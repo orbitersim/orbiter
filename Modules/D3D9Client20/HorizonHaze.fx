@@ -1,0 +1,41 @@
+
+
+HazeVS HazeTechVS(HZVERTEX vrt)
+{
+    // Zero output.
+	HazeVS outVS = (HazeVS)0;
+	
+    float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	outVS.posH  = mul(float4(posW, 1.0f), gVP);
+	outVS.tex0  = vrt.tex0;
+    outVS.color = vrt.color;
+    return outVS;
+}
+
+
+// Horizon haze pixel-shader frg.tex0.y is the altitude. 0.0 = Horizon (ground level) 1.0 = top of atmosphere
+//
+float4 HazeTechPS(HazeVS frg) : COLOR
+{
+    //return frg.color * tex2D(Tile0S, frg.tex0); 
+
+    //return float4(frg.color.rgb, frg.color.a*frg.tex0.y*frg.tex0.y);
+    return float4(frg.color.rgb*(frg.tex0.y+0.30), frg.color.a*frg.tex0.y*frg.tex0.y);
+}
+
+
+technique HazeTech
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD HazeTechVS();
+        pixelShader  = compile PS_MOD HazeTechPS();
+
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+        ZEnable = false;
+        ZWriteEnable = false;
+    }
+}
