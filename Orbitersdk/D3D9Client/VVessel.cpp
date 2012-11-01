@@ -22,6 +22,7 @@ using namespace oapi;
 
 void TransformPoint (VECTOR3 &p, const D3DXMATRIX &T);
 void TransformDirection (VECTOR3 &a, const D3DXMATRIX &T, bool normalise);
+const char *value_string (double val);
 
 // ==============================================================
 // class vVessel (implementation)
@@ -589,7 +590,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 {
-	char label[64];
+	const double threshold = 0;//0.25; // threshold for forces to be drawn
 	VECTOR3 vector;
 	float lscale = 1e-3f;
 	float alpha;
@@ -599,8 +600,12 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSSCALE);
 	float scale   = float(oapiGetSize(hObj)) / 50.0f;
 	
+	// -------------------------------------
+	// Render Body Force Vectors
+
 	if (bfvmode & BFV_ENABLE)
 	{
+		char label[64];
 		bool bLog;
 
 		if (bfvmode & BFV_SCALE_LOG) bLog = true;
@@ -622,138 +627,96 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 
 		alpha = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSOPACITY);
 
+		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
+		{
 		if (bfvmode & BFV_DRAG) {
 			vessel->GetDragVector(vector);
+				if (length(vector) > threshold) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "D = %sN", value_string(length(vector)));
+					RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), vector, lscale, scale, label, bLog);
+				}
 		}
 
 		if (bfvmode & BFV_WEIGHT) {
 			vessel->GetWeightVector(vector);
+				if (length(vector) > threshold) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,0,alpha), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "G = %sN", value_string(length(vector)));
+					RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,0,alpha), vector, lscale, scale, label, bLog);
+				}
 		}   
 
 		if (bfvmode & BFV_THRUST) {
 			vessel->GetThrustVector(vector);
+				if (length(vector) > threshold) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "T = %sN", value_string(length(vector)));
+					RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), vector, lscale, scale, label, bLog);
+				}
 		}
 
 		if (bfvmode & BFV_LIFT) {
 			vessel->GetLiftVector(vector);
+				if (length(vector) > threshold) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "L = %sN", value_string(length(vector)));
+					RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), vector, lscale, scale, label, bLog);
+				}
 		}
 
 		if (bfvmode & BFV_TOTAL) {
 			vessel->GetForceVector(vector);
+				if (length(vector) > threshold) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "F = %sN", value_string(length(vector)));
+					RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), vector, lscale, scale, label, bLog);
+				}
 		}
 
 		if (bfvmode & BFV_TORQUE) {
 			vessel->GetTorqueVector(vector);
+				if (length(vector) > threshold) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, bLog);
+					sprintf_s(label, 64, "T = %sNm", value_string(length(vector)));
+					RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, label, bLog);
+				}
+			}
 		}
 	}
+
+	// -------------------------------------
+	// Render Axes
 
 	DWORD scamode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWCOORDINATEAXESFLAG);
 
 	if (scamode&SCA_ENABLE && scamode&SCA_VESSEL)
 	{
 		float alpha   = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESOPACITY);
+
+		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
+		{
 		float sclset  = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
 		float scale   = float(oapiGetSize(hObj))/50.0f;
 		float ascale  = float(oapiGetSize(hObj))*sclset*0.5f;
 
 		RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(1,0,0), ascale, scale);
+			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(1,0,0), ascale, scale, "X");
+
 		RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,1,0), ascale, scale);
+			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,1,0), ascale, scale, "Y");
+
 		RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,1), ascale, scale);
+			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,1), ascale, scale, "Z");
 
 		if (scamode&SCA_NEGATIVE) {
 			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(-1,0,0), ascale, scale);
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(0,-1,0), ascale, scale);
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(0,0,-1), ascale, scale);
-		}
-	}
-
-
-	// -------------------------------------
-	// Render Labels
-
-	if (bfvmode & BFV_ENABLE)
-	{
-		bool bLog;
-		
-		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
-		{
-			
-			if (bfvmode & BFV_SCALE_LOG) bLog = true;
-			else                         bLog = false;
-
-			if (bfvmode & BFV_DRAG) {
-				vessel->GetDragVector(vector); len = length(vector);
-				if (len>10e3)	  sprintf_s(label, 64, "D=%0.2fkN",len*1e-3);
-				else if (len<0.1) sprintf_s(label, 64, "D=%0.2fµN",len*1e6);
-				else		      sprintf_s(label, 64, "D=%0.2fN",len); 
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), vector, lscale, scale, label, bLog);
-			}
-
-			if (bfvmode & BFV_WEIGHT) {
-				vessel->GetWeightVector(vector); len = length(vector);
-				if (len>10e3)	  sprintf_s(label, 64, "G=%0.2fkN",len*1e-3);
-				else if (len<0.1) sprintf_s(label, 64, "G=%0.2fµN",len*1e6);
-				else		      sprintf_s(label, 64, "G=%0.2fN",len); 
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,0,alpha), vector, lscale, scale, label, bLog);
-			}   
-
-			if (bfvmode & BFV_THRUST) {
-				vessel->GetThrustVector(vector); len = length(vector);
-				if (len>10e3)	  sprintf_s(label, 64, "T=%0.2fkN",len*1e-3);
-				else if (len<0.1) sprintf_s(label, 64, "T=%0.2fµN",len*1e6);
-				else		      sprintf_s(label, 64, "T=%0.2fN",len); 
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), vector, lscale, scale, label, bLog);
-			}
-
-			if (bfvmode & BFV_LIFT) {
-				vessel->GetLiftVector(vector); len = length(vector);
-				if (len>10e3)	  sprintf_s(label, 64, "L=%0.2fkN",len*1e-3);
-				else if (len<0.1) sprintf_s(label, 64, "L=%0.2fµN",len*1e6);
-				else		      sprintf_s(label, 64, "L=%0.2fN",len); 
-				RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), vector, lscale, scale, label, bLog);
-			}
-
-			if (bfvmode & BFV_TOTAL) {
-				vessel->GetForceVector(vector);	len = length(vector);
-				if (len>10e3)	  sprintf_s(label, 64, "F=%0.2fkN",len*1e-3);
-				else if (len<0.1) sprintf_s(label, 64, "F=%0.2fµN",len*1e6);
-				else		      sprintf_s(label, 64, "F=%0.2fN",len); 
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), vector, lscale, scale, label, bLog);
-			}
-
-			if (bfvmode & BFV_TORQUE) {
-				vessel->GetTorqueVector(vector); len = length(vector);
-				if (len>10e3)	  sprintf_s(label, 64, "Q=%0.2fkN",len*1e-3);
-				else if (len<0.1) sprintf_s(label, 64, "Q=%0.2fµN",len*1e6);
-				else		      sprintf_s(label, 64, "Q=%0.2fN",len); 
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, label, bLog);
-			}
-		}
-	}
-
-	if (scamode&SCA_ENABLE && scamode&SCA_VESSEL)
-	{
-		float alpha = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESOPACITY);
-
-		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
-		{
-			float sclset  = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
-			float scale   = float(oapiGetSize(hObj))/50.0f;
-			float ascale  = float(oapiGetSize(hObj))*sclset*0.5f;
-
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(1,0,0), ascale, scale, "X");
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,1,0), ascale, scale, "Y");
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,1), ascale, scale, "Z");
-
-			if (scamode&SCA_NEGATIVE) {
 				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(-1,0,0), ascale, scale, "-X");
+
+			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(0,-1,0), ascale, scale);
 				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,-1,0), ascale, scale, "-Y");
+
+			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(0,0,-1), ascale, scale);
 				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,-1), ascale, scale, "-Z");
 			}
 		}
@@ -1274,4 +1237,34 @@ void TransformDirection (VECTOR3 &a, const D3DXMATRIX &T, bool normalise)
 	}
 }
 		
-		
+// ===========================================================================
+// Add ISO-prefix to a value
+//
+#define ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
+
+static inline const int clip(int v, int vMin, int vMax)
+{
+	if      (v < vMin) return vMin;
+	else if (v > vMax) return vMax;
+	else               return v;
+}
+
+inline const char *value_string (char *buf, size_t buf_size, double val)
+{
+	static const char unit_prefixes[] = { 'µ', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
+
+	int index = (int) (log10(val)) / 3;
+	val /= pow(10.0, index*3);
+
+	// apply array index offset (+2) [-2...5] => [0...7]
+	index = clip(index+2, 0, ARRAY_ELEMS(unit_prefixes) -1);
+	sprintf_s(buf, buf_size, "%.3f %c", val, unit_prefixes[index]);
+
+	return buf;
+}
+
+const char *value_string (double val)
+{
+	static char buf[16];
+	return value_string(buf, sizeof(buf), val);
+}
