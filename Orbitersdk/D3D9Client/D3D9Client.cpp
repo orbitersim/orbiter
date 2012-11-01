@@ -211,6 +211,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 {
 	vtab             = NULL;
+	pBltGrpTgt = NULL;
 	strcpy(ScenarioName, "(none selected)");
 }
 
