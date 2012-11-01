@@ -210,8 +210,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 
 D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 {
-	vtab             = NULL;
-	pBltGrpTgt = NULL;
+	vtab = NULL;
 	strcpy(ScenarioName, "(none selected)");
 }
 
@@ -285,9 +284,10 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pFramework       = NULL;
 	pd3dDevice       = NULL;
 	parser			 = NULL;
+	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
 
-#ifdef _SURFACE_EX
-	surfBltTgt		 = NULL;
+#ifdef RP_REQUIRETEXPOW2
+	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 #endif
 
 	memset(&stats, 0, sizeof(stats));
