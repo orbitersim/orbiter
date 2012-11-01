@@ -36,7 +36,7 @@ char OprBuf[OPRBUF+1];
 char TimeBuf[TIMEBUF+1];
 
 time_t ltime;
-int uEnableLog = 4;		// This value is controlling log opeation 
+int uEnableLog = 1;		// This value is controlling log opeation 
 int iEnableLog = 0;
 int EnableLogStack[16];
 int iLine = 0;

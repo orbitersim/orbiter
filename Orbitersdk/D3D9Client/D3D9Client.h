@@ -632,7 +632,7 @@ protected:
 private:
 
 	void Label(const char *format, ...);
-	bool CheckBltGroup(SURFHANDLE src) const;
+	bool CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const;
 	void LogRenderParams () const;
 
 	mutable SURFHANDLE		pBltGrpTgt;

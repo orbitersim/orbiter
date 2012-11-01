@@ -1480,6 +1480,8 @@ bool D3D9Client::clbkSetSurfaceColourKey(SURFHANDLE surf, DWORD ckey)
 
 int D3D9Client::clbkBeginBltGroup(SURFHANDLE tgt) 
 {
+	if (pBltGrpTgt) return -1;
+
 	if (tgt==RENDERTGT_NONE) {
 		pBltGrpTgt = NULL;	
 		return -2;
@@ -1487,6 +1489,11 @@ int D3D9Client::clbkBeginBltGroup(SURFHANDLE tgt)
 
 	if (tgt==RENDERTGT_MAINWINDOW) pBltGrpTgt = pFramework->GetBackBufferHandle();
 	else						   pBltGrpTgt = tgt;
+
+	if (SURFACE(pBltGrpTgt)->IsRenderTarget()==false) {
+		pBltGrpTgt = NULL;
+		return -3;
+	}
 
 	return 0; 
 }
@@ -1500,11 +1507,16 @@ int D3D9Client::clbkEndBltGroup()
 }
 
 
-bool D3D9Client::CheckBltGroup(SURFHANDLE src) const
+bool D3D9Client::CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const
 {
-	if (SURFACE(src)->pTex!=NULL) {	
-		if (SURFACE(src)->ColorKey) { // Use blit groups only for color keyed source surfaces
-			if (SURFACE(pBltGrpTgt)->BeginBlitGroup()==S_OK) return true;	
+
+	// return false;  // Disable blt groups 
+
+	if (tgt==pBltGrpTgt) {
+		if (SURFACE(src)->pTex!=NULL) {	
+			if (SURFACE(src)->ColorKey) { // Use blit groups only for color keyed source surfaces
+				if (SURFACE(pBltGrpTgt)->BeginBlitGroup()==S_OK) return true;	
+			}
 		}
 	}
 	// Flush queue, release GPU and disable blit group
@@ -1533,9 +1545,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 
 #ifdef RP_REQUIRETEXPOW2
 		if (pBltGrpTgt) {
-			if (tgt!=pBltGrpTgt) return false;
-			if (CheckBltGroup(src)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-			else 				    SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
+			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 		}
 		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 #else
@@ -1567,9 +1578,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 
 #ifdef RP_REQUIRETEXPOW2
 		if (pBltGrpTgt) {
-			if (tgt!=pBltGrpTgt) return false;
-			if (CheckBltGroup(src)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-			else 				    SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
+			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 		}
 		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 #else
@@ -1602,9 +1612,8 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 #ifdef RP_REQUIRETEXPOW2
 		if (pBltGrpTgt) {
-			if (tgt!=pBltGrpTgt) return false;
-			if (CheckBltGroup(src)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-			else 				    SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
+			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 		}
 		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 #else
