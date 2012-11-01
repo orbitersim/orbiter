@@ -228,7 +228,7 @@ D3D9Client::~D3D9Client()
 const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 {
 	return (paramtype >= CFGPRM_SHOWBODYFORCEVECTORSFLAG)
-		   ? oapiExtension->GetConfigParam(paramtype)
+		   ? OapiExtension::GetConfigParam(paramtype)
 		   : GraphicsClient::GetConfigParam(paramtype);
 }
 
@@ -757,7 +757,7 @@ bool D3D9Client::RenderWithPopupWindows()
 	}
 
 	// Let the OapiExtension manager know about this..
-	oapiExtension->HandlePopupWindows(hPopupWnd, count);
+	OapiExtension::HandlePopupWindows(hPopupWnd, count);
 
 	for (DWORD i=0;i<count;i++) {
 		DWORD val = GetWindowLongA(hPopupWnd[i], GWL_STYLE);

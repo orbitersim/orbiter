@@ -113,7 +113,7 @@ OapiExtension::~OapiExtension(void)
 // Same functionality than 'official' GetConfigParam, but for non-provided
 // config parameters
 //
-const void *OapiExtension::GetConfigParam (DWORD paramtype) const
+const void *OapiExtension::GetConfigParam (DWORD paramtype)
 {
 	switch (paramtype) {
 		// Visual Helpers
@@ -139,7 +139,7 @@ const void *OapiExtension::GetConfigParam (DWORD paramtype) const
 // Hooks/Unhooks the popup windows; called whenever popup widows
 // appear/disappear
 //
-const void OapiExtension::HandlePopupWindows (const HWND *hPopupWnd, DWORD count) const
+void OapiExtension::HandlePopupWindows (const HWND *hPopupWnd, DWORD count)
 {
 	// New popup window we need to hook onto?
 	if (count && !AllHooksAttached()) {

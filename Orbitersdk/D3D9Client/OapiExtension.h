@@ -125,7 +125,7 @@ public:
 	 * \param count Number of entries in the list (return value of \ref
 	 *   oapi::GraphicsClient::GetPopupList.
 	 */
-	const void HandlePopupWindows (const HWND *hPopupWnd, DWORD count) const;
+	static void HandlePopupWindows (const HWND *hPopupWnd, DWORD count);
 
 	/**
 	 * \brief Same functionality than 'official' GetConfigParam, but for
@@ -143,7 +143,7 @@ public:
 	 * float scale = *(float*)GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
 	 * \endcode
 	 */
-	const void *GetConfigParam (DWORD paramtype) const;
+	static const void *GetConfigParam (DWORD paramtype);
 
 private:
 	// Body forces

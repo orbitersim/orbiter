@@ -10,6 +10,12 @@
 
 extern class D3D9Config *Config;
 
+/**
+ * \brief Configuration Manager
+ *
+ * This class provides access to config-parameters that were read from the
+ * config file.
+ */
 class D3D9Config {
 public:
 	D3D9Config ();
@@ -19,26 +25,26 @@ public:
 	bool ReadParams();
 	void WriteParams();
 
-	int PlanetPreloadMode;   // 0=load on demand, 1=preload
-	int PlanetLoadFrequency; // load frequency for on-demand textures [Hz]
+	int PlanetPreloadMode;			///< Planet preload mode setting (0=load on demand, 1=preload)
+	int PlanetLoadFrequency;		///< Load frequency for on-demand textures [Hz] (1...1000)
 	int Anisotrophy;    
 	int SceneAntialias;
-	int DisableDriverManagement;
-	int DisableVisualHelperReadout;
+	int DisableDriverManagement;	///< Disable the D3D9 driver management [sets the D3DCREATE_DISABLE_DRIVER_MANAGEMENT behavior flag]  (0=default, 1:disabled)
+	int DisableVisualHelperReadout;	///< Disable the hooking of the visual helper windows, to allow acces to config parameter that Orbiter core doesn't provide (0=normal mode, 1=disable any hooking)
 	int MemoryLogic;
-	int NearClipPlane;
+	int NearClipPlane;				///< Near clip plane mode (0,1)
 	int RejectRTDC;
-	int PreLBaseVis;
+	int PreLBaseVis;				///< Preload base visuals (0=load on demand, 1=preload)
 	int DebugFontSize;
 	int DepthBuffer;
 	int GDIRTSWrn;
-	int UseNormalMap;
+	int UseNormalMap;				///< Enable normal mapping (0,1)
 	int LoadInSystemMem;
 	int SketchpadMode;
-	int SketchpadFont;
-	int RwyLightAnimate;
-	double RwyLightAngle;
-	double RwyBrightness;
+	int SketchpadFont;				///< Sketchpad Font (0=Crisp, 1=Default, 2=Cleartype, 3=Proof Quality)
+	int RwyLightAnimate;			///< Runway light animate (0,1)
+	double RwyLightAngle;			///< Runway light angle [deg] (10...180)
+	double RwyBrightness;			///< Runway light brightness (0.3...3.0)
 	double RwyHazeScale;
 	double VCNearPlane;
 	double Convergence;
