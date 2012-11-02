@@ -87,7 +87,8 @@ void CelestialSphere::LoadStars ()
 	if (prm->mag_lo <= prm->mag_hi) return;
 
 	// Read binary data from file
-	FILE *f = fopen ("Star.bin", "rb");
+	FILE *f;
+	fopen_s(&f, "Star.bin", "rb");
 	if (!f) return;
 	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH

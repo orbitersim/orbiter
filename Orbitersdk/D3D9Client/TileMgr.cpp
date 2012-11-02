@@ -113,7 +113,7 @@ bool TileManager::LoadPatchData ()
 	strcpy_s(fname, 256, objname);
 	strcat_s(fname, 256, "_lmask.bin");
 
-	if (!(bGlobalSpecular || bGlobalLights) || !gc->TexturePath (fname, cpath) || !(binf = fopen (cpath, "rb"))) {
+	if (!(bGlobalSpecular || bGlobalLights) || !gc->TexturePath (fname, cpath) || fopen_s (&binf, cpath, "rb")) {
 
 		for (i = 0; i < patchidx[maxbaselvl]; i++)
 			tiledesc[i].flag = 1;
@@ -174,7 +174,7 @@ bool TileManager::LoadTileData ()
 	strcpy_s (fname, 256, objname);
 	strcat_s (fname, 256, "_tile.bin");
 	
-	if (!gc->TexturePath (fname, cpath) || !(file = fopen (cpath, "rb"))) {
+	if (!gc->TexturePath (fname, cpath) || fopen_s (&file, cpath, "rb")) {
 		LogWrn("Surface Tile TOC not found for %s",fname);	
 		return false; // TOC file not found
 	}
