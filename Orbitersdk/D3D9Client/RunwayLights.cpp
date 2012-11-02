@@ -134,8 +134,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 
 	// Helping vectors
 	VECTOR3 _direction = _end - _start; // Vector of the runway
-	VECTOR3 _dir = _direction; // Normalized direction
-	normalise(_dir);
+	VECTOR3 _dir = unit(_direction); // Normalized direction
 	VECTOR3 _td_disp = _dir * td_disp; // Touch zone displacement vector
 	
 	_start += _td_disp;
@@ -167,8 +166,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 	VECTOR3 _space; // Vector between each light
 	VECTOR3 _current; // Incremented in the for loop
 	VECTOR3 _shift;
-	VECTOR3 _widthDir = crossp(_direction, _V(0, 1, 0)); // used to calculate the edge lights
-	normalise(_widthDir);
+	VECTOR3 _widthDir = unit(crossp(_dir, _V(0, 1, 0))); // used to calculate the edge lights
 
 	BeaconArrayEntry* beaconsEntry1 = new BeaconArrayEntry[numLights];
 	
@@ -361,7 +359,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 		_space = _dir * spacing;
 		_current = _start - _space;
 
-		for (k=0; k<9; k++, i+=11)
+		for (k=0; k<9; k++, i+=5)
 		{
 			beaconsEntry1[i] = centerLight;
 			beaconsEntry1[i].color = white;
@@ -453,7 +451,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 
 
 	// VASI ---------------------------------------------------------
-	
+	/*
 	if (bVASI) {
 		BeaconArrayEntry vasiLight;
 
@@ -482,7 +480,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 			beaconsEntry1[i].color = white;
 			beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI.x*RAD)*VASI.y);
 		}
-	}
+	}*/
 
 
 	// Post process lights ------------------------------------------
