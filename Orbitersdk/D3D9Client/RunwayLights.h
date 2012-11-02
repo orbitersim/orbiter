@@ -31,12 +31,14 @@ public:
 	void SetEnd2(VECTOR3 pos);
 	void SetWidth(double width);
 	void SetTouchZoneDisplacement(double disp);
+	void SetTouchZoneDisplacement2(double disp);
 	void SetTouchZoneLength(double length);
 	void SetDecisionDist(double dist);
 	void SetApproachStart(double dist);
 	void AddPAPI(VECTOR3 pos, float disp=0.0f);
 	void AddVASI(VECTOR3 pos);
 	void SetSignleEnded(bool bSingleEnded);
+	void SetCategory(int cat);
 	
 	void Init();
 	void Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night);
@@ -49,7 +51,7 @@ protected:
 
 	void			   SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int idx);
 
-	class BeaconArray *BuildLights(VECTOR3 start, VECTOR3 end);
+	class BeaconArray *BuildLights(VECTOR3 start, VECTOR3 end, double td_dist);
 	class BeaconArray *BuildVASI(VECTOR3 start, VECTOR3 end);
 	class BeaconArray *BuildPAPI(VECTOR3 start, VECTOR3 end, int idx);
 
@@ -57,10 +59,14 @@ protected:
 	VECTOR3 end2;
 	double width;
 	double td_disp;
+	double td_disp2;
 	double td_length;
 	double apr_length;
 	double apr_start;
 	bool   bSingleEnded;
+	bool   bDisp2;
+	int	   iCategory;
+
 	OBJHANDLE hObj;
 	
 	DWORD nPAPI;

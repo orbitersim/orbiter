@@ -24,12 +24,15 @@ RunwayLights::RunwayLights(OBJHANDLE handle)
 	end2 = _V(0, 0, 0);
 	width = 50.0;
 	td_disp = 0.0;
+	td_disp2 = 0.0;
 	td_length = 600.0;
 	apr_start = 900.0;
 	apr_length = 257.0;
+	iCategory = 0;
 	nPAPI = 0;
 	hObj  = handle;
 	bVASI = false;
+	bDisp2 = false;
 	bSingleEnded = false;
 
 	for (int i=0;i<6;i++) papi_f[i]=papi_b[i]=NULL;
@@ -49,6 +52,11 @@ RunwayLights::~RunwayLights()
 		SAFE_DELETE(papi_f[i]);
 		SAFE_DELETE(papi_b[i]);
 	}
+}
+
+void RunwayLights::SetCategory(int cat)
+{
+	iCategory = cat;
 }
 
 void RunwayLights::SetSignleEnded(bool bEnd)
@@ -74,6 +82,12 @@ void RunwayLights::SetWidth(double w)
 void RunwayLights::SetTouchZoneDisplacement(double disp)
 {
 	td_disp = disp;
+}
+
+void RunwayLights::SetTouchZoneDisplacement2(double disp)
+{
+	bDisp2 = true;
+	td_disp2 = disp;
 }
 
 void RunwayLights::SetTouchZoneLength(double disp)
@@ -110,8 +124,12 @@ void RunwayLights::Init()
 {
 	_TRACE;
 	
-	beacons1 = BuildLights(end1, end2);
-	if (!bSingleEnded) beacons2 = BuildLights(end2, end1);
+	beacons1 = BuildLights(end1, end2, td_disp);
+
+	if (!bSingleEnded) {
+		if (bDisp2) beacons2 = BuildLights(end2, end1, td_disp2);
+		else		beacons2 = BuildLights(end2, end1, td_disp);
+	}
 
 	if (bVASI) {
 		vasi1 = BuildVASI(end1, end2);
@@ -126,7 +144,7 @@ void RunwayLights::Init()
 
 
 
-BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
+BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp)
 {
 	_TRACE;
 	const float lightSize = 4.0f;
@@ -135,9 +153,9 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 	// Helping vectors
 	VECTOR3 _direction = _end - _start; // Vector of the runway
 	VECTOR3 _dir = unit(_direction); // Normalized direction
-	VECTOR3 _td_disp = _dir * td_disp; // Touch zone displacement vector
+	VECTOR3 _td_disp = _dir * disp; // Touch zone displacement vector
 	
-	_start += _td_disp;
+	 _start += _td_disp;
 	_direction = _end - _start;
 
 	double len = length(_direction); // Length of the runway
@@ -153,8 +171,10 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 
 	if (numLightsApproach<0) numLightsApproach = 0;
 
-	
-	double limit = 59.0;
+	if (iCategory==0) {
+		if (width>59.0) iCategory = 2;
+		else			iCategory = 1;
+	}
 
 	// Not a critical. Must be higher than actual number of lights. Only used for memory allocation
 	numLights = 2 * (numLightsEdge*4 + numLightsEnd*3 + numLightsTouch*3*2 + numLightsDecision*3*2 + numLightsApproach*5); // total lights
@@ -268,8 +288,8 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 	_space = _dir * spacing;
 	_current = _start + _space * double(numLightsTouch);
 
-	if (width>limit) _shift = _widthDir * 17.0;
-	else             _shift = _widthDir * floor(width/3.5);
+	if (iCategory==2) _shift = _widthDir * 17.0;
+	else              _shift = _widthDir * floor(width/3.5);
 
 	for(k=0; k<(numLightsTouch*6); k+=6,i+=6)
 	{
@@ -290,7 +310,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 
 	_space = _widthDir * width/float(numLightsEnd-1);
 
-	if (width>limit) {
+	if (iCategory==2) {
 		_current = _start - _space*(float(numLightsEnd-1)/2.0) - _space * 3;
 		count = numLightsEnd+6;
 	}
@@ -308,7 +328,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 	}
 
 
-	if (width>limit) {
+	if (iCategory==2) {
 
 		// pre-touch zone lights with red -------------------------------
 
@@ -359,7 +379,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 		_space = _dir * spacing;
 		_current = _start - _space;
 
-		for (k=0; k<9; k++, i+=5)
+		for (k=0; k<10; k++, i+=5)
 		{
 			beaconsEntry1[i] = centerLight;
 			beaconsEntry1[i].color = white;
@@ -374,14 +394,18 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 
 			_current -= _space;
 		}
+
+		_current += _space;
 	}
 
 
 	// white line ---------------------------------------------------------
 
-	VECTOR3 _pos = _current - _shift;
-	count = (int)(length(_shift)/2.0)*2 + 3;
-	_space = (_shift*2)/count;
+	
+	count = (int)(length(_shift)/4.0);
+	_space = _shift/(count*2);
+
+	VECTOR3 _pos = _current + _space * 4;
 
 	for(k=0; k<count+1; k++, i++)
 	{
@@ -391,6 +415,16 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 		_pos += _space;
 	}
 
+	 _pos = _current - _space * 4;
+
+	for(k=0; k<count+1; k++, i++)
+	{
+		beaconsEntry1[i] = centerLight;
+		beaconsEntry1[i].pos = _pos;
+		beaconsEntry1[i].color = white;
+		_pos -= _space;
+	}
+
 	
 
 	// approach lights -------------------------------------
@@ -398,8 +432,8 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 	_space = _dir*spacing;
 	_current -= _space;
 
-	if (width>limit) count = numLightsApproach;
-	else             count = 2;
+	if (iCategory==2) count = numLightsApproach;
+	else              count = 2;
 
 	for(k=0; k<count; k++, i+=5)
 	{
@@ -418,7 +452,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 
 	// animated lights -------------------------------------------- 
 
-	if (width<=limit) {
+	if (iCategory==1) {
 
 		_space = _dir*100.0;
 		_current -= _space * 0.5;
@@ -428,8 +462,8 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end)
 			beaconsEntry1[i] = beaconLight;
 
 			if (Config->RwyLightAnimate) {
-				beaconsEntry1[i].lon = (1.0f-float(k)*0.2f)-0.2f;
-				beaconsEntry1[i].loff = (1.0f-float(k)*0.2f);
+				beaconsEntry1[i].lon = (1.0f-float(k)*0.10f)-0.10f;
+				beaconsEntry1[i].loff = (1.0f-float(k)*0.10f);
 			}
 			else {
 				beaconsEntry1[i].lon = 0.0f;
@@ -753,11 +787,18 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, Runwa
 					lights[numRunwayLights-1]->SetWidth(width);
 				}
 
-				else if(!strncmp(cbuf, "TD_DISP", 7))
+				else if(!strncmp(cbuf, "TD_DISP ", 8))
 				{
 					double disp;
 					sscanf(cbuf, "TD_DISP %lf", &disp);
 					lights[numRunwayLights-1]->SetTouchZoneDisplacement(disp);
+				}
+
+				else if(!strncmp(cbuf, "TD_DISP2", 8))
+				{
+					double disp;
+					sscanf(cbuf, "TD_DISP2 %lf", &disp);
+					lights[numRunwayLights-1]->SetTouchZoneDisplacement2(disp);
 				}
 
 				else if(!strncmp(cbuf, "TD_LENGTH", 9))
@@ -809,6 +850,15 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, Runwa
 				else if(!strncmp(cbuf, "SINGLEENDED", 11))
 				{
 					lights[numRunwayLights-1]->SetSignleEnded(true);
+				}
+
+				else if(!strncmp(cbuf, "CATEGORY", 8))
+				{
+					int cat;
+					sscanf(cbuf, "CATEGORY %d", &cat);
+					if (cat<0) cat = 0;
+					if (cat>2) cat = 2;
+					lights[numRunwayLights-1]->SetCategory(cat);
 				}
 
 				else if(!strncmp(cbuf, "END", 3))
