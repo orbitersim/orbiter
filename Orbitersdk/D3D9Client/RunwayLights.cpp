@@ -370,6 +370,20 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 			beaconsEntry1[i].pos = _current + _space * 5 + _widthDir * (3+k);
 			beaconsEntry1[i+1].pos = _current + _space * 5 - _widthDir * (3+k);
 		}
+
+		// white line ---------------------------------------------------------
+
+		VECTOR3 _pos = _current - _shift;
+		count = (int)(length(_shift)/2.0)*2 + 3;
+		_space = (_shift*2)/count;
+
+		for(k=0; k<count+1; k++, i++)
+		{
+			beaconsEntry1[i] = centerLight;
+			beaconsEntry1[i].pos = _pos;
+			beaconsEntry1[i].color = white;
+			_pos += _space;
+		}
 	}
 
 	else {
@@ -396,34 +410,35 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 		}
 
 		_current += _space;
+
+		// white line ---------------------------------------------------------
+
+		count = (int)(length(_shift)/4.0);
+		_space = _shift/(count*2);
+
+		VECTOR3 _pos = _current + _space * 4;
+
+		for(k=0; k<count+1; k++, i++)
+		{
+			beaconsEntry1[i] = centerLight;
+			beaconsEntry1[i].pos = _pos;
+			beaconsEntry1[i].color = white;
+			_pos += _space;
+		}
+
+		 _pos = _current - _space * 4;
+
+		for(k=0; k<count+1; k++, i++)
+		{
+			beaconsEntry1[i] = centerLight;
+			beaconsEntry1[i].pos = _pos;
+			beaconsEntry1[i].color = white;
+			_pos -= _space;
+		}
 	}
 
-
-	// white line ---------------------------------------------------------
 
 	
-	count = (int)(length(_shift)/4.0);
-	_space = _shift/(count*2);
-
-	VECTOR3 _pos = _current + _space * 4;
-
-	for(k=0; k<count+1; k++, i++)
-	{
-		beaconsEntry1[i] = centerLight;
-		beaconsEntry1[i].pos = _pos;
-		beaconsEntry1[i].color = white;
-		_pos += _space;
-	}
-
-	 _pos = _current - _space * 4;
-
-	for(k=0; k<count+1; k++, i++)
-	{
-		beaconsEntry1[i] = centerLight;
-		beaconsEntry1[i].pos = _pos;
-		beaconsEntry1[i].color = white;
-		_pos -= _space;
-	}
 
 	
 
