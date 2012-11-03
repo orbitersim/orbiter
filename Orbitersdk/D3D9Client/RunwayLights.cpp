@@ -437,10 +437,6 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	}
 
 
-	
-
-	
-
 	// approach lights -------------------------------------
 
 	_space = _dir*spacing;
@@ -846,7 +842,7 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, Runwa
 				else if(!strncmp(cbuf, "APPROACH_START", 14))
 				{
 					double disp;
-					sscanf(cbuf, "DECISION_DIST %lf", &disp);
+					sscanf(cbuf, "APPROACH_START %lf", &disp);
 					lights[numRunwayLights-1]->SetApproachStart(disp);
 				}
 
