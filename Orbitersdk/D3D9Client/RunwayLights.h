@@ -35,8 +35,8 @@ public:
 	void SetTouchZoneLength(double length);
 	void SetDecisionDist(double dist);
 	void SetApproachStart(double dist);
-	void AddPAPI(VECTOR3 pos, float disp=0.0f);
-	void AddVASI(VECTOR3 pos);
+	void AddPAPI(VECTOR3 pos, float disp=0.0f, DWORD end=0);
+	void AddVASI(VECTOR3 pos, DWORD end=0);
 	void SetSignleEnded(bool bSingleEnded);
 	void SetCategory(int cat);
 	
@@ -51,9 +51,9 @@ protected:
 
 	void			   SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int idx);
 
-	class BeaconArray *BuildLights(VECTOR3 start, VECTOR3 end, double td_dist);
-	class BeaconArray *BuildVASI(VECTOR3 start, VECTOR3 end);
-	class BeaconArray *BuildPAPI(VECTOR3 start, VECTOR3 end, int idx);
+	class BeaconArray *BuildLights(VECTOR3 start, VECTOR3 end, double disp);
+	class BeaconArray *BuildVASI(VECTOR3 start, VECTOR3 end, DWORD idx);
+	class BeaconArray *BuildPAPI(VECTOR3 start, VECTOR3 end, DWORD idx);
 
 	VECTOR3 end1;
 	VECTOR3 end2;
@@ -65,24 +65,24 @@ protected:
 	double apr_start;
 	bool   bSingleEnded;
 	bool   bDisp2;
-	int	   iCategory;
-
+	int    iCategory;
 	OBJHANDLE hObj;
 	
 	DWORD nPAPI;
-	VECTOR3 PAPI_pos[6];
-	float PAPI_disp[6];
+	VECTOR3 PAPI_pos[12];
+	float PAPI_disp[12];
+	DWORD PAPI_end[12];
 	
-	bool bVASI;
-	VECTOR3 VASI;
+	DWORD nVASI;
+	VECTOR3 VASI[2];
+	DWORD VASI_end[2];
 
 	int numLights;
 	BeaconArray* beacons1;
 	BeaconArray* beacons2;
-	BeaconArray* vasi1;
-	BeaconArray* vasi2;
-	BeaconArray* papi_f[6];
-	BeaconArray* papi_b[6];
+	BeaconArray* vasi[2];
+	BeaconArray* papi[12];
+	
 	const char * filename; 
 
 	float currentTime;	

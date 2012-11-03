@@ -31,13 +31,12 @@ RunwayLights::RunwayLights(OBJHANDLE handle)
 	iCategory = 0;
 	nPAPI = 0;
 	hObj  = handle;
-	bVASI = false;
-	bDisp2 = false;
+	nVASI = 0;
 	bSingleEnded = false;
 
-	for (int i=0;i<6;i++) papi_f[i]=papi_b[i]=NULL;
+	for (int i=0;i<12;i++) papi[i]=NULL;
+	for (int i=0;i<12;i++) vasi[i]=NULL;
 
-	vasi1 = vasi2 = NULL;
 	beacons1 = beacons2 = NULL;
 	currentTime = 0.0f;
 }
@@ -46,12 +45,9 @@ RunwayLights::~RunwayLights()
 {
 	SAFE_DELETE(beacons1);
 	SAFE_DELETE(beacons2);
-	SAFE_DELETE(vasi1);
-	SAFE_DELETE(vasi2);
-	for (int i=0;i<6;i++) {
-		SAFE_DELETE(papi_f[i]);
-		SAFE_DELETE(papi_b[i]);
-	}
+	for (int i=0;i<12;i++) SAFE_DELETE(papi[i]);
+	for (int i=0;i<2;i++) SAFE_DELETE(vasi[i]);
+	
 }
 
 void RunwayLights::SetCategory(int cat)
@@ -105,18 +101,21 @@ void RunwayLights::SetApproachStart(double dist)
 	apr_start = dist;
 }
 
-void RunwayLights::AddPAPI(VECTOR3 pos, float disp)
+void RunwayLights::AddPAPI(VECTOR3 pos, float disp, DWORD end)
 {
-	if (nPAPI>5) return;
+	if (nPAPI>12) return;
 	PAPI_pos[nPAPI] = pos;
 	PAPI_disp[nPAPI] = disp;
+	PAPI_end[nPAPI] = end;
 	nPAPI++;
 }
 
-void RunwayLights::AddVASI(VECTOR3 pos)
+void RunwayLights::AddVASI(VECTOR3 pos, DWORD end)
 {
-	bVASI = true;
-	VASI = pos;
+	if (nVASI>2) return;
+	VASI[nVASI] = pos;
+	VASI_end[nVASI] = end;
+	nVASI++;
 }
 
 
@@ -131,14 +130,14 @@ void RunwayLights::Init()
 		else		beacons2 = BuildLights(end2, end1, td_disp);
 	}
 
-	if (bVASI) {
-		vasi1 = BuildVASI(end1, end2);
-		if (!bSingleEnded) vasi2 = BuildVASI(end2, end1);
+	for (DWORD i=0;i<nVASI;i++) {
+		if (VASI_end[i]==0) vasi[i] = BuildVASI(end1, end2, i);
+		if (VASI_end[i]==1) vasi[i] = BuildVASI(end2, end1, i);
 	}
 
 	for (DWORD i=0;i<nPAPI;i++) {
-		papi_f[i] = BuildPAPI(end1, end2, i);
-		if (!bSingleEnded) papi_b[i] = BuildPAPI(end2, end1, i);
+		if (PAPI_end[i]==0) papi[i] = BuildPAPI(end1, end2, i);
+		if (PAPI_end[i]==1)	papi[i] = BuildPAPI(end2, end1, i);
 	}
 }
 
@@ -550,7 +549,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 }
 
 
-BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, int i)
+BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, DWORD i)
 {
 
 	// PAPI lights
@@ -589,11 +588,13 @@ BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, int i)
 }
 
 
-BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end)
+BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 {
 	_TRACE;
 	const float lightSize = 4.0f;
 	const float upAngle = 12.0f;
+
+	DWORD e = VASI_end[idx];
 
 	// Helping vectors
 	VECTOR3 _direction = _end - _start; // Vector of the runway
@@ -632,7 +633,7 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end)
 	vasiLight.fall = 0.1f;
 	vasiLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
 
-	_current = _start + _dir * VASI.z + _widthDir * (width/2.0 + 30.0);
+	_current = _start + _dir * VASI[e].z + _widthDir * (width/2.0 + 30.0);
 	_current.y = 0;
 
 	for (k=0;k<20;k++, i++) {
@@ -642,12 +643,12 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end)
 		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0);
 	}
 
-	_current -= _dir * VASI.y;
+	_current -= _dir * VASI[e].y;
 
 	for (k=0;k<5;k++, i++) {
 		beaconsEntry1[i] = vasiLight;
 		beaconsEntry1[i].color = white;
-		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI.x*RAD)*VASI.y);
+		beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI[e].x*RAD)*VASI[e].y);
 	}
 	
 	// Post process lights ------------------------------------------
@@ -736,20 +737,32 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 	if (D3DXVec3Dot(&D3DXVEC(camDir), &dirGlo) > 0)
 	{
 		if (night) beacons1->Render(dev, world, currentTime);
-		if (bVASI) vasi1->Render(dev, world);
-
+		
+		for (DWORD i=0;i<nVASI;i++) {
+			if (!vasi[i]) continue;
+			if (VASI_end[i]==0) vasi[i]->Render(dev, world);
+		}
 		for (DWORD i=0;i<nPAPI;i++) {
-			SetPAPIColors(papi_f[i], world, i);
-			papi_f[i]->Render(dev, world);
+			if (!papi[i]) continue;
+			if (PAPI_end[i]==0) {
+				SetPAPIColors(papi[i], world, i);
+				papi[i]->Render(dev, world);
+			}
 		}
 	}
 	else if (!bSingleEnded)
 	{
 		if (night) beacons2->Render(dev, world, currentTime);
-		if (bVASI) vasi2->Render(dev, world);
+		for (DWORD i=0;i<nVASI;i++) {
+			if (!vasi[i]) continue;
+			if (VASI_end[i]==1) vasi[i]->Render(dev, world);
+		}
 		for (DWORD i=0;i<nPAPI;i++) {
-			SetPAPIColors(papi_b[i], world, i);
-			papi_b[i]->Render(dev, world);
+			if (!papi[i]) continue;
+			if (PAPI_end[i]==1) {
+				SetPAPIColors(papi[i], world, i);
+				papi[i]->Render(dev, world);
+			}
 		}
 	}
 }
@@ -839,27 +852,41 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, Runwa
 
 				else if(!strncmp(cbuf, "PAPI", 4))
 				{
-					VECTOR3 vec; DWORD u;
+					VECTOR3 vec; DWORD u, q;
 				
-					int n = sscanf(cbuf, "PAPI %lf %lf %lf %u", &vec.x, &vec.y, &vec.z, &u);
+					int n = sscanf(cbuf, "PAPI %lf %lf %lf %u %u", &vec.x, &vec.y, &vec.z, &u, &q);
 
 					if (n==3) {
-						lights[numRunwayLights-1]->AddPAPI(vec,  1);
-						lights[numRunwayLights-1]->AddPAPI(vec, -1);
+						lights[numRunwayLights-1]->AddPAPI(vec,  1, 0);
+						lights[numRunwayLights-1]->AddPAPI(vec, -1, 0);
+						lights[numRunwayLights-1]->AddPAPI(vec,  1, 1);
+						lights[numRunwayLights-1]->AddPAPI(vec, -1, 1);
 					}
 					else if (n==4) {
-						if (!u)  lights[numRunwayLights-1]->AddPAPI(vec,  0); 
-						if (u&1) lights[numRunwayLights-1]->AddPAPI(vec,  1);
-						if (u&2) lights[numRunwayLights-1]->AddPAPI(vec, -1);
+						if (!u)  lights[numRunwayLights-1]->AddPAPI(vec,  0, 0); 
+						if (u&1) lights[numRunwayLights-1]->AddPAPI(vec,  1, 0);
+						if (u&2) lights[numRunwayLights-1]->AddPAPI(vec, -1, 0);
+						if (!u)  lights[numRunwayLights-1]->AddPAPI(vec,  0, 1); 
+						if (u&1) lights[numRunwayLights-1]->AddPAPI(vec,  1, 1);
+						if (u&2) lights[numRunwayLights-1]->AddPAPI(vec, -1, 1);
+					}
+					else if (n==5) {
+						if (!u)  lights[numRunwayLights-1]->AddPAPI(vec,  0, q); 
+						if (u&1) lights[numRunwayLights-1]->AddPAPI(vec,  1, q);
+						if (u&2) lights[numRunwayLights-1]->AddPAPI(vec, -1, q);
 					}
 					else  LogErr("RUNWAYLIGHTS: Invalid parameter count in PAPI entry in (%s)",filename);
 				}
 
 				else if(!strncmp(cbuf, "VASI", 4))
 				{
-					VECTOR3 vec;
-					sscanf(cbuf, "VASI %lf %lf %lf", &vec.x, &vec.y, &vec.z);
-					lights[numRunwayLights-1]->AddVASI(vec);
+					VECTOR3 vec; DWORD e;
+					int n = sscanf(cbuf, "VASI %lf %lf %lf %u", &vec.x, &vec.y, &vec.z, &e);
+					if (n==3) {
+						lights[numRunwayLights-1]->AddVASI(vec, 0);
+						lights[numRunwayLights-1]->AddVASI(vec, 1);
+					}
+					else lights[numRunwayLights-1]->AddVASI(vec, e);
 				}
 
 				else if(!strncmp(cbuf, "SINGLEENDED", 11))
