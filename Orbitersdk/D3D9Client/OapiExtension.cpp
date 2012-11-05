@@ -234,10 +234,13 @@ const void OapiExtension::RemoveHook(LPHOOKINFO lpHookInfo)
 
 // ===========================================================================
 // Check helper to avoid hooking 'Orbiter: Configure menu bars' dialog, which
-// uses some of the same IDCs as 'Visual helpers' dialog.
+// used some of the same IDCs as 'Visual helpers' dialog.
+// (at least in v111105)
 //
 const bool OapiExtension::IsOurDialog(HWND hwnd)
 {
+	if (oapiGetOrbiterVersion()>=121025) return true;
+
 	static char buff[16] = {0};
 
 	if (GetWindowText(hwnd, buff, 16) && !strncmp("Visual helpers", buff, 14)) {
