@@ -25,6 +25,7 @@
 #include "D3D9TK.h"
 #include "OrbiterAPI.h"
 #include "DebugControls.h"
+#include "D3D9Config.h"
 
 vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
@@ -40,6 +41,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	numTaxiLights   = 0;
 	runwayLights    = NULL;
 	taxiLights		= NULL;
+	csun_lights     = RAD * Config->SunAngle;
 
 	// load surface tiles
 	ntile = gc->GetBaseTileList (_hObj, &tspec);
@@ -228,7 +230,6 @@ bool vBase::Update ()
 	if (!active) return false;
 	if (!vObject::Update()) return false;
 
-	static const double csun_lights = RAD*1.0; // sun elevation at which lights are switched on
 	double simt = oapiGetSimTime();
 
 	if (fabs(simt-Tlghtchk)>0.1) {

@@ -49,6 +49,7 @@ public:
 	double VCNearPlane;
 	double Convergence;
 	double Separation;
+	double SunAngle;
 	int DebugLvl;
 	int MaxLights; 
 	int NVPerfHUD;

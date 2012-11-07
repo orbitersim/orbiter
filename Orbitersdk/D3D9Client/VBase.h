@@ -60,6 +60,7 @@ private:
 
 	double Tchk;               // next update
 	double Tlghtchk;           // next lighting update
+	double csun_lights;
 	DWORD ntile;               // number of surface tiles
 	const SurftileSpec *tspec; // list of tile specs
 	D3D9Mesh *tilemesh;
