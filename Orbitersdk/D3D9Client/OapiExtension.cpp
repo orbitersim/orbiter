@@ -8,7 +8,6 @@
 #include "OapiExtension.h"
 #include "D3D9Config.h"
 #include "OrbiterAPI.h"
-#include "DebugControls.h"
 
 // ===========================================================================
 // Orbiter [v110830] up to [v111105]
@@ -112,21 +111,12 @@ void OapiExtension::GlobalInit(D3D9Config &Config)
 const void *OapiExtension::GetConfigParam (DWORD paramtype)
 {
 	switch (paramtype) {
-		// Visual Helpers
 		case CFGPRM_SHOWBODYFORCEVECTORSFLAG: return (void*)&showBodyForceVectorsFlags;
 		case CFGPRM_BODYFORCEVECTORSSCALE   : return (void*)&bodyForceScale;
 		case CFGPRM_BODYFORCEVECTORSOPACITY : return (void*)&bodyForceOpacity;
 		case CFGPRM_SHOWCOORDINATEAXESFLAG  : return (void*)&showCoordinateAxesFlags;
 		case CFGPRM_COORDINATEAXESSCALE     : return (void*)&coordinateAxesScale;
 		case CFGPRM_COORDINATEAXESOPACITY   : return (void*)&coordinateAxesOpacity;
-		// Debug Controls
-		case CFGPRM_GETSELECTEDMESH         : return (void*)&DebugControls::sMesh;
-		case CFGPRM_GETSELECTEDGROUP        : return (void*)&DebugControls::sGroup;
-		case CFGPRM_GETDEBUGFLAGS           : return (void*)&DebugControls::debugFlags;
-		case CFGPRM_GETDISPLAYMODE          : return (void*)&DebugControls::dspMode;
-		case CFGPRM_GETCAMERAMODE           : return (void*)&DebugControls::camMode;
-		case CFGPRM_GETCAMERASPEED          : return (void*)&DebugControls::camSpeed;
-
 		default                             : return NULL;
 	}
 }

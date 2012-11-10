@@ -228,8 +228,10 @@ D3D9Client::~D3D9Client()
 const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 {
 	return (paramtype >= CFGPRM_SHOWBODYFORCEVECTORSFLAG)
-		   ? OapiExtension::GetConfigParam(paramtype)
-		   : GraphicsClient::GetConfigParam(paramtype);
+		 ? (paramtype >= CFGPRM_GETSELECTEDMESH)
+		 ? DebugControls::GetConfigParam(paramtype)
+		 : OapiExtension::GetConfigParam(paramtype)
+		 : GraphicsClient::GetConfigParam(paramtype);
 }
 
 

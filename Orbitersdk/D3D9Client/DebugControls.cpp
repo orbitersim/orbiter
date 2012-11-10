@@ -31,6 +31,23 @@ char visual[64];
 HWND hDlg = NULL;
 vObject *vObj = NULL;
 
+// ===========================================================================
+// Same functionality than 'official' GetConfigParam, but for non-provided
+// debug-control config parameters
+//
+const void *GetConfigParam (DWORD paramtype)
+{
+	switch (paramtype) {
+		case CFGPRM_GETSELECTEDMESH  : return (void*)&sMesh;
+		case CFGPRM_GETSELECTEDGROUP : return (void*)&sGroup;
+		case CFGPRM_GETDEBUGFLAGS    : return (void*)&debugFlags;
+		case CFGPRM_GETDISPLAYMODE   : return (void*)&dspMode;
+		case CFGPRM_GETCAMERAMODE    : return (void*)&camMode;
+		case CFGPRM_GETCAMERASPEED   : return (void*)&camSpeed;
+		default                      : return NULL;
+	}
+}
+
 void Create()
 {
 	vObj = NULL;
