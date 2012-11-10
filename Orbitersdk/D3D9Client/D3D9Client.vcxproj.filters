@@ -18,6 +18,9 @@
       <Extensions>*.fx</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Externals">
+      <UniqueIdentifier>{fb8da057-55a8-4e60-bca3-60ba1b5287e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CelSphere.cpp">
@@ -234,6 +237,18 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\D3D9TK.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GraphicsAPI.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\OrbiterAPI.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Orbitersdk.h">
+      <Filter>Externals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

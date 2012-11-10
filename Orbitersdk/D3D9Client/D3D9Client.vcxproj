@@ -182,6 +182,10 @@
     <ResourceCompile Include="D3D9Client.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\D3D9TK.h" />
+    <ClInclude Include="..\include\GraphicsAPI.h" />
+    <ClInclude Include="..\include\OrbiterAPI.h" />
+    <ClInclude Include="..\include\Orbitersdk.h" />
     <ClInclude Include="BeaconArray.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
