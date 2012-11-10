@@ -67,7 +67,7 @@ HOOKINFO OapiExtension::hookInfos[] = {
 	{IDC_SHOW_AXES_NEGATIVE     , SCA_NEGATIVE , (WNDPROC)CheckBoxWindowProc, NULL, NULL, NULL, NULL},
 	{IDC_BODYFORCE_PAGE         , 0x02000      , (WNDPROC)GaugeWindowProc   , NULL, NULL, NULL, NULL},
 	{IDC_SHOW_AXES_PAGE         , 0x04000      , (WNDPROC)GaugeWindowProc   , NULL, NULL, NULL, NULL}
-	//                       Sum: 0x07FFF
+	//                       Sum: 0x07FFF (SCA_xxx hookFlag values are shifted! (<<8) )
 };
 
 // ===========================================================================
