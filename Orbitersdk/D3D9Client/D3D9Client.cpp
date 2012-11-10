@@ -389,6 +389,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	vStar::GlobalInit(this);
 	vObject::GlobalInit(this);
 	vVessel::GlobalInit(this);
+	OapiExtension::GlobalInit(*Config);
 
 	SetItem("SceneTech.fx");
 	Scene::D3D9TechInit(pd3dDevice, fld);
@@ -399,9 +400,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	WriteLog("[D3D9Client Initialized]");
 	LogOk("...3D environment initialised");
 	SetLabel("Loading Textures...");
-
-	// Create API-Wrapper instance
-	oapiExtension = new OapiExtension();
 
 #ifdef _NVAPI_H
 	if (bNVAPI) {
@@ -484,7 +482,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 		GraphicsClient::clbkCloseSession(fastclose);
 
-		SAFE_DELETE(oapiExtension);
 		SAFE_DELETE(parser);
 
 		LogAlw("================ Deleting Scene ===============");

@@ -40,13 +40,14 @@
 // ===========================================================================
 // Class statics initialization
 
-DWORD OapiExtension::showBodyForceVectorsFlags;
-float OapiExtension::bodyForceScale;
-float OapiExtension::bodyForceOpacity;
-
-DWORD OapiExtension::showCoordinateAxesFlags;
-float OapiExtension::coordinateAxesScale;
-float OapiExtension::coordinateAxesOpacity;
+DWORD OapiExtension::showBodyForceVectorsFlags = (BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG);
+float OapiExtension::bodyForceScale = 1.0;
+float OapiExtension::bodyForceOpacity = 1.0;
+// Orbiters default here: "CoordinateAxes = 4 1 1"
+DWORD OapiExtension::showCoordinateAxesFlags = SCA_VESSEL;
+float OapiExtension::coordinateAxesScale = 1.0;
+float OapiExtension::coordinateAxesOpacity = 1.0;
+bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
 // hooking
 DWORD OapiExtension::hookMap = 0L;
@@ -73,22 +74,7 @@ HOOKINFO OapiExtension::hookInfos[] = {
 // ===========================================================================
 // Construction
 //
-OapiExtension::OapiExtension(void)
-{
-	// Orbiters default here: "Bodyforces = 60 1 1"
-	showBodyForceVectorsFlags = (BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG);
-	bodyForceScale = 1.0;
-	bodyForceOpacity = 1.0;
-	// Orbiters default here: "CoordinateAxes = 4 1 1"
-	showCoordinateAxesFlags = SCA_VESSEL;
-	coordinateAxesScale = 1.0;
-	coordinateAxesOpacity = 1.0;
-
-	GetConfigParameter();
-
-	if (Config->DisableVisualHelperReadout) {
-		hookMap = 0x7FFF; // pretend all hooks are already set
-	}
+OapiExtension::OapiExtension(void) {
 }
 
 // ===========================================================================
@@ -108,6 +94,16 @@ OapiExtension::~OapiExtension(void)
 	PUBLIC INTERFACE METHODS
 ------------------------------------------------------------------------------
 */
+
+// ===========================================================================
+// Initialization
+//
+void OapiExtension::GlobalInit(D3D9Config &Config)
+{
+	if (Config.DisableVisualHelperReadout) {
+		hookMap = 0x7FFF; // pretend all hooks are already set
+	}
+}
 
 // ===========================================================================
 // Same functionality than 'official' GetConfigParam, but for non-provided
@@ -161,7 +157,7 @@ void OapiExtension::HandlePopupWindows (const HWND *hPopupWnd, DWORD count)
 // ===========================================================================
 // Tries to get the initial settings from Orbiter_NG.cfg file
 //
-void OapiExtension::GetConfigParameter(void)
+bool OapiExtension::GetConfigParameter(void)
 {
 	FILEHANDLE f = oapiOpenFile("Orbiter_NG.cfg", FILE_IN, ROOT);
 	if (f) {
@@ -187,6 +183,7 @@ void OapiExtension::GetConfigParameter(void)
 
 		oapiCloseFile(f, FILE_IN);
 	}
+	return true;
 }
 
 // ===========================================================================

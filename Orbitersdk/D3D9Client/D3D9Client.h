@@ -278,9 +278,6 @@ public:
 	/// Returns a pointer to the mesh manager
 	inline       MeshManager*         GetMeshMgr() const      { return meshmgr; }
 
-	/// Returns a pointer to the OAPI-extension manager
-	inline      OapiExtension*        GetOapiExtension() const	{ return oapiExtension; }
-
 	/// Returns a pointer to the name of orbiter's root folder
 	inline const char *				  GetOrbiterRoot() const	{ return pOrbiterRoot; }
 
@@ -673,7 +670,6 @@ private:
 
 	MeshManager *meshmgr;   // mesh manager
 	TextureManager *texmgr; // texture manager
-	OapiExtension *oapiExtension; // OAPI extension manager
 	D3DXMATRIX ident;
 
 	LaunchpadItem *lpiCfg, *lpiPlanetRender;

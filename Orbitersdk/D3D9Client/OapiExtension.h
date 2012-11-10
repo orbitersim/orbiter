@@ -10,6 +10,8 @@
 
 #include <Windows.h>
 
+class D3D9Config;
+
 /// \defgroup cfgprm Configuration parameter identifiers
 /// Used by OapiExtension::GetConfigParam()
 /// @{
@@ -110,8 +112,17 @@ typedef struct {
 class OapiExtension
 {
 public:
-	OapiExtension(void);
-	~OapiExtension(void);
+
+	/**
+	 * \brief Initializes the OapiExtension.
+	 *
+	 * This function should be called eary on, because it defines whether this
+	 * class will install any hooking functions depending on the \ref
+	 * D3D9Config::DisableVisualHelperReadout value.
+	 * \param Config A reference to the configuration class, to get the \ref
+	 *   D3D9Config::DisableVisualHelperReadout value.
+	 */
+	static void GlobalInit(D3D9Config &Config);
 
 	/**
 	 * \brief Handles the read-out of values from an opened 'visual helpers'
@@ -146,6 +157,9 @@ public:
 	static const void *GetConfigParam (DWORD paramtype);
 
 private:
+	OapiExtension(void); // avoid default constructor creation & instantiation
+	~OapiExtension(void);
+
 	// Body forces
 	static DWORD showBodyForceVectorsFlags;
 	static float bodyForceScale;   // [0.25..4.0]
@@ -159,7 +173,8 @@ private:
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets
 	static HOOKINFO hookInfos[]; // Table of information of wrapped methods and items
 
-	static void GetConfigParameter(void); ///< Tries to read parameter from Orbiter_NG.cfg
+	static bool configParameterRead;      ///< Indication that Orbiter_NG.cfg has been read
+	static bool GetConfigParameter(void); ///< Tries to read parameter from Orbiter_NG.cfg
 
 	static bool AllHooksAttached(void) {return hookMap == 0x7FFF;}
 	static const LPHOOKINFO GetHookInfo(DWORD cid);
