@@ -53,6 +53,7 @@
 /// \par Parameter type:
 ///   double
 #define CFGPRM_GETCAMERASPEED			0x2006
+
 /// @}
 
 
@@ -69,7 +70,9 @@
 #define DBG_FLAGS_AMBIENT				0x0100	///< Add Ambient Light for Visual
 #define DBG_FLAGS_WIREFRAME				0x0200	///< Enable WireFrame
 #define DBG_FLAGS_DUALSIDED				0x0400	///< Dual Sided
+
 /// @}
+
 
 class vObject;
 

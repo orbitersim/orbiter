@@ -48,23 +48,8 @@ class D3D9Config;
 /// \par Parameter type:
 ///   float
 #define CFGPRM_COORDINATEAXESOPACITY  0x1005
+
 /// @}
-
-
-/*
-// jarmoniks defines (unused?!)
-#define DBGPRM_MESHIDX     0x1100
-#define DBGPRM_GROUPIDX    0x1101
-#define DBGPRM_VIEWMODE    0x1102
-#define DBGPRM_CAMERAMODE  0x1103
-#define DBGPRM_MESHHL      0x1104
-#define DBGPRM_GROUPHL     0x1105
-/// Bounding geometry flags
-#define DBGPRM_BBOX        0x1106
-#define DBGPRM_BSPHERE     0x1107
-#define DBGPRM_BMESH       0x1108
-#define DBGPRM_BGROUP      0x1109
-*/
 
 
 /// \defgroup bfvflag Bit flags for body force vector display mode elements
@@ -77,6 +62,7 @@ class D3D9Config;
 #define BFV_DRAG      0x0020 ///< Enable drag force vector display
 #define BFV_TOTAL     0x0040 ///< Enable total force vector display
 #define BFV_TORQUE    0x0080 ///< Enable torque force vector display
+
 /// @}
 
 
@@ -87,17 +73,24 @@ class D3D9Config;
 #define SCA_VESSEL   0x0004 ///< Enable vessel coordinate axes
 #define SCA_CELBODY  0x0008 ///< Enable celestial body coordinate axes
 #define SCA_SURFBASE 0x0010 ///< Enable surface base coordinate axes
+
 /// @}
 
 
+/**
+ * \brief Storage structure to keep hooking information.
+ *
+ * This struct basically keeps track of whether a hook is installed or not and
+ * stores the original handles for later recovery.
+ */
 typedef struct {
-	int     cid;           // ControlID (IDC_xxx)
-	DWORD   hookFlag;      // Bit flag for the hookMap
-	WNDPROC lpWrapWndFunc; // Wrapped WindowProc
-	WNDPROC lpOrigWndFunc; // Original WindowProc
-	HWND    hWnd;          // Window (e.g. CheckBox) handle
-	HWND    hWndScaleGauge;
-	HWND    hWndOpacityGauge;
+	int     cid;              ///< ControlID (IDC_xxx)
+	DWORD   hookFlag;         ///< Bit flag for the hookMap
+	WNDPROC lpWrapWndFunc;    ///< Wrapped WindowProc
+	WNDPROC lpOrigWndFunc;    ///< Original WindowProc
+	HWND    hWnd;             ///< Window (e.g. CheckBox) handle
+	HWND    hWndScaleGauge;   ///< Scal gauge handle
+	HWND    hWndOpacityGauge; ///< Opacity gauge handle
 } HOOKINFO, *LPHOOKINFO;
 
 
