@@ -79,11 +79,11 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max (1, min (16, i));
 	if (oapiReadItem_int   (hFile, "SceneAntialias", i))		SceneAntialias = i;
 	if (oapiReadItem_int   (hFile, "SketchpadMode",i))			SketchpadMode = i;
-	if (oapiReadItem_int   (hFile, "SketchpadFont",i))			SketchpadFont = i;
-	if (oapiReadItem_int   (hFile, "PreLoadBaseVisuals", i))	PreLBaseVis = i;
-	if (oapiReadItem_int   (hFile, "EnableNormalMapping", i))	UseNormalMap = i;
-	if (oapiReadItem_int   (hFile, "NearClipPlaneMode", i))		NearClipPlane = i;
-	if (oapiReadItem_int   (hFile, "RwyLightAnimate", i))		RwyLightAnimate = i;
+	if (oapiReadItem_int   (hFile, "SketchpadFont",i))			SketchpadFont =  max (0, min (3, i));
+	if (oapiReadItem_int   (hFile, "PreLoadBaseVisuals", i))	PreLBaseVis =  max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "EnableNormalMapping", i))	UseNormalMap =  max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "NearClipPlaneMode", i))		NearClipPlane =  max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "RwyLightAnimate", i))		RwyLightAnimate =  max (0, min (1, i));
 	if (oapiReadItem_float (hFile, "RwyLightAngle", d))			RwyLightAngle = max(10.0, min(180.0,d));
 	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3,  min(3.0,d));
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
@@ -102,9 +102,9 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "RejectRTDC", i))			RejectRTDC = i;
 	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))	    DebugFontSize = i;	
 	if (oapiReadItem_int   (hFile, "GDIRTSDebug", i))			GDIRTSWrn = i;
-	if (oapiReadItem_int   (hFile, "LoadTexturesInSystemMem",i)) LoadInSystemMem = i;
-	if (oapiReadItem_int   (hFile, "ManagedTiles",i))			ManagedTiles = i;
-	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = i;
+	if (oapiReadItem_int   (hFile, "LoadTexturesInSystemMem",i)) LoadInSystemMem =  max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "ManagedTiles",i))			ManagedTiles =  max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
