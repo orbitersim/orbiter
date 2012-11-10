@@ -51,8 +51,10 @@ public:
 	Scene (oapi::D3D9Client *_gc, DWORD w, DWORD h);
 	~Scene ();
 
+	/**
+	 * \brief Get a pointer to the client
+	 */
 	inline const oapi::D3D9Client *GetClient() const { return gc; }
-	// return the client
 
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
@@ -60,25 +62,41 @@ public:
  
 	inline DWORD GetStencilDepth() const { return stencilDepth; }
 
+	/**
+	 * \brief Get the ambient background colour
+	 */
 	inline D3DCOLOR GetBgColour() const { return bg_rgba; }
-	// ambient background colour
 
+	/**
+	 * \brief Get the viewport dimension (width)
+	 */
 	inline const DWORD ViewW() const { return viewW; }
+
+	/**
+	 * \brief Get the viewport dimension (height)
+	 */
 	inline const DWORD ViewH() const { return viewH; }
-	// return viewport dimensions
 
 	void UpdateCamVis();
+
+	/**
+	 * \brief Checks if hObj is within visual range.
+	 * Checks if hObj is within visual range, and creates or deletes the
+	 * associated vObject as required.
+	 */
 	void CheckVisual (OBJHANDLE hObj);
-	// checks if hObj is within visual range, and creates or
-	// deletes the associated vObject as required.
 
 	void Initialise ();
 
+	/**
+	 * \brief Update camera position, visuals, etc.
+	 */
 	void Update ();
-	// Update camera position, visuals, etc.
 
+	/**
+	 * \brief Render the whole scene
+	 */
 	void Render ();
-	// Render the scene
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces

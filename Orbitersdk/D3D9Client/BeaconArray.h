@@ -26,25 +26,26 @@
 #include <d3dx9.h>
 
 
+/**
+ * \brief BeaconArrayEntry structure describing one individual beacon light
+ */
 typedef struct {
-	VECTOR3 pos;	// Beacon position relative to visual origin (base origin)
-	VECTOR3 dir;	// Light direction. (1,0,0)=South (0,1,0)=Up (0,0,1)=East
-	DWORD	color;  // Light color
-	float	size;	// Size of the beacon in meters
-	float   angle;	// Light cone angle in degrees
-	float	lon;	// Light on time
-	float   loff;	// Light off time if (lon=0, loff=1) light always on
-	float   bright; // Light brightness factor. 1.0 = default
-	float   fall;   // Spotlight falloff speed 2.0 to 0.1; 
+	VECTOR3 pos;	///< Beacon position relative to visual origin (base origin)
+	VECTOR3 dir;	///< Light direction. (1,0,0)=South (0,1,0)=Up (0,0,1)=East
+	DWORD	color;	///< Light color
+	float	size;	///< Size of the beacon in meters
+	float   angle;	///< Light cone angle in degrees
+	float	lon;	///< Light on time
+	float   loff;	///< Light off time if (lon=0, loff=1) light always on
+	float   bright;	///< Light brightness factor. 1.0 = default
+	float   fall;	///< Spotlight falloff speed 2.0 to 0.1; 
 } BeaconArrayEntry;
 
 
 
 /**
  * \brief BeaconArray object with D3D9-specific vertex buffer
- *
  */
-
 class BeaconArray : private D3D9Effect 
 {
 
@@ -58,16 +59,22 @@ public:
 	BeaconArray(const BeaconArrayEntry *pArray, DWORD nArray);
 	~BeaconArray();
 	
-	void UnLockVertexBuffer();
-	BAVERTEX * LockVertexBuffer();
+	void UnLockVertexBuffer();		///< Unlocks the vertex buffer after manipulation is finished
+	BAVERTEX * LockVertexBuffer();	///< Locks the vertex buffer for manipulation
 
+	/**
+	 * \brief Render all beacons.
+	 * \param dev Pointer to the Direct 3D 9 device
+	 * \param pW 3DX matrix to operate on
+	 * \param time Seconds-only part of the simulation elapsed time (0...1.0)
+	 */
 	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float time=0.5f);
 
 private:
 
-	DWORD nVert; // Number of beacons
-	LPDIRECT3DVERTEXBUFFER9 pVB;
-	SURFHANDLE pBright;
+	DWORD nVert;					///< Number of beacons
+	LPDIRECT3DVERTEXBUFFER9 pVB;	///< Vertex buffer pointer
+	SURFHANDLE pBright;				///< D3D9RwyLight.dds texture handle
 };
 
 #endif // !__BEACONARRAY_H

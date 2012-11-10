@@ -754,7 +754,7 @@ public:
 	virtual void clbkEvent (DWORD event, UINT context) {}
 
 protected:
-	OBJHANDLE hObject;
+	OBJHANDLE hObject;	///< Object handle associated with the visual
 };
 
 }; // namespace oapi
