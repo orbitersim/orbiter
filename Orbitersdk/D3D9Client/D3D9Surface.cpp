@@ -1236,14 +1236,12 @@ bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const
 {
 	char buffe[64];
 	strcpy_s(buffe, 64, fname);
-	int i=0, len = strlen(buffe);
-	while (i<len) {
-		if (buffe[i]=='.') { buffe[i]=0; i++; break; }
-		else i++;
+	char *p = strrchr(buffe, '.');
+	if (p != NULL) {
+		*p = '\0';
+		sprintf_s(out, mlen, "%s_%s.%s", buffe, id, ++p);
 	}
-	if (i==len) return false;
-	sprintf_s(out, mlen, "%s_%s.%s",buffe,id,&buffe[i]);
-	return true;
+	return (p != NULL);
 }
 
 
