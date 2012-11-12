@@ -85,8 +85,11 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float4 cSpe = float4(gMat.specular.rgb, gMat.specPower);
     float4 cTex = tex2D(WrapS, frg.tex0);     
                                                   
-    if (gNormalType)  nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);         //Sampler for R8G8B8, V8U8, DXT1.  (CxV8U8 won't work)
-    else              nrmT = float3(tex2D(Nrm0S, frg.tex0).ag*2.0-1.0, 1.0);     //Sampler for DXT5nm     
+    if (gNormalType)  nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
+    else {
+		nrmT.rg = tex2D(Nrm0S, frg.tex0).rg * 2.0 - 1.0;					   //Sampler for V8U8  
+		nrmT.b = sqrt(1.0 - nrmT.g*nrmT.g - nrmT.r*nrmT.r);
+	}  
     
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	
     if (gFullyLit) {
