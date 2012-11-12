@@ -1255,6 +1255,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 	char nname[64];
 	char sname[64];
 	char ename[64];
+	char bname[64];
 	
 	bClear = false;
 
@@ -1275,6 +1276,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 			CreateName(nname, 64, fname, "norm");
 			CreateName(sname, 64, fname, "spec");
 			CreateName(ename, 64, fname, "emis");
+			CreateName(bname, 64, fname, "bump");
 		}
 			
 		// Get information about the file
@@ -1388,6 +1390,33 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 					}
 				}
 				else LogErr("Failed to acquire image information for (%s)",ename);
+			}
+
+			// Bump Map Section =======================================================================================================================
+			//
+			if (gc->TexturePath(bname, xpath) && pNormalMap==NULL) {
+				D3DXIMAGE_INFO info;
+				LPDIRECT3DTEXTURE9 pBumpMap = NULL;
+				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pBumpMap)==S_OK) {
+						if (D3DXCreateTexture(pDevice, info.Width, info.Height, 0, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pNormalMap)==S_OK) {
+							DWORD Channel = D3DX_CHANNEL_RED;
+							if (info.Format==D3DFMT_A8) Channel = D3DX_CHANNEL_ALPHA;
+							if (info.Format==D3DFMT_L8) Channel = D3DX_CHANNEL_LUMINANCE;
+							if (D3DXComputeNormalMap(pNormalMap, pBumpMap, NULL, 0, Channel, Config->BumpAmp)==S_OK) {
+								LogAlw("Bump Map %s Loaded Successfully",bname);
+								gNormalType = 1;
+							}
+							else LogErr("BumpMap conversion Failed (%s)",bname);
+						}
+						pBumpMap->Release();
+					}
+					else {
+						pNormalMap = NULL;
+						LogErr("Failed to load image (%s)",bname);
+					}
+				}
+				else LogErr("Failed to acquire image information for (%s)",sname);
 			}
 		}
 

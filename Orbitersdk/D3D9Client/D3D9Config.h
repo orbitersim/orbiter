@@ -50,6 +50,7 @@ public:
 	double Convergence;
 	double Separation;
 	double SunAngle;
+	double BumpAmp;
 	int DebugLvl;
 	int MaxLights; 
 	int NVPerfHUD;

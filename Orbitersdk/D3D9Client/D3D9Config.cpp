@@ -58,6 +58,7 @@ void D3D9Config::Reset ()
 	Convergence			= 0.2;
 	Separation			= 65.0;
 	SunAngle			= 10.0;
+	BumpAmp				= 1.0;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -87,6 +88,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "RwyLightAngle", d))			RwyLightAngle = max(10.0, min(180.0,d));
 	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3,  min(3.0,d));
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
+	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1,  min(10.0,d));
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
 	//if (oapiReadItem_float (hFile, "RwyHazeScale", d))			RwyHazeScale  = max(1.0,  min(30.0,d));
@@ -132,6 +134,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "RwyLightAngle", RwyLightAngle);
 	oapiWriteItem_float (hFile, "RwyBrightness", RwyBrightness);
 	oapiWriteItem_float (hFile, "NightLightsAngle", SunAngle);
+	oapiWriteItem_float (hFile, "BumpMapAmplitude", BumpAmp);	
 	//oapiWriteItem_float (hFile, "RwyHazeScale", RwyHazeScale);
 
 	oapiWriteItem_float (hFile, "StereoSeparation", Separation);
