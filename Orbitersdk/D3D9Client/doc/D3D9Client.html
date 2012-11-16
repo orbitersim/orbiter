@@ -1,0 +1,474 @@
+<style type="text/css">
+  li { text-decoration:underline; font-weight:bold; }
+</style>
+
+
+<div style="font-weight:bold;font-size:28pt;">
+  <center>D3D9Client documentation</center>
+</div>
+
+<h1>Installation</h1>
+<p>
+  You need a DirectX February 2010 or newer to run D3D9Client. To install the
+  client itself you need to extract the zip package in the root folder of the
+  Orbiter. In order to use a graphics client you need to run "Orbiter_ng.exe"
+  instead of "Orbiter.exe". Also the client must be activated from the Modules
+  tab.
+</p>
+
+<hr />
+<!-- ----------------------------------------------------------------------- -->
+<h1>DirectX Runtimes</h1>
+<p>
+  If the redistributable package isn't installed in your computer you will
+  receive an error message "The program can't start because d3dx9_42.dll is
+  missing from your computer". Or you may see a pop-up window in Orbiter
+  LaunchPad telling about a missing runtimes. If that happens then download and
+  extract the content of the package in any empty directory you want and then
+  find a Setup.exe and run it. You can delete the contents of the directory
+  after the setup is completed. The directory is just a temporary storage for
+  the installation files.
+</p>
+<p>
+  Here is a link: <a href="http://www.microsoft.com/en-us/download/details.aspx?id=9033">http://www.microsoft.com/en-us/download/details.aspx?id=9033</a>
+</p>
+
+<hr />
+<!-- ----------------------------------------------------------------------- -->
+<h1>Orbiter Sound, Spacecraft3.dll</h1>
+<p>
+  In order to use Spacecraft3.dll and Orbiter Sound with a graphics client. A
+  symbolic links must be created in /Modules/Server/ folder for "Config" and
+  "Sound" folders those are located in a root folder of the Orbiter. If you are
+  using Windows XP or newer and your installation is on a NTFS filesystem, these
+  links can be created from Video Tab -&gt; Advanced Setup. If you have problem
+  with the links you can also use a software called Link Shell Extension (see
+  link below) or you can simply copy the Config and Sound folders into
+  /Modules/Server/ but then you have to keep them updated manually.
+</p>
+<p>
+  Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html">http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
+</p>
+
+<hr />
+<!-- ----------------------------------------------------------------------- -->
+<h1>Fullscreen Mode and Alt-Tabing</h1>
+<p>
+  D3D9Client doesn't support alt-tabing in a so-called "True Fullscreen Mode".
+  Therefore, it's recommended that you use a windowed fullscreen mode that will
+  run the orbiter in a fullscreen sized borderless window. There is also a
+  conflict between a GDI based dialog (i.e. pop-up) windows and anti-aliasing in
+  a true fullscreen mode which will disable the anti-aliasing.
+</p>
+
+<hr />
+<!-- ----------------------------------------------------------------------- -->
+<h1 style="page-break-before:always;">D3D9Client Advanced Setup</h1>
+<p>
+  Under the regular Video Tab of the Orbiter (Orbiter_NG) Launchpad you find the
+  "Advanced" Button that will show the "D3D9Client Advanced Setup" Dialog. Here
+  you can change several settings to tweak your experience with the D3D9Client.
+</p>
+<blockquote>
+  <img title="D3D9Client Advanced Setup" src="images/D3D9Client Advanced Setup.png" alt="D3D9Client Advanced Setup" />
+</blockquote>
+<p>
+  On the lower left side of the Dialog you'll find the "Create symbolic links"
+  button that will create the symbolic links that are needed for some add-ons.
+  The symbolic links can only be created on an NTFS filesystem, so if you have
+  installed your Orbiter installation for example on an FAT32 of extFS
+  filesystem this feature will not work. In this case you have to copy the
+  according folders as explained in the "Orbiter Sound, Spacecraft3.dll" chapter
+  (above).
+</p>
+
+<h2>Surface texture load options</h2>
+<p>
+  Here you can change the behavior how the D3D9Client will load surface
+  textures. The two options available are either "Load on demand (recommended)"
+  or "Pre-load at session start":
+</p>
+<ul>
+  <li>Load on demand (recommended)</li>
+    <p>
+      With this recommended option selected the D3D9Client will only load
+      surface textures when they come into view while you are orbiting a planet.
+      The value in the "Max. load frequency [Hz]" input field lets you tune the
+      maximum frequency the D3D9Client will check whether some new surface
+      textures have come into view.
+    </p>
+  <li>Pre-load at session start</li>
+    <p>
+      With this option selected the D3D9Client will load all surface textures at
+      startup of a scenario which results in a longer loading time.
+    </p>
+</ul>
+
+<h2>Graphics options</h2>
+<p>
+  Here you can change settings according to your graphic hardware:
+</p>
+<ul>
+  <li>Anti-aliasing</li>
+    <p>
+      Depending on your hardware you can select the anti-aliasing feature that
+      will "smoothen" the visual artifacts that occur when displaying edges.
+    </p>
+  <li>Anisotropic filtering</li>
+    <p>
+      Depending on your hardware you can select the level of anisotropic
+      filtering. For further details about this topic take a look at
+      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering">Anisotropic filtering</a>
+      in the wikipedia.
+    </p>
+</ul>
+<p>
+  Following checkboxes can be checked (enabled) or unchecked (disabled) to
+  further fine-tune your D3D9Client experience:
+</p>
+<ul>
+  <li>Pre-load base visuals at startup</li>
+    <p>
+      With this option <b><em>enabled</em></b> the D3D9Client
+      will load all base visuals at startup of a scenario which results in a
+      longer loading time.
+      <br />
+      With this option <b><em>disabled</em></b> the D3D9Client
+      will only load base visuals when they come into view while you are e.g.
+      flying through the atmosphere or orbiting a planet.
+    </p>
+  <li>Enable advanced texture maps</li>
+    <p>
+      With this option enabled D3D9Client will try to add additional texture
+      information for meshes that supply them. This advanced texture maps define
+      for example how "rough" or "shiny" a texture appears.
+    </p>
+  <li>Disable near clip plane compatibility mode</li>
+    <p>
+      If the near clip-plane compatibility mode is enabled then the minimum
+      clip-plane distance is 1.0 meters as is in the Orbiters internal engine.
+      If the compatibility mode is disabled then the client can reduce the clip
+      distance down to 0.1 meters, if there is a graphics close to the camera.
+      This setting will only effect in so-called exterior pass. Virtual cockpit
+      near clip-plane distance is defined in D3D9Client.cfg and the default
+      value is 0.1 meters.
+    </p>
+</ul>
+
+<h2>SketchPad settings</h2>
+<p>
+  The SketchPad is used in Orbiter to draw 2D graphics onto surfaces. These are
+  for example MFD Displays or announcements in the Simulation.
+</p>
+<ul>
+  <li>Device to use</li>
+    <p>
+      The two options you can choose from at "Device to use" are "GDI/DirectX"
+      and "GDI Only".
+    </p>
+    <p>
+      <b><em>GDI/DirectX</em></b> will use the DirectX 2D
+      drawing capabilities of your graphic hardware to draw 2D surfaces.
+      Normally this is the recommended setting, because it will not produce so
+      much CPU load that the "GDI Only" option.
+      <br />
+      <b><em>GDI Only</em></b> will only use GDI to draw 2D
+      surfaces which might be the option when you experience any glitches or
+      graphical artifacts in MFD screens. This mode is used for older graphic
+      hardware to be able to run Orbiter.
+    </p>
+  <li>Font rendering</li>
+    <p>
+      The four options you can choose from at "Font rendering" are "Crisp",
+      "Default", "Cleartype" and "Proof Quality".
+    </p>
+    <p>
+      Each setting will render fonts more smooth but uses a bit more graphic
+      hardware performance.
+    </p>
+</ul>
+
+<h2>Generic configuration</h2>
+<p>
+  The generic configuration contains options that will change the general
+  behavior of D3D9Client. For most of the time the default setup should be fine
+  ("Default" Shader set and Debug Level "1").
+  But you can for example change the verbosity of the internal logging system to
+  be able to report more detailed issue information when you experience an
+  error/failure.
+</p>
+<ul>
+  <li>Shader set</li>
+    <p>
+      If you have different shader sets you like to switch between, this select
+      box lets you choose between them.
+      <br />
+      Note however, that this option is not always available and strongly
+      depends on the version of D3D9Client! The R6 release for example has only
+      the "Default" shader set to select.
+    </p>
+  <li>Debug level</li>
+    <p>
+      The five options you can choose from here [0...4] represent the level of
+      information that will be written into the log-file. The log-file is called
+      D3D9ClientLog.html which can be found in <em>Modules\D3D9Client\</em>
+      directory. Higher values will create more detailed output.
+    </p>
+    <p>
+      Until you have any problems and like to have more detailed information
+      what's going on, you should keep this level reasonably low as higher
+      values will result in more disk I/O what slows down the Simulation.
+    </p>
+</ul>
+
+<h2>StereoScopic 3D</h2>
+<p>
+  The stereoScopic 3D settings allow you to tweak the 3D experience if you are
+  using a NVIDIA graphic card that provides this feature.
+</p>
+<ul>
+  <li>Convergence</li>
+    <p>
+      The convergence value lets you choose "how far your eyes are apart".
+      The default value is 0.2 meters (20 cm / 7.8 inches) which is round about
+      the average distance between your eyes. Increasing this value might result
+      in a view with "more depth".
+    </p>
+  <li>Field Depth</li>
+    <p>
+      In optics, particularly as it relates to film and photography, depth of
+      field (DOF) is the distance between the nearest and farthest objects in a
+      scene that appear acceptably sharp in an image. In the context of
+      Stereoscopic 3D it defines the distance where the relative position
+      between the "right eye objects" and the
+      "left eye objects" are overlapping exactly and switch their
+      position when further away or closer that that "point".
+      For further details about this topic take a look at
+      <a href ="http://en.wikipedia.org/wiki/Depth_of_field">Depth of field</a>
+      in the wikipedia.
+    </p>
+</ul>
+
+<hr />
+<!-- ----------------------------------------------------------------------- -->
+<h1 style="page-break-before:always;">Base Configuration settings</h1>
+<p>
+  The D3D9Client allows you to to configure some more details when settings up
+  runway lights.
+  <br />
+  Additionally to the parameters that Orbiter itself defines (see
+  <em>Doc\OrbiterConfig.pdf</em> for further details) there are some extra
+  parameters you can define.
+  <br />
+  For a better understanding how some of those parameters will affect the
+  rendering of the runway lights this image might help:
+  <blockquote>
+    <img title="Runway lights" src="images/rwylights.png" alt="Runway lights" />
+  </blockquote>
+</p>
+
+<div style="text-decoration:underline;font-weight:bold;">&lt;RUNWAYLIGHTS&gt;</div>
+<ul>
+  <li><strong>&lt;END1 V&gt;</strong></li>
+    <p>
+      First end point of runway (center line).
+    </p>
+  <li><strong>&lt;END2 V&gt;</strong></li>
+    <p>
+      Second end point of runway (center line).
+    </p>
+  <li><strong>&lt;WIDTH F&gt;</strong></li>
+    <p>
+      Runway width (m)
+      <br />
+      Note: Two different light configurations exists (wide&gt;59m) and
+      (narrow&lt;59m)
+    </p>
+  <li><strong>&lt;PAPI F F F I I&gt;</strong></li>
+    <p>
+      Precision Approach Path Indicator (PAPI).<br />
+      Parameters:<br />
+      Designated approach angle (deg)<br />
+      Approach cone aperture (deg)<br />
+      Offset of PAPI location from runway endpoints. (m)<br />
+      PAPI Mode (int:0-3) (this is optional parameter)<br />
+      PAPI runway end point (int: 0-1) (if this parameter is not defined then
+      PAPI is added in both ends)<br />
+      <br />
+      PAPI Modes:<br />
+      0: On center line<br />
+      1: On left side<br />
+      2: On right side<br />
+      3 or none: On both sides<br />
+      <br />
+      PAPI Endpoint:<br />
+      0: PAPI lights added to END1 only<br />
+      1: PAPI lights added to END2 only<br />
+      Not Defined: PAPI lights added in both ends<br />
+      <br />
+      Note: Runwaylights can have 12 PAPI lights. Orbiter's inline engine will
+      ignore the last parameter. If more than one PAPI entries exists in the
+      runwaylights the inline engine will only use the last one.
+    </p>
+  <li><strong>&lt;VASI F F F I&gt;</strong></li>
+    <p>
+      Visual Approach Slope Indicator (VASI).<br />
+      Parameters:<br />Designated approach angle (deg)<br />
+      Distance between white and red indicator lights (m)<br />
+      Offset of VASI (red bar) location from runway endpoints (m)<br />
+      VASI runway end point (int: 0-1) (if not defined then VASI is added in both ends)<br />
+      <br />
+      Note: Runwaylights can have 2 VASI lights.
+    </p>
+  <li><strong>&lt;TD_DISP F&gt;</strong></li>
+    <p>
+      Touch Down displacement (m). (default: 0m)<br />
+      Displacement between runway endpoint and the green line.
+    </p>
+  <li><strong>&lt;TD_DISP2 F&gt;</strong></li>
+    <p>
+      Touch Down displacement for the other end of the runway (m).
+      (default: 0m)<br />
+      Displacement between runway endpoint and the green line. If this value
+      isn't specified then TD_DISP is used for both ends of the runway.
+    </p>
+  <li><strong>&lt;TD_LENGTH F&gt;</strong></li>
+    <p>
+      Length of the Touchdown zone (m). (default: 600m)<br />
+      Two columns of lights on a runway each containing 3 parallel lights.
+    </p>
+  <li><strong>&lt;DECISION_DIST F&gt;</strong></li>
+    <p>
+      Length of the "red lights" zone (m). (default: 257m)<br />
+      This zone contains 2 x 3 x 9 red lights and the spacing between lights
+      will depend about the length of the zone. The touchdown zone will use the
+      same spacing about 30m.
+    </p>
+  <li><strong>&lt;APPROACH_START F&gt;</strong></li>
+    <p>
+      Length of the approach lights from the green line (m).
+      (default: 900m)<br />
+      It's the long column of 5 parallel lights.
+    </p>
+  <li><strong>&lt;SINGLEENDED&gt;</strong></li>
+    <p>
+      If the singleended keyword is defined then the lights are only rendered
+      when approaching a runway from END1 towards END2. If you want a
+      asymmetric runwaylights then you need two runwaylight sections in a base
+      configuration file.
+    </p>
+  <li><strong>&lt;CATEGORY&gt;</strong></li>
+    <p>
+      Defines the category of runway lights. 1 = SSALR, 2 = ALSF-II, If this
+      value isn't specified then the category is automatically selected based
+      on a runway width. ALSF-II is used if the width is greater than 59m.
+    </p>
+</ul>
+
+<p>
+  Example of runway lights for KSC:
+</p>
+<blockquote style="background-color:silver; font-size:9pt;">
+<pre>RUNWAYLIGHTS
+  END1 -8220 -3 -600
+  END2 -12670 -12 -3155
+  WIDTH 100
+  PAPI 5.0 3.0 257 3      ; both sides of the green line, in both ends
+  PAPI 20.0 3.0 -2000 0 0 ; on a center line 2km before rwy in END 1
+  PAPI 20.0 3.0 -2000 3 1 ; both sides of center line, 2km before rwy, in END 2
+  VASI 1.5 152 671
+  TD_DISP 257
+  TD_LENGTH 600	
+  DECISION_DIST 257
+  APPROACH_START 900
+END</pre>
+</blockquote>
+
+<hr />
+<!-- ----------------------------------------------------------------------- -->
+<h1 style="page-break-before:always;">Advanced Texture Maps</h1>
+<p>
+  Additional texture maps can be automatically assigned for a mesh simply by
+  placing additional textures into a texture folder. Additional textures are
+  identified by using an identifier in the end of the textures name like
+  "dgmk4_1_bump.dds" where "dgmk4_1.dds" is the name of the base texture.
+</p>
+<p>
+  A fully specified texture set could for example consist of these files:
+  <pre>
+    cube.dds       <= 'base' texture
+    cube_bump.dds  <= 'advanced texture Bump-map'
+    cube_spec.dds  <= 'advanced texture Specular-map'
+    cube_emis.dds  <= 'advanced texture Emission-map'
+  </pre>
+</p>
+<p>
+  Available identifiers are:<br />
+</p>
+<ul>
+  <li><strong>&lt;_norm&gt;</strong></li>
+    <a name="_norm"/>
+    <p>
+      Tangent space normal map and the valid formats are:<br />
+      <br />
+      &lt;R8G8B8&gt; 3-bytes per pixel. Best quality (uncompressed)<br />
+      &lt;V8U8&gt;&ensp;&ensp;&ensp;2-bytes per pixel. Good quality (uncompressed)<br />
+      &lt;DXT1&gt;&ensp;&ensp;&ensp;1-byte per pixel. Bad quality (compressed)<br />
+      <br />
+      V8U8 offers the best quality for 2-bytes per pixel. This format can be
+      created with nVidia texture tools.
+    </p>
+    <p>
+      <strong style="color:red">Note:</strong>
+      The configuration of this (<em>_norm</em>) identifier is ignored if a
+      <em>_bump</em> configuration is also found. However, the <em>_norm</em>
+      configuration is the prefered one that should be used when you have the
+      choice (see also <a href="#_bump">_bump</a>).
+    </p>
+  <li><strong>&lt;_spec&gt;</strong></li>
+    <p>
+      Specular map controls a specular reflection in per pixel basis. Alpha channel
+      is containing a specular power setting. Value 255 is mapped to 80.0 and 0 to
+      0.0. Valid formats are &lt;R8G8B8A8&gt;, &lt;DXT3&gt; or &lt;DXT5&gt;.
+      If a specular map is assigned then a material specific settings are
+      ignored.
+    </p>
+  <li><strong>&lt;_bump&gt;</strong></li>
+    <a name="_bump"/>
+    <p>
+      Bump maps are also supported by the D3D9Client. They are automatically
+      converted into normal maps during loading of bump maps (see note).<br />
+      The <b>recommended</b> formats are &lt;A8&gt; and &lt;L8&gt;:<br />
+      &lt;A8&gt; 1-byte per pixel alpha<br />
+      &lt;L8&gt; 1-byte per pixel luminance<br />
+      <br />
+      From the <b>not recommended</b> multi-channel textures only the <b>red</b>
+      channel is used; They are:<br />
+      &lt;R8B8G8&gt; 3-bytes per pixel (only red is used anyway)<br />
+      &lt;DXT1&gt;&ensp;&ensp; 1-byte per pixel compressed<br />
+      &lt;R16F&gt;&ensp;&ensp;&ensp;2-bytes per pixel (might work, not tested!)<br />
+    </p>
+    <p>
+      <strong style="color:red">Note:</strong>
+      The configuration using the (<em>_bump</em>) identifier will overwrite any
+      <em>_norm</em> configuration in case both identifiers are found. The
+      <em>_norm</em> configuration is however the one that should be used when
+      you have the choice (see also <a href="#_norm">_norm</a>).
+    </p>
+  <li style="page-break-before:always;"><strong>&lt;_emis&gt;</strong></li>
+    <p>
+      Currently emission map works more like a light map and the simplified
+      equation is:
+      <pre style="font-size:9pt;">pixel_color.rgb = texture.rgb * clamp(emission_map.rgb +
+                                      sun_light.rgb + local_lights.rgb)</pre>
+      Alpha channel is ignored therefore the recommended formats are
+      &lt;R8G8B8&gt; or &lt;DXT1&gt;.<br />
+      The exact implementation would require some discussion with an add-on
+      developers to define the function for the emission map. An other
+      possibility is:
+      <pre style="font-size:9pt;">pixel_color.rgb = texture.rgb * clamp(sun_light.rgb + local_lights.rgb)
+                + emission_map.rgb</pre>
+      Of course, the clamp function can be changed to a different kind of
+      color curve manipulation function to control contrast and lightness.
+    </p>
+</ul>
