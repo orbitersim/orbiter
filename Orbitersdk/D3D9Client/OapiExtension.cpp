@@ -48,6 +48,8 @@ float OapiExtension::coordinateAxesScale = 1.0;
 float OapiExtension::coordinateAxesOpacity = 1.0;
 bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
+bool OapiExtension::orbiterSound40 = false;
+
 // hooking
 DWORD OapiExtension::hookMap = 0L;
 HOOKINFO OapiExtension::hookInfos[] = {
@@ -149,11 +151,22 @@ void OapiExtension::HandlePopupWindows (const HWND *hPopupWnd, DWORD count)
 //
 bool OapiExtension::GetConfigParameter(void)
 {
+	char *pLine;
+	bool orbiterSoundModuleEnabled = false;
+
 	FILEHANDLE f = oapiOpenFile("Orbiter_NG.cfg", FILE_IN, ROOT);
 	if (f) {
 		char  string[32];
 		DWORD flags;
 		float scale, opacity;
+
+		// General check for OrbiterSound module enabled
+		while (oapiReadScenario_nextline(f, pLine)) {
+			if (NULL != strstr(pLine, "OrbiterSound")) {
+				orbiterSoundModuleEnabled = true;
+				break;
+			}
+		}
 
 		if (oapiReadItem_string(f, "Bodyforces", string)) {
 			if (3 == sscanf_s(string, "%u %f %f", &flags, &scale, &opacity)) {
@@ -173,6 +186,23 @@ bool OapiExtension::GetConfigParameter(void)
 
 		oapiCloseFile(f, FILE_IN);
 	}
+
+	// Check for the OrbiterSound version
+	if (orbiterSoundModuleEnabled)  {
+		bool versionCorrect = false;
+
+		f = oapiOpenFile("Sound\\version.txt", FILE_IN, ROOT);
+		while (f && oapiReadScenario_nextline(f, pLine)) {
+			if (NULL != strstr(pLine, "OrbiterSound 4.0 (3D)")) {
+				versionCorrect = true;
+				break;
+			}
+		}
+		oapiCloseFile(f, FILE_IN);
+
+		orbiterSound40 = versionCorrect;
+	}
+
 	return true;
 }
 

@@ -1839,7 +1839,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R7b Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R7c Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

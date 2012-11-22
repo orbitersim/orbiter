@@ -350,12 +350,23 @@ void Scene::Update ()
 
 	CheckVisual(hObj);
 
-	if (DebugControls::IsActive()) {
-		if (hTgt!=hCameraTarget && hTgt!=NULL) {
-			vObject *vo = GetVisObject(hTgt);
-			if (vo) {
+	if (hTgt!=hCameraTarget && hTgt!=NULL) {
+		vObject *vo = GetVisObject(hTgt);
+		if (vo) {
+			if (DebugControls::IsActive()) {
 				DebugControls::SetVisual(vo);
-				hCameraTarget = hTgt;
+			}
+			hCameraTarget = hTgt;
+
+			// OrbiterSound 4.0 'playback helper'
+			if (OapiExtension::RunsOrbiterSound40() &&
+				oapiIsVessel(hTgt) && // oapiGetObjectType(vo->Object()) == OBJTP_VESSEL &&
+				dynamic_cast<vVessel*>(vo)->Playback()
+				)
+			{
+				// Orbiter doesn't do this when (only) camera focus changes
+				// during playback, therfore we do it ;)
+				oapiSetFocusObject(hTgt);
 			}
 		}
 	}

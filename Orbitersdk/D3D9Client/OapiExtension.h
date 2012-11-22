@@ -149,6 +149,13 @@ public:
 	 */
 	static const void *GetConfigParam (DWORD paramtype);
 
+	/**
+	 * \brief Returns whether OrbiterSound 4.0 is up and running
+	 *
+	 * \return Whether OrbiterSound 4.0 is active
+	 */
+	static const bool RunsOrbiterSound40() { return orbiterSound40; }
+
 private:
 	OapiExtension(void); // avoid default constructor creation & instantiation
 	~OapiExtension(void);
@@ -161,6 +168,8 @@ private:
 	static DWORD showCoordinateAxesFlags;
 	static float coordinateAxesScale;   // [0.25...4.0]
 	static float coordinateAxesOpacity; // [0...1]
+	// OrbiterSound 4.0 helper
+	static bool orbiterSound40;
 
 	// Hooking
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets

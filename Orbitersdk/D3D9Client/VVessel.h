@@ -98,6 +98,7 @@ public:
 	float GetExhaustLength() const { return ExhaustLength; }
 
 	bool HasExtPass();
+	bool const Playback() { return vessel->Playback(); }
 
 protected:
 	void LoadMeshes();
