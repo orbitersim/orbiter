@@ -1300,6 +1300,95 @@ DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 
 #ifdef RP_REQUIRETEXPOW2
 
+bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality)
+{
+	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
+
+	LPDIRECT3DSURFACE9 pRTG = NULL;
+	LPDIRECT3DSURFACE9 pSystem = NULL;
+	LPDIRECT3DSURFACE9 pSurf = SURFACE(surf)->pSurf;
+	
+	if (pSurf==NULL) return false;
+
+	bool bRet = false;
+	ImageData ID;
+	D3DSURFACE_DESC desc;
+	D3DLOCKED_RECT pRect;
+
+	SURFACE(surf)->GetDesc(&desc);
+
+	if (desc.Pool!=D3DPOOL_SYSTEMMEM) {
+
+		HR(pd3dDevice->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
+		HR(pd3dDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
+		HR(pd3dDevice->StretchRect(pSurf, NULL, pRTG, NULL, D3DTEXF_NONE));
+		HR(pd3dDevice->GetRenderTargetData(pRTG, pSystem));
+		
+		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK) {
+
+			ID.bpp = 24;
+			ID.height = desc.Height;
+			ID.width = desc.Width;
+			ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3; 
+			ID.bufsize = ID.stride * ID.height;
+
+			BYTE *tgt = ID.data = new BYTE[ID.bufsize];
+			BYTE *src = (BYTE *)pRect.pBits;
+
+			for (DWORD k=0;k<desc.Height;k++) {
+				for (DWORD i=0;i<desc.Width;i++) {
+					tgt[0+i*3] = src[0+i*4];
+					tgt[1+i*3] = src[1+i*4];
+					tgt[2+i*3] = src[2+i*4];
+				}
+				tgt += ID.stride;
+				src += pRect.Pitch;
+			}
+
+			bRet = WriteImageDataToFile(ID, fname, fmt, quality);
+
+			delete []ID.data;
+			pSystem->UnlockRect();
+		}
+
+		pRTG->Release();
+		pSystem->Release();
+		return bRet;
+	}
+
+	if (pSurf->LockRect(&pRect, NULL, D3DLOCK_READONLY)==S_OK) {
+		
+		ID.bpp = 24;
+		ID.height = desc.Height;
+		ID.width = desc.Width;
+		ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3; 
+		ID.bufsize = ID.stride * ID.height;
+
+		BYTE *tgt = ID.data = new BYTE[ID.bufsize];
+		BYTE *src = (BYTE *)pRect.pBits;
+
+		for (DWORD k=0;k<desc.Height;k++) {
+			for (DWORD i=0;i<desc.Width;i++) {
+				tgt[0+i*3] = src[0+i*4];
+				tgt[1+i*3] = src[1+i*4];
+				tgt[2+i*3] = src[2+i*4];
+			}
+			tgt += ID.stride;
+			src += pRect.Pitch;
+		}
+
+		bRet = WriteImageDataToFile(ID, fname, fmt, quality);
+
+		delete []ID.data;
+		pSurf->UnlockRect();
+		return bRet;
+	}
+
+	return false;
+}
+
+
+
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
 	_TRACER;
@@ -1839,7 +1928,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R7c Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R7d Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

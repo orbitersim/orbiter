@@ -304,6 +304,7 @@ public:
 	// @{
 
 	SURFHANDLE clbkCreateSurface (HBITMAP hBmp);
+	bool clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality=0.7f);
 	ScreenAnnotation* clbkCreateAnnotation(); 
 
 	/**
