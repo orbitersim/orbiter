@@ -16,6 +16,7 @@
 #include "D3D9Config.h"
 #include "Commctrl.h"
 #include "Junction.h"
+#include "OapiExtension.h"
 #include <stdio.h>
 #include <richedit.h>
 
@@ -775,7 +776,10 @@ void VideoTab::CreateSymbolicLinks()
 	result += "Sound: ";
 	if (junction::TargetDirectoryExists("Sound"))
 	{
-		if (!junction::IsDirectoryJunction("Modules\\Server\\Sound"))
+		if (OapiExtension::RunsOrbiterSound40()) {
+			result += "OK. OrbiterSound (4.0) detected. No link necessary.";
+		}
+		else if (!junction::IsDirectoryJunction("Modules\\Server\\Sound"))
 		{
 			if(!junction::CreateJunctionPoint("Sound", "Modules\\Server\\Sound"))
 			{
