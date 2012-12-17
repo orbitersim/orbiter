@@ -1331,7 +1331,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 							DWORD Channel = D3DX_CHANNEL_RED;
 							if (info.Format==D3DFMT_A8) Channel = D3DX_CHANNEL_ALPHA;
 							if (info.Format==D3DFMT_L8) Channel = D3DX_CHANNEL_LUMINANCE;
-							if (D3DXComputeNormalMap(pNormalMap, pBumpMap, NULL, 0, Channel, Config->BumpAmp)==S_OK) {
+							if (D3DXComputeNormalMap(pNormalMap, pBumpMap, NULL, 0, Channel, float(Config->BumpAmp))==S_OK) {
 								LogAlw("Bump Map %s Loaded Successfully",bname);
 								gNormalType = 1;
 							}
