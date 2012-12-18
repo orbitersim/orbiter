@@ -405,10 +405,10 @@ LRESULT CALLBACK OapiExtension::GaugeWindowProc(HWND hwnd, UINT uMsg, WPARAM wPa
 	WORD       scrollRequest;
 	LPHOOKINFO lpHookInfo = GetHookInfo(hwnd);
 	// --- Scale to Value calculation parameter ---
-	float vmin;         // Min value for member value
-	float vmax;         // Max value for member value
-	float step;         // Step size for SB_LINELEFT, SB_LINERIGHT
-	bool  isScaleGauge; // Whether it's a scale-gauge message or a opacity-gauge message
+	float vmin(0);             // Min value for member value
+	float vmax(0);             // Max value for member value
+	float step(0);             // Step size for SB_LINELEFT, SB_LINERIGHT
+	bool  isScaleGauge(false); // Whether it's a scale-gauge message or a opacity-gauge message
 
 	switch (uMsg) {
 

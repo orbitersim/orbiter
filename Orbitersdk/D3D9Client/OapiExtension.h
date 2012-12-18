@@ -184,7 +184,7 @@ private:
 	static const void RemoveHook(LPHOOKINFO lpHookInfo);
 
 	static const bool IsOurDialog(HWND hwnd);
-	static BOOL CALLBACK OapiExtension::EnumChildProc(HWND hwnd, LPARAM lParam);
+	static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam);
 	static LRESULT CALLBACK CheckBoxWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK GaugeWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
