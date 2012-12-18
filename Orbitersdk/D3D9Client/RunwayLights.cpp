@@ -35,7 +35,7 @@ RunwayLights::RunwayLights(OBJHANDLE handle)
 	bSingleEnded = false;
 
 	for (int i=0;i<12;i++) papi[i]=NULL;
-	for (int i=0;i<12;i++) vasi[i]=NULL;
+	for (int i=0;i<2;i++) vasi[i]=NULL;
 
 	beacons1 = beacons2 = NULL;
 	currentTime = 0.0f;
