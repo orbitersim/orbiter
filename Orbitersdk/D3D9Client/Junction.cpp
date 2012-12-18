@@ -11,6 +11,7 @@
 #include "Junction.h"
 #include <string>
 #include <memory>
+#include <vector>
 
 // This construct is used to get the right size independent of the union padding
 #define REPARSE_DATA_BUFFER_HEADER_SIZE offsetof(REPARSE_DATA_BUFFER, GenericReparseBuffer)
@@ -87,16 +88,17 @@ struct SafeHandle
 	bool CreateJunctionPoint(LPCSTR origin, LPCSTR junction)
 	{
 		size_t size;
-		std::string str; // multi purpose temporary string
+		//std::string str; // multi purpose temporary string
 
 		// Get Orbiter root path
 		size = GetCurrentDirectory(0,0);
-		std::auto_ptr<char> cwd((char*) new char[size]);
-		GetCurrentDirectory(size, cwd.get());
+		char* cwd = new char[size];
+		GetCurrentDirectory(size, cwd);
 
 		// char -> w_char
-		str = cwd.get();
+		std::string str(cwd);
 		std::wstring orbiterRoot( str.begin(), str.end() );
+		delete[] cwd;
 
 		// Prepend \??\ to path to mark it as not-for-parsing
 		// and the orbiter root path
@@ -113,7 +115,8 @@ struct SafeHandle
 		// O.K. Now let's fill the REPARSE_DATA_BUFFER
 		//
 		size = sizeof(REPARSE_DATA_BUFFER) - sizeof(WCHAR) + nativeTarget.length() * sizeof(WCHAR);
-		std::auto_ptr<REPARSE_DATA_BUFFER> reparseBuffer((REPARSE_DATA_BUFFER*) new unsigned char[size]);
+		std::vector<BYTE> vec(size, 0);
+		REPARSE_DATA_BUFFER* reparseBuffer = (REPARSE_DATA_BUFFER*)&vec[0];
 
 		reparseBuffer->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
 		reparseBuffer->Reserved = NULL;
@@ -143,7 +146,7 @@ struct SafeHandle
 		}
 
 		DWORD bytesReturned = 0; // dummy
-		if (!DeviceIoControl(hDir.Handle, FSCTL_SET_REPARSE_POINT, reparseBuffer.get(), (unsigned int) size, NULL, 0, &bytesReturned, NULL)) {
+		if (!DeviceIoControl(hDir.Handle, FSCTL_SET_REPARSE_POINT, reparseBuffer, (unsigned int) size, NULL, 0, &bytesReturned, NULL)) {
 			return false; // Error issuing DeviceIoControl FSCTL_SET_REPARSE_POINT
 		}
 
