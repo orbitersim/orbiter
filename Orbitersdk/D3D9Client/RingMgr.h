@@ -36,7 +36,7 @@ public:
 
 protected:
 	D3D9Mesh *CreateRing (double irad, double orad, int nsect);
-	DWORD RingManager::LoadTextures ();
+	DWORD LoadTextures ();
 
 private:
 	static oapi::D3D9Client *gc;
