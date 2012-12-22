@@ -517,8 +517,7 @@ void vPlanet::RenderCloudShadows(LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderBaseSurfaces(LPDIRECT3DDEVICE9 dev)
 {
-	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderSurface(dev);	
-	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);	
+	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderSurface(dev);		
 }
 
 // ==============================================================
@@ -537,4 +536,5 @@ void vPlanet::RenderBaseShadows(LPDIRECT3DDEVICE9 dev, float depth)
 void vPlanet::RenderBaseStructures (LPDIRECT3DDEVICE9 dev)
 {
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderStructures(dev);
+	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);
 }
