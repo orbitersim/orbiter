@@ -539,10 +539,7 @@ void Scene::Render ()
 		if (flags&DBG_FLAGS_WIREFRAME) pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 		else						   pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
-	else {
-		pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	}
-
+	
 	// Clear the viewport
 	
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, bg_rgba, 1.0f, 0L));
@@ -1040,6 +1037,8 @@ void Scene::Render ()
 		SetCameraFustrumLimits(znear, oapiGetSize(hFocus));
 		vFocus->Render(pDevice, true);
 	}
+
+	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	
 	gc->Render2DOverlay();
 
