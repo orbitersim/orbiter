@@ -375,5 +375,7 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	OBJHANDLE hPlanet = oapiGetBasePlanet(hObj); 
 	D3DXVECTOR4 param = D9OffsetRange(oapiGetSize(hPlanet), 30e3);
 
-	for (DWORD i=0; i<nstructure_as; i++) structure_as[i]->RenderShadowsEx(dev, scale, &mProj, &mWorld, &light, &param);
+	for (DWORD i=0; i<nstructure_as; i++) {
+		if (structure_as[i]->HasShadow()) structure_as[i]->RenderShadowsEx(dev, scale, &mProj, &mWorld, &light, &param);
+	}
 }

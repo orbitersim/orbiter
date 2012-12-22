@@ -38,6 +38,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client) : D3D9Effect()
 {
 	_TRACE;
 	gc = client;
+	pGB = NULL;
 	Constr = 0;
 	sunLight = NULL;
 	cAmbient = 0;
@@ -68,6 +69,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 {
 	_TRACE;
 	gc = client;
+	pGB = NULL;
 	Constr = 1;
 	sunLight = NULL;
 	cAmbient = 0;
@@ -143,6 +145,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
 
+	if (HasShadow()) UpdateGeometry();
 	UpdateBoundingBox();
 	CheckValidity();
 }
@@ -155,6 +158,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, DWORD groups, const MESHGROUPEX **hGroup,
 {
 	_TRACE;
 	gc = client;
+	pGB = NULL;
 	Constr = 5;
 	sunLight = NULL;
 	cAmbient = 0;
@@ -203,6 +207,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, DWORD groups, const MESHGROUPEX **hGroup,
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
 
+	if (HasShadow()) UpdateGeometry();
 	UpdateBoundingBox();
 	CheckValidity();
 }
@@ -215,6 +220,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 {
 	_TRACE;
 	gc = client;
+	pGB = NULL;
 	Constr = 2;
 	sunLight = NULL;
 	cAmbient = 0;
@@ -259,6 +265,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
 
+	if (HasShadow()) UpdateGeometry();
 	UpdateBoundingBox();
 	CheckValidity();
 }
@@ -269,6 +276,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 {
 	_TRACE;
 	gc = client;
+	pGB = NULL;
 	Constr = 3;
 	sunLight = NULL;
 	cAmbient = 0;
@@ -310,6 +318,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
 
+	if (HasShadow()) UpdateGeometry();
 	UpdateBoundingBox();
 	CheckValidity();
 }
@@ -322,6 +331,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	// note: 'mesh' must be a template mesh, because we may not be able to
 	// access vertex data in video memory
 	gc = mesh.gc;
+	pGB = NULL;
 	Constr = 4;
 	sunLight = NULL;
 	cAmbient = 0;
@@ -348,7 +358,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	// ----------------------------------------------------------------
 
 	WORD *pISrc,*pITgt;
-	NTVERTEX *pVSrc, *pVTgt;
+	NMVERTEX *pVSrc, *pVTgt;
 
 	HR(mesh.pIB->Lock(0, 0, (LPVOID*)&pISrc, 0)); 
 	HR(pIB->Lock(0, 0, (LPVOID*)&pITgt, 0)); 
@@ -380,6 +390,8 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	bGlobalTF = mesh.bGlobalTF;
 
 	MeshCatalog->Add(DWORD(this));
+
+	if (HasShadow()) UpdateGeometry();
 	UpdateBoundingBox();
 	CheckValidity();
 }
@@ -406,15 +418,47 @@ D3D9Mesh::~D3D9Mesh()
 	if (Grp) delete []Grp; 
 	if (nTex) delete []Tex;
 	if (nMtrl) delete []Mtrl;
+
 	if (pIB) pIB->Release();
 	if (pVB) pVB->Release();
+	if (pGB) pGB->Release();
 
 	pIB = NULL;
 	pVB = NULL;
+	pGB = NULL;
 
 	LogOk("Mesh 0x%X Deleted successfully -------------------------------",this);
 }
 
+// ===========================================================================================
+//
+bool D3D9Mesh::HasShadow()
+{
+	for (DWORD g=0; g<nGrp; g++) {
+		if (Grp[g]->UsrFlag & 3) continue;
+		if (Grp[g]->IntFlag & 3) continue;
+		return true;
+	}
+	return false;
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::UpdateGeometry()
+{
+	if (!pGB) {
+		HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_MANAGED, &pGB, NULL));
+	}
+	
+	NMVERTEX *pVSrc;
+	D3DXVECTOR3 *pVTgt;
+
+	HR(pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0)); 
+	HR(pGB->Lock(0, 0, (LPVOID*)&pVTgt, 0)); 
+	for (int i=0;i<MaxVert;i++) pVTgt[i] = D3DXVECTOR3(pVSrc[i].x, pVSrc[i].y, pVSrc[i].z);
+	HR(pVB->Unlock());
+	HR(pGB->Unlock());
+}
 
 // ===========================================================================================
 //
@@ -1420,13 +1464,13 @@ void D3D9Mesh::RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 // 
 void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW)
 {
-	if (!pVB) return;
+	if (!pGB) UpdateGeometry();
 	D3DXMATRIX q;
 
 	gc->GetStats()->Meshes++;
 
-	dev->SetVertexDeclaration(pMeshVertexDecl);
-	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
+	dev->SetVertexDeclaration(pPositionDecl);
+	dev->SetStreamSource(0, pGB, 0, sizeof(D3DXVECTOR3));
 	dev->SetIndices(pIB);
 
 	D3DXVECTOR4 data(0,0,0,0);
@@ -1469,13 +1513,13 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 
 void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
 {
-	if (!pVB) return;
+	if (!pGB) UpdateGeometry();
 	D3DXMATRIX q;
 
 	gc->GetStats()->Meshes++;
 
-	dev->SetVertexDeclaration(pMeshVertexDecl);
-	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
+	dev->SetVertexDeclaration(pPositionDecl);
+	dev->SetStreamSource(0, pGB, 0, sizeof(D3DXVECTOR3));
 	dev->SetIndices(pIB);
 
 	FX->SetTechnique(eShadowTech);

@@ -875,6 +875,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 
 		if (meshlist[i].mesh==NULL) continue;
 		if (!(meshlist[i].vismode & MESHVIS_EXTERNAL)) continue; // only render shadows for externally visible meshes
+		if (meshlist[i].mesh->HasShadow()==false) continue;
 		
 		D3D9Mesh *mesh = meshlist[i].mesh;
 

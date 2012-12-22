@@ -338,10 +338,10 @@ technique AxisTech
 // Mesh Shadow Technique
 // =============================================================================
 
-HazeVS ShadowMeshTechVS(MESH_VERTEX vrt)
+BShadowVS ShadowMeshTechVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
-	HazeVS outVS = (HazeVS)0;
+	BShadowVS outVS = (BShadowVS)0;
 	float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;
     float3 posW = mul(float4(posX, 1.0f), gW).xyz;
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
@@ -349,10 +349,10 @@ HazeVS ShadowMeshTechVS(MESH_VERTEX vrt)
     return outVS;
 }
 
-HazeVS ShadowMeshTechExVS(MESH_VERTEX vrt)
+BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
-	HazeVS outVS = (HazeVS)0;
+	BShadowVS outVS = (BShadowVS)0;
 	float d = dot(vrt.posL,vrt.posL);
     float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;
     float3 posW = mul(float4(posX-gColor.xyz*(gTexOff.x*d+gTexOff.y*d*d), 1.0f), gW).xyz;
@@ -362,7 +362,7 @@ HazeVS ShadowMeshTechExVS(MESH_VERTEX vrt)
 }
 
 
-float4 ShadowTechPS(HazeVS frg) : COLOR
+float4 ShadowTechPS(BShadowVS frg) : COLOR
 {
     return float4(0.0f, 0.0f, 0.0f, gMix);
 }

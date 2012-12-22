@@ -98,6 +98,12 @@ public:
 	inline DWORD GroupCount() const { return nGrp; }
 
 	/**
+	 * \brief Check if a mesh is casting shadows
+	 * \return Returns true if the mesh is casting shadows.
+	 */
+	bool HasShadow();
+
+	/**
 	 * \brief Returns a pointer to a mesh group.
 	 * \param idx group index (>= 0)
 	 * \return Pointer to group structure.
@@ -200,8 +206,10 @@ private:
 	bool CopyMaterial (D3DMATERIAL9 *mat7, const MATERIAL *mat);
 	void DeleteGroup(GROUPREC *grp);
 	void CheckValidity();
+	void UpdateGeometry();
 
 	LPDIRECT3DVERTEXBUFFER9 pVB;
+	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9 pIB;
 
 	DWORD	MaxVert;
