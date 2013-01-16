@@ -131,6 +131,9 @@
     <ClCompile Include="Junction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AABBUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CelSphere.h">
@@ -238,9 +241,6 @@
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\D3D9TK.h">
-      <Filter>Externals</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\GraphicsAPI.h">
       <Filter>Externals</Filter>
     </ClInclude>
@@ -249,6 +249,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Orbitersdk.h">
       <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="AABBUtil.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

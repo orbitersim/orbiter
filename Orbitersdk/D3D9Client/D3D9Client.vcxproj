@@ -79,7 +79,7 @@
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;dxguid.lib;Msimg32.lib;psapi.lib;D3D9TK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;dxguid.lib;Msimg32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\Modules\Plugin\$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\..\Orbitersdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -121,7 +121,7 @@
       <Culture>0x0809</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;D3D9TK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>..\..\Modules\Plugin\$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\Orbitersdk\lib;.\..\..\Modules\Server;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -141,6 +141,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
     <ClCompile Include="CelSphere.cpp" />
     <ClCompile Include="CloudMgr.cpp" />
@@ -182,10 +183,10 @@
     <ResourceCompile Include="D3D9Client.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\D3D9TK.h" />
     <ClInclude Include="..\include\GraphicsAPI.h" />
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
+    <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="BeaconArray.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
