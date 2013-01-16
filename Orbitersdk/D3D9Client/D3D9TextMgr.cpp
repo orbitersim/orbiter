@@ -48,7 +48,7 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice)
 	
 
 	red = green = blue = alpha = 1.0;
-	max = 0;
+	max_len = 0;
 
 	indices = new WORD[6*258];
 
@@ -383,14 +383,14 @@ void D3D9Text::SetColor(float r, float g, float b, float a=1.0)
 //
 void D3D9Text::Reset()
 {
-	max = 0;
+	max_len = 0;
 }
 
 // ----------------------------------------------------------------------------------------
 //
 float D3D9Text::Width()
 {
-	return max;
+	return max_len;
 }
 
 // ----------------------------------------------------------------------------------------
@@ -553,7 +553,7 @@ float D3D9Text::Print(LPD3DXCOLOR color, int x, int y, const char *str, int len,
 	delete []VBuffer;
 	
 	float l = xpos - x_orig;
-	if (l>max) max=l;
+	if (l>max_len) max_len=l;
 	return l;
 }
 

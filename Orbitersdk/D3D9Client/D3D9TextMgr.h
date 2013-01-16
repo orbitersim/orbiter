@@ -96,7 +96,7 @@ private:
 	int		sharing;
 	int		spacing;
 	int		linespacing;
-	float	max;		  // If several strings are printed. This is the wide of the widest one
+	float	max_len;		  // If several strings are printed. This is the wide of the widest one
 	float   rotation;
 	int		last;
 	int		charset;
