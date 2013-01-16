@@ -27,7 +27,7 @@
 #include "OrbiterAPI.h"
 #include "GraphicsAPI.h"
 #include "Scene.h"
-#include "D3D9TK.h"
+#include "AABBUtil.h"
 #include <d3d9.h> 
 #include <d3dx9.h>
 

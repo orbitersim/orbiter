@@ -9,7 +9,7 @@
 #include "VVessel.h"
 #include "MeshMgr.h"
 #include "Texture.h"
-#include "D3D9TK.h"
+#include "AABBUtil.h"
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "OapiExtension.h"

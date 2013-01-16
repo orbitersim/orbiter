@@ -159,7 +159,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib psapi.lib D3D9TK.lib nvapi.lib"
+				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib psapi.lib nvapi.lib"
 				OutputFile="..\..\Modules\Plugin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="..\..\Orbitersdk\lib;.\..\..\Modules\Server"
 				IgnoreDefaultLibraryNames="MSVCRT.lib"
@@ -201,6 +201,10 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
+			<File
+				RelativePath=".\AABBUtil.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\BeaconArray.cpp"
 				>
@@ -534,6 +538,10 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath=".\AABBUtil.h"
+				>
+			</File>
 			<File
 				RelativePath=".\BeaconArray.h"
 				>

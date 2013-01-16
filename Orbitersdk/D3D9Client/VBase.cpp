@@ -22,7 +22,7 @@
 #include "BeaconArray.h"
 #include "RunwayLights.h"
 #include "FileParser.h"
-#include "D3D9TK.h"
+#include "AABBUtil.h"
 #include "OrbiterAPI.h"
 #include "DebugControls.h"
 #include "D3D9Config.h"
