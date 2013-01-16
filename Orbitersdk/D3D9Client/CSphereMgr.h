@@ -44,7 +44,7 @@ protected:
 	// returns the direction of the tile centre from the planet centre in local
 	// planet coordinates
 
-	void TileExtents (int hemisp, int ilat, int nlat, int ilg, int nlng, double &lat1, double &lat2, double &lng1, double &lng2);
+	void TileExtents (int hemisp, int ilat, int nlat, int ilg, int nlng, double &lat1, double &lat2, double &lng1, double &lng2) const;
 
 	bool TileInView (int lvl, int ilat);
 	// Check if specified tile intersects viewport

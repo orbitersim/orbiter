@@ -679,7 +679,7 @@ VECTOR3 TileManager::TileCentre (int hemisp, int ilat, int nlat, int ilng, int n
 
 // =======================================================================
 
-void TileManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int nlng, double &lat1, double &lat2, double &lng1, double &lng2)
+void TileManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int nlng, double &lat1, double &lat2, double &lng1, double &lng2) const
 {
 	lat1 = PI05 * (double)ilat/(double)nlat;
 	lat2 = lat1 + PI05/(double)nlat;

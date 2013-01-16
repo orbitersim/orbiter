@@ -131,7 +131,7 @@ protected:
 	VECTOR3 TileCentre (int hemisp, int ilat, int nlat, int ilng, int nlng);
 	// direction to tile centre from planet centre in planet frame
 
-	void TileExtents (int hemisp, int ilat, int nlat, int ilg, int nlng, double &lat1, double &lat2, double &lng1, double &lng2);
+	void TileExtents (int hemisp, int ilat, int nlat, int ilg, int nlng, double &lat1, double &lat2, double &lng1, double &lng2) const;
 
 	int IsTileInView(int lvl, int ilat, float scale);
 	// checks if a given tile is observable from camera position
