@@ -89,7 +89,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 		fseek(f, 0, SEEK_END);
 		long size = ftell(f);
 		long BytesLeft = size;
-		buffer = (char *)malloc(size+1);
+		buffer = new char[size+1];
 		rewind(f);
 		fread(buffer, 1, size, f);
 		fclose(f);
@@ -124,7 +124,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 				LogMsg("Loaded a texture from %s, 0x%X (%u x %u)", fname, pTex, Info.Width, Info.Height);
 			}
 			else {
-				free(buffer);
+				delete[] buffer;
 				LogErr("Loaded %d textures for %s",ntex,fname);
 				return ntex;
 			}
@@ -133,7 +133,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 			BytesLeft -= bytes;
 			ntex++;
 		}
-		free(buffer);
+		delete[] buffer;
 		LogOk("Loaded %d textures for %s",ntex,fname);
 		return ntex;
 	}

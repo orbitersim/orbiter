@@ -19,7 +19,6 @@
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
-#include <malloc.h>
 #include <d3d9.h> 
 #include <d3dx9.h>
 #include "D3D9TextMgr.h"
@@ -33,7 +32,7 @@
 //
 D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice)
 {
-	Buffer   = (char *)malloc(512);
+	Buffer   = new char[512];
 	pDev     = pDevice;
 	charset  = ANSI_CHARSET;
 	sharing  = 0;
@@ -68,11 +67,11 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice)
 //
 D3D9Text::~D3D9Text()
 {
-	if (Buffer) free(Buffer);	Buffer=NULL;
-	if (Data)	free(Data);		Data=NULL;
-	if (Abc)	free(Abc);		Abc=NULL;
-	if (pTex)   pTex->Release(); pTex=NULL;
-	if (indices) delete []indices;
+	if (Buffer) delete[] Buffer;	Buffer=NULL;
+	if (Data)	delete[] Data;		Data=NULL;
+	if (Abc)	delete[] Abc;		Abc=NULL;
+	if (pTex)   pTex->Release();	pTex=NULL;
+	if (indices) delete []indices;	indices=NULL;
 }
 
 
@@ -214,13 +213,13 @@ bool D3D9Text::Init(HFONT hFont, int final)
 	
 	// Allocate space for data
 	//
-	Data = (struct D3D9FontData *) malloc( last * sizeof(D3D9FontData) );
-	if (Data==NULL) return false;
-	memset((void *)Data, 0, last * sizeof(D3D9FontData));
-
-	Abc = (_ABC *) malloc( last * sizeof(_ABC) );
-	if (Abc==NULL) return false;
-	memset((void *)Abc, 0, last * sizeof(_ABC));
+	try {
+		Data = new D3D9FontData[last]();	// zero-initialized
+		Abc = new _ABC[last]();				// zero-initialized
+	}
+	catch (std::bad_alloc&) {
+		return false;
+	}
 
 	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d Pitch&Family=%x",fl.lfFaceName, fl.lfHeight, fl.lfWeight, fl.lfPitchAndFamily); 
 
