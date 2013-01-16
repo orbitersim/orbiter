@@ -38,11 +38,11 @@ using namespace oapi;
 // ==============================================================
 // ==============================================================
 
-TextureManager::TextureManager(D3D9Client *gclient)
+TextureManager::TextureManager(D3D9Client *gclient) :
+	gc(gclient),
+	pDev(gclient->GetDevice()),
+	firstTex()
 {
-	gc         = gclient;
-	pDev       = gclient->GetDevice();
-	firstTex   = NULL;
 }
 
 // ==============================================================

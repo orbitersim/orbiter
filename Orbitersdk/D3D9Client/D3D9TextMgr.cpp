@@ -30,24 +30,31 @@
 
 // ----------------------------------------------------------------------------------------
 //
-D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice)
+D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
+	red        (1.0),
+	green      (1.0),
+	blue       (1.0),
+	alpha      (1.0),
+	tex_w      (),
+	tex_h      (),
+	sharing    (),
+	spacing    (),
+	linespacing(),
+	max_len    (),
+	rotation   (),
+	last       (),
+	charset    (ANSI_CHARSET),
+	halign     (),
+	valign     (),
+	pDev       (pDevice),
+	pTex       (NULL),
+	pTgtSurf   (),
+	Data       (NULL),
+	Abc        (NULL),
+	tm         (),
+	mVP        ()
 {
 	Buffer   = new char[512];
-	pDev     = pDevice;
-	charset  = ANSI_CHARSET;
-	sharing  = 0;
-	spacing  = 0;
-	rotation = 0.0f;
-	halign   = 0;
-	valign   = 0;
-	Abc      = NULL;
-	Data     = NULL;
-	pTex     = NULL;
-
-	
-
-	red = green = blue = alpha = 1.0;
-	max_len = 0;
 
 	indices = new WORD[6*258];
 
