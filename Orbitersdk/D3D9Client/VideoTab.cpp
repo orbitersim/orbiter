@@ -425,7 +425,7 @@ void VideoTab::UpdateConfigData()
 			if (hNode[i]==NULL) break;
 		}
 		
-		strcpy_s(gclient->ScenarioName,320,"Scenarios\\");
+		strcpy_s(gclient->ScenarioName,320, OapiExtension::GetScenarioPath());// "Scenarios\\");
 
 		for (int i=5;i>=0;i--) {
 			if (hNode[i]==NULL) continue;

@@ -156,6 +156,8 @@ public:
 	 */
 	static const bool RunsOrbiterSound40() { return orbiterSound40; }
 
+	static const char *GetScenarioPath() { return scenarioPath; }
+
 private:
 	OapiExtension(void); // avoid default constructor creation & instantiation
 	~OapiExtension(void);
@@ -170,6 +172,7 @@ private:
 	static float coordinateAxesOpacity; // [0...1]
 	// OrbiterSound 4.0 helper
 	static bool orbiterSound40;
+	static char *scenarioPath;
 
 	// Hooking
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets

@@ -46,6 +46,9 @@ float OapiExtension::bodyForceOpacity = 1.0;
 DWORD OapiExtension::showCoordinateAxesFlags = SCA_VESSEL;
 float OapiExtension::coordinateAxesScale = 1.0;
 float OapiExtension::coordinateAxesOpacity = 1.0;
+
+char *OapiExtension::scenarioPath = new char[1024]();
+
 bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
 bool OapiExtension::orbiterSound40 = false;
@@ -182,6 +185,10 @@ bool OapiExtension::GetConfigParameter(void)
 				coordinateAxesScale = scale;
 				coordinateAxesOpacity = opacity;
 			}
+		}
+
+		if (oapiReadItem_string(f, "ScenarioDir", string)) {
+			strcpy_s(scenarioPath, 1024, string);
 		}
 
 		oapiCloseFile(f, FILE_IN);
