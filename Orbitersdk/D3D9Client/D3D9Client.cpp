@@ -56,6 +56,9 @@ vObject *pCurrentVisual = 0;
 
 bool bSkepchpadOpen = false;
 
+extern "C" {
+    _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
 
 // ==============================================================
 // API interface
@@ -137,17 +140,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);
 	QueryPerformanceCounter((LARGE_INTEGER*)&qpcStart);
-
-	/*
-	HMODULE hMod = LoadLibraryA("D3DX9_42.dll");
-	if (!hMod) {
-		MissingRuntimeError();
-		return;
-	}
-	else {
-		LogAlw("[DirectX Runtimes found]");
-		FreeLibrary(hMod);
-	}*/
 
 #ifdef _NVAPI_H
 	if (NvAPI_Initialize()==NVAPI_OK) {
@@ -406,9 +398,14 @@ HWND D3D9Client::clbkCreateRenderWindow()
 #ifdef _NVAPI_H
 	if (bNVAPI) {
 		NvU8 bEnabled = 0;
-		if (NvAPI_Stereo_IsEnabled(&bEnabled)!=NVAPI_OK) {
-			LogErr("Failed to get Stereo State");
+		NvAPI_Status nvStereo = NvAPI_Stereo_IsEnabled(&bEnabled);
+
+		if (nvStereo!=NVAPI_OK) {
+			if (nvStereo==NVAPI_STEREO_NOT_INITIALIZED) LogWrn("Stereo API not initialized");
+			if (nvStereo==NVAPI_API_NOT_INITIALIZED) LogErr("nVidia API not initialized");
+			if (nvStereo==NVAPI_ERROR) LogErr("nVidia API ERROR");
 		}
+
 		if (bEnabled) {
 			LogAlw("[nVidia Stereo mode is Enabled]");
 			if (NvAPI_Stereo_CreateHandleFromIUnknown(pd3dDevice, &pStereoHandle)!=NVAPI_OK) {
