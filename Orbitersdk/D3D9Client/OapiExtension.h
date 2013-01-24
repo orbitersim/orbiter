@@ -2,13 +2,14 @@
 // FileParser.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Released under GNU General Public License
-// Copyright (C) 2012 Peter Schneider (Kuddel)
+// Copyright (C) 2012-2013 Peter Schneider (Kuddel)
 // ==============================================================
 
 #ifndef __OAPIEXTENSION_H
 #define __OAPIEXTENSION_H
 
 #include <Windows.h>
+#include <string>
 
 class D3D9Config;
 
@@ -156,7 +157,40 @@ public:
 	 */
 	static const bool RunsOrbiterSound40() { return orbiterSound40; }
 
-	static const char *GetScenarioPath() { return scenarioPath; }
+	/**
+	 * \brief Returns the current path to Config folder
+	 *
+	 * \return Path to Config folder
+	 */
+	static const char *GetConfigDir() { return configDir.c_str(); }
+
+	/**
+	 * \brief Returns the current path to Mesh folder
+	 *
+	 * \return Path to Mesh folder
+	 */
+	static const char *GetMeshDir() { return meshDir.c_str(); }
+
+	/**
+	 * \brief Returns the current path to Texture folder
+	 *
+	 * \return Path to Texture folder
+	 */
+	static const char *GetTextureDir() { return textureDir.c_str(); }
+
+	/**
+	 * \brief Returns the current path to High Texture folder
+	 *
+	 * \return Path to High Texture folder
+	 */
+	static const char *GetHightexDir() { return hightexDir.c_str(); }
+
+	/**
+	 * \brief Returns the current path to Scenario folder
+	 *
+	 * \return Path to Scenario folder
+	 */
+	static const char *GetScenarioDir() { return scenarioDir.c_str(); }
 
 private:
 	OapiExtension(void); // avoid default constructor creation & instantiation
@@ -172,7 +206,11 @@ private:
 	static float coordinateAxesOpacity; // [0...1]
 	// OrbiterSound 4.0 helper
 	static bool orbiterSound40;
-	static char *scenarioPath;
+	static std::string configDir;	///< Value of Orbiters ConfigDir parameter
+	static std::string meshDir;		///< Value of Orbiters MeshDir parameter
+	static std::string textureDir;	///< Value of Orbiters TextureDir parameter
+	static std::string hightexDir;	///< Value of Orbiters HightexDir parameter
+	static std::string scenarioDir; ///< Value of Orbiters ScenarioDir config parameter
 
 	// Hooking
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets

@@ -2,7 +2,7 @@
 // OapiExtension.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Released under GNU General Public License
-// Copyright (C) 2012 Peter Schneider (Kuddel)
+// Copyright (C) 2012-2013 Peter Schneider (Kuddel)
 // ==============================================================
 
 #include "OapiExtension.h"
@@ -46,8 +46,12 @@ float OapiExtension::bodyForceOpacity = 1.0;
 DWORD OapiExtension::showCoordinateAxesFlags = SCA_VESSEL;
 float OapiExtension::coordinateAxesScale = 1.0;
 float OapiExtension::coordinateAxesOpacity = 1.0;
-
-char *OapiExtension::scenarioPath = new char[1024]();
+// Orbiters default directories
+std::string OapiExtension::configDir(".\\Config\\");
+std::string OapiExtension::meshDir(".\\Meshes\\");
+std::string OapiExtension::textureDir(".\\Textures\\");
+std::string OapiExtension::hightexDir(".\\Textures2\\");
+std::string OapiExtension::scenarioDir(".\\Scenarios\\");
 
 bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
@@ -187,8 +191,21 @@ bool OapiExtension::GetConfigParameter(void)
 			}
 		}
 
+		// Get directory config
+		if (oapiReadItem_string(f, "ConfigDir", string)) {
+			configDir = string;
+		}
+		if (oapiReadItem_string(f, "MeshDir", string)) {
+			meshDir = string;
+		}
+		if (oapiReadItem_string(f, "TextureDir", string)) {
+			textureDir = string;
+		}
+		if (oapiReadItem_string(f, "HightexDir", string)) {
+			hightexDir = string;
+		}
 		if (oapiReadItem_string(f, "ScenarioDir", string)) {
-			strcpy_s(scenarioPath, 1024, string);
+			scenarioDir = string;
 		}
 
 		oapiCloseFile(f, FILE_IN);
