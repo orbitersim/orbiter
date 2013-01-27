@@ -11,6 +11,7 @@
 #include "D3D9Config.h"
 #include "D3D9Client.h"
 #include "Log.h"
+#include "OapiExtension.h"
 
 #include <vector>
 #include <iostream>
@@ -219,7 +220,7 @@ bool FileParser::ParseSystem(const char *_name)
 	FILE* file = NULL;
 	char cbuf[256];
 	char name[256];
-	sprintf_s(name, 256,"Config\\%s.cfg",_name);
+	sprintf_s(name, 256,"%s%s.cfg", OapiExtension::GetConfigDir(), _name);
 
 	file = fopen(name, "r");
 
@@ -253,7 +254,7 @@ bool FileParser::ParsePlanet(const char *_name)
 		bool bDefault = false;
 		bool bHasPath = false;
 
-		sprintf_s(path, 256, "Config\\%s.cfg",_name);
+		sprintf_s(path, 256, "%s%s.cfg", OapiExtension::GetConfigDir(), _name);
 		sprintf_s(name, 256, "%s.cfg",_name);
 		sprintf_s(def,  256, "%s\\Base",_name);
 
@@ -427,7 +428,7 @@ bool FileParser::ScanBases(OBJHANDLE hPlanet, const char *_name, OBJHANDLE hBase
 	_TRACE;
 	char name[256];
 
-	sprintf_s(name, 256, "Config\\%s",_name);
+	sprintf_s(name, 256, "%s%s", OapiExtension::GetConfigDir(), _name);
 
 	if (hPlanet==NULL) {
 		LogErr("hPlanet is NULL in FileParser::ScanBases(%s)", name);

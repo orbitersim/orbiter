@@ -751,11 +751,11 @@ void VideoTab::CreateSymbolicLinks()
 	// Config -> Modules/Server/Config
 	//
 	result += "Config: ";
-	if (junction::TargetDirectoryExists("Config"))
+	if (junction::TargetDirectoryExists(OapiExtension::GetConfigDir()))
 	{
 		if (!junction::IsDirectoryJunction("Modules\\Server\\Config"))
 		{
-			if (!junction::CreateJunctionPoint("Config", "Modules\\Server\\Config"))
+			if (!junction::CreateJunctionPoint(OapiExtension::GetConfigDir(), "Modules\\Server\\Config"))
 			{
 				result += (GetLastError() == ERROR_DIR_NOT_EMPTY)
 						? "OK. A non-empty 'Config' directory already exists."

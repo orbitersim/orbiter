@@ -21,6 +21,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "D3D9Client.h"
+#include "OapiExtension.h"
 
 using namespace oapi;
 
@@ -1435,7 +1436,7 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 
 	FILE *f = NULL;
 	
-	sprintf_s(cpath,256,"./Textures2/%s",fname);
+	sprintf_s(cpath,256,"%s%s", OapiExtension::GetHightexDir(), fname);
 	
 	if (fopen_s(&f, cpath, "rb")) return -3;
 		

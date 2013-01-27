@@ -87,24 +87,16 @@ struct SafeHandle
 // Junction methods
 	bool CreateJunctionPoint(LPCSTR origin, LPCSTR junction)
 	{
-		size_t size;
-		//std::string str; // multi purpose temporary string
+		char* buffer = new char[_MAX_PATH];
 
-		// Get Orbiter root path
-		size = GetCurrentDirectory(0,0);
-		char* cwd = new char[size];
-		GetCurrentDirectory(size, cwd);
-
-		// char -> w_char
-		std::string str(cwd);
-		std::wstring orbiterRoot( str.begin(), str.end() );
-		delete[] cwd;
+		GetFullPathName(origin, 256, buffer, NULL);
 
 		// Prepend \??\ to path to mark it as not-for-parsing
-		// and the orbiter root path
-		str = origin;
-		std::wstring nativeTarget = L"\\??\\" + orbiterRoot
-								  + L"\\" + std::wstring( str.begin(), str.end() );
+		// and convert char -> w_char
+		std::string str(buffer);
+		std::wstring nativeTarget = L"\\??\\" + std::wstring( str.begin(), str.end() );
+
+		delete[] buffer;
 
 		// Make sure there's a trailing slash
 		if (nativeTarget[ nativeTarget.length()-1 ] != L'\\') {
@@ -114,7 +106,7 @@ struct SafeHandle
 		//
 		// O.K. Now let's fill the REPARSE_DATA_BUFFER
 		//
-		size = sizeof(REPARSE_DATA_BUFFER) - sizeof(WCHAR) + nativeTarget.length() * sizeof(WCHAR);
+		size_t size = sizeof(REPARSE_DATA_BUFFER) - sizeof(WCHAR) + nativeTarget.length() * sizeof(WCHAR);
 		std::vector<BYTE> vec(size, 0);
 		REPARSE_DATA_BUFFER* reparseBuffer = (REPARSE_DATA_BUFFER*)&vec[0];
 
