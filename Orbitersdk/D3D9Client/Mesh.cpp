@@ -953,6 +953,29 @@ void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIREC
 	HR(FX->End());	
 }
 
+// Used only by ring manager --------------------------------------------------------------------
+//
+void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad)
+{
+	if (!pVB) return;
+
+	gc->GetStats()->Vertices += Grp[0]->nVert;
+	gc->GetStats()->Meshes++;
+
+	UINT numPasses = 0;
+	HR(FX->SetTechnique(eRingTech2));
+	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetTexture(eTex0, pTex));
+	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
+	HR(FX->SetValue(eMat, &defmat, sizeof(D3DMATERIAL9)));
+	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(irad, orad, 0, 0)));
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
+	RenderGroup(dev, Grp[0]);
+	HR(FX->EndPass());
+	HR(FX->End());	
+}
+
 // ===========================================================================================
 // This is a special rendering routine used by VVessel to render MFD screens and HUD
 //

@@ -43,6 +43,7 @@ D3DXHANDLE D3D9Effect::eExhaust = 0;	// Render engine exhaust texture
 D3DXHANDLE D3D9Effect::eSpotTech = 0;	// Vessel beacons
 D3DXHANDLE D3D9Effect::eBaseTile = 0;
 D3DXHANDLE D3D9Effect::eRingTech = 0;	// Planet rings technique
+D3DXHANDLE D3D9Effect::eRingTech2 = 0;	// Planet rings technique
 D3DXHANDLE D3D9Effect::eShadowTech = 0; // Vessel ground shadows
 D3DXHANDLE D3D9Effect::eArrowTech = 0;  // (Grapple point) arrows
 D3DXHANDLE D3D9Effect::eAxisTech = 0;
@@ -251,6 +252,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eBBTech		 = FX->GetTechniqueByName("BoundingBoxTech");
 	eBSTech		 = FX->GetTechniqueByName("BoundingSphereTech");
 	eRingTech    = FX->GetTechniqueByName("RingTech");
+	eRingTech2   = FX->GetTechniqueByName("RingTech2");
 	eExhaust     = FX->GetTechniqueByName("ExhaustTech");
 	eSpotTech    = FX->GetTechniqueByName("SpotTech");
 	eShadowTech  = FX->GetTechniqueByName("ShadowTech");

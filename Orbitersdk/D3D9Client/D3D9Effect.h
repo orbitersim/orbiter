@@ -72,6 +72,7 @@ public:
 	static D3DXHANDLE   ePanelTechB;
 	static D3DXHANDLE	eBaseTile;
 	static D3DXHANDLE	eRingTech;
+	static D3DXHANDLE	eRingTech2;
 	static D3DXHANDLE	eShadowTech;
 	static D3DXHANDLE	eBaseShadowTech;
 	static D3DXHANDLE	eBeaconArrayTech;

@@ -24,7 +24,7 @@
 #include "D3D9util.h"
 #include <stdio.h>
 #include <OrbiterAPI.h>
-
+#include "D3D9Frame.h"
 #include "nvapi.h"
 
 #ifdef _NVAPI_H
@@ -280,7 +280,6 @@ public:
 
 	/// Returns a pointer to the name of orbiter's root folder
 	inline const char *				  GetOrbiterRoot() const	{ return pOrbiterRoot; }
-
 
 	// void SetDefault (D3DVERTEXBUFFERDESC &vbdesc) const;
 	// Sets the dwCaps entry of vbdesc to system or video memory, depending

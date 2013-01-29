@@ -43,6 +43,7 @@ private:
 	const vPlanet *vp;
 	D3D9Mesh *mesh[MAXRINGRES];
 	LPDIRECT3DTEXTURE9 tex[MAXRINGRES];
+	LPDIRECT3DTEXTURE9 pTex;
 	DWORD rres, tres, ntex;
 	double irad, orad;
 };

@@ -44,6 +44,7 @@ public:
 
 	DWORD GetBaseCount();
 	vBase* GetBaseByIndex(DWORD index);
+	float GetRadius() const { return rad; }
 
 protected:
 	void RenderSphere (LPDIRECT3DDEVICE9 dev, bool bfog);

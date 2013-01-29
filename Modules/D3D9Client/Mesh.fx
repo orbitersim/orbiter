@@ -233,6 +233,28 @@ float4 RingTechPS(MeshVS frg) : COLOR
     return float4(color.rgb*sh, color.a);
 }
 
+float4 RingTech2PS(MeshVS frg) : COLOR
+{
+    float3 pp  = gCameraPos*gRadius[2] - frg.CamW*gDistScale;
+    float  dpp = dot(pp,pp);
+    float  len = sqrt(dpp);
+    
+    len = saturate(smoothstep(gTexOff.x, gTexOff.y, len));
+   
+    float4 color = tex2D(RingS, float2(len, 0.5));
+    color.a = color.r*0.75;
+     
+    float  da = dot(normalize(pp), gSun.direction);
+    float  r  = sqrt(dpp*(1.0-da*da));
+    
+    float sh  = max(0.05, smoothstep(gRadius[0], gRadius[1], r));
+    
+    if (da<0) sh = 1.0f;
+    
+    if (dot(frg.nrmW, frg.CamW)>0) return float4(color.rgb*0.35f*sh, color.a);
+    return float4(color.rgb*sh, color.a);
+}
+
 
 // =============================================================================
 // Base Tile Rendering Technique
@@ -619,15 +641,29 @@ technique VCHudTech
     }
 }
 
-
-// This is used for rendering beacons ------------------------------------------
-//
 technique RingTech
 {
     pass P0
     {
         vertexShader = compile VS_MOD TinyMeshTechVS();
         pixelShader  = compile PS_MOD RingTechPS();
+        
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+        ZWriteEnable = true;
+        ZEnable = false;
+        CullMode = NONE;
+    }   
+}
+
+technique RingTech2
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD TinyMeshTechVS();
+        pixelShader  = compile PS_MOD RingTech2PS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

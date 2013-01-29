@@ -277,7 +277,7 @@ sampler ExhaustS = sampler_state
 sampler RingS = sampler_state       // Planetary rings sampler
 {
 	Texture = <gTex0>;
-	MinFilter = LINEAR;
+	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;

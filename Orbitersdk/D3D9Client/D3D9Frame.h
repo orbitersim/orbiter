@@ -97,6 +97,7 @@ public:
 	inline BOOL					IsFullscreen() const         { return bIsFullscreen; }
 	inline BOOL					IsGDIBB() const				 { return bGDIBB; }
 	inline BOOL					IsAAEnabled() const			 { return bAAEnabled; }
+	inline const D3DCAPS9 *		GetCaps() const				 { return &caps; }
 
     // Creates the Framework
 	HRESULT Initialize(HWND hWnd, struct oapi::GraphicsClient::VIDEODATA *vData);

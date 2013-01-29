@@ -57,11 +57,30 @@ void RingManager::SetMeshRes(DWORD res)
 	}
 }
 
+
 DWORD RingManager::LoadTextures ()
 {
-	LogErr("Loading Ring Textures");
 	char fname[256];
+	char path[512];
+
 	oapiGetObjectName (vp->Object(), fname, 256);
+
+	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
+
+	D3DCAPS9 *caps = gc->GetHardwareCaps();
+
+	int size = max(min(caps->MaxTextureWidth, 8192), 2048);
+
+	sprintf_s(path, 512, "Textures/%s_ring_%d.dds", fname, size);
+	pTex = NULL;
+
+	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, D3DFMT_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
+		LogAlw("High resolution ring texture loaded [%s]",path);
+	}
+	
+	
+	
+	// Fallback for old method
 	strcat_s(fname, 256, "_ring.tex");
 	gc->SetItem(fname);
 	return gc->GetTexMgr()->LoadTextures(fname, tex, 0, MAXRINGRES);
@@ -97,8 +116,12 @@ bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)
 
 	D3DMAT_FromAxisT(&World, &x, &y, &z);
 
-	mesh[rres]->RenderRings(dev, &World, tex[tres]);
-
+	float rad = vp->GetRadius();
+	
+	if (pTex) {
+		mesh[rres]->RenderRings2(dev, &World, pTex, float(irad)*rad, float(orad)*rad);
+	}
+	else mesh[rres]->RenderRings(dev, &World, tex[tres]);
 	return true;
 }
 

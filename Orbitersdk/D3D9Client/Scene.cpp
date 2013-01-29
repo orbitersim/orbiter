@@ -175,6 +175,8 @@ void Scene::CheckVisual(OBJHANDLE hObj)
 {
 	_TRACE;
 
+	if (hObj==NULL) return;
+
 	VOBJREC *pv = FindVisual(hObj);
 	if (!pv) pv = AddVisualRec(hObj);
 
