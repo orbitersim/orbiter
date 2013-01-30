@@ -455,7 +455,7 @@ void D3D9Mesh::UpdateGeometry()
 
 	HR(pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0)); 
 	HR(pGB->Lock(0, 0, (LPVOID*)&pVTgt, 0)); 
-	for (int i=0;i<MaxVert;i++) pVTgt[i] = D3DXVECTOR3(pVSrc[i].x, pVSrc[i].y, pVSrc[i].z);
+	for (DWORD i=0;i<MaxVert;++i) pVTgt[i] = D3DXVECTOR3(pVSrc[i].x, pVSrc[i].y, pVSrc[i].z);
 	HR(pVB->Unlock());
 	HR(pGB->Unlock());
 }
