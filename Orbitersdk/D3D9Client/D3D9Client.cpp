@@ -640,6 +640,7 @@ void D3D9Client::clbkRenderScene()
 	_TRACER;
 	bScene = false;
 	
+	char Label[64];
 
 	if (pd3dDevice==NULL || scene==NULL) return;
 	if (bFailed) return;
@@ -674,12 +675,23 @@ void D3D9Client::clbkRenderScene()
 		scene->Render();		// Render the main scene
 		bScene = false;
 
-		if (oapiGetPause()) {
+		Label[0]=0;
+
+		VESSEL *hVes = oapiGetFocusInterface();
+
+		if (hVes) {
+			if (hVes->Recording()) strcpy_s(Label,64,"Recording");
+			if (hVes->Playback()) strcpy_s(Label,64,"Replay");
+		}
+
+		if (oapiGetPause()) strcpy_s(Label,64,"Paused");
+
+		if (Label[0]!=0) {
 			pd3dDevice->BeginScene();
 			RECT rect2 = {0,viewH-60,viewW,viewH-20};
-			pFramework->GetLargeFont()->DrawTextA(0, "PAUSED", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
+			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
 			rect2.left-=4; rect2.top-=4;
-			pFramework->GetLargeFont()->DrawTextA(0, "PAUSED", 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
+			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
 			pd3dDevice->EndScene();
 		}
 
