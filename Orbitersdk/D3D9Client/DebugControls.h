@@ -116,6 +116,7 @@ namespace DebugControls {
 	void		SetupMeshGroups();
 	void		UpdateVisual();
 	void		UpdateFlags();
+	double		GetVisualSize();
 	
 	bool		IsActive();
 

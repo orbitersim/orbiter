@@ -348,12 +348,32 @@ void Scene::Update ()
 	}
 
 	OBJHANDLE hTgt = oapiCameraTarget();
+
+	// This function will browse through vessels and planets. (not bases)
+	// Base visuals don't exist in the visual record. 
 	OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
 
 	CheckVisual(hObj);
 
 	if (hTgt!=hCameraTarget && hTgt!=NULL) {
+
+		if (oapiGetObjectType(hTgt)==OBJTP_SURFBASE) {
+			OBJHANDLE hPlanet = oapiGetBasePlanet(hTgt);
+			vPlanet *vp = (vPlanet *)GetVisObject(hPlanet);
+			if (vp) {
+				vBase *vb = vp->GetBaseByHandle(hTgt);
+				if (vb) {
+					if (DebugControls::IsActive()) {
+						DebugControls::SetVisual(vb);
+					}
+					hCameraTarget = hTgt;
+				}
+			}
+			return;
+		}
+
 		vObject *vo = GetVisObject(hTgt);
+		
 		if (vo) {
 			if (DebugControls::IsActive()) {
 				DebugControls::SetVisual(vo);
@@ -370,6 +390,7 @@ void Scene::Update ()
 				// during playback, therfore we do it ;)
 				oapiSetFocusObject(hTgt);
 			}
+			return;
 		}
 	}
 }

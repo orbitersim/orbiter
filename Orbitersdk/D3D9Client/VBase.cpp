@@ -274,8 +274,10 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 
 	// render tiles
 	if (tilemesh) {
+		uCurrentMesh = 0; // Used for debugging
 		tilemesh->SetSunLight(&sunLight);
 		tilemesh->RenderBaseTile(dev, &mWorld);
+		uCurrentMesh++;
 	}
 
 	// render generic objects under shadows
@@ -283,6 +285,7 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 		for (i = 0; i < nstructure_bs; i++) {
 			structure_bs[i]->SetSunLight(&sunLight);
 			structure_bs[i]->Render(dev, &mWorld, RENDER_BASEBS);
+			uCurrentMesh++;
 		}
 	}
 
@@ -295,13 +298,17 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	if (!IsVisible()) return false;
 
 	pCurrentVisual = this;
+	uCurrentMesh = 0; // Used for debugging
+
+	if (tilemesh) uCurrentMesh++;
+	uCurrentMesh += nstructure_bs;
 
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
 		structure_as[i]->SetSunLight(&sunLight);
 		structure_as[i]->RenderBase(dev, &mWorld);
+		uCurrentMesh++;
 	}
-
 	return true;
 }
 

@@ -171,6 +171,14 @@ void SetupMeshGroups()
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_GROUP), lbl);
 }
 
+double GetVisualSize()
+{
+	if (hDlg && vObj) {
+		OBJHANDLE hObj = vObj->GetObjectA();
+		if (hObj) return oapiGetSize(hObj);
+	}
+	return 1.0;
+}
 
 vObject * GetVisual()
 {

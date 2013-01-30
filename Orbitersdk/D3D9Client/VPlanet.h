@@ -44,6 +44,7 @@ public:
 
 	DWORD GetBaseCount();
 	vBase* GetBaseByIndex(DWORD index);
+	vBase* GetBaseByHandle(OBJHANDLE hBase);
 	float GetRadius() const { return rad; }
 
 protected:

@@ -1171,7 +1171,9 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 					short d = GET_WHEEL_DELTA_WPARAM(wParam);
 					if (d<-1) d=-1;
 					if (d>1) d=1;
-					if (scene->CameraPan(_V(0,0,double(d))*2.0, *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED))) return 0;	
+					double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
+					speed *= (DebugControls::GetVisualSize()/100.0);
+					if (scene->CameraPan(_V(0,0,double(d))*2.0, speed)) return 0;	
 				}
 			}
 
@@ -1182,7 +1184,9 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 						double y = double(GET_Y_LPARAM(lParam) - ypos);
 						xpos = GET_X_LPARAM(lParam);
 						ypos = GET_Y_LPARAM(lParam);
-						if (scene->CameraPan(_V(-x,y,0)*0.05, *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED))) return 0;	
+						double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
+						speed *= (DebugControls::GetVisualSize()/100.0);
+						if (scene->CameraPan(_V(-x,y,0)*0.05, speed)) return 0;	
 					}
 				}
 				break;

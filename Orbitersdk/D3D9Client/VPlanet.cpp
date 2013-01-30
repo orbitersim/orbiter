@@ -170,6 +170,14 @@ vBase* vPlanet::GetBaseByIndex(DWORD index)
 	return vbase[index];
 }
 
+// ==============================================================
+
+vBase* vPlanet::GetBaseByHandle(OBJHANDLE hBase)
+{
+	if (vbase) for (DWORD i=0;i<nbase;i++) if (vbase[i]) if (vbase[i]->Object()==hBase) return vbase[i];
+	return NULL;
+}
+
 // ===========================================================================================
 //
 bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
