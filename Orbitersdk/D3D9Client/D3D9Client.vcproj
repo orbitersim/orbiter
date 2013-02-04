@@ -645,6 +645,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OapiVersion.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Particle.h"
 				>
 			</File>

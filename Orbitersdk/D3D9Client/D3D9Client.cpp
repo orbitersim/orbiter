@@ -280,7 +280,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	parser			 = NULL;
 	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 #endif
 
@@ -1076,7 +1076,7 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 			LogMsg("D3D9Client::clbkGetRenderParam(RP_MAXLIGHTS): %u",*value);
 			return true;
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 		case RP_REQUIRETEXPOW2:
 			*value = 0;
 			return true;
@@ -1311,7 +1311,7 @@ DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 // Surface functions
 // =======================================================================
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 
 bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality)
 {
@@ -1578,7 +1578,7 @@ bool D3D9Client::clbkSetSurfaceColourKey(SURFHANDLE surf, DWORD ckey)
 // Blitting functions
 // =======================================================================
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 
 int D3D9Client::clbkBeginBltGroup(SURFHANDLE tgt) 
 {
@@ -1645,7 +1645,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 		RECT rs = { 0, 0, w, h };
 		RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 		if (pBltGrpTgt) {
 			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
 			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
@@ -1678,7 +1678,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 		RECT rs = { srcx, srcy, srcx+w, srcy+h };
 		RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 		if (pBltGrpTgt) {
 			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
 			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
@@ -1712,7 +1712,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 		RECT rs = { srcx, srcy, srcx+srcw, srcy+srch };
 		RECT rt = { tgtx, tgty, tgtx+tgtw, tgty+tgth };
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 		if (pBltGrpTgt) {
 			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
 			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
@@ -1941,7 +1941,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R8b Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R9 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

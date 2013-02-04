@@ -480,6 +480,29 @@ void D3D9Mesh::CheckValidity()
 		if (Grp[i]->nFace==0) LogWrn("MeshGroup has no faces");
 		if (Grp[i]->BBox.bs.w<1e-3) LogWrn("Small Bounding Sphere rad=%g nVtx=%u", Grp[i]->BBox.bs.w, Grp[i]->nVert);
 	}
+
+	
+	for (DWORD i=0;i<nGrp;i++) {
+
+		if (Grp[i]->nVert==0) continue;
+		if (Grp[i]->nFace==0) continue;
+
+		NMVERTEX *pVrt = LockVertexBuffer(i);
+
+		for (DWORD k=0;k<Grp[i]->nVert;k++) {
+			D3DXVECTOR3 v = D3DXVECTOR3(pVrt[k].nx, pVrt[k].ny, pVrt[k].nz); 
+			float len = D3DXVec3Length(&v);
+			if (fabs(len)<1e-3) {
+				LogErr("Zero length normals in mesh group %d in mesh 0x%X",i,this);
+				break;
+			}
+			if (fabs(len-1.0)>0.1) {
+				LogErr("Non-unit-length normals in mesh group %d in mesh 0x%X",i,this);
+				break;
+			}
+		}
+		UnLockVertexBuffer();
+	}
 }
 
 

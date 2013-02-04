@@ -18,6 +18,8 @@
 #include <fstream.h>
 #endif
 
+#include "OapiVersion.h"
+
 #include <d3d9.h> 
 #include <d3dx9.h>
 #include "GraphicsAPI.h"
@@ -304,7 +306,7 @@ public:
 
 	SURFHANDLE clbkCreateSurface (HBITMAP hBmp);
 
-#ifdef RP_REQUIRETEXPOW2
+#ifdef OAPI_BETA
 	bool clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality=0.7f);
 #endif
 
