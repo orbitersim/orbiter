@@ -126,8 +126,8 @@ MeshVS SimpleMeshTechVS(MESH_VERTEX vrt)
     float3 posW = mul(float4(posX, 1.0f), gW).xyz;              // Apply world transformation matrix
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
    
-    float3 nrmX = mul(float4(vrt.nrmL.xyz, 0.0f), gGrpT).xyz;       // Apply meshgroup specific transformation
-    float3 nrmW = mul(float4(posX, 0.0f), gW).xyz;              // Apply world transformation matrix
+    float3 nrmX = mul(float4(vrt.nrmL.xyz, 0.0f), gGrpT).xyz;   // Apply meshgroup specific transformation
+    float3 nrmW = mul(float4(nrmX, 0.0f), gW).xyz;              // Apply world transformation matrix
 
     outVS.nrmW  = normalize(nrmW);
     outVS.CamW  = -posW;
