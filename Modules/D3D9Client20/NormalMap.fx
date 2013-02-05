@@ -88,7 +88,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     if (gNormalType)  nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
     else {
 		nrmT.rg = tex2D(Nrm0S, frg.tex0).rg * 2.0 - 1.0;					   //Sampler for V8U8  
-		nrmT.b = sqrt(1.0 - nrmT.g*nrmT.g - nrmT.r*nrmT.r);
+		nrmT.b = 1.0;
 	}      
     
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	

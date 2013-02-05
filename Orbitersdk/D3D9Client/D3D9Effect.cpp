@@ -200,6 +200,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	
 	WORD Model = gc->GetHardwareCaps()->PixelShaderVersion & 0xFFFF;
 
+	if (!strcmp(Config->Shaders,"Level20")) Model = 0x200;
+
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 	D3DXMACRO macro[4]; memset(&macro, 0, 4*sizeof(D3DXMACRO));

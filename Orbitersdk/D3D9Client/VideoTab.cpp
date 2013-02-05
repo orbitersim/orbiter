@@ -584,7 +584,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd, IDC_SHADER, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_SHADER, CB_ADDSTRING, 0, (LPARAM)"Default");
-	//SendDlgItemMessageA(hWnd, IDC_SHADER, CB_ADDSTRING, 0, (LPARAM)"Debug");
+	SendDlgItemMessageA(hWnd, IDC_SHADER, CB_ADDSTRING, 0, (LPARAM)"Level20");
 	SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 0, 0);
 
 	// SKETCHPAD --------------------------------------
@@ -640,8 +640,8 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETPOS, 1, DWORD(Config->Convergence*100.0));
 	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, DWORD(Config->Separation));
 
-	//if (strcmp(Config->Shaders,"D3D9Client")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 0, 0);
-	//if (strcmp(Config->Shaders,"D3D9ClientDebug")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 1, 0);
+	if (strcmp(Config->Shaders,"Default")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 0, 0);
+	if (strcmp(Config->Shaders,"Level20")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 1, 0);
 	
 
 	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_SETCURSEL, Config->SketchpadMode, 0);
@@ -704,10 +704,10 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->PlanetPreloadMode = SendDlgItemMessage (hWnd, IDC_SRFPRELOAD, BM_GETCHECK, 0, 0);
 
 	if (SendDlgItemMessage(hWnd, IDC_SHADER, CB_GETCURSEL, 0, 0)==0) {
-		strcpy_s(Config->Shaders,64,"D3D9Client");
+		strcpy_s(Config->Shaders,64,"Default");
 	}
 	if (SendDlgItemMessage(hWnd, IDC_SHADER, CB_GETCURSEL, 0, 0)==1) {
-		strcpy_s(Config->Shaders,64,"D3D9ClientDebug");
+		strcpy_s(Config->Shaders,64,"Level20");
 	}
 
 	Config->DebugLvl = SendDlgItemMessage (hWnd, IDC_DEBUG, CB_GETCURSEL, 0, 0);

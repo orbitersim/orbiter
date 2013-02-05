@@ -93,7 +93,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
 	//if (oapiReadItem_float (hFile, "RwyHazeScale", d))			RwyHazeScale  = max(1.0,  min(30.0,d));
 
-	oapiReadItem_string (hFile, "ShaderFolder", Shaders);
+	oapiReadItem_string (hFile, "Shaders", Shaders);
 
 	if (oapiReadItem_int   (hFile, "DebugLvl", i))				DebugLvl = i;
 	if (oapiReadItem_float (hFile, "VCNearPlane", d))			VCNearPlane = max (-1.0, min (1.0, d));
@@ -141,6 +141,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "StereoConvergence", Convergence);
 
 	oapiWriteItem_string (hFile, "ShaderFolder", Shaders);
+	oapiWriteItem_string (hFile, "Shaders", Shaders);
 
 	oapiWriteItem_int   (hFile, "DebugLvl", DebugLvl);
 	oapiWriteItem_float (hFile, "VCNearPlane", VCNearPlane);

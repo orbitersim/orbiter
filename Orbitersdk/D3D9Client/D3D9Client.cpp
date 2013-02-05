@@ -335,7 +335,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bGDIBB		= (pFramework->IsGDIBB() == TRUE);
 	bAAEnabled  = (pFramework->IsAAEnabled() == TRUE);
 	viewBPP		= 32;
-	char *fld   = Config->Shaders;
+	
+	char fld[] = {"D3D9Client\0"};
 
 	if (bGDIBB) Config->SketchpadMode = 1;
 
