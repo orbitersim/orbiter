@@ -209,6 +209,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMgr.h" />
     <ClInclude Include="OapiExtension.h" />
+    <ClInclude Include="OapiVersion.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RingMgr.h" />
