@@ -64,7 +64,7 @@ void D3D9Config::Reset ()
 	DisableVisualHelperReadout = 0;
 
 	SolCfg				= new char[64];   strcpy_s(SolCfg,64,"Sol");
-	Shaders				= new char[64];   strcpy_s(Shaders,64,"D3D9Client");
+	Shaders				= new char[64];   strcpy_s(Shaders,64,"Default");
 	DebugFont		    = new char[64];   strcpy_s(DebugFont,64,"Fixed");
 }
 
@@ -140,7 +140,6 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "StereoSeparation", Separation);
 	oapiWriteItem_float (hFile, "StereoConvergence", Convergence);
 
-	oapiWriteItem_string (hFile, "ShaderFolder", Shaders);
 	oapiWriteItem_string (hFile, "Shaders", Shaders);
 
 	oapiWriteItem_int   (hFile, "DebugLvl", DebugLvl);
