@@ -1007,7 +1007,7 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 		}
 	}
 
-	if (Type==D3D9S_TEXTURE) ConvertToRenderTargetTexture(); // Added 05.02.2013
+	if (Type==D3D9S_TEXTURE) return false; //ConvertToRenderTargetTexture(); // Added 05.02.2013
 
 	// if (desc.Pool==D3DPOOL_DEFAULT && (Type==D3D9S_PLAIN || Type==D3D9S_RTGTTEX)) { // Removed 05.02.2013
 	if (desc.Pool==D3DPOOL_DEFAULT) {
@@ -1054,8 +1054,7 @@ bool D3D9ClientSurface::Clear(DWORD c)
 	}
 	else {
 
-		if (Type==D3D9S_TEXTURE) ConvertToRenderTargetTexture(); // Added 05.02.2013
-
+		if (Type==D3D9S_TEXTURE) return false; // ConvertToRenderTargetTexture(); // Added 05.02.2013
 		if (pDevice->ColorFill(pSurf, NULL, c)!=S_OK) {
 			LogErr("GPU ColorFill Failed");
 			LogSpecs("Surface");
