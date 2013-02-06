@@ -1027,9 +1027,6 @@ bool D3D9ClientSurface::Clear(DWORD c)
 {
 	DWORD color = 0;
 
-	bClear = true;
-	cClear = c;
-
 	if (desc.Pool==D3DPOOL_SYSTEMMEM || desc.Usage&D3DUSAGE_DYNAMIC) {
 		
 		HDC hDC = GetDCHard();
@@ -1041,6 +1038,9 @@ bool D3D9ClientSurface::Clear(DWORD c)
 			FillRect(hDC, &r, hBrush);
 			DeleteObject(hBrush);
 			ReleaseDC(hDC);
+			LogOk("Clear Surface GDI 0x%X (%s)(%u,%u)", this, name, desc.Width, desc.Height);
+			bClear = true;
+			cClear = c;
 			return true;
 		}
 		else {
@@ -1055,6 +1055,11 @@ bool D3D9ClientSurface::Clear(DWORD c)
 			LogErr("GPU ColorFill Failed");
 			LogSpecs("Surface");
 			return false;
+		}
+		else {
+			LogOk("Clear Surface 0x%X (%s)(%u,%u)", this, name, desc.Width, desc.Height);
+			bClear = true;
+			cClear = c;
 		}
 	}
 	return true;
