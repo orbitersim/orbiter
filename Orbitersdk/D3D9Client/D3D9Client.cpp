@@ -673,7 +673,7 @@ void D3D9Client::clbkRenderScene()
 		scene->UpdateCamVis();	// Update Camera and Visuals
 		
 		bScene = true;
-		scene->Render();		// Render the main scene
+		scene->RenderMainScene();		// Render the main scene
 		bScene = false;
 
 		Label[0]=0;

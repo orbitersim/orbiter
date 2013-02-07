@@ -91,12 +91,17 @@ public:
 	/**
 	 * \brief Update camera position, visuals, etc.
 	 */
-	void Update ();
+	void Update();
 
 	/**
-	 * \brief Render the whole scene
+	 * \brief Render the whole main scene
 	 */
-	void Render ();
+	void RenderMainScene();
+
+	/**
+	 * \brief Render a secondary scene
+	 */
+	void RenderSecondaryScene();
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -134,9 +139,10 @@ public:
 
 	// Camera Interface
 	//
-	void		SetCameraAperture(double _ap);
+	void		SetCameraAperture(double _ap, double _as);
 	void		SetCameraFustrumLimits(double nearlimit, double farlimit);
 	void		UpdateCameraFromOrbiter();
+	void		SetupCustomCamera(VECTOR3 pos, MATRIX3 grot, double apr, double asp);
 
 	bool		CameraPan(VECTOR3 pan, double speed);
 	bool		IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
@@ -144,7 +150,6 @@ public:
 	float		GetCameraFarPlane() const { return farplane; }
 	float		GetCameraAperture() const { return (float)aperture; }
 	VECTOR3		GetCameraGPos() const { return camera_pos; }
-	//VECTOR3		GetCameraRPos() const { return camera_rpos; }
 	VECTOR3		GetCameraGDir() const { return camera_dir; }
 	OBJHANDLE	GetCameraProxyBody() const { return hObj_proxy; }
 	double		GetCameraAltitude() const { return alt_proxy; }
@@ -184,7 +189,8 @@ protected:
 
 private:
 
-	DWORD GetActiveParticleEffectCount();
+	DWORD	GetActiveParticleEffectCount();
+	float	ComputeNearClipPlane();
 
 	VOBJREC *FindVisual (OBJHANDLE hObj);
 	// Locate the visual for hObj in the list if present, or return
@@ -240,19 +246,23 @@ private:
 	float  vh,vw,vhf,vwf;
 
 	VECTOR3		camera_pos;		// Global camera position
-	VECTOR3		camera_relpos;	// Relative camera position
+	VECTOR3		camera_relpos;	// Relative camera position (Used by Mesh Debugger)
 	VECTOR3		camera_dir;		// Camera direction
+	VECTOR3		sky_color;
+
 	D3DXVECTOR3 camera_x;
 	D3DXVECTOR3 camera_y;
 	D3DXVECTOR3 camera_z;
 
-	D3DXMATRIX	mView;       // D3D view matrix for current camera state
-	D3DXMATRIX	mProj;       // D3D projection matrix for current camera state
-	D3DXMATRIX	mProjView;	// product of projection and view matrix
+	D3DXMATRIX	mView;			// D3D view matrix for current camera state
+	D3DXMATRIX	mProj;			// D3D projection matrix for current camera state
+	D3DXMATRIX	mProjView;		// product of projection and view matrix
 	D3D9Light*	Lights;
 	D3D9Light	sunLight;
+
 	DWORD		nLights;
 	DWORD		maxlight;
+	DWORD		nplanets;		// Number of distance sorted planets to render
 
 	oapi::Font *pAxisFont;
 	oapi::Font *pLabelFont;
@@ -261,9 +271,11 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	OBJHANDLE hObj_proxy;   // closest celestial body
-	OBJHANDLE hCameraTarget;
-	double alt_proxy;       // camera distance to surface of hObj_proxy
+	class vVessel *vFocus;
+
+	OBJHANDLE hObj_proxy;		// closest celestial body
+	OBJHANDLE hCameraTarget;	// Current camera target, Mesh Debugger Related
+	double alt_proxy;			// camera distance to surface of hObj_proxy
 	double dVisualAppRad;
 
 	// Rendering Technique related parameters ============================================

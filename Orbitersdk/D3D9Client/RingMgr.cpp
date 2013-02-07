@@ -29,6 +29,8 @@ RingManager::RingManager (const vPlanet *vplanet, double inner_rad, double outer
 	rres = (DWORD)-1;
 	tres = 0;
 	ntex = 0;
+	pTex = NULL;
+
 	for (DWORD i = 0; i < MAXRINGRES; i++) {
 		mesh[i] = 0;
 		tex[i] = 0;
@@ -40,6 +42,7 @@ RingManager::~RingManager ()
 	DWORD i;
 	for (i = 0; i < 3; i++)	if (mesh[i]) delete mesh[i];
 	for (i = 0; i < ntex; i++) ReleaseTex(tex[i]);
+	if (pTex) pTex->Release();
 }
 
 void RingManager::GlobalInit(D3D9Client *gclient)
@@ -72,13 +75,10 @@ DWORD RingManager::LoadTextures ()
 	int size = max(min(caps->MaxTextureWidth, 8192), 2048);
 
 	sprintf_s(path, 512, "Textures/%s_ring_%d.dds", fname, size);
-	pTex = NULL;
-
+	
 	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, D3DFMT_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 		LogAlw("High resolution ring texture loaded [%s]",path);
 	}
-	
-	
 	
 	// Fallback for old method
 	strcat_s(fname, 256, "_ring.tex");
