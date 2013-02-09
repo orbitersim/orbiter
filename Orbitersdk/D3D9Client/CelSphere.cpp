@@ -84,12 +84,12 @@ void CelestialSphere::LoadStars ()
 		float lng, lat, mag;
 	} *data = new StarRec[buflen];
 
-	if (prm->mag_lo <= prm->mag_hi) return;
+	if (prm->mag_lo <= prm->mag_hi) { delete []data; return; }
 
 	// Read binary data from file
 	FILE *f;
 	fopen_s(&f, "Star.bin", "rb");
-	if (!f) return;
+	if (!f) { delete []data; return; }
 	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
 		for (i = 0; i < nv; i++)
