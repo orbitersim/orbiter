@@ -920,7 +920,7 @@ void Scene::RenderMainScene()
   
 	// Render Planets
 
-	for (int i=0;i<nplanets;i++) {
+	for (DWORD i=0;i<nplanets;i++) {
 
 		// double nplane, fplane;
 		// plist[i].vo->RenderZRange (&nplane, &fplane);
@@ -1220,7 +1220,7 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc)
 
 	// render planets -------------------------------------------
 	//
-	for (int i=0;i<nplanets;i++) {
+	for (DWORD i=0;i<nplanets;i++) {
 		OBJHANDLE hObj = plist[i].vo->Object();
 		bool isActive = plist[i].vo->IsActive();
 		if (isActive) plist[i].vo->Render(pDevice);

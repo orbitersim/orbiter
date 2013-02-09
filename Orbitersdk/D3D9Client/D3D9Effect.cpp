@@ -435,7 +435,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	float radlimit = float(rad) + 1.0f;
 	
-	D3DXVECTOR4 atm_color(0.3, 0.3, 0.3, 1.0);
+	D3DXVECTOR4 atm_color(0.3f, 0.3f, 0.3f, 1.0);
 
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
 
@@ -450,7 +450,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	D3DXVECTOR3 cmo = gc->GetScene()->GetCameraOffset();
 	//D3DXVECTOR3 plr = D3DXVEC(refl);
 
-	float proxy_size = asin(min(1.0, rad/len)) + 20.0*PI/180.0;
+	float proxy_size = float(asin(min(1.0, rad/len)) + 20.0*PI/180.0);
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
 	FX->SetValue(eCamOff, &D3DXVECTOR3(float(cmo.x),float(cmo.y),float(cmo.z)), sizeof(D3DXVECTOR3));
