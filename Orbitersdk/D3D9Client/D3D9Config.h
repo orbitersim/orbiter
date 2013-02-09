@@ -26,41 +26,41 @@ public:
 	void WriteParams();
 
 	int PlanetPreloadMode;			///< Planet preload mode setting (0=load on demand, 1=preload)
-	int PlanetLoadFrequency;		///< Load frequency for on-demand textures [Hz] (1...1000)
-	int Anisotrophy;    
-	int SceneAntialias;
-	int DisableDriverManagement;	///< Disable the D3D9 driver management [sets the D3DCREATE_DISABLE_DRIVER_MANAGEMENT behavior flag]  (0=default, 1:disabled)
+	int PlanetLoadFrequency;		///< Load frequency for on-demand textures \[Hz\] (1...1000)
+	int Anisotrophy;				///< Anisotropic filtering setting \[factor\] (1...16)
+	int SceneAntialias;				///< Antialiasing setting \[factor\] (0...)
+	int DisableDriverManagement;	///< Disable the D3D9 driver management \[sets the D3DCREATE_DISABLE_DRIVER_MANAGEMENT behavior flag\]  (0=default, 1:disabled)
 	int DisableVisualHelperReadout;	///< Disable the hooking of the visual helper windows, to allow acces to config parameter that Orbiter core doesn't provide (0=normal mode, 1=disable any hooking)
-	int MemoryLogic;
+	int MemoryLogic;				///< Memory allocation logic used at clbkCreateSurface (0=MakePlainSurface, 1:MakeRenderingTexture)
 	int NearClipPlane;				///< Near clip plane mode (0,1)
-	int RejectRTDC;
+	int RejectRTDC;					///< Whether to reject using GDI access to render target if the suface type is D3D9S_RTGTTEX
 	int PreLBaseVis;				///< Preload base visuals (0=load on demand, 1=preload)
-	int DebugFontSize;
-	int DepthBuffer;
-	int GDIRTSWrn;
+	int DebugFontSize;				///< Debug font height \[pixel\] (default=18px)
+	//int DepthBuffer;				///< Currently not used (default=24)
+	int GDIRTSWrn;					///< Whether to identify RT-GDI conflict by flashing the surface (0,1)
 	int UseNormalMap;				///< Enable normal mapping (0,1)
-	int LoadInSystemMem;
-	int SketchpadMode;
+	int LoadInSystemMem;			///< Whether to load textures into system-memory pool or into default pool (0=default pool, 1=system-memory pool)
+	int SketchpadMode;				///< Sketckpad mode to use (0=auto select DirectX/GDI, 1=use GDI only)
 	int SketchpadFont;				///< Sketchpad Font (0=Crisp, 1=Default, 2=Cleartype, 3=Proof Quality)
 	int RwyLightAnimate;			///< Runway light animate (0,1)
-	double RwyLightAngle;			///< Runway light angle [deg] (10...180)
+	double RwyLightAngle;			///< Runway light angle \[deg\] (10...180)
 	double RwyBrightness;			///< Runway light brightness (0.3...3.0)
-	double RwyHazeScale;
-	double VCNearPlane;
-	double Convergence;
-	double Separation;
-	double SunAngle;
-	double BumpAmp;
-	int DebugLvl;
-	int MaxLights; 
-	int NVPerfHUD;
-	int ManagedTiles;
-	int EnvMapSize;
-	int EnableEnvMaps;
-	char *InSurface;
-	char *DebugFont;
-	char *Shaders;
-	char *SolCfg;
+	//double RwyHazeScale;			///< Currently not used (default=3.0)
+	double VCNearPlane;				///< Virtual cockpit near clip-plane distance \[m\] (-1.0...1.0, default=0.1)
+	double Convergence;				///< StereoScopic 3D convergence distance \[m\] (0.05...1.0, default=0.2)
+	double Separation;				///< StereoScopic 3D depth of field separation \[m\] (10.0...100.0, default=65)
+	double SunAngle;				///< Sun-angle above horizon when night-lights set it \[deg\] (0.1...20.0, default=10)
+	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
+	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
+	int MaxLights;					///< Maximum number of light sources in use (0...12, default=12)
+	int NVPerfHUD;					///< ??? (0,1)
+	int ManagedTiles;				///< Whether to read DDS surfaces managed or un-managed (0,1 default=0)
+	int EnvMapSize;					///< Environment map size (64...512)
+	int EnableEnvMaps;				///< Whether environment maps are enabled (0,1)
+	//char *InSurface;
+	char *DebugFont;				///< Font face for debug lines (default="Fixed")
+	char *Shaders;					///< Shaders set to use. Naming a sub-directory of "Modules/" (default="Default")
+	char *SolCfg;					///< Solar system to use (default="Sol")
 	
 private:
 

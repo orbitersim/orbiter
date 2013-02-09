@@ -73,21 +73,27 @@ void CD3DFramework9::Clear()
 {
 	// NOTE: pD3D won't be cleared in here
 
-	hWnd			  = NULL;              
-    bIsFullscreen	  = false;      
-	bNoVSync		  = false;          
+	hWnd			  = NULL;
+    bIsFullscreen	  = false;
+	bAAEnabled		  = false;
+	bNoVSync		  = false;
 	Alpha			  = false;
 	SWVert			  = false;
 	Pure			  = false;
-	dwRenderWidth	  = 0;    
-    dwRenderHeight	  = 0;  
-	pd3dDevice		  = NULL;         
+	DDM				  = false;
+	bGDIBB			  = false;
+	nvPerfHud		  = false;
+	dwRenderWidth	  = 0;
+    dwRenderHeight	  = 0;
+	dwFSMode		  = 0;
+	pd3dDevice		  = NULL;
 	pLargeFont		  = NULL;
 	pSmallFont		  = NULL;
-	dwZBufferBitDepth = 0;  
-	dwStencilBitDepth = 0; 
+	dwZBufferBitDepth = 0;
+	dwStencilBitDepth = 0;
 	Adapter			  = 0;
 	Mode			  = 0;
+	MultiSample		  = 0;
 	pRenderTarget	  = NULL;
 	pBackBuffer		  = NULL;
 	pEnvDS			  = NULL;

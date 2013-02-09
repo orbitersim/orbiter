@@ -45,7 +45,7 @@ void D3D9Config::Reset ()
 	PreLBaseVis			= 0;
 	GDIRTSWrn			= 0;
 	DebugFontSize		= 18;
-	DepthBuffer			= 24;
+	//DepthBuffer		= 24;
 	UseNormalMap		= 1;
 	LoadInSystemMem     = 0;
 	ManagedTiles		= 0;
@@ -54,7 +54,7 @@ void D3D9Config::Reset ()
 	RwyLightAnimate		= 1;
 	RwyLightAngle		= 120.0;
 	RwyBrightness		= 1.0;
-	RwyHazeScale		= 3.0;
+	//RwyHazeScale		= 3.0;
 	Convergence			= 0.2;
 	Separation			= 65.0;
 	SunAngle			= 10.0;
@@ -96,21 +96,21 @@ bool D3D9Config::ReadParams ()
 
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
-	//if (oapiReadItem_float (hFile, "RwyHazeScale", d))			RwyHazeScale  = max(1.0,  min(30.0,d));
+	//if (oapiReadItem_float (hFile, "RwyHazeScale", d))		RwyHazeScale  = max(1.0,  min(30.0,d));
 
 	oapiReadItem_string (hFile, "Shaders", Shaders);
 
-	if (oapiReadItem_int   (hFile, "DebugLvl", i))				DebugLvl = i;
-	if (oapiReadItem_float (hFile, "VCNearPlane", d))			VCNearPlane = max (-1.0, min (1.0, d));
-	if (oapiReadItem_int   (hFile, "LightSourcesInUse", i))		MaxLights = i;
-	if (oapiReadItem_int   (hFile, "MemAllocLogic", i))			MemoryLogic = i;
-	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))			DisableDriverManagement = i;
-	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))				NVPerfHUD = i;
-	if (oapiReadItem_int   (hFile, "RejectRTDC", i))			RejectRTDC = i;
-	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))	    DebugFontSize = i;	
-	if (oapiReadItem_int   (hFile, "GDIRTSDebug", i))			GDIRTSWrn = i;
-	if (oapiReadItem_int   (hFile, "LoadTexturesInSystemMem",i)) LoadInSystemMem =  max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "ManagedTiles",i))			ManagedTiles =  max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "DebugLvl", i))					DebugLvl = i;
+	if (oapiReadItem_float (hFile, "VCNearPlane", d))				VCNearPlane = max (-1.0, min (1.0, d));
+	if (oapiReadItem_int   (hFile, "LightSourcesInUse", i))			MaxLights = i;
+	if (oapiReadItem_int   (hFile, "MemAllocLogic", i))				MemoryLogic = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))				DisableDriverManagement = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))					NVPerfHUD = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "RejectRTDC", i))				RejectRTDC = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))			DebugFontSize = i;	
+	if (oapiReadItem_int   (hFile, "GDIRTSDebug", i))				GDIRTSWrn = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "LoadTexturesInSystemMem",i))	LoadInSystemMem = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "ManagedTiles",i))				ManagedTiles = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
