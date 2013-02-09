@@ -24,7 +24,7 @@ class BeaconArray;
 class RunwayLights
 {
 public:
-	RunwayLights(OBJHANDLE handle);
+	RunwayLights(OBJHANDLE handle, const class Scene *snc);
 	virtual ~RunwayLights();
 
 	void SetEnd1(VECTOR3 pos);
@@ -45,7 +45,7 @@ public:
 
 	float GetWidth() { return float(width); }
 
-	static int CreateRunwayLights(OBJHANDLE base, const char *file, RunwayLights**& out);
+	static int CreateRunwayLights(OBJHANDLE base, const class Scene *scn, const char *file, RunwayLights**& out);
 
 protected:
 
@@ -84,7 +84,7 @@ protected:
 	BeaconArray* papi[12];
 	
 	const char * filename; 
-
+	const class Scene * scene;
 	float currentTime;	
 };
 
@@ -95,7 +95,7 @@ protected:
 class TaxiLights
 {
 public:
-	TaxiLights(OBJHANDLE handle);
+	TaxiLights(OBJHANDLE handle, const class Scene *scn);
 	virtual ~TaxiLights();
 
 	void SetEnd1(VECTOR3 pos);
@@ -107,7 +107,7 @@ public:
 	void Init();
 	void Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night);
 
-	static int CreateTaxiLights(OBJHANDLE base, const char *file, TaxiLights**& out);
+	static int CreateTaxiLights(OBJHANDLE base, const class Scene *scn, const char *file, TaxiLights**& out);
 
 protected:
 	OBJHANDLE	hObj;
@@ -120,6 +120,7 @@ protected:
 
 	BeaconArray* beacons1;
 	const char * filename; 
+	const class Scene * scene;
 	float		 currentTime;	
 };
 

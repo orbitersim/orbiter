@@ -94,13 +94,16 @@ public:
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev); 
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderAxis (LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp);
+	void RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2);
 	
+	LPDIRECT3DCUBETEXTURE9 GetEnvMap() { return pEnv; }
 	float GetExhaustLength() const { return ExhaustLength; }
 
 	bool HasExtPass();
 	bool const Playback() { return vessel->Playback(); }
 
 protected:
+
 	void LoadMeshes();
 	void InsertMesh(UINT idx);
 	void ClearMeshes();
@@ -139,6 +142,8 @@ private:
 
 	VESSEL *vessel;       // access instance for the vessel
 
+	LPDIRECT3DCUBETEXTURE9 pEnv;
+
 	struct MESHREC {
 		D3D9Mesh *mesh;   // DX7 mesh representation
 		D3DXMATRIX *trans; // mesh transformation matrix (rel. to vessel frame)
@@ -147,7 +152,7 @@ private:
 
 	UINT nmesh;           // number of meshes
 	UINT subsmax;
-
+	int iFace;				// EnvMap Face index
 	bool bAMSO;
 	ANIMATION *anim;      // list of animations (defined in the vessel object)
 	double *animstate;    // list of visual animation states

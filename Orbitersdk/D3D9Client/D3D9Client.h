@@ -520,6 +520,7 @@ public:
 
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
+	
 
 	void EmergencyShutdown();
 	void SplashScreen();
@@ -537,6 +538,8 @@ public:
 	D3DCAPS9 *GetHardwareCaps() { return &caps; }
 	D3D9Stat *GetStats() { return &stats; }
 	FileParser *GetFileParser() { return parser; }
+	LPDIRECT3DSURFACE9  GetEnvDepthStencil() { return pEnvDS; }
+	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
 
 	// overwritten
 	const void *GetConfigParam (DWORD paramtype) const;
@@ -646,6 +649,7 @@ private:
 	LPDIRECT3DSURFACE9		pSplashScreen;
 	LPDIRECT3DSURFACE9		pTextScreen;
 	LPDIRECT3DSURFACE9		pBackBuffer;
+	LPDIRECT3DSURFACE9		pEnvDS;
 	CD3DFramework9*		    pFramework;
 	D3DCAPS9				caps;
 	D3D9Stat				stats;

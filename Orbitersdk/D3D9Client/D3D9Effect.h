@@ -113,6 +113,7 @@ public:
 	static D3DXHANDLE	eUseSpec;
 	static D3DXHANDLE	eUseEmis;
 	static D3DXHANDLE	eDebugHL;
+	static D3DXHANDLE	eEnvMapEnable;
 	static D3DXHANDLE	eMix;
 	static D3DXHANDLE   eColor;
 	static D3DXHANDLE   eFogColor;
@@ -132,6 +133,10 @@ public:
 	static D3DXHANDLE	eFogDensity;
 	static D3DXHANDLE	ePointScale;
 
+	static D3DXHANDLE	eAtmColor;
+	static D3DXHANDLE	eCamOff;
+	static D3DXHANDLE	eProxySize;
+
 	static D3DXHANDLE	eAttennuate;
 	static D3DXHANDLE	eInScatter;
 
@@ -141,6 +146,7 @@ public:
 	static D3DXHANDLE	eTex3;
 	static D3DXHANDLE	eTex4;
 	static D3DXHANDLE	eTex5;
+	static D3DXHANDLE	eEnvMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 

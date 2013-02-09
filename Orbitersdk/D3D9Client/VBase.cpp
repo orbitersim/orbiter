@@ -96,7 +96,7 @@ void vBase::CreateRunwayLights()
 {
 	__TRY {
 		const char *file = gc->GetFileParser()->GetConfigFile(hObj);
-		if (file) numRunwayLights = RunwayLights::CreateRunwayLights(hObj, file, runwayLights);
+		if (file) numRunwayLights = RunwayLights::CreateRunwayLights(hObj, scn, file, runwayLights);
 		else LogErr("Configuration file not found for object 0x%X", hObj);
 	}
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -111,7 +111,7 @@ void vBase::CreateTaxiLights()
 {
 	__TRY {
 		const char *file = gc->GetFileParser()->GetConfigFile(hObj);
-		if (file) numTaxiLights = TaxiLights::CreateTaxiLights(hObj, file, taxiLights);
+		if (file) numTaxiLights = TaxiLights::CreateTaxiLights(hObj, scn, file, taxiLights);
 		else LogErr("Configuration file not found for object 0x%X", hObj);
 	}
 	__EXCEPT(ExcHandler(GetExceptionInformation()))

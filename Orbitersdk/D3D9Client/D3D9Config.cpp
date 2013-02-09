@@ -59,6 +59,8 @@ void D3D9Config::Reset ()
 	Separation			= 65.0;
 	SunAngle			= 10.0;
 	BumpAmp				= 1.0;
+	EnvMapSize		    = 256;
+	EnableEnvMaps		= 0;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -89,6 +91,9 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3,  min(3.0,d));
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
 	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1,  min(10.0,d));
+	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
+	if (oapiReadItem_int   (hFile, "EnableEnvMaps", i))			EnableEnvMaps = max(0, min(1, i));
+
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
 	//if (oapiReadItem_float (hFile, "RwyHazeScale", d))			RwyHazeScale  = max(1.0,  min(30.0,d));
@@ -131,10 +136,14 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "EnableNormalMapping", UseNormalMap);
 	oapiWriteItem_int   (hFile, "NearClipPlaneMode", NearClipPlane);
 	oapiWriteItem_int   (hFile, "RwyLightAnimate", RwyLightAnimate);
+
 	oapiWriteItem_float (hFile, "RwyLightAngle", RwyLightAngle);
 	oapiWriteItem_float (hFile, "RwyBrightness", RwyBrightness);
 	oapiWriteItem_float (hFile, "NightLightsAngle", SunAngle);
 	oapiWriteItem_float (hFile, "BumpMapAmplitude", BumpAmp);	
+	oapiWriteItem_int   (hFile, "EnvMapSize", EnvMapSize);
+	oapiWriteItem_int   (hFile, "EnableEnvMaps", EnableEnvMaps);
+
 	//oapiWriteItem_float (hFile, "RwyHazeScale", RwyHazeScale);
 
 	oapiWriteItem_float (hFile, "StereoSeparation", Separation);

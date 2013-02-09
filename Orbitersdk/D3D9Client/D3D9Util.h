@@ -232,6 +232,11 @@ inline D3DXVECTOR3 D3DXVEC(const VECTOR3 &v)
 	return D3DXVECTOR3(float(v.x), float(v.y), float(v.z));
 }
 
+inline D3DXVECTOR4 D3DXVEC4(const VECTOR3 &v, float w)
+{
+	return D3DXVECTOR4(float(v.x), float(v.y), float(v.z), w);
+}
+
 inline VECTOR3 _VD3DX(const D3DXVECTOR3 &v)
 {
 	return _V(double(v.x), double(v.y), double(v.z));

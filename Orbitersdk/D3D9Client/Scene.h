@@ -99,9 +99,9 @@ public:
 	void RenderMainScene();
 
 	/**
-	 * \brief Render a secondary scene
+	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
-	void RenderSecondaryScene();
+	void RenderSecondaryScene(class vObject *omit);
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -142,7 +142,7 @@ public:
 	void		SetCameraAperture(double _ap, double _as);
 	void		SetCameraFustrumLimits(double nearlimit, double farlimit);
 	void		UpdateCameraFromOrbiter();
-	void		SetupCustomCamera(VECTOR3 pos, MATRIX3 grot, double apr, double asp);
+	void		SetupCustomCamera(D3DXMATRIX mNew, VECTOR3 disp, double apr, double asp);
 
 	bool		CameraPan(VECTOR3 pan, double speed);
 	bool		IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
@@ -153,6 +153,7 @@ public:
 	VECTOR3		GetCameraGDir() const { return camera_dir; }
 	OBJHANDLE	GetCameraProxyBody() const { return hObj_proxy; }
 	double		GetCameraAltitude() const { return alt_proxy; }
+	D3DXVECTOR3 GetCameraOffset() { return camera_offset; }
 
 	const D3DXVECTOR3 *GetCameraX() const { return &camera_x; }
 	const D3DXVECTOR3 *GetCameraY() const { return &camera_y; }
@@ -191,6 +192,7 @@ private:
 
 	DWORD	GetActiveParticleEffectCount();
 	float	ComputeNearClipPlane();
+	void	VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube);
 
 	VOBJREC *FindVisual (OBJHANDLE hObj);
 	// Locate the visual for hObj in the list if present, or return
@@ -244,6 +246,7 @@ private:
 	float  farplane;        // fustrum farplane distance
 	float  apsq;
 	float  vh,vw,vhf,vwf;
+	bool   bCustomCam;		// true if a custom camera mode is in use. (apply camera_offset)
 
 	VECTOR3		camera_pos;		// Global camera position
 	VECTOR3		camera_relpos;	// Relative camera position (Used by Mesh Debugger)
@@ -253,6 +256,7 @@ private:
 	D3DXVECTOR3 camera_x;
 	D3DXVECTOR3 camera_y;
 	D3DXVECTOR3 camera_z;
+	D3DXVECTOR3	camera_offset;	
 
 	D3DXMATRIX	mView;			// D3D view matrix for current camera state
 	D3DXMATRIX	mProj;			// D3D projection matrix for current camera state
@@ -270,6 +274,7 @@ private:
 
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
+	ID3DXRenderToEnvMap *pENV;
 
 	class vVessel *vFocus;
 

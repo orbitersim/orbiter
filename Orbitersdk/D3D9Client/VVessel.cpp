@@ -43,6 +43,8 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
 	bAMSO = false;
+	pEnv = NULL;
+
 
 	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
 
@@ -56,6 +58,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 vVessel::~vVessel ()
 {
+	SAFE_RELEASE(pEnv);
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
 	ClearAnimations();
 	ClearMeshes();
@@ -168,7 +171,6 @@ bool vVessel::HasExtPass()
 	for (DWORD i=0;i<nmesh;i++) if (meshlist[i].vismode&MESHVIS_EXTPASS) return true;
 	return false;
 }
-
 
 bool vVessel::Update()
 {
@@ -464,6 +466,15 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 2); // turn on  fog
 	else										   D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 0); // turn off fog
 
+	if (pEnv) {
+		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eEnvMap, pEnv));
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, true));
+	}
+	else {
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+	}
+	
+
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
 	if (bVC && internalpass) {
@@ -583,6 +594,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, &D3DXVECTOR4(1,0,0,0.75f));
 		}
 	}
+
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false))
 
 	return true;
 }
@@ -885,6 +898,79 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 		} 
 		else mesh->RenderShadows(dev, alpha, &mProjWorld);
 	}
+}
+
+// ============================================================================================
+//
+void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
+{
+	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
+
+	if (!pEnvDS) {
+		LogErr("EnvDepthStencil doesn't exists");	
+		return;
+	}
+	
+	if (pEnv==NULL) {
+		D3DSURFACE_DESC desc;
+		pEnvDS->GetDesc(&desc);
+		//D3DUSAGE_AUTOGENMIPMAP
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv)!=S_OK) {
+			LogErr("Failed to create env cubemap for visual 0x%X",this);
+			return;
+		}
+	}
+
+	MATRIX3 grot;
+	vessel->GetRotationMatrix(grot);
+
+	D3DXMATRIX mEnv, mGlo;
+	D3DXVECTOR3 dir, up;
+
+	D3DXMatrixIdentity(&mGlo);
+	D3DMAT_SetInvRotation(&mGlo, &grot);
+
+	LPDIRECT3DSURFACE9 pORT = NULL;
+	LPDIRECT3DSURFACE9 pODS = NULL;
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+
+	HR(pDev->GetRenderTarget(0, &pORT));
+	HR(pDev->GetDepthStencilSurface(&pODS));
+    HR(pDev->SetDepthStencilSurface(pEnvDS));
+
+	for (DWORD i=0;i<cnt;i++) {
+
+		HR(pEnv->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
+		HR(pDev->SetRenderTarget(0, pSrf));
+
+		EnvMapDirection(iFace, &dir, &up);
+
+		iFace++;
+		if (iFace>=6) iFace = 0;
+
+		D3DXVECTOR3 cp;
+		D3DXVec3Cross(&cp, &up, &dir);
+		D3DXVec3Normalize(&cp, &cp);
+		D3DXMatrixIdentity(&mEnv);
+		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
+
+		D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
+		D3DXMatrixMultiply(&mEnv, &mWorldInv, &mEnv); 
+
+		gc->GetScene()->SetupCustomCamera(mEnv, cpos, 0.7853981634, 1.0);
+		gc->GetScene()->RenderSecondaryScene(this);
+
+		SAFE_RELEASE(pSrf);	
+	}
+
+	 HR(pDev->SetDepthStencilSurface(pODS));
+	 HR(pDev->SetRenderTarget(0, pORT));
+
+	 SAFE_RELEASE(pODS);
+	 SAFE_RELEASE(pORT);
+
+	 //pEnv->SetAutoGenFilterType(D3DTEXF_LINEAR);
+	 //pEnv->GenerateMipSubLevels();
 }
 
 

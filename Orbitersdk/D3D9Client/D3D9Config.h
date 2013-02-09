@@ -55,6 +55,8 @@ public:
 	int MaxLights; 
 	int NVPerfHUD;
 	int ManagedTiles;
+	int EnvMapSize;
+	int EnableEnvMaps;
 	char *InSurface;
 	char *DebugFont;
 	char *Shaders;

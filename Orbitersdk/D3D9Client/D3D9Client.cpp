@@ -335,6 +335,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bGDIBB		= (pFramework->IsGDIBB() == TRUE);
 	bAAEnabled  = (pFramework->IsAAEnabled() == TRUE);
 	viewBPP		= 32;
+	pEnvDS		= pFramework->GetEnvDepthStencil();
 	
 	char fld[] = {"D3D9Client\0"};
 

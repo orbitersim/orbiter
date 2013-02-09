@@ -173,6 +173,7 @@ private:
 	LPDIRECT3DTEXTURE9	  pSpecularMap;
 	LPDIRECT3DTEXTURE9	  pEmissionMap;
 	LPDIRECT3DDEVICE9	  pDevice;
+
 	ID3DXRenderToSurface *pRTS;
 	D3D9ClientSurface    *pSrc_prev;
 	D3DXCOLOR			  ClrKey;

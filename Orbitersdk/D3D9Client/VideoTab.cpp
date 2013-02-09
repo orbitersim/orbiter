@@ -651,9 +651,10 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_SRFPRELOAD, BM_SETCHECK, Config->PlanetPreloadMode==1, 0);
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
-	SendDlgItemMessage(hWnd, IDC_BASEVIS, BM_SETCHECK, Config->PreLBaseVis==1, 0);
-	SendDlgItemMessage(hWnd, IDC_NEARPLANE, BM_SETCHECK, Config->NearClipPlane==1, 0);
-
+	SendDlgItemMessage(hWnd, IDC_ENVMAPS,    BM_SETCHECK, Config->EnableEnvMaps==1, 0);
+	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
+	SendDlgItemMessage(hWnd, IDC_NEARPLANE,  BM_SETCHECK, Config->NearClipPlane==1, 0);
+	
 	sprintf_s(cbuf,32,"%d", Config->PlanetLoadFrequency);
 	SetWindowText(GetDlgItem(hWnd, IDC_HZ), cbuf);
 
@@ -691,16 +692,18 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->SketchpadMode = SendDlgItemMessage (hWnd, IDC_DEVICE, CB_GETCURSEL, 0, 0);
 	Config->SketchpadFont = SendDlgItemMessage (hWnd, IDC_FONT, CB_GETCURSEL, 0, 0);
 	
-	Config->UseNormalMap = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
-	Config->PreLBaseVis = SendDlgItemMessage (hWnd, IDC_BASEVIS, BM_GETCHECK, 0, 0);
-	Config->NearClipPlane = SendDlgItemMessage (hWnd, IDC_NEARPLANE, BM_GETCHECK, 0, 0);
+	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
+	Config->EnableEnvMaps = SendDlgItemMessage (hWnd, IDC_ENVMAPS,    BM_GETCHECK, 0, 0);
+	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
+	Config->NearClipPlane = SendDlgItemMessage (hWnd, IDC_NEARPLANE,  BM_GETCHECK, 0, 0);
 
 	Config->Convergence = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
 	Config->Separation  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
 
+	
 	GetWindowText(GetDlgItem(hWnd, IDC_HZ),  cbuf, 32);
-	Config->PlanetLoadFrequency = atoi(cbuf);
 
+	Config->PlanetLoadFrequency = atoi(cbuf);
 	Config->PlanetPreloadMode = SendDlgItemMessage (hWnd, IDC_SRFPRELOAD, BM_GETCHECK, 0, 0);
 
 	if (SendDlgItemMessage(hWnd, IDC_SHADER, CB_GETCURSEL, 0, 0)==0) {

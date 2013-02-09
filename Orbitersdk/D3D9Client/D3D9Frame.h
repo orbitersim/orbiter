@@ -39,6 +39,7 @@ class D3D9ClientSurface;
 //-----------------------------------------------------------------------------
 class CD3DFramework9
 {
+
     // Internal variables for the framework class
     HWND                 hWnd;               // The window object
     BOOL                 bIsFullscreen;      // Fullscreen vs. windowed
@@ -63,6 +64,7 @@ class CD3DFramework9
 	DWORD				 Mode;
 	DWORD				 MultiSample;
 	LPDIRECT3DSURFACE9	 pRenderTarget;
+	LPDIRECT3DSURFACE9	 pEnvDS;
 	D3D9ClientSurface *  pBackBuffer;
 	class D3D9Config  *  cfg;
 	
@@ -91,6 +93,7 @@ public:
 	inline DWORD				GetHeight() const			 { return dwRenderHeight; }
 	inline const RECT           GetScreenRect() const        { return rcScreenRect; }
 	inline LPDIRECT3DSURFACE9   GetBackBuffer() const		 { return pRenderTarget; }
+	inline LPDIRECT3DSURFACE9   GetEnvDepthStencil() const	 { return pEnvDS; }
 	inline SURFHANDLE			GetBackBufferHandle() const  { return pBackBuffer; }
 	inline LPD3DXFONT			GetLargeFont() const		 { return pLargeFont; }
 	inline LPD3DXFONT			GetSmallFont() const		 { return pSmallFont; }

@@ -82,6 +82,7 @@ D3DXHANDLE D3D9Effect::eTex1 = 0;		// Secaundary texture
 D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
 D3DXHANDLE D3D9Effect::eTex4 = 0;
 D3DXHANDLE D3D9Effect::eTex5 = 0;
+D3DXHANDLE D3D9Effect::eEnvMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -92,6 +93,10 @@ D3DXHANDLE D3D9Effect::eTime = 0;		// FLOAT Simulation elapsed time
 D3DXHANDLE D3D9Effect::eMix = 0;		// FLOAT Auxiliary factor/multiplier
 D3DXHANDLE D3D9Effect::eFogDensity = 0;	// 
 D3DXHANDLE D3D9Effect::ePointScale = 0;
+
+D3DXHANDLE D3D9Effect::eAtmColor = 0;
+D3DXHANDLE D3D9Effect::eCamOff = 0;
+D3DXHANDLE D3D9Effect::eProxySize = 0;
 
 // Shader Flow Controls
 D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multibly material alpha with texture alpha
@@ -105,6 +110,7 @@ D3DXHANDLE D3D9Effect::eNight = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eUseSpec = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseEmis = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 	
 	
 // --------------------------------------------------------------
@@ -293,6 +299,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eUseEmis	  = FX->GetParameterByName(0,"gUseEmis");
 	eUseSpec	  = FX->GetParameterByName(0,"gUseSpec");
 	eDebugHL	  = FX->GetParameterByName(0,"gDebugHL");
+	eEnvMapEnable = FX->GetParameterByName(0,"gEnvMapEnable");
 	eNormalMap	  = FX->GetParameterByName(0,"gNormalMap");
 	eNormalType	  = FX->GetParameterByName(0,"gNormalType");
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
@@ -302,10 +309,13 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eLightCount	  = FX->GetParameterByName(0,"gLightCount");
 	eColor		  = FX->GetParameterByName(0,"gColor");
 	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
+	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eDistScale    = FX->GetParameterByName(0,"gDistScale");
+	eProxySize    = FX->GetParameterByName(0,"gProxySize");
 	eTexOff		  = FX->GetParameterByName(0,"gTexOff");
 	eRadius       = FX->GetParameterByName(0,"gRadius");
 	eCameraPos	  = FX->GetParameterByName(0,"gCameraPos");
+	eCamOff		  = FX->GetParameterByName(0,"gCamOff");
 	eFogDensity	  = FX->GetParameterByName(0,"gFogDensity");
 	eAttennuate	  = FX->GetParameterByName(0,"gAttennuate");
 	eInScatter	  = FX->GetParameterByName(0,"gInScatter");
@@ -327,6 +337,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTex3   = FX->GetParameterByName(0,"gTex3");
 	eTex4   = FX->GetParameterByName(0,"gTex4");
 	eTex5   = FX->GetParameterByName(0,"gTex5");
+	eEnvMap = FX->GetParameterByName(0,"gEnvMap");
 
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
 	eSunAppRad	  = FX->GetParameterByName(0,"gSunAppRad");
@@ -385,12 +396,26 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	oapiGetViewportSize(&width, &height);
 
 	float radlimit = float(rad) + 1.0f;
+	
+	D3DXVECTOR4 atm_color(0.3, 0.3, 0.3, 1.0);
+
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
-	if (atm) radlimit = float(atm->radlimit);
+
+	if (atm) {
+		radlimit = float(atm->radlimit);
+		atm_color = D3DXVEC4(atm->color0, 1.0);
+	}
+	
+	float ap = gc->GetScene()->GetCameraAperture();
+
+	D3DXVECTOR3 cmo = gc->GetScene()->GetCameraOffset();
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
+	FX->SetValue(eCamOff, &D3DXVECTOR3(float(cmo.x),float(cmo.y),float(cmo.z)), sizeof(D3DXVECTOR3));
+	FX->SetVector(eAtmColor, &atm_color);
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
-	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(float(oapiCameraAperture())));
+	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
+	FX->SetFloat(eProxySize, cos(asin(min(1.0, rad/len))));
 }
 
 

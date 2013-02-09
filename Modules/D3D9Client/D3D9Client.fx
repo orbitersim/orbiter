@@ -38,41 +38,49 @@ uniform extern float4x4  gWI;			    // Inverse World matrix
 uniform extern float4x4  gVP;			    // Combined View and Projection matrix
 uniform extern float4x4  gGrpT;	            // Mesh group transformation matrix
 uniform extern float4x4  gGrpTI;	        // Inverse mesh group transformation matrix
-uniform extern float4    gAttennuate;       // Attennuation of fragment color
-uniform extern float4    gInScatter;        // In scattering light
+uniform extern float4    gAttennuate;       // (Mesh Constant Fog) Attennuation of fragment color
+uniform extern float4    gInScatter;        // (Mesh Constant Fog) In scattering light
 uniform extern float4    gColor;            // General purpose color parameter
 uniform extern float4    gFogColor;         // Distance fog color in "Legacy" implementation
-uniform extern float4    gTexOff;   
+uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
+uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector 
+uniform extern float3    gCamOff;			// Custom camera offset
 uniform extern Light     gLights[12];     
 uniform extern int       gLightCount;      
 uniform extern Light     gSun;			    // Sun light input structure
 uniform extern Mtrl      gMat;			    // Material input structure
 uniform extern Mtrl      gWater;			// Water material input structure
 uniform extern bool      gModAlpha;		    // Configuration input
-uniform extern bool      gFullyLit;
-uniform extern bool      gBrighten;
-uniform extern bool      gNormalMap;
-uniform extern bool      gNormalType;
-uniform extern bool      gTextured;
-uniform extern bool      gClamp;
-uniform extern bool      gNight;
-uniform extern bool      gUseEmis;
-uniform extern bool      gUseSpec;
-uniform extern bool      gDebugHL;			// Debug Highlighting
+uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
+uniform extern bool      gBrighten;				
+uniform extern bool      gNormalMap;		// Enable Normal Maps
+uniform extern bool      gNormalType;		// Normal map type selector
+uniform extern bool      gTextured;			// Enable Diffuse Texturing
+uniform extern bool      gClamp;			// Texture addressing mode Clamp/Wrap
+uniform extern bool      gNight;			// Nighttime/Daytime
+uniform extern bool      gUseEmis;			// Enable Emission Maps
+uniform extern bool      gUseSpec;			// Enable Specular Maps
+uniform extern bool      gDebugHL;			// Enable Debug Highlighting
+uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
+uniform extern float     gProxySize;		// Cosine of angular size of the Proxy Gbody.
 uniform extern float     gPointScale;
 uniform extern float     gDistScale;
 uniform extern float     gFogDensity;
 uniform extern float     gTime;			  
-uniform extern float     gMix;
-uniform extern texture   gTex0;			    
-uniform extern texture   gTex1;			    
-uniform extern texture   gTex3;	
+uniform extern float     gMix;				// General purpose parameter (multible uses)
+
+// Textures -----------------------------------------------------------------
+
+uniform extern texture   gTex0;			    // Diffuse texture
+uniform extern texture   gTex1;			    // Nightlights
+uniform extern texture   gTex3;				// Normal Map / Cloud Microtexture
 uniform extern texture   gTex4;				// Specular Map
 uniform extern texture   gTex5;		    	// Emission Map
+uniform extern texture   gEnvMap;	    	// Environment Map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -283,6 +291,17 @@ sampler RingS = sampler_state       // Planetary rings sampler
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
     AddressV = WRAP;
+};
+
+sampler EnvMapS = sampler_state       // Planetary rings sampler
+{
+	Texture = <gEnvMap>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+    AddressV = CLAMP;
+    AddressW = CLAMP;
 };
 
 

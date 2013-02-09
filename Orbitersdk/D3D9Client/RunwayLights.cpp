@@ -18,8 +18,9 @@
 #include "D3D9Util.h"
 #include <vector>
 
-RunwayLights::RunwayLights(OBJHANDLE handle)
+RunwayLights::RunwayLights(OBJHANDLE handle, const class Scene *scn)
 {
+	scene = scn;
 	end1 = _V(0, 0, 0);
 	end2 = _V(0, 0, 0);
 	width = 50.0;
@@ -724,10 +725,9 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 	if (Config->RwyLightAnimate==0) currentTime = 0.5f;
 
 	VECTOR3 dir = unit(end2 - end1); // Vector of the runway
-	VECTOR3 camDir;
+	VECTOR3 camDir = scene->GetCameraGDir();
 	D3DXVECTOR3 dirGlo;
-	oapiCameraGlobalDir(&camDir);
-
+	
 	D3DXVec3TransformNormal(&dirGlo, &D3DXVEC(dir), world);
 	
 	if (D3DXVec3Dot(&D3DXVEC(camDir), &dirGlo) > 0)
@@ -764,7 +764,7 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 }
 
 
-int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, RunwayLights**& out)
+int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, const char *filename, RunwayLights**& out)
 {
 	int numRunwayLights = 0;
 	std::vector<RunwayLights*> lights;
@@ -784,7 +784,7 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, Runwa
 		if(!strncmp(cbuf, "RUNWAYLIGHTS", 12))
 		{
 			numRunwayLights++;
-			lights.push_back(new RunwayLights(base));
+			lights.push_back(new RunwayLights(base, scn));
 			
 			for(;;)
 			{
@@ -929,8 +929,9 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const char *filename, Runwa
 // ==============================================================
 
 
-TaxiLights::TaxiLights(OBJHANDLE handle)
+TaxiLights::TaxiLights(OBJHANDLE handle, const class Scene *scn)
 {
+	scene = scn;
 	end1  = _V(0, 0, 0);
 	end2  = _V(0, 0, 0);
 	color = _V(1, 1, 1);
@@ -1014,9 +1015,7 @@ void TaxiLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 	if (night) beacons1->Render(dev, world, 0.5f);
 }
 
-
-
-int TaxiLights::CreateTaxiLights(OBJHANDLE base, const char *filename, TaxiLights**& out)
+int TaxiLights::CreateTaxiLights(OBJHANDLE base, const class Scene *scn, const char *filename, TaxiLights**& out)
 {
 	int numTaxiLights = 0;
 	std::vector<TaxiLights*> lights;
@@ -1034,7 +1033,7 @@ int TaxiLights::CreateTaxiLights(OBJHANDLE base, const char *filename, TaxiLight
 		if(!strncmp(cbuf, "BEACONARRAY", 11))
 		{
 			numTaxiLights++;
-			lights.push_back(new TaxiLights(base));
+			lights.push_back(new TaxiLights(base, scn));
 			
 			for(;;)
 			{

@@ -8,12 +8,12 @@ struct AdvancedVS
 {
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;     
-    half3  nrmW     : TEXCOORD1;
+    float3 nrmW     : TEXCOORD1;
     half4  diffuse  : COLOR0;           // (Local Light) Diffuse color
     half4  spec     : COLOR1;           // (Local Light) Specular color
     half4  atten    : TEXCOORD2;        // (Atmospheric haze) Attennuate incoming fragment color
     half4  insca    : TEXCOORD3;        // (Atmospheric haze) "Inscatter" Add to incoming fragment color
-    half2  tex0     : TEXCOORD4;
+    float2 tex0     : TEXCOORD4;
 };
 
 struct TileMeshVS
@@ -50,6 +50,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     nrmW = normalize(nrmW);
 
 	// A vector from the vertex to the camera
+	
 	outVS.CamW  = -posW;
 	outVS.tex0  = vrt.tex0;
     outVS.nrmW  = nrmW;
@@ -63,6 +64,11 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
     outVS.insca *= (gSun.diffuse+gSun.ambient);
+    
+    // Earth "glow" ------------------------------------------------------------
+    //float dota = -dot(gCameraPos, nrmW);
+	//float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
+	//outVS.diffuse += gAtmColor * pow(angl, 0.2) * 0.1;
 
     return outVS;
 }
@@ -93,6 +99,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 		cSpe.a *= 80.0f;
 	}
 
+
     float3 r = reflect(gSun.direction, nrmW);
     float  d = max(0,dot(-gSun.direction, nrmW));
 	float  s = pow(max(dot(r, CamW), 0.0f), cSpe.a); 
@@ -102,12 +109,19 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     half3 diff = gMat.diffuse.rgb  * (frg.diffuse.rgb + d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
 	half3 spec = cSpe.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
 
+	if (gEnvMapEnable) {
+		float  r = pow(saturate(smoothstep(0.0, 80.0, cSpe.a)), 2);  // Specular to reflection mapping
+		float3 v = reflect(-CamW, nrmW);
+		float3 s = r * texCUBE(EnvMapS, v);
+		//spec += cTex.rgb * cSpe.rgb * s;
+		spec += cSpe.rgb * s;
+	}
+	
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     // -------------------------------------------------------------------------
-	half3 color  = cTex.rgb * saturate(diff) + saturate(spec);
-    //float3 color  = dayTex.rgb * diff + spec;
-    //float3 color = 1.0f - exp(-1.0f*(dayTex.rgb*diff+spec));
+	  float3 color  = cTex.rgb * saturate(diff) + saturate(spec);   // Standard lighting
+    //    float3 color = 1.0f - exp(-1.0f*(cTex.rgb*diff+spec));		 // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 

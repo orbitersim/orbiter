@@ -90,6 +90,7 @@ void CD3DFramework9::Clear()
 	Mode			  = 0;
 	pRenderTarget	  = NULL;
 	pBackBuffer		  = NULL;
+	pEnvDS			  = NULL;
 
 	memset((void *)&rcScreenRect, 0, sizeof(RECT));
 	memset((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
@@ -115,6 +116,7 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pMeshVertexDecl);
 	SAFE_RELEASE(pPatchVertexDecl);
 	SAFE_RELEASE(pGPUBlitDecl);
+	SAFE_RELEASE(pEnvDS);
 	
 	if (pd3dDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
 	else									LogErr("[Failed to Reset DirectX Device]");				
@@ -377,6 +379,13 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	strcpy(fontDesc.FaceName, "Arial");
 
 	HR(D3DXCreateFontIndirect(pd3dDevice, &fontDesc, &pSmallFont));
+
+	DWORD EnvMapSize = Config->EnvMapSize;
+
+	if (Config->EnableEnvMaps) {
+		HR(pd3dDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
+	}
+	else pEnvDS = NULL;
 
 	LogOk("[3DDevice Initialized]");
     return S_OK;

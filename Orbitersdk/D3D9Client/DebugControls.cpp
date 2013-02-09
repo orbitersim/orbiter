@@ -89,6 +89,7 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_AMBIENT,	    (SendDlgItemMessageA(hDlg, IDC_DBG_AMBIENT, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_WIREFRAME,	(SendDlgItemMessageA(hDlg, IDC_DBG_WIRE, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_DUALSIDED,	(SendDlgItemMessageA(hDlg, IDC_DBG_DUAL, BM_GETCHECK, 0, 0)==BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_DSPENVMAP,	(SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, BM_GETCHECK, 0, 0)==BST_CHECKED));
 }
 
 void OpenDlgClbk(void *context)
@@ -307,6 +308,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_TILES:
 			case IDC_DBG_WIRE:
 			case IDC_DBG_DUAL:
+			case IDC_DBG_ENVMAP:
 				UpdateFlags();
 				break;
 		

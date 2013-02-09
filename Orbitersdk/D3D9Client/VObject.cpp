@@ -148,13 +148,13 @@ const char *vObject::GetName()
 bool vObject::IsVisible()
 {
 	VECTOR3 pos  = GetBoundingSpherePos();
-	//VECTOR3 cpos = gc->GetScene()->GetCameraRPos();
 	float rad = GetBoundingSphereRadius();
+
 	bool bVis = gc->GetScene()->IsVisibleInCamera(&D3DXVEC(pos), rad);
 
 	if (bVis) {
 		double brad = oapiGetSize(gc->GetScene()->GetCameraProxyBody());
-		double crad = cdist; //length(gc->GetScene()->GetCameraRPos());
+		double crad = cdist;
 		double alfa = acos(brad/crad);
 		double trad = length(pos+cpos);
 		double beta = acos(dotp(pos+cpos, cpos)/(crad*trad));

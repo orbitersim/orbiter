@@ -339,3 +339,38 @@ void D9AddAABB(const D9BBox *in, const D3DXMATRIX *pM, D9BBox *out, bool bReset)
 	XMStoreFloat4((XMFLOAT4*)&out->min, mi);
 	XMStoreFloat4((XMFLOAT4*)&out->max, mx);
 }
+
+
+void EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up)
+{
+    switch (dir) {
+        case 0:
+            *Dir = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+            *Up  = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+            break;
+        case 1:
+            *Dir = D3DXVECTOR3(-1.0f, 0.0f, 0.0f);
+            *Up  = D3DXVECTOR3( 0.0f, 1.0f, 0.0f);
+            break;
+        case 2:
+            *Dir = D3DXVECTOR3(0.0f, 1.0f,  0.0f);
+            *Up  = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
+            break;
+        case 3:
+            *Dir = D3DXVECTOR3(0.0f, -1.0f, 0.0f);
+            *Up  = D3DXVECTOR3(0.0f,  0.0f, 1.0f);
+            break;
+        case 4:
+            *Dir = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+            *Up  = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+            break;
+        case 5:
+            *Dir = D3DXVECTOR3(0.0f, 0.0f, -1.0f);
+            *Up  = D3DXVECTOR3(0.0f, 1.0f,  0.0f);
+            break;
+		default:
+			*Dir = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			*Up  = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			break;
+    }
+}

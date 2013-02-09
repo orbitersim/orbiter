@@ -38,5 +38,6 @@ bool		D9IsAABBVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4
 bool		D9IsBSVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *F);
 D3DXVECTOR4	D9LinearFieldOfView(const D3DXMATRIX *pProj);
 D3DXVECTOR4	D9OffsetRange(double R, double r);
+void		EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up);
 
 #endif
