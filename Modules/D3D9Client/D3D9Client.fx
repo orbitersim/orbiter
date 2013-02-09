@@ -47,6 +47,7 @@ uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector 
 uniform extern float3    gCamOff;			// Custom camera offset
+uniform extern float3    gReflDir;			// Planet/Sun reflection direction, Unit vector
 uniform extern Light     gLights[12];     
 uniform extern int       gLightCount;      
 uniform extern Light     gSun;			    // Sun light input structure
@@ -66,7 +67,7 @@ uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
-uniform extern float     gProxySize;		// Cosine of angular size of the Proxy Gbody.
+uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
 uniform extern float     gPointScale;
 uniform extern float     gDistScale;
 uniform extern float     gFogDensity;

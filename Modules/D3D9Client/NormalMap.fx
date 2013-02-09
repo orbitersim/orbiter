@@ -54,6 +54,12 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
     outVS.insca *= (gSun.diffuse+gSun.ambient);
+    
+    // Earth "glow" ------------------------------------------------------------
+    float dotb = saturate(-dot(gCameraPos, gSun.direction));
+    float dota = -dot(gCameraPos, nrmW);
+	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
+	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
    
     return outVS;
 }

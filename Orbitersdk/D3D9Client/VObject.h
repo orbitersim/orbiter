@@ -196,6 +196,8 @@ public:
 	void RenderDot(LPDIRECT3DDEVICE9 dev);
 	
 
+	bool bOmit;			// Omit this object from scene rendering
+
 protected:
 
 	void RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape);
@@ -209,6 +211,7 @@ protected:
 	D9BBox			BBox;
 	bool			bBSRecompute;
 
+	
 	bool active;		// visual is active (within camera range)
 	OBJHANDLE hObj;		// handle for the "logical" object
 	const Scene *scn;	// The scene to which the object belongs

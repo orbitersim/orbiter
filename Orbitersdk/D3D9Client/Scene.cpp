@@ -1175,7 +1175,7 @@ void Scene::RenderMainScene()
 
 // ===========================================================================================
 //
-void Scene::RenderSecondaryScene(vObject *omit)
+void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc)
 {
 	_TRACE;
 
@@ -1184,14 +1184,39 @@ void Scene::RenderSecondaryScene(vObject *omit)
 
 	HR(pDevice->BeginScene());
 
-	float znear = 0.5f;
+	VOBJREC *pv = NULL;
+
+	for (pv=vobjFirst; pv; pv=pv->next) pv->vobj->bOmit = false;
+
 
 	if (omit) {
+
+		omit->bOmit = true;
+
 		OBJHANDLE hObj = omit->GetObjectA();
-		if (hObj) znear = oapiGetSize(hObj);
+
+		if (oapiIsVessel(hObj) && bOmitAtc) {
+
+			VESSEL *hVes = oapiGetVesselInterface(hObj);
+			
+			DWORD nAtc = hVes->AttachmentCount(false);
+
+			for (DWORD i=0;i<nAtc;i++) {
+				
+				ATTACHMENTHANDLE hAtc = hVes->GetAttachmentHandle(false, i);
+
+				if (hAtc) {
+					OBJHANDLE hAtcObj = hVes->GetAttachmentStatus(hAtc);
+					if (hAtcObj) {
+						vObject *vObj = GetVisObject(hAtcObj);
+						vObj->bOmit = true;
+					}
+				}
+			}
+		}
 	}
 
-	SetCameraFustrumLimits(znear, 2e7f);
+	SetCameraFustrumLimits(0.1f, 2e7f);
 
 	// render planets -------------------------------------------
 	//
@@ -1204,12 +1229,10 @@ void Scene::RenderSecondaryScene(vObject *omit)
 
 	// render the vessel objects --------------------------------
 	// 
-	VOBJREC *pv = NULL;
-
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
 		if (!pv->vobj->IsVisible()) continue;
-		if (pv->vobj == omit) continue;
+		if (pv->vobj->bOmit) continue;
 		OBJHANDLE hObj = pv->vobj->Object();
 		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
 	}
@@ -1220,7 +1243,7 @@ void Scene::RenderSecondaryScene(vObject *omit)
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
 		if (!pv->vobj->IsVisible()) continue;
-		if (pv->vobj == omit) continue;
+		if (pv->vobj->bOmit) continue;
 		OBJHANDLE hObj = pv->vobj->Object();
 		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) ((vVessel*)pv->vobj)->RenderExhaust();
 	}
@@ -1229,7 +1252,7 @@ void Scene::RenderSecondaryScene(vObject *omit)
 	//
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
-		if (pv->vobj == omit) continue;
+		if (pv->vobj->bOmit) continue;
 		pv->vobj->RenderBeacons(pDevice);
 	}
 

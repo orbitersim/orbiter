@@ -101,7 +101,7 @@ public:
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
-	void RenderSecondaryScene(class vObject *omit);
+	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false);
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces

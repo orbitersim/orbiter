@@ -128,10 +128,12 @@ public:
 	static D3DXHANDLE   eTime;
 	static D3DXHANDLE	eExposure;
 	static D3DXHANDLE	eCameraPos;	
+	static D3DXHANDLE	eReflDir;
 	static D3DXHANDLE   eDistScale;
 	static D3DXHANDLE   eRadius;
 	static D3DXHANDLE	eFogDensity;
 	static D3DXHANDLE	ePointScale;
+	static D3DXHANDLE	eReflSize;
 
 	static D3DXHANDLE	eAtmColor;
 	static D3DXHANDLE	eCamOff;

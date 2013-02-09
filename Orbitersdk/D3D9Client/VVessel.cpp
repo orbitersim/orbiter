@@ -958,7 +958,7 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
 		D3DXMatrixMultiply(&mEnv, &mWorldInv, &mEnv); 
 
 		gc->GetScene()->SetupCustomCamera(mEnv, cpos, 0.7853981634, 1.0);
-		gc->GetScene()->RenderSecondaryScene(this);
+		gc->GetScene()->RenderSecondaryScene(this, true);
 
 		SAFE_RELEASE(pSrf);	
 	}

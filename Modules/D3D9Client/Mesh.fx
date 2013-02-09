@@ -66,9 +66,11 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     outVS.insca *= (gSun.diffuse+gSun.ambient);
     
     // Earth "glow" ------------------------------------------------------------
-    //float dota = -dot(gCameraPos, nrmW);
-	//float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	//outVS.diffuse += gAtmColor * pow(angl, 0.2) * 0.1;
+    float dotb = saturate(-dot(gCameraPos, gSun.direction));
+    float dota = -dot(gCameraPos, nrmW);
+	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
+	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
+	
 
     return outVS;
 }
