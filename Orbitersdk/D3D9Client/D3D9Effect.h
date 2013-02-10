@@ -54,11 +54,13 @@ public:
 
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DVERTEXBUFFER9 pVB;
-	
+	static LPDIRECT3DCUBETEXTURE9 pNoiseCube;
+
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
 	static D3D9Client   *gc;
 	static D3D9Mesh     *hArrow;
+	
 
 	// Techniques ----------------------------------------------------
 	static D3DXHANDLE	eVesselTech;
@@ -149,6 +151,7 @@ public:
 	static D3DXHANDLE	eTex4;
 	static D3DXHANDLE	eTex5;
 	static D3DXHANDLE	eEnvMap;
+	static D3DXHANDLE	eNoiseCube;
 
 	// Legacy Atmosphere -----------------------------------------------
 

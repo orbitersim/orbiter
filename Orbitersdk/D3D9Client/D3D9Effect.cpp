@@ -28,6 +28,7 @@ D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
+LPDIRECT3DCUBETEXTURE9 D3D9Effect::pNoiseCube = 0;
 
 // Some general rendering techniques
 D3DXHANDLE D3D9Effect::ePanelTech = 0;		// Used to draw a new style 2D panel
@@ -83,6 +84,7 @@ D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
 D3DXHANDLE D3D9Effect::eTex4 = 0;
 D3DXHANDLE D3D9Effect::eTex5 = 0;
 D3DXHANDLE D3D9Effect::eEnvMap = 0;
+D3DXHANDLE D3D9Effect::eNoiseCube = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -180,6 +182,7 @@ void D3D9Effect::GlobalExit()
 	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
 	SAFE_RELEASE(pVB);
+	SAFE_RELEASE(pNoiseCube);
 	SAFE_DELETE(hArrow);
 }
 
@@ -278,7 +281,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eVCHudTech	 = FX->GetTechniqueByName("VCHudTech");
 	eVCTech		 = FX->GetTechniqueByName("VCTech");
 
-
 	eVesselTech		 = FX->GetTechniqueByName("VesselTech");
 	eBaseShadowTech	 = FX->GetTechniqueByName("BaseShadowTech");
 	eBuildingTech	 = FX->GetTechniqueByName("BuildingTech");
@@ -291,10 +293,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eDiffuseTech    = FX->GetTechniqueByName("ParticleDiffuseTech");
 	eEmissiveTech   = FX->GetTechniqueByName("ParticleEmissiveTech");
 	
-	// General parameters -----------------------------------------------------
-
-	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
-	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
+	
+	// Flow Control Booleans -----------------------------------------------
 	eModAlpha	  = FX->GetParameterByName(0,"gModAlpha");
 	eFullyLit	  = FX->GetParameterByName(0,"gFullyLit");
 	eBrighten	  = FX->GetParameterByName(0,"gBrighten");
@@ -307,11 +307,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
 	eClamp		  = FX->GetParameterByName(0,"gClamp");
 	eNight		  = FX->GetParameterByName(0,"gNight");
+	// General parameters -------------------------------------------------- 
+	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
 	eLightCount	  = FX->GetParameterByName(0,"gLightCount");
 	eColor		  = FX->GetParameterByName(0,"gColor");
-	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
-	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eDistScale    = FX->GetParameterByName(0,"gDistScale");
 	eProxySize    = FX->GetParameterByName(0,"gProxySize");
 	eTexOff		  = FX->GetParameterByName(0,"gTexOff");
@@ -320,34 +320,40 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eCamOff		  = FX->GetParameterByName(0,"gCamOff");
 	eReflDir	  = FX->GetParameterByName(0,"gReflDir");
 	eReflSize	  = FX->GetParameterByName(0,"gReflSize");
-	eFogDensity	  = FX->GetParameterByName(0,"gFogDensity");
-	eAttennuate	  = FX->GetParameterByName(0,"gAttennuate");
-	eInScatter	  = FX->GetParameterByName(0,"gInScatter");
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
-	
+	eMix		  = FX->GetParameterByName(0,"gMix");
+	eTime		  = FX->GetParameterByName(0,"gTime");
+	// ----------------------------------------------------------------------
+	eVP			  = FX->GetParameterByName(0,"gVP");
+	eW			  = FX->GetParameterByName(0,"gW");
+	eWI			  = FX->GetParameterByName(0,"gWI");
+	eGT			  = FX->GetParameterByName(0,"gGrpT");
+	eGTI		  = FX->GetParameterByName(0,"gGrpTI");
+	// ----------------------------------------------------------------------
+	eSun		  = FX->GetParameterByName(0,"gSun");
+	eMat		  = FX->GetParameterByName(0,"gMat");
+	eWater		  = FX->GetParameterByName(0,"gWater");
+	// ----------------------------------------------------------------------
+	eTex0		  = FX->GetParameterByName(0,"gTex0");
+	eTex1		  = FX->GetParameterByName(0,"gTex1");
+	eTex3		  = FX->GetParameterByName(0,"gTex3");
+	eTex4		  = FX->GetParameterByName(0,"gTex4");
+	eTex5		  = FX->GetParameterByName(0,"gTex5");
+	eEnvMap		  = FX->GetParameterByName(0,"gEnvMap");
+	eNoiseCube	  = FX->GetParameterByName(0,"gNoiseCube");
 
-	eVP    = FX->GetParameterByName(0,"gVP");
-	eW     = FX->GetParameterByName(0,"gW");
-	eWI    = FX->GetParameterByName(0,"gWI");
-	eGT	   = FX->GetParameterByName(0,"gGrpT");
-	eGTI   = FX->GetParameterByName(0,"gGrpTI");
-	eSun   = FX->GetParameterByName(0,"gSun");
-	eMat   = FX->GetParameterByName(0,"gMat");
-	eWater = FX->GetParameterByName(0,"gWater");
-	eMix   = FX->GetParameterByName(0,"gMix");
-	eTime  = FX->GetParameterByName(0,"gTime");
-
-	eTex0   = FX->GetParameterByName(0,"gTex0");
-	eTex1   = FX->GetParameterByName(0,"gTex1");
-	eTex3   = FX->GetParameterByName(0,"gTex3");
-	eTex4   = FX->GetParameterByName(0,"gTex4");
-	eTex5   = FX->GetParameterByName(0,"gTex5");
-	eEnvMap = FX->GetParameterByName(0,"gEnvMap");
-
+	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
 	eSunAppRad	  = FX->GetParameterByName(0,"gSunAppRad");
 	eAmbient0	  = FX->GetParameterByName(0,"gAmbient0");
 	eDispersion	  = FX->GetParameterByName(0,"gDispersion");
+	eFogDensity	  = FX->GetParameterByName(0,"gFogDensity");
+	eAttennuate	  = FX->GetParameterByName(0,"gAttennuate");
+	eInScatter	  = FX->GetParameterByName(0,"gInScatter");
+	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
+	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
+	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
+
 
 	FX->SetInt(eHazeMode, 0);
 	FX->SetBool(eDebugHL, false);
@@ -355,6 +361,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
 
 
+	// Create a Circle Mesh --------------------------------------------
+	//
 	HR(pDev->CreateVertexBuffer(256*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pVB, NULL));
 
 	D3DXVECTOR3 *pVert;
@@ -372,12 +380,41 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 		pVB->Unlock();
 	} else LogErr("Failed to Lock vertex buffer");
 
+	// Create Arrow Mesh --------------------------------------------
+	//
 	MESHHANDLE hMesh = oapiLoadMesh("D3D9Arrow");
 	hArrow = new D3D9Mesh(gc, hMesh);
 	oapiDeleteMesh(hMesh);
 
 	if (hArrow==NULL) LogErr("D3D9Arrow.msh not found");
-	else hArrow->DumpGroups();
+	
+
+	// Create a noise cube map --------------------------------------
+	//
+	LPDIRECT3DCUBETEXTURE9 pNoiseCubeSM = NULL;
+	HR(D3DXCreateCubeTexture(pDev, 256, 1, 0, D3DFMT_R8G8B8, D3DPOOL_SYSTEMMEM, &pNoiseCubeSM));
+	
+	if (pNoiseCubeSM) {
+		D3DLOCKED_RECT pRect;
+		for (int i=0;i<6;i++) {
+			if (pNoiseCubeSM->LockRect(D3DCUBEMAP_FACES(i), 0, &pRect, NULL, 0)==S_OK) {
+				for (int y=0;y<256;y++) {
+					for (int x=0;x<(256*3);x++) {
+						char *Bits = (char *)pRect.pBits;
+						Bits[x] = char((rand()%255) - 127);
+					}
+				}
+				HR(pNoiseCubeSM->UnlockRect(D3DCUBEMAP_FACES(i), 0));
+			}
+		}
+
+		HR(D3DXCreateCubeTexture(pDev, 256, 1, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pNoiseCube));
+		HR(pDev->UpdateTexture(pNoiseCubeSM, pNoiseCube));
+		pNoiseCubeSM->Release();
+	}
+
+
+
 
 	LogMsg("...rendering technique initialized");
 }
@@ -435,7 +472,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	float radlimit = float(rad) + 1.0f;
 	
-	D3DXVECTOR4 atm_color(0.3f, 0.3f, 0.3f, 1.0);
+	D3DXVECTOR4 atm_color(0.3f, 0.3f, 0.3f, 1.0f);
 
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
 
