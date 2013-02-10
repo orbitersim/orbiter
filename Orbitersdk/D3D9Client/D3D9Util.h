@@ -171,15 +171,23 @@ typedef struct {
 } BAVERTEX;
 
 typedef struct {
-    int			  Type;             /* Type of light source */
-    D3DXCOLOR     Diffuse;          /* diffuse color of light */
-    D3DXCOLOR     Specular;         /* specular color of light */
-    D3DXCOLOR     Ambient;          /* ambient color of light */
-    D3DXVECTOR3   Position;         /* position in world space */
-    D3DXVECTOR3   Direction;        /* direction in world space */
-    D3DXVECTOR3   Attenuation;      /* Attenuation */
-	D3DXVECTOR4   Param;            /* range, falloff, theta, phi */
+    int			  Type;             ///< Type of light source
+    D3DXCOLOR     Diffuse;          ///< diffuse color of light
+    D3DXCOLOR     Specular;         ///< specular color of light
+    D3DXCOLOR     Ambient;          ///< ambient color of light
+    D3DXVECTOR3   Position;         ///< position in world space
+    D3DXVECTOR3   Direction;        ///< direction in world space
+    D3DXVECTOR3   Attenuation;      ///< Attenuation
+	D3DXVECTOR4   Param;            ///< range, falloff, theta, phi
 } D3D9Light;
+
+typedef struct {
+	bool	bEnable;				///< Enable Material extension
+	float	Reflect;				///< Reflectivity 0.0 to 1.0
+	float	DissolveScl;			///< Dissolve effect scale factor 0.20 to 3.0 (typical)
+	float   DissolveSct;			///< Dissolve effect scattering "range" 0.01 to 0.1 (typical)
+	SURFHANDLE pDissolve;			///< Pointer to Dissolve effect texture
+} D3D9MatExt;
 
 #define D3D9LRange 0
 #define D3D9LFalloff 1

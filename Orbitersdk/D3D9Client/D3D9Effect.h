@@ -54,7 +54,7 @@ public:
 
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DVERTEXBUFFER9 pVB;
-	static LPDIRECT3DCUBETEXTURE9 pNoiseCube;
+	static LPDIRECT3DTEXTURE9 pNoiseMap;
 
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
@@ -116,6 +116,7 @@ public:
 	static D3DXHANDLE	eUseEmis;
 	static D3DXHANDLE	eDebugHL;
 	static D3DXHANDLE	eEnvMapEnable;
+	static D3DXHANDLE	eUseDisl;
 	static D3DXHANDLE	eMix;
 	static D3DXHANDLE   eColor;
 	static D3DXHANDLE   eFogColor;
@@ -130,13 +131,11 @@ public:
 	static D3DXHANDLE   eTime;
 	static D3DXHANDLE	eExposure;
 	static D3DXHANDLE	eCameraPos;	
-	static D3DXHANDLE	eReflDir;
+	static D3DXHANDLE	eReflCtrl;
 	static D3DXHANDLE   eDistScale;
 	static D3DXHANDLE   eRadius;
 	static D3DXHANDLE	eFogDensity;
 	static D3DXHANDLE	ePointScale;
-	static D3DXHANDLE	eReflSize;
-
 	static D3DXHANDLE	eAtmColor;
 	static D3DXHANDLE	eCamOff;
 	static D3DXHANDLE	eProxySize;
@@ -151,7 +150,7 @@ public:
 	static D3DXHANDLE	eTex4;
 	static D3DXHANDLE	eTex5;
 	static D3DXHANDLE	eEnvMap;
-	static D3DXHANDLE	eNoiseCube;
+	static D3DXHANDLE	eDislMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 

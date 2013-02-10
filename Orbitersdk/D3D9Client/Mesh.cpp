@@ -131,8 +131,12 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 	for (DWORD i=1;i<nTex;i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
 
 	nMtrl = oapiMeshMaterialCount(hMesh);
-	if (nMtrl) Mtrl = new D3DMATERIAL9[nMtrl];
-	for (DWORD i=0;i<nMtrl;i++)	CopyMaterial(Mtrl+i, oapiMeshMaterial(hMesh, i));
+	if (nMtrl) {
+		Mtrl = new D3DMATERIAL9[nMtrl];
+		MtrlExt = new D3D9MatExt[nMtrl];
+	}
+
+	for (DWORD i=0;i<nMtrl;i++)	CopyMaterial(i, oapiMeshMaterial(hMesh, i));
 
 	ProcessInherit();
 
@@ -240,6 +244,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	Tex[1] = pTex; 
 	nMtrl  = 1;
 	Mtrl   = new D3DMATERIAL9[nMtrl];
+	MtrlExt = new D3D9MatExt[nMtrl];
 
 	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
 	memcpy(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
@@ -257,8 +262,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(NMVERTEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
 	HR(gc->GetDevice()->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
 
-	CopyMaterial(&Mtrl[0], pMat);
-
+	CopyMaterial(0, pMat);
 	CopyGroupEx(Grp[0], pGroup);
 
 	D3DXMatrixIdentity(&mTransform);
@@ -295,6 +299,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	Tex[0] = 0; // 'no texture'
 	nMtrl  = 1;
 	Mtrl   = new D3DMATERIAL9[nMtrl];
+	MtrlExt = new D3D9MatExt[nMtrl];
 
 	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
 	memcpy(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
@@ -312,7 +317,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	HR(gc->GetDevice()->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
 
 	CopyGroupEx(Grp[0], pGroup);
-	CopyMaterial(&Mtrl[0], (const MATERIAL *)&defmat);
+	CopyMaterial(0, (const MATERIAL *)&defmat);
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
@@ -381,8 +386,12 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	for (DWORD i=0;i<nTex;i++) Tex[i] = mesh.Tex[i];
 			
 	nMtrl = mesh.nMtrl;
-	if (nMtrl) Mtrl = new D3DMATERIAL9[nMtrl];
+	if (nMtrl) {
+		Mtrl = new D3DMATERIAL9[nMtrl];
+		MtrlExt = new D3D9MatExt[nMtrl];
+	}
 	memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3DMATERIAL9));
+	memcpy (MtrlExt, mesh.MtrlExt, nMtrl*sizeof(D3D9MatExt));
 
 	// ATTENTION:  Do we need to copy transformations
 	mTransform = mesh.mTransform;
@@ -417,7 +426,10 @@ D3D9Mesh::~D3D9Mesh()
 	
 	if (Grp) delete []Grp; 
 	if (nTex) delete []Tex;
-	if (nMtrl) delete []Mtrl;
+	if (nMtrl) {
+		delete []Mtrl;
+		delete []MtrlExt;
+	}
 
 	if (pIB) pIB->Release();
 	if (pVB) pVB->Release();
@@ -750,11 +762,14 @@ void D3D9Mesh::UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg)
 
 
 // ===========================================================================================
+// Use this only to initialise default materials in a D3D9Mesh constructor
+// Material extension part is set to zero.
 //
-bool D3D9Mesh::CopyMaterial(D3DMATERIAL9 *mat9, const MATERIAL *mat)
+bool D3D9Mesh::CopyMaterial(int idx, const MATERIAL *mat)
 {
 	if (!pVB) return true;
-	memcpy (mat9, mat, sizeof (D3DMATERIAL9));
+	memcpy(&Mtrl[idx], mat, sizeof (D3DMATERIAL9));
+	memset(&MtrlExt[idx], 0, sizeof (D3D9MatExt));
 	return true;
 }
 

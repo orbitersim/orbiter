@@ -45,9 +45,9 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
+uniform extern float4    gReflCtrl;			// Reflection control params. (MaxSpecPower, Dissolve Scale Factor, Dissolve Power, Scale factor for refl color) 
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector 
 uniform extern float3    gCamOff;			// Custom camera offset
-uniform extern float3    gReflDir;			// Planet/Sun reflection direction, Unit vector
 uniform extern Light     gLights[12];     
 uniform extern int       gLightCount;      
 uniform extern Light     gSun;			    // Sun light input structure
@@ -65,6 +65,7 @@ uniform extern bool      gUseEmis;			// Enable Emission Maps
 uniform extern bool      gUseSpec;			// Enable Specular Maps
 uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
+uniform extern bool      gUseDisl;			// Enable dissolve effect
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
@@ -82,6 +83,7 @@ uniform extern texture   gTex3;				// Normal Map / Cloud Microtexture
 uniform extern texture   gTex4;				// Specular Map
 uniform extern texture   gTex5;		    	// Emission Map
 uniform extern texture   gEnvMap;	    	// Environment Map
+uniform extern texture   gDislMap;   		// Dissolve Map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -303,6 +305,16 @@ sampler EnvMapS = sampler_state       // Planetary rings sampler
 	AddressU = CLAMP;
     AddressV = CLAMP;
     AddressW = CLAMP;
+};
+
+sampler DislMapS = sampler_state       // Planetary rings sampler
+{
+	Texture = <gDislMap>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 

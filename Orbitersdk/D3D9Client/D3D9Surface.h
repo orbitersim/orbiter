@@ -122,6 +122,7 @@ public:
 	HRESULT		BeginBlitGroup();
 	void		EndBlitGroup();
 	int			GetQueueSize();
+	bool		ScanNameSubId(const char *n);
 
 private:
 
@@ -182,7 +183,7 @@ private:
 	LPD3DXMATRIX		  pVP;
 	D3DVIEWPORT9		  *pViewPort;
 
-	char				  name[64];
+	char				  name[256];
 
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//

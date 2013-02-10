@@ -1617,7 +1617,19 @@ bool D3D9ClientSurface::IsPowerOfTwo() const
 //
 void D3D9ClientSurface::SetName(const char *n)
 {
-	strcpy_s(name, 64, n);
+	strcpy_s(name, 256, n);
+	int i = -1;
+	while (name[++i]!=0) if (name[i]=='/') name[i]='\\';
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+bool D3D9ClientSurface::ScanNameSubId(const char *n)
+{
+	char lbl[64];
+	sprintf_s(lbl,64,"\\%s\\",n);
+	if (strstr(name,lbl)) return true;
+	return false;
 }
 
 // -----------------------------------------------------------------------------------------------

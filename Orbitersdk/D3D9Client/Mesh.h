@@ -34,6 +34,7 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define RENDER_VC			4
 #define RENDER_BASEBS		5
 
+ 
 /**
  * \brief Mesh object with D3D9-specific vertex buffer
  *
@@ -125,7 +126,8 @@ public:
 	 * \return Pointer to material object.
 	 */
 	inline D3DMATERIAL9 *GetMaterial(DWORD idx) { return Mtrl+idx; }
-
+	
+	inline D3D9MatExt *GetMaterialExtension(DWORD idx) { return MtrlExt+idx; }
 	/**
 	 * \brief Replace a mesh texture.
 	 * \param texidx texture index (>= 0)
@@ -204,7 +206,7 @@ private:
 	void ProcessInherit();
 	bool CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg);
 	void ClearGroups ();
-	bool CopyMaterial (D3DMATERIAL9 *mat7, const MATERIAL *mat);
+	bool CopyMaterial (int idx, const MATERIAL *mat);
 	void DeleteGroup(GROUPREC *grp);
 	void CheckValidity();
 	void UpdateGeometry();
@@ -224,6 +226,7 @@ private:
 	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
 	DWORD nTex;                 // number of mesh textures
 	D3DMATERIAL9 *Mtrl;         // list of mesh materials
+	D3D9MatExt *MtrlExt;		// list of extended mesh materials
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3D9Light *sunLight;

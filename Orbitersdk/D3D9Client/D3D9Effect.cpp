@@ -28,7 +28,7 @@ D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
-LPDIRECT3DCUBETEXTURE9 D3D9Effect::pNoiseCube = 0;
+LPDIRECT3DTEXTURE9 D3D9Effect::pNoiseMap = 0;
 
 // Some general rendering techniques
 D3DXHANDLE D3D9Effect::ePanelTech = 0;		// Used to draw a new style 2D panel
@@ -84,7 +84,7 @@ D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
 D3DXHANDLE D3D9Effect::eTex4 = 0;
 D3DXHANDLE D3D9Effect::eTex5 = 0;
 D3DXHANDLE D3D9Effect::eEnvMap = 0;
-D3DXHANDLE D3D9Effect::eNoiseCube = 0;
+D3DXHANDLE D3D9Effect::eDislMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -99,7 +99,6 @@ D3DXHANDLE D3D9Effect::ePointScale = 0;
 D3DXHANDLE D3D9Effect::eAtmColor = 0;
 D3DXHANDLE D3D9Effect::eCamOff = 0;
 D3DXHANDLE D3D9Effect::eProxySize = 0;
-D3DXHANDLE D3D9Effect::eReflSize = 0;
 
 // Shader Flow Controls
 D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multibly material alpha with texture alpha
@@ -113,13 +112,15 @@ D3DXHANDLE D3D9Effect::eNight = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eUseSpec = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseEmis = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
+
 	
 	
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
-D3DXHANDLE D3D9Effect::eReflDir = 0;
+D3DXHANDLE D3D9Effect::eReflCtrl = 0;
 D3DXHANDLE D3D9Effect::eDistScale = 0;
 D3DXHANDLE D3D9Effect::eRadius = 0;
 D3DXHANDLE D3D9Effect::eAttennuate = 0;
@@ -182,7 +183,7 @@ void D3D9Effect::GlobalExit()
 	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
 	SAFE_RELEASE(pVB);
-	SAFE_RELEASE(pNoiseCube);
+	SAFE_RELEASE(pNoiseMap);
 	SAFE_DELETE(hArrow);
 }
 
@@ -307,6 +308,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
 	eClamp		  = FX->GetParameterByName(0,"gClamp");
 	eNight		  = FX->GetParameterByName(0,"gNight");
+	eUseDisl	  = FX->GetParameterByName(0,"gUseDisl");
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
@@ -318,8 +320,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eRadius       = FX->GetParameterByName(0,"gRadius");
 	eCameraPos	  = FX->GetParameterByName(0,"gCameraPos");
 	eCamOff		  = FX->GetParameterByName(0,"gCamOff");
-	eReflDir	  = FX->GetParameterByName(0,"gReflDir");
-	eReflSize	  = FX->GetParameterByName(0,"gReflSize");
+	eReflCtrl	  = FX->GetParameterByName(0,"gReflCtrl");
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
 	eMix		  = FX->GetParameterByName(0,"gMix");
 	eTime		  = FX->GetParameterByName(0,"gTime");
@@ -340,7 +341,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTex4		  = FX->GetParameterByName(0,"gTex4");
 	eTex5		  = FX->GetParameterByName(0,"gTex5");
 	eEnvMap		  = FX->GetParameterByName(0,"gEnvMap");
-	eNoiseCube	  = FX->GetParameterByName(0,"gNoiseCube");
+	eDislMap	  = FX->GetParameterByName(0,"gDislMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
@@ -355,10 +356,13 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
 
 
+	// Initialize default values --------------------------------------
+	//
 	FX->SetInt(eHazeMode, 0);
 	FX->SetBool(eDebugHL, false);
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
+	FX->SetVector(eReflCtrl,   &D3DXVECTOR4(0.0f, 1.0f, 0.05f, 1.0f));
 
 
 	// Create a Circle Mesh --------------------------------------------
@@ -389,28 +393,33 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (hArrow==NULL) LogErr("D3D9Arrow.msh not found");
 	
 
-	// Create a noise cube map --------------------------------------
+	// Create a noise map -------------------------------------------
 	//
-	LPDIRECT3DCUBETEXTURE9 pNoiseCubeSM = NULL;
-	HR(D3DXCreateCubeTexture(pDev, 256, 1, 0, D3DFMT_R8G8B8, D3DPOOL_SYSTEMMEM, &pNoiseCubeSM));
+	LPDIRECT3DTEXTURE9 pNoiseSM = NULL;
+	int size = 512;
+	HR(D3DXCreateTexture(pDev, size, size, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pNoiseSM));
 	
-	if (pNoiseCubeSM) {
+	if (pNoiseSM) {
+		int z=0;
 		D3DLOCKED_RECT pRect;
-		for (int i=0;i<6;i++) {
-			if (pNoiseCubeSM->LockRect(D3DCUBEMAP_FACES(i), 0, &pRect, NULL, 0)==S_OK) {
-				for (int y=0;y<256;y++) {
-					for (int x=0;x<(256*3);x++) {
-						char *Bits = (char *)pRect.pBits;
-						Bits[x] = char((rand()%255) - 127);
-					}
-				}
-				HR(pNoiseCubeSM->UnlockRect(D3DCUBEMAP_FACES(i), 0));
+		if (pNoiseSM->LockRect(0, &pRect, NULL, 0)==S_OK) {
+			char *Bits = (char *)pRect.pBits;
+			for (int y=0;y<size;y++) {
+				for (int x=0;x<(size*4);x++) Bits[x+z] = char((rand()%256) - 126);
+				z += pRect.Pitch;
 			}
+			HR(pNoiseSM->UnlockRect(0));
 		}
 
-		HR(D3DXCreateCubeTexture(pDev, 256, 1, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pNoiseCube));
-		HR(pDev->UpdateTexture(pNoiseCubeSM, pNoiseCube));
-		pNoiseCubeSM->Release();
+
+		//HR(D3DXCreateTexture(pDev, size, size, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pNoiseMap));
+		//HR(pDev->UpdateTexture(pNoiseSM, pNoiseMap));
+		pNoiseSM->Release();
+
+
+		HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Hatch3.dds", &pNoiseMap));
+
+		HR(FX->SetTexture(eDislMap, pNoiseMap));
 	}
 
 
@@ -466,9 +475,9 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	sprintf_s(oapiDebugString(),256,"Alpha=%f, Beta=%f, Delta=%f, Size=%f", alpha*180.0/PI, beta*180.0/PI, delta*180.0/PI, sz*180.0/PI);
 	*/
 
-
 	DWORD width, height;
-	oapiGetViewportSize(&width, &height);
+	oapiGetViewportSize(&width, &height); // BUG:  Custom Camera may have different view size
+
 
 	float radlimit = float(rad) + 1.0f;
 	
@@ -491,12 +500,11 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
 	FX->SetValue(eCamOff, &D3DXVECTOR3(float(cmo.x),float(cmo.y),float(cmo.z)), sizeof(D3DXVECTOR3));
-	//FX->SetValue(eReflDir, &D3DXVECTOR3(float(plr.x),float(plr.y),float(plr.z)), sizeof(D3DXVECTOR3));
+	//FX->SetVector(eReflCtrl, &D3DXVECTOR4(float(plr.x),float(plr.y),float(plr.z)));
 	FX->SetVector(eAtmColor, &atm_color);
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));
-	//FX->SetFloat(eReflSize, cos(proxy_size-eps));
 }
 
 

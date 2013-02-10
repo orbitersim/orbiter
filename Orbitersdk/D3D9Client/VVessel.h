@@ -111,6 +111,8 @@ protected:
 	void InitAnimations();
 	void InitAnimations(UINT meshidx);
 	void ClearAnimations();
+	bool LoadCustomConfig();
+	bool ParseIfStatement(const char *cbuf);
 
 	//void CreateExhaust();
 	//void SetExhaustVertices(const VECTOR3 &edir, const VECTOR3 &cdir, const VECTOR3 &ref, double lscale, double wscale);

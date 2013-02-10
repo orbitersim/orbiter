@@ -79,17 +79,19 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 
 float4 MeshTechPS(AdvancedVS frg) : COLOR
 {
+
 	// Normalize input
 	float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
-    half4 cTex = 1;
-    half4 cSpe = float4(gMat.specular.rgb, gMat.specPower);
+    
+    half4 cTex = gMat.diffuse;
+    half3 cSpe = gMat.specular.rgb;
+    half2 cRfl = float2(1.0f, gReflCtrl[0]); 
 
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMat.diffuse.a;	
     }
-    else cTex.a = gMat.diffuse.a;
    
     if (gFullyLit) {
 		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
@@ -97,33 +99,30 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     }
 
 	if (gUseSpec) {
-		cSpe = tex2D(SpecS, frg.tex0);
-		cSpe.a *= 80.0f;
+		cRfl.rg = tex2D(SpecS, frg.tex0).rg;
 	}
 
-
+	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
     float  d = max(0,dot(-gSun.direction, nrmW));
-	float  s = pow(max(dot(r, CamW), 0.0f), cSpe.a); 
+	float  s = pow(max(dot(r, CamW), 0.0f), gMat.specPower); 
 
-    if (cSpe.a<2.0 || d<=0) s = 0;
+    if (gMat.specPower<2.0 || d<=0) s = 0;
 
-    half3 diff = gMat.diffuse.rgb  * (frg.diffuse.rgb + d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
-	half3 spec = cSpe.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
+    half3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	half3 spec = frg.spec.rgb    + (s * gSun.specular.rgb);
 
 	if (gEnvMapEnable) {
-		float  r = pow(saturate(smoothstep(0.0, 80.0, cSpe.a)), 2);  // Specular to reflection mapping
 		float3 v = reflect(-CamW, nrmW);
-		float3 s = r * texCUBE(EnvMapS, v);
-		//spec += cTex.rgb * cSpe.rgb * s;
-		spec += cSpe.rgb * s;
+		if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2];
+		cTex.rgb = lerp(cTex.rgb, texCUBE(EnvMapS, v).rgb, cRfl.g);
 	}
 	
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     // -------------------------------------------------------------------------
-	  float3 color  = cTex.rgb * saturate(diff) + saturate(spec);   // Standard lighting
-    //    float3 color = 1.0f - exp(-1.0f*(cTex.rgb*diff+spec));		 // "HDR" lighting
+	   float3 color = cTex.rgb * saturate(diff) + cSpe.rgb * (cRfl.r * saturate(spec));  // Standard lighting
+    // float3 color = 1.0f - exp(-1.0f*(diff+spec));								     // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 

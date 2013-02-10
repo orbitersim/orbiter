@@ -45,7 +45,6 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	bAMSO = false;
 	pEnv = NULL;
 
-
 	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
 
 	bBSRecompute = true;
@@ -53,6 +52,9 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	LoadMeshes();
 	ClearAnimations();
 	InitAnimations();
+	if (!LoadCustomConfig()) {
+		LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
+	}
 }
 
 
@@ -914,7 +916,6 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
 	if (pEnv==NULL) {
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
-		//D3DUSAGE_AUTOGENMIPMAP
 		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv)!=S_OK) {
 			LogErr("Failed to create env cubemap for visual 0x%X",this);
 			return;
@@ -1286,6 +1287,146 @@ void vVessel::UpdateBoundingBox()
 
 	D9UpdateAABB(&BBox);
 }
+
+// ===========================================================================================
+//
+bool vVessel::ParseIfStatement(const char *cbuf)
+{
+	_TRACE;
+	char name[64];
+
+	if (sscanf_s(cbuf, "#if %s", name, 64)==1) {
+		for (DWORD i=0;i<nmesh;i++) {
+			D3D9Mesh *hMesh = meshlist[i].mesh;
+			if (hMesh) {
+				DWORD nt = hMesh->TextureCount();
+				for (DWORD t=0;t<nt;t++) {
+					D3D9ClientSurface *pSrf = SURFACE(hMesh->GetTexture(t));
+					if (pSrf) if (pSrf->ScanNameSubId(name)) return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+// ===========================================================================================
+//
+bool vVessel::LoadCustomConfig()
+{
+	_TRACE;
+	bool bParseMat = false;
+	char cbuf[256];
+	char path[256];
+	const char *cfgdir = OapiExtension::GetConfigDir();
+	const char *classname = vessel->GetClassNameA();
+
+	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
+
+	LogAlw("ConfigPath (%s)", path);
+
+	FILE* file = fopen(path, "r");
+
+	if (file==NULL) return true;
+
+	LogAlw("Reading a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
+
+	while(fgets2(cbuf, 256, file, 0x08)>=0) 
+	{
+		if(!strncmp(cbuf, "#end", 4)) break;
+		if(!strncmp(cbuf, "#endif", 6)) break;
+		if(!strncmp(cbuf, "#else", 5)) bParseMat = true;
+		if(!strncmp(cbuf, "#begin", 6)) bParseMat = true;
+		if(!strncmp(cbuf, "#if", 3)) if (ParseIfStatement(cbuf)) bParseMat = true;
+		if(!strncmp(cbuf, "#elseif", 7)) if (ParseIfStatement(cbuf)) bParseMat = true;
+		
+		if (bParseMat) {
+
+			DWORD mesh = 0;
+			DWORD material = 0;
+			float a, b;
+			D3D9Mesh *hMesh = NULL;
+
+			while(fgets2(cbuf, 256, file, 0x08)>=0) 
+			{
+				if (cbuf[0]=='#') break;
+
+				if (!strncmp(cbuf, "MESH", 4)) {
+
+					if (sscanf(cbuf, "MESH %u", &mesh)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+					if (mesh>nmesh || mesh==0) LogErr("Invalid Mesh Idx in (%s): %s", path, cbuf);
+
+					hMesh = meshlist[mesh-1].mesh;
+					material = 0;
+
+					if (hMesh==NULL) LogErr("Invalid Mesh Idx in (%s): %s", path, cbuf);
+					if (hMesh==NULL) return false;
+
+					LogAlw("Mesh %u Selected", mesh);
+				}
+				else if (!strncmp(cbuf, "MATERIAL", 8)) {
+
+					if (hMesh==NULL) return false;
+
+					if (sscanf(cbuf, "MATERIAL %u", &material)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+
+					if (material>hMesh->MaterialCount() || material==0) {
+						LogErr("Invalid Material Idx in (%s): %s", path, cbuf);
+						return false;
+					}
+				}
+				else if (!strncmp(cbuf, "REFLECT", 7)) {
+
+					if (sscanf(cbuf, "REFLECT %f", &a)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+
+					if (mesh==0 || material==0) return false;
+
+					D3D9MatExt *hME = hMesh->GetMaterialExtension(material-1);
+					hME->bEnable = true;
+					hME->Reflect = a;
+
+					LogAlw("Material %u Reflectivity = %f", material, a);
+				}
+
+				else if (!strncmp(cbuf, "DISSOLVE", 8)) {
+
+					char tex[128];
+
+					if (sscanf_s(cbuf, "DISSOLVE %s %f %f", tex, sizeof(tex), &a, &b)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+
+					if (mesh==0 || material==0) return false;
+
+					
+					D3D9MatExt *hME = hMesh->GetMaterialExtension(material-1);
+
+					hME->DissolveScl = a;
+					hME->DissolveSct = b;
+					hME->pDissolve = gc->clbkLoadTexture(tex, 0x8);
+					
+					if (hME->pDissolve==NULL) {
+						LogErr("Failed to load a texture (%s)",tex);
+						return false;
+					}
+
+					LogAlw("Material %u Dissolve scale=%f, scatter=%f, Texture=0x%X (%s)", material, a, b, hME->pDissolve, SURFACE(hME->pDissolve)->GetName());
+				}
+			}
+			break;
+		}
+	}
+
+	fclose(file);
+	return true;
+}
+
+
+
+
+
+
+
+
+
 
 // ===========================================================================================
 //
