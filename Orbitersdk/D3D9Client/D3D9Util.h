@@ -342,6 +342,73 @@ VERTEX_XYZ  *GetVertexXYZ  (DWORD n);
 VERTEX_XYZC *GetVertexXYZC (DWORD n);
 // Return pointer to static vertex buffer of given type of at least size n
 
+// -----------------------------------------------------------------------------------
+// Resource handling
+// ------------------------------------------------------------------------------------
+/**
+ * \brief Kind of auto_handle.
+ * This simple wrapper acts like 'auto_ptr' but is for HANDLE. It is used to
+ * avoid any not-closed HANDLES leaks when the block scope is left (via thrown
+ * exception or return e.g.)
+ */
+struct AutoHandle
+{
+	HANDLE Handle;
+
+	AutoHandle () {
+		Handle = NULL;
+	}
+
+	~AutoHandle () {
+		ForceClose();
+	}
+
+	bool IsInvalid () {
+		return Handle == INVALID_HANDLE_VALUE || Handle == NULL;
+	}
+
+	void ForceClose()
+	{
+		if (!IsInvalid()) {
+			CloseHandle(Handle);
+		}
+		Handle = NULL;
+	}
+};
+
+
+/**
+ * \brief Kind of auto_file.
+ * This simple wrapper acts like 'auto_ptr' but is for FILE pointer. It is used
+ * to avoid any not-closed FILES leaks when the block scope is left (via thrown
+ * exception or return e.g.)
+ */
+struct AutoFile
+{
+	FILE* pFile;
+
+	AutoFile () {
+		pFile = NULL;
+	}
+
+	~AutoFile () {
+		ForceClose();
+	}
+
+	bool IsInvalid () {
+		return pFile == NULL;
+	}
+
+	void ForceClose()
+	{
+		if (!IsInvalid()) {
+			fclose(pFile);
+		}
+		pFile = NULL;
+	}
+};
+
+
 // ------------------------------------------------------------------------------------
 // Miscellaneous helper functions
 // ------------------------------------------------------------------------------------

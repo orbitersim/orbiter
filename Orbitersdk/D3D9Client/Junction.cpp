@@ -9,6 +9,7 @@
 // ==============================================================
 
 #include "Junction.h"
+#include "D3D9Util.h"
 #include <string>
 #include <memory>
 #include <vector>
@@ -49,38 +50,6 @@ namespace junction {
 		};
 	} REPARSE_DATA_BUFFER;
 #pragma pack(pop)
-
-
-/**
- * \brief Kind of auto_handle.
- * This simple wrapper acts like 'auto_ptr' but is for HANDLE. It is used to
- * avoid any not-closed HANDLES leaks when the block scope is left (via thrown
- * exception or return e.g.)
- */
-struct SafeHandle
-{
-	HANDLE Handle;
-
-	SafeHandle () {
-		Handle = NULL;
-	}
-
-	~SafeHandle () {
-		ForceClose();
-	}
-
-	bool IsInvalid () {
-		return Handle == INVALID_HANDLE_VALUE || Handle == NULL;
-	}
-
-	void ForceClose()
-	{
-		if (!IsInvalid()) {
-			CloseHandle(Handle);
-		}
-		Handle = NULL;
-	}
-};
 
 
 // ===========================================================================
@@ -131,7 +100,7 @@ struct SafeHandle
 		CreateDirectory(junction, NULL);
 
 		// Set the reparse point
-		SafeHandle hDir;
+		AutoHandle hDir;
 		hDir.Handle = CreateFile(junction, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, NULL);
 		if (hDir.IsInvalid()) {
 			return false; // Failed to open directory!

@@ -14,6 +14,7 @@
 #include "D3D9Catalog.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
+#include "D3D9Util.h"
 
 using namespace oapi;
 
@@ -1321,18 +1322,19 @@ bool vVessel::LoadCustomConfig()
 	char path[256];
 	const char *cfgdir = OapiExtension::GetConfigDir();
 	const char *classname = vessel->GetClassNameA();
+	AutoFile file;
 
 	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
 
 	LogAlw("ConfigPath (%s)", path);
 
-	FILE* file = fopen(path, "r");
+	file.pFile = fopen(path, "r");
 
-	if (file==NULL) return true;
+	if (file.IsInvalid()) return true;
 
 	LogAlw("Reading a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
 
-	while(fgets2(cbuf, 256, file, 0x08)>=0) 
+	while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
 	{
 		if(!strncmp(cbuf, "#end", 4)) break;
 		if(!strncmp(cbuf, "#endif", 6)) break;
@@ -1348,7 +1350,7 @@ bool vVessel::LoadCustomConfig()
 			float a, b;
 			D3D9Mesh *hMesh = NULL;
 
-			while(fgets2(cbuf, 256, file, 0x08)>=0) 
+			while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
 			{
 				if (cbuf[0]=='#') break;
 
@@ -1416,7 +1418,6 @@ bool vVessel::LoadCustomConfig()
 		}
 	}
 
-	fclose(file);
 	return true;
 }
 
