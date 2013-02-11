@@ -39,6 +39,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	nmesh = 0;
 	nanim = 0;
 	subsmax = 0;
+	iFace = 0;
 	sunLight = *scene->GetLight(-1);
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
