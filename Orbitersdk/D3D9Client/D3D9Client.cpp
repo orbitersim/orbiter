@@ -1142,6 +1142,18 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				return 0;
 			}
 
+			case WM_MBUTTONDOWN:
+			{
+				if (DebugControls::IsActive()) {
+					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+					if (flags&DBG_FLAGS_PICK) {	
+						D3D9Pick pick = GetScene()->PickScene(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+						if (pick.pMesh) DebugControls::SelectGroup(pick.group);
+					}
+				}
+				break;
+			}
+
 			case WM_LBUTTONDOWN:
 			{
 				bTrackMouse = true;
@@ -1149,6 +1161,14 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				ypos = GET_Y_LPARAM(lParam); 
 				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags=TME_LEAVE; te.hwndTrack=hRenderWnd;
 				TrackMouseEvent(&te);
+
+				if (DebugControls::IsActive()) {
+					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+					if (flags&DBG_FLAGS_PICK) {	
+						D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
+						if (pick.pMesh) DebugControls::SelectGroup(pick.group);
+					}
+				}
 				break;
 			}
 

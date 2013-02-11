@@ -1157,13 +1157,19 @@ void Scene::RenderMainScene()
 
 	// Render Environmental Map For the Focus Vessel ----------------------------
 	//
-	if (Config->EnableEnvMaps) vFocus->RenderENVMap(pDevice, 1);
+	if (Config->EnvMapMode) {
+		DWORD flags = 0;
+		if (Config->EnvMapMode==1) flags |= 0x01; 
+		if (Config->EnvMapMode==2) flags |= 0x03;
+		vFocus->RenderENVMap(pDevice, Config->EnvMapFaces, flags);
+	}
 
 	// EnvMap Debugger ----------------------------------------------------------
-	// 
+	// TODO: Should be allowed to visualize other maps as well, not just index 0
+	//
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap());
+		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0));
 	}
 
 	scene_time = D3D9GetTime() - scene_time;
@@ -1175,7 +1181,7 @@ void Scene::RenderMainScene()
 
 // ===========================================================================================
 //
-void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc)
+void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 {
 	_TRACE;
 
@@ -1186,8 +1192,9 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc)
 
 	VOBJREC *pv = NULL;
 
+	// TODO:  This doesn't really belong in here. Omitting should be done by the caller function. Will fix later 
+	//
 	for (pv=vobjFirst; pv; pv=pv->next) pv->vobj->bOmit = false;
-
 
 	if (omit) {
 
@@ -1220,44 +1227,54 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc)
 
 	// render planets -------------------------------------------
 	//
-	for (DWORD i=0;i<nplanets;i++) {
-		OBJHANDLE hObj = plist[i].vo->Object();
-		bool isActive = plist[i].vo->IsActive();
-		if (isActive) plist[i].vo->Render(pDevice);
-		else		  plist[i].vo->RenderDot(pDevice);
-	} 
+	if (flags&0x01) {
+		for (DWORD i=0;i<nplanets;i++) {
+			OBJHANDLE hObj = plist[i].vo->Object();
+			bool isActive = plist[i].vo->IsActive();
+			if (isActive) plist[i].vo->Render(pDevice);  // TODO: Should pass the flags to surface base level
+			else		  plist[i].vo->RenderDot(pDevice);
+		} 
+	}
 
 	// render the vessel objects --------------------------------
 	// 
-	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
-		if (pv->vobj->bOmit) continue;
-		OBJHANDLE hObj = pv->vobj->Object();
-		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
+	if (flags&0x02) {
+		for (pv=vobjFirst; pv; pv=pv->next) {
+			if (!pv->vobj->IsActive()) continue;
+			if (!pv->vobj->IsVisible()) continue;
+			if (pv->vobj->bOmit) continue;
+			OBJHANDLE hObj = pv->vobj->Object();
+			if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
+		}
 	}
 
 
 	// render exhausts -------------------------------------------
 	//
-	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
-		if (pv->vobj->bOmit) continue;
-		OBJHANDLE hObj = pv->vobj->Object();
-		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) ((vVessel*)pv->vobj)->RenderExhaust();
+	if (flags&0x04) {
+		for (pv=vobjFirst; pv; pv=pv->next) {
+			if (!pv->vobj->IsActive()) continue;
+			if (!pv->vobj->IsVisible()) continue;
+			if (pv->vobj->bOmit) continue;
+			OBJHANDLE hObj = pv->vobj->Object();
+			if (oapiGetObjectType(hObj) == OBJTP_VESSEL) ((vVessel*)pv->vobj)->RenderExhaust();
+		}
 	}
 
 	// render beacons -------------------------------------------
 	//
-	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (pv->vobj->bOmit) continue;
-		pv->vobj->RenderBeacons(pDevice);
+	if (flags&0x08) {
+		for (pv=vobjFirst; pv; pv=pv->next) {
+			if (!pv->vobj->IsActive()) continue;
+			if (pv->vobj->bOmit) continue;
+			pv->vobj->RenderBeacons(pDevice);
+		}
 	}
 
 	// render exhaust particle system ----------------------------
-	for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
+	if (flags&0x10) {
+		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
+	}
 	
 	HR(pDevice->EndScene());
 }
@@ -1479,6 +1496,37 @@ void Scene::ExitGDIResources ()
 	oapiReleaseFont(pLabelFont);
 	oapiReleaseFont(pDebugFont);
 	for (int i=0;i<6;i++) oapiReleasePen(lblPen[i]);
+}
+
+// ===========================================================================================
+//
+D3D9Pick Scene::PickScene(short xpos, short ypos)
+{
+	float x = 2.0f*float(xpos)/float(viewW) - 1.0f;
+	float y = 2.0f*float(ypos)/float(viewH) - 1.0f;
+
+	D3DXVECTOR3 vPick = camera_x * (x/mProj._11) + camera_y * (-y/mProj._22) + camera_z;
+	
+	D3DXVec3Normalize(&vPick, &vPick);
+
+	VOBJREC *pv = NULL;
+
+	D3D9Pick result;
+	result.dist  = 1e10;
+	result.pMesh = NULL;
+	result.vObj  = NULL;
+
+	for (pv=vobjFirst; pv; pv=pv->next) {
+		if (pv->type==OBJTP_VESSEL) {
+			vVessel *vVes = (vVessel *)pv->vobj;
+			if (vVes) {
+				D3D9Pick pick = vVes->Pick(&vPick);
+				if (pick.dist<result.dist) result = pick;
+			}
+		}
+	}
+
+	return result;
 }
 
 // ===========================================================================================

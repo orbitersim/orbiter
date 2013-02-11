@@ -39,9 +39,20 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
 	float3 nrmX = mul(float4(vrt.nrmL.xyz,0), gGrpT).xyz;       
     float3 nrmW = mul(float4(nrmX,0), gW).xyz;  
    
+    /*
+    // Construct Tangent to World transform matrix
+    float3x3 TBN;
+    TBN[0] = vrt.tanL;
+    TBN[1] = vrt.bitL;
+    TBN[2] = vrt.nrmL; 
+    TBN = mul(TBN, gGrpT);
+    TBN = mul(TBN, gW);
+	outVS.nrmT  = TBN[2];
+	outVS.tanT  = TBN[0];
+	*/
+	
 	outVS.nrmT  = vrt.nrmL;
 	outVS.tanT  = vrt.tanL;
-	//outVS.bitT  = vrt.bitL;
     outVS.camW  = -posW;
     outVS.tex0  = vrt.tex0;
    
@@ -79,6 +90,14 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 		nrmT.rg = tex2D(Nrm0S, frg.tex0).rg * 2.0 - 1.0;					   //Sampler for V8U8  
 		nrmT.b = sqrt(1.0 - nrmT.g*nrmT.g - nrmT.r*nrmT.r);
 	}  
+	
+	/*
+	float3x3 TBN;
+    TBN[0] = frg.tanT;
+    TBN[1] = cross(frg.tanT, frg.nrmT);
+    TBN[2] = frg.nrmT;
+    float3 nrmW = mul(nrmT, TBN);
+    */
     
     float3x3 TBN;
     
@@ -89,6 +108,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float3 nrmO = mul(nrmT, TBN);
     float3 nrmG = mul(float4(nrmO,0), gGrpT).xyz;
     float3 nrmW = mul(float4(nrmG,0), gW).xyz;
+    
     
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	
     
@@ -116,7 +136,6 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 		float  r = pow(saturate(smoothstep(0.0, 80.0, cSpe.a)), 2); // Specular to reflection mapping
 		float3 v = reflect(-CamW, nrmW);
 		float3 s = r * texCUBE(EnvMapS, v);
-		//spec += cTex.rgb * cSpe.rgb * s;
 		spec += cSpe.rgb * s;
 	}
 	

@@ -189,6 +189,14 @@ typedef struct {
 	SURFHANDLE pDissolve;			///< Pointer to Dissolve effect texture
 } D3D9MatExt;
 
+typedef struct {
+	class D3D9Mesh *pMesh;
+	class vObject  *vObj;
+	float			dist;
+	int				group;
+	int				face;
+} D3D9Pick;
+
 #define D3D9LRange 0
 #define D3D9LFalloff 1
 #define D3D9LTheta 2

@@ -45,7 +45,6 @@ void D3D9Config::Reset ()
 	PreLBaseVis			= 0;
 	GDIRTSWrn			= 0;
 	DebugFontSize		= 18;
-	//DepthBuffer		= 24;
 	UseNormalMap		= 1;
 	LoadInSystemMem     = 0;
 	ManagedTiles		= 0;
@@ -54,13 +53,13 @@ void D3D9Config::Reset ()
 	RwyLightAnimate		= 1;
 	RwyLightAngle		= 120.0;
 	RwyBrightness		= 1.0;
-	//RwyHazeScale		= 3.0;
 	Convergence			= 0.2;
 	Separation			= 65.0;
 	SunAngle			= 10.0;
 	BumpAmp				= 1.0;
 	EnvMapSize		    = 256;
-	EnableEnvMaps		= 0;
+	EnvMapMode			= 0;
+	EnvMapFaces			= 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -92,12 +91,12 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
 	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1,  min(10.0,d));
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
-	if (oapiReadItem_int   (hFile, "EnableEnvMaps", i))			EnableEnvMaps = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(6, i));
 
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
-	//if (oapiReadItem_float (hFile, "RwyHazeScale", d))		RwyHazeScale  = max(1.0,  min(30.0,d));
-
+	
 	oapiReadItem_string (hFile, "Shaders", Shaders);
 
 	if (oapiReadItem_int   (hFile, "DebugLvl", i))					DebugLvl = i;
@@ -142,9 +141,8 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "NightLightsAngle", SunAngle);
 	oapiWriteItem_float (hFile, "BumpMapAmplitude", BumpAmp);	
 	oapiWriteItem_int   (hFile, "EnvMapSize", EnvMapSize);
-	oapiWriteItem_int   (hFile, "EnableEnvMaps", EnableEnvMaps);
-
-	//oapiWriteItem_float (hFile, "RwyHazeScale", RwyHazeScale);
+	oapiWriteItem_int   (hFile, "EnvMapMode", EnvMapMode);
+	oapiWriteItem_int   (hFile, "EnvMapFaces", EnvMapFaces);
 
 	oapiWriteItem_float (hFile, "StereoSeparation", Separation);
 	oapiWriteItem_float (hFile, "StereoConvergence", Convergence);

@@ -39,5 +39,6 @@ bool		D9IsBSVisible(const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *
 D3DXVECTOR4	D9LinearFieldOfView(const D3DXMATRIX *pProj);
 D3DXVECTOR4	D9OffsetRange(double R, double r);
 void		EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up);
+D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView);
 
 #endif

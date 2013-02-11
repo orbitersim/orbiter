@@ -36,7 +36,6 @@ public:
 	int RejectRTDC;					///< Whether to reject using GDI access to render target if the suface type is D3D9S_RTGTTEX
 	int PreLBaseVis;				///< Preload base visuals (0=load on demand, 1=preload)
 	int DebugFontSize;				///< Debug font height \[pixel\] (default=18px)
-	//int DepthBuffer;				///< Currently not used (default=24)
 	int GDIRTSWrn;					///< Whether to identify RT-GDI conflict by flashing the surface (0,1)
 	int UseNormalMap;				///< Enable normal mapping (0,1)
 	int LoadInSystemMem;			///< Whether to load textures into system-memory pool or into default pool (0=default pool, 1=system-memory pool)
@@ -45,7 +44,6 @@ public:
 	int RwyLightAnimate;			///< Runway light animate (0,1)
 	double RwyLightAngle;			///< Runway light angle \[deg\] (10...180)
 	double RwyBrightness;			///< Runway light brightness (0.3...3.0)
-	//double RwyHazeScale;			///< Currently not used (default=3.0)
 	double VCNearPlane;				///< Virtual cockpit near clip-plane distance \[m\] (-1.0...1.0, default=0.1)
 	double Convergence;				///< StereoScopic 3D convergence distance \[m\] (0.05...1.0, default=0.2)
 	double Separation;				///< StereoScopic 3D depth of field separation \[m\] (10.0...100.0, default=65)
@@ -56,8 +54,8 @@ public:
 	int NVPerfHUD;					///< ??? (0,1)
 	int ManagedTiles;				///< Whether to read DDS surfaces managed or un-managed (0,1 default=0)
 	int EnvMapSize;					///< Environment map size (64...512)
-	int EnableEnvMaps;				///< Whether environment maps are enabled (0,1)
-	//char *InSurface;
+	int EnvMapMode;					///< Environment map mode (0=disabled, 1=planet only, 2=fullscene)
+	int EnvMapFaces;				///< Number of environment map faces render per frame (1..6, default=1)
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *Shaders;					///< Shaders set to use. Naming a sub-directory of "Modules/" (default="Default")
 	char *SolCfg;					///< Solar system to use (default="Sol")

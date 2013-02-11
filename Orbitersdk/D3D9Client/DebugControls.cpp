@@ -90,6 +90,7 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_WIREFRAME,	(SendDlgItemMessageA(hDlg, IDC_DBG_WIRE, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_DUALSIDED,	(SendDlgItemMessageA(hDlg, IDC_DBG_DUAL, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_DSPENVMAP,	(SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, BM_GETCHECK, 0, 0)==BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_PICK,			(SendDlgItemMessageA(hDlg, IDC_DBG_PICK, BM_GETCHECK, 0, 0)==BST_CHECKED));
 }
 
 void OpenDlgClbk(void *context)
@@ -129,6 +130,19 @@ void OpenDlgClbk(void *context)
 }
 
 
+DWORD GetSelectedMesh()
+{
+	return sMesh;
+}
+
+
+void SelectGroup(DWORD idx)
+{
+	if (idx<nGroup) {
+		sGroup = idx;
+		SetupMeshGroups();
+	}
+}
 
 
 void SetupMeshGroups()
@@ -309,6 +323,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_WIRE:
 			case IDC_DBG_DUAL:
 			case IDC_DBG_ENVMAP:
+			case IDC_DBG_PICK:
 				UpdateFlags();
 				break;
 		

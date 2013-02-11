@@ -39,13 +39,14 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	vessel = oapiGetVesselInterface(_hObj);
 	nmesh = 0;
 	nanim = 0;
-	subsmax = 0;
+	nEnv  = 0;
 	iFace = 0;
 	sunLight = *scene->GetLight(-1);
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
 	bAMSO = false;
-	pEnv = NULL;
+
+	for (int i=0;i<4;i++) pEnv[i] = NULL;
 
 	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
 
@@ -54,6 +55,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	LoadMeshes();
 	ClearAnimations();
 	InitAnimations();
+
 	if (!LoadCustomConfig()) {
 		LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
 	}
@@ -62,7 +64,9 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 vVessel::~vVessel ()
 {
-	SAFE_RELEASE(pEnv);
+	for (int i=0;i<4;i++) {
+		SAFE_RELEASE(pEnv[i]);
+	}
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
 	ClearAnimations();
 	ClearMeshes();
@@ -470,15 +474,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 2); // turn on  fog
 	else										   D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 0); // turn off fog
 
-	if (pEnv) {
-		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eEnvMap, pEnv));
-		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, true));
-	}
-	else {
-		HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-	}
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
 	
-
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
 	if (bVC && internalpass) {
@@ -571,7 +568,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	
 		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC); // Render VC
-		else			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL); // Render Exterior
+		else			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
 		
 	
 		// render VC HUD and MFDs ------------------------------------------------------------------------
@@ -906,7 +903,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 
 // ============================================================================================
 //
-void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
+void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
 	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
 
@@ -915,13 +912,14 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
 		return;
 	}
 	
-	if (pEnv==NULL) {
+	if (pEnv[0]==NULL) {
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
-		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv)!=S_OK) {
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[0])!=S_OK) {
 			LogErr("Failed to create env cubemap for visual 0x%X",this);
 			return;
 		}
+		nEnv = 1;
 	}
 
 	MATRIX3 grot;
@@ -943,7 +941,7 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
 
 	for (DWORD i=0;i<cnt;i++) {
 
-		HR(pEnv->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
+		HR(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
 		HR(pDev->SetRenderTarget(0, pSrf));
 
 		EnvMapDirection(iFace, &dir, &up);
@@ -961,7 +959,7 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
 		D3DXMatrixMultiply(&mEnv, &mWorldInv, &mEnv); 
 
 		gc->GetScene()->SetupCustomCamera(mEnv, cpos, 0.7853981634, 1.0);
-		gc->GetScene()->RenderSecondaryScene(this, true);
+		gc->GetScene()->RenderSecondaryScene(this, true, flags);
 
 		SAFE_RELEASE(pSrf);	
 	}
@@ -971,9 +969,6 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt)
 
 	 SAFE_RELEASE(pODS);
 	 SAFE_RELEASE(pORT);
-
-	 //pEnv->SetAutoGenFilterType(D3DTEXF_LINEAR);
-	 //pEnv->GenerateMipSubLevels();
 }
 
 
@@ -1288,6 +1283,41 @@ void vVessel::UpdateBoundingBox()
 	}
 
 	D9UpdateAABB(&BBox);
+}
+
+// ===========================================================================================
+//
+D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
+{
+	D3DXMATRIX mWT;
+	LPD3DXMATRIX pWT = NULL;
+
+	D3D9Pick result;
+	result.dist  = 1e10;
+	result.pMesh = NULL;
+	result.vObj  = NULL;
+	result.face  = -1;
+	result.group = -1;
+
+	if (!meshlist || nmesh==0 || this!=DebugControls::GetVisual()) return result;
+
+	for (DWORD i=0;i<nmesh;i++) {
+
+		D3D9Mesh *hMesh = meshlist[i].mesh;
+
+		if (hMesh && i==DebugControls::GetSelectedMesh()) {
+
+			if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
+			else pWT = &mWorld;
+
+			D3D9Pick pick = hMesh->Pick(pWT, vDir);
+			if (pick.dist<result.dist) result = pick;
+		}
+	}
+
+	if (result.pMesh) result.vObj = this;
+
+	return result;
 }
 
 // ===========================================================================================

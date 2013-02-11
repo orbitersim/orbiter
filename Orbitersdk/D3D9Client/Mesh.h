@@ -148,7 +148,7 @@ public:
 	void RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
 	
 	
-	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL);
+	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
 	void RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
 	void RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW);
@@ -167,6 +167,8 @@ public:
 
 	void SetSunLight(D3D9Light *pLight);
 	
+	D3D9Pick Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir);
+
 	D3DXVECTOR3 GetBoundingSpherePos();
 	float GetBoundingSphereRadius();
 

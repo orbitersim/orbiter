@@ -1067,7 +1067,7 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
-void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech)
+void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
 {
 	
 	DWORD flags=0, selmsh=0, selgrp=0, displ=0; // Debug Variables
@@ -1262,7 +1262,36 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech)
 			if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 			else							   mat = &Mtrl[Grp[g]->MtrlIdx];
 		
-			if (mat!=old_mat) { old_mat=mat; FX->SetValue(eMat, mat, sizeof(D3DMATERIAL9)); }
+			if (mat!=old_mat) { 
+				old_mat = mat; 
+				FX->SetValue(eMat, mat, sizeof(D3DMATERIAL9));
+
+				if (nEnv && pEnv) {
+
+					if (mat==&defmat) {
+						HR(FX->SetBool(eEnvMapEnable, false));
+					}
+					else {
+						if (pEnv[0]) {
+
+							D3D9MatExt *pME = &MtrlExt[Grp[g]->MtrlIdx];
+
+							if (pME->bEnable) {
+								FX->SetBool(eEnvMapEnable, true);
+								FX->SetTexture(eEnvMap, pEnv[0]);
+								FX->SetVector(eReflCtrl, &D3DXVECTOR4(pME->Reflect, pME->DissolveScl, pME->DissolveSct, 1.0f));
+								if (pME->pDissolve) {
+									FX->SetTexture(eDislMap, SURFACE(pME->pDissolve)->GetTexture());
+									FX->SetBool(eUseDisl, true);
+								}
+								else FX->SetBool(eUseDisl, false);
+
+							}
+							else FX->SetBool(eEnvMapEnable, false);
+						}
+					}
+				}
+			}
 			
 			// Setup Textures and Normal Maps ==========================================================================
 			// 
@@ -1709,6 +1738,15 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 		for (DWORD g=0; g<nGrp; g++) {
 			if (flags&DBG_FLAGS_SELGRPONLY && g!=selgrp) continue;
 			if (Grp[g]->UsrFlag & 0x2) continue;
+			D3D9Effect::RenderBoundingSphere(pW, NULL, &Grp[g]->BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
+		}
+	}
+
+	/*
+	if (flags&DBG_FLAGS_SPHERES) {
+		for (DWORD g=0; g<nGrp; g++) {
+			if (flags&DBG_FLAGS_SELGRPONLY && g!=selgrp) continue;
+			if (Grp[g]->UsrFlag & 0x2) continue;
 			if (Grp[g]->bTransform) {
 				if (bGlobalTF)  {
 					D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform);
@@ -1718,7 +1756,7 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 			}
 			else D3D9Effect::RenderBoundingSphere(pW, &mTransform, &Grp[g]->BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
 		}
-	}
+	}*/
 
 	if (flags&DBG_FLAGS_BOXES) D3D9Effect::RenderBoundingBox(pW, &mTransform, &BBox.min, &BBox.max, &D3DXVECTOR4(0,0,1,0.75f));
 	if (flags&DBG_FLAGS_SPHERES) D3D9Effect::RenderBoundingSphere(pW, &mTransform, &BBox.bs, &D3DXVECTOR4(0,0,1,0.75f));
@@ -1864,6 +1902,89 @@ float D3D9Mesh::GetBoundingSphereRadius()
 	return BBox.bs.w; 
 }
 
+// ===========================================================================================
+//
+D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
+{
+	D3D9Pick result;
+
+	result.dist  = 1e10;
+	result.pMesh = NULL;
+	result.vObj  = NULL;
+	result.face  = -1;
+	result.group = -1;
+	
+	if (!pVB) return result;
+
+	UpdateBoundingBox();
+
+	D3DXMATRIX mW;
+
+	for (DWORD g=0;g<nGrp;g++) {
+
+		D3DXVECTOR3 bs = D3DXVECTOR3f4(Grp[g]->BBox.bs);
+		float rad = Grp[g]->BBox.bs.w;
+
+		D3DXVec3TransformCoord(&bs, &bs, pW);
+
+		bool bIntersect = D3DXSphereBoundProbe(&bs, rad, &D3DXVECTOR3(0,0,0), vDir);
+
+		if (!bIntersect) continue;
+
+		if (Grp[g]->bTransform) {
+			if (bGlobalTF) D3DXMatrixMultiply(&mW, &mTransform, &Grp[g]->Transform);
+			else mW = Grp[g]->Transform;
+		} else mW = mTransform;
+
+		D3DXMatrixMultiply(&mW, &mW, pW);
+
+		WORD *pIdc = NULL;
+		D3DXVECTOR3 *pVrt = NULL;
+
+		D3DXVECTOR3 _a, _b, _c, cp;
+
+		HR(pIB->Lock(Grp[g]->FaceOff*6, Grp[g]->nFace*6, (LPVOID*)&pIdc, 0)); 
+		HR(pGB->Lock(Grp[g]->VertOff*sizeof(D3DXVECTOR3), Grp[g]->nVert*sizeof(D3DXVECTOR3), (LPVOID*)&pVrt, 0)); 
+
+		for (DWORD i=0;i<Grp[g]->nFace;i++) {
+
+			DWORD a = pIdc[i*3+0];
+			DWORD b = pIdc[i*3+1];
+			DWORD c = pIdc[i*3+2];
+
+			D3DXVec3TransformCoord(&_a, &pVrt[a], &mW); 
+			D3DXVec3TransformCoord(&_b, &pVrt[b], &mW);
+			D3DXVec3TransformCoord(&_c, &pVrt[c], &mW);
+
+			//D3DXVec3TransformCoord(&_a, &_a, pW); 
+			//D3DXVec3TransformCoord(&_b, &_b, pW);
+			//D3DXVec3TransformCoord(&_c, &_c, pW);
+
+			float u, v, dst;
+
+			D3DXVec3Cross(&cp, &(_a-_b), &(_c-_b));
+
+			if (D3DXVec3Dot(&cp, vDir)>0) { 
+				if (D3DXIntersectTri(&_c, &_b, &_a, &D3DXVECTOR3(0,0,0), vDir, &u, &v, &dst)) {
+					if (dst<result.dist) {
+						result.dist  = dst;
+						result.face  = int(i);
+						result.group = int(g);
+						result.pMesh = this;
+					}
+				}
+			}
+		}
+
+		HR(pGB->Unlock());
+		HR(pIB->Unlock());
+	}
+
+	return result;
+}
+
+// ===========================================================================================
+//
 void D3D9Mesh::DumpTextures()
 {
 	LogBlu("Mesh 0x%X has %u textures",this, nTex-1);
@@ -1874,6 +1995,8 @@ void D3D9Mesh::DumpTextures()
 	}
 }
 
+// ===========================================================================================
+//
 void D3D9Mesh::DumpGroups()
 {
 	LogAlw("Mesh 0x%X has %u groups", this, nGrp);

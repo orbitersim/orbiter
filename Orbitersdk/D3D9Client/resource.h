@@ -17,7 +17,8 @@
 #define IDC_DBG_DUAL                            40001
 #define IDC_DBG_WIRE                            40002
 #define IDC_DBG_ENVMAP                          40003
-#define IDC_ENVMAPS                             40004
+#define IDC_DBG_MATGRP                          40004
+#define IDC_DBG_MATPRP                          40005
 #define IDC_SYMBOLIC                            40009
 #define IDC_NEARPLANE                           40010
 #define IDC_STATIC7                             40011
@@ -58,3 +59,16 @@
 #define IDC_DBG_VISO                            40073
 #define IDC_DBG_SPEED                           40074
 #define IDC_DBG_SPEEDDSP                        40075
+#define IDC_DBG_MATEFF                          40083
+#define IDC_DBG_RED                             40084
+#define IDC_DBG_GREEN                           40085
+#define IDC_DBG_BLUE                            40086
+#define IDC_DBG_ALPHA                           40087
+#define IDC_DBG_MATADJ                          40088
+#define IDC_DBG_MATSAVE                         40089
+#define IDC_ENVMODE                             40090
+#define IDC_STATIC8                             40091
+#define IDC_STATIC9                             40093
+#define IDC_ENVFACES                            40094
+#define IDC_DBG_TEXTURE                         40096
+#define IDC_DBG_PICK                            40098

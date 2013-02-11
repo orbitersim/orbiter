@@ -94,10 +94,12 @@ public:
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev); 
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderAxis (LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp);
-	void RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2);
+	void RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
 	
-	LPDIRECT3DCUBETEXTURE9 GetEnvMap() { return pEnv; }
+	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx) { return pEnv[idx]; }
 	float GetExhaustLength() const { return ExhaustLength; }
+
+	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
 
 	bool HasExtPass();
 	bool const Playback() { return vessel->Playback(); }
@@ -142,26 +144,25 @@ protected:
 	
 private:
 
-	VESSEL *vessel;       // access instance for the vessel
+	VESSEL *vessel;			// access instance for the vessel
 
-	LPDIRECT3DCUBETEXTURE9 pEnv;
+	LPDIRECT3DCUBETEXTURE9 pEnv[4];
+	int nEnv;				// Number of environmental cameras 
+	int iFace;				// EnvMap Face index that is to be rendered next
 
 	struct MESHREC {
-		D3D9Mesh *mesh;   // DX7 mesh representation
-		D3DXMATRIX *trans; // mesh transformation matrix (rel. to vessel frame)
+		D3D9Mesh *mesh;		// DX7 mesh representation
+		D3DXMATRIX *trans;	// mesh transformation matrix (rel. to vessel frame)
 		WORD vismode;
-	} *meshlist;          // list of associated meshes
+	} *meshlist;			// list of associated meshes
 
-	UINT nmesh;           // number of meshes
-	UINT subsmax;
-	int iFace;				// EnvMap Face index
+	UINT nmesh;				// number of meshes
 	bool bAMSO;
-	ANIMATION *anim;      // list of animations (defined in the vessel object)
-	double *animstate;    // list of visual animation states
-	UINT nanim;           // number of animations
-	double tCheckLight;    // time for next lighting check
-	
-	float ExhaustLength;
+	ANIMATION *anim;		// list of animations (defined in the vessel object)
+	double *animstate;		// list of visual animation states
+	UINT nanim;				// number of animations
+	double tCheckLight;		// time for next lighting check
+	float ExhaustLength;	
 
 	static class D3D9ClientSurface *mfdoff; 
 	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;

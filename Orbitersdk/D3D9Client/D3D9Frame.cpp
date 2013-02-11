@@ -388,7 +388,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	DWORD EnvMapSize = Config->EnvMapSize;
 
-	if (Config->EnableEnvMaps) {
+	if (Config->EnvMapMode) {
 		HR(pd3dDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
 	}
 	else pEnvDS = NULL;

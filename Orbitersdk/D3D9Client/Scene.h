@@ -101,7 +101,7 @@ public:
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
-	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false);
+	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -132,6 +132,8 @@ public:
 	void AddLocalLight(const LightEmitter *le, const vObject *vo, DWORD idx);
 
 	double GetObjectAppRad(OBJHANDLE hObj) const;
+
+	D3D9Pick PickScene(short xpos, short ypos);
 
 	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&mProjView; }
 	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }

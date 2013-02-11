@@ -71,6 +71,7 @@
 #define DBG_FLAGS_WIREFRAME				0x0200	///< Enable WireFrame
 #define DBG_FLAGS_DUALSIDED				0x0400	///< Dual Sided
 #define DBG_FLAGS_DSPENVMAP				0x0800	///< Display Environment map
+#define DBG_FLAGS_PICK					0x1000	///< Enable mesh picking with mouse
 /// @}
 
 
@@ -117,6 +118,8 @@ namespace DebugControls {
 	void		UpdateVisual();
 	void		UpdateFlags();
 	double		GetVisualSize();
+	DWORD		GetSelectedMesh();
+	void		SelectGroup(DWORD idx);
 	
 	bool		IsActive();
 

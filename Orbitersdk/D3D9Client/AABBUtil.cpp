@@ -21,6 +21,19 @@
 #include <xnamath.h>
 
 
+D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView)
+{
+	x = (x*2.0-1.0)/mProj->_11;
+	y = (y*2.0-1.0)/mProj->_22;
+	D3DXVECTOR3 pick(x, 1.0f, y);
+	D3DXMATRIX mViewI;
+	D3DXMatrixInverse(&mViewI, NULL, (const D3DXMATRIX *)&mView);
+	D3DXVec3TransformNormal(&pick, &pick, &mViewI);
+	D3DXVec3Normalize(&pick, &pick);
+	return pick;
+}
+
+
 void D9ZeroAABB(D9BBox *box)
 {
 	memset(box, 0, sizeof(D9BBox));
