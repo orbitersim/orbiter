@@ -8,9 +8,11 @@
 #include "D3D9Client.h"
 #include "resource.h"
 #include "D3D9Config.h"
+#include "D3D9Surface.h"
 #include "DebugControls.h"
 #include "Commctrl.h"
 #include "vObject.h"
+#include "vVessel.h"
 #include "Mesh.h"
 #include <stdio.h>
 
@@ -24,12 +26,14 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
-DWORD dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode;
+DWORD dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor;
 double camSpeed;
 char visual[64];
 
 HWND hDlg = NULL;
 vObject *vObj = NULL;
+
+void UpdateMaterialDisplay(bool bSetup=false);
 
 // ===========================================================================
 // Same functionality than 'official' GetConfigParam, but for non-provided
@@ -60,6 +64,7 @@ void Create()
 	camSpeed = 0.5;
 	camMode = 0;
 	dspMode = 0;
+	SelColor = 0;
 	dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug controls", OpenDlgClbk, NULL);
 }
 
@@ -105,19 +110,39 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_DISPLAY, CB_ADDSTRING, 0, (LPARAM)"Selected Visual");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DISPLAY, CB_ADDSTRING, 0, (LPARAM)"Selected Mesh");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DISPLAY, CB_ADDSTRING, 0, (LPARAM)"Selected Group");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DISPLAY, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_ADDSTRING, 0, (LPARAM)"Center on visual");
 	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_ADDSTRING, 0, (LPARAM)"Wheel Fly/Pan Cam");
+	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_SETCURSEL, 0, 0);
 
-	SendDlgItemMessage(hDlg, IDC_DBG_CAMERA, CB_SETCURSEL, 0, 0);
-	SendDlgItemMessage(hDlg, IDC_DBG_DISPLAY, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Diffuse");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Ambient");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Specular");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflectivity");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Dissolve");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
 
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
+
+
+	// Speed slider
 	SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_SETRANGEMAX, 1, 200);
 	SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_SETRANGEMIN, 1, 1);
 	SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_SETTICFREQ,  1, 0);
 	SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_SETPOS,  1, 75);
 	SetWindowTextA(GetDlgItem(hDlg, IDC_DBG_SPEEDDSP), "29");
+
+	// Meterial slider
+	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETTICFREQ,  1, 0);
+	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, 0);
+	
 
 	camMode = 0;
 	dspMode = 0;
@@ -128,6 +153,316 @@ void OpenDlgClbk(void *context)
 
 	UpdateFlags();
 }
+
+
+
+void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
+{
+	OBJHANDLE hObj = vObj->GetObjectA();
+
+	if (!oapiIsVessel(hObj)) return;
+
+	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+
+	if (!hMesh) return;
+
+	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+	D3DMATERIAL9 *pMat = hMesh->GetMaterial(matidx);
+	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
+
+	if (!pMat || !pMatE) return;
+
+	switch(MatPrp) {
+
+		case 0:	// Diffuse
+		{
+			pMatE->ModFlags |= D3D9MATEX_DIFFUSE;
+			switch(clr) {
+				case 0: pMat->Diffuse.r = value; break;
+				case 1: pMat->Diffuse.g = value; break;
+				case 2: pMat->Diffuse.b = value; break;
+				case 3: pMat->Diffuse.a = value; break;
+			}
+			break;
+		}
+
+		case 1:	// Ambient
+		{
+			pMatE->ModFlags |= D3D9MATEX_AMBIENT;
+			switch(clr) {
+				case 0: pMat->Ambient.r = value; break;
+				case 1: pMat->Ambient.g = value; break;
+				case 2: pMat->Ambient.b = value; break;
+				case 3: pMat->Ambient.a = 0.0; break;
+			}
+			break;
+		}
+
+		case 2:	// Specular
+		{
+			pMatE->ModFlags |= D3D9MATEX_SPECULAR;
+			switch(clr) {
+				case 0: pMat->Specular.r = value; break;
+				case 1: pMat->Specular.g = value; break;
+				case 2: pMat->Specular.b = value; break;
+				case 3: pMat->Power = value; break;
+			}
+			break;
+		}
+
+		case 3:	// Emission
+		{
+			pMatE->ModFlags |= D3D9MATEX_EMISSIVE;
+			switch(clr) {
+				case 0: pMat->Emissive.r = value; break;
+				case 1: pMat->Emissive.g = value; break;
+				case 2: pMat->Emissive.b = value; break;
+				case 3: pMat->Emissive.a = 0.0; break;
+			}
+			break;
+		}
+
+		case 4:	// Reflectivity
+		{
+			pMatE->ModFlags |= D3D9MATEX_REFLECT;
+			switch(clr) {
+				case 0: 
+				{
+					pMatE->Reflect = value;
+					break;
+				}
+			}
+			break;
+		}
+
+		case 5:	// Dissolve
+		{
+			pMatE->ModFlags |= D3D9MATEX_DISSOLVE;
+			switch(clr) {
+				case 0: pMatE->DissolveScl = value; break;
+				case 1: pMatE->DissolveSct = value; break;
+			}
+			break;
+		}
+	}
+}
+
+
+float GetMaterialValue(DWORD MatPrp, DWORD clr)
+{
+	OBJHANDLE hObj = vObj->GetObjectA();
+
+	if (!oapiIsVessel(hObj)) return 0.0f;
+
+	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+
+	if (!hMesh) return 0.0f;
+
+	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+	D3DMATERIAL9 *pMat = hMesh->GetMaterial(matidx);
+	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
+
+	if (!pMat || !pMatE) return 0.0f;
+
+	switch(MatPrp) {
+
+		case 0:	// Diffuse
+		{
+			switch(clr) {
+				case 0: return pMat->Diffuse.r;
+				case 1: return pMat->Diffuse.g;
+				case 2: return pMat->Diffuse.b;
+				case 3: return pMat->Diffuse.a;
+			}
+			break;
+		}
+
+		case 1:	// Ambient
+		{
+			switch(clr) {
+				case 0: return pMat->Ambient.r;
+				case 1: return pMat->Ambient.g;
+				case 2: return pMat->Ambient.b;
+				case 3: return pMat->Ambient.a;
+			}
+			break;
+		}
+
+		case 2:	// Specular
+		{
+			switch(clr) {
+				case 0: return pMat->Specular.r;
+				case 1: return pMat->Specular.g;
+				case 2: return pMat->Specular.b;
+				case 3: return pMat->Power;
+			}
+			break;
+		}
+
+		case 3:	// Emission
+		{
+			switch(clr) {
+				case 0: return pMat->Emissive.r;
+				case 1: return pMat->Emissive.g;
+				case 2: return pMat->Emissive.b;
+				case 3: return pMat->Emissive.a;
+			}
+			break;
+		}
+
+		case 4:	// Reflectivity
+		{
+			switch(clr) {
+				case 0: return pMatE->Reflect;
+			}
+			break;
+		}
+
+		case 5:	// Dissolve
+		{
+			switch(clr) {
+				case 0: return pMatE->DissolveScl;
+				case 1: return pMatE->DissolveSct;
+			}
+			break;
+		}
+	}
+
+	return 0.0f;
+}
+
+
+
+void SetColorSlider()
+{
+	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+
+	float val = GetMaterialValue(MatPrp, SelColor);
+	
+	if (MatPrp==2 && SelColor==3) val/=80.0; // Specular Power
+	if (MatPrp==5 && SelColor==0) val/=6.0;  // Dissolve scale
+	if (MatPrp==5 && SelColor==1) val/=0.2;  // Dissolve scatter
+	
+	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
+}
+
+
+void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
+{
+	char lbl[32];
+
+	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+
+	float r = GetMaterialValue(MatPrp, 0);
+	float g = GetMaterialValue(MatPrp, 1);
+	float b = GetMaterialValue(MatPrp, 2);
+	float a = GetMaterialValue(MatPrp, 3);
+
+	if (bRed) sprintf_s(lbl,32,"%2.2f", r);
+	else	  sprintf_s(lbl,32,"");
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_RED),   lbl);
+	
+	if (bGreen) sprintf_s(lbl,32,"%2.2f", g);
+	else		sprintf_s(lbl,32,"");
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_GREEN), lbl);
+
+	if (bBlue) sprintf_s(lbl,32,"%2.2f", b);
+	else	   sprintf_s(lbl,32,"");
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_BLUE),  lbl);
+
+	if (bAlpha) sprintf_s(lbl,32,"%2.2f", a);
+	else	    sprintf_s(lbl,32,"");
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_ALPHA), lbl);
+
+	if (bRed)   EnableWindow(GetDlgItem(hDlg, IDC_DBG_RED), true);
+	else	    EnableWindow(GetDlgItem(hDlg, IDC_DBG_RED), false);	
+	if (bGreen) EnableWindow(GetDlgItem(hDlg, IDC_DBG_GREEN), true);
+	else		EnableWindow(GetDlgItem(hDlg, IDC_DBG_GREEN), false);	
+	if (bBlue)  EnableWindow(GetDlgItem(hDlg, IDC_DBG_BLUE), true);
+	else	    EnableWindow(GetDlgItem(hDlg, IDC_DBG_BLUE), false);	
+	if (bAlpha) EnableWindow(GetDlgItem(hDlg, IDC_DBG_ALPHA), true);
+	else		EnableWindow(GetDlgItem(hDlg, IDC_DBG_ALPHA), false);
+}
+
+void UpdateMaterialDisplay(bool bSetup)
+{
+	char lbl[64];
+	char lbl2[64];
+
+	OBJHANDLE hObj = vObj->GetObjectA();
+	if (!oapiIsVessel(hObj)) return;
+	
+	vVessel *vVes = (vVessel *)vObj;
+	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+	if (!hMesh) return;
+
+	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+
+	const char *skin = vVes->GetSkinName();
+	
+	if (skin)	sprintf_s(lbl,"Material %u: [Skin %s]", matidx, skin);
+	else		sprintf_s(lbl,"Material %u:", matidx);
+
+	GetWindowText(GetDlgItem(hDlg, IDC_DBG_MATGRP), lbl2, 64);
+	if (strcmp(lbl, lbl2)) SetWindowText(GetDlgItem(hDlg, IDC_DBG_MATGRP), lbl); // Avoid causing flashing
+
+	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+
+	switch(MatPrp) {
+		case 0:	// Diffuse
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 3;
+		break;
+		case 1:	// Ambient
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 3;
+		break;
+		case 2:	// Specular
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 3;
+		break;
+		case 3:	// Emission
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 0;
+		break;
+		case 4:	// Reflectivity
+			DisplayMat(true, false, false, false);
+			if (bSetup) SelColor = 0;
+		break;
+		case 5:	// Dissolve
+			DisplayMat(true, true, false, false);
+			if (bSetup) SelColor = 0;
+		break;
+	}
+
+	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
+
+	if (texidx==0) SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), "Texture: None");
+	else {
+		char lbl[256];
+		SURFHANDLE hSrf = hMesh->GetTexture(texidx);
+		if (hSrf) {
+			sprintf_s(lbl, 256, "Texture: %s", SURFACE(hSrf)->GetName());
+			SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), lbl);
+		}
+	}
+}
+
+
+void UpdateColorSlider(WORD pos)
+{
+	float val = float(pos)/255.0f;
+	
+	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+
+	if (MatPrp==2 && SelColor==3) val*=80.0; // Specular Power
+	if (MatPrp==5 && SelColor==0) val*=6.0;  // Dissolve scale
+	if (MatPrp==5 && SelColor==1) val*=0.2;  // Dissolve scatter
+
+	UpdateMeshMaterial(val, MatPrp, SelColor);
+}
+
+
 
 
 DWORD GetSelectedMesh()
@@ -184,6 +519,9 @@ void SetupMeshGroups()
 
 	sprintf_s(lbl,256,"%u/%u",sGroup,nGroup-1);
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_GROUP), lbl);
+
+	UpdateMaterialDisplay();
+	SetColorSlider();
 }
 
 double GetVisualSize()
@@ -240,13 +578,19 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_HSCROLL:
 	{
-		if (LOWORD(wParam)==TB_THUMBTRACK) {
+		if (LOWORD(wParam)==TB_THUMBTRACK || LOWORD(wParam)==TB_ENDTRACK) {
 			WORD pos = HIWORD(wParam);
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_DBG_SPEED)) {
+				if (pos==0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_GETPOS,  0, 0));
 				double fpos = pow(2.0,double(pos)*13.0/200.0); 
 				sprintf_s(lbl,32,"%1.0f",fpos);
 				SetWindowTextA(GetDlgItem(hWnd, IDC_DBG_SPEEDDSP), lbl);
 				camSpeed = fpos/50.0;
+			}
+			if (HWND(lParam)==GetDlgItem(hWnd, IDC_DBG_MATADJ)) {
+				if (pos==0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_GETPOS,  0, 0));
+				UpdateColorSlider(pos);
+				UpdateMaterialDisplay();
 			}
 		}
 		return false;
@@ -260,6 +604,56 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				oapiCloseDialog(hWnd);
 				hDlg = NULL;
 				vObj = NULL;
+				break;
+		
+			case IDC_DBG_MATSAVE:
+			{
+				OBJHANDLE hObj = vObj->GetObjectA();
+				if (oapiIsVessel(hObj)) {
+					vVessel *vVes = (vVessel *)vObj;
+					vVes->SaveCustomConfig();
+				}
+				break;
+			}
+				
+
+			case IDC_DBG_RED:
+				if (HIWORD(wParam)==EN_SETFOCUS) {
+					SelColor = 0;
+					UpdateMaterialDisplay();
+					SetColorSlider();
+				}
+				break;
+
+			case IDC_DBG_GREEN:
+				if (HIWORD(wParam)==EN_SETFOCUS) {
+					SelColor = 1;
+					UpdateMaterialDisplay();
+					SetColorSlider();
+				}
+				break;
+
+			case IDC_DBG_BLUE:
+				if (HIWORD(wParam)==EN_SETFOCUS) {
+					SelColor = 2;
+					UpdateMaterialDisplay();
+					SetColorSlider();
+				}
+				break;
+
+			case IDC_DBG_ALPHA:
+				if (HIWORD(wParam)==EN_SETFOCUS) {
+					SelColor = 3;
+					UpdateMaterialDisplay();
+					SetColorSlider();
+				}
+				break;
+
+			case IDC_DBG_MATPRP:
+				if (HIWORD(wParam)==CBN_SELCHANGE) {
+					UpdateMaterialDisplay(true);
+					SetColorSlider();
+				}
 				break;
 
 			case IDC_DBG_DISPLAY:

@@ -181,8 +181,15 @@ typedef struct {
 	D3DXVECTOR4   Param;            ///< range, falloff, theta, phi
 } D3D9Light;
 
+#define D3D9MATEX_DIFFUSE	0x01
+#define D3D9MATEX_AMBIENT	0x02
+#define D3D9MATEX_SPECULAR	0x04
+#define D3D9MATEX_EMISSIVE	0x08
+#define D3D9MATEX_REFLECT	0x10
+#define D3D9MATEX_DISSOLVE	0x20
+
 typedef struct {
-	bool	bEnable;				///< Enable Material extension
+	DWORD	ModFlags;				///< Modification flags
 	float	Reflect;				///< Reflectivity 0.0 to 1.0
 	float	DissolveScl;			///< Dissolve effect scale factor 0.20 to 3.0 (typical)
 	float   DissolveSct;			///< Dissolve effect scattering "range" 0.01 to 0.1 (typical)
@@ -190,11 +197,11 @@ typedef struct {
 } D3D9MatExt;
 
 typedef struct {
-	class D3D9Mesh *pMesh;
-	class vObject  *vObj;
-	float			dist;
-	int				group;
-	int				face;
+	class D3D9Mesh *pMesh;			///< Mesh handle
+	class vObject  *vObj;			///< Visual handle
+	float			dist;			///< Distance to a pick point
+	int				group;			///< Mesh group that was picked
+	int				face;			///< Face that was picked
 } D3D9Pick;
 
 #define D3D9LRange 0
@@ -422,6 +429,7 @@ struct AutoFile
 // ------------------------------------------------------------------------------------
 
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_RELEASE(p) { if(p) { ULONG n=(p)->Release(); if (n>0) LogWrn("NOT RELEASED Refs=%u, File=%s Line=%u",n,__FILE__,__LINE__); (p)=NULL; } }
+//#define SAFE_RELEASE(p) { if(p) { ULONG n=(p)->Release(); if (n>0) LogWrn("NOT RELEASED Refs=%u, File=%s Line=%u",n,__FILE__,__LINE__); (p)=NULL; } }
+#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
 
 #endif // !__D3DUTIL_H

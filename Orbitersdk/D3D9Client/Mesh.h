@@ -128,6 +128,9 @@ public:
 	inline D3DMATERIAL9 *GetMaterial(DWORD idx) { return Mtrl+idx; }
 	
 	inline D3D9MatExt *GetMaterialExtension(DWORD idx) { return MtrlExt+idx; }
+
+	DWORD GetMeshGroupMaterialIdx(DWORD grp);
+	DWORD GetMeshGroupTextureIdx(DWORD grp);
 	/**
 	 * \brief Replace a mesh texture.
 	 * \param texidx texture index (>= 0)

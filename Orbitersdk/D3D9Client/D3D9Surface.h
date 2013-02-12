@@ -83,6 +83,7 @@ public:
 
 	const char* GetName() const { return name; }
 	void		SetName(const char *);
+	
 
 	bool		IsCompressed();
 	bool		IsGDISurface();
@@ -183,7 +184,7 @@ private:
 	LPD3DXMATRIX		  pVP;
 	D3DVIEWPORT9		  *pViewPort;
 
-	char				  name[256];
+	char				  name[128];
 
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//

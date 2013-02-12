@@ -1270,10 +1270,6 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 		return false;
 	}
 
-	// Few textures those will require a special attention
-	//
-	//if (strstr(Config->InSurface, fname))  return LoadTextureSpecial(fname);
-
 	// Construct normal map name
 	//
 	if (gc->TexturePath(fname, cpath)) {
@@ -1310,9 +1306,6 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 
 		// Decompress -------------------------------------------
 		if (flags&0x2) {  
-			//if (Format==D3DFMT_DXT5) Format = D3DFMT_X8R8G8B8;
-			//if (Format==D3DFMT_DXT3) Format = D3DFMT_X8R8G8B8;
-			//if (Format==D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
 			if (Format==D3DFMT_DXT5) Format = D3DFMT_A8R8G8B8;
 			if (Format==D3DFMT_DXT3) Format = D3DFMT_A8R8G8B8;
 			if (Format==D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
@@ -1617,7 +1610,7 @@ bool D3D9ClientSurface::IsPowerOfTwo() const
 //
 void D3D9ClientSurface::SetName(const char *n)
 {
-	strcpy_s(name, 256, n);
+	strcpy_s(name, 128, n);
 	int i = -1;
 	while (name[++i]!=0) if (name[i]=='/') name[i]='\\';
 }
@@ -1627,8 +1620,12 @@ void D3D9ClientSurface::SetName(const char *n)
 bool D3D9ClientSurface::ScanNameSubId(const char *n)
 {
 	char lbl[64];
+	char buf[256];
 	sprintf_s(lbl,64,"\\%s\\",n);
-	if (strstr(name,lbl)) return true;
+	strcpy(buf, name);
+	_strupr_s(lbl, 64);
+	_strupr_s(buf, 256);
+	if (strstr(buf,lbl)) return true;
 	return false;
 }
 

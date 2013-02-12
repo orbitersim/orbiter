@@ -1132,6 +1132,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		return 0;
 	}
 
+	if (bRunning) GetScene()->UpdateCameraFromOrbiter();
+
 	__TRY {
 
 		switch (uMsg) {

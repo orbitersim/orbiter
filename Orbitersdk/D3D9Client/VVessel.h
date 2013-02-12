@@ -101,8 +101,11 @@ public:
 
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
 
+	const char *GetSkinName();
+
 	bool HasExtPass();
 	bool const Playback() { return vessel->Playback(); }
+	bool SaveCustomConfig();
 
 protected:
 
@@ -158,11 +161,14 @@ private:
 
 	UINT nmesh;				// number of meshes
 	bool bAMSO;
+	bool bLoadConfig;
 	ANIMATION *anim;		// list of animations (defined in the vessel object)
 	double *animstate;		// list of visual animation states
 	UINT nanim;				// number of animations
 	double tCheckLight;		// time for next lighting check
-	float ExhaustLength;	
+	float ExhaustLength;
+
+	char skinname[32];
 
 	static class D3D9ClientSurface *mfdoff; 
 	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;

@@ -83,14 +83,19 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 	// Normalize input
 	float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
-    
+   
     half4 cTex = gMat.diffuse;
     half3 cSpe = gMat.specular.rgb;
-    half2 cRfl = float2(1.0f, gReflCtrl[0]); 
+    half2 cRfl = float2(gReflCtrl[0], 1.0f); 
+
+	float glass = 1.0;
 
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMat.diffuse.a;	
+    }
+    else {
+		glass = 1.0 - pow(saturate(dot(CamW, nrmW)), 2.0);
     }
    
     if (gFullyLit) {
@@ -112,16 +117,29 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     half3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
 	half3 spec = frg.spec.rgb    + (s * gSun.specular.rgb);
 
+	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
+
+	cTex.rgb *= saturate(diff);
+	
+	float3 cStr = cSpe.rgb * saturate(spec);
+
 	if (gEnvMapEnable) {
 		float3 v = reflect(-CamW, nrmW);
 		if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2];
-		cTex.rgb = lerp(cTex.rgb, texCUBE(EnvMapS, v).rgb, cRfl.g);
+		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
+		cStr += c * cRfl.r;
+		cTex.rgb = lerp(cTex.rgb, c.rgb, cRfl.r);	
 	}
 	
-	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
+	cTex.a = saturate(cTex.a + length(cStr)*glass); // Reflection from a glass
+	
+	float3 color = cTex.rgb + cSpe.rgb * saturate(spec);
+	
+	
+
 
     // -------------------------------------------------------------------------
-	   float3 color = cTex.rgb * saturate(diff) + cSpe.rgb * (cRfl.r * saturate(spec));  // Standard lighting
+	// float3 color = cTex.rgb * saturate(diff) + cSpe.rgb * saturate(spec);			 // Standard lighting
     // float3 color = 1.0f - exp(-1.0f*(diff+spec));								     // "HDR" lighting
     // -------------------------------------------------------------------------
 

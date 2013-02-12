@@ -845,6 +845,21 @@ bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
 	return true;
 }
 
+// ===========================================================================================
+//
+DWORD D3D9Mesh::GetMeshGroupMaterialIdx(DWORD idx)
+{
+	if (idx>=nGrp) return 0;
+	return Grp[idx]->MtrlIdx;
+}
+
+// ===========================================================================================
+//
+DWORD D3D9Mesh::GetMeshGroupTextureIdx(DWORD idx)
+{
+	if (idx>=nGrp) return 0;
+	return Grp[idx]->TexIdx;
+}
 
 // ===========================================================================================
 //
@@ -1272,11 +1287,12 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 						HR(FX->SetBool(eEnvMapEnable, false));
 					}
 					else {
+
 						if (pEnv[0]) {
 
 							D3D9MatExt *pME = &MtrlExt[Grp[g]->MtrlIdx];
 
-							if (pME->bEnable) {
+							if (pME->Reflect!=0.0) {
 								FX->SetBool(eEnvMapEnable, true);
 								FX->SetTexture(eEnvMap, pEnv[0]);
 								FX->SetVector(eReflCtrl, &D3DXVECTOR4(pME->Reflect, pME->DissolveScl, pME->DissolveSct, 1.0f));

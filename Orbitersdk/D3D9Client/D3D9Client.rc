@@ -75,7 +75,7 @@ FONT 8, "Ms Shell Dlg"
     LTEXT           "Special Effect", IDC_STATIC, 18, 270, 45, 8, SS_LEFT
     CONTROL         "", IDC_DBG_MATADJ, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 18, 321, 156, 13
     PUSHBUTTON      "Save Materials", IDC_DBG_MATSAVE, 6, 363, 52, 14
-    LTEXT           "Texture: None", IDC_DBG_TEXTURE, 18, 339, 46, 8, SS_LEFT
+    LTEXT           "Texture: None", IDC_DBG_TEXTURE, 18, 339, 250, 8, SS_LEFT
     AUTOCHECKBOX    "Pick", IDC_DBG_PICK, 120, 147, 30, 8
 }
 
