@@ -520,6 +520,8 @@ public:
 
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
+	void				RegisterDissolveMap(SURFHANDLE hSrf);
+	SURFHANDLE			GetDissolveMap(DWORD idx) const;
 	
 
 	void EmergencyShutdown();
@@ -643,6 +645,7 @@ private:
 
 	mutable SURFHANDLE		pBltGrpTgt;
 
+	SURFHANDLE				pDislMapList[16];
     LPDIRECT3DDEVICE9		pd3dDevice;
 	LPD3D9CLIENTSURFACE	    pDefaultTex;
 	LPD3D9CLIENTSURFACE	    pScatterTest;
@@ -672,6 +675,7 @@ private:
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
 	DWORD ShaderModel;
+	DWORD iDisl;
 	
 	// device enumeration callback function
 

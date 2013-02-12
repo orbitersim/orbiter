@@ -1444,8 +1444,6 @@ bool vVessel::LoadCustomConfig()
 					hME->Specular.b = c;
 					hME->Specular.a = 1.0;
 					hME->Power = d;
-
-					LogAlw("Material %u Specular = [%f %f %f] [%f]", material, a, b, c, d);
 					continue;
 				}
 
@@ -1460,8 +1458,6 @@ bool vVessel::LoadCustomConfig()
 					hME->Diffuse.g = b;
 					hME->Diffuse.b = c;
 					hME->Diffuse.a = d;
-				
-					LogAlw("Material %u Diffuse = [%f %f %f %f]", material, a, b, c, d);
 					continue;
 				}
 
@@ -1476,8 +1472,6 @@ bool vVessel::LoadCustomConfig()
 					hME->Emissive.g = b;
 					hME->Emissive.b = c;
 					hME->Emissive.a = 1.0;
-				
-					LogAlw("Material %u Emissive = [%f %f %f]", material, a, b, c);
 					continue;
 				}
 
@@ -1492,20 +1486,17 @@ bool vVessel::LoadCustomConfig()
 					hME->Ambient.g = b;
 					hME->Ambient.b = c;
 					hME->Ambient.a = 1.0;
-				
-					LogAlw("Material %u Ambient = [%f %f %f]", material, a, b, c);
 					continue;
 				}
 
 				// --------------------------------------------------------------------------------------------
 				if (!strncmp(cbuf, "REFLECT", 7)) {
 
-					if (sscanf(cbuf, "REFLECT %f", &a)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+					if (sscanf(cbuf, "REFLECT %f %f", &a, &b)!=2) LogErr("Invalid Line in (%s): %s", path, cbuf);
 					if (mesh==0xFF || material==0xFF) return false;
 					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
 					hME->Reflect = a;
-
-					LogAlw("Material %u Reflectivity = %f", material, a);
+					hME->Glass = b;
 					continue;
 				}
 
@@ -1527,10 +1518,8 @@ bool vVessel::LoadCustomConfig()
 						return false;
 					}
 					else {
-						//gc->RegisterDissolveMap(hME->pDissolve);
+						gc->RegisterDissolveMap(hME->pDissolve);
 					}
-
-					LogAlw("Material %u Dissolve scale=%f, scatter=%f, Texture=0x%X (%s)", material, a, b, hME->pDissolve, SURFACE(hME->pDissolve)->GetName());
 					continue;
 				}
 			}
@@ -1581,21 +1570,21 @@ bool vVessel::SaveCustomConfig()
 
 				if (pME->ModFlags) {
 
-					if (bFirst) fprintf(file.pFile,"MESH %u",i);
+					if (bFirst) fprintf(file.pFile,"MESH %u\n",i);
 					bFirst = false;
 
 					SURFHANDLE hSrf = pME->pDissolve;
 
-					fprintf(file.pFile,"MATERIAL %u",m);
-					if (pME->ModFlags&D3D9MATEX_AMBIENT) fprintf(file.pFile,"AMBIENT %f %f %f", pM->Ambient.r, pM->Ambient.g, pM->Ambient.b);
-					if (pME->ModFlags&D3D9MATEX_DIFFUSE) fprintf(file.pFile,"DIFFUSE %f %f %f %f", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
-					if (pME->ModFlags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Power);
-					if (pME->ModFlags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
-					if (pME->ModFlags&D3D9MATEX_REFLECT) fprintf(file.pFile,"REFLECT %f", pME->Reflect);
+					fprintf(file.pFile,"MATERIAL %u\n",m);
+					if (pME->ModFlags&D3D9MATEX_AMBIENT) fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.r, pM->Ambient.g, pM->Ambient.b);
+					if (pME->ModFlags&D3D9MATEX_DIFFUSE) fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
+					if (pME->ModFlags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Power);
+					if (pME->ModFlags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
+					if (pME->ModFlags&D3D9MATEX_REFLECT) fprintf(file.pFile,"REFLECT %f %f\n", pME->Reflect, pME->Glass);
 
 					if (hSrf && pME->ModFlags&D3D9MATEX_DISSOLVE) {
 						const char *name = SURFACE(hSrf)->GetName();
-						if (name) fprintf(file.pFile,"DISSOLVE %s %f %f", name, pME->DissolveScl, pME->DissolveSct);
+						if (name) fprintf(file.pFile,"DISSOLVE %s %f %f\n", name, pME->DissolveScl, pME->DissolveSct);
 					}
 				}
 			}

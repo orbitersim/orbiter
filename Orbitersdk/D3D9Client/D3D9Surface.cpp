@@ -302,6 +302,7 @@ void D3D9ClientSurface::Clear()
 	pNormalMap	= NULL;
 	pEmissionMap = NULL;
 	pSpecularMap = NULL;
+	pReflectionMap = NULL;
 	Type		= 0;
 	iBindCount  = 0;
 	Initial		= 0;
@@ -1262,6 +1263,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 	char sname[64];
 	char ename[64];
 	char bname[64];
+	char rname[64];
 	
 	bClear = false;
 
@@ -1279,6 +1281,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 			CreateName(sname, 64, fname, "spec");
 			CreateName(ename, 64, fname, "emis");
 			CreateName(bname, 64, fname, "bump");
+			CreateName(rname, 64, fname, "refl");
 		}
 			
 		// Get information about the file
@@ -1414,6 +1417,23 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 					}
 				}
 				else LogErr("Failed to acquire image information for (%s)",ename);
+			}
+
+			// Reflection Map Section =======================================================================================================================
+			//
+			if (gc->TexturePath(rname, xpath)) {
+				D3DXIMAGE_INFO info;
+				pEmissionMap = NULL;
+				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
+						LogAlw("Reflection Map %s Loaded Successfully",rname);
+					}
+					else {
+						pReflectionMap = NULL;
+						LogErr("Failed to load image (%s)",rname);
+					}
+				}
+				else LogErr("Failed to acquire image information for (%s)",rname);
 			}
 		}
 
@@ -1678,6 +1698,13 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetEmissionMap()
 LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetSpecularMap()
 {
 	return pSpecularMap;
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetReflectionMap()
+{
+	return pReflectionMap;
 }
 
 // -----------------------------------------------------------------------------------------------

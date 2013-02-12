@@ -81,10 +81,11 @@ D3DXHANDLE D3D9Effect::eLightCount = 0;	// Number of additional light sources
 D3DXHANDLE D3D9Effect::eTex0 = 0;		// Primary texture
 D3DXHANDLE D3D9Effect::eTex1 = 0;		// Secaundary texture
 D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
-D3DXHANDLE D3D9Effect::eTex4 = 0;
-D3DXHANDLE D3D9Effect::eTex5 = 0;
+D3DXHANDLE D3D9Effect::eSpecMap = 0;
+D3DXHANDLE D3D9Effect::eEmisMap = 0;
 D3DXHANDLE D3D9Effect::eEnvMap = 0;
 D3DXHANDLE D3D9Effect::eDislMap = 0;
+D3DXHANDLE D3D9Effect::eReflMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -113,6 +114,7 @@ D3DXHANDLE D3D9Effect::eUseSpec = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseEmis = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eUseRefl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 
 	
@@ -193,8 +195,8 @@ void D3D9Effect::ShutDown()
 	FX->SetTexture(eTex0, NULL);
 	FX->SetTexture(eTex1, NULL);
 	FX->SetTexture(eTex3, NULL);
-	FX->SetTexture(eTex4, NULL);
-	FX->SetTexture(eTex5, NULL);
+	FX->SetTexture(eSpecMap, NULL);
+	FX->SetTexture(eEmisMap, NULL);
 }
 
 
@@ -309,6 +311,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eClamp		  = FX->GetParameterByName(0,"gClamp");
 	eNight		  = FX->GetParameterByName(0,"gNight");
 	eUseDisl	  = FX->GetParameterByName(0,"gUseDisl");
+	eUseRefl	  = FX->GetParameterByName(0,"gUseRefl");
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
@@ -338,10 +341,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTex0		  = FX->GetParameterByName(0,"gTex0");
 	eTex1		  = FX->GetParameterByName(0,"gTex1");
 	eTex3		  = FX->GetParameterByName(0,"gTex3");
-	eTex4		  = FX->GetParameterByName(0,"gTex4");
-	eTex5		  = FX->GetParameterByName(0,"gTex5");
+	eSpecMap	  = FX->GetParameterByName(0,"gSpecMap");
+	eEmisMap	  = FX->GetParameterByName(0,"gEmisMap");
 	eEnvMap		  = FX->GetParameterByName(0,"gEnvMap");
 	eDislMap	  = FX->GetParameterByName(0,"gDislMap");
+	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
@@ -362,7 +366,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	FX->SetBool(eDebugHL, false);
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
-	FX->SetVector(eReflCtrl,   &D3DXVECTOR4(0.0f, 1.0f, 0.05f, 1.0f));
+	FX->SetVector(eReflCtrl,   &D3DXVECTOR4(0.0f, 0.0f, 0.0f, 0.0f));
 
 
 	// Create a Circle Mesh --------------------------------------------
@@ -500,7 +504,6 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
 	FX->SetValue(eCamOff, &D3DXVECTOR3(float(cmo.x),float(cmo.y),float(cmo.z)), sizeof(D3DXVECTOR3));
-	//FX->SetVector(eReflCtrl, &D3DXVECTOR4(float(plr.x),float(plr.y),float(plr.z)));
 	FX->SetVector(eAtmColor, &atm_color);
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));

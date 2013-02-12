@@ -100,6 +100,7 @@ public:
 	LPDIRECT3DTEXTURE9 GetNormalMap();
 	LPDIRECT3DTEXTURE9 GetEmissionMap();
 	LPDIRECT3DTEXTURE9 GetSpecularMap();
+	LPDIRECT3DTEXTURE9 GetReflectionMap();
 	LPDIRECT3DTEXTURE9 GetTexture();
 	LPDIRECT3DDEVICE9  GetDevice() { return pDevice; }
 	
@@ -174,6 +175,7 @@ private:
 	LPDIRECT3DTEXTURE9	  pNormalMap;
 	LPDIRECT3DTEXTURE9	  pSpecularMap;
 	LPDIRECT3DTEXTURE9	  pEmissionMap;
+	LPDIRECT3DTEXTURE9	  pReflectionMap;
 	LPDIRECT3DDEVICE9	  pDevice;
 
 	ID3DXRenderToSurface *pRTS;

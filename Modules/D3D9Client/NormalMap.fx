@@ -75,31 +75,25 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     return outVS;
 }
 
-
-
 float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 {
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
+    float4 cTex = gMat.diffuse;
     float3 nrmT = float3(0,0,1);
-    float4 cSpe = float4(gMat.specular.rgb, gMat.specPower);
-    float4 cTex = tex2D(WrapS, frg.tex0);     
-                                                  
-    if (gNormalType)  nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
-    else {
+
+	float4 cSpe; 
+
+    cTex = tex2D(WrapS, frg.tex0);
+    if (gModAlpha) cTex.a *= gMat.diffuse.a;	
+  
+    if (gNormalType) nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
+	else {
 		nrmT.rg = tex2D(Nrm0S, frg.tex0).rg * 2.0 - 1.0;					   //Sampler for V8U8  
 		nrmT.b = sqrt(1.0 - nrmT.g*nrmT.g - nrmT.r*nrmT.r);
-	}  
+	} 
 	
-	/*
 	float3x3 TBN;
-    TBN[0] = frg.tanT;
-    TBN[1] = cross(frg.tanT, frg.nrmT);
-    TBN[2] = frg.nrmT;
-    float3 nrmW = mul(nrmT, TBN);
-    */
-    
-    float3x3 TBN;
     
     TBN[0] = frg.tanT;
     TBN[1] = cross(frg.tanT, frg.nrmT);
@@ -109,50 +103,40 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float3 nrmG = mul(float4(nrmO,0), gGrpT).xyz;
     float3 nrmW = mul(float4(nrmG,0), gW).xyz;
     
-    
-    if (gModAlpha) cTex.a *= gMat.diffuse.a;	
-    
-    if (gFullyLit) {
-		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-		return float4(cTex.rgb*gMat.diffuse.rgb, cTex.a);
-	}
+	if (gUseSpec) cSpe = tex2D(SpecS, frg.tex0);
+	else 		  cSpe = float4(gMat.specular.rgb, gReflCtrl[0]);
 
-	if (gUseSpec) {
-		cSpe = tex2D(SpecS, frg.tex0);
-		cSpe.a *= 80.0f;
-	}
-  
-   
+	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
     float  d = max(0,dot(-gSun.direction, nrmW));
-	float  s = pow(max(dot(r, CamW), 0.0f), cSpe.a); 
+	float  s = pow(max(dot(r, CamW), 0.0f), gMat.specPower); 
 
-    if (cSpe.a<2.0 || d<=0) s = 0;
+    if (gMat.specPower<2.0 || d<=0) s = 0;
 
-    half3 diff = gMat.diffuse.rgb  * (frg.diffuse.rgb + d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
-	half3 spec = cSpe.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
+    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	float3 spec = saturate(frg.spec.rgb + (s * gSun.specular.rgb));
 
-	if (gEnvMapEnable) {
-		float  r = pow(saturate(smoothstep(0.0, 80.0, cSpe.a)), 2); // Specular to reflection mapping
-		float3 v = reflect(-CamW, nrmW);
-		float3 s = r * texCUBE(EnvMapS, v);
-		spec += cSpe.rgb * s;
-	}
-	
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
-    // -------------------------------------------------------------------------
-	 float3 color  = cTex.rgb * saturate(diff) + saturate(spec);   // Standard lighting
-    //   float3 color = 1.0f - exp(-1.0f*(cTex.rgb*diff+spec));		 // "HDR" lighting
+	cTex.rgb *= saturate(diff);
+	
+	if (gEnvMapEnable) {
+		float3 v = reflect(-CamW, nrmW);
+		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
+		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpe.a);	
+	}
+	
+	// -------------------------------------------------------------------------	
+	   float3 color = cTex.rgb + cSpe.rgb * spec;
+    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
     // -------------------------------------------------------------------------
 
-    if (gNight) color.rgb += tex2D(NightS, frg.tex0).rgb; 
+    if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
+    
     if (gDebugHL) color = color*0.5 + gColor.rgb;
 
     return float4(color.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }
-
-
 
 
 // =============================================================================

@@ -69,7 +69,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     float dotb = saturate(-dot(gCameraPos, gSun.direction));
     float dota = -dot(gCameraPos, nrmW);
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
+	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.25);
 	
 
     return outVS;
@@ -83,29 +83,23 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 	// Normalize input
 	float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
-   
-    half4 cTex = gMat.diffuse;
-    half3 cSpe = gMat.specular.rgb;
-    half2 cRfl = float2(gReflCtrl[0], 1.0f); 
-
+    float4 cTex = gMat.diffuse;
 	float glass = 1.0;
+	
+	float4 cSpe; 
 
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMat.diffuse.a;	
     }
     else {
-		glass = 1.0 - pow(saturate(dot(CamW, nrmW)), 2.0);
+		glass = 1.0 - pow(saturate(dot(CamW, nrmW)), gReflCtrl[3]);
     }
    
-    if (gFullyLit) {
-		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-		return float4(cTex.rgb*gMat.diffuse.rgb, cTex.a);
-    }
-
-	if (gUseSpec) {
-		cRfl.rg = tex2D(SpecS, frg.tex0).rg;
-	}
+    if (gFullyLit) return float4(cTex.rgb*gMat.diffuse.rgb, cTex.a);
+   
+	if (gUseSpec) cSpe = tex2D(SpecS, frg.tex0);
+	else 		  cSpe = float4(gMat.specular.rgb, gReflCtrl[0]);
 
 	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
@@ -114,33 +108,28 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
     if (gMat.specPower<2.0 || d<=0) s = 0;
 
-    half3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
-	half3 spec = frg.spec.rgb    + (s * gSun.specular.rgb);
+    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	float3 spec = saturate(frg.spec.rgb + (s * gSun.specular.rgb));
 
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
 	cTex.rgb *= saturate(diff);
 	
-	float3 cStr = cSpe.rgb * saturate(spec);
+	float3 cInt = cSpe.rgb * spec;
 
 	if (gEnvMapEnable) {
 		float3 v = reflect(-CamW, nrmW);
 		if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2];
 		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
-		cStr += c * cRfl.r;
-		cTex.rgb = lerp(cTex.rgb, c.rgb, cRfl.r);	
+		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpe.a);	
+		cInt += c * cSpe.a;
 	}
 	
-	cTex.a = saturate(cTex.a + length(cStr)*glass); // Reflection from a glass
-	
-	float3 color = cTex.rgb + cSpe.rgb * saturate(spec);
-	
-	
+	cTex.a = saturate(cTex.a + saturate(cInt.r+cInt.g+cInt.b)*glass); // Reflection from a glass
 
-
-    // -------------------------------------------------------------------------
-	// float3 color = cTex.rgb * saturate(diff) + cSpe.rgb * saturate(spec);			 // Standard lighting
-    // float3 color = 1.0f - exp(-1.0f*(diff+spec));								     // "HDR" lighting
+	// -------------------------------------------------------------------------	
+	   float3 color = cTex.rgb + cSpe.rgb * spec;
+    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
@@ -149,6 +138,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
     return float4(color.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }
+
 
 MeshVS SimpleMeshTechVS(MESH_VERTEX vrt)
 {

@@ -1164,6 +1164,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	LPDIRECT3DTEXTURE9  pNorm = NULL;
 	LPDIRECT3DTEXTURE9  pSpec = NULL;
 	LPDIRECT3DTEXTURE9  pEmis = NULL;
+	LPDIRECT3DTEXTURE9  pRefl = NULL;
 
 	dev->SetVertexDeclaration(pMeshVertexDecl);
 	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
@@ -1177,6 +1178,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	FX->SetBool(eNight, false);
 	FX->SetBool(eUseSpec, false);
 	FX->SetBool(eUseEmis, false);
+	FX->SetBool(eUseRefl, false);
+	FX->SetBool(eUseDisl, false);
 	FX->SetBool(eDebugHL, false);
 	
 	int nLights = gc->GetScene()->GetLightCount();
@@ -1272,6 +1275,43 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			if (bGroupCull) if (!D9IsBSVisible(&Grp[g]->BBox, &mWorldView, &Field)) continue;
 		
 
+			// Setup Textures and Normal Maps ==========================================================================
+			// 
+			if (bTextured) {
+
+				if (Tex[ti]!=old_tex) { 
+
+					old_tex = Tex[ti]; 
+					FX->SetTexture(eTex0, Tex[ti]->GetTexture());	
+
+					if (tni && Tex[tni]) {
+						FX->SetTexture(eTex1, Tex[tni]->GetTexture());
+						FX->SetBool(eNight, true);
+					} else FX->SetBool(eNight, false);
+
+					if (bUseNormalMap) {
+					
+						pSpec = Tex[ti]->GetSpecularMap();
+						pEmis = Tex[ti]->GetEmissionMap();
+						pRefl = Tex[ti]->GetReflectionMap();
+
+						if (pNorm) {
+							FX->SetTexture(eTex3, pNorm);
+							FX->SetBool(eNormalType, (Tex[ti]->NormalMapType()==1));
+						}
+
+						if (pSpec) FX->SetTexture(eSpecMap, pSpec);
+						if (pEmis) FX->SetTexture(eEmisMap, pEmis);
+						if (pRefl) FX->SetTexture(eReflMap, pRefl);
+						
+						FX->SetBool(eUseSpec, (pSpec!=NULL));
+						FX->SetBool(eUseEmis, (pEmis!=NULL));
+						FX->SetBool(eUseRefl, (pRefl!=NULL));
+					}
+				}
+			}
+
+
 			// Setup Mesh group material ==============================================================================
 			//		
 			if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
@@ -1292,10 +1332,10 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 							D3D9MatExt *pME = &MtrlExt[Grp[g]->MtrlIdx];
 
-							if (pME->Reflect!=0.0) {
+							if (pME->Reflect!=0.0 || pRefl) {
 								FX->SetBool(eEnvMapEnable, true);
 								FX->SetTexture(eEnvMap, pEnv[0]);
-								FX->SetVector(eReflCtrl, &D3DXVECTOR4(pME->Reflect, pME->DissolveScl, pME->DissolveSct, 1.0f));
+								FX->SetVector(eReflCtrl, &D3DXVECTOR4(pME->Reflect, pME->DissolveScl, pME->DissolveSct, pME->Glass));
 								if (pME->pDissolve) {
 									FX->SetTexture(eDislMap, SURFACE(pME->pDissolve)->GetTexture());
 									FX->SetBool(eUseDisl, true);
@@ -1305,35 +1345,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 							}
 							else FX->SetBool(eEnvMapEnable, false);
 						}
-					}
-				}
-			}
-			
-			// Setup Textures and Normal Maps ==========================================================================
-			// 
-			if (bTextured) {
-				if (Tex[ti]!=old_tex) { 
-					old_tex = Tex[ti]; 
-					FX->SetTexture(eTex0, Tex[ti]->GetTexture());	
-					if (tni && Tex[tni]) {
-						FX->SetTexture(eTex1, Tex[tni]->GetTexture());
-						FX->SetBool(eNight, true);
-					} else FX->SetBool(eNight, false);
-
-					if (bUseNormalMap) {
-					
-						pSpec = Tex[ti]->GetSpecularMap();
-						pEmis = Tex[ti]->GetEmissionMap();
-
-						if (pNorm) {
-							FX->SetTexture(eTex3, pNorm);
-							FX->SetBool(eNormalType, (Tex[ti]->NormalMapType()==1));
-						}
-						if (pSpec) FX->SetTexture(eTex4, pSpec);
-						if (pEmis) FX->SetTexture(eTex5, pEmis);
-						
-						FX->SetBool(eUseSpec, (pSpec!=NULL));
-						FX->SetBool(eUseEmis, (pEmis!=NULL));
 					}
 				}
 			}

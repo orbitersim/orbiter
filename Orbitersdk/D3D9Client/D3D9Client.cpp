@@ -272,6 +272,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bSkpGDI			 = true;
 	viewW = viewH    = 0;
 	viewBPP          = 0;
+	iDisl			 = 0;
 	scene            = NULL;
 	meshmgr          = NULL;
 	texmgr           = NULL;
@@ -361,6 +362,14 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	pDefaultTex = SURFACE(clbkLoadTexture("Null.dds"));
 	if (pDefaultTex==NULL) LogErr("CRITICAL !!   Null.dds not found");
+
+	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal.png"));
+	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal2.png"));
+	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal3.png"));
+	RegisterDissolveMap(clbkLoadTexture("Disl_Lines.png"));
+	RegisterDissolveMap(clbkLoadTexture("Disl_Lines2.png"));
+	RegisterDissolveMap(clbkLoadTexture("Disl_Noise.png"));
+	RegisterDissolveMap(clbkLoadTexture("Disl_Pool.png"));
 
 	int x=0;
 	if (viewW>1282) x=4;
@@ -1167,6 +1176,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				if (DebugControls::IsActive()) {
 					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 					if (flags&DBG_FLAGS_PICK) {	
+						DebugControls::SetGroupHighlight(true);
 						D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
 						if (pick.pMesh) DebugControls::SelectGroup(pick.group);
 					}
@@ -1176,6 +1186,12 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_LBUTTONUP:
 			{
+				if (DebugControls::IsActive()) {
+					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+					if (flags&DBG_FLAGS_PICK) {	
+						DebugControls::SetGroupHighlight(false);
+					}
+				}
 				bTrackMouse = false;
 				break;
 			}
@@ -1835,7 +1851,26 @@ LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 	return SURFACE(pFramework->GetBackBufferHandle());
 }
 
-// ==============================================================
+// =======================================================================
+
+void D3D9Client::RegisterDissolveMap(SURFHANDLE hSrf)
+{
+	if (iDisl<16) {
+		for (int i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return;
+		pDislMapList[iDisl] = hSrf;
+		iDisl++;
+	}
+}
+
+// =======================================================================
+
+SURFHANDLE D3D9Client::GetDissolveMap(DWORD idx) const
+{
+	if (idx<16) return pDislMapList[idx];
+	return NULL;
+}
+
+// =======================================================================
 
 void D3D9Client::WriteLog(const char *msg) const
 {
@@ -1845,11 +1880,15 @@ void D3D9Client::WriteLog(const char *msg) const
 	oapiWriteLog(cbuf);
 }
 
+// =======================================================================
+
 void D3D9Client::SetLabel(const char *txt)
 {
 	if (bRunning) return;
 	strcpy_s(pLoadLabel, 127, txt);
 }
+
+// =======================================================================
 
 void D3D9Client::SetItem(const char *txt)
 {
@@ -1903,7 +1942,7 @@ void D3D9Client::SetItem(const char *txt)
 	}
 }
 
-
+// =======================================================================
 
 void D3D9Client::SplashScreen()
 {
@@ -1965,7 +2004,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R9 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R10 Alpha 3 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

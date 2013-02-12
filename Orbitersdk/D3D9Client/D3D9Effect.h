@@ -114,6 +114,7 @@ public:
 	static D3DXHANDLE	eBrighten;
 	static D3DXHANDLE	eUseSpec;
 	static D3DXHANDLE	eUseEmis;
+	static D3DXHANDLE	eUseRefl;
 	static D3DXHANDLE	eDebugHL;
 	static D3DXHANDLE	eEnvMapEnable;
 	static D3DXHANDLE	eUseDisl;
@@ -147,10 +148,11 @@ public:
 	static D3DXHANDLE	eTex0;
 	static D3DXHANDLE	eTex1;
 	static D3DXHANDLE	eTex3;
-	static D3DXHANDLE	eTex4;
-	static D3DXHANDLE	eTex5;
+	static D3DXHANDLE	eSpecMap;
+	static D3DXHANDLE	eEmisMap;
 	static D3DXHANDLE	eEnvMap;
 	static D3DXHANDLE	eDislMap;
+	static D3DXHANDLE	eReflMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 

@@ -120,6 +120,7 @@ namespace DebugControls {
 	double		GetVisualSize();
 	DWORD		GetSelectedMesh();
 	void		SelectGroup(DWORD idx);
+	void		SetGroupHighlight(bool bStat);
 	
 	bool		IsActive();
 

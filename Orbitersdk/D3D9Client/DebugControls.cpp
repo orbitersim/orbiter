@@ -98,8 +98,14 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_PICK,			(SendDlgItemMessageA(hDlg, IDC_DBG_PICK, BM_GETCHECK, 0, 0)==BST_CHECKED));
 }
 
+void SetGroupHighlight(bool bStat)
+{
+	SETFLAG(debugFlags, DBG_FLAGS_HLGROUP, bStat);
+}
+
 void OpenDlgClbk(void *context)
 {
+	DWORD idx = 0;
 	HWND l_hDlg = oapiOpenDialog(g_hInst, IDD_D3D9MESHDEBUG, WndProc);
 
 	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
@@ -122,11 +128,17 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Ambient");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Specular");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflectivity");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflect");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Dissolve");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)"None");
+	while (true) {
+		SURFHANDLE hSrf = g_client->GetDissolveMap(idx++);
+		if (hSrf) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)SURFACE(hSrf)->GetName());
+		else break;
+	}
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
 
 
@@ -154,6 +166,26 @@ void OpenDlgClbk(void *context)
 	UpdateFlags();
 }
 
+void UpdateDissolveMap(SURFHANDLE hSrf)
+{
+	OBJHANDLE hObj = vObj->GetObjectA();
+
+	if (!oapiIsVessel(hObj)) return;
+
+	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+
+	if (!hMesh) return;
+
+	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+	D3DMATERIAL9 *pMat = hMesh->GetMaterial(matidx);
+	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
+
+	if (!pMat || !pMatE) return;
+
+	pMatE->pDissolve = hSrf;
+	pMatE->ModFlags |= D3D9MATEX_DISSOLVE;
+
+}
 
 
 void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
@@ -226,11 +258,9 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMatE->ModFlags |= D3D9MATEX_REFLECT;
 			switch(clr) {
-				case 0: 
-				{
-					pMatE->Reflect = value;
-					break;
-				}
+				case 0: pMatE->Reflect = value;	break;
+				case 1: pMatE->Glass = value; break;
+				
 			}
 			break;
 		}
@@ -314,6 +344,7 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		{
 			switch(clr) {
 				case 0: return pMatE->Reflect;
+				case 1: return pMatE->Glass;
 			}
 			break;
 		}
@@ -340,8 +371,9 @@ void SetColorSlider()
 	float val = GetMaterialValue(MatPrp, SelColor);
 	
 	if (MatPrp==2 && SelColor==3) val/=80.0; // Specular Power
-	if (MatPrp==5 && SelColor==0) val/=6.0;  // Dissolve scale
-	if (MatPrp==5 && SelColor==1) val/=0.2;  // Dissolve scatter
+	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
+	if (MatPrp==5 && SelColor==1) val/=0.5;  // Dissolve scatter
+	if (MatPrp==4 && SelColor==1) val/=2.0;  // Glass reflect
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -414,7 +446,7 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 3;
 		break;
 		case 1:	// Ambient
-			DisplayMat(true, true, true, true);
+			DisplayMat(true, true, true, false);
 			if (bSetup) SelColor = 3;
 		break;
 		case 2:	// Specular
@@ -422,11 +454,11 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 3;
 		break;
 		case 3:	// Emission
-			DisplayMat(true, true, true, true);
+			DisplayMat(true, true, true, false);
 			if (bSetup) SelColor = 0;
 		break;
 		case 4:	// Reflectivity
-			DisplayMat(true, false, false, false);
+			DisplayMat(true, true, false, false);
 			if (bSetup) SelColor = 0;
 		break;
 		case 5:	// Dissolve
@@ -456,8 +488,9 @@ void UpdateColorSlider(WORD pos)
 	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
 
 	if (MatPrp==2 && SelColor==3) val*=80.0; // Specular Power
-	if (MatPrp==5 && SelColor==0) val*=6.0;  // Dissolve scale
-	if (MatPrp==5 && SelColor==1) val*=0.2;  // Dissolve scatter
+	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
+	if (MatPrp==5 && SelColor==1) val*=0.5;  // Dissolve scatter
+	if (MatPrp==4 && SelColor==1) val*=2.0;  // Glass reflect
 
 	UpdateMeshMaterial(val, MatPrp, SelColor);
 }
@@ -651,6 +684,16 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_MATPRP:
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
+					UpdateMaterialDisplay(true);
+					SetColorSlider();
+				}
+				break;
+
+			case IDC_DBG_MATEFF:
+				if (HIWORD(wParam)==CBN_SELCHANGE) {
+					DWORD idx = SendDlgItemMessage(hWnd, IDC_DBG_MATEFF, CB_GETCURSEL, 0, 0);
+					if (idx==0) UpdateDissolveMap(NULL);
+					else        UpdateDissolveMap(g_client->GetDissolveMap(idx-1));
 					UpdateMaterialDisplay(true);
 					SetColorSlider();
 				}

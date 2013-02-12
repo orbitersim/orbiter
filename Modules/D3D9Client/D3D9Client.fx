@@ -66,6 +66,7 @@ uniform extern bool      gUseSpec;			// Enable Specular Maps
 uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool      gUseDisl;			// Enable dissolve effect
+uniform extern bool      gUseRefl;			// Enable dissolve effect
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
@@ -80,10 +81,11 @@ uniform extern float     gMix;				// General purpose parameter (multible uses)
 uniform extern texture   gTex0;			    // Diffuse texture
 uniform extern texture   gTex1;			    // Nightlights
 uniform extern texture   gTex3;				// Normal Map / Cloud Microtexture
-uniform extern texture   gTex4;				// Specular Map
-uniform extern texture   gTex5;		    	// Emission Map
+uniform extern texture   gSpecMap;			// Specular Map
+uniform extern texture   gEmisMap;	    	// Emission Map
 uniform extern texture   gEnvMap;	    	// Environment Map
 uniform extern texture   gDislMap;   		// Dissolve Map
+uniform extern texture   gReflMap;   		// Reflectivity Map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -183,7 +185,7 @@ sampler ClampS = sampler_state      // Base tile sampler
 
 sampler SpecS = sampler_state       // Primary Mesh texture sampler
 {
-	Texture = <gTex4>;
+	Texture = <gSpecMap>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -195,7 +197,19 @@ sampler SpecS = sampler_state       // Primary Mesh texture sampler
 
 sampler EmisS = sampler_state       // Primary Mesh texture sampler
 {
-	Texture = <gTex5>;
+	Texture = <gEmisMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+    MipMapLODBias = 0;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+sampler ReflS = sampler_state       // Primary Mesh texture sampler
+{
+	Texture = <gReflMap>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;

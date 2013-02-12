@@ -191,6 +191,7 @@ typedef struct {
 typedef struct {
 	DWORD	ModFlags;				///< Modification flags
 	float	Reflect;				///< Reflectivity 0.0 to 1.0
+	float	Glass;
 	float	DissolveScl;			///< Dissolve effect scale factor 0.20 to 3.0 (typical)
 	float   DissolveSct;			///< Dissolve effect scattering "range" 0.01 to 0.1 (typical)
 	SURFHANDLE pDissolve;			///< Pointer to Dissolve effect texture
