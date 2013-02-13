@@ -1457,12 +1457,15 @@ bool vVessel::LoadCustomConfig()
 					if (mesh==0xFF || material==0xFF) return false;
 					if (sscanf(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
 
-					D3DMATERIAL9 *hME = hMesh->GetMaterial(material);
-					hME->Specular.r = a;
-					hME->Specular.g = b;
-					hME->Specular.b = c;
-					hME->Specular.a = 1.0;
-					hME->Power = d;
+					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
+					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
+
+					hM->Specular.r = a;
+					hM->Specular.g = b;
+					hM->Specular.b = c;
+					hM->Specular.a = 1.0;
+					hM->Power = d;
+					hME->ModFlags |= D3D9MATEX_SPECULAR;
 					continue;
 				}
 
@@ -1472,11 +1475,14 @@ bool vVessel::LoadCustomConfig()
 					if (mesh==0xFF || material==0xFF) return false;
 					if (sscanf(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
 
-					D3DMATERIAL9 *hME = hMesh->GetMaterial(material);
-					hME->Diffuse.r = a;
-					hME->Diffuse.g = b;
-					hME->Diffuse.b = c;
-					hME->Diffuse.a = d;
+					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
+					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
+
+					hM->Diffuse.r = a;
+					hM->Diffuse.g = b;
+					hM->Diffuse.b = c;
+					hM->Diffuse.a = d;
+					hME->ModFlags |= D3D9MATEX_DIFFUSE;
 					continue;
 				}
 
@@ -1486,11 +1492,14 @@ bool vVessel::LoadCustomConfig()
 					if (mesh==0xFF || material==0xFF) return false;
 					if (sscanf(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 
-					D3DMATERIAL9 *hME = hMesh->GetMaterial(material);
-					hME->Emissive.r = a;
-					hME->Emissive.g = b;
-					hME->Emissive.b = c;
-					hME->Emissive.a = 1.0;
+					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
+					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
+
+					hM->Emissive.r = a;
+					hM->Emissive.g = b;
+					hM->Emissive.b = c;
+					hM->Emissive.a = 1.0;
+					hME->ModFlags |= D3D9MATEX_EMISSIVE;
 					continue;
 				}
 
@@ -1500,11 +1509,14 @@ bool vVessel::LoadCustomConfig()
 					if (mesh==0xFF || material==0xFF) return false;
 					if (sscanf(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 
-					D3DMATERIAL9 *hME = hMesh->GetMaterial(material);
-					hME->Ambient.r = a;
-					hME->Ambient.g = b;
-					hME->Ambient.b = c;
-					hME->Ambient.a = 1.0;
+					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
+					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
+
+					hM->Ambient.r = a;
+					hM->Ambient.g = b;
+					hM->Ambient.b = c;
+					hM->Ambient.a = 1.0;
+					hME->ModFlags |= D3D9MATEX_AMBIENT;
 					continue;
 				}
 
@@ -1516,6 +1528,7 @@ bool vVessel::LoadCustomConfig()
 					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
 					hME->Reflect = a;
 					hME->Glass = b;
+					hME->ModFlags |= D3D9MATEX_REFLECT;
 					continue;
 				}
 
@@ -1531,6 +1544,7 @@ bool vVessel::LoadCustomConfig()
 					hME->DissolveScl = a;
 					hME->DissolveSct = b;
 					hME->pDissolve = gc->clbkLoadTexture(tex, 0x8);
+					hME->ModFlags |= D3D9MATEX_DISSOLVE;
 					
 					if (hME->pDissolve==NULL) {
 						LogErr("Failed to load a texture (%s)",tex);
