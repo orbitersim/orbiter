@@ -372,7 +372,7 @@ void SetColorSlider()
 	
 	if (MatPrp==2 && SelColor==3) val/=80.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
-	if (MatPrp==5 && SelColor==1) val/=0.5;  // Dissolve scatter
+	if (MatPrp==5 && SelColor==1) val/=0.2;  // Dissolve scatter
 	if (MatPrp==4 && SelColor==1) val/=2.0;  // Glass reflect
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
@@ -497,7 +497,7 @@ void UpdateColorSlider(WORD pos)
 
 	if (MatPrp==2 && SelColor==3) val*=80.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
-	if (MatPrp==5 && SelColor==1) val*=0.5;  // Dissolve scatter
+	if (MatPrp==5 && SelColor==1) val*=0.2;  // Dissolve scatter
 	if (MatPrp==4 && SelColor==1) val*=2.0;  // Glass reflect
 
 	UpdateMeshMaterial(val, MatPrp, SelColor);

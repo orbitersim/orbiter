@@ -1378,6 +1378,12 @@ bool vVessel::ParseIfStatement(const char *cbuf)
 	return false;
 }
 
+void parse_vessel_classname(char *lbl)
+{
+	int i = -1;
+	while (lbl[++i]!=0) if (lbl[i]=='/' || lbl[i]=='\\') lbl[i]='_';
+}
+
 // ===========================================================================================
 //
 bool vVessel::LoadCustomConfig()
@@ -1386,13 +1392,15 @@ bool vVessel::LoadCustomConfig()
 	bool bParseMat = false;
 	char cbuf[256];
 	char path[256];
+	char classname[256];
+
 	const char *cfgdir = OapiExtension::GetConfigDir();
-	const char *classname = vessel->GetClassNameA();
+	strcpy_s(classname, 256, vessel->GetClassNameA());
+	parse_vessel_classname(classname);
+
 	AutoFile file;
 
 	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
-
-	LogAlw("ConfigPath (%s)", path);
 
 	file.pFile = fopen(path, "r");
 
@@ -1570,22 +1578,46 @@ bool vVessel::LoadCustomConfig()
 bool vVessel::SaveCustomConfig()
 {
 	_TRACE;
-	bool bParseMat = false;
+	bool bIfStatement = false;
+
 	char cbuf[256];
 	char path[256];
-	
+	char classname[256];
 	const char *cfgdir = OapiExtension::GetConfigDir();
-	const char *classname = vessel->GetClassNameA();
+	strcpy_s(classname, 256, vessel->GetClassNameA());
+	parse_vessel_classname(classname);
+
+	AutoFile in;
+
+	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
+
+	in.pFile = fopen(path, "r");
+
+	if (in.pFile) {
+		while(fgets2(cbuf, 256, in.pFile, 0x08)>=0) 
+		{
+			if(!strncmp(cbuf, "#if", 3)) {
+				bIfStatement = true;
+				break;
+			}
+		}
+		in.ForceClose();
+	}
 
 	AutoFile file;
 	
-	sprintf_s(path, 256, "%sGC\\temp.cfg", cfgdir);
+	if (bIfStatement) sprintf_s(path, 256, "%sGC\\temp.cfg", cfgdir);
+	else			  sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
 	
+	LogErr("Path = %s",path);
 	file.pFile = fopen(path, "w");
 
-	if (file.IsInvalid()) return false;
+	if (file.IsInvalid()) {
+		LogErr("Failed to write a file");
+		return false;
+	}
 
-	LogAlw("Writing a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
+	if (!bIfStatement) fprintf(file.pFile,"#default\n");
 
 	for (DWORD i=0;i<nmesh;i++) {
 		
@@ -1603,11 +1635,14 @@ bool vVessel::SaveCustomConfig()
 
 				if (pME->ModFlags) {
 
-					if (bFirst) fprintf(file.pFile,"MESH %u\n",i);
+					if (bFirst) {
+						fprintf(file.pFile,"; -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n",m);
+						fprintf(file.pFile,"MESH %u\n",i);
+					}
 					bFirst = false;
 
 					SURFHANDLE hSrf = pME->pDissolve;
-
+					fprintf(file.pFile,"; ---------------------------------------------\n",m);
 					fprintf(file.pFile,"MATERIAL %u\n",m);
 					if (pME->ModFlags&D3D9MATEX_AMBIENT) fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.r, pM->Ambient.g, pM->Ambient.b);
 					if (pME->ModFlags&D3D9MATEX_DIFFUSE) fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
@@ -1623,6 +1658,7 @@ bool vVessel::SaveCustomConfig()
 			}
 		}
 	}
+	if (!bIfStatement) fprintf(file.pFile,"#end\n");
 	return true;
 }
 

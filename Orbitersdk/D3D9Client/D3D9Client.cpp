@@ -364,8 +364,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	if (pDefaultTex==NULL) LogErr("CRITICAL !!   Null.dds not found");
 
 	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal.png"));
-	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal2.png"));
-	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal3.png"));
 	RegisterDissolveMap(clbkLoadTexture("Disl_Lines.png"));
 	RegisterDissolveMap(clbkLoadTexture("Disl_Lines2.png"));
 	RegisterDissolveMap(clbkLoadTexture("Disl_Noise.png"));
@@ -2022,7 +2020,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R10 Alpha 3 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R10 Alpha 4 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};
