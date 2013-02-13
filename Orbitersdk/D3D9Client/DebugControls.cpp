@@ -430,8 +430,8 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 
+	// Set material info
 	const char *skin = vVes->GetSkinName();
-	
 	if (skin)	sprintf_s(lbl,"Material %u: [Skin %s]", matidx, skin);
 	else		sprintf_s(lbl,"Material %u:", matidx);
 
@@ -478,6 +478,14 @@ void UpdateMaterialDisplay(bool bSetup)
 			SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), lbl);
 		}
 	}
+
+	// Setup dissolve texture
+	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
+	if (pMatE->pDissolve==NULL) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
+	else {
+		int id = g_client->GetIndexOfDissolveMap(pMatE->pDissolve);	
+		if (id>=0) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, id+1, 0);
+	}
 }
 
 
@@ -510,6 +518,17 @@ void SelectGroup(DWORD idx)
 		sGroup = idx;
 		SetupMeshGroups();
 	}
+}
+
+void SelectMesh(D3D9Mesh *pMesh)
+{
+	for (DWORD i=0;i<nMesh;i++) {
+		if (vObj->GetMesh(i)==pMesh) {
+			sMesh = i;
+			break;
+		}
+	}
+	SetupMeshGroups();
 }
 
 
@@ -594,6 +613,12 @@ void RemoveVisual(vObject *vo)
 	if (vObj==vo) vObj=NULL;
 }
 
+void SetColorValue(const char *lbl)
+{
+	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+	UpdateMeshMaterial(float(atof(lbl)), MatPrp, SelColor);
+	SetColorSlider();
+}
 
 // ==============================================================
 // Dialog message handler
@@ -656,6 +681,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					UpdateMaterialDisplay();
 					SetColorSlider();
 				}
+				if (HIWORD(wParam)==EN_KILLFOCUS) {
+					GetWindowTextA(HWND(lParam), lbl, 32);
+					SetColorValue(lbl);
+				}
 				break;
 
 			case IDC_DBG_GREEN:
@@ -663,6 +692,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					SelColor = 1;
 					UpdateMaterialDisplay();
 					SetColorSlider();
+				}
+				if (HIWORD(wParam)==EN_KILLFOCUS) {
+					GetWindowTextA(HWND(lParam), lbl, 32);
+					SetColorValue(lbl);
 				}
 				break;
 
@@ -672,6 +705,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					UpdateMaterialDisplay();
 					SetColorSlider();
 				}
+				if (HIWORD(wParam)==EN_KILLFOCUS) {
+					GetWindowTextA(HWND(lParam), lbl, 32);
+					SetColorValue(lbl);
+				}
 				break;
 
 			case IDC_DBG_ALPHA:
@@ -679,6 +716,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					SelColor = 3;
 					UpdateMaterialDisplay();
 					SetColorSlider();
+				}
+				if (HIWORD(wParam)==EN_KILLFOCUS) {
+					GetWindowTextA(HWND(lParam), lbl, 32);
+					SetColorValue(lbl);
 				}
 				break;
 

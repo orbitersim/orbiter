@@ -83,19 +83,31 @@ float4 PlanetTechPS(TileVS frg) : COLOR
 float4 CloudTechPS(TileVS frg) : COLOR
 {
     float mic = 1.0f;
-    if (gMix>0.0f) mic -= (1.0f - tex2D(Planet3S, frg.tex1).a) * gMix * 0.5f;
+    
+    // Default
+    if (gMix>0.0f) mic -= (1.0f - tex2D(Planet3S, frg.tex1*2).a) * gMix;
+    
+    // Test
+    //if (gMix>0.0f) mic -= (1.0f - tex2D(Planet3S, frg.tex1).a*tex2D(Planet3S, frg.tex1*6).a) * gMix;
  
     float4 data  = (gMat.ambient*frg.aux.b);
     float4 color = tex2D(Planet0S, frg.tex0);
+    float  alpha = color.a;
+    
+    // Modulate color
+    color = lerp(color*float4(0.7, 0.7, 0.74, 1), color, mic);
+    
+    // Modulate Alpha
+    // alpha = alpha * mic;
     
     if (dot(frg.normalW, frg.toCamW)<0) {    // Render cloud layer from below
-        float4 diff = (min(1,frg.aux.g*6) * frg.diffuse) * gMat.diffuse + data;
-        return float4(color.rgb*diff.rgb, color.a*mic);
+        float4 diff = (min(1,frg.aux.g*2) * frg.diffuse) * gMat.diffuse + data;
+        return float4(color.rgb*diff.rgb, alpha);
     }
 
     else { // Render cloud layer from above                            
-        float4 diff = (min(1,frg.aux.g*2) * frg.diffuse) * gMat.diffuse + data;
-        return float4(color.rgb*diff.rgb, color.a*mic); 
+        float4 diff = (min(1,frg.aux.g*1.5) * frg.diffuse) * gMat.diffuse + data;
+        return float4(color.rgb*diff.rgb, alpha); 
     }
 }
 

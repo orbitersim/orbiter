@@ -71,6 +71,9 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     float dota = -dot(gCameraPos, nrmW);
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
 	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
+	
+	// Add constanst -----------------------------------------------------------
+	outVS.diffuse.rgb += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
    
     return outVS;
 }
@@ -79,12 +82,10 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 {
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
-    float4 cTex = gMat.diffuse;
     float3 nrmT = float3(0,0,1);
-
 	float4 cSpe; 
 
-    cTex = tex2D(WrapS, frg.tex0);
+    float4 cTex = tex2D(WrapS, frg.tex0);
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	
   
     if (gNormalType) nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
@@ -108,12 +109,12 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 
 	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
-    float  d = max(0,dot(-gSun.direction, nrmW));
-	float  s = pow(max(dot(r, CamW), 0.0f), gMat.specPower); 
+    float  d = saturate(-dot(gSun.direction, nrmW));
+	float  s = pow(saturate(dot(r, CamW)), gMat.specPower); 
 
     if (gMat.specPower<2.0 || d<=0) s = 0;
 
-    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb);
 	float3 spec = saturate(frg.spec.rgb + (s * gSun.specular.rgb));
 
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;

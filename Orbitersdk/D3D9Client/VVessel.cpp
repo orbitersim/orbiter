@@ -1297,6 +1297,12 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 	D3DXMATRIX mWT;
 	LPD3DXMATRIX pWT = NULL;
 
+	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+	DWORD displ = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
+
+	bool bCockpit = (oapiCameraInternal() && (hObj == oapiGetFocusObject()));
+	bool bVC = (bCockpit && (oapiCockpitMode() == COCKPIT_VIRTUAL));
+
 	D3D9Pick result;
 	result.dist  = 1e10;
 	result.pMesh = NULL;
@@ -1310,14 +1316,29 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 
 		D3D9Mesh *hMesh = meshlist[i].mesh;
 
-		if (hMesh && i==DebugControls::GetSelectedMesh()) {
+		if (!hMesh) continue;
 
-			if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
-			else pWT = &mWorld;
+		// check if mesh should be rendered in this pass
+		WORD vismode = meshlist[i].vismode;
+		
+		if (DebugControls::IsActive()) if (displ>1) vismode = MESHVIS_ALWAYS;
+	
+		if (vismode==0) continue;
 
-			D3D9Pick pick = hMesh->Pick(pWT, vDir);
-			if (pick.dist<result.dist) result = pick;
+		if (bCockpit) {
+			if (!(vismode & MESHVIS_COCKPIT)) {
+				if ((!bVC) || (!(vismode & MESHVIS_VC))) continue;
+			}
+		} 
+		else {
+			if (!(vismode & MESHVIS_EXTERNAL)) continue;
 		}
+
+		if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
+		else pWT = &mWorld;
+
+		D3D9Pick pick = hMesh->Pick(pWT, vDir);
+		if (pick.dist<result.dist) result = pick;	
 	}
 
 	if (result.pMesh) result.vObj = this;
@@ -1339,8 +1360,6 @@ bool vVessel::ParseIfStatement(const char *cbuf)
 {
 	_TRACE;
 	char name[64];
-	LogErr("Parsing If statement [%s]",cbuf);
-
 	if (sscanf_s(cbuf, "#if %s", name, 64)==1) {
 		for (DWORD i=0;i<nmesh;i++) {
 			D3D9Mesh *hMesh = meshlist[i].mesh;

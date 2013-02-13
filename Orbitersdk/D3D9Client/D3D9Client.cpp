@@ -515,7 +515,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
 	_TRACER;
 	LogAlw("================ clbkDestroyRenderWindow ===============");
-	
+
 #ifdef _NVAPI_H
 	if (bNVAPI) {	
 		if (pStereoHandle) {
@@ -527,6 +527,13 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 #endif
 
 	__TRY {
+
+		DWORD i = 0;
+		while (true) {
+			SURFHANDLE hSrf = GetDissolveMap(i++);
+			if (hSrf) clbkReleaseTexture(hSrf);
+			else break;
+		}
 		
 		LogAlw("================ Clearing Texture Repository ===============");
 		SAFE_DELETE(texmgr);
@@ -549,7 +556,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		D3D9Text::GlobalExit();
 		D3D9Effect::GlobalExit();
 		D3D9ClientSurface::GlobalExit();
-		
+
 		SAFE_RELEASE(pSplashScreen);	// Splash screen related
 		SAFE_RELEASE(pTextScreen);		// Splash screen related
 		SAFE_RELEASE(pBackBuffer);		// Splash screen related
@@ -1178,7 +1185,10 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 					if (flags&DBG_FLAGS_PICK) {	
 						DebugControls::SetGroupHighlight(true);
 						D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
-						if (pick.pMesh) DebugControls::SelectGroup(pick.group);
+						if (pick.pMesh) {
+							DebugControls::SelectMesh(pick.pMesh);
+							DebugControls::SelectGroup(pick.group);
+						}
 					}
 				}
 				break;
@@ -1868,6 +1878,14 @@ SURFHANDLE D3D9Client::GetDissolveMap(DWORD idx) const
 {
 	if (idx<16) return pDislMapList[idx];
 	return NULL;
+}
+
+// =======================================================================
+
+int D3D9Client::GetIndexOfDissolveMap(SURFHANDLE hSrf) const
+{
+	for (int i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return i;
+	return -1;
 }
 
 // =======================================================================

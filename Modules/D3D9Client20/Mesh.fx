@@ -8,12 +8,12 @@ struct AdvancedVS
 {
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;     
-    half3  nrmW     : TEXCOORD1;
+    float3 nrmW     : TEXCOORD1;
     half4  diffuse  : COLOR0;           // (Local Light) Diffuse color
     half4  spec     : COLOR1;           // (Local Light) Specular color
     half4  atten    : TEXCOORD2;        // (Atmospheric haze) Attennuate incoming fragment color
     half4  insca    : TEXCOORD3;        // (Atmospheric haze) "Inscatter" Add to incoming fragment color
-    half2  tex0     : TEXCOORD4;
+    float2 tex0     : TEXCOORD4;
 };
 
 struct TileMeshVS
@@ -50,6 +50,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     nrmW = normalize(nrmW);
 
 	// A vector from the vertex to the camera
+	
 	outVS.CamW  = -posW;
 	outVS.tex0  = vrt.tex0;
     outVS.nrmW  = nrmW;
@@ -63,6 +64,16 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
     outVS.insca *= (gSun.diffuse+gSun.ambient);
+    
+    // Earth "glow" ------------------------------------------------------------
+    float dotb = saturate(-dot(gCameraPos, gSun.direction));
+    float dota = -dot(gCameraPos, nrmW);
+	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
+	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.25);
+	
+	// Add constanst -----------------------------------------------------------
+	outVS.diffuse.rgb += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	
 
     return outVS;
 }
@@ -71,43 +82,58 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 
 float4 MeshTechPS(AdvancedVS frg) : COLOR
 {
+
 	// Normalize input
 	float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
-    half4 cTex = 1;
-    half4 cSpe = float4(gMat.specular.rgb, gMat.specPower);
+    float4 cTex = gMat.diffuse;
+	float glass = 1.0;
+	
+	float4 cSpe; 
 
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMat.diffuse.a;	
     }
-    else cTex.a = gMat.diffuse.a;
-   
-    if (gFullyLit) {
-		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-		return float4(cTex.rgb*gMat.diffuse.rgb, cTex.a);
+    else {
+		glass = 1.0 - pow(saturate(dot(CamW, nrmW)), gReflCtrl[3]);
     }
+   
+    if (gFullyLit) return float4(cTex.rgb*gMat.diffuse.rgb, cTex.a);
+   
+	if (gUseSpec) cSpe = tex2D(SpecS, frg.tex0);
+	else 		  cSpe = float4(gMat.specular.rgb, gReflCtrl[0]);
 
-	if (gUseSpec) {
-		cSpe = tex2D(SpecS, frg.tex0);
-		cSpe.a *= 80.0f;
-	}
-
+	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
-    float  d = max(0,dot(-gSun.direction, nrmW));
-	float  s = pow(max(dot(r, CamW), 0.0f), cSpe.a); 
+    float  d = saturate(-dot(gSun.direction, nrmW));
+	float  s = pow(saturate(dot(r, CamW)), gMat.specPower) * saturate(gMat.specPower); 
 
-    if (cSpe.a<2.0 || d<=0) s = 0;
+    //if (gMat.specPower<2.0 || d==0) s = 0;
+    if (d==0) s = 0;
 
-    half3 diff = gMat.diffuse.rgb  * (frg.diffuse.rgb + d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
-	half3 spec = cSpe.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
+    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb);
+	float3 spec = frg.spec.rgb + (s * gSun.specular.rgb);
 
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
-    // -------------------------------------------------------------------------
-	half3 color  = cTex.rgb * saturate(diff) + saturate(spec);
-    //float3 color  = dayTex.rgb * diff + spec;
-    //float3 color = 1.0f - exp(-1.0f*(dayTex.rgb*diff+spec));
+	cTex.rgb *= saturate(diff);
+	
+	float3 cInt = cSpe.rgb * spec;
+
+	if (gEnvMapEnable) {
+		float3 v = reflect(-CamW, nrmW);
+		if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2];
+		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
+		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpe.a);	
+		cInt += c * cSpe.a;
+	}
+	
+	cTex.a = saturate(cTex.a + saturate(cInt.r+cInt.g+cInt.b)*glass); // Reflection from a glass
+
+	// -------------------------------------------------------------------------	
+	   float3 color = cTex.rgb + cSpe.rgb * saturate(spec);
+    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
@@ -116,6 +142,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
     return float4(color.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }
+
 
 MeshVS SimpleMeshTechVS(MESH_VERTEX vrt)
 {
@@ -166,6 +193,7 @@ float4 VCTechPS(MeshVS frg) : COLOR
     }
 
     if (gModAlpha || !gTextured) cTex.a *= gMat.diffuse.a;	
+    
     if (gFullyLit) {
 		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
 		return float4(cTex.rgb*saturate(gMat.diffuse.rgb+gMat.emissive.rgb), cTex.a);
@@ -224,6 +252,28 @@ float4 RingTechPS(MeshVS frg) : COLOR
     
     float  da = dot(normalize(pp), gSun.direction);
     float  r  = sqrt(dot(pp,pp) * (1.0-da*da));
+    
+    float sh  = max(0.05, smoothstep(gRadius[0], gRadius[1], r));
+    
+    if (da<0) sh = 1.0f;
+    
+    if (dot(frg.nrmW, frg.CamW)>0) return float4(color.rgb*0.35f*sh, color.a);
+    return float4(color.rgb*sh, color.a);
+}
+
+float4 RingTech2PS(MeshVS frg) : COLOR
+{
+    float3 pp  = gCameraPos*gRadius[2] - frg.CamW*gDistScale;
+    float  dpp = dot(pp,pp);
+    float  len = sqrt(dpp);
+    
+    len = saturate(smoothstep(gTexOff.x, gTexOff.y, len));
+   
+    float4 color = tex2D(RingS, float2(len, 0.5));
+    color.a = color.r*0.75;
+     
+    float  da = dot(normalize(pp), gSun.direction);
+    float  r  = sqrt(dpp*(1.0-da*da));
     
     float sh  = max(0.05, smoothstep(gRadius[0], gRadius[1], r));
     
@@ -338,10 +388,10 @@ technique AxisTech
 // Mesh Shadow Technique
 // =============================================================================
 
-HazeVS ShadowMeshTechVS(MESH_VERTEX vrt)
+BShadowVS ShadowMeshTechVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
-	HazeVS outVS = (HazeVS)0;
+	BShadowVS outVS = (BShadowVS)0;
 	float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;
     float3 posW = mul(float4(posX, 1.0f), gW).xyz;
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
@@ -349,10 +399,10 @@ HazeVS ShadowMeshTechVS(MESH_VERTEX vrt)
     return outVS;
 }
 
-HazeVS ShadowMeshTechExVS(MESH_VERTEX vrt)
+BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
-	HazeVS outVS = (HazeVS)0;
+	BShadowVS outVS = (BShadowVS)0;
 	float d = dot(vrt.posL,vrt.posL);
     float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;
     float3 posW = mul(float4(posX-gColor.xyz*(gTexOff.x*d+gTexOff.y*d*d), 1.0f), gW).xyz;
@@ -362,7 +412,7 @@ HazeVS ShadowMeshTechExVS(MESH_VERTEX vrt)
 }
 
 
-float4 ShadowTechPS(HazeVS frg) : COLOR
+float4 ShadowTechPS(BShadowVS frg) : COLOR
 {
     return float4(0.0f, 0.0f, 0.0f, gMix);
 }
@@ -619,15 +669,29 @@ technique VCHudTech
     }
 }
 
-
-// This is used for rendering beacons ------------------------------------------
-//
 technique RingTech
 {
     pass P0
     {
         vertexShader = compile VS_MOD TinyMeshTechVS();
         pixelShader  = compile PS_MOD RingTechPS();
+        
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+        ZWriteEnable = true;
+        ZEnable = false;
+        CullMode = NONE;
+    }   
+}
+
+technique RingTech2
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD TinyMeshTechVS();
+        pixelShader  = compile PS_MOD RingTech2PS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

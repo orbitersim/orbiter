@@ -71,11 +71,15 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
 	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.25);
 	
+	// Add constanst -----------------------------------------------------------
+	outVS.diffuse.rgb += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	
 
     return outVS;
 }
 
 
+// 66 instructions
 
 float4 MeshTechPS(AdvancedVS frg) : COLOR
 {
@@ -87,7 +91,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 	float glass = 1.0;
 	
 	float4 cSpe; 
-
+	
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMat.diffuse.a;	
@@ -103,13 +107,14 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
 	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
-    float  d = max(0,dot(-gSun.direction, nrmW));
-	float  s = pow(max(dot(r, CamW), 0.0f), gMat.specPower); 
+    float  d = saturate(-dot(gSun.direction, nrmW));
+	float  s = pow(saturate(dot(r, CamW)), gMat.specPower) * saturate(gMat.specPower); 
 
-    if (gMat.specPower<2.0 || d<=0) s = 0;
+    //if (gMat.specPower<2.0 || d==0) s = 0;
+    if (d==0) s = 0;
 
-    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
-	float3 spec = saturate(frg.spec.rgb + (s * gSun.specular.rgb));
+    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb);
+	float3 spec = frg.spec.rgb + (s * gSun.specular.rgb);
 
 	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
@@ -128,7 +133,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 	cTex.a = saturate(cTex.a + saturate(cInt.r+cInt.g+cInt.b)*glass); // Reflection from a glass
 
 	// -------------------------------------------------------------------------	
-	   float3 color = cTex.rgb + cSpe.rgb * spec;
+	   float3 color = cTex.rgb + cSpe.rgb * saturate(spec);
     // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
     // -------------------------------------------------------------------------
 

@@ -1336,7 +1336,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 								FX->SetBool(eEnvMapEnable, true);
 								FX->SetTexture(eEnvMap, pEnv[0]);
 								FX->SetVector(eReflCtrl, &D3DXVECTOR4(pME->Reflect, pME->DissolveScl, pME->DissolveSct, pME->Glass));
-								if (pME->pDissolve) {
+								if (pME->pDissolve && bTextured) {
 									FX->SetTexture(eDislMap, SURFACE(pME->pDissolve)->GetTexture());
 									FX->SetBool(eUseDisl, true);
 								}
@@ -1372,6 +1372,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			// 
 			FX->SetBool(eTextured, bTextured);
 			FX->SetBool(eFullyLit, (Grp[g]->UsrFlag&0x4)!=0);
+
+			if ((Grp[g]->UsrFlag&0x4)!=0) LogErr("Fully Lit %u, 0x%X", g, this);
 
 			FX->CommitChanges();
 
@@ -1948,6 +1950,8 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 	D3DXMATRIX mW;
 
 	for (DWORD g=0;g<nGrp;g++) {
+
+		if (Grp[g]->UsrFlag & 0x2) continue;
 
 		D3DXVECTOR3 bs = D3DXVECTOR3f4(Grp[g]->BBox.bs);
 		float rad = Grp[g]->BBox.bs.w;

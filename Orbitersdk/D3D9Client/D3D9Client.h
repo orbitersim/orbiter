@@ -522,6 +522,7 @@ public:
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
 	void				RegisterDissolveMap(SURFHANDLE hSrf);
 	SURFHANDLE			GetDissolveMap(DWORD idx) const;
+	int					GetIndexOfDissolveMap(SURFHANDLE hSrf) const;
 	
 
 	void EmergencyShutdown();
