@@ -603,9 +603,8 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 	if (bTextured) {
 
 		D3DXVECTOR3 *ta = new D3DXVECTOR3[nVtx];
-		D3DXVECTOR3 *bi = new D3DXVECTOR3[nVtx];
-
-		for (DWORD i=0;i<nVtx;i++) bi[i]=ta[i]=D3DXVECTOR3(0,0,0);
+		
+		for (DWORD i=0;i<nVtx;i++) ta[i]=D3DXVECTOR3(0,0,0);
 
 		for (DWORD i=0;i<nFace;i++) {
 
@@ -633,55 +632,31 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 			else q = 1.0f / q;
 
 			D3DXVECTOR3 t = ((k0*v1 - k1*v0) * q);		
-			D3DXVECTOR3 b = ((k1*u0 - k0*u1) * q); 
-
 			ta[i0]+=t; ta[i1]+=t; ta[i2]+=t;
-			bi[i0]+=b; bi[i1]+=b; bi[i2]+=b;
 		}
 
 		for (DWORD i=0;i<nVtx; i++) {
 
 			D3DXVECTOR3 n = D3DXVECTOR3(pVrt[i].nx,  pVrt[i].ny,  pVrt[i].nz);
 			D3DXVec3Normalize(&n, &n);
-
 			D3DXVECTOR3 t = (ta[i] - n * D3DXVec3Dot(&ta[i],&n));
-			D3DXVECTOR3 b = (bi[i] - n * D3DXVec3Dot(&bi[i],&n));
-
 			D3DXVec3Normalize(&t, &t);
-			//D3DXVec3Cross(&b,&n,&t);
-			D3DXVec3Normalize(&b, &b);
-
+	
 			pVrt[i].tx = t.x;
 			pVrt[i].ty = t.y;
 			pVrt[i].tz = t.z;
-
-			pVrt[i].bx = b.x;
-			pVrt[i].by = b.y;
-			pVrt[i].bz = b.z;
 		}
 
 		delete []ta;
-		delete []bi;
 	}
 	else {
 		for (DWORD i=0;i<nVtx; i++) {
-
 			D3DXVECTOR3 n = D3DXVECTOR3(pVrt[i].nx,  pVrt[i].ny,  pVrt[i].nz);
 			D3DXVECTOR3 t = Perpendicular(&n);
-			D3DXVECTOR3 b;
-
-			D3DXVec3Normalize(&n, &n);
 			D3DXVec3Normalize(&t, &t);
-			D3DXVec3Cross(&b,&n,&t);
-			D3DXVec3Normalize(&b, &b);
-
 			pVrt[i].tx = t.x;
 			pVrt[i].ty = t.y;
 			pVrt[i].tz = t.z;
-
-			pVrt[i].bx = b.x;
-			pVrt[i].by = b.y;
-			pVrt[i].bz = b.z;
 		}
 	}
 }

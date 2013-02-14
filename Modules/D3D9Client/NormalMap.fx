@@ -24,8 +24,10 @@ struct AdvancedNMVS
 {
     float4 posH     : POSITION0;
     float3 camW     : TEXCOORD0;
-    half4  diffuse  : TEXCOORD1;     // Diffuse color
-    half4  spec     : TEXCOORD2;     // Specular color
+    float3 locW     : TEXCOORD1;	 // Local light source average dir
+    half4  diff		: COLOR0;		 // Diffuse color
+    half4  spec     : COLOR1;        // Specular color
+    half3  ambi		: TEXCOORD2;
     half4  atten    : TEXCOORD3;     // Attennuate incoming fragment color
     half4  insca    : TEXCOORD4;     // "Inscatter" Add to incoming fragment color
     half2  tex0     : TEXCOORD5;
@@ -59,7 +61,7 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     // Construct Tangent to World transform matrix
     float3x3 TBN;
     TBN[0] = vrt.tanL;
-    TBN[1] = vrt.bitL;
+    TBN[1] = cross(vrt.tanL, vrt.nrmL);
     TBN[2] = vrt.nrmL; 
     TBN = mul(TBN, gGrpT);
     TBN = mul(TBN, gW);
@@ -74,22 +76,23 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
    
     float4 locW;
     
-    LocalVertexLight(outVS.diffuse, outVS.spec, locW, nrmW, posW);
+    LocalVertexLight(outVS.diff, outVS.spec, locW, nrmW, posW);
 
     //Atmospheric haze --------------------------------------------------------
 
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
     outVS.insca *= (gSun.diffuse+gSun.ambient);
+    outVS.locW = locW;
     
     // Earth "glow" ------------------------------------------------------------
     float dotb = saturate(-dot(gCameraPos, gSun.direction));
     float dota = -dot(gCameraPos, nrmW);
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
+	outVS.ambi = gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
 	
 	// Add constanst -----------------------------------------------------------
-	outVS.diffuse.rgb += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	outVS.ambi += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
    
     return outVS;
 }
@@ -99,7 +102,10 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
     float3 nrmT = float3(0,0,1);
-	float4 cSpe; 
+    
+	float4 cSpec; 
+	float3 cRefl;
+    float  iRefl;	
 
     float4 cTex = tex2D(WrapS, frg.tex0);
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	
@@ -120,32 +126,47 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float3 nrmG = mul(float4(nrmO,0), gGrpT).xyz;
     float3 nrmW = mul(float4(nrmG,0), gW).xyz;
     
-	if (gUseSpec) cSpe = tex2D(SpecS, frg.tex0);
-	else 		  cSpe = float4(gMat.specular.rgb, gReflCtrl[0]);
-
-	// Sunlight calculations
-    float3 r = reflect(gSun.direction, nrmW);
-    float  d = saturate(-dot(gSun.direction, nrmW));
-	float  s = pow(saturate(dot(r, CamW)), gMat.specPower); 
-
-    if (gMat.specPower<2.0 || d<=0) s = 0;
-
-    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb);
-	float3 spec = saturate(frg.spec.rgb + (s * gSun.specular.rgb));
-
-	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
-
-	cTex.rgb *= saturate(diff);
+	if (gUseSpec) {										
+		cSpec = tex2D(SpecS, frg.tex0);	// Color							
+		cSpec.a *= 100.0f; // Power										
+    }												
+    else {											
+		cSpec = float4(gMat.specular.rgb, gMat.specPower);		
+	}		
 	
-	if (gEnvMapEnable) {
-		float3 v = reflect(-CamW, nrmW);
-		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
-		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpe.a);	
-	}
+	if (gUseRefl) {
+		cRefl = tex2D(ReflS, frg.tex0);	// Color
+		iRefl = max(max(cRefl.r,cRefl.g), cRefl.b); // Intensity
+	} 					
+    else {
+		cRefl = gMat.specular.rgb;
+		iRefl = gReflCtrl[0];
+	}	
+
+	 // Sunlight calculation
+    float d = saturate(-dot(gSun.direction, nrmW));
+    float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
+   			
+    if (d==0) s = 0;							
+    																		
+    float3 diff = frg.diff.rgb * saturate(-dot(frg.locW, nrmW)) + frg.ambi + d;
+    float3 spec = frg.spec.rgb + s;
+
+    if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
+
+    cTex.rgb  *= saturate(diff);
+    cSpec.rgb *= spec;
+
+    if (gEnvMapEnable) {
+        float3 v = reflect(-CamW, nrmW);
+		float3 reflections = (cRefl.rgb * texCUBE(EnvMapS, v).rgb) * iRefl;				
+		cTex.rgb  *= (1.0-iRefl); 
+		cSpec.rgb += reflections;						
+    }
 	
 	// -------------------------------------------------------------------------	
-	   float3 color = cTex.rgb + cSpe.rgb * spec;
-    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
+	   float3 color = cTex.rgb + cSpec.rgb;
+    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpec.rgb * spec));  // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
@@ -171,7 +192,7 @@ TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
 
     half3x3 TBN;
 	TBN[0] = vrt.tanL.xyz;
-	TBN[1] = vrt.bitL.xyz;
+	TBN[1] = cross(vrt.tanL, vrt.nrmL);
 	TBN[2] = vrt.nrmL.xyz;
 
     half3x3 mTS = transpose(TBN);

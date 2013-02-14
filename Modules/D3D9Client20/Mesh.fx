@@ -16,10 +16,6 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
-// -------------------------------------------------------------------------------------------------------------
-// Vertex shader implementations with per vertex fog
-// -------------------------------------------------------------------------------------------------------------
-
 struct AdvancedVS
 {
     float4 posH     : POSITION0;
@@ -95,62 +91,79 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 }
 
 
-// 66 instructions
+// 70 instructions
 
 float4 MeshTechPS(AdvancedVS frg) : COLOR
 {
 
-	// Normalize input
-	float3 CamW = normalize(frg.CamW);
+    // Normalize input
+    float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
     float4 cTex = gMat.diffuse;
-	float glass = 1.0;
-	
-	float4 cSpe; 
-	
+    float glass = 1.0;
+
+    float4 cSpec;
+    float3 cRefl;
+    float  iRefl;										
+    
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
-        if (gModAlpha) cTex.a *= gMat.diffuse.a;	
+        if (gModAlpha) cTex.a *= gMat.diffuse.a;    
     }
     else {
-		glass = 1.0 - pow(saturate(dot(CamW, nrmW)), gReflCtrl[3]);
+        glass = 1.0 - pow(saturate(dot(CamW, nrmW)), gReflCtrl[3]);
     }
    
-    if (gFullyLit) return float4(cTex.rgb*gMat.diffuse.rgb, cTex.a);
+    if (gFullyLit) return float4(cTex.rgb, cTex.a);
    
-	if (gUseSpec) cSpe = tex2D(SpecS, frg.tex0);
-	else 		  cSpe = float4(gMat.specular.rgb, gReflCtrl[0]);
-
-	// Sunlight calculations
+    if (gUseSpec) {										
+		cSpec = tex2D(SpecS, frg.tex0);	// Color							
+		cSpec.a *= 100.0f; // Power										
+    }												
+    else {											
+		cSpec = float4(gMat.specular.rgb, gMat.specPower);		
+	}		
+	
+	if (gUseRefl) {
+		cRefl = tex2D(ReflS, frg.tex0);	// Color
+		iRefl = max(max(cRefl.r,cRefl.g), cRefl.b); // Intensity
+	} 					
+    else {
+		cRefl = gMat.specular.rgb;
+		iRefl = gReflCtrl[0];
+	}		
+   
+    // Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
     float  d = saturate(-dot(gSun.direction, nrmW));
-	float  s = pow(saturate(dot(r, CamW)), gMat.specPower) * saturate(gMat.specPower); 
+    float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a);					
+    
+    if (d==0) s = 0;							
+    																		
+    float3 diff = frg.diffuse.rgb + d;
+    float3 spec = frg.spec.rgb + s;
 
-    //if (gMat.specPower<2.0 || d==0) s = 0;
-    if (d==0) s = 0;
+    if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
-    float3 diff = frg.diffuse.rgb + (d * gSun.diffuse.rgb);
-	float3 spec = frg.spec.rgb + (s * gSun.specular.rgb);
+    cTex.rgb  *= saturate(diff);
+    cSpec.rgb *= spec;
 
-	if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
+    if (gEnvMapEnable) {
+        float3 v = reflect(-CamW, nrmW);
+        if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2]; // 4-instruction
+		float3 reflections = (cRefl.rgb * texCUBE(EnvMapS, v).rgb) * iRefl;				
+		cTex.rgb  *= (1.0-iRefl); 
+		cSpec.rgb += reflections;						
+    }
+    
+    // Must alter a glass transparency to make reflections visible.
+    // Reflection intensity calculations makes the shader bigger and slower
+    
+    cTex.a = saturate(cTex.a + saturate(cSpec.r+cSpec.g+cSpec.b)*glass); // Reflection from a glass
 
-	cTex.rgb *= saturate(diff);
-	
-	float3 cInt = cSpe.rgb * spec;
-
-	if (gEnvMapEnable) {
-		float3 v = reflect(-CamW, nrmW);
-		if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2];
-		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
-		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpe.a);	
-		cInt += c * cSpe.a;
-	}
-	
-	cTex.a = saturate(cTex.a + saturate(cInt.r+cInt.g+cInt.b)*glass); // Reflection from a glass
-
-	// -------------------------------------------------------------------------	
-	   float3 color = cTex.rgb + cSpe.rgb * saturate(spec);
-    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
+    // -------------------------------------------------------------------------
+	float3 color = cTex.rgb + cSpec.rgb;
+    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpec.rgb));  // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
@@ -158,7 +171,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     if (gDebugHL) color = color*0.5 + gColor.rgb;
 
     return float4(color.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
-}
+}  
 
 
 MeshVS SimpleMeshTechVS(MESH_VERTEX vrt)

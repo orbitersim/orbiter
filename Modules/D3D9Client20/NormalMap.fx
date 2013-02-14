@@ -99,7 +99,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
     float3 nrmT = float3(0,0,1);
-	float4 cSpe; 
+	float4 cSpec; 
 
     float4 cTex = tex2D(WrapS, frg.tex0);
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	
@@ -116,12 +116,13 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     TBN[1] = cross(frg.tanT, frg.nrmT);
     TBN[2] = frg.nrmT; 
     
-    float3 nrmO = mul(nrmT, TBN);
-    float3 nrmG = mul(float4(nrmO,0), gGrpT).xyz;
-    float3 nrmW = mul(float4(nrmG,0), gW).xyz;
+    float3 nrmW = 0;
+    //float3 nrmO = mul(nrmT, TBN);
+    //float3 nrmG = mul(float4(nrmO,0), gGrpT).xyz;
+    //float3 nrmW = mul(float4(nrmG,0), gW).xyz;
     
-	if (gUseSpec) cSpe = tex2D(SpecS, frg.tex0);
-	else 		  cSpe = float4(gMat.specular.rgb, gReflCtrl[0]);
+	if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);
+	else 		  cSpec = float4(gMat.specular.rgb, gReflCtrl[0]);
 
 	// Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
@@ -139,13 +140,13 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 	
 	if (gEnvMapEnable) {
 		float3 v = reflect(-CamW, nrmW);
-		float3 c = cSpe.rgb * texCUBE(EnvMapS, v).rgb;
-		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpe.a);	
+		float3 c = cSpec.rgb * texCUBE(EnvMapS, v).rgb;
+		cTex.rgb = lerp(cTex.rgb, c.rgb, cSpec.a);	
 	}
 	
 	// -------------------------------------------------------------------------	
-	   float3 color = cTex.rgb + cSpe.rgb * spec;
-    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpe.rgb * spec));  // "HDR" lighting
+	   float3 color = cTex.rgb + cSpec.rgb * spec;
+    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpec.rgb * spec));  // "HDR" lighting
     // -------------------------------------------------------------------------
 
     if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 

@@ -120,7 +120,6 @@ struct MESH_VERTEX {                           // Orbiter Mesh vertex layout
     float3 posL   : POSITION0;
     float3 nrmL   : NORMAL0;
     float3 tanL   : TANGENT0;
-    float3 bitL   : BINORMAL0;
     float2 tex0   : TEXCOORD0;
 };
 
