@@ -54,7 +54,8 @@ public:
 	/**
 	 * \brief Get a pointer to the client
 	 */
-	inline const oapi::D3D9Client *GetClient() const { return gc; }
+	//inline const oapi::D3D9Client *GetClient() const { return gc; }
+	inline oapi::D3D9Client *GetClient() const { return gc; }
 
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
@@ -131,7 +132,17 @@ public:
 
 	void AddLocalLight(const LightEmitter *le, const vObject *vo, DWORD idx);
 
+	/**
+	 * \brief Get object radius in pixels using oapiCameraGlobalPos()
+	 * \param hObj object handle
+	 */
 	double GetObjectAppRad(OBJHANDLE hObj) const;
+
+	/**
+	 * \brief Get object radius in pixels using a custom camera location.
+	 * \param hObj object handle
+	 */
+	double GetObjectAppRad2(OBJHANDLE hObj) const;
 
 	D3D9Pick PickScene(short xpos, short ypos);
 
@@ -279,6 +290,7 @@ private:
 	ID3DXRenderToEnvMap *pENV;
 
 	class vVessel *vFocus;
+	VOBJREC *vobjEnv;
 
 	OBJHANDLE hObj_proxy;		// closest celestial body
 	OBJHANDLE hCameraTarget;	// Current camera target, Mesh Debugger Related

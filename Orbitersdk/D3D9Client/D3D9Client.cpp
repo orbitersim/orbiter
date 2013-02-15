@@ -922,17 +922,17 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 {
 	_TRACER;
 	if (fname) {
-		LogOk("Storing a mesh 0x%X (%s)",hMesh,fname);
+		LogAlw("Storing a mesh 0x%X (%s)",hMesh,fname);
 		if (hMesh==NULL) LogErr("D3D9Client::clbkStoreMeshPersistent(%s) hMesh is NULL",fname);
 	}
 	else {
-		LogOk("Storing a mesh 0x%X",hMesh);
+		LogAlw("Storing a mesh 0x%X",hMesh);
 		if (hMesh==NULL) LogErr("D3D9Client::clbkStoreMeshPersistent() hMesh is NULL");
 	}
 
 	if (hMesh==NULL) return;
 	
-	int idx = meshmgr->StoreMesh(hMesh);
+	int idx = meshmgr->StoreMesh(hMesh, fname);
 
 	if (idx>=0) {
 		if (fname) LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,fname);

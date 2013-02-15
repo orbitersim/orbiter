@@ -44,7 +44,7 @@ void MeshManager::DeleteAll()
 	}
 }
 
-int MeshManager::StoreMesh(MESHHANDLE hMesh)
+int MeshManager::StoreMesh(MESHHANDLE hMesh, const char *name)
 {
 	if (hMesh==NULL) {
 		LogErr("NULL Mesh in MeshManager::StoreMesh()");
@@ -63,6 +63,7 @@ int MeshManager::StoreMesh(MESHHANDLE hMesh)
 	}
 	mlist[nmlist].hMesh = hMesh;
 	mlist[nmlist].mesh = new D3D9Mesh(gc, hMesh, true);
+	mlist[nmlist].mesh->SetName(name);
 	nmlist++;
 
 	float lim = 1e3;

@@ -15,6 +15,7 @@
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "D3D9Util.h"
+#include "MaterialMgr.h"
 
 using namespace oapi;
 
@@ -45,9 +46,10 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
 	bAMSO = false;
-	bLoadConfig = true;
+	bReflections = false;
 	
-	skinname[0] = NULL;
+	pMatMgr = new MatMgr(this, scene->GetClient());
+
 	for (int i=0;i<4;i++) pEnv[i] = NULL;
 
 	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
@@ -62,6 +64,8 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 vVessel::~vVessel ()
 {
+	delete pMatMgr;
+
 	for (int i=0;i<4;i++) {
 		SAFE_RELEASE(pEnv[i]);
 	}
@@ -184,13 +188,6 @@ bool vVessel::Update()
 
 	if (!active) return false;
 
-	if (bLoadConfig) {
-		if (!LoadCustomConfig()) {
-			LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
-		}
-		bLoadConfig = false;
-	}
-
 	vObject::Update();
 
 	UpdateAnimations();
@@ -264,6 +261,11 @@ void vVessel::LoadMeshes()
 
 	UpdateBoundingBox();
 
+	if (pMatMgr->LoadConfiguration()) {
+		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
+	}
+	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
+
 	LogOk("Loaded %u meshed for %s",nmesh,vessel->GetClassNameA());
 }
 
@@ -313,6 +315,7 @@ void vVessel::InsertMesh(UINT idx)
 	}
 
 	if (meshlist[idx].mesh) {
+		pMatMgr->ApplyConfiguration(meshlist[idx].mesh);
 		meshlist[idx].vismode = vessel->GetMeshVisibilityMode (idx);
 		vessel->GetMeshOffset (idx, ofs);
 		if (length(ofs)) {
@@ -907,14 +910,16 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 }
 
 // ============================================================================================
+// Return true to move into a next visual, false to continue working this visual
 //
-void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
+bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
+
 	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
 
 	if (!pEnvDS) {
 		LogErr("EnvDepthStencil doesn't exists");	
-		return;
+		return false;
 	}
 	
 	if (pEnv[0]==NULL) {
@@ -922,7 +927,7 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		pEnvDS->GetDesc(&desc);
 		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[0])!=S_OK) {
 			LogErr("Failed to create env cubemap for visual 0x%X",this);
-			return;
+			return false;
 		}
 		nEnv = 1;
 	}
@@ -953,7 +958,7 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 		iFace++;
 		if (iFace>=6) iFace = 0;
-
+		
 		D3DXVECTOR3 cp;
 		D3DXVec3Cross(&cp, &up, &dir);
 		D3DXVec3Normalize(&cp, &cp);
@@ -974,6 +979,7 @@ void vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	 SAFE_RELEASE(pODS);
 	 SAFE_RELEASE(pORT);
+	 return true;
 }
 
 
@@ -1348,331 +1354,6 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 
 // ===========================================================================================
 //
-const char *vVessel::GetSkinName()
-{
-	if (skinname[0]==0) return NULL;
-	return skinname;
-}
-
-// ===========================================================================================
-//
-bool vVessel::ParseIfStatement(const char *cbuf)
-{
-	_TRACE;
-	char name[64];
-	if (sscanf_s(cbuf, "#if %s", name, 64)==1) {
-		for (DWORD i=0;i<nmesh;i++) {
-			D3D9Mesh *hMesh = meshlist[i].mesh;
-			if (hMesh) {
-				DWORD nt = hMesh->TextureCount();
-				for (DWORD t=0;t<nt;t++) {
-					D3D9ClientSurface *pSrf = SURFACE(hMesh->GetTexture(t));
-					if (pSrf) if (pSrf->ScanNameSubId(name)) {
-						strcpy_s(skinname, 32, name);
-						return true;
-					}
-				}
-			}
-		}
-	}
-	return false;
-}
-
-void parse_vessel_classname(char *lbl)
-{
-	int i = -1;
-	while (lbl[++i]!=0) if (lbl[i]=='/' || lbl[i]=='\\') lbl[i]='_';
-}
-
-// ===========================================================================================
-//
-bool vVessel::LoadCustomConfig()
-{
-	_TRACE;
-	bool bParseMat = false;
-	char cbuf[256];
-	char path[256];
-	char classname[256];
-
-	const char *cfgdir = OapiExtension::GetConfigDir();
-	strcpy_s(classname, 256, vessel->GetClassNameA());
-	parse_vessel_classname(classname);
-
-	AutoFile file;
-
-	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
-
-	file.pFile = fopen(path, "r");
-
-	if (file.IsInvalid()) return true;
-
-	LogAlw("Reading a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
-
-	while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
-	{
-		if(!strncmp(cbuf, "#default", 8)) bParseMat = true;
-		if(!strncmp(cbuf, "#if", 3)) if (ParseIfStatement(cbuf)) bParseMat = true;
-		
-		if (bParseMat) {
-
-			DWORD mesh = 0xFF;
-			DWORD material = 0xFF;
-			float a, b, c, d;
-			D3D9Mesh *hMesh = NULL;
-
-			while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
-			{
-				if (!strncmp(cbuf, "#end", 4)) return true;
-
-				if (cbuf[0]=='#') {
-					LogErr("Invalid Configuration File (%s)",path);
-					return false;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "MESH", 4)) {
-
-					if (sscanf(cbuf, "MESH %u", &mesh)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-					if (mesh>nmesh) LogErr("Invalid Mesh Idx in (%s): %s", path, cbuf);
-
-					hMesh = meshlist[mesh].mesh;
-					material = 0;
-
-					if (hMesh==NULL) LogErr("Invalid Mesh Idx in (%s): %s", path, cbuf);
-					if (hMesh==NULL) return false;
-
-					LogAlw("Mesh %u Selected", mesh);
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "MATERIAL", 8)) {
-
-					if (hMesh==NULL) return false;
-
-					if (sscanf(cbuf, "MATERIAL %u", &material)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-
-					if (material>hMesh->MaterialCount()) {
-						LogErr("Invalid Material Idx in (%s): %s", path, cbuf);
-						return false;
-					}
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "SPECULAR", 8)) {
-
-					if (mesh==0xFF || material==0xFF) return false;
-					if (sscanf(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-
-					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
-					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
-
-					hM->Specular.r = a;
-					hM->Specular.g = b;
-					hM->Specular.b = c;
-					hM->Specular.a = 1.0;
-					hM->Power = d;
-					hME->ModFlags |= D3D9MATEX_SPECULAR;
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "DIFFUSE", 7)) {
-
-					if (mesh==0xFF || material==0xFF) return false;
-					if (sscanf(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-
-					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
-					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
-
-					hM->Diffuse.r = a;
-					hM->Diffuse.g = b;
-					hM->Diffuse.b = c;
-					hM->Diffuse.a = d;
-					hME->ModFlags |= D3D9MATEX_DIFFUSE;
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "EMISSIVE", 8)) {
-
-					if (mesh==0xFF || material==0xFF) return false;
-					if (sscanf(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-
-					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
-					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
-
-					hM->Emissive.r = a;
-					hM->Emissive.g = b;
-					hM->Emissive.b = c;
-					hM->Emissive.a = 1.0;
-					hME->ModFlags |= D3D9MATEX_EMISSIVE;
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "AMBIENT", 7)) {
-
-					if (mesh==0xFF || material==0xFF) return false;
-					if (sscanf(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-
-					D3DMATERIAL9 *hM = hMesh->GetMaterial(material);
-					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
-
-					hM->Ambient.r = a;
-					hM->Ambient.g = b;
-					hM->Ambient.b = c;
-					hM->Ambient.a = 1.0;
-					hME->ModFlags |= D3D9MATEX_AMBIENT;
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "REFLECT", 7)) {
-
-					if (sscanf(cbuf, "REFLECT %f %f", &a, &b)!=2) LogErr("Invalid Line in (%s): %s", path, cbuf);
-					if (mesh==0xFF || material==0xFF) return false;
-					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
-					hME->Reflect = a;
-					hME->Glass = b;
-					hME->ModFlags |= D3D9MATEX_REFLECT;
-					continue;
-				}
-
-				// --------------------------------------------------------------------------------------------
-				if (!strncmp(cbuf, "DISSOLVE", 8)) {
-
-					char tex[128];
-					if (sscanf_s(cbuf, "DISSOLVE %s %f %f", tex, sizeof(tex), &a, &b)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-					if (mesh==0xFF || material==0xFF) return false;
-
-					D3D9MatExt *hME = hMesh->GetMaterialExtension(material);
-
-					hME->DissolveScl = a;
-					hME->DissolveSct = b;
-					hME->pDissolve = gc->clbkLoadTexture(tex, 0x8);
-					hME->ModFlags |= D3D9MATEX_DISSOLVE;
-					
-					if (hME->pDissolve==NULL) {
-						LogErr("Failed to load a texture (%s)",tex);
-						return false;
-					}
-					else {
-						gc->RegisterDissolveMap(hME->pDissolve);
-					}
-					continue;
-				}
-			}
-			break;
-		}
-	}
-
-	return true;
-}
-
-
-
-// ===========================================================================================
-//
-bool vVessel::SaveCustomConfig()
-{
-	_TRACE;
-	bool bIfStatement = false;
-
-	char cbuf[256];
-	char path[256];
-	char classname[256];
-	const char *cfgdir = OapiExtension::GetConfigDir();
-	strcpy_s(classname, 256, vessel->GetClassNameA());
-	parse_vessel_classname(classname);
-
-	AutoFile in;
-
-	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
-
-	in.pFile = fopen(path, "r");
-
-	if (in.pFile) {
-		while(fgets2(cbuf, 256, in.pFile, 0x08)>=0) 
-		{
-			if(!strncmp(cbuf, "#if", 3)) {
-				bIfStatement = true;
-				break;
-			}
-		}
-		in.ForceClose();
-	}
-
-	AutoFile file;
-	
-	if (bIfStatement) sprintf_s(path, 256, "%sGC\\temp.cfg", cfgdir);
-	else			  sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
-	
-	LogErr("Path = %s",path);
-	file.pFile = fopen(path, "w");
-
-	if (file.IsInvalid()) {
-		LogErr("Failed to write a file");
-		return false;
-	}
-
-	if (!bIfStatement) fprintf(file.pFile,"#default\n");
-
-	for (DWORD i=0;i<nmesh;i++) {
-		
-		D3D9Mesh *hMesh = meshlist[i].mesh;
-
-		if (hMesh) {
-
-			DWORD mcnt = hMesh->MaterialCount();
-			bool bFirst = true;
-
-			for (DWORD m=0;m<mcnt;m++) {
-
-				D3D9MatExt   *pME = hMesh->GetMaterialExtension(m);
-				D3DMATERIAL9 *pM  = hMesh->GetMaterial(m);
-
-				if (pME->ModFlags) {
-
-					if (bFirst) {
-						fprintf(file.pFile,"; -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n",m);
-						fprintf(file.pFile,"MESH %u\n",i);
-					}
-					bFirst = false;
-
-					SURFHANDLE hSrf = pME->pDissolve;
-					fprintf(file.pFile,"; ---------------------------------------------\n",m);
-					fprintf(file.pFile,"MATERIAL %u\n",m);
-					if (pME->ModFlags&D3D9MATEX_AMBIENT) fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.r, pM->Ambient.g, pM->Ambient.b);
-					if (pME->ModFlags&D3D9MATEX_DIFFUSE) fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
-					if (pME->ModFlags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Power);
-					if (pME->ModFlags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
-					if (pME->ModFlags&D3D9MATEX_REFLECT) fprintf(file.pFile,"REFLECT %f %f\n", pME->Reflect, pME->Glass);
-
-					if (hSrf && pME->ModFlags&D3D9MATEX_DISSOLVE) {
-						const char *name = SURFACE(hSrf)->GetName();
-						if (name) fprintf(file.pFile,"DISSOLVE %s %f %f\n", name, pME->DissolveScl, pME->DissolveSct);
-					}
-				}
-			}
-		}
-	}
-	if (!bIfStatement) fprintf(file.pFile,"#end\n");
-	return true;
-}
-
-
-
-
-
-
-
-
-
-
-// ===========================================================================================
-//
 
 D3D9ClientSurface * vVessel::mfdoff = 0;
 D3D9ClientSurface * vVessel::tHUD = 0;
@@ -1694,6 +1375,8 @@ void TransformPoint (VECTOR3 &p, const D3DXMATRIX &T)
 	p.z = z*w;
 }
 
+// ===============================================================
+//
 void TransformDirection (VECTOR3 &a, const D3DXMATRIX &T, bool normalise)
 {
 	double x = a.x*T._11 + a.y*T._21 + a.z*T._31;

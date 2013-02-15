@@ -12,6 +12,7 @@
 #include "VObject.h"
 #include "Mesh.h"
 
+
 class oapi::D3D9Client;
 
 // ==============================================================
@@ -94,18 +95,16 @@ public:
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev); 
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderAxis (LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp);
-	void RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
+	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
 	
 	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx) { return pEnv[idx]; }
 	float GetExhaustLength() const { return ExhaustLength; }
 
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
 
-	const char *GetSkinName();
-
 	bool HasExtPass();
 	bool const Playback() { return vessel->Playback(); }
-	bool SaveCustomConfig();
+	class MatMgr * GetMaterialManager() const { return pMatMgr; }
 
 protected:
 
@@ -116,12 +115,7 @@ protected:
 	void InitAnimations();
 	void InitAnimations(UINT meshidx);
 	void ClearAnimations();
-	bool LoadCustomConfig();
-	bool ParseIfStatement(const char *cbuf);
-
-	//void CreateExhaust();
-	//void SetExhaustVertices(const VECTOR3 &edir, const VECTOR3 &cdir, const VECTOR3 &ref, double lscale, double wscale);
-
+	
 	/**
 	 * \brief Update animations of the visual
 	 *
@@ -148,6 +142,7 @@ protected:
 private:
 
 	VESSEL *vessel;			// access instance for the vessel
+	class MatMgr *pMatMgr;
 
 	LPDIRECT3DCUBETEXTURE9 pEnv[4];
 	int nEnv;				// Number of environmental cameras 
@@ -161,14 +156,12 @@ private:
 
 	UINT nmesh;				// number of meshes
 	bool bAMSO;
-	bool bLoadConfig;
+	bool bReflections;
 	ANIMATION *anim;		// list of animations (defined in the vessel object)
 	double *animstate;		// list of visual animation states
 	UINT nanim;				// number of animations
 	double tCheckLight;		// time for next lighting check
 	float ExhaustLength;
-
-	char skinname[32];
 
 	static class D3D9ClientSurface *mfdoff; 
 	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;

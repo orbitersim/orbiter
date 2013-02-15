@@ -47,6 +47,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client) : D3D9Effect()
 	bBSRecomputeAll = true;
 	bGlobalTF = false;
 	bModulateMatAlpha = false;
+	strcpy_s(name, 128, "???");
 	nGrp = 0;
 	nTex = 1;
 	Tex = new LPD3D9CLIENTSURFACE[nTex];
@@ -78,6 +79,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
 	bModulateMatAlpha = false;
+	strcpy_s(name, 128, "???");
 	MaxFace = 0;
 	MaxVert = 0;
 
@@ -171,6 +173,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, DWORD groups, const MESHGROUPEX **hGroup,
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
 	bModulateMatAlpha = false;
+	strcpy_s(name, 128, "???");
 	MaxFace = 0;
 	MaxVert = 0;
 	nGrp = groups;
@@ -233,6 +236,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
 	bModulateMatAlpha = false;
+	strcpy_s(name, 128, "???");
 
 	// template meshes are stored in system memory	
 	nGrp   = 1;
@@ -289,6 +293,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
 	bModulateMatAlpha = false;
+	strcpy_s(name, 128, "???");
 
 	// template meshes are stored in system memory	
 	nGrp   = 1;
@@ -345,6 +350,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
 	bModulateMatAlpha = mesh.bModulateMatAlpha;
+	strcpy_s(name, 128, mesh.name);
 
 	nGrp = mesh.nGrp;
 	Grp = new GROUPREC*[nGrp];
@@ -444,6 +450,31 @@ D3D9Mesh::~D3D9Mesh()
 
 // ===========================================================================================
 //
+void D3D9Mesh::SetName(const char *fname)
+{
+	if (fname) strcpy_s(name,128,fname);
+}
+
+// ===========================================================================================
+//
+/*
+DWORD D3D9Mesh::ComputeHash()
+{
+	DWORD   hash;
+	hash  =	MaxVert;
+	hash ^=	MaxFace<<12;
+	hash ^= nGrp<<24;               
+
+	DWORD dwords = (nMtrl*sizeof(D3DMATERIAL9))>>2;
+	DWORD *data = (DWORD *)Mtrl;
+
+	if (!data) return hash;
+	for (DWORD i=0;i<dwords;i++) hash ^= data[i];
+	return hash;
+}
+*/
+// ===========================================================================================
+//
 bool D3D9Mesh::HasShadow()
 {
 	for (DWORD g=0; g<nGrp; g++) {
@@ -476,7 +507,6 @@ void D3D9Mesh::UpdateGeometry()
 //
 void D3D9Mesh::CheckValidity()
 {
-
 	if (Constr!=5) {
 		float lim = 5e3;
 		for (DWORD i=0;i<nGrp;i++) {

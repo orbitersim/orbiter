@@ -362,6 +362,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MaterialMgr.cpp"
+				>
+			</File>
+			<File
 				RelativePath="Mesh.cpp"
 				>
 				<FileConfiguration
@@ -630,6 +634,10 @@
 			</File>
 			<File
 				RelativePath=".\Log.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MaterialMgr.h"
 				>
 			</File>
 			<File

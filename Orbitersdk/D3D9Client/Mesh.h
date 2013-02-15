@@ -90,7 +90,8 @@ public:
 	void UnLockVertexBuffer();
 	NMVERTEX * LockVertexBuffer(DWORD grp);
 
-	DWORD GetVertexFormat();
+	void SetName(const char *name);
+	const char *GetName() const { return name; }
 
 	/**
 	 * \brief Returns number of vertex groups
@@ -223,7 +224,6 @@ private:
 	DWORD	MaxVert;
 	DWORD	MaxFace;
 	DWORD   Constr;
-	DWORD   VtxFormat;			// Vertex Format 0=NTVERTEX, 1=NMVERTEX
 
 	oapi::D3D9Client *gc;		// the graphics client instance
 	GROUPREC **Grp;             // list of mesh groups
@@ -243,6 +243,8 @@ private:
 	bool bBSRecomputeAll;
 	bool bModulateMatAlpha;     // mix material and texture alpha channels
 	bool bGlobalTF;				// Mesh has a valid mTransform matrix
+
+	char name[128];
 };
 
 #endif // !__MESH_H

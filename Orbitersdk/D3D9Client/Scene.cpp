@@ -56,6 +56,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	_TRACE;
 
 	gc = _gc;
+	vobjEnv = NULL;
 	csphere = NULL;
 	light = NULL;
 	Lights = NULL;
@@ -178,6 +179,18 @@ double Scene::GetObjectAppRad(OBJHANDLE hObj) const
 
 // ===========================================================================================
 //
+double Scene::GetObjectAppRad2(OBJHANDLE hObj) const
+{
+	VECTOR3 pos;
+	oapiGetGlobalPos (hObj, &pos);
+	VECTOR3 cam = GetCameraGPos();
+	double rad = oapiGetSize (hObj);
+	double dst = dist (pos, cam);
+	return (rad*double(viewH))/(dst*tan(oapiCameraAperture()));
+}
+
+// ===========================================================================================
+//
 void Scene::CheckVisual(OBJHANDLE hObj)
 {
 	_TRACE;
@@ -243,6 +256,8 @@ void Scene::DelVisualRec (VOBJREC *pv)
 
 	DebugControls::RemoveVisual(pv->vobj);
 
+	vobjEnv = vobjFirst;
+
 	// delete the visual, its children and the entry itself
 	gc->UnregisterVisObject(pv->vobj->GetObject());
 
@@ -276,6 +291,7 @@ void Scene::DeleteAllVisuals()
 		pv = pvn;
 	}
 	vobjFirst = vobjLast = NULL;
+	vobjEnv = NULL;
 }
 
 // ===========================================================================================
@@ -1161,7 +1177,18 @@ void Scene::RenderMainScene()
 		DWORD flags = 0;
 		if (Config->EnvMapMode==1) flags |= 0x01; 
 		if (Config->EnvMapMode==2) flags |= 0x03;
-		vFocus->RenderENVMap(pDevice, Config->EnvMapFaces, flags);
+
+		if (vobjEnv==NULL) vobjEnv = vobjFirst;
+
+		while (vobjEnv) {	
+			if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
+				if (((vVessel *)vobjEnv->vobj)->RenderENVMap(pDevice, Config->EnvMapFaces, flags)) {
+					vobjEnv = vobjEnv->next;
+					break;
+				}	
+			}
+			vobjEnv = vobjEnv->next;
+		}
 	}
 
 	// EnvMap Debugger ----------------------------------------------------------
@@ -1280,6 +1307,8 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 }
 
 
+// ===========================================================================================
+//
 void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube)
 {
 	if (!pCube) return;

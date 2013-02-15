@@ -23,7 +23,7 @@ public:
 	MeshManager (oapi::D3D9Client *gclient);
 	~MeshManager();
 	void DeleteAll();
-	int StoreMesh (MESHHANDLE hMesh);
+	int StoreMesh (MESHHANDLE hMesh, const char *name);
 	const D3D9Mesh *GetMesh (MESHHANDLE hMesh);
 	void UpdateMesh (MESHHANDLE hMesh);
 

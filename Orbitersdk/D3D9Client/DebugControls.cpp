@@ -5,6 +5,7 @@
 // Copyright (C) 2012 Jarmo Nikkanen
 // ==============================================================
 
+
 #include "D3D9Client.h"
 #include "resource.h"
 #include "D3D9Config.h"
@@ -14,6 +15,7 @@
 #include "vObject.h"
 #include "vVessel.h"
 #include "Mesh.h"
+#include "MaterialMgr.h"
 #include <stdio.h>
 
 using namespace oapi;
@@ -185,6 +187,9 @@ void UpdateDissolveMap(SURFHANDLE hSrf)
 	pMatE->pDissolve = hSrf;
 	pMatE->ModFlags |= D3D9MATEX_DISSOLVE;
 
+	vVessel *vVes = (vVessel *)vObj;
+
+	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat, pMatE); 
 }
 
 
@@ -275,6 +280,10 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			break;
 		}
 	}
+
+
+	vVessel *vVes = (vVessel *)vObj;
+	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat, pMatE); 
 }
 
 
@@ -431,7 +440,7 @@ void UpdateMaterialDisplay(bool bSetup)
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 
 	// Set material info
-	const char *skin = vVes->GetSkinName();
+	const char *skin = NULL;
 	if (skin)	sprintf_s(lbl,"Material %u: [Skin %s]", matidx, skin);
 	else		sprintf_s(lbl,"Material %u:", matidx);
 
@@ -478,6 +487,9 @@ void UpdateMaterialDisplay(bool bSetup)
 			SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), lbl);
 		}
 	}
+
+	sprintf_s(lbl, 256, "Mesh: %s", hMesh->GetName());
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
 
 	// Setup dissolve texture
 	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
@@ -669,7 +681,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				OBJHANDLE hObj = vObj->GetObjectA();
 				if (oapiIsVessel(hObj)) {
 					vVessel *vVes = (vVessel *)vObj;
-					vVes->SaveCustomConfig();
+					vVes->GetMaterialManager()->SaveConfiguration();
 				}
 				break;
 			}
