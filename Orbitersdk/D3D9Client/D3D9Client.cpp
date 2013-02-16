@@ -443,7 +443,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	char cbuf[256];
 	sprintf_s(cbuf,256,"%sGC\\VesselSkin.cfg",OapiExtension::GetConfigDir());
 
-	file.pFile = fopen(cbuf,"r");
+	fopen_s(&file.pFile, cbuf, "r");
 	fseek(file.pFile, 0, SEEK_END);
 	
 	DWORD size = ftell(file.pFile);
@@ -1910,7 +1910,7 @@ LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 void D3D9Client::RegisterDissolveMap(SURFHANDLE hSrf)
 {
 	if (iDisl<16) {
-		for (int i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return;
+		for (DWORD i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return;
 		pDislMapList[iDisl] = hSrf;
 		iDisl++;
 	}
@@ -1928,7 +1928,7 @@ SURFHANDLE D3D9Client::GetDissolveMap(DWORD idx) const
 
 int D3D9Client::GetIndexOfDissolveMap(SURFHANDLE hSrf) const
 {
-	for (int i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return i;
+	for (DWORD i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return i;
 	return -1;
 }
 

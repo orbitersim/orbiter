@@ -770,7 +770,8 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, con
 	std::vector<RunwayLights*> lights;
 	char cbuf[256];
 	
-	FILE* file = fopen(filename, "r");
+	FILE* file = NULL;
+	fopen_s(&file, filename, "r");
 
 	if (file == NULL) {
 		LogErr("Could not open %s file.", filename);
@@ -1021,7 +1022,8 @@ int TaxiLights::CreateTaxiLights(OBJHANDLE base, const class Scene *scn, const c
 	std::vector<TaxiLights*> lights;
 	char cbuf[256];
 	
-	FILE* file = fopen(filename, "r");
+	FILE* file = NULL;
+	fopen_s(&file, filename, "r");
 
 	if (file == NULL) {
 		LogErr("Could not open %s file.", filename);

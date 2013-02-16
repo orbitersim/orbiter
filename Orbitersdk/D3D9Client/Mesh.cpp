@@ -1986,7 +1986,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 		D3DXVec3TransformCoord(&bs, &bs, pW);
 
-		bool bIntersect = D3DXSphereBoundProbe(&bs, rad, &D3DXVECTOR3(0,0,0), vDir);
+		BOOL bIntersect = D3DXSphereBoundProbe(&bs, rad, &D3DXVECTOR3(0,0,0), vDir);
 
 		if (!bIntersect) continue;
 

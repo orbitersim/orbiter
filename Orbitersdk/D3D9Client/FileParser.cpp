@@ -155,7 +155,7 @@ bool FileParser::ParseScenario(const char *name)
 	FILE* file = NULL;
 	char cbuf[256];
 
-	file = fopen(name, "r");
+	fopen_s(&file, name, "r");
 
 	if (file==NULL) {
 		LogErr("Could not open a scenario '%s'", name);
@@ -222,7 +222,7 @@ bool FileParser::ParseSystem(const char *_name)
 	char name[256];
 	sprintf_s(name, 256,"%s%s.cfg", OapiExtension::GetConfigDir(), _name);
 
-	file = fopen(name, "r");
+	fopen_s(&file, name, "r");
 
 	if(file==NULL) {
 		LogErr("Could not open a solar system file '%s'", name);
@@ -258,7 +258,7 @@ bool FileParser::ParsePlanet(const char *_name)
 		sprintf_s(name, 256, "%s.cfg",_name);
 		sprintf_s(def,  256, "%s\\Base",_name);
 
-		file = fopen(path, "r");
+		fopen_s(&file, path, "r");
 
 		if (file==NULL) {
 			LogErr("Could not open a planet configuration file '%s'", name);
@@ -369,7 +369,7 @@ OBJHANDLE FileParser::ParseBase(OBJHANDLE hPlanet, const char *name, OBJHANDLE h
 	char base[256];
 	bool bBase = false;
 
-	file = fopen(name, "r");
+	fopen_s(&file, name, "r");
 
 	if (file==NULL) {
 		LogErr("Could not open a base configuration file '%s'", name);

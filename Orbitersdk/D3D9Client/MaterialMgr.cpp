@@ -168,12 +168,12 @@ bool MatMgr::LoadConfiguration()
 
 	if (skinname) {
 		sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
-		file.pFile = fopen(path, "r");
+		fopen_s(&file.pFile, path, "r");
 	}
 
 	if (file.IsInvalid()) {
 		sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
-		file.pFile = fopen(path, "r");	
+		fopen_s(&file.pFile, path, "r");	
 	}
 
 	if (file.IsInvalid()) return true;
@@ -196,14 +196,14 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MATERIAL", 8)) {
-			if (sscanf(cbuf, "MATERIAL %u", &material)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "MATERIAL %u", &material)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			iRec = NewRecord(meshname, material);
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SPECULAR", 8)) {
-			if (sscanf(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Specular.r = a;
 			pRecord[iRec].Mat.Specular.g = b;
 			pRecord[iRec].Mat.Specular.b = c;
@@ -215,7 +215,7 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "DIFFUSE", 7)) {
-			if (sscanf(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Diffuse.r = a;
 			pRecord[iRec].Mat.Diffuse.g = b;
 			pRecord[iRec].Mat.Diffuse.b = c;
@@ -226,7 +226,7 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "EMISSIVE", 8)) {
-			if (sscanf(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Emissive.r = a;
 			pRecord[iRec].Mat.Emissive.g = b;
 			pRecord[iRec].Mat.Emissive.b = c;
@@ -237,7 +237,7 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "AMBIENT", 7)) {
-			if (sscanf(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Ambient.r = a;
 			pRecord[iRec].Mat.Ambient.g = b;
 			pRecord[iRec].Mat.Ambient.b = c;
@@ -248,7 +248,7 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "REFLECT", 7)) {
-			if (sscanf(cbuf, "REFLECT %f %f", &a, &b)!=2) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "REFLECT %f %f", &a, &b)!=2) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].MatEx.Reflect = a;
 			pRecord[iRec].MatEx.Glass = b;
 			pRecord[iRec].MatEx.ModFlags |= D3D9MATEX_REFLECT;
@@ -288,7 +288,6 @@ bool MatMgr::SaveConfiguration()
 	_TRACE;
 	bool bIfStatement = false;
 
-	char cbuf[256];
 	char path[256];
 	char classname[256];
 	char current[64];
@@ -309,7 +308,7 @@ bool MatMgr::SaveConfiguration()
 	if (skinname) sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
 	else 		  sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
 	
-	file.pFile = fopen(path, "w");
+	fopen_s(&file.pFile, path, "w");
 
 	if (file.IsInvalid()) {
 		LogErr("Failed to write a file");

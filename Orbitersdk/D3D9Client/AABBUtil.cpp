@@ -23,8 +23,8 @@
 
 D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView)
 {
-	x = (x*2.0-1.0)/mProj->_11;
-	y = (y*2.0-1.0)/mProj->_22;
+	x = float((x*2.0-1.0)/mProj->_11);
+	y = float((y*2.0-1.0)/mProj->_22);
 	D3DXVECTOR3 pick(x, 1.0f, y);
 	D3DXMATRIX mViewI;
 	D3DXMatrixInverse(&mViewI, NULL, (const D3DXMATRIX *)&mView);
