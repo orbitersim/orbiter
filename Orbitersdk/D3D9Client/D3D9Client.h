@@ -60,6 +60,7 @@ int		ExcHandler(EXCEPTION_POINTERS *p);
 void	MissingRuntimeError();
 
 typedef class D3D9ClientSurface * LPD3D9CLIENTSURFACE;
+typedef char * LPCHAR;
 
 
 struct D3D9Stat {
@@ -546,6 +547,7 @@ public:
 
 	// overwritten
 	const void *GetConfigParam (DWORD paramtype) const;
+	const char *GetSkinFileLine(DWORD idx) const;
 
 protected:
 	/**
@@ -636,8 +638,6 @@ protected:
 	/// rendering the 3D scene (glass cockpit, date info, etc.)
 	void Output2DOverlay();
 
-
-
 private:
 
 	void Label(const char *format, ...);
@@ -677,6 +677,7 @@ private:
 	DWORD viewBPP;          // bit depth of render viewport
 	DWORD ShaderModel;
 	DWORD iDisl;
+	DWORD nSkins;
 	
 	// device enumeration callback function
 
@@ -695,6 +696,8 @@ private:
 	char pOrbiterRoot[256];
 	char pLoadLabel[128];
 	char pLoadItem[128];
+	LPCHAR *pSkinNames;
+	char *pSkinBuffer;
 
 	// Control Panel
 	

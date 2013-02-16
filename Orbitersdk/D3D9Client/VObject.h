@@ -116,6 +116,7 @@ public:
 	 */
 	virtual MESHHANDLE GetMesh (UINT idx) { return NULL; }
 
+	virtual void PreInitObject() { }
 	
 	virtual bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin) { return false; }
 	

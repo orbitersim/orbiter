@@ -49,7 +49,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	bReflections = false;
 	
 	pMatMgr = new MatMgr(this, scene->GetClient());
-
+	skinname[0] = NULL;
 	for (int i=0;i<4;i++) pEnv[i] = NULL;
 
 	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
@@ -62,6 +62,8 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 }
 
 
+// ============================================================================================
+// 
 vVessel::~vVessel ()
 {
 	delete pMatMgr;
@@ -76,6 +78,8 @@ vVessel::~vVessel ()
 }
 
 
+// ============================================================================================
+// 
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
@@ -87,6 +91,8 @@ void vVessel::GlobalInit(D3D9Client *gc)
 }
 
 
+// ============================================================================================
+// 
 void vVessel::GlobalExit ()
 {
 	SAFE_DELETE(defexhausttex);
@@ -96,6 +102,8 @@ void vVessel::GlobalExit ()
 }
 
 
+// ============================================================================================
+// 
 void vVessel::clbkEvent(DWORD evnt, UINT context)
 {
 	switch (evnt) {
@@ -164,24 +172,104 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 }
 
 
+// ============================================================================================
+// 
 DWORD vVessel::GetMeshCount()
 {
 	return nmesh;
 }
 
 
+// ============================================================================================
+// 
 MESHHANDLE vVessel::GetMesh (UINT idx)
 {
 	return (idx < nmesh ? meshlist[idx].mesh : NULL);
 }
 
 
+// ============================================================================================
+// 
 bool vVessel::HasExtPass()
 {
 	for (DWORD i=0;i<nmesh;i++) if (meshlist[i].vismode&MESHVIS_EXTPASS) return true;
 	return false;
 }
 
+
+// ============================================================================================
+// 
+const char *vVessel::GetSkinName() const
+{
+	if (skinname[0]==0) return NULL;
+	return skinname;
+}
+
+// ============================================================================================
+// 
+void vVessel::PreInitObject()
+{
+	if (pMatMgr->LoadConfiguration()) {
+		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
+	}
+	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
+}
+
+// ============================================================================================
+// 
+void vVessel::ParseSkins()
+{
+	char classname[64];
+
+	D3D9Client *gc = scn->GetClient();
+	DWORD start = 0;
+
+	sprintf_s(classname, 64, "#%s", vessel->GetClassNameA());
+
+	// Fine a class name entry
+	while (true) {
+		const char *lbl = gc->GetSkinFileLine(start);
+		start++;
+		if (lbl==NULL) return;
+		if (strcmp(classname, lbl)==0) {
+			LogOk("Class name found from index = %u",start-1);
+			break;
+		}
+	}
+
+	DWORD count=0;
+
+	// Count the skin entries
+	while (true) {
+		const char *lbl = gc->GetSkinFileLine(start+count);
+		if (lbl!=NULL && lbl[0]!='#') count++;
+		else break;
+	}
+
+	LogOk("Vessel skin count = %u",count);
+
+	for (DWORD i=0;i<nmesh;i++) {
+		if (meshlist[i].mesh) {
+			DWORD nTex = meshlist[i].mesh->TextureCount();
+			for (DWORD t=0;t<nTex;t++) {
+				SURFHANDLE hTex = meshlist[i].mesh->GetTexture(t); 
+				if (hTex) {
+					for (DWORD k=0;k<count;k++) {
+						if (SURFACE(hTex)->ScanNameSubId(gc->GetSkinFileLine(start+k))) {
+							strcpy_s(skinname, 64, gc->GetSkinFileLine(start+k));
+							LogOk("Skin %s found", skinname);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+// ============================================================================================
+// 
 bool vVessel::Update()
 {
 	_TRACE;
@@ -203,6 +291,8 @@ bool vVessel::Update()
 }
 
 
+// ============================================================================================
+// 
 void vVessel::LoadMeshes()
 {
 	_TRACE;
@@ -261,15 +351,12 @@ void vVessel::LoadMeshes()
 
 	UpdateBoundingBox();
 
-	if (pMatMgr->LoadConfiguration()) {
-		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
-	}
-	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
-
 	LogOk("Loaded %u meshed for %s",nmesh,vessel->GetClassNameA());
 }
 
 
+// ============================================================================================
+// 
 void vVessel::InsertMesh(UINT idx)
 {
 	_TRACE;
@@ -333,6 +420,9 @@ void vVessel::InsertMesh(UINT idx)
 	LogAlw("vVessel(0x%X)::InsertMesh(%u) hMesh=0x%X offset=(%g, %g, %g)",this,idx, hMesh, ofs.x, ofs.y, ofs.z);
 }
 
+
+// ============================================================================================
+// 
 void vVessel::ClearMeshes()
 {
 	if (nmesh) {
@@ -347,6 +437,9 @@ void vVessel::ClearMeshes()
 	}
 }
 
+
+// ============================================================================================
+// 
 void vVessel::DelMesh(UINT idx)
 {
 	if (idx==0xFFFFFFFF) {
@@ -362,6 +455,8 @@ void vVessel::DelMesh(UINT idx)
 }
 
 
+// ============================================================================================
+// 
 void vVessel::InitAnimations()
 {
 	bBSRecompute = true;
@@ -387,7 +482,8 @@ void vVessel::InitAnimations()
 }
 
 
-
+// ============================================================================================
+// 
 void vVessel::InitAnimations(UINT meshidx)
 {
 	bBSRecompute = true;
@@ -415,6 +511,8 @@ void vVessel::InitAnimations(UINT meshidx)
 }
 
 
+// ============================================================================================
+// 
 void vVessel::ClearAnimations ()
 {
 	if (nanim) {
@@ -423,6 +521,9 @@ void vVessel::ClearAnimations ()
 	}
 }
 
+
+// ============================================================================================
+// 
 void vVessel::UpdateAnimations (UINT mshidx)
 {
 	double newstate;
@@ -444,6 +545,8 @@ void vVessel::UpdateAnimations (UINT mshidx)
 }
 
 
+// ============================================================================================
+// 
 bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
@@ -456,9 +559,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 }
 
 
-
-
-
+// ============================================================================================
+// 
 bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 {
 	_TRACE;
@@ -610,6 +712,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 }
 
 
+// ============================================================================================
+// 
 void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 {
 	const double threshold = 0;//0.25; // threshold for forces to be drawn
@@ -746,6 +850,8 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 } 
 
 
+// ============================================================================================
+// 
 bool vVessel::RenderExhaust()
 {
 	ExhaustLength = 0.0f;
@@ -769,6 +875,8 @@ bool vVessel::RenderExhaust()
 }
 
 
+// ============================================================================================
+// 
 void vVessel::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 {
 	DWORD idx = 0;
@@ -787,6 +895,9 @@ void vVessel::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 	}
 }
 
+
+// ============================================================================================
+// 
 void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 {
     if (!oapiGetShowGrapplePoints()) return; // nothing to do
@@ -827,6 +938,9 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
     }
 }  
 
+
+// ============================================================================================
+// 
 void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float alpha)
 {
 	static const double eps = 1e-2;

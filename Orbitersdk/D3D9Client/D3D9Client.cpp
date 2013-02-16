@@ -435,14 +435,57 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	}
 #endif
 
+
+	// Create A skin database -------------------------------------------------------------
+	//
+	AutoFile file;
+
+	char cbuf[256];
+	sprintf_s(cbuf,256,"%sGC\\VesselSkin.cfg",OapiExtension::GetConfigDir());
+
+	file.pFile = fopen(cbuf,"r");
+	fseek(file.pFile, 0, SEEK_END);
+	
+	DWORD size = ftell(file.pFile);
+	fseek(file.pFile, 0, SEEK_SET);
+
+	pSkinNames = new LPCHAR[256]; memset(pSkinNames, 0, 256*sizeof(LPCHAR));
+	pSkinBuffer = new char[size];
+	nSkins = 0;
+
+	if (!file.IsInvalid()) {
+
+		while (true) {
+	
+			int rv = fgets2(cbuf, 256, file.pFile, 0x08);
+			if (rv<0) break;
+			if (rv==0) continue;
+			
+			pSkinNames[nSkins++] = pSkinBuffer;
+			int k=0;
+			while (true) {
+				*pSkinBuffer = cbuf[k];
+				 pSkinBuffer++;
+				 if (cbuf[k]==0) break;
+				 k++;
+			}
+		}
+	}
+	else {
+		LogErr("Failed to open a vessel skin configuration file");
+	}
+
 	return hRenderWnd;
 }
 
 
-
-
-
-
+// ==============================================================
+// This is called when the simulation is ready to go but the clock
+const char *D3D9Client::GetSkinFileLine(DWORD idx) const
+{
+	if (idx<nSkins && pSkinNames) return pSkinNames[idx];
+	return NULL;
+}
 
 
 // ==============================================================
@@ -533,6 +576,9 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 			else break;
 		}
 		
+		delete[] pSkinBuffer;
+		delete[] pSkinNames;
+
 		LogAlw("================ Clearing Texture Repository ===============");
 		SAFE_DELETE(texmgr);
 		LogAlw("================ Texture Repository Cleared ===============");

@@ -349,6 +349,12 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 		gc->EmergencyShutdown();
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
+
+	// Parse Vessel Skins
+	if (pv->type==OBJTP_VESSEL) ((vVessel *)pv->vobj)->ParseSkins();
+
+	// Initialize Meshes
+	pv->vobj->PreInitObject();
 	
 	return pv;
 }

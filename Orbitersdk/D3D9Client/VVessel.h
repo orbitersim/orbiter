@@ -51,6 +51,9 @@ public:
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	void UpdateBoundingBox();
 	DWORD GetMeshCount();
+
+	void PreInitObject();
+	void ParseSkins();
 	
 	/**
 	 * \brief Per-frame object parameter updates
@@ -105,6 +108,7 @@ public:
 	bool HasExtPass();
 	bool const Playback() { return vessel->Playback(); }
 	class MatMgr * GetMaterialManager() const { return pMatMgr; }
+	const char *GetSkinName() const;
 
 protected:
 
@@ -162,6 +166,7 @@ private:
 	UINT nanim;				// number of animations
 	double tCheckLight;		// time for next lighting check
 	float ExhaustLength;
+	char skinname[64];
 
 	static class D3D9ClientSurface *mfdoff; 
 	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;

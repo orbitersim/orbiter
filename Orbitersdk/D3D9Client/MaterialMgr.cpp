@@ -2,6 +2,7 @@
 #include "MaterialMgr.h"
 #include "D3D9Surface.h"
 #include "OapiExtension.h"
+#include "vVessel.h"
 
 
 
@@ -152,22 +153,28 @@ bool MatMgr::LoadConfiguration()
 	char classname[256];
 	char meshname[64];
 
-	const char *cfgdir = OapiExtension::GetConfigDir();
-
 	OBJHANDLE hObj = vObj->GetObjectA();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
-	VESSEL *vessel = oapiGetVesselInterface(hObj);
+	const char *cfgdir = OapiExtension::GetConfigDir();
+	const char *skinname = ((vVessel *)vObj)->GetSkinName();
 
+	VESSEL *vessel = oapiGetVesselInterface(hObj);
 	strcpy_s(classname, 256, vessel->GetClassNameA());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
 
-	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
+	if (skinname) {
+		sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
+		file.pFile = fopen(path, "r");
+	}
 
-	file.pFile = fopen(path, "r");
+	if (file.IsInvalid()) {
+		sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
+		file.pFile = fopen(path, "r");	
+	}
 
 	if (file.IsInvalid()) return true;
 
@@ -286,20 +293,21 @@ bool MatMgr::SaveConfiguration()
 	char classname[256];
 	char current[64];
 
-	const char *cfgdir = OapiExtension::GetConfigDir();
-
 	OBJHANDLE hObj = vObj->GetObjectA();
 
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
 	VESSEL *vessel = oapiGetVesselInterface(hObj);
+	const char *skinname = ((vVessel *)vObj)->GetSkinName();
+	const char *cfgdir = OapiExtension::GetConfigDir();
 
 	strcpy_s(classname, 256, vessel->GetClassNameA());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
 	
-	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
+	if (skinname) sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
+	else 		  sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
 	
 	file.pFile = fopen(path, "w");
 
@@ -307,8 +315,6 @@ bool MatMgr::SaveConfiguration()
 		LogErr("Failed to write a file");
 		return false;
 	}
-
-	LogErr("Saving config:  %u records", nRec);
 
 	for (DWORD k=0;k<nRec;k++) pRecord[k].bSaved = false;
 
