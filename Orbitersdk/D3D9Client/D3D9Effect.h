@@ -54,8 +54,7 @@ public:
 
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DVERTEXBUFFER9 pVB;
-	static LPDIRECT3DTEXTURE9 pNoiseMap;
-
+	
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
 	static D3D9Client   *gc;

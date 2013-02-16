@@ -55,6 +55,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client) : D3D9Effect()
 	nMtrl = 0;
 	MaxFace = 0;
 	MaxVert = 0;
+	pGrpTF = NULL;
 	Grp = NULL;
 	pVB = NULL;
 	pIB = NULL;
@@ -147,6 +148,8 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 		CopyGroupEx(Grp[i], mg);
 	}
 
+	pGrpTF = new D3DXMATRIX[nGrp];
+
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
@@ -210,6 +213,8 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, DWORD groups, const MESHGROUPEX **hGroup,
 
 	for (DWORD i=0;i<nGrp;i++) CopyGroupEx(Grp[i], hGroup[i]);
 
+	pGrpTF = new D3DXMATRIX[nGrp];
+
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
@@ -249,6 +254,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	nMtrl  = 1;
 	Mtrl   = new D3DMATERIAL9[nMtrl];
 	MtrlExt = new D3D9MatExt[nMtrl];
+	pGrpTF = new D3DXMATRIX[nGrp];
 
 	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
 	memcpy(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
@@ -305,6 +311,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	nMtrl  = 1;
 	Mtrl   = new D3DMATERIAL9[nMtrl];
 	MtrlExt = new D3D9MatExt[nMtrl];
+	pGrpTF = new D3DXMATRIX[nGrp];
 
 	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
 	memcpy(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
@@ -354,6 +361,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 
 	nGrp = mesh.nGrp;
 	Grp = new GROUPREC*[nGrp];
+	pGrpTF = new D3DXMATRIX[nGrp];
 
 	MaxFace = mesh.MaxFace;
 	MaxVert = mesh.MaxVert;
@@ -436,6 +444,7 @@ D3D9Mesh::~D3D9Mesh()
 		delete []Mtrl;
 		delete []MtrlExt;
 	}
+	if (pGrpTF) delete []pGrpTF;
 
 	if (pIB) pIB->Release();
 	if (pVB) pVB->Release();
@@ -507,6 +516,7 @@ void D3D9Mesh::UpdateGeometry()
 //
 void D3D9Mesh::CheckValidity()
 {
+
 	if (Constr!=5) {
 		float lim = 5e3;
 		for (DWORD i=0;i<nGrp;i++) {
@@ -621,7 +631,7 @@ void D3D9Mesh::ResetTransformations()
 	bBSRecomputeAll = true;
 	for (DWORD i=0;i<nGrp;i++) {
 		D3DXMatrixIdentity(&Grp[i]->Transform);
-		D3DXMatrixIdentity(&Grp[i]->TransformInv);
+		D3DXMatrixIdentity(&pGrpTF[i]);
 		Grp[i]->bTransform = false;
 	}
 }
@@ -1177,6 +1187,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
+	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
 	FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
@@ -1356,21 +1367,21 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 			// Apply Animations =========================================================================================
 			// 
-			// TODO: Clean up matrices
+			/*
 			if (Grp[g]->bTransform) {
 				if (bGlobalTF)  {
 					FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
-					if (pass==0) FX->SetMatrix(eGTI, D3DXMatrixMultiply(&q, &Grp[g]->TransformInv, &mTransformInv));
 				}
 				else {
 					FX->SetMatrix(eGT, &Grp[g]->Transform);
-					if (pass==0) FX->SetMatrix(eGTI, &Grp[g]->TransformInv);
 				}
 			}
 			else {
 				FX->SetMatrix(eGT, &mTransform);
-				if (pass==0) FX->SetMatrix(eGTI, &mTransformInv);
-			}
+			}*/
+
+
+			FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
 
 		
 			// Setup Mesh drawing options =================================================================================
@@ -1450,6 +1461,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
+	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
 	FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
@@ -1525,11 +1537,15 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 		// Apply Animations =========================================================================================
 		// 
+		/*
 		if (Grp[g]->bTransform) {
 			if (bGlobalTF)  FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
 			else FX->SetMatrix(eGT, &Grp[g]->Transform);
 		}
 		else FX->SetMatrix(eGT, &mTransform);
+		*/
+
+		FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
 		
 
 		// Setup Mesh drawing options =================================================================================
@@ -1829,7 +1845,7 @@ void D3D9Mesh::TransformGroup(DWORD n, const D3DXMATRIX *m)
 	Grp[n]->bTransform = true;
 	Grp[n]->bUpdate = true;
 
-	if (Config->UseNormalMap==1) D3DXMatrixInverse(&Grp[n]->TransformInv, NULL, &Grp[n]->Transform);
+	D3DXMatrixMultiply(&pGrpTF[n], &mTransform, &Grp[n]->Transform);
 }
 
 // ===========================================================================================
@@ -1842,7 +1858,14 @@ void D3D9Mesh::Transform(const D3DXMATRIX *m)
 	bBSRecomputeAll = true;
 	bGlobalTF = true;
 	mTransform = mTransform * (*m);
-	if (Config->UseNormalMap==1) D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
+	D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
+	for (DWORD i=0;i<nGrp;i++) {
+		if (Grp[i]->bTransform) {
+			if (bGlobalTF) D3DXMatrixMultiply(&pGrpTF[i], &mTransform, &Grp[i]->Transform);
+			else pGrpTF[i] = Grp[i]->Transform;	
+		}
+		else pGrpTF[i] = mTransform;
+	}
 }
 
 // ===========================================================================================
@@ -1991,10 +2014,6 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 			D3DXVec3TransformCoord(&_a, &pVrt[a], &mW); 
 			D3DXVec3TransformCoord(&_b, &pVrt[b], &mW);
 			D3DXVec3TransformCoord(&_c, &pVrt[c], &mW);
-
-			//D3DXVec3TransformCoord(&_a, &_a, pW); 
-			//D3DXVec3TransformCoord(&_b, &_b, pW);
-			//D3DXVec3TransformCoord(&_c, &_c, pW);
 
 			float u, v, dst;
 

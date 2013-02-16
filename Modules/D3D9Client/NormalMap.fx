@@ -49,28 +49,21 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
 {
     // Zero output.
 	AdvancedNMVS outVS = (AdvancedNMVS)0;
-	
-	float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;       // Apply meshgroup specific transformation
-    float3 posW = mul(float4(posX, 1.0f), gW).xyz;              // Apply world transformation matrix
+
+    float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+    float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz; 
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
 
-	float3 nrmX = mul(float4(vrt.nrmL.xyz,0), gGrpT).xyz;       
-    float3 nrmW = mul(float4(nrmX,0), gW).xyz;  
-   
-    /*
-    // Construct Tangent to World transform matrix
+    // Construct Tangent space transform matrix
     float3x3 TBN;
     TBN[0] = vrt.tanL;
     TBN[1] = cross(vrt.tanL, vrt.nrmL);
     TBN[2] = vrt.nrmL; 
-    TBN = mul(TBN, gGrpT);
+    
     TBN = mul(TBN, gW);
+    
 	outVS.nrmT  = TBN[2];
 	outVS.tanT  = TBN[0];
-	*/
-	
-	outVS.nrmT  = vrt.nrmL;
-	outVS.tanT  = vrt.tanL;
     outVS.camW  = -posW;
     outVS.tex0  = vrt.tex0;
    
@@ -101,8 +94,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 {
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
-    float3 nrmT = float3(0,0,1);
-    
+   
 	float4 cSpec; 
 	float3 cRefl;
     float  iRefl;	
@@ -110,39 +102,20 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float4 cTex = tex2D(WrapS, frg.tex0);
     if (gModAlpha) cTex.a *= gMat.diffuse.a;	
   
-    if (gNormalType) nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
-	else {
-		nrmT.rg = tex2D(Nrm0S, frg.tex0).rg * 2.0 - 1.0;					   //Sampler for V8U8  
-		nrmT.b = sqrt(1.0 - nrmT.g*nrmT.g - nrmT.r*nrmT.r);
-	} 
+    float3 nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
 	
 	float3x3 TBN;
-    
     TBN[0] = frg.tanT;
     TBN[1] = cross(frg.tanT, frg.nrmT);
     TBN[2] = frg.nrmT; 
     
-    float3 nrmO = mul(nrmT, TBN);
-    float3 nrmG = mul(float4(nrmO,0), gGrpT).xyz;
-    float3 nrmW = mul(float4(nrmG,0), gW).xyz;
+    float3 nrmW = mul(nrmT, TBN);
     
-	if (gUseSpec) {										
-		cSpec = tex2D(SpecS, frg.tex0);	// Color							
-		cSpec.a *= 100.0f; // Power										
-    }												
-    else {											
-		cSpec = float4(gMat.specular.rgb, gMat.specPower);		
-	}		
+	if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																			
+    else 	      cSpec = float4(gMat.specular.rgb, gReflCtrl[0]);		
+		
+	cRefl = cSpec.rgb;
 	
-	if (gUseRefl) {
-		cRefl = tex2D(ReflS, frg.tex0);	// Color
-		iRefl = max(max(cRefl.r,cRefl.g), cRefl.b); // Intensity
-	} 					
-    else {
-		cRefl = gMat.specular.rgb;
-		iRefl = gReflCtrl[0];
-	}	
-
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
     float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
@@ -156,24 +129,19 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 
     cTex.rgb  *= saturate(diff);
     cSpec.rgb *= spec;
-
-    if (gEnvMapEnable) {
-        float3 v = reflect(-CamW, nrmW);
-		float3 reflections = (cRefl.rgb * texCUBE(EnvMapS, v).rgb) * iRefl;				
-		cTex.rgb  *= (1.0-iRefl); 
-		cSpec.rgb += reflections;						
+   
+    if (gEnvMapEnable) {	
+		cTex.rgb  *= (1.0-cSpec.a); 
+		cSpec.rgb += cRefl.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb * cSpec.a;						
     }
 	
-	// -------------------------------------------------------------------------	
-	   float3 color = cTex.rgb + cSpec.rgb;
-    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpec.rgb * spec));  // "HDR" lighting
-    // -------------------------------------------------------------------------
-
-    if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
+	cTex.rgb += cSpec.rgb;
     
-    if (gDebugHL) color = color*0.5 + gColor.rgb;
+    if (gNight && gTextured) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
+    
+    if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
 
-    return float4(color.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
+    return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }
 
 

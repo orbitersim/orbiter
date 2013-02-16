@@ -54,10 +54,8 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 {
     AdvancedVS outVS = (AdvancedVS)0;
 
-    float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;       // Apply meshgroup specific transformation
-    float3 posW = mul(float4(posX, 1.0f), gW).xyz;              // Apply world transformation matrix
-    float3 nrmX = mul(float4(vrt.nrmL.xyz, 0.0f), gGrpT).xyz;
-    float3 nrmW = mul(float4(nrmX, 0.0f), gW).xyz;
+	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
 
     nrmW = normalize(nrmW);
 
@@ -81,7 +79,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     float dotb = saturate(-dot(gCameraPos, gSun.direction));
     float dota = -dot(gCameraPos, nrmW);
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.3) * 0.25);
+	outVS.diffuse += gAtmColor * (pow(angl*dotb, 0.5) * 0.25);
 	
 	// Add constanst -----------------------------------------------------------
 	outVS.diffuse.rgb += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
@@ -91,52 +89,38 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 }
 
 
-// 70 instructions
-
 float4 MeshTechPS(AdvancedVS frg) : COLOR
 {
 
     // Normalize input
     float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
-    float4 cTex = gMat.diffuse;
-    float glass = 1.0;
-
+    float  glass = 1.0;
+    
+	float4 cTex;
     float4 cSpec;
     float3 cRefl;
-    float  iRefl;										
     
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMat.diffuse.a;    
     }
     else {
+		cTex = gMat.diffuse;
         glass = 1.0 - pow(saturate(dot(CamW, nrmW)), gReflCtrl[3]);
     }
    
-    if (gFullyLit) return float4(cTex.rgb, cTex.a);
+    if (gFullyLit) return cTex;
    
-    if (gUseSpec) {										
-		cSpec = tex2D(SpecS, frg.tex0);	// Color							
-		cSpec.a *= 100.0f; // Power										
-    }												
-    else {											
-		cSpec = float4(gMat.specular.rgb, gMat.specPower);		
-	}		
-	
-	if (gUseRefl) {
-		cRefl = tex2D(ReflS, frg.tex0);	// Color
-		iRefl = max(max(cRefl.r,cRefl.g), cRefl.b); // Intensity
-	} 					
-    else {
-		cRefl = gMat.specular.rgb;
-		iRefl = gReflCtrl[0];
-	}		
-   
+    if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																				
+    else 		  cSpec = float4(gMat.specular.rgb, gReflCtrl[0]);		
+
+	cRefl = cSpec.rgb;
+
     // Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
     float  d = saturate(-dot(gSun.direction, nrmW));
-    float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a);					
+    float  s = pow(saturate(dot(r, CamW)), gMat.specPower) * saturate(gMat.specPower);					
     
     if (d==0) s = 0;							
     																		
@@ -145,33 +129,28 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
-    cTex.rgb  *= saturate(diff);
+    cTex.rgb *= saturate(diff);
     cSpec.rgb *= spec;
 
     if (gEnvMapEnable) {
         float3 v = reflect(-CamW, nrmW);
         if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2]; // 4-instruction
-		float3 reflections = (cRefl.rgb * texCUBE(EnvMapS, v).rgb) * iRefl;				
-		cTex.rgb  *= (1.0-iRefl); 
-		cSpec.rgb += reflections;						
+		cTex.rgb *= (1.0-cSpec.a); 
+		cSpec.rgb += cRefl.rgb * texCUBE(EnvMapS, v).rgb * cSpec.a;						
     }
-    
+
     // Must alter a glass transparency to make reflections visible.
     // Reflection intensity calculations makes the shader bigger and slower
+   
+    cTex.a = saturate(cTex.a + saturate(cSpec.r+cSpec.g+cSpec.b) * glass);
+	cTex.rgb += cSpec.rgb;
     
-    cTex.a = saturate(cTex.a + saturate(cSpec.r+cSpec.g+cSpec.b)*glass); // Reflection from a glass
+    if (gNight && gTextured) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
+    if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
 
-    // -------------------------------------------------------------------------
-	float3 color = cTex.rgb + cSpec.rgb;
-    // float3 color = 1.0f - exp(-1.0f*(cTex.rgb + cSpec.rgb));  // "HDR" lighting
-    // -------------------------------------------------------------------------
+    return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
+} 
 
-    if (gNight && gTextured) color.rgb += tex2D(NightS, frg.tex0).rgb; 
-    
-    if (gDebugHL) color = color*0.5 + gColor.rgb;
-
-    return float4(color.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
-}  
 
 
 MeshVS SimpleMeshTechVS(MESH_VERTEX vrt)

@@ -28,7 +28,6 @@ D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
-LPDIRECT3DTEXTURE9 D3D9Effect::pNoiseMap = 0;
 
 // Some general rendering techniques
 D3DXHANDLE D3D9Effect::ePanelTech = 0;		// Used to draw a new style 2D panel
@@ -116,9 +115,6 @@ D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseRefl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
-
-	
-	
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
@@ -185,7 +181,6 @@ void D3D9Effect::GlobalExit()
 	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
 	SAFE_RELEASE(pVB);
-	SAFE_RELEASE(pNoiseMap);
 	SAFE_DELETE(hArrow);
 }
 
@@ -243,7 +238,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[2].Definition = new char[32];
 	sprintf_s((char*)macro[2].Definition,32,"%d",max(2,Config->Anisotrophy));
 
-	HR(D3DXCreateEffectFromFile(pDev, name, macro, 0, 0, 0, &FX, &errors));
+	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &FX, &errors));
 	
 	delete []macro[2].Definition;
 
@@ -396,39 +391,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	if (hArrow==NULL) LogErr("D3D9Arrow.msh not found");
 	
-
-	// Create a noise map -------------------------------------------
-	//
-	LPDIRECT3DTEXTURE9 pNoiseSM = NULL;
-	int size = 512;
-	HR(D3DXCreateTexture(pDev, size, size, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pNoiseSM));
-	
-	if (pNoiseSM) {
-		int z=0;
-		D3DLOCKED_RECT pRect;
-		if (pNoiseSM->LockRect(0, &pRect, NULL, 0)==S_OK) {
-			char *Bits = (char *)pRect.pBits;
-			for (int y=0;y<size;y++) {
-				for (int x=0;x<(size*4);x++) Bits[x+z] = char((rand()%256) - 126);
-				z += pRect.Pitch;
-			}
-			HR(pNoiseSM->UnlockRect(0));
-		}
-
-
-		//HR(D3DXCreateTexture(pDev, size, size, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pNoiseMap));
-		//HR(pDev->UpdateTexture(pNoiseSM, pNoiseMap));
-		pNoiseSM->Release();
-
-
-		HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Hatch3.dds", &pNoiseMap));
-
-		HR(FX->SetTexture(eDislMap, pNoiseMap));
-	}
-
-
-
-
 	LogMsg("...rendering technique initialized");
 }
 
