@@ -82,8 +82,8 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     float dotb = saturate(-dot(gCameraPos, gSun.direction));
     float dota = -dot(gCameraPos, nrmW);
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	outVS.ambi = gAtmColor * (pow(angl*dotb, 0.3) * 0.15);
-	
+	outVS.ambi = gAtmColor * pow(angl*dotb, 0.5);
+
 	// Add constanst -----------------------------------------------------------
 	outVS.ambi += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
    

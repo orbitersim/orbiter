@@ -13,6 +13,7 @@
 #define IDC_STATIC4                             1303
 #define IDC_STATIC5                             1304
 #define IDC_STATIC6                             1305
+#define IDC_STATIC10                            1306
 #define IDC_CREDITSTEXT                         40000
 #define IDC_DBG_DUAL                            40001
 #define IDC_DBG_WIRE                            40002
@@ -35,6 +36,7 @@
 #define IDC_NORMALMAPS                          40021
 #define IDC_CREDITS                             40026
 #define IDC_SRFPRELOAD                          40027
+#define IDC_GLASSSHADE                          40028
 #define IDC_DBG_GROUP                           40041
 #define IDC_DBG_HSG                             40042
 #define IDC_DBG_HSM                             40043
@@ -73,3 +75,5 @@
 #define IDC_ENVFACES                            40094
 #define IDC_DBG_TEXTURE                         40096
 #define IDC_DBG_PICK                            40098
+#define IDC_PLANETGLOW                          40099
+#define IDC_GEOMETRY                            40100

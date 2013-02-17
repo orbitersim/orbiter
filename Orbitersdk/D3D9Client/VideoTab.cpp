@@ -674,6 +674,9 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	sprintf_s(cbuf,32,"%d", Config->PlanetLoadFrequency);
 	SetWindowText(GetDlgItem(hWnd, IDC_HZ), cbuf);
 
+	sprintf_s(cbuf,32,"%3.3f", Config->PlanetGlow);
+	SetWindowText(GetDlgItem(hWnd, IDC_PLANETGLOW), cbuf);
+
 	DWORD af = min(caps.MaxAnisotropy, DWORD(Config->Anisotrophy));
 
 	switch(af) {
@@ -721,6 +724,9 @@ void VideoTab::SaveSetupState(HWND hWnd)
 
 	Config->PlanetLoadFrequency = atoi(cbuf);
 	Config->PlanetPreloadMode = SendDlgItemMessage (hWnd, IDC_SRFPRELOAD, BM_GETCHECK, 0, 0);
+
+	GetWindowText(GetDlgItem(hWnd, IDC_PLANETGLOW),  cbuf, 32);
+	Config->PlanetGlow = atof(cbuf);
 
 	if (SendDlgItemMessage(hWnd, IDC_SHADER, CB_GETCURSEL, 0, 0)==0) {
 		strcpy_s(Config->Shaders,64,"Default");

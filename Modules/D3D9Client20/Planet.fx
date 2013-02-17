@@ -101,7 +101,7 @@ float4 CloudTechPS(TileVS frg) : COLOR
     float mic = 1.0f;
     
     // Default
-    if (gMix>0.0f) mic -= (1.0f - tex2D(Planet3S, frg.tex1*2).a) * gMix;
+    if (gMix>0.0f) mic -= (1.0f - tex2D(Planet3S, frg.tex1).a) * gMix;
     
     // Test
     //if (gMix>0.0f) mic -= (1.0f - tex2D(Planet3S, frg.tex1).a*tex2D(Planet3S, frg.tex1*6).a) * gMix;
@@ -111,10 +111,10 @@ float4 CloudTechPS(TileVS frg) : COLOR
     float  alpha = color.a;
     
     // Modulate color
-    color = lerp(color*float4(0.7, 0.7, 0.74, 1), color, mic);
+    //color = lerp(color*float4(0.5, 0.5, 0.5, 1.0), color, mic);
     
     // Modulate Alpha
-    // alpha = alpha * mic;
+    alpha *= (mic*0.5+0.5); 
     
     if (dot(frg.normalW, frg.toCamW)<0) {    // Render cloud layer from below
         float4 diff = (min(1,frg.aux.g*2) * frg.diffuse) * gMat.diffuse + data;

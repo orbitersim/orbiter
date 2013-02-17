@@ -455,6 +455,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 		radlimit = float(atm->radlimit);
 		//atm_color = D3DXVEC4(atm->color0, 1.0);
 		atm_color = D3DXVEC4(*(VECTOR3*)oapiGetObjectParam(hPlanet, OBJPRM_PLANET_HAZECOLOUR), 1.0); 
+		atm_color *= float(Config->PlanetGlow);
 	}
 	
 	float ap = gc->GetScene()->GetCameraAperture();

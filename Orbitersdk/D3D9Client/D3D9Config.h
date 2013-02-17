@@ -49,6 +49,7 @@ public:
 	double Separation;				///< StereoScopic 3D depth of field separation \[m\] (10.0...100.0, default=65)
 	double SunAngle;				///< Sun-angle above horizon when night-lights set it \[deg\] (0.1...20.0, default=10)
 	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
+	double PlanetGlow;				///< Intensity of planet glow effect (0.01...1.0, default=0.3)
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
 	int MaxLights;					///< Maximum number of light sources in use (0...12, default=12)
 	int NVPerfHUD;					///< ??? (0,1)
