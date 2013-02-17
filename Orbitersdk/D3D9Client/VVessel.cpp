@@ -1094,11 +1094,24 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	// -----------------------------------------------------------------------------------------------
 	//
-	MATRIX3 grot;
-	vessel->GetRotationMatrix(grot);
 
-	D3DXMATRIX mEnv, mGlo;
+	MATRIX3 grot;
+	VECTOR3 gpos, gcam;
+	
+	vessel->GetRotationMatrix(grot);
+	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
+	
+	D3DXMATRIX mEnv, mGlo, mW, mWI;
 	D3DXVECTOR3 dir, up;
+
+	gpos -= scn->GetCameraGPos();
+
+	D3DXMatrixIdentity(&mW);
+	D3DMAT_SetInvRotation(&mW, &grot);
+	D3DMAT_SetTranslation(&mW, &gpos);
+	D3DXMatrixInverse(&mWI, NULL, &mW);
+
+	// -----------
 
 	D3DXMatrixIdentity(&mGlo);
 	D3DMAT_SetInvRotation(&mGlo, &grot);
@@ -1126,15 +1139,10 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DXVec3Normalize(&cp, &cp);
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
-		
-		//mEnv._14 = eCam->lPos.x;
-		//mEnv._24 = eCam->lPos.y;
-		//mEnv._34 = eCam->lPos.z;
-
 		D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
-		D3DXMatrixMultiply(&mEnv, &mWorldInv, &mEnv); 
+		D3DXMatrixMultiply(&mEnv, &mWI, &mEnv); 
 
-		gc->GetScene()->SetupCustomCamera(mEnv, cpos, 0.7853981634, 1.0);
+		gc->GetScene()->SetupCustomCamera(mEnv, gpos, 0.7853981634, 1.0);
 		gc->GetScene()->RenderSecondaryScene(this, true, flags);
 
 		SAFE_RELEASE(pSrf);	

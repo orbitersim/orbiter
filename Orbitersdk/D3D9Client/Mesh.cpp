@@ -1364,9 +1364,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				FX->SetMatrix(eGT, &mTransform);
 			}*/
 
-
-			FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
-
+			if (iTech==RENDER_VESSEL) FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
+			else FX->SetMatrix(eW, pW);
 		
 			// Setup Mesh drawing options =================================================================================
 			// 
