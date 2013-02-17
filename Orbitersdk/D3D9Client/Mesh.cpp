@@ -466,24 +466,6 @@ void D3D9Mesh::SetName(const char *fname)
 
 // ===========================================================================================
 //
-/*
-DWORD D3D9Mesh::ComputeHash()
-{
-	DWORD   hash;
-	hash  =	MaxVert;
-	hash ^=	MaxFace<<12;
-	hash ^= nGrp<<24;               
-
-	DWORD dwords = (nMtrl*sizeof(D3DMATERIAL9))>>2;
-	DWORD *data = (DWORD *)Mtrl;
-
-	if (!data) return hash;
-	for (DWORD i=0;i<dwords;i++) hash ^= data[i];
-	return hash;
-}
-*/
-// ===========================================================================================
-//
 bool D3D9Mesh::HasShadow()
 {
 	for (DWORD g=0; g<nGrp; g++) {
@@ -545,16 +527,38 @@ void D3D9Mesh::CheckValidity()
 			D3DXVECTOR3 v = D3DXVECTOR3(pVrt[k].nx, pVrt[k].ny, pVrt[k].nz); 
 			float len = D3DXVec3Length(&v);
 			if (fabs(len)<1e-3) {
-				LogErr("Zero length normals in mesh group %d in mesh 0x%X",i,this);
+				LogWrn("Zero length normals in mesh group %d in mesh 0x%X",i,this);
 				break;
 			}
 			if (fabs(len-1.0)>0.1) {
-				LogErr("Non-unit-length normals in mesh group %d in mesh 0x%X",i,this);
+				LogWrn("Non-unit-length normals in mesh group %d in mesh 0x%X",i,this);
 				break;
 			}
 		}
 		UnLockVertexBuffer();
 	}
+
+	/*
+	float *mats = new float[nMtrl];
+	float *texs = new float[nTex];
+	memset(mats, 0, nMtrl*4);
+	memset(texs, 0, nTex*4);
+
+	for (DWORD i=0;i<nGrp;i++) {
+		mats[Grp[i]->MtrlIdx] += 1.0f;
+		texs[Grp[i]->TexIdx] += 1.0f;
+	}
+	
+	float avmats = 0.0;
+	float avtexs = 0.0;
+	for (DWORD i=0;i<nMtrl;i++) avmats += mats[i];
+	for (DWORD i=0;i<nTex;i++) avtexs += texs[i];
+	
+	avmats /= float(nMtrl);
+	avtexs /= float(nTex);
+
+	LogErr("Mesh 0x%X: Mats=%3.3f(%u),  Textrs=%3.3f(%u)", this, avmats, nMtrl, avtexs, nTex);
+	*/
 }
 
 
@@ -937,26 +941,6 @@ void D3D9Mesh::UnLockVertexBuffer()
 
 // ===========================================================================================
 //
-void D3D9Mesh::UpdateBoundings(DWORD idx)
-{
-	if (!pVB) return;
-	if (idx>=nGrp) {
-		LogErr("D3D9Mesh(0x%X)::UpdateBoundings(%u) index out of range",this,idx);
-		return;
-	}
-
-	bBSRecompute = true;
-	NMVERTEX *vtx = LockVertexBuffer(idx);
-	GROUPREC *grp = Grp[idx];
-
-	if (vtx && grp->nVert>0) BoundingBox(vtx, grp->nVert, &grp->BBox);
-	else D9ZeroAABB(&grp->BBox);
-
-	if (vtx) UnLockVertexBuffer();	
-}
-
-// ===========================================================================================
-//
 D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx)
 { 
 	static int count = 10; 
@@ -1270,8 +1254,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 			}
 
-			if (tni && Grp[g]->TexMixEx[0]<0.5f) tni=0;
-		
 			if (Tex[ti]==NULL || ti==0) bTextured = false; 
 			else						bTextured = true;
 		
@@ -1296,6 +1278,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			if (bTextured) {
 
 				if (Tex[ti]!=old_tex) { 
+
+					if (tni && Grp[g]->TexMixEx[0]<0.5f) tni=0;
 
 					old_tex = Tex[ti]; 
 					FX->SetTexture(eTex0, Tex[ti]->GetTexture());	
@@ -1388,8 +1372,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			// 
 			FX->SetBool(eTextured, bTextured);
 			FX->SetBool(eFullyLit, (Grp[g]->UsrFlag&0x4)!=0);
-
-			if ((Grp[g]->UsrFlag&0x4)!=0) LogErr("Fully Lit %u, 0x%X", g, this);
 
 			FX->CommitChanges();
 

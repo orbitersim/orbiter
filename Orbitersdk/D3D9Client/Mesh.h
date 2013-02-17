@@ -180,7 +180,6 @@ public:
 	D9BBox * GetAABBTransformed();
 
 	void UpdateBoundingBox();
-	void UpdateBoundings(DWORD grp);
 	void BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 	
 	void SetAmbientColor(D3DCOLOR c);

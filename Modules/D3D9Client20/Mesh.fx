@@ -604,8 +604,8 @@ technique BaseTileTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BaseTileNMVS();
-        pixelShader  = compile PS_MOD BaseTileNMPS();
+        vertexShader = compile VS_MOD BaseTileVS();
+        pixelShader  = compile PS_MOD BaseTilePS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

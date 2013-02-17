@@ -149,7 +149,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 // Base Tile Rendering Technique
 // =============================================================================
 
-
+/*
 TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
 {
     // Null the output
@@ -210,3 +210,4 @@ float4 BaseTileNMPS(TileMeshNMVS frg) : COLOR
     
     return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }
+*/
