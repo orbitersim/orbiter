@@ -1218,6 +1218,8 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 {
 	_TRACE;
 
+	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
+
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, bg_rgba, 1.0f, 0L));
 

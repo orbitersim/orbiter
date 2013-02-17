@@ -61,7 +61,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 
 	// A vector from the vertex to the camera
 	
-	outVS.CamW  = -posW;
+	outVS.CamW  = -posW * gDistScale + gCamOff;   
 	outVS.tex0  = vrt.tex0;
     outVS.nrmW  = nrmW;
 	outVS.posH  = mul(float4(posW, 1.0f), gVP);
