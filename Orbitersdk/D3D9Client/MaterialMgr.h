@@ -30,40 +30,45 @@
 #include "vObject.h"
 
 
+/**
+ * \brief Management of custom configurations for vessel materials
+ */
 class MatMgr {
 
 public:
-				MatMgr(class vObject *vObj, class D3D9Client *_gc);
-				~MatMgr();
+					MatMgr(class vObject *vObj, class D3D9Client *_gc);
+					~MatMgr();
 
-DWORD			NewRecord(const char *name, DWORD midx);
-void			ClearRecord(DWORD iRec);
-void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3DMATERIAL9 *pM, D3D9MatExt *pME);
-void			ApplyConfiguration(D3D9Mesh *pMesh);
-bool			SaveConfiguration();
-bool			LoadConfiguration();
-const char *	GetSkinName();
+	DWORD			NewRecord(const char *name, DWORD midx);
+	void			ClearRecord(DWORD iRec);
+	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3DMATERIAL9 *pM, D3D9MatExt *pME);
+	void			ApplyConfiguration(D3D9Mesh *pMesh);
+	bool			SaveConfiguration();
+	bool			LoadConfiguration();
+	//const char *	GetSkinName();
 
 private:
 
-bool			ParseIfStatement(const char *cbuf);
+	bool			ParseIfStatement(const char *cbuf);
 
+	vObject			*vObj;
+	D3D9Client		*gc;
 
-class vObject	*vObj;
-class D3D9Client *gc;
+	char			skinname[64];	///< Name of what? skin
 
-char			skinname[64];
+	DWORD			nRec;	///< Number of records
+	DWORD			mRec;	///< Allocated records
 
-DWORD			nRec;	// Number of records
-DWORD			mRec;	// Allocated records
-
-struct MATREC {
-	char			mesh_name[64];
-	DWORD			mat_idx;
-	D3DMATERIAL9	Mat;
-	D3D9MatExt		MatEx;
-	bool			bSaved;
-} *pRecord;
+	/**
+	 * \brief Storage structure to keep material information.
+	 */
+	struct MATREC {
+		char			mesh_name[64];	///< Name of the mesh
+		DWORD			mat_idx;		///< Material index
+		D3DMATERIAL9	Mat;			///< Material itself
+		D3D9MatExt		MatEx;			///< Extended material
+		bool			bSaved;			///< Flag indicating whether the material has been saved
+	} *pRecord;
 
 };
 
