@@ -449,23 +449,23 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	DWORD size = ftell(file.pFile);
 	fseek(file.pFile, 0, SEEK_SET);
 
-	pSkinNames = new LPCHAR[256]; memset(pSkinNames, 0, 256*sizeof(LPCHAR));
-	pSkinBuffer = new char[size];
+	pSkinNames = new LPCHAR[256]();
+	pSkinBuffer = new char[size]();
 	nSkins = 0;
 
 	if (!file.IsInvalid()) {
-
+		char *_pSkinBuffer = pSkinBuffer; // we don't want to 'move' the original address!
 		while (true) {
 	
 			int rv = fgets2(cbuf, 256, file.pFile, 0x08);
 			if (rv<0) break;
 			if (rv==0) continue;
 			
-			pSkinNames[nSkins++] = pSkinBuffer;
+			pSkinNames[nSkins++] = _pSkinBuffer;
 			int k=0;
 			while (true) {
-				*pSkinBuffer = cbuf[k];
-				 pSkinBuffer++;
+				*_pSkinBuffer = cbuf[k];
+				 _pSkinBuffer++;
 				 if (cbuf[k]==0) break;
 				 k++;
 			}
