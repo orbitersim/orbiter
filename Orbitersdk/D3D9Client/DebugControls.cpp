@@ -427,7 +427,7 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 
 void UpdateMaterialDisplay(bool bSetup)
 {
-	char lbl[64];
+	char lbl[256];
 	char lbl2[64];
 
 	OBJHANDLE hObj = vObj->GetObjectA();
@@ -441,8 +441,8 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	// Set material info
 	const char *skin = NULL;
-	if (skin)	sprintf_s(lbl,"Material %u: [Skin %s]", matidx, skin);
-	else		sprintf_s(lbl,"Material %u:", matidx);
+	if (skin)	sprintf_s(lbl, 256, "Material %u: [Skin %s]", matidx, skin);
+	else		sprintf_s(lbl, 256, "Material %u:", matidx);
 
 	GetWindowText(GetDlgItem(hDlg, IDC_DBG_MATGRP), lbl2, 64);
 	if (strcmp(lbl, lbl2)) SetWindowText(GetDlgItem(hDlg, IDC_DBG_MATGRP), lbl); // Avoid causing flashing
@@ -480,7 +480,7 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	if (texidx==0) SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), "Texture: None");
 	else {
-		char lbl[256];
+		//char lbl[256];
 		SURFHANDLE hSrf = hMesh->GetTexture(texidx);
 		if (hSrf) {
 			sprintf_s(lbl, 256, "Texture: %s", SURFACE(hSrf)->GetName());
