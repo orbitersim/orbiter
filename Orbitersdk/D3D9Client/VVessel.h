@@ -149,7 +149,7 @@ private:
 	class MatMgr *pMatMgr;
 
 	LPDIRECT3DCUBETEXTURE9 pEnv[4];
-	int nEnv;				// Number of environmental cameras 
+	int nEnv;				// Number of environmental maps 
 	int iFace;				// EnvMap Face index that is to be rendered next
 
 	struct MESHREC {

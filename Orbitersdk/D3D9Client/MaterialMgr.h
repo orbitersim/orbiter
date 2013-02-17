@@ -29,6 +29,22 @@
 #include "D3D9Util.h"
 #include "vObject.h"
 
+#define ENVCAM_OMIT_ATTC		0x0001
+#define ENVCAM_OMIT_DOCKS		0x0002
+
+
+/**
+ * \brief Storage structure to keep environmental camera information.
+ */
+struct ENVCAMREC {
+	D3DXVECTOR3		lPos;			///< Camera local position
+	float			near_clip;		///< Near clip-plane distance
+	DWORD			flags;			///< Camera flags
+	WORD			nAttc;			///< Number of attachments points in a list
+	WORD			nDock;			///< Number of docking ports in a list
+	BYTE *			pOmitAttc;		///< Omit attachments
+	BYTE *			pOmitDock;		///< Omit cessels in docking ports
+};
 
 /**
  * \brief Management of custom configurations for vessel materials
@@ -45,17 +61,16 @@ public:
 	void			ApplyConfiguration(D3D9Mesh *pMesh);
 	bool			SaveConfiguration();
 	bool			LoadConfiguration();
-	//const char *	GetSkinName();
+	bool			LoadCameraConfig();
+	void			ResetCamera(DWORD idx);
 
+	ENVCAMREC *		GetCamera(DWORD idx);
+	DWORD			CameraCount();
+	
 private:
-
-	bool			ParseIfStatement(const char *cbuf);
 
 	vObject			*vObj;
 	D3D9Client		*gc;
-
-	char			skinname[64];	///< Name of what? skin
-
 	DWORD			nRec;	///< Number of records
 	DWORD			mRec;	///< Allocated records
 
@@ -70,6 +85,7 @@ private:
 		bool			bSaved;			///< Flag indicating whether the material has been saved
 	} *pRecord;
 
+	ENVCAMREC *pCamera;
 };
 
 #endif

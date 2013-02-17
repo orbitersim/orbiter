@@ -213,6 +213,8 @@ void vVessel::PreInitObject()
 		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
 	}
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
+
+	pMatMgr->LoadCameraConfig();
 }
 
 // ============================================================================================
@@ -1024,7 +1026,8 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 }
 
 // ============================================================================================
-// Return true to move into a next visual, false to continue working this visual
+// Return true if faces were rendered during this pass
+// Return false is all rendering operations were omitted or failed
 //
 bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
@@ -1046,6 +1049,51 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		nEnv = 1;
 	}
 
+	// -----------------------------------------------------------------------------------------------
+	//
+
+	gc->GetScene()->ClearOmitFlags();
+
+	ENVCAMREC *eCam = pMatMgr->GetCamera(0);
+
+	bOmit = true;
+
+	DWORD nAtc = vessel->AttachmentCount(false);
+	DWORD nDoc = vessel->DockCount();
+
+	if (eCam->flags & ENVCAM_OMIT_ATTC) {
+		for (DWORD i=0;i<nAtc;i++) {
+			ATTACHMENTHANDLE hAtc = vessel->GetAttachmentHandle(false, i);
+			if (hAtc) {
+				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
+				if (hAtcObj) {
+					vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
+					vObj->bOmit = true;
+				}
+			}
+		}
+	}
+	else {
+
+		DWORD nAttc = eCam->nAttc;
+
+		for (DWORD i=0;i<nAttc;i++) {
+			DWORD id = DWORD(eCam->pOmitAttc[i]);
+			ATTACHMENTHANDLE hAtc = vessel->GetAttachmentHandle(false, id);
+			if (hAtc) {
+				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
+				if (hAtcObj) {
+					vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
+					vObj->bOmit = true;
+				}
+			}
+		}
+	}
+	
+	gc->GetScene()->SetCameraFustrumLimits(eCam->near_clip, 2e7f);
+
+	// -----------------------------------------------------------------------------------------------
+	//
 	MATRIX3 grot;
 	vessel->GetRotationMatrix(grot);
 
@@ -1078,6 +1126,10 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DXVec3Normalize(&cp, &cp);
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
+		
+		//mEnv._14 = eCam->lPos.x;
+		//mEnv._24 = eCam->lPos.y;
+		//mEnv._34 = eCam->lPos.z;
 
 		D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
 		D3DXMatrixMultiply(&mEnv, &mWorldInv, &mEnv); 

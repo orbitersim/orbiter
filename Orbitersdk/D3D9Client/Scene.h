@@ -145,6 +145,7 @@ public:
 	double GetObjectAppRad2(OBJHANDLE hObj) const;
 
 	D3D9Pick PickScene(short xpos, short ypos);
+	void ClearOmitFlags();
 
 	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&mProjView; }
 	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }

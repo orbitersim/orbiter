@@ -1225,39 +1225,6 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 	VOBJREC *pv = NULL;
 
-	// TODO:  This doesn't really belong in here. Omitting should be done by the caller function. Will fix later 
-	//
-	for (pv=vobjFirst; pv; pv=pv->next) pv->vobj->bOmit = false;
-
-	if (omit) {
-
-		omit->bOmit = true;
-
-		OBJHANDLE hObj = omit->GetObjectA();
-
-		if (oapiIsVessel(hObj) && bOmitAtc) {
-
-			VESSEL *hVes = oapiGetVesselInterface(hObj);
-			
-			DWORD nAtc = hVes->AttachmentCount(false);
-
-			for (DWORD i=0;i<nAtc;i++) {
-				
-				ATTACHMENTHANDLE hAtc = hVes->GetAttachmentHandle(false, i);
-
-				if (hAtc) {
-					OBJHANDLE hAtcObj = hVes->GetAttachmentStatus(hAtc);
-					if (hAtcObj) {
-						vObject *vObj = GetVisObject(hAtcObj);
-						vObj->bOmit = true;
-					}
-				}
-			}
-		}
-	}
-
-	SetCameraFustrumLimits(0.1f, 2e7f);
-
 	// render planets -------------------------------------------
 	//
 	if (flags&0x01) {
@@ -1312,6 +1279,13 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	HR(pDevice->EndScene());
 }
 
+// ===========================================================================================
+//
+void Scene::ClearOmitFlags()
+{
+	VOBJREC *pv = NULL;
+	for (pv=vobjFirst; pv; pv=pv->next) pv->vobj->bOmit = false;
+}
 
 // ===========================================================================================
 //

@@ -14,8 +14,10 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 	vObj = v;
 	nRec = 0;
 	mRec = 32;
-	skinname[0] = NULL;
 	pRecord = (MatMgr::MATREC *)malloc(mRec*sizeof(MatMgr::MATREC));
+	pCamera = new ENVCAMREC[1];
+
+	ResetCamera(0);
 }
 
 
@@ -24,8 +26,43 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 MatMgr::~MatMgr()
 {
 	if (pRecord) free(pRecord);
+	if (pCamera) {
+		if (pCamera[0].pOmitAttc) delete[] pCamera[0].pOmitAttc;
+		if (pCamera[0].pOmitDock) delete[] pCamera[0].pOmitDock;
+		delete[] pCamera;
+	}
 }
 
+
+// ===========================================================================================
+//
+ENVCAMREC * MatMgr::GetCamera(DWORD idx)
+{
+	return &pCamera[0];
+}
+
+
+// ===========================================================================================
+//
+DWORD MatMgr::CameraCount()
+{
+	return 1;
+}
+
+
+// ===========================================================================================
+//
+void MatMgr::ResetCamera(DWORD idx)
+{
+	pCamera[idx].near_clip = 0.25f;
+	pCamera[idx].lPos = D3DXVECTOR3(0,0,0);
+	pCamera[idx].nAttc = 0;
+	pCamera[idx].nDock = 0;
+	pCamera[idx].flags = ENVCAM_OMIT_ATTC;
+	pCamera[idx].pOmitAttc = NULL;
+	pCamera[idx].pOmitDock = NULL;
+}
+	
 
 // ===========================================================================================
 //
@@ -187,7 +224,15 @@ bool MatMgr::LoadConfiguration()
 	while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
 	{	
 		float a, b, c, d;
+		DWORD id;
 		
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "CAMERA_LPOS", 11)) {
+			if (sscanf_s(cbuf, "CAMERA_LPOS %u %g %g %g", &id, &a, &b, &c)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
+
+			continue;
+		}
+
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {
 			if (sscanf_s(cbuf, "MESH %s", &meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
@@ -351,6 +396,117 @@ bool MatMgr::SaveConfiguration()
 			}
 		}
 	}
+	return true;
+}
+
+
+// ===========================================================================================
+//
+bool MatMgr::LoadCameraConfig()
+{
+	_TRACE;
+
+	char cbuf[256];
+	char path[256];
+	char classname[256];
+
+	OBJHANDLE hObj = vObj->GetObjectA();
+
+	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
+
+	const char *cfgdir = OapiExtension::GetConfigDir();
+	
+	VESSEL *vessel = oapiGetVesselInterface(hObj);
+	strcpy_s(classname, 256, vessel->GetClassNameA());
+	parse_vessel_classname(classname);
+
+	AutoFile file;
+
+	sprintf_s(path, 256, "%sGC\\%s_ecam.cfg", cfgdir, classname);
+	fopen_s(&file.pFile, path, "r");	
+	
+	if (file.IsInvalid()) return true;
+
+	LogAlw("Reading a camera configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
+	
+	DWORD iattc = 0;
+	DWORD idock = 0;
+	DWORD camera = 0;
+
+	BYTE attclist[256];
+	BYTE docklist[256];
+
+	while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
+	{	
+		float a, b, c, d;
+		DWORD id;
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "END_CAMERA", 10)) {
+
+			if (iattc) pCamera[camera].pOmitAttc = new BYTE[iattc];
+			if (idock) pCamera[camera].pOmitDock = new BYTE[idock];
+			
+			if (iattc) memcpy(pCamera[camera].pOmitAttc, attclist, iattc); 
+			if (idock) memcpy(pCamera[camera].pOmitDock, docklist, idock); 
+			
+			pCamera[camera].nAttc = iattc;
+			pCamera[camera].nDock = idock;
+			
+			continue;
+		}
+		
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "BEGIN_CAMERA", 12)) {
+			if (sscanf_s(cbuf, "BEGIN_CAMERA %u", &camera)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			camera = 0; // For now just one camera
+			pCamera[camera].flags = 0; // Clear default flags
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "LPOS", 4)) {
+			if (sscanf_s(cbuf, "LPOS %g %g %g", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pCamera[camera].lPos = D3DXVECTOR3(a,b,c);
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "OMITATTC", 8)) {
+			if (sscanf_s(cbuf, "OMITATTC %u", &id)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			attclist[iattc++] = id;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "OMITDOCK", 8)) {
+			if (sscanf_s(cbuf, "OMITDOCK %u", &id)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			docklist[idock++] = id;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "CLIPDIST", 8)) {
+			if (sscanf_s(cbuf, "CLIPDIST %g", &a)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pCamera[camera].near_clip = a;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "OMIT_ALL_ATTC", 13)) {
+			pCamera[camera].flags |= ENVCAM_OMIT_ATTC;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "OMIT_ALL_DOCKS", 14)) {
+			pCamera[camera].flags |= ENVCAM_OMIT_DOCKS;
+			continue;
+		}
+
+		if (cbuf[0]!=';') LogErr("Invalid Line in (%s): %s", path, cbuf);
+	}
+
 	return true;
 }
 
