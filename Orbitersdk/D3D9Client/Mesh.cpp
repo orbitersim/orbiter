@@ -121,9 +121,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 	for (DWORD i=1;i<nTex;i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
 
 	nMtrl = oapiMeshMaterialCount(hMesh);
-	if (nMtrl) {
-		Mtrl = new D3D9MatExt[nMtrl];
-	}
+	if (nMtrl) Mtrl = new D3D9MatExt[nMtrl];
 
 	for (DWORD i=0;i<nMtrl;i++)	CopyMaterial(i, oapiMeshMaterial(hMesh, i));
 
@@ -384,11 +382,9 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	for (DWORD i=0;i<nTex;i++) Tex[i] = mesh.Tex[i];
 			
 	nMtrl = mesh.nMtrl;
-	if (nMtrl) {
-		Mtrl = new D3D9MatExt[nMtrl];
-	}
+	if (nMtrl) Mtrl = new D3D9MatExt[nMtrl];
 	memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3D9MatExt));
-	
+
 	// ATTENTION:  Do we need to copy transformations
 	mTransform = mesh.mTransform;
 	mTransformInv = mesh.mTransformInv;
@@ -864,6 +860,16 @@ bool D3D9Mesh::HasTexture(SURFHANDLE hSurf)
 {
 	if (!pVB) return false;
 	for (DWORD i=0;i<nTex;i++) if (Tex[i]==hSurf) return true;
+	return false;
+}
+
+// ===========================================================================================
+//
+bool D3D9Mesh::IsReflective()
+{
+	if (!pVB) return false;
+	for (DWORD i=1;i<nTex;i++) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
+	for (DWORD i=1;i<nMtrl;i++) if (Mtrl[i].Fresnel!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
 	return false;
 }
 
@@ -1468,6 +1474,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 		//
 		if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 		else							   mat = &Mtrl[Grp[g]->MtrlIdx];
+
 		if (mat!=old_mat) { old_mat=mat; FX->SetValue(eMtrl, mat, D3D9MATSIZE); }
 		
 

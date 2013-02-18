@@ -89,8 +89,8 @@ float4 PlanetTechPS(TileVS frg) : COLOR
 	
     float3 cTex = tex2D(Planet0S, frg.tex0).rgb;
     
-    cTex *= float3(0.8, 0.7, 0.6);
-    cTex = pow(abs(cTex), float3(0.9, 1.1, 1.0));
+    //cTex *= float3(0.8, 0.7, 0.6);
+    //cTex = pow(abs(cTex), float3(0.9, 1.1, 1.0));
     
     float3 color = diff.rgb * cTex.rgb + frg.aux.a*vEff.rgb + vSpe.rgb;
 

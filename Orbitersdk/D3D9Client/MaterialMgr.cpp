@@ -101,6 +101,7 @@ void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3D9MatExt *pM)
 //
 void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 {
+
 	if (pMesh==NULL || nRec==0) return;
 
 	const char *name = pMesh->GetName();
@@ -320,7 +321,7 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
-			if (sscanf_s(cbuf, "FRESNEL %f %f", &a, &b)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "FRESNEL %f %f", &a, &b)!=2) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Fresnel = a;
 			pRecord[iRec].Mat.FOffset = b;
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;

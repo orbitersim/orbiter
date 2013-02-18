@@ -119,6 +119,7 @@ public:
 	inline DWORD TextureCount() const { return nTex; }
 	SURFHANDLE GetTexture(DWORD idx) const { return Tex[idx]; } 
 	bool HasTexture(SURFHANDLE hSurf);
+	bool IsReflective();
 
 	/**
 	 * \brief returns a pointer to a material definition.

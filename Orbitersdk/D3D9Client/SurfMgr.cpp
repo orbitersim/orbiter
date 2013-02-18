@@ -22,6 +22,7 @@
 using namespace oapi;
 
 D3DMATERIAL9 watermat = {{1,1,1,1},{1,1,1,1},{1,1,1,1},{0,0,0,0},20.0f};
+D3DMATERIAL9 def_mat = {{1,1,1,1},{1,1,1,1},{1,1,1,1},{0,0,0,1},0};
 
 int nrender[15]; // temporary
 
@@ -87,8 +88,6 @@ void SurfaceManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scal
 void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMATRIX mWrld)
 {
 	// render complete sphere (used at low LOD levels)
-	extern D3DMATERIAL9 def_mat;
-
 	HR(FX->SetTechnique(ePlanetTile));
 	HR(FX->SetValue(eSun, gc->GetScene()->GetLight(-1), sizeof(D3D9Light)));
 	HR(FX->SetMatrix(eW, mWrld));
@@ -148,8 +147,6 @@ void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXM
 
 void SurfaceManager::InitRenderTile()
 {
-	extern D3DMATERIAL9 def_mat;
-
 	HR(FX->SetTechnique(ePlanetTile));
 	HR(FX->SetValue(eSun, gc->GetScene()->GetLight(-1), sizeof(D3D9Light)));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));

@@ -96,7 +96,9 @@ void MeshManager::UpdateMesh (MESHHANDLE hMesh)
 				if (mg) mlist[i].mesh->UpdateGroupEx(k, mg);
 			}
 			DWORD nMtrl = oapiMeshMaterialCount(hMesh);
-			for (DWORD k=0;k<nMtrl;k++)	memcpy(mlist[i].mesh->GetMaterial(k), oapiMeshMaterial(hMesh, k), sizeof(D3DMATERIAL9));
+			for (DWORD k=0;k<nMtrl;k++)	{
+				DX9Mat2MatExt((D3DMATERIAL9 *)oapiMeshMaterial(hMesh, k), mlist[i].mesh->GetMaterial(k)); 
+			}
 		}
 		break;
 	}

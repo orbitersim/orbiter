@@ -46,7 +46,6 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
 	bAMSO = false;
-	bReflections = false;
 	
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	skinname[0] = NULL;
@@ -1031,6 +1030,19 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 //
 bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
+	
+	bool bReflective = false;
+
+	for (DWORD i=0;i<nmesh;i++) {
+		if (meshlist[i].mesh) {
+			if (meshlist[i].mesh->IsReflective()) {
+				bReflective = true;
+				break;
+			}
+		}
+	}
+
+	if (!bReflective) return false;
 
 	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
 

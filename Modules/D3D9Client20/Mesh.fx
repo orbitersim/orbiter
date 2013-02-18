@@ -130,8 +130,8 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     float  d = saturate(-dot(gSun.direction, nrmW));
     float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a);					
     
-    if (d==0) s = 0;							
-    																		
+    if (d==0) s = 0;	
+    																					
     float3 diff = frg.diffuse.rgb + d;
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 

@@ -504,7 +504,6 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	if (texidx==0) SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), "Texture: None");
 	else {
-		//char lbl[256];
 		SURFHANDLE hSrf = hMesh->GetTexture(texidx);
 		if (hSrf) {
 			sprintf_s(lbl, 256, "Texture: %s", SURFACE(hSrf)->GetName());

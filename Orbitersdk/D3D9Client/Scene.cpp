@@ -29,8 +29,6 @@ using namespace oapi;
 
 static D3DXMATRIX ident;
 
-D3DMATERIAL9 def_mat = {{1,1,1,1},{1,1,1,1},{1,1,1,1},{0,0,0,1},0};
-
 const double LABEL_DISTLIMIT = 0.6;
 
 struct PList { // auxiliary structure for object distance sorting

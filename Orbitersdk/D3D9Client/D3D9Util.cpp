@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP) D3D9 Client
 // Released under GNU General Public License
 // Copyright (C) 2006-2007 Martin Schweiger
-//				 2012 Jarmo Nikkanen
+//				 2012-2013 Jarmo Nikkanen
 //				 2012 Émile "Bibi Uncle" Grégoire
 // ==============================================================
 
@@ -17,9 +17,10 @@ float saturate(float x) { if (x>1) return 1; if (x<0) return 0; return x; }
 
 void DX9Mat2MatExt(D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
-	memcpy(pOut, pIn, sizeof(D3DMATERIAL9));
+	memcpy(pOut, pIn, 64);
 	pOut->Specular.a = pIn->Power;
-	pOut->Reflect = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.0f);
+	pOut->Reflect = pIn->Specular;
+	pOut->Reflect.a = 0.0f;
 	pOut->Fresnel = 0.0f;
 	pOut->FOffset = 1.0f;
 	pOut->DislMag = 0.0f;
@@ -30,9 +31,9 @@ void DX9Mat2MatExt(D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 
 void MatExt2DX9Mat(D3D9MatExt *pIn, D3DMATERIAL9 *pOut)
 {
-	memcpy(pOut, pIn, sizeof(D3DMATERIAL9));
+	memcpy(pOut, pIn, 64);
 	pOut->Power = pIn->Specular.a;
-	pOut->Specular.a = 0.0f;
+	pOut->Specular.a = 1.0f;
 }
 
 void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao)

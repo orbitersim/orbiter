@@ -63,7 +63,7 @@ void CloudManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale,
 	LoadData();
 	if (bNoTextures) return;
 	
-	extern D3DMATERIAL9 def_mat;
+	D3DMATERIAL9 def_mat = {{1,1,1,1},{1,1,1,1},{1,1,1,1},{0,0,0,1},0};
 
 	HR(FX->SetTechnique(eCloudTech));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));
