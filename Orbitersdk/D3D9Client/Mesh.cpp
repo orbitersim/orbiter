@@ -18,20 +18,6 @@
 
 using namespace oapi;
 
-static D3DMATERIAL9 defmat = {
-	{1,1,1,1},
-	{1,1,1,1},
-	{0,0,0,1},
-	{0,0,0,1},10.0f
-};
-
-static D3DMATERIAL9 night_mat = {
-	{1,1,1,1},
-	{0,0,0,1},
-	{0,0,0,1},
-	{1,1,1,1},10.0f
-};
-
 // ===========================================================================================
 //
 D3D9Mesh::D3D9Mesh(D3D9Client *client) : D3D9Effect()
@@ -59,6 +45,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client) : D3D9Effect()
 	Grp = NULL;
 	pVB = NULL;
 	pIB = NULL;
+	Mtrl = NULL;
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
 	MeshCatalog->Add(DWORD(this));
@@ -135,8 +122,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 
 	nMtrl = oapiMeshMaterialCount(hMesh);
 	if (nMtrl) {
-		Mtrl = new D3DMATERIAL9[nMtrl];
-		MtrlExt = new D3D9MatExt[nMtrl];
+		Mtrl = new D3D9MatExt[nMtrl];
 	}
 
 	for (DWORD i=0;i<nMtrl;i++)	CopyMaterial(i, oapiMeshMaterial(hMesh, i));
@@ -252,8 +238,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	Tex[0] = 0; // 'no texture'
 	Tex[1] = pTex; 
 	nMtrl  = 1;
-	Mtrl   = new D3DMATERIAL9[nMtrl];
-	MtrlExt = new D3D9MatExt[nMtrl];
+	Mtrl   = new D3D9MatExt[nMtrl];
 	pGrpTF = new D3DXMATRIX[nGrp];
 
 	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
@@ -309,8 +294,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	Tex	   = new LPD3D9CLIENTSURFACE[nTex];
 	Tex[0] = 0; // 'no texture'
 	nMtrl  = 1;
-	Mtrl   = new D3DMATERIAL9[nMtrl];
-	MtrlExt = new D3D9MatExt[nMtrl];
+	Mtrl   = new D3D9MatExt[nMtrl];
 	pGrpTF = new D3DXMATRIX[nGrp];
 
 	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
@@ -401,12 +385,10 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 			
 	nMtrl = mesh.nMtrl;
 	if (nMtrl) {
-		Mtrl = new D3DMATERIAL9[nMtrl];
-		MtrlExt = new D3D9MatExt[nMtrl];
+		Mtrl = new D3D9MatExt[nMtrl];
 	}
-	memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3DMATERIAL9));
-	memcpy (MtrlExt, mesh.MtrlExt, nMtrl*sizeof(D3D9MatExt));
-
+	memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3D9MatExt));
+	
 	// ATTENTION:  Do we need to copy transformations
 	mTransform = mesh.mTransform;
 	mTransformInv = mesh.mTransformInv;
@@ -440,10 +422,7 @@ D3D9Mesh::~D3D9Mesh()
 	
 	if (Grp) delete []Grp; 
 	if (nTex) delete []Tex;
-	if (nMtrl) {
-		delete []Mtrl;
-		delete []MtrlExt;
-	}
+	if (nMtrl) delete []Mtrl;
 	if (pGrpTF) delete []pGrpTF;
 
 	if (pIB) pIB->Release();
@@ -787,8 +766,7 @@ void D3D9Mesh::UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg)
 bool D3D9Mesh::CopyMaterial(int idx, const MATERIAL *mat)
 {
 	if (!pVB) return true;
-	memcpy(&Mtrl[idx], mat, sizeof (D3DMATERIAL9));
-	memset(&MtrlExt[idx], 0, sizeof (D3D9MatExt));
+	DX9Mat2MatExt((D3DMATERIAL9 *)mat, &Mtrl[idx]);
 	return true;
 }
 
@@ -997,7 +975,7 @@ void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIREC
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
-	HR(FX->SetValue(eMat, &defmat, sizeof(D3DMATERIAL9)));
+	HR(FX->SetValue(eMtrl, &defmat, D3D9MATSIZE));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	RenderGroup(dev, Grp[0]);
@@ -1019,7 +997,7 @@ void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRE
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
-	HR(FX->SetValue(eMat, &defmat, sizeof(D3DMATERIAL9)));
+	HR(FX->SetValue(eMtrl, &defmat, D3D9MATSIZE));
 	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(irad, orad, 0, 0)));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -1065,10 +1043,10 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 
 	// Setup Mesh group material ==============================================================================
 	//		
-	D3DMATERIAL9 *mat = &defmat;
+	D3D9MatExt *mat = &defmat;
 	if (Grp[idx]->MtrlIdx!=SPEC_DEFAULT) mat = &Mtrl[Grp[idx]->MtrlIdx];
 	
-	HR(FX->SetValue(eMat, mat, sizeof(D3DMATERIAL9)));
+	HR(FX->SetValue(eMtrl, mat, D3D9MATSIZE));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	RenderGroup(dev, grp);
@@ -1157,7 +1135,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 		FX->SetMatrix(eWI, &mWorldInverse);
 	}
 
-	D3DMATERIAL9 *mat, *old_mat = NULL;
+	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
 	LPD3D9CLIENTSURFACE Diffuse = NULL;
 	LPDIRECT3DTEXTURE9  pNorm = NULL;
@@ -1318,8 +1296,10 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			else							   mat = &Mtrl[Grp[g]->MtrlIdx];
 		
 			if (mat!=old_mat) { 
+
 				old_mat = mat; 
-				FX->SetValue(eMat, mat, sizeof(D3DMATERIAL9));
+
+				FX->SetValue(eMtrl, mat, D3D9MATSIZE);
 
 				if (nEnv && pEnv) {
 
@@ -1330,14 +1310,11 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 						if (pEnv[0]) {
 
-							D3D9MatExt *pME = &MtrlExt[Grp[g]->MtrlIdx];
-
-							if (pME->Reflect!=0.0 || pRefl) {
+							if (mat->Reflect.a!=0.0f || mat->Fresnel!=0.0f || pRefl) {
 								FX->SetBool(eEnvMapEnable, true);
 								FX->SetTexture(eEnvMap, pEnv[0]);
-								FX->SetVector(eReflCtrl, &D3DXVECTOR4(pME->Reflect, pME->DissolveScl, pME->DissolveSct, pME->Glass));
-								if (pME->pDissolve && bTextured) {
-									FX->SetTexture(eDislMap, SURFACE(pME->pDissolve)->GetTexture());
+								if (mat->pDissolve && bTextured) {
+									FX->SetTexture(eDislMap, SURFACE(mat->pDissolve)->GetTexture());
 									FX->SetBool(eUseDisl, true);
 								}
 								else FX->SetBool(eUseDisl, false);
@@ -1351,19 +1328,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 			// Apply Animations =========================================================================================
 			// 
-			/*
-			if (Grp[g]->bTransform) {
-				if (bGlobalTF)  {
-					FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
-				}
-				else {
-					FX->SetMatrix(eGT, &Grp[g]->Transform);
-				}
-			}
-			else {
-				FX->SetMatrix(eGT, &mTransform);
-			}*/
-
 			if (iTech==RENDER_VESSEL) FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
 			else FX->SetMatrix(eW, pW);
 		
@@ -1432,7 +1396,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 	
 	gc->GetStats()->Meshes++;
 
-	D3DMATERIAL9 *mat, *old_mat = NULL;
+	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
 	LPD3D9CLIENTSURFACE Diffuse = NULL;
 	
@@ -1504,7 +1468,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 		//
 		if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 		else							   mat = &Mtrl[Grp[g]->MtrlIdx];
-		if (mat!=old_mat) { old_mat=mat; FX->SetValue(eMat, mat, sizeof(D3DMATERIAL9)); }
+		if (mat!=old_mat) { old_mat=mat; FX->SetValue(eMtrl, mat, D3D9MATSIZE); }
 		
 
 		// Setup Textures and Normal Maps ==========================================================================
@@ -1518,17 +1482,8 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 		// Apply Animations =========================================================================================
 		// 
-		/*
-		if (Grp[g]->bTransform) {
-			if (bGlobalTF)  FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
-			else FX->SetMatrix(eGT, &Grp[g]->Transform);
-		}
-		else FX->SetMatrix(eGT, &mTransform);
-		*/
-
 		FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
 		
-
 		// Setup Mesh drawing options =================================================================================
 		// 
 		FX->SetBool(eTextured, bTextured);
@@ -1609,6 +1564,7 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 		if (Grp[g]->UsrFlag & 3) continue;  // No shadow & skip flags
 		if (Grp[g]->IntFlag & 3) continue;  // No shadow & skip flags
 		
+		// TODO: Use pW and instance groups.
 		if (Grp[g]->bTransform) {
 			if (bGlobalTF)  FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
 			else			FX->SetMatrix(eGT, &Grp[g]->Transform);

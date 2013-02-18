@@ -78,7 +78,7 @@ float4 PlanetTechPS(TileVS frg) : COLOR
    
     float4 diff  = frg.aux.g*(gMat.diffuse*frg.diffuse) + (gMat.ambient*frg.aux.b); 
     float  micro = 1.0f;
-   
+    
     if (gMix>0.0f) micro -= tex2D(Planet3S, frg.tex1).a;
     
     float4 vSpe = frg.aux.r * (gWater.specular*frg.diffuse) * micro;
@@ -86,8 +86,13 @@ float4 PlanetTechPS(TileVS frg) : COLOR
 
     if (gSpecMode==2) vSpe *= 1.0f - vEff.a;
     if (gSpecMode==0) vSpe = 0;
+	
+    float3 cTex = tex2D(Planet0S, frg.tex0).rgb;
     
-	float3 color = diff.rgb * tex2D(Planet0S, frg.tex0).rgb + frg.aux.a*vEff.rgb + vSpe.rgb;
+    cTex *= float3(0.8, 0.7, 0.6);
+    cTex = pow(abs(cTex), float3(0.9, 1.1, 1.0));
+    
+    float3 color = diff.rgb * cTex.rgb + frg.aux.a*vEff.rgb + vSpe.rgb;
 
 	if (gDebugHL) color = color*0.5;
 

@@ -82,7 +82,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	outVS.diffuse += gAtmColor * pow(angl*dotb, 0.5);
 	
 	// Add constanst -----------------------------------------------------------
-	outVS.diffuse.rgb += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	outVS.diffuse.rgb += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
 	
 
     return outVS;
@@ -95,56 +95,61 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     // Normalize input
     float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
-    float  glass = 1.0;
+    
+    // Reflection coefficient approximation from fresnel equations
+    float  fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
     
 	float4 cTex;
     float4 cSpec;
-    float3 cRefl;
-    
+    float4 cRefl;
+  
     if (gTextured) {
         cTex = tex2D(WrapS, frg.tex0);
-        if (gModAlpha) cTex.a *= gMat.diffuse.a;    
+        if (gModAlpha) cTex.a *= gMtrl.diffuse.a;    
     }
     else {
-		cTex = gMat.diffuse;
-        glass = 1.0 - pow(saturate(dot(CamW, nrmW)), gReflCtrl[3]);
+		cTex = gMtrl.diffuse;
     }
    
     if (gFullyLit) return cTex;
    
-    if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																				
-    else 		  cSpec = float4(gMat.specular.rgb, gReflCtrl[0]);		
+    if (gUseSpec) {
+		cSpec = tex2D(SpecS, frg.tex0);		
+		cSpec.a *= 100.0;
+	}																		
+    else cSpec = gMtrl.specular;		
 
-	cRefl = cSpec.rgb;
+	if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);	
+	else {
+		cRefl = gMtrl.reflect;
+		cRefl.rgb *= cRefl.a;
+	}
 
     // Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
     float  d = saturate(-dot(gSun.direction, nrmW));
-    float  s = pow(saturate(dot(r, CamW)), gMat.specPower) * saturate(gMat.specPower);					
+    float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a);					
     
     if (d==0) s = 0;							
     																		
     float3 diff = frg.diffuse.rgb + d;
-    float3 spec = frg.spec.rgb + s;
-
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     cTex.rgb *= saturate(diff);
-    cSpec.rgb *= spec;
+
+    // cTot is total reflected light
+    float3 cTot = cSpec.rgb * (frg.spec.rgb + s);
 
     if (gEnvMapEnable) {
         float3 v = reflect(-CamW, nrmW);
-        if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gReflCtrl[1])-0.5f) * gReflCtrl[2]; // 4-instruction
-		cTex.rgb *= (1.0-cSpec.a); 
-		cSpec.rgb += cRefl.rgb * texCUBE(EnvMapS, v).rgb * cSpec.a;						
+        if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag; // 4-instruction
+		cTex.rgb *= (1.0-cRefl.a); 
+		cTot.rgb += (cSpec.rgb*fce + cRefl.rgb) * texCUBE(EnvMapS, v).rgb;				
     }
-
-    // Must alter a glass transparency to make reflections visible.
-    // Reflection intensity calculations makes the shader bigger and slower
-   
-    cTex.a = saturate(cTex.a + saturate(cSpec.r+cSpec.g+cSpec.b) * glass);
-	cTex.rgb += cSpec.rgb;
     
+    cTex.a = saturate(cTex.a + max(max(cTot.r, cTot.g), cTot.b));
+	cTex.rgb += cTot.rgb;
+	 
     if (gNight && gTextured) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
     if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
 
@@ -201,21 +206,21 @@ float4 VCTechPS(MeshVS frg) : COLOR
         cTex = tex2D(WrapS, frg.tex0);
     }
 
-    if (gModAlpha || !gTextured) cTex.a *= gMat.diffuse.a;	
+    if (gModAlpha || !gTextured) cTex.a *= gMtrl.diffuse.a;	
     
     if (gFullyLit) {
 		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-		return float4(cTex.rgb*saturate(gMat.diffuse.rgb+gMat.emissive.rgb), cTex.a);
+		return float4(cTex.rgb*saturate(gMtrl.diffuse.rgb+gMtrl.emissive.rgb), cTex.a);
 	}
    
     float3 r = reflect(gSun.direction, nrmW);
-    float  d = max(0,dot(-gSun.direction, nrmW));
-	float  s = pow(max(dot(r, CamW), 0.0f), gMat.specPower); 
+    float  d = saturate(-dot(gSun.direction, nrmW));
+	float  s = pow(saturate(dot(r, CamW)), gMtrl.specular.a) * saturate(gMtrl.specular.a);
 
-    if (gMat.specPower<2.0 || d<=0) s = 0;
+    if (d==0) s = 0;
 
-    half3 diff = gMat.diffuse.rgb  * (d * gSun.diffuse.rgb) + (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
-    half3 spec = gMat.specular.rgb * (s * gSun.specular.rgb);
+    half3 diff = gMtrl.diffuse.rgb  * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+    half3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
     half3 colr = cTex.rgb * saturate(diff) + saturate(spec);
     
     if (gDebugHL) colr = colr*0.5 + gColor.rgb;
@@ -238,11 +243,9 @@ float4 MFDTechPS(MeshVS frg) : COLOR
 	float3 CamW = normalize(frg.CamW);
 	
 	float3 r = reflect(gSun.direction, nrmW);
-	float  s = 0.0f;
+	float  s = pow(max(dot(r, CamW), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
 
-    if (gMat.specPower>2.0) s = pow(max(dot(r, CamW), 0.0f), gMat.specPower);
-
-    float4 color = tex2D(MFDSamp, frg.tex0) + saturate(s * gMat.specular);
+    float3 color = tex2D(MFDSamp, frg.tex0).rgb + saturate(s * gMtrl.specular.rgb);
 	
     return float4(color.rgb, 1.0f);
 }
@@ -334,12 +337,12 @@ float4 BaseTilePS(TileMeshVS frg) : COLOR
 	float4 cTex = tex2D(ClampS, frg.tex0);
 	
 	float3 r = reflect(gSun.direction, nrmW);
-	float  s = pow(max(dot(r, CamW), 0.0f), 20.0f) * (1.0f-cTex.a);
+	float  s = pow(saturate(dot(r, CamW)), 20.0f) * (1.0f-cTex.a);
 	float  d = saturate(dot(-gSun.direction, nrmW));
   
     if (d<=0) s = 0;
        
-    half3 clr = cTex.rgb * (max(d,0) * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
+    half3 clr = cTex.rgb * saturate(d * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
 
     if (gNight) clr += tex2D(NightS, frg.tex0).rgb;     
 

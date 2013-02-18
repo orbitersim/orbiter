@@ -59,8 +59,11 @@ public:
 	static ID3DXEffect	*FX;
 	static D3D9Client   *gc;
 	static D3D9Mesh     *hArrow;
-	
 
+	static D3D9MatExt	defmat;
+	static D3D9MatExt	night_mat;
+	static D3D9MatExt	emissive_mat;
+	
 	// Techniques ----------------------------------------------------
 	static D3DXHANDLE	eVesselTech;
 	static D3DXHANDLE	eBuildingTech;
@@ -101,6 +104,7 @@ public:
 	static D3DXHANDLE	eGTI;
 
 	// Lighting related parameters ------------------------------------
+	static D3DXHANDLE   eMtrl;
 	static D3DXHANDLE	eMat;
 	static D3DXHANDLE	eWater;
 	static D3DXHANDLE	eSun;

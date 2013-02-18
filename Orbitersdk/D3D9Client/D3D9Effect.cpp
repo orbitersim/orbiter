@@ -29,6 +29,10 @@ D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
 
+D3D9MatExt D3D9Effect::defmat;
+D3D9MatExt D3D9Effect::night_mat;
+D3D9MatExt D3D9Effect::emissive_mat;
+
 // Some general rendering techniques
 D3DXHANDLE D3D9Effect::ePanelTech = 0;		// Used to draw a new style 2D panel
 D3DXHANDLE D3D9Effect::ePanelTechB = 0;		// Used to draw a new style 2D panel
@@ -73,6 +77,7 @@ D3DXHANDLE D3D9Effect::eGT = 0;			// Mesh group transformation matrix
 D3DXHANDLE D3D9Effect::eGTI = 0;		// Inverse mesh grp ...
 D3DXHANDLE D3D9Effect::eMat = 0;		// Material
 D3DXHANDLE D3D9Effect::eWater = 0;		// Water
+D3DXHANDLE D3D9Effect::eMtrl = 0;
 D3DXHANDLE D3D9Effect::eSun = 0;
 D3DXHANDLE D3D9Effect::eLights = 0;		// Additional light sources
 D3DXHANDLE D3D9Effect::eLightCount = 0;	// Number of additional light sources
@@ -131,12 +136,26 @@ D3DXHANDLE D3D9Effect::eDispersion = 0;
 
 LPDIRECT3DDEVICE9 D3D9Effect::pDev = 0;
 
-static D3DMATERIAL9 emissive_mat = { 
+static D3DMATERIAL9 _emissive_mat = { 
 	{0,0,0,1},
 	{0,0,0,1},
 	{0,0,0,1},
 	{1,1,1,1},
 	0.0
+};
+
+static D3DMATERIAL9 _defmat = {
+	{1,1,1,1},
+	{1,1,1,1},
+	{0,0,0,1},
+	{0,0,0,1},10.0f
+};
+
+static D3DMATERIAL9 _night_mat = {
+	{1,1,1,1},
+	{0,0,0,1},
+	{0,0,0,1},
+	{1,1,1,1},10.0f
 };
 
 static WORD billboard_idx[6] = {0,1,2, 3,2,1};
@@ -332,6 +351,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eSun		  = FX->GetParameterByName(0,"gSun");
 	eMat		  = FX->GetParameterByName(0,"gMat");
 	eWater		  = FX->GetParameterByName(0,"gWater");
+	eMtrl		  = FX->GetParameterByName(0,"gMtrl");
 	// ----------------------------------------------------------------------
 	eTex0		  = FX->GetParameterByName(0,"gTex0");
 	eTex1		  = FX->GetParameterByName(0,"gTex1");
@@ -363,6 +383,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
 	FX->SetVector(eReflCtrl,   &D3DXVECTOR4(0.0f, 0.0f, 0.0f, 0.0f));
 
+	DX9Mat2MatExt(&_defmat, &defmat);
+	DX9Mat2MatExt(&_night_mat, &night_mat);
+	DX9Mat2MatExt(&_emissive_mat, &emissive_mat);
 
 	// Create a Circle Mesh --------------------------------------------
 	//

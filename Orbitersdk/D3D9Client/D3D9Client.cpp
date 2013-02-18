@@ -1005,8 +1005,8 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->MaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
-	D3DMATERIAL9 *meshmat = mesh->GetMaterial(matidx);
-	memcpy (meshmat, mat, sizeof(D3DMATERIAL9));
+	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
+	if (meshmat) DX9Mat2MatExt((D3DMATERIAL9 *)mat, meshmat);
 	return 0;
 }
 

@@ -185,14 +185,25 @@ typedef struct {
 #define D3D9MATEX_EMISSIVE	0x08
 #define D3D9MATEX_REFLECT	0x10
 #define D3D9MATEX_DISSOLVE	0x20
+#define D3D9MATEX_FRESNEL	0x40
 
+#define D3D9MATSIZE 96
+/**
+ * \brief Material structure used in D3D9Mesh. Only the upper part (23 floats) is loaded into a shadrs
+ */
 typedef struct {
-	DWORD	ModFlags;				///< Modification flags
-	float	Reflect;				///< Reflectivity 0.0 to 1.0
-	float	Glass;
-	float	DissolveScl;			///< Dissolve effect scale factor 0.20 to 3.0 (typical)
-	float   DissolveSct;			///< Dissolve effect scattering "range" 0.01 to 0.1 (typical)
-	SURFHANDLE pDissolve;			///< Pointer to Dissolve effect texture
+	D3DCOLORVALUE Diffuse;        
+    D3DCOLORVALUE Ambient;        
+    D3DCOLORVALUE Specular;			///< Specular color, power in alpha  
+    D3DCOLORVALUE Emissive;       
+	D3DCOLORVALUE Reflect;			///< Color multiplier and reflectivity (alpha)
+	float		  Fresnel;			///< Refractive index
+	float		  FOffset;			///< Refractive index 
+	float		  DislScale;		///< Dissolve effect scale factor 0.20 to 3.0 (typical)
+	float		  DislMag;			///< Dissolve effect magnitude 0.01 to 0.1 (typical)
+	// -----------------------
+	SURFHANDLE	  pDissolve;		///< Pointer to Dissolve effect texture
+	DWORD		  ModFlags;			///< Modification flags
 } D3D9MatExt;
 
 typedef struct {
@@ -278,6 +289,9 @@ D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
 
 void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
 void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
+
+void DX9Mat2MatExt(D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
+void MatExt2DX9Mat(D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations

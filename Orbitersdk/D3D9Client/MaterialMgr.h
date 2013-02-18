@@ -57,7 +57,7 @@ public:
 
 	DWORD			NewRecord(const char *name, DWORD midx);
 	void			ClearRecord(DWORD iRec);
-	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3DMATERIAL9 *pM, D3D9MatExt *pME);
+	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3D9MatExt *pM);
 	void			ApplyConfiguration(D3D9Mesh *pMesh);
 	bool			SaveConfiguration();
 	bool			LoadConfiguration();
@@ -80,8 +80,7 @@ private:
 	struct MATREC {
 		char			mesh_name[64];	///< Name of the mesh
 		DWORD			mat_idx;		///< Material index
-		D3DMATERIAL9	Mat;			///< Material itself
-		D3D9MatExt		MatEx;			///< Extended material
+		D3D9MatExt		Mat;			///< Material itself
 		bool			bSaved;			///< Flag indicating whether the material has been saved
 	} *pRecord;
 

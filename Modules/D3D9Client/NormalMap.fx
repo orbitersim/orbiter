@@ -38,11 +38,13 @@ struct AdvancedNMVS
 struct TileMeshNMVS
 {
     float4 posH     : POSITION0;
-    half2  tex0     : TEXCOORD0;
-    half3  LigT     : TEXCOORD1;
-    half3  CamT     : TEXCOORD2;
-    half4  atten    : TEXCOORD3;     
-    half4  insca    : TEXCOORD4;  
+    float3 camW     : TEXCOORD0;
+    half4  atten    : TEXCOORD1;     
+    half4  insca    : TEXCOORD2; 
+    half2  tex0     : TEXCOORD3;
+    float3 nrmT     : TEXCOORD4;
+    float3 tanT     : TEXCOORD5;
+     
 };
 
 AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
@@ -85,7 +87,7 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
 	outVS.ambi = gAtmColor * pow(angl*dotb, 0.5);
 
 	// Add constanst -----------------------------------------------------------
-	outVS.ambi += (gMat.ambient.rgb*gSun.ambient.rgb) + (gMat.emissive.rgb);
+	outVS.ambi += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
    
     return outVS;
 }
@@ -94,13 +96,12 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 {
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
-   
+	
 	float4 cSpec; 
-	float3 cRefl;
-    float  iRefl;	
-
+	float4 cRefl;
+		
     float4 cTex = tex2D(WrapS, frg.tex0);
-    if (gModAlpha) cTex.a *= gMat.diffuse.a;	
+    if (gModAlpha) cTex.a *= gMtrl.diffuse.a;	
   
     float3 nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
 	
@@ -111,10 +112,17 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
     float3 nrmW = mul(nrmT, TBN);
     
+    // Reflection coefficient approximation from fresnel equations
+    float  fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
+    
 	if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																			
-    else 	      cSpec = float4(gMat.specular.rgb, gReflCtrl[0]);		
-		
-	cRefl = cSpec.rgb;
+    else 	      cSpec = gMtrl.specular;	
+    
+    if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);																			
+    else {
+		cRefl = gMtrl.reflect;
+		cRefl.rgb *= cRefl.a;
+	}		
 	
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
@@ -123,19 +131,18 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     if (d==0) s = 0;							
     																		
     float3 diff = frg.diff.rgb * saturate(-dot(frg.locW, nrmW)) + frg.ambi + d;
-    float3 spec = frg.spec.rgb + s;
-
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     cTex.rgb  *= saturate(diff);
-    cSpec.rgb *= spec;
+    
+    float3 cTot = cSpec.rgb * (frg.spec.rgb + s);
    
     if (gEnvMapEnable) {	
-		cTex.rgb  *= (1.0-cSpec.a); 
-		cSpec.rgb += cRefl.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb * cSpec.a;						
+		cTex.rgb *= (1.0-cRefl.a); 
+		cTot.rgb += (cSpec.rgb*fce + cRefl.rgb) * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
     }
 	
-	cTex.rgb += cSpec.rgb;
+	cTex.rgb += cTot.rgb;
     
     if (gNight && gTextured) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
     
@@ -149,31 +156,27 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 // Base Tile Rendering Technique
 // =============================================================================
 
-/*
 TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
 {
     // Null the output
 	TileMeshNMVS outVS = (TileMeshNMVS)0;
 
-    float3 posW  = mul(float4(vrt.posL, 1.0f), gW).xyz;
-	outVS.posH   = mul(float4(posW, 1.0f), gVP);
+    float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	float3 nrmW = mul(half4(vrt.nrmL, 0.0f), gW).xyz;
+	outVS.posH  = mul(float4(posW, 1.0f), gVP);
 
     half3x3 TBN;
 	TBN[0] = vrt.tanL.xyz;
 	TBN[1] = cross(vrt.tanL, vrt.nrmL);
 	TBN[2] = vrt.nrmL.xyz;
 
-    half3x3 mTS = transpose(TBN);
-
-    float3 CamL = mul(float4(0,0,0,1), gWI).xyz;
-    half3  LigL = mul(half4(gSun.direction,0), gWI).xyz;
-    half3  nrmW = mul(half4(vrt.nrmL.xyz,0), gW).xyz;
-	
-	outVS.LigT  = mul(LigL, mTS);
-    outVS.CamT  = mul(CamL-vrt.posL, mTS);
+    TBN = mul(TBN, gW);
+    
+	outVS.nrmT  = TBN[2];
+	outVS.tanT  = TBN[0];
+    outVS.camW  = -posW * gDistScale + gCamOff;
     outVS.tex0  = vrt.tex0;
 	
-   
     // Atmospheric haze --------------------------------------------------------
 
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
@@ -191,23 +194,25 @@ TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
 float4 BaseTileNMPS(TileMeshNMVS frg) : COLOR
 {
     // Normalize input
-	float3 LigT = normalize(frg.LigT);
-    float3 CamT = normalize(frg.CamT);
-    float3 nrmT = float3(0,0,1);
-
-    half4 cTex = tex2D(ClampS, frg.tex0); 
-
-    if (gNormalType)  nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);         //Sampler for R8G8B8, A8R8G8B8, V8U8, CxV8U8
-    else              nrmT = float3(tex2D(Nrm0S, frg.tex0).ag*2.0-1.0, 1.0);     //Sampler for DXT5, A8L8 
+    float3 CamW = normalize(frg.camW);
+	
+    float4 cTex = tex2D(ClampS, frg.tex0); 
+    float3 nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);         //Sampler for R8G8B8, A8R8G8B8, V8U8, CxV8U8
+   
+    float3x3 TBN;
+    TBN[0] = frg.tanT;
+    TBN[1] = cross(frg.tanT, frg.nrmT);
+    TBN[2] = frg.nrmT; 
     
-	float3 r = reflect(LigT, nrmT);
-	float  s = pow(max(dot(r, CamT), 0.0f), 20.0f) * (1.0f-cTex.a);
-	float  d = saturate(dot(-LigT, nrmT)*1.5);
+    float3 nrmW = mul(nrmT, TBN);
+    
+	float3 r = reflect(gSun.direction, nrmW);
+	float  s = pow(max(dot(r, CamW), 0.0f), 20.0f) * (1.0f-cTex.a);
+	float  d = saturate(-dot(gSun.direction, nrmW)*1.5);
   
     if (d<=0) s = 0;
        
-    half3 clr = cTex.rgb * (max(d,0) * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
+    float3 clr = cTex.rgb * (max(d,0) * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
     
     return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }
-*/

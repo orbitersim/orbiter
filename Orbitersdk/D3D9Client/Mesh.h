@@ -61,7 +61,6 @@ public:
 		bool  bTransform;
 		bool  bUpdate;
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
-		//D3DXMATRIX  TransformInv;
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
 		float TexMixEx[MAXTEX];
@@ -126,10 +125,8 @@ public:
 	 * \param idx material index (>= 0)
 	 * \return Pointer to material object.
 	 */
-	inline D3DMATERIAL9 *GetMaterial(DWORD idx) { return Mtrl+idx; }
+	inline D3D9MatExt *GetMaterial(DWORD idx) { return Mtrl+idx; }
 	
-	inline D3D9MatExt *GetMaterialExtension(DWORD idx) { return MtrlExt+idx; }
-
 	DWORD GetMeshGroupMaterialIdx(DWORD grp);
 	DWORD GetMeshGroupTextureIdx(DWORD grp);
 	/**
@@ -139,7 +136,6 @@ public:
 	 * \return \e true on success, \e false otherwise.
 	 */
 	bool SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex);
-	//bool SetMaterial(DWORD texidx, const MATERIAL *pMat);
 
 	LPDIRECT3DVERTEXBUFFER9 GetVertexBuffer(DWORD grp);
 
@@ -229,8 +225,7 @@ private:
 	DWORD nGrp;                 // number of mesh groups
 	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
 	DWORD nTex;                 // number of mesh textures
-	D3DMATERIAL9 *Mtrl;         // list of mesh materials
-	D3D9MatExt *MtrlExt;		// list of extended mesh materials
+	D3D9MatExt *Mtrl;           // list of mesh materials
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
@@ -238,8 +233,6 @@ private:
 	D3DCOLOR cAmbient;
 	DWORD nMtrl;                // number of mesh materials
 
-	
-	
 	bool bTemplate;             // mesh used as template only (not for rendering)
 	bool bBSRecompute;			// Bounding sphere must be recomputed
 	bool bBSRecomputeAll;

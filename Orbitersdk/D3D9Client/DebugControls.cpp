@@ -132,6 +132,7 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflect");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Dissolve");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Fresnel");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
@@ -179,17 +180,16 @@ void UpdateDissolveMap(SURFHANDLE hSrf)
 	if (!hMesh) return;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	D3DMATERIAL9 *pMat = hMesh->GetMaterial(matidx);
-	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
+	D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
+	
+	if (!pMat) return;
 
-	if (!pMat || !pMatE) return;
-
-	pMatE->pDissolve = hSrf;
-	pMatE->ModFlags |= D3D9MATEX_DISSOLVE;
+	pMat->pDissolve = hSrf;
+	pMat->ModFlags |= D3D9MATEX_DISSOLVE;
 
 	vVessel *vVes = (vVessel *)vObj;
 
-	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat, pMatE); 
+	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat); 
 }
 
 
@@ -204,16 +204,15 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	if (!hMesh) return;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	D3DMATERIAL9 *pMat = hMesh->GetMaterial(matidx);
-	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
+	D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
 
-	if (!pMat || !pMatE) return;
+	if (!pMat) return;
 
 	switch(MatPrp) {
 
 		case 0:	// Diffuse
 		{
-			pMatE->ModFlags |= D3D9MATEX_DIFFUSE;
+			pMat->ModFlags |= D3D9MATEX_DIFFUSE;
 			switch(clr) {
 				case 0: pMat->Diffuse.r = value; break;
 				case 1: pMat->Diffuse.g = value; break;
@@ -225,7 +224,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 		case 1:	// Ambient
 		{
-			pMatE->ModFlags |= D3D9MATEX_AMBIENT;
+			pMat->ModFlags |= D3D9MATEX_AMBIENT;
 			switch(clr) {
 				case 0: pMat->Ambient.r = value; break;
 				case 1: pMat->Ambient.g = value; break;
@@ -237,19 +236,19 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 		case 2:	// Specular
 		{
-			pMatE->ModFlags |= D3D9MATEX_SPECULAR;
+			pMat->ModFlags |= D3D9MATEX_SPECULAR;
 			switch(clr) {
 				case 0: pMat->Specular.r = value; break;
 				case 1: pMat->Specular.g = value; break;
 				case 2: pMat->Specular.b = value; break;
-				case 3: pMat->Power = value; break;
+				case 3: pMat->Specular.a = value; break;
 			}
 			break;
 		}
 
 		case 3:	// Emission
 		{
-			pMatE->ModFlags |= D3D9MATEX_EMISSIVE;
+			pMat->ModFlags |= D3D9MATEX_EMISSIVE;
 			switch(clr) {
 				case 0: pMat->Emissive.r = value; break;
 				case 1: pMat->Emissive.g = value; break;
@@ -261,10 +260,12 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 		case 4:	// Reflectivity
 		{
-			pMatE->ModFlags |= D3D9MATEX_REFLECT;
+			pMat->ModFlags |= D3D9MATEX_REFLECT;
 			switch(clr) {
-				case 0: pMatE->Reflect = value;	break;
-				case 1: pMatE->Glass = value; break;
+				case 0: pMat->Reflect.r = value; break;
+				case 1: pMat->Reflect.g = value; break;
+				case 2: pMat->Reflect.b = value; break;
+				case 3: pMat->Reflect.a = value; break;
 				
 			}
 			break;
@@ -272,10 +273,20 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 		case 5:	// Dissolve
 		{
-			pMatE->ModFlags |= D3D9MATEX_DISSOLVE;
+			pMat->ModFlags |= D3D9MATEX_DISSOLVE;
 			switch(clr) {
-				case 0: pMatE->DissolveScl = value; break;
-				case 1: pMatE->DissolveSct = value; break;
+				case 0: pMat->DislScale = value; break;
+				case 1: pMat->DislMag = value; break;
+			}
+			break;
+		}
+
+		case 6:	// Dissolve
+		{
+			pMat->ModFlags |= D3D9MATEX_FRESNEL;
+			switch(clr) {
+				case 0: pMat->Fresnel = value; break;
+				case 1: pMat->FOffset = value + 1.0f; break;
 			}
 			break;
 		}
@@ -283,7 +294,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 
 	vVessel *vVes = (vVessel *)vObj;
-	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat, pMatE); 
+	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat); 
 }
 
 
@@ -298,10 +309,9 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	if (!hMesh) return 0.0f;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	D3DMATERIAL9 *pMat = hMesh->GetMaterial(matidx);
-	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
-
-	if (!pMat || !pMatE) return 0.0f;
+	D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
+	
+	if (!pMat) return 0.0f;
 
 	switch(MatPrp) {
 
@@ -333,7 +343,7 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 				case 0: return pMat->Specular.r;
 				case 1: return pMat->Specular.g;
 				case 2: return pMat->Specular.b;
-				case 3: return pMat->Power;
+				case 3: return pMat->Specular.a;
 			}
 			break;
 		}
@@ -352,8 +362,10 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		case 4:	// Reflectivity
 		{
 			switch(clr) {
-				case 0: return pMatE->Reflect;
-				case 1: return pMatE->Glass;
+				case 0: return pMat->Reflect.r;
+				case 1: return pMat->Reflect.g;
+				case 2: return pMat->Reflect.b;
+				case 3: return pMat->Reflect.a;
 			}
 			break;
 		}
@@ -361,8 +373,17 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		case 5:	// Dissolve
 		{
 			switch(clr) {
-				case 0: return pMatE->DissolveScl;
-				case 1: return pMatE->DissolveSct;
+				case 0: return pMat->DislScale;
+				case 1: return pMat->DislMag;
+			}
+			break;
+		}
+
+		case 6:	// Fresnel
+		{
+			switch(clr) {
+				case 0: return pMat->Fresnel;
+				case 1: return pMat->FOffset - 1.0f;
 			}
 			break;
 		}
@@ -379,10 +400,9 @@ void SetColorSlider()
 
 	float val = GetMaterialValue(MatPrp, SelColor);
 	
-	if (MatPrp==2 && SelColor==3) val/=80.0; // Specular Power
+	if (MatPrp==2 && SelColor==3) val/=100.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val/=0.2f;  // Dissolve scatter
-	if (MatPrp==4 && SelColor==1) val/=2.0;  // Glass reflect
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -452,11 +472,11 @@ void UpdateMaterialDisplay(bool bSetup)
 	switch(MatPrp) {
 		case 0:	// Diffuse
 			DisplayMat(true, true, true, true);
-			if (bSetup) SelColor = 3;
+			if (bSetup) SelColor = 0;
 		break;
 		case 1:	// Ambient
 			DisplayMat(true, true, true, false);
-			if (bSetup) SelColor = 3;
+			if (bSetup) SelColor = 0;
 		break;
 		case 2:	// Specular
 			DisplayMat(true, true, true, true);
@@ -467,10 +487,14 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 0;
 		break;
 		case 4:	// Reflectivity
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 3;
+		break;
+		case 5:	// Dissolve
 			DisplayMat(true, true, false, false);
 			if (bSetup) SelColor = 0;
 		break;
-		case 5:	// Dissolve
+		case 6:	// Fresnel
 			DisplayMat(true, true, false, false);
 			if (bSetup) SelColor = 0;
 		break;
@@ -492,10 +516,10 @@ void UpdateMaterialDisplay(bool bSetup)
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
 
 	// Setup dissolve texture
-	D3D9MatExt * pMatE = hMesh->GetMaterialExtension(matidx);
-	if (pMatE->pDissolve==NULL) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
+	D3D9MatExt * pMat = hMesh->GetMaterial(matidx);
+	if (pMat->pDissolve==NULL) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
 	else {
-		int id = g_client->GetIndexOfDissolveMap(pMatE->pDissolve);	
+		int id = g_client->GetIndexOfDissolveMap(pMat->pDissolve);	
 		if (id>=0) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, id+1, 0);
 	}
 }
@@ -507,11 +531,10 @@ void UpdateColorSlider(WORD pos)
 	
 	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
 
-	if (MatPrp==2 && SelColor==3) val*=80.0; // Specular Power
+	if (MatPrp==2 && SelColor==3) val*=100.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val*=0.2f;  // Dissolve scatter
-	if (MatPrp==4 && SelColor==1) val*=2.0;  // Glass reflect
-
+	
 	UpdateMeshMaterial(val, MatPrp, SelColor);
 }
 

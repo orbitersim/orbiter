@@ -25,13 +25,26 @@
 #define CLOUD_INTENSITY 1.8f        // range(0.5f-2.0f)
 #define NIGHT_LIGHTS 0.7f           // range(0.2f-1.0f)
 
-struct Mtrl
+struct Mat
 {
 	float4 diffuse;	  
 	float4 ambient;   
 	float4 specular;  
     float4 emissive;  
 	float  specPower; 
+};
+
+struct Mtrl
+{
+	float4 diffuse;	  
+	float4 ambient;   
+	float4 specular;  
+    float4 emissive;  
+	float4 reflect;
+	float  fresnel;	
+	float  foffset;		
+	float  dislscale;		
+	float  dislmag;		  
 };
 
 struct Light {
@@ -68,8 +81,9 @@ uniform extern float3    gCamOff;			// Custom camera offset
 uniform extern Light     gLights[12];     
 uniform extern int       gLightCount;      
 uniform extern Light     gSun;			    // Sun light input structure
-uniform extern Mtrl      gMat;			    // Material input structure
-uniform extern Mtrl      gWater;			// Water material input structure
+uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
+uniform extern Mat       gWater;			// Water material input structure
+uniform extern Mtrl      gMtrl;			    // Material input structure
 uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
 uniform extern bool      gBrighten;				
@@ -461,9 +475,9 @@ void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float
         float spt    = saturate((dot(relpW, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
         
         float d      = dot(-relpW, nrmW);
-        float s      = pow(max(dot(reflect(relpW, nrmW), normalize(-posW)), 0.0f), gMat.specPower);
+        float s      = pow(max(dot(reflect(relpW, nrmW), normalize(-posW)), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
 
-        if (gMat.specPower<2.0 || d<=0) s = 0.0f;
+        if (d<=0) s = 0.0f;
         if (gLights[i].type==1) spt = 1.0f;         // Point light -> set spotlight factor to 1
 
         float dif = (att*spt);
