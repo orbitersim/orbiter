@@ -131,6 +131,8 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); 
 #endif
 
+	//_CrtSetBreakAlloc(17549);
+
 	D3D9InitLog("Modules/D3D9Client/D3D9ClientLog.html");
 
 	if (!D3DXCheckVersion(D3D_SDK_VERSION, D3DX_SDK_VERSION)) {
@@ -286,6 +288,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 #endif
 
 	memset(&stats, 0, sizeof(stats));
+	memset(pDislMapList, 0, 16*sizeof(SURFHANDLE));
 
 	D3DXMatrixIdentity(&ident);	
 
@@ -2066,7 +2069,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R10 Beta 1 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R10 Beta 2 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

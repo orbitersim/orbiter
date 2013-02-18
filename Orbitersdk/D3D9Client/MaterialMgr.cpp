@@ -445,7 +445,7 @@ bool MatMgr::LoadCameraConfig()
 
 	while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
 	{	
-		float a, b, c, d;
+		float a, b, c;
 		DWORD id;
 
 		// --------------------------------------------------------------------------------------------
@@ -457,8 +457,8 @@ bool MatMgr::LoadCameraConfig()
 			if (iattc) memcpy(pCamera[camera].pOmitAttc, attclist, iattc); 
 			if (idock) memcpy(pCamera[camera].pOmitDock, docklist, idock); 
 			
-			pCamera[camera].nAttc = iattc;
-			pCamera[camera].nDock = idock;
+			pCamera[camera].nAttc = WORD(iattc);
+			pCamera[camera].nDock = WORD(idock);
 			
 			continue;
 		}
@@ -481,14 +481,14 @@ bool MatMgr::LoadCameraConfig()
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "OMITATTC", 8)) {
 			if (sscanf_s(cbuf, "OMITATTC %u", &id)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			attclist[iattc++] = id;
+			attclist[iattc++] = BYTE(id);
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "OMITDOCK", 8)) {
 			if (sscanf_s(cbuf, "OMITDOCK %u", &id)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			docklist[idock++] = id;
+			docklist[idock++] = BYTE(id);
 			continue;
 		}
 

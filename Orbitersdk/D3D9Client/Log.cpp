@@ -26,7 +26,7 @@
 
 FILE *d3d9client_log = NULL;
 
-#define LOG_MAX_LINES 50000
+#define LOG_MAX_LINES 100000
 #define ERRBUF 8000
 #define OPRBUF 512
 #define TIMEBUF 63

@@ -254,7 +254,7 @@ void Scene::DelVisualRec (VOBJREC *pv)
 
 	DebugControls::RemoveVisual(pv->vobj);
 
-	vobjEnv = vobjFirst;
+	vobjEnv = NULL;
 
 	// delete the visual, its children and the entry itself
 	gc->UnregisterVisObject(pv->vobj->GetObject());
@@ -302,6 +302,8 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 	// create the visual and entry
 	VOBJREC *pv = new VOBJREC;
+
+	memset(pv, 0, sizeof(VOBJREC));
 
 	__TRY {
 		pv->vobj = vObject::Create(hObj, this);
@@ -1185,11 +1187,23 @@ void Scene::RenderMainScene()
 		if (vobjEnv==NULL) vobjEnv = vobjFirst;
 
 		while (vobjEnv) {	
+
 			if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
-				if (((vVessel *)vobjEnv->vobj)->RenderENVMap(pDevice, Config->EnvMapFaces, flags)) {
-					vobjEnv = vobjEnv->next;
+
+				OBJHANDLE hObj = vobjEnv->vobj->GetObjectA();
+
+				if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) {
+					LogErr("Anomaly");
 					break;
-				}	
+				}
+
+				if (vobjEnv->vobj) {
+					vVessel *vVes = (vVessel *)vobjEnv->vobj;
+					if (vVes->RenderENVMap(pDevice, Config->EnvMapFaces, flags)) {
+						vobjEnv = vobjEnv->next;
+						break;
+					}	
+				}
 			}
 			vobjEnv = vobjEnv->next;
 		}

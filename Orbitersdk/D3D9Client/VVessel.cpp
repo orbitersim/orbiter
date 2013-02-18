@@ -66,7 +66,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 vVessel::~vVessel ()
 {
 	delete pMatMgr;
-
+	
 	for (int i=0;i<4;i++) {
 		SAFE_RELEASE(pEnv[i]);
 	}
@@ -212,7 +212,6 @@ void vVessel::PreInitObject()
 		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
 	}
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
-
 	pMatMgr->LoadCameraConfig();
 }
 
@@ -308,7 +307,7 @@ void vVessel::LoadMeshes()
 	MeshManager *mmgr = gc->GetMeshMgr();
 
 	nmesh = vessel->GetMeshCount();
-	meshlist = new MESHREC[nmesh];
+	meshlist = new MESHREC[nmesh+1];
 
 	memset(meshlist, 0, nmesh*sizeof(MESHREC));
 
@@ -426,16 +425,16 @@ void vVessel::InsertMesh(UINT idx)
 // 
 void vVessel::ClearMeshes()
 {
-	if (nmesh) {
+	if (nmesh && meshlist) {
 		for (UINT i = 0; i < nmesh; i++) {
 			LogMsg("Deleting Vessel Mesh %u/%u 0x%X", i+1, nmesh, meshlist[i].mesh);
 			SAFE_DELETE(meshlist[i].mesh);
 			SAFE_DELETE(meshlist[i].trans);
 		}
-		delete []meshlist;
-		meshlist = 0;
-		nmesh = 0;
 	}
+	if (meshlist) delete[] meshlist;
+	meshlist = 0;
+	nmesh = 0;
 }
 
 
@@ -1033,11 +1032,13 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	
 	bool bReflective = false;
 
-	for (DWORD i=0;i<nmesh;i++) {
-		if (meshlist[i].mesh) {
-			if (meshlist[i].mesh->IsReflective()) {
-				bReflective = true;
-				break;
+	if (meshlist) {
+		for (DWORD i=0;i<nmesh;i++) {
+			if (meshlist[i].mesh) {
+				if (meshlist[i].mesh->IsReflective()) {
+					bReflective = true;
+					break;
+				}
 			}
 		}
 	}
@@ -1108,7 +1109,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	//
 
 	MATRIX3 grot;
-	VECTOR3 gpos, gcam;
+	VECTOR3 gpos;
 	
 	vessel->GetRotationMatrix(grot);
 	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);

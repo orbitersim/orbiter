@@ -111,7 +111,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 		cTex = gMtrl.diffuse;
     }
    
-    if (gFullyLit) return cTex;
+    //if (gFullyLit) return cTex;
    
     if (gUseSpec) {
 		cSpec = tex2D(SpecS, frg.tex0);		
@@ -132,13 +132,13 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     
     if (d==0) s = 0;	
     																					
-    float3 diff = frg.diffuse.rgb + d;
+    float3 diff = frg.diffuse.rgb + d * gSun.diffuse.rgb;
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     cTex.rgb *= saturate(diff);
 
     // cTot is total reflected light
-    float3 cTot = cSpec.rgb * (frg.spec.rgb + s);
+    float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
 
     if (gEnvMapEnable) {
         float3 v = reflect(-CamW, nrmW);

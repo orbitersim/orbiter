@@ -130,12 +130,12 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
    			
     if (d==0) s = 0;							
     																		
-    float3 diff = frg.diff.rgb * saturate(-dot(frg.locW, nrmW)) + frg.ambi + d;
+    float3 diff = frg.diff.rgb * saturate(-dot(frg.locW, nrmW)) + frg.ambi + d * gSun.diffuse.rgb;
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     cTex.rgb  *= saturate(diff);
     
-    float3 cTot = cSpec.rgb * (frg.spec.rgb + s);
+    float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
    
     if (gEnvMapEnable) {	
 		cTex.rgb *= (1.0-cRefl.a); 

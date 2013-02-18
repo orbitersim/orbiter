@@ -868,8 +868,8 @@ bool D3D9Mesh::HasTexture(SURFHANDLE hSurf)
 bool D3D9Mesh::IsReflective()
 {
 	if (!pVB) return false;
-	for (DWORD i=1;i<nTex;i++) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
-	for (DWORD i=1;i<nMtrl;i++) if (Mtrl[i].Fresnel!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
+	for (DWORD i=1;i<nTex;i++) if (Tex[i]) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
+	for (DWORD i=0;i<nMtrl;i++) if (Mtrl[i].Fresnel!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
 	return false;
 }
 
@@ -1158,7 +1158,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
-	FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
+	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 	FX->SetBool(eNight, false);
 	FX->SetBool(eUseSpec, false);
 	FX->SetBool(eUseEmis, false);
@@ -1415,7 +1415,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
-	FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
+	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 	FX->SetInt(eLightCount, 0);
 	FX->SetBool(eDebugHL, false);
 	
