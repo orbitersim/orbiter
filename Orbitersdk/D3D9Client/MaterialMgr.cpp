@@ -87,7 +87,7 @@ void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3D9MatExt *pM)
 
 	if (!bExists) {
 		// Create a new record
-		strcpy_s(pRecord[iRec].mesh_name, 64, pMesh->GetName());
+		strcpy_s(pRecord[iRec].mesh_name, 128, pMesh->GetName());
 		pRecord[iRec].mat_idx = midx;
 		nRec++;
 	}
@@ -153,7 +153,7 @@ DWORD MatMgr::NewRecord(const char *name, DWORD midx)
 
 	ClearRecord(nRec);
 
-	strcpy_s(pRecord[nRec].mesh_name, 64, name);
+	strcpy_s(pRecord[nRec].mesh_name, 128, name);
 	pRecord[nRec].mat_idx = midx;
 	nRec++;
 	return rv;
@@ -342,7 +342,7 @@ bool MatMgr::SaveConfiguration()
 
 	char path[256];
 	char classname[256];
-	char current[64];
+	char current[128]; // ..._mesh_name
 
 	OBJHANDLE hObj = vObj->GetObjectA();
 
@@ -372,7 +372,7 @@ bool MatMgr::SaveConfiguration()
 	for (DWORD k=0;k<nRec;k++) {
 		
 		if (!pRecord[k].bSaved) {
-			strcpy_s(current, 64, pRecord[k].mesh_name);
+			strcpy_s(current, 128, pRecord[k].mesh_name);
 			fprintf(file.pFile,"; =============================================\n");
 			fprintf(file.pFile,"MESH %s\n", current);
 		}
