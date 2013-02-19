@@ -1189,16 +1189,7 @@ void Scene::RenderMainScene()
 		if (vobjEnv==NULL) vobjEnv = vobjFirst;
 
 		while (vobjEnv) {	
-
 			if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
-
-				OBJHANDLE hObj = vobjEnv->vobj->GetObjectA();
-
-				if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) {
-					LogErr("Anomaly");
-					break;
-				}
-
 				if (vobjEnv->vobj) {
 					vVessel *vVes = (vVessel *)vobjEnv->vobj;
 					if (vVes->RenderENVMap(pDevice, Config->EnvMapFaces, flags)) {
