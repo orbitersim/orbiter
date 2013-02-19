@@ -1048,6 +1048,8 @@ void Scene::RenderMainScene()
 	// render the vessel objects
 	// -------------------------------------------------------------------------------------------------------
 
+	D3D9Effect::UpdateEffectCamera(hObj_proxy);
+
 	pSketch->SetTextColor(labelCol[0]);
 	pSketch->SetPen(lblPen[0]);
 

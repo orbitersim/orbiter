@@ -386,6 +386,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 pDev)
 		bool bfog = bFog;
 		float fogfactor = 0.0f;
 
+		D3D9Effect::UpdateEffectCamera(hObj);
+
 		cBackGround = scn->GetBgColour();
 		pCurrentVisual = this;
 
