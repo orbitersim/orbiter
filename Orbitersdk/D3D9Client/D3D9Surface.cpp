@@ -1362,6 +1362,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 						case D3DFMT_X8R8G8B8:
 						case D3DFMT_A8R8G8B8:
 						case D3DFMT_DXT1:
+						case D3DFMT_DXT3:
 							gNormalType = 1;
 							break;
 						

@@ -290,8 +290,8 @@ D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
 void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
 void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
 
-void DX9Mat2MatExt(D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
-void MatExt2DX9Mat(D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
+void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
+void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations

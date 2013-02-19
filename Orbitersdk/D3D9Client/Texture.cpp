@@ -125,7 +125,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 			}
 			else {
 				delete[] buffer;
-				LogErr("Loaded %d textures for %s",ntex,fname);
+				LogErr("Failed to surface tile (%d tiles loaded for %s)",ntex,fname);
 				return ntex;
 			}
 

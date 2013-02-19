@@ -210,9 +210,9 @@ void vVessel::PreInitObject()
 {
 	if (pMatMgr->LoadConfiguration()) {
 		for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) pMatMgr->ApplyConfiguration(meshlist[i].mesh);
+		pMatMgr->LoadCameraConfig();
 	}
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
-	pMatMgr->LoadCameraConfig();
 }
 
 // ============================================================================================

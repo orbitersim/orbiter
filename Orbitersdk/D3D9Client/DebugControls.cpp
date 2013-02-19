@@ -281,7 +281,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 6:	// Dissolve
+		case 6:	// Fresnel
 		{
 			pMat->ModFlags |= D3D9MATEX_FRESNEL;
 			switch(clr) {

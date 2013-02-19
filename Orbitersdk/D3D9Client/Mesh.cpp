@@ -762,7 +762,7 @@ void D3D9Mesh::UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg)
 bool D3D9Mesh::CopyMaterial(int idx, const MATERIAL *mat)
 {
 	if (!pVB) return true;
-	DX9Mat2MatExt((D3DMATERIAL9 *)mat, &Mtrl[idx]);
+	CreateMatExt((const D3DMATERIAL9 *)mat, &Mtrl[idx]);
 	return true;
 }
 
@@ -868,7 +868,7 @@ bool D3D9Mesh::HasTexture(SURFHANDLE hSurf)
 bool D3D9Mesh::IsReflective()
 {
 	if (!pVB) return false;
-	for (DWORD i=1;i<nTex;i++) if (Tex[i]) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
+	for (DWORD i=0;i<nTex;i++) if (Tex[i]) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
 	for (DWORD i=0;i<nMtrl;i++) if (Mtrl[i].Fresnel!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
 	return false;
 }

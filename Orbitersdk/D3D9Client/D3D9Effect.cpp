@@ -383,9 +383,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
 	FX->SetVector(eReflCtrl,   &D3DXVECTOR4(0.0f, 0.0f, 0.0f, 0.0f));
 
-	DX9Mat2MatExt(&_defmat, &defmat);
-	DX9Mat2MatExt(&_night_mat, &night_mat);
-	DX9Mat2MatExt(&_emissive_mat, &emissive_mat);
+	CreateMatExt(&_defmat, &defmat);
+	CreateMatExt(&_night_mat, &night_mat);
+	CreateMatExt(&_emissive_mat, &emissive_mat);
 
 	// Create a Circle Mesh --------------------------------------------
 	//

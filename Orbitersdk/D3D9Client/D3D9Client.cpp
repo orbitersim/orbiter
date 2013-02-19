@@ -1009,7 +1009,7 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 	DWORD nmat = mesh->MaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
 	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
-	if (meshmat) DX9Mat2MatExt((D3DMATERIAL9 *)mat, meshmat);
+	if (meshmat) UpdateMatExt((const D3DMATERIAL9 *)mat, meshmat);
 	return 0;
 }
 
@@ -2069,7 +2069,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R10 Beta 2 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R10 Beta 4 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

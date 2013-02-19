@@ -15,7 +15,17 @@
 
 float saturate(float x) { if (x>1) return 1; if (x<0) return 0; return x; }
 
-void DX9Mat2MatExt(D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
+
+void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
+{
+	pOut->Ambient = pIn->Ambient;
+	pOut->Diffuse = pIn->Diffuse;
+	pOut->Emissive = pIn->Emissive;
+	pOut->Specular = pIn->Specular;
+	pOut->Specular.a = pIn->Power;
+}
+
+void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
 	memcpy(pOut, pIn, 64);
 	pOut->Specular.a = pIn->Power;
@@ -29,12 +39,6 @@ void DX9Mat2MatExt(D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->ModFlags = 0;
 }
 
-void MatExt2DX9Mat(D3D9MatExt *pIn, D3DMATERIAL9 *pOut)
-{
-	memcpy(pOut, pIn, 64);
-	pOut->Power = pIn->Specular.a;
-	pOut->Specular.a = 1.0f;
-}
 
 void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 {
