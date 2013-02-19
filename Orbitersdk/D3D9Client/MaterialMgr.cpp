@@ -106,6 +106,8 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 
 	const char *name = pMesh->GetName();
 
+	LogAlw("Applying custom configuration to a mesh (%s)",name);
+
 	for (DWORD i=0;i<nRec;i++) {
 
 		if (strcmp(pRecord[i].mesh_name, name)==0) {
@@ -135,6 +137,8 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 				pM->pDissolve = pRecord[i].Mat.pDissolve;
 			}
 			pM->ModFlags = flags;
+
+			LogBlu("Material %u setup applied to mesh (%s) Flags=0x%X", idx, name, flags);
 		}
 	}
 }
@@ -218,7 +222,7 @@ bool MatMgr::LoadConfiguration()
 	DWORD mesh = 0;
 	DWORD material = 0;
 
-	while(fgets2(cbuf, 256, file.pFile, 0x08)>=0) 
+	while (fgets2(cbuf, 256, file.pFile, 0x0A)>=0) 
 	{	
 		float a, b, c, d;
 		DWORD id;
@@ -226,7 +230,6 @@ bool MatMgr::LoadConfiguration()
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "CAMERA_LPOS", 11)) {
 			if (sscanf_s(cbuf, "CAMERA_LPOS %u %g %g %g", &id, &a, &b, &c)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-
 			continue;
 		}
 
@@ -394,12 +397,18 @@ bool MatMgr::SaveConfiguration()
 			if (flags&D3D9MATEX_DIFFUSE)  fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
 			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Specular.a);
 			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
-			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b, pM->Reflect.a);
-			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f\n", pM->Fresnel, pM->FOffset);
+			
+			if (flags&D3D9MATEX_REFLECT) {
+				if (pM->Reflect.a>1e-3f) fprintf(file.pFile,"REFLECT %f %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b, pM->Reflect.a);
+			}
+			
+			if (flags&D3D9MATEX_FRESNEL) {
+				if (pM->Fresnel>1e-3f) fprintf(file.pFile,"FRESNEL %f %f\n", pM->Fresnel, pM->FOffset);
+			}
 
 			if (pM->pDissolve && flags&D3D9MATEX_DISSOLVE) {
 				const char *name = SURFACE(pM->pDissolve)->GetName();
-				if (name) fprintf(file.pFile,"DISSOLVE %s %f %f\n", name, pM->DislScale, pM->DislMag);
+				if (name && pM->DislScale>1e-3f && pM->DislMag>1e-3f) fprintf(file.pFile,"DISSOLVE %s %f %f\n", name, pM->DislScale, pM->DislMag);
 			}
 		}
 	}
