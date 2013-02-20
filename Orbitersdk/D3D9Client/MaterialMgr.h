@@ -78,7 +78,7 @@ private:
 	 * \brief Storage structure to keep material information.
 	 */
 	struct MATREC {
-		char			mesh_name[128];	///< Name of the mesh
+		char*			mesh_name;		///< Name of the mesh
 		DWORD			mat_idx;		///< Material index
 		D3D9MatExt		Mat;			///< Material itself
 		bool			bSaved;			///< Flag indicating whether the material has been saved
