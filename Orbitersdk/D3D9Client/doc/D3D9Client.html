@@ -35,16 +35,30 @@
 
 <hr />
 <!-- ----------------------------------------------------------------------- -->
-<h1>Orbiter Sound, Spacecraft3.dll</h1>
+<h1>Orbiter Sound 3.5, Spacecraft3.dll</h1>
 <p>
-  In order to use Spacecraft3.dll and Orbiter Sound with a graphics client. A
-  symbolic links must be created in /Modules/Server/ folder for "Config" and
-  "Sound" folders those are located in a root folder of the Orbiter. If you are
-  using Windows XP or newer and your installation is on a NTFS filesystem, these
-  links can be created from Video Tab -&gt; Advanced Setup. If you have problem
-  with the links you can also use a software called Link Shell Extension (see
-  link below) or you can simply copy the Config and Sound folders into
-  /Modules/Server/ but then you have to keep them updated manually.
+  In order to use Spacecraft3.dll and Orbiter Sound (Version 3.5) with an
+  external graphics client &ndash;like D3D9Client is one&ndash;, symbolic links in
+  <tt>/Modules/Server/</tt> folder must be created.
+</p>
+<p>
+  Note, that for the current version of Orbiter Sound (Version 4.0) the "Sound"
+  link is not necessary anymore. It will not be created via the according Button
+  in D3D9Clients "Advanced Setup" dialog, if D3DClient detects that the loaded
+  Orbiter Sound Module if of Version 4.0. Anyhow, it does not harm if the
+  "Sound" link is present for a Orbiter Sound 4.0 setup.
+</p>
+<p>
+  The two symbolic links in <tt>/Modules/Server/</tt> folder for "<tt>Config</tt>"
+  and "<tt>Sound</tt>" folders point (or link) to their "originals" located in
+  the root folder of the Orbiter installation.<br/>
+  If you are using Windows XP or newer and your installation is on a
+  <a href="http://en.wikipedia.org/wiki/NTFS" target="_blank">NTFS</a> filesystem,
+  these links can easily be created from Video Tab -&gt; Advanced Setup.
+  If you have problems with creating the links you can also use a software
+  called Link Shell Extension (see link below) or you can simply copy the
+  <tt>Config</tt> and <tt>Sound</tt> folders into <tt>/Modules/Server/</tt>.
+  But then you have to keep them updated manually.
 </p>
 <p>
   Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html">http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
