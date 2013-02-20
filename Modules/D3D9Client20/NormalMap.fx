@@ -113,20 +113,18 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float3 nrmW = mul(nrmT, TBN);
     
     // Reflection coefficient approximation from fresnel equations
-    float  fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
+#if defined(_GLASS)
+    float fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
+#else
+	float fce = 1.0;
+#endif
     
 	if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																			
     else 	      cSpec = gMtrl.specular;	
     
-    if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);																			
-    else {
-		cRefl = gMtrl.reflect;
-		cRefl.rgb *= cRefl.a;
-	}		
-	
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
-    float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
+    float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a*fce);
    			
     if (d==0) s = 0;							
     																		
@@ -136,17 +134,26 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     cTex.rgb  *= saturate(diff);
     
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
-   
-    if (gEnvMapEnable) {	
+    
+#if defined(_ENVMAP)   
+    if (gEnvMapEnable) {
+		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);																			
+		else {
+			cRefl = gMtrl.reflect;
+			cRefl.rgb *= cRefl.a;
+		}		
 		cTex.rgb *= (1.0-cRefl.a); 
 		cTot.rgb += (cSpec.rgb*fce + cRefl.rgb) * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
     }
+#endif
 	
 	cTex.rgb += cTot.rgb;
     
-    if (gNight && gTextured) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
+    if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
     
+#if defined(_DEBUG)    
     if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
+#endif
 
     return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }

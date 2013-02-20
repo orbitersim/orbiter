@@ -67,7 +67,12 @@ void Create()
 	camMode = 0;
 	dspMode = 0;
 	SelColor = 0;
-	dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug controls", OpenDlgClbk, NULL);
+	if (Config->EnableMeshDbg) {
+		dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug controls", OpenDlgClbk, NULL);
+	}
+	else {
+		dwCmd = 0;
+	}
 }
 
 bool IsActive()

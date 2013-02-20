@@ -83,12 +83,12 @@ FONT 8, "Ms Shell Dlg"
 
 
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-IDD_D3D9SETUP DIALOGEX 0, 0, 368, 287
+IDD_D3D9SETUP DIALOGEX 0, 0, 368, 306
 STYLE DS_MODALFRAME | DS_SETFONT | WS_CAPTION | WS_POPUP | WS_SYSMENU
 CAPTION "D3D9Client Advanced Setup"
 FONT 8, "MS Sans Serif", 0, 0, 0
 {
-    DEFPUSHBUTTON   "OK", IDOK, 312, 267, 50, 14
+    DEFPUSHBUTTON   "OK", IDOK, 313, 287, 50, 14
     AUTORADIOBUTTON "Load on demand (recommended)", IDC_DEMAND, 16, 16, 121, 10, WS_GROUP
     LTEXT           "Max. load frequency [Hz]:", IDC_STATIC5, 26, 29, 85, 8, SS_LEFT
     AUTORADIOBUTTON "Pre-load at session start", IDC_SRFPRELOAD, 16, 46, 94, 10
@@ -106,30 +106,31 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     COMBOBOX        IDC_AF, 85, 100, 35, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
     AUTOCHECKBOX    "Pre-load base visuals at startup", IDC_BASEVIS, 15, 140, 114, 8
     AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 15, 155, 114, 8
-    GROUPBOX        "Generic configuration", IDC_STATIC, 190, 70, 170, 49
+    GROUPBOX        "Generic configuration", IDC_STATIC, 190, 70, 170, 65
     LTEXT           "Shader set", IDC_STATIC6, 200, 85, 35, 8, SS_LEFT
     COMBOBOX        IDC_SHADER, 270, 85, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
     COMBOBOX        IDC_DEBUG, 270, 100, 35, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
     LTEXT           "Debug level", IDC_STATIC7, 200, 100, 39, 8, SS_LEFT
-    PUSHBUTTON      "Create symbolic links", IDC_SYMBOLIC, 90, 267, 85, 14, BS_FLAT
+    PUSHBUTTON      "Create symbolic links", IDC_SYMBOLIC, 92, 287, 85, 14, BS_FLAT
     AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 15, 200, 147, 8
-    PUSHBUTTON      "D3D9Client Credits", IDC_CREDITS, 6, 267, 80, 14, BS_FLAT
-    GROUPBOX        "StereoScopic 3D", IDC_STATIC, 190, 125, 170, 60
-    CONTROL         "", IDC_SEPARATION, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 245, 160, 85, 20
-    CONTROL         "", IDC_CONVERGENCE, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 245, 140, 85, 20
-    LTEXT           "Static", IDC_CONV_DSP, 335, 145, 22, 10, SS_LEFT
-    LTEXT           "Static", IDC_SEPA_DSP, 335, 165, 22, 10, SS_LEFT
-    LTEXT           "Convergence", IDC_STATIC, 195, 145, 44, 8, SS_LEFT
-    LTEXT           "Field Depth", IDC_STATIC, 195, 165, 37, 8, SS_LEFT
-    GROUPBOX        "Environment mapping", IDC_STATIC, 190, 195, 170, 50
-    COMBOBOX        IDC_ENVMODE, 260, 210, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
-    LTEXT           "Rendering mode", IDC_STATIC8, 200, 210, 53, 8, SS_LEFT
-    COMBOBOX        IDC_ENVFACES, 260, 225, 30, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
-    LTEXT           "Faces per frame", IDC_STATIC9, 200, 225, 52, 8, SS_LEFT
+    PUSHBUTTON      "D3D9Client Credits", IDC_CREDITS, 5, 287, 80, 14, BS_FLAT
+    GROUPBOX        "StereoScopic 3D", IDC_STATIC, 190, 140, 170, 60
+    CONTROL         "", IDC_SEPARATION, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 245, 175, 85, 20
+    CONTROL         "", IDC_CONVERGENCE, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 245, 155, 85, 20
+    LTEXT           "Static", IDC_CONV_DSP, 335, 160, 22, 10, SS_LEFT
+    LTEXT           "Static", IDC_SEPA_DSP, 335, 180, 22, 10, SS_LEFT
+    LTEXT           "Convergence", IDC_STATIC, 195, 160, 44, 8, SS_LEFT
+    LTEXT           "Field Depth", IDC_STATIC, 195, 180, 37, 8, SS_LEFT
+    GROUPBOX        "Environment mapping", IDC_STATIC, 190, 210, 170, 50
+    COMBOBOX        IDC_ENVMODE, 260, 225, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
+    LTEXT           "Rendering mode", IDC_STATIC8, 200, 225, 53, 8, SS_LEFT
+    COMBOBOX        IDC_ENVFACES, 260, 240, 30, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS
+    LTEXT           "Faces per frame", IDC_STATIC9, 200, 240, 52, 8, SS_LEFT
     EDITTEXT        IDC_PLANETGLOW, 85, 117, 35, 14, ES_AUTOHSCROLL
     LTEXT           "Planet glow", IDC_STATIC10, 15, 120, 38, 8, SS_LEFT
     AUTOCHECKBOX    "Enable geometry instancing", IDC_GEOMETRY, 15, 185, 103, 8, WS_DISABLED
     AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 15, 170, 113, 8
+    AUTOCHECKBOX    "Enable mesh debugger", IDC_MESH_DEBUGGER, 200, 118, 89, 8
 }
 
 

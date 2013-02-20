@@ -21,6 +21,7 @@
 #define IDC_DBG_MATGRP                          40004
 #define IDC_DBG_MATPRP                          40005
 #define IDC_DBG_MESHNAME                        40006
+#define IDC_MESH_DEBUGGER                       40007
 #define IDC_SYMBOLIC                            40009
 #define IDC_NEARPLANE                           40010
 #define IDC_STATIC7                             40011

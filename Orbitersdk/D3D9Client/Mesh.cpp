@@ -1340,6 +1340,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			// Setup Mesh drawing options =================================================================================
 			// 
 			FX->SetBool(eTextured, bTextured);
+			if (!bTextured) FX->SetBool(eNight, false);
 			FX->SetBool(eFullyLit, (Grp[g]->UsrFlag&0x4)!=0);
 
 			FX->CommitChanges();

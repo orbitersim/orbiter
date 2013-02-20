@@ -97,8 +97,12 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     float3 nrmW = normalize(frg.nrmW);
     
     // Reflection coefficient approximation from fresnel equations
-    float  fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
-    
+#if defined(_GLASS)
+    float fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
+#else
+	float fce = 1.0;
+#endif
+
 	float4 cTex;
     float4 cSpec;
     float4 cRefl;
@@ -117,18 +121,12 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 		cSpec = tex2D(SpecS, frg.tex0);		
 		cSpec.a *= 100.0;
 	}																		
-    else cSpec = gMtrl.specular;		
-
-	if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);	
-	else {
-		cRefl = gMtrl.reflect;
-		cRefl.rgb *= cRefl.a;
-	}
-
+    else cSpec = gMtrl.specular;	
+    	
     // Sunlight calculations
     float3 r = reflect(gSun.direction, nrmW);
     float  d = saturate(-dot(gSun.direction, nrmW));
-    float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a);					
+    float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a*fce);					
     
     if (d==0) s = 0;	
     																					
@@ -140,18 +138,31 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     // cTot is total reflected light
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
 
+#if defined(_ENVMAP)
     if (gEnvMapEnable) {
+		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);	
+		else {
+			cRefl = gMtrl.reflect;
+			cRefl.rgb *= cRefl.a;
+		}
         float3 v = reflect(-CamW, nrmW);
         if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag; // 4-instruction
 		cTex.rgb *= (1.0-cRefl.a); 
 		cTot.rgb += (cSpec.rgb*fce + cRefl.rgb) * texCUBE(EnvMapS, v).rgb;				
     }
-    
+#endif
+
+#if defined(_GLASS)    
     cTex.a = saturate(cTex.a + max(max(cTot.r, cTot.g), cTot.b));
+#endif
+
 	cTex.rgb += cTot.rgb;
 	 
-    if (gNight && gTextured) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
+    if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
+    
+#if defined(_DEBUG)
     if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
+#endif
 
     return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 } 

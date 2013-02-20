@@ -232,7 +232,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[4]; memset(&macro, 0, 4*sizeof(D3DXMACRO));
+	D3DXMACRO macro[8]; memset(&macro, 0, 8*sizeof(D3DXMACRO));
 
 	macro[0].Name = "VS_MOD";
 	macro[1].Name = "PS_MOD";
@@ -256,6 +256,12 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[2].Name = "ANISOTROPY_MACRO";
 	macro[2].Definition = new char[32];
 	sprintf_s((char*)macro[2].Definition,32,"%d",max(2,Config->Anisotrophy));
+
+	int m = 3;
+	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
+	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
+	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
+	
 
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &FX, &errors));
 	
