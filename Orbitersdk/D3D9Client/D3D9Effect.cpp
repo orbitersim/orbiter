@@ -475,24 +475,32 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 
 	float radlimit = float(rad) + 1.0f;
+	float rho0 = 1.0f;
 	
-	D3DXVECTOR4 atm_color(0.3f, 0.3f, 0.3f, 1.0f);
+	D3DXVECTOR4 atm_color(0.5f, 0.5f, 0.5f, 1.0f);
 
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
+	VESSEL *hVessel = oapiGetFocusInterface();
 
 	if (atm) {
 		radlimit = float(atm->radlimit);
-		//atm_color = D3DXVEC4(atm->color0, 1.0);
-		atm_color = D3DXVEC4(*(VECTOR3*)oapiGetObjectParam(hPlanet, OBJPRM_PLANET_HAZECOLOUR), 1.0); 
-		atm_color *= float(Config->PlanetGlow);
+		atm_color = D3DXVEC4(atm->color0, 1.0f);
+		rho0 = atm->rho0;
 	}
+
+	float av = (atm_color.x + atm_color.y + atm_color.z) * 0.3333333f;
+	float fc = 1.5f;
+	float alt = 1.0f - pow(float(hVessel->GetAtmDensity()/rho0), 0.2f);
+	atm_color += D3DXVECTOR4(av,av,av,1.0)*fc;
+	atm_color *= 1.0f/(fc+1.0f);
+	atm_color *= float(Config->PlanetGlow) * alt;
 	
 	float ap = gc->GetScene()->GetCameraAperture();
 
 	D3DXVECTOR3 cmo = gc->GetScene()->GetCameraOffset();
 	//D3DXVECTOR3 plr = D3DXVEC(refl);
 
-	float proxy_size = float(asin(min(1.0, rad/len)) + 45.0*PI/180.0);
+	float proxy_size = float(asin(min(1.0, rad/len)) + 40.0*PI/180.0);
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
 	FX->SetValue(eCamOff, &D3DXVECTOR3(float(cmo.x),float(cmo.y),float(cmo.z)), sizeof(D3DXVECTOR3));
