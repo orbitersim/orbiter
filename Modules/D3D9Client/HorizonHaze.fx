@@ -33,10 +33,10 @@ HazeVS HazeTechVS(HZVERTEX vrt)
 //
 float4 HazeTechPS(HazeVS frg) : COLOR
 {
-    //return frg.color * tex2D(Tile0S, frg.tex0); 
+    return frg.color * tex2D(ClampS, frg.tex0); 
 
     //return float4(frg.color.rgb, frg.color.a*frg.tex0.y*frg.tex0.y);
-    return float4(frg.color.rgb*(frg.tex0.y+0.30), frg.color.a*frg.tex0.y*frg.tex0.y);
+    //return float4(frg.color.rgb*(frg.tex0.y+0.30), frg.color.a*frg.tex0.y*frg.tex0.y);
 }
 
 

@@ -116,7 +116,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 #if defined(_GLASS)
     float fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
 #else
-	float fce = 1.0;
+	float fce = 0.0;
 #endif
     
 	if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																			
