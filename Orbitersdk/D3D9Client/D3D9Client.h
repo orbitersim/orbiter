@@ -539,6 +539,7 @@ public:
 	const LPD3DXMATRIX GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
 
 	HWND GetWindow();
+	bool HasVertexTextureSupport() { return bVertexTex; }
 	D3DCAPS9 *GetHardwareCaps() { return &caps; }
 	D3D9Stat *GetStats() { return &stats; }
 	FileParser *GetFileParser() { return parser; }
@@ -672,6 +673,7 @@ private:
 	bool bScene;
 	bool bRunning;
 	bool bHalt;
+	bool bVertexTex;
 
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport

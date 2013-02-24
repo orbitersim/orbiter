@@ -28,6 +28,7 @@ D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
+LPDIRECT3DTEXTURE9 D3D9Effect::pNoise = 0;
 
 D3D9MatExt D3D9Effect::defmat;
 D3D9MatExt D3D9Effect::night_mat;
@@ -51,6 +52,7 @@ D3DXHANDLE D3D9Effect::eRingTech2 = 0;	// Planet rings technique
 D3DXHANDLE D3D9Effect::eShadowTech = 0; // Vessel ground shadows
 D3DXHANDLE D3D9Effect::eArrowTech = 0;  // (Grapple point) arrows
 D3DXHANDLE D3D9Effect::eAxisTech = 0;
+D3DXHANDLE D3D9Effect::eLightCubeTech = 0;
 
 // VC rendering techniques
 D3DXHANDLE D3D9Effect::eVCMFDTech = 0;
@@ -90,6 +92,7 @@ D3DXHANDLE D3D9Effect::eEmisMap = 0;
 D3DXHANDLE D3D9Effect::eEnvMap = 0;
 D3DXHANDLE D3D9Effect::eDislMap = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
+D3DXHANDLE D3D9Effect::eEnvLight = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -309,6 +312,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eBuildingTech	 = FX->GetTechniqueByName("BuildingTech");
 	eBeaconArrayTech = FX->GetTechniqueByName("BeaconArrayTech");
 
+	eLightCubeTech   = FX->GetTechniqueByName("LightCubeTech");
+
 	//eNFVesselTech   = FX->GetTechniqueByName("NFVesselTech");
 	//eNFGlassTech    = FX->GetTechniqueByName("NFGlassTech");
 	//eNFBuildingTech = FX->GetTechniqueByName("NFBuildingTech");
@@ -367,6 +372,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eEnvMap		  = FX->GetParameterByName(0,"gEnvMap");
 	eDislMap	  = FX->GetParameterByName(0,"gDislMap");
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
+	eEnvLight	  = FX->GetParameterByName(0,"gEnvLight");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
@@ -379,7 +385,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
 	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
-
 
 	// Initialize default values --------------------------------------
 	//
@@ -411,6 +416,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 		}
 		pVB->Unlock();
 	} else LogErr("Failed to Lock vertex buffer");
+
+
+	SURFHANDLE hSrf = oapiLoadTexture("D3D9LENoise.dds");
+
+	pNoise = SURFACE(hSrf)->GetTexture();
 
 	// Create Arrow Mesh --------------------------------------------
 	//
@@ -510,7 +520,8 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	FX->SetFloat(eProxySize, cos(proxy_size));
 }
 
-
+// ===========================================================================================
+//
 void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 {
 	VECTOR3 GS, GP;
@@ -536,6 +547,76 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 	}
 }
 
+// ===========================================================================================
+//
+bool D3D9Effect::ComputeLighting(LPDIRECT3DCUBETEXTURE9 pEnv, LPDIRECT3DCUBETEXTURE9 pLight, LPDIRECT3DCUBETEXTURE9 pTgt)
+{
+	static D3DVECTOR bvtx[8] = {
+		{1,-1,-1}, {1, 1,-1}, {1, 1, 1}, {1,-1, 1},
+		{-1,-1,-1}, {-1, 1,-1}, {-1, 1, 1}, {-1,-1, 1}
+	};
+
+	static WORD bidx[36] = { 0,1,2, 0,2,3,  4,1,0, 4,5,1,  5,2,1, 5,6,2,  6,3,2, 6,7,3,  7,0,3, 7,4,0,  4,6,5, 4,7,6 }; 
+
+	LPDIRECT3DSURFACE9 pORT = NULL;
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+	UINT numPasses = 0;
+
+	HR(pDev->GetRenderTarget(0, &pORT));
+	
+	D3DXMATRIX mEnv, mP, mI;
+	D3DXVECTOR3 dir, up;
+
+	D3DXMatrixIdentity(&mI);
+
+	D3DXMatrixPerspectiveFovLH(&mP, float(PI05), 1.0f, 0.1f, 2.0f);
+
+	HR(pDev->SetVertexDeclaration(pPositionDecl));
+	HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+
+	for (DWORD i=0;i<6;i++) {
+
+		HR(pTgt->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
+		HR(pDev->SetRenderTarget(0, pSrf));
+
+		EnvMapDirection(i, &dir, &up);
+		
+		D3DXVECTOR3 cp;
+		D3DXVec3Cross(&cp, &up, &dir);
+		D3DXVec3Normalize(&cp, &cp);
+		D3DXMatrixIdentity(&mEnv);
+		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
+		D3DXMatrixMultiply(&mEnv, &mEnv, &mP);
+		
+		D3DCOLOR color = 0x00FF00;
+
+		HR(pDev->Clear(0, NULL, D3DCLEAR_TARGET, color, 1.0f, 0));
+		HR(pDev->BeginScene());
+		
+		HR(FX->SetTechnique(eLightCubeTech));
+		HR(FX->SetMatrix(eVP, &mEnv));
+		HR(FX->SetMatrix(eW, &mI));
+		HR(FX->SetTexture(eEnvMap, pEnv));
+		HR(FX->SetTexture(eEnvLight, pLight));
+		HR(FX->SetTexture(eTex0, pNoise));
+		HR(FX->SetFloat(eMix, float(float(rand()%512)/1024.0f)));
+		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+		HR(FX->BeginPass(0));
+		HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 8, 12, &bidx, D3DFMT_INDEX16, &bvtx, sizeof(D3DXVECTOR3)));
+		HR(FX->EndPass());
+		HR(FX->End());
+		
+		HR(pDev->EndScene());
+
+		SAFE_RELEASE(pSrf);	
+	}
+
+	 HR(pDev->SetRenderTarget(0, pORT));
+	 SAFE_RELEASE(pORT);
+
+	 HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
+	 return true;
+}
 
 // ===========================================================================================
 //

@@ -541,6 +541,12 @@ bool MatMgr::LoadCameraConfig()
 		}
 
 		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "DO_NOT_OMIT_FOCUS", 17)) {
+			pCamera[camera].flags |= ENVCAM_FOCUS;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "OMIT_ALL_DOCKS", 14)) {
 			pCamera[camera].flags |= ENVCAM_OMIT_DOCKS;
 			continue;

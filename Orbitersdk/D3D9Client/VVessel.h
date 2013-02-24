@@ -100,7 +100,7 @@ public:
 	void RenderAxis (LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp);
 	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
 	
-	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx) { return pEnv[idx]; }
+	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx);
 	float GetExhaustLength() const { return ExhaustLength; }
 
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
@@ -149,6 +149,8 @@ private:
 	class MatMgr *pMatMgr;
 
 	LPDIRECT3DCUBETEXTURE9 pEnv[4];
+	LPDIRECT3DCUBETEXTURE9 pLight, pLight2;
+
 	int nEnv;				// Number of environmental maps 
 	int iFace;				// EnvMap Face index that is to be rendered next
 

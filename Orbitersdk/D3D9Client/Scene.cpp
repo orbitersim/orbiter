@@ -1207,7 +1207,7 @@ void Scene::RenderMainScene()
 	//
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0));
+		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0)); //VisualizeCubeMap(vFocus->GetEnvMap(-1));
 	}
 
 	scene_time = D3D9GetTime() - scene_time;

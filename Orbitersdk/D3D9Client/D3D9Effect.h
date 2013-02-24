@@ -51,9 +51,11 @@ public:
 	static void RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size);
 	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);  
 	static void RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
-
+	static bool ComputeLighting(LPDIRECT3DCUBETEXTURE9 pEnv, LPDIRECT3DCUBETEXTURE9 pLight, LPDIRECT3DCUBETEXTURE9 pTgt);
+	
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DVERTEXBUFFER9 pVB;
+	static LPDIRECT3DTEXTURE9 pNoise;
 	
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
@@ -82,6 +84,7 @@ public:
 	static D3DXHANDLE	eBeaconArrayTech;
 	static D3DXHANDLE	eArrowTech;
 	static D3DXHANDLE	eAxisTech;
+	static D3DXHANDLE	eLightCubeTech;
 
 	static D3DXHANDLE	eVCHudTech;
 	static D3DXHANDLE	eVCMFDTech;
@@ -156,6 +159,7 @@ public:
 	static D3DXHANDLE	eEnvMap;
 	static D3DXHANDLE	eDislMap;
 	static D3DXHANDLE	eReflMap;
+	static D3DXHANDLE	eEnvLight;
 
 	// Legacy Atmosphere -----------------------------------------------
 

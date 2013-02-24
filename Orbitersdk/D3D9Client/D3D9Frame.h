@@ -43,6 +43,7 @@ class CD3DFramework9
     // Internal variables for the framework class
     HWND                 hWnd;               // The window object
     BOOL                 bIsFullscreen;      // Fullscreen vs. windowed
+	BOOL				 bVertexTexture;
 	BOOL				 bAAEnabled;
 	BOOL				 bNoVSync;           // don't use vertical sync in fullscreen
 	BOOL				 Alpha;
@@ -101,6 +102,7 @@ public:
 	inline BOOL					IsGDIBB() const				 { return bGDIBB; }
 	inline BOOL					IsAAEnabled() const			 { return bAAEnabled; }
 	inline const D3DCAPS9 *		GetCaps() const				 { return &caps; }
+	inline BOOL					HasVertexTextureSup() const  { return bVertexTexture; }
 
     // Creates the Framework
 	HRESULT Initialize(HWND hWnd, struct oapi::GraphicsClient::VIDEODATA *vData);

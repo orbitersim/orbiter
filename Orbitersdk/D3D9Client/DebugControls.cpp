@@ -408,6 +408,7 @@ void SetColorSlider()
 	if (MatPrp==2 && SelColor==3) val/=100.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val/=0.2f;  // Dissolve scatter
+	if (MatPrp==6 && SelColor==0) val/=4.0f;  // Fresnel range
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -538,6 +539,7 @@ void UpdateColorSlider(WORD pos)
 	if (MatPrp==2 && SelColor==3) val*=100.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val*=0.2f;  // Dissolve scatter
+	if (MatPrp==6 && SelColor==0) val*=4.0f;  // Fresnel range
 	
 	UpdateMeshMaterial(val, MatPrp, SelColor);
 }

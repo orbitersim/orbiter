@@ -271,6 +271,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bRunning		 = false;
 	bScene			 = false;
 	bHalt			 = false;
+	bVertexTex		 = false;
 	bSkpGDI			 = true;
 	viewW = viewH    = 0;
 	viewBPP          = 0;
@@ -340,6 +341,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bAAEnabled  = (pFramework->IsAAEnabled() == TRUE);
 	viewBPP		= 32;
 	pEnvDS		= pFramework->GetEnvDepthStencil();
+	bVertexTex  = pFramework->HasVertexTextureSup();
 	
 	char fld[] = {"D3D9Client\0"};
 

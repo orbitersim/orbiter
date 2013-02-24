@@ -31,6 +31,7 @@
 
 #define ENVCAM_OMIT_ATTC		0x0001
 #define ENVCAM_OMIT_DOCKS		0x0002
+#define ENVCAM_FOCUS			0x0004
 
 
 /**

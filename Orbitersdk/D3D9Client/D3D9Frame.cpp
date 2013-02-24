@@ -319,6 +319,12 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		HR(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_DXT1));
 	}
 
+	// Check vertex texture support
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F)==S_OK) {
+		bVertexTexture = true;
+	} 
+	else bVertexTexture = false;
+
 	if (bFail) {
 		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);	
 		return -1;

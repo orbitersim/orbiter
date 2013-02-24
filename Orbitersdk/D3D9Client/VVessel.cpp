@@ -45,6 +45,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	sunLight = *scene->GetLight(-1);
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
+	pLight = NULL;
 	bAMSO = false;
 	
 	pMatMgr = new MatMgr(this, scene->GetClient());
@@ -585,6 +586,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	else										   D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 0); // turn off fog
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+
+	if (pLight) D3D9Effect::FX->SetTexture(D3D9Effect::eEnvLight, pLight);
 	
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
@@ -1069,7 +1072,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	ENVCAMREC *eCam = pMatMgr->GetCamera(0);
 
-	bOmit = true;
+	// Omit the focus object
+	if ((eCam->flags&ENVCAM_FOCUS)==0) bOmit = true;
 
 	DWORD nAtc = vessel->AttachmentCount(false);
 	DWORD nDoc = vessel->DockCount();
@@ -1166,9 +1170,38 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	 SAFE_RELEASE(pODS);
 	 SAFE_RELEASE(pORT);
+
+	 /*
+	 if (pLight==NULL) {
+		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pLight)!=S_OK) {
+			LogErr("Failed to create env lightmap for visual 0x%X",this);
+			return false;
+		}
+		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pLight2)!=S_OK) {
+			LogErr("Failed to create env lightmap for visual 0x%X",this);
+			return false;
+		}
+	 }*/
+
+	 if (pLight) {
+		 D3D9Effect::ComputeLighting(pEnv[0], pLight, pLight2);
+		 LPDIRECT3DCUBETEXTURE9 pTemp = pLight;
+		 pLight = pLight2;
+		 pLight2 = pTemp;
+	 }
+
 	 return true;
 }
 
+
+// ============================================================================================
+// 
+LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
+{ 
+	if (idx<0) return pLight;
+	if (idx>=0 && idx<4) return pEnv[idx];
+	return NULL;
+}
 
 
 // ============================================================================================
