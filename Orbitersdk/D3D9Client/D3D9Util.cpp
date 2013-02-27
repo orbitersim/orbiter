@@ -31,8 +31,9 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Specular.a = pIn->Power;
 	pOut->Reflect = pIn->Specular;
 	pOut->Reflect.a = 0.0f;
-	pOut->Fresnel = 0.0f;
-	pOut->FOffset = 1.0f;
+	pOut->Fresnel.r = 0.0f;	// Offset
+	pOut->Fresnel.g = 0.0f;	// Mult
+	pOut->Fresnel.b = 0.0f;	// Power
 	pOut->DislMag = 0.0f;
 	pOut->DislScale = 0.0f;
 	pOut->pDissolve = NULL;

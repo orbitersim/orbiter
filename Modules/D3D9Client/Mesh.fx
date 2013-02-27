@@ -21,11 +21,12 @@ struct AdvancedVS
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;     
     float3 nrmW     : TEXCOORD1;
+    float2 tex0     : TEXCOORD2;
+    float2 aux		: TEXCOORD3; 
     half4  diffuse  : COLOR0;           // (Local Light) Diffuse color
     half4  spec     : COLOR1;           // (Local Light) Specular color
-    half4  atten    : TEXCOORD2;        // (Atmospheric haze) Attennuate incoming fragment color
-    half4  insca    : TEXCOORD3;        // (Atmospheric haze) "Inscatter" Add to incoming fragment color
-    float2 tex0     : TEXCOORD4;
+    half4  atten    : TEXCOORD4;        // (Atmospheric haze) Attennuate incoming fragment color
+    half4  insca    : TEXCOORD5;        // (Atmospheric haze) "Inscatter" Add to incoming fragment color
 };
 
 struct TileMeshVS
@@ -65,7 +66,9 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	outVS.tex0  = vrt.tex0;
     outVS.nrmW  = nrmW;
 	outVS.posH  = mul(float4(posW, 1.0f), gVP);
-
+	
+	float3 CamW = normalize(outVS.CamW);
+	
     half4 locW;
     LocalVertexLight(outVS.diffuse, outVS.spec, locW, nrmW, posW);
    
@@ -84,7 +87,10 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	// Add constanst -----------------------------------------------------------
 	outVS.diffuse.rgb += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
 	
-
+	// Pre-compute fresnel term ------------------------------------------------
+	outVS.aux[0] = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
+	outVS.aux[1] = dot(reflect(gSun.direction, nrmW), CamW);
+	
     return outVS;
 }
 
@@ -96,75 +102,71 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     float3 CamW = normalize(frg.CamW);
     float3 nrmW = normalize(frg.nrmW);
     
-    // Reflection coefficient approximation from fresnel equations
-#if defined(_GLASS)
-    float fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
-#else
-	float fce = 0.0;
-#endif
-
 	float4 cTex;
     float4 cSpec;
     float4 cRefl;
-  
-    if (gTextured) {
+    
+	if (gTextured) {													// Sample the main diffuse texture
         cTex = tex2D(WrapS, frg.tex0);
         if (gModAlpha) cTex.a *= gMtrl.diffuse.a;    
     }
-    else {
-		cTex = gMtrl.diffuse;
-    }
+    else cTex = gMtrl.diffuse;
+    
    
-    //if (gFullyLit) return cTex;
-   
-    if (gUseSpec) {
+    if (gUseSpec) {														// Get specular color and power
 		cSpec = tex2D(SpecS, frg.tex0);		
 		cSpec.a *= 100.0;
 	}																		
     else cSpec = gMtrl.specular;	
     	
-    // Sunlight calculations
-    float3 r = reflect(gSun.direction, nrmW);
+	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
     float  d = saturate(-dot(gSun.direction, nrmW));
-    float  s = pow(saturate(dot(r, CamW)), cSpec.a) * saturate(cSpec.a*fce);					
+    float  s = pow(saturate(frg.aux[1]), cSpec.a) * saturate(cSpec.a);					
     
     if (d==0) s = 0;	
     																					
-    float3 diff = frg.diffuse.rgb + d * gSun.diffuse.rgb;
-    if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
+    float3 diff = frg.diffuse.rgb + d * gSun.diffuse.rgb;				// Compute total diffuse light
+   
+    if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;					// Add emissive textures
 
-    cTex.rgb *= saturate(diff);
+    cTex.rgb *= saturate(diff);											// Lit the diffuse texture
 
-    // cTot is total reflected light
-    float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
+    float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
 
-#if defined(_ENVMAP)
-    if (gEnvMapEnable) {
-		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);	
+	if (gEnvMapEnable) {
+    
+		if (gUseRefl) {
+			cRefl.rgb = tex2D(SpecS, frg.tex0).rgb;						// Get a reflection color for non fresnel refl. 
+			cRefl.a = max(max(cRefl.r, cRefl.g), cRefl.b);				// Intensity of reflective material
+		}
 		else {
 			cRefl = gMtrl.reflect;
 			cRefl.rgb *= cRefl.a;
 		}
-        float3 v = reflect(-CamW, nrmW);
-        if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag; // 4-instruction
-		cTex.rgb *= (1.0-cRefl.a); 
-		cTot.rgb += (cSpec.rgb*fce + cRefl.rgb) * texCUBE(EnvMapS, v).rgb;				
+	
+		float fresnel = frg.aux[0];										// Precomputed Fresnel term
+	
+		cRefl.rgb = cRefl.rgb * (1.0f - fresnel) + fresnel;				// Multiply with refraction term and add reflection
+		
+        float3 v = reflect(-CamW, nrmW);								// Reflection vector
+		
+		// Apply noise/blur effects in reflections
+        if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag;
+		
+		cTex.rgb *= (1.0f - cRefl.a); 									// Attennuate diffuse texture
+		cTot.rgb += cRefl.rgb * texCUBE(EnvMapS, v).rgb;				// Add reflections into a specular light
     }
-#endif
 
-#if defined(_GLASS)    
-    cTex.a = saturate(cTex.a + max(max(cTot.r, cTot.g), cTot.b));
-#endif
+	float iTot = max(max(cTot.r, cTot.g), cTot.b);						// Intensity of total reflected light
+	
+	cTex.rgb += cTot.rgb;												// Apply reflections to output color
+	
+	cTex.a = saturate(cTex.a + iTot);									// Re-compute output alpha for alpha blending stage
+																		
+    if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 				// Apply building nightlights
+    if (gDebugHL) cTex.rgb = cTex.rgb*0.5f + gColor.rgb;				// Apply mesh debugger highlighting
 
-	cTex.rgb += cTot.rgb;
-	 
-    if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
-    
-#if defined(_DEBUG)
-    if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-#endif
-
-    return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
+    return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);		// Apply fog and light inscattering
 } 
 
 

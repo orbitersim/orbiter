@@ -103,7 +103,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float4 cTex = tex2D(WrapS, frg.tex0);
     if (gModAlpha) cTex.a *= gMtrl.diffuse.a;	
   
-    float3 nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);       //Sampler for R8G8B8, DXT1
+    float3 nrmT = tex2D(Nrm0S, frg.tex0).rgb * 2.0 - 1.0;       //Sampler for R8G8B8, DXT1
 	
 	float3x3 TBN;
     TBN[0] = frg.tanT;
@@ -112,48 +112,49 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
     float3 nrmW = mul(nrmT, TBN);
     
-    // Reflection coefficient approximation from fresnel equations
-#if defined(_GLASS)
-    float fce = gMtrl.foffset - pow(saturate(dot(CamW, nrmW)), gMtrl.fresnel);
-#else
-	float fce = 0.0;
-#endif
-    
-	if (gUseSpec) cSpec = tex2D(SpecS, frg.tex0);																			
-    else 	      cSpec = gMtrl.specular;	
+	if (gUseSpec) {
+		cSpec = tex2D(SpecS, frg.tex0);	
+		cSpec.a *= 100.0;
+	}																		
+    else cSpec = gMtrl.specular;	
     
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
-    float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a*fce);
+    float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
    			
     if (d==0) s = 0;							
     																		
     float3 diff = frg.diff.rgb * saturate(-dot(frg.locW, nrmW)) + frg.ambi + d * gSun.diffuse.rgb;
+    
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
     cTex.rgb  *= saturate(diff);
     
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
     
-#if defined(_ENVMAP)   
     if (gEnvMapEnable) {
-		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);																			
+		
+		if (gUseRefl) {
+			cRefl.rgb = tex2D(SpecS, frg.tex0).rgb;
+			cRefl.a = max(max(cRefl.r, cRefl.g), cRefl.b);		// Intensity of total reflected light
+		}																			
 		else {
 			cRefl = gMtrl.reflect;
 			cRefl.rgb *= cRefl.a;
-		}		
-		cTex.rgb *= (1.0-cRefl.a); 
-		cTot.rgb += (cSpec.rgb*fce + cRefl.rgb) * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
+		}
+		
+		float fresnel = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
+		
+		cRefl.rgb *= (1.0f - fresnel); 			// Refraction. Attennuate reflection
+		cRefl.rgb += fresnel;
+		
+		cTot  += cRefl.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
     }
-#endif
+
+	cTex.rgb *= (1.0f - cRefl.a); 						// Attennuate Diffuse Texture
+	cTex.rgb += cTot.rgb;								// Apply reflections
 	
-	cTex.rgb += cTot.rgb;
-    
-    if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 
-    
-#if defined(_DEBUG)    
     if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-#endif
 
     return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }

@@ -41,8 +41,7 @@ struct Mtrl
 	float4 specular;  
     float4 emissive;  
 	float4 reflect;
-	float  fresnel;	
-	float  foffset;		
+	float4 fresnel;	
 	float  dislscale;		
 	float  dislmag;		  
 };

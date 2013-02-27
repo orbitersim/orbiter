@@ -187,7 +187,7 @@ typedef struct {
 #define D3D9MATEX_DISSOLVE	0x20
 #define D3D9MATEX_FRESNEL	0x40
 
-#define D3D9MATSIZE 96
+#define D3D9MATSIZE 104
 /**
  * \brief Material structure used in D3D9Mesh. Only the upper part (23 floats) is loaded into a shadrs
  */
@@ -196,9 +196,8 @@ typedef struct {
     D3DCOLORVALUE Ambient;        
     D3DCOLORVALUE Specular;			///< Specular color, power in alpha  
     D3DCOLORVALUE Emissive;       
-	D3DCOLORVALUE Reflect;			///< Color multiplier and reflectivity (alpha)
-	float		  Fresnel;			///< Refractive index
-	float		  FOffset;			///< Refractive index 
+	D3DCOLORVALUE Reflect;			///< Color multiplier and intensity (alpha)
+	D3DCOLORVALUE Fresnel;			///< Fresnel reflection
 	float		  DislScale;		///< Dissolve effect scale factor 0.20 to 3.0 (typical)
 	float		  DislMag;			///< Dissolve effect magnitude 0.01 to 0.1 (typical)
 	// -----------------------

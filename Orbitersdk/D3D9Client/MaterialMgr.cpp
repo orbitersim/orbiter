@@ -152,10 +152,7 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 			if (flags&D3D9MATEX_EMISSIVE) pM->Emissive = pRecord[i].Mat.Emissive;
 			if (flags&D3D9MATEX_REFLECT) pM->Reflect = pRecord[i].Mat.Reflect;
 			if (flags&D3D9MATEX_SPECULAR) pM->Specular = pRecord[i].Mat.Specular;
-			if (flags&D3D9MATEX_FRESNEL) {
-				pM->Fresnel = pRecord[i].Mat.Fresnel;
-				pM->FOffset = pRecord[i].Mat.FOffset;
-			}
+			if (flags&D3D9MATEX_FRESNEL) pM->Fresnel = pRecord[i].Mat.Fresnel;
 			if (flags&D3D9MATEX_DISSOLVE) {
 				pM->DislScale = pRecord[i].Mat.DislScale;
 				pM->DislMag = pRecord[i].Mat.DislMag;
@@ -247,6 +244,7 @@ bool MatMgr::LoadConfiguration()
 	DWORD iRec = 0;
 	DWORD mesh = 0;
 	DWORD material = 0;
+	DWORD n = 0;
 
 	while (fgets2(cbuf, 256, file.pFile, 0x0A)>=0) 
 	{	
@@ -350,9 +348,13 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
-			if (sscanf_s(cbuf, "FRESNEL %f %f", &a, &b)!=2) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Fresnel = a;
-			pRecord[iRec].Mat.FOffset = b;
+			n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
+			if (n!=2 && n!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Fresnel.b = a;
+			pRecord[iRec].Mat.Fresnel.r = b;
+			if (n==2) pRecord[iRec].Mat.Fresnel.g = 1.0f - b;
+			if (n==3) pRecord[iRec].Mat.Fresnel.g = c;
+			if (a==0.0f) pRecord[iRec].Mat.Fresnel.g = 0.0f;
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			continue;
 		}
@@ -429,7 +431,7 @@ bool MatMgr::SaveConfiguration()
 			}
 			
 			if (flags&D3D9MATEX_FRESNEL) {
-				if (pM->Fresnel>1e-3f) fprintf(file.pFile,"FRESNEL %f %f\n", pM->Fresnel, pM->FOffset);
+				if (pM->Fresnel.b>1e-3f) fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.r, pM->Fresnel.g, pM->Fresnel.b);
 			}
 
 			if (pM->pDissolve && flags&D3D9MATEX_DISSOLVE) {

@@ -1,9 +1,20 @@
-// ==============================================================
-// DebugControls implementation
-// Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// =================================================================================================================================
+// The MIT Lisence:
+//
 // Copyright (C) 2012 Jarmo Nikkanen
-// ==============================================================
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+// IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// =================================================================================================================================
 
 
 #include "D3D9Client.h"
@@ -25,11 +36,14 @@ extern D3D9Client *g_client;
 
 // Little binary helper
 #define SETFLAG(bitmap, bit, value) (value ? bitmap |= bit : bitmap &= ~bit)
+#define CLAMP(x,a,b) min(max(a,x),b) 
 
 namespace DebugControls {
 
 DWORD dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor;
 double camSpeed;
+float cpr, cpg, cpb, cpa;
+
 char visual[64];
 
 HWND hDlg = NULL;
@@ -67,6 +81,9 @@ void Create()
 	camMode = 0;
 	dspMode = 0;
 	SelColor = 0;
+
+	cpr = cpg = cpb = cpa = 0.0f;
+
 	if (Config->EnableMeshDbg) {
 		dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug controls", OpenDlgClbk, NULL);
 	}
@@ -219,10 +236,10 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_DIFFUSE;
 			switch(clr) {
-				case 0: pMat->Diffuse.r = value; break;
-				case 1: pMat->Diffuse.g = value; break;
-				case 2: pMat->Diffuse.b = value; break;
-				case 3: pMat->Diffuse.a = value; break;
+				case 0: pMat->Diffuse.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: pMat->Diffuse.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: pMat->Diffuse.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 3: pMat->Diffuse.a = CLAMP(value, 0.0f, 1.0f); break;
 			}
 			break;
 		}
@@ -231,9 +248,9 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_AMBIENT;
 			switch(clr) {
-				case 0: pMat->Ambient.r = value; break;
-				case 1: pMat->Ambient.g = value; break;
-				case 2: pMat->Ambient.b = value; break;
+				case 0: pMat->Ambient.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: pMat->Ambient.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: pMat->Ambient.b = CLAMP(value, 0.0f, 1.0f); break;
 				case 3: pMat->Ambient.a = 0.0; break;
 			}
 			break;
@@ -243,10 +260,10 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_SPECULAR;
 			switch(clr) {
-				case 0: pMat->Specular.r = value; break;
-				case 1: pMat->Specular.g = value; break;
-				case 2: pMat->Specular.b = value; break;
-				case 3: pMat->Specular.a = value; break;
+				case 0: pMat->Specular.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: pMat->Specular.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: pMat->Specular.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 3: pMat->Specular.a = CLAMP(value, 0.0f, 1.0f); break;
 			}
 			break;
 		}
@@ -255,9 +272,9 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_EMISSIVE;
 			switch(clr) {
-				case 0: pMat->Emissive.r = value; break;
-				case 1: pMat->Emissive.g = value; break;
-				case 2: pMat->Emissive.b = value; break;
+				case 0: pMat->Emissive.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: pMat->Emissive.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: pMat->Emissive.b = CLAMP(value, 0.0f, 1.0f); break;
 				case 3: pMat->Emissive.a = 0.0; break;
 			}
 			break;
@@ -267,10 +284,10 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_REFLECT;
 			switch(clr) {
-				case 0: pMat->Reflect.r = value; break;
-				case 1: pMat->Reflect.g = value; break;
-				case 2: pMat->Reflect.b = value; break;
-				case 3: pMat->Reflect.a = value; break;
+				case 0: pMat->Reflect.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: pMat->Reflect.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: pMat->Reflect.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 3: pMat->Reflect.a = CLAMP(value, 0.0f, 1.0f); break;
 				
 			}
 			break;
@@ -280,8 +297,8 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_DISSOLVE;
 			switch(clr) {
-				case 0: pMat->DislScale = value; break;
-				case 1: pMat->DislMag = value; break;
+				case 0: pMat->DislScale = CLAMP(value, 0.0f, 12.0f); break;
+				case 1: pMat->DislMag = CLAMP(value, 0.0f, 0.2f); break;
 			}
 			break;
 		}
@@ -290,8 +307,14 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_FRESNEL;
 			switch(clr) {
-				case 0: pMat->Fresnel = value; break;
-				case 1: pMat->FOffset = value + 1.0f; break;
+				case 0: pMat->Fresnel.b = CLAMP(value, 1.0f, 5.0f); 
+					break;
+				case 1: 
+					pMat->Fresnel.r = CLAMP(value, 0.0f, 1.0f); 
+					pMat->Fresnel.g = 1.0f - CLAMP(value, 0.0f, 1.0f);
+					break;
+				case 2: pMat->Fresnel.g = CLAMP(value, 0.0f, 1.0f); 
+					break;
 			}
 			break;
 		}
@@ -387,8 +410,9 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		case 6:	// Fresnel
 		{
 			switch(clr) {
-				case 0: return pMat->Fresnel;
-				case 1: return pMat->FOffset - 1.0f;
+				case 0: return pMat->Fresnel.b;	// Power
+				case 1: return pMat->Fresnel.r;	// Offset
+				case 2: return pMat->Fresnel.g; // Multiplier
 			}
 			break;
 		}
@@ -408,7 +432,7 @@ void SetColorSlider()
 	if (MatPrp==2 && SelColor==3) val/=100.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val/=0.2f;  // Dissolve scatter
-	if (MatPrp==6 && SelColor==0) val/=4.0f;  // Fresnel range
+	if (MatPrp==6 && SelColor==0) val/=6.0f;  // Fresnel range
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -425,19 +449,19 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	float b = GetMaterialValue(MatPrp, 2);
 	float a = GetMaterialValue(MatPrp, 3);
 
-	if (bRed) sprintf_s(lbl,32,"%2.2f", r);
+	if (bRed) sprintf_s(lbl,32,"%3.3f", r);
 	else	  sprintf_s(lbl,32,"");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_RED),   lbl);
 	
-	if (bGreen) sprintf_s(lbl,32,"%2.2f", g);
+	if (bGreen) sprintf_s(lbl,32,"%3.3f", g);
 	else		sprintf_s(lbl,32,"");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_GREEN), lbl);
 
-	if (bBlue) sprintf_s(lbl,32,"%2.2f", b);
+	if (bBlue) sprintf_s(lbl,32,"%3.3f", b);
 	else	   sprintf_s(lbl,32,"");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_BLUE),  lbl);
 
-	if (bAlpha) sprintf_s(lbl,32,"%2.2f", a);
+	if (bAlpha) sprintf_s(lbl,32,"%3.3f", a);
 	else	    sprintf_s(lbl,32,"");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_ALPHA), lbl);
 
@@ -501,7 +525,7 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 0;
 		break;
 		case 6:	// Fresnel
-			DisplayMat(true, true, false, false);
+			DisplayMat(true, true, true, false);
 			if (bSetup) SelColor = 0;
 		break;
 	}
@@ -535,13 +559,33 @@ void UpdateColorSlider(WORD pos)
 	float val = float(pos)/255.0f;
 	
 	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+	bool bLink = (SendDlgItemMessageA(hDlg, IDC_DBG_LINK, BM_GETCHECK, 0, 0)==BST_CHECKED);
+
+	if (MatPrp==5 || MatPrp==6) bLink = false;
+	if (SelColor==3) bLink = false;
 
 	if (MatPrp==2 && SelColor==3) val*=100.0; // Specular Power
 	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val*=0.2f;  // Dissolve scatter
-	if (MatPrp==6 && SelColor==0) val*=4.0f;  // Fresnel range
+	if (MatPrp==6 && SelColor==0) val*=6.0f;  // Fresnel range
 	
-	UpdateMeshMaterial(val, MatPrp, SelColor);
+	float old = GetMaterialValue(MatPrp, SelColor);
+	float fct = val/old;
+	
+	if (old<1e-4) fct = val;
+
+	if (bLink) {
+		float r = GetMaterialValue(MatPrp, 0);
+		float g = GetMaterialValue(MatPrp, 1);
+		float b = GetMaterialValue(MatPrp, 2);
+		if (r<1e-4) r=1.0f;
+		if (g<1e-4) g=1.0f;
+		if (b<1e-4) b=1.0f;
+		UpdateMeshMaterial(r*fct, MatPrp, 0);
+		UpdateMeshMaterial(g*fct, MatPrp, 1);
+		UpdateMeshMaterial(b*fct, MatPrp, 2);
+	}
+	else UpdateMeshMaterial(val, MatPrp, SelColor);
 }
 
 
@@ -668,6 +712,8 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char lbl[32];
 
+	DWORD Prp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+
 	switch (uMsg) {
 
 	case WM_INITDIALOG:
@@ -714,7 +760,27 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 			}
-				
+
+			case IDC_DBG_LINK:
+				break;
+
+			case IDC_DBG_COPY:
+			{
+				cpr = GetMaterialValue(Prp, 0);
+				cpg = GetMaterialValue(Prp, 1);
+				cpb = GetMaterialValue(Prp, 2);
+				break;
+			}
+
+			case IDC_DBG_PASTE:
+			{
+				UpdateMeshMaterial(cpr, Prp, 0);
+				UpdateMeshMaterial(cpg, Prp, 1);
+				UpdateMeshMaterial(cpb, Prp, 2);
+				UpdateMaterialDisplay();
+				SetColorSlider();
+				break;
+			}
 
 			case IDC_DBG_RED:
 				if (HIWORD(wParam)==EN_SETFOCUS) {
@@ -767,7 +833,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_MATPRP:
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
 					UpdateMaterialDisplay(true);
-					SetColorSlider();
+					SetColorSlider();	
 				}
 				break;
 

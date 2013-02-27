@@ -1241,8 +1241,8 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTextureHard()
 //
 bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const char *id)
 {
-	char buffe[64];
-	strcpy_s(buffe, 64, fname);
+	char buffe[128];
+	strcpy_s(buffe, 128, fname);
 	char *p = strrchr(buffe, '.');
 	if (p != NULL) {
 		*p = '\0';
@@ -1259,11 +1259,11 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 {
 	char cpath[256];
 	char xpath[256];
-	char nname[64];
-	char sname[64];
-	char ename[64];
-	char bname[64];
-	char rname[64];
+	char nname[128];
+	char sname[128];
+	char ename[128];
+	char bname[128];
+	char rname[128];
 	
 	bClear = false;
 
@@ -1277,11 +1277,11 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 	if (gc->TexturePath(fname, cpath)) {
 
 		if (Config->UseNormalMap) {
-			CreateName(nname, 64, fname, "norm");
-			CreateName(sname, 64, fname, "spec");
-			CreateName(ename, 64, fname, "emis");
-			CreateName(bname, 64, fname, "bump");
-			CreateName(rname, 64, fname, "refl");
+			CreateName(nname, 128, fname, "norm");
+			CreateName(sname, 128, fname, "spec");
+			CreateName(ename, 128, fname, "emis");
+			CreateName(bname, 128, fname, "bump");
+			CreateName(rname, 128, fname, "refl");
 		}
 			
 		// Get information about the file

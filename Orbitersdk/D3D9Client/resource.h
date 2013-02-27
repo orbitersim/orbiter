@@ -78,3 +78,7 @@
 #define IDC_DBG_PICK                            40098
 #define IDC_PLANETGLOW                          40099
 #define IDC_GEOMETRY                            40100
+#define IDC_DBG_LINK                            40101
+#define IDC_DBG_REFLMAP                         40102
+#define IDC_DBG_PASTE                           40103
+#define IDC_DBG_COPY                            40104

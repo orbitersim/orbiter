@@ -869,7 +869,7 @@ bool D3D9Mesh::IsReflective()
 {
 	if (!pVB) return false;
 	for (DWORD i=0;i<nTex;i++) if (Tex[i]) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
-	for (DWORD i=0;i<nMtrl;i++) if (Mtrl[i].Fresnel!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
+	for (DWORD i=0;i<nMtrl;i++) if (Mtrl[i].Fresnel.g!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
 	return false;
 }
 
@@ -1127,7 +1127,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			break;
 	}
 
-	D3DXMATRIX mWorldView, mWorldInverse, q, qq;
+	D3DXMATRIX mWorldView,  q;
 	D3DXMatrixMultiply(&mWorldView, pW, scn->GetViewMatrix());
 
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
@@ -1136,14 +1136,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	
 	gc->GetStats()->Meshes++;
 
-	if (bUseNormalMap) {
-		D3DXMatrixInverse(&mWorldInverse, NULL, pW); // TODO: Inverse exists already
-		FX->SetMatrix(eWI, &mWorldInverse);
-	}
-
 	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
-	LPD3D9CLIENTSURFACE Diffuse = NULL;
 	LPDIRECT3DTEXTURE9  pNorm = NULL;
 	LPDIRECT3DTEXTURE9  pSpec = NULL;
 	LPDIRECT3DTEXTURE9  pEmis = NULL;
@@ -1154,11 +1148,11 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	dev->SetIndices(pIB);
 
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 
 	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 	FX->SetBool(eNight, false);
 	FX->SetBool(eUseSpec, false);
 	FX->SetBool(eUseEmis, false);
@@ -1316,10 +1310,10 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 						if (pEnv[0]) {
 
-							if (mat->Reflect.a!=0.0f || mat->Fresnel!=0.0f || pRefl) {
+							if (mat->Reflect.a!=0.0f || mat->Fresnel.g!=0.0f || pRefl) {
 								FX->SetBool(eEnvMapEnable, true);
 								FX->SetTexture(eEnvMap, pEnv[0]);
-								if (mat->pDissolve && bTextured) {
+								if (mat->pDissolve) {
 									FX->SetTexture(eDislMap, SURFACE(mat->pDissolve)->GetTexture());
 									FX->SetBool(eUseDisl, true);
 								}
@@ -1394,7 +1388,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 	bool bTextured = false;
 
-	D3DXMATRIX mWorldView, mWorldInverse, q, qq;
+	D3DXMATRIX mWorldView,  q;
 	D3DXMatrixMultiply(&mWorldView, pW, scn->GetViewMatrix());
 
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
@@ -1405,18 +1399,17 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
-	LPD3D9CLIENTSURFACE Diffuse = NULL;
 	
 	dev->SetVertexDeclaration(pMeshVertexDecl);
 	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
 	dev->SetIndices(pIB);
 
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 
 	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 	FX->SetInt(eLightCount, 0);
 	FX->SetBool(eDebugHL, false);
 	
