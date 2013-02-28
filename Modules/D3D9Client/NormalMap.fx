@@ -24,7 +24,7 @@ struct AdvancedNMVS
 {
     float4 posH     : POSITION0;
     float3 camW     : TEXCOORD0;
-    float3 locW     : TEXCOORD1;	 // Local light source average dir
+    float4 locW     : TEXCOORD1;	 // Local light source average dir
     half4  diff		: COLOR0;		 // Diffuse color
     half4  spec     : COLOR1;        // Specular color
     half3  ambi		: TEXCOORD2;
@@ -78,7 +78,8 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
     outVS.insca *= (gSun.diffuse+gSun.ambient);
-    outVS.locW = locW;
+    outVS.locW = float4(locW.xyz, 1.0f - saturate(-dot(locW.xyz, nrmW)));
+  
     
     // Earth "glow" ------------------------------------------------------------
     float dotb = saturate(-dot(gCameraPos, gSun.direction));
@@ -122,9 +123,10 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     float d = saturate(-dot(gSun.direction, nrmW));
     float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
    			
-    if (d==0) s = 0;							
-    																		
-    float3 diff = frg.diff.rgb * saturate(-dot(frg.locW, nrmW)) + frg.ambi + d * gSun.diffuse.rgb;
+    if (d==0) s = 0;	
+    						
+	float local = clamp(-dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f, 2.0f);   																		
+    float3 diff = frg.diff.rgb * (local*local) + frg.ambi + d * gSun.diffuse.rgb;
     
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 

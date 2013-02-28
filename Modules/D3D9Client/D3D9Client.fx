@@ -488,7 +488,7 @@ void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float
    
     diff = float4(1.5 - exp(-1.0*diffuse.rgb)*1.5, 0);
     spec = float4(1.5 - exp(-1.0*specular.rgb)*1.5, 0);
-    dir  = direction;
+    dir  = normalize(direction);
 }
 
 
