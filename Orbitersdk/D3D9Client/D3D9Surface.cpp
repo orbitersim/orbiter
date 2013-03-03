@@ -354,10 +354,10 @@ D3D9ClientSurface::~D3D9ClientSurface()
 
 	SAFE_RELEASE(pTemp);
 	SAFE_RELEASE(pTempTex);
-	
 	SAFE_RELEASE(pNormalMap);
 	SAFE_RELEASE(pEmissionMap);
 	SAFE_RELEASE(pSpecularMap);
+	SAFE_RELEASE(pReflectionMap);
 	SAFE_RELEASE(pDCTemp);
 	SAFE_RELEASE(pRTS);
 	SAFE_DELETE(pVP);
@@ -1426,8 +1426,11 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 				D3DXIMAGE_INFO info;
 				pEmissionMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
 						LogAlw("Reflection Map %s Loaded Successfully",rname);
+						if (ComputeReflAlpha()==false) {
+							LogErr("Failed to create reflection map alpha for (%s)",rname);
+						}
 					}
 					else {
 						pReflectionMap = NULL;
@@ -1458,6 +1461,33 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 	return false;
 }
 
+// -----------------------------------------------------------------------------------------------
+//
+bool D3D9ClientSurface::ComputeReflAlpha()
+{
+	if (pReflectionMap==NULL) return false;
+
+	D3DLOCKED_RECT pRect;
+	D3DSURFACE_DESC desc;
+
+	if (pReflectionMap->GetLevelDesc(0, &desc)!=S_OK) return false;
+
+	if (pReflectionMap->LockRect(0, &pRect, NULL, 0)==S_OK) {
+
+		BYTE *data = (BYTE *)pRect.pBits;
+
+		for (DWORD k=0;k<desc.Height;k++) {
+			for (DWORD i=0;i<desc.Width;i++) {
+				data[3+i*4] = max(max(data[0+i*4], data[1+i*4]), data[2+i*4]);
+			}
+			data += pRect.Pitch;
+		}
+		pReflectionMap->UnlockRect(0);
+		pReflectionMap->GenerateMipSubLevels();
+		return true;
+	}
+	return false;
+}
 
 // -----------------------------------------------------------------------------------------------
 //

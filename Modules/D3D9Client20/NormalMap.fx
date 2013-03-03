@@ -78,7 +78,8 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
     outVS.insca *= (gSun.diffuse+gSun.ambient);
-    outVS.locW = float4(locW.xyz, 1.0f - saturate(-dot(locW.xyz, nrmW)));
+	locW = -locW;
+    outVS.locW = float4(locW.xyz, 1.0f - saturate(dot(locW.xyz, nrmW)));
   
     
     // Earth "glow" ------------------------------------------------------------
@@ -125,7 +126,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
    			
     if (d==0) s = 0;	
     						
-	float local = clamp(-dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f, 2.0f);   																		
+	float local = clamp(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f, 2.0f);   																		
     float3 diff = frg.diff.rgb * (local*local) + frg.ambi + d * gSun.diffuse.rgb;
     
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
@@ -137,9 +138,8 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     if (gEnvMapEnable) {
 		
 		if (gUseRefl) {
-			cRefl.rgb = tex2D(SpecS, frg.tex0).rgb;
-			cRefl.a = max(max(cRefl.r, cRefl.g), cRefl.b);		// Intensity of total reflected light
-		}																			
+			cRefl = tex2D(SpecS, frg.tex0);	
+		}																
 		else {
 			cRefl = gMtrl.reflect;
 			cRefl.rgb *= cRefl.a;

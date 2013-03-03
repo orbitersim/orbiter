@@ -125,6 +125,7 @@ public:
 	void		EndBlitGroup();
 	int			GetQueueSize();
 	bool		ScanNameSubId(const char *n);
+	bool		ComputeReflAlpha();
 
 private:
 

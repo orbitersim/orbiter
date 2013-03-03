@@ -29,6 +29,7 @@ D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
 LPDIRECT3DTEXTURE9 D3D9Effect::pNoise = 0;
+SURFHANDLE D3D9Effect::hNoise = 0;
 
 D3D9MatExt D3D9Effect::defmat;
 D3D9MatExt D3D9Effect::night_mat;
@@ -214,6 +215,8 @@ void D3D9Effect::ShutDown()
 	FX->SetTexture(eTex3, NULL);
 	FX->SetTexture(eSpecMap, NULL);
 	FX->SetTexture(eEmisMap, NULL);
+
+	oapiReleaseTexture(hNoise);
 }
 
 
@@ -417,10 +420,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 		pVB->Unlock();
 	} else LogErr("Failed to Lock vertex buffer");
 
-
-	SURFHANDLE hSrf = oapiLoadTexture("D3D9LENoise.dds");
-
-	pNoise = SURFACE(hSrf)->GetTexture();
+	hNoise = oapiLoadTexture("D3D9LENoise.dds");
+	pNoise = SURFACE(hNoise)->GetTexture();
 
 	// Create Arrow Mesh --------------------------------------------
 	//
