@@ -350,8 +350,8 @@ bool MatMgr::LoadConfiguration()
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
 			n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
 			if (n!=2 && n!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Fresnel.b = a;
-			pRecord[iRec].Mat.Fresnel.r = b;
+			pRecord[iRec].Mat.Fresnel.b = a; // Power
+			pRecord[iRec].Mat.Fresnel.r = b; // Offset
 			if (n==2) pRecord[iRec].Mat.Fresnel.g = 1.0f - b;
 			if (n==3) pRecord[iRec].Mat.Fresnel.g = c;
 			if (a==0.0f) pRecord[iRec].Mat.Fresnel.g = 0.0f;
@@ -430,8 +430,8 @@ bool MatMgr::SaveConfiguration()
 				if (pM->Reflect.a>1e-3f) fprintf(file.pFile,"REFLECT %f %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b, pM->Reflect.a);
 			}
 			
-			if (flags&D3D9MATEX_FRESNEL) {
-				if (pM->Fresnel.b>1e-3f) fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.r, pM->Fresnel.g, pM->Fresnel.b);
+			if (flags&D3D9MATEX_FRESNEL) {										  //Power,       Offset,		Multiplier
+				if (pM->Fresnel.b>1e-3f) fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, pM->Fresnel.r, pM->Fresnel.g);
 			}
 
 			if (pM->pDissolve && flags&D3D9MATEX_DISSOLVE) {
