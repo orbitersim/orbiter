@@ -29,7 +29,9 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
 	memcpy(pOut, pIn, 64);
 	pOut->Specular.a = pIn->Power;
-	pOut->Reflect = pIn->Specular;
+	pOut->Reflect.r = 0.0f;
+	pOut->Reflect.g = 0.0f;
+	pOut->Reflect.b = 0.0f;
 	pOut->Reflect.a = 0.0f;
 	pOut->Fresnel.r = 0.0f;	// Offset
 	pOut->Fresnel.g = 0.0f;	// Mult

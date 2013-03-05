@@ -287,9 +287,8 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 				case 0: pMat->Reflect.r = CLAMP(value, 0.0f, 1.0f); break;
 				case 1: pMat->Reflect.g = CLAMP(value, 0.0f, 1.0f); break;
 				case 2: pMat->Reflect.b = CLAMP(value, 0.0f, 1.0f); break;
-				case 3: pMat->Reflect.a = CLAMP(value, 0.0f, 1.0f); break;
-				
 			}
+			pMat->Reflect.a = max(max(pMat->Reflect.r, pMat->Reflect.g), pMat->Reflect.b);
 			break;
 		}
 
@@ -517,8 +516,8 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 0;
 		break;
 		case 4:	// Reflectivity
-			DisplayMat(true, true, true, true);
-			if (bSetup) SelColor = 3;
+			DisplayMat(true, true, true, false);
+			if (bSetup) SelColor = 0;
 		break;
 		case 5:	// Dissolve
 			DisplayMat(true, true, false, false);

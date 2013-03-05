@@ -252,12 +252,6 @@ bool MatMgr::LoadConfiguration()
 		DWORD id;
 		
 		// --------------------------------------------------------------------------------------------
-		if (!strncmp(cbuf, "CAMERA_LPOS", 11)) {
-			if (sscanf_s(cbuf, "CAMERA_LPOS %u %g %g %g", &id, &a, &b, &c)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			continue;
-		}
-
-		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {
 			if (sscanf_s(cbuf, "MESH %s", &meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			continue;
@@ -316,11 +310,17 @@ bool MatMgr::LoadConfiguration()
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "REFLECT", 7)) {
-			if (sscanf_s(cbuf, "REFLECT %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			n = sscanf_s(cbuf, "REFLECT %f %f %f %f", &a, &b, &c, &d);
+			if (n!=3 && n!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Reflect.r = a;
 			pRecord[iRec].Mat.Reflect.g = b;
 			pRecord[iRec].Mat.Reflect.b = c;
-			pRecord[iRec].Mat.Reflect.a = d;
+			if (n==4) {
+				pRecord[iRec].Mat.Reflect.r *= d;
+				pRecord[iRec].Mat.Reflect.g *= d;
+				pRecord[iRec].Mat.Reflect.b *= d;
+			}
+			pRecord[iRec].Mat.Reflect.a = max(max(pRecord[iRec].Mat.Reflect.r, pRecord[iRec].Mat.Reflect.g), pRecord[iRec].Mat.Reflect.b);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_REFLECT;
 			continue;
 		}
@@ -413,31 +413,30 @@ bool MatMgr::SaveConfiguration()
 			if (strcmp(pRecord[i].mesh_name, current)!=0) continue;
 			else if (pRecord[i].bSaved) break;
 		
+			DWORD flags = pRecord[i].Mat.ModFlags;
+			D3D9MatExt *pM = &pRecord[i].Mat; 
+
+			if (flags&D3D9MATEX_REFLECT) if (pM->Reflect.a<1e-3f) flags &= (~D3D9MATEX_REFLECT);
+			if (flags&D3D9MATEX_FRESNEL) if (pM->Fresnel.r<1e-3f && pM->Fresnel.g<1e-3f) flags &= (~D3D9MATEX_FRESNEL);
+			if (flags&D3D9MATEX_DISSOLVE) {
+				const char *name = SURFACE(pM->pDissolve)->GetName();
+				if (name==0 || pM->DislScale<1e-3f || pM->DislMag<1e-3f) flags &= (~D3D9MATEX_DISSOLVE);
+			}
+
+			if (flags==0) continue;
+
 			fprintf(file.pFile,"; ---------------------------------------------\n");
 			fprintf(file.pFile,"MATERIAL %u\n", pRecord[i].mat_idx);
 			
 			pRecord[i].bSaved = true;
-
-			DWORD flags = pRecord[i].Mat.ModFlags;
-			D3D9MatExt *pM = &pRecord[i].Mat; 
 			
 			if (flags&D3D9MATEX_AMBIENT)  fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.r, pM->Ambient.g, pM->Ambient.b);
 			if (flags&D3D9MATEX_DIFFUSE)  fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
 			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Specular.a);
 			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
-			
-			if (flags&D3D9MATEX_REFLECT) {
-				if (pM->Reflect.a>1e-3f) fprintf(file.pFile,"REFLECT %f %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b, pM->Reflect.a);
-			}
-			
-			if (flags&D3D9MATEX_FRESNEL) {										  //Power,       Offset,		Multiplier
-				if (pM->Fresnel.b>1e-3f) fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, pM->Fresnel.r, pM->Fresnel.g);
-			}
-
-			if (pM->pDissolve && flags&D3D9MATEX_DISSOLVE) {
-				const char *name = SURFACE(pM->pDissolve)->GetName();
-				if (name && pM->DislScale>1e-3f && pM->DislMag>1e-3f) fprintf(file.pFile,"DISSOLVE %s %f %f\n", name, pM->DislScale, pM->DislMag);
-			}
+			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b);
+			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, pM->Fresnel.r, pM->Fresnel.g);
+			if (flags&D3D9MATEX_DISSOLVE) fprintf(file.pFile,"DISSOLVE %s %f %f\n", SURFACE(pM->pDissolve)->GetName(), pM->DislScale, pM->DislMag);
 		}
 	}
 	return true;

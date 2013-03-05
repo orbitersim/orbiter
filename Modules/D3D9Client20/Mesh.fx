@@ -89,8 +89,8 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	
 	// Pre-compute fresnel term ------------------------------------------------
 	outVS.aux[0] = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
-	outVS.aux[1] = dot(reflect(gSun.direction, nrmW), CamW);
-	
+	//outVS.aux[1] = 1.0 - (gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(-dot(gSun.direction, nrmW)), gMtrl.fresnel.z));
+
     return outVS;
 }
 
@@ -121,7 +121,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     	
 	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
     float  d = saturate(-dot(gSun.direction, nrmW));
-    float  s = pow(saturate(frg.aux[1]), cSpec.a) * saturate(cSpec.a);					
+    float  s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);					
     
     if (d==0) s = 0;	
     																					
@@ -135,24 +135,17 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
 	if (gEnvMapEnable) {
     
-		if (gUseRefl) {
-			cRefl.rgb = tex2D(SpecS, frg.tex0);							// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
-		}
-		else {
-			cRefl = gMtrl.reflect;
-			cRefl.rgb *= cRefl.a;
-		}
-	
-		float fresnel = frg.aux[0];										// Precomputed Fresnel term
-	
-		cRefl.rgb = cRefl.rgb * (1.0f - fresnel) + fresnel;				// Multiply with refraction term and add reflection
+		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);					// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
+		else 		  cRefl = gMtrl.reflect;
+		
+		cRefl.rgb = cRefl.rgb * (1.0f - frg.aux[0]) + frg.aux[0];		// Multiply with refraction term and add reflection
 		
         float3 v = reflect(-CamW, nrmW);								// Reflection vector
 		
 		// Apply noise/blur effects in reflections
         if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag;
 		
-		cTex.rgb *= (1.0f - cRefl.a); 									// Attennuate diffuse texture
+		cTex.rgb *= (1.0f - cRefl.a); // * frg.aux[1];					// Attennuate diffuse texture
 		cTot.rgb += cRefl.rgb * texCUBE(EnvMapS, v).rgb;				// Add reflections into a specular light
     }
 

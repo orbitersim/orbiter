@@ -137,13 +137,8 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
     if (gEnvMapEnable) {
 		
-		if (gUseRefl) {
-			cRefl = tex2D(SpecS, frg.tex0);	
-		}																
-		else {
-			cRefl = gMtrl.reflect;
-			cRefl.rgb *= cRefl.a;
-		}
+		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);														
+		else 		  cRefl = gMtrl.reflect;
 		
 		float fresnel = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
 		
