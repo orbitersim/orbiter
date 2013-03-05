@@ -1,3 +1,21 @@
+% =================================================================================================================================
+% The MIT Lisence:
+%
+% Copyright (C) 2013 Jarmo Nikkanen
+%
+% Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+% files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
+% modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+% is furnished to do so, subject to the following conditions:
+%
+% The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+%
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+% OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+% LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+% IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+% =================================================================================================================================
+
 \documentclass[twocolumn]{report}
 \usepackage{graphicx}
 \newcommand{\ident}{\indent}
@@ -8,24 +26,24 @@
 \newcommand{\asinh}{\sinh^{-1}}
 \newcommand{\ve}[1]{\overrightarrow{\mathbf{#1}}}
 
-\newenvironment{changemargin}[2]{%
-\begin{list}{}{%
-\onecolumn%
-\setlength{\leftmargin}{#1}%
-\setlength{\rightmargin}{#2}%
-}%
-\item[]}{\end{list}}
+
+\setlength{\hoffset}{-0.2in} \setlength{\textwidth}{17.5cm}
+\setlength{\voffset}{-0.2in}\setlength{\textheight}{21cm}
 
 \newenvironment{twocol}[0]{%
 \begin{list}{}{%
 \onecolumn
-\setlength{\leftmargin}{0cm}%
-\setlength{\rightmargin}{0cm}%
+\setlength{\leftmargin}{0.15cm}%
+\setlength{\rightmargin}{0.15cm}%
+\setlength{\topmargin}{0cm}%
+\setlength{\headheight}{0cm}%
+\setlength{\headsep}{0cm}%
+\setlength{\textheight}{24cm}%
 }%
 \item[]}{\end{list}}
 
-
 \begin{document}
+
 \title{
 \begin{center}
 \textbf{Reflections implementation}\end{center}
@@ -35,7 +53,9 @@
 \textbf{D3D9Client}\end{center}
 \vspace{-2cm}
 }
+
 \maketitle
+
 \begin{twocol}
 
 \section*{Fresnel reflection}
@@ -61,11 +81,12 @@ Here are two plots of the equation using different values of $p$. Red curve is u
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.6\textwidth]{curves.png}
-	\caption{Plot}
+	\includegraphics[width=0.6\textwidth]{images/curves.png}
+	\caption{Reflection intensity as function of angle}
 \end{figure}
 
-\newpage
+\end{twocol}
+\begin{twocol}
 
 \section*{Reflection Model}
 
@@ -73,39 +94,43 @@ Here is an image about the reflection model used in D3D9Client
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.35\textwidth]{Fresnel.png}
-	\caption{Model}
+	\includegraphics[width=0.35\textwidth]{images/Fresnel.png}
+	\caption{Reflection model}
 \end{figure}
 
-The model consists from a fresnel reflection $R$ and a metallic reflection $r$. The lambda $\vec{\lambda}$ is a reflectivity color of the material. $t$ is a fraction of the incoming ray that is not reflected away from the interface. Value of $t$ is simply $t=1-R$.
+The model consists from a fresnel reflection $R$ and a metallic reflection $r$. The lambda $\vec{\lambda}$ is a reflectivity color of the material. $t$ is a fraction of the incoming ray that is not reflected away from the interface. $\vec{\varphi}$ is the color of incoming ray of light. The value of $t$ is simply $t=1-R$.
 
 The intensity of "metallic" reflection alone is independent from a viewing angle. However, when combined with a fresnel reflection it is given by
 
 \begin{equation}
- \vec{r} = \vec{\lambda}(1-R)
+ \vec{r} = \vec{\lambda}t\vec{\varphi} = \vec{\lambda}(1-R)\vec{\varphi}
 \end{equation}
 
-The total reflected light is of course $r+R$. I suppose the fresnel reflection could take a specular color $\vec{s}$ but currently it is considered to be white $\vec{s}=[1,1,1]$
+The total reflected light is, of course, $\vec{R_{tot}}=r+R$. I suppose the fresnel reflection could take a specular color $\vec{s}$ of the material but currently it is considered to be white $\vec{s}=[1,1,1]$
 
 \begin{equation}
-\vec{R_{tot}} = \vec{\lambda}(1-R)+\vec{s}R
+\vec{R_{tot}} = (\vec{\lambda}(1-R)+\vec{s}R)\vec{\varphi}
 \end{equation}
 
-The color intensity of the diffuse surface is attennuated by the reflection intensity factor $1-|\vec{\lambda}|$. Resulting pixel color $\vec{c}$ is given by following equation where $\vec{d}$ it the color of the diffuse surface or a texture. 
+The color intensity of the diffuse surface is attennuated by the reflection intensity factor $1-|\vec{\lambda}|$. Resulting pixel color $\vec{c}$ is given by following equation where $\vec{d}$ is the color of the diffuse material or a texture.
 
 \begin{equation}
-\vec{c} = \vec{d}(1-|\vec{\lambda}|) + \vec{\lambda}(1-R) + \vec{s}R
+\vec{c_{rgb}} = \vec{d_{rgb}}(1-|\vec{\lambda}|) + \vec{R_{tot}}
+\end{equation}
+
+Material/Texture alpha must be modified for alpha blending stage to make reflections visible on otherwice transparent surfaces like glass. 
+
+\begin{equation}
+\vec{c_{a}} = max(\vec{d_a}, |\vec{R_{tot}}|)
 \end{equation}
 
 In the D3D9Client we simplify the computations and we do not apply fresnel equations to incoming sunlight. A diffuse surface under a reflective coating is considered to be fully lit by the sunlight and other light sources. 
 
-If we would take it in to account then the equation would become
+If we would take the sun angle $\sigma$ in to account then the equation would become
 
 \begin{equation}
-\vec{c} = \vec{d}(1-|\vec{\lambda}|)[1-R_0-m(1-\cos\sigma)^p] + \vec{\lambda}(1-R) + \vec{s}R
+\vec{c_{rgb}} = \vec{d_{rgb}}(1-|\vec{\lambda}|)[1-R_0-m(1-\cos\sigma)^p] + \vec{R_{tot}}
 \end{equation}
-
-Where $\sigma$ is the normal/sun angle.
 
 \end{twocol}
 \end{document}
