@@ -61,8 +61,9 @@ public:
 	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3D9MatExt *pM);
 	void			ApplyConfiguration(D3D9Mesh *pMesh);
 	bool			SaveConfiguration();
-	bool			LoadConfiguration();
+	bool			LoadConfiguration(bool bAppend=false);
 	bool			LoadCameraConfig();
+	bool			HasMesh(const char *name);
 	void			ResetCamera(DWORD idx);
 
 	ENVCAMREC *		GetCamera(DWORD idx);

@@ -116,7 +116,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
 	if (gUseSpec) {
 		cSpec = tex2D(SpecS, frg.tex0);	
-		cSpec.a *= 100.0;
+		cSpec.a *= 255.0;
 	}																		
     else cSpec = gMtrl.specular;	
     
@@ -126,7 +126,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
    			
     if (d==0) s = 0;	
     						
-	float local = clamp(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f, 2.0f);   																		
+	float local = max(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f);   																		
     float3 diff = frg.diff.rgb * (local*local) + frg.ambi + d * gSun.diffuse.rgb;
     
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
@@ -135,6 +135,8 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
     
+#if defined(_ENVMAP)
+    
     if (gEnvMapEnable) {
 		
 		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);														
@@ -142,16 +144,18 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 		
 		float fresnel = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
 		
-		cRefl.rgb *= (1.0f - fresnel); 			// Refraction. Attennuate reflection
-		cRefl.rgb += fresnel;
-		
-		cTot  += cRefl.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
-    }
-
-	cTex.rgb *= (1.0f - cRefl.a); 						// Attennuate Diffuse Texture
-	cTex.rgb += cTot.rgb;								// Apply reflections
+		cRefl.rgb = cRefl.rgb * (1.0f - fresnel) + fresnel;		// Multiply with refraction term and add reflection
 	
+		cTex.rgb *= (1.0f - cRefl.a); 						// Attennuate Diffuse Texture	
+		cTot.rgb += cRefl.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
+    }
+#endif
+
+	cTex.rgb += cTot.rgb;								// Apply reflections
+
+#if defined(_DEBUG)	
     if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
+#endif
 
     return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
 }

@@ -88,9 +88,11 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	outVS.diffuse.rgb += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
 	
 	// Pre-compute fresnel term ------------------------------------------------
-	outVS.aux[0] = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
-	//outVS.aux[1] = 1.0 - (gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(-dot(gSun.direction, nrmW)), gMtrl.fresnel.z));
 
+#if defined(_ENVMAP)
+	outVS.aux[0] = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
+#endif
+	
     return outVS;
 }
 
@@ -115,7 +117,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
    
     if (gUseSpec) {														// Get specular color and power
 		cSpec = tex2D(SpecS, frg.tex0);		
-		cSpec.a *= 100.0;
+		cSpec.a *= 255.0;
 	}																		
     else cSpec = gMtrl.specular;	
     	
@@ -132,6 +134,8 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     cTex.rgb *= saturate(diff);											// Lit the diffuse texture
 
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
+    
+#if defined(_ENVMAP)
 
 	if (gEnvMapEnable) {
     
@@ -145,18 +149,23 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 		// Apply noise/blur effects in reflections
         if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag;
 		
-		cTex.rgb *= (1.0f - cRefl.a); // * frg.aux[1];					// Attennuate diffuse texture
+		cTex.rgb *= (1.0f - cRefl.a); 									// Attennuate diffuse texture
 		cTot.rgb += cRefl.rgb * texCUBE(EnvMapS, v).rgb;				// Add reflections into a specular light
     }
+    
+#endif 
 
-	float iTot = max(max(cTot.r, cTot.g), cTot.b);						// Intensity of total reflected light
-	
+#if defined(_ENVMAP) || defined(_GLASS)
+	cTex.a = saturate(cTex.a + max(max(cTot.r, cTot.g), cTot.b));		// Re-compute output alpha for alpha blending stage
+#endif
+
 	cTex.rgb += cTot.rgb;												// Apply reflections to output color
-	
-	cTex.a = saturate(cTex.a + iTot);									// Re-compute output alpha for alpha blending stage
 																		
     if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 				// Apply building nightlights
+    
+#if defined(_DEBUG)
     if (gDebugHL) cTex.rgb = cTex.rgb*0.5f + gColor.rgb;				// Apply mesh debugger highlighting
+#endif
 
     return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);		// Apply fog and light inscattering
 } 

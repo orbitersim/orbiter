@@ -188,6 +188,18 @@ DWORD MatMgr::NewRecord(const char *name, DWORD midx)
 
 // ===========================================================================================
 //
+bool MatMgr::HasMesh(const char *name)
+{
+	for (DWORD i=0;i<nRec;i++) {
+		if (pRecord[i].mesh_name) {
+			if (strcmp(pRecord[i].mesh_name,name)==0) return true;
+		}
+	}
+	return false;
+}
+
+// ===========================================================================================
+//
 void MatMgr::ClearRecord(DWORD iRec)
 {
 	if (iRec>=mRec) return;
@@ -204,10 +216,9 @@ void parse_vessel_classname(char *lbl)
 
 // ===========================================================================================
 //
-bool MatMgr::LoadConfiguration()
+bool MatMgr::LoadConfiguration(bool bAppend)
 {
 	_TRACE;
-	bool bParseMat = false;
 
 	char cbuf[256];
 	char path[256];
@@ -254,8 +265,12 @@ bool MatMgr::LoadConfiguration()
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {
 			if (sscanf_s(cbuf, "MESH %s", &meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (HasMesh(meshname) && bAppend) meshname[0]=0;
 			continue;
 		}
+
+		// --------------------------------------------------------------------------------------------
+		if (meshname[0]==0) continue;  // Do not continue without a valid mesh
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MATERIAL", 8)) {
@@ -391,6 +406,10 @@ bool MatMgr::SaveConfiguration()
 	if (skinname) sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
 	else 		  sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
 	
+	// If the target file contains configurations those are not loaded into the editor,
+	// Load them before overwriting the file
+	LoadConfiguration(true);
+
 	fopen_s(&file.pFile, path, "w");
 
 	if (file.IsInvalid()) {
@@ -416,7 +435,7 @@ bool MatMgr::SaveConfiguration()
 			DWORD flags = pRecord[i].Mat.ModFlags;
 			D3D9MatExt *pM = &pRecord[i].Mat; 
 
-			if (flags&D3D9MATEX_REFLECT) if (pM->Reflect.a<1e-3f) flags &= (~D3D9MATEX_REFLECT);
+			if (flags&D3D9MATEX_REFLECT) if (pM->Reflect.r<1e-3f && pM->Reflect.g<1e-3f && pM->Reflect.b<1e-3f) flags &= (~D3D9MATEX_REFLECT);
 			if (flags&D3D9MATEX_FRESNEL) if (pM->Fresnel.r<1e-3f && pM->Fresnel.g<1e-3f) flags &= (~D3D9MATEX_FRESNEL);
 			if (flags&D3D9MATEX_DISSOLVE) {
 				const char *name = SURFACE(pM->pDissolve)->GetName();
