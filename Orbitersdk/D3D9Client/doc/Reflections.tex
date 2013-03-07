@@ -60,7 +60,7 @@
 
 \section*{Fresnel reflection}
 
-Fresnel reflection will occur when a ray of light will hit into an "optical" material that has a refractive index $n$. Good examples of such materials are glass, water and most plastics. Fresnel reflection is highly depended from a viewing angle. In the D3D9Client we use so called Schlick's approximation of fresnel reflection. 
+Fresnel reflection is probably the most common type of reflection. Good examples of material having a fresnel reflection are glass, water and most plastics. Fresnel reflection is highly depended from a viewing angle. Reflection is stronger when viewed from a shallow angle. In the D3D9Client we use so called Schlick's approximation of fresnel reflection. 
 
 \begin{equation}
  R = R_0 + (1-R_0)(1-\cos\theta)^p
@@ -103,10 +103,10 @@ The model consists from a fresnel reflection $R$ and a metallic reflection $r$. 
 The intensity of "metallic" reflection alone is independent from a viewing angle. However, when combined with a fresnel reflection it is given by
 
 \begin{equation}
- \vec{r} = \vec{\lambda}t\vec{\varphi} = \vec{\lambda}(1-R)\vec{\varphi}
+ \vec{r} = \vec{\lambda}(1-R)\vec{\varphi}
 \end{equation}
 
-The total reflected light is, of course, $\vec{R_{tot}}=r+R$. I suppose the fresnel reflection could take a specular color $\vec{s}$ of the material but currently it is considered to be white $\vec{s}=[1,1,1]$
+I suppose the fresnel reflection could take a specular color $\vec{s}$ of the material but currently it is considered to be white $\vec{s}=[1,1,1]$. The total reflected light is
 
 \begin{equation}
 \vec{R_{tot}} = (\vec{\lambda}(1-R)+\vec{s}R)\vec{\varphi}
@@ -131,6 +131,39 @@ If we would take the sun angle $\sigma$ in to account then the equation would be
 \begin{equation}
 \vec{c_{rgb}} = \vec{d_{rgb}}(1-|\vec{\lambda}|)[1-R_0-m(1-\cos\sigma)^p] + \vec{R_{tot}}
 \end{equation}
+
+\end{twocol}
+\begin{twocol}
+
+\section*{Material Editor}
+
+Reflections are controlled by "Fresnel" and "Reflect" material properties in the material editor that is a part of D3D9Client debug controls. These properties can be used independendly from each-other or together.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.45\textwidth]{images/materialed.png}
+	\caption{Material Editor}
+\end{figure}
+
+\textbf{Fresnel}
+
+The first field in fresnel parameters is the power value $p$. A typical range for the power paramater is [2.5 to 3.5]. The second field is the offset $R_0$ value and the typical range is [0.05 to 0.25]. The third field is the multiplier $m$ and the value is automatically set to 1.0-Offset when ever the offset is changed. There is usually no need to touch this value. Fresnel reflections can be disabled by setting the offset and multiplier to zero in that order.  
+
+\textbf{Reflect}
+
+Reflect material property is used to define metallic reflections from a materials like chrome and goldfoils. Material property fields $\vec{\lambda}$ are red, green and blue. Higher values will make the material more reflective and therefore the diffuse color is shifted towards black. Metallic reflections will be disabled if all values are set to zero. 
+
+\textbf{Dissolve}
+
+Dissolve is an experimental technique that can be used to create blurry or noisy reflections. Currently it can be only applied to non-normal mapped surface that has a texture. It would be possible to use a screen-space coordinates to create a similar effect to a non-textured materials as well. The first field is the effect scale factor (i.e. particle size). The second field is the effect strength. If either parameter is zero the effect will be disabled.
+
+\textbf{Link}
+
+The link checkbox allows the link the R, G and B fields and after that they can be adjusted simultaneously with the slider.
+
+\textbf{Copy and Paste}
+
+Copy and paste buttons can be used to copy RGB values from different material properties for an example from specular color to reflect color.
 
 \end{twocol}
 \end{document}
