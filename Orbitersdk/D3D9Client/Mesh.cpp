@@ -1132,7 +1132,10 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
 
-	if (bMeshCull) if (!D9IsAABBVisible(&BBox, &mWorldView, &Field)) return;
+	/*if (bMeshCull) if (!D9IsAABBVisible(&BBox, &mWorldView, &Field)) {
+		if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(dev, pW);
+		return;
+	}*/
 	
 	gc->GetStats()->Meshes++;
 
@@ -1729,23 +1732,6 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 			D3D9Effect::RenderBoundingSphere(pW, NULL, &Grp[g]->BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
 		}
 	}
-
-	/*
-	if (flags&DBG_FLAGS_SPHERES) {
-		for (DWORD g=0; g<nGrp; g++) {
-			if (flags&DBG_FLAGS_SELGRPONLY && g!=selgrp) continue;
-			if (Grp[g]->UsrFlag & 0x2) continue;
-			if (Grp[g]->bTransform) {
-				if (bGlobalTF)  {
-					D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform);
-					D3D9Effect::RenderBoundingSphere(pW, &q, &Grp[g]->BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
-				}
-				else D3D9Effect::RenderBoundingSphere(pW, &Grp[g]->Transform, &Grp[g]->BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
-			}
-			else D3D9Effect::RenderBoundingSphere(pW, &mTransform, &Grp[g]->BBox.bs, &D3DXVECTOR4(0,1,0,0.75f));
-		}
-	}*/
-
 	if (flags&DBG_FLAGS_BOXES) D3D9Effect::RenderBoundingBox(pW, &mTransform, &BBox.min, &BBox.max, &D3DXVECTOR4(0,0,1,0.75f));
 	if (flags&DBG_FLAGS_SPHERES) D3D9Effect::RenderBoundingSphere(pW, &mTransform, &BBox.bs, &D3DXVECTOR4(0,0,1,0.75f));
 }
@@ -1796,7 +1782,9 @@ void D3D9Mesh::Transform(const D3DXMATRIX *m)
 	bBSRecomputeAll = true;
 	bGlobalTF = true;
 	mTransform = mTransform * (*m);
+
 	D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
+
 	for (DWORD i=0;i<nGrp;i++) {
 		if (Grp[i]->bTransform) {
 			if (bGlobalTF) D3DXMatrixMultiply(&pGrpTF[i], &mTransform, &Grp[i]->Transform);
