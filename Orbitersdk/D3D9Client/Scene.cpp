@@ -596,13 +596,19 @@ float Scene::ComputeNearClipPlane()
 	float nearpoint = 10e3f;
 	float neardist = 10e3f;
 
-	bool bCockpit = oapiCameraInternal();
-
 	for (pv = vobjFirst; pv; pv = pv->next) {
 
 		float nr = 10e3f;
 		float fr = 0.0f;
 		float dn = 10e3f;
+
+		bool bCockpit = false;
+
+		if (pv->type==OBJTP_VESSEL) {	
+			if (pv->vobj==vFocus) {
+				bCockpit = oapiCameraInternal();
+			}
+		}
 
 		if (pv->apprad>0.01 && pv->vobj->IsActive()) {
 
@@ -822,6 +828,8 @@ void Scene::RenderMainScene()
 	}
 
 	SetCameraFustrumLimits(znear, 2e7f);
+
+	sprintf_s(oapiDebugString(),256,"znear = %f",znear);
 
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background

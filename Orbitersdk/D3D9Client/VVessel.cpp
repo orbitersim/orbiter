@@ -1244,8 +1244,6 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 	UINT i, ii;
 	D3DXMATRIX T;
 	ANIMATION *A = anim+an;
-	
-	//LogBlu("Animation %u",an);
 
 	for (ii = 0; ii < A->ncomp; ii++) {
 		i = (state > animstate[an] ? ii : A->ncomp-ii-1);
@@ -1254,15 +1252,6 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 		// What is this ??? mshidx is always -1
  		if (mshidx != ((UINT)-1) && mshidx != AC->trans->mesh) continue;
 	
-		/*
-		LogBlu("Animate Comp(%u): Mesh=0x%X, state0=%f, state1=%f", ii, AC->trans->mesh, AC->state0, AC->state1);
-
-		if (AC->trans->grp) {
-			for (int k=0;k<AC->trans->ngrp;k++) {
-				LogBlu("  Group(%u): %u",k,AC->trans->grp[k]);
-			}
-		}*/
-
 		s0 = animstate[an]; // current animation state in the visual
 		if      (s0 < AC->state0) s0 = AC->state0;
 		else if (s0 > AC->state1) s0 = AC->state1;

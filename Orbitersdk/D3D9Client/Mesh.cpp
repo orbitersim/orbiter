@@ -1132,10 +1132,10 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
 
-	/*if (bMeshCull) if (!D9IsAABBVisible(&BBox, &mWorldView, &Field)) {
+	if (bMeshCull) if (!D9IsAABBVisible(&BBox, &mWorldView, &Field)) {
 		if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(dev, pW);
 		return;
-	}*/
+	}
 	
 	gc->GetStats()->Meshes++;
 
