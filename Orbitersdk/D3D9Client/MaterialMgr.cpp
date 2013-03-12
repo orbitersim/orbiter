@@ -260,7 +260,6 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 	while (fgets2(cbuf, 256, file.pFile, 0x0A)>=0) 
 	{	
 		float a, b, c, d;
-		DWORD id;
 		
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {

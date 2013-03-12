@@ -680,7 +680,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		}
 
 	
-		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC); // Render VC
+		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC, pEnv, nEnv); // Render VC
 		else			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
 		
 	

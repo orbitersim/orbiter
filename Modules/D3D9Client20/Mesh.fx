@@ -43,7 +43,7 @@ struct MeshVS
 {
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;
-    half2  tex0     : TEXCOORD1;
+    float2 tex0     : TEXCOORD1;
     half3  nrmW     : TEXCOORD2;
 };
 
@@ -235,6 +235,12 @@ float4 VCTechPS(MeshVS frg) : COLOR
 
     half3 diff = gMtrl.diffuse.rgb  * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
     half3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
+    
+    if (gEnvMapEnable) {
+		cTex.rgb *= (1.0f - gMtrl.reflect.a); 									
+		spec += gMtrl.reflect.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;				
+    }
+    
     half3 colr = cTex.rgb * saturate(diff) + saturate(spec);
     
     if (gDebugHL) colr = colr*0.5 + gColor.rgb;

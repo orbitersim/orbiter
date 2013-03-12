@@ -13,7 +13,7 @@
 #include <d3d9.h> 
 #include <d3dx9.h>
 
-
+/*
 #ifndef __TRY
 #define __TRY
 #endif
@@ -29,6 +29,7 @@
 #ifndef _TRACER
 #define _TRACER {  QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef); LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); } //  DebugMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
 #endif
+*/
 
 
 #ifndef HR
@@ -43,7 +44,7 @@
 #endif
 
 
-/*
+
 #ifndef __TRY
 #define __TRY __try
 #endif
@@ -57,13 +58,13 @@
 #endif
 
 #ifndef _TRACER
-#define _TRACER QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
+#define _TRACER //QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
 #endif
+
 
 #ifndef HR
 #define HR(x) x;
 #endif
-*/
 
 #define PI 3.141592653589793238462643383279
 

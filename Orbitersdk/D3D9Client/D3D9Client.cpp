@@ -341,7 +341,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bAAEnabled  = (pFramework->IsAAEnabled() == TRUE);
 	viewBPP		= 32;
 	pEnvDS		= pFramework->GetEnvDepthStencil();
-	bVertexTex  = pFramework->HasVertexTextureSup();
+	bVertexTex  = (pFramework->HasVertexTextureSup() == TRUE);
 	
 	char fld[] = {"D3D9Client\0"};
 
@@ -2071,7 +2071,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R10 RC3 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R10 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

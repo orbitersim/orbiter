@@ -421,7 +421,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	} else LogErr("Failed to Lock vertex buffer");
 
 	hNoise = oapiLoadTexture("D3D9LENoise.dds");
-	pNoise = SURFACE(hNoise)->GetTexture();
+	if (hNoise) pNoise = SURFACE(hNoise)->GetTexture();
+	else pNoise = NULL;
 
 	// Create Arrow Mesh --------------------------------------------
 	//
@@ -496,7 +497,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	if (atm) {
 		radlimit = float(atm->radlimit);
 		atm_color = D3DXVEC4(atm->color0, 1.0f);
-		rho0 = atm->rho0;
+		rho0 = float(atm->rho0);
 	}
 
 	float av = (atm_color.x + atm_color.y + atm_color.z) * 0.3333333f;

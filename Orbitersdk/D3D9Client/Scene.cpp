@@ -829,8 +829,6 @@ void Scene::RenderMainScene()
 
 	SetCameraFustrumLimits(znear, 2e7f);
 
-	sprintf_s(oapiDebugString(),256,"znear = %f",znear);
-
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background
 	// -------------------------------------------------------------------------------------------------------

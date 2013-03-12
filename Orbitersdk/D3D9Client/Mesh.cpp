@@ -1075,7 +1075,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	if (!pVB) return;
 
 	if (iTech==RENDER_VC) {
-		RenderVC(dev, pW);
+		RenderVC(dev, pW, pEnv, nEnv);
 		return;
 	}
 
@@ -1367,7 +1367,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 // ================================================================================================
 // This is a rendering routine for a Exterior Mesh, non-spherical moons/asteroids
 //
-void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
+void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
 {
 	DWORD flags=0, selmsh=0, selgrp=0, displ=0; // Debug Variables
 	bool bActiveVisual=false;
@@ -1415,6 +1415,8 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 	FX->SetBool(eModAlpha, bModulateMatAlpha);
 	FX->SetInt(eLightCount, 0);
 	FX->SetBool(eDebugHL, false);
+	FX->SetBool(eUseDisl, false);
+	FX->SetBool(eEnvMapEnable, false);
 	
 
 	// ----------------------------------------------------------------
@@ -1472,7 +1474,28 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 		if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 		else							   mat = &Mtrl[Grp[g]->MtrlIdx];
 
-		if (mat!=old_mat) { old_mat=mat; FX->SetValue(eMtrl, mat, D3D9MATSIZE); }
+		if (mat!=old_mat) { 
+
+			old_mat=mat; 
+
+			FX->SetValue(eMtrl, mat, D3D9MATSIZE); 
+
+			if (nEnv && pEnv) {
+
+				if (mat==&defmat) {
+					HR(FX->SetBool(eEnvMapEnable, false));
+				}
+				else {
+					if (pEnv[0]) {
+						if (mat->Reflect.a!=0.0f) {
+							FX->SetBool(eEnvMapEnable, true);
+							FX->SetTexture(eEnvMap, pEnv[0]);
+						}
+						else FX->SetBool(eEnvMapEnable, false);
+					}
+				}
+			}
+		}
 		
 
 		// Setup Textures and Normal Maps ==========================================================================
