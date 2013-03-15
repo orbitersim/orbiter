@@ -139,7 +139,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 
 	if (gEnvMapEnable) {
     
-		if (gUseRefl) cRefl = tex2D(SpecS, frg.tex0);					// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
+		if (gUseRefl) cRefl = tex2D(ReflS, frg.tex0);					// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
 		else 		  cRefl = gMtrl.reflect;
 		
 		cRefl.rgb = cRefl.rgb * (1.0f - frg.aux[0]) + frg.aux[0];		// Multiply with refraction term and add reflection
