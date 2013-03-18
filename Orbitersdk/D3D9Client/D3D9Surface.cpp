@@ -1424,9 +1424,9 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 			//
 			if (gc->TexturePath(rname, xpath)) {
 				D3DXIMAGE_INFO info;
-				pEmissionMap = NULL;
+				pReflectionMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
 						LogAlw("Reflection Map %s Loaded Successfully",rname);
 						if (ComputeReflAlpha()==false) {
 							LogErr("Failed to create reflection map alpha for (%s)",rname);
@@ -1483,7 +1483,15 @@ bool D3D9ClientSurface::ComputeReflAlpha()
 			data += pRect.Pitch;
 		}
 		pReflectionMap->UnlockRect(0);
-		pReflectionMap->GenerateMipSubLevels();
+
+		LPDIRECT3DTEXTURE9 pSys = pReflectionMap;
+
+		if (D3DXCreateTexture(pDevice, desc.Width, desc.Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pReflectionMap)==S_OK) { 
+			HR(pReflectionMap->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC));
+			HR(pDevice->UpdateTexture(pSys, pReflectionMap));
+			pReflectionMap->GenerateMipSubLevels();
+			pSys->Release();
+		}
 		return true;
 	}
 	return false;

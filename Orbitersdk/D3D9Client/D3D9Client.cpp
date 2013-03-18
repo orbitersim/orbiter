@@ -1205,7 +1205,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_MOUSELEAVE:
 			{
-				GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
+				if (bTrackMouse) GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
 				return 0;
 			}
 
@@ -2071,7 +2071,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R10 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R11 Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};
