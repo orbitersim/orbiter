@@ -164,12 +164,11 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	Mode		  = vData->modeidx&0xFF;
 
 	LogAlw("[VideoConfiguration] Adapter=%u, ModeIndex=%u", Adapter, Mode);
-	LogAlw("dwFSMode = %u",dwFSMode);
 
 	D3DADAPTER_IDENTIFIER9 info;
 	pD3D->GetAdapterIdentifier(Adapter, 0, &info);
 	LogAlw("Adapter = %s",info.Description);
-	
+	LogAlw("dwFSMode = %u",dwFSMode);
 	
 	// Get DisplayMode Resolution ---------------------------------------
 	//
@@ -210,9 +209,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			}
 			break;
 		}
-
-		
-
 	}
 
 	// Hardware CAPS Checks --------------------------------------------------
@@ -492,6 +488,8 @@ HRESULT CD3DFramework9::CreateWindowedMode()
     dwRenderHeight	  = rcScreenRect.bottom - rcScreenRect.top;
 	dwZBufferBitDepth = 24;
 	dwStencilBitDepth = 8;
+
+	LogAlw("Window Size = [%u, %u]", dwRenderWidth, dwRenderHeight);
 
 	if (MultiSample) {
 

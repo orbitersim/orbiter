@@ -1205,7 +1205,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_MOUSELEAVE:
 			{
-				if (bTrackMouse) GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
+				if (bTrackMouse && bRunning) GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
 				return 0;
 			}
 
