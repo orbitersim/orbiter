@@ -206,7 +206,7 @@ private:
 
 	void UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
 	void ProcessInherit();
-	bool CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg);
+	bool CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid);
 	void ClearGroups ();
 	bool CopyMaterial (int idx, const MATERIAL *mat);
 	void DeleteGroup(GROUPREC *grp);

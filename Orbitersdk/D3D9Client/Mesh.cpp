@@ -129,7 +129,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 
 	for (DWORD i=0;i<nGrp;i++) {
 		MESHGROUPEX *mg = oapiMeshGroupEx(hMesh, i);
-		CopyGroupEx(Grp[i], mg);
+		CopyGroupEx(Grp[i], mg, i);
 	}
 
 	pGrpTF = new D3DXMATRIX[nGrp];
@@ -195,7 +195,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, DWORD groups, const MESHGROUPEX **hGroup,
 
 	ProcessInherit();
 
-	for (DWORD i=0;i<nGrp;i++) CopyGroupEx(Grp[i], hGroup[i]);
+	for (DWORD i=0;i<nGrp;i++) CopyGroupEx(Grp[i], hGroup[i], i);
 
 	pGrpTF = new D3DXMATRIX[nGrp];
 
@@ -256,7 +256,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	HR(gc->GetDevice()->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
 
 	CopyMaterial(0, pMat);
-	CopyGroupEx(Grp[0], pGroup);
+	CopyGroupEx(Grp[0], pGroup, 0);
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
@@ -310,7 +310,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(NMVERTEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
 	HR(gc->GetDevice()->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
 
-	CopyGroupEx(Grp[0], pGroup);
+	CopyGroupEx(Grp[0], pGroup, 0);
 	CopyMaterial(0, (const MATERIAL *)&defmat);
 
 	D3DXMatrixIdentity(&mTransform);
@@ -623,7 +623,7 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 
 		D3DXVECTOR3 *ta = new D3DXVECTOR3[nVtx];
 		
-		for (DWORD i=0;i<nVtx;i++) ta[i]=D3DXVECTOR3(0,0,0);
+		for (DWORD i=0;i<nVtx;i++) ta[i] = D3DXVECTOR3(0,0,0);
 
 		for (DWORD i=0;i<nFace;i++) {
 
@@ -683,9 +683,10 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 
 // ===========================================================================================
 // 
-bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg)
+bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 {
 	if (!pVB) return false;
+	
 	if (mg->nVtx>65535) LogErr("Mesh group vertex count is greater than 65535");
 	
 	grp->UsrFlag = mg->UsrFlag;
@@ -715,6 +716,17 @@ bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg)
 		pVert[i].z  = pNT[i].z;
 		pVert[i].u  = pNT[i].tu;
 		pVert[i].v  = pNT[i].tv;
+	}
+
+	// Check vertex index errors
+	//
+	for (DWORD i=0;i<(mg->nIdx/3);i++) {
+		if (pIndex[i*3+0]>=mg->nVtx || pIndex[i*3+1]>=mg->nVtx || pIndex[i*3+2]>=mg->nVtx) {
+			LogErr("Vertex index out of range Face=%u, MeshGroup=%u", i, gid);
+			pIndex[i*3+0] = 0;
+			pIndex[i*3+1] = 0;
+			pIndex[i*3+2] = 0;
+		}
 	}
 
 	if (Config->UseNormalMap) UpdateTangentSpace(pVert, pIndex, mg->nVtx, mg->nIdx/3, grp->TexIdx!=0);
@@ -1186,7 +1198,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 	// Pass 0 = Normal Mapped
 	// Pass 1 = Textured
-	// Pass 2 = Non-Textured
 
 	for (DWORD pass=0;pass<numPasses;pass++) {
 
