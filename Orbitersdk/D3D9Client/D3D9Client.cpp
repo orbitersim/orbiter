@@ -265,6 +265,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pDefaultTex		 = NULL;
 	hLblFont1		 = NULL;
 	hLblFont2		 = NULL;
+	pSkinNames		 = NULL;
+	pSkinBuffer		 = NULL;
 	bControlPanel    = false;
 	bFullscreen      = false;
 	bFailed			 = false;
@@ -449,16 +451,18 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	sprintf_s(cbuf,256,"%sGC\\VesselSkin.cfg",OapiExtension::GetConfigDir());
 
 	fopen_s(&file.pFile, cbuf, "r");
-	fseek(file.pFile, 0, SEEK_END);
 	
-	DWORD size = ftell(file.pFile);
-	fseek(file.pFile, 0, SEEK_SET);
-
-	pSkinNames = new LPCHAR[256]();
-	pSkinBuffer = new char[size]();
-	nSkins = 0;
-
 	if (!file.IsInvalid()) {
+
+		fseek(file.pFile, 0, SEEK_END);
+	
+		DWORD size = ftell(file.pFile);
+		fseek(file.pFile, 0, SEEK_SET);
+
+		pSkinNames = new LPCHAR[256]();
+		pSkinBuffer = new char[size]();
+		nSkins = 0;
+
 		char *_pSkinBuffer = pSkinBuffer; // we don't want to 'move' the original address!
 		while (true) {
 	
