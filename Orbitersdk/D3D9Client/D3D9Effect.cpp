@@ -108,6 +108,7 @@ D3DXHANDLE D3D9Effect::ePointScale = 0;
 D3DXHANDLE D3D9Effect::eAtmColor = 0;
 D3DXHANDLE D3D9Effect::eCamOff = 0;
 D3DXHANDLE D3D9Effect::eProxySize = 0;
+D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
 
 // Shader Flow Controls
 D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multibly material alpha with texture alpha
@@ -355,6 +356,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
 	eMix		  = FX->GetParameterByName(0,"gMix");
 	eTime		  = FX->GetParameterByName(0,"gTime");
+	eMtrlAlpha	  = FX->GetParameterByName(0,"gMtrlAlpha");
 	// ----------------------------------------------------------------------
 	eVP			  = FX->GetParameterByName(0,"gVP");
 	eW			  = FX->GetParameterByName(0,"gW");

@@ -101,40 +101,30 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 {
 
     // Normalize input
-    float3 CamW = normalize(frg.CamW);
-    float3 nrmW = normalize(frg.nrmW);
-    
-	float4 cTex;
-    float4 cSpec;
+    float3 CamW  = normalize(frg.CamW);
+    float3 nrmW  = normalize(frg.nrmW);
+    float4 cSpec = gMtrl.specular;
+    float4 cTex  = 1;
     float4 cRefl;
     
-	if (gTextured) {													// Sample the main diffuse texture
-        cTex = tex2D(WrapS, frg.tex0);
-        if (gModAlpha) cTex.a *= gMtrl.diffuse.a;    
-    }
-    else cTex = gMtrl.diffuse;
+	if (gTextured) cTex = tex2D(WrapS, frg.tex0);
+    if (gUseSpec) cSpec *= tex2D(SpecS, frg.tex0);	
     
-   
-    if (gUseSpec) {														// Get specular color and power
-		cSpec = tex2D(SpecS, frg.tex0);		
-		cSpec.a *= 255.0;
-	}																		
-    else cSpec = gMtrl.specular;	
-    	
+    cTex.a*=gMtrlAlpha;
+    
 	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
     float  d = saturate(-dot(gSun.direction, nrmW));
     float  s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);					
     
     if (d==0) s = 0;	
     																					
-    float3 diff = frg.diffuse.rgb + d * gSun.diffuse.rgb;				// Compute total diffuse light
-   
+    float3 diff = gMtrl.diffuse.rgb * (frg.diffuse.rgb + d * gSun.diffuse.rgb); // Compute total diffuse light
+	float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
+	
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;					// Add emissive textures
 
     cTex.rgb *= saturate(diff);											// Lit the diffuse texture
 
-    float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
-    
 #if defined(_ENVMAP)
 
 	if (gEnvMapEnable) {
@@ -142,7 +132,7 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
 		if (gUseRefl) cRefl = tex2D(ReflS, frg.tex0);					// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
 		else 		  cRefl = gMtrl.reflect;
 		
-		cRefl.rgb = cRefl.rgb * (1.0f - frg.aux[0]) + frg.aux[0];		// Multiply with refraction term and add reflection
+		cRefl = saturate(cRefl + (cRefl.a>0)*frg.aux[0]);
 		
         float3 v = reflect(-CamW, nrmW);								// Reflection vector
 		
@@ -214,13 +204,9 @@ float4 VCTechPS(MeshVS frg) : COLOR
     // Normalize input
 	float3 nrmW = normalize(frg.nrmW);
 	float3 CamW = normalize(frg.CamW);
-    half4 cTex = 1;
+    float4 cTex = 1;
 
-    if (gTextured) {
-        cTex = tex2D(WrapS, frg.tex0);
-    }
-
-    if (gModAlpha || !gTextured) cTex.a *= gMtrl.diffuse.a;	
+    if (gTextured) cTex = tex2D(WrapS, frg.tex0);
     
     if (gFullyLit) {
 		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
@@ -233,19 +219,19 @@ float4 VCTechPS(MeshVS frg) : COLOR
 
     if (d==0) s = 0;
 
-    half3 diff = gMtrl.diffuse.rgb  * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
-    half3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
+    float3 diff = gMtrl.diffuse.rgb * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+    float3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
     
     if (gEnvMapEnable) {
 		cTex.rgb *= (1.0f - gMtrl.reflect.a); 									
 		spec += gMtrl.reflect.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;				
     }
     
-    half3 colr = cTex.rgb * saturate(diff) + saturate(spec);
+    float3 colr = cTex.rgb * saturate(diff) + saturate(spec);
     
     if (gDebugHL) colr = colr*0.5 + gColor.rgb;
 
-    return float4(colr.rgb, cTex.a);
+    return float4(colr.rgb, cTex.a*gMtrlAlpha);
 }
 
 
@@ -627,8 +613,8 @@ technique BaseTileTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BaseTileVS();
-        pixelShader  = compile PS_MOD BaseTilePS();
+        vertexShader = compile VS_MOD BaseTileNMVS();
+        pixelShader  = compile PS_MOD BaseTileNMPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

@@ -66,7 +66,7 @@ AdvancedNMVS MeshTechNMVS(MESH_VERTEX vrt)
     
 	outVS.nrmT  = TBN[2];
 	outVS.tanT  = TBN[0];
-    outVS.camW  = -posW;
+    outVS.camW  = -posW * gDistScale + gCamOff;
     outVS.tex0  = vrt.tex0;
    
     float4 locW;
@@ -99,13 +99,13 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 	// Normalize input
 	float3 CamW = normalize(frg.camW);
 	
-	float4 cSpec; 
 	float4 cRefl;
-		
-    float4 cTex = tex2D(WrapS, frg.tex0);
-    if (gModAlpha) cTex.a *= gMtrl.diffuse.a;	
-  
-    float3 nrmT = tex2D(Nrm0S, frg.tex0).rgb * 2.0 - 1.0;       //Sampler for R8G8B8, DXT1
+	
+	float4 cSpec = gMtrl.specular; 	
+    float4 cTex  = tex2D(WrapS, frg.tex0);	
+    float3 nrmT  = tex2D(Nrm0S, frg.tex0).rgb * 2.0 - 1.0;       //Sampler for R8G8B8, DXT1
+	
+	cTex.a*=gMtrlAlpha;
 	
 	float3x3 TBN;
     TBN[0] = frg.tanT;
@@ -114,12 +114,8 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
     float3 nrmW = mul(nrmT, TBN);
     
-	if (gUseSpec) {
-		cSpec = tex2D(SpecS, frg.tex0);	
-		cSpec.a *= 255.0;
-	}																		
-    else cSpec = gMtrl.specular;	
-    
+	if (gUseSpec) cSpec *= tex2D(SpecS, frg.tex0);	
+	
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
     float s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
@@ -127,11 +123,11 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     if (d==0) s = 0;	
     						
 	float local = max(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f);   																		
-    float3 diff = frg.diff.rgb * (local*local) + frg.ambi + d * gSun.diffuse.rgb;
+    float3 diff = gMtrl.diffuse.rgb * (frg.diff.rgb * (local*local) + frg.ambi + d * gSun.diffuse.rgb);
     
     if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;
 
-    cTex.rgb  *= saturate(diff);
+    cTex.rgb *= saturate(diff);
     
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
     
@@ -144,9 +140,9 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 		
 		float fresnel = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
 		
-		cRefl.rgb = cRefl.rgb * (1.0f - fresnel) + fresnel;		// Multiply with refraction term and add reflection
+		cRefl = saturate(cRefl + (cRefl.a>0)*fresnel); 
 	
-		cTex.rgb *= (1.0f - cRefl.a); 						// Attennuate Diffuse Texture	
+		cTex.rgb *= (1.0f - cRefl.a); 						
 		cTot.rgb += cRefl.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;					
     }
 #endif
@@ -206,7 +202,7 @@ float4 BaseTileNMPS(TileMeshNMVS frg) : COLOR
     float3 CamW = normalize(frg.camW);
 	
     float4 cTex = tex2D(ClampS, frg.tex0); 
-    float3 nrmT = float3(tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0);         //Sampler for R8G8B8, A8R8G8B8, V8U8, CxV8U8
+    float3 nrmT = tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0;
    
     float3x3 TBN;
     TBN[0] = frg.tanT;

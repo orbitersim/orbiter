@@ -552,7 +552,7 @@ void D3D9Mesh::ProcessInherit()
 
 	for (DWORD i=0;i<nGrp;i++) {
 	
-		if (Grp[i]->UsrFlag & 0x8) LogErr("Flag 0x8 in use");
+		if (Grp[i]->UsrFlag & 0x8) LogErr("MeshGroupFlag 0x8 in use (OPERATION NOT IMPLEMENTED)");
 		
 		// Inherit Material
 		if (Grp[i]->MtrlIdx == SPEC_INHERIT) Grp[i]->MtrlIdx = Grp[i-1]->MtrlIdx;
@@ -1167,7 +1167,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
-	FX->SetBool(eModAlpha, bModulateMatAlpha);
 	FX->SetBool(eNight, false);
 	FX->SetBool(eUseSpec, false);
 	FX->SetBool(eUseEmis, false);
@@ -1315,6 +1314,9 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 				FX->SetValue(eMtrl, mat, D3D9MATSIZE);
 
+				if (bModulateMatAlpha || bTextured==false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+				else FX->SetFloat(eMtrlAlpha, 1.0f);
+
 				if (nEnv && pEnv) {
 
 					if (mat==&defmat) {
@@ -1423,7 +1425,6 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 
 	FX->SetMatrix(eGT, gc->GetIdentity()); 
 	FX->SetMatrix(eW, pW);
-	FX->SetBool(eModAlpha, bModulateMatAlpha);
 	FX->SetInt(eLightCount, 0);
 	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eUseDisl, false);
@@ -1490,6 +1491,9 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 			old_mat=mat; 
 
 			FX->SetValue(eMtrl, mat, D3D9MATSIZE); 
+
+			if (bModulateMatAlpha || bTextured==false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+				else FX->SetFloat(eMtrlAlpha, 1.0f);
 
 			if (nEnv && pEnv) {
 
