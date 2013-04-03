@@ -51,7 +51,7 @@ oapi::Pen * defpen = 0;
 //
 void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const char *folder)
 {
-	memset(fcache, 0, 128*sizeof(FontCache));
+	memset2(fcache, 0, 128*sizeof(FontCache));
 
 	pDev = pDevice;
 	gc = _gc;
@@ -154,7 +154,7 @@ void D3D9Pad::GlobalExit()
 	SAFE_RELEASE(pCircleHigh);
 	SAFE_RELEASE(FX);
 
-	memset(fcache, 0, 128*sizeof(FontCache));
+	memset2(fcache, 0, 128*sizeof(FontCache));
 }
 
 

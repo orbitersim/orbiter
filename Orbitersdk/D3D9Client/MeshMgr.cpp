@@ -56,7 +56,7 @@ int MeshManager::StoreMesh(MESHHANDLE hMesh, const char *name)
 	if (nmlist==nmlistbuf) { // need to allocate buffer
 		MeshBuffer *tmp = new MeshBuffer[nmlistbuf += 32];
 		if (nmlist) {
-			memcpy (tmp, mlist, nmlist*sizeof(MeshBuffer));
+			memcpy2 (tmp, mlist, nmlist*sizeof(MeshBuffer));
 			delete []mlist;
 		}
 		mlist = tmp;

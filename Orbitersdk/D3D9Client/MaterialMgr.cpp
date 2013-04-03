@@ -203,7 +203,7 @@ bool MatMgr::HasMesh(const char *name)
 void MatMgr::ClearRecord(DWORD iRec)
 {
 	if (iRec>=mRec) return;
-	memset(&pRecord[iRec],0,sizeof(MatMgr::MATREC));
+	memset2(&pRecord[iRec],0,sizeof(MatMgr::MATREC));
 }
 
 // ===========================================================================================
@@ -508,8 +508,8 @@ bool MatMgr::LoadCameraConfig()
 			if (iattc) pCamera[camera].pOmitAttc = new BYTE[iattc];
 			if (idock) pCamera[camera].pOmitDock = new BYTE[idock];
 			
-			if (iattc) memcpy(pCamera[camera].pOmitAttc, attclist, iattc); 
-			if (idock) memcpy(pCamera[camera].pOmitDock, docklist, idock); 
+			if (iattc) memcpy2(pCamera[camera].pOmitAttc, attclist, iattc); 
+			if (idock) memcpy2(pCamera[camera].pOmitDock, docklist, idock); 
 			
 			pCamera[camera].nAttc = WORD(iattc);
 			pCamera[camera].nDock = WORD(idock);

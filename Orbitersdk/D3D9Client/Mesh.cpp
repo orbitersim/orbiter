@@ -74,13 +74,13 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 	nGrp = oapiMeshGroupCount(hMesh);
 	Grp = new GROUPREC*[nGrp];
 
-	memset(Grp, 0, sizeof(GROUPREC*) * nGrp);
+	memset2(Grp, 0, sizeof(GROUPREC*) * nGrp);
 
 	for (DWORD i=0;i<nGrp;i++) {
-		Grp[i] = new GROUPREC;	memset(Grp[i], 0, sizeof(GROUPREC));
+		Grp[i] = new GROUPREC;	memset2(Grp[i], 0, sizeof(GROUPREC));
 		MESHGROUPEX *mg = oapiMeshGroupEx(hMesh, i);
-		memcpy(Grp[i]->TexIdxEx, mg->TexIdxEx, MAXTEX*sizeof(DWORD));
-		memcpy(Grp[i]->TexMixEx, mg->TexMixEx, MAXTEX*sizeof(float));
+		memcpy2(Grp[i]->TexIdxEx, mg->TexIdxEx, MAXTEX*sizeof(DWORD));
+		memcpy2(Grp[i]->TexMixEx, mg->TexMixEx, MAXTEX*sizeof(float));
 		Grp[i]->TexIdx  = mg->TexIdx;
 		Grp[i]->MtrlIdx = mg->MtrlIdx;
 		Grp[i]->FaceOff = MaxFace;
@@ -167,10 +167,10 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, DWORD groups, const MESHGROUPEX **hGroup,
 
 	Grp = new GROUPREC*[nGrp];
 
-	memset(Grp, 0, sizeof(GROUPREC*) * nGrp);
+	memset2(Grp, 0, sizeof(GROUPREC*) * nGrp);
 
 	for (DWORD i=0;i<nGrp;i++) {
-		Grp[i] = new GROUPREC;	memset(Grp[i], 0, sizeof(GROUPREC));
+		Grp[i] = new GROUPREC;	memset2(Grp[i], 0, sizeof(GROUPREC));
 		Grp[i]->TexIdxEx[0] = SPEC_DEFAULT;
 		Grp[i]->TexMixEx[0] = 0.0f;
 		Grp[i]->TexIdx  = i;
@@ -230,7 +230,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	// template meshes are stored in system memory	
 	nGrp   = 1;
 	Grp    = new GROUPREC*[nGrp];
-	Grp[0] = new GROUPREC; memset(Grp[0], 0, sizeof(GROUPREC));
+	Grp[0] = new GROUPREC; memset2(Grp[0], 0, sizeof(GROUPREC));
 	nTex   = 2;
 	Tex	   = new LPD3D9CLIENTSURFACE[nTex];
 	Tex[0] = 0; // 'no texture'
@@ -239,8 +239,8 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	Mtrl   = new D3D9MatExt[nMtrl];
 	pGrpTF = new D3DXMATRIX[nGrp];
 
-	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
-	memcpy(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
+	memcpy2(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
+	memcpy2(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
 
 	Grp[0]->TexIdx  = pGroup->TexIdx;
 	Grp[0]->MtrlIdx = pGroup->MtrlIdx;
@@ -287,7 +287,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	// template meshes are stored in system memory	
 	nGrp   = 1;
 	Grp    = new GROUPREC*[nGrp];
-	Grp[0] = new GROUPREC; memset(Grp[0], 0, sizeof(GROUPREC));
+	Grp[0] = new GROUPREC; memset2(Grp[0], 0, sizeof(GROUPREC));
 	nTex   = 1;
 	Tex	   = new LPD3D9CLIENTSURFACE[nTex];
 	Tex[0] = 0; // 'no texture'
@@ -295,8 +295,8 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	Mtrl   = new D3D9MatExt[nMtrl];
 	pGrpTF = new D3DXMATRIX[nGrp];
 
-	memcpy(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
-	memcpy(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
+	memcpy2(Grp[0]->TexIdxEx, pGroup->TexIdxEx, MAXTEX*sizeof(DWORD));
+	memcpy2(Grp[0]->TexMixEx, pGroup->TexMixEx, MAXTEX*sizeof(float));
 	Grp[0]->TexIdx  = pGroup->TexIdx;
 	Grp[0]->MtrlIdx = pGroup->MtrlIdx;
 	Grp[0]->VertOff = 0;
@@ -350,7 +350,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 
 	for (DWORD i=0;i<nGrp;i++) {
 		Grp[i] = new GROUPREC; 
-		memcpy(Grp[i], mesh.Grp[i], sizeof(GROUPREC));
+		memcpy2(Grp[i], mesh.Grp[i], sizeof(GROUPREC));
 	}
 
 	HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(NMVERTEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
@@ -363,14 +363,14 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 
 	HR(mesh.pIB->Lock(0, 0, (LPVOID*)&pISrc, 0)); 
 	HR(pIB->Lock(0, 0, (LPVOID*)&pITgt, 0)); 
-	memcpy(pITgt, pISrc, MaxFace*6); 
+	memcpy2(pITgt, pISrc, MaxFace*6); 
 	HR(mesh.pIB->Unlock());
 	HR(pIB->Unlock());
 
 
 	HR(mesh.pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0)); 
 	HR(pVB->Lock(0, 0, (LPVOID*)&pVTgt, 0)); 
-	memcpy(pVTgt, pVSrc, MaxVert*sizeof(NMVERTEX)); 
+	memcpy2(pVTgt, pVSrc, MaxVert*sizeof(NMVERTEX)); 
 	HR(mesh.pVB->Unlock());
 	HR(pVB->Unlock());
 
@@ -383,7 +383,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 			
 	nMtrl = mesh.nMtrl;
 	if (nMtrl) Mtrl = new D3D9MatExt[nMtrl];
-	memcpy (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3D9MatExt));
+	memcpy2 (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3D9MatExt));
 
 	// ATTENTION:  Do we need to copy transformations
 	mTransform = mesh.mTransform;
@@ -455,6 +455,7 @@ bool D3D9Mesh::HasShadow()
 //
 void D3D9Mesh::UpdateGeometry()
 {
+	_TRACE;
 	if (!pGB) {
 		HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_MANAGED, &pGB, NULL));
 	}
@@ -473,7 +474,7 @@ void D3D9Mesh::UpdateGeometry()
 //
 void D3D9Mesh::CheckValidity()
 {
-
+	_TRACE;
 	if (Constr!=5) {
 		float lim = 5e3;
 		for (DWORD i=0;i<nGrp;i++) {
@@ -516,8 +517,8 @@ void D3D9Mesh::CheckValidity()
 	/*
 	float *mats = new float[nMtrl];
 	float *texs = new float[nTex];
-	memset(mats, 0, nMtrl*4);
-	memset(texs, 0, nTex*4);
+	memset2(mats, 0, nMtrl*4);
+	memset2(texs, 0, nTex*4);
 
 	for (DWORD i=0;i<nGrp;i++) {
 		mats[Grp[i]->MtrlIdx] += 1.0f;
@@ -543,6 +544,7 @@ void D3D9Mesh::CheckValidity()
 //
 void D3D9Mesh::ProcessInherit()
 {
+	_TRACE;
 	if (!pVB) return;
 	if (Grp[0]->MtrlIdx == SPEC_INHERIT) Grp[0]->MtrlIdx = SPEC_DEFAULT; 
 	if (Grp[0]->TexIdx == SPEC_INHERIT) Grp[0]->TexIdx = SPEC_DEFAULT;
@@ -594,6 +596,7 @@ void D3D9Mesh::ProcessInherit()
 //
 D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx)
 {
+	_TRACE;
 	if (idx>=nGrp) return D3DXVECTOR3(0,0,0);
 	if (Grp[idx]->nVert<2) return D3DXVECTOR3(0,0,0);
 	return D3DXVECTOR3f4(Grp[idx]->BBox.max - Grp[idx]->BBox.min);
@@ -603,6 +606,7 @@ D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx)
 //
 void D3D9Mesh::ResetTransformations()
 {
+	_TRACE;
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
 	bGlobalTF = false;
@@ -619,6 +623,7 @@ void D3D9Mesh::ResetTransformations()
 // 
 void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured)
 {
+	_TRACE;
 	if (bTextured) {
 
 		D3DXVECTOR3 *ta = new D3DXVECTOR3[nVtx];
@@ -685,6 +690,7 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 // 
 bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 {
+	_TRACE;
 	if (!pVB) return false;
 	
 	if (mg->nVtx>65535) LogErr("Mesh group vertex count is greater than 65535");
@@ -703,7 +709,7 @@ bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 	HR(pIB->Lock(grp->FaceOff*6, grp->nFace*6, (LPVOID*)&pIndex, 0)); 
 	HR(pVB->Lock(grp->VertOff*sizeof(NMVERTEX), grp->nVert*sizeof(NMVERTEX), (LPVOID*)&pVert, 0)); 
 
-	memcpy(pIndex, mg->Idx, mg->nIdx*sizeof(WORD)); 
+	memcpy2(pIndex, mg->Idx, mg->nIdx*sizeof(WORD)); 
 
 	for (DWORD i=0;i<mg->nVtx; i++) {
 		float x = pNT[i].nx; float y = pNT[i].ny; float z = pNT[i].nz;
@@ -837,6 +843,7 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 //
 bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
 {
+	_TRACE;
 	if (!pVB) return false;
 
 	if (texidx >= nTex) {
@@ -879,6 +886,7 @@ bool D3D9Mesh::HasTexture(SURFHANDLE hSurf)
 //
 bool D3D9Mesh::IsReflective()
 {
+	_TRACE;
 	if (!pVB) return false;
 	for (DWORD i=0;i<nTex;i++) if (Tex[i]) if (SURFACE(Tex[i])->GetReflectionMap()) return true;
 	for (DWORD i=0;i<nMtrl;i++) if (Mtrl[i].Fresnel.g!=0.0f || Mtrl[i].Reflect.a!=0.0f) return true;
@@ -889,6 +897,7 @@ bool D3D9Mesh::IsReflective()
 //
 void D3D9Mesh::SetTexMixture(DWORD ntex, float mix)
 {
+	_TRACE;
 	if (!pVB) return;
 	ntex--;
 	for (DWORD g = 0; g < nGrp; g++) if (Grp[g]->TexIdxEx[ntex] != SPEC_DEFAULT) Grp[g]->TexMixEx[ntex] = mix;
@@ -939,6 +948,7 @@ void D3D9Mesh::UnLockVertexBuffer()
 //
 D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx)
 { 
+	_TRACE;
 	static int count = 10; 
 	if (idx<nGrp) return Grp[idx]; 
 	if ((count--)>0) LogErr("Mesh group index out of range. idx=%u nGrp=%u", idx, nGrp);
@@ -950,6 +960,7 @@ D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx)
 //
 void D3D9Mesh::SetAmbientColor(D3DCOLOR c)
 {
+	_TRACE;
 	if (!pVB) return;
 	cAmbient = c;
 }
@@ -959,6 +970,7 @@ void D3D9Mesh::SetAmbientColor(D3DCOLOR c)
 //
 void D3D9Mesh::SetupFog(const LPD3DXMATRIX pW)
 {
+	_TRACE;
 	if (!pVB) return;
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
@@ -969,6 +981,7 @@ void D3D9Mesh::SetupFog(const LPD3DXMATRIX pW)
 //
 void D3D9Mesh::RenderGroup(LPDIRECT3DDEVICE9 dev, const GROUPREC *grp)
 {
+	_TRACE;
 	if (!pVB) return;
 	gc->GetDevice()->SetVertexDeclaration(pMeshVertexDecl);
 	gc->GetDevice()->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
@@ -983,6 +996,7 @@ void D3D9Mesh::RenderGroup(LPDIRECT3DDEVICE9 dev, const GROUPREC *grp)
 //
 void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex)
 {
+	_TRACE;
 	if (!pVB) return;
 
 	gc->GetStats()->Vertices += Grp[0]->nVert;
@@ -1005,6 +1019,7 @@ void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIREC
 //
 void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad)
 {
+	_TRACE;
 	if (!pVB) return;
 
 	gc->GetStats()->Vertices += Grp[0]->nVert;
@@ -1031,6 +1046,7 @@ void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRE
 //
 void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex)
 {
+	_TRACE;
 	if (!pVB) return;
 
 	if (idx>=nGrp) return;
@@ -1079,11 +1095,10 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 //
 void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
 {
-	
+	_TRACE;	
 	DWORD flags=0, selmsh=0, selgrp=0, displ=0; // Debug Variables
 	bool bActiveVisual = false;
 
-	_TRACE;
 	if (!pVB) return;
 
 	if (iTech==RENDER_VC) {

@@ -140,7 +140,7 @@ D3D9Mesh *RingManager::CreateRing(double irad, double orad, int nsect)
 
 	MESHGROUPEX *grp = new MESHGROUPEX; 
 	
-	memset(grp,0,sizeof(MESHGROUPEX));
+	memset2(grp,0,sizeof(MESHGROUPEX));
 	
 	int count = nsect/2 + 1;
 	grp->nVtx = 2*count;

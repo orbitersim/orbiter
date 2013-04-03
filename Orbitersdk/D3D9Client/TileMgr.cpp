@@ -979,13 +979,13 @@ void TileManager::CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrin
 	mesh.nFace = nIdx/3;
 
 	if (mesh.pVB->Lock(0, 0, (LPVOID*)&pVBuffer, 0)==S_OK) {
-		memcpy(pVBuffer, Vtx, nVtx*sizeof(VERTEX_2TEX));
+		memcpy2(pVBuffer, Vtx, nVtx*sizeof(VERTEX_2TEX));
 		mesh.pVB->Unlock();
 	}
 	delete []Vtx;
 
 	if (mesh.pIB->Lock(0, 0, (LPVOID*)&pIBuffer, 0)==S_OK) {
-		memcpy(pIBuffer, Idx, nIdx*sizeof(WORD));
+		memcpy2(pIBuffer, Idx, nIdx*sizeof(WORD));
 		mesh.pIB->Unlock();
 	}
 	delete []Idx;
@@ -1115,12 +1115,12 @@ void TileManager::CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int n
 	WORD *pIBuffer;
 
 	if (mesh.pVB->Lock(0, 0, (LPVOID*)&pVBuffer, 0)==S_OK) {
-		memcpy(pVBuffer, Vtx, nVtx*sizeof(VERTEX_2TEX));
+		memcpy2(pVBuffer, Vtx, nVtx*sizeof(VERTEX_2TEX));
 		mesh.pVB->Unlock();
 	}
 
 	if (mesh.pIB->Lock(0, 0, (LPVOID*)&pIBuffer, 0)==S_OK) {
-		memcpy(pIBuffer, Idx, nIdx*sizeof(WORD));
+		memcpy2(pIBuffer, Idx, nIdx*sizeof(WORD));
 		mesh.pIB->Unlock();
 	}
 
@@ -1255,16 +1255,16 @@ void TileBuffer::HoldThread(bool bHold)
 TILEDESC *TileBuffer::AddTile ()
 {
 	TILEDESC *td = new TILEDESC;
-	memset (td, 0, sizeof(TILEDESC));
+	memset2 (td, 0, sizeof(TILEDESC));
 	DWORD i, j;
 
 	if (nused == nbuf) {
 		TILEDESC **tmp = new TILEDESC*[nbuf+16];
 		if (nbuf) {
-			memcpy (tmp, buf, nbuf*sizeof(TILEDESC*));
+			memcpy2 (tmp, buf, nbuf*sizeof(TILEDESC*));
 			delete []buf;
 		}
-		memset (tmp+nbuf, 0, 16*sizeof(TILEDESC*));
+		memset2 (tmp+nbuf, 0, 16*sizeof(TILEDESC*));
 		buf = tmp;
 		nbuf += 16;
 		last = nused;
@@ -1372,7 +1372,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 		WaitForSingleObject (hQueueMutex, INFINITE);
 
 		if (load = (nqueue > 0)) {
-			memcpy (&qd, loadqueue+queue_out, sizeof(QUEUEDESC));
+			memcpy2 (&qd, loadqueue+queue_out, sizeof(QUEUEDESC));
 		}
 		ReleaseMutex (hQueueMutex);
 

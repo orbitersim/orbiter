@@ -10,6 +10,7 @@
 
 #include "Junction.h"
 #include "D3D9Util.h"
+#include "AABBUtil.h"
 #include <string>
 #include <memory>
 #include <vector>
@@ -89,7 +90,7 @@ namespace junction {
 		reparseBuffer->MountPointReparseBuffer.PrintNameLength = 0;
 
 		// Copy the actual string
-		memcpy(reparseBuffer->MountPointReparseBuffer.PathBuffer, (LPCTSTR) nativeTarget.c_str(), reparseBuffer->MountPointReparseBuffer.SubstituteNameLength);
+		memcpy2(reparseBuffer->MountPointReparseBuffer.PathBuffer, (LPCTSTR) nativeTarget.c_str(), reparseBuffer->MountPointReparseBuffer.SubstituteNameLength);
 
 		// Set ReparseDataLength to the size of the MountPointReparseBuffer
 		// Kind in mind that with the padding for the union (given that SymbolicLinkReparseBuffer is larger),

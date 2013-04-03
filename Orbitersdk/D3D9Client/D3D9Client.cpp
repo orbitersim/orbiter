@@ -290,8 +290,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 #endif
 
-	memset(&stats, 0, sizeof(stats));
-	memset(pDislMapList, 0, 16*sizeof(SURFHANDLE));
+	memset2(&stats, 0, sizeof(stats));
+	memset2(pDislMapList, 0, 16*sizeof(SURFHANDLE));
 
 	D3DXMatrixIdentity(&ident);	
 
@@ -768,7 +768,7 @@ void D3D9Client::clbkRenderScene()
 
 		if (bControlPanel) RenderControlPanel();
 
-		memset(&stats, 0, 96);
+		memset2(&stats, 0, 96);
 	}
 
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -2051,7 +2051,7 @@ void D3D9Client::SplashScreen()
 	DeleteDC(hSrc);
 	DeleteObject(hBM);
 
-	LOGFONTA fnt; memset((void *)&fnt, 0, sizeof(LOGFONT));
+	LOGFONTA fnt; memset2((void *)&fnt, 0, sizeof(LOGFONT));
 
 	fnt.lfHeight		 = 18; 
 	fnt.lfWeight		 = 700; 
@@ -2075,7 +2075,7 @@ void D3D9Client::SplashScreen()
 	DWORD m = d/100; d-=m*100;
 	if (m>12) m=0;
 
-	char dataA[]={"D3D9Client R11 RC2 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R11 RC4 Debug Build [" __DATE__ "]"};
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Create a symbolic links."};

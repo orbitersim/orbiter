@@ -19,6 +19,7 @@
 #include "GraphicsAPI.h"
 #include "D3D9Frame.h"
 #include "D3D9Util.h"
+#include "AABBUtil.h"
 #include "D3D9Surface.h"
 #include "Log.h"
 #include "D3D9Config.h"
@@ -98,9 +99,9 @@ void CD3DFramework9::Clear()
 	pBackBuffer		  = NULL;
 	pEnvDS			  = NULL;
 
-	memset((void *)&rcScreenRect, 0, sizeof(RECT));
-	memset((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
-	memset((void *)&caps, 0, sizeof(D3DCAPS9));
+	memset2((void *)&rcScreenRect, 0, sizeof(RECT));
+	memset2((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
+	memset2((void *)&caps, 0, sizeof(D3DCAPS9));
 }
 
 //-----------------------------------------------------------------------------

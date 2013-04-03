@@ -24,6 +24,7 @@
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
 #include "D3D9Util.h"
+#include "AABBUtil.h"
 #include "Log.h"
 
 using namespace oapi;
@@ -317,7 +318,7 @@ void D3D9ClientSurface::Clear()
 	pDevice		= NULL;
 	Creation	= 0;
 	gNormalType = 0;
-	memset(&desc, 0, sizeof(D3DSURFACE_DESC));
+	memset2(&desc, 0, sizeof(D3DSURFACE_DESC));
 }
 
 

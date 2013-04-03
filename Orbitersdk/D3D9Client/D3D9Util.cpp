@@ -11,6 +11,7 @@
 
 #define STRICT
 #include "D3D9util.h"
+#include "AABBUtil.h"
 #include "D3D9Client.h"
 
 float saturate(float x) { if (x>1) return 1; if (x<0) return 0; return x; }
@@ -27,7 +28,7 @@ void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
-	memcpy(pOut, pIn, 64);
+	memcpy2(pOut, pIn, 64);
 	pOut->Specular.a = pIn->Power;
 	pOut->Reflect.r = 0.0f;
 	pOut->Reflect.g = 0.0f;
@@ -479,7 +480,7 @@ void D3DMAT_Identity (D3DXMATRIX *mat)
 
 void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src)
 {
-	 memcpy(tgt, src, sizeof (D3DXMATRIX)); 
+	 memcpy2(tgt, src, sizeof (D3DXMATRIX)); 
 }
 
 void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)

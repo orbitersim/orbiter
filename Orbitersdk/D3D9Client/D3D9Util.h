@@ -21,16 +21,21 @@
 #ifndef __EXCEPT
 #define __EXCEPT(x) if (false)
 #endif
+*/
 
 #ifndef _TRACE
-#define _TRACE { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); } // DebugMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
+#define _TRACE { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
 #endif
 
 #ifndef _TRACER
-#define _TRACER {  QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef); LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); } //  DebugMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
+#define _TRACER { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
+#endif
+
+/*
+#ifndef _TRACER
+#define _TRACER {  QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef); LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
 #endif
 */
-
 
 #ifndef HR
 #define HR(x)                                      \
@@ -53,6 +58,7 @@
 #define __EXCEPT(x) __except(x)
 #endif
 
+/*
 #ifndef _TRACE
 #define _TRACE
 #endif
@@ -61,10 +67,10 @@
 #define _TRACER //QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
 #endif
 
-
 #ifndef HR
 #define HR(x) x;
 #endif
+*/
 
 #define PI 3.141592653589793238462643383279
 

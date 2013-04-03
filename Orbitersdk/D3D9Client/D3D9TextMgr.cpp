@@ -143,7 +143,7 @@ bool D3D9Text::Init(int size, char *fontname, int weight, int last)
 	//
 	LOGFONT fnt;
 
-	memset((void *)&fnt, 0, sizeof(LOGFONT));
+	memset2((void *)&fnt, 0, sizeof(LOGFONT));
 
 	fnt.lfHeight		 = size; 
 	fnt.lfWidth			 = 0; 
@@ -173,7 +173,7 @@ bool D3D9Text::Init(int size, int style, int weight, int last)
 	//
 	LOGFONT fnt;
 
-	memset((void *)&fnt, 0, sizeof(LOGFONT));
+	memset2((void *)&fnt, 0, sizeof(LOGFONT));
 
 	fnt.lfHeight		 = size; 
 	fnt.lfWidth			 = 0; 
@@ -208,7 +208,7 @@ bool D3D9Text::Init(HFONT hFont, int final)
 	}
 
 	LOGFONT fl;
-	memset((void *)&fl, 0, sizeof(LOGFONT));
+	memset2((void *)&fl, 0, sizeof(LOGFONT));
 	GetObject(hFont, sizeof(LOGFONT), &fl);
 
 	tex_w = 512;	// Texture Width
@@ -264,7 +264,7 @@ restart:
 
 		// Get Text Metrics information
 		// 
-		memset((void *)&tm, 0, sizeof(TEXTMETRIC));
+		memset2((void *)&tm, 0, sizeof(TEXTMETRIC));
 		
 		if (GetTextMetrics(hDC, &tm)==false) {
 			LogErr("GetTextMetrics() FAIL");

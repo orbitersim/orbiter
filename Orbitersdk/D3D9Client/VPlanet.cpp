@@ -96,7 +96,7 @@ vPlanet::vPlanet(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		render_rad = (float)(rad*maxrad);
 	}
 	
-	memcpy(&fog, oapiGetObjectParam(_hObj, OBJPRM_PLANET_FOGPARAM), sizeof(FogParam));
+	memcpy2(&fog, oapiGetObjectParam(_hObj, OBJPRM_PLANET_FOGPARAM), sizeof(FogParam));
 
 	if (*(bool*)gc->GetConfigParam(CFGPRM_ATMFOG) && fog.dens_0 > 0) bFog = true;
 	else bFog = false;
@@ -254,7 +254,7 @@ bool vPlanet::Update ()
 		double cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
 
 		// world matrix for cloud shadows on the surface
-		memcpy (&clouddata->mWorldC0, &mWorld, sizeof (D3DXMATRIX));
+		memcpy2 (&clouddata->mWorldC0, &mWorld, sizeof (D3DXMATRIX));
 
 		if (cloudrot) {
 			static D3DXMATRIX crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
@@ -264,7 +264,7 @@ bool vPlanet::Update ()
 		}
 
 		// world matrix for cloud layer
-		memcpy (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DXMATRIX));
+		memcpy2 (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DXMATRIX));
 
 		for (i = 0; i < 3; i++)	for (j = 0; j < 3; j++)	clouddata->mWorldC.m[i][j] *= cloudscale;
 		

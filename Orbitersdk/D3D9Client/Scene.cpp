@@ -87,14 +87,14 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	if (!bLocalLight) maxlight = 0;
 
 	Lights = new D3D9Light[12];
-	memset(Lights, 0, 12*sizeof(D3D9Light));
+	memset2(Lights, 0, 12*sizeof(D3D9Light));
 
 	if (maxlight) {
 		lightlist = new LIGHTLIST[maxlight];	
-		memset(lightlist, 0, maxlight*sizeof(LIGHTLIST));
+		memset2(lightlist, 0, maxlight*sizeof(LIGHTLIST));
 	}
 
-	memset(&sunLight, 0, sizeof(D3D9Light));
+	memset2(&sunLight, 0, sizeof(D3D9Light));
 	
 	vobjFirst = vobjLast = NULL;
 	nstream = 0;
@@ -303,7 +303,7 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 	// create the visual and entry
 	VOBJREC *pv = new VOBJREC;
 
-	memset(pv, 0, sizeof(VOBJREC));
+	memset2(pv, 0, sizeof(VOBJREC));
 
 	__TRY {
 		pv->vobj = vObject::Create(hObj, this);
@@ -1471,7 +1471,7 @@ void Scene::AddParticleStream (class D3D9ParticleStream *_pstream)
 	
 	D3D9ParticleStream **tmp = new D3D9ParticleStream*[nstream+1];
 	if (nstream) {
-		memcpy (tmp, pstream, nstream*sizeof(D3D9ParticleStream*));
+		memcpy2 (tmp, pstream, nstream*sizeof(D3D9ParticleStream*));
 		delete []pstream;
 	}
 	pstream = tmp;

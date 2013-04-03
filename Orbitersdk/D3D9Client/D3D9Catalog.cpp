@@ -18,6 +18,7 @@
 
 #include "D3D9Catalog.h"
 #include "D3D9Util.h"
+#include "AABBUtil.h"
 #include "string.h"
 #include "Log.h"
 
@@ -56,8 +57,8 @@ void D3D9Catalog::Add(DWORD d)
 	if (count==nmax) {
 		nmax = count*2;
 		DWORD *n = new DWORD[nmax];
-		memset(n, 0, nmax*sizeof(DWORD));
-		memcpy(n, data, count*sizeof(DWORD));
+		memset2(n, 0, nmax*sizeof(DWORD));
+		memcpy2(n, data, count*sizeof(DWORD));
 		delete []data;
 		data=n;
 	}

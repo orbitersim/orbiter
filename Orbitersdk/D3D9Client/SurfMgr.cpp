@@ -44,7 +44,7 @@ SurfaceManager::SurfaceManager (D3D9Client *gclient, const vPlanet *vplanet)
 
 	int maxidx = patchidx[maxbaselvl];
 	tiledesc = new TILEDESC[maxidx];
-	memset (tiledesc, 0, maxidx*sizeof(TILEDESC));
+	memset2 (tiledesc, 0, maxidx*sizeof(TILEDESC));
 }
 
 // =======================================================================

@@ -18,7 +18,47 @@
 // =================================================================================================================================
 
 #include "AABBUtil.h"
+#include "Log.h"
 #include <xnamath.h>
+
+
+void D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line)
+{
+	if (tgt==NULL || src==NULL) {
+		LogErr("memcpy2(0x%X, 0x%X, %u) File=%s, Line=%d",tgt,src,bytes,file,line);
+		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		return;
+	}
+
+	__try {
+		memcpy(tgt,src,bytes);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		LogErr("memcpy2(0x%X, 0x%X, %u) File=%s, Line=%d", tgt, src, bytes, file, line);
+		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		return;	
+	}
+}
+
+void D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line)
+{
+	if (tgt==NULL) {
+		LogErr("memset2(0x%X, %d, %u) File=%s, Line=%d",tgt,val,bytes,file,line);
+		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		return;
+	}
+
+	__try {
+		memset(tgt,val,bytes);
+	}
+	__except(EXCEPTION_EXECUTE_HANDLER)
+	{
+		LogErr("memset2(0x%X, %d, %u) File=%s, Line=%d", tgt, val, bytes, file, line);
+		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		return;	
+	}
+}
 
 
 D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView)
@@ -36,7 +76,7 @@ D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3D
 
 void D9ZeroAABB(D9BBox *box)
 {
-	memset(box, 0, sizeof(D9BBox));
+	memset2(box, 0, sizeof(D9BBox));
 }
 
 void D9InitAABB(D9BBox *box)

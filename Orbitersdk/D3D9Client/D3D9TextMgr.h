@@ -26,6 +26,8 @@
 #include <d3dx9.h>
 
 #include "D3D9Client.h"
+#include "AABBUtil.h"
+
 
 class D3D9ClientSurface;
 
@@ -82,7 +84,7 @@ public:
 	void		SetTextVAlign(int x); // 0-top, 1=base, 2=bottom
 	float		Print(LPD3DXCOLOR color, int x, int y, const char *str, int len=-1, D3DXMATRIX *pVP=NULL, LPD3DXCOLOR bbox=NULL);
 	
-	void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy(t, &tm, sizeof(TEXTMETRIC)); }
+	void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy2(t, &tm, sizeof(TEXTMETRIC)); }
 
 private:
 
