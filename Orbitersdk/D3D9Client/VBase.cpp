@@ -29,6 +29,7 @@
 
 vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
+	_TRACE;
 	DWORD i;
 
 	structure_bs	= NULL;

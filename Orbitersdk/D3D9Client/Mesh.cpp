@@ -1397,10 +1397,10 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 //
 void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
 {
+	_TRACE;
+
 	DWORD flags=0, selmsh=0, selgrp=0, displ=0; // Debug Variables
 	bool bActiveVisual=false;
-
-	_TRACE;
 
 	if (!pVB) return;
 	Scene *scn = gc->GetScene(); 
@@ -1571,6 +1571,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 // 
 void D3D9Mesh::RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 {
+	_TRACE;
 	if (!pVB) return;
 	Render(dev, pW, RENDER_BASE);
 }
@@ -1580,6 +1581,7 @@ void D3D9Mesh::RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 // 
 void D3D9Mesh::RenderAsteroid(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 {
+	_TRACE;
 	if (!pVB) return;
 	Render(dev, pW, RENDER_ASTEROID);
 }
@@ -1597,6 +1599,7 @@ void D3D9Mesh::RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 // 
 void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW)
 {
+	_TRACE;
 	if (!pGB) UpdateGeometry();
 	D3DXMATRIX q;
 
@@ -1647,6 +1650,7 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 
 void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
 {
+	_TRACE;
 	if (!pGB) UpdateGeometry();
 	D3DXMATRIX q;
 
