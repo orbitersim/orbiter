@@ -166,7 +166,7 @@
       like.
       <p style="text-indent:1em;">Note: This option must be <b><em>enabled</em></b>
         to be able to use the "D3D9 Debug Controls" dialogs option which displays
-        the current enviornment (as a flattened cuboid) for debugging purposes.
+        the current environment (as a flattened cuboid) for debugging purposes.
       </p>
     </p>
   <li>Disable near clip plane compatibility mode</li>
@@ -219,9 +219,9 @@
   The generic configuration contains options that will change the general
   behavior of D3D9Client. For most of the time the default setup should be fine
   ("Default" Shader set and Debug Level "1").
-  But you can for example change the verbosity of the internal logging system to
-  be able to report more detailed issue information when you experience an
-  error/failure.
+  But you can for example change the verbosity of the internal logging system
+  to be able to report more detailed issue information when you experience an
+  error or failure.
 </p>
 <ul>
   <li>Shader set</li>
@@ -236,9 +236,10 @@
   <li>Debug level</li>
     <p>
       The five options you can choose from here [0...4] represent the level of
-      information that will be written into the log-file. The log-file is called
-      D3D9ClientLog.html which can be found in <em>Modules\D3D9Client\</em>
-      directory. Higher values will create more detailed output.
+      information that will be written into the log-file. The log-file is
+      called D3D9ClientLog.html which can be found in
+      <em>Modules\D3D9Client\</em> directory. Higher values will create more
+      detailed output.
     </p>
     <p>
       Until you have any problems and like to have more detailed information
@@ -257,8 +258,8 @@
     <p>
       The convergence value lets you choose "how far your eyes are apart".
       The default value is 0.2 meters (20 cm / 7.8 inches) which is round about
-      the average distance between your eyes. Increasing this value might result
-      in a view with "more depth".
+      the average distance between your eyes. Increasing this value might
+      result in a view with "more depth".
     </p>
   <li>Field Depth</li>
     <p>
@@ -302,9 +303,27 @@
 -->
 <ul>
   <li>Display</li>
-<!--
+  <a name="_display"/>
     <p>
-      describe widget ...
+      This combo box lets you select what parts of a scene is rendered. The
+      possible options are: "Everything", "Selected Visual", "Selected Mesh" or
+      "Selected Group".
+      <br />
+      <b><em>Everything</em></b> will, as the name suggests, display
+      everything. This will show the scene as it will be shown normally when
+      running a Orbiter simulation session.
+      <br />
+      <b><em>Selected Visual</em></b> will display only the currently selected
+      visual. Planets and moons for example are excluded.
+      <br />
+      <b><em>Selected Mesh</em></b> will display only the currently selected
+      mesh. If for example two vessels are in the complete scene, only one of
+      them will be displayed. All other vessels, planets and moons are
+      excluded.
+      <br />
+      <b><em>Selected Group</em></b> will display only the current selected
+      group. This is often just a "part" of a vessels mesh. All other groups,
+      vessels, planets and moons are excluded.
     </p>
   <li>Camera</li>
 <!--
@@ -319,29 +338,30 @@
     </p>
 -->
   <li>Mesh Idx</li>
-<!--
+    <a name="_mesh_idx"/>
     <p>
-      describe widget ...
+      This control lets you select one mesh of a multi-mesh vessel by its
+      index. If a vessel consists of a "hull"-mesh and a cockpit-mesh, you will
+      be able to select the two meshes individually by selecting the according
+      mesh index here.
     </p>
--->
   <li>Group Idx</li>
-<!--
     <p>
-      describe widget ...
+      This control lets you select one group out of the current selected mesh
+      (see <a href="#_mesh_idx">Mesh Idx</a>) of a multi-group mesh by its
+      index. If a mesh consists of multiple groups, you will be able to select
+      the individual groups by selecting the according group index here.
     </p>
--->
   <li>Highlight selected group</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b> the current selected group will
+      be permanently highlighted (green).
     </p>
--->
   <li>Highlight selected mesh</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b> the current selected mesh will
+      be permanently highlighted (blue).
     </p>
--->
   <li>Add ambient light</li>
 <!--
     <p>
@@ -349,25 +369,42 @@
     </p>
 -->
   <li>Dual sided</li>
-<!--
     <p>
-      describe widget ...
+      Faces are normally only rendered from one side (the "backside" is kind of
+      completely transparent). With this option <b><em>enabled</em></b> all
+      faces are rendered opaque from both sides.
+      <br />
+      This option might help developers to identify parts of the mesh that are
+      "sticking out" of another mesh-part, that are normally only to be seen
+      from the "inside". A cockpit mesh inside a hull mesh can be for example
+      much bigger than the hull and it will not be easy to find out, cause from
+      the "inside", the hull faces are transparent so the (to big) cockpit mesh
+      can be seen. And from the "outside" the cockpit faces are transparent
+      although "covering" the hull.
     </p>
--->
   <li>Wireframe</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b> the scene (or only parts of it,
+      see <a href="#_display">Display</a>) will be rendered as wireframe model.
+      In a wireframe model only the edges (the lines connecting vertices) of
+      the meshes are drawn. This can be helpful to identify 'useless' parts a
+      mesh.
     </p>
--->
   <li>Pick</li>
-<!--
     <p>
-      describe widget ...
-    </p>
+<!--
+      <img title="Pick in action" src="images/PickInAction_transp.png" alt="Pick in action" align="left" hspace="20" height="10%" />
 -->
+      The Pick option is one of the most useful tools for selecting materials.
+      With this option <b><em>enabled</em></b> you can just select a material
+      by clicking onto it with the left mouse button.
+      <br />
+      Whenever a material is picked it will light up in green, so it is easy to
+      see which material is chosen. After a material is chosen all the settings
+      in the lower part of the D3D9 Debug Controls Dialog apply to that
+      material.
+    </p>
 </ul>
-
 
 <h2>Bounding geometry</h2>
 <!--
@@ -554,7 +591,8 @@
       Parameters:<br />Designated approach angle (deg)<br />
       Distance between white and red indicator lights (m)<br />
       Offset of VASI (red bar) location from runway endpoints (m)<br />
-      VASI runway end point (int: 0-1) (if not defined then VASI is added in both ends)<br />
+      VASI runway end point (int: 0-1) (if not defined then VASI is added in
+      both ends)<br />
       <br />
       Note: Runwaylights can have 2 VASI lights.
     </p>
@@ -660,7 +698,7 @@ END</pre>
       <strong style="color:red">Note:</strong>
       The configuration of this (<em>_norm</em>) identifier is ignored if a
       <em>_bump</em> configuration is also found. However, the <em>_norm</em>
-      configuration is the prefered one that should be used when you have the
+      configuration is the preferred one that should be used when you have the
       choice (see also <a href="#_bump">_bump</a>).
     </p>
   <li><strong>&lt;_spec&gt;</strong></li>
