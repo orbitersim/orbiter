@@ -93,7 +93,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3,  min(3.0,d));
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
 	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1,  min(10.0,d));
-	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01,  min(1.0,d));
+	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01,  min(2.0,d));
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
