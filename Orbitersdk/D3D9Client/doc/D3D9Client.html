@@ -296,11 +296,19 @@
 </p>
 
 <h2>Mesh debugger</h2>
-<!--
 <p>
-  ...group description...
+  The mesh debugger group contains elements to inspect a mesh. It gives a mesh
+  developer some tools at hand to better inspect a mesh in its 'natural
+  environment', the Orbiter Simulation environment.<br />
+  Whith the options available in this group one can for example separate
+  individual parts of the shown scene and leave out all the rest, so it might
+  be easier to see what really happens at rendering.<br />
+  Other settings change the environment so that the current lighting
+  conditions do not apply, so when the mesh is currently in the shadowed part
+  of the orbit it can still be seen with some artificial ambient light.<br />
+  For all possibilities, please read the descriptions of the individual GUI-
+  Elements, below.
 </p>
--->
 <ul>
   <li>Display</li>
   <a name="_display"/>
@@ -363,11 +371,14 @@
       be permanently highlighted (blue).
     </p>
   <li>Add ambient light</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b> the current selected mesh will
+      be lit by artificial ambient light independent of the current 'global'
+      lighting conditions. The mesh is then not only lit from the sun (lighting
+      only parts of the mesh), but from all sides. This also applies to
+      situations when the mesh is usually not lit at all, when on the night
+      (dark) side of an orbit.
     </p>
--->
   <li>Dual sided</li>
     <p>
       Faces are normally only rendered from one side (the "backside" is kind of
@@ -398,7 +409,9 @@
       The Pick option is one of the most useful tools for selecting materials.
       With this option <b><em>enabled</em></b> you can just select a material
       by clicking onto it with the left mouse button.
-      <br />
+      <div style="left:5%; position:relative">
+      <img title="Pick in action" src="images/PickInAction.png" alt="Pick in action" height="20%" />
+      </div>
       Whenever a material is picked it will light up in green, so it is easy to
       see which material is chosen. After a material is chosen all the settings
       in the lower part of the D3D9 Debug Controls Dialog apply to that
@@ -407,50 +420,51 @@
 </ul>
 
 <h2>Bounding geometry</h2>
-<!--
 <p>
-  ...group description...
+  The options in this group offers additional rendering of bounding boxes or
+  spheres of individual mesh parts.
 </p>
--->
 <ul>
   <li>Boxes</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b>, objects of the scene will have
+      their bounding boxes also drawn.
     </p>
--->
   <li>Spheres</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b>, objects of the scene will have
+      their bounding spheres drawn. The sphere represents the smallest volume
+      that still fits the complete geometry.
     </p>
--->
   <li>Selected group only</li>
-<!--
     <p>
-      describe widget ...
+      This is one of three options that let you limit the parts of the mesh
+      that are rendered.
+      With this option <b><em>enabled</em></b>, only the currently selected
+      <b>group</b> will be rendered.
     </p>
--->
   <li>Selected mesh only</li>
-<!--
     <p>
-      describe widget ...
+      This is the second of three options that let you limit the parts of the
+      mesh that are rendered.
+      With this option <b><em>enabled</em></b>, only the currently selected
+      <b>mesh</b> will be rendered.
     </p>
--->
   <li>Selected visual only</li>
-<!--
     <p>
-      describe widget ...
+      This is the third of the three options that let you limit the parts of
+      the mesh that are rendered.
+      With this option <b><em>enabled</em></b>, only the currently selected
+      <b>visual</b> (vessel mesh) will be rendered.
     </p>
--->
 </ul>
 
 <h2>Misc.</h2>
-<!--
 <p>
-  ...group description...
+  This group contains some debugging options to assist on more severe problems
+  or let you see the current environment, that is used for the environment
+  mapping feature of the D3D9Client.
 </p>
--->
 <ul>
   <li>Tile debugger</li>
 <!--
@@ -465,11 +479,14 @@
     </p>
 -->
   <li>Display env mapping</li>
-<!--
     <p>
-      describe widget ...
+      With this option <b><em>enabled</em></b> the environment mapping "box"
+      will be displayed as a flattened box. This will become a cross-like area
+      that shows the environment of each of the sides of that "virtual box".
+      <br />
+      This box can be imagined as a box with mirror-surfaces which show the
+      environment the face of the box 'sees'
     </p>
--->
 </ul>
 
 <h2>Material 'X'</h2>
