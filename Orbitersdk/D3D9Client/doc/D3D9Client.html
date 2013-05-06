@@ -1,5 +1,6 @@
 <style type="text/css">
   li { text-decoration:underline; font-weight:bold; }
+  tt { background-color: #E0E0E0; }
 </style>
 
 
@@ -334,17 +335,28 @@
       vessels, planets and moons are excluded.
     </p>
   <li>Camera</li>
-<!--
+    <a name="_camera"/>
     <p>
-      describe widget ...
+      This combo box lets you select the camera-mode. It can be either "Center
+      on visual" or "Wheel Fly/Pan Cam".
+      <br />
+      <b><em>Center on visual</em></b> will select the 'normal' Orbiter camera
+      operations where with pressed right mouse button you can 'drag' the
+      camera around the current selected visual.
+      <br />
+      <b><em>Wheel Fly/Pan Cam</em></b> will select another camera-mode where
+      with pressed left mouse button you can pan the camera left/right or
+      up/down and with the right mouse button pressed it can be 'tilted'.
     </p>
--->
   <li>Speed</li>
-<!--
     <p>
-      describe widget ...
+      This control lets you change the speed of the camera movements when you
+      are in "Wheel Fly/Pan Cam" camera-mode (see
+      <a href="#_camera">Camera</a>).<br />
+      The value is a kind of 'factor' applied to the movement of the mouse (or
+      the mouse-wheel). It ranges from 1 (beeing the lowest speed) to 8192
+      (beeing <u>very fast</u>).
     </p>
--->
   <li>Mesh Idx</li>
     <a name="_mesh_idx"/>
     <p>
@@ -403,9 +415,6 @@
     </p>
   <li>Pick</li>
     <p>
-<!--
-      <img title="Pick in action" src="images/PickInAction_transp.png" alt="Pick in action" align="left" hspace="20" height="10%" />
--->
       The Pick option is one of the most useful tools for selecting materials.
       With this option <b><em>enabled</em></b> you can just select a material
       by clicking onto it with the left mouse button.
@@ -490,6 +499,7 @@
 </ul>
 
 <h2>Material 'X'</h2>
+<a name="_material_x"/>
 <!--
 <p>
   ...group description...
@@ -535,11 +545,30 @@
 </ul>
 
 <h2>Save materials <i>Button</i></sup></h2>
-<!--
 <p>
-  ...group description...
+  The <b><em>save materials</em></b> button in the "D3D9 Debug Controls" Dialog
+  does just that: it saves the materials ;)
+  <br />
+  Once you are happy with the result you have adjusted in the
+  <a href="#_material_x">Material 'X'</a> group, click on "save materials" and
+  the changed material specifications will be saved in the <tt>Config\GC\</tt>
+  folder of your Orbiter installation.
+  <br />
+  Then of course you can tweak these file(s) in <tt>Config\GC\</tt> folder with
+  notepad etc.
+  <br />
+  So next time you fly with a ship of the same class it will have the
+  properties, you have defined or changed, applied.
+  <br />
+  If you want to have the "default" look back, just delete the according file
+  from that folder (e.g. <tt>Config\GC\DeltaGlider.cfg</tt>) and the standard
+  Orbiter appearance will be restored.
+  <br />
+  The install ZIP of D3D9Client contains some of those files already, that
+  contain some nice "advanced looks" for some of the standard vessels. You can
+  always take those and place it back into that folder to get the
+  "D3D9-Default" look.
 </p>
--->
 
 <hr />
 <!-- ----------------------------------------------------------------------- -->
