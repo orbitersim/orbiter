@@ -476,17 +476,14 @@
 </p>
 <ul>
   <li>Tile debugger</li>
-<!--
     <p>
-      describe widget ...
+      Client development utility/debugger. Unimportant from user point of view.
     </p>
--->
   <li>Identify render target conflicts</li>
-<!--
     <p>
-      describe widget ...
+      Identifies GDI - Render Target conflicts by flashing surfaces in red and yellow.
+      These conflicts can cause a major framerate impact.
     </p>
--->
   <li>Display env mapping</li>
     <p>
       With this option <b><em>enabled</em></b> the environment mapping "box"
@@ -507,41 +504,57 @@
 -->
 <ul>
   <li>Dissolve effect</li>
-<!--
     <p>
-      describe widget ...
+    This field is used to select a special effect texture for dissolve effect.
     </p>
--->
   <li>Material property</li>
-<!--
-    <p>
-      describe widget ...
+  <p>
+	<b>Diffuse</b>
+		<p>
+		  Defines diffuse material property.
+		</p>
+	  <b>Ambient</b>
+		<p>
+		  Defines ambient material color.
+		</p>
+	  <b>Specular</b>
+		<p>
+		 Defines specular material color. The last field is specular power from 0.0 to 1000.0
+		</p>
+	  <b>Emissive</b>
+		<p>
+		 Defines emissive material color.
+		</p>
+	  <b>Reflect</b>
+		<p>
+		 Defines reflection color RGB. Due to some implementation problems a non-zero value must be entered to any of the fields to enable fresnel reflections.
+		</p>
+	<b>Dissolve</b>
+     <p>
+      Dissolve is an experimental technique that can be used to create blurry or noisy reflections. Currently it can be only applied to non-normal mapped surface that has a texture. It would be possible to use a screen-space coordinates to create a similar effect to a non-textured materials as well. The first field is the effect scale factor (i.e. particle size). The second field is the effect strength. If either parameter is zero the effect will be disabled. This property requires dissolve effect texture.
     </p>
--->
+     <b>Fresnel</b>
+		<p>
+		 The first field in fresnel parameters is the power value. A typical range for the power paramater is [2.5 to 3.5]. The power value will effect in a viewing angle dependency of the reflection. The second field is the offset value and the typical range is [0.05 to 0.25]. The offset defines the intensity of the reflection that is always present recardless of the vieving angle. The third field is the multiplier and the value is automatically set to 1.0-Offset when ever the offset is changed. There is usually no need to touch this value. Fresnel reflections can be disabled by setting the offset and multiplier to zero in that order. Note: Non zero reflect material property is required for fresnel reflections. It is 'ok' to define the offset using the reflect property.
+		</p>
+		</p>
+
   <li>(4) Channel values &amp; Slider</li>
-<!--
     <p>
-      describe widget ...
+      Meaning of the fields will depend about the selected material property. See properties from above.
     </p>
--->
   <li>Copy &amp; Paste</li>
-<!--
     <p>
-      describe widget ...
+      Copy and paste buttons can be used to copy RGB values from different material properties for an example from specular color to reflect color.
     </p>
--->
   <li>Link channels</li>
-<!--
     <p>
-      describe widget ...
+      The link checkbox allows the link the R, G and B fields and after that they can be adjusted simultaneously with the slider.
     </p>
--->
   <li>Use specular color</li>
-<!--
     <p>
-      describe widget ...
+      Not implemented.
     </p>
--->
 </ul>
 
 <h2>Save materials <i>Button</i></sup></h2>
@@ -722,6 +735,7 @@ END</pre>
     cube_bump.dds  <= 'advanced texture Bump-map'
     cube_spec.dds  <= 'advanced texture Specular-map'
     cube_emis.dds  <= 'advanced texture Emission-map'
+    cube_refl.dds  <= 'advanced texture Reflection-map'
   </pre>
 </p>
 <p>
@@ -750,10 +764,8 @@ END</pre>
   <li><strong>&lt;_spec&gt;</strong></li>
     <p>
       Specular map controls a specular reflection in per pixel basis. Alpha channel
-      is containing a specular power setting. Value 255 is mapped to 80.0 and 0 to
-      0.0. Valid formats are &lt;R8G8B8A8&gt;, &lt;DXT3&gt; or &lt;DXT5&gt;.
-      If a specular map is assigned then a material specific settings are
-      ignored.
+      is containing a specular power setting. Value 255 is mapped to maximum matarial defined power and 0 is mapped to
+      0.0. Specular map is modulated by specular material color. Valid formats are &lt;R8G8B8A8&gt;, &lt;DXT3&gt; or &lt;DXT5&gt;.
     </p>
   <li><strong>&lt;_bump&gt;</strong></li>
     <a name="_bump"/>
@@ -792,5 +804,9 @@ END</pre>
                 + emission_map.rgb</pre>
       Of course, the clamp function can be changed to a different kind of
       color curve manipulation function to control contrast and lightness.
+    </p>
+     <li><strong>&lt;_refl&gt;</strong></li>
+    <p>
+      Reflection map controls material reflectivity and color in a per pixel basis. Fresnel reflection is independed from a reflection color and intensity. However, a zero (black) reflection map value will mask off the fresnel reflections as well. A non zero value will apply full fresnel reflections for that pixel. Only RGB channels are used.
     </p>
 </ul>
