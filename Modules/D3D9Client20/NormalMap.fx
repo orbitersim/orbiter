@@ -138,7 +138,7 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
 		if (gUseRefl) cRefl = tex2D(ReflS, frg.tex0);														
 		else 		  cRefl = gMtrl.reflect;
 		
-		float fresnel = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
+		float fresnel = gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
 		
 		cRefl = saturate(cRefl + (cRefl.a>0)*fresnel); 
 	

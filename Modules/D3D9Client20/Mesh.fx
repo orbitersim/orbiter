@@ -90,7 +90,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
 	// Pre-compute fresnel term ------------------------------------------------
 
 #if defined(_ENVMAP)
-	outVS.aux[0] = gMtrl.fresnel.x + gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
+	outVS.aux[0] = gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
 #endif
 	
     return outVS;

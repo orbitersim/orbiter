@@ -365,9 +365,8 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 			n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
 			if (n!=2 && n!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			pRecord[iRec].Mat.Fresnel.b = a; // Power
-			pRecord[iRec].Mat.Fresnel.r = b; // Offset
-			if (n==2) pRecord[iRec].Mat.Fresnel.g = 1.0f - b;
-			if (n==3) pRecord[iRec].Mat.Fresnel.g = c;
+			pRecord[iRec].Mat.Fresnel.r = 0.0f; // Offset
+			pRecord[iRec].Mat.Fresnel.g = c;
 			if (a==0.0f) pRecord[iRec].Mat.Fresnel.g = 0.0f;
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			continue;
@@ -435,7 +434,7 @@ bool MatMgr::SaveConfiguration()
 			D3D9MatExt *pM = &pRecord[i].Mat; 
 
 			if (flags&D3D9MATEX_REFLECT) if (pM->Reflect.r<1e-3f && pM->Reflect.g<1e-3f && pM->Reflect.b<1e-3f) flags &= (~D3D9MATEX_REFLECT);
-			if (flags&D3D9MATEX_FRESNEL) if (pM->Fresnel.r<1e-3f && pM->Fresnel.g<1e-3f) flags &= (~D3D9MATEX_FRESNEL);
+			if (flags&D3D9MATEX_FRESNEL) if (pM->Fresnel.g<1e-3f) flags &= (~D3D9MATEX_FRESNEL);
 			if (flags&D3D9MATEX_DISSOLVE) {
 				const char *name = SURFACE(pM->pDissolve)->GetName();
 				if (name==0 || pM->DislScale<1e-3f || pM->DislMag<1e-3f) flags &= (~D3D9MATEX_DISSOLVE);
@@ -453,7 +452,7 @@ bool MatMgr::SaveConfiguration()
 			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Specular.a);
 			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
 			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b);
-			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, pM->Fresnel.r, pM->Fresnel.g);
+			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, 0.0f, pM->Fresnel.g);
 			if (flags&D3D9MATEX_DISSOLVE) fprintf(file.pFile,"DISSOLVE %s %f %f\n", SURFACE(pM->pDissolve)->GetName(), pM->DislScale, pM->DislMag);
 		}
 	}

@@ -306,13 +306,9 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 		{
 			pMat->ModFlags |= D3D9MATEX_FRESNEL;
 			switch(clr) {
-				case 0: pMat->Fresnel.b = CLAMP(value, 1.0f, 5.0f); 
+				case 0: pMat->Fresnel.b = CLAMP(value, 1.0f, 6.0f); 
 					break;
-				case 1: 
-					pMat->Fresnel.r = CLAMP(value, 0.0f, 1.0f); 
-					pMat->Fresnel.g = 1.0f - CLAMP(value, 0.0f, 1.0f);
-					break;
-				case 2: pMat->Fresnel.g = CLAMP(value, 0.0f, 1.0f); 
+				case 1: pMat->Fresnel.g = CLAMP(value, 0.0f, 1.0f); 
 					break;
 			}
 			break;
@@ -410,8 +406,7 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		{
 			switch(clr) {
 				case 0: return pMat->Fresnel.b;	// Power
-				case 1: return pMat->Fresnel.r;	// Offset
-				case 2: return pMat->Fresnel.g; // Multiplier
+				case 1: return pMat->Fresnel.g; // Multiplier
 			}
 			break;
 		}
@@ -524,7 +519,7 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 0;
 		break;
 		case 6:	// Fresnel
-			DisplayMat(true, true, true, false);
+			DisplayMat(true, true, false, false);
 			if (bSetup) SelColor = 0;
 		break;
 	}
