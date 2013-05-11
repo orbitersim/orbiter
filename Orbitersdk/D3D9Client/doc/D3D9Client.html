@@ -511,23 +511,23 @@
   <p>
 	<b>Diffuse</b>
 		<p>
-		  Defines diffuse material property.
+		  Defines diffuse material color [RGBA]. Texture is modulated with this color. The range for every property in this section is [0.0 to 1.0] unless otherwise noted.
 		</p>
 	  <b>Ambient</b>
 		<p>
-		  Defines ambient material color.
+		  Defines ambient material color [RGB].
 		</p>
 	  <b>Specular</b>
 		<p>
-		 Defines specular material color. The last field is specular power from 0.0 to 1000.0
+		 Defines specular material color [RGBP]. The last field is a specular power from [0.0 to 1000.0]
 		</p>
 	  <b>Emissive</b>
 		<p>
-		 Defines emissive material color.
+		 Defines emissive material color [RGB].
 		</p>
 	  <b>Reflect</b>
 		<p>
-		 Defines reflection color RGB. Due to some implementation problems a non-zero value must be entered to any of the fields to enable fresnel reflections.
+		 Defines reflection color [RGB] for a metallic (mirror a-like) reflection which intensity is independend from a viewing angle. This is also used to define minimum reflection offset for a fresnel reflection. Due to some implementation problems a non-zero value must be entered to enable fresnel reflections. For a mirror like reflections a typical range is [0.0 to 1.0] and for a fresnel reflections a typical range is [0.05 to 0.2]
 		</p>
 	<b>Dissolve</b>
      <p>
@@ -535,7 +535,7 @@
     </p>
      <b>Fresnel</b>
 		<p>
-		 The first field in fresnel parameters is the power value. A typical range for the power paramater is [2.5 to 3.5]. The power value will effect in a viewing angle dependency of the reflection. The second field is the offset value and the typical range is [0.05 to 0.25]. The offset defines the intensity of the reflection that is always present recardless of the vieving angle. The third field is the multiplier and the value is automatically set to 1.0-Offset when ever the offset is changed. There is usually no need to touch this value. Fresnel reflections can be disabled by setting the offset and multiplier to zero in that order. Note: Non zero reflect material property is required for fresnel reflections. It is 'ok' to define the offset using the reflect property.
+		 The first field in fresnel parameters is a power value. A typical range for the power is [2.5 to 4.5]. The power value will effect in a viewing angle dependency of the reflection. The second field is a multiplier. It will define a maximum reflection intensity when viewed from a shallow angle. This value must be zero to disable fresnel reflections otherwice a typical range is [0.8 to 0.95] 
 		</p>
 		</p>
 
@@ -545,7 +545,7 @@
     </p>
   <li>Copy &amp; Paste</li>
     <p>
-      Copy and paste buttons can be used to copy RGB values from different material properties for an example from specular color to reflect color.
+      Copy and paste buttons can be used to copy [RGB] values from different material properties for an example from specular color to reflect color.
     </p>
   <li>Link channels</li>
     <p>
@@ -807,6 +807,6 @@ END</pre>
     </p>
      <li><strong>&lt;_refl&gt;</strong></li>
     <p>
-      Reflection map controls material reflectivity and color in a per pixel basis. Fresnel reflection is independed from a reflection color and intensity. However, a zero (black) reflection map value will mask off the fresnel reflections as well. A non zero value will apply full fresnel reflections for that pixel. Only RGB channels are used.
+      Reflection map controls material reflectivity and color in a per pixel basis. Fresnel reflection works independendly from a reflection map. However, a zero (black) reflection map value will mask off the fresnel reflections as well. A non zero value will apply full fresnel reflections for that pixel. Only [RGB] channels from a texture are used.
     </p>
 </ul>
