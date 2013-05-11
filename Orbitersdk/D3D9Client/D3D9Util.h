@@ -13,15 +13,7 @@
 #include <d3d9.h> 
 #include <d3dx9.h>
 
-/*
-#ifndef __TRY
-#define __TRY
-#endif
-
-#ifndef __EXCEPT
-#define __EXCEPT(x) if (false)
-#endif
-*/
+#ifdef _DEBUG
 
 #ifndef _TRACE
 #define _TRACE { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
@@ -31,9 +23,27 @@
 #define _TRACER { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
 #endif
 
-/*
+//#ifndef _TRACER
+//#define _TRACER {  QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef); LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
+//#endif
+
+#else
+
+#ifndef _TRACE
+#define _TRACE
+#endif
+
 #ifndef _TRACER
-#define _TRACER {  QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef); LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
+#define _TRACER
+#endif
+
+#endif
+
+
+
+/*
+#ifndef HR
+#define HR(x) x;
 #endif
 */
 
@@ -48,8 +58,6 @@
 }
 #endif
 
-
-
 #ifndef __TRY
 #define __TRY __try
 #endif
@@ -59,18 +67,16 @@
 #endif
 
 /*
-#ifndef _TRACE
-#define _TRACE
+#ifndef __TRY
+#define __TRY
 #endif
 
-#ifndef _TRACER
-#define _TRACER //QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
-#endif
-
-#ifndef HR
-#define HR(x) x;
+#ifndef __EXCEPT
+#define __EXCEPT(x) if (false)
 #endif
 */
+
+
 
 #define PI 3.141592653589793238462643383279
 

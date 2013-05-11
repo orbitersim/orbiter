@@ -44,8 +44,11 @@ D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3D
 void		D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line);
 void		D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line);
 
-
+#ifdef _DEBUG 
 #define		memcpy2(x,y,z) D9CopyMem(x,y,z,__FILE__,__LINE__)
 #define		memset2(x,y,z) D9SetMem(x,y,z,__FILE__,__LINE__)
-
+#else
+#define		memcpy2(x,y,z) memcpy(x,y,z)
+#define		memset2(x,y,z) memset(x,y,z)
+#endif
 #endif
