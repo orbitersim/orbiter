@@ -76,6 +76,7 @@ void CD3DFramework9::Clear()
 
 	hWnd			  = NULL;
     bIsFullscreen	  = false;
+	bVertexTexture	  = false;
 	bAAEnabled		  = false;
 	bNoVSync		  = false;
 	Alpha			  = false;
