@@ -1,8 +1,13 @@
-<style type="text/css">
-  li { text-decoration:underline; font-weight:bold; }
-  tt { background-color: #E0E0E0; }
-</style>
-
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <title>D3D9Client documentation</title>
+  <style type="text/css">
+    li   { text-decoration:underline; font-weight:bold; }
+    code { background-color: #E0E0E0; }
+  </style>
+</head>
+<body style="padding: 10px; margin: 10px;">
 
 <div style="font-weight:bold;font-size:28pt;">
   <center>D3D9Client documentation</center>
@@ -18,7 +23,7 @@
 </p>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
+<!-- ====================================================================== -->
 <h1>DirectX Runtimes</h1>
 <p>
   If the redistributable package isn't installed in your computer you will
@@ -35,12 +40,12 @@
 </p>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
-<h1>Orbiter Sound 3.5, Spacecraft3.dll</h1>
+<!-- ====================================================================== -->
+<h1 id="_junctions">Orbiter Sound 3.5, Spacecraft3.dll</h1>
 <p>
   In order to use Spacecraft3.dll and Orbiter Sound (Version 3.5) with an
-  external graphics client &ndash;like D3D9Client is one&ndash;, symbolic links in
-  <tt>/Modules/Server/</tt> folder must be created.
+  external graphics client &ndash;like D3D9Client is one&ndash;, symbolic links
+  in <code>/Modules/Server/</code> folder must be created.
 </p>
 <p>
   Note, that for the current version of Orbiter Sound (Version 4.0) the "Sound"
@@ -50,42 +55,44 @@
   "Sound" link is present for a Orbiter Sound 4.0 setup.
 </p>
 <p>
-  The two symbolic links in <tt>/Modules/Server/</tt> folder for "<tt>Config</tt>"
-  and "<tt>Sound</tt>" folders point (or link) to their "originals" located in
-  the root folder of the Orbiter installation.<br/>
+  The two symbolic links in <code>/Modules/Server/</code> folder for
+  <code>Config</code> and <code>Sound</code> folders point (or link) to their
+  "originals" located in the root folder of the Orbiter installation.<br/>
   If you are using Windows XP or newer and your installation is on a
-  <a href="http://en.wikipedia.org/wiki/NTFS" target="_blank">NTFS</a> filesystem,
-  these links can easily be created from Video Tab -&gt; Advanced Setup.
-  If you have problems with creating the links you can also use a software
-  called Link Shell Extension (see link below) or you can simply copy the
-  <tt>Config</tt> and <tt>Sound</tt> folders into <tt>/Modules/Server/</tt>.
-  But then you have to keep them updated manually.
+  <a href="http://en.wikipedia.org/wiki/NTFS" target="_blank">NTFS</a>
+  filesystem, these links can easily be created from Video Tab -&gt; Advanced
+  Setup. If you have problems with creating the links you can also use a
+  software called Link Shell Extension (see link below) or you can simply copy
+  the <code>Config</code> and <code>Sound</code> folders into
+  <code>/Modules/Server/</code>. But then you have to keep them updated
+  manually.
 </p>
 <p>
   Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html">http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
 </p>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
-<h1>Fullscreen Mode and Alt-Tabing</h1>
+<!-- ====================================================================== -->
+<h1 style="page-break-before:always;">Fullscreen Mode and Alt-Tabing</h1>
 <p>
   D3D9Client doesn't support alt-tabing in a so-called "True Fullscreen Mode".
   Therefore, it's recommended that you use a windowed fullscreen mode that will
   run the orbiter in a fullscreen sized borderless window. There is also a
-  conflict between a GDI based dialog (i.e. pop-up) windows and anti-aliasing in
-  a true fullscreen mode which will disable the anti-aliasing.
+  conflict between a GDI based dialog (i.e. pop-up) windows and anti-aliasing
+  in a true fullscreen mode which will disable the anti-aliasing.
 </p>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
-<h1 style="page-break-before:always;">D3D9Client Advanced Setup</h1>
+<!-- ====================================================================== -->
+<h1>D3D9Client Advanced Setup</h1>
 <p>
-  Under the regular Video Tab of the Orbiter (Orbiter_NG) Launchpad you find the
-  "Advanced" Button that will show the "D3D9Client Advanced Setup" Dialog. Here
-  you can change several settings to tweak your experience with the D3D9Client.
+  Under the regular Video Tab of the Orbiter (Orbiter_NG) Launchpad you find
+  the "Advanced" Button that will show the "D3D9Client Advanced Setup" Dialog.
+  Here you can change several settings to tweak your experience with the
+  D3D9Client.
 </p>
 <blockquote>
-  <img title="D3D9Client Advanced Setup" src="images/D3D9Client Advanced Setup.png" alt="D3D9Client Advanced Setup" />
+  <img title="D3D9Client Advanced Setup" src="images/D3D9Client%20Advanced%20Setup.png" alt="D3D9Client Advanced Setup" />
 </blockquote>
 <p>
   On the lower left side of the Dialog you'll find the "Create symbolic links"
@@ -93,8 +100,8 @@
   The symbolic links can only be created on an NTFS filesystem, so if you have
   installed your Orbiter installation for example on an FAT32 of extFS
   filesystem this feature will not work. In this case you have to copy the
-  according folders as explained in the "Orbiter Sound, Spacecraft3.dll" chapter
-  (above).
+  according folders as explained in the "<a href="#_junctions">Orbiter Sound,
+  Spacecraft3.dll</a>" chapter.
 </p>
 
 <h2>Surface texture load options</h2>
@@ -107,15 +114,15 @@
   <li>Load on demand (recommended)</li>
     <p>
       With this recommended option selected the D3D9Client will only load
-      surface textures when they come into view while you are orbiting a planet.
-      The value in the "Max. load frequency [Hz]" input field lets you tune the
-      maximum frequency the D3D9Client will check whether some new surface
-      textures have come into view.
+      surface textures when they come into view while you are orbiting a
+      planet. The value in the "Max. load frequency [Hz]" input field lets you
+      tune the maximum frequency the D3D9Client will check whether some new
+      surface textures have come into view.
     </p>
   <li>Pre-load at session start</li>
     <p>
-      With this option selected the D3D9Client will load all surface textures at
-      startup of a scenario which results in a longer loading time.
+      With this option selected the D3D9Client will load all surface textures
+      at startup of a scenario which results in a longer loading time.
     </p>
 </ul>
 
@@ -133,8 +140,8 @@
     <p>
       Depending on your hardware you can select the level of anisotropic
       filtering. For further details about this topic take a look at
-      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering">Anisotropic filtering</a>
-      in the wikipedia.
+      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering">Anisotropic
+      filtering</a> in the wikipedia.
     </p>
 </ul>
 <p>
@@ -155,19 +162,20 @@
   <li>Enable advanced texture maps</li>
     <p>
       With this option enabled D3D9Client will try to add additional texture
-      information for meshes that supply them. This advanced texture maps define
-      for example how "rough" or "shiny" a texture appears.
+      information for meshes that supply them. This advanced texture maps
+      define for example how "rough" or "shiny" a texture appears.
     </p>
   <li>Enable environment maps</li>
     <p>
       With this option enabled D3D9Client will try to add additional texture
       information for meshes that supply them. This environment maps define how
-      "reflective" a texture appears. This reflections can be seen best on shiny
-      metal surfaces, which do reflect the "environment" more or less mirror-
-      like.
-      <p style="text-indent:1em;">Note: This option must be <b><em>enabled</em></b>
-        to be able to use the "D3D9 Debug Controls" dialogs option which displays
-        the current environment (as a flattened cuboid) for debugging purposes.
+      "reflective" a texture appears. This reflections can be seen best on
+      shiny metal surfaces, which do reflect the "environment" more or less
+      mirror-like.
+      <p style="text-indent:1em;">Note: This option must be
+        <b><em>enabled</em></b> to be able to use the "D3D9 Debug Controls"
+        dialogs option which displays the current environment (as a flattened
+        cuboid) for debugging purposes.
       </p>
     </p>
   <li>Disable near clip plane compatibility mode</li>
@@ -278,7 +286,7 @@
 </ul>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
+<!-- ====================================================================== -->
 <h1 style="page-break-before:always;">D3D9 Debug Controls Dialog</h1>
 <p>
   The D3D9 Debug Controls Dialog allows you look at different things while the
@@ -292,7 +300,8 @@
   The D3D9 Debug Controls Dialog also allows you to change the settings of
   materials at runtime, so that changes can be 'seen' while changing them.
   <blockquote>
-    <img title="D3D9 Debug Controls" src="images/D3D9 Debug Controls.png" alt="D3D9 Debug Controls" />
+    <img title="D3D9 Debug Controls" src="images/D3D9%20Debug%20Controls.png"
+         alt="D3D9 Debug Controls" />
   </blockquote>
 </p>
 
@@ -311,8 +320,7 @@
   Elements, below.
 </p>
 <ul>
-  <li>Display</li>
-  <a name="_display"/>
+  <li id="_display">Display</li>
     <p>
       This combo box lets you select what parts of a scene is rendered. The
       possible options are: "Everything", "Selected Visual", "Selected Mesh" or
@@ -334,8 +342,7 @@
       group. This is often just a "part" of a vessels mesh. All other groups,
       vessels, planets and moons are excluded.
     </p>
-  <li>Camera</li>
-    <a name="_camera"/>
+  <li id ="_camera">Camera</li>
     <p>
       This combo box lets you select the camera-mode. It can be either "Center
       on visual" or "Wheel Fly/Pan Cam".
@@ -357,8 +364,7 @@
       the mouse-wheel). It ranges from 1 (beeing the lowest speed) to 8192
       (beeing <u>very fast</u>).
     </p>
-  <li>Mesh Idx</li>
-    <a name="_mesh_idx"/>
+  <li id="_mesh_idx">Mesh Idx</li>
     <p>
       This control lets you select one mesh of a multi-mesh vessel by its
       index. If a vessel consists of a "hull"-mesh and a cockpit-mesh, you will
@@ -419,7 +425,8 @@
       With this option <b><em>enabled</em></b> you can just select a material
       by clicking onto it with the left mouse button.
       <div style="left:5%; position:relative">
-      <img title="Pick in action" src="images/PickInAction.png" alt="Pick in action" height="20%" />
+      <img title="Pick in action" src="images/PickInAction.png"
+           alt="Pick in action" height="20%" />
       </div>
       Whenever a material is picked it will light up in green, so it is easy to
       see which material is chosen. After a material is chosen all the settings
@@ -428,7 +435,7 @@
     </p>
 </ul>
 
-<h2>Bounding geometry</h2>
+<h2 style="page-break-before:always;">Bounding geometry</h2>
 <p>
   The options in this group offers additional rendering of bounding boxes or
   spheres of individual mesh parts.
@@ -481,8 +488,8 @@
     </p>
   <li>Identify render target conflicts</li>
     <p>
-      Identifies GDI - Render Target conflicts by flashing surfaces in red and yellow.
-      These conflicts can cause a major framerate impact.
+      Identifies GDI - Render Target conflicts by flashing surfaces in red and
+      yellow. These conflicts can cause a major framerate impact.
     </p>
   <li>Display env mapping</li>
     <p>
@@ -495,61 +502,82 @@
     </p>
 </ul>
 
-<h2>Material 'X'</h2>
-<a name="_material_x"/>
-<!--
+<h2 id="_material_x">Material 'X'</h2>
 <p>
-  ...group description...
+  This group contains all the elements that enable you to tweak the different
+  parameter of materials.
 </p>
--->
 <ul>
   <li>Dissolve effect</li>
     <p>
     This field is used to select a special effect texture for dissolve effect.
     </p>
   <li>Material property</li>
-  <p>
-	<b>Diffuse</b>
-		<p>
-		  Defines diffuse material color [RGBA]. Texture is modulated with this color. The range for every property in this section is [0.0 to 1.0] unless otherwise noted.
-		</p>
-	  <b>Ambient</b>
-		<p>
-		  Defines ambient material color [RGB].
-		</p>
-	  <b>Specular</b>
-		<p>
-		 Defines specular material color [RGBP]. The last field is a specular power from [0.0 to 1000.0]
-		</p>
-	  <b>Emissive</b>
-		<p>
-		 Defines emissive material color [RGB].
-		</p>
-	  <b>Reflect</b>
-		<p>
-		 Defines reflection color [RGB] for a metallic (mirror a-like) reflection which intensity is independend from a viewing angle. This is also used to define minimum reflection offset for a fresnel reflection. Due to some implementation problems a non-zero value must be entered to enable fresnel reflections. For a mirror like reflections a typical range is [0.0 to 1.0] and for a fresnel reflections a typical range is [0.05 to 0.2]
-		</p>
-	<b>Dissolve</b>
-     <p>
-      Dissolve is an experimental technique that can be used to create blurry or noisy reflections. Currently it can be only applied to non-normal mapped surface that has a texture. It would be possible to use a screen-space coordinates to create a similar effect to a non-textured materials as well. The first field is the effect scale factor (i.e. particle size). The second field is the effect strength. If either parameter is zero the effect will be disabled. This property requires dissolve effect texture.
-    </p>
-     <b>Fresnel</b>
-		<p>
-		 The first field in fresnel parameters is a power value. A typical range for the power is [2.5 to 4.5]. The power value will effect in a viewing angle dependency of the reflection. The second field is a multiplier. It will define a maximum reflection intensity when viewed from a shallow angle. This value must be zero to disable fresnel reflections otherwice a typical range is [0.8 to 0.95] 
-		</p>
-		</p>
-
+    <p>
+  	  <b>Diffuse</b>
+  		<p>
+  		  Defines diffuse material color [RGBA]. Texture is modulated with this
+        color. The range for every property in this section is [0.0 to 1.0]
+        unless otherwise noted.
+  		</p>
+  	  <b>Ambient</b>
+  		<p>
+  		  Defines ambient material color [RGB].
+  		</p>
+  	  <b>Specular</b>
+  		<p>
+  		  Defines specular material color [RGBP]. The last field is a specular
+        power from [0.0 to 1000.0].
+  		</p>
+  	  <b>Emissive</b>
+  		<p>
+  		  Defines emissive material color [RGB].
+  		</p>
+  	  <b>Reflect</b>
+  		<p>
+  		  Defines reflection color [RGB] for a metallic (mirror a-like)
+        reflection which intensity is independent from a viewing angle. This is
+        also used to define minimum reflection offset for a fresnel reflection.
+        Due to some implementation problems a non-zero value must be entered to
+        enable fresnel reflections. For a mirror like reflections a typical
+        range is [0.0 to 1.0] and for a fresnel reflections a typical range is
+        [0.05 to 0.2].
+  		</p>
+  	  <b>Dissolve</b>
+      <p>
+        Dissolve is an experimental technique that can be used to create blurry
+        or noisy reflections. Currently it can be only applied to non-normal
+        mapped surface that has a texture. It would be possible to use a
+        screen-space coordinates to create a similar effect to a non-textured
+        materials as well. The first field is the effect scale factor (i.e.
+        particle size). The second field is the effect strength. If either
+        parameter is zero the effect will be disabled. This property requires
+        dissolve effect texture.
+      </p>
+      <b>Fresnel</b>
+  		<p>
+  		  The first field in fresnel parameters is a power value. A typical range
+        for the power is [2.5 to 4.5]. The power value will effect in a viewing
+        angle dependency of the reflection. The second field is a multiplier.
+        It will define a maximum reflection intensity when viewed from a
+        shallow angle. This value must be zero to disable fresnel reflections
+        otherwise a typical range is [0.8 to 0.95].
+  		</p>
+  	</p>
   <li>(4) Channel values &amp; Slider</li>
     <p>
-      Meaning of the fields will depend about the selected material property. See properties from above.
+      Meaning of the fields will depend about the selected material property.
+      See properties from above.
     </p>
   <li>Copy &amp; Paste</li>
     <p>
-      Copy and paste buttons can be used to copy [RGB] values from different material properties for an example from specular color to reflect color.
+      Copy and paste buttons can be used to copy [RGB] values from different
+      material properties for an example from specular color to reflect color.
     </p>
   <li>Link channels</li>
     <p>
-      The link checkbox allows the link the R, G and B fields and after that they can be adjusted simultaneously with the slider.
+      The link checkbox allows the link the R, G and B fields and after that
+      they can be adjusted simultaneously with the slider.
     </p>
   <li>Use specular color</li>
     <p>
@@ -557,25 +585,25 @@
     </p>
 </ul>
 
-<h2>Save materials <i>Button</i></sup></h2>
+<h2>Save materials (<i>Button</i>)</h2>
 <p>
   The <b><em>save materials</em></b> button in the "D3D9 Debug Controls" Dialog
   does just that: it saves the materials ;)
   <br />
   Once you are happy with the result you have adjusted in the
   <a href="#_material_x">Material 'X'</a> group, click on "save materials" and
-  the changed material specifications will be saved in the <tt>Config\GC\</tt>
-  folder of your Orbiter installation.
+  the changed material specifications will be saved in the
+  <code>Config\GC\</code> folder of your Orbiter installation.
   <br />
-  Then of course you can tweak these file(s) in <tt>Config\GC\</tt> folder with
-  notepad etc.
+  Then of course you can tweak these file(s) in <code>Config\GC\</code> folder
+  with notepad etc.
   <br />
   So next time you fly with a ship of the same class it will have the
   properties, you have defined or changed, applied.
   <br />
   If you want to have the "default" look back, just delete the according file
-  from that folder (e.g. <tt>Config\GC\DeltaGlider.cfg</tt>) and the standard
-  Orbiter appearance will be restored.
+  from that folder (e.g. <code>Config\GC\DeltaGlider.cfg</code>) and the
+  standard Orbiter appearance will be restored.
   <br />
   The install ZIP of D3D9Client contains some of those files already, that
   contain some nice "advanced looks" for some of the standard vessels. You can
@@ -584,7 +612,7 @@
 </p>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
+<!-- ====================================================================== -->
 <h1 style="page-break-before:always;">Base Configuration settings</h1>
 <p>
   The D3D9Client allows you to to configure some more details when settings up
@@ -597,7 +625,7 @@
   For a better understanding how some of those parameters will affect the
   rendering of the runway lights this image might help:
   <blockquote>
-    <img title="Runway lights" src="images/rwylights.png" alt="Runway lights" />
+    <img title="Runway lights" src="images/rwylights.png" alt="Runway lights"/>
   </blockquote>
 </p>
 
@@ -720,7 +748,7 @@ END</pre>
 </blockquote>
 
 <hr />
-<!-- ----------------------------------------------------------------------- -->
+<!-- ====================================================================== -->
 <h1 style="page-break-before:always;">Advanced Texture Maps</h1>
 <p>
   Additional texture maps can be automatically assigned for a mesh simply by
@@ -731,19 +759,18 @@ END</pre>
 <p>
   A fully specified texture set could for example consist of these files:
   <pre>
-    cube.dds       <= 'base' texture
-    cube_bump.dds  <= 'advanced texture Bump-map'
-    cube_spec.dds  <= 'advanced texture Specular-map'
-    cube_emis.dds  <= 'advanced texture Emission-map'
-    cube_refl.dds  <= 'advanced texture Reflection-map'
+    cube.dds       &lt;= 'base' texture
+    cube_bump.dds  &lt;= 'advanced texture Bump-map'
+    cube_spec.dds  &lt;= 'advanced texture Specular-map'
+    cube_emis.dds  &lt;= 'advanced texture Emission-map'
+    cube_refl.dds  &lt;= 'advanced texture Reflection-map'
   </pre>
 </p>
 <p>
   Available identifiers are:<br />
 </p>
 <ul>
-  <li><strong>&lt;_norm&gt;</strong></li>
-    <a name="_norm"/>
+  <li id="_norm"><strong>&lt;_norm&gt;</strong></li>
     <p>
       Tangent space normal map and the valid formats are:<br />
       <br />
@@ -763,12 +790,13 @@ END</pre>
     </p>
   <li><strong>&lt;_spec&gt;</strong></li>
     <p>
-      Specular map controls a specular reflection in per pixel basis. Alpha channel
-      is containing a specular power setting. Value 255 is mapped to maximum matarial defined power and 0 is mapped to
-      0.0. Specular map is modulated by specular material color. Valid formats are &lt;R8G8B8A8&gt;, &lt;DXT3&gt; or &lt;DXT5&gt;.
+      Specular map controls a specular reflection in per pixel basis.
+      Alpha channel is containing a specular power setting. Value 255 is mapped
+      to maximum matarial defined power and 0 is mapped to 0.0. Specular map is
+      modulated by specular material color. Valid formats are &lt;R8G8B8A8&gt;,
+      &lt;DXT3&gt; or &lt;DXT5&gt;.
     </p>
-  <li><strong>&lt;_bump&gt;</strong></li>
-    <a name="_bump"/>
+  <li id="_bump" style="page-break-before:always;"><strong>&lt;_bump&gt;</strong></li>
     <p>
       Bump maps are also supported by the D3D9Client. They are automatically
       converted into normal maps during loading of bump maps (see note).<br />
@@ -784,12 +812,12 @@ END</pre>
     </p>
     <p>
       <strong style="color:red">Note:</strong>
-      The configuration using the (<em>_bump</em>) identifier will overwrite any
-      <em>_norm</em> configuration in case both identifiers are found. The
+      The configuration using the (<em>_bump</em>) identifier will overwrite
+      any <em>_norm</em> configuration in case both identifiers are found. The
       <em>_norm</em> configuration is however the one that should be used when
       you have the choice (see also <a href="#_norm">_norm</a>).
     </p>
-  <li style="page-break-before:always;"><strong>&lt;_emis&gt;</strong></li>
+  <li><strong>&lt;_emis&gt;</strong></li>
     <p>
       Currently emission map works more like a light map and the simplified
       equation is:
@@ -805,8 +833,14 @@ END</pre>
       Of course, the clamp function can be changed to a different kind of
       color curve manipulation function to control contrast and lightness.
     </p>
-     <li><strong>&lt;_refl&gt;</strong></li>
+      <li><strong>&lt;_refl&gt;</strong></li>
     <p>
-      Reflection map controls material reflectivity and color in a per pixel basis. Fresnel reflection works independendly from a reflection map. However, a zero (black) reflection map value will mask off the fresnel reflections as well. A non zero value will apply full fresnel reflections for that pixel. Only [RGB] channels from a texture are used.
+      Reflection map controls material reflectivity and color in a per pixel
+      basis. Fresnel reflection works independently from a reflection map.
+      However, a zero (black) reflection map value will mask off the fresnel
+      reflections as well. A non zero value will apply full fresnel reflections
+      for that pixel. Only [RGB] channels from a texture are used.
     </p>
 </ul>
+</body>
+</html>
