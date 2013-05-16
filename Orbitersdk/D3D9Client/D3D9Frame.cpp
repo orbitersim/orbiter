@@ -76,7 +76,7 @@ void CD3DFramework9::Clear()
 
 	hWnd			  = NULL;
     bIsFullscreen	  = false;
-	bVertexTexture	  = false;
+	bVertexTexture    = false;
 	bAAEnabled		  = false;
 	bNoVSync		  = false;
 	Alpha			  = false;
@@ -99,6 +99,8 @@ void CD3DFramework9::Clear()
 	pRenderTarget	  = NULL;
 	pBackBuffer		  = NULL;
 	pEnvDS			  = NULL;
+	pShmDS			  = NULL;
+	pShmRT			  = NULL;
 
 	memset2((void *)&rcScreenRect, 0, sizeof(RECT));
 	memset2((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
@@ -125,6 +127,8 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pPatchVertexDecl);
 	SAFE_RELEASE(pGPUBlitDecl);
 	SAFE_RELEASE(pEnvDS);
+	SAFE_RELEASE(pShmDS);
+	SAFE_RELEASE(pShmRT);
 	
 	if (pd3dDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
 	else									LogErr("[Failed to Reset DirectX Device]");				
@@ -193,8 +197,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 			case 1:
 			{
-				int x = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-				int y = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+				int x = GetSystemMetrics(SM_CXSCREEN);
+				int y = GetSystemMetrics(SM_CYSCREEN);
+				if (vData->pageflip) x = GetSystemMetrics(SM_CXVIRTUALSCREEN);
 				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPSIBLINGS|WS_VISIBLE);
 				SetWindowPos(hWnd,0, 0,0, x, y, SWP_SHOWWINDOW);
 				bIsFullscreen = false;
@@ -206,7 +211,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 				RECT rect;
 				SystemParametersInfo(SPI_GETWORKAREA,0,&rect,0);	
 				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPSIBLINGS|WS_VISIBLE);
-				SetWindowPos(hWnd,0,rect.left, rect.top, rect.right-rect.left, rect.bottom - rect.top,SWP_SHOWWINDOW);
+				int x = GetSystemMetrics(SM_CXSCREEN);
+				if (vData->pageflip) x = rect.right-rect.left;
+				SetWindowPos(hWnd,0,rect.left, rect.top, x, rect.bottom - rect.top, SWP_SHOWWINDOW);
 				bIsFullscreen = false;
 			}
 			break;
@@ -323,6 +330,16 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	} 
 	else bVertexTexture = false;
 
+	// Check shadow mapping support
+	bShadowMap = true;
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
+	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
+		
+	if (!bShadowMap) {
+		LogWrn("[No shadow mapping support]");
+		oapiWriteLog("D3D9Client:WARNING: [No shadow mapping support]");
+	}
+
 	if (bFail) {
 		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);	
 		return -1;
@@ -391,11 +408,21 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	HR(D3DXCreateFontIndirect(pd3dDevice, &fontDesc, &pSmallFont));
 
 	DWORD EnvMapSize = Config->EnvMapSize;
+	DWORD ShmMapSize = Config->ShadowMapSize;
 
 	if (Config->EnvMapMode) {
 		HR(pd3dDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
 	}
 	else pEnvDS = NULL;
+
+	if (Config->ShadowMapMode) {
+		HR(pd3dDevice->CreateDepthStencilSurface(ShmMapSize, ShmMapSize, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pShmDS, NULL));
+		HR(pd3dDevice->CreateTexture(ShmMapSize, ShmMapSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pShmRT, NULL));
+	}
+	else {
+		pShmDS = NULL;
+		pShmRT = NULL;
+	}
 
 	LogOk("[3DDevice Initialized]");
     return S_OK;
