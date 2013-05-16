@@ -44,6 +44,7 @@ class CD3DFramework9
     HWND                 hWnd;               // The window object
     BOOL                 bIsFullscreen;      // Fullscreen vs. windowed
 	BOOL				 bVertexTexture;
+	BOOL				 bShadowMap;
 	BOOL				 bAAEnabled;
 	BOOL				 bNoVSync;           // don't use vertical sync in fullscreen
 	BOOL				 Alpha;
@@ -66,6 +67,8 @@ class CD3DFramework9
 	DWORD				 MultiSample;
 	LPDIRECT3DSURFACE9	 pRenderTarget;
 	LPDIRECT3DSURFACE9	 pEnvDS;
+	LPDIRECT3DSURFACE9   pShmDS;
+	LPDIRECT3DTEXTURE9   pShmRT;
 	D3D9ClientSurface *  pBackBuffer;
 	class D3D9Config  *  cfg;
 	
@@ -95,6 +98,8 @@ public:
 	inline const RECT           GetScreenRect() const        { return rcScreenRect; }
 	inline LPDIRECT3DSURFACE9   GetBackBuffer() const		 { return pRenderTarget; }
 	inline LPDIRECT3DSURFACE9   GetEnvDepthStencil() const	 { return pEnvDS; }
+	inline LPDIRECT3DSURFACE9   GetShadowMapDepthStencil() const { return pShmDS; }
+	inline LPDIRECT3DTEXTURE9   GetShadowMapRenderTarget() const { return pShmRT; }
 	inline SURFHANDLE			GetBackBufferHandle() const  { return pBackBuffer; }
 	inline LPD3DXFONT			GetLargeFont() const		 { return pLargeFont; }
 	inline LPD3DXFONT			GetSmallFont() const		 { return pSmallFont; }

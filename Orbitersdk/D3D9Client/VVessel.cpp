@@ -122,10 +122,8 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 
 		case EVENT_VESSEL_MESHVISMODE:
 		{
-			//LogBlu("EVENT_VESSEL_MESHVISMODE");
 			bBSRecompute = true;
 			if (context < nmesh) {
-				//LogAlw("MeshIdx(%u) VisMode set to 0x%hX",context,vessel->GetMeshVisibilityMode(context));  AMSO calls this for every frame for every mesh cannot log it
 				meshlist[context].vismode = vessel->GetMeshVisibilityMode(context);	
 			}
 		} break;

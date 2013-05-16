@@ -59,6 +59,8 @@ public:
 	int EnvMapFaces;				///< Number of environment map faces render per frame (1..6, default=1)
 	int EnableGlass;				///< Enable improved glass shading (Fresnel rerflection)
 	int EnableMeshDbg;				///< Enable mesh debugger
+	int ShadowMapMode;				///< Shadow Mapping Mode
+	int ShadowMapSize;				///< Shadow Map size
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *Shaders;					///< Shaders set to use. Naming a sub-directory of "Modules/" (default="Default")
 	char *SolCfg;					///< Solar system to use (default="Sol")

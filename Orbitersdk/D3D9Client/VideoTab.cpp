@@ -92,6 +92,7 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDC_VID_BPP:
 			if (HIWORD(wParam) == CBN_SELCHANGE) {
+				SelectFullscreen(data->fullscreen);
 				return TRUE;
 			}
 
@@ -99,6 +100,7 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_VID_FULL:
 			if (HIWORD(wParam) == BN_CLICKED) {
 				SelectFullscreen(true);
+				data->fullscreen = true;
 				return TRUE;
 			}
 			break;
@@ -106,6 +108,7 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_VID_WINDOW:
 			if (HIWORD(wParam) == BN_CLICKED) {
 				SelectFullscreen(false);
+				data->fullscreen = false;
 				return TRUE;
 			}
 			break;
@@ -306,7 +309,7 @@ void VideoTab::SelectFullscreen(bool bFull)
 
 	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "(unused)");
 	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "GDI compatibility");
-	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "(unused)");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Multible displays");
 
 	SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bFull ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bFull ? BST_UNCHECKED : BST_CHECKED, 0);
@@ -322,7 +325,7 @@ void VideoTab::SelectFullscreen(bool bFull)
 		EnableWindow(GetDlgItem(hTab, IDC_VID_16X9), false);
 		EnableWindow(GetDlgItem(hTab, IDC_VID_MODE), true);
 		EnableWindow(GetDlgItem(hTab, IDC_VID_VSYNC), true);
-		EnableWindow(GetDlgItem(hTab, IDC_VID_PAGEFLIP), false);
+		EnableWindow(GetDlgItem(hTab, IDC_VID_PAGEFLIP), true);
 		EnableWindow(GetDlgItem(hTab, IDC_VID_BPP), true);
 	}
 	else {

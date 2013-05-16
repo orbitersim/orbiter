@@ -544,6 +544,8 @@ public:
 	D3D9Stat *GetStats() { return &stats; }
 	FileParser *GetFileParser() { return parser; }
 	LPDIRECT3DSURFACE9  GetEnvDepthStencil() { return pEnvDS; }
+	LPDIRECT3DSURFACE9  GetShadowMapDepthStencil() { return pShmDS; }
+	LPDIRECT3DTEXTURE9  GetShadowMapRenderTarget() { return pShmRT; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
 
 	// overwritten
@@ -655,6 +657,8 @@ private:
 	LPDIRECT3DSURFACE9		pTextScreen;
 	LPDIRECT3DSURFACE9		pBackBuffer;
 	LPDIRECT3DSURFACE9		pEnvDS;
+	LPDIRECT3DSURFACE9		pShmDS;
+	LPDIRECT3DTEXTURE9		pShmRT;
 	CD3DFramework9*		    pFramework;
 	D3DCAPS9				caps;
 	D3D9Stat				stats;
