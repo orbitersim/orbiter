@@ -108,6 +108,7 @@ public:
 	inline BOOL					IsAAEnabled() const			 { return bAAEnabled; }
 	inline const D3DCAPS9 *		GetCaps() const				 { return &caps; }
 	inline BOOL					HasVertexTextureSup() const  { return bVertexTexture; }
+	inline BOOL					GetVSync() const { return (bNoVSync==false); }
 
     // Creates the Framework
 	HRESULT Initialize(HWND hWnd, struct oapi::GraphicsClient::VIDEODATA *vData);

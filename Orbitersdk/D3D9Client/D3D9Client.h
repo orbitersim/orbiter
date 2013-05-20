@@ -678,12 +678,14 @@ private:
 	bool bRunning;
 	bool bHalt;
 	bool bVertexTex;
+	bool bVSync;
 
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
 	DWORD ShaderModel;
 	DWORD iDisl;
 	DWORD nSkins;
+	DWORD frame_timer;
 	
 	// device enumeration callback function
 

@@ -278,6 +278,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	viewW = viewH    = 0;
 	viewBPP          = 0;
 	iDisl			 = 0;
+	frame_timer		 = 0;
 	scene            = NULL;
 	meshmgr          = NULL;
 	texmgr           = NULL;
@@ -346,6 +347,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pShmDS		= pFramework->GetShadowMapDepthStencil();
 	pShmRT		= pFramework->GetShadowMapRenderTarget();
 	bVertexTex  = (pFramework->HasVertexTextureSup() == TRUE);
+	bVSync		= (pFramework->GetVSync() == TRUE);
 	
 	char fld[] = {"D3D9Client\0"};
 
@@ -793,10 +795,13 @@ void D3D9Client::clbkTimeJump(double simt, double simdt, double mjd)
 
 // ==============================================================
 
+double framer_rater_limit = 0.0;
+
 bool D3D9Client::clbkDisplayFrame()
 {
 	static int iRefrState = 0;
-	frame_time = D3D9GetTime() - frame_time;
+	double time = D3D9GetTime();
+	frame_time = time - frame_time;
 	stats.Frame += frame_time;
 	if (frame_time>stats.FramePeak) stats.FramePeak = frame_time;
 
@@ -813,7 +818,18 @@ bool D3D9Client::clbkDisplayFrame()
 	else {
 		if (!RenderWithPopupWindows()) pd3dDevice->Present(0, 0, 0, 0);
 	}
-	 
+	
+	double frmt = (1000000.0/Config->FrameRate) - (time - framer_rater_limit);
+
+	framer_rater_limit = time;
+
+	if (Config->FrameRate>0 && bVSync==false) {
+		if (frmt>0) frame_timer++;
+		else        frame_timer--;
+		if (frame_timer>40) frame_timer=40;
+		Sleep(frame_timer);
+	}
+
 	return true;
 }
 
@@ -2078,9 +2094,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client R11 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R12 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client R11 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R12 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

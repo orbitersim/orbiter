@@ -65,6 +65,7 @@ void D3D9Config::Reset ()
 	EnableMeshDbg		= 1;
 	ShadowMapMode		= 1;
 	ShadowMapSize		= 1024;
+	FrameRate			= 0.0;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -81,6 +82,8 @@ bool D3D9Config::ReadParams ()
 
 	FILEHANDLE hFile = oapiOpenFile(cfgfile, FILE_IN, ROOT);
 	if (!hFile) return false;
+
+	if (oapiReadItem_float (hFile, "FrameRate", d))				FrameRate = max(0.0, min(300.0, d));
 	if (oapiReadItem_int   (hFile, "PlanetPreloadMode", i))		PlanetPreloadMode = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "PlanetTexLoadFreq", i))		PlanetLoadFrequency = max (1, min (1000, i));
 	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max (1, min (16, i));
@@ -134,7 +137,8 @@ bool D3D9Config::ReadParams ()
 void D3D9Config::WriteParams ()
 {
 	FILEHANDLE hFile = oapiOpenFile (cfgfile, FILE_OUT, ROOT);
-	
+
+	oapiWriteItem_float (hFile, "FrameRate", FrameRate);
 	oapiWriteItem_int   (hFile, "PlanetPreloadMode", PlanetPreloadMode);
 	oapiWriteItem_int   (hFile, "PlanetTexLoadFreq", PlanetLoadFrequency);
 	oapiWriteItem_int   (hFile, "Anisotrophy", Anisotrophy);
