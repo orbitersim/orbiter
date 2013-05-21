@@ -143,6 +143,14 @@
       <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering">Anisotropic
       filtering</a> in the wikipedia.
     </p>
+    <li>Planet glow</li>
+    <p>
+      The value set here is a factor that lets you brighten or dim the "shine"
+      produced by the reflection of a planet. The higher the value the more the
+      current orbiting planet acts like a additional light source.
+      The supported value range is from 0.01 to 2.0. Although you might be able
+      to enter bigger or smaller values, those will be clipped to that range.
+    </p>
 </ul>
 <p>
   Following checkboxes can be checked (enabled) or unchecked (disabled) to
@@ -165,6 +173,16 @@
       information for meshes that supply them. This advanced texture maps
       define for example how "rough" or "shiny" a texture appears.
     </p>
+  <li>Enable improved glass shading</li>
+    <p>
+      With this option enabled D3D9Client will try to add improved glass
+      shading (Fresnel reflection) for meshes that supply them.
+    </p>
+  <li>Enable geometry instancing</li>
+    <p>
+      Currently disabled
+    </p>
+  <!-- removed
   <li>Enable environment maps</li>
     <p>
       With this option enabled D3D9Client will try to add additional texture
@@ -178,6 +196,7 @@
         cuboid) for debugging purposes.
       </p>
     </p>
+  -->
   <li>Disable near clip plane compatibility mode</li>
     <p>
       If the near clip-plane compatibility mode is enabled then the minimum
@@ -255,6 +274,14 @@
       what's going on, you should keep this level reasonably low as higher
       values will result in more disk I/O what slows down the Simulation.
     </p>
+  <li>Enable mesh debugger</li>
+    <p>
+      With this option enabled D3D9Client will provide additional mesh
+      debugging options at runtine. The "D3D9 Debug Controls" dialog will
+      provide a user interface to access several options. For further details
+      see the <a href="#_debug_controls">D3D9 Debug Controls Dialog</a> section
+      below.
+    </p>
 </ul>
 
 <h2>StereoScopic 3D</h2>
@@ -285,9 +312,34 @@
     </p>
 </ul>
 
+<h2>Environment mapping</h2>
+<p>
+  The environment mapping settings allow you to tweak the parameters that
+  define the behavior of the environment mapping feature. Environment mapping
+  is a feature used to draw reflections of the surrounding environment on
+  reflective surfaces.
+</p>
+<ul>
+  <li>Rendering mode</li>
+    <p>
+      The rendering mode selection offers three settings:<br />
+      <b><em>Disable</em></b> will completely disable the environment mapping
+        feature.<br />
+      <b><em>Planet Only</em></b> will only "reflect" the currently orbiting
+        planet or moon.<br />
+      <b><em>Full Scene</em></b> will "reflect" the complete scene, that is all
+        other ships, moons and planets.
+    </p>
+  <li>Faces per frame</li>
+    <p>
+    </p>
+</ul>
+
+
 <hr />
 <!-- ====================================================================== -->
-<h1 style="page-break-before:always;">D3D9 Debug Controls Dialog</h1>
+<h1 id="_debug_controls"
+    style="page-break-before:always;">D3D9 Debug Controls Dialog</h1>
 <p>
   The D3D9 Debug Controls Dialog allows you look at different things while the
   simulation is running.
