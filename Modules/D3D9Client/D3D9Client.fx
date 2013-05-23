@@ -87,7 +87,6 @@ uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
 uniform extern bool      gBrighten;				
 uniform extern bool      gNormalMap;		// Enable Normal Maps
-uniform extern bool      gNormalType;		// Normal map type selector
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
 uniform extern bool      gClamp;			// Texture addressing mode Clamp/Wrap
 uniform extern bool      gNight;			// Nighttime/Daytime

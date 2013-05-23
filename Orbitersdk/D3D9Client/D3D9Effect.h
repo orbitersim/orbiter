@@ -132,7 +132,6 @@ public:
 	static D3DXHANDLE	eSpecularMode;
 	static D3DXHANDLE	eHazeMode;
 	static D3DXHANDLE	eNormalMap;
-	static D3DXHANDLE	eNormalType;
 	static D3DXHANDLE	eTextured;
 	static D3DXHANDLE	eClamp;
 	static D3DXHANDLE	eNight;

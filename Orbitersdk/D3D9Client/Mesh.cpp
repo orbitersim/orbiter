@@ -1301,11 +1301,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 						pEmis = Tex[ti]->GetEmissionMap();
 						pRefl = Tex[ti]->GetReflectionMap();
 
-						if (pNorm) {
-							FX->SetTexture(eTex3, pNorm);
-							FX->SetBool(eNormalType, (Tex[ti]->NormalMapType()==1));
-						}
-
+						if (pNorm) FX->SetTexture(eTex3, pNorm);
 						if (pSpec) FX->SetTexture(eSpecMap, pSpec);
 						if (pEmis) FX->SetTexture(eEmisMap, pEmis);
 						if (pRefl) FX->SetTexture(eReflMap, pRefl);

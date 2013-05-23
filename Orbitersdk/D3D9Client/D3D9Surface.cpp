@@ -317,7 +317,6 @@ void D3D9ClientSurface::Clear()
 	cClear		= 0;
 	pDevice		= NULL;
 	Creation	= 0;
-	gNormalType = 0;
 	memset2(&desc, 0, sizeof(D3DSURFACE_DESC));
 }
 
@@ -1336,7 +1335,6 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 							if (info.Format==D3DFMT_L8) Channel = D3DX_CHANNEL_LUMINANCE;
 							if (D3DXComputeNormalMap(pNormalMap, pBumpMap, NULL, 0, Channel, float(Config->BumpAmp))==S_OK) {
 								LogAlw("Bump Map %s Loaded Successfully",bname);
-								gNormalType = 1;
 							}
 							else LogErr("BumpMap conversion Failed (%s)",bname);
 						}
@@ -1355,28 +1353,8 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 			if (gc->TexturePath(nname, xpath) && pBumpMap==NULL) {
 				D3DXIMAGE_INFO info;
 				pNormalMap = NULL;
-				DWORD Usage = 0;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-			
-					switch (info.Format) {
-						case D3DFMT_R8G8B8:
-						case D3DFMT_X8R8G8B8:
-						case D3DFMT_A8R8G8B8:
-						case D3DFMT_DXT1:
-						case D3DFMT_DXT3:
-							gNormalType = 1;
-							break;
-						
-						case D3DFMT_V8U8: 
-							gNormalType = 0;
-							break;
-
-						default:
-							LogErr("Format %u isn't supported for normal map. (%s)",info.Format,nname);
-							break;
-					}
-
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
 						LogAlw("Normal Map %s Loaded Successfully",nname);
 					}
 					else {

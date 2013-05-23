@@ -93,9 +93,6 @@ public:
 	bool		IsPowerOfTwo() const;
 	bool		IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
 
-	int			NormalMapType() const { return gNormalType; }
-
-
 	LPDIRECT3DTEXTURE9 GetTextureHard();
 	LPDIRECT3DTEXTURE9 GetNormalMap();
 	LPDIRECT3DTEXTURE9 GetEmissionMap();
@@ -161,7 +158,6 @@ private:
 	DWORD		cClear;
 	int			Initial;		// Initial creation flags
 	int			Creation;		// Method of surface creation
-	int			gNormalType;	// Normal map type. (if included)
 	int			SketchPad;		// 0=None, 1=GDI, 2=GPU
 	int			iBindCount;		// GPU Bind reference counter
 

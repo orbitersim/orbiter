@@ -115,7 +115,6 @@ D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multibly material alpha wi
 D3DXHANDLE D3D9Effect::eFullyLit = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eBrighten = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNormalMap = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eNormalType = 0; // BOOL
 D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eClamp = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eNight = 0;		// BOOL
@@ -335,7 +334,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eDebugHL	  = FX->GetParameterByName(0,"gDebugHL");
 	eEnvMapEnable = FX->GetParameterByName(0,"gEnvMapEnable");
 	eNormalMap	  = FX->GetParameterByName(0,"gNormalMap");
-	eNormalType	  = FX->GetParameterByName(0,"gNormalType");
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
 	eClamp		  = FX->GetParameterByName(0,"gClamp");
 	eNight		  = FX->GetParameterByName(0,"gNight");
