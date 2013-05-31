@@ -623,7 +623,7 @@ void D3D9Mesh::ResetTransformations()
 // 
 void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured)
 {
-	_TRACE;
+	//_TRACE;
 	if (bTextured) {
 
 		D3DXVECTOR3 *ta = new D3DXVECTOR3[nVtx];
@@ -690,7 +690,7 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 // 
 bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 {
-	_TRACE;
+	//_TRACE;
 	if (!pVB) return false;
 	
 	if (mg->nVtx>65535) LogErr("Mesh group vertex count is greater than 65535");
@@ -916,7 +916,7 @@ void D3D9Mesh::SetSunLight(D3D9Light *light)
 //
 NMVERTEX * D3D9Mesh::LockVertexBuffer(DWORD grp)
 {
-	_TRACE;
+	//_TRACE;
 	if (!pVB) return NULL;
 	NMVERTEX *pVert;
 	bBSRecompute = true;
@@ -939,7 +939,7 @@ NMVERTEX * D3D9Mesh::LockVertexBuffer(DWORD grp)
 //
 void D3D9Mesh::UnLockVertexBuffer()
 {
-	_TRACE;
+	//_TRACE;
 	if (!pVB) return;
 	HR(pVB->Unlock());
 }

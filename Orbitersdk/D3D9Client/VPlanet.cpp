@@ -110,12 +110,19 @@ vPlanet::vPlanet(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	for (DWORD i=0;i<nbase;i++) vbase[i] = NULL;
 
-	if (Config->PreLBaseVis && _hObj==oapiGetFocusInterface()->GetSurfaceRef()) {
-		LogAlw("PreLoading Base Visuals");
-		for (DWORD i=0;i<nbase;i++) {
-			OBJHANDLE hBase = oapiGetBaseByIndex (_hObj, i);
-			vbase[i] = new vBase (hBase, scn);
+	VESSEL *hVes = oapiGetFocusInterface();
+
+	if (hVes) {
+		if (Config->PreLBaseVis && _hObj==hVes->GetSurfaceRef()) {
+			LogAlw("PreLoading Base Visuals");
+			for (DWORD i=0;i<nbase;i++) {
+				OBJHANDLE hBase = oapiGetBaseByIndex (_hObj, i);
+				vbase[i] = new vBase (hBase, scn);
+			}
 		}
+	}
+	else {
+		LogErr("oapiGetFocusInterface() returns NULL");
 	}
 	
 	if (surfmgr->GetMaxLevel()==0) {

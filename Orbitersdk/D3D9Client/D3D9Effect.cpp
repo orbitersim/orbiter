@@ -494,6 +494,11 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
 	VESSEL *hVessel = oapiGetFocusInterface();
 
+	if (hVessel==NULL) {
+		LogErr("hVessel = NULL in UpdateEffectCamera()");
+		return;
+	}
+
 	if (atm) {
 		radlimit = float(atm->radlimit);
 		atm_color = D3DXVEC4(atm->color0, 1.0f);
