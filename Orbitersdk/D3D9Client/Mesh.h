@@ -212,6 +212,7 @@ private:
 	void DeleteGroup(GROUPREC *grp);
 	void CheckValidity();
 	void UpdateGeometry();
+	void Null();
 
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;

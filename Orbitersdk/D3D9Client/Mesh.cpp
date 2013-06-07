@@ -20,6 +20,15 @@ using namespace oapi;
 
 // ===========================================================================================
 //
+void D3D9Mesh::Null()
+{
+	pVB = NULL;
+	pIB = NULL;
+	pGB = NULL;
+}
+
+// ===========================================================================================
+//
 D3D9Mesh::D3D9Mesh(D3D9Client *client) : D3D9Effect()
 {
 	_TRACE;
@@ -72,6 +81,9 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 	MaxVert = 0;
 
 	nGrp = oapiMeshGroupCount(hMesh);
+
+	if (nGrp==0) { Null(); return; }
+
 	Grp = new GROUPREC*[nGrp];
 
 	memset2(Grp, 0, sizeof(GROUPREC*) * nGrp);
@@ -91,28 +103,16 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, MESHHANDLE hMesh, bool asTemplate) : D3D9
 		MaxVert += Grp[i]->nVert;
 	}
 
+	if (MaxVert==0 || MaxFace==0) { Null(); return; }
+
 	// template meshes are stored in system memory
 
 	D3DPOOL Pool = D3DPOOL_MANAGED;
 	DWORD MeshOptions = D3DUSAGE_WRITEONLY;
 	if (asTemplate) MeshOptions = 0, Pool = D3DPOOL_SYSTEMMEM;
-	
-	HRESULT hr1, hr2;
 
-	hr1 = gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(NMVERTEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL);
-	hr2 = gc->GetDevice()->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, MeshOptions, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL);
-
-	if (hr1!=S_OK || hr2!=S_OK) {
-
-		LogErr("Failed to create vertex/index buffers. MaxVert=%u, MaxFace=%u, MeshOpt=0x%X, nGrp=%u", MaxVert, MaxFace, MeshOptions, nGrp);
-
-		for (DWORD i=0;i<nGrp;i++) {
-			MESHGROUPEX *mg = oapiMeshGroupEx(hMesh, i);
-			LogErr("Group[%u] nIdx=%u, nVtx=%u, pIdx=0x%X, pVtx=0x%X", i, mg->nIdx, mg->nVtx, mg->Idx, mg->Vtx); 
-		}
-		pVB  = NULL; pIB  = NULL;
-		return;
-	}
+	HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(NMVERTEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
+	HR(gc->GetDevice()->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, MeshOptions, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
 
 	nTex = oapiMeshTextureCount(hMesh)+1;
 	Tex = new LPD3D9CLIENTSURFACE[nTex];
@@ -437,12 +437,14 @@ D3D9Mesh::~D3D9Mesh()
 void D3D9Mesh::SetName(const char *fname)
 {
 	if (fname) strcpy_s(name,128,fname);
+	if (!pVB) LogErr("No vertices in a mesh [%s]. Invalid Mesh",name);
 }
 
 // ===========================================================================================
 //
 bool D3D9Mesh::HasShadow()
 {
+	if (!pVB) return false;
 	for (DWORD g=0; g<nGrp; g++) {
 		if (Grp[g]->UsrFlag & 3) continue;
 		if (Grp[g]->IntFlag & 3) continue;
@@ -456,6 +458,7 @@ bool D3D9Mesh::HasShadow()
 void D3D9Mesh::UpdateGeometry()
 {
 	_TRACE;
+	if (!pVB) return;
 	if (!pGB) {
 		HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_MANAGED, &pGB, NULL));
 	}
@@ -475,6 +478,7 @@ void D3D9Mesh::UpdateGeometry()
 void D3D9Mesh::CheckValidity()
 {
 	_TRACE;
+	if (!pVB) return;
 	if (Constr!=5) {
 		float lim = 5e3;
 		for (DWORD i=0;i<nGrp;i++) {
@@ -597,6 +601,7 @@ void D3D9Mesh::ProcessInherit()
 D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx)
 {
 	_TRACE;
+	if (!pVB) return D3DXVECTOR3(0,0,0);
 	if (idx>=nGrp) return D3DXVECTOR3(0,0,0);
 	if (Grp[idx]->nVert<2) return D3DXVECTOR3(0,0,0);
 	return D3DXVECTOR3f4(Grp[idx]->BBox.max - Grp[idx]->BBox.min);
@@ -607,6 +612,7 @@ D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx)
 void D3D9Mesh::ResetTransformations()
 {
 	_TRACE;
+	if (!pVB) return;
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
 	bGlobalTF = false;
@@ -624,6 +630,9 @@ void D3D9Mesh::ResetTransformations()
 void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured)
 {
 	//_TRACE;
+
+	if (!pVB) return;
+
 	if (bTextured) {
 
 		D3DXVECTOR3 *ta = new D3DXVECTOR3[nVtx];
@@ -861,6 +870,7 @@ bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
 //
 DWORD D3D9Mesh::GetMeshGroupMaterialIdx(DWORD idx)
 {
+	if (!pVB) return 0;
 	if (idx>=nGrp) return 0;
 	return Grp[idx]->MtrlIdx;
 }
@@ -869,6 +879,7 @@ DWORD D3D9Mesh::GetMeshGroupMaterialIdx(DWORD idx)
 //
 DWORD D3D9Mesh::GetMeshGroupTextureIdx(DWORD idx)
 {
+	if (!pVB) return 0;
 	if (idx>=nGrp) return 0;
 	return Grp[idx]->TexIdx;
 }
@@ -949,6 +960,7 @@ void D3D9Mesh::UnLockVertexBuffer()
 D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx)
 { 
 	_TRACE;
+	if (!pVB) return NULL;
 	static int count = 10; 
 	if (idx<nGrp) return Grp[idx]; 
 	if ((count--)>0) LogErr("Mesh group index out of range. idx=%u nGrp=%u", idx, nGrp);
@@ -983,6 +995,7 @@ void D3D9Mesh::RenderGroup(LPDIRECT3DDEVICE9 dev, const GROUPREC *grp)
 {
 	_TRACE;
 	if (!pVB) return;
+	if (!grp) return;
 	gc->GetDevice()->SetVertexDeclaration(pMeshVertexDecl);
 	gc->GetDevice()->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
 	gc->GetDevice()->SetIndices(pIB);
@@ -998,6 +1011,7 @@ void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIREC
 {
 	_TRACE;
 	if (!pVB) return;
+	if (!pTex) return;
 
 	gc->GetStats()->Vertices += Grp[0]->nVert;
 	gc->GetStats()->Meshes++;
@@ -1021,6 +1035,7 @@ void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRE
 {
 	_TRACE;
 	if (!pVB) return;
+	if (!pTex) return;
 
 	gc->GetStats()->Vertices += Grp[0]->nVert;
 	gc->GetStats()->Meshes++;
@@ -1596,6 +1611,7 @@ void D3D9Mesh::RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW)
 {
 	_TRACE;
+	if (!pVB) return;
 	if (!pGB) UpdateGeometry();
 	D3DXMATRIX q;
 
@@ -1647,6 +1663,7 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
 {
 	_TRACE;
+	if (!pVB) return;
 	if (!pGB) UpdateGeometry();
 	D3DXMATRIX q;
 
@@ -2021,22 +2038,24 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 //
 void D3D9Mesh::DumpTextures()
 {
+	/*
 	LogBlu("Mesh 0x%X has %u textures",this, nTex-1);
 	if (Tex[0]!=NULL) LogErr("Texture in index 0");
 	for (DWORD i=1;i<nTex;i++) {
 		if (Tex[i]) LogBlu("Texture %u: 0x%X (%s)", i, Tex[i], Tex[i]->GetName());
 		else        LogBlu("Texture %u: NULL");
-	}
+	}*/
 }
 
 // ===========================================================================================
 //
 void D3D9Mesh::DumpGroups()
 {
+	/*
 	LogAlw("Mesh 0x%X has %u groups", this, nGrp);
 	for (DWORD i=0;i<nGrp;i++) {
 		LogAlw("Group(%u):",i);
 		LogAlw("VertexCount = %u",Grp[i]->nVert);
 		LogAlw("FaceCount = %u",Grp[i]->nFace);
-	}
+	}*/
 }
