@@ -462,7 +462,7 @@ void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float
 {
     float3 diffuse = 0;
     float3 specular = 0;
-    float4 direction = 0;
+    float3 direction = 0;
 
     int i;
     for (i=0;i<gLightCount;i++) 
@@ -470,25 +470,25 @@ void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float
         float  dist  = distance(posW,gLights[i].position);
         float3 relpW = normalize(posW-gLights[i].position);
 
-        float att    = max(0.0f, 1.0f/(gLights[i].attenuation[0] + gLights[i].attenuation[1]*dist + gLights[i].attenuation[2]*dist*dist));
+        float att    = saturate(1.0f / (gLights[i].attenuation[0] + gLights[i].attenuation[1]*dist + gLights[i].attenuation[2]*dist*dist));
         float spt    = saturate((dot(relpW, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
         
-        float d      = dot(-relpW, nrmW);
-        float s      = pow(max(dot(reflect(relpW, nrmW), normalize(-posW)), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
+        float d      = saturate(dot(-relpW, nrmW));
+        float s      = pow(saturate(dot(reflect(relpW, nrmW), normalize(-posW))), gMtrl.specular.a);
 
-        if (d<=0) s = 0.0f;
+        if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
         if (gLights[i].type==1) spt = 1.0f;         // Point light -> set spotlight factor to 1
 
         float dif = (att*spt);
 
-        diffuse   += gLights[i].diffuse.rgb * (dif * max(0,d));
+        diffuse   += gLights[i].diffuse.rgb * (dif * d);
         specular  += gLights[i].specular.rgb * (dif * s);
-        direction += float4(relpW, 1) * (dif*max(0,d));
+        direction += relpW * (dif * d);
     }  
    
     diff = float4(1.5 - exp(-1.0*diffuse.rgb)*1.5, 0);
     spec = float4(1.5 - exp(-1.0*specular.rgb)*1.5, 0);
-    dir  = normalize(direction);
+    dir  = float4(normalize(direction), 0);
 }
 
 

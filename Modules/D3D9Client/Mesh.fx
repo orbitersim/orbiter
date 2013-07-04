@@ -82,7 +82,7 @@ AdvancedVS MeshTechVS(MESH_VERTEX vrt)
     float dotb = saturate(-dot(gCameraPos, gSun.direction));
     float dota = -dot(gCameraPos, nrmW);
 	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	outVS.diffuse += gAtmColor * pow(angl*dotb, 0.5);
+	outVS.diffuse.rgb += gAtmColor.rgb * pow(angl*dotb, 0.5);
 	
 	// Add constanst -----------------------------------------------------------
 	outVS.diffuse.rgb += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
