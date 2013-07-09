@@ -2094,9 +2094,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client R11c Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R12 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client R11c Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client R12 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

@@ -469,20 +469,6 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo, DWORD idx)
 
 	if (idx>=maxlight) return;
 
-	if (lght.Attenuation[0]==0.0 && lght.Attenuation[1]==0.0 && lght.Attenuation[2]==0.0) LogErr("LightEmitter zero attennuation");
-
-	if (lght.Ambient.r<0) LogErr("LightEmiter invalid color 1");
-	if (lght.Ambient.g<0) LogErr("LightEmiter invalid color 2");
-	if (lght.Ambient.b<0) LogErr("LightEmiter invalid color 3");
-	if (lght.Ambient.a<0) LogErr("LightEmiter invalid color 4");
-	if (lght.Specular.r<0) LogErr("LightEmiter invalid color 5");
-	if (lght.Specular.g<0) LogErr("LightEmiter invalid color 6");
-	if (lght.Specular.b<0) LogErr("LightEmiter invalid color 7");
-	if (lght.Diffuse.r<0) LogErr("LightEmiter invalid color 8");
-	if (lght.Diffuse.g<0) LogErr("LightEmiter invalid color 9");
-	if (lght.Diffuse.b<0) LogErr("LightEmiter invalid color 10");
-	if (lght.Diffuse.a<0) LogErr("LightEmiter invalid color 11");
-
 	Lights[idx] = lght;
 	nLights = idx+1;
 }
@@ -778,8 +764,6 @@ void Scene::UpdateCamVis()
 		}
 
 		for (int i=1;i<nlight;i++) AddLocalLight(lightlist[i].plight, lightlist[i].vobj, i-1);
-
-		sprintf_s(oapiDebugString(),256,"Lights = %u", nLights);
 	}
 
 
