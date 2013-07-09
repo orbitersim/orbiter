@@ -35,6 +35,7 @@
 #define IDC_AF                                  40019
 #define IDC_BASEVIS                             40020
 #define IDC_NORMALMAPS                          40021
+#define IDC_DBG_FPSLIM                          40022
 #define IDC_CREDITS                             40026
 #define IDC_SRFPRELOAD                          40027
 #define IDC_GLASSSHADE                          40028

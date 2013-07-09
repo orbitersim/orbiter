@@ -49,7 +49,7 @@ FONT 8, "Ms Shell Dlg"
     GROUPBOX        "Bounding geometry", IDC_STATIC, 5, 165, 173, 45
     GROUPBOX        "Mesh debugger", IDC_STATIC, 5, 18, 173, 144
     AUTOCHECKBOX    "Tile debugger", IDC_DBG_TILES, 18, 225, 59, 8
-    AUTOCHECKBOX    "Identify render target conflicts", IDC_DBG_RTGT, 18, 237, 109, 8, WS_DISABLED
+    AUTOCHECKBOX    "Identify RTC", IDC_DBG_RTGT, 18, 237, 55, 8, WS_DISABLED
     GROUPBOX        "Misc.", IDC_STATIC, 5, 213, 173, 36
     AUTOCHECKBOX    "Selected mesh only", IDC_DBG_MSHO, 84, 186, 77, 8
     AUTOCHECKBOX    "Dual sided", IDC_DBG_DUAL, 120, 123, 49, 8
@@ -82,6 +82,7 @@ FONT 8, "Ms Shell Dlg"
     PUSHBUTTON      "Copy", IDC_DBG_COPY, 88, 336, 39, 14
     AUTOCHECKBOX    "Link channels", IDC_DBG_LINK, 23, 339, 60, 8
     AUTOCHECKBOX    "Use specular color", IDC_DBG_REFLMAP, 23, 352, 75, 8, WS_DISABLED
+    AUTOCHECKBOX    "FPS Limiter", IDC_DBG_FPSLIM, 84, 237, 51, 8, WS_DISABLED
 }
 
 
