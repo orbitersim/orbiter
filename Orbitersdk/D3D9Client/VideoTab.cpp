@@ -830,7 +830,7 @@ void VideoTab::CreateSymbolicLinks()
 			result += "OK. Link exists.";
 		}
 	} else {
-		result += "OK. OrbiterSound (3.5) not installed.";
+		result += "OK. OrbiterSound not installed.";
 	}
 	result += "\r\n";
 

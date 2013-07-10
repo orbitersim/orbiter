@@ -538,7 +538,16 @@ void Scene::Update ()
 				DebugControls::SetVisual(vo);
 			}
 
-			// Why is this here ??????????
+			// Why is this here ?
+			//
+			// kuddel: OrbiterSound 4.0 did not play the sounds of the 'focused'
+			//         Vessel when focus changed during playback. Therfore the
+			//         D3D9Client does a oapiSetFocusObject call when playback
+			//         is running. Is a OrbiterSound error, but we can work-around
+			//         this, so we do! To reproduce, just disable the following
+			//         code and run the 'Welcome.scn'.
+			//         See also: http://www.orbiter-forum.com/showthread.php?p=392689&postcount=18
+			//         and following...
 
 			// OrbiterSound 4.0 'playback helper'
 			if (OapiExtension::RunsOrbiterSound40() &&
