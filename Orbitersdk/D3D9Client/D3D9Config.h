@@ -51,6 +51,7 @@ public:
 	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
 	double PlanetGlow;				///< Intensity of planet glow effect (0.01...1.0, default=0.3)
 	double FrameRate;				///< Framerate limiter
+	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
 	int MaxLights;					///< Maximum number of light sources in use (0...12, default=12)
 	int NVPerfHUD;					///< ??? (0,1)

@@ -823,7 +823,7 @@ bool D3D9Client::clbkDisplayFrame()
 
 	framer_rater_limit = time;
 
-	if (Config->FrameRate>0 && bVSync==false) {
+	if (Config->EnableLimiter && Config->FrameRate>0 && bVSync==false) {
 		if (frmt>0) frame_timer++;
 		else        frame_timer--;
 		if (frame_timer>40) frame_timer=40;

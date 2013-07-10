@@ -82,7 +82,7 @@ FONT 8, "Ms Shell Dlg"
     PUSHBUTTON      "Copy", IDC_DBG_COPY, 88, 336, 39, 14
     AUTOCHECKBOX    "Link channels", IDC_DBG_LINK, 23, 339, 60, 8
     AUTOCHECKBOX    "Use specular color", IDC_DBG_REFLMAP, 23, 352, 75, 8, WS_DISABLED
-    AUTOCHECKBOX    "FPS Limiter", IDC_DBG_FPSLIM, 84, 237, 51, 8, WS_DISABLED
+    AUTOCHECKBOX    "FPS Limiter", IDC_DBG_FPSLIM, 84, 237, 51, 8
 }
 
 
