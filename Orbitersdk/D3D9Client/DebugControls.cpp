@@ -268,7 +268,7 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 				case 0: pMat->Specular.r = CLAMP(value, 0.0f, 1.0f); break;
 				case 1: pMat->Specular.g = CLAMP(value, 0.0f, 1.0f); break;
 				case 2: pMat->Specular.b = CLAMP(value, 0.0f, 1.0f); break;
-				case 3: pMat->Specular.a = CLAMP(value, 0.0f, 512.0f); break;
+				case 3: pMat->Specular.a = CLAMP(value, 0.0f, 1000.0f); break;
 			}
 			break;
 		}
@@ -428,7 +428,8 @@ void SetColorSlider()
 
 	float val = GetMaterialValue(MatPrp, SelColor);
 	
-	if (MatPrp==2 && SelColor==3) val/=1000.0; // Specular Power
+	//if (MatPrp==2 && SelColor==3) val/=1000.0; // Specular Power
+	if (MatPrp==2 && SelColor==3) val = log(val) / 6.907755279; // Specular Power
 	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val/=0.2f;  // Dissolve scatter
 	if (MatPrp==6 && SelColor==0) val/=6.0f;  // Fresnel range
@@ -563,7 +564,8 @@ void UpdateColorSlider(WORD pos)
 	if (MatPrp==5 || MatPrp==6) bLink = false;
 	if (SelColor==3) bLink = false;
 
-	if (MatPrp==2 && SelColor==3) val*=1000.0; // Specular Power
+	//if (MatPrp==2 && SelColor==3) val*=1000.0; // Specular Power
+	if (MatPrp==2 && SelColor==3) val = exp(val*6.907755279); // Specular Power
 	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
 	if (MatPrp==5 && SelColor==1) val*=0.2f;  // Dissolve scatter
 	if (MatPrp==6 && SelColor==0) val*=6.0f;  // Fresnel range
