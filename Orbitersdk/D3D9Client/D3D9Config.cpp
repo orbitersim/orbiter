@@ -85,7 +85,7 @@ bool D3D9Config::ReadParams ()
 	if (!hFile) return false;
 
 	if (oapiReadItem_float (hFile, "FrameRate", d))				FrameRate = max(0.0, min(300.0, d));
-	if (oapiReadItem_int   (hFile, "EnableLimiter", i))			EnableLimiter = max(0.0, min(1, i));
+	if (oapiReadItem_int   (hFile, "EnableLimiter", i))			EnableLimiter = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PlanetPreloadMode", i))		PlanetPreloadMode = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "PlanetTexLoadFreq", i))		PlanetLoadFrequency = max (1, min (1000, i));
 	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max (1, min (16, i));
