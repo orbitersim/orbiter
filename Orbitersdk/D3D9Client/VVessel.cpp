@@ -6,6 +6,7 @@
 // Copyright (C) 2010-2012 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
+#include <vector>
 #include "VVessel.h"
 #include "MeshMgr.h"
 #include "Texture.h"
@@ -218,12 +219,12 @@ void vVessel::PreInitObject()
 // 
 void vVessel::ParseSkins()
 {
-	char classname[64];
+	char classname[256];
 
 	D3D9Client *gc = scn->GetClient();
 	DWORD start = 0;
 
-	sprintf_s(classname, 64, "#%s", vessel->GetClassNameA());
+	sprintf_s(classname, 256, "#%s", vessel->GetClassNameA());
 
 	// Fine a class name entry
 	while (true) {
@@ -526,12 +527,45 @@ void vVessel::ClearAnimations ()
 void vVessel::UpdateAnimations (UINT mshidx)
 {
 	double newstate;
-	
+
+	UINT oldnAnim = nanim;
 	nanim = vessel->GetAnimPtr(&anim);
 
 	if (nanim>0 && animstate==NULL) {
 		LogErr("[ANOMALY] UpdateAnimations() called before the animations are initialized. Calling InitAnimations()...");
 		InitAnimations();
+	}
+
+	//animations have been added without being initialised?
+	if (nanim > oldnAnim)
+	{
+		std::vector<UINT> meshesToInitialise;
+		for (UINT i = oldnAnim; i < nanim; ++i)
+		//extracting meshindices for uninitialised animations.
+		//this might seem overly complicated, but it seems savest
+		//it guarantees that all new animations are initialised, and are initialised only once
+		{
+			for (UINT j = 0; j < anim[i].ncomp; ++j)
+			{
+				bool alreadyNoted = false;
+				for (UINT jj = 0;  jj < meshesToInitialise.size(); ++jj)
+				{
+					if (anim[i].comp[j]->trans->mesh == meshesToInitialise[jj])
+					{
+						alreadyNoted = true;
+						break;
+					}
+				}
+				if (!alreadyNoted)
+				{
+					meshesToInitialise.push_back(anim[i].comp[j]->trans->mesh);
+				}
+			}
+		}
+		for (UINT i = 0; i < meshesToInitialise.size(); ++i)
+		{
+			InitAnimations(meshesToInitialise[i]);
+		}
 	}
 
 	for (UINT i = 0; i < nanim; i++) {
