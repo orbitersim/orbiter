@@ -39,7 +39,7 @@ class FileParser
 public:
 
 	/**
-	 * \brief Create a BeaconArray object for rendering multible beacons at the same time
+	 * \brief Create a BeaconArray object for rendering multiple beacons at the same time
 	 * \param pArray Pointer into a BeaconArrayEntry list
 	 * \param nArray Number of entries in the array
 	 */
