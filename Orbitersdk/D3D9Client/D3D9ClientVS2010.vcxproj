@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>D3D9Client</ProjectName>
+    <ProjectGuid>{5B2C5D1A-7B8E-4343-BC33-836ABD122D3A}</ProjectGuid>
+    <RootNamespace>D3D9Client</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <LocalDebuggerCommand>$(SolutionDir)..\..\Modules\Server\orbiter.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>..\..\</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">-s "(Current state)"</LocalDebuggerCommandArguments>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Microsoft SDKs\DirectX\Lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Modules\Plugin/D3D9Client.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <AdditionalOptions>/D "D3D_DEBUG_INFO" %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\..\Orbitersdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>$(Configuration)\$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\..\Modules\Plugin/D3D9Client.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/D3D9Client.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeaderOutputFile>
+      </PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalLibraryDirectories>..\..\Orbitersdk\lib;.\..\..\Modules\Server;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <ImportLibrary>$(Configuration)\$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release/D3D9Client.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AABBUtil.cpp" />
+    <ClCompile Include="BeaconArray.cpp" />
+    <ClCompile Include="CelSphere.cpp" />
+    <ClCompile Include="CloudMgr.cpp" />
+    <ClCompile Include="CSphereMgr.cpp" />
+    <ClCompile Include="D3D9Catalog.cpp" />
+    <ClCompile Include="D3D9Client.cpp" />
+    <ClCompile Include="D3D9Config.cpp" />
+    <ClCompile Include="D3D9ControlPanel.cpp" />
+    <ClCompile Include="D3D9Effect.cpp" />
+    <ClCompile Include="D3D9Frame.cpp" />
+    <ClCompile Include="D3D9Pad.cpp" />
+    <ClCompile Include="D3D9Surface.cpp" />
+    <ClCompile Include="D3D9TextMgr.cpp" />
+    <ClCompile Include="D3D9Util.cpp" />
+    <ClCompile Include="DebugControls.cpp" />
+    <ClCompile Include="FileParser.cpp" />
+    <ClCompile Include="GDIPad.cpp" />
+    <ClCompile Include="HazeMgr.cpp" />
+    <ClCompile Include="Junction.cpp" />
+    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="MaterialMgr.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshMgr.cpp" />
+    <ClCompile Include="OapiExtension.cpp" />
+    <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="RingMgr.cpp" />
+    <ClCompile Include="RunwayLights.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SurfMgr.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TileMgr.cpp" />
+    <ClCompile Include="VBase.cpp" />
+    <ClCompile Include="VideoTab.cpp" />
+    <ClCompile Include="VObject.cpp" />
+    <ClCompile Include="VPlanet.cpp" />
+    <ClCompile Include="VStar.cpp" />
+    <ClCompile Include="VVessel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="D3D9Client.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\GraphicsAPI.h" />
+    <ClInclude Include="..\include\OrbiterAPI.h" />
+    <ClInclude Include="..\include\Orbitersdk.h" />
+    <ClInclude Include="AABBUtil.h" />
+    <ClInclude Include="BeaconArray.h" />
+    <ClInclude Include="CelSphere.h" />
+    <ClInclude Include="CloudMgr.h" />
+    <ClInclude Include="CSphereMgr.h" />
+    <ClInclude Include="D3D9Catalog.h" />
+    <ClInclude Include="D3D9Client.h" />
+    <ClInclude Include="D3D9Config.h" />
+    <ClInclude Include="D3D9Effect.h" />
+    <ClInclude Include="D3D9Frame.h" />
+    <ClInclude Include="D3D9Pad.h" />
+    <ClInclude Include="D3D9Surface.h" />
+    <ClInclude Include="D3D9TextMgr.h" />
+    <ClInclude Include="D3D9Util.h" />
+    <ClInclude Include="DebugControls.h" />
+    <ClInclude Include="FileParser.h" />
+    <ClInclude Include="GDIPad.h" />
+    <ClInclude Include="HazeMgr.h" />
+    <ClInclude Include="Junction.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="MaterialMgr.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshMgr.h" />
+    <ClInclude Include="OapiExtension.h" />
+    <ClInclude Include="OapiVersion.h" />
+    <ClInclude Include="Particle.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="RingMgr.h" />
+    <ClInclude Include="RunwayLights.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SurfMgr.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TileMgr.h" />
+    <ClInclude Include="VBase.h" />
+    <ClInclude Include="VideoTab.h" />
+    <ClInclude Include="VObject.h" />
+    <ClInclude Include="VPlanet.h" />
+    <ClInclude Include="VStar.h" />
+    <CustomBuildStep Include="VVessel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\BeaconArray.fx" />
+    <None Include="..\..\Modules\D3D9Client\CelestialSphere.fx" />
+    <None Include="..\..\Modules\D3D9Client\CKBlit.fx" />
+    <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
+    <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
+    <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
+    <None Include="..\..\Modules\D3D9Client\NormalMap.fx" />
+    <None Include="..\..\Modules\D3D9Client\Particle.fx" />
+    <None Include="..\..\Modules\D3D9Client\Planet.fx" />
+    <None Include="..\..\Modules\D3D9Client\SceneTech.fx" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
