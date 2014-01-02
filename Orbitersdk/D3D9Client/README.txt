@@ -26,6 +26,24 @@ To compile the sources of the D3D9 graphics client, you need:
   (I don't know whether later DX SDK's still support the DX9 interface, but it
   may be worth a try.)
 
+* NVIDIA API (needed since stereoscopic option was introduced in the Client)
+  The NVAPI can be downloaded from the nVIDIA developer site at
+
+  https://developer.nvidia.com/nvapi
+
+  If you don't like to install the NVIDIA API (it's not needed if stereoscopic
+  option should not be available in the client), you might need to add an empty
+  header "nvapi.h" into the main source directory (Orbitersdk\D3D9Client\).
+  That file does not need to contain anything, but here's an example that says
+  it all:
+
+  // ==============================================================
+  // nvapi.h
+  // Dummy header to be able to build the D3D9Client without
+  // the NVIDIA NvAPI interface installed.
+  // ==============================================================
+
+
 * To recompile the D3D9 source documentation you need Doxygen from
 
   http://www.stack.nl/~dimitri/doxygen/
@@ -56,9 +74,9 @@ For a first-time installation only:
 
 * Download the latest (currently it's orbiter111105-100830diff.7z) orbiter beta
   diffs from
- 
+
   http://sourceforge.net/projects/orbitervis/files/Orbiter%20beta%20files/
- 
+
   Unpack in the Orbiter directory. Make sure to preserve the directory
   structure of the zip archive. Answer "yes" if asked whether to overwrite
   existing files.
