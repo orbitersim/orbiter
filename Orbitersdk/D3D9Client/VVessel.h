@@ -118,7 +118,19 @@ protected:
 	void DelMesh(UINT idx);
 	void InitAnimations();
 	void InitAnimations(UINT meshidx);
+	void InitNewAnimations();
 	void ClearAnimations();
+
+	/**
+	 * \brief Grow \ref animstate buffer (if needed)
+	 *
+	 * Increases the size of \ref animstate buffer (if needed).
+	 * This method also updates the \ref nanim member.
+	 * \param newSize new size of buffer (return value of VESSEL::GetAnimPtr())
+	 * \return previous value of \ref nanim
+	 */
+	UINT GrowAnimstateBuffer (UINT newSize);
+
 	
 	/**
 	 * \brief Update animations of the visual

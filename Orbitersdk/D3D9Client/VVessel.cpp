@@ -6,7 +6,7 @@
 // Copyright (C) 2010-2012 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
-#include <vector>
+#include <set>
 #include "VVessel.h"
 #include "MeshMgr.h"
 #include "Texture.h"
@@ -157,7 +157,8 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 			break;
 
 		case EVENT_VESSEL_NEWANIM:
-			LogErr("EVENT_VESSEL_NEWANIM Not Implemented");
+			LogBlu("EVENT_VESSEL_NEWANIM");
+			InitNewAnimations();
 			break;
 
 		case EVENT_VESSEL_DELANIM:
@@ -456,27 +457,25 @@ void vVessel::DelMesh(UINT idx)
 
 
 // ============================================================================================
-// 
+//
 void vVessel::InitAnimations()
 {
 	bBSRecompute = true;
 
 	// This is the AMSO VISOR fix
-	for (DWORD i=0;i<nmesh;i++) if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations();
-	
-	if (nanim) ClearAnimations();
+	for (DWORD i=0;i<nmesh;i++) { if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations(); }
 
-	nanim = vessel->GetAnimPtr(&anim);
-	char name[64]; oapiGetObjectName(hObj,name,63);
-	if (nanim) {
-		LogAlw("Vessel(%s) Vis=0x%X has %u animations",name,this,nanim);
-		animstate = new double[nanim];
-		for (UINT i = 0; i < nanim; i++) {
-			LogBlu("Anim(%u): Has %u animcomps. AnimState=%g, DefState=%g",i,anim[i].ncomp,anim[i].state,anim[i].defstate);
+	UINT oldnanim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
+
+	char name[64]; oapiGetObjectName(hObj, name, 63);
+	if (nanim > oldnanim) {
+		LogAlw("Vessel(%s) Vis=0x%X has %u animations", name, this, nanim);
+		for (UINT i = oldnanim; i < nanim; ++i) {
+			LogBlu("Anim(%u): Has %u animcomps. AnimState=%g, DefState=%g", i, anim[i].ncomp, anim[i].state, anim[i].defstate);
 			animstate[i] = anim[i].defstate; // reset to default mesh states
 		}
 	}
-	else LogAlw("Vessel(%s) Vis=0x%X has no animations",name,this);
+	else LogAlw("Vessel(%s) Vis=0x%X has no animations", name, this);
 
 	UpdateAnimations(); // Must update immediately to prevent RMS grapple target displacement
 }
@@ -488,21 +487,17 @@ void vVessel::InitAnimations(UINT meshidx)
 {
 	bBSRecompute = true;
 
-	if (meshlist[meshidx].mesh) meshlist[meshidx].mesh->ResetTransformations();
+	if (meshlist[meshidx].mesh) { meshlist[meshidx].mesh->ResetTransformations(); }
 
-	if (nanim) ClearAnimations();
+	UINT oldnanim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
-	nanim = vessel->GetAnimPtr(&anim);
-
-	if (nanim) {
-		animstate = new double[nanim];
-		for (UINT i = 0; i < nanim; i++) {
-			for (UINT k=0;k<anim[i].ncomp;k++) {
+	if (nanim > oldnanim) {
+		for (UINT i = oldnanim; i < nanim; ++i) {
+			for (UINT k = 0; k < anim[i].ncomp; ++k) {
 				ANIMATIONCOMP *AC = anim[i].comp[k];
-				if (AC) {
-					if (AC->trans->mesh==meshidx) animstate[i] = anim[i].defstate; // reset to default mesh states
-					else 						  animstate[i] = anim[i].state;
-				}
+				animstate[i] = (AC->trans->mesh == meshidx)
+					         ? anim[i].defstate // reset to default mesh states
+							 : anim[i].state;
 			}
 		}
 	}
@@ -513,11 +508,52 @@ void vVessel::InitAnimations(UINT meshidx)
 
 // ============================================================================================
 // 
+void vVessel::InitNewAnimations ()
+{
+	std::set<UINT> initializedMeshes;
+	std::pair<std::set<UINT>::iterator,bool> ret;
+
+	UINT nAnim = vessel->GetAnimPtr(&anim);
+	for (UINT i = 0; i < nAnim; ++i)
+	{
+		for (UINT j = 0; j < anim[i].ncomp; ++j)
+		{
+			UINT mesh = anim[i].comp[j]->trans->mesh;
+			ret = initializedMeshes.insert(mesh);
+			if (ret.second) { // newly inserted?
+				InitAnimations(mesh);
+			}
+		}
+	}
+}
+
+
+// ============================================================================================
+// 
+UINT vVessel::GrowAnimstateBuffer (UINT newSize)
+{
+	UINT oldnum = nanim;
+	if (newSize > nanim) // append a new entries to the list
+	{
+		double *pTmp = new double[newSize]();
+		if (nanim) {
+			memcpy2(pTmp, animstate, nanim*sizeof(double));
+			delete []animstate;
+		}
+		animstate = pTmp;
+		nanim = newSize;
+	}
+	return oldnum;
+}
+
+
+// ============================================================================================
+// 
 void vVessel::ClearAnimations ()
 {
 	if (nanim) {
-		delete []animstate;
 		nanim = 0;
+		delete []animstate;
 	}
 }
 
@@ -528,8 +564,7 @@ void vVessel::UpdateAnimations (UINT mshidx)
 {
 	double newstate;
 
-	UINT oldnAnim = nanim;
-	nanim = vessel->GetAnimPtr(&anim);
+	UINT oldnAnim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
 	if (nanim>0 && animstate==NULL) {
 		LogErr("[ANOMALY] UpdateAnimations() called before the animations are initialized. Calling InitAnimations()...");
@@ -537,35 +572,8 @@ void vVessel::UpdateAnimations (UINT mshidx)
 	}
 
 	//animations have been added without being initialised?
-	if (nanim > oldnAnim)
-	{
-		std::vector<UINT> meshesToInitialise;
-		for (UINT i = oldnAnim; i < nanim; ++i)
-		//extracting meshindices for uninitialised animations.
-		//this might seem overly complicated, but it seems savest
-		//it guarantees that all new animations are initialised, and are initialised only once
-		{
-			for (UINT j = 0; j < anim[i].ncomp; ++j)
-			{
-				bool alreadyNoted = false;
-				for (UINT jj = 0;  jj < meshesToInitialise.size(); ++jj)
-				{
-					if (anim[i].comp[j]->trans->mesh == meshesToInitialise[jj])
-					{
-						alreadyNoted = true;
-						break;
-					}
-				}
-				if (!alreadyNoted)
-				{
-					meshesToInitialise.push_back(anim[i].comp[j]->trans->mesh);
-				}
-			}
-		}
-		for (UINT i = 0; i < meshesToInitialise.size(); ++i)
-		{
-			InitAnimations(meshesToInitialise[i]);
-		}
+	if (nanim > oldnAnim) {
+		InitNewAnimations();
 	}
 
 	for (UINT i = 0; i < nanim; i++) {
