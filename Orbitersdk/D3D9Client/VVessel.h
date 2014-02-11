@@ -50,11 +50,11 @@ public:
 	MESHHANDLE GetMesh (UINT idx);
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	void UpdateBoundingBox();
-	DWORD GetMeshCount();
+	inline DWORD GetMeshCount();
 
 	void PreInitObject();
 	void ParseSkins();
-	
+
 	/**
 	 * \brief Per-frame object parameter updates
 	 * \return \e true if update was performed, \e false if skipped.
@@ -88,18 +88,18 @@ public:
 	bool Render (LPDIRECT3DDEVICE9 dev, bool internalpass);
 
 	bool RenderExhaust();
-	
+
 	/**
 	 * \brief Render the vessel's active light beacons
 	 * \param dev render device
 	 */
 	void RenderBeacons (LPDIRECT3DDEVICE9 dev);
 	void RenderReentry (LPDIRECT3DDEVICE9 dev);
-	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev); 
+	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderAxis (LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp);
 	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
-	
+
 	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx);
 	float GetExhaustLength() const { return ExhaustLength; }
 
@@ -131,7 +131,7 @@ protected:
 	 */
 	UINT GrowAnimstateBuffer (UINT newSize);
 
-	
+
 	/**
 	 * \brief Update animations of the visual
 	 *
@@ -153,8 +153,8 @@ protected:
 
 	void Animate (UINT an, double state, UINT mshidx);
 	void AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T);
-	
-	
+
+
 private:
 
 	VESSEL *vessel;			// access instance for the vessel
@@ -163,7 +163,7 @@ private:
 	LPDIRECT3DCUBETEXTURE9 pEnv[4];
 	LPDIRECT3DCUBETEXTURE9 pLight, pLight2;
 
-	int nEnv;				// Number of environmental maps 
+	int nEnv;				// Number of environmental maps
 	int iFace;				// EnvMap Face index that is to be rendered next
 
 	struct MESHREC {
@@ -181,7 +181,7 @@ private:
 	float ExhaustLength;
 	char skinname[64];
 
-	static class D3D9ClientSurface *mfdoff; 
+	static class D3D9ClientSurface *mfdoff;
 	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;
 };
 

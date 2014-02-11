@@ -37,7 +37,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
 	_TRACER;
 	if (_hObj==NULL) return;
-	
+
 	vessel = oapiGetVesselInterface(_hObj);
 	nmesh = 0;
 	nanim = 0;
@@ -48,7 +48,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	animstate = NULL;
 	pLight = NULL;
 	bAMSO = false;
-	
+
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	skinname[0] = NULL;
 	for (int i=0;i<4;i++) pEnv[i] = NULL;
@@ -64,11 +64,11 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 
 // ============================================================================================
-// 
+//
 vVessel::~vVessel ()
 {
 	delete pMatMgr;
-	
+
 	for (int i=0;i<4;i++) {
 		SAFE_RELEASE(pEnv[i]);
 	}
@@ -80,20 +80,20 @@ vVessel::~vVessel ()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
 	const DWORD texsize = 256; // render target texture size
 	mfdoff  = SURFACE(gc->clbkCreateTexture(texsize, texsize));
 	SURFACE(mfdoff)->Fill(NULL, 0);
-	gc->GetTexMgr()->LoadTexture("Reentry.dds", &defreentrytex, 0); 
-	gc->GetTexMgr()->LoadTexture("Exhaust.dds", &defexhausttex, 0); 
+	gc->GetTexMgr()->LoadTexture("Reentry.dds", &defreentrytex, 0);
+	gc->GetTexMgr()->LoadTexture("Exhaust.dds", &defexhausttex, 0);
 }
 
 
 // ============================================================================================
-// 
+//
 void vVessel::GlobalExit ()
 {
 	SAFE_DELETE(defexhausttex);
@@ -104,7 +104,7 @@ void vVessel::GlobalExit ()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::clbkEvent(DWORD evnt, UINT context)
 {
 	switch (evnt) {
@@ -125,11 +125,11 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 		{
 			bBSRecompute = true;
 			if (context < nmesh) {
-				meshlist[context].vismode = vessel->GetMeshVisibilityMode(context);	
+				meshlist[context].vismode = vessel->GetMeshVisibilityMode(context);
 			}
 		} break;
 
-		case EVENT_VESSEL_MESHOFS: 
+		case EVENT_VESSEL_MESHOFS:
 		{
 			LogBlu("EVENT_VESSEL_MESHOFS");
 			bBSRecompute = true;
@@ -141,7 +141,7 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 					if (meshlist[idx].trans==NULL) meshlist[idx].trans = new D3DXMATRIX;
 					D3DMAT_Identity(meshlist[idx].trans);
 					D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
-				} 
+				}
 				else {
 					SAFE_DELETE(meshlist[idx].trans);
 				}
@@ -173,7 +173,7 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 
 
 // ============================================================================================
-// 
+//
 DWORD vVessel::GetMeshCount()
 {
 	return nmesh;
@@ -181,7 +181,7 @@ DWORD vVessel::GetMeshCount()
 
 
 // ============================================================================================
-// 
+//
 MESHHANDLE vVessel::GetMesh (UINT idx)
 {
 	return (idx < nmesh ? meshlist[idx].mesh : NULL);
@@ -189,7 +189,7 @@ MESHHANDLE vVessel::GetMesh (UINT idx)
 
 
 // ============================================================================================
-// 
+//
 bool vVessel::HasExtPass()
 {
 	for (DWORD i=0;i<nmesh;i++) if (meshlist[i].vismode&MESHVIS_EXTPASS) return true;
@@ -198,7 +198,7 @@ bool vVessel::HasExtPass()
 
 
 // ============================================================================================
-// 
+//
 const char *vVessel::GetSkinName() const
 {
 	if (skinname[0]==0) return NULL;
@@ -206,7 +206,7 @@ const char *vVessel::GetSkinName() const
 }
 
 // ============================================================================================
-// 
+//
 void vVessel::PreInitObject()
 {
 	if (pMatMgr->LoadConfiguration()) {
@@ -217,7 +217,7 @@ void vVessel::PreInitObject()
 }
 
 // ============================================================================================
-// 
+//
 void vVessel::ParseSkins()
 {
 	char classname[256];
@@ -253,7 +253,7 @@ void vVessel::ParseSkins()
 		if (meshlist[i].mesh) {
 			DWORD nTex = meshlist[i].mesh->TextureCount();
 			for (DWORD t=0;t<nTex;t++) {
-				SURFHANDLE hTex = meshlist[i].mesh->GetTexture(t); 
+				SURFHANDLE hTex = meshlist[i].mesh->GetTexture(t);
 				if (hTex) {
 					for (DWORD k=0;k<count;k++) {
 						if (SURFACE(hTex)->ScanNameSubId(gc->GetSkinFileLine(start+k))) {
@@ -270,7 +270,7 @@ void vVessel::ParseSkins()
 
 
 // ============================================================================================
-// 
+//
 bool vVessel::Update()
 {
 	_TRACE;
@@ -293,7 +293,7 @@ bool vVessel::Update()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::LoadMeshes()
 {
 	_TRACE;
@@ -323,10 +323,10 @@ void vVessel::LoadMeshes()
 		if (hMesh!=NULL && mesh!=NULL) {
 			// copy from preloaded template
 			meshlist[idx].mesh = new D3D9Mesh(*mesh);
-		} 
+		}
 		else {
 			// It's vital to use copy here for some reason
-			hMesh = vessel->CopyMeshFromTemplate(idx); 
+			hMesh = vessel->CopyMeshFromTemplate(idx);
 			if (hMesh) {
 				// load on the fly and discard after copying
 				meshlist[idx].mesh = new D3D9Mesh(gc, hMesh, false);
@@ -357,7 +357,7 @@ void vVessel::LoadMeshes()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::InsertMesh(UINT idx)
 {
 	_TRACE;
@@ -380,7 +380,7 @@ void vVessel::InsertMesh(UINT idx)
 			meshlist[i].vismode = 0;
 		}
 		nmesh = idx+1;
-	} 
+	}
 	else if (meshlist[idx].mesh) { // replace existing entry
 		SAFE_DELETE(meshlist[idx].mesh);
 		SAFE_DELETE(meshlist[idx].trans);
@@ -392,7 +392,7 @@ void vVessel::InsertMesh(UINT idx)
 	if (bAMSO) mmgr->UpdateMesh(hMesh);
 	const D3D9Mesh *mesh = mmgr->GetMesh(hMesh);
 
-	
+
 	if (hMesh && mesh) {
 		meshlist[idx].mesh = new D3D9Mesh (*mesh);
 	} else if (hMesh = vessel->CopyMeshFromTemplate (idx)) {	// It's vital to use a copy here for some reason
@@ -423,7 +423,7 @@ void vVessel::InsertMesh(UINT idx)
 
 
 // ============================================================================================
-// 
+//
 void vVessel::ClearMeshes()
 {
 	if (nmesh && meshlist) {
@@ -440,7 +440,7 @@ void vVessel::ClearMeshes()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::DelMesh(UINT idx)
 {
 	if (idx==0xFFFFFFFF) {
@@ -482,7 +482,7 @@ void vVessel::InitAnimations()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::InitAnimations(UINT meshidx)
 {
 	bBSRecompute = true;
@@ -507,7 +507,7 @@ void vVessel::InitAnimations(UINT meshidx)
 
 
 // ============================================================================================
-// 
+//
 void vVessel::InitNewAnimations ()
 {
 	std::set<UINT> initializedMeshes;
@@ -529,7 +529,7 @@ void vVessel::InitNewAnimations ()
 
 
 // ============================================================================================
-// 
+//
 UINT vVessel::GrowAnimstateBuffer (UINT newSize)
 {
 	UINT oldnum = nanim;
@@ -548,7 +548,7 @@ UINT vVessel::GrowAnimstateBuffer (UINT newSize)
 
 
 // ============================================================================================
-// 
+//
 void vVessel::ClearAnimations ()
 {
 	if (nanim) {
@@ -559,7 +559,7 @@ void vVessel::ClearAnimations ()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::UpdateAnimations (UINT mshidx)
 {
 	double newstate;
@@ -587,21 +587,21 @@ void vVessel::UpdateAnimations (UINT mshidx)
 
 
 // ============================================================================================
-// 
+//
 bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
 	if (!active) return false;
 	pCurrentVisual = this; // Set current visual for mesh debugger
 	UpdateBoundingBox();
-	bool bRet = Render(dev, false);	
+	bool bRet = Render(dev, false);
 	if (oapiCameraInternal()==false) RenderReentry(dev);
 	return bRet;
 }
 
 
 // ============================================================================================
-// 
+//
 bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 {
 	_TRACE;
@@ -628,11 +628,11 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
 
 	if (pLight) D3D9Effect::FX->SetTexture(D3D9Effect::eEnvLight, pLight);
-	
+
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
 	if (bVC && internalpass) {
-		
+
 		for (mfd = 0; mfd < MAXMFD; mfd++) {
 			sMFD[mfd] = gc->GetVCMFDSurface(mfd, &mfdspec[mfd]);
 		}
@@ -646,7 +646,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 				if (SURFACE(tHUD)->GetWidth()!=w || SURFACE(tHUD)->GetWidth()!=h) {
 					delete SURFACE(tHUD);
 					tHUD = SURFACE(gc->clbkCreateTexture(w, h));
-					SURFACE(tHUD)->Fill(NULL, 0);	
+					SURFACE(tHUD)->Fill(NULL, 0);
 				}
 			}
 			else {
@@ -667,16 +667,16 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 		// check if mesh should be rendered in this pass
 		WORD vismode = meshlist[i].vismode;
-		
+
 		if (DebugControls::IsActive()) if (displ>1) vismode = MESHVIS_ALWAYS;
-	
+
 		if (vismode==0) continue;
 
 		if (internalpass==false) {
-			if (vismode==MESHVIS_VC) continue; // Added 3-jan-2011 to prevent VC interior double rendering during exterior and interior passes	
+			if (vismode==MESHVIS_VC) continue; // Added 3-jan-2011 to prevent VC interior double rendering during exterior and interior passes
 			if ((vismode&MESHVIS_EXTPASS)==0 && bCockpit) continue;
 		}
-		
+
 		if (bCockpit) {
 			if (internalpass && (vismode & MESHVIS_EXTPASS)) continue;
 			if (!(vismode & MESHVIS_COCKPIT)) {
@@ -689,13 +689,13 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		D3DXMATRIX mWT;
 		LPD3DXMATRIX pWT;
 
-		// transform mesh	
+		// transform mesh
 		if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
 		else pWT = &mWorld;
-			
+
 		meshlist[i].mesh->SetSunLight(&sunLight);
 
-		
+
 		if (bVC && internalpass) {
 			for (mfd=0;mfd<MAXMFD;mfd++) {
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
@@ -704,29 +704,29 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 						if (MFDGrp) {
 							MFDGrp->UsrFlag&=~0x2;
 							meshlist[i].mesh->RenderMeshGroup(dev, 1, mfdspec[mfd]->ngroup, pWT, SURFACE(sMFD[mfd]));
-							MFDGrp->UsrFlag|=0x2; 
+							MFDGrp->UsrFlag|=0x2;
 						}
-					} 
+					}
 					else {
 						D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
 						if (MFDGrp) {
 							MFDGrp->UsrFlag&=~0x2;
 							meshlist[i].mesh->RenderMeshGroup(dev, 1, mfdspec[mfd]->ngroup, pWT, mfdoff);
-							MFDGrp->UsrFlag |= 0x2; 
+							MFDGrp->UsrFlag |= 0x2;
 						}
-					}	
+					}
 				}
 			}
 		}
 
-	
+
 		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC, pEnv, nEnv); // Render VC
 		else			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
-		
-	
+
+
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//
-	
+
 		if (bVC && internalpass) {
 
 			// render VC HUD
@@ -738,7 +738,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 					meshlist[i].mesh->RenderMeshGroup(dev, 0, hudspec->ngroup, pWT, tHUD);
 				}
 			}
-		}	
+		}
 	}
 
 	if (DebugControls::IsActive()) {
@@ -756,7 +756,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 
 // ============================================================================================
-// 
+//
 void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 {
 	const double threshold = 0;//0.25; // threshold for forces to be drawn
@@ -782,7 +782,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 
 		if (!bLog) {
 			if (bfvmode & BFV_DRAG) { vessel->GetDragVector(vector); if (length(vector)>len) len = length(vector); }
-			if (bfvmode & BFV_WEIGHT) {	vessel->GetWeightVector(vector); if (length(vector)>len) len = length(vector); }   
+			if (bfvmode & BFV_WEIGHT) {	vessel->GetWeightVector(vector); if (length(vector)>len) len = length(vector); }
 			if (bfvmode & BFV_THRUST) {	vessel->GetThrustVector(vector); if (length(vector)>len) len = length(vector); }
 			if (bfvmode & BFV_LIFT) { vessel->GetLiftVector(vector); if (length(vector)>len) len = length(vector); }
 			if (bfvmode & BFV_TOTAL) { vessel->GetForceVector(vector); if (length(vector)>len) len = length(vector); }
@@ -814,7 +814,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 					sprintf_s(label, 64, "G = %sN", value_string(length(vector)));
 					RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,0,alpha), vector, lscale, scale, label, bLog);
 				}
-			}   
+			}
 
 			if (bfvmode & BFV_THRUST) {
 				vessel->GetThrustVector(vector);
@@ -890,11 +890,11 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
 			}
 		}
 	}
-} 
+}
 
 
 // ============================================================================================
-// 
+//
 bool vVessel::RenderExhaust()
 {
 	ExhaustLength = 0.0f;
@@ -919,7 +919,7 @@ bool vVessel::RenderExhaust()
 
 
 // ============================================================================================
-// 
+//
 void vVessel::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 {
 	DWORD idx = 0;
@@ -940,50 +940,50 @@ void vVessel::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 
 
 // ============================================================================================
-// 
+//
 void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 {
-    if (!oapiGetShowGrapplePoints()) return; // nothing to do
+	if (!oapiGetShowGrapplePoints()) return; // nothing to do
 
-    DWORD i;
-    ATTACHMENTHANDLE hAtt;
-    VECTOR3 pos, dir, rot;
-    const float size = 0.25;
-    const float alpha = 0.5;
+	DWORD i;
+	ATTACHMENTHANDLE hAtt;
+	VECTOR3 pos, dir, rot;
+	const float size = 0.25;
+	const float alpha = 0.5;
 
-    // Flash calculations
-    static double lastTime = 0;
-    static bool isOn = true;
-    double simt = oapiGetSysTime();
-    if (simt-lastTime > 0.5) // Flashing period (twice per second)
-    {
-        isOn = !isOn;
-        lastTime = simt;
-    }
-    if (!isOn) return; // nothing to do
+	// Flash calculations
+	static double lastTime = 0;
+	static bool isOn = true;
+	double simt = oapiGetSysTime();
+	if (simt-lastTime > 0.5) // Flashing period (twice per second)
+	{
+		isOn = !isOn;
+		lastTime = simt;
+	}
+	if (!isOn) return; // nothing to do
 
-    const OBJHANDLE hVessel = vessel->GetHandle();
+	const OBJHANDLE hVessel = vessel->GetHandle();
 
-    // attachment points to parent
-    for (i = 0; i < vessel->AttachmentCount(true); ++i)
-    {
-        hAtt = vessel->GetAttachmentHandle(true, i);
-        vessel->GetAttachmentParams(hAtt, pos, dir, rot);
-        D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, &D3DXCOLOR(1,0,0,alpha));
-    }
+	// attachment points to parent
+	for (i = 0; i < vessel->AttachmentCount(true); ++i)
+	{
+		hAtt = vessel->GetAttachmentHandle(true, i);
+		vessel->GetAttachmentParams(hAtt, pos, dir, rot);
+		D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, &D3DXCOLOR(1,0,0,alpha));
+	}
 
-    // attachment points to children
-    for (i = 0; i < vessel->AttachmentCount(false); ++i)
-    {
-        hAtt = vessel->GetAttachmentHandle(false, i);
-        vessel->GetAttachmentParams(hAtt, pos, dir, rot);
-        D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, &D3DXCOLOR(0,0.5,1,alpha));
-    }
-}  
+	// attachment points to children
+	for (i = 0; i < vessel->AttachmentCount(false); ++i)
+	{
+		hAtt = vessel->GetAttachmentHandle(false, i);
+		vessel->GetAttachmentParams(hAtt, pos, dir, rot);
+		D3D9Effect::RenderArrow(hVessel, &pos, &dir, &rot, size, &D3DXCOLOR(0,0.5,1,alpha));
+	}
+}
 
 
 // ============================================================================================
-// 
+//
 void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float alpha)
 {
 	static const double eps = 1e-2;
@@ -997,12 +997,12 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	R = oapiGetSize (hPlanet);       // planet mean radius
 	alt = d-R;                       // altitude above surface
 	if (alt*eps > vessel->GetSize()) return; // too high to cast a shadow
-	
+
 	normalise(sd);                  // shadow projection direction
 
 	// calculate the intersection of the vessel's shadow with the planet surface
 	double fac1 = dotp (sd, pvr);
-	if (fac1 > 0.0) return;          // shadow doesn't intersect planet surface	
+	if (fac1 > 0.0) return;          // shadow doesn't intersect planet surface
 	double csun = -fac1/d;           // sun elevation above horizon
 	if (csun < shadow_elev_limit) return;   // sun too low to cast shadow
 	double arg  = fac1*fac1 - (dotp (pvr, pvr) - R*R);
@@ -1042,12 +1042,12 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	mProj._44 = 1;
 
 	D3DXMatrixMultiply(&mProjWorld, &mProj, &mWorld);
-	
+
 	bool isProjWorld = false;
 
 	float scale = float( min(1, (csun-0.07)/0.015) );
 	if (scale<1) alpha *= scale;
-			
+
 	// project all vessel meshes. This should be replaced by a dedicated shadow mesh
 
 	for (UINT i=0;i<nmesh;i++) {
@@ -1055,13 +1055,13 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 		if (meshlist[i].mesh==NULL) continue;
 		if (!(meshlist[i].vismode & MESHVIS_EXTERNAL)) continue; // only render shadows for externally visible meshes
 		if (meshlist[i].mesh->HasShadow()==false) continue;
-		
+
 		D3D9Mesh *mesh = meshlist[i].mesh;
 
 		if (meshlist[i].trans) {
 			D3DXMatrixMultiply(&mProjWorldShift, meshlist[i].trans, &mProjWorld);
 			mesh->RenderShadows(dev, alpha, &mProjWorldShift);
-		} 
+		}
 		else mesh->RenderShadows(dev, alpha, &mProjWorld);
 	}
 }
@@ -1072,7 +1072,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 //
 bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
-	
+
 	bool bReflective = false;
 
 	if (meshlist) {
@@ -1091,10 +1091,10 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
 
 	if (!pEnvDS) {
-		LogErr("EnvDepthStencil doesn't exists");	
+		LogErr("EnvDepthStencil doesn't exists");
 		return false;
 	}
-	
+
 	if (pEnv[0]==NULL) {
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
@@ -1146,7 +1146,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 			}
 		}
 	}
-	
+
 	gc->GetScene()->SetCameraFustrumLimits(eCam->near_clip, 2e7f);
 
 	// -----------------------------------------------------------------------------------------------
@@ -1154,10 +1154,10 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	MATRIX3 grot;
 	VECTOR3 gpos;
-	
+
 	vessel->GetRotationMatrix(grot);
 	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
-	
+
 	D3DXMATRIX mEnv, mGlo, mW, mWI;
 	D3DXVECTOR3 dir, up;
 
@@ -1190,29 +1190,29 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 		iFace++;
 		if (iFace>=6) iFace = 0;
-		
+
 		D3DXVECTOR3 cp;
 		D3DXVec3Cross(&cp, &up, &dir);
 		D3DXVec3Normalize(&cp, &cp);
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
 		D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
-		D3DXMatrixMultiply(&mEnv, &mWI, &mEnv); 
+		D3DXMatrixMultiply(&mEnv, &mWI, &mEnv);
 
 		gc->GetScene()->SetupCustomCamera(mEnv, gpos, 0.7853981634, 1.0);
 		gc->GetScene()->RenderSecondaryScene(this, true, flags);
 
-		SAFE_RELEASE(pSrf);	
+		SAFE_RELEASE(pSrf);
 	}
 
-	 HR(pDev->SetDepthStencilSurface(pODS));
-	 HR(pDev->SetRenderTarget(0, pORT));
+	HR(pDev->SetDepthStencilSurface(pODS));
+	HR(pDev->SetRenderTarget(0, pORT));
 
-	 SAFE_RELEASE(pODS);
-	 SAFE_RELEASE(pORT);
+	SAFE_RELEASE(pODS);
+	SAFE_RELEASE(pORT);
 
-	 /*
-	 if (pLight==NULL) {
+	/*
+	if (pLight==NULL) {
 		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pLight)!=S_OK) {
 			LogErr("Failed to create env lightmap for visual 0x%X",this);
 			return false;
@@ -1221,23 +1221,23 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 			LogErr("Failed to create env lightmap for visual 0x%X",this);
 			return false;
 		}
-	 }*/
+	}*/
 
-	 if (pLight) {
-		 D3D9Effect::ComputeLighting(pEnv[0], pLight, pLight2);
-		 LPDIRECT3DCUBETEXTURE9 pTemp = pLight;
-		 pLight = pLight2;
-		 pLight2 = pTemp;
-	 }
+	if (pLight) {
+		D3D9Effect::ComputeLighting(pEnv[0], pLight, pLight2);
+		LPDIRECT3DCUBETEXTURE9 pTemp = pLight;
+		pLight = pLight2;
+		pLight2 = pTemp;
+	}
 
-	 return true;
+	return true;
 }
 
 
 // ============================================================================================
-// 
+//
 LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
-{ 
+{
 	if (idx<0) return pLight;
 	if (idx>=0 && idx<4) return pEnv[idx];
 	return NULL;
@@ -1245,7 +1245,7 @@ LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
 
 
 // ============================================================================================
-// 
+//
 bool vVessel::ModLighting(D3D9Light *light)
 {
 	VECTOR3 GV;
@@ -1291,7 +1291,7 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 
 		// What is this ??? mshidx is always -1
  		if (mshidx != ((UINT)-1) && mshidx != AC->trans->mesh) continue;
-	
+
 		s0 = animstate[an]; // current animation state in the visual
 		if      (s0 < AC->state0) s0 = AC->state0;
 		else if (s0 > AC->state1) s0 = AC->state1;
@@ -1302,7 +1302,7 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 		ds /= (AC->state1 - AC->state0);   // stretch to range 0..1
 
 		// Build transformation matrix
-		switch (AC->trans->Type()) 
+		switch (AC->trans->Type())
 		{
 			case MGROUP_TRANSFORM::NULLTRANSFORM:
 			{
@@ -1310,10 +1310,10 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 				AnimateComponent (AC, T);
 			}	break;
 
-			case MGROUP_TRANSFORM::ROTATE: 
+			case MGROUP_TRANSFORM::ROTATE:
 			{
 				MGROUP_ROTATE *rot = (MGROUP_ROTATE*)AC->trans;
-				D3DXVECTOR3 ax(float(rot->axis.x), float(rot->axis.y), float(rot->axis.z));		
+				D3DXVECTOR3 ax(float(rot->axis.x), float(rot->axis.y), float(rot->axis.z));
 				D3DMAT_RotationFromAxis (ax, (float)ds*rot->angle, &T);
 				float dx = D3DVAL(rot->ref.x), dy = D3DVAL(rot->ref.y), dz = D3DVAL(rot->ref.z);
 				T._41 = dx - T._11*dx - T._21*dy - T._31*dz;
@@ -1322,7 +1322,7 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 				AnimateComponent (AC, T);
 			} break;
 
-			case MGROUP_TRANSFORM::TRANSLATE: 
+			case MGROUP_TRANSFORM::TRANSLATE:
 			{
 				MGROUP_TRANSLATE *lin = (MGROUP_TRANSLATE*)AC->trans;
 				D3DMAT_Identity (&T);
@@ -1364,16 +1364,16 @@ void vVessel::AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T)
 	if (trans->mesh == LOCALVERTEXLIST) { // transform a list of individual vertices
 		VECTOR3 *vtx = (VECTOR3*)trans->grp;
 		for (i = 0; i < trans->ngrp; i++) TransformPoint(vtx[i], T);
-	} 
+	}
 	else { // transform mesh groups
-		
+
 		if (trans->mesh >= nmesh) return; // mesh index out of range
 		D3D9Mesh *mesh = meshlist[trans->mesh].mesh;
 		if (!mesh) return;
 
 		if (trans->grp) { // animate individual mesh groups
 			for (i=0;i<trans->ngrp;i++) mesh->TransformGroup(trans->grp[i], &T);
-		} 
+		}
 		else {          // animate complete mesh
 			mesh->Transform(&T);
 		}
@@ -1407,7 +1407,7 @@ void vVessel::AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T)
 				// we can't transform anisotropic scaling vector
 			} break;
 		}
-	} 
+	}
 }
 
 
@@ -1428,7 +1428,7 @@ void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 
 	if (ints>1.0f) ints = 1.0f;
 	if (ints<0.01f) return;
-	
+
 	VECTOR3 d;
 	vessel->GetShipAirspeedVector(d);
 	vessel->GlobalRot(d, d);
@@ -1445,7 +1445,7 @@ void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 	D3DXVECTOR3 vPosA(float(cpos.x), float(cpos.y), float(cpos.z));
 	D3DXVECTOR3 vDir(float(d.x), float(d.y), float(d.z));
 	D3DXVECTOR3 vPosB = vPosA + vDir * (size*0.25f);
-	
+
 	D3D9Effect::RenderReEntry(defreentrytex, &vPosA, &vPosB, &vDir, alpha_A, alpha_B, size);
 }
 
@@ -1455,7 +1455,7 @@ void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 bool vVessel::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 {
 	if (bBSRecompute) UpdateBoundingBox();
-	
+
 	D3DXMATRIX mWorldView, mWorldViewTrans, mTF;
 
 	WORD vismode = MESHVIS_EXTERNAL | MESHVIS_EXTPASS;
@@ -1463,9 +1463,9 @@ bool vVessel::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 	Scene *scn = gc->GetScene();
 
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
-	
+
 	D3DXMatrixMultiply(&mWorldView, &mWorld, scn->GetViewMatrix());
-	
+
 	for (DWORD i=0;i<nmesh;i++) {
 		if (meshlist[i].vismode&vismode && meshlist[i].mesh) {
 			if (meshlist[i].trans) {
@@ -1494,9 +1494,9 @@ void vVessel::UpdateBoundingBox()
 	WORD vismode = MESHVIS_EXTERNAL | MESHVIS_EXTPASS;
 
 	D3DXMATRIX mTF;
-	
+
 	for (DWORD i=0;i<nmesh;i++) {
-		
+
 		D3DXVECTOR3 q,w;
 		if (meshlist[i].mesh==NULL) continue;
 
@@ -1575,16 +1575,16 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 
 		// check if mesh should be rendered in this pass
 		WORD vismode = meshlist[i].vismode;
-		
+
 		if (DebugControls::IsActive()) if (displ>1) vismode = MESHVIS_ALWAYS;
-	
+
 		if (vismode==0) continue;
 
 		if (bCockpit) {
 			if (!(vismode & MESHVIS_COCKPIT)) {
 				if ((!bVC) || (!(vismode & MESHVIS_VC))) continue;
 			}
-		} 
+		}
 		else {
 			if (!(vismode & MESHVIS_EXTERNAL)) continue;
 		}
@@ -1593,7 +1593,7 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 		else pWT = &mWorld;
 
 		D3D9Pick pick = hMesh->Pick(pWT, vDir);
-		if (pick.dist<result.dist) result = pick;	
+		if (pick.dist<result.dist) result = pick;
 	}
 
 	if (result.pMesh) result.vObj = this;
@@ -1619,7 +1619,7 @@ void TransformPoint (VECTOR3 &p, const D3DXMATRIX &T)
 	double y = p.x*T._12 + p.y*T._22 + p.z*T._32 + T._42;
 	double z = p.x*T._13 + p.y*T._23 + p.z*T._33 + T._43;
 	double w = 1.0/(p.x*T._14 + p.y*T._24 + p.z*T._34 + T._44);
-    p.x = x*w;
+	p.x = x*w;
 	p.y = y*w;
 	p.z = z*w;
 }
@@ -1639,7 +1639,7 @@ void TransformDirection (VECTOR3 &a, const D3DXMATRIX &T, bool normalise)
 		a.z *= len;
 	}
 }
-		
+
 // ===========================================================================
 // Add ISO-prefix to a value
 //
