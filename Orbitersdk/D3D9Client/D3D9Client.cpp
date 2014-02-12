@@ -1545,7 +1545,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 	}
 
 
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice);
+	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurfaceEx");
 	surf->SetCreation(D3D9C_SURFACE);
 	
 	
@@ -1595,7 +1595,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
 	_TRACER;
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice);
+	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurface");
 
 	if (Config->MemoryLogic==0) surf->MakePlainSurface(w,h);
 	else						surf->MakeRenderingTexture(w,h);
@@ -1619,7 +1619,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
 	_TRACER;
-	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pd3dDevice);
+	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pd3dDevice, "clbkCreateTexture");
 	// DO NOT USE ALPHA
 	pSurf->MakeTexture(w, h, D3DFMT_X8R8G8B8);
 	pSurf->SetCreation(D3D9C_TEXTURE);

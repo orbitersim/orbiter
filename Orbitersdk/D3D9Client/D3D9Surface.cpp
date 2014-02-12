@@ -276,10 +276,10 @@ void D3D9ClientSurface::SetupViewPort()
 
 // -----------------------------------------------------------------------------------------------
 //
-D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev)
+D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name/*="???"*/)
 {
-	Clear();	
-	strcpy_s(name,64,"???");
+	Clear();
+	strcpy_s(this->name, 64, (name ? name : "???"));
 	pDevice = pDev;
 	SurfaceCatalog->Add(DWORD(this));
 }

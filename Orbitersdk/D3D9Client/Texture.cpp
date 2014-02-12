@@ -55,7 +55,7 @@ TextureManager::~TextureManager ()
 
 HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSurf, int flags)
 {
-	(*pSurf) = new D3D9ClientSurface(pDev);
+	(*pSurf) = new D3D9ClientSurface(pDev, fname);
 	if ((*pSurf)->LoadTexture(fname, flags)==true) return S_OK;
 	delete (*pSurf);
 	*pSurf = NULL;

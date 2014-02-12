@@ -484,7 +484,7 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 	// Get Backbuffer 
 	if (pd3dDevice) {
 		pd3dDevice->GetRenderTarget(0, &pRenderTarget);
-		pBackBuffer = new D3D9ClientSurface(pd3dDevice);
+		pBackBuffer = new D3D9ClientSurface(pd3dDevice, "BackBuffer-Fullscreen");
 		pBackBuffer->MakeBackBuffer(pRenderTarget);
 		return S_OK;
 	}
@@ -597,7 +597,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	// Get Backbuffer 
 	if (pd3dDevice) {
 		pd3dDevice->GetRenderTarget(0, &pRenderTarget);
-		pBackBuffer = new D3D9ClientSurface(pd3dDevice);
+		pBackBuffer = new D3D9ClientSurface(pd3dDevice, "BackBuffer-Wnd");
 		pBackBuffer->MakeBackBuffer(pRenderTarget);
 		return S_OK;
 	}
