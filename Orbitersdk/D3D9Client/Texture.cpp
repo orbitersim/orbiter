@@ -18,7 +18,7 @@
 // format is a bit awkward to use, since it is a concatenation of .dds
 // files and DX9 functions have no way of reporting how much bytes were
 // actually processed in a texture loading, nor can they work with an
-// open file handle. We have to figure out the boundaries between the 
+// open file handle. We have to figure out the boundaries between the
 // .dds files ourselves. This code works by opening the file in memory
 // and examining the dds headers and calculating the .dds size, feeding
 // each .dds block to D3DXCreateTextureFromFileInMemoryEx(). Seems to work
@@ -63,7 +63,7 @@ HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSur
 }
 
 
-HRESULT TextureManager::LoadTexture(const char *fname, long ofs, LPDIRECT3DTEXTURE9 *pTex, int flag) 
+HRESULT TextureManager::LoadTexture(const char *fname, long ofs, LPDIRECT3DTEXTURE9 *pTex, int flag)
 {
 	LogErr("TextureManager::LoadTexture() NOT IN USE");
 	return -1;
@@ -84,7 +84,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 		FILE *f;
 
 		if (fopen_s(&f, cpath, "rb")) return 0;
-		
+
 		char *buffer, *location;
 		fseek(f, 0, SEEK_END);
 		long size = ftell(f);
@@ -99,9 +99,9 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 		{
 			DWORD Magic = *(DWORD*)location;
 			if (Magic != MAKEFOURCC('D','D','S',' ')) break;
-			
+
 			DDSURFACEDESC2 *header = (DDSURFACEDESC2*)(location + sizeof(Magic));
-			
+
 			if ((header->dwFlags&DDSD_LINEARSIZE)==0 && (header->dwFlags&DDSD_PITCH)==0) {
 				header->dwFlags|=DDSD_LINEARSIZE;
 				     if (header->ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X','T','5')) header->dwLinearSize = header->dwHeight * header->dwWidth;
@@ -111,13 +111,13 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 			}
 
 			long bytes = (header->dwFlags & DDSD_LINEARSIZE) ? header->dwLinearSize : (header->dwHeight * header->dwWidth * header->ddpfPixelFormat.dwRGBBitCount/8);
-			
+
 			bytes += sizeof(Magic) + sizeof(DDSURFACEDESC2);
 
 			D3DXIMAGE_INFO Info;
 			LPDIRECT3DTEXTURE9 pTex = NULL;
 
-			if (D3DXCreateTextureFromFileInMemoryEx(pDev, location, bytes, 0, 0, 1, 0, D3DFMT_FROM_FILE, 
+			if (D3DXCreateTextureFromFileInMemoryEx(pDev, location, bytes, 0, 0, 1, 0, D3DFMT_FROM_FILE,
 				D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, &Info, NULL, &pTex)==S_OK) {
 				ppdds[ntex] = pTex;
 				TileCatalog->Add(DWORD(pTex));
@@ -155,13 +155,13 @@ bool TextureManager::GetTexture(const char *fname, LPD3D9CLIENTSURFACE *pd3dt, i
 		texrec->tex->IncRef();
 		LogOk("Texture 0x%X (%s) found from repository. ReferenceCount=%d", *pd3dt, fname, (*pd3dt)->RefCount());
 		return true;
-	} 
+	}
 	else if (SUCCEEDED(LoadTexture(fname, pd3dt, flags))) {
 		// loaded from file
 		LogAlw("Texture 0x%X (%s) added in repository",*pd3dt,fname);
 		AddToRepository (fname, *pd3dt);
 		return true;
-	} 
+	}
 	else {
 		LogWrn("Texture %s not found",fname);
 		// not found

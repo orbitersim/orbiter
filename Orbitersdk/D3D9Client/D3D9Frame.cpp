@@ -4,7 +4,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Released under GNU General Public License
 // Copyright (C) 2007 Martin Schweiger
-//				 2011 Jarmo Nikkanen, All rights reserved. 
+//				 2011 Jarmo Nikkanen, All rights reserved.
 // ==============================================================
 
 
@@ -46,12 +46,12 @@ static char *d3dmessage={"Required DirectX version (June 2010 or newer) not foun
 
 CD3DFramework9::CD3DFramework9()
 {
-	pD3D = NULL;  
+	pD3D = NULL;
 	Clear();
 
 	// Create the Direct3D9 ---------------------------------------------
 	//
-    pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 
 	if (pD3D==NULL) {
 		LogErr("ERROR: [Direct3D9 Creation Failed]");
@@ -75,7 +75,7 @@ void CD3DFramework9::Clear()
 	// NOTE: pD3D won't be cleared in here
 
 	hWnd			  = NULL;
-    bIsFullscreen	  = false;
+	bIsFullscreen	  = false;
 	bVertexTexture    = false;
 	bAAEnabled		  = false;
 	bNoVSync		  = false;
@@ -86,7 +86,7 @@ void CD3DFramework9::Clear()
 	bGDIBB			  = false;
 	nvPerfHud		  = false;
 	dwRenderWidth	  = 0;
-    dwRenderHeight	  = 0;
+	dwRenderHeight	  = 0;
 	dwFSMode		  = 0;
 	pd3dDevice		  = NULL;
 	pLargeFont		  = NULL;
@@ -129,13 +129,13 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pEnvDS);
 	SAFE_RELEASE(pShmDS);
 	SAFE_RELEASE(pShmRT);
-	
+
 	if (pd3dDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
-	else									LogErr("[Failed to Reset DirectX Device]");				
+	else									LogErr("[Failed to Reset DirectX Device]");
 
 	SAFE_RELEASE(pd3dDevice);
 
-    return S_OK;
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -145,22 +145,22 @@ HRESULT CD3DFramework9::DestroyObjects ()
 HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 {
 	_TRACE;
-	
+
 	Clear();
 
 	DDM = (Config->DisableDriverManagement != 0);
 	nvPerfHud = (Config->NVPerfHUD != 0);
 
 	bool bFail = false;
-	
+
 	if (_hWnd==NULL || vData==NULL) {
 		LogErr("ERROR: Invalid input parameter in CD3DFramework9::Initialize()");
 		return E_INVALIDARG;
 	}
 
-    // Setup state for windowed/fullscreen mode
+	// Setup state for windowed/fullscreen mode
 	//
-    hWnd          = _hWnd;
+	hWnd          = _hWnd;
 	bAAEnabled    = (Config->SceneAntialias != 0);
 	bIsFullscreen = vData->fullscreen;
 	bNoVSync      = vData->novsync;
@@ -175,19 +175,19 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	pD3D->GetAdapterIdentifier(Adapter, 0, &info);
 	LogAlw("Adapter = %s",info.Description);
 	LogAlw("dwFSMode = %u",dwFSMode);
-	
+
 	// Get DisplayMode Resolution ---------------------------------------
 	//
 	if (bIsFullscreen) {
 
 		switch(dwFSMode) {
 
-			case 0:	
+			case 0:
 			{
 				D3DDISPLAYMODE mode;
 				if (Adapter<pD3D->GetAdapterCount()) {
 					if (Mode<pD3D->GetAdapterModeCount(Adapter, D3DFMT_X8R8G8B8)) {
-						pD3D->EnumAdapterModes(Adapter, D3DFMT_X8R8G8B8, Mode, &mode); 
+						pD3D->EnumAdapterModes(Adapter, D3DFMT_X8R8G8B8, Mode, &mode);
 						dwRenderWidth = mode.Width;
 						dwRenderHeight = mode.Height;
 					}
@@ -209,7 +209,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			case 2:
 			{
 				RECT rect;
-				SystemParametersInfo(SPI_GETWORKAREA,0,&rect,0);	
+				SystemParametersInfo(SPI_GETWORKAREA,0,&rect,0);
 				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPSIBLINGS|WS_VISIBLE);
 				int x = GetSystemMetrics(SM_CXSCREEN);
 				if (vData->pageflip) x = rect.right-rect.left;
@@ -221,7 +221,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	}
 
 	// Hardware CAPS Checks --------------------------------------------------
-	//	
+	//
 	HRESULT hr = pD3D->GetDeviceCaps(Adapter, D3DDEVTYPE_HAL, &caps);
 
 	if (hr!=S_OK) {
@@ -235,9 +235,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	if (pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_2_SAMPLES, NULL)==S_OK) aamax=2;
 	if (pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_4_SAMPLES, NULL)==S_OK) aamax=4;
 	if (pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, D3DMULTISAMPLE_8_SAMPLES, NULL)==S_OK) aamax=8;
-	
+
 	MultiSample = min(aamax, DWORD(Config->SceneAntialias));
-	
+
 	if (bGDIBB) MultiSample=0, bNoVSync = true;
 	if (MultiSample==1) MultiSample = 0;
 
@@ -261,7 +261,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogAlw("VertexDeclCaps.........: 0x%X",caps.DeclTypes);
 	LogAlw("DevCaps................: 0x%X",caps.DevCaps);
 	LogAlw("DevCaps2...............: 0x%X",caps.DevCaps2);
-	
+
 	BOOL bXna = XMVerifyCPUSupport();
 
 	if (bXna) {
@@ -299,7 +299,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	}
 
 	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) {
-		Pure = false;	
+		Pure = false;
 		LogWrn("[Not a pure device]");
 		oapiWriteLog("D3D9Client:WARNING: [Not a pure device]");
 	}
@@ -327,21 +327,21 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	// Check vertex texture support
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F)==S_OK) {
 		bVertexTexture = true;
-	} 
+	}
 	else bVertexTexture = false;
 
 	// Check shadow mapping support
 	bShadowMap = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
 	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
-		
+
 	if (!bShadowMap) {
 		LogWrn("[No shadow mapping support]");
 		oapiWriteLog("D3D9Client:WARNING: [No shadow mapping support]");
 	}
 
 	if (bFail) {
-		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);	
+		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);
 		return -1;
 	}
 
@@ -350,7 +350,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	if (FAILED(hr)) {
 		LogErr("[Device Initialization Failed]");
-		oapiWriteLog("D3D9Client:FAIL: [Device Initialization Failed]");	
+		oapiWriteLog("D3D9Client:FAIL: [Device Initialization Failed]");
 		return hr;
 	}
 
@@ -382,27 +382,27 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	//
 	D3DXFONT_DESC fontDesc;
 	fontDesc.Height          = 30;
-    fontDesc.Width           = 22;
-    fontDesc.Weight          = FW_BOLD;
-    fontDesc.MipLevels       = 0;
-    fontDesc.Italic          = false;
-    fontDesc.CharSet         = DEFAULT_CHARSET;
-    fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
-    fontDesc.Quality         = ANTIALIASED_QUALITY;
-    fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
+	fontDesc.Width           = 22;
+	fontDesc.Weight          = FW_BOLD;
+	fontDesc.MipLevels       = 0;
+	fontDesc.Italic          = false;
+	fontDesc.CharSet         = DEFAULT_CHARSET;
+	fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
+	fontDesc.Quality         = ANTIALIASED_QUALITY;
+	fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
 	strcpy(fontDesc.FaceName, "Arial");
 
 	HR(D3DXCreateFontIndirect(pd3dDevice, &fontDesc, &pLargeFont));
 
 	fontDesc.Height          = 16;
-    fontDesc.Width           = 10;
-    fontDesc.Weight          = FW_NORMAL;
-    fontDesc.MipLevels       = 0;
-    fontDesc.Italic          = false;
-    fontDesc.CharSet         = DEFAULT_CHARSET;
-    fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
-    fontDesc.Quality         = ANTIALIASED_QUALITY;
-    fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
+	fontDesc.Width           = 10;
+	fontDesc.Weight          = FW_NORMAL;
+	fontDesc.MipLevels       = 0;
+	fontDesc.Italic          = false;
+	fontDesc.CharSet         = DEFAULT_CHARSET;
+	fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
+	fontDesc.Quality         = ANTIALIASED_QUALITY;
+	fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
 	strcpy(fontDesc.FaceName, "Arial");
 
 	HR(D3DXCreateFontIndirect(pd3dDevice, &fontDesc, &pSmallFont));
@@ -425,7 +425,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	}
 
 	LogOk("[3DDevice Initialized]");
-    return S_OK;
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
@@ -436,9 +436,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 HRESULT CD3DFramework9::CreateFullscreenMode()
 {
 
-    // Get the dimensions of the screen bounds
-    // Store the rectangle which contains the renderer
-    SetRect(&rcScreenRect, 0, 0, dwRenderWidth, dwRenderHeight);
+	// Get the dimensions of the screen bounds
+	// Store the rectangle which contains the renderer
+	SetRect(&rcScreenRect, 0, 0, dwRenderWidth, dwRenderHeight);
 
 	HR(pD3D->CheckDeviceType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, false));
 
@@ -447,27 +447,27 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 	dwZBufferBitDepth = 24;
 	dwStencilBitDepth = 8;
 
-	d3dPP.BackBufferWidth            = dwRenderWidth; 
+	d3dPP.BackBufferWidth            = dwRenderWidth;
 	d3dPP.BackBufferHeight           = dwRenderHeight;
 	d3dPP.BackBufferFormat           = D3DFMT_X8R8G8B8;
 	d3dPP.BackBufferCount            = 1;
 	d3dPP.MultiSampleType            = D3DMULTISAMPLE_NONE;
 	d3dPP.MultiSampleQuality         = 0;
-	d3dPP.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
+	d3dPP.SwapEffect                 = D3DSWAPEFFECT_DISCARD;
 	d3dPP.hDeviceWindow              = hWnd;
 	d3dPP.Windowed                   = false;
-	d3dPP.EnableAutoDepthStencil     = true; 
+	d3dPP.EnableAutoDepthStencil     = true;
 	d3dPP.AutoDepthStencilFormat	 = D3DFMT_D24S8;
 	d3dPP.Flags                      = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER; // Must be lockable to allow GDI dialogs to work
 	d3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	
+
 	if (bNoVSync) d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	else		  d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
 	DWORD devBehaviorFlags = 0;
 
 	if (SWVert) devBehaviorFlags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-	else		devBehaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;	
+	else		devBehaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
 	if (Pure)   devBehaviorFlags |= D3DCREATE_PUREDEVICE;
 
@@ -478,10 +478,10 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 		D3DDEVTYPE_HAL,		// device type
 		hWnd,				// window associated with device
 		devBehaviorFlags|D3DCREATE_MULTITHREADED|D3DCREATE_FPU_PRESERVE,
-	    &d3dPP,				// present parameters
-	    &pd3dDevice));		// return created device
+		&d3dPP,				// present parameters
+		&pd3dDevice));		// return created device
 
-	// Get Backbuffer 
+	// Get Backbuffer
 	if (pd3dDevice) {
 		pd3dDevice->GetRenderTarget(0, &pRenderTarget);
 		pBackBuffer = new D3D9ClientSurface(pd3dDevice, "BackBuffer-Fullscreen");
@@ -489,7 +489,7 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 		return S_OK;
 	}
 
-    return -1;
+	return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -501,20 +501,20 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 {
 	_TRACE;
 
-    // Get the dimensions of the viewport and screen bounds
-    GetClientRect(hWnd, &rcScreenRect);
-    ClientToScreen(hWnd, (POINT*)&rcScreenRect.left);
-    ClientToScreen(hWnd, (POINT*)&rcScreenRect.right);
+	// Get the dimensions of the viewport and screen bounds
+	GetClientRect(hWnd, &rcScreenRect);
+	ClientToScreen(hWnd, (POINT*)&rcScreenRect.left);
+	ClientToScreen(hWnd, (POINT*)&rcScreenRect.right);
 
 	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE)) LogAlw("D3DFMT_D32F_LOCKABLE");
 	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32)) LogAlw("D3DFMT_D32");
 	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24S8)) LogAlw("D3DFMT_D24S8");
 	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24X8)) LogAlw("D3DFMT_D24X8");
 	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24FS8)) LogAlw("D3DFMT_D24FS8");
-	
-	
-    dwRenderWidth	  = rcScreenRect.right  - rcScreenRect.left;
-    dwRenderHeight	  = rcScreenRect.bottom - rcScreenRect.top;
+
+
+	dwRenderWidth	  = rcScreenRect.right  - rcScreenRect.left;
+	dwRenderHeight	  = rcScreenRect.bottom - rcScreenRect.top;
 	dwZBufferBitDepth = 24;
 	dwStencilBitDepth = 8;
 
@@ -525,38 +525,38 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 		DWORD level;
 		HR(pD3D->CheckDeviceMultiSampleType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, true, (D3DMULTISAMPLE_TYPE)MultiSample, &level));
 
-		d3dPP.BackBufferWidth            = dwRenderWidth; 
+		d3dPP.BackBufferWidth            = dwRenderWidth;
 		d3dPP.BackBufferHeight           = dwRenderHeight;
 		d3dPP.BackBufferFormat           = D3DFMT_X8R8G8B8;
 		d3dPP.BackBufferCount            = 1;
 		d3dPP.MultiSampleType            = (D3DMULTISAMPLE_TYPE)MultiSample;
 		d3dPP.MultiSampleQuality         = level - 1;
-		d3dPP.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
+		d3dPP.SwapEffect                 = D3DSWAPEFFECT_DISCARD;
 		d3dPP.hDeviceWindow              = hWnd;
 		d3dPP.Windowed                   = true;
-		d3dPP.EnableAutoDepthStencil     = true; 
+		d3dPP.EnableAutoDepthStencil     = true;
 		d3dPP.AutoDepthStencilFormat	 = D3DFMT_D24S8;
 		d3dPP.Flags                      = 0;
 		d3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	}
 	else {
-		d3dPP.BackBufferWidth            = dwRenderWidth; 
+		d3dPP.BackBufferWidth            = dwRenderWidth;
 		d3dPP.BackBufferHeight           = dwRenderHeight;
 		d3dPP.BackBufferFormat           = D3DFMT_X8R8G8B8;
 		d3dPP.BackBufferCount            = 1;
 		d3dPP.MultiSampleType            = D3DMULTISAMPLE_NONE;
 		d3dPP.MultiSampleQuality         = 0;
-		d3dPP.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
+		d3dPP.SwapEffect                 = D3DSWAPEFFECT_DISCARD;
 		d3dPP.hDeviceWindow              = hWnd;
 		d3dPP.Windowed                   = true;
-		d3dPP.EnableAutoDepthStencil     = true; 
+		d3dPP.EnableAutoDepthStencil     = true;
 		d3dPP.AutoDepthStencilFormat	 = D3DFMT_D24S8;
 		d3dPP.Flags                      = 0;
 		d3dPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	}
 
 	if (bGDIBB) d3dPP.Flags |= D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
-	
+
 	if (bNoVSync) d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	else		  d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
@@ -572,7 +572,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	if (nvPerfHud && Adapter==1) {
 
 		LogErr("[WARNING] NVPerfHUD mode is Active (Disable from D3D9Client.cfg) [WARNING]");
-		
+
 		hr = pD3D->CreateDevice(
 			Adapter,				// primary adapter
 			D3DDEVTYPE_REF,			// device type
@@ -582,7 +582,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 			&pd3dDevice);			// return created device
 	}
 	else {
-	
+
 		hr = pD3D->CreateDevice(
 			Adapter,				// primary adapter
 			D3DDEVTYPE_HAL,			// device type
@@ -591,10 +591,10 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 			&d3dPP,					// present parameters
 			&pd3dDevice);			// return created device
 	}
-	
+
 	if (hr!=S_OK) LogErr("CreateDevice() Failed HR=0x%X",hr);
-	
-	// Get Backbuffer 
+
+	// Get Backbuffer
 	if (pd3dDevice) {
 		pd3dDevice->GetRenderTarget(0, &pRenderTarget);
 		pBackBuffer = new D3D9ClientSurface(pd3dDevice, "BackBuffer-Wnd");
@@ -604,5 +604,4 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 
 	return -1;
 }
-
 

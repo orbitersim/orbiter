@@ -3,9 +3,9 @@
 //
 // Copyright (C) 2012 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 // is furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -23,7 +23,7 @@
 #include "D3D9Client.h"
 #include "D3D9Pad.h"
 #include "GDIPad.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 
@@ -47,13 +47,13 @@ class D3D9ClientSurface {
 				friend class GDIPad;
 
 public:
-				// Initialize global (shared) resources  
+				// Initialize global (shared) resources
 				static void D3D9TechInit(class D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
 				static void GlobalExit();
 
 				// Create empty surface. Must use Create methods to make a valid surface
 				D3D9ClientSurface(LPDIRECT3DDEVICE9 pDevice, const char* name = "???");
-				
+
 				// Destroy the class and release the texture (pTex) if exists. Value of Reference counter doesn't matter.
 				~D3D9ClientSurface();
 
@@ -62,7 +62,7 @@ public:
 	void		MakeSurfaceEx(UINT Width, UINT Height, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL Pool=D3DPOOL_DEFAULT);
 	void		MakeRenderTargetEx(UINT Width, UINT Height, bool bTexture, bool bLock, D3DFORMAT Format=D3DFMT_X8R8G8B8);
 	void		Make3DRenderTarget(UINT Width, UINT Height, UINT flags);
-	
+
 	void		MakeRenderingTexture(UINT Width, UINT Height, D3DFORMAT Format=D3DFMT_X8R8G8B8);
 	void		MakeTexture(UINT width, UINT height, D3DFORMAT Format=D3DFMT_X8R8G8B8);
 	void		MakePlainSurface(UINT width, UINT height, D3DPOOL pool=D3DPOOL_DEFAULT);
@@ -71,7 +71,7 @@ public:
 
 	bool		LoadTexture(const char *fname, int flags=0);
 	void		SaveSurface(const char *fname);
-	
+
 	DWORD		GetMipMaps();
 	DWORD		GetWidth();
 	DWORD		GetHeight();
@@ -83,13 +83,13 @@ public:
 
 	const char* GetName() const { return name; }
 	void		SetName(const char *);
-	
+
 
 	bool		IsCompressed();
 	bool		IsGDISurface();
 	bool		IsBackBuffer();
 	bool		IsTexture() const { return (pTex!=NULL); }
-	bool		IsRenderTarget(); 
+	bool		IsRenderTarget();
 	bool		IsPowerOfTwo() const;
 	bool		IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
 
@@ -100,14 +100,14 @@ public:
 	LPDIRECT3DTEXTURE9 GetReflectionMap();
 	LPDIRECT3DTEXTURE9 GetTexture();
 	LPDIRECT3DDEVICE9  GetDevice() { return pDevice; }
-	
-	
+
+
 	void		SetColorKey(DWORD ck);			// Enable and set color key
 	void		DisableColorKey();				// Disable color key.
-	
+
 	void		SetCreation(int);
 
-	HDC			GetDC();	
+	HDC			GetDC();
 	void		ReleaseDC(HDC);
 
 	HRESULT		AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
@@ -115,7 +115,7 @@ public:
 	void		CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
 	bool		Fill(LPRECT r, DWORD color);
 	bool		Clear(DWORD color);
-	
+
 	bool		BindGPU();
 	void		ReleaseGPU();
 	HRESULT		BeginBlitGroup();
@@ -142,15 +142,15 @@ private:
 	void		SetupViewPort();
 	void		LogSpecs(char *name);
 	void		Clear();
-	
+
 	bool		bCompressed;	// True if the surface is compressed
 	bool		bDCOpen;		// DC is Open. This is TRUE between GetDC() and ReleaseDC() calls.
 	bool		bNoGDI;			// Prevent a conversion into a GDI (System Memory) surface
 	bool		bClear;			// True if the entire surface is cleared using Clear() and it's still clean. Note: (Fill color = "oClear")
 	bool		bFlash;			// Make RT-GDI conflict surface to flash
 	bool		bHard;			// hDC is acquired using GetDCHard()
-	bool		bDC;			// This surface is used for GDI drawing. Flag is set in GetDC() 
-	bool		bSkpGetDCEr;	
+	bool		bDC;			// This surface is used for GDI drawing. Flag is set in GetDC()
+	bool		bSkpGetDCEr;
 	bool		bSkpGetDC;
 	bool		bBltGroup;		// BlitGroup operation is active
 	int			Refs;
@@ -179,7 +179,7 @@ private:
 	D3D9ClientSurface    *pSrc_prev;
 	D3DXCOLOR			  ClrKey;
 	DWORD				  ColorKey;
-	
+
 	LPD3DXMATRIX		  pVP;
 	D3DVIEWPORT9		  *pViewPort;
 
@@ -188,8 +188,8 @@ private:
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//
 	static D3D9Client * gc;
-	static ID3DXEffect*	FX;			
-	static D3DXHANDLE	eTech;	
+	static ID3DXEffect*	FX;
+	static D3DXHANDLE	eTech;
 	static D3DXHANDLE	eFlush;
 	static D3DXHANDLE	eVP;		// Transformation matrix
 	static D3DXHANDLE	eColor;		// Color key
@@ -203,4 +203,4 @@ private:
 };
 
 
-#endif 
+#endif

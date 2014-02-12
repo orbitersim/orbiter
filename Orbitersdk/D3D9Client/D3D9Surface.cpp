@@ -4,9 +4,9 @@
 //
 // Copyright (C) 2012 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 // is furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -29,15 +29,15 @@
 
 using namespace oapi;
 
-ID3DXEffect* D3D9ClientSurface::FX = 0;			
-D3DXHANDLE   D3D9ClientSurface::eTech = 0;	
-D3DXHANDLE   D3D9ClientSurface::eFlush = 0;	
-D3DXHANDLE   D3D9ClientSurface::eVP = 0;			
-D3DXHANDLE   D3D9ClientSurface::eColor = 0;	
-D3DXHANDLE   D3D9ClientSurface::eTex0 = 0;	
+ID3DXEffect* D3D9ClientSurface::FX = 0;
+D3DXHANDLE   D3D9ClientSurface::eTech = 0;
+D3DXHANDLE   D3D9ClientSurface::eFlush = 0;
+D3DXHANDLE   D3D9ClientSurface::eVP = 0;
+D3DXHANDLE   D3D9ClientSurface::eColor = 0;
+D3DXHANDLE   D3D9ClientSurface::eTex0 = 0;
 D3DXHANDLE   D3D9ClientSurface::eSize = 0;
 D3DXHANDLE   D3D9ClientSurface::eKey = 0;
-WORD *		 D3D9ClientSurface::Index = 0;	
+WORD *		 D3D9ClientSurface::Index = 0;
 GPUBLITVTX * D3D9ClientSurface::pGPUVtx = 0;
 WORD 		 D3D9ClientSurface::GPUBltIdx = 0;
 D3D9Client * D3D9ClientSurface::gc = 0;
@@ -53,30 +53,30 @@ HRESULT D3D9ClientSurface::AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t)
 		HRESULT hr = FlushQueue(); if (hr!=S_OK) return hr;
 	}
 
-	pGPUVtx[GPUBltIdx].sx = short(s->left); 
+	pGPUVtx[GPUBltIdx].sx = short(s->left);
 	pGPUVtx[GPUBltIdx].sy = short(s->top);
 	pGPUVtx[GPUBltIdx].tx = short(t->left);
 	pGPUVtx[GPUBltIdx].ty = short(t->top);
 	GPUBltIdx++;
 
-	pGPUVtx[GPUBltIdx].sx = short(s->left); 
+	pGPUVtx[GPUBltIdx].sx = short(s->left);
 	pGPUVtx[GPUBltIdx].sy = short(s->bottom);
 	pGPUVtx[GPUBltIdx].tx = short(t->left);
 	pGPUVtx[GPUBltIdx].ty = short(t->bottom);
 	GPUBltIdx++;
 
-	pGPUVtx[GPUBltIdx].sx = short(s->right); 
+	pGPUVtx[GPUBltIdx].sx = short(s->right);
 	pGPUVtx[GPUBltIdx].sy = short(s->bottom);
 	pGPUVtx[GPUBltIdx].tx = short(t->right);
 	pGPUVtx[GPUBltIdx].ty = short(t->bottom);
 	GPUBltIdx++;
 
-	pGPUVtx[GPUBltIdx].sx = short(s->right); 
+	pGPUVtx[GPUBltIdx].sx = short(s->right);
 	pGPUVtx[GPUBltIdx].sy = short(s->top);
 	pGPUVtx[GPUBltIdx].tx = short(t->right);
 	pGPUVtx[GPUBltIdx].ty = short(t->top);
 	GPUBltIdx++;
-	
+
 	pPrevSrc = src;
 
 	return S_OK;
@@ -86,7 +86,7 @@ HRESULT D3D9ClientSurface::AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t)
 
 HRESULT D3D9ClientSurface::FlushQueue()
 {
-	
+
 	// ATTENTION:  Must use texture address mode CLAMP
 
 	if (GPUBltIdx==0) return S_OK;
@@ -99,10 +99,10 @@ HRESULT D3D9ClientSurface::FlushQueue()
 	else FX->SetBool(eKey, false);
 
 	FX->SetTexture(eTex0, pPrevSrc->GetTexture());
-		
+
 	float srw = 1.0f / float(pPrevSrc->desc.Width);
 	float srh = 1.0f / float(pPrevSrc->desc.Height);
-	
+
 	FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1));
 
 	FX->CommitChanges();
@@ -176,7 +176,7 @@ HRESULT D3D9ClientSurface::GPUCopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT 
 	FX->SetMatrix(eVP, pVP);
 	FX->SetValue(eColor, &src->ClrKey, sizeof(D3DXCOLOR));
 	FX->SetTexture(eTex0, src->pTex);
-	
+
 	float srw = 1.0f / float(src->desc.Width);
 	float srh = 1.0f / float(src->desc.Height);
 	float lwq = float(s->left) * srw;
@@ -196,13 +196,13 @@ HRESULT D3D9ClientSurface::GPUCopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT 
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
-	
+
 	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
 	gc->GetStats()->Draw++;
 	gc->GetStats()->ColorKey++;
-	
+
 	FX->EndPass();
-	FX->End();	
+	FX->End();
 
 	return S_OK;
 }
@@ -220,7 +220,7 @@ HRESULT D3D9ClientSurface::GPUCopyTemp(LPRECT s, LPRECT t)
 	FX->SetMatrix(eVP, pVP);
 	FX->SetValue(eColor, &ClrKey, sizeof(D3DXCOLOR));
 	FX->SetTexture(eTex0, pTempTex);
-	
+
 	D3DSURFACE_DESC ds;
 	pTemp->GetDesc(&ds);
 
@@ -243,13 +243,13 @@ HRESULT D3D9ClientSurface::GPUCopyTemp(LPRECT s, LPRECT t)
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
-	
+
 	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
 	gc->GetStats()->Draw++;
 	gc->GetStats()->ColorKey++;
-	
+
 	FX->EndPass();
-	FX->End();	
+	FX->End();
 
 	return S_OK;
 }
@@ -258,7 +258,7 @@ HRESULT D3D9ClientSurface::GPUCopyTemp(LPRECT s, LPRECT t)
 //
 void D3D9ClientSurface::SetupViewPort()
 {
-	if (!pVP) pVP = new D3DXMATRIX; 
+	if (!pVP) pVP = new D3DXMATRIX;
 	if (!pViewPort) pViewPort = new D3DVIEWPORT9;
 
 	D3DXMatrixOrthoOffCenterLH(pVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
@@ -335,7 +335,7 @@ D3D9ClientSurface::~D3D9ClientSurface()
 		SAFE_DELETE(pViewPort);
 		return;
 	}
-	
+
 	LogBlu("Deleting Surface 0x%X (%s) (%u,%u)...",this,name,desc.Width,desc.Height);
 
 	if (pSurf) {
@@ -380,7 +380,7 @@ bool D3D9ClientSurface::BindGPU()
 		if (D3DXCreateRenderToSurface(pDevice, desc.Width, desc.Height, desc.Format, false, D3DFMT_UNKNOWN, &pRTS)!=S_OK) {
 			pRTS=NULL;
 			LogErr("D3D9ClientSurface::BindGPU() Failed");
-			return false;	
+			return false;
 		}
 	}
 
@@ -414,7 +414,7 @@ void D3D9ClientSurface::ReleaseGPU()
 void D3D9ClientSurface::MakeTextureEx(UINT Width, UINT Height, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool)
 {
 	Type = D3D9S_TEXTURE;
-	
+
 	if (Width==0 || Height==0) { LogErr("Trying to create a texture with zero size Handle=0x%X",this); return;	}
 	if (Width>8192 || Height>8192) { LogErr("Large surface created Handle=0x%X (%u,%u)", this, Width, Height);	return;	}
 
@@ -440,10 +440,10 @@ void D3D9ClientSurface::MakeSurfaceEx(UINT Width, UINT Height, D3DFORMAT Format,
 	Type = D3D9S_PLAIN;
 
 	HR(pDevice->CreateOffscreenPlainSurface(Width, Height, Format, Pool, &pSurf, NULL));
-	
+
 	LogBlu("D3D9ClientSurface: New Surface(0x%X) w=%u, h=%u",this,Width,Height);
 	GetDesc(&desc);
-	
+
 	if (desc.Width!=Width || desc.Height!=Height) LogErr("^^Requested surface size and allocation size doesn't match Allocated(%u,%u)^^",desc.Width,desc.Height);
 }
 
@@ -553,7 +553,7 @@ void D3D9ClientSurface::BringToSystemMem()
 //
 void D3D9ClientSurface::ConvertToPlainSurface()
 {
-	
+
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -585,7 +585,7 @@ void D3D9ClientSurface::Decompress()
 
 	SAFE_RELEASE(pSurf);
 	SAFE_RELEASE(pTex);
-	
+
 	// Must reload the file because it's initially loaded in default pool
 	//
 	if (LoadTexture(name, Initial|0x2)) {
@@ -611,7 +611,7 @@ void D3D9ClientSurface::ConvertToRenderTargetTexture()
 	HR(pNew->GetSurfaceLevel(0,&pTgt));
 
 	if (desc.Pool==D3DPOOL_SYSTEMMEM && Type==D3D9S_TEXTURE) {
-		HR(D3DXLoadSurfaceFromSurface(pTgt, NULL, NULL, pSurf, NULL, NULL, D3DX_DEFAULT, 0));	
+		HR(D3DXLoadSurfaceFromSurface(pTgt, NULL, NULL, pSurf, NULL, NULL, D3DX_DEFAULT, 0));
 	}
 	else {
 
@@ -700,10 +700,10 @@ void D3D9ClientSurface::CheckTemp(DWORD Width, DWORD Height)
 {
 	if (pTemp==NULL) {
 		D3DXCreateTexture(pDevice, Width, Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &pTempTex);
-		pTempTex->GetSurfaceLevel(0, &pTemp);	
+		pTempTex->GetSurfaceLevel(0, &pTemp);
 	}
 	if (pTemp==NULL) {
-		LogErr("CheckTemp Failed 2");	
+		LogErr("CheckTemp Failed 2");
 		return;
 	}
 
@@ -714,7 +714,7 @@ void D3D9ClientSurface::CheckTemp(DWORD Width, DWORD Height)
 		SAFE_RELEASE(pTemp);
 		SAFE_RELEASE(pTempTex);
 		D3DXCreateTexture(pDevice, max(ds.Width,Width), max(ds.Height,Height), 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &pTempTex);
-		pTempTex->GetSurfaceLevel(0, &pTemp);	
+		pTempTex->GetSurfaceLevel(0, &pTemp);
 	}
 
 	if (pTemp==NULL) LogErr("CheckTemp Failed");
@@ -742,9 +742,9 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	if (s->left < 0 || s->top < 0) return;
 
 	DWORD Width = s->right - s->left;
-	DWORD Height = s->bottom - s->top;		
+	DWORD Height = s->bottom - s->top;
 	DWORD TgtWidth = t->right - t->left;
-	DWORD TgtHeight = t->bottom - t->top;	
+	DWORD TgtHeight = t->bottom - t->top;
 
 	if (Width==0 || Height==0 || TgtWidth==0 || TgtHeight==0) return;
 
@@ -764,7 +764,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	//
 	//
 	if (src == this) {
-		
+
 		if (Type==D3D9S_TEXTURE || Type==D3D9S_DYNAMIC) ConvertToRenderTargetTexture();
 
 		if (bStretch) {
@@ -776,18 +776,18 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 
 		if (pTemp) {
 
-			RECT dr; 
-			dr.left   = 0; 
+			RECT dr;
+			dr.left   = 0;
 			dr.top    = 0;
 			dr.right  = Width;
 			dr.bottom = Height;
 
-			if (pDevice->StretchRect(pSurf, s, pTemp, &dr, D3DTEXF_POINT)==S_OK) {	
+			if (pDevice->StretchRect(pSurf, s, pTemp, &dr, D3DTEXF_POINT)==S_OK) {
 
 				//if (ColorKey==0x0) {
-					if (pDevice->StretchRect(pTemp, &dr, pSurf, t, D3DTEXF_POINT)==S_OK) {	
+					if (pDevice->StretchRect(pTemp, &dr, pSurf, t, D3DTEXF_POINT)==S_OK) {
 						return;
-					}	
+					}
 				/*}
 				else {
 					if (BindGPU()) {
@@ -796,7 +796,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 						return;
 					}
 				}*/
-			}	
+			}
 		}
 		LogErr("InSurface StretchRect Blitting Failed 0x%X",pSurf);
 		goto error_report;
@@ -828,7 +828,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 		// Special Handler for colorkeyed blitting ==================================================
 		//
 		if (src->ColorKey!=0x0) {
-			
+
 			if (Creation==D3D9C_BACKBUF) {
 
 				// Prepare source for blitting
@@ -846,10 +846,10 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 				// Prepare Target Surface
 				//
 				if (IsRenderTarget()==false) ConvertToRenderTargetTexture();
-				
+
 				// Prepare Source Surface
 				//
-				if (src->pTex==NULL) {	
+				if (src->pTex==NULL) {
 					if (src->bDC) src->ConvertToDynamicTexture();
 					else		  src->ConvertToRenderTargetTexture();
 				}
@@ -876,9 +876,9 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	if (src->desc.Pool==D3DPOOL_SYSTEMMEM) {
 
 		if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Format==desc.Format && !bStretch) {
-		
+
 			POINT p; p.x = t->left, p.y=t->top;
-		
+
 			if (pDevice->UpdateSurface(src->pSurf, s, pSurf, &p)==S_OK) {
 				LogOk("UpdateSurface 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
 				return;
@@ -894,7 +894,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 					LogErr("UpdateSurface Failed");
 					goto error_report;
 				}
-			}	
+			}
 		}
 	}
 
@@ -903,7 +903,7 @@ restart_blit:
 
 
 	// =====================================================================================================
-	// StretchRect Blitting Technique 
+	// StretchRect Blitting Technique
 	//
 
 	if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_DEFAULT) {
@@ -913,19 +913,19 @@ restart_blit:
 		bool bStretchBlit = false;
 		if (desc.Usage==D3DUSAGE_RENDERTARGET) bStretchBlit = true;
 		else if (Type==D3D9S_PLAIN && src->Type==D3D9S_PLAIN && bStretch==false) bStretchBlit = true;
-		
+
 		if (bStretchBlit) {
-			if (pDevice->StretchRect(src->pSurf, s, pSurf, t, D3DTEXF_POINT)==S_OK) {	
+			if (pDevice->StretchRect(src->pSurf, s, pSurf, t, D3DTEXF_POINT)==S_OK) {
 				LogOk("StretchRect 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
 				return;
-			}		
+			}
 			LogErr("StretchRect Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
 			goto error_report;
 		}
 	}
 
 	// =====================================================================================================
-	// Fall back in GDI Blitting Techniques 
+	// Fall back in GDI Blitting Techniques
 	//
 
 	if (src->desc.Pool==D3DPOOL_SYSTEMMEM && desc.Pool==D3DPOOL_SYSTEMMEM) {
@@ -947,18 +947,18 @@ restart_blit:
 		return;
 	}
 
-	
+
 	// Unable to perform blitting ----------------------------------------------------------------------------------------
 	//
 	LogWrn("No Fitting Blitting Routine Exists... for 0x%X -> 0x%X blit. Converting...",src,this);
 
 	if (Type==D3D9S_PLAIN && desc.Pool==D3DPOOL_SYSTEMMEM && src->desc.Pool==D3DPOOL_DEFAULT) {
-		src->BringToSystemMem();   
-		if (bRestart) { bRestart=false; goto restart_blit; } 
+		src->BringToSystemMem();
+		if (bRestart) { bRestart=false; goto restart_blit; }
 	}
 	else {
 		ConvertToRenderTargetTexture();
-		if (bRestart) { bRestart=false; goto restart_blit; } 
+		if (bRestart) { bRestart=false; goto restart_blit; }
 	}
 
 error_report:
@@ -983,15 +983,15 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 	DWORD color = 0;
 	LPRECT r;
 	RECT re;
-	
+
 	if (rect==NULL) { re.left=0, re.top=0, re.right=desc.Width, re.bottom=desc.Height; r=&re; }
 	else r = rect;
 
 	if (desc.Pool==D3DPOOL_SYSTEMMEM || desc.Usage&D3DUSAGE_DYNAMIC) {
-		
+
 		HDC hDC = GetDCHard();
 
-		if (hDC) {		
+		if (hDC) {
 			color = RGB((c>>16)&0xFF, (c>>8)&0xFF, c&0xFF);
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
 			HGDIOBJ hOld = SelectObject(hDC, hBrush);
@@ -1008,13 +1008,13 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 		}
 	}
 
-	if (desc.Pool==D3DPOOL_DEFAULT && (Type==D3D9S_PLAIN || Type==D3D9S_RTGTTEX)) { 
+	if (desc.Pool==D3DPOOL_DEFAULT && (Type==D3D9S_PLAIN || Type==D3D9S_RTGTTEX)) {
 		if (pDevice->ColorFill(pSurf, r, c)!=S_OK) {
 			LogErr("GPU ColorFill Failed");
 			LogSpecs("Surface");
 			return false;
 		}
-		LogOk("ColorFill 0x%X (%s) (%u,%u)", this, name, (r->right-r->left), (r->bottom-r->top));	
+		LogOk("ColorFill 0x%X (%s) (%u,%u)", this, name, (r->right-r->left), (r->bottom-r->top));
 		return true;
 	}
 
@@ -1029,10 +1029,10 @@ bool D3D9ClientSurface::Clear(DWORD c)
 	DWORD color = 0;
 
 	if (desc.Pool==D3DPOOL_SYSTEMMEM || desc.Usage&D3DUSAGE_DYNAMIC) {
-		
+
 		HDC hDC = GetDCHard();
 
-		if (hDC) {	
+		if (hDC) {
 			color = RGB((c>>16)&0xFF, (c>>8)&0xFF, c&0xFF);
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
 			RECT r; r.left = 0; r.top = 0; r.right = desc.Width; r.bottom = desc.Height;
@@ -1051,7 +1051,7 @@ bool D3D9ClientSurface::Clear(DWORD c)
 		}
 	}
 	else {
-		if (Type==D3D9S_TEXTURE) return false; 
+		if (Type==D3D9S_TEXTURE) return false;
 		if (pDevice->ColorFill(pSurf, NULL, c)!=S_OK) {
 			LogErr("GPU ColorFill Failed");
 			LogSpecs("Surface");
@@ -1093,7 +1093,7 @@ HDC	D3D9ClientSurface::GetDC()
 
 	if (bDCOpen) {
 		LogErr("DC is already open");
-		return NULL;	
+		return NULL;
 	}
 
 	if (iBindCount!=0) {
@@ -1123,8 +1123,8 @@ HDC	D3D9ClientSurface::GetDC()
 
 	// Oh Shit... Acquiring a hDC for rendering target surface
 	//
-	if (Type==D3D9S_RTGTTEX) {	
-	
+	if (Type==D3D9S_RTGTTEX) {
+
 		if (Config->RejectRTDC) {
 			LogErr("[GDI access to render target 0x%X (%u,%u) rejected]", this, desc.Width, desc.Height);
 			return NULL;
@@ -1132,13 +1132,13 @@ HDC	D3D9ClientSurface::GetDC()
 
 		// Create a temporary system memory copy
 		if (pDCTemp==NULL) pDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM, &pDCTemp, NULL);
-			
+
 		if (pDCTemp) {
 
 			// Download the render target into a system memory copy
 			// If the bClear flag is set then the download can be skipped because the surface is filled with a single color "oClear"
 			if (!bClear) pDevice->GetRenderTargetData(pSurf, pDCTemp);
-				
+
 			if (pDCTemp->GetDC(&hDC)==S_OK) {
 				if (bClear) {  // Fill the system memory copy with a color
 					HBRUSH hBrush = CreateSolidBrush(RGB((cClear>>16)&0xFF, (cClear>>8)&0xFF, cClear&0xFF));
@@ -1153,11 +1153,11 @@ HDC	D3D9ClientSurface::GetDC()
 			return NULL;
 		}
 	}
-	
+
 	if (Type==D3D9S_PLAIN && Creation==D3D9C_SURFACE && desc.Pool==D3DPOOL_DEFAULT && bNoGDI==false) BringToSystemMem();	// THIS IS VITAL
-	
+
 	if (pSurf->GetDC(&hDC)==S_OK) { bDCOpen = true; return hDC; }
-	
+
 	LogErr("D3D9ClientSurface: GetDC() Failed");
 	LogSpecs("Surface");
 	return NULL;
@@ -1174,7 +1174,7 @@ void D3D9ClientSurface::ReleaseDC(HDC hDC)
 	bDCOpen = false;
 
 	if (Creation==D3D9C_BACKBUF) {
-		HR(pSurf->ReleaseDC(hDC)); 
+		HR(pSurf->ReleaseDC(hDC));
 		if (!bHard) bClear = false;
 		return;
 	}
@@ -1193,7 +1193,7 @@ void D3D9ClientSurface::ReleaseDC(HDC hDC)
 	}
 
 	if (!bHard) bClear = false;
-	if (pSurf->ReleaseDC(hDC)==S_OK) return;  
+	if (pSurf->ReleaseDC(hDC)==S_OK) return;
 
 	LogErr("ReleaseDC() Failed");
 	LogSpecs("Surface");
@@ -1206,12 +1206,12 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTextureHard()
 {
 	if (pTex==NULL) return NULL;
 	if (desc.Pool==D3DPOOL_DEFAULT) return pTex;
-	
+
 	// Must bring the texture from a system memory to video memory. Create mipmaps in the process.
 	//
 	DWORD levels = pTex->GetLevelCount();
 	LogBlu("Moving a texture 0x%X from POOL_SYSTEMEME to POOL_DEFAULT MipMapCount=%u", this, levels);
-	
+
 	LPDIRECT3DTEXTURE9 pNew;
 	LPDIRECT3DSURFACE9 pTgt;
 
@@ -1223,13 +1223,13 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTextureHard()
 	HR(pNew->GetSurfaceLevel(0,&pTgt));
 	HR(pDevice->UpdateSurface(pSurf, NULL, pTgt, NULL));
 
-	pNew->GenerateMipSubLevels();	
+	pNew->GenerateMipSubLevels();
 
 	SAFE_RELEASE(pSurf);
 	SAFE_RELEASE(pTex);
-	
+
 	pSurf = pTgt;
-	pTex = pNew;	
+	pTex = pNew;
 
 	GetDesc(&desc);
 
@@ -1252,7 +1252,7 @@ bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const
 }
 
 
-// Load a texture ------------------------------------------------------------------------------------------------- 
+// Load a texture -------------------------------------------------------------------------------------------------
 //
 //
 bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
@@ -1264,7 +1264,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 	char ename[128];
 	char bname[128];
 	char rname[128];
-	
+
 	bClear = false;
 
 	if (gc==NULL) {
@@ -1283,7 +1283,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 			CreateName(bname, 128, fname, "bump");
 			CreateName(rname, 128, fname, "refl");
 		}
-			
+
 		// Get information about the file
 		//
 		D3DXIMAGE_INFO info;
@@ -1308,7 +1308,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 		}
 
 		// Decompress -------------------------------------------
-		if (flags&0x2) {  
+		if (flags&0x2) {
 			if (Format==D3DFMT_DXT5) Format = D3DFMT_A8R8G8B8;
 			if (Format==D3DFMT_DXT3) Format = D3DFMT_A8R8G8B8;
 			if (Format==D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
@@ -1422,7 +1422,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 
 		// Diffuse Texture Section ====================================================================================================================
 		//
-		if (D3DXCreateTextureFromFileExA(pDevice, cpath, 0, 0, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {	
+		if (D3DXCreateTextureFromFileExA(pDevice, cpath, 0, 0, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 			SetName(fname);
 			HR(pTex->GetSurfaceLevel(0, &pSurf));
 			GetDesc(&desc);
@@ -1430,9 +1430,9 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 			return true;
 		}
 		else {
-			LogErr("Texture %s failed to load",fname); 
+			LogErr("Texture %s failed to load",fname);
 			return false;
-		}	
+		}
 	}
 
 	LogWrn("Texture %s not found. Handle=0x%X",fname,this);
@@ -1465,7 +1465,7 @@ bool D3D9ClientSurface::ComputeReflAlpha()
 
 		LPDIRECT3DTEXTURE9 pSys = pReflectionMap;
 
-		if (D3DXCreateTexture(pDevice, desc.Width, desc.Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pReflectionMap)==S_OK) { 
+		if (D3DXCreateTexture(pDevice, desc.Width, desc.Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pReflectionMap)==S_OK) {
 			HR(pReflectionMap->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC));
 			HR(pDevice->UpdateTexture(pSys, pReflectionMap));
 			pReflectionMap->GenerateMipSubLevels();
@@ -1484,9 +1484,9 @@ void D3D9ClientSurface::SaveSurface(const char *fname)
 	LPDIRECT3DTEXTURE9 pTemp = NULL;
 	LPDIRECT3DSURFACE9 pTempS = NULL;
 	LPDIRECT3DSURFACE9 pSystemS = NULL;
-	
+
 	if (desc.Pool!=D3DPOOL_SYSTEMMEM) {
-		if (Type==D3D9S_TEXTURE || Type==D3D9S_DYNAMIC || Type==D3D9S_PLAIN) {		
+		if (Type==D3D9S_TEXTURE || Type==D3D9S_DYNAMIC || Type==D3D9S_PLAIN) {
 			HR(D3DXCreateTexture(pDevice, desc.Width, desc.Height, 1, D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &pTemp));
 			HR(pTemp->GetSurfaceLevel(0, &pTempS));
 			HR(pDevice->StretchRect(pSurf, NULL, pTempS, NULL, D3DTEXF_POINT));
@@ -1520,8 +1520,8 @@ void D3D9ClientSurface::SaveSurface(const char *fname)
 //
 void D3D9ClientSurface::LogSpecs(char *xname)
 {
-	char buf[256]; 
-	_SETLOG(4); 
+	char buf[256];
+	_SETLOG(4);
 
 	D3DSURFACE_DESC desc;
 	GetDesc(&desc);
@@ -1530,7 +1530,7 @@ void D3D9ClientSurface::LogSpecs(char *xname)
 	if (Type==D3D9S_DYNAMIC) LogMsg("%s is a Dynamic Texture",xname);
 	if (Type==D3D9S_PLAIN)   LogMsg("%s is a Plain Surface",xname);
 	if (Type==D3D9S_RTGTTEX) LogMsg("%s is a Render Target Texture",xname);
-	
+
 	if (pTex) LogMsg("%s has texture inteface",xname);
 	if (pSurf) LogMsg("%s has surface interface",xname);
 	if (desc.Pool==D3DPOOL_DEFAULT)   LogMsg("%s is in a DefaultPool",xname);
@@ -1763,7 +1763,7 @@ DWORD D3D9ClientSurface::GetSizeInBytes()
 	if (pNormalMap) size += GetTextureSizeInBytes(pNormalMap);
 	if (pSpecularMap) size += GetTextureSizeInBytes(pSpecularMap);
 	if (pEmissionMap) size += GetTextureSizeInBytes(pEmissionMap);
-	
+
 	return size;
 }
 
@@ -1789,22 +1789,22 @@ void D3D9ClientSurface::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev, co
 
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	
+
 	HR(D3DXCreateEffectFromFileA(pDev, name, 0, 0, 0, 0, &FX, &errors));
-	
+
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
 		MessageBoxA(0, (char*)errors->GetBufferPointer(), "CKBlit.fx Error", 0);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
-	
+
 	if (FX==0) {
 		LogErr("Failed to create an Effect (%s)",name);
 		MissingRuntimeError();
 		return;
 	}
 
-	eFlush = FX->GetTechniqueByName("FlushTech");	
+	eFlush = FX->GetTechniqueByName("FlushTech");
 	eTech  = FX->GetTechniqueByName("BlitTech");
 	eVP    = FX->GetParameterByName(0,"gVP");
 	eTex0  = FX->GetParameterByName(0,"gTex0");
