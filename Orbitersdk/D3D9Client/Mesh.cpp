@@ -861,7 +861,8 @@ bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
 	}
 	if (Tex[texidx]) Tex[texidx]->Release();
 	Tex[texidx] = tex;
-	tex->IncRef();
+	// TODO: Check if this incr. is *really* not needed! (ps 2014-02-12)
+	// tex->IncRef();
 	LogBlu("D3D9Mesh(0x%X)::SetTexture(%u, 0x%X) (%s)",this,texidx,tex,SURFACE(tex)->GetName());
 	return true;
 }
