@@ -227,14 +227,14 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	bModulateMatAlpha = false;
 	strcpy_s(name, 128, "???");
 
-	// template meshes are stored in system memory	
+	// template meshes are stored in system memory
 	nGrp   = 1;
 	Grp    = new GROUPREC*[nGrp];
 	Grp[0] = new GROUPREC; memset2(Grp[0], 0, sizeof(GROUPREC));
 	nTex   = 2;
 	Tex	   = new LPD3D9CLIENTSURFACE[nTex];
 	Tex[0] = 0; // 'no texture'
-	Tex[1] = pTex; 
+	Tex[1] = pTex;
 	nMtrl  = 1;
 	Mtrl   = new D3D9MatExt[nMtrl];
 	pGrpTF = new D3DXMATRIX[nGrp];
@@ -248,7 +248,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL
 	Grp[0]->FaceOff = 0;
 	Grp[0]->nFace   = pGroup->nIdx/3;
 	Grp[0]->nVert   = pGroup->nVtx;
-	
+
 	MaxFace = Grp[0]->nFace;
 	MaxVert = Grp[0]->nVert;
 
@@ -284,7 +284,7 @@ D3D9Mesh::D3D9Mesh(D3D9Client *client, const MESHGROUPEX *pGroup) : D3D9Effect()
 	bModulateMatAlpha = false;
 	strcpy_s(name, 128, "???");
 
-	// template meshes are stored in system memory	
+	// template meshes are stored in system memory
 	nGrp   = 1;
 	Grp    = new GROUPREC*[nGrp];
 	Grp[0] = new GROUPREC; memset2(Grp[0], 0, sizeof(GROUPREC));
@@ -349,7 +349,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	MaxVert = mesh.MaxVert;
 
 	for (DWORD i=0;i<nGrp;i++) {
-		Grp[i] = new GROUPREC; 
+		Grp[i] = new GROUPREC;
 		memcpy2(Grp[i], mesh.Grp[i], sizeof(GROUPREC));
 	}
 
@@ -361,16 +361,16 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	WORD *pISrc,*pITgt;
 	NMVERTEX *pVSrc, *pVTgt;
 
-	HR(mesh.pIB->Lock(0, 0, (LPVOID*)&pISrc, 0)); 
-	HR(pIB->Lock(0, 0, (LPVOID*)&pITgt, 0)); 
-	memcpy2(pITgt, pISrc, MaxFace*6); 
+	HR(mesh.pIB->Lock(0, 0, (LPVOID*)&pISrc, 0));
+	HR(pIB->Lock(0, 0, (LPVOID*)&pITgt, 0));
+	memcpy2(pITgt, pISrc, MaxFace*6);
 	HR(mesh.pIB->Unlock());
 	HR(pIB->Unlock());
 
 
-	HR(mesh.pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0)); 
-	HR(pVB->Lock(0, 0, (LPVOID*)&pVTgt, 0)); 
-	memcpy2(pVTgt, pVSrc, MaxVert*sizeof(NMVERTEX)); 
+	HR(mesh.pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0));
+	HR(pVB->Lock(0, 0, (LPVOID*)&pVTgt, 0));
+	memcpy2(pVTgt, pVSrc, MaxVert*sizeof(NMVERTEX));
 	HR(mesh.pVB->Unlock());
 	HR(pVB->Unlock());
 
@@ -380,7 +380,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	Tex = new LPD3D9CLIENTSURFACE[nTex];
 
 	for (DWORD i=0;i<nTex;i++) Tex[i] = mesh.Tex[i];
-			
+
 	nMtrl = mesh.nMtrl;
 	if (nMtrl) Mtrl = new D3D9MatExt[nMtrl];
 	memcpy2 (Mtrl, mesh.Mtrl, nMtrl*sizeof(D3D9MatExt));
@@ -413,10 +413,10 @@ D3D9Mesh::~D3D9Mesh()
 
 	if (MeshCatalog->Remove(DWORD(this))) LogAlw("Mesh 0x%X Removed from catalog",this);
 	else 								  LogErr("Mesh 0x%X wasn't in meshcatalog",this);
-	
+
 	if (nGrp && Grp) for (DWORD g=0;g<nGrp;g++) delete Grp[g];
-	
-	if (Grp) delete []Grp; 
+
+	if (Grp) delete []Grp;
 	if (nTex) delete []Tex;
 	if (nMtrl) delete []Mtrl;
 	if (pGrpTF) delete []pGrpTF;
@@ -462,12 +462,12 @@ void D3D9Mesh::UpdateGeometry()
 	if (!pGB) {
 		HR(gc->GetDevice()->CreateVertexBuffer(MaxVert*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_MANAGED, &pGB, NULL));
 	}
-	
+
 	NMVERTEX *pVSrc;
 	D3DXVECTOR3 *pVTgt;
 
-	HR(pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0)); 
-	HR(pGB->Lock(0, 0, (LPVOID*)&pVTgt, 0)); 
+	HR(pVB->Lock(0, 0, (LPVOID*)&pVSrc, 0));
+	HR(pGB->Lock(0, 0, (LPVOID*)&pVTgt, 0));
 	for (DWORD i=0;i<MaxVert;++i) pVTgt[i] = D3DXVECTOR3(pVSrc[i].x, pVSrc[i].y, pVSrc[i].z);
 	HR(pVB->Unlock());
 	HR(pGB->Unlock());
@@ -495,7 +495,7 @@ void D3D9Mesh::CheckValidity()
 		if (Grp[i]->BBox.bs.w<1e-3) LogWrn("Small Bounding Sphere rad=%g nVtx=%u", Grp[i]->BBox.bs.w, Grp[i]->nVert);
 	}
 
-	
+
 	for (DWORD i=0;i<nGrp;i++) {
 
 		if (Grp[i]->nVert==0) continue;
@@ -504,7 +504,7 @@ void D3D9Mesh::CheckValidity()
 		NMVERTEX *pVrt = LockVertexBuffer(i);
 
 		for (DWORD k=0;k<Grp[i]->nVert;k++) {
-			D3DXVECTOR3 v = D3DXVECTOR3(pVrt[k].nx, pVrt[k].ny, pVrt[k].nz); 
+			D3DXVECTOR3 v = D3DXVECTOR3(pVrt[k].nx, pVrt[k].ny, pVrt[k].nz);
 			float len = D3DXVec3Length(&v);
 			if (fabs(len)<1e-3) {
 				LogWrn("Zero length normals in mesh group %d in mesh 0x%X",i,this);
@@ -528,12 +528,12 @@ void D3D9Mesh::CheckValidity()
 		mats[Grp[i]->MtrlIdx] += 1.0f;
 		texs[Grp[i]->TexIdx] += 1.0f;
 	}
-	
+
 	float avmats = 0.0;
 	float avtexs = 0.0;
 	for (DWORD i=0;i<nMtrl;i++) avmats += mats[i];
 	for (DWORD i=0;i<nTex;i++) avtexs += texs[i];
-	
+
 	avmats /= float(nMtrl);
 	avtexs /= float(nTex);
 
@@ -550,19 +550,19 @@ void D3D9Mesh::ProcessInherit()
 {
 	_TRACE;
 	if (!pVB) return;
-	if (Grp[0]->MtrlIdx == SPEC_INHERIT) Grp[0]->MtrlIdx = SPEC_DEFAULT; 
+	if (Grp[0]->MtrlIdx == SPEC_INHERIT) Grp[0]->MtrlIdx = SPEC_DEFAULT;
 	if (Grp[0]->TexIdx == SPEC_INHERIT) Grp[0]->TexIdx = SPEC_DEFAULT;
 	if (Grp[0]->TexIdxEx[0] == SPEC_INHERIT) Grp[0]->TexIdxEx[0] = SPEC_DEFAULT;
 
 	bool bPopUp = false;
 
 	for (DWORD i=0;i<nGrp;i++) {
-	
+
 		if (Grp[i]->UsrFlag & 0x8) LogErr("MeshGroupFlag 0x8 in use (OPERATION NOT IMPLEMENTED)");
-		
+
 		// Inherit Material
 		if (Grp[i]->MtrlIdx == SPEC_INHERIT) Grp[i]->MtrlIdx = Grp[i-1]->MtrlIdx;
-			
+
 		// Inherit Texture
 		if (Grp[i]->TexIdx == SPEC_DEFAULT) Grp[i]->TexIdx = 0;
 		else if (Grp[i]->TexIdx == SPEC_INHERIT) Grp[i]->TexIdx = Grp[i-1]->TexIdx;
@@ -572,22 +572,22 @@ void D3D9Mesh::ProcessInherit()
 		if (Grp[i]->TexIdxEx[0] == SPEC_DEFAULT) Grp[i]->TexIdxEx[0] = 0;
 		else if (Grp[i]->TexIdxEx[0] == SPEC_INHERIT) Grp[i]->TexIdxEx[0] = Grp[i-1]->TexIdxEx[0];
 		else Grp[i]->TexIdxEx[0]++;
-	
+
 		// Do some safety checks
 		if (Grp[i]->TexIdx>=nTex) {
-			LogErr("Mesh(0x%X) has a texture index %u in group %u out of range. Constr=%u", this, Grp[i]->TexIdx, i, Constr); 
+			LogErr("Mesh(0x%X) has a texture index %u in group %u out of range. Constr=%u", this, Grp[i]->TexIdx, i, Constr);
 			Grp[i]->TexIdx = 0;
 			bPopUp = true;
 		}
 		if (Grp[i]->TexIdxEx[0]>=nTex) {
-			LogErr("Mesh(0x%X) has a night texture index %u in group %u out of range. Constr=%u", this, Grp[i]->TexIdxEx[0], i, Constr); 
+			LogErr("Mesh(0x%X) has a night texture index %u in group %u out of range. Constr=%u", this, Grp[i]->TexIdxEx[0], i, Constr);
 			Grp[i]->TexIdxEx[0] = 0;
 			bPopUp = true;
 		}
 
 		if (Grp[i]->MtrlIdx!=SPEC_DEFAULT) {
 			if (Grp[i]->MtrlIdx>=nMtrl) {
-				LogErr("Mesh(0x%X) has a material index %u in group %u out of range. Constr=%u", this, Grp[i]->MtrlIdx, i, Constr); 
+				LogErr("Mesh(0x%X) has a material index %u in group %u out of range. Constr=%u", this, Grp[i]->MtrlIdx, i, Constr);
 				Grp[i]->MtrlIdx = SPEC_DEFAULT;
 				bPopUp = true;
 			}
@@ -626,7 +626,7 @@ void D3D9Mesh::ResetTransformations()
 }
 
 // ===========================================================================================
-// 
+//
 void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured)
 {
 	//_TRACE;
@@ -636,7 +636,7 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 	if (bTextured) {
 
 		D3DXVECTOR3 *ta = new D3DXVECTOR3[nVtx];
-		
+
 		for (DWORD i=0;i<nVtx;i++) ta[i] = D3DXVECTOR3(0,0,0);
 
 		for (DWORD i=0;i<nFace;i++) {
@@ -645,26 +645,26 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 			DWORD i1 = pIdx[i*3+1];
 			DWORD i2 = pIdx[i*3+2];
 
-			D3DXVECTOR3 r0 = D3DXVECTOR3(pVrt[i0].x,  pVrt[i0].y,  pVrt[i0].z); 
+			D3DXVECTOR3 r0 = D3DXVECTOR3(pVrt[i0].x,  pVrt[i0].y,  pVrt[i0].z);
 			D3DXVECTOR3 r1 = D3DXVECTOR3(pVrt[i1].x,  pVrt[i1].y,  pVrt[i1].z);
 			D3DXVECTOR3 r2 = D3DXVECTOR3(pVrt[i2].x,  pVrt[i2].y,  pVrt[i2].z);
-			D3DXVECTOR2 t0 = D3DXVECTOR2(pVrt[i0].u, pVrt[i0].v);  
-			D3DXVECTOR2 t1 = D3DXVECTOR2(pVrt[i1].u, pVrt[i1].v);   
-			D3DXVECTOR2 t2 = D3DXVECTOR2(pVrt[i2].u, pVrt[i2].v); 
-			
-			float u0 = t1.x - t0.x; 
-			float v0 = t1.y - t0.y; 
-			float u1 = t2.x - t0.x;   
+			D3DXVECTOR2 t0 = D3DXVECTOR2(pVrt[i0].u, pVrt[i0].v);
+			D3DXVECTOR2 t1 = D3DXVECTOR2(pVrt[i1].u, pVrt[i1].v);
+			D3DXVECTOR2 t2 = D3DXVECTOR2(pVrt[i2].u, pVrt[i2].v);
+
+			float u0 = t1.x - t0.x;
+			float v0 = t1.y - t0.y;
+			float u1 = t2.x - t0.x;
 			float v1 = t2.y - t0.y;
 
 			D3DXVECTOR3 k0 = r1 - r0;
 			D3DXVECTOR3 k1 = r2 - r0;
-		
+
 			float q = (u0*v1-u1*v0);
 			if (q==0) q = 1.0f;
 			else q = 1.0f / q;
 
-			D3DXVECTOR3 t = ((k0*v1 - k1*v0) * q);		
+			D3DXVECTOR3 t = ((k0*v1 - k1*v0) * q);
 			ta[i0]+=t; ta[i1]+=t; ta[i2]+=t;
 		}
 
@@ -674,7 +674,7 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 			D3DXVec3Normalize(&n, &n);
 			D3DXVECTOR3 t = (ta[i] - n * D3DXVec3Dot(&ta[i],&n));
 			D3DXVec3Normalize(&t, &t);
-	
+
 			pVrt[i].tx = t.x;
 			pVrt[i].ty = t.y;
 			pVrt[i].tz = t.z;
@@ -696,17 +696,17 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 
 
 // ===========================================================================================
-// 
+//
 bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 {
 	//_TRACE;
 	if (!pVB) return false;
-	
+
 	if (mg->nVtx>65535) LogErr("Mesh group vertex count is greater than 65535");
-	
+
 	grp->UsrFlag = mg->UsrFlag;
 	grp->IntFlag = mg->Flags;
-	
+
 	//LogErr("IntFlags = 0x%hX,  UsrFlag=0x%X",grp->IntFlag,grp->UsrFlag);
 
 	D3DXMatrixIdentity(&grp->Transform);
@@ -715,10 +715,10 @@ bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 	NMVERTEX *pVert;
 	NTVERTEX *pNT = mg->Vtx;
 
-	HR(pIB->Lock(grp->FaceOff*6, grp->nFace*6, (LPVOID*)&pIndex, 0)); 
-	HR(pVB->Lock(grp->VertOff*sizeof(NMVERTEX), grp->nVert*sizeof(NMVERTEX), (LPVOID*)&pVert, 0)); 
+	HR(pIB->Lock(grp->FaceOff*6, grp->nFace*6, (LPVOID*)&pIndex, 0));
+	HR(pVB->Lock(grp->VertOff*sizeof(NMVERTEX), grp->nVert*sizeof(NMVERTEX), (LPVOID*)&pVert, 0));
 
-	memcpy2(pIndex, mg->Idx, mg->nIdx*sizeof(WORD)); 
+	memcpy2(pIndex, mg->Idx, mg->nIdx*sizeof(WORD));
 
 	for (DWORD i=0;i<mg->nVtx; i++) {
 		float x = pNT[i].nx; float y = pNT[i].ny; float z = pNT[i].nz;
@@ -748,7 +748,7 @@ bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 
 	if (mg->nVtx>0) BoundingBox(pVert, mg->nVtx, &grp->BBox);
 	else D9ZeroAABB(&grp->BBox);
-	
+
 	HR(pIB->Unlock());
 	HR(pVB->Unlock());
 
@@ -768,11 +768,11 @@ void D3D9Mesh::UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg)
 	NMVERTEX *pVert = LockVertexBuffer(idx);
 	NTVERTEX *pNT = mg->Vtx;
 
-	if (pVert) {	
+	if (pVert) {
 		for (DWORD i=0;i<mg->nVtx;i++) {
 			pVert[i].x = pNT[i].x;
 			pVert[i].y = pNT[i].y;
-			pVert[i].z = pNT[i].z;	
+			pVert[i].z = pNT[i].z;
 		}
 		if (Config->UseNormalMap) UpdateTangentSpace(pVert, mg->Idx, mg->nVtx, mg->nIdx/3, grp->TexIdx!=0);
 		if (mg->nVtx>0) BoundingBox(pVert, mg->nVtx, &grp->BBox);
@@ -832,12 +832,12 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 
 			if (Config->UseNormalMap) {
 				WORD *idx=0;
-				if (pIB->Lock(g->FaceOff*6, g->nFace*6, (LPVOID*)&idx, 0)==S_OK) { 
-					UpdateTangentSpace(vtx, idx, g->nVert, g->nFace, g->TexIdx!=0); 
+				if (pIB->Lock(g->FaceOff*6, g->nFace*6, (LPVOID*)&idx, 0)==S_OK) {
+					UpdateTangentSpace(vtx, idx, g->nVert, g->nFace, g->TexIdx!=0);
 					pIB->Unlock();
 				}
 			}
-			
+
 			if (g->nVert>0) BoundingBox(vtx, g->nVert, &g->BBox);
 			else D9ZeroAABB(&g->BBox);
 
@@ -959,11 +959,11 @@ void D3D9Mesh::UnLockVertexBuffer()
 // ===========================================================================================
 //
 D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx)
-{ 
+{
 	_TRACE;
 	if (!pVB) return NULL;
-	static int count = 10; 
-	if (idx<nGrp) return Grp[idx]; 
+	static int count = 10;
+	if (idx<nGrp) return Grp[idx];
 	if ((count--)>0) LogErr("Mesh group index out of range. idx=%u nGrp=%u", idx, nGrp);
 	return NULL;
 }
@@ -985,7 +985,7 @@ void D3D9Mesh::SetupFog(const LPD3DXMATRIX pW)
 {
 	_TRACE;
 	if (!pVB) return;
-	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
+	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1));
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
 }
 
@@ -1027,7 +1027,7 @@ void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIREC
 	HR(FX->BeginPass(0));
 	RenderGroup(dev, Grp[0]);
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 }
 
 // Used only by ring manager --------------------------------------------------------------------
@@ -1052,7 +1052,7 @@ void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRE
 	HR(FX->BeginPass(0));
 	RenderGroup(dev, Grp[0]);
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 }
 
 // ===========================================================================================
@@ -1092,16 +1092,16 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 
 	// Setup Mesh group material ==============================================================================
-	//		
+	//
 	D3D9MatExt *mat = &defmat;
 	if (Grp[idx]->MtrlIdx!=SPEC_DEFAULT) mat = &Mtrl[Grp[idx]->MtrlIdx];
-	
+
 	HR(FX->SetValue(eMtrl, mat, D3D9MATSIZE));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	RenderGroup(dev, grp);
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 }
 
 
@@ -1111,7 +1111,7 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 //
 void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
 {
-	_TRACE;	
+	_TRACE;
 	DWORD flags=0, selmsh=0, selgrp=0, displ=0; // Debug Variables
 	bool bActiveVisual = false;
 
@@ -1132,8 +1132,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 		if ((displ==2 || displ==3) && uCurrentMesh!=selmsh) return;
 	}
 
-	Scene *scn = gc->GetScene(); 
-	
+	Scene *scn = gc->GetScene();
+
 	float mix = 0.0f;
 	bool bClamp = false;
 	bool bMeshCull = true;
@@ -1179,7 +1179,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 		if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(dev, pW);
 		return;
 	}
-	
+
 	gc->GetStats()->Meshes++;
 
 	D3D9MatExt *mat, *old_mat = NULL;
@@ -1196,7 +1196,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 
-	FX->SetMatrix(eGT, gc->GetIdentity()); 
+	FX->SetMatrix(eGT, gc->GetIdentity());
 	FX->SetMatrix(eW, pW);
 	FX->SetBool(eNight, false);
 	FX->SetBool(eUseSpec, false);
@@ -1204,11 +1204,11 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	FX->SetBool(eUseRefl, false);
 	FX->SetBool(eUseDisl, false);
 	FX->SetBool(eDebugHL, false);
-	
+
 	int nLights = gc->GetScene()->GetLightCount();
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 
-	if (pLights && nLights>0 && iTech==RENDER_VESSEL) { 
+	if (pLights && nLights>0 && iTech==RENDER_VESSEL) {
 		HR(FX->SetValue(eLights, pLights, 12*sizeof(D3D9Light)));
 		FX->SetInt(eLightCount, nLights);
 	}
@@ -1238,7 +1238,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 		for (DWORD g=0; g<nGrp; g++) {
 
 			if (Grp[g]->UsrFlag & 0x2) continue;
-			
+
 			// Mesh Debugger -------------------------------------------
 			//
 			if (DebugControls::IsActive()) {
@@ -1276,9 +1276,9 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 			}
 
-			if (Tex[ti]==NULL || ti==0) bTextured = false; 
+			if (Tex[ti]==NULL || ti==0) bTextured = false;
 			else						bTextured = true;
-		
+
 			if (bTextured) {
 				pNorm = Tex[ti]->GetNormalMap();
 				if (pNorm==NULL && pass==0) continue;
@@ -1286,25 +1286,25 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			}
 			else {
 				if (pass==0) continue;
-				pNorm=NULL; 
+				pNorm=NULL;
 				old_tex=NULL;
 			}
 
 			// Cull unvisible geometry ------------------------------------------------------
-			//	
+			//
 			if (bGroupCull) if (!D9IsBSVisible(&Grp[g]->BBox, &mWorldView, &Field)) continue;
-		
+
 
 			// Setup Textures and Normal Maps ==========================================================================
-			// 
+			//
 			if (bTextured) {
 
-				if (Tex[ti]!=old_tex) { 
+				if (Tex[ti]!=old_tex) {
 
 					if (tni && Grp[g]->TexMixEx[0]<0.5f) tni=0;
 
-					old_tex = Tex[ti]; 
-					FX->SetTexture(eTex0, Tex[ti]->GetTexture());	
+					old_tex = Tex[ti];
+					FX->SetTexture(eTex0, Tex[ti]->GetTexture());
 
 					if (tni && Tex[tni]) {
 						FX->SetTexture(eTex1, Tex[tni]->GetTexture());
@@ -1312,7 +1312,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 					} else FX->SetBool(eNight, false);
 
 					if (bUseNormalMap) {
-					
+
 						pSpec = Tex[ti]->GetSpecularMap();
 						pEmis = Tex[ti]->GetEmissionMap();
 						pRefl = Tex[ti]->GetReflectionMap();
@@ -1321,7 +1321,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 						if (pSpec) FX->SetTexture(eSpecMap, pSpec);
 						if (pEmis) FX->SetTexture(eEmisMap, pEmis);
 						if (pRefl) FX->SetTexture(eReflMap, pRefl);
-						
+
 						FX->SetBool(eUseSpec, (pSpec!=NULL));
 						FX->SetBool(eUseEmis, (pEmis!=NULL));
 						FX->SetBool(eUseRefl, (pRefl!=NULL));
@@ -1331,13 +1331,13 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 
 			// Setup Mesh group material ==============================================================================
-			//		
+			//
 			if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 			else							   mat = &Mtrl[Grp[g]->MtrlIdx];
-		
-			if (mat!=old_mat) { 
 
-				old_mat = mat; 
+			if (mat!=old_mat) {
+
+				old_mat = mat;
 
 				FX->SetValue(eMtrl, mat, D3D9MATSIZE);
 
@@ -1370,19 +1370,19 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			}
 
 			// Apply Animations =========================================================================================
-			// 
+			//
 			if (iTech==RENDER_VESSEL) FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
 			else FX->SetMatrix(eW, pW);
-		
+
 			// Setup Mesh drawing options =================================================================================
-			// 
+			//
 			FX->SetBool(eTextured, bTextured);
 			if (!bTextured) FX->SetBool(eNight, false);
 			FX->SetBool(eFullyLit, (Grp[g]->UsrFlag&0x4)!=0);
 
 			FX->CommitChanges();
 
-			dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace);	
+			dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace);
 
 			gc->GetStats()->Vertices += Grp[g]->nVert;
 			gc->GetStats()->Draw++;
@@ -1392,7 +1392,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 		HR(FX->EndPass());
 	}
 
-	HR(FX->End());	
+	HR(FX->End());
 
 	if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(dev, pW);
 
@@ -1415,7 +1415,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 	bool bActiveVisual=false;
 
 	if (!pVB) return;
-	Scene *scn = gc->GetScene(); 
+	Scene *scn = gc->GetScene();
 
 	if (DebugControls::IsActive()) {
 		flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -1437,12 +1437,12 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
 
 	if (!D9IsAABBVisible(&BBox, &mWorldView, &Field)) return;
-	
+
 	gc->GetStats()->Meshes++;
 
 	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
-	
+
 	dev->SetVertexDeclaration(pMeshVertexDecl);
 	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
 	dev->SetIndices(pIB);
@@ -1450,18 +1450,18 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 
-	FX->SetMatrix(eGT, gc->GetIdentity()); 
+	FX->SetMatrix(eGT, gc->GetIdentity());
 	FX->SetMatrix(eW, pW);
 	FX->SetInt(eLightCount, 0);
 	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eUseDisl, false);
 	FX->SetBool(eEnvMapEnable, false);
-	
+
 
 	// ----------------------------------------------------------------
 	FX->SetTechnique(eVCTech);
 	// ----------------------------------------------------------------
-	
+
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
@@ -1497,15 +1497,15 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 
 
 		if (Grp[g]->UsrFlag & 0x2) continue;
-		
+
 		DWORD ti=Grp[g]->TexIdx;
-	
-		if (Tex[ti]==NULL || ti==0) bTextured = false; 
+
+		if (Tex[ti]==NULL || ti==0) bTextured = false;
 		else						bTextured = true;
-		
-		
+
+
 		// Cull unvisible geometry ------------------------------------------------------
-		//	
+		//
 		if (!D9IsBSVisible(&Grp[g]->BBox, &mWorldView, &Field)) continue;
 
 		// Setup Mesh group material ==============================================================================
@@ -1513,11 +1513,11 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 		if (Grp[g]->MtrlIdx==SPEC_DEFAULT) mat = &defmat;
 		else							   mat = &Mtrl[Grp[g]->MtrlIdx];
 
-		if (mat!=old_mat) { 
+		if (mat!=old_mat) {
 
-			old_mat=mat; 
+			old_mat=mat;
 
-			FX->SetValue(eMtrl, mat, D3D9MATSIZE); 
+			FX->SetValue(eMtrl, mat, D3D9MATSIZE);
 
 			if (bModulateMatAlpha || bTextured==false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
 				else FX->SetFloat(eMtrlAlpha, 1.0f);
@@ -1538,29 +1538,29 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 				}
 			}
 		}
-		
+
 
 		// Setup Textures and Normal Maps ==========================================================================
-		// 
+		//
 		if (bTextured) {
-			if (Tex[ti]!=old_tex) { 
-				old_tex = Tex[ti]; 
+			if (Tex[ti]!=old_tex) {
+				old_tex = Tex[ti];
 				FX->SetTexture(eTex0, Tex[ti]->GetTexture());
 			}
 		}
 
 		// Apply Animations =========================================================================================
-		// 
+		//
 		FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
-		
+
 		// Setup Mesh drawing options =================================================================================
-		// 
+		//
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, (Grp[g]->UsrFlag&0x4)!=0);
 
 		FX->CommitChanges();
 
-		dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace);	
+		dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace);
 
 		gc->GetStats()->Vertices += Grp[g]->nVert;
 		gc->GetStats()->Draw++;
@@ -1568,7 +1568,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 	}
 
 	FX->EndPass();
-	FX->End();	
+	FX->End();
 
 	if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(dev, pW);
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -1580,7 +1580,7 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 
 
 // ================================================================================================
-// 
+//
 void D3D9Mesh::RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 {
 	_TRACE;
@@ -1590,7 +1590,7 @@ void D3D9Mesh::RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 
 // ================================================================================================
-// 
+//
 void D3D9Mesh::RenderAsteroid(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 {
 	_TRACE;
@@ -1599,7 +1599,7 @@ void D3D9Mesh::RenderAsteroid(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 }
 
 // ===========================================================================================
-// 
+//
 void D3D9Mesh::RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 {
 	if (!pVB) return;
@@ -1608,7 +1608,7 @@ void D3D9Mesh::RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 
 // ================================================================================================
-// 
+//
 void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW)
 {
 	_TRACE;
@@ -1627,7 +1627,7 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 	FX->SetTechnique(eShadowTech);
 	FX->SetMatrix(eW, pW);
 	FX->SetFloat(eMix, alpha);
-	
+
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
@@ -1636,7 +1636,7 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 
 		if (Grp[g]->UsrFlag & 3) continue;  // No shadow & skip flags
 		if (Grp[g]->IntFlag & 3) continue;  // No shadow & skip flags
-		
+
 		// TODO: Use pW and instance groups.
 		if (Grp[g]->bTransform) {
 			if (bGlobalTF)  FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
@@ -1646,20 +1646,20 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 
 		FX->CommitChanges();
 
-		dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace); 
+		dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace);
 
 		gc->GetStats()->Vertices += Grp[g]->nVert;
 		gc->GetStats()->Draw++;
 	}
 
 	FX->EndPass();
-	FX->End();	
+	FX->End();
 }
 
 
 
 // ================================================================================================
-// 
+//
 
 void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
 {
@@ -1680,7 +1680,7 @@ void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXM
 	FX->SetFloat(eMix, alpha);
 	FX->SetVector(eColor, light);
 	FX->SetVector(eTexOff, param);
-	
+
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(1);
@@ -1689,15 +1689,15 @@ void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXM
 
 		if (Grp[g]->UsrFlag & 3) continue; // No shadow & skip flags
 		if (Grp[g]->IntFlag & 3) continue; // No shadow & skip flags
-		
+
 		FX->CommitChanges();
-		dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace); 
+		dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g]->VertOff, 0, Grp[g]->nVert, Grp[g]->FaceOff*3, Grp[g]->nFace);
 		gc->GetStats()->Vertices += Grp[g]->nVert;
 		gc->GetStats()->Draw++;
 	}
 
 	FX->EndPass();
-	FX->End();	
+	FX->End();
 }
 
 
@@ -1712,9 +1712,9 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 	if (!pVB) return;
 	if (DebugControls::IsActive()==false) return;
-	
-	Scene *scn = gc->GetScene(); 
-	
+
+	Scene *scn = gc->GetScene();
+
 	D3DXMATRIX q, qq;
 
 	static D3DVECTOR poly[10] = {
@@ -1738,8 +1738,8 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 		{0, 1, 0},
 		{0, 1, 1}
 	};
-	
-	
+
+
 
 	DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 	DWORD selmsh = *(DWORD*)gc->GetConfigParam(CFGPRM_GETSELECTEDMESH);
@@ -1757,10 +1757,10 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 		// ----------------------------------------------------------------
 		FX->SetMatrix(eW, pW);
-		FX->SetVector(eColor, &D3DXVECTOR4(0, 1, 0, 0.5f));	
+		FX->SetVector(eColor, &D3DXVECTOR4(0, 1, 0, 0.5f));
 		FX->SetTechnique(eBBTech);
 		// ----------------------------------------------------------------
-		
+
 		UINT numPasses = 0;
 		FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 		FX->BeginPass(0);
@@ -1769,31 +1769,31 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 			if (flags&DBG_FLAGS_SELGRPONLY && g!=selgrp) continue;
 			if (Grp[g]->UsrFlag & 0x2) continue;
-			
+
 			FX->SetVector(eAttennuate, &Grp[g]->BBox.min);
 			FX->SetVector(eInScatter, &Grp[g]->BBox.max);
 
 			// Apply Animations =========================================================================================
-			// 
+			//
 			if (Grp[g]->bTransform) {
 				if (bGlobalTF)  FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[g]->Transform));
 				else FX->SetMatrix(eGT, &Grp[g]->Transform);
 			}
 			else FX->SetMatrix(eGT, &mTransform);
-			
+
 
 			// Setup Mesh drawing options =================================================================================
-			// 
+			//
 			FX->CommitChanges();
 
-			dev->DrawPrimitiveUP(D3DPT_LINESTRIP, 9, &poly, sizeof(D3DVECTOR));	
-			dev->DrawPrimitiveUP(D3DPT_LINELIST, 3, &list, sizeof(D3DVECTOR));	
+			dev->DrawPrimitiveUP(D3DPT_LINESTRIP, 9, &poly, sizeof(D3DVECTOR));
+			dev->DrawPrimitiveUP(D3DPT_LINELIST, 3, &list, sizeof(D3DVECTOR));
 
 			gc->GetStats()->Draw+=2;
 		}
 
 		FX->EndPass();
-		FX->End();	
+		FX->End();
 	}
 
 	if (flags&DBG_FLAGS_SPHERES) {
@@ -1833,7 +1833,7 @@ void D3D9Mesh::BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box)
 void D3D9Mesh::TransformGroup(DWORD n, const D3DXMATRIX *m)
 {
 	if (!pVB) return;
-	
+
 	bBSRecompute = true;
 
 	Grp[n]->Transform = Grp[n]->Transform * (*m);
@@ -1848,7 +1848,7 @@ void D3D9Mesh::TransformGroup(DWORD n, const D3DXMATRIX *m)
 void D3D9Mesh::Transform(const D3DXMATRIX *m)
 {
 	if (!pVB) return;
-	
+
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
 	bGlobalTF = true;
@@ -1859,7 +1859,7 @@ void D3D9Mesh::Transform(const D3DXMATRIX *m)
 	for (DWORD i=0;i<nGrp;i++) {
 		if (Grp[i]->bTransform) {
 			if (bGlobalTF) D3DXMatrixMultiply(&pGrpTF[i], &mTransform, &Grp[i]->Transform);
-			else pGrpTF[i] = Grp[i]->Transform;	
+			else pGrpTF[i] = Grp[i]->Transform;
 		}
 		else pGrpTF[i] = mTransform;
 	}
@@ -1885,7 +1885,7 @@ void D3D9Mesh::UpdateBoundingBox()
 			}
 		}
 	}
-	
+
 	bBSRecomputeAll = false;
 	bBSRecompute = false;
 
@@ -1915,17 +1915,17 @@ void D3D9Mesh::UpdateBoundingBox()
 
 // ===========================================================================================
 //
-D9BBox * D3D9Mesh::GetAABB() 
-{ 
+D9BBox * D3D9Mesh::GetAABB()
+{
 	if (!pVB) return false;
 	UpdateBoundingBox();
-	return &BBox; 
+	return &BBox;
 }
 
 // ===========================================================================================
 //
-D9BBox * D3D9Mesh::GetAABBTransformed() 
-{ 
+D9BBox * D3D9Mesh::GetAABBTransformed()
+{
 	if (!pVB) return false;
 	UpdateBoundingBox();
 
@@ -1935,13 +1935,13 @@ D9BBox * D3D9Mesh::GetAABBTransformed()
 		D3DXVec3TransformCoord((LPD3DXVECTOR3)&BBoxT.max, (LPD3DXVECTOR3)&BBox.max, &mTransform);
 		return &BBoxT;
 	}
-	return &BBox; 
+	return &BBox;
 }
 
 // ===========================================================================================
 //
-D3DXVECTOR3 D3D9Mesh::GetBoundingSpherePos() 
-{ 
+D3DXVECTOR3 D3D9Mesh::GetBoundingSpherePos()
+{
 	if (!pVB) return D3DXVECTOR3(0,0,0);
 	UpdateBoundingBox();
 	return D3DXVECTOR3f4(BBox.bs);
@@ -1949,11 +1949,11 @@ D3DXVECTOR3 D3D9Mesh::GetBoundingSpherePos()
 
 // ===========================================================================================
 //
-float D3D9Mesh::GetBoundingSphereRadius() 
-{ 
+float D3D9Mesh::GetBoundingSphereRadius()
+{
 	if (!pVB) return 0.0f;
 	UpdateBoundingBox();
-	return BBox.bs.w; 
+	return BBox.bs.w;
 }
 
 // ===========================================================================================
@@ -1967,7 +1967,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 	result.vObj  = NULL;
 	result.face  = -1;
 	result.group = -1;
-	
+
 	if (!pVB) return result;
 
 	UpdateBoundingBox();
@@ -1999,8 +1999,8 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 		D3DXVECTOR3 _a, _b, _c, cp;
 
-		HR(pIB->Lock(Grp[g]->FaceOff*6, Grp[g]->nFace*6, (LPVOID*)&pIdc, 0)); 
-		HR(pGB->Lock(Grp[g]->VertOff*sizeof(D3DXVECTOR3), Grp[g]->nVert*sizeof(D3DXVECTOR3), (LPVOID*)&pVrt, 0)); 
+		HR(pIB->Lock(Grp[g]->FaceOff*6, Grp[g]->nFace*6, (LPVOID*)&pIdc, 0));
+		HR(pGB->Lock(Grp[g]->VertOff*sizeof(D3DXVECTOR3), Grp[g]->nVert*sizeof(D3DXVECTOR3), (LPVOID*)&pVrt, 0));
 
 		for (DWORD i=0;i<Grp[g]->nFace;i++) {
 
@@ -2008,7 +2008,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 			DWORD b = pIdc[i*3+1];
 			DWORD c = pIdc[i*3+2];
 
-			D3DXVec3TransformCoord(&_a, &pVrt[a], &mW); 
+			D3DXVec3TransformCoord(&_a, &pVrt[a], &mW);
 			D3DXVec3TransformCoord(&_b, &pVrt[b], &mW);
 			D3DXVec3TransformCoord(&_c, &pVrt[c], &mW);
 
@@ -2016,7 +2016,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 			D3DXVec3Cross(&cp, &(_a-_b), &(_c-_b));
 
-			if (D3DXVec3Dot(&cp, vDir)>0) { 
+			if (D3DXVec3Dot(&cp, vDir)>0) {
 				if (D3DXIntersectTri(&_c, &_b, &_a, &D3DXVECTOR3(0,0,0), vDir, &u, &v, &dst)) {
 					if (dst<result.dist) {
 						result.dist  = dst;
