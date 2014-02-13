@@ -58,7 +58,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
 	LoadMeshes();
-	ClearAnimations();
+	DisposeAnimations();
 	InitAnimations();
 }
 
@@ -73,7 +73,7 @@ vVessel::~vVessel ()
 		SAFE_RELEASE(pEnv[i]);
 	}
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
-	ClearAnimations();
+	DisposeAnimations();
 	ClearMeshes();
 	LogAlw("Vessel visual deleted succesfully");
 }
@@ -153,20 +153,23 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 			break;
 
 		case EVENT_VESSEL_RESETANIM:
-			LogErr("EVENT_VESSEL_RESETANIM Not Implemented");
+			LogBlu("EVENT_VESSEL_RESETANIM");
+			ResetAnimations();
+			break;
+
+		case EVENT_VESSEL_CLEARANIM:
+			LogBlu("EVENT_VESSEL_CLEARANIM");
+			ResetAnimations(context);
+			break;
+
+		case EVENT_VESSEL_DELANIM:
+			LogBlu("EVENT_VESSEL_DELANIM");
+			DelAnimation(context);
 			break;
 
 		case EVENT_VESSEL_NEWANIM:
 			LogBlu("EVENT_VESSEL_NEWANIM");
 			InitNewAnimations();
-			break;
-
-		case EVENT_VESSEL_DELANIM:
-			LogErr("EVENT_VESSEL_DELANIM Not Implemented");
-			break;
-
-		case EVENT_VESSEL_CLEARANIM:
-			LogErr("EVENT_VESSEL_CLEARANIM Not Implemented context=%u",context);
 			break;
 	}
 }
@@ -549,11 +552,49 @@ UINT vVessel::GrowAnimstateBuffer (UINT newSize)
 
 // ============================================================================================
 //
-void vVessel::ClearAnimations ()
+void vVessel::DisposeAnimations ()
 {
 	if (nanim) {
 		nanim = 0;
 		delete []animstate;
+	}
+}
+
+
+// ============================================================================================
+//
+void vVessel::ResetAnimations (UINT reset/*=1*/)
+{
+	// TODO: needed?
+	// bBSRecompute = true;
+
+	// nanim should stay the same, but just in case
+	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
+
+	if (reset == 1) {
+		for (UINT i = 0; i < nanim; ++i) {
+			for (UINT k = 0; k < anim[i].ncomp; ++k) {
+				animstate[i] = anim[i].defstate; // reset to default mesh state
+			}
+		}
+	}
+}
+
+
+// ============================================================================================
+//
+void vVessel::DelAnimation (UINT idx)
+{
+	// TODO: Check if this re-indexing is really right (or just do nothin')
+	UINT maxIdx = nanim-1;
+	if (idx > maxIdx) {
+		LogWrn("DelAnim() Index '%u' out of range (max. %u). Vessel %s",
+			   idx, maxIdx, vessel->GetClassNameA());
+	}
+	// Shift 'upper' animations one down (if not top element)
+	else if (idx < maxIdx) {
+		memcpy2(&animstate[idx], &animstate[idx+1], (nanim-1)*sizeof(double));
+		--nanim;
 	}
 }
 

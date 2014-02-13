@@ -119,7 +119,9 @@ protected:
 	void InitAnimations();
 	void InitAnimations(UINT meshidx);
 	void InitNewAnimations();
-	void ClearAnimations();
+	void DisposeAnimations();
+	void DelAnimation(UINT idx);
+	void ResetAnimations(UINT reset = 1);
 
 	/**
 	 * \brief Grow \ref animstate buffer (if needed)
