@@ -179,7 +179,7 @@ void LogBlu(const char *format, ...)
 	if (uEnableLog>1) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0xl%X)</font><font color=#1E90FF> ", my_ctime(&ltime), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#1E90FF> ", my_ctime(&ltime), th);
 
 		va_list args; 
 		va_start(args, format); 
