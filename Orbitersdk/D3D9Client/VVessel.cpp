@@ -74,7 +74,7 @@ vVessel::~vVessel ()
 	}
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
 	DisposeAnimations();
-	ClearMeshes();
+	DisposeMeshes();
 	LogAlw("Vessel visual deleted succesfully");
 }
 
@@ -301,7 +301,7 @@ void vVessel::LoadMeshes()
 {
 	_TRACE;
 	bBSRecompute = true;
-	if (nmesh) ClearMeshes();
+	if (nmesh) DisposeMeshes();
 
 	MESHHANDLE hMesh;
 	const D3D9Mesh *mesh;
@@ -427,7 +427,7 @@ void vVessel::InsertMesh(UINT idx)
 
 // ============================================================================================
 //
-void vVessel::ClearMeshes()
+void vVessel::DisposeMeshes()
 {
 	if (nmesh && meshlist) {
 		for (UINT i = 0; i < nmesh; i++) {
@@ -447,7 +447,7 @@ void vVessel::ClearMeshes()
 void vVessel::DelMesh(UINT idx)
 {
 	if (idx==0xFFFFFFFF) {
-		ClearMeshes();
+		DisposeMeshes();
 		return;
 	}
 
@@ -497,10 +497,14 @@ void vVessel::InitAnimations(UINT meshidx)
 	if (nanim > oldnanim) {
 		for (UINT i = oldnanim; i < nanim; ++i) {
 			for (UINT k = 0; k < anim[i].ncomp; ++k) {
-				ANIMATIONCOMP *AC = anim[i].comp[k];
-				animstate[i] = (AC->trans->mesh == meshidx)
-					         ? anim[i].defstate // reset to default mesh states
-							 : anim[i].state;
+				if (anim[i].comp[k]->trans->mesh == meshidx) {
+					animstate[i] = anim[i].defstate;
+					break; // inner (components) loop
+				}
+//			ANIMATIONCOMP *AC = anim[i].comp[k];
+//			animstate[i] = (AC->trans->mesh == meshidx)
+//			             ? anim[i].defstate // reset to default animation state
+//			             : anim[i].state;
 			}
 		}
 	}
@@ -555,8 +559,9 @@ UINT vVessel::GrowAnimstateBuffer (UINT newSize)
 void vVessel::DisposeAnimations ()
 {
 	if (nanim) {
-		nanim = 0;
+		LogAlw("Vessel(%s) Vis=0x%X: deleting %u animations", name, this, nanim);
 		delete []animstate;
+		nanim = 0;
 	}
 }
 
@@ -574,7 +579,7 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 	if (reset == 1) {
 		for (UINT i = 0; i < nanim; ++i) {
 			for (UINT k = 0; k < anim[i].ncomp; ++k) {
-				animstate[i] = anim[i].defstate; // reset to default mesh state
+				animstate[i] = anim[i].defstate; // reset to default animation state
 			}
 		}
 	}
@@ -1695,7 +1700,7 @@ static inline const int clip(int v, int vMin, int vMax)
 
 inline const char *value_string (char *buf, size_t buf_size, double val)
 {
-	static const char unit_prefixes[] = { 'µ', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
+	static const char unit_prefixes[] = { 'ï¿½', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
 
 	int index = (int) (log10(val)) / 3;
 	val /= pow(10.0, index*3);

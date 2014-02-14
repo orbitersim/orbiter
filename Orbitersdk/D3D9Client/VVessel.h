@@ -114,7 +114,7 @@ protected:
 
 	void LoadMeshes();
 	void InsertMesh(UINT idx);
-	void ClearMeshes();
+	void DisposeMeshes();
 	void DelMesh(UINT idx);
 	void InitAnimations();
 	void InitAnimations(UINT meshidx);
