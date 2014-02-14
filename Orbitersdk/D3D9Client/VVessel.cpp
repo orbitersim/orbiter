@@ -1700,7 +1700,7 @@ static inline const int clip(int v, int vMin, int vMax)
 
 inline const char *value_string (char *buf, size_t buf_size, double val)
 {
-	static const char unit_prefixes[] = { 'ï¿½', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
+	static const char unit_prefixes[] = { 'µ', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
 
 	int index = (int) (log10(val)) / 3;
 	val /= pow(10.0, index*3);
