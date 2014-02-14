@@ -376,7 +376,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 pDev)
 	if (!active) return false;
 
 	if (DebugControls::IsActive()) {
-		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		DWORD displ  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
 		vObject *vSel =  DebugControls::GetVisual();
 		if (vSel && displ>0) {

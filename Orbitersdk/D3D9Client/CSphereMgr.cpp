@@ -111,10 +111,10 @@ CSphereManager::~CSphereManager ()
 {
 	if (disabled) return;
 
-	DWORD i, maxidx = patchidx[maxbaselvl];
+	// DWORD i, maxidx = patchidx[maxbaselvl];
 
 	if (ntex) {
-		for (i = 0; i < ntex; i++)
+		for (DWORD i = 0; i < ntex; ++i)
 			ReleaseTex(texbuf[i]);
 		delete []texbuf;
 	}
@@ -182,8 +182,6 @@ bool CSphereManager::LoadTileData ()
 
 void CSphereManager::LoadTextures ()
 {
-	int i;
-
 	// pre-load level 1-8 textures
 	char fname[256];
 	strcpy (fname, texname);
@@ -197,7 +195,7 @@ void CSphereManager::LoadTextures ()
 		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
 		while ((int)ntex > patchidx[maxbaselvl]) ReleaseTex(texbuf[--ntex]);
 		// not enough textures loaded for requested resolution level
-		for (i = 0; i < patchidx[maxbaselvl]; i++)
+		for (int i = 0; i < patchidx[maxbaselvl]; ++i)
 			tiledesc[i].tex = texbuf[i];
 	} else {
 		delete []texbuf;

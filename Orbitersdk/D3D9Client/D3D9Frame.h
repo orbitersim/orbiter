@@ -44,7 +44,6 @@ class CD3DFramework9
     HWND                 hWnd;               // The window object
     BOOL                 bIsFullscreen;      // Fullscreen vs. windowed
 	BOOL				 bVertexTexture;
-	BOOL				 bShadowMap;
 	BOOL				 bAAEnabled;
 	BOOL				 bNoVSync;           // don't use vertical sync in fullscreen
 	BOOL				 Alpha;

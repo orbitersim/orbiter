@@ -248,14 +248,14 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 2.0]");
 		macro[0].Definition = "vs_2_0";
 		macro[1].Definition = "ps_2_0";
-		sprintf_s(name,256,"Modules/D3D9Client20/D3D9Client.fx",folder);
+		sprintf_s(name,256,"Modules/D3D9Client20/D3D9Client.fx");//,folder);
 	}
 	else {
 		LogAlw("[Compiling Effects for Shader Model 3.0]");
 		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
 		macro[0].Definition = "vs_3_0";
 		macro[1].Definition = "ps_3_0";
-		sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx",folder);
+		sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");//,folder);
 	}
 	
 	

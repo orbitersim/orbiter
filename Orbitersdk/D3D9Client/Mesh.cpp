@@ -1134,8 +1134,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 	Scene *scn = gc->GetScene();
 
-	float mix = 0.0f;
-	bool bClamp = false;
 	bool bMeshCull = true;
 	bool bTextured = true;
 	bool bGroupCull = true;
@@ -1427,8 +1425,6 @@ void D3D9Mesh::RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3D
 		if ((displ==2 || displ==3) && uCurrentMesh!=selmsh) return;
 	}
 
-	float mix = 0.0f;
-
 	bool bTextured = false;
 
 	D3DXMATRIX mWorldView,  q;
@@ -1713,7 +1709,7 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 	if (!pVB) return;
 	if (DebugControls::IsActive()==false) return;
 
-	Scene *scn = gc->GetScene();
+	// Scene *scn = gc->GetScene();
 
 	D3DXMATRIX q, qq;
 

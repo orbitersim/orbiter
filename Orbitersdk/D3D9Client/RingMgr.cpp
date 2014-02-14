@@ -89,7 +89,7 @@ DWORD RingManager::LoadTextures ()
 bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)
 {
 	MATRIX3 grot;
-	static D3DXMATRIX imat, *ringmat;
+	static D3DXMATRIX imat;
 	D3DXVECTOR3 q(mWorld._11, mWorld._21, mWorld._31);
 	float scale = D3DXVec3Length(&q);
 	

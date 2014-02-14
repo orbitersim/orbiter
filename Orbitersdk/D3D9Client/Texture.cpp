@@ -75,9 +75,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 {
 	_TRACE;
 
-	HRESULT hr = S_OK;
 	char cpath[256];
-	int ntex = 0;
 
 	if (gc->TexturePath (fname, cpath)) {
 
@@ -85,6 +83,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 
 		if (fopen_s(&f, cpath, "rb")) return 0;
 
+		int ntex = 0;
 		char *buffer, *location;
 		fseek(f, 0, SEEK_END);
 		long size = ftell(f);
@@ -227,5 +226,4 @@ DWORD TextureManager::MakeTexId (const char *fname)
 	DWORD id = 0;
 	for (const char *c = fname; *c; c++) id += *c;
 	return id;
-	return 0;
 }

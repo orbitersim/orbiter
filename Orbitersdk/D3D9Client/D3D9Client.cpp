@@ -349,7 +349,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bVertexTex  = (pFramework->HasVertexTextureSup() == TRUE);
 	bVSync		= (pFramework->GetVSync() == TRUE);
 
-	char fld[] = {"D3D9Client\0"};
+	char fld[] = "D3D9Client";
 
 	if (bGDIBB) Config->SketchpadMode = 1;
 

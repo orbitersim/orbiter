@@ -95,8 +95,7 @@ void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dua
 	if (dual && cdist<1.001) return;	// Enabled 04.06.2011
 
 	VECTOR3 cpos = {0,cdist,0};
-	double id = 1.0 / max (cdist, 1.001); 
-	double id2 = 1.0 / cdist;
+	double id = 1.0 / max (cdist, 1.001);
 	double visrad = acos (id);             // aperture of visibility sector
 	double sinv = sin(visrad);
 
@@ -138,7 +137,7 @@ void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dua
 	psun = mul (rrmat, psun);  // sun in camera-relative horizon coords
 	VECTOR3 cs = psun-cpos; normalise(cs); // camera->sun
 	normalise (psun);
-	float psunx = (float)psun.x, psuny = (float)psun.y, psunz = (float)psun.z;
+	// float psunx = (float)psun.x, psuny = (float)psun.y, psunz = (float)psun.z;
 
 	colofs = (dual ? 0.4 : 0.3);
 

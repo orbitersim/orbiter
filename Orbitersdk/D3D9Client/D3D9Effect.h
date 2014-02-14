@@ -53,14 +53,14 @@ public:
 	static void RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
 	static bool ComputeLighting(LPDIRECT3DCUBETEXTURE9 pEnv, LPDIRECT3DCUBETEXTURE9 pLight, LPDIRECT3DCUBETEXTURE9 pTgt);
 	
-	static LPDIRECT3DDEVICE9 pDev;
-	static LPDIRECT3DVERTEXBUFFER9 pVB;
-	static LPDIRECT3DTEXTURE9 pNoise;
-	static SURFHANDLE hNoise;
+	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device
+	static LPDIRECT3DVERTEXBUFFER9 pVB; ///< Static (global) Vertex buffer pointer
+	static LPDIRECT3DTEXTURE9 pNoise;   ///< Static (global) noise texture
+	static SURFHANDLE hNoise;           ///< Static (global) noise surface handle
 	
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
-	static D3D9Client   *gc;
+	static D3D9Client   *gc; ///< The graphics client instance
 	static D3D9Mesh     *hArrow;
 
 	static D3D9MatExt	defmat;

@@ -82,15 +82,15 @@ TileManager::TileManager (D3D9Client *gclient, const vPlanet *vplanet) : D3D9Eff
 
 TileManager::~TileManager ()
 {
-	DWORD i, maxidx = patchidx[maxbaselvl];
+	DWORD i;
 
 	if (ntex && texbuf) {
-		for (i = 0; i < ntex; i++)
+		for (i = 0; i < ntex; ++i)
 			ReleaseTex(texbuf[i]);
 		delete []texbuf;
 	}
 	if (nmask && specbuf) {
-		for (i = 0; i < nmask; i++)
+		for (i = 0; i < nmask; ++i)
 			ReleaseTex(specbuf[i]);
 		delete []specbuf;
 	}
@@ -1357,8 +1357,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 	bool load;
 	bool bManaged = (Config->ManagedTiles==1);
 	static QUEUEDESC qd;
-	static int nloaded = 0; // temporary
-	DWORD flag = (tb->bLoadMip ? 0:4);
+	// DWORD flag = (tb->bLoadMip ? 0:4);
 	DWORD idle = 1000/Config->PlanetLoadFrequency;
 	char fname[256];
 

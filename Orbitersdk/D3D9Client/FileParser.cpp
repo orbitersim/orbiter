@@ -251,7 +251,6 @@ bool FileParser::ParsePlanet(const char *_name)
 		char name[256];
 		char path[256];
 		char def[256];
-		bool bDefault = false;
 		bool bHasPath = false;
 
 		sprintf_s(path, 256, "%s%s.cfg", OapiExtension::GetConfigDir(), _name);

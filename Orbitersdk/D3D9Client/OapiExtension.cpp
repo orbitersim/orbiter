@@ -176,7 +176,7 @@ bool OapiExtension::GetConfigParameter(void)
 		}
 
 		if (oapiReadItem_string(f, "Bodyforces", string)) {
-			if (3 == sscanf_s(string, "%u %f %f", &flags, &scale, &opacity)) {
+			if (3 == sscanf_s(string, "%lu %f %f", &flags, &scale, &opacity)) {
 				showBodyForceVectorsFlags = flags;
 				bodyForceScale = scale;
 				bodyForceOpacity = opacity;
@@ -184,7 +184,7 @@ bool OapiExtension::GetConfigParameter(void)
 		}
 
 		if (oapiReadItem_string(f, "CoordinateAxes", string)) {
-			if (3 == sscanf_s(string, "%u %f %f", &flags, &scale, &opacity)) {
+			if (3 == sscanf_s(string, "%lu %f %f", &flags, &scale, &opacity)) {
 				showCoordinateAxesFlags = flags;
 				coordinateAxesScale = scale;
 				coordinateAxesOpacity = opacity;

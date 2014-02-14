@@ -271,7 +271,6 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 	pCurrentVisual = this;
 
 	DWORD i;
-	bool modlight = false;
 
 	// render tiles
 	if (tilemesh) {

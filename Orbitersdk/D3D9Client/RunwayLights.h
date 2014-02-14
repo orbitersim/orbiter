@@ -77,13 +77,11 @@ protected:
 	VECTOR3 VASI[2];
 	DWORD VASI_end[2];
 
-	int numLights;
 	BeaconArray* beacons1;
 	BeaconArray* beacons2;
 	BeaconArray* vasi[2];
 	BeaconArray* papi[12];
 	
-	const char * filename; 
 	const class Scene * scene;
 	float currentTime;	
 };
@@ -116,10 +114,8 @@ protected:
 	VECTOR3		color;
 	double		size;
 	int			count;
-	int			numLights;
 
 	BeaconArray* beacons1;
-	const char * filename; 
 	const class Scene * scene;
 	float		 currentTime;	
 };

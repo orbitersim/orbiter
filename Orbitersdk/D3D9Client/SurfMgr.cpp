@@ -188,12 +188,11 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 		HR(FX->SetVector(eTexOff, &D3DXVECTOR4(tuscale,tuofs,tvscale,tvofs)));
 	}
 
-	float x = 0.6f;
-	
 	DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 
 	if (DebugControls::IsActive()) {
 		if (flags&DBG_FLAGS_TILES) {
+			float x = 0.6f;
 			FX->SetBool(eDebugHL, true);
 			switch(lvl) {
 				case 14: FX->SetVector(eColor, &D3DXVECTOR4(x, 0, 0, 0)); break;

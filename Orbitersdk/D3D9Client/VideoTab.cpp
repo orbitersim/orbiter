@@ -253,7 +253,7 @@ void VideoTab::Initialise()
 void VideoTab::SelectMode(DWORD index)
 {
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
-	DWORD dat = SendDlgItemMessage(hTab, IDC_VID_MODE, CB_GETITEMDATA, index, 0);
+	SendDlgItemMessage(hTab, IDC_VID_MODE, CB_GETITEMDATA, index, 0);
 	data->modeidx = index + data->modeidx&0xFF00;
 }
 

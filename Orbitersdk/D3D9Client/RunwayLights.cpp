@@ -34,9 +34,19 @@ RunwayLights::RunwayLights(OBJHANDLE handle, const class Scene *scn)
 	hObj  = handle;
 	nVASI = 0;
 	bSingleEnded = false;
+	bDisp2 = false;
 
-	for (int i=0;i<12;i++) papi[i]=NULL;
-	for (int i=0;i<2;i++) vasi[i]=NULL;
+	for (int i=0; i<12; ++i) {
+		PAPI_pos[i] = _V(0,0,0);
+		PAPI_disp[i] = 0.0;
+		PAPI_end[i] = 0;
+		papi[i] = NULL;
+	}
+	for (int i=0; i<2; ++i) {
+		VASI[i] = _V(0,0,0);
+		VASI_end[i] = 0;
+		vasi[i] = NULL;
+	}
 
 	beacons1 = beacons2 = NULL;
 	currentTime = 0.0f;
@@ -177,7 +187,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	}
 
 	// Not a critical. Must be higher than actual number of lights. Only used for memory allocation
-	numLights = 2 * (numLightsEdge*4 + numLightsEnd*3 + numLightsTouch*3*2 + numLightsDecision*3*2 + numLightsApproach*5); // total lights
+	int numLights = 2 * (numLightsEdge*4 + numLightsEnd*3 + numLightsTouch*3*2 + numLightsDecision*3*2 + numLightsApproach*5); // total lights
 	
 	float lightAngle = float(Config->RwyLightAngle);
 	float brightness = float(Config->RwyBrightness);
@@ -851,7 +861,7 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, con
 				{
 					VECTOR3 vec; DWORD u, q;
 				
-					int n = sscanf(cbuf, "PAPI %lf %lf %lf %u %u", &vec.x, &vec.y, &vec.z, &u, &q);
+					int n = sscanf(cbuf, "PAPI %lf %lf %lf %lu %lu", &vec.x, &vec.y, &vec.z, &u, &q);
 
 					if (n==3) {
 						lights[numRunwayLights-1]->AddPAPI(vec,  1, 0);
@@ -878,7 +888,7 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, con
 				else if(!strncmp(cbuf, "VASI", 4))
 				{
 					VECTOR3 vec; DWORD e;
-					int n = sscanf(cbuf, "VASI %lf %lf %lf %u", &vec.x, &vec.y, &vec.z, &e);
+					int n = sscanf(cbuf, "VASI %lf %lf %lf %lu", &vec.x, &vec.y, &vec.z, &e);
 					if (n==3) {
 						lights[numRunwayLights-1]->AddVASI(vec, 0);
 						lights[numRunwayLights-1]->AddVASI(vec, 1);
