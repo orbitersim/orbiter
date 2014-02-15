@@ -114,7 +114,7 @@ void RunwayLights::SetApproachStart(double dist)
 
 void RunwayLights::AddPAPI(VECTOR3 pos, float disp, DWORD end)
 {
-	if (nPAPI>12) return;
+	if (nPAPI>=12) return;
 	PAPI_pos[nPAPI] = pos;
 	PAPI_disp[nPAPI] = disp;
 	PAPI_end[nPAPI] = end;
@@ -123,7 +123,7 @@ void RunwayLights::AddPAPI(VECTOR3 pos, float disp, DWORD end)
 
 void RunwayLights::AddVASI(VECTOR3 pos, DWORD end)
 {
-	if (nVASI>2) return;
+	if (nVASI>=2) return;
 	VASI[nVASI] = pos;
 	VASI_end[nVASI] = end;
 	nVASI++;
