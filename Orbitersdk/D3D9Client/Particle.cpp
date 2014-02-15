@@ -636,7 +636,7 @@ void ExhaustStream::Update ()
 		}
 	}
 
-	if (level && *level > 0 && (alpha0 = Level2Alpha(*level) * Atm2Alpha (vessel->GetAtmDensity())) > 0.01) {
+	if (level && *level > 0 && vessel && (alpha0 = Level2Alpha(*level) * Atm2Alpha (vessel->GetAtmDensity())) > 0.01) {
 		if (simt > t0+interval) {
 			VECTOR3 vp, vv;
 			MATRIX3 vR;
