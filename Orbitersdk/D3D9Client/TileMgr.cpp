@@ -1082,7 +1082,7 @@ void TileManager::CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int n
 
 	// generate faces
 	nIdx = (reduce ? res * (2*bseg-res) : 2*res*bseg) * 3;
-	WORD *Idx = new WORD[nIdx];
+	WORD *Idx = new WORD[nIdx]();
 
 	for (i = n = nofs0 = 0; i < res; i++) {
 		nseg = (reduce ? bseg-i : bseg);
