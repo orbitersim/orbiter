@@ -222,7 +222,6 @@ bool vPlanet::Update ()
 
 	if (patchres==0) return true;
 
-	int i, j;
 	float rad_scale = rad;
 	bool rescale = false;
 	dist_scale = 1.0f;
@@ -273,7 +272,11 @@ bool vPlanet::Update ()
 		// world matrix for cloud layer
 		memcpy2 (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DXMATRIX));
 
-		for (i = 0; i < 3; i++)	for (j = 0; j < 3; j++)	clouddata->mWorldC.m[i][j] *= cloudscale;
+		for (int i = 0; i < 3; ++i) {
+			for (int j = 0; j < 3; ++j) {
+				clouddata->mWorldC.m[i][j] *= cloudscale;
+			}
+		}
 		
 		// set microtexture intensity
 		double alt = cdist-rad;

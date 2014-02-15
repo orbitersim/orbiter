@@ -41,10 +41,10 @@ CelestialSphere::CelestialSphere(D3D9Client *_gc)
 
 CelestialSphere::~CelestialSphere()
 {
-	DWORD i;
-
 	if (nsbuf) {
-		for (i = 0; i < nsbuf; i++)	svtx[i]->Release();
+		for (DWORD i = 0; i < nsbuf; ++i) {
+			svtx[i]->Release();
+		}
 		delete []svtx;
 	}
 	if (ncline) delete []cnstvtx;

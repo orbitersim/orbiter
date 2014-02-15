@@ -452,7 +452,6 @@ float D3D9Text::Print(LPD3DXCOLOR color, int x, int y, const char *str, int len,
 {
 	static WORD cIndex[6] = {0,2,1,0,3,2};
 
-	float length = 0.0;
 	float xpos = float(x);
 	float ypos = float(y);
 	float x_orig = xpos;
@@ -471,7 +470,6 @@ float D3D9Text::Print(LPD3DXCOLOR color, int x, int y, const char *str, int len,
 	if (valign==2) ypos -= tm.tmHeight;
 	
 	UINT numPasses = 0;
-	HRESULT hr = -1;
 
 	xpos = ceil(xpos);
 	ypos = ceil(ypos);

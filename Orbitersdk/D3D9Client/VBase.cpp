@@ -270,22 +270,20 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 
 	pCurrentVisual = this;
 
-	DWORD i;
-
 	// render tiles
 	if (tilemesh) {
 		uCurrentMesh = 0; // Used for debugging
 		tilemesh->SetSunLight(&sunLight);
 		tilemesh->RenderBaseTile(dev, &mWorld);
-		uCurrentMesh++;
+		++uCurrentMesh;
 	}
 
 	// render generic objects under shadows
 	if (nstructure_bs) {
-		for (i = 0; i < nstructure_bs; i++) {
+		for (DWORD i = 0; i < nstructure_bs; ++i) {
 			structure_bs[i]->SetSunLight(&sunLight);
 			structure_bs[i]->Render(dev, &mWorld, RENDER_BASEBS);
-			uCurrentMesh++;
+			++uCurrentMesh;
 		}
 	}
 
@@ -307,7 +305,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	for (DWORD i=0; i<nstructure_as; i++) {
 		structure_as[i]->SetSunLight(&sunLight);
 		structure_as[i]->RenderBase(dev, &mWorld);
-		uCurrentMesh++;
+		++uCurrentMesh;
 	}
 	return true;
 }

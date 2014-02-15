@@ -284,8 +284,6 @@ bool TileManager::AddSubtileData (TILEDESC &td, TILEFILESPEC *tfs, DWORD idx, DW
 
 void TileManager::LoadTextures (char *modstr)
 {
-	int i;
-
 	// pre-load level 1-8 textures
 	ntex = patchidx[maxbaselvl];
 	texbuf = new LPDIRECT3DTEXTURE9[ntex];
@@ -300,7 +298,7 @@ void TileManager::LoadTextures (char *modstr)
 		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
 		while ((int)ntex > patchidx[maxbaselvl]) ReleaseTex(texbuf[--ntex]);
 		// not enough textures loaded for requested resolution level
-		for (i = 0; i < patchidx[maxbaselvl]; i++)
+		for (int i = 0; i < patchidx[maxbaselvl]; ++i)
 			tiledesc[i].tex = texbuf[i];
 	} else {
 		delete []texbuf;
@@ -405,11 +403,12 @@ void TileManager::AddSubtileTextures (TILEDESC *td, LPDIRECT3DTEXTURE9 *tbuf, DW
 
 void TileManager::LoadSpecularMasks ()
 {
-	int i;
-	DWORD n;
-	char fname[256];
-
 	if (nmask) {
+
+		int i;
+		DWORD n;
+		char fname[256];
+
 		strcpy_s (fname, 256, objname);
 		strcat_s (fname, 256, "_lmask.tex");
 		

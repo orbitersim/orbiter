@@ -806,7 +806,6 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 	bBSRecompute = true;
 
 	GROUPREC *g = Grp[grp];
-	DWORD i, vi;
 	DWORD flag = ges->flags;
 
 	if (flag & GRPEDIT_SETUSERFLAG)	     g->UsrFlag  = ges->UsrFlag;
@@ -815,6 +814,7 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 
 	if (flag & GRPEDIT_VTX) {
 		NMVERTEX *vtx = LockVertexBuffer(grp);
+		DWORD i, vi;
 		if (vtx) {
 			for (i = 0; i < ges->nVtx; i++) {
 				vi = (ges->vIdx ? ges->vIdx[i] : i);

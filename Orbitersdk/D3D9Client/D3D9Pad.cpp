@@ -792,9 +792,9 @@ int D3D9Pad::CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out)
 
 			case 1: 
 			{
-				WORD a = Out[idx] = In[mod(x-1,npt)]; idx++;
-				WORD b = Out[idx] = In[mod(x,npt)]; idx++;
-				WORD c = Out[idx] = In[mod(x+1,npt)]; idx++;
+				/*WORD a = */Out[idx] = In[mod(x-1,npt)]; idx++;
+				/*WORD b = */Out[idx] = In[mod(x,npt)]; idx++;
+				/*WORD c = */Out[idx] = In[mod(x+1,npt)]; idx++;
 				npt--;
 				for (int i=x;i<npt;i++) In[i]=In[i+1];
 				x = mod(x-1,npt);

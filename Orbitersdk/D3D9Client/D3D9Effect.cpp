@@ -407,9 +407,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	D3DXVECTOR3 *pVert;
 
-	float angle=0.0f, step=float(PI2)/255.0f;
-	
 	if (pVB->Lock(0,0,(void **)&pVert,0)==S_OK) {
+		float angle=0.0f, step=float(PI2)/255.0f;
 		pVert[0] = D3DXVECTOR3(0,0,0);
 		for (int i=1;i<256;i++) {
 			pVert[i].x = 0;
@@ -452,13 +451,13 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 
 	double len  = length(cam - pla);
 	double rad  = oapiGetSize(hPlanet);
-	double l2   = len*len;
-	double r2   = rad*rad;
 	
 	sun = unit(sun - cam);	// Vector pointing to sun from camera
 	cam = unit(cam - pla);	// Vector pointing to cam from planet
 	
 	/*
+	double l2   = len*len;
+	double r2   = rad*rad;
 	double beta  = acos(dotp(cam, sun));
 	double delta = beta * 0.5;
 	double step  = beta * 0.25;

@@ -252,9 +252,9 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 
 	for(k=0; k<(numLightsEdge-1); k++,i+=4)
 	{
-		VECTOR3 _distanceCalc = _current - _start;
-		double distanceFront = length(_distanceCalc);
-		_distanceCalc = _current - _end;
+		// VECTOR3 _distanceCalc = _current - _start;
+		// double distanceFront = length(_distanceCalc);
+		VECTOR3 _distanceCalc = _current - _end;
 		double distanceBack = length(_distanceCalc);
 
 		beaconsEntry1[i+0] = edgeLight;
@@ -612,11 +612,10 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 	_start += _td_disp;
 	_direction = _end - _start;
 
-	double len = length(_direction); // Length of the runway
-	double limit = 59.0;
-	
-	float lightAngle = float(Config->RwyLightAngle);
-	float brightness = float(Config->RwyBrightness);
+	// double len = length(_direction); // Length of the runway
+	// double limit = 59.0;
+	// float lightAngle = float(Config->RwyLightAngle);
+	// float brightness = float(Config->RwyBrightness);
 
 	// Main lights vectors
 	VECTOR3 _current; // Incremented in the for loop

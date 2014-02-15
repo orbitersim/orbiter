@@ -980,7 +980,6 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 	_TRACER;
 	bClear = false;
 
-	DWORD color = 0;
 	LPRECT r;
 	RECT re;
 
@@ -992,7 +991,7 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 		HDC hDC = GetDCHard();
 
 		if (hDC) {
-			color = RGB((c>>16)&0xFF, (c>>8)&0xFF, c&0xFF);
+			DWORD color = RGB((c>>16)&0xFF, (c>>8)&0xFF, c&0xFF);
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
 			HGDIOBJ hOld = SelectObject(hDC, hBrush);
 			Rectangle(hDC,r->left,r->top,r->right,r->bottom);
@@ -1026,14 +1025,12 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 //
 bool D3D9ClientSurface::Clear(DWORD c)
 {
-	DWORD color = 0;
-
 	if (desc.Pool==D3DPOOL_SYSTEMMEM || desc.Usage&D3DUSAGE_DYNAMIC) {
 
 		HDC hDC = GetDCHard();
 
 		if (hDC) {
-			color = RGB((c>>16)&0xFF, (c>>8)&0xFF, c&0xFF);
+			DWORD color = RGB((c>>16)&0xFF, (c>>8)&0xFF, c&0xFF);
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
 			RECT r; r.left = 0; r.top = 0; r.right = desc.Width; r.bottom = desc.Height;
 			FillRect(hDC, &r, hBrush);
@@ -1258,12 +1255,6 @@ bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const
 bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 {
 	char cpath[256];
-	char xpath[256];
-	char nname[128];
-	char sname[128];
-	char ename[128];
-	char bname[128];
-	char rname[128];
 
 	bClear = false;
 
@@ -1275,6 +1266,13 @@ bool D3D9ClientSurface::LoadTexture(const char *fname, int flags)
 	// Construct normal map name
 	//
 	if (gc->TexturePath(fname, cpath)) {
+
+		char xpath[256];
+		char nname[128];
+		char sname[128];
+		char ename[128];
+		char bname[128];
+		char rname[128];
 
 		if (Config->UseNormalMap) {
 			CreateName(nname, 128, fname, "norm");
