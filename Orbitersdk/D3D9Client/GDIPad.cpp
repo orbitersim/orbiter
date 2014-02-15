@@ -124,6 +124,7 @@ void GDIPad::SetBackgroundMode (BkgMode mode)
 	switch (mode) {
 		case BK_TRANSPARENT: bkmode = TRANSPARENT; break;
 		case BK_OPAQUE:      bkmode = OPAQUE; break;
+		default: return;
 	}
 	SetBkMode (hDC, bkmode);
 }
