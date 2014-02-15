@@ -263,7 +263,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {
-			if (sscanf_s(cbuf, "MESH %s", &meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (sscanf_s(cbuf, "MESH %s", meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			if (HasMesh(meshname) && bAppend) meshname[0]=0;
 			continue;
 		}
