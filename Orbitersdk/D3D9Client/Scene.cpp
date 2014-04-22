@@ -75,7 +75,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	D3DXMatrixIdentity(&mView);
 
 	SetCameraAperture(RAD*50.0, double(viewH)/double(viewW));
-	SetCameraFustrumLimits(2.5f, 5e6f); // initial limits
+	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
 	csphere = new CelestialSphere(gc);
 
@@ -839,7 +839,7 @@ void Scene::RenderMainScene()
 		if (camMode!=0) znear = 0.1f;
 	}
 
-	SetCameraFustrumLimits(znear, 2e7f);
+	SetCameraFrustumLimits(znear, 2e7f);
 
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background
@@ -964,9 +964,9 @@ void Scene::RenderMainScene()
 
 		// double nplane, fplane;
 		// plist[i].vo->RenderZRange (&nplane, &fplane);
-		// cam->SetFustrumLimits (nplane, fplane);
+		// cam->SetFrustumLimits (nplane, fplane);
 		// since we are not using z-buffers here, we can adjust the projection
-		// matrix at will to make sure the object is within the viewing fustrum
+		// matrix at will to make sure the object is within the viewing frustum
 
 		OBJHANDLE hObj = plist[i].vo->Object();
 		bool isActive = plist[i].vo->IsActive();
@@ -1155,7 +1155,7 @@ void Scene::RenderMainScene()
 		if (znear<0.01) znear=0.01;
 		if (znear>1.0)  znear=1.0;
 		OBJHANDLE hFocus = oapiGetFocusObject();
-		SetCameraFustrumLimits(znear, oapiGetSize(hFocus));
+		SetCameraFrustumLimits(znear, oapiGetSize(hFocus));
 		vFocus->Render(pDevice, true);
 	}
 
@@ -1596,7 +1596,7 @@ void Scene::SetCameraAperture(double _ap, double _as)
 
 // ===========================================================================================
 //
-void Scene::SetCameraFustrumLimits (double nearlimit, double farlimit)
+void Scene::SetCameraFrustumLimits (double nearlimit, double farlimit)
 {
 	nearplane = (float)nearlimit;
 	farplane = (float)farlimit;

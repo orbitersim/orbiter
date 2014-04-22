@@ -1193,7 +1193,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		}
 	}
 
-	gc->GetScene()->SetCameraFustrumLimits(eCam->near_clip, 2e7f);
+	gc->GetScene()->SetCameraFrustumLimits(eCam->near_clip, 2e7f);
 
 	// -----------------------------------------------------------------------------------------------
 	//

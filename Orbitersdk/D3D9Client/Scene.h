@@ -154,7 +154,7 @@ public:
 	// Camera Interface
 	//
 	void		SetCameraAperture(double _ap, double _as);
-	void		SetCameraFustrumLimits(double nearlimit, double farlimit);
+	void		SetCameraFrustumLimits(double nearlimit, double farlimit);
 	void		UpdateCameraFromOrbiter();
 	void		SetupCustomCamera(D3DXMATRIX mNew, VECTOR3 disp, double apr, double asp);
 
@@ -252,12 +252,12 @@ private:
 	static oapi::Pen *lblPen[6];
 	int   labelSize[1];
 
-	// camera fustrum parameters ========================================================
+	// camera frustum parameters ========================================================
 	//
 	float  aperture;        // aperture [rad]
 	float  aspect;          // aspect ratio
-	float  nearplane;       // fustrum nearplane distance
-	float  farplane;        // fustrum farplane distance
+	float  nearplane;       // frustum nearplane distance
+	float  farplane;        // frustum farplane distance
 	float  apsq;
 	float  vh,vw,vhf,vwf;
 	bool   bCustomCam;		// true if a custom camera mode is in use. (apply camera_offset)

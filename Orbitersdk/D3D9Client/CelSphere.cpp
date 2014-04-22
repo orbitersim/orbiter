@@ -30,7 +30,7 @@ CelestialSphere::CelestialSphere(D3D9Client *_gc)
 	pDevice = _gc->GetDevice();
 	sphere_r = 1e6f; // the actual render distance for the celestial sphere
 	                 // is irrelevant, since it is rendered without z-buffer,
-	                 // but it must be within the fustrum limits - check this
+	                 // but it must be within the frustum limits - check this
 	                 // in case the near and far planes are dynamically changed!
 	LoadStars ();
 	LoadConstellationLines ();
