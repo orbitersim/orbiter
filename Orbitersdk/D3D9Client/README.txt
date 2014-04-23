@@ -32,17 +32,14 @@ To compile the sources of the D3D9 graphics client, you need:
   https://developer.nvidia.com/nvapi
 
   If you don't like to install the NVIDIA API (it's not needed if stereoscopic
-  option should not be available in the client), you might need to add an empty
-  header "nvapi.h" into the main source directory (Orbitersdk\D3D9Client\).
-  That file does not need to contain anything, but here's an example that says
-  it all:
+  option should not be available in the client), you do not need to do anything.
 
-  // ==============================================================
-  // nvapi.h
-  // Dummy header to be able to build the D3D9Client without
-  // the NVIDIA NvAPI interface installed.
-  // ==============================================================
-
+  During the build process (pre compiling) a dummy header "nvapi.h" will be
+  generated into the main source directory (Orbitersdk\D3D9Client\)
+  automatically if it does not yet exist.
+  This also means that if you *have* installed the NVIDIA API and copied the
+  header file into the main source directory (Orbitersdk\D3D9Client\) it will
+  *not* be touched or overwritten by any further build process.
 
 * To recompile the D3D9 source documentation you need Doxygen from
 

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -100,6 +100,15 @@
     <PostBuildEvent>
       <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>if not exist "$(SolutionDir)nvapi.h" (
+  echo // ==============================================================&gt;"$(SolutionDir)nvapi.h"
+  echo // nvapi.h&gt;&gt;"$(SolutionDir)nvapi.h"
+  echo // Dummy header to be able to build the D3D9Client without&gt;&gt;"$(SolutionDir)nvapi.h"
+  echo // the NVIDIA NvAPI interface installed.&gt;&gt;"$(SolutionDir)nvapi.h"
+  echo // ==============================================================&gt;&gt;"$(SolutionDir)nvapi.h"
+)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -143,6 +152,15 @@
     <PostBuildEvent>
       <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>if not exist "$(SolutionDir)nvapi.h" (
+  echo // ==============================================================&gt;"$(SolutionDir)nvapi.h"
+  echo // nvapi.h&gt;&gt;"$(SolutionDir)nvapi.h"
+  echo // Dummy header to be able to build the D3D9Client without&gt;&gt;"$(SolutionDir)nvapi.h"
+  echo // the NVIDIA NvAPI interface installed.&gt;&gt;"$(SolutionDir)nvapi.h"
+  echo // ==============================================================&gt;&gt;"$(SolutionDir)nvapi.h"
+)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABBUtil.cpp" />
