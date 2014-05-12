@@ -405,6 +405,7 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo, DWORD idx)
 	if (Lights==NULL) return;
 
 	D3D9Light lght;
+	memset2(&lght, 0, sizeof(D3D9Light)); 
 
 	switch (le->GetType()) {
 	
