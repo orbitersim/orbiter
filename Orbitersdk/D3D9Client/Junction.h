@@ -5,7 +5,8 @@
 // Copyright (C) 2012 Peter Schneider (Kuddel)
 //
 // With a lot of help from Microsoft and some very important ideas
-// regarding 'union padding' form Mahmoud Al-Qudsi of NeoSmart
+// regarding 'union padding' from Mahmoud Al-Qudsi of NeoSmart
+// (Under MIT License)
 // ==============================================================
 
 #ifndef __JUNCTION_H
