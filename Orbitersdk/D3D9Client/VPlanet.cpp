@@ -1,8 +1,8 @@
 // ==============================================================
-//   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2014 Martin Schweiger
-//   Dual licensed under GPL v3 and LGPL v3
-//				 2010-2012 Jarmo Nikkanen (D3D9Client related parts)
+//  ORBITER VISUALISATION PROJECT (OVP)
+//  Copyright (C) 2006-2014 Martin Schweiger
+//  Dual licensed under GPL v3 and LGPL v3
+//	Copyright (C) 2010-2014 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -421,7 +421,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	if (patchres == 0) { // render as 2x2 pixel block
 		RenderDot (dev);
-		LogErr("Rendering Dot");
 	} 
 	else {             // render as sphere
 		DWORD amb = prm.amb0col;
@@ -518,7 +517,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			//mesh->SetSunLight(&sunLight);
 			//mesh->SetAmbientColor(cBackGround);
 			//mesh->RenderAsteroid(pDev, &mWorld);
-			LogErr("Rendering Mesh");
+			//LogErr("Rendering Mesh");
 		} else {
 			RenderSphere (dev);                               
 		}
@@ -677,16 +676,81 @@ float vPlanet::OpticalDepth(float alt, float cd)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return prm.SclHeight * exp(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr));
+	return exp(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr));
 }
 
 // ==============================================================
 
 void vPlanet::UpdateAtmoConfig()
 {
+	double outer     = size + SPrm.height * 10e3;
 	prm.SclHeight	 = float(SPrm.height)*1e3;
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, size+(prm.SclHeight*10.0));
+	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, outer);
+}
+
+
+double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
+{
+	double R = R0 + alt;
+
+	double rdt = -R * cos(dir);
+	double Ray = rdt + sqrt(R1*R1 - (R*R - rdt*rdt));	
+
+	double p0 = Ray * 0.0; 
+	double p1 = Ray * 0.2765; 
+	double p2 = Ray * 0.7235; 
+	double p3 = Ray * 1.0; 
+
+	double a0 = sqrt(R*R + p0*p0 + 2.0*R*p0*cos(dir)) - R0;
+	double a1 = sqrt(R*R + p1*p1 + 2.0*R*p1*cos(dir)) - R0;
+	double a2 = sqrt(R*R + p2*p2 + 2.0*R*p2*cos(dir)) - R0;
+	double a3 = sqrt(R*R + p3*p3 + 2.0*R*p3*cos(dir)) - R0;
+
+	double s0 = exp(-a0/h0);
+	double s1 = exp(-a1/h0);
+	double s2 = exp(-a2/h0);
+	double s3 = exp(-a3/h0);
+
+	double sum = (s0*0.167 + s1*0.833 + s2*0.833 + s3*0.167) * Ray * 0.5;
+
+	return sum;
+}
+
+
+
+   
+
+// ==============================================================
+
+void vPlanet::DumpDebugFile()
+{
+	/*
+	int samples = 90;
+	double max_angle = 90.0;
+	double delta = 3.1415*max_angle/float(samples*180);
+	double angle = 0.0;
+
+	double outer = size+(prm.SclHeight*10.0);
+
+	FILE *fp = fopen("OpticalDebug.txt","w");
+
+	double par = ExactOpticalDepth(0.0, 3.1416/2.0, size, outer, prm.SclHeight) / prm.SclHeight;
+
+	if (fp==NULL) return;
+
+	for (int i=0;i<samples;i++) {
+		double accurate = OpticalDepth(0.0, float(cos(angle)));
+		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
+		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
+		double test		= par*exp(0.0)/(1.0+(par-1.0)*cos(angle));
+
+		angle += delta;
+
+		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g\n", i, exact, accurate, gauss, test);
+	}
+	fclose(fp);
+	*/
 }
 
 // ==============================================================
@@ -719,6 +783,7 @@ void vPlanet::LoadAtmoConfig()
 	oapiReadItem_float(hFile, "MiePower", SPrm.mie);
 	oapiReadItem_float(hFile, "MiePhase", SPrm.mphase);
 	oapiReadItem_int(hFile,   "Mode", SPrm.mode);
+	oapiReadItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 
 	oapiCloseFile(hFile, FILE_IN);
 
@@ -756,6 +821,9 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "MiePower", SPrm.mie);
 	oapiWriteItem_float(hFile, "MiePhase", SPrm.mphase);
 	oapiWriteItem_int(hFile,   "Mode", SPrm.mode);
+	oapiWriteItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 
 	oapiCloseFile(hFile, FILE_OUT);
+
+	DumpDebugFile();
 }

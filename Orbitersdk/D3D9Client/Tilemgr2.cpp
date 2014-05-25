@@ -669,6 +669,7 @@ D3DXHANDLE TileManager2Base::sfCameraAlt = NULL;
 D3DXHANDLE TileManager2Base::sfAtmRad2 = NULL;
 D3DXHANDLE TileManager2Base::sfBalance = NULL;
 D3DXHANDLE TileManager2Base::siMode = NULL;
+D3DXHANDLE TileManager2Base::sbOverSat = false;
 
 
 // -----------------------------------------------------------------------
@@ -809,6 +810,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	sfAtmRad2			= pShader->GetParameterByName(0,"fAtmRad2");
 	sfBalance			= pShader->GetParameterByName(0,"fBalance");
 	siMode				= pShader->GetParameterByName(0,"iMode");
+	sbOverSat			= pShader->GetParameterByName(0,"bOverSat");
 }
 
 // -----------------------------------------------------------------------

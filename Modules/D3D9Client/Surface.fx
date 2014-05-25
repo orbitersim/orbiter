@@ -164,6 +164,7 @@ uniform extern float    fCameraAlt;         // Camera Altitude
 uniform extern float	fAtmRad2;			// Atmosphere upper radius squared (rad+scaleheight*5.0)^2
 uniform extern float	fBalance;			// Balance between optical depth of viewing ray and sunlight
 uniform extern int		iMode;
+uniform extern bool		bOverSat;			// Avoid over-saturation
 
 // Numeric integration points and weights for Gauss–Lobatto integral
 //
@@ -199,41 +200,11 @@ float RPhase(float cw)
 
 float AngleCoEff(float c)
 {
-	c = max(c,-0.2);
+	c = max(c,0);
 	float  c2 = c*c;
 	float  dt = dot(float4(1.0, c, c2, c2*c), vODCoEff);
-	return pow(max(dt, 2e-7), -2.0f);
+	return pow(dt, -2.0f);
 }
-	
-float Depth(float h, float c)
-{
-	return exp(-h*fInvScaleHeight) * AngleCoEff(c);
-}
-
-
-// -------------------------------------------------------------------------------------------------------------
-// Accurate optical depth between camera and vertex
-// Note: Does not work if the vertex and camara altitudes are near the same
-//
-float OpticalDepth(float3 vrt)
-{
-	// Compute geo-centric vertex position
-	float3 vp = vrt * fDistScale + vCameraPos;
-	
-	// Compute vertex altitude and normal
-	float  av = max(0, length(vp) - fRadius);
-	float3 nv = normalize(vp);
-	
-	if (av<fCameraAlt) vrt = -vrt; 
-	
-	vrt = normalize(vrt);
-	
-	float ov = Depth(av, dot(nv, vrt));
-	float oc = Depth(fCameraAlt, dot(vUnitCameraPos, vrt));
-	
-	return abs(ov - oc);
-}
-	
 	
 // -------------------------------------------------------------------------------
 // Atmospheric scattering implementation
@@ -247,7 +218,8 @@ void AtmoScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in floa
     float3 vp0  = vPosW + vCameraPos;				// Compute geo-centric vertex position
     float  fRad = length(vp0);						// Vextex distance from a geo-center
     float3 vNr0 = vp0/fRad;							// Surface normal at vertex location
-    float  fDNS = dot(vNr0, vSunDir);				
+    float  fDNS = dot(vNr0, vSunDir);				// Dot Normal Sun
+    float fRPha = RPhase(dot(vRay, vSunDir));		// Compute rayleigh phase factor			
     
     // Compute the length of the viewing ray to a camera or a skydome.
     //
@@ -264,22 +236,22 @@ void AtmoScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in floa
 	
     float3 vDns	= exp(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
     
-    // Evaluate the Gauss-Lobatto integral and map surface to zenith depth to 1.0 via fInvS.H.
-    float  fEx0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
-    
-    // Compute surface texture color attennuation (i.e. extinction term)
-    vOuts = exp(-vRayTotal * fEx0);
+    // Evaluate the Gauss-Lobatto integral
+    float fExRay0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
     
     // Evaluate optical depth between vertex and the Sun. (Accurate)
-    float fExSun  = vDns[0] * AngleCoEff(fDNS);				
-  
+    float fExSun0 = vDns[0] * AngleCoEff(fDNS);		
+    
+    // Compute surface texture color attennuation (i.e. extinction term)
+    vOuts = exp(-vRayTotal * fExRay0);
+    
     // Compute sunlight color received by a vertex
-    vSun = exp(-vRaySurface * fExSun) * fSrfIntensity;
+    vSun = exp(-vRaySurface * fExSun0) * fSrfIntensity;
 	
-	// Compute rayleigh phase factor
-	float fRPha = RPhase(dot(vRay, vSunDir));
-	
-    vIns = (1.0-vOuts) * (fSunIntensity * fRPha * saturate(fDNS*2.0));	
+	// Compute in-scattering 
+    vIns = (vRayInSct * exp(-vRayTotal * (fExSun0*fBalance*2.0))) * (fSunIntensity * fRPha * fExRay0 * saturate(fDNS*3.0));
+    
+    if (bOverSat) vIns = 1.0 - exp(-vIns);
 }
 	
 
@@ -296,7 +268,8 @@ void AtmoScatterMedium(out float3 vOuts, out float3 vIns, out float3 vSun, in fl
     float3 vp0  = vPosW + vCameraPos;				// Compute geo-centric vertex position
     float3 vNr0 = normalize(vp0);					// Surface normal at vertex location
     float  fRad = length(vp0);						// Vextex distance from a geo-center
-    float  fDNS = dot(vNr0, vSunDir);				
+    float  fDNS = dot(vNr0, vSunDir);				// Dot Normal Sun
+	float fRPha = RPhase(dot(vRay, vSunDir));		// Compute rayleigh phase factor		
     
     // Compute the length of the viewing ray to a camera or a skydome.
     //
@@ -306,7 +279,6 @@ void AtmoScatterMedium(out float3 vOuts, out float3 vIns, out float3 vSun, in fl
     } else {
 		fRay = length(vPosW);
 	}			
-	
 	
 	float3 vp1 = vp0 + vRay * (vPoints4[1]*fRay);	// Compute geo-centric sample 1 position
 	float3 vp2 = vp0 + vRay * (vPoints4[2]*fRay);	// Compute geo-centric sample 2 position
@@ -318,27 +290,23 @@ void AtmoScatterMedium(out float3 vOuts, out float3 vIns, out float3 vSun, in fl
     
     float4 vDns	= exp(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
     
-    // Evaluate the Gauss-Lobatto integral and map surface to zenith depth to 1.0 via fInvS.H.
-    float  fEx0 = dot(vDns, vWeight4) * (fRay * fInvScaleHeight * 0.5f);
+    // Evaluate the Gauss-Lobatto integral
+    float fExRay0 = dot(vDns, vWeight4) * (fRay * fInvScaleHeight * 0.5f);
   
-    // Compute surface texture color attennuation (i.e. extinction term)
-    vOuts = exp(-vRayTotal * fEx0);
+	// Evaluate optical depth between vertex and the Sun. (Accurate)
+    float fExSun0 = vDns[0] * AngleCoEff(fDNS);	
     
-    // Evaluate optical depth between vertex and the Sun. (Accurate)
-    float fExSun0  = vDns[0] * AngleCoEff(dot(vNr0, vSunDir));	
-    	
+    // Compute surface texture color attennuation (i.e. extinction term)
+    vOuts = exp(-vRayTotal * fExRay0);
+    
     // Compute sunlight color received by a vertex
     vSun = exp(-vRaySurface * fExSun0) * fSrfIntensity;
 	
-	// Compute rayleigh phase factor
-	float fRPha = RPhase(dot(vRay, vSunDir));	
-	
-	// Compute in-scattering color correction term
-	float3 vIn = vRayInSct * exp(-vRayTotal * fExSun0) * (vDns[1] * fRay * fInvScaleHeight);
+	// Compute in-scattering color
+	vIns = (vRayInSct * exp(-vRayTotal * (fExSun0*fBalance*2.0))) * (fSunIntensity * fRPha * fExRay0 * saturate(fDNS*3.0));
 		
-    vIns = ((1.0-vOuts)*vIn) * (fSunIntensity * fRPha * saturate(fDNS*3.0));
-    
-    vIns = 1.0 - exp(-vIns);
+	// Try to avoid over "exposure"
+    if (bOverSat) vIns = 1.0 - exp(-vIns);
 }
 	
 	
@@ -347,7 +315,7 @@ void AtmoScatterMedium(out float3 vOuts, out float3 vIns, out float3 vSun, in fl
 // Atmospheric scattering implementation
 // -------------------------------------------------------------------------------
     
-void AtmoScatterAccurate(out float3 vOuts, out float3 vIns, out float3 vSun, in float3 vPosW, in float3 vRay)
+void AtmoScatterExperiment(out float3 vOuts, out float3 vIns, out float3 vSun, in float3 vPosW, in float3 vRay)
 {  
     float  fRay;
     float4 vAlt;
@@ -356,7 +324,8 @@ void AtmoScatterAccurate(out float3 vOuts, out float3 vIns, out float3 vSun, in 
     float3 vp0  = vPosW + vCameraPos;				// Compute geo-centric vertex position
     float3 vNr0 = normalize(vp0);					// Surface normal at vertex location
     float  fRad = length(vp0);						// Vextex distance from a geo-center
-    			
+	float fRPha = RPhase(dot(vRay, vSunDir));		// Compute rayleigh phase factor
+				
     // Compute the length of the viewing ray to a camera or a skydome.
     //
     if (fCameraAlt>(fScaleHeight*5.0)) {   // TODO: Should use boolean to create a static branch for better efficiency
@@ -388,7 +357,7 @@ void AtmoScatterAccurate(out float3 vOuts, out float3 vIns, out float3 vSun, in 
     float  fRayEx0 = dot(vDns, vWeight4) * fIscale;
     
     // Evaluate rest of the ray extinction terms
-    float  fRayEx1 = (vDns[1]*0.5f + vDns[2] + vDns[3]*0.5f) * fIscale * (1-vPoints4[1]); 
+    float  fRayEx1 = (vDns[1] + vDns[3]) * fIscale * (1-vPoints4[1]); 
     float  fRayEx2 = (vDns[2] + vDns[3]) * fIscale * (1-vPoints4[2]); 
     float  fRayEx3 = 0;
     
@@ -413,21 +382,18 @@ void AtmoScatterAccurate(out float3 vOuts, out float3 vIns, out float3 vSun, in 
     float3 vIs3 = vWeight4[3] * vDns[3] * exp(vRayTotal*(-vSunEx[3]*a-fRayEx3*b));
     
     // Evaluate final inscattering integral
-    float3 vInS = (vRayInSct * (vIs0 + vIs1 + vIs2 + vIs3) * fIscale);
+    float3 vInS = (vRayInSct * (vIs0 + vIs1 + vIs2 + vIs3) * fRayEx0);
     
     // Compute surface texture color attennuation (i.e. extinction term)
     vOuts = exp(-vRayTotal * fRayEx0);
     
     // Compute sunlight color received by a vertex
     vSun  = exp(-vRaySurface * vSunEx[0]) * fSrfIntensity;
-	
-	// Compute rayleigh phase factor
-	float fRPha = RPhase(dot(vRay, vSunDir));	
 
 	//	
     vIns = vInS * (fSunIntensity * fRPha * saturate(fDNS*8.0+0.8));
     
-    vIns = 1.0 - exp(-vIns);
+    if (bOverSat) vIns = 1.0 - exp(-vIns);
 }	
 	
 	
@@ -459,7 +425,12 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
     
     if (iMode==0) AtmoScatterFast(outVS.atten, outVS.insca, outVS.sunlight, posW, vRay); 
     if (iMode==1) AtmoScatterMedium(outVS.atten, outVS.insca, outVS.sunlight, posW, vRay); 
-    if (iMode==2) AtmoScatterAccurate(outVS.atten, outVS.insca, outVS.sunlight, posW, vRay); 
+    if (iMode==2) {
+		outVS.atten = 1.0;
+		outVS.insca = 0.0;
+		outVS.sunlight = 1.0;
+		//AtmoScatterExperiment(outVS.atten, outVS.insca, outVS.sunlight, posW, vRay); 
+    }
       
     return outVS;
 }	
@@ -481,7 +452,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, frg.tex.xy); // + float4(vTint.rgb, 0);
 	float4 cMsk = tex2D(MaskTexS, frg.tex.xy);
 	
-	float dt = dot(vSunDir, frg.normalW);
+	float dt = saturate(dot(vSunDir, frg.normalW));
 	float nl = saturate(-(dt+0.242)*2.924-0.2);
 	
     float3 cDif  = frg.sunlight.rgb * saturate(dt);				// Sunlight color and intensity

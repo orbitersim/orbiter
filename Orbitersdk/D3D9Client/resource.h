@@ -27,9 +27,8 @@
 #define IDC_DBG_MATGRP                          40004
 #define IDC_ATM_RESET                           40005
 #define IDC_DBG_MATPRP                          40005
-#define IDC_ATM_SURFACE                         40006
 #define IDC_DBG_MESHNAME                        40006
-#define IDC_ATM_ORBIT                           40007
+#define IDC_ATM_OVERSAT                         40007
 #define IDC_MESH_DEBUGGER                       40007
 #define IDC_ATM_BALANCE                         40008
 #define IDC_ATD_BALANCE                         40009

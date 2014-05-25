@@ -685,7 +685,7 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 // h0	= Atmospheric Scale Height [m]
 // =======================================================================
 
-double OpticalDepth(double alt, double dir, double R, double R1, double h0)
+double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 {
 	double delta = 0.2 * PI / 180.0;
 	double r0 = R + alt;
@@ -747,20 +747,22 @@ float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm)
 
 D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 {
-	int ndata = 60;
-	
+
+	double x[] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 75.0, 80.0, 82.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 89.5, 90.0, 90.5};
+
 	VECTOR4 v, q;
 	MATRIX4 m, mi;
 	memset(&m, 0, sizeof(MATRIX4));
 	memset(&q, 0, sizeof(VECTOR4));
 
-	double x[64];
 	double y[64];
 	double ih0 = 1.0/h0;
 	double ipw = 1.0/SctPwr;
 
-	for (int i=0;i<ndata;i++) x[i] = (double(i))*RAD*1.5;
-	for (int i=0;i<ndata;i++) y[i] = pow(1.0 / (OpticalDepth(0.0, x[i], R, R1, h0) * ih0), ipw);	
+	int ndata = sizeof(x)/sizeof(double);
+
+	for (int i=0;i<ndata;i++) x[i] = x[i]*RAD;
+	for (int i=0;i<ndata;i++) y[i] = pow(1.0 / (ExactOpticalDepth(0.0, x[i], R, R1, h0) * ih0), ipw);	
 	for (int i=0;i<ndata;i++) 
 	{
 		double c = cos(x[i]);
@@ -785,9 +787,9 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 
 	
 	float d1 = FastOpticalDepth(0.0, 0, h0, fct);
-	float d2 = (float)OpticalDepth(0.0, PI05, R, R1, h0);
+	float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
 	float dv = (d1-d2)/d2;
-	if (dv>0.001) LogErr("Bad %g", dv);
+	if (dv>0.000001) LogErr("Bad %g", dv);
 	
 	return fct;
 }

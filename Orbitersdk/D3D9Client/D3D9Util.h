@@ -338,7 +338,7 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
-
+double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0);
 D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
 float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm);
 

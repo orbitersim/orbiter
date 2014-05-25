@@ -173,7 +173,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_BALANCE,  0.0, 1.0);
 	ConfigSlider(IDC_ATM_RSUN,     0.0, 2.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_SRFCOLOR, 0.3, 3.0);
+	ConfigSlider(IDC_ATM_SRFCOLOR, 0.0, 1.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.0, 10.0);
@@ -186,12 +186,12 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere scale height (7km - 10km for the Earth)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_OUT,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness)");
-	CreateToolTip(IDC_ATM_IN,		hDlg, "Finetune a color composition of in-scattered sunlight (i.e. Haze color)");
-	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight");
-	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "Controls a optical depth balance. (Effects in horizon color)");
-	CreateToolTip(IDC_ATM_RSUN,		hDlg, "Controls an intensity of in-scattering sunlight (i.e. Haze glow intensity)");
+	CreateToolTip(IDC_ATM_IN,		hDlg, "Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity)");
+	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight (Most visible when camera, planet and the sun are aligned)");
+	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "Controls a color balance of atmospheric haze. (Most effective in sunrise/set)");
+	CreateToolTip(IDC_ATM_RSUN,		hDlg, "Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity) (Same as InSct !!)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_SRFCOLOR,	hDlg, "Finetune a color composition of sunlight on a planet surface");
+	CreateToolTip(IDC_ATM_SRFCOLOR,	hDlg, "Controls a color composition of sunlight on a planet surface (Configure at sunrise/set)");
 	CreateToolTip(IDC_ATM_SUN,		hDlg, "Controls an intensity of sunlight on a planet surface");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_MIE,		hDlg, "(NOT IN USE) Overall scale factor for mie scattering");
@@ -201,8 +201,11 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Fast Model");
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Medium Model");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"\"Accurate\" Model");
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"\"Experiment\" Model");
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, param->mode, 0);
+
+	SendDlgItemMessage(hDlg, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
+
 	UpdateSliders();
 }
 
@@ -371,6 +374,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (vObj) {
 					vObj->LoadAtmoConfig();
 					UpdateSliders();
+					SendDlgItemMessage(hWnd, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
 				}
 				break;
 
@@ -385,6 +389,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				param->sun = 1.0;
 				param->balance = 0.5;
 				UpdateSliders();
+				break;
+	
+			case IDC_ATM_OVERSAT:
+				param->oversat = (SendDlgItemMessageA(hWnd, IDC_ATM_OVERSAT, BM_GETCHECK, 0, 0)==BST_CHECKED);
 				break;
 
 			case IDC_ATM_MODE:

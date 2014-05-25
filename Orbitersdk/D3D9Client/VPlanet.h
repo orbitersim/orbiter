@@ -58,6 +58,7 @@ public:
 	void			LoadAtmoConfig();
 	void			SaveAtmoConfig();
 	void			UpdateAtmoConfig();
+	void			DumpDebugFile();
 	// ------------------------------------------------------------------------
 
 	struct RenderPrm { // misc. parameters for rendering the planet

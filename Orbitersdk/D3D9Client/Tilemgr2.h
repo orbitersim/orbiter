@@ -285,6 +285,7 @@ public:
 	static D3DXHANDLE sfAtmRad2;
 	static D3DXHANDLE sfBalance;
 	static D3DXHANDLE siMode;
+	static D3DXHANDLE sbOverSat;
 };
 
 // =======================================================================

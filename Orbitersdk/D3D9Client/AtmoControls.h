@@ -9,7 +9,7 @@
 #define __ATMOCONTROLS_H
 
 #define ATM_SLIDER_COUNT 14
-#define SctPwr 2.0
+#define SctPwr 3.0
 
 typedef struct {
 	union {
@@ -32,6 +32,7 @@ typedef struct {
 		};
 	};
 	int mode;
+	bool oversat;
 } ScatterParams;
 
 class vPlanet;

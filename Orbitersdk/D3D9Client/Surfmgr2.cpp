@@ -705,7 +705,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	D3DXVECTOR3 raytot = lambda4 * float(atmo->rout);
 	D3DXVECTOR3 raysct = raytot  * float(atmo->rin);
-	D3DXVECTOR3 raysrf = raytot  * float(atmo->srfclr);
+	D3DXVECTOR3 raysrf = lambda4 * float(atmo->srfclr);
 	D3DXVECTOR3 mietot = lambda2 * float(atmo->mie);
 
 	double upperrad = obj_size + rprm.SclHeight*5.0;
@@ -728,8 +728,10 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	HR(Shader()->SetFloat(sfAtmRad2, float(upperrad*upperrad)));
 	HR(Shader()->SetFloat(sfBalance, float(atmo->balance)));
 	HR(Shader()->SetInt(siMode, int(atmo->mode)));
+	HR(Shader()->SetBool(sbOverSat, atmo->oversat));
+	
 
-	HR(Shader()->SetValue(svFogColor, &rprm.FogColor, sizeof(D3DXCOLOR)));
+	
 	
 	
 
