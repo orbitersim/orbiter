@@ -1,10 +1,10 @@
 ORBITER VISUALISATION PROJECT -
-D3D9 Client Installation Instructions
+D3D7 Client Installation Instructions
 
 1. Required components
 ----------------------
 
-To compile the sources of the D3D9 graphics client, you need:
+To compile the sources of the D3D7 graphics client, you need:
 
 * The latest Orbiter release (base + SDK packages), available from the
   download page at the Orbiter site http://orbit.medphys.ucl.ac.uk/
@@ -12,49 +12,26 @@ To compile the sources of the D3D9 graphics client, you need:
 * The latest Orbiter beta diffs, available under
   download.orbit.m6.net/betaNG/orbiter_beta.html
 
-* A Windows C++ compiler (Visual Studio 2008 Express is ok, later should be
-  fine, other compilers may or may not work).
+* A Windows C++ compiler (VC++6 is ok, later should be fine, other compilers
+  may or may not work).
 
 * For the various graphics clients, you also need the respective 3-D
-  graphics SDKs. The D3D9 client was built with the MS DirectX February 2010
-  SDK.
-  You need the DirectX End-User Runtimes (February 2010 or newer) to run
-  D3D9Client. It can be downloaded at Microsoft Download Center at
+  graphics SDKs. The D3D7 client was built with the MS DX7 SDK. This is no
+  longer officially supported by MS, but can still be found on the web,
+  for example at
 
-  http://www.microsoft.com/download/en/details.aspx?id=9033
+  http://bcb-tools.com/Downloads/dx7adxf.exe
 
-  (I don't know whether later DX SDK's still support the DX9 interface, but it
-  may be worth a try.)
+  (I don't know whether later DX SDK's still support the DX7
+  interface, but it may be worth a try.)
 
-* NVIDIA API (needed since stereoscopic option was introduced in the Client)
-  The NVAPI can be downloaded from the nVIDIA developer site at
-
-  https://developer.nvidia.com/nvapi
-
-  If you don't like to install the NVIDIA API (it's not needed if stereoscopic
-  option should not be available in the client), you do not need to do anything.
-
-  During the build process (pre compiling) a dummy header "nvapi.h" will be
-  generated into the main source directory (Orbitersdk\D3D9Client\)
-  automatically if it does not yet exist.
-  This also means that if you *have* installed the NVIDIA API and copied the
-  header file into the main source directory (Orbitersdk\D3D9Client\) it will
-  *not* be touched or overwritten by any further build process.
-
-* To recompile the D3D9 source documentation you need Doxygen from
+* To recompile the D3D7 source documentation you need Doxygen from
 
   http://www.stack.nl/~dimitri/doxygen/
 
-  There is a doxygen configuration file in D3D9Client/doc/Doxyfile which
-  can be used to generate the compressed html help file
-  orbitersdk/D3D9Client/doc/D3D9Client.chm included in the repository.
-  Additionally to doxygen itself some other packets might be needed (depending
-  on the output format you would like to generate) to create the 'chm' file
-  you need:
-  - Microsoft HTML Help Workshop (compiler for .CHM files)
-    http://go.microsoft.com/fwlink/?LinkId=14188
-  - Graphviz (for the 'dot' tool to generate graphs)
-    http://www.graphviz.org/
+  There is a doxygen configuration file in D3D7Client/doc/Doxyfile which
+  was used to generate the compressed html help file
+  D3D7Client/doc/D3D7Client.chm also included in the repository.
 
 
 2. Installation
@@ -66,40 +43,48 @@ For a first-time installation only:
   Program Files\Orbiter_OVP
 
 * Install the latest Orbiter release by unpacking the base package
-  (orbiter100830.zip) in that directory. Make sure to preserve the directory
-  structure of the zip archives.
+  (orbiter060929_base.zip) and the SDK package (orbiter060929_sdk.zip) in
+  that directory. Make sure to preserve the directory structure of the
+  zip archives.
 
-* Download the latest (currently it's orbiter111105-100830diff.7z) orbiter beta
-  diffs from
+For each update of the OVP sources:
 
-  http://sourceforge.net/projects/orbitervis/files/Orbiter%20beta%20files/
-
+* Download the latest orbiter beta diffs from
+  download.orbit.m6.net/betaNG/orbiter_beta.html
   Unpack in the Orbiter directory. Make sure to preserve the directory
   structure of the zip archive. Answer "yes" if asked whether to overwrite
   existing files.
   The graphics API linking the orbiter core and external graphics clients
   is continuously evolving, so it is important to make sure you have the
-  latest orbiter beta installed when compiling the current D3D9Client snapshot.
+  latest orbiter beta installed when compiling the current OVP snapshot.
 
-* Download the D3D9Client package from
+* Make sure that the Orbiter_NG shortcut in the Orbiter root directory points
+  to Modules/Server/orbiter.exe and is working properly.
 
-  http://www.orbiter-forum.com/showthread.php?t=18431
+* Download the OVP source tree into the Orbiter directory:
 
-  (it includes the source tree) and extract it as usual into the Orbiter
-  directory. Again, make sure to preserve the directory structure of the zip/7z
-  archive.
+  cvs -d:pserver:anonymous@orbitervis.cvs.sourceforge.net:/cvsroot/orbitervis login
+  cvs -z3 -d:pserver:anonymous@orbitervis.cvs.sourceforge.net:/cvsroot/orbitervis co -P orbitervis
 
-* Open the D3D9Client project (For Visual Studio 2008, the project file is in
-  orbitersdk/D3D9Client/D3D9Client.sln, For Visual Studio 2010, the project
-  file is orbitersdk/D3D9Client/D3D9ClientVS2010.sln) and compile
-  (this requires the DX9 SDK to be installed).
+  You should end up with a directory "orbitervis" inside you Orbiter root
+  directory.
+
+* Open the D3D7Client project (for VC++, the project file is in
+  orbitervis/D3D7Client/D3D7Client.dsw) and compile (this requires the
+  DX7 SDK to be installed).
+
+* Note that the VS2005 project files included in the sources tend to get out
+  of sync occasionally, because they are provided by other developers (I have
+  no means of updating them). In case of problems, just delete those project
+  files and have them regenerated by VC++ automatically from the VC++6
+  project files.
 
 
-3. Testing the D3D9 client
+3. Testing the D3D7 client
 --------------------------
 
-* If the compilation of the D3D9 client was successful, it has created a
-  plugin in Modules/Plugin/D3D9Client.dll.
+* If the compilation of the D3D7 client was successful, it has created a
+  plugin in Modules/Plugin/D3D7Client.dll.
 
 * Run the "no-graphics" version of orbiter (orbiter_ng) and activate
   the D3D7Client plugin from the Modules tab.
@@ -107,7 +92,11 @@ For a first-time installation only:
 * You should now get a video tab in the Launchpad dialog. Configure your
   graphics driver and screen options, then launch a scenario.
 
-* The current version of the D3D9 client is not yet complete. Some of the
+* If you run a windowed mode, you will get the main render window, and
+  an additional diagnosis window opened by the orbiter core (which does
+  currently not have any functionality).
+
+* The current version of the D3D7 client is not yet complete. Some of the
   features of the orbiter built-in graphics engine are still missing.
   However, the client is slowly taking shape, and new features are added on
   a regular basis.

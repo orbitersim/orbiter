@@ -1,6 +1,6 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
 //				 2012 Jarmo Nikkanen
 // ==============================================================
@@ -147,12 +147,12 @@ public:
 	D3D9Pick PickScene(short xpos, short ypos);
 	void ClearOmitFlags();
 
+	// Camera Interface
+	//
 	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&mProjView; }
 	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }
 	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&mView; }
 
-	// Camera Interface
-	//
 	void		SetCameraAperture(double _ap, double _as);
 	void		SetCameraFrustumLimits(double nearlimit, double farlimit);
 	void		UpdateCameraFromOrbiter();
@@ -162,6 +162,7 @@ public:
 	bool		IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
 	float		GetCameraAspect() const { return (float)aspect; }
 	float		GetCameraFarPlane() const { return farplane; }
+	float		GetCameraNearPlane() const { return nearplane; }
 	float		GetCameraAperture() const { return (float)aperture; }
 	VECTOR3		GetCameraGPos() const { return camera_pos; }
 	VECTOR3		GetCameraGDir() const { return camera_dir; }

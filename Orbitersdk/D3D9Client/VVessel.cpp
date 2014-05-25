@@ -1,7 +1,7 @@
 // ==============================================================
 // VVessel.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
 // Copyright (C) 2010-2012 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
@@ -1041,6 +1041,7 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	pvr = sd-pp;                     // planet-relative vessel position
 	d = length(pvr);                 // vessel-planet distance
 	R = oapiGetSize (hPlanet);       // planet mean radius
+	R += vessel->GetSurfaceElevation();
 	alt = d-R;                       // altitude above surface
 	if (alt*eps > vessel->GetSize()) return; // too high to cast a shadow
 
@@ -1059,8 +1060,8 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 	vessel->GetRotationMatrix (vR);
 	VECTOR3 sdv = tmul (vR, sd);     // projection direction in vessel frame
 	VECTOR3 shp = sdv*a;             // projection point
-	VECTOR3 hnp = sd*a + pvr; normalise (hnp); // horizon normal
-	VECTOR3 hn = tmul (vR, hnp);     // horizon normal in vessel frame
+	VECTOR3 hn, hnp = vessel->GetSurfaceNormal();
+	vessel->HorizonInvRot (hnp, hn);
 
 	// perform projections
 	double nr0 = dotp (hn, shp);

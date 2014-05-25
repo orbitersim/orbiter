@@ -1,6 +1,10 @@
 // =======================================================================
 // CSphereMgr: Rendering of the celestial sphere background at variable
 // resolutions.
+// Part of the ORBITER VISUALISATION PROJECT (OVP)
+// Dual licensed under GPL v3 and LGPL v3
+// Copyright (C) 2007 Martin Schweiger
+//				 2011 Jarmo Nikkanen (D3D9Client modification) 
 // =======================================================================
 
 #ifndef __CSPHEREMGR_H

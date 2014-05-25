@@ -1,12 +1,12 @@
 // ==============================================================
-// VPlanet.cpp
-// Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
-// Copyright (C) 2006-2010 Martin Schweiger
+//   ORBITER VISUALISATION PROJECT (OVP)
+//   Copyright (C) 2006-2014 Martin Schweiger
+//   Dual licensed under GPL v3 and LGPL v3
 //				 2010-2012 Jarmo Nikkanen (D3D9Client related parts)
 // ==============================================================
 
 // ==============================================================
+// VPlanet.cpp
 // class vPlanet (implementation)
 //
 // A vPlanet is the visual representation of a "planetary" object
@@ -22,71 +22,97 @@
 #include "VPlanet.h"
 #include "VBase.h"
 #include "SurfMgr.h"
+#include "surfmgr2.h"
+#include "cloudmgr2.h"
 #include "CloudMgr.h"
 #include "HazeMgr.h"
 #include "RingMgr.h"
 #include "FileParser.h"
 #include "DebugControls.h"
+#include "AtmoControls.h"
 
 using namespace oapi;
 
 // ==============================================================
 
 static double farplane = 1e6;
+static double max_surf_dist = 1e4;
+
 extern int SURF_MAX_PATCHLEVEL;
+extern int SURF_MAX_PATCHLEVEL2;
 
 // ==============================================================
 
-vPlanet::vPlanet(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
+vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	_TRACE;
+	memset(&SPrm, 0, sizeof(ScatterParams));
 
-	char name[64];
-	char label[128];
-	oapiGetObjectName(_hObj, name, 64);
-	sprintf_s(label,"Building %s and Bases...",name);
+	rad = (float)size;
+	render_rad = (float)(0.1*rad);
+	dist_scale = 1.0f;
+	max_centre_dist = 0.9*scene->GetCameraFarPlane();
+	maxdist = max (max_centre_dist, max_surf_dist + rad);
+	int tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
+	if (tilever < 2) {
+		surfmgr = new SurfaceManager (gc, this);
+		surfmgr2 = NULL;
+	} else {
+		surfmgr = NULL;
+		int maxlvl = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
+		maxlvl = min (maxlvl, SURF_MAX_PATCHLEVEL2);
+		surfmgr2 = new TileManager2<SurfTile> (this, maxlvl);
+	}
+	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
+	if (prm.bAtm) {
+		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);
+		prm.atm_href = log(atmc->rho0)*2e4 + 2e4;
+		prm.atm_amb0 = min (0.7, log (atmc->rho0+1.0)*0.35);
+		DWORD amb0 = *(DWORD*)gc->GetConfigParam (CFGPRM_AMBIENTLEVEL);
+		prm.amb0col = 0;
+		for (int i = 0; i < 4; i++) prm.amb0col |= amb0 << (i<<3);
+	}
+	hazemgr = 0;
+	hashaze = *(bool*)gc->GetConfigParam (CFGPRM_ATMHAZE) && prm.bAtm;
+	bRipple = *(bool*)gc->GetConfigParam (CFGPRM_SURFACERIPPLE) &&
+		*(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACERIPPLE);
+	if (bRipple) {
+		if (surfmgr) surfmgr->SetMicrotexture ("waves.dds");
+	}
 
-	gc->SetLabel(label);
+	shadowalpha = (float)(1.0f - *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
+	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) &&
+		shadowalpha >= 0.01;
 
-	rad			  = (float)oapiGetSize(_hObj);
-	render_rad	  = (float)(0.1*rad);
-	dist_scale	  = 1.0f;
-	patchres	  = 0;
-	surfmgr		  = new SurfaceManager(gc, this);
-	hazemgr		  = NULL;
-	ringmgr		  = NULL;
-	clouddata	  = NULL;
-	mesh		  = NULL;
-	hashaze		  = *(bool*)gc->GetConfigParam(CFGPRM_ATMHAZE) && oapiPlanetHasAtmosphere(_hObj);
-	bRipple       = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE) && *(bool*)oapiGetObjectParam(_hObj, OBJPRM_PLANET_SURFACERIPPLE);
-	shadowalpha   =  (float)(*(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
-	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) && shadowalpha >= 0.01;
-	bObjectShadow = *(bool*)gc->GetConfigParam (CFGPRM_OBJECTSHADOWS);
-	
-	if (bRipple) surfmgr->SetMicrotexture("waves.dds");
-
-	double apprad = scene->GetObjectAppRad(_hObj);
-	if (apprad>2.0) surfmgr->LoadData();
-	
-	if (*(bool*)gc->GetConfigParam(CFGPRM_CLOUDS) && *(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HASCLOUDS)) {
-
-		char name[32]; oapiGetObjectName(_hObj,name,32);
-		LogBlu("%s has cloud layer",name);
-
-		clouddata = new CloudData;
-		clouddata->cloudmgr = new CloudManager (gc, this);
-		clouddata->cloudrad = rad + *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDALT);
-		clouddata->cloudshadow = *(bool*)gc->GetConfigParam (CFGPRM_CLOUDSHADOWS);
-		if (clouddata->cloudshadow) {
-			clouddata->shadowalpha = 1.0f - *(float*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDSHADOWCOL);
-			if (clouddata->shadowalpha < 0.01f) clouddata->cloudshadow = false;
+	clouddata = 0;
+	cloudmgr2 = 0;
+	prm.bCloud = (*(bool*)gc->GetConfigParam (CFGPRM_CLOUDS) &&
+		*(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HASCLOUDS));
+	if (prm.bCloud) {
+		int cloudtilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDTILEENGINE);
+		prm.cloudalt = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDALT);
+		prm.bCloudBrighten = *(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDOVERSATURATE);
+		prm.bCloudShadow = *(bool*)gc->GetConfigParam (CFGPRM_CLOUDSHADOWS);
+		prm.shadowalpha = 1.0 - *(float*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDSHADOWCOL);
+		if (prm.shadowalpha < 0.01)
+			prm.bCloudShadow = false;
+		if (cloudtilever == 1) { // legacy cloud engine
+			clouddata = new CloudData;
+			clouddata->cloudmgr = new CloudManager (gc, this);
+			clouddata->cloudshadow = prm.bCloudShadow;
+			if (clouddata->cloudshadow) {
+				clouddata->shadowalpha = (float)prm.shadowalpha;
+			}
+			if (*(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROTEX)) {
+				clouddata->cloudmgr->SetMicrotexture ("cloud1.dds");
+				clouddata->microalt0 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMIN);
+				clouddata->microalt1 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMAX);
+			}
+		} else { // v2 cloud engine
+			int maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
+			cloudmgr2 = new TileManager2<CloudTile> (this, maxlvl);
 		}
-		if (*(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROTEX)) {
-			clouddata->cloudmgr->SetMicrotexture("cloud1.dds");
-			clouddata->microalt0 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMIN);
-			clouddata->microalt1 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMAX);
-		}
-		if (apprad>2.0) clouddata->cloudmgr->LoadData();
+	} else {
+		prm.bCloudShadow = false;
 	}
 
 	if (*(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HASRINGS)) {
@@ -94,21 +120,23 @@ vPlanet::vPlanet(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		double maxrad = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_RINGMAXRAD);
 		ringmgr = new RingManager (this, minrad, maxrad);
 		render_rad = (float)(rad*maxrad);
+	} else {
+		ringmgr = 0;
 	}
 	
-	memcpy2(&fog, oapiGetObjectParam(_hObj, OBJPRM_PLANET_FOGPARAM), sizeof(FogParam));
+	memcpy2 (&fog, oapiGetObjectParam (_hObj, OBJPRM_PLANET_FOGPARAM), sizeof (FogParam));
+	prm.bFogEnabled = (fog.dens_0 > 0);
 
-	if (*(bool*)gc->GetConfigParam(CFGPRM_ATMFOG) && fog.dens_0 > 0) bFog = true;
-	else bFog = false;
+	patchres = 0;
 
-	if (bFog) LogAlw("FogParams: alt_ref=%g, dens_0=%g, dens_ref=%g",fog.alt_ref, fog.dens_0, fog.dens_ref);
+	//if (*(bool*)gc->GetConfigParam(CFGPRM_ATMFOG)==false) prm.bFogEnabled = false;
 
-	nbase = oapiGetBaseCount(_hObj);
-
+	
+	nbase = oapiGetBaseCount (_hObj);
 	if (nbase)	vbase = new vBase*[nbase];
 	else		vbase = NULL;
-
-	for (DWORD i=0;i<nbase;i++) vbase[i] = NULL;
+	for (DWORD i = 0; i < nbase; i++)
+		vbase[i] = NULL;
 
 	VESSEL *hVes = oapiGetFocusInterface();
 
@@ -120,26 +148,23 @@ vPlanet::vPlanet(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 				vbase[i] = new vBase (hBase, scn);
 			}
 		}
-	}
-	else {
-		LogErr("oapiGetFocusInterface() returns NULL");
-	}
+	} 
 	
-	if (surfmgr->GetMaxLevel()==0) {
+	mesh = NULL;
+	if (surfmgr && surfmgr->GetMaxLevel() == 0) {
 		char cbuf[256];
 		oapiGetObjectName (hObj, cbuf, 256);
-		OBJHANDLE hMesh = oapiLoadMesh(cbuf);
+		OBJHANDLE hMesh = oapiLoadMesh (cbuf);
 		if (hMesh) {
-			LogBlu("Assigning a non-spherical mesh for %s",cbuf);
 			mesh = new D3D9Mesh (gc, hMesh);
 			oapiDeleteMesh (hMesh);
 		}
 	}
 
+	LoadAtmoConfig();
+
 	albedo = gc->GetFileParser()->GetAlbedo(hObj);
-
 	LogMsg("vPlanet constructor exiting");
-
 	gc->SetLabel("Loading Textures...");
 }
 
@@ -148,19 +173,21 @@ vPlanet::vPlanet(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 vPlanet::~vPlanet ()
 {
 	if (nbase) {
-		for (DWORD i = 0; i < nbase; i++) if (vbase[i]) delete vbase[i];
+		for (DWORD i = 0; i < nbase; i++)
+			if (vbase[i]) delete vbase[i];
 		delete []vbase;
 	}
-	
+	if (surfmgr) delete surfmgr;
+	else if (surfmgr2) delete surfmgr2;
+	if (cloudmgr2) delete cloudmgr2;
+
 	if (clouddata) {
 		delete clouddata->cloudmgr;
 		delete clouddata;
 	}
-
-	SAFE_DELETE(hazemgr);
-	SAFE_DELETE(ringmgr);
-	SAFE_DELETE(surfmgr);
-	SAFE_DELETE(mesh);
+	if (hazemgr) delete hazemgr;
+	if (ringmgr) delete ringmgr;
+	if (mesh)    delete mesh;
 }
 
 // ==============================================================
@@ -217,6 +244,8 @@ bool vPlanet::Update ()
 {
 	_TRACE;
 	if (!active) return false;
+	
+	//sunLight = *scn->GetLight(-1);	
 
 	vObject::Update();
 
@@ -226,11 +255,10 @@ bool vPlanet::Update ()
 	bool rescale = false;
 	dist_scale = 1.0f;
 
-	sunLight = *scn->GetLight(-1);	
-
-	if (cdist+render_rad > farplane && cdist-rad > 1e4) {
+	if (cdist > maxdist) {
 		rescale = true;
-		dist_scale = (FLOAT)(farplane/(cdist+render_rad));
+		dist_scale = (FLOAT)(max_centre_dist/cdist);
+		prm.DistScale = dist_scale;
 	}
 	if (rescale) {
 		rad_scale *= dist_scale;
@@ -245,43 +273,44 @@ bool vPlanet::Update ()
 	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
 
 	// cloud layer world matrix
-	
-	if (clouddata) {
-		clouddata->rendermode = (cdist < clouddata->cloudrad ? 1:0);
-		if (cdist > clouddata->cloudrad*(1.0-1.5e-4)) clouddata->rendermode |= 2;
-		if (clouddata->rendermode & 1) {
-			clouddata->viewap = acos (rad/cloudrad);
-			if (rad < cdist) clouddata->viewap += acos (rad/cdist);
-		} else {
-			clouddata->viewap = 0;
-		}
+	if (prm.bCloud) {
+		double cloudrad = size + prm.cloudalt;
+		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
+		prm.cloudvis = (cdist < cloudrad ? 1:0);
+		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
+		prm.bCloudFlatShadows = (cdist >= 1.05*size);
 
-		float cloudscale = (float)(clouddata->cloudrad/rad);
-		double cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
-
-		// world matrix for cloud shadows on the surface
-		memcpy2 (&clouddata->mWorldC0, &mWorld, sizeof (D3DXMATRIX));
-
-		if (cloudrot) {
-			static D3DXMATRIX crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
-			crot._11 =   crot._33 = (float)cos(cloudrot);
-			crot._13 = -(crot._31 = (float)sin(cloudrot));
-			D3DXMatrixMultiply(&clouddata->mWorldC0, &crot, &clouddata->mWorldC0);
-		}
-
-		// world matrix for cloud layer
-		memcpy2 (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DXMATRIX));
-
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) {
-				clouddata->mWorldC.m[i][j] *= cloudscale;
+		if (clouddata) {
+			if (prm.cloudvis & 1) {
+				clouddata->viewap = acos (size/cloudrad);
+				if (size < cdist) clouddata->viewap += acos (size/cdist);
+			} else {
+				clouddata->viewap = 0;
 			}
+
+			float cloudscale = (float)(cloudrad/size);
+
+			// world matrix for cloud shadows on the surface
+			memcpy2 (&clouddata->mWorldC0, &mWorld, sizeof (D3DMATRIX));
+			if (prm.cloudrot) {
+				static D3DXMATRIX crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
+				crot._11 =   crot._33 = (float)cos(prm.cloudrot);
+				crot._13 = -(crot._31 = (float)sin(prm.cloudrot));
+				D3DXMatrixMultiply (&clouddata->mWorldC0, &crot, &clouddata->mWorldC0);
+			}
+
+			// world matrix for cloud layer
+			memcpy2 (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DMATRIX));
+			for (int i = 0; i < 3; i++)
+				for (int j = 0; j < 3; j++) {
+					clouddata->mWorldC.m[i][j] *= cloudscale;
+				}
+
+			// set microtexture intensity
+			double alt = cdist-rad;
+			double lvl = (clouddata->microalt1-alt)/(clouddata->microalt1-clouddata->microalt0);
+			clouddata->cloudmgr->SetMicrolevel (max (0, min (1, lvl)));
 		}
-		
-		// set microtexture intensity
-		double alt = cdist-rad;
-		double lvl = (clouddata->microalt1-alt)/(clouddata->microalt1-clouddata->microalt0);
-		clouddata->cloudmgr->SetMicrolevel (max (0, min (1, lvl)));
 	}
 	
 
@@ -297,7 +326,7 @@ bool vPlanet::Update ()
 			double apprad = rad*scale/dst;
 
 			if (vbase[i]) { // base visual exists
-				if (apprad < 1.0 && patchres<2) { // out of visual range	
+				if (apprad < 1.0 && patchres<3) { // out of visual range
 					delete vbase[i];
 					vbase[i] = 0;
 				}
@@ -318,7 +347,6 @@ bool vPlanet::Update ()
 			}
 		}
 	}
-
 	return true;
 }
 
@@ -336,14 +364,13 @@ void vPlanet::CheckResolution()
 	if (apr < 2.5) { // render planet as 2x2 pixels
 		new_patchres = 0;
 		ntx = 0;
-	} 
-	else {
+	} else {
 		ntx = PI*2.0 * apr;
 
 		static const double scal2 = 1.0/log(2.0);
-		new_patchres = min (max ((int)(scal2*log(ntx)-5.0),1), SURF_MAX_PATCHLEVEL);
+		const double shift = (surfmgr2 ? 6.0 : 5.0); // reduce level for tile mgr v2, because of increased patch size
+		new_patchres = min (max ((int)(scal2*log(ntx)-5.0),1), SURF_MAX_PATCHLEVEL2);
 	}
-
 	if (new_patchres != patchres) {
 		if (hashaze) {
 			if (new_patchres < 3) {
@@ -352,10 +379,9 @@ void vPlanet::CheckResolution()
 				if (!hazemgr) { hazemgr = new HazeManager (scn->GetClient(), this); }
 			}
 		}
-		
 		if (ringmgr) {
 			int ringres = (new_patchres <= 3 ? 0 : new_patchres <= 4 ? 1:2);
-			ringmgr->SetMeshRes(ringres);
+			ringmgr->SetMeshRes (ringres);
 		}
 		patchres = new_patchres;
 	}
@@ -363,7 +389,7 @@ void vPlanet::CheckResolution()
 
 // ==============================================================
 
-void vPlanet::RenderZRange(double *nplane, double *fplane)
+void vPlanet::RenderZRange (double *nplane, double *fplane)
 {
 	double d = dotp (scn->GetCameraGDir(), cpos);
 	*fplane = max (1e3, d+rad*1.2);
@@ -373,10 +399,12 @@ void vPlanet::RenderZRange(double *nplane, double *fplane)
 
 // ==============================================================
 
-bool vPlanet::Render(LPDIRECT3DDEVICE9 pDev)
+bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
 	if (!active) return false;
+
+	D3D9Effect::UpdateEffectCamera(hObj);
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -389,93 +417,123 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 pDev)
 		}
 	}
 
+	pCurrentVisual = this;
+
 	if (patchres == 0) { // render as 2x2 pixel block
-		RenderDot(pDev);
+		RenderDot (dev);
+		LogErr("Rendering Dot");
 	} 
 	else {             // render as sphere
-		bool bfog = bFog;
-		float fogfactor = 0.0f;
+		DWORD amb = prm.amb0col;
+		bool ringpostrender = false;
+		float fogfactor;
 
-		D3D9Effect::UpdateEffectCamera(hObj);
+		D3DCOLOR bg		= scn->GetBgColour();
+		prm.bFog		= prm.bFogEnabled;
+		prm.bTint		= prm.bFogEnabled;
+		prm.bAddBkg		= ((bg & 0xFFFFFF) && (hObj != scn->GetCameraProxyBody()));
+		prm.FogDensity	= 0.0f;
+		prm.SkyColor	= D3DXCOLOR(bg);
+		prm.AmbColor	= D3DXCOLOR(0,0,0,0);
+		prm.FogColor	= D3DXCOLOR(0,0,0,0);
+		prm.TintColor	= D3DXCOLOR(0,0,0,0);
+		prm.SunDir		= D3DXVECTOR4(-scn->GetLight(-1)->Direction);
 
-		cBackGround = scn->GetBgColour();
-		pCurrentVisual = this;
-
-		bool addambient = ((cBackGround & 0xFFFFFF) && (hObj != scn->GetCameraProxyBody()));
-
-		DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-		float fAmbient = float(dAmbient)*0.0039f;
-
-		D3D9Effect::InitLegacyAtmosphere(hObj, fAmbient);
-		
-		D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/dist_scale);
-
-		// for planets seen through an atmospheric layer from the surface of
-		// another planet, add the ambient atmosphere colour to the rendering
-		if (!addambient) cBackGround = 0;
-			
-		if (ringmgr) ringmgr->Render(pDev, mWorld, false);
-		
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
-		
-		if (clouddata && (clouddata->rendermode & 1)) RenderCloudLayer(pDev, D3DCULL_CW);           // render clouds from below
-
-		if (hazemgr) hazemgr->Render(pDev, mWorld); // horizon ring
-		
-		if (bFog && hObj==scn->GetCameraProxyBody()) { // set up distance fog
-
- 			double R = oapiGetSize (hObj);
-			double h = max(1.0, cdist-R);
-
-			VECTOR3 fogcol = fog.col;
-			double h_ref = fog.alt_ref;   // 4e3;
-			double fog_0 = fog.dens_0;    // 5e-5;
-			double fog_ref = fog.dens_ref; // 3e-5;
-			double scl = h_ref*fog_ref;
-
-			if (h < h_ref) fogfactor = (float)(h/h_ref * (fog_ref-fog_0) + fog_0); // linear zone
-			else		   fogfactor = (float)(scl/h); // hyperbolic zone
-		
-			if (fogfactor < 0.0f) bfog = false;
-			else {
-		
-				// day/nighttime fog lighting
-				VECTOR3 ppos;
-				oapiGetGlobalPos(hObj, &ppos);
-				
-				double cosa = dotp (unit(ppos), unit(cpos));
-				double bright = 0.5 * max (0.0, min (1.0, cosa + 0.3));
-				float rfog = (float)(bright*(min(1.0,fogcol.x)+0.5)); // "whiten" the fog colour
-				float gfog = (float)(bright*(min(1.0,fogcol.y)+0.5));
-				float bfog = (float)(bright*(min(1.0,fogcol.z)+0.5));
-
-				D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
-				D3D9Effect::FX->SetVector(D3D9Effect::eFogColor, &D3DXVECTOR4(rfog,gfog,bfog,1.0f));
-				D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 2);
+		if (ringmgr) {
+			if (cdist < rad*ringmgr->InnerRad()) { // camera inside inner ring edge
+				ringmgr->Render(dev, mWorld, false);
+			} else {
+				// if the planet has a ring system we update the z-buffer
+				// but don't do z-checking for the planet surface
+				// This strategy could do with some reconsideration
+				ringpostrender = true;
 			}
 		}
 
-		if (bfog==false) D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 0);
+		if (prm.bCloud && (prm.cloudvis & 1))
+			RenderCloudLayer (dev, D3DCULL_CW);      // render clouds from below
+
+		if (hazemgr) hazemgr->Render (dev, mWorld, true);       // horizon ring
+		if (hazemgr) hazemgr->Render (dev, mWorld, true);       // horizon ring
+
+		if (prm.bAtm) {
+			if (ModLighting (amb))
+				prm.AmbColor = D3DXCOLOR(amb);
+		}
+
+		if (prm.bFog) { // set up distance fog
+			double h = max (1.0, cdist-size);
+
+			VECTOR3 fogcol = fog.col;
+			double h_ref = fog.alt_ref;   // 3e3;
+			double fog_0 = fog.dens_0;    // 5e-5;
+			double fog_ref = fog.dens_ref; // 3e-5;
+			double h_max = size*1.5; // At this altitude, fog effect drops to zero
+			double scl = h_ref*fog_ref;
+
+			if (h < h_ref) {
+				// linear zone
+				fogfactor = (float)(h/h_ref * (fog_ref-fog_0) + fog_0);
+			} else {
+				// hyperbolic zone: fogfactor = a/(h+b) + c
+				// a, b and c are designed such that
+				// * fogfactor(h) is continuous at h = h_ref
+				// * d fogfactor / dh is continuous at h = h_ref
+				// * fogfactor(h_max) = 0
+				double b = - (fog_ref*h_max + (fog_ref-fog_0)*(h_max-h_ref)) / (fog_ref + (fog_ref-fog_0)/h_ref * (h_max-h_ref));
+				double a = fog_ref*(h_ref+b)*(h_max+b)/(h_max-h_ref);
+				double c = -a/(h_max+b);
+				fogfactor = (float)(a/(h+b)+c);
+			}
+
+			if (fogfactor < 0.0) prm.bFog = false;
+			else {
+				// day/nighttime fog lighting
+				VECTOR3 ppos;
+				oapiGetGlobalPos (hObj, &ppos);
+				double cosa = dotp (unit(ppos), unit(cpos));
+				double bright = 1.0 * max (0.0, min (1.0, cosa + 0.3));
+				float rfog = (float)(bright*(min(1.0,fogcol.x)+0.0)); // "whiten" the fog colour
+				float gfog = (float)(bright*(min(1.0,fogcol.y)+0.0));
+				float bfog = (float)(bright*(min(1.0,fogcol.z)+0.0));
+				prm.FogDensity = fogfactor;
+				prm.FogColor = D3DXCOLOR(rfog, gfog, bfog, 1.0f);
+			}
+		}
+
+		if (prm.bTint) {
+			prm.TintColor = _D3DXCOLOR(*(VECTOR3*)oapiGetObjectParam (hObj, OBJPRM_PLANET_ATMTINTCOLOUR));
+			double R = oapiGetSize (hObj);
+			double alt = cdist - R;
+			double alt_ref1 = fog.alt_ref*5.0;
+			double alt_ref2 = alt_ref1 * 0.1;
+			if (alt < alt_ref1) {
+				double scale = (alt-alt_ref2)/(alt_ref1-alt_ref2);
+				if (scale <= 0.0) prm.bTint = false;
+				else prm.TintColor *= scale;
+			}
+		}
 
 		if (mesh) {
-			mesh->SetSunLight(&sunLight);
-			mesh->SetAmbientColor(cBackGround);
-			mesh->RenderAsteroid(pDev, &mWorld);
+			//mesh->SetSunLight(&sunLight);
+			//mesh->SetAmbientColor(cBackGround);
+			//mesh->RenderAsteroid(pDev, &mWorld);
+			LogErr("Rendering Mesh");
+		} else {
+			RenderSphere (dev);                               
 		}
-		else RenderSphere(pDev, bfog); // planet surface
 
-		if (nbase) RenderBaseStructures(pDev);
+		if (nbase) RenderBaseStructures (dev);
 
-		if (bfog==true) D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 0); // turn off fog
-		
-		if (clouddata && (clouddata->rendermode & 2)) RenderCloudLayer(pDev, D3DCULL_CCW);		  // render clouds from above
-		
-		if (hazemgr) hazemgr->Render(pDev, mWorld, true); // haze across planet disc
-		if (ringmgr) ringmgr->Render(pDev, mWorld, true);
-		
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
+		if (prm.bCloud && (prm.cloudvis & 2))
+			RenderCloudLayer (dev, D3DCULL_CCW);	  // render clouds from above
+
+		//if (hazemgr) 
+			//hazemgr->Render (dev, mWorld, true); // haze across planet disc
+
+		if (ringpostrender) 
+			ringmgr->Render (dev, mWorld, true);
 	}
-
 	return true;
 }
 
@@ -489,48 +547,75 @@ void vPlanet::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 
 // ==============================================================
 
-void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev, bool bfog)
+void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
-	float fogfactor;
-	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
-	if (bfog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
-
-	surfmgr->SetAmbientColor(cBackGround);
-	surfmgr->Render(dev, mWorld, dist_scale, patchres, 0.0, bfog); // surface
-
-	if (bfog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
-
-	if (nbase) {
-		RenderBaseSurfaces(dev);                     // base surfaces
-		RenderBaseShadows(dev, shadowalpha);         // base shadows
+	if (surfmgr2) {
+		if (cdist >= 1.3*rad) surfmgr2->Render (dmWorld, false, prm);
+		else				  surfmgr2->Render (dmWorld, true,  prm);
+	} else {
+		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
 	}
 
-	if (bfog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
-	if (clouddata && clouddata->cloudshadow) RenderCloudShadows(dev);         // cloud shadows
-	if (bfog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
+	if (nbase) {
+		RenderBaseSurfaces (dev);                     // base surfaces
+		RenderBaseShadows (dev, shadowalpha);         // base shadows
+	}
 
-	// cast shadows only on planet closest to camera
-	if (bVesselShadow && hObj == oapiCameraProxyGbody()) scn->RenderVesselShadows(hObj, shadowalpha); // vessel shadows
+	if (prm.bCloudShadow)
+		RenderCloudShadows (dev);                // cloud shadows
 
-	dev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	if (bVesselShadow && hObj == oapiCameraProxyGbody())
+		scn->RenderVesselShadows (hObj, shadowalpha); // vessel shadows
 }
 
 // ==============================================================
 
-void vPlanet::RenderCloudLayer(LPDIRECT3DDEVICE9 dev, DWORD cullmode)
+void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 {
-	if (cullmode != D3DCULL_CCW) dev->SetRenderState(D3DRS_CULLMODE, cullmode);
-	clouddata->cloudmgr->Render (dev, clouddata->mWorldC, dist_scale, min(patchres,8), clouddata->viewap); // clouds
-	if (cullmode != D3DCULL_CCW) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, cullmode);
+	if (cloudmgr2)
+		cloudmgr2->Render (dmWorld, false, prm);
+	else
+		clouddata->cloudmgr->Render (dev, clouddata->mWorldC, dist_scale, min(patchres,8), clouddata->viewap); // clouds
+	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
 // ==============================================================
 
-void vPlanet::RenderCloudShadows(LPDIRECT3DDEVICE9 dev)
+void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 {
-	dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	clouddata->cloudmgr->RenderShadow(dev, clouddata->mWorldC0, dist_scale, min(patchres,8), clouddata->viewap, clouddata->shadowalpha);	
+	return;
+
+	if (cloudmgr2) {
+		if (prm.bCloudFlatShadows)
+			cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
+	} 
+	else if (clouddata) { // legacy method
+		/*
+		D3DMATERIAL7 pmat;
+		static D3DMATERIAL7 cloudmat = {{0,0,0,1},{0,0,0,1},{0,0,0,0},{0,0,0,0},0};
+
+		float alpha = clouddata->shadowalpha;
+		cloudmat.diffuse.a = cloudmat.ambient.a = alpha;
+
+		dev->GetMaterial (&pmat);
+		dev->SetMaterial (&cloudmat);
+
+		DWORD ablend;
+		dev->GetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, &ablend);
+		if (!ablend)
+			dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+
+		clouddata->cloudmgr->Render (dev, clouddata->mWorldC0, min(patchres,8), (int)clouddata->viewap);
+
+		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+		if (!ablend)
+			dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+		dev->SetMaterial (&pmat);
+		*/
+	}
 }
 
 // ==============================================================
@@ -557,4 +642,120 @@ void vPlanet::RenderBaseStructures (LPDIRECT3DDEVICE9 dev)
 {
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderStructures(dev);
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);
+}
+
+// ==============================================================
+
+bool vPlanet::ModLighting (DWORD &ambient)
+{
+	// modify ambient light level inside atmospheres as a function of sun elevation
+	if (!prm.bAtm) return false;
+	if (cdist >= size+prm.atm_href) return false;
+
+	double alpha = acos (dotp (unit(scn->GetCameraGPos()), -unit(cpos)));
+	// angular distance between sun and planet as seen from camera
+
+	double sunelev = alpha - PI05; // elevation of sun above horizon (assuming camera on ground)
+	if (sunelev < -14.0*RAD) return false;  // total darkness
+
+	double rscale = (size-cdist)/prm.atm_href + 1.0;    // effect altitude scale (1 on ground, 0 at reference alt)
+	double amb = prm.atm_amb0 * min (1.0, (sunelev+14.0*RAD)/(20.0*RAD)); // effect magnitude (dependent on sun elevation)
+	if (amb < 0.05) return false;
+	amb = max (0, amb-0.05);
+
+	DWORD addamb = (DWORD)(amb*rscale*256.0);
+	DWORD newamb = *(DWORD*)gc->GetConfigParam (CFGPRM_AMBIENTLEVEL) + addamb;
+	ambient = 0;
+	for (int i = 0; i < 4; i++)
+		ambient |= min (255, newamb) << (i<<3);
+	return true;
+}
+
+// ==============================================================
+
+float vPlanet::OpticalDepth(float alt, float cd)
+{
+	float cd2 = cd * cd;
+	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
+	return prm.SclHeight * exp(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr));
+}
+
+// ==============================================================
+
+void vPlanet::UpdateAtmoConfig()
+{
+	prm.SclHeight	 = float(SPrm.height)*1e3;
+	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
+	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, size+(prm.SclHeight*10.0));
+}
+
+// ==============================================================
+
+void vPlanet::LoadAtmoConfig()
+{
+	char name[32];
+	char path[256];
+
+	oapiGetObjectName(hObj, name, 32);
+
+	sprintf_s(path,"GC/%s.atm.cfg",name);
+
+	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN, CONFIG);
+
+	if (!hFile) return;
+
+	oapiReadItem_float(hFile, "Red", SPrm.red);
+	oapiReadItem_float(hFile, "Green", SPrm.green);
+	oapiReadItem_float(hFile, "Blue", SPrm.blue);
+	oapiReadItem_float(hFile, "RWaveDep", SPrm.wavepow);
+	oapiReadItem_float(hFile, "ScaleHeight", SPrm.height);
+	oapiReadItem_float(hFile, "OutScatter", SPrm.rout);
+	oapiReadItem_float(hFile, "InScatter", SPrm.rin);
+	oapiReadItem_float(hFile, "RayleighPhase", SPrm.rphase);
+	oapiReadItem_float(hFile, "MiePhase", SPrm.balance);
+	oapiReadItem_float(hFile, "SunIntensity", SPrm.rsun);
+	oapiReadItem_float(hFile, "SrfColor", SPrm.srfclr);
+	oapiReadItem_float(hFile, "SrfIntensity", SPrm.sun);
+	oapiReadItem_float(hFile, "MiePower", SPrm.mie);
+	oapiReadItem_float(hFile, "MiePhase", SPrm.mphase);
+	oapiReadItem_int(hFile,   "Mode", SPrm.mode);
+
+	oapiCloseFile(hFile, FILE_IN);
+
+	UpdateAtmoConfig();
+	
+}
+
+// ==============================================================
+
+void vPlanet::SaveAtmoConfig()
+{
+	char name[64];
+	char path[256];
+
+	oapiGetObjectName(hObj, name, 64);
+
+	sprintf_s(path,"GC/%s.atm.cfg",name);
+
+	FILEHANDLE hFile = oapiOpenFile(path, FILE_OUT, CONFIG);
+
+	if (!hFile) return;
+
+	oapiWriteItem_float(hFile, "Red", SPrm.red);
+	oapiWriteItem_float(hFile, "Green", SPrm.green);
+	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
+	oapiWriteItem_float(hFile, "RWaveDep", SPrm.wavepow);
+	oapiWriteItem_float(hFile, "ScaleHeight", SPrm.height);
+	oapiWriteItem_float(hFile, "OutScatter", SPrm.rout);
+	oapiWriteItem_float(hFile, "InScatter", SPrm.rin);
+	oapiWriteItem_float(hFile, "RayleighPhase", SPrm.rphase);
+	oapiWriteItem_float(hFile, "MiePhase", SPrm.balance);
+	oapiWriteItem_float(hFile, "SunIntensity", SPrm.rsun);
+	oapiWriteItem_float(hFile, "SrfColor", SPrm.srfclr);
+	oapiWriteItem_float(hFile, "SrfIntensity", SPrm.sun);
+	oapiWriteItem_float(hFile, "MiePower", SPrm.mie);
+	oapiWriteItem_float(hFile, "MiePhase", SPrm.mphase);
+	oapiWriteItem_int(hFile,   "Mode", SPrm.mode);
+
+	oapiCloseFile(hFile, FILE_OUT);
 }

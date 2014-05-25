@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AtmoControls.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\BeaconArray.cpp"
 				>
 			</File>
@@ -233,6 +237,10 @@
 			</File>
 			<File
 				RelativePath=".\CloudMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Cloudmgr2.cpp"
 				>
 			</File>
 			<File
@@ -448,7 +456,15 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Spherepatch.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SurfMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Surfmgr2.cpp"
 				>
 			</File>
 			<File
@@ -475,6 +491,14 @@
 			</File>
 			<File
 				RelativePath=".\TileMgr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Tilemgr2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Tilemgr2_imp.hpp"
 				>
 			</File>
 			<File
@@ -547,6 +571,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AtmoControls.h"
+				>
+			</File>
+			<File
 				RelativePath=".\BeaconArray.h"
 				>
 			</File>
@@ -557,6 +585,17 @@
 			<File
 				RelativePath=".\CloudMgr.h"
 				>
+			</File>
+			<File
+				RelativePath=".\Cloudmgr2.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CSphereMgr.h"
@@ -641,6 +680,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MatrixInverse.h"
+				>
+			</File>
+			<File
 				RelativePath="Mesh.h"
 				>
 			</File>
@@ -661,6 +704,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Qtree.h"
+				>
+			</File>
+			<File
 				RelativePath="resource.h"
 				>
 			</File>
@@ -677,6 +724,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Spherepatch.h"
+				>
+			</File>
+			<File
 				RelativePath=".\SurfMgr.h"
 				>
 				<FileConfiguration
@@ -686,6 +737,10 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Surfmgr2.h"
+				>
 			</File>
 			<File
 				RelativePath="Texture.h"
@@ -701,6 +756,10 @@
 						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Tilemgr2.h"
+				>
 			</File>
 			<File
 				RelativePath=".\VBase.h"
@@ -787,6 +846,18 @@
 			</File>
 			<File
 				RelativePath="..\..\Modules\D3D9Client\SceneTech.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\Surface.fx"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Docs"
+			>
+			<File
+				RelativePath=".\TODO.txt"
 				>
 			</File>
 		</Filter>

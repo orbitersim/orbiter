@@ -1,6 +1,6 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
 //				 2012 Jarmo Nikkanen
 // ==============================================================
@@ -58,6 +58,7 @@
 }
 #endif
 
+/*
 #ifndef __TRY
 #define __TRY __try
 #endif
@@ -65,8 +66,8 @@
 #ifndef __EXCEPT
 #define __EXCEPT(x) __except(x)
 #endif
+*/
 
-/*
 #ifndef __TRY
 #define __TRY
 #endif
@@ -74,7 +75,7 @@
 #ifndef __EXCEPT
 #define __EXCEPT(x) if (false)
 #endif
-*/
+
 
 
 
@@ -265,6 +266,24 @@ inline D3DCOLORVALUE D3DCOLORMULT(const D3DCOLORVALUE *a, const D3DCOLORVALUE *b
 	return c;
 }
 
+inline void MATRIX4toD3DMATRIX (const MATRIX4 &M, D3DXMATRIX &D)
+{
+	D._11 = (float)M.m11;  D._12 = (float)M.m12;  D._13 = (float)M.m13;  D._14 = (float)M.m14;
+	D._21 = (float)M.m21;  D._22 = (float)M.m22;  D._23 = (float)M.m23;  D._24 = (float)M.m24;
+	D._31 = (float)M.m31;  D._32 = (float)M.m32;  D._33 = (float)M.m33;  D._34 = (float)M.m34;
+	D._41 = (float)M.m41;  D._42 = (float)M.m42;  D._43 = (float)M.m43;  D._44 = (float)M.m44;
+}
+
+inline MATRIX4 _MATRIX4(const LPD3DXMATRIX M)
+{
+	MATRIX4 D;
+	D.m11 = (double)M->_11;  D.m12 = (double)M->_12;  D.m13 = (double)M->_13;  D.m14 = (double)M->_14;
+	D.m21 = (double)M->_21;  D.m22 = (double)M->_22;  D.m23 = (double)M->_23;  D.m24 = (double)M->_24;
+	D.m31 = (double)M->_31;  D.m32 = (double)M->_32;  D.m33 = (double)M->_33;  D.m34 = (double)M->_34;
+	D.m41 = (double)M->_41;  D.m42 = (double)M->_42;  D.m43 = (double)M->_43;  D.m44 = (double)M->_44;
+	return D;
+}
+
 inline void D3DVEC (const VECTOR3 &v, D3DVECTOR &d3dv)
 {
 	d3dv.x = (float)v.x;
@@ -282,9 +301,24 @@ inline D3DXVECTOR4 D3DXVEC4(const VECTOR3 &v, float w)
 	return D3DXVECTOR4(float(v.x), float(v.y), float(v.z), w);
 }
 
+inline D3DXCOLOR _D3DXCOLOR(const VECTOR3 &v, float a = 1.0f)
+{
+	return D3DXCOLOR(float(v.x), float(v.y), float(v.z), a);
+}
+
+inline D3DXVECTOR3 _D3DXVECTOR3(const VECTOR3 &v)
+{
+	return D3DXVECTOR3(float(v.x), float(v.y), float(v.z));
+}
+
 inline VECTOR3 _VD3DX(const D3DXVECTOR3 &v)
 {
 	return _V(double(v.x), double(v.y), double(v.z));
+}
+
+inline VECTOR4 _VD4DX(const D3DXVECTOR4 &v)
+{
+	return _V(double(v.x), double(v.y), double(v.z), double(v.w));
 }
 
 inline float D3DVAL (double x)
@@ -304,6 +338,9 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
+
+D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
+float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm);
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations
@@ -454,6 +491,7 @@ struct AutoFile
 // ------------------------------------------------------------------------------------
 
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
+#define SAFE_DELETEA(p)  { if(p) { delete []p;     (p)=NULL; } }
 //#define SAFE_RELEASE(p) { if(p) { ULONG n=(p)->Release(); if (n>0) LogWrn("NOT RELEASED Refs=%u, File=%s Line=%u",n,__FILE__,__LINE__); (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
 

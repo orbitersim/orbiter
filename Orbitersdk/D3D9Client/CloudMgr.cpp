@@ -1,7 +1,7 @@
 // ==============================================================
 // CloudMgr.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
 // ==============================================================
 
@@ -136,7 +136,7 @@ void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMAT
 		
 		VBMESH &mesh = PATCH_TPL[level][idx]; // patch template
 
-		gc->GetStats()->Vertices += mesh.nVtx;
+		gc->GetStats()->Vertices += mesh.nv;
 		gc->GetStats()->Tiles[level]++;
 		gc->GetStats()->Draw++;
 
@@ -145,7 +145,7 @@ void CloudManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXMAT
 
 		pDev->SetStreamSource(0, mesh.pVB, 0, sizeof(VERTEX_2TEX));
 		pDev->SetIndices(mesh.pIB);
-		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh.nVtx, 0, mesh.nFace);
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh.nv, 0, mesh.nf);
 	}
 
 	HR(FX->EndPass());
@@ -193,5 +193,5 @@ void CloudManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 	
 	pDev->SetStreamSource(0, mesh.pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh.pIB);
-	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh.nVtx, 0, mesh.nFace);
+	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh.nv, 0, mesh.nf);
 }

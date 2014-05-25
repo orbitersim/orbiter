@@ -1,7 +1,7 @@
 // ==============================================================
 // VObject.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
 //				 2010-2012 Jarmo Nikkanen (D3D9Client related parts)
 // ==============================================================
@@ -48,7 +48,9 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene): VisObject (_hObj)
 	hObj = _hObj;
 	scn  = scene;
 	D3DXMatrixIdentity(&mWorld);
+	size = oapiGetSize(hObj);
 	cdist = 0.0;
+	dmWorld = identity4();
 	albedo = _V(1,1,1);
 	oapiGetObjectName(hObj, name, 64);
 }
@@ -107,6 +109,11 @@ bool vObject::Update()
 	// object positions are relative to camera
 
 	cdist = length(cpos);
+
+	dmWorld = _M(grot.m11, grot.m21, grot.m31, 0,
+		         grot.m12, grot.m22, grot.m32, 0,
+				 grot.m13, grot.m23, grot.m33, 0,
+				 cpos.x,   cpos.y,   cpos.z,   1);
 
 	// camera distance
 	D3DMAT_SetInvRotation(&mWorld, &grot);

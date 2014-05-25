@@ -3,7 +3,7 @@
 // Manages the user selections in the "Video" tab of the Orbiter
 // Launchpad dialog.
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
 //				 2010-2012 Jarmo Nikkanen (D3D9Client implementation)
 // ==============================================================

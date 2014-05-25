@@ -1,7 +1,7 @@
 // ==============================================================
 // HazeMgr.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
 //				 2011 Jarmo Nikkanen (D3D9Client modification) 
 // ==============================================================
@@ -92,7 +92,7 @@ void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dua
 	if (alpha <= 0.0) return;  // nothing to do
 
 	// Problem: the top part of horizon haze is rendered twice
-	if (dual && cdist<1.001) return;	// Enabled 04.06.2011
+	//if (dual && cdist<1.001) return;	// Enabled 04.06.2011
 
 	VECTOR3 cpos = {0,cdist,0};
 	double id = 1.0 / max (cdist, 1.001);
@@ -198,7 +198,7 @@ void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dua
 			j++;
 		}
 		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLESTRIP,0, 2*HORIZON_NSEG, 2*HORIZON_NSEG, Idx, D3DFMT_INDEX16, Vtx, sizeof(HVERTEX));
+		//pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLESTRIP,0, 2*HORIZON_NSEG, 2*HORIZON_NSEG, Idx, D3DFMT_INDEX16, Vtx, sizeof(HVERTEX));
 		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 

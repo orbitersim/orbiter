@@ -1,7 +1,7 @@
 // ==============================================================
 // Junction.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2012 Peter Schneider (Kuddel)
 //
 // With a lot of help from Microsoft and some very important ideas

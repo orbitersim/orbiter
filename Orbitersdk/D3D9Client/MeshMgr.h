@@ -1,7 +1,7 @@
 // ==============================================================
 // MeshMgr.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
 // ==============================================================
 

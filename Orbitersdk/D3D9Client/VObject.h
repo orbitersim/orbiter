@@ -1,7 +1,7 @@
 // ==============================================================
 // VObject.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
 //			     2011 Jarmo Nikkanen
 // ==============================================================
@@ -212,7 +212,6 @@ protected:
 	D9BBox			BBox;
 	bool			bBSRecompute;
 
-	
 	bool active;		// visual is active (within camera range)
 	OBJHANDLE hObj;		// handle for the "logical" object
 	const Scene *scn;	// The scene to which the object belongs
@@ -220,6 +219,8 @@ protected:
 	D3DXMATRIX mWorldInv;
 	VECTOR3 cpos;		// camera-relative object position
 	VECTOR3 albedo;
+	MATRIX4 dmWorld;    // world matrix in double precision
+	double size;        // object radius [m]
 	double cdist;		// current camera distance
 	char name[64];
 };

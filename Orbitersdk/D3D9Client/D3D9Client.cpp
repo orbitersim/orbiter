@@ -1,7 +1,7 @@
 // ==============================================================
 // D3D9Client.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
 //				 2012 Jarmo Nikkanen
 // ==============================================================
@@ -39,6 +39,7 @@
 #include "FileParser.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
+#include "Tilemgr2.h"
 
 using namespace oapi;
 
@@ -157,6 +158,7 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	SurfaceCatalog  = new D3D9Catalog("SurfaceCatalog");
 
 	DebugControls::Create();
+	AtmoControls::Create();
 
 	g_hInst = hDLL;
 	g_client = new D3D9Client(hDLL);
@@ -184,11 +186,19 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 	delete Config;
 
 	DebugControls::Release();
+	AtmoControls::Release();
 
 	if (g_client) {
 		oapiUnregisterGraphicsClient(g_client);
 		g_client = 0;
 	}
+
+// Why is this overriddden by martin ?
+//+	//if (g_client) {
+//+	//	oapiUnregisterGraphicsClient (g_client);
+//+	//	delete g_client;
+//+	//	g_client = 0;
+//+	//}
 
 #ifdef _NVAPI_H
 	if (bNVAPI) if (NvAPI_Unload()==NVAPI_OK) LogAlw("[nVidia API Unloaded]");
@@ -212,6 +222,8 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 
 D3D9Client::~D3D9Client()
 {
+//+	// Unregister graphics client
+//+	oapiUnregisterGraphicsClient (this);
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
 }
@@ -396,6 +408,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	// Device-specific initialisations
 
 	TileManager::GlobalInit(this);
+	TileManager2Base::GlobalInit(this);
 	RingManager::GlobalInit(this);
 	HazeManager::GlobalInit(this);
 	D3D9ParticleStream::GlobalInit(this);
@@ -598,6 +611,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 		HazeManager::GlobalExit();
 		TileManager::GlobalExit();
+		TileManager2Base::GlobalExit();
 		D3D9ParticleStream::GlobalExit();
 		vStar::GlobalExit();
 		vVessel::GlobalExit();

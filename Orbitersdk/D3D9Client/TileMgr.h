@@ -1,7 +1,7 @@
 // ==============================================================
 // TileMgr.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
-// Released under GNU General Public License
+// Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006-2007 Martin Schweiger
 // ==============================================================
 
@@ -18,16 +18,9 @@
 #include "D3D9Effect.h"
 #include "D3D9Util.h"
 #include "Mesh.h"
+#include "Spherepatch.h"
 
 #define MAXQUEUE 10
-
-struct VBMESH {
-	LPDIRECT3DVERTEXBUFFER9 pVB;
-	LPDIRECT3DINDEXBUFFER9 pIB;
-	DWORD nVtx, nFace;
-	D3DXVECTOR3 bsCnt;
-	float bsRad;
-};
 
 #pragma pack(push,1)
 	struct TILEFILESPEC {
@@ -86,11 +79,10 @@ public:
 
 	virtual void Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap = 0.0, bool bfog = false);
 
-	static void CreateSphere (LPDIRECT3DDEVICE9 dev, VBMESH &mesh, DWORD nrings, bool hemisphere, int which_half, int texres);
-	static void CreateSpherePatch (LPDIRECT3DDEVICE9 dev, VBMESH &mesh, int nlng, int nlat, int ilat, int res, int bseg = -1,
-		bool reduce = true, bool outside = true, bool store_vtx = false, bool shift_origin = false);
-
-	static void DestroyVBMesh (VBMESH &mesh);
+	//static void CreateSphere (LPDIRECT3DDEVICE9 dev, VBMESH &mesh, DWORD nrings, bool hemisphere, int which_half, int texres);
+	//static void CreateSpherePatch (LPDIRECT3DDEVICE9 dev, VBMESH &mesh, int nlng, int nlat, int ilat, int res, int bseg = -1,
+	//bool reduce = true, bool outside = true, bool store_vtx = false, bool shift_origin = false);
+	//static void DestroyVBMesh (VBMESH &mesh);
 
 	void SetAmbientColor(D3DCOLOR cAmbient);
 
@@ -145,7 +137,7 @@ protected:
 
 	D3DXMATRIX mWorld;
 	D3DCOLOR cAmbient;
-	oapi::D3D9Client *gc;      // the client
+	oapi::D3D9Client *gc;			 // the client
 	const vPlanet *vp;               // the planet visual
 	OBJHANDLE obj;                   // the planet object
 	char *objname;                   // the name of the planet (for identifying texture files)
