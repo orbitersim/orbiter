@@ -733,7 +733,8 @@ void vPlanet::DumpDebugFile()
 
 	double outer = size+(prm.SclHeight*10.0);
 
-	FILE *fp = fopen("OpticalDebug.txt","w");
+	FILE *fp = NULL;
+	fopen_s(&fp, "OpticalDebug.txt", "w");
 
 	double par = ExactOpticalDepth(0.0, 3.1416/2.0, size, outer, prm.SclHeight) / prm.SclHeight;
 

@@ -37,12 +37,12 @@ void CloudTile::Load ()
 	bool bLoadMip = true; // for now
 
 	DWORD Mips = (bLoadMip ? 1:2); // Load main level only or 1 additional mip sub-level
-	char path[256];
+	char path[MAX_PATH] = {'\0'};
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 
 	// Load cloud texture
-	sprintf (path, "Textures\\%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	sprintf_s (path, "Textures\\%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	owntex = true;
 	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex) != S_OK) {
 		if (GetParentSubTexRange (&texrange)) {

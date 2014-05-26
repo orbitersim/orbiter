@@ -77,12 +77,12 @@ void SurfTile::Load ()
 	bool bLoadMip = true; // for now
 
 	DWORD Mips = (bLoadMip ? 1:3); // Load main level only or 2 additional mip sub-level
-	char path[256];
+	char path[MAX_PATH] = {'\0'};
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 
 	// Load surface texture
-	sprintf (path, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	sprintf_s (path, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	
 	owntex = true;
 	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex) != S_OK) {
@@ -97,7 +97,7 @@ void SurfTile::Load ()
 	ltex = NULL;
 	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
 		if (owntex) {
-			sprintf (path, "Textures\\%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+			sprintf_s (path, "Textures\\%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 			D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &ltex);
 		} else if (node->Parent()) {
 			ltex = getSurfParent()->ltex;
@@ -139,8 +139,9 @@ bool SurfTile::LoadElevationData ()
 
 	int i, j;
 	char path[256];
-	sprintf (path, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
-	FILE *f = fopen(path,"rb");
+	sprintf_s (path, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
+	FILE *f = NULL;
+	fopen_s(&f, path, "rb");
 	if (f) {
 		elev = new INT16[ndat];
 		// read the elevation file header
