@@ -4,7 +4,7 @@
 	Version="9,00"
 	Name="D3D9Client"
 	ProjectGUID="{5B2C5D1A-7B8E-4343-BC33-836ABD122D3A}"
-	RootNamespace="D3D7Client"
+	RootNamespace="D3D9Client"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -43,7 +43,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Modules\Plugin/D3D7Client.tlb"
+				TypeLibraryName=".\..\..\Modules\Plugin/D3D9Client.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -95,7 +95,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\Modules\Plugin/D3D7Client.bsc"
+				OutputFile=".\..\..\Modules\Plugin/D3D9Client.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -135,7 +135,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/D3D7Client.tlb"
+				TypeLibraryName=".\Release/D3D9Client.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -182,7 +182,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/D3D7Client.bsc"
+				OutputFile=".\Release/D3D9Client.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
