@@ -26,6 +26,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				Description=""
+				CommandLine="if not exist &quot;$(SolutionDir)nvapi.h&quot; (&#x0D;&#x0A;
+  echo // ==============================================================&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // nvapi.h&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // Dummy header to be able to build the D3D9Client without&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // the NVIDIA NvAPI interface installed.&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // ==============================================================&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+)"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -117,6 +125,14 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				Description=""
+				CommandLine="if not exist &quot;$(SolutionDir)nvapi.h&quot; (&#x0D;&#x0A;
+  echo // ==============================================================&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // nvapi.h&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // Dummy header to be able to build the D3D9Client without&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // the NVIDIA NvAPI interface installed.&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+  echo // ==============================================================&gt;&gt;&quot;$(SolutionDir)nvapi.h&quot;&#x0D;&#x0A;
+)"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
