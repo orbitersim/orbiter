@@ -34,7 +34,7 @@ class D3D9ClientSurface;
 
 //-----------------------------------------------------------------------------
 // Name: CD3DFramework9
-// Desc: The Direct3D sample framework class for DX7. Maintains the D3D
+// Desc: The Direct3D sample framework class for DX9. Maintains the D3D
 //       surfaces and device used for 3D rendering.
 //-----------------------------------------------------------------------------
 class CD3DFramework9

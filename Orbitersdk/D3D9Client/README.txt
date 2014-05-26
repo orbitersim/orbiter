@@ -102,7 +102,7 @@ For a first-time installation only:
   plugin in Modules/Plugin/D3D9Client.dll.
 
 * Run the "no-graphics" version of orbiter (orbiter_ng) and activate
-  the D3D7Client plugin from the Modules tab.
+  the D3D9Client plugin from the Modules tab.
 
 * You should now get a video tab in the Launchpad dialog. Configure your
   graphics driver and screen options, then launch a scenario.
