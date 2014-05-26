@@ -202,8 +202,7 @@ float AngleCoEff(float c)
 {
 	c = max(c,0);
 	float  c2 = c*c;
-	float  dt = dot(float4(1.0, c, c2, c2*c), vODCoEff);
-	return pow(dt, -2.0f);
+	return rcp(dot(float4(1.0, c, c2, c2*c), vODCoEff));
 }
 	
 // -------------------------------------------------------------------------------
@@ -216,19 +215,22 @@ void AtmoScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in floa
     float3 vAlt;
     
     float3 vp0  = vPosW + vCameraPos;				// Compute geo-centric vertex position
-    float  fRad = length(vp0);						// Vextex distance from a geo-center
-    float3 vNr0 = vp0/fRad;							// Surface normal at vertex location
-    float  fDNS = dot(vNr0, vSunDir);				// Dot Normal Sun
-    float fRPha = RPhase(dot(vRay, vSunDir));		// Compute rayleigh phase factor			
-    
+    float  fRd2 = dot(vp0,vp0);						// Square radius
+    float  fRdR = rsqrt(fRd2);						// Reciprocal Vextex distance from a geo-center
+    float  fRad = rcp(fRdR);						// Vertex distance from a geo-centre
+    float3 vNr0 = vp0*fRdR;							// Surface normal at vertex location
+   	   
     // Compute the length of the viewing ray to a camera or a skydome.
     //
-    if (fCameraAlt>(fScaleHeight*5.0)) {   // TODO: Should use boolean to create a static branch for better efficiency
+    if (fCameraAlt>(fScaleHeight*5.0)) {   			// TODO: Should use boolean to create a static branch for better efficiency
 		float rdt = -fRad * dot(vRay, vNr0);
-		fRay = rdt + sqrt(fAtmRad2 - (fRad*fRad - rdt*rdt));	
+		fRay = rdt + sqrt(fAtmRad2 - (fRd2 - rdt*rdt));	
     } else {
 		fRay = length(vPosW);
-	}			
+	}	
+	
+	float  fDNS = dot(vNr0, vSunDir);				// Dot Normal Sun
+    float fRPha = RPhase(dot(vRay, vSunDir));		// Compute rayleigh phase factor			
 	
 	vAlt[0] = fRad - fRadius;						// Sample point 0 (i.e. Vertex) altitude
 	vAlt[2] = min(fScaleHeight*5.0, fCameraAlt);	// Sample point 2 (i.e. Camera or atmosphere upper limit altitude)

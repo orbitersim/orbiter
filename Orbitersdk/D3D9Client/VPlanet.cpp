@@ -725,7 +725,7 @@ double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
 
 void vPlanet::DumpDebugFile()
 {
-	/*
+	
 	int samples = 90;
 	double max_angle = 90.0;
 	double delta = 3.1415*max_angle/float(samples*180);
@@ -750,7 +750,7 @@ void vPlanet::DumpDebugFile()
 		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g\n", i, exact, accurate, gauss, test);
 	}
 	fclose(fp);
-	*/
+	
 }
 
 // ==============================================================

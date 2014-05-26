@@ -15,7 +15,7 @@
 
 #include "D3D9Client.h"
 #include "D3D9Util.h"
-#include "D3D9Effect.h"
+#include "PlanetRenderer.h"
 #include "VPlanet.h"
 #include "Spherepatch.h"
 #include "Qtree.h"
@@ -147,7 +147,7 @@ private:
 
 // =======================================================================
 
-class TileManager2Base {
+class TileManager2Base : public PlanetRenderer {
 	friend class Tile;
 
 public:
@@ -197,8 +197,7 @@ public:
 	void RenderNode (QuadTreeNode<TileType> *node);
 
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
-	void InitLegacyAtmosphere();
-
+	
 	const oapi::D3D9Client *GClient() const { return gc; }
 	const vPlanet *GetPlanet() const { return vp; }
 	const configPrm &Cprm() const { return cprm; }
@@ -209,8 +208,7 @@ public:
 
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
-	void SetWorldMatrix (const MATRIX4 &W);
-
+	
 	template<class TileType>
 	QuadTreeNode<TileType> *LoadChildNode (QuadTreeNode<TileType> *node, int idx);
 	// loads one of the four subnodes of 'node', given by 'idx'
@@ -228,64 +226,6 @@ private:
 	static double resolutionBias;
 	static bool bTileLoadThread;      // load tiles on separate thread
 	static LPDIRECT3DDEVICE9 pDev;    // render device
-
-	// -------------------------------------------------------------------
-	// Shader Implementation
-	// -------------------------------------------------------------------
-	
-	static ID3DXEffect *pShader;
-
-public:
-
-	static D3DXHANDLE eTileTech;
-	static D3DXHANDLE eCloudTech;
-	// ------------------------------------------------------------  
-	static D3DXHANDLE smWorld;
-	static D3DXHANDLE smViewProj;
-	// ------------------------------------------------------------  
-	static D3DXHANDLE svTexOff;
-	static D3DXHANDLE svWater;
-	static D3DXHANDLE svSunDir;
-	static D3DXHANDLE svAddBkg;
-	static D3DXHANDLE svTint;
-	// ------------------------------------------------------------
-	static D3DXHANDLE sfDistScale;
-	static D3DXHANDLE sfAlpha;
-	static D3DXHANDLE sfNight;
-	// ------------------------------------------------------------
-	static D3DXHANDLE sbSpecular;
-	static D3DXHANDLE sbCloudSh;
-	static D3DXHANDLE sbLights;
-	static D3DXHANDLE sbLegacyAtm;
-	// ------------------------------------------------------------
-	static D3DXHANDLE stDiff;
-	static D3DXHANDLE stMask;
-	// Atmosphere -------------------------------------------------
-	static D3DXHANDLE svFogColor;
-	static D3DXHANDLE sfFogDensity;
-	static D3DXHANDLE sfGlobalAmb;
-	static D3DXHANDLE sfSunAppRad;
-	static D3DXHANDLE sfDispersion;
-	static D3DXHANDLE sfAmbient0;
-	// Scatter model ----------------------------------------------
-	static D3DXHANDLE svPhase;		
-	static D3DXHANDLE svODCoEff;
-	static D3DXHANDLE svRayTotal;
-	static D3DXHANDLE svRayInSct;
-	static D3DXHANDLE svRaySurface;
-	static D3DXHANDLE svMieTotal;
-	static D3DXHANDLE svCameraPos;		
-	static D3DXHANDLE svUnitCameraPos;		
-	static D3DXHANDLE sfSunIntensity;
-	static D3DXHANDLE sfSrfIntensity;
-	static D3DXHANDLE sfScaleHeight;		
-	static D3DXHANDLE sfInvScaleHeight;
-	static D3DXHANDLE sfRadius;
-	static D3DXHANDLE sfCameraAlt;
-	static D3DXHANDLE sfAtmRad2;
-	static D3DXHANDLE sfBalance;
-	static D3DXHANDLE siMode;
-	static D3DXHANDLE sbOverSat;
 };
 
 // =======================================================================

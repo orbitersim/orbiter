@@ -642,8 +642,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	// set generic parameters
 	SetRenderPrm (dwmat, 0, use_zbuf, rprm);
 
-	InitLegacyAtmosphere();
-	
 	double np = 0.0, fp = 0.0;
 	int i;
 

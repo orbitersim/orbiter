@@ -619,58 +619,6 @@ TileLoader *TileManager2Base::loader = NULL;
 double TileManager2Base::resolutionBias = 4.0;
 bool TileManager2Base::bTileLoadThread = false;
 
-// ---------------------------------------------------------
-ID3DXEffect *TileManager2Base::pShader = NULL;
-D3DXHANDLE TileManager2Base::eTileTech = NULL;
-D3DXHANDLE TileManager2Base::eCloudTech = NULL;
-// ------------------------------------------------------------  
-D3DXHANDLE TileManager2Base::smWorld = NULL;
-D3DXHANDLE TileManager2Base::smViewProj = NULL;
-// ------------------------------------------------------------  
-D3DXHANDLE TileManager2Base::svTexOff = NULL;
-D3DXHANDLE TileManager2Base::svWater = NULL;
-D3DXHANDLE TileManager2Base::svSunDir = NULL;
-D3DXHANDLE TileManager2Base::svAddBkg = NULL;
-D3DXHANDLE TileManager2Base::svTint = NULL;
-// ------------------------------------------------------------
-D3DXHANDLE TileManager2Base::sfDistScale = NULL;
-D3DXHANDLE TileManager2Base::sfAlpha = NULL;
-D3DXHANDLE TileManager2Base::sfNight = NULL;
-// ------------------------------------------------------------
-D3DXHANDLE TileManager2Base::sbSpecular = NULL;
-D3DXHANDLE TileManager2Base::sbCloudSh = NULL;
-D3DXHANDLE TileManager2Base::sbLights = NULL;
-D3DXHANDLE TileManager2Base::sbLegacyAtm = NULL;
-// ------------------------------------------------------------
-D3DXHANDLE TileManager2Base::stDiff = NULL;
-D3DXHANDLE TileManager2Base::stMask = NULL;
-// Atmosphere -------------------------------------------------
-D3DXHANDLE TileManager2Base::svFogColor = NULL;
-D3DXHANDLE TileManager2Base::sfFogDensity = NULL;
-D3DXHANDLE TileManager2Base::sfGlobalAmb = NULL;
-D3DXHANDLE TileManager2Base::sfSunAppRad = NULL;
-D3DXHANDLE TileManager2Base::sfDispersion = NULL;
-D3DXHANDLE TileManager2Base::sfAmbient0 = NULL;
-// Scatter model ----------------------------------------------
-D3DXHANDLE TileManager2Base::svPhase = NULL;		
-D3DXHANDLE TileManager2Base::svODCoEff = NULL;
-D3DXHANDLE TileManager2Base::svRayTotal = NULL;	
-D3DXHANDLE TileManager2Base::svRayInSct = NULL;
-D3DXHANDLE TileManager2Base::svRaySurface = NULL;
-D3DXHANDLE TileManager2Base::svMieTotal = NULL;
-D3DXHANDLE TileManager2Base::svCameraPos = NULL;		
-D3DXHANDLE TileManager2Base::svUnitCameraPos = NULL;		
-D3DXHANDLE TileManager2Base::sfSunIntensity = NULL;
-D3DXHANDLE TileManager2Base::sfSrfIntensity = NULL;
-D3DXHANDLE TileManager2Base::sfScaleHeight = NULL;		
-D3DXHANDLE TileManager2Base::sfInvScaleHeight = NULL;
-D3DXHANDLE TileManager2Base::sfRadius = NULL;
-D3DXHANDLE TileManager2Base::sfCameraAlt = NULL;
-D3DXHANDLE TileManager2Base::sfAtmRad2 = NULL;
-D3DXHANDLE TileManager2Base::sfBalance = NULL;
-D3DXHANDLE TileManager2Base::siMode = NULL;
-D3DXHANDLE TileManager2Base::sbOverSat = false;
-
 
 // -----------------------------------------------------------------------
 
@@ -703,114 +651,6 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	bTileLoadThread = true; // TODO: g_pOrbiter->Cfg()->CfgPRenderPrm.bLoadOnThread;
 
 	loader = new TileLoader (gc);
-
-
-	// -----------------------------------------------------------------------
-	// Initialize Surface.fx Shader
-	// -----------------------------------------------------------------------
-
-	char name[256];
-
-	WORD Model = gc->GetHardwareCaps()->PixelShaderVersion & 0xFFFF;
-
-	if (!strcmp(Config->Shaders,"Level20")) Model = 0x200;
-
-	// Create the Effect from a .fx file.
-	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
-
-	macro[0].Name = "VS_MOD";
-	macro[1].Name = "PS_MOD";
-
-	if (Model==0x200) {
-		LogAlw("[Compiling Effects for Shader Model 2.0]");
-		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 2.0]");
-		macro[0].Definition = "vs_2_0";
-		macro[1].Definition = "ps_2_0";
-		sprintf_s(name,256,"Modules/D3D9Client20/Surface.fx");
-	}
-	else {
-		LogAlw("[Compiling Effects for Shader Model 3.0]");
-		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
-		macro[0].Definition = "vs_3_0";
-		macro[1].Definition = "ps_3_0";
-		sprintf_s(name,256,"Modules/D3D9Client/Surface.fx");
-	}
-	
-	
-	macro[2].Name = "ANISOTROPY_MACRO";
-	macro[2].Definition = new char[32];
-	sprintf_s((char*)macro[2].Definition,32,"%d",max(2,Config->Anisotrophy));
-	
-	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
-	
-	delete []macro[2].Definition;
-
-	if (errors) {
-		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
-		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Surface.fx Error", 0);
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
-
-	if (!pShader) {
-		LogErr("Failed to create an Effect (%s)",name);
-		return;
-	}
-
-	// ---------------------------------------------------------------------
-	// Bind shader-side variables and constants to local handles
-
-	// Techniques ----------------------------------------------------------
-	eTileTech			= pShader->GetTechniqueByName("TileTech");
-	eCloudTech			= pShader->GetTechniqueByName("CloudTech");
-	// ------------------------------------------------------------  
-	smWorld				= pShader->GetParameterByName(0,"mWorld");
-	smViewProj			= pShader->GetParameterByName(0,"mViewProj");
-	// ------------------------------------------------------------  
-	svTexOff			= pShader->GetParameterByName(0,"vTexOff");
-	svWater				= pShader->GetParameterByName(0,"vWater");
-	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
-	svAddBkg			= pShader->GetParameterByName(0,"vAddBkg");
-	svTint				= pShader->GetParameterByName(0,"vTint");
-	// ------------------------------------------------------------
-	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
-	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
-	sfNight				= pShader->GetParameterByName(0,"fNight");
-	// ------------------------------------------------------------
-	sbSpecular			= pShader->GetParameterByName(0,"bSpecular");
-	sbCloudSh			= pShader->GetParameterByName(0,"bCloudSh");
-	sbLights			= pShader->GetParameterByName(0,"bLights");
-	sbLegacyAtm			= pShader->GetParameterByName(0,"bLegacyAtm");
-	// ------------------------------------------------------------
-	stDiff				= pShader->GetParameterByName(0,"tDiff");
-	stMask				= pShader->GetParameterByName(0,"tMask");
-	// Atmosphere -----------------------------------------------------------
-	svFogColor			= pShader->GetParameterByName(0,"vFogColor");
-	sfFogDensity		= pShader->GetParameterByName(0,"fFogDensity");
-	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
-	sfSunAppRad			= pShader->GetParameterByName(0,"fSunAppRad");
-	sfDispersion		= pShader->GetParameterByName(0,"fDispersion");
-	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient0");
-	
-	// Scatter model --------------------------------------------------------
-	svPhase				= pShader->GetParameterByName(0,"vPhase");		
-	svODCoEff			= pShader->GetParameterByName(0,"vODCoEff");
-	svRayTotal			= pShader->GetParameterByName(0,"vRayTotal");
-	svRayInSct			= pShader->GetParameterByName(0,"vRayInSct");
-	svRaySurface		= pShader->GetParameterByName(0,"vRaySurface");
-	svMieTotal			= pShader->GetParameterByName(0,"vMieTotal");
-	svCameraPos			= pShader->GetParameterByName(0,"vCameraPos");		
-	svUnitCameraPos		= pShader->GetParameterByName(0,"vUnitCameraPos");		
-	sfSunIntensity		= pShader->GetParameterByName(0,"fSunIntensity");
-	sfSrfIntensity		= pShader->GetParameterByName(0,"fSrfIntensity");
-	sfScaleHeight		= pShader->GetParameterByName(0,"fScaleHeight");		
-	sfInvScaleHeight	= pShader->GetParameterByName(0,"fInvScaleHeight");
-	sfRadius			= pShader->GetParameterByName(0,"fRadius");
-	sfCameraAlt			= pShader->GetParameterByName(0,"fCameraAlt");
-	sfAtmRad2			= pShader->GetParameterByName(0,"fAtmRad2");
-	sfBalance			= pShader->GetParameterByName(0,"fBalance");
-	siMode				= pShader->GetParameterByName(0,"iMode");
-	sbOverSat			= pShader->GetParameterByName(0,"bOverSat");
 }
 
 // -----------------------------------------------------------------------
@@ -818,39 +658,6 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 void TileManager2Base::GlobalExit ()
 {
 	delete loader;
-	SAFE_RELEASE(pShader);
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::InitLegacyAtmosphere ()
-{
-	VECTOR3 GS, GP;
-
-	OBJHANDLE hPlanet = GetPlanet()->GetObject();
-
-	DWORD dAmbient = *(DWORD*)GClient()->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-	float fAmbient = float(dAmbient)*0.0039f;
-	
-	OBJHANDLE hS = oapiGetGbodyByIndex(0);	// the central star
-	oapiGetGlobalPos (hS, &GS);				// sun position
-	oapiGetGlobalPos (hPlanet, &GP);		// planet position
-			
-	float rs = (float)(oapiGetSize(hS) / length(GS-GP));
-	
-	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
-
-	HR(pShader->SetFloat(sfGlobalAmb, fAmbient));
-	HR(pShader->SetFloat(sfSunAppRad, rs)); 
-
-	if (atm) {
-		HR(pShader->SetFloat(sfAmbient0, min(0.7f, log(float(atm->rho0)+1.0f)*0.4f)));
-		HR(pShader->SetFloat(sfDispersion, max(0.02f, min(0.9f, log(float(atm->rho0)+1.0f)))));
-	}
-	else {
-		HR(pShader->SetFloat(sfAmbient0, 0.0f));
-		HR(pShader->SetFloat(sfDispersion, 0.0f));
-	}
 }
 
 // -----------------------------------------------------------------------
@@ -918,13 +725,4 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		prm.dwmat_tmp.m43 = (dx*prm.grot.m31 + dy*prm.grot.m32 + dz*prm.grot.m33 + prm.cpos.z) * (float)prm.scale;
 		return mul(lrot,prm.dwmat_tmp);
 	}
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::SetWorldMatrix (const MATRIX4 &W)
-{
-	D3DXMATRIX wtrans;
-	MATRIX4toD3DMATRIX (W, wtrans);
-	Shader()->SetMatrix(smWorld, &wtrans);
 }

@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
-//				 2012 Jarmo Nikkanen
+// Copyright (C) 2012-2014 Jarmo Nikkanen
 // ==============================================================
 
 
@@ -409,6 +409,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	TileManager::GlobalInit(this);
 	TileManager2Base::GlobalInit(this);
+	PlanetRenderer::GlobalInit(this);
 	RingManager::GlobalInit(this);
 	HazeManager::GlobalInit(this);
 	D3D9ParticleStream::GlobalInit(this);
@@ -612,6 +613,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		HazeManager::GlobalExit();
 		TileManager::GlobalExit();
 		TileManager2Base::GlobalExit();
+		PlanetRenderer::GlobalExit();
 		D3D9ParticleStream::GlobalExit();
 		vStar::GlobalExit();
 		vVessel::GlobalExit();

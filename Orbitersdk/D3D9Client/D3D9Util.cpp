@@ -766,7 +766,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 	for (int i=0;i<ndata;i++) 
 	{
 		double c = cos(x[i]);
-
+	
 		v = _V(1.0, c, c*c, c*c*c);
 		
 		m.m11 += v.x*v.x; m.m21 += v.y*v.x;	m.m22 += v.y*v.y; m.m31 += v.z*v.x;
@@ -789,7 +789,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 	float d1 = FastOpticalDepth(0.0, 0, h0, fct);
 	float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
 	float dv = (d1-d2)/d2;
-	if (dv>0.000001) LogErr("Bad %g", dv);
+	if (fabs(dv)>0.05) LogErr("Bad Match %g", dv);
 	
 	return fct;
 }
