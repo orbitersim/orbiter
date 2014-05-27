@@ -7,9 +7,6 @@
 //				 2011 Jarmo Nikkanen, All rights reserved.
 // ==============================================================
 
-
-
-
 #define STRICT
 
 #define _CRT_SECURE_NO_DEPRECATE

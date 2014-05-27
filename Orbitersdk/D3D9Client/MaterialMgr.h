@@ -1,10 +1,9 @@
-
 // ==============================================================
+// MaterialMgr.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2012 - 2014 Jarmo Nikkanen
 // ==============================================================
-
 
 #ifndef __MATERIALMGR_H
 #define __MATERIALMGR_H

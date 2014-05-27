@@ -1,12 +1,12 @@
 // ==============================================================
-//  ORBITER VISUALISATION PROJECT (OVP)
-//  Copyright (C) 2006-2014 Martin Schweiger
-//  Dual licensed under GPL v3 and LGPL v3
-//	Copyright (C) 2010-2014 Jarmo Nikkanen
+// VPlanet.cpp
+// Part of the ORBITER VISUALISATION PROJECT (OVP)
+// Dual licensed under GPL v3 and LGPL v3
+// Copyright (C) 2006-2014 Martin Schweiger
+// Copyright (C) 2010-2014 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
-// VPlanet.cpp
 // class vPlanet (implementation)
 //
 // A vPlanet is the visual representation of a "planetary" object

@@ -7,8 +7,6 @@
 //				 2012 Émile "Bibi Uncle" Grégoire
 // ==============================================================
 
-
-
 #define STRICT
 #include "D3D9util.h"
 #include "AABBUtil.h"

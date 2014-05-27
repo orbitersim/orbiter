@@ -1,4 +1,3 @@
-
 // ==============================================================
 // Scene.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
@@ -6,7 +5,6 @@
 // Copyright (C) 2007 Martin Schweiger
 //				 2012 Jarmo Nikkanen
 // ==============================================================
-
 
 #include "Scene.h"
 #include "VPlanet.h"
