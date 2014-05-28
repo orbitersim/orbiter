@@ -338,9 +338,7 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
-double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0);
-D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
-float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm);
+
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations
@@ -354,6 +352,7 @@ void D3DMAT_SetRotation (D3DXMATRIX *mat, const MATRIX3 *rot);
 void D3DMAT_SetInvRotation (D3DXMATRIX *mat, const MATRIX3 *rot);
 void D3DMAT_RotationFromAxis (const D3DXVECTOR3 &axis, float angle, D3DXMATRIX *rot);
 void D3DMAT_FromAxis(D3DXMATRIX *out, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z);
+void D3DMAT_FromAxis(D3DXMATRIX *out, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z);
 void D3DMAT_FromAxisT(D3DXMATRIX *out, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z);
 void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, float scale, D3DXMATRIX *pOut);
 void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, const D3DXVECTOR3 *dir, float size, float stretch, D3DXMATRIX *pOut);

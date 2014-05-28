@@ -23,6 +23,8 @@
 #ifndef __D3D9TK_H
 #define __D3D9TK_H
 
+#define SctPwr 1.0
+
 typedef struct {
 	D3DXVECTOR4 min, max, bs, a, b, c;
 } D9BBox;
@@ -40,6 +42,10 @@ D3DXVECTOR4	D9LinearFieldOfView(const D3DXMATRIX *pProj);
 D3DXVECTOR4	D9OffsetRange(double R, double r);
 void		EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up);
 D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView);
+
+double		ExactOpticalDepth(double alt, double dir, double R, double R1, double h0);
+D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
+float		FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm);
 
 void		D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line);
 void		D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line);

@@ -669,9 +669,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	// ---------------------------------------------------------------------
 
-	D3DXVECTOR3 ucam, cam = -_D3DXVECTOR3(GetPlanet()->PosFromCamera());
-	D3DXVec3Normalize(&ucam, &cam);
-
 	static float spec_base = 0.7f; // 0.95f;
 
 	// ---------------------------------------------------------------------
@@ -680,59 +677,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	HR(Shader()->SetTechnique(eTileTech));
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetVector(svSunDir, &rprm.SunDir));
-	HR(Shader()->SetFloat(sfDistScale, 1.0f)); //rprm.DistScale));
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
-
-	const ScatterParams *atmo = GetPlanet()->GetAtmoParams();
-
-	// Phase function variables
-	float g  = float(atmo->mphase);
-	float a  = (1.0f-g*g) / (4.0*3.14);
-	float b  = (1.0f+g*g);
-	float c  = float(atmo->rphase);
-	float rp = float(atmo->wavepow);
-	float mp = 1.0f;
-	
-	// !! WARNING !!  value stored in atmo->height is defined in kilometers. (rprm.SclHeight is pre-multiplied to meters)
-
-	// 1.0 / lambda^4
-	D3DXVECTOR3 lambda4 = D3DXVECTOR3(1.0f/pow(float(atmo->red),rp),  1.0f/pow(float(atmo->green),rp),  1.0f/pow(float(atmo->blue),rp));
-	D3DXVECTOR3 lambda2 = D3DXVECTOR3(1.0f/pow(float(atmo->red),mp),  1.0f/pow(float(atmo->green),mp),  1.0f/pow(float(atmo->blue),mp));
-	
-	D3DXVec3Normalize(&lambda4, &lambda4);
-
-	D3DXVECTOR3 raytot = lambda4 * float(atmo->rout);
-	D3DXVECTOR3 raysct = raytot  * float(atmo->rin);
-	D3DXVECTOR3 raysrf = lambda4 * float(atmo->srfclr);
-	D3DXVECTOR3 mietot = lambda2 * float(atmo->mie);
-
-	double upperrad = obj_size + rprm.SclHeight*5.0;
-
-	// Scatter Params
-	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,0), sizeof(D3DXVECTOR4)));
-	HR(Shader()->SetValue(svODCoEff, &rprm.ODCoEff,	sizeof(D3DXVECTOR4)));
-	HR(Shader()->SetValue(svRayTotal, &raytot, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svRayInSct, &raysct, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svRaySurface, &raysrf, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svMieTotal, &mietot, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svCameraPos, &cam, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svUnitCameraPos, &ucam, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetFloat(sfSunIntensity, float(atmo->rsun)));
-	HR(Shader()->SetFloat(sfSrfIntensity, float(atmo->sun)));
-	HR(Shader()->SetFloat(sfScaleHeight, float(rprm.SclHeight)));
-	HR(Shader()->SetFloat(sfInvScaleHeight, float(rprm.InvSclHeight)));
-	HR(Shader()->SetFloat(sfRadius, float(obj_size)));
-	HR(Shader()->SetFloat(sfCameraAlt, float(GetPlanet()->CamDist()-obj_size)));
-	HR(Shader()->SetFloat(sfAtmRad2, float(upperrad*upperrad)));
-	HR(Shader()->SetFloat(sfBalance, float(atmo->balance)));
-	HR(Shader()->SetInt(siMode, int(atmo->mode)));
-	HR(Shader()->SetBool(sbOverSat, atmo->oversat));
-	
-
-	
-	
-	
 
 	if (prm.tint) { HR(Shader()->SetValue(svTint, &rprm.TintColor, sizeof(D3DXCOLOR))); }
 	else          { HR(Shader()->SetVector(svTint, &D3DXVECTOR4(0, 0, 0, 1))); }

@@ -8,7 +8,8 @@
 #ifndef __PLANETRENDERER_H
 #define __PLANETRENDERER_H
 
-#define HORIZON2_NSEG 256
+#define HORIZON2_NSEG 512
+#define HORIZON2_NRING 5
 
 #include "D3D9Client.h"
 
@@ -20,22 +21,33 @@ public:
 
 	static void GlobalInit(class oapi::D3D9Client *gclient);
 	static void GlobalExit();
+	static void CreateSkydomeBuffers();
+	static void CreateRingBuffers();
 	
 	static		LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static		ID3DXEffect * Shader() { return pShader; }
 	
 	void		InitLegacyAtmosphere(OBJHANDLE hPlanet);
 	void		SetWorldMatrix (const MATRIX4 &W);
-	void		RenderHaze(D3DXMATRIX &wmat, float hralt);
+	void		SetViewProjectionMatrix (const MATRIX4 &VP);
+	void		SetWorldMatrix (const D3DXMATRIX &W);
+	void		SetViewProjectionMatrix (const D3DXMATRIX &VP);
+	static void	RenderRing(D3DXMATRIX &wmat, float hralt);
+	static void	RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr);
+	static void	RenderSkySegment(D3DXMATRIX &wmat, float drad);
+	static void InitializeScattering(class vPlanet *pPlanet);
 
 	// ------------------------------------------------------------
 	static oapi::D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
+	static LPDIRECT3DVERTEXBUFFER9 pSkyVB;
+	static LPDIRECT3DVERTEXBUFFER9 pRingVB;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
 	static D3DXHANDLE eCloudTech;
-	static D3DXHANDLE eHorizonTech;
+	static D3DXHANDLE eRingTech;
+	static D3DXHANDLE eSkyTech;
 	// ------------------------------------------------------------  
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;
@@ -58,12 +70,12 @@ public:
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
 	// Atmosphere -------------------------------------------------
-	static D3DXHANDLE svFogColor;
-	static D3DXHANDLE sfFogDensity;
-	static D3DXHANDLE sfGlobalAmb;
-	static D3DXHANDLE sfSunAppRad;
-	static D3DXHANDLE sfDispersion;
-	static D3DXHANDLE sfAmbient0;
+	//static D3DXHANDLE svFogColor;
+	//static D3DXHANDLE sfFogDensity;
+	//static D3DXHANDLE sfGlobalAmb;
+	//static D3DXHANDLE sfSunAppRad;
+	//static D3DXHANDLE sfDispersion;
+	//static D3DXHANDLE sfAmbient0;
 	// Scatter model ----------------------------------------------
 	static D3DXHANDLE svPhase;		
 	static D3DXHANDLE svODCoEff;
@@ -81,15 +93,9 @@ public:
 	static D3DXHANDLE sfCameraAlt;
 	static D3DXHANDLE sfAtmRad2;
 	static D3DXHANDLE sfBalance;
+	static D3DXHANDLE sfHorizonDst;
 	static D3DXHANDLE siMode;
 	static D3DXHANDLE sbOverSat;
-
-	// -------------------------------------------------------------
-
-	static WORD Idx[HORIZON2_NSEG*2+2];
-	static DWORD nIdx;
-	static D3DXVECTOR3 Vtx[HORIZON2_NSEG*2];
-	static float CosP[HORIZON2_NSEG], SinP[HORIZON2_NSEG];
 };
 
 #endif

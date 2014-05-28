@@ -405,6 +405,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	if (!active) return false;
 
 	D3D9Effect::UpdateEffectCamera(hObj);
+	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
+	PlanetRenderer::InitializeScattering(this);
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -436,7 +438,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.AmbColor	= D3DXCOLOR(0,0,0,0);
 		prm.FogColor	= D3DXCOLOR(0,0,0,0);
 		prm.TintColor	= D3DXCOLOR(0,0,0,0);
-		prm.SunDir		= D3DXVECTOR4(-scn->GetLight(-1)->Direction);
+		prm.SunDir		= -scn->GetLight(-1)->Direction;
 
 		if (ringmgr) {
 			if (cdist < rad*ringmgr->InnerRad()) { // camera inside inner ring edge
@@ -452,8 +454,15 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (prm.bCloud && (prm.cloudvis & 1))
 			RenderCloudLayer (dev, D3DCULL_CW);      // render clouds from below
 
-		if (hazemgr) hazemgr->Render (dev, mWorld, true);       // horizon ring
-		if (hazemgr) hazemgr->Render (dev, mWorld, true);       // horizon ring
+		//if (hazemgr) hazemgr->Render (dev, mWorld, true);       // horizon ring
+		
+		VECTOR3 cdir;
+		oapiCameraGlobalDir(&cdir);
+
+		double calt = length(cpos) - size;
+
+		if (calt>60e3)	PlanetRenderer::RenderRing(mWorld, float(100e3/size));
+		else			PlanetRenderer::RenderSky(cpos, cdir, size, 60.0);
 
 		if (prm.bAtm) {
 			if (ModLighting (amb))

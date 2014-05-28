@@ -11,8 +11,6 @@
 #include "D3D9util.h"
 #include "AABBUtil.h"
 #include "D3D9Client.h"
-#include "MatrixInverse.h"
-#include "AtmoControls.h"
 
 float saturate(float x) { if (x>1) return 1; if (x<0) return 0; return x; }
 
@@ -499,6 +497,21 @@ void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, co
 	mat->_33 = z->z;
 }
 
+void D3DMAT_FromAxis(D3DXMATRIX *mat, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z)
+{
+	mat->_11 = float(x->x);
+	mat->_21 = float(x->y);
+	mat->_31 = float(x->z);
+	
+	mat->_12 = float(y->x);
+	mat->_22 = float(y->y);
+	mat->_32 = float(y->z);
+	
+	mat->_13 = float(z->x);
+	mat->_23 = float(z->y);
+	mat->_33 = float(z->z);
+}
+
 void D3DMAT_FromAxisT(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)
 {
 	mat->_11 = x->x;
@@ -673,126 +686,6 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 
     return S_OK;
 }
-
-// =======================================================================
-// Compute an optical depth of a ray through an atmosphere to infinity
-// alt	= starting altitude of the ray above planet surface [m]
-// dir  = ray direction [rad] (zero = up)
-// R	= Planet Radius [m]
-// R1	= Atmosphere Outer Radius [m]
-// h0	= Atmospheric Scale Height [m]
-// =======================================================================
-
-double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
-{
-	double delta = 0.2 * PI / 180.0;
-	double r0 = R + alt;
-
-	if (dir<(delta*2.0)) return h0 * exp(-(r0-R)/h0) / cos(dir);
-
-	dir = PI - dir;
-
-	double m0 = r0 / sin(PI-dir-delta);
-
-	if (m0*sin(dir)>R1) return h0 * exp(-(r0-R)/h0) / cos(PI-dir); 
-
-	double opt = 0.0;
-	double sind = sin(delta); 
-
-	while (r0<R1) {
-
-		double m = r0 / sin(PI-dir-delta);
-		double r1 = m  * sin(dir);
-		double d0 = h0 * exp((r0-R)/-h0);
-		double d1 = h0 * exp((r1-R)/-h0);
-
-		if (fabs(r1-r0)<1e-9) {
-			dir += delta;
-			continue;
-		}
-
-		opt += fabs(d0-d1) * (m*sind) / fabs(r1-r0);
-
-		r0 = r1;
-		dir += delta;
-	}
-
-	return opt;
-}
-
-
-// ===========================================================================
-// Fast evaluation of Optical depth based of taylor series
-// alt = Ray starting altitude [m]
-// cd  = Cosine of the direction of the ray
-// h0  = Atmospheric Scale Height [m]
-// prm = Taylor co-efficients
-// ============================================================================
-
-float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm)
-{
-	float cd2 = cd * cd;
-	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return h0 * exp(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr));
-}
-
-// ===========================================================================
-// Solve taylor series co-efficients for a fast approximation of optical depth
-// R  = Planet Radius [m]
-// R1 = Atmosphere Outer Radius [m]
-// h0 = Atmospheric Scale Height [m]
-// ============================================================================
-
-D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
-{
-
-	double x[] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 75.0, 80.0, 82.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 89.5, 90.0, 90.5};
-
-	VECTOR4 v, q;
-	MATRIX4 m, mi;
-	memset(&m, 0, sizeof(MATRIX4));
-	memset(&q, 0, sizeof(VECTOR4));
-
-	double y[64];
-	double ih0 = 1.0/h0;
-	double ipw = 1.0/SctPwr;
-
-	int ndata = sizeof(x)/sizeof(double);
-
-	for (int i=0;i<ndata;i++) x[i] = x[i]*RAD;
-	for (int i=0;i<ndata;i++) y[i] = pow(1.0 / (ExactOpticalDepth(0.0, x[i], R, R1, h0) * ih0), ipw);	
-	for (int i=0;i<ndata;i++) 
-	{
-		double c = cos(x[i]);
-	
-		v = _V(1.0, c, c*c, c*c*c);
-		
-		m.m11 += v.x*v.x; m.m21 += v.y*v.x;	m.m22 += v.y*v.y; m.m31 += v.z*v.x;
-		m.m32 += v.z*v.y; m.m33 += v.z*v.z;	m.m41 += v.w*v.x; m.m42 += v.w*v.y;
-		m.m43 += v.w*v.z; m.m44 += v.w*v.w;
-
-		m.m12 = m.m21;	m.m13 = m.m31;	m.m14 = m.m41;	m.m23 = m.m32;	m.m24 = m.m42;	m.m34 = m.m43;
-
-		q.x += (v.x * y[i]);
-		q.y += (v.y * y[i]);
-		q.z += (v.z * y[i]);
-		q.w += (v.w * y[i]);
-	}
-
-	MATRIX4Inverse(mi, NULL, m);
-	VECTOR4 w = mul(mi, q);
-	D3DXVECTOR4 fct = D3DXVECTOR4(w.x, w.y, w.z, w.w);
-
-	
-	float d1 = FastOpticalDepth(0.0, 0, h0, fct);
-	float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
-	float dv = (d1-d2)/d2;
-	if (fabs(dv)>0.05) LogErr("Bad Match %g", dv);
-	
-	return fct;
-}
-
-
 
 
 

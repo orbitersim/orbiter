@@ -9,7 +9,7 @@
 #define __ATMOCONTROLS_H
 
 #define ATM_SLIDER_COUNT 14
-#define SctPwr 1.0
+
 
 typedef struct {
 	union {

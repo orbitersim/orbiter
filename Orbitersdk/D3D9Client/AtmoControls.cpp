@@ -167,13 +167,13 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_WAVE,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   1.0, 40.0, 1);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0);
+	ConfigSlider(IDC_ATM_OUT,      0.0, 4.0);
 	ConfigSlider(IDC_ATM_IN,       0.0, 3.0);
 	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
 	ConfigSlider(IDC_ATM_BALANCE,  0.0, 1.0);
 	ConfigSlider(IDC_ATM_RSUN,     0.0, 2.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_SRFCOLOR, 0.0, 1.0);
+	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.0, 10.0);

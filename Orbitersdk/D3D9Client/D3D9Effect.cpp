@@ -443,35 +443,8 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	sun = unit(sun - cam);	// Vector pointing to sun from camera
 	cam = unit(cam - pla);	// Vector pointing to cam from planet
 	
-	/*
-	double l2   = len*len;
-	double r2   = rad*rad;
-	double beta  = acos(dotp(cam, sun));
-	double delta = beta * 0.5;
-	double step  = beta * 0.25;
-	double rl2   = rad*len*2.0;
-	for (int i=0;i<32;i++) {
-		double d  = cos(delta);
-		double q  = acos((rad-d*len)/sqrt(r2+l2-rl2*d));
-		double a1 = PI - q;
-		double a2 = beta - delta;
-		if (fabs(a1-a2)<1e-4) break;
-		if (a1>a2) delta -= step;
-		else       delta += step;
-		step*=0.5;
-	}
-	double alpha = beta - delta;
-	double eps = PI - delta - (PI-alpha);
-	double q   = rad / sin(PI-delta-alpha);
-	VECTOR3 refl = unit(unit(cam * (q*sin(alpha)) + sun * (q*sin(delta))) * rad - cam * len); 
-	double ps = asin(rad/len);
-	double sz = ps - eps;
-	sprintf_s(oapiDebugString(),256,"Alpha=%f, Beta=%f, Delta=%f, Size=%f", alpha*180.0/PI, beta*180.0/PI, delta*180.0/PI, sz*180.0/PI);
-	*/
-
 	DWORD width, height;
 	oapiGetViewportSize(&width, &height); // BUG:  Custom Camera may have different view size
-
 
 	float radlimit = float(rad) + 1.0f;
 	float rho0 = 1.0f;
@@ -502,7 +475,6 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	float ap = gc->GetScene()->GetCameraAperture();
 
 	D3DXVECTOR3 cmo = gc->GetScene()->GetCameraOffset();
-	//D3DXVECTOR3 plr = D3DXVEC(refl);
 	float rl = float(rad/len);
 	float proxy_size = asin(min(1.0f, rl)) + float(40.0*PI/180.0);
 

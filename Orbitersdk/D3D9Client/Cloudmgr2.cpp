@@ -145,7 +145,6 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	//
 	HR(Shader()->SetTechnique(eCloudTech));
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetVector(svSunDir, &rprm.SunDir));
 	
 	if (rprm.bAddBkg) { HR(Shader()->SetValue(svAddBkg, &rprm.SkyColor, sizeof(D3DXCOLOR))); }
 	else			  { HR(Shader()->SetVector(svAddBkg, &D3DXVECTOR4(0, 0, 0, 0))); }

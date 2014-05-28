@@ -136,6 +136,13 @@ public:
 	inline double CamDist() const { return cdist; }
 
 	/**
+	 * \brief Returns object size
+	 * \return Object size [m]
+	 * \sa CamDist
+	 */
+	inline double GetSize() const { return size; }
+
+	/**
 	 * \brief Returns object position relative to camera
 	 * \return relative position vector [<b>m</b>]
 	 * \note The returned distance vector is expressed in the ecliptic frame.

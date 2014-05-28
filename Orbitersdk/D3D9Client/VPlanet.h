@@ -45,8 +45,8 @@ public:
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
-	float			GetRadius() const { return rad; }
-
+	float			GetRadius() const { return rad; }	//TODO: Remove this. Use GetSize() instead
+	
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
 	vBase*			GetBaseByIndex(DWORD index);
@@ -88,7 +88,7 @@ public:
 		D3DXCOLOR	AmbColor;
 		D3DXCOLOR	FogColor;
 		D3DXCOLOR   SkyColor;
-		D3DXVECTOR4 SunDir;
+		D3DXVECTOR3 SunDir;
 		D3DXVECTOR4 ODCoEff;		// Optical depth co-efficients
 		float		FogDensity;
 		float		DistScale;
