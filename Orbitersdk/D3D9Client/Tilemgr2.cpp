@@ -46,6 +46,8 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 Tile::~Tile ()
 {
+	state = Invalid;
+	mgr = NULL;
 	if (mesh) delete mesh;
 	if (tex && owntex) tex->Release();
 }
@@ -484,7 +486,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 // =======================================================================
 
 const oapi::D3D9Client *TileLoader::gc = 0;
-bool TileLoader::bRunThread = true;
+volatile bool TileLoader::bRunThread = true;
 int TileLoader::nqueue = 0;
 int TileLoader::queue_in = 0;
 int TileLoader::queue_out = 0;
@@ -555,6 +557,39 @@ bool TileLoader::LoadTileAsync (Tile *tile)
 
 // -----------------------------------------------------------------------
 
+void TileLoader::Unqueue (TileManager2Base *mgr)
+{
+	bool locked = false; // whether a mutex semaphore was taken
+
+	bool found;
+	do {
+		int i, j;
+		found = false;
+		for (i = 0; i < nqueue; ++i) {
+			j = (queue_out+i) % MAXQUEUE2;
+			if (queue[j].tile->mgr == mgr) {
+				if (!locked) {
+					WaitForMutex();
+					locked = true;
+				}
+				if (i) {
+					queue[j].tile = queue[queue_out].tile;
+				}
+				queue_out = (queue_out+1) % MAXQUEUE2;
+				nqueue--;
+				found = true;
+				break;
+			}
+		}
+	} while (found);
+
+	if (locked) {
+		ReleaseMutex(); // ...if mutex was taken
+	}
+}
+
+// -----------------------------------------------------------------------
+
 bool TileLoader::Unqueue (Tile *tile)
 {
 	if (tile->state != Tile::InQueue) return false;
@@ -563,9 +598,13 @@ bool TileLoader::Unqueue (Tile *tile)
 	for (i = 0; i < nqueue; i++) {
 		j = (queue_out+i) % MAXQUEUE2;
 		if (queue[j].tile == tile) {
-			if (i) queue[j].tile = queue[queue_out].tile;
+			WaitForMutex ();
+			if (i) {
+				queue[j].tile = queue[queue_out].tile;
+			}
 			queue_out = (queue_out+1) % MAXQUEUE2;
 			nqueue--;
+			ReleaseMutex ();
 			return true;
 		}
 	}
@@ -586,19 +625,25 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 		WaitForMutex ();
 		if (load = (nqueue > 0)) {
 			tile = queue[queue_out].tile;
-			tile->state = Tile::Loading; // lock tile and its ancestor tree
+			_ASSERT(TILE_STATE_OK(tile));
+			if (tile->state == Tile::InQueue) {
+				tile->state = Tile::Loading; // lock tile and its ancestor tree
+			} else {
+				load = false;
+			}
 			queue_out = (queue_out+1) % MAXQUEUE2; // remove from queue
 			nqueue--;
 		}
-		ReleaseMutex ();
+//		ReleaseMutex ();
 
 		if (load) {
 			tile->Load(); // load/create the tile
 
-			WaitForMutex ();
+//			WaitForMutex ();
 			tile->state = Tile::Inactive; // unlock tile
-			ReleaseMutex ();
+//			ReleaseMutex ();
 		}
+		ReleaseMutex ();
 	}
 	return 0;
 }
@@ -631,6 +676,15 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	oapiGetObjectName (obj, cbody_name, 256);
+}
+
+// -----------------------------------------------------------------------
+
+TileManager2Base::~TileManager2Base ()
+{
+	if (loader) {
+		loader->Unqueue(this);
+	}
 }
 
 // -----------------------------------------------------------------------

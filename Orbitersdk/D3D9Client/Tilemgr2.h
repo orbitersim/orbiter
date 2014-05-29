@@ -28,6 +28,15 @@
 #define TILE_PATCHRES 32
 #define TILE_ELEVSTRIDE (TILE_PATCHRES*8+3)
 
+// Debugging helper
+#define TILE_STATE_OK(t) (t->state == Tile::Invalid \
+                       || t->state == Tile::InQueue  \
+                       || t->state == Tile::Loading   \
+                       || t->state == Tile::Inactive   \
+                       || t->state == Tile::Active      \
+                       || t->state == Tile::Invisible    \
+                       || t->state == Tile::ForRender)
+
 // =======================================================================
 // Type definitions
 
@@ -128,6 +137,9 @@ public:
 	bool Unqueue (Tile *tile);
 	// remove a tile from the load queue (caller must own hLoadMutex)
 
+	void Unqueue (TileManager2Base *mgr);
+	// removes all tiles of a manager from the load queue (caller must own hLoadMutex)
+
 	inline static DWORD WaitForMutex() { return ::WaitForSingleObject (hLoadMutex, INFINITE); }
 	inline static BOOL ReleaseMutex() { return ::ReleaseMutex (hLoadMutex); }
 
@@ -137,7 +149,7 @@ private:
 	} queue[MAXQUEUE2];
 
 	static const oapi::D3D9Client *gc;
-	static bool bRunThread;
+	volatile static bool bRunThread;
 	static int nqueue, queue_in, queue_out;
 	HANDLE hLoadThread;
 	static HANDLE hLoadMutex;
@@ -178,6 +190,7 @@ public:
 	} prm;
 
 	TileManager2Base (const vPlanet *vplanet, int _maxres);
+	~TileManager2Base ();
 
 	static void GlobalInit (class oapi::D3D9Client *gclient);
 	static void GlobalExit ();

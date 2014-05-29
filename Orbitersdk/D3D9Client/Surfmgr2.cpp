@@ -57,8 +57,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 {
 	smgr = static_cast<TileManager2<SurfTile>* > (_mgr);
 	node = 0;
-	elev = 0;
-	ggelev = 0;
+	elev = NULL;
+	ggelev = NULL;
 	ltex = 0;
 }
 
@@ -66,8 +66,14 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 SurfTile::~SurfTile ()
 {
-	if (elev) delete []elev;
-	if (ltex && owntex) ltex->Release();
+	ggelev = NULL;
+	if (elev) {
+		delete []elev;
+		elev = NULL;
+	}
+	if (ltex && owntex) {
+		ltex->Release();
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -273,9 +279,11 @@ bool SurfTile::LoadElevationData ()
 				}
 			}
 			mean_elev /= ((TILE_PATCHRES*4+1)*(TILE_PATCHRES*4+1));
-		} else elev = 0;
+		} else {
+			elev = NULL;
+		}
 	}
-	return (elev != 0);
+	return (elev != NULL);
 }
 
 // -----------------------------------------------------------------------
