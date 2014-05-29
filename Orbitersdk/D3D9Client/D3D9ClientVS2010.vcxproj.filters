@@ -301,6 +301,9 @@
     <ClInclude Include="Surfmgr2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Qtree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\CelestialSphere.fx">

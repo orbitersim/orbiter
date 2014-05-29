@@ -234,6 +234,7 @@
     <ClInclude Include="OapiVersion.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="PlanetRenderer.h" />
+    <ClInclude Include="Qtree.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RingMgr.h" />
     <ClInclude Include="RunwayLights.h" />

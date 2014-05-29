@@ -164,9 +164,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABBUtil.cpp" />
+    <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
     <ClCompile Include="CelSphere.cpp" />
     <ClCompile Include="CloudMgr.cpp" />
+    <ClCompile Include="Cloudmgr2.cpp" />
     <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="D3D9Catalog.cpp" />
     <ClCompile Include="D3D9Client.cpp" />
@@ -189,12 +191,16 @@
     <ClCompile Include="MeshMgr.cpp" />
     <ClCompile Include="OapiExtension.cpp" />
     <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="PlanetRenderer.cpp" />
     <ClCompile Include="RingMgr.cpp" />
     <ClCompile Include="RunwayLights.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Spherepatch.cpp" />
     <ClCompile Include="SurfMgr.cpp" />
+    <ClCompile Include="Surfmgr2.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TileMgr.cpp" />
+    <ClCompile Include="Tilemgr2.cpp" />
     <ClCompile Include="VBase.cpp" />
     <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="VObject.cpp" />
@@ -210,9 +216,11 @@
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
     <ClInclude Include="AABBUtil.h" />
+    <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
+    <ClInclude Include="Cloudmgr2.h" />
     <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="D3D9Catalog.h" />
     <ClInclude Include="D3D9Client.h" />
@@ -235,13 +243,19 @@
     <ClInclude Include="OapiExtension.h" />
     <ClInclude Include="OapiVersion.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="PlanetRenderer.h" />
+    <ClInclude Include="Qtree.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RingMgr.h" />
     <ClInclude Include="RunwayLights.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="Spherepatch.h" />
     <ClInclude Include="SurfMgr.h" />
+    <ClInclude Include="Surfmgr2.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TileMgr.h" />
+    <ClInclude Include="Tilemgr2.h" />
+    <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
     <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
