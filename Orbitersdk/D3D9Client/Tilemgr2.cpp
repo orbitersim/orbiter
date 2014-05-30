@@ -97,7 +97,7 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 
 bool Tile::InView (const MATRIX4 &transform)
 {
-	return true;
+	//return true;
 
 	if (!lvl) return true; // no good check for this yet
 
