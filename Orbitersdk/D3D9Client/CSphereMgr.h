@@ -12,13 +12,14 @@
 
 #define STRICT 1
 #include "TileMgr.h"
+#include "PlanetRenderer.h"
 
 class D3D9Config;
 
 // =======================================================================
 // Class CSphereManager
 
-class CSphereManager : private D3D9Effect 
+class CSphereManager : private PlanetRenderer 
 {
 public:
 	CSphereManager (oapi::D3D9Client *gclient, const Scene *scene);
@@ -28,7 +29,7 @@ public:
 	static void CreateDeviceObjects(LPDIRECT3D9 d3d, LPDIRECT3DDEVICE9 dev);
 	static void DestroyDeviceObjects();
 
-	void Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl);
+	void Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl, bool bInAtmosphere);
 
 protected:
 	bool LoadPatchData ();

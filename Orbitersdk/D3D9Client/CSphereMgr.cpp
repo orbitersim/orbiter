@@ -37,7 +37,7 @@ void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
 // =======================================================================
 // Class CSphereManager
 
-CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : D3D9Effect()
+CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : PlanetRenderer()
 {
 	gc = gclient;
 	scn = scene;
@@ -53,7 +53,6 @@ CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : D3D9E
 
 	if (!c[0]) {
 		disabled = true;
-		return;
 	} else {
 		strncpy (texname, c, 64);
 		disabled = false;
@@ -182,6 +181,8 @@ bool CSphereManager::LoadTileData ()
 
 void CSphereManager::LoadTextures ()
 {
+	if (disabled) return;
+
 	// pre-load level 1-8 textures
 	char fname[256];
 	strcpy (fname, texname);
@@ -213,25 +214,20 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl)
+void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl, bool bInAtmosphere)
 {
-	if (disabled) return;
-
 	float intens = intensity;
 
 	if (bglvl) intens *= exp(-float(bglvl)*0.05f);
-	if (!intens) return; // sanity check
 	
-	D3DXCOLOR clr(intens, intens, intens, intens);
-
-	HR(FX->SetValue(eColor, &clr, sizeof(D3DXCOLOR)));
+	if (disabled) Shader()->SetFloat(sfAlpha, 0.0f);
+	else		  Shader()->SetFloat(sfAlpha, intens);
 
 	level = min ((DWORD)level, maxlvl);
 
 	RenderParam.dev = dev;
 	RenderParam.tgtlvl = level;
 	RenderParam.wmat = trans;
- 
 	RenderParam.viewap = atan(diagscale * tan(scn->GetCameraAperture()));
 
 	int startlvl = min (level, 8);
@@ -252,15 +248,20 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl)
 
 	WaitForSingleObject (tilebuf->hQueueMutex, INFINITE);
 
-	HR(FX->SetTechnique(eSkyDomeTech));
-	HR(FX->SetValue(eSun, scn->GetLight(-1), sizeof(D3D9Light)));
+	HR(Shader()->SetTechnique(eSkyDomeTech));
+	HR(Shader()->SetMatrix(smViewProj, scn->GetProjectionViewMatrix()));
 	
-	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
 
 	UINT numPasses = 0;
-	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
+	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+
+	if (!bInAtmosphere) {
+		Shader()->BeginPass(0);	// Render without atmospheric effects
+	}
+	else {
+		Shader()->BeginPass(1); // Render with atmospheric effects
+	}
 
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere
@@ -276,8 +277,8 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl)
 		}
 	}
 
-	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(Shader()->EndPass());
+	HR(Shader()->End());	
 
 	ReleaseMutex (tilebuf->hQueueMutex);
 }
@@ -329,9 +330,9 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	gc->GetStats()->Tiles[lvl]++;
 	gc->GetStats()->Draw++;
 	
-	FX->SetMatrix(eW, &mWorld);
-	FX->SetTexture(eTex0, tex);	
-	FX->CommitChanges();
+	Shader()->SetMatrix(smWorld, &mWorld);
+	Shader()->SetTexture(stDiff, tex);	
+	Shader()->CommitChanges();
 
 	pDev->SetStreamSource(0, mesh.pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh.pIB);
@@ -371,7 +372,7 @@ void CSphereManager::TileExtents (int hemisp, int ilat, int nlat, int ilng, int 
 bool CSphereManager::TileInView (int lvl, int ilat)
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat];
-	float rad = mesh.bsRad * 2000.0f; // * (float)RenderParam.objsize;
+	float rad = mesh.bsRad * 2000.0f;
 	D3DXVECTOR3 vP;
 	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
 	return gc->GetScene()->IsVisibleInCamera(&vP, rad);

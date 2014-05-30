@@ -687,9 +687,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
 
-	if (prm.tint) { HR(Shader()->SetValue(svTint, &rprm.TintColor, sizeof(D3DXCOLOR))); }
-	else          { HR(Shader()->SetVector(svTint, &D3DXVECTOR4(0, 0, 0, 1))); }
-
 	if (rprm.bAddBkg) { HR(Shader()->SetValue(svAddBkg, &rprm.SkyColor, sizeof(D3DXCOLOR))); }
 	else			  { HR(Shader()->SetVector(svAddBkg, &D3DXVECTOR4(0, 0, 0, 0))); }
 

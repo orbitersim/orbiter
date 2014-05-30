@@ -3,6 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 //   Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006-2014 Martin Schweiger
+// Copyright (C) 2010-2014 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -46,7 +47,8 @@ public:
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
 	float			GetRadius() const { return rad; }	//TODO: Remove this. Use GetSize() instead
-	
+	bool			CameraInAtmosphere() const;
+
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
 	vBase*			GetBaseByIndex(DWORD index);
@@ -71,7 +73,8 @@ public:
 		bool bFogEnabled;	    // does this planet support fog rendering?
 		double atm_href;	    // reference altitude for atmospheric effects [m]
 		double atm_amb0;        // scale parameter for ambient level modification
-		DWORD  amb0col;          // baseline ambient colour [rgba]
+		double atm_hzalt;		// Horizon rendering altitude
+		DWORD  amb0col;         // baseline ambient colour [rgba]
 		double cloudalt;        // altitude of cloud layer, if present [m]
 		double shadowalpha;     // opacity of shadows (0-1)
 

@@ -65,6 +65,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
 		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);
+		prm.atm_hzalt = atmc->horizonalt;
+		LogErr("Horizon Alt = %g",prm.atm_hzalt);
 		prm.atm_href = log(atmc->rho0)*2e4 + 2e4;
 		prm.atm_amb0 = min (0.7, log (atmc->rho0+1.0)*0.35);
 		DWORD amb0 = *(DWORD*)gc->GetConfigParam (CFGPRM_AMBIENTLEVEL);
@@ -188,6 +190,19 @@ vPlanet::~vPlanet ()
 	if (hazemgr) delete hazemgr;
 	if (ringmgr) delete ringmgr;
 	if (mesh)    delete mesh;
+}
+
+// ==============================================================
+
+bool vPlanet::CameraInAtmosphere() const
+{
+	double calt = CamDist() - size;
+
+	sprintf(oapiDebugString(),"[%s] Alt=%g HzAlt=%g",name,calt,prm.atm_hzalt);
+
+	if (prm.bAtm==false) return false;
+	if (calt>prm.atm_hzalt) return false;
+	return true;
 }
 
 // ==============================================================
@@ -406,7 +421,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	D3D9Effect::UpdateEffectCamera(hObj);
 	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
-	PlanetRenderer::InitializeScattering(this);
+	//PlanetRenderer::InitializeScattering(this);
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -786,7 +801,7 @@ void vPlanet::LoadAtmoConfig()
 	oapiReadItem_float(hFile, "OutScatter", SPrm.rout);
 	oapiReadItem_float(hFile, "InScatter", SPrm.rin);
 	oapiReadItem_float(hFile, "RayleighPhase", SPrm.rphase);
-	oapiReadItem_float(hFile, "MiePhase", SPrm.balance);
+	oapiReadItem_float(hFile, "Balance", SPrm.balance);
 	oapiReadItem_float(hFile, "SunIntensity", SPrm.rsun);
 	oapiReadItem_float(hFile, "SrfColor", SPrm.srfclr);
 	oapiReadItem_float(hFile, "SrfIntensity", SPrm.sun);
@@ -824,7 +839,7 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "OutScatter", SPrm.rout);
 	oapiWriteItem_float(hFile, "InScatter", SPrm.rin);
 	oapiWriteItem_float(hFile, "RayleighPhase", SPrm.rphase);
-	oapiWriteItem_float(hFile, "MiePhase", SPrm.balance);
+	oapiWriteItem_float(hFile, "Balance", SPrm.balance);
 	oapiWriteItem_float(hFile, "SunIntensity", SPrm.rsun);
 	oapiWriteItem_float(hFile, "SrfColor", SPrm.srfclr);
 	oapiWriteItem_float(hFile, "SrfIntensity", SPrm.sun);

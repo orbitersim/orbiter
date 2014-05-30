@@ -169,15 +169,15 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 4.0);
 	ConfigSlider(IDC_ATM_IN,       0.0, 3.0);
-	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
+	ConfigSlider(IDC_ATM_RPHASE,   0.0, 3.5);
 	ConfigSlider(IDC_ATM_BALANCE,  0.0, 1.0);
 	ConfigSlider(IDC_ATM_RSUN,     0.0, 2.0);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.0, 10.0);
-	ConfigSlider(IDC_ATM_MPHASE,   0.0, 0.9);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 0.5);
+	ConfigSlider(IDC_ATM_MPHASE,   0.75, 0.990);
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Wavelength setting for green light (default 0.600)");
@@ -194,8 +194,8 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_ATM_SRFCOLOR,	hDlg, "Controls a color composition of sunlight on a planet surface (Configure at sunrise/set)");
 	CreateToolTip(IDC_ATM_SUN,		hDlg, "Controls an intensity of sunlight on a planet surface");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_MIE,		hDlg, "(NOT IN USE) Overall scale factor for mie scattering");
-	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "(NOT IN USE) Directional strength of Henyey-Greenstein phase function");
+	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering");
+	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
 	
 
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);

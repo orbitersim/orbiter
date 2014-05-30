@@ -23,7 +23,8 @@ ID3DXEffect *PlanetRenderer::pShader = NULL;
 D3DXHANDLE PlanetRenderer::eTileTech = NULL;
 D3DXHANDLE PlanetRenderer::eCloudTech = NULL;
 D3DXHANDLE PlanetRenderer::eRingTech = NULL;
-D3DXHANDLE PlanetRenderer::eSkyTech = NULL;
+D3DXHANDLE PlanetRenderer::eHorizonTech = NULL;
+D3DXHANDLE PlanetRenderer::eSkyDomeTech = NULL;
 // ------------------------------------------------------------  
 D3DXHANDLE PlanetRenderer::smWorld = NULL;
 D3DXHANDLE PlanetRenderer::smViewProj = NULL;
@@ -32,7 +33,6 @@ D3DXHANDLE PlanetRenderer::svTexOff = NULL;
 D3DXHANDLE PlanetRenderer::svWater = NULL;
 D3DXHANDLE PlanetRenderer::svSunDir = NULL;
 D3DXHANDLE PlanetRenderer::svAddBkg = NULL;
-D3DXHANDLE PlanetRenderer::svTint = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
@@ -41,7 +41,6 @@ D3DXHANDLE PlanetRenderer::sfNight = NULL;
 D3DXHANDLE PlanetRenderer::sbSpecular = NULL;
 D3DXHANDLE PlanetRenderer::sbCloudSh = NULL;
 D3DXHANDLE PlanetRenderer::sbLights = NULL;
-D3DXHANDLE PlanetRenderer::sbLegacyAtm = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -67,7 +66,7 @@ D3DXHANDLE PlanetRenderer::sfScaleHeight = NULL;
 D3DXHANDLE PlanetRenderer::sfInvScaleHeight = NULL;
 D3DXHANDLE PlanetRenderer::sfRadius = NULL;
 D3DXHANDLE PlanetRenderer::sfCameraAlt = NULL;
-D3DXHANDLE PlanetRenderer::sfAtmRad2 = NULL;
+D3DXHANDLE PlanetRenderer::sfAtmRad = NULL;
 D3DXHANDLE PlanetRenderer::sfBalance = NULL;
 D3DXHANDLE PlanetRenderer::sfHorizonDst = NULL;
 D3DXHANDLE PlanetRenderer::siMode = NULL;
@@ -151,7 +150,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	eTileTech			= pShader->GetTechniqueByName("TileTech");
 	eCloudTech			= pShader->GetTechniqueByName("CloudTech");
 	eRingTech			= pShader->GetTechniqueByName("RingTech");
-	eSkyTech			= pShader->GetTechniqueByName("SkyTech");
+	eHorizonTech		= pShader->GetTechniqueByName("HorizonTech");
+	eSkyDomeTech		= pShader->GetTechniqueByName("SkyDomeTech");
 	// ------------------------------------------------------------  
 	smWorld				= pShader->GetParameterByName(0,"mWorld");
 	smViewProj			= pShader->GetParameterByName(0,"mViewProj");
@@ -160,7 +160,6 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
 	svAddBkg			= pShader->GetParameterByName(0,"vAddBkg");
-	svTint				= pShader->GetParameterByName(0,"vTint");
 	// ------------------------------------------------------------
 	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
@@ -169,11 +168,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbSpecular			= pShader->GetParameterByName(0,"bSpecular");
 	sbCloudSh			= pShader->GetParameterByName(0,"bCloudSh");
 	sbLights			= pShader->GetParameterByName(0,"bLights");
-	sbLegacyAtm			= pShader->GetParameterByName(0,"bLegacyAtm");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
-	
 	// Scatter model --------------------------------------------------------
 	svPhase				= pShader->GetParameterByName(0,"vPhase");		
 	svODCoEff			= pShader->GetParameterByName(0,"vODCoEff");
@@ -189,7 +186,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfInvScaleHeight	= pShader->GetParameterByName(0,"fInvScaleHeight");
 	sfRadius			= pShader->GetParameterByName(0,"fRadius");
 	sfCameraAlt			= pShader->GetParameterByName(0,"fCameraAlt");
-	sfAtmRad2			= pShader->GetParameterByName(0,"fAtmRad2");
+	sfAtmRad			= pShader->GetParameterByName(0,"fAtmRad");
 	sfBalance			= pShader->GetParameterByName(0,"fBalance");
 	sfHorizonDst		= pShader->GetParameterByName(0,"fHorizonDst");
 	siMode				= pShader->GetParameterByName(0,"iMode");
@@ -246,6 +243,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float   g = float(atmo->mphase);
 	float   a = (1.0f-g*g) / (4.0*3.14);
 	float   b = (1.0f+g*g);
+	float   d = (-2.0f*g);
 	float   c = float(atmo->rphase);
 	float  rp = float(atmo->wavepow);
 	float  h0 = float(atmo->height*1e3);				// Scale height
@@ -277,7 +275,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 mietot = lambda2 * float(atmo->mie);
 
 	// Upload parameters to shaders
-	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,0), sizeof(D3DXVECTOR4)));
+	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,d), sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svODCoEff, &ODCoEff,	sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svRayTotal, &raytot, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svRayInSct, &raysct, sizeof(D3DXVECTOR3)));
@@ -292,7 +290,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetFloat(sfInvScaleHeight, 1.0f/h0));
 	HR(Shader()->SetFloat(sfRadius, float(pr)));
 	HR(Shader()->SetFloat(sfCameraAlt, float(ca)));
-	HR(Shader()->SetFloat(sfAtmRad2, float(ur*ur)));
+	HR(Shader()->SetFloat(sfAtmRad, float(ur)));
 	HR(Shader()->SetFloat(sfBalance, float(atmo->balance)));
 	HR(Shader()->SetFloat(sfHorizonDst, float(hd)));
 	HR(Shader()->SetBool(sbOverSat, atmo->oversat));
@@ -339,7 +337,7 @@ void PlanetRenderer::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double ap
 
 void PlanetRenderer::RenderSkySegment(D3DXMATRIX &wmat, float drad)
 {
-	HR(pShader->SetTechnique(eSkyTech));
+	HR(pShader->SetTechnique(eHorizonTech));
 	HR(pShader->SetMatrix(smWorld, &wmat));
 	HR(pShader->SetMatrix(smViewProj, gc->GetScene()->GetProjectionViewMatrix()));
 	HR(pShader->SetFloat(sfHorizonDst, drad));

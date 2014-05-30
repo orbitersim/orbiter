@@ -23,6 +23,7 @@
 #include "DebugControls.h"
 
 
+
 using namespace oapi;
 
 static D3DXMATRIX ident;
@@ -57,6 +58,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	light = NULL;
 	Lights = NULL;
 	hSun = NULL;
+	vProxy = NULL;
 	hObj_proxy = NULL;
 	lightlist  = NULL;
 	pAxisFont  = NULL;
@@ -224,6 +226,7 @@ const D3D9Light *Scene::GetLight(int index) const
 //
 Scene::VOBJREC *Scene::FindVisual(OBJHANDLE hObj)
 {
+	if (hObj==NULL) return NULL;
 	VOBJREC *pv;
 	for (pv=vobjFirst; pv; pv=pv->next) if (pv->vobj->Object()==hObj) return pv;
 	return NULL;
@@ -807,15 +810,6 @@ void Scene::RenderMainScene()
 {
 	_TRACE;
 
-/*
-#ifdef _NVAPI_H
-	if (pStereoHandle) {
-		if (oapiCameraInternal()) NvAPI_Stereo_SetConvergence(pStereoHandle, 0.2f);
-		else				      NvAPI_Stereo_SetConvergence(pStereoHandle, 0.6f);
-		NvAPI_Stereo_SetSeparation(pStereoHandle, 70.0f);
-	}
-#endif
-*/	
 	if (vFocus==NULL) return;
 
 	double scene_time = D3D9GetTime();
@@ -828,6 +822,7 @@ void Scene::RenderMainScene()
 	
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, bg_rgba, 1.0f, 0L));
+	//HR(pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	
 	if (FAILED (pDevice->BeginScene())) return;
 
@@ -851,7 +846,18 @@ void Scene::RenderMainScene()
 		bglvl = (bg_rgba & 0xff) + ((bg_rgba >> 8) & 0xff) + ((bg_rgba >> 16) & 0xff);
 		bglvl = min (bglvl/2, 255);
 	}
-	cspheremgr->Render(pDevice, 8, bglvl);
+
+	bool bEnableAtmosphere = false;
+
+	vPlanet *vPl = GetCameraProxyVisual();
+
+	if (vPl) {		
+		bEnableAtmosphere = vPl->CameraInAtmosphere();
+		PlanetRenderer::InitializeScattering(vPl);
+	}
+
+	cspheremgr->Render(pDevice, 8, bglvl, bEnableAtmosphere);
+
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 
@@ -1667,6 +1673,8 @@ void Scene::UpdateCameraFromOrbiter()
 
 	// find the planet closest to the current camera position
 	hObj_proxy = oapiCameraProxyGbody();
+	vProxy = (vPlanet *)GetVisObject(hObj_proxy);
+	if (vProxy==NULL) LogErr("Proxy Visual Does Not Exists"); 
 	oapiGetGlobalPos(hObj_proxy, &pos);
 	alt_proxy  = dist(camera_pos, pos) - oapiGetSize(hObj_proxy);
 

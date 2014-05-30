@@ -24,6 +24,7 @@
 #include "VObject.h"
 
 class vObject;
+class vPlanet;
 class D3D9ParticleStream;
 class CSphereManager;
 class D3D9Text;
@@ -167,6 +168,7 @@ public:
 	VECTOR3		GetCameraGPos() const { return camera_pos; }
 	VECTOR3		GetCameraGDir() const { return camera_dir; }
 	OBJHANDLE	GetCameraProxyBody() const { return hObj_proxy; }
+	vPlanet *	GetCameraProxyVisual() const { return vProxy; }
 	double		GetCameraAltitude() const { return alt_proxy; }
 	D3DXVECTOR3 GetCameraOffset() { return camera_offset; }
 
@@ -295,6 +297,7 @@ private:
 	VOBJREC *vobjEnv;
 
 	OBJHANDLE hObj_proxy;		// closest celestial body
+	vPlanet *vProxy;			// closest celestial body (visual)
 	OBJHANDLE hCameraTarget;	// Current camera target, Mesh Debugger Related
 	double alt_proxy;			// camera distance to surface of hObj_proxy
 	double dVisualAppRad;

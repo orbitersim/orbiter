@@ -8,8 +8,8 @@
 #ifndef __PLANETRENDERER_H
 #define __PLANETRENDERER_H
 
-#define HORIZON2_NSEG 512
-#define HORIZON2_NRING 5
+#define HORIZON2_NSEG 1024
+#define HORIZON2_NRING 15
 
 #include "D3D9Client.h"
 
@@ -47,7 +47,8 @@ public:
 	static D3DXHANDLE eTileTech;
 	static D3DXHANDLE eCloudTech;
 	static D3DXHANDLE eRingTech;
-	static D3DXHANDLE eSkyTech;
+	static D3DXHANDLE eHorizonTech;
+	static D3DXHANDLE eSkyDomeTech;
 	// ------------------------------------------------------------  
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;
@@ -56,7 +57,6 @@ public:
 	static D3DXHANDLE svWater;
 	static D3DXHANDLE svSunDir;
 	static D3DXHANDLE svAddBkg;
-	static D3DXHANDLE svTint;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
 	static D3DXHANDLE sfAlpha;
@@ -65,7 +65,6 @@ public:
 	static D3DXHANDLE sbSpecular;
 	static D3DXHANDLE sbCloudSh;
 	static D3DXHANDLE sbLights;
-	static D3DXHANDLE sbLegacyAtm;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
@@ -91,7 +90,7 @@ public:
 	static D3DXHANDLE sfInvScaleHeight;
 	static D3DXHANDLE sfRadius;
 	static D3DXHANDLE sfCameraAlt;
-	static D3DXHANDLE sfAtmRad2;
+	static D3DXHANDLE sfAtmRad;
 	static D3DXHANDLE sfBalance;
 	static D3DXHANDLE sfHorizonDst;
 	static D3DXHANDLE siMode;
