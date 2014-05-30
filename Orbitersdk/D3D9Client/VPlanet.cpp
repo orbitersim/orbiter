@@ -46,13 +46,15 @@ extern int SURF_MAX_PATCHLEVEL2;
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
 	memset(&SPrm, 0, sizeof(ScatterParams));
+	
+	bScatter = LoadAtmoConfig();
 
 	rad = (float)size;
 	render_rad = (float)(0.1*rad);
 	dist_scale = 1.0f;
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
 	maxdist = max (max_centre_dist, max_surf_dist + rad);
-	int tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
+	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
@@ -66,14 +68,14 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	if (prm.bAtm) {
 		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);
 		prm.atm_hzalt = atmc->horizonalt;
-		LogErr("Horizon Alt = %g",prm.atm_hzalt);
 		prm.atm_href = log(atmc->rho0)*2e4 + 2e4;
 		prm.atm_amb0 = min (0.7, log (atmc->rho0+1.0)*0.35);
 		DWORD amb0 = *(DWORD*)gc->GetConfigParam (CFGPRM_AMBIENTLEVEL);
 		prm.amb0col = 0;
 		for (int i = 0; i < 4; i++) prm.amb0col |= amb0 << (i<<3);
 	}
-	hazemgr = 0;
+	hazemgr = NULL;
+	hazemgr2 = NULL;
 	hashaze = *(bool*)gc->GetConfigParam (CFGPRM_ATMHAZE) && prm.bAtm;
 	bRipple = *(bool*)gc->GetConfigParam (CFGPRM_SURFACERIPPLE) &&
 		*(bool*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACERIPPLE);
@@ -163,8 +165,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		}
 	}
 
-	LoadAtmoConfig();
-
 	albedo = gc->GetFileParser()->GetAlbedo(hObj);
 	LogMsg("vPlanet constructor exiting");
 	gc->SetLabel("Loading Textures...");
@@ -197,9 +197,6 @@ vPlanet::~vPlanet ()
 bool vPlanet::CameraInAtmosphere() const
 {
 	double calt = CamDist() - size;
-
-	sprintf(oapiDebugString(),"[%s] Alt=%g HzAlt=%g",name,calt,prm.atm_hzalt);
-
 	if (prm.bAtm==false) return false;
 	if (calt>prm.atm_hzalt) return false;
 	return true;
@@ -389,9 +386,13 @@ void vPlanet::CheckResolution()
 	if (new_patchres != patchres) {
 		if (hashaze) {
 			if (new_patchres < 3) {
-				if (hazemgr) { delete hazemgr; hazemgr = 0; }
+				if (hazemgr) { delete hazemgr; hazemgr = NULL; }
+				if (hazemgr2) { delete hazemgr2; hazemgr2 = NULL; }
 			} else {
-				if (!hazemgr) { hazemgr = new HazeManager (scn->GetClient(), this); }
+				if (tilever>1 && bScatter) { 
+					if (!hazemgr2) hazemgr2 = new HazeManager2 (scn->GetClient(), this); 
+				}
+				else if (!hazemgr) hazemgr = new HazeManager (scn->GetClient(), this);
 			}
 		}
 		if (ringmgr) {
@@ -469,16 +470,14 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (prm.bCloud && (prm.cloudvis & 1))
 			RenderCloudLayer (dev, D3DCULL_CW);      // render clouds from below
 
-		//if (hazemgr) hazemgr->Render (dev, mWorld, true);       // horizon ring
+		if (hazemgr2) {
+			float apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
+			hazemgr2->Render(mWorld, apr);
+		}
+	
+		if (hazemgr) hazemgr->Render(dev, mWorld);       // horizon ring
+	
 		
-		VECTOR3 cdir;
-		oapiCameraGlobalDir(&cdir);
-
-		double calt = length(cpos) - size;
-
-		if (calt>60e3)	PlanetRenderer::RenderRing(mWorld, float(100e3/size));
-		else			PlanetRenderer::RenderSky(cpos, cdir, size, 60.0);
-
 		if (prm.bAtm) {
 			if (ModLighting (amb))
 				prm.AmbColor = D3DXCOLOR(amb);
@@ -551,8 +550,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (prm.bCloud && (prm.cloudvis & 2))
 			RenderCloudLayer (dev, D3DCULL_CCW);	  // render clouds from above
 
-		//if (hazemgr) 
-			//hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		if (hazemgr) 
+			hazemgr->Render (dev, mWorld, true); // haze across planet disc
 
 		if (ringpostrender) 
 			ringmgr->Render (dev, mWorld, true);
@@ -780,7 +779,7 @@ void vPlanet::DumpDebugFile()
 
 // ==============================================================
 
-void vPlanet::LoadAtmoConfig()
+bool vPlanet::LoadAtmoConfig()
 {
 	char name[32];
 	char path[256];
@@ -791,7 +790,7 @@ void vPlanet::LoadAtmoConfig()
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN, CONFIG);
 
-	if (!hFile) return;
+	if (!hFile) return false;
 
 	oapiReadItem_float(hFile, "Red", SPrm.red);
 	oapiReadItem_float(hFile, "Green", SPrm.green);
@@ -813,6 +812,7 @@ void vPlanet::LoadAtmoConfig()
 	oapiCloseFile(hFile, FILE_IN);
 
 	UpdateAtmoConfig();
+	return true;
 	
 }
 

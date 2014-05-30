@@ -8,9 +8,6 @@
 #ifndef __PLANETRENDERER_H
 #define __PLANETRENDERER_H
 
-#define HORIZON2_NSEG 1024
-#define HORIZON2_NRING 15
-
 #include "D3D9Client.h"
 
 class PlanetRenderer {
@@ -21,28 +18,23 @@ public:
 
 	static void GlobalInit(class oapi::D3D9Client *gclient);
 	static void GlobalExit();
-	static void CreateSkydomeBuffers();
-	static void CreateRingBuffers();
+	static void	InitializeScattering(class vPlanet *pPlanet);
+
+	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
+	static ID3DXEffect * Shader() { return pShader; }
 	
-	static		LPDIRECT3DDEVICE9 Dev() { return pDev; }
-	static		ID3DXEffect * Shader() { return pShader; }
 	
-	void		InitLegacyAtmosphere(OBJHANDLE hPlanet);
+	//void		InitLegacyAtmosphere(OBJHANDLE hPlanet);
+
 	void		SetWorldMatrix (const MATRIX4 &W);
 	void		SetViewProjectionMatrix (const MATRIX4 &VP);
 	void		SetWorldMatrix (const D3DXMATRIX &W);
 	void		SetViewProjectionMatrix (const D3DXMATRIX &VP);
-	static void	RenderRing(D3DXMATRIX &wmat, float hralt);
-	static void	RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr);
-	static void	RenderSkySegment(D3DXMATRIX &wmat, float drad);
-	static void InitializeScattering(class vPlanet *pPlanet);
-
+	
 	// ------------------------------------------------------------
 	static oapi::D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
-	static LPDIRECT3DVERTEXBUFFER9 pSkyVB;
-	static LPDIRECT3DVERTEXBUFFER9 pRingVB;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
 	static D3DXHANDLE eCloudTech;

@@ -412,6 +412,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	PlanetRenderer::GlobalInit(this);
 	RingManager::GlobalInit(this);
 	HazeManager::GlobalInit(this);
+	HazeManager2::GlobalInit(this);
 	D3D9ParticleStream::GlobalInit(this);
 	CSphereManager::GlobalInit(this);
 	vStar::GlobalInit(this);
@@ -611,6 +612,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		LogAlw("================ Texture Repository Cleared ===============");
 
 		HazeManager::GlobalExit();
+		HazeManager2::GlobalExit();
 		TileManager::GlobalExit();
 		TileManager2Base::GlobalExit();
 		PlanetRenderer::GlobalExit();

@@ -16,8 +16,6 @@
 // ------------------------------------------------------------
 class oapi::D3D9Client *PlanetRenderer::gc = NULL; 
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
-LPDIRECT3DVERTEXBUFFER9 PlanetRenderer::pSkyVB = NULL;
-LPDIRECT3DVERTEXBUFFER9 PlanetRenderer::pRingVB = NULL;
 // ------------------------------------------------------------
 ID3DXEffect *PlanetRenderer::pShader = NULL;
 D3DXHANDLE PlanetRenderer::eTileTech = NULL;
@@ -191,17 +189,12 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfHorizonDst		= pShader->GetParameterByName(0,"fHorizonDst");
 	siMode				= pShader->GetParameterByName(0,"iMode");
 	sbOverSat			= pShader->GetParameterByName(0,"bOverSat");
-
-	CreateRingBuffers();
-	CreateSkydomeBuffers();
 }
 
 // -----------------------------------------------------------------------
 
 void PlanetRenderer::GlobalExit ()
 {
-	SAFE_RELEASE(pSkyVB);
-	SAFE_RELEASE(pRingVB);
 	SAFE_RELEASE(pShader);
 }
 
@@ -214,6 +207,8 @@ void PlanetRenderer::SetWorldMatrix (const MATRIX4 &W)
 	pShader->SetMatrix(smWorld, &wtrans);
 }
 
+// -----------------------------------------------------------------------
+
 void PlanetRenderer::SetViewProjectionMatrix (const MATRIX4 &VP)
 {
 	D3DXMATRIX wtrans;
@@ -221,16 +216,21 @@ void PlanetRenderer::SetViewProjectionMatrix (const MATRIX4 &VP)
 	pShader->SetMatrix(smViewProj, &wtrans);
 }
 
+// -----------------------------------------------------------------------
+
 void PlanetRenderer::SetWorldMatrix (const D3DXMATRIX &W)
 {
 	pShader->SetMatrix(smWorld, &W);
 }
+
+// -----------------------------------------------------------------------
 
 void PlanetRenderer::SetViewProjectionMatrix (const D3DXMATRIX &VP)
 {
 	pShader->SetMatrix(smViewProj, &VP);
 }
 
+// -----------------------------------------------------------------------
 
 void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 {
@@ -296,200 +296,3 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetBool(sbOverSat, atmo->oversat));
 	HR(Shader()->SetInt(siMode, atmo->mode));
 }
-
-
-
-void PlanetRenderer::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
-{
-	cpos = -cpos;
-	double crad = length(cpos);									// Camera radius
-	double hdst = sqrt(crad*crad - rad*rad);					// Camera to horizon distance
-	double can  = acos(dotp(unit(cpos),cdir)) - PI05;			// Camera horizon angle
-	
-	if (crad>(2*rad)) return;
-
-	VECTOR3 ur = unit(cpos);
-	VECTOR3 ux = unit(crossp(cdir, ur));
-	VECTOR3 uy = unit(crossp(ur, ux));
-
-	D3DXMATRIX mWL, mWR, mL, mR;
-	D3DMAT_Identity(&mWL);
-	D3DMAT_FromAxisT(&mWL, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
-	mWR = mWL;
-	RenderSkySegment(mWL, float(hdst));
-
-	double a = 10.0*PI/180.0;
-
-	int n = int(apr/20.0)+1;
-
-	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a));
-	D3DXMatrixRotationAxis(&mR, &_D3DXVECTOR3(ur), float(+a));
-
-	for (int i=0;i<n;i++) {
-		D3DXMatrixMultiply(&mWL, &mWL, &mL);
-		D3DXMatrixMultiply(&mWR, &mWR, &mR);
-		RenderSkySegment(mWL, float(hdst));
-		RenderSkySegment(mWR, float(hdst));
-	}
-}
-
-
-
-void PlanetRenderer::RenderSkySegment(D3DXMATRIX &wmat, float drad)
-{
-	HR(pShader->SetTechnique(eHorizonTech));
-	HR(pShader->SetMatrix(smWorld, &wmat));
-	HR(pShader->SetMatrix(smViewProj, gc->GetScene()->GetProjectionViewMatrix()));
-	HR(pShader->SetFloat(sfHorizonDst, drad));
-	
-	UINT prims = 30 * 60 * 2 - 2;
-	UINT numPasses = 0;
-	HR(pShader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(pShader->BeginPass(0));
-	pDev->SetVertexDeclaration(pPositionDecl);
-	pDev->SetStreamSource(0, pSkyVB, 0, sizeof(D3DXVECTOR3));
-	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, prims);	
-	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	HR(pShader->EndPass());
-	HR(pShader->End());	
-}
-
-
-
-void PlanetRenderer::CreateSkydomeBuffers()
-{
-
-	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[20000];
-	D3DXVECTOR3 *pBuf = NULL;
-
-	int k = 0;
-	int xseg = 30;
-	int yseg = 60;
-
-	double sa,ca,sb,cb;
-
-	double da = (10.0*PI/180.0)/double(xseg-1);
-	double db = (20.0*PI/180.0)/double(yseg-1);
-	
-	double a = -da*double(xseg/2);
-	double b = -db*double(yseg/2);
-	
-	for (int s=0;s<yseg;s++) {
-		for (int i=0;i<xseg;i++) {
-			sa = sin(a); ca = cos(a);
-			cb = cos(b); sb = sin(b);
-			pVrt[k++]=D3DXVECTOR3(float(sa*cb), float(sb), float(ca*cb));
-			cb = cos(b+db);
-			sb = sin(b+db);
-			pVrt[k++]=D3DXVECTOR3(float(sa*cb), float(sb), float(ca*cb));
-			a += da;
-		}
-		da = -da;
-		a += da;
-		b += db;
-	}
-
-	LogErr("Sky Buffer Size = %d", k);
-
-	HR(pDev->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB, NULL));
-
-	if (pSkyVB->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
-		memcpy2(pBuf, pVrt, k*sizeof(D3DXVECTOR3));
-		pSkyVB->Unlock();
-	}
-
-	delete []pVrt;
-
-}
-
-
-void PlanetRenderer::RenderRing(D3DXMATRIX &wmat, float hralt)
-{
-	D3DXMATRIX imat, transm;
-
-	D3DMAT_MatrixInvert (&imat, &wmat);
-	VECTOR3 rpos = {imat._41, imat._42, imat._43};		// camera in local coords (planet radius = 1)
-	double cdist = length (rpos);
-
-	double id = 1.0 / max (cdist, 1.001);
-	double visrad = acos(id);							// aperture of visibility sector
-	double sinv = sin(visrad);
-
-	float h1 = (float)id;
-	float h2 = h1 + (float)(hralt*id);
-	float r1 = (float)sinv;
-	float r2 = (1.0f+hralt)*r1;
-
-	normalise (rpos);
-
-	float cost = (float)rpos.y;
-	float sint = (float)sqrt(1.0-cost*cost);
-	float phi  = (float)atan2(rpos.z, rpos.x);
-	float cosp = (float)cos(phi);
-	float sinp = (float)sin(phi);
-
-	D3DXMATRIX rmat = D3DXMATRIX(cost*cosp, -sint, cost*sinp, 0,
-		              sint*cosp,  cost, sint*sinp, 0,
-					  -sinp,      0,    cosp,      0,
-					  0,          0,    0,         1);
-
-	D3DXMatrixMultiply(&transm, &rmat, &wmat);
-	
-	HR(pShader->SetTechnique(eRingTech));
-	HR(pShader->SetMatrix(smWorld, &transm));
-	HR(pShader->SetMatrix(smViewProj, gc->GetScene()->GetProjectionViewMatrix()));
-	HR(pShader->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
-	
-	UINT numPasses = 0;
-	UINT nPrims = HORIZON2_NSEG * HORIZON2_NRING * 2 - 2;
-	HR(pShader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(pShader->BeginPass(0));
-	
-	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	pDev->SetVertexDeclaration(pPositionDecl);
-	pDev->SetStreamSource(0, pRingVB, 0, sizeof(D3DXVECTOR3));
-	pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, nPrims);
-	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	HR(pShader->EndPass());
-	HR(pShader->End());	
-}
-
-
-void PlanetRenderer::CreateRingBuffers()
-{
-	int v = 0;
-	int nvrt = HORIZON2_NSEG * 2 * HORIZON2_NRING + 2;
-
-	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[nvrt];
-	D3DXVECTOR3 *pBuf = NULL;
-
-	// -------------------------------------------------------------------
-	float d = 1.0f/float(HORIZON2_NRING);
-	double phi = 0.0;
-	double dphi = PI2/double(HORIZON2_NSEG-1);
-	float x = float(cos(phi));
-	float z = float(sin(phi));
-	float y = 0.0f;
-	for (int k=0;k<HORIZON2_NRING;k++) {
-		for (int i=0;i<HORIZON2_NSEG;i++) {
-			pVrt[v++] = D3DXVECTOR3(x, y, z);
-			phi+=dphi;
-			x = float(cos(phi));
-			z = float(sin(phi));
-			pVrt[v++] = D3DXVECTOR3(x, y+d, z);
-		}
-		y+=d;
-	}
-
-	HR(pDev->CreateVertexBuffer(v*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pRingVB, NULL));
-
-	if (pRingVB->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
-		memcpy2(pBuf, pVrt, v*sizeof(D3DXVECTOR3));
-		pRingVB->Unlock();
-	}
-
-	delete []pVrt;
-}
-

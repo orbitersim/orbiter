@@ -3,6 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
+// Copyright (C) 2014 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -17,8 +18,13 @@
 
 #include "D3D9Client.h"
 #include "D3D9Effect.h"
+#include "PlanetRenderer.h"
 
-#define HORIZON_NSEG 128  // number of mesh segments
+#define HORIZON_NSEG 128	// number of mesh segments
+#define HORIZON2_NSEG 1024	// Horizon ring segments
+#define HORIZON2_NRING 15	// Horizon ring ring count
+#define HORIZON2_XSEG 30	// Sperical patch segments
+#define HORIZON2_YSEG 60	// Sperical patch segments
 
 class vPlanet;
 
@@ -53,5 +59,45 @@ private:
 	static float CosP[HORIZON_NSEG], SinP[HORIZON_NSEG];
 	static LPD3D9CLIENTSURFACE horizon;
 };
+
+
+
+// ==============================================================
+// class HazeManager2 (interface)
+//
+// Planetary atmospheric haze rendering with scattering technique
+// HazeManager2 is used with TileManager2
+// ==============================================================
+
+class HazeManager2 : public PlanetRenderer 
+{
+public:
+				 HazeManager2 (const oapi::D3D9Client *gclient, const vPlanet *vplanet);
+
+
+	static	void GlobalInit (oapi::D3D9Client *gclient);
+	static	void GlobalExit();
+	static	void CreateSkydomeBuffers();
+	static	void CreateRingBuffers();
+
+	void	Render(D3DXMATRIX &wmat, float hz_aperture_deg);
+	
+private:
+
+	void	RenderRing(D3DXMATRIX &wmat, float hralt);
+	void	RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr);
+	void	RenderSkySegment(D3DXMATRIX &wmat, float drad);
+
+	const oapi::D3D9Client *gc;
+	OBJHANDLE obj;
+	const vPlanet *vp;
+	double hralt, rad;
+
+	static LPDIRECT3DVERTEXBUFFER9 pSkyVB;
+	static LPDIRECT3DVERTEXBUFFER9 pRingVB;
+};
+
+
+
 
 #endif // !__HAZEMGR_H

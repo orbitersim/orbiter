@@ -31,6 +31,7 @@ class vPlanet: public vObject {
 	template<class T> friend class TileManager2;
 	friend class CloudManager;
 	friend class HazeManager;
+	friend class HazeManager2;
 	friend class RingManager;
 	friend class vBase;
 
@@ -58,7 +59,7 @@ public:
 	const ScatterParams * GetAtmoParams() const { return &SPrm; }
 	ScatterParams * GetAtmoParams() { return &SPrm; }
 	float			OpticalDepth(float alt, float cos_dir);
-	void			LoadAtmoConfig();
+	bool			LoadAtmoConfig();
 	void			SaveAtmoConfig();
 	void			UpdateAtmoConfig();
 	void			DumpDebugFile();
@@ -120,13 +121,16 @@ private:
 	float shadowalpha;        // alpha value for surface shadows
 	double cloudrad;          // cloud layer radius [m]
 	int patchres;             // surface LOD level
+	int tilever;			  // Surface tile version
 	bool hashaze;             // render atmospheric haze
+	bool bScatter;			  // Planet has scattering parameters
 	DWORD nbase;              // number of surface bases
 	vBase **vbase;            // list of base visuals
 	SurfaceManager *surfmgr;  // planet surface tile manager
 	TileManager2<SurfTile> *surfmgr2;   // planet surface tile manager (v2)
 	TileManager2<CloudTile> *cloudmgr2; // planet cloud layer tile manager (v2)
 	HazeManager *hazemgr;     // horizon haze rendering
+	HazeManager2 *hazemgr2;	  // horizon haze rendering
 	RingManager *ringmgr;     // ring manager
 	bool bRipple;             // render specular ripples on water surfaces
 	bool bVesselShadow;       // render vessel shadows on surface
