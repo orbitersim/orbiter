@@ -176,8 +176,8 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.0, 0.5);
-	ConfigSlider(IDC_ATM_MPHASE,   0.75, 0.990);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 0.1);
+	ConfigSlider(IDC_ATM_MPHASE,   0.85, 0.999);
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Wavelength setting for green light (default 0.600)");
