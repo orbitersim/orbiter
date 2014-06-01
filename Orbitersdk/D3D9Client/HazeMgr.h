@@ -21,8 +21,8 @@
 #include "PlanetRenderer.h"
 
 #define HORIZON_NSEG 128	// number of mesh segments
-#define HORIZON2_NSEG 1024	// Horizon ring segments
-#define HORIZON2_NRING 15	// Horizon ring ring count
+#define HORIZON2_NSEG 512	// Horizon ring segments
+#define HORIZON2_NRING 20	// Horizon ring ring count
 #define HORIZON2_XSEG 30	// Sperical patch segments
 #define HORIZON2_YSEG 60	// Sperical patch segments
 
@@ -36,9 +36,7 @@ public:
 	static void GlobalExit();
 
 	void Render (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, bool dual = false);
-	void RenderBasic (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, bool dual);
-	//void RenderAdvanced (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, bool dual);
-
+	
 private:
 	const oapi::D3D9Client *gc;
 	OBJHANDLE obj;
@@ -72,7 +70,7 @@ private:
 class HazeManager2 : public PlanetRenderer 
 {
 public:
-				 HazeManager2 (const oapi::D3D9Client *gclient, const vPlanet *vplanet);
+	HazeManager2 (const oapi::D3D9Client *gclient, const vPlanet *vplanet);
 
 
 	static	void GlobalInit (oapi::D3D9Client *gclient);
@@ -84,11 +82,10 @@ public:
 	
 private:
 
-	void	RenderRing(D3DXMATRIX &wmat, float hralt);
+	void	RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt);
 	void	RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr);
-	void	RenderSkySegment(D3DXMATRIX &wmat, float drad);
+	void	RenderSkySegment(D3DXMATRIX &wmat);
 
-	const oapi::D3D9Client *gc;
 	OBJHANDLE obj;
 	const vPlanet *vp;
 	double hralt, rad;

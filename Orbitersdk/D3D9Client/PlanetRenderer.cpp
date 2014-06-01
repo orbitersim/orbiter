@@ -64,11 +64,13 @@ D3DXHANDLE PlanetRenderer::sfScaleHeight = NULL;
 D3DXHANDLE PlanetRenderer::sfInvScaleHeight = NULL;
 D3DXHANDLE PlanetRenderer::sfRadius = NULL;
 D3DXHANDLE PlanetRenderer::sfCameraAlt = NULL;
-D3DXHANDLE PlanetRenderer::sfAtmRad = NULL;
+D3DXHANDLE PlanetRenderer::sfHorizonAlt = NULL;
+D3DXHANDLE PlanetRenderer::sfAtmRad2 = NULL;
 D3DXHANDLE PlanetRenderer::sfBalance = NULL;
 D3DXHANDLE PlanetRenderer::sfHorizonDst = NULL;
 D3DXHANDLE PlanetRenderer::siMode = NULL;
 D3DXHANDLE PlanetRenderer::sbOverSat = false;
+D3DXHANDLE PlanetRenderer::sbInSpace = false;
 
 
 
@@ -184,11 +186,13 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfInvScaleHeight	= pShader->GetParameterByName(0,"fInvScaleHeight");
 	sfRadius			= pShader->GetParameterByName(0,"fRadius");
 	sfCameraAlt			= pShader->GetParameterByName(0,"fCameraAlt");
-	sfAtmRad			= pShader->GetParameterByName(0,"fAtmRad");
+	sfHorizonAlt		= pShader->GetParameterByName(0,"fHorizonAlt");
+	sfAtmRad2			= pShader->GetParameterByName(0,"fAtmRad2");
 	sfBalance			= pShader->GetParameterByName(0,"fBalance");
 	sfHorizonDst		= pShader->GetParameterByName(0,"fHorizonDst");
 	siMode				= pShader->GetParameterByName(0,"iMode");
 	sbOverSat			= pShader->GetParameterByName(0,"bOverSat");
+	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
 }
 
 // -----------------------------------------------------------------------
@@ -249,7 +253,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float  h0 = float(atmo->height*1e3);				// Scale height
 	float  mp = 1.0f;
 	double pr = pPlanet->GetSize();						// Planet radius
-	double ur = pr + h0*5.0;							// Atmosphere upper radius (Skydome radius)
+	double ur = pr + pPlanet->prm.atm_hzalt;			// Atmosphere upper radius (Skydome radius)
 	double cr = pPlanet->CamDist();						// Camera distance from a planet center
 	double ca = cr - pr;								// Camera altutude
 	double hd = sqrt(cr*cr-pr*pr);						// Camera to horizon distance
@@ -290,9 +294,11 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetFloat(sfInvScaleHeight, 1.0f/h0));
 	HR(Shader()->SetFloat(sfRadius, float(pr)));
 	HR(Shader()->SetFloat(sfCameraAlt, float(ca)));
-	HR(Shader()->SetFloat(sfAtmRad, float(ur)));
+	HR(Shader()->SetFloat(sfHorizonAlt, float(ur-pr)));
+	HR(Shader()->SetFloat(sfAtmRad2, float(ur*ur)));
 	HR(Shader()->SetFloat(sfBalance, float(atmo->balance)));
 	HR(Shader()->SetFloat(sfHorizonDst, float(hd)));
 	HR(Shader()->SetBool(sbOverSat, atmo->oversat));
+	HR(Shader()->SetBool(sbInSpace, (cr>ur)));
 	HR(Shader()->SetInt(siMode, atmo->mode));
 }

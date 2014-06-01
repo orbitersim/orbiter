@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
-//				 2011 Jarmo Nikkanen (D3D9Client modification) 
+//				 2011-2014 Jarmo Nikkanen
 // ============================================================================
 
 // ============================================================================
@@ -75,13 +75,6 @@ void HazeManager::GlobalExit()
 
 void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 {
-	RenderBasic(pDev, wmat, dual);
-}
-
-// -----------------------------------------------------------------------
-
-void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
-{
 	D3DXMATRIX imat, transm;
 
 	VECTOR3 psun;
@@ -98,7 +91,7 @@ void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dua
 	if (alpha <= 0.0) return;  // nothing to do
 
 	// Problem: the top part of horizon haze is rendered twice
-	//if (dual && cdist<1.001) return;	// Enabled 04.06.2011
+	if (dual && cdist<1.001) return;	// Enabled 04.06.2011
 
 	VECTOR3 cpos = {0,cdist,0};
 	double id = 1.0 / max (cdist, 1.001);
@@ -204,7 +197,7 @@ void HazeManager::RenderBasic(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dua
 			j++;
 		}
 		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-		//pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLESTRIP,0, 2*HORIZON_NSEG, 2*HORIZON_NSEG, Idx, D3DFMT_INDEX16, Vtx, sizeof(HVERTEX));
+		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLESTRIP,0, 2*HORIZON_NSEG, 2*HORIZON_NSEG, Idx, D3DFMT_INDEX16, Vtx, sizeof(HVERTEX));
 		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 
@@ -243,7 +236,6 @@ LPD3D9CLIENTSURFACE HazeManager::horizon = 0;
 HazeManager2::HazeManager2(const D3D9Client *gclient, const vPlanet *vplanet) 
 : PlanetRenderer()
 {
-	gc = gclient;
 	vp = vplanet;
 	obj = vp->Object();
 	rad = oapiGetSize(obj);
@@ -275,7 +267,7 @@ void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 	VECTOR3 cdir; oapiCameraGlobalDir(&cdir);
 	double calt = vp->CamDist() - rad;	// Camera altitude	
 
-	if (calt>hralt)	RenderRing(wmat, float(hralt/rad));
+	if (calt>hralt)	RenderRing(vp->PosFromCamera(), cdir, rad, hralt);
 	else			RenderSky(vp->PosFromCamera(), cdir, rad, horizontal_aperture_deg);
 }
 
@@ -284,12 +276,20 @@ void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 {
 	cpos = -cpos;
-	double crad = length(cpos);									// Camera radius
-	double hdst = sqrt(crad*crad - rad*rad);					// Camera to horizon distance
-	double can  = acos(dotp(unit(cpos),cdir)) - PI05;			// Camera horizon angle
-	
-	if (crad>(2*rad)) return;
 
+	double cr = length(cpos);	
+	double hd = sqrt(cr*cr - rad*rad);
+	double al = asin(rad/cr);
+	double mx = hralt * 2.5;
+	double ha = hd * 0.25;
+
+	double r1 =  hd * sin(al);
+	double h1 = -hd * cos(al);
+	
+	double r2 = r1 + ha * cos(al);
+	double h2 = h1 + ha * sin(al); 
+
+	
 	VECTOR3 ur = unit(cpos);
 	VECTOR3 ux = unit(crossp(cdir, ur));
 	VECTOR3 uy = unit(crossp(ur, ux));
@@ -298,7 +298,11 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	D3DMAT_Identity(&mWL);
 	D3DMAT_FromAxisT(&mWL, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
 	mWR = mWL;
-	RenderSkySegment(mWL, float(hdst));
+
+	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
+	HR(Shader()->SetFloat(sfAlpha, float(ha)));
+
+	RenderSkySegment(mWL);
 
 	double a = 10.0*PI/180.0;
 
@@ -310,18 +314,17 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	for (int i=0;i<n;i++) {
 		D3DXMatrixMultiply(&mWL, &mWL, &mL);
 		D3DXMatrixMultiply(&mWR, &mWR, &mR);
-		RenderSkySegment(mWL, float(hdst));
-		RenderSkySegment(mWR, float(hdst));
+		RenderSkySegment(mWL);
+		RenderSkySegment(mWR);
 	}
 }
 
 // -----------------------------------------------------------------------
 
-void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, float drad)
+void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat)
 {
 	HR(Shader()->SetTechnique(eHorizonTech));
 	HR(Shader()->SetMatrix(smWorld, &wmat));
-	HR(Shader()->SetFloat(sfHorizonDst, drad));
 	
 	UINT prims = 30 * 60 * 2 - 2;
 	UINT numPasses = 0;
@@ -336,43 +339,40 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, float drad)
 	HR(Shader()->End());	
 }
 
+
+
+
 // -----------------------------------------------------------------------
 
-void HazeManager2::RenderRing(D3DXMATRIX &wmat, float hralt)
+void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt)
 {
-	D3DXMATRIX imat, transm;
+	cpos = -cpos;
+	double cr = length(cpos);	
+	double hd = sqrt(cr*cr - rad*rad);
+	double al = asin(rad/cr);
+	double mx = hralt * 1.5;
 
-	D3DMAT_MatrixInvert (&imat, &wmat);
-	VECTOR3 rpos = {imat._41, imat._42, imat._43};		// camera in local coords (planet radius = 1)
-	double cdist = length (rpos);
-
-	double id = 1.0 / max (cdist, 1.001);
-	double visrad = acos(id);							// aperture of visibility sector
-	double sinv = sin(visrad);
-
-	float h1 = (float)id;
-	float h2 = h1 + (float)(hralt*id);
-	float r1 = (float)sinv;
-	float r2 = (1.0f+hralt)*r1;
-
-	normalise (rpos);
-
-	float cost = (float)rpos.y;
-	float sint = (float)sqrt(1.0-cost*cost);
-	float phi  = (float)atan2(rpos.z, rpos.x);
-	float cosp = (float)cos(phi);
-	float sinp = (float)sin(phi);
-
-	D3DXMATRIX rmat = D3DXMATRIX(cost*cosp, -sint, cost*sinp, 0,
-		              sint*cosp,  cost, sint*sinp, 0,
-					  -sinp,      0,    cosp,      0,
-					  0,          0,    0,         1);
-
-	D3DXMatrixMultiply(&transm, &rmat, &wmat);
+	double r1 =  hd * sin(al);
+	double h1 = -hd * cos(al);
+	double qw =  hralt + (cr-rad);
+	if (qw>mx) qw=mx;
 	
+	double r2 = r1 + qw * cos(al);
+	double h2 = h1 + qw * sin(al); 
+
+	
+	VECTOR3 ur = unit(cpos);
+	VECTOR3 ux = unit(crossp(cdir, ur));
+	VECTOR3 uy = unit(crossp(ur, ux));
+
+	D3DXMATRIX mW;
+	D3DMAT_Identity(&mW);
+	D3DMAT_FromAxisT(&mW, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
+
 	HR(Shader()->SetTechnique(eRingTech));
-	HR(Shader()->SetMatrix(smWorld, &transm));
+	HR(Shader()->SetMatrix(smWorld, &mW));
 	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
+	HR(Shader()->SetFloat(sfAlpha, float(qw)));
 	
 	UINT numPasses = 0;
 	UINT nPrims = HORIZON2_NSEG * HORIZON2_NRING * 2 - 2;
@@ -389,6 +389,7 @@ void HazeManager2::RenderRing(D3DXMATRIX &wmat, float hralt)
 	HR(Shader()->EndPass());
 	HR(Shader()->End());	
 }
+
 
 // -----------------------------------------------------------------------
 
@@ -429,7 +430,6 @@ void HazeManager2::CreateRingBuffers()
 }
 
 // -----------------------------------------------------------------------
-
 void HazeManager2::CreateSkydomeBuffers()
 {
 
@@ -440,22 +440,19 @@ void HazeManager2::CreateSkydomeBuffers()
 	int xseg = HORIZON2_XSEG;
 	int yseg = HORIZON2_YSEG;
 
-	double sa,ca,sb,cb;
+	double sa, ca;
 
 	double da = (10.0*PI/180.0)/double(xseg-1);
-	double db = (20.0*PI/180.0)/double(yseg-1);
+	double db = 1.0/double(yseg-1);
 	
 	double a = -da*double(xseg/2);
-	double b = -db*double(yseg/2);
+	double b = 0.0;
 	
 	for (int s=0;s<yseg;s++) {
 		for (int i=0;i<xseg;i++) {
 			sa = sin(a); ca = cos(a);
-			cb = cos(b); sb = sin(b);
-			pVrt[k++]=D3DXVECTOR3(float(sa*cb), float(sb), float(ca*cb));
-			cb = cos(b+db);
-			sb = sin(b+db);
-			pVrt[k++]=D3DXVECTOR3(float(sa*cb), float(sb), float(ca*cb));
+			pVrt[k++]=D3DXVECTOR3(float(sa), float(b),   float(ca));
+			pVrt[k++]=D3DXVECTOR3(float(sa), float(b+db), float(ca));
 			a += da;
 		}
 		da = -da;

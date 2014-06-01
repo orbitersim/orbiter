@@ -22,13 +22,11 @@ public:
 
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static ID3DXEffect * Shader() { return pShader; }
+	static oapi::D3D9Client * Client() { return gc; }
 	
-	
-	//void		InitLegacyAtmosphere(OBJHANDLE hPlanet);
-
 	void		SetWorldMatrix (const MATRIX4 &W);
-	void		SetViewProjectionMatrix (const MATRIX4 &VP);
 	void		SetWorldMatrix (const D3DXMATRIX &W);
+	void		SetViewProjectionMatrix (const MATRIX4 &VP);
 	void		SetViewProjectionMatrix (const D3DXMATRIX &VP);
 	
 	// ------------------------------------------------------------
@@ -82,11 +80,13 @@ public:
 	static D3DXHANDLE sfInvScaleHeight;
 	static D3DXHANDLE sfRadius;
 	static D3DXHANDLE sfCameraAlt;
-	static D3DXHANDLE sfAtmRad;
+	static D3DXHANDLE sfHorizonAlt;
+	static D3DXHANDLE sfAtmRad2;
 	static D3DXHANDLE sfBalance;
 	static D3DXHANDLE sfHorizonDst;
 	static D3DXHANDLE siMode;
 	static D3DXHANDLE sbOverSat;
+	static D3DXHANDLE sbInSpace;
 };
 
 #endif

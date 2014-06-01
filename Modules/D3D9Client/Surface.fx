@@ -123,12 +123,14 @@ uniform extern float	fScaleHeight;		// Atmosphere scaleheight
 uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight		
 uniform extern float    fRadius;            // PlanetRad
 uniform extern float    fCameraAlt;         // Camera Altitude
-uniform extern float	fAtmRad;			// Atmosphere upper radius squared (fRadius+fScaleHeight*5.0)
+uniform extern float    fHorizonAlt;        // Horizon (i.e. Skydome, Atmosphere) Altitude/Height
+uniform extern float	fAtmRad2;			// Atmosphere upper radius squared (fRadius+fHorizonAlt)^2
 uniform extern float	fBalance;			// Inscattering Color balance controller
 uniform extern float	fHorizonDst;		// Camera to horizon distance sqrt(dot(vCameraPos,vCameraPos) - fRadius*fRadius)
 //uniform extern float	fParameter;			// Optical parameter (i.e. AngleCoEff(0.0f) )
 uniform extern int		iMode;
 uniform extern bool		bOverSat;			// Avoid over-saturation
+uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt) 
 
 // Numeric integration points and weights for Gauss–Lobatto integral
 //
@@ -160,7 +162,8 @@ float RPhase(float cw)
 }
 
 // -------------------------------------------------------------------------------------------------------------
-// Accurate optical depth, h = ray start altitude, c = cosine of the ray direction to inf (1.0 is up)
+// Optical depth angle co-efficiency factor, 
+// c = cosine of the ray direction (1.0 is up)
 //
 
 float AngleCoEff(float c)
@@ -169,8 +172,17 @@ float AngleCoEff(float c)
 	float  c2 = c*c;
 	return rcp(dot(float4(1.0f, c, c2, c2*c), vODCoEff));
 }
+
+float AngleCoEffEx(float c)
+{
+	float c1 = saturate(c);
+	float c2 = c1*c1;
+	float rv = rcp(dot(float4(1.0f, c1, c2, c2*c1), vODCoEff));
+	if (c<0) rv *= exp(-c*20.0f);
+	return rv;
+}
 	
-	
+	 
 	
 // =============================================================================================================
 // Atmospheric scattering implementation
@@ -195,9 +207,9 @@ void SurfaceScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in f
    	   
     // Compute the length of the viewing ray to a camera or a skydome.
     //
-    if (fCameraAlt>(fScaleHeight*5.0)) {   			// TODO: Should use boolean to create a static branch for better efficiency
+    if (bInSpace) {   			
 		float rdt = -fRad * dot(vRay, vNr0);
-		fRay = rdt + sqrt(fAtmRad*fAtmRad - (fRd2 - rdt*rdt));	
+		fRay = rdt + sqrt(fAtmRad2 - (fRd2 - rdt*rdt));	
     } else {
 		fRay = length(vPosW);
 	}	
@@ -206,12 +218,12 @@ void SurfaceScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in f
     float fRPha = RPhase(dot(vRay, vSunDir));		// Compute rayleigh phase factor			
 	
 	vAlt[0] = fRad - fRadius;						// Sample point 0 (i.e. Vertex) altitude
-	vAlt[2] = min(fScaleHeight*5.0, fCameraAlt);	// Sample point 2 (i.e. Camera or atmosphere upper limit altitude)
+	vAlt[2] = min(fHorizonAlt, fCameraAlt);			// Sample point 2 (i.e. Camera or atmosphere upper limit altitude)
 	vAlt[1] = (vAlt[0]+vAlt[2])*0.5;				// Sample point 1 altitude
 	
     float3 vDns	= exp(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
     
-    // Evaluate the Gauss-Lobatto integral
+    // Evaluate a Gauss-Lobatto integral
     float fExRay0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
     
     // Evaluate optical depth between vertex and the Sun.
@@ -235,13 +247,13 @@ void SkyScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
 {    
 	float3 vAlt;
 	
-	vAlt[0] = fAtmRad - fRadius;						// Sample point 0 (i.e. Skydome vertex) altitude
+	vAlt[0] = fHorizonAlt;								// Sample point 0 (i.e. Skydome vertex) altitude
 	vAlt[2] = fCameraAlt;								// Sample point 2 (i.e. Camera) altitude
 	vAlt[1] = (vAlt[0]+vAlt[2])*0.5;					// Sample point 1 altitude
 	
     float3 vDns	= exp(-vAlt*fInvScaleHeight);			// Compute atmospheric density for all sample points
     
-    float fExRay0 = vDns[2] * AngleCoEff(-dot(vRay, vUnitCameraPos));
+    float fExRay0 = vDns[2] * AngleCoEff(max(0.05f, -dot(vRay, vUnitCameraPos)));
     float fExSun2 = vDns[2] * AngleCoEff(dot(vUnitCameraPos, vSunDir));
     float fRPha	  = RPhase(dot(vRay, vSunDir));
     
@@ -252,43 +264,38 @@ void SkyScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
 }
 
 
-void RingScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
+void RingScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in float3 vRay)
 {    
-	
-	float3 vp0  = vPosW + vCameraPos;				// Compute geo-centric vertex position
-    float  fRad = length(vp0);						// Vertex distance from a geo-centre
-    float  fAlt = fRad - fRadius;
-    float  fDns = exp(-fAlt*fInvScaleHeight);
-    float3 vNr0 = normalize(vp0);					// Surface normal at vertex location
+    float fDns = exp(-fVtxAlt*fInvScaleHeight);
+	float fDRS = dot(vRay, vSunDir); 
+	float fDNS = dot(normalize(vPosW + vCameraPos), vSunDir);
 	  
     float fExRay0 = fDns * AngleCoEff(0.0f) * 2.0;
-    float fExSun2 = fDns * AngleCoEff(dot(vNr0, vSunDir));
-    float fRPha	  = RPhase(dot(vRay, vSunDir));
+    float fExSun2 = fDns * AngleCoEffEx(fDNS);
     
-	// Compute in-scattering 
-    vIns = (vRayInSct * exp(-vRayTotal * fExSun2 * fBalance * 2.0)) * (fSunIntensity * fRPha * fExRay0);
+    float3 vExSun1 = exp((vRayTotal) * ((fExSun2) * -fBalance*2.0)) * fExRay0;
+    
+	// Compute rayleigh in-scattering 
+    vIns = (vRayInSct * vExSun1 * RPhase(fDRS));
+    
+    // Compute mie in-scattering 
+    vIns += (vMieTotal * vExSun1 * MPhase(fDRS));
     
     if (bOverSat) vIns = 1.0 - exp(-vIns);
 }
 
 
 
-void HorizonScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
+void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in float3 vRay)
 {    
-    float  fRay;
     float3 vAlt;
     
-    float3  vp0 = vPosW + vCameraPos;					// Compute geo-centric vertex position
-    float  fRad = length(vp0);							// Vertex distance from a geo-centre
     float  fDRS = dot(vRay, vSunDir);
-    float fRPha = RPhase(fDRS);							// Compute rayleigh phase factor
-    float fMPha = MPhase(fDRS);			
+	float3 vNr0 = normalize(vPosW + vCameraPos);
 	
-	float3 vNr0 = normalize(vp0);
-	
-	vAlt[0] = fRad - fRadius;							// Sample point 0 (i.e. Skydome vertex) altitude
+	vAlt[0] = fVtxAlt;									// Sample point 0 (i.e. Skydome vertex) altitude
 	vAlt[2] = fCameraAlt;								// Sample point 2 (i.e. Camera) altitude
-	vAlt[1] = (vAlt[0]+vAlt[2])*0.5f;					// Sample point 1 altitude
+	vAlt[1] = (fVtxAlt+fCameraAlt)*0.5f;				// Sample point 1 altitude
 	
     float3 vDns	= exp(-vAlt*fInvScaleHeight);			// Compute atmospheric density for all sample points
     
@@ -296,7 +303,7 @@ void HorizonScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
     float fExRay0 = dot(vDns, vWeight3) * (fHorizonDst * fInvScaleHeight * 0.5f);
     
     // Add the remainder of the ray
-    fExRay0 += vDns[0] * AngleCoEff(-dot(vNr0,vRay));		
+    fExRay0 += vDns[0] * AngleCoEff(-dot(vNr0, vRay));		
     fExRay0 *= fSunIntensity;
     
     float  fExSun0 = vDns[0] * AngleCoEff(dot(vNr0, vSunDir));
@@ -304,10 +311,10 @@ void HorizonScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
 	float3 vExSun1 = exp((vRayTotal) * ((fExSun0+fExSun2) * -fBalance)) * fExRay0;
     
 	// Compute rayleigh in-scattering 
-    vIns = (vRayInSct * vExSun1 * fRPha);
+    vIns = (vRayInSct * vExSun1 * RPhase(fDRS));
     
     // Compute mie in-scattering 
-    vIns += (vMieTotal * vExSun1 * fMPha);
+    vIns += (vMieTotal * vExSun1 * MPhase(fDRS));
     
     if (bOverSat) vIns = 1.0 - exp(-vIns);
 }
@@ -466,22 +473,23 @@ HazeVS RingTechVS(float3 posL : POSITION0)
 {
     // Zero output.
 	HazeVS outVS = (HazeVS)0;
-
-	posL.x *= lerp(vTexOff[0], vTexOff[1], posL.y);
-	posL.z *= lerp(vTexOff[0], vTexOff[1], posL.y);
-	posL.y  = lerp(vTexOff[2], vTexOff[3], posL.y);
+	
+	float fVtxAlt = posL.y*fAlpha; 
+	
+	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
+	posL.y = lerp(vTexOff[2], vTexOff[3], posL.y);
 	
     float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
-	RingScatterFast(outVS.insca, posW, normalize(-posW));
+	RingScatterFast(outVS.insca, fVtxAlt, posW, normalize(-posW));
 	
     return outVS;
 }
 
 float4 RingTechPS(HazeVS frg) : COLOR
 {
-    return float4(frg.insca.rgb, 1);
+    return float4(frg.insca.rgb, max(frg.insca.r,frg.insca.b));
 }
 
 technique RingTech
@@ -493,8 +501,10 @@ technique RingTech
 
         AlphaBlendEnable = true;
         BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
+        //SrcBlend = SrcAlpha;
+        //DestBlend = InvSrcAlpha;
+        SrcBlend = One;
+        DestBlend = One;
         ZEnable = false;
         ZWriteEnable = false;
     }
@@ -513,21 +523,26 @@ HazeVS HorizonTechVS(float3 posL : POSITION0)
 {
     // Zero output.
 	HazeVS outVS = (HazeVS)0;
-	outVS.alpha = saturate(1.0-smoothstep(0.02, 0.16, posL.y));
-    float3 posW = mul(float4(posL*fHorizonDst, 1.0f), mWorld).xyz;
+	
+	float fVtxAlt = posL.y*fAlpha; 
+	
+	outVS.alpha = saturate(1.0-smoothstep(0.25f, 0.95f, posL.y));
+	
+	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
+	posL.y = lerp(vTexOff[2], vTexOff[3], posL.y);
+	
+    float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
-	// A vector from the vertex to the camera
-	float3 vRay = normalize(-posW);
-	
-	if (iMode==0) HorizonScatterFast(outVS.insca, posW, vRay); 
+	HorizonScatterFast(outVS.insca, fVtxAlt, posW, normalize(-posW));
 	
     return outVS;
 }
 
 float4 HorizonTechPS(HazeVS frg) : COLOR
 {
-    return float4(frg.insca.rgb, frg.alpha);
+	float c = max(frg.insca.r, frg.insca.b)*3.0;
+    return float4(frg.insca.rgb, c*frg.alpha);
 }
 
 technique HorizonTech
@@ -569,13 +584,16 @@ CelSphereVS SkyDomeTechVS(TILEVERTEX vrt)
 	
 	if (iMode==0) SkyScatterFast(outVS.insca, posW, vRay); 
 	
+	//outVS.insca *= saturate(-dot(vRay, vUnitCameraPos)*5.76);
+	//outVS.insca *= step(0.12f, -dot(vRay, vUnitCameraPos));
+	
     return outVS;
 }
 
 float4 SkyDomeTechPS(CelSphereVS frg) : COLOR
 {
-    //float3 vColor = tex2D(DiffTexS, frg.tex0).rgb * fAlpha + frg.insca.rgb;
-    return float4(frg.insca.rgb, 1.0);
+    float3 vColor = tex2D(DiffTexS, frg.tex0).rgb * fAlpha + frg.insca.rgb;
+    return float4(vColor, 1.0);
 }
 
 

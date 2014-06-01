@@ -422,7 +422,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	D3D9Effect::UpdateEffectCamera(hObj);
 	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
-	//PlanetRenderer::InitializeScattering(this);
+	PlanetRenderer::InitializeScattering(this);
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
