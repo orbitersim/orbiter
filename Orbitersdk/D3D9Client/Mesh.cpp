@@ -819,14 +819,23 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 			for (i = 0; i < ges->nVtx; i++) {
 				vi = (ges->vIdx ? ges->vIdx[i] : i);
 				if (vi < g->nVert) {
-					if (flag & GRPEDIT_VTXCRDX) vtx[vi].x = ges->Vtx[i].x;
-					if (flag & GRPEDIT_VTXCRDY) vtx[vi].y = ges->Vtx[i].y;
-					if (flag & GRPEDIT_VTXCRDZ) vtx[vi].z = ges->Vtx[i].z;
-					if (flag & GRPEDIT_VTXNMLX) vtx[vi].nx = ges->Vtx[i].nx;
-					if (flag & GRPEDIT_VTXNMLY) vtx[vi].ny = ges->Vtx[i].ny;
-					if (flag & GRPEDIT_VTXNMLZ) vtx[vi].nz = ges->Vtx[i].nz;
-					if (flag & GRPEDIT_VTXTEXU) vtx[vi].u = ges->Vtx[i].tu;
-					if (flag & GRPEDIT_VTXTEXV) vtx[vi].v = ges->Vtx[i].tv;
+
+					if      (flag & GRPEDIT_VTXCRDX)    vtx[vi].x   = ges->Vtx[i].x;
+					else if (flag & GRPEDIT_VTXCRDADDX) vtx[vi].x  += ges->Vtx[i].x;
+					if      (flag & GRPEDIT_VTXCRDY)    vtx[vi].y   = ges->Vtx[i].y;
+					else if (flag & GRPEDIT_VTXCRDADDY) vtx[vi].y  += ges->Vtx[i].y;
+					if      (flag & GRPEDIT_VTXCRDZ)    vtx[vi].z   = ges->Vtx[i].z;
+					else if (flag & GRPEDIT_VTXCRDADDZ) vtx[vi].z  += ges->Vtx[i].z;
+					if      (flag & GRPEDIT_VTXNMLX)    vtx[vi].nx  = ges->Vtx[i].nx;
+					else if (flag & GRPEDIT_VTXNMLADDX) vtx[vi].nx += ges->Vtx[i].nx;
+					if      (flag & GRPEDIT_VTXNMLY)    vtx[vi].ny  = ges->Vtx[i].ny;
+					else if (flag & GRPEDIT_VTXNMLADDY) vtx[vi].ny += ges->Vtx[i].ny;
+					if      (flag & GRPEDIT_VTXNMLZ)    vtx[vi].nz  = ges->Vtx[i].nz;
+					else if (flag & GRPEDIT_VTXNMLADDZ) vtx[vi].nz += ges->Vtx[i].nz;
+					if      (flag & GRPEDIT_VTXTEXU)    vtx[vi].u  = ges->Vtx[i].tu;
+					else if (flag & GRPEDIT_VTXTEXADDU) vtx[vi].u += ges->Vtx[i].tu;
+					if      (flag & GRPEDIT_VTXTEXV)    vtx[vi].v  = ges->Vtx[i].tv;
+					else if (flag & GRPEDIT_VTXTEXADDV) vtx[vi].v += ges->Vtx[i].tv;
 				}
 			}
 
@@ -846,6 +855,7 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 	}
 	return 0;
 }
+
 
 NTVERTEX Convert(NMVERTEX &v)
 {
@@ -885,7 +895,7 @@ int D3D9Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
 			}
 			UnLockVertexBuffer();
 		}
-		else return 0;
+		else return 1;
 	}
 
 	if (grs->nIdx && grs->Idx) { // index data requested
@@ -907,7 +917,7 @@ int D3D9Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
 			}
 			UnLockIndexBuffer();
 		}
-		else return 0;
+		else return 1;
 	}
 
 	grs->MtrlIdx = Grp[grp]->MtrlIdx;
