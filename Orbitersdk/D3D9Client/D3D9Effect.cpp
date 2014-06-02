@@ -217,6 +217,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	pDev = _pDev;
 	gc = _gc;
 
+	gc->clbkSplashLoadMsg("D3D9Client.fx",1);
 	
 	LogAlw("Starting to initialize D3D9Client.fx a rendering technique...");
 	
@@ -589,25 +590,21 @@ bool D3D9Effect::ComputeLighting(LPDIRECT3DCUBETEXTURE9 pEnv, LPDIRECT3DCUBETEXT
 
 // ===========================================================================================
 //
-void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pTex, const LPD3DXMATRIX pW, float alpha, float scale)
+void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive)
 {
 	UINT numPasses = 0;
 
-	if (alpha>0.5f) {
-		if (pTex->IsPowerOfTwo()) FX->SetTechnique(eSimple);		// Opaque, ANISOTROPIC filter 
-		else					  FX->SetTechnique(ePanelTechB);	// Opaque, POINT filter (for non-pow2 conditional)
-	}
-	else {
-		HR(FX->SetTechnique(ePanelTech));	// Transparent
-	}
-
+	if (pTex->IsPowerOfTwo()) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
+	else					  FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
+	
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex->GetTexture()));
+	HR(FX->SetFloat(eMix, alpha));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 
-	//if (alpha<0.5f) pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-	//else			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	if (additive) pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+	else		  pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 	pDev->SetVertexDeclaration(pNTVertexDecl);
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, mg->nVtx, mg->nIdx/3, mg->Idx, D3DFMT_INDEX16, mg->Vtx, sizeof(NTVERTEX));

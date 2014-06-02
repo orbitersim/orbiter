@@ -82,7 +82,7 @@ DWORD RingManager::LoadTextures ()
 	
 	// Fallback for old method
 	strcat_s(fname, 256, "_ring.tex");
-	gc->SetItem(fname);
+	
 	return gc->GetTexMgr()->LoadTextures(fname, tex, 0, MAXRINGRES);
 }
 

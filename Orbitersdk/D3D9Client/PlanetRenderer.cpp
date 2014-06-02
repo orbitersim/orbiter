@@ -94,6 +94,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	gc = gclient;
 	pDev = gc->GetDevice();
 
+	gc->clbkSplashLoadMsg("Surface.fx",1);
+
 	char name[256];
 
 	WORD Model = gc->GetHardwareCaps()->PixelShaderVersion & 0xFFFF;

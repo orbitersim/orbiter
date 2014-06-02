@@ -703,7 +703,6 @@ float Scene::ComputeNearClipPlane()
 
 void Scene::UpdateCamVis()
 {
-	
 	UpdateCameraFromOrbiter(); // update camera parameters
 
 	if (hObj_proxy) D3D9Effect::UpdateEffectCamera(hObj_proxy);
@@ -739,8 +738,9 @@ void Scene::UpdateCamVis()
 
 	// Process Local Light Sources -------------------------------------
 	//
-	int nlight = 1;
+	
 	int nEmitter = 0;
+	nlight = 1;
 	nLights = 0;
 
 	if (bLocalLight && lightlist) {
@@ -774,7 +774,9 @@ void Scene::UpdateCamVis()
 			}
 		}
 
-		for (int i=1;i<nlight;i++) AddLocalLight(lightlist[i].plight, lightlist[i].vobj, i-1);
+		for (int i = 1; i < nlight; i++)
+			if (lightlist[i].plight->GetVisibility() & LightEmitter::VIS_EXTERNAL)
+				AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
 	}
 
 
@@ -1097,6 +1099,9 @@ void Scene::RenderMainScene()
 		}
 	}
 
+	// -------------------------------------------------------------------------------------------------------
+	// render the vessel sub-systems
+	// -------------------------------------------------------------------------------------------------------
 
 	// render exhausts
 	//
@@ -1108,7 +1113,6 @@ void Scene::RenderMainScene()
 			((vVessel*)pv->vobj)->RenderExhaust();
 		}
 	}
-
 
 	// render beacons
 	//
@@ -1125,8 +1129,10 @@ void Scene::RenderMainScene()
     }  
 
 	// render exhaust particle system
+	//
 	for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	
+
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render vessel axis vectors
@@ -1152,9 +1158,27 @@ void Scene::RenderMainScene()
 
 
 
+	// -------------------------------------------------------------------------------------------------------
 	// render the internal parts of the focus object in a separate render pass
-	//
+	// -------------------------------------------------------------------------------------------------------
+
 	if (oapiCameraInternal() && vFocus) {
+
+		/*
+		// switch cockpit lights on, external-only lights off
+		if (lightlist) {
+			for (int i=1;i<nlight;i++) {
+				switch (lightlist[i].plight->GetVisibility()) {
+				case LightEmitter::VIS_EXTERNAL:
+					//dev->LightEnable (i, FALSE);
+					break;
+				case LightEmitter::VIS_COCKPIT:
+					AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
+					break;
+				}
+			}
+		}*/
+
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
 		double znear = Config->VCNearPlane;
 		if (znear<0.01) znear=0.01;
@@ -1167,6 +1191,12 @@ void Scene::RenderMainScene()
 	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	
 	gc->Render2DOverlay();
+
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Draw Debug String on a bottom of the screen
+	// -------------------------------------------------------------------------------------------------------
 
 	int len = strlen(oapiDebugString());
 
@@ -1202,8 +1232,10 @@ void Scene::RenderMainScene()
 	pDevice->EndScene();
 
 
-	// Render Environmental Map For the Focus Vessel ----------------------------
-	//
+	// -------------------------------------------------------------------------------------------------------
+	// Render Environmental Map For the Focus Vessel 
+	// -------------------------------------------------------------------------------------------------------
+
 	if (Config->EnvMapMode) {
 		DWORD flags = 0;
 		if (Config->EnvMapMode==1) flags |= 0x01; 
@@ -1225,9 +1257,11 @@ void Scene::RenderMainScene()
 		}
 	}
 
-	// EnvMap Debugger ----------------------------------------------------------
-	// TODO: Should be allowed to visualize other maps as well, not just index 0
-	//
+
+	// -------------------------------------------------------------------------------------------------------
+	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
+	// -------------------------------------------------------------------------------------------------------
+
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0)); //VisualizeCubeMap(vFocus->GetEnvMap(-1));
@@ -1673,8 +1707,15 @@ void Scene::UpdateCameraFromOrbiter()
 
 	// find the planet closest to the current camera position
 	hObj_proxy = oapiCameraProxyGbody();
+
+	if (hObj_proxy==NULL) {
+		LogErr("oapiCameraProxyGbody() returns NULL");
+		return;
+	}
+
 	vProxy = (vPlanet *)GetVisObject(hObj_proxy);
 	if (vProxy==NULL) LogErr("Proxy Visual Does Not Exists"); 
+
 	oapiGetGlobalPos(hObj_proxy, &pos);
 	alt_proxy  = dist(camera_pos, pos) - oapiGetSize(hObj_proxy);
 

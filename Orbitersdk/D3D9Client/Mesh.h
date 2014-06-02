@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
-//				 2012 Jarmo Nikkanen (D3D9Client Implementation)
+//				 2012-2014 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -87,7 +87,9 @@ public:
 	~D3D9Mesh();
 
 	void UnLockVertexBuffer();
+	void UnLockIndexBuffer();
 	NMVERTEX * LockVertexBuffer(DWORD grp);
+	WORD * LockIndexBuffer(DWORD grp);
 
 	void SetName(const char *name);
 	const char *GetName() const { return name; }
@@ -162,7 +164,7 @@ public:
 	void ResetTransformations();
 	void TransformGroup(DWORD n, const D3DXMATRIX *m);
 	void Transform(const D3DXMATRIX *m);
-
+	int  GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
 	int  EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 	void UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
 
@@ -216,7 +218,7 @@ private:
 
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;
-	LPDIRECT3DINDEXBUFFER9 pIB;
+	LPDIRECT3DINDEXBUFFER9  pIB;
 
 	DWORD	MaxVert;
 	DWORD	MaxFace;

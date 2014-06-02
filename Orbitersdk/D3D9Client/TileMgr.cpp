@@ -292,8 +292,6 @@ void TileManager::LoadTextures (char *modstr)
 	if (modstr) strcat_s (fname, 256, modstr);
 	strcat_s (fname, 256, ".tex");
 
-	gc->SetItem(fname);
-
 	if (ntex = gc->GetTexMgr()->LoadTextures (fname, texbuf, 0, ntex)) {
 		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
 		while ((int)ntex > patchidx[maxbaselvl]) ReleaseTex(texbuf[--ntex]);
@@ -329,7 +327,7 @@ void TileManager::PreloadTileTextures (TILEDESC *tile8, DWORD ntex, DWORD nmask)
 		strcpy_s (fname, 256, objname);
 		strcat_s (fname, 256, "_tile.tex");
 
-		gc->SetItem(fname);
+		gc->clbkSplashLoadMsg(fname, 1);
 
 		nt = gc->GetTexMgr()->LoadTextures (fname, texbuf, 0, ntex);
 		LogAlw("Number of textures loaded = %u",nt);
@@ -339,7 +337,7 @@ void TileManager::PreloadTileTextures (TILEDESC *tile8, DWORD ntex, DWORD nmask)
 		strcpy_s (fname, 256, objname);
 		strcat_s (fname, 256, "_tile_lmask.tex");
 
-		gc->SetItem(fname);
+		gc->clbkSplashLoadMsg(fname, 1);
 
 		nm = gc->GetTexMgr()->LoadTextures (fname, maskbuf, 0, nmask);
 	}
@@ -412,7 +410,7 @@ void TileManager::LoadSpecularMasks ()
 		strcpy_s (fname, 256, objname);
 		strcat_s (fname, 256, "_lmask.tex");
 		
-		gc->SetItem(fname);
+		gc->clbkSplashLoadMsg(fname, 1);
 
 		specbuf = new LPDIRECT3DTEXTURE9[nmask];
 		if (n = gc->GetTexMgr()->LoadTextures (fname, specbuf, 0, nmask)) {

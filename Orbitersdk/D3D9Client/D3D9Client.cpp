@@ -400,9 +400,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	SplashScreen();  // Warning D3D9ClientSurface is not yet fully initialized here
 
-	SetLabel("Building Shader Programs...");
-
-	SetItem("D3D9Client.fx");
+	clbkSplashLoadMsg("Building Shader Programs...",0);
+	
 	D3D9Effect::D3D9TechInit(this, pd3dDevice, fld);
 
 	// Device-specific initialisations
@@ -420,7 +419,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	vVessel::GlobalInit(this);
 	OapiExtension::GlobalInit(*Config);
 
-	SetItem("SceneTech.fx");
+	clbkSplashLoadMsg("SceneTech.fx",1);
 	Scene::D3D9TechInit(pd3dDevice, fld);
 
 	// Create scene instance
@@ -428,8 +427,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	WriteLog("[D3D9Client Initialized]");
 	LogOk("...3D environment initialised");
-	SetLabel("Loading Textures...");
-
+	
 #ifdef _NVAPI_H
 	if (bNVAPI) {
 		NvU8 bEnabled = 0;
@@ -531,6 +529,7 @@ void D3D9Client::clbkPostCreation()
 	parser->LogContent();
 
 	if (scene) scene->Initialise();
+
 	WriteLog("[Scene Initialized]");
 }
 
@@ -949,8 +948,6 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 
 	char cpath[256];
 
-	SetItem(fname);
-
 	if (TexturePath(fname, cpath)==false) {
 		LogWrn("Texture %s not found.",fname);
 		return NULL;
@@ -961,7 +958,6 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 	}
 	else {
 		if (texmgr->LoadTexture(fname, &pTex, flags)!=S_OK) return NULL;
-		//else LogBlu("Texture %s loaded. (%u x %u) flags=0x%X", fname, pTex->GetWidth(), pTex->GetHeight(), flags);
 	}
 
 	pTex->SetCreation(D3D9C_LOAD);
@@ -1088,9 +1084,12 @@ MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 
 int D3D9Client::clbkEditMeshGroup(DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges)
 {
-	_TRACER;
-	//LogWrn("Editing MeshGroup %u of 0x%X (flags=0x%X)",grpidx, hMesh, ges->flags);
 	return ((D3D9Mesh*)hMesh)->EditGroup(grpidx, ges);
+}
+
+int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs)
+{
+	return ((D3D9Mesh*)hMesh)->GetGroup (grpidx, grs);
 }
 
 #pragma endregion
@@ -1237,7 +1236,9 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		return 0;
 	}
 
-	if (bRunning) GetScene()->UpdateCameraFromOrbiter();
+	if (bRunning && DebugControls::IsActive()) {	
+		GetScene()->UpdateCameraFromOrbiter();
+	}
 
 	__TRY {
 
@@ -1389,9 +1390,24 @@ BOOL D3D9Client::LaunchpadVideoWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 // =======================================================================
 
-void D3D9Client::clbkRender2DPanel(SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, bool transparent)
+void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, float alpha, bool additive)
 {
 	_TRACER;
+
+	if (hMesh==NULL) {
+		LogErr("clbkRender2DPanel() hMesh = NULL");
+		return;
+	}
+
+	if (T==NULL) {
+		LogErr("clbkRender2DPanel() T = NULL");
+		return;
+	}
+
+	if (hSurf==NULL) {
+		LogErr("clbkRender2DPanel() hSurf = NULL");
+		return;
+	}
 
 	SURFHANDLE surf = 0;
 	DWORD ngrp = oapiMeshGroupCount(hMesh);
@@ -1409,7 +1425,7 @@ void D3D9Client::clbkRender2DPanel(SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 
 
 	for (DWORD i=0;i<ngrp;i++) {
 
-		float alpha = 1.0f, scale = 1.0f;
+		float scale = 1.0f;
 
 		MESHGROUP *gr = oapiMeshGroup(hMesh, i);
 
@@ -1418,8 +1434,6 @@ void D3D9Client::clbkRender2DPanel(SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 
 		DWORD TexIdx = gr->TexIdx;
 
 		if (TexIdx >= TEXIDX_MFD0) {
-			if (transparent) alpha = 0.0f;
-			else             alpha = 1.0f;
 			int mfdidx = TexIdx - TEXIDX_MFD0;
 			SURFHANDLE newsurf = GetMFDSurface(mfdidx);
 			if (!newsurf) continue;
@@ -1429,8 +1443,15 @@ void D3D9Client::clbkRender2DPanel(SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 
 
 		for (unsigned int k=0;k<gr->nVtx;k++) gr->Vtx[k].z = 0.0f;
 
-		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale);
+		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale, additive);
 	}
+}
+
+// =======================================================================
+
+void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, bool additive)
+{
+	clbkRender2DPanel (hSurf, hMesh, T, 1.0f, additive);
 }
 
 // =======================================================================
@@ -1930,6 +1951,13 @@ void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 
 // =======================================================================
 
+bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)
+{
+	return OutputLoadStatus (msg, line);
+}
+
+// =======================================================================
+
 LPD3D9CLIENTSURFACE D3D9Client::GetDefaultTexture() const
 {
 	return pDefaultTex;
@@ -1989,25 +2017,18 @@ void D3D9Client::WriteLog(const char *msg) const
 
 // =======================================================================
 
-void D3D9Client::SetLabel(const char *txt)
+bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 {
-	if (bRunning) return;
-	strcpy_s(pLoadLabel, 127, txt);
-}
+	if (bRunning) return false;
 
-// =======================================================================
-
-void D3D9Client::SetItem(const char *txt)
-{
-	if (bRunning) return;
-
-	strcpy_s(pLoadItem, 127, txt);
+	if (line==1) strcpy_s(pLoadItem, 127, txt);
+	if (line==0) strcpy_s(pLoadLabel, 127, txt);
 
 	if (bSkepchpadOpen==false && pTextScreen) {
 
 		if (pd3dDevice->TestCooperativeLevel()!=S_OK) {
 			LogErr("TestCooperativeLevel() Failed");
-			return;
+			return false;
 		}
 
 		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
@@ -2038,15 +2059,22 @@ void D3D9Client::SetItem(const char *txt)
 		DeleteObject(pen);
 
 		HR(pTextScreen->ReleaseDC(hDC));
-
-		HR(pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L));
 		HR(pd3dDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT));
 		HR(pd3dDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT));
-		HR(pd3dDevice->Present(0, 0, 0, 0));
+		
+		IDirect3DSwapChain9 *pSwap;
 
+		if (pd3dDevice->GetSwapChain(0, &pSwap)==S_OK) { 
+			pSwap->Present(0, 0, 0, 0, D3DPRESENT_DONOTWAIT);
+			pSwap->Release();
+			return true;
+		}
+
+		// Prevent "Not Responding" during loading
 		MSG msg;
-		while (PeekMessage( &msg, NULL, 0, 0, PM_REMOVE)) DispatchMessage(&msg);
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) DispatchMessage(&msg);
 	}
+	return false;
 }
 
 // =======================================================================

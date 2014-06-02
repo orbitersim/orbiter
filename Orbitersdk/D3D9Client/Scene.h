@@ -240,6 +240,7 @@ private:
 	CelestialSphere *csphere;  // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
 	bool  bLocalLight;
+	int nlight;
 
 	OBJHANDLE hSun;
 

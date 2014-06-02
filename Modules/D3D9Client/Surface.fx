@@ -176,10 +176,14 @@ float AngleCoEffEx(float c)
 {
 	float c1 = saturate(c); float c2 = c1*c1;
 	float rv = rcp(dot(float4(1.0f, c1, c2, c2*c1), vODCoEff));
-	if (c<0) rv *= exp(-c*10.0f);
+	if (c<0) rv *= exp(-c*5.0f);
 	return rv;
 }
 	
+float DepthClamp(float d)
+{
+	return fSunIntensity * (1.0-exp(-d/fSunIntensity));
+}
 	 
 	
 // =============================================================================================================
@@ -187,12 +191,12 @@ float AngleCoEffEx(float c)
 // -------------------------------------------------------------------------------------------------------------
 // vOuts = Out Scattering (Surface Texture Attennuation)
 // vIns = In Scattering (Will be added to a pixel color)
-// vSun = Color of the sun light received by the surface
+// vSrf = Color of the sun light received by the surface
 // vPosW = Camera relative vertex position
 // vRay = Unit Vector from vertex to a camera
 // =============================================================================================================    
 
-void SurfaceScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in float3 vPosW, in float3 vRay)
+void SurfaceScatterFast(out float3 vOuts, out float3 vIns, out float3 vSrf, in float3 vPosW, in float3 vRay)
 {    
     float  fRay;
     float3 vAlt;
@@ -216,27 +220,28 @@ void SurfaceScatterFast(out float3 vOuts, out float3 vIns, out float3 vSun, in f
     float fDRS = dot(vRay, vSunDir);				// Compute rayleigh phase factor			
 	
 	vAlt[0] = fRad - fRadius;						// Sample point 0 (i.e. Vertex) altitude
-	vAlt[2] = min(fHorizonAlt, fCameraAlt);			// Sample point 2 (i.e. Camera or atmosphere upper limit altitude)
+	vAlt[2] = min(fHorizonAlt, fCameraAlt);			// Sample point 2 (i.e. Camera or Skydome altitude)
 	vAlt[1] = (vAlt[0]+vAlt[2])*0.5;				// Sample point 1 altitude
 	
     float3 vDns	= exp(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
     
-    // Evaluate a Gauss-Lobatto integral
-    float fExRay0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
+    // Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
+    float fRay0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
     
     // Evaluate optical depth between vertex and the Sun.
-    float fExSun0 = vDns[0] * AngleCoEffEx(fDNS);		
+    float fSun0 = vDns[0] * AngleCoEffEx(fDNS);		
     
     // Compute surface texture color attennuation (i.e. extinction term)
-    vOuts = exp(-vRayTotal * fExRay0);
+    vOuts = exp(-vRayTotal * fRay0);
     
     // Compute sunlight color received by a vertex
-    vSun = exp(-vRaySurface * fExSun0) * fSrfIntensity;
+    vSrf = exp(-vRaySurface * fSun0) * fSrfIntensity;
 	
-	float3 vExSun0 = exp(-vRayTotal * fExSun0 * fBalance * 2.0) * fExRay0;
+	 // Color and intensity of in-coming sunlight
+	float3 vSun = exp(-vRayTotal * fSun0 * fBalance * 2.0) * fRay0;
     
-	// Compute in-scattering 
-    vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vExSun0;
+	// Multiply in-coming light with phase and light scattering factors
+    vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
     
     if (bOverSat) vIns = 1.0 - exp(-vIns);
 }
@@ -267,6 +272,15 @@ void SkyScatterFast(out float3 vIns, in float3 vPosW, in float3 vRay)
 
 
 
+// =============================================================================================================
+// Atmospheric scattering implementation
+// -------------------------------------------------------------------------------------------------------------
+// vIns = Light in scattering 
+// fVtxAlt = Vertex altitude
+// vPosW = Camera relative vertex position
+// vRay = Unit Vector from vertex to a camera
+// =============================================================================================================    
+
 void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in float3 vRay)
 {    
     float3 vAlt;
@@ -274,7 +288,6 @@ void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in f
     
     float  fRad = fVtxAlt + fRadius;
     float  fDRS = dot(vRay, vSunDir);
-	float3 vNr1 = normalize(vPosW*0.5 + vCameraPos);
 	float3 vNr0 = normalize(vPosW + vCameraPos);
 	float  fDR0 = -dot(vRay, vNr0);
 	
@@ -287,24 +300,26 @@ void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in f
 		fRay = length(vPosW);
 	}	
 	
-	vAlt[0] = fVtxAlt;									// Sample point 0 (i.e. Skydome vertex) altitude
-	vAlt[2] = min(fHorizonAlt, fCameraAlt);				// Sample point 2 (i.e. Camera) altitude
-	vAlt[1] = (vAlt[0]+vAlt[2])*0.5f;					// Sample point 1 altitude
+	vAlt[0] = fVtxAlt;									// Sample point 0 (i.e. Horizon vertex) altitude
+	vAlt[2] = min(fHorizonAlt, fCameraAlt);				// Sample point 2 (i.e. Camera or Skydome) altitude
+	vAlt[1] = (vAlt[0]+vAlt[2])*0.5f;					// Sample point 1 altitude. (This approximation is good enough)
 	
     float3 vDns	= exp(-vAlt*fInvScaleHeight);			// Compute atmospheric density for all sample points
     
-    // Evaluate the Gauss-Lobatto integral
-    float fExRay0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
+    // Evaluate a Gauss-Lobatto integral (from camera to vertex). Will give optical density for the ray
+    float fRay0 = dot(vDns, vWeight3) * (fRay * fInvScaleHeight * 0.5f);
     
-    // Add the remainder of the ray
-    fExRay0 += vDns[0] * AngleCoEff(fDR0);		
+    // Add the remainder of the ray (from vertex to infinity)
+    fRay0 += vDns[0] * AngleCoEff(fDR0);		
   
-    float  fExSun1 = vDns[1] * AngleCoEffEx(dot(vNr1, vSunDir));
-    float  fExSun0 = vDns[0] * AngleCoEffEx(dot(vNr0, vSunDir));
-	float3 vExSun1 = exp(-vRayTotal * (fExSun1+fExSun0) * fBalance) * fExRay0 * 0.5f;
+	// Optical density for incoming sunlight for in-scatter
+    float  fSun0 = vDns[0] * AngleCoEffEx(dot(vNr0, vSunDir));
     
-	// Compute in-scattering 
-    vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vExSun1;
+    // Color and intensity of in-coming sunlight
+   	float3 vSun = exp(-vRayTotal * fSun0 * fBalance * 2.0) * DepthClamp(fRay0);
+    
+	// Multiply in-coming light with phase and light scattering factors
+    vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
     
     if (bOverSat) vIns = 1.0 - exp(-vIns);
 }

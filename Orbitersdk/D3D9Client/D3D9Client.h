@@ -178,6 +178,16 @@ public:
 	virtual MESHHANDLE clbkGetMesh (VISHANDLE vis, UINT idx);
 
 	/**
+	 * \brief Mesh group data retrieval interface for device-specific meshes.
+	 * \param hMesh device mesh handle
+	 * \param grpidx mesh group index (>= 0)
+	 * \param grs data buffers and buffer size information. See \ref oapiGetMeshGroup
+	 *    for details.
+	 * \return Returns 0 on success, or error flags > 0.
+	 */
+	int clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs);
+
+	/**
 	 * \brief Mesh group editing interface for device-specific meshes.
 	 * \param hMesh device mesh handle
 	 * \param grpidx mesh group index (>= 0)
@@ -301,6 +311,20 @@ public:
 	 */
 	void clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, bool transparent = false);
 
+	/**
+	 * \brief Render an instrument panel in cockpit view as a 2D billboard.
+	 * \param hSurf array of texture handles for the panel surface
+	 * \param hMesh billboard mesh handle
+	 * \param T transformation matrix for panel mesh vertices (2D)
+	 * \param alpha opacity value, between 0 (transparent) and 1 (opaque)
+	 * \param additive flag for transparent (additive) rendering
+	 * \note The texture index of each group in the mesh is interpreted as index into the
+	 *   hSurf array. Special indices are TEXIDX_MFD0 and above, which specify the
+	 *   surfaces representing the MFD displays. These are obtained separately and
+	 *   don't need to be present in the hSurf list.
+	 */
+	void clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, float alpha, bool additive = false);
+
 	// ==================================================================
 	/// \name Surface-related methods
 	// @{
@@ -348,7 +372,7 @@ public:
 	 *  - OAPISURFACE_MIPMAPS: create a full chain of mipmaps for the surface if possible
 	 *  - OAPISURFACE_NOALPHA: create a surface without an alpha channel
 	 */
-	SURFHANDLE clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib);
+	SURFHANDLE clbkCreateSurfaceEx (DWORD w, DWORD h, DWORD attrib);
 
 	/**
 	 * \brief Creates a new texture surface.
@@ -502,6 +526,18 @@ public:
 	void clbkReleaseSurfaceDC (SURFHANDLE surf, HDC hDC);
 	// @}
 
+	/**
+	 * \brief Display a load status message on the splash screen
+	 * \param msg status message to be displayed
+	 * \line line number (0 or 1)
+	 * \return true if status display was initialised (which should
+	 *   always be the case, false if not.
+	 */
+	bool clbkSplashLoadMsg (const char *msg, int line);
+
+
+	void WriteLog (const char *msg) const;
+
 
 	// ==================================================================
 	/// \name 2D Drawing API
@@ -516,41 +552,29 @@ public:
 	void			  clbkReleaseBrush(Brush *brush) const;
 	// @}
 
-	void WriteLog (const char *msg) const;
-
-
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
 	void				RegisterDissolveMap(SURFHANDLE hSrf);
 	SURFHANDLE			GetDissolveMap(DWORD idx) const;
 	int					GetIndexOfDissolveMap(SURFHANDLE hSrf) const;
-	
-
-	void EmergencyShutdown();
-	void SplashScreen();
-	void VisualsCreated();	
-
-	void SetLabel(const char *txt);
-	void SetItem(const char *txt);
-
-	inline bool IsRunning() { return bRunning; }
-
-
-	const LPD3DXMATRIX GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
-
-	HWND GetWindow();
-	bool HasVertexTextureSupport() { return bVertexTex; }
-	D3DCAPS9 *GetHardwareCaps() { return &caps; }
-	D3D9Stat *GetStats() { return &stats; }
-	FileParser *GetFileParser() { return parser; }
+	void 				EmergencyShutdown();
+	void 				SplashScreen();
+	void 				VisualsCreated();	
+	inline bool 		IsRunning() { return bRunning; }
+	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
+	HWND 				GetWindow();
+	bool 				HasVertexTextureSupport() { return bVertexTex; }
+	D3DCAPS9 *			GetHardwareCaps() { return &caps; }
+	D3D9Stat *			GetStats() { return &stats; }
+	FileParser *		GetFileParser() { return parser; }
 	LPDIRECT3DSURFACE9  GetEnvDepthStencil() { return pEnvDS; }
 	LPDIRECT3DSURFACE9  GetShadowMapDepthStencil() { return pShmDS; }
 	LPDIRECT3DTEXTURE9  GetShadowMapRenderTarget() { return pShmRT; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
 
 	// overwritten
-	const void *GetConfigParam (DWORD paramtype) const;
-	const char *GetSkinFileLine(DWORD idx) const;
+	const void *		GetConfigParam (DWORD paramtype) const;
+	const char *		GetSkinFileLine(DWORD idx) const;
 
 protected:
 	/**
@@ -574,9 +598,11 @@ protected:
 
 	bool clbkUseLaunchpadVideoTab () const;
 
-	/// \brief Finalise session creation
-	///
-	/// - Initialises the scene
+	/**
+	 * \brief Finalise session creation
+	 *
+	 * - Initialises the scene
+	 */
 	void clbkPostCreation ();
 
 	/**
@@ -603,7 +629,7 @@ protected:
 	 * - Renders the scene into the back buffer
 	 * - Flips the back buffer into view
 	 */
-	void clbkRenderScene();
+	void clbkRenderScene ();
 
 	void clbkUpdate(bool running);
 	/**
@@ -639,7 +665,18 @@ protected:
 	///
 	/// Obtains the GDI of the render surface to output 2D data after
 	/// rendering the 3D scene (glass cockpit, date info, etc.)
-	void Output2DOverlay();
+	void Output2DOverlay ();
+
+	/**
+	 * \brief Displays a message on the splash screen.
+	 * \param msg Message to be displayed.
+	 * \param line line number (0 or 1)
+	 * \return true if load status was initialised, false if not.
+	 * \sa clbkSplashLoadMsg
+	 */
+	bool OutputLoadStatus (const char *msg, int line);
+
+
 
 private:
 
@@ -721,6 +758,14 @@ private:
 	WORD Items;
 	WORD SelectedItem;
 	WORD LabelPos;
+
+
+	// Load status output parameters
+	struct {
+		int x, y, w, h;
+		HBITMAP hBkg;
+		HDC bkgDC;
+	} lstatus;
 
 }; // class D3D9Client
 

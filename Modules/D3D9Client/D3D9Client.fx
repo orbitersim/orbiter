@@ -523,7 +523,12 @@ float4 SimpleTechPS(SimpleVS frg) : COLOR
 
 float4 PanelTechPS(SimpleVS frg) : COLOR
 {
-    return tex2D(Panel0S, frg.tex0);
+	return tex2D(SimpleS, frg.tex0*gMix);
+}
+
+float4 PanelTechBPS(SimpleVS frg) : COLOR
+{
+    return tex2D(Panel0S, frg.tex0*gMix);
 }
 
 float4 ExhaustTechPS(SimpleVS frg) : COLOR
@@ -608,8 +613,8 @@ technique PanelTech
         
         AlphaBlendEnable = true;
         BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = One;
+		SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
         ZEnable = false;
         ZWriteEnable = false;
     }   
@@ -620,7 +625,7 @@ technique PanelTechB
     pass P0
     {
         vertexShader = compile VS_MOD BasicVS();
-        pixelShader  = compile PS_MOD PanelTechPS();
+        pixelShader  = compile PS_MOD PanelTechBPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

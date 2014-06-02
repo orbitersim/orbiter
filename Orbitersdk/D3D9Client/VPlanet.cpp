@@ -167,7 +167,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	albedo = gc->GetFileParser()->GetAlbedo(hObj);
 	LogMsg("vPlanet constructor exiting");
-	gc->SetLabel("Loading Textures...");
 }
 
 // ==============================================================

@@ -847,6 +847,74 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 	return 0;
 }
 
+NTVERTEX Convert(NMVERTEX &v)
+{
+	NTVERTEX n;
+	n.x = v.x; n.y = v.y; n.z = v.z; 
+	n.nx = v.nx; n.ny = v.ny; n.nz = v.nz;
+	n.tu = v.u;	n.tv = v.v;
+	return n;
+}
+
+
+int D3D9Mesh::GetGroup (DWORD grp, GROUPREQUESTSPEC *grs)
+{
+	static NTVERTEX zero = {0,0,0, 0,0,0, 0,0};
+	if (grp >= nGrp) return 1;
+	DWORD nv = Grp[grp]->nVert;
+	DWORD ni = Grp[grp]->nFace*3;
+	DWORD i, vi;
+	int ret = 0;
+
+	if (grs->nVtx && grs->Vtx) { // vertex data requested
+		NMVERTEX *vtx = LockVertexBuffer(grp);
+		if (vtx) {
+			if (grs->VtxPerm) { // random access data request
+				for (i = 0; i < grs->nVtx; i++) {
+					vi = grs->VtxPerm[i];
+					if (vi < nv) {
+						grs->Vtx[i] = Convert(vtx[vi]);
+					} else {
+						grs->Vtx[i] = zero;
+						ret = 1;
+					}
+				}
+			} else {
+				if (grs->nVtx > nv) grs->nVtx = nv;
+				for (i=0;i<grs->nVtx;i++) grs->Vtx[i]=Convert(vtx[i]);
+			}
+			UnLockVertexBuffer();
+		}
+		else return 0;
+	}
+
+	if (grs->nIdx && grs->Idx) { // index data requested
+		WORD *idx = LockIndexBuffer(grp);
+		if (idx) {
+			if (grs->IdxPerm) { // random access data request
+				for (i = 0; i < grs->nIdx; i++) {
+					vi = grs->IdxPerm[i];
+					if (vi < ni) {
+						grs->Idx[i] = idx[vi];
+					} else {
+						grs->Idx[i] = 0;
+						ret = 1;
+					}
+				}
+			} else {
+				if (grs->nIdx > ni) grs->nIdx = ni;
+				memcpy2(grs->Idx, idx, grs->nIdx * sizeof(WORD));
+			}
+			UnLockIndexBuffer();
+		}
+		else return 0;
+	}
+
+	grs->MtrlIdx = Grp[grp]->MtrlIdx;
+	grs->TexIdx = Grp[grp]->TexIdx;
+	return ret;
+}
+
 
 // ===========================================================================================
 //
@@ -928,7 +996,6 @@ void D3D9Mesh::SetSunLight(D3D9Light *light)
 //
 NMVERTEX * D3D9Mesh::LockVertexBuffer(DWORD grp)
 {
-	//_TRACE;
 	if (!pVB) return NULL;
 	NMVERTEX *pVert;
 	bBSRecompute = true;
@@ -951,9 +1018,38 @@ NMVERTEX * D3D9Mesh::LockVertexBuffer(DWORD grp)
 //
 void D3D9Mesh::UnLockVertexBuffer()
 {
-	//_TRACE;
 	if (!pVB) return;
 	HR(pVB->Unlock());
+}
+
+// ===========================================================================================
+//
+WORD * D3D9Mesh::LockIndexBuffer(DWORD grp)
+{
+	if (!pIB) return NULL;
+	WORD *pIdx;
+	bBSRecompute = true;
+
+	if (grp>=nGrp) {
+		LogErr("D3D9Mesh(0x%X)::LockIndexBuffer(%u) index out of range",this,grp);
+		return NULL;
+	}
+
+	if (pIB->Lock(Grp[grp]->VertOff*sizeof(WORD), Grp[grp]->nFace*3*sizeof(WORD), (LPVOID*)&pIdx, 0)==S_OK) {
+		return pIdx;
+	}
+	else {
+		LogErr("D3D9Mesh(0x%X)::LockIndexBuffer(%u)",this,grp);
+		return NULL;
+	}
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::UnLockIndexBuffer()
+{
+	if (!pIB) return;
+	HR(pIB->Unlock());
 }
 
 // ===========================================================================================
