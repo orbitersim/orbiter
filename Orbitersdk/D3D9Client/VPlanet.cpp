@@ -729,10 +729,10 @@ double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
 	double a2 = sqrt(R*R + p2*p2 + 2.0*R*p2*cos(dir)) - R0;
 	double a3 = sqrt(R*R + p3*p3 + 2.0*R*p3*cos(dir)) - R0;
 
-	double s0 = exp(-a0/h0);
-	double s1 = exp(-a1/h0);
-	double s2 = exp(-a2/h0);
-	double s3 = exp(-a3/h0);
+	double s0 = exp2(-a0/h0);
+	double s1 = exp2(-a1/h0);
+	double s2 = exp2(-a2/h0);
+	double s3 = exp2(-a3/h0);
 
 	double sum = (s0*0.167 + s1*0.833 + s2*0.833 + s3*0.167) * Ray * 0.5;
 
@@ -766,7 +766,7 @@ void vPlanet::DumpDebugFile()
 		double accurate = OpticalDepth(0.0, float(cos(angle)));
 		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
 		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
-		double test		= par*exp(0.0)/(1.0+(par-1.0)*cos(angle));
+		double test		= par*exp2(0.0)/(1.0+(par-1.0)*cos(angle));
 
 		angle += delta;
 
@@ -800,11 +800,14 @@ bool vPlanet::LoadAtmoConfig()
 	oapiReadItem_float(hFile, "InScatter", SPrm.rin);
 	oapiReadItem_float(hFile, "RayleighPhase", SPrm.rphase);
 	oapiReadItem_float(hFile, "Balance", SPrm.balance);
-	oapiReadItem_float(hFile, "SunIntensity", SPrm.rsun);
+	oapiReadItem_float(hFile, "DepthClamp", SPrm.depth);
 	oapiReadItem_float(hFile, "SrfColor", SPrm.srfclr);
 	oapiReadItem_float(hFile, "SrfIntensity", SPrm.sun);
 	oapiReadItem_float(hFile, "MiePower", SPrm.mie);
 	oapiReadItem_float(hFile, "MiePhase", SPrm.mphase);
+	oapiReadItem_float(hFile, "Exposure", SPrm.expo);
+	oapiReadItem_float(hFile, "Transfer", SPrm.transfer);
+	oapiReadItem_float(hFile, "TransferColor", SPrm.trcolor);
 	oapiReadItem_int(hFile,   "Mode", SPrm.mode);
 	oapiReadItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 
@@ -839,11 +842,14 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "InScatter", SPrm.rin);
 	oapiWriteItem_float(hFile, "RayleighPhase", SPrm.rphase);
 	oapiWriteItem_float(hFile, "Balance", SPrm.balance);
-	oapiWriteItem_float(hFile, "SunIntensity", SPrm.rsun);
+	oapiWriteItem_float(hFile, "DepthClamp", SPrm.depth);
 	oapiWriteItem_float(hFile, "SrfColor", SPrm.srfclr);
 	oapiWriteItem_float(hFile, "SrfIntensity", SPrm.sun);
 	oapiWriteItem_float(hFile, "MiePower", SPrm.mie);
 	oapiWriteItem_float(hFile, "MiePhase", SPrm.mphase);
+	oapiWriteItem_float(hFile, "Exposure", SPrm.expo);
+	oapiWriteItem_float(hFile, "Transfer", SPrm.transfer);
+	oapiWriteItem_float(hFile, "TransferColor", SPrm.trcolor);
 	oapiWriteItem_int(hFile,   "Mode", SPrm.mode);
 	oapiWriteItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 

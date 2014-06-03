@@ -94,6 +94,9 @@ void Create()
 	Slider[11].id = IDC_ATM_SUN;
 	Slider[12].id = IDC_ATM_RSUN;
 	Slider[13].id = IDC_ATM_SRFCOLOR;
+	Slider[14].id = IDC_ATM_EXPO;
+	Slider[15].id = IDC_ATM_DIST;
+	Slider[16].id = IDC_ATM_ACOLOR;
 
 	Slider[0].dsp = IDC_ATD_RED;
 	Slider[1].dsp = IDC_ATD_GREEN;
@@ -109,6 +112,9 @@ void Create()
 	Slider[11].dsp = IDC_ATD_SUN;
 	Slider[12].dsp = IDC_ATD_RSUN;
 	Slider[13].dsp = IDC_ATD_SRFCOLOR;
+	Slider[14].dsp = IDC_ATD_EXPO;
+	Slider[15].dsp = IDC_ATD_DIST;
+	Slider[16].dsp = IDC_ATD_ACOLOR;
 
 	for (int i=0;i<ATM_SLIDER_COUNT;i++) defs.data[i] = 0.0;
 
@@ -121,7 +127,7 @@ void Create()
 	defs.rin	 = 1.0;
 	defs.srfclr  = 1.0;
 	defs.sun	 = 1.0;
-	defs.rsun	 = 1.0;
+	defs.depth	 = 20.0;
 	defs.balance = 0.5;
 }
 
@@ -166,17 +172,21 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_WAVE,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   1.0, 40.0, 1);
+	ConfigSlider(IDC_ATM_EXPO,	   0.2, 1.5);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 4.0);
 	ConfigSlider(IDC_ATM_IN,       0.0, 3.0);
 	ConfigSlider(IDC_ATM_RPHASE,   0.0, 3.5);
-	ConfigSlider(IDC_ATM_BALANCE,  0.0, 1.0);
+	ConfigSlider(IDC_ATM_BALANCE,  0.0, 2.0);
 	ConfigSlider(IDC_ATM_RSUN,     1.0, 50.0);
+	// -------------------------------------------------------
+	ConfigSlider(IDC_ATM_DIST,	   0.0, 0.4);
+	ConfigSlider(IDC_ATM_ACOLOR,   0.0, 3.0);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.0, 1.0);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 8.0);
 	ConfigSlider(IDC_ATM_MPHASE,   0.85, 0.999);
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
@@ -184,15 +194,16 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_ATM_BLUE,		hDlg, "Wavelength setting for blue light (default 0.480)");
 	CreateToolTip(IDC_ATM_WAVE,		hDlg, "Main control for atmospheric color composition (4.0 for the Earth)");
 	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere scale height (7km - 10km for the Earth)");
+	CreateToolTip(IDC_ATM_EXPO,		hDlg, "Overall brightness control (i.e. Camera \"exposure\" control)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_OUT,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness)");
-	CreateToolTip(IDC_ATM_IN,		hDlg, "Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity)");
+	CreateToolTip(IDC_ATM_IN,		hDlg, "(FINE) Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity)");
 	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight (Most visible when camera, planet and the sun are aligned)");
-	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "Controls a color balance of atmospheric haze. (Most effective in sunrise/set)");
-	CreateToolTip(IDC_ATM_RSUN,		hDlg, "Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity) (Same as InSct !!)");
+	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "(FINE) Controls a color balance of atmospheric haze. (Most effective in sunrise/set)");
+	CreateToolTip(IDC_ATM_RSUN,		hDlg, "Optical depth clamp distance (i.e. Horizon haze distance)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_SRFCOLOR,	hDlg, "Controls a color composition of sunlight on a planet surface (Configure at sunrise/set)");
-	CreateToolTip(IDC_ATM_SUN,		hDlg, "Controls an intensity of sunlight on a planet surface");
+	CreateToolTip(IDC_ATM_SRFCOLOR,	hDlg, "(FINE) Controls a color composition of sunlight on a planet surface (Configure at sunrise/set)");
+	CreateToolTip(IDC_ATM_SUN,		hDlg, "(FINE) Controls an intensity of sunlight on a planet surface");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering");
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
@@ -384,7 +395,6 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_ATM_RESET:
 				param->rin = 1.0;
-				param->rsun = 1.0;
 				param->srfclr = 1.0;
 				param->sun = 1.0;
 				param->balance = 0.5;

@@ -350,7 +350,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	double cr = length(cpos);	
 	double hd = sqrt(cr*cr - rad*rad);
 	double al = asin(rad/cr);
-	double mx = hralt * 1.5;
+	double mx = hralt * 3.0;
 
 	double r1 =  hd * sin(al);
 	double h1 = -hd * cos(al);

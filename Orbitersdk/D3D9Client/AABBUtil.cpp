@@ -444,13 +444,13 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 	double delta = 0.2 * PI / 180.0;
 	double r0 = R + alt;
 
-	if (dir<(delta*2.0)) return h0 * exp(-(r0-R)/h0) / cos(dir);
+	if (dir<(delta*2.0)) return h0 * exp2(-(r0-R)/h0) / cos(dir);
 
 	dir = PI - dir;
 
 	double m0 = r0 / sin(PI-dir-delta);
 
-	if (m0*sin(dir)>R1) return h0 * exp(-(r0-R)/h0) / cos(PI-dir); 
+	if (m0*sin(dir)>R1) return h0 * exp2(-(r0-R)/h0) / cos(PI-dir); 
 
 	double opt = 0.0;
 	double sind = sin(delta); 
@@ -459,8 +459,8 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 
 		double m = r0 / sin(PI-dir-delta);
 		double r1 = m  * sin(dir);
-		double d0 = h0 * exp((r0-R)/-h0);
-		double d1 = h0 * exp((r1-R)/-h0);
+		double d0 = h0 * exp2((r0-R)/-h0);
+		double d1 = h0 * exp2((r1-R)/-h0);
 
 		if (fabs(r1-r0)<1e-9) {
 			dir += delta;
@@ -489,7 +489,7 @@ float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return h0 * exp(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr));
+	return h0 * exp2(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr));
 }
 
 // ===========================================================================

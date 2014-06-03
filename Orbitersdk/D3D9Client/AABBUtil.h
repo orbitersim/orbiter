@@ -25,6 +25,12 @@
 
 #define SctPwr 1.0
 
+inline double exp2(double x)
+{ 
+	return exp(x*0.69314718055994530941723212145818);
+}
+
+
 typedef struct {
 	D3DXVECTOR4 min, max, bs, a, b, c;
 } D9BBox;

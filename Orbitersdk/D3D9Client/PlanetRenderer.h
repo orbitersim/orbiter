@@ -74,7 +74,7 @@ public:
 	static D3DXHANDLE svMieTotal;
 	static D3DXHANDLE svCameraPos;		
 	static D3DXHANDLE svUnitCameraPos;		
-	static D3DXHANDLE sfSunIntensity;
+	static D3DXHANDLE sfDepthClamp;
 	static D3DXHANDLE sfSrfIntensity;
 	static D3DXHANDLE sfScaleHeight;		
 	static D3DXHANDLE sfInvScaleHeight;
@@ -84,6 +84,9 @@ public:
 	static D3DXHANDLE sfAtmRad2;
 	static D3DXHANDLE sfBalance;
 	static D3DXHANDLE sfHorizonDst;
+	static D3DXHANDLE sfExposure;			
+	static D3DXHANDLE sfTransfer;			
+	static D3DXHANDLE sfTransferColor;	
 	static D3DXHANDLE siMode;
 	static D3DXHANDLE sbOverSat;
 	static D3DXHANDLE sbInSpace;

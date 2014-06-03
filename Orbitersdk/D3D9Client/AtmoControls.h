@@ -8,7 +8,7 @@
 #ifndef __ATMOCONTROLS_H
 #define __ATMOCONTROLS_H
 
-#define ATM_SLIDER_COUNT 14
+#define ATM_SLIDER_COUNT 17
 
 
 typedef struct {
@@ -27,8 +27,11 @@ typedef struct {
 			double balance;		// Optical depth balance between viewing ray and sunlight
 			double height;		// atmospheric scale height
 			double sun;			// sun intensity for surface lighting
-			double rsun;		// sun intensity for rayleigh inscattering
+			double depth;		// depth clamp
 			double srfclr;		// surface color fine tune
+			double expo;		// exposure
+			double transfer;	// transfer distance
+			double trcolor;		// transfer color
 		};
 	};
 	int mode;
