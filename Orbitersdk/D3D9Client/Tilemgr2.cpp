@@ -834,7 +834,7 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 	}
 
 	if (VtxPool[pool].empty()) {
-		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_MANAGED, pVB, NULL));
+		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		return VtxPoolSize[pool];
 	}
 	else {
@@ -880,7 +880,7 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 	}
 
 	if (IdxPool[pool].empty()) {
-		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, pIB, NULL));
+		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		return IdxPoolSize[pool];
 	}
 	else {

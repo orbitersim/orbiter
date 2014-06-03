@@ -69,7 +69,7 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 			nv_cur = pMgr->RecycleVertexBuffer(nv, &pVB);
 		} else {
 			SAFE_RELEASE(pVB);
-			HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
+			HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pVB, NULL));
 			nv_cur = nv;
 		}
 	}
@@ -80,7 +80,7 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 			nf_cur = pMgr->RecycleIndexBuffer(nf, &pIB);
 		} else {
 			SAFE_RELEASE(pIB);
-			HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
+			HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL));
 			nf_cur = nf;
 		}
 	}
@@ -88,12 +88,12 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 	VERTEX_2TEX *pVBuffer;
 	WORD *pIBuffer;
 
-	if (vtx) if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, 0)==S_OK) {
+	if (vtx) if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD)==S_OK) {
 		memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));
 		pVB->Unlock();
 	}
 
-	if (idx) if (pIB->Lock(0, 0, (LPVOID*)&pIBuffer, 0)==S_OK) {
+	if (idx) if (pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD)==S_OK) {
 		memcpy(pIBuffer, idx, nf*sizeof(WORD)*3);
 		pIB->Unlock();
 	}
