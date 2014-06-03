@@ -15,6 +15,8 @@
 #include "D3D9Config.h"
 #include "D3D9Effect.h"
 
+#include <stack>
+
 // =======================================================================
 // Externals
 
@@ -337,7 +339,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 		vtx[n++] = vtx[i + ((ilat&1) ? 0 : (grdlng+1)*grdlat)];
 
 	// create the mesh
-	VBMESH *mesh = new VBMESH;
+	VBMESH *mesh = new VBMESH(mgr);
 	mesh->vtx = vtx;
 	mesh->nv  = nvtx;
 	mesh->idx = idx;
@@ -356,7 +358,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	mesh->Box[6] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmax.z)) + pref);
 	mesh->Box[7] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmax.z)) + pref);
 
-	mesh->MapVertices(TileManager2Base::pDev); // TODO
+	mesh->MapVertices(TileManager2Base::pDev);
 
 	return mesh;
 }
@@ -473,7 +475,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
     }
 
 	// create the mesh
-	VBMESH *mesh = new VBMESH;
+	VBMESH *mesh = new VBMESH(mgr);
 	mesh->vtx = Vtx;
 	mesh->nv  = nVtx;
 	mesh->idx = Idx;
@@ -676,6 +678,8 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	oapiGetObjectName (obj, cbody_name, 256);
+
+	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 }
 
 // -----------------------------------------------------------------------
@@ -684,6 +688,19 @@ TileManager2Base::~TileManager2Base ()
 {
 	if (loader) {
 		loader->Unqueue(this);
+	}
+
+	LogAlw("Deleting TileManagerBase 0x%X ...",this);
+
+	for (int i=0;i<NPOOLS;i++) {
+		while (!VtxPool[i].empty()) {
+			VtxPool[i].top()->Release();
+			VtxPool[i].pop();
+		}
+		while (!IdxPool[i].empty()) {
+			IdxPool[i].top()->Release();
+			IdxPool[i].pop();
+		}
 	}
 }
 
@@ -778,5 +795,97 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		prm.dwmat_tmp.m42 = (dx*prm.grot.m21 + dy*prm.grot.m22 + dz*prm.grot.m23 + prm.cpos.y) * (float)prm.scale;
 		prm.dwmat_tmp.m43 = (dx*prm.grot.m31 + dy*prm.grot.m32 + dz*prm.grot.m33 + prm.cpos.z) * (float)prm.scale;
 		return mul(lrot,prm.dwmat_tmp);
+	}
+}
+
+
+
+DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *pVB)
+{
+	int pool = -1;
+	D3DVERTEXBUFFER_DESC desc;
+
+	if (*pVB) {
+		(*pVB)->GetDesc(&desc);
+		desc.Size /= sizeof(VERTEX_2TEX);
+		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==desc.Size) { pool = i; break; } 
+		if (pool>=0) {
+			VtxPool[pool].push(*pVB);
+			*pVB = NULL;
+			if (nv==0) return 0; // Store buffer, do not allocate new one.
+		}
+		else LogErr("Pool Doesn't exists");	
+	}
+
+	
+	pool = -1;
+	
+	// Find a pool 
+	for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==nv) { pool = i; break; }
+	
+	// Create a new pool size
+	if (pool==-1) {
+		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==0) { VtxPoolSize[i] = nv; pool = i; break; }	
+		if (pool<0) { 
+			LogErr("Failed to Crerate a Pool (size=%u)", nv);
+			*pVB = NULL; 
+			return 0; 
+		}
+	}
+
+	if (VtxPool[pool].empty()) {
+		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_MANAGED, pVB, NULL));
+		return VtxPoolSize[pool];
+	}
+	else {
+		*pVB = VtxPool[pool].top();
+		VtxPool[pool].pop();
+		return VtxPoolSize[pool];
+	}
+}
+
+
+
+DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB)
+{
+	int pool = -1;
+	D3DINDEXBUFFER_DESC desc;
+
+	if (*pIB) {
+		(*pIB)->GetDesc(&desc);
+		desc.Size /= (sizeof(WORD)*3);
+		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==desc.Size) { pool = i; break; } 
+		if (pool>=0) {
+			IdxPool[pool].push(*pIB);
+			*pIB = NULL;
+			if (nf==0) return 0; // Store buffer, do not allocate new one.
+		}
+		else LogErr("Pool Doesn't exists");	
+	}
+
+	
+	pool = -1;
+	
+	// Find a pool 
+	for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==nf) { pool = i; break; }
+	
+	// Create a new pool size
+	if (pool==-1) {
+		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==0) { IdxPoolSize[i] = nf; pool = i; break; }	
+		if (pool<0) { 
+			LogErr("Failed to Crerate a Pool (size=%u)", nf);
+			*pIB = NULL; 
+			return 0; 
+		}
+	}
+
+	if (IdxPool[pool].empty()) {
+		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, pIB, NULL));
+		return IdxPoolSize[pool];
+	}
+	else {
+		*pIB = IdxPool[pool].top();
+		IdxPool[pool].pop();
+		return IdxPoolSize[pool];
 	}
 }

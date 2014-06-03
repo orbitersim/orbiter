@@ -17,6 +17,7 @@
 
 struct VBMESH {
 
+	VBMESH(class TileManager2Base *pMgr);
 	VBMESH();
 	~VBMESH();
 
@@ -25,6 +26,7 @@ struct VBMESH {
 	LPDIRECT3DVERTEXBUFFER9 pVB;	// mesh vertex buffer
 	LPDIRECT3DINDEXBUFFER9  pIB;	// mesh index buffer
 
+	class TileManager2Base * pMgr; 
 	VERTEX_2TEX *vtx;				// separate storage of vertices (NULL if not available)
 	WORD *idx;						// list of indices
 	DWORD nv;						// number of vertices

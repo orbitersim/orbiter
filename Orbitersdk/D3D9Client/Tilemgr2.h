@@ -19,7 +19,9 @@
 #include "VPlanet.h"
 #include "Spherepatch.h"
 #include "Qtree.h"
+#include <stack>
 
+#define NPOOLS 16
 #define MAXQUEUE2 20
 
 #define TILE_VALID  0x0001
@@ -210,6 +212,15 @@ public:
 	void RenderNode (QuadTreeNode<TileType> *node);
 
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
+
+	/**
+	 * \brief Create and/or Recycle a vertex buffer
+	 * \param nVerts Number of vertices requested for a new buffer. Use "Zero" to recycle/release a buffer that is no-longer needed. 
+	 * \param pVB (in/out) Pointer to vertex buffer. The "old" input buffer is recycled and a new one is returned.
+	 * \return Number of vertices in a returned buffer. Could be larger than requested.
+	 */
+	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
+	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
 	
 	const oapi::D3D9Client *GClient() const { return gc; }
 	const vPlanet *GetPlanet() const { return vp; }
@@ -234,6 +245,11 @@ private:
 	const vPlanet *vp;               // the planet visual
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
+
+	DWORD VtxPoolSize[NPOOLS];
+	DWORD IdxPoolSize[NPOOLS];
+	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
+	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
 
 	static oapi::D3D9Client *gc;
 	static double resolutionBias;

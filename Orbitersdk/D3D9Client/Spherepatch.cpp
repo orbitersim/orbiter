@@ -11,11 +11,26 @@
 
 #include "Spherepatch.h"
 #include "AABBUtil.h"
+#include "TileMgr2.h"
 
 static float TEX2_MULTIPLIER = 4.0f; // microtexture multiplier
 
 // ==============================================================
 // struct VBMESH
+
+VBMESH::VBMESH (class TileManager2Base *pmgr)
+{
+	pIB = NULL;
+	pVB = NULL;
+	idx = NULL;
+	vtx = NULL;	
+	nv  = 0;
+	nf  = 0;
+	bBox = false;
+	nv_cur = 0;
+	nf_cur = 0;
+	pMgr = pmgr;
+}
 
 VBMESH::VBMESH ()
 {
@@ -25,15 +40,21 @@ VBMESH::VBMESH ()
 	vtx = NULL;	
 	nv  = 0;
 	nf  = 0;
-	bBox  = false;
+	bBox = false;
+	pMgr = NULL;
 	nv_cur = 0;
 	nf_cur = 0;
 }
 
 VBMESH::~VBMESH ()
 {
-	SAFE_RELEASE(pVB);
-	SAFE_RELEASE(pIB);
+	if (pMgr) {
+		nv_cur = pMgr->RecycleVertexBuffer(0, &pVB);
+		nf_cur = pMgr->RecycleIndexBuffer(0, &pIB);
+	} else {
+		SAFE_RELEASE(pVB);
+		SAFE_RELEASE(pIB);
+	}
 	SAFE_DELETEA(vtx);
 	SAFE_DELETEA(idx);
 }
@@ -44,16 +65,24 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 {
 	if (nv!=nv_cur && vtx) {
 		// Resize Vertex Buffer
-		SAFE_RELEASE(pVB);
-		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
-		nv_cur = nv;
+		if (pMgr) {
+			nv_cur = pMgr->RecycleVertexBuffer(nv, &pVB);
+		} else {
+			SAFE_RELEASE(pVB);
+			HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_MANAGED, &pVB, NULL));
+			nv_cur = nv;
+		}
 	}
 
 	if (nf!=nf_cur && idx) {
 		// Resize Index Buffer
-		SAFE_RELEASE(pIB);
-		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
-		nf_cur = nf;
+		if (pMgr) {
+			nf_cur = pMgr->RecycleIndexBuffer(nf, &pIB);
+		} else {
+			SAFE_RELEASE(pIB);
+			HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIB, NULL));
+			nf_cur = nf;
+		}
 	}
 
 	VERTEX_2TEX *pVBuffer;
@@ -168,8 +197,6 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 		nidx += 3;
     }
 
-	//HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&Vtx->x, nVtx, sizeof(VERTEX_2TEX), &mesh.bsCnt, &mesh.bsRad));
-
 	mesh.nv  = nVtx;
 	mesh.nf  = nIdx/3;
 	mesh.vtx = Vtx;
@@ -187,10 +214,6 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat, int ilat, int res, int bseg,
 	bool reduce, bool outside, bool store_vtx, bool shift_origin)
 {
-
-	//res+=2;
-	//if (bseg>0) bseg+=2;
-	//else        bseg-=2;
 
 	const float c1 = 1.0f, c2 = 0.0f;
 	int i, j, nVtx, nIdx, nseg, n, nofs0, nofs1;
@@ -294,9 +317,6 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 		for (i = 0; i < nIdx/3; i += 3)
 			tmp = Idx[i+1], Idx[i+1] = Idx[i+2], Idx[i+2] = tmp;
 
-
-	//HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&Vtx->x, nVtx, sizeof(VERTEX_2TEX), &mesh.bsCnt, &mesh.bsRad));
-
 	mesh.nv  = nVtx;
 	mesh.nf  = nIdx/3;
 	mesh.vtx = Vtx;
@@ -331,8 +351,14 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 //
 void DestroyVBMesh (VBMESH &mesh)
 {
-	SAFE_RELEASE(mesh.pVB);
-	SAFE_RELEASE(mesh.pIB);
+	if (mesh.pMgr) {
+		mesh.pMgr->RecycleVertexBuffer(0, &mesh.pVB);
+		mesh.pMgr->RecycleIndexBuffer(0, &mesh.pIB);
+	} else {
+		SAFE_RELEASE(mesh.pVB);
+		SAFE_RELEASE(mesh.pIB);
+	}
+
 	SAFE_DELETEA(mesh.vtx);
 	SAFE_DELETEA(mesh.idx);
 
