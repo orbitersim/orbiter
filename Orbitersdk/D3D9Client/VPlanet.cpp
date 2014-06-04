@@ -184,9 +184,10 @@ vPlanet::~vPlanet ()
 		delete clouddata->cloudmgr;
 		delete clouddata;
 	}
-	if (hazemgr) delete hazemgr;
-	if (ringmgr) delete ringmgr;
-	if (mesh)    delete mesh;
+	if (hazemgr)  delete hazemgr;
+	if (hazemgr2) delete hazemgr2;
+	if (ringmgr)  delete ringmgr;
+	if (mesh)     delete mesh;
 }
 
 // ==============================================================
