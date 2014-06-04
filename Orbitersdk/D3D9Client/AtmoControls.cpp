@@ -289,13 +289,13 @@ void UpdateSlider(int id, bool bSetPos)
 
 		switch (Slider[i].style) {
 			case 0:
-				sprintf_s(buf,"%.3f", val);
+				sprintf_s(buf,"%.3lf", val);
 				break;
 			case 1:
-				sprintf_s(buf,"%.1f k", val);
+				sprintf_s(buf,"%.1lf k", val);
 				break;
 			default:
-				sprintf_s(buf,"%.3f", val);
+				sprintf_s(buf,"%.3lf", val);
 				break;
 		}
 
