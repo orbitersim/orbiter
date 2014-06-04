@@ -11,27 +11,28 @@
 #define ATM_SLIDER_COUNT 17
 
 
-typedef struct {
+typedef struct ScatterParams {
+	ScatterParams();			///< Defaut c'tor
 	union {
 		double data[ATM_SLIDER_COUNT];  // ATTENTION: Order of params must match with slider indexes
 		struct {
-			double red;			// Red wave length
-			double green;		// Green wavw length
-			double blue;		// Blue wave length
-			double wavepow;		// lambda power
-			double rin;			// in-scatter strength
-			double rout;		// out-scatter strenght
-			double rphase;		// Rayleigh phase
-			double mie;			// 
-			double mphase;		// g-constant in HG phase function
-			double balance;		// Optical depth balance between viewing ray and sunlight
-			double height;		// atmospheric scale height
-			double sun;			// sun intensity for surface lighting
-			double depth;		// depth clamp
-			double srfclr;		// surface color fine tune
-			double expo;		// exposure
-			double transfer;	// transfer distance
-			double trcolor;		// transfer color
+			double red;			///< Red wave length
+			double green;		///< Green wavw length
+			double blue;		///< Blue wave length
+			double wavepow;		///< lambda power
+			double rin;			///< in-scatter strength
+			double rout;		///< out-scatter strenght
+			double rphase;		///< Rayleigh phase
+			double mie;			///< scale factor for mie scattering
+			double mphase;		///< g-constant in HG phase function
+			double balance;		///< Optical depth balance between viewing ray and sunlight
+			double height;		///< atmospheric scale height
+			double sun;			///< sun intensity for surface lighting
+			double depth;		///< depth clamp
+			double srfclr;		///< surface color fine tune
+			double expo;		///< exposure
+			double transfer;	///< transfer distance
+			double trcolor;		///< transfer color
 		};
 	};
 	int mode;

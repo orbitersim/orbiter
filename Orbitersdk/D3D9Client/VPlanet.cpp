@@ -45,8 +45,6 @@ extern int SURF_MAX_PATCHLEVEL2;
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	memset(&SPrm, 0, sizeof(ScatterParams));
-	
 	bScatter = LoadAtmoConfig();
 
 	rad = (float)size;

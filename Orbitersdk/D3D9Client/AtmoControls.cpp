@@ -21,6 +21,55 @@ using namespace oapi;
 extern HINSTANCE g_hInst;
 extern D3D9Client *g_client;
 
+// ==============================================================
+
+// Defaut c'tor to init members
+ScatterParams::ScatterParams() :
+	red      ( 0.0 ), // 0.400 ... 0.700
+	green    ( 0.0 ), // 0.400 ... 0.700
+	blue     ( 0.0 ), // 0.400 ... 0.700
+	wavepow  ( 0.0 ), // -8.0 ... 8.0
+	rin      ( 0.0 ), // 0.0 ... 3.0
+	rout     ( 0.0 ), // 0.0 ... 4.0
+	rphase   ( 0.0 ), // 0.0 ... 3.5
+	mie      ( 0.0 ), // 0.0 ... 8.0
+	mphase   ( 0.0 ), // 0.85 ... 0.999
+	balance  ( 0.0 ), // 0.0 ... 2.0
+	height   ( 0.0 ), // 1.0 ... 40.0 [km]
+	sun      ( 0.0 ), // 0.3 ... 3.0
+	depth    ( 0.0 ), // 1.0 ... 50.0
+	srfclr   ( 0.0 ), // 0.5 ... 2.0
+	expo     ( 0.0 ), // 0.2 ... 1.5
+	transfer ( 0.0 ), // 0.0 ... 0.4
+	trcolor  ( 0.0 ), // 0.0 ... 3.0
+	mode     ( 0 ),   // [0|1]
+	oversat  ( false )// [true|false]
+/*
+	// (values from earth)
+	red      ( 0.650 ),  // 0.400 ... 0.700
+	green    ( 0.500 ),  // 0.400 ... 0.700
+	blue     ( 0.480 ),  // 0.400 ... 0.700
+	wavepow  ( 4.0 ),    // -8.0 ... 8.0
+	rin      ( 1.0 ),    // 0.0 ... 3.0
+	rout     ( 0.592 ),  // 0.0 ... 4.0
+	rphase   ( 0.3395 ), // 0.0 ... 3.5
+	mie      ( 0.0869 ), // 0.0 ... 8.0
+	mphase   ( 0.9831 ), // 0.85 ... 0.999
+	balance  ( 0.5 ),    // 0.0 ... 2.0
+	height   ( 8.0 ),    // 1.0 ... 40.0 [km]
+	sun      ( 1.0 ),    // 0.3 ... 3.0
+	depth    ( 20.0 ),   // 1.0 ... 50.0
+	srfclr   ( 1.0 ),    // 0.5 ... 2.0
+	expo     ( 0.5 ),    // 0.2 ... 1.5
+	transfer ( 0.0 ),    // 0.0 ... 0.4
+	trcolor  ( 0.0 ),    // 0.0 ... 3.0
+	mode     ( 0 ),      // [0|1]
+	oversat  ( true )    // [true|false]
+*/
+{
+}
+
+// ==============================================================
 
 namespace AtmoControls {
 
@@ -116,19 +165,31 @@ void Create()
 	Slider[15].dsp = IDC_ATD_DIST;
 	Slider[16].dsp = IDC_ATD_ACOLOR;
 
+	/*
+	 * Not needed, I think (kuddel)
+	 *
 	for (int i=0;i<ATM_SLIDER_COUNT;i++) defs.data[i] = 0.0;
 
-	defs.red	 = 0.650;
-	defs.green	 = 0.500;
-	defs.blue	 = 0.480;
-	defs.wavepow = 4.0;
-	defs.height  = 8.0;
-	defs.mode    = 0;
-	defs.rin	 = 1.0;
-	defs.srfclr  = 1.0;
-	defs.sun	 = 1.0;
-	defs.depth	 = 20.0;
-	defs.balance = 0.5;
+	defs.red      = 0.650;  // 0.400 ... 0.700
+	defs.green    = 0.500;  // 0.400 ... 0.700
+	defs.blue     = 0.480;  // 0.400 ... 0.700
+	defs.wavepow  = 4.0;    // -8.0 ... 8.0
+	defs.rin      = 1.0;    // 0.0 ... 3.0
+	defs.rout     = 0.592;  // 0.0 ... 4.0
+	defs.rphase   = 0.3395; // 0.0 ... 3.5
+	defs.mie      = 0.0869; // 0.0 ... 8.0
+	defs.mphase   = 0.9831; // 0.85 ... 0.999
+	defs.balance  = 0.5;    // 0.0 ... 2.0
+	defs.height   = 8.0;    // 1.0 ... 40.0 [km]
+	defs.sun      = 1.0;    // 0.3 ... 3.0
+	defs.depth    = 20.0;   // 1.0 ... 50.0
+	defs.srfclr   = 1.0;    // 0.5 ... 2.0
+	defs.expo     = 0.5;    // 0.2 ... 1.5
+	defs.transfer = 0.0;    // 0.0 ... 0.4
+	defs.trcolor  = 0.0;    // 0.0 ... 3.0
+	defs.mode     = 0;
+	defs.oversat = true;
+	*/
 }
 
 // ==============================================================
