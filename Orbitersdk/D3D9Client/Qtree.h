@@ -67,11 +67,11 @@ template<typename T>
 QuadTreeNode<T>::~QuadTreeNode ()
 {
 	if (parent) { parent = NULL; }
-	// for (int i = 0; i < 4; ++i) {
-	// 	if (child[i]) {
-	// 		delete child[i];
-	// 	}
-	// }
+	for (int i = 0; i < 4; ++i) {
+		if (child[i]) {
+			delete child[i];
+		}
+	}
 	if (entry) {
 		delete entry;
 	}

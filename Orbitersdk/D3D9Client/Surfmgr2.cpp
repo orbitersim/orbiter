@@ -58,7 +58,7 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	smgr = static_cast<TileManager2<SurfTile>* > (_mgr);
 	node = 0;
 	elev = NULL;
-	ggelev = NULL;
+	// ggelev = NULL;
 	ltex = 0;
 }
 
@@ -66,7 +66,7 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 SurfTile::~SurfTile ()
 {
-	ggelev = NULL;
+	// ggelev = NULL;
 	if (elev) {
 		delete []elev;
 		elev = NULL;
@@ -290,6 +290,22 @@ bool SurfTile::LoadElevationData ()
 
 INT16 *SurfTile::ElevationData () const
 {
+	QuadTreeNode<SurfTile> *ggparent;
+	if ( node->Parent() &&
+	     node->Parent()->Parent() &&
+	    (ggparent = node->Parent()->Parent()->Parent()) && ggparent->Entry()->LoadElevationData() )
+	{
+		// compute pixel offset into great-grandparent tile set
+		int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
+		mean_elev = ggparent->Entry()->mean_elev; // not quite true, since the ancestor covers a larger area
+		return ggparent->Entry()->elev + ofs;
+	}
+	return NULL;
+
+	/*
+	 * The SurfTile::ggelev member will point to already disposed memory!
+	 * Until there's a kind of 'ClearGrandGrandParent()' method, this is dangerous!
+	 *
 	if (!ggelev) {
 		QuadTreeNode<SurfTile> *ggparent;
 		if (node->Parent() && node->Parent()->Parent() && (ggparent = node->Parent()->Parent()->Parent())) {
@@ -302,6 +318,7 @@ INT16 *SurfTile::ElevationData () const
 		}
 	}
 	return ggelev;
+	*/
 }
 
 // -----------------------------------------------------------------------

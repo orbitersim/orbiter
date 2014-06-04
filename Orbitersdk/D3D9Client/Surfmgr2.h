@@ -54,7 +54,7 @@ private:
 
 	LPDIRECT3DTEXTURE9 ltex;	// landmask/nightlight texture, if applicable
 	INT16 *elev;				// elevation data [m] (8x subsampled)
-	mutable INT16 *ggelev;		// pointer to my elevation data in the great-grandparent
+	// mutable INT16 *ggelev;		// pointer to my elevation data in the great-grandparent
 };
 
 #endif // !__SURFMGR2_H
