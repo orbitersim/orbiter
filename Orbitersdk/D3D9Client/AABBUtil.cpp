@@ -492,6 +492,72 @@ float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm)
 	return h0 * exp2(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr));
 }
 
+float FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm)
+{
+	cd = 1.0f - cd;
+	float cd2 = cd * cd;
+	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
+	return h0 * exp2(-alt/h0) * exp2(D3DXVec4Dot(&q, &prm));
+}
+
+// ===========================================================================
+// Solve taylor series co-efficients for a fast approximation of optical depth
+// R  = Planet Radius [m]
+// R1 = Atmosphere Outer Radius [m]
+// h0 = Atmospheric Scale Height [m]
+// ============================================================================
+
+D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
+{
+
+	double x[] = {80.0, 82.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 89.5, 90.0, 90.5, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0};
+
+	VECTOR4 v, q;
+	MATRIX4 m, mi;
+	memset(&m, 0, sizeof(MATRIX4));
+	memset(&q, 0, sizeof(VECTOR4));
+
+	double y[64];
+	double ih0 = 1.0/h0;
+	double ipw = -1.0/2.0;
+
+	int ndata = sizeof(x)/sizeof(double);
+
+	for (int i=0;i<ndata;i++) x[i] = x[i]*RAD;
+	for (int i=0;i<ndata;i++) y[i] = log(ExactOpticalDepth(0.0, x[i], R, R1, h0) * ih0) / log(2.0);	
+	for (int i=0;i<ndata;i++) 
+	{
+		double c = 1.0 - cos(x[i]);
+	
+		v = _V(1.0, c, c*c, c*c*c);
+		
+		m.m11 += v.x*v.x; m.m21 += v.y*v.x;	m.m22 += v.y*v.y; m.m31 += v.z*v.x;
+		m.m32 += v.z*v.y; m.m33 += v.z*v.z;	m.m41 += v.w*v.x; m.m42 += v.w*v.y;
+		m.m43 += v.w*v.z; m.m44 += v.w*v.w;
+
+		m.m12 = m.m21;	m.m13 = m.m31;	m.m14 = m.m41;	m.m23 = m.m32;	m.m24 = m.m42;	m.m34 = m.m43;
+
+		q.x += (v.x * y[i]);
+		q.y += (v.y * y[i]);
+		q.z += (v.z * y[i]);
+		q.w += (v.w * y[i]);
+	}
+
+	MATRIX4Inverse(mi, NULL, m);
+	VECTOR4 w = mul(mi, q);
+	D3DXVECTOR4 fct = D3DXVECTOR4(w.x, w.y, w.z, w.w);
+
+	
+	//float d1 = FastOpticalDepthEx(0.0, 0, h0, fct);
+	//float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
+	//float dv = (d1-d2)/d2;
+	//if (fabs(dv)>0.05) LogErr("Bad Match %g", dv);
+	
+	return fct;
+}
+
+
+
 // ===========================================================================
 // Solve taylor series co-efficients for a fast approximation of optical depth
 // R  = Planet Radius [m]

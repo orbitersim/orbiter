@@ -60,14 +60,15 @@ public:
 	static D3DXHANDLE stMask;
 	// Atmosphere -------------------------------------------------
 	//static D3DXHANDLE svFogColor;
-	//static D3DXHANDLE sfFogDensity;
-	//static D3DXHANDLE sfGlobalAmb;
+	//static D3DXHANDLE sfFogDensity:
 	//static D3DXHANDLE sfSunAppRad;
 	//static D3DXHANDLE sfDispersion;
-	//static D3DXHANDLE sfAmbient0;
+	static D3DXHANDLE sfGlobalAmb;
+	static D3DXHANDLE sfAmbient0;
 	// Scatter model ----------------------------------------------
 	static D3DXHANDLE svPhase;		
 	static D3DXHANDLE svODCoEff;
+	static D3DXHANDLE svODCoEffEx;
 	static D3DXHANDLE svRayTotal;
 	static D3DXHANDLE svRayInSct;
 	static D3DXHANDLE svRaySurface;
@@ -85,11 +86,12 @@ public:
 	static D3DXHANDLE sfBalance;
 	static D3DXHANDLE sfHorizonDst;
 	static D3DXHANDLE sfExposure;			
-	static D3DXHANDLE sfTransfer;			
-	static D3DXHANDLE sfTransferColor;	
+	static D3DXHANDLE sfAux1;			
+	static D3DXHANDLE sfAux2;	
 	static D3DXHANDLE siMode;
 	static D3DXHANDLE sbOverSat;
 	static D3DXHANDLE sbInSpace;
+	static D3DXHANDLE sbOnOff;
 };
 
 #endif

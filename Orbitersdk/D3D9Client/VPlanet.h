@@ -93,7 +93,8 @@ public:
 		D3DXCOLOR	FogColor;
 		D3DXCOLOR   SkyColor;
 		D3DXVECTOR3 SunDir;
-		D3DXVECTOR4 ODCoEff;		// Optical depth co-efficients
+		D3DXVECTOR4 ODCoEff;		// Optical depth taylor co-efficients
+		D3DXVECTOR4 ODCoEffEx;		// Optical depth taylor co-efficients
 		float		FogDensity;
 		float		DistScale;
 		float		SclHeight;		// Atmospheric scale height

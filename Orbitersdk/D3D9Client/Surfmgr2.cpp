@@ -343,7 +343,7 @@ void SurfTile::Render ()
 		double rad = rad0/(double)(2<<lvl); // tile radius
 
 		has_specular = (sdist < PI05+rad);
-		render_cloud_shadows = (sdist < PI05+rad && !mgr->prm.rprm->bCloudFlatShadows /*&& mgr->prm.cloudmgr*/);
+		render_cloud_shadows = (sdist < PI05+rad && !mgr->prm.rprm->bCloudFlatShadows);
 		render_lights = (render_lights && sdist > 1.45);
 	}
 

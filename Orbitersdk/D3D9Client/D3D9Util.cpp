@@ -372,7 +372,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 
 D3DXVECTOR3 expv(D3DXVECTOR3 &v)
 {
-	return D3DXVECTOR3(exp(v.x), exp(v.y), exp(v.z));
+	return D3DXVECTOR3(exp2(v.x), exp2(v.y), exp2(v.z));
 }
 
 

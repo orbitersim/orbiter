@@ -31,8 +31,8 @@ typedef struct ScatterParams {
 			double depth;		///< depth clamp
 			double srfclr;		///< surface color fine tune
 			double expo;		///< exposure
-			double transfer;	///< transfer distance
-			double trcolor;		///< transfer color
+			double aux1;		///< unused auxiliary parameter
+			double aux2;		///< unused auxiliary parameter
 		};
 	};
 	int mode;
@@ -64,4 +64,4 @@ namespace AtmoControls {
 	BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
-#endif // !__DEBUGCONTROLS_H
+#endif // !__ATMOCONTROLS_H

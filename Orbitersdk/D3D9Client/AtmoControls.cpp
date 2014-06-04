@@ -25,6 +25,7 @@ extern D3D9Client *g_client;
 
 // Defaut c'tor to init members
 ScatterParams::ScatterParams() :
+/*
 	red      ( 0.0 ), // 0.400 ... 0.700
 	green    ( 0.0 ), // 0.400 ... 0.700
 	blue     ( 0.0 ), // 0.400 ... 0.700
@@ -40,11 +41,11 @@ ScatterParams::ScatterParams() :
 	depth    ( 0.0 ), // 1.0 ... 50.0
 	srfclr   ( 0.0 ), // 0.5 ... 2.0
 	expo     ( 0.0 ), // 0.2 ... 1.5
-	transfer ( 0.0 ), // 0.0 ... 0.4
-	trcolor  ( 0.0 ), // 0.0 ... 3.0
+	aux1	 ( 0.0 ), // 0.0 ... 2.0
+	aux2	 ( 0.0 ), // 0.0 ... 2.0
 	mode     ( 0 ),   // [0|1]
 	oversat  ( false )// [true|false]
-/*
+*/
 	// (values from earth)
 	red      ( 0.650 ),  // 0.400 ... 0.700
 	green    ( 0.500 ),  // 0.400 ... 0.700
@@ -61,11 +62,10 @@ ScatterParams::ScatterParams() :
 	depth    ( 20.0 ),   // 1.0 ... 50.0
 	srfclr   ( 1.0 ),    // 0.5 ... 2.0
 	expo     ( 0.5 ),    // 0.2 ... 1.5
-	transfer ( 0.0 ),    // 0.0 ... 0.4
-	trcolor  ( 0.0 ),    // 0.0 ... 3.0
+	aux1	 ( 0.0 ),    // 0.0 ... 2.0
+	aux2	 ( 0.0 ),    // 0.0 ... 2.0
 	mode     ( 0 ),      // [0|1]
 	oversat  ( true )    // [true|false]
-*/
 {
 }
 
@@ -144,8 +144,8 @@ void Create()
 	Slider[12].id = IDC_ATM_RSUN;
 	Slider[13].id = IDC_ATM_SRFCOLOR;
 	Slider[14].id = IDC_ATM_EXPO;
-	Slider[15].id = IDC_ATM_DIST;
-	Slider[16].id = IDC_ATM_ACOLOR;
+	Slider[15].id = IDC_ATM_AUX1;
+	Slider[16].id = IDC_ATM_AUX2;
 
 	Slider[0].dsp = IDC_ATD_RED;
 	Slider[1].dsp = IDC_ATD_GREEN;
@@ -162,34 +162,8 @@ void Create()
 	Slider[12].dsp = IDC_ATD_RSUN;
 	Slider[13].dsp = IDC_ATD_SRFCOLOR;
 	Slider[14].dsp = IDC_ATD_EXPO;
-	Slider[15].dsp = IDC_ATD_DIST;
-	Slider[16].dsp = IDC_ATD_ACOLOR;
-
-	/*
-	 * Not needed, I think (kuddel)
-	 *
-	for (int i=0;i<ATM_SLIDER_COUNT;i++) defs.data[i] = 0.0;
-
-	defs.red      = 0.650;  // 0.400 ... 0.700
-	defs.green    = 0.500;  // 0.400 ... 0.700
-	defs.blue     = 0.480;  // 0.400 ... 0.700
-	defs.wavepow  = 4.0;    // -8.0 ... 8.0
-	defs.rin      = 1.0;    // 0.0 ... 3.0
-	defs.rout     = 0.592;  // 0.0 ... 4.0
-	defs.rphase   = 0.3395; // 0.0 ... 3.5
-	defs.mie      = 0.0869; // 0.0 ... 8.0
-	defs.mphase   = 0.9831; // 0.85 ... 0.999
-	defs.balance  = 0.5;    // 0.0 ... 2.0
-	defs.height   = 8.0;    // 1.0 ... 40.0 [km]
-	defs.sun      = 1.0;    // 0.3 ... 3.0
-	defs.depth    = 20.0;   // 1.0 ... 50.0
-	defs.srfclr   = 1.0;    // 0.5 ... 2.0
-	defs.expo     = 0.5;    // 0.2 ... 1.5
-	defs.transfer = 0.0;    // 0.0 ... 0.4
-	defs.trcolor  = 0.0;    // 0.0 ... 3.0
-	defs.mode     = 0;
-	defs.oversat = true;
-	*/
+	Slider[15].dsp = IDC_ATD_AUX1;
+	Slider[16].dsp = IDC_ATD_AUX2;
 }
 
 // ==============================================================
@@ -233,7 +207,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_WAVE,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   1.0, 40.0, 1);
-	ConfigSlider(IDC_ATM_EXPO,	   0.2, 1.5);
+	ConfigSlider(IDC_ATM_EXPO,	   0.1, 1.5);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 4.0);
 	ConfigSlider(IDC_ATM_IN,       0.0, 3.0);
@@ -241,13 +215,13 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_BALANCE,  0.0, 2.0);
 	ConfigSlider(IDC_ATM_RSUN,     1.0, 50.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_DIST,	   0.0, 0.4);
-	ConfigSlider(IDC_ATM_ACOLOR,   0.0, 3.0);
+	ConfigSlider(IDC_ATM_AUX1,	   0.0, 2.0);
+	ConfigSlider(IDC_ATM_AUX2,	   0.0, 2.0);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.0, 8.0);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 1.0);
 	ConfigSlider(IDC_ATM_MPHASE,   0.85, 0.999);
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
@@ -271,9 +245,8 @@ void OpenDlgClbk(void *context)
 	
 
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Fast Model");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Medium Model");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"\"Experiment\" Model");
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Enabled");
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Disabled");
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, param->mode, 0);
 
 	SendDlgItemMessage(hDlg, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -455,10 +428,14 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_ATM_RESET:
+				param->red = 0.650; 
+				param->green = 0.500; 
+				param->blue = 0.480;
 				param->rin = 1.0;
 				param->srfclr = 1.0;
 				param->sun = 1.0;
-				param->balance = 0.5;
+				param->balance = 1.0;
+				param->rphase = 0.25;
 				UpdateSliders();
 				break;
 	

@@ -697,7 +697,7 @@ float vPlanet::OpticalDepth(float alt, float cd)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return exp(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr));
+	return exp2(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr));
 }
 
 // ==============================================================
@@ -708,6 +708,7 @@ void vPlanet::UpdateAtmoConfig()
 	prm.SclHeight	 = float(SPrm.height)*1e3;
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
 	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, outer);
+	prm.ODCoEffEx	 = SolveScatterEx(prm.SclHeight, size, outer);
 }
 
 
@@ -746,9 +747,9 @@ double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
 
 void vPlanet::DumpDebugFile()
 {
-	
-	int samples = 90;
-	double max_angle = 90.0;
+	/*
+	int samples = 100;
+	double max_angle = 100.0;
 	double delta = 3.1415*max_angle/float(samples*180);
 	double angle = 0.0;
 
@@ -762,17 +763,17 @@ void vPlanet::DumpDebugFile()
 	if (fp==NULL) return;
 
 	for (int i=0;i<samples;i++) {
-		double accurate = OpticalDepth(0.0, float(cos(angle)));
+		double fast		= FastOpticalDepth(0.0, float(cos(angle)), prm.SclHeight, prm.ODCoEff) / prm.SclHeight;
+		double fastex	= FastOpticalDepthEx(0.0, float(cos(angle)), prm.SclHeight, prm.ODCoEffEx) / prm.SclHeight;
 		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
 		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
-		double test		= par*exp2(0.0)/(1.0+(par-1.0)*cos(angle));
-
+		
 		angle += delta;
 
-		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g\n", i, exact, accurate, gauss, test);
+		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g\n", i, exact, fast, fastex, gauss);
 	}
 	fclose(fp);
-	
+	*/
 }
 
 // ==============================================================
@@ -805,8 +806,8 @@ bool vPlanet::LoadAtmoConfig()
 	oapiReadItem_float(hFile, "MiePower", SPrm.mie);
 	oapiReadItem_float(hFile, "MiePhase", SPrm.mphase);
 	oapiReadItem_float(hFile, "Exposure", SPrm.expo);
-	oapiReadItem_float(hFile, "Transfer", SPrm.transfer);
-	oapiReadItem_float(hFile, "TransferColor", SPrm.trcolor);
+	oapiReadItem_float(hFile, "Aux1", SPrm.aux1);
+	oapiReadItem_float(hFile, "Aux2", SPrm.aux2);
 	oapiReadItem_int(hFile,   "Mode", SPrm.mode);
 	oapiReadItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 
@@ -847,8 +848,8 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "MiePower", SPrm.mie);
 	oapiWriteItem_float(hFile, "MiePhase", SPrm.mphase);
 	oapiWriteItem_float(hFile, "Exposure", SPrm.expo);
-	oapiWriteItem_float(hFile, "Transfer", SPrm.transfer);
-	oapiWriteItem_float(hFile, "TransferColor", SPrm.trcolor);
+	oapiWriteItem_float(hFile, "Aux1", SPrm.aux1);
+	oapiWriteItem_float(hFile, "Aux2", SPrm.aux2);
 	oapiWriteItem_int(hFile,   "Mode", SPrm.mode);
 	oapiWriteItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 

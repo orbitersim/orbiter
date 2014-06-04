@@ -22,7 +22,7 @@
 
 #define HORIZON_NSEG 128	// number of mesh segments
 #define HORIZON2_NSEG 512	// Horizon ring segments
-#define HORIZON2_NRING 40	// Horizon ring ring count
+#define HORIZON2_NRING 30	// Horizon ring ring count
 #define HORIZON2_XSEG 10	// Sperical patch segments
 #define HORIZON2_YSEG 40	// Sperical patch segments
 
