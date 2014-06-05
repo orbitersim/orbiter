@@ -259,6 +259,31 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 ucam, cam = -_D3DXVECTOR3(pPlanet->PosFromCamera());
 	D3DXVec3Normalize(&ucam, &cam);
 
+	OBJHANDLE hPlanet = pPlanet->GetObjectA();
+	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+	VECTOR3 gpos, gsun;
+	oapiGetGlobalPos(hPlanet, &gpos);
+	oapiGetGlobalPos(hSun, &gsun);
+
+	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
+
+	D3DXVECTOR4 ODCoEff = pPlanet->prm.ODCoEff;
+	D3DXVECTOR4 ODCoEffEx = pPlanet->prm.ODCoEffEx;
+	D3DXVECTOR3 SunDir = _D3DXVECTOR3(unit(gsun-gpos));
+
+	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+	float fAmbient = float(dAmbient)*0.0039f;
+
+	HR(Shader()->SetValue(svCameraPos, &cam, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svUnitCameraPos, &ucam, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svSunDir, &SunDir, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetFloat(sfAmbient0, 0.0f));
+	HR(Shader()->SetFloat(sfGlobalAmb, fAmbient));
+	HR(Shader()->SetBool(sbOnOff, false));
+
+	// If the planet has no atmosphere we can skip the rest.
+	if (atm==NULL) return;
+
 	const ScatterParams *atmo = pPlanet->GetAtmoParams();
 
 	// Phase function variables
@@ -276,18 +301,6 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	double ca = cr - pr;								// Camera altutude
 	double hd = sqrt(cr*cr-pr*pr);						// Camera to horizon distance
 
-	OBJHANDLE hPlanet = pPlanet->GetObjectA();
-	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
-	VECTOR3 gpos, gsun;
-	oapiGetGlobalPos(hPlanet, &gpos);
-	oapiGetGlobalPos(hSun, &gsun);
-
-	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
-
-	D3DXVECTOR4 ODCoEff = pPlanet->prm.ODCoEff;
-	D3DXVECTOR4 ODCoEffEx = pPlanet->prm.ODCoEffEx;
-	D3DXVECTOR3 SunDir = _D3DXVECTOR3(unit(gsun-gpos));
-
 	// 1.0 / lambda^4
 	D3DXVECTOR3 lambda4 = D3DXVECTOR3(1.0f/pow(float(atmo->red),rp),  1.0f/pow(float(atmo->green),rp),  1.0f/pow(float(atmo->blue),rp));
 	D3DXVECTOR3 lambda2 = D3DXVECTOR3(1.0f/pow(float(atmo->red),mp),  1.0f/pow(float(atmo->green),mp),  1.0f/pow(float(atmo->blue),mp));
@@ -300,13 +313,8 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 raysrf = raytot  * float(atmo->srfclr);
 	D3DXVECTOR3 mietot = lambda2 * float(atmo->mie);
 
-	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-	float fAmbient = float(dAmbient)*0.0039f;
-
-	if (atm) Shader()->SetFloat(sfAmbient0, min(0.7f, log(float(atm->rho0)+1.0f)*0.4f));
-	else     Shader()->SetFloat(sfAmbient0, 0.0f);
-
 	// Upload parameters to shaders
+	HR(Shader()->SetFloat(sfAmbient0, min(0.7f, log(float(atm->rho0)+1.0f)*0.4f)));
 	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,d), sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svODCoEff, &ODCoEff, sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svODCoEffEx, &ODCoEffEx, sizeof(D3DXVECTOR4)));
@@ -314,16 +322,12 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetValue(svRayInSct, &raysct, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svRaySurface, &raysrf, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svMieTotal, &mietot, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svCameraPos, &cam, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svUnitCameraPos, &ucam, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svSunDir, &SunDir, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetFloat(sfDepthClamp, float(atmo->depth)));
 	HR(Shader()->SetFloat(sfSrfIntensity, float(atmo->sun)));
 	HR(Shader()->SetFloat(sfBalance, float(atmo->balance)));
 	HR(Shader()->SetFloat(sfExposure, float(-atmo->expo)));
 	HR(Shader()->SetFloat(sfAux1, float(atmo->aux1)));
 	HR(Shader()->SetFloat(sfAux2, float(atmo->aux2)));
-	HR(Shader()->SetFloat(sfGlobalAmb, fAmbient));
 	HR(Shader()->SetFloat(sfScaleHeight, h0));
 	HR(Shader()->SetFloat(sfInvScaleHeight, 1.0f/h0));
 	HR(Shader()->SetFloat(sfRadius, float(pr)));
