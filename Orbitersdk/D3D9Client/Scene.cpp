@@ -578,15 +578,16 @@ float Scene::ComputeNearClipPlane()
 	VOBJREC *pv = NULL;
 	
 	OBJHANDLE hObj = oapiCameraProxyGbody();
+	VESSEL *hVes = oapiGetFocusInterface();
 	
-	if (hObj) {
+	if (hObj && hVes) {
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
 		double g = atan(apsq);
 		double t = dotp(unit(camera_pos-pos), unit(camera_dir));
 		if (t<-1.0) t=1.0; if (t>1.0) t=1.0f;
 		double a = PI - acos(t);
-		double R = oapiGetSize(hObj_proxy);
+		double R = oapiGetSize(hObj_proxy) + hVes->GetSurfaceElevation();
 		double r = length(camera_pos-pos);
 		double h = r - R;
 		if (h<10e3) {
