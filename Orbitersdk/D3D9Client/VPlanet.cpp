@@ -465,14 +465,15 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			}
 		}
 
-		if (prm.bCloud && (prm.cloudvis & 1))
-			RenderCloudLayer (dev, D3DCULL_CW);      // render clouds from below
-
+		
 		if (hazemgr2) {
 			float apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
 			hazemgr2->Render(mWorld, apr);
 		}
-	
+
+		if (prm.bCloud && (prm.cloudvis & 1))
+			RenderCloudLayer (dev, D3DCULL_NONE);      // render clouds from below
+
 		if (hazemgr) hazemgr->Render(dev, mWorld);       // horizon ring
 	
 		

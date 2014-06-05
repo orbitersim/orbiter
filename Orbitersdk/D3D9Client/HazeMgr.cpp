@@ -317,6 +317,8 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 		RenderSkySegment(mWL);
 		RenderSkySegment(mWR);
 	}
+
+	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(1, 0, 1, 0)));
 }
 
 // -----------------------------------------------------------------------

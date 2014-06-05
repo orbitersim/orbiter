@@ -531,14 +531,14 @@ TileVS CloudTechVS(TILEVERTEX vrt)
 		outVS.insca = float3(0, 0, 0.2);
 	}	
 
-	float fDot = pow(saturate(dot(vSunDir, vNrmW)), 0.5f);
+	float fDot = pow(saturate(dot(vSunDir, vPlN)), 0.5f);
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
     float fMult = saturate((fScaleHeight-fCameraAlt)*fInvScaleHeight);
 
 	float3 vAmbient	= max(fAmbient0*saturate(fNgt-0.05f)*fMult, fGlobalAmb);
 	
-	outVS.atten *= max(vSunLight*fDot*1.5f, vAmbient);
+	outVS.atten *= max(vSunLight*fDot*2.0f, vAmbient);
 		
     return outVS;
 }
@@ -547,7 +547,7 @@ TileVS CloudTechVS(TILEVERTEX vrt)
 float4 CloudTechPS(TileVS frg) : COLOR
 {
 	float4 cTex = tex2D(DiffTexS, frg.tex.xy);
-    return float4(cTex.rgb * frg.atten.rgb + vAddBkg.rgb + frg.insca.rgb, cTex.a);
+    return float4(cTex.rgb * frg.atten.rgb + frg.insca.rgb, cTex.a);
 }
 
 
