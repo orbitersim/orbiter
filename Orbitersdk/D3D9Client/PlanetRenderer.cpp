@@ -19,6 +19,7 @@ LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
 // ------------------------------------------------------------
 ID3DXEffect *PlanetRenderer::pShader = NULL;
 D3DXHANDLE PlanetRenderer::eTileTech = NULL;
+D3DXHANDLE PlanetRenderer::eTileTechNoZ = NULL;
 D3DXHANDLE PlanetRenderer::eCloudTech = NULL;
 D3DXHANDLE PlanetRenderer::eRingTech = NULL;
 D3DXHANDLE PlanetRenderer::eHorizonTech = NULL;
@@ -156,6 +157,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 
 	// Techniques ----------------------------------------------------------
 	eTileTech			= pShader->GetTechniqueByName("TileTech");
+	eTileTechNoZ		= pShader->GetTechniqueByName("TileTechNoZ");
 	eCloudTech			= pShader->GetTechniqueByName("CloudTech");
 	eRingTech			= pShader->GetTechniqueByName("RingTech");
 	eHorizonTech		= pShader->GetTechniqueByName("HorizonTech");

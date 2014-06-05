@@ -571,7 +571,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
 
 	if (surfmgr2) {
-		if (cdist >= 1.3*rad) surfmgr2->Render (dmWorld, false, prm);
+		if (cdist >= 2.0*rad) surfmgr2->Render (dmWorld, false, prm);
 		else				  surfmgr2->Render (dmWorld, true,  prm);
 	} else {
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface

@@ -759,14 +759,6 @@ private:
 	WORD SelectedItem;
 	WORD LabelPos;
 
-
-	// Load status output parameters
-	struct {
-		int x, y, w, h;
-		HBITMAP hBkg;
-		HDC bkgDC;
-	} lstatus;
-
 }; // class D3D9Client
 
 

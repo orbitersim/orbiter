@@ -120,7 +120,7 @@ float D9NearPlane(LPDIRECT3DDEVICE9 pDev, float znear, float zfar, float dmin, c
 	if (znear>0) dmin = znear;
 
 	float fact = 1500.0f/min(10e3f, zfar);
-	float zmax = 200.0f;
+	float zmax = 500.0f;
 
 	if (bReduced) zmax = 25.0f;
 	

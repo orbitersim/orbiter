@@ -35,6 +35,7 @@ public:
 	static ID3DXEffect *pShader;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
+	static D3DXHANDLE eTileTechNoZ;
 	static D3DXHANDLE eCloudTech;
 	static D3DXHANDLE eRingTech;
 	static D3DXHANDLE eHorizonTech;

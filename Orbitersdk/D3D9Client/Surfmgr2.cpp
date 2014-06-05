@@ -674,6 +674,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	class Scene *scene = GClient()->GetScene();
 
 	// adjust scaling parameters (can only be done if no z-buffering is in use)
+	
 	if (!use_zbuf) {
 		double R = obj_size;
 		double D = prm.cdist*R;
@@ -700,7 +701,9 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	// Initialize shading technique and feed planet specific data to shaders
 	//
 
-	HR(Shader()->SetTechnique(eTileTech));
+	if (use_zbuf) Shader()->SetTechnique(eTileTech);
+	else		  Shader()->SetTechnique(eTileTechNoZ);
+
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
 

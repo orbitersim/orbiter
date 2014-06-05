@@ -674,6 +674,8 @@ float Scene::ComputeNearClipPlane()
 
 	DWORD prteff = GetActiveParticleEffectCount();
 
+	if (farpoint==0.0) farpoint = 20e4;
+
 	float znear = D9NearPlane(pDevice, nearpoint, farpoint, neardist, GetProjectionMatrix(), (prteff!=0));
 
 	if (oapiCameraInternal()) {
@@ -817,14 +819,15 @@ void Scene::RenderMainScene()
 	double scene_time = D3D9GetTime();
 
 	if (DebugControls::IsActive()) {
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, bg_rgba, 1.0f, 0L));
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_WIREFRAME) pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 		else						   pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
-	
-	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, bg_rgba, 1.0f, 0L));
-	//HR(pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+	else {
+		// Clear the viewport
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+	}
 	
 	if (FAILED (pDevice->BeginScene())) return;
 
@@ -835,7 +838,7 @@ void Scene::RenderMainScene()
 		if (camMode!=0) znear = 0.1f;
 	}
 
-	SetCameraFrustumLimits(znear, 2e7f);
+	SetCameraFrustumLimits(znear, 1e8f);
 
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background
@@ -968,7 +971,7 @@ void Scene::RenderMainScene()
 	// Render Planets
 
 	for (DWORD i=0;i<nplanets;i++) {
-
+		
 		// double nplane, fplane;
 		// plist[i].vo->RenderZRange (&nplane, &fplane);
 		// cam->SetFrustumLimits (nplane, fplane);

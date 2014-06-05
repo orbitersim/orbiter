@@ -478,6 +478,19 @@ technique TileTech
     }
 }
 
+technique TileTechNoZ
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD SurfaceTechVS();
+        pixelShader  = compile PS_MOD SurfaceTechPS();
+        
+        AlphaBlendEnable = false;
+        ZEnable = false; 
+        ZWriteEnable = false;
+    }
+}
+
 
 
 
