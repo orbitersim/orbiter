@@ -288,7 +288,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 
 	// Phase function variables
 	float   g = float(atmo->mphase);
-	float   a = (1.0f-g*g) / (4.0*3.14);
+	float   a = float((1.0-g*g) / (4.0*3.14));
 	float   b = (1.0f+g*g);
 	float   d = (-2.0f*g);
 	float   c = float(atmo->rphase);

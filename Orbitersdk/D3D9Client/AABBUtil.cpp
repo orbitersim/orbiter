@@ -485,11 +485,11 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 // prm = Taylor co-efficients
 // ============================================================================
 
-float FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm)
+float FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 prm)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return h0 * exp2(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr));
+	return float(h0 * exp2(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr)));
 }
 
 float FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm)
@@ -497,7 +497,7 @@ float FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm)
 	cd = 1.0f - cd;
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return h0 * exp2(-alt/h0) * exp2(D3DXVec4Dot(&q, &prm));
+	return float(h0 * exp2(-alt/h0) * exp2(D3DXVec4Dot(&q, &prm)));
 }
 
 // ===========================================================================
@@ -545,7 +545,7 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 
 	MATRIX4Inverse(mi, NULL, m);
 	VECTOR4 w = mul(mi, q);
-	D3DXVECTOR4 fct = D3DXVECTOR4(w.x, w.y, w.z, w.w);
+	D3DXVECTOR4 fct = D3DXVECTOR4(float(w.x), float(w.y), float(w.z), float(w.w));
 
 	
 	//float d1 = FastOpticalDepthEx(0.0, 0, h0, fct);
@@ -603,7 +603,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 
 	MATRIX4Inverse(mi, NULL, m);
 	VECTOR4 w = mul(mi, q);
-	D3DXVECTOR4 fct = D3DXVECTOR4(w.x, w.y, w.z, w.w);
+	D3DXVECTOR4 fct = D3DXVECTOR4(float(w.x), float(w.y), float(w.z), float(w.w));
 
 	
 	float d1 = FastOpticalDepth(0.0, 0, h0, fct);

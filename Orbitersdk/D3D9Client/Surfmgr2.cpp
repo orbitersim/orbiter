@@ -536,9 +536,9 @@ void SurfTile::FixCorner (const SurfTile *nbr)
 	
 		double rad = mgr->CbodySize();
 		double radfac = (rad+nbr_corner_elev)/(rad+corner_elev);
-		mesh->vtx[vtx_idx].x = vtx_store.x*radfac + vtxshift.x*(radfac-1.0);
-		mesh->vtx[vtx_idx].y = vtx_store.y*radfac + vtxshift.y*(radfac-1.0);
-		mesh->vtx[vtx_idx].z = vtx_store.z*radfac + vtxshift.z*(radfac-1.0);
+		mesh->vtx[vtx_idx].x = float(vtx_store.x*radfac + vtxshift.x*(radfac-1.0));
+		mesh->vtx[vtx_idx].y = float(vtx_store.y*radfac + vtxshift.y*(radfac-1.0));
+		mesh->vtx[vtx_idx].z = float(vtx_store.z*radfac + vtxshift.z*(radfac-1.0));
 	}
 }
 
@@ -583,9 +583,9 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 						if (ilat & 1) i0++; else i1--;
 					for (i = i0; i <= i1; i++) {
 						double radfac = (rad+nbr_elev[i*TILE_ELEVSTRIDE])/(rad+elev[i*TILE_ELEVSTRIDE*nsub]);
-						mesh->vtx[vtx_ofs+i*vtx_skip].x = vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0);
-						mesh->vtx[vtx_ofs+i*vtx_skip].y = vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0);
-						mesh->vtx[vtx_ofs+i*vtx_skip].z = vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0);
+						mesh->vtx[vtx_ofs+i*vtx_skip].x = float(vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].y = float(vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].z = float(vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0));
 					}
 					// interpolate the nodes that fall between neighbour nodes
 					for (i = 0; i < nbr_range; i++)
@@ -641,9 +641,9 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 						if (ilng & 1) i1--; else i0++;
 					for (i = i0; i <= i1; i++) {
 						double radfac = (rad+nbr_elev[i])/(rad+elev[i*nsub]);
-						mesh->vtx[vtx_ofs+i*vtx_skip].x = vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0);
-						mesh->vtx[vtx_ofs+i*vtx_skip].y = vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0);
-						mesh->vtx[vtx_ofs+i*vtx_skip].z = vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0);
+						mesh->vtx[vtx_ofs+i*vtx_skip].x = float(vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].y = float(vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].z = float(vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0));
 					}
 					// interpolate the nodes that fall between neighbour nodes
 					for (i = 0; i < nbr_range; i++)

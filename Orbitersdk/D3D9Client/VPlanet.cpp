@@ -467,8 +467,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 		
 		if (hazemgr2) {
-			float apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
-			hazemgr2->Render(mWorld, apr);
+			double apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
+			hazemgr2->Render(mWorld, float(apr));
 		}
 
 		if (prm.bCloud && (prm.cloudvis & 1))
@@ -531,7 +531,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			if (alt < alt_ref1) {
 				double scale = (alt-alt_ref2)/(alt_ref1-alt_ref2);
 				if (scale <= 0.0) prm.bTint = false;
-				else prm.TintColor *= scale;
+				else prm.TintColor *= float(scale);
 			}
 		}
 
@@ -698,7 +698,7 @@ float vPlanet::OpticalDepth(float alt, float cd)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return exp2(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr));
+	return float(exp2(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr)));
 }
 
 // ==============================================================
@@ -706,7 +706,7 @@ float vPlanet::OpticalDepth(float alt, float cd)
 void vPlanet::UpdateAtmoConfig()
 {
 	double outer     = size + SPrm.height * 10e3;
-	prm.SclHeight	 = float(SPrm.height)*1e3;
+	prm.SclHeight	 = float(SPrm.height*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
 	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, outer);
 	prm.ODCoEffEx	 = SolveScatterEx(prm.SclHeight, size, outer);

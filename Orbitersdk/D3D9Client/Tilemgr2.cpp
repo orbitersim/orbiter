@@ -300,8 +300,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	// regenerate normals for terrain
 	if (elev) {
 		const double shade_exaggerate = 1.0; // 1 = normal, <1 = more dramatic landscape shadows
-		double dy, dz, dydz, nz_x, nz_z, ny_x, ny_y, nx1, ny1, nz1;
-		double dy_dezp, dy_dezm, dz_deyp, dz_deym;
+		double dy, dz, dydz, nz_x, ny_x, nx1, ny1, nz1;
 		int en;
 		dy = radius * PI/(nlat*grdlat);  // y-distance between vertices
 		ny_x = shade_exaggerate*dy;

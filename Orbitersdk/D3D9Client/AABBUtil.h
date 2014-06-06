@@ -52,7 +52,7 @@ D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3D
 double		ExactOpticalDepth(double alt, double dir, double R, double R1, double h0);
 D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
 D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1);
-float		FastOpticalDepth(float alt, float cd, float h0, D3DXVECTOR4 prm);
+float		FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 prm);
 float		FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm);
 
 void		D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line);

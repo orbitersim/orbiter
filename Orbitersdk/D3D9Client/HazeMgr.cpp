@@ -299,7 +299,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	D3DMAT_FromAxisT(&mWL, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
 	mWR = mWL;
 
-	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
+	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(float(r1), float(r2), float(h1), float(h2))));
 	HR(Shader()->SetFloat(sfAlpha, float(ha)));
 
 	RenderSkySegment(mWL);
@@ -373,7 +373,7 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 
 	HR(Shader()->SetTechnique(eRingTech));
 	HR(Shader()->SetMatrix(smWorld, &mW));
-	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
+	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(float(r1), float(r2), float(h1), float(h2))));
 	HR(Shader()->SetFloat(sfAlpha, float(qw)));
 	
 	UINT numPasses = 0;
