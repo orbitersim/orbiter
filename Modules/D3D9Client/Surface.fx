@@ -166,28 +166,15 @@ float RPhase(float cw)
 }
 
 // -------------------------------------------------------------------------------------------------------------
-// Optical depth angle co-efficiency factor. (Valid for angles 0 to 90deg)
+// Optical depth angle co-efficiency factor. (Accurate and valid for angles 0 to 96deg)
 // c = cosine of the ray direction (1.0 is up)
 //
-
 float AngleCoEff(float c)
 {
-	c = saturate(c); float c2 = c*c;
-	return rcp(dot(float4(1.0f, c, c2, c2*c), vODCoEff));
+	float  c1 = rcp(max(0.0954, c+0.2)); float c2 = c1*c1;
+	float4 v1 = float4(1.0f, c1, c2, c2*c1);
+	return dot(v1, vODCoEff) + dot(v1*(c2*c2), vODCoEffEx);
 }
-
-// -------------------------------------------------------------------------------------------------------------
-// Optical depth angle co-efficiency factor. (Valid for angles 80 to 100deg)
-// c = cosine of the ray direction (1.0 is up)
-//
-float AngleCoEffEx(float c)
-{
-	float c1 = 1.0-c; 
-	float c2 = c1*c1;
-	float rv = exp2(dot(float4(1.0f, c1, c2, c2*c1), vODCoEffEx));
-	return rv;
-}
-
 
 float Shadow(float c)
 {
@@ -203,7 +190,7 @@ float ShadowEx(float c, float alt)
 	float fHrz = fVtx * c;
 	float fAlt = sqrt(fVtx*fVtx - fHrz*fHrz) - fRadius;
 
-	return smoothstep(-fScaleHeight*4.0, 0, fAlt);
+	return smoothstep(-fHorizonAlt, 0, fAlt);
 }
 
 
@@ -255,19 +242,19 @@ void SurfaceScatterFast(out float3 vAttenuate, out float3 vInscatter, out float3
     float fRay0 = fMnD * (fRay * fInvScaleHeight);
     
 	// Angle co-efficiency factor for incoming sunlight
-	float fSCo = max(AngleCoEff(fDNS), AngleCoEffEx(fDNS));
+	float fSCo = AngleCoEff(fDNS);
 
 	// Limit the optical depth
     fRay0 = fDepthClamp * (1.0f-exp2(-fRay0*fInvDepthClamp));
 
 	// Compute sunlight color received by a vertex
-    vSunLight = exp2((vRaySurface+vMieTotal) * -(vDns[0] * fSCo)) * fSrfIntensity * Shadow(fDNS);
+    vSunLight = exp2(-(vRaySurface+vMieTotal) * (vDns[0] * fSCo)) * fSrfIntensity * Shadow(fDNS);
     
     // Compute surface texture color attennuation (i.e. extinction term)
-    vAttenuate = exp2((vRayTotal+vMieTotal) * -fRay0);
+    vAttenuate = exp2(-(vRayTotal+vMieTotal) * fRay0);
     
 	// Color of inscattered sunlight
-	float3 vSun = exp2((vRayTotal+vMieTotal) * -(fMnD * fSCo * fBalance)) * fRay0 * Shadow(fDNS);
+	float3 vSun = exp2(-(vRayTotal*fBalance+vMieTotal) * (fMnD * fSCo)) * fRay0 * Shadow(fDNS);
     
 	// Multiply in-coming light with phase and light scattering factors
     vInscatter = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSun;
@@ -326,10 +313,10 @@ void SkyScatterFast(out float3 vIns, in float3 vUnitRay)
 	float  fDNS = dot(vNr1, vSunDir);
 	
 	// Optical depth for incoming sunlight	    
-    float fDSun = fMnD * AngleCoEff(fDNS);
+    float  fSCo = AngleCoEff(fDNS);
    
 	// Color of inscattered sunlight
-    float3 vSun = exp2((vRayTotal+vMieTotal) * -(fDSun * fBalance)) * fDRay * Shadow(fDNS);
+    float3 vSun = exp2(-(vRayTotal*fBalance+vMieTotal) * (fMnD * fSCo)) * fDRay * Shadow(fDNS);
  
 	// Compute in-scattering 
     vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
@@ -344,7 +331,7 @@ void SkyScatterFast(out float3 vIns, in float3 vUnitRay)
     
 	float3 vAmbient	= fAmbient0*saturate(fNgt-0.05f) * fMult;
     
-    vIns += vAmbient * saturate(0.5f-max(vIns.b, vIns.r))*2.0;
+    vIns += (vAmbient*(vRayInSct+1)*0.5f) * saturate(0.5f-max(vIns.b, vIns.r))*2.0;
 }
 
 
@@ -367,7 +354,7 @@ void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in f
 	
 	float fDNR = dot(vNr0, vUnitRay);
     float fDns = exp2(-fVtxAlt*fInvScaleHeight);					
-	float fDRay = fDns * (AngleCoEffEx(-fDNR) + AngleCoEffEx(fDNR));
+	float fDRay = fDns * (AngleCoEff(-fDNR) + AngleCoEff(fDNR));
    
    	// Limit the optical depth
     fDRay = fDepthClamp * (1.0f-exp2(-fDRay*fInvDepthClamp));
@@ -375,9 +362,9 @@ void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in f
    	float fDNS = dot(vNr0, vSunDir);
    	 
 	// Optical depth for incoming sunlight	    
-    float fSun = (fDns+0.05f)*0.5f * max(AngleCoEff(fDNS), AngleCoEffEx(fDNS));
+    float fDSun = (fDns+0.05f)*0.5f * AngleCoEff(fDNS);
     
-    float3 vSun = exp2((vRayTotal+vMieTotal) * -(fSun * fBalance)) * fDRay * ShadowEx(fDNS, fVtxAlt);
+    float3 vSun = exp2(-(vRayTotal*fBalance+vMieTotal) * fDSun) * fDRay * ShadowEx(fDNS, fVtxAlt);
     
     float  fDRS = -dot(vUnitRay, vSunDir);
     

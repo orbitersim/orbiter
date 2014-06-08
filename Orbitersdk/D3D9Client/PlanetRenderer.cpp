@@ -267,9 +267,11 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 
 	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
 
-	D3DXVECTOR4 ODCoEff = pPlanet->prm.ODCoEff;
-	D3DXVECTOR4 ODCoEffEx = pPlanet->prm.ODCoEffEx;
-	D3DXVECTOR3 SunDir = _D3DXVECTOR3(unit(gsun-gpos));
+	double *pCoEff = pPlanet->prm.ScatterCoEff;
+
+	D3DXVECTOR4 ODCoEff   = D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])); 
+	D3DXVECTOR4 ODCoEffEx = D3DXVECTOR4(float(pCoEff[4]), float(pCoEff[5]), float(pCoEff[6]), float(pCoEff[7])); 
+	D3DXVECTOR3 SunDir    = _D3DXVECTOR3(unit(gsun-gpos));
 
 	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 	float fAmbient = float(dAmbient)*0.0039f;
@@ -316,8 +318,8 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	// Upload parameters to shaders
 	HR(Shader()->SetFloat(sfAmbient0, min(0.7f, log(float(atm->rho0)+1.0f)*0.4f)));
 	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,d), sizeof(D3DXVECTOR4)));
-	HR(Shader()->SetValue(svODCoEff, &ODCoEff, sizeof(D3DXVECTOR4)));
-	HR(Shader()->SetValue(svODCoEffEx, &ODCoEffEx, sizeof(D3DXVECTOR4)));
+	HR(Shader()->SetValue(svODCoEff,   &D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])), sizeof(D3DXVECTOR4)));
+	HR(Shader()->SetValue(svODCoEffEx, &D3DXVECTOR4(float(pCoEff[4]), float(pCoEff[5]), float(pCoEff[6]), float(pCoEff[7])), sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svRayTotal, &raytot, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svRayInSct, &raysct, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svRaySurface, &raysrf, sizeof(D3DXVECTOR3)));

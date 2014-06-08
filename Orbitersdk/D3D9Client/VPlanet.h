@@ -58,7 +58,7 @@ public:
 	// Atmospheric ------------------------------------------------------------
 	const ScatterParams * GetAtmoParams() const { return &SPrm; }
 	ScatterParams * GetAtmoParams() { return &SPrm; }
-	float			OpticalDepth(float alt, float cos_dir);
+	double			OpticalDepth(double alt, double cos_dir);
 	bool			LoadAtmoConfig();
 	void			SaveAtmoConfig();
 	void			UpdateAtmoConfig();
@@ -93,13 +93,11 @@ public:
 		D3DXCOLOR	FogColor;
 		D3DXCOLOR   SkyColor;
 		D3DXVECTOR3 SunDir;
-		D3DXVECTOR4 ODCoEff;		// Optical depth taylor co-efficients
-		D3DXVECTOR4 ODCoEffEx;		// Optical depth taylor co-efficients
 		float		FogDensity;
 		float		DistScale;
 		float		SclHeight;		// Atmospheric scale height
 		float		InvSclHeight;	// Inverse of atmospheric scale height	
-		double		ScatterCoEff[12];
+		double		ScatterCoEff[8];
 	} prm;
 
 	// Access functions

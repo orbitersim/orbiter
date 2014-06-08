@@ -43,6 +43,7 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 			for (int i=0;i<n;i++) { double x = A[k*n+i]; A[k*n+i] = A[r*n+i]; A[r*n+i] = x; } 
 			int x=p[k]; p[k]=p[r]; p[r]=x; e++;
 		}
+
 		for (int i=k+1;i<n;i++) { A[i*n+k]/=A[k*n+k]; for (int j=k+1;j<n;j++) A[i*n+j]-=(A[i*n+k]*A[k*n+j]); }
 	}
 
@@ -645,14 +646,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 bool SolveXScatter(double h0, double R, double R1, double *r, int m)
 {
 
-	//double x[] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 75.0, 80.0, 83.0, 85.0, 85.5, 90.0, 90.5, 91.0, 92.0, 93.0};
-	//double x[] = {0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 78.0, 80.0, 82.0, 84.0, 85.0, 85.5};
-	//double x[] = {0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0, 32.0, 36.0, 40.0, 44.0, 48.0, 52.0, 56.0, 60.0, 64.0, 68.0, 72.0, 76.0, 80.0,
-	//	          82.0, 84.0, 86.0, 88.0, 90.0, 92.0, 94.0, 96.0, 98.0, 99.0};
-
-	double x[50]; x[0]=0.0;
-
-	for (int i=1;i<50;i++) x[i] = x[i-1] + 1.9;
+	double x[50]; x[0]=0.0; for (int i=1;i<50;i++) x[i] = x[i-1] + 1.93;
 	
 	int ndata = sizeof(x)/sizeof(double);
 
@@ -665,19 +659,26 @@ bool SolveXScatter(double h0, double R, double R1, double *r, int m)
 	memset(q, 0, m*sizeof(double));
 
 	double ih0 = 1.0/h0;
-	double ipw = 1.0/SctPwr2;
 
 	for (int i=0;i<ndata;i++) x[i] = x[i]*RAD;
-	for (int i=0;i<ndata;i++) y[i] = pow(1.0 / (ExactOpticalDepth(0.0, x[i], R, R1, h0) * ih0), ipw);	
-	for (int i=0;i<ndata;i++) 
-	{
-		double c = cos(x[i]); v[0] = 1.0;
+	for (int i=0;i<ndata;i++) y[i] = ExactOpticalDepth(0.0, x[i], R, R1, h0) * ih0;	
+	for (int i=0;i<ndata;i++) {
+
+		double c = 1.0/(cos(x[i])+0.2); v[0] = 1.0;
+		
 		for (int f=1;f<m;f++) v[f] = v[f-1]*c;
 		for (int f=0;f<m;f++) for (int g=0;g<m;g++) M[f*m+g] += (v[f]*v[g]);
 		for (int f=0;f<m;f++) q[f] += (v[f]*y[i]);
 	}
 
 	bool bRet = SolveLUSystem(m, M, q, r);
+
+	//float cd = 1.0/0.2;
+	//float val = 0.0, xf = 1.0;
+	//for (int i=0;i<8;i++) {	val += float(r[i])*xf; xf*=cd; }
+	//double par = ExactOpticalDepth(0.0, PI05, R, R1, h0) * ih0;	
+	//sprintf_s(oapiDebugString(),256,"%g [%g %g]", fabs(val-float(par)), val, par);
+	//sprintf_s(oapiDebugString(),256,"%g %g %g %g %g %g %g %g", r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]);
 	
 	delete []v; delete []q;
 	delete []y;	delete []M;

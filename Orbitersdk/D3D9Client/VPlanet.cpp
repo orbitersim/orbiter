@@ -694,11 +694,12 @@ bool vPlanet::ModLighting (DWORD &ambient)
 
 // ==============================================================
 
-float vPlanet::OpticalDepth(float alt, float cd)
+double vPlanet::OpticalDepth(double alt, double cd)
 {
-	float cd2 = cd * cd;
-	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return float(exp2(-alt*prm.InvSclHeight) * pow(D3DXVec4Dot(&q, &prm.ODCoEff), -float(SctPwr)));
+	cd = 1.0/(cd+0.2);
+	double val = 0.0, x = 1.0;
+	for (int i=0;i<8;i++) {	val += prm.ScatterCoEff[i]*x; x*=cd; }
+	return double(prm.SclHeight) * exp2(-alt*double(prm.InvSclHeight)) * val;
 }
 
 // ==============================================================
@@ -708,9 +709,7 @@ void vPlanet::UpdateAtmoConfig()
 	double outer     = size + SPrm.height * 10e3;
 	prm.SclHeight	 = float(SPrm.height*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, outer);
-	prm.ODCoEffEx	 = SolveScatterEx(prm.SclHeight, size, outer);
-	//SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 8);
+	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 8);
 }
 
 
@@ -749,46 +748,24 @@ double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
 
 void vPlanet::DumpDebugFile()
 {
-	/*
 	int samples = 100;
 	double max_angle = 100.0;
 	double delta = 3.1415*max_angle/float(samples*180);
 	double angle = 0.0;
-
 	double outer = size+(prm.SclHeight*10.0);
 
 	FILE *fp = NULL;
 	fopen_s(&fp, "OpticalDebug.txt", "w");
-
-	double par = ExactOpticalDepth(0.0, 3.1416/2.0, size, outer, prm.SclHeight) / prm.SclHeight;
-
 	if (fp==NULL) return;
 
 	for (int i=0;i<samples;i++) {
-		double fast		= FastOpticalDepth(0.0, float(cos(angle)), prm.SclHeight, prm.ODCoEff) / prm.SclHeight;
-		double fastex	= FastOpticalDepthEx(0.0, float(cos(angle)), prm.SclHeight, prm.ODCoEffEx) / prm.SclHeight;
 		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
 		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
-		
-		double cd  = cos(angle), cd2 = cd*cd, cd4 = cd2*cd2, dot = 0.0;
-
-		dot  = (prm.ScatterCoEff[0]);
-		dot += (prm.ScatterCoEff[1]) * cd;
-		dot += (prm.ScatterCoEff[2]) * cd2;
-		dot += (prm.ScatterCoEff[3]) * cd2*cd;
-		dot += (prm.ScatterCoEff[4]) * cd4;
-		dot += (prm.ScatterCoEff[5]) * cd4*cd;
-		dot += (prm.ScatterCoEff[6]) * cd4*cd2;
-		dot += (prm.ScatterCoEff[7]) * cd4*cd2*cd;
-		
-		float accur = float(pow(dot, -double(SctPwr2)));
-
+		double accur    = OpticalDepth(0.0, cos(angle)) / double(prm.SclHeight);	
 		angle += delta;
-
-		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g %6.6g\n", i, exact, accur, fast, fastex, gauss);
+		fprintf(fp,"%d %6.6g %6.6g %6.6g\n", i, exact, accur, gauss);
 	}
 	fclose(fp);
-	*/
 }
 
 // ==============================================================
