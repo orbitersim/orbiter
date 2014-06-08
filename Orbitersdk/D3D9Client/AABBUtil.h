@@ -24,6 +24,7 @@
 #define __D3D9TK_H
 
 #define SctPwr 1.0
+#define SctPwr2 2.0
 
 inline double exp2(double x)
 { 
@@ -50,13 +51,18 @@ void		EnvMapDirection(int dir, D3DXVECTOR3 *Dir, D3DXVECTOR3 *Up);
 D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView);
 
 double		ExactOpticalDepth(double alt, double dir, double R, double R1, double h0);
+
 D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
 D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1);
+bool		SolveXScatter(double h0, double R, double R1, double *q, int m);
 float		FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 prm);
 float		FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm);
 
+bool		SolveLUSystem(int n, double *A, double *b, double *x, double *det=NULL);
+
 void		D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line);
 void		D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line);
+
 
 #ifdef _DEBUG 
 #define		memcpy2(x,y,z) D9CopyMem(x,y,z,__FILE__,__LINE__)

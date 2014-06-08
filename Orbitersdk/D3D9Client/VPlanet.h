@@ -98,7 +98,8 @@ public:
 		float		FogDensity;
 		float		DistScale;
 		float		SclHeight;		// Atmospheric scale height
-		float		InvSclHeight;	// Inverse of atmospheric scale height		
+		float		InvSclHeight;	// Inverse of atmospheric scale height	
+		double		ScatterCoEff[12];
 	} prm;
 
 	// Access functions

@@ -45,8 +45,7 @@ extern int SURF_MAX_PATCHLEVEL2;
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	bScatter = LoadAtmoConfig();
-
+	bScatter = false;
 	rad = (float)size;
 	render_rad = (float)(0.1*rad);
 	dist_scale = 1.0f;
@@ -57,6 +56,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
 	} else {
+		bScatter = LoadAtmoConfig();
 		surfmgr = NULL;
 		int maxlvl = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 		maxlvl = min (maxlvl, SURF_MAX_PATCHLEVEL2);
@@ -710,6 +710,7 @@ void vPlanet::UpdateAtmoConfig()
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
 	prm.ODCoEff		 = SolveScatter(prm.SclHeight, size, outer);
 	prm.ODCoEffEx	 = SolveScatterEx(prm.SclHeight, size, outer);
+	//SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 8);
 }
 
 
@@ -769,9 +770,22 @@ void vPlanet::DumpDebugFile()
 		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
 		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
 		
+		double cd  = cos(angle), cd2 = cd*cd, cd4 = cd2*cd2, dot = 0.0;
+
+		dot  = (prm.ScatterCoEff[0]);
+		dot += (prm.ScatterCoEff[1]) * cd;
+		dot += (prm.ScatterCoEff[2]) * cd2;
+		dot += (prm.ScatterCoEff[3]) * cd2*cd;
+		dot += (prm.ScatterCoEff[4]) * cd4;
+		dot += (prm.ScatterCoEff[5]) * cd4*cd;
+		dot += (prm.ScatterCoEff[6]) * cd4*cd2;
+		dot += (prm.ScatterCoEff[7]) * cd4*cd2*cd;
+		
+		float accur = float(pow(dot, -double(SctPwr2)));
+
 		angle += delta;
 
-		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g\n", i, exact, fast, fastex, gauss);
+		fprintf(fp,"%d %6.6g %6.6g %6.6g %6.6g %6.6g\n", i, exact, accur, fast, fastex, gauss);
 	}
 	fclose(fp);
 	*/

@@ -126,8 +126,8 @@ uniform extern float	fAtmRad2;			// Atmosphere upper radius squared (fRadius+fHo
 uniform extern float	fBalance;			// Inscattering Color balance controller
 uniform extern float	fHorizonDst;		// Camera to horizon distance sqrt(dot(vCameraPos,vCameraPos) - fRadius*fRadius)
 uniform extern float	fExposure;			// Camera exposure factor
-uniform extern float	fAux1;				// Light transfer distance in atmosphere
-uniform extern float	fAux2;				// Color attennuation during transfer
+uniform extern float	fAux1;				// Unused. Bound to Aux1 slider
+uniform extern float	fAux2;				// Unused. Bound to Aux2 slider
 uniform extern float	fAmbient0;
 uniform extern float	fGlobalAmb;
 uniform extern int		iMode;
@@ -154,7 +154,7 @@ static float3 vPoints3 = (vSample3 + 1.0) * 0.5;		// Map to range 0 to 1
 //
 float MPhase(float cw)
 {
-	return vPhase.x * pow(abs(vPhase.y-vPhase.w*cw), -1.5f);
+	return fAux1 + vPhase.x * pow(abs(vPhase.y-vPhase.w*cw), -1.5f);
 }
 
 // -------------------------------------------------------------------------------------------------------------
@@ -203,7 +203,7 @@ float ShadowEx(float c, float alt)
 	float fHrz = fVtx * c;
 	float fAlt = sqrt(fVtx*fVtx - fHrz*fHrz) - fRadius;
 
-	return smoothstep(-fHorizonAlt, 0, fAlt);
+	return smoothstep(-fScaleHeight*4.0, 0, fAlt);
 }
 
 
@@ -261,16 +261,16 @@ void SurfaceScatterFast(out float3 vAttenuate, out float3 vInscatter, out float3
     fRay0 = fDepthClamp * (1.0f-exp2(-fRay0*fInvDepthClamp));
 
 	// Compute sunlight color received by a vertex
-    vSunLight = exp2(-vRaySurface * vDns[0] * fSCo) * fSrfIntensity * Shadow(fDNS);
+    vSunLight = exp2((vRaySurface+vMieTotal) * -(vDns[0] * fSCo)) * fSrfIntensity * Shadow(fDNS);
     
     // Compute surface texture color attennuation (i.e. extinction term)
-    vAttenuate = exp2(-vRayTotal * fRay0);
+    vAttenuate = exp2((vRayTotal+vMieTotal) * -fRay0);
     
 	// Color of inscattered sunlight
-	float3 vSun = exp2(-vRayTotal * (fMnD * fSCo * fBalance)) * fRay0 * Shadow(fDNS);
+	float3 vSun = exp2((vRayTotal+vMieTotal) * -(fMnD * fSCo * fBalance)) * fRay0 * Shadow(fDNS);
     
 	// Multiply in-coming light with phase and light scattering factors
-    vInscatter = (vRayInSct * vSun) * RPhase(fDRS);
+    vInscatter = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSun;
     
     if (bOverSat) vInscatter = 1.0 - exp2(vInscatter*fExposure);
 }
@@ -329,7 +329,7 @@ void SkyScatterFast(out float3 vIns, in float3 vUnitRay)
     float fDSun = fMnD * AngleCoEff(fDNS);
    
 	// Color of inscattered sunlight
-    float3 vSun = exp2(-vRayTotal * fDSun * fBalance) * fDRay * Shadow(fDNS);
+    float3 vSun = exp2((vRayTotal+vMieTotal) * -(fDSun * fBalance)) * fDRay * Shadow(fDNS);
  
 	// Compute in-scattering 
     vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
@@ -367,17 +367,17 @@ void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in f
 	
 	float fDNR = dot(vNr0, vUnitRay);
     float fDns = exp2(-fVtxAlt*fInvScaleHeight);					
-	float fRay = fDns * (AngleCoEffEx(-fDNR) + AngleCoEffEx(fDNR));
+	float fDRay = fDns * (AngleCoEffEx(-fDNR) + AngleCoEffEx(fDNR));
    
    	// Limit the optical depth
-    fRay = fDepthClamp * (1.0f-exp2(-fRay*fInvDepthClamp));
+    fDRay = fDepthClamp * (1.0f-exp2(-fDRay*fInvDepthClamp));
    	
    	float fDNS = dot(vNr0, vSunDir);
    	 
 	// Optical depth for incoming sunlight	    
-    float fSun = (fDns+0.5f)*0.5f * AngleCoEff(fDNS);
+    float fSun = (fDns+0.05f)*0.5f * max(AngleCoEff(fDNS), AngleCoEffEx(fDNS));
     
-    float3 vSun = exp2(-vRayTotal * fSun * fBalance) * fRay * ShadowEx(fDNS, fVtxAlt);
+    float3 vSun = exp2((vRayTotal+vMieTotal) * -(fSun * fBalance)) * fDRay * ShadowEx(fDNS, fVtxAlt);
     
     float  fDRS = -dot(vUnitRay, vSunDir);
     

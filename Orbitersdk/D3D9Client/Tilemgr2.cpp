@@ -558,6 +558,8 @@ bool TileLoader::LoadTileAsync (Tile *tile)
 
 // -----------------------------------------------------------------------
 
+// Something is wrong in here. Tiles are being loaded even-if TileManager2Base is deleted.  
+
 void TileLoader::Unqueue (TileManager2Base *mgr)
 {
 	bool locked = false; // whether a mutex semaphore was taken
@@ -626,7 +628,7 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 		WaitForMutex ();
 		if (load = (nqueue > 0)) {
 			tile = queue[queue_out].tile;
-			_ASSERT(TILE_STATE_OK(tile));
+			_ASSERT(TILE_STATE_OK(tile));			// THIS IS TRIGGERED OFTEN
 			if (tile->state == Tile::InQueue) {
 				tile->state = Tile::Loading; // lock tile and its ancestor tree
 			} else {
@@ -685,11 +687,11 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 
 TileManager2Base::~TileManager2Base ()
 {
+	LogAlw("Deleting TileManagerBase 0x%X ...",this);
+
 	if (loader) {
 		loader->Unqueue(this);
 	}
-
-	LogAlw("Deleting TileManagerBase 0x%X ...",this);
 
 	for (int i=0;i<NPOOLS;i++) {
 		while (!VtxPool[i].empty()) {
@@ -707,8 +709,6 @@ TileManager2Base::~TileManager2Base ()
 
 void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 {
-	LogAlw("Starting to initialize Surface.fx a shading technique...");
-
 	gc = gclient;
 	pDev = gc->GetDevice();
 
@@ -727,6 +727,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 
 void TileManager2Base::GlobalExit ()
 {
+	LogAlw("TileManager2Base::GlobalExit()");
 	delete loader;
 }
 

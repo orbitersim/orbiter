@@ -1,7 +1,7 @@
 // =================================================================================================================================
 // The MIT Lisence:
 //
-// Copyright (C) 2013 Jarmo Nikkanen
+// Copyright (C) 2013-2014 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -19,8 +19,44 @@
 #include "AABBUtil.h"
 #include "OrbiterAPI.h"
 #include "Log.h"
-#include "MatrixInverse.h"
 #include <xnamath.h>
+
+
+// =================================================================================================================================
+// Solve a system of linear equations
+//
+bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
+{		
+	int e=0, *p = new int[n]; 
+
+	// Initialize a permutations
+	for (int i=0;i<n;i++) p[i] = i;
+
+	// Do LU Decomposition ---------------------------------------------------------------------------------------
+	for (int k=0;k<n;k++) {
+		int r = 0; double d = 0.0; 
+		for (int s=k;s<n;s++) if (fabs(A[s*n+k])>d) { d = fabs(A[s*n+k]); r = s; }
+
+		if (d==0.0) { LogErr("Singular Matrix in SolveLUSystem()"); delete []p; return false; }
+
+		if (r!=k) {
+			for (int i=0;i<n;i++) { double x = A[k*n+i]; A[k*n+i] = A[r*n+i]; A[r*n+i] = x; } 
+			int x=p[k]; p[k]=p[r]; p[r]=x; e++;
+		}
+		for (int i=k+1;i<n;i++) { A[i*n+k]/=A[k*n+k]; for (int j=k+1;j<n;j++) A[i*n+j]-=(A[i*n+k]*A[k*n+j]); }
+	}
+
+	// Do Substitutions ------------------------------------------------------------------------------------------
+	for (int i=0;i<n;i++) {	x[i] = b[p[i]];	for (int j=0;j<i;j++) x[i] -= A[i*n+j]*x[j]; }
+	for (int i=n-1;i>=0;i--) {	for (int j=i+1;j<n;j++) x[i] -= A[i*n+j]*x[j]; x[i] /= A[i*n+i]; }
+
+	// Do Determinant --------------------------------------------------------------------------------------------
+	if (det) { *det = 1.0; for (int i=0;i<n;i++) *det *= A[i*n+i]; if (e&1) *det*=-1.0; } 
+
+	delete []p;
+	return true;
+}
+
 
 
 void D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line)
@@ -513,7 +549,7 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 	double x[] = {80.0, 82.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 89.5, 90.0, 90.5, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0};
 
 	VECTOR4 v, q;
-	MATRIX4 m, mi;
+	MATRIX4 m;
 	memset(&m, 0, sizeof(MATRIX4));
 	memset(&q, 0, sizeof(VECTOR4));
 
@@ -543,17 +579,9 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 		q.w += (v.w * y[i]);
 	}
 
-	MATRIX4Inverse(mi, NULL, m);
-	VECTOR4 w = mul(mi, q);
-	D3DXVECTOR4 fct = D3DXVECTOR4(float(w.x), float(w.y), float(w.z), float(w.w));
-
-	
-	//float d1 = FastOpticalDepthEx(0.0, 0, h0, fct);
-	//float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
-	//float dv = (d1-d2)/d2;
-	//if (fabs(dv)>0.05) LogErr("Bad Match %g", dv);
-	
-	return fct;
+	double r[4];
+	SolveLUSystem(4, (double *)&m, (double *)&q, r, NULL);
+	return D3DXVECTOR4(float(r[0]), float(r[1]), float(r[2]), float(r[3]));
 }
 
 
@@ -571,7 +599,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 	double x[] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 75.0, 80.0, 82.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 89.5, 90.0, 90.5};
 
 	VECTOR4 v, q;
-	MATRIX4 m, mi;
+	MATRIX4 m;
 	memset(&m, 0, sizeof(MATRIX4));
 	memset(&q, 0, sizeof(VECTOR4));
 
@@ -601,16 +629,61 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 		q.w += (v.w * y[i]);
 	}
 
-	MATRIX4Inverse(mi, NULL, m);
-	VECTOR4 w = mul(mi, q);
-	D3DXVECTOR4 fct = D3DXVECTOR4(float(w.x), float(w.y), float(w.z), float(w.w));
+	double r[4];
+	SolveLUSystem(4, (double *)&m, (double *)&q, r, NULL);
+	D3DXVECTOR4 fct = D3DXVECTOR4(float(r[0]), float(r[1]), float(r[2]), float(r[3]));
 
-	
 	float d1 = FastOpticalDepth(0.0, 0, h0, fct);
 	float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
 	float dv = (d1-d2)/d2;
-	if (fabs(dv)>0.05) LogErr("Bad Match %g", dv);
+	if (fabs(dv)>0.2) LogErr("Bad Match %g", dv);
 	
 	return fct;
 }
+
+
+bool SolveXScatter(double h0, double R, double R1, double *r, int m)
+{
+
+	//double x[] = {0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 75.0, 80.0, 83.0, 85.0, 85.5, 90.0, 90.5, 91.0, 92.0, 93.0};
+	//double x[] = {0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 78.0, 80.0, 82.0, 84.0, 85.0, 85.5};
+	//double x[] = {0.0, 4.0, 8.0, 12.0, 16.0, 20.0, 24.0, 28.0, 32.0, 36.0, 40.0, 44.0, 48.0, 52.0, 56.0, 60.0, 64.0, 68.0, 72.0, 76.0, 80.0,
+	//	          82.0, 84.0, 86.0, 88.0, 90.0, 92.0, 94.0, 96.0, 98.0, 99.0};
+
+	double x[50]; x[0]=0.0;
+
+	for (int i=1;i<50;i++) x[i] = x[i-1] + 1.9;
+	
+	int ndata = sizeof(x)/sizeof(double);
+
+	double *v = new double[m];
+	double *q = new double[m];
+	double *M = new double[m*m];
+	double *y = new double[ndata];
+
+	memset(M, 0, m*m*sizeof(double));
+	memset(q, 0, m*sizeof(double));
+
+	double ih0 = 1.0/h0;
+	double ipw = 1.0/SctPwr2;
+
+	for (int i=0;i<ndata;i++) x[i] = x[i]*RAD;
+	for (int i=0;i<ndata;i++) y[i] = pow(1.0 / (ExactOpticalDepth(0.0, x[i], R, R1, h0) * ih0), ipw);	
+	for (int i=0;i<ndata;i++) 
+	{
+		double c = cos(x[i]); v[0] = 1.0;
+		for (int f=1;f<m;f++) v[f] = v[f-1]*c;
+		for (int f=0;f<m;f++) for (int g=0;g<m;g++) M[f*m+g] += (v[f]*v[g]);
+		for (int f=0;f<m;f++) q[f] += (v[f]*y[i]);
+	}
+
+	bool bRet = SolveLUSystem(m, M, q, r);
+	
+	delete []v; delete []q;
+	delete []y;	delete []M;
+
+	return bRet;
+}
+
+
 

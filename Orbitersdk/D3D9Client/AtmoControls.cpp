@@ -207,10 +207,10 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_WAVE,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   1.0, 40.0, 1);
-	ConfigSlider(IDC_ATM_EXPO,	   0.1, 1.5);
+	ConfigSlider(IDC_ATM_EXPO,	   0.1, 2.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_OUT,      0.0, 4.0);
-	ConfigSlider(IDC_ATM_IN,       0.0, 3.0);
+	ConfigSlider(IDC_ATM_OUT,      0.0, 1.5);
+	ConfigSlider(IDC_ATM_IN,       0.0, 5.0);
 	ConfigSlider(IDC_ATM_RPHASE,   0.0, 3.5);
 	ConfigSlider(IDC_ATM_BALANCE,  0.0, 2.0);
 	ConfigSlider(IDC_ATM_RSUN,     1.0, 50.0);
@@ -221,7 +221,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
 	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.0, 1.0);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 1.5);
 	ConfigSlider(IDC_ATM_MPHASE,   0.85, 0.999);
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
