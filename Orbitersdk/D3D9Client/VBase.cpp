@@ -153,8 +153,6 @@ vBase::~vBase ()
 		}
 		delete[] taxiLights;
 	}
-	
-	LogAlw("Base visual deleted");
 }
 
 DWORD vBase::GetMeshCount()

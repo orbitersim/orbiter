@@ -13,7 +13,7 @@
 #include "Tilemgr2.h"
 #include "Texture.h"
 #include "D3D9Config.h"
-#include "D3D9Effect.h"
+#include "D3D9Catalog.h"
 
 #include <stack>
 
@@ -51,7 +51,10 @@ Tile::~Tile ()
 	state = Invalid;
 	mgr = NULL;
 	if (mesh) delete mesh;
-	if (tex && owntex) tex->Release();
+	if (tex && owntex) {
+		tex->Release();
+		TileCatalog->Remove(DWORD(tex));
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -99,10 +102,7 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 
 bool Tile::InView (const MATRIX4 &transform)
 {
-	//return true;
-
 	if (!lvl) return true; // no good check for this yet
-
 	if (!mesh) return true; // DEBUG : TEMPORARY
 
 	bool bx1, bx2, by1, by2, bz1, bbvis;
@@ -509,12 +509,21 @@ TileLoader::TileLoader (const oapi::D3D9Client *gclient)
 
 TileLoader::~TileLoader ()
 {
-	bRunThread = false;
-	if (WaitForSingleObject (hLoadThread, 1000) == WAIT_TIMEOUT) {
-		TerminateThread (hLoadThread, 0);
-	}
+	if (bRunThread) LogErr("TileLoader() Not Yet ShutDown()");
 	CloseHandle (hLoadThread);
 	CloseHandle (hLoadMutex);
+}
+
+// -----------------------------------------------------------------------
+
+bool TileLoader::ShutDown()
+{
+	bRunThread = false;
+	if (WaitForSingleObject (hLoadThread, 4000) != 0) {
+		TerminateThread (hLoadThread, 0);
+		return false;
+	}
+	return true;
 }
 
 // -----------------------------------------------------------------------
@@ -725,9 +734,15 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 
 // -----------------------------------------------------------------------
 
+bool TileManager2Base::ShutDown()
+{
+	return loader->ShutDown();
+}
+
+// -----------------------------------------------------------------------
+
 void TileManager2Base::GlobalExit ()
 {
-	LogAlw("TileManager2Base::GlobalExit()");
 	delete loader;
 }
 

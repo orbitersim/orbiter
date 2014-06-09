@@ -49,14 +49,16 @@ VBMESH::VBMESH ()
 VBMESH::~VBMESH ()
 {
 	if (pMgr) {
-		nv_cur = pMgr->RecycleVertexBuffer(0, &pVB);
-		nf_cur = pMgr->RecycleIndexBuffer(0, &pIB);
+		pMgr->RecycleVertexBuffer(0, &pVB);
+		pMgr->RecycleIndexBuffer(0, &pIB);
 	} else {
 		SAFE_RELEASE(pVB);
 		SAFE_RELEASE(pIB);
 	}
 	SAFE_DELETEA(vtx);
 	SAFE_DELETEA(idx);
+	nv_cur = 0;
+	nf_cur = 0;
 }
 
 
@@ -88,14 +90,22 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 	VERTEX_2TEX *pVBuffer;
 	WORD *pIBuffer;
 
-	if (vtx) if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD)==S_OK) {
-		memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));
-		pVB->Unlock();
+	if (vtx) {
+		if (pVB) {
+			if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD)==S_OK) {
+				memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));
+				pVB->Unlock();
+			}
+		} else LogErr("Failed to create vertex buffer");
 	}
 
-	if (idx) if (pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD)==S_OK) {
-		memcpy(pIBuffer, idx, nf*sizeof(WORD)*3);
-		pIB->Unlock();
+	if (idx) {
+		if (pIB) {
+			if (pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD)==S_OK) {
+				memcpy(pIBuffer, idx, nf*sizeof(WORD)*3);
+				pIB->Unlock();
+			}
+		} else LogErr("Failed to create index buffer");
 	}
 }
 
@@ -347,7 +357,8 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 
 
 
-// ==============================================================
+// ====================================================================
+// NOTE: This is used to delete a vertex buffers from a static VBMESH
 //
 void DestroyVBMesh (VBMESH &mesh)
 {
@@ -364,5 +375,7 @@ void DestroyVBMesh (VBMESH &mesh)
 
 	mesh.nv = 0;
 	mesh.nf = 0;
+	mesh.nv_cur = 0;
+	mesh.nf_cur = 0;
 }
 

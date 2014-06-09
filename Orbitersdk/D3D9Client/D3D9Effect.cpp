@@ -189,7 +189,6 @@ D3D9Effect::~D3D9Effect()
 
 void D3D9Effect::GlobalExit()
 {
-	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
 	SAFE_RELEASE(pVB);
 	SAFE_DELETE(hArrow);

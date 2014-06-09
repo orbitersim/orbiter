@@ -543,11 +543,9 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 		LogAlw("================ clbkCloseSession ===============");
 
-		if (TileBuffer::ShutDown()==false) {
-			LogErr("Failed to shutdown tile buffer");
-		}
-		else LogOk("Tile buffer shutdown successful");
-
+		if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
+		if (TileManager2Base::ShutDown()==false) LogErr("Failed to Shutdown TileManager2Base()");
+		
 		DebugControls::SetVisual(NULL);
 		D3D9Effect::ShutDown();
 
@@ -640,6 +638,8 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		SAFE_DELETE(pBBuf);
 		SAFE_DELETE(pDefaultTex);
 
+		LogAlw("================ Checking Object Catalogs =================");
+		
 		// Check surface catalog --------------------------------------------------------------------------------------
 		//
 		DWORD n = SurfaceCatalog->CountEntries();
@@ -661,10 +661,8 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		// Check tile catalog --------------------------------------------------------------------------------------
 		//
 		DWORD nt = TileCatalog->CountEntries();
-		if (nt) LogErr("Tile Catalog contains %u unreleased entries",nt);
-		else    LogAlw("[OK] All Tiles are deleted");
-
-
+		if (nt) LogErr("SurfaceTile catalog contains %u unreleased entries",nt);
+		
 		SurfaceCatalog->Clear();
 		MeshCatalog->Clear();
 		TileCatalog->Clear();

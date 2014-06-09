@@ -12,6 +12,7 @@
 
 #include "cloudmgr2.h"
 #include "Texture.h"
+#include "D3D9Catalog.h"
 
 // =======================================================================
 // =======================================================================
@@ -48,9 +49,8 @@ void CloudTile::Load ()
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getParent()->Tex();
 			owntex = false;
-		} else
-			tex = 0;
-	}
+		} else tex = 0;
+	} else TileCatalog->Add(DWORD(tex));
 
 	bool shift_origin = (lvl >= 4);
 

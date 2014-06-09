@@ -24,7 +24,6 @@ MeshManager::MeshManager(D3D9Client *gclient)
 MeshManager::~MeshManager()
 {
 	DeleteAll();
-	LogAlw("MeshManager Deleted");
 }
 
 void MeshManager::DeleteAll()

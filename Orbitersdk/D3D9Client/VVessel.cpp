@@ -75,7 +75,6 @@ vVessel::~vVessel ()
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
 	DisposeAnimations();
 	DisposeMeshes();
-	LogAlw("Vessel visual deleted succesfully");
 }
 
 

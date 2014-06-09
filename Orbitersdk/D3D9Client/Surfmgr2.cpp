@@ -14,6 +14,7 @@
 
 #include "Surfmgr2.h"
 #include "Texture.h"
+#include "D3D9Catalog.h"
 
 // =======================================================================
 
@@ -72,6 +73,7 @@ SurfTile::~SurfTile ()
 		elev = NULL;
 	}
 	if (ltex && owntex) {
+		TileCatalog->Remove(DWORD(ltex));
 		ltex->Release();
 	}
 }
@@ -97,7 +99,7 @@ void SurfTile::Load ()
 			owntex = false;
 		} else
 			tex = 0;
-	}
+	} else TileCatalog->Add(DWORD(tex));
 	
 	// Load mask texture
 	ltex = NULL;
@@ -105,6 +107,7 @@ void SurfTile::Load ()
 		if (owntex) {
 			sprintf_s (path, "Textures\\%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 			D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &ltex);
+			if (ltex) TileCatalog->Add(DWORD(ltex));
 		} else if (node->Parent()) {
 			ltex = getSurfParent()->ltex;
 		}

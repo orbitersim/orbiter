@@ -135,6 +135,7 @@ public:
 	TileLoader (const oapi::D3D9Client *gclient);
 	~TileLoader ();
 	bool LoadTileAsync (Tile *tile);
+	bool ShutDown ();
 
 	bool Unqueue (Tile *tile);
 	// remove a tile from the load queue (caller must own hLoadMutex)
@@ -196,7 +197,8 @@ public:
 
 	static void GlobalInit (class oapi::D3D9Client *gclient);
 	static void GlobalExit ();
-	
+	static bool ShutDown ();
+
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static ID3DXEffect * Shader() { return pShader; }
 	

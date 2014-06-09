@@ -79,11 +79,6 @@ public:
 
 	virtual void Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, int level, double viewap = 0.0, bool bfog = false);
 
-	//static void CreateSphere (LPDIRECT3DDEVICE9 dev, VBMESH &mesh, DWORD nrings, bool hemisphere, int which_half, int texres);
-	//static void CreateSpherePatch (LPDIRECT3DDEVICE9 dev, VBMESH &mesh, int nlng, int nlat, int ilat, int res, int bseg = -1,
-	//bool reduce = true, bool outside = true, bool store_vtx = false, bool shift_origin = false);
-	//static void DestroyVBMesh (VBMESH &mesh);
-
 	void SetAmbientColor(D3DCOLOR cAmbient);
 
 protected:
