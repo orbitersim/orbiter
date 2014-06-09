@@ -112,7 +112,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	double np = 0.0, fp = 0.0;
 	int i;
 
-	class Scene *scene = GClient()->GetScene();
+	class Scene *scene = GetClient()->GetScene();
 
 	// adjust scaling parameters (can only be done if no z-buffering is in use)
 	if (!use_zbuf) {

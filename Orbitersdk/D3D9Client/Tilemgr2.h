@@ -224,7 +224,8 @@ public:
 	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
 	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
 	
-	const oapi::D3D9Client *GClient() const { return gc; }
+	const class Scene * GetScene() const { return gc->GetScene(); }
+	const oapi::D3D9Client *GetClient() const { return gc; }
 	const vPlanet *GetPlanet() const { return vp; }
 	const configPrm &Cprm() const { return cprm; }
 	const char *CbodyName() const { return cbody_name; }

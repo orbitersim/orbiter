@@ -14,6 +14,7 @@
 #include "Texture.h"
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
+#include "Scene.h"
 
 #include <stack>
 
@@ -758,7 +759,7 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	// set up the parameter structure
 	oapiGetRotationMatrix(obj, &prm.grot); // planet's rotation matrix
 	oapiGetGlobalPos (obj, &obj_pos);      // planet position
-	oapiCameraGlobalPos (&cam_pos);        // camera position
+	cam_pos = GetScene()->GetCameraGPos(); // camera position
 
 	if (prerot) {
 		double srot = sin(prerot), crot = cos(prerot);

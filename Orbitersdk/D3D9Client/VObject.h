@@ -102,6 +102,8 @@ public:
 
 	inline const D3DXMATRIX * MWorld() const { return &mWorld; }
 
+	inline const Scene * GetScene() const { return scn; }
+
 	/**
 	 * \brief Returns the handle of the associated logical object
 	 * \return object handle

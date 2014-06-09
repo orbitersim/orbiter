@@ -264,7 +264,7 @@ void HazeManager2::GlobalExit()
 
 void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 {
-	VECTOR3 cdir; oapiCameraGlobalDir(&cdir);
+	VECTOR3 cdir = vp->GetScene()->GetCameraGDir();
 	double calt = vp->CamDist() - rad;	// Camera altitude	
 
 	if (calt>hralt)	RenderRing(vp->PosFromCamera(), cdir, rad, hralt);
