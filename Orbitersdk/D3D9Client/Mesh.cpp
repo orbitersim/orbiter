@@ -2141,13 +2141,12 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 //
 void D3D9Mesh::DumpTextures()
 {
-	/*
 	LogBlu("Mesh 0x%X has %u textures",this, nTex-1);
 	if (Tex[0]!=NULL) LogErr("Texture in index 0");
 	for (DWORD i=1;i<nTex;i++) {
 		if (Tex[i]) LogBlu("Texture %u: 0x%X (%s)", i, Tex[i], Tex[i]->GetName());
 		else        LogBlu("Texture %u: NULL");
-	}*/
+	}
 }
 
 // ===========================================================================================

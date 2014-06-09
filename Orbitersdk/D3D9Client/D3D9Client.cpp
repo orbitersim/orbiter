@@ -530,12 +530,17 @@ void D3D9Client::clbkPostCreation()
 
 	if (scene) scene->Initialise();
 
+	bRunning = true;
+
+	LogAlw("=============== Loading Completed and Visuals Created ================");
+
 	WriteLog("[Scene Initialized]");
 }
 
 
 // ==============================================================
-
+// Called when simulation session is about to be closed
+//
 void D3D9Client::clbkCloseSession(bool fastclose)
 {
 	_TRACER;
@@ -543,29 +548,37 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 		LogAlw("================ clbkCloseSession ===============");
 
+		// Disable rendering and some other systems
+		//
+		bRunning = false;
+
+		// At fisrt, shutdown tile loaders -------------------------------------------------------
+		//
 		if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
 		if (TileManager2Base::ShutDown()==false) LogErr("Failed to Shutdown TileManager2Base()");
 		
+		// Disconnect a vesual form debug controls 
 		DebugControls::SetVisual(NULL);
+
+		// Disconnect textures from pipeline (Unlikely nesseccary)
 		D3D9Effect::ShutDown();
 
-		DWORD cnt = MeshCatalog->CountEntries();
 
+		// DEBUG: List all textures connected to meshes
+		/* DWORD cnt = MeshCatalog->CountEntries();
 		for (DWORD i=0;i<cnt;i++) {
 			D3D9Mesh *x = (D3D9Mesh*)MeshCatalog->Get(i);
 			if (x) x->DumpTextures();
-		}
+		} */
 
 		GraphicsClient::clbkCloseSession(fastclose);
 
 		SAFE_DELETE(parser);
-
-		LogAlw("================ Deleting Scene ===============");
+		LogAlw("================= Deleting Scene ================");
 		Scene::GlobalExit();
 		SAFE_DELETE(scene);
-		LogAlw("================ Deleting Mesh Manager ===============");
+		LogAlw("============== Deleting Mesh Manager ============");
 		SAFE_DELETE(meshmgr);
-		LogOk("================ clbkCloseSession Success ===============");
 		WriteLog("[Session Closed. Scene deleted.]");
 	}
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -580,7 +593,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
 	_TRACER;
-	LogAlw("================ clbkDestroyRenderWindow ===============");
+	LogAlw("============= clbkDestroyRenderWindow ===========");
 
 #ifdef _NVAPI_H
 	if (bNVAPI) {
@@ -604,10 +617,10 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		delete[] pSkinBuffer;
 		delete[] pSkinNames;
 
-		LogAlw("================ Clearing Texture Repository ===============");
+		LogAlw("=========== Clearing Texture Repository =========");
 		SAFE_DELETE(texmgr);
-		LogAlw("================ Texture Repository Cleared ===============");
-
+		
+		LogAlw("===== Calling GlobalExit() for sub-systems ======");
 		HazeManager::GlobalExit();
 		HazeManager2::GlobalExit();
 		TileManager::GlobalExit();
@@ -638,7 +651,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		SAFE_DELETE(pBBuf);
 		SAFE_DELETE(pDefaultTex);
 
-		LogAlw("================ Checking Object Catalogs =================");
+		LogAlw("============ Checking Object Catalogs ===========");
 		
 		// Check surface catalog --------------------------------------------------------------------------------------
 		//
@@ -672,9 +685,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		SAFE_DELETE(pFramework);
 
 		// Close Render Window -----------------------------------------
-
-		bRunning		 = false;
-
 		GraphicsClient::clbkDestroyRenderWindow(fastclose);
 
 		hRenderWnd		 = NULL;
@@ -682,8 +692,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		bFailed			 = false;
 		viewW = viewH    = 0;
 		viewBPP          = 0;
-
-		LogOk("================ clbkDestroyRenderWindow Success ===============");
 	}
 
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -711,14 +719,6 @@ void D3D9Client::clbkUpdate(bool running)
 		EmergencyShutdown();
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
-}
-
-// ==============================================================
-
-void D3D9Client::VisualsCreated()
-{
-	bRunning = true;
-	LogAlw("=============== Loading Completed and Visuals Created ================");
 }
 
 // ==============================================================

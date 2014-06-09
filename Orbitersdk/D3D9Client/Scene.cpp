@@ -152,15 +152,13 @@ void Scene::Initialise()
 	sunLight.Attenuation[0] = 1.0f; 
     sunLight.Param[D3D9LRange] = FLT_MAX;
 
-	// check object visibility (one object per frame in the interest
-	// of scalability)
+	// Browse through all objects and create visuals if in visual range
+	//
 	DWORD nobj = oapiGetObjectCount();
 	for (DWORD i=0;i<nobj;i++) {
 		OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
 		CheckVisual(hObj);
 	}
-
-	gc->VisualsCreated();
 }
 
 // ===========================================================================================

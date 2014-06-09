@@ -202,7 +202,6 @@ void D3D9Effect::ShutDown()
 	FX->SetTexture(eTex3, NULL);
 	FX->SetTexture(eSpecMap, NULL);
 	FX->SetTexture(eEmisMap, NULL);
-
 	oapiReleaseTexture(hNoise);
 }
 

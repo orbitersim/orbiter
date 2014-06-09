@@ -559,7 +559,6 @@ public:
 	int					GetIndexOfDissolveMap(SURFHANDLE hSrf) const;
 	void 				EmergencyShutdown();
 	void 				SplashScreen();
-	void 				VisualsCreated();	
 	inline bool 		IsRunning() { return bRunning; }
 	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
 	HWND 				GetWindow();
