@@ -26,6 +26,7 @@ public:
 	~CSphereManager ();
 
 	static void GlobalInit (oapi::D3D9Client *gclient);
+	static void GlobalExit ();
 	static void CreateDeviceObjects(LPDIRECT3D9 d3d, LPDIRECT3DDEVICE9 dev);
 	static void DestroyDeviceObjects();
 
@@ -58,7 +59,21 @@ protected:
 	static const D3D9Config *cfg;    // configuration parameters
 	const Scene *scn;
 	static int *patchidx;            // texture offsets for different LOD levels
-	static VBMESH **PATCH_TPL;
+	static VBMESH PATCH_TPL_1;
+	static VBMESH PATCH_TPL_2;
+	static VBMESH PATCH_TPL_3;
+	static VBMESH PATCH_TPL_4[2];
+	static VBMESH PATCH_TPL_5;
+	static VBMESH PATCH_TPL_6[2];
+	static VBMESH PATCH_TPL_7[4];
+	static VBMESH PATCH_TPL_8[8];
+	static VBMESH PATCH_TPL_9[16];
+	static VBMESH PATCH_TPL_10[32];
+	static VBMESH PATCH_TPL_11[64];
+	static VBMESH PATCH_TPL_12[128];
+	static VBMESH PATCH_TPL_13[256];
+	static VBMESH PATCH_TPL_14[512];
+	static VBMESH *PATCH_TPL[15];
 	static int **NLNG;
 	static int *NLAT;
 

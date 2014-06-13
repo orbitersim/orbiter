@@ -17,10 +17,13 @@
 #define IDC_STATIC10                            1306
 #define IDC_ATD_RSUN                            40000
 #define IDC_CREDITSTEXT                         40000
+#define IDC_LODBIAS                             40000
 #define IDC_ATM_RSUN                            40001
 #define IDC_DBG_DUAL                            40001
 #define IDC_ATD_SRFCOLOR                        40002
 #define IDC_DBG_WIRE                            40002
+#define IDC_DYNEXPS                             40002
+#define IDC_ATMOQ                               40003
 #define IDC_ATM_SRFCOLOR                        40003
 #define IDC_DBG_ENVMAP                          40003
 #define IDC_ATM_MODE                            40004

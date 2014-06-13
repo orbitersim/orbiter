@@ -4,9 +4,14 @@
 // Copyright (C) 2014 Jarmo Nikkanen
 // =============================================================================================================
 
-// -------------------------------------------------------------------------------------------------------------
+
+// =============================================================================================================
 // Shader File for TileManager2 and 3D Terrain implementation
-// -------------------------------------------------------------------------------------------------------------
+// Contains a light weight implementation 
+// =============================================================================================================
+
+
+
 
 // -------------------------------------------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
@@ -28,9 +33,17 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
 struct TileVS
 {
     float4 posH     : POSITION0;
-    float2 tex      : TEXCOORD0;  // Texture coordinate
-    float4 aux      : TEXCOORD1;  // Specular, Unused, Twilight, Night Texture Intensity
-	float3 atten    : COLOR0;     // Combined attennuation and sunlight
+    float2 texUV    : TEXCOORD0;  // Texture coordinate
+    float2 aux      : TEXCOORD1;  // Specular
+	float3 atten    : COLOR0;     // Attennuation
+    float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
+};
+
+struct CloudVS
+{
+    float4 posH     : POSITION0;
+    float2 texUV    : TEXCOORD0;  // Texture coordinate
+	float3 atten    : COLOR0;     // Attennuation
     float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
 };
 
@@ -71,7 +84,8 @@ uniform extern bool      bCloudSh;			// Enable cloud shadows
 uniform extern bool      bLights;			// Enable night-lights
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
-uniform extern texture   tMask;				// Nightlights / Mask texture
+uniform extern texture   tMask;				// Nightlights / Specular mask texture
+uniform extern texture   tSun;				// Pre-computed sunlight
 
 // -------------------------------------------------------------------------------------------------------------
 // Texture Sampler implementations
@@ -101,6 +115,16 @@ sampler MaskTexS = sampler_state
     AddressV = CLAMP;
 };
 
+sampler SunTexS = sampler_state
+{
+	Texture = <tSun>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = NONE;
+	AddressU = CLAMP;
+    AddressV = CLAMP;
+};
+
 
 // -------------------------------------------------------------------------------------------------------------
 // Atmospheric scattering model 
@@ -113,39 +137,35 @@ uniform extern float3	vRayTotal;			// Total rayleigh scattering for surface
 uniform extern float3	vRaySurface;		// Total rayleigh scattering for sun light to surface
 uniform extern float3	vRayInSct;			// Total rayleigh scattering for sun light to 
 uniform extern float3	vMieTotal;	
+uniform extern float3	vOutScatter;		// Total rayleigh scattering for sun light to surface
 uniform extern float3   vCameraPos;         // Geo-centric camera position 
 uniform extern float3   vUnitCameraPos;     // Geo-centric camera position (Unit vector)
-uniform extern float	fDepthClamp;		// Maximum optical depth for horizon haze
-uniform extern float	fSrfIntensity;		// Sun intensity for surface lighting
+uniform extern float	fDepthClamp;		// Maximum optical depth for horizon haze (Bound to Horizon slider)
+uniform extern float	fSrfIntensity;		// Sun intensity for surface lighting (Bound to Sun slider)
 uniform extern float	fScaleHeight;		// Atmosphere scaleheight
 uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight		
 uniform extern float    fRadius;            // PlanetRad
 uniform extern float    fCameraAlt;         // Camera Altitude
 uniform extern float    fHorizonAlt;        // Horizon (i.e. Skydome, Atmosphere) Altitude/Height
 uniform extern float	fAtmRad2;			// Atmosphere upper radius squared (fRadius+fHorizonAlt)^2
-uniform extern float	fBalance;			// Inscattering Color balance controller
+uniform extern float	fBalance;			// Inscattering Color balance (Bound to Color slider)
 uniform extern float	fHorizonDst;		// Camera to horizon distance sqrt(dot(vCameraPos,vCameraPos) - fRadius*fRadius)
-uniform extern float	fExposure;			// Camera exposure factor
+uniform extern float	fExposure;			// Camera exposure factor (Bound to Exposure slider)
 uniform extern float	fAux1;				// Unused. Bound to Aux1 slider
 uniform extern float	fAux2;				// Unused. Bound to Aux2 slider
-uniform extern float	fAmbient0;
+uniform extern float	fAmbient;			// Planet specific ambient level pre-multiplied with camera altitude factor
 uniform extern float	fGlobalAmb;
 uniform extern int		iMode;
 uniform extern bool		bOverSat;			// Avoid over-saturation
 uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt) 
 uniform extern bool		bOnOff;				
 
-static float fInvDepthClamp = 1.0/fDepthClamp;
-
 // Numeric integration points and weights for Gauss–Lobatto integral
 //
-const  float4 vSample4 = {-1, -0.447, 0.447, 1};		// Smaple points
-const  float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};	// Sample weights
-static float4 vPoints4 = (vSample4 + 1.0) * 0.5;		// Map to range 0 to 1
-
-const  float3 vSample3 = {-1, 0, 1};					// Smaple points
-const  float3 vWeight3 = {0.333, 1.333, 0.333};			// Sample weights
-static float3 vPoints3 = (vSample3 + 1.0) * 0.5;		// Map to range 0 to 1
+const  float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};
+const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};	
+const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};			
+const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
 
 
 // -------------------------------------------------------------------------------------------------------------
@@ -171,7 +191,8 @@ float RPhase(float cw)
 //
 float AngleCoEff(float c)
 {
-	float  c1 = rcp(max(0.0954, c+0.2)); float c2 = c1*c1;
+	//float  c1 = rcp(max(0.0608, c+0.2)); float c2 = c1*c1;  // 98 deg
+	float  c1 = rcp(max(0.0954, c+0.2)); float c2 = c1*c1;  // 96 deg
 	float4 v1 = float4(1.0f, c1, c2, c2*c1);
 	return dot(v1, vODCoEff) + dot(v1*(c2*c2), vODCoEffEx);
 }
@@ -194,79 +215,6 @@ float ShadowEx(float c, float alt)
 }
 
 
-
-
-
-// =============================================================================================================
-// Atmospheric scattering implementation (Renders a planet surface/clouds from atmosphere and space)
-// -------------------------------------------------------------------------------------------------------------
-// vAttenuate = Out Scattering (Surface Texture Attennuation)
-// vInscatter = In Scattering (Will be added to a pixel color)
-// vSunLight = Color of the sun light received by the surface
-// vPosW = Camera relative vertex position
-// vRay = Unit Vector from vertex to a camera
-// vSMN = Surface mean normal at vertex location 
-// =============================================================================================================    
-
-void SurfaceScatterFast(out float3 vAttenuate, out float3 vInscatter, out float3 vSunLight, in float3 vPosW, in float3 vRay, in float3 vSMN)
-{    
-    float  fRay;
-    float4 vAlt;
-    
-    float3 vp0  = vPosW + vCameraPos;				// Compute geo-centric vertex position
-    float  fRad = dot(vp0, vSMN);					// Vertex distance from a geo-centre
-  
-    // Compute the length of the viewing ray to a camera or a skydome.
-    //
-    if (bInSpace) {   			
-		float rdt = -fRad * dot(vRay, vSMN);
-		fRay = rdt + sqrt(fAtmRad2 - (fRad*fRad - rdt*rdt));	
-    } else {
-		fRay = length(vPosW);
-	}	
-	
-	float fDNS = dot(vSMN, vSunDir);				// Dot Normal Sun
-    float fDRS = dot(vRay, vSunDir);				// Compute rayleigh phase factor	
-  		
-	vAlt[0] = fRad - fRadius;						// Sample point 0 (i.e. Vertex) altitude
-	vAlt[3] = min(fHorizonAlt, fCameraAlt);			// Sample point 3 (i.e. Camera or Skydome altitude)
-	vAlt[1] = lerp(vAlt[0], vAlt[3], vPoints4[1]);	// Sample point 1 altitude
-	vAlt[2] = lerp(vAlt[0], vAlt[3], vPoints4[2]);	// Sample point 2 altitude
-	
-    float4 vDns	= exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
-    
-	// Mean atmospheric density for a viewing ray
-	float fMnD	= dot(vDns, vWeight4) * 0.5f;
-
-    // Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
-    float fRay0 = fMnD * (fRay * fInvScaleHeight);
-    
-	// Angle co-efficiency factor for incoming sunlight
-	float fSCo = AngleCoEff(fDNS);
-
-	// Limit the optical depth
-    fRay0 = fDepthClamp * (1.0f-exp2(-fRay0*fInvDepthClamp));
-
-	// Compute sunlight color received by a vertex
-    vSunLight = exp2(-(vRaySurface+vMieTotal) * (vDns[0] * fSCo)) * fSrfIntensity * Shadow(fDNS);
-    
-    // Compute surface texture color attennuation (i.e. extinction term)
-    vAttenuate = exp2(-(vRayTotal+vMieTotal) * fRay0);
-    
-	// Color of inscattered sunlight
-	float3 vSun = exp2(-(vRayTotal*fBalance+vMieTotal) * (fMnD * fSCo)) * fRay0 * Shadow(fDNS);
-    
-	// Multiply in-coming light with phase and light scattering factors
-    vInscatter = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSun;
-    
-    if (bOverSat) vInscatter = 1.0 - exp2(vInscatter*fExposure);
-}
-
-
-
-
-
-
 // =============================================================================================================
 // Atmospheric scattering implementation. (Will render horizon and sky-color as seen from the atmosphere)
 // -------------------------------------------------------------------------------------------------------------
@@ -274,64 +222,42 @@ void SurfaceScatterFast(out float3 vAttenuate, out float3 vInscatter, out float3
 // vUnitRay = Unit Vector pointing in ray direction. (away from the camera)
 // =============================================================================================================    
 
-void SkyScatterFast(out float3 vIns, in float3 vUnitRay)
+void SkyColor(out float3 vIns, in float3 vUnitRay)
 {    
-	float4 vAlt;
-	
-	// Ray length from a camera to skydome
-	// 
+
 	float  fCam = fCameraAlt + fRadius;
 	float  fPrm = fCam * dot(vUnitRay, vUnitCameraPos);
 	float  fRay = sqrt(fAtmRad2 - (fCam*fCam - fPrm*fPrm)) - fPrm;
 	float3 vRay = vUnitRay * fRay;
-	
-	float fDRS = -dot(vUnitRay, vSunDir);
-	
+	float  fDRS = -dot(vUnitRay, vSunDir);
+	float3 vPos = vCameraPos + vRay*0.5f;
+	float3 vNr1 = normalize(vPos);
+	float  fDNS = dot(vNr1, vSunDir);
+
 	// Setup altitudes for all sample points
-	//
-	vAlt[0] = fCameraAlt;
-	vAlt[3] = fHorizonAlt;
-	vAlt[1] = length(vCameraPos + vRay*vPoints4[1]) - fRadius;
-	vAlt[2] = length(vCameraPos + vRay*vPoints4[2]) - fRadius;
+	float3 vAlt = float3(fCameraAlt, dot(vNr1, vPos)-fRadius, fHorizonAlt);
 	
 	// Atmospheric densities for sample points	
-    float4 vDns = exp2(-vAlt*fInvScaleHeight);				
+    float3 vDns = exp2(-vAlt*fInvScaleHeight);				
     
 	// Mean atmospheric density for a viewing ray
-	float fMnD = dot(vDns, vWeight4) * 0.5f;
+	float fMnD = dot(vDns, vWeight3);
 
 	// Evaluate a Gauss-Lobatto integral (from camera to skydome). Will give optical depth for the ray
-    float fDRay = fMnD * (fRay * fInvScaleHeight);
+    float fDRay = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
     
-	// Limit the optical depth
-    fDRay = fDepthClamp * (1.0f-exp2(-fDRay*fInvDepthClamp));
-    
-	// Normal vector in a middle sample point. 
-	float3 vNr1 = normalize(vCameraPos + vRay*0.5f);	
-	
-	// Normal-sun angle
-	float  fDNS = dot(vNr1, vSunDir);
-	
-	// Optical depth for incoming sunlight	    
-    float  fSCo = AngleCoEff(fDNS);
-   
 	// Color of inscattered sunlight
-    float3 vSun = exp2(-(vRayTotal*fBalance+vMieTotal) * (fMnD * fSCo)) * fDRay * Shadow(fDNS);
+    float3 vSun = exp2(-(vRayTotal+vMieTotal) * (fMnD * AngleCoEff(fDNS))) * fDRay * Shadow(fDNS);
  
 	// Compute in-scattering 
     vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
     
-	// Camara altitude dependency multiplier for ambient color of atmosphere
-    float fMult = saturate((fScaleHeight-fCameraAlt)*fInvScaleHeight);
-
-	// Compute ambient light level for atmosphere
-    float fNgt = (fDNS+0.242f) * 2.924f; 
+    float fNgt = saturate(fDNS*2.924f+0.657f); 
 
     if (bOverSat) vIns = 1.0 - exp2(vIns*fExposure);
     
-	float3 vAmbient	= fAmbient0*saturate(fNgt-0.05f) * fMult;
-    
-    vIns += (vAmbient*(vRayInSct+1)*0.5f) * saturate(0.5f-max(vIns.b, vIns.r))*2.0;
+	// Compute ambient light level for the sky
+    vIns += (vRayInSct+1.0f) * (fAmbient * fNgt * saturate(0.5f-max(vIns.b, vIns.r)));
 }
 
 
@@ -348,23 +274,20 @@ void SkyScatterFast(out float3 vIns, in float3 vUnitRay)
 // vUnitRay = Unit Vector from vertex to a camera
 // =============================================================================================================    
 
-void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in float3 vUnitRay)
+void HorizonColor(out float3 vIns, in float fVtxAlt, in float3 vPosW, in float3 vUnitRay)
 {    
 	float3 vNr0 = normalize(vCameraPos + vPosW);
-	
+		
 	float fDNR = dot(vNr0, vUnitRay);
-    float fDns = exp2(-fVtxAlt*fInvScaleHeight);					
+    float fDNS = dot(vNr0, vSunDir);
+
+	float fDns = exp2(-fVtxAlt*fInvScaleHeight);					
 	float fDRay = fDns * (AngleCoEff(-fDNR) + AngleCoEff(fDNR));
-   
-   	// Limit the optical depth
-    fDRay = fDepthClamp * (1.0f-exp2(-fDRay*fInvDepthClamp));
-   	
-   	float fDNS = dot(vNr0, vSunDir);
-   	 
-	// Optical depth for incoming sunlight	    
-    float fDSun = (fDns+0.05f)*0.5f * AngleCoEff(fDNS);
     
-    float3 vSun = exp2(-(vRayTotal*fBalance+vMieTotal) * fDSun) * fDRay * ShadowEx(fDNS, fVtxAlt);
+	// Optical depth for incoming sunlight	    
+    float fDSun = fDns * 0.5f * AngleCoEff(fDNS);
+    
+    float3 vSun = exp2(-(vRayTotal+vMieTotal) * fDSun) * fDRay * ShadowEx(fDNS, fVtxAlt);
     
     float  fDRS = -dot(vUnitRay, vSunDir);
     
@@ -381,58 +304,74 @@ void HorizonScatterFast(out float3 vIns, in float fVtxAlt, in float3 vPosW, in f
 
 
 
-
 // =============================================================================================================
 // Planet Surface Renderer
 // =============================================================================================================
 
-#define AUX_UNUSED		1	
 #define AUX_SPECULAR	0	// Specular light intensity
-#define AUX_AMBIENT		2	// Ambient light level in atmosphere
-#define AUX_NIGHT		3	// Night lights intensity
+#define AUX_NIGHT		1	// Night lights intensity
 
 TileVS SurfaceTechVS(TILEVERTEX vrt)
 {
     // Zero output.
 	TileVS outVS = (TileVS)0;
+	float3 vSunLight;
 	
     // Apply a world transformation matrix
     float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
     float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
+	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
+	outVS.texUV  = vrt.tex0 * vTexOff.xz + vTexOff.yw;	
+	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
+	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
+	float3 vPlN  = normalize(vVrt);						// Planet mean normal at vertex location
+	float  fAlt  = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
+	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
+	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
+	float  fDRS  = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
+	float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 
-	// Convert transformed vertex position into a "screen" space using a combined (View and Projection) Matrix
-	outVS.posH	= mul(float4(vPosW, 1.0f), mViewProj);
-	outVS.tex   = vrt.tex0 * vTexOff.xz + vTexOff.yw;
-	
-	// A vector from the vertex to the camera
-	float3 vRay = normalize(-vPosW);
-	float3 vPlN = normalize(vCameraPos + vPosW);
-	float  fNgt	= (dot(vSunDir, vPlN)+0.242f) * 2.924f; 
-	
     outVS.aux[AUX_SPECULAR] = pow(saturate(dot(reflect(-vSunDir, vNrmW), vRay)), vWater.a);
-    outVS.aux[AUX_NIGHT]	= saturate(-fNgt - 0.2f);
-    
-    float3 vSunLight;
+	outVS.aux[AUX_NIGHT]	= saturate(-fNgt - 0.2f);
+   
 
-	float fDNS = dot(vSunDir, vNrmW);
-    
-	// Render Atmospheric effects ?
-	if (bOnOff) {
-
-		SurfaceScatterFast(outVS.atten, outVS.insca, vSunLight, vPosW, vRay, vPlN); 
-
-		// Camara altitude dependency multiplier for ambient color of atmosphere
-		float fMult = saturate((fScaleHeight-fCameraAlt)*fInvScaleHeight);
-
-		float3 vAmbient	= max(fAmbient0*saturate(fNgt-0.05f)*fMult, fGlobalAmb);
-
-		outVS.atten *= max((vSunLight*fDNS), vAmbient);
+	if (bInSpace) {
+		float fDns  = exp2(-fAlt*fInvScaleHeight);
+		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
+		vSunLight   = exp2(-(vRayTotal+vMieTotal) * (fDns * AngleCoEff(fDPS)));
+		outVS.atten = exp2(-(vRayTotal+vMieTotal) * fDRay);
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS);
 	}
-    else {
-		outVS.atten = saturate(fDNS);
-		outVS.insca = 0;
-	}	
 
+	else {
+
+		float fRay = abs(dot(vPosW, vRay));				// Length of the viewing ray	
+	
+		// Altitude vector for sample points
+	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
+		
+		// Compute atmospheric density for all sample points
+		float3 vDns	= exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
+	    
+		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
+		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
+	    
+		vSunLight = exp2(-(vRayTotal+vMieTotal) * (vDns[0] * AngleCoEff(fDPS)));
+
+		// Compute surface texture color attennuation (i.e. extinction term)
+		outVS.atten = exp2(-(vRayTotal+vMieTotal) * fDRay);
+	    
+		// Multiply in-coming light with phase and light scattering factors
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS);
+	}
+
+	// Camara altitude dependency multiplier for ambient color of atmosphere
+	float fAmb = max(saturate(fNgt-0.05f)*fAmbient, fGlobalAmb) * 0.08f;
+
+	outVS.atten *= max((vSunLight*fDNS), (vRayInSct+4.0f) * fAmb);
+
+	if (bOverSat) outVS.insca = 1.0f - exp2(outVS.insca*fExposure);
+	
     return outVS;
 }	
 
@@ -442,15 +381,15 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 {
 	float3 cNgt = 0;
 	float3 cSpe = 0;
-	float4 cTex = tex2D(DiffTexS, frg.tex.xy);
-	float4 cMsk = tex2D(MaskTexS, frg.tex.xy);
+	float4 cTex = tex2D(DiffTexS, frg.texUV);
+	float4 cMsk = tex2D(MaskTexS, frg.texUV);
 	
     if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb * 1.5f;
     if (bLights)   cNgt = cMsk.rgb * (frg.aux[AUX_NIGHT] * fNight);
     
     float3 color = (cTex.rgb + cSpe) * frg.atten.rgb + vAddBkg.rgb + frg.insca.rgb + cNgt;
   
-	return float4(color, 1.0);   
+	return float4(color, 1.0f);   
 }
 
 
@@ -492,48 +431,75 @@ technique TileTechNoZ
 // Cloud Layer Renderer
 // =============================================================================================================
 
-TileVS CloudTechVS(TILEVERTEX vrt)
+CloudVS CloudTechVS(TILEVERTEX vrt)
 {
     // Zero output.
-	TileVS outVS   = (TileVS)0;
+	CloudVS outVS = (CloudVS)0;
+	float3 vSunLight = 1.0;
 	
-    // Apply a mes h group transformation matrix
     float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
-    float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
-
-	// Convert transformed vertex position into a "screen" space using a combined (World, View and Projection) Matrix
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
-	outVS.tex	 = vrt.tex0 * vTexOff.xz + vTexOff.yw;
-	
-	// A vector from the vertex to the camera
-	float3 vRay  = normalize(-vPosW);
-	float3 vPlN  = normalize(vCameraPos + vPosW);
-	float  fNgt  = (dot(vSunDir, vPlN)+0.242f) * 2.924f; 
-   
-	float3 vSunLight;
-	
-	if (bOnOff) SurfaceScatterFast(outVS.atten, outVS.insca, vSunLight, vPosW, vRay, vPlN); 
-    else {
-		outVS.atten = 1;
-		outVS.insca = float3(0, 0, 0.2);
-	}	
+	outVS.texUV	 = vrt.tex0 * vTexOff.xz + vTexOff.yw;
+	float3 vVrt  = vCameraPos + vPosW;			// Geo-centric vertex position
+	float3 vRay  = normalize(-vPosW);			// Unit viewing ray
+	float3 vPlN  = normalize(vVrt);				// Planet mean normal at vertex location
+	float  fAlt  = dot(vVrt, vPlN) - fRadius;	// Vertex altitude
+	float  fDPS  = dot(vPlN, vSunDir);			// Dot mean normal, sun direction
+	float  fDRS  = dot(vRay, vSunDir);			// Dot viewing ray, sun direction
+	float  fFct  = pow(saturate(fDPS), 0.5f);
 
-	float fDot = pow(saturate(dot(vSunDir, vPlN)), 0.5f);
+	if (bInSpace) {
 
-	// Camara altitude dependency multiplier for ambient color of atmosphere
-    float fMult = saturate((fScaleHeight-fCameraAlt)*fInvScaleHeight);
-
-	float3 vAmbient	= max(fAmbient0*saturate(fNgt-0.05f)*fMult, fGlobalAmb);
-	
-	outVS.atten *= max(vSunLight*fDot*2.0f, vAmbient);
+		float fDns = exp2(-fAlt*fInvScaleHeight);
 		
+		// An optical depth for a viewing ray
+		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
+	    
+		vSunLight = exp2(-vRayTotal * (fDns * AngleCoEff(fDPS)));
+
+		// Compute surface texture color attennuation (i.e. extinction term)
+		outVS.atten = exp2(-(vRayTotal+vMieTotal) * fDRay);
+	    
+		// Multiply in-coming light with phase and light scattering factors
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSunLight * fDRay;
+		outVS.atten *= vSunLight * fFct; 
+		outVS.insca *= fFct; 
+
+	}
+	else {
+
+		// Length of the viewing ray
+		float fRay = abs(dot(vPosW, vRay));					
+	
+		// Altitude vector for sample points
+	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
+		
+		// Compute atmospheric density for all sample points
+		float3 vDns	= exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
+	    
+		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
+		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
+	    
+		vSunLight = exp2(-vRayTotal * (vDns[0] * AngleCoEff(fDPS)));
+
+		// Compute surface texture color attennuation (i.e. extinction term)
+		outVS.atten = exp2(-(vRayTotal+vMieTotal) * fDRay);
+	    
+		// Multiply in-coming light with phase and light scattering factors
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSunLight * fDRay;
+
+		outVS.atten *= vSunLight * fFct + outVS.insca; 	
+	}
+
+	if (bOverSat) outVS.insca = 1.0 - exp2(outVS.insca*fExposure);
+
     return outVS;
 }
 
 
-float4 CloudTechPS(TileVS frg) : COLOR
+float4 CloudTechPS(CloudVS frg) : COLOR
 {
-	float4 cTex = tex2D(DiffTexS, frg.tex.xy);
+	float4 cTex = tex2D(DiffTexS, frg.texUV);
     return float4(cTex.rgb * frg.atten.rgb + frg.insca.rgb, cTex.a);
 }
 
@@ -578,8 +544,8 @@ HazeVS RingTechVS(float3 posL : POSITION0)
     float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
-	if (bOnOff) HorizonScatterFast(outVS.insca, fVtxAlt, posW, normalize(posW));
-	else outVS.insca = float3(0.2, 0, 0);
+	if (bOnOff) HorizonColor(outVS.insca, fVtxAlt, posW, normalize(posW));
+	else outVS.insca = float3(0.5, 0, 0);
 	
     return outVS;
 }
@@ -587,7 +553,7 @@ HazeVS RingTechVS(float3 posL : POSITION0)
 float4 RingTechPS(HazeVS frg) : COLOR
 {
 	float c = max(frg.insca.r, frg.insca.b)*3.0;
-    return float4(frg.insca.rgb, 1.0+c*frg.alpha);
+    return float4(frg.insca.rgb, c*frg.alpha);
 }
 
 technique RingTech
@@ -622,7 +588,7 @@ HazeVS HorizonTechVS(float3 posL : POSITION0)
 	
 	float fVtxAlt = posL.y*fAlpha;	// Vertex Altitude
 	
-	outVS.alpha = saturate(1.0-smoothstep(0.7f, 0.95f, posL.y));
+	outVS.alpha = saturate(1.0-smoothstep(0.6f, 0.98f, posL.y));
 	
 	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
 	posL.y   = lerp(vTexOff[2], vTexOff[3], posL.y);
@@ -630,8 +596,8 @@ HazeVS HorizonTechVS(float3 posL : POSITION0)
     float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
-	if (bOnOff) SkyScatterFast(outVS.insca, normalize(posW));
-	else outVS.insca = float3(0, 0.2, 0);
+	if (bOnOff) SkyColor(outVS.insca, normalize(posW));
+	else outVS.insca = float3(0, 0.9, 0.9);
 	
     return outVS;
 }
@@ -676,8 +642,8 @@ CelSphereVS SkyDomeTechVS(TILEVERTEX vrt)
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	outVS.tex0	= vrt.tex0;
 	
-	if (bOnOff) SkyScatterFast(outVS.insca, normalize(posW)); 
-	else outVS.insca = float3(0, 0, 0.4);
+	if (bOnOff) SkyColor(outVS.insca, normalize(posW)); 
+	else outVS.insca = float3(0, 0, 0.5);
 	
     return outVS;
 }

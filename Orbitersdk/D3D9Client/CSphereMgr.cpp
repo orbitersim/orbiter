@@ -4,7 +4,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
-//				 2011 Jarmo Nikkanen (D3D9Client modification) 
+// Copyright (C) 2011-2014 Jarmo Nikkanen (D3D9Client modification) 
 // ==============================================================
 
 #include "D3D9util.h"
@@ -13,22 +13,39 @@
 #include "Texture.h"
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
+#include "Spherepatch.h"
 
 using namespace oapi;
 
 // =======================================================================
 // Externals
 
-extern int patchidx[9];
-extern VBMESH *PATCH_TPL[15];
-
 DWORD CSphereManager::vpX0, CSphereManager::vpX1, CSphereManager::vpY0, CSphereManager::vpY1;
 double CSphereManager::diagscale;
 int *CSphereManager::patchidx = 0;
 int **CSphereManager::NLNG = 0;
 int *CSphereManager::NLAT = 0;
-VBMESH **CSphereManager::PATCH_TPL = 0;
 const D3D9Config *CSphereManager::cfg = NULL;
+
+VBMESH CSphereManager::PATCH_TPL_1;
+VBMESH CSphereManager::PATCH_TPL_2;
+VBMESH CSphereManager::PATCH_TPL_3;
+VBMESH CSphereManager::PATCH_TPL_4[2];
+VBMESH CSphereManager::PATCH_TPL_5;
+VBMESH CSphereManager::PATCH_TPL_6[2];
+VBMESH CSphereManager::PATCH_TPL_7[4];
+VBMESH CSphereManager::PATCH_TPL_8[8];
+VBMESH CSphereManager::PATCH_TPL_9[16];
+VBMESH CSphereManager::PATCH_TPL_10[32];
+VBMESH CSphereManager::PATCH_TPL_11[64];
+VBMESH CSphereManager::PATCH_TPL_12[128];
+VBMESH CSphereManager::PATCH_TPL_13[256];
+VBMESH CSphereManager::PATCH_TPL_14[512];
+VBMESH *CSphereManager::PATCH_TPL[15] = {
+	0, &PATCH_TPL_1, &PATCH_TPL_2, &PATCH_TPL_3, PATCH_TPL_4, &PATCH_TPL_5,
+	PATCH_TPL_6, PATCH_TPL_7, PATCH_TPL_8, PATCH_TPL_9, PATCH_TPL_10,
+	PATCH_TPL_11, PATCH_TPL_12, PATCH_TPL_13, PATCH_TPL_14
+};
 
 
 void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
@@ -45,7 +62,6 @@ CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : Plane
 	gc->clbkSplashLoadMsg("Loading Celestial Sphere...",0);
 	
 	patchidx  = TileManager::patchidx;
-	PATCH_TPL = TileManager::PATCH_TPL;
 	NLNG = TileManager::NLNG;
 	NLAT = TileManager::NLAT;
 
@@ -125,6 +141,8 @@ CSphereManager::~CSphereManager ()
 
 void CSphereManager::GlobalInit(oapi::D3D9Client *gclient)
 {
+	LogAlw("CSphereManager::GlobalInit()...");
+
 	LPDIRECT3DDEVICE9 dev = gclient->GetDevice();
 	D3DVIEWPORT9 vp;
 	dev->GetViewport (&vp);
@@ -134,6 +152,93 @@ void CSphereManager::GlobalInit(oapi::D3D9Client *gclient)
 
 	diagscale = (double)vp.Width/(double)vp.Height;
 	diagscale = sqrt(1.0 + diagscale*diagscale);
+
+	// Level 1 patch template
+	CreateSphere (dev, PATCH_TPL_1, 6, false, 0, 64);
+ 
+ 	// Level 2 patch template
+	CreateSphere (dev, PATCH_TPL_2, 8, false, 0, 128);
+ 
+ 	// Level 3 patch template
+	CreateSphere (dev, PATCH_TPL_3, 12, false, 0, 256);
+ 
+ 	// Level 4 patch templates
+	CreateSphere (dev, PATCH_TPL_4[0], 16, true, 0, 256);
+	CreateSphere (dev, PATCH_TPL_4[1], 16, true, 1, 256);
+ 
+ 	// Level 5 patch template
+	CreateSpherePatch (dev, PATCH_TPL_5, 4, 1, 0, 18);
+ 
+ 	// Level 6 patch templates
+	CreateSpherePatch (dev, PATCH_TPL_6[0], 8, 2, 0, 10, 16);
+	CreateSpherePatch (dev, PATCH_TPL_6[1], 4, 2, 1, 12);
+ 
+ 	// Level 7 patch templates
+	CreateSpherePatch (dev, PATCH_TPL_7[0], 16, 4, 0, 12, 12, false);
+	CreateSpherePatch (dev, PATCH_TPL_7[1], 16, 4, 1, 12, 12, false);
+	CreateSpherePatch (dev, PATCH_TPL_7[2], 12, 4, 2, 10, 16, true);
+	CreateSpherePatch (dev, PATCH_TPL_7[3],  6, 4, 3, 12, -1, true);
+ 
+	int r = 16;
+	if (Config->LODBias<0) r = 8;
+	
+ 	// Level 8 patch templates
+	CreateSpherePatch (dev, PATCH_TPL_8[0], 32, 8, 0, (12*r)>>4, (15*r)>>4, false, true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[1], 32, 8, 1, (12*r)>>4, (15*r)>>4, false, true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[2], 30, 8, 2, (12*r)>>4, (16*r)>>4, false, true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[3], 28, 8, 3, (12*r)>>4, (12*r)>>4, false, true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[4], 24, 8, 4, (12*r)>>4, (12*r)>>4, false, true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[5], 18, 8, 5, (12*r)>>4, (12*r)>>4, false, true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[6], 12, 8, 6, (10*r)>>4, (16*r)>>4, true,  true, true);
+	CreateSpherePatch (dev, PATCH_TPL_8[7],  6, 8, 7, (12*r)>>4, -1, true,  true, true);
+
+
+	// Patch templates for level 9 and beyond
+	/*
+	const int n = 8;
+	const int nlng8[8] = {32,32,30,28,24,18,12,6};
+	const int res8[8] = {15,15,16,12,12,12,12,12};
+	int mult = 2, idx, lvl, i, j;
+	for (lvl = 9; lvl <= SURF_MAX_PATCHLEVEL; lvl++) {
+		idx = 0;
+		for (i = 0; i < 8; i++) {
+			for (j = 0; j < mult; j++) {
+				if (idx < n*mult)
+					CreateSpherePatch (dev, PATCH_TPL[lvl][idx], nlng8[i]*mult, n*mult, idx, 12, res8[i], false, true, true, true);
+				else
+					CreateSpherePatch (dev, PATCH_TPL[lvl][idx], nlng8[i]*mult, n*mult, idx, 12, -1, true, true, true, true);
+				
+				idx++;
+			}
+		}
+		mult *= 2;
+	}*/
+
+	LogMsg("...Done");
+}
+
+// ==============================================================
+
+void CSphereManager::GlobalExit ()
+{
+	int i;
+
+	DestroyVBMesh (PATCH_TPL_1);
+	DestroyVBMesh (PATCH_TPL_2);
+	DestroyVBMesh (PATCH_TPL_3);
+	for (i = 0; i <  2; i++) DestroyVBMesh (PATCH_TPL_4[i]);
+	DestroyVBMesh (PATCH_TPL_5);
+	for (i = 0; i <  2; i++) DestroyVBMesh (PATCH_TPL_6[i]);
+	for (i = 0; i <  4; i++) DestroyVBMesh (PATCH_TPL_7[i]);
+	for (i = 0; i <  8; i++) DestroyVBMesh (PATCH_TPL_8[i]);
+
+	/*
+	const int n = 8;
+	int mult = 2, lvl;
+	for (lvl = 9; lvl <= SURF_MAX_PATCHLEVEL; lvl++) {
+		for (i = 0; i < n*mult; i++) DestroyVBMesh (PATCH_TPL[lvl][i]);
+		mult *= 2;
+	}*/
 }
 
 // =======================================================================
@@ -256,13 +361,9 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl, bool b
 	UINT numPasses = 0;
 	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
-	if (!bInAtmosphere) {
-		Shader()->BeginPass(0);	// Render without atmospheric effects
-	}
-	else {
-		Shader()->BeginPass(1); // Render with atmospheric effects
-	}
-
+	if (!bInAtmosphere) Shader()->BeginPass(0);	// Render without atmospheric effects
+	else 				Shader()->BeginPass(1); // Render with atmospheric effects
+	
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere
 			D3DXMatrixMultiply(&RenderParam.wmat, &TileManager::Rsouth, &RenderParam.wmat);

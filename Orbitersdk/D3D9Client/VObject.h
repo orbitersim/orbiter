@@ -103,6 +103,8 @@ public:
 	inline const D3DXMATRIX * MWorld() const { return &mWorld; }
 
 	inline const Scene * GetScene() const { return scn; }
+	inline oapi::D3D9Client * GetClient() { return gc; }
+	inline LPDIRECT3DDEVICE9 GetDevice() { return gc->GetDevice(); }
 
 	/**
 	 * \brief Returns the handle of the associated logical object

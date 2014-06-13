@@ -11,8 +11,7 @@
 #include "D3D9util.h"
 #include "AABBUtil.h"
 #include "D3D9Client.h"
-
-float saturate(float x) { if (x>1) return 1; if (x<0) return 0; return x; }
+#include "VectorHelpers.h"
 
 
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
@@ -369,11 +368,6 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 // =======================================================================
 // Some utility methods for D3D vectors and matrices
 // ============================================================================
-
-D3DXVECTOR3 expv(D3DXVECTOR3 &v)
-{
-	return D3DXVECTOR3(float(exp2(v.x)), float(exp2(v.y)), float(exp2(v.z)));
-}
 
 
 float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b)

@@ -291,8 +291,8 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	if ((caps.VertexShaderVersion&0xFFFF)<0x0200) {
 		LogErr("[Insufficient Vertex Shader. Attempting software vertex processing...]");
-		oapiWriteLog("D3D9Client:WARNING: [Insufficient Vertex Shader. Attempting software vertex processing...]");
-		SWVert = true;
+		oapiWriteLog("D3D9Client:FAIL: [Vertex Shader Version 2.0 or better is required]");
+		bFail=true;
 	}
 
 	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) {
@@ -302,7 +302,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	}
 
 	if ((caps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT)==0) {
-		SWVert = true;
+		//bFail=true;
 		LogWrn("[No Hardware T&L]");
 		oapiWriteLog("D3D9Client:WARNING: [No Hardware T&L]");
 	}
@@ -327,6 +327,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	}
 	else bVertexTexture = false;
 
+
 	// Check shadow mapping support
 	bool bShadowMap = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
@@ -335,6 +336,16 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	if (!bShadowMap) {
 		LogWrn("[No shadow mapping support]");
 		oapiWriteLog("D3D9Client:WARNING: [No shadow mapping support]");
+	}
+
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DYNAMIC, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) {
+		LogErr("[No D3DFMT_A16B16G16R16F Support]");
+		oapiWriteLog("D3D9Client:WARNING: [No D3DFMT_A16B16G16R16F support]");
+	}
+
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DYNAMIC, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) {
+		LogErr("[No D3DFMT_A32B32G32R32F Support]");
+		oapiWriteLog("D3D9Client:WARNING: [No D3DFMT_A32B32G32R32F support]");
 	}
 
 	if (bFail) {
@@ -421,7 +432,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		pShmRT = NULL;
 	}
 
-	LogOk("[3DDevice Initialized]");
+	LogAlw("=== [3DDevice Initialized] ===");
 	return S_OK;
 }
 

@@ -59,6 +59,7 @@ public:
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
+	static D3DXHANDLE stSun;
 	// Atmosphere -------------------------------------------------
 	//static D3DXHANDLE svFogColor;
 	//static D3DXHANDLE sfFogDensity:

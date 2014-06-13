@@ -21,7 +21,7 @@
 // =======================================================================
 // Externals
 
-static int maxres = 14;    // max tree resolution depth    
+static int maxres = 14;    // max tree resolution depth    (NOT IN USE)
 static int patch_res = 32; // patch node grid dimensions
 static int elev_stride = patch_res*8+3;
 static TEXCRDRANGE2 fullrange = {0,1,0,1};
@@ -722,7 +722,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	gc = gclient;
 	pDev = gc->GetDevice();
 
-	resolutionBias = 4.0 + *(double*)gclient->GetConfigParam (CFGPRM_RESOLUTIONBIAS);
+	resolutionBias = 4.0 + double(Config->LODBias);
 	cprm.bSpecular = *(bool*)gclient->GetConfigParam (CFGPRM_SURFACEREFLECT);
 	cprm.bLights = *(bool*)gclient->GetConfigParam (CFGPRM_SURFACELIGHTS);
 	cprm.bCloudShadow = *(bool*)gclient->GetConfigParam (CFGPRM_CLOUDSHADOWS);

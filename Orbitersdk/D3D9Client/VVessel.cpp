@@ -473,7 +473,7 @@ void vVessel::InitAnimations()
 	if (nanim > oldnanim) {
 		LogAlw("Vessel(%s) Vis=0x%X has %u animations", name, this, nanim);
 		for (UINT i = oldnanim; i < nanim; ++i) {
-			LogBlu("Anim(%u): Has %u animcomps. AnimState=%g, DefState=%g", i, anim[i].ncomp, anim[i].state, anim[i].defstate);
+			//LogBlu("Anim(%u): Has %u animcomps. AnimState=%g, DefState=%g", i, anim[i].ncomp, anim[i].state, anim[i].defstate);
 			animstate[i] = anim[i].defstate; // reset to default mesh states
 		}
 	}

@@ -306,11 +306,6 @@ inline D3DXCOLOR _D3DXCOLOR(const VECTOR3 &v, float a = 1.0f)
 	return D3DXCOLOR(float(v.x), float(v.y), float(v.z), a);
 }
 
-inline D3DXVECTOR3 _D3DXVECTOR3(const VECTOR3 &v)
-{
-	return D3DXVECTOR3(float(v.x), float(v.y), float(v.z));
-}
-
 inline VECTOR3 _VD3DX(const D3DXVECTOR3 &v)
 {
 	return _V(double(v.x), double(v.y), double(v.z));

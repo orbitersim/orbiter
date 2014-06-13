@@ -776,6 +776,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\VectorHelpers.h"
+				>
+			</File>
+			<File
 				RelativePath=".\VideoTab.h"
 				>
 			</File>

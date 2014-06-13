@@ -18,6 +18,7 @@
 
 #include "AABBUtil.h"
 #include "OrbiterAPI.h"
+#include "VectorHelpers.h"
 #include "Log.h"
 #include <xnamath.h>
 
@@ -39,7 +40,7 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 
 		if (d==0.0) { LogErr("Singular Matrix in SolveLUSystem()"); delete []p; return false; }
 
-		if (r!=k) {
+		if (r!=k) { // Do Swaps
 			for (int i=0;i<n;i++) { double x = A[k*n+i]; A[k*n+i] = A[r*n+i]; A[r*n+i] = x; } 
 			int x=p[k]; p[k]=p[r]; p[r]=x; e++;
 		}
@@ -49,7 +50,7 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 
 	// Do Substitutions ------------------------------------------------------------------------------------------
 	for (int i=0;i<n;i++) {	x[i] = b[p[i]];	for (int j=0;j<i;j++) x[i] -= A[i*n+j]*x[j]; }
-	for (int i=n-1;i>=0;i--) {	for (int j=i+1;j<n;j++) x[i] -= A[i*n+j]*x[j]; x[i] /= A[i*n+i]; }
+	for (int i=n-1;i>=0;i--) { for (int j=i+1;j<n;j++) x[i] -= A[i*n+j]*x[j]; x[i] /= A[i*n+i]; }
 
 	// Do Determinant --------------------------------------------------------------------------------------------
 	if (det) { *det = 1.0; for (int i=0;i<n;i++) *det *= A[i*n+i]; if (e&1) *det*=-1.0; } 
@@ -67,10 +68,7 @@ void D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int li
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		return;
 	}
-
-	__try {
-		memcpy(tgt,src,bytes);
-	}
+	__try {	memcpy(tgt,src,bytes);	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		LogErr("memcpy2(0x%X, 0x%X, %u) File=%s, Line=%d", tgt, src, bytes, file, line);
@@ -86,10 +84,7 @@ void D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line)
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		return;
 	}
-
-	__try {
-		memset(tgt,val,bytes);
-	}
+	__try {	memset(tgt,val,bytes); }
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 		LogErr("memset2(0x%X, %d, %u) File=%s, Line=%d", tgt, val, bytes, file, line);
@@ -480,14 +475,15 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 {
 	double delta = 0.2 * PI / 180.0;
 	double r0 = R + alt;
+	double h0ln = h0; // /log(2.0);
 
-	if (dir<(delta*2.0)) return h0 * exp2(-(r0-R)/h0) / cos(dir);
+	if (dir<(delta*2.0)) return h0ln * exp2(-(r0-R)/h0) / cos(dir);
 
 	dir = PI - dir;
 
 	double m0 = r0 / sin(PI-dir-delta);
 
-	if (m0*sin(dir)>R1) return h0 * exp2(-(r0-R)/h0) / cos(PI-dir); 
+	if (m0*sin(dir)>R1) return h0ln * exp2(-(r0-R)/h0) / cos(PI-dir); 
 
 	double opt = 0.0;
 	double sind = sin(delta); 
@@ -496,8 +492,8 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 
 		double m = r0 / sin(PI-dir-delta);
 		double r1 = m  * sin(dir);
-		double d0 = h0 * exp2((r0-R)/-h0);
-		double d1 = h0 * exp2((r1-R)/-h0);
+		double d0 = h0ln * exp2((r0-R)/-h0);
+		double d1 = h0ln * exp2((r1-R)/-h0);
 
 		if (fabs(r1-r0)<1e-9) {
 			dir += delta;
@@ -514,6 +510,14 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 }
 
 
+
+
+
+
+
+
+
+
 // ===========================================================================
 // Fast evaluation of Optical depth based of taylor series
 // alt = Ray starting altitude [m]
@@ -522,19 +526,27 @@ double ExactOpticalDepth(double alt, double dir, double R, double R1, double h0)
 // prm = Taylor co-efficients
 // ============================================================================
 
-float FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 prm)
+float FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 *prm)
 {
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return float(h0 * exp2(-alt/h0) * pow(D3DXVec4Dot(&q, &prm), -float(SctPwr)));
+	return float(h0 * exp2(-alt/h0) * pow(D3DXVec4Dot(&q, prm), -float(SctPwr)));
 }
 
-float FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm)
+float FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 *prm)
 {
 	cd = 1.0f - cd;
 	float cd2 = cd * cd;
 	D3DXVECTOR4 q(1.0f, cd, cd2, cd2*cd);
-	return float(h0 * exp2(-alt/h0) * exp2(D3DXVec4Dot(&q, &prm)));
+	return float(h0 * exp2(-alt/h0) * exp2(D3DXVec4Dot(&q, prm)));
+}
+
+double FastOpticalDepth(double alt, double cd, double h0, double *coeff, int m)
+{
+	cd = 1.0/(cd+0.2);
+	double val = 0.0, x = 1.0;
+	for (int i=0;i<m;i++) {	val += coeff[i]*x; x*=cd; }
+	return h0 * exp2(-alt/h0) * val;
 }
 
 // ===========================================================================
@@ -634,7 +646,7 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 	SolveLUSystem(4, (double *)&m, (double *)&q, r, NULL);
 	D3DXVECTOR4 fct = D3DXVECTOR4(float(r[0]), float(r[1]), float(r[2]), float(r[3]));
 
-	float d1 = FastOpticalDepth(0.0, 0, h0, fct);
+	float d1 = FastOpticalDepth(0.0, 0, h0, &fct);
 	float d2 = (float)ExactOpticalDepth(0.0, PI05, R, R1, h0);
 	float dv = (d1-d2)/d2;
 	if (fabs(dv)>0.2) LogErr("Bad Match %g", dv);
@@ -643,10 +655,10 @@ D3DXVECTOR4 SolveScatter(double h0, double R, double R1)
 }
 
 
-bool SolveXScatter(double h0, double R, double R1, double *r, int m)
+bool SolveXScatter(double h0, double R, double R1, double *r, double angle, int m)
 {
-
-	double x[50]; x[0]=0.0; for (int i=1;i<50;i++) x[i] = x[i-1] + 1.93;
+	double delta = angle / 50.0;
+	double x[50]; x[0]=0.0; for (int i=1;i<50;i++) x[i] = x[i-1] + delta;
 	
 	int ndata = sizeof(x)/sizeof(double);
 
@@ -673,13 +685,14 @@ bool SolveXScatter(double h0, double R, double R1, double *r, int m)
 
 	bool bRet = SolveLUSystem(m, M, q, r);
 
-	//float cd = 1.0/0.2;
-	//float val = 0.0, xf = 1.0;
-	//for (int i=0;i<8;i++) {	val += float(r[i])*xf; xf*=cd; }
-	//double par = ExactOpticalDepth(0.0, PI05, R, R1, h0) * ih0;	
-	//sprintf_s(oapiDebugString(),256,"%g [%g %g]", fabs(val-float(par)), val, par);
-	//sprintf_s(oapiDebugString(),256,"%g %g %g %g %g %g %g %g", r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]);
-	
+	// Run some tests
+
+	for (int i=0;i<50;i++) {
+		double dif = y[i] - FastOpticalDepth(0.0, cos(x[i]), h0, r, m) * ih0;
+		double prs = fabs(dif) / fabs(y[i]);
+		if (prs>0.001) LogErr("Difference greater than 0.001 [%g], angle=%g, y=%g", prs, x[i]*DEG, y[i]);
+	}
+
 	delete []v; delete []q;
 	delete []y;	delete []M;
 

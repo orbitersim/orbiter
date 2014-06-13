@@ -627,6 +627,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		TileManager2Base::GlobalExit();
 		PlanetRenderer::GlobalExit();
 		D3D9ParticleStream::GlobalExit();
+		CSphereManager::GlobalExit();
 		vStar::GlobalExit();
 		vVessel::GlobalExit();
 		vObject::GlobalExit();
@@ -708,7 +709,10 @@ void D3D9Client::clbkUpdate(bool running)
 {
 	_TRACER;
 
-	if (!parser) clbkPostCreation();
+	if (!parser) {
+		clbkPostCreation();
+		LogErr("clbkUpdate() called before clbkPostCreation()");
+	}
 
 	__TRY {
 		if (bFailed==false && bRunning) scene->Update();
@@ -1230,7 +1234,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	static short xpos=0, ypos=0;
 
 	if (hRenderWnd!=hWnd) {
-		LogWrn("Invalid Window in RenderWndProc() Window is already destroyed");
+		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow()");
 		return 0;
 	}
 
@@ -2138,9 +2142,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 3 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 4 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 3 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 4 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

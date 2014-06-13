@@ -9,6 +9,7 @@
 #include "PlanetRenderer.h"
 #include "D3D9Config.h"
 #include "AABBUtil.h"
+#include "VectorHelpers.h"
 #include "Scene.h"
 #include "VPlanet.h"
 
@@ -43,6 +44,7 @@ D3DXHANDLE PlanetRenderer::sbLights = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
+D3DXHANDLE PlanetRenderer::stSun = NULL;
 // Atmosphere -------------------------------------------------
 //D3DXHANDLE PlanetRenderer::svFogColor = NULL;
 //D3DXHANDLE PlanetRenderer::sfFogDensity = NULL;
@@ -96,13 +98,19 @@ PlanetRenderer::~PlanetRenderer()
 
 void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 {
-	LogAlw("Starting to initialize Surface.fx a shading technique...");
+	char sh_name[32];
 
+	if (Config->AtmoShader==0) strcpy_s(sh_name,32,"Surface.fx");
+	if (Config->AtmoShader==1) strcpy_s(sh_name,32,"SurfaceAD.fx");
+	if (Config->AtmoShader==2) strcpy_s(sh_name,32,"SurfaceEX.fx");
+
+	LogAlw("Starting to initialize %s a shading technique...", sh_name);
+	
 	gc = gclient;
 	pDev = gc->GetDevice();
 
-	gc->clbkSplashLoadMsg("Surface.fx",1);
-
+	gc->clbkSplashLoadMsg(sh_name, 1);
+	
 	char name[256];
 
 	WORD Model = gc->GetHardwareCaps()->PixelShaderVersion & 0xFFFF;
@@ -121,14 +129,14 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 2.0]");
 		macro[0].Definition = "vs_2_0";
 		macro[1].Definition = "ps_2_0";
-		sprintf_s(name,256,"Modules/D3D9Client20/Surface.fx");
+		sprintf_s(name,256,"Modules/D3D9Client20/%s",sh_name);
 	}
 	else {
 		LogAlw("[Compiling Effects for Shader Model 3.0]");
 		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
 		macro[0].Definition = "vs_3_0";
 		macro[1].Definition = "ps_3_0";
-		sprintf_s(name,256,"Modules/D3D9Client/Surface.fx");
+		sprintf_s(name,256,"Modules/D3D9Client/%s",sh_name);
 	}
 	
 	
@@ -142,7 +150,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
-		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Surface.fx Error", 0);
+		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Surface??.fx Error", 0);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
 
@@ -181,10 +189,11 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
+	stSun				= pShader->GetParameterByName(0,"tSun");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
-	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient0");
-	// Scatter model --------------------------------------------------------
+	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
+	// Scatter model ----------------------------------------------
 	svPhase				= pShader->GetParameterByName(0,"vPhase");		
 	svODCoEff			= pShader->GetParameterByName(0,"vODCoEff");
 	svODCoEffEx			= pShader->GetParameterByName(0,"vODCoEffEx");
@@ -206,7 +215,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfHorizonDst		= pShader->GetParameterByName(0,"fHorizonDst");
 	sfExposure			= pShader->GetParameterByName(0,"fExposure");			
 	sfAux1				= pShader->GetParameterByName(0,"fAux1");			
-	sfAux2				= pShader->GetParameterByName(0,"fAux2");		
+	sfAux2				= pShader->GetParameterByName(0,"fAux2");
+	// ------------------------------------------------------------
 	siMode				= pShader->GetParameterByName(0,"iMode");
 	sbOverSat			= pShader->GetParameterByName(0,"bOverSat");
 	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
@@ -294,7 +304,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float   b = (1.0f+g*g);
 	float   d = (-2.0f*g);
 	float   c = float(atmo->rphase);
-	float  rp = float(atmo->wavepow);
+	float  rp = float(atmo->rpow);
 	float  h0 = float(atmo->height*1e3);				// Scale height
 	float  mp = 1.0f;
 	double pr = pPlanet->GetSize();						// Planet radius
@@ -315,8 +325,15 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 raysrf = raytot  * float(atmo->srfclr);
 	D3DXVECTOR3 mietot = lambda2 * float(atmo->mie);
 
+	/*if (atmo->pSunLight) {
+		HR(Shader()->SetTexture(stSun, atmo->pSunLight));
+	} else LogErr("Sunlight Color Map is Missing !!!");*/
+
+	// Camara altitude dependency multiplier for ambient color of atmosphere
+    float fMult = saturate((h0-float(ca*0.1))/h0);
+
 	// Upload parameters to shaders
-	HR(Shader()->SetFloat(sfAmbient0, min(0.7f, log(float(atm->rho0)+1.0f)*0.4f)));
+	HR(Shader()->SetFloat(sfAmbient0, fMult * min(0.7f, log(float(atm->rho0)+1.0f)*0.4f)));
 	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,d), sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svODCoEff,   &D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])), sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svODCoEffEx, &D3DXVECTOR4(float(pCoEff[4]), float(pCoEff[5]), float(pCoEff[6]), float(pCoEff[7])), sizeof(D3DXVECTOR4)));

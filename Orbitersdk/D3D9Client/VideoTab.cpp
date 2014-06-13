@@ -616,6 +616,14 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_ENVMODE, CB_ADDSTRING, 0, (LPARAM)"Full Scene");
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, 0, 0);
 
+	// ATMOSPHERE --------------------------------------
+
+	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Default");
+	//SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Advanced");
+	//SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Experiment");
+	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_SETCURSEL, 0, 0);
+
 	// ENVMAP FACES --------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_RESETCONTENT, 0, 0);
@@ -647,13 +655,17 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETRANGEMAX, 1, 100);
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETRANGEMIN, 1, 5);
-
+	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETTICFREQ, 5, 0);
+	
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETRANGEMAX,  1, 100);
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETRANGEMIN,  1, 10);
-
-	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETTICFREQ, 5, 0);
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETTICFREQ,  5, 0);
 	
+	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMAX, 1, 3);
+	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -3);
+	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETTICFREQ, 1, 0);
+	
+
 
 	sprintf_s(cbuf,32,"%1.1fm",float(Config->Convergence));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_CONV_DSP), cbuf);
@@ -663,12 +675,14 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETPOS, 1, DWORD(Config->Convergence*100.0));
 	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, DWORD(Config->Separation));
+	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, DWORD(Config->LODBias));
 
 	if (strcmp(Config->Shaders,"Default")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 0, 0);
 	if (strcmp(Config->Shaders,"Level20")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 1, 0);
 	
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, Config->EnvMapMode, 0);
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces-1, 0);
+	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_SETCURSEL, Config->AtmoShader, 0);
 	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_SETCURSEL, Config->SketchpadMode, 0);
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_SETCURSEL, Config->SketchpadFont, 0);
 	SendDlgItemMessage(hWnd, IDC_DEBUG, CB_SETCURSEL, Config->DebugLvl, 0);
@@ -676,6 +690,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_SRFPRELOAD, BM_SETCHECK, Config->PlanetPreloadMode==1, 0);
 	SendDlgItemMessage(hWnd, IDC_GLASSSHADE, BM_SETCHECK, Config->EnableGlass==1, 0);
 	SendDlgItemMessage(hWnd, IDC_MESH_DEBUGGER, BM_SETCHECK, Config->EnableMeshDbg==1, 0);
+	SendDlgItemMessage(hWnd, IDC_DYNEXPS, BM_SETCHECK, Config->DynamicExps==1, 0);
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
@@ -717,21 +732,25 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 void VideoTab::SaveSetupState(HWND hWnd)
 {
 	char cbuf[32];
-
+	// Combo boxes
 	Config->SketchpadMode = SendDlgItemMessage (hWnd, IDC_DEVICE, CB_GETCURSEL, 0, 0);
 	Config->SketchpadFont = SendDlgItemMessage (hWnd, IDC_FONT, CB_GETCURSEL, 0, 0);
 	Config->EnvMapMode	  = SendDlgItemMessage (hWnd, IDC_ENVMODE, CB_GETCURSEL, 0, 0);
 	Config->EnvMapFaces	  = SendDlgItemMessage (hWnd, IDC_ENVFACES, CB_GETCURSEL, 0, 0) + 1;
-
+	Config->AtmoShader	  = SendDlgItemMessage (hWnd, IDC_ATMOQ, CB_GETCURSEL, 0, 0);
+	// Check boxes
 	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
 	Config->NearClipPlane = SendDlgItemMessage (hWnd, IDC_NEARPLANE,  BM_GETCHECK, 0, 0);
 	Config->EnableGlass   = SendDlgItemMessage (hWnd, IDC_GLASSSHADE,  BM_GETCHECK, 0, 0);
 	Config->EnableMeshDbg = SendDlgItemMessage (hWnd, IDC_MESH_DEBUGGER,  BM_GETCHECK, 0, 0);
+	Config->DynamicExps   = SendDlgItemMessage (hWnd, IDC_DYNEXPS,  BM_GETCHECK, 0, 0);
+	// Sliders
+	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
+	Config->Separation    = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
+	Config->LODBias       = int(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
 
-	Config->Convergence = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
-	Config->Separation  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
-
+	// Other things
 	GetWindowText(GetDlgItem(hWnd, IDC_HZ),  cbuf, 32);
 
 	Config->PlanetLoadFrequency = atoi(cbuf);

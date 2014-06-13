@@ -26,15 +26,11 @@
 #define SctPwr 1.0
 #define SctPwr2 2.0
 
-inline double exp2(double x)
-{ 
-	return exp(x*0.69314718055994530941723212145818);
-}
-
 
 typedef struct {
 	D3DXVECTOR4 min, max, bs, a, b, c;
 } D9BBox;
+
 
 float		D9NearPlane(LPDIRECT3DDEVICE9 pDev, float zmin, float zmax, float dmax, const D3DXMATRIX *pProj, bool bReduced);
 int			D9ComputeMinMaxDistance(LPDIRECT3DDEVICE9 pDev, const D9BBox *in, const D3DXMATRIX *pWV, const D3DXVECTOR4 *F, float *zmin, float *zmax, float *dmin);
@@ -54,9 +50,10 @@ double		ExactOpticalDepth(double alt, double dir, double R, double R1, double h0
 
 D3DXVECTOR4 SolveScatter(double h0, double R, double R1);
 D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1);
-bool		SolveXScatter(double h0, double R, double R1, double *q, int m);
-float		FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 prm);
-float		FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 prm);
+bool		SolveXScatter(double h0, double R, double R1, double *q, double angle = 95.0, int m = 8);
+float		FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 *prm);
+float		FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 *prm);
+double		FastOpticalDepthEx(double alt, double cd, double h0, double *coeff, int m = 8);
 
 bool		SolveLUSystem(int n, double *A, double *b, double *x, double *det=NULL);
 

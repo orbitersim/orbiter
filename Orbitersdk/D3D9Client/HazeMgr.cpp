@@ -18,6 +18,7 @@
 #include "Texture.h"
 #include "D3D9Surface.h"
 #include "D3D9Util.h"
+#include "VectorHelpers.h"
 #include "D3D9Effect.h"
 
 using namespace oapi;
@@ -277,11 +278,12 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 {
 	cpos = -cpos;
 
-	double cr = length(cpos);	
-	double hd = sqrt(cr*cr - rad*rad);
+	double cr = length(cpos);
+	double hd = sqrt(cr*cr - rad*rad) * 10.0;
 	double al = asin(rad/cr);
-	double mx = hralt * 2.5;
-	double ha = hd * 0.25;
+	double ha = hd * 0.5;
+
+	if (ha>(hralt*20.0)) ha = (hralt*20.0);
 
 	double r1 =  hd * sin(al);
 	double h1 = -hd * cos(al);
@@ -328,7 +330,7 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat)
 	HR(Shader()->SetTechnique(eHorizonTech));
 	HR(Shader()->SetMatrix(smWorld, &wmat));
 	
-	UINT prims = 30 * 60 * 2 - 2;
+	UINT prims = HORIZON2_XSEG * HORIZON2_YSEG * 2 - 2;
 	UINT numPasses = 0;
 	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(Shader()->BeginPass(0));
@@ -349,14 +351,14 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat)
 void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt)
 {
 	cpos = -cpos;
-	double cr = length(cpos);	
+	double cr = length(cpos);
 	double hd = sqrt(cr*cr - rad*rad);
 	double al = asin(rad/cr);
-	double mx = hralt * 3.0;
+	double mx = hralt * 4.0;
 
 	double r1 =  hd * sin(al);
 	double h1 = -hd * cos(al);
-	double qw =  hralt + (cr-rad);
+	double qw = (hralt + (cr-rad)) * 0.8;
 	if (qw>mx) qw=mx;
 	
 	double r2 = r1 + qw * cos(al);

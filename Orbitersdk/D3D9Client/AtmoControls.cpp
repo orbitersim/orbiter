@@ -29,14 +29,14 @@ ScatterParams::ScatterParams() :
 	red      ( 0.0 ), // 0.400 ... 0.700
 	green    ( 0.0 ), // 0.400 ... 0.700
 	blue     ( 0.0 ), // 0.400 ... 0.700
-	wavepow  ( 0.0 ), // -8.0 ... 8.0
+	rpow	 ( 0.0 ), // -8.0 ... 8.0
 	rin      ( 0.0 ), // 0.0 ... 3.0
 	rout     ( 0.0 ), // 0.0 ... 4.0
 	rphase   ( 0.0 ), // 0.0 ... 3.5
 	mie      ( 0.0 ), // 0.0 ... 8.0
 	mphase   ( 0.0 ), // 0.85 ... 0.999
 	balance  ( 0.0 ), // 0.0 ... 2.0
-	height   ( 0.0 ), // 1.0 ... 40.0 [km]
+	height   ( 0.0 ), // 4.0 ... 40.0 [km]
 	sun      ( 0.0 ), // 0.3 ... 3.0
 	depth    ( 0.0 ), // 1.0 ... 50.0
 	srfclr   ( 0.0 ), // 0.5 ... 2.0
@@ -44,20 +44,21 @@ ScatterParams::ScatterParams() :
 	aux1	 ( 0.0 ), // 0.0 ... 2.0
 	aux2	 ( 0.0 ), // 0.0 ... 2.0
 	mode     ( 0 ),   // [0|1]
-	oversat  ( false )// [true|false]
+	oversat  ( false ), // [true|false]
+	pSunLight ( NULL )
 */
 	// (values from earth)
 	red      ( 0.650 ),  // 0.400 ... 0.700
 	green    ( 0.500 ),  // 0.400 ... 0.700
 	blue     ( 0.480 ),  // 0.400 ... 0.700
-	wavepow  ( 4.0 ),    // -8.0 ... 8.0
+	rpow	 ( 4.0 ),    // -8.0 ... 8.0
 	rin      ( 1.0 ),    // 0.0 ... 3.0
 	rout     ( 0.592 ),  // 0.0 ... 4.0
 	rphase   ( 0.3395 ), // 0.0 ... 3.5
 	mie      ( 0.0869 ), // 0.0 ... 8.0
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
 	balance  ( 0.5 ),    // 0.0 ... 2.0
-	height   ( 8.0 ),    // 1.0 ... 40.0 [km]
+	height   ( 8.0 ),    // 4.0 ... 40.0 [km]
 	sun      ( 1.0 ),    // 0.3 ... 3.0
 	depth    ( 20.0 ),   // 1.0 ... 50.0
 	srfclr   ( 1.0 ),    // 0.5 ... 2.0
@@ -65,7 +66,8 @@ ScatterParams::ScatterParams() :
 	aux1	 ( 0.0 ),    // 0.0 ... 2.0
 	aux2	 ( 0.0 ),    // 0.0 ... 2.0
 	mode     ( 0 ),      // [0|1]
-	oversat  ( true )    // [true|false]
+	oversat  ( true ),   // [true|false]
+	pSunLight ( NULL )
 {
 }
 
@@ -206,7 +208,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_GREEN,    0.400, 0.700);
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_WAVE,     -8.0, 8.0);
-	ConfigSlider(IDC_ATM_HEIGHT,   1.0, 40.0, 1);
+	ConfigSlider(IDC_ATM_HEIGHT,   4.0, 40.0, 1);
 	ConfigSlider(IDC_ATM_EXPO,	   0.1, 2.0);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 1.5);
@@ -250,6 +252,19 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, param->mode, 0);
 
 	SendDlgItemMessage(hDlg, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
+
+	if (Config->AtmoShader==0) {
+		param->balance = 1.0;
+		param->aux2 = 0.0;
+		param->sun = 1.0;
+		param->depth = 50.0;
+		param->srfclr = 1.0;
+		EnableWindow(GetDlgItem(hDlg, IDC_ATM_BALANCE), false);
+		EnableWindow(GetDlgItem(hDlg, IDC_ATM_AUX2), false);
+		EnableWindow(GetDlgItem(hDlg, IDC_ATM_RSUN), false);
+		EnableWindow(GetDlgItem(hDlg, IDC_ATM_SRFCOLOR), false);
+		EnableWindow(GetDlgItem(hDlg, IDC_ATM_SUN), false);
+	}
 
 	UpdateSliders();
 }
@@ -424,7 +439,14 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_ATM_SAVE:
-				if (vObj) vObj->SaveAtmoConfig();
+				if (vObj) {
+					vObj->SaveAtmoConfig();
+					/*DWORD dAmbient = *(DWORD*)g_client->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+					Scatter *pSct = new Scatter(param, vObj->GetObjectA(), dAmbient);
+					SAFE_RELEASE(param->pSunLight);
+					pSct->ComputeSunLightColorMap(g_client->GetDevice(), &param->pSunLight, true);
+					delete pSct;*/
+				}
 				break;
 
 			case IDC_ATM_RESET:

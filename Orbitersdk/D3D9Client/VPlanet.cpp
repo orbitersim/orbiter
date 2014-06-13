@@ -30,6 +30,7 @@
 #include "FileParser.h"
 #include "DebugControls.h"
 #include "AtmoControls.h"
+#include "VectorHelpers.h"
 
 using namespace oapi;
 
@@ -188,6 +189,8 @@ vPlanet::~vPlanet ()
 	if (hazemgr2) delete hazemgr2;
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
+
+	SAFE_RELEASE(SPrm.pSunLight);
 }
 
 // ==============================================================
@@ -706,10 +709,19 @@ double vPlanet::OpticalDepth(double alt, double cd)
 
 void vPlanet::UpdateAtmoConfig()
 {
-	double outer     = size + SPrm.height * 10e3;
+	
 	prm.SclHeight	 = float(SPrm.height*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 8);
+
+	double outer = size + prm.SclHeight * 12.0;
+
+	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 96.0, 8);
+
+	/*DWORD dAmbient = *(DWORD*)GetClient()->GetConfigParam(CFGPRM_AMBIENTLEVEL);
+	Scatter *pSct = new Scatter(&SPrm, Object(), dAmbient);
+	SAFE_RELEASE(SPrm.pSunLight);
+	pSct->ComputeSunLightColorMap(GetDevice(), &SPrm.pSunLight, false);
+	delete pSct;*/
 }
 
 
@@ -735,24 +747,21 @@ double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
 	double s2 = exp2(-a2/h0);
 	double s3 = exp2(-a3/h0);
 
-	double sum = (s0*0.167 + s1*0.833 + s2*0.833 + s3*0.167) * Ray * 0.5;
+	double sum = (s0*0.167 + s1*0.833 + s2*0.833 + s3*0.167) * Ray * 0.5 * 0.6931471806;
 
 	return sum;
 }
-
-
-
-   
 
 // ==============================================================
 
 void vPlanet::DumpDebugFile()
 {
+	/*
 	int samples = 100;
 	double max_angle = 100.0;
 	double delta = 3.1415*max_angle/float(samples*180);
 	double angle = 0.0;
-	double outer = size+(prm.SclHeight*10.0);
+	double outer = size + (prm.SclHeight*8.0);
 
 	FILE *fp = NULL;
 	fopen_s(&fp, "OpticalDebug.txt", "w");
@@ -765,7 +774,7 @@ void vPlanet::DumpDebugFile()
 		angle += delta;
 		fprintf(fp,"%d %6.6g %6.6g %6.6g\n", i, exact, accur, gauss);
 	}
-	fclose(fp);
+	fclose(fp);*/
 }
 
 // ==============================================================
@@ -774,6 +783,8 @@ bool vPlanet::LoadAtmoConfig()
 {
 	char name[32];
 	char path[256];
+
+	if (!oapiPlanetHasAtmosphere(hObj)) return false;
 
 	oapiGetObjectName(hObj, name, 32);
 
@@ -786,7 +797,7 @@ bool vPlanet::LoadAtmoConfig()
 	oapiReadItem_float(hFile, "Red", SPrm.red);
 	oapiReadItem_float(hFile, "Green", SPrm.green);
 	oapiReadItem_float(hFile, "Blue", SPrm.blue);
-	oapiReadItem_float(hFile, "RWaveDep", SPrm.wavepow);
+	oapiReadItem_float(hFile, "RWaveDep", SPrm.rpow);
 	oapiReadItem_float(hFile, "ScaleHeight", SPrm.height);
 	oapiReadItem_float(hFile, "OutScatter", SPrm.rout);
 	oapiReadItem_float(hFile, "InScatter", SPrm.rin);
@@ -828,7 +839,7 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "Red", SPrm.red);
 	oapiWriteItem_float(hFile, "Green", SPrm.green);
 	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
-	oapiWriteItem_float(hFile, "RWaveDep", SPrm.wavepow);
+	oapiWriteItem_float(hFile, "RWaveDep", SPrm.rpow);
 	oapiWriteItem_float(hFile, "ScaleHeight", SPrm.height);
 	oapiWriteItem_float(hFile, "OutScatter", SPrm.rout);
 	oapiWriteItem_float(hFile, "InScatter", SPrm.rin);

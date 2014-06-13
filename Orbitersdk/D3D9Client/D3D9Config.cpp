@@ -67,6 +67,9 @@ void D3D9Config::Reset ()
 	ShadowMapSize		= 1024;
 	FrameRate			= 200.0;
 	EnableLimiter		= 0;
+	LODBias				= 0;
+	AtmoShader			= 0;
+	DynamicExps			= 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -126,6 +129,10 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "LoadTexturesInSystemMem",i))	LoadInSystemMem = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "ManagedTiles",i))				ManagedTiles = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
+
+	if (oapiReadItem_int   (hFile, "LODBias",i))					LODBias = max (-3, min (3, i));
+	if (oapiReadItem_int   (hFile, "DynamixExps",i))				DynamicExps = max (0, min (1, i));
+	if (oapiReadItem_int   (hFile, "AtmoShader",i))					AtmoShader = max (0, min (2, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -184,6 +191,10 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "LoadTexturesInSystemMem", LoadInSystemMem);
 	oapiWriteItem_int   (hFile, "ManagedTiles", ManagedTiles);
 	oapiWriteItem_int   (hFile, "DisableVisualHelperReadout", DisableVisualHelperReadout);
+
+	oapiWriteItem_int   (hFile, "LODBias", LODBias);			
+	oapiWriteItem_int   (hFile, "DynamixExps", DynamicExps);
+	oapiWriteItem_int   (hFile, "AtmoShader", AtmoShader);
 	
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		

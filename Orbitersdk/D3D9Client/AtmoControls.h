@@ -19,7 +19,7 @@ typedef struct ScatterParams {
 			double red;			///< Red wave length
 			double green;		///< Green wavw length
 			double blue;		///< Blue wave length
-			double wavepow;		///< lambda power
+			double rpow;		///< lambda power
 			double rin;			///< in-scatter strength
 			double rout;		///< out-scatter strenght
 			double rphase;		///< Rayleigh phase
@@ -37,6 +37,7 @@ typedef struct ScatterParams {
 	};
 	int mode;
 	bool oversat;
+	LPDIRECT3DTEXTURE9 pSunLight;
 } ScatterParams;
 
 class vPlanet;
@@ -63,5 +64,41 @@ namespace AtmoControls {
 
 	BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
+
+
+
+
+/*
+class Scatter {
+
+public:
+				Scatter(ScatterParams *prm, OBJHANDLE hPlanet, DWORD dAmbient);
+				~Scatter();
+
+	double		AngleCoEff(double cos_dir);
+
+	void		ComputeSunLightColorMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 *pOutSM, bool bSave=false);
+	void		ComputeInscatterColorMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 *pOutSM, bool bSave=false);
+
+private:
+
+	double		fRadius;
+	double		fAtmRad;
+	double		fMaxDepth;
+	double		fHorizonAlt;
+	double		fScaleHeight;
+	double		fInvScaleHeight;
+	double		fCoEff[12];
+	double		fMieA, fMieB, fMieC;
+
+	float		fGlobalAmb, fSunAppRad, fAmbient0;
+
+	D3DXVECTOR3	vLambda4, vLambda1;
+	D3DXVECTOR3	vRayTot, vMieTot, vRaySun, vRayIns, vRaySrf;
+
+	const ATMCONST *atm;
+};*/
+
+
 
 #endif // !__ATMOCONTROLS_H
