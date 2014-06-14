@@ -137,7 +137,6 @@ uniform extern float3	vRayTotal;			// Total rayleigh scattering for surface
 uniform extern float3	vRaySurface;		// Total rayleigh scattering for sun light to surface
 uniform extern float3	vRayInSct;			// Total rayleigh scattering for sun light to 
 uniform extern float3	vMieTotal;	
-uniform extern float3	vOutScatter;		// Total rayleigh scattering for sun light to surface
 uniform extern float3   vCameraPos;         // Geo-centric camera position 
 uniform extern float3   vUnitCameraPos;     // Geo-centric camera position (Unit vector)
 uniform extern float	fDepthClamp;		// Maximum optical depth for horizon haze (Bound to Horizon slider)
@@ -274,26 +273,65 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 // vUnitRay = Unit Vector from vertex to a camera
 // =============================================================================================================    
 
-void HorizonColor(out float3 vIns, in float fVtxAlt, in float3 vPosW, in float3 vUnitRay)
+void HorizonColor(out float3 vIns, in float3 vUnitRay)
 {    
-	float3 vNr0 = normalize(vCameraPos + vPosW);
-		
-	float fDNR = dot(vNr0, vUnitRay);
-    float fDNS = dot(vNr0, vSunDir);
+	float  fDCR = -dot(vUnitCameraPos, vUnitRay);
+	float  fHrz = (fCameraAlt+fRadius)*fDCR;
 
-	float fDns = exp2(-fVtxAlt*fInvScaleHeight);					
-	float fDRay = fDns * (AngleCoEff(-fDNR) + AngleCoEff(fDNR));
-    
+	float3 vPos = vCameraPos + vUnitRay * fHrz;
+	float3 vNr1 = normalize(vPos);
+    float  fDNS = dot(vNr1, vSunDir);
+	float  fRad = dot(vNr1, vPos);				// Geo-centric vertex radius
+	float  fDRS = -dot(vUnitRay, vSunDir);
+	float  fRd2 = fRad*fRad;
+	
+	if (fRd2>fAtmRad2) {
+		vIns = 0;
+		return;
+	}
+	
+	// Setup altitudes for all sample points
+	float3 vAlt = float3(fHorizonAlt, fRad - fRadius, fHorizonAlt);
+	float3 vDns = exp2(-vAlt*fInvScaleHeight);					
+	
+	// Mean atmospheric density for a viewing ray
+	float  fMnD = dot(vDns, vWeight3);
+
+	// Compute secant
+	float  fSgt = sqrt(fAtmRad2 - fRd2) * 2.0;
+
+	// Evaluate a Gauss-Lobatto integral. Will give optical depth for the ray
+    float fDRay = fMnD * (fSgt * fInvScaleHeight) * 0.3465735903f;
+
 	// Optical depth for incoming sunlight	    
-    float fDSun = fDns * 0.5f * AngleCoEff(fDNS);
+    float fDSun = fMnD * AngleCoEff(fDNS);
     
-    float3 vSun = exp2(-(vRayTotal+vMieTotal) * fDSun) * fDRay * ShadowEx(fDNS, fVtxAlt);
-    
-    float  fDRS = -dot(vUnitRay, vSunDir);
+    float3 vSun = exp2(-(vRayTotal+vMieTotal) * fDSun) * fDRay * Shadow(fDNS);
     
 	// Multiply in-coming light with phase and light scattering factors
     vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
     
+    if (bOverSat) vIns = 1.0 - exp2(vIns*fExposure);
+}
+
+
+void HorizonColor2(out float3 vIns, in float3 vUnitRay)
+{    
+	float  fDCR = -dot(vUnitCameraPos, vUnitRay);
+	float  fHrz = (fCameraAlt+fRadius)*fDCR;
+	float3 vPos = vCameraPos + vUnitRay * fHrz;
+	float3 vNr1 = normalize(vPos);
+    float  fDNS = dot(vNr1, vSunDir);
+	float  fDNR = dot(vNr1, vUnitRay);
+	float  fRad = dot(vNr1, vPos);				// Geo-centric vertex radius
+	float  fDRS = -dot(vUnitRay, vSunDir);
+	float  fRd2 = fRad*fRad;
+	float  fDns = exp2((fRadius-fRad)*fInvScaleHeight);
+	float fDRay = fDns * (AngleCoEff(fDNR) + AngleCoEff(-fDNR)); 
+    float  fMnD = fDRay * rsqrt(fAtmRad2 - fRd2) * fScaleHeight * 1.4427f;  
+    float fDSun = fMnD * AngleCoEff(fDNS);
+    float3 vSun = exp2(-(vRayTotal+vMieTotal) * fDSun) * fDRay * Shadow(fDNS);
+    vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
     if (bOverSat) vIns = 1.0 - exp2(vIns*fExposure);
 }
 
@@ -541,17 +579,13 @@ HazeVS RingTechVS(float3 posL : POSITION0)
     // Zero output.
 	HazeVS outVS = (HazeVS)0;
 	
-	float fVtxAlt = posL.y*fAlpha; 
-	
-	outVS.alpha = saturate(1.0-smoothstep(0.7f, 0.95f, posL.y));
-	
 	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
 	posL.y   = lerp(vTexOff[2], vTexOff[3], posL.y);
 	
     float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
-	if (bOnOff) HorizonColor(outVS.insca, fVtxAlt, posW, normalize(posW));
+	if (bOnOff) HorizonColor(outVS.insca, normalize(posW));
 	else outVS.insca = float3(0.5, 0, 0);
 	
     return outVS;
@@ -559,8 +593,7 @@ HazeVS RingTechVS(float3 posL : POSITION0)
 
 float4 RingTechPS(HazeVS frg) : COLOR
 {
-	float c = max(frg.insca.r, frg.insca.b)*3.0;
-    return float4(frg.insca.rgb, c*frg.alpha);
+    return float4(frg.insca.rgb, 1.0f);
 }
 
 technique RingTech
