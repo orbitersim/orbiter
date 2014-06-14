@@ -319,14 +319,15 @@ void CSphereManager::LoadTextures ()
 
 // =======================================================================
 
-void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl, bool bInAtmosphere)
+void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl)
 {
+	if (disabled) return;
+
 	float intens = intensity;
 
 	if (bglvl) intens *= exp(-float(bglvl)*0.05f);
 	
-	if (disabled) Shader()->SetFloat(sfAlpha, 0.0f);
-	else		  Shader()->SetFloat(sfAlpha, intens);
+	Shader()->SetFloat(sfAlpha, intens);
 
 	level = min ((DWORD)level, maxlvl);
 
@@ -361,8 +362,7 @@ void CSphereManager::Render (LPDIRECT3DDEVICE9 dev, int level, int bglvl, bool b
 	UINT numPasses = 0;
 	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
-	if (!bInAtmosphere) Shader()->BeginPass(0);	// Render without atmospheric effects
-	else 				Shader()->BeginPass(1); // Render with atmospheric effects
+	Shader()->BeginPass(0);
 	
 	for (hemisp = idx = 0; hemisp < 2; hemisp++) {
 		if (hemisp) { // flip world transformation to southern hemisphere

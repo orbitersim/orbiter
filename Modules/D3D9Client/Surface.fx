@@ -578,17 +578,13 @@ technique RingTech
 
 
 // =============================================================================================================
-// Render Low-Altitude horizon
+// Render SkyDome and Horizon
 // =============================================================================================================
 
 HazeVS HorizonTechVS(float3 posL : POSITION0)
 {
     // Zero output.
 	HazeVS outVS = (HazeVS)0;
-	
-	float fVtxAlt = posL.y*fAlpha;	// Vertex Altitude
-	
-	outVS.alpha = saturate(1.0-smoothstep(0.6f, 0.98f, posL.y));
 	
 	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
 	posL.y   = lerp(vTexOff[2], vTexOff[3], posL.y);
@@ -602,10 +598,10 @@ HazeVS HorizonTechVS(float3 posL : POSITION0)
     return outVS;
 }
 
+
 float4 HorizonTechPS(HazeVS frg) : COLOR
 {
-	float c = max(frg.insca.r, frg.insca.b)*3.0;
-    return float4(frg.insca.rgb, c*frg.alpha);
+    return float4(frg.insca.rgb, 1.0f);
 }
 
 technique HorizonTech
@@ -617,45 +613,12 @@ technique HorizonTech
 
         AlphaBlendEnable = true;
         BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
+        SrcBlend = One;
+        DestBlend = One;
         ZEnable = false;
         ZWriteEnable = false;
     }
 }
-
-
-
-
-
-
-// =============================================================================================================
-// Render Skydome (i.e. Celestial Sphere Background Image Manager) from Atmosphere
-// =============================================================================================================
-
-CelSphereVS SkyDomeTechVS(TILEVERTEX vrt)
-{
-    // Zero output.
-	CelSphereVS outVS = (CelSphereVS)0;
-	
-    float3 posW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
-	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
-	outVS.tex0	= vrt.tex0;
-	
-	if (bOnOff) SkyColor(outVS.insca, normalize(posW)); 
-	else outVS.insca = float3(0, 0, 0.5);
-	
-    return outVS;
-}
-
-float4 SkyDomeTechPS(CelSphereVS frg) : COLOR
-{
-    float3 vColor = tex2D(DiffTexS, frg.tex0).rgb * fAlpha + frg.insca.rgb;
-    return float4(vColor, 1.0);
-}
-
-
-
 
 
 
@@ -685,16 +648,6 @@ technique SkyDomeTech
     {
         vertexShader = compile VS_MOD SpaceTechVS();
         pixelShader  = compile PS_MOD SpaceTechPS();
-
-        AlphaBlendEnable = false;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }
-    
-    pass P1
-    {
-        vertexShader = compile VS_MOD SkyDomeTechVS();
-        pixelShader  = compile PS_MOD SkyDomeTechPS();
 
         AlphaBlendEnable = false;
         ZEnable = false;

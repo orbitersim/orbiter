@@ -20,6 +20,7 @@
 #include "D3D9Util.h"
 #include "VectorHelpers.h"
 #include "D3D9Effect.h"
+#include "D3D9Config.h"
 
 using namespace oapi;
 
@@ -249,15 +250,21 @@ HazeManager2::HazeManager2(const D3D9Client *gclient, const vPlanet *vplanet)
 
 void HazeManager2::GlobalInit(D3D9Client *gclient)
 {
+	for (int i=0;i<6;i++) pSkyVB[i]=NULL;
 	CreateRingBuffers();
-	CreateSkydomeBuffers();
+	CreateSkydomeBuffers(0);
+	CreateSkydomeBuffers(1);
+	CreateSkydomeBuffers(2);
+	CreateSkydomeBuffers(3);
+	CreateSkydomeBuffers(4);
+	CreateSkydomeBuffers(5);
 }
 
 // -----------------------------------------------------------------------
 
 void HazeManager2::GlobalExit()
 {
-	SAFE_RELEASE(pSkyVB);
+	for (int i=0;i<6;i++) { SAFE_RELEASE(pSkyVB[i]); }
 	SAFE_RELEASE(pRingVB);
 }
 
@@ -278,72 +285,80 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 {
 	cpos = -cpos;
 
-	double cr = length(cpos);
+	double cr = length(cpos); if (cr<(rad+100.0)) cr=rad+100.0;
 	double hd = sqrt(cr*cr - rad*rad) * 10.0;
-	double al = asin(rad/cr);
-	double ha = hd * 0.5;
 
-	if (ha>(hralt*20.0)) ha = (hralt*20.0);
-
-	double r1 =  hd * sin(al);
-	double h1 = -hd * cos(al);
-	
-	double r2 = r1 + ha * cos(al);
-	double h2 = h1 + ha * sin(al); 
-
-	
 	VECTOR3 ur = unit(cpos);
 	VECTOR3 ux = unit(crossp(cdir, ur));
 	VECTOR3 uy = unit(crossp(ur, ux));
 
-	D3DXMATRIX mWL, mWR, mL, mR;
+	D3DXMATRIX mWL, mL;
 	D3DMAT_Identity(&mWL);
 	D3DMAT_FromAxisT(&mWL, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
-	mWR = mWL;
 
-	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(float(r1), float(r2), float(h1), float(h2))));
-	HR(Shader()->SetFloat(sfAlpha, float(ha)));
-
-	RenderSkySegment(mWL);
-
-	double a = 10.0*PI/180.0;
-
-	int n = (int(ceil(apr/10.0))+6)/2;
+	double a = 15.0*RAD;
+	double b = (PI-asin(rad/cr))/6.0;
+	
+	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
 
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a));
-	D3DXMatrixRotationAxis(&mR, &_D3DXVECTOR3(ur), float(+a));
 
-	for (int i=0;i<n;i++) {
+	int rd = 0;
+	for (int i=0;i<24;i++) {
+
+		double x = asin(rad/cr);
+
 		D3DXMatrixMultiply(&mWL, &mWL, &mL);
-		D3DXMatrixMultiply(&mWR, &mWR, &mR);
-		RenderSkySegment(mWL);
-		RenderSkySegment(mWR);
+
+		for (int j=0;j<6;j++) {
+		
+			float r1 =  float(sin(x));	 float h1 = -float(cos(x));
+			float r2 =  float(sin(x+b)); float h2 = -float(cos(x+b)); 
+			
+			D3DXVECTOR3 vCnt = vTileCenter * D3DXVECTOR3((r1+r2)*0.5f, 1.0f, (r1+r2)*0.5f);	vCnt.y = (h1+h2)*0.5f;
+			D3DXVec3TransformCoord(&vCnt, &vCnt, &mWL);
+			
+			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.415))) {
+				RenderSkySegment(mWL, hd, x, x+b, j);
+				rd++;
+			}
+			x+=b;
+		}
 	}
+
+	sprintf_s(oapiDebugString(),256,"Tiles Rendered %d",rd);
 
 	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(1, 0, 1, 0)));
 }
 
 // -----------------------------------------------------------------------
 
-void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat)
+void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, double dmax, int index)
 {
+	float r1 =  float(rad * sin(dmin));
+	float h1 = -float(rad * cos(dmin));
+	float r2 =  float(rad * sin(dmax));
+	float h2 = -float(rad * cos(dmax)); 
+
 	HR(Shader()->SetTechnique(eHorizonTech));
 	HR(Shader()->SetMatrix(smWorld, &wmat));
+	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
 	
-	UINT prims = HORIZON2_XSEG * HORIZON2_YSEG * 2 - 2;
+	int xres = (Config->LODBias<0 ? xlreslvl[index] : xreslvl[index]);
+	int yres = (Config->LODBias<0 ? ylreslvl[index] : yreslvl[index]);
+
+	UINT prims = xres * yres * 2 - 2;
 	UINT numPasses = 0;
 	HR(Shader()->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(Shader()->BeginPass(0));
 	Dev()->SetVertexDeclaration(pPositionDecl);
-	Dev()->SetStreamSource(0, pSkyVB, 0, sizeof(D3DXVECTOR3));
+	Dev()->SetStreamSource(0, pSkyVB[index], 0, sizeof(D3DXVECTOR3));
 	Dev()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	Dev()->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, prims);	
 	Dev()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	HR(Shader()->EndPass());
 	HR(Shader()->End());	
 }
-
-
 
 
 // -----------------------------------------------------------------------
@@ -434,49 +449,47 @@ void HazeManager2::CreateRingBuffers()
 }
 
 // -----------------------------------------------------------------------
-void HazeManager2::CreateSkydomeBuffers()
+void HazeManager2::CreateSkydomeBuffers(int index)
 {
+	int k = 0;
 
-	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[HORIZON2_XSEG*HORIZON2_YSEG*2+2];
+	int xseg = (Config->LODBias<0 ? xlreslvl[index] : xreslvl[index]);
+	int yseg = (Config->LODBias<0 ? ylreslvl[index] : yreslvl[index]);
+
+	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[xseg*yseg*2+2];
 	D3DXVECTOR3 *pBuf = NULL;
 
-	int k = 0;
-	int xseg = HORIZON2_XSEG;
-	int yseg = HORIZON2_YSEG;
-
-	double sa, ca;
-
-	double da = (10.0*PI/180.0)/double(xseg-1);
-	double db = 1.0/double(yseg-1);
-	
-	double a = -da*double(xseg/2);
-	double b = 0.0;
+	double sa = 0.0, ca = 1.0;
+	double db = 1.0/double(yseg);
+	double dc = (1.0-cos(15.0*RAD))/double(xseg-1);
+	double ds = sin(15.0*RAD)/double(xseg-1);
+	double b  = 0.0;
 	
 	for (int s=0;s<yseg;s++) {
 		for (int i=0;i<xseg;i++) {
-			sa = sin(a); ca = cos(a);
-			pVrt[k++]=D3DXVECTOR3(float(sa), float(b),   float(ca));
+			pVrt[k++]=D3DXVECTOR3(float(sa), float(b),    float(ca));
 			pVrt[k++]=D3DXVECTOR3(float(sa), float(b+db), float(ca));
-			a += da;
+			sa += ds; ca -= dc;
 		}
-		da = -da;
-		a += da;
-		b += db;
+		ds = -ds; dc = -dc;	sa += ds; ca -= dc;	b += db;
 	}
 
-	HR(Dev()->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB, NULL));
+	HR(Dev()->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB[index], NULL));
 
-	if (pSkyVB->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
+	if (pSkyVB[index]->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
 		memcpy2(pBuf, pVrt, k*sizeof(D3DXVECTOR3));
-		pSkyVB->Unlock();
+		pSkyVB[index]->Unlock();
 	}
 
 	delete []pVrt;
-
 }
 
 // -----------------------------------------------------------------------
 
-LPDIRECT3DVERTEXBUFFER9 HazeManager2::pSkyVB = NULL;
+LPDIRECT3DVERTEXBUFFER9 HazeManager2::pSkyVB[6];
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pRingVB = NULL;
+int HazeManager2::xreslvl[6] = {28,18,14,10,8,6};
+int HazeManager2::yreslvl[6] = {32,24,18,18,16,10};
+int HazeManager2::xlreslvl[6] = {18,12,10,6,6,4};
+int HazeManager2::ylreslvl[6] = {22,16,12,12,10,8};
 

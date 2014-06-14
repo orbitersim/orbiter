@@ -825,7 +825,7 @@ void Scene::RenderMainScene()
 	}
 	else {
 		// Clear the viewport
-		HR(pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	}
 	
 	if (FAILED (pDevice->BeginScene())) return;
@@ -860,10 +860,13 @@ void Scene::RenderMainScene()
 		PlanetRenderer::InitializeScattering(vPl);
 	}
 
-	cspheremgr->Render(pDevice, 8, bglvl, bEnableAtmosphere);
+	// -------------------------------------------------------------------------------------------------------
+	// Render Celestial Sphere Background Image 
+	// -------------------------------------------------------------------------------------------------------
+
+	cspheremgr->Render(pDevice, 8, bglvl);
 
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
 
 	// -------------------------------------------------------------------------------------------------------
 	// planetarium mode (celestial sphere elements)

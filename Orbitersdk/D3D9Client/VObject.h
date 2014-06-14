@@ -102,7 +102,7 @@ public:
 
 	inline const D3DXMATRIX * MWorld() const { return &mWorld; }
 
-	inline const Scene * GetScene() const { return scn; }
+	inline Scene * GetScene() const { return scn; }
 	inline oapi::D3D9Client * GetClient() { return gc; }
 	inline LPDIRECT3DDEVICE9 GetDevice() { return gc->GetDevice(); }
 
@@ -225,7 +225,7 @@ protected:
 
 	bool active;		// visual is active (within camera range)
 	OBJHANDLE hObj;		// handle for the "logical" object
-	const Scene *scn;	// The scene to which the object belongs
+	Scene *scn;			// The scene to which the object belongs
 	D3DXMATRIX mWorld;	// D3D world matrix for the object
 	D3DXMATRIX mWorldInv;
 	VECTOR3 cpos;		// camera-relative object position

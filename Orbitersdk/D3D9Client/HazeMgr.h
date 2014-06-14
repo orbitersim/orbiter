@@ -23,8 +23,7 @@
 #define HORIZON_NSEG 128	// number of mesh segments
 #define HORIZON2_NSEG 256	// Horizon ring segments
 #define HORIZON2_NRING 25	// Horizon ring ring count
-#define HORIZON2_XSEG 8		// Sperical patch segments
-#define HORIZON2_YSEG 48	// Sperical patch segments
+#define HORIZON2_XSEG 16	// Sperical patch segments
 
 class vPlanet;
 
@@ -75,7 +74,7 @@ public:
 
 	static	void GlobalInit (oapi::D3D9Client *gclient);
 	static	void GlobalExit();
-	static	void CreateSkydomeBuffers();
+	static	void CreateSkydomeBuffers(int index);
 	static	void CreateRingBuffers();
 
 	void	Render(D3DXMATRIX &wmat, float hz_aperture_deg);
@@ -84,13 +83,17 @@ private:
 
 	void	RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hralt);
 	void	RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr);
-	void	RenderSkySegment(D3DXMATRIX &wmat);
+	void	RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, double dmax, int index);
 
 	OBJHANDLE obj;
 	const vPlanet *vp;
 	double hralt, rad;
 
-	static LPDIRECT3DVERTEXBUFFER9 pSkyVB;
+	static int xreslvl[6];
+	static int yreslvl[6];
+	static int xlreslvl[6];
+	static int ylreslvl[6];
+	static LPDIRECT3DVERTEXBUFFER9 pSkyVB[6];
 	static LPDIRECT3DVERTEXBUFFER9 pRingVB;
 };
 

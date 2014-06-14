@@ -46,7 +46,7 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene): VisObject (_hObj)
 	active = true;
 	bBSRecompute = true;
 	hObj = _hObj;
-	scn  = scene;
+	scn  = (Scene *)scene;
 	D3DXMatrixIdentity(&mWorld);
 	size = oapiGetSize(hObj);
 	cdist = 0.0;

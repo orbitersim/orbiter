@@ -34,18 +34,24 @@ inline float exp2(float d)
 	return exp(d*0.693147180559945f);
 }
 
+inline double lerp(double a, double b, double x)
+{
+	return a + (b-a)*x;
+}
+
+inline float lerp(float a, float b, float x)
+{
+	return a + (b-a)*x;
+}
+
 inline double saturate(double d)
 {
-	if (d>1.0) return 1.0;
-	if (d<0.0) return 0.0;
-	return d;
+	if (d>1.0) return 1.0; if (d<0.0) return 0.0; return d;
 }
 
 inline float saturate(float d)
 {
-	if (d>1.0f) return 1.0f;
-	if (d<0.0f) return 0.0f;
-	return d;
+	if (d>1.0f) return 1.0f; if (d<0.0f) return 0.0f; return d;
 }
 
 
@@ -205,6 +211,11 @@ inline D3DXVECTOR3 _D3DXVECTOR3(const VECTOR3 &v)
 inline D3DXVECTOR3 _D3DXVECTOR3(double x, double y, double z)
 {
 	return D3DXVECTOR3(float(x), float(y), float(z));
+}
+
+inline D3DXVECTOR3 operator* (const D3DXVECTOR3 &a, const D3DXVECTOR3 &b)
+{
+	return D3DXVECTOR3(a.x*b.x, a.y*b.y, a.z*b.z);
 }
 
 #endif
