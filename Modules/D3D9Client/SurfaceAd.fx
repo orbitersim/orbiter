@@ -315,6 +315,29 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 }
 
 
+void HorizonColor2(out float3 vIns, in float3 vUnitRay)
+{    
+	float  fDCR = -dot(vUnitCameraPos, vUnitRay);
+	float  fHrz = (fCameraAlt+fRadius)*fDCR;
+	float3 vPos = vCameraPos + vUnitRay * fHrz;
+	float3 vNr1 = normalize(vPos);
+    float  fDNS = dot(vNr1, vSunDir);
+	float  fDNR = dot(vNr1, vUnitRay);
+	float  fRad = dot(vNr1, vPos);				// Geo-centric vertex radius
+	float  fDRS = -dot(vUnitRay, vSunDir);
+	float  fRd2 = fRad*fRad;
+	float  fDns = exp2((fRadius-fRad)*fInvScaleHeight);
+	float fDRay = fDns * (AngleCoEff(fDNR) + AngleCoEff(-fDNR)); 
+    float  fMnD = fDRay * rsqrt(fAtmRad2 - fRd2) * fScaleHeight * 1.4427f;  
+    float fDSun = fMnD * AngleCoEff(fDNS);
+    float3 vSun = exp2(-(vRayTotal+vMieTotal) * fDSun) * fDRay * Shadow(fDNS);
+    vIns = (vRayInSct*RPhase(fDRS) + vMieTotal*MPhase(fDRS)) * vSun;
+    if (bOverSat) vIns = 1.0 - exp2(vIns*fExposure);
+}
+
+
+
+
 
 
 
@@ -693,7 +716,8 @@ CelSphereVS SpaceTechVS(TILEVERTEX vrt)
 
 float4 SpaceTechPS(CelSphereVS frg) : COLOR
 {
-    return float4(tex2D(DiffTexS, frg.tex0).rgb * fAlpha, 1.0f);
+	float3 vColor = tex2D(DiffTexS, frg.tex0).rgb * fAlpha + frg.insca.rgb;
+    return float4(vColor, 1.0);
 }
 
 technique SkyDomeTech

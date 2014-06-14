@@ -620,8 +620,8 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Default");
-	//SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Advanced");
-	//SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Experiment");
+	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Advanced");
+	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Experiment");
 	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_SETCURSEL, 0, 0);
 
 	// ENVMAP FACES --------------------------------------

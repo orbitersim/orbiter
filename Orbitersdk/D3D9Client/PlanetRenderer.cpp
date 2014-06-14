@@ -32,7 +32,7 @@ D3DXHANDLE PlanetRenderer::smViewProj = NULL;
 D3DXHANDLE PlanetRenderer::svTexOff = NULL;
 D3DXHANDLE PlanetRenderer::svWater = NULL;
 D3DXHANDLE PlanetRenderer::svSunDir = NULL;
-D3DXHANDLE PlanetRenderer::svAddBkg = NULL;
+D3DXHANDLE PlanetRenderer::svGeneric = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
@@ -101,8 +101,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	char sh_name[32];
 
 	if (Config->AtmoShader==0) strcpy_s(sh_name,32,"Surface.fx");
-	if (Config->AtmoShader==1) strcpy_s(sh_name,32,"SurfaceAD.fx");
-	if (Config->AtmoShader==2) strcpy_s(sh_name,32,"SurfaceEX.fx");
+	if (Config->AtmoShader==1) strcpy_s(sh_name,32,"SurfaceAd.fx");
+	if (Config->AtmoShader==2) strcpy_s(sh_name,32,"SurfaceEx.fx");
 
 	LogAlw("Starting to initialize %s a shading technique...", sh_name);
 	
@@ -177,7 +177,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svTexOff			= pShader->GetParameterByName(0,"vTexOff");
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
-	svAddBkg			= pShader->GetParameterByName(0,"vAddBkg");
+	svGeneric			= pShader->GetParameterByName(0,"vGeneric");
 	// ------------------------------------------------------------
 	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");

@@ -354,7 +354,8 @@ void SurfTile::Render ()
 	// Feed tile specific data to shaders
 	//
 	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetVector(TileManager2Base::svTexOff, &D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f)));
+	HR(Shader->SetVector(TileManager2Base::svTexOff,  &D3DXVECTOR4(0, 0, 0, 0)));
+	HR(Shader->SetVector(TileManager2Base::svGeneric, &D3DXVECTOR4(1, 1, 1, 1)));
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
 	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
@@ -367,6 +368,7 @@ void SurfTile::Render ()
 	else {				 HR(Shader->SetFloat(TileManager2Base::sfNight, 0.0f));	}
 
 	Shader->CommitChanges();
+
 	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
 	// -------------------------------------------------------------------
@@ -379,9 +381,10 @@ void SurfTile::Render ()
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 	HR(Shader->EndPass());
 
-
 	// add cloud shadows
-	/*
+	
+	render_cloud_shadows = false;
+
 	if (render_cloud_shadows) {
 
 		const TileManager2<CloudTile> *cmgr = mgr->GetPlanet()->CloudMgr2();
@@ -402,58 +405,46 @@ void SurfTile::Render ()
 
 				float alpha = (float)mgr->prm.rprm->shadowalpha;
 
-				HR(Shader->SetFloat(eAlpha, alpha));
+				if (alpha < 0.01f) return; // don't render cloud shadows for this planet
 
-				//if (alpha < 0.01f) return; // don't render cloud shadows for this planet
-				
+				HR(Shader->SetFloat(TileManager2Base::sfAlpha, alpha));
+
 				if (ncloud == 1) { // other cases still to be done
 
 					for (int i = 0; i < ncloud; i++) {
-
-						HR(Shader->SetTexture(eDiffTex, tbuf[i]->Tex()));
 
 						// to be completed: create new mesh with modified texture coordinates
 						const TEXCRDRANGE2 *ctexrange = tbuf[i]->GetTexRange();
 						double cminlat, cmaxlat, cminlng, cmaxlng;
 						float tu0, tu1, tv0, tv1, tuscale, tvscale;
+
 						tbuf[i]->Extents (&cminlat, &cmaxlat, &cminlng, &cmaxlng);
 
 						cminlng -= mgr->prm.rprm->cloudrot;
 						cmaxlng -= mgr->prm.rprm->cloudrot;
-						if (cmaxlng < -PI) {
-							cminlng += PI2;
-							cmaxlng += PI2;
-						}
 
-						static int ncvtx = (TILE_PATCHRES+3)*(TILE_PATCHRES+3);
-						static VERTEX_2TEX *cvtx = new VERTEX_2TEX[ncvtx];
-						if (mesh->nv > ncvtx) {
-							delete []cvtx;
-							cvtx = new VERTEX_2TEX[ncvtx=mesh->nv];
-						}
-						memcpy2(cvtx, mesh->vtx, mesh->nv*sizeof(VERTEX_2TEX));
+						if (cmaxlng < -PI) { cminlng += PI2; cmaxlng += PI2; }
+
 						tu0 = ctexrange->tumin + (ctexrange->tumax-ctexrange->tumin)*(float)((minlng-cminlng)/(cmaxlng-cminlng));
 						tu1 = ctexrange->tumin + (ctexrange->tumax-ctexrange->tumin)*(float)((maxlng-cminlng)/(cmaxlng-cminlng));
 						tv0 = ctexrange->tvmin + (ctexrange->tvmax-ctexrange->tvmin)*(float)((maxlat-cmaxlat)/(cminlat-cmaxlat));
 						tv1	= ctexrange->tvmin + (ctexrange->tvmax-ctexrange->tvmin)*(float)((minlat-cmaxlat)/(cminlat-cmaxlat));
+
 						tuscale = (tu1-tu0)/(texrange.tumax-texrange.tumin);
 						tvscale = (tv1-tv0)/(texrange.tvmax-texrange.tvmin);
-
-						HR(Shader->SetVector(eTexOff, &D3DXVECTOR4(tuscale, texrange.tumin, tvscale, texrange.tvmin)));
-
-						//cvtx[j].tu0 = tu0 + tuscale * (cvtx[j].tu0-texrange.tumin);
-						//cvtx[j].tv0 = tv0 + tvscale * (cvtx[j].tv0-texrange.tvmin);
-						
-						Shader->CommitChanges();
-
+		
+						HR(Shader->SetVector(TileManager2Base::svTexOff,  &D3DXVECTOR4(tu0, tv0, texrange.tumin, texrange.tvmin)));
+						HR(Shader->SetVector(TileManager2Base::svGeneric, &D3DXVECTOR4(tuscale, tvscale, 0, 0)));
+						HR(Shader->SetTexture(TileManager2Base::stDiff, tbuf[i]->Tex()));
+						HR(Shader->CommitChanges());
 						HR(Shader->BeginPass(1));
-						//pDev->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, FVF_2TEX, cvtx, mesh->nv, mesh->idx, mesh->ni, 0);
+						pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 						HR(Shader->EndPass());
 					}
 				}
 			}
 		}
-	}*/
+	}
 
 	HR(Shader->End());	
 }
@@ -709,9 +700,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
-
-	if (rprm.bAddBkg) { HR(Shader()->SetValue(svAddBkg, &rprm.SkyColor, sizeof(D3DXCOLOR))); }
-	else			  { HR(Shader()->SetVector(svAddBkg, &D3DXVECTOR4(0, 0, 0, 0))); }
 
 	// ------------------------------------------------------------------
 	// TODO: render full sphere for levels < 4

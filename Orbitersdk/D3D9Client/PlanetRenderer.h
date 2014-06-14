@@ -47,7 +47,7 @@ public:
 	static D3DXHANDLE svTexOff;
 	static D3DXHANDLE svWater;
 	static D3DXHANDLE svSunDir;
-	static D3DXHANDLE svAddBkg;
+	static D3DXHANDLE svGeneric;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
 	static D3DXHANDLE sfAlpha;
