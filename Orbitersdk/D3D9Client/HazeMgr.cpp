@@ -287,6 +287,7 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 
 	double cr = length(cpos); if (cr<(rad+100.0)) cr=rad+100.0;
 	double hd = sqrt(cr*cr - rad*rad) * 10.0;
+	double al = asin(rad/cr);
 
 	VECTOR3 ur = unit(cpos);
 	VECTOR3 ux = unit(crossp(cdir, ur));
@@ -300,34 +301,20 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	double b = (PI-asin(rad/cr))/6.0;
 	
 	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
-
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a));
 
-	int rd = 0;
 	for (int i=0;i<24;i++) {
-
-		double x = asin(rad/cr);
-
+		double x = al;
 		D3DXMatrixMultiply(&mWL, &mWL, &mL);
-
 		for (int j=0;j<6;j++) {
-		
 			float r1 =  float(sin(x));	 float h1 = -float(cos(x));
 			float r2 =  float(sin(x+b)); float h2 = -float(cos(x+b)); 
-			
 			D3DXVECTOR3 vCnt = vTileCenter * D3DXVECTOR3((r1+r2)*0.5f, 1.0f, (r1+r2)*0.5f);	vCnt.y = (h1+h2)*0.5f;
-			D3DXVec3TransformCoord(&vCnt, &vCnt, &mWL);
-			
-			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.415))) {
-				RenderSkySegment(mWL, hd, x, x+b, j);
-				rd++;
-			}
+			D3DXVec3TransformCoord(&vCnt, &vCnt, &mWL);	
+			if (vp->GetScene()->IsVisibleInCamera(&vCnt, float(sin(a*0.5)*1.415))) RenderSkySegment(mWL, hd, x, x+b, j);	
 			x+=b;
 		}
 	}
-
-	sprintf_s(oapiDebugString(),256,"Tiles Rendered %d",rd);
-
 	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(1, 0, 1, 0)));
 }
 
@@ -344,8 +331,8 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, d
 	HR(Shader()->SetMatrix(smWorld, &wmat));
 	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
 	
-	int xres = (Config->LODBias<0 ? xlreslvl[index] : xreslvl[index]);
-	int yres = (Config->LODBias<0 ? ylreslvl[index] : yreslvl[index]);
+	int xres = (Config->LODBias<-1 ? xlreslvl[index] : xreslvl[index]);
+	int yres = (Config->LODBias<-1 ? ylreslvl[index] : yreslvl[index]);
 
 	UINT prims = xres * yres * 2 - 2;
 	UINT numPasses = 0;
@@ -453,8 +440,8 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 {
 	int k = 0;
 
-	int xseg = (Config->LODBias<0 ? xlreslvl[index] : xreslvl[index]);
-	int yseg = (Config->LODBias<0 ? ylreslvl[index] : yreslvl[index]);
+	int xseg = (Config->LODBias<-1 ? xlreslvl[index] : xreslvl[index]);
+	int yseg = (Config->LODBias<-1 ? ylreslvl[index] : yreslvl[index]);
 
 	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[xseg*yseg*2+2];
 	D3DXVECTOR3 *pBuf = NULL;

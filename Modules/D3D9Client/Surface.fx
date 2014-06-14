@@ -325,16 +325,26 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
 	float3 vPlN  = normalize(vVrt);						// Planet mean normal at vertex location
-	float  fAlt  = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
 	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
-	float  fDRS  = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
 	float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 
-    outVS.aux[AUX_SPECULAR] = pow(saturate(dot(reflect(-vSunDir, vNrmW), vRay)), vWater.a);
-	outVS.aux[AUX_NIGHT]	= saturate(-fNgt - 0.2f);
-   
+	outVS.aux[AUX_SPECULAR] = pow(saturate(dot(reflect(-vSunDir, vNrmW), vRay)), vWater.a);
 
+	// Camara altitude dependency multiplier for ambient color of atmosphere
+	float fAmb = max(saturate(fNgt-0.05f)*fAmbient, fGlobalAmb) * 0.08f;
+
+	if (!bOnOff) {
+		outVS.atten = max(fDNS, 4.0f*fAmb);
+		outVS.insca = 0.0;
+		return outVS;
+	}
+
+	float  fAlt = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
+	float  fDRS = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
+	
+	outVS.aux[AUX_NIGHT] = saturate(-fNgt - 0.2f);
+   
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
 		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
@@ -365,9 +375,6 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieTotal * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS);
 	}
 
-	// Camara altitude dependency multiplier for ambient color of atmosphere
-	float fAmb = max(saturate(fNgt-0.05f)*fAmbient, fGlobalAmb) * 0.08f;
-
 	outVS.atten *= max((vSunLight*fDNS), (vRayInSct+4.0f) * fAmb);
 
 	if (bOverSat) outVS.insca = 1.0f - exp2(outVS.insca*fExposure);
@@ -387,7 +394,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
     if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb * 1.5f;
     if (bLights)   cNgt = cMsk.rgb * (frg.aux[AUX_NIGHT] * fNight);
     
-    float3 color = (cTex.rgb + cSpe) * frg.atten.rgb + vAddBkg.rgb + frg.insca.rgb + cNgt;
+    float3 color = (cTex.rgb + cSpe) * frg.atten.rgb + frg.insca.rgb + cNgt;
   
 	return float4(color, 1.0f);   
 }
