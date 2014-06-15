@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="D3D9Client"
 	ProjectGUID="{5B2C5D1A-7B8E-4343-BC33-836ABD122D3A}"
 	RootNamespace="D3D9Client"
@@ -864,6 +864,10 @@
 			</File>
 			<File
 				RelativePath="..\..\Modules\D3D9Client\Surface.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\SurfaceAd.fx"
 				>
 			</File>
 		</Filter>
