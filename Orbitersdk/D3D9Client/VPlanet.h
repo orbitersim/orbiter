@@ -58,7 +58,8 @@ public:
 	// Atmospheric ------------------------------------------------------------
 	const ScatterParams * GetAtmoParams() const { return &SPrm; }
 	ScatterParams * GetAtmoParams() { return &SPrm; }
-	double			OpticalDepth(double alt, double cos_dir);
+	double			AngleCoEff(double cos_dir);
+	D3DXVECTOR3		GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGlobalAmb);
 	bool			LoadAtmoConfig();
 	void			SaveAtmoConfig();
 	void			UpdateAtmoConfig();

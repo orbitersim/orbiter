@@ -24,10 +24,8 @@ public:
 	static ID3DXEffect * Shader() { return pShader; }
 	static oapi::D3D9Client * Client() { return gc; }
 	
-	void		SetWorldMatrix (const MATRIX4 &W);
-	void		SetWorldMatrix (const D3DXMATRIX &W);
-	void		SetViewProjectionMatrix (const MATRIX4 &VP);
-	void		SetViewProjectionMatrix (const D3DXMATRIX &VP);
+	static void	SetWorldMatrix (const MATRIX4 &W);
+	static void	SetViewProjectionMatrix (const D3DXMATRIX *VP);
 	
 	// ------------------------------------------------------------
 	static oapi::D3D9Client *gc;
@@ -40,6 +38,7 @@ public:
 	static D3DXHANDLE eRingTech;
 	static D3DXHANDLE eHorizonTech;
 	static D3DXHANDLE eSkyDomeTech;
+	static D3DXHANDLE eCloudShadowTech;
 	// ------------------------------------------------------------  
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;

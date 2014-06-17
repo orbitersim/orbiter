@@ -174,66 +174,62 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 template<>
 void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPlanet::RenderPrm &rprm)
 {
-	/*
+	
 	double scale = obj_size/(obj_size+GetPlanet()->prm.cloudalt);
+
 	MATRIX4 dwmat_scaled = {
 		dwmat.m11*scale, dwmat.m12*scale, dwmat.m13*scale, dwmat.m14*scale,
 		dwmat.m21*scale, dwmat.m22*scale, dwmat.m23*scale, dwmat.m24*scale,
 		dwmat.m31*scale, dwmat.m32*scale, dwmat.m33*scale, dwmat.m34*scale,
 		dwmat.m41,       dwmat.m42,       dwmat.m43,       dwmat.m44};
+
 	SetRenderPrm (dwmat_scaled, rprm.cloudrot, false, rprm);
+
 	prm.grot *= scale;
 
-	D3DMATERIAL9 pmat;
-	static D3DMATERIAL9 cloudmat = { {0,0,0,1}, {0,0,0,1}, {0,0,0,0}, {0,0,0,0}, 0};
-	
 	float alpha = (float)rprm.shadowalpha;
 	if (alpha < 0.01f) return; // don't render cloud shadows for this planet
-	cloudmat.Diffuse.a = cloudmat.Ambient.a = alpha;
 
-	Dev()->GetMaterial (&pmat);
-	Dev()->SetMaterial (&cloudmat);
-	Dev()->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-	Dev()->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-	
+	class Scene *scene = GetClient()->GetScene();
+
 	double np = 0.0, fp = 0.0;
 	int i, j;
 
-	Camera *camera = GClient()->GetScene()->GetCamera();
 	double R = obj_size;
 	double D = prm.cdist*R;
 	double zmax = sqrt(D*D-R*R);
 	double zmin = max (2.0, min (zmax*1e-4, (D-R)*0.8));
-	np = camera->GetNearlimit();
-	fp = camera->GetFarlimit();
-	camera->SetFrustumLimits (zmin, zmax);
+	np = scene->GetCameraNearPlane();
+	fp = scene->GetCameraFarPlane();
+	scene->SetCameraFrustumLimits (zmin, zmax);
 
 	// build a transformation matrix for frustum testing
-	MATRIX4 Mproj = camera->ProjectionMatrix();
+	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
 	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
-	MATRIX4 Mview = camera->ViewMatrix();
+	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview,Mproj);
 
+	// ---------------------------------------------------------------------
+	// Initialize shading technique and feed planet specific data to shaders
+	//
+	HR(Shader()->SetTechnique(eCloudShadowTech));
+	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
+	HR(Shader()->SetVector(svTexOff,  &D3DXVECTOR4(0, 0, 0, 0)));
+	HR(Shader()->SetVector(svGeneric, &D3DXVECTOR4(1, 1, 1, 1)));
+	HR(Shader()->SetFloat(sfAlpha, alpha));
+	
 	// TODO: render full sphere for levels < 4
 
 	loader->WaitForMutex();
 
 	// render the tree
-	Dev()->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP);
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
-	Dev()->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP);
-
+	
 	loader->ReleaseMutex ();
 
 	if (np)
-		camera->SetFrustumLimits(np,fp);
-
-	Dev()->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-	Dev()->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-	Dev()->SetMaterial (&pmat);
-	*/
+		scene->SetCameraFrustumLimits (np, fp);
 }
 
 // -----------------------------------------------------------------------

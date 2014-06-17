@@ -147,12 +147,25 @@ public:
 	inline double GetSize() const { return size; }
 
 	/**
+	 * \brief Returns the apparent radius of the Sun
+	 * \return Apparent radius of the Sun [sun_rad/distance]
+	 */
+	inline double SunApparentRad() const { return sunapprad; }
+
+	/**
 	 * \brief Returns object position relative to camera
 	 * \return relative position vector [<b>m</b>]
 	 * \note The returned distance vector is expressed in the ecliptic frame.
 	 * \sa CamDist
 	 */
 	inline const VECTOR3 &PosFromCamera() const { return cpos; }
+
+	/**
+	 * \brief Returns a unit vertor pointing towards the sun
+	 * \return A unit vertor pointing towards the sun [<b>m</b>]
+	 * \note The returned vector is expressed in the ecliptic frame.
+	 */
+	inline const VECTOR3 &SunDirection() const { return sundir; }
 
 	/**
 	 * \brief Per-frame object parameter updates
@@ -229,10 +242,14 @@ protected:
 	D3DXMATRIX mWorld;	// D3D world matrix for the object
 	D3DXMATRIX mWorldInv;
 	VECTOR3 cpos;		// camera-relative object position
+	VECTOR3 sundir;		// Sun direction (unit vector)
 	VECTOR3 albedo;
 	MATRIX4 dmWorld;    // world matrix in double precision
 	double size;        // object radius [m]
 	double cdist;		// current camera distance
+	double sunapprad;	// Apparent size of the sun
+	double sundst;		// Distance to the sun [m]
+
 	char name[64];
 };
 

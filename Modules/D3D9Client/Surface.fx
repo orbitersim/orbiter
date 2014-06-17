@@ -47,6 +47,13 @@ struct CloudVS
     float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
 };
 
+struct CloudShVS
+{
+    float4 posH     : POSITION0;
+    float2 texUV    : TEXCOORD0;  // Texture coordinate
+	float  alpha	: TEXCOORD1;
+};
+
 struct HazeVS
 {
     float4 posH    : POSITION0;
@@ -421,7 +428,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float fY = saturate(fDRP);
 	float fLvl = fX * rcp(fX+fY);
 
-	outVS.atten *= max(vSunLight*fLvl, (vRayInSct+4.0f) * fAmb);
+	outVS.atten *= max(vSunLight * vWhiteBalance * fLvl, (vRayInSct+4.0f) * fAmb);
 	outVS.insca = 1.0f - exp2(-outVS.insca);
 	
     return outVS;
@@ -441,7 +448,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
     
     float3 color = (cTex.rgb + cSpe) * frg.atten.rgb + frg.insca.rgb + cNgt;
 
-	return float4(color*vWhiteBalance, 1.0f);   
+	return float4(color, 1.0f);   
 }
 
 
@@ -450,22 +457,25 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 // Cloud Shadow Renderer
 // =============================================================================================================
 
-TileVS ShadowTechVS(TILEVERTEX vrt)
+CloudShVS ShadowTechVS(TILEVERTEX vrt)
 {
     // Zero output.
-	TileVS outVS = (TileVS)0;
+	CloudShVS outVS = (CloudShVS)0;
     // Apply a world transformation matrix
     float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
     float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
 	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
+
+	outVS.alpha  = 1.0f - smoothstep(fCameraAlt, fHorizonDst, length(vPosW));
+
 	return outVS;
 }	
 
-float4 ShadowTechPS(TileVS frg) : COLOR
+float4 ShadowTechPS(CloudShVS frg) : COLOR
 {
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
-	return float4(0, 0, 0, fAlpha*cTex.a);   
+	return float4(0, 0, 0, fAlpha*cTex.a*frg.alpha);   
 }
 
 
@@ -603,6 +613,23 @@ technique CloudTech
     {
         vertexShader = compile VS_MOD CloudTechVS();
         pixelShader  = compile PS_MOD CloudTechPS();
+        
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+        ZEnable = false; 
+        ZWriteEnable = false;
+    }
+}
+
+
+technique CloudShadowTech
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD ShadowTechVS();
+        pixelShader  = compile PS_MOD ShadowTechPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

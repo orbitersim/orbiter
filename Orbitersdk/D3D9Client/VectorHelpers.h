@@ -218,5 +218,37 @@ inline D3DXVECTOR3 operator* (const D3DXVECTOR3 &a, const D3DXVECTOR3 &b)
 	return D3DXVECTOR3(a.x*b.x, a.y*b.y, a.z*b.z);
 }
 
+inline D3DXVECTOR3 operator+ (const D3DXVECTOR3 &a, float d)
+{
+	return D3DXVECTOR3(a.x+d, a.y+d, a.z+d);
+}
+
+inline D3DXVECTOR3 &operator*= (D3DXVECTOR3 &a, const D3DXVECTOR3 &b)
+{
+	a.x *= b.x; a.y *= b.y; a.z *= b.z; 
+	return a;
+}
+
+inline D3DXVECTOR3 &operator+= (D3DXVECTOR3 &a, float d)
+{
+	a.x += d; a.y += d; a.z += d; 
+	return a;
+}
+
+inline D3DXVECTOR3 rcp(const D3DXVECTOR3 &v)
+{
+	return D3DXVECTOR3(1.0f/v.x, 1.0f/v.y, 1.0f/v.z);
+}
+
+inline D3DXVECTOR3 vmax(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
+{
+	return D3DXVECTOR3(max(v.x, w.x), max(v.y, w.y), max(v.z, w.z));
+}
+
+inline D3DXVECTOR3 vmin(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
+{
+	return D3DXVECTOR3(min(v.x, w.x), min(v.y, w.y), min(v.z, w.z));
+}
+
 #endif
 

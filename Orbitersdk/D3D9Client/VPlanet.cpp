@@ -289,7 +289,7 @@ bool vPlanet::Update ()
 		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
-		prm.bCloudFlatShadows = (cdist >= 1.05*size);
+		prm.bCloudFlatShadows = (cdist >= 1.02*size); //(cdist >= 1.05*size);
 
 		if (clouddata) {
 			if (prm.cloudvis & 1) {
@@ -423,6 +423,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
 	PlanetRenderer::InitializeScattering(this);
 
+	PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
+
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		DWORD displ  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDISPLAYMODE);
@@ -453,7 +455,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.AmbColor	= D3DXCOLOR(0,0,0,0);
 		prm.FogColor	= D3DXCOLOR(0,0,0,0);
 		prm.TintColor	= D3DXCOLOR(0,0,0,0);
-		prm.SunDir		= -scn->GetLight(-1)->Direction;
+		prm.SunDir		= _D3DXVECTOR3(SunDirection());
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);
@@ -595,36 +597,12 @@ void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 
 void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 {
-	return;
-
 	if (cloudmgr2) {
 		if (prm.bCloudFlatShadows)
 			cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
 	} 
 	else if (clouddata) { // legacy method
-		/*
-		D3DMATERIAL7 pmat;
-		static D3DMATERIAL7 cloudmat = {{0,0,0,1},{0,0,0,1},{0,0,0,0},{0,0,0,0},0};
-
-		float alpha = clouddata->shadowalpha;
-		cloudmat.diffuse.a = cloudmat.ambient.a = alpha;
-
-		dev->GetMaterial (&pmat);
-		dev->SetMaterial (&cloudmat);
-
-		DWORD ablend;
-		dev->GetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, &ablend);
-		if (!ablend)
-			dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
-		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
-		clouddata->cloudmgr->Render (dev, clouddata->mWorldC0, min(patchres,8), (int)clouddata->viewap);
-
-		dev->SetTextureStageState (0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-		if (!ablend)
-			dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
-		dev->SetMaterial (&pmat);
-		*/
+		clouddata->cloudmgr->RenderShadow(dev, clouddata->mWorldC0, dist_scale, min(patchres,8), clouddata->viewap, clouddata->shadowalpha);	
 	}
 }
 
@@ -683,12 +661,38 @@ bool vPlanet::ModLighting (DWORD &ambient)
 
 // ==============================================================
 
-double vPlanet::OpticalDepth(double alt, double cd)
+D3DXVECTOR3 vPlanet::GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGlobalAmb)
 {
-	cd = 1.0/(cd+0.2);
+	double fAlt = length(vPos) - size;
+	if (fAlt>prm.SclHeight*20.0) return D3DXVECTOR3(1,1,1);
+
+	float  rp = -float(SPrm.rpow);
+	float  mp = -float(SPrm.mpow);
+
+	D3DXVECTOR3 lambda4 = D3DXVECTOR3(pow(float(SPrm.red),rp), pow(float(SPrm.green),rp), pow(float(SPrm.blue),rp));
+	D3DXVECTOR3 lambda2 = D3DXVECTOR3(pow(float(SPrm.red),mp), pow(float(SPrm.green),mp), pow(float(SPrm.blue),mp));
+	
+	D3DXVec3Normalize(&lambda4, &lambda4);
+	D3DXVec3Normalize(&lambda2, &lambda2);
+
+	D3DXVECTOR3 vOutTotSun = lambda4*float(SPrm.rout) + lambda2*float(SPrm.mie);
+	D3DXVECTOR3 vRayInSct  = lambda4*float(SPrm.rin * SPrm.rout);
+
+	double fDPS = max(0.34, dotp(unit(vPos), sundir));	
+	double fDns = exp2(-fAlt * prm.InvSclHeight);
+
+	return exp2(-vOutTotSun * (fDns * AngleCoEff(fDPS)));
+}
+
+
+// ==============================================================
+
+double vPlanet::AngleCoEff(double cd)
+{
+	cd = 1.0/max(0.0954, cd+0.2);
 	double val = 0.0, x = 1.0;
 	for (int i=0;i<8;i++) {	val += prm.ScatterCoEff[i]*x; x*=cd; }
-	return double(prm.SclHeight) * exp2(-alt*double(prm.InvSclHeight)) * val;
+	return val;
 }
 
 // ==============================================================

@@ -102,14 +102,18 @@ bool vObject::Update()
 	if (!active) return false;
 
 	MATRIX3 grot;
+	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
 	oapiGetRotationMatrix(hObj, &grot);
 	oapiGetGlobalPos(hObj, &cpos);
+	oapiGetGlobalPos(hSun, &sundir);
+
+	sundst = length(sundir-cpos);
+	sundir = unit(sundir-cpos);
 	cpos -= scn->GetCameraGPos();
-
-	// object positions are relative to camera
-
 	cdist = length(cpos);
+	sunapprad = oapiGetSize(hSun) / sundst;
 
+		
 	dmWorld = _M(grot.m11, grot.m21, grot.m31, 0,
 		         grot.m12, grot.m22, grot.m32, 0,
 				 grot.m13, grot.m23, grot.m33, 0,
