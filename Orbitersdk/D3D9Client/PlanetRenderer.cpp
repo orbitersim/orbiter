@@ -12,6 +12,7 @@
 #include "VectorHelpers.h"
 #include "Scene.h"
 #include "VPlanet.h"
+#include "D3D9Surface.h"
 
 
 // ------------------------------------------------------------
@@ -44,7 +45,7 @@ D3DXHANDLE PlanetRenderer::sbLights = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
-D3DXHANDLE PlanetRenderer::stSun = NULL;
+D3DXHANDLE PlanetRenderer::stNoise = NULL;
 // Atmosphere -------------------------------------------------
 //D3DXHANDLE PlanetRenderer::svFogColor = NULL;
 //D3DXHANDLE PlanetRenderer::sfFogDensity = NULL;
@@ -54,24 +55,25 @@ D3DXHANDLE PlanetRenderer::stSun = NULL;
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
 // Scatter model ----------------------------------------------
-D3DXHANDLE PlanetRenderer::svPhase = NULL;		
+D3DXHANDLE PlanetRenderer::svMPhase = NULL;		
 D3DXHANDLE PlanetRenderer::svODCoEff = NULL;
 D3DXHANDLE PlanetRenderer::svODCoEffEx = NULL;
-D3DXHANDLE PlanetRenderer::svRayTotal = NULL;	
+D3DXHANDLE PlanetRenderer::svMieInSct = NULL;	
 D3DXHANDLE PlanetRenderer::svRayInSct = NULL;
-D3DXHANDLE PlanetRenderer::svRaySurface = NULL;
-D3DXHANDLE PlanetRenderer::svMieTotal = NULL;
+D3DXHANDLE PlanetRenderer::svOutTotSun = NULL;
+D3DXHANDLE PlanetRenderer::svOutTotSrf = NULL;
+D3DXHANDLE PlanetRenderer::svWhiteBalance = NULL;
 D3DXHANDLE PlanetRenderer::svCameraPos = NULL;		
 D3DXHANDLE PlanetRenderer::svUnitCameraPos = NULL;		
 D3DXHANDLE PlanetRenderer::sfDepthClamp = NULL;
-D3DXHANDLE PlanetRenderer::sfSrfIntensity = NULL;
+//D3DXHANDLE PlanetRenderer::sfSrfIntensity = NULL;
 D3DXHANDLE PlanetRenderer::sfScaleHeight = NULL;		
 D3DXHANDLE PlanetRenderer::sfInvScaleHeight = NULL;
 D3DXHANDLE PlanetRenderer::sfRadius = NULL;
 D3DXHANDLE PlanetRenderer::sfCameraAlt = NULL;
 D3DXHANDLE PlanetRenderer::sfHorizonAlt = NULL;
 D3DXHANDLE PlanetRenderer::sfAtmRad2 = NULL;
-D3DXHANDLE PlanetRenderer::sfBalance = NULL;
+D3DXHANDLE PlanetRenderer::sfRPhase = NULL;
 D3DXHANDLE PlanetRenderer::sfHorizonDst = NULL;
 D3DXHANDLE PlanetRenderer::sfExposure = NULL;			
 D3DXHANDLE PlanetRenderer::sfAux1 = NULL;			
@@ -189,29 +191,30 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
-	stSun				= pShader->GetParameterByName(0,"tSun");
+	stNoise				= pShader->GetParameterByName(0,"tNoise");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
 	// Scatter model ----------------------------------------------
-	svPhase				= pShader->GetParameterByName(0,"vPhase");		
+	svMPhase			= pShader->GetParameterByName(0,"vMPhase");		
 	svODCoEff			= pShader->GetParameterByName(0,"vODCoEff");
 	svODCoEffEx			= pShader->GetParameterByName(0,"vODCoEffEx");
-	svRayTotal			= pShader->GetParameterByName(0,"vRayTotal");
+	svMieInSct			= pShader->GetParameterByName(0,"vMieInSct");
 	svRayInSct			= pShader->GetParameterByName(0,"vRayInSct");
-	svRaySurface		= pShader->GetParameterByName(0,"vRaySurface");
-	svMieTotal			= pShader->GetParameterByName(0,"vMieTotal");
+	svOutTotSun			= pShader->GetParameterByName(0,"vOutTotSun");
+	svOutTotSrf			= pShader->GetParameterByName(0,"vOutTotSrf");
+	svWhiteBalance		= pShader->GetParameterByName(0,"vWhiteBalance");
 	svCameraPos			= pShader->GetParameterByName(0,"vCameraPos");		
 	svUnitCameraPos		= pShader->GetParameterByName(0,"vUnitCameraPos");		
 	sfDepthClamp		= pShader->GetParameterByName(0,"fDepthClamp");
-	sfSrfIntensity		= pShader->GetParameterByName(0,"fSrfIntensity");
+	//sfSrfIntensity		= pShader->GetParameterByName(0,"fSrfIntensity");
 	sfScaleHeight		= pShader->GetParameterByName(0,"fScaleHeight");		
 	sfInvScaleHeight	= pShader->GetParameterByName(0,"fInvScaleHeight");
 	sfRadius			= pShader->GetParameterByName(0,"fRadius");
 	sfCameraAlt			= pShader->GetParameterByName(0,"fCameraAlt");
 	sfHorizonAlt		= pShader->GetParameterByName(0,"fHorizonAlt");
 	sfAtmRad2			= pShader->GetParameterByName(0,"fAtmRad2");
-	sfBalance			= pShader->GetParameterByName(0,"fBalance");
+	sfRPhase			= pShader->GetParameterByName(0,"fRPhase");
 	sfHorizonDst		= pShader->GetParameterByName(0,"fHorizonDst");
 	sfExposure			= pShader->GetParameterByName(0,"fExposure");			
 	sfAux1				= pShader->GetParameterByName(0,"fAux1");			
@@ -303,10 +306,12 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float   a = float((1.0-g*g) / (4.0*3.14));
 	float   b = (1.0f+g*g);
 	float   d = (-2.0f*g);
-	float   c = float(atmo->rphase);
+	float   c = float(atmo->moffset);
 	float  rp = float(atmo->rpow);
 	float  h0 = float(atmo->height*1e3);				// Scale height
-	float  mp = 1.0f;
+	float  mp = float(atmo->mpow);
+	float  wb = float(atmo->balance);
+
 	double pr = pPlanet->GetSize();						// Planet radius
 	double ur = pr + pPlanet->prm.atm_hzalt;			// Atmosphere upper radius (Skydome radius)
 	double cr = pPlanet->CamDist();						// Camera distance from a planet center
@@ -316,34 +321,34 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	// 1.0 / lambda^4
 	D3DXVECTOR3 lambda4 = D3DXVECTOR3(1.0f/pow(float(atmo->red),rp),  1.0f/pow(float(atmo->green),rp),  1.0f/pow(float(atmo->blue),rp));
 	D3DXVECTOR3 lambda2 = D3DXVECTOR3(1.0f/pow(float(atmo->red),mp),  1.0f/pow(float(atmo->green),mp),  1.0f/pow(float(atmo->blue),mp));
+	D3DXVECTOR3 whitebl = D3DXVECTOR3(1.0f/pow(float(atmo->red),wb),  1.0f/pow(float(atmo->green),wb),  1.0f/pow(float(atmo->blue),wb));
 	
 	D3DXVec3Normalize(&lambda4, &lambda4);
 	D3DXVec3Normalize(&lambda2, &lambda2);
 
-	D3DXVECTOR3 raytot = lambda4 * float(atmo->rout);
-	D3DXVECTOR3 raysct = raytot  * float(atmo->rin);
-	D3DXVECTOR3 raysrf = raytot  * float(atmo->srfclr);
-	D3DXVECTOR3 mietot = lambda2 * float(atmo->mie);
+	whitebl *= 1.0f/whitebl.y;
 
-	/*if (atmo->pSunLight) {
-		HR(Shader()->SetTexture(stSun, atmo->pSunLight));
-	} else LogErr("Sunlight Color Map is Missing !!!");*/
-
+	D3DXVECTOR3 vOutTotSun = lambda4*float(atmo->rout) + lambda2*float(atmo->mie);
+	D3DXVECTOR3 vOutTotSrf = lambda4*float(atmo->rout) + lambda2*float(atmo->mie);
+	D3DXVECTOR3 vMieInSct  = lambda2*float(atmo->mie);	
+	D3DXVECTOR3 vRayInSct  = lambda4*float(atmo->rin * atmo->rout);
+	D3DXVECTOR3 vWhiteBalance = whitebl*float(atmo->expo);
+	
 	// Camara altitude dependency multiplier for ambient color of atmosphere
     float fMult = saturate((h0-float(ca*0.1))/h0);
 
 	// Upload parameters to shaders
 	HR(Shader()->SetFloat(sfAmbient0, fMult * min(0.7f, log(float(atm->rho0)+1.0f)*0.4f)));
-	HR(Shader()->SetValue(svPhase, &D3DXVECTOR4(a,b,c,d), sizeof(D3DXVECTOR4)));
-	HR(Shader()->SetValue(svODCoEff,   &D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])), sizeof(D3DXVECTOR4)));
+	HR(Shader()->SetValue(svMPhase, &D3DXVECTOR4(a,b,c,d), sizeof(D3DXVECTOR4)));
+	HR(Shader()->SetValue(svODCoEff, &D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])), sizeof(D3DXVECTOR4)));
 	HR(Shader()->SetValue(svODCoEffEx, &D3DXVECTOR4(float(pCoEff[4]), float(pCoEff[5]), float(pCoEff[6]), float(pCoEff[7])), sizeof(D3DXVECTOR4)));
-	HR(Shader()->SetValue(svRayTotal, &raytot, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svRayInSct, &raysct, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svRaySurface, &raysrf, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svMieTotal, &mietot, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svOutTotSun, &vOutTotSun, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svOutTotSrf, &vOutTotSrf, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svMieInSct, &vMieInSct, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svRayInSct, &vRayInSct, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svWhiteBalance, &vWhiteBalance, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetFloat(sfDepthClamp, float(atmo->depth)));
-	HR(Shader()->SetFloat(sfSrfIntensity, float(atmo->sun)));
-	HR(Shader()->SetFloat(sfBalance, float(atmo->balance)));
+	HR(Shader()->SetFloat(sfRPhase, float(atmo->rphase)));
 	HR(Shader()->SetFloat(sfExposure, float(-atmo->expo)));
 	HR(Shader()->SetFloat(sfAux1, float(atmo->aux1)));
 	HR(Shader()->SetFloat(sfAux2, float(atmo->aux2)));
@@ -358,4 +363,5 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetBool(sbInSpace, (cr>ur)));
 	HR(Shader()->SetBool(sbOnOff, (atmo->mode==0)));
 	HR(Shader()->SetInt(siMode, atmo->mode));
+	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
 }

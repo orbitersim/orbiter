@@ -554,6 +554,7 @@ public:
 
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
+	LPD3D9CLIENTSURFACE GetNoiseTex() const { return pNoiseTex; }
 	void				RegisterDissolveMap(SURFHANDLE hSrf);
 	SURFHANDLE			GetDissolveMap(DWORD idx) const;
 	int					GetIndexOfDissolveMap(SURFHANDLE hSrf) const;
@@ -570,6 +571,7 @@ public:
 	LPDIRECT3DSURFACE9  GetShadowMapDepthStencil() { return pShmDS; }
 	LPDIRECT3DTEXTURE9  GetShadowMapRenderTarget() { return pShmRT; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
+
 
 	// overwritten
 	const void *		GetConfigParam (DWORD paramtype) const;
@@ -688,6 +690,7 @@ private:
 	SURFHANDLE				pDislMapList[16];
     LPDIRECT3DDEVICE9		pd3dDevice;
 	LPD3D9CLIENTSURFACE	    pDefaultTex;
+	LPD3D9CLIENTSURFACE		pNoiseTex;
 	LPD3D9CLIENTSURFACE	    pScatterTest;
 	LPDIRECT3DSURFACE9		pSplashScreen;
 	LPDIRECT3DSURFACE9		pTextScreen;

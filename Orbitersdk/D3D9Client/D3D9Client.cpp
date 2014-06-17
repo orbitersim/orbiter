@@ -298,7 +298,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pd3dDevice       = NULL;
 	parser			 = NULL;
 	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
-
+	pNoiseTex		 = NULL;
 #ifdef OAPI_BETA
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 #endif
@@ -383,8 +383,11 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	deffont = (oapi::Font*) new D3D9PadFont(20, true, "fixed");
 	defpen  = (oapi::Pen*)  new D3D9PadPen(1, 1, 0x00FF00);
 
+	pNoiseTex = SURFACE(clbkLoadTexture("D3D9Noise.dds"));
 	pDefaultTex = SURFACE(clbkLoadTexture("Null.dds"));
-	if (pDefaultTex==NULL) LogErr("CRITICAL !!   Null.dds not found");
+
+	if (pDefaultTex==NULL) LogErr("Null.dds not found");
+	if (pNoiseTex==NULL) LogErr("D3D9Noise.dds not found");
 
 	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal.png"));
 	RegisterDissolveMap(clbkLoadTexture("Disl_Lines.png"));
@@ -651,6 +654,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 		SAFE_DELETE(pBBuf);
 		SAFE_DELETE(pDefaultTex);
+		SAFE_DELETE(pNoiseTex);
 
 		LogAlw("============ Checking Object Catalogs ===========");
 		
@@ -2142,9 +2146,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 4 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 5 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 4 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 5 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

@@ -25,46 +25,28 @@ extern D3D9Client *g_client;
 
 // Defaut c'tor to init members
 ScatterParams::ScatterParams() :
-/*
-	red      ( 0.0 ), // 0.400 ... 0.700
-	green    ( 0.0 ), // 0.400 ... 0.700
-	blue     ( 0.0 ), // 0.400 ... 0.700
-	rpow	 ( 0.0 ), // -8.0 ... 8.0
-	rin      ( 0.0 ), // 0.0 ... 3.0
-	rout     ( 0.0 ), // 0.0 ... 4.0
-	rphase   ( 0.0 ), // 0.0 ... 3.5
-	mie      ( 0.0 ), // 0.0 ... 8.0
-	mphase   ( 0.0 ), // 0.85 ... 0.999
-	balance  ( 0.0 ), // 0.0 ... 2.0
-	height   ( 0.0 ), // 4.0 ... 40.0 [km]
-	sun      ( 0.0 ), // 0.3 ... 3.0
-	depth    ( 0.0 ), // 1.0 ... 50.0
-	srfclr   ( 0.0 ), // 0.5 ... 2.0
-	expo     ( 0.0 ), // 0.2 ... 1.5
-	aux1	 ( 0.0 ), // 0.0 ... 2.0
-	aux2	 ( 0.0 ), // 0.0 ... 2.0
-	mode     ( 0 ),   // [0|1]
-	oversat  ( false ), // [true|false]
-	pSunLight ( NULL )
-*/
-	// (values from earth)
 	red      ( 0.650 ),  // 0.400 ... 0.700
 	green    ( 0.500 ),  // 0.400 ... 0.700
 	blue     ( 0.480 ),  // 0.400 ... 0.700
 	rpow	 ( 4.0 ),    // -8.0 ... 8.0
+	mpow	 ( 1.0 ),    // -2.0 ... 2.0
+	height   ( 8.0 ),    // 4.0 ... 40.0 [km]
+	depth    ( 1.0 ),    // 0.0 ... 1.5
+	// ----------------------------------------
+	expo     ( 0.5 ),    // 0.2 ... 1.5
+	balance  ( 0.0 ),    // -0.5 ... 0.5
+	// ----------------------------------------
 	rin      ( 1.0 ),    // 0.0 ... 3.0
 	rout     ( 0.592 ),  // 0.0 ... 4.0
 	rphase   ( 0.3395 ), // 0.0 ... 3.5
+	// ----------------------------------------
+	moffset  ( 1.0 ),    // 0.0 ... 2.0
 	mie      ( 0.0869 ), // 0.0 ... 8.0
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
-	balance  ( 0.5 ),    // 0.0 ... 2.0
-	height   ( 8.0 ),    // 4.0 ... 40.0 [km]
-	sun      ( 1.0 ),    // 0.3 ... 3.0
-	depth    ( 20.0 ),   // 1.0 ... 50.0
-	srfclr   ( 1.0 ),    // 0.5 ... 2.0
-	expo     ( 0.5 ),    // 0.2 ... 1.5
+	// ----------------------------------------
 	aux1	 ( 0.0 ),    // 0.0 ... 2.0
 	aux2	 ( 0.0 ),    // 0.0 ... 2.0
+	// ----------------------------------------
 	mode     ( 0 ),      // [0|1]
 	oversat  ( true ),   // [true|false]
 	pSunLight ( NULL )
@@ -134,7 +116,7 @@ void Create()
 	Slider[0].id = IDC_ATM_RED;
 	Slider[1].id = IDC_ATM_GREEN;
 	Slider[2].id = IDC_ATM_BLUE;
-	Slider[3].id = IDC_ATM_WAVE;
+	Slider[3].id = IDC_ATM_RPOW;
 	Slider[4].id = IDC_ATM_IN;
 	Slider[5].id = IDC_ATM_OUT;
 	Slider[6].id = IDC_ATM_RPHASE;
@@ -142,17 +124,17 @@ void Create()
 	Slider[8].id = IDC_ATM_MPHASE;
 	Slider[9].id = IDC_ATM_BALANCE;
 	Slider[10].id = IDC_ATM_HEIGHT;
-	Slider[11].id = IDC_ATM_SUN;
-	Slider[12].id = IDC_ATM_RSUN;
-	Slider[13].id = IDC_ATM_SRFCOLOR;
+	Slider[11].id = IDC_ATM_AUX2;
+	Slider[12].id = IDC_ATM_DEPTH;
+	Slider[13].id = IDC_ATM_MPOW;
 	Slider[14].id = IDC_ATM_EXPO;
-	Slider[15].id = IDC_ATM_AUX1;
-	Slider[16].id = IDC_ATM_AUX2;
+	Slider[15].id = IDC_ATM_MOFFSET;
+	Slider[16].id = IDC_ATM_AUX1;
 
 	Slider[0].dsp = IDC_ATD_RED;
 	Slider[1].dsp = IDC_ATD_GREEN;
 	Slider[2].dsp = IDC_ATD_BLUE;
-	Slider[3].dsp = IDC_ATD_WAVE;
+	Slider[3].dsp = IDC_ATD_RPOW;
 	Slider[4].dsp = IDC_ATD_IN;
 	Slider[5].dsp = IDC_ATD_OUT;
 	Slider[6].dsp = IDC_ATD_RPHASE;
@@ -160,12 +142,12 @@ void Create()
 	Slider[8].dsp = IDC_ATD_MPHASE;
 	Slider[9].dsp = IDC_ATD_BALANCE;
 	Slider[10].dsp = IDC_ATD_HEIGHT;
-	Slider[11].dsp = IDC_ATD_SUN;
-	Slider[12].dsp = IDC_ATD_RSUN;
-	Slider[13].dsp = IDC_ATD_SRFCOLOR;
+	Slider[11].dsp = IDC_ATD_AUX2;
+	Slider[12].dsp = IDC_ATD_DEPTH;
+	Slider[13].dsp = IDC_ATD_MPOW;
 	Slider[14].dsp = IDC_ATD_EXPO;
-	Slider[15].dsp = IDC_ATD_AUX1;
-	Slider[16].dsp = IDC_ATD_AUX2;
+	Slider[15].dsp = IDC_ATD_MOFFSET;
+	Slider[16].dsp = IDC_ATD_AUX1;
 }
 
 // ==============================================================
@@ -207,25 +189,25 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_RED,      0.400, 0.700);
 	ConfigSlider(IDC_ATM_GREEN,    0.400, 0.700);
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
-	ConfigSlider(IDC_ATM_WAVE,     -8.0, 8.0);
+	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
+	ConfigSlider(IDC_ATM_MPOW,     -2.0, 2.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   4.0, 40.0, 1);
-	ConfigSlider(IDC_ATM_EXPO,	   0.1, 2.0);
+	ConfigSlider(IDC_ATM_DEPTH,    0.0, 1.5);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_OUT,      0.0, 1.5);
-	ConfigSlider(IDC_ATM_IN,       0.0, 5.0);
-	ConfigSlider(IDC_ATM_RPHASE,   0.0, 3.5);
-	ConfigSlider(IDC_ATM_BALANCE,  0.0, 2.0);
-	ConfigSlider(IDC_ATM_RSUN,     1.0, 50.0);
+	ConfigSlider(IDC_ATM_EXPO,	   0.1, 2.0);
+	ConfigSlider(IDC_ATM_BALANCE,  -0.3, 0.7);
+	// -------------------------------------------------------
+	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0);
+	ConfigSlider(IDC_ATM_IN,       0.5, 2.0);
+	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
+	// -------------------------------------------------------
+	ConfigSlider(IDC_ATM_MOFFSET,  0.0, 2.0);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 2.0);
+	ConfigSlider(IDC_ATM_MPHASE,   0.80, 0.999);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX1,	   0.0, 2.0);
 	ConfigSlider(IDC_ATM_AUX2,	   0.0, 2.0);
-	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_SRFCOLOR, 0.5, 2.0);
-	ConfigSlider(IDC_ATM_SUN,      0.3, 3.0);
-	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MIE,      0.0, 1.5);
-	ConfigSlider(IDC_ATM_MPHASE,   0.85, 0.999);
-	// -------------------------------------------------------
+	/*
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Wavelength setting for green light (default 0.600)");
 	CreateToolTip(IDC_ATM_BLUE,		hDlg, "Wavelength setting for blue light (default 0.480)");
@@ -244,7 +226,7 @@ void OpenDlgClbk(void *context)
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering");
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
-	
+	*/
 
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Enabled");
@@ -252,19 +234,6 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, param->mode, 0);
 
 	SendDlgItemMessage(hDlg, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
-
-	if (Config->AtmoShader==0) {
-		param->balance = 1.0;
-		param->aux2 = 0.0;
-		param->sun = 1.0;
-		param->depth = 50.0;
-		param->srfclr = 1.0;
-		EnableWindow(GetDlgItem(hDlg, IDC_ATM_BALANCE), false);
-		EnableWindow(GetDlgItem(hDlg, IDC_ATM_AUX2), false);
-		EnableWindow(GetDlgItem(hDlg, IDC_ATM_RSUN), false);
-		EnableWindow(GetDlgItem(hDlg, IDC_ATM_SRFCOLOR), false);
-		EnableWindow(GetDlgItem(hDlg, IDC_ATM_SUN), false);
-	}
 
 	UpdateSliders();
 }
@@ -454,9 +423,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				param->green = 0.500; 
 				param->blue = 0.480;
 				param->rin = 1.0;
-				param->srfclr = 1.0;
-				param->sun = 1.0;
-				param->balance = 1.0;
+				param->balance = 0.0;
 				param->rphase = 0.25;
 				UpdateSliders();
 				break;

@@ -19,20 +19,20 @@ typedef struct ScatterParams {
 			double red;			///< Red wave length
 			double green;		///< Green wavw length
 			double blue;		///< Blue wave length
-			double rpow;		///< lambda power
+			double rpow;		///< Rayleigh power
 			double rin;			///< in-scatter strength
 			double rout;		///< out-scatter strenght
 			double rphase;		///< Rayleigh phase
 			double mie;			///< scale factor for mie scattering
 			double mphase;		///< g-constant in HG phase function
-			double balance;		///< Optical depth balance between viewing ray and sunlight
+			double balance;		///< White balance
 			double height;		///< atmospheric scale height
-			double sun;			///< sun intensity for surface lighting
-			double depth;		///< depth clamp
-			double srfclr;		///< surface color fine tune
-			double expo;		///< exposure
-			double aux1;		///< unused auxiliary parameter
 			double aux2;		///< unused auxiliary parameter
+			double depth;		///< depth clamp
+			double mpow;		///< Mie power
+			double expo;		///< exposure
+			double moffset;		///< Constant Mie level
+			double aux1;		///< unused auxiliary parameter
 		};
 	};
 	int mode;

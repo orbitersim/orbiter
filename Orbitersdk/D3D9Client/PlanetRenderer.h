@@ -59,7 +59,7 @@ public:
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
-	static D3DXHANDLE stSun;
+	static D3DXHANDLE stNoise;
 	// Atmosphere -------------------------------------------------
 	//static D3DXHANDLE svFogColor;
 	//static D3DXHANDLE sfFogDensity:
@@ -68,24 +68,25 @@ public:
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;
 	// Scatter model ----------------------------------------------
-	static D3DXHANDLE svPhase;		
+	static D3DXHANDLE svMPhase;		
 	static D3DXHANDLE svODCoEff;
 	static D3DXHANDLE svODCoEffEx;
-	static D3DXHANDLE svRayTotal;
+	static D3DXHANDLE svMieInSct;	
 	static D3DXHANDLE svRayInSct;
-	static D3DXHANDLE svRaySurface;
-	static D3DXHANDLE svMieTotal;
+	static D3DXHANDLE svOutTotSun;
+	static D3DXHANDLE svOutTotSrf;
+	static D3DXHANDLE svWhiteBalance;
 	static D3DXHANDLE svCameraPos;		
 	static D3DXHANDLE svUnitCameraPos;		
 	static D3DXHANDLE sfDepthClamp;
-	static D3DXHANDLE sfSrfIntensity;
+	//static D3DXHANDLE sfSrfIntensity;
 	static D3DXHANDLE sfScaleHeight;		
 	static D3DXHANDLE sfInvScaleHeight;
 	static D3DXHANDLE sfRadius;
 	static D3DXHANDLE sfCameraAlt;
 	static D3DXHANDLE sfHorizonAlt;
 	static D3DXHANDLE sfAtmRad2;
-	static D3DXHANDLE sfBalance;
+	static D3DXHANDLE sfRPhase;
 	static D3DXHANDLE sfHorizonDst;
 	static D3DXHANDLE sfExposure;			
 	static D3DXHANDLE sfAux1;			

@@ -258,8 +258,6 @@ bool vPlanet::Update ()
 	_TRACE;
 	if (!active) return false;
 	
-	//sunLight = *scn->GetLight(-1);	
-
 	vObject::Update();
 
 	if (patchres==0) return true;
@@ -458,16 +456,9 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		prm.SunDir		= -scn->GetLight(-1)->Direction;
 
 		if (ringmgr) {
-			if (cdist < rad*ringmgr->InnerRad()) { // camera inside inner ring edge
-				ringmgr->Render(dev, mWorld, false);
-			} else {
-				// if the planet has a ring system we update the z-buffer
-				// but don't do z-checking for the planet surface
-				// This strategy could do with some reconsideration
-				ringpostrender = true;
-			}
+			ringmgr->Render(dev, mWorld, false);
+			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
 		}
-
 		
 		if (hazemgr2) {
 			double apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
@@ -539,10 +530,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		}
 
 		if (mesh) {
-			//mesh->SetSunLight(&sunLight);
-			//mesh->SetAmbientColor(cBackGround);
-			//mesh->RenderAsteroid(pDev, &mWorld);
-			//LogErr("Rendering Mesh");
+			mesh->SetSunLight((D3D9Light *)scn->GetLight(-1));
+			mesh->RenderAsteroid(dev, &mWorld);
 		} else {
 			RenderSphere (dev);                               
 		}
@@ -552,11 +541,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (prm.bCloud && (prm.cloudvis & 2))
 			RenderCloudLayer (dev, D3DCULL_CCW);	  // render clouds from above
 
-		if (hazemgr) 
-			hazemgr->Render (dev, mWorld, true); // haze across planet disc
-
-		if (ringpostrender) 
-			ringmgr->Render (dev, mWorld, true);
+		if (hazemgr) hazemgr->Render (dev, mWorld, true); // haze across planet disc
+		if (ringmgr) ringmgr->Render (dev, mWorld, true);
 	}
 	return true;
 }
@@ -709,19 +695,10 @@ double vPlanet::OpticalDepth(double alt, double cd)
 
 void vPlanet::UpdateAtmoConfig()
 {
-	
 	prm.SclHeight	 = float(SPrm.height*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-
 	double outer = size + prm.SclHeight * 12.0;
-
 	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 96.0, 8);
-
-	/*DWORD dAmbient = *(DWORD*)GetClient()->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-	Scatter *pSct = new Scatter(&SPrm, Object(), dAmbient);
-	SAFE_RELEASE(SPrm.pSunLight);
-	pSct->ComputeSunLightColorMap(GetDevice(), &SPrm.pSunLight, false);
-	delete pSct;*/
 }
 
 
@@ -798,19 +775,24 @@ bool vPlanet::LoadAtmoConfig()
 	oapiReadItem_float(hFile, "Green", SPrm.green);
 	oapiReadItem_float(hFile, "Blue", SPrm.blue);
 	oapiReadItem_float(hFile, "RWaveDep", SPrm.rpow);
+	oapiReadItem_float(hFile, "MWaveDep", SPrm.mpow);
 	oapiReadItem_float(hFile, "ScaleHeight", SPrm.height);
+	oapiReadItem_float(hFile, "DepthClamp", SPrm.depth);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "Exposure", SPrm.expo);
+	oapiReadItem_float(hFile, "Balance", SPrm.balance);
+	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, "OutScatter", SPrm.rout);
 	oapiReadItem_float(hFile, "InScatter", SPrm.rin);
 	oapiReadItem_float(hFile, "RayleighPhase", SPrm.rphase);
-	oapiReadItem_float(hFile, "Balance", SPrm.balance);
-	oapiReadItem_float(hFile, "DepthClamp", SPrm.depth);
-	oapiReadItem_float(hFile, "SrfColor", SPrm.srfclr);
-	oapiReadItem_float(hFile, "SrfIntensity", SPrm.sun);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "MieOffset", SPrm.moffset);
 	oapiReadItem_float(hFile, "MiePower", SPrm.mie);
 	oapiReadItem_float(hFile, "MiePhase", SPrm.mphase);
-	oapiReadItem_float(hFile, "Exposure", SPrm.expo);
+	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, "Aux1", SPrm.aux1);
 	oapiReadItem_float(hFile, "Aux2", SPrm.aux2);
+	// -----------------------------------------------------------------
 	oapiReadItem_int(hFile,   "Mode", SPrm.mode);
 	oapiReadItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 
@@ -840,19 +822,24 @@ void vPlanet::SaveAtmoConfig()
 	oapiWriteItem_float(hFile, "Green", SPrm.green);
 	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
 	oapiWriteItem_float(hFile, "RWaveDep", SPrm.rpow);
+	oapiWriteItem_float(hFile, "MWaveDep", SPrm.mpow);
 	oapiWriteItem_float(hFile, "ScaleHeight", SPrm.height);
+	oapiWriteItem_float(hFile, "DepthClamp", SPrm.depth);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, "Exposure", SPrm.expo);
+	oapiWriteItem_float(hFile, "Balance", SPrm.balance);
+	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, "OutScatter", SPrm.rout);
 	oapiWriteItem_float(hFile, "InScatter", SPrm.rin);
 	oapiWriteItem_float(hFile, "RayleighPhase", SPrm.rphase);
-	oapiWriteItem_float(hFile, "Balance", SPrm.balance);
-	oapiWriteItem_float(hFile, "DepthClamp", SPrm.depth);
-	oapiWriteItem_float(hFile, "SrfColor", SPrm.srfclr);
-	oapiWriteItem_float(hFile, "SrfIntensity", SPrm.sun);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, "MieOffset", SPrm.moffset);
 	oapiWriteItem_float(hFile, "MiePower", SPrm.mie);
 	oapiWriteItem_float(hFile, "MiePhase", SPrm.mphase);
-	oapiWriteItem_float(hFile, "Exposure", SPrm.expo);
+	// -----------------------------------------------------------------	
 	oapiWriteItem_float(hFile, "Aux1", SPrm.aux1);
 	oapiWriteItem_float(hFile, "Aux2", SPrm.aux2);
+	// -----------------------------------------------------------------
 	oapiWriteItem_int(hFile,   "Mode", SPrm.mode);
 	oapiWriteItem_bool(hFile,  "OverSaturation", SPrm.oversat);
 

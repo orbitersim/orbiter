@@ -690,7 +690,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_SRFPRELOAD, BM_SETCHECK, Config->PlanetPreloadMode==1, 0);
 	SendDlgItemMessage(hWnd, IDC_GLASSSHADE, BM_SETCHECK, Config->EnableGlass==1, 0);
 	SendDlgItemMessage(hWnd, IDC_MESH_DEBUGGER, BM_SETCHECK, Config->EnableMeshDbg==1, 0);
-	SendDlgItemMessage(hWnd, IDC_DYNEXPS, BM_SETCHECK, Config->DynamicExps==1, 0);
+	//SendDlgItemMessage(hWnd, IDC_DYNEXPS, BM_SETCHECK, Config->DynamicExps==1, 0);
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
@@ -744,7 +744,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->NearClipPlane = SendDlgItemMessage (hWnd, IDC_NEARPLANE,  BM_GETCHECK, 0, 0);
 	Config->EnableGlass   = SendDlgItemMessage (hWnd, IDC_GLASSSHADE,  BM_GETCHECK, 0, 0);
 	Config->EnableMeshDbg = SendDlgItemMessage (hWnd, IDC_MESH_DEBUGGER,  BM_GETCHECK, 0, 0);
-	Config->DynamicExps   = SendDlgItemMessage (hWnd, IDC_DYNEXPS,  BM_GETCHECK, 0, 0);
+	//Config->DynamicExps   = SendDlgItemMessage (hWnd, IDC_DYNEXPS,  BM_GETCHECK, 0, 0);
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
 	Config->Separation    = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
