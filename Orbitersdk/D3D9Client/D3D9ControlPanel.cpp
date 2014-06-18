@@ -137,15 +137,11 @@ void D3D9Client::RenderControlPanel()
 	for (DWORD i=0;i<nSurf;i++) {
 		LPD3D9CLIENTSURFACE pSurf = SURFACE(SurfaceCatalog->Get(i));
 		if (pSurf->desc.Pool==D3DPOOL_DEFAULT) {
-			if (pSurf->Type==D3D9S_PLAIN) {
-				plain_count++;
-				plain_size += pSurf->GetSizeInBytes();
-			}
 			if (pSurf->Type==D3D9S_TEXTURE) {
 				textr_count++;
 				textr_size += pSurf->GetSizeInBytes();
 			}
-			if (pSurf->Type==D3D9S_RTGTTEX) {
+			if (pSurf->Type==D3D9S_RENDER) {
 				rendt_count++;
 				rendt_size += pSurf->GetSizeInBytes();
 			}

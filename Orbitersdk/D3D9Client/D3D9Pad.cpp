@@ -210,7 +210,6 @@ D3D9Pad::~D3D9Pad ()
 {
 	_TRACE;
 	if (pTgt) if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
-	if (bConvertTgt) pTgt->ConvertToDynamicTexture();
 	pTgt = NULL;
 
 	//if (cfont!=deffont && cfont!=NULL) LogErr("Custom font still attached in sketchpad 0x%X",this); 
@@ -689,13 +688,14 @@ void D3D9Pad::Rectangle2(float l, float t, float r, float b)
 HDC D3D9Pad::GetDC() 
 { 
 	if (pTgt->IsBackBuffer()) return NULL;
-	if (!pTgt->bSkpGetDC) {
+
+	/*if (!pTgt->bSkpGetDC) {
 		pTgt->bSkpGetDC = true;
 		bConvertTgt=true;
-	}
+	}*/
 	
 	if (!pTgt->bSkpGetDCEr) {
-		LogErr("D3D9Pad::GetDC() called for surface 0x%X 'DC not available'. The surface is active render target at a moment",pTgt);
+		LogErr("!!Never Use Sketchpad::GetDC()!!  HDC not available, the surface is active render target at a moment");
 		pTgt->bSkpGetDCEr = true;
 	}
 	return NULL;

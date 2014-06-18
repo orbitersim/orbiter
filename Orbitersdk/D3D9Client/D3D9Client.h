@@ -215,6 +215,28 @@ public:
 	SURFHANDLE clbkLoadTexture (const char *fname, DWORD flags = 0);
 
 	/**
+	 * \brief Load a surface from file into a surface object, and return a SURFHANDLE for it.
+	 * \param fname texture file name with path relative to orbiter texture folders
+	 * \param attrib \ref surfacecaps (see notes)
+	 * \return A SURFHANDLE for the loaded surface, for example a pointer to the surface object.
+	 * \note If the request refers to a static surface that has already be loaded, or if the
+	 *   client buffers the unmodified surfaces after loading, it can simply return a handle to
+	 *   the existing surface object, instead of reading it again from file.
+	 * \note The attrib bitflag can contain one of the following main attributes:
+	 *  - OAPISURFACE_RO: Load the surface to be readable by the GPU pipeline
+	 *  - OAPISURFACE_RW: Load the surface to be readable and writable by the GPU pipeline
+	 *  - OAPISURFACE_GDI: Load the surface to be readable and writable by the CPU, and can be blitted into an uncompressed RO or RW surface without alpha channel
+	 *  - OAPISURFACE_STATIC: Load the surface to be readable by the GPU pipeline
+     *  In addition, the flag can contain any of the following auxiliary attributes:
+	 *  - OAPISURFACE_MIPMAPS: Load the mipmaps for the surface from file, or create them if necessary
+	 *  - OAPISURFACE_NOMIPMAPS: Don't load mipmaps, even if they are available in the file
+	 *  - OAPISURFACE_NOALPHA: Load the surface without an alpha channel
+	 *  - OAPISURFACE_UNCOMPRESS: Uncompress the surface on loading.
+	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
+	 */
+	SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib);
+
+	/**
 	 * \brief Texture release request
 	 *
 	 * Releases the specified texture from device memory.

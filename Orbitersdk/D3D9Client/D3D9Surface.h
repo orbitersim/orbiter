@@ -15,10 +15,10 @@
 #include <d3dx9.h>
 
 
-#define D3D9S_PLAIN		0x1
-#define D3D9S_TEXTURE	0x2
-#define D3D9S_DYNAMIC	0x3
-#define D3D9S_RTGTTEX	0x4
+#define D3D9S_TEXTURE	0x1
+#define D3D9S_RENDER	0x2
+#define D3D9S_DYNAMIC	0x4
+#define D3D9S_LOCK		0x8
 
 #define D3D9C_LOAD		0x1		// Created by clbkLoadTexture
 #define D3D9C_TEXTURE   0x2	    // Created by clbkCreateTexture
@@ -30,148 +30,132 @@
 
 class D3D9ClientSurface {
 
-				friend class D3D9Client;
-				friend class D3D9Pad;
-				friend class GDIPad;
+	friend class D3D9Client;
+	friend class D3D9Pad;
+	friend class GDIPad;
 
 public:
-				// Initialize global (shared) resources
-				static void D3D9TechInit(class D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
-				static void GlobalExit();
+						// Initialize global (shared) resources
+	static void			D3D9TechInit(class D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
+	static void			GlobalExit();
 
-				// Create empty surface. Must use Create methods to make a valid surface
-				D3D9ClientSurface(LPDIRECT3DDEVICE9 pDevice, const char* name = "???");
+						// Create empty surface. Must use Create methods to make a valid surface
+						D3D9ClientSurface(LPDIRECT3DDEVICE9 pDevice, const char* name = "???");
 
-				// Destroy the class and release the texture (pTex) if exists. Value of Reference counter doesn't matter.
-				~D3D9ClientSurface();
+						// Destroy the class and release the texture (pTex) if exists. Value of Reference counter doesn't matter.
+						~D3D9ClientSurface();
 
-	void		MakeBackBuffer(LPDIRECT3DSURFACE9);
-	void		MakeTextureEx(UINT Width, UINT Height, DWORD Usage, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL Pool=D3DPOOL_DEFAULT);
-	void		MakeSurfaceEx(UINT Width, UINT Height, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL Pool=D3DPOOL_DEFAULT);
-	void		MakeRenderTargetEx(UINT Width, UINT Height, bool bTexture, bool bLock, D3DFORMAT Format=D3DFMT_X8R8G8B8);
-	void		Make3DRenderTarget(UINT Width, UINT Height, UINT flags);
+	void				MakeBackBuffer(LPDIRECT3DSURFACE9);
+	void				MakeTextureEx(UINT Width, UINT Height, DWORD Usage=D3DUSAGE_DYNAMIC|D3DUSAGE_AUTOGENMIPMAP, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL pool=D3DPOOL_DEFAULT);
+	void				MakeRenderTargetEx(UINT Width, UINT Height, bool bLock=false, D3DFORMAT Format=D3DFMT_X8R8G8B8);
+	
+	bool				GetDesc(D3DSURFACE_DESC *);
 
-	void		MakeRenderingTexture(UINT Width, UINT Height, D3DFORMAT Format=D3DFMT_X8R8G8B8);
-	void		MakeTexture(UINT width, UINT height, D3DFORMAT Format=D3DFMT_X8R8G8B8);
-	void		MakePlainSurface(UINT width, UINT height, D3DPOOL pool=D3DPOOL_DEFAULT);
+	bool				LoadSurface(const char *fname, DWORD flags);
+	bool				LoadTexture(const char *fname);
+	void				SaveSurface(const char *fname);
 
-	bool		GetDesc(D3DSURFACE_DESC *);
+	DWORD				GetMipMaps();
+	DWORD				GetWidth();
+	DWORD				GetHeight();
+	DWORD				GetSizeInBytes();
 
-	bool		LoadTexture(const char *fname, int flags=0);
-	void		SaveSurface(const char *fname);
+	void				SetAttribs(DWORD attrib) { Attrib = attrib; }
 
-	DWORD		GetMipMaps();
-	DWORD		GetWidth();
-	DWORD		GetHeight();
-	DWORD		GetSizeInBytes();
+	void				IncRef();	// Increase surface reference counter
+	bool				Release();	// Decrease the counter
+	int					RefCount() { return Refs; }
 
-	void		IncRef();	// Increase surface reference counter
-	bool		Release();	// Decrease the counter
-	int			RefCount() { return Refs; }
-
-	const char* GetName() const { return name; }
-	void		SetName(const char *);
+	const char *		GetName() const { return name; }
+	void				SetName(const char *);
 
 
-	bool		IsCompressed();
-	bool		IsGDISurface();
-	bool		IsBackBuffer();
-	bool		IsTexture() const { return (pTex!=NULL); }
-	bool		IsRenderTarget();
-	bool		IsPowerOfTwo() const;
-	bool		IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
+	bool				IsCompressed();
+	bool				IsGDISurface();
+	bool				IsBackBuffer();
+	bool				IsTexture() const { return (pTex!=NULL); }
+	bool				IsRenderTarget();
+	bool				IsPowerOfTwo() const;
+	bool				IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
 
-	LPDIRECT3DTEXTURE9 GetTextureHard();
-	LPDIRECT3DTEXTURE9 GetNormalMap();
-	LPDIRECT3DTEXTURE9 GetEmissionMap();
-	LPDIRECT3DTEXTURE9 GetSpecularMap();
-	LPDIRECT3DTEXTURE9 GetReflectionMap();
-	LPDIRECT3DTEXTURE9 GetTexture();
-	LPDIRECT3DDEVICE9  GetDevice() { return pDevice; }
+	LPDIRECT3DTEXTURE9	GetTextureHard();
+	LPDIRECT3DTEXTURE9	GetNormalMap();
+	LPDIRECT3DTEXTURE9	GetEmissionMap();
+	LPDIRECT3DTEXTURE9	GetSpecularMap();
+	LPDIRECT3DTEXTURE9	GetReflectionMap();
+	LPDIRECT3DTEXTURE9	GetTexture();
+	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
 
 
-	void		SetColorKey(DWORD ck);			// Enable and set color key
-	void		DisableColorKey();				// Disable color key.
+	void				SetColorKey(DWORD ck);			// Enable and set color key
+	void				DisableColorKey();				// Disable color key.
 
-	void		SetCreation(int);
+	HDC					GetDC();
+	void				ReleaseDC(HDC);
 
-	HDC			GetDC();
-	void		ReleaseDC(HDC);
-
-	HRESULT		AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
-	HRESULT		FlushQueue();
-	void		CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
-	bool		Fill(LPRECT r, DWORD color);
-	bool		Clear(DWORD color);
-
-	bool		BindGPU();
-	void		ReleaseGPU();
-	HRESULT		BeginBlitGroup();
-	void		EndBlitGroup();
-	int			GetQueueSize();
-	bool		ScanNameSubId(const char *n);
-	bool		ComputeReflAlpha();
+	HRESULT				AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
+	HRESULT				FlushQueue();
+	void				CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
+	bool				Fill(LPRECT r, DWORD color);
+	bool				Clear(DWORD color);
+	
+	bool				BindGPU();
+	void				ReleaseGPU();
+	HRESULT				BeginBlitGroup();
+	void				EndBlitGroup();
+	int					GetQueueSize();
+	bool				ScanNameSubId(const char *n);
+	bool				ComputeReflAlpha();
 
 private:
 
-	bool		CreateName(char *out, int len, const char *fname, const char *id);
-	void		Decompress();
-	void		BringToSystemMem();
-	void		ConvertToPlainSurface();
-	void		ConvertToDynamicTexture();
-	void		ConvertToRenderTargetTexture();
-	DWORD		GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
-	DWORD		GetSizeInBytes(D3DFORMAT Format, DWORD pixels);
-	void		CheckTemp(DWORD Width, DWORD Height);
+	void				ConvertToRenderTargetTexture();
+	void				ConvertToRenderTarget();
+	void				CreateSubSurface();
+	void				CreateDCSubSurface();
+	bool				CreateName(char *out, int len, const char *fname, const char *id);
+	void				Decompress();
+	DWORD				GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
+	DWORD				GetSizeInBytes(D3DFORMAT Format, DWORD pixels);
+	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
+	//HRESULT				GPUCopyTemp(LPRECT s, LPRECT t);
+	HDC					GetDCHard();
+	void				SetupViewPort();
+	void				LogSpecs(char *name);
+	void				Clear();
 
-	HRESULT		GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
-	HRESULT		GPUCopyTemp(LPRECT s, LPRECT t);
-	HDC			GetDCHard();
-	void		SetupViewPort();
-	void		LogSpecs(char *name);
-	void		Clear();
-
-	bool		bCompressed;	// True if the surface is compressed
-	bool		bDCOpen;		// DC is Open. This is TRUE between GetDC() and ReleaseDC() calls.
-	bool		bNoGDI;			// Prevent a conversion into a GDI (System Memory) surface
-	bool		bClear;			// True if the entire surface is cleared using Clear() and it's still clean. Note: (Fill color = "oClear")
-	bool		bFlash;			// Make RT-GDI conflict surface to flash
-	bool		bHard;			// hDC is acquired using GetDCHard()
-	bool		bDC;			// This surface is used for GDI drawing. Flag is set in GetDC()
-	bool		bSkpGetDCEr;
-	bool		bSkpGetDC;
-	bool		bBltGroup;		// BlitGroup operation is active
-	int			Refs;
-	DWORD		Type;
-	DWORD		cClear;
-	int			Initial;		// Initial creation flags
-	int			Creation;		// Method of surface creation
-	int			SketchPad;		// 0=None, 1=GDI, 2=GPU
-	int			iBindCount;		// GPU Bind reference counter
-
-	D3DSURFACE_DESC		  desc;
-
-
-	LPDIRECT3DSURFACE9	  pTemp;		// Temporary surface for in-surface blitting
-	LPDIRECT3DTEXTURE9	  pTempTex;		// Temporary surface for in-surface blitting
-	LPDIRECT3DSURFACE9	  pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
-	LPDIRECT3DTEXTURE9	  pTex;			// This is a NULL if Type==D3D9S_PLAIN or Creation==D3D9C_BACKBUF
-	LPDIRECT3DSURFACE9	  pDCTemp;		// Containing a temporary system memory copy of a render target texture
-	LPDIRECT3DTEXTURE9	  pNormalMap;
-	LPDIRECT3DTEXTURE9	  pSpecularMap;
-	LPDIRECT3DTEXTURE9	  pEmissionMap;
-	LPDIRECT3DTEXTURE9	  pReflectionMap;
-	LPDIRECT3DDEVICE9	  pDevice;
+	// -------------------------------------------------------------------------------
+	char				name[128];
+	bool				bCompressed;	// True if the surface is compressed
+	bool				bDCOpen;		// DC is Open. This is TRUE between GetDC() and ReleaseDC() calls.
+	bool				bHard;			// hDC is acquired using GetDCHard()
+	bool				bDC;			// This surface is used for GDI drawing. Flag is set in GetDC()
+	bool				bSkpGetDCEr;
+	bool				bSkpGetDC;
+	bool				bBltGroup;		// BlitGroup operation is active
+	bool				bBackBuffer;
+	int					Refs;
+	DWORD				Type;
+	int					Initial;		// Initial creation flags
+	int					SketchPad;		// 0=None, 1=GDI, 2=GPU
+	int					iBindCount;		// GPU Bind reference counter
+	D3DSURFACE_DESC		desc;
+	LPDIRECT3DSURFACE9	pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
+	LPDIRECT3DTEXTURE9	pTex;		// This is a NULL if Type==D3D9S_PLAIN or Creation==D3D9C_BACKBUF
+	LPDIRECT3DSURFACE9	pDCSub;		// Containing a temporary system memory copy of a render target texture
+	LPDIRECT3DTEXTURE9	pNormalMap;
+	LPDIRECT3DTEXTURE9	pSpecularMap;
+	LPDIRECT3DTEXTURE9	pEmissionMap;
+	LPDIRECT3DTEXTURE9	pReflectionMap;
+	LPDIRECT3DDEVICE9	pDevice;
+	D3D9ClientSurface * pSrc_prev;
+	D3DXCOLOR			ClrKey;
+	DWORD				ColorKey;
+	DWORD				Attrib;
+	LPD3DXMATRIX		pVP;
+	D3DVIEWPORT9 *		pViewPort;
 
 	ID3DXRenderToSurface *pRTS;
-	D3D9ClientSurface    *pSrc_prev;
-	D3DXCOLOR			  ClrKey;
-	DWORD				  ColorKey;
-
-	LPD3DXMATRIX		  pVP;
-	D3DVIEWPORT9		  *pViewPort;
-
-	char				  name[128];
 
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//

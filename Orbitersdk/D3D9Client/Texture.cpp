@@ -12,18 +12,6 @@
 // stored in DXT? format into DIRECTDRAWSURFACE7 instances.
 // ==============================================================
 
-// DX9 port:
-// The loading of textures has been completely rewritten. DX9 offers
-// functions to do the loading for you. Unfortunately, the orbiter .tex
-// format is a bit awkward to use, since it is a concatenation of .dds
-// files and DX9 functions have no way of reporting how much bytes were
-// actually processed in a texture loading, nor can they work with an
-// open file handle. We have to figure out the boundaries between the
-// .dds files ourselves. This code works by opening the file in memory
-// and examining the dds headers and calculating the .dds size, feeding
-// each .dds block to D3DXCreateTextureFromFileInMemoryEx(). Seems to work
-// ok for now.
-
 #include "windows.h"
 #include "Texture.h"
 #include "D3D9Surface.h"
@@ -56,19 +44,21 @@ TextureManager::~TextureManager ()
 HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSurf, int flags)
 {
 	(*pSurf) = new D3D9ClientSurface(pDev, fname);
-	if ((*pSurf)->LoadTexture(fname, flags)==true) return S_OK;
+
+	DWORD attrib = OAPISURFACE_TEXTURE;
+	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
+	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS;	
+	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
+	else			 attrib |= OAPISURFACE_MIPMAPS;
+
+	if ((flags&0x2)&&(flags&0x1)==0) attrib |= OAPISURFACE_RENDERTARGET; // Uncompress means that it's going to do something bad, so, let's prepare for the worst.
+
+	if ((*pSurf)->LoadSurface(fname, attrib)==true) return S_OK;
+
 	delete (*pSurf);
 	*pSurf = NULL;
 	return -1;
 }
-
-
-HRESULT TextureManager::LoadTexture(const char *fname, long ofs, LPDIRECT3DTEXTURE9 *pTex, int flag)
-{
-	LogErr("TextureManager::LoadTexture() NOT IN USE");
-	return -1;
-}
-
 
 
 int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, DWORD flags, int amount)

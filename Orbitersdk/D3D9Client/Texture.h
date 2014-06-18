@@ -28,8 +28,7 @@ public:
 	~TextureManager();
 	
 	HRESULT LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *ppdds, int flags);
-	HRESULT LoadTexture(const char *fname, long ofs, LPDIRECT3DTEXTURE9 *tex, int flags);
-	
+
 	int LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, DWORD flags, int count);
 	// Read a texture from file 'fname' into the DX7 surface
 	// pointed to by 'ppdds'.

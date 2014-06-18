@@ -51,7 +51,7 @@ HDC GDIPad::GetDC()
 {
 	SURFHANDLE srf = GetSurface();
 	if (!SURFACE(srf)->bSkpGetDCEr) {
-		//LogWrn("GDIPad::GetDC() called for surface 0x%X",srf);
+		LogErr("!!Never Use Sketchpad::GetDC()!!");
 		SURFACE(srf)->bSkpGetDCEr = true;
 	}
 
