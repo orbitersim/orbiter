@@ -193,7 +193,7 @@ void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPla
 	class Scene *scene = GetClient()->GetScene();
 
 	double np = 0.0, fp = 0.0;
-	int i, j;
+	int i;
 
 	double R = obj_size;
 	double D = prm.cdist*R;

@@ -681,7 +681,7 @@ D3DXVECTOR3 vPlanet::GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGloba
 	double fDPS = max(0.34, dotp(unit(vPos), sundir));	
 	double fDns = exp2(-fAlt * prm.InvSclHeight);
 
-	return exp2(-vOutTotSun * (fDns * AngleCoEff(fDPS)));
+	return exp2(-vOutTotSun * float(fDns * AngleCoEff(fDPS)));
 }
 
 

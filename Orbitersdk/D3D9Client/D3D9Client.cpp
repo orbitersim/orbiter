@@ -13,7 +13,6 @@
 #include "orbitersdk.h"
 #include "D3D9Client.h"
 #include "D3D9Config.h"
-#include "D3D9Extra.h"
 #include "D3D9Util.h"
 #include "D3D9Catalog.h"
 #include "D3D9Surface.h"
