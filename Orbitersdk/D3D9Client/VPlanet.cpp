@@ -272,7 +272,7 @@ bool vPlanet::Update ()
 		prm.DistScale = dist_scale;
 	}
 	if (rescale) {
-		rad_scale *= dist_scale;
+		rad_scale  *= dist_scale;
 		mWorld._41 *= dist_scale;
 		mWorld._42 *= dist_scale;
 		mWorld._43 *= dist_scale;
@@ -289,7 +289,7 @@ bool vPlanet::Update ()
 		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
-		prm.bCloudFlatShadows = (cdist >= 1.02*size); //(cdist >= 1.05*size);
+		prm.bCloudFlatShadows = (cdist >= (size+prm.atm_hzalt)); //(cdist >= 1.05*size);
 
 		if (clouddata) {
 			if (prm.cloudvis & 1) {

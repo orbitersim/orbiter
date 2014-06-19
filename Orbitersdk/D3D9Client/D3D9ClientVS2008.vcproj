@@ -686,10 +686,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MatrixInverse.h"
-				>
-			</File>
-			<File
 				RelativePath="Mesh.h"
 				>
 			</File>

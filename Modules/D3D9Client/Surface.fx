@@ -94,6 +94,8 @@ uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tNoise;			// Pre-computed sunlight
 
+
+
 // -------------------------------------------------------------------------------------------------------------
 // Texture Sampler implementations
 // -------------------------------------------------------------------------------------------------------------
@@ -561,11 +563,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 		// Multiply in-coming light with phase and light scattering factors
 		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
 
-		outVS.atten *= vSunLight * fFct; 
-		outVS.insca *= fFct; 
-		outVS.insca *= vWhiteBalance; 
-		outVS.atten *= vWhiteBalance; 
-
+		outVS.atten *= vSunLight * fFct + outVS.insca; 
 	}
 	else {
 
@@ -576,7 +574,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
 		
 		// Compute atmospheric density for all sample points
-		float3 vDns	= exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
+		float3 vDns	= exp2(-vAlt*fInvScaleHeight);
 	    
 		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
