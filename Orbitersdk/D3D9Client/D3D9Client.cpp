@@ -402,7 +402,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	SplashScreen();  // Warning D3D9ClientSurface is not yet fully initialized here
 
-	clbkSplashLoadMsg("Building Shader Programs...",0);
+	OutputLoadStatus("Building Shader Programs...",0);
 	
 	D3D9Effect::D3D9TechInit(this, pd3dDevice, fld);
 
@@ -421,7 +421,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	vVessel::GlobalInit(this);
 	OapiExtension::GlobalInit(*Config);
 
-	clbkSplashLoadMsg("SceneTech.fx",1);
+	OutputLoadStatus("SceneTech.fx",1);
 	Scene::D3D9TechInit(pd3dDevice, fld);
 
 	// Create scene instance
@@ -932,14 +932,6 @@ ParticleStream *D3D9Client::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss,
 	ReentryStream *rs = new ReentryStream (this, hVessel, pss);
 	scene->AddParticleStream (rs);
 	return rs;
-}
-
-// ======================================================================
-
-bool D3D9Client::clbkParticleStreamExists(const ParticleStream *ps)
-{
-	LogErr("UnImplemented Feature Used clbkParticleStreamExists");
-	return false;
 }
 
 #pragma endregion

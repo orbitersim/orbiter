@@ -215,7 +215,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	pDev = _pDev;
 	gc = _gc;
 
-	gc->clbkSplashLoadMsg("D3D9Client.fx",1);
+	gc->OutputLoadStatus("D3D9Client.fx",1);
 	
 	LogAlw("Starting to initialize D3D9Client.fx a rendering technique...");
 	

@@ -877,8 +877,8 @@ HDC	D3D9ClientSurface::GetDC()
 		goto skip;
 	}
 
-	if (Type==(D3D9S_RENDER|D3D9S_TEXTURE)) {
-		LogWrn("Surface 0x%X (%s) (%u, %u) does not fit well for GDI use. Consider a better graphical layout", this, name, desc.Width, desc.Height);
+	if (Type==(D3D9S_RENDER|D3D9S_TEXTURE) && pDCSub==NULL) {
+		if (Attrib) LogErr("Surface 0x%X (%s) (%u, %u) does not fit for GDI use. Creating GDI sub-surface...", this, name, desc.Width, desc.Height);
 		CreateDCSubSurface();
 	}
 
@@ -1303,6 +1303,7 @@ bool D3D9ClientSurface::ComputeReflAlpha()
 //
 void D3D9ClientSurface::SaveSurface(const char *fname)
 {
+	/*
 	LPDIRECT3DTEXTURE9 pSystem = NULL;
 	LPDIRECT3DTEXTURE9 pTemp = NULL;
 	LPDIRECT3DSURFACE9 pTempS = NULL;
@@ -1336,7 +1337,7 @@ void D3D9ClientSurface::SaveSurface(const char *fname)
 	}
 	else {
 		HR(D3DXSaveSurfaceToFileA(fname, D3DXIFF_DDS, pSurf, NULL, NULL));
-	}
+	}*/
 }
 
 // -----------------------------------------------------------------------------------------------

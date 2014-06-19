@@ -59,7 +59,7 @@ CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : Plane
 	gc = gclient;
 	scn = scene;
 
-	gc->clbkSplashLoadMsg("Loading Celestial Sphere...",0);
+	gc->OutputLoadStatus("Loading Celestial Sphere...",0);
 	
 	patchidx  = TileManager::patchidx;
 	NLNG = TileManager::NLNG;
@@ -293,7 +293,7 @@ void CSphereManager::LoadTextures ()
 	strcpy (fname, texname);
 	strcat (fname, ".tex");
 
-	gc->clbkSplashLoadMsg(fname,1);
+	gc->OutputLoadStatus(fname,1);
 
 	ntex = patchidx[maxbaselvl];
 	texbuf = new LPDIRECT3DTEXTURE9[ntex];

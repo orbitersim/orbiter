@@ -112,7 +112,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	gc = gclient;
 	pDev = gc->GetDevice();
 
-	gc->clbkSplashLoadMsg(sh_name, 1);
+	gc->OutputLoadStatus(sh_name, 1);
 	
 	char name[256];
 
