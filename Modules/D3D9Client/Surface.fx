@@ -256,17 +256,17 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
     float fDRay = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
     
 	// Color of inscattered sunlight
-    float3 vSun = exp2(-vOutTotSun * (fMnD * AngleCoEff(fDNS))) * fDRay * Shadow(fDNS);
+    float3 vSun = exp2(-vOutTotSun * (fMnD * AngleCoEff(fDNS))) * fDRay * Shadow(fDNS) * fExposure;
  
 	// Compute in-scattering 
     vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun * fDepthClamp;
     
     float fNgt = saturate(fDNS*2.924f+0.657f); 
 
-    vIns = 1.0 - exp2(-vIns);
-    
 	// Compute ambient light level for the sky
     vIns += (vRayInSct+1.0f) * (fAmbient * fNgt * saturate(0.5f-max(vIns.b, vIns.r)));
+
+    vIns = 1.0 - exp2(-vIns);
 }
 
 
@@ -316,7 +316,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 	// Optical depth for incoming sunlight	    
     float fDSun = fMnD * AngleCoEff(fDNS);
     
-    float3 vSun = exp2(-vOutTotSun * fDSun) * fDRay * Shadow(fDNS);
+    float3 vSun = exp2(-vOutTotSun * fDSun) * fDRay * Shadow(fDNS) * fExposure;
     
 	// Multiply in-coming light with phase and light scattering factors
     vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun * fDepthClamp;
@@ -385,7 +385,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	if (!bOnOff) {
 		float fX = saturate(fDNS)*2.0;
 		float fY = saturate(fDRP);
-		float fLvl = fX * rcp(fX+fY);
+		float fLvl = fX * rcp(fX+fY) * fExposure;
 		outVS.atten = max(fLvl, 4.0f*fAmb);
 		outVS.insca = 0.0;
 		return outVS;
@@ -399,7 +399,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
 		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
-		vSunLight   = exp2(-vOutTotSun * (fDns * AngleCoEff(fDPS)));
+		vSunLight   = exp2(-vOutTotSun * (fDns * AngleCoEff(fDPS))) * fExposure;
 		outVS.atten = exp2(-vOutTotSrf * fDRay);
 		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS);
 	}
@@ -417,7 +417,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
 	    
-		vSunLight = exp2(-vOutTotSun * (vDns[0] * AngleCoEff(fDPS)));
+		vSunLight = exp2(-vOutTotSun * (vDns[0] * AngleCoEff(fDPS))) * fExposure;
 
 		// Compute surface texture color attennuation (i.e. extinction term)
 		outVS.atten = exp2(-vOutTotSrf * fDRay);
@@ -445,11 +445,10 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
 	float4 cMsk = tex2D(MaskTexS, frg.texUV);
 	
-    if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb * 1.5f;
+    if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb * fAux1;
     if (bLights)   cNgt = cMsk.rgb * (frg.aux[AUX_NIGHT] * fNight);
     
-    float3 color = (cTex.rgb + cSpe) * frg.atten.rgb + frg.insca.rgb + cNgt;
-
+    float3 color = cTex.rgb * frg.atten.rgb * (1.0+cSpe*2.0) + cSpe + frg.insca.rgb + cNgt;
 	return float4(color, 1.0f);   
 }
 
@@ -555,7 +554,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 		// An optical depth for a viewing ray
 		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
 	    
-		vSunLight = exp2(-vRayInSct * (fDns * AngleCoEff(fDPS)));
+		vSunLight = exp2(-vRayInSct * (fDns * AngleCoEff(fDPS))) * fExposure;
 
 		// Compute surface texture color attennuation (i.e. extinction term)
 		outVS.atten = exp2(-vOutTotSrf * fDRay);
@@ -579,7 +578,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
 	    
-		vSunLight = exp2(-vRayInSct * (vDns[0] * AngleCoEff(fDPS)));
+		vSunLight = exp2(-vRayInSct * (vDns[0] * AngleCoEff(fDPS))) * fExposure;
 
 		// Compute surface texture color attennuation (i.e. extinction term)
 		outVS.atten = exp2(-vOutTotSrf * fDRay);

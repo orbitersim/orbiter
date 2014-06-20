@@ -314,7 +314,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 vOutTotSrf = lambda4*float(atmo->rout) + lambda2*float(atmo->mie);
 	D3DXVECTOR3 vMieInSct  = lambda2*float(atmo->mie);	
 	D3DXVECTOR3 vRayInSct  = lambda4*float(atmo->rin * atmo->rout);
-	D3DXVECTOR3 vWhiteBalance = whitebl*float(atmo->expo);
+	D3DXVECTOR3 vWhiteBalance = whitebl;
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
     float fMult = saturate((h0-float(ca*0.1))/h0);
@@ -332,7 +332,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetValue(svWhiteBalance, &vWhiteBalance, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetFloat(sfDepthClamp, float(atmo->depth)));
 	HR(Shader()->SetFloat(sfRPhase, float(atmo->rphase)));
-	HR(Shader()->SetFloat(sfExposure, float(-atmo->expo)));
+	HR(Shader()->SetFloat(sfExposure, float(atmo->expo)));
 	HR(Shader()->SetFloat(sfAux1, float(atmo->aux1)));
 	HR(Shader()->SetFloat(sfAux2, float(atmo->aux2)));
 	HR(Shader()->SetFloat(sfScaleHeight, h0));

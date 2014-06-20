@@ -194,7 +194,7 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_HEIGHT,   4.0, 40.0, 1);
 	ConfigSlider(IDC_ATM_DEPTH,    0.0, 1.5);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_EXPO,	   0.1, 2.0);
+	ConfigSlider(IDC_ATM_EXPO,	   0.1, 3.0);
 	ConfigSlider(IDC_ATM_BALANCE,  -0.3, 0.7);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0);
