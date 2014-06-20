@@ -8,13 +8,6 @@
 #define IDD_D3D9SCATTER                         113
 #define IDS_INFO                                1000
 #define IDS_TYPE                                1001
-#define IDC_STATIC1                             1300
-#define IDC_STATIC2                             1301
-#define IDC_STATIC3                             1302
-#define IDC_STATIC4                             1303
-#define IDC_STATIC5                             1304
-#define IDC_STATIC6                             1305
-#define IDC_STATIC10                            1306
 #define IDC_CREDITSTEXT                         40000
 #define IDC_LODBIAS                             40000
 #define IDC_ATD_DEPTH                           40001
@@ -38,7 +31,6 @@
 #define IDC_ATD_EXPO                            40010
 #define IDC_NEARPLANE                           40010
 #define IDC_ATM_AUX2                            40011
-#define IDC_STATIC7                             40011
 #define IDC_ATD_AUX2                            40012
 #define IDC_DEVICE                              40012
 #define IDC_ATD_AUX1                            40013
@@ -94,8 +86,6 @@
 #define IDC_DBG_MATADJ                          40088
 #define IDC_DBG_MATSAVE                         40089
 #define IDC_ENVMODE                             40090
-#define IDC_STATIC8                             40091
-#define IDC_STATIC9                             40093
 #define IDC_ENVFACES                            40094
 #define IDC_DBG_TEXTURE                         40096
 #define IDC_DBG_PICK                            40098
