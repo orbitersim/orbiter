@@ -91,6 +91,9 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 	WORD *pIBuffer;
 
 	if (vtx) {
+
+		HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&vtx->x, nv, sizeof(VERTEX_2TEX), &bsCnt, &bsRad));
+
 		if (pVB) {
 			if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD)==S_OK) {
 				memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));

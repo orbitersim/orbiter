@@ -544,7 +544,11 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			RenderCloudLayer (dev, D3DCULL_CCW);	  // render clouds from above
 
 		if (hazemgr) hazemgr->Render (dev, mWorld, true); // haze across planet disc
-		if (ringmgr) ringmgr->Render (dev, mWorld, true);
+		if (ringmgr) {
+			ringmgr->Render (dev, mWorld, true);
+			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
+		}
+
 	}
 	return true;
 }
@@ -561,12 +565,19 @@ void vPlanet::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
+	float fogfactor;
+	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
 		if (cdist >= 2.0*rad) surfmgr2->Render (dmWorld, false, prm);
 		else				  surfmgr2->Render (dmWorld, true,  prm);
-	} else {
+	} 
+	else {
+		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
+		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
+		surfmgr->SetAmbientColor(prm.AmbColor);
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
+		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 	}
 
 	if (nbase) {
@@ -574,8 +585,9 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		RenderBaseShadows (dev, shadowalpha);         // base shadows
 	}
 
-	if (prm.bCloudShadow)
-		RenderCloudShadows (dev);                // cloud shadows
+	if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
+	if (clouddata && clouddata->cloudshadow) RenderCloudShadows(dev);         // cloud shadows
+	if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 
 	if (bVesselShadow && hObj == oapiCameraProxyGbody())
 		scn->RenderVesselShadows (hObj, shadowalpha); // vessel shadows
