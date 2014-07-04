@@ -244,8 +244,8 @@ sampler NightS = sampler_state      // Night texture sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
     MipMapLODBias = 0;
-	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressU = WRAP;
+    AddressV = WRAP;
 };
 
 
