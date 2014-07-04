@@ -108,7 +108,11 @@ float4 MeshTechPS(AdvancedVS frg) : COLOR
     float4 cRefl;
     
 	if (gTextured) cTex = tex2D(WrapS, frg.tex0);
-    if (gUseSpec) cSpec *= tex2D(SpecS, frg.tex0);	
+	
+    if (gUseSpec) {
+		cSpec = tex2D(SpecS, frg.tex0);
+		cSpec.a *= 255.0f;
+	}	
     
     cTex.a*=gMtrlAlpha;
     

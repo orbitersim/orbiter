@@ -114,7 +114,10 @@ float4 MeshTechNMPS(AdvancedNMVS frg) : COLOR
     
     float3 nrmW = mul(nrmT, TBN);
     
-	if (gUseSpec) cSpec *= tex2D(SpecS, frg.tex0);	
+	if (gUseSpec) {
+		cSpec = tex2D(SpecS, frg.tex0);
+		cSpec.a *= 255.0f;
+	}	
 	
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
