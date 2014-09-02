@@ -30,7 +30,7 @@
 vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
 	_TRACE;
-	DWORD i;
+	DWORD i,j;
 
 	structure_bs	= NULL;
 	structure_as	= NULL;
@@ -45,19 +45,30 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	csun_lights     = RAD * Config->SunAngle;
 
 	// load surface tiles
-	ntile = gc->GetBaseTileList (_hObj, &tspec);
+	DWORD _ntile = gc->GetBaseTileList (_hObj, &tspec);
+	ntile = 0;
+	for (i=0; i<_ntile; ++i) {
+		// Only count (render) tiles where bit0 is set!
+		if (tspec[i].texflag & 0x01) {
+			++ntile;
+		}
+	}
 
 	if (ntile) {
 
 		MESHGROUPEX **grps = new MESHGROUPEX*[ntile];
 		SURFHANDLE *texs = new SURFHANDLE[ntile];
 
-		for (i = 0; i < ntile; i++) {
-			DWORD ng = oapiMeshGroupCount(tspec[i].mesh);
-			if (ng!=1) LogErr("MeshGroup Count = %u",ng);
-			else {
-				texs[i] = tspec[i].tex;
-				grps[i] = oapiMeshGroupEx(tspec[i].mesh, 0);
+		for (i = 0, j = 0; i < _ntile; ++i) {
+			// Only render tiles where bit0 is set!
+			if (tspec[i].texflag & 0x01) {
+				DWORD ng = oapiMeshGroupCount(tspec[i].mesh);
+				if (ng!=1) LogErr("MeshGroup Count = %u",ng);
+				else {
+					texs[j] = tspec[i].tex;
+					grps[j] = oapiMeshGroupEx(tspec[i].mesh, 0);
+				}
+				++j;
 			}
 		}
 		tilemesh = new D3D9Mesh(gc, ntile, (const MESHGROUPEX**)grps, texs);	
