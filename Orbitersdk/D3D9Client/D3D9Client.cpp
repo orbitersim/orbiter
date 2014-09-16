@@ -214,6 +214,8 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 {
 	vtab = NULL;
+	g_cm_list = NULL;
+	g_cm_list_count = 0;
 	strcpy(ScenarioName, "(none selected)");
 }
 
@@ -225,6 +227,15 @@ D3D9Client::~D3D9Client()
 //+	oapiUnregisterGraphicsClient (this);
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
+
+	// Free constellation names memory (if allocted)
+	if (g_cm_list) {
+		for (DWORD n = 0; n < g_cm_list_count; ++n) {
+			delete[] g_cm_list[n].fullname;
+			delete[] g_cm_list[n].shortname;
+		}
+		delete[] g_cm_list;
+	}
 }
 
 // ==============================================================
@@ -1928,6 +1939,63 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w
 }
 
 #pragma endregion
+
+// =======================================================================
+// WA functions
+// =======================================================================
+#pragma pack(1)
+
+// File entry struct
+typedef struct {
+  double lng;          ///< longitude
+  double lat;          ///< latitude
+  char   shortname[3]; ///< short name
+  size_t length;       ///< length of 'fullname'
+} ConstellEntry;
+#pragma pack()
+
+DWORD D3D9Client::GetConstellationMarkers(const CNSTLABELLIST **cm_list) //const
+{
+	if ( !g_cm_list ) {
+		FILE* file = NULL;
+		const size_t e_size = sizeof(ConstellEntry);// - sizeof( ((ConstellEntry*)0)->fullname );
+
+		if ( 0 != fopen_s(&file, ".\\Constell2.bin", "rb") || file == NULL ) {
+			LogErr("Could not open 'Constell2.bin'");
+			return 0;
+		}
+
+		g_cm_list = new CNSTLABELLIST[100](); // @todo: do not guess!
+
+		while ( !feof(file) ) {
+			ConstellEntry _entry;
+			CNSTLABELLIST* _out = &g_cm_list[g_cm_list_count];
+			if ( 1 != fread(&_entry, e_size, 1 , file)) {
+				break;
+			}
+
+			_out->lat = _entry.lat;
+			_out->lng = _entry.lng;
+			_out->shortname = new char[4]();
+			_out->fullname = new char[_entry.length+1]();
+
+			// memcpy(_out.shortname, _entry.shortname, 3); 
+			_out->shortname[0] = _entry.shortname[0]; 
+			_out->shortname[1] = _entry.shortname[1]; 
+			_out->shortname[2] = _entry.shortname[2]; 
+
+			if (_entry.length) {
+				fread(_out->fullname, sizeof(char), _entry.length , file);
+			}
+			g_cm_list_count++;
+		}
+		fclose(file);
+	}
+
+	*cm_list = g_cm_list;
+
+	return g_cm_list_count;
+}
 
 // =======================================================================
 // GDI functions

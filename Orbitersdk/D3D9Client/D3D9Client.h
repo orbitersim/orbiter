@@ -80,7 +80,7 @@ namespace oapi {
 
 // ==============================================================
 // D3D9Client class interface
-/// The DX7 render client for Orbiter
+/// The DX9 render client for Orbiter
 // ==============================================================
 
 class D3D9Client: public GraphicsClient {
@@ -1138,6 +1138,29 @@ protected:
 	/// Obtains the GDI of the render surface to output 2D data after
 	/// rendering the 3D scene (glass cockpit, date info, etc.)
 	void Output2DOverlay ();
+
+
+	/**
+	 * \brief Constellation label list description
+	 */
+	struct CNSTLABELLIST {
+		double lng;        ///< longitude
+		double lat;        ///< latitude
+		char   *shortname; ///< short name
+		char   *fullname;  ///< full name
+	};
+
+	CNSTLABELLIST *g_cm_list;
+
+	DWORD g_cm_list_count;
+
+	/**
+	 * \brief Returns an array of constellation markers
+	 * \param cm_list array of marker lists
+	 * \return number of lists in the array
+	 * \sa CNSTLABELLIST
+	 */
+	DWORD GetConstellationMarkers (const CNSTLABELLIST **cm_list);
 
 public:
 
