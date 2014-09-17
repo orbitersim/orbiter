@@ -950,37 +950,26 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 
 	if (plnmode & PLN_ENABLE) {
+
+		// constellation labels --------------------------------------------------
 		if (plnmode & PLN_CNSTLABEL) {
-			const float sphere_r = 1e6f; // the actual render distance for the celestial sphere
-										 // is irrelevant, since it is rendered without z-buffer,
-										 // but it must be within the frustum limits - check this
-										 // in case the near and far planes are dynamically changed!
 			const D3D9Client::CNSTLABELLIST *list;
 			DWORD n, nlist;
-			double xz;
 			char *label;
-			VECTOR3 pos;
 
 			pSketch->SetTextColor(labelCol[5]);
 			pSketch->SetPen(lblPen[5]);
 
 			nlist = gc->GetConstellationMarkers(&list);
 			for (n = 0; n < nlist; ++n) {
-				//@todo: should be done in GetConstellationMarkers(); change CNSTLABELLIST struct!
-				xz = sphere_r * cos (list[n].lat);
-				pos.x = xz * cos(list[n].lng);
-				pos.z = xz * sin(list[n].lng);
-				pos.y = sphere_r * sin(list[n].lat);
-
 				label = (plnmode & PLN_CNSTSHORT) ? list[n].shortname : list[n].fullname;
-
-			    RenderDirectionMarker(pSketch, pos, label, NULL, -1, 0);
+				RenderDirectionMarker(pSketch, list[n].pos, NULL, label, -1, 0);
 			}
 		} 
+		// celestial marker (stars) names ----------------------------------------
 		if (plnmode & PLN_CCMARK) {
 			const GraphicsClient::LABELLIST *list;
 			DWORD n, nlist;
-			HDC hDC = NULL;
 			nlist = gc->GetCelestialMarkers(&list);
 				
 			for (n = 0; n < nlist; n++) {
@@ -996,7 +985,7 @@ void Scene::RenderMainScene()
 			}	
 		} 
 	}
-  
+
 	// Render Planets
 
 	for (DWORD i=0;i<nplanets;i++) {

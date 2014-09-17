@@ -56,6 +56,10 @@ vObject *pCurrentVisual = 0;
 
 bool bSkepchpadOpen = false;
 
+// Module local constellation marker storage
+static D3D9Client::CNSTLABELLIST *g_cm_list = NULL;
+static DWORD g_cm_list_count = 0;
+
 extern "C" {
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 }
@@ -214,8 +218,6 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 {
 	vtab = NULL;
-	g_cm_list = NULL;
-	g_cm_list_count = 0;
 	strcpy(ScenarioName, "(none selected)");
 }
 
@@ -1941,54 +1943,66 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w
 #pragma endregion
 
 // =======================================================================
-// WA functions
+// Constellation name functions
 // =======================================================================
-#pragma pack(1)
 
-// File entry struct
-typedef struct {
-  double lng;          ///< longitude
-  double lat;          ///< latitude
-  char   shortname[3]; ///< short name
-  size_t length;       ///< length of 'fullname'
-} ConstellEntry;
-#pragma pack()
-
-DWORD D3D9Client::GetConstellationMarkers(const CNSTLABELLIST **cm_list) //const
+DWORD D3D9Client::GetConstellationMarkers(const CNSTLABELLIST **cm_list) const
 {
 	if ( !g_cm_list ) {
+		#pragma pack(1)
+		// File entry struct
+		typedef struct {
+			double lng;    ///< longitude
+			double lat;    ///< latitude
+			char   abr[3]; ///< abbreviation (short name)
+			size_t len;    ///< length of 'fullname'
+		} ConstellEntry;
+		#pragma pack()
+
 		FILE* file = NULL;
-		const size_t e_size = sizeof(ConstellEntry);// - sizeof( ((ConstellEntry*)0)->fullname );
+		const size_t e_size = sizeof(ConstellEntry);
+		const float sphere_r = 1e6f; // the actual render distance for the celestial sphere
+		                             // is irrelevant, since it is rendered without z-buffer,
+		                             // but it must be within the frustum limits - check this
+		                             // in case the near and far planes are dynamically changed!
 
 		if ( 0 != fopen_s(&file, ".\\Constell2.bin", "rb") || file == NULL ) {
 			LogErr("Could not open 'Constell2.bin'");
 			return 0;
 		}
 
-		g_cm_list = new CNSTLABELLIST[100](); // @todo: do not guess!
+		ConstellEntry f_entry;
+		CNSTLABELLIST *p_out;
 
-		while ( !feof(file) ) {
-			ConstellEntry _entry;
-			CNSTLABELLIST* _out = &g_cm_list[g_cm_list_count];
-			if ( 1 != fread(&_entry, e_size, 1 , file)) {
-				break;
-			}
-
-			_out->lat = _entry.lat;
-			_out->lng = _entry.lng;
-			_out->shortname = new char[4]();
-			_out->fullname = new char[_entry.length+1]();
-
-			// memcpy(_out.shortname, _entry.shortname, 3); 
-			_out->shortname[0] = _entry.shortname[0]; 
-			_out->shortname[1] = _entry.shortname[1]; 
-			_out->shortname[2] = _entry.shortname[2]; 
-
-			if (_entry.length) {
-				fread(_out->fullname, sizeof(char), _entry.length , file);
-			}
-			g_cm_list_count++;
+		// Get number of labels from file
+		while ( !feof(file) && (1 == fread(&f_entry, e_size, 1 , file)) ) {
+			++g_cm_list_count;
+			fseek(file, f_entry.len, SEEK_CUR);
 		}
+
+		rewind(file);
+
+		g_cm_list = new CNSTLABELLIST[g_cm_list_count]();
+
+		for (p_out = g_cm_list; !feof(file); ++p_out) {
+			if ( 1 == fread(&f_entry, e_size, 1 , file)) {
+				// shortname
+				p_out->shortname = new char[4]();
+				// memcpy(p_out.shortname, f_entry.abr, 3); 
+				p_out->shortname[0] = f_entry.abr[0]; 
+				p_out->shortname[1] = f_entry.abr[1]; 
+				p_out->shortname[2] = f_entry.abr[2]; 
+				// fullname
+				p_out->fullname = new char[f_entry.len+1]();
+				fread(p_out->fullname, sizeof(char), f_entry.len, file);
+				// position
+				double xz = sphere_r * cos(f_entry.lat);
+				p_out->pos.x = xz * cos(f_entry.lng);
+				p_out->pos.z = xz * sin(f_entry.lng);
+				p_out->pos.y = sphere_r * sin(f_entry.lat);
+			}
+		}
+
 		fclose(file);
 	}
 

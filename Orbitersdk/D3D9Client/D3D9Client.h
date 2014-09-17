@@ -1139,30 +1139,24 @@ protected:
 	/// rendering the 3D scene (glass cockpit, date info, etc.)
 	void Output2DOverlay ();
 
+public:
 
 	/**
-	 * \brief Constellation label list description
+	 * \brief Constellation label list element description
 	 */
 	struct CNSTLABELLIST {
-		double lng;        ///< longitude
-		double lat;        ///< latitude
 		char   *shortname; ///< short name
 		char   *fullname;  ///< full name
+		VECTOR3 pos;       ///< position
 	};
-
-	CNSTLABELLIST *g_cm_list;
-
-	DWORD g_cm_list_count;
 
 	/**
 	 * \brief Returns an array of constellation markers
-	 * \param cm_list array of marker lists
+	 * \param cm_list array of constellation label elements
 	 * \return number of lists in the array
 	 * \sa CNSTLABELLIST
 	 */
-	DWORD GetConstellationMarkers (const CNSTLABELLIST **cm_list);
-
-public:
+	DWORD GetConstellationMarkers (const CNSTLABELLIST **cm_list) const;
 
 	/**
 	 * \brief Displays a message on the splash screen.
