@@ -267,7 +267,7 @@ void CelestialSphere::RenderGreatCircle(ID3DXEffect *FX)
 	HR(FX->BeginPass(0));
 	HR(pDevice->SetStreamSource(0, grdlng, 0, sizeof(VERTEX_XYZ)));
 	HR(pDevice->SetVertexDeclaration(pPositionDecl));
-	HR(pDevice->DrawPrimitive(D3DPT_LINESTRIP, 5*(NSEG+1), NSEG+1));
+	HR(pDevice->DrawPrimitive(D3DPT_LINESTRIP, 5*(NSEG+1), NSEG));
 	HR(FX->EndPass());
 	HR(FX->End());	
 	
