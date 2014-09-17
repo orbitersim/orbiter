@@ -30,7 +30,7 @@ public:
 	bool Render (LPDIRECT3DDEVICE9 dev);
 
 private:
-	double size;       ///< physical size of central body
+//	double size;       ///< physical size of central body
 	double maxdist;    ///< max render distance
 	//D3DMATERIAL9 mtrl; ///< Material definition for rendering
 	//static D3D9Mesh *billboard;         ///< visual

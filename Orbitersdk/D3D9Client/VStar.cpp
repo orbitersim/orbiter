@@ -19,7 +19,7 @@ LPD3D9CLIENTSURFACE vStar::deftex = 0;
 
 vStar::vStar(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	size = oapiGetSize(_hObj);
+//	size = oapiGetSize(_hObj);
 	maxdist = 0.5*scene->GetCameraFarPlane();
 }
 
