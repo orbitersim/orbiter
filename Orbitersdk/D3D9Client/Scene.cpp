@@ -953,17 +953,17 @@ void Scene::RenderMainScene()
 
 		// constellation labels --------------------------------------------------
 		if (plnmode & PLN_CNSTLABEL) {
-			const D3D9Client::CNSTLABELLIST *list;
+			const GraphicsClient::LABELSPEC *ls;
 			DWORD n, nlist;
 			char *label;
 
 			pSketch->SetTextColor(labelCol[5]);
 			pSketch->SetPen(lblPen[5]);
 
-			nlist = gc->GetConstellationMarkers(&list);
+			nlist = gc->GetConstellationMarkers(&ls);
 			for (n = 0; n < nlist; ++n) {
-				label = (plnmode & PLN_CNSTSHORT) ? list[n].shortname : list[n].fullname;
-				RenderDirectionMarker(pSketch, list[n].pos, NULL, label, -1, 0);
+				label = (plnmode & PLN_CNSTLONG) ? ls[n].label[0] : ls[n].label[1];
+				RenderDirectionMarker(pSketch, ls[n].pos, NULL, label, -1, 0);
 			}
 		} 
 		// celestial marker (stars) names ----------------------------------------

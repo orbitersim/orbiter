@@ -1142,21 +1142,12 @@ protected:
 public:
 
 	/**
-	 * \brief Constellation label list element description
-	 */
-	struct CNSTLABELLIST {
-		char   *shortname; ///< short name
-		char   *fullname;  ///< full name
-		VECTOR3 pos;       ///< position
-	};
-
-	/**
 	 * \brief Returns an array of constellation markers
 	 * \param cm_list array of constellation label elements
 	 * \return number of lists in the array
-	 * \sa CNSTLABELLIST
+	 * \sa LABELSPEC
 	 */
-	DWORD GetConstellationMarkers (const CNSTLABELLIST **cm_list) const;
+	DWORD GetConstellationMarkers (const LABELSPEC **cm_list) const;
 
 	/**
 	 * \brief Displays a message on the splash screen.

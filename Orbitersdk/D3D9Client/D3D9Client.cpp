@@ -57,7 +57,7 @@ vObject *pCurrentVisual = 0;
 bool bSkepchpadOpen = false;
 
 // Module local constellation marker storage
-static D3D9Client::CNSTLABELLIST *g_cm_list = NULL;
+static GraphicsClient::LABELSPEC *g_cm_list = NULL;
 static DWORD g_cm_list_count = 0;
 
 extern "C" {
@@ -233,8 +233,8 @@ D3D9Client::~D3D9Client()
 	// Free constellation names memory (if allocted)
 	if (g_cm_list) {
 		for (DWORD n = 0; n < g_cm_list_count; ++n) {
-			delete[] g_cm_list[n].fullname;
-			delete[] g_cm_list[n].shortname;
+			delete[] g_cm_list[n].label[0];
+			delete[] g_cm_list[n].label[1];
 		}
 		delete[] g_cm_list;
 	}
@@ -1946,7 +1946,7 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w
 // Constellation name functions
 // =======================================================================
 
-DWORD D3D9Client::GetConstellationMarkers(const CNSTLABELLIST **cm_list) const
+DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
 {
 	if ( !g_cm_list ) {
 		#pragma pack(1)
@@ -1972,7 +1972,7 @@ DWORD D3D9Client::GetConstellationMarkers(const CNSTLABELLIST **cm_list) const
 		}
 
 		ConstellEntry f_entry;
-		CNSTLABELLIST *p_out;
+		LABELSPEC *p_out;
 
 		// Get number of labels from file
 		while ( !feof(file) && (1 == fread(&f_entry, e_size, 1 , file)) ) {
@@ -1982,24 +1982,23 @@ DWORD D3D9Client::GetConstellationMarkers(const CNSTLABELLIST **cm_list) const
 
 		rewind(file);
 
-		g_cm_list = new CNSTLABELLIST[g_cm_list_count]();
+		g_cm_list = new LABELSPEC[g_cm_list_count]();
 
 		for (p_out = g_cm_list; !feof(file); ++p_out) {
 			if ( 1 == fread(&f_entry, e_size, 1 , file)) {
-				// shortname
-				p_out->shortname = new char[4]();
-				// memcpy(p_out.shortname, f_entry.abr, 3); 
-				p_out->shortname[0] = f_entry.abr[0]; 
-				p_out->shortname[1] = f_entry.abr[1]; 
-				p_out->shortname[2] = f_entry.abr[2]; 
-				// fullname
-				p_out->fullname = new char[f_entry.len+1]();
-				fread(p_out->fullname, sizeof(char), f_entry.len, file);
+				p_out->label[0] = new char[f_entry.len+1]();
+				p_out->label[1] = new char[4]();
 				// position
 				double xz = sphere_r * cos(f_entry.lat);
 				p_out->pos.x = xz * cos(f_entry.lng);
 				p_out->pos.z = xz * sin(f_entry.lng);
 				p_out->pos.y = sphere_r * sin(f_entry.lat);
+				// fullname
+				fread(p_out->label[0], sizeof(char), f_entry.len, file);
+				// shortname
+				p_out->label[1][0] = f_entry.abr[0];
+				p_out->label[1][1] = f_entry.abr[1];
+				p_out->label[1][2] = f_entry.abr[2];
 			}
 		}
 
