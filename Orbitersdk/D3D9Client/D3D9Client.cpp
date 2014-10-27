@@ -750,7 +750,7 @@ void D3D9Client::clbkRenderScene()
 	_TRACER;
 	bScene = false;
 
-	char Label[64];
+	char Label[7];
 
 	if (pd3dDevice==NULL || scene==NULL) return;
 	if (bFailed) return;
@@ -790,11 +790,11 @@ void D3D9Client::clbkRenderScene()
 		VESSEL *hVes = oapiGetFocusInterface();
 
 		if (hVes) {
-			if (hVes->Recording()) strcpy_s(Label,64,"Recording");
-			if (hVes->Playback()) strcpy_s(Label,64,"Replay");
+			if (hVes->Recording()) strcpy_s(Label, 7, "Record");
+			if (hVes->Playback()) strcpy_s(Label, 7, "Replay");
 		}
 
-		if (oapiGetPause()) strcpy_s(Label,64,"Paused");
+		if (oapiGetPause()) strcpy_s(Label, 7, "Paused");
 
 		if (Label[0]!=0) {
 			pd3dDevice->BeginScene();
