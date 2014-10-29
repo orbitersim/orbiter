@@ -96,6 +96,7 @@ void DebugMsg(const char *format, ...)
 	va_list args; 
 	va_start(args, format); 
 	_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+	va_end(args);
 	strcat_s(ErrBuf, ERRBUF, "\n");
 	OutputDebugString(ErrBuf);
 }
@@ -117,6 +118,8 @@ void LogMsg(const char *format, ...)
 		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 		
+		va_end(args);
+
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
@@ -139,6 +142,8 @@ void LogAlw(const char *format, ...)
 		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 	
+		va_end(args);
+
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
@@ -162,11 +167,13 @@ void LogErr(const char *format, ...)
 		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 		
+		va_end(args);
+
 		oapiWriteLog(ErrBuf);
 
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
-		fflush(d3d9client_log); 
+		fflush(d3d9client_log);
 	}
 }	
 
@@ -186,9 +193,11 @@ void LogBlu(const char *format, ...)
 		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 	
+		va_end(args);
+
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
-		fflush(d3d9client_log); 
+		fflush(d3d9client_log);
 	}
 }	
 
@@ -208,9 +217,11 @@ void LogWrn(const char *format, ...)
 		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 
+		va_end(args);
+
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
-		fflush(d3d9client_log); 
+		fflush(d3d9client_log);
 	}
 }	
 
@@ -230,8 +241,10 @@ void LogOk(const char *format, ...)
 		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 	
+		va_end(args);
+
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
-		fflush(d3d9client_log); 
+		fflush(d3d9client_log);
 	}
 }	

@@ -80,10 +80,12 @@ void D3D9Client::Item(WORD id, const char *label, const char *format, ...)
 void D3D9Client::Label(const char *format, ...)
 {
 	char buffer[256];
-	va_list args; 
-	va_start(args, format); 
+	va_list args;
+	va_start(args, format);
 			
-	_vsnprintf_s(buffer, 255, 255, format, args); 	
+	_vsnprintf_s(buffer, 255, 255, format, args);
+
+	va_end(args);
 
 	int len = strlen(buffer);
 	pItemsSkp->Text(20, LabelPos, buffer, len);
