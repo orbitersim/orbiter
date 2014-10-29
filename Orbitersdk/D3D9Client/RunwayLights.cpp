@@ -215,6 +215,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	centerLight.loff = 1.0f;
 	centerLight.bright = 1.5f * brightness;
 	centerLight.fall = 0.5;
+	centerLight.pos = _V(0,0,0);
 	centerLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
 
 	endLight  = centerLight;
