@@ -216,6 +216,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	centerLight.bright = 1.5f * brightness;
 	centerLight.fall = 0.5;
 	centerLight.pos = _V(0,0,0);
+	centerLight.color = 0;
 	centerLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
 
 	endLight  = centerLight;
@@ -580,6 +581,8 @@ BeaconArray * RunwayLights::BuildPAPI(VECTOR3 start, VECTOR3 end, DWORD i)
 	papiLight.loff = 1.0f;
 	papiLight.bright = 4.0f * float(Config->RwyBrightness);
 	papiLight.fall = 0.5;
+	papiLight.pos = _V(0,0,0);
+	papiLight.color = 0;
 	papiLight.dir = dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
 
 	BeaconArrayEntry entryPAPI[4];
@@ -638,6 +641,8 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 	vasiLight.loff = 1.0f;
 	vasiLight.bright = 3.0f * float(Config->RwyBrightness);
 	vasiLight.fall = 0.1f;
+	vasiLight.pos = _V(0,0,0);
+	vasiLight.color = 0;
 	vasiLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
 
 	_current = _start + _dir * VASI[e].z + _widthDir * (width/2.0 + 30.0);
@@ -1004,6 +1009,7 @@ void TaxiLights::Init()
 	taxiLight.bright = 5.0f;
 	taxiLight.fall = 0.5;
 	taxiLight.dir = _V(0, 1, 0);
+	taxiLight.pos = _V(0, 0, 0);
 	taxiLight.color = D3DXCOLOR(float(color.x), float(color.y), float(color.z), 1.0f);
 
 	VECTOR3 space = dir * len / (count-1);
