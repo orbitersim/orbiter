@@ -885,16 +885,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	if (Config->SketchpadFont==2) AAQuality = CLEARTYPE_QUALITY;
 	if (Config->SketchpadFont==3) AAQuality = PROOF_QUALITY;
 
-	// Create Windows GDI Font for a use with GDIPad ---------------------------
-	//
-	if (hFont==NULL) {
-		hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
-		if (hFont==NULL) {
-			face  = (prop ? def_sansface : def_fixedface);
-			hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
-		}
-	}
-
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
 	if (pFont==NULL) {
@@ -904,25 +894,36 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		pFont = new D3D9Text(pDev);
 		pFont->Init(hNew, 255);
 
-		DeleteObject(hNew);
-
 		pFont->SetRotation(rotation);
 		
 		if (nfcache>120) {
 			LogErr("Font Cache is Full.");
+			DeleteObject(hNew);
 		}
+		else {
+			// Fill the cache --------------------------------
+			//
+			fcache[nfcache].hFont  = hNew;  
+			fcache[nfcache].pFont  = pFont;
+			fcache[nfcache].height = height;
+			fcache[nfcache].style  = style;
+			fcache[nfcache].prop   = prop;
+			strcpy_s(fcache[nfcache].face, 32, face);
+			nfcache++;
 
-		// Fill the cache --------------------------------
-		//
-		if (orientation) fcache[nfcache].hFont = NULL;  // Do not cache rotated hFont for Windows GDI
-		else             fcache[nfcache].hFont = hFont;
+			if (orientation==0) hFont = hNew;
+		}
+	}
 
-		fcache[nfcache].pFont  = pFont;
-		fcache[nfcache].height = height;
-		fcache[nfcache].style  = style;
-		fcache[nfcache].prop   = prop;
-		strcpy_s(fcache[nfcache].face, 32, face);
-		nfcache++;
+
+	// Create Windows GDI Font for a use with GDIPad ---------------------------
+	//
+	if (hFont==NULL) {
+		hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+		if (hFont==NULL) {
+			face  = (prop ? def_sansface : def_fixedface);
+			hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+		}
 	}
 }
 
