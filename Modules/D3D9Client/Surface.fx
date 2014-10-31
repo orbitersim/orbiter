@@ -70,6 +70,7 @@ struct CelSphereVS
 
 
 
+
 // -------------------------------------------------------------------------------------------------
 // Global shader variables
 // -------------------------------------------------------------------------------------------------
@@ -142,17 +143,17 @@ sampler NoiseTexS = sampler_state
 uniform extern float4	vMPhase;			// Pre-computed factors used in Mie phase function
 uniform extern float4	vODCoEff;			// Optical Depth Taylor co-efficients
 uniform extern float4	vODCoEffEx;			// Optical Depth Taylor co-efficients
-uniform extern float3	vMieInSct;			// Mie scattering = M_in/(lambda^m)
-uniform extern float3	vRayInSct;			// Rayleigh scattering = R_in/(lambda^r)
-uniform extern float3	vOutTotSun;			// Total out-scattering for in-coming sunlight  = R_outsun/(lambda^r) + M_outsun/(lambda^m)
-uniform extern float3	vOutTotSrf;			// Total out-scattering for a planet's surface  = R_outsrf/(lambda^r) + M_outsrf/(lambda^m)
-uniform extern float3	vWhiteBalance;	
+uniform extern float3	vMieInSct;			// Mie scattering factor = Mie/(lambda^m)
+uniform extern float3	vRayInSct;			// Rayleigh in-scattering = (ROut*RIn)/(lambda^r)
+uniform extern float3	vTotOutSct;			// Total out-scattering = ROut/(lambda^r) + Mie/(lambda^m)
+uniform extern float3	vWhiteBalance;		// lambda^x
+uniform extern float3	vColorShift;		// lerp([1,1,1], 1.0/lambda^r, Aux3)	
 uniform extern float3   vCameraPos;         // Geo-centric camera position 
 uniform extern float3   vUnitCameraPos;     // Geo-centric camera position (Unit vector)
-uniform extern float	fDepthClamp;		// Maximum optical depth for horizon haze (Bound to Horizon slider)
-//uniform extern float	fSrfIntensity;		// Sun intensity for surface lighting (Bound to Sun slider)
+uniform extern float	fSunset;			// Sunset color corrector (Bound to sunset slider)
 uniform extern float	fScaleHeight;		// Atmosphere scaleheight
-uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight		
+uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight	
+uniform extern float	fInvMieScaleHeight;	// Inverse of Mie scale height
 uniform extern float    fRadius;            // PlanetRad
 uniform extern float    fCameraAlt;         // Camera Altitude
 uniform extern float    fHorizonAlt;        // Horizon (i.e. Skydome, Atmosphere) Altitude/Height
@@ -160,12 +161,13 @@ uniform extern float	fAtmRad2;			// Atmosphere upper radius squared (fRadius+fHo
 uniform extern float	fRPhase;			// Rayleigh phase factor
 uniform extern float	fHorizonDst;		// Camera to horizon distance sqrt(dot(vCameraPos,vCameraPos) - fRadius*fRadius)
 uniform extern float	fExposure;			// Camera exposure factor (Bound to Exposure slider)
-uniform extern float	fAux1;				// Unused. Bound to Aux1 slider
-uniform extern float	fAux2;				// Unused. Bound to Aux2 slider
+uniform extern float	fAux1;				// Bound to Aux1 slider
+uniform extern float	fAux2;				// Bound to Aux2 slider
+uniform extern float	fAux4;				// Bound to Aux4 slider
+uniform extern float	fInvAux1;			// Inverse of fAux1
+uniform extern float	fInvParameter;		// Inverse of optical parameter 1.0/AngleCoEff(0)
 uniform extern float	fAmbient;			// Planet specific ambient level pre-multiplied with camera altitude factor
 uniform extern float	fGlobalAmb;
-uniform extern int		iMode;
-uniform extern bool		bOverSat;			// Avoid over-saturation
 uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt) 
 uniform extern bool		bOnOff;				
 
@@ -176,6 +178,7 @@ const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
 const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};			
 const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
 
+const float srfoffset = -0.04;
 
 // -------------------------------------------------------------------------------------------------------------
 // Henyey-Greenstein Phase function
@@ -183,7 +186,7 @@ const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
 //
 float MPhase(float cw)
 {
-	return vMPhase.z + vMPhase.x * pow(abs(vMPhase.y-vMPhase.w*cw), -1.5f);
+	return max(1, vMPhase.x * pow(abs(vMPhase.y-vMPhase.w*cw), -1.5f));
 }
 
 // -------------------------------------------------------------------------------------------------------------
@@ -200,28 +203,18 @@ float RPhase(float cw)
 //
 float AngleCoEff(float c)
 {
-	//float  c1 = rcp(max(0.0608, c+0.2)); float c2 = c1*c1;  // 98 deg
-	float  c1 = rcp(max(0.0954, c+0.2)); float c2 = c1*c1;  // 96 deg
+	float  c1 = rcp(max(0.0954, c+0.2)); 
+	float  c2 = c1*c1;
 	float4 v1 = float4(1.0f, c1, c2, c2*c1);
 	return dot(v1, vODCoEff) + dot(v1*(c2*c2), vODCoEffEx);
 }
 
-float Shadow(float c)
+float Shadow(float c, float f)
 {
-	return saturate(1.0+c*8.0);
+	float fC = saturate((c+fAux1+f)*fInvAux1);
+    return (3.0 - 2.0 * fC) * (fC*fC);
 }
 
-// Compute shadowing by planet, see if the ray intersects the surface and how much
-//
-float ShadowEx(float c, float alt)
-{
-	if (c>0) return 1.0;
-	float fVtx = alt + fRadius;
-	float fHrz = fVtx * c;
-	float fAlt = sqrt(fVtx*fVtx - fHrz*fHrz) - fRadius;
-
-	return smoothstep(-fHorizonAlt, 0, fAlt);
-}
 
 
 // =============================================================================================================
@@ -241,32 +234,42 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 	float  fDRS = -dot(vUnitRay, vSunDir);
 	float3 vPos = vCameraPos + vRay*0.5f;
 	float3 vNr1 = normalize(vPos);
+	float  fAlt = dot(vNr1, vPos)-fRadius;
 	float  fDNS = dot(vNr1, vSunDir);
-
+	float  fDNR = dot(vNr1, vUnitRay);
+	
 	// Setup altitudes for all sample points
-	float3 vAlt = float3(fCameraAlt, dot(vNr1, vPos)-fRadius, fHorizonAlt);
+	float3 vAlt = float3(fCameraAlt, fAlt, fHorizonAlt);
 	
 	// Atmospheric densities for sample points	
-    float3 vDns = exp2(-vAlt*fInvScaleHeight);				
-    
+    float3 vDns = exp2(-vAlt*fInvScaleHeight);	
+
 	// Mean atmospheric density for a viewing ray
-	float fMnD = dot(vDns, vWeight3);
+	float  fMnD = dot(vDns, vWeight3);
 
 	// Evaluate a Gauss-Lobatto integral (from camera to skydome). Will give optical depth for the ray
-    float fDRay = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
-    
+    float  fDep = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
+
+	float  fASn = AngleCoEff(fDNS);
+	float  fANr = AngleCoEff(fDNR);
+	
+	// Optical Depth correction for sunset
+	float  fCmD = vDns[0] * (fANr*fANr) * fASn * (-fDRS+1.0f) * fInvParameter;
+	
 	// Color of inscattered sunlight
-    float3 vSun = exp2(-vOutTotSun * (fMnD * AngleCoEff(fDNS))) * fDRay * Shadow(fDNS) * fExposure;
- 
+	float3 vSun = exp2(-vTotOutSct * (fAux2*fMnD*fASn + fCmD*fSunset)) * fDep * 0.5f * Shadow(fDNS, 0);
+
 	// Compute in-scattering 
-    vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun * fDepthClamp;
+    vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun;
     
     float fNgt = saturate(fDNS*2.924f+0.657f); 
 
 	// Compute ambient light level for the sky
     vIns += (vRayInSct+1.0f) * (fAmbient * fNgt * saturate(0.5f-max(vIns.b, vIns.r)));
 
-    vIns = 1.0 - exp2(-vIns);
+    vIns = (1.0f - exp2(vIns * vColorShift)) * vWhiteBalance;
+
+	vIns = pow(abs(vIns), fAux4);  
 }
 
 
@@ -294,6 +297,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 	float  fRad = dot(vNr1, vPos);				// Geo-centric vertex radius
 	float  fDRS = -dot(vUnitRay, vSunDir);
 	float  fRd2 = fRad*fRad;
+	float  fAlt = fRad - fRadius;
 	
 	if (fRd2>fAtmRad2) {
 		vIns = 0;
@@ -301,50 +305,30 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 	}
 	
 	// Setup altitudes for all sample points
-	float3 vAlt = float3(fHorizonAlt, fRad - fRadius, fHorizonAlt);
-	float3 vDns = exp2(-vAlt*fInvScaleHeight);					
-	
+	float3 vAlt = float3(fHorizonAlt, fAlt, fHorizonAlt);
+	float3 vDns = exp2(-vAlt*fInvScaleHeight);	
+
 	// Mean atmospheric density for a viewing ray
 	float  fMnD = dot(vDns, vWeight3);
-
+	
 	// Compute secant
-	float  fSgt = sqrt(fAtmRad2 - fRd2) * 2.0;
+	float  fSgt = sqrt(fAtmRad2 - fRd2);
 
 	// Evaluate a Gauss-Lobatto integral. Will give optical depth for the ray
-    float fDRay = fMnD * (fSgt * fInvScaleHeight) * 0.3465735903f;
+    float  fDep = fMnD * fSgt * fInvScaleHeight * 0.6931471806f;
 
-	// Optical depth for incoming sunlight	    
-    float fDSun = fMnD * AngleCoEff(fDNS);
-    
-    float3 vSun = exp2(-vOutTotSun * fDSun) * fDRay * Shadow(fDNS) * fExposure;
-    
+	// Optical depth for incoming sunlight	
+	float fCoEff = fAux2 * AngleCoEff(fDNS);
+  
+    float3 vSun = exp2(-vTotOutSct * fMnD * fCoEff) * fDep * Shadow(fDNS, 0);
+	
 	// Multiply in-coming light with phase and light scattering factors
-    vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun * fDepthClamp;
-    vIns = 1.0 - exp2(-vIns);
-}
-
-/*void HorizonColor2(out float3 vIns, in float3 vUnitRay)
-{    
-	float  fDCR = -dot(vUnitCameraPos, vUnitRay);
-	float  fHrz = (fCameraAlt+fRadius)*fDCR;
-	float3 vPos = vCameraPos + vUnitRay * fHrz;
-	float3 vNr1 = normalize(vPos);
-    float  fDNS = dot(vNr1, vSunDir);
-	float  fDNR = dot(vNr1, vUnitRay);
-	float  fRad = dot(vNr1, vPos);				// Geo-centric vertex radius
-	float  fDRS = -dot(vUnitRay, vSunDir);
-	float  fRd2 = fRad*fRad;
-	float  fDns = exp2((fRadius-fRad)*fInvScaleHeight);
-	float fDRay = fDns * (AngleCoEff(fDNR) + AngleCoEff(-fDNR)); 
-    float  fMnD = fDRay * rsqrt(fAtmRad2 - fRd2) * fScaleHeight * 1.4427f;  
-    float fDSun = fMnD * AngleCoEff(fDNS);
-    float3 vSun = exp2(-(vRayTotal+vMieInSct) * fDSun) * fDRay * Shadow(fDNS);
     vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun;
-    if (bOverSat) vIns = 1.0 - exp2(vIns*fExposure);
-}*/
 
+    vIns = (1.0f - exp2(vIns * vColorShift)) * vWhiteBalance;
 
-
+	vIns = pow(abs(vIns), fAux4);  
+}
 
 
 
@@ -392,16 +376,16 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	}
 
 	float  fAlt = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
-	float  fDRS = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
+	float  fDRS = dot(vRay, vSunDir);					// Dot viewing ray, sun direction
 	
 	outVS.aux[AUX_NIGHT] = saturate(-fNgt - 0.2f);
    
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
 		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
-		vSunLight   = exp2(-vOutTotSun * (fDns * AngleCoEff(fDPS))) * fExposure;
-		outVS.atten = exp2(-vOutTotSrf * fDRay);
-		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS);
+		vSunLight   = exp2(-vTotOutSct * (fAux2 * fDns * 0.5f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
+		outVS.atten = exp2(-vTotOutSct * fDRay);
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
 	}
 
 	else {
@@ -412,26 +396,25 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
 		
 		// Compute atmospheric density for all sample points
-		float3 vDns	= exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
+		float3 vDns = exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
 	    
 		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
 	    
-		vSunLight = exp2(-vOutTotSun * (vDns[0] * AngleCoEff(fDPS))) * fExposure;
-
+		vSunLight = exp2(-vTotOutSct * (fAux2 * vDns[0] * 0.5f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
+	
 		// Compute surface texture color attennuation (i.e. extinction term)
-		outVS.atten = exp2(-vOutTotSrf * fDRay);
+		outVS.atten = exp2(-vTotOutSct * fDRay);
 	    
 		// Multiply in-coming light with phase and light scattering factors
-		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS);
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
 	}
 
-	float fX = saturate(fDNS)*2.0;
+	float fX = saturate(fDNS);
 	float fY = saturate(fDRP);
 	float fLvl = fX * rcp(fX+fY);
 
-	outVS.atten *= max(vSunLight * vWhiteBalance * fLvl, (vRayInSct+4.0f) * fAmb);
-	outVS.insca = 1.0f - exp2(-outVS.insca);
+	outVS.atten *= max(vSunLight * fLvl, (vRayInSct+4.0f) * fAmb);
 	
     return outVS;
 }	
@@ -445,14 +428,109 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
 	float4 cMsk = tex2D(MaskTexS, frg.texUV);
 	
-    if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb * fAux1;
+    if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb;
     if (bLights)   cNgt = cMsk.rgb * (frg.aux[AUX_NIGHT] * fNight);
     
-    float3 color = cTex.rgb * frg.atten.rgb * (1.0+cSpe*2.0) + cSpe + frg.insca.rgb + cNgt;
-	return float4(color, 1.0f);   
+    float3 color = cTex.rgb * frg.atten.rgb * (1.5+cSpe*2.0) + cSpe + frg.insca.rgb + cNgt;
+	float3 rv = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
+
+	return float4(pow(abs(rv), fAux4), 1.0f);  
 }
 
 
+
+// =============================================================================================================
+// Cloud Layer Renderer
+// =============================================================================================================
+
+CloudVS CloudTechVS(TILEVERTEX vrt)
+{
+    // Zero output.
+	CloudVS outVS = (CloudVS)0;
+	float3 vSunLight = 1.0;
+	
+    float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
+	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
+	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
+	float3 vVrt  = vCameraPos + vPosW;			// Geo-centric vertex position
+	float3 vRay  = normalize(-vPosW);			// Unit viewing ray
+	float3 vPlN  = normalize(vVrt);				// Planet mean normal at vertex location
+	float  fAlt  = dot(vVrt, vPlN) - fRadius;	// Vertex altitude
+	float  fDPS  = dot(vPlN, vSunDir);			// Dot mean normal, sun direction
+	float  fDRP  = dot(vPlN, vRay);				// Dot mean normal, sun direction
+	float  fDRS  = dot(vRay, vSunDir);			// Dot viewing ray, sun direction
+	
+	float fX = saturate(fDPS);
+	float fY = saturate(fDRP);
+	float fLvl = fX * rcp(fX+fY);
+
+	if (bInSpace) {
+
+		float fDns = exp2(-fAlt*fInvScaleHeight);
+		
+		// An optical depth for a viewing ray
+		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
+	    
+		vSunLight = exp2(-vRayInSct * (fAux2 * fDns * AngleCoEff(fDPS)));
+
+		// Compute surface texture color attennuation (i.e. extinction term)
+		outVS.atten = exp2(-vTotOutSct * fDRay);
+	    
+		// Multiply in-coming light with phase and light scattering factors
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS, srfoffset);
+		outVS.atten *= vSunLight * fLvl + outVS.insca; 	
+	}
+	else {
+
+		// Length of the viewing ray
+		float fRay = abs(dot(vPosW, vRay));					
+	
+		// Altitude vector for sample points
+	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
+		
+		// Compute atmospheric density for all sample points
+		float3 vDns	= exp2(-vAlt*fInvScaleHeight);
+	    
+		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
+		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
+	    
+		vSunLight = exp2(-vRayInSct * (fAux2 * vDns[0] * AngleCoEff(fDPS)));
+
+		// Compute surface texture color attennuation (i.e. extinction term)
+		outVS.atten = exp2(-vTotOutSct * fDRay);
+	    
+		// Multiply in-coming light with phase and light scattering factors
+		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay * Shadow(fDPS, srfoffset);
+		outVS.atten *= vSunLight * fLvl + outVS.insca; 	
+	}
+
+    return outVS;
+}
+
+
+float4 CloudTechPS(CloudVS frg) : COLOR
+{
+	float4 cTex = tex2D(DiffTexS, frg.texUV);
+	float3 color = cTex.rgb * frg.atten.rgb + frg.insca.rgb;
+   	return float4((1.0f - exp2(-color*fExposure))*vWhiteBalance, cTex.a); 
+}
+
+
+technique CloudTech
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD CloudTechVS();
+        pixelShader  = compile PS_MOD CloudTechPS();
+        
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+        ZEnable = false; 
+        ZWriteEnable = false;
+    }
+}
 
 // =============================================================================================================
 // Cloud Shadow Renderer
@@ -480,6 +558,21 @@ float4 ShadowTechPS(CloudShVS frg) : COLOR
 }
 
 
+technique CloudShadowTech
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD ShadowTechVS();
+        pixelShader  = compile PS_MOD ShadowTechPS();
+        
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+        ZEnable = false; 
+        ZWriteEnable = false;
+    }
+}
 
 
 // This is used for high resolution base tiles ---------------------------------
@@ -527,122 +620,6 @@ technique TileTechNoZ
 
 
 // =============================================================================================================
-// Cloud Layer Renderer
-// =============================================================================================================
-
-CloudVS CloudTechVS(TILEVERTEX vrt)
-{
-    // Zero output.
-	CloudVS outVS = (CloudVS)0;
-	float3 vSunLight = 1.0;
-	
-    float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
-	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
-	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
-	float3 vVrt  = vCameraPos + vPosW;			// Geo-centric vertex position
-	float3 vRay  = normalize(-vPosW);			// Unit viewing ray
-	float3 vPlN  = normalize(vVrt);				// Planet mean normal at vertex location
-	float  fAlt  = dot(vVrt, vPlN) - fRadius;	// Vertex altitude
-	float  fDPS  = dot(vPlN, vSunDir);			// Dot mean normal, sun direction
-	float  fDRS  = dot(vRay, vSunDir);			// Dot viewing ray, sun direction
-	float  fFct  = pow(saturate(fDPS), 0.5f);
-
-	if (bInSpace) {
-
-		float fDns = exp2(-fAlt*fInvScaleHeight);
-		
-		// An optical depth for a viewing ray
-		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
-	    
-		vSunLight = exp2(-vRayInSct * (fDns * AngleCoEff(fDPS))) * fExposure;
-
-		// Compute surface texture color attennuation (i.e. extinction term)
-		outVS.atten = exp2(-vOutTotSrf * fDRay);
-	    
-		// Multiply in-coming light with phase and light scattering factors
-		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
-
-		outVS.atten *= vSunLight * fFct + outVS.insca; 
-	}
-	else {
-
-		// Length of the viewing ray
-		float fRay = abs(dot(vPosW, vRay));					
-	
-		// Altitude vector for sample points
-	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
-		
-		// Compute atmospheric density for all sample points
-		float3 vDns	= exp2(-vAlt*fInvScaleHeight);
-	    
-		// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
-		float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
-	    
-		vSunLight = exp2(-vRayInSct * (vDns[0] * AngleCoEff(fDPS))) * fExposure;
-
-		// Compute surface texture color attennuation (i.e. extinction term)
-		outVS.atten = exp2(-vOutTotSrf * fDRay);
-	    
-		// Multiply in-coming light with phase and light scattering factors
-		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
-
-		outVS.atten *= vSunLight * fFct + outVS.insca; 	
-	}
-
-	outVS.insca = 1.0 - exp2(-outVS.insca);
-	outVS.insca *= vWhiteBalance; 
-	outVS.atten *= vWhiteBalance; 
-
-    return outVS;
-}
-
-
-float4 CloudTechPS(CloudVS frg) : COLOR
-{
-	float4 cTex = tex2D(DiffTexS, frg.texUV);
-    return float4(cTex.rgb * frg.atten.rgb + frg.insca.rgb, cTex.a);
-}
-
-
-technique CloudTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD CloudTechVS();
-        pixelShader  = compile PS_MOD CloudTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false; 
-        ZWriteEnable = false;
-    }
-}
-
-
-technique CloudShadowTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD ShadowTechVS();
-        pixelShader  = compile PS_MOD ShadowTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false; 
-        ZWriteEnable = false;
-    }
-}
-
-
-
-
-
-
-// =============================================================================================================
 // Render Horizon "Ring" from the space
 // =============================================================================================================
 
@@ -658,16 +635,14 @@ HazeVS RingTechVS(float3 posL : POSITION0)
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
 	if (bOnOff) HorizonColor(outVS.insca, normalize(posW));
-	else outVS.insca = float3(0.5, 0, 0);
-	
-	outVS.insca *= vWhiteBalance; 
+	else outVS.insca = float3(0, 0, 0);
 
     return outVS;
 }
 
 float4 RingTechPS(HazeVS frg) : COLOR
 {
-	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV,0,0)).r - 0.5f) * 0.008;
+	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV,0,0)).r - 0.5f) * 0.01;
     return float4(frg.insca.rgb+a, 1.0f);
 }
 
@@ -710,10 +685,8 @@ HazeVS HorizonTechVS(float3 posL : POSITION0)
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	
 	if (bOnOff) SkyColor(outVS.insca, normalize(posW));
-	else outVS.insca = float3(0, 0.9, 0.9);
+	else outVS.insca = float3(0, 0, 0);
 	
-	outVS.insca *= vWhiteBalance; 
-
     return outVS;
 }
 

@@ -8,7 +8,7 @@
 #ifndef __ATMOCONTROLS_H
 #define __ATMOCONTROLS_H
 
-#define ATM_SLIDER_COUNT 17
+#define ATM_SLIDER_COUNT 19
 
 
 typedef struct ScatterParams {
@@ -27,17 +27,17 @@ typedef struct ScatterParams {
 			double mphase;		///< g-constant in HG phase function
 			double balance;		///< White balance
 			double height;		///< atmospheric scale height
-			double aux2;		///< unused auxiliary parameter
+			double aux2;		///< auxiliary parameter
 			double depth;		///< depth clamp
 			double mpow;		///< Mie power
 			double expo;		///< exposure
-			double moffset;		///< Constant Mie level
-			double aux1;		///< unused auxiliary parameter
+			double mheight;		///< Constant Mie level
+			double aux1;		///< auxiliary parameter
+			double aux3;		///< auxiliary parameter
+			double aux4;		///< auxiliary parameter
 		};
 	};
-	int mode;
-	bool oversat;
-	LPDIRECT3DTEXTURE9 pSunLight;
+	bool orbit;
 } ScatterParams;
 
 class vPlanet;

@@ -86,7 +86,7 @@ private:
 
 	OBJHANDLE obj;
 	const vPlanet *vp;
-	double hralt, rad;
+	double rad;
 
 	static int xreslvl[6];
 	static int yreslvl[6];

@@ -40,16 +40,16 @@ ScatterParams::ScatterParams() :
 	rout     ( 0.592 ),  // 0.0 ... 4.0
 	rphase   ( 0.3395 ), // 0.0 ... 3.5
 	// ----------------------------------------
-	moffset  ( 1.0 ),    // 0.0 ... 2.0
+	mheight  ( 4.0 ),    // 0.0 ... 2.0
 	mie      ( 0.0869 ), // 0.0 ... 8.0
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
 	// ----------------------------------------
 	aux1	 ( 0.0 ),    // 0.0 ... 2.0
 	aux2	 ( 0.0 ),    // 0.0 ... 2.0
+	aux3	 ( 0.0 ),
+	aux4	 ( 0.0 ),
 	// ----------------------------------------
-	mode     ( 0 ),      // [0|1]
-	oversat  ( true ),   // [true|false]
-	pSunLight ( NULL )
+	orbit	 ( false )   // [true|false]
 {
 }
 
@@ -71,6 +71,7 @@ ScatterParams *param = NULL;
 
 sSlider Slider[ATM_SLIDER_COUNT];
 
+DWORD atmmode = 0;
 DWORD dwCmd = NULL;
 HWND hDlg = NULL;
 vPlanet *vObj = NULL;
@@ -130,6 +131,8 @@ void Create()
 	Slider[14].id = IDC_ATM_EXPO;
 	Slider[15].id = IDC_ATM_MOFFSET;
 	Slider[16].id = IDC_ATM_AUX1;
+	Slider[17].id = IDC_ATM_AUX3;
+	Slider[18].id = IDC_ATM_AUX4;
 
 	Slider[0].dsp = IDC_ATD_RED;
 	Slider[1].dsp = IDC_ATD_GREEN;
@@ -148,6 +151,8 @@ void Create()
 	Slider[14].dsp = IDC_ATD_EXPO;
 	Slider[15].dsp = IDC_ATD_MOFFSET;
 	Slider[16].dsp = IDC_ATD_AUX1;
+	Slider[17].dsp = IDC_ATD_AUX3;
+	Slider[18].dsp = IDC_ATD_AUX4;
 }
 
 // ==============================================================
@@ -180,33 +185,40 @@ void OpenDlgClbk(void *context)
 		OBJHANDLE hBody = scene->GetCameraProxyBody();
 		if (hBody) vObj = (vPlanet *) scene->GetVisObject(hBody);
 	}
-	
-	if (vObj) param = vObj->GetAtmoParams();
+
+	if (vObj) param = vObj->GetAtmoParams(atmmode);
 	else      param = &defs;
 
 	for (int i=0;i<ATM_SLIDER_COUNT;i++) Slider[i].hWnd = GetDlgItem(hDlg, Slider[i].id);
+
+	// Style flags
+	// 1 = unit in [km] 
+	// 2 = same for orbital and surface setup
+	// 4 = call vPlanet::UpdateAtmoConfig() on change
 
 	ConfigSlider(IDC_ATM_RED,      0.400, 0.700);
 	ConfigSlider(IDC_ATM_GREEN,    0.400, 0.700);
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
-	ConfigSlider(IDC_ATM_MPOW,     -2.0, 2.0);
-	ConfigSlider(IDC_ATM_HEIGHT,   4.0, 40.0, 1);
-	ConfigSlider(IDC_ATM_DEPTH,    0.0, 1.5);
+	ConfigSlider(IDC_ATM_MPOW,     -4.0, 4.0);
+	ConfigSlider(IDC_ATM_HEIGHT,   2.0, 40.0, 1|2|4);
+	ConfigSlider(IDC_ATM_DEPTH,    0.0, 0.3);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_EXPO,	   0.1, 3.0);
+	ConfigSlider(IDC_ATM_EXPO,	   0.2, 5.0);
 	ConfigSlider(IDC_ATM_BALANCE,  -0.3, 0.7);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0);
 	ConfigSlider(IDC_ATM_IN,       0.5, 2.0);
 	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MOFFSET,  0.0, 2.0);
+	ConfigSlider(IDC_ATM_MOFFSET,  0.1, 10.0, 1|2);
 	ConfigSlider(IDC_ATM_MIE,      0.0, 2.0);
 	ConfigSlider(IDC_ATM_MPHASE,   0.80, 0.999);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_AUX1,	   0.0, 2.0);
-	ConfigSlider(IDC_ATM_AUX2,	   0.0, 2.0);
+	ConfigSlider(IDC_ATM_AUX1,	   0.0, 0.3);
+	ConfigSlider(IDC_ATM_AUX2,	   0.0, 1.0);
+	ConfigSlider(IDC_ATM_AUX3,	   0.0, 2.0);
+	ConfigSlider(IDC_ATM_AUX4,	   0.1, 4.4);
 	/*
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Wavelength setting for green light (default 0.600)");
@@ -229,11 +241,20 @@ void OpenDlgClbk(void *context)
 	*/
 
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Enabled");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Disabled");
-	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, param->mode, 0);
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Surface");
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Orbital");
+	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_SETCURSEL, atmmode, 0);
 
-	SendDlgItemMessage(hDlg, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
+	SetTimer(hDlg, 0, 200, NULL);
+
+	char title[256];
+	if (vObj) {
+		if (param->orbit) sprintf_s(title,256,"Atmospheric Controls [%s] [Orbital]", vObj->GetName());
+		else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
+		SetWindowTextA(hDlg,title);
+	}
+
 
 	UpdateSliders();
 }
@@ -265,12 +286,23 @@ void ConfigSlider(int id, double min, double max, int style)
 
 void SetSlider(int id, WORD pos)
 {
+	if (!vObj) return;
 	for (int i=0;i<ATM_SLIDER_COUNT;i++) if (Slider[i].id==id) {
 		double x = (1000.0-double(pos))/1000.0;
-		param->data[i] = Slider[i].min*(1.0-x) + Slider[i].max*x;
+		double v = Slider[i].min*(1.0-x) + Slider[i].max*x;
+		
+		if (Slider[i].style&2) {
+			vObj->GetAtmoParams(1)->data[i] = v;
+			vObj->GetAtmoParams(2)->data[i] = v;
+		}
+		else {
+			param->data[i] = v;
+		}
+
+		if (Slider[i].style&4) vObj->UpdateAtmoConfig(); 
+
 		UpdateSlider(id, false);
 
-		if (id==IDC_ATM_HEIGHT && vObj) vObj->UpdateAtmoConfig(); 
 		return;
 	}
 	LogErr("Invalid Slider ID in AtmoControls");
@@ -305,18 +337,9 @@ void UpdateSlider(int id, bool bSetPos)
 			SendDlgItemMessage(hDlg, id, TBM_SETPOS,  1, dpos);
 		}
 
-		switch (Slider[i].style) {
-			case 0:
-				sprintf_s(buf,"%.3lf", val);
-				break;
-			case 1:
-				sprintf_s(buf,"%.1lf k", val);
-				break;
-			default:
-				sprintf_s(buf,"%.3lf", val);
-				break;
-		}
-
+		if (Slider[i].style&1) sprintf_s(buf,"%.1lf k", val);
+		else				   sprintf_s(buf,"%.3lf", val);
+		
 		SetWindowTextA(GetDlgItem(hDlg, Slider[i].dsp), buf);
 		return;
 	}
@@ -377,6 +400,20 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		return true;
 	}
 
+	case WM_TIMER:
+	{
+		if (vObj) {
+			if (param->orbit != vObj->GetAtmoParams(atmmode)->orbit) {
+				char title[256];
+				param = vObj->GetAtmoParams(atmmode);
+				if (param->orbit) sprintf_s(title,256,"Atmospheric Controls [%s] [Orbital]", vObj->GetName());
+				else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
+				SetWindowTextA(hDlg,title);
+				UpdateSliders();
+			}
+		}
+	}
+
 	case WM_VSCROLL:
 	{
 		if (LOWORD(wParam)==TB_THUMBTRACK) {
@@ -401,15 +438,16 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_ATM_LOAD:
 				if (vObj) {
-					vObj->LoadAtmoConfig();
+					vObj->LoadAtmoConfig(false);
+					vObj->LoadAtmoConfig(true);
 					UpdateSliders();
-					SendDlgItemMessage(hWnd, IDC_ATM_OVERSAT, BM_SETCHECK, param->oversat ? BST_CHECKED : BST_UNCHECKED, 0);
 				}
 				break;
 
 			case IDC_ATM_SAVE:
 				if (vObj) {
-					vObj->SaveAtmoConfig();
+					vObj->SaveAtmoConfig(false);
+					vObj->SaveAtmoConfig(true);
 					/*DWORD dAmbient = *(DWORD*)g_client->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 					Scatter *pSct = new Scatter(param, vObj->GetObjectA(), dAmbient);
 					SAFE_RELEASE(param->pSunLight);
@@ -418,7 +456,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
-			case IDC_ATM_RESET:
+			/*case IDC_ATM_RESET:
 				param->red = 0.650; 
 				param->green = 0.500; 
 				param->blue = 0.480;
@@ -426,16 +464,11 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				param->balance = 0.0;
 				param->rphase = 0.25;
 				UpdateSliders();
-				break;
+				break;*/
 	
-			case IDC_ATM_OVERSAT:
-				param->oversat = (SendDlgItemMessageA(hWnd, IDC_ATM_OVERSAT, BM_GETCHECK, 0, 0)==BST_CHECKED);
-				break;
-
 			case IDC_ATM_MODE:
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
-					DWORD idx = SendDlgItemMessage(hWnd, IDC_ATM_MODE, CB_GETCURSEL, 0, 0);
-					if (param) param->mode = idx;	
+					atmmode = SendDlgItemMessage(hWnd, IDC_ATM_MODE, CB_GETCURSEL, 0, 0);
 				}
 				break;
 

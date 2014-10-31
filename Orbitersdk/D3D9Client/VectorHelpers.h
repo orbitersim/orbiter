@@ -250,5 +250,10 @@ inline D3DXVECTOR3 vmin(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
 	return D3DXVECTOR3(min(v.x, w.x), min(v.y, w.y), min(v.z, w.z));
 }
 
+inline D3DXVECTOR3 lerp(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w, float x)
+{
+	return D3DXVECTOR3(v.x+(w.x-v.x)*x, v.y+(w.y-v.y)*x, v.z+(w.z-v.z)*x);
+}
+
 #endif
 

@@ -163,7 +163,6 @@ public:
 private:
 	class D3D9Text *pFont;
 	HFONT hFont;
-	bool  bDelete;
 	float rotation;
 	static LPDIRECT3DDEVICE9 pDev;
 };

@@ -8,6 +8,7 @@
 #define IDD_D3D9SCATTER                         113
 #define IDS_INFO                                1000
 #define IDS_TYPE                                1001
+#define IDC_ATL_AUX1                            40000
 #define IDC_CREDITSTEXT                         40000
 #define IDC_LODBIAS                             40000
 #define IDC_ATD_DEPTH                           40001
@@ -19,11 +20,11 @@
 #define IDC_DBG_ENVMAP                          40003
 #define IDC_ATM_MODE                            40004
 #define IDC_DBG_MATGRP                          40004
-#define IDC_ATM_RESET                           40005
+#define IDC_ATL_AUX4                            40005
 #define IDC_DBG_MATPRP                          40005
 #define IDC_ATM_EXPO                            40006
 #define IDC_DBG_MESHNAME                        40006
-#define IDC_ATM_OVERSAT                         40007
+#define IDC_ATM_AUX4                            40007
 #define IDC_MESH_DEBUGGER                       40007
 #define IDC_ATM_BALANCE                         40008
 #define IDC_ATD_BALANCE                         40009
@@ -47,9 +48,14 @@
 #define IDC_ATD_MPOW                            40018
 #define IDC_AF                                  40019
 #define IDC_ATM_DEPTH                           40019
+#define IDC_ATL_AUX2                            40020
 #define IDC_BASEVIS                             40020
+#define IDC_ATL_AUX3                            40021
 #define IDC_NORMALMAPS                          40021
+#define IDC_ATM_AUX3                            40022
 #define IDC_DBG_FPSLIM                          40022
+#define IDC_ATD_AUX3                            40023
+#define IDC_ATD_AUX4                            40024
 #define IDC_CREDITS                             40026
 #define IDC_SRFPRELOAD                          40027
 #define IDC_GLASSSHADE                          40028

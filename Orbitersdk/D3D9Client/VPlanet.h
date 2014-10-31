@@ -19,7 +19,7 @@
 #define __VPLANET_H
 
 #include "VObject.h"
-#include "AtmoCOntrols.h"
+#include "AtmoControls.h"
 
 class D3D9Mesh;
 class SurfTile;
@@ -49,6 +49,7 @@ public:
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
 	float			GetRadius() const { return rad; }	//TODO: Remove this. Use GetSize() instead
 	bool			CameraInAtmosphere() const;
+	double			GetHorizonAlt() const;
 
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
@@ -56,12 +57,11 @@ public:
 	vBase*			GetBaseByHandle(OBJHANDLE hBase);
 
 	// Atmospheric ------------------------------------------------------------
-	const ScatterParams * GetAtmoParams() const { return &SPrm; }
-	ScatterParams * GetAtmoParams() { return &SPrm; }
+	ScatterParams * GetAtmoParams(int mode=-1);
 	double			AngleCoEff(double cos_dir);
 	D3DXVECTOR3		GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGlobalAmb);
-	bool			LoadAtmoConfig();
-	void			SaveAtmoConfig();
+	bool			LoadAtmoConfig(bool bOrbit);
+	void			SaveAtmoConfig(bool bOrbit);
 	void			UpdateAtmoConfig();
 	void			DumpDebugFile();
 	// ------------------------------------------------------------------------
@@ -140,6 +140,9 @@ private:
 	FogParam fog;             // distance fog render parameters
 	D3D9Mesh *mesh;           // mesh for nonspherical body
 	ScatterParams SPrm;		  // Parameters for atmospheric configuration dialog 
+	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog 
+	ScatterParams NPrm;		  // Parameters for atmospheric configuration dialog 
+	ScatterParams CPrm;		  // Parameters for atmospheric configuration dialog 
 	struct CloudData {        // cloud render parameters (for legacy interface)
 		CloudManager *cloudmgr; // cloud tile manager
 		double cloudrad;        // cloud layer radius [m]

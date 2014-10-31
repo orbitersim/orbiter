@@ -859,7 +859,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 	pFont = NULL;
 	hFont = NULL;
-	bDelete = false;
 	
 	if (orientation!=0) rotation = float(orientation) * 0.1f;
 	else                rotation = 0.0f;
@@ -886,7 +885,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	if (Config->SketchpadFont==2) AAQuality = CLEARTYPE_QUALITY;
 	if (Config->SketchpadFont==3) AAQuality = PROOF_QUALITY;
 
-	// Create Windows GDI Font --------------------------
+	// Create Windows GDI Font for a use with GDIPad ---------------------------
 	//
 	if (hFont==NULL) {
 		hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
@@ -894,10 +893,9 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 			face  = (prop ? def_sansface : def_fixedface);
 			hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
 		}
-		if (orientation!=0) bDelete=true;
 	}
 
-	// Create DirectX accelerated font ------------------
+	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
 	if (pFont==NULL) {
 	
@@ -932,7 +930,10 @@ D3D9PadFont::~D3D9PadFont ()
 {
 	if (pFont) pFont->SetRotation(0.0f);
 	fonts_allocated--;
-	if (hFont && bDelete) DeleteObject(hFont); // Delete rotated (non-cached) fonts
+
+	// If the current font is in a cache, do not delete it.
+	for (int i=0;i<nfcache;i++) if (hFont == fcache[i].hFont) return;
+	DeleteObject(hFont);
 }
 
 void D3D9PadFont::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)

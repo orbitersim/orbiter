@@ -241,9 +241,6 @@ HazeManager2::HazeManager2(const D3D9Client *gclient, const vPlanet *vplanet)
 	vp = vplanet;
 	obj = vp->Object();
 	rad = oapiGetSize(obj);
-	const ATMCONST *atmc = oapiGetPlanetAtmConstants (obj);
-	if (atmc)	hralt = atmc->horizonalt;
-	else		hralt = 0.01f;
 }
 
 // -----------------------------------------------------------------------
@@ -274,8 +271,9 @@ void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 {
 	VECTOR3 cdir = vp->GetScene()->GetCameraGDir();
 	double calt = vp->CamDist() - rad;	// Camera altitude	
+	double halt = vp->GetHorizonAlt();
 
-	if (calt>hralt)	RenderRing(vp->PosFromCamera(), cdir, rad, hralt);
+	if (calt>halt)	RenderRing(vp->PosFromCamera(), cdir, rad, halt);
 	else			RenderSky(vp->PosFromCamera(), cdir, rad, horizontal_aperture_deg);
 }
 
@@ -476,7 +474,7 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pSkyVB[6];
 LPDIRECT3DVERTEXBUFFER9 HazeManager2::pRingVB = NULL;
 int HazeManager2::xreslvl[6] = {28,18,14,10,8,6};
-int HazeManager2::yreslvl[6] = {32,24,18,18,16,10};
+int HazeManager2::yreslvl[6] = {48,28,18,18,16,14};
 int HazeManager2::xlreslvl[6] = {18,12,10,6,6,4};
 int HazeManager2::ylreslvl[6] = {22,16,12,12,10,8};
 

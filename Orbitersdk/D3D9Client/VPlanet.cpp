@@ -57,7 +57,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
 	} else {
-		bScatter = LoadAtmoConfig();
+		bScatter = LoadAtmoConfig(false);
+		if (bScatter) LoadAtmoConfig(true);
 		surfmgr = NULL;
 		int maxlvl = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 		maxlvl = min (maxlvl, SURF_MAX_PATCHLEVEL2);
@@ -189,8 +190,6 @@ vPlanet::~vPlanet ()
 	if (hazemgr2) delete hazemgr2;
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
-
-	SAFE_RELEASE(SPrm.pSunLight);
 }
 
 // ==============================================================
@@ -198,9 +197,19 @@ vPlanet::~vPlanet ()
 bool vPlanet::CameraInAtmosphere() const
 {
 	double calt = CamDist() - size;
+	double halt = GetHorizonAlt();
 	if (prm.bAtm==false) return false;
-	if (calt>prm.atm_hzalt) return false;
+	if (calt>halt) return false;
 	return true;
+}
+
+// ==============================================================
+
+double	vPlanet::GetHorizonAlt() const
+{
+	if (!prm.bAtm) return 0.0;
+	if (!bScatter) return prm.atm_hzalt;
+	return SPrm.height*9e3;
 }
 
 // ==============================================================
@@ -289,7 +298,7 @@ bool vPlanet::Update ()
 		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
-		prm.bCloudFlatShadows = (cdist >= (size+prm.atm_hzalt)); //(cdist >= 1.05*size);
+		prm.bCloudFlatShadows = (cdist >= (size+GetHorizonAlt())); //(cdist >= 1.05*size);
 
 		if (clouddata) {
 			if (prm.cloudvis & 1) {
@@ -585,10 +594,8 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		RenderBaseShadows (dev, shadowalpha);         // base shadows
 	}
 
-	if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
-	if (clouddata && clouddata->cloudshadow) RenderCloudShadows(dev);         // cloud shadows
-	if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
-
+	RenderCloudShadows(dev); // cloud shadows
+	
 	if (bVesselShadow && hObj == oapiCameraProxyGbody())
 		scn->RenderVesselShadows (hObj, shadowalpha); // vessel shadows
 }
@@ -614,7 +621,11 @@ void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 			cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
 	} 
 	else if (clouddata) { // legacy method
+		float fogfactor;
+		D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
+		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
 		clouddata->cloudmgr->RenderShadow(dev, clouddata->mWorldC0, dist_scale, min(patchres,8), clouddata->viewap, clouddata->shadowalpha);	
+		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 	}
 }
 
@@ -713,7 +724,10 @@ void vPlanet::UpdateAtmoConfig()
 {
 	prm.SclHeight	 = float(SPrm.height*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
-	double outer = size + prm.SclHeight * 12.0;
+	double outer = size + SPrm.height * 12.0 * 1e3;
+	double height = size + SPrm.height * 5.0;
+	double angle = (PI-asin(size/height)) * DEG;
+
 	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 96.0, 8);
 }
 
@@ -770,9 +784,50 @@ void vPlanet::DumpDebugFile()
 	fclose(fp);*/
 }
 
+ScatterParams * vPlanet::GetAtmoParams(int mode)
+{
+	if (!prm.bAtm || prm.atm_hzalt==0.0) return &SPrm;	// Return surface setup if a planet doesn't have atmosphere
+
+	double alt  = saturate((CamDist()-size) / (GetHorizonAlt()*3.0));
+
+	alt = sqrt(alt);
+
+	if (mode==0 && alt>0.5) mode = 2;
+	if (mode==0 && alt<0.5) mode = 1;
+
+	if (mode==1) return &SPrm;		// Surface configuration 
+	if (mode==2) return &OPrm;		// Orbital configuration
+	
+	// ----------------------------------------------------
+	CPrm.aux1   = lerp(SPrm.aux1,	OPrm.aux1,		alt);
+	CPrm.aux2   = lerp(SPrm.aux2,	OPrm.aux2,		alt);
+	CPrm.aux3	= lerp(SPrm.aux3,	OPrm.aux3,		alt);
+	CPrm.aux4	= lerp(SPrm.aux4,	OPrm.aux4,		alt);
+	CPrm.balance= lerp(SPrm.balance,OPrm.balance,	alt);
+	CPrm.depth  = lerp(SPrm.depth,	OPrm.depth,		alt);
+	CPrm.expo   = lerp(SPrm.expo,	OPrm.expo,		alt);
+	CPrm.mie    = lerp(SPrm.mie,	OPrm.mie,		alt);
+	CPrm.mphase = lerp(SPrm.mphase, OPrm.mphase,	alt);
+	CPrm.mpow	= lerp(SPrm.mpow,	OPrm.mpow,		alt);
+	CPrm.rin	= lerp(SPrm.rin,	OPrm.rin,		alt);
+	CPrm.rout	= lerp(SPrm.rout,	OPrm.rout,		alt);
+	CPrm.rpow	= lerp(SPrm.rpow,	OPrm.rpow,		alt);
+	// ----------------------------------------------------
+	CPrm.red	= SPrm.red;
+	CPrm.green	= SPrm.green;
+	CPrm.blue   = SPrm.blue;
+	CPrm.height = SPrm.height;
+	CPrm.mheight= SPrm.mheight;
+	CPrm.rphase = SPrm.rphase;
+
+	return &CPrm;
+}
+	
+	
+
 // ==============================================================
 
-bool vPlanet::LoadAtmoConfig()
+bool vPlanet::LoadAtmoConfig(bool bOrbit)
 {
 	char name[32];
 	char path[256];
@@ -781,37 +836,46 @@ bool vPlanet::LoadAtmoConfig()
 
 	oapiGetObjectName(hObj, name, 32);
 
-	sprintf_s(path,"GC/%s.atm.cfg",name);
+	if (bOrbit) sprintf_s(path,"GC/%s.atmo.cfg",name);
+	else		sprintf_s(path,"GC/%s.atms.cfg",name);
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN, CONFIG);
 
 	if (!hFile) return false;
 
-	oapiReadItem_float(hFile, "Red", SPrm.red);
-	oapiReadItem_float(hFile, "Green", SPrm.green);
-	oapiReadItem_float(hFile, "Blue", SPrm.blue);
-	oapiReadItem_float(hFile, "RWaveDep", SPrm.rpow);
-	oapiReadItem_float(hFile, "MWaveDep", SPrm.mpow);
-	oapiReadItem_float(hFile, "ScaleHeight", SPrm.height);
-	oapiReadItem_float(hFile, "DepthClamp", SPrm.depth);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "Exposure", SPrm.expo);
-	oapiReadItem_float(hFile, "Balance", SPrm.balance);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "OutScatter", SPrm.rout);
-	oapiReadItem_float(hFile, "InScatter", SPrm.rin);
-	oapiReadItem_float(hFile, "RayleighPhase", SPrm.rphase);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "MieOffset", SPrm.moffset);
-	oapiReadItem_float(hFile, "MiePower", SPrm.mie);
-	oapiReadItem_float(hFile, "MiePhase", SPrm.mphase);
-	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "Aux1", SPrm.aux1);
-	oapiReadItem_float(hFile, "Aux2", SPrm.aux2);
-	// -----------------------------------------------------------------
-	oapiReadItem_int(hFile,   "Mode", SPrm.mode);
-	oapiReadItem_bool(hFile,  "OverSaturation", SPrm.oversat);
+	ScatterParams *prm;
 
+	if (bOrbit) prm = &OPrm;
+	else		prm = &SPrm;
+
+	prm->orbit = bOrbit;
+
+	oapiReadItem_float(hFile, "Red", prm->red);
+	oapiReadItem_float(hFile, "Green", prm->green);
+	oapiReadItem_float(hFile, "Blue", prm->blue);
+	oapiReadItem_float(hFile, "RWaveDep", prm->rpow);
+	oapiReadItem_float(hFile, "MWaveDep", prm->mpow);
+	oapiReadItem_float(hFile, "ScaleHeight", prm->height);
+	oapiReadItem_float(hFile, "DepthClamp", prm->depth);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "Exposure", prm->expo);
+	oapiReadItem_float(hFile, "Balance", prm->balance);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "OutScatter", prm->rout);
+	oapiReadItem_float(hFile, "InScatter", prm->rin);
+	oapiReadItem_float(hFile, "RayleighPhase", prm->rphase);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "MieOffset", prm->mheight);
+	oapiReadItem_float(hFile, "MiePower", prm->mie);
+	oapiReadItem_float(hFile, "MiePhase", prm->mphase);
+	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "Aux1", prm->aux1);
+	oapiReadItem_float(hFile, "Aux2", prm->aux2);
+	oapiReadItem_float(hFile, "Aux3", prm->aux3);
+	oapiReadItem_float(hFile, "Aux4", prm->aux4);
+	// -----------------------------------------------------------------
+	
+	
 	oapiCloseFile(hFile, FILE_IN);
 
 	UpdateAtmoConfig();
@@ -821,44 +885,50 @@ bool vPlanet::LoadAtmoConfig()
 
 // ==============================================================
 
-void vPlanet::SaveAtmoConfig()
+void vPlanet::SaveAtmoConfig(bool bOrbit)
 {
 	char name[64];
 	char path[256];
 
 	oapiGetObjectName(hObj, name, 64);
 
-	sprintf_s(path,"GC/%s.atm.cfg",name);
+	if (bOrbit) sprintf_s(path,"GC/%s.atmo.cfg",name);
+	else		sprintf_s(path,"GC/%s.atms.cfg",name);
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_OUT, CONFIG);
 
 	if (!hFile) return;
 
-	oapiWriteItem_float(hFile, "Red", SPrm.red);
-	oapiWriteItem_float(hFile, "Green", SPrm.green);
-	oapiWriteItem_float(hFile, "Blue", SPrm.blue);
-	oapiWriteItem_float(hFile, "RWaveDep", SPrm.rpow);
-	oapiWriteItem_float(hFile, "MWaveDep", SPrm.mpow);
-	oapiWriteItem_float(hFile, "ScaleHeight", SPrm.height);
-	oapiWriteItem_float(hFile, "DepthClamp", SPrm.depth);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "Exposure", SPrm.expo);
-	oapiWriteItem_float(hFile, "Balance", SPrm.balance);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "OutScatter", SPrm.rout);
-	oapiWriteItem_float(hFile, "InScatter", SPrm.rin);
-	oapiWriteItem_float(hFile, "RayleighPhase", SPrm.rphase);
-	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "MieOffset", SPrm.moffset);
-	oapiWriteItem_float(hFile, "MiePower", SPrm.mie);
-	oapiWriteItem_float(hFile, "MiePhase", SPrm.mphase);
-	// -----------------------------------------------------------------	
-	oapiWriteItem_float(hFile, "Aux1", SPrm.aux1);
-	oapiWriteItem_float(hFile, "Aux2", SPrm.aux2);
-	// -----------------------------------------------------------------
-	oapiWriteItem_int(hFile,   "Mode", SPrm.mode);
-	oapiWriteItem_bool(hFile,  "OverSaturation", SPrm.oversat);
+	ScatterParams *prm;
 
+	if (bOrbit) prm = &OPrm;
+	else		prm = &SPrm;
+
+	oapiWriteItem_float(hFile, "Red", prm->red);
+	oapiWriteItem_float(hFile, "Green", prm->green);
+	oapiWriteItem_float(hFile, "Blue", prm->blue);
+	oapiWriteItem_float(hFile, "RWaveDep", prm->rpow);
+	oapiWriteItem_float(hFile, "MWaveDep", prm->mpow);
+	oapiWriteItem_float(hFile, "ScaleHeight", prm->height);
+	oapiWriteItem_float(hFile, "DepthClamp", prm->depth);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, "Exposure", prm->expo);
+	oapiWriteItem_float(hFile, "Balance", prm->balance);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, "OutScatter", prm->rout);
+	oapiWriteItem_float(hFile, "InScatter", prm->rin);
+	oapiWriteItem_float(hFile, "RayleighPhase", prm->rphase);
+	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, "MieOffset", prm->mheight);
+	oapiWriteItem_float(hFile, "MiePower", prm->mie);
+	oapiWriteItem_float(hFile, "MiePhase", prm->mphase);
+	// -----------------------------------------------------------------	
+	oapiWriteItem_float(hFile, "Aux1", prm->aux1);
+	oapiWriteItem_float(hFile, "Aux2", prm->aux2);
+	oapiWriteItem_float(hFile, "Aux3", prm->aux3);
+	oapiWriteItem_float(hFile, "Aux4", prm->aux4);
+	// -----------------------------------------------------------------
+	
 	oapiCloseFile(hFile, FILE_OUT);
 
 	DumpDebugFile();

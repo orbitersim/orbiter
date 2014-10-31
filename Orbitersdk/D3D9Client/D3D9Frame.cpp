@@ -338,6 +338,18 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		oapiWriteLog("D3D9Client:WARNING: [No shadow mapping support]");
 	}
 
+	// Check shadow mapping support
+	
+	bool bFloatBB = true;
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloatBB = false;
+	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloatBB = false;
+	
+	if (!bFloatBB) {
+		LogWrn("[No render-target D3DFMT_A16B16G16R16F support]");
+		oapiWriteLog("D3D9Client:WARNING: [No render-target D3DFMT_A16B16G16R16F support]");
+	}
+
+
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DYNAMIC, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) {
 		LogErr("[No D3DFMT_A16B16G16R16F Support]");
 		oapiWriteLog("D3D9Client:WARNING: [No D3DFMT_A16B16G16R16F support]");
