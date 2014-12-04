@@ -30,6 +30,7 @@ VBMESH::VBMESH (class TileManager2Base *pmgr)
 	nv_cur = 0;
 	nf_cur = 0;
 	pMgr = pmgr;
+	bsRad = 0.0;
 }
 
 VBMESH::VBMESH ()
@@ -44,6 +45,7 @@ VBMESH::VBMESH ()
 	pMgr = NULL;
 	nv_cur = 0;
 	nf_cur = 0;
+	bsRad = 0.0;
 }
 
 VBMESH::~VBMESH ()
