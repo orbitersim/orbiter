@@ -543,7 +543,7 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 	// Fix the left or right edge
 	int i, i0, i1, j, vtx_ofs, nbrlvl, dlvl;
 	VERTEX_2TEX *vtx_store;
-	static int subidxmask[4] = {0,1,3,7};
+	static int subidxmask[6] = {0,1,3,7, 0,1};// last two (wrap around)
 
 	vtx_ofs = (ilng & 1 ? TILE_PATCHRES : 0); // check if neighbour is at left or right edge
 	if (nbr && nbr->mesh && nbr->mesh->vtx) {
@@ -600,7 +600,7 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 	// Fix the top or bottom edge
 	int i, i0, i1, j, nbrlvl, dlvl;
 	VERTEX_2TEX *vtx_store;
-	static int subidxmask[4] = {0,1,3,7};
+	static int subidxmask[6] = {0,1,3,7, 0,1};// last two (wrap around)
 
 	int line = (ilat & 1 ? 0 : TILE_PATCHRES);
 	int vtx_ofs = (ilat & 1 ? 0 : line*(TILE_PATCHRES+1));
