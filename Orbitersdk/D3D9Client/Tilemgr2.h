@@ -56,7 +56,7 @@ class Tile
 
 public:
 	Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng);
-	~Tile ();
+	virtual ~Tile ();
 
 	inline int Level() const { return lvl; }
 
