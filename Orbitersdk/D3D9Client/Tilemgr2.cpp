@@ -665,7 +665,6 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 // =======================================================================
 
 class oapi::D3D9Client *TileManager2Base::gc = NULL; 
-LPDIRECT3DDEVICE9 TileManager2Base::pDev = NULL;
 TileManager2Base::configPrm TileManager2Base::cprm = {
 	1,                  // elevInterpol
 	false,				// bSpecular

@@ -257,7 +257,6 @@ private:
 	static oapi::D3D9Client *gc;
 	static double resolutionBias;
 	static bool bTileLoadThread;      // load tiles on separate thread
-	static LPDIRECT3DDEVICE9 pDev;    // render device
 };
 
 // =======================================================================
