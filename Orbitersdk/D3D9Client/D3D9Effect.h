@@ -8,7 +8,7 @@
 #define __D3D9EFFECT_H
 
 #include "D3D9Client.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 using namespace oapi;
@@ -37,34 +37,34 @@ public:
 	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, float size, const D3DXCOLOR *pColor);
 	static void Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive);
 	static void RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size);
-	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);  
+	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);
 	static void RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
 	static bool ComputeLighting(LPDIRECT3DCUBETEXTURE9 pEnv, LPDIRECT3DCUBETEXTURE9 pLight, LPDIRECT3DCUBETEXTURE9 pTgt);
-	
-	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device
-	static LPDIRECT3DVERTEXBUFFER9 pVB; ///< Static (global) Vertex buffer pointer
-	static LPDIRECT3DTEXTURE9 pNoise;   ///< Static (global) noise texture
-	static SURFHANDLE hNoise;           ///< Static (global) noise surface handle
-	
+
+	static LPDIRECT3DDEVICE9		pDev;	///< Static (global) render device
+	static LPDIRECT3DVERTEXBUFFER9	pVB;	///< Static (global) Vertex buffer pointer
+	static LPDIRECT3DTEXTURE9		pNoise;	///< Static (global) noise texture
+	static SURFHANDLE				hNoise;	///< Static (global) noise surface handle
+
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
-	static D3D9Client   *gc; ///< The graphics client instance
-	static D3D9Mesh     *hArrow;
+	static D3D9Client	*gc; ///< The graphics client instance
+	static D3D9Mesh		*hArrow;
 
 	static D3D9MatExt	defmat;
 	static D3D9MatExt	night_mat;
 	static D3D9MatExt	emissive_mat;
-	
+
 	// Techniques ----------------------------------------------------
 	static D3DXHANDLE	eVesselTech;
 	static D3DXHANDLE	eBuildingTech;
 	static D3DXHANDLE	eSimple;
 	static D3DXHANDLE	eBBTech;
 	static D3DXHANDLE	eBSTech;
-	static D3DXHANDLE   eExhaust;
-	static D3DXHANDLE   eSpotTech;
-	static D3DXHANDLE   ePanelTech;
-	static D3DXHANDLE   ePanelTechB;
+	static D3DXHANDLE	eExhaust;
+	static D3DXHANDLE	eSpotTech;
+	static D3DXHANDLE	ePanelTech;
+	static D3DXHANDLE	ePanelTechB;
 	static D3DXHANDLE	eBaseTile;
 	static D3DXHANDLE	eRingTech;
 	static D3DXHANDLE	eRingTech2;
@@ -96,7 +96,7 @@ public:
 	static D3DXHANDLE	eGTI;
 
 	// Lighting related parameters ------------------------------------
-	static D3DXHANDLE   eMtrl;
+	static D3DXHANDLE	eMtrl;
 	static D3DXHANDLE	eMat;
 	static D3DXHANDLE	eWater;
 	static D3DXHANDLE	eSun;
@@ -104,7 +104,7 @@ public:
 	static D3DXHANDLE	eLightCount;
 
 	// Auxilliary params ----------------------------------------------
-	static D3DXHANDLE   eModAlpha;
+	static D3DXHANDLE	eModAlpha;
 	static D3DXHANDLE	eFullyLit;
 	static D3DXHANDLE	eBrighten;
 	static D3DXHANDLE	eUseSpec;
@@ -114,21 +114,21 @@ public:
 	static D3DXHANDLE	eEnvMapEnable;
 	static D3DXHANDLE	eUseDisl;
 	static D3DXHANDLE	eMix;
-	static D3DXHANDLE   eColor;
-	static D3DXHANDLE   eFogColor;
-	static D3DXHANDLE   eTexOff;
+	static D3DXHANDLE	eColor;
+	static D3DXHANDLE	eFogColor;
+	static D3DXHANDLE	eTexOff;
 	static D3DXHANDLE	eSpecularMode;
 	static D3DXHANDLE	eHazeMode;
 	static D3DXHANDLE	eNormalMap;
 	static D3DXHANDLE	eTextured;
 	static D3DXHANDLE	eClamp;
 	static D3DXHANDLE	eNight;
-	static D3DXHANDLE   eTime;
+	static D3DXHANDLE	eTime;
 	static D3DXHANDLE	eExposure;
-	static D3DXHANDLE	eCameraPos;	
+	static D3DXHANDLE	eCameraPos;
 	static D3DXHANDLE	eReflCtrl;
-	static D3DXHANDLE   eDistScale;
-	static D3DXHANDLE   eRadius;
+	static D3DXHANDLE	eDistScale;
+	static D3DXHANDLE	eRadius;
 	static D3DXHANDLE	eFogDensity;
 	static D3DXHANDLE	ePointScale;
 	static D3DXHANDLE	eAtmColor;
@@ -152,10 +152,10 @@ public:
 
 	// Legacy Atmosphere -----------------------------------------------
 
-	static D3DXHANDLE	eGlobalAmb;	 
-	static D3DXHANDLE	eSunAppRad;	 
-	static D3DXHANDLE	eAmbient0;	 
-	static D3DXHANDLE	eDispersion;	  
+	static D3DXHANDLE	eGlobalAmb;
+	static D3DXHANDLE	eSunAppRad;
+	static D3DXHANDLE	eAmbient0;
+	static D3DXHANDLE	eDispersion;
 };
 
 #endif // !__D3D9EFFECT_H
