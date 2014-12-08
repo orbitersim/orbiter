@@ -241,7 +241,6 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMgr.h" />
     <ClInclude Include="OapiExtension.h" />
-    <ClInclude Include="OapiVersion.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="PlanetRenderer.h" />
     <ClInclude Include="Qtree.h" />

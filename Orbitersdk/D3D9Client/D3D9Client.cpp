@@ -311,9 +311,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	parser			 = NULL;
 	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
 	pNoiseTex		 = NULL;
-#ifdef OAPI_BETA
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
-#endif
 
 	memset2(&stats, 0, sizeof(stats));
 	memset2(pDislMapList, 0, 16*sizeof(SURFHANDLE));
@@ -1138,12 +1136,9 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 			LogMsg("D3D9Client::clbkGetRenderParam(RP_MAXLIGHTS): %u",*value);
 			return true;
 
-#ifdef OAPI_BETA
 		case RP_REQUIRETEXPOW2:
 			*value = 0;
 			return true;
-#endif
-
 	}
 	return false;
 }

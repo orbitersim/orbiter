@@ -274,9 +274,6 @@
     <ClInclude Include="AABBUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OapiVersion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MaterialMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
