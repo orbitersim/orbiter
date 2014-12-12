@@ -742,7 +742,7 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 		}
 		if (++n == stride || n+i0 == np) {
 			alpha = (float)max (0.1, 0.60 * p->alpha0*(1.0-(oapiGetSimTime()-p->t0)*ipht2));
-			if (alpha>0.11f) {
+			if (alpha>0.01f) {
 				HR(FX->SetFloat(eMix, alpha));
 				HR(FX->CommitChanges());
 				HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));

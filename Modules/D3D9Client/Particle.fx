@@ -20,7 +20,7 @@ ParticleVS ParticleDiffuseVS(NTVERTEX vrt)
 {
 	ParticleVS outVS = (ParticleVS)0;
 	outVS.tex0    = vrt.tex0;
-    outVS.light   = saturate(dot(-gSun.direction, vrt.nrmL)) + 0.6f;
+    outVS.light   = saturate(dot(-gSun.direction, vrt.nrmL)*2.0);
 	outVS.posH    = mul(float4(vrt.posL, 1.0f), gVP);
     return outVS;
 }
@@ -33,14 +33,20 @@ ParticleVS ParticleEmissiveVS(EPVERTEX vrt)
     return outVS;
 }
 
+
+
+// ---------------------------------------------------------------------------------------------
 // gMix is the particle opacity computed from time and halflife
-//
+// gColor is hardcoded to [1,1,1] in exhaust streams and [1, 0.7, 0.5] in reentry streams
+// frg.light is a sun light intensity level illuminating a particles. Light color is [1,1,1]
+// ---------------------------------------------------------------------------------------------
+
+
 float4 ParticleDiffusePS(ParticleVS frg) : COLOR
 {
     float4 color = tex2D(WrapS, frg.tex0);
     return float4(color.rgb*frg.light, color.a*gMix);  
 }
-
 
 float4 ParticleEmissivePS(ParticleVS frg) : COLOR
 {
@@ -51,8 +57,10 @@ float4 ParticleEmissivePS(ParticleVS frg) : COLOR
 float4 ParticleShadowPS(ParticleVS frg) : COLOR
 {
     float4 color = tex2D(WrapS, frg.tex0);
-    return float4(0,0,0,color.a*gMix);
+    return float4(0,0,0,color.a*gMix*2.0);
 }
+
+
 
 technique ParticleDiffuseTech
 {
@@ -86,6 +94,10 @@ technique ParticleEmissiveTech
         ZWriteEnable = false;
     }
 
+	// ---------------------------------------------------------------------------------------------
+	// Ground shadows are rendered only for DIFFUSE particles
+	// Shadow rendering is defined here because of identical vertex declarations [EPVERTEX]
+	// ---------------------------------------------------------------------------------------------
     pass P1
     {
         vertexShader = compile VS_MOD ParticleEmissiveVS();
