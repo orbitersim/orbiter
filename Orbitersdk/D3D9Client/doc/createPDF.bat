@@ -1,7 +1,40 @@
-@rem This line assumes the Pyhton is installed system-wide
-python unoconv -f pdf -o ..\..\..\Doc\D3D9Client.pdf D3D9Client.html
+@rem ---------------------------------------------------------------------------
+@rem -- setup
+@rem ---------------------------------------------------------------------------
 
-@rem If Phython is not installed system-wide, we can use LibreOffice's Phython
-@rem like this e.g.
-@rem C:\Program Files (x86)\LibreOffice 3.6\program\python.exe unoconv -f pdf -o D3D9Client.pdf D3D9Client.html
+@set WKHTMLTOPDF_PATH=C:\Program Files\wkhtmltopdf\bin
+@rem set PRG="C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe"
+@set INPUT=D3D9Client.html
+@set OUTPUT=..\..\..\Doc\D3D9Client.pdf
 
+@rem ---------------------------------------------------------------------------
+@rem -- check
+@rem ---------------------------------------------------------------------------
+
+@set PRG="%WKHTMLTOPDF_PATH%\wkhtmltopdf.exe"
+@if not exist %PRG% (
+  @echo Sorry, could not find wkhtmltopdf at '%WKHTMLTOPDF_PATH%'!
+  @echo   To create the PDF from the %INPUT% source wkhtmltopdf has to be
+  @echo   installed ^(http://wkhtmltopdf.org^)!
+  @echo.
+  @echo.
+  @pause
+  @goto :eof
+)
+
+
+@rem ---------------------------------------------------------------------------
+@rem -- run
+@rem ---------------------------------------------------------------------------
+
+@%PRG% --margin-left 25mm --zoom 1.3 %INPUT% %OUTPUT%
+
+
+@rem ---------------------------------------------------------------------------
+@rem -- cleanup
+@rem ---------------------------------------------------------------------------
+
+@set WKHTMLTOPDF_PATH=
+@set PRG=
+@set INPUT=
+@set OUTPUT=

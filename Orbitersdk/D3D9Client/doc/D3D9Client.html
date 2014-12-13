@@ -3,7 +3,10 @@
 <head>
   <title>D3D9Client documentation</title>
   <style type="text/css">
-    li   { text-decoration:underline; font-weight:bold; }
+    p    { page-break-inside:avoid; }
+    dt   { margin-top:10px; }
+    dd   { margin-left:20px; }
+    li   { text-decoration:underline; font-weight:bold; page-break-inside:avoid; }
     code { background-color: #E0E0E0; }
   </style>
 </head>
@@ -36,7 +39,8 @@
   the installation files.
 </p>
 <p>
-  Here is a link: <a href="http://www.microsoft.com/en-us/download/details.aspx?id=9033">http://www.microsoft.com/en-us/download/details.aspx?id=9033</a>
+  Here is a link: <a href="http://www.microsoft.com/en-us/download/details.aspx?id=9033">
+               http://www.microsoft.com/en-us/download/details.aspx?id=9033</a>
 </p>
 
 <hr />
@@ -68,7 +72,8 @@
   manually.
 </p>
 <p>
-  Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html">http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
+  Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html">
+          http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
 </p>
 
 <hr />
@@ -92,7 +97,9 @@
   D3D9Client.
 </p>
 <blockquote>
-  <img title="D3D9Client Advanced Setup" src="images/D3D9Client%20Advanced%20Setup.png" alt="D3D9Client Advanced Setup" />
+  <img title="D3D9Client Advanced Setup"
+       src="images/D3D9Client%20Advanced%20Setup.png"
+       alt="D3D9Client Advanced Setup" />
 </blockquote>
 <p>
   On the lower left side of the Dialog you'll find the "Create symbolic links"
@@ -104,7 +111,7 @@
   Spacecraft3.dll</a>" chapter.
 </p>
 
-<h2>Surface texture load options</h2>
+<h2 style="page-break-before:always;">Surface texture load options</h2>
 <p>
   Here you can change the behavior how the D3D9Client will load surface
   textures. The two options available are either "Load on demand (recommended)"
@@ -219,17 +226,20 @@
     <p>
       The two options you can choose from at "Device to use" are "GDI/DirectX"
       and "GDI Only".
-    </p>
-    <p>
-      <b><em>GDI/DirectX</em></b> will use the DirectX 2D
-      drawing capabilities of your graphic hardware to draw 2D surfaces.
-      Normally this is the recommended setting, because it will not produce so
-      much CPU load that the "GDI Only" option.
-      <br />
-      <b><em>GDI Only</em></b> will only use GDI to draw 2D
-      surfaces which might be the option when you experience any glitches or
-      graphical artifacts in MFD screens. This mode is used for older graphic
-      hardware to be able to run Orbiter.
+    <dl>
+      <dt><b><em>GDI/DirectX</em></b></dt>
+      <dd>
+        will use the DirectX 2D drawing capabilities of your graphic hardware to
+        draw 2D surfaces. Normally this is the recommended setting, because it
+        will not produce so much CPU load that the "GDI Only" option.
+      </dd>
+      <dt><b><em>GDI Only</em></b>
+      <dd>
+        will only use GDI to draw 2D surfaces which might be the option when you
+        experience any glitches or graphical artifacts in MFD screens. This mode
+        is used for older graphic hardware to be able to run Orbiter.
+      </dd>
+    </dl>
     </p>
   <li>Font rendering</li>
     <p>
@@ -277,7 +287,7 @@
   <li>Enable mesh debugger</li>
     <p>
       With this option enabled D3D9Client will provide additional mesh
-      debugging options at runtine. The "D3D9 Debug Controls" dialog will
+      debugging options at runtime. The "D3D9 Debug Controls" dialog will
       provide a user interface to access several options. For further details
       see the <a href="#_debug_controls">D3D9 Debug Controls Dialog</a> section
       below.
@@ -321,17 +331,21 @@
 </p>
 <ul>
   <li>Rendering mode</li>
-    <p>
-      The rendering mode selection offers three settings:<br />
+    <p style="margin-bottom: 5px;">
+      The rendering mode selection offers three settings:
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Disable</em></b> will completely disable the environment mapping
-        feature.<br />
+        feature.</div>
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Planet Only</em></b> will only "reflect" the currently orbiting
-        planet or moon.<br />
+        planet or moon.</div>
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Full Scene</em></b> will "reflect" the complete scene, that is all
-        other ships, moons and planets.
+        other ships, moons and planets.</div>
     </p>
   <li>Faces per frame</li>
     <p>
+      Number of environment map faces that will be rendered per frame.
     </p>
 </ul>
 
@@ -357,12 +371,12 @@
   </blockquote>
 </p>
 
-<h2>Mesh debugger</h2>
+<h2 style="page-break-before:always;">Mesh debugger</h2>
 <p>
   The mesh debugger group contains elements to inspect a mesh. It gives a mesh
   developer some tools at hand to better inspect a mesh in its 'natural
   environment', the Orbiter Simulation environment.<br />
-  Whith the options available in this group one can for example separate
+  With the options available in this group one can for example separate
   individual parts of the shown scene and leave out all the rest, so it might
   be easier to see what really happens at rendering.<br />
   Other settings change the environment so that the current lighting
@@ -377,22 +391,26 @@
       This combo box lets you select what parts of a scene is rendered. The
       possible options are: "Everything", "Selected Visual", "Selected Mesh" or
       "Selected Group".
-      <br />
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Everything</em></b> will, as the name suggests, display
       everything. This will show the scene as it will be shown normally when
       running a Orbiter simulation session.
-      <br />
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Selected Visual</em></b> will display only the currently selected
       visual. Planets and moons for example are excluded.
-      <br />
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Selected Mesh</em></b> will display only the currently selected
       mesh. If for example two vessels are in the complete scene, only one of
       them will be displayed. All other vessels, planets and moons are
       excluded.
-      <br />
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
       <b><em>Selected Group</em></b> will display only the current selected
       group. This is often just a "part" of a vessels mesh. All other groups,
       vessels, planets and moons are excluded.
+      </div>
     </p>
   <li id ="_camera">Camera</li>
     <p>
@@ -413,7 +431,7 @@
       are in "Wheel Fly/Pan Cam" camera-mode (see
       <a href="#_camera">Camera</a>).<br />
       The value is a kind of 'factor' applied to the movement of the mouse (or
-      the mouse-wheel). It ranges from 1 (beeing the lowest speed) to 8192
+      the mouse-wheel). It ranges from 1 (being the lowest speed) to 8192
       (beeing <u>very fast</u>).
     </p>
   <li id="_mesh_idx">Mesh Idx</li>
@@ -478,7 +496,8 @@
       by clicking onto it with the left mouse button.
       <div style="left:5%; position:relative">
       <img title="Pick in action" src="images/PickInAction.png"
-           alt="Pick in action" height="20%" />
+           alt="Pick in action"
+           height="300px" />
       </div>
       Whenever a material is picked it will light up in green, so it is easy to
       see which material is chosen. After a material is chosen all the settings
@@ -556,12 +575,14 @@
     <p>
       With this option <b><em>enabled</em></b> a frames per second limiter is
       enabled that will limit the number of frames that will be rendered per
-      time interval (per second that is). Limiter FPS value is set using D3D9Client.cfg
+      time interval (per second that is). Limiter FPS value is set using
+      D3D9Client.cfg
       <br />
-      This feature is created to reduce unnecessary GPU/CPU load. Not to produce
-      a stable frame rate. Improper setting can cause extreme tearing on the screen.
-      Setting the frame rate limiter to 200fps usually works pretty well. 
-      It is recommended to use vertical sync feature from a video tab instead of this. 
+      This feature is created to reduce unnecessary GPU/CPU load. Not to
+      produce a stable frame rate. Improper setting can cause extreme tearing
+      on the screen. Setting the frame rate limiter to 200fps usually works
+      pretty well. It is recommended to use vertical sync feature from a video
+      tab instead of this. 
     </p>
 
 </ul>
@@ -573,42 +594,42 @@
 </p>
 <ul>
   <li>Dissolve effect</li>
-    <p>
+  <p>
     This field is used to select a special effect texture for dissolve effect.
-    </p>
+  </p>
   <li>Material property</li>
-    <p>
-  	  <b>Diffuse</b>
-  		<p>
-  		  Defines diffuse material color [RGBA]. Texture is modulated with this
+    <dl>
+      <dt><b>Diffuse</b></dt>
+      <dd>
+        Defines diffuse material color [RGBA]. Texture is modulated with this
         color. The range for every property in this section is [0.0 to 1.0]
         unless otherwise noted.
-  		</p>
-  	  <b>Ambient</b>
-  		<p>
-  		  Defines ambient material color [RGB].
-  		</p>
-  	  <b>Specular</b>
-  		<p>
-  		  Defines specular material color [RGBP]. The last field is a specular
+      </dd>
+      <dt><b>Ambient</b></dt>
+      <dd>
+        Defines ambient material color [RGB].
+      </dd>
+      <dt><b>Specular</b></dt>
+      <dd>
+        Defines specular material color [RGBP]. The last field is a specular
         power from [0.0 to 1000.0].
-  		</p>
-  	  <b>Emissive</b>
-  		<p>
-  		  Defines emissive material color [RGB].
-  		</p>
-  	  <b>Reflect</b>
-  		<p>
-  		  Defines reflection color [RGB] for a metallic (mirror a-like)
+      </dd>
+      <dt><b>Emissive</b></dt>
+      <dd>
+        Defines emissive material color [RGB].
+      </dd>
+      <dt><b>Reflect</b></dt>
+      <dd>
+        Defines reflection color [RGB] for a metallic (mirror a-like)
         reflection which intensity is independent from a viewing angle. This is
         also used to define minimum reflection offset for a fresnel reflection.
         Due to some implementation problems a non-zero value must be entered to
         enable fresnel reflections. For a mirror like reflections a typical
         range is [0.0 to 1.0] and for a fresnel reflections a typical range is
         [0.05 to 0.2].
-  		</p>
-  	  <b>Dissolve</b>
-      <p>
+      </dd>
+      <dt><b>Dissolve</b></dt>
+      <dd>
         Dissolve is an experimental technique that can be used to create blurry
         or noisy reflections. Currently it can be only applied to non-normal
         mapped surface that has a texture. It would be possible to use a
@@ -617,36 +638,36 @@
         particle size). The second field is the effect strength. If either
         parameter is zero the effect will be disabled. This property requires
         dissolve effect texture.
-      </p>
-      <b>Fresnel</b>
-  		<p>
-  		  The first field in fresnel parameters is a power value. A typical range
+      </dd>
+      <dt><b>Fresnel</b></dt>
+      <dd>
+        The first field in fresnel parameters is a power value. A typical range
         for the power is [2.5 to 4.5]. The power value will effect in a viewing
         angle dependency of the reflection. The second field is a multiplier.
         It will define a maximum reflection intensity when viewed from a
         shallow angle. This value must be zero to disable fresnel reflections
         otherwise a typical range is [0.8 to 0.95].
-  		</p>
-  	</p>
+      </dd>
+    </dl>
   <li>(4) Channel values &amp; Slider</li>
-    <p>
-      Meaning of the fields will depend about the selected material property.
-      See properties from above.
-    </p>
+  <p>
+    Meaning of the fields will depend about the selected material property.
+    See properties from above.
+  </p>
   <li>Copy &amp; Paste</li>
-    <p>
-      Copy and paste buttons can be used to copy [RGB] values from different
-      material properties for an example from specular color to reflect color.
-    </p>
+  <p>
+    Copy and paste buttons can be used to copy [RGB] values from different
+    material properties for an example from specular color to reflect color.
+  </p>
   <li>Link channels</li>
-    <p>
-      The link checkbox allows the link the R, G and B fields and after that
-      they can be adjusted simultaneously with the slider.
-    </p>
+  <p>
+    The link checkbox allows the link the R, G and B fields and after that
+    they can be adjusted simultaneously with the slider.
+  </p>
   <li>Use specular color</li>
-    <p>
-      Not implemented.
-    </p>
+  <p>
+    Not implemented.
+  </p>
 </ul>
 
 <h2>Save materials (<i>Button</i>)</h2>
@@ -836,14 +857,15 @@ END</pre>
 <ul>
   <li id="_norm"><strong>&lt;_norm&gt;</strong></li>
     <p>
-      Tangent space normal map and the valid formats are:<br />
-      <br />
-      &lt;R8G8B8&gt; 3-bytes per pixel. Best quality (uncompressed)<br />
-      &lt;V8U8&gt;&ensp;&ensp;&ensp;2-bytes per pixel. Good quality (uncompressed)<br />
-      &lt;DXT1&gt;&ensp;&ensp;&ensp;1-byte per pixel. Bad quality (compressed)<br />
-      <br />
-      V8U8 offers the best quality for 2-bytes per pixel. This format can be
-      created with nVidia texture tools.
+      Tangent space normal map and the valid formats are:
+      <table>
+        <tr><td>&lt;R8G8B8&gt;</td>
+            <td>3-bytes per pixel. Best quality (uncompressed)</td></tr>
+        <tr><td>&lt;V8U8&gt;</td>
+            <td>2-bytes per pixel. Good quality (uncompressed)</td></tr>
+        <tr><td>&lt;DXT1&gt;</td>
+            <td>1-byte per pixel. Bad quality (compressed)</td></tr>
+      </table>
     </p>
     <p>
       <strong style="color:red">Note:</strong>
@@ -861,18 +883,25 @@ END</pre>
       &lt;DXT3&gt; or &lt;DXT5&gt;.
     </p>
   <li id="_bump" style="page-break-before:always;"><strong>&lt;_bump&gt;</strong></li>
-    <p>
+    <p style="margin-bottom:5px">
       Bump maps are also supported by the D3D9Client. They are automatically
       converted into normal maps during loading of bump maps (see note).<br />
-      The <b>recommended</b> formats are &lt;A8&gt; and &lt;L8&gt;:<br />
-      &lt;A8&gt; 1-byte per pixel alpha<br />
-      &lt;L8&gt; 1-byte per pixel luminance<br />
+      The <b>recommended</b> formats are &lt;A8&gt; and &lt;L8&gt;:
+      <table>
+        <tr><td>&lt;A8&gt;</td><td>1-byte per pixel alpha</td></tr>
+        <tr><td>&lt;L8&gt;</td><td>1-byte per pixel luminance</td></tr>
+      </table>
       <br />
       From the <b>not recommended</b> multi-channel textures only the <b>red</b>
-      channel is used; They are:<br />
-      &lt;R8B8G8&gt; 3-bytes per pixel (only red is used anyway)<br />
-      &lt;DXT1&gt;&ensp;&ensp; 1-byte per pixel compressed<br />
-      &lt;R16F&gt;&ensp;&ensp;&ensp;2-bytes per pixel (might work, not tested!)<br />
+      channel is used;<br />They are:
+      <table>
+        <tr><td>&lt;R8B8G8&gt;</td>
+            <td>3-bytes per pixel (only red is used anyway</td></tr>
+        <tr><td>&lt;DXT1&gt;</td>
+            <td>1-byte per pixel compressed</td></tr>
+        <tr><td>&lt;R16F&gt;</td>
+            <td>2-bytes per pixel (might work, not tested!)</td></tr>
+      </table>
     </p>
     <p>
       <strong style="color:red">Note:</strong>
@@ -907,7 +936,6 @@ END</pre>
     </p>
 </ul>
 <br />
-<!-- does not render nice as PDF :(
 <p>
   Note, that not all objects support all advanced texture maps:
   <table style="text-align:center">
@@ -924,6 +952,5 @@ END</pre>
     <tr><td style="background-color:silver;text-align:left">Reflection-map</td><td><tt>_refl</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
   </table>
 </p>
--->
 </body>
 </html>
