@@ -63,6 +63,7 @@ public:
 	int EnableMeshDbg;				///< Enable mesh debugger
 	int ShadowMapMode;				///< Shadow Mapping Mode
 	int ShadowMapSize;				///< Shadow Map size
+	int CustomCamMode;				///< Custom Camera Mode
 	int AtmoShader;					///< Atmospheric Shader Type
 	int LODBias;					///< 3D Terrain resolution bias
 	int	DynamicExps;				///< Denamic Exposure Control

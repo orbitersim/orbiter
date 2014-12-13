@@ -298,7 +298,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bScene			 = false;
 	bHalt			 = false;
 	bVertexTex		 = false;
-	bSkpGDI			 = true;
 	viewW = viewH    = 0;
 	viewBPP          = 0;
 	iDisl			 = 0;
@@ -1659,10 +1658,12 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 		if (attrib&OAPISURFACE_GDI) usage = D3DUSAGE_DYNAMIC;
 		if (attrib&OAPISURFACE_RENDERTARGET) usage = D3DUSAGE_RENDERTARGET;
 		surf->MakeTextureEx(w, h, usage, fmt, pool);
+		if (attrib&OAPISURFACE_RENDER3D) surf->MakeDepthStencil();
 		return surf;
 	}
 
 	surf->MakeRenderTargetEx(w, h, (attrib&OAPISURFACE_GDI)!=0, fmt);
+	if (attrib&OAPISURFACE_RENDER3D) surf->MakeDepthStencil();
 
 	return surf;
 }
@@ -2217,9 +2218,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 8 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 9 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 8 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 9 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
@@ -2275,7 +2276,6 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 
 	if (SURFACE(surf)->IsBackBuffer()) {
 		if (bScene==true || bGDIBB==false) {
-			bSkpGDI=false;
 			if (bScene==false) pd3dDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() in the main rendering routine
 			bSkepchpadOpen = true;
 			return new D3D9Pad(surf);
@@ -2284,8 +2284,6 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	else {
 		if (Config->SketchpadMode==0) {
 			if (SURFACE(surf)->IsRenderTarget()) {
-				//LogErr("[INFO] Sketchpad is used for RenderTargetSurface 0x%X Size=(%ux%u)", surf, SURFACE(surf)->GetWidth(), SURFACE(surf)->GetHeight());
-				bSkpGDI=false;
 				bSkepchpadOpen = true;
 				return new D3D9Pad(surf);
 			}
@@ -2294,7 +2292,6 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 
 	// Fall back into a GDI rendering -----------------------------------------------
 	//
-	bSkpGDI = true;
 	HDC hDC = clbkGetSurfaceDC (surf);
 	if (hDC) {
 		bSkepchpadOpen = true;
@@ -2311,12 +2308,12 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 	SURFHANDLE surf = sp->GetSurface();
 
 	if (surf) {
-		if (bSkpGDI) {
+		if (SURFACE(surf)->GetSketchPadMode()==SKETCHPAD_GDI) {
 			GDIPad *gdip = (GDIPad*)sp;
 			clbkReleaseSurfaceDC(gdip->GetSurface(), gdip->GetDC());
 			delete gdip;
 		}
-		else {
+		if (SURFACE(surf)->GetSketchPadMode()==SKETCHPAD_DIRECTX) {
 			if (SURFACE(surf)->IsBackBuffer()) {
 				if (bScene==false) pd3dDevice->EndScene();
 			}

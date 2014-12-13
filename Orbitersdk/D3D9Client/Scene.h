@@ -44,6 +44,18 @@ class Scene {
 		double camdist2;
 	} *lightlist;
 
+	struct CAMREC {
+		MATRIX3		mRotation;
+		VECTOR3		vPosition;
+		double		dAperture;
+		SURFHANDLE	hSurface;
+		OBJHANDLE	hVessel;
+		DWORD		dwFlags;
+		int			iError;
+		bool		bActive;
+		CAMREC  *prev, *next;
+	} *camFirst, *camLast, *camCurrent;
+
 public:
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder);
@@ -146,6 +158,7 @@ public:
 	double GetObjectAppRad2(OBJHANDLE hObj) const;
 
 	D3D9Pick PickScene(short xpos, short ypos);
+
 	void ClearOmitFlags();
 
 	// Camera Interface
@@ -154,23 +167,47 @@ public:
 	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }
 	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&mView; }
 
-	void		SetCameraAperture(double _ap, double _as);
-	void		SetCameraFrustumLimits(double nearlimit, double farlimit);
-	void		UpdateCameraFromOrbiter();
-	void		SetupCustomCamera(D3DXMATRIX mNew, VECTOR3 disp, double apr, double asp);
 
-	bool		CameraPan(VECTOR3 pan, double speed);
-	bool		IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
-	float		GetCameraAspect() const { return (float)aspect; }
-	float		GetCameraFarPlane() const { return farplane; }
-	float		GetCameraNearPlane() const { return nearplane; }
-	float		GetCameraAperture() const { return (float)aperture; }
-	VECTOR3		GetCameraGPos() const { return camera_pos; }
-	VECTOR3		GetCameraGDir() const { return camera_dir; }
-	OBJHANDLE	GetCameraProxyBody() const { return hObj_proxy; }
-	vPlanet *	GetCameraProxyVisual() const { return vProxy; }
-	double		GetCameraAltitude() const { return alt_proxy; }
-	D3DXVECTOR3 GetCameraOffset() { return camera_offset; }
+	// Custom Camera Interface ======================================================================================================
+	//
+	CAMERAHANDLE	SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, MATRIX3 &mRot, VECTOR3 &pos, double fov, SURFHANDLE hSurf, DWORD flags);
+	int				DeleteCustomCamera(CAMERAHANDLE hCamera);
+	void			DeleteAllCustomCameras();
+	void			CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn);
+	void			RenderCustomCameraView(CAMREC *cCur);
+
+
+	// Main Camera Interface =========================================================================================================
+	//
+	void			SetCameraAperture(double _ap, double _as);
+	void			SetCameraFrustumLimits(double nearlimit, double farlimit);
+
+					// Imitialize Main Camera Setup
+	void			UpdateCameraFromOrbiter();
+
+					// Temporary main camera view change. Will be restored to normal view in a start of the next frame.
+	void			SetupCustomCamera(D3DXMATRIX &mRotation, VECTOR3 &disp, double apr, double asp);
+	
+					// This function will take the camera control from the Orbiter and places the camera in user defined location.
+					// Orbiter will continue moving it's own camera while taken so, camera may end-up in an odd place when released.
+	void			TakeCamera(MATRIX3 &mRotation, VECTOR3 &disp, double apr);
+	void			ReleaseCameraTake();
+
+					// Pan Camera in a mesh debugger
+	bool			CameraPan(VECTOR3 pan, double speed);
+
+					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera 
+	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
+	float			GetCameraAspect() const { return (float)aspect; }
+	float			GetCameraFarPlane() const { return farplane; }
+	float			GetCameraNearPlane() const { return nearplane; }
+	float			GetCameraAperture() const { return (float)aperture; }
+	VECTOR3			GetCameraGPos() const { return camera_pos; }
+	VECTOR3			GetCameraGDir() const { return camera_dir; }
+	OBJHANDLE		GetCameraProxyBody() const { return hObj_proxy; }
+	vPlanet *		GetCameraProxyVisual() const { return vProxy; }
+	double			GetCameraAltitude() const { return alt_proxy; }
+	D3DXVECTOR3		GetCameraOffset() { return camera_offset; }
 
 	const D3DXVECTOR3 *GetCameraX() const { return &camera_x; }
 	const D3DXVECTOR3 *GetCameraY() const { return &camera_y; }
@@ -265,6 +302,15 @@ private:
 	float  apsq;
 	float  vh,vw,vhf,vwf;
 	bool   bCustomCam;		// true if a custom camera mode is in use. (apply camera_offset)
+
+	// Default Camera Override Paramaters =============================================== 
+	//
+	bool	bTakeCamera;	// true if user application has a control of the camera. (apply camera_offset) 
+	MATRIX3 mTakeRotation;
+	VECTOR3 vTakeOffset;
+	double	dTakeAperture;
+
+
 
 	VECTOR3		camera_pos;		// Global camera position
 	VECTOR3		camera_relpos;	// Relative camera position (Used by Mesh Debugger)

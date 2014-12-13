@@ -40,6 +40,7 @@ extern oapi::Pen  *defpen;
  */
 class D3D9Pad : public oapi::Sketchpad 
 {
+
 public:
 	
 	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
@@ -98,10 +99,10 @@ private:
 	mutable D3DXCOLOR brushcolor;
 	mutable D3DXCOLOR bkcolor;
 	
+	HDC	hDC;
 	DWORD bkmode;
 	DWORD halign, valign;
 	int origx, origy, cx, cy;
-	bool bConvertTgt;
 	
 	D3D9ClientSurface *pTgt;
 

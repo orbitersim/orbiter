@@ -424,6 +424,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OgciExtensions.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Particle.cpp"
 				>
 			</File>

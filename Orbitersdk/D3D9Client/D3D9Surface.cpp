@@ -20,6 +20,8 @@ using namespace oapi;
 ID3DXEffect* D3D9ClientSurface::FX = 0;
 D3DXHANDLE   D3D9ClientSurface::eTech = 0;
 D3DXHANDLE   D3D9ClientSurface::eFlush = 0;
+D3DXHANDLE   D3D9ClientSurface::eSketch = 0;
+D3DXHANDLE   D3D9ClientSurface::eRotate = 0;
 D3DXHANDLE   D3D9ClientSurface::eVP = 0;
 D3DXHANDLE   D3D9ClientSurface::eColor = 0;
 D3DXHANDLE   D3D9ClientSurface::eTex0 = 0;
@@ -186,23 +188,26 @@ HRESULT D3D9ClientSurface::GPUCopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT 
 
 // -----------------------------------------------------------------------------------------------
 //
-/*
-HRESULT D3D9ClientSurface::GPUCopyTemp(LPRECT s, LPRECT t)
+void D3D9ClientSurface::SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha, VECTOR3 *clr)
 {
 	// ATTENTION:  Must use texture address mode CLAMP
 
+	D3D9ClientSurface *src = SURFACE(hSrc);
+
 	pDevice->SetVertexDeclaration(pPosTexDecl);
 
-	FX->SetTechnique(eTech);
+	D3DXCOLOR color;
+
+	if (clr) color = D3DXCOLOR(float(clr->x), float(clr->y), float(clr->z), alpha);
+	else     color = D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha);
+
+	FX->SetTechnique(eSketch);
 	FX->SetMatrix(eVP, pVP);
-	FX->SetValue(eColor, &ClrKey, sizeof(D3DXCOLOR));
-	FX->SetTexture(eTex0, pTempTex);
+	FX->SetValue(eColor, &color, sizeof(D3DXCOLOR));
+	FX->SetTexture(eTex0, src->pTex);
 
-	D3DSURFACE_DESC ds;
-	pTemp->GetDesc(&ds);
-
-	float srw = 1.0f / float(ds.Width);
-	float srh = 1.0f / float(ds.Height);
+	float srw = 1.0f / float(src->desc.Width);
+	float srh = 1.0f / float(src->desc.Height);
 	float lwq = float(s->left) * srw;
 	float thq = float(s->top) * srh;
 	float rwq = float(s->right) * srw;
@@ -220,16 +225,72 @@ HRESULT D3D9ClientSurface::GPUCopyTemp(LPRECT s, LPRECT t)
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
-
 	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
 	gc->GetStats()->Draw++;
-	gc->GetStats()->ColorKey++;
-
 	FX->EndPass();
 	FX->End();
+}
 
-	return S_OK;
-}*/
+// -----------------------------------------------------------------------------------------------
+//
+void D3D9ClientSurface::SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha, VECTOR3 *clr)
+{
+	// ATTENTION:  Must use texture address mode CLAMP
+
+	D3D9ClientSurface *src = SURFACE(hSrc);
+
+	pDevice->SetVertexDeclaration(pPosTexDecl);
+
+	D3DXCOLOR color;
+
+	if (clr) color = D3DXCOLOR(float(clr->x), float(clr->y), float(clr->z), alpha);
+	else     color = D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha);
+
+	FX->SetTechnique(eRotate);
+	FX->SetMatrix(eVP, pVP);
+	FX->SetValue(eColor, &color, sizeof(D3DXCOLOR));
+	FX->SetTexture(eTex0, src->pTex);
+
+	float srw = 1.0f / float(src->desc.Width);
+	float srh = 1.0f / float(src->desc.Height);
+	float lwq = float(s->left) * srw;
+	float thq = float(s->top) * srh;
+	float rwq = float(s->right) * srw;
+	float bhq = float(s->bottom) * srh;
+
+	float san = sin(angle) * 0.5f;
+	float can = cos(angle) * 0.5f;
+
+	float ax  = float(tcx) + (-w * can + h * san);
+	float ay  = float(tcy) + (-w * san - h * can);
+
+	float bx  = float(tcx) + (-w * can - h * san);
+	float by  = float(tcy) + (-w * san + h * can);
+
+	float cx  = float(tcx) + (+w * can - h * san);
+	float cy  = float(tcy) + (+w * san + h * can);
+
+	float dx  = float(tcx) + (+w * can + h * san);
+	float dy  = float(tcy) + (+w * san - h * can);
+
+	SMVERTEX Vertex[4] = {
+		{float(ax), float(ay), 0, lwq, thq},
+		{float(bx), float(by), 0, lwq, bhq},
+		{float(cx), float(cy), 0, rwq, bhq},
+		{float(dx), float(dy), 0, rwq, thq}
+	};
+
+	static WORD cIndex[6] = {0,2,1,0,3,2};
+
+	UINT numPasses = 0;
+	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
+	FX->BeginPass(0);
+	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+	gc->GetStats()->Draw++;
+	FX->EndPass();
+	FX->End();
+}
+
 
 // -----------------------------------------------------------------------------------------------
 //
@@ -273,6 +334,8 @@ void D3D9ClientSurface::Clear()
 	pSurf		= NULL;
 	pRTS		= NULL;
 	pDCSub		= NULL;
+	hDefFont	= NULL;
+	pStencil	= NULL;
 	pNormalMap	= NULL;
 	pEmissionMap = NULL;
 	pSpecularMap = NULL;
@@ -281,12 +344,12 @@ void D3D9ClientSurface::Clear()
 	iBindCount  = 0;
 	Initial		= 0;
 	Attrib		= 0;
+	SketchPad	= SKETCHPAD_NONE;
 	bDCOpen		= false;
-	bDC			= false;
 	bSkpGetDCEr	= false;
-	bSkpGetDC   = false;
 	bBltGroup   = false;
 	bBackBuffer = false;
+	bDCHack		= false;
 	pDevice		= NULL;
 	memset2(&desc, 0, sizeof(D3DSURFACE_DESC));
 }
@@ -315,6 +378,7 @@ D3D9ClientSurface::~D3D9ClientSurface()
 	SAFE_RELEASE(pEmissionMap);
 	SAFE_RELEASE(pSpecularMap);
 	SAFE_RELEASE(pReflectionMap);
+	SAFE_RELEASE(pStencil);
 	SAFE_RELEASE(pDCSub);
 	SAFE_RELEASE(pRTS);
 	SAFE_DELETE(pVP);
@@ -380,10 +444,10 @@ void D3D9ClientSurface::MakeTextureEx(UINT Width, UINT Height, DWORD Usage, D3DF
 	HR(pDevice->CreateTexture(Width, Height, 1, Usage, Format, pool, &pTex, NULL));
 	if (pTex) pTex->GetSurfaceLevel(0, &pSurf);
 
-	if (Type==D3D9S_DYNAMIC)			LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (Dynamic)", this, Width, Height);
-	else if (Type==D3D9S_RENDER)		LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (RenderTarget)", this, Width, Height);
-	else if (pool==D3DPOOL_SYSTEMMEM)	LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (SystemMem)", this, Width, Height);
-	else								LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (Default)", this, Width, Height);
+	if (Usage&D3DUSAGE_DYNAMIC)			LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (Dynamic)", this, Width, Height);
+	if (Usage&D3DUSAGE_RENDERTARGET)	LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (RenderTarget)", this, Width, Height);
+	if (pool==D3DPOOL_SYSTEMMEM)		LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (SystemMem)", this, Width, Height);
+	else if (Type==D3D9S_TEXTURE)		LogBlu("D3D9ClientSurface: New Texture(0x%X) w=%u, h=%u (Default)", this, Width, Height);
 
 	GetDesc(&desc);
 	if (Usage&D3DUSAGE_RENDERTARGET) SetupViewPort();
@@ -409,6 +473,14 @@ void D3D9ClientSurface::MakeRenderTargetEx(UINT Width, UINT Height, bool bLock, 
 
 	GetDesc(&desc);
 	SetupViewPort();
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+void D3D9ClientSurface::MakeDepthStencil()
+{
+	LogBlu("D3D9ClientSurface: Creating DepthStencil SubSurface");
+	HR(pDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pStencil, NULL));
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -821,8 +893,7 @@ HDC	D3D9ClientSurface::GetDCHard()
 HDC	D3D9ClientSurface::GetDC()
 {
 	bHard = false;
-	bDC = true;
-
+	
 	if (bDCOpen) {
 		LogErr("DC is already open");
 		return NULL;
@@ -904,6 +975,26 @@ void D3D9ClientSurface::ReleaseDC(HDC hDC)
 {
 	bDCOpen = false;
 
+	if (bDCHack) {
+
+		SelectObject(hDC, GetStockObject (NULL_PEN));
+		SelectObject(hDC, GetStockObject (NULL_BRUSH));
+		SelectObject(hDC, GetStockObject (SYSTEM_FONT));
+
+		if (hDefFont) DeleteObject(hDefFont);
+		hDefFont = NULL;
+
+		if (pDCSub->ReleaseDC(hDC)==S_OK) {
+			if (iBindCount!=0) return; // Still Bound, Can not flip the surface
+			RECT sr; sr.left = 1; sr.top = 1;
+			sr.right = desc.Width-1;
+			sr.bottom = desc.Height-1;		
+			HR(pDevice->StretchRect(pDCSub, &sr, pSurf, &sr, D3DTEXF_POINT));
+			bDCHack = false; // Hack finished, we are done
+			return;
+		}
+	}
+
 	if (bBackBuffer) {
 		HR(pSurf->ReleaseDC(hDC));
 		return;
@@ -920,6 +1011,46 @@ void D3D9ClientSurface::ReleaseDC(HDC hDC)
 
 	LogErr("ReleaseDC() Failed");
 	LogSpecs("Surface");
+}
+
+
+
+// -----------------------------------------------------------------------------------------------
+//
+HDC	D3D9ClientSurface::GetDC_Hack()
+{
+	if (bDCOpen) LogErr("D3D9ClientSurface::GetDC_Hack()  DC Already Open");
+	if (bDCHack) LogErr("D3D9ClientSurface::GetDC_Hack()  Hack Already Active");
+
+	HDC hDC = NULL;
+	if (pDCSub==NULL) CreateDCSubSurface();
+	if (pDCSub) { 
+		HR(pDevice->ColorFill(pDCSub, NULL, 0x00000000));
+		if (pDCSub->GetDC(&hDC)==S_OK) { 
+			LogBlu("Creating Hacked DC");
+
+			bDCHack = true; 
+			bDCOpen = true; 
+
+			DWORD AAQuality = NONANTIALIASED_QUALITY;
+
+			if (Config->SketchpadFont==1) AAQuality = DRAFT_QUALITY;
+			if (Config->SketchpadFont==2) AAQuality = CLEARTYPE_QUALITY;
+			if (Config->SketchpadFont==3) AAQuality = PROOF_QUALITY;
+
+			hDefFont = CreateFontA(desc.Height/21, 0, 0, 0, FW_NORMAL, false, false, 0, 0, 0, 2, AAQuality, 49, "Courier New");
+
+			SelectObject(hDC, hDefFont);
+			SelectObject(hDC, GetStockObject (NULL_PEN));
+			SelectObject(hDC, GetStockObject (NULL_BRUSH));
+			SetBkMode(hDC, TRANSPARENT);
+			
+			return hDC;
+		}
+	}
+	else LogErr("Failed to create Sub Surface");
+	LogErr("D3D9ClientSurface: GetDCHack() Failed");
+	return NULL;
 }
 
 
@@ -1449,6 +1580,15 @@ bool D3D9ClientSurface::IsRenderTarget()
 
 // -----------------------------------------------------------------------------------------------
 //
+bool D3D9ClientSurface::Is3DRenderTarget()
+{
+	if (bBackBuffer) return true;
+	if (desc.Pool==D3DPOOL_DEFAULT && desc.Usage&D3DUSAGE_RENDERTARGET && pStencil!=NULL) return true;
+	return false;
+}
+
+// -----------------------------------------------------------------------------------------------
+//
 bool D3D9ClientSurface::IsBackBuffer()
 {
 	if (bBackBuffer) return true;
@@ -1551,6 +1691,20 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetReflectionMap()
 
 // -----------------------------------------------------------------------------------------------
 //
+LPDIRECT3DSURFACE9 D3D9ClientSurface::GetDepthStencil()
+{
+	return pStencil;
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+LPDIRECT3DSURFACE9 D3D9ClientSurface::GetSurface()
+{
+	return pSurf;
+}
+
+// -----------------------------------------------------------------------------------------------
+//
 DWORD D3D9ClientSurface::GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT)
 {
 	D3DSURFACE_DESC d; pT->GetLevelDesc(0,&d);
@@ -1630,6 +1784,8 @@ void D3D9ClientSurface::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev, co
 
 	eFlush = FX->GetTechniqueByName("FlushTech");
 	eTech  = FX->GetTechniqueByName("BlitTech");
+	eSketch= FX->GetTechniqueByName("SketchTech");
+	eRotate= FX->GetTechniqueByName("RotateTech");
 	eVP    = FX->GetParameterByName(0,"gVP");
 	eTex0  = FX->GetParameterByName(0,"gTex0");
 	eColor = FX->GetParameterByName(0,"gColor");

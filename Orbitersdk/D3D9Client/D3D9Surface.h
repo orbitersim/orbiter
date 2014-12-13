@@ -20,12 +20,6 @@
 #define D3D9S_DYNAMIC	0x4
 #define D3D9S_LOCK		0x8
 
-#define D3D9C_LOAD		0x1		// Created by clbkLoadTexture
-#define D3D9C_TEXTURE   0x2	    // Created by clbkCreateTexture
-#define D3D9C_SURFACE   0x3		// Created by clbkCreateSurface
-#define D3D9C_BACKBUF   0x4		// Created by MakeBackBuffer
-
-
 // Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
 
 class D3D9ClientSurface {
@@ -48,7 +42,8 @@ public:
 	void				MakeBackBuffer(LPDIRECT3DSURFACE9);
 	void				MakeTextureEx(UINT Width, UINT Height, DWORD Usage=D3DUSAGE_DYNAMIC|D3DUSAGE_AUTOGENMIPMAP, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL pool=D3DPOOL_DEFAULT);
 	void				MakeRenderTargetEx(UINT Width, UINT Height, bool bLock=false, D3DFORMAT Format=D3DFMT_X8R8G8B8);
-	
+	void				MakeDepthStencil();
+
 	bool				GetDesc(D3DSURFACE_DESC *);
 
 	bool				LoadSurface(const char *fname, DWORD flags);
@@ -75,9 +70,12 @@ public:
 	bool				IsBackBuffer();
 	bool				IsTexture() const { return (pTex!=NULL); }
 	bool				IsRenderTarget();
+	bool				Is3DRenderTarget();
 	bool				IsPowerOfTwo() const;
 	bool				IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
 
+	LPDIRECT3DSURFACE9	GetDepthStencil();
+	LPDIRECT3DSURFACE9	GetSurface();
 	LPDIRECT3DTEXTURE9	GetTextureHard();
 	LPDIRECT3DTEXTURE9	GetNormalMap();
 	LPDIRECT3DTEXTURE9	GetEmissionMap();
@@ -85,6 +83,7 @@ public:
 	LPDIRECT3DTEXTURE9	GetReflectionMap();
 	LPDIRECT3DTEXTURE9	GetTexture();
 	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
+	int					GetSketchPadMode() { return SketchPad; }
 
 
 	void				SetColorKey(DWORD ck);			// Enable and set color key
@@ -92,10 +91,14 @@ public:
 
 	HDC					GetDC();
 	void				ReleaseDC(HDC);
+	HDC					GetDC_Hack();
 
 	HRESULT				AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
 	HRESULT				FlushQueue();
 	void				CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
+	void				SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha=-1, VECTOR3 *clr=NULL);
+	void				SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha=-1, VECTOR3 *clr=NULL);
+
 	bool				Fill(LPRECT r, DWORD color);
 	bool				Clear(DWORD color);
 	
@@ -118,7 +121,6 @@ private:
 	DWORD				GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
 	DWORD				GetSizeInBytes(D3DFORMAT Format, DWORD pixels);
 	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
-	//HRESULT				GPUCopyTemp(LPRECT s, LPRECT t);
 	HDC					GetDCHard();
 	void				SetupViewPort();
 	void				LogSpecs(char *name);
@@ -129,9 +131,8 @@ private:
 	bool				bCompressed;	// True if the surface is compressed
 	bool				bDCOpen;		// DC is Open. This is TRUE between GetDC() and ReleaseDC() calls.
 	bool				bHard;			// hDC is acquired using GetDCHard()
-	bool				bDC;			// This surface is used for GDI drawing. Flag is set in GetDC()
+	bool				bDCHack;		// DC Hack for SketchPad::GetDC() 
 	bool				bSkpGetDCEr;
-	bool				bSkpGetDC;
 	bool				bBltGroup;		// BlitGroup operation is active
 	bool				bBackBuffer;
 	int					Refs;
@@ -140,6 +141,7 @@ private:
 	int					SketchPad;		// 0=None, 1=GDI, 2=GPU
 	int					iBindCount;		// GPU Bind reference counter
 	D3DSURFACE_DESC		desc;
+	LPDIRECT3DSURFACE9	pStencil;		
 	LPDIRECT3DSURFACE9	pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
 	LPDIRECT3DTEXTURE9	pTex;		// This is a NULL if Type==D3D9S_PLAIN or Creation==D3D9C_BACKBUF
 	LPDIRECT3DSURFACE9	pDCSub;		// Containing a temporary system memory copy of a render target texture
@@ -154,6 +156,7 @@ private:
 	DWORD				Attrib;
 	LPD3DXMATRIX		pVP;
 	D3DVIEWPORT9 *		pViewPort;
+	HFONT				hDefFont;
 
 	ID3DXRenderToSurface *pRTS;
 
@@ -163,6 +166,8 @@ private:
 	static ID3DXEffect*	FX;
 	static D3DXHANDLE	eTech;
 	static D3DXHANDLE	eFlush;
+	static D3DXHANDLE	eSketch;
+	static D3DXHANDLE	eRotate;
 	static D3DXHANDLE	eVP;		// Transformation matrix
 	static D3DXHANDLE	eColor;		// Color key
 	static D3DXHANDLE	eTex0;		// Source Texture

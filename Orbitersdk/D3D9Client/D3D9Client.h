@@ -27,6 +27,10 @@
 #include "D3D9Frame.h"
 #include "nvapi.h"
 
+#define SKETCHPAD_NONE			 0x0
+#define SKETCHPAD_GDI			 0x1
+#define SKETCHPAD_DIRECTX		 0x2
+
 #ifdef _NVAPI_H
 extern StereoHandle	pStereoHandle;
 #endif
@@ -57,6 +61,7 @@ void	MissingRuntimeError();
 
 typedef class D3D9ClientSurface * LPD3D9CLIENTSURFACE;
 typedef char * LPCHAR;
+typedef void * CAMERAHANDLE;
 
 
 struct D3D9Stat {
@@ -1185,7 +1190,6 @@ private:
 
 	bool bControlPanel;
 	bool bScatterUpdate;
-	bool bSkpGDI;
 	bool bFullscreen;       // fullscreen render mode flag
 	bool bGDIBB;		
 	bool bAAEnabled;	

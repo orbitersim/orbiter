@@ -22,7 +22,7 @@ using namespace oapi;
 
 GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 {
-	LogOk("Creating GDI SketchPad...");
+	LogOk("Creating GDI SketchPad... for Surface 0x%X",s);
 
 	hDC    = hdc;
 	cfont  = NULL;
@@ -30,6 +30,8 @@ GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 	cbrush = NULL;
 	hFont0 = NULL;
 	hFontA = NULL;
+
+	SURFACE(GetSurface())->SketchPad = SKETCHPAD_GDI;
 
 	// Default initial drawing settings
 	SetBkMode (hDC, TRANSPARENT); // transparent text background
@@ -39,32 +41,27 @@ GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 
 GDIPad::~GDIPad ()
 {
+	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
+
 	// make sure to deselect custom resources before destroying the DC
 	if (hFont0) SelectObject (hDC, hFont0);
 	SelectObject (hDC, GetStockObject (NULL_PEN));
 	SelectObject (hDC, GetStockObject (NULL_BRUSH));
 	if (hFontA) DeleteObject(hFontA);
-	LogOk("...GDI SketchPad Released");
+	LogOk("...GDI SketchPad Released for surface 0x%X", GetSurface());
 }
 
 HDC GDIPad::GetDC()
 {
-	SURFHANDLE srf = GetSurface();
-	if (!SURFACE(srf)->bSkpGetDCEr) {
-		LogErr("!!Never Use Sketchpad::GetDC()!!");
-		SURFACE(srf)->bSkpGetDCEr = true;
-	}
-
 	return hDC;
 }
 
 Font *GDIPad::SetFont (Font *font) const
 {
-	//LogErr("GDIPad::SetFont(0x%X) surface(%u,%u)",font,SURFACE(GetSurface())->GetWidth(), SURFACE(GetSurface())->GetHeight());
 	Font *pfont = cfont;
 	if (font) {
 		HFONT hFont = (HFONT)SelectObject (hDC, ((D3D9PadFont*)font)->hFont);
-		if (!cfont) hFont0 = hFont; // Disabled for ShuttleFleet Hack
+		if (!cfont) hFont0 = hFont;
 	} else if (hFont0) { // restore original font
 		SelectObject (hDC, hFont0);
 		hFont0 = 0;

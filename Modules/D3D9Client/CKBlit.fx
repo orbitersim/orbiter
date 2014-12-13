@@ -16,6 +16,8 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+
+
 // -------------------------------------------------------------------------------------------------------------
 // D3D9Client ColorKey Blitting technique
 // -------------------------------------------------------------------------------------------------------------
@@ -34,6 +36,17 @@ sampler Tex0S = sampler_state
 	MinFilter = POINT;
 	MagFilter = POINT;
 	MipFilter = None;
+	AddressU  = CLAMP;
+    AddressV  = CLAMP;
+};
+
+sampler Tex0AS = sampler_state
+{
+	Texture   = <gTex0>;
+	MinFilter = Anisotropic;
+	MagFilter = Anisotropic;
+	MipFilter = NONE;
+	MaxAnisotropy = 18;
 	AddressU  = CLAMP;
     AddressV  = CLAMP;
 };
@@ -92,6 +105,22 @@ float4 BlitTechPS(float2 tex0 : TEXCOORD0) : COLOR
     return float4(c.rgb, 1.0f);
 }
 
+float4 SketchTechPS(float2 tex0 : TEXCOORD0) : COLOR
+{
+    float4 c = tex2D(Tex0S, tex0);
+	if (gColor.a<0) c.a = 1.0;
+	else c.a *= gColor.a;
+    return float4(c.rgb*gColor.rgb, c.a);
+}
+
+float4 RotateTechPS(float2 tex0 : TEXCOORD0) : COLOR
+{
+    float4 c = tex2D(Tex0AS, tex0);
+	if (gColor.a<0) c.a = 1.0;
+	else c.a *= gColor.a;
+    return float4(c.rgb*gColor.rgb, c.a);
+}
+
 float4 FlushTechPS(float2 tex0 : TEXCOORD0) : COLOR
 {
     float4 c = tex2D(Tex0S, tex0);
@@ -113,6 +142,32 @@ technique BlitTech
         vertexShader = compile vs_2_0 BlitTechVS();
         pixelShader  = compile ps_2_0 BlitTechPS();
         AlphaBlendEnable = false;
+    }
+}
+
+technique SketchTech
+{
+    pass P0
+    {
+        vertexShader = compile vs_2_0 BlitTechVS();
+        pixelShader  = compile ps_2_0 SketchTechPS();
+        AlphaBlendEnable = true;
+		BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
+    }
+}
+
+technique RotateTech
+{
+    pass P0
+    {
+        vertexShader = compile vs_2_0 BlitTechVS();
+        pixelShader  = compile ps_2_0 RotateTechPS();
+        AlphaBlendEnable = true;
+		BlendOp = Add;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;
     }
 }
 

@@ -173,6 +173,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	cfont  = NULL;
 	cpen   = NULL;
 	cbrush = NULL;
+	hDC    = NULL;
 	pTgt   = SURFACE(s);
 	pDev   = pTgt->GetDevice();
 	origx  = 0;
@@ -183,7 +184,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	halign = TA_LEFT;
 	valign = TA_TOP;
 
-	bConvertTgt = false;
+	SURFACE(GetSurface())->SketchPad = SKETCHPAD_DIRECTX;
 
 	brushcolor = D3DXCOLOR(0,1,0,1);
 	bkcolor    = D3DXCOLOR(0,0,0,1);
@@ -209,7 +210,14 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 D3D9Pad::~D3D9Pad ()
 {
 	_TRACE;
-	if (pTgt) if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
+	
+	if (pTgt) {
+		if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
+		if (hDC) pTgt->ReleaseDC(hDC);
+	}
+
+	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
+
 	pTgt = NULL;
 
 	//if (cfont!=deffont && cfont!=NULL) LogErr("Custom font still attached in sketchpad 0x%X",this); 
@@ -687,18 +695,17 @@ void D3D9Pad::Rectangle2(float l, float t, float r, float b)
 
 HDC D3D9Pad::GetDC() 
 { 
+	if (hDC) return hDC;
+
 	if (pTgt->IsBackBuffer()) return NULL;
 
-	/*if (!pTgt->bSkpGetDC) {
-		pTgt->bSkpGetDC = true;
-		bConvertTgt=true;
-	}*/
-	
 	if (!pTgt->bSkpGetDCEr) {
-		LogErr("!!Never Use Sketchpad::GetDC()!!  HDC not available, the surface is active render target at a moment");
+		LogErr("!! Never Use Sketchpad::GetDC() !! hDC not available, the surface is active render target at a moment");
 		pTgt->bSkpGetDCEr = true;
 	}
-	return NULL;
+
+	hDC = pTgt->GetDC_Hack();
+	return hDC;
 }
 
 
@@ -870,9 +877,10 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		if (fcache[i].height!=height) continue;
 		if (fcache[i].style!=style) continue;
 		if (fcache[i].prop!=prop) continue;
-		if (_stricmp(fcache[i].face,face)) continue;
+		if (_stricmp(fcache[i].face,face)!=0) continue;
 		pFont = fcache[i].pFont;
-		if (orientation==0) hFont = fcache[i].hFont;
+		//hFont = fcache[i].hFont;
+		break;
 	}
 	
 	int weight = (style & BOLD ? FW_BOLD : FW_NORMAL);
@@ -894,6 +902,8 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		pFont = new D3D9Text(pDev);
 		pFont->Init(hNew, 255);
 
+		DeleteObject(hNew);
+
 		pFont->SetRotation(rotation);
 		
 		if (nfcache>120) {
@@ -902,28 +912,23 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		}
 		else {
 			// Fill the cache --------------------------------
-			//
-			fcache[nfcache].hFont  = hNew;  
+			fcache[nfcache].hFont  = NULL;  
 			fcache[nfcache].pFont  = pFont;
 			fcache[nfcache].height = height;
 			fcache[nfcache].style  = style;
 			fcache[nfcache].prop   = prop;
 			strcpy_s(fcache[nfcache].face, 32, face);
 			nfcache++;
-
-			if (orientation==0) hFont = hNew;
 		}
 	}
 
-
-	// Create Windows GDI Font for a use with GDIPad ---------------------------
+	// Create Rotated windows GDI Font for a use with GDIPad ---------------------------
 	//
+	hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+
 	if (hFont==NULL) {
-		hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
-		if (hFont==NULL) {
-			face  = (prop ? def_sansface : def_fixedface);
-			hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
-		}
+		face  = (prop ? def_sansface : def_fixedface);
+		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
 	}
 }
 
@@ -931,9 +936,6 @@ D3D9PadFont::~D3D9PadFont ()
 {
 	if (pFont) pFont->SetRotation(0.0f);
 	fonts_allocated--;
-
-	// If the current font is in a cache, do not delete it.
-	for (int i=0;i<nfcache;i++) if (hFont == fcache[i].hFont) return;
 	DeleteObject(hFont);
 }
 
