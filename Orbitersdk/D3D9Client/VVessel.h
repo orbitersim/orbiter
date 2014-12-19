@@ -147,7 +147,7 @@ protected:
 	/**
 	 * \brief Modify local lighting due to planet shadow or
 	 *   atmospheric dispersion.
-	 * \param light pointer to D3DLIGHT7 structure receiving modified parameters
+	 * \param light pointer to D3D9Light structure receiving modified parameters
 	 * \return \e true if lighting modifications should be applied, \e false
 	 *   if global lighting conditions apply.
 	 */
@@ -163,13 +163,12 @@ private:
 	class MatMgr *pMatMgr;
 
 	LPDIRECT3DCUBETEXTURE9 pEnv[4];
-	LPDIRECT3DCUBETEXTURE9 pLight, pLight2;
-
+	
 	int nEnv;				// Number of environmental maps
 	int iFace;				// EnvMap Face index that is to be rendered next
 
 	struct MESHREC {
-		D3D9Mesh *mesh;		// DX7 mesh representation
+		D3D9Mesh *mesh;		// DX9 mesh representation
 		D3DXMATRIX *trans;	// mesh transformation matrix (rel. to vessel frame)
 		WORD vismode;
 	} *meshlist;			// list of associated meshes

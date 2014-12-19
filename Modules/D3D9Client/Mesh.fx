@@ -1,33 +1,9 @@
-// =================================================================================================================================
-// The MIT Lisence:
-//
-// Copyright (C) 2013 Jarmo Nikkanen
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
-// is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-// IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-// =================================================================================================================================
+// ==============================================================
+// Part of the ORBITER VISUALISATION PROJECT (OVP)
+// Dual licensed under GPL v3 and LGPL v3
+// Copyright (C) 2014 Jarmo Nikkanen
+// ==============================================================
 
-struct AdvancedVS
-{
-    float4 posH     : POSITION0;
-    float3 CamW     : TEXCOORD0;     
-    float3 nrmW     : TEXCOORD1;
-    float2 tex0     : TEXCOORD2;
-    float2 aux		: TEXCOORD3; 
-    half4  diffuse  : COLOR0;           // (Local Light) Diffuse color
-    half4  spec     : COLOR1;           // (Local Light) Specular color
-    half4  atten    : TEXCOORD4;        // (Atmospheric haze) Attennuate incoming fragment color
-    half4  insca    : TEXCOORD5;        // (Atmospheric haze) "Inscatter" Add to incoming fragment color
-};
 
 struct TileMeshVS
 {
@@ -47,122 +23,17 @@ struct MeshVS
     half3  nrmW     : TEXCOORD2;
 };
 
-
-#include "NormalMap.fx"
-
-
-AdvancedVS MeshTechVS(MESH_VERTEX vrt)
+struct TileMeshNMVS
 {
-    AdvancedVS outVS = (AdvancedVS)0;
-
-	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
-	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
-
-    nrmW = normalize(nrmW);
-
-	// A vector from the vertex to the camera
-	
-	outVS.CamW  = -posW * gDistScale + gCamOff;   
-	outVS.tex0  = vrt.tex0;
-    outVS.nrmW  = nrmW;
-	outVS.posH  = mul(float4(posW, 1.0f), gVP);
-	
-	float3 CamW = normalize(outVS.CamW);
-	
-    half4 locW;
-    LocalVertexLight(outVS.diffuse, outVS.spec, locW, nrmW, posW);
-   
-    // Atmospheric haze --------------------------------------------------------
-
-    AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
-
-    outVS.insca *= (gSun.diffuse+gSun.ambient);
-    
-    // Earth "glow" ------------------------------------------------------------
-    float dotb = saturate(-dot(gCameraPos, gSun.direction));
-    float dota = -dot(gCameraPos, nrmW);
-	float angl = saturate((dota-gProxySize)/(1.0f-gProxySize));
-	outVS.diffuse.rgb += gAtmColor.rgb * pow(angl*dotb, 0.7);
-	
-	// Add constanst -----------------------------------------------------------
-	outVS.diffuse.rgb += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
-	
-	// Pre-compute fresnel term ------------------------------------------------
-
-#if defined(_ENVMAP)
-	outVS.aux[0] = gMtrl.fresnel.y * pow(1.0f-saturate(dot(CamW, nrmW)), gMtrl.fresnel.z);
-#endif
-	
-    return outVS;
-}
-
-
-float4 MeshTechPS(AdvancedVS frg) : COLOR
-{
-
-    // Normalize input
-    float3 CamW  = normalize(frg.CamW);
-    float3 nrmW  = normalize(frg.nrmW);
-    float4 cSpec = gMtrl.specular;
-    float4 cTex  = 1;
-    float4 cRefl;
-    
-	if (gTextured) cTex = tex2D(WrapS, frg.tex0);
-	
-    if (gUseSpec) {
-		cSpec = tex2D(SpecS, frg.tex0);
-		cSpec.a *= 255.0f;
-	}	
-    
-    cTex.a*=gMtrlAlpha;
-    
-	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
-    float  d = saturate(-dot(gSun.direction, nrmW));
-    float  s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);					
-    
-    if (d==0) s = 0;	
-    																					
-    float3 diff = gMtrl.diffuse.rgb * (frg.diffuse.rgb + d * gSun.diffuse.rgb); // Compute total diffuse light
-	float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
-	
-    if (gUseEmis) diff += tex2D(EmisS, frg.tex0).rgb;					// Add emissive textures
-
-    cTex.rgb *= saturate(diff);											// Lit the diffuse texture
-
-#if defined(_ENVMAP)
-
-	if (gEnvMapEnable) {
-    
-		if (gUseRefl) cRefl = tex2D(ReflS, frg.tex0);					// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
-		else 		  cRefl = gMtrl.reflect;
-		
-		cRefl = saturate(cRefl + (cRefl.a>0)*frg.aux[0]);
-		
-        float3 v = reflect(-CamW, nrmW);								// Reflection vector
-		
-		// Apply noise/blur effects in reflections
-        if (gUseDisl) v += (tex2D(DislMapS, frg.tex0*gMtrl.dislscale)-0.5f) * gMtrl.dislmag;
-		
-		cTex.rgb *= (1.0f - cRefl.a); 									// Attennuate diffuse texture
-		cTot.rgb += cRefl.rgb * texCUBE(EnvMapS, v).rgb;				// Add reflections into a specular light
-    }
-    
-#endif 
-
-#if defined(_ENVMAP) || defined(_GLASS)
-	cTex.a = saturate(cTex.a + max(max(cTot.r, cTot.g), cTot.b));		// Re-compute output alpha for alpha blending stage
-#endif
-
-	cTex.rgb += cTot.rgb;												// Apply reflections to output color
-																		
-    if (gNight) cTex.rgb += tex2D(NightS, frg.tex0).rgb; 				// Apply building nightlights
-    
-#if defined(_DEBUG)
-    if (gDebugHL) cTex.rgb = cTex.rgb*0.5f + gColor.rgb;				// Apply mesh debugger highlighting
-#endif
-
-    return float4(cTex.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);		// Apply fog and light inscattering
-} 
+    float4 posH     : POSITION0;
+    float3 camW     : TEXCOORD0;
+    half4  atten    : TEXCOORD1;     
+    half4  insca    : TEXCOORD2; 
+    half2  tex0     : TEXCOORD3;
+    float3 nrmT     : TEXCOORD4;
+    float3 tanT     : TEXCOORD5;
+     
+};
 
 
 
@@ -354,11 +225,78 @@ float4 BaseTilePS(TileMeshVS frg) : COLOR
        
     half3 clr = cTex.rgb * saturate(d * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
 
-    if (gNight) clr += tex2D(NightS, frg.tex0).rgb;     
+    if (gNight) clr += tex2D(Tex1S, frg.tex0).rgb;     
 
     return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
     //return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a*(1-frg.insca.a));  // Make basetiles transparent during night
 }
+
+
+// =============================================================================
+// Base Tile Rendering Technique
+// =============================================================================
+
+TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
+{
+    // Null the output
+	TileMeshNMVS outVS = (TileMeshNMVS)0;
+
+    float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	float3 nrmW = mul(half4(vrt.nrmL, 0.0f), gW).xyz;
+	outVS.posH  = mul(float4(posW, 1.0f), gVP);
+
+    half3x3 TBN;
+	TBN[0] = vrt.tanL.xyz;
+	TBN[1] = cross(vrt.tanL, vrt.nrmL);
+	TBN[2] = vrt.nrmL.xyz;
+
+    TBN = mul(TBN, gW);
+    
+	outVS.nrmT  = TBN[2];
+	outVS.tanT  = TBN[0];
+    outVS.camW  = -posW * gDistScale + gCamOff;
+    outVS.tex0  = vrt.tex0;
+	
+    // Atmospheric haze --------------------------------------------------------
+
+    AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
+
+    half4 diffuse;
+    float ambi, nigh;
+
+    LegacySunColor(diffuse, ambi, nigh, nrmW);
+
+    outVS.insca *= (diffuse+ambi);
+    return outVS;
+}
+
+
+float4 BaseTileNMPS(TileMeshNMVS frg) : COLOR
+{
+    // Normalize input
+    float3 CamW = normalize(frg.camW);
+	
+    float4 cTex = tex2D(ClampS, frg.tex0); 
+    float3 nrmT = tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0;
+   
+    float3x3 TBN;
+    TBN[0] = frg.tanT;
+    TBN[1] = cross(frg.tanT, frg.nrmT);
+    TBN[2] = frg.nrmT; 
+    
+    float3 nrmW = mul(nrmT, TBN);
+    
+	float3 r = reflect(gSun.direction, nrmW);
+	float  s = pow(max(dot(r, CamW), 0.0f), 20.0f) * (1.0f-cTex.a);
+	float  d = saturate(-dot(gSun.direction, nrmW)*1.5);
+  
+    if (d<=0) s = 0;
+       
+    float3 clr = cTex.rgb * (max(d,0) * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
+    
+    return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
+}
+
 
 // =============================================================================
 // Vessel Axis vector technique 
@@ -544,71 +482,6 @@ technique BoundingSphereTech
         DestBlend = InvSrcAlpha; 
         ZEnable = true; 
         ZWriteEnable = true;  
-    }
-}
-
-
-
-
-// This is the default mesh rendering technique --------------------------------
-//
-
-technique VesselTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD MeshTechNMVS();
-        pixelShader  = compile PS_MOD MeshTechNMPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        ZEnable = true; 
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;    
-        ZWriteEnable = true;
-    }
-
-    pass P1
-    {
-        vertexShader = compile VS_MOD MeshTechVS();
-        pixelShader  = compile PS_MOD MeshTechPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        ZEnable = true; 
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;    
-        ZWriteEnable = true;
-    }
-}
-
-
-technique BuildingTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD MeshTechNMVS();
-        pixelShader  = compile PS_MOD MeshTechNMPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        ZEnable = true; 
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;    
-        ZWriteEnable = true;
-    }
-
-    pass P1
-    {
-        vertexShader = compile VS_MOD MeshTechVS();
-        pixelShader  = compile PS_MOD MeshTechPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        ZEnable = true; 
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;    
-        ZWriteEnable = true;
     }
 }
 

@@ -475,7 +475,6 @@ void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src)
 	 memcpy2(tgt, src, sizeof (D3DXMATRIX)); 
 }
 
-
 void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)
 {
 	mat->_11 = x->x;
@@ -680,12 +679,3 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 
     return S_OK;
 }
-
-
-
-
-
-	
-
-
-	

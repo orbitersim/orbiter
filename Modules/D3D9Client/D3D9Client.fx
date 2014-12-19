@@ -50,6 +50,11 @@ struct Light {
 #define Theta   2
 #define Phi     3
 
+// -------------------------------------------------------------------------
+uniform extern Mtrl		 gMtrlInst[4];		// Instance Materials
+uniform extern float 	 gMtrlAlphaInst[4];	// Instance Alpha
+uniform extern float4x4  gGrpInst[8];		// Instance Matrices
+// -------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix
 uniform extern float4x4  gWI;			    // Inverse World matrix
 uniform extern float4x4  gVP;			    // Combined View and Projection matrix
@@ -62,7 +67,6 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
-uniform extern float4    gReflCtrl;			// Reflection control params. (MaxSpecPower, Dissolve Scale Factor, Dissolve Power, Scale factor for refl color) 
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector 
 uniform extern float3    gCamOff;			// Custom camera offset
 uniform extern Light     gLights[12];     
@@ -72,8 +76,7 @@ uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove 
 uniform extern Mat       gWater;			// Water material input structure
 uniform extern Mtrl      gMtrl;			    // Material input structure
 uniform extern bool      gModAlpha;		    // Configuration input
-uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
-uniform extern bool      gBrighten;				
+uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations		
 uniform extern bool      gNormalMap;		// Enable Normal Maps
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
 uniform extern bool      gClamp;			// Texture addressing mode Clamp/Wrap
@@ -84,15 +87,21 @@ uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool      gUseDisl;			// Enable dissolve effect
 uniform extern bool      gUseRefl;			// Enable dissolve effect
+uniform extern bool		 gInSpace;			// True if a mesh is located in space
+uniform extern bool		 gInstanced;		// True if a mesh is using instancing
+uniform extern bool		 gLocalLights;		// Local light sources enabled
+uniform extern bool		 gGlow;				// Planet glow enabled
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
+uniform extern float	 gInvProxySize;		// = 1.0 / (1.0f-gProxySize)
 uniform extern float     gPointScale;
 uniform extern float     gDistScale;
 uniform extern float     gFogDensity;
 uniform extern float     gTime;			  
 uniform extern float     gMix;				// General purpose parameter (multible uses)
 uniform extern float 	 gMtrlAlpha;
+uniform extern float	 gGlowConst;
 
 // Textures -----------------------------------------------------------------
 
@@ -117,11 +126,12 @@ uniform extern float     gAmbient0;
 // Vertex layouts
 // -------------------------------------------------------------------------------------------------------------
 
-struct MESH_VERTEX {                           // Orbiter Mesh vertex layout
+struct MESH_VERTEX {                        // D3D9Client Mesh vertex layout
     float3 posL   : POSITION0;
     float3 nrmL   : NORMAL0;
     float3 tanL   : TANGENT0;
     float2 tex0   : TEXCOORD0;
+	int2   idx	  : BLENDINDICES;
 };
 
 struct NTVERTEX {                           // Orbiter Mesh vertex layout
@@ -236,19 +246,6 @@ sampler ReflS = sampler_state       // Primary Mesh texture sampler
     AddressV = WRAP;
 };
 
-sampler NightS = sampler_state      // Night texture sampler
-{
-	Texture = <gTex1>;
-	MinFilter = ANISOTROPIC;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
-	AddressU = WRAP;
-    AddressV = WRAP;
-};
-
-
 sampler Tex1S = sampler_state       // Secundary mesh texture sampler (i.e. night texture) 
 {
 	Texture = <gTex1>;
@@ -327,7 +324,7 @@ sampler RingS = sampler_state       // Planetary rings sampler
     AddressV = WRAP;
 };
 
-sampler EnvMapS = sampler_state       // Planetary rings sampler
+sampler EnvMapS = sampler_state
 {
 	Texture = <gEnvMap>;
 	MinFilter = LINEAR;
@@ -338,7 +335,7 @@ sampler EnvMapS = sampler_state       // Planetary rings sampler
     AddressW = CLAMP;
 };
 
-sampler DislMapS = sampler_state       // Planetary rings sampler
+sampler DislMapS = sampler_state
 {
 	Texture = <gDislMap>;
 	MinFilter = LINEAR;
@@ -395,9 +392,6 @@ sampler Planet3S = sampler_state    // Planet/Cloud micro texture sampler
 
 void AtmosphericHaze(out half4 att, out half4 ins, in float depth, in float3 posW)
 {
-    //float alt = length(posW+gCameraPos*gRadius[2]) - gRadius[0];
-    //float alt = dotp(posW,gCameraPos) + gRadius[3];
-
     if (gHazeMode==0) {
         att = 1;
         ins = 0;
@@ -426,10 +420,11 @@ void AtmosphericHaze(out half4 att, out half4 ins, in float depth, in float3 pos
 void LegacySunColor(out half4 diff, out float ambi, out float nigh, in float3 normalW)
 {
 	float   h = dot(-gSun.direction, normalW);
+	float   s = saturate((h+gSunAppRad)/(2.0f*gSunAppRad));
 	float3 r0 = 1.0 - float3(0.65, 0.75, 1.0) * gDispersion;
 
 	if (gDispersion!=0) { // case 1: planet has atmosphere
-		float3 di = (r0 + (1.0-r0) * saturate(h*5.780)) * saturate((h+gSunAppRad)/(2.0*gSunAppRad)); 
+		float3 di = (r0 + (1.0-r0) * saturate(h*5.780)) * s; 
 		float  ni = (h+0.242)*2.924;	
 		float  am = saturate(max(gAmbient0*saturate(ni)-0.05, gGlobalAmb));
 	
@@ -438,7 +433,7 @@ void LegacySunColor(out half4 diff, out float ambi, out float nigh, in float3 no
         nigh = saturate(-ni-0.2);
 	} 
 	else { // case 2: planet has no atmosphere
-        diff = float4(r0*saturate((h+gSunAppRad)/(2.0f*gSunAppRad)), 1);
+        diff = float4(r0*s, 1);
         ambi = gGlobalAmb;
         nigh = 0;
 	}
@@ -446,7 +441,7 @@ void LegacySunColor(out half4 diff, out float ambi, out float nigh, in float3 no
 
 
 
-void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float3 nrmW, in float3 posW)
+void LocalVertexLight(out float3 diff, out float3 spec, out float3 dir, in float3 nrmW, in float3 posW, in float sp)
 {
     float3 diffuse = 0;
     float3 specular = 0;
@@ -455,14 +450,15 @@ void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float
     int i;
     for (i=0;i<gLightCount;i++) 
     {
-        float  dist  = distance(posW,gLights[i].position);
-        float3 relpW = normalize(posW-gLights[i].position);
+        float3 relpW = posW - gLights[i].position;
+        float3 relpN = normalize(relpW);
+		float  dst   = dot(relpW, relpN);
 
-        float att    = saturate(1.0f / (gLights[i].attenuation[0] + gLights[i].attenuation[1]*dist + gLights[i].attenuation[2]*dist*dist));
-        float spt    = saturate((dot(relpW, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
+        float att    = rcp(dot(gLights[i].attenuation.xyz, float3(1.0, dst, dst*dst)));
+        float spt    = saturate((dot(relpN, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
         
-        float d      = saturate(dot(-relpW, nrmW));
-        float s      = pow(saturate(dot(reflect(relpW, nrmW), normalize(-posW))), gMtrl.specular.a);
+        float d      = saturate(dot(-relpN, nrmW));
+        float s      = pow(saturate(dot(reflect(relpN, nrmW), normalize(-posW))), sp);
 
         if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
         if (gLights[i].type==1) spt = 1.0f;         // Point light -> set spotlight factor to 1
@@ -471,12 +467,12 @@ void LocalVertexLight(out float4 diff, out float4 spec, out float4 dir, in float
 
         diffuse   += gLights[i].diffuse.rgb * (dif * d);
         specular  += gLights[i].specular.rgb * (dif * s);
-        direction += relpW * (dif * d);
+        direction += relpN * (dif * d);
     }  
    
-    diff = float4(1.5 - exp(-1.0*diffuse.rgb)*1.5, 0);
-    spec = float4(1.5 - exp(-1.0*specular.rgb)*1.5, 0);
-    dir  = float4(normalize(direction), 0);
+    diff = 1.5 - exp2(-diffuse.rgb)*1.5;
+    spec = 1.5 - exp2(-specular.rgb)*1.5;
+    dir  = normalize(direction);
 }
 
 
@@ -544,6 +540,7 @@ float4 SpotTechPS(SimpleVS frg) : COLOR
 
 #include "Particle.fx"
 #include "Mesh.fx"
+#include "Vessel.fx"
 #include "CelestialSphere.fx"
 #include "HorizonHaze.fx"
 #include "Planet.fx"

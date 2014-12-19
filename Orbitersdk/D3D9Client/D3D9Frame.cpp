@@ -283,29 +283,13 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		oapiWriteLog("D3D9Client:WARNING: [Hardware has only a limited non-power of 2 texture support]");
 	}
 
-	if ((caps.PixelShaderVersion&0xFFFF)<0x0200) {
-		LogErr("[Pixel Shader Version 2.0 or better is required]");
-		oapiWriteLog("D3D9Client:FAIL: [Pixel Shader Version 2.0 or better is required]");
+	if ((caps.PixelShaderVersion&0xFFFF)<0x0300 || (caps.VertexShaderVersion&0xFFFF)<0x0300) {
+		LogErr("[Pixel Shader Version 3.0 is required (i.e. DirectX 9.0c)]");
+		oapiWriteLog("D3D9Client:FAIL: [Pixel Shader Version 3.0 is required (i.e. DirectX 9.0c)]");
 		bFail=true;
 	}
 
-	if ((caps.VertexShaderVersion&0xFFFF)<0x0200) {
-		LogErr("[Insufficient Vertex Shader. Attempting software vertex processing...]");
-		oapiWriteLog("D3D9Client:FAIL: [Vertex Shader Version 2.0 or better is required]");
-		bFail=true;
-	}
-
-	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) {
-		Pure = false;
-		LogWrn("[Not a pure device]");
-		oapiWriteLog("D3D9Client:WARNING: [Not a pure device]");
-	}
-
-	if ((caps.DevCaps&D3DDEVCAPS_HWTRANSFORMANDLIGHT)==0) {
-		//bFail=true;
-		LogWrn("[No Hardware T&L]");
-		oapiWriteLog("D3D9Client:WARNING: [No Hardware T&L]");
-	}
+	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) Pure = false;
 
 
 	// ==============================================================
@@ -348,7 +332,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		LogWrn("[No render-target D3DFMT_A16B16G16R16F support]");
 		oapiWriteLog("D3D9Client:WARNING: [No render-target D3DFMT_A16B16G16R16F support]");
 	}
-
 
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DYNAMIC, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) {
 		LogErr("[No D3DFMT_A16B16G16R16F Support]");

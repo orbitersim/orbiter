@@ -11,6 +11,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Config.h"
 #include "Mesh.h"
+#include "VectorHelpers.h"
 
 D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
@@ -29,7 +30,6 @@ D3DXHANDLE D3D9Effect::ePanelTechB = 0;		// Used to draw a new style 2D panel
 D3DXHANDLE D3D9Effect::eVesselTech = 0;		// Vessel exterior, surface bases.
 D3DXHANDLE D3D9Effect::eBBTech = 0;			// Bounding Box Tech
 D3DXHANDLE D3D9Effect::eBSTech = 0;			// Bounding Sphere Tech
-D3DXHANDLE D3D9Effect::eBuildingTech = 0;
 D3DXHANDLE D3D9Effect::eSimple = 0;
 D3DXHANDLE D3D9Effect::eBaseShadowTech = 0;	// Used to draw transparent surface without texture 
 D3DXHANDLE D3D9Effect::eBeaconArrayTech = 0;
@@ -41,7 +41,6 @@ D3DXHANDLE D3D9Effect::eRingTech2 = 0;	// Planet rings technique
 D3DXHANDLE D3D9Effect::eShadowTech = 0; // Vessel ground shadows
 D3DXHANDLE D3D9Effect::eArrowTech = 0;  // (Grapple point) arrows
 D3DXHANDLE D3D9Effect::eAxisTech = 0;
-D3DXHANDLE D3D9Effect::eLightCubeTech = 0;
 
 // VC rendering techniques
 D3DXHANDLE D3D9Effect::eVCMFDTech = 0;
@@ -66,6 +65,7 @@ D3DXHANDLE D3D9Effect::eW = 0;			// World matrix
 D3DXHANDLE D3D9Effect::eWI = 0;			// World inverse matrix
 D3DXHANDLE D3D9Effect::eGT = 0;			// Mesh group transformation matrix
 D3DXHANDLE D3D9Effect::eGTI = 0;		// Inverse mesh grp ...
+D3DXHANDLE D3D9Effect::eInstMatrix = 0;	// Instance Matrix array
 D3DXHANDLE D3D9Effect::eMat = 0;		// Material
 D3DXHANDLE D3D9Effect::eWater = 0;		// Water
 D3DXHANDLE D3D9Effect::eMtrl = 0;
@@ -81,7 +81,6 @@ D3DXHANDLE D3D9Effect::eEmisMap = 0;
 D3DXHANDLE D3D9Effect::eEnvMap = 0;
 D3DXHANDLE D3D9Effect::eDislMap = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
-D3DXHANDLE D3D9Effect::eEnvLight = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -101,25 +100,28 @@ D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
 // Shader Flow Controls
 D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multibly material alpha with texture alpha
 D3DXHANDLE D3D9Effect::eFullyLit = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eBrighten = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNormalMap = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eClamp = 0;		// BOOL
-D3DXHANDLE D3D9Effect::eNight = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eUseSpec = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseEmis = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseRefl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eInstanced = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eLocalLights  = 0;	// BOOL		
+D3DXHANDLE D3D9Effect::eGlow = 0;	// BOOL	
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
-D3DXHANDLE D3D9Effect::eReflCtrl = 0;
 D3DXHANDLE D3D9Effect::eDistScale = 0;
 D3DXHANDLE D3D9Effect::eRadius = 0;
 D3DXHANDLE D3D9Effect::eAttennuate = 0;
 D3DXHANDLE D3D9Effect::eInScatter = 0;
+D3DXHANDLE D3D9Effect::eInvProxySize = 0;
+D3DXHANDLE D3D9Effect::eGlowConst = 0;
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eGlobalAmb = 0;	 
 D3DXHANDLE D3D9Effect::eSunAppRad = 0;	 
@@ -189,6 +191,7 @@ D3D9Effect::~D3D9Effect()
 
 void D3D9Effect::GlobalExit()
 {
+	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
 	SAFE_RELEASE(pVB);
 	SAFE_DELETE(hArrow);
@@ -230,21 +233,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[0].Name = "VS_MOD";
 	macro[1].Name = "PS_MOD";
 
-	if (Model==0x200) {
-		LogAlw("[Compiling Effects for Shader Model 2.0]");
-		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 2.0]");
-		macro[0].Definition = "vs_2_0";
-		macro[1].Definition = "ps_2_0";
-		sprintf_s(name,256,"Modules/D3D9Client20/D3D9Client.fx");//,folder);
-	}
-	else {
-		LogAlw("[Compiling Effects for Shader Model 3.0]");
-		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
-		macro[0].Definition = "vs_3_0";
-		macro[1].Definition = "ps_3_0";
-		sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");//,folder);
-	}
-	
+	LogAlw("[Compiling Effects for Shader Model 3.0]");
+		
+	macro[0].Definition = "vs_3_0";
+	macro[1].Definition = "ps_3_0";
+	sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");
 	
 	macro[2].Name = "ANISOTROPY_MACRO";
 	macro[2].Definition = new char[32];
@@ -299,23 +292,13 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	eVesselTech		 = FX->GetTechniqueByName("VesselTech");
 	eBaseShadowTech	 = FX->GetTechniqueByName("BaseShadowTech");
-	eBuildingTech	 = FX->GetTechniqueByName("BuildingTech");
 	eBeaconArrayTech = FX->GetTechniqueByName("BeaconArrayTech");
-
-	eLightCubeTech   = FX->GetTechniqueByName("LightCubeTech");
-
-	//eNFVesselTech   = FX->GetTechniqueByName("NFVesselTech");
-	//eNFGlassTech    = FX->GetTechniqueByName("NFGlassTech");
-	//eNFBuildingTech = FX->GetTechniqueByName("NFBuildingTech");
-
-	eDiffuseTech    = FX->GetTechniqueByName("ParticleDiffuseTech");
-	eEmissiveTech   = FX->GetTechniqueByName("ParticleEmissiveTech");
-	
+	eDiffuseTech     = FX->GetTechniqueByName("ParticleDiffuseTech");
+	eEmissiveTech    = FX->GetTechniqueByName("ParticleEmissiveTech");
 	
 	// Flow Control Booleans -----------------------------------------------
 	eModAlpha	  = FX->GetParameterByName(0,"gModAlpha");
 	eFullyLit	  = FX->GetParameterByName(0,"gFullyLit");
-	eBrighten	  = FX->GetParameterByName(0,"gBrighten");
 	eUseEmis	  = FX->GetParameterByName(0,"gUseEmis");
 	eUseSpec	  = FX->GetParameterByName(0,"gUseSpec");
 	eDebugHL	  = FX->GetParameterByName(0,"gDebugHL");
@@ -323,9 +306,12 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eNormalMap	  = FX->GetParameterByName(0,"gNormalMap");
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
 	eClamp		  = FX->GetParameterByName(0,"gClamp");
-	eNight		  = FX->GetParameterByName(0,"gNight");
 	eUseDisl	  = FX->GetParameterByName(0,"gUseDisl");
 	eUseRefl	  = FX->GetParameterByName(0,"gUseRefl");
+	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
+	eInstanced	  = FX->GetParameterByName(0,"gInstanced");	
+	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			
+	eGlow		  = FX->GetParameterByName(0,"gGlow");	
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
@@ -337,17 +323,18 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eRadius       = FX->GetParameterByName(0,"gRadius");
 	eCameraPos	  = FX->GetParameterByName(0,"gCameraPos");
 	eCamOff		  = FX->GetParameterByName(0,"gCamOff");
-	eReflCtrl	  = FX->GetParameterByName(0,"gReflCtrl");
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
 	eMix		  = FX->GetParameterByName(0,"gMix");
 	eTime		  = FX->GetParameterByName(0,"gTime");
 	eMtrlAlpha	  = FX->GetParameterByName(0,"gMtrlAlpha");
+	eGlowConst    = FX->GetParameterByName(0,"gGlowConst");
 	// ----------------------------------------------------------------------
 	eVP			  = FX->GetParameterByName(0,"gVP");
 	eW			  = FX->GetParameterByName(0,"gW");
 	eWI			  = FX->GetParameterByName(0,"gWI");
 	eGT			  = FX->GetParameterByName(0,"gGrpT");
 	eGTI		  = FX->GetParameterByName(0,"gGrpTI");
+	eInstMatrix   = FX->GetParameterByName(0,"gGrpInst");
 	// ----------------------------------------------------------------------
 	eSun		  = FX->GetParameterByName(0,"gSun");
 	eMat		  = FX->GetParameterByName(0,"gMat");
@@ -362,7 +349,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eEnvMap		  = FX->GetParameterByName(0,"gEnvMap");
 	eDislMap	  = FX->GetParameterByName(0,"gDislMap");
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
-	eEnvLight	  = FX->GetParameterByName(0,"gEnvLight");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
@@ -372,6 +358,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eFogDensity	  = FX->GetParameterByName(0,"gFogDensity");
 	eAttennuate	  = FX->GetParameterByName(0,"gAttennuate");
 	eInScatter	  = FX->GetParameterByName(0,"gInScatter");
+	eInvProxySize = FX->GetParameterByName(0,"gInvProxySize");
 	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
 	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
@@ -380,9 +367,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	//
 	FX->SetInt(eHazeMode, 0);
 	FX->SetBool(eDebugHL, false);
+	FX->SetBool(eInSpace, false);
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
-	FX->SetVector(eReflCtrl,   &D3DXVECTOR4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	CreateMatExt(&_defmat, &defmat);
 	CreateMatExt(&_night_mat, &night_mat);
@@ -445,6 +432,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	DWORD width, height;
 	oapiGetViewportSize(&width, &height); // BUG:  Custom Camera may have different view size
 
+
 	float radlimit = float(rad) + 1.0f;
 	float rho0 = 1.0f;
 	
@@ -486,6 +474,8 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));
+	FX->SetFloat(eInvProxySize, 1.0f/(1.0f-cos(proxy_size)));
+	FX->SetFloat(eGlowConst, saturate(float(dotp(cam, sun))));
 }
 
 // ===========================================================================================
@@ -515,76 +505,7 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 	}
 }
 
-// ===========================================================================================
-//
-bool D3D9Effect::ComputeLighting(LPDIRECT3DCUBETEXTURE9 pEnv, LPDIRECT3DCUBETEXTURE9 pLight, LPDIRECT3DCUBETEXTURE9 pTgt)
-{
-	static D3DVECTOR bvtx[8] = {
-		{1,-1,-1}, {1, 1,-1}, {1, 1, 1}, {1,-1, 1},
-		{-1,-1,-1}, {-1, 1,-1}, {-1, 1, 1}, {-1,-1, 1}
-	};
 
-	static WORD bidx[36] = { 0,1,2, 0,2,3,  4,1,0, 4,5,1,  5,2,1, 5,6,2,  6,3,2, 6,7,3,  7,0,3, 7,4,0,  4,6,5, 4,7,6 }; 
-
-	LPDIRECT3DSURFACE9 pORT = NULL;
-	LPDIRECT3DSURFACE9 pSrf = NULL;
-	UINT numPasses = 0;
-
-	HR(pDev->GetRenderTarget(0, &pORT));
-	
-	D3DXMATRIX mEnv, mP, mI;
-	D3DXVECTOR3 dir, up;
-
-	D3DXMatrixIdentity(&mI);
-
-	D3DXMatrixPerspectiveFovLH(&mP, float(PI05), 1.0f, 0.1f, 2.0f);
-
-	HR(pDev->SetVertexDeclaration(pPositionDecl));
-	HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-
-	for (DWORD i=0;i<6;i++) {
-
-		HR(pTgt->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
-		HR(pDev->SetRenderTarget(0, pSrf));
-
-		EnvMapDirection(i, &dir, &up);
-		
-		D3DXVECTOR3 cp;
-		D3DXVec3Cross(&cp, &up, &dir);
-		D3DXVec3Normalize(&cp, &cp);
-		D3DXMatrixIdentity(&mEnv);
-		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
-		D3DXMatrixMultiply(&mEnv, &mEnv, &mP);
-		
-		D3DCOLOR color = 0x00FF00;
-
-		HR(pDev->Clear(0, NULL, D3DCLEAR_TARGET, color, 1.0f, 0));
-		HR(pDev->BeginScene());
-		
-		HR(FX->SetTechnique(eLightCubeTech));
-		HR(FX->SetMatrix(eVP, &mEnv));
-		HR(FX->SetMatrix(eW, &mI));
-		HR(FX->SetTexture(eEnvMap, pEnv));
-		HR(FX->SetTexture(eEnvLight, pLight));
-		HR(FX->SetTexture(eTex0, pNoise));
-		HR(FX->SetFloat(eMix, float(float(rand()%512)/1024.0f)));
-		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-		HR(FX->BeginPass(0));
-		HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 8, 12, &bidx, D3DFMT_INDEX16, &bvtx, sizeof(D3DXVECTOR3)));
-		HR(FX->EndPass());
-		HR(FX->End());
-		
-		HR(pDev->EndScene());
-
-		SAFE_RELEASE(pSrf);	
-	}
-
-	 HR(pDev->SetRenderTarget(0, pORT));
-	 SAFE_RELEASE(pORT);
-
-	 HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
-	 return true;
-}
 
 // ===========================================================================================
 //

@@ -47,7 +47,9 @@ class D3D9Mesh : private D3D9Effect
 
 public:
 
-	D9BBox BBox, BBoxT;
+	D9BBox BBox;
+
+	D3DXMATRIX InstMatrix[16];
 	
 	struct GROUPREC {			// mesh group definition
 		DWORD VertOff;			// Vertex Offset
@@ -66,11 +68,18 @@ public:
 		float TexMixEx[MAXTEX];
 	};
 
-	/**
-	 * \brief Create an empty mesh
-	 * \param client graphics client
-	 */
-	D3D9Mesh(D3D9Client *client);
+	struct INSTREC {
+		DWORD  UsrFlag;
+		DWORD  MtrlIdx;
+		DWORD  TexIdx;
+		DWORD  TexIdxEx;
+		float  TexMixEx;
+		DWORD  nGrp;
+		WORD   GrpIdx[16];
+		D9BBox BBox;
+	};
+
+	
 	D3D9Mesh(const D3D9Mesh &mesh);
 
 	/**
@@ -82,7 +91,6 @@ public:
 	 */
 	D3D9Mesh(oapi::D3D9Client *client, DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
 	D3D9Mesh(oapi::D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
-	D3D9Mesh(oapi::D3D9Client *client, const MESHGROUPEX *pGroup);
 	D3D9Mesh(oapi::D3D9Client *client, MESHHANDLE hMesh, bool asTemplate=false);
 	~D3D9Mesh();
 
@@ -130,8 +138,11 @@ public:
 	 */
 	inline D3D9MatExt *GetMaterial(DWORD idx) { return Mtrl+idx; }
 	
+
+	// These two are only used by DebugControls.cpp
 	DWORD GetMeshGroupMaterialIdx(DWORD grp);
 	DWORD GetMeshGroupTextureIdx(DWORD grp);
+
 	/**
 	 * \brief Replace a mesh texture.
 	 * \param texidx texture index (>= 0)
@@ -150,9 +161,8 @@ public:
 	void RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
 	void RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
 	
-	
+	void RenderInstanced(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
-	void RenderVC(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
 	void RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW);
 	void RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
@@ -176,16 +186,12 @@ public:
 	float GetBoundingSphereRadius();
 
 	D9BBox * GetAABB();
-	D9BBox * GetAABBTransformed();
-
+	
 	void UpdateBoundingBox();
 	void BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 	
 	void SetAmbientColor(D3DCOLOR c);
 	void SetupFog(const LPD3DXMATRIX pW);
-
-	void GetTransform(LPD3DXMATRIX pT) { pT[0]=mTransform; for(DWORD i=0;i<nGrp;i++) pT[1+i]=Grp[i]->Transform; return; }
-	void SetTransform(LPD3DXMATRIX pT) { mTransform=pT[0]; for(DWORD i=0;i<nGrp;i++) Grp[i]->Transform=pT[1+i]; return; }
 
 	void DumpTextures();
 	void DumpGroups();
@@ -207,6 +213,7 @@ public:
 private:
 
 	void UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
+	void ProcessInstances();
 	void ProcessInherit();
 	bool CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid);
 	void ClearGroups ();
@@ -219,6 +226,7 @@ private:
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
+	LPDIRECT3DINDEXBUFFER9  pBB;
 
 	DWORD	MaxVert;
 	DWORD	MaxFace;
@@ -226,16 +234,20 @@ private:
 
 	oapi::D3D9Client *gc;		// the graphics client instance
 	GROUPREC **Grp;             // list of mesh groups
+	INSTREC *Inst;				// list of instance groups 
 	DWORD nGrp;                 // number of mesh groups
-	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
+	int   nInst;				// number of instance groups
+	DWORD nMtrl;                // number of mesh materials
 	DWORD nTex;                 // number of mesh textures
 	D3D9MatExt *Mtrl;           // list of mesh materials
+	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
 	D3D9Light *sunLight;
 	D3DCOLOR cAmbient;
-	DWORD nMtrl;                // number of mesh materials
+	
+	
 
 	bool bTemplate;             // mesh used as template only (not for rendering)
 	bool bBSRecompute;			// Bounding sphere must be recomputed

@@ -108,6 +108,7 @@ const D3DVERTEXELEMENT9 MeshVertexDecl[] = {
 	{0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 	{0, 24, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0},
 	{0, 36, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+	{0, 44, D3DDECLTYPE_SHORT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0},
 	D3DDECL_END()
 };
 
@@ -166,6 +167,7 @@ typedef struct {
 	float nx, ny, nz;
 	float tx, ty, tz;
 	float u, v;
+	short a, b;
 } NMVERTEX;
 
 typedef struct {
@@ -333,7 +335,6 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
-
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations

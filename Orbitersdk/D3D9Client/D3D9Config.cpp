@@ -38,15 +38,12 @@ void D3D9Config::Reset ()
 	DebugLvl			= 1;
 	VCNearPlane		    = 0.1; 
 	MaxLights			= 12;
-	MemoryLogic			= 0;
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
-	RejectRTDC          = 0;
 	PreLBaseVis			= 0;
 	GDIRTSWrn			= 0;
 	DebugFontSize		= 18;
 	UseNormalMap		= 1;
-	LoadInSystemMem     = 0;
 	ManagedTiles		= 0;
 	SketchpadMode		= 0;
 	SketchpadFont		= 1;
@@ -122,13 +119,10 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "DebugLvl", i))					DebugLvl = i;
 	if (oapiReadItem_float (hFile, "VCNearPlane", d))				VCNearPlane = max (-1.0, min (1.0, d));
 	if (oapiReadItem_int   (hFile, "LightSourcesInUse", i))			MaxLights = i;
-	if (oapiReadItem_int   (hFile, "MemAllocLogic", i))				MemoryLogic = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))				DisableDriverManagement = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))					NVPerfHUD = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "RejectRTDC", i))				RejectRTDC = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))			DebugFontSize = i;	
 	if (oapiReadItem_int   (hFile, "GDIRTSDebug", i))				GDIRTSWrn = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "LoadTexturesInSystemMem",i))	LoadInSystemMem = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "ManagedTiles",i))				ManagedTiles = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 
@@ -185,13 +179,10 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "DebugLvl", DebugLvl);
 	oapiWriteItem_float (hFile, "VCNearPlane", VCNearPlane);
 	oapiWriteItem_int   (hFile, "LightSourcesInUse", MaxLights);
-	oapiWriteItem_int   (hFile, "MemAllocLogic", MemoryLogic);
 	oapiWriteItem_int   (hFile, "DisableDrvMgm", DisableDriverManagement);
 	oapiWriteItem_int   (hFile, "NVPerfHUD", NVPerfHUD);
-	oapiWriteItem_int   (hFile, "RejectRTDC", RejectRTDC);
 	oapiWriteItem_int   (hFile, "DebugLineFontSize", DebugFontSize);	
 	oapiWriteItem_int   (hFile, "GDIRTSDebug", GDIRTSWrn);
-	oapiWriteItem_int   (hFile, "LoadTexturesInSystemMem", LoadInSystemMem);
 	oapiWriteItem_int   (hFile, "ManagedTiles", ManagedTiles);
 	oapiWriteItem_int   (hFile, "DisableVisualHelperReadout", DisableVisualHelperReadout);
 

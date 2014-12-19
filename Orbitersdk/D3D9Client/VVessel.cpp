@@ -46,7 +46,6 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	sunLight = *scene->GetLight(-1);
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
-	pLight = NULL;
 	bAMSO = false;
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
@@ -75,6 +74,7 @@ vVessel::~vVessel ()
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
 	DisposeAnimations();
 	DisposeMeshes();
+	LogAlw("Vessel visual deleted succesfully");
 }
 
 
@@ -459,6 +459,7 @@ void vVessel::DelMesh(UINT idx)
 
 
 // ============================================================================================
+// This is called only from a class constructor
 //
 void vVessel::InitAnimations()
 {
@@ -483,7 +484,9 @@ void vVessel::InitAnimations()
 }
 
 
+
 // ============================================================================================
+// Called when a new mesh is inserted to a mesh
 //
 void vVessel::InitAnimations(UINT meshidx)
 {
@@ -493,21 +496,14 @@ void vVessel::InitAnimations(UINT meshidx)
 
 	UINT oldnanim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
-	if (nanim > oldnanim) {
-		for (UINT i = oldnanim; i < nanim; ++i) {
-			for (UINT k = 0; k < anim[i].ncomp; ++k) {
-				if (anim[i].comp[k]->trans->mesh == meshidx) {
-					animstate[i] = anim[i].defstate;
-					break; // inner (components) loop
-				}
-//			ANIMATIONCOMP *AC = anim[i].comp[k];
-//			animstate[i] = (AC->trans->mesh == meshidx)
-//			             ? anim[i].defstate // reset to default animation state
-//			             : anim[i].state;
+	for (UINT i = 0; i < nanim; ++i) {
+		for (UINT k = 0; k < anim[i].ncomp; ++k) {
+			if (anim[i].comp[k]->trans->mesh == meshidx) {
+				animstate[i] = anim[i].defstate;
 			}
 		}
 	}
-
+	
 	UpdateAnimations(); // Must update immediately to prevent RMS grapple target displacement
 }
 
@@ -569,8 +565,7 @@ void vVessel::DisposeAnimations ()
 //
 void vVessel::ResetAnimations (UINT reset/*=1*/)
 {
-	// TODO: needed?
-	// bBSRecompute = true;
+	bBSRecompute = true;
 
 	// nanim should stay the same, but just in case
 	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
@@ -667,12 +662,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	const VCMFDSPEC *mfdspec[MAXMFD];
 	SURFHANDLE sHUD=0, sMFD[MAXMFD];
 
-	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 2); // turn on  fog
-	else										   D3D9Effect::FX->SetInt(D3D9Effect::eHazeMode, 0); // turn off fog
+	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false); // turn on  fog
+	else										   D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);  // turn off fog
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-
-	if (pLight) D3D9Effect::FX->SetTexture(D3D9Effect::eEnvLight, pLight);
 
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
@@ -765,8 +758,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		}
 
 
-		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC, pEnv, nEnv); // Render VC
-		else			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
+		if (internalpass)	meshlist[i].mesh->Render(dev, pWT, RENDER_VC,     pEnv, nEnv); // Render VC
+		else 				meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
+		
 
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
@@ -1257,25 +1251,6 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	SAFE_RELEASE(pODS);
 	SAFE_RELEASE(pORT);
 
-	/*
-	if (pLight==NULL) {
-		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pLight)!=S_OK) {
-			LogErr("Failed to create env lightmap for visual 0x%X",this);
-			return false;
-		}
-		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pLight2)!=S_OK) {
-			LogErr("Failed to create env lightmap for visual 0x%X",this);
-			return false;
-		}
-	}*/
-
-	if (pLight) {
-		D3D9Effect::ComputeLighting(pEnv[0], pLight, pLight2);
-		LPDIRECT3DCUBETEXTURE9 pTemp = pLight;
-		pLight = pLight2;
-		pLight2 = pTemp;
-	}
-
 	return true;
 }
 
@@ -1284,7 +1259,6 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 //
 LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
 {
-	if (idx<0) return pLight;
 	if (idx>=0 && idx<4) return pEnv[idx];
 	return NULL;
 }
