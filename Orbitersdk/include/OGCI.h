@@ -44,8 +44,6 @@ typedef void * CAMERAHANDLE;
 #define OAPISURFACE_SYSMEM       0x0200 ///< Create the surface in system (host) memory
 #define OAPISURFACE_RENDER3D     0x0400 ///< Create a surface that can act as a target for rendering a 3D scene
 
-typedef SURFHANDLE (OGCIFN *_oapiCreateSurfaceEx)(DWORD  width, DWORD  height, DWORD  attrib);   
-
 #define OGCI_FOR_2010P1
 #endif
 
@@ -53,24 +51,43 @@ typedef SURFHANDLE (OGCIFN *_oapiCreateSurfaceEx)(DWORD  width, DWORD  height, D
 // Function Prototypes
 // -------------------------------------------------------------------------------------------------------------------------------------
 
-typedef DWORD (OGCIFN *_ogciClientID)();
+typedef DWORD (OGCIFN *__ogciClientID)();
+typedef SURFHANDLE (OGCIFN *__ogciCreateSurfaceEx)(DWORD  width, DWORD  height, DWORD  attrib);   
 
 // Camera Take Intaeface
-typedef void  (OGCIFN *_ogciTakeCamera)(VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov);
-typedef void  (OGCIFN *_ogciReleaseCameraTake)();
+typedef void  (OGCIFN *__ogciTakeCamera)(VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov);
+typedef void  (OGCIFN *__ogciReleaseCameraTake)();
 
 // Custom Camera Interface
-typedef int   (OGCIFN *_ogciDeleteCustomCamera)(CAMERAHANDLE hCam);
-typedef void  (OGCIFN *_ogciCustomCameraOnOff)(CAMERAHANDLE hCam, bool bOn);
-typedef CAMERAHANDLE (OGCIFN *_ogciSetupCustomCamera)(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags);
+typedef int   (OGCIFN *__ogciDeleteCustomCamera)(CAMERAHANDLE hCam);
+typedef void  (OGCIFN *__ogciCustomCameraOnOff)(CAMERAHANDLE hCam, bool bOn);
+typedef CAMERAHANDLE (OGCIFN *__ogciSetupCustomCamera)(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags);
 
 // Custom Sketchpad Goodies
-typedef int   (OGCIFN *_ogciSketchpadVersion)(oapi::Sketchpad *pSkp);
-typedef void  (OGCIFN *_ogciSketchBlt)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, int tx, int ty);
-typedef void  (OGCIFN *_ogciSketchBltEx)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha, VECTOR3 *color);
-typedef void  (OGCIFN *_ogciSketchRotateBlt)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha, VECTOR3 *color);
+typedef int   (OGCIFN *__ogciSketchpadVersion)(oapi::Sketchpad *pSkp);
+typedef void  (OGCIFN *__ogciSketchBlt)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, int tx, int ty);
+typedef void  (OGCIFN *__ogciSketchBltEx)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha, VECTOR3 *color);
+typedef void  (OGCIFN *__ogciSketchRotateBlt)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha, VECTOR3 *color);
 
-bool	ogciInitialize();
-bool	ogciEnabled();
+
+
+// -------------------------------------
+// Some Generic functions
+bool			ogciInitialize();
+bool			ogciEnabled();
+DWORD			ogciClientID();
+
+// -------------------------------------
+// Custom Camera Interface
+int				ogciDeleteCustomCamera(CAMERAHANDLE hCam);
+void			ogciCustomCameraOnOff(CAMERAHANDLE hCam, bool bOn);
+CAMERAHANDLE	ogciSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags=0xFF);
+
+// -------------------------------------
+// Custom Sketchpad Goodies
+int				ogciSketchpadVersion(oapi::Sketchpad *pSkp);
+void			ogciSketchBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, int tx, int ty);
+void			ogciSketchBltEx(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha=-1.0f, VECTOR3 *color=NULL);
+void			ogciSketchRotateBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha=-1.0f, VECTOR3 *color=NULL);
 
 #endif
