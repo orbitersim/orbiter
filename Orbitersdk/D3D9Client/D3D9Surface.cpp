@@ -827,7 +827,8 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 		}
 	}
 
-
+	LogErr("Failed to Fill a surface");
+	LogSpecs("Surface");
 	return false;
 }
 
@@ -867,7 +868,9 @@ bool D3D9ClientSurface::Clear(DWORD c)
 			return false;
 		}
 	}
-	return true;
+	LogErr("Failed to Clear a surface");
+	LogSpecs("Surface");
+	return false;
 }
 
 // -----------------------------------------------------------------------------------------------

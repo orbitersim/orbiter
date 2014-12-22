@@ -1619,7 +1619,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 	// OAPISURFACE_SKETCHPAD goes with Lockable Render Target or with SystemMem
 	if (attrib==OAPISURFACE_SKETCHPAD) {
 		if (Config->SketchpadMode==0) attrib = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-		if (Config->SketchpadMode==1) attrib = OAPISURFACE_SYSMEM;
+		if (Config->SketchpadMode==1) attrib = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
 	}
 
 	// OAPISURFACE_SYSMEM will use texture interface
