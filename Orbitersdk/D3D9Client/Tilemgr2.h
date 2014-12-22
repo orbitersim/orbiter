@@ -230,8 +230,7 @@ public:
 	const configPrm &Cprm() const { return cprm; }
 	const char *CbodyName() const { return cbody_name; }
 	const double CbodySize() const { return obj_size; }
-
-	
+	const ELEVHANDLE ElevMgr() const { return emgr; }
 
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
@@ -248,6 +247,7 @@ private:
 	const vPlanet *vp;               // the planet visual
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
+	ELEVHANDLE emgr;                 // elevation data query handle
 
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];
@@ -256,7 +256,8 @@ private:
 
 	static oapi::D3D9Client *gc;
 	static double resolutionBias;
-	static bool bTileLoadThread;      // load tiles on separate thread
+	static double resolutionScale;
+	static bool bTileLoadThread;     // load tiles on separate thread
 };
 
 // =======================================================================
@@ -267,6 +268,7 @@ class TileManager2: public TileManager2Base {
 
 public:
 	TileManager2 (const vPlanet *vplanet, int _maxres);
+	~TileManager2 ();
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 	void RenderFlatCloudShadows (MATRIX4 &dwmat, const vPlanet::RenderPrm &rprm);

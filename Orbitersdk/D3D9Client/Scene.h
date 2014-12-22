@@ -198,6 +198,7 @@ public:
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera 
 	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
+	double			GetTanAp() const { return tan(aperture); }
 	float			GetCameraAspect() const { return (float)aspect; }
 	float			GetCameraFarPlane() const { return farplane; }
 	float			GetCameraNearPlane() const { return nearplane; }

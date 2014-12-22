@@ -123,7 +123,8 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			double a = prm.cdist - erad*cos(adist);
 			tdist = sqrt(a*a + h*h);
 		}
-		int tgtres = (tdist < 1e-6 ? prm.maxlvl : max (0, min (prm.maxlvl, (int)(bias - log(tdist)*res_scale))));
+		double apr = tdist * GetScene()->GetTanAp() * resolutionScale;
+		int tgtres = (apr < 1e-6 ? prm.maxlvl : max (0, min (prm.maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 	}
 
@@ -194,6 +195,17 @@ TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres)
 		tiletree[i].SetEntry (new TileType (this, 0, 0, i));
 		tiletree[i].Entry()->Load();
 	}
+}
+
+// -----------------------------------------------------------------------
+
+// WARNING: Added for Beta 9, may conflict with existing implementations
+
+template<class TileType>
+TileManager2<TileType>::~TileManager2 ()
+{
+	for (int i = 0; i < 2; i++)
+		tiletree[i].DelChildren();
 }
 
 // -----------------------------------------------------------------------

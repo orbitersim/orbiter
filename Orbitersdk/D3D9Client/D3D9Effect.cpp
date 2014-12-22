@@ -517,7 +517,10 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pT
 	else					  FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
 	
 	HR(FX->SetMatrix(eW, pW));
-	HR(FX->SetTexture(eTex0, pTex->GetTexture()));
+
+	if (pTex) FX->SetTexture(eTex0, pTex->GetTexture());
+	else      FX->SetTexture(eTex0, NULL);
+
 	HR(FX->SetFloat(eMix, alpha));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));

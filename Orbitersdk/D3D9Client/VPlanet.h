@@ -126,6 +126,7 @@ private:
 	bool hashaze;             // render atmospheric haze
 	bool bScatter;			  // Planet has scattering parameters
 	DWORD nbase;              // number of surface bases
+	DWORD max_patchres;
 	vBase **vbase;            // list of base visuals
 	SurfaceManager *surfmgr;  // planet surface tile manager
 	TileManager2<SurfTile> *surfmgr2;   // planet surface tile manager (v2)

@@ -1344,21 +1344,6 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 {
 	_TRACER;
 
-	if (hMesh==NULL) {
-		LogErr("clbkRender2DPanel() hMesh = NULL");
-		return;
-	}
-
-	if (T==NULL) {
-		LogErr("clbkRender2DPanel() T = NULL");
-		return;
-	}
-
-	if (hSurf==NULL) {
-		LogErr("clbkRender2DPanel() hSurf = NULL");
-		return;
-	}
-
 	SURFHANDLE surf = 0;
 	DWORD ngrp = oapiMeshGroupCount(hMesh);
 
@@ -1388,9 +1373,11 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 			SURFHANDLE newsurf = GetMFDSurface(mfdidx);
 			if (!newsurf) continue;
 			surf = newsurf;
+		} else if (hSurf) {
+			surf = hSurf[TexIdx];
 		}
-		else surf = hSurf[TexIdx];
-
+		else surf = oapiGetTextureHandle (hMesh, gr->TexIdx+1);
+	
 		for (unsigned int k=0;k<gr->nVtx;k++) gr->Vtx[k].z = 0.0f;
 
 		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale, additive);
@@ -2160,10 +2147,6 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 void D3D9Client::SplashScreen()
 {
 
-	DWORD Width = pFramework->GetRenderWidth();
-	DWORD Height = pFramework->GetRenderHeight();
-	HINSTANCE hInst = oapiGetOrbiterInstance();
-
 	loadd_x = 279*viewW/1280;
 	loadd_y = 545*viewH/800;
 	loadd_w = viewW/3;
@@ -2172,26 +2155,20 @@ void D3D9Client::SplashScreen()
 	HR(pd3dDevice->TestCooperativeLevel());
 	HR(pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L));
 	HR(pd3dDevice->CreateOffscreenPlainSurface(loadd_w, loadd_h, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pTextScreen, NULL));
-	HR(pd3dDevice->CreateOffscreenPlainSurface(Width, Height, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pSplashScreen, NULL));
+	HR(pd3dDevice->CreateOffscreenPlainSurface(viewW, viewH, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pSplashScreen, NULL));
 
-	HBITMAP hBM = LoadBitmapA(hInst, MAKEINTRESOURCE(273));
-	BITMAP bm;
+	D3DXIMAGE_INFO Info;
 
-	GetObject(hBM, sizeof(BITMAP), &bm);
+	HMODULE hOrbiter =  GetModuleHandleA("orbiter.exe");
+	HRSRC hRes = FindResourceA(hOrbiter, MAKEINTRESOURCEA(292), "IMAGE");
+	HGLOBAL hImage = LoadResource(hOrbiter, hRes);
+	LPVOID pData = LockResource(hImage);
+	DWORD size = SizeofResource(hOrbiter, hRes);
+
+	HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, NULL, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
 
 	HDC hDC;
 	HR(pSplashScreen->GetDC(&hDC));
-
-	HDC hSrc = CreateCompatibleDC(hDC);
-
-	HGDIOBJ hOld = SelectObject(hSrc, hBM);
-
-	SetStretchBltMode(hDC, HALFTONE);
-	StretchBlt(hDC, 0, 0, Width, Height, hSrc, 0, 0, bm.bmWidth, bm.bmHeight, SRCCOPY);
-
-	SelectObject(hSrc, hOld);
-	DeleteDC(hSrc);
-	DeleteObject(hBM);
 
 	LOGFONTA fnt; memset2((void *)&fnt, 0, sizeof(LOGFONT));
 
@@ -2227,8 +2204,8 @@ void D3D9Client::SplashScreen()
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Please create symbolic link."};
 
-	int xc = Width*814/bm.bmWidth;
-	int yc = Height*544/bm.bmHeight;
+	int xc = viewW*814/1280;
+	int yc = viewH*545/800;
 
 	TextOut(hDC, xc, yc + 0*20, "ORBITER Space Flight Simulator",30);
 	TextOut(hDC, xc, yc + 1*20, dataB, strlen(dataB));
@@ -2236,14 +2213,14 @@ void D3D9Client::SplashScreen()
 
 	if (bGDIBB) {
 		SetTextAlign(hDC, TA_CENTER);
-		TextOut(hDC, Width/2, Height-30, dataC, strlen(dataC));
+		TextOut(hDC, viewW/2, viewH-30, dataC, strlen(dataC));
 	}
 
 	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
 
 	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
 		SetTextAlign(hDC, TA_CENTER);
-		TextOut(hDC, Width/2, Height-50, dataD, strlen(dataD));
+		TextOut(hDC, viewW/2, viewH-50, dataD, strlen(dataD));
 	}
 
 	SelectObject(hDC, hO);

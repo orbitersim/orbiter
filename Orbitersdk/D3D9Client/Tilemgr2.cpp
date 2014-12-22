@@ -104,6 +104,7 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 bool Tile::InView (const MATRIX4 &transform)
 {
 	if (!lvl) return true; // no good check for this yet
+
 	if (!mesh) return true; // DEBUG : TEMPORARY
 
 	bool bx1, bx2, by1, by2, bz1, bbvis;
@@ -634,7 +635,6 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 	bool load;
 
 	while (bRunThread) {
-		Sleep (idle);
 		WaitForMutex ();
 		if (load = (nqueue > 0)) {
 			tile = queue[queue_out].tile;
@@ -647,16 +647,17 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 			queue_out = (queue_out+1) % MAXQUEUE2; // remove from queue
 			nqueue--;
 		}
-//		ReleaseMutex ();
+		ReleaseMutex ();
 
 		if (load) {
 			tile->Load(); // load/create the tile
 
-//			WaitForMutex ();
+			WaitForMutex ();
 			tile->state = Tile::Inactive; // unlock tile
-//			ReleaseMutex ();
+			ReleaseMutex ();
+		} else {
+			Sleep (idle);
 		}
-		ReleaseMutex ();
 	}
 	return 0;
 }
@@ -674,8 +675,8 @@ TileManager2Base::configPrm TileManager2Base::cprm = {
 };
 TileLoader *TileManager2Base::loader = NULL;
 double TileManager2Base::resolutionBias = 4.0;
+double TileManager2Base::resolutionScale = 1.0;
 bool TileManager2Base::bTileLoadThread = false;
-
 
 // -----------------------------------------------------------------------
 
@@ -688,7 +689,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	oapiGetObjectName (obj, cbody_name, 256);
-
+	emgr = oapiElevationManager(obj);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 }
 
@@ -722,6 +723,9 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	pDev = gc->GetDevice();
 
 	resolutionBias = 4.0 + double(Config->LODBias);
+	DWORD w, h;
+	gc->clbkGetViewportSize (&w, &h);
+	resolutionScale = 1400.0 / (double)h;
 	cprm.bSpecular = *(bool*)gclient->GetConfigParam (CFGPRM_SURFACEREFLECT);
 	cprm.bLights = *(bool*)gclient->GetConfigParam (CFGPRM_SURFACELIGHTS);
 	cprm.bCloudShadow = *(bool*)gclient->GetConfigParam (CFGPRM_CLOUDSHADOWS);
@@ -813,6 +817,7 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 	}
 }
 
+// -----------------------------------------------------------------------
 
 
 DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *pVB)

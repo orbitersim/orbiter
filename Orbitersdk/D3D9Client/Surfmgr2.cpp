@@ -59,8 +59,9 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	smgr = static_cast<TileManager2<SurfTile>* > (_mgr);
 	node = 0;
 	elev = NULL;
-	// ggelev = NULL;
+	//ggelev = NULL;
 	ltex = 0;
+	has_elevfile = false;
 }
 
 // -----------------------------------------------------------------------
@@ -91,15 +92,40 @@ void SurfTile::Load ()
 
 	// Load surface texture
 	sprintf_s (path, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-	
+
+	bool bTileDebugger = false;
+
+	DWORD Usage = 0;
+	D3DFORMAT Format = D3DFMT_FROM_FILE;
+
+	if (bTileDebugger) {
+		Usage = D3DUSAGE_DYNAMIC;
+		Format = D3DFMT_X8R8G8B8;
+	}
+
 	owntex = true;
-	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex) != S_OK) {
+
+	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex) != S_OK) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getSurfParent()->Tex();
 			owntex = false;
 		} else
 			tex = 0;
-	} else TileCatalog->Add(DWORD(tex));
+	} else {	
+		TileCatalog->Add(DWORD(tex));
+		if (bTileDebugger) {
+			LPDIRECT3DSURFACE9 pSurf;
+			tex->GetSurfaceLevel(0, &pSurf);
+			HDC hDC;
+			pSurf->GetDC(&hDC);
+			if (hDC==NULL) LogErr("Failed to get hDC");
+			char label[256];
+			sprintf_s(label,256,"%02d-%06d-%06d.dds",lvl+4,ilat,ilng);
+			TextOut(hDC,16,16,label,strlen(label));
+			pSurf->ReleaseDC(hDC);
+			pSurf->Release();
+		}
+	}
 	
 	// Load mask texture
 	ltex = NULL;
@@ -141,12 +167,14 @@ bool SurfTile::LoadElevationData ()
 	// can be served directly without further disk I/O.
 
 	if (elev) return true; // already present
+
+	has_elevfile = false;
 	int mode = mgr->Cprm().elevMode;
 	if (!mode) return false;
 
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 
-	int i, j;
+	int i;
 	char path[256];
 	sprintf_s (path, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
 	FILE *f = NULL;
@@ -186,105 +214,67 @@ bool SurfTile::LoadElevationData ()
 				elev[i] = (INT16)(elev[i] * elev_exaggerate_factor);
 
 		fclose(f);
-	} else {
-		// try fetching elevation data recursively from parent and interpolate them
-		if (node->Parent() && node->Parent()->Entry()->LoadElevationData ()) {
-			int lat_ofs = (ilat & 1 ? 0 : TILE_PATCHRES*4);
-			int lng_ofs = (ilng & 1 ? TILE_PATCHRES*4 : 0);
-			elev = new INT16[ndat];
-			mean_elev = 0.0;
-			INT16 *celev = elev + TILE_ELEVSTRIDE+1;   // pointer to beginning of unpadded block
-			INT16 *pelev = node->Parent()->Entry()->elev + lat_ofs*TILE_ELEVSTRIDE + lng_ofs + TILE_ELEVSTRIDE+1;
 
-			for (i = 0; i <= TILE_PATCHRES*4; i++) {
-				for (j = 0; j <= TILE_PATCHRES*4; j++) {
-					mean_elev += (celev[i*2*TILE_ELEVSTRIDE + j*2] = pelev[i*TILE_ELEVSTRIDE + j]);
-				}
+		// now load the overload data if present
+		sprintf (path, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
+		f = fopen(path,"rb");
+		if (f) {
+			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
+			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
+				fseek (f, hdr.hdrsize, SEEK_SET);
 			}
-			if (mode == 1) { // linear
-				for (i = 0; i <= TILE_PATCHRES*4; i++) {
-					for (j = -1; j <= TILE_PATCHRES*4; j++) {
-						celev[i*2*TILE_ELEVSTRIDE + j*2+1] = (pelev[i*TILE_ELEVSTRIDE+j] + pelev[i*TILE_ELEVSTRIDE+j+1]) / 2;
-					}
+			switch (hdr.dtype) {
+			case 0:
+				for (i = 0; i < ndat; i++) elev[i] = (INT16)hdr.offset;
+				break;
+			case 8: {
+				const UINT8 mask = 0xFF;
+				UINT8 *tmp = new UINT8[ndat];
+				fread (tmp, sizeof(UINT8), ndat, f);
+				for (i = 0; i < ndat; i++)
+					if (tmp[i] != mask) elev[i] = (INT16)(tmp[i]+hdr.offset);
+				delete []tmp;
 				}
-				for (i = -1; i <= TILE_PATCHRES*4; i++) {
-					for (j = 0; j <= TILE_PATCHRES*4; j++) {
-						celev[(i*2+1)*TILE_ELEVSTRIDE + j*2] = (pelev[i*TILE_ELEVSTRIDE+j] + pelev[(i+1)*TILE_ELEVSTRIDE+j]) / 2;
-					}
+				break;
+			case -16: {
+				const INT16 mask = (INT16)0xFFFF;
+				INT16 *tmp = new INT16[ndat];
+				INT16 ofs = (INT16)hdr.offset;
+				fread (tmp, sizeof(INT16), ndat, f);
+				for (i = 0; i < ndat; i++)
+					if (tmp[i] != mask) elev[i] = tmp[i]+ofs;
+				delete []tmp;
 				}
-				for (i = -1; i <= TILE_PATCHRES*4; i++) {
-					for (j = -1; j <= TILE_PATCHRES*4; j++) {
-						celev[(i*2+1)*TILE_ELEVSTRIDE + j*2+1] = (pelev[i*TILE_ELEVSTRIDE+j] + pelev[i*TILE_ELEVSTRIDE+j+1] + pelev[(i+1)*TILE_ELEVSTRIDE+j] + pelev[(i+1)*TILE_ELEVSTRIDE+j+1]) / 4;
-					}
-				}
-			} else { // cubic spline interpolation
-				double a_m1, a_0, a_p1, a_p2, b_m1, b_0, b_p1, b_p2, res;
-				for (i = 0; i <= TILE_PATCHRES*4; i++) {
-					for (j = 0; j < TILE_PATCHRES*4; j++) {
-						a_m1 = pelev[i*TILE_ELEVSTRIDE+j-1];
-						a_0  = pelev[i*TILE_ELEVSTRIDE+j];
-						a_p1 = pelev[i*TILE_ELEVSTRIDE+j+1];
-						a_p2 = pelev[i*TILE_ELEVSTRIDE+j+2];
-						res = 0.5 * (2.0*a_0 + 0.5*(-a_m1+a_p1) + 0.25*(2.0*a_m1-5.0*a_0+4.0*a_p1-a_p2) + 0.125*(-a_m1+3.0*a_0-3.0*a_p1+a_p2));
-						celev[i*2*TILE_ELEVSTRIDE + j*2+1] = (INT16)(res+0.5);
-					}
-				}
-				for (i = 0; i < TILE_PATCHRES*4; i++) {
-					for (j = 0; j <= TILE_PATCHRES*4; j++) {
-						a_m1 = pelev[(i-1)*TILE_ELEVSTRIDE+j];
-						a_0  = pelev[i*TILE_ELEVSTRIDE+j];
-						a_p1 = pelev[(i+1)*TILE_ELEVSTRIDE+j];
-						a_p2 = pelev[(i+2)*TILE_ELEVSTRIDE+j];
-						res = 0.5 * (2.0*a_0 + 0.5*(-a_m1+a_p1) + 0.25*(2.0*a_m1-5.0*a_0+4.0*a_p1-a_p2) + 0.125*(-a_m1+3.0*a_0-3.0*a_p1+a_p2));
-						celev[(i*2+1)*TILE_ELEVSTRIDE + j*2] = (INT16)(res+0.5);
-					}
-				}
-				for (i = 0; i < TILE_PATCHRES*4; i++) {
-					for (j = 0; j < TILE_PATCHRES*4; j++) {
-						if (i) b_m1 = celev[(i*2-2)*TILE_ELEVSTRIDE + j*2+1];
-						else {
-							a_m1 = pelev[(i-1)*TILE_ELEVSTRIDE+j-1];
-							a_0  = pelev[(i-1)*TILE_ELEVSTRIDE+j];
-							a_p1 = pelev[(i-1)*TILE_ELEVSTRIDE+j+1];
-							a_p2 = pelev[(i-1)*TILE_ELEVSTRIDE+j+2];
-							b_m1 = 0.5 * (2.0*a_0 + 0.5*(-a_m1+a_p1) + 0.25*(2.0*a_m1-5.0*a_0+4.0*a_p1-a_p2) + 0.125*(-a_m1+3.0*a_0-3.0*a_p1+a_p2));
-						}
-						b_0  = celev[(i*2)*TILE_ELEVSTRIDE + j*2+1];
-						b_p1 = celev[(i*2+2)*TILE_ELEVSTRIDE + j*2+1];
-						if (i < TILE_PATCHRES*4-1) b_p2 = celev[(i*2+4)*TILE_ELEVSTRIDE + j*2+1];
-						else {
-							a_m1 = pelev[(i+2)*TILE_ELEVSTRIDE+j-1];
-							a_0  = pelev[(i+2)*TILE_ELEVSTRIDE+j];
-							a_p1 = pelev[(i+2)*TILE_ELEVSTRIDE+j+1];
-							a_p2 = pelev[(i+2)*TILE_ELEVSTRIDE+j+2];
-							b_p2 = 0.5 * (2.0*a_0 + 0.5*(-a_m1+a_p1) + 0.25*(2.0*a_m1-5.0*a_0+4.0*a_p1-a_p2) + 0.125*(-a_m1+3.0*a_0-3.0*a_p1+a_p2));
-						}
-						res = 0.5 * (2.0*b_0 + 0.5*(-b_m1+b_p1) + 0.25*(2.0*b_m1-5.0*b_0+4.0*b_p1-b_p2) + 0.125*(-b_m1+3.0*b_0-3.0*b_p1+b_p2));
-						celev[(i*2+1)*TILE_ELEVSTRIDE + j*2+1] = (INT16)(res+0.5);
-					}
-				}
-				// do linear interpolation for border nodes
-				for (i = 0; i <= TILE_PATCHRES*4; i++) {
-					celev[(i*2)*TILE_ELEVSTRIDE-1] = (pelev[i*TILE_ELEVSTRIDE-1]+pelev[i*TILE_ELEVSTRIDE])/2;
-					celev[(i*2)*TILE_ELEVSTRIDE+TILE_PATCHRES*8+1] = (pelev[i*TILE_ELEVSTRIDE+TILE_PATCHRES*4]+pelev[i*TILE_ELEVSTRIDE+TILE_PATCHRES*4+1]) /2;
-				}
-				for (j = 0; j <= TILE_PATCHRES*4; j++) {
-					celev[-TILE_ELEVSTRIDE+j*2] = (pelev[-TILE_ELEVSTRIDE+j]+pelev[j])/2;
-					celev[(TILE_PATCHRES*8+1)*TILE_ELEVSTRIDE+j*2] = (pelev[(TILE_PATCHRES*4)*TILE_ELEVSTRIDE+j]+pelev[(TILE_PATCHRES*4+1)*TILE_ELEVSTRIDE+j])/2;
-				}
-				for (i = -1; i <= TILE_PATCHRES*4; i++) {
-					celev[(i*2+1)*TILE_ELEVSTRIDE-1] = (pelev[i*TILE_ELEVSTRIDE-1] + pelev[i*TILE_ELEVSTRIDE] + pelev[(i+1)*TILE_ELEVSTRIDE-1] + pelev[(i+1)*TILE_ELEVSTRIDE])/4;
-					celev[(i*2+1)*TILE_ELEVSTRIDE+TILE_PATCHRES*8+1] = (pelev[i*TILE_ELEVSTRIDE+TILE_PATCHRES*4] + pelev[i*TILE_ELEVSTRIDE+TILE_PATCHRES*4+1] + pelev[(i+1)*TILE_ELEVSTRIDE+TILE_PATCHRES*4] + pelev[(i+1)*TILE_ELEVSTRIDE+TILE_PATCHRES*4+1])/4;
-				}
-				for (j = 0; j < TILE_PATCHRES*4; j++) {
-					celev[-TILE_ELEVSTRIDE+j*2+1] = (pelev[-TILE_ELEVSTRIDE+j] + pelev[-TILE_ELEVSTRIDE+j+1] + pelev[j] + pelev[j+1])/4;
-					celev[(TILE_PATCHRES*8+1)*TILE_ELEVSTRIDE+j*2+1] = (pelev[(TILE_PATCHRES*4)*TILE_ELEVSTRIDE+j] + pelev[(TILE_PATCHRES*4)*TILE_ELEVSTRIDE+j+1] + pelev[(TILE_PATCHRES*4+1)*TILE_ELEVSTRIDE+j] + pelev[(TILE_PATCHRES*4+1)*TILE_ELEVSTRIDE+j+1])/4;
-				}
+				break;
 			}
-			mean_elev /= ((TILE_PATCHRES*4+1)*(TILE_PATCHRES*4+1));
-		} else {
-			elev = NULL;
+			fclose(f);
 		}
+		has_elevfile = true;
+
+	} else {
+
+		// construct elevation grid by interpolating ancestor data
+		ELEVHANDLE hElev = mgr->ElevMgr();
+		if (hElev) {
+			int plvl = lvl-1;
+			int pilat = ilat >> 1;
+			int pilng = ilng >> 1;
+			INT16 *pelev;
+			QuadTreeNode<SurfTile> *parent = node->Parent();
+			for (; plvl >= 0; plvl--) { // find ancestor with elevation data
+				if (parent && parent->Entry()->has_elevfile) {
+					pelev = parent->Entry()->elev;
+					break;
+				}
+				parent = parent->Parent();
+				pilat >>= 1;
+				pilng >>= 1;
+			}
+			elev = new INT16[ndat];
+			// submit ancestor data to elevation manager for interpolation
+			mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
+		} else elev = 0;
+
 	}
 	return (elev != NULL);
 }
@@ -341,6 +331,7 @@ void SurfTile::Render ()
 	if (!mesh) return; // DEBUG : TEMPORARY
 
 	if (ltex) {
+
 		sdist = acos (dotp (mgr->prm.sdir, cnt));
 		static const double rad0 = sqrt(2.0)*PI05;
 		double rad = rad0/(double)(2<<lvl); // tile radius
@@ -381,10 +372,9 @@ void SurfTile::Render ()
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 	HR(Shader->EndPass());
 
-	// add cloud shadows
-	
 	render_cloud_shadows = false;
 
+	// add cloud shadows
 	if (render_cloud_shadows) {
 
 		const TileManager2<CloudTile> *cmgr = mgr->GetPlanet()->CloudMgr2();
@@ -530,9 +520,9 @@ void SurfTile::FixCorner (const SurfTile *nbr)
 	
 		double rad = mgr->CbodySize();
 		double radfac = (rad+nbr_corner_elev)/(rad+corner_elev);
-		mesh->vtx[vtx_idx].x = float(vtx_store.x*radfac + vtxshift.x*(radfac-1.0));
-		mesh->vtx[vtx_idx].y = float(vtx_store.y*radfac + vtxshift.y*(radfac-1.0));
-		mesh->vtx[vtx_idx].z = float(vtx_store.z*radfac + vtxshift.z*(radfac-1.0));
+		mesh->vtx[vtx_idx].x = (float)(vtx_store.x*radfac + vtxshift.x*(radfac-1.0));
+		mesh->vtx[vtx_idx].y = (float)(vtx_store.y*radfac + vtxshift.y*(radfac-1.0));
+		mesh->vtx[vtx_idx].z = (float)(vtx_store.z*radfac + vtxshift.z*(radfac-1.0));
 	}
 }
 
@@ -577,9 +567,9 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 						if (ilat & 1) i0++; else i1--;
 					for (i = i0; i <= i1; i++) {
 						double radfac = (rad+nbr_elev[i*TILE_ELEVSTRIDE])/(rad+elev[i*TILE_ELEVSTRIDE*nsub]);
-						mesh->vtx[vtx_ofs+i*vtx_skip].x = float(vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0));
-						mesh->vtx[vtx_ofs+i*vtx_skip].y = float(vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0));
-						mesh->vtx[vtx_ofs+i*vtx_skip].z = float(vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].x = (float)(vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].y = (float)(vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].z = (float)(vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0));
 					}
 					// interpolate the nodes that fall between neighbour nodes
 					for (i = 0; i < nbr_range; i++)
@@ -635,9 +625,9 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 						if (ilng & 1) i1--; else i0++;
 					for (i = i0; i <= i1; i++) {
 						double radfac = (rad+nbr_elev[i])/(rad+elev[i*nsub]);
-						mesh->vtx[vtx_ofs+i*vtx_skip].x = float(vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0));
-						mesh->vtx[vtx_ofs+i*vtx_skip].y = float(vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0));
-						mesh->vtx[vtx_ofs+i*vtx_skip].z = float(vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].x = (float)(vtx_store[i*nsub].x*radfac + vtxshift.x*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].y = (float)(vtx_store[i*nsub].y*radfac + vtxshift.y*(radfac-1.0));
+						mesh->vtx[vtx_ofs+i*vtx_skip].z = (float)(vtx_store[i*nsub].z*radfac + vtxshift.z*(radfac-1.0));
 					}
 					// interpolate the nodes that fall between neighbour nodes
 					for (i = 0; i < nbr_range; i++)
@@ -651,8 +641,6 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 	}
 }
 
-
-
 // =======================================================================
 // =======================================================================
 
@@ -664,11 +652,9 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	double np = 0.0, fp = 0.0;
 	int i;
-	
 	class Scene *scene = GetClient()->GetScene();
 
 	// adjust scaling parameters (can only be done if no z-buffering is in use)
-	
 	if (!use_zbuf) {
 		double R = obj_size;
 		double D = prm.cdist*R;
