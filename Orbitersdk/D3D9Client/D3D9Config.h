@@ -64,6 +64,7 @@ public:
 	int AtmoShader;					///< Atmospheric Shader Type
 	int LODBias;					///< 3D Terrain resolution bias
 	int	DynamicExps;				///< Denamic Exposure Control
+	int TileDebug;					///< Enable tile debugger
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *Shaders;					///< Shaders set to use. Naming a sub-directory of "Modules/" (default="Default")
 	char *SolCfg;					///< Solar system to use (default="Sol")

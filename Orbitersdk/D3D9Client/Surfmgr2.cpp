@@ -15,6 +15,7 @@
 #include "Surfmgr2.h"
 #include "Texture.h"
 #include "D3D9Catalog.h"
+#include "D3D9Config.h"
 
 // =======================================================================
 
@@ -93,12 +94,10 @@ void SurfTile::Load ()
 	// Load surface texture
 	sprintf_s (path, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 
-	bool bTileDebugger = false;
-
 	DWORD Usage = 0;
 	D3DFORMAT Format = D3DFMT_FROM_FILE;
 
-	if (bTileDebugger) {
+	if (Config->TileDebug) {
 		Usage = D3DUSAGE_DYNAMIC;
 		Format = D3DFMT_X8R8G8B8;
 	}
@@ -113,15 +112,23 @@ void SurfTile::Load ()
 			tex = 0;
 	} else {	
 		TileCatalog->Add(DWORD(tex));
-		if (bTileDebugger) {
+		if (Config->TileDebug) {
 			LPDIRECT3DSURFACE9 pSurf;
-			tex->GetSurfaceLevel(0, &pSurf);
+			D3DSURFACE_DESC desc;
 			HDC hDC;
+
+			tex->GetSurfaceLevel(0, &pSurf);
+			pSurf->GetDesc(&desc);
 			pSurf->GetDC(&hDC);
 			if (hDC==NULL) LogErr("Failed to get hDC");
 			char label[256];
 			sprintf_s(label,256,"%02d-%06d-%06d.dds",lvl+4,ilat,ilng);
+			HFONT hOld = (HFONT)SelectObject(hDC, mgr->GetDebugFont());
 			TextOut(hDC,16,16,label,strlen(label));
+			SetBkMode(hDC, TRANSPARENT);
+			SelectObject(hDC, GetStockObject (NULL_BRUSH));
+			Rectangle(hDC, 0, 0, desc.Width-1, desc.Height-1);
+			SelectObject(hDC, hOld);
 			pSurf->ReleaseDC(hDC);
 			pSurf->Release();
 		}

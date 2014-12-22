@@ -677,6 +677,7 @@ TileLoader *TileManager2Base::loader = NULL;
 double TileManager2Base::resolutionBias = 4.0;
 double TileManager2Base::resolutionScale = 1.0;
 bool TileManager2Base::bTileLoadThread = false;
+HFONT TileManager2Base::hFont = NULL;
 
 // -----------------------------------------------------------------------
 
@@ -734,6 +735,8 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	bTileLoadThread = true; // TODO: g_pOrbiter->Cfg()->CfgPRenderPrm.bLoadOnThread;
 
 	loader = new TileLoader (gc);
+
+	hFont  = CreateFont(26, 0, 0, 0, 600, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, "Arial");
 }
 
 // -----------------------------------------------------------------------
@@ -747,6 +750,7 @@ bool TileManager2Base::ShutDown()
 
 void TileManager2Base::GlobalExit ()
 {
+	DeleteObject(hFont); hFont = NULL;
 	delete loader;
 }
 

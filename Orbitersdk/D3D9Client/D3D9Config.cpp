@@ -68,6 +68,7 @@ void D3D9Config::Reset ()
 	LODBias				= 0;
 	AtmoShader			= 0;
 	DynamicExps			= 1;
+	TileDebug			= 0;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -110,6 +111,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "ShadowMapSize", i))			ShadowMapSize = max(512, min(4096, i));
 	if (oapiReadItem_int   (hFile, "EnableGlass", i))			EnableGlass = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "EnableMeshDbg", i))			EnableMeshDbg = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "TileDebug", i))				TileDebug = max(0, min(1, i));
 
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
@@ -169,6 +171,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "ShadowMapSize", ShadowMapSize);
 	oapiWriteItem_int   (hFile, "EnableGlass", EnableGlass);
 	oapiWriteItem_int   (hFile, "EnableMeshDbg", EnableMeshDbg);
+	oapiWriteItem_int   (hFile, "TileDebug", TileDebug);
 
 
 	oapiWriteItem_float (hFile, "StereoSeparation", Separation);

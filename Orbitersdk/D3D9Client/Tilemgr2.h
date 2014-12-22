@@ -201,6 +201,7 @@ public:
 
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static ID3DXEffect * Shader() { return pShader; }
+	static HFONT GetDebugFont() { return hFont; }
 	
 	
 	template<class TileType>
@@ -248,12 +249,13 @@ private:
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle
-
+	
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];
 	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
 
+	static HFONT hFont;
 	static oapi::D3D9Client *gc;
 	static double resolutionBias;
 	static double resolutionScale;
