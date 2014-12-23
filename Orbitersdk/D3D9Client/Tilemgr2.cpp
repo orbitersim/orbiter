@@ -862,7 +862,7 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 		return VtxPoolSize[pool];
 	}
 	else {
-		*pVB = VtxPool[pool].top();
+		if (pVB) *pVB = VtxPool[pool].top();
 		VtxPool[pool].pop();
 		return VtxPoolSize[pool];
 	}
@@ -908,7 +908,7 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 		return IdxPoolSize[pool];
 	}
 	else {
-		*pIB = IdxPool[pool].top();
+		if (pIB) *pIB = IdxPool[pool].top();
 		IdxPool[pool].pop();
 		return IdxPoolSize[pool];
 	}
