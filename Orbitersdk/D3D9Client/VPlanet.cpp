@@ -111,7 +111,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 				clouddata->microalt1 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMAX);
 			}
 		} else { // v2 cloud engine
-			int maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
+			DWORD maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
 			maxlvl = min (maxlvl, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 			cloudmgr2 = new TileManager2<CloudTile> (this, maxlvl);
 		}
@@ -389,7 +389,7 @@ void vPlanet::CheckResolution()
 
 		static const double scal2 = 1.0/log(2.0);
 		const double shift = (surfmgr2 ? 6.0 : 5.0); // reduce level for tile mgr v2, because of increased patch size
-		new_patchres = min (max ((int)(scal2*log(ntx)-shift),1), max_patchres);
+		new_patchres = min (max ((DWORD)(scal2*log(ntx)-shift),1), max_patchres);
 	}
 	if (new_patchres != patchres) {
 		if (hashaze) {
