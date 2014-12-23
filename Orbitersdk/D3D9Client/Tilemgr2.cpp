@@ -650,9 +650,8 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 		ReleaseMutex ();
 
 		if (load) {
-			tile->Load(); // load/create the tile
-
 			WaitForMutex ();
+			tile->Load(); // load/create the tile
 			tile->state = Tile::Inactive; // unlock tile
 			ReleaseMutex ();
 		} else {
@@ -862,7 +861,7 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 		return VtxPoolSize[pool];
 	}
 	else {
-		if (pVB) *pVB = VtxPool[pool].top();
+		*pVB = VtxPool[pool].top();
 		VtxPool[pool].pop();
 		return VtxPoolSize[pool];
 	}
@@ -908,7 +907,7 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 		return IdxPoolSize[pool];
 	}
 	else {
-		if (pIB) *pIB = IdxPool[pool].top();
+		*pIB = IdxPool[pool].top();
 		IdxPool[pool].pop();
 		return IdxPoolSize[pool];
 	}
