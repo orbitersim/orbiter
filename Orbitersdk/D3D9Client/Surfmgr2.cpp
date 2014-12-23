@@ -223,8 +223,9 @@ bool SurfTile::LoadElevationData ()
 		fclose(f);
 
 		// now load the overload data if present
-		sprintf (path, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
-		f = fopen(path,"rb");
+		f = NULL;
+		sprintf_s (path, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
+		fopen_s(&f, path, "rb");
 		if (f) {
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
@@ -266,7 +267,7 @@ bool SurfTile::LoadElevationData ()
 			int plvl = lvl-1;
 			int pilat = ilat >> 1;
 			int pilng = ilng >> 1;
-			INT16 *pelev;
+			INT16 *pelev = NULL;
 			QuadTreeNode<SurfTile> *parent = node->Parent();
 			for (; plvl >= 0; plvl--) { // find ancestor with elevation data
 				if (parent && parent->Entry()->has_elevfile) {
@@ -279,7 +280,9 @@ bool SurfTile::LoadElevationData ()
 			}
 			elev = new INT16[ndat];
 			// submit ancestor data to elevation manager for interpolation
-			mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
+			if (pelev) {
+        mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
+      }
 		} else elev = 0;
 
 	}
