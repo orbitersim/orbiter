@@ -15,6 +15,7 @@
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
 #include "Scene.h"
+#include "OapiExtension.h"
 
 #include <stack>
 
@@ -731,7 +732,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	cprm.bCloudShadow = *(bool*)gclient->GetConfigParam (CFGPRM_CLOUDSHADOWS);
 	cprm.lightfac = *(double*)gclient->GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	cprm.elevMode = *(int*)gclient->GetConfigParam (CFGPRM_ELEVATIONMODE);
-	bTileLoadThread = true; // TODO: g_pOrbiter->Cfg()->CfgPRenderPrm.bLoadOnThread;
+	bTileLoadThread = *(bool*)gclient->GetConfigParam(CFGPRM_TILELOADTHREAD);
 
 	loader = new TileLoader (gc);
 

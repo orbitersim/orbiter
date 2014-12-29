@@ -50,6 +50,12 @@ class D3D9Config;
 ///   float
 #define CFGPRM_COORDINATEAXESOPACITY  0x1005
 
+
+/// Load tiles in separate thread?
+/// \par Parameter type:
+///   bool
+#define CFGPRM_TILELOADTHREAD  0x1006
+
 /// @}
 
 
@@ -196,6 +202,8 @@ private:
 	OapiExtension(void); // avoid default constructor creation & instantiation
 	~OapiExtension(void);
 
+	// Planet rendering parameters
+	static bool tileLoadThread;	///< Whether to load planet tiles inseparate thread [true|false]
 	// Body forces
 	static DWORD showBodyForceVectorsFlags;
 	static float bodyForceScale;   // [0.25..4.0]

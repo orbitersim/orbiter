@@ -56,6 +56,8 @@ std::string OapiExtension::scenarioDir(".\\Scenarios\\");
 bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
 bool OapiExtension::orbiterSound40 = false;
+bool OapiExtension::tileLoadThread = true;
+
 
 // hooking
 DWORD OapiExtension::hookMap = 0L;
@@ -126,6 +128,7 @@ const void *OapiExtension::GetConfigParam (DWORD paramtype)
 		case CFGPRM_SHOWCOORDINATEAXESFLAG  : return (void*)&showCoordinateAxesFlags;
 		case CFGPRM_COORDINATEAXESSCALE     : return (void*)&coordinateAxesScale;
 		case CFGPRM_COORDINATEAXESOPACITY   : return (void*)&coordinateAxesOpacity;
+		case CFGPRM_TILELOADTHREAD          : return (void*)&tileLoadThread;
 		default                             : return NULL;
 	}
 }
@@ -190,6 +193,9 @@ bool OapiExtension::GetConfigParameter(void)
 				coordinateAxesOpacity = opacity;
 			}
 		}
+
+		// Get planet rendering parameters
+		oapiReadItem_bool(f, "TileLoadThread", tileLoadThread);
 
 		// Get directory config
 		if (oapiReadItem_string(f, "ConfigDir", string)) {
