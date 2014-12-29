@@ -292,27 +292,27 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float  wb = -float(atmo->balance);
 	float  cs =  float(atmo->aux3);
 
+	double me = pPlanet->GetMinElevation();				// Minimum elevation
 	double pr = pPlanet->GetSize();						// Planet radius
+	double mr = pr+me;									// Minimum radius
 	double ur = pr + pPlanet->GetHorizonAlt();			// Atmosphere upper radius (Skydome radius)
 	double cr = pPlanet->CamDist();						// Camera distance from a planet center
-	double ca = cr - pr;								// Camera altutude
-	double hd = sqrt(cr*cr-pr*pr);						// Camera to horizon distance
+	double ca = cr - pr;								// Camera altitude
+	double hd = sqrt(cr*cr-mr*mr);						// Camera to horizon distance
 
-	float fA = float(sqrt(1.0 - pr*pr/(cr*cr)));
+	float fA = float(sqrt(1.0 - (mr*mr)/(cr*cr)));
 	float fB = (-D3DXVec3Dot(&SunDir, &ucam)-fA) / (float(atmo->aux1+0.01)*0.64f);
 	float fP = float(pPlanet->AngleCoEff(0.0));
 
 	float fCorrect = 0.5f + saturate(fB)*1.5f;
-	
-	//cs *= fCorrect;
+
+	//sprintf(oapiDebugString(),"Debug: MinElev=%f, ca=%f, hd=%f, fA=%f, fB=%f, fP=%f", pPlanet->GetMinElevation(), ca, hd, fA, fB, fP);
 
 	// 1.0 / lambda^4
 	D3DXVECTOR3 lambda4 = D3DXVECTOR3(pow(float(atmo->red),rp), pow(float(atmo->green),rp), pow(float(atmo->blue),rp));
 	D3DXVECTOR3 lambda2 = D3DXVECTOR3(pow(float(atmo->red),mp), pow(float(atmo->green),mp), pow(float(atmo->blue),mp));
-	//D3DXVECTOR3 lambdaX = D3DXVECTOR3(pow(float(atmo->red),cs), pow(float(atmo->green),cs), pow(float(atmo->blue),cs));
 	D3DXVECTOR3 whitebl = D3DXVECTOR3(pow(float(atmo->red),wb), pow(float(atmo->green),wb), pow(float(atmo->blue),wb));
 	
-
 	D3DXVec3Normalize(&lambda4, &lambda4);
 	D3DXVec3Normalize(&lambda2, &lambda2);
 
@@ -322,7 +322,6 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 vMieInSct  = lambda2*float(atmo->mie);	
 	D3DXVECTOR3 vRayInSct  = lambda4*float(atmo->rin * atmo->rout);
 	D3DXVECTOR3 vWhiteBalance = whitebl;
-	//D3DXVECTOR3 vColorShift = lerp(D3DXVECTOR3(1,1,1), lambdaX, fCorrect) * float(-atmo->expo);
 	D3DXVECTOR3 vColorShift = lerp(D3DXVECTOR3(1,1,1), lambda4, float(atmo->aux3)*fCorrect) * float(-atmo->expo);
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere

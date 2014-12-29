@@ -219,27 +219,32 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_AUX2,	   0.0, 1.0);
 	ConfigSlider(IDC_ATM_AUX3,	   0.0, 2.0);
 	ConfigSlider(IDC_ATM_AUX4,	   0.1, 4.4);
-	/*
+	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Wavelength setting for green light (default 0.600)");
 	CreateToolTip(IDC_ATM_BLUE,		hDlg, "Wavelength setting for blue light (default 0.480)");
-	CreateToolTip(IDC_ATM_WAVE,		hDlg, "Main control for atmospheric color composition (4.0 for the Earth)");
+	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
+	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition (1.0 for the Earth)");
 	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere scale height (7km - 10km for the Earth)");
-	CreateToolTip(IDC_ATM_EXPO,		hDlg, "Overall brightness control (i.e. Camera \"exposure\" control)");
+	CreateToolTip(IDC_ATM_DEPTH,	hDlg, "Sunset color boost");
+	// -------------------------------------------------------
+	CreateToolTip(IDC_ATM_EXPO,		hDlg, "[PostProcess] Overall brightness control (i.e. Camera \"exposure\" control) (default 1.0)");
+	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "[PostProcess] Camera White balance control (default 1.0)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_OUT,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness)");
-	CreateToolTip(IDC_ATM_IN,		hDlg, "(FINE) Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity)");
+	CreateToolTip(IDC_ATM_IN,		hDlg, "Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity) (default 1.0)");
 	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight (Most visible when camera, planet and the sun are aligned)");
-	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "(FINE) Controls a color balance of atmospheric haze. (Most effective in sunrise/set)");
-	CreateToolTip(IDC_ATM_RSUN,		hDlg, "Optical depth clamp distance (i.e. Horizon haze distance)");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_SRFCOLOR,	hDlg, "(FINE) Controls a color composition of sunlight on a planet surface (Configure at sunrise/set)");
-	CreateToolTip(IDC_ATM_SUN,		hDlg, "(FINE) Controls an intensity of sunlight on a planet surface");
-	// -------------------------------------------------------
+	CreateToolTip(IDC_ATM_MOFFSET,	hDlg, "Atmosphere scale height for Mie");
 	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering");
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
-	*/
-
+	// -------------------------------------------------------
+	CreateToolTip(IDC_ATM_AUX1,		hDlg, "Distance of light transfer in atmosphere behind terminator");
+	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Horizon intensity");
+	CreateToolTip(IDC_ATM_AUX3,		hDlg, "Sky color boost to compensate a lack of multible scattering. (Orbital sunrise color)");
+	CreateToolTip(IDC_ATM_AUX4,		hDlg, "[PostProcess] Gamma correction");
+	// -------------------------------------------------------
+	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Surface");
@@ -249,12 +254,19 @@ void OpenDlgClbk(void *context)
 	SetTimer(hDlg, 0, 200, NULL);
 
 	char title[256];
+
 	if (vObj) {
 		if (param->orbit) sprintf_s(title,256,"Atmospheric Controls [%s] [Orbital]", vObj->GetName());
 		else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
-		SetWindowTextA(hDlg,title);
-	}
 
+		// Not working for some reason !!!
+		//if (param->orbit) SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Surface");
+		//else			  SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Orbital");
+
+		SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to other config");
+
+		SetWindowTextA(hDlg, title);
+	}
 
 	UpdateSliders();
 }
@@ -448,24 +460,22 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (vObj) {
 					vObj->SaveAtmoConfig(false);
 					vObj->SaveAtmoConfig(true);
-					/*DWORD dAmbient = *(DWORD*)g_client->GetConfigParam(CFGPRM_AMBIENTLEVEL);
-					Scatter *pSct = new Scatter(param, vObj->GetObjectA(), dAmbient);
-					SAFE_RELEASE(param->pSunLight);
-					pSct->ComputeSunLightColorMap(g_client->GetDevice(), &param->pSunLight, true);
-					delete pSct;*/
 				}
 				break;
 
-			/*case IDC_ATM_RESET:
-				param->red = 0.650; 
-				param->green = 0.500; 
-				param->blue = 0.480;
-				param->rin = 1.0;
-				param->balance = 0.0;
-				param->rphase = 0.25;
-				UpdateSliders();
-				break;*/
-	
+			case IDC_ATM_COPYTO:
+				if (vObj) {
+					if (param->orbit) {
+						memcpy2(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));
+						vObj->GetAtmoParams(1)->orbit = false;
+					}
+					else {
+						memcpy2(vObj->GetAtmoParams(2), param, sizeof(ScatterParams)); 
+						vObj->GetAtmoParams(2)->orbit = true;
+					}
+				}
+				break;
+
 			case IDC_ATM_MODE:
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
 					atmmode = SendDlgItemMessage(hWnd, IDC_ATM_MODE, CB_GETCURSEL, 0, 0);

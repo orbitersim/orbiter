@@ -272,9 +272,10 @@ void HazeManager2::Render(D3DXMATRIX &wmat, float horizontal_aperture_deg)
 	VECTOR3 cdir = vp->GetScene()->GetCameraGDir();
 	double calt = vp->CamDist() - rad;	// Camera altitude	
 	double halt = vp->GetHorizonAlt();
+	double melv = vp->GetMinElevation();
 
-	if (calt>halt)	RenderRing(vp->PosFromCamera(), cdir, rad, halt);
-	else			RenderSky(vp->PosFromCamera(), cdir, rad, horizontal_aperture_deg);
+	if (calt>halt)	RenderRing(vp->PosFromCamera(), cdir, rad+melv, halt);
+	else			RenderSky(vp->PosFromCamera(), cdir, rad+melv, horizontal_aperture_deg);
 }
 
 // -----------------------------------------------------------------------

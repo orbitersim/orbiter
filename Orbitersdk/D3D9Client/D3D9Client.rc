@@ -93,6 +93,7 @@ STYLE DS_3DLOOK | DS_CENTER | DS_MODALFRAME | DS_SHELLFONT | WS_CAPTION | WS_VIS
 CAPTION "Atmospheric Controls"
 FONT 8, "Ms Shell Dlg"
 {
+    PUSHBUTTON      "Copy To", IDC_ATM_COPYTO, 161, 265, 80, 14, 0, WS_EX_LEFT
     GROUPBOX        "Atmosphere", IDC_STATIC, 10, 5, 255, 250, 0, WS_EX_LEFT
     CTEXT           "Red", IDC_STATIC, 21, 21, 25, 8, SS_CENTER, WS_EX_LEFT
     CTEXT           "Configuration", IDC_STATIC, 20, 267, 42, 8, SS_CENTER, WS_EX_LEFT

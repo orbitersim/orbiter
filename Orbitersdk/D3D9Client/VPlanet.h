@@ -50,7 +50,8 @@ public:
 	float			GetRadius() const { return rad; }	//TODO: Remove this. Use GetSize() instead
 	bool			CameraInAtmosphere() const;
 	double			GetHorizonAlt() const;
-
+	double          GetMinElevation() const;
+	
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
 	vBase*			GetBaseByIndex(DWORD index);

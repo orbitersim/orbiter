@@ -232,6 +232,8 @@ public:
 	const char *CbodyName() const { return cbody_name; }
 	const double CbodySize() const { return obj_size; }
 	const ELEVHANDLE ElevMgr() const { return emgr; }
+	const double GetMinElev() const;
+	void  ReduceMinElevation(double Elev);
 
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
@@ -242,6 +244,7 @@ protected:
 
 	static configPrm cprm;
 	double obj_size;                 // planet radius
+	double min_elev;				 // minimum elevation
 	static TileLoader *loader;
 
 private:

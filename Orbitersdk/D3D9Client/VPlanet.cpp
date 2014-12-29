@@ -214,6 +214,15 @@ double	vPlanet::GetHorizonAlt() const
 
 // ==============================================================
 
+double vPlanet::GetMinElevation() const
+{
+	if (surfmgr2) return surfmgr2->GetMinElev();
+	return 0.0f;
+}
+
+
+// ==============================================================
+
 DWORD vPlanet::GetBaseCount()
 {
 	return nbase;

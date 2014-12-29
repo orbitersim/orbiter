@@ -74,10 +74,7 @@ SurfTile::~SurfTile ()
 		delete []elev;
 		elev = NULL;
 	}
-	if (ltex && owntex) {
-		TileCatalog->Remove(DWORD(ltex));
-		ltex->Release();
-	}
+	if (ltex && owntex) if (TileCatalog->Remove(DWORD(ltex))) ltex->Release();
 }
 
 // -----------------------------------------------------------------------
@@ -195,6 +192,9 @@ bool SurfTile::LoadElevationData ()
 			fseek (f, hdr.hdrsize, SEEK_SET);
 		}
 		mean_elev = hdr.emean;
+
+		mgr->ReduceMinElevation(hdr.emin);
+
 		// read the elevation data
 		switch (hdr.dtype) {
 		case 0: // flat tile, defined by offset

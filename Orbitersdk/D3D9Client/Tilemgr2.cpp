@@ -53,8 +53,7 @@ Tile::~Tile ()
 	mgr = NULL;
 	if (mesh) delete mesh;
 	if (tex && owntex) {
-		tex->Release();
-		TileCatalog->Remove(DWORD(tex));
+		if (TileCatalog->Remove(DWORD(tex))) tex->Release();
 	}
 }
 
@@ -688,6 +687,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
+	min_elev = obj_size; 
 	oapiGetObjectName (obj, cbody_name, 256);
 	emgr = oapiElevationManager(obj);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
@@ -911,4 +911,17 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 		IdxPool[pool].pop();
 		return IdxPoolSize[pool];
 	}
+}
+
+
+void TileManager2Base::ReduceMinElevation(double Elev)
+{
+	if (Elev<min_elev) min_elev = Elev;
+}
+
+
+const double TileManager2Base::GetMinElev() const
+{
+	if (min_elev==obj_size) return 0.0; // Info not provided
+	return min_elev;
 }
