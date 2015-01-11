@@ -53,8 +53,7 @@ public:
 	inline DWORD GetMeshCount();
 
 	void PreInitObject();
-	void ParseSkins();
-
+	
 	/**
 	 * \brief Per-frame object parameter updates
 	 * \return \e true if update was performed, \e false if skipped.
@@ -109,6 +108,7 @@ public:
 	bool const Playback() { return vessel->Playback(); }
 	class MatMgr * GetMaterialManager() const { return pMatMgr; }
 	const char *GetSkinName() const;
+	void SetSkinName(const char *name);
 
 protected:
 

@@ -2,20 +2,12 @@
 #define IDC_STATIC (-1)
 #endif
 
-// Dialog IDs
-//
 #define IDD_D3D9CREDITS                         101
 #define IDD_D3D9MESHDEBUG                       102
 #define IDD_D3D9SCATTER                         103
 #define IDD_D3D9SETUP                           104
-
-// Orbiter launchpad control IDs
-//
 #define IDS_INFO                                1000
 #define IDS_TYPE                                1001
-
-// D3D9Client control IDs
-//
 #define IDC_AA                                  2000
 #define IDC_AF                                  2001
 #define IDC_ATD_AUX1                            2002
@@ -37,7 +29,6 @@
 #define IDC_ATD_RED                             2018
 #define IDC_ATD_RPHASE                          2019
 #define IDC_ATD_RPOW                            2020
-#define IDC_ATMOQ                               2021
 #define IDC_ATM_AUX1                            2022
 #define IDC_ATM_AUX2                            2023
 #define IDC_ATM_AUX3                            2024
@@ -122,18 +113,9 @@
 #define IDC_PLANETGLOW                          2103
 #define IDC_SEPARATION                          2104
 #define IDC_SEPA_DSP                            2105
-#define IDC_SHADER                              2106
 #define IDC_SRFPRELOAD                          2107
 #define IDC_SYMBOLIC                            2108
 #define IDC_ATM_COPYTO                          2109
-
-// Next default values for new objects
-// 
-#ifdef APSTUDIO_INVOKED
-#ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        105
-#define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         2109
-#define _APS_NEXT_SYMED_VALUE           105
-#endif
-#endif
+#define IDC_SUNBRIGHTNESS                       2110
+#define IDC_POSTPROCESS                         2111
+#define IDC_CAMMODE                             2112

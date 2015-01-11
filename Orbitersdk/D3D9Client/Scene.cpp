@@ -68,6 +68,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	viewH = h;
 	viewW = w;
 	nLights = 0;
+	dwTurn = 0;
 	bTakeCamera = false;
 	
 	pDevice = _gc->GetDevice();
@@ -144,9 +145,11 @@ void Scene::Initialise()
 
 	// Setup sunlight -------------------------------
 	//
-	sunLight.Diffuse.r = sunLight.Specular.r = 1.0f; 
-	sunLight.Diffuse.g = sunLight.Specular.g = 1.0f;
-	sunLight.Diffuse.b = sunLight.Specular.b = 1.0f;
+	float pwr = float(Config->SunBrightness);
+
+	sunLight.Diffuse.r = sunLight.Specular.r = pwr; 
+	sunLight.Diffuse.g = sunLight.Specular.g = pwr;
+	sunLight.Diffuse.b = sunLight.Specular.b = pwr;
 	sunLight.Diffuse.a = sunLight.Specular.a = 1.0f;
 	sunLight.Ambient.r = float(ambient)*0.0039f;
 	sunLight.Ambient.g = float(ambient)*0.0039f;
@@ -351,9 +354,6 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 		gc->EmergencyShutdown();
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
-
-	// Parse Vessel Skins
-	if (pv->type==OBJTP_VESSEL) ((vVessel *)pv->vobj)->ParseSkins();
 
 	// Initialize Meshes
 	pv->vobj->PreInitObject();
@@ -707,6 +707,7 @@ float Scene::ComputeNearClipPlane()
 
 void Scene::UpdateCamVis()
 {
+	
 	UpdateCameraFromOrbiter(); // update camera parameters
 
 	if (hObj_proxy) D3D9Effect::UpdateEffectCamera(hObj_proxy);
@@ -992,7 +993,7 @@ void Scene::RenderMainScene()
 	// Render Planets
 
 	for (DWORD i=0;i<nplanets;i++) {
-		
+
 		// double nplane, fplane;
 		// plist[i].vo->RenderZRange (&nplane, &fplane);
 		// cam->SetFrustumLimits (nplane, fplane);
@@ -1157,7 +1158,6 @@ void Scene::RenderMainScene()
 	for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	
 
-
 	// -------------------------------------------------------------------------------------------------------
 	// Render vessel axis vectors
 	// -------------------------------------------------------------------------------------------------------
@@ -1262,16 +1262,21 @@ void Scene::RenderMainScene()
 	// Render Custom Camera Views 
 	// -------------------------------------------------------------------------------------------------------
 
-	if (Config->CustomCamMode && vFocus) {
-		if (camCurrent==NULL) camCurrent = camFirst;
-		OBJHANDLE hVessel = vFocus->GetObjectA();
-		while (camCurrent) {
-			if (camCurrent->hVessel==hVessel && camCurrent->bActive) {
-				RenderCustomCameraView(camCurrent);
+	if (Config->CustomCamMode==0) dwTurn = 1;
+	if (Config->EnvMapMode==0) dwTurn = 0;
+
+	if (Config->EnvMapFaces>0 || dwTurn==0) {
+		if (Config->CustomCamMode && vFocus) {
+			if (camCurrent==NULL) camCurrent = camFirst;
+			OBJHANDLE hVessel = vFocus->GetObjectA();
+			while (camCurrent) {
+				if (camCurrent->hVessel==hVessel && camCurrent->bActive) {
+					RenderCustomCameraView(camCurrent);
+					camCurrent = camCurrent->next;
+					break;
+				}
 				camCurrent = camCurrent->next;
-				break;
 			}
-			camCurrent = camCurrent->next;
 		}
 	}
 
@@ -1279,24 +1284,27 @@ void Scene::RenderMainScene()
 	// Render Environmental Map For the Focus Vessel 
 	// -------------------------------------------------------------------------------------------------------
 
-	if (Config->EnvMapMode) {
-		DWORD flags = 0;
-		if (Config->EnvMapMode==1) flags |= 0x01; 
-		if (Config->EnvMapMode==2) flags |= 0x03;
+	if (Config->EnvMapFaces>0 || dwTurn==1) {
 
-		if (vobjEnv==NULL) vobjEnv = vobjFirst;
+		if (Config->EnvMapMode) {
+			DWORD flags = 0;
+			if (Config->EnvMapMode==1) flags |= 0x01; 
+			if (Config->EnvMapMode==2) flags |= 0x03;
 
-		while (vobjEnv) {	
-			if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
-				if (vobjEnv->vobj) {
-					vVessel *vVes = (vVessel *)vobjEnv->vobj;
-					if (vVes->RenderENVMap(pDevice, Config->EnvMapFaces, flags)) {
-						vobjEnv = vobjEnv->next;
-						break;
-					}	
+			if (vobjEnv==NULL) vobjEnv = vobjFirst;
+
+			while (vobjEnv) {	
+				if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
+					if (vobjEnv->vobj) {
+						vVessel *vVes = (vVessel *)vobjEnv->vobj;
+						if (vVes->RenderENVMap(pDevice, max(1, Config->EnvMapFaces), flags)) {
+							vobjEnv = vobjEnv->next;
+							break;
+						}	
+					}
 				}
+				vobjEnv = vobjEnv->next;
 			}
-			vobjEnv = vobjEnv->next;
 		}
 	}
 
@@ -1314,6 +1322,9 @@ void Scene::RenderMainScene()
 
 	if (scene_time>gc->GetStats()->ScenePeak) gc->GetStats()->ScenePeak = scene_time;
 	gc->GetStats()->Scene += scene_time;
+
+	if (dwTurn==0) dwTurn = 1;
+	else		   dwTurn = 0;
 }
 
 
@@ -1849,8 +1860,9 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 	CAMREC *pv = NULL;
 
 	if (!hSurf) return NULL;
+	if (Config->CustomCamMode==0) return NULL;
 	if (SURFACE(hSurf)->Is3DRenderTarget()==false) return NULL;
-
+	
 	if (hCamera==NULL) {
 
 		pv = new CAMREC;

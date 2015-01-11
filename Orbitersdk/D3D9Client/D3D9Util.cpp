@@ -12,6 +12,7 @@
 #include "AABBUtil.h"
 #include "D3D9Client.h"
 #include "VectorHelpers.h"
+#include "D3D9Config.h"
 
 
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
@@ -115,8 +116,10 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao)
 
 	double s  = length(S);	
 
+	float pwr = float(Config->SunBrightness);
+
 	if (hP==hS) {
-		light->Diffuse   = light->Specular = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f); 
+		light->Diffuse   = light->Specular = D3DXCOLOR(pwr, pwr, pwr, 1.0f); 
 		light->Ambient   = D3DXCOLOR(ao, ao, ao, 1.0f);
 		light->Direction = D3DXVEC(S) * (-1.0f/float(s));
 		return;
@@ -174,7 +177,7 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao)
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 	
-	light->Diffuse   = light->Specular = D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f); 
+	light->Diffuse   = light->Specular = D3DXCOLOR(lcol.x*pwr, lcol.y*pwr, lcol.z*pwr, 1.0f); 
 	light->Ambient   = D3DXCOLOR(amb, amb, amb, 1.0f);
 	light->Direction = D3DXVEC(S) * (-1.0f/float(s));
 }

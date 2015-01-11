@@ -46,7 +46,8 @@ public:
 	double Separation;				///< StereoScopic 3D depth of field separation \[m\] (10.0...100.0, default=65)
 	double SunAngle;				///< Sun-angle above horizon when night-lights set it \[deg\] (0.1...20.0, default=10)
 	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
-	double PlanetGlow;				///< Intensity of planet glow effect (0.01...1.0, default=0.3)
+	double PlanetGlow;				///< Intensity of planet glow effect (0.01...2.0, default=0.7)
+	double SunBrightness;			///< Intensity of sun light (1.0...3.0, default 1.2)
 	double FrameRate;				///< Framerate limiter
 	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
@@ -61,12 +62,11 @@ public:
 	int ShadowMapMode;				///< Shadow Mapping Mode
 	int ShadowMapSize;				///< Shadow Map size
 	int CustomCamMode;				///< Custom Camera Mode
-	int AtmoShader;					///< Atmospheric Shader Type
+	int Instancing;					///< Enable Geometry Instancing
 	int LODBias;					///< 3D Terrain resolution bias
 	int	DynamicExps;				///< Denamic Exposure Control
 	int TileDebug;					///< Enable tile debugger
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
-	char *Shaders;					///< Shaders set to use. Naming a sub-directory of "Modules/" (default="Default")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 
 private:

@@ -209,6 +209,13 @@ const char *vVessel::GetSkinName() const
 
 // ============================================================================================
 //
+void vVessel::SetSkinName(const char *name)
+{
+	strncpy_s(skinname, 64, name, 63);
+}
+
+// ============================================================================================
+//
 void vVessel::PreInitObject()
 {
 	if (pMatMgr->LoadConfiguration()) {
@@ -217,59 +224,6 @@ void vVessel::PreInitObject()
 	}
 	else LogErr("Failed to load a custom configuration for %s",vessel->GetClassNameA());
 }
-
-// ============================================================================================
-//
-void vVessel::ParseSkins()
-{
-	char classname[256];
-
-	D3D9Client *gc = scn->GetClient();
-	DWORD start = 0;
-
-	sprintf_s(classname, 256, "#%s", vessel->GetClassNameA());
-
-	// Fine a class name entry
-	while (true) {
-		const char *lbl = gc->GetSkinFileLine(start);
-		start++;
-		if (lbl==NULL) return;
-		if (strcmp(classname, lbl)==0) {
-			LogOk("Class name found from index = %u",start-1);
-			break;
-		}
-	}
-
-	DWORD count=0;
-
-	// Count the skin entries
-	while (true) {
-		const char *lbl = gc->GetSkinFileLine(start+count);
-		if (lbl!=NULL && lbl[0]!='#') count++;
-		else break;
-	}
-
-	LogOk("Vessel skin count = %u",count);
-
-	for (DWORD i=0;i<nmesh;i++) {
-		if (meshlist[i].mesh) {
-			DWORD nTex = meshlist[i].mesh->TextureCount();
-			for (DWORD t=0;t<nTex;t++) {
-				SURFHANDLE hTex = meshlist[i].mesh->GetTexture(t);
-				if (hTex) {
-					for (DWORD k=0;k<count;k++) {
-						if (SURFACE(hTex)->ScanNameSubId(gc->GetSkinFileLine(start+k))) {
-							strcpy_s(skinname, 64, gc->GetSkinFileLine(start+k));
-							LogOk("Skin %s found", skinname);
-							return;
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
 
 // ============================================================================================
 //
@@ -739,6 +693,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
 					if (sMFD[mfd]) {
 						D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
+						meshlist[i].mesh->DynamicGroup(mfdspec[mfd]->ngroup);
 						if (MFDGrp) {
 							MFDGrp->UsrFlag&=~0x2;
 							meshlist[i].mesh->RenderMeshGroup(dev, 1, mfdspec[mfd]->ngroup, pWT, SURFACE(sMFD[mfd]));
@@ -747,6 +702,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 					}
 					else {
 						D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
+						meshlist[i].mesh->DynamicGroup(mfdspec[mfd]->ngroup);
 						if (MFDGrp) {
 							MFDGrp->UsrFlag&=~0x2;
 							meshlist[i].mesh->RenderMeshGroup(dev, 1, mfdspec[mfd]->ngroup, pWT, mfdoff);
@@ -772,6 +728,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			//
 			if (sHUD && hudspec->nmesh == i) {
 				D3D9Mesh::GROUPREC * HUDGrp = meshlist[i].mesh->GetGroup(hudspec->ngroup);
+				meshlist[i].mesh->DynamicGroup(hudspec->ngroup);
 				if (HUDGrp) {
 					gc->clbkBlt(tHUD, 0, 0, sHUD);
 					meshlist[i].mesh->RenderMeshGroup(dev, 0, hudspec->ngroup, pWT, tHUD);

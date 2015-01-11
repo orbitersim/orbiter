@@ -332,6 +332,7 @@ private:
 	DWORD		nLights;
 	DWORD		maxlight;
 	DWORD		nplanets;		// Number of distance sorted planets to render
+	DWORD		dwTurn;
 
 	oapi::Font *pAxisFont;
 	oapi::Font *pLabelFont;

@@ -99,9 +99,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 {
 	char sh_name[32];
 
-	if (Config->AtmoShader==0) strcpy_s(sh_name,32,"Surface.fx");
-	if (Config->AtmoShader==1) strcpy_s(sh_name,32,"SurfaceAd.fx");
-	if (Config->AtmoShader==2) strcpy_s(sh_name,32,"SurfaceEx.fx");
+	strcpy_s(sh_name,32,"Surface.fx");
 
 	LogAlw("Starting to initialize %s a shading technique...", sh_name);
 	
@@ -112,32 +110,18 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	
 	char name[256];
 
-	WORD Model = gc->GetHardwareCaps()->PixelShaderVersion & 0xFFFF;
-
-	if (!strcmp(Config->Shaders,"Level20")) Model = 0x200;
-
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
 
 	macro[0].Name = "VS_MOD";
 	macro[1].Name = "PS_MOD";
-
-	if (Model==0x200) {
-		LogAlw("[Compiling Effects for Shader Model 2.0]");
-		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 2.0]");
-		macro[0].Definition = "vs_2_0";
-		macro[1].Definition = "ps_2_0";
-		sprintf_s(name,256,"Modules/D3D9Client20/%s",sh_name);
-	}
-	else {
-		LogAlw("[Compiling Effects for Shader Model 3.0]");
-		oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
-		macro[0].Definition = "vs_3_0";
-		macro[1].Definition = "ps_3_0";
-		sprintf_s(name,256,"Modules/D3D9Client/%s",sh_name);
-	}
 	
+	LogAlw("[Compiling Effects for Shader Model 3.0]");
+	oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
+	macro[0].Definition = "vs_3_0";
+	macro[1].Definition = "ps_3_0";
+	sprintf_s(name,256,"Modules/D3D9Client/%s",sh_name);
 	
 	macro[2].Name = "ANISOTROPY_MACRO";
 	macro[2].Definition = new char[32];

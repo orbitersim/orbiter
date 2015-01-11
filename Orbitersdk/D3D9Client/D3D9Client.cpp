@@ -289,8 +289,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pDefaultTex		 = NULL;
 	hLblFont1		 = NULL;
 	hLblFont2		 = NULL;
-	pSkinNames		 = NULL;
-	pSkinBuffer		 = NULL;
 	bControlPanel    = false;
 	bFullscreen      = false;
 	bFailed			 = false;
@@ -471,58 +469,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	}
 #endif
 
-
-	// Create A skin database -------------------------------------------------------------
-	//
-	AutoFile file;
-
-	char cbuf[256];
-	sprintf_s(cbuf,256,"%sGC\\VesselSkin.cfg",OapiExtension::GetConfigDir());
-
-	fopen_s(&file.pFile, cbuf, "r");
-
-	if (!file.IsInvalid()) {
-
-		fseek(file.pFile, 0, SEEK_END);
-
-		DWORD size = ftell(file.pFile);
-		fseek(file.pFile, 0, SEEK_SET);
-
-		pSkinNames = new LPCHAR[256]();
-		pSkinBuffer = new char[size]();
-		nSkins = 0;
-
-		char *_pSkinBuffer = pSkinBuffer; // we don't want to 'move' the original address!
-		while (true) {
-
-			int rv = fgets2(cbuf, 256, file.pFile, 0x08);
-			if (rv<0) break;
-			if (rv==0) continue;
-
-			pSkinNames[nSkins++] = _pSkinBuffer;
-			int k=0;
-			while (true) {
-				*_pSkinBuffer = cbuf[k];
-				 _pSkinBuffer++;
-				 if (cbuf[k]==0) break;
-				 k++;
-			}
-		}
-	}
-	else {
-		LogErr("Failed to open a vessel skin configuration file");
-	}
-
 	return hRenderWnd;
-}
-
-
-// ==============================================================
-// This is called when the simulation is ready to go but the clock
-const char *D3D9Client::GetSkinFileLine(DWORD idx) const
-{
-	if (idx<nSkins && pSkinNames) return pSkinNames[idx];
-	return NULL;
 }
 
 
@@ -626,9 +573,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 			else break;
 		}
 
-		delete[] pSkinBuffer;
-		delete[] pSkinNames;
-
 		LogAlw("=========== Clearing Texture Repository =========");
 		SAFE_DELETE(texmgr);
 		
@@ -676,7 +620,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		while (n) {
 			LPD3D9CLIENTSURFACE pSurf = SURFACE(SurfaceCatalog->Get(0));
 			if (pSurf) {
-				LogErr("Surface 0x%X (%s) (%u,%u) Type=%u", pSurf, pSurf->GetName(), pSurf->GetWidth(), pSurf->GetHeight(), pSurf->Type);
+				LogErr("Surface 0x%X (%s) (%u,%u)", pSurf, pSurf->GetName(), pSurf->GetWidth(), pSurf->GetHeight());
 				SAFE_DELETE(pSurf);
 			} else {
 				LogErr("A NULL surface in the SurfaceCatalog");
@@ -1526,17 +1470,8 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 	_TRACER;
 	DWORD flags = 0;
 
-	if (attrib==0) attrib = OAPISURFACE_SYSMEM;
-
 	// Process flag conflicts and issues ---------------------------------------------------------------------------------
 	//
-	flags = OAPISURFACE_TEXTURE|OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-	
-	if ((attrib&flags)==flags) {
-		LogErr("clbkLoadSurface() Can not combine OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI");
-		attrib-=OAPISURFACE_GDI;
-	}
-
 	flags = OAPISURFACE_RENDERTARGET|OAPISURFACE_SYSMEM;
 
 	if ((attrib&flags)==flags) {
@@ -1549,12 +1484,8 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 		if (Config->SketchpadMode==1) attrib = OAPISURFACE_SYSMEM;
 	}
 
-	flags = OAPISURFACE_SYSMEM;
-	if ((attrib&flags)==flags) attrib|=OAPISURFACE_TEXTURE;
-
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, fname);
 	surf->LoadSurface(fname, attrib);
-	surf->SetAttribs(attrib);
 	return surf;
 }
 
@@ -1591,67 +1522,8 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
-	_TRACER;
-
-	DWORD flags = 0;
-
-	if (attrib==0) attrib = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-
-	// Create the Surface ------------------------------------------------------------------------------------------------
-	//
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurfaceEx");
-	surf->SetAttribs(attrib);
-
-	// Process flag conflicts and issues ---------------------------------------------------------------------------------
-	//
-	flags = OAPISURFACE_TEXTURE|OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-	if ((attrib&flags)==flags) {
-		LogErr("clbkCreateSurfaceEx() Can not combine OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI");
-		attrib-=OAPISURFACE_GDI;
-	}
-
-	flags = OAPISURFACE_RENDERTARGET|OAPISURFACE_SYSMEM;
-	if ((attrib&flags)==flags) {
-		LogErr("clbkCreateSurfaceEx() Can not combine OAPISURFACE_RENDERTARGET | OAPISURFACE_SYSMEM");
-		attrib-=OAPISURFACE_SYSMEM;
-	}
-
-	// OAPISURFACE_SKETCHPAD goes with Lockable Render Target or with SystemMem
-	if (attrib==OAPISURFACE_SKETCHPAD) {
-		if (Config->SketchpadMode==0) attrib = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-		if (Config->SketchpadMode==1) attrib = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-	}
-
-	// OAPISURFACE_SYSMEM will use texture interface
-	flags = OAPISURFACE_SYSMEM;
-	if ((attrib&flags)==flags) attrib|=OAPISURFACE_TEXTURE;
-
-	
-	// Create the Surface ------------------------------------------------------------------------------------------------
-	//
-	D3DFORMAT fmt = D3DFMT_X8R8G8B8;
-	if (attrib&OAPISURFACE_ALPHA) fmt = D3DFMT_A8R8G8B8;
-
-	D3DPOOL pool = D3DPOOL_DEFAULT;
-	if (attrib&OAPISURFACE_SYSMEM) pool = D3DPOOL_SYSTEMMEM;
-
-	if (attrib&OAPISURFACE_TEXTURE) {
-
-		// OAPISURFACE_SYSMEM will override OAPISURFACE_GDI if both defined
-		flags = OAPISURFACE_GDI|OAPISURFACE_SYSMEM;
-		if ((attrib&flags)==flags) attrib-=OAPISURFACE_GDI;
-
-		DWORD usage = 0;
-		if (attrib&OAPISURFACE_GDI) usage = D3DUSAGE_DYNAMIC;
-		if (attrib&OAPISURFACE_RENDERTARGET) usage = D3DUSAGE_RENDERTARGET;
-		surf->MakeTextureEx(w, h, usage, fmt, pool);
-		if (attrib&OAPISURFACE_RENDER3D) surf->MakeDepthStencil();
-		return surf;
-	}
-
-	surf->MakeRenderTargetEx(w, h, (attrib&OAPISURFACE_GDI)!=0, fmt);
-	if (attrib&OAPISURFACE_RENDER3D) surf->MakeDepthStencil();
-
+	surf->CreateSurface(w, h, attrib);
 	return surf;
 }
 
@@ -1662,7 +1534,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
 	_TRACER;
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurface");
-	surf->MakeRenderTargetEx(w, h, true);
+	surf->MakeEmptySurfaceEx(w, h);
 	return surf;
 }
 
@@ -1681,7 +1553,8 @@ SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
 	_TRACER;
 	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pd3dDevice, "clbkCreateTexture");
-	pSurf->MakeTextureEx(w, h, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8); // DO NOT USE ALPHA
+	// DO NOT USE ALPHA
+	pSurf->MakeEmptyTextureEx(w, h);
 	return (SURFHANDLE)pSurf;
 }
 
@@ -2195,9 +2068,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 9 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 11 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 9 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 11 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
@@ -2251,6 +2124,13 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 
 	if (surf==NULL) surf = GetBackBufferHandle();
 
+	int SkpMode = SURFACE(surf)->GetPreferredSkpMode();
+
+	if (SkpMode==0) {
+		if (Config->SketchpadMode==0) SkpMode = SKETCHPAD_DIRECTX;
+		else						  SkpMode = SKETCHPAD_GDI;
+	}
+
 	if (SURFACE(surf)->IsBackBuffer()) {
 		if (bScene==true || bGDIBB==false) {
 			if (bScene==false) pd3dDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() in the main rendering routine
@@ -2259,7 +2139,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 		}
 	}
 	else {
-		if (Config->SketchpadMode==0) {
+		if (SkpMode==SKETCHPAD_DIRECTX) {
 			if (SURFACE(surf)->IsRenderTarget()) {
 				bSkepchpadOpen = true;
 				return new D3D9Pad(surf);
@@ -2269,7 +2149,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 
 	// Fall back into a GDI rendering -----------------------------------------------
 	//
-	HDC hDC = clbkGetSurfaceDC (surf);
+	HDC hDC = clbkGetSurfaceDC(surf);
 	if (hDC) {
 		bSkepchpadOpen = true;
 		return new GDIPad(surf, hDC);
@@ -2297,6 +2177,9 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 			D3D9Pad *gdip = (D3D9Pad*)sp;
 			delete gdip;
 		}
+
+		// Process some sketchpad stuff
+		SURFACE(surf)->ProcessFlags();
 	}
 }
 

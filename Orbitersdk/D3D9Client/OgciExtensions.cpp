@@ -8,6 +8,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Config.h"
 #include "Scene.h"
+#include "VVessel.h"
 
 extern D3D9Client *g_client;
 
@@ -18,11 +19,44 @@ DLLCLBK DWORD ogciClientID()
 	return DWORD('D3D9');
 }
 
-
-
-DLLCLBK SURFHANDLE ogciCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
+DLLCLBK bool ogciGenerateMipMaps(SURFHANDLE hSurface, DWORD Filter)
 {
-	return oapiCreateSurfaceEx(w, h, attrib);
+	return SURFACE(hSurface)->GenerateMipMaps();
+}
+
+			
+DLLCLBK bool ogciRegisterSkinName(const VISHANDLE hVisual, const char *name)
+{
+	VisObject *pVis = (VisObject *)hVisual;
+	OBJHANDLE hObj = pVis->GetObject();
+	if (hObj) if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
+		vVessel *pVes = (vVessel *)hVisual;
+		pVes->SetSkinName(name);
+		return true;
+	}
+	return false;
+}
+
+
+DLLCLBK SURFHANDLE ogciCreateSurfaceEx(int w, int h, DWORD attrib)
+{
+	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
+	D3D9ClientSurface *surf = new D3D9ClientSurface(pDev, "oapiCreateSurfaceEx");
+	surf->CreateSurface(w, h, attrib);
+	return surf;
+}
+
+
+DLLCLBK DWORD ogciGetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
+{
+	return SURFACE(hSurf)->GetAttribs(bCreation);
+}
+
+
+DLLCLBK void ogciConvertSurface(SURFHANDLE hSurf, DWORD attrib)
+{
+	LogBlu("ogciConvertSurface(0x%X) Attribs = 0x%X", hSurf, attrib);
+	SURFACE(hSurf)->ConvertSurface(attrib);
 }
 
 
@@ -38,14 +72,20 @@ DLLCLBK void ogciSketchBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, int tx, int t
 
 		RECT src, tgt;
 
-		src.left = 0; src.top = 0;
-		src.right = SURFACE(hSrc)->GetWidth();
-		src.bottom = SURFACE(hSrc)->GetHeight();
-		tgt.left = tx; tgt.top = ty;
-		tgt.right = tx + SURFACE(hSrc)->GetWidth();
-		tgt.bottom = ty + SURFACE(hSrc)->GetHeight();
+		DWORD w = SURFACE(hSrc)->GetWidth();
+		DWORD h = SURFACE(hSrc)->GetHeight();
+
+		src.left = 0; 
+		src.top = 0;
+		src.right = w; 
+		src.bottom = h;
+		tgt.left = tx; 
+		tgt.top = ty;
+		tgt.right = tx + w;
+		tgt.bottom = ty + h;
 
 		pTgt->SketchRect(hSrc, &src, &tgt);
+		LogOk("ogciSketchBlt 0x%X (%s) -> 0x%X (%s) (%u,%u)", hSrc, SURFACE(hSrc)->GetName(), pTgt, pTgt->GetName(), w, h);
 	}
 }
 
@@ -56,6 +96,7 @@ DLLCLBK void ogciSketchBltEx(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, L
 
 	if (pTgt->GetSketchPadMode() == SKETCHPAD_DIRECTX) {
 		pTgt->SketchRect(hSrc, s, t, alpha, color);
+		LogOk("ogciSketchBltEx 0x%X (%s) -> 0x%X (%s)", hSrc, SURFACE(hSrc)->GetName(), pTgt, pTgt->GetName());
 	}
 }
 
@@ -66,9 +107,9 @@ DLLCLBK void ogciSketchRotateBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT 
 
 	if (pTgt->GetSketchPadMode() == SKETCHPAD_DIRECTX) {
 		pTgt->SketchRotateRect(hSrc, s, tcx, tcy, w, h, angle, alpha, color);
+		LogOk("ogciSketchRotateBlt 0x%X (%s) -> 0x%X (%s) (%u,%u)", hSrc, SURFACE(hSrc)->GetName(), pTgt, pTgt->GetName(), w, h);
 	}
 }
-
 
 
 DLLCLBK int ogciSketchpadVersion(oapi::Sketchpad *pSkp)
@@ -78,7 +119,14 @@ DLLCLBK int ogciSketchpadVersion(oapi::Sketchpad *pSkp)
 }
 
 
+DLLCLBK void ogciRequestDXSketchpad(oapi::Sketchpad *pSkp)
+{
+	LogAlw("Requesting DirectX Sketchpad for surface 0x%X",pSkp->GetSurface());
+	SURFACE(pSkp->GetSurface())->SetFlag(D3D9_CUSTOM_FLAG_DXPAD);
+}
 
+
+/*
 DLLCLBK void ogciGrabSketchWhenReleased(oapi::Sketchpad *pSkp, SURFHANDLE hTgt)
 {
 	D3D9ClientSurface *pTgt = SURFACE(pSkp->GetSurface());
@@ -87,7 +135,7 @@ DLLCLBK void ogciGrabSketchWhenReleased(oapi::Sketchpad *pSkp, SURFHANDLE hTgt)
 		D3D9Pad *pPad = (D3D9Pad *)pSkp;
 		//pPad->GrabSketch(hTgt);
 	}
-}
+}*/
 
 	
 
@@ -118,12 +166,10 @@ DLLCLBK void ogciReleaseCameraTake()
 DLLCLBK CAMERAHANDLE ogciSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags)
 {
 	VECTOR3 x = crossp(up, dir);
-
 	MATRIX3 mTake;
 	mTake.m11 = x.x;	mTake.m21 = x.y;	mTake.m31 = x.z;
 	mTake.m12 = up.x;	mTake.m22 = up.y;	mTake.m32 = up.z;
 	mTake.m13 = dir.x;	mTake.m23 = dir.y;	mTake.m33 = dir.z;
-
 	return g_client->GetScene()->SetupCustomCamera(hCam, hVessel, mTake, pos, fov, hSurf, flags);
 }
 

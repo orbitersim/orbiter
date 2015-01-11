@@ -168,12 +168,11 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 {
 	_TRACE;
 
-	LogOk("Creating D3D9 SketchPad...");
+	LogOk("Creating D3D9 SketchPad for surface (0x%X)...", s);
 
 	cfont  = NULL;
 	cpen   = NULL;
 	cbrush = NULL;
-	hDC    = NULL;
 	pTgt   = SURFACE(s);
 	pDev   = pTgt->GetDevice();
 	origx  = 0;
@@ -190,6 +189,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	bkcolor    = D3DXCOLOR(0,0,0,1);
 	textcolor  = D3DXCOLOR(0,1,0,1);
 	pencolor   = D3DXCOLOR(0,1,0,1);
+	bConvert   = false;
 	
 
 	HR(FX->SetMatrix(eVP, pTgt->pVP));
@@ -213,18 +213,32 @@ D3D9Pad::~D3D9Pad ()
 	
 	if (pTgt) {
 		if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
-		if (hDC) pTgt->ReleaseDC(hDC);
+		if (bConvert) {
+			pTgt->SetPreferredSketchpad(SKETCHPAD_GDI);
+			LogAlw("Sketchpad: Requests conversion of 0x%X to Plain (Sysmem)", pTgt);
+			if (pTgt->ConvertToPlain()==false) {
+				LogAlw("Sketchpad: Requests conversion of 0x%X to RenderTarget-Lock", pTgt);
+				if (pTgt->ConvertToRenderTarget(true)==false) {
+					LogWrn("Sketchpad: - ! - Requests denied - ! -");
+				}
+			}
+		}
 	}
-
 	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
-
 	pTgt = NULL;
-
-	//if (cfont!=deffont && cfont!=NULL) LogErr("Custom font still attached in sketchpad 0x%X",this); 
-	//if (cpen!=defpen && cpen!=NULL) LogErr("Custom pen still attached in sketchpad 0x%X",this); 
-	//if (cbrush!=NULL) LogErr("Custom brush still attached in sketchpad 0x%X",this); 
-	
 	LogOk("...D3D9 SketchPad Released");
+}
+
+
+HDC D3D9Pad::GetDC() 
+{ 
+	if (pTgt->IsBackBuffer()) return NULL;
+	if (!pTgt->bSkpGetDCEr) {
+		LogWrn(" - ! - Never Use Sketchpad::GetDC() !! hDC not available, the surface is active render target at a moment - ! -");
+		pTgt->bSkpGetDCEr = true;
+	}
+	bConvert = true;
+	return NULL;
 }
 
 Font *D3D9Pad::SetFont(Font *font) const
@@ -690,26 +704,6 @@ void D3D9Pad::Rectangle2(float l, float t, float r, float b)
 	FX->End();	
 }
 
-
-
-
-HDC D3D9Pad::GetDC() 
-{ 
-	if (hDC) return hDC;
-
-	if (pTgt->IsBackBuffer()) return NULL;
-
-	if (!pTgt->bSkpGetDCEr) {
-		LogErr("!! Never Use Sketchpad::GetDC() !! hDC not available, the surface is active render target at a moment");
-		pTgt->bSkpGetDCEr = true;
-	}
-
-	hDC = pTgt->GetDC_Hack();
-	return hDC;
-}
-
-
-
 short mod(short a, short b)
 {
 	if (a<0) return b-1;
@@ -906,10 +900,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 		pFont->SetRotation(rotation);
 		
-		if (nfcache>120) {
-			LogErr("Font Cache is Full.");
-			DeleteObject(hNew);
-		}
+		if (nfcache>120) LogErr("Font Cache is Full.");
 		else {
 			// Fill the cache --------------------------------
 			fcache[nfcache].hFont  = NULL;  

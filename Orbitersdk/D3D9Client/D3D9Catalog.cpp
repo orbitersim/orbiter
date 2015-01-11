@@ -17,19 +17,23 @@ D3D9Catalog::D3D9Catalog(const char *n)
 	data  = new DWORD[nmax];
 	strcpy_s(name,16,n);
 	for (DWORD i=0;i<nmax;i++) data[i]=0;
+	InitializeCriticalSectionAndSpinCount(&Crits, 256); 
 }
 
 D3D9Catalog::~D3D9Catalog()
 {
+	DeleteCriticalSection(&Crits);
 	delete []data;
 }
 
 void D3D9Catalog::Clear()
 {
+	EnterCriticalSection(&Crits);
 	for (DWORD i=0;i<nmax;i++) {
 		if (data[i]!=0) LogErr("Catalog contains undeleted data 0x%X (%s)",data[i],name);
 		data[i]=0;
 	}
+	LeaveCriticalSection(&Crits);
 }
 
 void D3D9Catalog::Add(DWORD d)
@@ -38,8 +42,12 @@ void D3D9Catalog::Add(DWORD d)
 		LogErr("Trying to catalog a NULL pointer.(%s)",name);
 		return;
 	}
+
+	EnterCriticalSection(&Crits);
+
 	for (DWORD i=0;i<count;i++) if (data[i]==d) {
 		LogErr("Data 0x%X already catalogged (%s)",d,name);
+		LeaveCriticalSection(&Crits);
 		return;
 	}
 	if (count==nmax) {
@@ -52,6 +60,7 @@ void D3D9Catalog::Add(DWORD d)
 	}
 	data[count]=d;
 	count++;
+	LeaveCriticalSection(&Crits);
 }
 
 DWORD D3D9Catalog::CountEntries()
@@ -61,21 +70,29 @@ DWORD D3D9Catalog::CountEntries()
 
 DWORD D3D9Catalog::Seek(DWORD d)
 {
-	for (DWORD i=0;i<count;i++) if (data[i]==d) return i;
+	EnterCriticalSection(&Crits);
+	for (DWORD i=0;i<count;i++) if (data[i]==d) {
+		LeaveCriticalSection(&Crits);
+		return i;
+	}
+	LeaveCriticalSection(&Crits);
 	return 0xFFFFFFFF;
 }
 
 bool D3D9Catalog::Remove(DWORD d)
 {
+	EnterCriticalSection(&Crits);
 	for (DWORD i=0;i<count;i++) {
 		if (data[i]==d) {
 			for (DWORD k=i;k<(count-1);k++) data[k]=data[k+1];
 			count--;
 			data[count] = 0;
+			LeaveCriticalSection(&Crits);
 			return true;
 		}
 	}	
 	LogErr("Entry 0x%X wasn't in the catalog (%s)",d,name);
+	LeaveCriticalSection(&Crits);
 	return false;
 }
 

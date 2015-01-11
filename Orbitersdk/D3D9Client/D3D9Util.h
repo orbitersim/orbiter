@@ -240,6 +240,7 @@ extern IDirect3DVertexDeclaration9	*pNTVertexDecl;
 extern IDirect3DVertexDeclaration9	*pBAVertexDecl;
 extern IDirect3DVertexDeclaration9	*pPosColorDecl;
 extern IDirect3DVertexDeclaration9	*pPositionDecl;
+extern IDirect3DVertexDeclaration9	*pVector4Decl;
 extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
 extern IDirect3DVertexDeclaration9	*pGPUBlitDecl;

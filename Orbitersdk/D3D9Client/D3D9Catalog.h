@@ -25,6 +25,7 @@ public:
 private:
 	DWORD *data;
 	DWORD nmax, count;
+	CRITICAL_SECTION Crits;
 	char  name[16];
 };
 

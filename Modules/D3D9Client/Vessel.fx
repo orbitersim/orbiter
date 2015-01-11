@@ -9,11 +9,9 @@ struct VesselVS
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;     
     float3 nrmW     : TEXCOORD1;
-    float3 tex0     : TEXCOORD2;
-    float2 aux		: TEXCOORD3; 
+    float4 tex0     : TEXCOORD2;
     float3 diffuse  : COLOR0;           // (Local Light) Diffuse color
     float3 spec     : COLOR1;           // (Local Light) Specular color
-	int	   inst		: TEXCOORD4;
 };
 
 struct VesselNMVS
@@ -30,24 +28,31 @@ struct VesselNMVS
 };
 
 
-//float3 posW  = mul(float4(vrt.posL, 1.0f), gGrpInst[vrt.idx[0]]).xyz;
-//float3 nrmW  = mul(float4(vrt.nrmL, 0.0f), gGrpInst[vrt.idx[0]]).xyz;
 
 
-// ========================================================================================
+
+// ========================================================================================================================
 // Vertex shader for vessel without normal-mapping
 //
 VesselVS VesselTechVS(MESH_VERTEX vrt)
 {
     VesselVS outVS = (VesselVS)0;
-	
-	float3 posW  = mul(float4(vrt.posL, 1.0f), gW).xyz;
-	float3 nrmW  = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
 
-	outVS.CamW   = -posW * gDistScale + gCamOff;   // A vector from the vertex to the camera
-    outVS.nrmW   = nrmW;
-	outVS.posH   = mul(float4(posW, 1.0f), gVP);
-	outVS.tex0   = float3(vrt.tex0.xy, outVS.posH.z);
+	float3 posW, nrmW;
+
+	if (gInstanced) {
+		posW = mul(float4(vrt.posL, 1.0f), gGrpInst[vrt.idx[0]]).xyz;
+		nrmW = mul(float4(vrt.nrmL, 0.0f), gGrpInst[vrt.idx[0]]).xyz;
+	}
+	else {
+		posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+		nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
+	}
+
+	outVS.CamW = -posW * gDistScale + gCamOff;   // A vector from the vertex to the camera
+    outVS.nrmW = nrmW;
+	outVS.posH = mul(float4(posW, 1.0f), gVP);
+	outVS.tex0 = float4(vrt.tex0.xy, outVS.posH.z, 0);
 	
 	if (gLocalLights) {
 		float3 locW;
@@ -63,7 +68,7 @@ VesselVS VesselTechVS(MESH_VERTEX vrt)
 	// Pre-compute fresnel term ------------------------------------------------
 #if defined(_ENVMAP)
 	if (gEnvMapEnable) {
-		outVS.aux[0] = gMtrl.fresnel.y * pow(1.0f-saturate(dot(normalize(outVS.CamW), nrmW)), gMtrl.fresnel.z);
+		outVS.tex0.w = gMtrl.fresnel.y * pow(1.0f-saturate(dot(normalize(outVS.CamW), nrmW)), gMtrl.fresnel.z);
 	}
 #endif
 	
@@ -71,6 +76,9 @@ VesselVS VesselTechVS(MESH_VERTEX vrt)
 }
 
 
+// ========================================================================================================================
+// Pixel shader for vessel without normal-mapping
+//
 float4 VesselTechPS(VesselVS frg) : COLOR
 {
   
@@ -105,7 +113,8 @@ float4 VesselTechPS(VesselVS frg) : COLOR
 
 	float3 cTot  = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
 	
-    cTex.rgb *= saturate(diff);											// Lit the diffuse texture
+    cTex.rgb *= saturate(diff);	// Lit the diffuse texture
+	//cTex.rgb = (1.0f - exp2(-cTex.rgb*diff))*2.0f;
 
 #if defined(_ENVMAP)
 
@@ -114,7 +123,7 @@ float4 VesselTechPS(VesselVS frg) : COLOR
 		if (gUseRefl) cRefl = tex2D(ReflS, frg.tex0.xy);					// Get a reflection color for non fresnel refl. (Pre-computed intensity in alpha)
 		else 		  cRefl = gMtrl.reflect;
 		
-		cRefl = saturate(cRefl + (cRefl.a>0)*frg.aux[0]);
+		cRefl = saturate(cRefl + (cRefl.a>0)*frg.tex0.w);
 		
         float3 v = reflect(-CamW, nrmW);								// Reflection vector
 		
@@ -136,19 +145,19 @@ float4 VesselTechPS(VesselVS frg) : COLOR
 	if (gUseEmis) cTex.rgb += tex2D(EmisS, frg.tex0.xy).rgb;			// Add emissive textures
 
 #if defined(_DEBUG)
-    if (gDebugHL) cTex.rgb = cTex.rgb*0.5f + gColor.rgb;				// Apply mesh debugger highlighting
+    if (gDebugHL) cTex = cTex*0.5f + gColor;							// Apply mesh debugger highlighting
 #endif
 
 	if (gInSpace) return cTex;	
 	
 	float fogFact = exp(-max(0, frg.tex0.z)*gFogDensity);
-	return lerp(gFogColor, cTex, fogFact);							// Apply fog
+	return lerp(gFogColor, cTex, fogFact);								// Apply fog
 } 
 
 
 
 
-// ========================================================================================
+// ========================================================================================================================
 // Vertex shader for vessel with normal-mapping
 //
 VesselNMVS VesselTechNMVS(MESH_VERTEX vrt)
@@ -156,21 +165,29 @@ VesselNMVS VesselTechNMVS(MESH_VERTEX vrt)
     // Zero output.
 	VesselNMVS outVS = (VesselNMVS)0;
 
-    float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
-    float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz; 
-    outVS.posH  = mul(float4(posW, 1.0f), gVP);
-
-    // Construct Tangent space transformation matrix
+	  // Construct Tangent space transformation matrix
     float3x3 TBN;
     TBN[0] = vrt.tanL;
     TBN[1] = cross(vrt.tanL, vrt.nrmL);
     TBN[2] = vrt.nrmL; 
-    
-    TBN = mul(TBN, gW);
-    
+
+	float3 posW, nrmW;
+
+    if (gInstanced) {
+		posW = mul(float4(vrt.posL, 1.0f), gGrpInst[vrt.idx[0]]).xyz;
+		nrmW = mul(float4(vrt.nrmL, 0.0f), gGrpInst[vrt.idx[0]]).xyz;
+		TBN  = mul(TBN, gGrpInst[vrt.idx[0]]);
+	}
+	else {
+		posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+		nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
+		TBN  = mul(TBN, gW);
+	}
+
 	outVS.nrmT  = TBN[2];
 	outVS.bitT  = TBN[1];
 	outVS.tanT  = TBN[0];
+	outVS.posH  = mul(float4(posW, 1.0f), gVP);
     outVS.camW  = -posW * gDistScale + gCamOff;
     outVS.tex0  = float3(vrt.tex0.xy, outVS.posH.z);
    
@@ -192,6 +209,8 @@ VesselNMVS VesselTechNMVS(MESH_VERTEX vrt)
 }
 
 
+// ========================================================================================================================
+//
 float4 VesselTechNMPS(VesselNMVS frg) : COLOR
 {
 	// Normalize input
@@ -213,7 +232,7 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
     float3 nrmW = mul(nrmT, TBN);
 
 	if (gUseSpec) {
-		cSpec = tex2D(SpecS, frg.tex0);
+		cSpec = tex2D(SpecS, frg.tex0.xy);
 		cSpec.a *= 255.0f;
 	}	
 	
@@ -253,7 +272,7 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
 	if (gUseEmis) cTex.rgb += tex2D(EmisS, frg.tex0.xy).rgb;
 
 #if defined(_DEBUG)	
-    if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
+     if (gDebugHL) cTex = cTex*0.5f + gColor;
 #endif
 
 	cTex.a = 1.0f;
@@ -267,7 +286,43 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
 
 
 
-// This is the default mesh rendering technique --------------------------------
+// ========================================================================================================================
+//
+float4 VirtualCockpitPS(VesselVS frg) : COLOR
+{
+    // Normalize input
+	float3 nrmW = normalize(frg.nrmW);
+	float3 CamW = normalize(frg.CamW);
+    float4 cTex = 1;
+
+    if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
+    
+	cTex.a *= gMtrlAlpha;
+
+    if (gFullyLit) {
+		if (gDebugHL) cTex = cTex*0.5 + gColor;
+		return float4(cTex.rgb*saturate(gMtrl.diffuse.rgb+gMtrl.emissive.rgb), cTex.a);
+	}
+   
+    float3 r = reflect(gSun.direction, nrmW);
+    float  d = saturate(-dot(gSun.direction, nrmW));
+	float  s = pow(saturate(dot(r, CamW)), gMtrl.specular.a) * saturate(gMtrl.specular.a);
+
+    if (d==0) s = 0;
+
+    float3 diff = gMtrl.diffuse.rgb * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+    float3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
+    
+    cTex.rgb = cTex.rgb * saturate(diff) + saturate(spec);
+    
+    if (gDebugHL) cTex = cTex*0.5 + gColor;
+
+    return float4(cTex.rgb, cTex.a);
+}
+
+
+// ========================================================================================================================
+// This is the default mesh rendering technique 
 //
 technique VesselTech
 {
@@ -288,6 +343,36 @@ technique VesselTech
     {
         vertexShader = compile VS_MOD VesselTechVS();
         pixelShader  = compile PS_MOD VesselTechPS();
+
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        ZEnable = true; 
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;    
+        ZWriteEnable = true;
+    }
+}
+
+
+technique VCTech
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD VesselTechNMVS();
+        pixelShader  = compile PS_MOD VesselTechNMPS();
+
+        AlphaBlendEnable = true;
+        BlendOp = Add;
+        ZEnable = true; 
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha;    
+        ZWriteEnable = true;
+    }
+
+    pass P1
+    {
+        vertexShader = compile VS_MOD VesselTechVS();
+        pixelShader  = compile PS_MOD VirtualCockpitPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;

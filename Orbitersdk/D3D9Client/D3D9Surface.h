@@ -14,11 +14,7 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
-
-#define D3D9S_TEXTURE	0x1
-#define D3D9S_RENDER	0x2
-#define D3D9S_DYNAMIC	0x4
-#define D3D9S_LOCK		0x8
+#define	D3D9_CUSTOM_FLAG_DXPAD		0x1
 
 // Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
 
@@ -39,14 +35,17 @@ public:
 						// Destroy the class and release the texture (pTex) if exists. Value of Reference counter doesn't matter.
 						~D3D9ClientSurface();
 
+	void				ConvertSurface(DWORD attrib);
+	void				CreateSurface(int w, int h, DWORD attrib);
 	void				MakeBackBuffer(LPDIRECT3DSURFACE9);
-	void				MakeTextureEx(UINT Width, UINT Height, DWORD Usage=D3DUSAGE_DYNAMIC|D3DUSAGE_AUTOGENMIPMAP, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL pool=D3DPOOL_DEFAULT);
-	void				MakeRenderTargetEx(UINT Width, UINT Height, bool bLock=false, D3DFORMAT Format=D3DFMT_X8R8G8B8);
+	void				MakeEmptySurfaceEx(UINT Width, UINT Height, DWORD Usage=0, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL pool=D3DPOOL_SYSTEMMEM, DWORD Flags=0);
+	void				MakeEmptyTextureEx(UINT Width, UINT Height, DWORD Usage=0, D3DFORMAT Format=D3DFMT_X8R8G8B8);
 	void				MakeDepthStencil();
 
 	bool				GetDesc(D3DSURFACE_DESC *);
+	bool				GenerateMipMaps();
 
-	bool				LoadSurface(const char *fname, DWORD flags);
+	bool				LoadSurface(const char *fname, DWORD flags, bool bDecompress=false);
 	bool				LoadTexture(const char *fname);
 	void				SaveSurface(const char *fname);
 
@@ -55,7 +54,9 @@ public:
 	DWORD				GetHeight();
 	DWORD				GetSizeInBytes();
 
-	void				SetAttribs(DWORD attrib) { Attrib = attrib; }
+	void				SetFlag(DWORD flag) { Flags |= flag; }
+	void				RemoveFlag(DWORD flag) { Flags &= (~flag); }
+	void				ProcessFlags();
 
 	void				IncRef();	// Increase surface reference counter
 	bool				Release();	// Decrease the counter
@@ -64,7 +65,8 @@ public:
 	const char *		GetName() const { return name; }
 	void				SetName(const char *);
 
-
+	inline bool			Exists() { return (pSurf!=NULL); }
+	inline bool			HasSubSurface() { return (pDCSub!=NULL); }
 	bool				IsCompressed();
 	bool				IsGDISurface();
 	bool				IsBackBuffer();
@@ -72,8 +74,15 @@ public:
 	bool				IsRenderTarget();
 	bool				Is3DRenderTarget();
 	bool				IsPowerOfTwo() const;
-	bool				IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
+	inline bool			IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
+	inline bool			IsDynamic() { return (desc.Usage&D3DUSAGE_DYNAMIC)!=0; }
+	inline bool			IsPlainSurface() { return (desc.Usage==0 && pTex==NULL); }
 
+
+	void				SetPreferredSketchpad(int skp);
+
+	DWORD				GetAttribs(int What=1);
+	DWORD				GetFlags() { return Flags; }
 	LPDIRECT3DSURFACE9	GetDepthStencil();
 	LPDIRECT3DSURFACE9	GetSurface();
 	LPDIRECT3DTEXTURE9	GetTextureHard();
@@ -84,6 +93,7 @@ public:
 	LPDIRECT3DTEXTURE9	GetTexture();
 	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
 	int					GetSketchPadMode() { return SketchPad; }
+	int					GetPreferredSkpMode() { return iSkpMode; }
 
 
 	void				SetColorKey(DWORD ck);			// Enable and set color key
@@ -91,13 +101,14 @@ public:
 
 	HDC					GetDC();
 	void				ReleaseDC(HDC);
-	HDC					GetDC_Hack();
-
+	
 	HRESULT				AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
 	HRESULT				FlushQueue();
 	void				CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
-	void				SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha=-1, VECTOR3 *clr=NULL);
-	void				SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha=-1, VECTOR3 *clr=NULL);
+
+	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
+	HRESULT				SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha=-1, VECTOR3 *clr=NULL);
+	HRESULT				SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha=-1, VECTOR3 *clr=NULL);
 
 	bool				Fill(LPRECT r, DWORD color);
 	bool				Clear(DWORD color);
@@ -107,20 +118,20 @@ public:
 	HRESULT				BeginBlitGroup();
 	void				EndBlitGroup();
 	int					GetQueueSize();
-	bool				ScanNameSubId(const char *n);
 	bool				ComputeReflAlpha();
 
 private:
 
-	void				ConvertToRenderTargetTexture();
-	void				ConvertToRenderTarget();
+	bool				ConvertToRenderTargetTexture();
+	bool				ConvertToRenderTarget(bool bLock=false);
+	bool				ConvertToPlain();
+	bool				ConvertToTexture(bool bDynamic=false);
+	void				SyncSubSurface();
 	void				CreateSubSurface();
-	void				CreateDCSubSurface();
 	bool				CreateName(char *out, int len, const char *fname, const char *id);
-	void				Decompress();
+	void				Decompress(DWORD Attribs=0);
 	DWORD				GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
 	DWORD				GetSizeInBytes(D3DFORMAT Format, DWORD pixels);
-	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
 	HDC					GetDCHard();
 	void				SetupViewPort();
 	void				LogSpecs(char *name);
@@ -135,10 +146,15 @@ private:
 	bool				bSkpGetDCEr;
 	bool				bBltGroup;		// BlitGroup operation is active
 	bool				bBackBuffer;
+	bool				bLockable;
+	bool				bMainDC;
+	bool				bDCSys;
+	bool				bBltSys;
 	int					Refs;
-	DWORD				Type;
-	int					Initial;		// Initial creation flags
-	int					SketchPad;		// 0=None, 1=GDI, 2=GPU
+	int					Initial;		// Initial creation Attributes flags
+	int					Active;			// Active Attribute flags
+	int					SketchPad;		// Currently Active Sketchpad 0=None, 1=GDI, 2=GPU
+	int					iSkpMode;		// Preferred SketchPad Mode 0=Auto, 1=GDI, 2=GPU 
 	int					iBindCount;		// GPU Bind reference counter
 	D3DSURFACE_DESC		desc;
 	LPDIRECT3DSURFACE9	pStencil;		
@@ -150,10 +166,10 @@ private:
 	LPDIRECT3DTEXTURE9	pEmissionMap;
 	LPDIRECT3DTEXTURE9	pReflectionMap;
 	LPDIRECT3DDEVICE9	pDevice;
-	D3D9ClientSurface * pSrc_prev;
 	D3DXCOLOR			ClrKey;
 	DWORD				ColorKey;
-	DWORD				Attrib;
+	DWORD				Flags;
+	DWORD				GDIBltCtr;
 	LPD3DXMATRIX		pVP;
 	D3DVIEWPORT9 *		pViewPort;
 	HFONT				hDefFont;

@@ -99,10 +99,10 @@ private:
 	mutable D3DXCOLOR brushcolor;
 	mutable D3DXCOLOR bkcolor;
 	
-	HDC	hDC;
 	DWORD bkmode;
 	DWORD halign, valign;
 	int origx, origy, cx, cy;
+	bool bConvert;
 	
 	D3D9ClientSurface *pTgt;
 

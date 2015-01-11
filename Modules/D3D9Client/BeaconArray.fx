@@ -26,7 +26,7 @@ struct BeaconVS
 BeaconVS BeaconArrayVS(BAVERTEX vrt)
 {
 	BeaconVS outVS = (BeaconVS)0;
-	float3 posX   = mul(float4(vrt.posL, 1.0f), gW).xyz * gDistScale - gCamOff;
+	float3 posX   = mul(float4(vrt.posL, 1.0f), gW).xyz - gCamOff;
 	float dist    = length(posX);	// distance to a beacon
 	
 	float3 offL   = float3(0, dist*2e-3, 0);
@@ -37,7 +37,7 @@ BeaconVS BeaconArrayVS(BAVERTEX vrt)
 	
 	posW = posW * gDistScale - gCamOff;
 	
-	float fog     = 1.0f / exp(abs(outVS.posH.z * gFogDensity * 20.0f)); // Haze effect scale factor
+	float fog     =  exp(-abs(outVS.posH.z * gFogDensity * 20.0f)); // Haze effect scale factor
 
 	// Viewing angle dependency
 	float dota    = -dot(normalize(posW), dirW);

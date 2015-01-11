@@ -49,12 +49,12 @@ HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSur
 	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
 	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS;	
 	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
-	else			 attrib |= OAPISURFACE_MIPMAPS;
+	//else			 attrib |= OAPISURFACE_MIPMAPS;
 
-	if ((flags&0x2)&&(flags&0x1)==0) attrib |= OAPISURFACE_RENDERTARGET; // Uncompress means that it's going to do something bad, so, let's prepare for the worst.
+	if ((flags&0x2) && ((flags&0x1)==0)) attrib |= OAPISURFACE_RENDERTARGET; // Uncompress means that it's going to do something bad, so, let's prepare for the worst.
 
 	if ((*pSurf)->LoadSurface(fname, attrib)==true) return S_OK;
-
+	
 	delete (*pSurf);
 	*pSurf = NULL;
 	return -1;

@@ -49,17 +49,28 @@ public:
 
 	D9BBox BBox;
 
-	D3DXMATRIX InstMatrix[16];
+	D3DXMATRIX InstMatrix[8];
 	
 	struct GROUPREC {			// mesh group definition
-		DWORD VertOff;			// Vertex Offset
-		DWORD FaceOff;			// Index Offset
-		DWORD nFace;
-		DWORD nVert;
+		DWORD VertOff;			// Main mesh Vertex Offset
+		DWORD FaceOff;			// Main mesh Index Offset
+		DWORD BaseIdx;			// Main mesh Base Index
+		//------------------------------------------------
+		DWORD GeoVOff;			// Geometry Vertex Offset
+		DWORD GeoFOff;			// Geometry Face Offset
+		DWORD GeoBIdx;			// Geometry Base Index
+		//------------------------------------------------
+		DWORD nFace;			// Face count
+		DWORD nVert;			// Vertex count
+		//------------------------------------------------
 		DWORD MtrlIdx;			// material index 0=None
 		DWORD TexIdx;			// texture indices
 		DWORD UsrFlag;			// user-defined flag
 		WORD  IntFlag;			// internal flags
+		WORD  InstanceRec;		// Instance record ID
+		WORD  GeometryRec;		// Geometry record ID
+		bool  bInstanced;		// Instancing helper flag.
+		bool  bGrouped;			// Instancing helper flag.
 		bool  bTransform;
 		bool  bUpdate;
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
@@ -75,8 +86,24 @@ public:
 		DWORD  TexIdxEx;
 		float  TexMixEx;
 		DWORD  nGrp;
-		WORD   GrpIdx[16];
-		D9BBox BBox;
+		DWORD  nVert;
+		DWORD  nFace;
+		DWORD  VertOff;
+		DWORD  FaceOff;
+		WORD   GrpIdx[8];
+		bool   bBroken;
+	};
+
+	struct GEOMREC {
+		DWORD  nVert;
+		DWORD  nFace;
+		DWORD  nGrp;
+		DWORD  VertOff;
+		DWORD  FaceOff;
+		DWORD  Flags;
+		WORD   GrpIdx[8];
+		bool   bBroken;
+		bool   bNoShadow;
 	};
 
 	
@@ -97,7 +124,7 @@ public:
 	void UnLockVertexBuffer();
 	void UnLockIndexBuffer();
 	NMVERTEX * LockVertexBuffer(DWORD grp);
-	WORD * LockIndexBuffer(DWORD grp);
+	DWORD * LockIndexBuffer(DWORD grp);
 
 	void SetName(const char *name);
 	const char *GetName() const { return name; }
@@ -175,6 +202,7 @@ public:
 	void TransformGroup(DWORD n, const D3DXMATRIX *m);
 	void Transform(const D3DXMATRIX *m);
 	int  GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
+	void DynamicGroup(DWORD idx);
 	int  EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 	void UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
 
@@ -212,22 +240,22 @@ public:
 	
 private:
 
-	void UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
+	void UpdateTangentSpace(NMVERTEX *pVrt, DWORD *pIdx, DWORD BaseOffset, DWORD nVtx, DWORD nFace, bool bTextured);
 	void ProcessInstances();
 	void ProcessInherit();
 	bool CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid);
 	void ClearGroups ();
 	bool CopyMaterial (int idx, const MATERIAL *mat);
-	void DeleteGroup(GROUPREC *grp);
 	void CheckValidity();
-	void UpdateGeometry();
+	void CreateGeometryBuffers();
+	void UpdateGeometryBuffer();
 	void Null();
 
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
-	LPDIRECT3DINDEXBUFFER9  pBB;
-
+	LPDIRECT3DINDEXBUFFER9  pGI;
+	
 	DWORD	MaxVert;
 	DWORD	MaxFace;
 	DWORD   Constr;
@@ -235,8 +263,10 @@ private:
 	oapi::D3D9Client *gc;		// the graphics client instance
 	GROUPREC **Grp;             // list of mesh groups
 	INSTREC *Inst;				// list of instance groups 
+	GEOMREC *Geom;				// Geometry record
 	DWORD nGrp;                 // number of mesh groups
-	int   nInst;				// number of instance groups
+	DWORD nGeom;				// number of geometry groups
+	DWORD nInst;				// number of instance groups
 	DWORD nMtrl;                // number of mesh materials
 	DWORD nTex;                 // number of mesh textures
 	D3D9MatExt *Mtrl;           // list of mesh materials

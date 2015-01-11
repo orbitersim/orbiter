@@ -46,6 +46,7 @@ void   LogWrn(const char *format, ...);
 void   LogOk (const char *format, ...);
 void   LogBlu(const char *format, ...);
 void   LogAlw(const char *format, ...);
+void   LogBad(const char *format, ...);
 void   DebugMsg(const char *format, ...);
 
 double D3D9GetTime();

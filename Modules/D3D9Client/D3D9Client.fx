@@ -51,8 +51,8 @@ struct Light {
 #define Phi     3
 
 // -------------------------------------------------------------------------
-uniform extern Mtrl		 gMtrlInst[4];		// Instance Materials
-uniform extern float 	 gMtrlAlphaInst[4];	// Instance Alpha
+//uniform extern Mtrl		 gMtrlInst[4];		// Instance Materials
+//uniform extern float 	 gMtrlAlphaInst[4];	// Instance Alpha
 uniform extern float4x4  gGrpInst[8];		// Instance Matrices
 // -------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix
@@ -154,7 +154,7 @@ struct HZVERTEX {
 };
 
 struct SHADOW_VERTEX {
-    float3 posL     : POSITION0;
+    float4 posL     : POSITION0;
 };
  
 
@@ -493,24 +493,11 @@ SimpleVS BasicVS(NTVERTEX vrt)
     return outVS;
 }
 
-BShadowVS BaseShadowVS(SHADOW_VERTEX vrt)
-{
-	BShadowVS outVS = (BShadowVS)0;
-	float3 posW  = mul(float4(vrt.posL, 1.0f), gW).xyz;
-	outVS.posH   = mul(float4(posW, 1.0f), gVP);
-    return outVS;
-}
-
 
 
 // -------------------------------------------------------------------------------------------------------------
 // PixelShader Implementations
 // -------------------------------------------------------------------------------------------------------------
-
-float4 BaseShadowPS(BShadowVS frg) : COLOR
-{
-    return float4(0.0f, 0.0f, 0.0f, gMix);
-}
 
 float4 SimpleTechPS(SimpleVS frg) : COLOR
 {
@@ -668,29 +655,4 @@ technique SpotTech
         ZWriteEnable = false;
         ZEnable = true;
     }   
-}
-
-
-// This is used for rendering beacons ------------------------------------------
-//
-technique BaseShadowTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD BaseShadowVS();
-        pixelShader  = compile PS_MOD BaseShadowPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        ZEnable = false; 
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;    
-        ZWriteEnable = false;  
-        
-		StencilEnable = true;
-		StencilRef    = 1;
-		StencilMask   = 1;
-		StencilFunc   = NotEqual;
-		StencilPass   = Replace;
-    }
 }

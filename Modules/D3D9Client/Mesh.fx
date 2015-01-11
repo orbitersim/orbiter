@@ -20,16 +20,16 @@ struct MeshVS
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;
     float2 tex0     : TEXCOORD1;
-    half3  nrmW     : TEXCOORD2;
+    float3 nrmW     : TEXCOORD2;
 };
 
 struct TileMeshNMVS
 {
     float4 posH     : POSITION0;
     float3 camW     : TEXCOORD0;
-    half4  atten    : TEXCOORD1;     
-    half4  insca    : TEXCOORD2; 
-    half2  tex0     : TEXCOORD3;
+    float4 atten    : TEXCOORD1;     
+    float4 insca    : TEXCOORD2; 
+    float2 tex0     : TEXCOORD3;
     float3 nrmT     : TEXCOORD4;
     float3 tanT     : TEXCOORD5;
      
@@ -73,43 +73,6 @@ MeshVS TinyMeshTechVS(MESH_VERTEX vrt)
 }
 
 
-
-float4 VCTechPS(MeshVS frg) : COLOR
-{
-    // Normalize input
-	float3 nrmW = normalize(frg.nrmW);
-	float3 CamW = normalize(frg.CamW);
-    float4 cTex = 1;
-
-    if (gTextured) cTex = tex2D(WrapS, frg.tex0);
-    
-    if (gFullyLit) {
-		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
-		return float4(cTex.rgb*saturate(gMtrl.diffuse.rgb+gMtrl.emissive.rgb), cTex.a);
-	}
-   
-    float3 r = reflect(gSun.direction, nrmW);
-    float  d = saturate(-dot(gSun.direction, nrmW));
-	float  s = pow(saturate(dot(r, CamW)), gMtrl.specular.a) * saturate(gMtrl.specular.a);
-
-    if (d==0) s = 0;
-
-    float3 diff = gMtrl.diffuse.rgb * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
-    float3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
-    
-    if (gEnvMapEnable) {
-		cTex.rgb *= (1.0f - gMtrl.reflect.a); 									
-		spec += gMtrl.reflect.rgb * texCUBE(EnvMapS, reflect(-CamW, nrmW)).rgb;				
-    }
-    
-    float3 colr = cTex.rgb * saturate(diff) + saturate(spec);
-    
-    if (gDebugHL) colr = colr*0.5 + gColor.rgb;
-
-    return float4(colr.rgb, cTex.a*gMtrlAlpha);
-}
-
-
 float4 HUDTechPS(MeshVS frg) : COLOR
 {
     return tex2D(SimpleS, frg.tex0);
@@ -119,7 +82,6 @@ float4 HUDTechPS(MeshVS frg) : COLOR
 float4 MFDTechPS(MeshVS frg) : COLOR
 {
 	// Normalize input
-    
 	float3 nrmW = normalize(frg.nrmW);
 	float3 CamW = normalize(frg.CamW);
 	
@@ -352,10 +314,8 @@ BShadowVS ShadowMeshTechVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
 	BShadowVS outVS = (BShadowVS)0;
-	float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;
-    float3 posW = mul(float4(posX, 1.0f), gW).xyz;
+	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gGrpInst[vrt.posL.w]).xyz;
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
-
     return outVS;
 }
 
@@ -363,11 +323,10 @@ BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
 	BShadowVS outVS = (BShadowVS)0;
-	float d = dot(vrt.posL,vrt.posL);
-    float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;
+	float d = dot(vrt.posL.xyz,vrt.posL.xyz);
+    float3 posX = mul(float4(vrt.posL.xyz, 1.0f), gGrpT).xyz;
     float3 posW = mul(float4(posX-gColor.xyz*(gTexOff.x*d+gTexOff.y*d*d), 1.0f), gW).xyz;
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
-
     return outVS;
 }
 
@@ -516,24 +475,6 @@ technique BaseTileTech
         CullMode = CCW;
     }   
 }
-
-
-technique VCTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD SimpleMeshTechVS();
-        pixelShader  = compile PS_MOD VCTechPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = true;
-        ZWriteEnable = true;
-    }
-}
-
 
 technique VCMFDTech
 {

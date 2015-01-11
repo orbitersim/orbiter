@@ -150,6 +150,30 @@ void LogAlw(const char *format, ...)
 	}
 }
 
+//-------------------------------------------------------------------------------------------
+//
+void LogBad(const char *format, ...)
+{
+	if (d3d9client_log==NULL) return;
+	if (iLine>LOG_MAX_LINES) return;
+	if (uEnableLog>0) {
+		DWORD th = GetCurrentThreadId();
+		time(&ltime);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Orange> ", my_ctime(&ltime), th);
+		
+		va_list args; 
+		va_start(args, format); 
+		
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+	
+		va_end(args);
+
+		fputs(ErrBuf,d3d9client_log);
+		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
+	}
+}
+
 
 // ---------------------------------------------------
 //

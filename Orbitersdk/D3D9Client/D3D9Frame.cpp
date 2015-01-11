@@ -261,12 +261,14 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	BOOL bXna = XMVerifyCPUSupport();
 
+	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) Pure = false;
+
 	if (bXna) {
 		LogAlw("XNA Math Support.......: Yes");
 		oapiWriteLog("D3D9Client: Sytem has XNA math support");
 	}
 	else {
-		LogErr("XNA Math Support.......: No");
+		LogBad("XNA Math Support.......: No");
 		oapiWriteLog("D3D9Client:FAIL: Sytem has no XNA math support");
 		bFail=true;
 	}
@@ -289,63 +291,82 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		bFail=true;
 	}
 
-	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) Pure = false;
-
-
-	// ==============================================================
-
-
-	if ((caps.Caps2&D3DCAPS2_CANAUTOGENMIPMAP)==0) {
-		LogWrn("[No Hardware MipMap auto generation]");
-		oapiWriteLog("D3D9Client:WARNING: [No Hardware MipMap auto generation]");
-	}
-	else {
-		HR(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_DXT5));
-		HR(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_DXT3));
-		HR(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_DXT1));
+	if (bFail) {
+		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);
+		return -1;
 	}
 
+
+
+	// Do Some Additional Hardware Checks ===================================================================
+	
+	
 	// Check vertex texture support
+	//
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F)==S_OK) {
 		bVertexTexture = true;
+		LogAlw("Vertex Texture.........: Yes");
 	}
-	else bVertexTexture = false;
-
+	else {
+		bVertexTexture = false;
+		LogBad("Vertex Texture.........: No");
+	}
 
 	// Check shadow mapping support
+	//
 	bool bShadowMap = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
 	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
 
-	if (!bShadowMap) {
-		LogWrn("[No shadow mapping support]");
-		oapiWriteLog("D3D9Client:WARNING: [No shadow mapping support]");
-	}
+	if (bShadowMap) LogAlw("Shadow Mapping.........: Yes");
+	else			LogBad("Shadow Mapping.........: No");
 
-	// Check shadow mapping support
+	// Check Float Render Targets
+	//
+	bool bFloat16BB = true;
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloat16BB = false;
+	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloat16BB = false;
+				  
+	if (bFloat16BB) LogAlw("D3DFMT_A16B16G16R16F...: Yes");
+	else		    LogBad("D3DFMT_A16B16G16R16F...: No");
+
+	// Check Float Render Targets
+	//
+	bool bFloat32BB = true;
+	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) bFloat32BB = false;
+	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A32B32G32R32F, D3DFMT_D24X8)!=S_OK) bFloat32BB = false;
+				  
+	if (bFloat32BB) LogAlw("D3DFMT_A32B32G32R32F...: Yes");
+	else		    LogBad("D3DFMT_A32B32G32R32F...: No");
+
+	// Check Depth Stencil
+	//
+	HRESULT D32F = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE);
+
+	if (D32F==S_OK) LogAlw("D3DFMT_D32F_LOCKABLE...: Yes"); 
+	else		    LogBad("D3DFMT_D32F_LOCKABLE...: No");
+
 	
-	bool bFloatBB = true;
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloatBB = false;
-	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloatBB = false;
+	HRESULT A4R4 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A4R4G4B4);
+
+	if (A4R4==S_OK) LogAlw("D3DFMT_A4R4G4B4 Tex....: Yes"); 
+	else		    LogBad("D3DFMT_A4R4G4B4 Tex....: No");
+
+	HRESULT A4G4 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, D3DFMT_A4R4G4B4);
+
+	if (A4G4==S_OK) LogAlw("D3DFMT_A4R4G4B4 Srf....: Yes"); 
+	else		    LogBad("D3DFMT_A4R4G4B4 Srf....: No");
+
+	HRESULT AR10 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A2R10G10B10);
+
+	if (AR10==S_OK) LogAlw("D3DFMT_A2R10G10B10.....: Yes"); 
+	else		    LogBad("D3DFMT_A2R10G10B10.....: No");
 	
-	if (!bFloatBB) {
-		LogWrn("[No render-target D3DFMT_A16B16G16R16F support]");
-		oapiWriteLog("D3D9Client:WARNING: [No render-target D3DFMT_A16B16G16R16F support]");
-	}
-
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DYNAMIC, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) {
-		LogErr("[No D3DFMT_A16B16G16R16F Support]");
-		oapiWriteLog("D3D9Client:WARNING: [No D3DFMT_A16B16G16R16F support]");
-	}
-
-	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DYNAMIC, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) {
-		LogErr("[No D3DFMT_A32B32G32R32F Support]");
-		oapiWriteLog("D3D9Client:WARNING: [No D3DFMT_A32B32G32R32F support]");
-	}
-
-	if (bFail) {
-		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);
-		return -1;
+	// Check MipMap autogeneration
+	//
+	if ((caps.Caps2&D3DCAPS2_CANAUTOGENMIPMAP)==0) {
+		LogWrn("[No Hardware MipMap auto generation]");
+		oapiWriteLog("D3D9Client:WARNING: [No Hardware MipMap auto generation]");
 	}
 
 	if (bIsFullscreen) hr = CreateFullscreenMode();
@@ -509,13 +530,6 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	ClientToScreen(hWnd, (POINT*)&rcScreenRect.left);
 	ClientToScreen(hWnd, (POINT*)&rcScreenRect.right);
 
-	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE)) LogAlw("D3DFMT_D32F_LOCKABLE");
-	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32)) LogAlw("D3DFMT_D32");
-	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24S8)) LogAlw("D3DFMT_D24S8");
-	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24X8)) LogAlw("D3DFMT_D24X8");
-	if (0==pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24FS8)) LogAlw("D3DFMT_D24FS8");
-
-
 	dwRenderWidth	  = rcScreenRect.right  - rcScreenRect.left;
 	dwRenderHeight	  = rcScreenRect.bottom - rcScreenRect.top;
 	dwZBufferBitDepth = 24;
@@ -563,10 +577,8 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	if (bNoVSync) d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	else		  d3dPP.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
 
-	DWORD devBehaviorFlags = 0;
+	DWORD devBehaviorFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
-	if (SWVert) devBehaviorFlags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-	else		devBehaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
 	if (Pure)   devBehaviorFlags |= D3DCREATE_PUREDEVICE;
 	if (DDM)	devBehaviorFlags |= D3DCREATE_DISABLE_DRIVER_MANAGEMENT;
 

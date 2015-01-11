@@ -222,10 +222,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	
 	LogAlw("Starting to initialize D3D9Client.fx a rendering technique...");
 	
-	WORD Model = gc->GetHardwareCaps()->PixelShaderVersion & 0xFFFF;
-
-	if (!strcmp(Config->Shaders,"Level20")) Model = 0x200;
-
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
@@ -248,7 +244,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
 	
-
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &FX, &errors));
 	
 	delete []macro[2].Definition;

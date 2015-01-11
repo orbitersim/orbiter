@@ -588,14 +588,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_DEBUG, CB_ADDSTRING, 0, (LPARAM)"3");
 	SendDlgItemMessageA(hWnd, IDC_DEBUG, CB_ADDSTRING, 0, (LPARAM)"4");
 	
-
-	// SHADER --------------------------------------
-
-	SendDlgItemMessage(hWnd, IDC_SHADER, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_SHADER, CB_ADDSTRING, 0, (LPARAM)"Default");
-	SendDlgItemMessageA(hWnd, IDC_SHADER, CB_ADDSTRING, 0, (LPARAM)"Level20");
-	SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 0, 0);
-
 	// SKETCHPAD --------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_RESETCONTENT, 0, 0);
@@ -616,20 +608,19 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_ENVMODE, CB_ADDSTRING, 0, (LPARAM)"Full Scene");
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, 0, 0);
 
-	// ATMOSPHERE --------------------------------------
+	// CUSTOM CAMERA MODE --------------------------------------
 
-	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Default");
-	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Advanced");
-	SendDlgItemMessageA(hWnd, IDC_ATMOQ, CB_ADDSTRING, 0, (LPARAM)"Experiment");
-	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessage(hWnd, IDC_CAMMODE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_CAMMODE, CB_ADDSTRING, 0, (LPARAM)"Disable");
+	SendDlgItemMessageA(hWnd, IDC_CAMMODE, CB_ADDSTRING, 0, (LPARAM)"Enabled");
+	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, 0, 0);
 
 	// ENVMAP FACES --------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"1");
-	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"2");
-	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"3");
+	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"Light");
+	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"Medimum");
+	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"Heavy");
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, 0, 0);
 
 	// Write values in controls ----------------
@@ -677,12 +668,9 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, DWORD(Config->Separation));
 	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, DWORD(Config->LODBias));
 
-	if (strcmp(Config->Shaders,"Default")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 0, 0);
-	if (strcmp(Config->Shaders,"Level20")==0) SendDlgItemMessage(hWnd, IDC_SHADER, CB_SETCURSEL, 1, 0);
-	
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, Config->EnvMapMode, 0);
-	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces-1, 0);
-	SendDlgItemMessage(hWnd, IDC_ATMOQ, CB_SETCURSEL, Config->AtmoShader, 0);
+	SendDlgItemMessage(hWnd, IDC_CAMMODE, CB_SETCURSEL, Config->CustomCamMode, 0);
+	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces, 0);
 	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_SETCURSEL, Config->SketchpadMode, 0);
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_SETCURSEL, Config->SketchpadFont, 0);
 	SendDlgItemMessage(hWnd, IDC_DEBUG, CB_SETCURSEL, Config->DebugLvl, 0);
@@ -690,7 +678,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_SRFPRELOAD, BM_SETCHECK, Config->PlanetPreloadMode==1, 0);
 	SendDlgItemMessage(hWnd, IDC_GLASSSHADE, BM_SETCHECK, Config->EnableGlass==1, 0);
 	SendDlgItemMessage(hWnd, IDC_MESH_DEBUGGER, BM_SETCHECK, Config->EnableMeshDbg==1, 0);
-	//SendDlgItemMessage(hWnd, IDC_DYNEXPS, BM_SETCHECK, Config->DynamicExps==1, 0);
+	SendDlgItemMessage(hWnd, IDC_GEOMETRY, BM_SETCHECK, Config->Instancing==1, 0);
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
@@ -701,6 +689,9 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	sprintf_s(cbuf,32,"%3.3f", Config->PlanetGlow);
 	SetWindowText(GetDlgItem(hWnd, IDC_PLANETGLOW), cbuf);
+
+	sprintf_s(cbuf,32,"%3.3f", Config->SunBrightness);
+	SetWindowText(GetDlgItem(hWnd, IDC_SUNBRIGHTNESS), cbuf);
 
 	DWORD af = min(caps.MaxAnisotropy, DWORD(Config->Anisotrophy));
 
@@ -736,18 +727,18 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->SketchpadMode = SendDlgItemMessage (hWnd, IDC_DEVICE, CB_GETCURSEL, 0, 0);
 	Config->SketchpadFont = SendDlgItemMessage (hWnd, IDC_FONT, CB_GETCURSEL, 0, 0);
 	Config->EnvMapMode	  = SendDlgItemMessage (hWnd, IDC_ENVMODE, CB_GETCURSEL, 0, 0);
-	Config->EnvMapFaces	  = SendDlgItemMessage (hWnd, IDC_ENVFACES, CB_GETCURSEL, 0, 0) + 1;
-	Config->AtmoShader	  = SendDlgItemMessage (hWnd, IDC_ATMOQ, CB_GETCURSEL, 0, 0);
+	Config->CustomCamMode = SendDlgItemMessage (hWnd, IDC_CAMMODE, CB_GETCURSEL, 0, 0);
+	Config->EnvMapFaces	  = SendDlgItemMessage (hWnd, IDC_ENVFACES, CB_GETCURSEL, 0, 0);
 	// Check boxes
 	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
 	Config->NearClipPlane = SendDlgItemMessage (hWnd, IDC_NEARPLANE,  BM_GETCHECK, 0, 0);
 	Config->EnableGlass   = SendDlgItemMessage (hWnd, IDC_GLASSSHADE,  BM_GETCHECK, 0, 0);
 	Config->EnableMeshDbg = SendDlgItemMessage (hWnd, IDC_MESH_DEBUGGER,  BM_GETCHECK, 0, 0);
-	//Config->DynamicExps   = SendDlgItemMessage (hWnd, IDC_DYNEXPS,  BM_GETCHECK, 0, 0);
+	Config->Instancing	  = SendDlgItemMessage (hWnd, IDC_GEOMETRY,  BM_GETCHECK, 0, 0);
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
-	Config->Separation    = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
+	Config->Separation	  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
 	Config->LODBias       = int(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
 
 	// Other things
@@ -759,12 +750,8 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	GetWindowText(GetDlgItem(hWnd, IDC_PLANETGLOW),  cbuf, 32);
 	Config->PlanetGlow = atof(cbuf);
 
-	if (SendDlgItemMessage(hWnd, IDC_SHADER, CB_GETCURSEL, 0, 0)==0) {
-		strcpy_s(Config->Shaders,64,"Default");
-	}
-	if (SendDlgItemMessage(hWnd, IDC_SHADER, CB_GETCURSEL, 0, 0)==1) {
-		strcpy_s(Config->Shaders,64,"Level20");
-	}
+	GetWindowText(GetDlgItem(hWnd, IDC_SUNBRIGHTNESS),  cbuf, 32);
+	Config->SunBrightness = atof(cbuf);
 
 	Config->DebugLvl = SendDlgItemMessage (hWnd, IDC_DEBUG, CB_GETCURSEL, 0, 0);
 

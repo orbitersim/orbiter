@@ -166,61 +166,62 @@ FONT 8, "Ms Shell Dlg"
 
 
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-IDD_D3D9SETUP DIALOGEX 0, 0, 368, 324
+IDD_D3D9SETUP DIALOGEX 0, 0, 368, 340
 STYLE DS_MODALFRAME | DS_SETFONT | WS_CAPTION | WS_POPUP | WS_SYSMENU
 CAPTION "D3D9Client Advanced Setup"
 FONT 8, "MS Sans Serif", 0, 0, 0
 {
-    DEFPUSHBUTTON   "OK", IDOK, 315, 300, 50, 14, 0, WS_EX_LEFT
+    GROUPBOX        "Terrain Resolution", 0, 5, 263, 175, 50, 0, WS_EX_LEFT
+    DEFPUSHBUTTON   "OK", IDOK, 315, 320, 50, 14, 0, WS_EX_LEFT
     AUTORADIOBUTTON "Load on demand (recommended)", IDC_DEMAND, 16, 16, 121, 10, WS_GROUP, WS_EX_LEFT
     LTEXT           "Max. load frequency [Hz]:", IDC_STATIC, 26, 29, 85, 8, SS_LEFT, WS_EX_LEFT
     AUTORADIOBUTTON "Pre-load at session start", IDC_SRFPRELOAD, 16, 46, 94, 10, 0, WS_EX_LEFT
     EDITTEXT        IDC_HZ, 116, 27, 35, 14, ES_AUTOHSCROLL, WS_EX_LEFT
-    GROUPBOX        "Surface texture load options", IDC_STATIC, 5, 5, 170, 55, 0, WS_EX_LEFT
+    GROUPBOX        "Surface texture load options", IDC_STATIC, 5, 5, 175, 55, 0, WS_EX_LEFT
     GROUPBOX        "SketchPad settings", IDC_STATIC, 190, 5, 170, 55, 0, WS_EX_LEFT
     COMBOBOX        IDC_FONT, 270, 35, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     COMBOBOX        IDC_DEVICE, 270, 20, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     LTEXT           "Device to use", IDC_STATIC, 200, 20, 45, 9, SS_LEFT, WS_EX_LEFT
     LTEXT           "Font rendering", IDC_STATIC, 200, 35, 46, 8, SS_LEFT, WS_EX_LEFT
-    GROUPBOX        "Graphics options", IDC_STATIC, 5, 70, 170, 150, 0, WS_EX_LEFT
+    GROUPBOX        "Graphics options", IDC_STATIC, 5, 70, 175, 185, 0, WS_EX_LEFT
     LTEXT           "Anti-aliasing", IDC_STATIC, 15, 85, 38, 8, SS_LEFT, WS_EX_LEFT
     COMBOBOX        IDC_AA, 85, 85, 35, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     LTEXT           "Anisotropic filtering", IDC_STATIC, 15, 100, 60, 8, SS_LEFT, WS_EX_LEFT
     COMBOBOX        IDC_AF, 85, 100, 35, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    COMBOBOX        IDC_ATMOQ, 85, 269, 77, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    AUTOCHECKBOX    "Pre-load base visuals at startup", IDC_BASEVIS, 15, 140, 114, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 15, 155, 114, 8, 0, WS_EX_LEFT
-    GROUPBOX        "Generic configuration", IDC_STATIC, 190, 70, 170, 65, 0, WS_EX_LEFT
-    LTEXT           "Shader set", IDC_STATIC, 200, 85, 35, 8, SS_LEFT, WS_EX_LEFT
-    COMBOBOX        IDC_SHADER, 270, 85, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    COMBOBOX        IDC_DEBUG, 270, 100, 35, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    LTEXT           "Debug level", IDC_STATIC, 200, 100, 39, 8, SS_LEFT, WS_EX_LEFT
-    PUSHBUTTON      "Create symbolic links", IDC_SYMBOLIC, 90, 300, 85, 14, BS_FLAT, WS_EX_LEFT
-    AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 15, 200, 147, 8, 0, WS_EX_LEFT
-    PUSHBUTTON      "D3D9Client Credits", IDC_CREDITS, 5, 300, 80, 14, BS_FLAT, WS_EX_LEFT
+    AUTOCHECKBOX    "Pre-load base visuals at startup", IDC_BASEVIS, 15, 160, 114, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 15, 175, 114, 8, 0, WS_EX_LEFT
+    GROUPBOX        "Generic configuration", IDC_STATIC, 190, 70, 170, 60, 0, WS_EX_LEFT
+    COMBOBOX        IDC_DEBUG, 270, 85, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
+    LTEXT           "Debug level", IDC_STATIC, 200, 88, 39, 8, SS_LEFT, WS_EX_LEFT
+    PUSHBUTTON      "Create symbolic links", IDC_SYMBOLIC, 90, 320, 85, 14, BS_FLAT, WS_EX_LEFT
+    AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 15, 205, 147, 8, 0, WS_EX_LEFT
+    PUSHBUTTON      "D3D9Client Credits", IDC_CREDITS, 5, 320, 80, 14, BS_FLAT, WS_EX_LEFT
     GROUPBOX        "StereoScopic 3D", IDC_STATIC, 190, 140, 170, 60, 0, WS_EX_LEFT
     CONTROL         "", IDC_SEPARATION, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 245, 175, 85, 20, WS_EX_LEFT
-    CONTROL         "", IDC_LODBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 71, 248, 99, 20, WS_EX_LEFT
-    LTEXT           "Performance", IDC_STATIC, 60, 240, 41, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "LOD Bias", IDC_STATIC, 15, 248, 40, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "Atmosphere shader", IDC_STATIC, 15, 271, 62, 8, SS_LEFT, WS_EX_LEFT
+    CONTROL         "", IDC_LODBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 70, 280, 99, 20, WS_EX_LEFT
+    LTEXT           "Performance", IDC_STATIC, 60, 275, 41, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "LOD Bias", IDC_STATIC, 15, 288, 40, 8, SS_LEFT, WS_EX_LEFT
     CONTROL         "", IDC_CONVERGENCE, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 245, 155, 85, 20, WS_EX_LEFT
     LTEXT           "Static", IDC_CONV_DSP, 335, 160, 22, 10, SS_LEFT, WS_EX_LEFT
     LTEXT           "Static", IDC_SEPA_DSP, 335, 180, 22, 10, SS_LEFT, WS_EX_LEFT
     LTEXT           "Convergence", IDC_STATIC, 195, 160, 44, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Field Depth", IDC_STATIC, 195, 180, 37, 8, SS_LEFT, WS_EX_LEFT
-    GROUPBOX        "Environment mapping", IDC_STATIC, 190, 210, 170, 50, 0, WS_EX_LEFT
-    GROUPBOX        "Planet rendering options", IDC_STATIC, 5, 225, 170, 65, 0, WS_EX_LEFT
+    GROUPBOX        "Reflections and Custom camera settings", IDC_STATIC, 190, 210, 170, 70, 0, WS_EX_LEFT
     COMBOBOX        IDC_ENVMODE, 260, 225, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    LTEXT           "Rendering mode", IDC_STATIC, 200, 225, 53, 8, SS_LEFT, WS_EX_LEFT
-    COMBOBOX        IDC_ENVFACES, 260, 240, 30, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
-    LTEXT           "Faces per frame", IDC_STATIC, 200, 240, 52, 8, SS_LEFT, WS_EX_LEFT
+    COMBOBOX        IDC_CAMMODE, 260, 241, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
+    LTEXT           "Reflection Mode", IDC_STATIC, 200, 229, 53, 8, SS_LEFT, WS_EX_LEFT
+    COMBOBOX        IDC_ENVFACES, 260, 257, 80, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
+    LTEXT           "Update Rate", IDC_STATIC, 200, 260, 42, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Custom Cameras", IDC_STATIC, 200, 245, 54, 8, SS_LEFT, WS_EX_LEFT
     EDITTEXT        IDC_PLANETGLOW, 85, 117, 35, 14, ES_AUTOHSCROLL, WS_EX_LEFT
+    EDITTEXT        IDC_SUNBRIGHTNESS, 85, 137, 35, 14, WS_DISABLED | ES_AUTOHSCROLL, WS_EX_LEFT
     LTEXT           "Planet glow", IDC_STATIC, 15, 120, 38, 8, SS_LEFT, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable geometry instancing", IDC_GEOMETRY, 15, 185, 103, 8, WS_DISABLED, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 15, 170, 113, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable mesh debugger", IDC_MESH_DEBUGGER, 200, 118, 89, 8, 0, WS_EX_LEFT
-    LTEXT           "Quality", IDC_STATIC, 149, 240, 22, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Sun Brightness", IDC_STATIC, 15, 140, 48, 8, SS_LEFT, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable geometry instancing", IDC_GEOMETRY, 15, 220, 103, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable sunlight post processing", IDC_POSTPROCESS, 15, 235, 115, 8, WS_DISABLED, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 15, 190, 113, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable mesh debugger", IDC_MESH_DEBUGGER, 200, 105, 89, 8, 0, WS_EX_LEFT
+    LTEXT           "Quality", IDC_STATIC, 149, 275, 22, 8, SS_LEFT, WS_EX_LEFT
 }
 
 

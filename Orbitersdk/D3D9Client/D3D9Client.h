@@ -23,9 +23,12 @@
 #include "GraphicsAPI.h"
 #include "D3D9util.h"
 #include <stdio.h>
+#include <assert.h>
 #include <OrbiterAPI.h>
 #include "D3D9Frame.h"
 #include "nvapi.h"
+
+#define OAPISURFACE_VIDEOMEMORY	 0x8000
 
 #define SKETCHPAD_NONE			 0x0
 #define SKETCHPAD_GDI			 0x1
@@ -1204,7 +1207,6 @@ private:
 	DWORD viewBPP;          // bit depth of render viewport
 	DWORD ShaderModel;
 	DWORD iDisl;
-	DWORD nSkins;
 	DWORD frame_timer;
 	
 	// device enumeration callback function
@@ -1224,9 +1226,7 @@ private:
 	char pOrbiterRoot[256];
 	char pLoadLabel[128];
 	char pLoadItem[128];
-	LPCHAR *pSkinNames;
-	char *pSkinBuffer;
-
+	
 	// Control Panel
 	
 	void Item(WORD id, const char *label, const char *format, ...);
