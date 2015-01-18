@@ -1650,6 +1650,9 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		DWORD Usage = 0;
 		DWORD Mips = 0;
 
+		// Convert Non-supported format -------------------------
+		if (Format==D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
+
 		LPDIRECT3DTEXTURE9 pBumpMap = NULL;
 	
 		if (Config->UseNormalMap) {

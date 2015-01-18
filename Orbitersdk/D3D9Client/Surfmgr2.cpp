@@ -61,7 +61,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	node = 0;
 	elev = NULL;
 	//ggelev = NULL;
-	ltex = 0;
+	ltex = NULL;
+	load_ltex = NULL;
 	has_elevfile = false;
 }
 
@@ -74,16 +75,18 @@ SurfTile::~SurfTile ()
 		delete []elev;
 		elev = NULL;
 	}
-	if (ltex && owntex) if (TileCatalog->Remove(DWORD(ltex))) ltex->Release();
+	if (ltex && owntex) {
+		mgr->RecycleTexture(0, D3DFORMAT(0), &ltex);
+	}
+	if (load_ltex && owntex) {
+		if (TileCatalog->Remove(DWORD(load_ltex))) load_ltex->Release();
+	}
 }
 
 // -----------------------------------------------------------------------
 
 void SurfTile::Load ()
 {
-	bool bLoadMip = true; // for now
-
-	DWORD Mips = (bLoadMip ? 1:3); // Load main level only or 2 additional mip sub-level
 	char path[MAX_PATH] = {'\0'};
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
@@ -91,74 +94,62 @@ void SurfTile::Load ()
 	// Load surface texture
 	sprintf_s (path, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 
+	DWORD Mips = 1;
 	DWORD Usage = 0;
 	D3DFORMAT Format = D3DFMT_FROM_FILE;
+	D3DXIMAGE_INFO info;
 
 	if (Config->TileDebug) {
-		Usage = D3DUSAGE_DYNAMIC;
 		Format = D3DFMT_X8R8G8B8;
 	}
 
 	owntex = true;
-
-	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex) != S_OK) {
+	
+	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getSurfParent()->Tex();
 			owntex = false;
 		} else
 			tex = 0;
 	} else {	
-		TileCatalog->Add(DWORD(tex));
-		if (Config->TileDebug) {
-			LPDIRECT3DSURFACE9 pSurf;
-			D3DSURFACE_DESC desc;
-			HDC hDC;
-
-			tex->GetSurfaceLevel(0, &pSurf);
-			pSurf->GetDesc(&desc);
-			pSurf->GetDC(&hDC);
-			if (hDC==NULL) LogErr("Failed to get hDC");
-			char label[256];
-			sprintf_s(label,256,"%02d-%06d-%06d.dds",lvl+4,ilat,ilng);
-			HFONT hOld = (HFONT)SelectObject(hDC, mgr->GetDebugFont());
-			TextOut(hDC,16,16,label,strlen(label));
-			SetBkMode(hDC, TRANSPARENT);
-			SelectObject(hDC, GetStockObject (NULL_BRUSH));
-			Rectangle(hDC, 0, 0, desc.Width-1, desc.Height-1);
-			SelectObject(hDC, hOld);
-			pSurf->ReleaseDC(hDC);
-			pSurf->Release();
-		}
+		TileCatalog->Add(DWORD(load_tex));
+		mgr->TileLabel(load_tex, lvl, ilat, ilng);
+		mgr->RecycleTexture(info.Width, info.Format, &tex);
+		HR(pDev->UpdateTexture(load_tex, tex));  // Might be better to call from rendering thread
 	}
 	
 	// Load mask texture
-	ltex = NULL;
 	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
 		if (owntex) {
 			sprintf_s (path, "Textures\\%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-			D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &ltex);
-			if (ltex) TileCatalog->Add(DWORD(ltex));
+			D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_ltex);
+			if (load_ltex) {
+				TileCatalog->Add(DWORD(load_ltex));
+				mgr->TileLabel(load_ltex, lvl, ilat, ilng);
+				mgr->RecycleTexture(info.Width, info.Format, &ltex);
+				HR(pDev->UpdateTexture(load_ltex, ltex));
+			}
 		} else if (node->Parent()) {
 			ltex = getSurfParent()->ltex;
 		}
 	}
 
 	// Load elevation data
-	INT16 *elev = ElevationData ();
+	INT16 *ev = ElevationData ();
 	bool shift_origin = (lvl >= 4);
 
 	if (!lvl) {
 		// create hemisphere mesh for western or eastern hemispheres
-		mesh = CreateMesh_hemisphere (TILE_PATCHRES, elev, 0.0);
+		mesh = CreateMesh_hemisphere (TILE_PATCHRES, ev, 0.0);
 	//} else if (ilat == 0 || ilat == (1<<lvl)-1) {
 		// create triangular patch for north/south pole region
 	//	mesh = CreateMesh_tripatch (patch_res, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (TILE_PATCHRES, TILE_PATCHRES, elev, 0.0, &texrange, shift_origin, &vtxshift);
+		mesh = CreateMesh_quadpatch (TILE_PATCHRES, TILE_PATCHRES, ev, 0.0, &texrange, shift_origin, &vtxshift);
 	}
-
 }
+
 
 // -----------------------------------------------------------------------
 
@@ -192,7 +183,8 @@ bool SurfTile::LoadElevationData ()
 			fseek (f, hdr.hdrsize, SEEK_SET);
 		}
 		mean_elev = hdr.emean;
-
+		max_elev = hdr.emax;
+		
 		mgr->ReduceMinElevation(hdr.emin);
 
 		// read the elevation data
@@ -679,7 +671,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	//Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview,Mproj);
 

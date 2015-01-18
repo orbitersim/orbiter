@@ -85,12 +85,17 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	}
 
 	// check if patch is visible from camera position
+
 	VECTOR3 &cnt = tile->cnt;                   // tile centre in unit planet frame
 	static const double rad0 = sqrt(2.0)*PI05;
 	double rad = rad0/(double)nlat;
 	double alpha = acos (dotp (prm.cdir, cnt)); // angle between tile centre and camera from planet centre
 	double adist = alpha - rad;                 // angle between closest tile corner and camera
-	if (adist >= prm.viewap) {
+	double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
+	double modrad = minrad - abs(tile->max_elev) / obj_size;
+	double viewap = acos(modrad / (max (prm.cdist, minrad+0.0002)));
+
+	if (adist >= viewap) {
 		if (lvl == 0)
 			bstepdown = false;                // force render at lowest resolution
 		else {

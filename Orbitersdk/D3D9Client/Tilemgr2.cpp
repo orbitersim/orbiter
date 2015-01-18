@@ -36,9 +36,11 @@ int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
 Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng)
 {
-	mesh = 0;
-	tex = 0;
+	mesh = NULL;
+	tex = NULL;
+	load_tex = NULL;
 	mean_elev = 0.0;
+	max_elev = 0.0;
 	texrange = fullrange;
 	owntex = true;
 	lngnbr_lvl = latnbr_lvl = dianbr_lvl = _lvl;
@@ -51,10 +53,12 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 Tile::~Tile ()
 {
 	state = Invalid;
-	mgr = NULL;
 	if (mesh) delete mesh;
 	if (tex && owntex) {
-		if (TileCatalog->Remove(DWORD(tex))) tex->Release();
+		mgr->RecycleTexture(0, D3DFORMAT(0), &tex);
+	}
+	if (load_tex && owntex) {
+		if (TileCatalog->Remove(DWORD(load_tex))) load_tex->Release();
 	}
 }
 
@@ -675,7 +679,7 @@ TileManager2Base::configPrm TileManager2Base::cprm = {
 TileLoader *TileManager2Base::loader = NULL;
 double TileManager2Base::resolutionBias = 4.0;
 double TileManager2Base::resolutionScale = 1.0;
-bool TileManager2Base::bTileLoadThread = false;
+bool TileManager2Base::bTileLoadThread = true;
 HFONT TileManager2Base::hFont = NULL;
 
 // -----------------------------------------------------------------------
@@ -691,7 +695,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 	min_elev = obj_size; 
 	oapiGetObjectName (obj, cbody_name, 256);
 	emgr = oapiElevationManager(obj);
-	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
+	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=TexPoolFmt[i]=0;
 }
 
 // -----------------------------------------------------------------------
@@ -704,16 +708,26 @@ TileManager2Base::~TileManager2Base ()
 		loader->Unqueue(this);
 	}
 
+	DWORD nVtx=0, nIdx=0, nTex=0;
+
 	for (int i=0;i<NPOOLS;i++) {
 		while (!VtxPool[i].empty()) {
 			VtxPool[i].top()->Release();
 			VtxPool[i].pop();
+			nVtx++;
 		}
 		while (!IdxPool[i].empty()) {
 			IdxPool[i].top()->Release();
 			IdxPool[i].pop();
+			nIdx++;
+		}
+		while (!TexPool[i].empty()) {
+			TexPool[i].top()->Release();
+			TexPool[i].pop();
+			nTex++;
 		}
 	}
+	LogAlw("Recycling Pool Status nVtx=%u, nIdx=%u, nTex=%u", nVtx, nIdx, nTex);
 }
 
 // -----------------------------------------------------------------------
@@ -784,7 +798,8 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	normalise (prm.cdir);
 	prm.sdir = tmul (prm.grot, -obj_pos);  // sun's direction in planet frame
 	normalise (prm.sdir);
-	prm.viewap = acos (1.0/(max (prm.cdist, 1.0+minalt)));
+	double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
+	prm.viewap = acos (minrad / (max (prm.cdist, 1.0+minalt)));
 	prm.scale = 1.0;
 	prm.fog = rprm.bFog;
 	prm.tint = rprm.bTint;
@@ -915,6 +930,57 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 }
 
 
+bool TileManager2Base::RecycleTexture(DWORD size, D3DFORMAT tFmt, LPDIRECT3DTEXTURE9 *pTex)
+{
+	int pool = -1;
+	D3DSURFACE_DESC desc;
+	DWORD Fmt = 0;
+
+	if (tFmt==D3DFMT_DXT1) Fmt = size + (1<<16);
+	if (tFmt==D3DFMT_DXT5) Fmt = size + (1<<17);
+
+	if (*pTex) {
+		(*pTex)->GetLevelDesc(0, &desc);
+		DWORD cFmt = 0;
+		if (desc.Format==D3DFMT_DXT1) cFmt = desc.Width + (1<<16);
+		if (desc.Format==D3DFMT_DXT5) cFmt = desc.Width + (1<<17);
+		for (int i=0;i<NPOOLS;i++) if (TexPoolFmt[i]==cFmt) { pool = i; break; } 
+		if (pool>=0) TexPool[pool].push(*pTex);
+		else LogErr("Texture Pool Doesn't exists size=%u, Format=0x%X", desc.Width, desc.Format);	
+	}
+
+	if (size==0 || tFmt==0) {
+		*pTex = NULL;
+		return false; // Only store texture, do not allocate new one.
+	}
+
+	pool = -1;
+	
+	// Find a pool 
+	for (int i=0;i<NPOOLS;i++) if (TexPoolFmt[i]==Fmt) { pool = i; break; }
+	
+	// Create a new pool size
+	if (pool==-1) {
+		for (int i=0;i<NPOOLS;i++) if (TexPoolFmt[i]==0) { TexPoolFmt[i] = Fmt; pool = i; break; }	
+		if (pool<0) { 
+			LogErr("Failed to Crerate a Pool (Fmt=%u)", Fmt);
+			*pTex = NULL; 
+			return 0; 
+		}
+	}
+
+	if (TexPool[pool].empty()) {
+		HR(pDev->CreateTexture(size, size, 1, 0, tFmt, D3DPOOL_DEFAULT, pTex, NULL));
+		return true;
+	}
+	else {
+		*pTex = TexPool[pool].top();
+		TexPool[pool].pop();
+		return true;
+	}
+}
+
+
 void TileManager2Base::ReduceMinElevation(double Elev)
 {
 	if (Elev<min_elev) min_elev = Elev;
@@ -925,4 +991,30 @@ const double TileManager2Base::GetMinElev() const
 {
 	if (min_elev==obj_size) return 0.0; // Info not provided
 	return min_elev;
+}
+
+void TileManager2Base::TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng)
+{
+	if (Config->TileDebug==0) return;
+	if (!tex) return;
+	LPDIRECT3DSURFACE9 pSurf;
+	D3DSURFACE_DESC desc;
+	HDC hDC;
+	HR(tex->GetSurfaceLevel(0, &pSurf));
+	if (!pSurf) return;
+	HR(pSurf->GetDesc(&desc));
+	if ((desc.Usage&D3DUSAGE_DYNAMIC)==0) return;
+	HR(pSurf->GetDC(&hDC));
+	if (!hDC) return; 
+	char label[256];
+	sprintf_s(label,256,"%02d-%06d-%06d.dds",lvl+4,ilat,ilng);
+	HFONT hOld = (HFONT)SelectObject(hDC, GetDebugFont());
+	TextOut(hDC,16,16,label,strlen(label));
+	SetBkMode(hDC, TRANSPARENT);
+	SelectObject(hDC, GetStockObject (NULL_BRUSH));
+	SelectObject(hDC, GetStockObject (WHITE_PEN));
+	Rectangle(hDC, 0, 0, desc.Width-1, desc.Height-1);
+	SelectObject(hDC, hOld);
+	pSurf->ReleaseDC(hDC);
+	pSurf->Release();
 }

@@ -27,7 +27,7 @@ class vBase: public vObject {
 	friend class vPlanet;
 
 public:
-	vBase (OBJHANDLE _hObj, const Scene *scene);
+	vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP=NULL);
 	~vBase();
 
 	virtual bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
@@ -70,6 +70,7 @@ private:
 	bool lights;               // use nighttextures for base objects
 	bool bLocalLight;          // true if lighting is modified
 	D3D9Light localLight;      // current local lighting parameters
+	class vPlanet *base_planet;
 	
 	int numRunwayLights;
 	RunwayLights** runwayLights;

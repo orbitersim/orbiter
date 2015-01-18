@@ -13,6 +13,7 @@
 #include "cloudmgr2.h"
 #include "Texture.h"
 #include "D3D9Catalog.h"
+#include "D3D9Config.h"
 
 // =======================================================================
 // =======================================================================
@@ -35,22 +36,34 @@ CloudTile::~CloudTile ()
 
 void CloudTile::Load ()
 {
-	bool bLoadMip = true; // for now
-
-	DWORD Mips = (bLoadMip ? 1:2); // Load main level only or 1 additional mip sub-level
 	char path[MAX_PATH] = {'\0'};
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 
+	DWORD Usage = 0;
+	DWORD Mips = 1;
+	D3DXIMAGE_INFO info;
+
+	D3DFORMAT Format = D3DFMT_FROM_FILE;
+
+	if (Config->TileDebug) {
+		Format = D3DFMT_X8R8G8B8;
+	}
+
 	// Load cloud texture
 	sprintf_s (path, "Textures\\%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	owntex = true;
-	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &tex) != S_OK) {
+	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getParent()->Tex();
 			owntex = false;
 		} else tex = 0;
-	} else TileCatalog->Add(DWORD(tex));
+	} else {
+		TileCatalog->Add(DWORD(load_tex));
+		mgr->TileLabel(load_tex, lvl, ilat, ilng);
+		mgr->RecycleTexture(info.Width, info.Format, &tex);
+		HR(pDev->UpdateTexture(load_tex, tex));  // Might be better to call from rendering thread
+	}
 
 	bool shift_origin = (lvl >= 4);
 
@@ -136,7 +149,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	//Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview,Mproj);
 
@@ -205,9 +218,9 @@ void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPla
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	//Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
-	prm.dviewproj = mul(Mview,Mproj);
+	prm.dviewproj = mul(Mview, Mproj);
 
 	// ---------------------------------------------------------------------
 	// Initialize shading technique and feed planet specific data to shaders

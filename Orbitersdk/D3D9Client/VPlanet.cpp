@@ -149,7 +149,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 			LogAlw("PreLoading Base Visuals");
 			for (DWORD i=0;i<nbase;i++) {
 				OBJHANDLE hBase = oapiGetBaseByIndex (_hObj, i);
-				vbase[i] = new vBase (hBase, scn);
+				vbase[i] = new vBase (hBase, scn, this);
 			}
 		}
 	} 
@@ -361,7 +361,7 @@ bool vPlanet::Update ()
 				}
 			} else {        // base visual doesn't exist
 				if (apprad > 2.0) { // within visual range
-					vbase[i] = new vBase (hBase, scn);
+					vbase[i] = new vBase (hBase, scn, this);
 				}
 			}
 

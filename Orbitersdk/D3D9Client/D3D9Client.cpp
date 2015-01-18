@@ -735,8 +735,6 @@ void D3D9Client::clbkRenderScene()
 			if (hVes->Playback()) strcpy_s(Label, 7, "Replay");
 		}
 
-		if (oapiGetPause()) strcpy_s(Label, 7, "Paused");
-
 		if (Label[0]!=0) {
 			pd3dDevice->BeginScene();
 			RECT rect2 = {0,viewH-60,viewW,viewH-20};

@@ -21,7 +21,7 @@
 #include "Qtree.h"
 #include <stack>
 
-#define NPOOLS 16
+#define NPOOLS 32
 #define MAXQUEUE2 20
 
 #define TILE_VALID  0x0001
@@ -115,6 +115,7 @@ protected:
 	int ilat;                  // latitude index
 	int ilng;                  // longitude index
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
+	LPDIRECT3DTEXTURE9 load_tex;  // SysMem copy used in load-thread
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
 	TEXCRDRANGE2 texrange;     // texture coordinate subrange (if using ancestor subtexture)
 	VBMESH *mesh;              // vertex-buffered tile mesh
@@ -124,6 +125,7 @@ protected:
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	mutable double mean_elev;  // mean tile elevation [m]
+	mutable double max_elev;   // maximum tile elevation [m]
 };
 
 // =======================================================================
@@ -202,6 +204,8 @@ public:
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static ID3DXEffect * Shader() { return pShader; }
 	static HFONT GetDebugFont() { return hFont; }
+
+	void TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng);
 	
 	
 	template<class TileType>
@@ -224,6 +228,7 @@ public:
 	 */
 	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
 	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
+	bool  RecycleTexture(DWORD size, D3DFORMAT tFmt, LPDIRECT3DTEXTURE9 *pTex);
 	
 	const class Scene * GetScene() const { return gc->GetScene(); }
 	const oapi::D3D9Client *GetClient() const { return gc; }
@@ -255,8 +260,10 @@ private:
 	
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];
+	DWORD TexPoolFmt[NPOOLS];
 	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
+	std::stack<LPDIRECT3DTEXTURE9> TexPool[NPOOLS];
 
 	static HFONT hFont;
 	static oapi::D3D9Client *gc;

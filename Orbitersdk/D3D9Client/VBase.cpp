@@ -26,12 +26,14 @@
 #include "OrbiterAPI.h"
 #include "DebugControls.h"
 #include "D3D9Config.h"
+#include "VPlanet.h"
 
-vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
+vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj, scene)
 {
 	_TRACE;
 	DWORD i,j;
 
+	base_planet		= vP;
 	structure_bs	= NULL;
 	structure_as	= NULL;
 	nstructure_bs	= 0;
@@ -53,6 +55,9 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 			++ntile;
 		}
 	}
+
+	// Do not render tiles for planets having a new tile format
+	if (base_planet) if (base_planet->tilever >= 2) ntile = 0;
 
 	if (ntile) {
 
