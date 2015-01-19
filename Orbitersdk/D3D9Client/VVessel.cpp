@@ -1246,7 +1246,9 @@ bool vVessel::ModLighting(D3D9Light *light)
 		if (*(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS)&DBG_FLAGS_AMBIENT) fAmbient = 0.25f;
 	}
 
-	OrbitalLighting(light, hP, GV, fAmbient);
+	vPlanet *vP = (vPlanet *)GetScene()->GetVisObject(hP);
+
+	if (vP) OrbitalLighting(light, vP, GV, fAmbient);
 
 	return true;
 }

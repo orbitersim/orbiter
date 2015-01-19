@@ -13,6 +13,7 @@
 #include "D3D9Client.h"
 #include "VectorHelpers.h"
 #include "D3D9Config.h"
+#include "VPlanet.h"
 
 
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
@@ -101,9 +102,11 @@ void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 
 
 
-void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao)
+void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
 {
 	VECTOR3 GS, GP;
+
+	OBJHANDLE hP = vP->GetObject();
 	
 	D3DXVECTOR3 _one(1,1,1);
 
@@ -127,7 +130,7 @@ void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao)
 
 	double r   = length(P);
 	double pres = 1.0;  
-	double size = oapiGetSize(hP);
+	double size = oapiGetSize(hP) + vP->GetMinElevation();
 	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
 
 	float aalt = 1.0f;

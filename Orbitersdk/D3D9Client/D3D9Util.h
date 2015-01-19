@@ -332,7 +332,7 @@ float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b);
 D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
 
 void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
-void OrbitalLighting(D3D9Light *light, OBJHANDLE hP, VECTOR3 GO, float ao);
+void OrbitalLighting(D3D9Light *light, class vPlanet *vP, VECTOR3 GO, float ao);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
