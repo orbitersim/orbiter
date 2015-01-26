@@ -67,7 +67,6 @@ void D3D9Config::Reset ()
 	CustomCamMode		= 1;
 	Instancing			= 0;
 	LODBias				= 0;
-	DynamicExps			= 1;
 	TileDebug			= 0;
 
 	DisableDriverManagement = 0;
@@ -125,7 +124,6 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "ManagedTiles",i))				ManagedTiles = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "LODBias",i))					LODBias = max (-3, min (3, i));
-	if (oapiReadItem_int   (hFile, "DynamixExps",i))				DynamicExps = max (0, min (1, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -181,7 +179,6 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "ManagedTiles", ManagedTiles);
 	oapiWriteItem_int   (hFile, "DisableVisualHelperReadout", DisableVisualHelperReadout);
 	oapiWriteItem_int   (hFile, "LODBias", LODBias);			
-	oapiWriteItem_int   (hFile, "DynamixExps", DynamicExps);
 	
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		

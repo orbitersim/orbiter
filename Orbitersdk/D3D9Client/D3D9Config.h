@@ -64,7 +64,6 @@ public:
 	int CustomCamMode;				///< Custom Camera Mode
 	int Instancing;					///< Enable Geometry Instancing
 	int LODBias;					///< 3D Terrain resolution bias
-	int	DynamicExps;				///< Denamic Exposure Control
 	int TileDebug;					///< Enable tile debugger
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")

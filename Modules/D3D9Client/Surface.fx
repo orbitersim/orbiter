@@ -33,8 +33,9 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
 struct TileVS
 {
     float4 posH     : POSITION0;
-    float2 texUV    : TEXCOORD0;  // Texture coordinate
-    float2 aux      : TEXCOORD1;  // Specular
+    float4 texUV    : TEXCOORD0;  // Texture coordinate
+    float2 aux      : TEXCOORD1;  // Night lights
+	float3 camW		: TEXCOORD2;
 	float3 atten    : COLOR0;     // Attennuation
     float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
 };
@@ -82,6 +83,8 @@ uniform extern float4    vTexOff;			// Texture offsets used by surface manager (
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power) 
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float4    vGeneric;          // Generic Multi-use vector
+uniform extern float3    vTangent;			// Unit Vector
+uniform extern float3    vBiTangent;		// Unit Vector
 // ------------------------------------------------------------
 uniform extern float     fDistScale;		// UNUSED: Scale factor
 uniform extern float 	 fAlpha;			// Cloud shodow alpha
@@ -93,7 +96,8 @@ uniform extern bool      bLights;			// Enable night-lights
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
-uniform extern texture   tNoise;			// Pre-computed sunlight
+uniform extern texture   tNoise;			// 
+uniform extern texture	 tOcean;			// Ocean Texture
 
 
 
@@ -135,6 +139,16 @@ sampler NoiseTexS = sampler_state
     AddressV = WRAP;
 };
 
+sampler OceaTexS = sampler_state
+{
+	Texture = <tOcean>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+
 
 // -------------------------------------------------------------------------------------------------------------
 // Atmospheric scattering model 
@@ -168,6 +182,7 @@ uniform extern float	fInvAux1;			// Inverse of fAux1
 uniform extern float	fInvParameter;		// Inverse of optical parameter 1.0/AngleCoEff(0)
 uniform extern float	fAmbient;			// Planet specific ambient level pre-multiplied with camera altitude factor
 uniform extern float	fGlobalAmb;
+uniform extern float	fTime;				// 
 uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt) 
 uniform extern bool		bOnOff;				
 
@@ -350,8 +365,6 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
     float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
     float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
-
-	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
 	
 	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
@@ -359,12 +372,17 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
 	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
 	float  fDRP  = dot(vPlN, vRay);
-	float  fNgt	 = (fDPS+0.242f) * 2.924f; 
+	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
+	float  fNgt	 = fDPS * 4.0f; 
+	outVS.camW   = vRay;
+
+	outVS.texUV.xy = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
+	outVS.texUV.zw = float2(dot(vTangent, vPlN), dot(vBiTangent, vPlN)) * 8000.0f;
+	outVS.texUV.z += fTime*0.008f;
 	
-	outVS.aux[AUX_SPECULAR] = pow(saturate(dot(reflect(-vSunDir, vNrmW), vRay)), vWater.a);
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
-	float fAmb = max(saturate(fNgt-0.05f)*fAmbient, fGlobalAmb) * 0.08f;
+	float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
 
 	if (!bOnOff) {
 		float fX = saturate(fDNS)*2.0;
@@ -378,7 +396,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float  fAlt = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
 	float  fDRS = dot(vRay, vSunDir);					// Dot viewing ray, sun direction
 	
-	outVS.aux[AUX_NIGHT] = saturate(-fNgt - 0.2f);
+	outVS.aux[AUX_NIGHT] = -fNgt;
    
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
@@ -425,13 +443,24 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 {
 	float3 cNgt = 0;
 	float3 cSpe = 0;
-	float4 cTex = tex2D(DiffTexS, frg.texUV);
-	float4 cMsk = tex2D(MaskTexS, frg.texUV);
+	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
+	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
 	
-    if (bSpecular) cSpe = ((1.0-cMsk.a) * frg.aux[AUX_SPECULAR]) * vWater.rgb;
-    if (bLights)   cNgt = cMsk.rgb * (frg.aux[AUX_NIGHT] * fNight);
-    
-    float3 color = cTex.rgb * frg.atten.rgb * (1.5+cSpe*2.0) + cSpe + frg.insca.rgb + cNgt;
+	if (bSpecular) {
+		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz * 2.0 - 1.0f;
+		float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vUnitCameraPos * cNrm.b);
+		float f = 1.0-saturate(dot(frg.camW, nrmW));
+		float s = dot(reflect(-vSunDir, nrmW), frg.camW);
+		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
+
+		cSpe = m * pow(saturate(s), vWater.a) * vWater.rgb * 3.0f;
+		cTex.rgb = lerp(cTex.rgb, float3(0.8, 1.0, 1.3), m * (f*f*f));
+	}
+
+	if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
+	
+    float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
+
 	float3 rv = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
 
 	return float4(pow(abs(rv), fAux4), 1.0f);  

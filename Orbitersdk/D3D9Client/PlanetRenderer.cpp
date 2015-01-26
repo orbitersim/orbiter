@@ -18,6 +18,7 @@
 // ------------------------------------------------------------
 class oapi::D3D9Client *PlanetRenderer::gc = NULL; 
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
+LPDIRECT3DTEXTURE9 PlanetRenderer::hOcean = NULL;
 // ------------------------------------------------------------
 ID3DXEffect *PlanetRenderer::pShader = NULL;
 D3DXHANDLE PlanetRenderer::eTileTech = NULL;
@@ -35,6 +36,8 @@ D3DXHANDLE PlanetRenderer::svTexOff = NULL;
 D3DXHANDLE PlanetRenderer::svWater = NULL;
 D3DXHANDLE PlanetRenderer::svSunDir = NULL;
 D3DXHANDLE PlanetRenderer::svGeneric = NULL;
+D3DXHANDLE PlanetRenderer::svTangent = NULL;
+D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
@@ -47,6 +50,7 @@ D3DXHANDLE PlanetRenderer::sbLights = NULL;
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
 D3DXHANDLE PlanetRenderer::stNoise = NULL;
+D3DXHANDLE PlanetRenderer::stOcean = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -77,6 +81,7 @@ D3DXHANDLE PlanetRenderer::sfAux2 = NULL;
 D3DXHANDLE PlanetRenderer::sfAux4 = NULL;	
 D3DXHANDLE PlanetRenderer::sfInvAux1 = NULL;	
 D3DXHANDLE PlanetRenderer::sfInvParameter = NULL;
+D3DXHANDLE PlanetRenderer::sfTime = NULL;
 D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
 D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
 
@@ -162,6 +167,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
 	svGeneric			= pShader->GetParameterByName(0,"vGeneric");
+	svTangent			= pShader->GetParameterByName(0,"vTangent");
+	svBiTangent			= pShader->GetParameterByName(0,"vBiTangent");
 	// ------------------------------------------------------------
 	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
@@ -174,6 +181,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
 	stNoise				= pShader->GetParameterByName(0,"tNoise");
+	stOcean				= pShader->GetParameterByName(0,"tOcean");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
@@ -204,9 +212,18 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfAux4				= pShader->GetParameterByName(0,"fAux4");
 	sfInvAux1			= pShader->GetParameterByName(0,"fInvAux1");
 	sfInvParameter		= pShader->GetParameterByName(0,"fInvParameter");
+	sfTime				= pShader->GetParameterByName(0,"fTime");
 	// ------------------------------------------------------------
 	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
 	sbOnOff				= pShader->GetParameterByName(0,"bOnOff");
+
+	// ------------------------------------------------------------
+	
+	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Ocean.dds", &hOcean));
+	
+	if (hOcean) {
+		HR(pShader->SetTexture(stOcean, hOcean));
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -214,6 +231,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 void PlanetRenderer::GlobalExit ()
 {
 	SAFE_RELEASE(pShader);
+	SAFE_RELEASE(hOcean);
 }
 
 // -----------------------------------------------------------------------
@@ -239,7 +257,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 ucam, cam = -_D3DXVECTOR3(pPlanet->PosFromCamera());
 	D3DXVec3Normalize(&ucam, &cam);
 
-	OBJHANDLE hPlanet = pPlanet->GetObjectA();
+	OBJHANDLE hPlanet = pPlanet->GetObject();
 
 	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
 
@@ -283,6 +301,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	double cr = pPlanet->CamDist();						// Camera distance from a planet center
 	double ca = cr - pr;								// Camera altitude
 	double hd = sqrt(cr*cr-mr*mr);						// Camera to horizon distance
+	double tm = fmod(oapiGetSimTime(), 256.0);
 
 	float fA = float(sqrt(1.0 - (mr*mr)/(cr*cr)));
 	float fB = (-D3DXVec3Dot(&SunDir, &ucam)-fA) / (float(atmo->aux1+0.01)*0.64f);
@@ -338,7 +357,24 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetFloat(sfHorizonAlt, float(ur-pr)));
 	HR(Shader()->SetFloat(sfAtmRad2, float(ur*ur)));
 	HR(Shader()->SetFloat(sfHorizonDst, float(hd)));
+	HR(Shader()->SetFloat(sfTime, float(tm)));
 	HR(Shader()->SetBool(sbInSpace, (cr>ur)));
 	HR(Shader()->SetBool(sbOnOff, true));
 	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
+
+	// ---------------------------------------------------------------------
+	/*
+	MATRIX3 mRot;
+	oapiGetRotationMatrix(hPlanet, &mRot);
+
+	//VECTOR3 vNrm = mul(mRot, _VD3DX(ucam));
+	VECTOR3 vNrm = _VD3DX(ucam);
+	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
+	VECTOR3 vTan = unit(crossp(vNrm, vRot));
+	VECTOR3 vBiT = unit(crossp(vNrm, vTan));
+
+	// ---------------------------------------------------------------------
+	HR(Shader()->SetValue(svTangent,   &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svBiTangent, &D3DXVEC(vBiT), sizeof(D3DXVECTOR3)));
+	*/
 }

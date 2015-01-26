@@ -338,10 +338,23 @@ void SurfTile::Render ()
 		static const double rad0 = sqrt(2.0)*PI05;
 		double rad = rad0/(double)(2<<lvl); // tile radius
 
-		has_specular = (sdist < PI05+rad);
+		has_specular = (sdist < PI05+rad+0.1);
 		render_cloud_shadows = (sdist < PI05+rad && !mgr->prm.rprm->bCloudFlatShadows);
 		render_lights = (render_lights && sdist > 1.45);
 	}
+
+	// ---------------------------------------------------------------------
+	MATRIX3 mRot;
+	oapiGetRotationMatrix(mgr->GetPlanet()->GetObject(), &mRot);
+
+	VECTOR3 vNrm = mul(mRot, cnt);
+	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
+	VECTOR3 vTan = unit(crossp(vNrm, vRot));
+	VECTOR3 vBiT = unit(crossp(vNrm, vTan));
+
+	// ---------------------------------------------------------------------
+	HR(Shader->SetValue(TileManager2Base::svTangent,   &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));
+	HR(Shader->SetValue(TileManager2Base::svBiTangent, &D3DXVEC(vBiT), sizeof(D3DXVECTOR3)));
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders

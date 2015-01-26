@@ -31,6 +31,7 @@ public:
 	static oapi::D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
+	static LPDIRECT3DTEXTURE9 hOcean;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
 	static D3DXHANDLE eTileTechNoZ;
@@ -47,6 +48,8 @@ public:
 	static D3DXHANDLE svWater;
 	static D3DXHANDLE svSunDir;
 	static D3DXHANDLE svGeneric;
+	static D3DXHANDLE svTangent;
+	static D3DXHANDLE svBiTangent;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
 	static D3DXHANDLE sfAlpha;
@@ -55,10 +58,13 @@ public:
 	static D3DXHANDLE sbSpecular;
 	static D3DXHANDLE sbCloudSh;
 	static D3DXHANDLE sbLights;
+	static D3DXHANDLE sbInSpace;
+	static D3DXHANDLE sbOnOff;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
 	static D3DXHANDLE stNoise;
+	static D3DXHANDLE stOcean;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;
@@ -89,8 +95,7 @@ public:
 	static D3DXHANDLE sfAux4;
 	static D3DXHANDLE sfInvAux1;
 	static D3DXHANDLE sfInvParameter;
-	static D3DXHANDLE sbInSpace;
-	static D3DXHANDLE sbOnOff;
+	static D3DXHANDLE sfTime;
 };
 
 #endif
