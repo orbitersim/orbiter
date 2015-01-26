@@ -388,7 +388,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 		float fX = saturate(fDNS)*2.0;
 		float fY = saturate(fDRP);
 		float fLvl = fX * rcp(fX+fY) * fExposure;
-		outVS.atten = max(fLvl, 4.0f*fAmb);
+		outVS.atten = max(fLvl, 4.0f*fAmb)*0.5;
 		outVS.insca = 0.0;
 		return outVS;
 	}
