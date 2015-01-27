@@ -843,10 +843,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Modules\D3D9Client\NormalMap.fx"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Modules\D3D9Client\Particle.fx"
 				>
 			</File>
@@ -864,6 +860,10 @@
 			</File>
 			<File
 				RelativePath="..\..\Modules\D3D9Client\SurfaceAd.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\Vessel.fx"
 				>
 			</File>
 		</Filter>
