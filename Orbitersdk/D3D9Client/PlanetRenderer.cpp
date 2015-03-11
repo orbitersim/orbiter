@@ -219,7 +219,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 
 	// ------------------------------------------------------------
 	
-	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Ocean.dds", &hOcean));
+	sprintf_s(name, "D3D9Ocean.dds");
+	gc->TexturePath(name, name);
+	HR(D3DXCreateTextureFromFileA(pDev, name, &hOcean));
 	
 	if (hOcean) {
 		HR(pShader->SetTexture(stOcean, hOcean));

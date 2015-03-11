@@ -51,9 +51,10 @@ void CloudTile::Load ()
 	}
 
 	// Load cloud texture
-	sprintf_s (path, "Textures\\%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	sprintf_s (path, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	bool found = mgr->GetClient()->TexturePath(path, path);
 	owntex = true;
-	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
+	if (!found || D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getParent()->Tex();
 			owntex = false;

@@ -91,9 +91,6 @@ void SurfTile::Load ()
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 
-	// Load surface texture
-	sprintf_s (path, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-
 	DWORD Mips = 1;
 	DWORD Usage = 0;
 	D3DFORMAT Format = D3DFMT_FROM_FILE;
@@ -103,9 +100,13 @@ void SurfTile::Load ()
 		Format = D3DFMT_X8R8G8B8;
 	}
 
+	// Load surface texture
+	sprintf_s (path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	bool found = mgr->GetClient()->TexturePath(path, path);
+
 	owntex = true;
 	
-	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
+	if (!found || D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getSurfParent()->Tex();
 			owntex = false;
@@ -121,7 +122,8 @@ void SurfTile::Load ()
 	// Load mask texture
 	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
 		if (owntex) {
-			sprintf_s (path, "Textures\\%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+			sprintf_s (path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+			mgr->GetClient()->TexturePath(path, path);
 			D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_ltex);
 			if (load_ltex) {
 				TileCatalog->Add(DWORD(load_ltex));
@@ -171,9 +173,10 @@ bool SurfTile::LoadElevationData ()
 
 	int i;
 	char path[256];
-	sprintf_s (path, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
+	sprintf_s (path, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
+	bool found = mgr->GetClient()->TexturePath(path, path);
 	FILE *f = NULL;
-	fopen_s(&f, path, "rb");
+	if (found) fopen_s(&f, path, "rb");
 	if (f) {
 		elev = new INT16[ndat];
 		// read the elevation file header
@@ -216,8 +219,9 @@ bool SurfTile::LoadElevationData ()
 
 		// now load the overload data if present
 		f = NULL;
-		sprintf_s (path, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
-		fopen_s(&f, path, "rb");
+		sprintf_s (path, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
+		found = mgr->GetClient()->TexturePath(path, path);
+		if (found) fopen_s(&f, path, "rb");
 		if (f) {
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {

@@ -72,9 +72,11 @@ DWORD RingManager::LoadTextures ()
 
 	D3DCAPS9 *caps = gc->GetHardwareCaps();
 
+	//@todo: try 8192,4096,2048...for(MaxTextureWidth;x>2048;x/2)...
 	int size = max(min(caps->MaxTextureWidth, 8192), 2048);
 
-	sprintf_s(path, 512, "Textures/%s_ring_%d.dds", fname, size);
+	sprintf_s(path, 512, "%s_ring_%d.dds", fname, size);
+	gc->TexturePath(path, path);
 	
 	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, D3DFMT_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 		LogAlw("High resolution ring texture loaded [%s]",path);
