@@ -289,6 +289,9 @@ public:
 	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilng, ilat); }
 	// Returns the node at the specified position, or 0 if it doesn't exist
 
+	inline TileType *GlobalTile (int lvl) { _ASSERT(lvl < 3); return globtile[lvl]; }
+	// Returns a low-res global tile
+
 	int Coverage (double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt) const;
 	// fills tbuf with a list of tiles up to maxlvl currently covering the area latmin,latmax,lngmin,lngmax
 	// nt is the length of tbuf. Return value is the number of tiles copied into tbuf.
@@ -297,6 +300,7 @@ public:
 	// after the next call to Render.
 
 protected:
+	TileType *globtile[3];              // full-sphere tiles for resolution levels 1-3
 	QuadTreeNode<TileType> tiletree[2]; // quadtree roots for western and eastern hemisphere
 
 	void CheckCoverage (const QuadTreeNode<TileType> *node, double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt, int *nfound) const;

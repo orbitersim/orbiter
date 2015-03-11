@@ -80,6 +80,8 @@ public:
 		DWORD  amb0col;         // baseline ambient colour [rgba]
 		double cloudalt;        // altitude of cloud layer, if present [m]
 		double shadowalpha;     // opacity of shadows (0-1)
+		double horizon_excess;  // extend horizon visibility radius
+		double tilebb_excess;   // extend tile visibility bounding box
 
 		// frame-by-frame options
 		bool bAddBkg;		    // render additive to sky background (i.e. planet seen through atm.layer of another planet)

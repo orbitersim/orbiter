@@ -208,14 +208,13 @@ bool SurfTile::LoadElevationData ()
 				for (i = 0; i < ndat; i++) elev[i] = (INT16)(elev[i]+hdr.offset);
 			break;
 		}
-
-		bool elev_exaggerate = false; // for now
-		double elev_exaggerate_factor = 3.0; // for now
-		if (elev_exaggerate)
-			for (i = 0; i < ndat; i++)
-				elev[i] = (INT16)(elev[i] * elev_exaggerate_factor);
-
 		fclose(f);
+
+		#if 0 // for now
+		double elev_exaggerate_factor = 3.0; // for now
+		for (i = 0; i < ndat; i++)
+			elev[i] = (INT16)(elev[i] * elev_exaggerate_factor);
+		#endif
 
 		// now load the overload data if present
 		f = NULL;
@@ -264,6 +263,9 @@ bool SurfTile::LoadElevationData ()
 			int pilat = ilat >> 1;
 			int pilng = ilng >> 1;
 			INT16 *pelev = NULL;
+			if (!node) { // happens many times at startup...
+				return false;
+			}
 			QuadTreeNode<SurfTile> *parent = node->Parent();
 			for (; plvl >= 0; plvl--) { // find ancestor with elevation data
 				if (parent && parent->Entry()->has_elevfile) {
@@ -277,10 +279,9 @@ bool SurfTile::LoadElevationData ()
 			elev = new INT16[ndat];
 			// submit ancestor data to elevation manager for interpolation
 			if (pelev) {
-        mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
-      }
-		} else elev = 0;
-
+				mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
+			}
+		} else elev = NULL;
 	}
 	return (elev != NULL);
 }
@@ -289,15 +290,28 @@ bool SurfTile::LoadElevationData ()
 
 INT16 *SurfTile::ElevationData () const
 {
-	QuadTreeNode<SurfTile> *ggparent;
-	if ( node->Parent() &&
-	     node->Parent()->Parent() &&
-	    (ggparent = node->Parent()->Parent()->Parent()) && ggparent->Entry()->LoadElevationData() )
+	if (lvl >= 3) // traverse quadtree back to great-grandparent
 	{
-		// compute pixel offset into great-grandparent tile set
-		int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
-		mean_elev = ggparent->Entry()->mean_elev; // not quite true, since the ancestor covers a larger area
-		return ggparent->Entry()->elev + ofs;
+		QuadTreeNode<SurfTile> *ggparent;
+		if ( node->Parent() &&
+			 node->Parent()->Parent() &&
+			(ggparent = node->Parent()->Parent()->Parent()) && ggparent->Entry()->LoadElevationData() )
+		{
+			// compute pixel offset into great-grandparent tile set
+			int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
+			mean_elev = ggparent->Entry()->mean_elev; // not quite true, since the ancestor covers a larger area
+			return ggparent->Entry()->elev + ofs;
+		}
+	}
+	else // level 0...2
+	{
+		SurfTile *ggp = smgr->GlobalTile(lvl);
+		if ( ggp->LoadElevationData() )
+		{
+			int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
+			mean_elev = ggp->mean_elev; // not quite true, since the ancestor covers a larger area
+			return ggp->elev + ofs;
+		}
 	}
 	return NULL;
 

@@ -195,6 +195,10 @@ template<class TileType>
 TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres)
 : TileManager2Base (vplanet, _maxres)
 {
+	// Load the low-res full-sphere tiles
+	for (int i = 0; i < 3; i++) {
+		globtile[i] = new TileType (this, i-3, 0, 0);
+	}
 	// Set the root tiles for level 0
 	for (int i = 0; i < 2; i++) {
 		tiletree[i].SetEntry (new TileType (this, 0, 0, i));
@@ -211,6 +215,8 @@ TileManager2<TileType>::~TileManager2 ()
 {
 	for (int i = 0; i < 2; i++)
 		tiletree[i].DelChildren();
+	for (int i = 0; i < 3; i++)
+		delete globtile[i];
 }
 
 // -----------------------------------------------------------------------

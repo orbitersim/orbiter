@@ -62,6 +62,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		if (bScatter) LoadAtmoConfig(true);
 		surfmgr = NULL;
 		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres);
+		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
+		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
 	}
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
