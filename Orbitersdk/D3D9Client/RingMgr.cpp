@@ -72,7 +72,6 @@ DWORD RingManager::LoadTextures ()
 
 	D3DCAPS9 *caps = gc->GetHardwareCaps();
 
-	//@todo: try 8192,4096,2048...for(MaxTextureWidth;x>2048;x/2)...
 	int size = max(min(caps->MaxTextureWidth, 8192), 2048);
 
 	sprintf_s(path, 512, "%s_ring_%d.dds", fname, size);
