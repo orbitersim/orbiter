@@ -589,8 +589,8 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
-		if (cdist >= 2.0*rad) surfmgr2->Render (dmWorld, false, prm);
-		else				  surfmgr2->Render (dmWorld, true,  prm);
+		if (cdist>=1.3*rad && cdist>1e6) surfmgr2->Render (dmWorld, false, prm);
+		else							 surfmgr2->Render (dmWorld, true,  prm);
 	} 
 	else {
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	

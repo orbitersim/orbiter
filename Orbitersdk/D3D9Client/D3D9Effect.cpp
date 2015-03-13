@@ -110,7 +110,7 @@ D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseRefl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eInstanced = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eLocalLights  = 0;	// BOOL		
 D3DXHANDLE D3D9Effect::eGlow = 0;	// BOOL	
 // --------------------------------------------------------------
@@ -304,7 +304,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eUseDisl	  = FX->GetParameterByName(0,"gUseDisl");
 	eUseRefl	  = FX->GetParameterByName(0,"gUseRefl");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
-	eInstanced	  = FX->GetParameterByName(0,"gInstanced");	
+	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			
 	eGlow		  = FX->GetParameterByName(0,"gGlow");	
 	// General parameters -------------------------------------------------- 

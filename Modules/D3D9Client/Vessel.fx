@@ -38,17 +38,9 @@ VesselVS VesselTechVS(MESH_VERTEX vrt)
 {
     VesselVS outVS = (VesselVS)0;
 
-	float3 posW, nrmW;
-
-	if (gInstanced) {
-		posW = mul(float4(vrt.posL, 1.0f), gGrpInst[vrt.idx[0]]).xyz;
-		nrmW = mul(float4(vrt.nrmL, 0.0f), gGrpInst[vrt.idx[0]]).xyz;
-	}
-	else {
-		posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
-		nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
-	}
-
+	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
+	
 	outVS.CamW = -posW * gDistScale + gCamOff;   // A vector from the vertex to the camera
     outVS.nrmW = nrmW;
 	outVS.posH = mul(float4(posW, 1.0f), gVP);
@@ -88,7 +80,10 @@ float4 VesselTechPS(VesselVS frg) : COLOR
     float4 cTex  = 1;
     float4 cRefl;
     
-	if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
+	if (gTextured) {
+		if (gNoColor) cTex.a = tex2D(WrapS, frg.tex0.xy).a;
+		else cTex = tex2D(WrapS, frg.tex0.xy);
+	}
 	
 	if (gFullyLit) {
 		if (gDebugHL) cTex.rgb = cTex.rgb*0.5 + gColor.rgb;
@@ -171,19 +166,11 @@ VesselNMVS VesselTechNMVS(MESH_VERTEX vrt)
     TBN[1] = cross(vrt.tanL, vrt.nrmL);
     TBN[2] = vrt.nrmL; 
 
-	float3 posW, nrmW;
+	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
 
-    if (gInstanced) {
-		posW = mul(float4(vrt.posL, 1.0f), gGrpInst[vrt.idx[0]]).xyz;
-		nrmW = mul(float4(vrt.nrmL, 0.0f), gGrpInst[vrt.idx[0]]).xyz;
-		TBN  = mul(TBN, gGrpInst[vrt.idx[0]]);
-	}
-	else {
-		posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
-		nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
-		TBN  = mul(TBN, gW);
-	}
-
+	TBN  = mul(TBN, gW);
+	
 	outVS.nrmT  = TBN[2];
 	outVS.bitT  = TBN[1];
 	outVS.tanT  = TBN[0];
@@ -295,7 +282,10 @@ float4 VirtualCockpitPS(VesselVS frg) : COLOR
 	float3 CamW = normalize(frg.CamW);
     float4 cTex = 1;
 
-    if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
+    if (gTextured) {
+		if (gNoColor) cTex.a = tex2D(WrapS, frg.tex0.xy).a;
+		else cTex = tex2D(WrapS, frg.tex0.xy);
+	}
     
 	cTex.a *= gMtrlAlpha;
 

@@ -108,7 +108,7 @@ public:
 	static D3DXHANDLE	eEnvMapEnable;
 	static D3DXHANDLE	eUseDisl;
 	static D3DXHANDLE	eInSpace;
-	static D3DXHANDLE	eInstanced;
+	static D3DXHANDLE	eNoColor;
 	static D3DXHANDLE	eLocalLights;		
 	static D3DXHANDLE	eGlow;	
 	static D3DXHANDLE	eInvProxySize;

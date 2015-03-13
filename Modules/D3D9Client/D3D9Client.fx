@@ -51,8 +51,6 @@ struct Light {
 #define Phi     3
 
 // -------------------------------------------------------------------------
-//uniform extern Mtrl		 gMtrlInst[4];		// Instance Materials
-//uniform extern float 	 gMtrlAlphaInst[4];	// Instance Alpha
 uniform extern float4x4  gGrpInst[8];		// Instance Matrices
 // -------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix
@@ -88,7 +86,7 @@ uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool      gUseDisl;			// Enable dissolve effect
 uniform extern bool      gUseRefl;			// Enable dissolve effect
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
-uniform extern bool		 gInstanced;		// True if a mesh is using instancing
+uniform extern bool		 gNoColor;			// No color flag
 uniform extern bool		 gLocalLights;		// Local light sources enabled
 uniform extern bool		 gGlow;				// Planet glow enabled
 uniform extern int       gSpecMode;
@@ -131,7 +129,6 @@ struct MESH_VERTEX {                        // D3D9Client Mesh vertex layout
     float3 nrmL   : NORMAL0;
     float3 tanL   : TANGENT0;
     float2 tex0   : TEXCOORD0;
-	int2   idx	  : BLENDINDICES;
 };
 
 struct NTVERTEX {                           // Orbiter Mesh vertex layout
