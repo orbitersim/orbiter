@@ -690,6 +690,7 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 
 			D3DXVECTOR3 t = ((k0*v1 - k1*v0) * q);
 			ta[i0]+=t; ta[i1]+=t; ta[i2]+=t;
+			pVrt[i0].w = pVrt[i1].w = pVrt[i2].w = (q<0.0f ? 1.0f : -1.0f);
 		}
 
 		for (DWORD i=0;i<nVtx; i++) {
@@ -750,6 +751,10 @@ bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 		pVert[i].z  = pNT[i].z;
 		pVert[i].u  = pNT[i].tu;
 		pVert[i].v  = pNT[i].tv;
+		pVert[i].w  = 1.0f;
+		pVert[i].tx = 1.0f;
+		pVert[i].ty = 0.0f;
+		pVert[i].tz = 0.0f;
 	}
 
 	// Check vertex index errors (This is important)

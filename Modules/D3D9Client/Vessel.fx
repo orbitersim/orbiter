@@ -163,7 +163,7 @@ VesselNMVS VesselTechNMVS(MESH_VERTEX vrt)
 	  // Construct Tangent space transformation matrix
     float3x3 TBN;
     TBN[0] = vrt.tanL;
-    TBN[1] = cross(vrt.tanL, vrt.nrmL);
+    TBN[1] = cross(vrt.tanL, vrt.nrmL) * vrt.tex0.z;
     TBN[2] = vrt.nrmL; 
 
 	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
