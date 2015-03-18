@@ -17,11 +17,30 @@ set BASE_DIR=..\..
 set OUT_DIR=_release
 set VERSION=Beta9-forRev10
 
+
+:: Try to get the Visual Studio version
+if not "%VS110COMNTOOLS%"=="" (
+  set VSCOMNTOOLS="%VS110COMNTOOLS%"
+  set SOLUTIONFILE=D3D9ClientVS2012.sln
+  goto :assign
+)
+if not "%VS100COMNTOOLS%"=="" (
+  set VSCOMNTOOLS="%VS100COMNTOOLS%"
+  set SOLUTIONFILE=D3D9ClientVS2010.sln
+  goto :assign
+)
+if not "%VS90COMNTOOLS%"=="" (
+  set VSCOMNTOOLS="%VS90COMNTOOLS%"
+  set SOLUTIONFILE=D3D9ClientVS2008.sln
+  goto :assign
+)
+
+:assign
 set ZIP_NAME=D3D9Client%VERSION%
-set SETVCVARS="%VS100COMNTOOLS%vsvars32.bat"
+set SETVCVARS=%VSCOMNTOOLS%vsvars32.bat
 set VC=msbuild.exe
 set BUILD_FLAG=/t:build
-set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\D3D9ClientVS2010.sln"
+set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%SOLUTIONFILE%"
 set CONFIG=/p:Configuration=Release
 set ZIP_CMD="C:\Program Files\7-Zip\7z.exe"
 
@@ -86,5 +105,6 @@ set ABS_PATH=
 set ZIP_CMD=
 set ZIP_NAME=
 set SETVCVARS=
+set VSCOMNTOOLS=
 
 exit /b 0
