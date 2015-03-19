@@ -1343,7 +1343,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	int nLights = gc->GetScene()->GetLightCount();
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 
-	if (pLights && nLights>0 && iTech==RENDER_VESSEL) {
+	if (pLights && nLights>0) { // && iTech==RENDER_VESSEL) {
 		HR(FX->SetValue(eLights, pLights, 12*sizeof(D3D9Light)));
 		FX->SetInt(eLightCount, nLights);
 		FX->SetBool(eLocalLights, true);

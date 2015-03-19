@@ -36,6 +36,7 @@ struct Mtrl
 
 struct Light {
     int      type;             /* Type of light source */
+	float    dst2;			   /* Camera-Light Emitter distance squared */
     float4   diffuse;          /* diffuse color of light */
     float4   specular;         /* specular color of light */
     float4   ambient;          /* ambient color of light */

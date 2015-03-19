@@ -55,12 +55,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	gc = _gc;
 	vobjEnv = NULL;
 	csphere = NULL;
-	light = NULL;
 	Lights = NULL;
 	hSun = NULL;
 	vProxy = NULL;
 	hObj_proxy = NULL;
-	lightlist  = NULL;
 	pAxisFont  = NULL;
 	pLabelFont = NULL;
 	pDebugFont = NULL;
@@ -90,12 +88,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	Lights = new D3D9Light[12];
 	memset2(Lights, 0, 12*sizeof(D3D9Light));
-
-	if (maxlight) {
-		lightlist = new LIGHTLIST[maxlight];	
-		memset2(lightlist, 0, maxlight*sizeof(LIGHTLIST));
-	}
-
 	memset2(&sunLight, 0, sizeof(D3D9Light));
 	
 	vobjFirst = vobjLast = NULL;
@@ -119,7 +111,6 @@ Scene::~Scene ()
 	SAFE_DELETE(csphere);
 	
 	if (Lights) delete []Lights;
-	if (lightlist) delete []lightlist;
 	if (cspheremgr) delete cspheremgr;
 
 	// Particle Streams
@@ -402,82 +393,6 @@ VECTOR3 Scene::SkyColour ()
 
 // ===========================================================================================
 //
-void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo, DWORD idx)
-{
-	if (Lights==NULL) return;
-
-	D3D9Light lght;
-	memset2(&lght, 0, sizeof(D3D9Light)); 
-
-	switch (le->GetType()) {
-	
-		case LightEmitter::LT_POINT: {
-			lght.Type = D3DLIGHT_POINT;
-			lght.Param[D3D9LRange] = (float)((PointLight*)le)->GetRange();
-			const double *att = ((PointLight*)le)->GetAttenuation();
-			lght.Attenuation[0] = (float)att[0];
-			lght.Attenuation[1] = (float)att[1];
-			lght.Attenuation[2] = (float)att[2];
-		} break;
-
-		case LightEmitter::LT_SPOT: {
-			lght.Type = D3DLIGHT_SPOT;
-			lght.Param[D3D9LRange] = (float)((SpotLight*)le)->GetRange();
-			const double *att = ((SpotLight*)le)->GetAttenuation();
-			lght.Attenuation[0] = (float)att[0];
-			lght.Attenuation[1] = (float)att[1];
-			lght.Attenuation[2] = (float)att[2];
-			lght.Param[D3D9LFalloff] = 1.0f;
-			lght.Param[D3D9LTheta]   = (float)((SpotLight*)le)->GetUmbra();
-			lght.Param[D3D9LPhi]     = (float)((SpotLight*)le)->GetPenumbra();
-			
-			// We'll do this here to avoid per pixel cosine computation and division
-			lght.Param[D3D9LPhi]   = cos(lght.Param[D3D9LPhi]*0.5f);
-			lght.Param[D3D9LTheta] = 1.0f/(cos(lght.Param[D3D9LTheta]*0.5f)-lght.Param[D3D9LPhi]);
-		} break;
-	}
-
-	double intens = le->GetIntensity();
-
-	const COLOUR4 &col_d = le->GetDiffuseColour();
-	lght.Diffuse.r = (float)(col_d.r*intens);
-	lght.Diffuse.g = (float)(col_d.g*intens);
-	lght.Diffuse.b = (float)(col_d.b*intens);
-	lght.Diffuse.a = (float)(col_d.a*intens);
-
-	const COLOUR4 &col_s = le->GetSpecularColour();
-	lght.Specular.r = (float)(col_s.r*intens);
-	lght.Specular.g = (float)(col_s.g*intens);
-	lght.Specular.b = (float)(col_s.b*intens);
-	lght.Specular.a = (float)(col_s.a*intens);
-
-	const COLOUR4 &col_a = le->GetAmbientColour();
-	lght.Ambient.r = (float)(col_a.r*intens);
-	lght.Ambient.g = (float)(col_a.g*intens);
-	lght.Ambient.b = (float)(col_a.b*intens);
-	lght.Ambient.a = (float)(col_a.a*intens);
-
-	if (lght.Type != D3DLIGHT_DIRECTIONAL) {
-		const VECTOR3 pos = le->GetPosition();
-		D3DXVECTOR3 p((float)pos.x, (float)pos.y, (float)pos.z); 
-		D3DXVec3TransformCoord((D3DXVECTOR3 *)&lght.Position, &p, vo->MWorld());	
-	}
-	
-	if (lght.Type != D3DLIGHT_POINT) {
-		const VECTOR3 dir = le->GetDirection();
-		D3DXVECTOR3 d((float)dir.x, (float)dir.y, (float)dir.z); 
-		D3DXVec3TransformNormal((D3DXVECTOR3 *)&lght.Direction, &d, vo->MWorld());
-		D3DXVec3Normalize((D3DXVECTOR3 *)&lght.Direction, (D3DXVECTOR3 *)&lght.Direction);
-	}
-
-	if (idx>=maxlight) return;
-
-	Lights[idx] = lght;
-	nLights = idx+1;
-}
-
-// ===========================================================================================
-//
 void Scene::Update ()
 {
 	_TRACE;
@@ -743,13 +658,10 @@ void Scene::UpdateCamVis()
 
 	// Process Local Light Sources -------------------------------------
 	//
-	
-	int nEmitter = 0;
-	nlight = 1;
-	nLights = 0;
+	if (bLocalLight) {
 
-	if (bLocalLight && lightlist) {
-		DWORD j, k;
+		ClearLocalLights();
+
 		VOBJREC *pv = NULL;
 		for (pv = vobjFirst; pv; pv = pv->next) {
 			if (!pv->vobj->IsActive()) continue;
@@ -757,31 +669,12 @@ void Scene::UpdateCamVis()
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 				VESSEL *vessel = oapiGetVesselInterface (hObj);
 				DWORD nemitter = vessel->LightEmitterCount();
-				for (j = 0; j < nemitter; j++) {
+				for (DWORD j = 0; j < nemitter; j++) {
 					const LightEmitter *em = vessel->GetLightEmitter(j);
-					if (em->IsActive()==false || em->GetIntensity()==0.0) continue;
-					nEmitter++;
-					const VECTOR3 *pos = em->GetPositionRef();
-					D3DXVECTOR3 q, p = D3DXVECTOR3((float)pos->x, (float)pos->y, (float)pos->z);
-					D3DXVec3TransformCoord(&q, &p, pv->vobj->MWorld());
-					double dst2 = q.x*q.x + q.y*q.y + q.z*q.z;
-					for (k = nlight-1; k >= 1; k--) {
-						if (lightlist[k].camdist2 < dst2) break;
-						else if (k < maxlight-1) lightlist[k+1] = lightlist[k]; // shift entries to make space
-						else nlight--;
-					}
-					if (k == maxlight-1) continue;
-					lightlist[k+1].plight = em;
-					lightlist[k+1].vobj = pv->vobj;
-					lightlist[k+1].camdist2 = dst2;
-					nlight++;
+					if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, pv->vobj);
 				}
 			}
 		}
-
-		for (int i = 1; i < nlight; i++)
-			if (lightlist[i].plight->GetVisibility() & LightEmitter::VIS_EXTERNAL)
-				AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
 	}
 
 
@@ -805,6 +698,103 @@ void Scene::UpdateCamVis()
 	int distcomp(const void *arg1, const void *arg2);
 
 	qsort((void*)plist, nplanets, sizeof(PList), distcomp);
+}
+
+// ===========================================================================================
+//
+void Scene::ClearLocalLights()
+{
+	nLights  = 0;
+	lmaxdst2 = 0.0f;
+	lmaxidx  = 0;
+}
+
+// ===========================================================================================
+//
+void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
+{
+	if (Lights==NULL) return;
+	if (le->IsActive()==false || le->GetIntensity()==0.0) return;
+
+	// -----------------------------------------------------------------------------
+	D3DXVECTOR3 pos;
+	D3DXVec3TransformCoord(&pos, &D3DXVEC(le->GetPosition()), vo->MWorld());
+	float Dst2 = D3DXVec3Dot(&pos, &pos);
+
+	if (nLights==maxlight && Dst2>lmaxdst2) return;
+
+	// -----------------------------------------------------------------------------
+	D3D9Light lght;
+	memset2(&lght, 0, sizeof(D3D9Light)); 
+
+	const double *att = ((PointLight*)le)->GetAttenuation();
+	lght.Attenuation = D3DXVECTOR3((float)att[0], (float)att[1], (float)att[2]);
+	lght.Param[D3D9LRange] = (float)((SpotLight*)le)->GetRange();
+	lght.Dst2 = Dst2;
+	lght.Position = pos;
+
+	// -----------------------------------------------------------------------------
+	switch (le->GetType()) {
+
+		case LightEmitter::LT_POINT: {
+			lght.Type = D3DLIGHT_POINT;
+		} break;
+
+		case LightEmitter::LT_SPOT: {
+			lght.Type = D3DLIGHT_SPOT;
+			lght.Param[D3D9LFalloff] = 1.0f;
+			lght.Param[D3D9LTheta]   = (float)((SpotLight*)le)->GetUmbra();
+			lght.Param[D3D9LPhi]     = (float)((SpotLight*)le)->GetPenumbra();	
+			lght.Param[D3D9LPhi]     = cos(lght.Param[D3D9LPhi]*0.5f);
+			lght.Param[D3D9LTheta]   = 1.0f/(cos(lght.Param[D3D9LTheta]*0.5f)-lght.Param[D3D9LPhi]);
+		} break;
+
+		default:
+			LogErr("Invalid Light Emitter Type");
+			break;
+	}
+
+	// -----------------------------------------------------------------------------
+	double intens = le->GetIntensity();
+
+	const COLOUR4 &col_d = le->GetDiffuseColour();
+	lght.Diffuse.r = (float)(col_d.r*intens);
+	lght.Diffuse.g = (float)(col_d.g*intens);
+	lght.Diffuse.b = (float)(col_d.b*intens);
+	lght.Diffuse.a = (float)(col_d.a*intens);
+
+	const COLOUR4 &col_s = le->GetSpecularColour();
+	lght.Specular.r = (float)(col_s.r*intens);
+	lght.Specular.g = (float)(col_s.g*intens);
+	lght.Specular.b = (float)(col_s.b*intens);
+	lght.Specular.a = (float)(col_s.a*intens);
+
+	const COLOUR4 &col_a = le->GetAmbientColour();
+	lght.Ambient.r = (float)(col_a.r*intens);
+	lght.Ambient.g = (float)(col_a.g*intens);
+	lght.Ambient.b = (float)(col_a.b*intens);
+	lght.Ambient.a = (float)(col_a.a*intens);
+
+	// -----------------------------------------------------------------------------
+	if (lght.Type != D3DLIGHT_POINT) {
+		const VECTOR3 dir = le->GetDirection();
+		D3DXVECTOR3 d((float)dir.x, (float)dir.y, (float)dir.z); 
+		D3DXVec3TransformNormal((D3DXVECTOR3 *)&lght.Direction, &d, vo->MWorld());
+		D3DXVec3Normalize((D3DXVECTOR3 *)&lght.Direction, (D3DXVECTOR3 *)&lght.Direction);
+	}
+
+	// -----------------------------------------------------------------------------
+	// Replace or Add
+	if (nLights==maxlight) {
+		Lights[lmaxidx] = lght;
+		lmaxdst2 = 0.0f;
+		for (int i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;	
+	}
+	else {
+		Lights[nLights] = lght;
+		if (lght.Dst2>lmaxdst2) lmaxdst2 = lght.Dst2, lmaxidx = nLights;
+		nLights++;
+	}
 }
 
 
@@ -1188,20 +1178,17 @@ void Scene::RenderMainScene()
 
 	if (oapiCameraInternal() && vFocus) {
 
-		/*
 		// switch cockpit lights on, external-only lights off
-		if (lightlist) {
-			for (int i=1;i<nlight;i++) {
-				switch (lightlist[i].plight->GetVisibility()) {
-				case LightEmitter::VIS_EXTERNAL:
-					//dev->LightEnable (i, FALSE);
-					break;
-				case LightEmitter::VIS_COCKPIT:
-					AddLocalLight (lightlist[i].plight, lightlist[i].vobj, i);
-					break;
-				}
+		//
+		if (bLocalLight) {
+			ClearLocalLights();
+			VESSEL *vessel = oapiGetFocusInterface();
+			DWORD nemitter = vessel->LightEmitterCount();
+			for (DWORD j = 0; j < nemitter; j++) {
+				const LightEmitter *em = vessel->GetLightEmitter(j);
+				if (em->GetVisibility() & LightEmitter::VIS_COCKPIT) AddLocalLight(em, vFocus);
 			}
-		}*/
+		}
 
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
 		double znear = Config->VCNearPlane;

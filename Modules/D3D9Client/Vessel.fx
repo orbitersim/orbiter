@@ -300,9 +300,11 @@ float4 VirtualCockpitPS(VesselVS frg) : COLOR
 
     if (d==0) s = 0;
 
-    float3 diff = gMtrl.diffuse.rgb * (d * gSun.diffuse.rgb) + (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
-    float3 spec = gMtrl.specular.rgb * (s * gSun.specular.rgb);
-    
+	float3 diff  = gMtrl.diffuse.rgb * (frg.diffuse.rgb + d * gSun.diffuse.rgb); // Compute total diffuse light
+	       diff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+
+	float3 spec  = gMtrl.specular.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	 // Compute total specular light
+
     cTex.rgb = cTex.rgb * saturate(diff) + saturate(spec);
     
     if (gDebugHL) cTex = cTex*0.5 + gColor;

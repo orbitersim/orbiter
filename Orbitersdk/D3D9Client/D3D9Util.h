@@ -184,6 +184,7 @@ typedef struct {
 
 typedef struct {
     int			  Type;             ///< Type of light source
+	float		  Dst2;				///< Square distance between camera and the light emitter
     D3DXCOLOR     Diffuse;          ///< diffuse color of light
     D3DXCOLOR     Specular;         ///< specular color of light
     D3DXCOLOR     Ambient;          ///< ambient color of light

@@ -38,12 +38,6 @@ class Scene {
 		VOBJREC *prev, *next;  // previous and next list entry
 	} *vobjFirst, *vobjLast;   // first and last list entry
 
-	struct LIGHTLIST {
-		const LightEmitter *plight;
-		vObject *vobj;
-		double camdist2;
-	} *lightlist;
-
 	struct CAMREC {
 		MATRIX3		mRotation;
 		VECTOR3		vPosition;
@@ -143,7 +137,8 @@ public:
 	void AddParticleStream (class D3D9ParticleStream *_pstream);
 	void DelParticleStream (DWORD idx);
 
-	void AddLocalLight(const LightEmitter *le, const vObject *vo, DWORD idx);
+	void AddLocalLight(const LightEmitter *le, const vObject *vo);
+	void ClearLocalLights();
 
 	/**
 	 * \brief Get object radius in pixels using oapiCameraGlobalPos()
@@ -279,14 +274,13 @@ private:
 	CelestialSphere *csphere;  // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
 	bool  bLocalLight;
-	int nlight;
-
+	
 	OBJHANDLE hSun;
 
 	D3D9ParticleStream **pstream; // list of particle streams
 	DWORD                nstream; // number of streams
 
-	D3D9Light **light;		// only one for now
+	//D3D9Light **light;		// only one for now
 	D3DCOLOR bg_rgba;          // ambient background colour
 
 	// GDI resources ====================================================================
@@ -330,8 +324,10 @@ private:
 	D3D9Light*	Lights;
 	D3D9Light	sunLight;
 
+	float		lmaxdst2;
 	DWORD		nLights;
 	DWORD		maxlight;
+	DWORD		lmaxidx;
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
 
