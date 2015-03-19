@@ -728,6 +728,7 @@ bool D3D9Mesh::CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid)
 
 	grp->UsrFlag = mg->UsrFlag;
 	grp->IntFlag = mg->Flags;
+	grp->zBias   = mg->zBias;
 
 	D3DXMatrixIdentity(&grp->Transform);
 
@@ -1213,6 +1214,12 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 	if (Tech==0) HR(FX->SetTechnique(eVCHudTech));
 	if (Tech==1) HR(FX->SetTechnique(eVCMFDTech));
 
+	if (grp->zBias) {
+		float zBias = float(grp->zBias) * 1.2e-7;
+		dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
+	}
+
+
 	if (Grp[idx]->bTransform) {
 		if (bGlobalTF)  FX->SetMatrix(eGT, D3DXMatrixMultiply(&q, &mTransform, &Grp[idx]->Transform));
 		else FX->SetMatrix(eGT, &Grp[idx]->Transform);
@@ -1235,6 +1242,8 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 	RenderGroup(dev, grp);
 	HR(FX->EndPass());
 	HR(FX->End());
+
+	if (grp->zBias) dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
 }
 
 
@@ -1488,6 +1497,13 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				}
 			}
 
+			// Apply z-Bias =============================================================================================
+			//
+			if (Grp[g]->zBias) {
+				float zBias = float(Grp[g]->zBias) * 1.2e-7;
+				dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
+			}
+
 			// Apply Animations =========================================================================================
 			//
 			if (Grp[g]->bTransform) FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
@@ -1505,6 +1521,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			gc->GetStats()->Vertices += Grp[g]->nVert;
 			gc->GetStats()->Draw++;
 			gc->GetStats()->MeshGrps++;
+
+			if (Grp[g]->zBias) dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
 		}
 		HR(FX->EndPass());
 	}

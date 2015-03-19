@@ -181,6 +181,7 @@ public:
 	//
 	void			SetCameraAperture(double _ap, double _as);
 	void			SetCameraFrustumLimits(double nearlimit, double farlimit);
+	float			GetDepthResolution(float dist) const { return fabs((nearplane-farplane)*(dist*dist) / (farplane*nearplane*24.0f)); }
 
 					// Imitialize Main Camera Setup
 	void			UpdateCameraFromOrbiter();

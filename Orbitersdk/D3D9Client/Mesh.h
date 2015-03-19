@@ -67,6 +67,7 @@ public:
 		DWORD UsrFlag;			// user-defined flag
 		WORD  IntFlag;			// internal flags
 		WORD  GeometryRec;		// Geometry record ID
+		WORD  zBias;
 		bool  bTransform;
 		bool  bUpdate;
 		bool  bGrouped;

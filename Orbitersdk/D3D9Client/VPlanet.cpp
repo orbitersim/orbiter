@@ -589,8 +589,12 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
+		float Dist = (float)oapiCameraTargetDist();
+		float DepthBias = 2.0/GetScene()->GetDepthResolution(Dist);
+		dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&DepthBias));
 		if (cdist>=1.3*rad && cdist>1e6) surfmgr2->Render (dmWorld, false, prm);
 		else							 surfmgr2->Render (dmWorld, true,  prm);
+		dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
 	} 
 	else {
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	

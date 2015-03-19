@@ -387,14 +387,6 @@ float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b)
 }
 
 
-float DepthResolution(const LPD3DXVECTOR3 line, const LPD3DXVECTOR3 pos, float zfar, float znear)
-{
-	D3DXVECTOR3 q;
-	float z = D3DXVec3Dot(D3DXVec3Normalize(&q, line), pos);
-	return fabs( (znear-zfar)*z*z / (zfar*znear*24.0f) );
-}
-
-
 D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a)
 {
 	float x = fabs(a->x);
