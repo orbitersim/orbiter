@@ -31,6 +31,7 @@ protected:
 	// Return pointer to parent tile, if exists
 
 	virtual void Load ();
+	virtual void PreLoad ();
 	virtual void Render ();
 
 	TileManager2<CloudTile> *cmgr;	// cloud tile manager interface

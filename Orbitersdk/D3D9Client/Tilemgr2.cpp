@@ -36,9 +36,9 @@ int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
 Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng)
 {
+	TexBuffer = lTexBuffer = NULL;
 	mesh = NULL;
 	tex = NULL;
-	load_tex = NULL;
 	mean_elev = 0.0;
 	max_elev = 0.0;
 	texrange = fullrange;
@@ -54,13 +54,71 @@ Tile::~Tile ()
 {
 	state = Invalid;
 	if (mesh) delete mesh;
+
 	if (tex && owntex) {
-		mgr->RecycleTexture(0, D3DFORMAT(0), &tex);
-	}
-	if (load_tex && owntex) {
-		if (TileCatalog->Remove(DWORD(load_tex))) load_tex->Release();
+		if (TileCatalog->Remove(DWORD(tex))) tex->Release();
 	}
 }
+
+
+// ------------------------------------------------------------------------
+// Pre Load routine for surface tiles
+// ------------------------------------------------------------------------
+
+bool Tile::LoadFile(const char *path, LPVOID *pBuffer, DWORD *DataSize)
+{
+	LARGE_INTEGER size;
+   
+    HANDLE hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+ 
+    if (hFile == INVALID_HANDLE_VALUE) return false;
+   
+	GetFileSizeEx(hFile, &size);
+
+	if (size.HighPart!=0 || size.LowPart>524288) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+	*pBuffer = new char[size.LowPart];
+
+	if (ReadFile(hFile, *pBuffer, size.LowPart, DataSize, NULL)==false) {
+        CloseHandle(hFile);
+		SAFE_DELETEA(*pBuffer);
+		*DataSize = 0;
+        return false;
+    }
+
+	CloseHandle(hFile);
+
+	return true;
+}
+
+
+// ------------------------------------------------------------------------
+// Create a texture from a pre-loaded data
+// ------------------------------------------------------------------------
+
+bool Tile::CreateTexture(LPDIRECT3DDEVICE9 pDev, LPVOID pBuffer, DWORD DataSize, LPDIRECT3DTEXTURE9 *pTex)
+{
+	DWORD Mips = 1;
+	DWORD Usage = 0;
+	D3DFORMAT Format = D3DFMT_FROM_FILE;
+
+	if (DataSize==0 || pBuffer==NULL) return false;
+
+	if (Config->TileDebug) {
+		Format = D3DFMT_X8R8G8B8;
+		Usage = D3DUSAGE_DYNAMIC;
+	}
+
+	if (D3DXCreateTextureFromFileInMemoryEx(pDev, pBuffer, DataSize, 0, 0, Mips, Usage, Format, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, NULL, NULL, pTex) != S_OK) {
+		*pTex = NULL;
+		return false;
+	}
+	return true;
+}
+
 
 // -----------------------------------------------------------------------
 
@@ -507,7 +565,7 @@ TileLoader::TileLoader (const oapi::D3D9Client *gclient)
 	nqueue = queue_in = queue_out = 0;
 	load_frequency = Config->PlanetLoadFrequency;
 	DWORD id;
-	hLoadMutex = CreateMutex (0, FALSE, NULL);
+	hLoadMutex  = CreateMutex (0, FALSE, NULL);
 	hLoadThread = CreateThread (NULL, 32768, Load_ThreadProc, this, 0, &id);
 }
 
@@ -573,8 +631,6 @@ bool TileLoader::LoadTileAsync (Tile *tile)
 
 // -----------------------------------------------------------------------
 
-// Something is wrong in here. Tiles are being loaded even-if TileManager2Base is deleted.  
-
 void TileLoader::Unqueue (TileManager2Base *mgr)
 {
 	bool locked = false; // whether a mutex semaphore was taken
@@ -639,7 +695,11 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 	bool load;
 
 	while (bRunThread) {
-		WaitForMutex ();
+		
+		Sleep(max(2,idle));
+
+		WaitForMutex();
+
 		if (load = (nqueue > 0)) {
 			tile = queue[queue_out].tile;
 			_ASSERT(TILE_STATE_OK(tile));			// THIS IS TRIGGERED OFTEN
@@ -651,15 +711,19 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 			queue_out = (queue_out+1) % MAXQUEUE2; // remove from queue
 			nqueue--;
 		}
-		ReleaseMutex ();
+
+		ReleaseMutex();
 
 		if (load) {
-			WaitForMutex ();
-			tile->Load(); // load/create the tile
+
+			// Preload data from harddrive to system memory without a Mutex
+			tile->PreLoad();
+
+			// Enter in a critical section of tile loading
+			WaitForMutex(); 
+			tile->Load();
 			tile->state = Tile::Inactive; // unlock tile
-			ReleaseMutex ();
-		} else {
-			Sleep (idle);
+			ReleaseMutex();
 		}
 	}
 	return 0;
@@ -695,7 +759,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 	min_elev = obj_size; 
 	oapiGetObjectName (obj, cbody_name, 256);
 	emgr = oapiElevationManager(obj);
-	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=TexPoolFmt[i]=0;
+	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 }
 
 // -----------------------------------------------------------------------
@@ -708,7 +772,7 @@ TileManager2Base::~TileManager2Base ()
 		loader->Unqueue(this);
 	}
 
-	DWORD nVtx=0, nIdx=0, nTex=0;
+	DWORD nVtx=0, nIdx=0;
 
 	for (int i=0;i<NPOOLS;i++) {
 		while (!VtxPool[i].empty()) {
@@ -721,13 +785,8 @@ TileManager2Base::~TileManager2Base ()
 			IdxPool[i].pop();
 			nIdx++;
 		}
-		while (!TexPool[i].empty()) {
-			TexPool[i].top()->Release();
-			TexPool[i].pop();
-			nTex++;
-		}
 	}
-	LogAlw("Recycling Pool Status nVtx=%u, nIdx=%u, nTex=%u", nVtx, nIdx, nTex);
+	LogAlw("Recycling Pool Status nVtx=%u, nIdx=%u", nVtx, nIdx);
 }
 
 // -----------------------------------------------------------------------
@@ -928,58 +987,6 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 		return IdxPoolSize[pool];
 	}
 }
-
-
-bool TileManager2Base::RecycleTexture(DWORD size, D3DFORMAT tFmt, LPDIRECT3DTEXTURE9 *pTex)
-{
-	int pool = -1;
-	D3DSURFACE_DESC desc;
-	DWORD Fmt = 0;
-
-	if (tFmt==D3DFMT_DXT1) Fmt = size + (1<<16);
-	if (tFmt==D3DFMT_DXT5) Fmt = size + (1<<17);
-
-	if (*pTex) {
-		(*pTex)->GetLevelDesc(0, &desc);
-		DWORD cFmt = 0;
-		if (desc.Format==D3DFMT_DXT1) cFmt = desc.Width + (1<<16);
-		if (desc.Format==D3DFMT_DXT5) cFmt = desc.Width + (1<<17);
-		for (int i=0;i<NPOOLS;i++) if (TexPoolFmt[i]==cFmt) { pool = i; break; } 
-		if (pool>=0) TexPool[pool].push(*pTex);
-		else LogErr("Texture Pool Doesn't exists size=%u, Format=0x%X", desc.Width, desc.Format);	
-	}
-
-	if (size==0 || tFmt==0) {
-		*pTex = NULL;
-		return false; // Only store texture, do not allocate new one.
-	}
-
-	pool = -1;
-	
-	// Find a pool 
-	for (int i=0;i<NPOOLS;i++) if (TexPoolFmt[i]==Fmt) { pool = i; break; }
-	
-	// Create a new pool size
-	if (pool==-1) {
-		for (int i=0;i<NPOOLS;i++) if (TexPoolFmt[i]==0) { TexPoolFmt[i] = Fmt; pool = i; break; }	
-		if (pool<0) { 
-			LogErr("Failed to Crerate a Pool (Fmt=%u)", Fmt);
-			*pTex = NULL; 
-			return 0; 
-		}
-	}
-
-	if (TexPool[pool].empty()) {
-		HR(pDev->CreateTexture(size, size, 1, 0, tFmt, D3DPOOL_DEFAULT, pTex, NULL));
-		return true;
-	}
-	else {
-		*pTex = TexPool[pool].top();
-		TexPool[pool].pop();
-		return true;
-	}
-}
-
 
 void TileManager2Base::ReduceMinElevation(double Elev)
 {

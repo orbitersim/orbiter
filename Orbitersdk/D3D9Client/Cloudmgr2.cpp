@@ -34,36 +34,34 @@ CloudTile::~CloudTile ()
 
 // -----------------------------------------------------------------------
 
-void CloudTile::Load ()
+void CloudTile::PreLoad()
 {
 	char path[MAX_PATH] = {'\0'};
-
-	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-
-	DWORD Usage = 0;
-	DWORD Mips = 1;
-	D3DXIMAGE_INFO info;
-
-	D3DFORMAT Format = D3DFMT_FROM_FILE;
-
-	if (Config->TileDebug) {
-		Format = D3DFMT_X8R8G8B8;
-	}
 
 	// Load cloud texture
 	sprintf_s (path, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	bool found = mgr->GetClient()->TexturePath(path, path);
+	if (found) LoadFile(path, &TexBuffer, &TexSize);
+}
+
+
+// -----------------------------------------------------------------------
+
+void CloudTile::Load ()
+{
+	
+	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
+
 	owntex = true;
-	if (!found || D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
+
+	if (CreateTexture(pDev, TexBuffer, TexSize, &tex) != true) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getParent()->Tex();
 			owntex = false;
 		} else tex = 0;
 	} else {
-		TileCatalog->Add(DWORD(load_tex));
-		mgr->TileLabel(load_tex, lvl, ilat, ilng);
-		mgr->RecycleTexture(info.Width, info.Format, &tex);
-		HR(pDev->UpdateTexture(load_tex, tex));  // Might be better to call from rendering thread
+		TileCatalog->Add(DWORD(tex));
+		mgr->TileLabel(tex, lvl, ilat, ilng);
 	}
 
 	bool shift_origin = (lvl >= 4);

@@ -34,6 +34,7 @@ protected:
 	// Return pointer to parent tile, if exists
 
 	void Load ();
+	void PreLoad ();
 	bool LoadElevationData ();
 	void Render ();
 

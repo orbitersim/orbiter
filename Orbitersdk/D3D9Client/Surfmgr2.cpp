@@ -76,65 +76,65 @@ SurfTile::~SurfTile ()
 		elev = NULL;
 	}
 	if (ltex && owntex) {
-		mgr->RecycleTexture(0, D3DFORMAT(0), &ltex);
-	}
-	if (load_ltex && owntex) {
-		if (TileCatalog->Remove(DWORD(load_ltex))) load_ltex->Release();
+		if (TileCatalog->Remove(DWORD(ltex))) ltex->Release();
 	}
 }
 
 // -----------------------------------------------------------------------
 
-void SurfTile::Load ()
+void SurfTile::PreLoad()
 {
 	char path[MAX_PATH] = {'\0'};
 
-	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
-
-	DWORD Mips = 1;
-	DWORD Usage = 0;
-	D3DFORMAT Format = D3DFMT_FROM_FILE;
-	D3DXIMAGE_INFO info;
-
-	if (Config->TileDebug) {
-		Format = D3DFMT_X8R8G8B8;
-	}
-
-	// Load surface texture
+	// ---------------------------------------------------------
 	sprintf_s (path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	bool found = mgr->GetClient()->TexturePath(path, path);
+	if (found) LoadFile(path, &TexBuffer, &TexSize);
+
+	// ---------------------------------------------------------
+	if (found) {
+		sprintf_s (path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		found = mgr->GetClient()->TexturePath(path, path);
+		if (found) LoadFile(path, &lTexBuffer, &lTexSize);
+	}
+}
+
+
+// -----------------------------------------------------------------------
+
+void SurfTile::Load ()
+{
+
+	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 
 	owntex = true;
 	
-	if (!found || D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_tex) != S_OK) {
+	if (CreateTexture(pDev, TexBuffer, TexSize, &tex) != true) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getSurfParent()->Tex();
 			owntex = false;
 		} else
 			tex = 0;
 	} else {	
-		TileCatalog->Add(DWORD(load_tex));
-		mgr->TileLabel(load_tex, lvl, ilat, ilng);
-		mgr->RecycleTexture(info.Width, info.Format, &tex);
-		HR(pDev->UpdateTexture(load_tex, tex));  // Might be better to call from rendering thread
+		TileCatalog->Add(DWORD(tex));
+		mgr->TileLabel(tex, lvl, ilat, ilng);
 	}
 	
 	// Load mask texture
 	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
 		if (owntex) {
-			sprintf_s (path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-			mgr->GetClient()->TexturePath(path, path);
-			D3DXCreateTextureFromFileExA(pDev, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &load_ltex);
-			if (load_ltex) {
-				TileCatalog->Add(DWORD(load_ltex));
-				mgr->TileLabel(load_ltex, lvl, ilat, ilng);
-				mgr->RecycleTexture(info.Width, info.Format, &ltex);
-				HR(pDev->UpdateTexture(load_ltex, ltex));
+			CreateTexture(pDev, lTexBuffer, lTexSize, &ltex);
+			if (ltex) {
+				TileCatalog->Add(DWORD(ltex));
+				mgr->TileLabel(ltex, lvl, ilat, ilng);
 			}
 		} else if (node->Parent()) {
 			ltex = getSurfParent()->ltex;
 		}
 	}
+
+	SAFE_DELETEA(lTexBuffer);
+	SAFE_DELETEA(TexBuffer);
 
 	// Load elevation data
 	INT16 *ev = ElevationData ();

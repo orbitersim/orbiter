@@ -100,6 +100,8 @@ protected:
 
 	virtual void Render () {}
 
+	virtual void PreLoad() {}
+
 	VECTOR3 Centre () const;
 	// Returns the direction of the tile centre from the planet centre in local planet coordinates
 
@@ -110,12 +112,18 @@ protected:
 	VBMESH *CreateMesh_hemisphere (int grd, INT16 *elev=0, double globelev=0.0);
 	// Creates a hemisphere mesh for eastern or western hemisphere at resolution level 4
 
+	bool CreateTexture(LPDIRECT3DDEVICE9 pDev, LPVOID pBuffer, DWORD DataSize, LPDIRECT3DTEXTURE9 *pTex);
+	bool LoadFile(const char *path, LPVOID *pBuffer, DWORD *DataSize);
+
+
+	LPVOID	TexBuffer,lTexBuffer;
+	DWORD	TexSize,lTexSize;
+
 	TileManager2Base *mgr;     // the manager this tile is associated with
 	int lvl;                   // tile resolution level
 	int ilat;                  // latitude index
 	int ilng;                  // longitude index
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
-	LPDIRECT3DTEXTURE9 load_tex;  // SysMem copy used in load-thread
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
 	TEXCRDRANGE2 texrange;     // texture coordinate subrange (if using ancestor subtexture)
 	VBMESH *mesh;              // vertex-buffered tile mesh
@@ -228,7 +236,6 @@ public:
 	 */
 	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
 	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
-	bool  RecycleTexture(DWORD size, D3DFORMAT tFmt, LPDIRECT3DTEXTURE9 *pTex);
 	
 	const class Scene * GetScene() const { return gc->GetScene(); }
 	const oapi::D3D9Client *GetClient() const { return gc; }
@@ -260,10 +267,8 @@ private:
 	
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];
-	DWORD TexPoolFmt[NPOOLS];
 	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
-	std::stack<LPDIRECT3DTEXTURE9> TexPool[NPOOLS];
 
 	static HFONT hFont;
 	static oapi::D3D9Client *gc;
