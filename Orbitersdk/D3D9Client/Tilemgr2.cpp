@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2014 Martin Schweiger
+//   Copyright (C) 2006-2015 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -22,7 +22,7 @@
 // =======================================================================
 // Externals
 
-static int maxres = 14;    // max tree resolution depth    (NOT IN USE)
+static int maxres = 14;    // max tree resolution depth    
 static int patch_res = 32; // patch node grid dimensions
 static int elev_stride = patch_res*8+3;
 static TEXCRDRANGE2 fullrange = {0,1,0,1};
@@ -216,7 +216,7 @@ void Tile::Extents (double *latmin, double *latmax, double *lngmin, double *lngm
 // -----------------------------------------------------------------------
 
 VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double globelev,
-	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift)
+	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift, double bb_excess)
 {
 	const float TEX2_MULTIPLIER = 4.0f; // was: 16.0f
 	const float c1 = 1.0f, c2 = 0.0f;   // -1.0f/512.0f; // assumes 256x256 texture patches
@@ -409,6 +409,18 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	mesh->nf  = nidx/3;
 
 	// set bounding box for visibility calculations
+	if (bb_excess) {
+		double bb_dx = tpmax.x-tpmin.x;
+		double bb_dy = tpmax.y-tpmin.y;
+		double bb_dz = tpmax.z-tpmin.z;
+		double scale = sqrt(bb_dx*bb_dx + bb_dy*bb_dy + bb_dz*bb_dz)/(2.0*sqrt(3.0))*bb_excess;
+		tpmin.x -= scale;
+		tpmax.x += scale;
+		tpmin.y -= scale;
+		tpmax.y += scale;
+		tpmin.z -= scale;
+		tpmax.z += scale;
+	}
 	pref.x -= dx;
 	pref.y -= dy;
 	
@@ -436,8 +448,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 	VECTOR3 pos, nml;
 
 	// Allocate memory for the vertices and indices
-	int         nVtx = grd*(grd+1)+2;
-	int         nIdx = 6*grd*grd;
+	int         nVtx = (grd-1)*(grd+1)+2;
+	int         nIdx = 6*(grd*(grd-2)+grd);
 	VERTEX_2TEX *Vtx = new VERTEX_2TEX[nVtx];
 	WORD*       Idx = new WORD[nIdx];
 
@@ -448,22 +460,23 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 
 	// Angle deltas for constructing the sphere's vertices
     double fDAng   = PI / grd;
-    double lat = fDAng;
+    double lng, lat = fDAng;
 	DWORD x1 = grd;
 	DWORD x2 = x1+1;
 	FLOAT du = 0.5f/(FLOAT)texres;
 	FLOAT a  = (1.0f-2.0f*du)/(FLOAT)x1;
 
     // Make the middle of the sphere
-    for (y = 0; y < grd; y++) {
+    for (y = 1; y < grd; y++) {
 		slat = sin(lat), clat = cos(lat);
-		float tv = (float)(lat/PI);
+		FLOAT tv = (float)(lat/PI);
 
         for (x = 0; x < x2; x++) {
-            double lng = x*fDAng - PI;  // subtract Pi to wrap at +-180°
+            lng = x*fDAng - PI;  // subtract Pi to wrap at +-180°
 			if (ilng) lng += PI;
 			slng = sin(lng), clng = cos(lng);
-			eradius = radius; // TODO: elevation
+			eradius = radius + globelev; // radius including node elevation
+			if (elev) eradius += (double)elev[(33-y)*TILE_ELEVSTRIDE + x+1];
 			nml = _V(slat*clng, clat, slat*slng);
 			pos = nml*eradius;
 			vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
@@ -478,7 +491,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
         lat += fDAng;
     }
 
-    for (y = 0; y < grd-1; y++) {
+    for (y = 0; y < grd-2; y++) {
         for (x = 0; x < x1; x++) {
             *idx++ = (WORD)( (y+0)*x2 + (x+0) );
             *idx++ = (WORD)( (y+0)*x2 + (x+1) );
@@ -491,7 +504,12 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
     }
     // Make top and bottom
 	WORD wNorthVtx = nvtx;
-	eradius = radius;
+	eradius = radius + globelev;
+	if (elev) {
+		double mn = 0.0;
+		for (x = 0; x < x2; x++) mn += (double)elev[TILE_ELEVSTRIDE*33 + x+1];
+		eradius += mn/x2;
+	}
 	nml = _V(0,1,0);
 	pos = nml*eradius;
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
@@ -504,7 +522,12 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 	WORD wSouthVtx = nvtx;
 
 	
-	eradius = radius;
+	eradius = radius + globelev;
+	if (elev) {
+		double mn = 0.0;
+		for (x = 0; x < x2; x++) mn += (double)elev[TILE_ELEVSTRIDE + x+1];
+		eradius += mn/x2;
+	}
 	nml = _V(0,-1,0);
 	pos = nml*eradius;
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
@@ -517,12 +540,12 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 
     for (x = 0; x < x1; x++) {
 		WORD p1 = wSouthVtx;
-		WORD p2 = (WORD)( (y)*x2 + (x+0) );
-		WORD p3 = (WORD)( (y)*x2 + (x+1) );
+		WORD p2 = (WORD)( (grd-2)*x2 + (x+0) );
+		WORD p3 = (WORD)( (grd-2)*x2 + (x+1) );
 
         *idx++ = p1;
-        *idx++ = p3;
         *idx++ = p2;
+        *idx++ = p3;
 		nidx += 3;
     }
 
@@ -537,13 +560,43 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 		nidx += 3;
     }
 
+	// regenerate normals for terrain
+	if (elev) {
+		double dy, dz, dydz, nx1, ny1, nz1;
+		int en;
+		dy = radius * PI/grd;  // y-distance between vertices
+		vtx = Vtx;
+		for (y = 1; y < grd; y++) {
+			lat = PI05-y*fDAng;
+			slat = sin(lat), clat = cos(lat);
+			dz = radius * PI*cos(lat) / grd; // z-distance between vertices on unit sphere
+			dydz = dy*dz;
+			for (x = 0; x < x2; x++) {
+				lng = x*fDAng;
+				if (!ilng) lng -= PI;
+				slng = sin(lng), clng = cos(lng);
+				en = (33-y)*TILE_ELEVSTRIDE + x+1;
+				VECTOR3 nml = {2.0*dydz, dz*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*(elev[en-1]-elev[en+1])};
+				normalise(nml);
+				// rotate into place
+				nx1 = nml.x*clat - nml.y*slat;
+				ny1 = nml.x*slat + nml.y*clat;
+				nz1 = nml.z;
+				vtx->nx = (float)(nx1*clng - nz1*slng);
+				vtx->ny = (float)(ny1);
+				vtx->nz = (float)(nx1*slng + nz1*clng);
+				vtx++;
+			}
+		}
+	}
+
 	// create the mesh
 	VBMESH *mesh = new VBMESH(mgr);
 	mesh->vtx = Vtx;
 	mesh->nv  = nVtx;
 	mesh->idx = Idx;
 	mesh->nf  = nIdx/3;
-	mesh->MapVertices (TileManager2Base::pDev); // TODO
+	mesh->MapVertices (TileManager2Base::pDev);
 	return mesh;
 }
 
@@ -565,7 +618,7 @@ TileLoader::TileLoader (const oapi::D3D9Client *gclient)
 	nqueue = queue_in = queue_out = 0;
 	load_frequency = Config->PlanetLoadFrequency;
 	DWORD id;
-	hLoadMutex  = CreateMutex (0, FALSE, NULL);
+	hLoadMutex = CreateMutex (0, FALSE, NULL);
 	hLoadThread = CreateThread (NULL, 32768, Load_ThreadProc, this, 0, &id);
 }
 
@@ -752,7 +805,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
 : vp(vplanet)
 {
 	// set persistent parameters
-	prm.maxlvl = max (1, _maxres-4);
+	prm.maxlvl = max (0, _maxres-4);
 
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
@@ -831,7 +884,7 @@ void TileManager2Base::GlobalExit ()
 
 void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm)
 {
-	const double minalt = 0.002;
+	const double minalt = max(0.002,rprm.horizon_excess);
 	VECTOR3 obj_pos, cam_pos;
 
 	prm.rprm = &rprm;
@@ -857,8 +910,9 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	normalise (prm.cdir);
 	prm.sdir = tmul (prm.grot, -obj_pos);  // sun's direction in planet frame
 	normalise (prm.sdir);
-	double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
-	prm.viewap = acos (minrad / (max (prm.cdist, 1.0+minalt)));
+	//double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
+	//prm.viewap = acos (minrad / (max (prm.cdist, 1.0+minalt)));
+	prm.viewap = acos (1.0/(max (prm.cdist, 1.0+minalt)));
 	prm.scale = 1.0;
 	prm.fog = rprm.bFog;
 	prm.tint = rprm.bTint;

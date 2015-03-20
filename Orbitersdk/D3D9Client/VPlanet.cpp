@@ -2,8 +2,8 @@
 // VPlanet.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2014 Martin Schweiger
-// Copyright (C) 2010-2014 Jarmo Nikkanen
+// Copyright (C) 2006-2015 Martin Schweiger
+// Copyright (C) 2010-2015 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -113,7 +113,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 				clouddata->microalt1 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMAX);
 			}
 		} else { // v2 cloud engine
-			DWORD maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
+			int maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
 			maxlvl = min (maxlvl, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 			cloudmgr2 = new TileManager2<CloudTile> (this, maxlvl);
 		}
@@ -282,6 +282,7 @@ bool vPlanet::Update ()
 
 	if (patchres==0) return true;
 
+	int i, j;
 	float rad_scale = rad;
 	bool rescale = false;
 	dist_scale = 1.0f;
@@ -292,7 +293,7 @@ bool vPlanet::Update ()
 		prm.DistScale = dist_scale;
 	}
 	if (rescale) {
-		rad_scale  *= dist_scale;
+		rad_scale *= dist_scale;
 		mWorld._41 *= dist_scale;
 		mWorld._42 *= dist_scale;
 		mWorld._43 *= dist_scale;
@@ -322,7 +323,7 @@ bool vPlanet::Update ()
 			float cloudscale = (float)(cloudrad/size);
 
 			// world matrix for cloud shadows on the surface
-			memcpy2 (&clouddata->mWorldC0, &mWorld, sizeof (D3DMATRIX));
+			memcpy (&clouddata->mWorldC0, &mWorld, sizeof (D3DMATRIX));
 			if (prm.cloudrot) {
 				static D3DXMATRIX crot (1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1);
 				crot._11 =   crot._33 = (float)cos(prm.cloudrot);
@@ -331,9 +332,9 @@ bool vPlanet::Update ()
 			}
 
 			// world matrix for cloud layer
-			memcpy2 (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DMATRIX));
-			for (int i = 0; i < 3; i++)
-				for (int j = 0; j < 3; j++) {
+			memcpy (&clouddata->mWorldC, &clouddata->mWorldC0, sizeof (D3DMATRIX));
+			for (i = 0; i < 3; i++)
+				for (j = 0; j < 3; j++) {
 					clouddata->mWorldC.m[i][j] *= cloudscale;
 				}
 
@@ -348,16 +349,15 @@ bool vPlanet::Update ()
 	// check all base visuals
 	if (nbase) {	
 		VECTOR3 pos, cpos = scn->GetCameraGPos();
-		double scale = (double)scn->ViewH()/tan(scn->GetCameraAperture());
+		double scale = (double)scn->ViewH()/scn->GetTanAp();
 		for (DWORD i = 0; i < nbase; i++) {
 			OBJHANDLE hBase = oapiGetBaseByIndex (hObj, i);
 			oapiGetGlobalPos (hBase, &pos);
 			double rad = oapiGetSize (hBase);
 			double dst = dist (pos, cpos);
 			double apprad = rad*scale/dst;
-
 			if (vbase[i]) { // base visual exists
-				if (apprad < 1.0 && patchres<3) { // out of visual range
+				if (apprad < 1.0) { // out of visual range
 					delete vbase[i];
 					vbase[i] = 0;
 				}
@@ -366,6 +366,8 @@ bool vPlanet::Update ()
 					vbase[i] = new vBase (hBase, scn, this);
 				}
 			}
+
+			// CHECK THIS
 
 			if (vbase[i]) {
 				if (apprad < 1.0) {
@@ -385,26 +387,28 @@ bool vPlanet::Update ()
 
 void vPlanet::CheckResolution()
 {
-	double alt = max(1.0, cdist-rad);
-	double apr = rad * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));
+	double alt = max (1.0, cdist-rad);
+	double apr = rad * scn->ViewH()*0.5 / (alt * scn->GetTanAp());
 	// apparent planet radius in units of screen pixels
 
 	int new_patchres;
 	double ntx;
 
 	if (apr < 2.5) { // render planet as 2x2 pixels
+		renderpix = true;
 		new_patchres = 0;
 		ntx = 0;
 	} else {
+		renderpix = false;
 		ntx = PI*2.0 * apr;
 
 		static const double scal2 = 1.0/log(2.0);
 		const double shift = (surfmgr2 ? 6.0 : 5.0); // reduce level for tile mgr v2, because of increased patch size
-		new_patchres = min (max ((DWORD)(scal2*log(ntx)-shift),1), max_patchres);
+		new_patchres = min (max ((int)(scal2*log(ntx)-shift),1), max_patchres);
 	}
 	if (new_patchres != patchres) {
 		if (hashaze) {
-			if (new_patchres < 3) {
+			if (new_patchres < 1) {
 				if (hazemgr) { delete hazemgr; hazemgr = NULL; }
 				if (hazemgr2) { delete hazemgr2; hazemgr2 = NULL; }
 			} else {
@@ -458,7 +462,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	pCurrentVisual = this;
 
-	if (patchres == 0) { // render as 2x2 pixel block
+	if (renderpix) { // render as 2x2 pixel block
 		RenderDot (dev);
 	} 
 	else {             // render as sphere
@@ -589,12 +593,16 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
-		float Dist = (float)oapiCameraTargetDist();
-		float DepthBias = 2.0/GetScene()->GetDepthResolution(Dist);
-		dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&DepthBias));
-		if (cdist>=1.3*rad && cdist>1e6) surfmgr2->Render (dmWorld, false, prm);
+		//float Dist = (float)oapiCameraTargetDist();
+		//float DepthBias = 3.0f * GetScene()->GetDepthResolution(Dist)/pow(2.0f, 24.0f);
+		//dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&DepthBias));
+		if (cdist>=1.3*rad && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
 		else							 surfmgr2->Render (dmWorld, true,  prm);
-		dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
+
+		if (this==GetScene()->GetCameraProxyVisual()) {
+			HR(dev->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
+		}
+		//dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
 	} 
 	else {
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	

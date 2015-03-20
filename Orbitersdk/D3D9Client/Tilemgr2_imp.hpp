@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2014 Martin Schweiger
+//   Copyright (C) 2006-2015 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -85,17 +85,18 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	}
 
 	// check if patch is visible from camera position
-
 	VECTOR3 &cnt = tile->cnt;                   // tile centre in unit planet frame
 	static const double rad0 = sqrt(2.0)*PI05;
 	double rad = rad0/(double)nlat;
 	double alpha = acos (dotp (prm.cdir, cnt)); // angle between tile centre and camera from planet centre
 	double adist = alpha - rad;                 // angle between closest tile corner and camera
-	double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
-	double modrad = minrad - abs(tile->max_elev) / obj_size;
-	double viewap = acos(modrad / (max (prm.cdist, minrad+0.0002)));
 
-	if (adist >= viewap) {
+	//double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
+	//double modrad = minrad - abs(tile->max_elev) / obj_size;
+	//double viewap = acos(modrad / (max (prm.cdist, minrad+0.0002)));
+	//if (adist >= viewap) {
+
+	if (adist >= prm.viewap) {
 		if (lvl == 0)
 			bstepdown = false;                // force render at lowest resolution
 		else {
@@ -196,9 +197,9 @@ TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres)
 : TileManager2Base (vplanet, _maxres)
 {
 	// Load the low-res full-sphere tiles
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 3; i++)
 		globtile[i] = new TileType (this, i-3, 0, 0);
-	}
+
 	// Set the root tiles for level 0
 	for (int i = 0; i < 2; i++) {
 		tiletree[i].SetEntry (new TileType (this, 0, 0, i));
@@ -207,8 +208,6 @@ TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres)
 }
 
 // -----------------------------------------------------------------------
-
-// WARNING: Added for Beta 9, may conflict with existing implementations
 
 template<class TileType>
 TileManager2<TileType>::~TileManager2 ()

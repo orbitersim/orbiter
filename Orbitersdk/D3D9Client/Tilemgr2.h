@@ -106,7 +106,7 @@ protected:
 	// Returns the direction of the tile centre from the planet centre in local planet coordinates
 
 	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double globelev=0.0, 
-		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0);
+		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
 	// Creates a quadrilateral patch mesh
 
 	VBMESH *CreateMesh_hemisphere (int grd, INT16 *elev=0, double globelev=0.0);
@@ -116,8 +116,8 @@ protected:
 	bool LoadFile(const char *path, LPVOID *pBuffer, DWORD *DataSize);
 
 
-	LPVOID	TexBuffer,lTexBuffer;
-	DWORD	TexSize,lTexSize;
+	LPVOID	TexBuffer, lTexBuffer;
+	DWORD	TexSize, lTexSize;
 
 	TileManager2Base *mgr;     // the manager this tile is associated with
 	int lvl;                   // tile resolution level
@@ -294,7 +294,8 @@ public:
 	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilng, ilat); }
 	// Returns the node at the specified position, or 0 if it doesn't exist
 
-	inline TileType *GlobalTile (int lvl) { _ASSERT(lvl < 3); return globtile[lvl]; }
+	inline TileType *GlobalTile (int lvl)
+	{ return globtile[lvl]; }
 	// Returns a low-res global tile
 
 	int Coverage (double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt) const;

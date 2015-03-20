@@ -35,6 +35,7 @@ protected:
 
 	void Load ();
 	void PreLoad ();
+	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double *mean_elev=0);
 	bool LoadElevationData ();
 	void Render ();
 
@@ -53,10 +54,9 @@ protected:
 private:
 	INT16 *ElevationData () const;
 
-	LPDIRECT3DTEXTURE9 ltex;	// landmask/nightlight texture, if applicable
-	LPDIRECT3DTEXTURE9 load_ltex;	// landmask/nightlight texture, if applicable
+	LPDIRECT3DTEXTURE9 ltex;		// landmask/nightlight texture, if applicable
 	INT16 *elev;               // elevation data [m] (8x subsampled)
-	// mutable INT16 *ggelev;		// pointer to my elevation data in the great-grandparent
+	mutable INT16 *ggelev;     // pointer to my elevation data in the great-grandparent
 	bool has_elevfile;          // true if the elevation data for this tile were read from file
 };
 

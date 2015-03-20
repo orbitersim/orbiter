@@ -2,8 +2,8 @@
 // VPlanet.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 //   Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2014 Martin Schweiger
-// Copyright (C) 2010-2014 Jarmo Nikkanen
+// Copyright (C) 2006-2015 Martin Schweiger
+// Copyright (C) 2010-2015 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -124,12 +124,13 @@ private:
 	double maxdist, max_centre_dist;
 	float shadowalpha;        // alpha value for surface shadows
 	double cloudrad;          // cloud layer radius [m]
+	int max_patchres;         // max surface LOD level
 	int patchres;             // surface LOD level
 	int tilever;			  // Surface tile version
+	bool renderpix;           // render planet as pixel block (at large distance)
 	bool hashaze;             // render atmospheric haze
 	bool bScatter;			  // Planet has scattering parameters
 	DWORD nbase;              // number of surface bases
-	DWORD max_patchres;
 	vBase **vbase;            // list of base visuals
 	SurfaceManager *surfmgr;  // planet surface tile manager
 	TileManager2<SurfTile> *surfmgr2;   // planet surface tile manager (v2)

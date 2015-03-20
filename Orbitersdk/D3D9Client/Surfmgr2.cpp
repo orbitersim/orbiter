@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   Copyright (C) 2006-2014 Martin Schweiger
+//   Copyright (C) 2006-2015 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
@@ -13,6 +13,7 @@
 // ==============================================================
 
 #include "Surfmgr2.h"
+#include "Tilemgr2.h"
 #include "Texture.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
@@ -60,9 +61,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	smgr = static_cast<TileManager2<SurfTile>* > (_mgr);
 	node = 0;
 	elev = NULL;
-	//ggelev = NULL;
+	ggelev = NULL;
 	ltex = NULL;
-	load_ltex = NULL;
 	has_elevfile = false;
 }
 
@@ -70,7 +70,6 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 
 SurfTile::~SurfTile ()
 {
-	// ggelev = NULL;
 	if (elev) {
 		delete []elev;
 		elev = NULL;
@@ -137,21 +136,101 @@ void SurfTile::Load ()
 	SAFE_DELETEA(TexBuffer);
 
 	// Load elevation data
-	INT16 *ev = ElevationData ();
+	INT16 *elev = ElevationData ();
 	bool shift_origin = (lvl >= 4);
 
 	if (!lvl) {
 		// create hemisphere mesh for western or eastern hemispheres
-		mesh = CreateMesh_hemisphere (TILE_PATCHRES, ev, 0.0);
+		mesh = CreateMesh_hemisphere (TILE_PATCHRES, elev, 0.0);
 	//} else if (ilat == 0 || ilat == (1<<lvl)-1) {
 		// create triangular patch for north/south pole region
 	//	mesh = CreateMesh_tripatch (patch_res, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (TILE_PATCHRES, TILE_PATCHRES, ev, 0.0, &texrange, shift_origin, &vtxshift);
+		mesh = CreateMesh_quadpatch (TILE_PATCHRES, TILE_PATCHRES, elev, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
+
 }
 
+// -----------------------------------------------------------------------
+
+INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double *mean_elev)
+{
+	INT16 *e = NULL;
+	char path[256];
+	sprintf (path, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+	FILE *f = fopen (path, "rb");
+	if (f) {
+		int i;
+		const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
+		e = new INT16[ndat];
+		// read the elevation file header
+		ELEVFILEHEADER hdr;
+		fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
+		if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
+			fseek (f, hdr.hdrsize, SEEK_SET);
+		}
+
+		if (mean_elev) *mean_elev = hdr.emean;
+
+		mgr->ReduceMinElevation(hdr.emin);	
+		
+		switch (hdr.dtype) {
+		case 0: // flat tile, defined by offset
+			for (i = 0; i < ndat; i++) e[i] = (INT16)hdr.offset;
+			break;
+		case 8: {
+			UINT8 *tmp = new UINT8[ndat];
+			fread (tmp, sizeof(UINT8), ndat, f);
+			for (i = 0; i < ndat; i++) e[i] = (INT16)(tmp[i]+hdr.offset);
+			delete []tmp;
+			}
+			break;
+		case -16:
+			fread (e, sizeof(INT16), ndat, f);
+			if (hdr.offset)
+				for (i = 0; i < ndat; i++) e[i] = (INT16)(e[i]+hdr.offset);
+			break;
+		}
+		fclose (f);
+
+		// now load the overloaded data if present
+		sprintf (path, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+		f = fopen (path, "rb");
+		if (f) {
+			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
+			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
+				fseek (f, hdr.hdrsize, SEEK_SET);
+			}
+			switch (hdr.dtype) {
+			case 0: // overwrite the entire tile with a flat offset
+				for (i = 0; i < ndat; i++) e[i] = (INT16)hdr.offset;
+				break;
+			case 8: { // mask flag is 0xFF
+				const UINT8 mask = 0xFF;
+				UINT8 *tmp = new UINT8[ndat];
+				fread (tmp, sizeof(UINT8), ndat, f);
+				for (i = 0; i < ndat; i++)
+					if (tmp[i] != mask) e[i] = (INT16)(tmp[i]+hdr.offset);
+				delete []tmp;
+				}
+				break;
+			case -16: { // mask flag = 0xFFFF
+				const INT16 mask = (INT16)0xFFFF;
+				INT16 *tmp = new INT16[ndat];
+				INT16 ofs = (INT16)hdr.offset;
+				fread (tmp, sizeof(INT16), ndat, f);
+				for (i = 0; i < ndat; i++)
+					if (tmp[i] != mask) e[i] = tmp[i]+ofs;
+				delete []tmp;
+				}
+				break;
+			}
+			fclose(f);
+		}
+	}
+	return e;
+}
 
 // -----------------------------------------------------------------------
 
@@ -171,90 +250,12 @@ bool SurfTile::LoadElevationData ()
 
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 
-	int i;
-	char path[256];
-	sprintf_s (path, "%s\\Elev\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
-	bool found = mgr->GetClient()->TexturePath(path, path);
-	FILE *f = NULL;
-	if (found) fopen_s(&f, path, "rb");
-	if (f) {
-		elev = new INT16[ndat];
-		// read the elevation file header
-		ELEVFILEHEADER hdr;
-		fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
-		if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
-			fseek (f, hdr.hdrsize, SEEK_SET);
-		}
-		mean_elev = hdr.emean;
-		max_elev = hdr.emax;
-		
-		mgr->ReduceMinElevation(hdr.emin);
+	elev = ReadElevationFile (mgr->CbodyName(), lvl+4, ilat, ilng, &mean_elev);
 
-		// read the elevation data
-		switch (hdr.dtype) {
-		case 0: // flat tile, defined by offset
-			for (i = 0; i < ndat; i++) elev[i] = (INT16)hdr.offset;
-			break;
-		case 8: {
-			UINT8 *tmp = new UINT8[ndat];
-			fread (tmp, sizeof(UINT8), ndat, f);
-			for (i = 0; i < ndat; i++) elev[i] = (INT16)(tmp[i]+hdr.offset);
-			delete []tmp;
-			}
-			break;
-		case -16:
-			fread (elev, sizeof(INT16), ndat, f);
-			if (hdr.offset)
-				for (i = 0; i < ndat; i++) elev[i] = (INT16)(elev[i]+hdr.offset);
-			break;
-		}
-		fclose(f);
-
-		#if 0 // for now
-		double elev_exaggerate_factor = 3.0; // for now
-		for (i = 0; i < ndat; i++)
-			elev[i] = (INT16)(elev[i] * elev_exaggerate_factor);
-		#endif
-
-		// now load the overload data if present
-		f = NULL;
-		sprintf_s (path, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", mgr->CbodyName(), lvl+4, ilat, ilng);
-		found = mgr->GetClient()->TexturePath(path, path);
-		if (found) fopen_s(&f, path, "rb");
-		if (f) {
-			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
-			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
-				fseek (f, hdr.hdrsize, SEEK_SET);
-			}
-			switch (hdr.dtype) {
-			case 0:
-				for (i = 0; i < ndat; i++) elev[i] = (INT16)hdr.offset;
-				break;
-			case 8: {
-				const UINT8 mask = 0xFF;
-				UINT8 *tmp = new UINT8[ndat];
-				fread (tmp, sizeof(UINT8), ndat, f);
-				for (i = 0; i < ndat; i++)
-					if (tmp[i] != mask) elev[i] = (INT16)(tmp[i]+hdr.offset);
-				delete []tmp;
-				}
-				break;
-			case -16: {
-				const INT16 mask = (INT16)0xFFFF;
-				INT16 *tmp = new INT16[ndat];
-				INT16 ofs = (INT16)hdr.offset;
-				fread (tmp, sizeof(INT16), ndat, f);
-				for (i = 0; i < ndat; i++)
-					if (tmp[i] != mask) elev[i] = tmp[i]+ofs;
-				delete []tmp;
-				}
-				break;
-			}
-			fclose(f);
-		}
+	if (elev) {
 		has_elevfile = true;
-
-	} else {
+	} 
+	else if (lvl > 0) {
 
 		// construct elevation grid by interpolating ancestor data
 		ELEVHANDLE hElev = mgr->ElevMgr();
@@ -262,10 +263,7 @@ bool SurfTile::LoadElevationData ()
 			int plvl = lvl-1;
 			int pilat = ilat >> 1;
 			int pilng = ilng >> 1;
-			INT16 *pelev = NULL;
-			if (!node) { // happens many times at startup...
-				return false;
-			}
+			INT16 *pelev;
 			QuadTreeNode<SurfTile> *parent = node->Parent();
 			for (; plvl >= 0; plvl--) { // find ancestor with elevation data
 				if (parent && parent->Entry()->has_elevfile) {
@@ -278,60 +276,38 @@ bool SurfTile::LoadElevationData ()
 			}
 			elev = new INT16[ndat];
 			// submit ancestor data to elevation manager for interpolation
-			if (pelev) {
-				mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
-			}
-		} else elev = NULL;
+			mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
+		} else elev = 0;
+
 	}
-	return (elev != NULL);
+	return (elev != 0);
 }
 
 // -----------------------------------------------------------------------
 
 INT16 *SurfTile::ElevationData () const
 {
-	if (lvl >= 3) // traverse quadtree back to great-grandparent
-	{
-		QuadTreeNode<SurfTile> *ggparent;
-		if ( node->Parent() &&
-			 node->Parent()->Parent() &&
-			(ggparent = node->Parent()->Parent()->Parent()) && ggparent->Entry()->LoadElevationData() )
-		{
-			// compute pixel offset into great-grandparent tile set
-			int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
-			mean_elev = ggparent->Entry()->mean_elev; // not quite true, since the ancestor covers a larger area
-			return ggparent->Entry()->elev + ofs;
-		}
-	}
-	else // level 0...2
-	{
-		SurfTile *ggp = smgr->GlobalTile(lvl);
-		if ( ggp->LoadElevationData() )
-		{
-			int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
-			mean_elev = ggp->mean_elev; // not quite true, since the ancestor covers a larger area
-			return ggp->elev + ofs;
-		}
-	}
-	return NULL;
-
-	/*
-	 * The SurfTile::ggelev member will point to already disposed memory!
-	 * Until there's a kind of 'ClearGrandGrandParent()' method, this is dangerous!
-	 *
 	if (!ggelev) {
-		QuadTreeNode<SurfTile> *ggparent;
-		if (node->Parent() && node->Parent()->Parent() && (ggparent = node->Parent()->Parent()->Parent())) {
-			if (ggparent->Entry()->LoadElevationData ()) {
-				// compute pixel offset into great-grandparent tile set
+		if (lvl >= 3) { // traverse quadtree back to great-grandparent
+			QuadTreeNode<SurfTile> *ggparent;
+			if (node->Parent() && node->Parent()->Parent() && (ggparent = node->Parent()->Parent()->Parent())) {
+				if (ggparent->Entry()->LoadElevationData ()) {
+					// compute pixel offset into great-grandparent tile set
+					int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
+					mean_elev = ggparent->Entry()->mean_elev; // not quite true, since the ancestor covers a larger area
+					ggelev = ggparent->Entry()->elev + ofs;
+				}
+			}
+		} else {
+			SurfTile *ggp = smgr->GlobalTile(lvl);
+			if (ggp->LoadElevationData ()) {
 				int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
-				mean_elev = ggparent->Entry()->mean_elev; // not quite true, since the ancestor covers a larger area
-				ggelev = ggparent->Entry()->elev + ofs;
+				mean_elev = ggp->mean_elev; // not quite true, since the ancestor covers a larger area
+				ggelev = ggp->elev + ofs;
 			}
 		}
 	}
 	return ggelev;
-	*/
 }
 
 // -----------------------------------------------------------------------
@@ -352,7 +328,7 @@ void SurfTile::Render ()
 
 	if (ltex) {
 
-		sdist = acos (dotp (mgr->prm.sdir, cnt));
+		double sdist = acos (dotp (mgr->prm.sdir, cnt));
 		static const double rad0 = sqrt(2.0)*PI05;
 		double rad = rad0/(double)(2<<lvl); // tile radius
 
@@ -471,7 +447,6 @@ void SurfTile::Render ()
 
 	HR(Shader->End());	
 }
-
 
 // -----------------------------------------------------------------------
 
@@ -733,7 +708,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
 
-	loader->ReleaseMutex();
+	loader->ReleaseMutex ();
 
 	if (np)
 		scene->SetCameraFrustumLimits(np,fp);
