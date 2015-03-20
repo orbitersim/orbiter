@@ -85,6 +85,7 @@ uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float4    vGeneric;          // Generic Multi-use vector
 uniform extern float3    vTangent;			// Unit Vector
 uniform extern float3    vBiTangent;		// Unit Vector
+uniform extern float3    vMapUVOffset;		// 
 // ------------------------------------------------------------
 uniform extern float     fDistScale;		// UNUSED: Scale factor
 uniform extern float 	 fAlpha;			// Cloud shodow alpha
@@ -376,9 +377,11 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float  fNgt	 = fDPS * 4.0f; 
 	outVS.camW   = vRay;
 
-	outVS.texUV.xy = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
-	outVS.texUV.zw = float2(dot(vTangent, vPlN), dot(vBiTangent, vPlN)) * 8000.0f;
-	outVS.texUV.z += fTime*0.008f;
+	outVS.texUV.xy  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
+	outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
+	outVS.texUV.zw *= 1e-3f; // Water scale factor
+	outVS.texUV.zw += 64.0f; 
+	outVS.texUV.z  += fTime*0.008f;
 	
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
@@ -448,13 +451,14 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	
 	if (bSpecular) {
 		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz * 2.0 - 1.0f;
+		cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
 		float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vUnitCameraPos * cNrm.b);
 		float f = 1.0-saturate(dot(frg.camW, nrmW));
 		float s = dot(reflect(-vSunDir, nrmW), frg.camW);
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
-		cSpe = m * pow(saturate(s), vWater.a) * vWater.rgb * 3.0f;
-		cTex.rgb = lerp(cTex.rgb, float3(0.8, 1.0, 1.3), m * (f*f*f));
+		cSpe = m * pow(saturate(s), 100.0f) * vWater.rgb * 2.0f;
+		cTex.rgb = lerp(cTex.rgb, float3(1.0, 1.2, 2.1), m * (f*f*f));
 	}
 
 	if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);

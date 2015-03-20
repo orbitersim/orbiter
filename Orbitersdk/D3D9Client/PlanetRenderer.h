@@ -32,6 +32,7 @@ public:
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
+	static VECTOR3 vLPosOld;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
 	static D3DXHANDLE eTileTechNoZ;
@@ -50,6 +51,7 @@ public:
 	static D3DXHANDLE svGeneric;
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
+	static D3DXHANDLE svMapUVOffset;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
 	static D3DXHANDLE sfAlpha;
