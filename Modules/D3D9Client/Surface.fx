@@ -36,6 +36,7 @@ struct TileVS
     float4 texUV    : TEXCOORD0;  // Texture coordinate
     float2 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
+	float3 nrmW		: TEXCOORD3;
 	float3 atten    : COLOR0;     // Attennuation
     float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
 };
@@ -376,6 +377,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 	float  fNgt	 = fDPS * 4.0f; 
 	outVS.camW   = vRay;
+	outVS.nrmW   = vNrmW;
 
 	outVS.texUV.xy  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
 	outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
@@ -450,9 +452,11 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
 	
 	if (bSpecular) {
-		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz * 2.0 - 1.0f;
+		float Fct = min(1.0f, 10000.0f / fCameraAlt);
+		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f;
+		cNrm *= Fct;
 		cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
-		float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vUnitCameraPos * cNrm.b);
+		float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (frg.nrmW * cNrm.b);
 		float f = 1.0-saturate(dot(frg.camW, nrmW));
 		float s = dot(reflect(-vSunDir, nrmW), frg.camW);
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);

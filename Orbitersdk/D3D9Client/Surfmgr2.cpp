@@ -338,6 +338,7 @@ void SurfTile::Render ()
 	}
 
 	// ---------------------------------------------------------------------
+	/*
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(mgr->GetPlanet()->GetObject(), &mRot);
 
@@ -349,6 +350,7 @@ void SurfTile::Render ()
 	// ---------------------------------------------------------------------
 	HR(Shader->SetValue(TileManager2Base::svTangent,   &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));
 	HR(Shader->SetValue(TileManager2Base::svBiTangent, &D3DXVEC(vBiT), sizeof(D3DXVECTOR3)));
+	*/
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders

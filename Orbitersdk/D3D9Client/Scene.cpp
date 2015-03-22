@@ -1249,6 +1249,7 @@ void Scene::RenderMainScene()
 	// Render Custom Camera Views 
 	// -------------------------------------------------------------------------------------------------------
 
+	/*
 	if (Config->CustomCamMode==0) dwTurn = 1;
 	if (Config->EnvMapMode==0) dwTurn = 0;
 
@@ -1296,6 +1297,7 @@ void Scene::RenderMainScene()
 	}
 
 
+
 	// -------------------------------------------------------------------------------------------------------
 	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
 	// -------------------------------------------------------------------------------------------------------
@@ -1304,6 +1306,7 @@ void Scene::RenderMainScene()
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0));
 	}
+	*/
 
 	scene_time = D3D9GetTime() - scene_time;
 
