@@ -1215,7 +1215,7 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 	if (Tech==1) HR(FX->SetTechnique(eVCMFDTech));
 
 	if (grp->zBias) {
-		float zBias = float(grp->zBias) * 1.2e-7;
+		float zBias = float(grp->zBias) * 1.2e-7f;
 		dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
 	}
 
@@ -1500,7 +1500,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			// Apply z-Bias =============================================================================================
 			//
 			if (Grp[g]->zBias) {
-				float zBias = float(Grp[g]->zBias) * 1.2e-7;
+				float zBias = float(Grp[g]->zBias) * 1.2e-7f;
 				dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
 			}
 

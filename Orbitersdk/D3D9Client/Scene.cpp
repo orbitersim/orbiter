@@ -788,7 +788,7 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 	if (nLights==maxlight) {
 		Lights[lmaxidx] = lght;
 		lmaxdst2 = 0.0f;
-		for (int i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;	
+		for (DWORD i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;	
 	}
 	else {
 		Lights[nLights] = lght;

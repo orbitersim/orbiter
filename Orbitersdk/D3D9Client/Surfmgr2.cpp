@@ -86,13 +86,13 @@ void SurfTile::PreLoad()
 	char path[MAX_PATH] = {'\0'};
 
 	// ---------------------------------------------------------
-	sprintf_s (path, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	sprintf_s (path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	bool found = mgr->GetClient()->TexturePath(path, path);
 	if (found) LoadFile(path, &TexBuffer, &TexSize);
 
 	// ---------------------------------------------------------
 	if (found) {
-		sprintf_s (path, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		sprintf_s (path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 		found = mgr->GetClient()->TexturePath(path, path);
 		if (found) LoadFile(path, &lTexBuffer, &lTexSize);
 	}
@@ -121,7 +121,7 @@ void SurfTile::Load ()
 	
 	// Load mask texture
 	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
-		if (owntex) {
+		if (owntex && tex) {
 			CreateTexture(pDev, lTexBuffer, lTexSize, &ltex);
 			if (ltex) {
 				TileCatalog->Add(DWORD(ltex));
@@ -132,8 +132,8 @@ void SurfTile::Load ()
 		}
 	}
 
-	SAFE_DELETEA(lTexBuffer);
-	SAFE_DELETEA(TexBuffer);
+	SAFE_DELETEA(lTexBuffer);  lTexSize = 0;
+	SAFE_DELETEA(TexBuffer);  TexSize = 0;
 
 	// Load elevation data
 	INT16 *elev = ElevationData ();
@@ -158,7 +158,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 {
 	INT16 *e = NULL;
 	char path[256];
-	sprintf (path, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+	sprintf_s (path, 256, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 	FILE *f = fopen (path, "rb");
 	if (f) {
 		int i;
@@ -195,7 +195,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		fclose (f);
 
 		// now load the overloaded data if present
-		sprintf (path, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+		sprintf_s (path, 256, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 		f = fopen (path, "rb");
 		if (f) {
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);

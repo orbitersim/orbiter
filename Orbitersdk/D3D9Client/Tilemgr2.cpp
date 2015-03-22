@@ -37,6 +37,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng)
 {
 	TexBuffer = lTexBuffer = NULL;
+	TexSize = lTexSize = 0;
 	mesh = NULL;
 	tex = NULL;
 	mean_elev = 0.0;
@@ -749,7 +750,7 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 
 	while (bRunThread) {
 		
-		Sleep(max(2,idle));
+		Sleep(max(1,idle));
 
 		WaitForMutex();
 

@@ -377,7 +377,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 	float  fNgt	 = fDPS * 4.0f; 
 	outVS.camW   = vRay;
-	outVS.nrmW   = vNrmW;
+	outVS.nrmW   = vPlN;
 
 	outVS.texUV.xy  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
 	outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
@@ -452,7 +452,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
 	
 	if (bSpecular) {
-		float Fct = min(1.0f, 10000.0f / fCameraAlt);
+		float Fct = min(2.0f, 10000.0f / fCameraAlt);
 		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f;
 		cNrm *= Fct;
 		cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 

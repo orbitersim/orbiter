@@ -39,7 +39,7 @@ void CloudTile::PreLoad()
 	char path[MAX_PATH] = {'\0'};
 
 	// Load cloud texture
-	sprintf_s (path, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 	bool found = mgr->GetClient()->TexturePath(path, path);
 	if (found) LoadFile(path, &TexBuffer, &TexSize);
 }
@@ -63,6 +63,8 @@ void CloudTile::Load ()
 		TileCatalog->Add(DWORD(tex));
 		mgr->TileLabel(tex, lvl, ilat, ilng);
 	}
+
+	SAFE_DELETEA(TexBuffer); TexSize = 0;
 
 	bool shift_origin = (lvl >= 4);
 
