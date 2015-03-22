@@ -457,7 +457,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		float s = dot(reflect(-vSunDir, nrmW), frg.camW);
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
-		cSpe = m * pow(saturate(s), 100.0f) * vWater.rgb * 2.0f;
+		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
 		cTex.rgb = lerp(cTex.rgb, float3(1.0, 1.2, 2.1), m * (f*f*f));
 	}
 
