@@ -34,19 +34,15 @@ int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
 // Class Tile
 
 Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
-: mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng)
+: mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng),
+  lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
+  texrange(fullrange), cnt(Centre()),
+  TexBuffer(NULL), lTexBuffer(NULL), mesh(NULL), tex(NULL),
+  TexSize (0), lTexSize (0),
+  mean_elev(0.0), max_elev(0.0),
+  state(Invalid),
+  edgeok(false), owntex (true)
 {
-	TexBuffer = lTexBuffer = NULL;
-	TexSize = lTexSize = 0;
-	mesh = NULL;
-	tex = NULL;
-	mean_elev = 0.0;
-	max_elev = 0.0;
-	texrange = fullrange;
-	owntex = true;
-	lngnbr_lvl = latnbr_lvl = dianbr_lvl = _lvl;
-	state = Invalid;
-	cnt = Centre();
 }
 
 // -----------------------------------------------------------------------
