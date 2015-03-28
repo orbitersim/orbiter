@@ -158,8 +158,10 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 {
 	INT16 *e = NULL;
 	char path[256];
-	sprintf_s (path, 256, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-	FILE *f = fopen (path, "rb");
+	sprintf_s (path, 256, "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+	bool found = mgr->GetClient()->TexturePath(path, path);
+	FILE *f = NULL;
+	if (found) fopen_s(&f, path, "rb");
 	if (f) {
 		int i;
 		const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
@@ -195,8 +197,10 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		fclose (f);
 
 		// now load the overloaded data if present
-		sprintf_s (path, 256, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-		f = fopen (path, "rb");
+		f = NULL;
+		sprintf_s (path, 256, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+		found = found = mgr->GetClient()->TexturePath(path, path);
+		if (found) fopen_s(&f, path, "rb");
 		if (f) {
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {

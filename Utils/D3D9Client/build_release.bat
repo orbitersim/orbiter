@@ -15,7 +15,7 @@
 :: --- Setup
 set BASE_DIR=..\..
 set OUT_DIR=_release
-set VERSION=Beta9-forRev10
+set VERSION=Beta12-forRev13
 
 
 :: Try to get the Visual Studio version

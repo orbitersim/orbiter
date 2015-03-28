@@ -124,7 +124,7 @@ private:
 	double maxdist, max_centre_dist;
 	float shadowalpha;        // alpha value for surface shadows
 	double cloudrad;          // cloud layer radius [m]
-	int max_patchres;         // max surface LOD level
+	DWORD max_patchres;       // max surface LOD level
 	int patchres;             // surface LOD level
 	int tilever;			  // Surface tile version
 	bool renderpix;           // render planet as pixel block (at large distance)
