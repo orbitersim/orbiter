@@ -1286,7 +1286,7 @@ public:
 	 * \brief Returns the object handle associated with the visual.
 	 * \return Object handle
 	 */
-	OBJHANDLE GetObject () const { return hObject; }
+	OBJHANDLE GetObject () const { return hObj; }
 
 	/**
 	 * \brief Message callback.
@@ -1300,7 +1300,7 @@ public:
 	virtual void clbkEvent (DWORD event, UINT context) {}
 
 protected:
-	OBJHANDLE hObject;	///< Object handle associated with the visual
+	OBJHANDLE hObj;	///< Object handle associated with the visual
 };
 
 }; // namespace oapi

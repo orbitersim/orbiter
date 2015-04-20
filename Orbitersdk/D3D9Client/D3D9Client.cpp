@@ -2217,10 +2217,9 @@ void D3D9Client::clbkReleaseBrush(Brush *brush) const
 // ======================================================================
 // class VisObject
 
-VisObject::VisObject(OBJHANDLE hObj)
+VisObject::VisObject(OBJHANDLE hObj) : hObj(hObj)
 {
 	_TRACER;
-	hObject = hObj;
 }
 
 VisObject::~VisObject ()

@@ -237,7 +237,6 @@ protected:
 	bool			bBSRecompute;
 
 	bool active;		// visual is active (within camera range)
-	OBJHANDLE hObj;		// handle for the "logical" object
 	Scene *scn;			// The scene to which the object belongs
 	D3DXMATRIX mWorld;	// D3D world matrix for the object
 	D3DXMATRIX mWorldInv;
