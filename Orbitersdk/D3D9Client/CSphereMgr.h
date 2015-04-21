@@ -22,11 +22,29 @@ class D3D9Config;
 class CSphereManager : private PlanetRenderer 
 {
 public:
+	/**
+	 * \brief Constructs a new sphere manager object
+	 * \param gclient client instance pointer
+	 * \param scene scene to which the visual is added
+	 */
 	CSphereManager (oapi::D3D9Client *gclient, const Scene *scene);
+
+	/**
+	 * \brief Destroys the sphere manager object
+	 */
 	~CSphereManager ();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit (oapi::D3D9Client *gclient);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit ();
+
 	static void CreateDeviceObjects(LPDIRECT3D9 d3d, LPDIRECT3DDEVICE9 dev);
 	static void DestroyDeviceObjects();
 

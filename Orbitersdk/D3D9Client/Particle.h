@@ -28,11 +28,27 @@ class D3D9ParticleStream : public oapi::ParticleStream, public D3D9Effect
 {
 
 public:
-
+	/**
+	 * \brief Constructs a new particle stream object
+	 * \param _gc pointer to graphics client
+	 * \param pss particle stream parameters
+	 */
 	D3D9ParticleStream (oapi::GraphicsClient *_gc, PARTICLESTREAMSPEC *pss = 0);
+
+	/**
+	 * \brief Destroys the particle stream object
+	 */
 	virtual ~D3D9ParticleStream();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient pointer to graphics client
+	 */
 	static void GlobalInit(oapi::D3D9Client *gclient);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit();
 
 	void SetObserverRef (const VECTOR3 *cam);

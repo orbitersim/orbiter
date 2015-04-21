@@ -202,10 +202,27 @@ public:
 		//VECTOR3 atm_tint;  // atmospheric RGB surface tint at high atmosphere
 	} prm;
 
+	/**
+	 * \brief Constructs a new tile manager object
+	 * \param vplanet planet instance pointer
+	 * \param _maxres maximum resolution
+	 */
 	TileManager2Base (const vPlanet *vplanet, int _maxres);
+
+	/**
+	 * \brief Destroys the tile manager object
+	 */
 	~TileManager2Base ();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit (class oapi::D3D9Client *gclient);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit ();
 	static bool ShutDown ();
 

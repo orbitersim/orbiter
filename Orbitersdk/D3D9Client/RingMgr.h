@@ -22,9 +22,23 @@
  */
 class RingManager {
 public:
+	/**
+	 * \brief Constructs a new ring manager object
+	 * \param vPlanet planet instance pointer
+	 * \param inner_rad inner radius of the ring (>=1) [unit planet radius]
+	 * \param outer_rad outer radius of the ring (>inner_rad) [unit planet radius]
+	 */
 	RingManager (const vPlanet *vplanet, double inner_rad, double outer_rad);
+
+	/**
+	 * \brief Destroys the ring manager object
+	 */
 	~RingManager ();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit (oapi::D3D9Client *gclient);
 
 	void SetMeshRes (DWORD res);

@@ -13,10 +13,25 @@
 class PlanetRenderer {
 	
 public:
-				PlanetRenderer();
-				~PlanetRenderer();
+	/**
+	 * \brief Constructs a new planet renderer object
+	 */
+	PlanetRenderer();
 
+	/**
+	 * \brief Destroys the planet renderer object
+	 */
+	~PlanetRenderer();
+
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit(class oapi::D3D9Client *gclient);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit();
 	static void	InitializeScattering(class vPlanet *pPlanet);
 

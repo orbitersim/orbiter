@@ -19,7 +19,12 @@ class D3D9Effect {
 
 public:
 	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit();
+
 	static void ShutDown();
 
 	D3D9Effect();
@@ -55,21 +60,21 @@ public:
 	static D3D9MatExt	emissive_mat;
 	
 	// Techniques ----------------------------------------------------
-	static D3DXHANDLE	eVesselTech;
+	static D3DXHANDLE	eVesselTech;     ///< Vessel exterior, surface bases
 	static D3DXHANDLE	eSimple;
-	static D3DXHANDLE	eBBTech;
-	static D3DXHANDLE	eBSTech;
-	static D3DXHANDLE   eExhaust;
-	static D3DXHANDLE   eSpotTech;
-	static D3DXHANDLE   ePanelTech;
-	static D3DXHANDLE   ePanelTechB;
+	static D3DXHANDLE	eBBTech;         ///< Bounding Box Tech
+	static D3DXHANDLE	eBSTech;         ///< Bounding Sphere Tech
+	static D3DXHANDLE   eExhaust;        ///< Render engine exhaust texture
+	static D3DXHANDLE   eSpotTech;       ///< Vessel beacons
+	static D3DXHANDLE   ePanelTech;      ///< Used to draw a new style 2D panel
+	static D3DXHANDLE   ePanelTechB;     ///< Used to draw a new style 2D panel
 	static D3DXHANDLE	eBaseTile;
-	static D3DXHANDLE	eRingTech;
-	static D3DXHANDLE	eRingTech2;
-	static D3DXHANDLE	eShadowTech;
-	static D3DXHANDLE	eBaseShadowTech;
+	static D3DXHANDLE	eRingTech;       ///< Planet rings technique
+	static D3DXHANDLE	eRingTech2;      ///< Planet rings technique
+	static D3DXHANDLE	eShadowTech;     ///< Vessel ground shadows
+	static D3DXHANDLE	eBaseShadowTech; ///< Used to draw transparent surface without texture
 	static D3DXHANDLE	eBeaconArrayTech;
-	static D3DXHANDLE	eArrowTech;
+	static D3DXHANDLE	eArrowTech;      ///< (Grapple point) arrows
 	static D3DXHANDLE	eAxisTech;
 	static D3DXHANDLE	eVCHudTech;
 	static D3DXHANDLE	eVCMFDTech;
@@ -83,45 +88,45 @@ public:
 	static D3DXHANDLE	eHazeTech;
 
 	// Transformation Matrices ----------------------------------------
-	static D3DXHANDLE	eVP;	// Combined View & Projection Matrix
-	static D3DXHANDLE	eW;		// World Matrix
-	static D3DXHANDLE	eWI;	// World inverse Matrix
-	static D3DXHANDLE	eGT;	// MeshGroup transformation matrix
-	static D3DXHANDLE	eGTI;
-	static D3DXHANDLE	eInstMatrix;
+	static D3DXHANDLE	eVP;         ///< Combined View & Projection Matrix
+	static D3DXHANDLE	eW;          ///< World Matrix
+	static D3DXHANDLE	eWI;         ///< World inverse Matrix
+	static D3DXHANDLE	eGT;         ///< MeshGroup transformation matrix
+	static D3DXHANDLE	eGTI;        ///< Inverse mesh grp transformation matrix
+	static D3DXHANDLE	eInstMatrix; ///< Instance Matrix array
 
 	// Lighting related parameters ------------------------------------
 	static D3DXHANDLE   eMtrl;
-	static D3DXHANDLE	eMat;
-	static D3DXHANDLE	eWater;
-	static D3DXHANDLE	eSun;
-	static D3DXHANDLE	eLights;
-	static D3DXHANDLE	eLightCount;
+	static D3DXHANDLE	eMat;        ///< Material
+	static D3DXHANDLE	eWater;      ///< Water
+	static D3DXHANDLE	eSun;        ///< Sun
+	static D3DXHANDLE	eLights;     ///< Additional light sources
+	static D3DXHANDLE	eLightCount; ///< Number of additional light sources
 
 	// Auxilliary params ----------------------------------------------
-	static D3DXHANDLE   eModAlpha;
-	static D3DXHANDLE	eFullyLit;
-	static D3DXHANDLE	eUseSpec;
-	static D3DXHANDLE	eUseEmis;
-	static D3DXHANDLE	eUseRefl;
+	static D3DXHANDLE   eModAlpha;     ///< BOOL multiply material alpha with texture alpha
+	static D3DXHANDLE	eFullyLit;     ///< BOOL
+	static D3DXHANDLE	eUseSpec;      ///< BOOL
+	static D3DXHANDLE	eUseEmis;      ///< BOOL
+	static D3DXHANDLE	eUseRefl;      ///< BOOL
 	static D3DXHANDLE	eDebugHL;
-	static D3DXHANDLE	eEnvMapEnable;
-	static D3DXHANDLE	eUseDisl;
-	static D3DXHANDLE	eInSpace;
-	static D3DXHANDLE	eNoColor;
-	static D3DXHANDLE	eLocalLights;		
-	static D3DXHANDLE	eGlow;	
+	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
+	static D3DXHANDLE	eUseDisl;      ///< BOOL
+	static D3DXHANDLE	eInSpace;      ///< BOOL
+	static D3DXHANDLE	eNoColor;      ///< BOOL
+	static D3DXHANDLE	eLocalLights;  ///< BOOL		
+	static D3DXHANDLE	eGlow;	       ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
-	static D3DXHANDLE	eMix;
-	static D3DXHANDLE   eColor;
-	static D3DXHANDLE   eFogColor;
-	static D3DXHANDLE   eTexOff;
+	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
+	static D3DXHANDLE   eColor;        ///< Auxiliary color input
+	static D3DXHANDLE   eFogColor;     ///< Fog color input
+	static D3DXHANDLE   eTexOff;       ///< Surface tile texture offsets
 	static D3DXHANDLE	eSpecularMode;
 	static D3DXHANDLE	eHazeMode;
 	static D3DXHANDLE	eNormalMap;
 	static D3DXHANDLE	eTextured;
 	static D3DXHANDLE	eClamp;
-	static D3DXHANDLE   eTime;
+	static D3DXHANDLE   eTime;         ///< FLOAT Simulation elapsed time
 	static D3DXHANDLE	eExposure;
 	static D3DXHANDLE	eCameraPos;	
 	static D3DXHANDLE   eDistScale;
@@ -137,9 +142,9 @@ public:
 	static D3DXHANDLE	eInScatter;
 
 	// Textures --------------------------------------------------------
-	static D3DXHANDLE	eTex0;
-	static D3DXHANDLE	eTex1;
-	static D3DXHANDLE	eTex3;
+	static D3DXHANDLE	eTex0;    ///< Primary texture
+	static D3DXHANDLE	eTex1;    ///< Secondary texture
+	static D3DXHANDLE	eTex3;    ///< Tertiary texture
 	static D3DXHANDLE	eSpecMap;
 	static D3DXHANDLE	eEmisMap;
 	static D3DXHANDLE	eEnvMap;

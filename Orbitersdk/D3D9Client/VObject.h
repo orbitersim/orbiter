@@ -6,21 +6,6 @@
 //			     2011 Jarmo Nikkanen
 // ==============================================================
 
-// ==============================================================
-// class vObject (interface)
-//
-// A "vObject" is the visual representation of an Orbiter object
-// (vessel, planet/moon/sun, surface base). vObjects usually have
-// one or more meshes associated with them that define their visual
-// appearance, but they can be arbitrarily complex (e.g. planets
-// with clould layers, atmospheric haze, etc.)
-// Visual objects don't persist like their "logical" counterparts,
-// but are created and deleted as they pass in and out of the
-// visual range of a camera. vObjects are therefore associated
-// with a particular scene. In multi-scene environments, a single
-// logical object may have multiple vObjects associated with it.
-// ==============================================================
-
 #ifndef __VOBJECT_H
 #define __VOBJECT_H
 
@@ -36,13 +21,25 @@ extern class D3D9Config *Config;
 // ==============================================================
 // class vObject (interface)
 // ==============================================================
+
 /**
  * \brief Visual object base class.
  *
  * A vObject is a render object representing a 'logical'
  * Orbiter object (identified by its OBJHANDLE) in a scene.
+ *
+ * A "vObject" is the visual representation of an Orbiter object (vessel,
+ * planet/moon/sun, surface base). vObjects usually have one or more meshes
+ * associated with them that define their visual appearance, but they can be
+ * arbitrarily complex (e.g. planets with clould layers, atmospheric haze,
+ * etc.)
+ * Visual objects don't persist like their "logical" counterparts, but are
+ * created and deleted as they pass in and out of the visual range of a
+ * camera.
+ * vObjects are therefore associated with a particular scene. In multi-scene
+ * environments, a single logical object may have multiple vObjects
+ * associated with it.
  */
-
 class vObject: public oapi::VisObject {
 public:
 

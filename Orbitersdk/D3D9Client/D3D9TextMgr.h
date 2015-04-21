@@ -47,12 +47,23 @@ struct D3D9FontData {
 class D3D9Text {
 
 public:
+	/**
+	 * \brief Constructs a new text object
+	 * \param pDevice direct 3D device instance pointer
+	 */
+	D3D9Text(LPDIRECT3DDEVICE9 pDevice);
+
+	/**
+	 * \brief Destroys the text object
+	 */
+	~D3D9Text();
 
 	static void D3D9TechInit(oapi::D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
-	static void GlobalExit();
 
-				D3D9Text(LPDIRECT3DDEVICE9 pDevice);
-			   ~D3D9Text();
+	/**
+	 * \brief Release global parameters
+	 */
+	static void GlobalExit();
 	
 	void		SetCharSet(int charset=ANSI_CHARSET);	// Must be set before Init
 

@@ -42,37 +42,251 @@ class D3D9Pad : public oapi::Sketchpad
 {
 
 public:
-	
-	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
-	static void GlobalExit();
-
+	/**
+	 * \brief Constructs a drawing object for a given surface.
+	 * \param s surface handle
+	 */
 	D3D9Pad(SURFHANDLE s);
+
+	/**
+	 * \brief Destructor. Destroys a drawing object.
+	 */
 	~D3D9Pad();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 * \param pDev direct 3D device instance pointer
+	 * \param folder shader folder (based on Orbiter's "Modules" path).
+	 *   Usually this should be set to "D3D9Client")
+	 */
+	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
+
+	/**
+	 * \brief Release global parameters
+	 */
+	static void GlobalExit();
+
+	/**
+	 * \brief Return the Windows device context handle, if applicable.
+	 * \return device context handle
+	 * \default None, returns NULL.
+	 * \note The device context returned by this function should not be
+	 *   released (e.g. with ReleaseDC). The device context is released
+	 *   automatically when the Sketchpad instance is destroyed.
+	 * \note This method should be regarded as temporary. Ultimately, the
+	 *   device-dependent drawing mechanism should be hidden outside the
+	 *   sketchpad implementation.
+	 */
 	HDC GetDC();
 
+	/**
+	 * \brief Selects a new font to use.
+	 * \param font pointer to font resource
+	 * \return Previously selected font.
+	 * \default None, returns NULL.
+	 * \sa oapi::Font, oapi::GraphicsClient::clbkCreateFont
+	 */
 	oapi::Font  *SetFont (oapi::Font *font) const;
+
+	/**
+	 * \brief Selects a new pen to use.
+	 * \param pen pointer to pen resource, or NULL to disable outlines
+	 * \return Previously selected pen.
+	 * \default None, returns NULL.
+	 * \sa oapi::Pen, oapi::GraphicsClient::clbkCreatePen
+	 */
 	oapi::Pen   *SetPen (oapi::Pen *pen) const;
+
+	/**
+	 * \brief Selects a new brush to use.
+	 * \param brush pointer to brush resource, or NULL to disable fill mode
+	 * \return Previously selected brush.
+	 * \default None, returns NULL.
+	 * \sa oapi::Brush, oapi::GraphicsClient::clbkCreateBrush
+	 */
 	oapi::Brush *SetBrush (oapi::Brush *brush) const;
 
+	/**
+	 * \brief Set horizontal and vertical text alignment.
+	 * \param tah horizontal alignment
+	 * \param tav vertical alignment
+	 * \default None.
+	 */
 	void SetTextAlign(TAlign_horizontal tah=LEFT, TAlign_vertical tav=TOP);
 
+	/**
+	 * \brief Set the foreground colour for text output.
+	 * \param col colour description (format: 0xBBGGRR)
+	 * \return Previous colour setting.
+	 * \default None, returns 0.
+	 */
 	DWORD SetTextColor (DWORD col);
+
+	/**
+	 * \brief Set the background colour for text output.
+	 * \param col background colour description (format: 0xBBGGRR)
+	 * \return Previous colour setting
+	 * \default None, returns 0.
+	 * \note The background colour is only used if the background mode
+	 *   is set to BK_OPAQUE.
+	 * \sa SetBackgroundMode
+	 */
 	DWORD SetBackgroundColor (DWORD col);
+
+	/**
+	 * \brief Set the background mode for text output.
+	 * \param mode background mode (see \ref BkgMode)
+	 * \default None.
+	 * \note In opaque background mode, the text background is drawn
+	 *   in the current background colour (see SetBackgroundColor).
+	 * \note The default background mode (before the first call of
+	 *   SetBackgroundMode) should be transparent.
+	 * \sa SetBackgroundColor, SetTextColor
+	 */
 	void  SetBackgroundMode (BkgMode mode);
 
+	/**
+	 * \brief Return height and (average) width of a character in the currently
+	 *   selected font.
+	 * \return Height of character cell [pixel] in the lower 16 bit of the return value,
+	 *   and (average) width of character cell [pixel] in the upper 16 bit.
+	 * \default None, returns 0.
+	 * \note The height value should describe the height of the character cell (i.e.
+	 *   the smallest box circumscribing all characters in the font), but without any
+	 *   "internal leading", i.e. the gap between characters in two consecutive lines.
+	 * \note For proportional fonts, the width value should be an approximate average
+	 *   character width.
+	 */
 	DWORD GetCharSize ();
+
+	/**
+	 * \brief Return the width of a text string in the currently selected font.
+	 * \param str text string
+	 * \param len string length, or 0 for auto (0-terminated string)
+	 * \return width of the string, drawn in the currently selected font [pixel]
+	 * \default None, returns 0.
+	 * \sa SetFont
+	 */
 	DWORD GetTextWidth (const char *str, int len = 0);
 
+	/**
+	 * \brief Move the drawing reference to a new point.
+	 * \param x x-coordinate of new reference point [pixel]
+	 * \param y y-coordinate of new reference point [pixel]
+	 * \note Some methods use the drawing reference point for
+	 *   drawing operations, e.g. \ref LineTo.
+	 * \default None.
+	 * \sa LineTo
+	 */
 	void MoveTo (int x, int y);
+
+	/**
+	 * \brief Draw a line to a specified point.
+	 * \param x x-coordinate of line end point [pixel]
+	 * \param y y-coordinate of line end point [pixel]
+	 * \default None.
+	 * \note The line starts at the current drawing reference
+	 *   point.
+	 * \sa MoveTo
+	 */
 	void LineTo (int x, int y);
+
+	/**
+	 * \brief Set the position in the surface bitmap which is mapped to the
+	 *   origin of the coordinate system for all drawing functions.
+	 * \param x horizontal position of the origin [pixel]
+	 * \param y vertical position of the origin [pixel]
+	 * \default None.
+	 * \note By default, the reference point for drawing function coordinates is
+	 *   the top left corner of the bitmap, with positive x-axis to the right,
+	 *   and positive y-axis down.
+	 * \note SetOrigin can be used to shift the logical reference point to a
+	 *   different position in the surface bitmap (but not to change the
+	 *   orientation of the axes).
+	 * \sa GetOrigin
+	 */
 	void SetOrigin (int x, int y);
+
+	/**
+	 * \brief Draw a text string.
+	 * \param x reference x position [pixel]
+	 * \param y reference y position [pixel]
+	 * \param str text string
+	 * \param len string length for output
+	 * \return \e true on success, \e false on failure.
+	 * \default None, returns false.
+	 */
 	bool Text (int x, int y, const char *str, int len);
+
+	/**
+	 * \brief Draw a single pixel in a specified colour.
+	 * \param x x-coordinate of point [pixel]
+	 * \param y y-coordinate of point [pixel]
+	 * \param col pixel colour (format: 0xBBGGRR)
+	 */
 	void Pixel (int x, int y, DWORD col);
+
+	/**
+	 * \brief Draw a line between two points.
+	 * \param x0 x-coordinate of first point [pixel]
+	 * \param y0 y-coordinate of first point [pixel]
+	 * \param x1 x-coordinate of second point [pixel]
+	 * \param y1 y-coordinate of second point [pixel]
+	 * \default None.
+	 * \note The line is drawn with the currently selected pen.
+	 * \sa SetPen
+	 */
 	void Line (int x0, int y0, int x1, int y1);
+
+	/**
+	 * \brief Draw a rectangle (filled or outline).
+	 * \param x0 left edge of rectangle [pixel]
+	 * \param y0 top edge of rectangle [pixel]
+	 * \param x1 right edge of rectangle [pixel]
+	 * \param y1 bottom edge of rectangle [pixel]
+	 * \default Draws the rectangle from 4 line segments and
+	 *   fills the rectangle with the currently selected brush resource.
+	 * \sa MoveTo, LineTo, Ellipse, Polygon
+	 */
 	void Rectangle (int x0, int y0, int x1, int y1);
+
+	/**
+	 * \brief Draw an ellipse from its bounding box.
+	 * \param x0 left edge of bounding box [pixel]
+	 * \param y0 top edge of bounding box [pixel]
+	 * \param x1 right edge of bounding box [pixel]
+	 * \param y1 bottom edge of bounding box [pixel]
+	 * \default None.
+	 * \note The ellipse is filled with the currently selected
+	 *   brush resource.
+	 * \sa Rectangle, Polygon
+	 */
 	void Ellipse (int x0, int y0, int x1, int y1);
+
+	/**
+	 * \brief Draw a closed polygon given by vertex points.
+	 * \param pt list of vertex points
+	 * \param npt number of points in the list
+	 * \default None.
+	 * \note The polygon should be closed, i.e. the last point
+	 *   joined with the first one.
+	 * \note The outline of the polygon is drawn with the 
+	 *   current pen, and filled with the current brush.
+	 * \sa Polyline, PolyPolygon, Rectangle, Ellipse
+	 */
 	void Polygon (const oapi::IVECTOR2 *pt, int npt);
+
+	/**
+	 * \brief Draw a line of piecewise straight segments.
+	 * \param pt list of vertex points
+	 * \param npt number of points in the list
+	 * \default None
+	 * \note The line is drawn with the currently selected pen.
+	 * \note Polylines are open figures: the end points are
+	 *   not connected, and no fill operation is performed.
+	 * \sa Polygon, PolyPolyline, Rectangle, Ellipse
+	 */
 	void Polyline (const oapi::IVECTOR2 *pt, int npt);
 
 private:
@@ -90,9 +304,9 @@ private:
 	int	 CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
 	int	 CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out);
 	
-	mutable oapi::Font  *cfont;  // currently selected font (NULL if none)
-	mutable oapi::Pen   *cpen;   // currently selected pen (NULL if none)
-	mutable oapi::Brush *cbrush; // currently selected brush (NULL if none)
+	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
+	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
+	mutable oapi::Brush *cbrush; ///< currently selected brush (NULL if none)
 
 	mutable D3DXCOLOR textcolor;
 	mutable D3DXCOLOR pencolor;

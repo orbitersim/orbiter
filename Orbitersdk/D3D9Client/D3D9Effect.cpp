@@ -74,7 +74,7 @@ D3DXHANDLE D3D9Effect::eLights = 0;		// Additional light sources
 D3DXHANDLE D3D9Effect::eLightCount = 0;	// Number of additional light sources
 
 D3DXHANDLE D3D9Effect::eTex0 = 0;		// Primary texture
-D3DXHANDLE D3D9Effect::eTex1 = 0;		// Secaundary texture
+D3DXHANDLE D3D9Effect::eTex1 = 0;		// Secondary texture
 D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
 D3DXHANDLE D3D9Effect::eSpecMap = 0;
 D3DXHANDLE D3D9Effect::eEmisMap = 0;
@@ -98,7 +98,7 @@ D3DXHANDLE D3D9Effect::eProxySize = 0;
 D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
 
 // Shader Flow Controls
-D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multibly material alpha with texture alpha
+D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multiply material alpha with texture alpha
 D3DXHANDLE D3D9Effect::eFullyLit = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNormalMap = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
@@ -177,9 +177,9 @@ NTVERTEX exhaust_vtx[8] = {
 
 // ===========================================================================================
 //
-D3D9Effect::D3D9Effect()
+D3D9Effect::D3D9Effect() : d3d9id('D3D9')
 {
-	d3d9id = 'D3D9';
+
 }
 
 // ===========================================================================================

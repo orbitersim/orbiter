@@ -12,12 +12,13 @@
 #include "VObject.h"
 #include "Mesh.h"
 
-
 class oapi::D3D9Client;
+
 
 // ==============================================================
 // class vVessel (interface)
 // ==============================================================
+
 /**
  * \brief Visual representation of a vessel object.
  *
@@ -42,7 +43,15 @@ public:
 
 	~vVessel ();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit (oapi::D3D9Client *gc);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit ();
 
 	void clbkEvent(DWORD evnt, UINT context);

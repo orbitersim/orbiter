@@ -64,10 +64,27 @@ class TileManager : public D3D9Effect {
 	friend class CSphereManager;
 
 public:
+	/**
+	 * \brief Constructs a new tile manager object
+	 * \param gclient client instance pointer
+	 * \param vPlanet planet instance pointer
+	 */
 	TileManager (oapi::D3D9Client *gclient, const vPlanet *vplanet);
+
+	/**
+	 * \brief Destroys the tile manager object
+	 */
 	virtual ~TileManager ();
 
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit(oapi::D3D9Client *gclient);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit();
 
 	// One-time global initialisation/exit methods

@@ -5,13 +5,6 @@
 // Copyright (C) 2006-2007 Martin Schweiger
 // ==============================================================
 
-// ==============================================================
-// Class CelestialSphere (interface)
-//
-// This class is responsible for rendering the celestial sphere
-// background (stars, constellations, grids, labels, etc.)
-// ==============================================================
-
 #ifndef __CELSPHERE_H
 #define __CELSPHERE_H
 
@@ -20,23 +13,37 @@
 
 #define D3DMAXNUMVERTICES 32767		// This should be dynamic
 
+
+// ==============================================================
+// Class CelestialSphere (interface)
+// ==============================================================
+
 /**
  * \brief Rendering methods for the background celestial sphere.
  *
  * Loads star and constellation information from data bases and uses them to
- * celestial sphere background.
+ * render the celestial sphere background (stars, constellations, grids,
+ * labels, etc.)
  */
 class CelestialSphere {
-public:
 
+public:
+	/**
+	 * \brief Create a new celestial sphere object.
+	 * \param _gc pointer to graphics client
+	 */
 	CelestialSphere(oapi::D3D9Client *_gc);
+
+	/**
+	 * \brief Destructor
+	 */
 	~CelestialSphere();
 
 	/**
 	 * \brief Render stars as pixels on the celestial sphere
-	 * \param dev render device
-	 * \param nmax max. number of stars (default is all available stars)
-	 * \param bgcol pointer to background color (default is black)
+	 * \param fx  render effect
+	 * \param nmax  max. number of stars (default is all available stars)
+	 * \param bgcol  pointer to background color (default is black)
 	 * \note if a background colour is passed into this function, the rendering
 	 *   of stars darker than the background is suppressed.
 	 * \note All device parameters are assumed to be set correctly on call.
@@ -45,8 +52,7 @@ public:
 
 	/**
 	 * \brief Render constellation lines on the celestial sphere
-	 * \param dev render device
-	 * \param col line colour
+	 * \param fx  render effect
 	 * \note All device parameters are assumed to be set correctly on call.
 	 * \note Suggestion: render additively onto background, so that the lines
 	 *   are never darker than the background sky.
@@ -55,8 +61,7 @@ public:
 
 	/**
 	 * \brief Render a great circle on the celestial sphere in a given colour.
-	 * \param dev render device
-	 * \param col RGB line colour (0..1 for each component)
+	 * \param fx  render effect
 	 * \note By default (i.e. for identity world matrix), the circle is
 	 *   drawn along the plane of the ecliptic. To render a circle in any
 	 *   other orientation, the world matrix must be adjusted accordingly
@@ -66,9 +71,8 @@ public:
 
 	/**
 	 * \brief Render grid lines on the celestial sphere in a given colour.
-	 * \param dev render device
-	 * \param col RGB line colour (0..1 for each component)
-	 * \param eqline indicates if the equator line should be drawn
+	 * \param fx  render effect
+	 * \param eqline  indicates if the equator line should be drawn
 	 * \note By default (i.e. for identity world matrix), this draws the
 	 *   ecliptic grid. To render a grid for any other reference frame,
 	 *   the world matrix must be adjusted accordingly before call.
@@ -77,7 +81,6 @@ public:
 	 *   with RenderGreatCircle().
 	 */
 	void RenderGrid(ID3DXEffect *fx, bool eqline = true);
-
 	
 	/**
 	 * \brief Number of stars loaded from the data base
@@ -86,29 +89,35 @@ public:
 	inline DWORD NStar() const { return nsvtx; }
 
 protected:
+	/**
+	 * \brief Load star coordinates from file
+	 */
 	void LoadStars ();
-	// Load star coordinates from file
 
+	/**
+	 * \brief Load constellation line data from file
+	 */
 	void LoadConstellationLines ();
-	// Load constellation line data from file
 
+	/**
+	 * \brief Allocate vertex list for rendering grid lines
+	 *        (e.g. celestial or ecliptic)
+	 */
 	void AllocGrids ();
-	// Allocate vertex list for rendering grid lines
-	// (e.g. celestial or ecliptic)
 
 private:
-	oapi::D3D9Client *gc;
-	float sphere_r;       // render radius for celestial sphere
-	DWORD nsbuf;          // number of vertex buffers for star positions
-	//DWORD nstar;          // total number of stars across all buffers
-	DWORD nsvtx;          // total number of vertices over all buffers
-	LPDIRECT3DVERTEXBUFFER9 *svtx; // star vertex buffers
-	int lvlid[256];       // star brightness hash table
-	DWORD ncline;         // number of constellation lines
-	VERTEX_XYZ  *cnstvtx; // vertex list of constellation lines
-	LPDIRECT3DVERTEXBUFFER9 grdlng, grdlat; // vertex buffers for grid lines
-	D3DXMATRIX mWorld;
-	LPDIRECT3DDEVICE9 pDevice;
+	oapi::D3D9Client *gc; ///< pointer to grahics client
+	float sphere_r;       ///< render radius for celestial sphere
+	DWORD nsbuf;          ///< number of vertex buffers for star positions
+//	DWORD nstar;          ///< total number of stars across all buffers
+	DWORD nsvtx;          ///< total number of vertices over all buffers
+	LPDIRECT3DVERTEXBUFFER9 *svtx; ///< star vertex buffers
+	int lvlid[256];       ///< star brightness hash table
+	DWORD ncline;         ///< number of constellation lines
+	VERTEX_XYZ  *cnstvtx; ///< vertex list of constellation lines
+	LPDIRECT3DVERTEXBUFFER9 grdlng, grdlat; ///< vertex buffers for grid lines
+	D3DXMATRIX mWorld;    ///< world matrix
+	LPDIRECT3DDEVICE9 pDevice; ///< DirectX9 device
 };
 
 #endif // !__CELSPHERE_H

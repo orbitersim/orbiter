@@ -29,8 +29,22 @@ class vPlanet;
 class HazeManager : private D3D9Effect 
 {
 public:
+	/**
+	 * \brief Constructs a new haze manager object
+	 * \param gclient pointer to graphics client
+	 * \param vPlanet planet instance pointer
+	 */
 	HazeManager (const oapi::D3D9Client *gclient, const vPlanet *vplanet);
+
+	/**
+	 * \brief Set up global parameters shared by all instances
+	 * \param gclient client instance pointer
+	 */
 	static void GlobalInit (oapi::D3D9Client *gclient);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit();
 
 	void Render (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, bool dual = false);

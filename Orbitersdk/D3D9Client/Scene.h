@@ -53,6 +53,10 @@ class Scene {
 public:
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder);
+
+	/**
+	 * \brief Release global parameters
+	 */
 	static void GlobalExit();
 
 	Scene (oapi::D3D9Client *_gc, DWORD w, DWORD h);

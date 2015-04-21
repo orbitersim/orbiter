@@ -5,15 +5,6 @@
 // Copyright (C) 2007 Martin Schweiger
 // ==============================================================
 
-// ==============================================================
-// class vBase (interface)
-//
-// A vBase is the visual representation of a surface base
-// object (a "spaceport" on the surface of a planet or moon,
-// usually with runways or landing pads where vessels can
-// land and take off.
-// ==============================================================
-
 #ifndef __VBASE_H
 #define __VBASE_H
 
@@ -23,6 +14,18 @@
 class RunwayLights;
 class TaxiLights;
 
+
+// ==============================================================
+// class vBase (interface)
+// ==============================================================
+
+/**
+ * \brief Visual representation of a surface base.
+ *
+ * A vBase is the visual representation of a surface base object (a "spaceport"
+ * on the surface of a planet or moon, usually with runways or landing pads
+ * where vessels can land and take off.
+ */
 class vBase: public vObject {
 	friend class vPlanet;
 

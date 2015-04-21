@@ -424,7 +424,7 @@ VERTEX_XYZC *GetVertexXYZC (DWORD n);
  */
 struct AutoHandle
 {
-	HANDLE Handle;
+	HANDLE Handle; ///< The handle storage
 
 	AutoHandle () {
 		Handle = NULL;
@@ -434,10 +434,16 @@ struct AutoHandle
 		ForceClose();
 	}
 
+	/**
+	 * \brief Check whether the handle is not valid
+	 */
 	bool IsInvalid () {
 		return Handle == INVALID_HANDLE_VALUE || Handle == NULL;
 	}
 
+	/**
+	 * \brief Close the handle
+	 */
 	void ForceClose()
 	{
 		if (!IsInvalid()) {
@@ -456,7 +462,7 @@ struct AutoHandle
  */
 struct AutoFile
 {
-	FILE* pFile;
+	FILE* pFile; ///< The file handle storage
 
 	AutoFile () {
 		pFile = NULL;
@@ -466,10 +472,16 @@ struct AutoFile
 		ForceClose();
 	}
 
+	/**
+	 * \brief Check whether the file is not valid
+	 */
 	bool IsInvalid () {
 		return pFile == NULL;
 	}
 
+	/**
+	 * \brief Close the file
+	 */
 	void ForceClose()
 	{
 		if (!IsInvalid()) {
