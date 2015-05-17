@@ -96,6 +96,26 @@ float4 VesselTechPS(VesselVS frg) : COLOR
 	}	
     
     cTex.a *= gMtrlAlpha;
+	
+
+	float4 cTransm = float4(cTex.rgb, 1.0f);
+	if (gUseTransm) {
+		cTransm = tex2D(TransmS, frg.tex0);
+		cTransm.a *= 1024.0f;
+	}
+	
+	float3 cTransl = cTex;
+	if (gUseTransl) {
+		cTransl = tex2D(TranslS, frg.tex0);
+	}
+	
+	int gTranslucent = 0;
+	if (gUseTransm || gUseTransl) {
+		gTranslucent = 1;
+	}
+
+	float3 TnrmW = -nrmW;//normalize(float3(frg.nrmW.xy, -frg.nrmW.z));
+
     
 	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
     float  d = saturate(-dot(gSun.direction, nrmW));
@@ -110,6 +130,27 @@ float4 VesselTechPS(VesselVS frg) : COLOR
 	
     cTex.rgb *= saturate(diff);	// Lit the diffuse texture
 	//cTex.rgb = (1.0f - exp2(-cTex.rgb*diff))*2.0f;
+	
+	if (gTranslucent) {
+		// Sunlight translucent calculation
+		float Td = saturate(-dot(gSun.direction, TnrmW));
+		float Ts = pow(saturate(dot(gSun.direction, CamW)), cTransm.a) * saturate(cTransm.a);
+				
+		//if (Td==0) Ts = 0;
+		Ts *= saturate(Td * 2.0f);  // Causes the transmittance effect to fall off at very shallow angles
+						
+		//float Tlocal = 0;// max(dot(frg.locW.xyz, TnrmW) + frg.locW.w, 0.0f);   
+
+		float3 Tdiff = gMtrl.diffuse.rgb * (/* frg.diff.rgb * (Tlocal*Tlocal) + */ Td * gSun.diffuse.rgb);
+			   Tdiff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+		
+		cTransl.rgb *= saturate(Tdiff);// * 0.5f;
+		
+		cTex.rgb += (1 - cTex.rgb) * cTransl.rgb;
+		
+		// local light effect disabled because I can't make it illuminate the correct side
+		cTot += cTransm.rgb * (/* frg.spec.rgb + */ Ts * gSun.specular.rgb);
+	}
 
 #if defined(_ENVMAP)
 
@@ -209,6 +250,8 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
     float4 cTex  = tex2D(WrapS, frg.tex0.xy);	
     float3 nrmT  = tex2D(Nrm0S, frg.tex0.xy).rgb * 2.0 - 1.0;       //Sampler for R8G8B8, DXT1
 	
+	nrmT.z = cos(nrmT.x * nrmT.y * 1.570796);		// Fix for norm-poisoned specular map, re-normalize to positive z-axis
+	
 	cTex.a*=gMtrlAlpha;
 	
 	float3x3 TBN;
@@ -217,11 +260,39 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
     TBN[2] = frg.nrmT; 
 
     float3 nrmW = mul(nrmT, TBN);
+	
+	float3 TnrmW;
+	
+	int gTranslucent = 0;
+	if (gUseTransm || gUseTransl) {
+		gTranslucent = 1;
+	}
+	
+	if (gTranslucent) {
+		nrmT.z *= -1; // flip normal z-axis for translucent effect
+		
+		TBN[0] = frg.tanT;
+		TBN[1] = frg.bitT;
+		TBN[2] = frg.nrmT;
+		
+		TnrmW = mul(nrmT, TBN);
+	}	
 
 	if (gUseSpec) {
 		cSpec = tex2D(SpecS, frg.tex0.xy);
 		cSpec.a *= 255.0f;
 	}	
+	
+	float4 cTransm = float4(cTex.rgb, 1.0f);
+	if (gUseTransm) {
+		cTransm = tex2D(TransmS, frg.tex0);
+		cTransm.a *= 1024.0f;
+	}
+	
+	float3 cTransl = cTex.rgb;
+	if (gUseTransl) {
+		cTransl = tex2D(TranslS, frg.tex0);
+	}
 	
 	 // Sunlight calculation
     float d = saturate(-dot(gSun.direction, nrmW));
@@ -237,6 +308,26 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
     cTex.rgb *= saturate(diff);
     
     float3 cTot = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);
+	
+	if (gTranslucent) {
+		// Sunlight calculation
+		float Td = saturate(-dot(gSun.direction, TnrmW));
+		float Ts = pow(saturate(dot(gSun.direction, CamW)), cTransm.a) * saturate(cTransm.a);
+				
+		//if (Td==0) Ts = 0;
+		Ts *= saturate(Td * 2.0f);  // Causes the transmittance effect to fall off at very shallow angles
+						
+		float Tlocal = 0;// max(dot(frg.locW.xyz, TnrmW) + frg.locW.w, 0.0f);   
+
+		float3 Tdiff = gMtrl.diffuse.rgb * (frg.diff.rgb * (Tlocal*Tlocal) + Td * gSun.diffuse.rgb);
+			   Tdiff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+		
+		cTransl.rgb *= saturate(Tdiff);// * 0.5f;
+		
+		cTex.rgb += (1 - cTex.rgb) * cTransl.rgb;
+		
+		cTot += cTransm.rgb * (/* frg.spec.rgb + */ Ts * gSun.specular.rgb);
+	}
     
 #if defined(_ENVMAP)
     

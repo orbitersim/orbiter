@@ -61,7 +61,7 @@
 <p>
   The two symbolic links in <code>/Modules/Server/</code> folder for
   <code>Config</code> and <code>Sound</code> folders point (or link) to their
-  "originals" located in the root folder of the Orbiter installation.<br/>
+  "originals" located in the root folder of the Orbiter installation.<br />
   If you are using Windows XP or newer and your installation is on a
   <a href="http://en.wikipedia.org/wiki/NTFS" target="_blank">NTFS</a>
   filesystem, these links can easily be created from Video Tab -&gt; Advanced
@@ -448,7 +448,7 @@
       index. If a mesh consists of multiple groups, you will be able to select
       the individual groups by selecting the according group index here.
     </p>
-  <li>Highlight selected group</li>
+  <li style="page-break-before:always;">Highlight selected group</li>
     <p>
       With this option <b><em>enabled</em></b> the current selected group will
       be permanently highlighted (green).
@@ -571,7 +571,7 @@
       This box can be imagined as a box with mirror-surfaces which show the
       environment the face of the box 'sees'
     </p>
-  <li>FPS Limiter</li>
+  <li style="page-break-before:always;">FPS Limiter</li>
     <p>
       With this option <b><em>enabled</em></b> a frames per second limiter is
       enabled that will limit the number of frames that will be rendered per
@@ -731,7 +731,7 @@
       Note: Two different light configurations exists (wide&gt;59m) and
       (narrow&lt;59m)
     </p>
-  <li><strong>&lt;PAPI F F F I I&gt;</strong></li>
+  <li style="page-break-before:always;"><strong>&lt;PAPI F F F I I&gt;</strong></li>
     <p>
       Precision Approach Path Indicator (PAPI).<br />
       Parameters:<br />
@@ -874,7 +874,7 @@ END</pre>
       configuration is the preferred one that should be used when you have the
       choice (see also <a href="#_bump">_bump</a>).
     </p>
-  <li><strong>&lt;_spec&gt;</strong></li>
+  <li id="_spec"><strong>&lt;_spec&gt;</strong></li>
     <p>
       Specular map controls a specular reflection in per pixel basis.
       Alpha channel is containing a specular power setting. Value 255 is mapped
@@ -882,7 +882,7 @@ END</pre>
       modulated by specular material color. Valid formats are &lt;R8G8B8A8&gt;,
       &lt;DXT3&gt; or &lt;DXT5&gt;.
     </p>
-  <li id="_bump" style="page-break-before:always;"><strong>&lt;_bump&gt;</strong></li>
+  <li id="_bump"><strong>&lt;_bump&gt;</strong></li>
     <p style="margin-bottom:5px">
       Bump maps are also supported by the D3D9Client. They are automatically
       converted into normal maps during loading of bump maps (see note).<br />
@@ -910,7 +910,7 @@ END</pre>
       <em>_norm</em> configuration is however the one that should be used when
       you have the choice (see also <a href="#_norm">_norm</a>).
     </p>
-  <li><strong>&lt;_emis&gt;</strong></li>
+  <li style="page-break-before:always;"><strong>&lt;_emis&gt;</strong></li>
     <p>
       Currently emission map works more like a light map and the simplified
       equation is:
@@ -934,6 +934,30 @@ END</pre>
       reflections as well. A non zero value will apply full fresnel reflections
       for that pixel. Only [RGB] channels from a texture are used.
     </p>
+      <li><strong>&lt;_transl&gt;</strong></li>
+    <p>
+      Translucence map controls the material translucency on a per pixel basis.
+      The texture behaves much like a diffuse texture, except that it is
+      illuminated from behind. Illumination is based on the angle of the sun
+      relative to the surface; if the sun is directly behind the surface, the
+      illumination is strong, and if the sun is at a low angle but still behind
+      the surface, the illumination is dim. If the sun begins to illuminate the
+      surface from in front, the translucence effect is no longer visible.
+      <br />
+      Only [RGB] channels from a texture are used.
+    </p>
+      <li><strong>&lt;_transm&gt;</strong></li>
+    <p>
+      Transmittance map controls the amount of light that passes through a
+      translucent material without being diffused. The effect is very similar
+      to a specular reflection, except that it simulates the bright spot on a
+      semi-transparent material that is directly between the sun and the
+      observer.<br />
+      The [RGBA] channels from a texture are used. The RGB channels provide
+      color and brightness, while the alpha channel changes the size of the
+      bright spot. This is analogous to how the <a href="#_spec">specular map</a>
+      is used.
+    </p>
 </ul>
 <br />
 <p>
@@ -950,6 +974,8 @@ END</pre>
     <tr><td style="background-color:silver;text-align:left">Specular-map</td><td><tt>_spec</tt></td><td style="color:green">supported</td><td style="color:green">supported</td><td style="color:red">not supported</td></tr>
     <tr><td style="background-color:silver;text-align:left">Emission-map</td><td><tt>_emis</tt></td><td style="color:green">supported</td><td style="color:green">supported</td><td style="color:red">not supported</td></tr>
     <tr><td style="background-color:silver;text-align:left">Reflection-map</td><td><tt>_refl</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Translucence-map</td><td><tt>_transl</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Transmittance-map</td><td><tt>_transm</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
   </table>
 </p>
 </body>

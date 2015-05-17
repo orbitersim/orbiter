@@ -349,6 +349,8 @@ void D3D9ClientSurface::Clear()
 	pEmissionMap = NULL;
 	pSpecularMap = NULL;
 	pReflectionMap = NULL;
+	pTranslucenceMap = NULL;
+	pTransmittanceMap = NULL;
 	iBindCount  = 0;
 	iSkpMode	= 0;
 	Initial		= 0;
@@ -393,6 +395,8 @@ D3D9ClientSurface::~D3D9ClientSurface()
 	SAFE_RELEASE(pEmissionMap);
 	SAFE_RELEASE(pSpecularMap);
 	SAFE_RELEASE(pReflectionMap);
+	SAFE_RELEASE(pTranslucenceMap);
+	SAFE_RELEASE(pTransmittanceMap);
 	SAFE_RELEASE(pStencil);
 	SAFE_RELEASE(pDCSub);
 	SAFE_RELEASE(pRTS);
@@ -1629,6 +1633,8 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		char ename[128];
 		char bname[128];
 		char rname[128];
+		char tlname[128];			// Translucence
+		char tmname[128];			// Transmittance
 
 		if (Config->UseNormalMap) {
 			CreateName(nname, 128, fname, "norm");
@@ -1636,6 +1642,8 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 			CreateName(ename, 128, fname, "emis");
 			CreateName(bname, 128, fname, "bump");
 			CreateName(rname, 128, fname, "refl");
+			CreateName(tlname, 128, fname, "transl");
+			CreateName(tmname, 128, fname, "transm");
 		}
 
 		// Get information about the file
@@ -1751,6 +1759,39 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 					}
 				}
 				else LogErr("Failed to acquire image information for (%s)",rname);
+			}
+
+			// Translucence Map Section =======================================================================================================================
+			//
+			if (gc->TexturePath(tlname, xpath)) {
+				D3DXIMAGE_INFO info;
+				pTranslucenceMap = NULL;
+				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTranslucenceMap)==S_OK) {
+						LogAlw("Translucence Map %s Loaded Successfully",ename);
+					}
+					else {
+						pEmissionMap = NULL;
+						LogErr("Failed to load image (%s)",ename);
+					}
+				}
+				else LogErr("Failed to acquire image information for (%s)",ename);
+			}
+			// Transmittance Map Section =======================================================================================================================
+			//
+			if (gc->TexturePath(tmname, xpath)) {
+				D3DXIMAGE_INFO info;
+				pTransmittanceMap = NULL;
+				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTransmittanceMap)==S_OK) {
+						LogAlw("Transmittance Map %s Loaded Successfully",ename);
+					}
+					else {
+						pEmissionMap = NULL;
+						LogErr("Failed to load image (%s)",ename);
+					}
+				}
+				else LogErr("Failed to acquire image information for (%s)",ename);
 			}
 		}
 
@@ -2114,6 +2155,20 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetSpecularMap()
 LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetReflectionMap()
 {
 	return pReflectionMap;
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTranslucenceMap()
+{
+	return pTranslucenceMap;
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTransmittanceMap()
+{
+	return pTransmittanceMap;
 }
 
 // -----------------------------------------------------------------------------------------------

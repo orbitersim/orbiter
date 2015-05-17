@@ -1323,6 +1323,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	LPDIRECT3DTEXTURE9  pSpec = NULL;
 	LPDIRECT3DTEXTURE9  pEmis = NULL;
 	LPDIRECT3DTEXTURE9  pRefl = NULL;
+	LPDIRECT3DTEXTURE9  pTransl = NULL;
+	LPDIRECT3DTEXTURE9  pTransm = NULL;
 
 	dev->SetVertexDeclaration(pMeshVertexDecl);
 	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
@@ -1339,6 +1341,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	FX->SetBool(eUseRefl, false);
 	FX->SetBool(eUseDisl, false);
 	FX->SetBool(eDebugHL, false);
+	FX->SetBool(eUseTransl, false);
+	FX->SetBool(eUseTransm, false);
 
 	int nLights = gc->GetScene()->GetLightCount();
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
@@ -1444,14 +1448,20 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 						pSpec = Tex[ti]->GetSpecularMap();
 						pEmis = Tex[ti]->GetEmissionMap();
 						pRefl = Tex[ti]->GetReflectionMap();
+						pTransl = Tex[ti]->GetTranslucenceMap();
+						pTransm = Tex[ti]->GetTransmittanceMap();
 
 						if (pNorm) FX->SetTexture(eTex3, pNorm);
 						if (pSpec) FX->SetTexture(eSpecMap, pSpec);
 						if (pEmis) FX->SetTexture(eEmisMap, pEmis);
 						if (pRefl) FX->SetTexture(eReflMap, pRefl);
+						if (pTransl) FX->SetTexture(eTranslMap, pTransl);
+						if (pTransm) FX->SetTexture(eTransmMap, pTransm);
 
 						FX->SetBool(eUseSpec, (pSpec!=NULL));
 						FX->SetBool(eUseRefl, (pRefl!=NULL));
+						FX->SetBool(eUseTransl, (pTransl!=NULL));
+						FX->SetBool(eUseTransm, (pTransm!=NULL));
 
 						if (pEmis) bEmission = true;
 					}

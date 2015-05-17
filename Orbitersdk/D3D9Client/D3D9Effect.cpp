@@ -81,6 +81,8 @@ D3DXHANDLE D3D9Effect::eEmisMap = 0;
 D3DXHANDLE D3D9Effect::eEnvMap = 0;
 D3DXHANDLE D3D9Effect::eDislMap = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
+D3DXHANDLE D3D9Effect::eTranslMap = 0;
+D3DXHANDLE D3D9Effect::eTransmMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -108,6 +110,8 @@ D3DXHANDLE D3D9Effect::eUseEmis = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eUseRefl = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eUseTransl = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eUseTransm = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
@@ -303,6 +307,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eClamp		  = FX->GetParameterByName(0,"gClamp");
 	eUseDisl	  = FX->GetParameterByName(0,"gUseDisl");
 	eUseRefl	  = FX->GetParameterByName(0,"gUseRefl");
+	eUseTransl	  = FX->GetParameterByName(0,"gUseTransl");
+	eUseTransm	  = FX->GetParameterByName(0,"gUseTransm");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			
@@ -357,6 +363,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
 	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
+	eTranslMap	  = FX->GetParameterByName(0,"gTranslMap");
+	eTransmMap	  = FX->GetParameterByName(0,"gTransmMap");
 
 	// Initialize default values --------------------------------------
 	//

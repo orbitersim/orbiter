@@ -85,7 +85,9 @@ uniform extern bool      gUseSpec;			// Enable Specular Maps
 uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool      gUseDisl;			// Enable dissolve effect
-uniform extern bool      gUseRefl;			// Enable dissolve effect
+uniform extern bool      gUseRefl;			// Enable Reflection Maps
+uniform extern bool      gUseTransl;		// Enble translucent effect
+uniform extern bool      gUseTransm;		// Enable transmissive effect
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
 uniform extern bool		 gNoColor;			// No color flag
 uniform extern bool		 gLocalLights;		// Local light sources enabled
@@ -112,6 +114,8 @@ uniform extern texture   gEmisMap;	    	// Emission Map
 uniform extern texture   gEnvMap;	    	// Environment Map
 uniform extern texture   gDislMap;   		// Dissolve Map
 uniform extern texture   gReflMap;   		// Reflectivity Map
+uniform extern texture   gTranslMap;		// Translucence Map
+uniform extern texture   gTransmMap;		// Transmittance Map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -235,6 +239,29 @@ sampler EmisS = sampler_state       // Primary Mesh texture sampler
 sampler ReflS = sampler_state       // Primary Mesh texture sampler
 {
 	Texture = <gReflMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+    MipMapLODBias = 0;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+sampler TranslS = sampler_state       // Translucence texture sampler
+{
+	Texture = <gTranslMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+    MipMapLODBias = 0;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+sampler TransmS = sampler_state       // Transmittance texture sampler
+{
+	Texture = <gTransmMap>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;

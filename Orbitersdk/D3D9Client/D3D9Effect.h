@@ -109,6 +109,8 @@ public:
 	static D3DXHANDLE	eUseSpec;      ///< BOOL
 	static D3DXHANDLE	eUseEmis;      ///< BOOL
 	static D3DXHANDLE	eUseRefl;      ///< BOOL
+	static D3DXHANDLE	eUseTransl;
+	static D3DXHANDLE	eUseTransm;
 	static D3DXHANDLE	eDebugHL;
 	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
 	static D3DXHANDLE	eUseDisl;      ///< BOOL
@@ -150,6 +152,8 @@ public:
 	static D3DXHANDLE	eEnvMap;
 	static D3DXHANDLE	eDislMap;
 	static D3DXHANDLE	eReflMap;
+	static D3DXHANDLE	eTranslMap;
+	static D3DXHANDLE	eTransmMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 	static D3DXHANDLE	eGlobalAmb;	 

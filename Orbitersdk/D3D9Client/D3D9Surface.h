@@ -90,6 +90,8 @@ public:
 	LPDIRECT3DTEXTURE9	GetEmissionMap();
 	LPDIRECT3DTEXTURE9	GetSpecularMap();
 	LPDIRECT3DTEXTURE9	GetReflectionMap();
+	LPDIRECT3DTEXTURE9	GetTranslucenceMap();
+	LPDIRECT3DTEXTURE9	GetTransmittanceMap();
 	LPDIRECT3DTEXTURE9	GetTexture();
 	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
 	int					GetSketchPadMode() { return SketchPad; }
@@ -165,6 +167,8 @@ private:
 	LPDIRECT3DTEXTURE9	pSpecularMap;
 	LPDIRECT3DTEXTURE9	pEmissionMap;
 	LPDIRECT3DTEXTURE9	pReflectionMap;
+	LPDIRECT3DTEXTURE9	pTranslucenceMap;
+	LPDIRECT3DTEXTURE9	pTransmittanceMap;
 	LPDIRECT3DDEVICE9	pDevice;
 	D3DXCOLOR			ClrKey;
 	DWORD				ColorKey;
