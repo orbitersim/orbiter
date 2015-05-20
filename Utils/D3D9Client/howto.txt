@@ -1,0 +1,114 @@
+How to release new D3D9Client Versions (Builds)
+===============================================
+
+1. Abstract
+   --------
+     This document describes the steps that need to be performed when releasing
+   a new version of D3D9Client.
+
+     The intention of this document is to make sure that the release process is
+   standardized and hopefully less failure prone by giving a step-by-step
+   instruction manual.
+
+2. Preparations
+   ------------
+     Currently (May 2015) we have to build --at least-- two release versions of
+   the client, one for Orbiter 2010-P1[*] and one for Orbiter BETA[**]!
+
+     Each release will be build and linked against different Orbiter APIs and
+   might therefore not be backwards rsp. upwards compatible.
+
+     A basic understanding of subversion is needed to follow all the steps in
+   chapter 3. Nothing too special, but terms like "commit", "create tag" and
+   "working copy" should be familiar.
+
+     For an overview of required tools to compile D3D9Client from the sources
+   see the README.txt document located at the source path[***]. Note that for
+   building a fully working release the NVIDIA API has to be installed on the
+   build system as well!
+
+   --
+   [*]   Orbiter 2010-P1     : Build Jan 1 2013 [v.130101]
+   [**]  Orbiter BETA rev.13 : Build Mar 6 2015 [v.150306]
+   [***] '.\Orbitersdk\D3D9Client\README.txt'
+
+
+3. Step by step instruction
+   ------------------------
+   3.1. Version Number increase.
+          Make sure the repository contains sources with a new version number
+        and derived files with that new version number.
+        Version number have to be adjusted in the following files:
+        - Orbitersdk\D3D9Client\D3D9Client.cpp
+        - Orbitersdk\D3D9Client\doc\Doxyfile
+        - Utils\D3D9Client\build_release.bat
+        Derived files are:
+        - Doc\D3D9Client.pdf
+        - Orbitersdk\D3D9Client\doc\D3D9Client_API_Reference.chm
+
+        Changes due to a version number increase should therefore *only* affect
+        the following files indicated by subversion modifications:
+        - Doc\D3D9Client.pdf
+        - Orbitersdk\D3D9Client\D3D9Client.cpp
+        - Orbitersdk\D3D9Client\doc\D3D9Client_API_Reference.chm
+        - Orbitersdk\D3D9Client\doc\Doxyfile
+        - Utils\D3D9Client\build_release.bat
+        Make sure these modification have been committed!
+
+   3.2. Create a tag.
+          To be able to easily re-create any previous release, tags are created
+        for any released version of D3D9Client. The naming of those branches
+        follows this simple schema:
+
+        * Tag names for Orbiter BETA releases are named like 'Beta ##'
+                                                (for example 'Beta 9')
+        * Tag names for Orbiter 2010-P1 releases are named like 'R##'
+                                                   (for example 'R15')
+        Attention! Orbiter BETA tags are taken from the '2010-P1' branch, while
+                   Orbiter 2010-P1 tags are taken from trunk!
+
+        When the according tag has been created one can build the release
+        ZIP(s). This should be done on a working copy of the according tag.
+
+   3.3. Decide what to build (2010-P1 or BETA release)
+        ...
+
+   3.4. Run the build script[*] located in the 'Utils' folder.
+          This should build a new release and create two new ZIP files named
+        (for example) 'D3D9ClientBeta12-forRev13(r54321).zip' and
+        'D3D9ClientBeta12-forRev13(r54321)+src.zip' when you build from trunk,
+        or 'D3D9ClientR15-for2010-P1(r54321).zip' &
+        'D3D9ClientR15-for2010-P1(r54321).zip' when you build from the
+        '2010-P1' branch.
+
+        --
+        [*] '.\Utils\D3D9Client\build_release.bat'.
+
+
+   3.x. ...
+        ...
+
+   3.x. ...
+        ...
+
+   3.x. Upload to CodePlex
+
+   3.x. Update information page @ CodePlex
+
+   3.x. Tell the forum
+
+
+4. Checklist
+   ---------
+     This checklist is a short summary of the steps to do. It only handles
+     *one* build variant (either 2010-P1 or BETA release):
+
+   [ ] Version number increase (and commit)
+   [ ] Create tag
+   [ ] Checkout working copy (of new tag)
+   [ ] Build
+   [ ] ...
+   [ ] ...
+   [ ] Upload to CodePlex
+   [ ] Update information page @ CodePlex
+   [ ] Tell the forum
