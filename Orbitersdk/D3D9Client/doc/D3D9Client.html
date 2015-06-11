@@ -3,7 +3,9 @@
 <head>
   <title>D3D9Client documentation</title>
   <style type="text/css">
-    p    { page-break-inside:avoid; }
+   .brk  { page-break-before:always; }
+   .nbrk { page-break-inside:avoid; }
+    p    { page-break-inside:avoid; text-align: justify }
     dt   { margin-top:10px; }
     dd   { margin-left:20px; }
     li   { text-decoration:underline; font-weight:bold; page-break-inside:avoid; }
@@ -16,6 +18,8 @@
   <center>D3D9Client documentation</center>
 </div>
 
+<hr />
+<!-- ====================================================================== -->
 <h1>Requirements</h1>
 <p>
   D3D9Client uses external libraries that need support for the SSE2
@@ -88,7 +92,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 style="page-break-before:always;">Fullscreen Mode and Alt-Tabing</h1>
+<h1 class="brk">Fullscreen Mode and Alt-Tabing</h1>
 <p>
   D3D9Client doesn't support alt-tabing in a so-called "True Fullscreen Mode".
   Therefore, it's recommended that you use a windowed fullscreen mode that will
@@ -121,7 +125,7 @@
   Spacecraft3.dll</a>" chapter.
 </p>
 
-<h2 style="page-break-before:always;">Surface texture load options</h2>
+<h2 class="brk">Surface texture load options</h2>
 <p>
   Here you can change the behavior how the D3D9Client will load surface
   textures. The two options available are either "Load on demand (recommended)"
@@ -195,7 +199,7 @@
       With this option enabled D3D9Client will try to add improved glass
       shading (Fresnel reflection) for meshes that supply them.
     </p>
-  <li>Enable geometry instancing</li>
+  <li class="brk">Enable geometry instancing</li>
     <p>
       Currently disabled
     </p>
@@ -214,6 +218,7 @@
       </p>
     </p>
   -->
+
   <li>Disable near clip plane compatibility mode</li>
     <p>
       If the near clip-plane compatibility mode is enabled then the minimum
@@ -281,7 +286,7 @@
       depends on the version of D3D9Client! The R6 release for example has only
       the "Default" shader set to select.
     </p>
-  <li>Debug level</li>
+  <li class="brk">Debug level</li>
     <p>
       The five options you can choose from here [0...4] represent the level of
       information that will be written into the log-file. The log-file is
@@ -363,7 +368,7 @@
 <hr />
 <!-- ====================================================================== -->
 <h1 id="_debug_controls"
-    style="page-break-before:always;">D3D9 Debug Controls Dialog</h1>
+    class="brk">D3D9 Debug Controls Dialog</h1>
 <p>
   The D3D9 Debug Controls Dialog allows you look at different things while the
   simulation is running.
@@ -381,7 +386,7 @@
   </blockquote>
 </p>
 
-<h2 style="page-break-before:always;">Mesh debugger</h2>
+<h2 class="brk">Mesh debugger</h2>
 <p>
   The mesh debugger group contains elements to inspect a mesh. It gives a mesh
   developer some tools at hand to better inspect a mesh in its 'natural
@@ -458,7 +463,7 @@
       index. If a mesh consists of multiple groups, you will be able to select
       the individual groups by selecting the according group index here.
     </p>
-  <li style="page-break-before:always;">Highlight selected group</li>
+  <li class="brk">Highlight selected group</li>
     <p>
       With this option <b><em>enabled</em></b> the current selected group will
       be permanently highlighted (green).
@@ -516,7 +521,7 @@
     </p>
 </ul>
 
-<h2 style="page-break-before:always;">Bounding geometry</h2>
+<h2 class="brk">Bounding geometry</h2>
 <p>
   The options in this group offers additional rendering of bounding boxes or
   spheres of individual mesh parts.
@@ -581,7 +586,7 @@
       This box can be imagined as a box with mirror-surfaces which show the
       environment the face of the box 'sees'
     </p>
-  <li style="page-break-before:always;">FPS Limiter</li>
+  <li>FPS Limiter</li>
     <p>
       With this option <b><em>enabled</em></b> a frames per second limiter is
       enabled that will limit the number of frames that will be rendered per
@@ -669,7 +674,7 @@
     Copy and paste buttons can be used to copy [RGB] values from different
     material properties for an example from specular color to reflect color.
   </p>
-  <li>Link channels</li>
+  <li class="brk">Link channels</li>
   <p>
     The link checkbox allows the link the R, G and B fields and after that
     they can be adjusted simultaneously with the slider.
@@ -708,7 +713,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 style="page-break-before:always;">Base Configuration settings</h1>
+<h1 class="brk">Base Configuration settings</h1>
 <p>
   The D3D9Client allows you to to configure some more details when settings up
   runway lights.
@@ -741,7 +746,7 @@
       Note: Two different light configurations exists (wide&gt;59m) and
       (narrow&lt;59m)
     </p>
-  <li style="page-break-before:always;"><strong>&lt;PAPI F F F I I&gt;</strong></li>
+  <li class="brk"><strong>&lt;PAPI F F F I I&gt;</strong></li>
     <p>
       Precision Approach Path Indicator (PAPI).<br />
       Parameters:<br />
@@ -802,7 +807,7 @@
       will depend about the length of the zone. The touchdown zone will use the
       same spacing about 30m.
     </p>
-  <li><strong>&lt;APPROACH_START F&gt;</strong></li>
+  <li class="brk"><strong>&lt;APPROACH_START F&gt;</strong></li>
     <p>
       Length of the approach lights from the green line (m).
       (default: 900m)<br />
@@ -826,7 +831,7 @@
 <p>
   Example of runway lights for KSC:
 </p>
-<blockquote style="background-color:silver; font-size:9pt;">
+<blockquote style="background-color:silver; font-size:9pt; padding:10px; width:100%">
 <pre>RUNWAYLIGHTS
   END1 -8220 -3 -600
   END2 -12670 -12 -3155
@@ -844,7 +849,7 @@ END</pre>
 
 <hr />
 <!-- ====================================================================== -->
-<h1 style="page-break-before:always;">Advanced Texture Maps</h1>
+<h1 class="brk">Advanced Texture Maps</h1>
 <p>
   Additional texture maps can be automatically assigned for a mesh simply by
   placing additional textures into a texture folder. Additional textures are
@@ -920,7 +925,7 @@ END</pre>
       <em>_norm</em> configuration is however the one that should be used when
       you have the choice (see also <a href="#_norm">_norm</a>).
     </p>
-  <li style="page-break-before:always;"><strong>&lt;_emis&gt;</strong></li>
+  <li class="brk"><strong>&lt;_emis&gt;</strong></li>
     <p>
       Currently emission map works more like a light map and the simplified
       equation is:
