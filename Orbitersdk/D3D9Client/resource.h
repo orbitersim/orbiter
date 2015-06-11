@@ -6,8 +6,8 @@
 #define IDD_D3D9MESHDEBUG                       102
 #define IDD_D3D9SCATTER                         103
 #define IDD_D3D9SETUP                           104
-#define IDS_INFO                                2000
-#define IDS_TYPE                                2001
+#define IDS_INFO                                1000 // never change these!
+#define IDS_TYPE                                1001 //   "      "     "
 #define IDC_AA                                  2002
 #define IDC_AF                                  2003
 #define IDC_ATD_AUX1                            2004
