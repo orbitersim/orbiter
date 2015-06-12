@@ -15,8 +15,11 @@
 :: --- Setup
 set BASE_DIR=..\..
 set OUT_DIR=_release
-set VERSION=Beta12-forRev13
+set VERSION=Beta12
 
+:: Enhance Version by Orbiter Version
+for /F "tokens=* USEBACKQ" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
+set VERSION=%VERSION%-for%OVER%
 
 :: Try to get the Visual Studio version
 if not "%VS110COMNTOOLS%"=="" (

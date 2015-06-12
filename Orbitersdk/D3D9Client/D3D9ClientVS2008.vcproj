@@ -43,7 +43,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Modules\Plugin/D3D9Client.tlb"
+				TypeLibraryName=".\..\..\Modules\Plugin\D3D9Client.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -73,7 +73,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib dxguid.lib Msimg32.lib psapi.lib nvapi.lib"
-				OutputFile="..\..\Modules\Plugin\$(ProjectName)Debug.dll"
+				OutputFile="..\..\Modules\Plugin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="&quot;C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86&quot;;..\..\Orbitersdk\lib"
 				IgnoreDefaultLibraryNames="MSVCRT.lib"
 				GenerateDebugInformation="true"
@@ -95,7 +95,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\..\..\Modules\Plugin/D3D9Client.bsc"
+				OutputFile=".\..\..\Modules\Plugin\D3D9Client.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -135,7 +135,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/D3D9Client.tlb"
+				TypeLibraryName=".\Release\D3D9Client.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -182,7 +182,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/D3D9Client.bsc"
+				OutputFile=".\Release\D3D9Client.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

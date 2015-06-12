@@ -84,7 +84,8 @@
       <OutputFile>.\..\..\Modules\Plugin/D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
+      <Command>if not exist ..\..\Modules\Plugin mkdir ..\..\Modules\Plugin
+copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if not exist "$(SolutionDir)nvapi.h" (
@@ -140,7 +141,8 @@
       <OutputFile>.\Release/D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
+      <Command>if not exist ..\..\Modules\Plugin mkdir ..\..\Modules\Plugin
+copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(TargetExt)</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>if not exist "$(SolutionDir)nvapi.h" (
