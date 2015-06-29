@@ -149,7 +149,6 @@ protected:
 
 	D3DXMATRIX mWorld;
 	D3DCOLOR cAmbient;
-	oapi::D3D9Client *gc;			 // the client
 	const vPlanet *vp;               // the planet visual
 	OBJHANDLE obj;                   // the planet object
 	char *objname;                   // the name of the planet (for identifying texture files)

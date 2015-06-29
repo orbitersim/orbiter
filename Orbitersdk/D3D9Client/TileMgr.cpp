@@ -55,7 +55,6 @@ int compare_idx (const void *el1, const void *el2);
 
 TileManager::TileManager (D3D9Client *gclient, const vPlanet *vplanet) : D3D9Effect()
 {
-	gc = gclient;
 	vp = vplanet;
 	obj = vp->Object();
 	char name[256];
