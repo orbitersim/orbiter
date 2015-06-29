@@ -121,7 +121,7 @@ protected:
 	double ipht2;
 
 protected:
-	oapi::D3D9Client *gc;
+	oapi::D3D9Client *pGC;					// pointer to graphics client
 	static LPD3D9CLIENTSURFACE deftex;		// default particle texture
 	static LPD3D9CLIENTSURFACE deftexems;	// default particle texture
 	static bool bShadows;					// render particle shadows

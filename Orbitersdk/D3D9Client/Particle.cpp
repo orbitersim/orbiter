@@ -50,7 +50,7 @@ bool D3D9ParticleStream::bShadows = false;
 
 D3D9ParticleStream::D3D9ParticleStream(GraphicsClient *_gc, PARTICLESTREAMSPEC *pss) : ParticleStream (_gc, pss), D3D9Effect()
 {
-	gc = (D3D9Client*)_gc;
+	pGC = (D3D9Client*)_gc;
 
 	//cam_ref = &gc->GetScene()->GetCameraGPos();
 	//src_ref = 0;
@@ -431,7 +431,7 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 	float *u, *v;
 	NTVERTEX *vtx;
 
-	VECTOR3 camera_gpos = gc->GetScene()->GetCameraGPos();
+	VECTOR3 camera_gpos = pGC->GetScene()->GetCameraGPos();
 	
 	CalcNormals(plast->pos - camera_gpos, dvtx);
 
@@ -465,8 +465,8 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 			HR(FX->CommitChanges());
 			HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, dvtx+i0*4, sizeof(NTVERTEX)));
 
-			gc->GetStats()->Draw++;
-			gc->GetStats()->Vertices += n*4;
+			pGC->GetStats()->Draw++;
+			pGC->GetStats()->Vertices += n*4;
 			
 			i0 += n;
 			n = 0;
@@ -493,7 +493,7 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 	float *u, *v;
 	VERTEX_XYZ_TEX *vtx;
 
-	VECTOR3 camera_gpos = gc->GetScene()->GetCameraGPos();
+	VECTOR3 camera_gpos = pGC->GetScene()->GetCameraGPos();
 
 	HR(dev->SetVertexDeclaration(pPosTexDecl));
 	HR(FX->SetTechnique(eEmissiveTech));
@@ -527,8 +527,8 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 			HR(FX->CommitChanges());
 			HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));
 			
-			gc->GetStats()->Draw++;
-			gc->GetStats()->Vertices += n*4;
+			pGC->GetStats()->Draw++;
+			pGC->GetStats()->Vertices += n*4;
 
 			i0 += n;
 			n = 0;
@@ -694,7 +694,7 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 
 	VECTOR3 pp,gcam;
 	oapiGetGlobalPos (hPlanet, &pp);
-	gcam = gc->GetScene()->GetCameraGPos();
+	gcam = pGC->GetScene()->GetCameraGPos();
 
 	R = oapiGetSize(hPlanet);
 	sd = unit(p->pos);  // shadow projection direction
@@ -746,8 +746,8 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 				HR(FX->SetFloat(eMix, alpha));
 				HR(FX->CommitChanges());
 				HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));
-				gc->GetStats()->Draw++;
-				gc->GetStats()->Vertices += n*4;
+				pGC->GetStats()->Draw++;
+				pGC->GetStats()->Vertices += n*4;
 			}	
 			i0 += n;
 			n = 0;
