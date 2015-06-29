@@ -288,7 +288,6 @@ private:
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
 
 	static HFONT hFont;
-	static oapi::D3D9Client *gc;
 	static double resolutionBias;
 	static double resolutionScale;
 	static bool bTileLoadThread;     // load tiles on separate thread
