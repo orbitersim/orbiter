@@ -16,7 +16,7 @@
 D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
-LPDIRECT3DVERTEXBUFFER9 D3D9Effect::pVB = 0;
+LPDIRECT3DVERTEXBUFFER9 D3D9Effect::VB = 0;
 LPDIRECT3DTEXTURE9 D3D9Effect::pNoise = 0;
 SURFHANDLE D3D9Effect::hNoise = 0;
 
@@ -197,7 +197,7 @@ void D3D9Effect::GlobalExit()
 {
 	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
-	SAFE_RELEASE(pVB);
+	SAFE_RELEASE(VB);
 	SAFE_DELETE(hArrow);
 }
 
@@ -380,11 +380,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	// Create a Circle Mesh --------------------------------------------
 	//
-	HR(pDev->CreateVertexBuffer(256*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pVB, NULL));
+	HR(pDev->CreateVertexBuffer(256*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &VB, NULL));
 
 	D3DXVECTOR3 *pVert;
 
-	if (pVB->Lock(0,0,(void **)&pVert,0)==S_OK) {
+	if (VB->Lock(0,0,(void **)&pVert,0)==S_OK) {
 		float angle=0.0f, step=float(PI2)/255.0f;
 		pVert[0] = D3DXVECTOR3(0,0,0);
 		for (int i=1;i<256;i++) {
@@ -393,7 +393,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 			pVert[i].z = sin(angle);
 			angle += step;
 		}
-		pVB->Unlock();
+		VB->Unlock();
 	} else LogErr("Failed to Lock vertex buffer");
 
 	hNoise = oapiLoadTexture("D3D9LENoise.dds");
@@ -769,7 +769,7 @@ void D3D9Effect::RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX 
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
 	
-	pDev->SetStreamSource(0, pVB, 0, sizeof(D3DXVECTOR3));
+	pDev->SetStreamSource(0, VB, 0, sizeof(D3DXVECTOR3));
 	pDev->DrawPrimitive(D3DPT_LINESTRIP, 0, 255);	
 	
 	FX->EndPass();
