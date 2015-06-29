@@ -241,7 +241,6 @@ private:
 	DWORD	MaxFace;
 	DWORD   Constr;
 
-	oapi::D3D9Client *gc;		// the graphics client instance
 	GROUPREC **Grp;             // list of mesh groups
 	GEOMREC *Geom;				// Geometry record
 	DWORD nGrp;                 // number of mesh groups

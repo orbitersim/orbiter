@@ -219,7 +219,6 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	Null();
 	// note: 'mesh' must be a template mesh, because we may not be able to
 	// access vertex data in video memory
-	gc = mesh.gc;
 	bModulateMatAlpha = mesh.bModulateMatAlpha;
 	strcpy_s(name, 128, mesh.name);
 
