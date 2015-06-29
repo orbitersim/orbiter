@@ -26,7 +26,6 @@ using namespace oapi;
 
 HazeManager::HazeManager (const D3D9Client *gclient, const vPlanet *vplanet) : D3D9Effect()
 {
-	gc = gclient;
 	vp = vplanet;
 	obj = vp->Object();
 	rad = oapiGetSize (obj);

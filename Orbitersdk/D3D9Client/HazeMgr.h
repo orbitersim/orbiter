@@ -50,7 +50,6 @@ public:
 	void Render (LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, bool dual = false);
 	
 private:
-	const oapi::D3D9Client *gc;
 	OBJHANDLE obj;
 	const vPlanet *vp;
 	VECTOR3 basecol;
