@@ -56,7 +56,6 @@ void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
 
 CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : PlanetRenderer()
 {
-	gc = gclient;
 	scn = scene;
 
 	gc->OutputLoadStatus("Loading Celestial Sphere...",0);

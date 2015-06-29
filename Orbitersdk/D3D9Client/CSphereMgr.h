@@ -73,7 +73,6 @@ protected:
 	bool TileInView (int lvl, int ilat);
 	// Check if specified tile intersects viewport
 
-	oapi::D3D9Client *gc;			 // the client
 	static const D3D9Config *cfg;    // configuration parameters
 	const Scene *scn;
 	static int *patchidx;            // texture offsets for different LOD levels
