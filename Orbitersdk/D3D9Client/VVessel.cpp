@@ -36,7 +36,9 @@ const char *value_string (double val);
 vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
 	_TRACER;
-	if (_hObj==NULL) return;
+
+	//@todo throw @ vObject or visObject???
+	if (_hObj==NULL) throw std::invalid_argument("_hObj");
 
 	vessel = oapiGetVesselInterface(_hObj);
 	nmesh = 0;
