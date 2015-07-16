@@ -31,7 +31,7 @@
 #define IDC_SHOW_AXES_SURFBASE      1209
 #define IDC_SHOW_AXES_NEGATIVE      1210
 #define IDC_SHOW_AXES_SCALE_GAUGE   1211
-#define IDC_SHOW_AXES_OPACITY_GAUGE	1212
+#define IDC_SHOW_AXES_OPACITY_GAUGE 1212
 
 // Little binary helper
 #define SETFLAG(bitmap, bit, value) (value ? bitmap |= bit : bitmap &= ~bit)
@@ -219,18 +219,16 @@ bool OapiExtension::GetConfigParameter(void)
 
 	// Check for the OrbiterSound version
 	if (orbiterSoundModuleEnabled)  {
-		bool versionCorrect = false;
+		orbiterSound40 = false;
 
 		f = oapiOpenFile("Sound\\version.txt", FILE_IN, ROOT);
 		while (f && oapiReadScenario_nextline(f, pLine)) {
 			if (NULL != strstr(pLine, "OrbiterSound 4.0 (3D)")) {
-				versionCorrect = true;
+				orbiterSound40 = true;
 				break;
 			}
 		}
 		oapiCloseFile(f, FILE_IN);
-
-		orbiterSound40 = versionCorrect;
 	}
 
 	return true;

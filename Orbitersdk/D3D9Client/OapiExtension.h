@@ -76,7 +76,7 @@ class D3D9Config;
 /// \defgroup scaflag Bit flags for coordinate axes vector display mode elements
 /// @{
 #define SCA_ENABLE   0x0001 ///< Enable coordinate axes display mode (master flag)
-#define SCA_NEGATIVE 0x0002 ///< Enable dispaly of negative axes
+#define SCA_NEGATIVE 0x0002 ///< Enable display of negative axes
 #define SCA_VESSEL   0x0004 ///< Enable vessel coordinate axes
 #define SCA_CELBODY  0x0008 ///< Enable celestial body coordinate axes
 #define SCA_SURFBASE 0x0010 ///< Enable surface base coordinate axes
@@ -96,7 +96,7 @@ typedef struct {
 	WNDPROC lpWrapWndFunc;    ///< Wrapped WindowProc
 	WNDPROC lpOrigWndFunc;    ///< Original WindowProc
 	HWND    hWnd;             ///< Window (e.g. CheckBox) handle
-	HWND    hWndScaleGauge;   ///< Scal gauge handle
+	HWND    hWndScaleGauge;   ///< Scale gauge handle
 	HWND    hWndOpacityGauge; ///< Opacity gauge handle
 } HOOKINFO, *LPHOOKINFO;
 
@@ -116,7 +116,7 @@ public:
 	/**
 	 * \brief Initializes the OapiExtension.
 	 *
-	 * This function should be called eary on, because it defines whether this
+	 * This function should be called early on, because it defines whether this
 	 * class will install any hooking functions depending on the \ref
 	 * D3D9Config::DisableVisualHelperReadout value.
 	 * \param Config A reference to the configuration class, to get the \ref
@@ -203,7 +203,7 @@ private:
 	~OapiExtension(void);
 
 	// Planet rendering parameters
-	static bool tileLoadThread;	///< Whether to load planet tiles inseparate thread [true|false]
+	static bool tileLoadThread; ///< Whether to load planet tiles inseparate thread [true|false]
 	// Body forces
 	static DWORD showBodyForceVectorsFlags;
 	static float bodyForceScale;   // [0.25..4.0]
@@ -214,10 +214,10 @@ private:
 	static float coordinateAxesOpacity; // [0...1]
 	// OrbiterSound 4.0 helper
 	static bool orbiterSound40;
-	static std::string configDir;	///< Value of Orbiters ConfigDir parameter
-	static std::string meshDir;		///< Value of Orbiters MeshDir parameter
-	static std::string textureDir;	///< Value of Orbiters TextureDir parameter
-	static std::string hightexDir;	///< Value of Orbiters HightexDir parameter
+	static std::string configDir;   ///< Value of Orbiters ConfigDir parameter
+	static std::string meshDir;     ///< Value of Orbiters MeshDir parameter
+	static std::string textureDir;  ///< Value of Orbiters TextureDir parameter
+	static std::string hightexDir;  ///< Value of Orbiters HightexDir parameter
 	static std::string scenarioDir; ///< Value of Orbiters ScenarioDir config parameter
 
 	// Hooking
