@@ -284,7 +284,7 @@ private:
 	D3D9ParticleStream **pstream; // list of particle streams
 	DWORD                nstream; // number of streams
 
-	//D3D9Light **light;		// only one for now
+
 	D3DCOLOR bg_rgba;          // ambient background colour
 
 	// GDI resources ====================================================================

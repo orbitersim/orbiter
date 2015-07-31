@@ -454,7 +454,7 @@ void D3D9Mesh::ProcessInherit()
 
 
 // ===========================================================================================
-// TODO: Check This
+// 
 void D3D9Mesh::CreateGeometryBuffers()
 {
 	_TRACE;
@@ -569,7 +569,7 @@ void D3D9Mesh::CreateGeometryBuffers()
 
 
 // ===========================================================================================
-// TODO: Check This
+//
 void D3D9Mesh::UpdateGeometryBuffer()
 {
 

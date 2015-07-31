@@ -925,6 +925,11 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	if (s->right > (long)src->desc.Width || s->bottom > (long)src->desc.Height) return;
 	if (s->left < 0 || s->top < 0) return;
 
+	if (s->left > s->right) return;
+	if (t->left > t->right) return;
+	if (s->top > s->bottom) return;
+	if (t->top > t->bottom) return;
+
 	DWORD Width = s->right - s->left;
 	DWORD Height = s->bottom - s->top;
 	DWORD TgtWidth = t->right - t->left;

@@ -601,6 +601,7 @@ void ExhaustStream::Update ()
 			VECTOR3 av2 = oapiGetWindVector (hPlanet, lng, lat, r2-rad, 3);
 			VECTOR3 dav = (av2-av1)/np;
 			double r = oapiGetSize (hPlanet);
+			if (vessel) r += vessel->GetSurfaceElevation();
 			oapiGetPlanetAtmParams (hPlanet, d, &prm);
 			double pref = sqrt(prm.p)/300.0;
 			double slow = exp(-beta*pref*dt);
@@ -661,6 +662,7 @@ void ExhaustStream::Update ()
 					oapiGlobalToEqu (hPlanet, p->pos, &lng, &lat, &alt);
 					//planet->GlobalToEquatorial (MakeVector(p->pos), lng, lat, alt);
 					alt -= oapiGetSize(hPlanet);
+					if (vessel) alt -= vessel->GetSurfaceElevation();
 					if (alt*eps < vessel->GetSize()) p->flag |= 1; // render shadow
 				}
 
@@ -685,6 +687,8 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 
 	ParticleSpec *p = pfirst;
 
+	VESSEL *vessel = (hRef ? oapiGetVesselInterface (hRef) : 0);
+
 	double R;
 	float *u, *v, alpha;
 	int n, j, i0; 
@@ -697,6 +701,7 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 	gcam = pGC->GetScene()->GetCameraGPos();
 
 	R = oapiGetSize(hPlanet);
+	if (vessel) R += vessel->GetSurfaceElevation();
 	sd = unit(p->pos);  // shadow projection direction
 	VECTOR3 pv0 = p->pos - pp;   // rel. particle position
 	// calculate the intersection of the vessel's shadow with the planet surface
