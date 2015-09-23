@@ -29,7 +29,8 @@ How to release new D3D9Client Versions (Builds)
 
    --
    [*]   Orbiter 2010-P1     : Build Jan 1 2013 [v.130101]
-   [**]  Orbiter BETA rev.13 : Build Mar 6 2015 [v.150306]
+   [**]  Orbiter BETA rev.13 : Build Mar 6 2015 [v.150306] (revision and build-
+                               number of Orbiter are just an example here)
    [***] '.\Orbitersdk\D3D9Client\README.txt'
 
 
@@ -57,21 +58,44 @@ How to release new D3D9Client Versions (Builds)
 
    3.2. Create a tag.
           To be able to easily re-create any previous release, tags are created
-        for any released version of D3D9Client. The naming of those branches
-        follows this simple schema:
+        for any released version of D3D9Client. The naming of those tags follow
+        this simple schema:
 
         * Tag names for Orbiter BETA releases are named like 'Beta ##'
                                                 (for example 'Beta 9')
         * Tag names for Orbiter 2010-P1 releases are named like 'R##'
                                                    (for example 'R15')
-        Attention! Orbiter BETA tags are taken from the '2010-P1' branch, while
-                   Orbiter 2010-P1 tags are taken from trunk!
+
+        Attention! Orbiter BETA tags are taken from the trunk, while
+                   Orbiter 2010-P1 tags are taken from '2010-P1' branch!
 
         When the according tag has been created one can build the release
         ZIP(s). This should be done on a working copy of the according tag.
 
    3.3. Decide what to build (2010-P1 or BETA release)
-        ...
+          The source code of the trunk and the '2010-P1' branch do not differ
+        much, but those little differences make the point!
+
+          Therefore when your working copy is from the trunk, you'll build a
+        'BETA' release and when your working copy is from the '2010-P1' branch
+        you'll build a 2010-P1 release. Simple, right ;)
+
+          The best thing is to have two working copies of D3D9Client available
+        that do have the according Orbiter libraries & -header files as local
+        files. These two folders (working copies) can than be updated and build
+        whenever one likes to build a new D3D9 release.
+
+          The Orbiter libraries & -header files for a 2010-P1 release working-
+        copy should never be changed, due to the fact that the 2010-P1 Orbiter
+        release is stable (frozen).
+          The Orbiter libraries & -header files for a BEAT release working-copy
+        however might need to be replaced more frequently (whenever Martin S.
+        updates the libraries or -header files in Orbiters repository[*])
+
+        --
+        [*] For a build of D3D9Client, only the content of the folders
+            'Orbitersdk/include/' and 'Orbitersdk/lib/' from the official
+            orbiter repository ('svn://orbiter-forum.com/orbiter/') are needed.
 
    3.4. Run the build script[*] located in the 'Utils' folder.
           This should build a new release and create two new ZIP files named
