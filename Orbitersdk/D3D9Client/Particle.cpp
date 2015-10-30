@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
-//				 2011 Jarmo Nikkanen (D3D9Client modification)  
+//				 2011 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
 #define STRICT 1
@@ -243,7 +243,7 @@ void D3D9ParticleStream::Timejump()
 	pfirst = NULL;
 	plast = NULL;
 	np = 0;
-	t0 = oapiGetSimTime();	
+	t0 = oapiGetSimTime();
 }
 
 void D3D9ParticleStream::SetDParticleCoords(const VECTOR3 &ppos, double scale, NTVERTEX *vtx)
@@ -344,7 +344,7 @@ void D3D9ParticleStream::SetShadowCoords(const VECTOR3 &ppos, const VECTOR3 &cdi
 		vx *= len;
 		vy *= len;
 		vz *= len;
-	} 
+	}
 	else {
 		ux = 0;
 		uy = scale;
@@ -385,7 +385,7 @@ void D3D9ParticleStream::CalcNormals(const VECTOR3 &ppos, NTVERTEX *vtx)
 		vx *= len;
 		vy *= len;
 		vz *= len;
-	} 
+	}
 	else {
 		ux = 0;
 		uy = 1.0;
@@ -413,7 +413,7 @@ void D3D9ParticleStream::Render(LPDIRECT3DDEVICE9 dev)
 {
 	if (!pfirst) return;
 	if (diffuse) RenderDiffuse(dev);
-	else         RenderEmissive(dev);	
+	else         RenderEmissive(dev);
 }
 
 void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
@@ -432,7 +432,7 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 	NTVERTEX *vtx;
 
 	VECTOR3 camera_gpos = pGC->GetScene()->GetCameraGPos();
-	
+
 	CalcNormals(plast->pos - camera_gpos, dvtx);
 
 	HR(dev->SetVertexDeclaration(pNTVertexDecl));
@@ -440,7 +440,7 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 	HR(FX->SetMatrix(eW, &mWorld));
 
 	if (tex) HR(FX->SetTexture(eTex0, tex->GetTexture()));
-		
+
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 
@@ -467,14 +467,14 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 
 			pGC->GetStats()->Draw++;
 			pGC->GetStats()->Vertices += n*4;
-			
+
 			i0 += n;
 			n = 0;
 		}
 	}
 
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 }
 
 
@@ -498,13 +498,13 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 	HR(dev->SetVertexDeclaration(pPosTexDecl));
 	HR(FX->SetTechnique(eEmissiveTech));
 	HR(FX->SetMatrix(eW, &mWorld));
-	
+
 	if (tex) HR(FX->SetTexture(eTex0, tex->GetTexture()));
 
 	D3DCOLORVALUE color;
 	SetMaterial(color);
 
-	HR(FX->SetValue(eColor, &color, sizeof(D3DCOLORVALUE))); 
+	HR(FX->SetValue(eColor, &color, sizeof(D3DCOLORVALUE)));
 
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -519,24 +519,24 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 			vtx->tu = u[j];
 			vtx->tv = v[j];
 		}
-		
+
 		if (++n == stride || n+i0 == np) {
 
 			float alpha = (float)max (0.1, p->alpha0*(1.0-(oapiGetSimTime()-p->t0)*ipht2));
 			HR(FX->SetFloat(eMix, alpha));
 			HR(FX->CommitChanges());
 			HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));
-			
+
 			pGC->GetStats()->Draw++;
 			pGC->GetStats()->Vertices += n*4;
 
 			i0 += n;
 			n = 0;
 		}
-	}	
+	}
 
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 }
 
 
@@ -677,7 +677,7 @@ void ExhaustStream::Update ()
 			}
 		}
 	} else t0 = simt;
-	
+
 }
 
 
@@ -691,7 +691,7 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 
 	double R;
 	float *u, *v, alpha;
-	int n, j, i0; 
+	int n, j, i0;
 	VECTOR3 sd, hn;
 
 	VERTEX_XYZ_TEX *vtx;
@@ -753,14 +753,14 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 				HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));
 				pGC->GetStats()->Draw++;
 				pGC->GetStats()->Vertices += n*4;
-			}	
+			}
 			i0 += n;
 			n = 0;
 		}
 	}
 
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 }
 
 
@@ -779,7 +779,7 @@ void ReentryStream::SetMaterial (D3DCOLORVALUE &col)
 	// should be heating-dependent
 	col.r = 1.0f;
 	col.g = 0.7f;
-	col.b = 0.5f; 
+	col.b = 0.5f;
 }
 
 void ReentryStream::Update ()
@@ -789,7 +789,10 @@ void ReentryStream::Update ()
 
 	double simt = oapiGetSimTime();
 	double simdt = oapiGetSimStep();
-	double friction = (vessel ? vessel->GetDynPressure() * vessel->GetAirspeed() : 0.0);
+	double friction = vessel
+	                ? 0.5 * pow(vessel->GetAtmDensity(), 0.6)
+	                      * pow(vessel->GetAirspeed()  , 3  )
+	                : 0.0;
 	double alpha0;
 
 	if (np) {
