@@ -144,6 +144,7 @@ void OapiExtension::HandlePopupWindows (const HWND *hPopupWnd, DWORD count)
 		for (DWORD i = 0; i < count; ++i) {
 			if (IsOurDialog(hPopupWnd[i])) {
 				EnumChildWindows(hPopupWnd[i], EnumChildProc, 0L);
+				break;
 			}
 		}
 	}
@@ -278,20 +279,15 @@ const void OapiExtension::RemoveHook(LPHOOKINFO lpHookInfo)
 }
 
 // ===========================================================================
-// Check helper to avoid hooking 'Orbiter: Configure menu bars' dialog, which
-// used some of the same IDCs as 'Visual helpers' dialog.
-// (at least in v111105)
+// Check helper to avoid hooking 'Orbiter: Configure menu bars' dialog, or
+// any other addon-dialog which might use some of the same IDCs as the
+// 'Visual helpers' dialog.
 //
 const bool OapiExtension::IsOurDialog(HWND hwnd)
 {
-	if (oapiGetOrbiterVersion()>=121025) return true;
-
 	static char buff[16] = {0};
-
-	if (GetWindowText(hwnd, buff, 16) && !strncmp("Visual helpers", buff, 14)) {
-		return true;
-	}
-	return false;
+	return GetWindowText(hwnd, buff, 16)
+	    && !strncmp("Visual helpers", buff, 14);
 }
 
 // ===========================================================================
