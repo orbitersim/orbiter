@@ -1290,7 +1290,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 {
 	_TRACER;
 
-	SURFHANDLE surf = 0;
+	SURFHANDLE surf = NULL;
 	DWORD ngrp = oapiMeshGroupCount(hMesh);
 
 	if (ngrp==0) return;
@@ -1316,9 +1316,8 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 
 		if (TexIdx >= TEXIDX_MFD0) {
 			int mfdidx = TexIdx - TEXIDX_MFD0;
-			SURFHANDLE newsurf = GetMFDSurface(mfdidx);
-			if (!newsurf) continue;
-			surf = newsurf;
+			surf = GetMFDSurface(mfdidx);
+			if (!surf) surf = (SURFHANDLE)pDefaultTex;
 		} else if (hSurf) {
 			surf = hSurf[TexIdx];
 		}
@@ -1326,7 +1325,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 	
 		for (unsigned int k=0;k<gr->nVtx;k++) gr->Vtx[k].z = 0.0f;
 
-		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale, additive);
+		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale, additive);	
 	}
 }
 
