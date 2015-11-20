@@ -476,6 +476,7 @@ void D3D9ClientSurface::ConvertSurface(DWORD attrib)
 		if (attrib&OAPISURFACE_RENDER3D) MakeDepthStencil();
 
 		flags = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
+
 		if ((attrib&flags)==flags) {
 			ConvertToRenderTargetTexture();
 			CreateSubSurface();
@@ -496,11 +497,13 @@ void D3D9ClientSurface::ConvertSurface(DWORD attrib)
 		return;
 	}
 
+
 	// Create Non Texture Surface --------------------------------------------------------------------------------------------
 	//
 	if (attrib&OAPISURFACE_RENDER3D) MakeDepthStencil();
 
 	flags = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
+
 	if ((attrib&flags)==flags) {
 		ConvertToRenderTarget(true);
 		return;
@@ -546,9 +549,9 @@ void D3D9ClientSurface::CreateSurface(int w, int h, DWORD attrib)
 	// Process Surface Format ---------------------------------------------------------------------------------------------
 	//
 	if (attrib&OAPISURFACE_SKETCHPAD) {
-		attrib |= OAPISURFACE_GDI;
+		//attrib |= OAPISURFACE_GDI;
 		if ((attrib&(OAPISURFACE_RENDERTARGET|OAPISURFACE_SYSMEM))==0) {
-			if (Config->SketchpadMode==0) attrib |= OAPISURFACE_SYSMEM;
+			if (Config->SketchpadMode==0) attrib |= (OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
 			if (Config->SketchpadMode==1) attrib |= OAPISURFACE_RENDERTARGET;
 		}
 	}
@@ -557,7 +560,7 @@ void D3D9ClientSurface::CreateSurface(int w, int h, DWORD attrib)
 	//
 	D3DFORMAT fmt = D3DFMT_X8R8G8B8;
 	if (attrib&OAPISURFACE_ALPHA) fmt = D3DFMT_A8R8G8B8;
-	if (attrib&OAPISURFACE_GDI) fmt = D3DFMT_X8R8G8B8;
+	if (attrib&OAPISURFACE_GDI)   fmt = D3DFMT_X8R8G8B8;
 
 	// Process Surface Pool ------------------------------------------------------------------------------------------------
 	//
@@ -1182,7 +1185,10 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 
 	if (IsCompressed()) Decompress();
 
-	if (Initial&OAPISURFACE_TEXTURE) return false;
+	if (Initial==OAPISURFACE_TEXTURE) {
+		LogErr("Attempting to fill a texture 0x%X color=0x%X", this, c);
+		return false;
+	}
 
 	LPRECT r;
 	RECT re;
@@ -1241,7 +1247,10 @@ bool D3D9ClientSurface::Clear(DWORD c)
 
 	if (IsCompressed()) Decompress();
 
-	if (Initial&OAPISURFACE_TEXTURE) return false;
+	if (Initial==OAPISURFACE_TEXTURE) {
+		LogErr("Attempting to clear a texture 0x%X color=0x%X",this,c);
+		return false;
+	}
 
 	if (pSurf==NULL) {
 		LogErr("Null pSurf 0x%X",this);

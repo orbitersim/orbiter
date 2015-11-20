@@ -318,7 +318,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
 		structure_as[i]->SetSunLight(&sunLight);
-		structure_as[i]->RenderBase(dev, &mWorld);
+		structure_as[i]->Render(dev, &mWorld, RENDER_BASE);
 		++uCurrentMesh;
 	}
 	return true;

@@ -85,9 +85,8 @@ vVessel::~vVessel ()
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
-	const DWORD texsize = 256; // render target texture size
-	mfdoff  = SURFACE(gc->clbkCreateTexture(texsize, texsize));
-	SURFACE(mfdoff)->Fill(NULL, 0);
+	mfdoff = SURFACE(gc->clbkCreateSurfaceEx(16, 16, OAPISURFACE_TEXTURE|OAPISURFACE_RENDERTARGET));
+	mfdoff->Fill(NULL, 0);
 	gc->GetTexMgr()->LoadTexture("Reentry.dds", &defreentrytex, 0);
 	gc->GetTexMgr()->LoadTexture("Exhaust.dds", &defexhausttex, 0);
 }

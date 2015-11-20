@@ -1329,6 +1329,12 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	dev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
 	dev->SetIndices(pIB);
 
+	/*if (iTech==RENDER_BASEBS) {
+		float zBias = -2.0f * scn->GetDepthResolution((float)oapiCameraTargetDist());
+		dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
+		dev->SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, *((DWORD*)&zBias));
+	}*/
+
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Light));
 
@@ -1359,6 +1365,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
+	
+
 	// Pass 0 = Normal Mapped
 	// Pass 1 = Textured
 
@@ -1367,6 +1375,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 		if (bUseNormalMap==false && pass==0) continue; // Skip normal mapped rendering pass
 
 		HR(FX->BeginPass(pass));
+
+		if (iTech==RENDER_BASEBS) dev->SetRenderState(D3DRS_ZENABLE, 0);
 
 		for (DWORD g=0; g<nGrp; g++) {
 
@@ -1508,10 +1518,11 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 			// Apply z-Bias =============================================================================================
 			//
+			/*
 			if (Grp[g]->zBias) {
 				float zBias = float(Grp[g]->zBias) * 1.2e-7f;
 				dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
-			}
+			}*/
 
 			// Apply Animations =========================================================================================
 			//
@@ -1531,7 +1542,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			gc->GetStats()->Draw++;
 			gc->GetStats()->MeshGrps++;
 
-			if (Grp[g]->zBias) dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
+			//if (Grp[g]->zBias) dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
 		}
 		HR(FX->EndPass());
 	}
@@ -1540,26 +1551,13 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(dev, pW);
 	FX->SetBool(eDebugHL, false);
 	if (flags&DBG_FLAGS_DUALSIDED) dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-}
 
-
-// ================================================================================================
-//
-void D3D9Mesh::RenderBase(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
-{
-	_TRACE;
-	if (!pVB) return;
-	Render(dev, pW, RENDER_BASE);
-}
-
-
-// ================================================================================================
-//
-void D3D9Mesh::RenderAsteroid(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
-{
-	_TRACE;
-	if (!pVB) return;
-	Render(dev, pW, RENDER_ASTEROID);
+	/*
+	if (iTech==RENDER_BASEBS) {
+		float zBias = 0.0f;
+		dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
+		dev->SetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, *((DWORD*)&zBias));
+	}*/
 }
 
 // ===========================================================================================
