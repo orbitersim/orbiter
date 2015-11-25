@@ -27,7 +27,6 @@ public:
 	RunwayLights(OBJHANDLE handle, const class Scene *snc);
 	virtual ~RunwayLights();
 
-	void Update();
 	void SetEnd1(VECTOR3 pos);
 	void SetEnd2(VECTOR3 pos);
 	void SetWidth(double width);

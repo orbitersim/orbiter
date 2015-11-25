@@ -31,7 +31,7 @@ struct FontCache {
 	int height;
 	int orient;
 	bool prop;
-	char face[32];
+	char face[64];
 	Font::Style style;
 	class D3D9Text *pFont;
 } fcache[256];

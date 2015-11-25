@@ -60,8 +60,6 @@ public:
 	 */
 	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float time=0.5f);
 
-	void Update(int count);
-
 private:
 
 	DWORD nVert;					///< Number of beacons
