@@ -56,8 +56,10 @@ QuadTreeNode<TileType> *TileManager2Base::LoadChildNode (QuadTreeNode<TileType> 
 	QuadTreeNode<TileType> *child = node->AddChild (idx, tile);
 	if (bTileLoadThread)
 		loader->LoadTileAsync (tile);
-	else
-		tile->Load ();
+	else {
+		tile->PreLoad();
+		tile->Load();
+	}
 	return child;
 }
 
@@ -90,12 +92,6 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	double rad = rad0/(double)nlat;
 	double alpha = acos (dotp (prm.cdir, cnt)); // angle between tile centre and camera from planet centre
 	double adist = alpha - rad;                 // angle between closest tile corner and camera
-
-	//double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
-	//double modrad = minrad - abs(tile->max_elev) / obj_size;
-	//double viewap = acos(modrad / (max (prm.cdist, minrad+0.0002)));
-	//if (adist >= viewap) {
-
 	if (adist >= prm.viewap) {
 		if (lvl == 0)
 			bstepdown = false;                // force render at lowest resolution
@@ -203,6 +199,7 @@ TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres)
 	// Set the root tiles for level 0
 	for (int i = 0; i < 2; i++) {
 		tiletree[i].SetEntry (new TileType (this, 0, 0, i));
+		tiletree[i].Entry()->PreLoad();
 		tiletree[i].Entry()->Load();
 	}
 }

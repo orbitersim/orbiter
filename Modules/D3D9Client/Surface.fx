@@ -372,8 +372,10 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
 	float3 vPlN  = normalize(vVrt);						// Planet mean normal at vertex location
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
+	float  fDPR  = dot(vPlN,  vRay);					// Dot mean normal, viewing ray
+	float  fDNR	 = dot(vNrmW, vRay);
 	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
-	float  fDRP  = dot(vPlN, vRay);
+	float  fDRS  = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
 	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 	float  fNgt	 = fDPS * 4.0f; 
 	outVS.camW   = vRay;
@@ -389,23 +391,25 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	// Camara altitude dependency multiplier for ambient color of atmosphere
 	float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
 
-	if (!bOnOff) {
-		float fX = saturate(fDNS)*2.0;
-		float fY = saturate(fDRP);
-		float fLvl = fX * rcp(fX+fY) * fExposure;
-		outVS.atten = max(fLvl, 4.0f*fAmb)*0.5;
+	if (!bOnOff) {	
+		float fX = saturate(fDNS);						// Lambertian
+		float fY = saturate(fDNR)*0.4;					// Lommel-Seeliger compensation
+		float fZ = pow(abs(fDRS),10.0f) * 0.2f;			// Shadow compensation
+		float fLvl = fX * (fZ+rcp(fX+fY)) * fExposure;	// Bake all together
+
+		outVS.atten = max(fLvl, 4.0f*fAmb);
 		outVS.insca = 0.0;
 		return outVS;
 	}
 
 	float  fAlt = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
-	float  fDRS = dot(vRay, vSunDir);					// Dot viewing ray, sun direction
+	
 	
 	outVS.aux[AUX_NIGHT] = -fNgt;
    
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
-		float fDRay = fDns * AngleCoEff(dot(vPlN, vRay));
+		float fDRay = fDns * AngleCoEff(fDPR);
 		vSunLight   = exp2(-vTotOutSct * (fAux2 * fDns * 0.5f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
 		outVS.atten = exp2(-vTotOutSct * fDRay);
 		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
@@ -434,10 +438,10 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	}
 
 	float fX = saturate(fDNS);
-	float fY = saturate(fDRP);
-	float fLvl = fX * rcp(fX+fY);
+	//float fY = saturate(fDPR);
+	//float fLvl = fX * rcp(fX+fY);
 
-	outVS.atten *= max(vSunLight * fLvl, (vRayInSct+4.0f) * fAmb);
+	outVS.atten *= max(vSunLight * fX, (vRayInSct+4.0f) * fAmb);
 	
     return outVS;
 }	
@@ -450,7 +454,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float3 cSpe = 0;
 	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
 	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
-	
+
 	if (bSpecular) {
 		float Fct = min(2.0f, 10000.0f / fCameraAlt);
 		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f;
@@ -462,16 +466,16 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
 		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
-		cTex.rgb = lerp(cTex.rgb, float3(1.0, 1.2, 2.1), m * (f*f*f));
+		cTex.rgb = lerp(cTex.rgb, float3(1.2, 1.4, 3.5)*0.7, m * (f*f*f));
 	}
 
 	if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
 	
     float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
 
-	float3 rv = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
+	if (bOnOff) color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
 
-	return float4(pow(abs(rv), fAux4), 1.0f);  
+	return float4(pow(abs(color), fAux4), 1.0f);  
 }
 
 
@@ -583,7 +587,8 @@ CloudShVS ShadowTechVS(TILEVERTEX vrt)
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
 	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
 
-	outVS.alpha  = 1.0f - smoothstep(fCameraAlt, fHorizonDst, length(vPosW));
+	float step   = smoothstep(fHorizonDst*0.5f, fCameraAlt, length(vPosW));
+	outVS.alpha  = saturate(step*step);
 
 	return outVS;
 }	
@@ -591,7 +596,7 @@ CloudShVS ShadowTechVS(TILEVERTEX vrt)
 float4 ShadowTechPS(CloudShVS frg) : COLOR
 {
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
-	return float4(0, 0, 0, fAlpha*cTex.a*frg.alpha);   
+	return float4(0, 0, 0, (fAlpha)*cTex.a*frg.alpha);   
 }
 
 

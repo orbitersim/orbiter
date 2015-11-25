@@ -39,7 +39,7 @@ public:
 	
 	bool Update ();
 
-	void RenderBeacons (LPDIRECT3DDEVICE9 dev);
+	void RenderRunwayLights (LPDIRECT3DDEVICE9 dev);
 	bool RenderSurface (LPDIRECT3DDEVICE9 dev);
 	bool RenderStructures (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, float alpha);

@@ -45,10 +45,13 @@ __int64 qpcFrq = 0;
 __int64 qpcRef = 0; 
 __int64 qpcStart = 0;
 
+CRITICAL_SECTION LogCrit;
+
 void D3D9InitLog(char *file)
 {
 	if (fopen_s(&d3d9client_log,file,"w+")) { d3d9client_log=NULL; } // Failed
 	else {
+		InitializeCriticalSectionAndSpinCount(&LogCrit, 256); 
 		fprintf_s(d3d9client_log,"<html><head><title>D3D9Client Log</title></head><body bgcolor=0x000000 text=0xFFFFFF>"); 
 		fprintf_s(d3d9client_log,"<center><h2>D3D9Client Log</h2><br>");
 		fprintf_s(d3d9client_log,"</center><hr><br><br>"); 
@@ -61,6 +64,7 @@ void D3D9CloseLog()
 		fprintf(d3d9client_log,"</body></html>");
 		fclose(d3d9client_log);
 		d3d9client_log = NULL;
+		DeleteCriticalSection(&LogCrit);
 	}
 }
 
@@ -108,6 +112,7 @@ void LogMsg(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>3) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -124,6 +129,7 @@ void LogMsg(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -132,6 +138,7 @@ void LogAlw(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -148,6 +155,7 @@ void LogAlw(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -156,6 +164,7 @@ void LogBad(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -172,6 +181,7 @@ void LogBad(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }
 
 
@@ -181,6 +191,7 @@ void LogErr(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -199,6 +210,7 @@ void LogErr(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }	
 
 // ---------------------------------------------------
@@ -207,6 +219,7 @@ void LogBlu(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>1) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -223,6 +236,7 @@ void LogBlu(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }	
 
 // ---------------------------------------------------
@@ -231,6 +245,7 @@ void LogWrn(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>1) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -247,6 +262,7 @@ void LogWrn(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }	
 
 // ---------------------------------------------------
@@ -255,6 +271,7 @@ void LogOk(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>2) {
 		DWORD th = GetCurrentThreadId();
 		time(&ltime);
@@ -271,4 +288,5 @@ void LogOk(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 	}
+	LeaveCriticalSection(&LogCrit);
 }	

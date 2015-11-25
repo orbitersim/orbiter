@@ -36,12 +36,9 @@ CloudTile::~CloudTile ()
 
 void CloudTile::PreLoad()
 {
-	char path[MAX_PATH] = {'\0'};
-
-	// Load cloud texture
-	sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-	bool found = mgr->GetClient()->TexturePath(path, path);
-	if (found) LoadFile(path, &TexBuffer, &TexSize);
+	char name[MAX_PATH] = {'\0'};
+	sprintf_s (name, MAX_PATH, "Textures\\%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+	LoadTextureFile(name, &pPreSrf, false);
 }
 
 
@@ -54,17 +51,12 @@ void CloudTile::Load ()
 
 	owntex = true;
 
-	if (CreateTexture(pDev, TexBuffer, TexSize, &tex) != true) {
+	if (CreateTexture(pDev, pPreSrf, &tex) != true) {
 		if (GetParentSubTexRange (&texrange)) {
 			tex = getParent()->Tex();
 			owntex = false;
 		} else tex = 0;
-	} else {
-		TileCatalog->Add(DWORD(tex));
-		mgr->TileLabel(tex, lvl, ilat, ilng);
-	}
-
-	SAFE_DELETEA(TexBuffer); TexSize = 0;
+	} else TileCatalog->Add(DWORD(tex));
 
 	bool shift_origin = (lvl >= 4);
 
@@ -109,7 +101,6 @@ void CloudTile::Render ()
 	pDev->SetIndices(mesh->pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 	HR(Shader->EndPass());
-
 	HR(Shader->End());
 }
 
@@ -150,7 +141,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	//Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview,Mproj);
 
@@ -219,7 +210,7 @@ void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPla
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	//Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview, Mproj);
 

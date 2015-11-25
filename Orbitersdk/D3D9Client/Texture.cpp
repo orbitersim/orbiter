@@ -110,7 +110,7 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 				D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, &Info, NULL, &pTex)==S_OK) {
 				ppdds[ntex] = pTex;
 				TileCatalog->Add(DWORD(pTex));
-				LogMsg("Loaded a texture from %s, 0x%X (%u x %u)", fname, pTex, Info.Width, Info.Height);
+				//LogAlw("Loaded a texture from %s, 0x%X (%u x %u)", fname, pTex, Info.Width, Info.Height);
 			}
 			else {
 				delete[] buffer;

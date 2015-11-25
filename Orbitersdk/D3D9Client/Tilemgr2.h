@@ -95,12 +95,20 @@ public:
 protected:
 	virtual Tile *getParent() = 0;
 
-	virtual void Load () = 0;
-	// Load tile data from file, or synthesise missing data from ancestors
-
 	virtual void Render () {}
 
-	virtual void PreLoad() {}
+	/**
+	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
+	 */
+	virtual void PreLoad() = 0;
+
+	/**
+	 * \brief Construct a surface tile textures from a preloaded data /see virtual bool PreLoad()
+	 */
+	virtual void Load () = 0;
+
+	bool	CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRECT3DTEXTURE9 *pTex);
+	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug=true);
 
 	VECTOR3 Centre () const;
 	// Returns the direction of the tile centre from the planet centre in local planet coordinates
@@ -112,18 +120,13 @@ protected:
 	VBMESH *CreateMesh_hemisphere (int grd, INT16 *elev=0, double globelev=0.0);
 	// Creates a hemisphere mesh for eastern or western hemisphere at resolution level 4
 
-	bool CreateTexture(LPDIRECT3DDEVICE9 pDev, LPVOID pBuffer, DWORD DataSize, LPDIRECT3DTEXTURE9 *pTex);
-	bool LoadFile(const char *path, LPVOID *pBuffer, DWORD *DataSize);
-
-
-	LPVOID	TexBuffer, lTexBuffer;
-	DWORD	TexSize, lTexSize;
-
 	TileManager2Base *mgr;     // the manager this tile is associated with
 	int lvl;                   // tile resolution level
 	int ilat;                  // latitude index
 	int ilng;                  // longitude index
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
+	LPDIRECT3DTEXTURE9 pPreSrf;
+	LPDIRECT3DTEXTURE9 pPreMsk;
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
 	TEXCRDRANGE2 texrange;     // texture coordinate subrange (if using ancestor subtexture)
 	VBMESH *mesh;              // vertex-buffered tile mesh

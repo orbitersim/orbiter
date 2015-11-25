@@ -181,6 +181,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 
 	if (numLightsApproach<0) numLightsApproach = 0;
 
+	if (iCategory==3) return NULL;
 	if (iCategory==0) {
 		if (width>59.0) iCategory = 2;
 		else			iCategory = 1;
@@ -547,12 +548,12 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 
 	for (int k=0;k<i;k++) {
 		beaconsEntry1[k].dir = _V(-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z);
-		double dst = length(beaconsEntry1[k].pos);
-		double dif = sqrt(dst*dst + size*size) - size;
-		beaconsEntry1[k].pos.y -= (dif-0.2);
+		//double dst = length(beaconsEntry1[k].pos);
+		//double dif = sqrt(dst*dst + size*size) - size;
+		//beaconsEntry1[k].pos.y -= (dif-0.2);
 	}
 
-	BeaconArray *beacons = new BeaconArray(beaconsEntry1, i);
+	BeaconArray *beacons = new BeaconArray(beaconsEntry1, i, hObj);
 	delete[] beaconsEntry1;
 	return beacons;
 }
@@ -747,7 +748,7 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 	
 	if (D3DXVec3Dot(&D3DXVEC(camDir), &dirGlo) > 0)
 	{
-		if (night) beacons1->Render(dev, world, currentTime);
+		if (night && beacons1) beacons1->Render(dev, world, currentTime);
 		
 		for (DWORD i=0;i<nVASI;i++) {
 			if (!vasi[i]) continue;
@@ -763,7 +764,7 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 	}
 	else if (!bSingleEnded)
 	{
-		if (night) beacons2->Render(dev, world, currentTime);
+		if (night && beacons2) beacons2->Render(dev, world, currentTime);
 		for (DWORD i=0;i<nVASI;i++) {
 			if (!vasi[i]) continue;
 			if (VASI_end[i]==1) vasi[i]->Render(dev, world);
@@ -911,7 +912,7 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, con
 					int cat;
 					sscanf(cbuf, "CATEGORY %d", &cat);
 					if (cat<0) cat = 0;
-					if (cat>2) cat = 2;
+					if (cat>3) cat = 3;
 					lights[numRunwayLights-1]->SetCategory(cat);
 				}
 

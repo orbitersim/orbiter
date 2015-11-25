@@ -33,7 +33,7 @@ ScatterParams::ScatterParams() :
 	height   ( 8.0 ),    // 4.0 ... 40.0 [km]
 	depth    ( 1.0 ),    // 0.0 ... 1.5
 	// ----------------------------------------
-	expo     ( 0.5 ),    // 0.2 ... 1.5
+	expo     ( 1.0 ),    // 0.2 ... 3.0
 	balance  ( 0.0 ),    // -0.5 ... 0.5
 	// ----------------------------------------
 	rin      ( 1.0 ),    // 0.0 ... 3.0
@@ -47,7 +47,7 @@ ScatterParams::ScatterParams() :
 	aux1	 ( 0.0 ),    // 0.0 ... 2.0
 	aux2	 ( 0.0 ),    // 0.0 ... 2.0
 	aux3	 ( 0.0 ),
-	aux4	 ( 0.0 ),
+	aux4	 ( 0.9 ),
 	// ----------------------------------------
 	orbit	 ( false )   // [true|false]
 {
@@ -195,13 +195,15 @@ void OpenDlgClbk(void *context)
 	// 1 = unit in [km] 
 	// 2 = same for orbital and surface setup
 	// 4 = call vPlanet::UpdateAtmoConfig() on change
+	// 8 = x^2 "linearization"
+	
 
 	ConfigSlider(IDC_ATM_RED,      0.400, 0.700);
 	ConfigSlider(IDC_ATM_GREEN,    0.400, 0.700);
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -4.0, 4.0);
-	ConfigSlider(IDC_ATM_HEIGHT,   2.0, 40.0, 1|2|4);
+	ConfigSlider(IDC_ATM_HEIGHT,   2.0, 400.0, 1|2|4|8);
 	ConfigSlider(IDC_ATM_DEPTH,    0.0, 0.3);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_EXPO,	   0.2, 5.0);
@@ -301,6 +303,7 @@ void SetSlider(int id, WORD pos)
 	if (!vObj) return;
 	for (int i=0;i<ATM_SLIDER_COUNT;i++) if (Slider[i].id==id) {
 		double x = (1000.0-double(pos))/1000.0;
+		if (Slider[i].style&8) x = x*x;
 		double v = Slider[i].min*(1.0-x) + Slider[i].max*x;
 		
 		if (Slider[i].style&2) {
@@ -345,6 +348,7 @@ void UpdateSlider(int id, bool bSetPos)
 
 		if (bSetPos) {
 			double x = (val - Slider[i].min)/(Slider[i].max-Slider[i].min);
+			if (Slider[i].style&8) x = sqrt(x);
 			DWORD dpos = 1000 - DWORD(x*1000.0);
 			SendDlgItemMessage(hDlg, id, TBM_SETPOS,  1, dpos);
 		}

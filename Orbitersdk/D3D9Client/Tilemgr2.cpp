@@ -37,8 +37,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng),
   lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
   texrange(fullrange), cnt(Centre()),
-  TexBuffer(NULL), lTexBuffer(NULL), mesh(NULL), tex(NULL),
-  TexSize (0), lTexSize (0),
+  mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL),
   mean_elev(0.0), max_elev(0.0),
   state(Invalid),
   edgeok(false), owntex (true)
@@ -62,33 +61,19 @@ Tile::~Tile ()
 // Pre Load routine for surface tiles
 // ------------------------------------------------------------------------
 
-bool Tile::LoadFile(const char *path, LPVOID *pBuffer, DWORD *DataSize)
+bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug)
 {
-	LARGE_INTEGER size;
-   
-    HANDLE hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
- 
-    if (hFile == INVALID_HANDLE_VALUE) return false;
-   
-	GetFileSizeEx(hFile, &size);
+	DWORD Usage = 0, Mips = 1, Filter = D3DX_FILTER_NONE;
+	D3DFORMAT Format = D3DFMT_FROM_FILE;
+	if (Config->TileMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
+	if (Config->TileDebug && bEnableDebug) Usage = D3DUSAGE_DYNAMIC, Format = D3DFMT_R5G6B5;
 
-	if (size.HighPart!=0 || size.LowPart>524288) {
-		CloseHandle(hFile);
-		return false;
+	if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_FILTER_NONE, Filter, 0, NULL, NULL, pPre)==S_OK) {
+		return true;
 	}
 
-	*pBuffer = new char[size.LowPart];
-
-	if (ReadFile(hFile, *pBuffer, size.LowPart, DataSize, NULL)==false) {
-        CloseHandle(hFile);
-		SAFE_DELETEA(*pBuffer);
-		*DataSize = 0;
-        return false;
-    }
-
-	CloseHandle(hFile);
-
-	return true;
+	*pPre = NULL;
+	return false;
 }
 
 
@@ -96,26 +81,18 @@ bool Tile::LoadFile(const char *path, LPVOID *pBuffer, DWORD *DataSize)
 // Create a texture from a pre-loaded data
 // ------------------------------------------------------------------------
 
-bool Tile::CreateTexture(LPDIRECT3DDEVICE9 pDev, LPVOID pBuffer, DWORD DataSize, LPDIRECT3DTEXTURE9 *pTex)
+bool Tile::CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRECT3DTEXTURE9 *pTex)
 {
-	DWORD Mips = 1;
-	DWORD Usage = 0;
-	D3DFORMAT Format = D3DFMT_FROM_FILE;
-
-	if (DataSize==0 || pBuffer==NULL) return false;
-
-	if (Config->TileDebug) {
-		Format = D3DFMT_X8R8G8B8;
-		Usage = D3DUSAGE_DYNAMIC;
+	D3DSURFACE_DESC desc;
+	if (pPre) {
+		pPre->GetLevelDesc(0, &desc);
+		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, pPre->GetLevelCount(), 0, desc.Format, D3DPOOL_DEFAULT, pTex));
+		HR(pDev->UpdateTexture(pPre, (*pTex)));
+		SAFE_RELEASE(pPre);
+		return true;
 	}
-
-	if (D3DXCreateTextureFromFileInMemoryEx(pDev, pBuffer, DataSize, 0, 0, Mips, Usage, Format, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, NULL, NULL, pTex) != S_OK) {
-		*pTex = NULL;
-		return false;
-	}
-	return true;
+	return false;
 }
-
 
 // -----------------------------------------------------------------------
 
@@ -163,12 +140,11 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 bool Tile::InView (const MATRIX4 &transform)
 {
 	if (!lvl) return true; // no good check for this yet
-
 	if (!mesh) return true; // DEBUG : TEMPORARY
 
-	bool bx1, bx2, by1, by2, bz1, bbvis;
+	bool bx1, bx2, by1, by2, bz1;
+	bx1 = bx2 = by1 = by2 = bz1 = false;
 	int v;
-	bx1 = bx2 = by1 = by2 = bz1 = bbvis = false;
 	double hx, hy, hz;
 	for (v = 0; v < 8; v++) {
 		VECTOR4 vt = mul (mesh->Box[v], transform);
@@ -179,9 +155,9 @@ bool Tile::InView (const MATRIX4 &transform)
 		if (hx <  1.0) bx2 = true;
 		if (hy > -1.0) by1 = true;
 		if (hy <  1.0) by2 = true;
-		if (bbvis = bx1 && bx2 && by1 && by2 && bz1) break;
+		if (bx1 && bx2 && by1 && by2 && bz1) return true;
 	}
-	return bbvis;
+	return false;
 }
 
 // -----------------------------------------------------------------------
@@ -746,8 +722,6 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 
 	while (bRunThread) {
 		
-		Sleep(max(1,idle));
-
 		WaitForMutex();
 
 		if (load = (nqueue > 0)) {
@@ -764,16 +738,17 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 
 		ReleaseMutex();
 
-		if (load) {
+		if (load) {	
+			tile->PreLoad(); // Preload data from harddrive to system memory without a Mutex
 
-			// Preload data from harddrive to system memory without a Mutex
-			tile->PreLoad();
-
-			// Enter in a critical section of tile loading
-			WaitForMutex(); 
-			tile->Load();
+			WaitForMutex();
+			tile->Load(); // Create the actual tile texture from a pre-loaded data
 			tile->state = Tile::Inactive; // unlock tile
 			ReleaseMutex();
+			
+		}
+		else {
+			Sleep(1);
 		}
 	}
 	return 0;
@@ -906,14 +881,10 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	normalise (prm.cdir);
 	prm.sdir = tmul (prm.grot, -obj_pos);  // sun's direction in planet frame
 	normalise (prm.sdir);
-	//double minrad = 1.0 + GetPlanet()->GetMinElevation()/obj_size;
-	//prm.viewap = acos (minrad / (max (prm.cdist, 1.0+minalt)));
 	prm.viewap = acos (1.0/(max (prm.cdist, 1.0+minalt)));
 	prm.scale = 1.0;
 	prm.fog = rprm.bFog;
 	prm.tint = rprm.bTint;
-	//if (prm.tint)
-	//	prm.atm_tint = rprm.rgbTint;
 }
 
 // -----------------------------------------------------------------------
@@ -944,6 +915,7 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		return mul(lrot,prm.dwmat_tmp);
 	}
 }
+
 
 // -----------------------------------------------------------------------
 
@@ -992,7 +964,7 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 	}
 }
 
-
+// -----------------------------------------------------------------------
 
 DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB)
 {
@@ -1038,11 +1010,14 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 	}
 }
 
+// -----------------------------------------------------------------------
+
 void TileManager2Base::ReduceMinElevation(double Elev)
 {
 	if (Elev<min_elev) min_elev = Elev;
 }
 
+// -----------------------------------------------------------------------
 
 const double TileManager2Base::GetMinElev() const
 {
@@ -1050,28 +1025,33 @@ const double TileManager2Base::GetMinElev() const
 	return min_elev;
 }
 
+// -----------------------------------------------------------------------
+
 void TileManager2Base::TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng)
 {
-	if (Config->TileDebug==0) return;
 	if (!tex) return;
-	LPDIRECT3DSURFACE9 pSurf;
+	if (!Config->TileDebug) return;
+
+	LPDIRECT3DSURFACE9 pSurf = NULL;
+	HDC hDC = NULL;
 	D3DSURFACE_DESC desc;
-	HDC hDC;
+	
 	HR(tex->GetSurfaceLevel(0, &pSurf));
-	if (!pSurf) return;
-	HR(pSurf->GetDesc(&desc));
-	if ((desc.Usage&D3DUSAGE_DYNAMIC)==0) return;
+	HR(tex->GetLevelDesc(0, &desc));
 	HR(pSurf->GetDC(&hDC));
-	if (!hDC) return; 
+
 	char label[256];
-	sprintf_s(label,256,"%02d-%06d-%06d.dds",lvl+4,ilat,ilng);
+	sprintf_s(label, 256, "%02d-%06d-%06d.dds", lvl+4, ilat, ilng);
 	HFONT hOld = (HFONT)SelectObject(hDC, GetDebugFont());
-	TextOut(hDC,16,16,label,strlen(label));
+	TextOut(hDC, 16, 16, label, strlen(label));
 	SetBkMode(hDC, TRANSPARENT);
 	SelectObject(hDC, GetStockObject (NULL_BRUSH));
 	SelectObject(hDC, GetStockObject (WHITE_PEN));
 	Rectangle(hDC, 0, 0, desc.Width-1, desc.Height-1);
+	SelectObject(hDC, GetStockObject (BLACK_PEN));
+	Rectangle(hDC, 1, 1, desc.Width-2, desc.Height-2);
 	SelectObject(hDC, hOld);
-	pSurf->ReleaseDC(hDC);
+	
+	HR(pSurf->ReleaseDC(hDC));
 	pSurf->Release();
 }

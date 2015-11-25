@@ -21,8 +21,8 @@
 #include "PlanetRenderer.h"
 
 #define HORIZON_NSEG 128	// number of mesh segments
-#define HORIZON2_NSEG 256	// Horizon ring segments
-#define HORIZON2_NRING 32	// Horizon ring ring count
+#define HORIZON2_NSEG 512	// Horizon ring segments
+#define HORIZON2_NRING 64	// Horizon ring ring count
 
 class vPlanet;
 

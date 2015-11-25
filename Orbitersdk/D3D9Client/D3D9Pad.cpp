@@ -34,8 +34,7 @@ struct FontCache {
 	char face[32];
 	Font::Style style;
 	class D3D9Text *pFont;
-	HFONT hFont;
-} fcache[128];
+} fcache[256];
 
 
 int nfcache = 0;
@@ -51,7 +50,8 @@ oapi::Pen * defpen = 0;
 //
 void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const char *folder)
 {
-	memset2(fcache, 0, 128*sizeof(FontCache));
+	memset2(fcache, 0, 256*sizeof(FontCache));
+	nfcache = 0;
 
 	pDev = pDevice;
 	gc = _gc;
@@ -145,16 +145,13 @@ void D3D9Pad::GlobalExit()
 	if (pens_allocated==0 && brushes_allocated==0 && fonts_allocated==0) LogAlw("Sketchap Exiting... All resources released");
 
 	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",nfcache);
-	for (int i=0;i<nfcache;i++) {
-		if (fcache[i].pFont) delete fcache[i].pFont;
-		if (fcache[i].hFont) DeleteObject(fcache[i].hFont);
-	}
-
+	for (int i=0;i<nfcache;i++) if (fcache[i].pFont) delete fcache[i].pFont;
+	
 	SAFE_RELEASE(pCircleLow);
 	SAFE_RELEASE(pCircleHigh);
 	SAFE_RELEASE(FX);
 
-	memset2(fcache, 0, 128*sizeof(FontCache));
+	memset2(fcache, 0, 256*sizeof(FontCache));
 }
 
 
@@ -215,13 +212,7 @@ D3D9Pad::~D3D9Pad ()
 		if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
 		if (bConvert) {
 			pTgt->SetPreferredSketchpad(SKETCHPAD_GDI);
-			LogAlw("Sketchpad: Requests conversion of 0x%X to Plain (Sysmem)", pTgt);
-			if (pTgt->ConvertToPlain()==false) {
-				LogAlw("Sketchpad: Requests conversion of 0x%X to RenderTarget-Lock", pTgt);
-				if (pTgt->ConvertToRenderTarget(true)==false) {
-					LogWrn("Sketchpad: - ! - Requests denied - ! -");
-				}
-			}
+			if (pTgt->ConvertToPlain()==false) pTgt->ConvertToRenderTarget(true);
 		}
 	}
 	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
@@ -873,7 +864,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		if (fcache[i].prop!=prop) continue;
 		if (_stricmp(fcache[i].face,face)!=0) continue;
 		pFont = fcache[i].pFont;
-		//hFont = fcache[i].hFont;
 		break;
 	}
 	
@@ -900,15 +890,14 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 		pFont->SetRotation(rotation);
 		
-		if (nfcache>120) LogErr("Font Cache is Full.");
+		if (nfcache>250) LogErr("Font Cache is Full.");
 		else {
 			// Fill the cache --------------------------------
-			fcache[nfcache].hFont  = NULL;  
 			fcache[nfcache].pFont  = pFont;
 			fcache[nfcache].height = height;
 			fcache[nfcache].style  = style;
 			fcache[nfcache].prop   = prop;
-			strcpy_s(fcache[nfcache].face, 32, face);
+			strcpy_s(fcache[nfcache].face, 64, face);
 			nfcache++;
 		}
 	}
@@ -927,7 +916,7 @@ D3D9PadFont::~D3D9PadFont ()
 {
 	if (pFont) pFont->SetRotation(0.0f);
 	fonts_allocated--;
-	DeleteObject(hFont);
+	if (hFont) DeleteObject(hFont);
 }
 
 void D3D9PadFont::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)

@@ -175,11 +175,11 @@ typedef struct {
 
 
 typedef struct {
-	float x, y, z;		///< beacon position
-	float dx, dy, dz;	///< light direction
-	float size, angle, on, off;	///< beacon size and light cone angle
+	float x, y, z;					///< beacon position
+	float dx, dy, dz;				///< light direction
+	float size, angle, on, off;		///< beacon size and light cone angle
 	float bright, falloff;
-	DWORD color;		///< beacon color
+	DWORD color;					///< beacon color
 } BAVERTEX;
 
 typedef struct {

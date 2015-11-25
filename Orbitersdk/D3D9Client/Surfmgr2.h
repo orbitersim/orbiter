@@ -53,6 +53,7 @@ protected:
 
 private:
 	INT16 *ElevationData () const;
+	double GetMeanElevation (const INT16 *elev) const;
 
 	LPDIRECT3DTEXTURE9 ltex;		// landmask/nightlight texture, if applicable
 	INT16 *elev;               // elevation data [m] (8x subsampled)

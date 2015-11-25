@@ -1,7 +1,7 @@
 // ===========================================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012 - 2014 Jarmo Nikkanen
+// Copyright (C) 2012 - 2015 Jarmo Nikkanen
 // ===========================================================================================
 
 #include "BeaconArray.h"
@@ -12,21 +12,56 @@
 
 using namespace oapi;
 
-
 // ===========================================================================================
 //
-BeaconArray::BeaconArray(const BeaconArrayEntry *pEnt, DWORD nEntry) : D3D9Effect()
+BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, OBJHANDLE _hBase) : D3D9Effect()
 {
 	_TRACE;
 	pVB = NULL;
 	nVert = nEntry;
-
+	hBase = _hBase;
+	hPlanet = NULL;
+	
+	double mean_rad = 0;	// Planet mean radius
+	double base_rad = 0;	// Distace of surface base from a geocentre (i.e. mean_rad + base elevation)
+	double inv_brad = 0;	// 1.0/base_rad
+	double base_lng = 0;
+	double base_lat = 0;
+	
 	HR(gc->GetDevice()->CreateVertexBuffer(nEntry*sizeof(BAVERTEX), D3DUSAGE_DYNAMIC|D3DUSAGE_POINTS, 0, D3DPOOL_DEFAULT, &pVB, NULL));
 	
 	BAVERTEX *pVrt = LockVertexBuffer();
 
+	if (hBase) {
+		hPlanet = oapiGetBasePlanet(hBase);
+		oapiGetBaseEquPos(hBase, &base_lng, &base_lat, &mean_rad);	// mrad = mean radius
+		VECTOR3 bp;
+		oapiGetRelativePos(hBase, hPlanet, &bp);
+		base_rad = length(bp);								// brad = base radius
+		inv_brad = 1.0/base_rad;
+	}
+
 	if (pVrt) {
+
 		for (DWORD i=0;i<nEntry;i++) {
+
+			if (hBase) {
+				
+				// Beacon lng, lat
+				double lat  = base_lat - atan(pEnt[i].pos.x*inv_brad);
+				double lng  = base_lng + atan(pEnt[i].pos.z*inv_brad);
+
+				// Beacon distance from a geo-centre
+				double elv  = mean_rad + oapiSurfaceElevation(hPlanet, lng, lat);
+
+				// Beacon distance from center of the base
+				double dst  = sqrt(pEnt[i].pos.x*pEnt[i].pos.x + pEnt[i].pos.z*pEnt[i].pos.z);
+
+				// Beacon's y-coordinate in local base reference frame
+				double y = sqrt(elv*elv - dst*dst) - base_rad;
+
+	  			pEnt[i].pos.y = 0.5 + y;
+			}
 
 			pVrt[i].x  = float(pEnt[i].pos.x);
 			pVrt[i].y  = float(pEnt[i].pos.y);
@@ -108,10 +143,14 @@ void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float tim
 		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 		HR(FX->BeginPass(0));
 		
+		dev->SetRenderState(D3DRS_ZENABLE, 0);
+
 		dev->SetVertexDeclaration(pBAVertexDecl);
 		dev->SetStreamSource(0, pVB, 0, sizeof(BAVERTEX));
 		dev->DrawPrimitive(D3DPT_POINTLIST, 0, nVert);
 	
+		dev->SetRenderState(D3DRS_ZENABLE, 1);
+
 		HR(FX->EndPass());
 		HR(FX->End());	
 

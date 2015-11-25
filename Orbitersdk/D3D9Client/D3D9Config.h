@@ -62,7 +62,7 @@ public:
 	int ShadowMapMode;				///< Shadow Mapping Mode
 	int ShadowMapSize;				///< Shadow Map size
 	int CustomCamMode;				///< Custom Camera Mode
-	int Instancing;					///< Enable Geometry Instancing
+	int TileMipmaps;				///< Enable surface tile mipmaps
 	int LODBias;					///< 3D Terrain resolution bias
 	int TileDebug;					///< Enable tile debugger
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")

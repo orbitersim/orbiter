@@ -103,7 +103,7 @@
 #define IDC_ENVFACES                            2094
 #define IDC_ENVMODE                             2095
 #define IDC_FONT                                2096
-#define IDC_GEOMETRY                            2097
+#define IDC_MIPMAPS								2097
 #define IDC_GLASSSHADE                          2098
 #define IDC_HZ                                  2099
 #define IDC_LODBIAS                             2100

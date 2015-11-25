@@ -45,6 +45,9 @@ extern int SURF_MAX_PATCHLEVEL;
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
+	char path[MAX_PATH];
+	FILE *fp = NULL;
+
 	bScatter = false;
 	rad = (float)size;
 	render_rad = (float)(0.1*rad);
@@ -57,6 +60,13 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
+
+		// Check existance of tileformat (1) texture data
+		sprintf_s(path, MAX_PATH, "Textures\\%s.tex", name);
+		if (fopen_s(&fp, path, "rb")) {
+			LogErr("WARNING: No texture data found for %s (TileFormat = 1)", name);
+		} else fclose(fp);
+
 	} else {
 		bScatter = LoadAtmoConfig(false);
 		if (bScatter) LoadAtmoConfig(true);
@@ -64,6 +74,12 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres);
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
+
+		// Check existance of tileformat (2) texture data
+		sprintf_s(path, MAX_PATH, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", name, 1, 0, 0);
+		if (fopen_s(&fp, path, "rb")) {
+			LogErr("WARNING: No texture data found for %s (TileFormat = 2)", name);
+		} else fclose(fp);
 	}
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
@@ -310,7 +326,8 @@ bool vPlanet::Update ()
 		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
-		prm.bCloudFlatShadows = (cdist >= (size+GetHorizonAlt())); //(cdist >= 1.05*size);
+		prm.bCloudFlatShadows = (cdist >= 1.05*size);
+		//prm.bCloudFlatShadows = (cdist >= (size+GetHorizonAlt()));
 
 		if (clouddata) {
 			if (prm.cloudvis & 1) {
@@ -344,7 +361,6 @@ bool vPlanet::Update ()
 			clouddata->cloudmgr->SetMicrolevel (max (0, min (1, lvl)));
 		}
 	}
-	
 
 	// check all base visuals
 	if (nbase) {	
@@ -391,7 +407,7 @@ void vPlanet::CheckResolution()
 	double apr = rad * scn->ViewH()*0.5 / (alt * scn->GetTanAp());
 	// apparent planet radius in units of screen pixels
 
-	DWORD new_patchres;
+	int new_patchres;
 	double ntx;
 
 	if (apr < 2.5) { // render planet as 2x2 pixels
@@ -404,7 +420,7 @@ void vPlanet::CheckResolution()
 
 		static const double scal2 = 1.0/log(2.0);
 		const double shift = (surfmgr2 ? 6.0 : 5.0); // reduce level for tile mgr v2, because of increased patch size
-		new_patchres = min (max ((DWORD)(scal2*log(ntx)-shift),1), max_patchres);
+		new_patchres = min (max ((int)(scal2*log(ntx)-shift),1), max_patchres);
 	}
 	if (new_patchres != patchres) {
 		if (hashaze) {
@@ -464,8 +480,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	if (renderpix) { // render as 2x2 pixel block
 		RenderDot (dev);
-	} 
-	else {             // render as sphere
+	} else {             // render as sphere
 		DWORD amb = prm.amb0col;
 		bool ringpostrender = false;
 		float fogfactor;
@@ -542,18 +557,6 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			}
 		}
 
-		if (prm.bTint) {
-			prm.TintColor = _D3DXCOLOR(*(VECTOR3*)oapiGetObjectParam (hObj, OBJPRM_PLANET_ATMTINTCOLOUR));
-			double R = oapiGetSize (hObj);
-			double alt = cdist - R;
-			double alt_ref1 = fog.alt_ref*5.0;
-			double alt_ref2 = alt_ref1 * 0.1;
-			if (alt < alt_ref1) {
-				double scale = (alt-alt_ref2)/(alt_ref1-alt_ref2);
-				if (scale <= 0.0) prm.bTint = false;
-				else prm.TintColor *= float(scale);
-			}
-		}
 
 		if (mesh) {
 			mesh->SetSunLight((D3D9Light *)scn->GetLight(-1));
@@ -608,10 +611,10 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		RenderBaseSurfaces (dev);                     // base surfaces
 		RenderBaseShadows (dev, shadowalpha);         // base shadows
 	}
-
-	RenderCloudShadows(dev); // cloud shadows
-	
+	if (prm.bCloudShadow)
+		RenderCloudShadows (dev);                	// cloud shadows
 	if (bVesselShadow && hObj == oapiCameraProxyGbody())
+	// cast shadows only on planet closest to camera
 		scn->RenderVesselShadows (hObj, shadowalpha); // vessel shadows
 }
 
@@ -648,7 +651,10 @@ void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderBaseSurfaces(LPDIRECT3DDEVICE9 dev)
 {
-	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderSurface(dev);		
+	for (DWORD i=0;i<nbase;i++) if (vbase[i]) {
+		vbase[i]->RenderSurface(dev);	
+		vbase[i]->RenderRunwayLights(dev);
+	}
 }
 
 // ==============================================================
@@ -858,6 +864,8 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 
 	if (!hFile) return false;
 
+	LogAlw("Loading Atmospheric Configuration file [%s] Handle=0x%X",path,hFile);
+
 	ScatterParams *prm;
 
 	if (bOrbit) prm = &OPrm;
@@ -889,7 +897,6 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	oapiReadItem_float(hFile, "Aux3", prm->aux3);
 	oapiReadItem_float(hFile, "Aux4", prm->aux4);
 	// -----------------------------------------------------------------
-	
 	
 	oapiCloseFile(hFile, FILE_IN);
 

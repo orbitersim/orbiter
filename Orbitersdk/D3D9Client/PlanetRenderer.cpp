@@ -263,29 +263,47 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVec3Normalize(&ucam, &cam);
 
 	OBJHANDLE hPlanet = pPlanet->GetObject();
+	D3DXVECTOR3 SunDir = _D3DXVECTOR3(pPlanet->SunDirection());
 
-	const ATMCONST *atm = (oapiGetObjectType(hPlanet)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hPlanet) : NULL);
-
-	double *pCoEff = pPlanet->prm.ScatterCoEff;
-
-	D3DXVECTOR4 ODCoEff   = D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])); 
-	D3DXVECTOR4 ODCoEffEx = D3DXVECTOR4(float(pCoEff[4]), float(pCoEff[5]), float(pCoEff[6]), float(pCoEff[7])); 
-	D3DXVECTOR3 SunDir    = _D3DXVECTOR3(pPlanet->SunDirection());
+	const ScatterParams *atmo = pPlanet->GetAtmoParams();
 
 	DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 	float fAmbient = float(dAmbient)*0.0039f;
 
+	float fWb = -float(atmo->balance);	// White balance
+	double pr = pPlanet->GetSize();		// Planet radius
+	double cr = pPlanet->CamDist();		// Camera distance from a planet center
+	double ca = cr - pr;				// Camera altitude
+
+	D3DXVECTOR3 whitebl = D3DXVECTOR3(pow(float(atmo->red),fWb), pow(float(atmo->green),fWb), pow(float(atmo->blue),fWb));
+	whitebl *= 1.0f/whitebl.y;
+
+	// Initialize rendering for all bodies rendering ---------------------------------------------------
+	//
+	HR(Shader()->SetBool(sbOnOff, false));
 	HR(Shader()->SetValue(svCameraPos, &cam, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svUnitCameraPos, &ucam, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svSunDir, &SunDir, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetFloat(sfAmbient0, 0.0f));
 	HR(Shader()->SetFloat(sfGlobalAmb, fAmbient));
-	HR(Shader()->SetBool(sbOnOff, false));
+	HR(Shader()->SetValue(svWhiteBalance, &whitebl, sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetFloat(sfExposure, float(atmo->expo)));
+	HR(Shader()->SetFloat(sfAux4, 1.0f/float(atmo->aux4)));
+	HR(Shader()->SetFloat(sfRadius, float(pr)));
+	HR(Shader()->SetFloat(sfCameraAlt, float(ca)));
 
-	// If the planet has no atmosphere we can skip the rest.
-	if (atm==NULL) return;
+	// Initialize atmospheric rendering ---------------------------------------------------
+	//
+	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet);
+	if (atm==NULL) return; // No atmosphere... skip the rest
 
-	const ScatterParams *atmo = pPlanet->GetAtmoParams();
+
+	// Initialize atmospheric rendering constants ----------------------------------------------
+	//
+	double *pCoEff = pPlanet->prm.ScatterCoEff;
+
+	D3DXVECTOR4 ODCoEff   = D3DXVECTOR4(float(pCoEff[0]), float(pCoEff[1]), float(pCoEff[2]), float(pCoEff[3])); 
+	D3DXVECTOR4 ODCoEffEx = D3DXVECTOR4(float(pCoEff[4]), float(pCoEff[5]), float(pCoEff[6]), float(pCoEff[7])); 
 
 	// Phase function variables
 	float   g = float(atmo->mphase);
@@ -296,40 +314,30 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float  h0 = float(atmo->height*1e3);				// Scale height
 	float hm0 = float(atmo->mheight*1e3);
 	float  mp = -float(atmo->mpow);
-	float  wb = -float(atmo->balance);
 	float  cs =  float(atmo->aux3);
 
 	double me = pPlanet->GetMinElevation();				// Minimum elevation
-	double pr = pPlanet->GetSize();						// Planet radius
 	double mr = pr+me;									// Minimum radius
 	double ur = pr + pPlanet->GetHorizonAlt();			// Atmosphere upper radius (Skydome radius)
-	double cr = pPlanet->CamDist();						// Camera distance from a planet center
-	double ca = cr - pr;								// Camera altitude
 	double hd = sqrt(cr*cr-mr*mr);						// Camera to horizon distance
 	double tm = fmod(oapiGetSimTime(), 256.0);
 
-	float fA = float(sqrt(1.0 - (mr*mr)/(cr*cr)));
-	float fB = (-D3DXVec3Dot(&SunDir, &ucam)-fA) / (float(atmo->aux1+0.01)*0.64f);
-	float fP = float(pPlanet->AngleCoEff(0.0));
+	float  fA = float(sqrt(1.0 - (mr*mr)/(cr*cr)));
+	float  fB = (-D3DXVec3Dot(&SunDir, &ucam)-fA) / (float(atmo->aux1+0.01)*0.64f);
+	float  fP = float(pPlanet->AngleCoEff(0.0));
 
 	float fCorrect = 0.5f + saturate(fB)*1.5f;
-
-	//sprintf(oapiDebugString(),"Debug: MinElev=%f, ca=%f, hd=%f, fA=%f, fB=%f, fP=%f", pPlanet->GetMinElevation(), ca, hd, fA, fB, fP);
 
 	// 1.0 / lambda^4
 	D3DXVECTOR3 lambda4 = D3DXVECTOR3(pow(float(atmo->red),rp), pow(float(atmo->green),rp), pow(float(atmo->blue),rp));
 	D3DXVECTOR3 lambda2 = D3DXVECTOR3(pow(float(atmo->red),mp), pow(float(atmo->green),mp), pow(float(atmo->blue),mp));
-	D3DXVECTOR3 whitebl = D3DXVECTOR3(pow(float(atmo->red),wb), pow(float(atmo->green),wb), pow(float(atmo->blue),wb));
 	
 	D3DXVec3Normalize(&lambda4, &lambda4);
 	D3DXVec3Normalize(&lambda2, &lambda2);
 
-	whitebl *= 1.0f/whitebl.y;
-
 	D3DXVECTOR3 vTotOutSct = lambda4*float(atmo->rout) + lambda2*float(atmo->mie);
 	D3DXVECTOR3 vMieInSct  = lambda2*float(atmo->mie);	
 	D3DXVECTOR3 vRayInSct  = lambda4*float(atmo->rin * atmo->rout);
-	D3DXVECTOR3 vWhiteBalance = whitebl;
 	D3DXVECTOR3 vColorShift = lerp(D3DXVECTOR3(1,1,1), lambda4, float(atmo->aux3)*fCorrect) * float(-atmo->expo);
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
@@ -345,20 +353,15 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetValue(svMieInSct, &vMieInSct, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svRayInSct, &vRayInSct, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svColorShift, &vColorShift, sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svWhiteBalance, &vWhiteBalance, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetFloat(sfSunset, float(atmo->depth)));
 	HR(Shader()->SetFloat(sfRPhase, float(atmo->rphase)));
-	HR(Shader()->SetFloat(sfExposure, float(atmo->expo)));
 	HR(Shader()->SetFloat(sfAux1, float(atmo->aux1)));
 	HR(Shader()->SetFloat(sfAux2, float(atmo->aux2)));
-	HR(Shader()->SetFloat(sfAux4, 1.0f/float(atmo->aux4)));
 	HR(Shader()->SetFloat(sfInvAux1, 1.0f/float(atmo->aux1)));
 	HR(Shader()->SetFloat(sfInvParameter, 1.0f/fP));
 	HR(Shader()->SetFloat(sfScaleHeight, h0));
 	HR(Shader()->SetFloat(sfInvScaleHeight, 1.0f/h0));
 	HR(Shader()->SetFloat(sfInvMieScaleHeight, 1.0f/hm0));
-	HR(Shader()->SetFloat(sfRadius, float(pr)));
-	HR(Shader()->SetFloat(sfCameraAlt, float(ca)));
 	HR(Shader()->SetFloat(sfHorizonAlt, float(ur-pr)));
 	HR(Shader()->SetFloat(sfAtmRad2, float(ur*ur)));
 	HR(Shader()->SetFloat(sfHorizonDst, float(hd)));
@@ -368,7 +371,8 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
 
 	// ---------------------------------------------------------------------
-	
+	// Initialize normal mapped water
+	//
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hPlanet, &mRot);
 

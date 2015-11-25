@@ -109,6 +109,8 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj,
 	CreateTaxiLights();
 }
 
+// ===========================================================================================
+//
 void vBase::CreateRunwayLights()
 {
 	__TRY {
@@ -124,6 +126,8 @@ void vBase::CreateRunwayLights()
 	}
 }
 
+// ===========================================================================================
+//
 void vBase::CreateTaxiLights()
 {
 	__TRY {
@@ -139,6 +143,8 @@ void vBase::CreateTaxiLights()
 	}
 }
 
+// ===========================================================================================
+//
 vBase::~vBase ()
 {
 	DWORD i;
@@ -171,6 +177,8 @@ vBase::~vBase ()
 	}
 }
 
+// ===========================================================================================
+//
 DWORD vBase::GetMeshCount()
 {
 	if (tilemesh) return nstructure_bs + nstructure_as + 1;
@@ -239,6 +247,8 @@ void vBase::UpdateBoundingBox()
 }
 
 
+// ===========================================================================================
+//
 bool vBase::Update ()
 {
 	_TRACE;
@@ -276,6 +286,9 @@ bool vBase::Update ()
 	return true;
 }
 
+
+// ===========================================================================================
+//
 bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 {
 	// note: assumes z-buffer disabled
@@ -304,6 +317,9 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 	return true;
 }
 
+
+// ===========================================================================================
+//
 bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 {
 	if (!active) return false;
@@ -324,7 +340,10 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	return true;
 }
 
-void vBase::RenderBeacons(LPDIRECT3DDEVICE9 dev)
+
+// ===========================================================================================
+//
+void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 {
 	if (!active) return;
 	if (!IsVisible()) return;
@@ -358,6 +377,9 @@ void vBase::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 	}
 }
 
+
+// ===========================================================================================
+//
 void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 {
 	if (!nstructure_as) return; // nothing to do

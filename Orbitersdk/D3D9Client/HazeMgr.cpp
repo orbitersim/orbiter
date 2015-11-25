@@ -373,8 +373,14 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 	D3DMAT_Identity(&mW);
 	D3DMAT_FromAxisT(&mW, &_D3DXVECTOR3(ux), &_D3DXVECTOR3(ur), &_D3DXVECTOR3(uy));
 
+	class Scene *scene = Client()->GetScene();
+	double np = scene->GetCameraNearPlane();
+	double fp = scene->GetCameraFarPlane();
+	scene->SetCameraFrustumLimits(cr*0.02,cr*10.0);
+	
 	HR(Shader()->SetTechnique(eRingTech));
 	HR(Shader()->SetMatrix(smWorld, &mW));
+	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(float(r1), float(r2), float(h1), float(h2))));
 	HR(Shader()->SetFloat(sfAlpha, float(qw)));
 	
@@ -392,6 +398,8 @@ void HazeManager2::RenderRing(VECTOR3 cpos, VECTOR3 cdir, double rad, double hra
 
 	HR(Shader()->EndPass());
 	HR(Shader()->End());	
+
+	scene->SetCameraFrustumLimits(np, fp);
 }
 
 
