@@ -553,7 +553,6 @@ float4 SpotTechPS(SimpleVS frg) : COLOR
 #include "Particle.fx"
 #include "Mesh.fx"
 #include "Vessel.fx"
-#include "CelestialSphere.fx"
 #include "HorizonHaze.fx"
 #include "Planet.fx"
 #include "BeaconArray.fx"

@@ -108,7 +108,8 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		if (lvl == 0)
 			bstepdown = false;
 		else {
-			node->DelChildren ();             // remove the sub-tree
+			// Keep a tile allocated as long as the tile can be seen from a current camera position
+			//node->DelChildren ();             // remove the sub-tree
 			tile->state = Tile::Invisible;
 			return;
 		}

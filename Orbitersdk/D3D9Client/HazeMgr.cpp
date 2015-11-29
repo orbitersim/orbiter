@@ -299,6 +299,9 @@ void HazeManager2::RenderSky(VECTOR3 cpos, VECTOR3 cdir, double rad, double apr)
 	double b = (PI-asin(rad/cr))/6.0;
 	
 	D3DXVECTOR3 vTileCenter = D3DXVECTOR3(float(sin(15.0*RAD)), 1.0f, float(1.0+cos(15.0*RAD))) * 0.5;
+	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a*0.5));
+	D3DXMatrixMultiply(&mWL, &mWL, &mL);
+
 	D3DXMatrixRotationAxis(&mL, &_D3DXVECTOR3(ur), float(-a));
 
 	for (int i=0;i<24;i++) {

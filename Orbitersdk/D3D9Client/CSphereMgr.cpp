@@ -94,9 +94,9 @@ CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : Plane
 	MATRIX3 R = {2000,0,0, 0,2000,0, 0,0,2000};
 
 	// rotation from galactic to ecliptic frame
-	double theta = 60.18*RAD;
-	double phi = 90.02*RAD;
-	double lambda = 173.6*RAD;
+	double theta = 60.28*RAD;
+	double phi = 90.08*RAD;
+	double lambda = 173.7*RAD;
 	double sint = sin(theta), cost = cos(theta);
 	double sinp = sin(phi), cosp = cos(phi);
 	double sinl = sin(lambda), cosl = cos(lambda);

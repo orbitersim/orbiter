@@ -823,10 +823,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Modules\D3D9Client\CelestialSphere.fx"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Modules\D3D9Client\CKBlit.fx"
 				>
 			</File>

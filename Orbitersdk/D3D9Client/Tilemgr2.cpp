@@ -833,7 +833,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 
 	loader = new TileLoader (gc);
 
-	hFont  = CreateFont(26, 0, 0, 0, 600, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, "Arial");
+	hFont  = CreateFont(42, 0, 0, 0, 600, false, false, 0, 0, 0, 2, CLEARTYPE_QUALITY, 49, "Arial");
 }
 
 // -----------------------------------------------------------------------
@@ -881,10 +881,9 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	normalise (prm.cdir);
 	prm.sdir = tmul (prm.grot, -obj_pos);  // sun's direction in planet frame
 	normalise (prm.sdir);
-	prm.viewap = acos (1.0/(max (prm.cdist, 1.0+minalt)));
+	// Add 5km threshold to allow slight camera movement with out causing surface tiles to unload
+	prm.viewap = acos (1.0/(max ((cdist+5e3) / obj_size, 1.0+minalt)));
 	prm.scale = 1.0;
-	prm.fog = rprm.bFog;
-	prm.tint = rprm.bTint;
 }
 
 // -----------------------------------------------------------------------

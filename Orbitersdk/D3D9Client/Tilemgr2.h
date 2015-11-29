@@ -200,9 +200,6 @@ public:
 		double cdist;      // camera distance from planet centre (in units of planet radii)
 		double viewap;     // aperture of surface cap visible from camera pos
 		double scale;
-		bool fog;
-		bool tint;         // apply atmospheric tint?
-		//VECTOR3 atm_tint;  // atmospheric RGB surface tint at high atmosphere
 	} prm;
 
 	/**
