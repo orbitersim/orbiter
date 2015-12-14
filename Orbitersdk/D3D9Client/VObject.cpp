@@ -39,7 +39,9 @@ using namespace oapi;
 D3D9Client *vObject::gc = NULL;
 D3D9ClientSurface *vObject::blobtex[3] = {0,0,0};
 
-// Constructor
+
+// ===========================================================================================
+//
 vObject::vObject(OBJHANDLE _hObj, const Scene *scene): VisObject (_hObj)
 {
 	_TRACE;
@@ -54,6 +56,9 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene): VisObject (_hObj)
 	oapiGetObjectName(hObj, name, 64);
 }
 
+
+// ===========================================================================================
+//
 vObject *vObject::Create(OBJHANDLE _hObj, const Scene *scene)
 {
 	_TRACE;
@@ -72,6 +77,9 @@ vObject *vObject::Create(OBJHANDLE _hObj, const Scene *scene)
 	}
 }
 
+
+// ===========================================================================================
+//
 void vObject::GlobalInit(D3D9Client *gclient)
 {
 	_TRACE;
@@ -80,38 +88,46 @@ void vObject::GlobalInit(D3D9Client *gclient)
 	for (int i=0;i<3;i++) blobtex[i] = SURFACE(gc->clbkLoadTexture(fname[i]));
 }
 
+
+// ===========================================================================================
+//
 void vObject::GlobalExit()
 {
 	_TRACE;
 	for (int i=0;i<3;i++) SAFE_DELETE(blobtex[i]);
 }
 
+
+// ===========================================================================================
+//
 void vObject::Activate(bool isactive)
 {
 	active = isactive;
 }
 
+
+// ===========================================================================================
+//
 DWORD vObject::GetMeshCount()
 { 
 	return 0;
 }
 
-bool vObject::Update()
+
+// ===========================================================================================
+//
+bool vObject::Update(bool bMainScene)
 {
 	if (!active) return false;
 
 	MATRIX3 grot;
-	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+	VECTOR3 gpos;
+
 	oapiGetRotationMatrix(hObj, &grot);
-	oapiGetGlobalPos(hObj, &cpos);
-	oapiGetGlobalPos(hSun, &sundir);
-
-	sundst = length(sundir-cpos);
-	sundir = unit(sundir-cpos);
-	cpos -= scn->GetCameraGPos();
-	cdist = length(cpos);
-	sunapprad = oapiGetSize(hSun) / sundst;
-
+	oapiGetGlobalPos(hObj, &gpos);
+	
+	cpos   = gpos - scn->GetCameraGPos();
+	cdist  = length(cpos);
 		
 	dmWorld = _M(grot.m11, grot.m21, grot.m31, 0,
 		         grot.m12, grot.m22, grot.m32, 0,
@@ -124,17 +140,30 @@ bool vObject::Update()
 
 	D3DXMatrixInverse(&mWorldInv, NULL, &mWorld);
 
-	// update the object's world matrix
-	CheckResolution();
+	if (bMainScene) {
+		OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+		oapiGetGlobalPos(hSun, &sundir);
+
+		sundst = length(sundir-gpos);
+		sundir = unit(sundir-gpos);
+		sunapprad = oapiGetSize(hSun) / sundst;
+		CheckResolution();
+	}
 
 	return true;
 }
 
+
+// ===========================================================================================
+//
 void vObject::UpdateBoundingBox()
 {
 	
 }
 
+
+// ===========================================================================================
+//
 VECTOR3 vObject::GetBoundingSpherePos()
 {
 	if (bBSRecompute) UpdateBoundingBox();
@@ -143,18 +172,26 @@ VECTOR3 vObject::GetBoundingSpherePos()
 	return _V((double)pos.x, (double)pos.y, (double)pos.z);
 }
 
+
+// ===========================================================================================
+//
 float vObject::GetBoundingSphereRadius()
 {
 	if (bBSRecompute) UpdateBoundingBox();
 	return BBox.bs.w;
 }
 
+
+// ===========================================================================================
+//
 const char *vObject::GetName()
 {
 	return name;
 }
 
 
+// ===========================================================================================
+//
 bool vObject::IsVisible()
 {
 	VECTOR3 pos  = GetBoundingSpherePos();
@@ -180,6 +217,7 @@ bool vObject::IsVisible()
 }
 
 
+// ===========================================================================================
 // This routine will render beacons
 //
 void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape)
@@ -209,7 +247,7 @@ void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, 
 }
 
 
-
+// ===========================================================================================
 // This routine is for rendering celestial body dots
 //
 void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
@@ -250,7 +288,8 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 }
 
 
-
+// ===========================================================================================
+//
 void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog)
 {
 	MATRIX3 grot;
@@ -298,7 +337,8 @@ void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vect
 }
 
 
-
+// ===========================================================================================
+//
 void vObject::RenderAxisLabel(Sketchpad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
 {
 	D3DXVECTOR3 homog,ws;

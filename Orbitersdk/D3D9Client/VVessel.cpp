@@ -228,13 +228,13 @@ void vVessel::PreInitObject()
 
 // ============================================================================================
 //
-bool vVessel::Update()
+bool vVessel::Update(bool bMainScene)
 {
 	_TRACE;
 
 	if (!active) return false;
 
-	vObject::Update();
+	vObject::Update(bMainScene);
 
 	UpdateAnimations();
 
@@ -1150,26 +1150,14 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	// -----------------------------------------------------------------------------------------------
 	//
 
-	MATRIX3 grot;
 	VECTOR3 gpos;
-
-	vessel->GetRotationMatrix(grot);
 	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
 
-	D3DXMATRIX mEnv, mGlo, mW, mWI;
+	// Prepare camera and scene for env map rendering
+	gc->GetScene()->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0, true, RENDERPASS_ENVCAM);
+
+	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;
-
-	gpos -= scn->GetCameraGPos();
-
-	D3DXMatrixIdentity(&mW);
-	D3DMAT_SetInvRotation(&mW, &grot);
-	D3DMAT_SetTranslation(&mW, &gpos);
-	D3DXMatrixInverse(&mWI, NULL, &mW);
-
-	// -----------
-
-	D3DXMatrixIdentity(&mGlo);
-	D3DMAT_SetInvRotation(&mGlo, &grot);
 
 	LPDIRECT3DSURFACE9 pORT = NULL;
 	LPDIRECT3DSURFACE9 pODS = NULL;
@@ -1194,10 +1182,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DXVec3Normalize(&cp, &cp);
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
-		D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
-		D3DXMatrixMultiply(&mEnv, &mWI, &mEnv);
-
-		gc->GetScene()->SetupCustomCamera(mEnv, gpos, 0.7853981634, 1.0);
+		
+		gc->GetScene()->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0, false, RENDERPASS_ENVCAM);
 		gc->GetScene()->RenderSecondaryScene(this, true, flags);
 
 		SAFE_RELEASE(pSrf);

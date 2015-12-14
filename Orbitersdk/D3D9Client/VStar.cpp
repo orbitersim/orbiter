@@ -37,12 +37,12 @@ void vStar::GlobalExit()
 	if (deftex)    delete deftex;
 }
 
-bool vStar::Update ()
+bool vStar::Update (bool bMainScene)
 {
 	_TRACE;
 	if (!active) return false;
 
-	vObject::Update ();
+	vObject::Update (bMainScene);
 
 	return true;
 }

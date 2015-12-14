@@ -135,6 +135,7 @@ protected:
 	bool edgeok;               // edges have been checked in this frame
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
+	DWORD FrameId;
 	mutable double mean_elev;  // mean tile elevation [m]
 	mutable double max_elev;   // maximum tile elevation [m]
 };

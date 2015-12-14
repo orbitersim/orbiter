@@ -165,7 +165,7 @@ bool OapiExtension::GetConfigParameter(void)
 	char *pLine;
 	bool orbiterSoundModuleEnabled = false;
 
-	FILEHANDLE f = oapiOpenFile("Orbiter_NG.cfg", FILE_IN, ROOT);
+	FILEHANDLE f = oapiOpenFile("Orbiter_NG.cfg", FILE_IN_ZEROONFAIL, ROOT);
 	if (f) {
 		char  string[32];
 		DWORD flags;
@@ -215,21 +215,21 @@ bool OapiExtension::GetConfigParameter(void)
 			scenarioDir = string;
 		}
 
-		oapiCloseFile(f, FILE_IN);
+		oapiCloseFile(f, FILE_IN_ZEROONFAIL);
 	}
 
 	// Check for the OrbiterSound version
 	if (orbiterSoundModuleEnabled)  {
 		orbiterSound40 = false;
 
-		f = oapiOpenFile("Sound\\version.txt", FILE_IN, ROOT);
+		f = oapiOpenFile("Sound\\version.txt", FILE_IN_ZEROONFAIL, ROOT);
 		while (f && oapiReadScenario_nextline(f, pLine)) {
 			if (NULL != strstr(pLine, "OrbiterSound 4.0 (3D)")) {
 				orbiterSound40 = true;
 				break;
 			}
 		}
-		oapiCloseFile(f, FILE_IN);
+		oapiCloseFile(f, FILE_IN_ZEROONFAIL);
 	}
 
 	return true;

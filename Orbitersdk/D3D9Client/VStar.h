@@ -47,7 +47,7 @@ public:
 	 */
 	static void GlobalExit ();
 
-	bool Update ();
+	bool Update (bool bMainScene);
 	bool Render (LPDIRECT3DDEVICE9 dev);
 
 private:

@@ -67,7 +67,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	viewW = w;
 	nLights = 0;
 	dwTurn = 0;
-	bTakeCamera = false;
+	dwFrameId = 0;
 	
 	pDevice = _gc->GetDevice();
 	
@@ -622,8 +622,8 @@ float Scene::ComputeNearClipPlane()
 
 void Scene::UpdateCamVis()
 {
-	
-	UpdateCameraFromOrbiter(); // update camera parameters
+	dwFrameId++;				// Advance to a next frame
+	UpdateCameraFromOrbiter();	// Update camera parameters.
 
 	if (hObj_proxy) D3D9Effect::UpdateEffectCamera(hObj_proxy);
 	
@@ -640,14 +640,20 @@ void Scene::UpdateCamVis()
 	D3DVEC(rpos, sunLight.Position);
 
 
-	// update all existing visuals, get focus visual -------------------
+	// Get focus visual -----------------------------------------------
 	// 
 	OBJHANDLE hFocus = oapiGetFocusObject();
 	vFocus = NULL;
 	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) {
-		if (pv->type==OBJTP_VESSEL) if (pv->vobj->Object()==hFocus) vFocus = (vVessel *)pv->vobj;
-		pv->vobj->Update();
+		if (pv->type==OBJTP_VESSEL) if (pv->vobj->Object()==hFocus) {
+			vFocus = (vVessel *)pv->vobj;
+			break;
+		}
 	}
+
+	// Update the world state for the next time step ------------------
+	//
+	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) pv->vobj->Update(true);
 
    
 	// Compute SkyColor -----------------------------------------------
@@ -806,6 +812,8 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 void Scene::RenderMainScene()
 {
 	_TRACE;
+
+	UpdateCamVis();
 
 	if (vFocus==NULL) return;
 
@@ -1245,15 +1253,22 @@ void Scene::RenderMainScene()
 	//
 	pDevice->EndScene();
 
+
 	// -------------------------------------------------------------------------------------------------------
 	// Render Custom Camera Views 
 	// -------------------------------------------------------------------------------------------------------
 
-	/*
-	if (Config->CustomCamMode==0) dwTurn = 1;
-	if (Config->EnvMapMode==0) dwTurn = 0;
+	
 
-	if (Config->EnvMapFaces>0 || dwTurn==0) {
+	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
+	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
+	
+	int RenderCount = max(1, Config->EnvMapFaces);
+	
+	// --------------------------------------------------------------------------------------------------------
+	// Render Custom Camera view for a focus vessel
+	//
+	if (dwTurn==RENDERTURN_CUSTOMCAM) {
 		if (Config->CustomCamMode && vFocus) {
 			if (camCurrent==NULL) camCurrent = camFirst;
 			OBJHANDLE hVessel = vFocus->GetObjectA();
@@ -1270,9 +1285,8 @@ void Scene::RenderMainScene()
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render Environmental Map For the Focus Vessel 
-	// -------------------------------------------------------------------------------------------------------
-
-	if (Config->EnvMapFaces>0 || dwTurn==1) {
+	// 
+	if (dwTurn==RENDERTURN_ENVCAM) {
 
 		if (Config->EnvMapMode) {
 			DWORD flags = 0;
@@ -1285,7 +1299,7 @@ void Scene::RenderMainScene()
 				if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
 					if (vobjEnv->vobj) {
 						vVessel *vVes = (vVessel *)vobjEnv->vobj;
-						if (vVes->RenderENVMap(pDevice, max(1, Config->EnvMapFaces), flags)) {
+						if (vVes->RenderENVMap(pDevice, RenderCount, flags)) {
 							vobjEnv = vobjEnv->next;
 							break;
 						}	
@@ -1306,15 +1320,15 @@ void Scene::RenderMainScene()
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0));
 	}
-	*/
+	
 
 	scene_time = D3D9GetTime() - scene_time;
 
 	if (scene_time>gc->GetStats()->ScenePeak) gc->GetStats()->ScenePeak = scene_time;
 	gc->GetStats()->Scene += scene_time;
 
-	if (dwTurn==0) dwTurn = 1;
-	else		   dwTurn = 0;
+	dwTurn++;
+	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
 }
 
 
@@ -1327,7 +1341,7 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, bg_rgba, 1.0f, 0L));
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	
 	if (FAILED (pDevice->BeginScene())) return;
 
@@ -1337,7 +1351,6 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	//
 	if (flags&0x01) {
 		for (DWORD i=0;i<nplanets;i++) {
-			OBJHANDLE hObj = plist[i].vo->Object();
 			bool isActive = plist[i].vo->IsActive();
 			if (isActive) plist[i].vo->Render(pDevice);  // TODO: Should pass the flags to surface base level
 			else		  plist[i].vo->RenderDot(pDevice);
@@ -1737,26 +1750,11 @@ void Scene::UpdateCameraFromOrbiter()
 		camera_relpos = _V(0,0,0);
 	}
 
+	oapiCameraGlobalDir(&camera_dir);
+	oapiCameraRotationMatrix(&grot);
+	D3DXMatrixIdentity(&mView);
+	D3DMAT_SetRotation(&mView, &grot);
 
-	if (bTakeCamera && hTgt) {
-		D3DXMatrixIdentity(&mView);
-		D3DMAT_SetRotation(&mView, &mTakeRotation); 
-		oapiGetGlobalPos(hTgt, &pos);
-		camera_pos = pos + vTakeOffset; // Compute from target pos and offset
-		camera_relpos = vTakeOffset;
-	}
-	else {
-		oapiCameraGlobalDir(&camera_dir);
-		oapiCameraRotationMatrix(&grot);
-		D3DXMatrixIdentity(&mView);
-		D3DMAT_SetRotation(&mView, &grot);
-	}
-
-	camera_x   = D3DXVECTOR3(mView._11, mView._21, mView._31);
-	camera_y   = D3DXVECTOR3(mView._12, mView._22, mView._32);
-	camera_z   = D3DXVECTOR3(mView._13, mView._23, mView._33);
-	camera_dir = _VD3DX(camera_z);
-	
 	// note: in render space, the camera is always placed at the origin,
 	// so that render coordinates are precise in the vicinity of the
 	// observer (before they are translated into D3D single-precision
@@ -1765,29 +1763,46 @@ void Scene::UpdateCameraFromOrbiter()
 	// translational transformation between orbiter global coordinates
 	// and render coordinates.
 
+	SetupInternalCamera(&mView, &camera_pos, oapiCameraAperture(), double(viewH)/double(viewW), false, RENDERPASS_MAINSCENE); 
+}
+
+
+// ===========================================================================================
+//
+void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp, bool bUpdate, DWORD Pass)
+{
+	dwRenderPass = Pass;
+
+	// Update camera orientation if a new matrix is provided
+	if (mNew) {
+		mView	   = *mNew;
+		camera_x   = D3DXVECTOR3(mView._11, mView._21, mView._31);
+		camera_y   = D3DXVECTOR3(mView._12, mView._22, mView._32);
+		camera_z   = D3DXVECTOR3(mView._13, mView._23, mView._33);
+		camera_dir = _VD3DX(camera_z);
+	}
+
+	if (gpos) camera_pos = *gpos;
+
 	// find the planet closest to the current camera position
 	hObj_proxy = oapiCameraProxyGbody();
 
-	if (hObj_proxy==NULL) {
-		LogErr("oapiCameraProxyGbody() returns NULL");
-		return;
-	}
-
+	// find the visual
 	vProxy = (vPlanet *)GetVisObject(hObj_proxy);
-	if (vProxy==NULL) LogErr("Proxy Visual Does Not Exists"); 
-
+	
+	// Camera altitude over the proxy
+	VECTOR3 pos;
 	oapiGetGlobalPos(hObj_proxy, &pos);
-	alt_proxy  = dist(camera_pos, pos) - oapiGetSize(hObj_proxy);
-
-	camera_offset = D3DXVECTOR3(0,0,0);
-	bCustomCam = false;
+	alt_proxy = dist(camera_pos, pos) - oapiGetSize(hObj_proxy);
 
 	// Call SetCameraAparture to update ViewProj Matrix
-	//
-	if (bTakeCamera) SetCameraAperture(dTakeAperture, double(viewH)/double(viewW));
-	else			 SetCameraAperture(oapiCameraAperture(), double(viewH)/double(viewW));
-}
+	SetCameraAperture(apr, asp);
 
+	// Finally update world matrices from all visuals if camera position vector is provided and update is requested
+	// Othervice the world status remains unchanged 
+	//
+	if (gpos && bUpdate) for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) pv->vobj->Update(false);
+}
 
 
 
@@ -1795,23 +1810,6 @@ void Scene::UpdateCameraFromOrbiter()
 // CUSTOM CAMERA INTERFACE
 // ===========================================================================================
 
-void Scene::TakeCamera(MATRIX3 &mRotation, VECTOR3 &disp, double apr)
-{
-	bTakeCamera = true;
-	mTakeRotation = mRotation;
-	vTakeOffset = disp;
-	dTakeAperture = apr;
-}
-
-// ===========================================================================================
-//
-void Scene::ReleaseCameraTake()
-{
-	bTakeCamera = false;
-}
-
-// ===========================================================================================
-//
 int Scene::DeleteCustomCamera(CAMERAHANDLE hCam)
 {
 	if (!hCam) return 0;
@@ -1894,33 +1892,8 @@ void Scene::CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn)
 
 // ===========================================================================================
 //
-void Scene::SetupCustomCamera(D3DXMATRIX &mNew, VECTOR3 &disp, double apr, double asp)
-{
-	mView = mNew;
-
-	camera_x   = D3DXVECTOR3(mView._11, mView._21, mView._31);
-	camera_y   = D3DXVECTOR3(mView._12, mView._22, mView._32);
-	camera_z   = D3DXVECTOR3(mView._13, mView._23, mView._33);
-	camera_dir = _VD3DX(camera_z);
-
-	oapiCameraGlobalPos(&camera_pos);
-
-	camera_pos += disp;
-	camera_offset = D3DXVEC(disp);
-
-	bCustomCam = true;
-
-	// Call SetCameraAparture to update ViewProj Matrix
-	//
-	SetCameraAperture(apr, asp);
-}
-
-// ===========================================================================================
-//
 void Scene::RenderCustomCameraView(CAMREC *cCur)
 {
-	UpdateCameraFromOrbiter();
-
 	VESSEL *pVes = oapiGetVesselInterface(cCur->hVessel);
 
 	DWORD w = SURFACE(cCur->hSurface)->GetWidth();
@@ -1942,23 +1915,16 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	pVes->GetRotationMatrix(grot);
 	pVes->Local2Global(cCur->vPosition, gpos);
 	
-	D3DXMATRIX mEnv, mGlo, mW, mWI;
-
-	gpos -= GetCameraGPos();
-
-	D3DXMatrixIdentity(&mW);
-	D3DMAT_SetTranslation(&mW, &gpos);
-	D3DXMatrixInverse(&mWI, NULL, &mW);
+	D3DXMATRIX mEnv, mGlo;
 
 	D3DXMatrixIdentity(&mGlo);
 	D3DMAT_SetRotation(&mGlo, &grot);
 	D3DXMatrixIdentity(&mEnv);
 	D3DMAT_SetRotation(&mEnv, &cCur->mRotation);
 	D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
-	D3DXMatrixMultiply(&mEnv, &mWI, &mEnv);
 	
 	SetCameraFrustumLimits(0.1, 2e7);
-	SetupCustomCamera(mEnv, gpos, cCur->dAperture, double(h)/double(w));
+	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w), true, RENDERPASS_CUSTOMCAM);
 	
 	ClearOmitFlags();
 
@@ -1981,7 +1947,6 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 //
 bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
 {
-	if (bCustomCam) *pCnt -= camera_offset;
 	float z = camera_z.x*pCnt->x + camera_z.y*pCnt->y + camera_z.z*pCnt->z;
 	if (z<(-radius)) return false; 
 	if (z<0) z=-z;

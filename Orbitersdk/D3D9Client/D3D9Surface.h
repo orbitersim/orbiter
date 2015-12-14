@@ -14,8 +14,6 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
-#define	D3D9_CUSTOM_FLAG_DXPAD		0x1
-
 // Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
 
 class D3D9ClientSurface {
@@ -56,8 +54,7 @@ public:
 
 	void				SetFlag(DWORD flag) { Flags |= flag; }
 	void				RemoveFlag(DWORD flag) { Flags &= (~flag); }
-	void				ProcessFlags();
-
+	
 	void				IncRef();	// Increase surface reference counter
 	bool				Release();	// Decrease the counter
 	int					RefCount() { return Refs; }
@@ -79,13 +76,10 @@ public:
 	inline bool			IsPlainSurface() { return (desc.Usage==0 && pTex==NULL); }
 
 
-	void				SetPreferredSketchpad(int skp);
-
 	DWORD				GetAttribs(int What=1);
 	DWORD				GetFlags() { return Flags; }
 	LPDIRECT3DSURFACE9	GetDepthStencil();
 	LPDIRECT3DSURFACE9	GetSurface();
-	LPDIRECT3DTEXTURE9	GetTextureHard();
 	LPDIRECT3DTEXTURE9	GetNormalMap();
 	LPDIRECT3DTEXTURE9	GetEmissionMap();
 	LPDIRECT3DTEXTURE9	GetSpecularMap();
@@ -95,8 +89,6 @@ public:
 	LPDIRECT3DTEXTURE9	GetTexture();
 	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
 	int					GetSketchPadMode() { return SketchPad; }
-	int					GetPreferredSkpMode() { return iSkpMode; }
-
 
 	void				SetColorKey(DWORD ck);			// Enable and set color key
 	void				DisableColorKey();				// Disable color key.
@@ -156,7 +148,6 @@ private:
 	int					Initial;		// Initial creation Attributes flags
 	int					Active;			// Active Attribute flags
 	int					SketchPad;		// Currently Active Sketchpad 0=None, 1=GDI, 2=GPU
-	int					iSkpMode;		// Preferred SketchPad Mode 0=Auto, 1=GDI, 2=GPU 
 	int					iBindCount;		// GPU Bind reference counter
 	D3DSURFACE_DESC		desc;
 	LPDIRECT3DSURFACE9	pStencil;		

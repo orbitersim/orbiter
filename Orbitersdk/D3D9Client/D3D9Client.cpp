@@ -370,7 +370,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	char fld[] = "D3D9Client";
 
-	if (bGDIBB) Config->SketchpadMode = 1;
+	//if (bGDIBB) Config->SketchpadMode = 1;
 
 	D3D9ClientSurface::D3D9TechInit(this, pd3dDevice, fld);
 
@@ -719,8 +719,6 @@ void D3D9Client::clbkRenderScene()
 		if (mem<32) TileBuffer::HoldThread(true);
 
 		LogOk("== Begin Scene ==");
-
-		scene->UpdateCamVis();	// Update Camera and Visuals
 
 		bScene = true;
 		scene->RenderMainScene();		// Render the main scene
@@ -1116,6 +1114,39 @@ void D3D9Client::EmergencyShutdown()
 	bHalt = true;
 }
 
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	bool eatKeystroke = false;
+
+	if (nCode == HC_ACTION) 
+	{
+		switch (wParam) 
+		{
+			case WM_KEYDOWN:  
+			case WM_SYSKEYDOWN:
+			case WM_KEYUP:    
+			case WM_SYSKEYUP:
+			{
+				PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT) lParam;
+				// eatKeystroke = (p->vkCode == VK_SNAPSHOT);
+				switch (p->vkCode) {
+				case 'W': case 'w':
+				case 'A': case 'a':
+				case 'S': case 's':
+				case 'D': case 'd':
+					// Here goes your code...
+					eatKeystroke = true;
+					break;
+				}
+				break;
+			}
+		}
+	}
+
+	return eatKeystroke
+		 ? 1
+		 : CallNextHookEx(NULL, nCode, wParam, lParam);
+}
 
 // ==============================================================
 // Message handler for render window
@@ -1123,6 +1154,19 @@ void D3D9Client::EmergencyShutdown()
 LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	_TRACER;
+
+	// -----------------------------------------------------------------------
+	/*
+	static bool hooked = false;
+	if (!hooked && hRenderWnd == hWnd) {
+		// Install the low-level keyboard & mouse hooks
+		HINSTANCE hInstance = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
+		HHOOK hhkLowLevelKybd  = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, hInstance, 0);
+		hooked = true;
+	}*/
+	// -----------------------------------------------------------------------
+
+
 
 	static bool bTrackMouse = false;
 	static short xpos=0, ypos=0;
@@ -1484,8 +1528,8 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 	}
 
 	if (attrib==OAPISURFACE_SKETCHPAD) {
-		if (Config->SketchpadMode==0) attrib = OAPISURFACE_RENDERTARGET|OAPISURFACE_GDI;
-		if (Config->SketchpadMode==1) attrib = OAPISURFACE_SYSMEM;
+		attrib |= OAPISURFACE_RENDERTARGET;
+		attrib &= ~(OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
 	}
 
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, fname);
@@ -2079,9 +2123,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 13c Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 14 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 13c Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 14 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
@@ -2126,7 +2170,7 @@ void D3D9Client::SplashScreen()
 
 // ==============================================================
 // 2D Drawing Interface
-
+//
 oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 {
 	_TRACER;
@@ -2135,8 +2179,8 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 
 	if (surf==NULL) surf = GetBackBufferHandle();
 
-	int SkpMode = SURFACE(surf)->GetPreferredSkpMode();
-
+	// Sketching to backbuffer -----------------------------------------------------
+	//
 	if (SURFACE(surf)->IsBackBuffer()) {
 		if (bScene==true || bGDIBB==false) {
 			if (bScene==false) pd3dDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() in the main rendering routine
@@ -2144,25 +2188,21 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 			return new D3D9Pad(surf);
 		}
 	}
-	else {
-		if (SkpMode==0) {
-			if (SURFACE(surf)->GetAttribs()==OAPISURFACE_GDI)	SkpMode = SKETCHPAD_GDI;		// Prefer GDI as a first solution
-			else if (SURFACE(surf)->IsRenderTarget())			SkpMode = SKETCHPAD_DIRECTX;
-			else												SkpMode = SKETCHPAD_GDI;		// Don't know
-		}
-		if (SkpMode==SKETCHPAD_DIRECTX) {
-			bSkepchpadOpen = true;
-			return new D3D9Pad(surf);	
-		}
-	}
-
-	// Fall back into a GDI rendering -----------------------------------------------
+	
+	// Auto-select a sketchpad -----------------------------------------------------
 	//
-	HDC hDC = clbkGetSurfaceDC(surf);
-	if (hDC) {
+	if (SURFACE(surf)->IsRenderTarget()) {
 		bSkepchpadOpen = true;
-		return new GDIPad(surf, hDC);
+		return new D3D9Pad(surf);	
 	}
+	else {
+		HDC hDC = clbkGetSurfaceDC(surf);
+		if (hDC) {
+			bSkepchpadOpen = true;
+			return new GDIPad(surf, hDC);
+		}
+	}
+	
 	return NULL;
 }
 
@@ -2187,9 +2227,6 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 			D3D9Pad *gdip = (D3D9Pad*)sp;
 			delete gdip;
 		}
-
-		// Process some sketchpad stuff
-		SURFACE(surf)->ProcessFlags();
 	}
 }
 

@@ -119,47 +119,6 @@ DLLCLBK int ogciSketchpadVersion(oapi::Sketchpad *pSkp)
 }
 
 
-DLLCLBK void ogciRequestDXSketchpad(oapi::Sketchpad *pSkp)
-{
-	LogAlw("Requesting DirectX Sketchpad for surface 0x%X",pSkp->GetSurface());
-	SURFACE(pSkp->GetSurface())->SetFlag(D3D9_CUSTOM_FLAG_DXPAD);
-}
-
-
-/*
-DLLCLBK void ogciGrabSketchWhenReleased(oapi::Sketchpad *pSkp, SURFHANDLE hTgt)
-{
-	D3D9ClientSurface *pTgt = SURFACE(pSkp->GetSurface());
-
-	if (pTgt->GetSketchPadMode() == SKETCHPAD_DIRECTX) {
-		D3D9Pad *pPad = (D3D9Pad *)pSkp;
-		//pPad->GrabSketch(hTgt);
-	}
-}*/
-
-	
-
-
-// Acquire Camera Control ==================================================================
-//
-//
-DLLCLBK void ogciTakeCamera(VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov)
-{
-	VECTOR3 x = crossp(up, dir);
-	MATRIX3 mTake;
-	mTake.m11 = x.x;	mTake.m21 = x.y;	mTake.m31 = x.z;
-	mTake.m12 = up.x;	mTake.m22 = up.y;	mTake.m32 = up.z;
-	mTake.m13 = dir.x;	mTake.m23 = dir.y;	mTake.m33 = dir.z;
-	g_client->GetScene()->TakeCamera(mTake, pos, fov);
-}
-
-DLLCLBK void ogciReleaseCameraTake()
-{
-	g_client->GetScene()->ReleaseCameraTake();
-}
-
-
-
 // Custom Camera Interface ==================================================================
 //
 //

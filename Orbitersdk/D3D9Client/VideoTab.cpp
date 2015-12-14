@@ -591,9 +591,8 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	// SKETCHPAD --------------------------------------
 
 	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_DEVICE, CB_ADDSTRING, 0, (LPARAM)"GDI/DirectX");
-	SendDlgItemMessageA(hWnd, IDC_DEVICE, CB_ADDSTRING, 0, (LPARAM)"GDI Only");
-	
+	SendDlgItemMessageA(hWnd, IDC_DEVICE, CB_ADDSTRING, 0, (LPARAM)"n/a");
+
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Crisp");
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Default");
@@ -637,7 +636,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	}
 
 	if (bGB) {
-		Config->SketchpadMode = 1;
+		//Config->SketchpadMode = 1;
 		EnableWindow(GetDlgItem(hWnd, IDC_DEVICE), false);
 	}
 	else {
@@ -670,7 +669,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, Config->EnvMapMode, 0);
 	SendDlgItemMessage(hWnd, IDC_CAMMODE, CB_SETCURSEL, Config->CustomCamMode, 0);
-	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces, 0);
+	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces-1, 0);
 	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_SETCURSEL, Config->SketchpadMode, 0);
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_SETCURSEL, Config->SketchpadFont, 0);
 	SendDlgItemMessage(hWnd, IDC_DEBUG, CB_SETCURSEL, Config->DebugLvl, 0);
@@ -728,7 +727,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->SketchpadFont = SendDlgItemMessage (hWnd, IDC_FONT, CB_GETCURSEL, 0, 0);
 	Config->EnvMapMode	  = SendDlgItemMessage (hWnd, IDC_ENVMODE, CB_GETCURSEL, 0, 0);
 	Config->CustomCamMode = SendDlgItemMessage (hWnd, IDC_CAMMODE, CB_GETCURSEL, 0, 0);
-	Config->EnvMapFaces	  = SendDlgItemMessage (hWnd, IDC_ENVFACES, CB_GETCURSEL, 0, 0);
+	Config->EnvMapFaces	  = SendDlgItemMessage (hWnd, IDC_ENVFACES, CB_GETCURSEL, 0, 0) + 1;
 	// Check boxes
 	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);

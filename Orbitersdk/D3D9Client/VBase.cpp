@@ -249,11 +249,11 @@ void vBase::UpdateBoundingBox()
 
 // ===========================================================================================
 //
-bool vBase::Update ()
+bool vBase::Update (bool bMainScene)
 {
 	_TRACE;
 	if (!active) return false;
-	if (!vObject::Update()) return false;
+	if (!vObject::Update(bMainScene)) return false;
 
 	double simt = oapiGetSimTime();
 

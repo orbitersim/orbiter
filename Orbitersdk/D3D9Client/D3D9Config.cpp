@@ -57,7 +57,7 @@ void D3D9Config::Reset ()
 	SunBrightness		= 1.2;
 	EnvMapSize		    = 256;
 	EnvMapMode			= 0;
-	EnvMapFaces			= 0;
+	EnvMapFaces			= 1;
 	EnableGlass			= 1;
 	EnableMeshDbg		= 1;
 	ShadowMapMode		= 1;
@@ -81,7 +81,7 @@ bool D3D9Config::ReadParams ()
 	int i;
 	double d;
 
-	FILEHANDLE hFile = oapiOpenFile(cfgfile, FILE_IN, ROOT);
+	FILEHANDLE hFile = oapiOpenFile(cfgfile, FILE_IN_ZEROONFAIL, ROOT);
 	if (!hFile) return false;
 
 	if (oapiReadItem_float (hFile, "FrameRate", d))				FrameRate = max(0.0, min(300.0, d));
@@ -105,7 +105,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "SunBrightness", d))			SunBrightness = max(0.7,  min(4.0,d));
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
-	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
 	if (oapiReadItem_int   (hFile, "ShadowMapMode", i))			ShadowMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "ShadowMapSize", i))			ShadowMapSize = max(512, min(4096, i));
 	if (oapiReadItem_int   (hFile, "EnableGlass", i))			EnableGlass = max(0, min(1, i));
@@ -128,7 +128,7 @@ bool D3D9Config::ReadParams ()
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
 
-	oapiCloseFile (hFile, FILE_IN);
+	oapiCloseFile (hFile, FILE_IN_ZEROONFAIL);
 
 	return true;
 }

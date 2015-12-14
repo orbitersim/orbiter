@@ -175,7 +175,7 @@ public:
 	 * \note Inactive objects skip this method.
 	 * \sa Render, CheckResolution
 	 */
-	virtual bool Update ();
+	virtual bool Update (bool bMainScene);
 
 	/**
 	 * \brief Level-of-detail check

@@ -95,11 +95,13 @@ uniform extern float 	 fNight;			// Nightlights intensity
 uniform extern bool      bSpecular;			// Enable water
 uniform extern bool      bCloudSh;			// Enable cloud shadows
 uniform extern bool      bLights;			// Enable night-lights
+uniform extern bool      bEnvEnable;		// Enable environment maps
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tNoise;			// 
 uniform extern texture	 tOcean;			// Ocean Texture
+uniform extern texture	 tEnvMap;	
 
 
 
@@ -149,6 +151,16 @@ sampler OceaTexS = sampler_state
 	MipFilter = LINEAR;
 	AddressU = WRAP;
     AddressV = WRAP;
+};
+
+sampler EnvMapS = sampler_state
+{
+	Texture = <tEnvMap>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+    AddressV = CLAMP;
 };
 
 
@@ -455,18 +467,33 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
 	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
 
+
 	if (bSpecular) {
-		float Fct = min(2.0f, 10000.0f / fCameraAlt);
-		float3 cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f;
-		cNrm *= Fct;
-		cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
-		float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (frg.nrmW * cNrm.b);
+
+		#if defined(_SURFACERIPPLES)
+			float Fct = min(2.0f, 10000.0f / fCameraAlt);
+			float3 cNrm = (tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f) * Fct;
+			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
+			// Compute world space normal 
+			float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (frg.nrmW * cNrm.b);
+		#else
+			float3 nrmW = frg.nrmW;
+		#endif
+
 		float f = 1.0-saturate(dot(frg.camW, nrmW));
 		float s = dot(reflect(-vSunDir, nrmW), frg.camW);
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
 		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
-		cTex.rgb = lerp(cTex.rgb, float3(1.2, 1.4, 3.5)*0.7, m * (f*f*f));
+
+		/*#if defined(_ENVMAP) && defined(_SURFACERIPPLES)
+			float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
+			if (bEnvEnable) cSky = texCUBE(EnvMapS, reflect(-frg.camW, nrmW)).rgb * 3.0;
+		#else*/
+			float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
+		//#endif
+
+		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
 	}
 
 	if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);

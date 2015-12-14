@@ -137,7 +137,6 @@ public:
 	static D3DXHANDLE	eFogDensity;
 	static D3DXHANDLE	ePointScale;
 	static D3DXHANDLE	eAtmColor;
-	static D3DXHANDLE	eCamOff;
 	static D3DXHANDLE	eProxySize;
 	static D3DXHANDLE	eMtrlAlpha;
 	static D3DXHANDLE	eAttennuate;

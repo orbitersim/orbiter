@@ -145,12 +145,12 @@ bool Tile::InView (const MATRIX4 &transform)
 	bool bx1, bx2, by1, by2, bz1;
 	bx1 = bx2 = by1 = by2 = bz1 = false;
 	int v;
-	double hx, hy, hz;
+	double hx, hy;
 	for (v = 0; v < 8; v++) {
 		VECTOR4 vt = mul (mesh->Box[v], transform);
-		hx = vt.x/vt.w, hy = vt.y/vt.w, hz = vt.z/vt.w;
-		if (hz <= 1.0) hx = -hx, hy = -hy;
-		if (hz >  0.0) bz1 = true;
+		hx = vt.x/vt.w, hy = vt.y/vt.w;
+		if (vt.z > 0.0) bz1 = true;
+		else hx = -hx, hy = -hy;
 		if (hx > -1.0) bx1 = true;
 		if (hx <  1.0) bx2 = true;
 		if (hy > -1.0) by1 = true;

@@ -289,12 +289,12 @@ void vPlanet::UpdateBoundingBox()
 
 // ==============================================================
 
-bool vPlanet::Update ()
+bool vPlanet::Update (bool bMainScene)
 {
 	_TRACE;
 	if (!active) return false;
 	
-	vObject::Update();
+	vObject::Update(bMainScene);
 
 	if (patchres==0) return true;
 
@@ -372,27 +372,28 @@ bool vPlanet::Update ()
 			double rad = oapiGetSize (hBase);
 			double dst = dist (pos, cpos);
 			double apprad = rad*scale/dst;
-			if (vbase[i]) { // base visual exists
-				if (apprad < 1.0) { // out of visual range
-					delete vbase[i];
-					vbase[i] = 0;
-				}
-			} else {        // base visual doesn't exist
-				if (apprad > 2.0) { // within visual range
-					vbase[i] = new vBase (hBase, scn, this);
+
+			// -----------------------------------------------------------------
+			//
+			if (bMainScene) {
+				if (vbase[i]) { // base visual exists
+					if (apprad < 1.0) { // out of visual range
+						delete vbase[i];
+						vbase[i] = 0;
+					}
+				} else {        // base visual doesn't exist
+					if (apprad > 2.0) { // within visual range
+						vbase[i] = new vBase (hBase, scn, this);
+					}
 				}
 			}
 
-			// CHECK THIS
-
+			// Toggle surface base on/off based on visual size -----------------
+			// 
 			if (vbase[i]) {
-				if (apprad < 1.0) {
-					vbase[i]->Activate(false);
-				}
-				else if (apprad > 2.0) {
-					vbase[i]->Activate(true);
-				}
-				vbase[i]->Update();	
+				if (apprad < 1.0) vbase[i]->Activate(false);
+				else if (apprad > 2.0) vbase[i]->Activate(true);
+				vbase[i]->Update(bMainScene);	
 			}
 		}
 	}
@@ -461,8 +462,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 	D3D9Effect::UpdateEffectCamera(hObj);
 	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
-	PlanetRenderer::InitializeScattering(this);
 
+	PlanetRenderer::InitializeScattering(this);
 	PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
 
 	if (DebugControls::IsActive()) {
@@ -860,7 +861,7 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	if (bOrbit) sprintf_s(path,"GC/%s.atmo.cfg",name);
 	else		sprintf_s(path,"GC/%s.atms.cfg",name);
 
-	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN, CONFIG);
+	FILEHANDLE hFile = oapiOpenFile(path, FILE_IN_ZEROONFAIL, CONFIG);
 
 	if (!hFile) return false;
 
@@ -898,7 +899,7 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	oapiReadItem_float(hFile, "Aux4", prm->aux4);
 	// -----------------------------------------------------------------
 	
-	oapiCloseFile(hFile, FILE_IN);
+	oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
 
 	UpdateAtmoConfig();
 	return true;
@@ -918,8 +919,6 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 	else		sprintf_s(path,"GC/%s.atms.cfg",name);
 
 	FILEHANDLE hFile = oapiOpenFile(path, FILE_OUT, CONFIG);
-
-	if (!hFile) return;
 
 	ScatterParams *prm;
 

@@ -352,7 +352,6 @@ void D3D9ClientSurface::Clear()
 	pTranslucenceMap = NULL;
 	pTransmittanceMap = NULL;
 	iBindCount  = 0;
-	iSkpMode	= 0;
 	Initial		= 0;
 	Active		= 0;
 	Flags		= 0;
@@ -549,11 +548,8 @@ void D3D9ClientSurface::CreateSurface(int w, int h, DWORD attrib)
 	// Process Surface Format ---------------------------------------------------------------------------------------------
 	//
 	if (attrib&OAPISURFACE_SKETCHPAD) {
-		//attrib |= OAPISURFACE_GDI;
-		if ((attrib&(OAPISURFACE_RENDERTARGET|OAPISURFACE_SYSMEM))==0) {
-			if (Config->SketchpadMode==0) attrib |= (OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
-			if (Config->SketchpadMode==1) attrib |= OAPISURFACE_RENDERTARGET;
-		}
+		attrib |= OAPISURFACE_RENDERTARGET;
+		attrib &= ~(OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
 	}
 
 	// Process Surface Format ---------------------------------------------------------------------------------------------
@@ -1433,48 +1429,6 @@ void D3D9ClientSurface::ReleaseDC(HDC hDC)
 
 // -----------------------------------------------------------------------------------------------
 //
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTextureHard()
-{
-	if (pTex==NULL) {
-		LogErr("Surface(0x%X) doesn't have texture interface.", this);
-		LogSpecs("Surface");
-		return NULL;
-	}
-
-	if (desc.Pool==D3DPOOL_DEFAULT) return pTex;
-
-	// Must bring the texture from a system memory to video memory. Create mipmaps in the process.
-	//
-	DWORD levels = pTex->GetLevelCount();
-	LogBlu("Moving a texture 0x%X from POOL_SYSTEMEME to POOL_DEFAULT MipMapCount=%u", this, levels);
-
-	LPDIRECT3DTEXTURE9 pNew;
-	LPDIRECT3DSURFACE9 pTgt;
-
-	int Mips=0;
-	if (GetAttribs()&OAPISURFACE_NOMIPMAPS) Mips=1;
-
-	HR(D3DXCreateTexture(pDevice, desc.Width, desc.Height, Mips, desc.Usage|D3DUSAGE_AUTOGENMIPMAP, desc.Format, D3DPOOL_DEFAULT, &pNew));
-	HR(pNew->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC));
-	HR(pNew->GetSurfaceLevel(0,&pTgt));
-	HR(pDevice->UpdateSurface(pSurf, NULL, pTgt, NULL));
-
-	pNew->GenerateMipSubLevels();
-
-	SAFE_RELEASE(pSurf);
-	SAFE_RELEASE(pTex);
-
-	pSurf = pTgt;
-	pTex = pNew;
-
-	GetDesc(&desc);
-
-	return pTex;
-}
-
-
-// -----------------------------------------------------------------------------------------------
-//
 bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const char *id)
 {
 	char buffe[128];
@@ -2065,13 +2019,6 @@ bool D3D9ClientSurface::IsPowerOfTwo() const
 
 // -----------------------------------------------------------------------------------------------
 //
-void D3D9ClientSurface::SetPreferredSketchpad(int skp)
-{
-	iSkpMode = skp;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
 void D3D9ClientSurface::SetName(const char *n)
 {
 	strcpy_s(name, 128, n);
@@ -2137,10 +2084,12 @@ bool D3D9ClientSurface::GenerateMipMaps()
 LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 {
 	if (pTex==NULL) ConvertToTexture(true);
-	
-	LPDIRECT3DTEXTURE9 pTexture = GetTextureHard();
-	if (pTexture==NULL) pTexture = gc->GetDefaultTexture()->GetTexture();
-	return pTexture;
+	if (pTex==NULL) {
+		LogErr("D3D9ClientSurface::GetTexture() Failed 0x%X", this);
+		LogSpecs("Surface");
+		return NULL;
+	}
+	return pTex;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2240,22 +2189,6 @@ DWORD D3D9ClientSurface::GetSizeInBytes()
 
 	return size;
 }
-
-
-// -----------------------------------------------------------------------------------------------
-//
-void D3D9ClientSurface::ProcessFlags()
-{
-	if (Flags&D3D9_CUSTOM_FLAG_DXPAD) {
-		RemoveFlag(D3D9_CUSTOM_FLAG_DXPAD);
-		if (!IsRenderTarget()) {
-			Active |= OAPISURFACE_RENDERTARGET;
-			if (IsTexture()) ConvertToRenderTargetTexture();
-			else             ConvertToRenderTarget(true);
-		}
-	}
-}
-
 
 // -----------------------------------------------------------------------------------------------
 //

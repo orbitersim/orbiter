@@ -216,7 +216,7 @@ TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
     
 	outVS.nrmT  = TBN[2];
 	outVS.tanT  = TBN[0];
-    outVS.camW  = -posW * gDistScale + gCamOff;
+    outVS.camW  = -posW * gDistScale;
     outVS.tex0  = vrt.tex0;
 	
     // Atmospheric haze --------------------------------------------------------

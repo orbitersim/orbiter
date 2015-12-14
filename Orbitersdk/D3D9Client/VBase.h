@@ -37,7 +37,7 @@ public:
 	virtual void UpdateBoundingBox();
 	virtual DWORD GetMeshCount();
 	
-	bool Update ();
+	bool Update (bool bMainScene);
 
 	void RenderRunwayLights (LPDIRECT3DDEVICE9 dev);
 	bool RenderSurface (LPDIRECT3DDEVICE9 dev);

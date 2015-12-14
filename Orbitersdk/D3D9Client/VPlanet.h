@@ -46,7 +46,7 @@ public:
 	virtual bool	GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void	UpdateBoundingBox();
 
-	bool			Update ();
+	bool			Update (bool bMainScene);
 	void			CheckResolution ();
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);

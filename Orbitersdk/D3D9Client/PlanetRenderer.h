@@ -48,6 +48,7 @@ public:
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
 	static VECTOR3 vLPosOld;
+	static bool bEnvMapEnabled;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
 	static D3DXHANDLE eTileTechNoZ;
@@ -77,11 +78,13 @@ public:
 	static D3DXHANDLE sbLights;
 	static D3DXHANDLE sbInSpace;
 	static D3DXHANDLE sbOnOff;
+	static D3DXHANDLE sbEnvEnable;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
 	static D3DXHANDLE stNoise;
 	static D3DXHANDLE stOcean;
+	static D3DXHANDLE stEnvMap;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;

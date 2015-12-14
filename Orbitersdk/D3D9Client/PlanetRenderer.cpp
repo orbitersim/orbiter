@@ -20,6 +20,7 @@ class oapi::D3D9Client *PlanetRenderer::gc = NULL;
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
 LPDIRECT3DTEXTURE9 PlanetRenderer::hOcean = NULL;
 VECTOR3 PlanetRenderer::vLPosOld = _V(1,0,0);
+bool PlanetRenderer::bEnvMapEnabled = false;
 // ------------------------------------------------------------
 ID3DXEffect *PlanetRenderer::pShader = NULL;
 D3DXHANDLE PlanetRenderer::eTileTech = NULL;
@@ -53,6 +54,7 @@ D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
 D3DXHANDLE PlanetRenderer::stNoise = NULL;
 D3DXHANDLE PlanetRenderer::stOcean = NULL;
+D3DXHANDLE PlanetRenderer::stEnvMap = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -84,8 +86,10 @@ D3DXHANDLE PlanetRenderer::sfAux4 = NULL;
 D3DXHANDLE PlanetRenderer::sfInvAux1 = NULL;	
 D3DXHANDLE PlanetRenderer::sfInvParameter = NULL;
 D3DXHANDLE PlanetRenderer::sfTime = NULL;
+// ------------------------------------------------------------ 
 D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
 D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
+D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
 
 
 
@@ -105,34 +109,41 @@ PlanetRenderer::~PlanetRenderer()
 void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 {
 	char sh_name[32];
+	char name[256];
 
 	strcpy_s(sh_name,32,"Surface.fx");
+	sprintf_s(name,256,"Modules/D3D9Client/%s",sh_name);
 
 	LogAlw("Starting to initialize %s a shading technique...", sh_name);
 	
 	gc = gclient;
 	pDev = gc->GetDevice();
-
 	gc->OutputLoadStatus(sh_name, 1);
 	
-	char name[256];
-
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
 	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
 
+	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
+
+	// ------------------------------------------------------------------------------
 	macro[0].Name = "VS_MOD";
-	macro[1].Name = "PS_MOD";
-	
-	LogAlw("[Compiling Effects for Shader Model 3.0]");
-	oapiWriteLog("D3D9Client: [Compiling Effects for Shader Model 3.0]");
 	macro[0].Definition = "vs_3_0";
+	macro[1].Name = "PS_MOD";
 	macro[1].Definition = "ps_3_0";
-	sprintf_s(name,256,"Modules/D3D9Client/%s",sh_name);
-	
-	macro[2].Name = "ANISOTROPY_MACRO";
-	macro[2].Definition = new char[32];
-	sprintf_s((char*)macro[2].Definition,32,"%d",max(2,Config->Anisotrophy));
+	// ------------------------------------------------------------------------------
+	int m=2;
+	macro[m].Name = "ANISOTROPY_MACRO";
+	macro[m].Definition = new char[32];
+	sprintf_s((char*)macro[m++].Definition,32,"%d",max(2,Config->Anisotrophy));
+	// ------------------------------------------------------------------------------
+	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
+	// ------------------------------------------------------------------------------
+	if (Config->EnvMapMode && bRiples) {
+		macro[m++].Name = "_ENVMAP"; 
+		bEnvMapEnabled = true;
+	} else bEnvMapEnabled = false;
+	// ------------------------------------------------------------------------------
 	
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
 	
@@ -185,6 +196,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stMask				= pShader->GetParameterByName(0,"tMask");
 	stNoise				= pShader->GetParameterByName(0,"tNoise");
 	stOcean				= pShader->GetParameterByName(0,"tOcean");
+	stEnvMap			= pShader->GetParameterByName(0,"tEnvMap");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
@@ -219,6 +231,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------
 	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
 	sbOnOff				= pShader->GetParameterByName(0,"bOnOff");
+	sbEnvEnable			= pShader->GetParameterByName(0,"bEnvEnable");
 
 	// ------------------------------------------------------------
 	

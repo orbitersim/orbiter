@@ -17,6 +17,7 @@
 #include "Texture.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
+#include "vVessel.h"
 
 // =======================================================================
 
@@ -244,28 +245,25 @@ bool SurfTile::LoadElevationData ()
 
 		// construct elevation grid by interpolating ancestor data
 		ELEVHANDLE hElev = mgr->ElevMgr();
-		if (hElev) {
-			int plvl = lvl-1;
-			int pilat = ilat >> 1;
-			int pilng = ilng >> 1;
-			INT16 *pelev = NULL;
-			QuadTreeNode<SurfTile> *parent = node->Parent();
-			for (; plvl >= 0; plvl--) { // find ancestor with elevation data
-				if (parent && parent->Entry()->has_elevfile) {
-					pelev = parent->Entry()->elev;
-					break;
-				}
-				parent = parent->Parent();
-				pilat >>= 1;
-				pilng >>= 1;
+		if (!hElev) return false;
+		int plvl = lvl-1;
+		int pilat = ilat >> 1;
+		int pilng = ilng >> 1;
+		INT16 *pelev = 0;
+		QuadTreeNode<SurfTile> *parent = node->Parent();
+		for (; plvl >= 0; plvl--) { // find ancestor with elevation data
+			if (parent && parent->Entry()->has_elevfile) {
+				pelev = parent->Entry()->elev;
+				break;
 			}
-
-			if (!pelev) return false;
-
-			elev = new INT16[ndat];
-			// submit ancestor data to elevation manager for interpolation
-			mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, &mean_elev);
-		} else elev = 0;
+			parent = parent->Parent();
+			pilat >>= 1;
+			pilng >>= 1;
+		}
+		if (!pelev) return false;
+		elev = new INT16[ndat];
+		// submit ancestor data to elevation manager for interpolation
+		mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev);
 
 	}
 	return (elev != 0);
@@ -319,6 +317,7 @@ void SurfTile::Render ()
 {
 	bool render_lights = mgr->Cprm().bLights;
 	bool render_shadows = (mgr->GetPlanet()->CloudMgr2() && !mgr->prm.rprm->bCloudFlatShadows);
+
 	if (!mesh) return; // DEBUG : TEMPORARY
 
 	UINT numPasses = 0;
@@ -331,6 +330,7 @@ void SurfTile::Render ()
 	bool has_specular = false;
 	bool has_shadows = false;
 	bool has_lights = false;
+
 	if (ltex || render_shadows) {
 		sdist = acos (dotp (mgr->prm.sdir, cnt));
 		rad = rad0/(double)(2<<lvl); // tile radius
@@ -670,6 +670,19 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
+	HR(Shader()->SetBool(sbEnvEnable, false));
+
+
+	// Setup Environment map ---------------------------------------------
+	//
+	vVessel *vFocus = scene->GetFocusVisual();
+	if (vFocus && bEnvMapEnabled) {
+		LPDIRECT3DCUBETEXTURE9 pEnv = vFocus->GetEnvMap(0);
+		if (pEnv) {
+			HR(Shader()->SetTexture(stEnvMap, pEnv));
+			HR(Shader()->SetBool(sbEnvEnable, true));
+		}
+	}
 
 	// ------------------------------------------------------------------
 	// TODO: render full sphere for levels < 4

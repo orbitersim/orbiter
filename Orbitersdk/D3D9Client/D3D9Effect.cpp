@@ -95,7 +95,6 @@ D3DXHANDLE D3D9Effect::eFogDensity = 0;	//
 D3DXHANDLE D3D9Effect::ePointScale = 0;
 
 D3DXHANDLE D3D9Effect::eAtmColor = 0;
-D3DXHANDLE D3D9Effect::eCamOff = 0;
 D3DXHANDLE D3D9Effect::eProxySize = 0;
 D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
 
@@ -323,7 +322,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTexOff		  = FX->GetParameterByName(0,"gTexOff");
 	eRadius       = FX->GetParameterByName(0,"gRadius");
 	eCameraPos	  = FX->GetParameterByName(0,"gCameraPos");
-	eCamOff		  = FX->GetParameterByName(0,"gCamOff");
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
 	eMix		  = FX->GetParameterByName(0,"gMix");
 	eTime		  = FX->GetParameterByName(0,"gTime");
@@ -463,8 +461,6 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	atm_color *= float(Config->PlanetGlow) * alt;
 	
 	float ap = gc->GetScene()->GetCameraAperture();
-
-	D3DXVECTOR3 cmo = gc->GetScene()->GetCameraOffset();
 	float rl = float(rad/len);
 	float proxy_size = asin(min(1.0f, rl)) + float(40.0*PI/180.0);
 
@@ -472,7 +468,6 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	else atm_color = D3DXVECTOR4(0,0,0,1);
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
-	FX->SetValue(eCamOff, &D3DXVECTOR3(float(cmo.x),float(cmo.y),float(cmo.z)), sizeof(D3DXVECTOR3));
 	FX->SetVector(eAtmColor, &atm_color);
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));

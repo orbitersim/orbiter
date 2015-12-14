@@ -70,7 +70,7 @@ public:
 	 *   - Calls vObject::Update
 	 *   - Calls \ref UpdateAnimations
 	 */
-	bool Update ();
+	bool Update (bool bMainScene);
 
 	/**
 	 * \brief Object render call

@@ -294,15 +294,19 @@ private:
 	bool HasPen();
 	bool HasBrush();
 	bool HasWidePen();
+	bool HasThinPen();
 	bool IsDashed();
+
+	float GetPenWidth();
+
 
 	void Ellipse2(  float x, float y, float w, float h);
 	void Rectangle2(float x, float y, float w, float h);
-	void Rectangle3(float x, float y, float w, float h, int width);
-	void Lines(D3DXVECTOR3 *lines, int count);
-
+	
+	inline D3DXVECTOR2 _DXV2(const IVECTOR2 *pt);
 	int	 CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
 	int	 CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out);
+	void CreateLineVertexList(D3DXVECTOR3 *Vtx, const IVECTOR2 *pt, int npt, bool bLoop);
 	
 	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
@@ -324,13 +328,13 @@ private:
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DVERTEXBUFFER9 pCircleLow;
 	static LPDIRECT3DVERTEXBUFFER9 pCircleHigh;
+	static LPD3DXVECTOR2 pSinCosLow;
+	static LPD3DXVECTOR2 pSinCosHigh;
 	
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//
-	static ID3DXEffect*	FX;			
-	static D3DXHANDLE	eTech;		
+	static ID3DXEffect*	FX;				
 	static D3DXHANDLE	eEllipse;
-	static D3DXHANDLE	eWideRect;
 	static D3DXHANDLE	eLine;
 	static D3DXHANDLE	eVP;	// Transformation matrix
 	static D3DXHANDLE	eColor;	

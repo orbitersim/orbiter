@@ -29,6 +29,16 @@ class D3D9ParticleStream;
 class CSphereManager;
 class D3D9Text;
 
+#define RENDERPASS_MAINSCENE	0x0001
+#define RENDERPASS_ENVCAM		0x0002
+#define RENDERPASS_CUSTOMCAM	0x0003
+#define RENDERPASS_SCENEDEPTH	0x0004
+
+
+#define RENDERTURN_ENVCAM		0
+#define RENDERTURN_CUSTOMCAM	1
+#define RENDERTURN_LAST			1
+
 class Scene {
 
 	struct VOBJREC {           // linked list of object visuals
@@ -90,14 +100,6 @@ public:
 	inline const DWORD ViewH() const { return viewH; }
 
 	void UpdateCamVis();
-
-	/**
-	 * \brief Checks if hObj is within visual range.
-	 * Checks if hObj is within visual range, and creates or deletes the
-	 * associated vObject as required.
-	 */
-	void CheckVisual (OBJHANDLE hObj);
-
 	void Initialise ();
 
 	/**
@@ -160,11 +162,8 @@ public:
 
 	void ClearOmitFlags();
 
-	// Camera Interface
-	//
-	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&mProjView; }
-	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }
-	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&mView; }
+	
+	
 
 
 	// Custom Camera Interface ======================================================================================================
@@ -176,23 +175,25 @@ public:
 	void			RenderCustomCameraView(CAMREC *cCur);
 
 
+	// Camera Matrix Access =========================================================================================================
+	//
+	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&mProjView; }
+	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }
+	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&mView; }
+
+
 	// Main Camera Interface =========================================================================================================
 	//
 	void			SetCameraAperture(double _ap, double _as);
 	void			SetCameraFrustumLimits(double nearlimit, double farlimit);
 	float			GetDepthResolution(float dist) const { return fabs((nearplane-farplane)*(dist*dist) / (farplane*nearplane*16777215.0f)); }
 
-					// Imitialize Main Camera Setup
+					// Acquire camera information from the Orbiter and initialize internal camera setup
 	void			UpdateCameraFromOrbiter();
 
-					// Temporary main camera view change. Will be restored to normal view in a start of the next frame.
-	void			SetupCustomCamera(D3DXMATRIX &mRotation, VECTOR3 &disp, double apr, double asp);
+					// Manually initialize client's internal camera setup
+	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp, bool bUpdate, DWORD dwRenderPass);
 	
-					// This function will take the camera control from the Orbiter and places the camera in user defined location.
-					// Orbiter will continue moving it's own camera while taken so, camera may end-up in an odd place when released.
-	void			TakeCamera(MATRIX3 &mRotation, VECTOR3 &disp, double apr);
-	void			ReleaseCameraTake();
-
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);
 
@@ -207,14 +208,21 @@ public:
 	VECTOR3			GetCameraGDir() const { return camera_dir; }
 	OBJHANDLE		GetCameraProxyBody() const { return hObj_proxy; }
 	vPlanet *		GetCameraProxyVisual() const { return vProxy; }
-	double			GetCameraAltitude() const { return alt_proxy; }
-	D3DXVECTOR3		GetCameraOffset() { return camera_offset; }
+	double			GetCameraAltitude() const { return alt_proxy; }	
+	DWORD			GetRenderPass() const { return dwRenderPass; }
+	DWORD			GetFrameId() const { return dwFrameId; }
 
 	const D3DXVECTOR3 *GetCameraX() const { return &camera_x; }
 	const D3DXVECTOR3 *GetCameraY() const { return &camera_y; }
 	const D3DXVECTOR3 *GetCameraZ() const { return &camera_z; }
 
-	class vObject *GetVisObject(OBJHANDLE hObj);
+
+	// Visual Management =========================================================================================================
+	//
+	class vObject *	GetVisObject(OBJHANDLE hObj);
+	class vVessel *	GetFocusVisual() { return vFocus; }
+	void			CheckVisual(OBJHANDLE hObj);
+
 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
@@ -277,6 +285,7 @@ private:
 	DWORD stencilDepth;        // stencil buffer bit depth
 	CelestialSphere *csphere;  // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
+	DWORD dwRenderPass;		   // Currently active render pass
 	bool  bLocalLight;
 	
 	OBJHANDLE hSun;
@@ -301,16 +310,6 @@ private:
 	float  farplane;        // frustum farplane distance
 	float  apsq;
 	float  vh,vw,vhf,vwf;
-	bool   bCustomCam;		// true if a custom camera mode is in use. (apply camera_offset)
-
-	// Default Camera Override Paramaters =============================================== 
-	//
-	bool	bTakeCamera;	// true if user application has a control of the camera. (apply camera_offset) 
-	MATRIX3 mTakeRotation;
-	VECTOR3 vTakeOffset;
-	double	dTakeAperture;
-
-
 
 	VECTOR3		camera_pos;		// Global camera position
 	VECTOR3		camera_relpos;	// Relative camera position (Used by Mesh Debugger)
@@ -320,7 +319,6 @@ private:
 	D3DXVECTOR3 camera_x;
 	D3DXVECTOR3 camera_y;
 	D3DXVECTOR3 camera_z;
-	D3DXVECTOR3	camera_offset;	
 
 	D3DXMATRIX	mView;			// D3D view matrix for current camera state
 	D3DXMATRIX	mProj;			// D3D projection matrix for current camera state
@@ -334,6 +332,7 @@ private:
 	DWORD		lmaxidx;
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
+	DWORD		dwFrameId;
 
 	oapi::Font *pAxisFont;
 	oapi::Font *pLabelFont;

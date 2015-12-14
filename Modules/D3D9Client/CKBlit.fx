@@ -258,18 +258,6 @@ OutputVS EllipseTechVS(float3 posL : POSITION0)
     return outVS;
 }
 
-
-DrawVS WideRectTechVS(float4 posL : POSITION0)
-{
-    // Zero output.
-	DrawVS outVS = (DrawVS)0;
-    float3 posX = float3(gData[0]+posL.x*gData[2]+posL.z*posL.x, gData[1]+posL.y*gData[3]+posL.z*posL.y, 0.0f);
-	outVS.posH = mul(float4(posX, 1.0f),gVP);
-    return outVS;
-}
-
-
-
 OutputVS LineTechVS(float3 posL : POSITION0)
 {
     // Zero output.
@@ -304,33 +292,12 @@ float4 FillTechPS() : COLOR
 }
 
 
-
-
-
-
-
-
-
 technique EllipseTech
 {
     pass P0
     {
         vertexShader = compile vs_2_0 EllipseTechVS();
         pixelShader  = compile ps_2_0 DrawTechPS();
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false;
-    }
-}
-
-technique WideRectTech
-{
-    pass P0
-    {
-        vertexShader = compile vs_2_0 WideRectTechVS();
-        pixelShader  = compile ps_2_0 FillTechPS();
         AlphaBlendEnable = true;
         BlendOp = Add;
         SrcBlend = SrcAlpha;

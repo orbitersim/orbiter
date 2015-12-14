@@ -70,6 +70,8 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 {
 	static const double res_scale = 1.1; // resolution scale with distance
 
+	const Scene *scene = GetScene();
+
 	Tile *tile = node->Entry();
 	tile->state = Tile::ForRender;
 	tile->edgeok = false;
@@ -126,13 +128,14 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			double a = prm.cdist - erad*cos(adist);
 			tdist = sqrt(a*a + h*h);
 		}
-		double apr = tdist * GetScene()->GetTanAp() * resolutionScale;
+		double apr = tdist * scene->GetTanAp() * resolutionScale;
 		int tgtres = (apr < 1e-6 ? prm.maxlvl : max (0, min (prm.maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 	}
 
 	// Recursion to next level: subdivide into 2x2 patch
 	if (bstepdown) {
+		tile->FrameId = scene->GetFrameId();
 		bool subcomplete = true;
 		int i, idx;
 		// check if all 4 subtiles are available already, and queue any missing for loading
@@ -154,8 +157,9 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		}
 	}
 
-	if (!bstepdown)
-		node->DelChildren ();
+	if (!bstepdown) {
+		if (scene->GetRenderPass()==RENDERPASS_MAINSCENE && (scene->GetFrameId()-tile->FrameId)>64) node->DelChildren ();
+	}
 }
 
 // -----------------------------------------------------------------------

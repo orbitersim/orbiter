@@ -41,7 +41,7 @@ VesselVS VesselTechVS(MESH_VERTEX vrt)
 	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
 	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
 	
-	outVS.CamW = -posW * gDistScale + gCamOff;   // A vector from the vertex to the camera
+	outVS.CamW = -posW * gDistScale;   // A vector from the vertex to the camera
     outVS.nrmW = nrmW;
 	outVS.posH = mul(float4(posW, 1.0f), gVP);
 	outVS.tex0 = float4(vrt.tex0.xy, outVS.posH.z, 0);
@@ -216,7 +216,7 @@ VesselNMVS VesselTechNMVS(MESH_VERTEX vrt)
 	outVS.bitT  = TBN[1];
 	outVS.tanT  = TBN[0];
 	outVS.posH  = mul(float4(posW, 1.0f), gVP);
-    outVS.camW  = -posW * gDistScale + gCamOff;
+    outVS.camW  = -posW * gDistScale;
     outVS.tex0  = float3(vrt.tex0.xy, outVS.posH.z);
    
 	float3 locW = 0;
