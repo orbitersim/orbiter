@@ -2027,8 +2027,7 @@ float D3D9Mesh::GetBoundingSphereRadius()
 D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 {
 	D3D9Pick result;
-
-	result.dist  = 1e10;
+	result.dist  = 1e30f;
 	result.pMesh = NULL;
 	result.vObj  = NULL;
 	result.face  = -1;

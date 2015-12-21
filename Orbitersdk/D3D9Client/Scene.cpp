@@ -623,7 +623,7 @@ float Scene::ComputeNearClipPlane()
 void Scene::UpdateCamVis()
 {
 	dwFrameId++;				// Advance to a next frame
-	UpdateCameraFromOrbiter();	// Update camera parameters.
+	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);	// Update camera parameters.
 
 	if (hObj_proxy) D3D9Effect::UpdateEffectCamera(hObj_proxy);
 	
@@ -639,7 +639,6 @@ void Scene::UpdateCamVis()
 	D3DVEC(-unit(rpos), sunLight.Direction);
 	D3DVEC(rpos, sunLight.Position);
 
-
 	// Get focus visual -----------------------------------------------
 	// 
 	OBJHANDLE hFocus = oapiGetFocusObject();
@@ -651,11 +650,6 @@ void Scene::UpdateCamVis()
 		}
 	}
 
-	// Update the world state for the next time step ------------------
-	//
-	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) pv->vobj->Update(true);
-
-   
 	// Compute SkyColor -----------------------------------------------
 	//
 	sky_color = SkyColour();
@@ -831,6 +825,7 @@ void Scene::RenderMainScene()
 	}
 	
 	if (FAILED (pDevice->BeginScene())) return;
+	else bRendering = true;
 
 	float znear = ComputeNearClipPlane();
 	
@@ -1252,6 +1247,7 @@ void Scene::RenderMainScene()
 	// End Of Main Scene Rendering ---------------------------------------------
 	//
 	pDevice->EndScene();
+	bRendering = false;
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1262,7 +1258,8 @@ void Scene::RenderMainScene()
 
 	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
 	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
-	
+	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
+
 	int RenderCount = max(1, Config->EnvMapFaces);
 	
 	// --------------------------------------------------------------------------------------------------------
@@ -1328,7 +1325,6 @@ void Scene::RenderMainScene()
 	gc->GetStats()->Scene += scene_time;
 
 	dwTurn++;
-	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
 }
 
 
@@ -1642,18 +1638,25 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 	VOBJREC *pv = NULL;
 
 	D3D9Pick result;
-	result.dist  = 1e10;
+	result.dist  = 1e30f;
 	result.pMesh = NULL;
 	result.vObj  = NULL;
+	result.face  = -1;
+	result.group = -1;
 
 	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (pv->type==OBJTP_VESSEL) {
-			vVessel *vVes = (vVessel *)pv->vobj;
-			if (vVes) {
-				D3D9Pick pick = vVes->Pick(&vPick);
-				if (pick.dist<result.dist) result = pick;
-			}
-		}
+
+		if (pv->type!=OBJTP_VESSEL) continue;
+		if (!pv->vobj->IsActive()) continue;
+		if (!pv->vobj->IsVisible()) continue;
+		
+		vVessel *vVes = (vVessel *)pv->vobj;
+		double cd = vVes->CamDist();
+
+		if (cd<5e3 && cd>1e-3) {
+			D3D9Pick pick = vVes->Pick(&vPick);
+			if (pick.pMesh) if (pick.dist<result.dist) result = pick;
+		}	
 	}
 
 	return result;
@@ -1722,7 +1725,7 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 
 // ===========================================================================================
 //
-void Scene::UpdateCameraFromOrbiter()
+void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 {
 	MATRIX3 grot;
 	VECTOR3 pos;
@@ -1763,15 +1766,15 @@ void Scene::UpdateCameraFromOrbiter()
 	// translational transformation between orbiter global coordinates
 	// and render coordinates.
 
-	SetupInternalCamera(&mView, &camera_pos, oapiCameraAperture(), double(viewH)/double(viewW), false, RENDERPASS_MAINSCENE); 
+	SetupInternalCamera(&mView, &camera_pos, oapiCameraAperture(), double(viewH)/double(viewW), true, dwPass); 
 }
 
 
 // ===========================================================================================
 //
-void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp, bool bUpdate, DWORD Pass)
+void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, double asp, bool bUpdate, DWORD dwPass)
 {
-	dwRenderPass = Pass;
+	dwRenderPass = dwPass;
 
 	// Update camera orientation if a new matrix is provided
 	if (mNew) {
@@ -1801,7 +1804,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	// Finally update world matrices from all visuals if camera position vector is provided and update is requested
 	// Othervice the world status remains unchanged 
 	//
-	if (gpos && bUpdate) for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) pv->vobj->Update(false);
+	if (gpos && bUpdate) for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) pv->vobj->Update(dwPass==RENDERPASS_MAINSCENE);
 }
 
 

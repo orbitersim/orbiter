@@ -1197,7 +1197,6 @@ private:
 	bool bGDIBB;		
 	bool bAAEnabled;	
 	bool bFailed;
-	bool bScene;
 	bool bRunning;
 	bool bHalt;
 	bool bVertexTex;

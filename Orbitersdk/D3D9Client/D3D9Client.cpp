@@ -153,6 +153,8 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 		bNVAPI = true;
 	}
 	else LogAlw("[nVidia API Not Available]");
+#else
+	LogAlw("[Not Compiled With nVidia API]");
 #endif
 
 	Config			= new D3D9Config();
@@ -293,7 +295,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bFullscreen      = false;
 	bFailed			 = false;
 	bRunning		 = false;
-	bScene			 = false;
 	bHalt			 = false;
 	bVertexTex		 = false;
 	viewW = viewH    = 0;
@@ -689,8 +690,7 @@ double frame_time = 0.0;
 void D3D9Client::clbkRenderScene()
 {
 	_TRACER;
-	bScene = false;
-
+	
 	char Label[7];
 
 	if (pd3dDevice==NULL || scene==NULL) return;
@@ -718,12 +718,8 @@ void D3D9Client::clbkRenderScene()
 		UINT mem = pd3dDevice->GetAvailableTextureMem()>>20;
 		if (mem<32) TileBuffer::HoldThread(true);
 
-		LogOk("== Begin Scene ==");
-
-		bScene = true;
 		scene->RenderMainScene();		// Render the main scene
-		bScene = false;
-
+		
 		Label[0]=0;
 
 		VESSEL *hVes = oapiGetFocusInterface();
@@ -1176,8 +1172,10 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		return 0;
 	}
 
-	if (bRunning && DebugControls::IsActive()) {	
-		GetScene()->UpdateCameraFromOrbiter();
+	if (bRunning && DebugControls::IsActive()) {
+		// Must update camera to correspond MAIN_SCENE due to Pick() function, 
+		// because env-maps have altered camera settings 
+		GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
 	}
 
 	__TRY {
@@ -1192,13 +1190,13 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_MBUTTONDOWN:
 			{
-				if (DebugControls::IsActive()) {
+				/*if (DebugControls::IsActive()) {
 					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 					if (flags&DBG_FLAGS_PICK) {
 						D3D9Pick pick = GetScene()->PickScene(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 						if (pick.pMesh) DebugControls::SelectGroup(pick.group);
 					}
-				}
+				}*/
 				break;
 			}
 
@@ -1211,13 +1209,32 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				TrackMouseEvent(&te);
 
 				if (DebugControls::IsActive()) {
+
 					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+
 					if (flags&DBG_FLAGS_PICK) {
-						DebugControls::SetGroupHighlight(true);
+
 						D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
-						if (pick.pMesh) {
+
+						if (!pick.pMesh) break;
+				
+						//sprintf_s(oapiDebugString(),256,"vObj=0x%X, Mesh=0x%X, Grp=%d, Face=%d", pick.vObj, pick.pMesh, pick.group, pick.face);
+
+						bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
+						bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;	
+	
+						if (bShift && bCtrl) {
+							OBJHANDLE hObj = pick.vObj->Object();
+							if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
+								oapiSetFocusObject(hObj);
+								break;
+							}
+						}
+						else if (pick.group>=0) {
+							DebugControls::SetVisual(pick.vObj);
 							DebugControls::SelectMesh(pick.pMesh);
 							DebugControls::SelectGroup(pick.group);
+							DebugControls::SetGroupHighlight(true);
 						}
 					}
 				}
@@ -2182,8 +2199,9 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	// Sketching to backbuffer -----------------------------------------------------
 	//
 	if (SURFACE(surf)->IsBackBuffer()) {
+		bool bScene = GetScene()->IsRendering();
 		if (bScene==true || bGDIBB==false) {
-			if (bScene==false) pd3dDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() in the main rendering routine
+			if (bScene==false) pd3dDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() of the main rendering routine
 			bSkepchpadOpen = true;
 			return new D3D9Pad(surf);
 		}
@@ -2222,7 +2240,7 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 		}
 		if (SURFACE(surf)->GetSketchPadMode()==SKETCHPAD_DIRECTX) {
 			if (SURFACE(surf)->IsBackBuffer()) {
-				if (bScene==false) pd3dDevice->EndScene();
+				if (!GetScene()->IsRendering()) pd3dDevice->EndScene();
 			}
 			D3D9Pad *gdip = (D3D9Pad*)sp;
 			delete gdip;

@@ -1525,13 +1525,14 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 	bool bVC = (bCockpit && (oapiCockpitMode() == COCKPIT_VIRTUAL));
 
 	D3D9Pick result;
-	result.dist  = 1e10;
+	result.dist  = 1e30f;
 	result.pMesh = NULL;
 	result.vObj  = NULL;
 	result.face  = -1;
 	result.group = -1;
 
-	if (!meshlist || nmesh==0 || this!=DebugControls::GetVisual()) return result;
+	//if (!meshlist || nmesh==0 || this!=DebugControls::GetVisual()) return result;
+	if (!meshlist || nmesh==0) return result;
 
 	for (DWORD i=0;i<nmesh;i++) {
 
@@ -1559,7 +1560,7 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 		else pWT = &mWorld;
 
 		D3D9Pick pick = hMesh->Pick(pWT, vDir);
-		if (pick.dist<result.dist) result = pick;
+		if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 	}
 
 	if (result.pMesh) result.vObj = this;

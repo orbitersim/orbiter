@@ -33,6 +33,7 @@ class D3D9Text;
 #define RENDERPASS_ENVCAM		0x0002
 #define RENDERPASS_CUSTOMCAM	0x0003
 #define RENDERPASS_SCENEDEPTH	0x0004
+#define RENDERPASS_PICKSCENE	0x0005
 
 
 #define RENDERTURN_ENVCAM		0
@@ -162,6 +163,8 @@ public:
 
 	void ClearOmitFlags();
 
+	bool IsRendering() const { return bRendering; }
+
 	
 	
 
@@ -189,7 +192,7 @@ public:
 	float			GetDepthResolution(float dist) const { return fabs((nearplane-farplane)*(dist*dist) / (farplane*nearplane*16777215.0f)); }
 
 					// Acquire camera information from the Orbiter and initialize internal camera setup
-	void			UpdateCameraFromOrbiter();
+	void			UpdateCameraFromOrbiter(DWORD dwPass);
 
 					// Manually initialize client's internal camera setup
 	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp, bool bUpdate, DWORD dwRenderPass);
@@ -333,6 +336,7 @@ private:
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
 	DWORD		dwFrameId;
+	bool		bRendering;
 
 	oapi::Font *pAxisFont;
 	oapi::Font *pLabelFont;

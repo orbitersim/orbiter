@@ -129,12 +129,15 @@ bool vObject::Update(bool bMainScene)
 	cpos   = gpos - scn->GetCameraGPos();
 	cdist  = length(cpos);
 		
+	// Create double precision world matrix
+	//
 	dmWorld = _M(grot.m11, grot.m21, grot.m31, 0,
 		         grot.m12, grot.m22, grot.m32, 0,
 				 grot.m13, grot.m23, grot.m33, 0,
 				 cpos.x,   cpos.y,   cpos.z,   1);
 
-	// camera distance
+	// Create single precision world matrix
+	//
 	D3DMAT_SetInvRotation(&mWorld, &grot);
 	D3DMAT_SetTranslation(&mWorld, &cpos);
 
