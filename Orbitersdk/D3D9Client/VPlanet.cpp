@@ -100,9 +100,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		if (surfmgr) surfmgr->SetMicrotexture ("waves.dds");
 	}
 
-	shadowalpha = (float)(1.0f - *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
-	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) &&
-		shadowalpha >= 0.01;
+	shadowalpha = (float)(/*1.0f -*/ *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
+	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) && (shadowalpha >= 0.01);
 
 	clouddata = 0;
 	cloudmgr2 = 0;
@@ -614,6 +613,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	}
 	if (prm.bCloudShadow)
 		RenderCloudShadows (dev);                	// cloud shadows
+
 	if (bVesselShadow && hObj == oapiCameraProxyGbody())
 	// cast shadows only on planet closest to camera
 		scn->RenderVesselShadows (hObj, shadowalpha); // vessel shadows
