@@ -38,6 +38,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
   lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
   texrange(fullrange), cnt(Centre()),
   mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL),
+  FrameId(0),
   mean_elev(0.0), max_elev(0.0),
   state(Invalid),
   edgeok(false), owntex (true)
@@ -445,7 +446,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 		FLOAT tv = (float)(lat/PI);
 
         for (x = 0; x < x2; x++) {
-            lng = x*fDAng - PI;  // subtract Pi to wrap at +-180°
+            lng = x*fDAng - PI;  // subtract Pi to wrap at +-180ï¿½
 			if (ilng) lng += PI;
 			slng = sin(lng), clng = cos(lng);
 			eradius = radius + globelev; // radius including node elevation
@@ -894,7 +895,7 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 		return prm.dwmat;
 	}
 
-	double lat, lng = PI2 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180°
+	double lat, lng = PI2 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180ï¿½
 	double slng = sin(lng), clng = cos(lng);
 	MATRIX4 lrot = {clng,0,slng,0,  0,1.0,0,0,  -slng,0,clng,0,  0,0,0,1.0};
 
