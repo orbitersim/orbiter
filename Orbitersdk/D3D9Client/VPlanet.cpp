@@ -56,7 +56,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	maxdist = max (max_centre_dist, max_surf_dist + rad);
 	max_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	max_patchres = min (max_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
-	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
+	int tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
@@ -71,7 +71,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		bScatter = LoadAtmoConfig(false);
 		if (bScatter) LoadAtmoConfig(true);
 		surfmgr = NULL;
-		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres);
+		int patchlvl = 2 << *(int*)gc->GetConfigParam (CFGPRM_TILEPATCHRES);
+		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres, patchlvl);
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
 
@@ -128,9 +129,9 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 				clouddata->microalt1 = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMICROALTMAX);
 			}
 		} else { // v2 cloud engine
-			DWORD maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
+			int maxlvl = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_CLOUDMAXLEVEL);
 			maxlvl = min (maxlvl, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
-			cloudmgr2 = new TileManager2<CloudTile> (this, maxlvl);
+			cloudmgr2 = new TileManager2<CloudTile> (this, maxlvl, 32);
 		}
 	} else {
 		prm.bCloudShadow = false;

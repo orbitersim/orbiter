@@ -194,8 +194,8 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 // =======================================================================
 
 template<class TileType>
-TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres)
-: TileManager2Base (vplanet, _maxres)
+TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres, int _gridres)
+: TileManager2Base (vplanet, _maxres, _gridres)
 {
 	// Load the low-res full-sphere tiles
 	for (int i = 0; i < 3; i++)

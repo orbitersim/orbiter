@@ -27,17 +27,9 @@
 #define TILE_VALID  0x0001
 #define TILE_ACTIVE 0x0002
 
-#define TILE_PATCHRES 32
-#define TILE_ELEVSTRIDE (TILE_PATCHRES*8+3)
-
-// Debugging helper
-#define TILE_STATE_OK(t) (t->state == Tile::Invalid \
-                       || t->state == Tile::InQueue  \
-                       || t->state == Tile::Loading   \
-                       || t->state == Tile::Inactive   \
-                       || t->state == Tile::Active      \
-                       || t->state == Tile::Invisible    \
-                       || t->state == Tile::ForRender)
+//#define TILE_PATCHRES 32
+#define TILE_FILERES 256
+#define TILE_ELEVSTRIDE (TILE_FILERES+3)
 
 // =======================================================================
 // Type definitions
@@ -180,7 +172,8 @@ class TileManager2Base : public PlanetRenderer {
 	friend class Tile;
 
 public:
-	struct configPrm {					// global configuration parameters
+	struct configPrm {				// global configuration parameters
+		int gridRes;                    // mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
 		int elevMode;                   // elevation mode (0=none, 1=linear, 2=cubic)
 		bool bSpecular;					// render specular surface reflections?
 		bool bLights;					// render planet night lights?
@@ -208,7 +201,7 @@ public:
 	 * \param vplanet planet instance pointer
 	 * \param _maxres maximum resolution
 	 */
-	TileManager2Base (const vPlanet *vplanet, int _maxres);
+	TileManager2Base (const vPlanet *vplanet, int _maxres, int _gridres);
 
 	/**
 	 * \brief Destroys the tile manager object
@@ -301,7 +294,7 @@ class TileManager2: public TileManager2Base {
 	friend class Tile;
 
 public:
-	TileManager2 (const vPlanet *vplanet, int _maxres);
+	TileManager2 (const vPlanet *vplanet, int _maxres, int _gridres);
 	~TileManager2 ();
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);

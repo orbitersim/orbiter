@@ -124,16 +124,17 @@ void SurfTile::Load ()
 	// Load elevation data
 	INT16 *elev = ElevationData ();
 	bool shift_origin = (lvl >= 4);
+	int res = mgr->Cprm().gridRes;
 
 	if (!lvl) {
 		// create hemisphere mesh for western or eastern hemispheres
-		mesh = CreateMesh_hemisphere (TILE_PATCHRES, elev, 0.0);
+		mesh = CreateMesh_hemisphere (res, elev, 0.0);
 	//} else if (ilat == 0 || ilat == (1<<lvl)-1) {
 		// create triangular patch for north/south pole region
 	//	mesh = CreateMesh_tripatch (patch_res, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (TILE_PATCHRES, TILE_PATCHRES, elev, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
+		mesh = CreateMesh_quadpatch (res, res, elev, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
 
 }
@@ -275,18 +276,26 @@ INT16 *SurfTile::ElevationData () const
 {
 	if (!ggelev) {
 		if (lvl >= 3) { // traverse quadtree back to great-grandparent
-			QuadTreeNode<SurfTile> *ggparent;
-			if (node->Parent() && node->Parent()->Parent() && (ggparent = node->Parent()->Parent()->Parent())) {
-				if (ggparent->Entry()->LoadElevationData ()) {
-					// compute pixel offset into great-grandparent tile set
-					int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
-					ggelev = ggparent->Entry()->elev + ofs;
-				}
+			QuadTreeNode<SurfTile> *ancestor = node; // start at my own node
+			int blockRes = TILE_FILERES;
+			while (blockRes > mgr->Cprm().gridRes && ancestor) {
+				ancestor = ancestor->Parent();
+				blockRes >>= 1;
+			}
+			if (ancestor && ancestor->Entry()->LoadElevationData()) {
+				// compute pixel offset into great-grandparent tile set
+				int nblock = TILE_FILERES/blockRes;
+				int mask = nblock-1;
+				int ofs = ((mask - ilat & mask) * TILE_ELEVSTRIDE + (ilng & mask)) * blockRes;
+				ggelev = ancestor->Entry()->elev + ofs;
 			}
 		} else {
 			SurfTile *ggp = smgr->GlobalTile(lvl);
 			if (ggp->LoadElevationData ()) {
-				int ofs = ((7 - ilat & 7) * TILE_ELEVSTRIDE + (ilng & 7)) * TILE_PATCHRES;
+				int blockRes = mgr->Cprm().gridRes;
+				int nblock = TILE_FILERES/blockRes;
+				int mask = nblock-1;
+				int ofs = ((mask - ilat & mask) * TILE_ELEVSTRIDE + (ilng & mask)) * blockRes;
 				ggelev = ggp->elev + ofs;
 			}
 		}
@@ -301,14 +310,15 @@ INT16 *SurfTile::ElevationData () const
 double SurfTile::GetMeanElevation (const INT16 *elev) const
 {
 	int i, j;
+	int res = mgr->Cprm().gridRes;
 	double melev = 0.0;
-	for (j = 0; j <= TILE_PATCHRES; j++) {
-		for (i = 0; i <= TILE_PATCHRES; i++) {
+	for (j = 0; j <= res; j++) {
+		for (i = 0; i <= res; i++) {
 			melev += elev[i];
 		}
 		elev += TILE_ELEVSTRIDE;
 	}
-	return melev / ((TILE_PATCHRES+1)*(TILE_PATCHRES+1));	
+	return melev / ((res+1)*(res+1));	
 }
 
 // -----------------------------------------------------------------------
@@ -489,8 +499,9 @@ void SurfTile::FixCorner (const SurfTile *nbr)
 {
 	if (!mesh) return; // sanity check
 
-	int vtx_idx = (ilat & 1 ? 0 : (TILE_PATCHRES+1)*TILE_PATCHRES) + (ilng & 1 ? TILE_PATCHRES : 0);
-	VERTEX_2TEX &vtx_store = mesh->vtx[mesh->nv + (ilat & 1 ? 0 : TILE_PATCHRES)];
+	int res = mgr->Cprm().gridRes;
+	int vtx_idx = (ilat & 1 ? 0 : (res+1)*res) + (ilng & 1 ? res : 0);
+	VERTEX_2TEX &vtx_store = mesh->vtx[mesh->nv + (ilat & 1 ? 0 : res)];
 
 	INT16 *elev = ElevationData();
 	if (!elev) return;
@@ -499,8 +510,8 @@ void SurfTile::FixCorner (const SurfTile *nbr)
 		INT16 *nbr_elev = nbr->ElevationData();
 		if (!nbr_elev) return;
 
-		INT16 corner_elev = elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? 0 : TILE_ELEVSTRIDE*TILE_PATCHRES) + (ilng & 1 ? TILE_PATCHRES : 0)];
-		INT16 nbr_corner_elev = nbr_elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? TILE_ELEVSTRIDE*TILE_PATCHRES : 0) + (ilng & 1 ? 0 : TILE_PATCHRES)];
+		INT16 corner_elev = elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? 0 : TILE_ELEVSTRIDE*res) + (ilng & 1 ? res : 0)];
+		INT16 nbr_corner_elev = nbr_elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? TILE_ELEVSTRIDE*res : 0) + (ilng & 1 ? 0 : res)];
 	
 		double rad = mgr->CbodySize();
 		double radfac = (rad+nbr_corner_elev)/(rad+corner_elev);
@@ -516,20 +527,21 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 {
 	// Fix the left or right edge
 	int i, i0, i1, j, vtx_ofs, nbrlvl, dlvl;
+	int res = mgr->Cprm().gridRes;
 	VERTEX_2TEX *vtx_store;
 	static int subidxmask[6] = {0,1,3,7, 0,1};// last two (wrap around)
 
-	vtx_ofs = (ilng & 1 ? TILE_PATCHRES : 0); // check if neighbour is at left or right edge
+	vtx_ofs = (ilng & 1 ? res : 0); // check if neighbour is at left or right edge
 	if (nbr && nbr->mesh && nbr->mesh->vtx) {
 		nbrlvl = min(nbr->lvl, lvl); // we don't need to worry about neigbour levels higher than ours
 		vtx_store = mesh->vtx + mesh->nv;
 		if (nbrlvl == lvl) { // put my own edge back
 			i0 = 0;
-			i1 = TILE_PATCHRES;
+			i1 = res;
 			if (keep_corner)
 				if (ilat & 1) i0++; else i1--;
 			for (i = i0; i <= i1; i++)
-				mesh->vtx[vtx_ofs+i*(TILE_PATCHRES+1)] = vtx_store[i];
+				mesh->vtx[vtx_ofs+i*(res+1)] = vtx_store[i];
 		} else {  // interpolate to neighbour's left edge
 			dlvl = lvl-nbrlvl;
 			if (dlvl <= 5) { // for larger tile level differences the interleaved sampling method doesn't work
@@ -538,11 +550,11 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 				if (elev && nbr_elev) {
 					elev += TILE_ELEVSTRIDE+1 + vtx_ofs; // add offset
 					int nsub = 1 << dlvl;    // number of tiles fitting alongside the lowres neighbour
-					int vtx_skip = nsub*(TILE_PATCHRES+1);  // interleave factor for nodes attaching to neigbour nodes
-					int nbr_range = TILE_PATCHRES/nsub; // number of neighbour vertices attaching to us - 1
+					int vtx_skip = nsub*(res+1);  // interleave factor for nodes attaching to neigbour nodes
+					int nbr_range = res/nsub; // number of neighbour vertices attaching to us - 1
 					int subidx = ilat & subidxmask[dlvl];
 					int nbr_ofs = (subidxmask[dlvl]-subidx) * nbr_range * TILE_ELEVSTRIDE;
-					nbr_elev += TILE_ELEVSTRIDE+1 + nbr_ofs + (TILE_PATCHRES-vtx_ofs);
+					nbr_elev += TILE_ELEVSTRIDE+1 + nbr_ofs + (res-vtx_ofs);
 					double rad = mgr->CbodySize();
 					// match nodes to neighbour elevations
 					i0 = 0;
@@ -558,7 +570,7 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 					// interpolate the nodes that fall between neighbour nodes
 					for (i = 0; i < nbr_range; i++)
 						for (j = 1; j < nsub; j++)
-							VtxInterpolate (mesh->vtx[vtx_ofs+j*(TILE_PATCHRES+1)+i*vtx_skip], mesh->vtx[vtx_ofs+i*vtx_skip], mesh->vtx[vtx_ofs+(i+1)*vtx_skip], (double)j/double(nsub));
+							VtxInterpolate (mesh->vtx[vtx_ofs+j*(res+1)+i*vtx_skip], mesh->vtx[vtx_ofs+i*vtx_skip], mesh->vtx[vtx_ofs+(i+1)*vtx_skip], (double)j/double(nsub));
 				}
 			} else {
 				// problems
@@ -573,17 +585,18 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 {
 	// Fix the top or bottom edge
 	int i, i0, i1, j, nbrlvl, dlvl;
+	int res = mgr->Cprm().gridRes;
 	VERTEX_2TEX *vtx_store;
 	static int subidxmask[6] = {0,1,3,7, 0,1};// last two (wrap around)
 
-	int line = (ilat & 1 ? 0 : TILE_PATCHRES);
-	int vtx_ofs = (ilat & 1 ? 0 : line*(TILE_PATCHRES+1));
+	int line = (ilat & 1 ? 0 : res);
+	int vtx_ofs = (ilat & 1 ? 0 : line*(res+1));
 	if (nbr && nbr->mesh && nbr->mesh->vtx) {
 		nbrlvl = min(nbr->lvl, lvl); // we don't need to worry about neigbour levels higher than ours
-		vtx_store = mesh->vtx + mesh->nv + TILE_PATCHRES + 1;
+		vtx_store = mesh->vtx + mesh->nv + res + 1;
 		if (nbrlvl == lvl) { // put my own edge back
 			i0 = 0;
-			i1 = TILE_PATCHRES;
+			i1 = res;
 			if (keep_corner)
 				if (ilng & 1) i1--; else i0++;
 			for (i = i0; i <= i1; i++)
@@ -597,10 +610,10 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 					elev += (line+1)*TILE_ELEVSTRIDE + 1; // add offset
 					int nsub = 1 << dlvl;    // number of tiles fitting alongside the lowres neighbour
 					int vtx_skip = nsub;     // interleave factor for nodes attaching to neigbour nodes
-					int nbr_range = TILE_PATCHRES/nsub; // number of neighbour vertices attaching to us - 1
+					int nbr_range = res/nsub; // number of neighbour vertices attaching to us - 1
 					int subidx = ilng & subidxmask[dlvl];
 					int nbr_ofs = subidx * nbr_range;
-					nbr_elev += TILE_ELEVSTRIDE+1 + nbr_ofs + (TILE_PATCHRES-line)*TILE_ELEVSTRIDE;
+					nbr_elev += TILE_ELEVSTRIDE+1 + nbr_ofs + (res-line)*TILE_ELEVSTRIDE;
 					double rad = mgr->CbodySize();
 					// match nodes to neighbour elevations
 					i0 = 0;

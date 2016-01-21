@@ -59,16 +59,17 @@ void CloudTile::Load ()
 	} else TileCatalog->Add(DWORD(tex));
 
 	bool shift_origin = (lvl >= 4);
+	int res = mgr->Cprm().gridRes;
 
 	if (!lvl) {
 		// create hemisphere mesh for western or eastern hemispheres
-		mesh = CreateMesh_hemisphere (TILE_PATCHRES, 0, mean_elev);
+		mesh = CreateMesh_hemisphere (res, 0, mean_elev);
 	//} else if (ilat == 0 || ilat == (1<<lvl)-1) {
 		// create triangular patch for north/south pole region
 	//	mesh = CreateMesh_tripatch (TILE_PATCHRES, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (TILE_PATCHRES, TILE_PATCHRES, 0, mean_elev, &texrange, shift_origin, &vtxshift);
+		mesh = CreateMesh_quadpatch (res, res, 0, mean_elev, &texrange, shift_origin, &vtxshift);
 	}
 }
 

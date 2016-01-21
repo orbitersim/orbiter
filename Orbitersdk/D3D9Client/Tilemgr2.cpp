@@ -759,7 +759,8 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 // =======================================================================
 
 TileManager2Base::configPrm TileManager2Base::cprm = {
-	1,                  // elevInterpol
+	32,                 // gridRes
+	2,                  // elevInterpol
 	false,				// bSpecular
 	false,				// bLights
 	false,              // bCloudShadow
@@ -773,11 +774,12 @@ HFONT TileManager2Base::hFont = NULL;
 
 // -----------------------------------------------------------------------
 
-TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres)
+TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gridres)
 : vp(vplanet)
 {
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);
+	cprm.gridRes = _gridres;
 
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
