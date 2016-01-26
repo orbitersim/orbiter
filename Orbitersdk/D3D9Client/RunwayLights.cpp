@@ -1011,6 +1011,7 @@ void TaxiLights::Init()
 	taxiLight.fall = 0.5;
 	taxiLight.dir = _V(0, 1, 0);
 	taxiLight.pos = _V(0, 0, 0);
+	//taxiLight.lat = taxiLight.lng = 0.0;
 	taxiLight.color = D3DXCOLOR(float(color.x), float(color.y), float(color.z), 1.0f);
 
 	VECTOR3 space = dir * len / (count-1);
