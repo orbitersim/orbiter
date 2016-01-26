@@ -121,6 +121,16 @@ public:
 	void SetOrigin (int x, int y);
 
 	/**
+	 * \brief Returns the position in the surface bitmap which is mapped to
+	 *   the origin of the coordinate system for all drawing functions.
+	 * \param [out] x pointer to integer receiving horizontal position of the origin [pixel]
+	 * \param [out] y pointer to integer receiving vertical position of the origin [pixel]
+	 * \default Returns (0,0)
+	 * \sa SetOrigin
+	 */
+	void GetOrigin (int *x, int *y) const;
+
+	/**
 	 * \brief Draws a text string.
 	 * \param x reference x position [pixel]
 	 * \param y reference y position [pixel]

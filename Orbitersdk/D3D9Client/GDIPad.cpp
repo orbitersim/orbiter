@@ -141,11 +141,25 @@ DWORD GDIPad::GetTextWidth (const char *str, int len)
 	return (DWORD)size.cx;
 }
 
+// ===============================================================================================
+//
 void GDIPad::SetOrigin (int x, int y)
 {
 	SetViewportOrgEx (hDC, x, y, NULL);
 }
 
+// ===============================================================================================
+//
+void GDIPad::GetOrigin (int *x, int *y) const
+{
+	POINT point;
+	GetViewportOrgEx (hDC, &point);
+	if (x) *x = point.x;
+	if (y) *y = point.y;
+}
+
+// ===============================================================================================
+//
 bool GDIPad::Text (int x, int y, const char *str, int len)
 {
 	return (TextOut (hDC, x, y, str, len) != FALSE);
