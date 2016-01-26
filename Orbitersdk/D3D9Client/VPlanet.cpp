@@ -56,7 +56,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	maxdist = max (max_centre_dist, max_surf_dist + rad);
 	max_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	max_patchres = min (max_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
-	int tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
+	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
@@ -71,7 +71,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		bScatter = LoadAtmoConfig(false);
 		if (bScatter) LoadAtmoConfig(true);
 		surfmgr = NULL;
-		int patchlvl = 2 << *(int*)gc->GetConfigParam (CFGPRM_TILEPATCHRES);
+		int patchlvl = 1 << (5 + Config->MeshRes);
 		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres, patchlvl);
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);

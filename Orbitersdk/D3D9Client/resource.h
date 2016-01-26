@@ -119,3 +119,4 @@
 #define IDC_SUNBRIGHTNESS                       2110
 #define IDC_POSTPROCESS                         2111
 #define IDC_CAMMODE                             2112
+#define IDC_MESHRES                             2113

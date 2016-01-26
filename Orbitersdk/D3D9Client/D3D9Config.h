@@ -64,6 +64,7 @@ public:
 	int CustomCamMode;				///< Custom Camera Mode
 	int TileMipmaps;				///< Enable surface tile mipmaps
 	int LODBias;					///< 3D Terrain resolution bias
+	int MeshRes;					///< Tile patch mesh resolution
 	int TileDebug;					///< Enable tile debugger
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")

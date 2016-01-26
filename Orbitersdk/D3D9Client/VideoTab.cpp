@@ -654,6 +654,10 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMAX, 1, 3);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -3);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETTICFREQ, 1, 0);
+
+	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMAX, 1, 2);
+	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETTICFREQ, 1, 0);
 	
 
 
@@ -666,6 +670,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETPOS, 1, DWORD(Config->Convergence*100.0));
 	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, DWORD(Config->Separation));
 	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, DWORD(Config->LODBias));
+	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, DWORD(Config->MeshRes));
 
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, Config->EnvMapMode, 0);
 	SendDlgItemMessage(hWnd, IDC_CAMMODE, CB_SETCURSEL, Config->CustomCamMode, 0);
@@ -739,6 +744,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
 	Config->Separation	  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
 	Config->LODBias       = int(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
+	Config->MeshRes       = int(SendDlgItemMessage(hWnd, IDC_MESHRES,  TBM_GETPOS, 0, 0));
 
 	// Other things
 	GetWindowText(GetDlgItem(hWnd, IDC_HZ),  cbuf, 32);
