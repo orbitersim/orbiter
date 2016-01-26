@@ -149,7 +149,7 @@ class TileLoader {
 	template<class T> friend class TileManager2;
 
 public:
-	TileLoader (const oapi::D3D9Client *gclient);
+	explicit TileLoader (const oapi::D3D9Client *gclient);
 	~TileLoader ();
 	bool LoadTileAsync (Tile *tile);
 	bool ShutDown ();

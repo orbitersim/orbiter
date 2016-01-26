@@ -228,7 +228,7 @@ protected:
 
 class TileBuffer {
 public:
-	TileBuffer (const oapi::D3D9Client *gclient);
+	explicit TileBuffer (const oapi::D3D9Client *gclient);
 	~TileBuffer ();
 	TILEDESC *AddTile ();
 	void DeleteSubTiles (TILEDESC *tile);

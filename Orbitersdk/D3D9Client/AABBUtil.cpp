@@ -555,7 +555,7 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1)
 
 	double y[64];
 	double ih0 = 1.0/h0;
-	double ipw = -1.0/2.0;
+//	double ipw = -1.0/2.0;
 
 	int ndata = sizeof(x)/sizeof(double);
 

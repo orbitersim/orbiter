@@ -17,7 +17,7 @@
 
 struct VBMESH {
 
-	VBMESH(class TileManager2Base *pMgr);
+	explicit VBMESH(class TileManager2Base *pMgr);
 	VBMESH();
 	~VBMESH();
 

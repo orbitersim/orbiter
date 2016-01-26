@@ -108,7 +108,7 @@ public:
 	 * with the Orbiter core via the oapiRegisterGraphicsClient function.
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
-	D3D9Client (HINSTANCE hInstance);
+	explicit D3D9Client (HINSTANCE hInstance);
 	
 	/**
 	 * \brief Destroy the graphics object.
@@ -1273,7 +1273,7 @@ public:
 	 * \param hObj object handle
 	 * \sa oapi::GraphicsClient::RegisterVisObject
 	 */
-	VisObject (OBJHANDLE hObj);
+	explicit VisObject (OBJHANDLE hObj);
 
 	/**
 	 * \brief Destroys the visual.

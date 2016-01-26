@@ -13,7 +13,7 @@
 
 class D3D9Catalog {
 public:
-	D3D9Catalog(const char *name);
+	explicit D3D9Catalog(const char *name);
 	~D3D9Catalog();
 
 	void  Add(DWORD data);

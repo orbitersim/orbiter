@@ -32,7 +32,7 @@ public:
 	 * \brief Create a new celestial sphere object.
 	 * \param _gc pointer to graphics client
 	 */
-	CelestialSphere(oapi::D3D9Client *_gc);
+	explicit CelestialSphere(oapi::D3D9Client *_gc);
 
 	/**
 	 * \brief Destructor

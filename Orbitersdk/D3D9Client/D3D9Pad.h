@@ -46,7 +46,7 @@ public:
 	 * \brief Constructs a drawing object for a given surface.
 	 * \param s surface handle
 	 */
-	D3D9Pad(SURFHANDLE s);
+	explicit D3D9Pad(SURFHANDLE s);
 
 	/**
 	 * \brief Destructor. Destroys a drawing object.
@@ -444,7 +444,7 @@ public:
 	 * \param col line colour (format: 0xBBGGRR)
 	 * \Only solid GDI brushes are supported.
 	 */
-	D3D9PadBrush (DWORD col);
+	explicit D3D9PadBrush (DWORD col);
 
 	/**
 	 * \brief Brush destructor.

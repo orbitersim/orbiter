@@ -31,7 +31,7 @@ public:
 	 * \param pArray Pointer into a BeaconArrayEntry list
 	 * \param nArray Number of entries in the array
 	 */
-	FileParser(const char *scenario);
+	explicit FileParser(const char *scenario);
 	~FileParser();
 	
 	const char * GetConfigFile(OBJHANDLE hObj);

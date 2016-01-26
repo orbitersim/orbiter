@@ -51,7 +51,7 @@ public:
 	 * \brief Constructs a new text object
 	 * \param pDevice direct 3D device instance pointer
 	 */
-	D3D9Text(LPDIRECT3DDEVICE9 pDevice);
+	explicit D3D9Text(LPDIRECT3DDEVICE9 pDevice);
 
 	/**
 	 * \brief Destroys the text object

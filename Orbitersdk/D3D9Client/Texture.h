@@ -24,7 +24,7 @@
 class TextureManager {
 public:
 
-	TextureManager(oapi::D3D9Client *gclient);
+	explicit TextureManager(oapi::D3D9Client *gclient);
 	~TextureManager();
 	
 	HRESULT LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *ppdds, int flags);
