@@ -31,6 +31,17 @@
 #define TILE_FILERES 256
 #define TILE_ELEVSTRIDE (TILE_FILERES+3)
 
+#ifdef _DEBUG
+// Debugging helper
+#define TILE_STATE_OK(t) (t->state == Tile::Invalid \
+                       || t->state == Tile::InQueue  \
+                       || t->state == Tile::Loading   \
+                       || t->state == Tile::Inactive   \
+                       || t->state == Tile::Active      \
+                       || t->state == Tile::Invisible    \
+                       || t->state == Tile::ForRender)
+#endif // _DEBUG
+
 // =======================================================================
 // Type definitions
 
