@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
-// Copyright (C) 2012-2014 Jarmo Nikkanen
+// Copyright (C) 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
 
@@ -2140,9 +2140,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 15 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 16 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 15 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 16 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
