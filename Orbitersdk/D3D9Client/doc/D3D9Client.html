@@ -172,6 +172,14 @@
       The supported value range is from 0.01 to 2.0. Although you might be able
       to enter bigger or smaller values, those will be clipped to that range.
     </p>
+    <li>Sun brightness</li>
+    <p>
+      Currently disabled
+      <!--
+      The value set here is a factor that lets you brighten or dim the "sun".
+      The higher the value the brighter the sun will be rendered.
+      -->
+    </p>
 </ul>
 <p>
   Following checkboxes can be checked (enabled) or unchecked (disabled) to
@@ -194,16 +202,16 @@
       information for meshes that supply them. This advanced texture maps
       define for example how "rough" or "shiny" a texture appears.
     </p>
-  <li>Enable improved glass shading</li>
+  <li class="brk">Enable improved glass shading</li>
     <p>
       With this option enabled D3D9Client will try to add improved glass
       shading (Fresnel reflection) for meshes that supply them.
     </p>
+  <!-- removed
   <li class="brk">Enable geometry instancing</li>
     <p>
       Currently disabled
     </p>
-  <!-- removed
   <li>Enable environment maps</li>
     <p>
       With this option enabled D3D9Client will try to add additional texture
@@ -229,6 +237,30 @@
       near clip-plane distance is defined in D3D9Client.cfg and the default
       value is 0.1 meters.
     </p>
+    <li>Enable surface tile mipmaps</li>
+    <p>
+      ...
+    </p>
+    <li>Enable sunlight post processing</li>
+    <p>
+      Currently disabled
+    </p>
+</ul>
+
+<h2>Terrain Resolution</h2>
+<p>
+  Here you can change settings that will affect the rendering of planetary
+  terrains.
+</p>
+<ul>
+  <li>LOD Bias</li>
+  <p>
+    The Level of Detail (LOD) ...
+  </p>
+  <li>Mesh resolution</li>
+  <p>
+    The mesh resolution ...
+  </p>
 </ul>
 
 <h2>SketchPad settings</h2>
@@ -267,7 +299,7 @@
     </p>
 </ul>
 
-<h2>Generic configuration</h2>
+<h2 class="brk">Generic configuration</h2>
 <p>
   The generic configuration contains options that will change the general
   behavior of D3D9Client. For most of the time the default setup should be fine
@@ -277,6 +309,7 @@
   error or failure.
 </p>
 <ul>
+  <!-- removed
   <li>Shader set</li>
     <p>
       If you have different shader sets you like to switch between, this select
@@ -286,7 +319,8 @@
       depends on the version of D3D9Client! The R6 release for example has only
       the "Default" shader set to select.
     </p>
-  <li class="brk">Debug level</li>
+  -->
+  <li>Debug level</li>
     <p>
       The five options you can choose from here [0...4] represent the level of
       information that will be written into the log-file. The log-file is
@@ -337,17 +371,17 @@
     </p>
 </ul>
 
-<h2>Environment mapping</h2>
+<h2 class="brk">Reflections and Custom camera settings</h2>
 <p>
-  The environment mapping settings allow you to tweak the parameters that
-  define the behavior of the environment mapping feature. Environment mapping
-  is a feature used to draw reflections of the surrounding environment on
-  reflective surfaces.
+  The reflections and custom camera settings allow you to tweak the parameters
+  that define the behavior of the environment mapping feature. Environment
+  mapping is a feature used to draw reflections of the surrounding environment
+  on reflective surfaces or an completely isolated surfaces (camera screens).
 </p>
 <ul>
-  <li>Rendering mode</li>
+  <li>Reflection Mode</li>
     <p style="margin-bottom: 5px;">
-      The rendering mode selection offers three settings:
+      The reflection mode selection offers three settings:
       <div style="text-indent:-1em; margin-left:1em">
       <b><em>Disable</em></b> will completely disable the environment mapping
         feature.</div>
@@ -358,9 +392,19 @@
       <b><em>Full Scene</em></b> will "reflect" the complete scene, that is all
         other ships, moons and planets.</div>
     </p>
-  <li>Faces per frame</li>
+  <li>Custom Cameras</li>
     <p>
-      Number of environment map faces that will be rendered per frame.
+      This selection lets you enable or disable the environment mapping on
+      isolated surfaces (camera screen) feature.
+      The custom camera selection offers therefore only two settings:
+      <b><em>Enabled</em></b> or <b><em>Disable</em></b>.
+    </p>
+  <li>Update Rate</li>
+    <p>
+      Selects the number of environment map faces that will be rendered per
+      frame.
+      The update rate selection offers three settings: <b><em>Light</em></b>,
+      <b><em>Medium</em></b> or <b><em>Heavy</em></b>
     </p>
 </ul>
 
