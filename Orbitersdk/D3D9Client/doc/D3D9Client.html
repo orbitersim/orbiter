@@ -239,7 +239,14 @@
     </p>
     <li>Enable surface tile mipmaps</li>
     <p>
-      ...
+      In some situations planetary (or minor body) surfaces appear to be noisy
+      and are flickering.
+      <a href="http://en.wikipedia.org/wiki/Mipmap">Mipmaps</a> are one
+      solution to address these problems. By enabling this option these
+      artifacts should greatly be reduced and the surface will appear smooth.
+      <br/>
+      The impact of enabling mipmaps is an increased load time because the
+      mipmaps are generated during texture loading.
     </p>
     <li>Enable sunlight post processing</li>
     <p>
@@ -288,18 +295,21 @@
       </dd>
     </dl>
     </p>
-  <li>Font rendering</li>
+  <li class="brk">Font rendering</li>
     <p>
-      The four options you can choose from at "Font rendering" are "Crisp",
-      "Default", "Cleartype" and "Proof Quality".
+      The four options you can choose from at "<b><em>Font rendering</em></b>"
+      are:<br/>
+      "<b><em>Crisp</em></b>", "<b><em>Default</em></b>",
+      "<b><em>Cleartype</em></b>" and "<b><em>Proof Quality</em></b>".
     </p>
     <p>
-      Each setting will render fonts more smooth but uses a bit more graphic
-      hardware performance.
+      Each setting will effect how the fonts are pre-rendered for sketchpad
+      use. Choose what ever gives the best visual results. No performance
+      impact.
     </p>
 </ul>
 
-<h2 class="brk">Generic configuration</h2>
+<h2>Generic configuration</h2>
 <p>
   The generic configuration contains options that will change the general
   behavior of D3D9Client. For most of the time the default setup should be fine
@@ -376,7 +386,8 @@
   The reflections and custom camera settings allow you to tweak the parameters
   that define the behavior of the environment mapping feature. Environment
   mapping is a feature used to draw reflections of the surrounding environment
-  on reflective surfaces or an completely isolated surfaces (camera screens).
+  on reflective surfaces. Custom camera settings will allow add-ons to render
+  images on isolated surfaces (camera screens).
 </p>
 <ul>
   <li>Reflection Mode</li>
@@ -394,10 +405,17 @@
     </p>
   <li>Custom Cameras</li>
     <p>
-      This selection lets you enable or disable the environment mapping on
-      isolated surfaces (camera screen) feature.
+      The custom camera interface can be used by add-ons to create e.g.
+      payload-bay cameras, docking cameras and other things like that.
+      The camera image rendered by a custom camera can be displayed in an MFD
+      screen or any other screen in a virtual cockpit or in a panel.
+      Developer note : See ogci.h for additional details.
+      <br/>
       The custom camera selection offers therefore only two settings:
       <b><em>Enabled</em></b> or <b><em>Disable</em></b>.
+      <br/>
+      (Note: This has nothing to do with environment maps; it merely uses the
+      same code and update mechanism to do the rendering)
     </p>
   <li>Update Rate</li>
     <p>
