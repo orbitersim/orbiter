@@ -1664,7 +1664,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				D3DXIMAGE_INFO info;
 				pNormalMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, D3DX_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
 						LogAlw("Normal Map %s Loaded Successfully",nname);
 					}
 					else {
@@ -1681,7 +1681,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				D3DXIMAGE_INFO info;
 				pSpecularMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSpecularMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSpecularMap)==S_OK) {
 						LogAlw("Specular Map %s Loaded Successfully",sname);
 					}
 					else {
@@ -1698,7 +1698,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				D3DXIMAGE_INFO info;
 				pEmissionMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pEmissionMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pEmissionMap)==S_OK) {
 						LogAlw("Emission Map %s Loaded Successfully",ename);
 					}
 					else {
@@ -1735,7 +1735,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				D3DXIMAGE_INFO info;
 				pTranslucenceMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTranslucenceMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTranslucenceMap)==S_OK) {
 						LogAlw("Translucence Map %s Loaded Successfully",ename);
 					}
 					else {
@@ -1751,7 +1751,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				D3DXIMAGE_INFO info;
 				pTransmittanceMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTransmittanceMap)==S_OK) {
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTransmittanceMap)==S_OK) {
 						LogAlw("Transmittance Map %s Loaded Successfully",ename);
 					}
 					else {

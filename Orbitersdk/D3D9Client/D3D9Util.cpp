@@ -25,6 +25,15 @@ void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Specular.a = pIn->Power;
 }
 
+void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut)
+{
+	pOut->Ambient = pIn->Ambient;
+	pOut->Diffuse = pIn->Diffuse;
+	pOut->Emissive = pIn->Emissive;
+	pOut->Specular = pIn->Specular;
+	pOut->Power	= pIn->Specular.a;
+}
+
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
 	memcpy2(pOut, pIn, 64);

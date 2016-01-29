@@ -390,6 +390,8 @@ public:
 	 */
 	~D3D9PadFont ();
 
+	HFONT GetGDIFont () const;
+
 private:
 	class D3D9Text *pFont;
 	HFONT hFont;

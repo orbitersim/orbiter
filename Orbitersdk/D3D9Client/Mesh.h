@@ -68,6 +68,7 @@ public:
 		WORD  IntFlag;			// internal flags
 		WORD  GeometryRec;		// Geometry record ID
 		WORD  zBias;
+		WORD  MFDScreenId;		// MFD screen ID + 1
 		bool  bTransform;
 		bool  bUpdate;
 		bool  bGrouped;

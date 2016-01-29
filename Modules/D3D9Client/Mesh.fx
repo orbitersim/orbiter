@@ -75,7 +75,19 @@ MeshVS TinyMeshTechVS(MESH_VERTEX vrt)
 
 float4 HUDTechPS(MeshVS frg) : COLOR
 {
-    return tex2D(SimpleS, frg.tex0);
+	// Normalize input
+	float3 nrmW = normalize(frg.nrmW);
+	float3 CamW = normalize(frg.CamW);
+	
+	float3 r = reflect(gSun.direction, nrmW);
+	float  s = pow(max(dot(r, CamW), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
+
+	float3 diff  = gMtrl.diffuse.rgb + gMtrl.emissive.rgb;
+    float3 color = tex2D(MFDSamp, frg.tex0).rgb * diff + saturate(s * gMtrl.specular.rgb);
+	
+    return float4(color.rgb, 1.0f);
+
+    //return tex2D(SimpleS, frg.tex0);
 }
 
 
@@ -88,9 +100,10 @@ float4 MFDTechPS(MeshVS frg) : COLOR
 	float3 r = reflect(gSun.direction, nrmW);
 	float  s = pow(max(dot(r, CamW), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
 
-    float3 color = tex2D(MFDSamp, frg.tex0).rgb + saturate(s * gMtrl.specular.rgb);
+	float3 diff  = gMtrl.diffuse.rgb + gMtrl.emissive.rgb;
+    float3 color = tex2D(MFDSamp, frg.tex0).rgb * diff + saturate(s * gMtrl.specular.rgb);
 	
-    return float4(color.rgb, 1.0f);
+    return float4(color.rgb,  gMtrl.diffuse.a);
 }
 
 

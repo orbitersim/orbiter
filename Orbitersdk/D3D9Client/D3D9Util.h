@@ -335,6 +335,7 @@ void OrbitalLighting(D3D9Light *light, class vPlanet *vP, VECTOR3 GO, float ao);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
+void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations

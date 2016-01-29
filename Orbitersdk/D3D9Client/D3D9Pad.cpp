@@ -1113,6 +1113,15 @@ D3D9PadFont::~D3D9PadFont ()
 	if (hFont) DeleteObject(hFont);
 }
 
+
+// -----------------------------------------------------------------------------------------------
+//
+HFONT D3D9PadFont::GetGDIFont () const
+{
+	return hFont;	
+}
+
+
 // -----------------------------------------------------------------------------------------------
 //
 void D3D9PadFont::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)

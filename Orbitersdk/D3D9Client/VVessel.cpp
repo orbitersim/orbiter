@@ -615,7 +615,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	const VCHUDSPEC *hudspec;
 	const VCMFDSPEC *mfdspec[MAXMFD];
-	SURFHANDLE sHUD=0, sMFD[MAXMFD];
+	SURFHANDLE sHUD=0; //, sMFD[MAXMFD];
 
 	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false); // turn on  fog
 	else										   D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);  // turn off fog
@@ -626,12 +626,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	//
 	if (bVC && internalpass) {
 
-		for (mfd = 0; mfd < MAXMFD; mfd++) {
-			sMFD[mfd] = gc->GetVCMFDSurface(mfd, &mfdspec[mfd]);
-		}
+		for (mfd = 0; mfd < MAXMFD; mfd++) gc->GetVCMFDSurface(mfd, &mfdspec[mfd]);
 
 		sHUD = gc->GetVCHUDSurface(&hudspec);
-
+		
 		if (sHUD) {
 			DWORD w = SURFACE(sHUD)->GetWidth();
 			DWORD h = SURFACE(sHUD)->GetHeight();
@@ -692,33 +690,15 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		if (bVC && internalpass) {
 			for (mfd=0;mfd<MAXMFD;mfd++) {
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
-					if (sMFD[mfd]) {
-						D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
-						meshlist[i].mesh->DynamicGroup(mfdspec[mfd]->ngroup);
-						if (MFDGrp) {
-							MFDGrp->UsrFlag&=~0x2;
-							meshlist[i].mesh->RenderMeshGroup(dev, 1, mfdspec[mfd]->ngroup, pWT, SURFACE(sMFD[mfd]));
-							MFDGrp->UsrFlag|=0x2;
-						}
-					}
-					else {
-						D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
-						meshlist[i].mesh->DynamicGroup(mfdspec[mfd]->ngroup);
-						if (MFDGrp) {
-							MFDGrp->UsrFlag&=~0x2;
-							meshlist[i].mesh->RenderMeshGroup(dev, 1, mfdspec[mfd]->ngroup, pWT, mfdoff);
-							MFDGrp->UsrFlag |= 0x2;
-						}
-					}
+					D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
+					if (MFDGrp) MFDGrp->MFDScreenId = 1 + mfd;
 				}
 			}
 		}
 
-
 		if (internalpass)	meshlist[i].mesh->Render(dev, pWT, RENDER_VC,     pEnv, nEnv); // Render VC
 		else 				meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
 		
-
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//

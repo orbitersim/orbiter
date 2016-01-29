@@ -944,6 +944,19 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 
 // ==============================================================
 
+int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat)
+{
+	_TRACER;
+	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
+	DWORD nmat = mesh->MaterialCount();
+	if (matidx >= nmat) return 4; // "index out of range"
+	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
+	if (meshmat) GetMatExt(meshmat, (D3DMATERIAL9 *)mat);
+	return 0;	
+}
+
+// ==============================================================
+
 bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD value)
 {
 	_TRACER;
@@ -2140,9 +2153,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 16 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 17 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 16 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 17 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
