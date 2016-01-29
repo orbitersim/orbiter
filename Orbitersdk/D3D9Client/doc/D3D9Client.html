@@ -172,13 +172,28 @@
       The supported value range is from 0.01 to 2.0. Although you might be able
       to enter bigger or smaller values, those will be clipped to that range.
     </p>
-    <li>Sun brightness</li>
+    <li>Texture Mipmaps</li>
     <p>
-      Currently disabled
-      <!--
-      The value set here is a factor that lets you brighten or dim the "sun".
-      The higher the value the brighter the sun will be rendered.
-      -->
+      The texture mipmaps selector lets you choose the texture mipmap auto
+      generation policy. The select box lets you decide how to deal with
+      missing (not defined) mipmaps at load time.<br/>
+      <p style="margin-bottom: 5px;">
+        The texture mipmaps selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Load as defined</em></b>:
+            Only defined mipmaps will be loaded. No automatic generation of
+            mipmaps will be performed.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Autogen missing</em></b>:
+            Defined mipmaps will be loaded unaltered. Missing (not defined)
+            mipmaps will be generated automatically.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Autogen all</em></b>:
+            All mipmaps (defined or not defined) will be generated automatically.
+        </div>
+      </p>
     </p>
 </ul>
 <p>
@@ -196,13 +211,13 @@
       will only load base visuals when they come into view while you are e.g.
       flying through the atmosphere or orbiting a planet.
     </p>
-  <li>Enable advanced texture maps</li>
+  <li class="brk">Enable advanced texture maps</li>
     <p>
       With this option enabled D3D9Client will try to add additional texture
       information for meshes that supply them. This advanced texture maps
       define for example how "rough" or "shiny" a texture appears.
     </p>
-  <li class="brk">Enable improved glass shading</li>
+  <li>Enable improved glass shading</li>
     <p>
       With this option enabled D3D9Client will try to add improved glass
       shading (Fresnel reflection) for meshes that supply them.
@@ -248,10 +263,6 @@
       The impact of enabling mipmaps is an increased load time because the
       mipmaps are generated during texture loading.
     </p>
-    <li>Enable sunlight post processing</li>
-    <p>
-      Currently disabled
-    </p>
 </ul>
 
 <h2>Terrain Resolution</h2>
@@ -262,11 +273,17 @@
 <ul>
   <li>LOD Bias</li>
   <p>
-    The Level of Detail (LOD) ...
+    This slider allows to adjust the terrain tile resolution level-of-detail
+    (LOD) bias.
+    Sharper uses higher resolution tiles, which give a sharper appearance, but
+    can induce flickering. Smoother uses lower lower resolution tiles which
+    look smoother and produce less flickering.
   </p>
   <li>Mesh resolution</li>
   <p>
-    The mesh resolution ...
+    This slider allows to adjust the terrain tile mesh resolution.
+    Higher values will result in smoother appearance, but can affect frame
+    rates on some systems.
   </p>
 </ul>
 
@@ -295,7 +312,7 @@
       </dd>
     </dl>
     </p>
-  <li class="brk">Font rendering</li>
+  <li>Font rendering</li>
     <p>
       The four options you can choose from at "<b><em>Font rendering</em></b>"
       are:<br/>
