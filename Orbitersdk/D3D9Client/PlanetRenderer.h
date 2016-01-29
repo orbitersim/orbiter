@@ -1,4 +1,3 @@
-
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
@@ -10,6 +9,12 @@
 
 #include "D3D9Client.h"
 
+/**
+ * \brief Global planet renderer object
+ *
+ * The global planet renderer object provides objects and handles
+ * (like D3DX Tech HANDLEs) usefull to all rendering instances.
+ */
 class PlanetRenderer {
 	
 public:

@@ -4,17 +4,17 @@
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
-// ==============================================================
-// cloudmgr2.h
-// Rendering of planetary cloud layers using texture tiles at
-// variable resolutions (new version).
-// ==============================================================
-
 #ifndef __CLOUDMGR2_H
 #define __CLOUDMGR2_H
 
 #include "Tilemgr2_imp.hpp"
 
+/**
+ * \brief Visual representation of planetary cloud tile.
+ *
+ * Rendering of planetary cloud layers using texture tiles at
+ * variable resolutions (new version).
+ */
 class CloudTile: public Tile {
 	friend class TileManager2Base;
 	template<class CloudTile> friend class TileManager2;

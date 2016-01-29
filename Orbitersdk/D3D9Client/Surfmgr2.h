@@ -4,17 +4,17 @@
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
-// ==============================================================
-// surfmgr2.h
-// Planetary surface rendering engine v2, including a simple
-// LOD (level-of-detail) algorithm for surface patch resolution.
-// ==============================================================
-
 #ifndef __SURFMGR2_H
 #define __SURFMGR2_H
 
 #include "Tilemgr2_imp.hpp"
 
+/**
+ * \brief Planetary surface rendering engine.
+ *
+ * Planetary surface rendering engine v2, including a simple
+ * LOD (level-of-detail) algorithm for surface patch resolution.
+ */
 class SurfTile: public Tile {
 	friend class TileManager2Base;
 	template<class SurfTile> friend class TileManager2;

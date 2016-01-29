@@ -52,6 +52,13 @@ typedef struct {
 
 // =======================================================================
 
+/**
+ * \brief Surface tile texture class.
+ *
+ * A Tile is the basic (visual) representation of a "planetary" surface
+ * (of a planet, moon or asteroid).
+ * There should be no simple tile objects, but derived classes.
+ */
 class Tile
 {
 	friend class TileManager2Base;
@@ -145,6 +152,11 @@ protected:
 
 // =======================================================================
 
+/**
+ * \brief Planetary surface tile loader template.
+ *
+ * Planetary surface tile loader template class.
+ */
 class TileLoader {
 	template<class T> friend class TileManager2;
 
@@ -179,32 +191,44 @@ private:
 
 // =======================================================================
 
+/**
+ * \brief Base class for tile managment classes.
+ *
+ * Rendering of planetary surfaces using texture tiles at
+ * variable resolutions (new version).
+ */
 class TileManager2Base : public PlanetRenderer {
 	friend class Tile;
 
 public:
-	struct configPrm {				// global configuration parameters
-		int gridRes;                    // mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
-		int elevMode;                   // elevation mode (0=none, 1=linear, 2=cubic)
-		bool bSpecular;					// render specular surface reflections?
-		bool bLights;					// render planet night lights?
-		bool bCloudShadow;				// render cloud shadows?
-		double lightfac;				// city light brightness factor
+	/**
+	 * \brief Global configuration parameters
+	 */
+	struct configPrm {
+		int gridRes;		///< mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
+		int elevMode;		///< elevation mode (0=none, 1=linear, 2=cubic)
+		bool bSpecular;		///< render specular surface reflections?
+		bool bLights;		///< render planet night lights?
+		bool bCloudShadow;	///< render cloud shadows?
+		double lightfac;	///< city light brightness factor
 	};
 
+	/**
+	 * \brief Global rendering parameters
+	 */
 	struct RenderPrm {
-		const vPlanet::RenderPrm *rprm;  // render parameters inherited from the vPlanet object
-		int maxlvl;        // max tile level
-		MATRIX4 dwmat;     // planet world matrix, double precision
-		MATRIX4 dwmat_tmp; // modifyable planet world matrix, double precision
-		MATRIX4 dviewproj; // view+projection matrix, double precision
-		MATRIX3 grot;      // planet rotation matrix
-		VECTOR3 cpos;      // planet offset vector (in global frame)
-		VECTOR3 cdir;      // camera direction from planet centre (in planet frame)
-		VECTOR3 sdir;      // sun direction in local planet coords
-		double cdist;      // camera distance from planet centre (in units of planet radii)
-		double viewap;     // aperture of surface cap visible from camera pos
-		double scale;
+		const vPlanet::RenderPrm *rprm;	///< render parameters inherited from the vPlanet object
+		int maxlvl;						///< max tile level
+		MATRIX4 dwmat;					///< planet world matrix, double precision
+		MATRIX4 dwmat_tmp;				///< modifyable planet world matrix, double precision
+		MATRIX4 dviewproj;				///< view+projection matrix, double precision
+		MATRIX3 grot;					///< planet rotation matrix
+		VECTOR3 cpos;					///< planet offset vector (in global frame)
+		VECTOR3 cdir;					///< camera direction from planet centre (in planet frame)
+		VECTOR3 sdir;					///< sun direction in local planet coords
+		double cdist;					///< camera distance from planet centre (in units of planet radii)
+		double viewap;					///< aperture of surface cap visible from camera pos
+		double scale;					///< scale factor
 	} prm;
 
 	/**
@@ -229,6 +253,10 @@ public:
 	 * \brief Release global parameters
 	 */
 	static void GlobalExit ();
+
+	/**
+	 * \brief Shutdown on loader instance
+	 */
 	static bool ShutDown ();
 
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }

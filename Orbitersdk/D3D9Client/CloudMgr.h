@@ -5,18 +5,17 @@
 // Copyright (C) 2007 Martin Schweiger
 // ==============================================================
 
-// ==============================================================
-// class CloudManager (interface)
-//
-// Planetary rendering management for cloud layers, including a simple
-// LOD (level-of-detail) algorithm for patch resolution.
-// ==============================================================
-
 #ifndef __CLOUDMGR_H
 #define __CLOUDMGR_H
 
 #include "TileMgr.h"
 
+/**
+ * \brief Planetary rendering management for clouds.
+ *
+ * Planetary rendering management for cloud layers, including a simple
+ * LOD (level-of-detail) algorithm for patch resolution.
+ */
 class CloudManager: public TileManager {
 public:
 	CloudManager (oapi::D3D9Client *gclient, const vPlanet *vplanet);

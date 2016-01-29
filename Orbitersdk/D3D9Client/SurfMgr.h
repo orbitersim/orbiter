@@ -5,18 +5,17 @@
 // Copyright (C) 2007 Martin Schweiger
 // ==============================================================
 
-// ==============================================================
-// class SurfaceManager (interface)
-//
-// Planetary surface rendering management, including a simple
-// LOD (level-of-detail) algorithm for surface patch resolution.
-// ==============================================================
-
 #ifndef __SURFMGR_H
 #define __SURFMGR_H
 
 #include "TileMgr.h"
 
+/**
+ * \brief Planetary surface rendering management.
+ *
+ * Planetary surface rendering management, including a simple
+ * LOD (level-of-detail) algorithm for surface patch resolution.
+ */
 class SurfaceManager: public TileManager {
 public:
 	SurfaceManager(oapi::D3D9Client *gclient, const vPlanet *vplanet);
