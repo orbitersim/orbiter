@@ -247,8 +247,8 @@ STRINGTABLE
 //
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 1 VERSIONINFO
-    FILEVERSION     15,12,0,0
-    PRODUCTVERSION  15,0,0,0
+    FILEVERSION     16,1,29,0
+    PRODUCTVERSION  16,0,0,0
     FILEOS          VOS_NT_WINDOWS32
     FILETYPE        VFT_DLL
     FILESUBTYPE     VFT2_UNKNOWN
@@ -259,17 +259,23 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
     {
         BLOCK "080904E4"
         {
+        //  VALUE "Comments", "http://d3d9client.codeplex.com || http://orbit.medphys.ucl.ac.uk"
+        //  VALUE "CompanyName", ""
             VALUE "FileDescription", "Render engine plugin for Orbiter Space Flight Simulator"
-            VALUE "FileVersion", "15.12.0.0"
+            VALUE "FileVersion", "16.1.29.0"
             VALUE "InternalName", "D3D9Client"
-            VALUE "LegalCopyright", "Copyright © 2010 - 2015"
+            VALUE "LegalCopyright", "Copyright © 2010 - 2016"
+        //  VALUE "LegalTrademarks", ""
             VALUE "OriginalFilename", "D3D9Client.dll"
+        //  VALUE "PrivateBuild", ""
             VALUE "ProductName", "D3D9Client"
-            VALUE "ProductVersion", "15.0.0.0"
+            VALUE "ProductVersion", "16.0.0.0"
+        //  VALUE "SpecialBuild", ""
         }
     }
     BLOCK "VarFileInfo"
     {
+        // English language (0x409) in the Windows ANSI codepage (1252 / 0x04E4)
         VALUE "Translation", 0x0809, 0x04E4
     }
 }
