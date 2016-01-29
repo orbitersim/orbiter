@@ -128,7 +128,7 @@ void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
 
 	double s  = length(S);	
 
-	float pwr = float(Config->SunBrightness);
+	float pwr = 1.0f;
 
 	if (hP==hS) {
 		light->Diffuse   = light->Specular = D3DXCOLOR(pwr, pwr, pwr, 1.0f); 

@@ -54,7 +54,6 @@ void D3D9Config::Reset ()
 	SunAngle			= 10.0;
 	BumpAmp				= 1.0;
 	PlanetGlow			= 0.7;
-	SunBrightness		= 1.2;
 	EnvMapSize		    = 256;
 	EnvMapMode			= 0;
 	EnvMapFaces			= 1;
@@ -66,6 +65,7 @@ void D3D9Config::Reset ()
 	EnableLimiter		= 0;
 	CustomCamMode		= 1;
 	TileMipmaps			= 0;
+	TextureMips			= 1;
 	LODBias				= 0;
 	MeshRes				= 0;
 	TileDebug			= 0;
@@ -103,7 +103,6 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
 	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1,  min(10.0,d));
 	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01,  min(2.0,d));
-	if (oapiReadItem_float (hFile, "SunBrightness", d))			SunBrightness = max(0.7,  min(4.0,d));
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
@@ -112,6 +111,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "EnableGlass", i))			EnableGlass = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "EnableMeshDbg", i))			EnableMeshDbg = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "TileMipmaps", i))			TileMipmaps = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "TextureMips", i))			TextureMips = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "TileDebug", i))				TileDebug = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
@@ -159,7 +159,6 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "NightLightsAngle", SunAngle);
 	oapiWriteItem_float (hFile, "BumpMapAmplitude", BumpAmp);	
 	oapiWriteItem_float (hFile, "PlanetGlow", PlanetGlow);	
-	oapiWriteItem_float (hFile, "SunBrightness", SunBrightness);
 	oapiWriteItem_int   (hFile, "EnvMapSize", EnvMapSize);
 	oapiWriteItem_int   (hFile, "EnvMapMode", EnvMapMode);
 	oapiWriteItem_int   (hFile, "EnvMapFaces", EnvMapFaces);
@@ -168,6 +167,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "EnableGlass", EnableGlass);
 	oapiWriteItem_int   (hFile, "EnableMeshDbg", EnableMeshDbg);
 	oapiWriteItem_int   (hFile, "TileMipmaps", TileMipmaps);
+	oapiWriteItem_int   (hFile, "TextureMips", TextureMips);
 	oapiWriteItem_int   (hFile, "TileDebug", TileDebug);
 	oapiWriteItem_float (hFile, "StereoSeparation", Separation);
 	oapiWriteItem_float (hFile, "StereoConvergence", Convergence);

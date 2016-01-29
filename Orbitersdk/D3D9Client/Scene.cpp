@@ -136,7 +136,7 @@ void Scene::Initialise()
 
 	// Setup sunlight -------------------------------
 	//
-	float pwr = float(Config->SunBrightness);
+	float pwr = 1.0f;
 
 	sunLight.Diffuse.r = sunLight.Specular.r = pwr; 
 	sunLight.Diffuse.g = sunLight.Specular.g = pwr;

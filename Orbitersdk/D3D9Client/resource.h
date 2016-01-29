@@ -103,7 +103,7 @@
 #define IDC_ENVFACES                            2094
 #define IDC_ENVMODE                             2095
 #define IDC_FONT                                2096
-#define IDC_MIPMAPS								2097
+#define IDC_MIPMAPS                             2097
 #define IDC_GLASSSHADE                          2098
 #define IDC_HZ                                  2099
 #define IDC_LODBIAS                             2100
@@ -116,7 +116,6 @@
 #define IDC_SRFPRELOAD                          2107
 #define IDC_SYMBOLIC                            2108
 #define IDC_ATM_COPYTO                          2109
-#define IDC_SUNBRIGHTNESS                       2110
-#define IDC_POSTPROCESS                         2111
-#define IDC_CAMMODE                             2112
-#define IDC_MESHRES                             2113
+#define IDC_CAMMODE                             2110
+#define IDC_MESHRES                             2111
+#define IDC_TEXMIPS                             2112

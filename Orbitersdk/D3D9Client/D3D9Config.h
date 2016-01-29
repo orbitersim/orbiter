@@ -47,7 +47,6 @@ public:
 	double SunAngle;				///< Sun-angle above horizon when night-lights set it \[deg\] (0.1...20.0, default=10)
 	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
 	double PlanetGlow;				///< Intensity of planet glow effect (0.01...2.0, default=0.7)
-	double SunBrightness;			///< Intensity of sun light (1.0...3.0, default 1.2)
 	double FrameRate;				///< Framerate limiter
 	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
@@ -66,6 +65,7 @@ public:
 	int LODBias;					///< 3D Terrain resolution bias
 	int MeshRes;					///< Tile patch mesh resolution
 	int TileDebug;					///< Enable tile debugger
+	int TextureMips;				///< Texture mipmap autogen policy
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 

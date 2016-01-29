@@ -1624,7 +1624,10 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		D3DFORMAT Format = info.Format;
 		D3DPOOL Pool = D3DPOOL_DEFAULT;
 		DWORD Usage = 0;
-		DWORD Mips = 0;
+		DWORD Mips = D3DFMT_FROM_FILE;
+
+		if (Config->TextureMips == 2) Mips = 0;							// Autogen all
+		if (Config->TextureMips == 1 && info.MipLevels==1) Mips = 0;	// Autogen missing
 
 		// Convert Non-supported format -------------------------
 		if (Format==D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;

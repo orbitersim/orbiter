@@ -622,6 +622,14 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_ENVFACES, CB_ADDSTRING, 0, (LPARAM)"Heavy");
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, 0, 0);
 
+	// TEXTURE MIPMAP POLICY --------------------------------------
+
+	SendDlgItemMessage(hWnd, IDC_TEXMIPS, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_TEXMIPS, CB_ADDSTRING, 0, (LPARAM)"Load as defined");
+	SendDlgItemMessageA(hWnd, IDC_TEXMIPS, CB_ADDSTRING, 0, (LPARAM)"Autogen missing");
+	SendDlgItemMessageA(hWnd, IDC_TEXMIPS, CB_ADDSTRING, 0, (LPARAM)"Autogen all");
+	SendDlgItemMessage(hWnd, IDC_TEXMIPS, CB_SETCURSEL, 0, 0);
+
 	// Write values in controls ----------------
 
 	bool bFS = (SendDlgItemMessage(hTab, IDC_VID_BPP, CB_GETCURSEL, 0, 0)==0 && SendDlgItemMessage(hTab, IDC_VID_FULL, BM_GETCHECK, 0, 0)==BST_CHECKED);
@@ -672,6 +680,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, DWORD(Config->LODBias));
 	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, DWORD(Config->MeshRes));
 
+	SendDlgItemMessage(hWnd, IDC_TEXMIPS, CB_SETCURSEL, Config->TextureMips, 0);
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, Config->EnvMapMode, 0);
 	SendDlgItemMessage(hWnd, IDC_CAMMODE, CB_SETCURSEL, Config->CustomCamMode, 0);
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces-1, 0);
@@ -693,9 +702,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	sprintf_s(cbuf,32,"%3.3f", Config->PlanetGlow);
 	SetWindowText(GetDlgItem(hWnd, IDC_PLANETGLOW), cbuf);
-
-	sprintf_s(cbuf,32,"%3.3f", Config->SunBrightness);
-	SetWindowText(GetDlgItem(hWnd, IDC_SUNBRIGHTNESS), cbuf);
 
 	DWORD af = min(caps.MaxAnisotropy, DWORD(Config->Anisotrophy));
 
@@ -733,6 +739,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->EnvMapMode	  = SendDlgItemMessage (hWnd, IDC_ENVMODE, CB_GETCURSEL, 0, 0);
 	Config->CustomCamMode = SendDlgItemMessage (hWnd, IDC_CAMMODE, CB_GETCURSEL, 0, 0);
 	Config->EnvMapFaces	  = SendDlgItemMessage (hWnd, IDC_ENVFACES, CB_GETCURSEL, 0, 0) + 1;
+	Config->TextureMips	  = SendDlgItemMessage (hWnd, IDC_TEXMIPS, CB_GETCURSEL, 0, 0);
 	// Check boxes
 	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
@@ -754,9 +761,6 @@ void VideoTab::SaveSetupState(HWND hWnd)
 
 	GetWindowText(GetDlgItem(hWnd, IDC_PLANETGLOW),  cbuf, 32);
 	Config->PlanetGlow = atof(cbuf);
-
-	GetWindowText(GetDlgItem(hWnd, IDC_SUNBRIGHTNESS),  cbuf, 32);
-	Config->SunBrightness = atof(cbuf);
 
 	Config->DebugLvl = SendDlgItemMessage (hWnd, IDC_DEBUG, CB_GETCURSEL, 0, 0);
 
