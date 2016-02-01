@@ -56,7 +56,6 @@ CelestialSphere::~CelestialSphere()
 
 void CelestialSphere::LoadStars ()
 {
-	gc->WriteLog("[Loading Stars]");
 	StarRenderPrm *prm = (StarRenderPrm*)gc->GetConfigParam (CFGPRM_STARRENDERPRM);
 
 	double a, b, xz;
@@ -71,7 +70,7 @@ void CelestialSphere::LoadStars ()
 			b = prm->brt_min - prm->mag_lo*a;
 		}
 	} else {
-		oapiWriteLog("WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
+		oapiWriteLog("D3D9: WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
 	}
 
 	float c;

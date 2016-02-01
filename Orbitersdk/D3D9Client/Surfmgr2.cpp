@@ -685,10 +685,12 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
 	HR(Shader()->SetBool(sbEnvEnable, false));
 
+	// -------------------------------------------------------------------
+	vVessel *vFocus = scene->GetFocusVisual();
+	vPlanet *vProxy = scene->GetCameraProxyVisual();
 
 	// Setup Environment map ---------------------------------------------
 	//
-	vVessel *vFocus = scene->GetFocusVisual();
 	if (vFocus && bEnvMapEnabled) {
 		LPDIRECT3DCUBETEXTURE9 pEnv = vFocus->GetEnvMap(0);
 		if (pEnv) {
@@ -696,6 +698,32 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 			HR(Shader()->SetBool(sbEnvEnable, true));
 		}
 	}
+
+	// Setup Planetary micro texture ------------------------------------
+	//
+	if (vp==vProxy) {
+		if (strcmp(CbodyName(), "Moon")==0) {
+			if (pMicro==NULL) {
+				HR(D3DXCreateTextureFromFile(pDev, "Textures/D3D9Luna.dds", &pMicro));
+			}
+			HR(Shader()->SetFloat(sfAlpha, 1.0f));
+		}
+		if (strcmp(CbodyName(), "Mars")==0) {
+			if (pMicro==NULL) {
+				HR(D3DXCreateTextureFromFile(pDev, "Textures/D3D9Mars.dds", &pMicro));
+			}
+			HR(Shader()->SetFloat(sfAlpha, 4.0f));
+		}
+	}
+
+	if (pMicro) {
+		HR(Shader()->SetTexture(stMicro, pMicro));
+		HR(Shader()->SetBool(sbMicro, true));
+	}
+	else {
+		HR(Shader()->SetBool(sbMicro, false));
+	}
+
 
 	// ------------------------------------------------------------------
 	// TODO: render full sphere for levels < 4

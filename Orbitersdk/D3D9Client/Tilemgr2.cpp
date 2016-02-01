@@ -781,6 +781,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	prm.maxlvl = max (0, _maxres-4);
 	cprm.gridRes = _gridres;
 
+	pMicro = NULL;
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	min_elev = obj_size; 

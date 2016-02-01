@@ -170,7 +170,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	D3DADAPTER_IDENTIFIER9 info;
 	pD3D->GetAdapterIdentifier(Adapter, 0, &info);
-	LogAlw("Adapter = %s",info.Description);
+	LogOapi("3D-Adapter = %s",info.Description);
 	LogAlw("dwFSMode = %u",dwFSMode);
 
 	// Get DisplayMode Resolution ---------------------------------------
@@ -239,8 +239,8 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	if (MultiSample==1) MultiSample = 0;
 
 	LogAlw("MaxTextureBlendStages..: %u",caps.MaxTextureBlendStages);
-	LogAlw("MaxTextureWidth........: %u",caps.MaxTextureWidth);
-	LogAlw("MaxTextureHeight.......: %u",caps.MaxTextureHeight);
+	LogOapi("MaxTextureWidth........: %u",caps.MaxTextureWidth);
+	LogOapi("MaxTextureHeight.......: %u",caps.MaxTextureHeight);
 	LogAlw("MaxPrimitiveCount......: %u",caps.MaxPrimitiveCount);
 	LogAlw("MaxVertexIndex.........: %u",caps.MaxVertexIndex);
 	LogAlw("MaxAnisotropy..........: %u",caps.MaxAnisotropy);
@@ -252,51 +252,41 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogAlw("MaxPointSize...........: %f",caps.MaxPointSize);
 	LogAlw("VertexShaderVersion....: 0x%hX",(caps.VertexShaderVersion&0xFFFF));
 	LogAlw("PixelShaderVersion.....: 0x%hX",(caps.PixelShaderVersion&0xFFFF));
-	LogAlw("NumSimultaneousRTs.....: %u",caps.NumSimultaneousRTs);
+	LogOapi("NumSimultaneousRTs.....: %u",caps.NumSimultaneousRTs);
 	LogAlw("D3DPTEXTURECAPS_POW2...: %d",(caps.TextureCaps&D3DPTEXTURECAPS_POW2)>0);
 	LogAlw("NONPOW2CONDITIONAL.....: %d",(caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)>0);
 	LogAlw("VertexDeclCaps.........: 0x%X",caps.DeclTypes);
 	LogAlw("DevCaps................: 0x%X",caps.DevCaps);
 	LogAlw("DevCaps2...............: 0x%X",caps.DevCaps2);
-
+	
 	BOOL bXna = XMVerifyCPUSupport();
 
 	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) Pure = false;
 
 	if (bXna) {
-		LogAlw("XNA Math Support.......: Yes");
-		oapiWriteLog("D3D9Client: Sytem has XNA math support");
+		LogOapi("XNA Math Support.......: Yes");
 	}
 	else {
-		LogBad("XNA Math Support.......: No");
-		oapiWriteLog("D3D9Client:FAIL: Sytem has no XNA math support");
+		LogOapi("XNA Math Support.......: No");
 		bFail=true;
 	}
 
 	// Check non power of two texture support
 	if ((caps.TextureCaps&D3DPTEXTURECAPS_POW2) && !(caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)) {
 		LogErr("[Non-Power of 2 texture support required]");
-		oapiWriteLog("D3D9Client:FAIL: [Non-Power of 2 texture support required]");
 		bFail=true;
 	}
 
 	if ((caps.TextureCaps&D3DPTEXTURECAPS_POW2) && (caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)) {
 		LogWrn("[Hardware has only a limited non-power of 2 texture support]");
-		oapiWriteLog("D3D9Client:WARNING: [Hardware has only a limited non-power of 2 texture support]");
 	}
 
 	if ((caps.PixelShaderVersion&0xFFFF)<0x0300 || (caps.VertexShaderVersion&0xFFFF)<0x0300) {
 		LogErr("[Pixel Shader Version 3.0 is required (i.e. DirectX 9.0c)]");
-		oapiWriteLog("D3D9Client:FAIL: [Pixel Shader Version 3.0 is required (i.e. DirectX 9.0c)]");
 		bFail=true;
 	}
 
-	if (bFail) {
-		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);
-		return -1;
-	}
-
-
+	
 
 	// Do Some Additional Hardware Checks ===================================================================
 	
@@ -305,11 +295,11 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	//
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F)==S_OK) {
 		bVertexTexture = true;
-		LogAlw("Vertex Texture.........: Yes");
+		LogOapi("Vertex Texture.........: Yes");
 	}
 	else {
 		bVertexTexture = false;
-		LogBad("Vertex Texture.........: No");
+		LogOapi("Vertex Texture.........: No");
 	}
 
 	// Check shadow mapping support
@@ -318,55 +308,47 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
 	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
 
-	if (bShadowMap) LogAlw("Shadow Mapping.........: Yes");
-	else			LogBad("Shadow Mapping.........: No");
+	if (bShadowMap) LogOapi("Shadow Mapping.........: Yes");
+	else			LogOapi("Shadow Mapping.........: No");
 
-	// Check Float Render Targets
-	//
 	bool bFloat16BB = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloat16BB = false;
 	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloat16BB = false;
 				  
-	if (bFloat16BB) LogAlw("D3DFMT_A16B16G16R16F...: Yes");
-	else		    LogBad("D3DFMT_A16B16G16R16F...: No");
+	if (bFloat16BB) LogOapi("D3DFMT_A16B16G16R16F...: Yes");
+	else		    LogOapi("D3DFMT_A16B16G16R16F...: No");
 
-	// Check Float Render Targets
-	//
 	bool bFloat32BB = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) bFloat32BB = false;
-	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A32B32G32R32F, D3DFMT_D24X8)!=S_OK) bFloat32BB = false;
-				  
-	if (bFloat32BB) LogAlw("D3DFMT_A32B32G32R32F...: Yes");
-	else		    LogBad("D3DFMT_A32B32G32R32F...: No");
+			  
+	if (bFloat32BB) LogOapi("D3DFMT_A32B32G32R32F...: Yes");
+	else		    LogOapi("D3DFMT_A32B32G32R32F...: No");
 
-	// Check Depth Stencil
-	//
 	HRESULT D32F = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE);
 
-	if (D32F==S_OK) LogAlw("D3DFMT_D32F_LOCKABLE...: Yes"); 
-	else		    LogBad("D3DFMT_D32F_LOCKABLE...: No");
-
-	
-	HRESULT A4R4 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A4R4G4B4);
-
-	if (A4R4==S_OK) LogAlw("D3DFMT_A4R4G4B4 Tex....: Yes"); 
-	else		    LogBad("D3DFMT_A4R4G4B4 Tex....: No");
-
-	HRESULT A4G4 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, D3DFMT_A4R4G4B4);
-
-	if (A4G4==S_OK) LogAlw("D3DFMT_A4R4G4B4 Srf....: Yes"); 
-	else		    LogBad("D3DFMT_A4R4G4B4 Srf....: No");
+	if (D32F==S_OK) LogOapi("D3DFMT_D32F_LOCKABLE...: Yes"); 
+	else		    LogOapi("D3DFMT_D32F_LOCKABLE...: No");
 
 	HRESULT AR10 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A2R10G10B10);
 
-	if (AR10==S_OK) LogAlw("D3DFMT_A2R10G10B10.....: Yes"); 
-	else		    LogBad("D3DFMT_A2R10G10B10.....: No");
+	if (AR10==S_OK) LogOapi("D3DFMT_A2R10G10B10.....: Yes"); 
+	else		    LogOapi("D3DFMT_A2R10G10B10.....: No");
 	
+
+	if (caps.DeclTypes&D3DDTCAPS_DEC3N) LogOapi("D3DDTCAPS_DEC3N........: Yes");
+	else								LogOapi("D3DDTCAPS_DEC3N........: No (Critical)"), bFail = true;
+
 	// Check MipMap autogeneration
 	//
 	if ((caps.Caps2&D3DCAPS2_CANAUTOGENMIPMAP)==0) {
 		LogWrn("[No Hardware MipMap auto generation]");
-		oapiWriteLog("D3D9Client:WARNING: [No Hardware MipMap auto generation]");
+		oapiWriteLog("D3D9: WARNING: [No Hardware MipMap auto generation]");
+	}
+
+	if (bFail) {
+		oapiWriteLog("D3D9: FAIL: !! Graphics card doesn't meet the minimum requirements to run !!");
+		MessageBoxA(NULL, "Graphics card doesn't meet the minimum requirements to run D3D9Client.", "D3D9Client Error",MB_OK);
+		return -1;
 	}
 
 	if (bIsFullscreen) hr = CreateFullscreenMode();
@@ -374,11 +356,10 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	if (FAILED(hr)) {
 		LogErr("[Device Initialization Failed]");
-		oapiWriteLog("D3D9Client:FAIL: [Device Initialization Failed]");
 		return hr;
 	}
 
-	LogAlw("Available Texture Memory = %u MB",pd3dDevice->GetAvailableTextureMem()>>20);
+	LogOapi("Available Texture Memory = %u MB",pd3dDevice->GetAvailableTextureMem()>>20);
 
 	D3DVIEWPORT9 vp;
 

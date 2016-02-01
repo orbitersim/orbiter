@@ -96,12 +96,14 @@ uniform extern bool      bSpecular;			// Enable water
 uniform extern bool      bCloudSh;			// Enable cloud shadows
 uniform extern bool      bLights;			// Enable night-lights
 uniform extern bool      bEnvEnable;		// Enable environment maps
+uniform extern bool      bMicro;			// Enable micro texture
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tNoise;			// 
 uniform extern texture	 tOcean;			// Ocean Texture
 uniform extern texture	 tEnvMap;	
+uniform extern texture	 tMicro;	
 
 
 
@@ -163,6 +165,15 @@ sampler EnvMapS = sampler_state
     AddressV = CLAMP;
 };
 
+sampler MicroTexS = sampler_state
+{
+	Texture = <tMicro>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
 
 // -------------------------------------------------------------------------------------------------------------
 // Atmospheric scattering model 
@@ -366,7 +377,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 // Planet Surface Renderer
 // =============================================================================================================
 
-#define AUX_SPECULAR	0	// Specular light intensity
+#define AUX_DIST		0	// Vertex distance
 #define AUX_NIGHT		1	// Night lights intensity
 
 TileVS SurfaceTechVS(TILEVERTEX vrt)
@@ -390,6 +401,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float  fDRS  = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
 	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 	float  fNgt	 = fDPS * 4.0f; 
+	float fRay   = abs(dot(vPosW, vRay));				// Length of the viewing ray
 	outVS.camW   = vRay;
 	outVS.nrmW   = vPlN;
 
@@ -402,6 +414,9 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
 	float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
+
+	outVS.aux[AUX_NIGHT] = -fNgt;
+	outVS.aux[AUX_DIST]  =  fRay;
 
 	if (!bOnOff) {	
 		float fX = saturate(fDNS);						// Lambertian
@@ -416,9 +431,6 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 
 	float  fAlt = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
 	
-	
-	outVS.aux[AUX_NIGHT] = -fNgt;
-   
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
 		float fDRay = fDns * AngleCoEff(fDPR);
@@ -429,7 +441,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 
 	else {
 
-		float fRay = abs(dot(vPosW, vRay));				// Length of the viewing ray	
+		//float fRay = abs(dot(vPosW, vRay));				// Length of the viewing ray	
 	
 		// Altitude vector for sample points
 	  	float3 vAlt = float3(fAlt, (fAlt+fCameraAlt)*0.5, fCameraAlt);	
@@ -494,6 +506,22 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		//#endif
 
 		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
+	}
+
+	if (bMicro) {
+
+		float dist = frg.aux[AUX_DIST] / fAlpha;
+
+		float4 cMic1 = tex2D(MicroTexS, frg.texUV.xy*32.0f*fAlpha);
+		float4 cMic2 = tex2D(MicroTexS, frg.texUV.xy*512.0f*fAlpha);
+
+		float step1 = smoothstep(2000, 12000, dist);
+		float step2 = smoothstep(300,  1500, dist);
+		
+		float fClr  = lerp(cMic2.g, cMic2.r, cMic1.b);
+		float fClr2 = lerp(fClr*(cMic1.r+0.5f), cMic1.r, step2) + 0.5f;
+
+		cTex.rgb *= lerp(fClr2, 1.0f, step1);
 	}
 
 	if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);

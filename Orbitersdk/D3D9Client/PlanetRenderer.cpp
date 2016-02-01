@@ -49,12 +49,17 @@ D3DXHANDLE PlanetRenderer::sfNight = NULL;
 D3DXHANDLE PlanetRenderer::sbSpecular = NULL;
 D3DXHANDLE PlanetRenderer::sbCloudSh = NULL;
 D3DXHANDLE PlanetRenderer::sbLights = NULL;
+D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
+D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
+D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
+D3DXHANDLE PlanetRenderer::sbMicro = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
 D3DXHANDLE PlanetRenderer::stNoise = NULL;
 D3DXHANDLE PlanetRenderer::stOcean = NULL;
 D3DXHANDLE PlanetRenderer::stEnvMap = NULL;
+D3DXHANDLE PlanetRenderer::stMicro = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -87,10 +92,6 @@ D3DXHANDLE PlanetRenderer::sfInvAux1 = NULL;
 D3DXHANDLE PlanetRenderer::sfInvParameter = NULL;
 D3DXHANDLE PlanetRenderer::sfTime = NULL;
 // ------------------------------------------------------------ 
-D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
-D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
-D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
-
 
 
 
@@ -191,12 +192,17 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbSpecular			= pShader->GetParameterByName(0,"bSpecular");
 	sbCloudSh			= pShader->GetParameterByName(0,"bCloudSh");
 	sbLights			= pShader->GetParameterByName(0,"bLights");
+	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
+	sbOnOff				= pShader->GetParameterByName(0,"bOnOff");
+	sbEnvEnable			= pShader->GetParameterByName(0,"bEnvEnable");
+	sbMicro				= pShader->GetParameterByName(0,"bMicro");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
 	stNoise				= pShader->GetParameterByName(0,"tNoise");
 	stOcean				= pShader->GetParameterByName(0,"tOcean");
 	stEnvMap			= pShader->GetParameterByName(0,"tEnvMap");
+	stMicro				= pShader->GetParameterByName(0,"tMicro");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
@@ -228,11 +234,6 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfInvAux1			= pShader->GetParameterByName(0,"fInvAux1");
 	sfInvParameter		= pShader->GetParameterByName(0,"fInvParameter");
 	sfTime				= pShader->GetParameterByName(0,"fTime");
-	// ------------------------------------------------------------
-	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
-	sbOnOff				= pShader->GetParameterByName(0,"bOnOff");
-	sbEnvEnable			= pShader->GetParameterByName(0,"bEnvEnable");
-
 	// ------------------------------------------------------------
 	
 	sprintf_s(name, "D3D9Ocean.dds");

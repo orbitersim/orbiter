@@ -308,9 +308,11 @@ protected:
 	double obj_size;                 // planet radius
 	double min_elev;				 // minimum elevation
 	static TileLoader *loader;
+	const vPlanet *vp;               // the planet visual
+	LPDIRECT3DTEXTURE9 pMicro;
 
 private:
-	const vPlanet *vp;               // the planet visual
+	
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle

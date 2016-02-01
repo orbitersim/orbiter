@@ -160,6 +160,37 @@ void LogAlw(const char *format, ...)
 
 //-------------------------------------------------------------------------------------------
 //
+void LogOapi(const char *format, ...)
+{
+
+	if (d3d9client_log==NULL) return;
+	if (iLine>LOG_MAX_LINES) return;
+	EnterCriticalSection(&LogCrit);
+	if (uEnableLog>0) {
+		DWORD th = GetCurrentThreadId();
+		time(&ltime);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(&ltime), th);
+		
+		va_list args; 
+		va_start(args, format); 
+		
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+	
+		va_end(args);
+
+		fputs(ErrBuf,d3d9client_log);
+		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
+
+		char text[256];
+		sprintf_s(text, 256, "D3D9: %s", ErrBuf);
+		oapiWriteLog(text);
+	}
+	LeaveCriticalSection(&LogCrit);
+}
+
+//-------------------------------------------------------------------------------------------
+//
 void LogBad(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
@@ -204,11 +235,13 @@ void LogErr(const char *format, ...)
 		
 		va_end(args);
 
-		oapiWriteLog(ErrBuf);
-
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
+
+		char text[256];
+		sprintf_s(text, 256, "D3D9: ERROR: %s", ErrBuf);
+		oapiWriteLog(text);
 	}
 	LeaveCriticalSection(&LogCrit);
 }	

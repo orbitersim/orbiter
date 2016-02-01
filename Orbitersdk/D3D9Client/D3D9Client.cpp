@@ -338,7 +338,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	HRESULT hr = pFramework->Initialize(hRenderWnd, GetVideoData());
 
 	if (hr!=S_OK) {
-		WriteLog("ERROR: Failed to initialize 3D Framework");
 		LogErr("ERROR: Failed to initialize 3D Framework");
 		return NULL;
 	}
@@ -2033,8 +2032,8 @@ int D3D9Client::GetIndexOfDissolveMap(SURFHANDLE hSrf) const
 void D3D9Client::WriteLog(const char *msg) const
 {
 	_TRACER;
-	char cbuf[256] = "D3D9Client: ";
-	strcpy_s(cbuf+12, 240, msg);
+	char cbuf[256];
+	sprintf_s(cbuf, 256, "D3D9: %s", msg);
 	oapiWriteLog(cbuf);
 }
 
@@ -2153,9 +2152,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 17 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 17d Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 17 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 17d Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
