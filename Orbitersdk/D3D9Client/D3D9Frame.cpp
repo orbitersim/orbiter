@@ -255,7 +255,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogOapi("NumSimultaneousRTs.....: %u",caps.NumSimultaneousRTs);
 	LogAlw("D3DPTEXTURECAPS_POW2...: %d",(caps.TextureCaps&D3DPTEXTURECAPS_POW2)>0);
 	LogAlw("NONPOW2CONDITIONAL.....: %d",(caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)>0);
-	LogAlw("VertexDeclCaps.........: 0x%X",caps.DeclTypes);
+	LogOapi("VertexDeclCaps.........: 0x%X",caps.DeclTypes);
 	LogAlw("DevCaps................: 0x%X",caps.DevCaps);
 	LogAlw("DevCaps2...............: 0x%X",caps.DevCaps2);
 	
@@ -336,7 +336,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	
 
 	if (caps.DeclTypes&D3DDTCAPS_DEC3N) LogOapi("D3DDTCAPS_DEC3N........: Yes");
-	else								LogOapi("D3DDTCAPS_DEC3N........: No (Critical)"), bFail = true;
+	else								LogOapi("D3DDTCAPS_DEC3N........: No");
 
 	// Check MipMap autogeneration
 	//

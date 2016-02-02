@@ -800,6 +800,8 @@ TileManager2Base::~TileManager2Base ()
 		loader->Unqueue(this);
 	}
 
+	SAFE_RELEASE(pMicro);
+
 	DWORD nVtx=0, nIdx=0;
 
 	for (int i=0;i<NPOOLS;i++) {
@@ -814,6 +816,7 @@ TileManager2Base::~TileManager2Base ()
 			nIdx++;
 		}
 	}
+
 	LogAlw("Recycling Pool Status nVtx=%u, nIdx=%u", nVtx, nIdx);
 }
 
