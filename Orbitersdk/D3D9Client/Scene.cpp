@@ -151,11 +151,12 @@ void Scene::Initialise()
 
 	// Browse through all objects and create visuals if in visual range
 	//
+	/*
 	DWORD nobj = oapiGetObjectCount();
 	for (DWORD i=0;i<nobj;i++) {
 		OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
 		CheckVisual(hObj);
-	}
+	}*/
 }
 
 // ===========================================================================================
@@ -397,12 +398,6 @@ void Scene::Update ()
 {
 	_TRACE;
 
-	if (hSun==NULL) {
-		LogErr("Scene::Update() Scene not yet initialized");
-		//Initialise();
-		return;
-	}
-	
 	// update particle streams - should be skipped when paused
 	if (!oapiGetPause()) {
 		for (DWORD i=0;i<nstream;) {

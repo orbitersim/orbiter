@@ -699,25 +699,22 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		}
 	}
 
+
 	// Setup Planetary micro texture ------------------------------------
 	//
-	if (vp==vProxy) {
-		if (strcmp(CbodyName(), "Moon")==0) {
-			if (pMicro==NULL) {
-				HR(D3DXCreateTextureFromFile(pDev, "Textures/D3D9Luna.dds", &pMicro));
-			}
-			HR(Shader()->SetFloat(sfAlpha, 1.0f));
-		}
-		if (strcmp(CbodyName(), "Mars")==0) {
-			if (pMicro==NULL) {
-				HR(D3DXCreateTextureFromFile(pDev, "Textures/D3D9Mars.dds", &pMicro));
-			}
-			HR(Shader()->SetFloat(sfAlpha, 4.0f));
+	if (vp==vProxy && bMicroCheck) {
+		bMicroCheck = false;
+		char file[256];
+		for (int i=0;i<2;i++) {
+			sprintf_s(file, 256, "Textures/D3D9%s_%c.dds", CbodyName(), char('A'+i));
+			D3DXCreateTextureFromFile(pDev, file, &pMicro[i]);
 		}
 	}
 
-	if (pMicro) {
-		HR(Shader()->SetTexture(stMicro, pMicro));
+	if (pMicro[0] && pMicro[1]) {	
+		HR(Shader()->SetFloat(sfAlpha, float(obj_size)/1.7e6f));
+		HR(Shader()->SetTexture(stMicroA, pMicro[0]));
+		HR(Shader()->SetTexture(stMicroB, pMicro[1]));
 		HR(Shader()->SetBool(sbMicro, true));
 	}
 	else {

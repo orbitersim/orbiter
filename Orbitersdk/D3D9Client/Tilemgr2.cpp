@@ -780,8 +780,8 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);
 	cprm.gridRes = _gridres;
-
-	pMicro = NULL;
+	bMicroCheck = true;
+	pMicro[0] = pMicro[1] = NULL;
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	min_elev = obj_size; 
@@ -800,8 +800,9 @@ TileManager2Base::~TileManager2Base ()
 		loader->Unqueue(this);
 	}
 
-	SAFE_RELEASE(pMicro);
-
+	SAFE_RELEASE(pMicro[0]);
+	SAFE_RELEASE(pMicro[1]);
+	
 	DWORD nVtx=0, nIdx=0;
 
 	for (int i=0;i<NPOOLS;i++) {

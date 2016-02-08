@@ -241,6 +241,9 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogAlw("MaxTextureBlendStages..: %u",caps.MaxTextureBlendStages);
 	LogOapi("MaxTextureWidth........: %u",caps.MaxTextureWidth);
 	LogOapi("MaxTextureHeight.......: %u",caps.MaxTextureHeight);
+	LogOapi("MaxTextureRepeat.......: %u",caps.MaxTextureRepeat);
+	LogOapi("VolTexAddressCaps......: 0x%X",caps.VolumeTextureAddressCaps);
+	LogAlw("MaxVolumeExtent........: %u",caps.MaxVolumeExtent);
 	LogAlw("MaxPrimitiveCount......: %u",caps.MaxPrimitiveCount);
 	LogAlw("MaxVertexIndex.........: %u",caps.MaxVertexIndex);
 	LogAlw("MaxAnisotropy..........: %u",caps.MaxAnisotropy);
@@ -337,6 +340,12 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	if (caps.DeclTypes&D3DDTCAPS_DEC3N) LogOapi("D3DDTCAPS_DEC3N........: Yes");
 	else								LogOapi("D3DDTCAPS_DEC3N........: No");
+
+	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_2) LogOapi("D3DDTCAPS_FLOAT16_2....: Yes");
+	else								    LogOapi("D3DDTCAPS_FLOAT16_2....: No");
+
+	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_4) LogOapi("D3DDTCAPS_FLOAT16_4....: Yes");
+	else								    LogOapi("D3DDTCAPS_FLOAT16_4....: No");
 
 	// Check MipMap autogeneration
 	//

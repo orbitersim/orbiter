@@ -34,7 +34,7 @@ struct TileVS
 {
     float4 posH     : POSITION0;
     float4 texUV    : TEXCOORD0;  // Texture coordinate
-    float2 aux      : TEXCOORD1;  // Night lights
+    float3 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
 	float3 nrmW		: TEXCOORD3;
 	float3 atten    : COLOR0;     // Attennuation
@@ -103,7 +103,9 @@ uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tNoise;			// 
 uniform extern texture	 tOcean;			// Ocean Texture
 uniform extern texture	 tEnvMap;	
-uniform extern texture	 tMicro;	
+uniform extern texture	 tMicroA;	
+uniform extern texture	 tMicroB;
+uniform extern texture	 tMicroBlend;
 
 
 
@@ -165,9 +167,29 @@ sampler EnvMapS = sampler_state
     AddressV = CLAMP;
 };
 
-sampler MicroTexS = sampler_state
+sampler MicroAS = sampler_state
 {
-	Texture = <tMicro>;
+	Texture = <tMicroA>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+sampler MicroBS = sampler_state
+{
+	Texture = <tMicroB>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+sampler MicroBlendS = sampler_state
+{
+	Texture = <tMicroBlend>;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -379,6 +401,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 
 #define AUX_DIST		0	// Vertex distance
 #define AUX_NIGHT		1	// Night lights intensity
+#define AUX_SLOPE		2   // Terrain slope factor 0.0=flat, 1.0=sloped
 
 TileVS SurfaceTechVS(TILEVERTEX vrt)
 {
@@ -395,22 +418,13 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
 	float3 vPlN  = normalize(vVrt);						// Planet mean normal at vertex location
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
-	float  fDPR  = dot(vPlN,  vRay);					// Dot mean normal, viewing ray
-	float  fDNR	 = dot(vNrmW, vRay);
-	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
-	float  fDRS  = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
+	float  fRay  = abs(dot(vPosW, vRay));				// Length of the viewing ray
 	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 	float  fNgt	 = fDPS * 4.0f; 
-	float fRay   = abs(dot(vPosW, vRay));				// Length of the viewing ray
-	outVS.camW   = vRay;
-	outVS.nrmW   = vPlN;
+	outVS.camW   = -vPosW;
+	outVS.nrmW   = vNrmW;
 
 	outVS.texUV.xy  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
-	outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
-	outVS.texUV.zw *= 1e-3f; // Water scale factor
-	outVS.texUV.zw += 64.0f; 
-	outVS.texUV.z  += fTime*0.008f;
-	
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
 	float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
@@ -418,18 +432,18 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	outVS.aux[AUX_NIGHT] = -fNgt;
 	outVS.aux[AUX_DIST]  =  fRay;
 
-	if (!bOnOff) {	
-		float fX = saturate(fDNS);						// Lambertian
-		float fY = saturate(fDNR)*0.4;					// Lommel-Seeliger compensation
-		float fZ = pow(abs(fDRS),10.0f) * 0.2f;			// Shadow compensation
-		float fLvl = fX * (fZ+rcp(fX+fY)) * fExposure;	// Bake all together
+	if (!bOnOff) return outVS;
 
-		outVS.atten = max(fLvl, 4.0f*fAmb);
-		outVS.insca = 0.0;
-		return outVS;
-	}
-
-	float  fAlt = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
+	outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
+	outVS.texUV.zw *= 1e-3f; // Water scale factor
+	outVS.texUV.zw += 64.0f; 
+	outVS.texUV.z  += fTime*0.008f;
+		
+	float  fDPR  = dot(vPlN,  vRay);					// Dot mean normal, viewing ray
+	float  fDNR	 = dot(vNrmW, vRay);
+	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
+	float  fDRS  = dot(vRay,  vSunDir);					// Dot viewing ray, sun direction
+	float  fAlt  = dot(vVrt, vPlN) - fRadius;			// Vertex altitude
 	
 	if (bInSpace) {
 		float fDns  = exp2(-fAlt*fInvScaleHeight);
@@ -479,7 +493,15 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
 	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
 
+	float3 nrmW = frg.nrmW;					// Per-vertex surface normal vector
+	float3 nvrW = frg.nrmW;					// Per-vertex surface normal vector
+	float3 camW = normalize(frg.camW);		// Unit viewing ray
+	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric vertex position
+	float3 vPlN = normalize(vVrt);			// Planet mean normal	
+	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
 
+	// Specular Water reflection
+	//
 	if (bSpecular) {
 
 		#if defined(_SURFACERIPPLES)
@@ -487,13 +509,11 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float3 cNrm = (tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f) * Fct;
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
 			// Compute world space normal 
-			float3 nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (frg.nrmW * cNrm.b);
-		#else
-			float3 nrmW = frg.nrmW;
+			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
 		#endif
 
-		float f = 1.0-saturate(dot(frg.camW, nrmW));
-		float s = dot(reflect(-vSunDir, nrmW), frg.camW);
+		float f = 1.0-saturate(dot(camW, nrmW));
+		float s = dot(reflect(-vSunDir, nrmW), camW);
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
 		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
@@ -508,29 +528,75 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
 	}
 
-	if (bMicro) {
+	else {
 
-		float dist = frg.aux[AUX_DIST] / fAlpha;
+		if (bMicro) {
 
-		float4 cMic1 = tex2D(MicroTexS, frg.texUV.xy*32.0f*fAlpha);
-		float4 cMic2 = tex2D(MicroTexS, frg.texUV.xy*512.0f*fAlpha);
+			float dist = frg.aux[AUX_DIST] / fAlpha;
+			
+			frg.texUV.xy *= fAlpha;
 
-		float step1 = smoothstep(2000, 12000, dist);
-		float step2 = smoothstep(300,  1500, dist);
-		
-		float fClr  = lerp(cMic2.g, cMic2.r, cMic1.b);
-		float fClr2 = lerp(fClr*(cMic1.r+0.5f), cMic1.r, step2) + 0.5f;
+			float  fMicM = tex2D(MicroBlendS, frg.texUV.xy*32.0f).r;	// Blend/Mixture
+			float3 cDstA = tex2D(MicroAS, frg.texUV.xy*32.0f).rgb;		// High altitude micro texture A
+			float3 cDstB = tex2D(MicroBS, frg.texUV.xy*32.0f).rgb;		// High altitude micro texture B
+			float3 cCloA = tex2D(MicroAS, frg.texUV.xy*512.0f).rgb;		// Low altitude micro texture A
+			float3 cCloB = tex2D(MicroBS, frg.texUV.xy*512.0f).rgb;		// Low altitude micro texture B
 
-		cTex.rgb *= lerp(fClr2, 1.0f, step1);
+			float step1 = smoothstep(4000, 12000, dist);
+			float step2 = smoothstep(300,  1500, dist);
+			
+			float3 cLow = lerp(cCloB, cCloA, fMicM);								// Low altitude mixture
+			float3 cHig = lerp(cDstB, cDstA, fMicM);								// High altitude mixture
+			float3 cCmp = lerp(cLow * (cHig+0.5f), cHig, step2);					// Blend low and high altitude luminance
+
+			// Create normals
+			float3 cNrm  = float3((cCmp.xy - 0.5f) * 2.0f, 0);
+			cNrm.z  = cos(cNrm.x * cNrm.y * 1.57);
+
+			// Compute world space normal
+			nrmW = (vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z);
+			nrmW = normalize(nrmW);
+
+			// Apply luminance
+			cTex.rgb *= lerp(cCmp.b+0.5f, 1.0f, step1);
+		}
 	}
 
-	if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
-	
-    float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
+	// Do we have an atmosphere ?
+	//
+	if (!bOnOff) { // No
 
-	if (bOnOff) color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
+		//float a = (fRad - fRadius) / 7000.0f;
+		//float b = 1.0f - abs(a);
+		//return float4(saturate(a), saturate(b*b), saturate(-a), 1.0);
 
-	return float4(pow(abs(color), fAux4), 1.0f);  
+		float fDRP = dot(vPlN, vSunDir);
+
+		nrmW = lerp(nrmW, vPlN, pow(0.05, saturate(fDRP)));
+
+		float fDNS = dot(nrmW, vSunDir);
+		float fDNR = dot(nrmW, camW);
+		float fDRS = dot(camW, vSunDir);
+
+		float fX = saturate(fDNS);						// Lambertian
+		float fY = 0.05 + saturate(fDNR)*0.4;			// Lommel-Seeliger compensation
+		float fZ = pow(abs(fDRS),10.0f) * 0.3f;			// Shadow compensation
+		float fLvl = fX * (fZ+rcp(fX+fY)) * fExposure;	// Bake all together
+
+		float3 color = cTex.rgb * max(fLvl, 0) + cSpe;
+
+		return float4(pow(abs(color), fAux4), 1.0f);
+	}
+	else { // Yes
+
+		if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
+		
+		float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
+
+		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
+
+		return float4(pow(abs(color), fAux4), 1.0f);  
+	}
 }
 
 

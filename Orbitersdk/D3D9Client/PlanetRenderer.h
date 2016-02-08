@@ -52,6 +52,7 @@ public:
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
+	static LPDIRECT3DTEXTURE9 hMicroBlend;
 	static VECTOR3 vLPosOld;
 	static bool bEnvMapEnabled;
 	// ------------------------------------------------------------
@@ -91,7 +92,9 @@ public:
 	static D3DXHANDLE stNoise;
 	static D3DXHANDLE stOcean;
 	static D3DXHANDLE stEnvMap;
-	static D3DXHANDLE stMicro;
+	static D3DXHANDLE stMicroA;
+	static D3DXHANDLE stMicroB;
+	static D3DXHANDLE stMicroBlend;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;

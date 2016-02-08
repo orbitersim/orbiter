@@ -2,7 +2,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2007 Martin Schweiger
-//				 2012 Jarmo Nikkanen
+//				 2012-2016 Jarmo Nikkanen
 // ==============================================================
 
 #ifndef __D3DUTIL_H
@@ -332,6 +332,8 @@ D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
 
 void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
 void OrbitalLighting(D3D9Light *light, class vPlanet *vP, VECTOR3 GO, float ao);
+
+bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE9 *pIn, LPDIRECT3DVOLUMETEXTURE9 *pOut);
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);

@@ -309,8 +309,9 @@ protected:
 	double min_elev;				 // minimum elevation
 	static TileLoader *loader;
 	const vPlanet *vp;               // the planet visual
-	LPDIRECT3DTEXTURE9 pMicro;
-
+	LPDIRECT3DTEXTURE9 pMicro[2];
+	bool bMicroCheck;
+		
 private:
 	
 	OBJHANDLE obj;                   // the planet object

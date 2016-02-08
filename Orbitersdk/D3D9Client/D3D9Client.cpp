@@ -665,21 +665,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 void D3D9Client::clbkUpdate(bool running)
 {
 	_TRACER;
-
-	if (!parser) {
-		clbkPostCreation();
-		LogErr("clbkUpdate() called before clbkPostCreation()");
-	}
-
-	__TRY {
-		if (bFailed==false && bRunning) scene->Update();
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkUpdate()");
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	if (bFailed==false && bRunning) scene->Update();
 }
 
 // ==============================================================

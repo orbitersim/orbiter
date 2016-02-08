@@ -686,3 +686,66 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 
     return S_OK;
 }
+ 
+
+bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE9 *pIn, LPDIRECT3DVOLUMETEXTURE9 *pOut)
+{
+	if (count==0 || pDevice==NULL || pIn==NULL || pOut==NULL) return false;
+	if (pIn[0]==NULL) return false;
+
+	LPDIRECT3DVOLUMETEXTURE9 pTemp = NULL;
+
+	D3DSURFACE_DESC desc;
+	D3DVOLUME_DESC vd;
+	D3DLOCKED_BOX  box;
+	D3DLOCKED_RECT rect;
+
+	pIn[0]->GetLevelDesc(0, &desc);
+	DWORD mips = pIn[0]->GetLevelCount();
+	
+	if (D3DXCreateVolumeTexture(pDevice, desc.Width, desc.Height, count, mips, 0, desc.Format, D3DPOOL_SYSTEMMEM, &pTemp)==S_OK) {
+
+		DWORD height = desc.Height;
+
+		for (DWORD m=0; m < mips; m++) {
+			pTemp->GetLevelDesc(m, &vd);
+			if (pTemp->LockBox(m, &box, NULL, 0)==S_OK) {
+				char *pDst = (char*)box.pBits;
+				for (int i=0; i < count; i++) {
+					pIn[i]->GetLevelDesc(m, &desc);
+					if (pIn[i]->LockRect(m, &rect, NULL, D3DLOCK_READONLY)==S_OK) {
+						if ((box.RowPitch == rect.Pitch) && (box.SlicePitch == rect.Pitch*height)) {
+							memcpy(pDst, rect.pBits, box.SlicePitch);
+							pDst += box.SlicePitch;
+							pIn[i]->UnlockRect(m);
+							continue;
+						}
+						LogErr("CreateVolumeTexture: Pitch miss-match");
+						pIn[i]->UnlockRect(m);
+						pTemp->UnlockBox(m);
+						return false;
+					}
+					else {
+						LogErr("CreateVolumeTexture: Failed to lock a rect");
+						return false;
+					}
+				}
+			}
+			else {
+				LogErr("CreateVolumeTexture: Failed to lock a box");
+				return false;
+			}
+			height>>=1;
+			pTemp->UnlockBox(m);
+		}
+
+		if (D3DXCreateVolumeTexture(pDevice, desc.Width, desc.Height, count, mips, 0, desc.Format, D3DPOOL_DEFAULT, pOut)==S_OK) {
+			HR(pDevice->UpdateTexture(pTemp, (*pOut)));
+			(*pOut)->GenerateMipSubLevels();
+			pTemp->Release();
+			return true;
+		}
+		return false;
+	}
+	return false;
+}

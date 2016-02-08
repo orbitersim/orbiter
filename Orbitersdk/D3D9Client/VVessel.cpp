@@ -441,7 +441,7 @@ void vVessel::InitAnimations()
 
 
 // ============================================================================================
-// Called when a new mesh is inserted to a mesh
+// Called when a new mesh is inserted to a vessel
 //
 void vVessel::InitAnimations(UINT meshidx)
 {
@@ -539,17 +539,10 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 //
 void vVessel::DelAnimation (UINT idx)
 {
-	// TODO: Check if this re-indexing is really right (or just do nothin')
-	UINT maxIdx = nanim-1;
-	if (idx > maxIdx) {
-		LogWrn("DelAnim() Index '%u' out of range (max. %u). Vessel %s",
-			   idx, maxIdx, vessel->GetClassNameA());
-	}
-	// Shift 'upper' animations one down (if not top element)
-	else if (idx < maxIdx) {
-		memcpy2(&animstate[idx], &animstate[idx+1], (nanim-1)*sizeof(double));
-		--nanim;
-	}
+	animstate[idx] = -1.0; // Mark deleted, index can be reused later.
+
+	// Do nothing here. Orbiter never reduces the animation buffer size.
+	// VESSEL::GetAnimPtr() returns highest existing animation ID, not the actual animation count
 }
 
 
@@ -560,11 +553,6 @@ void vVessel::UpdateAnimations (UINT mshidx)
 	double newstate;
 
 	UINT oldnAnim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-
-	if (nanim>0 && animstate==NULL) {
-		LogErr("[ANOMALY] UpdateAnimations() called before the animations are initialized. Calling InitAnimations()...");
-		InitAnimations();
-	}
 
 	//animations have been added without being initialised?
 	if (nanim > oldnAnim) {

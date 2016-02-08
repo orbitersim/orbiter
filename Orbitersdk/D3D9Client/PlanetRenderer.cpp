@@ -19,6 +19,7 @@
 class oapi::D3D9Client *PlanetRenderer::gc = NULL; 
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
 LPDIRECT3DTEXTURE9 PlanetRenderer::hOcean = NULL;
+LPDIRECT3DTEXTURE9 PlanetRenderer::hMicroBlend = NULL;
 VECTOR3 PlanetRenderer::vLPosOld = _V(1,0,0);
 bool PlanetRenderer::bEnvMapEnabled = false;
 // ------------------------------------------------------------
@@ -59,7 +60,9 @@ D3DXHANDLE PlanetRenderer::stMask = NULL;
 D3DXHANDLE PlanetRenderer::stNoise = NULL;
 D3DXHANDLE PlanetRenderer::stOcean = NULL;
 D3DXHANDLE PlanetRenderer::stEnvMap = NULL;
-D3DXHANDLE PlanetRenderer::stMicro = NULL;
+D3DXHANDLE PlanetRenderer::stMicroA = NULL;
+D3DXHANDLE PlanetRenderer::stMicroB = NULL;
+D3DXHANDLE PlanetRenderer::stMicroBlend = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -202,7 +205,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stNoise				= pShader->GetParameterByName(0,"tNoise");
 	stOcean				= pShader->GetParameterByName(0,"tOcean");
 	stEnvMap			= pShader->GetParameterByName(0,"tEnvMap");
-	stMicro				= pShader->GetParameterByName(0,"tMicro");
+	stMicroA			= pShader->GetParameterByName(0,"tMicroA");
+	stMicroB			= pShader->GetParameterByName(0,"tMicroB");
+	stMicroBlend		= pShader->GetParameterByName(0,"tMicroBlend");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
@@ -236,12 +241,13 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfTime				= pShader->GetParameterByName(0,"fTime");
 	// ------------------------------------------------------------
 	
-	sprintf_s(name, "D3D9Ocean.dds");
-	gc->TexturePath(name, name);
-	HR(D3DXCreateTextureFromFileA(pDev, name, &hOcean));
+	
+	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Ocean.dds", &hOcean));
+	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9MicroBlend.dds", &hMicroBlend));
 	
 	if (hOcean) {
 		HR(pShader->SetTexture(stOcean, hOcean));
+		HR(pShader->SetTexture(stMicroBlend, hMicroBlend));
 	}
 }
 
@@ -251,6 +257,7 @@ void PlanetRenderer::GlobalExit ()
 {
 	SAFE_RELEASE(pShader);
 	SAFE_RELEASE(hOcean);
+	SAFE_RELEASE(hMicroBlend);
 }
 
 // -----------------------------------------------------------------------
