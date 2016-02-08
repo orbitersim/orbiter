@@ -50,7 +50,6 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	pTex       (NULL),
 	pTgtSurf   (),
 	Data       (NULL),
-	Abc        (NULL),
 	tm         (),
 	mVP        ()
 {
@@ -76,7 +75,6 @@ D3D9Text::~D3D9Text()
 {
 	if (Buffer) delete[] Buffer;	Buffer=NULL;
 	if (Data)	delete[] Data;		Data=NULL;
-	if (Abc)	delete[] Abc;		Abc=NULL;
 	if (pTex)   pTex->Release();	pTex=NULL;
 	if (indices) delete []indices;	indices=NULL;
 }
@@ -211,9 +209,8 @@ bool D3D9Text::Init(HFONT hFont, int final)
 	memset2((void *)&fl, 0, sizeof(LOGFONT));
 	GetObject(hFont, sizeof(LOGFONT), &fl);
 
-	tex_w = 512;	// Texture Width
-	//tex_h = 32 + (fl.lfHeight*fl.lfHeight * 4 * 255) / (3*512);	// Texture Height
-	tex_h = 128;
+	tex_w = 2048;	// Texture Width
+	tex_h = 32;
 	last  = final;
 
 	int first = 33;		// ANSI code of the First Charter
@@ -222,7 +219,6 @@ bool D3D9Text::Init(HFONT hFont, int final)
 	//
 	try {
 		Data = new D3D9FontData[last]();	// zero-initialized
-		Abc = new _ABC[last]();				// zero-initialized
 	}
 	catch (std::bad_alloc&) {
 		return false;
@@ -234,7 +230,10 @@ bool D3D9Text::Init(HFONT hFont, int final)
 
 restart:
 
-	if (tex_h>=2048) return false;
+	if (tex_h>=2048) {
+		LogErr("^^ Font is too large for pre-rendering");	
+		return false;
+	}
 
 	LPDIRECT3DSURFACE9 pSurf = NULL;
 
@@ -255,12 +254,6 @@ restart:
 	if (hOld == NULL) { LogErr("SelectObject(hFont) FAIL"); return false; }
 
 	if (bFirst) {
-
-		// Get Char Width/Spacing information from 33 to 255
-		//
-		if (GetCharABCWidths(hDC, first, last, Abc)==false) {
-			LogWrn("!! GetCharABCWidths FAIL !!  Non-Critical");
-		}
 
 		// Get Text Metrics information
 		// 
@@ -332,7 +325,6 @@ restart:
 			//LogWrn("Charters doesn't fit in used texture (%dx%d)", tex_w, tex_h);	
 			pSurf->ReleaseDC(hDC);
 			pSurf->Release();
-			//tex_h = (tex_h*3)/2;
 			tex_h *= 2;
 			goto restart;
 		}

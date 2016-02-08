@@ -118,7 +118,6 @@ private:
 	LPDIRECT3DTEXTURE9	pTex;
 	D3D9ClientSurface	*pTgtSurf;
 	D3D9FontData		*Data;
-	_ABC				*Abc;
 	WORD				*indices;
 
 	TEXTMETRIC  tm;
