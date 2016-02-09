@@ -392,18 +392,27 @@ void Scene::Update ()
 		}
 	}
 
+	static bool bFirstUpdate = true;
+
 	// check object visibility (one object per frame in the interest
 	// of scalability)
 	DWORD nobj = oapiGetObjectCount();
 
-	if (iVCheck >= nobj) {
-		iVCheck = 0;
+	if (bFirstUpdate) {
+		for (DWORD i=0;i<nobj;i++) {
+			OBJHANDLE hObj = oapiGetObjectByIndex(i);
+			CheckVisual(hObj);
+		}
 	}
+	else {
 
-	// This function will browse through vessels and planets. (not bases)
-	// Base visuals don't exist in the visual record. 
-	OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
-	CheckVisual(hObj);
+		if (iVCheck >= nobj) iVCheck = 0;
+
+		// This function will browse through vessels and planets. (not bases)
+		// Base visuals don't exist in the visual record. 
+		OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
+		CheckVisual(hObj);
+	}
 
 
 	// If Camera target has changed, setup mesh debugger
