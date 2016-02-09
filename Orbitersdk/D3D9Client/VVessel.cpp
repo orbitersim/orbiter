@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 Martin Schweiger
-// Copyright (C) 2010-2012 Jarmo Nikkanen (D3D9Client modification)
+// Copyright (C) 2010-2016 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
 #include <set>
@@ -59,8 +59,11 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
 	LoadMeshes();
-	DisposeAnimations();
-	InitAnimations();
+	
+	// Initialize static animations
+	//
+	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
+	for (UINT i=0;i<nanim;i++) animstate[i] = anim[i].defstate;
 }
 
 
@@ -169,7 +172,7 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 
 		case EVENT_VESSEL_NEWANIM:
 			LogBlu("EVENT_VESSEL_NEWANIM");
-			InitNewAnimations();
+			InitNewAnimation(context);
 			break;
 	}
 }
@@ -373,7 +376,7 @@ void vVessel::InsertMesh(UINT idx)
 		}
 	}
 
-	InitAnimations(idx);
+	UpdateAnimations(idx);
 
 	LogAlw("vVessel(0x%X)::InsertMesh(%u) hMesh=0x%X offset=(%g, %g, %g)",this,idx, hMesh, ofs.x, ofs.y, ofs.z);
 }
@@ -416,6 +419,7 @@ void vVessel::DelMesh(UINT idx)
 // ============================================================================================
 // This is called only from a class constructor
 //
+/*
 void vVessel::InitAnimations()
 {
 	bBSRecompute = true;
@@ -461,35 +465,27 @@ void vVessel::InitAnimations(UINT meshidx)
 	
 	UpdateAnimations(); // Must update immediately to prevent RMS grapple target displacement
 }
-
+*/
 
 // ============================================================================================
 //
-void vVessel::InitNewAnimations ()
+void vVessel::InitNewAnimation (UINT idx)
 {
-	std::set<UINT> initializedMeshes;
-	std::pair<std::set<UINT>::iterator,bool> ret;
+	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
+	animstate[idx] = anim[idx].defstate;
 
-	UINT nAnim = vessel->GetAnimPtr(&anim);
-	for (UINT i = 0; i < nAnim; ++i)
-	{
-		for (UINT j = 0; j < anim[i].ncomp; ++j)
-		{
-			UINT mesh = anim[i].comp[j]->trans->mesh;
-			ret = initializedMeshes.insert(mesh);
-			if (ret.second) { // newly inserted?
-				InitAnimations(mesh);
-			}
-		}
+	// Call ResetTransformations for all related meshes
+	for (UINT i = 0; i < anim[idx].ncomp; ++i) {
+		UINT m = anim[idx].comp[i]->trans->mesh;
+		if (m<nmesh) if (meshlist[m].mesh) meshlist[m].mesh->ResetTransformations();
 	}
 }
 
 
 // ============================================================================================
 //
-UINT vVessel::GrowAnimstateBuffer (UINT newSize)
+void vVessel::GrowAnimstateBuffer (UINT newSize)
 {
-	UINT oldnum = nanim;
 	if (newSize > nanim) // append a new entries to the list
 	{
 		double *pTmp = new double[newSize]();
@@ -500,7 +496,6 @@ UINT vVessel::GrowAnimstateBuffer (UINT newSize)
 		animstate = pTmp;
 		nanim = newSize;
 	}
-	return oldnum;
 }
 
 
@@ -522,16 +517,13 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 {
 	bBSRecompute = true;
 
+	// Reset transformation matrices
+	for (DWORD i=0;i<nmesh;i++) { if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations(); }
+
 	// nanim should stay the same, but just in case
 	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
-	if (reset == 1) {
-		for (UINT i = 0; i < nanim; ++i) {
-			for (UINT k = 0; k < anim[i].ncomp; ++k) {
-				animstate[i] = anim[i].defstate; // reset to default animation state
-			}
-		}
-	}
+	if (reset == 1) for (UINT i=0;i<nanim;++i) animstate[i] = anim[i].defstate; // reset to default animation state	
 }
 
 
@@ -539,10 +531,8 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 //
 void vVessel::DelAnimation (UINT idx)
 {
-	animstate[idx] = -1.0; // Mark deleted, index can be reused later.
-
-	// Do nothing here. Orbiter never reduces the animation buffer size.
-	// VESSEL::GetAnimPtr() returns highest existing animation ID, not the actual animation count
+	// Do nothing here. Orbiter never reduces the animation buffer size. (i.e. anim[])
+	// VESSEL::GetAnimPtr() returns highest existing animation ID + 1, not the actual animation count
 }
 
 
@@ -552,12 +542,7 @@ void vVessel::UpdateAnimations (UINT mshidx)
 {
 	double newstate;
 
-	UINT oldnAnim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-
-	//animations have been added without being initialised?
-	if (nanim > oldnAnim) {
-		InitNewAnimations();
-	}
+	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
 	for (UINT i = 0; i < nanim; i++) {
 		if (!anim[i].ncomp) continue;

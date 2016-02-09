@@ -170,9 +170,10 @@ sampler EnvMapS = sampler_state
 sampler MicroAS = sampler_state
 {
 	Texture = <tMicroA>;
-	MinFilter = LINEAR;
+	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -180,9 +181,10 @@ sampler MicroAS = sampler_state
 sampler MicroBS = sampler_state
 {
 	Texture = <tMicroB>;
-	MinFilter = LINEAR;
+	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -536,7 +538,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			
 			frg.texUV.xy *= fAlpha;
 
-			float  fMicM = tex2D(MicroBlendS, frg.texUV.xy*32.0f).r;	// Blend/Mixture
+			float2 fMicM = tex2D(MicroBlendS, frg.texUV.xy*16.0f).rg;	// Blend/Mixture
 			float3 cDstA = tex2D(MicroAS, frg.texUV.xy*32.0f).rgb;		// High altitude micro texture A
 			float3 cDstB = tex2D(MicroBS, frg.texUV.xy*32.0f).rgb;		// High altitude micro texture B
 			float3 cCloA = tex2D(MicroAS, frg.texUV.xy*512.0f).rgb;		// Low altitude micro texture A
@@ -545,8 +547,8 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float step1 = smoothstep(4000, 12000, dist);
 			float step2 = smoothstep(300,  1500, dist);
 			
-			float3 cLow = lerp(cCloB, cCloA, fMicM);								// Low altitude mixture
-			float3 cHig = lerp(cDstB, cDstA, fMicM);								// High altitude mixture
+			float3 cLow = lerp(cCloB, cCloA, fMicM.g);								// Low altitude mixture
+			float3 cHig = lerp(cDstB, cDstA, fMicM.r);								// High altitude mixture
 			float3 cCmp = lerp(cLow * (cHig+0.5f), cHig, step2);					// Blend low and high altitude luminance
 
 			// Create normals

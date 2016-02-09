@@ -125,9 +125,9 @@ protected:
 	void InsertMesh(UINT idx);
 	void DisposeMeshes();
 	void DelMesh(UINT idx);
-	void InitAnimations();
-	void InitAnimations(UINT meshidx);
-	void InitNewAnimations();
+	//void InitAnimations();
+	//void InitAnimations(UINT meshidx);
+	void InitNewAnimation(UINT idx);
 	void DisposeAnimations();
 	void DelAnimation(UINT idx);
 	void ResetAnimations(UINT reset = 1);
@@ -140,7 +140,7 @@ protected:
 	 * \param newSize new size of buffer (return value of VESSEL::GetAnimPtr())
 	 * \return previous value of \ref nanim
 	 */
-	UINT GrowAnimstateBuffer (UINT newSize);
+	void GrowAnimstateBuffer (UINT newSize);
 
 
 	/**

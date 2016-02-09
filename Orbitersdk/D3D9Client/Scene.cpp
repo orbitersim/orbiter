@@ -302,21 +302,7 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 	memset2(pv, 0, sizeof(VOBJREC));
 
-	__TRY {
-		pv->vobj = vObject::Create(hObj, this);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		char buf[64]; oapiGetObjectName(hObj, buf, 64);
-		char *classname = NULL;
-		int objtp = oapiGetObjectType(hObj);
-		if (objtp==OBJTP_VESSEL) classname = oapiGetVesselInterface(hObj)->GetClassNameA();
-		LogErr("Critical exception in Scene::AddVisualRec(0x%X) (%s)(%d)", hObj, buf, objtp);
-		if (classname) LogErr("VesselClass Name = %s",classname);
-		gc->EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
-
+	pv->vobj = vObject::Create(hObj, this);
 	pv->type = oapiGetObjectType(hObj);
 
 	oapiGetObjectName(hObj, buf, 255);
