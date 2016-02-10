@@ -28,12 +28,12 @@ inline double exp2(double d)
 { 
 	return exp(d*0.69314718055994530941723212145818);
 }
-
+#if !defined(_CMATH_)
 inline float exp2(float d)
 { 
 	return exp(d*0.693147180559945f);
 }
-
+#endif
 inline double lerp(double a, double b, double x)
 {
 	return a + (b-a)*x;

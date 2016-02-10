@@ -84,7 +84,7 @@ namespace junction {
 		reparseBuffer->ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
 		reparseBuffer->Reserved = NULL;
 		reparseBuffer->MountPointReparseBuffer.SubstituteNameOffset = 0;
-		reparseBuffer->MountPointReparseBuffer.SubstituteNameLength = nativeTarget.length() * (int) sizeof(WCHAR);
+		reparseBuffer->MountPointReparseBuffer.SubstituteNameLength = static_cast<USHORT>( nativeTarget.length() * sizeof(WCHAR) );
 
 		// No substitute name, point it outside the bounds of the string
 		reparseBuffer->MountPointReparseBuffer.PrintNameOffset = reparseBuffer->MountPointReparseBuffer.SubstituteNameLength + (int) sizeof(WCHAR);
