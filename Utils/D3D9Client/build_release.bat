@@ -22,25 +22,29 @@ for /F "tokens=* USEBACKQ" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) d
 set VERSION=%VERSION%-for%OVER%
 
 :: Try to get the Visual Studio version
+if not "%VS140COMNTOOLS%"=="" (
+  set SETVCVARS="%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
+  set SOLUTIONFILE=D3D9ClientVS2015.sln
+  goto :assign
+)
 if not "%VS110COMNTOOLS%"=="" (
-  set VSCOMNTOOLS="%VS110COMNTOOLS%"
+  set SETVCVARS="%VS110COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2012.sln
   goto :assign
 )
 if not "%VS100COMNTOOLS%"=="" (
-  set VSCOMNTOOLS="%VS100COMNTOOLS%"
+  set SETVCVARS="%VS100COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2010.sln
   goto :assign
 )
 if not "%VS90COMNTOOLS%"=="" (
-  set VSCOMNTOOLS="%VS90COMNTOOLS%"
+  set SETVCVARS="%VS90COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2008.sln
   goto :assign
 )
 
 :assign
 set ZIP_NAME=D3D9Client%VERSION%
-set SETVCVARS=%VSCOMNTOOLS%vsvars32.bat
 set VC=msbuild.exe
 set BUILD_FLAG=/t:build
 set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%SOLUTIONFILE%"
@@ -108,6 +112,5 @@ set ABS_PATH=
 set ZIP_CMD=
 set ZIP_NAME=
 set SETVCVARS=
-set VSCOMNTOOLS=
 
 exit /b 0
