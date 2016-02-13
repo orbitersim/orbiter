@@ -1,7 +1,7 @@
 // ===========================================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012 - 2014 Jarmo Nikkanen
+// Copyright (C) 2012 - 2016 Jarmo Nikkanen
 // ===========================================================================================
 
 
@@ -131,8 +131,10 @@ void D3D9Client::RenderControlPanel()
 	DWORD plain_count = 0, plain_size = 0;
 	DWORD textr_count = 0, textr_size = 0;
 	DWORD rendt_count = 0, rendt_size = 0;
+	DWORD rttex_count = 0, rttex_size = 0;
 	DWORD dyntx_count = 0, dyntx_size = 0;
 	DWORD sysme_count = 0, sysme_size = 0;
+	DWORD duall_count = 0, duall_size = 0;
 
 	DWORD nSurf = SurfaceCatalog->CountEntries();
 
@@ -140,12 +142,26 @@ void D3D9Client::RenderControlPanel()
 		LPD3D9CLIENTSURFACE pSurf = SURFACE(SurfaceCatalog->Get(i));
 		if (pSurf->desc.Pool==D3DPOOL_DEFAULT) {
 			if (pSurf->IsRenderTarget()) {
-				rendt_count++;
-				rendt_size += pSurf->GetSizeInBytes();
+				if (pSurf->IsDualLayer()) {
+					duall_count++;
+					duall_size += pSurf->GetSizeInBytes();
+				}
+				else if (pSurf->IsTexture()) {
+					rttex_count++;
+					rttex_size += pSurf->GetSizeInBytes();
+				}
+				else {
+					rendt_count++;
+					rendt_size += pSurf->GetSizeInBytes();
+				}
 			}
 			else if (pSurf->IsDynamic()) {
 				dyntx_count++;
 				dyntx_size += pSurf->GetSizeInBytes();
+			}
+			else if (pSurf->IsPlainSurface()) {
+				plain_count++;
+				plain_size += pSurf->GetSizeInBytes();
 			}
 			else {
 				textr_count++;
@@ -177,6 +193,8 @@ void D3D9Client::RenderControlPanel()
 	Label("SystemMem Surfaces...: %u (%u MB)", sysme_count, sysme_size>>20);
 	Label("Dynamic Textures.....: %u (%u MB)", dyntx_count, dyntx_size>>20);
 	Label("Render Targets.......: %u (%u MB)", rendt_count, rendt_size>>20);
+	Label("Render Texturex......: %u (%u MB)", rttex_count, rttex_size>>20);
+	Label("Dual Layer...........: %u (%u MB)", duall_count, duall_size>>20);
 	Label("Plain Surfaces.......: %u (%u MB)", plain_count, plain_size>>20);
 	Label("Textures.............: %u (%u MB)", textr_count, textr_size>>20);
 

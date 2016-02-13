@@ -2,8 +2,8 @@
 // VVessel.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006 Martin Schweiger
-// Copyright (C) 2010-2016 Jarmo Nikkanen (D3D9Client modification)
+// Copyright (C) 2006-2016 Martin Schweiger
+//				 2010-2016 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
 #include <set>

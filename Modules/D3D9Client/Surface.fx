@@ -1,7 +1,7 @@
 // =============================================================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2014 Jarmo Nikkanen
+// Copyright (C) 2014 - 2016 Jarmo Nikkanen
 // =============================================================================================================
 
 
@@ -538,18 +538,12 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			
 			frg.texUV.xy *= fAlpha;
 
-			float2 fMicM = tex2D(MicroBlendS, frg.texUV.xy*16.0f).rg;	// Blend/Mixture
-			float3 cDstA = tex2D(MicroAS, frg.texUV.xy*32.0f).rgb;		// High altitude micro texture A
-			float3 cDstB = tex2D(MicroBS, frg.texUV.xy*32.0f).rgb;		// High altitude micro texture B
-			float3 cCloA = tex2D(MicroAS, frg.texUV.xy*512.0f).rgb;		// Low altitude micro texture A
-			float3 cCloB = tex2D(MicroBS, frg.texUV.xy*512.0f).rgb;		// Low altitude micro texture B
-
-			float step1 = smoothstep(4000, 12000, dist);
-			float step2 = smoothstep(300,  1500, dist);
+			float3 cDstA = tex2D(MicroBS, frg.texUV.xy*64.0f).rgb;		// High altitude micro texture A
+			float3 cCloA = tex2D(MicroAS, frg.texUV.xy*2048.0f).rgb;		// Low altitude micro texture A
 			
-			float3 cLow = lerp(cCloB, cCloA, fMicM.g);								// Low altitude mixture
-			float3 cHig = lerp(cDstB, cDstA, fMicM.r);								// High altitude mixture
-			float3 cCmp = lerp(cLow * (cHig+0.5f), cHig, step2);					// Blend low and high altitude luminance
+			float step1 = smoothstep(6000, 24000, dist);
+			float step2 = smoothstep(300,  4000, dist);
+			float3 cCmp = lerp(cCloA * (cDstA+0.5f), cDstA, step2);					// Blend low and high altitude luminance
 
 			// Create normals
 			float3 cNrm  = float3((cCmp.xy - 0.5f) * 2.0f, 0);
@@ -560,7 +554,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			nrmW = normalize(nrmW);
 
 			// Apply luminance
-			cTex.rgb *= lerp(cCmp.b+0.5f, 1.0f, step1);
+			cTex.rgb *= lerp(cCmp.b+0.5f, 1.0f, step1) * 1.2f;
 		}
 	}
 

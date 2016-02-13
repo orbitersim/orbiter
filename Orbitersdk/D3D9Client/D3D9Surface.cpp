@@ -2,7 +2,7 @@
 // D3D9Surface.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2011 - 2014 Jarmo Nikkanen
+// Copyright (C) 2011 - 2016 Jarmo Nikkanen
 // ===========================================================================================
 
 #define STRICT
@@ -14,9 +14,6 @@
 #include "D3D9Util.h"
 #include "AABBUtil.h"
 #include "Log.h"
-
-#define RTGTH 64000 // System Memory <-> Render Target Size Treshold
-
 
 using namespace oapi;
 
@@ -659,7 +656,6 @@ void D3D9ClientSurface::Decompress(DWORD Attr)
 void D3D9ClientSurface::CreateSubSurface()
 {
 	if (pDCSub) return;
-	assert(desc.Format!=D3DFMT_A4R4G4B4);
 	HR(pDevice->CreateRenderTarget(desc.Width, desc.Height, desc.Format, D3DMULTISAMPLE_NONE, 0, true, &pDCSub, NULL));
 	LogBlu("Creating SubSurface for 0x%X", this);
 }
@@ -936,24 +932,40 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 
 	if (Width==0 || Height==0 || TgtWidth==0 || TgtHeight==0) return;
 
-	DWORD BltSize = max(Width*Height, TgtWidth*TgtHeight);
-	DWORD TgtSize = desc.Width * desc.Height;
-	DWORD SrcSize = src->desc.Width * src->desc.Height;
-
 	// Is scaling operation required -------------------------------------------------------------
 	//
 	bool bStretch = true;
 	if (Width==TgtWidth && Height==TgtHeight) bStretch = false;
 
+
+	// =====================================================================================================
+	// If target not yet exists
+	//
 	if (!Exists()) {
 		if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToRenderTargetTexture();
 		else								  ConvertToRenderTarget();
 	}
 
+
+	// =====================================================================================================
+	// If source not yet exists
+	//
+	if (!src->Exists()) {
+		if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToTexture(true);
+		else								  ConvertToTexture(true);
+	}
+
+
 	// If compressed surface is involved in blitting then decompress ------------------------------
 	//
 	if (IsCompressed()) Decompress();
 	if (src->IsCompressed()) src->Decompress();
+
+
+	// =====================================================================================================
+	// ANOMALIUS CASE: If target is non-render target texture.. Convert.. 
+	//
+	if (pTex && (desc.Usage&D3DUSAGE_RENDERTARGET)==0) ConvertToRenderTargetTexture();
 
 
 	// =====================================================================================================
@@ -977,7 +989,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 
 
 	// ==========================================================================================================
-	// Color Conversion from Source to Target is required
+	// SPECIAL CASE: Color Conversion from Source to Target is required
 	//
 	if ((src->desc.Format != desc.Format) && src->ColorKey==0x0) {
 		if (src->IsTexture()==false) {
@@ -1005,40 +1017,8 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	}
 
 
-	// =======================================================================================
-	// Preprocess some anomalius cases
-
-
-	// Try to bring GetDC related surfaces in system memory ----------------------------------
-	//
-	if ((src->desc.Pool==D3DPOOL_DEFAULT) && (desc.Pool==D3DPOOL_SYSTEMMEM)) {
-		if (GetAttribs()&OAPISURFACE_SYSMEM) {
-			if ((src->GetAttribs()&OAPISURFACE_VIDEOMEMORY)==0) {
-				src->ConvertToPlain(); // Bring the source to sysmem as well
-				src->Active |= OAPISURFACE_SYSMEM;
-			}
-		}
-		else if (src->bBltSys==false && SrcSize<RTGTH) {
-			if ((src->GetAttribs()&OAPISURFACE_VIDEOMEMORY)==0) {
-				src->ConvertToPlain();
-				src->bBltSys = true;
-			}
-		}
-	}
-
-	// Target is Non-render target texture -----------------------------------------------------
-	//
-	if (pTex && (desc.Usage&D3DUSAGE_RENDERTARGET)==0) ConvertToRenderTargetTexture();
-
-	// Need to stretch the surface -------------------------------------------------------------
-	//
-	if (bStretch) {
-		if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_SYSTEMMEM) {
-			src->ConvertToRenderTarget(true);
-		}
-	}
-
-	// Blitting into a BackBuffer --------------------------------------------------------------
+	// =====================================================================================================
+	// Blitting into a BackBuffer
 	//
 	if (bBackBuffer) {
 		src->Active |= OAPISURFACE_VIDEOMEMORY;
@@ -1053,6 +1033,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 
 
 	// =====================================================================================================
+	// SPECIAL CASE: For screen capture or similar thing
 	// Get Render Target Data
 	//
 	if (src->ColorKey==0x0) {
@@ -1072,16 +1053,10 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 		}
 	}
 
-
 	// =====================================================================================================
+	// StretchRect Blitting Technique
 	//
 	if (src->ColorKey==0x0) {
-
-		if (src->pSurf==NULL) src->ConvertToRenderTarget();
-		
-		// =====================================================================================================
-		// StretchRect Blitting Technique
-		//
 		if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_DEFAULT) {
 			if (pDevice->StretchRect(src->pSurf, s, pSurf, t, D3DTEXF_POINT)==S_OK) {
 				LogOk("StretchRect 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
@@ -1090,10 +1065,13 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 			LogErr("StretchRect Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
 			goto error_report;
 		}
+	}
 
-		// =====================================================================================================
-		// UpdateSurface Blitting Technique
-		//
+
+	// =====================================================================================================
+	// UpdateSurface Blitting Technique
+	//
+	if (src->ColorKey==0x0) {
 		if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_SYSTEMMEM) {
 			POINT p; p.x = t->left; p.y=t->top;
 			if (pDevice->UpdateSurface(src->pSurf, s, pSurf, &p)==S_OK) {
@@ -1103,33 +1081,11 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 			LogErr("UpdateSurface Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
 			goto error_report;
 		}
-
-		// =====================================================================================================
-		// GDI Blitting Technique
-		//
-		if (src->desc.Pool==D3DPOOL_SYSTEMMEM && desc.Pool==D3DPOOL_SYSTEMMEM) {
-			
-			if (BltSize>RTGTH) GDIBltCtr++; 
-			if (GDIBltCtr>4) {
-				ConvertToRenderTarget(true);
-				src->ConvertToRenderTarget(true);
-			}
-
-			HDC hSrc = src->GetDCHard();
-			HDC hTgt = GetDCHard();
-			if (hSrc && hTgt) {
-				StretchBlt(hTgt, t->left, t->top, TgtWidth, TgtHeight, hSrc, s->left, s->top, Width, Height, SRCCOPY);
-				LogOk("GDI Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
-			}
-			else { LogErr("GDI Blitting Failed"); goto error_report; }
-			if (hTgt) this->ReleaseDC(hTgt);
-			if (hSrc) src->ReleaseDC(hSrc);
-			return;
-		}
 	}
 
+
 	// ==========================================================================================================
-	// ColorKeyed blitting using primary GPU
+	// SPECIAL CASE: ColorKeyed blitting using primary GPU
 	//
 	if (src->ColorKey!=0x0) {
 		if (src->IsTexture()==false) {
@@ -1174,8 +1130,7 @@ error_report:
 bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 {
 	if (!Exists()) {
-		if (GetAttribs()&OAPISURFACE_SYSMEM) ConvertToPlain();
-		else if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToRenderTargetTexture();
+		if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToRenderTargetTexture();
 		else ConvertToRenderTarget();
 	}
 
@@ -1199,7 +1154,7 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 		}
 	}
 
-	if (desc.Usage&D3DUSAGE_DYNAMIC || desc.Pool==D3DPOOL_SYSTEMMEM) {
+	if (desc.Usage&D3DUSAGE_DYNAMIC) {
 
 		HDC hDC = GetDCHard();
 
@@ -1231,8 +1186,7 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 bool D3D9ClientSurface::Clear(DWORD c)
 {
 	if (!Exists()) {
-		if (GetAttribs()&OAPISURFACE_SYSMEM) ConvertToPlain();
-		else if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToRenderTargetTexture();
+		if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToRenderTargetTexture();
 		else ConvertToRenderTarget();
 	}
 
@@ -1250,7 +1204,7 @@ bool D3D9ClientSurface::Clear(DWORD c)
 		}
 	}
 
-	if (desc.Usage&D3DUSAGE_DYNAMIC || desc.Pool==D3DPOOL_SYSTEMMEM) {
+	if (desc.Usage&D3DUSAGE_DYNAMIC) {
 
 		HDC hDC = GetDCHard();
 
@@ -1301,20 +1255,7 @@ HDC	D3D9ClientSurface::GetDC()
 {
 	bHard = false;
 
-	DWORD size = desc.Width * desc.Height;
-
-	if (!Exists()) {
-		if (size > RTGTH) {
-			if (GetAttribs()&OAPISURFACE_SYSMEM) ConvertToPlain();
-			else if (GetAttribs()&OAPISURFACE_TEXTURE) {
-				ConvertToRenderTargetTexture();
-				CreateSubSurface();
-			} else ConvertToRenderTarget(true);
-		} else {
-			if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToTexture(true);
-			else ConvertToPlain();
-		}
-	}
+	if (!Exists()) ConvertToTexture(true);
 
 	if (IsCompressed()) Decompress(OAPISURFACE_NOALPHA);
 
@@ -1331,12 +1272,6 @@ HDC	D3D9ClientSurface::GetDC()
 	if (desc.Format == D3DFMT_A8R8G8B8) {
 		LogErr("Alpha channel surface in GetDC()");
 		return NULL;
-	}
-
-	// Try to bring a GDI surface to system memory
-	if (!bDCSys && !bBackBuffer && desc.Pool==D3DPOOL_DEFAULT && (size<RTGTH)) {
-		bDCSys = true;
-		ConvertToPlain();
 	}
 
 	if (desc.Usage&D3DUSAGE_RENDERTARGET) {

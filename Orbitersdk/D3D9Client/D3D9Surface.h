@@ -1,7 +1,7 @@
 // ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012 - 2014 Jarmo Nikkanen
+// Copyright (C) 2012 - 2016 Jarmo Nikkanen
 // ==============================================================
 
 #ifndef __D3DSURFACE_H
@@ -74,6 +74,7 @@ public:
 	inline bool			IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
 	inline bool			IsDynamic() { return (desc.Usage&D3DUSAGE_DYNAMIC)!=0; }
 	inline bool			IsPlainSurface() { return (desc.Usage==0 && pTex==NULL); }
+	inline bool			IsDualLayer() { return (pDCSub!=NULL); }
 
 
 	DWORD				GetAttribs(int What=1);

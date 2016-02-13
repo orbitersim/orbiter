@@ -855,10 +855,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Modules\D3D9Client\SurfaceAd.fx"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Modules\D3D9Client\Vessel.fx"
 				>
 			</File>

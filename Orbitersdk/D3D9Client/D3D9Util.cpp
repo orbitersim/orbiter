@@ -2,9 +2,9 @@
 // Utilities
 // Part of the ORBITER VISUALISATION PROJECT (OVP) D3D9 Client
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2006-2007 Martin Schweiger
-//				 2012-2013 Jarmo Nikkanen
-//				 2012 Émile "Bibi Uncle" Grégoire
+// Copyright (C) 2006-2016 Martin Schweiger
+//				 2012-2016 Jarmo Nikkanen
+//				 2012-2016 Émile "Bibi Uncle" Grégoire
 // ==============================================================
 
 #define STRICT

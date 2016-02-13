@@ -2,8 +2,8 @@
 // Configuration Manager
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2007 Martin Schweiger
-//				 2011 Jarmo Nikkanen (D3D9Client modification) 
+// Copyright (C) 2007-2016 Martin Schweiger
+//				 2011-2016 Jarmo Nikkanen
 // ==============================================================
 
 #include "D3D9Config.h"

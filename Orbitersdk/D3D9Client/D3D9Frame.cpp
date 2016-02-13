@@ -3,8 +3,8 @@
 // Desc: Class functions to implement a Direct3D app framework.
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2007 Martin Schweiger
-//				 2011 Jarmo Nikkanen, All rights reserved.
+// Copyright (C) 2007 - 2016 Martin Schweiger
+//				 2011 - 2016 Jarmo Nikkanen
 // ==============================================================
 
 #define STRICT
