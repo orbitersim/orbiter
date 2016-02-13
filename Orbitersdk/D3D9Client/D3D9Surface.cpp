@@ -1181,11 +1181,6 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 
 	if (IsCompressed()) Decompress();
 
-	if (Initial==OAPISURFACE_TEXTURE) {
-		LogErr("Attempting to fill a texture 0x%X color=0x%X", this, c);
-		return false;
-	}
-
 	LPRECT r;
 	RECT re;
 
@@ -1242,17 +1237,6 @@ bool D3D9ClientSurface::Clear(DWORD c)
 	}
 
 	if (IsCompressed()) Decompress();
-
-	if (Initial==OAPISURFACE_TEXTURE) {
-		LogErr("Attempting to clear a texture 0x%X color=0x%X",this,c);
-		return false;
-	}
-
-	if (pSurf==NULL) {
-		LogErr("Null pSurf 0x%X",this);
-		LogSpecs("Surface");
-		assert(pSurf!=NULL);
-	}
 
 	if (desc.Pool==D3DPOOL_DEFAULT) {
 		if (desc.Usage&D3DUSAGE_RENDERTARGET || (pTex==NULL && desc.Usage==0)) {

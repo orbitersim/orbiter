@@ -524,12 +524,12 @@ void UpdateMaterialDisplay(bool bSetup)
 	else {
 		SURFHANDLE hSrf = hMesh->GetTexture(texidx);
 		if (hSrf) {
-			sprintf_s(lbl, 256, "Texture: %s", SURFACE(hSrf)->GetName());
+			sprintf_s(lbl, 256, "Texture: %s [%u]", RemovePath(SURFACE(hSrf)->GetName()), texidx);
 			SetWindowText(GetDlgItem(hDlg, IDC_DBG_TEXTURE), lbl);
 		}
 	}
 
-	sprintf_s(lbl, 256, "Mesh: %s", hMesh->GetName());
+	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
 
 	// Setup dissolve texture

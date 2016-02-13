@@ -688,6 +688,15 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 }
  
 
+const char *RemovePath(const char *in)
+{
+	int len = strlen(in);
+	const char *ptr = in;
+	for (int i=0;i<len;i++) if (in[i]=='\\' || in[i]=='/') ptr = &in[i+1];
+	return ptr;
+}
+
+
 bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE9 *pIn, LPDIRECT3DVOLUMETEXTURE9 *pOut)
 {
 	if (count==0 || pDevice==NULL || pIn==NULL || pOut==NULL) return false;
