@@ -277,7 +277,9 @@ bool SurfTile::LoadElevationData ()
 INT16 *SurfTile::ElevationData () const
 {
 	if (!ggelev) {
-		if (lvl >= 3) { // traverse quadtree back to great-grandparent
+		int ancestor_dlvl = 3;
+		while (1 << (8-ancestor_dlvl) < mgr->Cprm().gridRes) ancestor_dlvl--;
+		if (lvl >= ancestor_dlvl) { // traverse quadtree back to great-grandparent
 			QuadTreeNode<SurfTile> *ancestor = node; // start at my own node
 			int blockRes = TILE_FILERES;
 			while (blockRes > mgr->Cprm().gridRes && ancestor) {
@@ -292,7 +294,7 @@ INT16 *SurfTile::ElevationData () const
 				ggelev = ancestor->Entry()->elev + ofs;
 			}
 		} else {
-			SurfTile *ggp = smgr->GlobalTile(lvl);
+			SurfTile *ggp = smgr->GlobalTile(lvl-ancestor_dlvl+3);
 			if (ggp->LoadElevationData ()) {
 				int blockRes = mgr->Cprm().gridRes;
 				int nblock = TILE_FILERES/blockRes;

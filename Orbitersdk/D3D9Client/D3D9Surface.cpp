@@ -526,28 +526,33 @@ void D3D9ClientSurface::CreateSurface(int w, int h, DWORD attrib)
 	//
 	flags = OAPISURFACE_RENDERTARGET|OAPISURFACE_SYSMEM;
 	if ((attrib&flags)==flags) {
-		LogErr("oapiCreateSurfaceEx() Can not combine OAPISURFACE_RENDERTARGET | OAPISURFACE_SYSMEM");
+		LogErr("oapiCreateSurfaceEx() Cannot combine OAPISURFACE_RENDERTARGET | OAPISURFACE_SYSMEM");
 		attrib-=OAPISURFACE_SYSMEM;
 	}
 
 	flags = OAPISURFACE_RENDER3D|OAPISURFACE_SYSMEM;
 	if ((attrib&flags)==flags) {
-		LogErr("oapiCreateSurfaceEx() Can not combine OAPISURFACE_RENDER3D | OAPISURFACE_SYSMEM");
+		LogErr("oapiCreateSurfaceEx() Cannot combine OAPISURFACE_RENDER3D | OAPISURFACE_SYSMEM");
 		attrib-=OAPISURFACE_SYSMEM;
 	}
 
 	flags = OAPISURFACE_TEXTURE|OAPISURFACE_SYSMEM;
 	if ((attrib&flags)==flags) {
-		LogErr("oapiCreateSurfaceEx() Can not combine OAPISURFACE_TEXTURE | OAPISURFACE_SYSMEM");
+		LogErr("oapiCreateSurfaceEx() Cannot combine OAPISURFACE_TEXTURE | OAPISURFACE_SYSMEM");
 		attrib-=OAPISURFACE_SYSMEM;
 	}
 
-	// Process Surface Format ---------------------------------------------------------------------------------------------
-	//
+	flags = OAPISURFACE_MIPMAPS|OAPISURFACE_GDI;
+	if ((attrib&flags)==flags) {
+		LogErr("oapiCreateSurfaceEx() Cannot combine OAPISURFACE_MIPMAPS | OAPISURFACE_GDI");
+		attrib-=OAPISURFACE_SYSMEM;
+	}
+
+	/*
 	if (attrib&OAPISURFACE_SKETCHPAD) {
 		attrib |= OAPISURFACE_RENDERTARGET;
 		attrib &= ~(OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
-	}
+	}*/
 
 	// Process Surface Format ---------------------------------------------------------------------------------------------
 	//
@@ -726,10 +731,16 @@ bool D3D9ClientSurface::ConvertToRenderTargetTexture()
 	if (desc.Usage&D3DUSAGE_DYNAMIC) desc.Usage-=D3DUSAGE_DYNAMIC;
 
 	if (IsCompressed()) { Decompress();	return true; }
-	
-	assert(desc.Format!=D3DFMT_A4R4G4B4);
 
-	if (pDevice->CreateTexture(desc.Width, desc.Height, 1, desc.Usage|D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &pNew, NULL)!=S_OK) {
+	DWORD Usage = desc.Usage|D3DUSAGE_RENDERTARGET;
+	DWORD Mips = 1;
+
+	if (GetAttribs()&OAPISURFACE_MIPMAPS) {
+		Mips = 0;
+		Usage |= D3DUSAGE_AUTOGENMIPMAP;
+	}
+
+	if (pDevice->CreateTexture(desc.Width, desc.Height, Mips, Usage, desc.Format, D3DPOOL_DEFAULT, &pNew, NULL)!=S_OK) {
 		LogErr("CreateTexture Failed in ConvertToRenderTargetTexture(0x%X) W=%u, H=%u, usage=0x%X, Format=0x%X", this, desc.Width, desc.Height, desc.Usage, desc.Format);
 		LogSpecs("Surface");
 		return false;
@@ -857,7 +868,8 @@ bool D3D9ClientSurface::ConvertToTexture(bool bDynamic)
 	
 	DWORD Mips = 1;
 	if (desc.Usage&D3DUSAGE_AUTOGENMIPMAP) Mips = 0;
-
+	if (GetAttribs()&OAPISURFACE_MIPMAPS) Mips = 0;
+	
 	if (bDynamic) {
 		HR(pDevice->CreateTexture(desc.Width, desc.Height, Mips, D3DUSAGE_DYNAMIC, desc.Format, D3DPOOL_DEFAULT, &pNew, NULL));	
 		if (pNew) {
@@ -1977,7 +1989,7 @@ DWORD D3D9ClientSurface::GetAttribs(int What)
 	if (desc.Format==D3DFMT_A8R8G8B8) Cur |= OAPISURFACE_ALPHA;
 	if (pStencil && desc.Usage&D3DUSAGE_RENDERTARGET) Cur |= OAPISURFACE_RENDER3D;
 	if (bLockable) Cur |= OAPISURFACE_GDI;
-	//if (pDCSub) Cur |= OAPISURFACE_GDI;
+	if (pDCSub) Cur |= OAPISURFACE_GDI;
 	if (pTex) {
 		if (pTex->GetLevelCount()>1) Cur |= OAPISURFACE_MIPMAPS;
 		else						 Cur |= OAPISURFACE_NOMIPMAPS;
@@ -1989,14 +2001,33 @@ DWORD D3D9ClientSurface::GetAttribs(int What)
 //
 bool D3D9ClientSurface::GenerateMipMaps()
 {
-	if (desc.Usage&D3DUSAGE_AUTOGENMIPMAP && pTex) {
-		if (pSurf) {
-			pSurf->Release();
-			pTex->GenerateMipSubLevels();
-			pTex->GetSurfaceLevel(0, &pSurf);
-		}
-		else pTex->GenerateMipSubLevels();
+	if (desc.Usage&D3DUSAGE_AUTOGENMIPMAP) {
+		pTex->GenerateMipSubLevels();
 		return true;
+	}
+	else {
+
+		DWORD mips = GetMipMaps();
+
+		if (desc.Usage&D3DUSAGE_RENDERTARGET && pTex && mips>1) {
+
+			LPDIRECT3DSURFACE9 pSrf = pSurf;
+			LPDIRECT3DSURFACE9 pMip = NULL;
+
+			for (DWORD i=1;i<mips;i++) {
+				pTex->GetSurfaceLevel(i, &pMip);
+				if (pMip) {
+					HR(pDevice->StretchRect(pSrf, NULL, pMip, NULL, D3DTEXF_LINEAR));
+					if (pSrf!=pSurf) SAFE_RELEASE(pSrf);
+					pSrf = pMip;	
+				}
+				else break;
+			}
+
+			if (pSrf!=pSurf) SAFE_RELEASE(pSrf);
+
+			return true;
+		}
 	}
 	return false;
 }
