@@ -1479,6 +1479,21 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				}
 			}
 
+			// Apply MFD Screen Override ================================================================================
+			//
+			if (Grp[g]->MFDScreenId) {
+				bTextured = true;
+				old_tex = NULL;
+				FX->SetBool(eUseSpec, false);
+				FX->SetBool(eUseRefl, false);
+				FX->SetBool(eUseTransl, false);
+				FX->SetBool(eUseTransm, false);
+				SURFHANDLE hMFD = gc->GetMFDSurface(Grp[g]->MFDScreenId-1);
+
+				if (hMFD) FX->SetTexture(eTex0, SURFACE(hMFD)->GetTexture());
+				else	  FX->SetTexture(eTex0, gc->GetDefaultTexture()->GetTexture());
+			}
+
 
 			// Setup Mesh group material ==============================================================================
 			//
@@ -1524,21 +1539,6 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				dev->SetRenderState(D3DRS_DEPTHBIAS, *((DWORD*)&zBias));
 			}*/
 
-
-			// Apply MFD Screen Override ================================================================================
-			//
-			if (Grp[g]->MFDScreenId) {
-				bTextured = true;
-				old_tex = NULL;
-				FX->SetBool(eUseSpec, false);
-				FX->SetBool(eUseRefl, false);
-				FX->SetBool(eUseTransl, false);
-				FX->SetBool(eUseTransm, false);
-				SURFHANDLE hMFD = gc->GetMFDSurface(Grp[g]->MFDScreenId-1);
-
-				if (hMFD) FX->SetTexture(eTex0, SURFACE(hMFD)->GetTexture());
-				else	  FX->SetTexture(eTex0, gc->GetDefaultTexture()->GetTexture());
-			}
 
 			// Apply Animations =========================================================================================
 			//
