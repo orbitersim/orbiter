@@ -201,6 +201,8 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 		}
 	}
 	
+	//linescale = pTgt->GetWidth()>>8;
+	//if (linescale<1) linescale = 1;
 	//if (pTgt->GetFlags()&SRFFLAG_VC_MFD) linescale = pTgt->GetWidth()>>8;
 }
 
