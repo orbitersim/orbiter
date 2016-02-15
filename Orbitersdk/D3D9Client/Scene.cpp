@@ -399,6 +399,7 @@ void Scene::Update ()
 	DWORD nobj = oapiGetObjectCount();
 
 	if (bFirstUpdate) {
+		bFirstUpdate = false;
 		for (DWORD i=0;i<nobj;i++) {
 			OBJHANDLE hObj = oapiGetObjectByIndex(i);
 			CheckVisual(hObj);

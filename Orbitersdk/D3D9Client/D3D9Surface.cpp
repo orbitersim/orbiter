@@ -711,6 +711,7 @@ bool D3D9ClientSurface::ConvertToPlain()
 	pSurf = pNew;
 	GetDesc(&desc);
 	LogBlu("Surface 0x%X (%s) Converted to PlainSurface (SysMem) (%u,%u)", this, name, desc.Width, desc.Height);
+	assert(false);
 	return true;
 }
 
@@ -725,7 +726,6 @@ bool D3D9ClientSurface::ConvertToRenderTargetTexture()
 	bLockable = false;
 	if (bBackBuffer) return false;
 	if (GetAttribs()&OAPISURFACE_SYSMEM) return false;
-	if ((desc.Usage&D3DUSAGE_RENDERTARGET) && pTex) return true;
 
 	// Remove dynamic property, conflicts with rt
 	if (desc.Usage&D3DUSAGE_DYNAMIC) desc.Usage-=D3DUSAGE_DYNAMIC;
@@ -782,6 +782,8 @@ bool D3D9ClientSurface::ConvertToRenderTargetTexture()
 	pTex  = pNew;
 	pSurf = pTgt;
 
+	//Active = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
+
 	GetDesc(&desc);
 	SetupViewPort();
 	LogBlu("Surface 0x%X (%s) Converted to RenderTargetTexture (%u,%u)", this, name, desc.Width, desc.Height);
@@ -799,8 +801,6 @@ bool D3D9ClientSurface::ConvertToRenderTarget(bool bLock)
 	if (GetAttribs()&OAPISURFACE_SYSMEM) return false;
 	if (GetAttribs()&OAPISURFACE_TEXTURE) return false;
 	if ((bLockable==bLock) && (desc.Usage&D3DUSAGE_RENDERTARGET) && pTex==NULL) return true;
-
-	assert(desc.Format!=D3DFMT_A4R4G4B4);
 
 	if (pDevice->CreateRenderTarget(desc.Width, desc.Height, desc.Format, D3DMULTISAMPLE_NONE, 0, bLock, &pTgt, NULL)!=S_OK) {
 		LogErr("CreateRenderTarget Failed in ConvertToRenderTarget(0x%X) W=%u, H=%u, usage=0x%X, Format=0x%X", this, desc.Width, desc.Height, desc.Usage, desc.Format);
@@ -843,6 +843,9 @@ bool D3D9ClientSurface::ConvertToRenderTarget(bool bLock)
 	bLockable = bLock;
 	pTex = NULL;
 	pSurf = pTgt;
+
+	//Active = OAPISURFACE_RENDERTARGET;
+	//if (bLock) Active |= OAPISURFACE_GDI;
 
 	GetDesc(&desc);
 	SetupViewPort();
@@ -910,6 +913,7 @@ bool D3D9ClientSurface::ConvertToTexture(bool bDynamic)
 
 	LogErr("ConvertToTexture(0x%X) No Conversion Rule", this);
 	LogSpecs("Surface");
+	assert(false);
 	return false;
 }
 
@@ -1134,6 +1138,7 @@ error_report:
 	LogSpecs("Target");
 	src->LogSpecs("Source");
 	_POPLOG;
+	assert(false);
 }
 
 
@@ -1189,6 +1194,7 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 
 	LogErr("ColorFill Failed");
 	LogSpecs("Surface");
+	assert(false);
 	return false;
 }
 
@@ -1239,6 +1245,7 @@ bool D3D9ClientSurface::Clear(DWORD c)
 
 	LogErr("ClearSurface Failed");
 	LogSpecs("Surface");
+	assert(false);
 	return false;
 }
 
@@ -1334,6 +1341,7 @@ HDC	D3D9ClientSurface::GetDC()
 skip:
 	LogErr("D3D9ClientSurface: GetDC() Failed");
 	LogSpecs("Surface");
+	assert(false);
 	return NULL;
 }
 
@@ -2036,6 +2044,7 @@ bool D3D9ClientSurface::GenerateMipMaps()
 //
 LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 {
+	_TRACE;
 	if (pTex==NULL) ConvertToTexture(true);
 	if (pTex==NULL) {
 		LogErr("D3D9ClientSurface::GetTexture() Failed 0x%X", this);

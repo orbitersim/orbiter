@@ -625,7 +625,6 @@ void D3D9Mesh::DynamicGroup(DWORD idx)
 //
 D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx)
 {
-	_TRACE;
 	if (!pVB) return D3DXVECTOR3(0,0,0);
 	if (idx>=nGrp) return D3DXVECTOR3(0,0,0);
 	if (Grp[idx]->nVert<2) return D3DXVECTOR3(0,0,0);

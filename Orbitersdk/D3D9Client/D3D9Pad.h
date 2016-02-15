@@ -330,6 +330,7 @@ private:
 	
 	DWORD bkmode;
 	DWORD halign, valign;
+	DWORD linescale;
 	int origx, origy, cx, cy;
 	bool bConvert;
 	

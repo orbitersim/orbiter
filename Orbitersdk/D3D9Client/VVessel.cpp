@@ -471,14 +471,9 @@ void vVessel::InitAnimations(UINT meshidx)
 //
 void vVessel::InitNewAnimation (UINT idx)
 {
-	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-	animstate[idx] = anim[idx].defstate;
-
-	// Call ResetTransformations for all related meshes
-	for (UINT i = 0; i < anim[idx].ncomp; ++i) {
-		UINT m = anim[idx].comp[i]->trans->mesh;
-		if (m<nmesh) if (meshlist[m].mesh) meshlist[m].mesh->ResetTransformations();
-	}
+	// vessel->GetAnimPtr(&anim) returns invalid data here. New idx is not yet included in anim[]
+	GrowAnimstateBuffer(idx+1);
+	animstate[idx] = -1.0;
 }
 
 
@@ -521,7 +516,7 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 	for (DWORD i=0;i<nmesh;i++) { if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations(); }
 
 	// nanim should stay the same, but just in case
-	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
+	// GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
 	if (reset == 1) for (UINT i=0;i<nanim;++i) animstate[i] = anim[i].defstate; // reset to default animation state	
 }
@@ -542,8 +537,29 @@ void vVessel::UpdateAnimations (UINT mshidx)
 {
 	double newstate;
 
-	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
+	//GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
+	UINT x = vessel->GetAnimPtr(&anim);
+	if (x != nanim) {
+		LogErr("vessel->GetAnimPtr(&anim) returns unexpected value in UpdateAnimations %u vs %u", x, nanim);
+		GrowAnimstateBuffer(x);
+	}
+
+	// Initialize new animations -------------------------------------
+	//
+	for (UINT k=0;k<nanim;k++) if (animstate[k]<-0.5) {
+
+		animstate[k] = anim[k].defstate;
+
+		// Call ResetTransformations for all related meshes
+		for (UINT i = 0; i < anim[k].ncomp; ++i) {
+			UINT m = anim[k].comp[i]->trans->mesh;
+			if (m<nmesh) if (meshlist[m].mesh) meshlist[m].mesh->ResetTransformations();
+		}
+	}
+
+	// Update animations ---------------------------------------------
+	//
 	for (UINT i = 0; i < nanim; i++) {
 		if (!anim[i].ncomp) continue;
 		if (animstate[i] != (newstate = anim[i].state)) {

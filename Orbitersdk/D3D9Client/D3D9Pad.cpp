@@ -16,7 +16,6 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
-//#define _WIDE
 
 #include "D3D9Pad.h"
 #include "D3D9Client.h"
@@ -190,6 +189,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	textcolor  = D3DXCOLOR(0,1,0,1);
 	pencolor   = D3DXCOLOR(0,1,0,1);
 	bConvert   = false;
+	linescale  = 1;
 	
 	HR(FX->SetMatrix(eVP, pTgt->pVP));
 
@@ -200,6 +200,8 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 			return;
 		}
 	}
+	
+	//if (pTgt->GetFlags()&SRFFLAG_VC_MFD) linescale = pTgt->GetWidth()>>8;
 }
 
 
@@ -381,11 +383,8 @@ bool D3D9Pad::IsDashed()
 //
 bool D3D9Pad::HasWidePen()
 {
-#ifdef _WIDE
 	if (cpen==NULL) return false;
-	return true;
-#endif
-	if (cpen==NULL) return false;
+	if (linescale>1) return true;
 	if (((D3D9PadPen*)cpen)->width>1) return true;
 	return false;
 }
@@ -395,9 +394,7 @@ bool D3D9Pad::HasWidePen()
 //
 bool D3D9Pad::HasThinPen()
 {
-#ifdef _WIDE
-	return false;
-#endif
+	if (linescale>1) return false;
 	if (cpen==NULL) return false;
 	if (((D3D9PadPen*)cpen)->width<=1) return true;
 	return false;	
@@ -416,11 +413,8 @@ bool D3D9Pad::HasBrush()
 //
 float D3D9Pad::GetPenWidth()
 {
-#ifdef _WIDE
-	return 2.0f;
-#endif
 	if (cpen==NULL) return 1.0f;
-	return float(((D3D9PadPen*)cpen)->width);	
+	return float(((D3D9PadPen*)cpen)->width*linescale);	
 }
 
 
@@ -764,6 +758,7 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 {
+
 	UINT numPasses=0;
 
 	// Prepare render pileline -------------------------------------------------------
@@ -785,7 +780,7 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 		D3DXVECTOR3 *Vtx = new D3DXVECTOR3[npt*2];
 		CreateLineVertexList(Vtx, pt, npt, false);
 		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, npt*2, Vtx, sizeof(D3DXVECTOR3));
+		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, npt*2-2, Vtx, sizeof(D3DXVECTOR3));
 		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		SAFE_DELETEA(Vtx);
 	}
