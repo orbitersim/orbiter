@@ -976,8 +976,8 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	// If source not yet exists
 	//
 	if (!src->Exists()) {
-		if (src->GetAttribs()&OAPISURFACE_TEXTURE) src->ConvertToTexture(true);
-		else									   src->ConvertToTexture(true);
+		LogErr("Blitting graphics from uninitialized surface !! Handle = 0x%X", src);
+		assert(false);
 	}
 
 
@@ -1142,8 +1142,8 @@ error_report:
 
 	_SETLOG(5);
 	LogErr("D3D9ClientSurface::CopyRect() Failed");
-	LogMsg("Source Rect (%d,%d,%d,%d) (w=%u,h=%u) HANDLE=0x%X (%s)",s->left,s->top,s->right,s->bottom, abs(s->left-s->right), abs(s->top-s->bottom), src, src->name);
-	LogMsg("Target Rect (%d,%d,%d,%d) (w=%u,h=%u) HANDLE=0x%X (%s)",t->left,t->top,t->right,t->bottom, abs(t->left-t->right), abs(t->top-t->bottom), this, name);
+	LogErr("Source Rect (%d,%d,%d,%d) (w=%u,h=%u) HANDLE=0x%X (%s)",s->left,s->top,s->right,s->bottom, abs(s->left-s->right), abs(s->top-s->bottom), src, src->name);
+	LogErr("Target Rect (%d,%d,%d,%d) (w=%u,h=%u) HANDLE=0x%X (%s)",t->left,t->top,t->right,t->bottom, abs(t->left-t->right), abs(t->top-t->bottom), this, name);
 	LogSpecs("Target");
 	src->LogSpecs("Source");
 	assert(false);
@@ -2070,10 +2070,14 @@ bool D3D9ClientSurface::GenerateMipMaps()
 LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 {
 	_TRACE;
-	if (pTex==NULL) {
-		if (desc.Usage&D3DUSAGE_RENDERTARGET)	ConvertToRenderTargetTexture();
-		else									ConvertToTexture(true);
+
+	if (!Exists()) {
+		LogErr("Texture used without being initialized 0x%X", this);
+		assert(false);
 	}
+
+	if (pTex==NULL) if (desc.Usage&D3DUSAGE_RENDERTARGET) ConvertToRenderTargetTexture();
+
 	if (pTex==NULL) {
 		LogErr("D3D9ClientSurface::GetTexture() Failed 0x%X", this);
 		LogSpecs("Surface");
