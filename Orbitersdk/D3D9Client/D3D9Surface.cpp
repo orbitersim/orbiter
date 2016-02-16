@@ -491,7 +491,7 @@ void D3D9ClientSurface::ConvertSurface(DWORD attrib)
 			return;
 		}
 
-		ConvertToTexture();
+		ConvertToTexture(true);
 		return;
 	}
 
@@ -976,8 +976,8 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	// If source not yet exists
 	//
 	if (!src->Exists()) {
-		if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToTexture(true);
-		else								  ConvertToTexture(true);
+		if (src->GetAttribs()&OAPISURFACE_TEXTURE) src->ConvertToTexture(true);
+		else									   src->ConvertToTexture(true);
 	}
 
 
@@ -2070,7 +2070,10 @@ bool D3D9ClientSurface::GenerateMipMaps()
 LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 {
 	_TRACE;
-	if (pTex==NULL) ConvertToTexture(true);
+	if (pTex==NULL) {
+		if (desc.Usage&D3DUSAGE_RENDERTARGET)	ConvertToRenderTargetTexture();
+		else									ConvertToTexture(true);
+	}
 	if (pTex==NULL) {
 		LogErr("D3D9ClientSurface::GetTexture() Failed 0x%X", this);
 		LogSpecs("Surface");
