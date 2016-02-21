@@ -105,6 +105,7 @@ uniform extern texture	 tOcean;			// Ocean Texture
 uniform extern texture	 tEnvMap;	
 uniform extern texture	 tMicroA;	
 uniform extern texture	 tMicroB;
+uniform extern texture	 tMicroC;
 uniform extern texture	 tMicroBlend;
 
 
@@ -189,12 +190,13 @@ sampler MicroBS = sampler_state
     AddressV = WRAP;
 };
 
-sampler MicroBlendS = sampler_state
+sampler MicroCS = sampler_state
 {
-	Texture = <tMicroBlend>;
-	MinFilter = LINEAR;
+	Texture = <tMicroC>;
+	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -538,23 +540,28 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			
 			frg.texUV.xy *= fAlpha;
 
-			float3 cDstA = tex2D(MicroBS, frg.texUV.xy*64.0f).rgb;		// High altitude micro texture A
-			float3 cCloA = tex2D(MicroAS, frg.texUV.xy*2048.0f).rgb;		// Low altitude micro texture A
+			float3 cFar = tex2D(MicroCS, frg.texUV.xy*8.0f).rgb;		// High altitude micro texture C
+			float3 cMed = tex2D(MicroBS, frg.texUV.xy*128.0f).rgb;		// Medimum altitude micro texture B
+			float3 cClo = tex2D(MicroAS, frg.texUV.xy*2048.0f).rgb;		// Low altitude micro texture A
 			
-			float step1 = smoothstep(6000, 24000, dist);
-			float step2 = smoothstep(300,  4000, dist);
-			float3 cCmp = lerp(cCloA * (cDstA+0.5f), cDstA, step2);					// Blend low and high altitude luminance
-
+			float step1 = smoothstep(25000, 12000, dist);
+			
+			//float step2 = smoothstep(4000,  6000,  dist);
+			//float step3 = smoothstep(200,   600,   dist);
+			//float3 cCmp = lerp(cClo * (cMed+0.5f), cMed, step3);
+			//float3 cFnl = lerp(cCmp * (cFar+0.5f), cFar, step2);
+			
+			float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cClo+0.5f);
+			
 			// Create normals
-			float3 cNrm  = float3((cCmp.xy - 0.5f) * 2.0f, 0);
+			float3 cNrm  = float3((cFnl.xy - 1.0f) * 2.0f, 0) * step1;
 			cNrm.z  = cos(cNrm.x * cNrm.y * 1.57);
 
 			// Compute world space normal
-			nrmW = (vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z);
-			nrmW = normalize(nrmW);
-
+			nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+		
 			// Apply luminance
-			cTex.rgb *= lerp(cCmp.b+0.5f, 1.0f, step1) * 1.2f;
+			cTex.rgb *= lerp(1.0f, cFnl.b, step1);
 		}
 	}
 

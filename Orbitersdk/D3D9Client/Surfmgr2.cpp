@@ -709,16 +709,17 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	if (vp==vProxy && bMicroCheck) {
 		bMicroCheck = false;
 		char file[256];
-		for (int i=0;i<2;i++) {
+		for (int i=0;i<3;i++) {
 			sprintf_s(file, 256, "Textures/D3D9%s_%c.dds", CbodyName(), char('A'+i));
 			D3DXCreateTextureFromFile(pDev, file, &pMicro[i]);
 		}
 	}
 
-	if (pMicro[0] && pMicro[1]) {	
+	if (pMicro[0] && pMicro[1] && pMicro[2]) {	
 		HR(Shader()->SetFloat(sfAlpha, float(obj_size)/1.7e6f));
 		HR(Shader()->SetTexture(stMicroA, pMicro[0]));
 		HR(Shader()->SetTexture(stMicroB, pMicro[1]));
+		HR(Shader()->SetTexture(stMicroC, pMicro[2]));
 		HR(Shader()->SetBool(sbMicro, true));
 	}
 	else {

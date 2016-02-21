@@ -94,6 +94,7 @@ public:
 	static D3DXHANDLE stEnvMap;
 	static D3DXHANDLE stMicroA;
 	static D3DXHANDLE stMicroB;
+	static D3DXHANDLE stMicroC;
 	static D3DXHANDLE stMicroBlend;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;

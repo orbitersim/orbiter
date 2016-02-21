@@ -939,23 +939,23 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 
 	// Check failure and abort conditions -------------------------------------------------------
 	//
-	if (!FX) return;
-	if (t->right > (long)desc.Width || t->bottom > (long)desc.Height) return;
-	if (t->left < 0 || t->top < 0) return;
-	if (s->right > (long)src->desc.Width || s->bottom > (long)src->desc.Height) return;
-	if (s->left < 0 || s->top < 0) return;
+	if (t->right > (long)desc.Width || t->bottom > (long)desc.Height) goto invalid_input;
+	if (t->left < 0 || t->top < 0)  goto invalid_input;
 
-	if (s->left > s->right) return;
-	if (t->left > t->right) return;
-	if (s->top > s->bottom) return;
-	if (t->top > t->bottom) return;
+	if (s->right > (long)src->desc.Width || s->bottom > (long)src->desc.Height)  goto invalid_input;
+	if (s->left < 0 || s->top < 0)  goto invalid_input;
+
+	if (s->left > s->right)  goto invalid_input;
+	if (t->left > t->right)  goto invalid_input;
+	if (s->top > s->bottom)  goto invalid_input;
+	if (t->top > t->bottom)  goto invalid_input;
 
 	DWORD Width = s->right - s->left;
 	DWORD Height = s->bottom - s->top;
 	DWORD TgtWidth = t->right - t->left;
 	DWORD TgtHeight = t->bottom - t->top;
 
-	if (Width==0 || Height==0 || TgtWidth==0 || TgtHeight==0) return;
+	if (Width==0 || Height==0 || TgtWidth==0 || TgtHeight==0)  goto invalid_input;
 
 	// Is scaling operation required -------------------------------------------------------------
 	//
@@ -976,7 +976,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	// If source not yet exists
 	//
 	if (!src->Exists()) {
-		LogErr("Blitting graphics from uninitialized surface !! Handle = 0x%X", src);
+		LogErr("Blitting graphics from uninitialized source surface !! Handle = 0x%X", src);
 		assert(false);
 	}
 
@@ -1012,111 +1012,16 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 		goto error_report;	
 	}
 
-
-	// ==========================================================================================================
-	// SPECIAL CASE: Color Conversion from Source to Target is required
-	//
-	if ((src->desc.Format != desc.Format) && src->ColorKey==0x0) {
-		if (src->IsTexture()==false) {
-			src->ConvertToRenderTargetTexture();
-			src->Active |= OAPISURFACE_TEXTURE;
-		}
-		if (bBackBuffer) {
-			if (SketchRect(src, s, t, 1.0f)==S_OK) {
-				LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
-				return;
-			}
-		} else {
-			if (!IsRenderTarget()) {
-				ConvertToRenderTargetTexture();
-				Active |= OAPISURFACE_RENDERTARGET;
-			}
-			if (BindGPU()) {
-				if (SketchRect(src, s, t, 1.0f)==S_OK) {
-					LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
-				}
-				ReleaseGPU();
-				return;
-			}
-		}
-	}
-
-
-	// =====================================================================================================
-	// Blitting into a BackBuffer
-	//
-	if (bBackBuffer) {
-		src->Active |= OAPISURFACE_VIDEOMEMORY;
-		if (src->desc.Pool==D3DPOOL_SYSTEMMEM) {
-			if ((src->GetAttribs()&OAPISURFACE_SYSMEM)==0) src->ConvertToRenderTarget();
-			else {
-				LogErr("Can Not Blit in BackBuffer from a System Memory Surface 0x%X", src);
-				goto error_report;
-			}
-		}
-	}
-
-
-	// =====================================================================================================
-	// SPECIAL CASE: For screen capture or similar thing
-	// Get Render Target Data
-	//
-	if (src->ColorKey==0x0) {
-		if (src->desc.Pool==D3DPOOL_DEFAULT && desc.Pool==D3DPOOL_SYSTEMMEM) {
-			if (src->desc.Usage&D3DUSAGE_RENDERTARGET) {
-				if (!HasSubSurface()) CreateSubSurface();
-				// Copy graphics in sub surface and then in a sysmem main surf
-				if (pDevice->StretchRect(src->pSurf, s, pDCSub, t, D3DTEXF_POINT)==S_OK) {
-					if (pDevice->GetRenderTargetData(pDCSub, pSurf)==S_OK) {
-						LogOk("- ! - GetRenderTargetData 0x%X (%s) -> 0x%X (%s) (%u,%u) - ! -", src, src->name, this, name, Width, Height);
-						return;
-					}
-				}
-				LogErr("GetRenderTargetData Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
-				goto error_report;	
-			}
-		}
-	}
-
-	// =====================================================================================================
-	// StretchRect Blitting Technique
-	//
-	if (src->ColorKey==0x0) {
-		if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_DEFAULT) {
-			if (pDevice->StretchRect(src->pSurf, s, pSurf, t, D3DTEXF_POINT)==S_OK) {
-				LogOk("StretchRect 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
-				return;
-			}
-			LogErr("StretchRect Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
-			goto error_report;
-		}
-	}
-
-
-	// =====================================================================================================
-	// UpdateSurface Blitting Technique
-	//
-	if (src->ColorKey==0x0) {
-		if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_SYSTEMMEM) {
-			POINT p; p.x = t->left; p.y=t->top;
-			if (pDevice->UpdateSurface(src->pSurf, s, pSurf, &p)==S_OK) {
-				LogOk("UpdateSurface 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
-				return;
-			}
-			LogErr("UpdateSurface Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
-			goto error_report;
-		}
-	}
-
-
 	// ==========================================================================================================
 	// SPECIAL CASE: ColorKeyed blitting using primary GPU
 	//
-	if (src->ColorKey!=0x0) {
+	if (src->ColorKey) {
+
 		if (src->IsTexture()==false) {
 			src->ConvertToRenderTargetTexture();
 			src->Active |= OAPISURFACE_TEXTURE;
 		}
+
 		if (bBackBuffer) {
 			if (GPUCopyRect(src, s, t)==S_OK) {
 				LogOk("GPU ColorKey Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
@@ -1134,7 +1039,103 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 				return;
 			}
 		}
+		LogErr("Colorkeyed blit failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
+		goto error_report;	
 	}
+
+
+	// ==========================================================================================================
+	// SPECIAL CASE: Color Conversion from Source to Target is required
+	//
+	if (src->desc.Format != desc.Format) {
+		if (src->IsTexture()==false) {
+			src->ConvertToRenderTargetTexture();
+			src->Active |= OAPISURFACE_TEXTURE;
+		}
+		if (bBackBuffer) {
+			if (SketchRect(src, s, t, 1.0f)==S_OK) {
+				LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
+				return;
+			}
+		} else {
+			if (!IsRenderTarget()) {
+				ConvertToRenderTargetTexture();
+				Active |= OAPISURFACE_RENDERTARGET;
+			}
+			if (BindGPU()) {
+				if (SketchRect(src, s, t, 1.0f)==S_OK) {
+					LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
+				} else LogErr("SketchRect CC Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
+				ReleaseGPU();
+				goto error_report;
+			}
+		}
+	}
+
+
+	// =====================================================================================================
+	// Blitting into a BackBuffer
+	//
+	/*
+	if (bBackBuffer) {
+		src->Active |= OAPISURFACE_VIDEOMEMORY;
+		if (src->desc.Pool==D3DPOOL_SYSTEMMEM) {
+			if ((src->GetAttribs()&OAPISURFACE_SYSMEM)==0) src->ConvertToRenderTarget();
+			else {
+				LogErr("Can Not Blit in BackBuffer from a System Memory Surface 0x%X", src);
+				goto error_report;
+			}
+		}
+	}*/
+
+
+	// =====================================================================================================
+	// SPECIAL CASE: For screen capture or similar thing
+	// Get Render Target Data
+	//
+	if (src->desc.Pool==D3DPOOL_DEFAULT && desc.Pool==D3DPOOL_SYSTEMMEM) {
+		if (src->desc.Usage&D3DUSAGE_RENDERTARGET) {
+			if (!HasSubSurface()) CreateSubSurface();
+			// Copy graphics in sub surface and then in a sysmem main surf
+			if (pDevice->StretchRect(src->pSurf, s, pDCSub, t, D3DTEXF_POINT)==S_OK) {
+				if (pDevice->GetRenderTargetData(pDCSub, pSurf)==S_OK) {
+					LogOk("- ! - GetRenderTargetData 0x%X (%s) -> 0x%X (%s) (%u,%u) - ! -", src, src->name, this, name, Width, Height);
+					return;
+				}
+			}
+			LogErr("GetRenderTargetData Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
+			goto error_report;	
+		}
+	}
+	
+
+	// =====================================================================================================
+	// StretchRect Blitting Technique
+	//
+	if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_DEFAULT) {
+		if (pDevice->StretchRect(src->pSurf, s, pSurf, t, D3DTEXF_POINT)==S_OK) {
+			LogOk("StretchRect 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
+			return;
+		}
+		LogErr("StretchRect Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
+		goto error_report;
+	}
+	
+
+	// =====================================================================================================
+	// UpdateSurface Blitting Technique
+	//
+	if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_SYSTEMMEM) {
+		POINT p; p.x = t->left; p.y=t->top;
+		if (pDevice->UpdateSurface(src->pSurf, s, pSurf, &p)==S_OK) {
+			LogOk("UpdateSurface 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
+			return;
+		}
+		LogErr("UpdateSurface Blitting Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
+		goto error_report;
+	}
+	
+
 
 	// Unable to perform blitting ----------------------------------------------------------------------------------------
 	//
@@ -1148,6 +1149,12 @@ error_report:
 	src->LogSpecs("Source");
 	assert(false);
 	_POPLOG;
+	return;
+
+invalid_input:
+	//LogWrn("Source Rect (%d,%d,%d,%d) (w=%u,h=%u) HANDLE=0x%X (%s)",s->left,s->top,s->right,s->bottom, abs(s->left-s->right), abs(s->top-s->bottom), src, src->name);
+	//LogWrn("Target Rect (%d,%d,%d,%d) (w=%u,h=%u) HANDLE=0x%X (%s)",t->left,t->top,t->right,t->bottom, abs(t->left-t->right), abs(t->top-t->bottom), this, name);
+	return;
 }
 
 
@@ -2072,8 +2079,8 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 	_TRACE;
 
 	if (!Exists()) {
+		ConvertToTexture(true);
 		LogErr("Texture used without being initialized 0x%X", this);
-		assert(false);
 	}
 
 	if (pTex==NULL) if (desc.Usage&D3DUSAGE_RENDERTARGET) ConvertToRenderTargetTexture();

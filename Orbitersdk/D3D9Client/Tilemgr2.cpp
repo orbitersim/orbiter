@@ -781,7 +781,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	prm.maxlvl = max (0, _maxres-4);
 	cprm.gridRes = _gridres;
 	bMicroCheck = true;
-	pMicro[0] = pMicro[1] = NULL;
+	pMicro[0] = pMicro[1] = pMicro[2] = NULL;
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	min_elev = obj_size; 
@@ -802,6 +802,7 @@ TileManager2Base::~TileManager2Base ()
 
 	SAFE_RELEASE(pMicro[0]);
 	SAFE_RELEASE(pMicro[1]);
+	SAFE_RELEASE(pMicro[2]);
 	
 	DWORD nVtx=0, nIdx=0;
 

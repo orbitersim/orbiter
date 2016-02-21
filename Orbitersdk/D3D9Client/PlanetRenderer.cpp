@@ -62,6 +62,7 @@ D3DXHANDLE PlanetRenderer::stOcean = NULL;
 D3DXHANDLE PlanetRenderer::stEnvMap = NULL;
 D3DXHANDLE PlanetRenderer::stMicroA = NULL;
 D3DXHANDLE PlanetRenderer::stMicroB = NULL;
+D3DXHANDLE PlanetRenderer::stMicroC = NULL;
 D3DXHANDLE PlanetRenderer::stMicroBlend = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
@@ -207,6 +208,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stEnvMap			= pShader->GetParameterByName(0,"tEnvMap");
 	stMicroA			= pShader->GetParameterByName(0,"tMicroA");
 	stMicroB			= pShader->GetParameterByName(0,"tMicroB");
+	stMicroC			= pShader->GetParameterByName(0,"tMicroC");
 	stMicroBlend		= pShader->GetParameterByName(0,"tMicroBlend");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
