@@ -542,16 +542,18 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 			float3 cFar = tex2D(MicroCS, frg.texUV.xy*8.0f).rgb;		// High altitude micro texture C
 			float3 cMed = tex2D(MicroBS, frg.texUV.xy*128.0f).rgb;		// Medimum altitude micro texture B
-			float3 cClo = tex2D(MicroAS, frg.texUV.xy*2048.0f).rgb;		// Low altitude micro texture A
+			float3 cLow = tex2D(MicroAS, frg.texUV.xy*2048.0f).rgb;		// Low altitude micro texture A
 			
 			float step1 = smoothstep(25000, 12000, dist);
 			
+			
 			//float step2 = smoothstep(4000,  6000,  dist);
 			//float step3 = smoothstep(200,   600,   dist);
-			//float3 cCmp = lerp(cClo * (cMed+0.5f), cMed, step3);
-			//float3 cFnl = lerp(cCmp * (cFar+0.5f), cFar, step2);
+			//cLow = lerp(cLow, 0.5f, step3);
+			//cMed = lerp(cMed, 0.5f, step2);
 			
-			float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cClo+0.5f);
+			
+			float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
 			
 			// Create normals
 			float3 cNrm  = float3((cFnl.xy - 1.0f) * 2.0f, 0) * step1;
