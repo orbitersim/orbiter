@@ -314,6 +314,28 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetFloat(sfAux4, 1.0f/float(atmo->aux4)));
 	HR(Shader()->SetFloat(sfRadius, float(pr)));
 	HR(Shader()->SetFloat(sfCameraAlt, float(ca)));
+	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
+
+	// ---------------------------------------------------------------------
+	// Initialize normal mapped water
+	//
+	MATRIX3 mRot;
+	oapiGetRotationMatrix(hPlanet, &mRot);
+
+	VECTOR3 vCPos = pPlanet->PosFromCamera();
+	VECTOR3 vLPos = unit(tmul(mRot, vCPos));
+
+	if (dotp(vLPos, vLPosOld)<0.99) vLPosOld = vLPos;
+
+	VECTOR3 vNrm = mul(mRot, vLPosOld);
+	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
+	VECTOR3 vTan = unit(crossp(vNrm, vRot));
+	VECTOR3 vBiT = unit(crossp(vNrm, vTan));
+
+	// ---------------------------------------------------------------------
+	HR(Shader()->SetValue(svTangent,     &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svBiTangent,   &D3DXVEC(vBiT), sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svMapUVOffset, &D3DXVEC(vNrm-vCPos), sizeof(D3DXVECTOR3)));
 
 	// Initialize atmospheric rendering ---------------------------------------------------
 	//
@@ -391,26 +413,4 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetFloat(sfTime, float(tm)));
 	HR(Shader()->SetBool(sbInSpace, (cr>ur)));
 	HR(Shader()->SetBool(sbOnOff, true));
-	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
-
-	// ---------------------------------------------------------------------
-	// Initialize normal mapped water
-	//
-	MATRIX3 mRot;
-	oapiGetRotationMatrix(hPlanet, &mRot);
-
-	VECTOR3 vCPos = pPlanet->PosFromCamera();
-	VECTOR3 vLPos = unit(tmul(mRot, vCPos));
-
-	if (dotp(vLPos, vLPosOld)<0.99) vLPosOld = vLPos;
-
-	VECTOR3 vNrm = mul(mRot, vLPosOld);
-	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
-	VECTOR3 vTan = unit(crossp(vNrm, vRot));
-	VECTOR3 vBiT = unit(crossp(vNrm, vTan));
-
-	// ---------------------------------------------------------------------
-	HR(Shader()->SetValue(svTangent,     &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svBiTangent,   &D3DXVEC(vBiT), sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svMapUVOffset, &D3DXVEC(vNrm-vCPos), sizeof(D3DXVECTOR3)));
 }

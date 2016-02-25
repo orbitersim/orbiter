@@ -143,7 +143,7 @@ sampler NoiseTexS = sampler_state
 	Texture = <tNoise>;
 	MinFilter = POINT;
 	MagFilter = POINT;
-	MipFilter = POINT;
+	MipFilter = NONE;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -536,22 +536,32 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 		if (bMicro) {
 
-			float dist = frg.aux[AUX_DIST] / fAlpha;
-			
-			frg.texUV.xy *= fAlpha;
+			float dist = frg.aux[AUX_DIST];// / fAlpha;
 
-			float3 cFar = tex2D(MicroCS, frg.texUV.xy*8.0f).rgb;		// High altitude micro texture C
-			float3 cMed = tex2D(MicroBS, frg.texUV.xy*128.0f).rgb;		// Medimum altitude micro texture B
-			float3 cLow = tex2D(MicroAS, frg.texUV.xy*2048.0f).rgb;		// Low altitude micro texture A
+			float2 UVn  = frg.texUV.xy;
+			float2 UVr  = frg.texUV.xy;
+
+			// Noise texture size 128x128, 512/128 = 4
+			float fRot = tex2D(NoiseTexS, UVn*4.0f).r;
+			float fMir = tex2D(NoiseTexS, UVn*4.0f+0.5).r;
+			
+			if (fRot<0.5f) UVr = UVr.yx;						// Rotate 90deg and mirror
+			if (fRot<0.35) UVr = -UVr;							// Rotate 180deg
+			if (fRot>0.65) UVr = -UVr;							// Rotate 180deg
+
+			//if (fMir<0.4)  UVr.x = -UVr.x;						// Mirror X
+			//if (fMir>0.6)  UVr.y = -UVr.y;						// Mirror Y
+
+			float3 cFar = tex2D(MicroCS, UVn*8.0f).rgb;			// High altitude micro texture C
+			float3 cMed = tex2D(MicroBS, UVn*64.0f).rgb;		// Medimum altitude micro texture B
+			float3 cLow = tex2D(MicroAS, UVr*512.0f).rgb;		// Low altitude micro texture A
 			
 			float step1 = smoothstep(25000, 12000, dist);
-			
 			
 			//float step2 = smoothstep(4000,  6000,  dist);
 			//float step3 = smoothstep(200,   600,   dist);
 			//cLow = lerp(cLow, 0.5f, step3);
 			//cMed = lerp(cMed, 0.5f, step2);
-			
 			
 			float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
 			
@@ -559,8 +569,8 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float3 cNrm  = float3((cFnl.xy - 1.0f) * 2.0f, 0) * step1;
 			cNrm.z  = cos(cNrm.x * cNrm.y * 1.57);
 
-			// Compute world space normal
-			nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+			// Approximate world space normal
+			//nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
 		
 			// Apply luminance
 			cTex.rgb *= lerp(1.0f, cFnl.b, step1);
