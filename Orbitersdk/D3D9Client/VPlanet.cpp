@@ -31,6 +31,7 @@
 #include "DebugControls.h"
 #include "AtmoControls.h"
 #include "VectorHelpers.h"
+#include "OapiExtension.h"
 
 using namespace oapi;
 
@@ -47,6 +48,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
 	char path[MAX_PATH];
 	FILE *fp = NULL;
+
+	memset(&MicroCfg, 0, sizeof(MicroCfg));
 
 	bScatter = false;
 	rad = (float)size;
@@ -182,6 +185,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 			oapiDeleteMesh (hMesh);
 		}
 	}
+
+	MicroCfg.bEnabled = ParseMicroTextures();
 
 	albedo = gc->GetFileParser()->GetAlbedo(hObj);
 	LogMsg("vPlanet constructor exiting");
@@ -597,6 +602,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
+		LoadMicroTextures();
 		if (cdist>=1.3*rad && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
 		else							 surfmgr2->Render (dmWorld, true,  prm);
 	} 
@@ -954,4 +960,110 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 	oapiCloseFile(hFile, FILE_OUT);
 
 	DumpDebugFile();
+}
+
+
+// ===========================================================================================
+//
+bool vPlanet::ParseMicroTextures()
+{
+	if (Config->MicroMode==0) return false;	// Micro textures are disabled
+
+	FILE* file = NULL;
+	char cbuf[256];
+	char fname[256];
+	sprintf_s(fname, 256, "%sMicroTex.cfg", OapiExtension::GetConfigDir());
+
+	memset(&MicroCfg, 0, sizeof(MicroCfg));
+
+	fopen_s(&file, fname, "r");
+
+	if (!file) {
+		LogErr("Could not open MicroTex.cfg file");
+		return false;
+	}
+
+	bool bFound = false;
+
+	while (fgets(cbuf, 256, file)) {
+	
+		if (!strncmp(cbuf, "//", 2)) continue;
+
+		if (!strncmp(cbuf, "BODY", 4)) {
+			if (bFound) break;
+			if (sscanf(cbuf, "BODY %s", fname)==1) {
+				if (strcmp(fname, GetName())==0) bFound = true;
+			}
+			else {
+				LogErr("Error in MicroTex.cfg");
+				fclose(file);
+				return false;
+			}
+		}
+		
+		if (bFound) {
+
+			if(!strncmp(cbuf, "NORMALS", 7)) {
+				int lvl;
+				if (sscanf(cbuf, "NORMALS %d", &lvl)==1) {
+					MicroCfg.bNormals = (lvl==1);
+				}
+				else {
+					LogErr("Error in MicroTex.cfg");
+					fclose(file);
+					return false;
+				}
+
+			}
+
+			if(!strncmp(cbuf, "LEVEL", 5)) {
+				float reso; int lvl;
+				if (sscanf(cbuf, "LEVEL %d %s %f", &lvl, fname, &reso)==3) {
+					lvl = min(2, max(lvl,0));
+					MicroCfg.Level[lvl].reso = reso;
+					strcpy_s(MicroCfg.Level[lvl].file, 32, fname);
+				}
+				else {
+					LogErr("Error in MicroTex.cfg");
+					fclose(file);
+					return false;
+				}
+			}
+		}
+	}
+
+	fclose(file);
+
+	return bFound;
+}
+
+
+// ===========================================================================================
+//
+bool vPlanet::LoadMicroTextures()
+{
+	if (scn->GetCameraProxyVisual() != this) return false;
+
+	if (MicroCfg.bEnabled && !MicroCfg.bLoaded) {
+		LogOapi("Loading Micro Textures for %s", GetName());
+		char file[256];
+		for (int i=0;i<3;i++) {
+			sprintf_s(file, 256, "Textures/%s", MicroCfg.Level[i].file);
+			HR(D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex));
+			D3DSURFACE_DESC desc;
+			if (MicroCfg.Level[i].pTex) {
+				MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
+				MicroCfg.Level[i].size = float(desc.Width) / MicroCfg.Level[i].reso;
+				LogOapi("Level %u, %s, %.1fpx/m, %.1fm", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size);
+			}
+		}
+		MicroCfg.bLoaded = true;
+		for (int i=0;i<3;i++) if (!MicroCfg.Level[i].pTex) {
+			MicroCfg.bEnabled = false;
+			MicroCfg.bLoaded = false;
+		}
+		if (MicroCfg.bLoaded) LogOapi("Micro textures Loaded");
+	}
+
+	return MicroCfg.bEnabled;
 }

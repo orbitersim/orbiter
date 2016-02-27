@@ -42,6 +42,8 @@ D3DXHANDLE PlanetRenderer::svGeneric = NULL;
 D3DXHANDLE PlanetRenderer::svTangent = NULL;
 D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
 D3DXHANDLE PlanetRenderer::svMapUVOffset = NULL;
+D3DXHANDLE PlanetRenderer::svMicroScale1 = NULL;		
+D3DXHANDLE PlanetRenderer::svMicroScale2 = NULL;	
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
@@ -54,6 +56,7 @@ D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
 D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
 D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
 D3DXHANDLE PlanetRenderer::sbMicro = NULL;
+D3DXHANDLE PlanetRenderer::sbMicroNormals = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -127,7 +130,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
+	D3DXMACRO macro[16]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
 
@@ -140,9 +143,26 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	int m=2;
 	macro[m].Name = "ANISOTROPY_MACRO";
 	macro[m].Definition = new char[32];
-	sprintf_s((char*)macro[m++].Definition,32,"%d",max(2,Config->Anisotrophy));
+	sprintf_s((char*)macro[m].Definition,32,"%d",max(2,Config->Anisotrophy));
+	// ------------------------------------------------------------------------------
+	m=3;
+	macro[m].Name = "MICRO_ANISOTROPY";
+	macro[m].Definition = new char[32];
+	int micro_aniso = (1 << (max(1,Config->MicroFilter) - 1));
+	sprintf_s((char*)macro[m].Definition,32,"%d", micro_aniso);
+	// ------------------------------------------------------------------------------
+	m=4;
+	macro[m].Name = "MICRO_FILTER";
+	macro[m].Definition = new char[32];
+	switch(Config->MicroFilter) {
+		case 0:  strcpy_s((char*)macro[m].Definition, 32, "POINT"); break;
+		case 1:  strcpy_s((char*)macro[m].Definition, 32, "LINEAR"); break;
+		default: strcpy_s((char*)macro[m].Definition, 32, "ANISOTROPIC"); break;
+	}
+	m++;
 	// ------------------------------------------------------------------------------
 	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
+	if (Config->MicroMode==2) macro[m++].Name = "_MICROTEXNORMALS";
 	// ------------------------------------------------------------------------------
 	if (Config->EnvMapMode && bRiples) {
 		macro[m++].Name = "_ENVMAP"; 
@@ -153,6 +173,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
 	
 	delete []macro[2].Definition;
+	delete []macro[3].Definition;
+	delete []macro[4].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -188,6 +210,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svTangent			= pShader->GetParameterByName(0,"vTangent");
 	svBiTangent			= pShader->GetParameterByName(0,"vBiTangent");
 	svMapUVOffset		= pShader->GetParameterByName(0,"vMapUVOffset");
+	svMicroScale1		= pShader->GetParameterByName(0,"vMicroScale1");	
+	svMicroScale2		= pShader->GetParameterByName(0,"vMicroScale2");
 	// ------------------------------------------------------------
 	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
@@ -200,6 +224,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbOnOff				= pShader->GetParameterByName(0,"bOnOff");
 	sbEnvEnable			= pShader->GetParameterByName(0,"bEnvEnable");
 	sbMicro				= pShader->GetParameterByName(0,"bMicro");
+	sbMicroNormals		= pShader->GetParameterByName(0,"bMicroNormals");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");

@@ -69,6 +69,8 @@ void D3D9Config::Reset ()
 	LODBias				= 0;
 	MeshRes				= 0;
 	TileDebug			= 0;
+	MicroMode			= 2;
+	MicroFilter			= 2;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -126,6 +128,8 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "LODBias",i))					LODBias = max (-3, min (3, i));
 	if (oapiReadItem_int   (hFile, "MeshRes",i))					MeshRes = max (0, min (2, i));
+	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (2, i));
+	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -182,6 +186,8 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "DisableVisualHelperReadout", DisableVisualHelperReadout);
 	oapiWriteItem_int   (hFile, "LODBias", LODBias);
 	oapiWriteItem_int   (hFile, "MeshRes", MeshRes);
+	oapiWriteItem_int   (hFile, "MicroMode", MicroMode);
+	oapiWriteItem_int   (hFile, "MicroFilter", MicroFilter);
 	
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		

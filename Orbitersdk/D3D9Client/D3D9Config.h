@@ -66,6 +66,8 @@ public:
 	int MeshRes;					///< Tile patch mesh resolution
 	int TileDebug;					///< Enable tile debugger
 	int TextureMips;				///< Texture mipmap autogen policy
+	int MicroMode;			
+	int MicroFilter;
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 

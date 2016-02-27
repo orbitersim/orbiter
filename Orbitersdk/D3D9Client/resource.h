@@ -119,3 +119,5 @@
 #define IDC_CAMMODE                             2110
 #define IDC_MESHRES                             2111
 #define IDC_TEXMIPS                             2112
+#define IDC_MICROMODE                           2113
+#define IDC_MICROFILTER                         2114

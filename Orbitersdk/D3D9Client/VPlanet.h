@@ -120,6 +120,8 @@ protected:
 	void RenderBaseShadows (LPDIRECT3DDEVICE9 dev, float depth);
 	void RenderCloudShadows (LPDIRECT3DDEVICE9 dev);
 	bool ModLighting (DWORD &ambient);
+	bool ParseMicroTextures();
+	bool LoadMicroTextures();
 
 private:
 	float rad;                // planet radius [m]
@@ -166,6 +168,21 @@ private:
 		double microalt0,       // altitude limits for micro-textures
 		       microalt1;
 	} *clouddata;
+
+	struct _MicroTC {
+		char	file[32];		// Texture file name
+		float	reso;			// Resolution px/m
+		float	size;			// Texture size in meters;
+		LPDIRECT3DTEXTURE9 pTex;
+	};
+
+public:
+	struct _MicroCfg {
+		_MicroTC Level[3];
+		bool bNormals;			// Normals enabled
+		bool bEnabled;			// Micro textures enables
+		bool bLoaded;			// Micro textures loaded
+	} MicroCfg;
 };
 
 #endif // !__VPLANET_H

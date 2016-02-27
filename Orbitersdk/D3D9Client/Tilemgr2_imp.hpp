@@ -179,6 +179,7 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 		SetWorldMatrix (WorldMatrix (ilng, nlng, ilat, nlat));
 		tile->Render ();
 	} else if (tile->state == Tile::Active) {
+		tile->StepIn ();
 		for (int i = 0; i < 4; i++) {
 			if (node->Child(i)) {
 				if (node->Child(i)->Entry() && (node->Child(i)->Entry()->state & TILE_ACTIVE)) {

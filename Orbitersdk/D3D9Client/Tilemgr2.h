@@ -79,6 +79,9 @@ public:
 	void Extents (double *latmin, double *latmax, double *lngmin, double *lngmax) const;
 	// Return the latitude/longitude extents of the tile
 
+	void Size (double *base_width, double *top_width, double *height) const;
+	// Return tile size in meters
+
 	virtual void MatchEdges () {}
 	// Match edges with neighbour tiles
 
@@ -106,6 +109,8 @@ protected:
 	virtual Tile *getParent() = 0;
 
 	virtual void Render () {}
+
+	virtual void StepIn () {}
 
 	/**
 	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
@@ -146,6 +151,8 @@ protected:
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	DWORD FrameId;
+	double width;			   // Mean tile width [m]	
+	double height;			   // tile height [m];
 	mutable double mean_elev;  // mean tile elevation [m]
 	mutable double max_elev;   // maximum tile elevation [m]
 };
@@ -309,8 +316,6 @@ protected:
 	double min_elev;				 // minimum elevation
 	static TileLoader *loader;
 	const vPlanet *vp;               // the planet visual
-	LPDIRECT3DTEXTURE9 pMicro[3];
-	bool bMicroCheck;
 		
 private:
 	

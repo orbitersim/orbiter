@@ -222,6 +222,7 @@ void D3D9Client::RenderControlPanel()
 	Label("oapiBlt calls........: %u", stats.Blits); 
 	Label("Color keyed blits....: %u", stats.ColorKey); 
 	Label("Tiles rendered.......: %u", tiles_rendered);
+	Label("Max Texture Repeat...: %u", stats.MaxRepeat); 
 	Label("Scene rendering......: %.0fus (%.0fus peak)", scene_avg, scene_pek); 
 	Label("MFD, HUD, Panels.....: %.0fus (%.0fus peak)", frame_avg, frame_pek); 
 	

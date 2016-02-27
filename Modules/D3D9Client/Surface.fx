@@ -80,6 +80,8 @@ struct CelSphereVS
 uniform extern float4x4  mWorld;		    // World matrix
 uniform extern float4x4  mViewProj;			// Combined View and Projection matrix
 // ------------------------------------------------------------
+uniform extern float4    vMicroScale1;		// Micro Texture A,B scale factors
+uniform extern float4    vMicroScale2;		// Micro texture C scale factors
 uniform extern float4    vTexOff;			// Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power) 
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
@@ -97,6 +99,7 @@ uniform extern bool      bCloudSh;			// Enable cloud shadows
 uniform extern bool      bLights;			// Enable night-lights
 uniform extern bool      bEnvEnable;		// Enable environment maps
 uniform extern bool      bMicro;			// Enable micro texture
+uniform extern bool      bMicroNormals;		// Enable micro texture
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -171,10 +174,10 @@ sampler EnvMapS = sampler_state
 sampler MicroAS = sampler_state
 {
 	Texture = <tMicroA>;
-	MinFilter = ANISOTROPIC;
+	MinFilter = MICRO_FILTER;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	MaxAnisotropy = ANISOTROPY_MACRO;
+	MaxAnisotropy = MICRO_ANISOTROPY;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -182,10 +185,10 @@ sampler MicroAS = sampler_state
 sampler MicroBS = sampler_state
 {
 	Texture = <tMicroB>;
-	MinFilter = ANISOTROPIC;
+	MinFilter = MICRO_FILTER;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	MaxAnisotropy = ANISOTROPY_MACRO;
+	MaxAnisotropy = MICRO_ANISOTROPY;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -193,10 +196,10 @@ sampler MicroBS = sampler_state
 sampler MicroCS = sampler_state
 {
 	Texture = <tMicroC>;
-	MinFilter = ANISOTROPIC;
+	MinFilter = MICRO_FILTER;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	MaxAnisotropy = ANISOTROPY_MACRO;
+	MaxAnisotropy = MICRO_ANISOTROPY;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -489,6 +492,110 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 }	
 
 
+float4 SurfaceTechPS(TileVS frg) : COLOR
+{
+	float3 cNgt = 0;
+	float3 cSpe = 0;
+	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
+	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
+
+	float3 nrmW = frg.nrmW;					// Per-vertex surface normal vector
+	float3 nvrW = frg.nrmW;					// Per-vertex surface normal vector
+	float3 camW = normalize(frg.camW);		// Unit viewing ray
+	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric vertex position
+	float3 vPlN = normalize(vVrt);			// Planet mean normal	
+	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
+
+	// Specular Water reflection
+	//
+	if (bSpecular) {
+
+		#if defined(_SURFACERIPPLES)
+			float Fct = min(2.0f, 10000.0f / fCameraAlt);
+			float3 cNrm = (tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f) * Fct;
+			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
+			// Compute world space normal 
+			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
+		#endif
+
+		float f = 1.0-saturate(dot(camW, nrmW));
+		float s = dot(reflect(-vSunDir, nrmW), camW);
+		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
+
+		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
+
+		float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
+		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
+	}
+
+	else {
+
+		if (bMicro) {
+
+			float dist = frg.aux[AUX_DIST];
+
+			float2 UV  = frg.texUV.xy;
+		
+			float3 cFar = tex2D(MicroCS, UV*vMicroScale2.xy).rgb;	// High altitude micro texture C
+			float3 cMed = tex2D(MicroBS, UV*vMicroScale1.zw).rgb;	// Medimum altitude micro texture B
+			float3 cLow = tex2D(MicroAS, UV*vMicroScale1.xy).rgb;	// Low altitude micro texture A
+			
+			float step1 = smoothstep(25000, 12000, dist);
+			
+			//float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
+			float3 cFnl = (cFar + cMed + cLow) * 0.6666f;
+			//float3 cFnl = pow(abs(cFar*cMed*cLow), 0.33333f) * 2.0f;
+			
+			// Create normals
+			if (bMicroNormals) {
+				cFnl.rgb = cFnl.bbb;
+				#if defined(_MICROTEXNORMALS)
+					float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);
+					float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
+					cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
+					// Approximate world space normal
+					nrmW = normalize(-(vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+				#endif
+			}
+		
+			// Apply luminance
+			cTex.rgb *= lerp(1.0f, cFnl, step1);
+		}
+	}
+
+	// Do we have an atmosphere ?
+	//
+	if (!bOnOff) { // No
+
+		float fDRP = dot(vPlN, vSunDir);
+
+		nrmW = lerp(nrmW, vPlN, pow(0.05, saturate(fDRP)));
+
+		float fDNS = dot(nrmW, vSunDir);
+		float fDNR = dot(nrmW, camW);
+		float fDRS = dot(camW, vSunDir);
+
+		float fX = saturate(fDNS);						// Lambertian
+		float fY = 0.05 + saturate(fDNR)*0.4;			// Lommel-Seeliger compensation
+		float fZ = pow(abs(fDRS),10.0f) * 0.3f;			// Shadow compensation
+		float fLvl = fX * (fZ+rcp(fX+fY)) * fExposure;	// Bake all together
+
+		float3 color = cTex.rgb * max(fLvl, 0);			// Apply sunlight
+
+		return float4(pow(abs(color), fAux4), 1.0f);	// Gamma corrention
+	}
+
+	else { // Yes, atmosphere is present
+
+		if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
+		float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
+		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
+		return float4(pow(abs(color), fAux4), 1.0f);  
+	}
+}
+
+
+/*
 
 float4 SurfaceTechPS(TileVS frg) : COLOR
 {
@@ -522,12 +629,12 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
 
-		/*#if defined(_ENVMAP) && defined(_SURFACERIPPLES)
+		#if defined(_ENVMAP) && defined(_SURFACERIPPLES)
 			float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
 			if (bEnvEnable) cSky = texCUBE(EnvMapS, reflect(-frg.camW, nrmW)).rgb * 3.0;
-		#else*/
+		#else
 			float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
-		//#endif
+		#endif
 
 		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
 	}
@@ -543,11 +650,10 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 			// Noise texture size 128x128, 512/128 = 4
 			float fRot = tex2D(NoiseTexS, UVn*4.0f).r;
-			float fMir = tex2D(NoiseTexS, UVn*4.0f+0.5).r;
 			
-			if (fRot<0.5f) UVr = UVr.yx;						// Rotate 90deg and mirror
-			if (fRot<0.35) UVr = -UVr;							// Rotate 180deg
-			if (fRot>0.65) UVr = -UVr;							// Rotate 180deg
+			//if (fRot<0.5f) UVr = float2(-UVr.y, UVr.x);			// Rotate 90deg and mirror
+			//if (fRot<0.35) UVr = -UVr;							// Rotate 180deg
+			//if (fRot>0.65) UVr = -UVr;							// Rotate 180deg
 
 			//if (fMir<0.4)  UVr.x = -UVr.x;						// Mirror X
 			//if (fMir>0.6)  UVr.y = -UVr.y;						// Mirror Y
@@ -563,14 +669,20 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			//cLow = lerp(cLow, 0.5f, step3);
 			//cMed = lerp(cMed, 0.5f, step2);
 			
+			//if (fRot<0.5f) cLow.xy = float2(1.0f-cLow.y, cLow.x);			// Rotate 90deg and mirror
+			//if (fRot<0.35) cLow.xy = 1.0f-cLow.xy;							// Rotate 180deg
+			//if (fRot>0.65) cLow.xy = 1.0f-cLow.xy;		
+
+		
 			float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
+			
 			
 			// Create normals
 			float3 cNrm  = float3((cFnl.xy - 1.0f) * 2.0f, 0) * step1;
-			cNrm.z  = cos(cNrm.x * cNrm.y * 1.57);
+			cNrm.z  = sqrt(1 - (cNrm.x*cNrm.x + cNrm.y * cNrm.y));
 
 			// Approximate world space normal
-			//nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+			nrmW = normalize(-(vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
 		
 			// Apply luminance
 			cTex.rgb *= lerp(1.0f, cFnl.b, step1);
@@ -613,7 +725,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		return float4(pow(abs(color), fAux4), 1.0f);  
 	}
 }
-
+*/
 
 
 // =============================================================================================================

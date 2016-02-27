@@ -181,10 +181,10 @@ void Tile::Extents (double *latmin, double *latmax, double *lngmin, double *lngm
 {
 	int nlat = 1 << lvl;
 	int nlng = 2 << lvl;
-	*latmin = PI * (0.5 - (double)(ilat+1)/(double)nlat);
-	*latmax = PI * (0.5 - (double)ilat/(double)nlat);
-	*lngmin = PI2 * (double)(ilng-nlng/2)/(double)nlng;
-	*lngmax = PI2 * (double)(ilng-nlng/2+1)/(double)nlng;
+	if (latmin) *latmin = PI * (0.5 - (double)(ilat+1)/(double)nlat);
+	if (latmax) *latmax = PI * (0.5 - (double)ilat/(double)nlat);
+	if (lngmin) *lngmin = PI2 * (double)(ilng-nlng/2)/(double)nlng;
+	if (lngmax) *lngmax = PI2 * (double)(ilng-nlng/2+1)/(double)nlng;
 }
 
 // -----------------------------------------------------------------------
@@ -780,8 +780,6 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);
 	cprm.gridRes = _gridres;
-	bMicroCheck = true;
-	pMicro[0] = pMicro[1] = pMicro[2] = NULL;
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	min_elev = obj_size; 
@@ -800,10 +798,6 @@ TileManager2Base::~TileManager2Base ()
 		loader->Unqueue(this);
 	}
 
-	SAFE_RELEASE(pMicro[0]);
-	SAFE_RELEASE(pMicro[1]);
-	SAFE_RELEASE(pMicro[2]);
-	
 	DWORD nVtx=0, nIdx=0;
 
 	for (int i=0;i<NPOOLS;i++) {

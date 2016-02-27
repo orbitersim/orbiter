@@ -74,6 +74,8 @@ public:
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
 	static D3DXHANDLE svMapUVOffset;
+	static D3DXHANDLE svMicroScale1;		
+	static D3DXHANDLE svMicroScale2;	
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
 	static D3DXHANDLE sfAlpha;
@@ -86,6 +88,7 @@ public:
 	static D3DXHANDLE sbOnOff;
 	static D3DXHANDLE sbEnvEnable;
 	static D3DXHANDLE sbMicro;
+	static D3DXHANDLE sbMicroNormals;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;

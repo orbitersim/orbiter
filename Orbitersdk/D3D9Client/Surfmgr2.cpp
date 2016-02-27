@@ -327,6 +327,74 @@ double SurfTile::GetMeanElevation (const INT16 *elev) const
 
 // -----------------------------------------------------------------------
 
+void SurfTile::StepIn ()
+{
+	if (!owntex) return;
+
+	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
+	ID3DXEffect *Shader = mgr->Shader();
+	const vPlanet *vPlanet = mgr->GetPlanet();
+
+	DWORD MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
+	D3D9Stat *stats = mgr->Client()->GetStats();
+
+	if (vPlanet != mgr->GetScene()->GetCameraProxyVisual()) return;
+
+	// ---------------------------------------------------------------------
+	// Compute micro texture repeat counts and feed to the shaders
+	//
+	if (vPlanet->MicroCfg.bEnabled) {
+
+		double latmin, latmax, lngmin, lngmax;
+		Extents (&latmin, &latmax, &lngmin, &lngmax);
+
+		float bw = float((lngmax - lngmin) * cos(latmin) * vPlanet->GetSize());
+		float he = float((latmax - latmin) * vPlanet->GetSize()); 
+		float a  = vPlanet->MicroCfg.Level[0].size;
+		float b  = vPlanet->MicroCfg.Level[1].size;
+		float c  = vPlanet->MicroCfg.Level[2].size;
+
+		D3DXVECTOR4 MicroRep1 = D3DXVECTOR4(floor(bw/a), floor(he/a), floor(bw/b), floor(he/b));
+		D3DXVECTOR4 MicroRep2 = D3DXVECTOR4(floor(bw/c), floor(he/c), 0, 0);
+
+		/*
+		stats->MaxRepeat = 0;
+
+		// Track what's going on with repeat counts
+		if (MicroRep1.x>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.x);
+		if (MicroRep1.y>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.y);
+		if (MicroRep1.z>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.z);
+		if (MicroRep1.w>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.w);
+		if (MicroRep2.x>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep2.x);
+		if (MicroRep2.y>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep2.y);
+
+		LogAlw("%u", stats->MaxRepeat);*/
+
+		// Safety check
+		bool bFail = false;
+		if (MicroRep1.x>MaxRep || MicroRep1.y>MaxRep || MicroRep1.z>MaxRep) bFail = true;
+		if (MicroRep1.w>MaxRep || MicroRep2.x>MaxRep || MicroRep2.y>MaxRep) bFail = true;
+	
+		if (bFail) {
+			HR(Shader->SetBool(TileManager2Base::sbMicro, false));
+			HR(Shader->SetVector(TileManager2Base::svMicroScale1, &D3DXVECTOR4(0, 0, 0, 0)));
+			HR(Shader->SetVector(TileManager2Base::svMicroScale2, &D3DXVECTOR4(0, 0, 0, 0)));
+		}
+		else {
+			HR(Shader->SetBool(TileManager2Base::sbMicro, true));
+			HR(Shader->SetVector(TileManager2Base::svMicroScale1, &MicroRep1));
+			HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroRep2));
+		}
+	}
+	else {
+		HR(Shader->SetVector(TileManager2Base::svMicroScale1, &D3DXVECTOR4(0, 0, 0, 0)));
+		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &D3DXVECTOR4(0, 0, 0, 0)));
+	}
+}
+
+
+// -----------------------------------------------------------------------
+
 void SurfTile::Render ()
 {
 	bool render_lights = mgr->Cprm().bLights;
@@ -338,6 +406,7 @@ void SurfTile::Render ()
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	ID3DXEffect *Shader = mgr->Shader();
+	const vPlanet *vPlanet = mgr->GetPlanet();
 
 	static const double rad0 = sqrt(2.0)*PI05;
 	double sdist, rad;
@@ -351,6 +420,9 @@ void SurfTile::Render ()
 		has_shadows = (render_shadows && sdist < PI05+rad);
 		has_lights = (render_lights && ltex && sdist > 1.45);
 	}
+
+	if (owntex) StepIn ();
+
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders
@@ -703,24 +775,14 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		}
 	}
 
-
-	// Setup Planetary micro texture ------------------------------------
+	// Setup micro textures ---------------------------------------------
 	//
-	if (vp==vProxy && bMicroCheck) {
-		bMicroCheck = false;
-		char file[256];
-		for (int i=0;i<3;i++) {
-			sprintf_s(file, 256, "Textures/D3D9%s_%c.dds", CbodyName(), char('A'+i));
-			D3DXCreateTextureFromFile(pDev, file, &pMicro[i]);
-		}
-	}
-
-	if (pMicro[0] && pMicro[1] && pMicro[2]) {	
-		HR(Shader()->SetFloat(sfAlpha, float(obj_size)/1.7e6f));
-		HR(Shader()->SetTexture(stMicroA, pMicro[0]));
-		HR(Shader()->SetTexture(stMicroB, pMicro[1]));
-		HR(Shader()->SetTexture(stMicroC, pMicro[2]));
+	if (vp->MicroCfg.bEnabled) {	
+		HR(Shader()->SetTexture(stMicroA, vp->MicroCfg.Level[0].pTex));
+		HR(Shader()->SetTexture(stMicroB, vp->MicroCfg.Level[1].pTex));
+		HR(Shader()->SetTexture(stMicroC, vp->MicroCfg.Level[2].pTex));
 		HR(Shader()->SetBool(sbMicro, true));
+		HR(Shader()->SetBool(sbMicroNormals, vp->MicroCfg.bNormals));
 	}
 	else {
 		HR(Shader()->SetBool(sbMicro, false));

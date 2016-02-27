@@ -73,6 +73,7 @@ struct D3D9Stat {
 	DWORD Blits;
 	DWORD ColorKey;
 	DWORD MeshGrps;
+	DWORD MaxRepeat;
 	DWORD Meshes;
 	DWORD Tiles[18];
 	double Frame, FramePeak;
