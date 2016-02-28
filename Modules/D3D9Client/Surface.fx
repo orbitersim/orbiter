@@ -543,14 +543,20 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float step1 = smoothstep(25000, 12000, dist);
 			
 			//float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
-			float3 cFnl = (cFar + cMed + cLow) * 0.6666f;
+			//float3 cFnl = (cFar + cMed + cLow) * 0.6666f;
+			  float3 cFnl = max(0, min(2, 1.33333f*(cFar+cMed+cLow)-1));
 			//float3 cFnl = pow(abs(cFar*cMed*cLow), 0.33333f) * 2.0f;
+
+			//float3 hi = max(cFar, max(cMed, cLow));
+			//float3 lo = min(cFar, min(cMed, cLow));
+			//float3 cFnl = (hi-0.5 > 0.5-lo ? hi : lo) * 2;
 			
 			// Create normals
 			if (bMicroNormals) {
 				cFnl.rgb = cFnl.bbb;
 				#if defined(_MICROTEXNORMALS)
-					float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);
+					//float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);
+					float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;
 					float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
 					cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
 					// Approximate world space normal
