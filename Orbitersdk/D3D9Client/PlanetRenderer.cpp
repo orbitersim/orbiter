@@ -342,17 +342,12 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
 
 	// ---------------------------------------------------------------------
-	// Initialize normal mapped water
+	// Initialize camera centric tangent frame for normal mapped water
 	//
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hPlanet, &mRot);
-
 	VECTOR3 vCPos = pPlanet->PosFromCamera();
-	VECTOR3 vLPos = unit(tmul(mRot, vCPos));
-
-	if (dotp(vLPos, vLPosOld)<0.99) vLPosOld = vLPos;
-
-	VECTOR3 vNrm = mul(mRot, vLPosOld);
+	VECTOR3 vNrm = mul(mRot, pPlanet->ReferencePoint());
 	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
 	VECTOR3 vTan = unit(crossp(vNrm, vRot));
 	VECTOR3 vBiT = unit(crossp(vNrm, vTan));

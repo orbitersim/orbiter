@@ -56,6 +56,8 @@ public:
 	double			GetHorizonAlt() const;
 	double          GetMinElevation() const;
 	
+	VECTOR3			ReferencePoint();
+
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
 	vBase*			GetBaseByIndex(DWORD index);
@@ -151,6 +153,7 @@ private:
 	bool bFog;                // render distance fog?
 	FogParam fog;             // distance fog render parameters
 	D3D9Mesh *mesh;           // mesh for nonspherical body
+	VECTOR3	vRefPoint;		  // Auxiliary reference point for normal mapped water
 	ScatterParams SPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams NPrm;		  // Parameters for atmospheric configuration dialog

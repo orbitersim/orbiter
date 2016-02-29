@@ -50,7 +50,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	FILE *fp = NULL;
 
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
-
+	vRefPoint = _V(1,0,0);
 	bScatter = false;
 	rad = (float)size;
 	render_rad = (float)(0.1*rad);
@@ -736,6 +736,18 @@ D3DXVECTOR3 vPlanet::GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGloba
 	return exp2(-vOutTotSun * float(fDns * AngleCoEff(fDPS)));
 }
 
+// ==============================================================
+// Get a "semi" fixed surface reference point. Update if camera
+// movement is greater that 2deg
+//
+VECTOR3 vPlanet::ReferencePoint()
+{
+	MATRIX3 mRot;
+	oapiGetRotationMatrix(hObj, &mRot);
+	VECTOR3 vLPos = unit(tmul(mRot, PosFromCamera()));
+	if (dotp(vLPos, vRefPoint)<0.998) vRefPoint = vLPos;
+	return vRefPoint;
+}
 
 // ==============================================================
 
