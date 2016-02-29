@@ -205,6 +205,12 @@ vPlanet::~vPlanet ()
 	else if (surfmgr2) delete surfmgr2;
 	if (cloudmgr2) delete cloudmgr2;
 
+	if (MicroCfg.bLoaded) {
+		SAFE_RELEASE(MicroCfg.Level[0].pTex);
+		SAFE_RELEASE(MicroCfg.Level[1].pTex);
+		SAFE_RELEASE(MicroCfg.Level[2].pTex);
+	}
+
 	if (clouddata) {
 		delete clouddata->cloudmgr;
 		delete clouddata;
@@ -745,7 +751,7 @@ VECTOR3 vPlanet::ReferencePoint()
 	MATRIX3 mRot;
 	oapiGetRotationMatrix(hObj, &mRot);
 	VECTOR3 vLPos = unit(tmul(mRot, PosFromCamera()));
-	if (dotp(vLPos, vRefPoint)<0.998) vRefPoint = vLPos;
+	if (dotp(vLPos, vRefPoint)<0.9993) vRefPoint = vLPos;
 	return vRefPoint;
 }
 
@@ -1075,6 +1081,11 @@ bool vPlanet::LoadMicroTextures()
 			MicroCfg.bLoaded = false;
 		}
 		if (MicroCfg.bLoaded) LogOapi("Micro textures Loaded");
+		else {
+			SAFE_RELEASE(MicroCfg.Level[0].pTex);
+			SAFE_RELEASE(MicroCfg.Level[1].pTex);
+			SAFE_RELEASE(MicroCfg.Level[2].pTex);
+		}
 	}
 
 	return MicroCfg.bEnabled;

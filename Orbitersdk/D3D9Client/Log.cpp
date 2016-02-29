@@ -239,8 +239,8 @@ void LogErr(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 
-		char text[256];
-		sprintf_s(text, 256, "D3D9: ERROR: %s", ErrBuf);
+		char text[8000];
+		sprintf_s(text, 8000, "D3D9: ERROR: %s", ErrBuf);
 		oapiWriteLog(text);
 	}
 	LeaveCriticalSection(&LogCrit);

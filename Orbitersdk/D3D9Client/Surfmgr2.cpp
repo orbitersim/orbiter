@@ -434,6 +434,8 @@ void SurfTile::Render ()
 	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
 	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
 	// ---------------------------------------------------------------------------------------------------
+	HR(Shader->SetInt(TileManager2Base::siTileLvl, lvl));
+	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetBool(TileManager2Base::sbSpecular, has_specular));
 	HR(Shader->SetBool(TileManager2Base::sbCloudSh, has_shadows));
 	HR(Shader->SetBool(TileManager2Base::sbLights, has_lights));

@@ -87,13 +87,10 @@
 #define IDC_DBG_PASTE                           2078
 #define IDC_DBG_PICK                            2079
 #define IDC_DBG_RED                             2080
-#define IDC_DBG_REFLMAP                         2081
-#define IDC_DBG_RTGT                            2082
 #define IDC_DBG_SPEED                           2083
 #define IDC_DBG_SPEEDDSP                        2084
 #define IDC_DBG_SPHERES                         2085
 #define IDC_DBG_TEXTURE                         2086
-#define IDC_DBG_TILES                           2087
 #define IDC_DBG_VISO                            2088
 #define IDC_DBG_VISUAL                          2089
 #define IDC_DBG_WIRE                            2090
@@ -121,3 +118,6 @@
 #define IDC_TEXMIPS                             2112
 #define IDC_MICROMODE                           2113
 #define IDC_MICROFILTER                         2114
+#define IDC_DBG_MORE                            2115
+#define IDC_DBG_SCENEDBG                        2116
+#define IDC_DBG_LESS                            2117

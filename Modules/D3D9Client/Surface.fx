@@ -100,6 +100,9 @@ uniform extern bool      bLights;			// Enable night-lights
 uniform extern bool      bEnvEnable;		// Enable environment maps
 uniform extern bool      bMicro;			// Enable micro texture
 uniform extern bool      bMicroNormals;		// Enable micro texture
+uniform extern int		 iTileLvl;			// Surface tile level being rendered
+uniform extern int		 iDebug;			// Debug Mode identifier
+uniform extern bool		 bDebug;			// Debug Mode enabled 
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -284,6 +287,30 @@ float Shadow(float c, float f)
     return (3.0 - 2.0 * fC) * (fC*fC);
 }
 
+float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
+{
+	float a = (fRad - fRadius) / 7000.0f;
+	
+	if (iDebug==1) return float4((nrmW + 1.0) * 0.5, 1.0);
+
+	
+	if (iDebug==3) {
+		float b = 1.0f - abs(a);
+		return float4(saturate(a), saturate(b*b), saturate(-a), 1.0);
+	}
+	
+	if (iDebug==4) {
+		a = saturate(a*0.5 + 0.5);
+		return float4(a, a, a, 1.0);
+	}
+	
+	if (iDebug==5) {
+		float x = saturate(iTileLvl * 0.05);
+		return float4(color, 1) * float4(x, 0.0, 1-x, 1.0);
+	}
+	
+	return float4(0,0,0,1);
+}
 
 
 // =============================================================================================================
@@ -540,11 +567,11 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float3 cMed = tex2D(MicroBS, UV*vMicroScale1.zw).rgb;	// Medimum altitude micro texture B
 			float3 cLow = tex2D(MicroAS, UV*vMicroScale1.xy).rgb;	// Low altitude micro texture A
 			
-			float step1 = smoothstep(25000, 12000, dist);
+			float step1 = smoothstep(40000, 20000, dist);
 			
 			//float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
 			//float3 cFnl = (cFar + cMed + cLow) * 0.6666f;
-			  float3 cFnl = max(0, min(2, 1.33333f*(cFar+cMed+cLow)-1));
+			float3 cFnl = max(0, min(2, 1.33333f*(cFar+cMed+cLow)-1));
 			//float3 cFnl = pow(abs(cFar*cMed*cLow), 0.33333f) * 2.0f;
 
 			//float3 hi = max(cFar, max(cMed, cLow));
@@ -555,8 +582,8 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			if (bMicroNormals) {
 				cFnl.rgb = cFnl.bbb;
 				#if defined(_MICROTEXNORMALS)
-					//float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);
-					float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;
+					float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);
+					//float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;
 					float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
 					cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
 					// Approximate world space normal
@@ -569,6 +596,10 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		}
 	}
 
+	// Is Debug mode enabled
+	//
+	if (bDebug) return DebugProg(nrmW, cTex.rgb, fRad);
+	
 	// Do we have an atmosphere ?
 	//
 	if (!bOnOff) { // No

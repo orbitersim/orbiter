@@ -33,7 +33,7 @@ double camSpeed;
 float cpr, cpg, cpb, cpa;
 
 char visual[64];
-
+int  origwidth;
 HWND hDlg = NULL;
 vObject *vObj = NULL;
 
@@ -85,6 +85,12 @@ bool IsActive()
 	return (hDlg!=NULL);
 }
 
+int GetSceneDebug()
+{
+	if (!hDlg) return -1;
+	return (int)SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_GETCURSEL, 0, 0);
+}
+
 void Release()
 {
 	vObj=NULL;
@@ -101,7 +107,6 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_SPHERES,		(SendDlgItemMessageA(hDlg, IDC_DBG_SPHERES, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_HLMESH,		(SendDlgItemMessageA(hDlg, IDC_DBG_HSM, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_HLGROUP,		(SendDlgItemMessageA(hDlg, IDC_DBG_HSG, BM_GETCHECK, 0, 0)==BST_CHECKED));
-	SETFLAG(debugFlags, DBG_FLAGS_TILES,		(SendDlgItemMessageA(hDlg, IDC_DBG_TILES, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_SELVISONLY,	(SendDlgItemMessageA(hDlg, IDC_DBG_VISO, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_AMBIENT,	    (SendDlgItemMessageA(hDlg, IDC_DBG_AMBIENT, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_WIREFRAME,	(SendDlgItemMessageA(hDlg, IDC_DBG_WIRE, BM_GETCHECK, 0, 0)==BST_CHECKED));
@@ -126,6 +131,11 @@ void OpenDlgClbk(void *context)
 	if (l_hDlg) hDlg = l_hDlg; // otherwise open already
 	else return;
 
+	RECT rect;
+	GetWindowRect(hDlg, &rect);
+	SetWindowPos(hDlg, NULL, rect.left, rect.top, 298, rect.bottom - rect.top, SWP_SHOWWINDOW);
+	origwidth = rect.right - rect.left;
+
 	SendDlgItemMessage(hDlg, IDC_DBG_FPSLIM, BM_SETCHECK, Config->EnableLimiter==1, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_DISPLAY, CB_RESETCONTENT, 0, 0);
@@ -149,6 +159,15 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Dissolve");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Fresnel");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"None");
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Normals Global");
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Normals Tangent");
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Height");
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Height Mk2");
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Tile Level");
+	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)"None");
@@ -700,6 +719,7 @@ void SetColorValue(const char *lbl)
 BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char lbl[32];
+	RECT rect;
 
 	DWORD Prp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
 
@@ -885,6 +905,16 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			case IDC_DBG_MORE:
+				GetWindowRect(hDlg, &rect);
+				SetWindowPos(hDlg, NULL, rect.left, rect.top, origwidth, rect.bottom - rect.top, SWP_SHOWWINDOW);
+				break;
+
+			case IDC_DBG_LESS:
+				GetWindowRect(hDlg, &rect);
+				SetWindowPos(hDlg, NULL, rect.left, rect.top, 298, rect.bottom - rect.top, SWP_SHOWWINDOW);
+				break;
+
 			case IDC_DBG_GRPO:
 			case IDC_DBG_VISO:
 			case IDC_DBG_MSHO:
@@ -893,7 +923,6 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_HSM:
 			case IDC_DBG_HSG:
 			case IDC_DBG_AMBIENT:
-			case IDC_DBG_TILES:
 			case IDC_DBG_WIRE:
 			case IDC_DBG_DUAL:
 			case IDC_DBG_ENVMAP:

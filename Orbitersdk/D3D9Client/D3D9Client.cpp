@@ -812,10 +812,12 @@ bool D3D9Client::RenderWithPopupWindows()
 	// Let the OapiExtension manager know about this..
 	OapiExtension::HandlePopupWindows(hPopupWnd, count);
 
-	for (DWORD i=0;i<count;i++) {
-		DWORD val = GetWindowLongA(hPopupWnd[i], GWL_STYLE);
-		if ((val&WS_SYSMENU)==0) {
-			SetWindowLongA(hPopupWnd[i], GWL_STYLE, val|WS_SYSMENU);
+	if (!bFullscreen) {
+		for (DWORD i=0;i<count;i++) {
+			DWORD val = GetWindowLongA(hPopupWnd[i], GWL_STYLE);
+			if ((val&WS_SYSMENU)==0) {
+				SetWindowLongA(hPopupWnd[i], GWL_STYLE, val|WS_SYSMENU);
+			}
 		}
 	}
 
@@ -2138,9 +2140,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 19c Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 19d Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 19c Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 19d Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

@@ -89,6 +89,9 @@ public:
 	static D3DXHANDLE sbEnvEnable;
 	static D3DXHANDLE sbMicro;
 	static D3DXHANDLE sbMicroNormals;
+	static D3DXHANDLE siTileLvl;
+	static D3DXHANDLE siDebug;
+	static D3DXHANDLE sbDebug;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
@@ -130,6 +133,7 @@ public:
 	static D3DXHANDLE sfInvAux1;
 	static D3DXHANDLE sfInvParameter;
 	static D3DXHANDLE sfTime;
+
 };
 
 #endif

@@ -13,6 +13,7 @@
 #include "Scene.h"
 #include "VPlanet.h"
 #include "D3D9Surface.h"
+#include "DebugControls.h"
 
 
 // ------------------------------------------------------------
@@ -57,6 +58,9 @@ D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
 D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
 D3DXHANDLE PlanetRenderer::sbMicro = NULL;
 D3DXHANDLE PlanetRenderer::sbMicroNormals = NULL;
+D3DXHANDLE PlanetRenderer::siTileLvl = NULL;
+D3DXHANDLE PlanetRenderer::siDebug = NULL;
+D3DXHANDLE PlanetRenderer::sbDebug = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -225,6 +229,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbEnvEnable			= pShader->GetParameterByName(0,"bEnvEnable");
 	sbMicro				= pShader->GetParameterByName(0,"bMicro");
 	sbMicroNormals		= pShader->GetParameterByName(0,"bMicroNormals");
+	siTileLvl			= pShader->GetParameterByName(0,"iTileLvl");
+	siDebug				= pShader->GetParameterByName(0,"iDebug");
+	sbDebug				= pShader->GetParameterByName(0,"bDebug");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
@@ -326,9 +333,11 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	D3DXVECTOR3 whitebl = D3DXVECTOR3(pow(float(atmo->red),fWb), pow(float(atmo->green),fWb), pow(float(atmo->blue),fWb));
 	whitebl *= 1.0f/whitebl.y;
 
-	// Initialize rendering for all bodies rendering ---------------------------------------------------
+	// Initialize rendering for all bodies -----------------------------------------------------
 	//
 	HR(Shader()->SetBool(sbOnOff, false));
+	HR(Shader()->SetBool(sbDebug, (DebugControls::GetSceneDebug()>0)));
+	HR(Shader()->SetInt (siDebug,  DebugControls::GetSceneDebug()));
 	HR(Shader()->SetValue(svCameraPos, &cam, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svUnitCameraPos, &ucam, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svSunDir, &SunDir, sizeof(D3DXVECTOR3)));

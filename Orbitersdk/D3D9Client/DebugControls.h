@@ -111,6 +111,7 @@ namespace DebugControls {
 	void		SelectGroup(DWORD idx);
 	void		SelectMesh(D3D9Mesh *pMesh);
 	void		SetGroupHighlight(bool bStat);
+	int			GetSceneDebug();
 	
 	bool		IsActive();
 
