@@ -40,10 +40,8 @@ void D3D9Config::Reset ()
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
 	PreLBaseVis			= 0;
-	GDIRTSWrn			= 0;
 	DebugFontSize		= 18;
 	UseNormalMap		= 1;
-	ManagedTiles		= 0;
 	SketchpadMode		= 0;
 	SketchpadFont		= 1;
 	RwyLightAnimate		= 1;
@@ -71,6 +69,7 @@ void D3D9Config::Reset ()
 	TileDebug			= 0;
 	MicroMode			= 2;
 	MicroFilter			= 2;
+	BlendMode			= 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -123,13 +122,12 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))				DisableDriverManagement = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))					NVPerfHUD = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))			DebugFontSize = i;	
-	if (oapiReadItem_int   (hFile, "GDIRTSDebug", i))				GDIRTSWrn = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "ManagedTiles",i))				ManagedTiles = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "LODBias",i))					LODBias = max (-3, min (3, i));
 	if (oapiReadItem_int   (hFile, "MeshRes",i))					MeshRes = max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
+	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -181,13 +179,12 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "DisableDrvMgm", DisableDriverManagement);
 	oapiWriteItem_int   (hFile, "NVPerfHUD", NVPerfHUD);
 	oapiWriteItem_int   (hFile, "DebugLineFontSize", DebugFontSize);	
-	oapiWriteItem_int   (hFile, "GDIRTSDebug", GDIRTSWrn);
-	oapiWriteItem_int   (hFile, "ManagedTiles", ManagedTiles);
 	oapiWriteItem_int   (hFile, "DisableVisualHelperReadout", DisableVisualHelperReadout);
 	oapiWriteItem_int   (hFile, "LODBias", LODBias);
 	oapiWriteItem_int   (hFile, "MeshRes", MeshRes);
 	oapiWriteItem_int   (hFile, "MicroMode", MicroMode);
 	oapiWriteItem_int   (hFile, "MicroFilter", MicroFilter);
+	oapiWriteItem_int   (hFile, "BlendMode", BlendMode);
 	
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		

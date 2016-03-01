@@ -1088,7 +1088,6 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 	TileBuffer *tb = (TileBuffer*)data;
 	const oapi::D3D9Client *gc = tb->gc;
 	bool load;
-	bool bManaged = (Config->ManagedTiles==1);
 	static QUEUEDESC qd;
 	// DWORD flag = (tb->bLoadMip ? 0:4);
 	DWORD idle = 1000/Config->PlanetLoadFrequency;
@@ -1125,7 +1124,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 				strcpy_s (fname, 256, qd.name);
 				strcat_s (fname, 256, "_tile.tex");
 
-				HRESULT hr = ReadDDSSurface (gc->GetDevice(),fname, ofs, &tex, bManaged);
+				HRESULT hr = ReadDDSSurface (gc->GetDevice(),fname, ofs, &tex, false);
 
 				if (hr != S_OK) {
 					tex = NULL;
@@ -1141,7 +1140,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 					ofs = (td->flag & 0x40 ? (long)midx * TILESIZE : (long)midx);
 					strcpy_s (fname, 256, qd.name);
 					strcat_s (fname, 256, "_tile_lmask.tex");
-					if (ReadDDSSurface (gc->GetDevice(), fname, ofs, &mask, bManaged) != S_OK) mask = NULL;
+					if (ReadDDSSurface (gc->GetDevice(), fname, ofs, &mask, false) != S_OK) mask = NULL;
 				}
 			}
 			// apply loaded components

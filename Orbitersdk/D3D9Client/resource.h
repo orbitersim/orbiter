@@ -121,3 +121,4 @@
 #define IDC_DBG_MORE                            2115
 #define IDC_DBG_SCENEDBG                        2116
 #define IDC_DBG_LESS                            2117
+#define IDC_BLENDMODE                           2118

@@ -293,6 +293,12 @@ float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
 	
 	if (iDebug==1) return float4((nrmW + 1.0) * 0.5, 1.0);
 
+	if (iDebug==2) {
+		float x = dot(nrmW, vTangent) + 1;
+		float y = dot(nrmW, vBiTangent) + 1;
+		float z = dot(nrmW, vUnitCameraPos) + 1;
+		return float4(x, y, z, 2.0) * 0.5;
+	}
 	
 	if (iDebug==3) {
 		float b = 1.0f - abs(a);
@@ -566,28 +572,39 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float3 cFar = tex2D(MicroCS, UV*vMicroScale2.xy).rgb;	// High altitude micro texture C
 			float3 cMed = tex2D(MicroBS, UV*vMicroScale1.zw).rgb;	// Medimum altitude micro texture B
 			float3 cLow = tex2D(MicroAS, UV*vMicroScale1.xy).rgb;	// Low altitude micro texture A
-			
+
 			float step1 = smoothstep(40000, 20000, dist);
 			
+			// OPTIONAL TEXTURE BLEND EQUATIONS -------------------------------
 			//float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
 			//float3 cFnl = (cFar + cMed + cLow) * 0.6666f;
-			float3 cFnl = max(0, min(2, 1.33333f*(cFar+cMed+cLow)-1));
+			  float3 cFnl = max(0, min(2, 1.33333f*(cFar+cMed+cLow)-1));
 			//float3 cFnl = pow(abs(cFar*cMed*cLow), 0.33333f) * 2.0f;
 
+			// INTERESTING RESULTS
 			//float3 hi = max(cFar, max(cMed, cLow));
 			//float3 lo = min(cFar, min(cMed, cLow));
 			//float3 cFnl = (hi-0.5 > 0.5-lo ? hi : lo) * 2;
 			
+
 			// Create normals
 			if (bMicroNormals) {
 				cFnl.rgb = cFnl.bbb;
 				#if defined(_MICROTEXNORMALS)
-					float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);
-					//float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;
+
+					// NORMAL BLEND EQUATIONS ---------------------------------
+					#if BLEND==0 
+						float2 cMix = (cFar.rg + cMed.rg + cLow.rg) * 0.6666f;				// SOFT BLEND
+					#elif BLEND==1 
+						float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);	// MEDIUM BLEND
+					#else 
+						float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;					// HARD BLEND
+					#endif
+
 					float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
 					cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
 					// Approximate world space normal
-					nrmW = normalize(-(vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+					nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
 				#endif
 			}
 		

@@ -163,6 +163,15 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		case 1:  strcpy_s((char*)macro[m].Definition, 32, "LINEAR"); break;
 		default: strcpy_s((char*)macro[m].Definition, 32, "ANISOTROPIC"); break;
 	}
+	// ------------------------------------------------------------------------------
+	m=5;
+	macro[m].Name = "BLEND";
+	macro[m].Definition = new char[4];
+	switch(Config->BlendMode) {
+		case 0:  strcpy_s((char*)macro[m].Definition, 4, "0"); break;
+		case 1:  strcpy_s((char*)macro[m].Definition, 4, "1"); break;
+		default: strcpy_s((char*)macro[m].Definition, 4, "2"); break;
+	}
 	m++;
 	// ------------------------------------------------------------------------------
 	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
@@ -179,10 +188,11 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	delete []macro[2].Definition;
 	delete []macro[3].Definition;
 	delete []macro[4].Definition;
+	delete []macro[5].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
-		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Surface??.fx Error", 0);
+		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Surface.fx Error", 0);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
 
@@ -358,8 +368,8 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	VECTOR3 vCPos = pPlanet->PosFromCamera();
 	VECTOR3 vNrm = mul(mRot, pPlanet->ReferencePoint());
 	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
-	VECTOR3 vTan = unit(crossp(vNrm, vRot));
-	VECTOR3 vBiT = unit(crossp(vNrm, vTan));
+	VECTOR3 vTan = unit(crossp(vRot, vNrm));
+	VECTOR3 vBiT = unit(crossp(vTan ,vNrm));
 
 	// ---------------------------------------------------------------------
 	HR(Shader()->SetValue(svTangent,     &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));

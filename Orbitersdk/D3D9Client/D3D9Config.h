@@ -34,7 +34,6 @@ public:
 	int NearClipPlane;				///< Near clip plane mode (0,1)
 	int PreLBaseVis;				///< Preload base visuals (0=load on demand, 1=preload)
 	int DebugFontSize;				///< Debug font height \[pixel\] (default=18px)
-	int GDIRTSWrn;					///< Whether to identify RT-GDI conflict by flashing the surface (0,1)
 	int UseNormalMap;				///< Enable normal mapping (0,1)
 	int SketchpadMode;				///< Sketckpad mode to use (0=auto select DirectX/GDI, 1=use GDI only)
 	int SketchpadFont;				///< Sketchpad Font (0=Crisp, 1=Default, 2=Cleartype, 3=Proof Quality)
@@ -52,7 +51,6 @@ public:
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
 	int MaxLights;					///< Maximum number of light sources in use (0...12, default=12)
 	int NVPerfHUD;					///< ??? (0,1)
-	int ManagedTiles;				///< Whether to read DDS surfaces managed or un-managed (0,1 default=0)
 	int EnvMapSize;					///< Environment map size (64...512)
 	int EnvMapMode;					///< Environment map mode (0=disabled, 1=planet only, 2=fullscene)
 	int EnvMapFaces;				///< Number of environment map faces render per frame (1..6, default=1)
@@ -68,6 +66,7 @@ public:
 	int TextureMips;				///< Texture mipmap autogen policy
 	int MicroMode;			
 	int MicroFilter;
+	int BlendMode;
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 
