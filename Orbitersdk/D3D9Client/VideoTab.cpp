@@ -633,12 +633,12 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	// MICROTEX FILTER --------------------------------------------
 
 	SendDlgItemMessage(hWnd,  IDC_MICROFILTER, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Point");
-	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Linear");
+	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Point (Fast)");
+	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Linear (Bad)");
 	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 2x");
-	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 4x");
+	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 4x (Good)");
 	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 8x");
-	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 16x");
+	SendDlgItemMessageA(hWnd, IDC_MICROFILTER, CB_ADDSTRING, 0, (LPARAM)"Anisotropic 16x (Slow)");
 	SendDlgItemMessage(hWnd,  IDC_MICROFILTER, CB_SETCURSEL, 0, 0);
 	
 	// MICROTEX FILTER --------------------------------------------
