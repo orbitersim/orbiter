@@ -330,8 +330,10 @@ double SurfTile::GetMeanElevation (const INT16 *elev) const
 
 float fixinput(float a)
 {
+	// Repeat counts for rotated textures must be pow of 2 from 2 to 256, after that with an increment of 128
+	// Because current noise texture is 128x128
 	if (Config->MicroMode == 2) return exp2(ceil(log2(a)));
-	else						return ceil(a);
+	else return ceil(a);
 }
 
 
@@ -364,7 +366,7 @@ void SurfTile::StepIn ()
 		float b  = vPlanet->MicroCfg.Level[1].size;
 		float c  = vPlanet->MicroCfg.Level[2].size;
 
-		D3DXVECTOR4 MicroRep1 = D3DXVECTOR4(fixinput(bw/a), fixinput(he/a), fixinput(bw/b), fixinput(he/b));
+		D3DXVECTOR4 MicroRep1 = D3DXVECTOR4((bw/a), (he/a), (bw/b), (he/b));
 		D3DXVECTOR4 MicroRep2 = D3DXVECTOR4(fixinput(bw/c), fixinput(he/c), 0, 0);
 
 		// Safety check
