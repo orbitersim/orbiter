@@ -535,10 +535,13 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric vertex position
 	float3 vPlN = normalize(vVrt);			// Planet mean normal	
 	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
-
+	
 	// Specular Water reflection
 	//
 	if (bSpecular) {
+
+		// Specular Mask
+		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
 		#if defined(_SURFACERIPPLES)
 			float Fct = min(2.0f, 10000.0f / fCameraAlt);
@@ -546,17 +549,20 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
 			// Compute world space normal 
 			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
+			nrmW = lerp(nvrW, nrmW, m); 
 		#endif
 
-		float f = 1.0-saturate(dot(camW, nrmW));
+		// Compute specular reflection intensity 
 		float s = dot(reflect(-vSunDir, nrmW), camW);
-		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
-
 		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
 
-		float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
+		// Compute Fresnel term
+		float f = 1.0-saturate(dot(camW, nrmW));
+		float f4 = f*f*f*f;
 
-		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
+		float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
+		// Apply fresnel reflection
+		cTex.rgb = lerp(cTex.rgb, cSky, m * f4);
 	}
 
 	else {
@@ -663,7 +669,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		float3 color = cTex.rgb * frg.atten.rgb * saturate(fDNS) + frg.insca.rgb;
 
 		// Add Specular component and Night lights
-		color += cSpe + cNgt;
+		color += cSpe + cTex.rgb*cNgt;
 
 		// Apply color exposure and "white balance"
 		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;
