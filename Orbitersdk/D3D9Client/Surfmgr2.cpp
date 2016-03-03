@@ -18,6 +18,7 @@
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
 #include "vVessel.h"
+#include "VectorHelpers.h"
 
 // =======================================================================
 
@@ -327,6 +328,15 @@ double SurfTile::GetMeanElevation (const INT16 *elev) const
 
 // -----------------------------------------------------------------------
 
+float fixinput(float a)
+{
+	if (Config->MicroMode == 2) return exp2(ceil(log2(a)));
+	else						return ceil(a);
+}
+
+
+// -----------------------------------------------------------------------
+
 void SurfTile::StepIn ()
 {
 	if (!owntex) return;
@@ -354,21 +364,8 @@ void SurfTile::StepIn ()
 		float b  = vPlanet->MicroCfg.Level[1].size;
 		float c  = vPlanet->MicroCfg.Level[2].size;
 
-		D3DXVECTOR4 MicroRep1 = D3DXVECTOR4(floor(bw/a), floor(he/a), floor(bw/b), floor(he/b));
-		D3DXVECTOR4 MicroRep2 = D3DXVECTOR4(floor(bw/c), floor(he/c), 0, 0);
-
-		/*
-		stats->MaxRepeat = 0;
-
-		// Track what's going on with repeat counts
-		if (MicroRep1.x>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.x);
-		if (MicroRep1.y>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.y);
-		if (MicroRep1.z>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.z);
-		if (MicroRep1.w>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep1.w);
-		if (MicroRep2.x>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep2.x);
-		if (MicroRep2.y>stats->MaxRepeat) stats->MaxRepeat = DWORD(MicroRep2.y);
-
-		LogAlw("%u", stats->MaxRepeat);*/
+		D3DXVECTOR4 MicroRep1 = D3DXVECTOR4(fixinput(bw/a), fixinput(he/a), fixinput(bw/b), fixinput(he/b));
+		D3DXVECTOR4 MicroRep2 = D3DXVECTOR4(fixinput(bw/c), fixinput(he/c), 0, 0);
 
 		// Safety check
 		bool bFail = false;

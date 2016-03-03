@@ -12,7 +12,6 @@
 
 
 
-
 // -------------------------------------------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
 // -------------------------------------------------------------------------------------------------------------
@@ -515,11 +514,9 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 		outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
 	}
 
-	float fX = saturate(fDNS);
-	//float fY = saturate(fDPR);
-	//float fLvl = fX * rcp(fX+fY);
-
-	outVS.atten *= max(vSunLight * fX, (vRayInSct+4.0f) * fAmb);
+	//float fX = saturate(fDNS);
+	//outVS.atten *= max(vSunLight * fX, (vRayInSct+4.0f) * fAmb);
+	outVS.atten *= max(vSunLight, (vRayInSct+4.0f) * fAmb);
 	
     return outVS;
 }	
@@ -569,12 +566,30 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float dist = frg.aux[AUX_DIST];
 
 			float2 UV  = frg.texUV.xy;
+			float2 UVr = frg.texUV.xy;
+
+			#if defined(_MICROROTATIONS)
+				// Noise texture size 128x128
+				float fRot = tex2D(NoiseTexS, UV*vMicroScale2.xy*7.8125e-3).r;
+				if (fRot<0.5f) UVr = float2(-UVr.y, UVr.x);				// Rotate 90deg and mirror
+				if (fRot<0.35) UVr = -UVr;								// Rotate 180deg
+				if (fRot>0.65) UVr = -UVr;								// Rotate 180deg
+			#endif
 		
-			float3 cFar = tex2D(MicroCS, UV*vMicroScale2.xy).rgb;	// High altitude micro texture C
+			float3 cFar = tex2D(MicroCS, UVr*vMicroScale2.xy).rgb;	// High altitude micro texture C
 			float3 cMed = tex2D(MicroBS, UV*vMicroScale1.zw).rgb;	// Medimum altitude micro texture B
 			float3 cLow = tex2D(MicroAS, UV*vMicroScale1.xy).rgb;	// Low altitude micro texture A
 
-			float step1 = smoothstep(40000, 20000, dist);
+			float step1 = smoothstep(50000, 20000, dist);
+
+			#if defined(_MICROROTATIONS)
+				// Rotate Normals
+				if (fRot<0.5f) cFar.xy = float2(cFar.y, 1.0f-cFar.x);	// Rotate 90deg and mirror
+				if (fRot<0.35) cFar.xy = 1.0f-cFar.xy;					// Rotate 180deg
+				if (fRot>0.65) cFar.xy = 1.0f-cFar.xy;	
+				// Normal Null range
+				cFar.rg = (abs(cFar.rg-0.5)>0.01 ? cFar.rg : 0.5f);
+			#endif
 			
 			// OPTIONAL TEXTURE BLEND EQUATIONS -------------------------------
 			//float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
@@ -590,23 +605,19 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 			// Create normals
 			if (bMicroNormals) {
-				cFnl.rgb = cFnl.bbb;
-				#if defined(_MICROTEXNORMALS)
-
-					// NORMAL BLEND EQUATIONS ---------------------------------
-					#if BLEND==0 
-						float2 cMix = (cFar.rg + cMed.rg + cLow.rg) * 0.6666f;				// SOFT BLEND
-					#elif BLEND==1 
-						float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);	// MEDIUM BLEND
-					#else 
-						float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;					// HARD BLEND
-					#endif
-
-					float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
-					cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
-					// Approximate world space normal
-					nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+				cFnl = cFnl.bbb;
+				#if BLEND==0 
+					float2 cMix = (cFar.rg + cMed.rg + cLow.rg) * 0.6666f;				// SOFT BLEND
+				#elif BLEND==1 
+					float2 cMix  = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);	// MEDIUM BLEND
+				#else 
+					float2 cMix  = cFar.rg * cMed.rg * cLow.rg * 8.0f;					// HARD BLEND
 				#endif
+
+				float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
+				cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
+				// Approximate world space normal
+				nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
 			}
 		
 			// Apply luminance
@@ -642,9 +653,22 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 	else { // Yes, atmosphere is present
 
-		if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
-		float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
-		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
+		// Night lights
+		if (bLights) cNgt = 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
+
+		// Labmertian shading term
+		float fDNS = dot(nrmW, vSunDir);
+
+		// Compose final color, take atmospheric attennuation and inscatter in account
+		float3 color = cTex.rgb * frg.atten.rgb * saturate(fDNS) + frg.insca.rgb;
+
+		// Add Specular component and Night lights
+		color += cSpe + cNgt;
+
+		// Apply color exposure and "white balance"
+		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;
+
+		// Apply gamma correction
 		return float4(pow(abs(color), fAux4), 1.0f);  
 	}
 }

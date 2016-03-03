@@ -175,7 +175,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	m++;
 	// ------------------------------------------------------------------------------
 	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
-	if (Config->MicroMode==2) macro[m++].Name = "_MICROTEXNORMALS";
+	if (Config->MicroMode==2) macro[m++].Name = "_MICROROTATIONS";
 	// ------------------------------------------------------------------------------
 	if (Config->EnvMapMode && bRiples) {
 		macro[m++].Name = "_ENVMAP"; 

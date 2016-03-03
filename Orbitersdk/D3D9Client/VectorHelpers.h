@@ -23,6 +23,10 @@
 #ifndef __VECTORHELPERS_H
 #define __VECTORHELPERS_H
 
+inline double log2(double d)
+{ 
+	return log(d*1.4426950408889634073599246810019);
+}
 
 inline double exp2(double d)
 { 
@@ -33,6 +37,11 @@ inline float exp2(float d)
 { 
 	return exp(d*0.693147180559945f);
 }
+inline float log2(float d)
+{ 
+	return log(d*1.442695040888963f);
+}
+
 #endif
 inline double lerp(double a, double b, double x)
 {
