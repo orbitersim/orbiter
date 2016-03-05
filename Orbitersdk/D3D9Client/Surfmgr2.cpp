@@ -346,7 +346,7 @@ float SurfTile::fixinput(float a, int x)
 {
 	switch(x) {
 		case 0: return (1.0f+floor(a*0.0625f))*16.0f;
-		case 1: return (1.0f+floor(a*0.128f))*8.0f;
+		case 1: return (1.0f+floor(a*0.125f))*8.0f;
 		case 2: return (1.0f+floor(a*0.5f))*2.0f;
 	}
 	return 0.0f;

@@ -468,6 +468,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
 	
 	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
+	float3 vPlN  = normalize(vVrt);
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
 	float  fRay  = abs(dot(vPosW, vRay));				// Length of the viewing ray
@@ -592,10 +593,9 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			float2 UV  = frg.texUV.zw;
 			float2 UVr = frg.texUV.zw * vMSc2.zw + vMSc2.xy;
 
-			/*
-			#if defined(_MICROROTATIONS)
+			/*#if defined(_MICROROTATIONS)
 				// Noise texture size 128x128
-				float fRot = tex2D(MicroRT, frg.texUV.xy*vMicroScale2.xy*0.25f).r;
+				float fRot = tex2D(MicroRT, frg.texUV.xy*16*0.25f).r;
 				if (fRot<0.5f) UVr = float2(-UVr.y, UVr.x);					// Rotate 90deg
 				if (fRot<0.35) UVr = -UVr;									// Rotate 180deg
 				if (fRot>0.65) UVr = -UVr;									// Rotate 180deg
