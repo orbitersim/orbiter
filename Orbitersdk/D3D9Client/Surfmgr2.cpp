@@ -66,6 +66,7 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	ggelev = NULL;
 	ltex = NULL;
 	has_elevfile = false;
+	MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
 }
 
 // -----------------------------------------------------------------------
@@ -328,66 +329,62 @@ double SurfTile::GetMeanElevation (const INT16 *elev) const
 
 // -----------------------------------------------------------------------
 
-float fixinput(float a)
+SurfTile *SurfTile::getTextureOwner()
 {
-	// Repeat counts for rotated textures must be pow of 2 from 2 to 256, after that with an increment of 128
-	// Because current noise texture is 128x128
-	if (Config->MicroMode == 2) return exp2(ceil(log2(a)));
-	else return ceil(a);
+	if (owntex) return this;
+	SurfTile *parent = getSurfParent();
+	while (parent) {
+		if (parent->owntex) return parent;
+		else parent = parent->getSurfParent();
+	}
+	return NULL;
 }
-
 
 // -----------------------------------------------------------------------
 
+float SurfTile::fixinput(float a, int x)
+{
+	switch(x) {
+		case 0: return (1.0f+floor(a*0.0625f))*16.0f;
+		case 1: return (1.0f+floor(a*0.128f))*8.0f;
+		case 2: return (1.0f+floor(a*0.5f))*2.0f;
+	}
+	return 0.0f;
+}
+
+// -----------------------------------------------------------------------
+
+D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
+{
+	float rs = 1.0f / float( 1 << (lvl-pT->Level()) );	// Range subdivision
+	float xo = pT->MicroRep[ml].x * texrange.tumin;		
+	float yo = pT->MicroRep[ml].y * texrange.tvmin;
+	xo -= floor(xo); // Micro texture offset for current tile
+	yo -= floor(yo); // Micro texture offset for current tile
+	return D3DXVECTOR4(xo, yo, pT->MicroRep[ml].x * rs, pT->MicroRep[ml].y * rs); 
+}
+
+// -----------------------------------------------------------------------
+// Called during rendering even if this tile is not rendered but children are
+//
 void SurfTile::StepIn ()
 {
-	if (!owntex) return;
-
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	ID3DXEffect *Shader = mgr->Shader();
 	const vPlanet *vPlanet = mgr->GetPlanet();
 
-	DWORD MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
-	D3D9Stat *stats = mgr->Client()->GetStats();
-
 	if (vPlanet != mgr->GetScene()->GetCameraProxyVisual()) return;
 
-	// ---------------------------------------------------------------------
-	// Compute micro texture repeat counts and feed to the shaders
+	// Compute micro texture repeat counts -------------------------------------
 	//
-	if (vPlanet->MicroCfg.bEnabled) {
-
-		double latmin, latmax, lngmin, lngmax;
-		Extents (&latmin, &latmax, &lngmin, &lngmax);
-
-		float bw = float((lngmax - lngmin) * cos(latmin) * vPlanet->GetSize());
-		float he = float((latmax - latmin) * vPlanet->GetSize()); 
-		float a  = vPlanet->MicroCfg.Level[0].size;
-		float b  = vPlanet->MicroCfg.Level[1].size;
-		float c  = vPlanet->MicroCfg.Level[2].size;
-
-		D3DXVECTOR4 MicroRep1 = D3DXVECTOR4((bw/a), (he/a), (bw/b), (he/b));
-		D3DXVECTOR4 MicroRep2 = D3DXVECTOR4(fixinput(bw/c), fixinput(he/c), 0, 0);
-
-		// Safety check
-		bool bFail = false;
-		if (MicroRep1.x>MaxRep || MicroRep1.y>MaxRep || MicroRep1.z>MaxRep) bFail = true;
-		if (MicroRep1.w>MaxRep || MicroRep2.x>MaxRep || MicroRep2.y>MaxRep) bFail = true;
-	
-		if (bFail) {
-			HR(Shader->SetBool(TileManager2Base::sbMicro, false));
-			HR(Shader->SetVector(TileManager2Base::svMicroScale1, &D3DXVECTOR4(0, 0, 0, 0)));
-			HR(Shader->SetVector(TileManager2Base::svMicroScale2, &D3DXVECTOR4(0, 0, 0, 0)));
-		}
-		else {
-			HR(Shader->SetBool(TileManager2Base::sbMicro, true));
-			HR(Shader->SetVector(TileManager2Base::svMicroScale1, &MicroRep1));
-			HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroRep2));
-		}
-	}
-	else {
-		HR(Shader->SetVector(TileManager2Base::svMicroScale1, &D3DXVECTOR4(0, 0, 0, 0)));
-		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &D3DXVECTOR4(0, 0, 0, 0)));
+	if (owntex && vPlanet->MicroCfg.bEnabled) {
+		float s  = float(vPlanet->GetSize());
+		float a  = s / vPlanet->MicroCfg.Level[0].size;
+		float b  = s / vPlanet->MicroCfg.Level[1].size;
+		float c  = s / vPlanet->MicroCfg.Level[2].size;
+		MicroRep[0] = D3DXVECTOR2(fixinput(width*a,0), fixinput(height*a,0));
+		MicroRep[1] = D3DXVECTOR2(fixinput(width*b,1), fixinput(height*b,1));
+		MicroRep[2] = D3DXVECTOR2(fixinput(width*c,2), fixinput(height*c,2));
 	}
 }
 
@@ -420,8 +417,17 @@ void SurfTile::Render ()
 		has_lights = (render_lights && ltex && sdist > 1.45);
 	}
 
-	if (owntex) StepIn ();
+	// Assign micro texture range information to shaders
+	//
+	SurfTile *pT = getTextureOwner();
 
+	if (pT) {
+		HR(Shader->SetBool(TileManager2Base::sbMicro, true));
+		HR(Shader->SetVector(TileManager2Base::svMicroScale0, &MicroTexRange(pT, 0)));
+		HR(Shader->SetVector(TileManager2Base::svMicroScale1, &MicroTexRange(pT, 1)));
+		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroTexRange(pT, 2)));
+	}
+	
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders

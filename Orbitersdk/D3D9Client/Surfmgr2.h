@@ -31,6 +31,8 @@ public:
 protected:
 	virtual Tile *getParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
 	inline SurfTile *getSurfParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
+	SurfTile *getTextureOwner();
+
 	// Return pointer to parent tile, if exists
 
 	void Load ();
@@ -55,7 +57,11 @@ protected:
 private:
 	INT16 *ElevationData () const;
 	double GetMeanElevation (const INT16 *elev) const;
+	float fixinput(float,int);
+	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
+	D3DXVECTOR2 MicroRep[3];
+	DWORD MaxRep;
 	LPDIRECT3DTEXTURE9 ltex;		// landmask/nightlight texture, if applicable
 	INT16 *elev;               // elevation data [m] (8x subsampled)
 	mutable INT16 *ggelev;     // pointer to my elevation data in the great-grandparent

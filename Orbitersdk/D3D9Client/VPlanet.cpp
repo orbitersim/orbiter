@@ -309,6 +309,9 @@ bool vPlanet::Update (bool bMainScene)
 
 	if (patchres==0) return true;
 
+	// Check if micro textures needs loading
+	if (MicroCfg.bEnabled && !MicroCfg.bLoaded && scn->GetCameraProxyVisual()==this) LoadMicroTextures();
+
 	int i, j;
 	float rad_scale = rad;
 	bool rescale = false;
@@ -608,7 +611,6 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
-		LoadMicroTextures();
 		if (cdist>=1.3*rad && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
 		else							 surfmgr2->Render (dmWorld, true,  prm);
 	} 
@@ -986,6 +988,7 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 bool vPlanet::ParseMicroTextures()
 {
 	if (Config->MicroMode==0) return false;	// Micro textures are disabled
+	if (surfmgr2==NULL) return false; // Only supported with tile format 2 
 
 	FILE* file = NULL;
 	char cbuf[256];
@@ -1060,32 +1063,30 @@ bool vPlanet::ParseMicroTextures()
 //
 bool vPlanet::LoadMicroTextures()
 {
-	if (scn->GetCameraProxyVisual() != this) return false;
-
-	if (MicroCfg.bEnabled && !MicroCfg.bLoaded) {
-		LogOapi("Loading Micro Textures for %s", GetName());
-		char file[256];
-		for (int i=0;i<3;i++) {
-			sprintf_s(file, 256, "Textures/%s", MicroCfg.Level[i].file);
-			HR(D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex));
-			D3DSURFACE_DESC desc;
-			if (MicroCfg.Level[i].pTex) {
-				MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
-				MicroCfg.Level[i].size = float(desc.Width) / MicroCfg.Level[i].reso;
-				LogOapi("Level %u, %s, %.1fpx/m, %.1fm", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size);
-			}
+	LogOapi("Loading Micro Textures for %s", GetName());
+	char file[256];
+	for (int i=0;i<3;i++) {
+		sprintf_s(file, 256, "Textures/%s", MicroCfg.Level[i].file);
+		HR(D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex));
+		D3DSURFACE_DESC desc;
+		if (MicroCfg.Level[i].pTex) {
+			MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
+			MicroCfg.Level[i].size = float(desc.Width) / MicroCfg.Level[i].reso;
+			MicroCfg.Level[i].px = float(desc.Width);
+			LogOapi("Level %u, %s, %.1fpx/m, %.1fm", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size);
 		}
-		MicroCfg.bLoaded = true;
-		for (int i=0;i<3;i++) if (!MicroCfg.Level[i].pTex) {
-			MicroCfg.bEnabled = false;
-			MicroCfg.bLoaded = false;
-		}
-		if (MicroCfg.bLoaded) LogOapi("Micro textures Loaded");
-		else {
-			SAFE_RELEASE(MicroCfg.Level[0].pTex);
-			SAFE_RELEASE(MicroCfg.Level[1].pTex);
-			SAFE_RELEASE(MicroCfg.Level[2].pTex);
-		}
+	}
+	MicroCfg.bLoaded = true;
+	for (int i=0;i<3;i++) if (!MicroCfg.Level[i].pTex) {
+		MicroCfg.bEnabled = false;
+		MicroCfg.bLoaded = false;
+	}
+	if (MicroCfg.bLoaded) LogOapi("Micro textures Loaded");
+	else {
+		LogOapi("Failed to load micro textures");
+		SAFE_RELEASE(MicroCfg.Level[0].pTex);
+		SAFE_RELEASE(MicroCfg.Level[1].pTex);
+		SAFE_RELEASE(MicroCfg.Level[2].pTex);
 	}
 
 	return MicroCfg.bEnabled;

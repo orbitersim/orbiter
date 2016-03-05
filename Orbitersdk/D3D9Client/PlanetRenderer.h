@@ -52,7 +52,7 @@ public:
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
-	static LPDIRECT3DTEXTURE9 hMicroBlend;
+	static LPDIRECT3DTEXTURE9 hMicroRot;
 	static VECTOR3 vLPosOld;
 	static bool bEnvMapEnabled;
 	// ------------------------------------------------------------
@@ -74,6 +74,7 @@ public:
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
 	static D3DXHANDLE svMapUVOffset;
+	static D3DXHANDLE svMicroScale0;
 	static D3DXHANDLE svMicroScale1;		
 	static D3DXHANDLE svMicroScale2;	
 	// ------------------------------------------------------------
@@ -101,7 +102,7 @@ public:
 	static D3DXHANDLE stMicroA;
 	static D3DXHANDLE stMicroB;
 	static D3DXHANDLE stMicroC;
-	static D3DXHANDLE stMicroBlend;
+	static D3DXHANDLE stMicroRot;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;

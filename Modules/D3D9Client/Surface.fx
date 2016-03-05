@@ -79,8 +79,9 @@ struct CelSphereVS
 uniform extern float4x4  mWorld;		    // World matrix
 uniform extern float4x4  mViewProj;			// Combined View and Projection matrix
 // ------------------------------------------------------------
-uniform extern float4    vMicroScale1;		// Micro Texture A,B scale factors
-uniform extern float4    vMicroScale2;		// Micro texture C scale factors
+uniform extern float4    vMSc0;				// Micro Texture A scale factors
+uniform extern float4    vMSc1;				// Micro Texture B scale factors
+uniform extern float4    vMSc2;				// Micro texture C scale factors
 uniform extern float4    vTexOff;			// Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power) 
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
@@ -111,7 +112,7 @@ uniform extern texture	 tEnvMap;
 uniform extern texture	 tMicroA;	
 uniform extern texture	 tMicroB;
 uniform extern texture	 tMicroC;
-uniform extern texture	 tMicroBlend;
+uniform extern texture	 tMicroRot;
 
 
 
@@ -148,7 +149,7 @@ sampler NoiseTexS = sampler_state
 	Texture = <tNoise>;
 	MinFilter = POINT;
 	MagFilter = POINT;
-	MipFilter = NONE;
+	MipFilter = POINT;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -202,6 +203,16 @@ sampler MicroCS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = MICRO_ANISOTROPY;
+	AddressU = WRAP;
+    AddressV = WRAP;
+};
+
+sampler MicroRT = sampler_state
+{
+	Texture = <tMicroRot>;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = NONE;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -300,8 +311,11 @@ float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
 	}
 	
 	if (iDebug==3) {
-		float b = 1.0f - abs(a);
-		return float4(saturate(a), saturate(b*b), saturate(-a), 1.0);
+		if (a<-1)		return saturate(float4(0,   0, 2+a, 1.0));	
+		else if (a<0)	return saturate(float4(0, 1+a,   1, 1.0));	
+		else if (a<1)	return saturate(float4(a,   1, 1-a, 1.0));	
+		else if (a<2)	return saturate(float4(1, 2-a,	 0, 1.0));	
+		else 			return saturate(float4(1, a-2, a-2, 1.0));
 	}
 	
 	if (iDebug==4) {
@@ -455,29 +469,33 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	
 	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
-	float3 vPlN  = normalize(vVrt);						// Planet mean normal at vertex location
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
 	float  fRay  = abs(dot(vPosW, vRay));				// Length of the viewing ray
-	//float  fNgt	 = (fDPS+0.242f) * 2.924f; 
 	float  fNgt	 = fDPS * 4.0f; 
 	outVS.camW   = -vPosW;
 	outVS.nrmW   = vNrmW;
 
+	// vTexOff, vGeneric only used in cloud shadow rendering
 	outVS.texUV.xy  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
-
-	// Camara altitude dependency multiplier for ambient color of atmosphere
-	float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
+	outVS.texUV.zw  = vrt.tex1.xy;
 
 	outVS.aux[AUX_NIGHT] = -fNgt;
 	outVS.aux[AUX_DIST]  =  fRay;
 
+	// If no atmosphere skip the rest
 	if (!bOnOff) return outVS;
 
-	outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
-	outVS.texUV.zw *= 1e-3f; // Water scale factor
-	outVS.texUV.zw += 64.0f; 
-	outVS.texUV.z  += fTime*0.008f;
-		
+	// Create UV coords for water
+	if (bSpecular) {
+		outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
+		outVS.texUV.zw *= 1e-3f; // Water scale factor
+		outVS.texUV.zw += 64.0f; 
+		outVS.texUV.z  += fTime*0.008f;
+	}
+
+	// Camara altitude dependency multiplier for ambient color of atmosphere
+	float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
+
 	float  fDPR  = dot(vPlN,  vRay);					// Dot mean normal, viewing ray
 	float  fDNR	 = dot(vNrmW, vRay);
 	float  fDNS  = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
@@ -529,10 +547,10 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
 	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
 
-	float3 nrmW = frg.nrmW;					// Per-vertex surface normal vector
-	float3 nvrW = frg.nrmW;					// Per-vertex surface normal vector
+	float3 nrmW = frg.nrmW;					// Per-pixel surface normal vector
+	float3 nvrW = frg.nrmW;					// Per-pixel surface normal vector
 	float3 camW = normalize(frg.camW);		// Unit viewing ray
-	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric vertex position
+	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);			// Planet mean normal	
 	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
 	
@@ -571,31 +589,41 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 			float dist = frg.aux[AUX_DIST];
 
-			float2 UV  = frg.texUV.xy;
-			float2 UVr = frg.texUV.xy;
+			float2 UV  = frg.texUV.zw;
+			float2 UVr = frg.texUV.zw * vMSc2.zw + vMSc2.xy;
 
+			/*
 			#if defined(_MICROROTATIONS)
 				// Noise texture size 128x128
-				float fRot = tex2D(NoiseTexS, UV*vMicroScale2.xy*7.8125e-3).r;
-				if (fRot<0.5f) UVr = float2(-UVr.y, UVr.x);				// Rotate 90deg and mirror
-				if (fRot<0.35) UVr = -UVr;								// Rotate 180deg
-				if (fRot>0.65) UVr = -UVr;								// Rotate 180deg
-			#endif
+				float fRot = tex2D(MicroRT, frg.texUV.xy*vMicroScale2.xy*0.25f).r;
+				if (fRot<0.5f) UVr = float2(-UVr.y, UVr.x);					// Rotate 90deg
+				if (fRot<0.35) UVr = -UVr;									// Rotate 180deg
+				if (fRot>0.65) UVr = -UVr;									// Rotate 180deg
+			#endif*/
 		
-			float3 cFar = tex2D(MicroCS, UVr*vMicroScale2.xy).rgb;	// High altitude micro texture C
-			float3 cMed = tex2D(MicroBS, UV*vMicroScale1.zw).rgb;	// Medimum altitude micro texture B
-			float3 cLow = tex2D(MicroAS, UV*vMicroScale1.xy).rgb;	// Low altitude micro texture A
+			#if defined(_DEVELOPPERMODE)
+				// Normal in .rg luminance in .b
+				float3 cFar = tex2D(MicroCS, UVr).rgb;						// High altitude micro texture C
+				float3 cMed = tex2D(MicroBS, UV*vMSc1.zw+vMSc1.xy).rgb;		// Medimum altitude micro texture B
+				float3 cLow = tex2D(MicroAS, UV*vMSc0.zw+vMSc0.xy).rgb;		// Low altitude micro texture A
+			#else
+				// Normal in .ag luminance in .b
+				float3 cFar = tex2D(MicroCS, UVr).agb;						// High altitude micro texture C
+				float3 cMed = tex2D(MicroBS, UV*vMSc1.zw+vMSc1.xy).agb;		// Medimum altitude micro texture B
+				float3 cLow = tex2D(MicroAS, UV*vMSc0.zw+vMSc0.xy).agb;		// Low altitude micro texture A
+			#endif
 
 			float step1 = smoothstep(50000, 20000, dist);
 
+			/*
 			#if defined(_MICROROTATIONS)
 				// Rotate Normals
-				if (fRot<0.5f) cFar.xy = float2(cFar.y, 1.0f-cFar.x);	// Rotate 90deg and mirror
-				if (fRot<0.35) cFar.xy = 1.0f-cFar.xy;					// Rotate 180deg
-				if (fRot>0.65) cFar.xy = 1.0f-cFar.xy;	
+				if (fRot<0.5f) cFar.xy = float2(cFar.y, 1.0f-cFar.x);		// Rotate 90deg
+				if (fRot<0.35) cFar.xy = 1.0f-cFar.xy;						// Rotate 180deg
+				if (fRot>0.65) cFar.xy = 1.0f-cFar.xy;						// Rotate 180deg
 				// Normal Null range
 				cFar.rg = (abs(cFar.rg-0.5)>0.01 ? cFar.rg : 0.5f);
-			#endif
+			#endif*/
 			
 			// OPTIONAL TEXTURE BLEND EQUATIONS -------------------------------
 			//float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
@@ -623,7 +651,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 				float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
 				cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
 				// Approximate world space normal
-				nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
+				nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nvrW * cNrm.z));
 			}
 		
 			// Apply luminance
@@ -639,9 +667,8 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	//
 	if (!bOnOff) { // No
 
-		float fDRP = dot(vPlN, vSunDir);
-
-		nrmW = lerp(nrmW, vPlN, pow(0.05, saturate(fDRP)));
+		float fTrS = saturate(dot(nvrW, vSunDir)*10.0f);	// Shadowing by terrain
+		float fPlS = saturate(dot(vPlN, vSunDir)*10.0f);	// Shadowing by planet
 
 		float fDNS = dot(nrmW, vSunDir);
 		float fDNR = dot(nrmW, camW);
@@ -651,6 +678,9 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		float fY = 0.05 + saturate(fDNR)*0.4;			// Lommel-Seeliger compensation
 		float fZ = pow(abs(fDRS),10.0f) * 0.3f;			// Shadow compensation
 		float fLvl = fX * (fZ+rcp(fX+fY)) * fExposure;	// Bake all together
+
+		// Apply shadows
+		fLvl *= (fTrS * fPlS);
 
 		float3 color = cTex.rgb * max(fLvl, 0);			// Apply sunlight
 
@@ -662,7 +692,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		// Night lights
 		if (bLights) cNgt = 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
 
-		// Labmertian shading term
+		// Lambertian shading term
 		float fDNS = dot(nrmW, vSunDir);
 
 		// Compose final color, take atmospheric attennuation and inscatter in account
@@ -678,139 +708,6 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		return float4(pow(abs(color), fAux4), 1.0f);  
 	}
 }
-
-
-/*
-
-float4 SurfaceTechPS(TileVS frg) : COLOR
-{
-	float3 cNgt = 0;
-	float3 cSpe = 0;
-	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
-	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
-
-	float3 nrmW = frg.nrmW;					// Per-vertex surface normal vector
-	float3 nvrW = frg.nrmW;					// Per-vertex surface normal vector
-	float3 camW = normalize(frg.camW);		// Unit viewing ray
-	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric vertex position
-	float3 vPlN = normalize(vVrt);			// Planet mean normal	
-	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
-
-	// Specular Water reflection
-	//
-	if (bSpecular) {
-
-		#if defined(_SURFACERIPPLES)
-			float Fct = min(2.0f, 10000.0f / fCameraAlt);
-			float3 cNrm = (tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f) * Fct;
-			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
-			// Compute world space normal 
-			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
-		#endif
-
-		float f = 1.0-saturate(dot(camW, nrmW));
-		float s = dot(reflect(-vSunDir, nrmW), camW);
-		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
-
-		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
-
-		#if defined(_ENVMAP) && defined(_SURFACERIPPLES)
-			float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
-			if (bEnvEnable) cSky = texCUBE(EnvMapS, reflect(-frg.camW, nrmW)).rgb * 3.0;
-		#else
-			float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
-		#endif
-
-		cTex.rgb = lerp(cTex.rgb, cSky, m * (f*f*f*f));
-	}
-
-	else {
-
-		if (bMicro) {
-
-			float dist = frg.aux[AUX_DIST];// / fAlpha;
-
-			float2 UVn  = frg.texUV.xy;
-			float2 UVr  = frg.texUV.xy;
-
-			// Noise texture size 128x128, 512/128 = 4
-			float fRot = tex2D(NoiseTexS, UVn*4.0f).r;
-			
-			//if (fRot<0.5f) UVr = float2(-UVr.y, UVr.x);			// Rotate 90deg and mirror
-			//if (fRot<0.35) UVr = -UVr;							// Rotate 180deg
-			//if (fRot>0.65) UVr = -UVr;							// Rotate 180deg
-
-			//if (fMir<0.4)  UVr.x = -UVr.x;						// Mirror X
-			//if (fMir>0.6)  UVr.y = -UVr.y;						// Mirror Y
-
-			float3 cFar = tex2D(MicroCS, UVn*8.0f).rgb;			// High altitude micro texture C
-			float3 cMed = tex2D(MicroBS, UVn*64.0f).rgb;		// Medimum altitude micro texture B
-			float3 cLow = tex2D(MicroAS, UVr*512.0f).rgb;		// Low altitude micro texture A
-			
-			float step1 = smoothstep(25000, 12000, dist);
-			
-			//float step2 = smoothstep(4000,  6000,  dist);
-			//float step3 = smoothstep(200,   600,   dist);
-			//cLow = lerp(cLow, 0.5f, step3);
-			//cMed = lerp(cMed, 0.5f, step2);
-			
-			//if (fRot<0.5f) cLow.xy = float2(1.0f-cLow.y, cLow.x);			// Rotate 90deg and mirror
-			//if (fRot<0.35) cLow.xy = 1.0f-cLow.xy;							// Rotate 180deg
-			//if (fRot>0.65) cLow.xy = 1.0f-cLow.xy;		
-
-		
-			float3 cFnl = (cFar+0.5f) * (cMed+0.5f) * (cLow+0.5f);
-			
-			
-			// Create normals
-			float3 cNrm  = float3((cFnl.xy - 1.0f) * 2.0f, 0) * step1;
-			cNrm.z  = sqrt(1 - (cNrm.x*cNrm.x + cNrm.y * cNrm.y));
-
-			// Approximate world space normal
-			nrmW = normalize(-(vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nrmW * cNrm.z));
-		
-			// Apply luminance
-			cTex.rgb *= lerp(1.0f, cFnl.b, step1);
-		}
-	}
-
-	// Do we have an atmosphere ?
-	//
-	if (!bOnOff) { // No
-
-		//float a = (fRad - fRadius) / 7000.0f;
-		//float b = 1.0f - abs(a);
-		//return float4(saturate(a), saturate(b*b), saturate(-a), 1.0);
-
-		float fDRP = dot(vPlN, vSunDir);
-
-		nrmW = lerp(nrmW, vPlN, pow(0.05, saturate(fDRP)));
-
-		float fDNS = dot(nrmW, vSunDir);
-		float fDNR = dot(nrmW, camW);
-		float fDRS = dot(camW, vSunDir);
-
-		float fX = saturate(fDNS);						// Lambertian
-		float fY = 0.05 + saturate(fDNR)*0.4;			// Lommel-Seeliger compensation
-		float fZ = pow(abs(fDRS),10.0f) * 0.3f;			// Shadow compensation
-		float fLvl = fX * (fZ+rcp(fX+fY)) * fExposure;	// Bake all together
-
-		float3 color = cTex.rgb * max(fLvl, 0) + cSpe;
-
-		return float4(pow(abs(color), fAux4), 1.0f);
-	}
-	else { // Yes
-
-		if (bLights) frg.atten.rgb += 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
-		
-		float3 color = cTex.rgb * frg.atten.rgb + cSpe + frg.insca.rgb + cNgt;
-
-		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;  
-
-		return float4(pow(abs(color), fAux4), 1.0f);  
-	}
-}
-*/
 
 
 // =============================================================================================================

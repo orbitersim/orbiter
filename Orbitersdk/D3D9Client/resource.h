@@ -122,3 +122,7 @@
 #define IDC_DBG_SCENEDBG                        2116
 #define IDC_DBG_LESS                            2117
 #define IDC_BLENDMODE                           2118
+#define IDC_DBG_OPEN                            2119
+#define IDC_DBG_EXECUTE                         2120
+#define IDC_DBG_ACTION                          2121
+#define IDC_DBG_FILE                            2122

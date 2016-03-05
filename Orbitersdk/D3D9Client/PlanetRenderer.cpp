@@ -20,7 +20,7 @@
 class oapi::D3D9Client *PlanetRenderer::gc = NULL; 
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
 LPDIRECT3DTEXTURE9 PlanetRenderer::hOcean = NULL;
-LPDIRECT3DTEXTURE9 PlanetRenderer::hMicroBlend = NULL;
+LPDIRECT3DTEXTURE9 PlanetRenderer::hMicroRot = NULL;
 VECTOR3 PlanetRenderer::vLPosOld = _V(1,0,0);
 bool PlanetRenderer::bEnvMapEnabled = false;
 // ------------------------------------------------------------
@@ -43,8 +43,9 @@ D3DXHANDLE PlanetRenderer::svGeneric = NULL;
 D3DXHANDLE PlanetRenderer::svTangent = NULL;
 D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
 D3DXHANDLE PlanetRenderer::svMapUVOffset = NULL;
-D3DXHANDLE PlanetRenderer::svMicroScale1 = NULL;		
-D3DXHANDLE PlanetRenderer::svMicroScale2 = NULL;	
+D3DXHANDLE PlanetRenderer::svMicroScale0 = NULL;
+D3DXHANDLE PlanetRenderer::svMicroScale1 = NULL;
+D3DXHANDLE PlanetRenderer::svMicroScale2 = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
@@ -70,7 +71,7 @@ D3DXHANDLE PlanetRenderer::stEnvMap = NULL;
 D3DXHANDLE PlanetRenderer::stMicroA = NULL;
 D3DXHANDLE PlanetRenderer::stMicroB = NULL;
 D3DXHANDLE PlanetRenderer::stMicroC = NULL;
-D3DXHANDLE PlanetRenderer::stMicroBlend = NULL;
+D3DXHANDLE PlanetRenderer::stMicroRot = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -173,9 +174,11 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		default: strcpy_s((char*)macro[m].Definition, 4, "2"); break;
 	}
 	m++;
+	if (Config->MicroMode==2) macro[m].Name = "_MICROROTATIONS";
+	if (Config->MicroMode==3) macro[m].Name = "_DEVELOPPERMODE";
+	m++;
 	// ------------------------------------------------------------------------------
 	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
-	if (Config->MicroMode==2) macro[m++].Name = "_MICROROTATIONS";
 	// ------------------------------------------------------------------------------
 	if (Config->EnvMapMode && bRiples) {
 		macro[m++].Name = "_ENVMAP"; 
@@ -224,8 +227,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svTangent			= pShader->GetParameterByName(0,"vTangent");
 	svBiTangent			= pShader->GetParameterByName(0,"vBiTangent");
 	svMapUVOffset		= pShader->GetParameterByName(0,"vMapUVOffset");
-	svMicroScale1		= pShader->GetParameterByName(0,"vMicroScale1");	
-	svMicroScale2		= pShader->GetParameterByName(0,"vMicroScale2");
+	svMicroScale0		= pShader->GetParameterByName(0,"vMSc0");	
+	svMicroScale1		= pShader->GetParameterByName(0,"vMSc1");	
+	svMicroScale2		= pShader->GetParameterByName(0,"vMSc2");
 	// ------------------------------------------------------------
 	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
@@ -251,7 +255,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stMicroA			= pShader->GetParameterByName(0,"tMicroA");
 	stMicroB			= pShader->GetParameterByName(0,"tMicroB");
 	stMicroC			= pShader->GetParameterByName(0,"tMicroC");
-	stMicroBlend		= pShader->GetParameterByName(0,"tMicroBlend");
+	stMicroRot			= pShader->GetParameterByName(0,"tMicroRot");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
@@ -287,11 +291,11 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	
 	
 	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Ocean.dds", &hOcean));
-	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9MicroBlend.dds", &hMicroBlend));
+	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9MicroRot.dds", &hMicroRot));
 	
 	if (hOcean) {
 		HR(pShader->SetTexture(stOcean, hOcean));
-		HR(pShader->SetTexture(stMicroBlend, hMicroBlend));
+		HR(pShader->SetTexture(stMicroRot, hMicroRot));
 	}
 }
 
@@ -301,7 +305,7 @@ void PlanetRenderer::GlobalExit ()
 {
 	SAFE_RELEASE(pShader);
 	SAFE_RELEASE(hOcean);
-	SAFE_RELEASE(hMicroBlend);
+	SAFE_RELEASE(hMicroRot);
 }
 
 // -----------------------------------------------------------------------

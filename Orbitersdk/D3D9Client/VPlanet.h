@@ -176,6 +176,7 @@ private:
 		char	file[32];		// Texture file name
 		float	reso;			// Resolution px/m
 		float	size;			// Texture size in meters;
+		float	px;				// pixel count
 		LPDIRECT3DTEXTURE9 pTex;
 	};
 

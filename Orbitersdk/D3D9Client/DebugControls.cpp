@@ -37,6 +37,10 @@ int  origwidth;
 HWND hDlg = NULL;
 vObject *vObj = NULL;
 
+OPENFILENAMEA OpenTex, SaveTex;
+char OpenFileName[255];
+char SaveFileName[255];    
+
 void UpdateMaterialDisplay(bool bSetup=false);
 
 // ===========================================================================
@@ -78,6 +82,32 @@ void Create()
 	else {
 		dwCmd = 0;
 	}
+  
+	memset(&OpenTex, 0, sizeof(OPENFILENAME));
+	memset(OpenFileName, 0, sizeof(OpenFileName));
+
+	OpenTex.lStructSize = sizeof(OPENFILENAME);
+	OpenTex.lpstrFile = OpenFileName;
+	OpenTex.lpstrInitialDir = "Textures\0";
+	OpenTex.nMaxFile = sizeof(OpenFileName);
+	OpenTex.lpstrFilter = "*.dds\0";
+	OpenTex.nFilterIndex = 0;
+	OpenTex.lpstrFileTitle = NULL;
+	OpenTex.nMaxFileTitle = 0;
+	OpenTex.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+	memset(&SaveTex, 0, sizeof(OPENFILENAME));
+	memset(SaveFileName, 0, sizeof(SaveFileName));
+
+	SaveTex.lStructSize = sizeof(OPENFILENAME);
+	SaveTex.lpstrFile = SaveFileName;
+	SaveTex.lpstrInitialDir = "Textures\0";
+	SaveTex.nMaxFile = sizeof(SaveFileName);
+	SaveTex.lpstrFilter = "*.dds\0";
+	SaveTex.nFilterIndex = 0;
+	SaveTex.lpstrFileTitle = NULL;
+	SaveTex.nMaxFileTitle = 0;
+	SaveTex.Flags = OFN_OVERWRITEPROMPT;
 }
 
 bool IsActive()
@@ -168,6 +198,10 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Height Mk2");
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"Tile Level");
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_SETCURSEL, 0, 0);
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Normals");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)"None");
@@ -713,6 +747,88 @@ void SetColorValue(const char *lbl)
 	SetColorSlider();
 }
 
+DWORD ProcessColor(D3DXCOLOR &C, DWORD Action, int x, int y)
+{
+	if (Action==0) return D3DXCOLOR(C.b, C.g, C.b, C.r);
+	return D3DXCOLOR(0, 0, 0, 1);
+}
+
+bool Execute(HWND hWnd, LPOPENFILENAME pOF)
+{
+	LPDIRECT3DDEVICE9 pDevice = g_client->GetDevice();
+
+	SaveTex.hwndOwner = hWnd;
+
+	D3DLOCKED_RECT in, out;
+
+	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);	
+
+	if (Action==0) {
+		LPDIRECT3DTEXTURE9 pTex = NULL;
+		LPDIRECT3DTEXTURE9 pWork = NULL;
+		LPDIRECT3DTEXTURE9 pSave = NULL;
+		D3DXIMAGE_INFO info;
+
+		HR(D3DXCreateTextureFromFileEx(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));	
+		
+		if (!pTex) {
+			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 
+			return false;
+		}
+
+		HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));	
+		if (!pWork) return false;
+		HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave));
+		if (!pSave) return false;
+
+		strcpy_s(SaveTex.lpstrFile, 255, OpenTex.lpstrFile);
+
+		if (GetSaveFileName(&SaveTex)) {
+		
+			for (DWORD n=0;n<info.MipLevels;n++) {
+				DWORD w = info.Width>>n;
+				DWORD h = info.Height>>n;
+				HR(pTex->LockRect(n, &in, NULL, 0)); 
+				HR(pWork->LockRect(n, &out, NULL, 0));
+				DWORD *pIn  = (DWORD *)in.pBits;
+				DWORD *pOut = (DWORD *)out.pBits;
+				for (DWORD y=0;y<h;y++) {
+					for (DWORD x=0;x<w;x++) {
+						D3DXCOLOR color(pIn[x + y*w]);
+						pOut[x + y*w] = ProcessColor(color, Action, x, y);
+					}
+				}
+				HR(pTex->UnlockRect(n));
+				HR(pWork->UnlockRect(n));
+			}
+
+			for (DWORD n=0;n<info.MipLevels;n++) {
+				LPDIRECT3DSURFACE9 pIn, pOut;
+				pWork->GetSurfaceLevel(n, &pIn);
+				pSave->GetSurfaceLevel(n, &pOut);
+				if (D3DXLoadSurfaceFromSurface(pOut, NULL, NULL, pIn, NULL, NULL, D3DX_FILTER_NONE, 0)!=S_OK) {
+					LogErr("D3DXLoadSurfaceFromSurface Failed");
+					return false;
+				}
+				pIn->Release();
+				pOut->Release();
+			}
+
+			if (D3DXSaveTextureToFileA(SaveTex.lpstrFile, D3DXIFF_DDS, pSave, NULL)!=S_OK) {
+				LogErr("Failed to create a file [%s]",SaveTex.lpstrFile); 
+				return false;
+			}
+			
+			pSave->Release();
+			pWork->Release();
+			pTex->Release();
+			return true;
+		}
+	}
+	return false;
+}
+			
+
 // ==============================================================
 // Dialog message handler
 
@@ -720,6 +836,8 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char lbl[32];
 	RECT rect;
+
+	OpenTex.hwndOwner = hWnd;
 
 	DWORD Prp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
 
@@ -905,6 +1023,18 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			case IDC_DBG_OPEN:
+				if (GetOpenFileNameA(&OpenTex)) {
+					SetWindowText(GetDlgItem(hWnd, IDC_DBG_FILE), OpenTex.lpstrFile);
+				}
+				break;
+
+			case IDC_DBG_EXECUTE:
+				if (Execute(hWnd, &OpenTex)) MessageBox(hWnd,"Done :)","D3D9 Controls", MB_OK);
+				else 						 MessageBox(hWnd,"Failed :(","D3D9 Controls", MB_OK);
+				break;
+
+
 			case IDC_DBG_MORE:
 				GetWindowRect(hDlg, &rect);
 				SetWindowPos(hDlg, NULL, rect.left, rect.top, origwidth, rect.bottom - rect.top, SWP_SHOWWINDOW);
@@ -929,6 +1059,9 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_PICK:
 			case IDC_DBG_FPSLIM:
 				UpdateFlags();
+				break;
+
+			case IDC_DBG_FILE:
 				break;
 		
 			default: 

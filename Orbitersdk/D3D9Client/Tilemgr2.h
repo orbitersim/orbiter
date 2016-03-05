@@ -79,8 +79,6 @@ public:
 	void Extents (double *latmin, double *latmax, double *lngmin, double *lngmax) const;
 	// Return the latitude/longitude extents of the tile
 
-	void Size (double *base_width, double *top_width, double *height) const;
-	// Return tile size in meters
 
 	virtual void MatchEdges () {}
 	// Match edges with neighbour tiles
@@ -151,8 +149,8 @@ protected:
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	DWORD FrameId;
-	double width;			   // Mean tile width [m]	
-	double height;			   // tile height [m];
+	float width;			   // tile width [rad] (widest section i.e base)
+	float height;			   // tile height [rad]
 	mutable double mean_elev;  // mean tile elevation [m]
 	mutable double max_elev;   // maximum tile elevation [m]
 };

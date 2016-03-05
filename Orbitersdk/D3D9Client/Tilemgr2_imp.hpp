@@ -177,6 +177,7 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 		int nlat = 1 << lvl;
 		tile->MatchEdges ();
 		SetWorldMatrix (WorldMatrix (ilng, nlng, ilat, nlat));
+		tile->StepIn ();
 		tile->Render ();
 	} else if (tile->state == Tile::Active) {
 		tile->StepIn ();
