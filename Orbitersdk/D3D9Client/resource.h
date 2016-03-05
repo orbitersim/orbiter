@@ -126,3 +126,4 @@
 #define IDC_DBG_EXECUTE                         2120
 #define IDC_DBG_ACTION                          2121
 #define IDC_DBG_FILE                            2122
+#define IDC_MICROBIAS                           2123

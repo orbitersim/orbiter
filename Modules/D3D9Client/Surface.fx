@@ -126,8 +126,8 @@ sampler DiffTexS = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	MaxAnisotropy = 8;
-    MipMapLODBias = 0;
+	MaxAnisotropy = MICRO_ANISOTROPY;
+    MipMapLODBias = 0.0;
 	AddressU = CLAMP;
     AddressV = CLAMP;
 };
@@ -181,6 +181,7 @@ sampler MicroAS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = MICRO_ANISOTROPY;
+	MipMapLodBias = MICRO_BIAS;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -192,6 +193,7 @@ sampler MicroBS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = MICRO_ANISOTROPY;
+	MipMapLODBias = MICRO_BIAS;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -203,6 +205,7 @@ sampler MicroCS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = MICRO_ANISOTROPY;
+	MipMapLODBias = MICRO_BIAS;
 	AddressU = WRAP;
     AddressV = WRAP;
 };

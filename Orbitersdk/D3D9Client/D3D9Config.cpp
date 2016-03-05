@@ -70,6 +70,7 @@ void D3D9Config::Reset ()
 	MicroMode			= 2;
 	MicroFilter			= 2;
 	BlendMode			= 1;
+	MicroBias			= 3;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -128,6 +129,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (3, i));
 	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
 	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
+	if (oapiReadItem_int   (hFile, "MicroBias", i))					MicroBias = max(0,  min(10, i));
 	
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -185,7 +187,8 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "MicroMode", MicroMode);
 	oapiWriteItem_int   (hFile, "MicroFilter", MicroFilter);
 	oapiWriteItem_int   (hFile, "BlendMode", BlendMode);
-	
+	oapiWriteItem_int   (hFile, "MicroBias", MicroBias);
+
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		
 	

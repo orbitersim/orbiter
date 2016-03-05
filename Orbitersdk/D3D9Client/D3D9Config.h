@@ -67,6 +67,7 @@ public:
 	int MicroMode;			
 	int MicroFilter;
 	int BlendMode;
+	int MicroBias;					///< Mipmap LOD Bias for surface micro textures
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 

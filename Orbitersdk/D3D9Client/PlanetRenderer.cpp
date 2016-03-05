@@ -173,6 +173,12 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		case 1:  strcpy_s((char*)macro[m].Definition, 4, "1"); break;
 		default: strcpy_s((char*)macro[m].Definition, 4, "2"); break;
 	}
+	// ------------------------------------------------------------------------------
+	m=6;
+	macro[m].Name = "MICRO_BIAS";
+	macro[m].Definition = new char[8];
+	sprintf_s((char*)macro[m].Definition,8,"%1.1f",float(Config->MicroBias)*0.1f);
+	// ------------------------------------------------------------------------------
 	m++;
 	if (Config->MicroMode==2) macro[m].Name = "_MICROROTATIONS";
 	if (Config->MicroMode==3) macro[m].Name = "_DEVELOPPERMODE";
@@ -192,6 +198,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	delete []macro[3].Definition;
 	delete []macro[4].Definition;
 	delete []macro[5].Definition;
+	delete []macro[6].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
