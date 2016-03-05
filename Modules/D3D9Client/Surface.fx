@@ -590,6 +590,9 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 			float dist = frg.aux[AUX_DIST];
 
+			//float2 UV  = frg.texUV.xy;
+			//float2 UVr = frg.texUV.xy * vMSc2.zw + vMSc2.xy;
+
 			float2 UV  = frg.texUV.zw;
 			float2 UVr = frg.texUV.zw * vMSc2.zw + vMSc2.xy;
 

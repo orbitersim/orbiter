@@ -174,9 +174,9 @@ private:
 
 	struct _MicroTC {
 		char	file[32];		// Texture file name
-		float	reso;			// Resolution px/m
-		float	size;			// Texture size in meters;
-		float	px;				// pixel count
+		double	reso;			// Resolution px/m
+		double	size;			// Texture size in meters;
+		double	px;				// pixel count
 		LPDIRECT3DTEXTURE9 pTex;
 	};
 

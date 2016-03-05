@@ -149,8 +149,8 @@ protected:
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	DWORD FrameId;
-	float width;			   // tile width [rad] (widest section i.e base)
-	float height;			   // tile height [rad]
+	double width;			   // tile width [rad] (widest section i.e base)
+	double height;			   // tile height [rad]
 	mutable double mean_elev;  // mean tile elevation [m]
 	mutable double max_elev;   // maximum tile elevation [m]
 };

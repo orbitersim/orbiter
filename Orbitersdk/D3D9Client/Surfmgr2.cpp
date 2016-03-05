@@ -342,12 +342,13 @@ SurfTile *SurfTile::getTextureOwner()
 
 // -----------------------------------------------------------------------
 
-float SurfTile::fixinput(float a, int x)
+float SurfTile::fixinput(double a, int x)
 {
+	//return float((1.0+floor(a*0.0625))*16.0);
 	switch(x) {
-		case 0: return (1.0f+floor(a*0.0625f))*16.0f;
-		case 1: return (1.0f+floor(a*0.125f))*8.0f;
-		case 2: return (1.0f+floor(a*0.5f))*2.0f;
+		case 0: return float((1.0+floor(a*0.0625))*16.0);
+		case 1: return float((1.0+floor(a*0.125))*8.0);
+		case 2: return float((1.0+floor(a*0.5))*2.0);
 	}
 	return 0.0f;
 }
@@ -356,6 +357,8 @@ float SurfTile::fixinput(float a, int x)
 
 D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
 {
+	//return D3DXVECTOR4(0, 0, pT->MicroRep[ml].x, pT->MicroRep[ml].y); 	
+
 	float rs = 1.0f / float( 1 << (lvl-pT->Level()) );	// Range subdivision
 	float xo = pT->MicroRep[ml].x * texrange.tumin;		
 	float yo = pT->MicroRep[ml].y * texrange.tvmin;
@@ -421,11 +424,14 @@ void SurfTile::Render ()
 	//
 	SurfTile *pT = getTextureOwner();
 
-	if (pT) {
+	if (pT && vPlanet->MicroCfg.bEnabled) {
 		HR(Shader->SetBool(TileManager2Base::sbMicro, true));
 		HR(Shader->SetVector(TileManager2Base::svMicroScale0, &MicroTexRange(pT, 0)));
 		HR(Shader->SetVector(TileManager2Base::svMicroScale1, &MicroTexRange(pT, 1)));
 		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroTexRange(pT, 2)));
+	}
+	else {
+		HR(Shader->SetBool(TileManager2Base::sbMicro, false));	
 	}
 	
 

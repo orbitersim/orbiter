@@ -1041,7 +1041,7 @@ bool vPlanet::ParseMicroTextures()
 				float reso; int lvl;
 				if (sscanf(cbuf, "LEVEL %d %s %f", &lvl, fname, &reso)==3) {
 					lvl = min(2, max(lvl,0));
-					MicroCfg.Level[lvl].reso = reso;
+					MicroCfg.Level[lvl].reso = double(reso);
 					strcpy_s(MicroCfg.Level[lvl].file, 32, fname);
 				}
 				else {
@@ -1071,9 +1071,10 @@ bool vPlanet::LoadMicroTextures()
 		D3DSURFACE_DESC desc;
 		if (MicroCfg.Level[i].pTex) {
 			MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
-			MicroCfg.Level[i].size = float(desc.Width) / MicroCfg.Level[i].reso;
-			MicroCfg.Level[i].px = float(desc.Width);
-			LogOapi("Level %u, %s, %.1fpx/m, %.1fm", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size);
+			MicroCfg.Level[i].size = double(desc.Width) / MicroCfg.Level[i].reso;
+			MicroCfg.Level[i].px = double(desc.Width);
+			DWORD mips = MicroCfg.Level[i].pTex->GetLevelCount();
+			LogOapi("Level %u, %s, %.1fpx/m, %.1fm, Mipmap count=%u", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size, mips);
 		}
 	}
 	MicroCfg.bLoaded = true;

@@ -57,7 +57,7 @@ protected:
 private:
 	INT16 *ElevationData () const;
 	double GetMeanElevation (const INT16 *elev) const;
-	float fixinput(float,int);
+	float fixinput(double, int);
 	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
 	D3DXVECTOR2 MicroRep[3];

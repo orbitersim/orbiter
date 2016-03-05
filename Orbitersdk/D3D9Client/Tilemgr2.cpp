@@ -43,10 +43,10 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
   state(Invalid),
   edgeok(false), owntex (true)
 {
-	float f = 1.0f / float(1<<lvl);
-	float x = float(PI) * (0.5f - float(ilat+1) * f);
-	width = float(PI) * cos(x) * f;
-	height = float(PI) * f;
+	double f = 1.0 / double(1<<lvl);
+	double x = PI * (0.5 - double(ilat+1) * f);
+	width = PI * cos(x) * f;
+	height = PI * f;
 }
 
 // -----------------------------------------------------------------------
