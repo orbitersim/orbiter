@@ -94,7 +94,7 @@ void Create()
 	OpenTex.nFilterIndex = 0;
 	OpenTex.lpstrFileTitle = NULL;
 	OpenTex.nMaxFileTitle = 0;
-	OpenTex.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	OpenTex.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 	memset(&SaveTex, 0, sizeof(OPENFILENAME));
 	memset(SaveFileName, 0, sizeof(SaveFileName));
@@ -107,7 +107,7 @@ void Create()
 	SaveTex.nFilterIndex = 0;
 	SaveTex.lpstrFileTitle = NULL;
 	SaveTex.nMaxFileTitle = 0;
-	SaveTex.Flags = OFN_OVERWRITEPROMPT;
+	SaveTex.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 }
 
 bool IsActive()
@@ -200,7 +200,9 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Normals");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm DXT5");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm RGB8");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm RGB4");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
@@ -750,6 +752,8 @@ void SetColorValue(const char *lbl)
 DWORD ProcessColor(D3DXCOLOR &C, DWORD Action, int x, int y)
 {
 	if (Action==0) return D3DXCOLOR(C.b, C.g, C.b, C.r);
+	if (Action==1) return D3DXCOLOR(C.b, C.g, C.b, C.r);
+	if (Action==2) return D3DXCOLOR(C.b, C.g, C.b, C.r);
 	return D3DXCOLOR(0, 0, 0, 1);
 }
 
@@ -763,7 +767,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);	
 
-	if (Action==0) {
+	if (Action==0 || Action==1 || Action==2) {
 		LPDIRECT3DTEXTURE9 pTex = NULL;
 		LPDIRECT3DTEXTURE9 pWork = NULL;
 		LPDIRECT3DTEXTURE9 pSave = NULL;
@@ -778,7 +782,11 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 		HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));	
 		if (!pWork) return false;
-		HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave));
+
+		if (Action==0) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave)); }
+		if (Action==1) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pSave)); }
+		if (Action==2) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A4R4G4B4, D3DPOOL_SYSTEMMEM, &pSave)); }
+
 		if (!pSave) return false;
 
 		strcpy_s(SaveTex.lpstrFile, 255, OpenTex.lpstrFile);
@@ -806,7 +814,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 				LPDIRECT3DSURFACE9 pIn, pOut;
 				pWork->GetSurfaceLevel(n, &pIn);
 				pSave->GetSurfaceLevel(n, &pOut);
-				if (D3DXLoadSurfaceFromSurface(pOut, NULL, NULL, pIn, NULL, NULL, D3DX_FILTER_NONE, 0)!=S_OK) {
+				if (D3DXLoadSurfaceFromSurface(pOut, NULL, NULL, pIn, NULL, NULL, D3DX_FILTER_POINT, 0)!=S_OK) {
 					LogErr("D3DXLoadSurfaceFromSurface Failed");
 					return false;
 				}
@@ -1034,6 +1042,8 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				else 						 MessageBox(hWnd,"Failed :(","D3D9 Controls", MB_OK);
 				break;
 
+			case IDC_DBG_ACTION:
+				break;
 
 			case IDC_DBG_MORE:
 				GetWindowRect(hDlg, &rect);
