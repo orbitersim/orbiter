@@ -13,8 +13,10 @@
 #include "Commctrl.h"
 #include "vObject.h"
 #include "vVessel.h"
+#include "vPlanet.h"
 #include "Mesh.h"
 #include "MaterialMgr.h"
+#include "VectorHelpers.h"
 #include <stdio.h>
 
 using namespace oapi;
@@ -60,6 +62,17 @@ const void *GetConfigParam (DWORD paramtype)
 	}
 }
 
+// =============================================================================================
+//
+float GetFloatFromBox(HWND hWnd, int item)
+{
+	char lbl[32];
+	GetWindowTextA(GetDlgItem(hWnd, item), lbl, 32);	
+	return float(atof(lbl));
+}
+
+// =============================================================================================
+//
 void Create()
 {
 	vObj = NULL;
@@ -90,7 +103,7 @@ void Create()
 	OpenTex.lpstrFile = OpenFileName;
 	OpenTex.lpstrInitialDir = "Textures\0";
 	OpenTex.nMaxFile = sizeof(OpenFileName);
-	OpenTex.lpstrFilter = "*.dds\0";
+	OpenTex.lpstrFilter = "*.dds;*.jpg;*.png;*.hdr;*.bmp;*.tga\0";
 	OpenTex.nFilterIndex = 0;
 	OpenTex.lpstrFileTitle = NULL;
 	OpenTex.nMaxFileTitle = 0;
@@ -110,17 +123,23 @@ void Create()
 	SaveTex.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 }
 
+// =============================================================================================
+//
 bool IsActive()
 {
 	return (hDlg!=NULL);
 }
 
+// =============================================================================================
+//
 int GetSceneDebug()
 {
 	if (!hDlg) return -1;
 	return (int)SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_GETCURSEL, 0, 0);
 }
 
+// =============================================================================================
+//
 void Release()
 {
 	vObj=NULL;
@@ -129,10 +148,13 @@ void Release()
 	dwCmd = NULL;
 }
 
+// =============================================================================================
+//
 void UpdateFlags()
 {
 	SETFLAG(debugFlags, DBG_FLAGS_SELGRPONLY,	(SendDlgItemMessageA(hDlg, IDC_DBG_GRPO, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_SELMSHONLY,	(SendDlgItemMessageA(hDlg, IDC_DBG_MSHO, BM_GETCHECK, 0, 0)==BST_CHECKED));
+	SETFLAG(debugFlags, DBG_FLAGS_TILEBOXES,	(SendDlgItemMessageA(hDlg, IDC_DBG_TILEBB, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_BOXES,		(SendDlgItemMessageA(hDlg, IDC_DBG_BOXES, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_SPHERES,		(SendDlgItemMessageA(hDlg, IDC_DBG_SPHERES, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_HLMESH,		(SendDlgItemMessageA(hDlg, IDC_DBG_HSM, BM_GETCHECK, 0, 0)==BST_CHECKED));
@@ -148,11 +170,15 @@ void UpdateFlags()
 	Config->EnableLimiter = (int)((debugFlags&DBG_FLAGS_FPSLIM)>0);
 }
 
+// =============================================================================================
+//
 void SetGroupHighlight(bool bStat)
 {
 	SETFLAG(debugFlags, DBG_FLAGS_HLGROUP, bStat);
 }
 
+// =============================================================================================
+//
 void OpenDlgClbk(void *context)
 {
 	DWORD idx = 0;
@@ -203,7 +229,19 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm DXT5");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm RGB8");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm RGB4");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Load and Assign");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_SETCURSEL, 0, 0);
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Save");
+	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 0");
+	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 1");
+	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 2");
+	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_SETCURSEL, 0, 0);
+
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARA), "1.3");
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARB), "0.01");
+	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARC), "0.00");
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)"None");
@@ -228,7 +266,6 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETTICFREQ,  1, 0);
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, 0);
 	
-
 	camMode = 0;
 	dspMode = 0;
 
@@ -239,6 +276,8 @@ void OpenDlgClbk(void *context)
 	UpdateFlags();
 }
 
+// =============================================================================================
+//
 void UpdateDissolveMap(SURFHANDLE hSrf)
 {
 	OBJHANDLE hObj = vObj->GetObjectA();
@@ -262,7 +301,8 @@ void UpdateDissolveMap(SURFHANDLE hSrf)
 	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat); 
 }
 
-
+// =============================================================================================
+//
 void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 {
 	OBJHANDLE hObj = vObj->GetObjectA();
@@ -368,7 +408,8 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat); 
 }
 
-
+// =============================================================================================
+//
 float GetMaterialValue(DWORD MatPrp, DWORD clr)
 {
 	OBJHANDLE hObj = vObj->GetObjectA();
@@ -463,8 +504,8 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	return 0.0f;
 }
 
-
-
+// =============================================================================================
+//
 void SetColorSlider()
 {
 	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
@@ -480,7 +521,8 @@ void SetColorSlider()
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
 
-
+// =============================================================================================
+//
 void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 {
 	char lbl[32];
@@ -518,6 +560,8 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	else		EnableWindow(GetDlgItem(hDlg, IDC_DBG_ALPHA), false);
 }
 
+// =============================================================================================
+//
 void UpdateMaterialDisplay(bool bSetup)
 {
 	char lbl[256];
@@ -596,7 +640,8 @@ void UpdateMaterialDisplay(bool bSetup)
 	}
 }
 
-
+// =============================================================================================
+//
 void UpdateColorSlider(WORD pos)
 {
 	float val = float(pos)/255.0f;
@@ -632,15 +677,15 @@ void UpdateColorSlider(WORD pos)
 	else UpdateMeshMaterial(val, MatPrp, SelColor);
 }
 
-
-
-
+// =============================================================================================
+//
 DWORD GetSelectedMesh()
 {
 	return sMesh;
 }
 
-
+// =============================================================================================
+//
 void SelectGroup(DWORD idx)
 {
 	if (idx<nGroup) {
@@ -649,6 +694,8 @@ void SelectGroup(DWORD idx)
 	}
 }
 
+// =============================================================================================
+//
 void SelectMesh(D3D9Mesh *pMesh)
 {
 	for (DWORD i=0;i<nMesh;i++) {
@@ -660,7 +707,8 @@ void SelectMesh(D3D9Mesh *pMesh)
 	SetupMeshGroups();
 }
 
-
+// =============================================================================================
+//
 void SetupMeshGroups()
 {
 	char lbl[256];
@@ -705,6 +753,8 @@ void SetupMeshGroups()
 	SetColorSlider();
 }
 
+// =============================================================================================
+//
 double GetVisualSize()
 {
 	if (hDlg && vObj) {
@@ -714,11 +764,15 @@ double GetVisualSize()
 	return 1.0;
 }
 
+// =============================================================================================
+//
 vObject * GetVisual()
 {
 	return vObj;
 }
 
+// =============================================================================================
+//
 void SetVisual(vObject *vo)
 {
 	if (!hDlg) {
@@ -729,6 +783,8 @@ void SetVisual(vObject *vo)
 	UpdateVisual();
 }
 
+// =============================================================================================
+//
 void UpdateVisual()
 {
 	if (!vObj || !hDlg) return; 
@@ -737,11 +793,15 @@ void UpdateVisual()
 	SetupMeshGroups();
 }
 
+// =============================================================================================
+//
 void RemoveVisual(vObject *vo)
 {
 	if (vObj==vo) vObj=NULL;
 }
 
+// =============================================================================================
+//
 void SetColorValue(const char *lbl)
 {
 	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
@@ -749,14 +809,65 @@ void SetColorValue(const char *lbl)
 	SetColorSlider();
 }
 
-DWORD ProcessColor(D3DXCOLOR &C, DWORD Action, int x, int y)
+// =============================================================================================
+//
+float reduce(float v, float q)
 {
-	if (Action==0) return D3DXCOLOR(C.b, C.g, C.b, C.r);
-	if (Action==1) return D3DXCOLOR(C.b, C.g, C.b, C.r);
-	if (Action==2) return D3DXCOLOR(C.b, C.g, C.b, C.r);
+	if (v>0) return max(0, v-q);
+	else     return min(0, v+q);
+}
+
+struct PCParam {
+	DWORD Action;
+	DWORD Func;
+	DWORD Mip;
+	float a,b,c;
+};
+
+// =============================================================================================
+//
+D3DXCOLOR ProcessColor(D3DXVECTOR4 &C, PCParam *prm, int x, int y)
+{
+	float fMip = float(prm->Mip);
+	float a = prm->a;
+	float b = prm->b;
+	float c = prm->c;
+
+	if (prm->Action>=0 && prm->Action<=2) {
+
+		// Swap color channels
+		C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
+
+		if (c>0.001) {
+			C.x += float(oapiRand()*2.0-1.0) * c;
+			C.y += float(oapiRand()*2.0-1.0) * c;
+			C.z += float(oapiRand()*2.0-1.0) * c;
+			C.w += float(oapiRand()*2.0-1.0) * c;
+		}
+		
+		// Reduce contrast
+		if (prm->Func & 0x2) {
+
+			if (prm->Mip==0) return D3DXCOLOR(C.x, C.y, C.z, C.w);		// Do nothing for the main level
+
+			C = C*2.0f - 1.0f;			// Expand to [-1, 1]
+			C *= pow(a, -abs(C)*fMip);
+
+			float k = b * fMip;
+
+			C = D3DXVECTOR4(reduce(C.x, k), reduce(C.y, k), reduce(C.z, k), reduce(C.w, k));
+			C = C*0.5f + 0.5f;			// Back to [0, 1]
+
+			return D3DXCOLOR(C.x, C.y, C.z, C.w);
+		}
+		else return D3DXCOLOR(C.x, C.y, C.z, C.w);
+	}
+
 	return D3DXCOLOR(0, 0, 0, 1);
 }
 
+// =============================================================================================
+//
 bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 {
 	LPDIRECT3DDEVICE9 pDevice = g_client->GetDevice();
@@ -764,57 +875,108 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 	SaveTex.hwndOwner = hWnd;
 
 	D3DLOCKED_RECT in, out;
+	PCParam prm;
 
-	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);	
+	DWORD Func;
+	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);
+	DWORD Target = SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_GETCURSEL, 0, 0);
 
-	if (Action==0 || Action==1 || Action==2) {
+	if (SendDlgItemMessageA(hDlg, IDC_DBG_NORM, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x1;
+	if (SendDlgItemMessageA(hDlg, IDC_DBG_FADE, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x2;
+	if (SendDlgItemMessageA(hDlg, IDC_DBG_SEAMS, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x4;
+
+	if (Action>=0 && Action<=3) {
+
 		LPDIRECT3DTEXTURE9 pTex = NULL;
 		LPDIRECT3DTEXTURE9 pWork = NULL;
 		LPDIRECT3DTEXTURE9 pSave = NULL;
 		D3DXIMAGE_INFO info;
 
-		HR(D3DXCreateTextureFromFileEx(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));	
+		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));	
 		
 		if (!pTex) {
 			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 
 			return false;
 		}
 
-		HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));	
-		if (!pWork) return false;
+		if (Action!=3) {
 
-		if (Action==0) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave)); }
-		if (Action==1) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pSave)); }
-		if (Action==2) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A4R4G4B4, D3DPOOL_SYSTEMMEM, &pSave)); }
+			HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));	
+			if (!pWork) return false;
 
-		if (!pSave) return false;
+			if (Action==0) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave)); }
+			if (Action==1) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pSave)); }
+			if (Action==2) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A4R4G4B4, D3DPOOL_SYSTEMMEM, &pSave)); }
 
-		strcpy_s(SaveTex.lpstrFile, 255, OpenTex.lpstrFile);
+			if (!pSave) return false;
 
-		if (GetSaveFileName(&SaveTex)) {
-		
+			bool bPaused = oapiGetPause();
+			oapiSetPause(true);
+			
+			// Process texture ----------------------------------------------
+			//
 			for (DWORD n=0;n<info.MipLevels;n++) {
+
+				D3DXCOLOR seam;
+
 				DWORD w = info.Width>>n;
 				DWORD h = info.Height>>n;
 				HR(pTex->LockRect(n, &in, NULL, 0)); 
 				HR(pWork->LockRect(n, &out, NULL, 0));
 				DWORD *pIn  = (DWORD *)in.pBits;
 				DWORD *pOut = (DWORD *)out.pBits;
+
+				prm.Mip = n;
+				prm.Action = Action;
+				prm.Func = Func;
+				prm.a = GetFloatFromBox(hDlg, IDC_DBG_VARA);
+				prm.b = GetFloatFromBox(hDlg, IDC_DBG_VARB);
+				prm.c = GetFloatFromBox(hDlg, IDC_DBG_VARC);
+				
 				for (DWORD y=0;y<h;y++) {
 					for (DWORD x=0;x<w;x++) {
-						D3DXCOLOR color(pIn[x + y*w]);
-						pOut[x + y*w] = ProcessColor(color, Action, x, y);
+
+						D3DXCOLOR c(pIn[x + y*w]);
+						DWORD r = w-1;
+						DWORD b = h-1;
+						
+						if (Func&0x4) {
+							seam = c;
+							if (x==0) seam = D3DXCOLOR(pIn[r + y*w]);
+							if (x==r) seam = D3DXCOLOR(pIn[0 + y*w]);
+							if (y==0) seam = D3DXCOLOR(pIn[x + b*w]);
+							if (y==b) seam = D3DXCOLOR(pIn[x + 0*w]);
+							c = (c*2.0f + seam) * 0.33333f;
+						}
+
+						pOut[x + y*w] = ProcessColor(D3DXVECTOR4(c.r, c.g, c.b, c.a), &prm, x, y);
 					}
 				}
+
+				// Balance fine correction
+				if (Func&0x1) {
+					D3DXCOLOR c = D3DXCOLOR(0,0,0,0);
+					DWORD s = w*h;
+					for (DWORD x=0;x<s;x++) c += D3DXCOLOR(pOut[x]);
+					c *= 1.0f/float(w*h);
+					c -= D3DXCOLOR(0.5f, 0.5f, 0.5f, 0.5f);
+					for (DWORD x=0;x<s;x++) pOut[x] = (D3DXCOLOR(pOut[x])-c);	
+				}
+
+
 				HR(pTex->UnlockRect(n));
 				HR(pWork->UnlockRect(n));
 			}
 
+			SAFE_RELEASE(pTex);
+
+			// Convert texture format --------------------------------------
+			//
 			for (DWORD n=0;n<info.MipLevels;n++) {
 				LPDIRECT3DSURFACE9 pIn, pOut;
 				pWork->GetSurfaceLevel(n, &pIn);
 				pSave->GetSurfaceLevel(n, &pOut);
-				if (D3DXLoadSurfaceFromSurface(pOut, NULL, NULL, pIn, NULL, NULL, D3DX_FILTER_POINT, 0)!=S_OK) {
+				if (D3DXLoadSurfaceFromSurface(pOut, NULL, NULL, pIn, NULL, NULL, D3DX_FILTER_LINEAR, 0)!=S_OK) {
 					LogErr("D3DXLoadSurfaceFromSurface Failed");
 					return false;
 				}
@@ -822,17 +984,42 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 				pOut->Release();
 			}
 
-			if (D3DXSaveTextureToFileA(SaveTex.lpstrFile, D3DXIFF_DDS, pSave, NULL)!=S_OK) {
-				LogErr("Failed to create a file [%s]",SaveTex.lpstrFile); 
-				return false;
+			oapiSetPause(bPaused);
+
+			SAFE_RELEASE(pWork);
+		}
+		else {
+			// Copy input to output	
+			pSave = pTex;
+		}
+
+		// Save the texture into a file -------------------------------
+		//
+		if (Target==0) {
+			bool bPaused = oapiGetPause();
+			oapiSetPause(true);
+			strcpy_s(SaveTex.lpstrFile, 255, OpenTex.lpstrFile);
+			if (GetSaveFileName(&SaveTex)) {
+				if (D3DXSaveTextureToFileA(SaveTex.lpstrFile, D3DXIFF_DDS, pSave, NULL)!=S_OK) {
+					LogErr("Failed to create a file [%s]",SaveTex.lpstrFile); 
+					return false;
+				}
+				SAFE_RELEASE(pSave);
+				oapiSetPause(bPaused);
+				return true;
 			}
-			
-			pSave->Release();
-			pWork->Release();
-			pTex->Release();
+		}
+
+		// Assign the texture for rendering -----------------------------
+		//
+		if (Target==1 || Target==2 || Target==3) {
+			vPlanet *vP = g_client->GetScene()->GetCameraProxyVisual();	
+			if (vP) vP->SetMicroTexture(pSave, Target-1);
+			SAFE_RELEASE(pSave);
 			return true;
 		}
 	}
+
 	return false;
 }
 			
@@ -844,6 +1031,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char lbl[32];
 	RECT rect;
+	bool bPaused;
 
 	OpenTex.hwndOwner = hWnd;
 
@@ -1032,14 +1220,16 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_DBG_OPEN:
+				bPaused = oapiGetPause();
+				oapiSetPause(true);
 				if (GetOpenFileNameA(&OpenTex)) {
 					SetWindowText(GetDlgItem(hWnd, IDC_DBG_FILE), OpenTex.lpstrFile);
 				}
+				oapiSetPause(bPaused);
 				break;
 
 			case IDC_DBG_EXECUTE:
-				if (Execute(hWnd, &OpenTex)) MessageBox(hWnd,"Done :)","D3D9 Controls", MB_OK);
-				else 						 MessageBox(hWnd,"Failed :(","D3D9 Controls", MB_OK);
+				if (Execute(hWnd, &OpenTex)==false) MessageBox(hWnd,"Failed :(","D3D9 Controls", MB_OK);
 				break;
 
 			case IDC_DBG_ACTION:
@@ -1068,6 +1258,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_ENVMAP:
 			case IDC_DBG_PICK:
 			case IDC_DBG_FPSLIM:
+			case IDC_DBG_TILEBB:
 				UpdateFlags();
 				break;
 

@@ -1781,7 +1781,7 @@ void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXM
 
 	for (DWORD g=0;g<nGeom;g++) {
 		if (Geom[g].bBroken==false && Geom[g].bNoShadow==true) continue;
-		if (Geom[g].bBroken) {
+		//if (Geom[g].bBroken) {
 			// If the Geometry group has gone broken, render each group member separately
 			for (DWORD i=0;i<Geom[g].nGrp;i++) {
 				DWORD gr = Geom[g].GrpIdx[i];
@@ -1789,10 +1789,10 @@ void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXM
 				if (Grp[gr]->IntFlag & 0x3) continue;
 				dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Geom[g].VertOff, 0, Geom[g].nVert, Grp[gr]->GeoFOff*3, Grp[gr]->nFace);
 			}
-		} else {
+		/*} else {
 			// Geometry group is intact, render all at once.
 			dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Geom[g].VertOff, 0, Geom[g].nVert, Geom[g].FaceOff*3, Geom[g].nFace);
-		}
+		}*/
 	}
 	FX->EndPass();
 	FX->End();

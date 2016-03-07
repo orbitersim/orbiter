@@ -1058,6 +1058,19 @@ bool vPlanet::ParseMicroTextures()
 	return bFound;
 }
 
+// ===========================================================================================
+//
+void vPlanet::SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot)
+{
+	LPDIRECT3DTEXTURE9 pTex = NULL;
+	D3DSURFACE_DESC desc;
+	pSrc->GetLevelDesc(0, &desc);
+	DWORD MipLevels = pSrc->GetLevelCount();
+	HR(D3DXCreateTexture(GetDevice(), desc.Width, desc.Height, MipLevels, 0, desc.Format, D3DPOOL_DEFAULT, &pTex));
+	HR(GetDevice()->UpdateTexture(pSrc, pTex));
+	SAFE_RELEASE(MicroCfg.Level[slot].pTex);
+	MicroCfg.Level[slot].pTex = pTex;
+}
 
 // ===========================================================================================
 //

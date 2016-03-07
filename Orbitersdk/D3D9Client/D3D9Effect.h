@@ -34,6 +34,7 @@ public:
 	static void InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient);
 	static void SetViewProjMatrix(LPD3DXMATRIX pVP);
 
+	static void RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color);
 	static void RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bmin, const D3DXVECTOR4 *bmax, const LPD3DXVECTOR4 color);
 	static void RenderBoundingSphere(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT, const D3DXVECTOR4 *bs, const LPD3DXVECTOR4 color);
 	static void RenderBillboard(const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex);
@@ -63,6 +64,7 @@ public:
 	static D3DXHANDLE	eVesselTech;     ///< Vessel exterior, surface bases
 	static D3DXHANDLE	eSimple;
 	static D3DXHANDLE	eBBTech;         ///< Bounding Box Tech
+	static D3DXHANDLE	eTBBTech;        ///< Bounding Box Tech
 	static D3DXHANDLE	eBSTech;         ///< Bounding Sphere Tech
 	static D3DXHANDLE   eExhaust;        ///< Render engine exhaust texture
 	static D3DXHANDLE   eSpotTech;       ///< Vessel beacons

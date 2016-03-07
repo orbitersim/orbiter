@@ -426,6 +426,20 @@ float4 BoundingBoxPS(BShadowVS frg) : COLOR
     return gColor;
 }
 
+technique TileBoxTech
+{
+    pass P0
+    {
+        vertexShader = compile VS_MOD BoundingSphereVS();
+        pixelShader  = compile PS_MOD BoundingBoxPS();
+
+        AlphaBlendEnable = true;
+        SrcBlend = SrcAlpha;
+        DestBlend = InvSrcAlpha; 
+        ZEnable = true; 
+        ZWriteEnable = true;  
+    }
+}
 
 technique BoundingBoxTech
 {

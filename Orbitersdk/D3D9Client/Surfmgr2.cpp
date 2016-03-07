@@ -19,6 +19,7 @@
 #include "D3D9Config.h"
 #include "vVessel.h"
 #include "VectorHelpers.h"
+#include "DebugControls.h"
 
 // =======================================================================
 
@@ -521,6 +522,17 @@ void SurfTile::Render ()
 		}
 	}
 	HR(Shader->End());	
+
+	// Render tile bounding box
+	//
+	if (DebugControls::IsActive()) {
+		DWORD flags  = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+		if (flags&DBG_FLAGS_TILEBOXES) {
+			D3DXMATRIX wm;
+			Shader->GetMatrix(TileManager2Base::smWorld, &wm);
+			D3D9Effect::RenderTileBoundingBox(&wm, mesh->Box, &D3DXVECTOR4(1,0,0,1));
+		}
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -755,7 +767,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	Mproj.m33 = 1000.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview,Mproj);
 

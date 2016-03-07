@@ -61,6 +61,7 @@
 #define DBG_FLAGS_DSPENVMAP				0x0800	///< Display Environment map
 #define DBG_FLAGS_PICK					0x1000	///< Enable mesh picking with mouse
 #define DBG_FLAGS_FPSLIM				0x2000	///< FPS Limiter enabled
+#define DBG_FLAGS_TILEBOXES				0x4000	///< Tile Boxes
 /// @}
 
 

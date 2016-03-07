@@ -57,6 +57,7 @@ public:
 	double          GetMinElevation() const;
 	
 	VECTOR3			ReferencePoint();
+	void			SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot);
 
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();

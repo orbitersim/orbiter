@@ -29,6 +29,7 @@ D3DXHANDLE D3D9Effect::ePanelTech = 0;		// Used to draw a new style 2D panel
 D3DXHANDLE D3D9Effect::ePanelTechB = 0;		// Used to draw a new style 2D panel
 D3DXHANDLE D3D9Effect::eVesselTech = 0;		// Vessel exterior, surface bases.
 D3DXHANDLE D3D9Effect::eBBTech = 0;			// Bounding Box Tech
+D3DXHANDLE D3D9Effect::eTBBTech = 0;
 D3DXHANDLE D3D9Effect::eBSTech = 0;			// Bounding Sphere Tech
 D3DXHANDLE D3D9Effect::eSimple = 0;
 D3DXHANDLE D3D9Effect::eBaseShadowTech = 0;	// Used to draw transparent surface without texture 
@@ -270,6 +271,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eBaseTile    = FX->GetTechniqueByName("BaseTileTech");
 	eSimple      = FX->GetTechniqueByName("SimpleTech");
 	eBBTech		 = FX->GetTechniqueByName("BoundingBoxTech");
+	eTBBTech	 = FX->GetTechniqueByName("TileBoxTech");
 	eBSTech		 = FX->GetTechniqueByName("BoundingSphereTech");
 	eRingTech    = FX->GetTechniqueByName("RingTech");
 	eRingTech2   = FX->GetTechniqueByName("RingTech2");
@@ -737,6 +739,33 @@ void D3D9Effect::RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT
 	pDev->DrawPrimitiveUP(D3DPT_LINESTRIP, 9, &poly, sizeof(D3DVECTOR));	
 	pDev->DrawPrimitiveUP(D3DPT_LINELIST, 3, &list, sizeof(D3DVECTOR));	
 
+	FX->EndPass();
+	FX->End();	
+}
+
+void D3D9Effect::RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color)
+{
+	D3DXMATRIX ident;
+	D3DXMatrixIdentity(&ident);
+
+	D3DXVECTOR3 poly[8];
+
+	for (int i=0;i<8;i++) poly[i] = D3DXVEC(pVtx[i]);
+
+	WORD idc1[10] = { 0, 1, 3, 2, 0, 4, 5, 7, 6, 4 };
+	WORD idc2[6] = { 1, 5, 3, 7, 2, 6};
+
+	pDev->SetVertexDeclaration(pPositionDecl);
+
+	FX->SetMatrix(eW, pW);
+	FX->SetVector(eColor, color);	
+	FX->SetTechnique(eTBBTech);
+
+	UINT numPasses = 0;
+	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
+	FX->BeginPass(0);
+	pDev->DrawIndexedPrimitiveUP(D3DPT_LINESTRIP, 0, 8, 9, &idc1, D3DFMT_INDEX16, &poly, sizeof(D3DXVECTOR3));
+	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, 8, 3, &idc2, D3DFMT_INDEX16, &poly, sizeof(D3DXVECTOR3));	
 	FX->EndPass();
 	FX->End();	
 }

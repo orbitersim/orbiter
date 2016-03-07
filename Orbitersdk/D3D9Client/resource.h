@@ -127,3 +127,11 @@
 #define IDC_DBG_ACTION                          2121
 #define IDC_DBG_FILE                            2122
 #define IDC_MICROBIAS                           2123
+#define IDC_DBG_OPT_B                           2125
+#define IDC_DBG_VARA                            2126
+#define IDC_DBG_VARB                            2127
+#define IDC_DBG_VARC                            2128
+#define IDC_DBG_NORM                            2129
+#define IDC_DBG_FADE                            2130
+#define IDC_DBG_SEAMS                           2131
+#define IDC_DBG_TILEBB                          2132

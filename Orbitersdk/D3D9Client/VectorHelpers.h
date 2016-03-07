@@ -18,10 +18,28 @@
 
 
 #include "OrbiterAPI.h"
+#include <math.h>
 
 
 #ifndef __VECTORHELPERS_H
 #define __VECTORHELPERS_H
+
+#if !defined(_CMATH_)
+inline float exp2(float d)
+{ 
+	return exp(d*0.693147180559945f);
+}
+inline float log2(float d)
+{ 
+	return log(d*1.442695040888963f);
+}
+#endif
+
+inline float sign(float a)
+{
+	if (a<0.0f) return -1.0f;
+	return 1.0f;
+}
 
 inline double log2(double d)
 { 
@@ -32,17 +50,7 @@ inline double exp2(double d)
 { 
 	return exp(d*0.69314718055994530941723212145818);
 }
-#if !defined(_CMATH_)
-inline float exp2(float d)
-{ 
-	return exp(d*0.693147180559945f);
-}
-inline float log2(float d)
-{ 
-	return log(d*1.442695040888963f);
-}
 
-#endif
 inline double lerp(double a, double b, double x)
 {
 	return a + (b-a)*x;
@@ -64,9 +72,9 @@ inline float saturate(float d)
 }
 
 
+	
 // VECTOR3 Helpers ==================================================================
 //
-
 inline VECTOR3 &operator+= (VECTOR3 &v, double d)
 {
 	v.x+=d; v.y+=d;	v.z+=d;
@@ -262,6 +270,42 @@ inline D3DXVECTOR3 vmin(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w)
 inline D3DXVECTOR3 lerp(const D3DXVECTOR3 &v, const D3DXVECTOR3 &w, float x)
 {
 	return D3DXVECTOR3(v.x+(w.x-v.x)*x, v.y+(w.y-v.y)*x, v.z+(w.z-v.z)*x);
+}
+
+
+
+// D3DXVECTOR4 Helpers ==================================================================
+//
+//
+inline D3DXVECTOR4 abs(D3DXVECTOR4 &a)
+{
+	return D3DXVECTOR4(abs(a.x), abs(a.y), abs(a.z), abs(a.w));
+}
+
+inline D3DXVECTOR4 sign(D3DXVECTOR4 &a)
+{
+	return D3DXVECTOR4(sign(a.x), sign(a.y), sign(a.z), sign(a.w));
+}
+
+inline D3DXVECTOR4 pow(float x, D3DXVECTOR4 &y)
+{
+	return D3DXVECTOR4(pow(x, y.x), pow(x, y.y), pow(x, y.z), pow(x, y.w));
+}
+
+inline D3DXVECTOR4 operator- (const D3DXVECTOR4 &v, float d)
+{
+	return D3DXVECTOR4(v.x-d, v.y-d, v.z-d, v.w-d);
+}
+
+inline D3DXVECTOR4 operator+ (const D3DXVECTOR4 &v, float d)
+{
+	return D3DXVECTOR4(v.x+d, v.y+d, v.z+d, v.w+d);
+}
+
+inline D3DXVECTOR4 &operator*= (D3DXVECTOR4 &v, const D3DXVECTOR4 &d)
+{
+	v.x*=d.x; v.y*=d.y;	v.z*=d.z; v.w*=d.w;
+	return v;
 }
 
 #endif
