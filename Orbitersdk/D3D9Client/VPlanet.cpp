@@ -17,6 +17,9 @@
 
 #define D3D_OVERLOADS
 
+#include <map>
+#include <sstream>
+
 #include "D3D9Client.h"
 #include "D3D9Config.h"
 #include "VPlanet.h"
@@ -39,6 +42,10 @@ using namespace oapi;
 
 static double farplane = 1e6;
 static double max_surf_dist = 1e4;
+
+// Buffered MicroTex.cfg file read:
+static bool bMicroTexFileRead = false;
+static std::map<std::string, vPlanet::_MicroCfg> MicroCfgs;
 
 extern int SURF_MAX_PATCHLEVEL;
 
@@ -206,9 +213,9 @@ vPlanet::~vPlanet ()
 	if (cloudmgr2) delete cloudmgr2;
 
 	if (MicroCfg.bLoaded) {
-		SAFE_RELEASE(MicroCfg.Level[0].pTex);
-		SAFE_RELEASE(MicroCfg.Level[1].pTex);
-		SAFE_RELEASE(MicroCfg.Level[2].pTex);
+		for (int i = 0; i < ARRAYSIZE(MicroCfg.Level); ++i) {
+			SAFE_RELEASE(MicroCfg.Level[i].pTex);
+		}
 	}
 
 	if (clouddata) {
@@ -984,78 +991,80 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 
 
 // ===========================================================================================
+// static
+void vPlanet::ParseMicroTexturesFile()
+{
+	std::string filename(OapiExtension::GetConfigDir());
+	            filename += "MicroTex.cfg";
+
+	std::string line, // One file line
+	            kwd,  // Dummy 'keyword' variable
+	            name; // Body name
+	int         idx, found = 0;
+	_MicroCfg   currCfg = { 0 };
+
+	std::ifstream fs(filename);
+	while (std::getline(fs, line))
+	{
+		// Empty or comment line?
+		if (!line.length() || line.find("//") == 0) {
+			continue;
+		}
+
+		std::istringstream iss(line);
+
+		// BODY <name> (start of block)?
+		if (line.find("BODY") == 0)
+		{
+			iss >> kwd >> name;
+			found = 1; // we don't use 'found |= 1' on purpose here; It's a new block!
+		}
+		// NORMALS <0|1>?
+		else if (line.find("NORMALS") == 0) {
+			iss >> kwd >> currCfg.bNormals;
+			found |= 2;
+		}
+		// LEVEL <idx> <texture> <resolution>?
+		else if (line.find("LEVEL") == 0) {
+			iss >> kwd >> idx;
+			if (idx >= 0 && idx <= 2) {
+				iss >> currCfg.Level[idx].file >> currCfg.Level[idx].reso;
+				found |= (4 << idx);
+			} else {
+				LogErr("Error in MicroTex.cfg (LEVEL index out of bounds idx:=[0..2])!");
+			}
+		}
+
+		// Block complete?
+		if (found == (1|2|4|8|16)) {
+			MicroCfgs[name] = currCfg;
+			found = 0;
+		}
+	}
+	fs.close();
+	bMicroTexFileRead = true;
+}
+
+// ===========================================================================================
 //
 bool vPlanet::ParseMicroTextures()
 {
 	if (Config->MicroMode==0) return false;	// Micro textures are disabled
 	if (surfmgr2==NULL) return false; // Only supported with tile format 2 
 
-	FILE* file = NULL;
-	char cbuf[256];
-	char fname[256];
-	sprintf_s(fname, 256, "%sMicroTex.cfg", OapiExtension::GetConfigDir());
-
-	memset(&MicroCfg, 0, sizeof(MicroCfg));
-
-	fopen_s(&file, fname, "r");
-
-	if (!file) {
-		LogErr("Could not open MicroTex.cfg file");
-		return false;
+	// Parse file (only once!)
+	if (!bMicroTexFileRead) {
+		ParseMicroTexturesFile();
 	}
 
-	bool bFound = false;
-
-	while (fgets(cbuf, 256, file)) {
-	
-		if (!strncmp(cbuf, "//", 2)) continue;
-
-		if (!strncmp(cbuf, "BODY", 4)) {
-			if (bFound) break;
-			if (sscanf(cbuf, "BODY %s", fname)==1) {
-				if (strcmp(fname, GetName())==0) bFound = true;
-			}
-			else {
-				LogErr("Error in MicroTex.cfg");
-				fclose(file);
-				return false;
-			}
-		}
-		
-		if (bFound) {
-
-			if(!strncmp(cbuf, "NORMALS", 7)) {
-				int lvl;
-				if (sscanf(cbuf, "NORMALS %d", &lvl)==1) {
-					MicroCfg.bNormals = (lvl==1);
-				}
-				else {
-					LogErr("Error in MicroTex.cfg");
-					fclose(file);
-					return false;
-				}
-
-			}
-
-			if(!strncmp(cbuf, "LEVEL", 5)) {
-				float reso; int lvl;
-				if (sscanf(cbuf, "LEVEL %d %s %f", &lvl, fname, &reso)==3) {
-					lvl = min(2, max(lvl,0));
-					MicroCfg.Level[lvl].reso = double(reso);
-					strcpy_s(MicroCfg.Level[lvl].file, 32, fname);
-				}
-				else {
-					LogErr("Error in MicroTex.cfg");
-					fclose(file);
-					return false;
-				}
-			}
-		}
+	// Find 'our' config
+	auto it = MicroCfgs.find(GetName());
+	if (it != MicroCfgs.end()) {
+		MicroCfg = it->second;
+		MicroCfgs.erase(it);
+		return true;
 	}
-
-	fclose(file);
-
-	return bFound;
+	return false;
 }
 
 // ===========================================================================================
@@ -1078,7 +1087,7 @@ bool vPlanet::LoadMicroTextures()
 {
 	LogOapi("Loading Micro Textures for %s", GetName());
 	char file[256];
-	for (int i=0;i<3;i++) {
+	for (int i=0; i<ARRAYSIZE(MicroCfg.Level); ++i) {
 		sprintf_s(file, 256, "Textures/%s", MicroCfg.Level[i].file);
 		HR(D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex));
 		D3DSURFACE_DESC desc;
@@ -1091,16 +1100,17 @@ bool vPlanet::LoadMicroTextures()
 		}
 	}
 	MicroCfg.bLoaded = true;
-	for (int i=0;i<3;i++) if (!MicroCfg.Level[i].pTex) {
+	for (int i=0; i<ARRAYSIZE(MicroCfg.Level); ++i) if (!MicroCfg.Level[i].pTex) {
 		MicroCfg.bEnabled = false;
 		MicroCfg.bLoaded = false;
+		break;
 	}
 	if (MicroCfg.bLoaded) LogOapi("Micro textures Loaded");
 	else {
 		LogOapi("Failed to load micro textures");
-		SAFE_RELEASE(MicroCfg.Level[0].pTex);
-		SAFE_RELEASE(MicroCfg.Level[1].pTex);
-		SAFE_RELEASE(MicroCfg.Level[2].pTex);
+		for (int i = 0; i < ARRAYSIZE(MicroCfg.Level); ++i) {
+			SAFE_RELEASE(MicroCfg.Level[i].pTex);
+		}
 	}
 
 	return MicroCfg.bEnabled;

@@ -123,8 +123,10 @@ protected:
 	void RenderBaseShadows (LPDIRECT3DDEVICE9 dev, float depth);
 	void RenderCloudShadows (LPDIRECT3DDEVICE9 dev);
 	bool ModLighting (DWORD &ambient);
-	bool ParseMicroTextures();
+
+	bool ParseMicroTextures();            ///< Read micro-texture config for this planet
 	bool LoadMicroTextures();
+	static void ParseMicroTexturesFile(); ///< Parse MicroTex.cfg file (once)
 
 private:
 	float rad;                // planet radius [m]
