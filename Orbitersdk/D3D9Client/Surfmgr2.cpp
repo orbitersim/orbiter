@@ -382,13 +382,11 @@ void SurfTile::StepIn ()
 	// Compute micro texture repeat counts -------------------------------------
 	//
 	if (owntex && vPlanet->MicroCfg.bEnabled) {
-		float s  = float(vPlanet->GetSize());
-		float a  = s / vPlanet->MicroCfg.Level[0].size;
-		float b  = s / vPlanet->MicroCfg.Level[1].size;
-		float c  = s / vPlanet->MicroCfg.Level[2].size;
-		MicroRep[0] = D3DXVECTOR2(fixinput(width*a,0), fixinput(height*a,0));
-		MicroRep[1] = D3DXVECTOR2(fixinput(width*b,1), fixinput(height*b,1));
-		MicroRep[2] = D3DXVECTOR2(fixinput(width*c,2), fixinput(height*c,2));
+		double s = vPlanet->GetSize();
+		for (int i = 0; i < ARRAYSIZE(vPlanet->MicroCfg.Level); ++i) {
+			double f = s / vPlanet->MicroCfg.Level[i].size;
+			MicroRep[i] = D3DXVECTOR2(fixinput(width*f, i), fixinput(height*f, i));
+		}
 	}
 }
 
