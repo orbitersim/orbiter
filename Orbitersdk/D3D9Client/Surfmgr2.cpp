@@ -767,7 +767,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	// build a transformation matrix for frustum testing
 	MATRIX4 Mproj = _MATRIX4(scene->GetProjectionMatrix());
-	Mproj.m33 = 1000.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
+	Mproj.m33 = 1.0; Mproj.m43 = -1.0;  // adjust near plane to 1, far plane to infinity
 	MATRIX4 Mview = _MATRIX4(scene->GetViewMatrix());
 	prm.dviewproj = mul(Mview,Mproj);
 
