@@ -73,6 +73,31 @@ float GetFloatFromBox(HWND hWnd, int item)
 
 // =============================================================================================
 //
+HWND CreateToolTip(int toolID, HWND hDlg, PTSTR pszText)
+{
+    if (!toolID || !hDlg || !pszText) return NULL;
+    
+    // Get the window of the tool.
+    HWND hwndTool = GetDlgItem(hDlg, toolID);
+    // Create the tooltip. g_hInst is the global instance handle.
+    HWND hwndTip = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP |TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hDlg, NULL, g_hInst, NULL);
+    
+    if (!hwndTool || !hwndTip) return NULL;
+                                                          
+    // Associate the tooltip with the tool.
+    TOOLINFO toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = hDlg;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)hwndTool;
+    toolInfo.lpszText = pszText;
+    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+
+    return hwndTip;
+}
+
+// =============================================================================================
+//
 void Create()
 {
 	vObj = NULL;
@@ -226,18 +251,17 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm DXT5");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm RGB8");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert Nrm RGB4");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Load and Assign");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert to DXT5");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert to RGB8");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_ADDSTRING, 0, (LPARAM)"Convert to RGB4");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_SETCURSEL, 0, 0);
 
-	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Save");
-	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 0");
-	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 1");
-	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 2");
-	SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_ADDSTRING, 0, (LPARAM)"Save");
+	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 0");
+	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 1");
+	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 2");
+	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_SETCURSEL, 0, 0);
 
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARA), "1.3");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARB), "0.01");
@@ -274,6 +298,16 @@ void OpenDlgClbk(void *context)
 	SetVisual(g_client->GetScene()->GetVisObject(hTgt));	// This will call SetupMeshGroups()
 
 	UpdateFlags();
+
+	CreateToolTip(IDC_DBG_TARGET, hDlg, "Select a target where the resulting image is assigned");
+	CreateToolTip(IDC_DBG_FMIPS, hDlg, "Load mipmaps from file. Do not autogenerate them.");
+	CreateToolTip(IDC_DBG_ALPHAG, hDlg, "Check if source image contains normal information in alpha(X) and green(Y) channels");
+	CreateToolTip(IDC_DBG_SEAMS, hDlg, "Enable seams reduction at each mipmap level");
+	CreateToolTip(IDC_DBG_FADE, hDlg, "Enable mipmap post processing. Contrast and detail is reduced from each mipmap to prevent 'stripes' (See:Fa,Fb)");
+	CreateToolTip(IDC_DBG_NORM, hDlg, "Center color channels at 0.5f to prevent lightening/darkening the results");
+	CreateToolTip(IDC_DBG_VARA, hDlg, "Attennuates high contrast components. Leaves low contrast parts unchanged [1.0 to 1.6]");
+	CreateToolTip(IDC_DBG_VARB, hDlg, "Attennuates everything equally. Typical range [0.00 to 0.03]");
+	CreateToolTip(IDC_DBG_VARC, hDlg, "Apply noise to main level and all mipmaps before attennuation (Fa,Fb)");
 }
 
 // =============================================================================================
@@ -833,37 +867,29 @@ D3DXCOLOR ProcessColor(D3DXVECTOR4 &C, PCParam *prm, int x, int y)
 	float b = prm->b;
 	float c = prm->c;
 
-	if (prm->Action>=0 && prm->Action<=2) {
+	// Swap color channels
+	if ((prm->Func&0x8)==0) C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
+	
+	if (c>0.001) {
+		D3DXVECTOR4 rnd((float)oapiRand(),(float)oapiRand(), (float)oapiRand(), (float)oapiRand());
+		C += (rnd*2.0f-1.0f) * (c/(2.0f+fMip));
+	}
+	
+	// Reduce contrast
+	if (prm->Func & 0x2) {
 
-		// Swap color channels
-		C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
+		if (prm->Mip==0) return D3DXCOLOR(C.x, C.y, C.z, C.w);		// Do nothing for the main level
 
-		if (c>0.001) {
-			C.x += float(oapiRand()*2.0-1.0) * c;
-			C.y += float(oapiRand()*2.0-1.0) * c;
-			C.z += float(oapiRand()*2.0-1.0) * c;
-			C.w += float(oapiRand()*2.0-1.0) * c;
-		}
-		
-		// Reduce contrast
-		if (prm->Func & 0x2) {
+		C = C*2.0f - 1.0f;			// Expand to [-1, 1]
+		C *= pow(a, -abs(C)*fMip);
 
-			if (prm->Mip==0) return D3DXCOLOR(C.x, C.y, C.z, C.w);		// Do nothing for the main level
+		float k = b * fMip;
 
-			C = C*2.0f - 1.0f;			// Expand to [-1, 1]
-			C *= pow(a, -abs(C)*fMip);
-
-			float k = b * fMip;
-
-			C = D3DXVECTOR4(reduce(C.x, k), reduce(C.y, k), reduce(C.z, k), reduce(C.w, k));
-			C = C*0.5f + 0.5f;			// Back to [0, 1]
-
-			return D3DXCOLOR(C.x, C.y, C.z, C.w);
-		}
-		else return D3DXCOLOR(C.x, C.y, C.z, C.w);
+		C = D3DXVECTOR4(reduce(C.x, k), reduce(C.y, k), reduce(C.z, k), reduce(C.w, k));
+		C = C*0.5f + 0.5f;			// Back to [0, 1]
 	}
 
-	return D3DXCOLOR(0, 0, 0, 1);
+	return D3DXCOLOR(C.x, C.y, C.z, C.w);
 }
 
 // =============================================================================================
@@ -879,27 +905,31 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 	DWORD Func;
 	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);
-	DWORD Target = SendDlgItemMessageA(hDlg, IDC_DBG_OPT_B, CB_GETCURSEL, 0, 0);
+	DWORD Target = SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_GETCURSEL, 0, 0);
 
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_NORM, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x1;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_FADE, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x2;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_SEAMS, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x4;
+	if (SendDlgItemMessageA(hDlg, IDC_DBG_ALPHAG, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x8;
 
-	if (Action>=0 && Action<=3) {
+	if (Action>=0 && Action<=2) {
 
 		LPDIRECT3DTEXTURE9 pTex = NULL;
 		LPDIRECT3DTEXTURE9 pWork = NULL;
 		LPDIRECT3DTEXTURE9 pSave = NULL;
 		D3DXIMAGE_INFO info;
 
-		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));	
+		DWORD Mips = 0;
+		if (SendDlgItemMessageA(hDlg, IDC_DBG_FMIPS, BM_GETCHECK, 0, 0)==BST_CHECKED) Mips = D3DX_FROM_FILE;
+	
+		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, Mips, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));	
 		
 		if (!pTex) {
 			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 
 			return false;
 		}
 
-		if (Action!=3) {
+		if (true) {
 
 			HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));	
 			if (!pWork) return false;
@@ -910,8 +940,6 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 			if (!pSave) return false;
 
-			bool bPaused = oapiGetPause();
-			oapiSetPause(true);
 			
 			// Process texture ----------------------------------------------
 			//
@@ -983,9 +1011,6 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 				pIn->Release();
 				pOut->Release();
 			}
-
-			oapiSetPause(bPaused);
-
 			SAFE_RELEASE(pWork);
 		}
 		else {
@@ -996,8 +1021,6 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 		// Save the texture into a file -------------------------------
 		//
 		if (Target==0) {
-			bool bPaused = oapiGetPause();
-			oapiSetPause(true);
 			strcpy_s(SaveTex.lpstrFile, 255, OpenTex.lpstrFile);
 			if (GetSaveFileName(&SaveTex)) {
 				if (D3DXSaveTextureToFileA(SaveTex.lpstrFile, D3DXIFF_DDS, pSave, NULL)!=S_OK) {
@@ -1005,7 +1028,6 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 					return false;
 				}
 				SAFE_RELEASE(pSave);
-				oapiSetPause(bPaused);
 				return true;
 			}
 		}
@@ -1229,7 +1251,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_DBG_EXECUTE:
+				bPaused = oapiGetPause();
+				oapiSetPause(true);
 				if (Execute(hWnd, &OpenTex)==false) MessageBox(hWnd,"Failed :(","D3D9 Controls", MB_OK);
+				oapiSetPause(bPaused);
 				break;
 
 			case IDC_DBG_ACTION:
@@ -1262,6 +1287,9 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				UpdateFlags();
 				break;
 
+			case IDC_DBG_VARA:
+			case IDC_DBG_VARB:
+			case IDC_DBG_VARC:
 			case IDC_DBG_FILE:
 				break;
 		
