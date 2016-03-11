@@ -46,6 +46,7 @@ static double max_surf_dist = 1e4;
 // Buffered MicroTex.cfg file read:
 static bool bMicroTexFileRead = false;
 static std::map<std::string, vPlanet::_MicroCfg> MicroCfgs;
+typedef std::map<std::string, vPlanet::_MicroCfg>::iterator MicroCfgsIterator;
 
 extern int SURF_MAX_PATCHLEVEL;
 
@@ -1003,7 +1004,7 @@ void vPlanet::ParseMicroTexturesFile()
 	int         idx, found = 0;
 	_MicroCfg   currCfg = { 0 };
 
-	std::ifstream fs(filename);
+	std::ifstream fs(filename.c_str());
 	while (std::getline(fs, line))
 	{
 		// Empty or comment line?
@@ -1058,7 +1059,7 @@ bool vPlanet::ParseMicroTextures()
 	}
 
 	// Find 'our' config
-	auto it = MicroCfgs.find(GetName());
+	MicroCfgsIterator it = MicroCfgs.find(GetName());
 	if (it != MicroCfgs.end()) {
 		MicroCfg = it->second;
 		MicroCfgs.erase(it);
