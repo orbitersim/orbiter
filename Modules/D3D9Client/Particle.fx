@@ -105,7 +105,7 @@ technique ParticleEmissiveTech
 
         AlphaBlendEnable = true;
         BlendOp = Add;
-        ZEnable = true; 
+        ZEnable = false; 
         SrcBlend = SrcAlpha;
         DestBlend = InvSrcAlpha;    
         ZWriteEnable = false;

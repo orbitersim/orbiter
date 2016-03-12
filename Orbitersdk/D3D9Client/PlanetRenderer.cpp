@@ -179,10 +179,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	macro[m].Definition = new char[8];
 	sprintf_s((char*)macro[m].Definition,8,"%1.1f",float(Config->MicroBias)*0.1f);
 	// ------------------------------------------------------------------------------
-	m++;
-	if (Config->MicroMode==2) macro[m].Name = "_MICROROTATIONS";
-	if (Config->MicroMode==3) macro[m].Name = "_DEVELOPPERMODE";
-	m++;
+	m=7;
+	if (Config->MicroMode==2) macro[m++].Name = "_MICROROTATIONS";
+	if (Config->MicroMode==3) macro[m++].Name = "_DEVELOPPERMODE";
 	// ------------------------------------------------------------------------------
 	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
 	// ------------------------------------------------------------------------------
