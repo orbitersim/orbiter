@@ -1,6 +1,19 @@
+#include <commctrl.h>
+// Fix Microsoft Visual Studio Version 2012 resource compiler RC4011 warnings.
+// Instead of #include <Richedit.h>
+#if defined(RC_INVOKED)
+  #ifdef UNICODE
+    #define RICHEDIT_CLASS  L"RichEdit20W"
+  #else
+    #define RICHEDIT_CLASS  "RichEdit20A"
+  #endif // UNICODE 
+#endif // RC_INVOKED
+
+
 #ifndef IDC_STATIC
 #define IDC_STATIC (-1)
 #endif
+
 
 #define IDD_D3D9CREDITS                         101
 #define IDD_D3D9MESHDEBUG                       102

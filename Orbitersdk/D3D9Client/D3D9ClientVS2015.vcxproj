@@ -139,6 +139,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <DisableSpecificWarnings>4838</DisableSpecificWarnings>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -270,6 +271,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
+    <ClInclude Include="VectorHelpers.h" />
     <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />

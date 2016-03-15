@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -130,6 +130,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -258,6 +259,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
+    <ClInclude Include="VectorHelpers.h" />
     <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />

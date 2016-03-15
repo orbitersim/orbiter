@@ -116,6 +116,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
+      <WarningLevel>Level3</WarningLevel>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
@@ -248,6 +249,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
+    <ClInclude Include="VectorHelpers.h" />
     <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />

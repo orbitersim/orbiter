@@ -24,51 +24,51 @@
 #ifndef __VECTORHELPERS_H
 #define __VECTORHELPERS_H
 
-#if !defined(_CMATH_)
+#if defined(_MSC_VER) && (_MSC_VER >= 1900 ) // Microsoft Visual Studio Version 2015 and higher
+  // exp2() and log2() are defined in <cmath>
+#define  _constexpr_ constexpr
+
+#else // older MSVC++ versions
+
+inline double exp2(double d)
+{
+	return exp(d*0.69314718055994530941723212145818);
+}
 inline float exp2(float d)
 { 
 	return exp(d*0.693147180559945f);
 }
-inline float log2(float d)
-{ 
-	return log(d*1.442695040888963f);
-}
-#endif
-
-inline float sign(float a)
-{
-	if (a<0.0f) return -1.0f;
-	return 1.0f;
-}
 
 inline double log2(double d)
-{ 
+{
 	return log(d*1.4426950408889634073599246810019);
 }
+inline float log2(float d)
+{
+	return log(d*1.442695040888963f);
+}
+#define  _constexpr_
+#endif
 
-inline double exp2(double d)
-{ 
-	return exp(d*0.69314718055994530941723212145818);
+template <typename T> inline _constexpr_ T sign (T val)
+{
+	return val < T(0) ? T(-1) : T(1);
 }
 
-inline double lerp(double a, double b, double x)
+template <typename T> inline _constexpr_ T lerp (T a, T b, T x)
 {
-	return a + (b-a)*x;
+	return a + (b - a)*x;
 }
+// ...slightly faster than the above, but not available in Visual Studio 2012 (I think)?
+//template <typename T> inline _constexpr_ T lerp(T v0, T v1, T t) {
+//	return fma(t, v1, fma(-t, v0, v0));
+//}
 
-inline float lerp(float a, float b, float x)
+template <typename T> inline _constexpr_ T saturate (T val)
 {
-	return a + (b-a)*x;
-}
-
-inline double saturate(double d)
-{
-	if (d>1.0) return 1.0; if (d<0.0) return 0.0; return d;
-}
-
-inline float saturate(float d)
-{
-	if (d>1.0f) return 1.0f; if (d<0.0f) return 0.0f; return d;
+	return (val > T(1)) ? T(1)
+		 : (val < T(0)) ? T(0)
+		 : val;
 }
 
 
