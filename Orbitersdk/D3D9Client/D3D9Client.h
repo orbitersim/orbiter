@@ -65,6 +65,7 @@ void	MissingRuntimeError();
 typedef class D3D9ClientSurface * LPD3D9CLIENTSURFACE;
 typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;
+typedef class D3D9Mesh * HMESH;
 
 
 struct D3D9Stat {

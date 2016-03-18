@@ -26,18 +26,21 @@ struct BeaconVS
 BeaconVS BeaconArrayVS(BAVERTEX vrt)
 {
 	BeaconVS outVS = (BeaconVS)0;
-	float3 posX   = mul(float4(vrt.posL, 1.0f), gW).xyz;
-	float dist    = length(posX);	// distance to a beacon
 	
-	float3 offL   = float3(0, dist*2e-3, 0);
+	//float3 posX   = mul(float4(vrt.posL, 1.0f), gW).xyz;
+	//float dist    = length(posX);	// distance to a beacon
+	//float3 offL   = float3(0, dist*2e-3, 0);
+	//float3 posW   = mul(float4(vrt.posL+offL, 1.0f), gW).xyz;
 	
-	float3 posW   = mul(float4(vrt.posL+offL, 1.0f), gW).xyz;
+	float3 posW   = mul(float4(vrt.posL, 1.0f), gW).xyz;
 	float3 dirW   = mul(float4(vrt.dirL, 0.0f), gW).xyz;
 	outVS.posH    = mul(float4(posW, 1.0f), gVP);
 	
-	posW = posW * gDistScale;
+	//posW = posW * gDistScale;
 	
 	float fog     =  exp(-abs(outVS.posH.z * gFogDensity * 20.0f)); // Haze effect scale factor
+
+	float dist    = length(posW);	// distance to a beacon
 
 	// Viewing angle dependency
 	float dota    = -dot(normalize(posW), dirW);
@@ -77,7 +80,7 @@ technique BeaconArrayTech
 		BlendOp = Add; 
         SrcBlend = SrcAlpha;
         DestBlend = InvSrcAlpha;    
-		ZEnable = true;    
+		ZEnable = false;    
         ZWriteEnable = false;
     }
 }

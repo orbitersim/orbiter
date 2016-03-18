@@ -22,10 +22,10 @@
 #include "AABBUtil.h"
 #include <d3d9.h> 
 #include <d3dx9.h>
+#include <vector>
 
 const DWORD SPEC_DEFAULT = (DWORD)(-1); // "default" material/texture flag
 const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
-
 
 #define RENDER_VESSEL		0
 #define RENDER_BASE			1
@@ -62,8 +62,8 @@ public:
 		DWORD nFace;			// Face count
 		DWORD nVert;			// Vertex count
 		//------------------------------------------------
-		DWORD MtrlIdx;			// material index 0=None
-		DWORD TexIdx;			// texture indices
+		DWORD MtrlIdx;			// material index
+		DWORD TexIdx;			// texture index 0=None
 		DWORD UsrFlag;			// user-defined flag
 		WORD  IntFlag;			// internal flags
 		WORD  GeometryRec;		// Geometry record ID
@@ -72,6 +72,7 @@ public:
 		bool  bTransform;
 		bool  bUpdate;
 		bool  bGrouped;
+		bool  bDeleted;			// This entry is deleted by DelGroup()
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
@@ -91,68 +92,75 @@ public:
 	};
 
 	
-	D3D9Mesh(const D3D9Mesh &mesh);
+					D3D9Mesh(const D3D9Mesh &mesh);
+					D3D9Mesh(class AdMesh &mesh, bool bHasUV=true);
+					
+					/**
+					 * \brief Create a mesh consisting of a single mesh group
+					 * \param client graphics client
+					 * \param grp vertex group definition
+					 * \param deepcopy if true, group contents are copied; otherwise, group
+					 *   definition pointer is used directly
+					 */
+					D3D9Mesh(DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
+					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
+					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate=false);
+					~D3D9Mesh();
 
-	/**
-	 * \brief Create a mesh consisting of a single mesh group
-	 * \param client graphics client
-	 * \param grp vertex group definition
-	 * \param deepcopy if true, group contents are copied; otherwise, group
-	 *   definition pointer is used directly
-	 */
-	D3D9Mesh(oapi::D3D9Client *client, DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
-	D3D9Mesh(oapi::D3D9Client *client, const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
-	D3D9Mesh(oapi::D3D9Client *client, MESHHANDLE hMesh, bool asTemplate=false);
-	~D3D9Mesh();
+	void			UnLockVertexBuffer();
+	void			UnLockIndexBuffer();
+	NMVERTEX *		LockVertexBuffer(DWORD grp);
+	WORD *			LockIndexBuffer(DWORD grp);
+	
+	void			SetName(const char *name);
+	const char *	GetName() const { return name; }
 
-	void UnLockVertexBuffer();
-	void UnLockIndexBuffer();
-	NMVERTEX * LockVertexBuffer(DWORD grp);
-	WORD * LockIndexBuffer(DWORD grp);
-
-	void SetName(const char *name);
-	const char *GetName() const { return name; }
-
-	/**
-	 * \brief Returns number of vertex groups
-	 * \return Number of groups
-	 */
-	inline DWORD GroupCount() const { return nGrp; }
+	
+	
 
 	/**
 	 * \brief Check if a mesh is casting shadows
 	 * \return Returns true if the mesh is casting shadows.
 	 */
-	bool HasShadow();
+	bool			HasShadow();
 
 	/**
 	 * \brief Returns a pointer to a mesh group.
 	 * \param idx group index (>= 0)
 	 * \return Pointer to group structure.
 	 */
-	GROUPREC *GetGroup(DWORD idx);
+	GROUPREC *		GetGroup(DWORD idx);
 
 	/**
 	 * \brief Returns number of material specifications.
 	 * \return Number of materials.
 	 */
-	inline DWORD MaterialCount() const { return nMtrl; }
-	inline DWORD TextureCount() const { return nTex; }
-	SURFHANDLE GetTexture(DWORD idx) const { return Tex[idx]; } 
-	bool HasTexture(SURFHANDLE hSurf);
-	bool IsReflective();
+	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; } 
+	bool			HasTexture(SURFHANDLE hSurf);
+	bool			IsReflective();
 
 	/**
 	 * \brief returns a pointer to a material definition.
 	 * \param idx material index (>= 0)
 	 * \return Pointer to material object.
 	 */
-	inline D3D9MatExt *GetMaterial(DWORD idx) { return Mtrl+idx; }
-	
+	D3D9MatExt *	GetMaterial(DWORD idx) { return Mtrl+idx; }
 
-	// These two are only used by DebugControls.cpp
-	DWORD GetMeshGroupMaterialIdx(DWORD grp);
-	DWORD GetMeshGroupTextureIdx(DWORD grp);
+	DWORD			GetGroupCount() const { return nGrp; }
+	DWORD			GetMaterialCount() const { return nMtrl; }
+	DWORD			GetTextureCount() const { return nTex; }
+	DWORD			GetVertexCount(int grp=-1) const;
+	DWORD			GetIndexCount(int grp=-1) const;
+
+	DWORD			GetMeshGroupMaterialIdx(DWORD grp) const;
+	DWORD			GetMeshGroupTextureIdx(DWORD grp) const;
+	DWORD			GetGroupTransformCount() const;
+	D3DXVECTOR3		GetBoundingSpherePos();
+	float			GetBoundingSphereRadius();
+	D9BBox *		GetAABB();
+	D3DXVECTOR3		GetGroupSize(DWORD idx);
+	LPD3DXMATRIX	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
+
 
 	/**
 	 * \brief Replace a mesh texture.
@@ -160,54 +168,40 @@ public:
 	 * \param tex texture handle
 	 * \return \e true on success, \e false otherwise.
 	 */
-	bool SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex);
+	bool			SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex);
+	void			SetTexMixture (DWORD ntex, float mix);
 
-	LPDIRECT3DVERTEXBUFFER9 GetVertexBuffer(DWORD grp);
+	void			RenderGroup(LPDIRECT3DDEVICE9 dev, const GROUPREC *grp);
+	void			RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex);
+	void			RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
+	void			RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
+	void			Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
+	void			RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW);
+	void			RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
+	void			RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
+	void			RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
 
-	void SetTexMixture (DWORD ntex, float mix);
 
+	void			ResetTransformations();
+	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
+	void			Transform(const D3DXMATRIX *m);
+	int				GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
+	void			DynamicGroup(DWORD idx);
+	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
+	void			UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
+
+	void			SetSunLight(D3D9Light *pLight);
 	
-	void RenderGroup(LPDIRECT3DDEVICE9 dev, const GROUPREC *grp);
-	void RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex);
-	void RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
-	void RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
+	D3D9Pick		Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir);
 	
-	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
-	void RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW);
-	void RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
-	void RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
-	void RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
+	void			UpdateBoundingBox();
+	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 
+	void			SetAmbientColor(D3DCOLOR c);
+	void			SetupFog(const LPD3DXMATRIX pW);
 
-	void ResetTransformations();
-	void TransformGroup(DWORD n, const D3DXMATRIX *m);
-	void Transform(const D3DXMATRIX *m);
-	int  GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
-	void DynamicGroup(DWORD idx);
-	int  EditGroup (DWORD grp, GROUPEDITSPEC *ges);
-	void UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
-
-	void SetSunLight(D3D9Light *pLight);
-	
-	D3D9Pick Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir);
-
-	D3DXVECTOR3 GetBoundingSpherePos();
-	float GetBoundingSphereRadius();
-
-	D9BBox * GetAABB();
-	
-	void UpdateBoundingBox();
-	void BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
-	
-	void SetAmbientColor(D3DCOLOR c);
-	void SetupFog(const LPD3DXMATRIX pW);
-
-	void DumpTextures();
-	void DumpGroups();
-
-	DWORD GetVertexCount() { return MaxVert; }
-	D3DXVECTOR3 GetGroupSize(DWORD idx);
-	LPD3DXMATRIX GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
+	void			DumpTextures();
+	void			DumpGroups();
 
 	/**
 	 * \brief Enable/disable material alpha value for transparency calculation.
@@ -217,16 +211,22 @@ public:
 	 *   By enabling material alpha calculation, the final alpha value is
 	 *   calculated as the product of material and texture alpha value.
 	 */
-	inline void EnableMatAlpha (bool enable) { bModulateMatAlpha = enable; }
+	inline void		EnableMatAlpha (bool enable) { bModulateMatAlpha = enable; }
 	
+	DWORD			AddTexture(D3D9ClientSurface *pTex);
+	DWORD			AddMaterial(D3D9MatExt *pMat);
+	void			SetMeshGroupTextureIdx(DWORD grp, DWORD tex_idx);
+	void			SetMeshGroupMaterialIdx(DWORD grp, DWORD mtrl_idx);
+	bool			Bake();
+
 private:
 
 	void UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
 	void ProcessInherit();
-	bool CopyGroupEx(GROUPREC *grp, const MESHGROUPEX *mg, DWORD gid);
+	bool CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
+	void SetGroupRec(DWORD i, const MESHGROUPEX *mg);
 	void ClearGroups ();
 	bool CopyMaterial (int idx, const MATERIAL *mat);
-	void CheckValidity();
 	void CreateGeometryBuffers();
 	void UpdateGeometryBuffer();
 	void Null();
@@ -240,7 +240,7 @@ private:
 	DWORD	MaxFace;
 	DWORD   Constr;
 
-	GROUPREC **Grp;             // list of mesh groups
+	GROUPREC *Grp;              // list of mesh groups
 	GEOMREC *Geom;				// Geometry record
 	DWORD nGrp;                 // number of mesh groups
 	DWORD nGeom;				// number of geometry groups

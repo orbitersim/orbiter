@@ -14,6 +14,14 @@
 
 class oapi::D3D9Client;
 
+#define RP_VESSEL_INTERIOR	0x01		///> Flag indicates rendering of vessels interior (i.e. VC)
+										///> If the flag not assigned then vessel exterior is being rendered
+
+#define RP_VESSEL_LIGHTPP	0x02		///> Flag indicates rendering of "LightPrePass" into a G-Buffer
+										///> If the flag is not assigned, this is rendering of the main forward pass
+
+
+
 
 // ==============================================================
 // class vVessel (interface)
@@ -93,7 +101,7 @@ public:
 	 *   in cockpit camera mode.
 	 * \sa Render(LPDIRECT3DDEVICE9)
 	 */
-	bool Render (LPDIRECT3DDEVICE9 dev, bool internalpass);
+	bool Render (LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass);
 
 	bool RenderExhaust();
 

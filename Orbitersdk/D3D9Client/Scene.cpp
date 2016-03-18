@@ -21,6 +21,7 @@
 #include "AABBUtil.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
+#include "IProcess.h"
 
 
 
@@ -57,24 +58,30 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	csphere = NULL;
 	Lights = NULL;
 	hSun = NULL;
-	vProxy = NULL;
-	hObj_proxy = NULL;
 	pAxisFont  = NULL;
 	pLabelFont = NULL;
 	pDebugFont = NULL;
-	hCameraTarget = NULL;
 	viewH = h;
 	viewW = w;
 	nLights = 0;
 	dwTurn = 0;
 	dwFrameId = 0;
+	// ---------------------------
+	psgDepth = NULL;
+	psgNormal = NULL;
+	psgSpecular = NULL;
+	ptgDepth = NULL;
+	ptgNormal = NULL;
+	ptgSpecular = NULL;
+	// ------------------------
 	
 	pDevice = _gc->GetDevice();
 	
-	D3DXMatrixIdentity(&ident);
-	D3DXMatrixIdentity(&mView);
+	memset(&Camera, 0, sizeof(Camera));
 
-	SetCameraAperture(RAD*50.0, double(viewH)/double(viewW));
+	D3DXMatrixIdentity(&ident);
+	
+	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
 	csphere = new CelestialSphere(gc);
@@ -98,8 +105,40 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	InitGDIResources();
 
 	cspheremgr = new CSphereManager(_gc, this);
-	
+
+	LogAlw("=========== Initializing G-Buffer ============");
+
+	/*
+	//HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgNormal));
+	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8,	  D3DPOOL_DEFAULT, &ptgNormal));
+	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_G16R16F,     D3DPOOL_DEFAULT, &ptgSpecular));
+	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,		  D3DPOOL_DEFAULT, &ptgDepth));
+
+	if (ptgNormal)   ptgNormal->GetSurfaceLevel(0, &psgNormal);
+	if (ptgSpecular) ptgSpecular->GetSurfaceLevel(0, &psgSpecular);
+	if (ptgDepth)    ptgDepth->GetSurfaceLevel(0, &psgDepth);
+	*/
+
 	LogAlw("================ Scene Created ===============");
+
+	/*
+	SURFHANDLE hTgt = oapiCreateSurfaceEx(viewW, viewH, OAPISURFACE_RENDERTARGET);
+
+	pIPI = new ImageProcessing(pDevice, "Modules/D3D9Client/IPI.hlsl", "PSMain");
+
+	pIPI->SetOutput(0, hTgt);
+	pIPI->SetFloat("myVar", 1.0f);
+	pIPI->SetFloat("myVec", &D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f), sizeof(D3DXVECTOR4));
+
+	if (!pIPI->Execute()) LogErr("pIPI::Execute Failed");
+
+	oapiBlt(gc->GetBackBufferHandle(), hTgt, 0, 0, 0, 0, viewW, viewH);
+
+	oapiDestroySurface(hTgt);
+
+	pDevice->Present(0, 0, 0, 0);
+	Sleep(2000);*/
+	
 }
 
 // ===========================================================================================
@@ -107,6 +146,19 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 Scene::~Scene ()
 {
 	_TRACE;
+
+	pDevice->SetRenderTarget(0, NULL);
+	pDevice->SetRenderTarget(1, NULL);
+	pDevice->SetRenderTarget(2, NULL);
+	pDevice->SetRenderTarget(3, NULL);
+
+	SAFE_RELEASE(psgNormal);
+	SAFE_RELEASE(psgSpecular);
+	SAFE_RELEASE(psgDepth);
+
+	SAFE_RELEASE(ptgNormal);
+	SAFE_RELEASE(ptgSpecular);
+	SAFE_RELEASE(ptgDepth);
 
 	SAFE_DELETE(csphere);
 	
@@ -149,14 +201,15 @@ void Scene::Initialise()
 	sunLight.Attenuation[0] = 1.0f; 
     sunLight.Param[D3D9LRange] = FLT_MAX;
 
-	// Browse through all objects and create visuals if in visual range
+	// Update Sunlight direction -------------------------------------
 	//
-	/*
-	DWORD nobj = oapiGetObjectCount();
-	for (DWORD i=0;i<nobj;i++) {
-		OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
-		CheckVisual(hObj);
-	}*/
+	VECTOR3 rpos, cpos;
+	oapiGetGlobalPos(hSun, &rpos);
+	oapiCameraGlobalPos(&cpos); rpos-=cpos;
+	D3DVEC(-unit(rpos), sunLight.Direction);
+	D3DVEC(rpos, sunLight.Position);
+
+	// Do not "pre-create" visuals here. Will cause changed call order for vessel callbacks
 }
 
 // ===========================================================================================
@@ -220,7 +273,7 @@ const D3D9Light *Scene::GetLight(int index) const
 
 // ===========================================================================================
 //
-Scene::VOBJREC *Scene::FindVisual(OBJHANDLE hObj)
+Scene::VOBJREC *Scene::FindVisual(OBJHANDLE hObj) const
 {
 	if (hObj==NULL) return NULL;
 	VOBJREC *pv;
@@ -230,7 +283,7 @@ Scene::VOBJREC *Scene::FindVisual(OBJHANDLE hObj)
 
 // ===========================================================================================
 //
-class vObject *Scene::GetVisObject(OBJHANDLE hObj)
+class vObject *Scene::GetVisObject(OBJHANDLE hObj) const
 {
 	Scene::VOBJREC *v = FindVisual(hObj);
 	if (v) return v->vobj;
@@ -420,9 +473,9 @@ void Scene::Update ()
 	//
 	OBJHANDLE hTgt = oapiCameraTarget();
 
-	if (hTgt!=hCameraTarget && hTgt!=NULL) {
+	if (hTgt!=Camera.hTarget && hTgt!=NULL) {
 		
-		hCameraTarget = hTgt;
+		Camera.hTarget = hTgt;
 
 		if (oapiGetObjectType(hTgt)==OBJTP_SURFBASE) {
 			OBJHANDLE hPlanet = oapiGetBasePlanet(hTgt);
@@ -490,12 +543,12 @@ float Scene::ComputeNearClipPlane()
 	if (hObj && hVes) {
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
-		double g = atan(apsq);
-		double t = dotp(unit(camera_pos-pos), unit(camera_dir));
+		double g = atan(Camera.apsq);
+		double t = dotp(unit(Camera.pos-pos), unit(Camera.dir));
 		if (t<-1.0) t=1.0; if (t>1.0) t=1.0f;
 		double a = PI - acos(t);
-		double R = oapiGetSize(hObj_proxy) + hVes->GetSurfaceElevation();
-		double r = length(camera_pos-pos);
+		double R = oapiGetSize(Camera.hObj_proxy) + hVes->GetSurfaceElevation();
+		double r = length(Camera.pos-pos);
 		double h = r - R;
 		if (h<10e3) {
 			double d = a - g; if (d<0) d=0;
@@ -614,9 +667,13 @@ float Scene::ComputeNearClipPlane()
 void Scene::UpdateCamVis()
 {
 	dwFrameId++;				// Advance to a next frame
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);	// Update camera parameters.
 
-	if (hObj_proxy) D3D9Effect::UpdateEffectCamera(hObj_proxy);
+	// Update camera parameters --------------------------------------
+	// and call vObject::Update() for all visuals
+	//
+	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);	
+
+	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 	
 	// Clear active local lisghts list -------------------------------
 	//
@@ -626,7 +683,7 @@ void Scene::UpdateCamVis()
 	// 
 	VECTOR3 rpos;
 	oapiGetGlobalPos(hSun, &rpos);
-	rpos -= camera_pos; 
+	rpos -= Camera.pos; 
 	D3DVEC(-unit(rpos), sunLight.Direction);
 	D3DVEC(rpos, sunLight.Position);
 
@@ -1082,7 +1139,7 @@ void Scene::RenderMainScene()
 	// render the vessel objects
 	// -------------------------------------------------------------------------------------------------------
 
-	D3D9Effect::UpdateEffectCamera(hObj_proxy);
+	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
 	pSketch->SetTextColor(labelCol[0]);
 	pSketch->SetPen(lblPen[0]);
@@ -1237,7 +1294,7 @@ void Scene::RenderMainScene()
 
 	// End Of Main Scene Rendering ---------------------------------------------
 	//
-	pDevice->EndScene();
+	HR(pDevice->EndScene());
 	bRendering = false;
 
 
@@ -1303,7 +1360,8 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
 	// -------------------------------------------------------------------------------------------------------
-
+	// pDevice->StretchRect(psgNormal, NULL, gc->GetBackBuffer(), NULL, D3DTEXF_LINEAR);
+	
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0));
@@ -1389,6 +1447,41 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 // ===========================================================================================
 //
+void Scene::RenderLightPrePass()
+{
+	_TRACE;
+	UpdateCamVis();
+	if (vFocus==NULL) return;
+	float znear = ComputeNearClipPlane();
+	SetCameraFrustumLimits(znear, 1e8f);
+
+	pDevice->SetRenderTarget(0, psgDepth);		// R32F
+	pDevice->SetRenderTarget(1, psgNormal);		// A2RGB10
+	pDevice->SetRenderTarget(2, psgSpecular);	// G16R16F
+
+	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
+
+	// Clear the viewport
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+	
+	if (FAILED (pDevice->BeginScene())) return;
+
+	VOBJREC *pv = NULL;
+
+	// render the vessel objects --------------------------------
+	// 
+	for (pv=vobjFirst; pv; pv=pv->next) {
+		if (!pv->vobj->IsActive()) continue;
+		if (!pv->vobj->IsVisible()) continue;
+		OBJHANDLE hObj = pv->vobj->Object();
+		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
+	}
+
+	HR(pDevice->EndScene());
+}
+
+// ===========================================================================================
+//
 void Scene::ClearOmitFlags()
 {
 	VOBJREC *pv = NULL;
@@ -1469,7 +1562,7 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 	D3DXVECTOR3 homog;
 	D3DXVECTOR3 dir((float)-rdir.x, (float)-rdir.y, (float)-rdir.z);
 
-	if (D3DXVec3Dot(&dir,&camera_z)>0) return;
+	if (D3DXVec3Dot(&dir, &Camera.z)>0) return;
 
 	D3DXVec3TransformCoord(&homog, &dir, GetProjectionViewMatrix());
 
@@ -1617,12 +1710,34 @@ void Scene::ExitGDIResources ()
 
 // ===========================================================================================
 //
+float Scene::GetDepthResolution(float dist) const 
+{ 
+	return fabs( (Camera.nearplane-Camera.farplane)*(dist*dist) / (Camera.farplane * Camera.nearplane * 16777215.0f) ); 
+}
+
+// ===========================================================================================
+//
+void Scene::PushCamera() 
+{ 
+	CameraStack.push(Camera); 
+}
+
+// ===========================================================================================
+//
+void Scene::PopCamera() 
+{ 
+	Camera = CameraStack.top(); 
+	CameraStack.pop();
+}
+
+// ===========================================================================================
+//
 D3D9Pick Scene::PickScene(short xpos, short ypos)
 {
 	float x = 2.0f*float(xpos)/float(viewW) - 1.0f;
 	float y = 2.0f*float(ypos)/float(viewH) - 1.0f;
 
-	D3DXVECTOR3 vPick = camera_x * (x/mProj._11) + camera_y * (-y/mProj._22) + camera_z;
+	D3DXVECTOR3 vPick = Camera.x * (x/Camera.mProj._11) + Camera.y * (-y/Camera.mProj._22) + Camera.z;
 	
 	D3DXVec3Normalize(&vPick, &vPick);
 
@@ -1655,42 +1770,43 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 
 // ===========================================================================================
 //
-void Scene::SetCameraAperture(double _ap, double _as)
+void Scene::SetCameraAperture(float ap, float as)
 {
-	aperture = (float)_ap;
-	aspect = (float)_as;
+	Camera.aperture = ap;
+	Camera.aspect = as;
 
-	float tanap = tan(aperture);
+	float tanap = tan(ap);
 	
-	ZeroMemory(&mProj, sizeof(D3DXMATRIX));
-	mProj._11 = (aspect / tanap);
-	mProj._22 = (1.0f    / tanap);
-	mProj._43 = (mProj._33 = farplane / (farplane-nearplane)) * (-nearplane);
-	mProj._34 = 1.0f;
+	ZeroMemory(&Camera.mProj, sizeof(D3DXMATRIX));
+
+	Camera.mProj._11 = (as / tanap);
+	Camera.mProj._22 = (1.0f    / tanap);
+	Camera.mProj._43 = (Camera.mProj._33 = Camera.farplane / (Camera.farplane-Camera.nearplane)) * (-Camera.nearplane);
+	Camera.mProj._34 = 1.0f;
 	
-	float x = tanap / aspect;
+	float x = tanap / as;
 	float y = tanap;
-	float z = aspect / tanap;
+	float z = as / tanap;
 	
-	apsq = sqrt(x*x*x*z + y*y);
+	Camera.apsq = sqrt(x*x*x*z + y*y);
 
-	vh   = tan(aperture);
-	vw   = vh/aspect;
-	vhf  = (1.0f/cos(aperture));
-	vwf  = vhf/aspect;
+	Camera.vh   = tan(ap);
+	Camera.vw   = Camera.vh/as;
+	Camera.vhf  = 1.0f / cos(ap);
+	Camera.vwf  = Camera.vhf/as;
 
-	D3DXMatrixMultiply(&mProjView, &mView, &mProj);
+	D3DXMatrixMultiply(&Camera.mProjView, &Camera.mView, &Camera.mProj);
 
-	D3D9Effect::SetViewProjMatrix(&mProjView);
+	D3D9Effect::SetViewProjMatrix(&Camera.mProjView);
 }
 
 // ===========================================================================================
 //
 void Scene::SetCameraFrustumLimits (double nearlimit, double farlimit)
 {
-	nearplane = (float)nearlimit;
-	farplane = (float)farlimit;
-	SetCameraAperture(aperture, aspect);
+	Camera.nearplane = (float)nearlimit;
+	Camera.farplane  = (float)farlimit;
+	SetCameraAperture(Camera.aperture, Camera.aspect);
 }
 
 // ===========================================================================================
@@ -1704,9 +1820,9 @@ bool Scene::CameraPan(VECTOR3 pan, double speed)
 		if (camMode==1) {
 			VECTOR3 pos;
 			oapiGetGlobalPos(hTgt, &pos);
-			camera_pos = pos + camera_relpos;
-			camera_pos += camera_dir * (pan.z*speed) + _VD3DX(camera_x) * (pan.x*speed) + _VD3DX(camera_y) * (pan.y*speed);
-			camera_relpos = camera_pos - pos;
+			Camera.pos = pos + Camera.relpos;
+			Camera.pos += Camera.dir * (pan.z*speed) + _VD3DX(Camera.x) * (pan.x*speed) + _VD3DX(Camera.y) * (pan.y*speed);
+			Camera.relpos = Camera.pos - pos;
 			return true;
 		}
 	}
@@ -1729,25 +1845,25 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 		if (DebugControls::IsActive()==false || camMode==0) {
 			// Acquire camera information from Orbiter
 			oapiGetGlobalPos(hTgt, &pos);
-			oapiCameraGlobalPos(&camera_pos);
-			camera_relpos = camera_pos - pos;	// camera_relpos is a mesh debugger paramater
+			oapiCameraGlobalPos(&Camera.pos);
+			Camera.relpos = Camera.pos - pos;	// camera_relpos is a mesh debugger paramater
 		}
 		else {
 			// Mesh debugger camera mode active
 			oapiGetGlobalPos(hTgt, &pos);
-			camera_pos = pos + camera_relpos; // Compute from target pos and offset
+			Camera.pos = pos + Camera.relpos; // Compute from target pos and offset
 		}
 	}
 	else {
 		// Camera target doesn't exist. (Should not happen)
-		oapiCameraGlobalPos(&camera_pos);
-		camera_relpos = _V(0,0,0);
+		oapiCameraGlobalPos(&Camera.pos);
+		Camera.relpos = _V(0,0,0);
 	}
 
-	oapiCameraGlobalDir(&camera_dir);
+	oapiCameraGlobalDir(&Camera.dir);
 	oapiCameraRotationMatrix(&grot);
-	D3DXMatrixIdentity(&mView);
-	D3DMAT_SetRotation(&mView, &grot);
+	D3DXMatrixIdentity(&Camera.mView);
+	D3DMAT_SetRotation(&Camera.mView, &grot);
 
 	// note: in render space, the camera is always placed at the origin,
 	// so that render coordinates are precise in the vicinity of the
@@ -1757,7 +1873,7 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 	// translational transformation between orbiter global coordinates
 	// and render coordinates.
 
-	SetupInternalCamera(&mView, &camera_pos, oapiCameraAperture(), double(viewH)/double(viewW), true, dwPass); 
+	SetupInternalCamera(&Camera.mView, &Camera.pos, oapiCameraAperture(), double(viewH)/double(viewW), true, dwPass); 
 }
 
 
@@ -1769,28 +1885,28 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	// Update camera orientation if a new matrix is provided
 	if (mNew) {
-		mView	   = *mNew;
-		camera_x   = D3DXVECTOR3(mView._11, mView._21, mView._31);
-		camera_y   = D3DXVECTOR3(mView._12, mView._22, mView._32);
-		camera_z   = D3DXVECTOR3(mView._13, mView._23, mView._33);
-		camera_dir = _VD3DX(camera_z);
+		Camera.mView	  = *mNew;
+		Camera.x   = D3DXVECTOR3(Camera.mView._11, Camera.mView._21, Camera.mView._31);
+		Camera.y   = D3DXVECTOR3(Camera.mView._12, Camera.mView._22, Camera.mView._32);
+		Camera.z   = D3DXVECTOR3(Camera.mView._13, Camera.mView._23, Camera.mView._33);
+		Camera.dir = _VD3DX(Camera.z);
 	}
 
-	if (gpos) camera_pos = *gpos;
+	if (gpos) Camera.pos = *gpos;
 
 	// find the planet closest to the current camera position
-	hObj_proxy = oapiCameraProxyGbody();
+	Camera.hObj_proxy = oapiCameraProxyGbody();
 
 	// find the visual
-	vProxy = (vPlanet *)GetVisObject(hObj_proxy);
+	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
 	
 	// Camera altitude over the proxy
 	VECTOR3 pos;
-	oapiGetGlobalPos(hObj_proxy, &pos);
-	alt_proxy = dist(camera_pos, pos) - oapiGetSize(hObj_proxy);
+	oapiGetGlobalPos(Camera.hObj_proxy, &pos);
+	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
 
 	// Call SetCameraAparture to update ViewProj Matrix
-	SetCameraAperture(apr, asp);
+	SetCameraAperture(float(apr), float(asp));
 
 	// Finally update world matrices from all visuals if camera position vector is provided and update is requested
 	// Othervice the world status remains unchanged 
@@ -1941,15 +2057,15 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 //
 bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
 {
-	float z = camera_z.x*pCnt->x + camera_z.y*pCnt->y + camera_z.z*pCnt->z;
+	float z = Camera.z.x*pCnt->x + Camera.z.y*pCnt->y + Camera.z.z*pCnt->z;
 	if (z<(-radius)) return false; 
 	if (z<0) z=-z;
-	float y = camera_y.x*pCnt->x + camera_y.y*pCnt->y + camera_y.z*pCnt->z;
+	float y = Camera.y.x*pCnt->x + Camera.y.y*pCnt->y + Camera.y.z*pCnt->z;
 	if (y<0) y=-y;
-	if (y-(radius*vhf) > (vh*z)) return false; 
-	float x = camera_x.x*pCnt->x + camera_x.y*pCnt->y + camera_x.z*pCnt->z;
+	if (y-(radius*Camera.vhf) > (Camera.vh*z)) return false; 
+	float x = Camera.x.x*pCnt->x + Camera.x.y*pCnt->y + Camera.x.z*pCnt->z;
 	if (x<0) x=-x;
-	if (x-(radius*vwf) > (vw*z)) return false;
+	if (x-(radius*Camera.vwf) > (Camera.vw*z)) return false;
 	return true;
 }
 

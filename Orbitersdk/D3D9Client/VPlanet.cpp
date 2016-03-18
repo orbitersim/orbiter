@@ -34,6 +34,7 @@
 #include "DebugControls.h"
 #include "AtmoControls.h"
 #include "VectorHelpers.h"
+#include "MeshTools.h"
 #include "OapiExtension.h"
 
 using namespace oapi;
@@ -103,6 +104,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		prm.amb0col = 0;
 		for (int i = 0; i < 4; i++) prm.amb0col |= amb0 << (i<<3);
 	}
+	tile_cache = NULL;
 	hazemgr = NULL;
 	hazemgr2 = NULL;
 	hashaze = *(bool*)gc->GetConfigParam (CFGPRM_ATMHAZE) && prm.bAtm;
@@ -189,11 +191,52 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		oapiGetObjectName (hObj, cbuf, 256);
 		OBJHANDLE hMesh = oapiLoadMesh (cbuf);
 		if (hMesh) {
-			mesh = new D3D9Mesh (gc, hMesh);
+			mesh = new D3D9Mesh (hMesh);
 			oapiDeleteMesh (hMesh);
 		}
 	}
 
+	// Create a rock patch mesh --------------------------------------------------------------
+	//
+	pRockPatch = NULL;
+	
+	/*
+	if (strcmp(GetName(),"Moon")==0) {
+		
+		D3DXMATRIX mW;
+		D3DXQUATERNION qW;
+
+		AdMesh PatchMesh;
+		AdMesh Rock("D3D9Rock_M", true);
+
+		if (Rock.GetGroupCount()>0) {
+
+			HGROUP hRock = Rock.GetGroup(0);
+			hRock->NormalizeGroupSize();
+		
+			HGROUP hPatch = PatchMesh.AddGroup(hRock);
+
+			for (int i=0;i<100;i++) {	
+				float scale = float(oapiRand());
+				scale = 0.1f + scale * scale * 2.0f;
+				D3DXVECTOR3 pos = D3DXVECTOR3(float(oapiRand()), float(oapiRand()), 0.0f) * 20.0f;
+
+				D3DXQuaternionRotationYawPitchRoll(&qW, float(oapiRand())*6.283f, float(oapiRand())*6.283f, 0.0f);
+				D3DXMatrixAffineTransformation(&mW, scale, &D3DXVECTOR3(0,0,0), &qW, &pos);
+
+				if (hPatch->Append(hRock, &mW)==0x10000) {
+					LogErr("Rock-patch: Max size reached");
+					break;
+				}
+			}
+
+			pRockPatch = new D3D9Mesh(&PatchMesh, true);
+		}
+	}*/
+
+
+	// Finish creation ------------------------------------------------------------------------
+	//
 	MicroCfg.bEnabled = ParseMicroTextures();
 
 	albedo = gc->GetFileParser()->GetAlbedo(hObj);
@@ -298,6 +341,21 @@ bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 	return true;
 }
 
+// ===========================================================================================
+//
+int vPlanet::GetElevation(double lat, double lng, double *elv, int *lvl, class SurfTile **tile)
+{
+	int rv = 0;
+	if (!surfmgr2) return -4;
+	if (tile_cache) rv = tile_cache->GetElevation(lat, lng, elv, &tile_cache);
+	if (rv!=1) rv = surfmgr2->GetElevation(lat, lng, elv, &tile_cache);
+
+	if (rv>=0) {
+		if (tile) *tile = tile_cache;
+		if (lvl) *lvl = tile_cache->Level();
+	}
+	return rv;
+}
 
 // ===========================================================================================
 //
@@ -348,8 +406,9 @@ bool vPlanet::Update (bool bMainScene)
 		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
-		prm.bCloudFlatShadows = (cdist >= 1.05*size);
+		//prm.bCloudFlatShadows = (cdist >= 1.05*size);
 		//prm.bCloudFlatShadows = (cdist >= (size+GetHorizonAlt()));
+		//prm.bCloudFlatShadows = false;
 
 		if (clouddata) {
 			if (prm.cloudvis & 1) {
@@ -610,7 +669,13 @@ void vPlanet::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 	// Beacons rendered elsewhere before the cloud layer	
 }
 
-
+// ==============================================================
+/*
+void vPlanet::RenderSurfaceMicroDetails(LPDIRECT3DDEVICE9 dev)
+{
+	
+}
+*/
 // ==============================================================
 
 void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
@@ -619,6 +684,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	if (surfmgr2) {
+		tile_cache = NULL;	// Clear tile cache
 		if (cdist>=1.3*rad && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
 		else							 surfmgr2->Render (dmWorld, true,  prm);
 	} 
@@ -659,8 +725,8 @@ void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 {
 	if (cloudmgr2) {
-		if (prm.bCloudFlatShadows)
-			cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
+		//if (prm.bCloudFlatShadows)
+		//	cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
 	} 
 	else if (clouddata) { // legacy method
 		float fogfactor;

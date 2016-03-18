@@ -34,13 +34,14 @@ inline double exp2(double d)
 {
 	return exp(d*0.69314718055994530941723212145818);
 }
+
 inline float exp2(float d)
 { 
 	return exp(d*0.693147180559945f);
 }
 
 inline double log2(double d)
-{
+{ 
 	return log(d*1.4426950408889634073599246810019);
 }
 inline float log2(float d)

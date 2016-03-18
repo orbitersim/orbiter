@@ -289,7 +289,7 @@ void vVessel::LoadMeshes()
 			hMesh = vessel->CopyMeshFromTemplate(idx);
 			if (hMesh) {
 				// load on the fly and discard after copying
-				meshlist[idx].mesh = new D3D9Mesh(gc, hMesh, false);
+				meshlist[idx].mesh = new D3D9Mesh(hMesh, false);
 				oapiDeleteMesh(hMesh);
 			}
 		}
@@ -356,7 +356,7 @@ void vVessel::InsertMesh(UINT idx)
 	if (hMesh && mesh) {
 		meshlist[idx].mesh = new D3D9Mesh (*mesh);
 	} else if (hMesh = vessel->CopyMeshFromTemplate (idx)) {	// It's vital to use a copy here for some reason
-		meshlist[idx].mesh = new D3D9Mesh (gc, hMesh);
+		meshlist[idx].mesh = new D3D9Mesh (hMesh);
 		oapiDeleteMesh (hMesh);
 	} else {
 		meshlist[idx].mesh = 0;
@@ -583,10 +583,20 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 	return bRet;
 }
 
+// ============================================================================================
+//
+/*
+bool vVessel::RenderLightPrePass(LPDIRECT3DDEVICE9 dev)
+{
+	_TRACE;
+	if (!active) return false;
+	UpdateBoundingBox();
+	return Render(dev, 
+}*/
 
 // ============================================================================================
 //
-bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
+bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 {
 	_TRACE;
 	if (!active) return false;
@@ -610,6 +620,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	else										   D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);  // turn off fog
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+
+	bool internalpass = (dwRenderPass&RP_VESSEL_INTERIOR)!=0;
+	bool lightprepass = (dwRenderPass&RP_VESSEL_LIGHTPP)!=0;
 
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
@@ -676,7 +689,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		meshlist[i].mesh->SetSunLight(&sunLight);
 
 
-		if (bVC && internalpass) {
+		if (bVC && internalpass  && !lightprepass) {
 			for (mfd=0;mfd<MAXMFD;mfd++) {
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
 					D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
@@ -685,14 +698,15 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			}
 		}
 
-		if (internalpass)	meshlist[i].mesh->Render(dev, pWT, RENDER_VC,     pEnv, nEnv); // Render VC
-		else 				meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv); // Render Exterior
+		// Render vessel meshes --------------------------------------------------------------------------
+		//
+		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC, NULL, 0);
+		else 			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv);
 		
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//
-
-		if (bVC && internalpass) {
+		if (bVC && internalpass && !lightprepass) {
 
 			// render VC HUD
 			//

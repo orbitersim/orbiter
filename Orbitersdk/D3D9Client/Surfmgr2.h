@@ -28,6 +28,8 @@ public:
 	inline void SetNode (QuadTreeNode<SurfTile> *_node) { node = _node; }
 	// Register the tile to a quad tree node
 
+	int GetElevation(double lat, double lng, double *elev, SurfTile **, bool bFilter=true);
+
 protected:
 	virtual Tile *getParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
 	inline SurfTile *getSurfParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
@@ -60,6 +62,7 @@ private:
 	float fixinput(double, int);
 	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
+	LPDIRECT3DTEXTURE9 htex;
 	D3DXVECTOR2 MicroRep[3];
 	DWORD MaxRep;
 	LPDIRECT3DTEXTURE9 ltex;		// landmask/nightlight texture, if applicable

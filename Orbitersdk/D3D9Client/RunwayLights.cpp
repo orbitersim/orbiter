@@ -16,10 +16,12 @@
 #include "BeaconArray.h"
 #include "D3D9Config.h"
 #include "D3D9Util.h"
+#include "vBase.h"
 #include <vector>
 
-RunwayLights::RunwayLights(OBJHANDLE handle, const class Scene *scn)
+RunwayLights::RunwayLights(class vBase *_vB, const class Scene *scn)
 {
+	vB = _vB;
 	scene = scn;
 	end1 = _V(0, 0, 0);
 	end2 = _V(0, 0, 0);
@@ -31,7 +33,7 @@ RunwayLights::RunwayLights(OBJHANDLE handle, const class Scene *scn)
 	apr_length = 257.0;
 	iCategory = 0;
 	nPAPI = 0;
-	hObj  = handle;
+	hObj = vB->GetObjectA();
 	nVASI = 0;
 	bSingleEnded = false;
 	bDisp2 = false;
@@ -501,59 +503,16 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 		}
 	}
 	
-
 	// Snap to ground
-
 	for (int k=0;k<i;k++) beaconsEntry1[k].pos.y = 0;
 	
-
-
-	// VASI ---------------------------------------------------------
-	/*
-	if (bVASI) {
-		BeaconArrayEntry vasiLight;
-
-		vasiLight.angle = min(180.0f, float(Config->RwyLightAngle) * 2.0f);
-		vasiLight.size = 1.5f * lightSize;
-		vasiLight.lon = 0.0f;
-		vasiLight.loff = 1.0f;
-		vasiLight.bright = 3.0f * float(Config->RwyBrightness);
-		vasiLight.fall = 0.1f;
-		vasiLight.dir = _dir*cos(upAngle*RAD) + _V(0, 1, 0)*sin(upAngle*RAD);
-
-		_current = _start + _dir * VASI.z + _widthDir * (width/2.0 + 30.0);
-		_current.y = 0;
-
-		for (k=0;k<20;k++, i++) {
-			beaconsEntry1[i] = vasiLight;
-			beaconsEntry1[i].color = red;
-			beaconsEntry1[i].size = 1.0f * lightSize;
-			beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0);
-		}
-
-		_current -= _dir * VASI.y;
-
-		for (k=0;k<5;k++, i++) {
-			beaconsEntry1[i] = vasiLight;
-			beaconsEntry1[i].color = white;
-			beaconsEntry1[i].pos = _current + _widthDir * 2.0 * float(k) + _V(0,1,0) + _V(0,1,0)*(sin(VASI.x*RAD)*VASI.y);
-		}
-	}*/
-
-
 	// Post process lights ------------------------------------------
-
 	OBJHANDLE hPlanet = oapiGetBasePlanet(hObj);
 	double size = oapiGetSize(hPlanet);
 
-	for (int k=0;k<i;k++) {
-		beaconsEntry1[k].dir = _V(-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z);
-		//double dst = length(beaconsEntry1[k].pos);
-		//double dif = sqrt(dst*dst + size*size) - size;
-		//beaconsEntry1[k].pos.y -= (dif-0.2);
-	}
+	for (int k=0;k<i;k++) beaconsEntry1[k].dir = _V(-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z);
 
-	BeaconArray *beacons = new BeaconArray(beaconsEntry1, i, hObj);
+	BeaconArray *beacons = new BeaconArray(beaconsEntry1, i, vB);
 	delete[] beaconsEntry1;
 	return beacons;
 }
@@ -682,10 +641,6 @@ BeaconArray *RunwayLights::BuildVASI(VECTOR3 _start, VECTOR3 _end, DWORD idx)
 }
 	
 
-
-
-
-
 void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int i)
 {
 
@@ -698,7 +653,7 @@ void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int i)
 
 		D3DXVECTOR3 vPos, vUp, vFront;
 		D3DXVec3TransformNormal(&vUp, &D3DXVECTOR3(0,1,0), world);
-		D3DXVECTOR3 vRef1(pVrt[0].x, pVrt[0].y, pVrt[0].z);
+		D3DXVECTOR3 vRef1 = pVrt[0].pos;
 		D3DXVec3Normalize(&vFront, D3DXVec3TransformCoord(&vPos, &vRef1, world));
 	
 		float slope = float(-asin(D3DXVec3Dot(&vFront,&vUp))*DEG);
@@ -730,6 +685,12 @@ void RunwayLights::SetPAPIColors(BeaconArray *pPAPI, LPD3DXMATRIX world, int i)
 	}
 }
 
+
+void RunwayLights::Update(class vPlanet *vP)
+{
+	if (beacons1) beacons1->Update(50, vP);
+	if (beacons2) beacons2->Update(50, vP);
+}
 
 
 void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
@@ -780,7 +741,7 @@ void RunwayLights::Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night)
 }
 
 
-int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, const char *filename, RunwayLights**& out)
+int RunwayLights::CreateRunwayLights(class vBase *vB, const class Scene *scn, const char *filename, RunwayLights**& out)
 {
 	int numRunwayLights = 0;
 	std::vector<RunwayLights*> lights;
@@ -801,7 +762,7 @@ int RunwayLights::CreateRunwayLights(OBJHANDLE base, const class Scene *scn, con
 		if(!strncmp(cbuf, "RUNWAYLIGHTS", 12))
 		{
 			numRunwayLights++;
-			lights.push_back(new RunwayLights(base, scn));
+			lights.push_back(new RunwayLights(vB, scn));
 			
 			for(;;)
 			{

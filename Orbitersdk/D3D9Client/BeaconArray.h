@@ -27,10 +27,12 @@ typedef struct {
 	float   loff;	///< Light off time if (lon=0, loff=1) light always on
 	float   bright;	///< Light brightness factor. 1.0 = default
 	float   fall;	///< Spotlight falloff speed 2.0 to 0.1; 
-//	double  lng;	///< Geocentric longitude (Automatically filled by BeaconArray constructor)
-//	double  lat;	///< Geocentric latitude (Automatically filled by BeaconArray constructor)
 } BeaconArrayEntry;
 
+typedef struct {
+	double lng, lat;
+	VECTOR3 vLoc;
+} BeaconPos;
 
 
 /**
@@ -46,7 +48,7 @@ public:
 	 * \param pArray Pointer into a BeaconArrayEntry list.
 	 * \param nArray Number of entries in the array
 	 */
-	BeaconArray(BeaconArrayEntry *pArray, DWORD nArray, OBJHANDLE hBase=NULL);
+	BeaconArray(BeaconArrayEntry *pArray, DWORD nArray, class vBase *vP=NULL);
 	~BeaconArray();
 	
 	void UnLockVertexBuffer();		///< Unlocks the vertex buffer after manipulation is finished
@@ -60,12 +62,18 @@ public:
 	 */
 	void Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float time=0.5f);
 
+	void Update(DWORD nCount, vPlanet *vP);
+
 private:
 
 	DWORD nVert;					///< Number of beacons
+	DWORD bidx;						///< Update index
 	LPDIRECT3DVERTEXBUFFER9 pVB;	///< Vertex buffer pointer
 	SURFHANDLE pBright;				///< D3D9RwyLight.dds texture handle
-	OBJHANDLE hPlanet, hBase;
+	OBJHANDLE hBase;
+	class vBase *vB;
+	BeaconPos *pBeaconPos;
+	double base_elev;
 };
 
 #endif // !__BEACONARRAY_H

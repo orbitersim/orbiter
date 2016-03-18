@@ -39,6 +39,16 @@ public:
 	
 	bool Update (bool bMainScene);
 
+	double	GetElevation() const;
+	vPlanet *GetPlanet() { return vP; }
+	
+	// Convert from base centric system to local geocentric system
+	VECTOR3 ToLocal(VECTOR3 pos, double *lng=NULL, double *lat=NULL) const;
+
+	// Convert from local geocentric frame to base centric system
+	VECTOR3 FromLocal(VECTOR3 pos) const;
+	void	FromLocal(VECTOR3 pos, D3DXVECTOR3 *pTgt) const;
+
 	void RenderRunwayLights (LPDIRECT3DDEVICE9 dev);
 	bool RenderSurface (LPDIRECT3DDEVICE9 dev);
 	bool RenderStructures (LPDIRECT3DDEVICE9 dev);
@@ -47,6 +57,7 @@ public:
 	const SurftileSpec *GetTileDesc() { return tspec; }
 
 private:
+
 	void SetupShadowMeshes();
 	void CreateRunwayLights();
 	void CreateTaxiLights();
@@ -73,8 +84,12 @@ private:
 	bool lights;               // use nighttextures for base objects
 	bool bLocalLight;          // true if lighting is modified
 	D3D9Light localLight;      // current local lighting parameters
-	class vPlanet *base_planet;
-	
+	class vPlanet *vP;
+	OBJHANDLE hPlanet;
+	VECTOR3 vLocalPos;
+	MATRIX3 mGlobalRot;
+	D3DXMATRIX mGlobalInvRot;
+
 	int numRunwayLights;
 	RunwayLights** runwayLights;
 

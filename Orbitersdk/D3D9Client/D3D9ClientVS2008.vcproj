@@ -147,6 +147,7 @@
 				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="0"
 				PrecompiledHeaderFile=""
+				Detect64BitPortabilityProblems="false"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -165,6 +166,7 @@
 				OutputFile="..\..\Modules\Plugin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="..\..\Orbitersdk\lib;.\..\..\Modules\Server"
 				IgnoreDefaultLibraryNames="MSVCRT.lib"
+				LargeAddressAware="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary="$(ConfigurationName)\$(TargetName).lib"
@@ -364,6 +366,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IProcess.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Junction.cpp"
 				>
 			</File>
@@ -416,6 +422,17 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\MeshTools.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -678,6 +695,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\IProcess.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Junction.h"
 				>
 			</File>
@@ -696,6 +717,24 @@
 			<File
 				RelativePath="MeshMgr.h"
 				>
+			</File>
+			<File
+				RelativePath=".\MeshTools.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\OapiExtension.h"
@@ -832,6 +871,10 @@
 			</File>
 			<File
 				RelativePath="..\..\Modules\D3D9Client\HorizonHaze.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\IPI.hlsl"
 				>
 			</File>
 			<File

@@ -47,6 +47,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	double x = PI * (0.5 - double(ilat+1) * f);
 	width = PI * cos(x) * f;
 	height = PI * f;
+	Extents(&minlat, &maxlat, &minlng, &maxlng);
 }
 
 // -----------------------------------------------------------------------
@@ -139,6 +140,13 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 }
 
 // -----------------------------------------------------------------------
+
+D3DXVECTOR4 Tile::GetTexRangeDX () const
+{
+	return D3DXVECTOR4(texrange.tumin, texrange.tvmin, texrange.tumax-texrange.tumin, texrange.tvmax-texrange.tvmin);
+}
+
+// -----------------------------------------------------------------------
 // Check if tile bounding box intersects the viewing frustum
 // given the transformation matrix transform
 
@@ -181,14 +189,14 @@ VECTOR3 Tile::Centre () const
 
 // -----------------------------------------------------------------------
 
-void Tile::Extents (double *latmin, double *latmax, double *lngmin, double *lngmax) const
+void Tile::Extents (double *_latmin, double *_latmax, double *_lngmin, double *_lngmax) const
 {
 	int nlat = 1 << lvl;
 	int nlng = 2 << lvl;
-	if (latmin) *latmin = PI * (0.5 - (double)(ilat+1)/(double)nlat);
-	if (latmax) *latmax = PI * (0.5 - (double)ilat/(double)nlat);
-	if (lngmin) *lngmin = PI2 * (double)(ilng-nlng/2)/(double)nlng;
-	if (lngmax) *lngmax = PI2 * (double)(ilng-nlng/2+1)/(double)nlng;
+	*_latmin = PI * (0.5 - (double)(ilat+1)/(double)nlat);
+	*_latmax = PI * (0.5 - (double)ilat/(double)nlat);
+	*_lngmin = PI2 * (double)(ilng-nlng/2)/(double)nlng;
+	*_lngmax = PI2 * (double)(ilng-nlng/2+1)/(double)nlng;
 }
 
 // -----------------------------------------------------------------------
@@ -928,6 +936,8 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 
 DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *pVB)
 {
+	static DWORD buffercnt = 0;
+
 	int pool = -1;
 	D3DVERTEXBUFFER_DESC desc;
 
@@ -960,7 +970,11 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 	}
 
 	if (VtxPool[pool].empty()) {
-		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		buffercnt++;
+		sprintf_s(oapiDebugString(),256,"TileMeshCache %d Entries [%d MB]", buffercnt, (buffercnt*nv*sizeof(VERTEX_2TEX))>>20);
+		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		return VtxPoolSize[pool];
 	}
 	else {
@@ -1006,7 +1020,8 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 	}
 
 	if (IdxPool[pool].empty()) {
-		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		return IdxPoolSize[pool];
 	}
 	else {
@@ -1027,6 +1042,7 @@ void TileManager2Base::ReduceMinElevation(double Elev)
 
 const double TileManager2Base::GetMinElev() const
 {
+	// TODO: This is bad
 	if (min_elev==obj_size) return 0.0; // Info not provided
 	return min_elev;
 }

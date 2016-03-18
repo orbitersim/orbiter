@@ -767,7 +767,7 @@ void SetupMeshGroups()
 
 	D3D9Mesh *mesh = (class D3D9Mesh *)vObj->GetMesh(sMesh);
 
-	if (mesh) nGroup = mesh->GroupCount();
+	if (mesh) nGroup = mesh->GetGroupCount();
 	else	  nGroup = 0;
 
 	if (nGroup!=0) {
@@ -988,7 +988,10 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 					for (DWORD x=0;x<s;x++) c += D3DXCOLOR(pOut[x]);
 					c *= 1.0f/float(w*h);
 					c -= D3DXCOLOR(0.5f, 0.5f, 0.5f, 0.5f);
-					for (DWORD x=0;x<s;x++) pOut[x] = (D3DXCOLOR(pOut[x])-c);	
+					for (DWORD x=0;x<s;x++) {
+						D3DXCOLOR q = D3DXCOLOR(pOut[x]);
+						pOut[x] = D3DXCOLOR(q.r-c.r, q.g, q.b-c.b, q.a);
+					}
 				}
 
 

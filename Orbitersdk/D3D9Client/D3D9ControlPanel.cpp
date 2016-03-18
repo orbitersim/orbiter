@@ -12,6 +12,7 @@
 #include "D3D9Client.h"
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
+#include "Mesh.h"
 
 using namespace oapi;
 
@@ -124,7 +125,7 @@ void D3D9Client::RenderControlPanel()
 	
 	pItemsSkp->SetTextColor(0x00FF00);
 	pItemsSkp->SetFont(largef);
-	pItemsSkp->Text(20,70,"D3D9Client Statistics & Control Panel",37);
+	pItemsSkp->Text(20,70,"D3D9Client Statistics",21);
 	pItemsSkp->SetFont(smallf);
 	LabelPos = 130;
 	
@@ -193,10 +194,10 @@ void D3D9Client::RenderControlPanel()
 	Label("SystemMem Surfaces...: %u (%u MB)", sysme_count, sysme_size>>20);
 	Label("Dynamic Textures.....: %u (%u MB)", dyntx_count, dyntx_size>>20);
 	Label("Render Targets.......: %u (%u MB)", rendt_count, rendt_size>>20);
-	Label("Render Texturex......: %u (%u MB)", rttex_count, rttex_size>>20);
-	Label("Dual Layer...........: %u (%u MB)", duall_count, duall_size>>20);
+	Label("Render Textures......: %u (%u MB)", rttex_count, rttex_size>>20);
+	Label("Dual Layer Surfaces..: %u (%u MB)", duall_count, duall_size>>20);
 	Label("Plain Surfaces.......: %u (%u MB)", plain_count, plain_size>>20);
-	Label("Textures.............: %u (%u MB)", textr_count, textr_size>>20);
+	Label("Plain Textures.......: %u (%u MB)", textr_count, textr_size>>20);
 
 	DWORD mesh_count = MeshCatalog->CountEntries();
 	DWORD tile_count = TileCatalog->CountEntries();
@@ -210,10 +211,28 @@ void D3D9Client::RenderControlPanel()
 	Label("Tiles Loaded.........: %u (%u MB)", tile_count, tile_size>>20); 
 	Label("Meshes Loaded........: %u", mesh_count); 
 
+	DWORD tot_verts = 0;
+	DWORD tot_trans = 0;
+	DWORD tot_group = 0;
+
+	for (DWORD i=0;i<mesh_count;i++) {
+		D3D9Mesh *pMesh = (D3D9Mesh *)MeshCatalog->Get(i);
+		if (pMesh) {
+			tot_verts += pMesh->GetVertexCount();
+			tot_trans += pMesh->GetGroupTransformCount();
+			tot_group += pMesh->GetGroupCount();
+		}
+	}
+
+	Label("Vertices Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
+	Label("Groups Allocated.....: %u", tot_group);
+	Label("Group Tarnsforms.....: %u", tot_trans); 
+
+
 	LabelPos += 22;
 
-	DWORD tiles_rendered = 0;
-	for (int i=8;i<=14;i++) tiles_rendered += stats.Tiles[i];
+	//DWORD tiles_rendered = 0;
+	//for (int i=8;i<=14;i++) tiles_rendered += stats.Tiles[i];
 
 	Label("Vertices processed...: %u", stats.Vertices); 
 	Label("Mesh groups rendered.: %u", stats.MeshGrps);
@@ -221,7 +240,7 @@ void D3D9Client::RenderControlPanel()
 	Label("Direct3D draw calls..: %u", stats.Draw); 
 	Label("oapiBlt calls........: %u", stats.Blits); 
 	Label("Color keyed blits....: %u", stats.ColorKey); 
-	Label("Tiles rendered.......: %u", tiles_rendered);
+	//Label("Tiles rendered.......: %u", tiles_rendered);
 	Label("Max Texture Repeat...: %u", stats.MaxRepeat); 
 	Label("Scene rendering......: %.0fus (%.0fus peak)", scene_avg, scene_pek); 
 	Label("MFD, HUD, Panels.....: %.0fus (%.0fus peak)", frame_avg, frame_pek); 
@@ -236,10 +255,6 @@ void D3D9Client::RenderControlPanel()
 	Label("Level 14 Tiles.......: %u", stats.Tiles[14]);
 	*/
 
-	LabelPos += 22;
-	Label("Key  Function");
-	Label("[S]  Sketchpad Usage.: %s", SkpU[Config->SketchpadMode]);
-	
 	pItemsSkp->SetPen(NULL);
 	pItemsSkp->SetBrush(NULL);
 
@@ -265,22 +280,5 @@ void D3D9Client::RenderControlPanel()
 
 bool D3D9Client::ControlPanelMsg(WPARAM wParam)
 {
-	//if (wParam>='0' && wParam<='9') scatter.uEditMode = 1 + wParam - '0';
-	//if (wParam>='A' && wParam<='B') scatter.uEditMode = 11 + wParam - 'A';
-	
-	if (wParam=='S') {
-		Config->SketchpadMode++;
-		if (Config->SketchpadMode>1) Config->SketchpadMode = 0;
-		return true;
-	}
-
-	if (wParam==VK_UP) {
-		
-	}
-
-	if (wParam==VK_DOWN) {
-		
-	}
-
 	return false;
 }

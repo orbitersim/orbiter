@@ -78,7 +78,7 @@ void CD3DFramework9::Clear()
 	bNoVSync		  = false;
 	Alpha			  = false;
 	SWVert			  = false;
-	Pure			  = false;
+	Pure			  = true;
 	DDM				  = false;
 	bGDIBB			  = false;
 	nvPerfHud		  = false;

@@ -968,7 +968,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	//
 	if (!Exists()) {
 		if (GetAttribs()&OAPISURFACE_TEXTURE) ConvertToRenderTargetTexture();
-		else								  ConvertToRenderTarget();
+		else								  ConvertToRenderTarget(true);
 	}
 
 
@@ -1082,7 +1082,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 		if (src->desc.Pool==D3DPOOL_SYSTEMMEM) {
 			if ((src->GetAttribs()&OAPISURFACE_SYSMEM)==0) src->ConvertToRenderTarget();
 			else {
-				LogErr("Can Not Blit in BackBuffer from a System Memory Surface 0x%X", src);
+				LogErr("Cannot Blit in BackBuffer from a System Memory Surface 0x%X", src);
 				goto error_report;
 			}
 		}
@@ -2083,8 +2083,7 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 		LogErr("Texture used without being initialized 0x%X", this);
 	}
 
-	if (pTex==NULL) if (desc.Usage&D3DUSAGE_RENDERTARGET) ConvertToRenderTargetTexture();
-
+	if (pTex==NULL) ConvertToRenderTargetTexture();
 	if (pTex==NULL) {
 		LogErr("D3D9ClientSurface::GetTexture() Failed 0x%X", this);
 		LogSpecs("Surface");

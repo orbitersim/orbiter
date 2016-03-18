@@ -58,6 +58,18 @@
 }
 #endif
 
+
+inline bool _HROK(HRESULT hr, const char *file, int line)
+{
+	if (hr==S_OK) return true;
+	else LogErr("%s Line:%d Error:%d", file, line, hr);
+	return false;
+}
+
+#ifndef HROK
+#define HROK(x)	_HROK(x, __FILE__, __LINE__)
+#endif
+
 /*
 #ifndef __TRY
 #define __TRY __try
@@ -175,8 +187,8 @@ typedef struct {
 
 
 typedef struct {
-	float x, y, z;					///< beacon position
-	float dx, dy, dz;				///< light direction
+	D3DXVECTOR3 pos;				///< beacon position
+	D3DXVECTOR3 dir;				///< light direction
 	float size, angle, on, off;		///< beacon size and light cone angle
 	float bright, falloff;
 	DWORD color;					///< beacon color
@@ -244,6 +256,19 @@ extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
 extern IDirect3DVertexDeclaration9	*pGPUBlitDecl;
 
+inline void swap(double &a, double &b)
+{
+	double c = a; a = b; b = c;
+}
+
+// Jump between western and eastern hemispheres 
+inline double wrap(double a)
+{
+	if (a<-PI) return a+PI2;
+	if (a>PI) return a-PI2;
+	return a;
+}
+
 // -----------------------------------------------------------------------------------
 // Conversion functions
 // ------------------------------------------------------------------------------------
@@ -284,6 +309,17 @@ inline MATRIX4 _MATRIX4(const LPD3DXMATRIX M)
 	D.m31 = (double)M->_31;  D.m32 = (double)M->_32;  D.m33 = (double)M->_33;  D.m34 = (double)M->_34;
 	D.m41 = (double)M->_41;  D.m42 = (double)M->_42;  D.m43 = (double)M->_43;  D.m44 = (double)M->_44;
 	return D;
+}
+
+inline void TransformVertex(NMVERTEX *pVrt, LPD3DXMATRIX pW)
+{
+	D3DXVECTOR3 p,n,t;
+	D3DXVec3TransformCoord(&p, &D3DXVECTOR3(pVrt->x, pVrt->y, pVrt->z), pW);
+	D3DXVec3TransformNormal(&n, &D3DXVECTOR3(pVrt->nx, pVrt->ny, pVrt->nz), pW);
+	D3DXVec3TransformNormal(&t, &D3DXVECTOR3(pVrt->tx, pVrt->ty, pVrt->tz), pW);
+	pVrt->x  = p.x;	pVrt->y  = p.y; pVrt->z  = p.z; 
+	pVrt->nx = n.x; pVrt->ny = n.y; pVrt->nz = n.z; 
+	pVrt->tx = t.x; pVrt->ty = t.y; pVrt->tz = t.z; 
 }
 
 inline void D3DVEC (const VECTOR3 &v, D3DVECTOR &d3dv)
@@ -345,6 +381,11 @@ bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
+bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc);
+
+LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
+LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
+
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations

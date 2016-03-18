@@ -186,7 +186,7 @@ D3D9Mesh *RingManager::CreateRing(double irad, double orad, int nsect)
 
 	MATERIAL mat = {{1,1,1,1},{0,0,0,1},{0,0,0,1},{0,0,0,0},20.0f};
 
-	D3D9Mesh *msh = new D3D9Mesh(gc, grp, &mat, NULL);
+	D3D9Mesh *msh = new D3D9Mesh(grp, &mat, NULL);
 
 	delete grp->Idx;
 	delete grp->Vtx;

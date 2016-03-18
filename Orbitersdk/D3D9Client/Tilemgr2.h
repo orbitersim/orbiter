@@ -68,8 +68,10 @@ public:
 	Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng);
 	virtual ~Tile ();
 
+	inline int State() const { return state; }
 	inline int Level() const { return lvl; }
-
+	inline bool HasOwnTex() const { return owntex; }
+	
 	bool PreDelete();
 	// Prepare tile for deletion. Return false if tile is locked
 
@@ -83,6 +85,7 @@ public:
 	virtual void MatchEdges () {}
 	// Match edges with neighbour tiles
 
+	D3DXVECTOR4 GetTexRangeDX () const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range
 
@@ -153,6 +156,12 @@ protected:
 	double height;			   // tile height [rad]
 	mutable double mean_elev;  // mean tile elevation [m]
 	mutable double max_elev;   // maximum tile elevation [m]
+
+public:
+	double minlat;
+	double maxlat;
+	double minlng;
+	double maxlng;
 };
 
 // =======================================================================
@@ -295,6 +304,7 @@ public:
 	const class Scene * GetScene() const { return gc->GetScene(); }
 	const oapi::D3D9Client *GetClient() const { return gc; }
 	const vPlanet *GetPlanet() const { return vp; }
+
 	const configPrm &Cprm() const { return cprm; }
 	const char *CbodyName() const { return cbody_name; }
 	const double CbodySize() const { return obj_size; }
@@ -343,11 +353,14 @@ public:
 	~TileManager2 ();
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
-	void RenderFlatCloudShadows (MATRIX4 &dwmat, const vPlanet::RenderPrm &rprm);
+	//void RenderFlatCloudShadows (MATRIX4 &dwmat, const vPlanet::RenderPrm &rprm);
+	int GetElevation(double lat, double lng, double *elev, SurfTile **cache);
 
 	QuadTreeNode<TileType> *FindNode (int lvl, int ilng, int ilat)
 	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilng, ilat); }
 	// Returns the node at the specified position, or 0 if it doesn't exist
+
+	const Tile *SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const;
 
 	inline TileType *GlobalTile (int lvl)
 	{ return globtile[lvl]; }
@@ -365,6 +378,7 @@ protected:
 	QuadTreeNode<TileType> tiletree[2]; // quadtree roots for western and eastern hemisphere
 
 	void CheckCoverage (const QuadTreeNode<TileType> *node, double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt, int *nfound) const;
+	const Tile *SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const;
 };
 
 #endif // !__TILEMGR2_H

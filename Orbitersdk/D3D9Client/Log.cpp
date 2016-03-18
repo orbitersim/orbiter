@@ -182,9 +182,11 @@ void LogOapi(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 
-		char text[256];
-		sprintf_s(text, 256, "D3D9: %s", ErrBuf);
+		int len = strlen(ErrBuf) + 16;
+		char *text = new char[len];
+		sprintf_s(text, len, "D3D9: %s", ErrBuf);
 		oapiWriteLog(text);
+		delete text;
 	}
 	LeaveCriticalSection(&LogCrit);
 }
@@ -239,9 +241,11 @@ void LogErr(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 
-		char text[8000];
-		sprintf_s(text, 8000, "D3D9: ERROR: %s", ErrBuf);
+		int len = strlen(ErrBuf) + 16;
+		char *text = new char[len];
+		sprintf_s(text, len, "D3D9: ERROR: %s", ErrBuf);
 		oapiWriteLog(text);
+		delete text;
 	}
 	LeaveCriticalSection(&LogCrit);
 }	

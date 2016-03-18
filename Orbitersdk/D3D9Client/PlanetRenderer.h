@@ -70,7 +70,7 @@ public:
 	static D3DXHANDLE svTexOff;
 	static D3DXHANDLE svWater;
 	static D3DXHANDLE svSunDir;
-	static D3DXHANDLE svGeneric;
+	static D3DXHANDLE svCloudOff;
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
 	static D3DXHANDLE svMapUVOffset;
@@ -96,6 +96,8 @@ public:
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
+	static D3DXHANDLE stCloud;
+	static D3DXHANDLE stCloud2;
 	static D3DXHANDLE stNoise;
 	static D3DXHANDLE stOcean;
 	static D3DXHANDLE stEnvMap;

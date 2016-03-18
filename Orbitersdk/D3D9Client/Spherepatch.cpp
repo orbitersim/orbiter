@@ -97,7 +97,8 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 		HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&vtx->x, nv, sizeof(VERTEX_2TEX), &bsCnt, &bsRad));
 
 		if (pVB) {
-			if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD)==S_OK) {
+			//if (pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD)==S_OK) {
+			if (HROK(pVB->Lock(0, 0, (LPVOID*)&pVBuffer, 0))) {
 				memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));
 				pVB->Unlock();
 			}
@@ -106,7 +107,8 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 
 	if (idx) {
 		if (pIB) {
-			if (pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD)==S_OK) {
+			//if (pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD)==S_OK) {
+			if (HROK(pIB->Lock(0, 0, (LPVOID*)&pIBuffer, 0))) {
 				memcpy(pIBuffer, idx, nf*sizeof(WORD)*3);
 				pIB->Unlock();
 			}

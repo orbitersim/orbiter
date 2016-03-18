@@ -14,6 +14,7 @@
 
 #include "Surfmgr2.h"
 #include "Tilemgr2.h"
+#include "Cloudmgr2.h"
 #include "Texture.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
@@ -66,6 +67,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	elev = NULL;
 	ggelev = NULL;
 	ltex = NULL;
+	htex = NULL;
+
 	has_elevfile = false;
 	MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
 }
@@ -81,6 +84,7 @@ SurfTile::~SurfTile ()
 	if (ltex && owntex) {
 		if (TileCatalog->Remove(DWORD(ltex))) ltex->Release();
 	}
+	if (htex) htex->Release();
 }
 
 // -----------------------------------------------------------------------
@@ -126,6 +130,7 @@ void SurfTile::Load ()
 
 	// Load elevation data
 	INT16 *elev = ElevationData ();
+	
 	bool shift_origin = (lvl >= 4);
 	int res = mgr->Cprm().gridRes;
 
@@ -151,7 +156,6 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	char path[256];
 	sprintf_s (path, 256, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 	if (!fopen_s(&f, path, "rb")) {
-		//LogWrn("Loading Elevation File [%s]", path);
 		int i;
 		const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 		e = new INT16[ndat];
@@ -188,7 +192,6 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		f = NULL;
 		sprintf_s (path, 256, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 		if (!fopen_s(&f, path, "rb")) {
-			//LogWrn("Loading Elevation File [%s]", path);
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 				fseek (f, hdr.hdrsize, SEEK_SET);
@@ -247,7 +250,27 @@ bool SurfTile::LoadElevationData ()
 
 		has_elevfile = true;
 
-	} else if (lvl > 0) {
+		/*
+		HR(D3DXCreateTexture(mgr->Dev(), TILE_ELEVSTRIDE, TILE_ELEVSTRIDE, 1, D3DUSAGE_DYNAMIC, D3DFMT_L16, D3DPOOL_DEFAULT, &htex));
+
+		if (htex) {
+			D3DLOCKED_RECT Rect;
+			if (htex->LockRect(0, &Rect, NULL, D3DLOCK_DISCARD)==S_OK) {
+				BYTE  *pTgt = (BYTE *)Rect.pBits;
+				INT16 *pSrc = elev;
+				for (int k=0;k<TILE_ELEVSTRIDE;k++) {
+					memcpy(pTgt, pSrc, TILE_ELEVSTRIDE*sizeof(INT16));
+					pTgt += Rect.Pitch;
+					pSrc += TILE_ELEVSTRIDE;
+				}
+				htex->UnlockRect(0);
+				LogBlu("Height map created 0x%X", htex);	
+			}
+			else LogErr("Failed to lock a height map");
+		}*/
+
+	} 
+	else if (lvl > 0) {
 
 		// construct elevation grid by interpolating ancestor data
 		ELEVHANDLE hElev = mgr->ElevMgr();
@@ -314,6 +337,58 @@ INT16 *SurfTile::ElevationData () const
 
 // -----------------------------------------------------------------------
 
+int SurfTile::GetElevation(double lat, double lng, double *elev, SurfTile **cache, bool bFilter)
+{
+	if (cache) *cache = this;
+
+	if (lat<minlat || lat>maxlat) return -1;
+	if (lng<minlng || lng>maxlng) return -1;
+	
+	if (state==Invisible) return 0;
+	
+	if (state==ForRender) {
+		if (!ggelev) { *elev = 0.0; return 1; }
+		else {
+			double fRes = double(mgr->Cprm().gridRes);
+
+			if (!bFilter) {
+				int i = int( (lat-minlat) * fRes / (maxlat-minlat) ) + 1;
+				int j = int( (lng-minlng) * fRes / (maxlng-minlng) ) + 1;
+				*elev = double(ggelev[j+i*TILE_ELEVSTRIDE]);
+			}
+			else {
+
+				float x = float( (lat-minlat) * fRes / (maxlat-minlat) ) + 1.0f; // 0.5f
+				float y = float( (lng-minlng) * fRes / (maxlng-minlng) ) + 1.0f; // 0.5f
+				float fx = (x - floor(x));
+				float fy = (y - floor(y));
+
+				int i0 = int(x) * TILE_ELEVSTRIDE; 
+				int i1 = i0 + TILE_ELEVSTRIDE; 
+				int j0 = int(y);
+				
+				float q = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx); j0++;
+				float w = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx);
+
+				*elev = double(lerp(q,w,fy));
+			}
+
+			return 1;
+		}
+	}
+
+	if (state==Active) {
+		int i = 0;
+		if (lng>(minlng+maxlng)*0.5) i++;
+		if (lat<(minlat+maxlat)*0.5) i+=2;
+		return  node->Child(i)->Entry()->GetElevation(lat, lng, elev, cache);		
+	}
+
+	return -3;
+}
+
+// -----------------------------------------------------------------------
+
 double SurfTile::GetMeanElevation (const INT16 *elev) const
 {
 	int i, j;
@@ -345,7 +420,6 @@ SurfTile *SurfTile::getTextureOwner()
 
 float SurfTile::fixinput(double a, int x)
 {
-	//return float((1.0+floor(a*0.0625))*16.0);
 	switch(x) {
 		case 0: return float((1.0+floor(a*0.0625))*16.0);
 		case 1: return float((1.0+floor(a*0.125))*8.0);
@@ -358,8 +432,6 @@ float SurfTile::fixinput(double a, int x)
 
 D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
 {
-	//return D3DXVECTOR4(0, 0, pT->MicroRep[ml].x, pT->MicroRep[ml].y); 	
-
 	float rs = 1.0f / float( 1 << (lvl-pT->Level()) );	// Range subdivision
 	float xo = pT->MicroRep[ml].x * texrange.tumin;		
 	float yo = pT->MicroRep[ml].y * texrange.tvmin;
@@ -370,6 +442,7 @@ D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
 
 // -----------------------------------------------------------------------
 // Called during rendering even if this tile is not rendered but children are
+// i.e. called for every RENDERED and ACTIVE tile
 //
 void SurfTile::StepIn ()
 {
@@ -396,7 +469,7 @@ void SurfTile::StepIn ()
 void SurfTile::Render ()
 {
 	bool render_lights = mgr->Cprm().bLights;
-	bool render_shadows = (mgr->GetPlanet()->CloudMgr2() && !mgr->prm.rprm->bCloudFlatShadows);
+	bool render_shadows = mgr->GetPlanet()->CloudMgr2()!=NULL; // && !mgr->prm.rprm->bCloudFlatShadows);
 
 	if (!mesh) return; // DEBUG : TEMPORARY
 
@@ -419,7 +492,11 @@ void SurfTile::Render ()
 		has_lights = (render_lights && ltex && sdist > 1.45);
 	}
 
-	// Assign micro texture range information to shaders
+	
+	HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(0, 0, 1, 1)));
+
+
+	// Assign micro texture range information to shaders -------------------------
 	//
 	SurfTile *pT = getTextureOwner();
 
@@ -432,17 +509,82 @@ void SurfTile::Render ()
 	else {
 		HR(Shader->SetBool(TileManager2Base::sbMicro, false));	
 	}
+
+	
+	// Setup cloud shadows -------------------------------------------------------
+	//
+	if (has_shadows) {
+
+		has_shadows = false;
+
+		const TileManager2<CloudTile> *cmgr = vPlanet->CloudMgr2();
+		int maxlvl = min(lvl,9);
+		double rot = mgr->prm.rprm->cloudrot;
+		double edglat = (minlat+maxlat)*0.5;	// latitude of tile center
+		double edglng = wrap(rot+minlng);		// surface tile minlng-edge position on cloud-layer
+
+		for (int attempt=0;attempt<2;attempt++) {
+
+			CloudTile *ctile = (CloudTile *)cmgr->SearchTile(edglng, edglat, maxlvl, true);
+
+			if (ctile) {
+
+				double icsize = double( 1 << ctile->Level() ) / PI;	// inverse of cloud tile size in radians
+				
+				// Compute surface tile uv origin on a selected claud tile
+				// Note: edglng exists always within tile i.e. no wrap from PI to -PI
+				double u0 = (edglng - ctile->minlng) * icsize;
+				double v0 = (ctile->maxlat - maxlat) * icsize;		// Note: Tile corner is lower-left, texture corner is upper-left
+				double u1 = u0 + (maxlng-minlng) * icsize;
+				double v1 = v0 + (maxlat-minlat) * icsize;
+
+				// Feed uv-offset and uv-range to the shaders
+				HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(float(u0), float(v0), float(u1-u0), float(v1-v0))));
+				HR(Shader->SetFloat(TileManager2Base::sfAlpha, 1.0f));
+				HR(Shader->SetTexture(TileManager2Base::stCloud, ctile->Tex()));
+
+				// Texture uv range extends to another tile
+				if (u1 > 1.0) {
+
+					double csize = PI / double(1<<ctile->Level());			// cloud tile size in radians
+					double ctr = (ctile->minlng + ctile->maxlng) * 0.5;		// cloud tile center
+					double lng  = wrap(ctr + csize*sign(rot));				// center of the next tile
+
+					// Request an other tile from the same level as the first one
+					CloudTile *ctile2 = (CloudTile *)cmgr->SearchTile(lng, edglat, ctile->Level(), true);
+
+					if (ctile2) {
+						if (ctile2->Level() == ctile->Level()) {
+							// Rendering with dual texture
+							HR(Shader->SetTexture(TileManager2Base::stCloud2, ctile2->Tex()));
+							has_shadows = true;
+							break;
+						}
+						else {
+							// Failed to match a dual texture render requirements (due to no-valid tile available)
+							// Try again and request a lower level texture data for the first texture
+							maxlvl = ctile2->Level();
+							if (attempt==1) LogErr("CloudShadows mapping failed");
+						}
+					}
+				}
+				else {
+					// Just one texture in use
+					has_shadows = true;
+					break;
+				}
+			}
+		}
+	}
 	
 
 	// ---------------------------------------------------------------------
 	// Feed tile specific data to shaders
 	//
 	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetVector(TileManager2Base::svTexOff,  &D3DXVECTOR4(0, 0, 0, 0)));
-	HR(Shader->SetVector(TileManager2Base::svGeneric, &D3DXVECTOR4(1, 1, 1, 1)));
-	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
 	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
+	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX()));
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetInt(TileManager2Base::siTileLvl, lvl));
 	// ---------------------------------------------------------------------------------------------------
@@ -455,71 +597,19 @@ void SurfTile::Render ()
 
 	Shader->CommitChanges();
 
-	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-
+	
 	// -------------------------------------------------------------------
 	// render surface mesh
 
+	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(Shader->BeginPass(0));
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 	HR(Shader->EndPass());
-
-	// add cloud shadows
-	if (has_shadows) {
-		const TileManager2<CloudTile> *cmgr = mgr->GetPlanet()->CloudMgr2();
-		int nlng = 2 << lvl;
-		int nlat = 1 << lvl;
-		double minlat = PI * (double)(nlat/2-ilat-1)/(double)nlat;
-		double maxlat = PI * (double)(nlat/2-ilat)/(double)nlat;
-		double minlng = PI2 * (double)(ilng-nlng/2)/(double)nlng;
-		double maxlng = PI2 * (double)(ilng-nlng/2+1)/(double)nlng;
-
-		const Tile *tbuf[2];
-		int maxlvl = min(lvl,9);
-		int ncloud = cmgr->Coverage(minlat, maxlat, minlng, maxlng, maxlvl, tbuf, 2);
-		if (ncloud > 0) {
-			float alpha = (float)mgr->prm.rprm->shadowalpha;
-			if (alpha >= 0.01f) { // otherwise don't render cloud shadows for this planet
-
-				if (ncloud == 1) { // other cases still to be done
-					for (int i = 0; i < ncloud; i++) {
-						// to be completed: create new mesh with modified texture coordinates
-						const TEXCRDRANGE2 *ctexrange = tbuf[i]->GetTexRange();
-						double cminlat, cmaxlat, cminlng, cmaxlng;
-						float tu0, tu1, tv0, tv1, tuscale, tvscale;
-						tbuf[i]->Extents (&cminlat, &cmaxlat, &cminlng, &cmaxlng);
-
-						cminlng -= mgr->prm.rprm->cloudrot;
-						cmaxlng -= mgr->prm.rprm->cloudrot;
-						if (cmaxlng < -PI) {
-							cminlng += PI2;
-							cmaxlng += PI2;
-						}
-						tu0 = ctexrange->tumin + (ctexrange->tumax-ctexrange->tumin)*(float)((minlng-cminlng)/(cmaxlng-cminlng));
-						tu1 = ctexrange->tumin + (ctexrange->tumax-ctexrange->tumin)*(float)((maxlng-cminlng)/(cmaxlng-cminlng));
-						tv0 = ctexrange->tvmin + (ctexrange->tvmax-ctexrange->tvmin)*(float)((maxlat-cmaxlat)/(cminlat-cmaxlat));
-						tv1	= ctexrange->tvmin + (ctexrange->tvmax-ctexrange->tvmin)*(float)((minlat-cmaxlat)/(cminlat-cmaxlat));
-						tuscale = (tu1-tu0)/(texrange.tumax-texrange.tumin);
-						tvscale = (tv1-tv0)/(texrange.tvmax-texrange.tvmin);
-
-						HR(Shader->SetFloat(TileManager2Base::sfAlpha, alpha));
-						HR(Shader->SetVector(TileManager2Base::svTexOff,  &D3DXVECTOR4(tu0, tv0, texrange.tumin, texrange.tvmin)));
-						HR(Shader->SetVector(TileManager2Base::svGeneric, &D3DXVECTOR4(tuscale, tvscale, 0, 0)));
-						HR(Shader->SetTexture(TileManager2Base::stDiff, tbuf[i]->Tex()));
-						HR(Shader->CommitChanges());
-						HR(Shader->BeginPass(1)); // 1 = Shadow Pass
-						pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
-						HR(Shader->EndPass());
-					}
-				}
-
-			}
-		}
-	}
 	HR(Shader->End());	
+
 
 	// Render tile bounding box
 	//
@@ -829,4 +919,12 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	if (np)
 		scene->SetCameraFrustumLimits(np,fp);
+}
+
+
+template<>
+int TileManager2<SurfTile>::GetElevation(double lat, double lng, double *elev, SurfTile **cache)
+{
+	if (lng<0) return tiletree[0].Entry()->GetElevation(lat, lng, elev, cache);
+	return tiletree[1].Entry()->GetElevation(lat, lng, elev, cache);
 }

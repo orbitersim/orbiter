@@ -403,7 +403,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	// Create Arrow Mesh --------------------------------------------
 	//
 	MESHHANDLE hMesh = oapiLoadMesh("D3D9Arrow");
-	hArrow = new D3D9Mesh(gc, hMesh);
+	hArrow = new D3D9Mesh(hMesh);
 	oapiDeleteMesh(hMesh);
 
 	if (hArrow==NULL) LogErr("D3D9Arrow.msh not found");

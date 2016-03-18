@@ -58,6 +58,7 @@ public:
 	
 	VECTOR3			ReferencePoint();
 	void			SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot);
+	int				GetElevation(double lat, double lng, double *elv, int *lvl=NULL, class SurfTile **tile=NULL);
 
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
@@ -96,7 +97,7 @@ public:
 		double cloudrot;	    ///< cloud layer rotation state
 		bool bFog;			    ///< render distance fog in this frame?
 		bool bTint;			    ///< render atmospheric tint?
-		bool bCloudFlatShadows; ///< render cloud shadows onto a sphere?
+		//bool bCloudFlatShadows; ///< render cloud shadows onto a sphere?
 		
 		// Shader Params
 		D3DXCOLOR	TintColor;
@@ -147,6 +148,7 @@ private:
 	SurfaceManager *surfmgr;  // planet surface tile manager
 	TileManager2<SurfTile> *surfmgr2;   // planet surface tile manager (v2)
 	TileManager2<CloudTile> *cloudmgr2; // planet cloud layer tile manager (v2)
+	class SurfTile *tile_cache;
 	HazeManager *hazemgr;     // horizon haze rendering
 	HazeManager2 *hazemgr2;	  // horizon haze rendering
 	RingManager *ringmgr;     // ring manager
@@ -156,6 +158,7 @@ private:
 	bool bFog;                // render distance fog?
 	FogParam fog;             // distance fog render parameters
 	D3D9Mesh *mesh;           // mesh for nonspherical body
+	D3D9Mesh *pRockPatch;
 	VECTOR3	vRefPoint;		  // Auxiliary reference point for normal mapped water
 	ScatterParams SPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog

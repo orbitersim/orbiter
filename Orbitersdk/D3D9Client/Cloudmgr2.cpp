@@ -87,6 +87,7 @@ void CloudTile::Render ()
 	//
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
+	HR(Shader->SetVector(TileManager2Base::svCloudOff, &GetTexRangeDX()));
 	// ---------------------------------------------------------------------------------------------------
 
 	Shader->CommitChanges();
@@ -151,9 +152,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	//
 	HR(Shader()->SetTechnique(eCloudTech));
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetVector(svTexOff,  &D3DXVECTOR4(0, 0, 0, 0)));
-	HR(Shader()->SetVector(svGeneric, &D3DXVECTOR4(1, 1, 1, 1)));
-
+	
 	if (rprm.bCloudBrighten) { HR(Shader()->SetFloat(sfAlpha, 2.0f)); }
 	else					 { HR(Shader()->SetFloat(sfAlpha, 1.0f)); }
 
@@ -176,7 +175,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 }
 
 // -----------------------------------------------------------------------
-
+/*
 template<>
 void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPlanet::RenderPrm &rprm)
 {
@@ -220,8 +219,8 @@ void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPla
 	//
 	HR(Shader()->SetTechnique(eCloudShadowTech));
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
-	HR(Shader()->SetVector(svTexOff,  &D3DXVECTOR4(0, 0, 0, 0)));
-	HR(Shader()->SetVector(svGeneric, &D3DXVECTOR4(1, 1, 1, 1)));
+	HR(Shader()->SetVector(svTexOff,   &D3DXVECTOR4(0, 0, 1, 1)));
+	HR(Shader()->SetVector(svCloudOff, &D3DXVECTOR4(0, 0, 1, 1)));
 	HR(Shader()->SetFloat(sfAlpha, alpha));
 	
 	// TODO: render full sphere for levels < 4
@@ -237,6 +236,7 @@ void TileManager2<CloudTile>::RenderFlatCloudShadows (MATRIX4 &dwmat, const vPla
 	if (np)
 		scene->SetCameraFrustumLimits (np, fp);
 }
+*/
 
 // -----------------------------------------------------------------------
 
@@ -256,4 +256,13 @@ int TileManager2<CloudTile>::Coverage (double latmin, double latmax, double lngm
 		CheckCoverage (tiletree+i, latmin, latmax, lngmin, lngmax, maxlvl, tbuf, nt, &nfound);
 	}
 	return nfound;
+}
+
+// -----------------------------------------------------------------------
+
+template<>
+const Tile * TileManager2<CloudTile>::SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const
+{
+	if (lng<0) return SearchTileSub(&tiletree[0], lng, lat, maxlvl, bOwntex);
+	else	   return SearchTileSub(&tiletree[1], lng, lat, maxlvl, bOwntex);
 }

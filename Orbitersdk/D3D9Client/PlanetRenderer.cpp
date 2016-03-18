@@ -39,7 +39,7 @@ D3DXHANDLE PlanetRenderer::smViewProj = NULL;
 D3DXHANDLE PlanetRenderer::svTexOff = NULL;
 D3DXHANDLE PlanetRenderer::svWater = NULL;
 D3DXHANDLE PlanetRenderer::svSunDir = NULL;
-D3DXHANDLE PlanetRenderer::svGeneric = NULL;
+D3DXHANDLE PlanetRenderer::svCloudOff = NULL;
 D3DXHANDLE PlanetRenderer::svTangent = NULL;
 D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
 D3DXHANDLE PlanetRenderer::svMapUVOffset = NULL;
@@ -65,6 +65,8 @@ D3DXHANDLE PlanetRenderer::sbDebug = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
+D3DXHANDLE PlanetRenderer::stCloud = NULL;
+D3DXHANDLE PlanetRenderer::stCloud2 = NULL;
 D3DXHANDLE PlanetRenderer::stNoise = NULL;
 D3DXHANDLE PlanetRenderer::stOcean = NULL;
 D3DXHANDLE PlanetRenderer::stEnvMap = NULL;
@@ -227,9 +229,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	smViewProj			= pShader->GetParameterByName(0,"mViewProj");
 	// ------------------------------------------------------------  
 	svTexOff			= pShader->GetParameterByName(0,"vTexOff");
+	svCloudOff			= pShader->GetParameterByName(0,"vCloudOff");
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
-	svGeneric			= pShader->GetParameterByName(0,"vGeneric");
 	svTangent			= pShader->GetParameterByName(0,"vTangent");
 	svBiTangent			= pShader->GetParameterByName(0,"vBiTangent");
 	svMapUVOffset		= pShader->GetParameterByName(0,"vMapUVOffset");
@@ -255,6 +257,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
+	stCloud				= pShader->GetParameterByName(0,"tCloud");
+	stCloud2			= pShader->GetParameterByName(0,"tCloud2");
 	stNoise				= pShader->GetParameterByName(0,"tNoise");
 	stOcean				= pShader->GetParameterByName(0,"tOcean");
 	stEnvMap			= pShader->GetParameterByName(0,"tEnvMap");

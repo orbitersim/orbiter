@@ -110,7 +110,8 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		if (lvl == 0)
 			bstepdown = false;
 		else {
-			// Keep a tile allocated as long as the tile can be seen from a current camera position
+			// Keep a tile allocated as long as the tile can be seen from a current camera position.
+			// We have multible views and only the active (current) view is checked here.
 			//node->DelChildren ();             // remove the sub-tree
 			tile->state = Tile::Invisible;
 			return;
@@ -135,7 +136,6 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 
 	// Recursion to next level: subdivide into 2x2 patch
 	if (bstepdown) {
-		tile->FrameId = scene->GetFrameId();
 		bool subcomplete = true;
 		int i, idx;
 		// check if all 4 subtiles are available already, and queue any missing for loading
@@ -158,6 +158,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	}
 
 	if (!bstepdown) {
+		// Delete tile and sub-tree if the tile has not been needeed for a while
 		if (scene->GetRenderPass()==RENDERPASS_MAINSCENE && (scene->GetFrameId()-tile->FrameId)>64) node->DelChildren ();
 	}
 }
@@ -168,6 +169,7 @@ template<class TileType>
 void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 {
 	TileType *tile = node->Entry();
+	const Scene *scene = GetScene();
 
 	if (tile->state == Tile::ForRender) {
 		int lvl = tile->lvl;
@@ -179,12 +181,13 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 		SetWorldMatrix (WorldMatrix (ilng, nlng, ilat, nlat));
 		tile->StepIn ();
 		tile->Render ();
+		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
 	} else if (tile->state == Tile::Active) {
 		tile->StepIn ();
 		for (int i = 0; i < 4; i++) {
 			if (node->Child(i)) {
 				if (node->Child(i)->Entry() && (node->Child(i)->Entry()->state & TILE_ACTIVE)) {
-					RenderNode (node->Child (i)); // step down into subtree
+					RenderNode (node->Child (i));	// step down into subtree
 				}
 			}
 		}
@@ -253,6 +256,30 @@ void TileManager2<TileType>::CheckCoverage (const QuadTreeNode<TileType> *node,
 		tbuf[*nfound] = t;
 		*nfound = *nfound+1;
 	}
+}
+
+// -----------------------------------------------------------------------
+
+template<class TileType>
+const Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const
+{
+	const Tile *t = node->Entry();
+
+	if (!t) return NULL;
+	if (!t->HasOwnTex() && bOwntex) return NULL;
+	if ((t->State()&TILE_VALID)==0) return NULL;
+	if (t->Level()==maxlvl) return t;
+
+	int i = 0;
+	if (lng > (t->minlng+t->maxlng)*0.5) i++;
+	if (lat < (t->minlat+t->maxlat)*0.5) i+=2;
+
+	const QuadTreeNode<TileType> *next = node->Child(i);
+	if (next) {
+		const Tile *check = SearchTileSub(next, lng, lat, maxlvl, bOwntex);
+		if (check) return check;
+	} 
+	return t;
 }
 
 #endif // !__TILEMGR2_IMP_HPP

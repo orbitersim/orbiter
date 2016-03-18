@@ -127,7 +127,7 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 
 			DWORD idx = pRecord[i].mat_idx;
 			
-			if (idx>=pMesh->MaterialCount()) continue;
+			if (idx>=pMesh->GetMaterialCount()) continue;
 
 			D3D9MatExt *pM = pMesh->GetMaterial(idx);
 

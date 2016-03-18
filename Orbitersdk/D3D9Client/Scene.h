@@ -22,6 +22,7 @@
 #include "D3D9Client.h"
 #include "CelSphere.h"
 #include "VObject.h"
+#include <stack>
 
 class vObject;
 class vPlanet;
@@ -42,6 +43,9 @@ class D3D9Text;
 
 class Scene {
 
+
+	// Visual record ===================================================================
+	//
 	struct VOBJREC {           // linked list of object visuals
 		vObject *vobj;         // visual instance
 		int	type;
@@ -49,6 +53,9 @@ class Scene {
 		VOBJREC *prev, *next;  // previous and next list entry
 	} *vobjFirst, *vobjLast;   // first and last list entry
 
+
+	// Custom camera parameters ========================================================
+	//
 	struct CAMREC {
 		MATRIX3		mRotation;
 		VECTOR3		vPosition;
@@ -60,6 +67,37 @@ class Scene {
 		bool		bActive;
 		CAMREC  *prev, *next;
 	} *camFirst, *camLast, *camCurrent;
+
+
+	// Camera frustum parameters ========================================================
+	//
+	struct CAMERA {
+		float		aperture;   // aperture [rad]
+		float		aspect;     // aspect ratio
+		float		nearplane;  // frustum nearplane distance
+		float		farplane;   // frustum farplane distance
+		float		apsq;
+		float		vh, vw, vhf, vwf;
+
+		VECTOR3		pos;		// Global camera position
+		VECTOR3		relpos;		// Relative camera position (Used by Mesh Debugger)
+		VECTOR3		dir;		// Camera direction
+
+		D3DXVECTOR3 x;			// Camera axis vector
+		D3DXVECTOR3 y;			// Camera axis vector
+		D3DXVECTOR3 z;			// Camera axis vector
+
+		D3DXMATRIX	mView;		// D3DX view matrix for current camera state
+		D3DXMATRIX	mProj;		// D3DX projection matrix for current camera state
+		D3DXMATRIX	mProjView;	// D3DX combined projection view matrix
+
+		OBJHANDLE	hObj_proxy;	// closest celestial body
+		vPlanet *	vProxy;		// closest celestial body (visual)
+		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
+		double		alt_proxy;	// camera distance to surface of hObj_proxy
+	} Camera;
+
+
 
 public:
 
@@ -117,6 +155,8 @@ public:
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
+
+	void RenderLightPrePass();
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -180,16 +220,16 @@ public:
 
 	// Camera Matrix Access =========================================================================================================
 	//
-	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&mProjView; }
-	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&mProj; }
-	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&mView; }
+	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&Camera.mProjView; }
+	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&Camera.mProj; }
+	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&Camera.mView; }
 
 
 	// Main Camera Interface =========================================================================================================
 	//
-	void			SetCameraAperture(double _ap, double _as);
+	void			SetCameraAperture(float _ap, float _as);
 	void			SetCameraFrustumLimits(double nearlimit, double farlimit);
-	float			GetDepthResolution(float dist) const { return fabs((nearplane-farplane)*(dist*dist) / (farplane*nearplane*16777215.0f)); }
+	float			GetDepthResolution(float dist) const;
 
 					// Acquire camera information from the Orbiter and initialize internal camera setup
 	void			UpdateCameraFromOrbiter(DWORD dwPass);
@@ -202,28 +242,32 @@ public:
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera 
 	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
-	double			GetTanAp() const { return tan(aperture); }
-	float			GetCameraAspect() const { return (float)aspect; }
-	float			GetCameraFarPlane() const { return farplane; }
-	float			GetCameraNearPlane() const { return nearplane; }
-	float			GetCameraAperture() const { return (float)aperture; }
-	VECTOR3			GetCameraGPos() const { return camera_pos; }
-	VECTOR3			GetCameraGDir() const { return camera_dir; }
-	OBJHANDLE		GetCameraProxyBody() const { return hObj_proxy; }
-	vPlanet *		GetCameraProxyVisual() const { return vProxy; }
-	double			GetCameraAltitude() const { return alt_proxy; }	
+	double			GetTanAp() const { return tan(Camera.aperture); }
+	float			GetCameraAspect() const { return (float)Camera.aspect; }
+	float			GetCameraFarPlane() const { return Camera.farplane; }
+	float			GetCameraNearPlane() const { return Camera.nearplane; }
+	float			GetCameraAperture() const { return (float)Camera.aperture; }
+	VECTOR3			GetCameraGPos() const { return Camera.pos; }
+	VECTOR3			GetCameraGDir() const { return Camera.dir; }
+	OBJHANDLE		GetCameraProxyBody() const { return Camera.hObj_proxy; }
+	vPlanet *		GetCameraProxyVisual() const { return Camera.vProxy; }
+	double			GetCameraAltitude() const { return Camera.alt_proxy; }	
+
 	DWORD			GetRenderPass() const { return dwRenderPass; }
 	DWORD			GetFrameId() const { return dwFrameId; }
 
-	const D3DXVECTOR3 *GetCameraX() const { return &camera_x; }
-	const D3DXVECTOR3 *GetCameraY() const { return &camera_y; }
-	const D3DXVECTOR3 *GetCameraZ() const { return &camera_z; }
+	const D3DXVECTOR3 *GetCameraX() const { return &Camera.x; }
+	const D3DXVECTOR3 *GetCameraY() const { return &Camera.y; }
+	const D3DXVECTOR3 *GetCameraZ() const { return &Camera.z; }
+
+	void			PushCamera();	// Push current camera onto a stack
+	void			PopCamera();	// Restore a camera from a stack
 
 
 	// Visual Management =========================================================================================================
 	//
-	class vObject *	GetVisObject(OBJHANDLE hObj);
-	class vVessel *	GetFocusVisual() { return vFocus; }
+	class vObject *	GetVisObject(OBJHANDLE hObj) const;
+	class vVessel *	GetFocusVisual() const { return vFocus; }
 	void			CheckVisual(OBJHANDLE hObj);
 
 
@@ -260,7 +304,7 @@ private:
 	float	ComputeNearClipPlane();
 	void	VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube);
 
-	VOBJREC *FindVisual (OBJHANDLE hObj);
+	VOBJREC *FindVisual (OBJHANDLE hObj) const; 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
 
@@ -305,29 +349,12 @@ private:
 	static oapi::Pen *lblPen[6];
 	int   labelSize[1];
 
-	// camera frustum parameters ========================================================
-	//
-	float  aperture;        // aperture [rad]
-	float  aspect;          // aspect ratio
-	float  nearplane;       // frustum nearplane distance
-	float  farplane;        // frustum farplane distance
-	float  apsq;
-	float  vh,vw,vhf,vwf;
+	std::stack<CAMERA>	CameraStack;
 
-	VECTOR3		camera_pos;		// Global camera position
-	VECTOR3		camera_relpos;	// Relative camera position (Used by Mesh Debugger)
-	VECTOR3		camera_dir;		// Camera direction
-	VECTOR3		sky_color;
-
-	D3DXVECTOR3 camera_x;
-	D3DXVECTOR3 camera_y;
-	D3DXVECTOR3 camera_z;
-
-	D3DXMATRIX	mView;			// D3D view matrix for current camera state
-	D3DXMATRIX	mProj;			// D3D projection matrix for current camera state
-	D3DXMATRIX	mProjView;		// product of projection and view matrix
 	D3D9Light*	Lights;
 	D3D9Light	sunLight;
+
+	VECTOR3		sky_color;
 
 	float		lmaxdst2;
 	DWORD		nLights;
@@ -346,14 +373,23 @@ private:
 	CSphereManager *cspheremgr;
 	ID3DXRenderToEnvMap *pENV;
 
+	class ImageProcessing *pIPI;
+
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;
 
-	OBJHANDLE hObj_proxy;		// closest celestial body
-	vPlanet *vProxy;			// closest celestial body (visual)
-	OBJHANDLE hCameraTarget;	// Current camera target, Mesh Debugger Related
-	double alt_proxy;			// camera distance to surface of hObj_proxy
+
 	double dVisualAppRad;
+
+	// Deferred Experiment ===============================================================
+	//
+	LPDIRECT3DSURFACE9 psgDepth;		// float32
+	LPDIRECT3DSURFACE9 psgNormal;		// RGB10A2
+	LPDIRECT3DSURFACE9 psgSpecular;		// G16R16F
+	LPDIRECT3DTEXTURE9 ptgDepth;
+	LPDIRECT3DTEXTURE9 ptgNormal;
+	LPDIRECT3DTEXTURE9 ptgSpecular;
+
 
 	// Rendering Technique related parameters ============================================
 	//

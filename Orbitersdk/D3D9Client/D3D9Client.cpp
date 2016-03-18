@@ -922,7 +922,7 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 {
 	_TRACER;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
-	DWORD nmat = mesh->MaterialCount();
+	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
 	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
 	if (meshmat) UpdateMatExt((const D3DMATERIAL9 *)mat, meshmat);
@@ -935,7 +935,7 @@ int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *m
 {
 	_TRACER;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
-	DWORD nmat = mesh->MaterialCount();
+	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
 	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
 	if (meshmat) GetMatExt(meshmat, (D3DMATERIAL9 *)mat);
@@ -1190,13 +1190,6 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_MBUTTONDOWN:
 			{
-				/*if (DebugControls::IsActive()) {
-					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-					if (flags&DBG_FLAGS_PICK) {
-						D3D9Pick pick = GetScene()->PickScene(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-						if (pick.pMesh) DebugControls::SelectGroup(pick.group);
-					}
-				}*/
 				break;
 			}
 
@@ -1258,7 +1251,6 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
 				bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
 				if (wParam=='C' && bShift && bCtrl) bControlPanel = !bControlPanel;
-				if (bControlPanel && bShift && bCtrl) ControlPanelMsg(wParam);
 				break;
 			}
 
@@ -2140,9 +2132,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 20 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 21b Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 20 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 21b Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

@@ -16,6 +16,64 @@
 #include "VPlanet.h"
 
 
+
+bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
+{
+
+	void *pSrcData = NULL;
+	void *pDstData = NULL;
+
+	if (_pSrc->GetType()==D3DRTYPE_VERTEXBUFFER && _pDst->GetType()==D3DRTYPE_VERTEXBUFFER) {
+
+		LPDIRECT3DVERTEXBUFFER9 pSrc = (LPDIRECT3DVERTEXBUFFER9)_pSrc;
+		LPDIRECT3DVERTEXBUFFER9 pDst = (LPDIRECT3DVERTEXBUFFER9)_pDst;
+
+		D3DVERTEXBUFFER_DESC src_desc, dst_desc;
+
+		HR(pSrc->GetDesc(&src_desc));
+		HR(pDst->GetDesc(&dst_desc));
+
+		if (dst_desc.Size<src_desc.Size) return false;
+		
+		HR(pSrc->Lock(0, 0, &pSrcData, D3DLOCK_READONLY));
+		HR(pDst->Lock(0, 0, &pDstData, 0));
+
+		memcpy(pDstData, pSrcData, src_desc.Size);
+
+		HR(pSrc->Unlock());
+		HR(pDst->Unlock());
+
+		return true;
+	}
+
+	if (_pSrc->GetType()==D3DRTYPE_INDEXBUFFER && _pDst->GetType()==D3DRTYPE_INDEXBUFFER) {
+
+		LPDIRECT3DINDEXBUFFER9 pSrc = (LPDIRECT3DINDEXBUFFER9)_pSrc;
+		LPDIRECT3DINDEXBUFFER9 pDst = (LPDIRECT3DINDEXBUFFER9)_pDst;
+
+		D3DINDEXBUFFER_DESC src_desc, dst_desc;
+
+		HR(pSrc->GetDesc(&src_desc));
+		HR(pDst->GetDesc(&dst_desc));
+
+		if (dst_desc.Size<src_desc.Size) return false;
+		if (dst_desc.Format!=src_desc.Format) return false;
+		
+		HR(pSrc->Lock(0, 0, &pSrcData, D3DLOCK_READONLY));
+		HR(pDst->Lock(0, 0, &pDstData, 0));
+
+		memcpy(pDstData, pSrcData, src_desc.Size);
+
+		HR(pSrc->Unlock());
+		HR(pDst->Unlock());
+
+		return true;
+	}
+
+	return false;
+}
+	
+
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
 	pOut->Ambient = pIn->Ambient;
@@ -153,6 +211,9 @@ void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
 	float alt  = float(r-size);
 	float rs   = float(oapiGetSize(hS) / s);
 	float ac   = float(-dotp(S,P)/(r*s));					// sun elevation
+
+	// Avoid some fault conditions
+	if (alt<0) alt=0, k=1e3, size = r;
 
 	if (ac>1.0f) ac=1.0f; if (ac<-1.0f) ac=-1.0f;
 
@@ -395,7 +456,8 @@ float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b)
 	return acos(x);
 }
 
-
+// ============================================================================
+//
 D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a)
 {
 	float x = fabs(a->x);
@@ -459,7 +521,8 @@ void D3DMAT_CreateX_Billboard(const D3DXVECTOR3 *toCam, const D3DXVECTOR3 *pos, 
 	pOut->_14 = pOut->_24 = pOut->_34 = pOut->_44 = 0.0f;
 }
 
-
+// ============================================================================
+//
 void D3DMAT_ZeroMatrix(D3DXMATRIX *mat)
 {
 	ZeroMemory(mat, sizeof (D3DXMATRIX));
@@ -482,6 +545,8 @@ void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src)
 	 memcpy2(tgt, src, sizeof (D3DXMATRIX)); 
 }
 
+// ============================================================================
+//
 void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)
 {
 	mat->_11 = x->x;
@@ -497,6 +562,8 @@ void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, co
 	mat->_33 = z->z;
 }
 
+// ============================================================================
+//
 void D3DMAT_FromAxis(D3DXMATRIX *mat, const VECTOR3 *x, const VECTOR3 *y, const VECTOR3 *z)
 {
 	mat->_11 = float(x->x);
@@ -512,6 +579,8 @@ void D3DMAT_FromAxis(D3DXMATRIX *mat, const VECTOR3 *x, const VECTOR3 *y, const 
 	mat->_33 = float(z->z);
 }
 
+// ============================================================================
+//
 void D3DMAT_FromAxisT(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, const D3DVECTOR *z)
 {
 	mat->_11 = x->x;
@@ -602,6 +671,8 @@ void D3DMAT_RotX  (D3DXMATRIX *mat, double r)
 	mat->_11 = mat->_44 = 1.0f;
 }
 
+// ============================================================================
+//
 void D3DMAT_RotY (D3DXMATRIX *mat, double r)
 {
 	double sinr = sin(r), cosr = cos(r);
@@ -611,6 +682,8 @@ void D3DMAT_RotY (D3DXMATRIX *mat, double r)
 	mat->_22 = mat->_44 = 1.0f;
 }
 
+// ============================================================================
+//
 float D3DMAT_BSScaleFactor(const D3DXMATRIX *mat)
 {
 	float lx = mat->_11*mat->_11 + mat->_12*mat->_12 + mat->_13*mat->_13; 
@@ -630,8 +703,8 @@ void D3DMAT_SetTranslation (D3DXMATRIX *mat, const VECTOR3 *trans)
 	mat->_43 = (FLOAT)trans->z;
 }
 
-// =======================================================================
-
+// ============================================================================
+//
 bool D3DMAT_VectorMatrixMultiply (D3DXVECTOR3 *res, const D3DXVECTOR3 *v, const D3DXMATRIX *mat)
 {
     float x = v->x*mat->_11 + v->y*mat->_21 + v->z* mat->_31 + mat->_41;
@@ -686,7 +759,110 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 
     return S_OK;
 }
- 
+
+// ============================================================================
+//
+LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
+{
+	
+	ID3DXBuffer* pErrors = NULL;
+	ID3DXBuffer* pCode = NULL;
+	LPDIRECT3DPIXELSHADER9 pShader = NULL;
+	DWORD flags = 0;
+	char *str = NULL;
+	char *tok = NULL;
+
+	D3DXMACRO macro[16]; 
+	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+
+	if (options) {
+		int m = 0;
+		int l = strlen(options);
+		str = new char[l];
+		strcpy_s(str, l, options); 
+		tok = strtok(str,";, ");
+		while (tok!=NULL && m<16) {
+			macro[m++].Name = tok;
+			tok = strtok(NULL, ";, ");
+		}
+	}
+	
+	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
+	
+	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
+	
+	if (pErrors) {
+		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
+		MessageBoxA(0, (char*)pErrors->GetBufferPointer(), "Failed to compile a shader", 0);
+		FatalAppExitA(0, "Failed to compile shader code. Exiting...");
+	}
+
+	if (!pCode) {
+		LogErr("Failed to compile a shader [%s] [%s]", file, function);
+		return NULL;
+	}
+
+    HR(pDev->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pShader));
+
+    SAFE_RELEASE(pCode);
+	SAFE_RELEASE(pErrors);
+	SAFE_DELETEA(str);
+
+	return pShader;
+}
+
+
+// ============================================================================
+//
+LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
+{
+
+	ID3DXBuffer* pErrors = NULL;
+	ID3DXBuffer* pCode = NULL;
+	LPDIRECT3DVERTEXSHADER9 pShader = NULL;
+	DWORD flags = 0;
+
+	char *str = NULL;
+	char *tok = NULL;
+
+	D3DXMACRO macro[16]; 
+	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+
+	if (options) {
+		int m = 0;
+		int l = strlen(options);
+		str = new char[l];
+		strcpy_s(str, l, options); 
+		tok = strtok(str,";, ");
+		while (tok!=NULL && m<16) {
+			macro[m++].Name = tok;
+			tok = strtok(NULL, ";, ");
+		}
+	}
+
+	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
+	
+	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
+	
+	if (pErrors) {
+		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
+		MessageBoxA(0, (char*)pErrors->GetBufferPointer(), "Failed to compile a shader", 0);
+		FatalAppExitA(0, "Failed to compile shader code. Exiting...");
+	}
+
+	if (!pCode) {
+		LogErr("Failed to compile a shader [%s] [%s]", file, function);
+		return NULL;
+	}
+
+    HR(pDev->CreateVertexShader((DWORD*)pCode->GetBufferPointer(), &pShader));
+
+    SAFE_RELEASE(pCode);
+	SAFE_RELEASE(pErrors);
+	SAFE_DELETEA(str);
+
+	return pShader;
+}
 
 const char *RemovePath(const char *in)
 {

@@ -9,68 +9,39 @@
 #include "Scene.h"
 #include "D3D9Surface.h"
 #include "D3D9Config.h"
+#include "vPlanet.h"
+#include "vBase.h"
 
 using namespace oapi;
 
 // ===========================================================================================
 //
-BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, OBJHANDLE _hBase) : D3D9Effect()
+BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, vBase *_vB) : D3D9Effect()
 {
 	_TRACE;
 	pVB = NULL;
+	vB = _vB;
 	nVert = nEntry;
-	hBase = _hBase;
-	hPlanet = NULL;
-	
-	double mean_rad = 0;	// Planet mean radius
-	double base_rad = 0;	// Distace of surface base from a geocentre (i.e. mean_rad + base elevation)
-	double inv_brad = 0;	// 1.0/base_rad
-	double base_lng = 0;
-	double base_lat = 0;
-	
+	hBase = NULL;
+	bidx = 0;
+
+	if (vB) hBase = vB->GetObject();
+		
+	pBeaconPos = new BeaconPos[nEntry];
+
 	HR(gc->GetDevice()->CreateVertexBuffer(nEntry*sizeof(BAVERTEX), D3DUSAGE_DYNAMIC|D3DUSAGE_POINTS, 0, D3DPOOL_DEFAULT, &pVB, NULL));
 	
 	BAVERTEX *pVrt = LockVertexBuffer();
-
-	if (hBase) {
-		hPlanet = oapiGetBasePlanet(hBase);
-		oapiGetBaseEquPos(hBase, &base_lng, &base_lat, &mean_rad);	// mrad = mean radius
-		VECTOR3 bp;
-		oapiGetRelativePos(hBase, hPlanet, &bp);
-		base_rad = length(bp);								// brad = base radius
-		inv_brad = 1.0/base_rad;
-	}
 
 	if (pVrt) {
 
 		for (DWORD i=0;i<nEntry;i++) {
 
-			if (hBase) {
-				
-				// Beacon lng, lat
-				double lat  = base_lat - atan(pEnt[i].pos.x*inv_brad);
-				double lng  = base_lng + atan(pEnt[i].pos.z*inv_brad);
+			if (vB) pBeaconPos[i].vLoc = unit(vB->ToLocal(pEnt[i].pos, &pBeaconPos[i].lng, &pBeaconPos[i].lat));
 
-				// Beacon distance from a geo-centre
-				double elv  = mean_rad + oapiSurfaceElevation(hPlanet, lng, lat);
-
-				// Beacon distance from center of the base
-				double dst  = sqrt(pEnt[i].pos.x*pEnt[i].pos.x + pEnt[i].pos.z*pEnt[i].pos.z);
-
-				// Beacon's y-coordinate in local base reference frame
-				double y = sqrt(elv*elv - dst*dst) - base_rad;
-
-	  			pEnt[i].pos.y = 0.5 + y;
-			}
-
-			pVrt[i].x  = float(pEnt[i].pos.x);
-			pVrt[i].y  = float(pEnt[i].pos.y);
-			pVrt[i].z  = float(pEnt[i].pos.z);
-
-			pVrt[i].dx = float(pEnt[i].dir.x);
-			pVrt[i].dy = float(pEnt[i].dir.y);
-			pVrt[i].dz = float(pEnt[i].dir.z);
-
+			pVrt[i].pos = D3DXVEC(pEnt[i].pos);
+			pVrt[i].dir = D3DXVEC(pEnt[i].dir);
+	
 			pVrt[i].color = pEnt[i].color;
 			pVrt[i].size  = pEnt[i].size;
 			pVrt[i].angle = cos(pEnt[i].angle * 0.0174532925f * 0.5f);
@@ -97,9 +68,29 @@ BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, OBJHANDLE _hBase)
 //
 BeaconArray::~BeaconArray()
 {
-	if (!pVB) return;
+	SAFE_DELETEA(pBeaconPos);
 	SAFE_RELEASE(pVB);
 	gc->clbkReleaseTexture(pBright);
+}
+
+
+// ===========================================================================================
+//
+void BeaconArray::Update(DWORD nCount, vPlanet *vP)
+{
+	if (nCount>nVert) nCount = nVert;
+	double meanelev = vP->GetSize();
+	BAVERTEX *pVrt = LockVertexBuffer();
+	if (!pVrt) return;
+	for (DWORD i=0;i<nCount;i++) {
+		double elv = 0;
+		if (vP->GetElevation(pBeaconPos[bidx].lat, pBeaconPos[bidx].lng, &elv)==1) {
+			VECTOR3 vLoc = pBeaconPos[bidx].vLoc * (meanelev+elv);
+			vB->FromLocal(vLoc, &pVrt[bidx].pos);
+		}
+		bidx++;	if (bidx>=nVert) bidx=0;
+	}
+	UnLockVertexBuffer();
 }
 
 
@@ -143,7 +134,7 @@ void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float tim
 		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 		HR(FX->BeginPass(0));
 		
-		dev->SetRenderState(D3DRS_ZENABLE, 0);
+		//dev->SetRenderState(D3DRS_ZENABLE, 0);
 
 		dev->SetVertexDeclaration(pBAVertexDecl);
 		dev->SetStreamSource(0, pVB, 0, sizeof(BAVERTEX));

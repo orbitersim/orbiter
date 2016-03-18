@@ -28,12 +28,16 @@
 #include "D3D9Config.h"
 #include "VPlanet.h"
 
-vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj, scene)
+vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj, scene)
 {
 	_TRACE;
 	DWORD i,j;
 
-	base_planet		= vP;
+	vP = _vP;
+	hPlanet = oapiGetBasePlanet(hObj);
+
+	if (!vP) vP = (vPlanet *)scene->GetVisObject(hPlanet);
+	
 	structure_bs	= NULL;
 	structure_as	= NULL;
 	nstructure_bs	= 0;
@@ -46,6 +50,25 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj,
 	taxiLights		= NULL;
 	csun_lights     = RAD * Config->SunAngle;
 
+	// ----------------------------------------------------------------------
+	// Compute transformations from local base frame to planet frame and back
+	//
+	MATRIX3 grot; VECTOR3 gpos;
+	oapiGetRotationMatrix(hPlanet, &grot);
+	oapiGetRotationMatrix(hObj, &mGlobalRot);
+	oapiGetRelativePos(hObj, hPlanet, &gpos);
+	vLocalPos = tmul(grot, gpos);
+
+	swap(grot.m12, grot.m21);
+	swap(grot.m13, grot.m31);
+	swap(grot.m23, grot.m32);
+
+	mGlobalRot = mul(grot, mGlobalRot);
+
+	D3DXMatrixIdentity(&mGlobalInvRot);
+	D3DMAT_SetRotation(&mGlobalInvRot, &mGlobalRot);
+	//------------------------------------------------------------------------
+
 	// load surface tiles
 	DWORD _ntile = gc->GetBaseTileList (_hObj, &tspec);
 	ntile = 0;
@@ -57,7 +80,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj,
 	}
 
 	// Do not render tiles for planets having a new tile format
-	if (base_planet) if (base_planet->tilever >= 2) ntile = 0;
+	if (vP->tilever >= 2) ntile = 0;
 
 	if (ntile) {
 
@@ -76,7 +99,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj,
 				++j;
 			}
 		}
-		tilemesh = new D3D9Mesh(gc, ntile, (const MESHGROUPEX**)grps, texs);	
+		tilemesh = new D3D9Mesh(ntile, (const MESHGROUPEX**)grps, texs);	
 		delete []grps; 
         delete []texs;
 	}
@@ -88,12 +111,12 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj,
 
 	if (nstructure_bs = nsbs) {
 		structure_bs = new D3D9Mesh*[nsbs];
-		for (i = 0; i < nsbs; i++) structure_bs[i] = new D3D9Mesh(gc, sbs[i]);
+		for (i = 0; i < nsbs; i++) structure_bs[i] = new D3D9Mesh(sbs[i]);
 	}
 
 	if (nstructure_as = nsas) {
 		structure_as = new D3D9Mesh*[nsas];
-		for (i = 0; i < nsas; i++) structure_as[i] = new D3D9Mesh(gc, sas[i]);
+		for (i = 0; i < nsas; i++) structure_as[i] = new D3D9Mesh(sas[i]);
 	}
 
 	lights = false;
@@ -109,38 +132,59 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *vP): vObject (_hObj,
 	CreateTaxiLights();
 }
 
+
+// ===========================================================================================
+//
+VECTOR3 vBase::ToLocal(VECTOR3 pos, double *lng, double *lat) const
+{
+	double rad;
+	VECTOR3 vLoc = mul(mGlobalRot, pos) + vLocalPos;
+	if (lng && lat) oapiLocalToEqu(hPlanet, vLoc, lng, lat, &rad);
+	return vLoc;
+}
+
+
+// ===========================================================================================
+//
+VECTOR3 vBase::FromLocal(VECTOR3 pos) const
+{
+	return tmul(mGlobalRot, pos-vLocalPos);
+}
+
+// ===========================================================================================
+//
+void vBase::FromLocal(VECTOR3 pos, D3DXVECTOR3 *pTgt) const
+{
+	D3DXVECTOR3 pv(float(pos.x-vLocalPos.x), float(pos.y-vLocalPos.y), float(pos.z-vLocalPos.z));
+	D3DXVec3TransformNormal(pTgt, &pv, &mGlobalInvRot);
+}
+
+// ===========================================================================================
+//
+double vBase::GetElevation() const
+{
+	VECTOR3 bp;
+	oapiGetRelativePos(hObj, hPlanet, &bp);
+	return length(bp) - oapiGetSize(hPlanet);
+}
+
+
 // ===========================================================================================
 //
 void vBase::CreateRunwayLights()
 {
-	__TRY {
-		const char *file = gc->GetFileParser()->GetConfigFile(hObj);
-		if (file) numRunwayLights = RunwayLights::CreateRunwayLights(hObj, scn, file, runwayLights);
-		else LogErr("Configuration file not found for object 0x%X", hObj);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in RunwayLights::CreateRunwayLights()");
-		gc->EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	const char *file = gc->GetFileParser()->GetConfigFile(hObj);
+	if (file) numRunwayLights = RunwayLights::CreateRunwayLights(this, scn, file, runwayLights);
+	else LogErr("Configuration file not found for object 0x%X", hObj);
 }
 
 // ===========================================================================================
 //
 void vBase::CreateTaxiLights()
 {
-	__TRY {
-		const char *file = gc->GetFileParser()->GetConfigFile(hObj);
-		if (file) numTaxiLights = TaxiLights::CreateTaxiLights(hObj, scn, file, taxiLights);
-		else LogErr("Configuration file not found for object 0x%X", hObj);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in TaxiLights::CreateTaxiLights()");
-		gc->EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	const char *file = gc->GetFileParser()->GetConfigFile(hObj);
+	if (file) numTaxiLights = TaxiLights::CreateTaxiLights(hObj, scn, file, taxiLights);
+	else LogErr("Configuration file not found for object 0x%X", hObj);
 }
 
 // ===========================================================================================
@@ -350,21 +394,15 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 
 	pCurrentVisual = this;
 
-	__TRY {
-		for(int i=0; i<numRunwayLights; i++)
-		{
-			runwayLights[i]->Render(dev, &mWorld, lights);
-		}
-		for(int i=0; i<numTaxiLights; i++)
-		{
-			taxiLights[i]->Render(dev, &mWorld, lights);
-		}
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
+	for(int i=0; i<numRunwayLights; i++)
 	{
-		LogErr("Exception in vBase::RenderBeacons()");
-		gc->EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		runwayLights[i]->Update(vP);
+		runwayLights[i]->Render(dev, &mWorld, lights);
+	}
+
+	for(int i=0; i<numTaxiLights; i++)
+	{
+		taxiLights[i]->Render(dev, &mWorld, lights);
 	}
 	
 	if (DebugControls::IsActive()) {

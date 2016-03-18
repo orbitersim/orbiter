@@ -83,9 +83,9 @@ uniform extern float4    vMSc0;				// Micro Texture A scale factors
 uniform extern float4    vMSc1;				// Micro Texture B scale factors
 uniform extern float4    vMSc2;				// Micro texture C scale factors
 uniform extern float4    vTexOff;			// Texture offsets used by surface manager (i.e. SubTexRange)
+uniform extern float4    vCloudOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power) 
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
-uniform extern float4    vGeneric;          // Generic Multi-use vector
 uniform extern float3    vTangent;			// Unit Vector
 uniform extern float3    vBiTangent;		// Unit Vector
 uniform extern float3    vMapUVOffset;		// 
@@ -106,6 +106,8 @@ uniform extern bool		 bDebug;			// Debug Mode enabled
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
+uniform extern texture   tCloud;
+uniform extern texture   tCloud2;
 uniform extern texture   tNoise;			// 
 uniform extern texture	 tOcean;			// Ocean Texture
 uniform extern texture	 tEnvMap;	
@@ -128,6 +130,26 @@ sampler DiffTexS = sampler_state
 	MipFilter = LINEAR;
 	MaxAnisotropy = MICRO_ANISOTROPY;
     MipMapLODBias = 0.0;
+	AddressU = CLAMP;
+    AddressV = CLAMP;
+};
+
+sampler CloudTexS = sampler_state
+{
+	Texture = <tCloud>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+    AddressV = CLAMP;
+};
+
+sampler Cloud2TexS = sampler_state
+{
+	Texture = <tCloud2>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	AddressU = CLAMP;
     AddressV = CLAMP;
 };
@@ -479,9 +501,8 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	outVS.camW   = -vPosW;
 	outVS.nrmW   = vNrmW;
 
-	// vTexOff, vGeneric only used in cloud shadow rendering
-	outVS.texUV.xy  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
-	outVS.texUV.zw  = vrt.tex1.xy;
+	outVS.texUV.xy  = vrt.tex1.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
+	outVS.texUV.zw  = vrt.tex1.xy;						// Note: vrt.tex1 range [0 to 1] for all tiles
 
 	outVS.aux[AUX_NIGHT] = -fNgt;
 	outVS.aux[AUX_DIST]  =  fRay;
@@ -548,8 +569,12 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 {
 	float3 cNgt = 0;
 	float3 cSpe = 0;
-	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
-	float4 cMsk = tex2D(MaskTexS, frg.texUV.xy);
+	
+	float2 vUVSrf = frg.texUV.xy * vTexOff.zw + vTexOff.xy;
+	float2 vUVCld = frg.texUV.xy * vCloudOff.zw + vCloudOff.xy;
+
+	float4 cTex = tex2D(DiffTexS, vUVSrf);
+	float4 cMsk = tex2D(MaskTexS, vUVSrf);
 
 	float3 nrmW = frg.nrmW;					// Per-pixel surface normal vector
 	float3 nvrW = frg.nrmW;					// Per-pixel surface normal vector
@@ -558,6 +583,8 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float3 vPlN = normalize(vVrt);			// Planet mean normal	
 	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
 	
+	
+
 	// Specular Water reflection
 	//
 	if (bSpecular) {
@@ -596,8 +623,8 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 			//float2 UV  = frg.texUV.xy;
 			//float2 UVr = frg.texUV.xy * vMSc2.zw + vMSc2.xy;
 
-			float2 UV  = frg.texUV.zw;
-			float2 UVr = frg.texUV.zw * vMSc2.zw + vMSc2.xy;
+			float2 UV  = frg.texUV.xy;
+			float2 UVr = UV * vMSc2.zw + vMSc2.xy;
 
 			/*#if defined(_MICROROTATIONS)
 				// Noise texture size 128x128
@@ -695,8 +722,19 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 	else { // Yes, atmosphere is present
 
-		// Night lights
+		// Do we render cloud shadows ?
+		//
+		if (bCloudSh) {
+			float fShd = 1.0;
+			if (vUVCld.x<1.0) fShd -= tex2D(CloudTexS, vUVCld).a;
+			else 			  fShd -= tex2D(Cloud2TexS, vUVCld-float2(1,0)).a;
+			cTex.rgb *= (fShd*fAlpha);
+		}
+
+		// Night lights ?
+		//
 		if (bLights) cNgt = 3.0f * cMsk.rgb * (saturate(frg.aux[AUX_NIGHT]) * fNight);
+
 
 		// Lambertian shading term
 		float fDNS = dot(nrmW, vSunDir);
@@ -728,7 +766,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 	
     float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
-	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
+	outVS.texUV  = vrt.tex0.xy; // * vCloudOff.zw + vCloudOff.xy;
 	float3 vVrt  = vCameraPos + vPosW;			// Geo-centric vertex position
 	float3 vRay  = normalize(-vPosW);			// Unit viewing ray
 	float3 vPlN  = normalize(vVrt);				// Planet mean normal at vertex location
@@ -821,7 +859,7 @@ CloudShVS ShadowTechVS(TILEVERTEX vrt)
     float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
     float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
-	outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
+	//outVS.texUV  = vTexOff.xy + (vrt.tex0.xy - vTexOff.zw) * vGeneric.xy;
 
 	float step   = smoothstep(fHorizonDst*0.5f, fCameraAlt, length(vPosW));
 	outVS.alpha  = saturate(step*step);
@@ -832,7 +870,8 @@ CloudShVS ShadowTechVS(TILEVERTEX vrt)
 float4 ShadowTechPS(CloudShVS frg) : COLOR
 {
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
-	return float4(0, 0, 0, (fAlpha)*cTex.a*frg.alpha);   
+	return float4(0, 0, 0, cTex.a*10.0f);
+	//return float4(0, 0, 0, (fAlpha)*cTex.a*frg.alpha);   
 }
 
 
@@ -875,7 +914,7 @@ technique TileTech
         AlphaBlendEnable = true;
 		SrcBlend = SrcAlpha;
         DestBlend = InvSrcAlpha;
-        ZEnable = false; 
+        ZEnable = true; 
         ZWriteEnable = false;
     }
 }
