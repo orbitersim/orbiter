@@ -88,8 +88,6 @@ vVessel::~vVessel ()
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
-	mfdoff = SURFACE(gc->clbkCreateSurfaceEx(16, 16, OAPISURFACE_TEXTURE|OAPISURFACE_RENDERTARGET));
-	mfdoff->Fill(NULL, 0);
 	gc->GetTexMgr()->LoadTexture("Reentry.dds", &defreentrytex, 0);
 	gc->GetTexMgr()->LoadTexture("Exhaust.dds", &defexhausttex, 0);
 }
@@ -102,7 +100,6 @@ void vVessel::GlobalExit ()
 	SAFE_DELETE(defexhausttex);
 	SAFE_DELETE(defreentrytex);
 	SAFE_DELETE(tHUD);
-	SAFE_DELETE(mfdoff);
 }
 
 
@@ -1554,7 +1551,6 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 // ===========================================================================================
 //
 
-D3D9ClientSurface * vVessel::mfdoff = 0;
 D3D9ClientSurface * vVessel::tHUD = 0;
 D3D9ClientSurface * vVessel::defreentrytex = 0;
 D3D9ClientSurface * vVessel::defexhausttex = 0;

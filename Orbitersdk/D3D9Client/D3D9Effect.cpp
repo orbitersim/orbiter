@@ -20,6 +20,7 @@ LPDIRECT3DVERTEXBUFFER9 D3D9Effect::VB = 0;
 LPDIRECT3DTEXTURE9 D3D9Effect::pNoise = 0;
 SURFHANDLE D3D9Effect::hNoise = 0;
 
+D3D9MatExt D3D9Effect::mfdmat;
 D3D9MatExt D3D9Effect::defmat;
 D3D9MatExt D3D9Effect::night_mat;
 D3D9MatExt D3D9Effect::emissive_mat;
@@ -147,6 +148,13 @@ static D3DMATERIAL9 _defmat = {
 	{1,1,1,1},
 	{0,0,0,1},
 	{0,0,0,1},10.0f
+};
+
+static D3DMATERIAL9 _mfdmat = {
+	{1,1,1,1},
+	{1,1,1,1},
+	{0,0,0,1},
+	{1,1,1,1},10.0f
 };
 
 static D3DMATERIAL9 _night_mat = {
@@ -374,6 +382,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
 
+	CreateMatExt(&_mfdmat, &mfdmat);
 	CreateMatExt(&_defmat, &defmat);
 	CreateMatExt(&_night_mat, &night_mat);
 	CreateMatExt(&_emissive_mat, &emissive_mat);

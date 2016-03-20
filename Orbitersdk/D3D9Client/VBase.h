@@ -58,7 +58,6 @@ public:
 
 private:
 
-	void SetupShadowMeshes();
 	void CreateRunwayLights();
 	void CreateTaxiLights();
 

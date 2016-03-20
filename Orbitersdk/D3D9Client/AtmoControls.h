@@ -50,7 +50,6 @@ namespace AtmoControls {
 	void		Create();
 	void		Release();
 
-	void		InitDialog();
 	void		OpenDlgClbk(void *context);
 	void		SetVisual(vObject *vo);
 	vPlanet *	GetVisual();

@@ -225,7 +225,6 @@ private:
 	void ProcessInherit();
 	bool CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
 	void SetGroupRec(DWORD i, const MESHGROUPEX *mg);
-	void ClearGroups ();
 	bool CopyMaterial (int idx, const MATERIAL *mat);
 	void CreateGeometryBuffers();
 	void UpdateGeometryBuffer();

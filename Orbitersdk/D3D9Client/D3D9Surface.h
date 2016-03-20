@@ -92,7 +92,6 @@ public:
 	int					GetSketchPadMode() { return SketchPad; }
 
 	void				SetColorKey(DWORD ck);			// Enable and set color key
-	void				DisableColorKey();				// Disable color key.
 
 	HDC					GetDC();
 	void				ReleaseDC(HDC);

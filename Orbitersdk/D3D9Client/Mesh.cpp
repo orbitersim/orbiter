@@ -1386,7 +1386,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 		for (DWORD g=0; g<nGrp; g++) {
 
-			if (Grp[g].UsrFlag & 0x2) continue;
+			if ((Grp[g].UsrFlag&0x2) && (Grp[g].MFDScreenId==0)) continue;
 
 			// Mesh Debugger -------------------------------------------------------------------------------------------
 			//
@@ -1499,43 +1499,60 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 				if (hMFD) FX->SetTexture(eTex0, SURFACE(hMFD)->GetTexture());
 				else	  FX->SetTexture(eTex0, gc->GetDefaultTexture()->GetTexture());
 			}
-
-
-			// Setup Mesh group material ==============================================================================
+			
+			// Setup Mesh group material for MFD drawing =========================================================
 			//
-			if (Grp[g].MtrlIdx==SPEC_DEFAULT) mat = &defmat;
-			else							   mat = &Mtrl[Grp[g].MtrlIdx];
+			if (Grp[g].MFDScreenId) {
 
-			if (mat!=old_mat) {
-
-				old_mat = mat;
-
-				FX->SetValue(eMtrl, mat, D3D9MATSIZE);
+				if (Grp[g].MtrlIdx==SPEC_DEFAULT) mat = &mfdmat;
+				else							  mat = &Mtrl[Grp[g].MtrlIdx];
 
 				if (bModulateMatAlpha || bTextured==false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
 				else										FX->SetFloat(eMtrlAlpha, 1.0f);
 
-				if (nEnv && pEnv) {
-					if (mat==&defmat) {
-						HR(FX->SetBool(eEnvMapEnable, false));
-					}
-					else {
-						if (pEnv[0]) {
-							if (mat->Reflect.a!=0.0f || mat->Fresnel.g!=0.0f || pRefl) {
-								FX->SetBool(eEnvMapEnable, true);
-								FX->SetTexture(eEnvMap, pEnv[0]);
-								if (mat->pDissolve) {
-									FX->SetTexture(eDislMap, SURFACE(mat->pDissolve)->GetTexture());
-									FX->SetBool(eUseDisl, true);
-								}
-								else FX->SetBool(eUseDisl, false);
+				FX->SetValue(eMtrl, mat, D3D9MATSIZE);
+				FX->SetBool(eEnvMapEnable, false);
+			}
 
+			// Setup Mesh group material  ==========================================================================
+			//
+			else {
+
+				if (Grp[g].MtrlIdx==SPEC_DEFAULT) mat = &defmat;
+				else							  mat = &Mtrl[Grp[g].MtrlIdx];
+
+				if (mat!=old_mat) {
+
+					old_mat = mat;
+
+					FX->SetValue(eMtrl, mat, D3D9MATSIZE);
+
+					if (bModulateMatAlpha || bTextured==false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+					else										FX->SetFloat(eMtrlAlpha, 1.0f);
+
+					if (nEnv && pEnv) {
+						if (mat==&defmat) {
+							HR(FX->SetBool(eEnvMapEnable, false));
+						}
+						else {
+							if (pEnv[0]) {
+								if (mat->Reflect.a!=0.0f || mat->Fresnel.g!=0.0f || pRefl) {
+									FX->SetBool(eEnvMapEnable, true);
+									FX->SetTexture(eEnvMap, pEnv[0]);
+									if (mat->pDissolve) {
+										FX->SetTexture(eDislMap, SURFACE(mat->pDissolve)->GetTexture());
+										FX->SetBool(eUseDisl, true);
+									}
+									else FX->SetBool(eUseDisl, false);
+
+								}
+								else FX->SetBool(eEnvMapEnable, false);
 							}
-							else FX->SetBool(eEnvMapEnable, false);
 						}
 					}
 				}
 			}
+
 
 			// Apply z-Bias =============================================================================================
 			//
@@ -1549,7 +1566,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 			// Apply Animations =========================================================================================
 			//
 			if (Grp[g].bTransform) FX->SetMatrix(eW, D3DXMatrixMultiply(&q, &pGrpTF[g], pW));
-			else					FX->SetMatrix(eW, &mWorldMesh);
+			else				   FX->SetMatrix(eW, &mWorldMesh);
 
 			// Setup Mesh drawing options =================================================================================
 			//

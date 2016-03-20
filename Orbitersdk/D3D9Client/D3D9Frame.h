@@ -71,7 +71,6 @@ private:
     LPDIRECT3DSURFACE9   pShmDS;
     LPDIRECT3DTEXTURE9   pShmRT;
     D3D9ClientSurface *  pBackBuffer;
-//  class D3D9Config  *  cfg;
 
     RECT                 rcScreenRect;       // Screen rect for window
 

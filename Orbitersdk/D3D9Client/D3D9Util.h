@@ -460,8 +460,6 @@ struct VERTEX_TL2TEX {
 };
 #define FVF_TL2TEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2 | D3DFVF_TEXCOORDSIZE2(0) | D3DFVF_TEXCOORDSIZE2(1) )
 
-VERTEX_XYZ  *GetVertexXYZ  (DWORD n);
-VERTEX_XYZC *GetVertexXYZC (DWORD n);
 // Return pointer to static vertex buffer of given type of at least size n
 
 // -----------------------------------------------------------------------------------
@@ -549,7 +547,6 @@ struct AutoFile
 
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETEA(p)  { if(p) { delete []p;     (p)=NULL; } }
-//#define SAFE_RELEASE(p) { if(p) { ULONG n=(p)->Release(); if (n>0) LogWrn("NOT RELEASED Refs=%u, File=%s Line=%u",n,__FILE__,__LINE__); (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
 
 #endif // !__D3DUTIL_H

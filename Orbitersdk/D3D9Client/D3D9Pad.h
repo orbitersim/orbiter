@@ -310,10 +310,6 @@ private:
 
 	float GetPenWidth();
 
-
-	void Ellipse2(  float x, float y, float w, float h);
-	void Rectangle2(float x, float y, float w, float h);
-	
 	inline D3DXVECTOR2 _DXV2(const IVECTOR2 *pt);
 	int	 CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
 	int	 CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out);

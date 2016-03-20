@@ -40,7 +40,6 @@ public:
 	static void RenderBillboard(const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex);
 	static void RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, LPD3D9CLIENTSURFACE def);
 	static void RenderSpot(float intens, const LPD3DXCOLOR color, const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex);
-	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, float size, const D3DXCOLOR *pColor);
 	static void Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive);
 	static void RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size);
 	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);  
@@ -56,6 +55,7 @@ public:
 	static D3D9Client   *gc; ///< The graphics client instance
 	static D3D9Mesh     *hArrow;
 
+	static D3D9MatExt	mfdmat;
 	static D3D9MatExt	defmat;
 	static D3D9MatExt	night_mat;
 	static D3D9MatExt	emissive_mat;

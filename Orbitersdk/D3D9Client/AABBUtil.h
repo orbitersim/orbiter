@@ -53,7 +53,6 @@ D3DXVECTOR4 SolveScatterEx(double h0, double R, double R1);
 bool		SolveXScatter(double h0, double R, double R1, double *q, double angle = 95.0, int m = 8);
 float		FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 *prm);
 float		FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 *prm);
-double		FastOpticalDepthEx(double alt, double cd, double h0, double *coeff, int m = 8);
 
 bool		SolveLUSystem(int n, double *A, double *b, double *x, double *det=NULL);
 
