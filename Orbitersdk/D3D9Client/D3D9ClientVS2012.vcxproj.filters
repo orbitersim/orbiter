@@ -77,6 +77,9 @@
     <ClCompile Include="MeshMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MeshTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Particle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,6 +158,9 @@
     <ClCompile Include="Surfmgr2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IProcess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CelSphere.h">
@@ -200,6 +206,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MeshMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Particle.h">
@@ -304,11 +313,11 @@
     <ClInclude Include="VectorHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IProcess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\CelestialSphere.fx">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="..\..\Modules\D3D9Client\CKBlit.fx">
       <Filter>Shaders</Filter>
     </None>

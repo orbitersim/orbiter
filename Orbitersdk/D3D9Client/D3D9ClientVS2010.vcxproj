@@ -177,11 +177,13 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="FileParser.cpp" />
     <ClCompile Include="GDIPad.cpp" />
     <ClCompile Include="HazeMgr.cpp" />
+    <ClCompile Include="IProcess.cpp" />
     <ClCompile Include="Junction.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MaterialMgr.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshMgr.cpp" />
+    <ClCompile Include="MeshTools.cpp" />
     <ClCompile Include="OapiExtension.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="PlanetRenderer.cpp" />
@@ -228,11 +230,13 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="FileParser.h" />
     <ClInclude Include="GDIPad.h" />
     <ClInclude Include="HazeMgr.h" />
+    <ClInclude Include="IProcess.h" />
     <ClInclude Include="Junction.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MaterialMgr.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMgr.h" />
+    <ClInclude Include="MeshTools.h" />
     <ClInclude Include="OapiExtension.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="PlanetRenderer.h" />
@@ -258,7 +262,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\BeaconArray.fx" />
-    <None Include="..\..\Modules\D3D9Client\CelestialSphere.fx" />
     <None Include="..\..\Modules\D3D9Client\CKBlit.fx" />
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
