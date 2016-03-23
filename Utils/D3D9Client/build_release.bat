@@ -65,8 +65,8 @@ mkdir "%OUT_DIR%"
 
 
 :: --- Build
-call %SETVCVARS% x86
-call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG%
+call %SETVCVARS% x86 || goto exit_nok
+call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG% || goto exit_nok
 
 
 :: --- Export
@@ -96,8 +96,21 @@ rmdir /S /Q "Utils"
 %ZIP_CMD% a -tzip -mx9 "..\%ZIP_NAME%(r%REVISION%).zip" *
 
 
-:: --- Cleanup & exit
+:: --- Pass / Fail exit
+:exit_ok
 cd %ABS_PATH%
+@call :cleanup
+exit /B 0
+
+:exit_nok
+echo.
+echo Build failed!
+call :cleanup
+exit /B 1
+
+
+:: --- Cleanup
+:cleanup
 rmdir /S /Q "%OUT_DIR%"
 set BASE_DIR=
 set OUT_DIR=
@@ -112,5 +125,3 @@ set ABS_PATH=
 set ZIP_CMD=
 set ZIP_NAME=
 set SETVCVARS=
-
-exit /b 0
