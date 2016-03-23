@@ -186,7 +186,7 @@ void LogOapi(const char *format, ...)
 		char *text = new char[len];
 		sprintf_s(text, len, "D3D9: %s", ErrBuf);
 		oapiWriteLog(text);
-		delete text;
+		delete[] text;
 	}
 	LeaveCriticalSection(&LogCrit);
 }
@@ -245,7 +245,7 @@ void LogErr(const char *format, ...)
 		char *text = new char[len];
 		sprintf_s(text, len, "D3D9: ERROR: %s", ErrBuf);
 		oapiWriteLog(text);
-		delete text;
+		delete[] text;
 	}
 	LeaveCriticalSection(&LogCrit);
 }	
