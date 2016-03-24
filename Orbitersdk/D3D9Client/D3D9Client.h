@@ -27,12 +27,14 @@
 #include <OrbiterAPI.h>
 #include "D3D9Frame.h"
 #include "nvapi.h"
+#include "OGCI_Const.h"
+#include <vector>
 
 #define OAPISURFACE_VIDEOMEMORY	 0x8000
 
-#define SKETCHPAD_NONE			 0x0
-#define SKETCHPAD_GDI			 0x1
-#define SKETCHPAD_DIRECTX		 0x2
+//#define SKETCHPAD_NONE		 0x0
+//#define SKETCHPAD_GDI			 0x1
+//#define SKETCHPAD_DIRECTX		 0x2
 
 #ifdef _NVAPI_H
 extern StereoHandle	pStereoHandle;
@@ -969,7 +971,8 @@ public:
 	LPDIRECT3DTEXTURE9  GetShadowMapRenderTarget() { return pShmRT; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
 	const void *		GetConfigParam (DWORD paramtype) const;
-	const char *		GetSkinFileLine(DWORD idx) const;
+	bool				RegisterRenderProc(__ogciRenderProc proc, DWORD id);
+	void				MakeRenderProcCall(SURFHANDLE hSrf, DWORD id);
 
 protected:
 
@@ -1155,7 +1158,7 @@ protected:
 	///
 	/// Obtains the GDI of the render surface to output 2D data after
 	/// rendering the 3D scene (glass cockpit, date info, etc.)
-	void Output2DOverlay ();
+	//void Output2DOverlay ();
 
 public:
 
@@ -1180,7 +1183,6 @@ private:
 
 	void Label(const char *format, ...);
 	bool CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const;
-	void LogRenderParams () const;
 
 	mutable SURFHANDLE		pBltGrpTgt;
 
@@ -1216,7 +1218,7 @@ private:
 
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
-	DWORD ShaderModel;
+	//DWORD ShaderModel;
 	DWORD iDisl;
 	DWORD frame_timer;
 	
@@ -1229,7 +1231,14 @@ private:
 	TextureManager *texmgr; // texture manager
 	D3DXMATRIX ident;
 
-	LaunchpadItem *lpiCfg, *lpiPlanetRender;
+	struct RenderProcData {
+		__ogciRenderProc proc;
+		DWORD id;
+	};
+
+	std::vector<RenderProcData> RenderProc;
+
+	//LaunchpadItem *lpiCfg, *lpiPlanetRender;
 
 	HFONT hLblFont1;
 	HFONT hLblFont2;

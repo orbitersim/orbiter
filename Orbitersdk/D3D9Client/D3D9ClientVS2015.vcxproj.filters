@@ -21,6 +21,9 @@
     <Filter Include="Externals">
       <UniqueIdentifier>{fb8da057-55a8-4e60-bca3-60ba1b5287e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Ogci">
+      <UniqueIdentifier>{b2aaf674-fe3f-446a-ba22-f1b5cc464fd2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CelSphere.cpp">
@@ -160,6 +163,12 @@
     </ClCompile>
     <ClCompile Include="IProcess.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OgciExtensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\OGCI.cpp">
+      <Filter>Ogci</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -316,6 +325,12 @@
     <ClInclude Include="IProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\OGCI.h">
+      <Filter>Ogci</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\OGCI_Const.h">
+      <Filter>Ogci</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\CKBlit.fx">
@@ -330,9 +345,6 @@
     <None Include="..\..\Modules\D3D9Client\Mesh.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\..\Modules\D3D9Client\NormalMap.fx">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="..\..\Modules\D3D9Client\Particle.fx">
       <Filter>Shaders</Filter>
     </None>
@@ -343,6 +355,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\..\Modules\D3D9Client\BeaconArray.fx">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Modules\D3D9Client\Surface.fx">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

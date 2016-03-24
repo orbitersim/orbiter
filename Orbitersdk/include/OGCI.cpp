@@ -24,13 +24,14 @@
 
 // Function Prototypes
 // -------------------------------------------------------------------------------------------------------------------------------------
-
+/*
 typedef DWORD (OGCIFN *__ogciClientID)();
 typedef SURFHANDLE (OGCIFN *__ogciCreateSurfaceEx)(int  width, int  height, DWORD  attrib); 
 typedef DWORD (OGCIFN *__ogciGetSurfaceAttribs)(SURFHANDLE hSurf, bool bCreation);
 typedef void (OGCIFN *__ogciConvertSurface)(SURFHANDLE hSurf, DWORD attrib);
 typedef bool (OGCIFN *__ogciGenerateMipMaps)(SURFHANDLE hSurface, DWORD filter);
 typedef bool (OGCIFN *__ogciRegisterSkinName)(const VISHANDLE hVisual, const char *name);
+typedef bool (OGCIFN *__ogciRegisterRenderProc)(__ogciRenderProc proc, DWORD id);
 
 // Custom Camera Interface
 typedef int   (OGCIFN *__ogciDeleteCustomCamera)(CAMERAHANDLE hCam);
@@ -42,7 +43,7 @@ typedef int   (OGCIFN *__ogciSketchpadVersion)(oapi::Sketchpad *pSkp);
 typedef void  (OGCIFN *__ogciSketchBlt)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, int tx, int ty);
 typedef void  (OGCIFN *__ogciSketchBltEx)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha, VECTOR3 *color);
 typedef void  (OGCIFN *__ogciSketchRotateBlt)(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha, VECTOR3 *color);
-
+*/
 
 HMODULE ogciHandle = NULL;
 
@@ -59,6 +60,7 @@ __ogciSketchRotateBlt _ogciSketchRotateBlt = NULL;
 __ogciSketchpadVersion _ogciSketchpadVersion = NULL;
 __ogciGenerateMipMaps _ogciGenerateMipMaps = NULL;
 __ogciRegisterSkinName _ogciRegisterSkinName = NULL;
+__ogciRegisterRenderProc _ogciRegisterRenderProc = NULL;
 
 
 
@@ -73,6 +75,7 @@ bool PostInit(HMODULE hClient)
 	_ogciConvertSurface = (__ogciConvertSurface)GetProcAddress(hClient, "ogciConvertSurface");
 	_ogciGenerateMipMaps = (__ogciGenerateMipMaps)GetProcAddress(hClient, "ogciGenerateMipMaps");
 	_ogciRegisterSkinName = (__ogciRegisterSkinName)GetProcAddress(hClient, "ogciRegisterSkinName");
+	_ogciRegisterRenderProc = (__ogciRegisterRenderProc)GetProcAddress(hClient, "ogciRegisterRenderProc");
 	// -------------
 	_ogciDeleteCustomCamera = (__ogciDeleteCustomCamera)GetProcAddress(hClient, "ogciDeleteCustomCamera");
 	_ogciCustomCameraOnOff = (__ogciCustomCameraOnOff)GetProcAddress(hClient, "ogciCustomCameraOnOff");
@@ -119,6 +122,12 @@ bool ogciRegisterSkinName(const VISHANDLE hVisual, const char *name)
 {
 	if (_ogciRegisterSkinName) return _ogciRegisterSkinName(hVisual, name);	
 	return false;	
+}
+
+bool ogciRegisterRenderProc(__ogciRenderProc proc, DWORD id)
+{
+	if (_ogciRegisterRenderProc) return _ogciRegisterRenderProc(proc, id);
+	return false;
 }
 
 SURFHANDLE ogciCreateSurfaceEx(int  width, int  height, DWORD  attrib)

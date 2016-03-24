@@ -835,7 +835,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	gc = gclient;
 	pDev = gc->GetDevice();
 
-	resolutionBias = 4.0 + double(Config->LODBias);
+	resolutionBias = 4.0 + Config->LODBias;
 	DWORD w, h;
 	gc->clbkGetViewportSize (&w, &h);
 	resolutionScale = 1400.0 / (double)h;
@@ -973,8 +973,8 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 		buffercnt++;
 		sprintf_s(oapiDebugString(),256,"TileMeshCache %d Entries [%d MB]", buffercnt, (buffercnt*nv*sizeof(VERTEX_2TEX))>>20);
 		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
-		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
-		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		return VtxPoolSize[pool];
 	}
 	else {
@@ -1021,7 +1021,8 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 
 	if (IdxPool[pool].empty()) {
 		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
-		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD) * 3, D3DUSAGE_DYNAMIC, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		return IdxPoolSize[pool];
 	}
 	else {

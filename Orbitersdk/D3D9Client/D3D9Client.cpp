@@ -2009,6 +2009,39 @@ int D3D9Client::GetIndexOfDissolveMap(SURFHANDLE hSrf) const
 
 // =======================================================================
 
+void D3D9Client::MakeRenderProcCall(SURFHANDLE hSrf, DWORD id)
+{
+	for (DWORD i = 0; i < RenderProc.size(); i++) {
+		if (RenderProc[i].id == id) {
+			RenderProc[i].proc(hSrf);
+		}
+	}
+}
+
+// =======================================================================
+
+bool D3D9Client::RegisterRenderProc(__ogciRenderProc proc, DWORD id)
+{
+	if (id == 0) {
+		for (DWORD i = 0; i < RenderProc.size(); i++) {
+			if (RenderProc[i].proc == proc) {
+				RenderProc.erase(RenderProc.begin() + i);
+				return true;
+			}
+		}
+	}
+	else {
+		RenderProcData data;
+		data.proc = proc;
+		data.id = id;
+		RenderProc.push_back(data);
+		return true;
+	}
+	return false;
+}
+
+// =======================================================================
+
 void D3D9Client::WriteLog(const char *msg) const
 {
 	_TRACER;
@@ -2132,9 +2165,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 21b Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 22 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 21b Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 22 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

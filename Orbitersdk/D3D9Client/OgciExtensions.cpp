@@ -13,6 +13,11 @@
 extern D3D9Client *g_client;
 
 
+DLLCLBK bool ogciRegisterRenderProc(__ogciRenderProc proc, DWORD flags)
+{
+	return g_client->RegisterRenderProc(proc, flags);
+}
+
 
 DLLCLBK DWORD ogciClientID()
 {

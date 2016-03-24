@@ -95,6 +95,7 @@ char *my_ctime(const time_t *t)
 
 //-------------------------------------------------------------------------------------------
 //
+/*
 void DebugMsg(const char *format, ...)
 {
 	va_list args; 
@@ -103,7 +104,7 @@ void DebugMsg(const char *format, ...)
 	va_end(args);
 	strcat_s(ErrBuf, ERRBUF, "\n");
 	OutputDebugString(ErrBuf);
-}
+}*/
 	
 	
 //-------------------------------------------------------------------------------------------

@@ -33,7 +33,7 @@ namespace DebugControls {
 DWORD dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
-
+double resbias = 4.0;
 char visual[64];
 int  origwidth;
 HWND hDlg = NULL;
@@ -44,6 +44,12 @@ char OpenFileName[255];
 char SaveFileName[255];    
 
 void UpdateMaterialDisplay(bool bSetup=false);
+
+bool IsEquEnabled()
+{
+	return SendDlgItemMessageA(hDlg, IDC_DBG_ENCTER, BM_GETCHECK, 0, 0) == BST_CHECKED;
+}
+
 
 // ===========================================================================
 // Same functionality than 'official' GetConfigParam, but for non-provided
@@ -120,6 +126,8 @@ void Create()
 	else {
 		dwCmd = 0;
 	}
+
+	resbias = 4.0 + Config->LODBias;
   
 	memset(&OpenTex, 0, sizeof(OPENFILENAME));
 	memset(OpenFileName, 0, sizeof(OpenFileName));
@@ -276,6 +284,11 @@ void OpenDlgClbk(void *context)
 	}
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
 
+	// Speed slider
+	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETRANGEMAX, 1,  10);
+	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETRANGEMIN, 1, -10);
+	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETPOS, 1, 0);
 
 	// Speed slider
 	SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_SETRANGEMAX, 1, 200);
@@ -1073,6 +1086,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		if (LOWORD(wParam)==TB_THUMBTRACK || LOWORD(wParam)==TB_ENDTRACK) {
 			WORD pos = HIWORD(wParam);
+
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_DBG_SPEED)) {
 				if (pos==0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_SPEED, TBM_GETPOS,  0, 0));
 				double fpos = pow(2.0,double(pos)*13.0/200.0); 
@@ -1080,6 +1094,11 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetWindowTextA(GetDlgItem(hWnd, IDC_DBG_SPEEDDSP), lbl);
 				camSpeed = fpos/50.0;
 			}
+
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_DBG_RESBIAS)) {
+				resbias = 4.0 + 0.2 * double(SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_GETPOS, 0, 0));
+			}
+
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_DBG_MATADJ)) {
 				if (pos==0) pos = WORD(SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_GETPOS,  0, 0));
 				UpdateColorSlider(pos);

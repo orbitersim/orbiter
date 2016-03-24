@@ -1252,8 +1252,14 @@ void Scene::RenderMainScene()
 
 	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	
-	gc->Render2DOverlay();
+	pSketch->SetFont(NULL);
+	pSketch->SetPen(NULL);
 
+	oapiReleaseSketchpad(pSketch); pSketch = NULL;
+
+	gc->MakeRenderProcCall(gc->GetBackBufferHandle(), RENDERPROC_HUD_1ST);
+	gc->Render2DOverlay();
+	gc->MakeRenderProcCall(gc->GetBackBufferHandle(), RENDERPROC_HUD_2ND);
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1263,6 +1269,8 @@ void Scene::RenderMainScene()
 	int len = strlen(oapiDebugString());
 
 	if (len>0) { 
+
+		oapi::Sketchpad *pSketch = oapiGetSketchpad(gc->GetBackBufferHandle());
 
 		oapi::Pen * nullp = oapiCreatePen(0, 1, 0xFFFFFF);
 		oapi::Brush *brush = oapiCreateBrush(0xB0000000);
@@ -1284,14 +1292,9 @@ void Scene::RenderMainScene()
 
 		oapiReleasePen(nullp);
 		oapiReleaseBrush(brush);
+		oapiReleaseSketchpad(pSketch);
 	}
 		
-	pSketch->SetFont(NULL);
-	pSketch->SetPen(NULL);
-
-	oapiReleaseSketchpad(pSketch);
-
-
 	// End Of Main Scene Rendering ---------------------------------------------
 	//
 	HR(pDevice->EndScene());

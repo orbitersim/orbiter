@@ -339,6 +339,7 @@ INT16 *SurfTile::ElevationData () const
 
 int SurfTile::GetElevation(double lat, double lng, double *elev, SurfTile **cache, bool bFilter)
 {
+	static int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	if (cache) *cache = this;
 
 	if (lat<minlat || lat>maxlat) return -1;
@@ -367,6 +368,10 @@ int SurfTile::GetElevation(double lat, double lng, double *elev, SurfTile **cach
 				int i1 = i0 + TILE_ELEVSTRIDE; 
 				int j0 = int(y);
 				
+				assert(i0 > 0);
+				assert(j0 > 0);
+				assert((j0 + i1) < ndat);
+
 				float q = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx); j0++;
 				float w = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx);
 

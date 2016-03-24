@@ -20,15 +20,9 @@
 #define __OGCI_H
 
 #include "OrbiterAPI.h"
-
-typedef void * CAMERAHANDLE;
+#include "OGCI_Const.h"
 
 #define OGCIFN __cdecl
-
-#define SKETCHPAD_NONE			 0x0
-#define SKETCHPAD_GDI			 0x1
-#define SKETCHPAD_DIRECTX		 0x2
-
 
 #ifndef OAPISURFACE_TEXTURE
 #define OAPISURFACE_TEXTURE      0x0001 ///< Surface can be used as a texture (e.g. by associating it with a mesh)
@@ -111,6 +105,15 @@ bool			ogciGenerateMipMaps(SURFHANDLE hSurface, DWORD Filter=0);
 				* \note If used, this function must be called inside of VESSEL2::clbkVisualCreated()
 				*/
 bool			ogciRegisterSkinName(const VISHANDLE hVisual, const char *name);
+
+				/**
+				* \brief This function will register a custom render callback function
+				* \param proc, function to be called when render event occur
+				* \param id, render event id
+				* \return false if an error occured, true otherwise.
+				*/
+bool			ogciRegisterRenderProc(__ogciRenderProc proc, DWORD id);
+
 
 
 				// -----------------------------------------------------------------------------------------------------------------------------------
@@ -202,5 +205,6 @@ void			ogciSketchBltEx(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT sRect, LPR
 				* \note Automatic clipping will occur if the source doesn't fit into a sketchpad target surface. Can scale.
 				*/
 void			ogciSketchRotateBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT sRect, int tcx, int tcy, int w, int h, float angle, float alpha=-1.0f, VECTOR3 *color=NULL);
+
 
 #endif

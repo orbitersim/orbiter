@@ -77,6 +77,7 @@ namespace DebugControls {
 	extern  DWORD dspMode;
 	extern  DWORD camMode;
 	extern  double camSpeed;
+	extern  double resbias;
 	
 	/**
 	 * \brief Same functionality than 'official' GetConfigParam, but for
@@ -115,6 +116,7 @@ namespace DebugControls {
 	int			GetSceneDebug();
 	
 	bool		IsActive();
+	bool		IsEquEnabled();
 
 	BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

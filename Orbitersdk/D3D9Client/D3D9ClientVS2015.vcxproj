@@ -100,6 +100,7 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(Configuration)\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -178,6 +179,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\include\OGCI.cpp" />
     <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
@@ -207,6 +209,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="MeshMgr.cpp" />
     <ClCompile Include="MeshTools.cpp" />
     <ClCompile Include="OapiExtension.cpp" />
+    <ClCompile Include="OgciExtensions.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="PlanetRenderer.cpp" />
     <ClCompile Include="RingMgr.cpp" />
@@ -230,6 +233,8 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\GraphicsAPI.h" />
+    <ClInclude Include="..\include\OGCI.h" />
+    <ClInclude Include="..\include\OGCI_Const.h" />
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
     <ClInclude Include="AABBUtil.h" />
@@ -288,10 +293,15 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
     <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
-    <None Include="..\..\Modules\D3D9Client\NormalMap.fx" />
     <None Include="..\..\Modules\D3D9Client\Particle.fx" />
     <None Include="..\..\Modules\D3D9Client\Planet.fx" />
     <None Include="..\..\Modules\D3D9Client\SceneTech.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\Surface.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

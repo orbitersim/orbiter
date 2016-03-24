@@ -332,8 +332,8 @@ void HazeManager2::RenderSkySegment(D3DXMATRIX &wmat, double rad, double dmin, d
 	HR(Shader()->SetMatrix(smWorld, &wmat));
 	HR(Shader()->SetVector(svTexOff, &D3DXVECTOR4(r1, r2, h1, h2)));
 	
-	int xres = (Config->LODBias<-1 ? xlreslvl[index] : xreslvl[index]);
-	int yres = (Config->LODBias<-1 ? ylreslvl[index] : yreslvl[index]);
+	int xres = (Config->LODBias<-0.5 ? xlreslvl[index] : xreslvl[index]);
+	int yres = (Config->LODBias<-0.5 ? ylreslvl[index] : yreslvl[index]);
 
 	UINT prims = xres * yres * 2 - 2;
 	UINT numPasses = 0;
@@ -449,8 +449,8 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 {
 	int k = 0;
 
-	int xseg = (Config->LODBias<-1 ? xlreslvl[index] : xreslvl[index]);
-	int yseg = (Config->LODBias<-1 ? ylreslvl[index] : yreslvl[index]);
+	int xseg = (Config->LODBias<-0.5 ? xlreslvl[index] : xreslvl[index]);
+	int yseg = (Config->LODBias<-0.5 ? ylreslvl[index] : yreslvl[index]);
 
 	D3DXVECTOR3 *pVrt = new D3DXVECTOR3[xseg*yseg*2+2];
 	D3DXVECTOR3 *pBuf = NULL;

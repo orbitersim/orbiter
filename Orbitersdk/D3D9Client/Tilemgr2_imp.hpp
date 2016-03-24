@@ -14,6 +14,7 @@
 #define __TILEMGR2_IMP_HPP
 
 #include "tilemgr2.h"
+#include "DebugControls.h"
 
 // -----------------------------------------------------------------------
 
@@ -81,8 +82,8 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	int nlng = 2 << lvl;
 	int nlat = 1 << lvl;
 	bool bstepdown = true;
-	double bias = resolutionBias;
-	if (ilat < nlat/6 || ilat >= nlat-nlat/6) { // lower resolution at the poles
+	double bias = DebugControls::resbias;			// 2 to 6, default 4
+	if (ilat < nlat/6 || ilat >= nlat-nlat/6) {		// lower resolution at the poles
 		bias -= 1.0;
 		if (ilat < nlat/12 || ilat >= nlat-nlat/12)
 			bias -= 1.0;
@@ -112,7 +113,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		else {
 			// Keep a tile allocated as long as the tile can be seen from a current camera position.
 			// We have multible views and only the active (current) view is checked here.
-			//node->DelChildren ();             // remove the sub-tree
+			if (Config->EnvMapMode == 0 && Config->CustomCamMode == 0) node->DelChildren();  // remove the sub-tree
 			tile->state = Tile::Invisible;
 			return;
 		}
@@ -129,9 +130,15 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			double a = prm.cdist - erad*cos(adist);
 			tdist = sqrt(a*a + h*h);
 		}
+
+		if (DebugControls::IsEquEnabled()) bias -=  3.0 * max(0,adist) / prm.viewap;
+		
 		double apr = tdist * scene->GetTanAp() * resolutionScale;
-		int tgtres = (apr < 1e-6 ? prm.maxlvl : max (0, min (prm.maxlvl, (int)(bias - log(apr)*res_scale))));
-		bstepdown = (lvl < tgtres);
+		int tgtres = (apr < 1e-6 ? prm.maxlvl : max(0, min(prm.maxlvl, (int)(bias - log(apr)*res_scale))));
+
+		if (DebugControls::IsEquEnabled()) tgtres += min(2, int(2.5e3/(fabs(tdist)*obj_size)));
+
+		bstepdown = (lvl < tgtres);	
 	}
 
 	// Recursion to next level: subdivide into 2x2 patch

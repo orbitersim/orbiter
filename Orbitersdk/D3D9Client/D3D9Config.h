@@ -60,7 +60,7 @@ public:
 	int ShadowMapSize;				///< Shadow Map size
 	int CustomCamMode;				///< Custom Camera Mode
 	int TileMipmaps;				///< Enable surface tile mipmaps
-	int LODBias;					///< 3D Terrain resolution bias
+	double LODBias;					///< 3D Terrain resolution bias
 	int MeshRes;					///< Tile patch mesh resolution
 	int TileDebug;					///< Enable tile debugger
 	int TextureMips;				///< Texture mipmap autogen policy

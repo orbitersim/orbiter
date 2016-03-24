@@ -688,8 +688,8 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETRANGEMIN,  1, 10);
 	SendDlgItemMessage(hWnd, IDC_SEPARATION, TBM_SETTICFREQ,  5, 0);
 	
-	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMAX, 1, 3);
-	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -3);
+	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMAX, 1, 10);
+	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETRANGEMIN, 1, -10);
 	SendDlgItemMessage(hWnd, IDC_LODBIAS, TBM_SETTICFREQ, 1, 0);
 
 	SendDlgItemMessage(hWnd, IDC_MESHRES, TBM_SETRANGEMAX, 1, 2);
@@ -707,11 +707,11 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	sprintf_s(cbuf,32,"%1.0f%%",float(Config->Separation));
 	SetWindowTextA(GetDlgItem(hWnd, IDC_SEPA_DSP), cbuf);
 
-	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETPOS, 1, DWORD(Config->Convergence*100.0));
-	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, DWORD(Config->Separation));
-	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, DWORD(Config->LODBias));
-	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, DWORD(Config->MeshRes));
-	SendDlgItemMessage(hWnd, IDC_MICROBIAS,   TBM_SETPOS, 1, DWORD(Config->MicroBias));
+	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETPOS, 1, int(Config->Convergence*100.0));
+	SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_SETPOS, 1, int(Config->Separation));
+	SendDlgItemMessage(hWnd, IDC_LODBIAS,     TBM_SETPOS, 1, int(Config->LODBias*5.0));
+	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, int(Config->MeshRes));
+	SendDlgItemMessage(hWnd, IDC_MICROBIAS,   TBM_SETPOS, 1, int(Config->MicroBias));
 
 	SendDlgItemMessage(hWnd, IDC_BLENDMODE, CB_SETCURSEL, Config->BlendMode, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROMODE, CB_SETCURSEL, Config->MicroMode, 0);
@@ -789,7 +789,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
 	Config->Separation	  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));
-	Config->LODBias       = int(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
+	Config->LODBias       = 0.2 * double(SendDlgItemMessage(hWnd, IDC_LODBIAS,  TBM_GETPOS, 0, 0));
 	Config->MeshRes       = int(SendDlgItemMessage(hWnd, IDC_MESHRES,  TBM_GETPOS, 0, 0));
 	Config->MicroBias     = int(SendDlgItemMessage(hWnd, IDC_MICROBIAS,  TBM_GETPOS, 0, 0));
 
