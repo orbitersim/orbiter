@@ -111,7 +111,6 @@ private:
 	D3DVIEWPORT9 iVP;
 	D3DXHANDLE   hVP;
 
-	char	buf[256];
 	char	file[256];
 	char	entry[64];
 };

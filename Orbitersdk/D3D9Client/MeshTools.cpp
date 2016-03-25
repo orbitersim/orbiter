@@ -258,7 +258,7 @@ bool AdMesh::Load(const char *file)
 // ADGROUP
 // ===========================================================================================
 //
-AdGroup::AdGroup()
+AdGroup::AdGroup() : vBSc(), vBSr(0), Mtrl(0), Tex (0)
 {
 }
 
