@@ -98,6 +98,7 @@ namespace DebugControls {
 	const void *GetConfigParam (DWORD paramtype);
 
 	void		Create();
+	void		Close();
 	void		Release();
 	void		OpenDlgClbk(void *context);
 

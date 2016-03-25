@@ -517,8 +517,8 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
 		if (TileManager2Base::ShutDown()==false) LogErr("Failed to Shutdown TileManager2Base()");
 		
-		// Disconnect a vesual form debug controls 
-		DebugControls::SetVisual(NULL);
+		// Close dialog if Open and disconnect a visual form debug controls 
+		DebugControls::Close();
 
 		// Disconnect textures from pipeline (Unlikely nesseccary)
 		D3D9Effect::ShutDown();

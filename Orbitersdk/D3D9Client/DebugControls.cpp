@@ -158,6 +158,17 @@ void Create()
 
 // =============================================================================================
 //
+void Close()
+{
+	if (hDlg != NULL) {
+		oapiCloseDialog(hDlg);
+		hDlg = NULL;
+	}
+	vObj = NULL;
+}
+
+// =============================================================================================
+//
 bool IsActive()
 {
 	return (hDlg!=NULL);
@@ -1113,9 +1124,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam)) {
 
 			case IDCANCEL:
-				oapiCloseDialog(hWnd);
-				hDlg = NULL;
-				vObj = NULL;
+				Close();
 				break;
 		
 			case IDC_DBG_MATSAVE:
