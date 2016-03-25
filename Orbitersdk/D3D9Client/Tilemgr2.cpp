@@ -48,6 +48,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	width = PI * cos(x) * f;
 	height = PI * f;
 	Extents(&minlat, &maxlat, &minlng, &maxlng);
+	D3D9Stats.TilesAllocated++;
 }
 
 // -----------------------------------------------------------------------
@@ -60,6 +61,7 @@ Tile::~Tile ()
 	if (tex && owntex) {
 		if (TileCatalog->Remove(DWORD(tex))) tex->Release();
 	}
+	D3D9Stats.TilesAllocated--;
 }
 
 
@@ -936,8 +938,6 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 
 DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *pVB)
 {
-	static DWORD buffercnt = 0;
-
 	int pool = -1;
 	D3DVERTEXBUFFER_DESC desc;
 
@@ -970,8 +970,9 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 	}
 
 	if (VtxPool[pool].empty()) {
-		buffercnt++;
-		sprintf_s(oapiDebugString(),256,"TileMeshCache %d Entries [%d MB]", buffercnt, (buffercnt*nv*sizeof(VERTEX_2TEX))>>20);
+		D3D9Stats.TilesCached++;
+		D3D9Stats.TilesCachedMB += nv*sizeof(VERTEX_2TEX);
+		
 		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));

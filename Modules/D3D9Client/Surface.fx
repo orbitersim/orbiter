@@ -128,7 +128,7 @@ sampler DiffTexS = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	MaxAnisotropy = MICRO_ANISOTROPY;
+	MaxAnisotropy = ANISOTROPY_MACRO;
     MipMapLODBias = 0.0;
 	AddressU = CLAMP;
     AddressV = CLAMP;
@@ -137,9 +137,10 @@ sampler DiffTexS = sampler_state
 sampler CloudTexS = sampler_state
 {
 	Texture = <tCloud>;
-	MinFilter = LINEAR;
+	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	MaxAnisotropy = 2;
 	AddressU = CLAMP;
     AddressV = CLAMP;
 };

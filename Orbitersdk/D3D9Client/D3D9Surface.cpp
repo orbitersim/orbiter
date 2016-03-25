@@ -83,9 +83,7 @@ HRESULT D3D9ClientSurface::FlushQueue()
 	FX->CommitChanges();
 
 	pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, GPUBltIdx, GPUBltIdx>>1, Index, D3DFMT_INDEX16, pGPUVtx, sizeof(GPUBLITVTX));
-	gc->GetStats()->Draw++;
-	gc->GetStats()->ColorKey += (GPUBltIdx>>2);
-
+	
 	GPUBltIdx = 0;
 	pPrevSrc = NULL;
 
@@ -168,9 +166,7 @@ HRESULT D3D9ClientSurface::GPUCopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT 
 	FX->BeginPass(0);
 
 	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-	gc->GetStats()->Draw++;
-	gc->GetStats()->ColorKey++;
-
+	
 	FX->EndPass();
 	FX->End();
 
@@ -225,7 +221,6 @@ HRESULT D3D9ClientSurface::SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
 	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-	gc->GetStats()->Draw++;
 	FX->EndPass();
 	FX->End();
 	return S_OK;
@@ -293,7 +288,6 @@ HRESULT D3D9ClientSurface::SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, 
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
 	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-	gc->GetStats()->Draw++;
 	FX->EndPass();
 	FX->End();
 	return S_OK;
@@ -934,8 +928,6 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 {
 	_TRACER;
 	bool bRestart = true;
-
-	gc->GetStats()->Blits++;
 
 	// Check failure and abort conditions -------------------------------------------------------
 	//

@@ -1373,8 +1373,8 @@ void Scene::RenderMainScene()
 
 	scene_time = D3D9GetTime() - scene_time;
 
-	if (scene_time>gc->GetStats()->ScenePeak) gc->GetStats()->ScenePeak = scene_time;
-	gc->GetStats()->Scene += scene_time;
+	if (scene_time>D3D9Stats.Timer.ScenePeak) D3D9Stats.Timer.ScenePeak = scene_time;
+	D3D9Stats.Timer.Scene += scene_time;
 
 	dwTurn++;
 }

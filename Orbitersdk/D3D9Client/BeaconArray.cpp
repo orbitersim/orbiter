@@ -120,37 +120,26 @@ void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float tim
 {
 	if (!pVB) return;
 
-	__TRY {
-		gc->GetStats()->Vertices += nVert;
-		gc->GetStats()->Draw++;
-
-		UINT numPasses = 0;
-		HR(FX->SetTechnique(eBeaconArrayTech));
-		HR(FX->SetMatrix(eW, pW));
-		HR(FX->SetTexture(eTex0, SURFACE(pBright)->GetTexture()));
-		HR(FX->SetFloat(eTime, time));
-		HR(FX->SetFloat(eMix, float(Config->RwyBrightness)));
+	UINT numPasses = 0;
+	HR(FX->SetTechnique(eBeaconArrayTech));
+	HR(FX->SetMatrix(eW, pW));
+	HR(FX->SetTexture(eTex0, SURFACE(pBright)->GetTexture()));
+	HR(FX->SetFloat(eTime, time));
+	HR(FX->SetFloat(eMix, float(Config->RwyBrightness)));
 		
-		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-		HR(FX->BeginPass(0));
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
 		
-		//dev->SetRenderState(D3DRS_ZENABLE, 0);
+	//dev->SetRenderState(D3DRS_ZENABLE, 0);
 
-		dev->SetVertexDeclaration(pBAVertexDecl);
-		dev->SetStreamSource(0, pVB, 0, sizeof(BAVERTEX));
-		dev->DrawPrimitive(D3DPT_POINTLIST, 0, nVert);
+	dev->SetVertexDeclaration(pBAVertexDecl);
+	dev->SetStreamSource(0, pVB, 0, sizeof(BAVERTEX));
+	dev->DrawPrimitive(D3DPT_POINTLIST, 0, nVert);
 	
-		dev->SetRenderState(D3DRS_ZENABLE, 1);
+	dev->SetRenderState(D3DRS_ZENABLE, 1);
 
-		HR(FX->EndPass());
-		HR(FX->End());	
+	HR(FX->EndPass());
+	HR(FX->End());	
 
-		dev->SetRenderState(D3DRS_POINTSPRITEENABLE, 0);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in BeaconArray::Render()");
-		gc->EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	dev->SetRenderState(D3DRS_POINTSPRITEENABLE, 0);
 }

@@ -49,6 +49,7 @@ D3D9Catalog *TileCatalog = 0;
 D3D9Catalog *SurfaceCatalog = 0;
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
+_D3D9Stats D3D9Stats;
 
 #ifdef _NVAPI_H
  StereoHandle pStereoHandle = 0;
@@ -311,7 +312,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pNoiseTex		 = NULL;
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 
-	memset2(&stats, 0, sizeof(stats));
+	memset2(&D3D9Stats, 0, sizeof(D3D9Stats));
 	memset2(pDislMapList, 0, 16*sizeof(SURFHANDLE));
 
 	D3DXMatrixIdentity(&ident);
@@ -725,7 +726,11 @@ void D3D9Client::clbkRenderScene()
 
 		if (bControlPanel) RenderControlPanel();
 
-		memset2(&stats, 0, 100);
+
+		memset2(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
+		memset2(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
+		memset2(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
+
 	}
 
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -756,8 +761,8 @@ bool D3D9Client::clbkDisplayFrame()
 	static int iRefrState = 0;
 	double time = D3D9GetTime();
 	frame_time = time - frame_time;
-	stats.Frame += frame_time;
-	if (frame_time>stats.FramePeak) stats.FramePeak = frame_time;
+	D3D9Stats.Timer.Frame += frame_time;
+	if (frame_time>D3D9Stats.Timer.FramePeak) D3D9Stats.Timer.FramePeak = frame_time;
 
 	if (!bRunning) {
 		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };

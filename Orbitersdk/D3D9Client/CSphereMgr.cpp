@@ -426,9 +426,7 @@ void CSphereManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 {
 	VBMESH &mesh = PATCH_TPL[lvl][ilat]; // patch template
 
-	gc->GetStats()->Vertices += mesh.nv;
-	gc->GetStats()->Tiles[lvl]++;
-	gc->GetStats()->Draw++;
+	D3D9Stats.Old.Tiles[lvl]++;
 	
 	Shader()->SetMatrix(smWorld, &mWorld);
 	Shader()->SetTexture(stDiff, tex);	

@@ -1145,8 +1145,8 @@ void D3D9Mesh::RenderGroup(LPDIRECT3DDEVICE9 pDev, const GROUPREC *grp)
 	pDev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
 	pDev->SetIndices(pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, grp->VertOff, 0, grp->nVert, grp->FaceOff*3, grp->nFace);
-	gc->GetStats()->Vertices += grp->nVert;
-	gc->GetStats()->Draw++;
+	D3D9Stats.Mesh.Vertices += grp->nVert;
+	D3D9Stats.Mesh.MeshGrps++;
 }
 
 
@@ -1158,8 +1158,8 @@ void D3D9Mesh::RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIREC
 	if (!pVB) return;
 	if (!pTex) return;
 
-	gc->GetStats()->Vertices += Grp[0].nVert;
-	gc->GetStats()->Meshes++;
+	D3D9Stats.Mesh.Vertices += Grp[0].nVert;
+	D3D9Stats.Mesh.MeshGrps++;
 
 	UINT numPasses = 0;
 	HR(FX->SetTechnique(eRingTech));
@@ -1182,8 +1182,8 @@ void D3D9Mesh::RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRE
 	if (!pVB) return;
 	if (!pTex) return;
 
-	gc->GetStats()->Vertices += Grp[0].nVert;
-	gc->GetStats()->Meshes++;
+	D3D9Stats.Mesh.Vertices += Grp[0].nVert;
+	D3D9Stats.Mesh.MeshGrps++;
 
 	UINT numPasses = 0;
 	HR(FX->SetTechnique(eRingTech2));
@@ -1212,6 +1212,9 @@ void D3D9Mesh::RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, con
 	if (idx>=nGrp) return;
 
 	GROUPREC *grp = &Grp[idx];
+
+	D3D9Stats.Mesh.Vertices += grp->nVert;
+	D3D9Stats.Mesh.MeshGrps++;
 
 	UINT numPasses = 0;
 	D3DXMATRIX q;
@@ -1320,7 +1323,7 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
 	else mWorldMesh = *pW;
 
-	gc->GetStats()->Meshes++;
+	D3D9Stats.Mesh.Meshes++;
 
 	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
@@ -1578,9 +1581,8 @@ void D3D9Mesh::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech, L
 
 			dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff,  0, Grp[g].nVert,  Grp[g].FaceOff*3, Grp[g].nFace);
 
-			gc->GetStats()->Vertices += Grp[g].nVert;
-			gc->GetStats()->Draw++;
-			gc->GetStats()->MeshGrps++;
+			D3D9Stats.Mesh.Vertices += Grp[g].nVert;
+			D3D9Stats.Mesh.MeshGrps++;
 
 			//if (Grp[g].zBias) dev->SetRenderState(D3DRS_DEPTHBIAS, 0);
 		}
@@ -1718,9 +1720,8 @@ void D3D9Mesh::RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 			dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].FaceOff*3, Grp[g].nFace);
 
-			gc->GetStats()->Vertices += Grp[g].nVert;
-			gc->GetStats()->Draw++;
-			gc->GetStats()->MeshGrps++;
+			D3D9Stats.Mesh.Vertices += Grp[g].nVert;
+			D3D9Stats.Mesh.MeshGrps++;
 		}
 		HR(FX->EndPass());
 	}
@@ -1740,7 +1741,7 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
 	else mWorldMesh = *pW;
 
-	gc->GetStats()->Meshes++;
+	D3D9Stats.Mesh.Meshes++;
 
 	dev->SetVertexDeclaration(pVector4Decl);
 	dev->SetStreamSource(0, pGB, 0, sizeof(D3DXVECTOR4));
@@ -1768,10 +1769,14 @@ void D3D9Mesh::RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMAT
 				if (Grp[gr].UsrFlag & 0x3) continue;
 				if (Grp[gr].IntFlag & 0x3) continue;
 				dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Geom[g].VertOff, 0, Geom[g].nVert, Grp[gr].GeoFOff*3, Grp[gr].nFace);
+				D3D9Stats.Mesh.Vertices += Geom[g].nVert;
+				D3D9Stats.Mesh.MeshGrps++;
 			}
 		} else {
 			// Geometry group is intact, render all at once.
 			dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Geom[g].VertOff, 0, Geom[g].nVert, Geom[g].FaceOff*3, Geom[g].nFace);
+			D3D9Stats.Mesh.Vertices += Geom[g].nVert;
+			D3D9Stats.Mesh.MeshGrps++;
 		}
 	}
 	FX->EndPass();
@@ -1786,7 +1791,7 @@ void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXM
 	if (!pVB || !pGB) return;
 	if (!Geom) return;
 
-	gc->GetStats()->Meshes++;
+	D3D9Stats.Mesh.Meshes++;
 
 	dev->SetVertexDeclaration(pVector4Decl);
 	dev->SetStreamSource(0, pGB, 0, sizeof(D3DXVECTOR4));
@@ -1812,6 +1817,8 @@ void D3D9Mesh::RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXM
 				if (Grp[gr].UsrFlag & 0x3) continue;
 				if (Grp[gr].IntFlag & 0x3) continue;
 				dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Geom[g].VertOff, 0, Geom[g].nVert, Grp[gr].GeoFOff*3, Grp[gr].nFace);
+				D3D9Stats.Mesh.Vertices += Geom[g].nVert;
+				D3D9Stats.Mesh.MeshGrps++;
 			}
 		/*} else {
 			// Geometry group is intact, render all at once.
@@ -1834,8 +1841,6 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 	if (!pVB) return;
 	if (DebugControls::IsActive()==false) return;
-
-	// Scene *scn = gc->GetScene();
 
 	D3DXMATRIX q, qq;
 
@@ -1910,8 +1915,6 @@ void D3D9Mesh::RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW)
 
 			dev->DrawPrimitiveUP(D3DPT_LINESTRIP, 9, &poly, sizeof(D3DVECTOR));
 			dev->DrawPrimitiveUP(D3DPT_LINELIST, 3, &list, sizeof(D3DVECTOR));
-
-			gc->GetStats()->Draw+=2;
 		}
 
 		FX->EndPass();

@@ -189,6 +189,8 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 		tile->StepIn ();
 		tile->Render ();
 		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
+		D3D9Stats.Surf.Tiles[lvl]++;
+		D3D9Stats.Surf.Verts += tile->mesh->nv;
 	} else if (tile->state == Tile::Active) {
 		tile->StepIn ();
 		for (int i = 0; i < 4; i++) {

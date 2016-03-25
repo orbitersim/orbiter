@@ -464,10 +464,6 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 			HR(FX->SetFloat(eMix, alpha));
 			HR(FX->CommitChanges());
 			HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, dvtx+i0*4, sizeof(NTVERTEX)));
-
-			pGC->GetStats()->Draw++;
-			pGC->GetStats()->Vertices += n*4;
-
 			i0 += n;
 			n = 0;
 		}
@@ -526,10 +522,6 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 			HR(FX->SetFloat(eMix, alpha));
 			HR(FX->CommitChanges());
 			HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));
-
-			pGC->GetStats()->Draw++;
-			pGC->GetStats()->Vertices += n*4;
-
 			i0 += n;
 			n = 0;
 		}
@@ -751,8 +743,6 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 				HR(FX->SetFloat(eMix, alpha));
 				HR(FX->CommitChanges());
 				HR(dev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, n*4, n*2, idx, D3DFMT_INDEX16, evtx+i0*4, sizeof(VERTEX_XYZ_TEX)));
-				pGC->GetStats()->Draw++;
-				pGC->GetStats()->Vertices += n*4;
 			}
 			i0 += n;
 			n = 0;

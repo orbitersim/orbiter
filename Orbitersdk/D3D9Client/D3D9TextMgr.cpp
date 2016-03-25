@@ -540,9 +540,6 @@ float D3D9Text::Print(LPD3DXCOLOR color, int x, int y, const char *str, int len,
 		LogErr("D3D9Text::DrawIndexedPrimitiveUP Failed");
 	}
 
-	gc->GetStats()->Draw++;
-	gc->GetStats()->Vertices += len<<2;
-
 	HR(FX->EndPass());
 	HR(FX->End());	
 

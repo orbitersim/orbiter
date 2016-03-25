@@ -539,9 +539,6 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pT
 
 	pDev->SetVertexDeclaration(pNTVertexDecl);
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, mg->nVtx, mg->nIdx/3, mg->Idx, D3DFMT_INDEX16, mg->Vtx, sizeof(NTVERTEX));
-	
-	gc->GetStats()->Vertices += mg->nVtx;
-	gc->GetStats()->Draw++;
 
 	HR(FX->EndPass());
 	HR(FX->End());	
@@ -593,8 +590,6 @@ void D3D9Effect::RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTO
 	FX->CommitChanges();
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &ReentryIdx, D3DFMT_INDEX16, &ReentryVtxA, sizeof(NTVERTEX));
 
-	gc->GetStats()->Draw+=2;
-
 	FX->EndPass();
 	FX->End();	
 }
@@ -617,7 +612,6 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, billboard_idx, D3DFMT_INDEX16, billboard_vtx, sizeof(NTVERTEX)));
 	HR(FX->EndPass());
 	HR(FX->End());	
-	gc->GetStats()->Draw++;
 }
 
 
@@ -638,7 +632,6 @@ void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, billboard_idx, D3DFMT_INDEX16, billboard_vtx, sizeof(NTVERTEX)));
 	HR(FX->EndPass());
 	HR(FX->End());	
-	gc->GetStats()->Draw++;
 }
 
 
@@ -701,7 +694,6 @@ void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 8, 4, exhaust_idx, D3DFMT_INDEX16, exhaust_vtx, sizeof(NTVERTEX)));
 	HR(FX->EndPass());
 	HR(FX->End());	
-	gc->GetStats()->Draw++;
 }
 
 
@@ -881,7 +873,6 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     HR(pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 6, &arrow, sizeof(D3DVECTOR))); // Draw 6 triangles un-indexed
     HR(FX->EndPass());
     HR(FX->End()); 
-    gc->GetStats()->Draw++; // Increment rendering statistics counter
 }  
 
 
@@ -904,6 +895,4 @@ void D3D9Effect::RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, flo
 
 	HR(FX->EndPass());
 	HR(FX->End());	
-
-	gc->GetStats()->Draw++;
 }

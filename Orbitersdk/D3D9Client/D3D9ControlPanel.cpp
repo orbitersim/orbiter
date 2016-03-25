@@ -35,49 +35,6 @@ DWORD TextureSizeInBytes(LPDIRECT3DTEXTURE9 pTex)
 }
 
 
-/*
-void D3D9Client::ClearTimers()
-{
-	TimeGDI = 0.0;
-	TimeGDIPad = 0.0;
-	TimeD3D9Pad = 0.0;
-	TimeBlit = 0.0;
-	TimePlanets = 0.0;
-	TimeVessels = 0.0;
-	TimeVC = 0.0;
-	TimeHUD = 0.0;
-}*/
-
-void D3D9Client::Item(WORD id, const char *label, const char *format, ...)
-{
-	/*
-	ItemList[Items] = id;
-	
-	if (SelectedItem==id) pItemsSkp->SetTextColor(0xFFFF00);
-	else                  pItemsSkp->SetTextColor(0x888800);		
-
-	char buffer[256];
-	va_list args; 
-	va_start(args, format); 
-			
-	_vsnprintf_s(buffer, 255, 255, format, args); 	
-
-	int len = strlen(buffer);
-
-	pItemsSkp->Text(x,   y, label, 0);
-	pItemsSkp->Text(x+c, y, buffer, len);
-
-	RECT rect;
-	rect.left   = x;
-	rect.top    = y;
-	rect.bottom = y + (pItemsSkp->GetCharSize()&0x0000FFFF);
-	rect.right  = x + c + GetTextWidth(buffer, len);
-
-	ItemRect[Items] = rect;
-	Items++;
-	*/
-}
-
 void D3D9Client::Label(const char *format, ...)
 {
 	char buffer[256];
@@ -175,15 +132,15 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
-	stats.count += 1.0;
+	D3D9Stats.Timer.count += 1.0;
 
 	if (oapiGetSimTime()>(sim_time+1.2)) {
 		sim_time  = oapiGetSimTime();
-		scene_avg = stats.Scene / stats.count;
-		frame_avg = stats.Frame / stats.count;
-		scene_pek = stats.ScenePeak;
-		frame_pek = stats.FramePeak;
-		stats.Frame = stats.Scene = stats.ScenePeak = stats.FramePeak = stats.count = 0.0;
+		scene_avg = D3D9Stats.Timer.Scene / D3D9Stats.Timer.count;
+		frame_avg = D3D9Stats.Timer.Frame / D3D9Stats.Timer.count;
+		scene_pek = D3D9Stats.Timer.ScenePeak;
+		frame_pek = D3D9Stats.Timer.FramePeak;
+		D3D9Stats.Timer.Frame = D3D9Stats.Timer.Scene = D3D9Stats.Timer.ScenePeak = D3D9Stats.Timer.FramePeak = D3D9Stats.Timer.count = 0.0;
 	}
 	else {
 		if (oapiGetSimTime()<sim_time) sim_time  = oapiGetSimTime();
@@ -202,15 +159,30 @@ void D3D9Client::RenderControlPanel()
 	DWORD mesh_count = MeshCatalog->CountEntries();
 	DWORD tile_count = TileCatalog->CountEntries();
 	DWORD tile_size = 0;
+	DWORD tile_render_countA = 0;
+	DWORD tile_render_countB = 0;
 	
 	for (DWORD i=0;i<tile_count;i++) {
 		LPDIRECT3DTEXTURE9 pTex = (LPDIRECT3DTEXTURE9)TileCatalog->Get(i);
 		if (pTex) tile_size += TextureSizeInBytes(pTex);
 	}
-				
-	Label("Tiles Loaded.........: %u (%u MB)", tile_count, tile_size>>20); 
-	Label("Meshes Loaded........: %u", mesh_count); 
 
+	for (DWORD i = 0; i<32; i++) {
+		tile_render_countA += D3D9Stats.Old.Tiles[i];
+		tile_render_countB += D3D9Stats.Surf.Tiles[i];
+	}
+		
+	LabelPos += 22;
+	Label("Tile Textures Loaded.: %u (%u MB)", tile_count, tile_size>>20); 
+	Label("Tiles Rendered (Old).: %u (%u kVtx)", tile_render_countA, D3D9Stats.Old.Verts>>10);
+	Label("Tiles Rendered (New).: %u (%u kVtx)", tile_render_countB, D3D9Stats.Surf.Verts>>10);
+	Label("Tiles Allocated (New): %u", D3D9Stats.TilesAllocated);
+	Label("Tile Vertex Cache....: %u (%u MB)", D3D9Stats.TilesCached, D3D9Stats.TilesCachedMB>>20);
+
+
+	
+
+	
 	DWORD tot_verts = 0;
 	DWORD tot_trans = 0;
 	DWORD tot_group = 0;
@@ -224,37 +196,18 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
+	LabelPos += 22;
+	Label("Meshes Loaded........: %u ", mesh_count);
 	Label("Vertices Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
 	Label("Groups Allocated.....: %u", tot_group);
 	Label("Group Tarnsforms.....: %u", tot_trans); 
-
-
+	Label("Mesh vertices render.: %u", D3D9Stats.Mesh.Vertices);
+	Label("Mesh groups rendered.: %u", D3D9Stats.Mesh.MeshGrps);
+	Label("Meshes rendered......: %u", D3D9Stats.Mesh.Meshes);
 	LabelPos += 22;
-
-	//DWORD tiles_rendered = 0;
-	//for (int i=8;i<=14;i++) tiles_rendered += stats.Tiles[i];
-
-	Label("Vertices processed...: %u", stats.Vertices); 
-	Label("Mesh groups rendered.: %u", stats.MeshGrps);
-	Label("Meshes rendered......: %u", stats.Meshes);
-	Label("Direct3D draw calls..: %u", stats.Draw); 
-	Label("oapiBlt calls........: %u", stats.Blits); 
-	Label("Color keyed blits....: %u", stats.ColorKey); 
-	//Label("Tiles rendered.......: %u", tiles_rendered);
-	Label("Max Texture Repeat...: %u", stats.MaxRepeat); 
-	Label("Scene rendering......: %.0fus (%.0fus peak)", scene_avg, scene_pek); 
+	Label("Scene rendering time.: %.0fus (%.0fus peak)", scene_avg, scene_pek); 
 	Label("MFD, HUD, Panels.....: %.0fus (%.0fus peak)", frame_avg, frame_pek); 
 	
-	/*
-	Label("Level 8 Tiles........: %u", stats.Tiles[8]);
-	Label("Level 9 Tiles........: %u", stats.Tiles[9]);
-	Label("Level 10 Tiles.......: %u", stats.Tiles[10]);
-	Label("Level 11 Tiles.......: %u", stats.Tiles[11]);
-	Label("Level 12 Tiles.......: %u", stats.Tiles[12]);
-	Label("Level 13 Tiles.......: %u", stats.Tiles[13]);
-	Label("Level 14 Tiles.......: %u", stats.Tiles[14]);
-	*/
-
 	pItemsSkp->SetPen(NULL);
 	pItemsSkp->SetBrush(NULL);
 
@@ -263,15 +216,6 @@ void D3D9Client::RenderControlPanel()
 	oapiReleasePen(pen);
 	oapiReleasePen(nullp);
 	oapiReleaseBrush(brush);
-
-	/*
-	if (pItemsSkp==NULL) { LogErr("Failed to create a sketchpad for control panel"); return; }
-
-
-	Title("Color of the Sun");
-	Item(0x1001,"InScatter","%.5f",1.2);
-	Item(0x1002,"OutScatter","%.5f",1.3);
-	*/
 
 	oapiReleaseSketchpad(pItemsSkp);
 }

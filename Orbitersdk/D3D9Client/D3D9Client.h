@@ -70,19 +70,36 @@ typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
 
 
-struct D3D9Stat {
-	DWORD Vertices;		// Number of vertices rendered
-	DWORD Draw;
-	DWORD Blits;
-	DWORD ColorKey;
-	DWORD MeshGrps;
-	DWORD MaxRepeat;
-	DWORD Meshes;
-	DWORD Tiles[18];
-	double Frame, FramePeak;
-	double Scene, ScenePeak;
-	double count;
+struct _D3D9Stats {
+
+	struct {
+		DWORD Vertices;		// Number of vertices rendered
+		DWORD MeshGrps;
+		DWORD Meshes;
+	} Mesh;
+
+	struct {
+		DWORD Verts;
+		WORD  Tiles[32];
+	} Old;
+
+	struct {
+		DWORD Verts;
+		WORD  Tiles[32];
+	} Surf;
+
+	struct {
+		double Frame, FramePeak;
+		double Scene, ScenePeak;
+		double count;
+	} Timer;
+
+	DWORD TilesCached;
+	DWORD TilesCachedMB;
+	DWORD TilesAllocated;
 };
+
+extern _D3D9Stats D3D9Stats;
 
 namespace oapi {
 
@@ -964,7 +981,6 @@ public:
 	HWND 				GetWindow();
 	bool 				HasVertexTextureSupport() { return bVertexTex; }
 	D3DCAPS9 *			GetHardwareCaps() { return &caps; }
-	D3D9Stat *			GetStats() { return &stats; }
 	FileParser *		GetFileParser() { return parser; }
 	LPDIRECT3DSURFACE9  GetEnvDepthStencil() { return pEnvDS; }
 	LPDIRECT3DSURFACE9  GetShadowMapDepthStencil() { return pShmDS; }
@@ -1199,7 +1215,6 @@ private:
 	LPDIRECT3DTEXTURE9		pShmRT;
 	CD3DFramework9*		    pFramework;
 	D3DCAPS9				caps;
-	D3D9Stat				stats;
 	FileParser *		    parser;
 	char					ScenarioName[320];
 
@@ -1248,8 +1263,6 @@ private:
 	char pLoadItem[128];
 	
 	// Control Panel
-	
-	void Item(WORD id, const char *label, const char *format, ...);
 	void RenderControlPanel();
 	bool ControlPanelMsg(WPARAM wParam);
 
