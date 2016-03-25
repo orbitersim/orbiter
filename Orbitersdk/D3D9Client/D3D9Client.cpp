@@ -10,6 +10,7 @@
 #define STRICT 1
 #define ORBITER_MODULE
 
+#include <set> // ...for Brush-, Pen- and Font-accounting
 #include "orbitersdk.h"
 #include "D3D9Client.h"
 #include "D3D9Config.h"
@@ -60,6 +61,11 @@ bool bSkepchpadOpen = false;
 // Module local constellation marker storage
 static GraphicsClient::LABELSPEC *g_cm_list = NULL;
 static DWORD g_cm_list_count = 0;
+
+// Debuging Brush-, Pen- and Font-accounting
+std::set<Font *> g_fonts;
+std::set<Pen *> g_pens;
+std::set<Brush *> g_brushes;
 
 extern "C" {
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
@@ -134,9 +140,8 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	// _CrtSetBreakAlloc(8351);
 #endif
-
-	//_CrtSetBreakAlloc(17549);
 
 	D3D9InitLog("Modules/D3D9Client/D3D9ClientLog.html");
 
@@ -221,7 +226,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 {
 	vtab = NULL;
-	strcpy(ScenarioName, "(none selected)");
+	strcpy_s(ScenarioName, "(none selected)");
 }
 
 // ==============================================================
@@ -240,6 +245,35 @@ D3D9Client::~D3D9Client()
 			delete[] g_cm_list[n].label[1];
 		}
 		delete[] g_cm_list;
+	}
+
+	//
+	// Orbiter seems not to release all resources :(
+	//
+
+	// --- Fonts
+	if (g_fonts.size()) {
+		LogErr("%u un-released fonts!", g_fonts.size());
+		for (auto it = g_fonts.begin(); it != g_fonts.end(); ) {
+			clbkReleaseFont(*it++);
+		}
+		g_fonts.clear();
+	}
+	// --- Brushes
+	if (g_brushes.size()) {
+		LogErr("%u un-released brushes!", g_brushes.size());
+		for (auto it = g_brushes.begin(); it != g_brushes.end(); ) {
+			clbkReleaseBrush(*it++);
+		}
+		g_brushes.clear();
+	}
+	// --- Pens
+	if (g_pens.size()) {
+		LogErr("%u un-released pens!", g_pens.size());
+		for (auto it = g_pens.begin(); it != g_pens.end(); ) {
+			clbkReleasePen(*it++);
+		}
+		g_pens.clear();
 	}
 }
 
@@ -2154,7 +2188,7 @@ void D3D9Client::SplashScreen()
 	fnt.lfClipPrecision	 = CLIP_DEFAULT_PRECIS;
 	fnt.lfQuality		 = ANTIALIASED_QUALITY;
 	fnt.lfPitchAndFamily = DEFAULT_PITCH;
-	strcpy(fnt.lfFaceName, "Courier New");
+	strcpy_s(fnt.lfFaceName, "Courier New");
 
 	HFONT hF = CreateFontIndirect(&fnt);
 
@@ -2281,36 +2315,39 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
 {
 	_TRACER;
-	return new D3D9PadFont(height, prop, face, style, orientation);
+	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
 }
 
 void D3D9Client::clbkReleaseFont(Font *font) const
 {
 	_TRACER;
+	g_fonts.erase(font);
 	delete ((D3D9PadFont*)font);
 }
 
 Pen *D3D9Client::clbkCreatePen(int style, int width, DWORD col) const
 {
 	_TRACER;
-	return new D3D9PadPen(style, width, col);
+	return *g_pens.insert(new D3D9PadPen(style, width, col)).first;
 }
 
 void D3D9Client::clbkReleasePen(Pen *pen) const
 {
 	_TRACER;
+	g_pens.erase(pen);
 	delete ((D3D9PadPen*)pen);
 }
 
 Brush *D3D9Client::clbkCreateBrush(DWORD col) const
 {
 	_TRACER;
-	return new D3D9PadBrush(col);
+	return *g_brushes.insert(new D3D9PadBrush(col)).first;
 }
 
 void D3D9Client::clbkReleaseBrush(Brush *brush) const
 {
 	_TRACER;
+	g_brushes.erase(brush);
 	delete ((D3D9PadBrush*)brush);
 }
 
