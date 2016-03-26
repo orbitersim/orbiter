@@ -39,9 +39,6 @@ struct FontCache {
 
 
 int nfcache = 0;
-int pens_allocated = 0;
-int brushes_allocated = 0;
-int fonts_allocated = 0;
 
 oapi::Font * deffont = 0;
 oapi::Pen * defpen = 0;
@@ -137,13 +134,6 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const cha
 //
 void D3D9Pad::GlobalExit()
 {
-
-	if (pens_allocated!=0)    LogErr("SketchPad Pens still in use %d",pens_allocated);
-	if (brushes_allocated!=0) LogErr("SketchPad Brushes still in use %d",brushes_allocated);
-	if (fonts_allocated!=0)   LogErr("SketchPad Fonts still in use %d",fonts_allocated);
-
-	if (pens_allocated==0 && brushes_allocated==0 && fonts_allocated==0) LogAlw("Sketchap Exiting... All resources released");
-
 	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",nfcache);
 	for (int i=0;i<nfcache;i++) if (fcache[i].pFont) delete fcache[i].pFont;
 	
@@ -1024,8 +1014,6 @@ LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
 
 D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, int orientation) : Font(height, prop, face, style, orientation)
 {
-	fonts_allocated++;
-
 	char *def_fixedface = "Courier New";
 	char *def_sansface = "Arial";
 	char *def_serifface = "Times New Roman";
@@ -1106,7 +1094,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 D3D9PadFont::~D3D9PadFont ()
 {
 	if (pFont) pFont->SetRotation(0.0f);
-	fonts_allocated--;
 	if (hFont) DeleteObject(hFont);
 }
 
@@ -1134,8 +1121,6 @@ void D3D9PadFont::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 
 D3D9PadPen::D3D9PadPen (int s, int w, DWORD col): oapi::Pen (style, width, col)
 {
-	pens_allocated++;
-
 	switch (s) {
 		case 0:  style = PS_NULL;  break;
 		case 2:  style = PS_DOT;   break;
@@ -1153,7 +1138,6 @@ D3D9PadPen::D3D9PadPen (int s, int w, DWORD col): oapi::Pen (style, width, col)
 //
 D3D9PadPen::~D3D9PadPen ()
 {
-	pens_allocated--;
 	DeleteObject(hPen);
 }
 
@@ -1172,7 +1156,6 @@ void D3D9PadPen::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 
 D3D9PadBrush::D3D9PadBrush (DWORD col): oapi::Brush (col)
 {
-	brushes_allocated++;
 	hBrush = CreateSolidBrush(COLORREF(col&0xFFFFFF));
 	if ((col&0xFF000000)==0) col|=0xFF000000;
 	fcolor = D3DXCOLOR(col);
@@ -1183,7 +1166,6 @@ D3D9PadBrush::D3D9PadBrush (DWORD col): oapi::Brush (col)
 //
 D3D9PadBrush::~D3D9PadBrush ()
 {
-	brushes_allocated--;
 	DeleteObject(hBrush);
 }
 

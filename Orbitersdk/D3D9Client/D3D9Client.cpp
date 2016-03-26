@@ -204,13 +204,6 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 		g_client = 0;
 	}
 
-// Why is this overriddden by martin ?
-//+	//if (g_client) {
-//+	//	oapiUnregisterGraphicsClient (g_client);
-//+	//	delete g_client;
-//+	//	g_client = 0;
-//+	//}
-
 #ifdef _NVAPI_H
 	if (bNVAPI) if (NvAPI_Unload()==NVAPI_OK) LogAlw("[nVidia API Unloaded]");
 #endif
@@ -233,8 +226,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
 
 D3D9Client::~D3D9Client()
 {
-//+	// Unregister graphics client
-//+	oapiUnregisterGraphicsClient (this);
+
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
 
