@@ -705,8 +705,6 @@ void D3D9Client::clbkUpdate(bool running)
 
 // ==============================================================
 
-double frame_time = 0.0;
-
 void D3D9Client::clbkRenderScene()
 {
 	_TRACER;
@@ -773,8 +771,6 @@ void D3D9Client::clbkRenderScene()
 		EmergencyShutdown();
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
-
-	frame_time = D3D9GetTime();
 }
 
 // ==============================================================
@@ -794,10 +790,7 @@ bool D3D9Client::clbkDisplayFrame()
 	_TRACER;
 	static int iRefrState = 0;
 	double time = D3D9GetTime();
-	frame_time = time - frame_time;
-	D3D9Stats.Timer.Frame += frame_time;
-	if (frame_time>D3D9Stats.Timer.FramePeak) D3D9Stats.Timer.FramePeak = frame_time;
-
+	
 	if (!bRunning) {
 		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
 		pd3dDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);

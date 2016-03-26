@@ -89,7 +89,6 @@ struct _D3D9Stats {
 	} Surf;
 
 	struct {
-		double Frame, FramePeak;
 		double Scene, ScenePeak;
 		double count;
 	} Timer;

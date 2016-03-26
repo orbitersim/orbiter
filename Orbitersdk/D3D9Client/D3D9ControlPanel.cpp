@@ -57,9 +57,7 @@ void D3D9Client::RenderControlPanel()
 	static char *SkpU[]={"Auto","GDI"};
 
 	static double scene_avg = 0.0;
-	static double frame_avg = 0.0;
 	static double scene_pek = 0.0;
-	static double frame_pek = 0.0;
 	static double sim_time  = 0.0;
 
 	LPDIRECT3DDEVICE9 dev = pd3dDevice;
@@ -137,10 +135,8 @@ void D3D9Client::RenderControlPanel()
 	if (oapiGetSimTime()>(sim_time+1.2)) {
 		sim_time  = oapiGetSimTime();
 		scene_avg = D3D9Stats.Timer.Scene / D3D9Stats.Timer.count;
-		frame_avg = D3D9Stats.Timer.Frame / D3D9Stats.Timer.count;
 		scene_pek = D3D9Stats.Timer.ScenePeak;
-		frame_pek = D3D9Stats.Timer.FramePeak;
-		D3D9Stats.Timer.Frame = D3D9Stats.Timer.Scene = D3D9Stats.Timer.ScenePeak = D3D9Stats.Timer.FramePeak = D3D9Stats.Timer.count = 0.0;
+		D3D9Stats.Timer.Scene = D3D9Stats.Timer.ScenePeak = D3D9Stats.Timer.count = 0.0;
 	}
 	else {
 		if (oapiGetSimTime()<sim_time) sim_time  = oapiGetSimTime();
@@ -206,8 +202,7 @@ void D3D9Client::RenderControlPanel()
 	Label("Meshes rendered......: %u", D3D9Stats.Mesh.Meshes);
 	LabelPos += 22;
 	Label("Scene rendering time.: %.0fus (%.0fus peak)", scene_avg, scene_pek); 
-	Label("MFD, HUD, Panels.....: %.0fus (%.0fus peak)", frame_avg, frame_pek); 
-	
+
 	pItemsSkp->SetPen(NULL);
 	pItemsSkp->SetBrush(NULL);
 

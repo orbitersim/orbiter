@@ -83,7 +83,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		bScatter = LoadAtmoConfig(false);
 		if (bScatter) LoadAtmoConfig(true);
 		surfmgr = NULL;
-		int patchlvl = 1 << (5 + Config->MeshRes);
+		int patchlvl = 1 << (4 + Config->MeshRes);
 		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres, patchlvl);
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);

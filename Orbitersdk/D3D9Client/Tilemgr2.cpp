@@ -287,12 +287,11 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 			vtx[n].tu0 = D3DVAL((c1*j)/grdlng+c2); // overlap to avoid seams
 			vtx[n].tv0 = D3DVAL(grdlat-i)/D3DVAL(grdlat);
-			vtx[n].tu1 = vtx[n].tu0 * TEX2_MULTIPLIER;
-			vtx[n].tv1 = vtx[n].tv0 * TEX2_MULTIPLIER;
-
+			//vtx[n].tu1 = vtx[n].tu0 * TEX2_MULTIPLIER;
+			//vtx[n].tv1 = vtx[n].tv0 * TEX2_MULTIPLIER;
 			// map texture coordinates to subrange
-			vtx[n].tu0 = vtx[n].tu0*turange + range->tumin;
-			vtx[n].tv0 = vtx[n].tv0*tvrange + range->tvmin;
+			//vtx[n].tu0 = vtx[n].tu0*turange + range->tumin;
+			//vtx[n].tv0 = vtx[n].tv0*tvrange + range->tvmin;
 			n++;
 		}
 	}
@@ -471,8 +470,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 			vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
 			vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
 			FLOAT tu = a*(FLOAT)x + du;
-			vtx->tu0 = vtx->tu1 = tu;
-			vtx->tv0 = vtx->tv1 = tv;
+			vtx->tu0 = tu; // vtx->tu1 = tu;
+			vtx->tv0 = tv; // vtx->tv1 = tv;
 			vtx++;
 			nvtx++;
         }
@@ -503,8 +502,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
 	vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
-	vtx->tu0 = vtx->tu1 = 0.5f;
-	vtx->tv0 = vtx->tv1 = 0.0f;
+	vtx->tu0 = 0.5f; // vtx->tu1 = 0.5f;
+	vtx->tv0 = 0.0f; // vtx->tv1 = 0.0f;
 	vtx++;
     nvtx++;
 	WORD wSouthVtx = nvtx;
@@ -521,8 +520,8 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 	vtx->x = D3DVAL(pos.x);  vtx->nx = D3DVAL(nml.x);
 	vtx->y = D3DVAL(pos.y);  vtx->ny = D3DVAL(nml.y);
 	vtx->z = D3DVAL(pos.z);  vtx->nz = D3DVAL(nml.z);
-	vtx->tu0 = vtx->tu1 = 0.5f;
-	vtx->tv0 = vtx->tv1 = 1.0f;
+	vtx->tu0 = 0.5f; // vtx->tu1 = 0.5f;
+	vtx->tv0 = 1.0f; // vtx->tv1 = 1.0f;
 	vtx++;
     nvtx++;
 

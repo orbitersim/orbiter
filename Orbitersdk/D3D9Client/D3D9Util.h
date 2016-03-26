@@ -127,7 +127,7 @@ const D3DVERTEXELEMENT9 PatchVertexDecl[] = {
 	{0, 0,  D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
 	{0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 	{0, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-	{0, 32, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
+	//{0, 32, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 	D3DDECL_END()
 };
 
@@ -415,52 +415,26 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a);
 // ------------------------------------------------------------------------------------
 // Vertex formats
 // ------------------------------------------------------------------------------------
-
-struct VECTOR2D     { float x, y; };
-
-struct VERTEX_XYZ   { float x, y, z; };                   // transformed vertex
-struct VERTEX_XYZH  { float x, y, z, h; };                // untransformed vertex
-struct VERTEX_XYZC  { float x, y, z; D3DCOLOR col; };     // untransformed vertex with single colour component
-struct VERTEX_XYZHC { float x, y, z, h; D3DCOLOR col; };  // transformed vertex with single colour component
-
-
+struct VERTEX_XYZ { float x, y, z; };                   // transformed vertex
+struct VERTEX_XYZC { float x, y, z; D3DCOLOR col; };     // untransformed vertex with single colour component
 
 // untransformed lit vertex with texture coordinates
 struct VERTEX_XYZ_TEX {
 	float x, y, z;
 	float tu, tv;
 };
-#define FVF_XYZ_TEX ( D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) )
 
 // untransformed unlit vertex with two sets of texture coordinates
 struct VERTEX_2TEX  {
 	float x, y, z, nx, ny, nz;
-	float tu0, tv0, tu1, tv1;
-	inline VERTEX_2TEX () : x(0.0f), y(0.0f), z(0.0f), nx(0.0f), ny(0.0f), nz(0.0f),
-	                        tu0(0.0f), tv0(0.0f), tu1(0.0f), tv1(0.0f) {}
-	inline VERTEX_2TEX (D3DVECTOR p, D3DVECTOR n, float u0, float v0, float u1, float v1)
-	                 : x(p.x), y(p.y), z(p.z), nx(n.x), ny(n.y), nz(n.z),
-	                   tu0(u0), tv0(v0), tu1(u1), tv1(v1) {}
+	float tu0, tv0; // , tu1, tv1;
+	inline VERTEX_2TEX() : x(0.0f), y(0.0f), z(0.0f), nx(0.0f), ny(0.0f), nz(0.0f),
+		tu0(0.0f), tv0(0.0f) {} //, tu1(0.0f), tv1(0.0f) {}
+	inline VERTEX_2TEX(D3DVECTOR p, D3DVECTOR n, float u0, float v0, float u1, float v1)
+		: x(p.x), y(p.y), z(p.z), nx(n.x), ny(n.y), nz(n.z),
+		tu0(u0), tv0(v0) {} //, tu1(u1), tv1(v1) {}
 };
-#define FVF_2TEX ( D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX2 | D3DFVF_TEXCOORDSIZE2(0) | D3DFVF_TEXCOORDSIZE2(1) )
 
-// transformed lit vertex with 1 colour definition and one set of texture coordinates
-struct VERTEX_TL1TEX {
-	float x, y, z, rhw;
-	D3DCOLOR col;
-	float tu, tv;
-};
-#define FVF_TL1TEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) )
-
-// transformed lit vertex with two sets of texture coordinates
-struct VERTEX_TL2TEX {
-	float x, y, z, rhw;
-	D3DCOLOR diff, spec;
-	float tu0, tv0, tu1, tv1;
-};
-#define FVF_TL2TEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2 | D3DFVF_TEXCOORDSIZE2(0) | D3DFVF_TEXCOORDSIZE2(1) )
-
-// Return pointer to static vertex buffer of given type of at least size n
 
 // -----------------------------------------------------------------------------------
 // Resource handling

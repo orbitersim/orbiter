@@ -125,7 +125,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))			DebugFontSize = i;	
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	if (oapiReadItem_float (hFile, "LODBias",d))					LODBias = max (-2.0, min (2.0, d));
-	if (oapiReadItem_int   (hFile, "MeshRes",i))					MeshRes = max (0, min (2, i));
+	if (oapiReadItem_int   (hFile, "MeshRes",i))					MeshRes = max (0, min (3, i));
 	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (3, i));
 	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
 	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));

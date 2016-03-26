@@ -301,8 +301,8 @@ void CreateSpherePatch (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, int nlng, int nlat
 
 			Vtx[n].tu0 = D3DVAL(nseg ? (c1*j)/nseg+c2 : 0.5f); // overlap to avoid seams
 			Vtx[n].tv0 = D3DVAL((c1*(res-i))/res+c2);
-			Vtx[n].tu1 = (nseg ? Vtx[n].tu0 * TEX2_MULTIPLIER : 0.5f);
-			Vtx[n].tv1 = Vtx[n].tv0 * TEX2_MULTIPLIER;
+			//Vtx[n].tu1 = (nseg ? Vtx[n].tu0 * TEX2_MULTIPLIER : 0.5f);
+			//Vtx[n].tv1 = Vtx[n].tv0 * TEX2_MULTIPLIER;
 			if (!outside) {
 				Vtx[n].nx = -Vtx[n].nx;
 				Vtx[n].ny = -Vtx[n].ny;

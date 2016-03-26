@@ -69,7 +69,7 @@ FONT 8, "Ms Shell Dlg"
     PUSHBUTTON      ">", IDC_DBG_MSHDN, 114, 87, 9, 12, BS_CENTER, WS_EX_LEFT
     AUTOCHECKBOX    "Selected visual only", IDC_DBG_VISO, 84, 200, 79, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_DBG_SPEED, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 42, 69, 108, 13, WS_EX_LEFT
-    CONTROL         "", IDC_DBG_RESBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 205, 55, 155, 15, WS_EX_LEFT
+    CONTROL         "", IDC_DBG_RESBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_BOTH, 205, 55, 155, 20, WS_EX_LEFT
     LTEXT           "Speed", IDC_STATIC, 18, 69, 22, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Static", IDC_DBG_SPEEDDSP, 150, 69, 21, 10, SS_LEFT, WS_EX_LEFT
     AUTOCHECKBOX    "Add ambient light", IDC_DBG_AMBIENT, 18, 147, 70, 8, 0, WS_EX_LEFT
@@ -256,12 +256,13 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     LTEXT           "Custom Cameras", IDC_STATIC, 380, 109, 54, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Update Rate", IDC_STATIC, 380, 125, 42, 8, SS_LEFT, WS_EX_LEFT
     GROUPBOX        "Terrain Resolution", 0, 190, 125, 170, 100, 0, WS_EX_LEFT
-    LTEXT           "Performance", IDC_STATIC, 245, 139, 41, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "32", IDC_STATIC, 260, 170, 9, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "64", IDC_STATIC, 300, 170, 9, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "128", IDC_STATIC, 335, 171, 13, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "Quality", IDC_STATIC, 330, 138, 22, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "LOD Bias", IDC_STATIC, 200, 153, 40, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Lower", IDC_STATIC, 255, 138, 20, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "32", IDC_STATIC, 285, 170, 9, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "16", IDC_STATIC, 260, 170, 9, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "64", IDC_STATIC, 313, 170, 9, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "128", IDC_STATIC, 335, 170, 13, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Higher", IDC_STATIC, 330, 138, 22, 8, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Texture Bias", IDC_STATIC, 200, 153, 40, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Mesh resolution", IDC_STATIC, 200, 185, 50, 8, SS_LEFT, WS_EX_LEFT
 }
 

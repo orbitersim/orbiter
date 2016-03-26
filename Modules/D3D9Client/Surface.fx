@@ -21,7 +21,7 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
     float3 posL     : POSITION0;
     float3 normalL  : NORMAL0;
     float2 tex0     : TEXCOORD0;
-    float2 tex1     : TEXCOORD1;
+    //float2 tex1     : TEXCOORD1;
 };
 
 
@@ -502,8 +502,8 @@ TileVS SurfaceTechVS(TILEVERTEX vrt)
 	outVS.camW   = -vPosW;
 	outVS.nrmW   = vNrmW;
 
-	outVS.texUV.xy  = vrt.tex1.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
-	outVS.texUV.zw  = vrt.tex1.xy;						// Note: vrt.tex1 range [0 to 1] for all tiles
+	outVS.texUV.xy  = vrt.tex0.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
+	outVS.texUV.zw  = vrt.tex0.xy;						// Note: vrt.tex1 range [0 to 1] for all tiles
 
 	outVS.aux[AUX_NIGHT] = -fNgt;
 	outVS.aux[AUX_DIST]  =  fRay;
