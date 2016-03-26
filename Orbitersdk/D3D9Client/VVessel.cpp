@@ -64,6 +64,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	//
 	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 	for (UINT i=0;i<nanim;i++) animstate[i] = anim[i].defstate;
+	UpdateAnimations();
 }
 
 
@@ -530,7 +531,7 @@ void vVessel::DelAnimation (UINT idx)
 
 // ============================================================================================
 //
-void vVessel::UpdateAnimations (UINT mshidx)
+void vVessel::UpdateAnimations (int mshidx)
 {
 	double newstate;
 
@@ -541,17 +542,28 @@ void vVessel::UpdateAnimations (UINT mshidx)
 		LogErr("vessel->GetAnimPtr(&anim) returns unexpected value in UpdateAnimations %u vs %u", x, nanim);
 		GrowAnimstateBuffer(x);
 	}
+	
+	if (mshidx>=0) {
 
-	// Initialize new animations -------------------------------------
-	//
-	for (UINT k=0;k<nanim;k++) if (animstate[k]<-0.5) {
+		// Reset animations when a mesh is added to a vessel --------------------
+		//
+		for (UINT i = 0; i < nanim; ++i) {
+			for (UINT k = 0; k < anim[i].ncomp; ++k) {
+				if (anim[i].comp[k]->trans->mesh == mshidx) animstate[i] = anim[i].defstate;
+			}
+		}
+	}
+	else {
 
-		animstate[k] = anim[k].defstate;
-
-		// Call ResetTransformations for all related meshes
-		for (UINT i = 0; i < anim[k].ncomp; ++i) {
-			UINT m = anim[k].comp[i]->trans->mesh;
-			if (m<nmesh) if (meshlist[m].mesh) meshlist[m].mesh->ResetTransformations();
+		// Initialize new dynamic animations -------------------------------------
+		//
+		for (UINT k=0;k<nanim;k++) if (animstate[k]<-0.5) {
+			animstate[k] = anim[k].defstate;
+			// Call ResetTransformations for all related meshes
+			for (UINT i = 0; i < anim[k].ncomp; ++i) {
+				UINT m = anim[k].comp[i]->trans->mesh;
+				if (m<nmesh) if (meshlist[m].mesh) meshlist[m].mesh->ResetTransformations();
+			}
 		}
 	}
 

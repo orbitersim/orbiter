@@ -131,12 +131,13 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			tdist = sqrt(a*a + h*h);
 		}
 
-		if (DebugControls::IsEquEnabled()) bias -=  3.0 * max(0,adist) / prm.viewap;
+		//if (DebugControls::IsEquEnabled()) 
+		bias -=  3.0 * sqrt(max(0,adist) / prm.viewap);
 		
 		double apr = tdist * scene->GetTanAp() * resolutionScale;
 
 		int maxlvl = prm.maxlvl;
-		if (DebugControls::IsEquEnabled()) maxlvl += 2;
+		//if (DebugControls::IsEquEnabled()) maxlvl += 2;
 
 		int tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
 

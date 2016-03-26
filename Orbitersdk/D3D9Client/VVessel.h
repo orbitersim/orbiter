@@ -159,7 +159,7 @@ protected:
 	 * \param mshidx mesh index
 	 * \note If mshidx == (UINT)-1 (default), all meshes are updated.
 	 */
-	void UpdateAnimations (UINT mshidx = (UINT)-1);
+	void UpdateAnimations (int mshidx = -1);
 
 	/**
 	 * \brief Modify local lighting due to planet shadow or

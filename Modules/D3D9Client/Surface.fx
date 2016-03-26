@@ -180,7 +180,7 @@ sampler NoiseTexS = sampler_state
 sampler OceaTexS = sampler_state
 {
 	Texture = <tOcean>;
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	AddressU = WRAP;
@@ -580,12 +580,11 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 	float3 nrmW = frg.nrmW;					// Per-pixel surface normal vector
 	float3 nvrW = frg.nrmW;					// Per-pixel surface normal vector
 	float3 camW = normalize(frg.camW);		// Unit viewing ray
-	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric pixel position
+	float3 vVrt = vCameraPos - frg.camW;		// Geo-centric pixel position
 	float3 vPlN = normalize(vVrt);			// Planet mean normal	
 	float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
 	
 	
-
 	// Specular Water reflection
 	//
 	if (bSpecular) {
@@ -594,8 +593,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 
 		#if defined(_SURFACERIPPLES)
-			float Fct = min(2.0f, 10000.0f / fCameraAlt);
-			float3 cNrm = (tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f) * Fct;
+			float3 cNrm = (tex2D(OceaTexS, frg.texUV.zw).xyz - 0.5f) * 2.0f;
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796); 
 			// Compute world space normal 
 			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
@@ -608,11 +606,10 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 		// Compute Fresnel term
 		float f = 1.0-saturate(dot(camW, nrmW));
-		float f4 = f*f*f*f;
-
-		float3 cSky = float3(1.2, 1.4, 3.5) * 0.7;
+		float f2 = f*f;
+		float3 cSky = float3(0.84, 1.0, 2.45);
 		// Apply fresnel reflection
-		cTex.rgb = lerp(cTex.rgb, cSky, m * f4);
+		cTex.rgb = lerp(cTex.rgb, cSky, m * f2*f2);
 	}
 
 	else {
