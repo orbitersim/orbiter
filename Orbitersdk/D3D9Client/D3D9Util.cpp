@@ -236,7 +236,8 @@ void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
 	else           al = 0.173f;
 	
 	D3DXVECTOR3 lcol(1,1,1);
-	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
+	//D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
+	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(1.15f, 1.65f, 2.35f) * disp;
 
 	if (atm) { 
 		lcol = (r0 + (_one-r0) * saturate((h/al))) * saturate((h+rs)/(2.0f*rs));

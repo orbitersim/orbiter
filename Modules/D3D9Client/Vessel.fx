@@ -123,7 +123,7 @@ float4 VesselTechPS(VesselVS frg) : COLOR
     
     if (d==0) s = 0;	
     																					
-    float3 diff  = gMtrl.diffuse.rgb * (frg.diffuse.rgb + d * gSun.diffuse.rgb); // Compute total diffuse light
+    float3 diff  = gMtrl.diffuse.rgb * (frg.diffuse.rgb + d * saturate(gSun.diffuse.rgb)); // Compute total diffuse light
 	       diff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
 
 	float3 cTot  = cSpec.rgb * (frg.spec.rgb + s * gSun.specular.rgb);	// Compute total specular light
@@ -302,7 +302,7 @@ float4 VesselTechNMPS(VesselNMVS frg) : COLOR
     				
 	float local = max(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f);   
 
-    float3 diff = gMtrl.diffuse.rgb * (frg.diff.rgb * (local*local) + d * gSun.diffuse.rgb);
+    float3 diff = gMtrl.diffuse.rgb * (frg.diff.rgb * (local*local) + d * saturate(gSun.diffuse.rgb));
 		   diff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
     
     cTex.rgb *= saturate(diff);
