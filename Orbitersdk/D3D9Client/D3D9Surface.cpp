@@ -1245,7 +1245,7 @@ bool D3D9ClientSurface::Clear(DWORD c)
 		}
 	}
 
-	if (desc.Usage&D3DUSAGE_DYNAMIC) {
+	if (desc.Usage&D3DUSAGE_DYNAMIC || desc.Pool==D3DPOOL_SYSTEMMEM) {
 
 		HDC hDC = GetDCHard();
 
