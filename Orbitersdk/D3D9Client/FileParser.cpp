@@ -7,37 +7,78 @@
 //				 2012 - 2016 Peter Schneider (Kuddel)
 // ==============================================================
 
+#include <functional> 
+#include <algorithm>
+#include <sstream>
+#include <cctype>
+
 #include "FileParser.h"
 #include "D3D9Config.h"
 #include "D3D9Client.h"
 #include "Log.h"
 #include "OapiExtension.h"
 
-#include <vector>
-#include <iostream>
 
-#include <functional> 
-#include <algorithm>
+// ===========================================================================================
+// string helper
 
-using namespace std;
+// trim from start
+static inline std::string &ltrim (std::string &s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	return s;
+}
+
+// trim from end
+static inline std::string &rtrim (std::string &s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	return s;
+}
+
+// trim from both ends
+static inline std::string &trim (std::string &s) {
+	return ltrim(rtrim(s));
+}
+
+// lowercase complete string
+static inline void toLower (std::string &s) {
+	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+}
+
+// case insensitive compare
+static inline bool startsWith (const std::string &haystack, const std::string &needle) {
+	std::string _haystack(haystack); toLower(_haystack);
+	std::string _needle(needle); toLower(_needle);
+	return _haystack.compare(0, _needle.length(), _needle) == 0;
+}
+
+// parse assignments like "foo=bar", "foo = bar" or even "foo= bar ; with comment"
+static std::pair<std::string, std::string> &splitAssignment (const std::string &line, const char delim='=')
+{
+	static std::pair<std::string, std::string> ret;
+
+	//const char delim = '=';
+	const char comment = ';';
+	size_t delPos = line.find(delim),  // delimiter position
+	       cmtPos = line.find(comment);// comment pos...
+
+	// ...convert to 'comment part length' if comment found
+	cmtPos -= cmtPos != std::string::npos ? delPos + 1 : 0;
+
+	ret.first = trim(line.substr(0, delPos));
+	ret.second = trim(line.substr(delPos + 1, cmtPos));
+
+	return ret;
+}
 
 
 // ===========================================================================================
 //
-FileParser::FileParser(const char *scenario)
+FileParser::FileParser (const char *scenario) :
+	system(),
+	context(),
+	mjd(51981.0)
 {
 	_TRACE;
-	bContext = false;
-	eidx = 0;
-	mjd = 51981.0;
-	strcpy(context," ");
-	entry = new ObjEntry[4096];
-
-	for (int i=0;i<4096;i++) {
-		entry[i].hObj = NULL;
-		entry[i].file = NULL;
-		entry[i].Albedo = _V(1,1,1);
-	}
 
 	LogAlw("==== Scanning Configuration Files ====");
 
@@ -52,7 +93,7 @@ FileParser::FileParser(const char *scenario)
 				DWORD nb = oapiGetBaseCount(hPl);
 				for (DWORD b=0;b<nb;b++) {
 					OBJHANDLE hBs = oapiGetBaseByIndex(hPl, b);
-					if (!DoesExists(hBs)) {
+					if (!DoesExist(hBs)) {
 						if (ScanBases(hPl, "", hBs, false)==false) {
 							//char name[256];
 							//oapiGetObjectName(hBs, name, 256);
@@ -68,48 +109,65 @@ FileParser::FileParser(const char *scenario)
 
 // ===========================================================================================
 //
-FileParser::~FileParser()
+FileParser::~FileParser ()
 {
-	for (DWORD i=0;i<eidx;i++) if (entry[i].file) delete[] entry[i].file;
-	delete[] entry;
+	for (auto it = entries.begin(); it != entries.end(); ++it) {
+		delete[] it->second->file;
+		delete it->second;
+	}
+	entries.clear();
 }
 
 // ===========================================================================================
 //
-const char *FileParser::GetConfigFile(OBJHANDLE hObj)
+const char *FileParser::GetConfigFile (OBJHANDLE hObj)
 {
-	for (DWORD i=0;i<eidx;i++) if (entry[i].hObj==hObj) return entry[i].file;
+	ObjEntry *e = GetEntry(hObj);
+	return e ? e->file : NULL;
+}
+
+// ===========================================================================================
+//
+VECTOR3 FileParser::GetAlbedo (OBJHANDLE hObj)
+{
+	ObjEntry *e = GetEntry(hObj);
+	return e ? e->Albedo : _V(1,1,1);
+}
+
+// ===========================================================================================
+//
+bool FileParser::DoesExist (OBJHANDLE hObj) {
+	return GetEntry(hObj) != NULL;
+}
+
+// ===========================================================================================
+//
+FileParser::ObjEntry *FileParser::GetEntry (OBJHANDLE hObj, bool create/* = false*/)
+{
+	auto it = entries.find(hObj);
+	if (it != entries.end()) {
+		return it->second;
+	}
+	if (create) {
+		return entries[hObj] = new ObjEntry();
+	}
 	return NULL;
 }
 
 // ===========================================================================================
 //
-VECTOR3 FileParser::GetAlbedo(OBJHANDLE hObj)
-{
-	for (DWORD i=0;i<eidx;i++) if (entry[i].hObj==hObj) return entry[i].Albedo;
-	return _V(1,1,1);
-}
-
-bool FileParser::DoesExists(OBJHANDLE hObj)
-{
-	for (DWORD i=0;i<eidx;i++) if (entry[i].hObj==hObj) return true;
-	return false;
-}
-
-// ===========================================================================================
-//
-bool FileParser::HasMissingObjects()
+bool FileParser::HasMissingObjects ()
 {
 	DWORD npl = oapiGetGbodyCount();
 	for (DWORD p=0;p<npl;p++) {
 		OBJHANDLE hPl = oapiGetGbodyByIndex(p);
 		if (hPl && oapiGetObjectType(hPl) == OBJTP_PLANET) {
-			if (!DoesExists(hPl)) return true;
+			if (!DoesExist(hPl)) return true;
 			else {
 				DWORD nbs = oapiGetBaseCount(hPl);
 				for (DWORD b=0;b<nbs;b++) {
 					OBJHANDLE hBs = oapiGetBaseByIndex(hPl, b);
-					if (!DoesExists(hBs)) return true;
+					if (!DoesExist(hBs)) return true;
 				}
 			}
 		}
@@ -119,7 +177,7 @@ bool FileParser::HasMissingObjects()
 
 // ===========================================================================================
 //
-void FileParser::LogContent()
+void FileParser::LogContent ()
 {
 	char buf[256];
 
@@ -128,7 +186,7 @@ void FileParser::LogContent()
 	for (DWORD p=0;p<npl;p++) {
 		OBJHANDLE hPl = oapiGetGbodyByIndex(p);
 		if (hPl && oapiGetObjectType(hPl) == OBJTP_PLANET) {
-			if (!DoesExists(hPl)) {
+			if (!DoesExist(hPl)) {
 				oapiGetObjectName(hPl, buf, 256);
 				LogErr("Planet 0x%X = '%s' not cataloged", hPl, buf);
 			}
@@ -136,7 +194,7 @@ void FileParser::LogContent()
 				DWORD nbs = oapiGetBaseCount(hPl);
 				for (DWORD b=0;b<nbs;b++) {
 					OBJHANDLE hBs = oapiGetBaseByIndex(hPl, b);
-					if (!DoesExists(hBs)) {
+					if (!DoesExist(hBs)) {
 						oapiGetObjectName(hBs, buf, 256);
 						LogErr("Base Object 0x%X = '%s' not cataloged", hBs, buf);
 					}
@@ -146,213 +204,225 @@ void FileParser::LogContent()
 	}
 }
 
-
-
 // ===========================================================================================
 //
-bool FileParser::ParseScenario(const char *name)
+bool FileParser::ParseScenario (const std::string &name)
 {
-	FILE* file = NULL;
-	char cbuf[256];
-
-	fopen_s(&file, name, "r");
-
-	if (file==NULL) {
-		LogErr("Could not open a scenario '%s'", name);
+	std::ifstream fs(name);
+	if (fs.fail()) {
+		LogErr("Could not open a scenario '%s'", name.c_str());
 		return false;
 	}
 
-	bool bSystem = false;
+	std::string line, // One file line
+	            dummy;
+	std::istringstream iss;
 
-	while(fgets2(cbuf, 256, file)>=0) {
-		if(!strncmp(cbuf, "BEGIN_ENVIRONMENT", 17)) {
-			while(fgets2(cbuf, 256, file)>=0) {
+	// skip until BEGIN_ENVIRONMENT
+	while (std::getline(fs, line) && !startsWith( trim(line), "BEGIN_ENVIRONMENT")) {}
 
-				if(!_strnicmp(cbuf, "System", 6))	{
-					strcpy_s(system, 64, cbuf+7);
-					bSystem = true;
-					LogAlw("Scenario System=%s",system);
-				}
+	while (std::getline(fs, line))
+	{
+		line = trim(line);
 
-				if(!_strnicmp(cbuf, "CONTEXT", 7))	{
-					strcpy_s(context, 64, cbuf+8);
-					bContext = true;
-					LogAlw("Scenario Context=%s",context);
-				}
+		// skip empty lines & comment lines
+		if (!line.length() || line[0] == ';') {
+			continue;
+		}
 
-				if(!_strnicmp(cbuf, "Date MJD", 8))	{
-					sscanf(cbuf, "Date MJD %lf", &mjd);
-					LogAlw("Scenario MJD=%.12f",mjd);
-				}
+		// re-set string stream
+		iss.str(line);
+		iss.clear();
 
-				if(!_strnicmp(cbuf, "Date JD", 7))	{
-					sscanf(cbuf, "Date JD %lf", &mjd);
-					mjd-=2400000.5;
-					LogAlw("Scenario MJD=%.12f",mjd);
-				}
-
-				if(!_strnicmp(cbuf, "Date JE", 7))	{
-					LogErr("UnImplemented parameter 'Date JE' in scenario '%s',",name);
-				}
-
-				if(!strncmp(cbuf, "END_ENVIRONMENT",15)) {
-					fclose(file);
-					if (bSystem) {
-						ParseSystem(system);
-						return true;
-					}
-					LogErr("Failed to found a system from scenario '%s'",name);
-					return false;
-				}
+		// SYSTEM <string>
+		if (startsWith(line, "System")) {
+			system = splitAssignment(line, ' ').second;
+			LogAlw("Scenario System=%s", system.c_str());
+		}
+		// CONTEXT <string>
+		else if (startsWith(line, "CONTEXT")) {
+			context = splitAssignment(line, ' ').second;
+			LogAlw("Scenario Context=%s", context.c_str());
+		}
+		// Date MJD <float>
+		else if (startsWith(line, "Date MJD")) {
+			iss >> dummy >> dummy >> mjd;
+			LogAlw("Scenario MJD=%.12f", mjd);
+		}
+		// Date JD <float>
+		else if (startsWith(line, "Date JD")) {
+			iss >> dummy >> dummy >> mjd;
+			if (!iss.fail()) { mjd -= 2400000.5; }
+			LogAlw("Scenario MJD=%.12f", mjd);
+		}
+		// Date JE <float>
+		else if (startsWith(line, "Date JE")) {
+			LogErr("UnImplemented parameter 'Date JE' in scenario '%s',", name.c_str());
+		}
+		else if (startsWith(line, "END_ENVIRONMENT")) {
+			if (!system.empty()) {
+				ParseSystem(system);
+				return true;
 			}
+			LogErr("Failed to find a system from scenario '%s'", name.c_str());
+			return false;
 		}
 	}
 
-	fclose(file);
-	LogErr("Failed to parse a scenario '%s'",name);			
+	LogErr("Failed to parse a scenario '%s'", name.c_str());
 	return false;
 }
 
 // ===========================================================================================
 //
-bool FileParser::ParseSystem(const char *_name)
+bool FileParser::ParseSystem (const std::string &_name)
 {
-	FILE* file = NULL;
-	char cbuf[256];
-	char name[256];
-	sprintf_s(name, 256,"%s%s.cfg", OapiExtension::GetConfigDir(), _name);
+	std::string name;
+	name = OapiExtension::GetConfigDir() + _name + ".cfg";
 
-	fopen_s(&file, name, "r");
+	std::ifstream fs(name);
 
-	if(file==NULL) {
-		LogErr("Could not open a solar system file '%s'", name);
+	if (fs.fail()) {
+		LogErr("Could not open a solar system file '%s'", name.c_str());
 		return false;
 	}
 
-	while (true) {
-		int rv = fgets2(cbuf, 256, file);
-		if (rv<0) break; if (rv!=2) continue;
-		if (!_strnicmp(cbuf, "Name", 4)) continue;
-		ParsePlanet(strchr(cbuf,'=')+1);
-	}
+	std::string line; // One file line
 
-	fclose(file);
+	while (std::getline(fs, line))
+	{
+		line = trim(line);
+		// skip empty lines, comments and the "Name = Sol" lines
+		if (!line.length() || line[0] == ';' || startsWith(line, "Name")) {
+			continue;
+		}
+
+		// <PlanetX> = <string>
+		auto ass = splitAssignment(line);
+
+		if (!ass.second.empty()) {
+			ParsePlanet(ass.second);
+		}
+	}
 	return true;
 }
 
 // ===========================================================================================
 //
-bool FileParser::ParsePlanet(const char *_name)
+bool FileParser::ParsePlanet (const std::string &_name)
 {
 	__TRY {
-
-		FILE* file = NULL;
-		char cbuf[256];
-		char name[256];
-		char path[256];
-		char def[256];
 		bool bHasPath = false;
 
-		sprintf_s(path, 256, "%s%s.cfg", OapiExtension::GetConfigDir(), _name);
-		sprintf_s(name, 256, "%s.cfg",_name);
-		sprintf_s(def,  256, "%s\\Base",_name);
+		std::string path, name, def, dummy;
 
-		fopen_s(&file, path, "r");
+		name = _name + ".cfg";                       // e.g. "Earth.cfg"
+		path = OapiExtension::GetConfigDir() + name; // e.g. ".\Config\Earth.cfg"
+		def  = _name + "\\Base";                     // e.g. "Earth\Base"
 
-		if (file==NULL) {
-			LogErr("Could not open a planet configuration file '%s'", name);
+		std::ifstream fs(path);
+		if (fs.fail()) {
+			LogErr("Could not open a planet configuration file '%s'", name.c_str());
 			return false;
 		}
 
 		OBJHANDLE hPlanet = NULL;
-		DWORD pidx = 0;
+		std::string line; // One file line
 
-		while (true) {
+		while (std::getline(fs, line))
+		{
+			line = trim(line);
+			// skip empty lines and comments
+			if (!line.length() || line[0] == ';') {
+				continue;
+			}
 
-			int rv = fgets2(cbuf, 256, file);
-			if (rv<0) break; if (rv==0) continue;
-
-			if(!_strnicmp(cbuf, "Name=", 5))	{
-				hPlanet = oapiGetObjectByName(cbuf+5);
-				if (hPlanet) {
-					if (!DoesExists(hPlanet)) {
-						pidx = eidx;
-						entry[eidx].hObj = hPlanet;
-						entry[eidx].file = new char[strlen(name)+1];
-						strcpy(entry[eidx].file, name);
-						LogAlw("Planet Added: 0x%X, %s",hPlanet,name);
-						eidx++;
+			// Name = <string>
+			if (startsWith(line, "Name"))
+			{
+				auto ass = splitAssignment(line);
+				hPlanet = oapiGetObjectByName(const_cast<char*>(ass.second.c_str()));
+				if (hPlanet)
+				{
+					if (DoesExist(hPlanet)) {
+						continue; // Already exists, ignore this file
 					}
-					else {
-						hPlanet=NULL; // Already exists, ignore this file
-						break;
-					}
+					ObjEntry *e = GetEntry(hPlanet, true);
+					e->file = new char[name.length() + 1];
+					strcpy_s(e->file, name.length() + 1, &name[0]);
 				}
-				else LogErr("Planet Not Found '%s'", cbuf+5);
+				else {
+					LogErr("Planet Not Found '%s'", &line[5]);
+				}
 			}
 
-			if (hPlanet==NULL) continue;
+			if (hPlanet == NULL) continue;
 
-			if(!_strnicmp(cbuf, "AlbedoRGB=", 10)) {
-				VECTOR3 vec;
-				sscanf(cbuf+10, "%lf %lf %lf", &vec.x, &vec.y, &vec.z);
-				entry[pidx].Albedo = vec;
+			// AlbedoRGB = <float> <float> <float>
+			if (startsWith(line, "AlbedoRGB"))
+			{
+				std::istringstream iss(line);
+				ObjEntry *e = GetEntry(hPlanet, true);
+				iss >> dummy >> dummy
+					>> e->Albedo.x
+					>> e->Albedo.y
+					>> e->Albedo.z;
 			}
 
-			if(!strncmp(cbuf, "BEGIN_SURFBASE", 14)) {
-				
-				char dir[64], buf0[64], buf1[64];
-			
-				while (true) {
+			if (startsWith(line, "BEGIN_SURFBASE"))
+			{
+				std::string dir, buf0, buf1;
 
-					bool bCtx = true;
-					bool bPer = true;
-					bool bPth = false;
+				bool bCtx = true;  // CONTEXT fits
+				bool bPer = true;  // PERIOD fits
+				bool bPth = false; // PATH set
 
-					double mjd0 = 0.0;
-					double mjd1 = 1e6;
+				double mjd0 = DBL_MIN;// was: 0.0;
+				double mjd1 = DBL_MAX;// was: 1e6;
 
-					int rv = fgets2(cbuf, 256, file);
-					if (rv<0) break; if (rv==0) continue;
+				while (std::getline(fs, line))
+				{
+					line = trim(line);
+	
+					if (startsWith(line, "END_SURFBASE")) break;
 
-					if(!strncmp(cbuf, "END_SURFBASE", 12))	break;
-
-					char *d = strstr(cbuf, "DIR");
-					if (d) {
+					// DIR <folder> [PERIOD <mjd0> <mjd1>] [CONTEXT <string>]
+					if (startsWith(line, "DIR")) {
+						std::istringstream iss(line);
+						iss >> dummy >> dir;
 						bPth = true;
-						sscanf_s(d, "DIR %s", dir, 64);
+						// handle optional PERIOD or CONTEXT
+						do {
+							iss >> dummy;
+							if (dummy == "PERIOD") {
+								iss >> buf0 >> buf1;
+								if (buf0 != "-") { mjd0 = atof(buf0.c_str()); }
+								if (buf1 != "-") { mjd1 = atof(buf1.c_str()); }
+								if (mjd0 > mjd || mjd1 < mjd) { bPer = false; }
+							}
+							else if (dummy == "CONTEXT") {
+								iss >> buf0;
+								bCtx = (buf0 == context);//if (buf0 != context) { bCtx = false; }
+							}
+						} while (!iss.fail());
 					}
-
-					d = strstr(cbuf, "CONTEXT");
-					if (d) {
-						sscanf_s(d, "CONTEXT %s", buf0, 64);
-						if (strcmp(buf0,context)) bCtx = false;
-					}
-				
-					d = strstr(cbuf, "PERIOD");
-					if (d) {
-						sscanf_s(d, "PERIOD %s %s", buf0, 64, buf1, 64);
-						if (buf0[0]!='-') sscanf(buf0,"%lf",&mjd0);
-						if (buf1[0]!='-') sscanf(buf1,"%lf",&mjd1);
-						if (mjd0>mjd || mjd1<mjd) bPer = false;
-					}	
 
 					if (bPth && bCtx && bPer) {
 						bHasPath = true;
-						ScanBases(hPlanet, dir);
+						ScanBases(hPlanet, dir.c_str());
 					}
-				}	
+				}
 			}
 		}
 
-		//Is the default path already searched ?
-		if (!bHasPath && hPlanet) ScanBases(hPlanet, def);
-
-		fclose(file);
+		// Is the default path already searched ?
+		if (!bHasPath && hPlanet) {
+			ScanBases(hPlanet, def.c_str());
+		}
 	}
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
 	{
-		LogErr("FileParser::ParsePlanet(%s)",_name);
+		LogErr("FileParser::ParsePlanet(%s)", _name.c_str());
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
 
@@ -361,76 +431,82 @@ bool FileParser::ParsePlanet(const char *_name)
 
 // ===========================================================================================
 //
-OBJHANDLE FileParser::ParseBase(OBJHANDLE hPlanet, const char *name, OBJHANDLE hBase)
+OBJHANDLE FileParser::ParseBase (OBJHANDLE hPlanet, const char *name, OBJHANDLE hBase)
 {
-	FILE* file = NULL;
-	char cbuf[256];
-	char base[256];
-	bool bBase = false;
+	std::ifstream fs(name);
 
-	fopen_s(&file, name, "r");
-
-	if (file==NULL) {
+	if (fs.fail()) {
 		LogErr("Could not open a base configuration file '%s'", name);
 		return NULL;
 	}
 
-	while (true) {
+	std::string line; // One file line
+	char cbuf[512];   // big enough (for objectName)?
+	bool bBase = false;
 
-		int rv = fgets2(cbuf, 256, file);
-		if (rv<0) break; if (rv==0) continue;
+	while (std::getline(fs, line))
+	{
+		line = trim(line);
+		// skip empty lines and comments
+		if (!line.length() || line[0] == ';') {
+			continue;
+		}
 
-		if (strncmp(cbuf, "BASE", 4)==0) bBase = true;
-
-		if (!_strnicmp(cbuf, "Name=", 5)) {
-			
+		// BASE (start of block)
+		if (startsWith(line, "BASE")) {
+			bBase = true;
+		}
+		// Name = <string>
+		else if (startsWith(line, "Name"))
+		{
 			if (!bBase) break;
 
-			if (hBase) {
-				oapiGetObjectName(hBase, base, 256);
-				if (strcmp(cbuf+5, base)==0) {
-					if (!DoesExists(hBase)) {
-						entry[eidx].hObj = hBase;
-						entry[eidx].file = new char[strlen(name)+1];
-						strcpy(entry[eidx].file, name);
-						eidx++;
-						LogAlw("Base Added: 0x%X, %s",hBase,name);
-						fclose(file);
-						return hBase;
-					}
+			// auto ass = splitAssignment(line);
+			std::string baseName = splitAssignment(line).second;
+
+			if (hBase)
+			{
+				oapiGetObjectName(hBase, cbuf, sizeof(cbuf));
+				if (baseName == cbuf && !DoesExist(hBase))
+				{
+					ObjEntry *e = GetEntry(hBase, true);
+					e->file = new char[strlen(name) + 1];
+					strcpy_s(e->file, strlen(name) + 1, name);
+
+					LogAlw("Base Added: 0x%X, %s", hBase, name);
+					return hBase;
 				}
 			}
-			else {
-				OBJHANDLE hBs = oapiGetBaseByName(hPlanet, cbuf+5);
-				if (hBs) {
-					if (!DoesExists(hBs)) {
-						entry[eidx].hObj = hBs;
-						entry[eidx].file = new char[strlen(name)+1];
-						strcpy(entry[eidx].file, name);
-						eidx++;
-						LogAlw("Base Added: 0x%X, %s",hBs,name);
-						fclose(file);
-						return hBs;
-					}
+			else
+			{
+				OBJHANDLE hBs = oapiGetBaseByName(hPlanet, const_cast<char*>(baseName.c_str()) );
+				if (hBs && !DoesExist(hBs))
+				{
+					ObjEntry *e = GetEntry(hBs, true);
+					e->file = new char[strlen(name) + 1];
+					strcpy_s(e->file, strlen(name) + 1, name);
+
+					LogAlw("Base Added: 0x%X, %s", hBs, name);
+					return hBs;
 				}
 			}
-			break;
-		}
+			break; // we've got what we came for (and was already known)
+		} // end-if (startsWith(line, "Name"))
 	}
-	fclose(file);
+
 	return NULL;
 }
 
 
-bool FileParser::ScanBases(OBJHANDLE hPlanet, const char *_name, OBJHANDLE hBase, bool bDeep)
+bool FileParser::ScanBases (OBJHANDLE hPlanet, const std::string &dir, OBJHANDLE hBase, bool bDeep)
 {
 	_TRACE;
-	char name[256];
 
-	sprintf_s(name, 256, "%s%s", OapiExtension::GetConfigDir(), _name);
+	std::string name;
+	name = OapiExtension::GetConfigDir() + dir;
 
 	if (hPlanet==NULL) {
-		LogErr("hPlanet is NULL in FileParser::ScanBases(%s)", name);
+		LogErr("hPlanet is NULL in FileParser::ScanBases(%s)", name.c_str());
 		return false;
 	}
 
@@ -443,21 +519,21 @@ bool FileParser::ScanBases(OBJHANDLE hPlanet, const char *_name, OBJHANDLE hBase
 	strPattern.erase();
 	strPattern = name;
 
-	if (_name[0]!='\0')	strPattern += "\\*.*";
-	else				strPattern += "*.*";
+	if (dir.empty()) strPattern += "*.*";
+	else             strPattern += "\\*.*";
 
 	hFile = FindFirstFile(strPattern.c_str(), &FileInformation);
 
-	if(hFile != INVALID_HANDLE_VALUE)
+	if (hFile != INVALID_HANDLE_VALUE)
 	{
 		do
 		{
-			if(FileInformation.cFileName[0] != '.')
+			if (FileInformation.cFileName[0] != '.')
 			{
 				if (FileInformation.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
 					strFilePath.erase();
-					strFilePath = _name;
+					strFilePath = dir;
 					strFilePath += FileInformation.cFileName;
 					// Search the sub-directory only in a special cases
 					if (bDeep) ScanBases(hPlanet, strFilePath.c_str(), hBase, bDeep);
@@ -466,21 +542,21 @@ bool FileParser::ScanBases(OBJHANDLE hPlanet, const char *_name, OBJHANDLE hBase
 				{
 					strFilePath.erase();
 					strFilePath = name;
-					if (_name[0]!='\0') strFilePath += "\\";
+					if (!dir.empty()) strFilePath += "\\";
 					strFilePath += FileInformation.cFileName;
 
 					// Check extension
 					strExtension = FileInformation.cFileName;
 					strExtension = strExtension.substr(strExtension.rfind(".") + 1);
 
-					if(!strcmp(strExtension.c_str(), "cfg"))
+					if (!strcmp(strExtension.c_str(), "cfg"))
 					{
 						OBJHANDLE hB = ParseBase(hPlanet, strFilePath.c_str(), hBase);
 						if (hBase==hB && hBase!=NULL) return true;
 					}
 				}
 			}
-		} while(FindNextFileA(hFile, &FileInformation) == TRUE);
+		} while (FindNextFileA(hFile, &FileInformation) == TRUE);
 
 		FindClose(hFile);
 	}
