@@ -1,17 +1,15 @@
 #include <commctrl.h>
-
-/* Fix for VS2015 RC4005 warnings  
-
 // Fix Microsoft Visual Studio Version 2012 resource compiler RC4011 warnings.
 // Instead of #include <Richedit.h>
 #if defined(RC_INVOKED)
-  #ifdef UNICODE
-    #define RICHEDIT_CLASS  L"RichEdit20W"
-  #else
-    #define RICHEDIT_CLASS  "RichEdit20A"
-  #endif // UNICODE 
+  #ifndef RICHEDIT_CLASS
+    #ifdef UNICODE
+      #define RICHEDIT_CLASS  L"RichEdit20W"
+    #else
+      #define RICHEDIT_CLASS  "RichEdit20A"
+    #endif // UNICODE
+  #endif // !RICHEDIT_CLASS
 #endif // RC_INVOKED
-*/
 
 
 #ifndef IDC_STATIC
