@@ -48,7 +48,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D &quot;D3D_DEBUG_INFO&quot;"
+				AdditionalOptions="/D &quot;D3D_DEBUG_INFO&quot; /D PSAPI_VERSION=1"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;C:\Program Files (x86)\Microsoft Platform SDK for Windows Server 2003 R2\Include\mfc&quot;;&quot;C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Include&quot;;..\..\Orbitersdk\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;D3D9CLIENT_EXPORTS"
@@ -140,6 +140,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/D PSAPI_VERSION=1"
 				Optimization="3"
 				AdditionalIncludeDirectories="..\..\Orbitersdk\include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS"

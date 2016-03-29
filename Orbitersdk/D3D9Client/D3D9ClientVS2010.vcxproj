@@ -50,7 +50,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/D "D3D_DEBUG_INFO" %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/D "D3D_DEBUG_INFO" /D PSAPI_VERSION=1%(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -108,6 +108,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       </HeaderFileName>
     </Midl>
     <ClCompile>
+      <AdditionalOptions>/D PSAPI_VERSION=1%(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
