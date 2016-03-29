@@ -821,6 +821,58 @@ void D3D9Client::clbkPreOpenPopup ()
 
 // =======================================================================
 
+static DWORD g_lastPopupWindowCount = 0;
+static void FixOutOfScreenPositions (const HWND *hWnd, DWORD count)
+{
+	// Only check if a popup window is *added*
+	if (count > g_lastPopupWindowCount)
+	{
+		for (DWORD i=0; i<count; ++i)
+		{
+			RECT rect;
+			GetWindowRect(hWnd[i], &rect);
+
+			int x = -1, y, w, h; // x != -1 indicates "position change needed"
+			if (rect.left < 0) {
+				x = 0;
+				y = rect.top;
+			}
+			if (rect.top  < 0) {
+				x = rect.left;
+				y = 0;
+			}
+
+			// For the rest we need monitor information...
+			HMONITOR monitor = MonitorFromWindow(hWnd[i], MONITOR_DEFAULTTONEAREST);
+			MONITORINFO info;
+			info.cbSize = sizeof(MONITORINFO);
+			GetMonitorInfo(monitor, &info);
+
+			int monitorWidth = info.rcMonitor.right - info.rcMonitor.left; // info.rcWork....
+			int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
+
+			if (rect.right > monitorWidth) {
+				x = monitorWidth - (rect.right - rect.left);
+				y = rect.top;
+			}
+			if (rect.bottom > monitorHeight) {
+				x = rect.left;
+				y = monitorHeight - (rect.bottom - rect.top);
+			}
+
+			if (x != -1) {
+				w = rect.right - rect.left,
+				h = rect.bottom - rect.top;
+				MoveWindow(hWnd[i], x, y, w, h, FALSE);
+			}
+		}
+
+	}
+	g_lastPopupWindowCount = count;
+}
+
+// =======================================================================
+
 bool D3D9Client::RenderWithPopupWindows()
 {
 	_TRACER;
@@ -835,6 +887,8 @@ bool D3D9Client::RenderWithPopupWindows()
 
 	// Let the OapiExtension manager know about this..
 	OapiExtension::HandlePopupWindows(hPopupWnd, count);
+
+	FixOutOfScreenPositions(hPopupWnd, count);
 
 	if (!bFullscreen) {
 		for (DWORD i=0;i<count;i++) {
