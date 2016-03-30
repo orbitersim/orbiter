@@ -57,7 +57,7 @@ var MsgBox = vb.Function("MsgBox");
 // -----------------------------------------------------------------------------
 var tasks = [{
      file : "Orbitersdk\\D3D9Client\\D3D9Client.cpp",
-     rexp : /D3D9Client (?:Beta)? (\S+)(?: Debug)? Build/,
+     rexp : /D3D9Client(?:\s+Beta)?\s+([\d\.]+)(?:\s+Debug)?\s+Build/,
     subst : "{MajorMinor}" // "{Major}.{Minor}"
   }, {
      file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
@@ -69,11 +69,11 @@ var tasks = [{
     subst : "{Major},0,0,0"
   }, {
      file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
-     rexp : /VALUE\s+\"FileVersion\"\,\s+\"((\d+).(\d+).(\d+).(\d+))\"/,
+     rexp : /VALUE\s+\"FileVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
     subst : "{Major}.{Minor}.{Build}.{Release}"
   }, {
      file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
-     rexp : /VALUE\s+\"ProductVersion\"\,\s+\"((\d+).(\d+).(\d+).(\d+))\"/,
+     rexp : /VALUE\s+\"ProductVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
     subst : "{Major}.0.0.0"
   }, {
      file : "Utils\\D3D9Client\\build_release.bat",
@@ -107,6 +107,7 @@ function getCurrentVersion () {
       break;
     }
   }
+  f.Close();
   return version.join("."); // {String}
 }
 
@@ -121,14 +122,17 @@ var Message = "Enter (new) version number:"
             + 'Exmples: "1.2"  or "21.0.8.15"'
             ;
 var versionString = InputBox(Message, Title, getCurrentVersion());
+if (versionString==null) {
+  WScript.Quit(666);
+}
 // MsgBox("You choose: "+versionString,1);
 
 // Prepare the "replacement macros"
 var v = versionString.split(".");
-var Major      = parseInt(v[0], 10);
-var Minor      = parseInt(v[1], 10);
-var Build      = parseInt(v[2], 10);
-var Release    = parseInt(v[3], 10);
+var Major      = parseInt(v[0]||"0", 10);
+var Minor      = parseInt(v[1]||"0", 10);
+var Build      = parseInt(v[2]||"0", 10);
+var Release    = parseInt(v[3]||"0", 10);
 var MajorMinor = ""+Major+(Minor?("."+Minor):"");
 
 for (var i=0; i<tasks.length; ++i) {
