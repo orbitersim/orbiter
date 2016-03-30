@@ -76,6 +76,11 @@ var tasks = [{
      rexp : /VALUE\s+\"ProductVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
     subst : "{Major}.0.0.0"
   }, {
+     file : "Orbitersdk\\D3D9Client\\doc\\Doxyfile",
+     rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta\s+)?([\d\.]+)\"/,
+    subst : "{MajorMinor}",
+     unix : true // UNIX EOL
+  }, {
      file : "Utils\\D3D9Client\\build_release.bat",
      rexp : /set VERSION=(?:Beta)?([\d\.]+)$/,
     subst : "{MajorMinor}"
@@ -178,9 +183,12 @@ for (var i=0; i<tasks.length; ++i)
   // --- Write back ---
   // WScript.Echo( lines.join("\r\n") );
   var f = fso.OpenTextFile(file, ForWriting);
-  // f.Write( lines.join("\r\n") );
-  for (var j=0,k=lines.length; j<k; ++j) {
-    f.WriteLine( lines[j] );
+  if (task.unix) {
+    f.Write( lines.join("\n") + "\n" );
+  } else {
+    for (var j=0,k=lines.length; j<k; ++j) {
+      f.WriteLine( lines[j] );
+    }
   }
   f.Close();
 }
