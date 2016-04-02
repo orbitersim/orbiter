@@ -248,6 +248,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 vPlanet::~vPlanet ()
 {
+	// Delete all merker objects
 	Markers.clear();
 
 	if (nbase) {
@@ -399,14 +400,14 @@ int vPlanet::GetElevation(double lng, double lat, double *elv, int *lvl, class S
 
 void vPlanet::PickSurface(TILEPICK *result)
 {
-	if (surfmgr2) surfmgr2->Pick(result);
-}
-
-// ==============================================================
-
-void vPlanet::SetCursor(int id, double lng, double lat)
-{
-	SetPosition(hCursor[id], lng, lat);
+	if (surfmgr2) {
+		surfmgr2->Pick(result);
+		if (result->pTile) {
+			SetPosition(hCursor[0], result->lng, result->lat);
+			surfmgr2->SetPickedTile(result->pTile);
+		}
+		else SetPosition(hCursor[0], result->lng, result->lat);
+	}
 }
 
 // ==============================================================

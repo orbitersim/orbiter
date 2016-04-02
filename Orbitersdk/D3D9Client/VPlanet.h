@@ -103,7 +103,6 @@ public:
 	HSRFOBJ			AddMarker(int type, double lng, double lat, float scale, D3DXCOLOR *color);
 	void			SetPosition(HSRFOBJ hItem, double lng, double lat);
 	void			DeleteObject(HSRFOBJ hItem);
-	void			SetCursor(int id, double lng, double lat);
 
 
 

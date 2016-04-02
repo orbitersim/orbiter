@@ -67,21 +67,14 @@ QuadTreeNode<TileType> *TileManager2Base::LoadChildNode (QuadTreeNode<TileType> 
 // -----------------------------------------------------------------------
 
 template<class TileType>
-void TileManager2Base::PickNode(QuadTreeNode<TileType> *node, D3DXVECTOR3 *vRay, std::vector<Tile*> &tiles)
+void TileManager2Base::QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles)
 {
 	Tile *tile = node->Entry();
-	int lvl = tile->lvl;
-	if (tile->state == Tile::ForRender && lvl>1) {	
-		D3DXMATRIX W; D3DXVECTOR3 bs = tile->mesh->bsCnt;
-		MATRIX4toD3DMATRIX(WorldMatrix(tile), W);
-		D3DXVec3TransformCoord(&bs, &bs, &W);
-		tile->bIntersect = D3DXSphereBoundProbe(&bs, tile->mesh->bsRad, &D3DXVECTOR3(0, 0, 0), vRay)==1;
-		if (tile->bIntersect) tiles.push_back(tile);
-	}
+	if (tile->state == Tile::ForRender) 	tiles.push_back(tile);
 	else if (tile->state == Tile::Active) {
 		for (int i = 0; i < 4; i++) {
 			if (node->Child(i)) {
-				if (node->Child(i)->Entry() && (node->Child(i)->Entry()->state & TILE_ACTIVE)) PickNode(node->Child(i), vRay, tiles);
+				if (node->Child(i)->Entry() && (node->Child(i)->Entry()->state & TILE_ACTIVE)) QueryTiles(node->Child(i), tiles);
 			}
 		}
 	}

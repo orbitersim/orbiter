@@ -21,6 +21,7 @@
 #include "Qtree.h"
 #include <stack>
 #include <vector>
+#include <list>
 
 #define NPOOLS 32
 #define MAXQUEUE2 20
@@ -90,6 +91,8 @@ public:
 	virtual void MatchEdges () {}
 	// Match edges with neighbour tiles
 
+	float GetBoundingSphereRad() const;
+	D3DXVECTOR3 GetBoundingSpherePos() const;
 	D3DXVECTOR4 GetTexRangeDX () const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range
@@ -297,7 +300,7 @@ public:
 	void RenderNode (QuadTreeNode<TileType> *node);
 
 	template<class TileType>
-	void PickNode(QuadTreeNode<TileType> *node, D3DXVECTOR3 *vRay, std::vector<Tile*> &tiles);
+	void QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles);
 
 
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
@@ -324,7 +327,8 @@ public:
 	float GetMaxElev() const {	return max_elev; }
 	void SetMinMaxElev(float min, float max);
 	void ResetMinMaxElev();
-
+	Tile *GetPickedTile() const { return pPicked; }
+	void SetPickedTile(Tile *pTile) { pPicked = pTile; }
 
 
 protected:
@@ -341,9 +345,9 @@ protected:
 	float max_elev;					 // maximum renderred elevation
 	static TileLoader *loader;
 	const vPlanet *vp;				 // the planet visual
-	
+	class Tile *pPicked;			 // Selected tile via picking
 private:
-	bool bSet;
+	bool bSet;						 // This is related to GetMin/MaxElevation
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle

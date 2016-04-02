@@ -600,7 +600,7 @@ void SurfTile::Render ()
 	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
 	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX()));
 	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetInt(TileManager2Base::siTileLvl, int(bIntersect)));
+	//HR(Shader->SetInt(TileManager2Base::siTileLvl, int(bIntersect)));
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetBool(TileManager2Base::sbSpecular, has_specular));
 	HR(Shader->SetBool(TileManager2Base::sbCloudSh, has_shadows));
@@ -608,6 +608,13 @@ void SurfTile::Render ()
 	// ---------------------------------------------------------------------------------------------------
 	if (has_lights) { HR(Shader->SetFloat(TileManager2Base::sfNight, float(mgr->Cprm().lightfac))); }
 	else {			  HR(Shader->SetFloat(TileManager2Base::sfNight, 0.0f));	}
+
+	D3DXVECTOR4 vBackup;
+
+	if (mgr->GetPickedTile()==this) {
+		Shader->GetVector(TileManager2Base::svWhiteBalance, &vBackup);
+		Shader->SetVector(TileManager2Base::svWhiteBalance, &D3DXVECTOR4(1.5f, 0.5f, 0.5f, 1.0f));
+	}
 
 	Shader->CommitChanges();
 
@@ -624,6 +631,9 @@ void SurfTile::Render ()
 	HR(Shader->EndPass());
 	HR(Shader->End());	
 
+	if (mgr->GetPickedTile() == this) {
+		Shader->SetVector(TileManager2Base::svWhiteBalance, &vBackup);
+	}
 
 	// Render tile bounding box
 	//
@@ -967,63 +977,73 @@ void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 {
 	if (bFreeze) return;
 
-	std::vector<Tile *> tiles;
+	double lng, lat, dst, elv;
+	double delta, angle = PI2;
+	
+	std::list<Tile *> tiles;
 
-	D3DXVECTOR3 vRay = pPick->vRay;
+	// Give me a list of rendered tiles 
+	//
+	QueryTiles(&tiletree[0], tiles);
+	QueryTiles(&tiletree[1], tiles);
 
-	PickNode(&tiletree[0], &vRay, tiles);
-	PickNode(&tiletree[1], &vRay, tiles);
+	std::list<Tile *>::iterator it = tiles.begin();
 
-	double dlng, dlat, lng, lat, dst, elv;
-	double delta, dstmin = PI2;
-	int lvl;
+	// Remove tiles whose bounding sphere is not intersected by picking ray
+	//
+	while (it!=tiles.end()) {
+		D3DXMATRIX W; D3DXVECTOR3 bs = (*it)->GetBoundingSpherePos();
+		MATRIX4toD3DMATRIX(WorldMatrix(*it), W);
+		D3DXVec3TransformCoord(&bs, &bs, &W);
+		std::list<Tile *>::iterator er = it; it++;
+		if (D3DXSphereBoundProbe(&bs, (*er)->GetBoundingSphereRad(), &D3DXVECTOR3(0, 0, 0), &pPick->vRay) != 1) tiles.erase(er);
+	}
 
+	// Find the closest tile edge intersected by picking plane
+	//
+	VECTOR3 vPln = crossp(pPick->vCam, pPick->vDir);
 	SurfTile *pStart = NULL;
 
-	VECTOR3 vPln = crossp(pPick->vCam, pPick->vDir);
-
-	for (DWORD i = 0; i < tiles.size(); i++) {
-		int rv = tiles[i]->PlaneIntersection(vPln, pPick->rHed, pPick->cLng, pPick->cLat, &lng, &lat, &dst);
-		if (rv>=0) {
-			if (dst < dstmin) {
-				dstmin = dst;
-				dlng = lng;
-				dlat = lat;
-				pStart = (SurfTile *)tiles[i];
-			}
-		}	
+	for (it = tiles.begin(); it != tiles.end(); it++) {
+		int rv = (*it)->PlaneIntersection(vPln, pPick->rHed, pPick->cLng, pPick->cLat, &lng, &lat, &dst);
+		if (rv>=0 && dst < angle) {
+			angle = dst;
+			pStart = (SurfTile *)(*it);
+		}
 	}
 
 	if (!pStart) return;
 
-	((vPlanet *)vp)->SetCursor(1, dlng, dlat);
-	((vPlanet *)vp)->SetCursor(2, pPick->cLng, pPick->cLat);
-
 	delta = pStart->height / 256.0;
-	dstmin += delta;
+	angle += delta;
 
+	// Finally scan through remaining terrain. Limit to 2k staps just in case
+	//
 	for (int cnt = 0; cnt < 2000; cnt++) {
 
-		VECTOR3 pos = pPick->vCam * cos(dstmin) + pPick->vDir * sin(dstmin);
+		vp->GetLngLat(pPick->vCam * cos(angle) + pPick->vDir * sin(angle), &lng, &lat);
 
-		vp->GetLngLat(pos, &lng, &lat);
-
-		int rv = vp->GetElevation(lng, lat, &elv, &lvl, &pStart);
+		int rv = 0;
+		if (pStart) rv = pStart->GetElevation(lng, lat, &elv, &pStart);		// Try quick search at first
+		if (rv!=1)  rv = GetElevation(lng, lat, &elv, &pStart);				// Browse through tile tree
 
 		if (rv > 0 && pStart) {
 
-			double pick_elev = (sin(pPick->aPck) * vp->CamDist() / sin(PI - dstmin - pPick->aPck)) - vp->GetSize();
+			double cd = vp->CamDist();
+			double pr = (sin(pPick->aPck) * cd / sin(PI - angle - pPick->aPck));
+			double pe = pr - vp->GetSize();
 
-			if (elv >= pick_elev) {
-				((vPlanet *)vp)->SetCursor(0, lng, lat);
-				sprintf_s(oapiDebugString(), 256, "Location=(%f, %f) Elv=%f", lng*DEG, lat*DEG, elv);
+			// Does the ray intersect terrain at this point
+			if (elv >= pe) {
+				pPick->pTile = pStart;
+				pPick->lng = lng;
+				pPick->lat = lat;
+				pPick->height = elv;
+				pPick->dist = sqrt(pr*pr + cd*cd - 2.0*pr*cd*cos(angle));
 				return;
 			}
 			delta = pStart->height / 256.0;
 		}
-
-		dstmin += delta;
+		angle += delta;
 	}
-
-	((vPlanet *)vp)->SetCursor(0, 0, 0);
 }

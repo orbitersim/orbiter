@@ -177,6 +177,22 @@ bool Tile::InView (const MATRIX4 &transform)
 }
 
 // -----------------------------------------------------------------------
+
+float Tile::GetBoundingSphereRad() const
+{
+	if (mesh) return mesh->bsRad;
+	return 0.0f;
+}
+
+// -----------------------------------------------------------------------
+
+D3DXVECTOR3 Tile::GetBoundingSpherePos() const
+{
+	if (mesh) return mesh->bsCnt;
+	return D3DXVECTOR3(0,0,0);
+}
+
+// -----------------------------------------------------------------------
 // Check if a plane intersects a tile, plane must be given in planet
 // coordinates
 

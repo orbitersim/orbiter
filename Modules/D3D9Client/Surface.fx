@@ -99,7 +99,7 @@ uniform extern bool      bCloudSh;			// Enable cloud shadows
 uniform extern bool      bLights;			// Enable night-lights
 uniform extern bool      bEnvEnable;		// Enable environment maps
 uniform extern bool      bMicro;			// Enable micro texture
-uniform extern bool      bMicroNormals;		// Enable micro texture
+uniform extern bool      bMicroNormals;		// Enable micro texture normal maps
 uniform extern int		 iTileLvl;			// Surface tile level being rendered
 uniform extern int		 iDebug;			// Debug Mode identifier
 uniform extern bool		 bDebug;			// Debug Mode enabled 
@@ -350,7 +350,7 @@ float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
 	}
 	
 	if (iDebug==5) {
-		return float4(color, 1) + float4(0.3, -0.3, -0.3, 0) * iTileLvl;
+		return float4(color*vWhiteBalance, 1);
 	}
 	
 	return float4(0,0,0,1);
@@ -714,7 +714,7 @@ float4 SurfaceTechPS(TileVS frg) : COLOR
 
 		float3 color = cTex.rgb * max(fLvl, 0);			// Apply sunlight
 
-		return float4(pow(abs(color), fAux4), 1.0f);	// Gamma corrention
+		return float4(pow(abs(color*vWhiteBalance), fAux4), 1.0f);	// Gamma corrention
 	}
 
 	else { // Yes, atmosphere is present
