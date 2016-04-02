@@ -7,6 +7,9 @@
 #ifndef __D3D9EFFECT_H
 #define __D3D9EFFECT_H
 
+#define D3D9SM_SPHERE	0x01
+#define D3D9SM_ARROW	0x02
+
 #include "D3D9Client.h"
 #include <d3d9.h> 
 #include <d3dx9.h>
@@ -43,7 +46,6 @@ public:
 	static void Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive);
 	static void RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size);
 	static void RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *dir, const VECTOR3 *rot, float size, const D3DXCOLOR *pColor);  
-	static void RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
 	
 	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device
 	static LPDIRECT3DVERTEXBUFFER9 VB;  ///< Static (global) Vertex buffer pointer
@@ -53,7 +55,6 @@ public:
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
 	static D3D9Client   *gc; ///< The graphics client instance
-	static D3D9Mesh     *hArrow;
 
 	static D3D9MatExt	mfdmat;
 	static D3D9MatExt	defmat;
@@ -78,8 +79,6 @@ public:
 	static D3DXHANDLE	eBeaconArrayTech;
 	static D3DXHANDLE	eArrowTech;      ///< (Grapple point) arrows
 	static D3DXHANDLE	eAxisTech;
-	static D3DXHANDLE	eVCHudTech;
-	static D3DXHANDLE	eVCMFDTech;
 	static D3DXHANDLE	eVCTech;
 	static D3DXHANDLE	ePlanetTile;
 	static D3DXHANDLE	eCloudTech;
@@ -88,6 +87,7 @@ public:
 	static D3DXHANDLE	eDiffuseTech;
 	static D3DXHANDLE	eEmissiveTech;
 	static D3DXHANDLE	eHazeTech;
+	static D3DXHANDLE	eSimpMesh;
 
 	// Transformation Matrices ----------------------------------------
 	static D3DXHANDLE	eVP;         ///< Combined View & Projection Matrix

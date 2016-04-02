@@ -13,7 +13,6 @@
 #include "Mesh.h"
 #include "VectorHelpers.h"
 
-D3D9Mesh * D3D9Effect::hArrow = 0;
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::VB = 0;
@@ -43,11 +42,11 @@ D3DXHANDLE D3D9Effect::eRingTech2 = 0;	// Planet rings technique
 D3DXHANDLE D3D9Effect::eShadowTech = 0; // Vessel ground shadows
 D3DXHANDLE D3D9Effect::eArrowTech = 0;  // (Grapple point) arrows
 D3DXHANDLE D3D9Effect::eAxisTech = 0;
+D3DXHANDLE D3D9Effect::eSimpMesh = 0;
 
 // VC rendering techniques
-D3DXHANDLE D3D9Effect::eVCMFDTech = 0;
 D3DXHANDLE D3D9Effect::eVCTech = 0;
-D3DXHANDLE D3D9Effect::eVCHudTech = 0;
+
 
 // Planet Rendering techniques
 D3DXHANDLE D3D9Effect::ePlanetTile = 0;
@@ -201,14 +200,17 @@ D3D9Effect::~D3D9Effect()
 	
 }
 
+// ===========================================================================================
+//
 void D3D9Effect::GlobalExit()
 {
 	LogAlw("====== D3D9Effect Global Exit =======");
 	SAFE_RELEASE(FX);
 	SAFE_RELEASE(VB);
-	SAFE_DELETE(hArrow);
 }
 
+// ===========================================================================================
+//
 void D3D9Effect::ShutDown()
 {
 	if (!FX) return;
@@ -293,11 +295,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eSkyDomeTech = FX->GetTechniqueByName("SkyDomeTech");
 	eArrowTech   = FX->GetTechniqueByName("ArrowTech"); 
 	eAxisTech    = FX->GetTechniqueByName("AxisTech"); 
-	
-	eVCMFDTech	 = FX->GetTechniqueByName("VCMFDTech");
-	eVCHudTech	 = FX->GetTechniqueByName("VCHudTech");
 	eVCTech		 = FX->GetTechniqueByName("VCTech");
-
+	eSimpMesh	 = FX->GetTechniqueByName("SimplifiedTech");
 	eVesselTech		 = FX->GetTechniqueByName("VesselTech");
 	eBaseShadowTech	 = FX->GetTechniqueByName("BaseShadowTech");
 	eBeaconArrayTech = FX->GetTechniqueByName("BeaconArrayTech");
@@ -408,16 +407,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	hNoise = oapiLoadTexture("D3D9LENoise.dds");
 	if (hNoise) pNoise = SURFACE(hNoise)->GetTexture();
 	else pNoise = NULL;
-
-	// Create Arrow Mesh --------------------------------------------
-	//
-	MESHHANDLE hMesh = oapiLoadMesh("D3D9Arrow");
-	hArrow = new D3D9Mesh(hMesh);
-	oapiDeleteMesh(hMesh);
-
-	if (hArrow==NULL) LogErr("D3D9Arrow.msh not found");
-	
-	LogMsg("...rendering technique initialized");
 }
 
 
@@ -616,7 +605,6 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 
 
 // ===========================================================================================
-//
 // Used by Render Star only
 //
 void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex)
@@ -873,26 +861,4 @@ void D3D9Effect::RenderArrow(OBJHANDLE hObj, const VECTOR3 *ofs, const VECTOR3 *
     HR(pDev->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 6, &arrow, sizeof(D3DVECTOR))); // Draw 6 triangles un-indexed
     HR(FX->EndPass());
     HR(FX->End()); 
-}  
-
-
-// ===========================================================================================
-// This is a special rendering routine used to render beacons
-//
-void D3D9Effect::RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len)
-{
-	UINT numPasses = 0;
-	HR(FX->SetTechnique(eAxisTech));
-	HR(FX->SetFloat(eMix, len));
-	HR(FX->SetValue(eColor, pColor, sizeof(D3DXCOLOR)));
-	HR(FX->SetMatrix(eW, pW));
-	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
-
-	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-	hArrow->RenderGroup(pDev, hArrow->GetGroup(0));
-	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	HR(FX->EndPass());
-	HR(FX->End());	
 }

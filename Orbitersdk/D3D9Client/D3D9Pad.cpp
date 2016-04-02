@@ -96,8 +96,6 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const cha
 
 	// Initialize Techniques -------------------------------------------------------------------------
 	//
-	LogMsg("Starting to initialize a surface rendering technique");
-	
 	char name[256];
 	sprintf_s(name,256,"Modules/%s/CKBlit.fx",folder);
 
@@ -125,8 +123,6 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const cha
 	eColor    = FX->GetParameterByName(0,"gColor");
 	eData     = FX->GetParameterByName(0,"gData");
 	eDash     = FX->GetParameterByName(0,"gDash");
-	
-	LogMsg("...rendering technique initialized");
 }
 
 
@@ -157,8 +153,6 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 {
 	_TRACE;
 
-	LogOk("Creating D3D9 SketchPad for surface (0x%X)...", s);
-
 	cfont  = deffont;
 	cpen   = NULL;
 	cbrush = NULL;
@@ -178,7 +172,6 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	bkcolor    = D3DXCOLOR(0,0,0,1);
 	textcolor  = D3DXCOLOR(0,1,0,1);
 	pencolor   = D3DXCOLOR(0,1,0,1);
-	bConvert   = false;
 	linescale  = 1;
 	
 	HR(FX->SetMatrix(eVP, pTgt->pVP));
@@ -205,7 +198,6 @@ D3D9Pad::~D3D9Pad ()
 	if (pTgt) if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
 	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
 	pTgt = NULL;
-	LogOk("...D3D9 SketchPad Released");
 }
 
 
@@ -218,7 +210,6 @@ HDC D3D9Pad::GetDC()
 		LogWrn(" - ! - Never Use Sketchpad::GetDC() !! hDC not available, the surface is active render target at a moment - ! -");
 		pTgt->bSkpGetDCEr = true;
 	}
-	bConvert = true;
 	return NULL;
 }
 

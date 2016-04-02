@@ -36,19 +36,15 @@ extern __int64 qpcStart;
 #define _UNDEBUGED LogWrn("[Undebuged/Unfinished code section reached in %s (File %s, Line %d)]",__FUNCTION__,__FILE__,__LINE__);
 //#define _UNDEBUGED
 
-double ElapsedTime();
-
 void   D3D9InitLog(char *file);
 void   D3D9CloseLog();
-void   LogMsg(const char *format, ...);
+void   LogTrace(const char *format, ...);
 void   LogErr(const char *format, ...);
 void   LogWrn(const char *format, ...);
 void   LogOk (const char *format, ...);
 void   LogBlu(const char *format, ...);
 void   LogOapi(const char *format, ...);
 void   LogAlw(const char *format, ...);
-void   LogBad(const char *format, ...);
-//void   DebugMsg(const char *format, ...);
 
 double D3D9GetTime();
 

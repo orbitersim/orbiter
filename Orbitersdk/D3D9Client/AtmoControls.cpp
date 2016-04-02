@@ -262,10 +262,10 @@ void OpenDlgClbk(void *context)
 		else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
 
 		// Not working for some reason !!!
-		//if (param->orbit) SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Surface");
-		//else			  SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Orbital");
+		if (param->orbit) SetWindowText(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Surface");
+		else			  SetWindowText(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Orbital");
 
-		SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to other config");
+		//SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to other config");
 
 		SetWindowTextA(hDlg, title);
 	}
@@ -424,6 +424,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				param = vObj->GetAtmoParams(atmmode);
 				if (param->orbit) sprintf_s(title,256,"Atmospheric Controls [%s] [Orbital]", vObj->GetName());
 				else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
+
+				if (param->orbit) SetWindowText(GetDlgItem(hWnd, IDC_ATM_COPYTO), "Copy to Surface");
+				else			  SetWindowText(GetDlgItem(hWnd, IDC_ATM_COPYTO), "Copy to Orbital");
+				
 				SetWindowTextA(hDlg,title);
 				UpdateSliders();
 			}

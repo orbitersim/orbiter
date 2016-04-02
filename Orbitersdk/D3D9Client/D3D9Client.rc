@@ -215,7 +215,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 15, 180, 114, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 15, 195, 113, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 15, 210, 147, 8, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Enable surface tile mipmaps", IDC_MIPMAPS, 200, 209, 103, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable tile mipmaps (very slow load)", IDC_MIPMAPS, 200, 209, 103, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_LODBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 255, 147, 95, 20, WS_EX_LEFT
     CONTROL         "", IDC_MESHRES, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 255, 180, 95, 20, WS_EX_LEFT
     CONTROL         "", IDC_MICROBIAS, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 435, 222, 95, 20, WS_EX_LEFT

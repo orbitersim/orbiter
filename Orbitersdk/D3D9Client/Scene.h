@@ -86,6 +86,7 @@ class Scene {
 		D3DXVECTOR3 x;			// Camera axis vector
 		D3DXVECTOR3 y;			// Camera axis vector
 		D3DXVECTOR3 z;			// Camera axis vector
+		D3DXVECTOR3 upos;		// Camera position unit vector
 
 		D3DXMATRIX	mView;		// D3DX view matrix for current camera state
 		D3DXMATRIX	mProj;		// D3DX projection matrix for current camera state
@@ -199,15 +200,14 @@ public:
 	 */
 	double GetObjectAppRad2(OBJHANDLE hObj) const;
 
-	D3D9Pick PickScene(short xpos, short ypos);
+	D3D9Pick		PickScene(short xpos, short ypos);
+	TILEPICK		PickSurface(short xpos, short ypos);
 
-	void ClearOmitFlags();
-
-	bool IsRendering() const { return bRendering; }
+	void			ClearOmitFlags();
+	bool			IsRendering() const { return bRendering; }
 
 	
 	
-
 
 	// Custom Camera Interface ======================================================================================================
 	//
@@ -240,6 +240,8 @@ public:
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);
 
+	D3DXVECTOR3		GetPickingRay(short x, short y);
+
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera 
 	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
 	double			GetTanAp() const { return tan(Camera.aperture); }
@@ -252,6 +254,7 @@ public:
 	OBJHANDLE		GetCameraProxyBody() const { return Camera.hObj_proxy; }
 	vPlanet *		GetCameraProxyVisual() const { return Camera.vProxy; }
 	double			GetCameraAltitude() const { return Camera.alt_proxy; }	
+	void			GetCameraLngLat(double *lng, double *lat) const;
 
 	DWORD			GetRenderPass() const { return dwRenderPass; }
 	DWORD			GetFrameId() const { return dwFrameId; }
@@ -259,7 +262,7 @@ public:
 	const D3DXVECTOR3 *GetCameraX() const { return &Camera.x; }
 	const D3DXVECTOR3 *GetCameraY() const { return &Camera.y; }
 	const D3DXVECTOR3 *GetCameraZ() const { return &Camera.z; }
-
+	
 	void			PushCamera();	// Push current camera onto a stack
 	void			PopCamera();	// Restore a camera from a stack
 

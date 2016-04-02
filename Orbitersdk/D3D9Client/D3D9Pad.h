@@ -24,12 +24,7 @@
 #include <d3d9.h> 
 #include <d3dx9.h>
 
-
 using namespace oapi;
-
-typedef struct {
-	float x,y;
-} Vec2D;
 
 extern oapi::Font *deffont;
 extern oapi::Pen  *defpen;
@@ -328,8 +323,7 @@ private:
 	DWORD halign, valign;
 	DWORD linescale;
 	int origx, origy, cx, cy;
-	bool bConvert;
-	
+
 	D3D9ClientSurface *pTgt;
 
 	static D3D9Client *gc;

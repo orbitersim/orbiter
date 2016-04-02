@@ -472,7 +472,7 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 
 	RenderParam.bCockpit = (oapiCameraMode()==CAM_COCKPIT);
 	RenderParam.objsize = oapiGetSize (obj);
-	RenderParam.cdist = vp->CamDist() / vp->rad; // camera distance in units of planet radius
+	RenderParam.cdist = vp->CamDist() / vp->GetSize(); // camera distance in units of planet radius
 	RenderParam.viewap = (viewap ? viewap : acos (1.0/max (1.0, RenderParam.cdist)));
 	RenderParam.sdir = tmul (RenderParam.grot, -gpos);
 	RenderParam.horzdist = sqrt(RenderParam.cdist*RenderParam.cdist-1.0) * RenderParam.objsize;	
@@ -830,8 +830,6 @@ void TileManager::GlobalInit (D3D9Client *gclient)
 
 	// rotation matrix for flipping patches onto southern hemisphere
 	D3DMAT_RotX (&Rsouth, PI);
-
-	LogMsg("...Done");
 }
 
 // ==============================================================

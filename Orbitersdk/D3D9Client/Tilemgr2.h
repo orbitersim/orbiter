@@ -20,6 +20,7 @@
 #include "Spherepatch.h"
 #include "Qtree.h"
 #include <stack>
+#include <vector>
 
 #define NPOOLS 32
 #define MAXQUEUE2 20
@@ -78,9 +79,13 @@ public:
 	bool InView (const MATRIX4 &transform);
 	// tile in view of camera, given by transformation matrix 'transform'?
 
+	VECTOR3 Centre() const;
+	// Returns the direction of the tile centre from the planet centre in local planet coordinates
+
+	int PlaneIntersection(VECTOR3 &vPln, double dir, double lng, double lat, double *oLng=NULL, double *oLat=NULL, double *oDst=NULL);
+
 	void Extents (double *latmin, double *latmax, double *lngmin, double *lngmax) const;
 	// Return the latitude/longitude extents of the tile
-
 
 	virtual void MatchEdges () {}
 	// Match edges with neighbour tiles
@@ -113,6 +118,8 @@ protected:
 
 	virtual void StepIn () {}
 
+	//virtual void Pick(MATRIX4 &dwMatrix, TILEPICK *pPick) {}
+
 	/**
 	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
 	 */
@@ -125,9 +132,6 @@ protected:
 
 	bool	CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRECT3DTEXTURE9 *pTex);
 	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug=true);
-
-	VECTOR3 Centre () const;
-	// Returns the direction of the tile centre from the planet centre in local planet coordinates
 
 	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double globelev=0.0, 
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
@@ -149,13 +153,15 @@ protected:
 	VECTOR3 cnt;               // tile centre in local planet coords
 	VECTOR3 vtxshift;          // tile frame shift of origin from planet centre
 	bool edgeok;               // edges have been checked in this frame
+	bool bIntersect;		
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	DWORD FrameId;
-	double width;			   // tile width [rad] (widest section i.e base)
-	double height;			   // tile height [rad]
+	float width;			   // tile width [rad] (widest section i.e base)
+	float height;			   // tile height [rad]
+	float max_elev;
+	float min_elev;
 	mutable double mean_elev;  // mean tile elevation [m]
-	mutable double max_elev;   // maximum tile elevation [m]
 
 public:
 	double minlat;
@@ -290,6 +296,10 @@ public:
 	template<class TileType>
 	void RenderNode (QuadTreeNode<TileType> *node);
 
+	template<class TileType>
+	void PickNode(QuadTreeNode<TileType> *node, D3DXVECTOR3 *vRay, std::vector<Tile*> &tiles);
+
+
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
 	/**
@@ -309,11 +319,17 @@ public:
 	const char *CbodyName() const { return cbody_name; }
 	const double CbodySize() const { return obj_size; }
 	const ELEVHANDLE ElevMgr() const { return emgr; }
-	const double GetMinElev() const;
-	void  ReduceMinElevation(double Elev);
+	
+	float GetMinElev() const {	return min_elev; }
+	float GetMaxElev() const {	return max_elev; }
+	void SetMinMaxElev(float min, float max);
+	void ResetMinMaxElev();
+
+
 
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
+	MATRIX4 WorldMatrix(Tile *tile);
 	
 	template<class TileType>
 	QuadTreeNode<TileType> *LoadChildNode (QuadTreeNode<TileType> *node, int idx);
@@ -321,12 +337,13 @@ protected:
 
 	static configPrm cprm;
 	double obj_size;                 // planet radius
-	double min_elev;				 // minimum elevation
+	float min_elev;					 // minimum renderred elevation
+	float max_elev;					 // maximum renderred elevation
 	static TileLoader *loader;
-	const vPlanet *vp;               // the planet visual
-		
-private:
+	const vPlanet *vp;				 // the planet visual
 	
+private:
+	bool bSet;
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle
@@ -335,7 +352,7 @@ private:
 	DWORD IdxPoolSize[NPOOLS];
 	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
-
+	
 	static HFONT hFont;
 	static double resolutionBias;
 	static double resolutionScale;
@@ -353,8 +370,10 @@ public:
 	~TileManager2 ();
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
-	//void RenderFlatCloudShadows (MATRIX4 &dwmat, const vPlanet::RenderPrm &rprm);
-	int GetElevation(double lat, double lng, double *elev, SurfTile **cache);
+
+	int GetElevation(double lng, double lat, double *elev, SurfTile **cache);
+
+	void Pick(TILEPICK *pPick);
 
 	QuadTreeNode<TileType> *FindNode (int lvl, int ilng, int ilat)
 	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilng, ilat); }
@@ -376,7 +395,7 @@ public:
 protected:
 	TileType *globtile[3];              // full-sphere tiles for resolution levels 1-3
 	QuadTreeNode<TileType> tiletree[2]; // quadtree roots for western and eastern hemisphere
-
+	
 	void CheckCoverage (const QuadTreeNode<TileType> *node, double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt, int *nfound) const;
 	const Tile *SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const;
 };

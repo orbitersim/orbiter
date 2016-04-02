@@ -926,7 +926,7 @@ bool D3D9ClientSurface::ConvertToTexture(bool bDynamic)
 //
 void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UINT ck)
 {
-	_TRACER;
+	_TRACE;
 	bool bRestart = true;
 
 	// Check failure and abort conditions -------------------------------------------------------
@@ -1591,17 +1591,35 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		D3DFORMAT Format = info.Format;
 		D3DPOOL Pool = D3DPOOL_DEFAULT;
 		DWORD Usage = 0;
-		DWORD Mips = D3DFMT_FROM_FILE;
-
-		if (Config->TextureMips == 2) Mips = 0;							// Autogen all
-		if (Config->TextureMips == 1 && info.MipLevels==1) Mips = 0;	// Autogen missing
-
+		
 		// Convert Non-supported format -------------------------
 		if (Format==D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
 
 		LPDIRECT3DTEXTURE9 pBumpMap = NULL;
 	
+
+		// Diffuse Texture Section ====================================================================================================================
+		//
+		DWORD Mips = D3DFMT_FROM_FILE;
+		if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+		if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
+
+		if (D3DXCreateTextureFromFileExA(pDevice, cpath, 0, 0, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK) {
+			SetName(fname);
+			HR(pTex->GetSurfaceLevel(0, &pSurf));
+			GetDesc(&desc);
+			LogBlu("Texture %s Loaded. Handle=0x%X, (%ux%u), MipMaps=%u, Format=0x%X", fname, this, desc.Width, desc.Height, pTex->GetLevelCount(), DWORD(Format));
+		}
+		else {
+			LogErr("Texture %s failed to load", fname);
+			return false;
+		}
+
+
+		// Load Additional Textures ===================================================================================================================
+		//
 		if (Config->UseNormalMap) {
+
 
 			// Bump Map Section =======================================================================================================================
 			//
@@ -1628,13 +1646,17 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				else LogErr("Failed to acquire image information for (%s)",sname);
 			}
 
+
 			// Normal Map Section =======================================================================================================================
 			//
 			if (gc->TexturePath(nname, xpath) && pBumpMap==NULL) {
 				D3DXIMAGE_INFO info;
 				pNormalMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, D3DX_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
+					Mips = D3DFMT_FROM_FILE;
+					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
 						LogAlw("Normal Map %s Loaded Successfully",nname);
 					}
 					else {
@@ -1645,12 +1667,16 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				else LogErr("Failed to acquire image information for (%s)",nname);
 			}
 
+
 			// Specular Map Section =======================================================================================================================
 			//
 			if (gc->TexturePath(sname, xpath)) {
 				D3DXIMAGE_INFO info;
 				pSpecularMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					Mips = D3DFMT_FROM_FILE;
+					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
 					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSpecularMap)==S_OK) {
 						LogAlw("Specular Map %s Loaded Successfully",sname);
 					}
@@ -1662,12 +1688,16 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				else LogErr("Failed to acquire image information for (%s)",sname);
 			}
 
+
 			// Emission Map Section =======================================================================================================================
 			//
 			if (gc->TexturePath(ename, xpath)) {
 				D3DXIMAGE_INFO info;
 				pEmissionMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					Mips = D3DFMT_FROM_FILE;
+					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
 					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pEmissionMap)==S_OK) {
 						LogAlw("Emission Map %s Loaded Successfully",ename);
 					}
@@ -1679,13 +1709,17 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				else LogErr("Failed to acquire image information for (%s)",ename);
 			}
 
+
 			// Reflection Map Section =======================================================================================================================
 			//
 			if (gc->TexturePath(rname, xpath)) {
 				D3DXIMAGE_INFO info;
 				pReflectionMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
+					Mips = D3DFMT_FROM_FILE;
+					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
+					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
 						LogAlw("Reflection Map %s Loaded Successfully",rname);
 						if (ComputeReflAlpha()==false) {
 							LogErr("Failed to create reflection map alpha for (%s)",rname);
@@ -1699,12 +1733,16 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				else LogErr("Failed to acquire image information for (%s)",rname);
 			}
 
+
 			// Translucence Map Section =======================================================================================================================
 			//
 			if (gc->TexturePath(tlname, xpath)) {
 				D3DXIMAGE_INFO info;
 				pTranslucenceMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					Mips = D3DFMT_FROM_FILE;
+					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
 					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTranslucenceMap)==S_OK) {
 						LogAlw("Translucence Map %s Loaded Successfully",ename);
 					}
@@ -1715,12 +1753,17 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				}
 				else LogErr("Failed to acquire image information for (%s)",ename);
 			}
+
+
 			// Transmittance Map Section =======================================================================================================================
 			//
 			if (gc->TexturePath(tmname, xpath)) {
 				D3DXIMAGE_INFO info;
 				pTransmittanceMap = NULL;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
+					Mips = D3DFMT_FROM_FILE;
+					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
 					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTransmittanceMap)==S_OK) {
 						LogAlw("Transmittance Map %s Loaded Successfully",ename);
 					}
@@ -1733,19 +1776,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 			}
 		}
 
-		// Diffuse Texture Section ====================================================================================================================
-		//
-		if (D3DXCreateTextureFromFileExA(pDevice, cpath, 0, 0, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
-			SetName(fname);
-			HR(pTex->GetSurfaceLevel(0, &pSurf));
-			GetDesc(&desc);
-			LogBlu("Texture %s Loaded. Handle=0x%X, (%ux%u), MipMaps=%u, Format=0x%X", fname, this, desc.Width, desc.Height, pTex->GetLevelCount(), DWORD(Format));
-			return true;
-		}
-		else {
-			LogErr("Texture %s failed to load",fname);
-			return false;
-		}
+		return pTex != NULL;
 	}
 
 	LogWrn("Texture %s not found. Handle=0x%X",fname,this);
@@ -2243,6 +2274,4 @@ void D3D9ClientSurface::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev, co
 		z+=4;
 		x+=6;
 	}
-
-	LogMsg("...rendering technique initialized");
 }

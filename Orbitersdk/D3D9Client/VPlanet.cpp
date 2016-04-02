@@ -61,11 +61,9 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
 	vRefPoint = _V(1,0,0);
 	bScatter = false;
-	rad = (float)size;
-	render_rad = (float)(0.1*rad);
 	dist_scale = 1.0f;
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
-	maxdist = max (max_centre_dist, max_surf_dist + rad);
+	maxdist = max (max_centre_dist, max_surf_dist + size);
 	max_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	max_patchres = min (max_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
@@ -154,7 +152,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		double minrad = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_RINGMINRAD);
 		double maxrad = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_RINGMAXRAD);
 		ringmgr = new RingManager (this, minrad, maxrad);
-		render_rad = (float)(rad*maxrad);
 	} else {
 		ringmgr = 0;
 	}
@@ -234,19 +231,25 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		}
 	}*/
 
+	// Add a cursor object into the scene ------------------------
+	//
+	hCursor[0] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 80.0f, &D3DXCOLOR(0, 0, 1, 0.5f));		// Cursor
+	hCursor[1] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 1, 0, 0.5f));		// Tile entry point
+	hCursor[2] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 0, 0, 0.5f));		// Camera location
 
-	// Finish creation ------------------------------------------------------------------------
+	// Finish creation -------------------------------------------
 	//
 	MicroCfg.bEnabled = ParseMicroTextures();
 
 	albedo = gc->GetFileParser()->GetAlbedo(hObj);
-	LogMsg("vPlanet constructor exiting");
 }
 
 // ==============================================================
 
 vPlanet::~vPlanet ()
 {
+	Markers.clear();
+
 	if (nbase) {
 		for (DWORD i = 0; i < nbase; i++)
 			if (vbase[i]) delete vbase[i];
@@ -285,7 +288,7 @@ bool vPlanet::CameraInAtmosphere() const
 
 // ==============================================================
 
-double	vPlanet::GetHorizonAlt() const
+double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
 	if (!bScatter) return prm.atm_hzalt;
@@ -297,7 +300,15 @@ double	vPlanet::GetHorizonAlt() const
 double vPlanet::GetMinElevation() const
 {
 	if (surfmgr2) return surfmgr2->GetMinElev();
-	return 0.0f;
+	return 0.0;
+}
+
+// ==============================================================
+
+double vPlanet::GetMaxElevation() const
+{
+	if (surfmgr2) return surfmgr2->GetMaxElev();
+	return 0.0;
 }
 
 
@@ -323,8 +334,34 @@ vBase* vPlanet::GetBaseByHandle(OBJHANDLE hBase)
 	return NULL;
 }
 
-// ===========================================================================================
-//
+// ==============================================================
+
+VECTOR3 vPlanet::GetUnitSurfacePos(double lng, double lat) const
+{
+	double slat = sin(lat), clat = cos(lat);
+	double slng = sin(lng), clng = cos(lng);
+	return _V(clat*clng, slat, clat*slng);
+}
+
+// ==============================================================
+
+VECTOR3 vPlanet::ToLocal(VECTOR3 &glob) const
+{
+	MATRIX3 grot;
+	oapiGetRotationMatrix(hObj, &grot);
+	return tmul(grot, glob);
+}
+
+// ==============================================================
+
+void vPlanet::GetLngLat(VECTOR3 &loc, double *lng, double *lat) const
+{
+	*lat = asin(loc.y);
+	*lng = atan2(loc.z, loc.x);
+}
+
+// ==============================================================
+
 bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 {
 	if (mesh==NULL) return false;
@@ -341,14 +378,15 @@ bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 	return true;
 }
 
-// ===========================================================================================
-//
-int vPlanet::GetElevation(double lat, double lng, double *elv, int *lvl, class SurfTile **tile)
+// ==============================================================
+
+int vPlanet::GetElevation(double lng, double lat, double *elv, int *lvl, class SurfTile **tile) const
 {
 	int rv = 0;
 	if (!surfmgr2) return -4;
-	if (tile_cache) rv = tile_cache->GetElevation(lat, lng, elv, &tile_cache);
-	if (rv!=1) rv = surfmgr2->GetElevation(lat, lng, elv, &tile_cache);
+
+	if (tile_cache) rv = tile_cache->GetElevation(lng, lat, elv, &tile_cache);	// tile_cache is set to NULL when tiles are deleted
+	if (rv!=1) rv = surfmgr2->GetElevation(lng, lat, elv, &tile_cache);
 
 	if (rv>=0) {
 		if (tile) *tile = tile_cache;
@@ -357,8 +395,120 @@ int vPlanet::GetElevation(double lat, double lng, double *elv, int *lvl, class S
 	return rv;
 }
 
-// ===========================================================================================
-//
+// ==============================================================
+
+void vPlanet::PickSurface(TILEPICK *result)
+{
+	if (surfmgr2) surfmgr2->Pick(result);
+}
+
+// ==============================================================
+
+void vPlanet::SetCursor(int id, double lng, double lat)
+{
+	SetPosition(hCursor[id], lng, lat);
+}
+
+// ==============================================================
+
+void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
+{
+	D3DXMATRIX ident;
+	MATRIX3 grot;
+	oapiGetRotationMatrix(hObj, &grot);
+	D3DXMatrixIdentity(&ident);
+
+	std::list<_SRFMARKER>::iterator it = Markers.begin();
+
+	while (it!=Markers.end()) {
+		if (it->pMesh) {
+			if (GetElevation(it->lng, it->lat, &it->elv) == 1) {
+				VECTOR3 pos = cpos + mul(grot, it->uPos) * (size + it->elv);
+				it->pMesh->SetRotation(it->mWorld);
+				it->pMesh->SetPosition(pos);
+				if (it->type) {
+					it->pMesh->GetMaterial(0)->Diffuse = it->vColor;
+				}
+				it->pMesh->Render(&ident, RENDER_BASE);
+			}
+		}
+		it++;
+	}
+}
+
+// ==============================================================
+
+HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, bool bDual, float scale)
+{
+	_SRFMARKER m;
+	
+	m.lng = lng;
+	m.lat = lat;
+	m.rot = rot;
+	m.scl = scale;
+	m.bDual = bDual;
+	m.uPos = GetUnitSurfacePos(lng, lat);
+	m.pMesh = pMesh;
+	m.type = 0;
+	
+	D3DXMatrixRotationAxis(&m.mWorld, &D3DXVEC(m.uPos), rot);
+	D3DXMatrixScaling(&m.mWorld, scale, scale, scale);
+	
+	Markers.push_front(m);
+	return Markers.begin();
+}
+
+// ==============================================================
+
+HSRFOBJ	vPlanet::AddMarker(int type, double lng, double lat, float scale, D3DXCOLOR *color)
+{
+	_SRFMARKER m;
+
+	m.lng = lng;
+	m.lat = lat;
+	m.rot = 0.0f;
+	m.scl = scale;
+	m.uPos = GetUnitSurfacePos(lng, lat);
+	m.vColor = *color;
+	m.type = WORD(type);
+	
+	switch (type) {
+	case D3D9SM_SPHERE:
+	{ 
+		m.bDual = true;
+		m.pMesh = hStockMesh[type];
+	}
+	}
+
+	D3DXMatrixRotationAxis(&m.mWorld, &D3DXVEC(m.uPos), 0.0f);
+	D3DXMatrixScaling(&m.mWorld, scale, scale, scale);
+
+	Markers.push_front(m);
+	return Markers.begin();
+}
+
+// ==============================================================
+
+void vPlanet::SetPosition(HSRFOBJ hItem, double lng, double lat)
+{
+	hItem->lng = lng;
+	hItem->lat = lat;
+	hItem->uPos = GetUnitSurfacePos(lng, lat);
+
+	float scale = hItem->scl;
+	D3DXMatrixRotationAxis(&hItem->mWorld, &D3DXVEC(hItem->uPos), hItem->rot);
+	D3DXMatrixScaling(&hItem->mWorld, scale, scale, scale);
+}
+
+// ==============================================================
+
+void vPlanet::DeleteObject(HSRFOBJ hItem)
+{
+	Markers.erase(hItem);
+}
+
+// ==============================================================
+
 void vPlanet::UpdateBoundingBox()
 {
 	bBSRecompute = false;
@@ -379,7 +529,7 @@ bool vPlanet::Update (bool bMainScene)
 	if (MicroCfg.bEnabled && !MicroCfg.bLoaded && scn->GetCameraProxyVisual()==this) LoadMicroTextures();
 
 	int i, j;
-	float rad_scale = rad;
+	float rad_scale = float(size);
 	bool rescale = false;
 	dist_scale = 1.0f;
 
@@ -437,7 +587,7 @@ bool vPlanet::Update (bool bMainScene)
 				}
 
 			// set microtexture intensity
-			double alt = cdist-rad;
+			double alt = cdist-size;
 			double lvl = (clouddata->microalt1-alt)/(clouddata->microalt1-clouddata->microalt0);
 			clouddata->cloudmgr->SetMicrolevel (max (0, min (1, lvl)));
 		}
@@ -485,8 +635,8 @@ bool vPlanet::Update (bool bMainScene)
 
 void vPlanet::CheckResolution()
 {
-	double alt = max (1.0, cdist-rad);
-	double apr = rad * scn->ViewH()*0.5 / (alt * scn->GetTanAp());
+	double alt = max (1.0, cdist-size);
+	double apr = size * scn->ViewH()*0.5 / (alt * scn->GetTanAp());
 	// apparent planet radius in units of screen pixels
 
 	DWORD new_patchres;
@@ -529,8 +679,8 @@ void vPlanet::CheckResolution()
 void vPlanet::RenderZRange (double *nplane, double *fplane)
 {
 	double d = dotp (scn->GetCameraGDir(), cpos);
-	*fplane = max (1e3, d+rad*1.2);
-	*nplane = max (1e0, d-rad*1.2);
+	*fplane = max (1e3, d+size*1.2);
+	*nplane = max (1e0, d-size*1.2);
 	*fplane = min (*fplane, *nplane*1e5);
 }
 
@@ -642,7 +792,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 		if (mesh) {
 			mesh->SetSunLight((D3D9Light *)scn->GetLight(-1));
-			mesh->Render(dev, &mWorld, RENDER_ASTEROID);
+			mesh->Render(&mWorld, RENDER_ASTEROID);
 		} else {
 			RenderSphere (dev);                               
 		}
@@ -685,8 +835,11 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 
 	if (surfmgr2) {
 		tile_cache = NULL;	// Clear tile cache
-		if (cdist>=1.3*rad && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
-		else							 surfmgr2->Render (dmWorld, true,  prm);
+		if (cdist>=1.3*size && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
+		else {
+			surfmgr2->Render(dmWorld, true, prm);
+			RenderObjects(dev);
+		}
 	} 
 	else {
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	

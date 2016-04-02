@@ -33,6 +33,7 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define RENDER_BASETILES	3
 #define RENDER_VC			4
 #define RENDER_BASEBS		5
+#define RENDER_CUSTOM		6
 
  
 /**
@@ -72,6 +73,7 @@ public:
 		bool  bTransform;
 		bool  bUpdate;
 		bool  bGrouped;
+		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
@@ -91,7 +93,7 @@ public:
 		bool   bNoShadow;
 	};
 
-	
+					D3D9Mesh(const char *name);
 					D3D9Mesh(const D3D9Mesh &mesh);
 					D3D9Mesh(class AdMesh &mesh, bool bHasUV=true);
 					
@@ -107,6 +109,7 @@ public:
 					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate=false);
 					~D3D9Mesh();
 
+	void			LoadMeshFromHandle(MESHHANDLE hMesh, bool asTemplate);
 	void			UnLockVertexBuffer();
 	void			UnLockIndexBuffer();
 	NMVERTEX *		LockVertexBuffer(DWORD grp);
@@ -130,6 +133,8 @@ public:
 	 * \return Pointer to group structure.
 	 */
 	GROUPREC *		GetGroup(DWORD idx);
+
+	void			SetDualSided(DWORD idx, bool bState) { GetGroup(idx)->bDualSided = bState; }
 
 	/**
 	 * \brief Returns number of material specifications.
@@ -161,6 +166,8 @@ public:
 	D3DXVECTOR3		GetGroupSize(DWORD idx);
 	LPD3DXMATRIX	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
 
+	void			SetPosition(VECTOR3 &pos);
+	void			SetRotation(D3DXMATRIX &rot);
 
 	/**
 	 * \brief Replace a mesh texture.
@@ -171,17 +178,20 @@ public:
 	bool			SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex);
 	void			SetTexMixture (DWORD ntex, float mix);
 
-	void			RenderGroup(LPDIRECT3DDEVICE9 dev, const GROUPREC *grp);
-	void			RenderMeshGroup(LPDIRECT3DDEVICE9 dev, DWORD Tech, DWORD idx, const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex);
-	void			RenderBaseTile(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
-	void			RenderBoundingBox(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW);
-	void			Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
-	void			RenderShadows(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pW);
-	void			RenderShadowsEx(LPDIRECT3DDEVICE9 dev, float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
-	void			RenderRings(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
-	void			RenderRings2(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
+	void			RenderSimplified(const LPD3DXMATRIX pW, bool bCull=true);
+	void			RenderGroup(const GROUPREC *grp);
+	void			RenderGroup(int idx);
+	void			RenderBaseTile(const LPD3DXMATRIX pW);
+	void			RenderBoundingBox(const LPD3DXMATRIX pW);
+	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
+	void			RenderShadows(float alpha, const LPD3DXMATRIX pW);
+	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
+	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
+	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
+	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
 
 
+	void			ConvertToDynamic();
 	void			ResetTransformations();
 	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
 	void			Transform(const D3DXMATRIX *m);
@@ -254,7 +264,7 @@ private:
 	D3DCOLOR cAmbient;
 	
 	
-
+	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write 
 	bool bTemplate;             // mesh used as template only (not for rendering)
 	bool bBSRecompute;			// Bounding sphere must be recomputed
 	bool bBSRecomputeAll;

@@ -14,29 +14,13 @@
 #include <d3dx9.h>
 
 #ifdef _DEBUG
-
 #ifndef _TRACE
-#define _TRACE { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
+#define _TRACE { LogTrace("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
 #endif
-
-#ifndef _TRACER
-#define _TRACER { LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
-#endif
-
-//#ifndef _TRACER
-//#define _TRACER {  QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef); LogMsg("[TRACE] %s Line:%d %s",__FILE__,__LINE__,__FUNCTION__); }
-//#endif
-
 #else
-
 #ifndef _TRACE
 #define _TRACE
 #endif
-
-#ifndef _TRACER
-#define _TRACER
-#endif
-
 #endif
 
 
@@ -239,6 +223,17 @@ typedef struct {
 	int				group;			///< Mesh group that was picked
 	int				face;			///< Face that was picked
 } D3D9Pick;
+
+typedef struct {
+	// -- Output --
+	double dist;
+	double lng, lat, height;
+	class Tile * pTile;
+	// -- Input --
+	double rHed, aPck, cLng, cLat;
+	D3DXVECTOR3 vRay;
+	VECTOR3	vCam, vDir;
+} TILEPICK;
 
 #define D3D9LRange 0
 #define D3D9LFalloff 1

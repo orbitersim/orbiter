@@ -117,12 +117,12 @@ bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)
 
 	D3DMAT_FromAxisT(&World, &x, &y, &z);
 
-	float rad = vp->GetRadius();
+	float rad = float(vp->GetSize());
 	
 	if (pTex) {
-		mesh[rres]->RenderRings2(dev, &World, pTex, float(irad)*rad, float(orad)*rad);
+		mesh[rres]->RenderRings2(&World, pTex, float(irad)*rad, float(orad)*rad);
 	}
-	else mesh[rres]->RenderRings(dev, &World, tex[tres]);
+	else mesh[rres]->RenderRings(&World, tex[tres]);
 	return true;
 }
 

@@ -28,7 +28,9 @@ public:
 	inline void SetNode (QuadTreeNode<SurfTile> *_node) { node = _node; }
 	// Register the tile to a quad tree node
 
-	int GetElevation(double lat, double lng, double *elev, SurfTile **, bool bFilter=true);
+	int GetElevation(double lng, double lat, double *elev, SurfTile **, bool bFilter=true);
+	
+	double GetCameraDistance();
 
 protected:
 	virtual Tile *getParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
@@ -43,6 +45,7 @@ protected:
 	bool LoadElevationData ();
 	void Render ();
 	void StepIn ();
+	//void Pick(MATRIX4 &dwMatrix, TILEPICK *pPick);
 
 	TileManager2<SurfTile> *smgr;	// surface tile manager interface
 	QuadTreeNode<SurfTile> *node;	// my node in the quad tree, if I'm part of a tree

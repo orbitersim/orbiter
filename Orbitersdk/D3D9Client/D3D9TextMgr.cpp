@@ -559,8 +559,6 @@ void D3D9Text::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev, const char 
 	//
 	gc = _gc;
 
-	LogMsg("Starting to initialize a surface rendering technique");
-	
 	char name[256];
 	sprintf_s(name,256,"Modules/%s/CKBlit.fx",folder);
 
@@ -588,9 +586,6 @@ void D3D9Text::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev, const char 
 	eTex0  = FX->GetParameterByName(0,"gTex0");
 	eColor = FX->GetParameterByName(0,"gColor");
 	eData  = FX->GetParameterByName(0,"gData");
-	
-
-	LogMsg("...rendering technique initialized");
 }
 
 void D3D9Text::GlobalExit()

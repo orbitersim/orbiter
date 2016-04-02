@@ -67,8 +67,33 @@ QuadTreeNode<TileType> *TileManager2Base::LoadChildNode (QuadTreeNode<TileType> 
 // -----------------------------------------------------------------------
 
 template<class TileType>
+void TileManager2Base::PickNode(QuadTreeNode<TileType> *node, D3DXVECTOR3 *vRay, std::vector<Tile*> &tiles)
+{
+	Tile *tile = node->Entry();
+	int lvl = tile->lvl;
+	if (tile->state == Tile::ForRender && lvl>1) {	
+		D3DXMATRIX W; D3DXVECTOR3 bs = tile->mesh->bsCnt;
+		MATRIX4toD3DMATRIX(WorldMatrix(tile), W);
+		D3DXVec3TransformCoord(&bs, &bs, &W);
+		tile->bIntersect = D3DXSphereBoundProbe(&bs, tile->mesh->bsRad, &D3DXVECTOR3(0, 0, 0), vRay)==1;
+		if (tile->bIntersect) tiles.push_back(tile);
+	}
+	else if (tile->state == Tile::Active) {
+		for (int i = 0; i < 4; i++) {
+			if (node->Child(i)) {
+				if (node->Child(i)->Entry() && (node->Child(i)->Entry()->state & TILE_ACTIVE)) PickNode(node->Child(i), vRay, tiles);
+			}
+		}
+	}
+}
+
+// -----------------------------------------------------------------------
+
+template<class TileType>
 void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 {
+	if (bFreeze) return;
+
 	static const double res_scale = 1.1; // resolution scale with distance
 
 	const Scene *scene = GetScene();
@@ -131,18 +156,12 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			tdist = sqrt(a*a + h*h);
 		}
 
-		//if (DebugControls::IsEquEnabled()) 
-		bias -=  3.0 * sqrt(max(0,adist) / prm.viewap);
-		
-		double apr = tdist * scene->GetTanAp() * resolutionScale;
-
+		bias -=  2.0 * sqrt(max(0,adist) / prm.viewap);
 		int maxlvl = prm.maxlvl;
 		//if (DebugControls::IsEquEnabled()) maxlvl += 2;
 
+		double apr = tdist * scene->GetTanAp() * resolutionScale;
 		int tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
-
-		//if (DebugControls::IsEquEnabled()) tgtres += min(2, int(1.5e3/(fabs(tdist)*obj_size)));
-
 		bstepdown = (lvl < tgtres);	
 	}
 
@@ -185,17 +204,14 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 
 	if (tile->state == Tile::ForRender) {
 		int lvl = tile->lvl;
-		int ilng = tile->ilng;
-		int ilat = tile->ilat;
-		int nlng = 2 << lvl;
-		int nlat = 1 << lvl;
 		tile->MatchEdges ();
-		SetWorldMatrix (WorldMatrix (ilng, nlng, ilat, nlat));
+		SetWorldMatrix (WorldMatrix (tile));
 		tile->StepIn ();
 		tile->Render ();
 		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
 		D3D9Stats.Surf.Tiles[lvl]++;
 		D3D9Stats.Surf.Verts += tile->mesh->nv;
+
 	} else if (tile->state == Tile::Active) {
 		tile->StepIn ();
 		for (int i = 0; i < 4; i++) {

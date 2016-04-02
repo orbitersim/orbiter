@@ -38,6 +38,7 @@ using namespace oapi;
 
 D3D9Client *vObject::gc = NULL;
 D3D9ClientSurface *vObject::blobtex[3] = {0,0,0};
+D3D9Mesh *vObject::hStockMesh[16] = {};
 
 
 // ===========================================================================================
@@ -86,6 +87,14 @@ void vObject::GlobalInit(D3D9Client *gclient)
 	static char *fname[3] = {"Ball.dds","Ball2.dds","Ball3.dds"};
 	gc = gclient;
 	for (int i=0;i<3;i++) blobtex[i] = SURFACE(gc->clbkLoadTexture(fname[i]));
+
+	// Create Some Stock Meshes ----------------------------------------
+	//
+	for (int i = 0; i < ARRAYSIZE(hStockMesh); i++) hStockMesh[i] = NULL;
+	hStockMesh[D3D9SM_ARROW] = new D3D9Mesh("D3D9Arrow");
+	hStockMesh[D3D9SM_SPHERE] = new D3D9Mesh("D3D9Sphere");
+
+	hStockMesh[D3D9SM_SPHERE]->SetDualSided(0, true);
 }
 
 
@@ -95,6 +104,7 @@ void vObject::GlobalExit()
 {
 	_TRACE;
 	for (int i=0;i<3;i++) SAFE_DELETE(blobtex[i]);
+	for (int i = 0; i < ARRAYSIZE(hStockMesh); i++) SAFE_DELETE(hStockMesh[i]);
 }
 
 
@@ -126,6 +136,7 @@ bool vObject::Update(bool bMainScene)
 	oapiGetRotationMatrix(hObj, &grot);
 	oapiGetGlobalPos(hObj, &gpos);
 	
+	axis   = mul(grot, _V(0, 1, 0));
 	cpos   = gpos - scn->GetCameraGPos();
 	cdist  = length(cpos);
 		
@@ -315,17 +326,9 @@ void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vect
 
     D3DXMatrixIdentity(&W);
 
-    W._11 = float(x.x);
-    W._12 = float(x.y);
-    W._13 = float(x.z);
-
-    W._21 = float(y.x);
-    W._22 = float(y.y);
-    W._23 = float(y.z);
-
-    W._31 = float(z.x);
-    W._32 = float(z.y);
-    W._33 = float(z.z);
+    W._11 = float(x.x); W._12 = float(x.y); W._13 = float(x.z);
+    W._21 = float(y.x); W._22 = float(y.y); W._23 = float(y.z);
+    W._31 = float(z.x); W._32 = float(z.y); W._33 = float(z.z);
 
     W._41 = float(pos.x);
     W._42 = float(pos.y);
@@ -336,7 +339,7 @@ void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vect
 	if (bLog) len = max(0.0f, 13.0f+log(len)) * lscale / size;
 	else      len = len * lscale / size;
 
-	D3D9Effect::RenderAxisVector(&W, pColor, len);
+	hStockMesh[D3D9SM_ARROW]->RenderAxisVector(&W, pColor, len);
 }
 
 
@@ -344,58 +347,50 @@ void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vect
 //
 void vObject::RenderAxisLabel(Sketchpad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
 {
-	D3DXVECTOR3 homog,ws;
+	D3DXVECTOR3 homog, ws;
 	MATRIX3 grot;
 	D3DXMATRIX W;
 	VECTOR3 gpos, camp;
 
-    oapiGetRotationMatrix(hObj, &grot);
+	oapiGetRotationMatrix(hObj, &grot);
 	VECTOR3 dir = mul(grot, vector);
 
 	oapiGetGlobalPos(hObj, &gpos);
 
-    camp = gc->GetScene()->GetCameraGPos();
+	camp = gc->GetScene()->GetCameraGPos();
 
-    VECTOR3 pos = gpos - camp;
+	VECTOR3 pos = gpos - camp;
 	VECTOR3 rot = crossp(pos, vector);
-   
-    VECTOR3 y = mul (grot, unit(vector)) * size;
-    VECTOR3 x = mul (grot, unit(rot)) * size;
-    VECTOR3 z = mul (grot, unit(crossp(vector, rot))) * size;
 
-    D3DXMatrixIdentity(&W);
+	VECTOR3 y = mul(grot, unit(vector)) * size;
+	VECTOR3 x = mul(grot, unit(rot)) * size;
+	VECTOR3 z = mul(grot, unit(crossp(vector, rot))) * size;
 
-    W._11 = float(x.x);
-    W._12 = float(x.y);
-    W._13 = float(x.z);
+	D3DXMatrixIdentity(&W);
 
-    W._21 = float(y.x);
-    W._22 = float(y.y);
-    W._23 = float(y.z);
+	W._11 = float(x.x);  W._12 = float(x.y);  W._13 = float(x.z);
+	W._21 = float(y.x);  W._22 = float(y.y);  W._23 = float(y.z);
+	W._31 = float(z.x);  W._32 = float(z.y);  W._33 = float(z.z);
 
-    W._31 = float(z.x);
-    W._32 = float(z.y);
-    W._33 = float(z.z);
-
-    W._41 = float(pos.x);
-    W._42 = float(pos.y);
-    W._43 = float(pos.z);
+	W._41 = float(pos.x);
+	W._42 = float(pos.y);
+	W._43 = float(pos.z);
 
 	float len = float(length(vector));
-	
-	if (bLog) len = max(0.0f, 13.0f+log(len)) * lscale / size;
+
+	if (bLog) len = max(0.0f, 13.0f + log(len)) * lscale / size;
 	else      len = len * lscale / size;
 
-	D3DXVec3TransformCoord(&ws, &D3DXVECTOR3(0,len,0), &W);
+	D3DXVec3TransformCoord(&ws, &D3DXVECTOR3(0, len, 0), &W);
 	D3DXVec3TransformCoord(&homog, &ws, scn->GetProjectionViewMatrix());
 
-	if (D3DXVec3Dot(&ws, scn->GetCameraZ())<0) return;
+	if (D3DXVec3Dot(&ws, scn->GetCameraZ()) < 0) return;
 
 	if (homog.x >= -1.0f && homog.x <= 1.0f && homog.y >= -1.0f && homog.y <= 1.0f) {
-		int xc = (int)(scn->ViewW()*0.5*(1.0f+homog.x));
-		int yc = (int)(scn->ViewH()*0.5*(1.0f-homog.y));
+		int xc = (int)(scn->ViewW()*0.5*(1.0f + homog.x));
+		int yc = (int)(scn->ViewH()*0.5*(1.0f - homog.y));
 		pSkp->SetTextColor(D3DXCOLOR(clr->b, clr->g, clr->r, clr->a));
-		pSkp->Text(xc+10, yc, label, strlen(label));
+		pSkp->Text(xc + 10, yc, label, strlen(label));
 	}
 }
 

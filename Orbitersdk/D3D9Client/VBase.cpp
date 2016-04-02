@@ -345,7 +345,7 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 	if (tilemesh) {
 		uCurrentMesh = 0; // Used for debugging
 		tilemesh->SetSunLight(&sunLight);
-		tilemesh->RenderBaseTile(dev, &mWorld);
+		tilemesh->RenderBaseTile(&mWorld);
 		++uCurrentMesh;
 	}
 
@@ -353,7 +353,7 @@ bool vBase::RenderSurface(LPDIRECT3DDEVICE9 dev)
 	if (nstructure_bs) {
 		for (DWORD i = 0; i < nstructure_bs; ++i) {
 			structure_bs[i]->SetSunLight(&sunLight);
-			structure_bs[i]->Render(dev, &mWorld, RENDER_BASEBS);
+			structure_bs[i]->Render(&mWorld, RENDER_BASEBS);
 			++uCurrentMesh;
 		}
 	}
@@ -378,7 +378,7 @@ bool vBase::RenderStructures(LPDIRECT3DDEVICE9 dev)
 	// render generic objects above shadows
 	for (DWORD i=0; i<nstructure_as; i++) {
 		structure_as[i]->SetSunLight(&sunLight);
-		structure_as[i]->Render(dev, &mWorld, RENDER_BASE);
+		structure_as[i]->Render(&mWorld, RENDER_BASE);
 		++uCurrentMesh;
 	}
 	return true;
@@ -455,6 +455,6 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	D3DXVECTOR4 param = D9OffsetRange(oapiGetSize(hPlanet), 30e3);
 
 	for (DWORD i=0; i<nstructure_as; i++) {
-		if (structure_as[i]->HasShadow()) structure_as[i]->RenderShadowsEx(dev, scale, &mProj, &mWorld, &light, &param);
+		if (structure_as[i]->HasShadow()) structure_as[i]->RenderShadowsEx(scale, &mProj, &mWorld, &light, &param);
 	}
 }

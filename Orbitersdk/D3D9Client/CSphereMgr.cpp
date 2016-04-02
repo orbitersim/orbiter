@@ -212,8 +212,6 @@ void CSphereManager::GlobalInit(oapi::D3D9Client *gclient)
 		}
 		mult *= 2;
 	}*/
-
-	LogMsg("...Done");
 }
 
 // ==============================================================

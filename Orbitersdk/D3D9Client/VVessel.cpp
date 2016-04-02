@@ -35,7 +35,7 @@ const char *value_string (double val);
 
 vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	_TRACER;
+	_TRACE;
 
 	//@todo throw @ vObject or visObject???
 	if (_hObj==NULL) throw std::invalid_argument("_hObj");
@@ -386,7 +386,6 @@ void vVessel::DisposeMeshes()
 {
 	if (nmesh && meshlist) {
 		for (UINT i = 0; i < nmesh; i++) {
-			LogMsg("Deleting Vessel Mesh %u/%u 0x%X", i+1, nmesh, meshlist[i].mesh);
 			SAFE_DELETE(meshlist[i].mesh);
 			SAFE_DELETE(meshlist[i].trans);
 		}
@@ -623,8 +622,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 
 	const VCHUDSPEC *hudspec;
 	const VCMFDSPEC *mfdspec[MAXMFD];
-	SURFHANDLE sHUD=0; //, sMFD[MAXMFD];
-
+	
 	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false); // turn on  fog
 	else										   D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);  // turn off fog
 
@@ -636,26 +634,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
 	if (bVC && internalpass) {
-
 		for (mfd = 0; mfd < MAXMFD; mfd++) gc->GetVCMFDSurface(mfd, &mfdspec[mfd]);
-
-		sHUD = gc->GetVCHUDSurface(&hudspec);
-		
-		if (sHUD) {
-			DWORD w = SURFACE(sHUD)->GetWidth();
-			DWORD h = SURFACE(sHUD)->GetHeight();
-			if (tHUD) {
-				if (SURFACE(tHUD)->GetWidth()!=w || SURFACE(tHUD)->GetWidth()!=h) {
-					delete SURFACE(tHUD);
-					tHUD = SURFACE(gc->clbkCreateTexture(w, h));
-					SURFACE(tHUD)->Fill(NULL, 0);
-				}
-			}
-			else {
-				tHUD = SURFACE(gc->clbkCreateTexture(w, h));
-				SURFACE(tHUD)->Fill(NULL, 0);
-			}
-		}
+		gc->GetVCHUDSurface(&hudspec);
 	}
 
 
@@ -709,23 +689,16 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
-		if (internalpass) meshlist[i].mesh->Render(dev, pWT, RENDER_VC, NULL, 0);
-		else 			  meshlist[i].mesh->Render(dev, pWT, RENDER_VESSEL, pEnv, nEnv);
+		if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
+		else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);
 		
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//
 		if (bVC && internalpass && !lightprepass) {
-
-			// render VC HUD
-			//
-			if (sHUD && hudspec->nmesh == i) {
+			if (hudspec->nmesh == i) {
 				D3D9Mesh::GROUPREC * HUDGrp = meshlist[i].mesh->GetGroup(hudspec->ngroup);
-				meshlist[i].mesh->DynamicGroup(hudspec->ngroup);
-				if (HUDGrp) {
-					gc->clbkBlt(tHUD, 0, 0, sHUD);
-					meshlist[i].mesh->RenderMeshGroup(dev, 0, hudspec->ngroup, pWT, tHUD);
-				}
+				if (HUDGrp) HUDGrp->MFDScreenId = 0x100;
 			}
 		}
 	}
@@ -1050,9 +1023,9 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 
 		if (meshlist[i].trans) {
 			D3DXMatrixMultiply(&mProjWorldShift, meshlist[i].trans, &mProjWorld);
-			mesh->RenderShadows(dev, alpha, &mProjWorldShift);
+			mesh->RenderShadows(alpha, &mProjWorldShift);
 		}
-		else mesh->RenderShadows(dev, alpha, &mProjWorld);
+		else mesh->RenderShadows(alpha, &mProjWorld);
 	}
 }
 

@@ -350,8 +350,7 @@ float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
 	}
 	
 	if (iDebug==5) {
-		float x = saturate(iTileLvl * 0.05);
-		return float4(color, 1) * float4(x, 0.0, 1-x, 1.0);
+		return float4(color, 1) + float4(0.3, -0.3, -0.3, 0) * iTileLvl;
 	}
 	
 	return float4(0,0,0,1);

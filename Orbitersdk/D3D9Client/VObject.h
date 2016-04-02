@@ -15,6 +15,7 @@
 #include "AABBUtil.h"
 #include <d3d9.h> 
 #include <d3dx9.h>
+#include <vector>
 
 extern class D3D9Config *Config;
 
@@ -128,7 +129,7 @@ public:
 	VECTOR3 GetBoundingSpherePos();
 	float GetBoundingSphereRadius();
 	const char *GetName();
-
+	
 	/**
 	 * \brief Returns distance from camera
 	 * \return camera distance [m]
@@ -217,6 +218,7 @@ public:
 	
 	void RenderDot(LPDIRECT3DDEVICE9 dev);
 	
+	
 
 	bool bOmit;			// Omit this object from scene rendering
 
@@ -226,8 +228,10 @@ protected:
 	void RenderAxisVector(oapi::Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
 	void RenderAxisLabel(oapi::Sketchpad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
 	
+	
 	static oapi::D3D9Client *gc;			// graphics client instance pointer
 	static D3D9ClientSurface *blobtex[3];  // beacon textures
+	static D3D9Mesh * hStockMesh[16];
 	
 	D3D9Light		sunLight;	// Local copy of sun light. (Can be freely edited)
 	D9BBox			BBox;
@@ -237,6 +241,7 @@ protected:
 	Scene *scn;			// The scene to which the object belongs
 	D3DXMATRIX mWorld;	// D3D world matrix for the object
 	D3DXMATRIX mWorldInv;
+	VECTOR3	axis;
 	VECTOR3 cpos;		// camera-relative object position
 	VECTOR3 sundir;		// Sun direction (unit vector)
 	VECTOR3 albedo;

@@ -11,10 +11,29 @@
 
 #include "VObject.h"
 #include "AtmoControls.h"
+#include <list>
 
 class D3D9Mesh;
 class SurfTile;
 class CloudTile;
+
+typedef struct {
+	class vBase *	hBase;					// Reference base handle or NULL for planet geocentre		
+	D3DXMATRIX		mWorld;					// Object orientation, and location (if the reference is a base)
+	D3DCOLORVALUE	vColor;
+	VECTOR3			uPos;					// Geocentric position (unit vector), if the reference is geocentre
+	double			lng, lat, elv;			// Location, if the reference is geocentre
+	float			rot, scl;				// Object rotation and scale factor
+	D3D9Mesh *		pMesh;
+	WORD			flags;
+	WORD			type;
+	bool			bDual;					// Dual-sided rendering
+} _SRFMARKER;
+
+
+//typedef _SRFMARKER &HSRFOBJ;
+//typedef _SRFMARKER  *HSRFOBJ;
+typedef std::list<_SRFMARKER>::iterator HSRFOBJ;
 
 
 // ==============================================================
@@ -30,6 +49,7 @@ class CloudTile;
  * variations in elevation.
  */
 class vPlanet: public vObject {
+
 	friend class TileManager;
 	friend class SurfaceManager;
 	template<class T> friend class TileManager2;
@@ -51,14 +71,18 @@ public:
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
-	float			GetRadius() const { return rad; }	//TODO: Remove this. Use GetSize() instead
 	bool			CameraInAtmosphere() const;
 	double			GetHorizonAlt() const;
 	double          GetMinElevation() const;
-	
+	double			GetMaxElevation() const;
+	VECTOR3			GetUnitSurfacePos(double lng, double lat) const;
+	VECTOR3			GetRotationAxis() const { return axis; }
+	VECTOR3			ToLocal(VECTOR3 &glob) const;
+	void			GetLngLat(VECTOR3 &loc, double *lng, double *lat) const;
 	VECTOR3			ReferencePoint();
 	void			SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot);
-	int				GetElevation(double lat, double lng, double *elv, int *lvl=NULL, class SurfTile **tile=NULL);
+	int				GetElevation(double lng, double lat, double *elv, int *lvl=NULL, class SurfTile **tile=NULL) const;
+	void 			PickSurface(TILEPICK *pPick);
 
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
@@ -73,7 +97,16 @@ public:
 	void			SaveAtmoConfig(bool bOrbit);
 	void			UpdateAtmoConfig();
 	void			DumpDebugFile();
-	// ------------------------------------------------------------------------
+
+	// Object Interface -------------------------------------------------------
+	HSRFOBJ			AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot = 0.0f, bool bDual = false, float scale = 1.0f);
+	HSRFOBJ			AddMarker(int type, double lng, double lat, float scale, D3DXCOLOR *color);
+	void			SetPosition(HSRFOBJ hItem, double lng, double lat);
+	void			DeleteObject(HSRFOBJ hItem);
+	void			SetCursor(int id, double lng, double lat);
+
+
+
 
 	struct RenderPrm { //< misc. parameters for rendering the planet
 		// persistent options
@@ -123,6 +156,7 @@ protected:
 	void RenderBaseStructures (LPDIRECT3DDEVICE9 dev);
 	void RenderBaseShadows (LPDIRECT3DDEVICE9 dev, float depth);
 	void RenderCloudShadows (LPDIRECT3DDEVICE9 dev);
+	void RenderObjects(LPDIRECT3DDEVICE9 dev);
 	bool ModLighting (DWORD &ambient);
 
 	bool ParseMicroTextures();            ///< Read micro-texture config for this planet
@@ -130,8 +164,6 @@ protected:
 	static void ParseMicroTexturesFile(); ///< Parse MicroTex.cfg file (once)
 
 private:
-	float rad;                // planet radius [m]
-	float render_rad;         // distance to be rendered past planet centre
 	float dist_scale;         // planet rescaling factor
 	double maxdist,           // ???
 	       max_centre_dist;
@@ -148,7 +180,7 @@ private:
 	SurfaceManager *surfmgr;  // planet surface tile manager
 	TileManager2<SurfTile> *surfmgr2;   // planet surface tile manager (v2)
 	TileManager2<CloudTile> *cloudmgr2; // planet cloud layer tile manager (v2)
-	class SurfTile *tile_cache;
+	mutable class SurfTile *tile_cache;
 	HazeManager *hazemgr;     // horizon haze rendering
 	HazeManager2 *hazemgr2;	  // horizon haze rendering
 	RingManager *ringmgr;     // ring manager
@@ -159,6 +191,7 @@ private:
 	FogParam fog;             // distance fog render parameters
 	D3D9Mesh *mesh;           // mesh for nonspherical body
 	D3D9Mesh *pRockPatch;
+	HSRFOBJ hCursor[3];
 	VECTOR3	vRefPoint;		  // Auxiliary reference point for normal mapped water
 	ScatterParams SPrm;		  // Parameters for atmospheric configuration dialog
 	ScatterParams OPrm;		  // Parameters for atmospheric configuration dialog
@@ -185,6 +218,8 @@ private:
 		double	px;				// pixel count
 		LPDIRECT3DTEXTURE9 pTex;
 	};
+
+	std::list<_SRFMARKER> Markers;
 
 public:
 	struct _MicroCfg {

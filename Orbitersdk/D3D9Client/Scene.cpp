@@ -346,7 +346,7 @@ void Scene::DeleteAllVisuals()
 //
 Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 {
-	_TRACER;
+	_TRACE;
 
 	char buf[256];
 
@@ -1720,6 +1720,18 @@ float Scene::GetDepthResolution(float dist) const
 
 // ===========================================================================================
 //
+void Scene::GetCameraLngLat(double *lng, double *lat) const
+{
+	double rad;	VECTOR3 rpos; MATRIX3 grot;
+	OBJHANDLE hPlanet = GetCameraProxyBody();
+	oapiGetGlobalPos(hPlanet, &rpos);
+	oapiGetRotationMatrix(hPlanet, &grot);
+	rpos = GetCameraGPos() - rpos;
+	oapiLocalToEqu(hPlanet, tmul(grot, rpos), lng, lat, &rad);
+}
+
+// ===========================================================================================
+//
 void Scene::PushCamera() 
 { 
 	CameraStack.push(Camera); 
@@ -1735,16 +1747,72 @@ void Scene::PopCamera()
 
 // ===========================================================================================
 //
+D3DXVECTOR3 Scene::GetPickingRay(short xpos, short ypos)
+{
+	float x = 2.0f*float(xpos) / float(ViewW()) - 1.0f;
+	float y = 2.0f*float(ypos) / float(ViewH()) - 1.0f;
+	D3DXVECTOR3 vPick = Camera.x * (x / Camera.mProj._11) + Camera.y * (-y / Camera.mProj._22) + Camera.z;
+	D3DXVec3Normalize(&vPick, &vPick);
+	return vPick;
+}
+
+// ===========================================================================================
+//
+TILEPICK Scene::PickSurface(short xpos, short ypos)
+{
+	TILEPICK tp; memset(&tp, 0, sizeof(TILEPICK));
+
+	vPlanet *vp = GetCameraProxyVisual();
+
+	if (!vp) return tp;
+
+	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
+
+	double cLng, cLat;
+	GetCameraLngLat(&cLng, &cLat);
+
+	VECTOR3 vPck = vp->ToLocal(_VD3DX(vPick));			// Picking ray in Planet's local system
+	VECTOR3 vCam = vp->GetUnitSurfacePos(cLng, cLat);	// Camera position vector
+	VECTOR3 vRot = vp->GetRotationAxis();				// Planet's rotation axis
+
+	// Compute tangent plane
+	VECTOR3 vEast = unit(crossp(vRot, vCam));
+	VECTOR3 vNorth = unit(crossp(vCam, vEast));
+
+	// Make the picking ray co-planar with tangent plane
+	VECTOR3 vDir = unit(vPck - vCam * dotp(vCam, vPck));
+
+	// Angle between vCam, vPick
+	double aPck = PI - acos(dotp(vCam, vPck));
+
+	// Pick heading [0,360] 0=North 90=East
+	double rHed = PI - atan2(-dotp(vEast, vDir), -dotp(vNorth, vDir));
+	
+	tp.vRay = vPick;
+	tp.vDir = vDir;
+	tp.vCam = vCam;
+	tp.cLng = cLng;
+	tp.cLat = cLat;
+	tp.rHed = rHed;
+	tp.aPck = aPck;
+
+	vp->PickSurface(&tp);
+
+	return tp;
+}
+
+// ===========================================================================================
+//
 D3D9Pick Scene::PickScene(short xpos, short ypos)
 {
-	float x = 2.0f*float(xpos)/float(viewW) - 1.0f;
-	float y = 2.0f*float(ypos)/float(viewH) - 1.0f;
-
-	D3DXVECTOR3 vPick = Camera.x * (x/Camera.mProj._11) + Camera.y * (-y/Camera.mProj._22) + Camera.z;
+	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
 	
-	D3DXVec3Normalize(&vPick, &vPick);
+	/*vPlanet *vp = GetCameraProxyVisual();
 
-	VOBJREC *pv = NULL;
+	if (vp) {
+		TILEPICK tp = vp->PickSurface(vPick);
+	}*/
+
 
 	D3D9Pick result;
 	result.dist  = 1e30f;
@@ -1753,7 +1821,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 	result.face  = -1;
 	result.group = -1;
 
-	for (pv=vobjFirst; pv; pv=pv->next) {
+	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) {
 
 		if (pv->type!=OBJTP_VESSEL) continue;
 		if (!pv->vobj->IsActive()) continue;
@@ -1896,6 +1964,8 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	}
 
 	if (gpos) Camera.pos = *gpos;
+
+	Camera.upos = D3DXVEC(unit(Camera.pos));
 
 	// find the planet closest to the current camera position
 	Camera.hObj_proxy = oapiCameraProxyGbody();
@@ -2083,8 +2153,6 @@ void Scene::GlobalExit()
 //
 void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 {
-	LogMsg("Starting to initialize a SceneTech rendering technique...");
-
 	char name[256];
 	sprintf_s(name,256,"Modules/%s/SceneTech.fx", folder);
 
@@ -2121,8 +2189,6 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 	eWVP   = FX->GetParameterByName(0,"gWVP");
 	eTex0  = FX->GetParameterByName(0,"gTex0");
 	eColor = FX->GetParameterByName(0,"gColor");
-	
-	LogMsg("...rendering technique initialized");
 }
 
 // ===========================================================================================

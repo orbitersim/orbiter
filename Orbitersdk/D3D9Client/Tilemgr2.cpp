@@ -39,16 +39,17 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
   texrange(fullrange), cnt(Centre()),
   mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL),
   FrameId(0),
-  mean_elev(0.0), max_elev(0.0),
+  mean_elev(0.0), min_elev(0.0), max_elev(0.0),
   state(Invalid),
   edgeok(false), owntex (true)
 {
 	double f = 1.0 / double(1<<lvl);
 	double x = PI * (0.5 - double(ilat+1) * f);
-	width = PI * cos(x) * f;
-	height = PI * f;
+	width = float(PI * cos(x) * f);
+	height = float(PI * f);
 	Extents(&minlat, &maxlat, &minlng, &maxlng);
 	D3D9Stats.TilesAllocated++;
+	bIntersect = false;
 }
 
 // -----------------------------------------------------------------------
@@ -176,6 +177,74 @@ bool Tile::InView (const MATRIX4 &transform)
 }
 
 // -----------------------------------------------------------------------
+// Check if a plane intersects a tile, plane must be given in planet
+// coordinates
+
+int Tile::PlaneIntersection(VECTOR3 &vPln, double hed, double lng, double lat, double *oLng, double *oLat, double *oDst)
+{
+	assert(state == Tile::ForRender);
+
+	bool bLng = false, bLat = false;
+	int rv = 0;
+	if ((lat >= minlat) && (lat <= maxlat)) bLat = true, rv = 0x10;
+	if ((lng >= minlng) && (lng <= maxlng)) bLng = true, rv = 0x20;
+
+	if (bLng && bLat) {
+		if (oLng) *oLng = lng;
+		if (oLat) *oLat = lat;
+		if (oDst) *oDst = 0.0;
+		return 0;
+	}
+
+	double dir = PI05 - hed;
+	if (dir < -PI) dir += PI2;	
+
+	double tLng = fabs(dir) < PI05 ? minlng : maxlng;
+	double tLat = dir > 0 ? minlat : maxlat;
+
+	if (!bLng) {
+
+		VECTOR3 vTgt = _V(-sin(tLng), 0, cos(tLng));
+		VECTOR3 vNod = unit(crossp(vTgt, vPln));
+
+		double qLat = asin(vNod.y);
+		double qLng = atan2(vNod.z, vNod.x);
+
+		if (fabs(qLng - tLng)>0.1) qLat = -qLat, qLng = wrap(qLng + PI);
+
+		if ((qLat >= minlat) && (qLat <= maxlat)) {
+			*oLat = qLat;
+			*oLng = tLng;
+			*oDst = oapiOrthodome(tLng, qLat, lng, lat);
+			return 1 + rv;
+		}
+	}
+
+	if (!bLat) {
+		VECTOR3 vLAN = _V(vPln.z, 0, -vPln.x);
+		//VECTOR3 vNod = unit(crossp(vTgt, vPln));
+		VECTOR3 vAux = crossp(vPln, vLAN);
+		double qInc = acos(vPln.y);
+		double dDst = asin(sin(tLat) / sin(qInc));
+
+		if (dir < 0) dDst = PI-dDst;
+
+		VECTOR3 vInt = vLAN * cos(dDst) + vAux * sin(dDst);
+		double qLng = atan2(vInt.z, vInt.x);
+
+		if ((qLng >= minlng) && (qLng <= maxlng)) {
+			*oLat = tLat;
+			*oLng = qLng;
+			*oDst = oapiOrthodome(qLng, tLat, lng, lat);
+			return 2 + rv;
+		}
+	}
+	return -1;
+}
+
+
+
+// -----------------------------------------------------------------------
 // returns the direction of the tile centre from the planet centre in local
 // planet coordinates
 
@@ -244,6 +313,9 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	VECTOR3 pref = {radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)}; // origin
 	VECTOR3 tpmin, tpmax; 
 
+	max_elev = -1e30f;
+	min_elev = +1e30f;
+
 	// patch translation vector
 	if (shift_origin) {
 		dx = (north ? clat0:clat1)*radius;
@@ -267,6 +339,11 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 			eradius = radius + globelev; // radius including node elevation
 			if (elev) eradius += (double)elev[(i+1)*elev_stride + j+1];
+
+			float felev = float(eradius - radius);
+			max_elev = max(max_elev, felev);
+			min_elev = min(min_elev, felev);
+
 			nml = _V(clat*clng, slat, clat*slng);
 			pos = nml*eradius;
 			tpos = mul (R, pos-pref);
@@ -420,6 +497,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	mesh->Box[6] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmax.z)) + pref);
 	mesh->Box[7] = _V(tmul (R, _V(tpmax.x, tpmax.y, tpmax.z)) + pref);
 
+	mesh->ComputeSphere();
 	mesh->MapVertices(TileManager2Base::pDev);
 
 	return mesh;
@@ -795,10 +873,10 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	cprm.gridRes = _gridres;
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
-	min_elev = obj_size; 
 	oapiGetObjectName (obj, cbody_name, 256);
 	emgr = oapiElevationManager(obj);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
+	ResetMinMaxElev();
 }
 
 // -----------------------------------------------------------------------
@@ -904,6 +982,41 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 
 // -----------------------------------------------------------------------
 
+void TileManager2Base::ResetMinMaxElev()
+{
+	min_elev = 0.0f;
+	max_elev = 0.0f;
+	bSet = true;
+}
+
+// -----------------------------------------------------------------------
+
+void TileManager2Base::SetMinMaxElev(float mi, float ma)
+{
+	if (bSet) {
+		min_elev = mi;
+		max_elev = ma;
+		bSet = false;
+		return;
+	}
+	min_elev = min(min_elev, mi);
+	max_elev = max(max_elev, ma);
+}
+
+// -----------------------------------------------------------------------
+
+MATRIX4 TileManager2Base::WorldMatrix(Tile *tile)
+{
+	int lvl = tile->lvl;
+	int ilng = tile->ilng;
+	int ilat = tile->ilat;
+	int nlng = 2 << lvl;
+	int nlat = 1 << lvl;
+	return WorldMatrix(ilng, nlng, ilat, nlat);
+}
+
+// -----------------------------------------------------------------------
+
 MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 {
 	if (nlat < 2) {  // render full sphere
@@ -972,9 +1085,9 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 		D3D9Stats.TilesCached++;
 		D3D9Stats.TilesCachedMB += nv*sizeof(VERTEX_2TEX);
 		
-		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
-		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
+		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		return VtxPoolSize[pool];
 	}
 	else {
@@ -1020,8 +1133,8 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 	}
 
 	if (IdxPool[pool].empty()) {
-		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
-		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD) * 3, D3DUSAGE_DYNAMIC, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD) * 3, D3DUSAGE_DYNAMIC, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		return IdxPoolSize[pool];
 	}
@@ -1030,22 +1143,6 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 		IdxPool[pool].pop();
 		return IdxPoolSize[pool];
 	}
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::ReduceMinElevation(double Elev)
-{
-	if (Elev<min_elev) min_elev = Elev;
-}
-
-// -----------------------------------------------------------------------
-
-const double TileManager2Base::GetMinElev() const
-{
-	// TODO: This is bad
-	if (min_elev==obj_size) return 0.0; // Info not provided
-	return min_elev;
 }
 
 // -----------------------------------------------------------------------

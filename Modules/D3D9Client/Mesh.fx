@@ -9,10 +9,10 @@ struct TileMeshVS
 {
     float4 posH     : POSITION0;
     float3 CamW     : TEXCOORD0;
-    half2  tex0     : TEXCOORD1;
-    half3  nrmW     : TEXCOORD2;
-    half4  atten    : COLOR0;           // (Atmospheric haze) Attennuate incoming fragment color
-    half4  insca    : COLOR1;           // (Atmospheric haze) "Inscatter" Add to incoming fragment color
+    float2 tex0     : TEXCOORD1;
+	float3 nrmW     : TEXCOORD2;
+	float4 atten    : COLOR0;           // (Atmospheric haze) Attennuate incoming fragment color
+	float4 insca    : COLOR1;           // (Atmospheric haze) "Inscatter" Add to incoming fragment color
 };
 
 struct MeshVS
@@ -35,28 +35,6 @@ struct TileMeshNMVS
      
 };
 
-
-
-MeshVS SimpleMeshTechVS(MESH_VERTEX vrt)
-{
-    // Zero output.
-	MeshVS outVS = (MeshVS)0;
-	
-	float3 posX = mul(float4(vrt.posL, 1.0f), gGrpT).xyz;       // Apply meshgroup specific transformation
-    float3 posW = mul(float4(posX, 1.0f), gW).xyz;              // Apply world transformation matrix
-    outVS.posH  = mul(float4(posW, 1.0f), gVP);
-   
-    float3 nrmX = mul(float4(vrt.nrmL.xyz, 0.0f), gGrpT).xyz;   // Apply meshgroup specific transformation
-    float3 nrmW = mul(float4(nrmX, 0.0f), gW).xyz;              // Apply world transformation matrix
-
-    outVS.nrmW  = normalize(nrmW);
-    outVS.CamW  = -posW;
-    outVS.tex0  = vrt.tex0;
-
-    return outVS;
-}
-
-
 MeshVS TinyMeshTechVS(MESH_VERTEX vrt)
 {
     // Zero output.
@@ -64,7 +42,7 @@ MeshVS TinyMeshTechVS(MESH_VERTEX vrt)
 	
     float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;              // Apply world transformation matrix
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
-    float3 nrmW = mul(float4(vrt.nrmL.xyz, 0.0f), gW).xyz;          // Apply world transformation matrix
+    float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;          // Apply world transformation matri
     outVS.nrmW  = normalize(nrmW);
     outVS.CamW  = -posW;
     outVS.tex0  = vrt.tex0;
@@ -73,37 +51,45 @@ MeshVS TinyMeshTechVS(MESH_VERTEX vrt)
 }
 
 
-float4 HUDTechPS(MeshVS frg) : COLOR
+float4 TinyMeshTechPS(MeshVS frg) : COLOR
 {
+	return float4(0,1,0,1);
+
 	// Normalize input
 	float3 nrmW = normalize(frg.nrmW);
 	float3 CamW = normalize(frg.CamW);
+	float4 cSpec = gMtrl.specular;
+	float4 cTex = 1;
+
+	if (gTextured) {
+		if (gNoColor) cTex.a = tex2D(WrapS, frg.tex0.xy).a;
+		else cTex = tex2D(WrapS, frg.tex0.xy);
+	}
+
+	if (gFullyLit) return float4(cTex.rgb*saturate(gMtrl.diffuse.rgb + gMtrl.emissive.rgb), cTex.a);
+
+	cTex.a *= gMtrlAlpha;
 	
-	float3 r = reflect(gSun.direction, nrmW);
-	float  s = pow(max(dot(r, CamW), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
+	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
+	float  d = saturate(-dot(gSun.direction, nrmW));
+	float  s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
 
-	float3 diff  = gMtrl.diffuse.rgb + gMtrl.emissive.rgb;
-    float3 color = tex2D(MFDSamp, frg.tex0).rgb * diff + saturate(s * gMtrl.specular.rgb);
-	
-    return float4(color.rgb, 1.0f);
+	if (d == 0) s = 0;
 
-    //return tex2D(SimpleS, frg.tex0);
-}
+	float3 diff = gMtrl.diffuse.rgb * (d * saturate(gSun.diffuse.rgb)); // Compute total diffuse light
+	diff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
 
+	float3 cTot = cSpec.rgb * (s * gSun.specular.rgb);	// Compute total specular light
 
-float4 MFDTechPS(MeshVS frg) : COLOR
-{
-	// Normalize input
-	float3 nrmW = normalize(frg.nrmW);
-	float3 CamW = normalize(frg.CamW);
-	
-	float3 r = reflect(gSun.direction, nrmW);
-	float  s = pow(max(dot(r, CamW), 0.0f), gMtrl.specular.a) * saturate(gMtrl.specular.a);
+	cTex.rgb *= saturate(diff);	// Lit the diffuse texture
+								
+#if defined(_GLASS)
+	cTex.a = saturate(cTex.a + max(max(cTot.r, cTot.g), cTot.b));		// Re-compute output alpha for alpha blending stage
+#endif
 
-	float3 diff  = gMtrl.diffuse.rgb + gMtrl.emissive.rgb;
-    float3 color = tex2D(MFDSamp, frg.tex0).rgb * diff + saturate(s * gMtrl.specular.rgb);
-	
-    return float4(color.rgb,  gMtrl.diffuse.a);
+	cTex.rgb += cTot.rgb;												// Apply reflections to output color
+
+	return cTex;
 }
 
 
@@ -210,7 +196,7 @@ float4 BaseTilePS(TileMeshVS frg) : COLOR
 // =============================================================================
 // Base Tile Rendering Technique
 // =============================================================================
-
+/*
 TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
 {
     // Null the output
@@ -270,7 +256,7 @@ float4 BaseTileNMPS(TileMeshNMVS frg) : COLOR
     float3 clr = cTex.rgb * (max(d,0) * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
     
     return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
-}
+}*/
 
 
 // =============================================================================
@@ -474,7 +460,7 @@ technique BoundingSphereTech
 
 technique BaseTileTech
 {
-    pass P0
+    /*pass P0
     {
         vertexShader = compile VS_MOD BaseTileNMVS();
         pixelShader  = compile PS_MOD BaseTileNMPS();
@@ -486,9 +472,9 @@ technique BaseTileTech
         ZEnable = false;
         ZWriteEnable = false;
         CullMode = CCW;
-    }   
+    }*/  
 
-    pass P1
+    pass P0
     {
         vertexShader = compile VS_MOD BaseTileVS();
         pixelShader  = compile PS_MOD BaseTilePS();
@@ -501,35 +487,6 @@ technique BaseTileTech
         ZWriteEnable = false;
         CullMode = CCW;
     }   
-}
-
-technique VCMFDTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD SimpleMeshTechVS();
-        pixelShader  = compile PS_MOD MFDTechPS();
-
-        AlphaBlendEnable = false;
-        ZEnable = true;
-        ZWriteEnable = true;
-    }
-}
-
-
-technique VCHudTech
-{
-    pass P0
-    {
-        vertexShader = compile VS_MOD SimpleMeshTechVS();
-        pixelShader  = compile PS_MOD HUDTechPS();
-
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = One;
-        DestBlend = One;
-        ZEnable = false;
-    }
 }
 
 technique RingTech
@@ -564,4 +521,20 @@ technique RingTech2
         ZEnable = false;
         CullMode = NONE;
     }   
+}
+
+technique SimplifiedTech
+{
+	pass P0
+	{
+		vertexShader = compile VS_MOD TinyMeshTechVS();
+		pixelShader = compile PS_MOD TinyMeshTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = true;
+		ZEnable = true;
+	}
 }

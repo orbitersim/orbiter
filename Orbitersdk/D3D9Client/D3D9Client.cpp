@@ -56,6 +56,7 @@ _D3D9Stats D3D9Stats;
  StereoHandle pStereoHandle = 0;
 #endif
 
+bool bFreeze = false;
 bool bSkepchpadOpen = false;
 
 // Module local constellation marker storage
@@ -288,7 +289,7 @@ const void *D3D9Client::GetConfigParam (DWORD paramtype) const
 //
 bool D3D9Client::clbkInitialise()
 {
-	_TRACER;
+	_TRACE;
 	LogAlw("================ clbkInitialise ===============");
 	LogAlw("Orbiter Version = %d",oapiGetOrbiterVersion());
 
@@ -306,7 +307,7 @@ bool D3D9Client::clbkInitialise()
 //
 HWND D3D9Client::clbkCreateRenderWindow()
 {
-	_TRACER;
+	_TRACE;
 
 	LogAlw("================ clbkCreateRenderWindow ===============");
 
@@ -351,7 +352,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	hRenderWnd = GraphicsClient::clbkCreateRenderWindow();
 
-	LogMsg("Window Handle = 0x%X",hRenderWnd);
+	LogAlw("Window Handle = 0x%X",hRenderWnd);
 	SetWindowText(hRenderWnd, "[D3D9Client]");
 
 	LogOk("Starting to initialize device and 3D environment...");
@@ -506,7 +507,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 //
 void D3D9Client::clbkPostCreation()
 {
-	_TRACER;
+	_TRACE;
 	LogAlw("================ clbkPostCreation ===============");
 
 	if (parser) return;
@@ -529,7 +530,7 @@ void D3D9Client::clbkPostCreation()
 //
 void D3D9Client::clbkCloseSession(bool fastclose)
 {
-	_TRACER;
+	_TRACE;
 	__TRY {
 
 		LogAlw("================ clbkCloseSession ===============");
@@ -578,7 +579,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
-	_TRACER;
+	_TRACE;
 	LogAlw("============= clbkDestroyRenderWindow ===========");
 
 #ifdef _NVAPI_H
@@ -691,7 +692,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 void D3D9Client::clbkUpdate(bool running)
 {
-	_TRACER;
+	_TRACE;
 	if (bFailed==false && bRunning) scene->Update();
 }
 
@@ -699,7 +700,7 @@ void D3D9Client::clbkUpdate(bool running)
 
 void D3D9Client::clbkRenderScene()
 {
-	_TRACER;
+	_TRACE;
 	
 	char Label[7];
 
@@ -769,7 +770,7 @@ void D3D9Client::clbkRenderScene()
 
 void D3D9Client::clbkTimeJump(double simt, double simdt, double mjd)
 {
-	_TRACER;
+	_TRACE;
 	GraphicsClient::clbkTimeJump (simt, simdt, mjd);
 }
 
@@ -779,7 +780,7 @@ double framer_rater_limit = 0.0;
 
 bool D3D9Client::clbkDisplayFrame()
 {
-	_TRACER;
+	_TRACE;
 	static int iRefrState = 0;
 	double time = D3D9GetTime();
 	
@@ -815,7 +816,7 @@ bool D3D9Client::clbkDisplayFrame()
 
 void D3D9Client::clbkPreOpenPopup ()
 {
-	_TRACER;
+	_TRACE;
 	GetDevice()->SetDialogBoxMode(true);
 }
 
@@ -875,7 +876,7 @@ static void FixOutOfScreenPositions (const HWND *hWnd, DWORD count)
 
 bool D3D9Client::RenderWithPopupWindows()
 {
-	_TRACER;
+	_TRACE;
 
 	const HWND *hPopupWnd;
 	DWORD count = GetPopupList(&hPopupWnd);
@@ -919,7 +920,7 @@ ParticleStream *D3D9Client::clbkCreateParticleStream(PARTICLESTREAMSPEC *pss)
 ParticleStream *D3D9Client::clbkCreateExhaustStream(PARTICLESTREAMSPEC *pss,
 	OBJHANDLE hVessel, const double *lvl, const VECTOR3 *ref, const VECTOR3 *dir)
 {
-	_TRACER;
+	_TRACE;
 	ExhaustStream *es = new ExhaustStream (this, hVessel, lvl, ref, dir, pss);
 	scene->AddParticleStream (es);
 	return es;
@@ -930,7 +931,7 @@ ParticleStream *D3D9Client::clbkCreateExhaustStream(PARTICLESTREAMSPEC *pss,
 ParticleStream *D3D9Client::clbkCreateExhaustStream(PARTICLESTREAMSPEC *pss,
 	OBJHANDLE hVessel, const double *lvl, const VECTOR3 &ref, const VECTOR3 &dir)
 {
-	_TRACER;
+	_TRACE;
 	ExhaustStream *es = new ExhaustStream (this, hVessel, lvl, ref, dir, pss);
 	scene->AddParticleStream (es);
 	return es;
@@ -941,7 +942,7 @@ ParticleStream *D3D9Client::clbkCreateExhaustStream(PARTICLESTREAMSPEC *pss,
 ParticleStream *D3D9Client::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss,
 	OBJHANDLE hVessel)
 {
-	_TRACER;
+	_TRACE;
 	ReentryStream *rs = new ReentryStream (this, hVessel, pss);
 	scene->AddParticleStream (rs);
 	return rs;
@@ -953,7 +954,7 @@ ParticleStream *D3D9Client::clbkCreateReentryStream (PARTICLESTREAMSPEC *pss,
 
 ScreenAnnotation* D3D9Client::clbkCreateAnnotation()
 {
-	_TRACER;
+	_TRACE;
 	return GraphicsClient::clbkCreateAnnotation();
 }
 
@@ -963,7 +964,7 @@ ScreenAnnotation* D3D9Client::clbkCreateAnnotation()
 
 void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 {
-	_TRACER;
+	_TRACE;
 	if (fname) {
 		LogAlw("Storing a mesh 0x%X (%s)",hMesh,fname);
 		if (hMesh==NULL) LogErr("D3D9Client::clbkStoreMeshPersistent(%s) hMesh is NULL",fname);
@@ -981,15 +982,13 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 		if (fname) LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,fname);
 		else	   LogWrn("MeshGroup(%d) in a mesh 0x%X is larger than 1km",idx,hMesh);
 	}
-
-	LogMsg("Mesh Stored");
 }
 
 // ==============================================================
 
 bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE surf)
 {
-	_TRACER;
+	_TRACE;
 	if (hMesh && surf) return ((D3D9Mesh*)hMesh)->SetTexture(texidx, SURFACE(surf));
 	return false;
 }
@@ -998,7 +997,7 @@ bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDL
 
 int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat)
 {
-	_TRACER;
+	_TRACE;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
@@ -1011,7 +1010,7 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 
 int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat)
 {
-	_TRACER;
+	_TRACE;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
@@ -1024,7 +1023,7 @@ int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *m
 
 bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD value)
 {
-	_TRACER;
+	_TRACE;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	switch (prop) {
 		case MESHPROPERTY_MODULATEMATALPHA:
@@ -1039,7 +1038,7 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD valu
 
 MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 {
-	_TRACER;
+	_TRACE;
 	if (vis==NULL) {
 		LogErr("NULL visual in clbkGetMesh(NULL,%u)",idx);
 		return NULL;
@@ -1053,13 +1052,13 @@ MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 
 int D3D9Client::clbkEditMeshGroup(DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSPEC *ges)
 {
-	_TRACER;
+	_TRACE;
 	return ((D3D9Mesh*)hMesh)->EditGroup(grpidx, ges);
 }
 
 int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs)
 {
-	_TRACER;
+	_TRACE;
 	return ((D3D9Mesh*)hMesh)->GetGroup (grpidx, grs);
 }
 
@@ -1069,7 +1068,7 @@ int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUES
 
 void D3D9Client::clbkNewVessel(OBJHANDLE hVessel)
 {
-	_TRACER;
+	_TRACE;
 	if (scene) scene->NewVessel(hVessel);
 }
 
@@ -1077,7 +1076,7 @@ void D3D9Client::clbkNewVessel(OBJHANDLE hVessel)
 
 void D3D9Client::clbkDeleteVessel(OBJHANDLE hVessel)
 {
-	_TRACER;
+	_TRACE;
 	__TRY {
 		if (scene) scene->DeleteVessel(hVessel);
 	}
@@ -1095,7 +1094,7 @@ void D3D9Client::clbkDeleteVessel(OBJHANDLE hVessel)
 
 void D3D9Client::clbkRefreshVideoData()
 {
-	_TRACER;
+	_TRACE;
 	if (vtab) vtab->UpdateConfigData();
 }
 
@@ -1103,7 +1102,7 @@ void D3D9Client::clbkRefreshVideoData()
 
 bool D3D9Client::clbkUseLaunchpadVideoTab() const
 {
-	_TRACER;
+	_TRACE;
 	return true;
 }
 
@@ -1112,7 +1111,7 @@ bool D3D9Client::clbkUseLaunchpadVideoTab() const
 
 bool D3D9Client::clbkFullscreenMode() const
 {
-	_TRACER;
+	_TRACE;
 	return bFullscreen;
 }
 
@@ -1121,8 +1120,7 @@ bool D3D9Client::clbkFullscreenMode() const
 
 void D3D9Client::clbkGetViewportSize(DWORD *width, DWORD *height) const
 {
-	_TRACER;
-	LogMsg("Width=%u, Height=%u",viewW,viewH);
+	_TRACE;
 	*width = viewW, *height = viewH;
 }
 
@@ -1131,26 +1129,22 @@ void D3D9Client::clbkGetViewportSize(DWORD *width, DWORD *height) const
 
 bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 {
-	_TRACER;
+	_TRACE;
 	switch (prm) {
 		case RP_COLOURDEPTH:
-			LogMsg("D3D9Client::clbkGetRenderParam(RP_COLOURDEPTH): %u",viewBPP);
 			*value = viewBPP;
 			return true;
 
 		case RP_ZBUFFERDEPTH:
-			LogMsg("D3D9Client::clbkGetRenderParam(RP_ZBUFFERDEPTH): %u",GetFramework()->GetZBufferBitDepth());
 			*value = GetFramework()->GetZBufferBitDepth();
 			return true;
 
 		case RP_STENCILDEPTH:
-			LogMsg("D3D9Client::clbkGetRenderParam(RP_STENCILDEPTH): %u",GetFramework()->GetStencilBitDepth());
 			*value = GetFramework()->GetStencilBitDepth();
 			return true;
 
 		case RP_MAXLIGHTS:
 			*value = max(0, min(12, Config->MaxLights));
-			LogMsg("D3D9Client::clbkGetRenderParam(RP_MAXLIGHTS): %u",*value);
 			return true;
 
 		case RP_REQUIRETEXPOW2:
@@ -1165,7 +1159,7 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 
 int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context)
 {
-	_TRACER;
+	_TRACE;
 	VisObject *vo = (VisObject*)vis;
 	vo->clbkEvent(msg, context);
 	if (DebugControls::IsActive()) {
@@ -1227,7 +1221,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	_TRACER;
+	_TRACE;
 
 	// -----------------------------------------------------------------------
 	/*
@@ -1326,6 +1320,9 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_KEYDOWN:
 			{
+				if (DebugControls::IsActive()) {
+					if (wParam == 'F') bFreeze = !bFreeze;
+				}
 				bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
 				bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
 				if (wParam=='C' && bShift && bCtrl) bControlPanel = !bControlPanel;
@@ -1346,15 +1343,19 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 			case WM_MOUSEMOVE:
 				if (DebugControls::IsActive()) {
+
+					double x = double(GET_X_LPARAM(lParam) - xpos);
+					double y = double(GET_Y_LPARAM(lParam) - ypos);
+					xpos = GET_X_LPARAM(lParam);
+					ypos = GET_Y_LPARAM(lParam);
+
 					if (bTrackMouse) {
-						double x = double(GET_X_LPARAM(lParam) - xpos);
-						double y = double(GET_Y_LPARAM(lParam) - ypos);
-						xpos = GET_X_LPARAM(lParam);
-						ypos = GET_Y_LPARAM(lParam);
 						double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
 						speed *= (DebugControls::GetVisualSize()/100.0);
 						if (scene->CameraPan(_V(-x,y,0)*0.05, speed)) return 0;
 					}
+
+					GetScene()->PickSurface(xpos, ypos);
 				}
 				break;
 
@@ -1410,7 +1411,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 BOOL D3D9Client::LaunchpadVideoWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	_TRACER;
+	_TRACE;
 	if (vtab) return vtab->WndProc(hWnd, uMsg, wParam, lParam);
 	else return false;
 }
@@ -1419,7 +1420,7 @@ BOOL D3D9Client::LaunchpadVideoWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, float alpha, bool additive)
 {
-	_TRACER;
+	_TRACE;
 
 	SURFHANDLE surf = NULL;
 	DWORD ngrp = oapiMeshGroupCount(hMesh);
@@ -1464,7 +1465,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 
 void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3 *T, bool additive)
 {
-	_TRACER;
+	_TRACE;
 	clbkRender2DPanel (hSurf, hMesh, T, 1.0f, additive);
 }
 
@@ -1472,7 +1473,7 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 
 DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 {
-	_TRACER;
+	_TRACE;
 	return ((DWORD)r << 16) + ((DWORD)g << 8) + (DWORD)b;
 }
 
@@ -1488,7 +1489,7 @@ DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 
 bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality)
 {
-	_TRACER;
+	_TRACE;
 	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
 
 	LPDIRECT3DSURFACE9 pRTG = NULL;
@@ -1578,7 +1579,7 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, Im
 
 SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 {
-	_TRACER;
+	_TRACE;
 	LPD3D9CLIENTSURFACE pTex = NULL;
 
 	char cpath[256];
@@ -1602,7 +1603,7 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 
 SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 {
-	_TRACER;
+	_TRACE;
 	DWORD flags = 0;
 
 	// Process flag conflicts and issues ---------------------------------------------------------------------------------
@@ -1628,7 +1629,7 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 
 void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 {
-	_TRACER;
+	_TRACE;
 	__TRY {
 
 		if (texmgr->IsInRepository(hTex)) return;	// Do not release surfaces stored in repository
@@ -1658,7 +1659,7 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
-	_TRACER;
+	_TRACE;
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurfaceEx");
 	surf->CreateSurface(w, h, attrib);
 	return surf;
@@ -1669,7 +1670,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 
 SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
-	_TRACER;
+	_TRACE;
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurface");
 	surf->MakeEmptySurfaceEx(w, h);
 	return surf;
@@ -1679,7 +1680,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 
 SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 {
-	_TRACER;
+	_TRACE;
 	SURFHANDLE hSurf = GraphicsClient::clbkCreateSurface(hBmp);
 	return hSurf;
 }
@@ -1688,7 +1689,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 
 SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
-	_TRACER;
+	_TRACE;
 	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pd3dDevice, "clbkCreateTexture");
 	// DO NOT USE ALPHA
 	pSurf->MakeEmptyTextureEx(w, h);
@@ -1699,7 +1700,7 @@ SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 
 void D3D9Client::clbkIncrSurfaceRef(SURFHANDLE surf)
 {
-	_TRACER;
+	_TRACE;
 	if (surf==NULL) { LogErr("D3D9Client::clbkIncrSurfaceRef() Input Surface is NULL");	return; }
 	SURFACE(surf)->IncRef();
 }
@@ -1708,7 +1709,7 @@ void D3D9Client::clbkIncrSurfaceRef(SURFHANDLE surf)
 
 bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 {
-	_TRACER;
+	_TRACE;
 
 	__TRY {
 
@@ -1748,7 +1749,7 @@ bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 
 bool D3D9Client::clbkGetSurfaceSize(SURFHANDLE surf, DWORD *w, DWORD *h)
 {
-	_TRACER;
+	_TRACE;
 	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
 	*w = SURFACE(surf)->GetWidth();
 	*h = SURFACE(surf)->GetHeight();
@@ -1759,7 +1760,7 @@ bool D3D9Client::clbkGetSurfaceSize(SURFHANDLE surf, DWORD *w, DWORD *h)
 
 bool D3D9Client::clbkSetSurfaceColourKey(SURFHANDLE surf, DWORD ckey)
 {
-	_TRACER;
+	_TRACE;
 	if (surf==NULL) { LogErr("Surface is NULL"); return false; }
 	SURFACE(surf)->SetColorKey(ckey);
 	return true;
@@ -1773,7 +1774,7 @@ bool D3D9Client::clbkSetSurfaceColourKey(SURFHANDLE surf, DWORD ckey)
 
 int D3D9Client::clbkBeginBltGroup(SURFHANDLE tgt)
 {
-	_TRACER;
+	_TRACE;
 	if (pBltGrpTgt) return -1;
 
 	if (tgt==RENDERTGT_NONE) {
@@ -1794,7 +1795,7 @@ int D3D9Client::clbkBeginBltGroup(SURFHANDLE tgt)
 
 int D3D9Client::clbkEndBltGroup()
 {
-	_TRACER;
+	_TRACE;
 	if (pBltGrpTgt==NULL) return -2;
 	SURFACE(pBltGrpTgt)->EndBlitGroup(); // Flush queue and release GPU
 	pBltGrpTgt = NULL;
@@ -1821,7 +1822,7 @@ bool D3D9Client::CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const
 
 bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD flag) const
 {
-	_TRACER;
+	_TRACE;
 
 	__TRY {
 
@@ -1853,7 +1854,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 
 bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag) const
 {
-	_TRACER;
+	_TRACE;
 
 	__TRY {
 		if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
@@ -1882,7 +1883,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
                                SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag) const
 {
-	_TRACER;
+	_TRACE;
 
 	__TRY {
 		if (src==NULL) { LogErr("D3D9Client::clbkScaleBlt() Source surface is NULL"); return false; }
@@ -1911,7 +1912,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int dx, int dy)
 {
-	_TRACER;
+	_TRACE;
 	return GraphicsClient::clbkCopyBitmap(pdds, hbm, x,y,dx,dy);;
 }
 
@@ -1919,7 +1920,7 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 
 bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD col) const
 {
-	_TRACER;
+	_TRACE;
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 	bool ret = SURFACE(tgt)->Clear(col);
 	return ret;
@@ -1929,7 +1930,7 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD col) const
 
 bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const
 {
-	_TRACER;
+	_TRACE;
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 	RECT r = {tgtx, tgty, tgtx+w, tgty+h};
 	bool ret = SURFACE(tgt)->Fill(&r, col);
@@ -2012,7 +2013,7 @@ DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
 
 HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 {
-	_TRACER;
+	_TRACE;
 	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
 	HDC hDC = SURFACE(surf)->GetDC();
 	return hDC;
@@ -2022,7 +2023,7 @@ HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 
 void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 {
-	_TRACER;
+	_TRACE;
 	if (hDC==NULL) { LogErr("D3D9Client::clbkReleaseSurfaceDC() Input hDC is NULL"); return; }
 	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
 	SURFACE(surf)->ReleaseDC(hDC);
@@ -2032,7 +2033,7 @@ void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 
 bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)
 {
-	_TRACER;
+	_TRACE;
 	return OutputLoadStatus (msg, line);
 }
 
@@ -2054,7 +2055,7 @@ HWND D3D9Client::GetWindow()
 
 LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 {
-	_TRACER;
+	_TRACE;
 	return SURFACE(pFramework->GetBackBufferHandle());
 }
 
@@ -2122,7 +2123,7 @@ bool D3D9Client::RegisterRenderProc(__ogciRenderProc proc, DWORD id)
 
 void D3D9Client::WriteLog(const char *msg) const
 {
-	_TRACER;
+	_TRACE;
 	char cbuf[256];
 	sprintf_s(cbuf, 256, "D3D9: %s", msg);
 	oapiWriteLog(cbuf);
@@ -2287,17 +2288,21 @@ void D3D9Client::SplashScreen()
 #pragma region Drawing_(Sketchpad)_Interface
 
 
+double sketching_time;
 
 // ==============================================================
 // 2D Drawing Interface
 //
 oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 {
-	_TRACER;
-
+	_TRACE;
+	
+	sketching_time = D3D9GetTime();
 	if (bSkepchpadOpen) LogErr("an other Sketchpad is already open");
 
-	if (surf==NULL) surf = GetBackBufferHandle();
+	if (surf == NULL) surf = GetBackBufferHandle();
+
+	LogOk("Creating SketchPad for surface (0x%X)(%u,%u)...", surf, SURFACE(surf)->GetWidth(), SURFACE(surf)->GetHeight());
 
 	// Sketching to backbuffer -----------------------------------------------------
 	//
@@ -2330,7 +2335,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 
 void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 {
-	_TRACER;
+	_TRACE;
 	bSkepchpadOpen = false;
 
 	SURFHANDLE surf = sp->GetSurface();
@@ -2349,43 +2354,45 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 			delete gdip;
 		}
 	}
+	sketching_time = D3D9GetTime() - sketching_time;
+	LogOk("...SketchPad Released.  Time spend %.2fms", sketching_time*1e-3);
 }
 
 Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
 {
-	_TRACER;
+	_TRACE;
 	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
 }
 
 void D3D9Client::clbkReleaseFont(Font *font) const
 {
-	_TRACER;
+	_TRACE;
 	g_fonts.erase(font);
 	delete ((D3D9PadFont*)font);
 }
 
 Pen *D3D9Client::clbkCreatePen(int style, int width, DWORD col) const
 {
-	_TRACER;
+	_TRACE;
 	return *g_pens.insert(new D3D9PadPen(style, width, col)).first;
 }
 
 void D3D9Client::clbkReleasePen(Pen *pen) const
 {
-	_TRACER;
+	_TRACE;
 	g_pens.erase(pen);
 	delete ((D3D9PadPen*)pen);
 }
 
 Brush *D3D9Client::clbkCreateBrush(DWORD col) const
 {
-	_TRACER;
+	_TRACE;
 	return *g_brushes.insert(new D3D9PadBrush(col)).first;
 }
 
 void D3D9Client::clbkReleaseBrush(Brush *brush) const
 {
-	_TRACER;
+	_TRACE;
 	g_brushes.erase(brush);
 	delete ((D3D9PadBrush*)brush);
 }
@@ -2398,7 +2405,7 @@ void D3D9Client::clbkReleaseBrush(Brush *brush) const
 
 VisObject::VisObject(OBJHANDLE hObj) : hObj(hObj)
 {
-	_TRACER;
+	_TRACE;
 }
 
 VisObject::~VisObject ()

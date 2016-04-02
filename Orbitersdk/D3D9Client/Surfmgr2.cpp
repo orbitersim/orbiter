@@ -167,8 +167,6 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		}
 		if (_mean_elev) *_mean_elev = hdr.emean;
 
-		mgr->ReduceMinElevation(hdr.emin);	
-		
 		switch (hdr.dtype) {
 		case 0: // flat tile, defined by offset
 			for (i = 0; i < ndat; i++) e[i] = (INT16)hdr.offset;
@@ -337,7 +335,23 @@ INT16 *SurfTile::ElevationData () const
 
 // -----------------------------------------------------------------------
 
-int SurfTile::GetElevation(double lat, double lng, double *elev, SurfTile **cache, bool bFilter)
+double SurfTile::GetMeanElevation(const INT16 *elev) const
+{
+	int i, j;
+	int res = mgr->Cprm().gridRes;
+	double melev = 0.0;
+	for (j = 0; j <= res; j++) {
+		for (i = 0; i <= res; i++) {
+			melev += elev[i];
+		}
+		elev += TILE_ELEVSTRIDE;
+	}
+	return melev / ((res + 1)*(res + 1));
+}
+
+// -----------------------------------------------------------------------
+
+int SurfTile::GetElevation(double lng, double lat, double *elev, SurfTile **cache, bool bFilter)
 {
 	static int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	if (cache) *cache = this;
@@ -386,26 +400,10 @@ int SurfTile::GetElevation(double lat, double lng, double *elev, SurfTile **cach
 		int i = 0;
 		if (lng>(minlng+maxlng)*0.5) i++;
 		if (lat<(minlat+maxlat)*0.5) i+=2;
-		return  node->Child(i)->Entry()->GetElevation(lat, lng, elev, cache);		
+		return  node->Child(i)->Entry()->GetElevation(lng, lat, elev, cache);		
 	}
 
 	return -3;
-}
-
-// -----------------------------------------------------------------------
-
-double SurfTile::GetMeanElevation (const INT16 *elev) const
-{
-	int i, j;
-	int res = mgr->Cprm().gridRes;
-	double melev = 0.0;
-	for (j = 0; j <= res; j++) {
-		for (i = 0; i <= res; i++) {
-			melev += elev[i];
-		}
-		elev += TILE_ELEVSTRIDE;
-	}
-	return melev / ((res+1)*(res+1));	
 }
 
 // -----------------------------------------------------------------------
@@ -431,6 +429,15 @@ float SurfTile::fixinput(double a, int x)
 		case 2: return float((1.0+floor(a*0.5))*2.0);
 	}
 	return 0.0f;
+}
+
+// -----------------------------------------------------------------------
+
+double SurfTile::GetCameraDistance()
+{	
+	VECTOR3 cnt = Centre() * (mgr->CbodySize() + mean_elev);
+	cnt = mgr->prm.cpos + mul(mgr->prm.grot, cnt);
+	return length(cnt);
 }
 
 // -----------------------------------------------------------------------
@@ -477,6 +484,8 @@ void SurfTile::Render ()
 	bool render_shadows = mgr->GetPlanet()->CloudMgr2()!=NULL; // && !mgr->prm.rprm->bCloudFlatShadows);
 
 	if (!mesh) return; // DEBUG : TEMPORARY
+
+	mgr->SetMinMaxElev(min_elev, max_elev);
 
 	UINT numPasses = 0;
 
@@ -591,7 +600,7 @@ void SurfTile::Render ()
 	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
 	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX()));
 	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetInt(TileManager2Base::siTileLvl, lvl));
+	HR(Shader->SetInt(TileManager2Base::siTileLvl, int(bIntersect)));
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetBool(TileManager2Base::sbSpecular, has_specular));
 	HR(Shader->SetBool(TileManager2Base::sbCloudSh, has_shadows));
@@ -916,6 +925,10 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	for (i = 0; i < 2; i++)
 		ProcessNode (tiletree+i);
 
+	vp->tile_cache = NULL;
+
+	ResetMinMaxElev();
+
 	// render the tree
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
@@ -926,10 +939,91 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		scene->SetCameraFrustumLimits(np,fp);
 }
 
+// -----------------------------------------------------------------------
 
 template<>
-int TileManager2<SurfTile>::GetElevation(double lat, double lng, double *elev, SurfTile **cache)
+int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, SurfTile **cache)
 {
-	if (lng<0) return tiletree[0].Entry()->GetElevation(lat, lng, elev, cache);
-	return tiletree[1].Entry()->GetElevation(lat, lng, elev, cache);
+	int rv = 0;
+	loader->WaitForMutex();
+	if (lng<0) rv = tiletree[0].Entry()->GetElevation(lng, lat, elev, cache);
+	else	   rv = tiletree[1].Entry()->GetElevation(lng, lat, elev, cache);
+	loader->ReleaseMutex();
+	return rv;
+}
+
+// -----------------------------------------------------------------------
+
+struct pair { Tile *pTile; double dist;	pair(Tile*a, double b) { pTile = a, dist = b; } };
+
+bool pair_cmp(const pair &a, const pair &b)
+{
+	if (a.dist < b.dist) return true;
+	return false;
+}
+
+template<>
+void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
+{
+	if (bFreeze) return;
+
+	std::vector<Tile *> tiles;
+
+	D3DXVECTOR3 vRay = pPick->vRay;
+
+	PickNode(&tiletree[0], &vRay, tiles);
+	PickNode(&tiletree[1], &vRay, tiles);
+
+	double dlng, dlat, lng, lat, dst, elv;
+	double delta, dstmin = PI2;
+	int lvl;
+
+	SurfTile *pStart = NULL;
+
+	VECTOR3 vPln = crossp(pPick->vCam, pPick->vDir);
+
+	for (DWORD i = 0; i < tiles.size(); i++) {
+		int rv = tiles[i]->PlaneIntersection(vPln, pPick->rHed, pPick->cLng, pPick->cLat, &lng, &lat, &dst);
+		if (rv>=0) {
+			if (dst < dstmin) {
+				dstmin = dst;
+				dlng = lng;
+				dlat = lat;
+				pStart = (SurfTile *)tiles[i];
+			}
+		}	
+	}
+
+	if (!pStart) return;
+
+	((vPlanet *)vp)->SetCursor(1, dlng, dlat);
+	((vPlanet *)vp)->SetCursor(2, pPick->cLng, pPick->cLat);
+
+	delta = pStart->height / 256.0;
+	dstmin += delta;
+
+	for (int cnt = 0; cnt < 2000; cnt++) {
+
+		VECTOR3 pos = pPick->vCam * cos(dstmin) + pPick->vDir * sin(dstmin);
+
+		vp->GetLngLat(pos, &lng, &lat);
+
+		int rv = vp->GetElevation(lng, lat, &elv, &lvl, &pStart);
+
+		if (rv > 0 && pStart) {
+
+			double pick_elev = (sin(pPick->aPck) * vp->CamDist() / sin(PI - dstmin - pPick->aPck)) - vp->GetSize();
+
+			if (elv >= pick_elev) {
+				((vPlanet *)vp)->SetCursor(0, lng, lat);
+				sprintf_s(oapiDebugString(), 256, "Location=(%f, %f) Elv=%f", lng*DEG, lat*DEG, elv);
+				return;
+			}
+			delta = pStart->height / 256.0;
+		}
+
+		dstmin += delta;
+	}
+
+	((vPlanet *)vp)->SetCursor(0, 0, 0);
 }
