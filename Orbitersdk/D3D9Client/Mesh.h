@@ -149,7 +149,7 @@ public:
 	 * \param idx material index (>= 0)
 	 * \return Pointer to material object.
 	 */
-	D3D9MatExt *	GetMaterial(DWORD idx) { return Mtrl+idx; }
+	D3D9MatExt *	GetMaterial(DWORD idx);
 
 	DWORD			GetGroupCount() const { return nGrp; }
 	DWORD			GetMaterialCount() const { return nMtrl; }

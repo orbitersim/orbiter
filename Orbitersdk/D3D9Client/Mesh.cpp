@@ -1226,6 +1226,13 @@ D3D9Mesh::GROUPREC *D3D9Mesh::GetGroup(DWORD idx)
 	return NULL;
 }
 
+// ===========================================================================================
+//
+D3D9MatExt * D3D9Mesh::GetMaterial(DWORD idx)
+{
+	if (idx >= nMtrl) return NULL;
+	return &Mtrl[idx];
+}
 
 // ===========================================================================================
 //
@@ -1235,7 +1242,6 @@ void D3D9Mesh::SetAmbientColor(D3DCOLOR c)
 	if (!pVB) return;
 	cAmbient = c;
 }
-
 
 // ===========================================================================================
 //

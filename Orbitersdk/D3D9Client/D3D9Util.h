@@ -230,9 +230,8 @@ typedef struct {
 	double lng, lat, height;
 	class Tile * pTile;
 	// -- Input --
-	double rHed, aPck, cLng, cLat;
-	D3DXVECTOR3 vRay;
-	VECTOR3	vCam, vDir;
+	double cLng, cLat;
+	VECTOR3 vRay;
 } TILEPICK;
 
 #define D3D9LRange 0

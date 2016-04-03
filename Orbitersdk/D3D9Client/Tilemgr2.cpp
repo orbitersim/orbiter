@@ -238,7 +238,6 @@ int Tile::PlaneIntersection(VECTOR3 &vPln, double hed, double lng, double lat, d
 
 	if (!bLat) {
 		VECTOR3 vLAN = _V(vPln.z, 0, -vPln.x);
-		//VECTOR3 vNod = unit(crossp(vTgt, vPln));
 		VECTOR3 vAux = crossp(vPln, vLAN);
 		double qInc = acos(vPln.y);
 		double dDst = asin(sin(tLat) / sin(qInc));

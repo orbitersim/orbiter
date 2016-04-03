@@ -964,14 +964,6 @@ int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, S
 
 // -----------------------------------------------------------------------
 
-struct pair { Tile *pTile; double dist;	pair(Tile*a, double b) { pTile = a, dist = b; } };
-
-bool pair_cmp(const pair &a, const pair &b)
-{
-	if (a.dist < b.dist) return true;
-	return false;
-}
-
 template<>
 void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 {
@@ -982,30 +974,46 @@ void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 	
 	std::list<Tile *> tiles;
 
-	// Give me a list of rendered tiles 
+	// Give me a list of rendered tiles ----------------------------------------------
 	//
 	QueryTiles(&tiletree[0], tiles);
 	QueryTiles(&tiletree[1], tiles);
 
-	std::list<Tile *>::iterator it = tiles.begin();
+	auto it = tiles.begin();
 
-	// Remove tiles whose bounding sphere is not intersected by picking ray
+	// Remove tiles whose bounding sphere is not intersected by picking ray ---------
 	//
 	while (it!=tiles.end()) {
 		D3DXMATRIX W; D3DXVECTOR3 bs = (*it)->GetBoundingSpherePos();
 		MATRIX4toD3DMATRIX(WorldMatrix(*it), W);
 		D3DXVec3TransformCoord(&bs, &bs, &W);
-		std::list<Tile *>::iterator er = it; it++;
-		if (D3DXSphereBoundProbe(&bs, (*er)->GetBoundingSphereRad(), &D3DXVECTOR3(0, 0, 0), &pPick->vRay) != 1) tiles.erase(er);
+		auto er = it; it++;
+		if (D3DXSphereBoundProbe(&bs, (*er)->GetBoundingSphereRad(), &D3DXVECTOR3(0, 0, 0), &D3DXVEC(pPick->vRay)) != 1) tiles.erase(er);
 	}
 
-	// Find the closest tile edge intersected by picking plane
+	// Compute some parameters to do the rest of the computations -------------------
 	//
-	VECTOR3 vPln = crossp(pPick->vCam, pPick->vDir);
+	VECTOR3 vCam = vp->GetUnitSurfacePos(pPick->cLng, pPick->cLat);	// Camera position vector;
+	VECTOR3 vPck = vp->ToLocal(pPick->vRay);							// Picking ray in Planet's local system
+	VECTOR3 vRot = vp->GetRotationAxis();							// Planet's rotation axis
+	VECTOR3 vEast = unit(crossp(vRot, vCam));						// Tangent plane east direction 
+	VECTOR3 vNorth = unit(crossp(vCam, vEast));						// Tangent plane north direction
+	VECTOR3 vDir = unit(vPck - vCam * dotp(vCam, vPck));				// Make the picking ray co-planar with tangent plane
+	VECTOR3 vPln = crossp(vCam, vDir);								// Compute picking plane
+	
+	// Angle between vCam, vPick
+	double rPck = PI - acos(dotp(vCam, vPck));						
+	// Pick heading [0,360] 0=North 90=East
+	double rHed = PI - atan2(-dotp(vEast, vDir), -dotp(vNorth, vDir));
+	double sPck = sin(rPck);
+	double cDst = vp->CamDist();
+	
+	// Find the closest tile edge intersected by picking plane ----------------------
+	//
 	SurfTile *pStart = NULL;
 
 	for (it = tiles.begin(); it != tiles.end(); it++) {
-		int rv = (*it)->PlaneIntersection(vPln, pPick->rHed, pPick->cLng, pPick->cLat, &lng, &lat, &dst);
+		int rv = (*it)->PlaneIntersection(vPln, rHed, pPick->cLng, pPick->cLat, &lng, &lat, &dst);
 		if (rv>=0 && dst < angle) {
 			angle = dst;
 			pStart = (SurfTile *)(*it);
@@ -1017,11 +1025,11 @@ void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 	delta = pStart->height / 256.0;
 	angle += delta;
 
-	// Finally scan through remaining terrain. Limit to 2k staps just in case
+	// Finally scan through remaining terrain. Limit to 2k staps just in case --------
 	//
 	for (int cnt = 0; cnt < 2000; cnt++) {
 
-		vp->GetLngLat(pPick->vCam * cos(angle) + pPick->vDir * sin(angle), &lng, &lat);
+		vp->GetLngLat(vCam * cos(angle) + vDir * sin(angle), &lng, &lat);
 
 		int rv = 0;
 		if (pStart) rv = pStart->GetElevation(lng, lat, &elv, &pStart);		// Try quick search at first
@@ -1029,8 +1037,7 @@ void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 
 		if (rv > 0 && pStart) {
 
-			double cd = vp->CamDist();
-			double pr = (sin(pPick->aPck) * cd / sin(PI - angle - pPick->aPck));
+			double pr = sPck * cDst / sin(PI - angle - rPck);
 			double pe = pr - vp->GetSize();
 
 			// Does the ray intersect terrain at this point
@@ -1039,7 +1046,7 @@ void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 				pPick->lng = lng;
 				pPick->lat = lat;
 				pPick->height = elv;
-				pPick->dist = sqrt(pr*pr + cd*cd - 2.0*pr*cd*cos(angle));
+				pPick->dist = sqrt(pr*pr + cDst*cDst - 2.0*pr*cDst*cos(angle));
 				return;
 			}
 			delta = pStart->height / 256.0;

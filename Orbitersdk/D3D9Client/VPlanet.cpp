@@ -233,9 +233,11 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	// Add a cursor object into the scene ------------------------
 	//
-	hCursor[0] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 80.0f, &D3DXCOLOR(0, 0, 1, 0.5f));		// Cursor
-	hCursor[1] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 1, 0, 0.5f));		// Tile entry point
-	hCursor[2] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 0, 0, 0.5f));		// Camera location
+	hCursor[0] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 80.0f, &D3DXCOLOR(0, 0, 0.75, 0.5f));		// Cursor
+	//hCursor[1] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 1, 0, 0.5f));		// Tile entry point
+	//hCursor[2] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 0, 0, 0.5f));		// Camera location
+
+	SetEnabled(hCursor[0], false);
 
 	// Finish creation -------------------------------------------
 	//
@@ -401,12 +403,15 @@ int vPlanet::GetElevation(double lng, double lat, double *elv, int *lvl, class S
 void vPlanet::PickSurface(TILEPICK *result)
 {
 	if (surfmgr2) {
+		
 		surfmgr2->Pick(result);
+
 		if (result->pTile) {
+			SetEnabled(hCursor[0], true);
 			SetPosition(hCursor[0], result->lng, result->lat);
 			surfmgr2->SetPickedTile(result->pTile);
 		}
-		else SetPosition(hCursor[0], result->lng, result->lat);
+		else SetEnabled(hCursor[0], false);
 	}
 }
 
@@ -419,17 +424,22 @@ void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
 	oapiGetRotationMatrix(hObj, &grot);
 	D3DXMatrixIdentity(&ident);
 
-	std::list<_SRFMARKER>::iterator it = Markers.begin();
+	auto it = Markers.begin();
 
 	while (it!=Markers.end()) {
-		if (it->pMesh) {
+		if (it->pMesh && it->bEnabled) {
 			if (GetElevation(it->lng, it->lat, &it->elv) == 1) {
 				VECTOR3 pos = cpos + mul(grot, it->uPos) * (size + it->elv);
 				it->pMesh->SetRotation(it->mWorld);
 				it->pMesh->SetPosition(pos);
 				if (it->type) {
-					it->pMesh->GetMaterial(0)->Diffuse = it->vColor;
+					D3D9MatExt *pMat = it->pMesh->GetMaterial(0);
+					if (pMat) {
+						pMat->Diffuse  = it->vColor;
+						pMat->Emissive = (it->vColor * 0.25f);
+					}
 				}
+				it->pMesh->SetSunLight(&sunLight);
 				it->pMesh->Render(&ident, RENDER_BASE);
 			}
 		}
@@ -441,7 +451,7 @@ void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
 
 HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, bool bDual, float scale)
 {
-	_SRFMARKER m;
+	_SRFMARKER m; memset(&m, 0, sizeof(_SRFMARKER));
 	
 	m.lng = lng;
 	m.lat = lat;
@@ -451,6 +461,7 @@ HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, b
 	m.uPos = GetUnitSurfacePos(lng, lat);
 	m.pMesh = pMesh;
 	m.type = 0;
+	m.bEnabled = true;
 	
 	D3DXMatrixRotationAxis(&m.mWorld, &D3DXVEC(m.uPos), rot);
 	D3DXMatrixScaling(&m.mWorld, scale, scale, scale);
@@ -463,7 +474,7 @@ HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, b
 
 HSRFOBJ	vPlanet::AddMarker(int type, double lng, double lat, float scale, D3DXCOLOR *color)
 {
-	_SRFMARKER m;
+	_SRFMARKER m; memset(&m, 0, sizeof(_SRFMARKER));
 
 	m.lng = lng;
 	m.lat = lat;
@@ -472,6 +483,7 @@ HSRFOBJ	vPlanet::AddMarker(int type, double lng, double lat, float scale, D3DXCO
 	m.uPos = GetUnitSurfacePos(lng, lat);
 	m.vColor = *color;
 	m.type = WORD(type);
+	m.bEnabled = true;
 	
 	switch (type) {
 	case D3D9SM_SPHERE:
@@ -503,6 +515,13 @@ void vPlanet::SetPosition(HSRFOBJ hItem, double lng, double lat)
 
 // ==============================================================
 
+void vPlanet::SetEnabled(HSRFOBJ hItem, bool bEnabled)
+{
+	hItem->bEnabled = bEnabled;
+}
+
+// ==============================================================
+
 void vPlanet::DeleteObject(HSRFOBJ hItem)
 {
 	Markers.erase(hItem);
@@ -523,6 +542,9 @@ bool vPlanet::Update (bool bMainScene)
 	if (!active) return false;
 	
 	vObject::Update(bMainScene);
+
+	// Update Sunlight direction -------------------------------------
+	D3DVEC(-sundir, sunLight.Direction);
 
 	if (patchres==0) return true;
 

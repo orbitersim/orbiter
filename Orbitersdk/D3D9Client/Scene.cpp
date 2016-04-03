@@ -1763,41 +1763,16 @@ TILEPICK Scene::PickSurface(short xpos, short ypos)
 	TILEPICK tp; memset(&tp, 0, sizeof(TILEPICK));
 
 	vPlanet *vp = GetCameraProxyVisual();
-
 	if (!vp) return tp;
-
-	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
 
 	double cLng, cLat;
 	GetCameraLngLat(&cLng, &cLat);
 
-	VECTOR3 vPck = vp->ToLocal(_VD3DX(vPick));			// Picking ray in Planet's local system
-	VECTOR3 vCam = vp->GetUnitSurfacePos(cLng, cLat);	// Camera position vector
-	VECTOR3 vRot = vp->GetRotationAxis();				// Planet's rotation axis
-
-	// Compute tangent plane
-	VECTOR3 vEast = unit(crossp(vRot, vCam));
-	VECTOR3 vNorth = unit(crossp(vCam, vEast));
-
-	// Make the picking ray co-planar with tangent plane
-	VECTOR3 vDir = unit(vPck - vCam * dotp(vCam, vPck));
-
-	// Angle between vCam, vPick
-	double aPck = PI - acos(dotp(vCam, vPck));
-
-	// Pick heading [0,360] 0=North 90=East
-	double rHed = PI - atan2(-dotp(vEast, vDir), -dotp(vNorth, vDir));
-	
-	tp.vRay = vPick;
-	tp.vDir = vDir;
-	tp.vCam = vCam;
 	tp.cLng = cLng;
 	tp.cLat = cLat;
-	tp.rHed = rHed;
-	tp.aPck = aPck;
-
+	tp.vRay = _VD3DX(GetPickingRay(xpos, ypos));
+	
 	vp->PickSurface(&tp);
-
 	return tp;
 }
 

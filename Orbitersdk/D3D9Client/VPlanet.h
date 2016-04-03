@@ -20,7 +20,7 @@ class CloudTile;
 typedef struct {
 	class vBase *	hBase;					// Reference base handle or NULL for planet geocentre		
 	D3DXMATRIX		mWorld;					// Object orientation, and location (if the reference is a base)
-	D3DCOLORVALUE	vColor;
+	D3DXCOLOR		vColor;
 	VECTOR3			uPos;					// Geocentric position (unit vector), if the reference is geocentre
 	double			lng, lat, elv;			// Location, if the reference is geocentre
 	float			rot, scl;				// Object rotation and scale factor
@@ -28,11 +28,10 @@ typedef struct {
 	WORD			flags;
 	WORD			type;
 	bool			bDual;					// Dual-sided rendering
+	bool			bEnabled;
 } _SRFMARKER;
 
 
-//typedef _SRFMARKER &HSRFOBJ;
-//typedef _SRFMARKER  *HSRFOBJ;
 typedef std::list<_SRFMARKER>::iterator HSRFOBJ;
 
 
@@ -103,7 +102,7 @@ public:
 	HSRFOBJ			AddMarker(int type, double lng, double lat, float scale, D3DXCOLOR *color);
 	void			SetPosition(HSRFOBJ hItem, double lng, double lat);
 	void			DeleteObject(HSRFOBJ hItem);
-
+	void			SetEnabled(HSRFOBJ hItem, bool bEnabled);
 
 
 
