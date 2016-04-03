@@ -6,6 +6,10 @@ if %PROCESSOR_ARCHITECTURE%==x86 (
 ) else (
   %windir%\SysWOW64\cscript //nologo //E:jscript %0 %*
 )
+cd ..\..
+TortoiseProc.exe /command:commit ^
+                 /path:"Orbitersdk\D3D9Client\D3D9Client.cpp*Orbitersdk\D3D9Client\D3D9Client.rc*Orbitersdk\D3D9Client\doc\Doxyfile*Utils\D3D9Client\build_release.bat" ^
+                 /logmsg:"- bumped version" /closeonend:0
 goto :eof
 */
 // -----------------------------------------------------------------------------
