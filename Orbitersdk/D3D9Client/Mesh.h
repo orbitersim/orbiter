@@ -93,7 +93,7 @@ public:
 		bool   bNoShadow;
 	};
 
-					D3D9Mesh(const char *name);
+	explicit		D3D9Mesh(const char *name);
 					D3D9Mesh(const D3D9Mesh &mesh);
 					D3D9Mesh(class AdMesh &mesh, bool bHasUV=true);
 					

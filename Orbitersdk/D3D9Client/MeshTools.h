@@ -98,7 +98,7 @@ class AdMesh
 
 public:
 						AdMesh();
-						AdMesh(MESHHANDLE hMesh);
+	explicit			AdMesh(MESHHANDLE hMesh);
 						AdMesh(const char *file, bool bValidate=false);
 						~AdMesh();
 
