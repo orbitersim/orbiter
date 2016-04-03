@@ -6,10 +6,6 @@ if %PROCESSOR_ARCHITECTURE%==x86 (
 ) else (
   %windir%\SysWOW64\cscript //nologo //E:jscript %0 %*
 )
-cd ..\..
-TortoiseProc.exe /command:commit ^
-                 /path:"Orbitersdk\D3D9Client\D3D9Client.cpp*Orbitersdk\D3D9Client\D3D9Client.rc*Orbitersdk\D3D9Client\doc\Doxyfile*Utils\D3D9Client\build_release.bat" ^
-                 /logmsg:"- bumped version" /closeonend:0
 goto :eof
 */
 // -----------------------------------------------------------------------------
@@ -104,6 +100,8 @@ var ForReading   = 1; // const
 var ForWriting   = 2;
 var ForAppending = 8;
 
+var BetaStr = "";
+
 function getCurrentVersion () {
   var version = [0,0,0,0];
   var f = fso.OpenTextFile(tasks[0].file, ForReading);
@@ -113,6 +111,10 @@ function getCurrentVersion () {
     if (matches !== null) {
       var vs = matches[1].split(".");
       for (var i=0; i<vs.length && i<3; ++i) { version[i] = vs[i]; }
+      var m2 = line.match(/D3D9Client\s+(Beta)/);
+      if (m2 && m2[1]) {
+        BetaStr = m2[1];
+      }
       break;
     }
   }
@@ -153,6 +155,7 @@ for (var i=0; i<tasks.length; ++i) {
   task.subst = task.subst.replace("{MajorMinor}", MajorMinor);
 }
 
+var _files = [];
 // For each task ...
 var lastFile = null;
 for (var i=0; i<tasks.length; ++i)
@@ -164,6 +167,7 @@ for (var i=0; i<tasks.length; ++i)
 
   // --- Info ---
   if (lastFile != file) {
+    _files.push(file);
     WScript.Echo("- "+file);
     lastFile = file;
   }
@@ -196,4 +200,13 @@ for (var i=0; i<tasks.length; ++i)
   }
   f.Close();
 }
+var logmsg = "- bumped version to " + [BetaStr,MajorMinor].join(" ");
+var svn = "TortoiseProc.exe"
+        + " /command:commit"
+        + " /path:\"" + _files.join("*") + "\""
+        + " /logmsg:\"" + logmsg + "\""
+        + " /closeonend:0"
+        ;
+WshShell.Run(svn, 1, true);
+
 WScript.Echo("Done!");
