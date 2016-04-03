@@ -137,6 +137,7 @@ void LogAlw(const char *format, ...)
 
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
 }
@@ -162,6 +163,7 @@ void LogOapi(const char *format, ...)
 
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
 	
 		int len = strlen(ErrBuf) + 16;
 		char *text = new char[len];
@@ -223,6 +225,7 @@ void LogBlu(const char *format, ...)
 
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
 }	
@@ -247,6 +250,7 @@ void LogWrn(const char *format, ...)
 
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
 }	
@@ -271,6 +275,7 @@ void LogOk(const char *format, ...)
 
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
+		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
 }	

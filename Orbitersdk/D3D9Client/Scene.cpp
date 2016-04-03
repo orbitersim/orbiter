@@ -1807,13 +1807,6 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 {
 	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
 	
-	/*vPlanet *vp = GetCameraProxyVisual();
-
-	if (vp) {
-		TILEPICK tp = vp->PickSurface(vPick);
-	}*/
-
-
 	D3D9Pick result;
 	result.dist  = 1e30f;
 	result.pMesh = NULL;

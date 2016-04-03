@@ -418,6 +418,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	deffont = (oapi::Font*) new D3D9PadFont(20, true, "fixed");
 	defpen  = (oapi::Pen*)  new D3D9PadPen(1, 1, 0x00FF00);
 
+	for (auto it = g_fonts.begin(); it != g_fonts.end();it++) ((D3D9PadFont*)(*it))->InitD3DFont();
+	
 	pNoiseTex = SURFACE(clbkLoadTexture("D3D9Noise.dds"));
 	pDefaultTex = SURFACE(clbkLoadTexture("Null.dds"));
 

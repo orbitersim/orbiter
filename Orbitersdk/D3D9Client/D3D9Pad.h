@@ -383,11 +383,17 @@ public:
 
 	HFONT GetGDIFont () const;
 
+	void InitD3DFont();
+
 private:
 	class D3D9Text *pFont;
 	HFONT hFont;
 	float rotation;
 	static LPDIRECT3DDEVICE9 pDev;
+	int _height;
+	bool _prop;
+	char _face[64];
+	Style _style;
 };
 
 

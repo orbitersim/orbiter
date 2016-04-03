@@ -1017,6 +1017,11 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	}
 	else face++;
 
+	_height = height;
+	_prop = prop;
+	_style = style;
+	strcpy_s(_face, 64, face);
+
 	pFont = NULL;
 	hFont = NULL;
 	
@@ -1047,7 +1052,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
-	if (pFont==NULL) {
+	if (pFont==NULL && pDev) {
 	
 		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
 
@@ -1077,6 +1082,56 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	if (hFont==NULL) {
 		face  = (prop ? def_sansface : def_fixedface);
 		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+	}
+}
+
+// -----------------------------------------------------------------------------------------------
+//
+void D3D9PadFont::InitD3DFont()
+{
+	if (pFont) return;
+
+	for (int i = 0; i<nfcache; i++) {
+		if (fcache[i].height != _height) continue;
+		if (fcache[i].style != _style) continue;
+		if (fcache[i].prop != _prop) continue;
+		if (_stricmp(fcache[i].face, _face) != 0) continue;
+		pFont = fcache[i].pFont;
+		break;
+	}
+
+	int weight = (_style & BOLD ? FW_BOLD : FW_NORMAL);
+	DWORD italic = (_style & ITALIC ? TRUE : FALSE);
+	DWORD underline = (_style & UNDERLINE ? TRUE : FALSE);
+
+	DWORD AAQuality = NONANTIALIASED_QUALITY;
+
+	if (Config->SketchpadFont == 1) AAQuality = DRAFT_QUALITY;
+	if (Config->SketchpadFont == 2) AAQuality = CLEARTYPE_QUALITY;
+	if (Config->SketchpadFont == 3) AAQuality = PROOF_QUALITY;
+
+	// Create DirectX accelerated font for a use with D3D9Pad ------------------
+	//
+	if (pFont == NULL) {
+
+		HFONT hNew = CreateFont(_height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, _face);
+
+		pFont = new D3D9Text(pDev);
+		pFont->Init(hNew, 255);
+		DeleteObject(hNew);
+
+		pFont->SetRotation(rotation);
+
+		if (nfcache>250) LogErr("Font Cache is Full.");
+		else {
+			// Fill the cache --------------------------------
+			fcache[nfcache].pFont = pFont;
+			fcache[nfcache].height = _height;
+			fcache[nfcache].style = _style;
+			fcache[nfcache].prop = _prop;
+			strcpy_s(fcache[nfcache].face, 64, _face);
+			nfcache++;
+		}
 	}
 }
 
