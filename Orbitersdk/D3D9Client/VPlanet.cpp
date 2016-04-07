@@ -861,7 +861,14 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		if (cdist>=1.3*size && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
 		else {
 			surfmgr2->Render(dmWorld, true, prm);
-			RenderObjects(dev);
+
+			if (DebugControls::IsActive()) {
+				RenderObjects(dev);
+			}
+			else {
+				surfmgr2->SetPickedTile(NULL);
+				hCursor[0]->bEnabled = false;
+			}
 		}
 	} 
 	else {

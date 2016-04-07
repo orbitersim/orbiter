@@ -26,9 +26,11 @@
 
 // Address mode WRAP is assumed by default
 // Filter POINT is assumed by default
+#define IPF_CLAMP		0x0007
 #define IPF_CLAMP_U		0x0001
 #define IPF_CLAMP_V		0x0002
 #define IPF_CLAMP_W		0x0004
+#define IPF_MIRROR		0x0038
 #define IPF_MIRROR_U	0x0008
 #define IPF_MIRROR_V	0x0010
 #define IPF_MIRROR_W	0x0020
@@ -89,14 +91,14 @@ public:
 	// Native DirectX calls -------------------------------------------------------------
 	//
 	void	SetOutputNative(int id, LPDIRECT3DSURFACE9 hSrf);
-	void	SetTextureNative(const char *var, LPDIRECT3DTEXTURE9 hTex, DWORD flags);
+	void	SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags);
 
 private:
 
 	bool	SetupViewPort();	
 
 	struct {
-		LPDIRECT3DTEXTURE9 hTex;
+		LPDIRECT3DBASETEXTURE9 hTex;
 		DWORD flags;
 	} pTextures[16];
 

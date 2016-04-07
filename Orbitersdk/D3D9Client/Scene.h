@@ -158,6 +158,7 @@ public:
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
 
 	void RenderLightPrePass();
+	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt);
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -302,7 +303,7 @@ protected:
 	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale);
 
 private:
-
+	void	LoadSampler();
 	DWORD	GetActiveParticleEffectCount();
 	float	ComputeNearClipPlane();
 	void	VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube);
@@ -383,6 +384,17 @@ private:
 
 
 	double dVisualAppRad;
+
+	// Blur Sampling Kernel ==============================================================
+	//
+	class ImageProcessing *pDither;
+	class ImageProcessing *pBlur;
+	
+	LPDIRECT3DCUBETEXTURE9 pBlrTemp;
+
+	D3DXVECTOR2 BlurKernel[32];
+	D3DXVECTOR2 rotationX[32];
+	D3DXVECTOR2 rotationY[32];
 
 	// Deferred Experiment ===============================================================
 	//

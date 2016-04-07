@@ -35,6 +35,9 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define RENDER_BASEBS		5
 #define RENDER_CUSTOM		6
 
+#define ENVMAP_MIRROR		0
+#define ENVMAP_METALLIC		1
+
  
 /**
  * \brief Mesh object with D3D9-specific vertex buffer

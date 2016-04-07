@@ -52,8 +52,8 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	skinname[0] = NULL;
-	for (int i=0;i<4;i++) pEnv[i] = NULL;
-
+	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
+	
 	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
 
 	bBSRecompute = true;
@@ -72,11 +72,10 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 //
 vVessel::~vVessel ()
 {
-	delete pMatMgr;
+	SAFE_DELETE(pMatMgr);
+	
+	for (int i = 0; i < ARRAYSIZE(pEnv); i++) SAFE_RELEASE(pEnv[i]);
 
-	for (int i=0;i<4;i++) {
-		SAFE_RELEASE(pEnv[i]);
-	}
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
 	DisposeAnimations();
 	DisposeMeshes();
@@ -1058,6 +1057,12 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		return false;
 	}
 
+	if (iFace >= 6) {
+		iFace = 0;
+		scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MIRROR], &pEnv[ENVMAP_METALLIC]);
+	}
+
+
 	if (pEnv[0]==NULL) {
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
@@ -1139,9 +1144,6 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 		EnvMapDirection(iFace, &dir, &up);
 
-		iFace++;
-		if (iFace>=6) iFace = 0;
-
 		D3DXVECTOR3 cp;
 		D3DXVec3Cross(&cp, &up, &dir);
 		D3DXVec3Normalize(&cp, &cp);
@@ -1150,6 +1152,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		
 		gc->GetScene()->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0, false, RENDERPASS_ENVCAM);
 		gc->GetScene()->RenderSecondaryScene(this, true, flags);
+
+		iFace++;
 
 		SAFE_RELEASE(pSrf);
 	}

@@ -154,3 +154,4 @@
 #define IDC_DBG_FMIPS                           2134
 #define IDC_DBG_ENCTER                          2135
 #define IDC_DBG_RESBIAS                         2136
+#define IDC_DBG_BLRMAP                          2137

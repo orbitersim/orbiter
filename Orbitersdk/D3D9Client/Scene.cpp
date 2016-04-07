@@ -22,6 +22,7 @@
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "IProcess.h"
+#include <sstream>
 
 
 
@@ -61,6 +62,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pAxisFont  = NULL;
 	pLabelFont = NULL;
 	pDebugFont = NULL;
+	pBlrTemp = NULL;
+	pDither = pBlur = NULL;
 	viewH = h;
 	viewW = w;
 	nLights = 0;
@@ -106,6 +109,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	cspheremgr = new CSphereManager(_gc, this);
 
+	LoadSampler();
+	
 	LogAlw("=========== Initializing G-Buffer ============");
 
 	/*
@@ -160,6 +165,10 @@ Scene::~Scene ()
 	SAFE_RELEASE(ptgSpecular);
 	SAFE_RELEASE(ptgDepth);
 
+	SAFE_RELEASE(pBlrTemp);
+	SAFE_DELETE(pDither);
+	SAFE_DELETE(pBlur);
+
 	SAFE_DELETE(csphere);
 	
 	if (Lights) delete []Lights;
@@ -175,6 +184,39 @@ Scene::~Scene ()
 	DeleteAllVisuals();
 	ExitGDIResources();
 }
+
+// ===========================================================================================
+//
+void Scene::LoadSampler()
+{
+	std::string line;
+	std::ifstream fs("Modules/D3D9Client/Sampler.cfg");
+
+	while (std::getline(fs, line)) {
+		if (!line.length() || line.find("//") == 0) continue;
+		if (line.find("KERNEL") == 0) {
+			int i = 0;
+			while (std::getline(fs, line) && i<ARRAYSIZE(BlurKernel)) {
+				if (line.find("END") == 0) break;
+				std::istringstream iss(line);
+				iss >> BlurKernel[i].x >> BlurKernel[i].y;
+				LogAlw("%f, %f",BlurKernel[i].x, BlurKernel[i].y);
+				i++;
+			}
+		}
+		if (line.find("ROTATIONS") == 0) {
+			int i = 0;
+			while (std::getline(fs, line) && i<ARRAYSIZE(rotationX) && i<ARRAYSIZE(rotationY)) {
+				if (line.find("END") == 0) break;
+				std::istringstream iss(line);
+				iss >> rotationX[i].x >> rotationX[i].y >> rotationY[i].x >> rotationY[i].y;
+				i++;
+			}
+		}
+	}
+	fs.close();
+}
+
 
 // ===========================================================================================
 //
@@ -1367,7 +1409,10 @@ void Scene::RenderMainScene()
 	
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-		if (flags&DBG_FLAGS_DSPENVMAP) VisualizeCubeMap(vFocus->GetEnvMap(0));
+		if (flags&DBG_FLAGS_DSPENVMAP) {
+			if (flags&DBG_FLAGS_DSPBLRMAP) VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_METALLIC));
+			else VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MIRROR));
+		}
 	}
 	
 
@@ -1482,6 +1527,117 @@ void Scene::RenderLightPrePass()
 
 	HR(pDevice->EndScene());
 }
+
+
+bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt)
+{
+
+	if (!pDither) {
+		pDither = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PSDither");
+		pBlur = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PSBlur");
+	}
+
+	if (!pDither->IsOK()) {
+		LogErr("pDither is not OK");
+		return false;
+	}
+
+	if (!pBlur->IsOK()) {
+		LogErr("pBlur is not OK");
+		return false;
+	}
+
+	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
+
+	if (!pEnvDS) {
+		LogErr("EnvDepthStencil doesn't exists");
+		return false;
+	}
+
+	D3DSURFACE_DESC desc;
+	pEnvDS->GetDesc(&desc);
+	DWORD width = min(512, desc.Width);
+
+	if (!*pTgt) if (D3DXCreateCubeTexture(pDev, width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, pTgt) != S_OK) return false;
+	if (!pBlrTemp) if (D3DXCreateCubeTexture(pDev, width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp) != S_OK) return false;
+
+	D3DXVECTOR3 dir, up, cp;
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+
+	pDither->SetTextureNative("tCube", pSrc, IPF_LINEAR);
+	pDither->SetFloat("vaKernel", BlurKernel, sizeof(BlurKernel));
+	pDither->SetFloat("vaRotationX", rotationX, sizeof(rotationX));
+	pDither->SetFloat("vaRotationY", rotationY, sizeof(rotationY));
+	pDither->SetFloat("fScale", 64.0f / 512.0f);
+	pDither->SetFloat("iCount", 32);
+
+	for (DWORD i = 0; i < 6; i++) {
+
+		EnvMapDirection(i, &dir, &up);
+		D3DXVec3Cross(&cp, &up, &dir);
+		D3DXVec3Normalize(&cp, &cp);
+
+		HR(pBlrTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
+
+		pDither->SetOutputNative(0, pSrf);
+		pDither->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+		pDither->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+		pDither->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+
+		if (!pDither->Execute()) {
+			LogErr("pDither Execute Failed");
+			return false;
+		}
+
+		SAFE_RELEASE(pSrf);
+	}
+
+	pDither->SetTextureNative("tCube", pBlrTemp, IPF_LINEAR);
+	pDither->SetFloat("fScale", 12.0f / 512.0f);
+	pDither->SetFloat("iCount", 16);
+
+	for (DWORD i = 0; i < 6; i++) {
+
+		EnvMapDirection(i, &dir, &up);
+		D3DXVec3Cross(&cp, &up, &dir);
+		D3DXVec3Normalize(&cp, &cp);
+
+		HR((*pTgt)->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
+
+		pDither->SetOutputNative(0, pSrf);
+		pDither->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+		pDither->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+		pDither->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+
+		if (!pDither->Execute()) {
+			LogErr("pDither Execute Failed");
+			return false;
+		}
+
+		SAFE_RELEASE(pSrf);
+	}
+		
+
+	/*pBlur->SetTextureNative("tSrc", pBlrTemp, IPF_LINEAR);
+	for (DWORD i = 0; i < 6; i++) {
+		EnvMapDirection(i, &dir, &up);
+		D3DXVec3Cross(&cp, &up, &dir);
+		D3DXVec3Normalize(&cp, &cp);
+		HR((*pTgt)->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
+		pBlur->SetOutputNative(0, pSrf);
+		pBlur->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+		pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+		pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+		if (!pBlur->Execute()) {
+			LogErr("pBlur Execute Failed");
+			return false;
+		}
+		SAFE_RELEASE(pSrf);
+	}*/
+
+	return true;
+}
+
 
 // ===========================================================================================
 //
@@ -2170,3 +2326,34 @@ int distcomp (const void *arg1, const void *arg2)
 
 COLORREF Scene::labelCol[6] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080};
 oapi::Pen * Scene::lblPen[6] = {0,0,0,0,0,0};
+
+
+
+/*
+float Rand()
+{
+float x = float(oapiRand()*2.0-1.0);
+if (x<0) return -(x*x);
+return x*x;
+}
+
+static D3DXVECTOR2 kernel32[32];
+static D3DXVECTOR2 rotationX[32];
+static D3DXVECTOR2 rotationY[32];
+static bool bKernel32 = true;
+static bool bRotations = true;
+if (mode == 2) { bKernel32 = true; return false; }
+if (mode == 3) { bRotations = true;	return false; }
+if (bKernel32) {
+for (int i = 0; i < 32; i++) kernel32[i] = D3DXVECTOR2(Rand(), Rand());
+FILE *fp = fopen("SmpKernelOut.txt", "wt");	for (int i = 0; i < 32; i++) fprintf(fp, "%f %f\n", kernel32[i].x, kernel32[i].y); fclose(fp);	bKernel32 = false;
+}
+if (bRotations) {
+for (int i = 0; i < 32; i++) {
+float a = float(PI2 * oapiRand());	float b = float(PI2 * oapiRand());
+rotationX[i] = D3DXVECTOR2(cos(a), sin(a));	rotationY[i] = D3DXVECTOR2(cos(b), sin(b));
+FILE *fp = fopen("RotationsOut.txt", "wt");
+for (int i = 0; i < 32; i++) fprintf(fp, "%f %f %f %f\n", rotationX[i].x, rotationX[i].y, rotationY[i].x, rotationY[i].y);
+fclose(fp);
+} bRotations = false;
+}*/

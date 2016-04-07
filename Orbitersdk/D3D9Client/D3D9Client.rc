@@ -3,6 +3,8 @@
 // http://www.resedit.net
 
 #include <windows.h>
+#include <commctrl.h>
+#include <richedit.h>
 #include "resource.h"
 
 
@@ -73,6 +75,7 @@ FONT 8, "Ms Shell Dlg"
     AUTOCHECKBOX    "Add ambient light", IDC_DBG_AMBIENT, 18, 147, 70, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Wireframe", IDC_DBG_WIRE, 120, 135, 48, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Display env mapping", IDC_DBG_ENVMAP, 205, 120, 81, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Display blr map", IDC_DBG_BLRMAP, 285, 120, 63, 8, 0, WS_EX_LEFT
     GROUPBOX        "Material", IDC_DBG_MATGRP, 5, 215, 175, 147, 0, WS_EX_LEFT
     COMBOBOX        IDC_DBG_MATPRP, 78, 245, 96, 15, CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     LTEXT           "Material property", IDC_STATIC, 18, 245, 53, 8, SS_LEFT, WS_EX_LEFT

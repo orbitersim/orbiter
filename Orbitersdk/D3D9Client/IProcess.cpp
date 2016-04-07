@@ -312,7 +312,7 @@ void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
 
 // ================================================================================================
 //
-void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DTEXTURE9 hTex, DWORD flags)
+void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags)
 {
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
