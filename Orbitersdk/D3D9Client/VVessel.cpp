@@ -619,7 +619,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 	bool bVC = (bCockpit && (oapiCockpitMode() == COCKPIT_VIRTUAL));
 	// render virtual cockpit
 
-	const VCHUDSPEC *hudspec;
+	const VCHUDSPEC *hudspec(NULL);
 	const VCMFDSPEC *mfdspec[MAXMFD];
 	
 	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false); // turn on  fog
@@ -694,7 +694,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//
-		if (bVC && internalpass && !lightprepass) {
+		if (bVC && internalpass && !lightprepass && hudspec) {
 			if (hudspec->nmesh == i) {
 				D3D9Mesh::GROUPREC * HUDGrp = meshlist[i].mesh->GetGroup(hudspec->ngroup);
 				if (HUDGrp) HUDGrp->MFDScreenId = 0x100;
