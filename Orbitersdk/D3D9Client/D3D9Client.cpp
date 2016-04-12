@@ -83,7 +83,7 @@ extern "C" {
 
 void MissingRuntimeError()
 {
-	MessageBoxA(NULL, "DirectX Runtimes may be missing. See /Doc/D3D9Client.doc for more information", "D3D9Client Initialization Failed",MB_OK);
+	MessageBoxA(NULL, "DirectX Runtimes may be missing. See /Doc/D3D9Client.pdf for more information", "D3D9Client Initialization Failed",MB_OK);
 }
 
 int PrintModules(DWORD pAdr)
