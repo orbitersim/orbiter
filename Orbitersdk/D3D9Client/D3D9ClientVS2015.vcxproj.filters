@@ -167,9 +167,6 @@
     <ClCompile Include="OgciExtensions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\OGCI.cpp">
-      <Filter>Ogci</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CelSphere.h">
@@ -362,6 +359,9 @@
     </None>
     <None Include="..\..\Modules\D3D9Client\Vessel.fx">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\include\OGCI.cpp">
+      <Filter>Ogci</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

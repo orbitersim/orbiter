@@ -1357,7 +1357,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 						if (scene->CameraPan(_V(-x,y,0)*0.05, speed)) return 0;
 					}
 
-					GetScene()->PickSurface(xpos, ypos);
+					//GetScene()->PickSurface(xpos, ypos);
 				}
 				break;
 
