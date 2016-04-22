@@ -70,32 +70,36 @@ typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
 
 
+/**
+ * \brief Statistical data storage
+ */
 struct _D3D9Stats {
 
 	struct {
-		DWORD Vertices;		// Number of vertices rendered
-		DWORD MeshGrps;
-		DWORD Meshes;
-	} Mesh;
+		DWORD Vertices;		///< Number of vertices rendered
+		DWORD MeshGrps;		///< Number of mesh groups rendered
+		DWORD Meshes;		///< Number of meshes rendered
+	} Mesh;					///< Mesh related statistics
 
 	struct {
-		DWORD Verts;
-		WORD  Tiles[32];
-	} Old;
+		DWORD Verts;		///< Number of vertices rendered
+		WORD  Tiles[32];	///< Number of tiles rendered (per level)
+	} Old;					///< Surface related statistics (old surface engine)
 
 	struct {
-		DWORD Verts;
-		WORD  Tiles[32];
-	} Surf;
+		DWORD Verts;		///< Number of vertices rendered
+		WORD  Tiles[32];	///< Number of tiles rendered (per level)
+	} Surf;					///< Surface related statistics (new surface engine)
 
 	struct {
-		double Scene, ScenePeak;
-		double count;
-	} Timer;
+		double Scene,		///< Total scene rendering time
+		       ScenePeak;	///< Peak scen rendering time
+		double count;		///< Number of scenes (to calculate average time)
+	} Timer;				///< Render timing related statistics
 
-	DWORD TilesCached;
-	DWORD TilesCachedMB;
-	DWORD TilesAllocated;
+	DWORD TilesCached;		///< Number of cached tiles
+	DWORD TilesCachedMB;	///< Total size of tile cache (MBytes)
+	DWORD TilesAllocated;	///< Number of allocated tiles
 };
 
 extern _D3D9Stats D3D9Stats;
