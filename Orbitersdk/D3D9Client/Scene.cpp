@@ -1308,7 +1308,8 @@ void Scene::RenderMainScene()
 	// Draw Debug String on a bottom of the screen
 	// -------------------------------------------------------------------------------------------------------
 
-	int len = strlen(oapiDebugString());
+	const char* dbgString = oapiDebugString();
+	int len = strlen(dbgString);
 
 	if (len>0) { 
 
@@ -1324,10 +1325,10 @@ void Scene::RenderMainScene()
 		pSketch->SetBrush(brush);
 
 		DWORD height = Config->DebugFontSize;
-		DWORD width  = pSketch->GetTextWidth(oapiDebugString(), len);
+		DWORD width  = pSketch->GetTextWidth(dbgString, len);
 
 		pSketch->Rectangle(-1, viewH-height-1, width+4, viewH);
-		pSketch->Text(2, viewH-2, oapiDebugString(), len);
+		pSketch->Text(2, viewH-2, dbgString, len);
 
 		pSketch->SetPen(NULL);
 		pSketch->SetBrush(NULL);

@@ -349,11 +349,11 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 
 	memset2(&D3D9Stats, 0, sizeof(D3D9Stats));
-	memset2(pDislMapList, 0, 16*sizeof(SURFHANDLE));
+	memset2(pDislMapList, 0, ARRAYSIZE(pDislMapList)*sizeof(SURFHANDLE));
 
 	D3DXMatrixIdentity(&ident);
 
-	sprintf_s(oapiDebugString(),255,"");
+	oapiDebugString()[0] = '\0';
 
 	TileCatalog->Clear();
 	MeshCatalog->Clear();
@@ -2074,7 +2074,7 @@ LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 
 void D3D9Client::RegisterDissolveMap(SURFHANDLE hSrf)
 {
-	if (iDisl<16) {
+	if (iDisl<ARRAYSIZE(pDislMapList)) {
 		for (DWORD i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return;
 		pDislMapList[iDisl] = hSrf;
 		iDisl++;
@@ -2085,7 +2085,7 @@ void D3D9Client::RegisterDissolveMap(SURFHANDLE hSrf)
 
 SURFHANDLE D3D9Client::GetDissolveMap(DWORD idx) const
 {
-	if (idx<16) return pDislMapList[idx];
+	if (idx<ARRAYSIZE(pDislMapList)) return pDislMapList[idx];
 	return NULL;
 }
 

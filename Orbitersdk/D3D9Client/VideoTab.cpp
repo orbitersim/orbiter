@@ -21,10 +21,9 @@
 #include <vector>
 #include <richedit.h>
 
-#define IDC_SCENARIO_TREE (oapiGetOrbiterVersion()>=111105 ? 1090 : 1088)
-
 using namespace oapi;
 
+const UINT IDC_SCENARIO_TREE = (oapiGetOrbiterVersion() >= 111105) ? 1090 : 1088;
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 {
@@ -162,7 +161,6 @@ BOOL VideoTab::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void VideoTab::Initialise()
 {
-	char cbuf[32];
 	D3DDISPLAYMODE mode, curMode;
 	D3DADAPTER_IDENTIFIER9 info;
 
@@ -179,6 +177,7 @@ void VideoTab::Initialise()
 	if (d3dObject==NULL) LogErr("VideoTab::Initialize() Direct3DCreate9 Failed");
 	else {
 
+		char cbuf[32];
 		int nAdapter = d3dObject->GetAdapterCount();
 		
 		if (data->deviceidx < 0 || (data->deviceidx)>=nAdapter) {
@@ -263,7 +262,6 @@ void VideoTab::SelectMode(DWORD index)
 //
 void VideoTab::SelectAdapter(DWORD index)
 {
-	char cbuf[32];
 
 	SelectedAdapterIdx = index; 
 
@@ -276,6 +274,7 @@ void VideoTab::SelectAdapter(DWORD index)
 	if (d3dObject==NULL) LogErr("VideoTab::SelectAdapter(%u) Direct3DCreate9 Failed",index);
 	else {
 
+		char cbuf[32];
 		D3DDISPLAYMODE mode, curMode;
 	
 		if (d3dObject->GetAdapterCount()<=index) {
@@ -490,10 +489,10 @@ BOOL CALLBACK VideoTab::SetupDlgProcWrp(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 BOOL CALLBACK VideoTab::SetupDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	char lbl[32];
 
 	if (uMsg==WM_HSCROLL) {
 		if (LOWORD(wParam)==TB_THUMBTRACK) {
+			char lbl[32];
 			WORD pos = HIWORD(wParam);
 			if (HWND(lParam)==GetDlgItem(hWnd, IDC_CONVERGENCE)) {
 				sprintf_s(lbl,32,"%1.2fm",float(pos)*0.01);
