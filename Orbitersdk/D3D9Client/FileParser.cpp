@@ -73,7 +73,7 @@ static std::pair<std::string, std::string> &splitAssignment (const std::string &
 
 // ===========================================================================================
 //
-FileParser::FileParser (const char *scenario) :
+FileParser::FileParser (const std::string &scenario) :
 	system(),
 	context(),
 	mjd(51981.0)

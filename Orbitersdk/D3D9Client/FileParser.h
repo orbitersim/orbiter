@@ -20,7 +20,7 @@ class FileParser
 {
 public:
 
-	explicit FileParser (const char *scenario);
+	explicit FileParser(const std::string & scenario);
 	        ~FileParser ();
 
 	bool        DoesExist (OBJHANDLE hObj);

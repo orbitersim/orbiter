@@ -217,10 +217,11 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 // D3D9Client class implementation
 // ==============================================================
 
-D3D9Client::D3D9Client (HINSTANCE hInstance) : GraphicsClient(hInstance)
+D3D9Client::D3D9Client (HINSTANCE hInstance) :
+	GraphicsClient(hInstance),
+	vtab(NULL),
+	scenarioName("(none selected)")
 {
-	vtab = NULL;
-	strcpy_s(ScenarioName, "(none selected)");
 }
 
 // ==============================================================
@@ -514,7 +515,7 @@ void D3D9Client::clbkPostCreation()
 
 	if (parser) return;
 
-	parser = new FileParser(ScenarioName);
+	parser = new FileParser(scenarioName);
 	parser->LogContent();
 
 	if (scene) scene->Initialise();

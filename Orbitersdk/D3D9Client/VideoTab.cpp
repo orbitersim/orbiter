@@ -18,7 +18,7 @@
 #include "Commctrl.h"
 #include "Junction.h"
 #include "OapiExtension.h"
-#include <stdio.h>
+#include <vector>
 #include <richedit.h>
 
 #define IDC_SCENARIO_TREE (oapiGetOrbiterVersion()>=111105 ? 1090 : 1088)
@@ -415,38 +415,45 @@ void VideoTab::UpdateConfigData()
 			return;
 		}
 
-		HTREEITEM hNode[6]; 
-		for (int i=0;i<6;i++) hNode[i]=NULL;
-		
-		hNode[0] = TreeView_GetSelection(hTree);
+		HTREEITEM item = TreeView_GetSelection(hTree);
 
-		if (hNode[0]==NULL) {
+		if (item == NULL) {
 			LogErr("FAILED. Scenario not selected");
 			return;
 		}
 
-		for (int i=1;i<6;i++) {
-			hNode[i] = TreeView_GetParent(hTree, hNode[i-1]);
-			if (hNode[i]==NULL) break;
-		}
-		
-		strcpy_s(gclient->ScenarioName,320, OapiExtension::GetScenarioDir());
+		using std::vector;
+		vector<HTREEITEM> hNodes;
 
-		for (int i=5;i>=0;i--) {
-			if (hNode[i]==NULL) continue;
-			TVITEMA item; char buf[128];
-			item.mask = TVIF_TEXT | TVIF_HANDLE;
-			item.hItem = hNode[i];
-			item.pszText = buf;
-			item.cchTextMax = 128;
-			TreeView_GetItem(hTree, &item);
-		
-			strcat_s(gclient->ScenarioName,320,buf);
-			if (i!=0) strcat_s(gclient->ScenarioName,320,"\\");
-			LogAlw("Node[%d] = %s (0x%X)", i, buf, hNode[i]);
+		while (item) { // [ego, parent, grandparent, ...]
+			hNodes.push_back( item );
+			item = TreeView_GetParent(hTree, item);
 		}
-		strcat_s(gclient->ScenarioName,320,".scn");
-		LogAlw("Scenario = %s",gclient->ScenarioName);
+
+		using std::string;
+		string path = OapiExtension::GetScenarioDir();
+		path.erase( path.find_last_not_of( '\\' )+1 ); // trim trailing path-delimiter
+
+		char buf[MAX_PATH];
+		TVITEMA tvItem = {0};
+		tvItem.mask = TVIF_TEXT | TVIF_HANDLE;
+		tvItem.pszText = buf;
+		tvItem.cchTextMax = ARRAYSIZE(buf);
+
+		for (auto it = hNodes.crbegin(); it != hNodes.crend(); ++it) {
+			tvItem.hItem = *it;
+			TreeView_GetItem(hTree, &tvItem);
+			// Note: The returned text will not necessarily be stored in the
+			//       original buffer passed by the application.
+			//       It is possible that pszText will point to text in a
+			//       new buffer rather than place it in the old buffer. 
+			path += "\\"; path += tvItem.pszText;
+		}
+		path += ".scn";
+
+		gclient->SetScenarioName(path);
+
+		LogAlw("Scenario = %s", path.c_str());
 	}
 	else {
 		LogErr("FAILED to get a handle of a scenario dialog");

@@ -112,7 +112,6 @@ namespace oapi {
 
 class D3D9Client: public GraphicsClient {
 
-	friend class ::VideoTab;
 	friend class ::Scene;
 	friend class ::MeshManager;
 	friend class ::TextureManager;
@@ -989,6 +988,7 @@ public:
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__ogciRenderProc proc, DWORD id);
 	void				MakeRenderProcCall(SURFHANDLE hSrf, DWORD id);
+	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 
 protected:
 
@@ -1216,7 +1216,7 @@ private:
 	CD3DFramework9*		    pFramework;
 	D3DCAPS9				caps;
 	FileParser *		    parser;
-	char					ScenarioName[320];
+	std::string				scenarioName;
 
 	HWND hRenderWnd;        // render window handle
 
