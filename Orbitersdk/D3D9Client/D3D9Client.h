@@ -1246,12 +1246,8 @@ private:
 	TextureManager *texmgr; // texture manager
 	D3DXMATRIX ident;
 
-	struct RenderProcData {
-		__ogciRenderProc proc;
-		DWORD id;
-	};
-
-	std::vector<RenderProcData> RenderProc;
+	struct RenderProcData;
+	std::vector<RenderProcData> RenderProcs;
 
 	//LaunchpadItem *lpiCfg, *lpiPlanetRender;
 

@@ -41,6 +41,14 @@
 #include "DebugControls.h"
 #include "Tilemgr2.h"
 
+// ==============================================================
+// Structure definitions
+
+struct D3D9Client::RenderProcData {
+	__ogciRenderProc proc;
+	DWORD id;
+};
+
 using namespace oapi;
 
 HINSTANCE g_hInst = 0;
@@ -2093,9 +2101,9 @@ int D3D9Client::GetIndexOfDissolveMap(SURFHANDLE hSrf) const
 
 void D3D9Client::MakeRenderProcCall(SURFHANDLE hSrf, DWORD id)
 {
-	for (DWORD i = 0; i < RenderProc.size(); i++) {
-		if (RenderProc[i].id == id) {
-			RenderProc[i].proc(hSrf);
+	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
+		if (it->id == id) {
+			it->proc(hSrf);
 		}
 	}
 }
@@ -2104,20 +2112,18 @@ void D3D9Client::MakeRenderProcCall(SURFHANDLE hSrf, DWORD id)
 
 bool D3D9Client::RegisterRenderProc(__ogciRenderProc proc, DWORD id)
 {
-	if (id == 0) {
-		for (DWORD i = 0; i < RenderProc.size(); i++) {
-			if (RenderProc[i].proc == proc) {
-				RenderProc.erase(RenderProc.begin() + i);
+	if (id)	{ // register (add)
+		RenderProcData data = { proc, id };
+		RenderProcs.push_back(data);
+		return true;
+	}
+	else { // unregister (remove)
+		for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
+			if (it->proc == proc) {
+				RenderProcs.erase(it);
 				return true;
 			}
 		}
-	}
-	else {
-		RenderProcData data;
-		data.proc = proc;
-		data.id = id;
-		RenderProc.push_back(data);
-		return true;
 	}
 	return false;
 }
