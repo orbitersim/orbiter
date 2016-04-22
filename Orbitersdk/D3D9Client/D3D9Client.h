@@ -112,11 +112,7 @@ namespace oapi {
 
 class D3D9Client: public GraphicsClient {
 
-	friend class ::Scene;
-	friend class ::MeshManager;
-	friend class ::TextureManager;
-	friend class ::D3D9ClientSurface;
-	friend class ::CD3DFramework9;
+	friend class ::Scene;	// <= likes to call Render2DOverlay()
 
 public:
 
