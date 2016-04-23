@@ -2216,7 +2216,19 @@ void D3D9Client::SplashScreen()
 	LPVOID pData = LockResource(hImage);
 	DWORD size = SizeofResource(hOrbiter, hRes);
 
-	HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, NULL, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
+	// Splash screen image is 1920 x 1200 pixel
+	double scale = min(viewW / 1920.0, viewH / 1200.0);
+	double _w = (1920.0 * scale);
+	double _h = (1200.0 * scale);
+	double _l = abs(viewW - _w)/2.0;
+	double _t = abs(viewH - _h)/2.0;
+	RECT imgRect = {
+		static_cast<LONG>( round(_l) ),
+		static_cast<LONG>( round(_t) ),
+		static_cast<LONG>( round(_w + _l) ),
+		static_cast<LONG>( round(_h + _t) )
+	};
+	HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, &imgRect, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
 
 	HDC hDC;
 	HR(pSplashScreen->GetDC(&hDC));
