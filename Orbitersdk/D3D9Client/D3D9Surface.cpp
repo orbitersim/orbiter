@@ -319,7 +319,7 @@ D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name/*=
 	Clear();
 	strcpy_s(this->name, 64, (name ? name : "???"));
 	pDevice = pDev;
-	SurfaceCatalog->Add(DWORD(this));
+	SurfaceCatalog->Add(this);
 }
 
 
@@ -368,7 +368,7 @@ void D3D9ClientSurface::Clear()
 //
 D3D9ClientSurface::~D3D9ClientSurface()
 {
-	if (SurfaceCatalog->Remove(DWORD(this))==false) {
+	if (SurfaceCatalog->Remove(this)==false) {
 		LogErr("Surface 0x%X wasn't in the catalog",this);
 	}
 

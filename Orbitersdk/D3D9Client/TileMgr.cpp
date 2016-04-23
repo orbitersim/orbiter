@@ -42,7 +42,7 @@ int tmissing = 0;
 // Local prototypes
 void ReleaseTex(LPDIRECT3DTEXTURE9 pTex)
 {
-	TileCatalog->Remove(DWORD(pTex));
+	TileCatalog->Remove(pTex);
 	pTex->Release();
 }
 
@@ -1211,7 +1211,7 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 			return -10;
 		}
 		if ((*pTex)==NULL) return -8;
-		if (*pTex) TileCatalog->Add(DWORD(*pTex));	
+		if (*pTex) TileCatalog->Add(*pTex);	
 		if ((*pTex)->LockRect(0, &rect, NULL, 0)==S_OK) {
 			if (ddsd.dwFlags & DDSD_LINEARSIZE) {
 				fread(rect.pBits, ddsd.dwLinearSize, 1, f);
@@ -1230,7 +1230,7 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 		HR(pDev->CreateTexture(ddsd.dwWidth, ddsd.dwHeight, 1, 0, Format, D3DPOOL_SYSTEMMEM, &pSys, NULL));
 
 		if (pSys==NULL || (*pTex)==NULL) return -8;
-		if (*pTex) TileCatalog->Add(DWORD(*pTex));
+		if (*pTex) TileCatalog->Add(*pTex);
 		if (pSys->LockRect(0, &rect, NULL, 0)==S_OK) {
 			if (ddsd.dwFlags & DDSD_LINEARSIZE) {
 				fread(rect.pBits, ddsd.dwLinearSize, 1, f);

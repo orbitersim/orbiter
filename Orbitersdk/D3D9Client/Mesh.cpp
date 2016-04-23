@@ -106,7 +106,7 @@ D3D9Mesh::D3D9Mesh(DWORD groups, const MESHGROUPEX **hGroup, const SURFHANDLE *h
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(DWORD(this));
+	MeshCatalog->Add(this);
 
 	UpdateBoundingBox();
 	CreateGeometryBuffers();
@@ -140,7 +140,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSu
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(DWORD(this));
+	MeshCatalog->Add(this);
 
 	UpdateBoundingBox();
 	CreateGeometryBuffers();
@@ -201,7 +201,7 @@ D3D9Mesh::D3D9Mesh(class AdMesh &mesh, bool bHasUV) : D3D9Effect()
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(DWORD(this));
+	MeshCatalog->Add(this);
 
 	UpdateBoundingBox();
 	CreateGeometryBuffers();
@@ -290,7 +290,7 @@ D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
 	mTransformInv = mesh.mTransformInv;
 	bGlobalTF = mesh.bGlobalTF;
 
-	MeshCatalog->Add(DWORD(this));
+	MeshCatalog->Add(this);
 
 	UpdateBoundingBox();
 }
@@ -302,8 +302,8 @@ D3D9Mesh::~D3D9Mesh()
 	_TRACE;
 	if (!pVB) return;
 
-	if (MeshCatalog->Remove(DWORD(this))) LogAlw("Mesh 0x%X Removed from catalog",this);
-	else 								  LogErr("Mesh 0x%X wasn't in meshcatalog",this);
+	if (MeshCatalog->Remove(this)) LogAlw("Mesh 0x%X Removed from catalog",this);
+	else 						   LogErr("Mesh 0x%X wasn't in meshcatalog",this);
 
 	if (Grp) delete []Grp;
 	if (nTex) delete []Tex;
@@ -360,7 +360,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, bool asTemplate)
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(DWORD(this));
+	MeshCatalog->Add(this);
 
 	UpdateBoundingBox();
 	CreateGeometryBuffers();

@@ -94,8 +94,8 @@ void D3D9Client::RenderControlPanel()
 
 	DWORD nSurf = SurfaceCatalog->CountEntries();
 
-	for (DWORD i=0;i<nSurf;i++) {
-		LPD3D9CLIENTSURFACE pSurf = SURFACE(SurfaceCatalog->Get(i));
+	for (auto it = SurfaceCatalog->cbegin(); it != SurfaceCatalog->cend(); ++it) {
+		LPD3D9CLIENTSURFACE pSurf = *it;
 		if (pSurf->desc.Pool==D3DPOOL_DEFAULT) {
 			if (pSurf->IsRenderTarget()) {
 				if (pSurf->IsDualLayer()) {
@@ -158,9 +158,8 @@ void D3D9Client::RenderControlPanel()
 	DWORD tile_render_countA = 0;
 	DWORD tile_render_countB = 0;
 	
-	for (DWORD i=0;i<tile_count;i++) {
-		LPDIRECT3DTEXTURE9 pTex = (LPDIRECT3DTEXTURE9)TileCatalog->Get(i);
-		if (pTex) tile_size += TextureSizeInBytes(pTex);
+	for (auto it = TileCatalog->cbegin(); it != TileCatalog->cend(); ++it) {
+		if (*it) tile_size += TextureSizeInBytes(*it);
 	}
 
 	for (DWORD i = 0; i<32; i++) {
@@ -183,8 +182,8 @@ void D3D9Client::RenderControlPanel()
 	DWORD tot_trans = 0;
 	DWORD tot_group = 0;
 
-	for (DWORD i=0;i<mesh_count;i++) {
-		D3D9Mesh *pMesh = (D3D9Mesh *)MeshCatalog->Get(i);
+	for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
+		D3D9Mesh *pMesh = *it;
 		if (pMesh) {
 			tot_verts += pMesh->GetVertexCount();
 			tot_trans += pMesh->GetGroupTransformCount();

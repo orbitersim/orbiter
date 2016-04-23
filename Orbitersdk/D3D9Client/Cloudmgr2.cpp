@@ -56,7 +56,7 @@ void CloudTile::Load ()
 			tex = getParent()->Tex();
 			owntex = false;
 		} else tex = 0;
-	} else TileCatalog->Add(DWORD(tex));
+	} else TileCatalog->Add(tex);
 
 	bool shift_origin = (lvl >= 4);
 	int res = mgr->Cprm().gridRes;

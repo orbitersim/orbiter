@@ -20,6 +20,7 @@
 
 #include <d3d9.h> 
 #include <d3dx9.h>
+#include "D3D9Catalog.h"
 #include "GraphicsAPI.h"
 #include "D3D9util.h"
 #include <stdio.h>
@@ -51,13 +52,9 @@ class D3D9Mesh;
 class D3D9Annotation;
 class D3D9Text;
 class CSphereManager;
-class D3D9Catalog;
 class FileParser;
 class OapiExtension;
 
-extern D3D9Catalog *	TileCatalog;
-extern D3D9Catalog *	MeshCatalog;
-extern D3D9Catalog *	SurfaceCatalog;
 extern DWORD			uCurrentMesh;
 extern class vObject *	pCurrentVisual;
 
@@ -68,6 +65,10 @@ typedef class D3D9ClientSurface * LPD3D9CLIENTSURFACE;
 typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
+
+extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog; 
+extern D3D9Catalog<D3D9Mesh*>			*MeshCatalog;
+extern D3D9Catalog<LPD3D9CLIENTSURFACE>	*SurfaceCatalog;
 
 
 /**

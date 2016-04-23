@@ -82,7 +82,7 @@ SurfTile::~SurfTile ()
 		elev = NULL;
 	}
 	if (ltex && owntex) {
-		if (TileCatalog->Remove(DWORD(ltex))) ltex->Release();
+		if (TileCatalog->Remove(ltex)) ltex->Release();
 	}
 	if (htex) htex->Release();
 }
@@ -116,13 +116,13 @@ void SurfTile::Load ()
 			owntex = false;
 		} else
 			tex = 0;
-	} else TileCatalog->Add(DWORD(tex));
+	} else TileCatalog->Add(tex);
 
 	// Load mask texture
 	if (mgr->Cprm().bSpecular || mgr->Cprm().bLights) {
 		if (owntex && tex) {
 			CreateTexture(pDev, pPreMsk, &ltex);
-			if (ltex) TileCatalog->Add(DWORD(ltex));
+			if (ltex) TileCatalog->Add(ltex);
 		} else if (node->Parent()) {
 			ltex = getSurfParent()->ltex;
 		}

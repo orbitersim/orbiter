@@ -7,26 +7,36 @@
 #ifndef __D3D9CATALOG_H
 #define __D3D9CATALOG_H
 
-#include <windows.h>
-#include <d3d9.h> 
-#include <d3dx9.h>
+#include <set>
 
+template <typename T>
 class D3D9Catalog {
 public:
-	explicit D3D9Catalog(const char *name);
-	~D3D9Catalog();
+	D3D9Catalog ()				{}
+	~D3D9Catalog ()			{ Clear(); }
 
-	void  Add(DWORD data);
-	void  Clear();
-	DWORD Seek(DWORD data);
-	DWORD Get(DWORD id);
-	DWORD CountEntries();
-	bool  Remove(DWORD data);
+	void	Add (T entry)		{ _data.insert(entry); }
+	void	Clear ()			{ _data.clear();  }
+//	T		Seek (T entry)		{ return _data.find(entry) - _data.begin(); }
+	size_t	CountEntries ()		{ return _data.size(); }
+	bool	Remove (T entry)	{ return _data.erase(entry) == 1; }
+
+	typedef std::set<typename T> TSet;
+	typedef typename TSet::iterator iterator;
+	typedef typename TSet::const_iterator const_iterator;
+
+	iterator		begin ()	{ return _data.begin(); }
+	iterator		end ()		{ return _data.end(); }
+	const_iterator	cbegin ()	{ return _data.cbegin(); }
+	const_iterator	cend ()		{ return _data.cend(); }
+
+//	iterator rbegin() { return _data.rbegin(); }
+//	iterator rend() { return _data.rend(); }
+//	const_iterator crbegin() { return _data.crbegin(); }
+//	const_iterator crend() { return _data.crend(); }
+
 private:
-	DWORD *data;
-	DWORD nmax, count;
-	CRITICAL_SECTION Crits;
-	char  name[16];
+	TSet _data;
 };
 
 #endif // !__D3D9EXTRA_H

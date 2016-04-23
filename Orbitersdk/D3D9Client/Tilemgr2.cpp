@@ -60,7 +60,7 @@ Tile::~Tile ()
 	if (mesh) delete mesh;
 
 	if (tex && owntex) {
-		if (TileCatalog->Remove(DWORD(tex))) tex->Release();
+		if (TileCatalog->Remove(tex)) tex->Release();
 	}
 	D3D9Stats.TilesAllocated--;
 }

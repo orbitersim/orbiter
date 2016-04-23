@@ -53,9 +53,10 @@ using namespace oapi;
 
 HINSTANCE g_hInst = 0;
 D3D9Client *g_client = 0;
-D3D9Catalog *MeshCatalog = 0;
-D3D9Catalog *TileCatalog = 0;
-D3D9Catalog *SurfaceCatalog = 0;
+D3D9Catalog<D3D9Mesh*>			 *MeshCatalog;
+D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
+D3D9Catalog<LPD3D9CLIENTSURFACE> *SurfaceCatalog;
+
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
 _D3D9Stats D3D9Stats;
@@ -173,9 +174,9 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 #endif
 
 	Config			= new D3D9Config();
-	TileCatalog		= new D3D9Catalog("TileCatalog");
-	MeshCatalog		= new D3D9Catalog("MeshCatalog");
-	SurfaceCatalog  = new D3D9Catalog("SurfaceCatalog");
+	TileCatalog		= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
+	MeshCatalog		= new D3D9Catalog<D3D9Mesh*>;
+	SurfaceCatalog	= new D3D9Catalog<LPD3D9CLIENTSURFACE>();
 
 	DebugControls::Create();
 	AtmoControls::Create();
@@ -652,20 +653,15 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		
 		// Check surface catalog --------------------------------------------------------------------------------------
 		//
-		DWORD n = SurfaceCatalog->CountEntries();
-
-		if (n) LogErr("UnDeleted Surface(s) Detected");
-
-		while (n) {
-			LPD3D9CLIENTSURFACE pSurf = SURFACE(SurfaceCatalog->Get(0));
-			if (pSurf) {
-				LogErr("Surface 0x%X (%s) (%u,%u)", pSurf, pSurf->GetName(), pSurf->GetWidth(), pSurf->GetHeight());
-				SAFE_DELETE(pSurf);
-			} else {
-				LogErr("A NULL surface in the SurfaceCatalog");
-				break;
+		auto it = SurfaceCatalog->begin();
+		if (it != SurfaceCatalog->end())
+		{
+			LogErr("UnDeleted Surface(s) Detected");
+			while (it != SurfaceCatalog->end())
+			{
+				LogErr("Surface 0x%X (%s) (%u,%u)", *it, (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
+				delete *it;
 			}
-			n = SurfaceCatalog->CountEntries();
 		}
 
 		// Check tile catalog --------------------------------------------------------------------------------------
@@ -1646,11 +1642,10 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 		if (texmgr->IsInRepository(hTex)) return;	// Do not release surfaces stored in repository
 
 		if (SURFACE(hTex)->Release()) {
-			DWORD nmesh = MeshCatalog->CountEntries();
-			for (DWORD i=0;i<nmesh;i++) {
-				D3D9Mesh *mesh = (D3D9Mesh *)MeshCatalog->Get(i);
-				if (mesh) if (mesh->HasTexture(hTex)) {
-					LogErr("Something is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",SURFACE(hTex)->GetName());
+			for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
+				if (*it && (*it)->HasTexture(hTex)) {
+					LogErr( "Something is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
+						    (*it)->GetName() );
 					return;
 				}
 			}
@@ -1732,12 +1727,10 @@ bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 
 		if (bRel) {
 
-			DWORD nmesh = MeshCatalog->CountEntries();
-
-			for (DWORD i=0;i<nmesh;i++) {
-				D3D9Mesh *mesh = (D3D9Mesh *)MeshCatalog->Get(i);
-				if (mesh) if (mesh->HasTexture(surf)) {
-					LogErr("Orbiter is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",SURFACE(surf)->GetName());
+			for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
+				if (*it && (*it)->HasTexture(surf)) {
+					LogErr( "Orbiter is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
+						    (*it)->GetName() );
 					return true;
 				}
 			}
@@ -2253,9 +2246,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 23.2 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 23.3 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 23.2 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 23.3 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
