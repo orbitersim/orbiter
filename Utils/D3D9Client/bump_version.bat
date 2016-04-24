@@ -77,7 +77,7 @@ var tasks = [{
     subst : "{Major}.0.0.0"
   }, {
      file : "Orbitersdk\\D3D9Client\\doc\\Doxyfile",
-     rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta\s+)?([\d\.]+)\"/,
+     rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta|R)?\s*([\d\.]+)\"/,
     subst : "{MajorMinor}",
      unix : true // UNIX EOL
   }, {
