@@ -661,6 +661,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 			{
 				LogErr("Surface 0x%X (%s) (%u,%u)", *it, (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
 				delete *it;
+				it = SurfaceCatalog->begin();
 			}
 		}
 

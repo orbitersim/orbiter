@@ -13,7 +13,7 @@ template <typename T>
 class D3D9Catalog {
 public:
 	D3D9Catalog ()				{}
-	~D3D9Catalog ()			{ Clear(); }
+	~D3D9Catalog ()				{ Clear(); }
 
 	void	Add (T entry)		{ _data.insert(entry); }
 	void	Clear ()			{ _data.clear();  }
