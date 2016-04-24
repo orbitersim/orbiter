@@ -2228,6 +2228,7 @@ void D3D9Client::SplashScreen()
 		static_cast<LONG>( round(_w + _l) ),
 		static_cast<LONG>( round(_h + _t) )
 	};
+	HR(pd3dDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
 	HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, &imgRect, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
 
 	HDC hDC;
