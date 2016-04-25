@@ -41,6 +41,10 @@
 #include "DebugControls.h"
 #include "Tilemgr2.h"
 
+#if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
+#define round(v) floor(v+0.5)
+#endif
+
 // ==============================================================
 // Structure definitions
 
