@@ -253,10 +253,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Catalog.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\D3D9Client.cpp"
 				>
 				<FileConfiguration

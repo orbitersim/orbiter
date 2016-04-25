@@ -75,6 +75,7 @@
       </PrecompiledHeaderOutputFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -134,6 +135,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       </PrecompiledHeaderOutputFile>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalOptions>/D PSAPI_VERSION=1 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -178,7 +180,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="CloudMgr.cpp" />
     <ClCompile Include="Cloudmgr2.cpp" />
     <ClCompile Include="CSphereMgr.cpp" />
-    <ClCompile Include="D3D9Catalog.cpp" />
     <ClCompile Include="D3D9Client.cpp" />
     <ClCompile Include="D3D9Config.cpp" />
     <ClCompile Include="D3D9ControlPanel.cpp" />

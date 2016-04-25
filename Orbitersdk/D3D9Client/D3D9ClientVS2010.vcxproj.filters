@@ -32,9 +32,6 @@
     <ClCompile Include="CSphereMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D3D9Catalog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="D3D9Client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
