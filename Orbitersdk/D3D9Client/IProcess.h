@@ -22,10 +22,15 @@
 
 #include <d3d9.h> 
 #include <d3dx9.h>
+#include <list>
 #include "OrbiterAPI.h"
 
 // Address mode WRAP is assumed by default
 // Filter POINT is assumed by default
+#define IPF_WRAP		0x0000
+#define IPF_WRAP_U		0x0000
+#define IPF_WRAP_V		0x0000
+#define IPF_WRAP_W		0x0000
 #define IPF_CLAMP		0x0007
 #define IPF_CLAMP_U		0x0001
 #define IPF_CLAMP_V		0x0002
@@ -34,6 +39,7 @@
 #define IPF_MIRROR_U	0x0008
 #define IPF_MIRROR_V	0x0010
 #define IPF_MIRROR_W	0x0020
+#define IPF_POINT		0x0000
 #define IPF_LINEAR		0x0040
 #define IPF_PYRAMIDAL	0x0080
 #define IPF_GAUSSIAN	0x0100
@@ -87,6 +93,10 @@ public:
 	// ----------------------------------------------------------------------------------
 	bool	IsOK();
 	bool	Execute();
+	bool    Execute(DWORD blendop, DWORD src, DWORD dest);
+
+	// ----------------------------------------------------------------------------------
+	int		FindDefine(const char *key);
 
 	// Native DirectX calls -------------------------------------------------------------
 	//
@@ -114,7 +124,9 @@ private:
 	D3DXHANDLE   hVP;
 
 	char	file[256];
-	char	entry[64];
+	char	entry[32];
+
+	std::list<std::string> def;
 };
 
 #endif

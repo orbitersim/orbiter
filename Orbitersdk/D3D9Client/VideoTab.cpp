@@ -665,6 +665,14 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_BLENDMODE, CB_ADDSTRING, 0, (LPARAM)"Hard light");
 	SendDlgItemMessage(hWnd,  IDC_BLENDMODE, CB_SETCURSEL, 0, 0);
 
+	// SHADING METHOD ------------------------------------------
+
+	SendDlgItemMessage(hWnd, IDC_SHADING, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_SHADING, CB_ADDSTRING, 0, (LPARAM)"Phong");
+	SendDlgItemMessageA(hWnd, IDC_SHADING, CB_ADDSTRING, 0, (LPARAM)"Blinn");
+	SendDlgItemMessageA(hWnd, IDC_SHADING, CB_ADDSTRING, 0, (LPARAM)"Ward");
+	SendDlgItemMessage(hWnd, IDC_SHADING, CB_SETCURSEL, 0, 0);
+
 	// Write values in controls ----------------
 
 	bool bFS = (SendDlgItemMessage(hTab, IDC_VID_BPP, CB_GETCURSEL, 0, 0)==0 && SendDlgItemMessage(hTab, IDC_VID_FULL, BM_GETCHECK, 0, 0)==BST_CHECKED);
@@ -719,6 +727,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, int(Config->MeshRes));
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS,   TBM_SETPOS, 1, int(Config->MicroBias));
 
+	SendDlgItemMessage(hWnd, IDC_SHADING, CB_SETCURSEL, Config->ShadeMethod, 0);
 	SendDlgItemMessage(hWnd, IDC_BLENDMODE, CB_SETCURSEL, Config->BlendMode, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROMODE, CB_SETCURSEL, Config->MicroMode, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROFILTER, CB_SETCURSEL, Config->MicroFilter, 0);
@@ -734,6 +743,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_GLASSSHADE, BM_SETCHECK, Config->EnableGlass==1, 0);
 	SendDlgItemMessage(hWnd, IDC_MESH_DEBUGGER, BM_SETCHECK, Config->EnableMeshDbg==1, 0);
 	SendDlgItemMessage(hWnd, IDC_MIPMAPS, BM_SETCHECK, Config->TileMipmaps==1, 0);
+	SendDlgItemMessage(hWnd, IDC_POSTPROCESS, BM_SETCHECK, Config->PostProcess == 1, 0);
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
@@ -785,6 +795,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->MicroMode	  = SendDlgItemMessage (hWnd, IDC_MICROMODE, CB_GETCURSEL, 0, 0);
 	Config->MicroFilter	  = SendDlgItemMessage (hWnd, IDC_MICROFILTER, CB_GETCURSEL, 0, 0);
 	Config->BlendMode	  = SendDlgItemMessage (hWnd, IDC_BLENDMODE, CB_GETCURSEL, 0, 0);
+	Config->ShadeMethod   = SendDlgItemMessage (hWnd, IDC_SHADING, CB_GETCURSEL, 0, 0);
 	// Check boxes
 	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
@@ -792,6 +803,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->EnableGlass   = SendDlgItemMessage (hWnd, IDC_GLASSSHADE,  BM_GETCHECK, 0, 0);
 	Config->EnableMeshDbg = SendDlgItemMessage (hWnd, IDC_MESH_DEBUGGER,  BM_GETCHECK, 0, 0);
 	Config->TileMipmaps	  = SendDlgItemMessage (hWnd, IDC_MIPMAPS,  BM_GETCHECK, 0, 0);
+	Config->PostProcess	  = SendDlgItemMessage (hWnd, IDC_POSTPROCESS, BM_GETCHECK, 0, 0);
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
 	Config->Separation	  = double(SendDlgItemMessage(hWnd, IDC_SEPARATION,  TBM_GETPOS, 0, 0));

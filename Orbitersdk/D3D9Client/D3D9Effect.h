@@ -14,6 +14,23 @@
 #include <d3d9.h> 
 #include <d3dx9.h>
 
+// NOTE: a "bool" in HLSL is 32bits (i.e. int)
+// Must match with counterpart in D3D9Client.fx
+
+struct TexFlow {
+	BOOL Emis;		// Enable Emission Maps
+	BOOL Spec;		// Enable Specular Maps
+	BOOL Refl;		// Enable Reflection Maps
+	BOOL Transl;	// Enble translucent effect
+	BOOL Transm;	// Enable transmissive effect
+	BOOL Rghn;		// Enable roughness map
+	BOOL Norm;		// Enable normal map
+	BOOL Frsl;		// Enable fresnel map
+	BOOL Transx;	// True if either of Transl or Transm is true
+};
+
+
+
 using namespace oapi;
 
 class D3D9Effect {
@@ -79,7 +96,6 @@ public:
 	static D3DXHANDLE	eBeaconArrayTech;
 	static D3DXHANDLE	eArrowTech;      ///< (Grapple point) arrows
 	static D3DXHANDLE	eAxisTech;
-	static D3DXHANDLE	eVCTech;
 	static D3DXHANDLE	ePlanetTile;
 	static D3DXHANDLE	eCloudTech;
 	static D3DXHANDLE	eCloudShadow;
@@ -108,14 +124,9 @@ public:
 	// Auxilliary params ----------------------------------------------
 	static D3DXHANDLE   eModAlpha;     ///< BOOL multiply material alpha with texture alpha
 	static D3DXHANDLE	eFullyLit;     ///< BOOL
-	static D3DXHANDLE	eUseSpec;      ///< BOOL
-	static D3DXHANDLE	eUseEmis;      ///< BOOL
-	static D3DXHANDLE	eUseRefl;      ///< BOOL
-	static D3DXHANDLE	eUseTransl;
-	static D3DXHANDLE	eUseTransm;
-	static D3DXHANDLE	eDebugHL;
+	static D3DXHANDLE	eFlow;		   ///< BOOL
+	static D3DXHANDLE	eDebugHL;	   ///< BOOL
 	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
-	static D3DXHANDLE	eUseDisl;      ///< BOOL
 	static D3DXHANDLE	eInSpace;      ///< BOOL
 	static D3DXHANDLE	eNoColor;      ///< BOOL
 	static D3DXHANDLE	eLocalLights;  ///< BOOL		
@@ -128,8 +139,9 @@ public:
 	static D3DXHANDLE	eSpecularMode;
 	static D3DXHANDLE	eHazeMode;
 	static D3DXHANDLE	eNormalMap;
+	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTextured;
-	static D3DXHANDLE	eClamp;
+	static D3DXHANDLE	eFresnel;
 	static D3DXHANDLE   eTime;         ///< FLOAT Simulation elapsed time
 	static D3DXHANDLE	eExposure;
 	static D3DXHANDLE	eCameraPos;	
@@ -150,9 +162,10 @@ public:
 	static D3DXHANDLE	eTex3;    ///< Tertiary texture
 	static D3DXHANDLE	eSpecMap;
 	static D3DXHANDLE	eEmisMap;
-	static D3DXHANDLE	eEnvMap;
-	static D3DXHANDLE	eDislMap;
+	static D3DXHANDLE	eEnvMapA;
+	static D3DXHANDLE	eEnvMapB;
 	static D3DXHANDLE	eReflMap;
+	static D3DXHANDLE	eFrslMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;
 

@@ -1149,8 +1149,8 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 
 	if (IdxPool[pool].empty()) {
 		HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
-		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD) * 3, D3DUSAGE_DYNAMIC, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
+		//HR(pDev->CreateIndexBuffer(nf*sizeof(WORD) * 3, D3DUSAGE_DYNAMIC, D3DFMT_INDEX16, D3DPOOL_DEFAULT, pIB, NULL));
 		return IdxPoolSize[pool];
 	}
 	else {

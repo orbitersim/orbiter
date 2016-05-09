@@ -52,17 +52,14 @@ public:
 	static LPDIRECT3DDEVICE9 pDev;   
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
-	static LPDIRECT3DTEXTURE9 hMicroRot;
 	static VECTOR3 vLPosOld;
 	static bool bEnvMapEnabled;
 	// ------------------------------------------------------------
 	static D3DXHANDLE eTileTech;
-	static D3DXHANDLE eTileTechNoZ;
 	static D3DXHANDLE eCloudTech;
 	static D3DXHANDLE eRingTech;
 	static D3DXHANDLE eHorizonTech;
 	static D3DXHANDLE eSkyDomeTech;
-	static D3DXHANDLE eCloudShadowTech;
 	// ------------------------------------------------------------  
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;
@@ -82,13 +79,11 @@ public:
 	static D3DXHANDLE sfAlpha;
 	static D3DXHANDLE sfNight;
 	// ------------------------------------------------------------
-	static D3DXHANDLE sbSpecular;
 	static D3DXHANDLE sbCloudSh;
 	static D3DXHANDLE sbLights;
 	static D3DXHANDLE sbInSpace;
 	static D3DXHANDLE sbOnOff;
 	static D3DXHANDLE sbEnvEnable;
-	static D3DXHANDLE sbMicro;
 	static D3DXHANDLE sbMicroNormals;
 	static D3DXHANDLE siTileLvl;
 	static D3DXHANDLE siDebug;

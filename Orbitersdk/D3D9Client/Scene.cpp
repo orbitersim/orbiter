@@ -62,21 +62,13 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pAxisFont  = NULL;
 	pLabelFont = NULL;
 	pDebugFont = NULL;
-	pBlrTemp = NULL;
-	pDither = pBlur = NULL;
+	pBlur = NULL;
+	pOffscreenTarget = NULL;
 	viewH = h;
 	viewW = w;
 	nLights = 0;
 	dwTurn = 0;
 	dwFrameId = 0;
-	// ---------------------------
-	psgDepth = NULL;
-	psgNormal = NULL;
-	psgSpecular = NULL;
-	ptgDepth = NULL;
-	ptgNormal = NULL;
-	ptgSpecular = NULL;
-	// ------------------------
 	
 	pDevice = _gc->GetDevice();
 	
@@ -96,10 +88,16 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
 	if (!bLocalLight) maxlight = 0;
 
-	Lights = new D3D9Light[12];
-	memset2(Lights, 0, 12*sizeof(D3D9Light));
-	memset2(&sunLight, 0, sizeof(D3D9Light));
-	
+	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
+
+	memset2(&sunLight, 0, sizeof(D3D9Sun));
+	memset2(pBlrTemp, 0, sizeof(pBlrTemp));
+
+	CLEARARRAY(pBlrTemp);
+	CLEARARRAY(pTextures);
+	CLEARARRAY(ptgBuffer);
+	CLEARARRAY(psgBuffer);
+
 	vobjFirst = vobjLast = NULL;
 	camFirst = camLast = camCurrent = NULL;
 	nstream = 0;
@@ -111,39 +109,40 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	LoadSampler();
 	
-	LogAlw("=========== Initializing G-Buffer ============");
+	// Initialize post processing effects --------------------------------------------------------------------------------------------------
+	//
+	pLightBlur = NULL;
 
-	/*
-	//HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgNormal));
-	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8,	  D3DPOOL_DEFAULT, &ptgNormal));
-	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_G16R16F,     D3DPOOL_DEFAULT, &ptgSpecular));
-	HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,		  D3DPOOL_DEFAULT, &ptgDepth));
+	if (Config->PostProcess) {
 
-	if (ptgNormal)   ptgNormal->GetSurfaceLevel(0, &psgNormal);
-	if (ptgSpecular) ptgSpecular->GetSurfaceLevel(0, &psgSpecular);
-	if (ptgDepth)    ptgDepth->GetSurfaceLevel(0, &psgDepth);
-	*/
+		pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain");
+		
+		int BufSize = pLightBlur->FindDefine("BufferDivider");
+		int BufFmt = pLightBlur->FindDefine("BufferFormat");
 
-	LogAlw("================ Scene Created ===============");
+		D3DFORMAT BackBuffer = D3DFMT_A2R10G10B10;
+		if (BufFmt == 1) BackBuffer = D3DFMT_A16B16G16R16F;
 
-	/*
-	SURFHANDLE hTgt = oapiCreateSurfaceEx(viewW, viewH, OAPISURFACE_RENDERTARGET);
+		LPDIRECT3DSURFACE9 pBack = gc->GetBackBuffer();
+		D3DSURFACE_DESC desc;
+		pBack->GetDesc(&desc);
 
-	pIPI = new ImageProcessing(pDevice, "Modules/D3D9Client/IPI.hlsl", "PSMain");
+		if (pDevice->CreateRenderTarget(viewW, viewH, BackBuffer, desc.MultiSampleType, desc.MultiSampleQuality, false, &pOffscreenTarget, NULL) == S_OK) {
+			HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pTextures[TEX_NOISE]));
+			HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9CLUT.dds", &pTextures[TEX_CLUT]));
+			HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_COLOR]));
+			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
+			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_TEMP]));
+		}
+		else {
+			LogErr("Creation of Offscreen render target failed");
+			SAFE_DELETE(pLightBlur);
+		}
+	}
 
-	pIPI->SetOutput(0, hTgt);
-	pIPI->SetFloat("myVar", 1.0f);
-	pIPI->SetFloat("myVec", &D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f), sizeof(D3DXVECTOR4));
-
-	if (!pIPI->Execute()) LogErr("pIPI::Execute Failed");
-
-	oapiBlt(gc->GetBackBufferHandle(), hTgt, 0, 0, 0, 0, viewW, viewH);
-
-	oapiDestroySurface(hTgt);
-
-	pDevice->Present(0, 0, 0, 0);
-	Sleep(2000);*/
+	for (int i = 0; i < ARRAYSIZE(ptgBuffer);i++)  if (ptgBuffer[i]) ptgBuffer[i]->GetSurfaceLevel(0, &psgBuffer[i]);
 	
+	LogAlw("================ Scene Created ===============");
 }
 
 // ===========================================================================================
@@ -157,20 +156,17 @@ Scene::~Scene ()
 	pDevice->SetRenderTarget(2, NULL);
 	pDevice->SetRenderTarget(3, NULL);
 
-	SAFE_RELEASE(psgNormal);
-	SAFE_RELEASE(psgSpecular);
-	SAFE_RELEASE(psgDepth);
-
-	SAFE_RELEASE(ptgNormal);
-	SAFE_RELEASE(ptgSpecular);
-	SAFE_RELEASE(ptgDepth);
-
-	SAFE_RELEASE(pBlrTemp);
-	SAFE_DELETE(pDither);
-	SAFE_DELETE(pBlur);
-
-	SAFE_DELETE(csphere);
+	for (int i = 0; i < ARRAYSIZE(psgBuffer); i++) SAFE_RELEASE(psgBuffer[i]);
+	for (int i = 0; i < ARRAYSIZE(ptgBuffer); i++) SAFE_RELEASE(ptgBuffer[i]);
+	for (int i = 0; i < ARRAYSIZE(pTextures); i++) SAFE_RELEASE(pTextures[i]);
 	
+	SAFE_DELETE(pBlur);
+	SAFE_DELETE(pLightBlur);
+	SAFE_DELETE(csphere);
+	SAFE_RELEASE(pOffscreenTarget);
+	
+	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
+
 	if (Lights) delete []Lights;
 	if (cspheremgr) delete cspheremgr;
 
@@ -189,7 +185,7 @@ Scene::~Scene ()
 //
 void Scene::LoadSampler()
 {
-	std::string line;
+	/*std::string line;
 	std::ifstream fs("Modules/D3D9Client/Sampler.cfg");
 
 	while (std::getline(fs, line)) {
@@ -200,7 +196,7 @@ void Scene::LoadSampler()
 				if (line.find("END") == 0) break;
 				std::istringstream iss(line);
 				iss >> BlurKernel[i].x >> BlurKernel[i].y;
-				LogAlw("%f, %f",BlurKernel[i].x, BlurKernel[i].y);
+				BlurKernel[i].z = sqrt(BlurKernel[i].x*BlurKernel[i].x + BlurKernel[i].y*BlurKernel[i].y);
 				i++;
 			}
 		}
@@ -214,7 +210,7 @@ void Scene::LoadSampler()
 			}
 		}
 	}
-	fs.close();
+	fs.close();*/
 }
 
 
@@ -232,24 +228,21 @@ void Scene::Initialise()
 	//
 	float pwr = 1.0f;
 
-	sunLight.Diffuse.r = sunLight.Specular.r = pwr; 
-	sunLight.Diffuse.g = sunLight.Specular.g = pwr;
-	sunLight.Diffuse.b = sunLight.Specular.b = pwr;
-	sunLight.Diffuse.a = sunLight.Specular.a = 1.0f;
+	sunLight.Color.r = pwr; 
+	sunLight.Color.g = pwr;
+	sunLight.Color.b = pwr;
+	sunLight.Color.a = 1.0f;
 	sunLight.Ambient.r = float(ambient)*0.0039f;
 	sunLight.Ambient.g = float(ambient)*0.0039f;
 	sunLight.Ambient.b = float(ambient)*0.0039f;
 	sunLight.Ambient.a = 1.0f;
-	sunLight.Attenuation[0] = 1.0f; 
-    sunLight.Param[D3D9LRange] = FLT_MAX;
-
+	
 	// Update Sunlight direction -------------------------------------
 	//
 	VECTOR3 rpos, cpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	oapiCameraGlobalPos(&cpos); rpos-=cpos;
-	D3DVEC(-unit(rpos), sunLight.Direction);
-	D3DVEC(rpos, sunLight.Position);
+	D3DVEC(-unit(rpos), sunLight.Dir);
 
 	// Do not "pre-create" visuals here. Will cause changed call order for vessel callbacks
 }
@@ -310,7 +303,7 @@ void Scene::CheckVisual(OBJHANDLE hObj)
 const D3D9Light *Scene::GetLight(int index) const
 {
 	if ((DWORD)index<maxlight || index>=0) return &Lights[index];
-	return &sunLight;
+	return NULL;
 }
 
 // ===========================================================================================
@@ -717,18 +710,13 @@ void Scene::UpdateCamVis()
 
 	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 	
-	// Clear active local lisghts list -------------------------------
-	//
-	memset2(Lights, 0, 12*sizeof(D3D9Light));
-
 	// Update Sunlight direction -------------------------------------
 	// 
 	VECTOR3 rpos;
 	oapiGetGlobalPos(hSun, &rpos);
 	rpos -= Camera.pos; 
-	D3DVEC(-unit(rpos), sunLight.Direction);
-	D3DVEC(rpos, sunLight.Position);
-
+	D3DVEC(-unit(rpos), sunLight.Dir);
+	
 	// Get focus visual -----------------------------------------------
 	// 
 	OBJHANDLE hFocus = oapiGetFocusObject();
@@ -797,6 +785,9 @@ void Scene::ClearLocalLights()
 	nLights  = 0;
 	lmaxdst2 = 0.0f;
 	lmaxidx  = 0;
+
+	// Clear active local lisghts list -------------------------------
+	for (int i = 0; i < MAX_SCENE_LIGHTS; i++) Lights[i].Reset();
 }
 
 // ===========================================================================================
@@ -805,77 +796,15 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 {
 	if (Lights==NULL) return;
 	if (le->IsActive()==false || le->GetIntensity()==0.0) return;
+	
+	assert(vo != NULL);
 
-	// -----------------------------------------------------------------------------
-	D3DXVECTOR3 pos;
-	D3DXVec3TransformCoord(&pos, &D3DXVEC(le->GetPosition()), vo->MWorld());
-	float Dst2 = D3DXVec3Dot(&pos, &pos);
-
-	if (nLights==maxlight && Dst2>lmaxdst2) return;
-
-	// -----------------------------------------------------------------------------
-	D3D9Light lght;
-	memset2(&lght, 0, sizeof(D3D9Light)); 
-
-	const double *att = ((PointLight*)le)->GetAttenuation();
-	lght.Attenuation = D3DXVECTOR3((float)att[0], (float)att[1], (float)att[2]);
-	lght.Param[D3D9LRange] = (float)((SpotLight*)le)->GetRange();
-	lght.Dst2 = Dst2;
-	lght.Position = pos;
-
-	// -----------------------------------------------------------------------------
-	switch (le->GetType()) {
-
-		case LightEmitter::LT_POINT: {
-			lght.Type = D3DLIGHT_POINT;
-		} break;
-
-		case LightEmitter::LT_SPOT: {
-			lght.Type = D3DLIGHT_SPOT;
-			lght.Param[D3D9LFalloff] = 1.0f;
-			lght.Param[D3D9LTheta]   = (float)((SpotLight*)le)->GetUmbra();
-			lght.Param[D3D9LPhi]     = (float)((SpotLight*)le)->GetPenumbra();	
-			lght.Param[D3D9LPhi]     = cos(lght.Param[D3D9LPhi]*0.5f);
-			lght.Param[D3D9LTheta]   = 1.0f/(cos(lght.Param[D3D9LTheta]*0.5f)-lght.Param[D3D9LPhi]);
-		} break;
-
-		default:
-			LogErr("Invalid Light Emitter Type");
-			break;
-	}
-
-	// -----------------------------------------------------------------------------
-	double intens = le->GetIntensity();
-
-	const COLOUR4 &col_d = le->GetDiffuseColour();
-	lght.Diffuse.r = (float)(col_d.r*intens);
-	lght.Diffuse.g = (float)(col_d.g*intens);
-	lght.Diffuse.b = (float)(col_d.b*intens);
-	lght.Diffuse.a = (float)(col_d.a*intens);
-
-	const COLOUR4 &col_s = le->GetSpecularColour();
-	lght.Specular.r = (float)(col_s.r*intens);
-	lght.Specular.g = (float)(col_s.g*intens);
-	lght.Specular.b = (float)(col_s.b*intens);
-	lght.Specular.a = (float)(col_s.a*intens);
-
-	const COLOUR4 &col_a = le->GetAmbientColour();
-	lght.Ambient.r = (float)(col_a.r*intens);
-	lght.Ambient.g = (float)(col_a.g*intens);
-	lght.Ambient.b = (float)(col_a.b*intens);
-	lght.Ambient.a = (float)(col_a.a*intens);
-
-	// -----------------------------------------------------------------------------
-	if (lght.Type != D3DLIGHT_POINT) {
-		const VECTOR3 dir = le->GetDirection();
-		D3DXVECTOR3 d((float)dir.x, (float)dir.y, (float)dir.z); 
-		D3DXVec3TransformNormal((D3DXVECTOR3 *)&lght.Direction, &d, vo->MWorld());
-		D3DXVec3Normalize((D3DXVECTOR3 *)&lght.Direction, (D3DXVECTOR3 *)&lght.Direction);
-	}
+	D3D9Light lght(le, vo);
 
 	// -----------------------------------------------------------------------------
 	// Replace or Add
 	if (nLights==maxlight) {
+		if (lght.Dst2 > lmaxdst2) return;
 		Lights[lmaxidx] = lght;
 		lmaxdst2 = 0.0f;
 		for (DWORD i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;	
@@ -890,6 +819,24 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 
 
 
+// ===========================================================================================
+//
+HRESULT Scene::BeginScene()
+{
+	bRendering = false;
+	HRESULT hr = pDevice->BeginScene();
+	if (hr == S_OK) bRendering = true;
+	return hr;
+}
+
+// ===========================================================================================
+//
+void Scene::EndScene()
+{
+	pDevice->EndScene();
+	bRendering = false;
+}
+
 
 // ===========================================================================================
 //
@@ -897,11 +844,18 @@ void Scene::RenderMainScene()
 {
 	_TRACE;
 
+	double scene_time = D3D9GetTime();
 	UpdateCamVis();
+	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
 	if (vFocus==NULL) return;
 
-	double scene_time = D3D9GetTime();
+	LPDIRECT3DSURFACE9 pBackBuffer;
+
+	if (pOffscreenTarget) pBackBuffer = pOffscreenTarget;
+	else				  pBackBuffer = gc->GetBackBuffer();
+
+	pDevice->SetRenderTarget(0, pBackBuffer);
 
 	if (DebugControls::IsActive()) {
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
@@ -914,9 +868,8 @@ void Scene::RenderMainScene()
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	}
 	
-	if (FAILED (pDevice->BeginScene())) return;
-	else bRendering = true;
-
+	if (FAILED (BeginScene())) return;
+	
 	float znear = ComputeNearClipPlane();
 	
 	if (DebugControls::IsActive()) {
@@ -1027,7 +980,7 @@ void Scene::RenderMainScene()
 	// Sketchpad for planetarium mode labels and markers
 	// -------------------------------------------------------------------------------------------------------
 
-	oapi::Sketchpad *pSketch = oapiGetSketchpad(gc->GetBackBufferHandle());
+	oapi::Sketchpad *pSketch = new D3D9Pad(pBackBuffer);
 
 	pSketch->SetFont(pLabelFont);
 	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
@@ -1188,6 +1141,8 @@ void Scene::RenderMainScene()
 
 	VOBJREC *pv = NULL;
 
+	double tot_vessels = D3D9GetTime();
+
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
 		if (!pv->vobj->IsVisible()) continue;
@@ -1206,6 +1161,8 @@ void Scene::RenderMainScene()
 			}
 		}
 	}
+
+	D3D9SetTime(D3D9Stats.Timer.Vessels, tot_vessels);
 
 	// -------------------------------------------------------------------------------------------------------
 	// render the vessel sub-systems
@@ -1271,6 +1228,8 @@ void Scene::RenderMainScene()
 
 	if (oapiCameraInternal() && vFocus) {
 
+		double tot_vc = D3D9GetTime();
+
 		// switch cockpit lights on, external-only lights off
 		//
 		if (bLocalLight) {
@@ -1290,65 +1249,127 @@ void Scene::RenderMainScene()
 		OBJHANDLE hFocus = oapiGetFocusObject();
 		SetCameraFrustumLimits(znear, oapiGetSize(hFocus));
 		vFocus->Render(pDevice, true);
+
+		D3D9SetTime(D3D9Stats.Timer.VirtualCP, tot_vc);
 	}
 
 	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	
+	
+	// End Of Main Scene Rendering ---------------------------------------------
+	//
 	pSketch->SetFont(NULL);
 	pSketch->SetPen(NULL);
 
-	oapiReleaseSketchpad(pSketch); pSketch = NULL;
+	SAFE_DELETE(pSketch);
+
+
+	if (pOffscreenTarget) EndScene();
+
+	// -------------------------------------------------------------------------------------------------------
+	// Copy Offscreen render target to backbuffer
+	// -------------------------------------------------------------------------------------------------------
+
+	if (pOffscreenTarget && pLightBlur) {
+
+		double tot_pp = D3D9GetTime();
+
+		int iGensPerFrame = pLightBlur->FindDefine("PassCount");
+
+		D3DSURFACE_DESC colr;
+		D3DSURFACE_DESC blur;
+		
+		psgBuffer[GBUF_BLUR]->GetDesc(&blur);
+		psgBuffer[GBUF_COLOR]->GetDesc(&colr);
+
+		D3DXVECTOR2 scr = D3DXVECTOR2(1.0f / float(colr.Width), 1.0f / float(colr.Height));
+		D3DXVECTOR2 sbf = D3DXVECTOR2(1.0f / float(blur.Width), 1.0f / float(blur.Height));
+	
+
+		if (pLightBlur->IsOK()) {
+
+			// Grap a copy of a backbuffer
+			pDevice->StretchRect(pOffscreenTarget, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
+			
+			pLightBlur->SetFloat("vSB", &sbf, sizeof(D3DXVECTOR2));
+			pLightBlur->SetFloat("vBB", &scr, sizeof(D3DXVECTOR2));
+			pLightBlur->SetBool("bBlendIn", false);
+			pLightBlur->SetBool("bBlur", false);
+			
+			// -----------------------------------------------------
+			pLightBlur->SetBool("bSample", true);
+			pLightBlur->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_POINT | IPF_CLAMP);
+			pLightBlur->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_LINEAR | IPF_CLAMP);
+			pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
+
+			if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
+	
+			// -----------------------------------------------------
+			pLightBlur->SetBool("bSample", false);
+			pLightBlur->SetBool("bBlur", true);
+				
+			for (int i = 0; i < iGensPerFrame; i++) {
+
+				pLightBlur->SetInt("PassId", i);
+				
+				pLightBlur->SetBool("bDir", false);
+				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_POINT | IPF_CLAMP);
+				pLightBlur->SetOutputNative(0, psgBuffer[GBUF_TEMP]);
+
+				if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
+
+				pLightBlur->SetBool("bDir", true);
+				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_TEMP], IPF_POINT | IPF_CLAMP);
+				pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
+
+				if (!pLightBlur->Execute()) 	LogErr("pLightBlur Execute Failed");
+			}
+			
+			pLightBlur->SetBool("bBlendIn", true);
+			pLightBlur->SetBool("bBlur", false);
+			pLightBlur->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_LINEAR | IPF_CLAMP);
+			pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_LINEAR | IPF_CLAMP);
+			pLightBlur->SetOutputNative(0, gc->GetBackBuffer());
+
+			if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
+		}
+		else {
+			LogErr("pLightBlur is not o.k.");
+		}
+
+		D3D9SetTime(D3D9Stats.Timer.PostProcess, tot_pp);
+	}
+
+
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render HUD Overlay to backbuffer directly
+	// -------------------------------------------------------------------------------------------------------
+
+	if (pOffscreenTarget) {
+		pDevice->SetRenderTarget(0, gc->GetBackBuffer());
+		if (FAILED(BeginScene())) return;
+	}
+
+	double tot_hud = D3D9GetTime();
 
 	gc->MakeRenderProcCall(gc->GetBackBufferHandle(), RENDERPROC_HUD_1ST);
 	gc->Render2DOverlay();
 	gc->MakeRenderProcCall(gc->GetBackBufferHandle(), RENDERPROC_HUD_2ND);
 
+	D3D9SetTime(D3D9Stats.Timer.HUDOverlay, tot_hud);
 
-	// -------------------------------------------------------------------------------------------------------
-	// Draw Debug String on a bottom of the screen
-	// -------------------------------------------------------------------------------------------------------
 
-	const char* dbgString = oapiDebugString();
-	int len = strlen(dbgString);
-
-	if (len>0) { 
-
-		oapi::Sketchpad *pSketch = oapiGetSketchpad(gc->GetBackBufferHandle());
-
-		oapi::Pen * nullp = oapiCreatePen(0, 1, 0xFFFFFF);
-		oapi::Brush *brush = oapiCreateBrush(0xB0000000);
-
-		pSketch->SetFont(pDebugFont);
-		pSketch->SetTextColor(0xFFFFFF);
-		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::BOTTOM);
-		pSketch->SetPen(nullp);
-		pSketch->SetBrush(brush);
-
-		DWORD height = Config->DebugFontSize;
-		DWORD width  = pSketch->GetTextWidth(dbgString, len);
-
-		pSketch->Rectangle(-1, viewH-height-1, width+4, viewH);
-		pSketch->Text(2, viewH-2, dbgString, len);
-
-		pSketch->SetPen(NULL);
-		pSketch->SetBrush(NULL);
-
-		oapiReleasePen(nullp);
-		oapiReleaseBrush(brush);
-		oapiReleaseSketchpad(pSketch);
-	}
-		
-	// End Of Main Scene Rendering ---------------------------------------------
+	// End Of HUD Rendering ---------------------------------------------
 	//
-	HR(pDevice->EndScene());
-	bRendering = false;
+	EndScene();
 
 
+		
 	// -------------------------------------------------------------------------------------------------------
 	// Render Custom Camera Views 
 	// -------------------------------------------------------------------------------------------------------
-
-	
 
 	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
 	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
@@ -1360,6 +1381,7 @@ void Scene::RenderMainScene()
 	// Render Custom Camera view for a focus vessel
 	//
 	if (dwTurn==RENDERTURN_CUSTOMCAM) {
+		double tot_cam = D3D9GetTime();
 		if (Config->CustomCamMode && vFocus) {
 			if (camCurrent==NULL) camCurrent = camFirst;
 			OBJHANDLE hVessel = vFocus->GetObjectA();
@@ -1372,6 +1394,7 @@ void Scene::RenderMainScene()
 				camCurrent = camCurrent->next;
 			}
 		}
+		D3D9SetTime(D3D9Stats.Timer.CustCams, tot_cam);
 	}
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1409,19 +1432,69 @@ void Scene::RenderMainScene()
 	// pDevice->StretchRect(psgNormal, NULL, gc->GetBackBuffer(), NULL, D3DTEXF_LINEAR);
 	
 	if (DebugControls::IsActive()) {
-		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-		if (flags&DBG_FLAGS_DSPENVMAP) {
-			if (flags&DBG_FLAGS_DSPBLRMAP) VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_METALLIC));
-			else VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MIRROR));
+		int sel = DebugControls::GetSelectedEnvMap();
+		if (sel>0) {
+			VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MIRROR), sel - 1);
 		}
 	}
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Draw Debug String on a bottom of the screen
+	// -------------------------------------------------------------------------------------------------------
+
+	const char* dbgString = oapiDebugString();
+	int len = strlen(dbgString);
+
+	if (len>0 || !D3D9DebugQueue.empty()) {
+
+		BeginScene();
+
+		oapi::Sketchpad *pSketch = new D3D9Pad(gc->GetBackBuffer());
+
+		oapi::Pen * nullp = oapiCreatePen(0, 1, 0x000000);
+		oapi::Brush *brush = oapiCreateBrush(0xB0000000);
+
+		pSketch->SetFont(pDebugFont);
+		pSketch->SetTextColor(0xFFFFFF);
+		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::BOTTOM);
+		pSketch->SetPen(nullp);
+		pSketch->SetBrush(brush);
+
+		DWORD height = Config->DebugFontSize;
+
+		// Display Orbiter's debug string
+		if (len > 0) {
+			DWORD width = pSketch->GetTextWidth(dbgString, len);
+			pSketch->Rectangle(-1, viewH - height - 1, width + 4, viewH);
+			pSketch->Text(2, viewH - 2, dbgString, len);
+		}
+
+		DWORD pos = viewH;
+
+		// Display additional debug string queue
+		//
+		while (!D3D9DebugQueue.empty()) {
+			pos -= (height * 3) / 2;
+			std::string str = D3D9DebugQueue.front();
+			len = strlen(str.c_str());
+			DWORD width = pSketch->GetTextWidth(str.c_str(), len);
+			pSketch->Rectangle(-1, pos - height - 1, width + 4, pos);
+			pSketch->Text(2, pos - 2, str.c_str(), len);
+			D3D9DebugQueue.pop();
+		}
+
+		pSketch->SetPen(NULL);
+		pSketch->SetBrush(NULL);
+
+		oapiReleasePen(nullp);
+		oapiReleaseBrush(brush);
 	
+		SAFE_DELETE(pSketch);
 
-	scene_time = D3D9GetTime() - scene_time;
-
-	if (scene_time>D3D9Stats.Timer.ScenePeak) D3D9Stats.Timer.ScenePeak = scene_time;
-	D3D9Stats.Timer.Scene += scene_time;
-
+		EndScene();
+	}
+	
 	dwTurn++;
 }
 
@@ -1437,7 +1510,7 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	
-	if (FAILED (pDevice->BeginScene())) return;
+	if (FAILED (BeginScene())) return;
 
 	VOBJREC *pv = NULL;
 
@@ -1491,13 +1564,14 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
 	
-	HR(pDevice->EndScene());
+	EndScene();
 }
 
 // ===========================================================================================
 //
 void Scene::RenderLightPrePass()
 {
+	/*
 	_TRACE;
 	UpdateCamVis();
 	if (vFocus==NULL) return;
@@ -1527,20 +1601,16 @@ void Scene::RenderLightPrePass()
 	}
 
 	HR(pDevice->EndScene());
+	*/
 }
 
 
 bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt)
 {
+	bool bQuality = true;
 
-	if (!pDither) {
-		pDither = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PSDither");
+	if (!pBlur) {
 		pBlur = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PSBlur");
-	}
-
-	if (!pDither->IsOK()) {
-		LogErr("pDither is not OK");
-		return false;
 	}
 
 	if (!pBlur->IsOK()) {
@@ -1559,82 +1629,91 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	pEnvDS->GetDesc(&desc);
 	DWORD width = min(512, desc.Width);
 
-	if (!*pTgt) if (D3DXCreateCubeTexture(pDev, width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, pTgt) != S_OK) return false;
-	if (!pBlrTemp) if (D3DXCreateCubeTexture(pDev, width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp) != S_OK) return false;
+	if (pTgt) if (!*pTgt) if (D3DXCreateCubeTexture(pDev, width, 4, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, pTgt) != S_OK) return false;
+
+	if (!pBlrTemp[0]) {
+		if (D3DXCreateCubeTexture(pDev, width >> 0, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp[0]) != S_OK) return false;
+		if (D3DXCreateCubeTexture(pDev, width >> 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp[1]) != S_OK) return false;
+		if (D3DXCreateCubeTexture(pDev, width >> 2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp[2]) != S_OK) return false;
+		if (D3DXCreateCubeTexture(pDev, width >> 3, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp[3]) != S_OK) return false;
+		if (D3DXCreateCubeTexture(pDev, width >> 4, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp[4]) != S_OK) return false;
+	}
+
 
 	D3DXVECTOR3 dir, up, cp;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
+	LPDIRECT3DSURFACE9 pTmp = NULL;
 
-	pDither->SetTextureNative("tCube", pSrc, IPF_LINEAR);
-	pDither->SetFloat("vaKernel", BlurKernel, sizeof(BlurKernel));
-	pDither->SetFloat("vaRotationX", rotationX, sizeof(rotationX));
-	pDither->SetFloat("vaRotationY", rotationY, sizeof(rotationY));
-	pDither->SetFloat("fScale", 64.0f / 512.0f);
-	pDither->SetFloat("iCount", 32);
+	double tot_blur = D3D9GetTime();
 
+	// Create clurred mip sub-levels
+	//
 	for (DWORD i = 0; i < 6; i++) {
-
-		EnvMapDirection(i, &dir, &up);
-		D3DXVec3Cross(&cp, &up, &dir);
-		D3DXVec3Normalize(&cp, &cp);
-
-		HR(pBlrTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
-
-		pDither->SetOutputNative(0, pSrf);
-		pDither->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
-		pDither->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-		pDither->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
-
-		if (!pDither->Execute()) {
-			LogErr("pDither Execute Failed");
-			return false;
-		}
-
+		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
+		pBlrTemp[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTmp);
+		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
 		SAFE_RELEASE(pSrf);
+		SAFE_RELEASE(pTmp);
 	}
 
-	pDither->SetTextureNative("tCube", pBlrTemp, IPF_LINEAR);
-	pDither->SetFloat("fScale", 12.0f / 512.0f);
-	pDither->SetFloat("iCount", 16);
+	for (int mip = 1; mip < 5; mip++) {
 
-	for (DWORD i = 0; i < 6; i++) {
+		pBlur->SetFloat("fD", 4.0f / float(width >> (mip-1)));
+		pBlur->SetBool("bDir", false);
+		pBlur->SetTextureNative("tCube", pBlrTemp[mip-1], IPF_LINEAR);
+	
+		for (DWORD i = 0; i < 6; i++) {
 
-		EnvMapDirection(i, &dir, &up);
-		D3DXVec3Cross(&cp, &up, &dir);
-		D3DXVec3Normalize(&cp, &cp);
+			EnvMapDirection(i, &dir, &up);
+			D3DXVec3Cross(&cp, &up, &dir);
+			D3DXVec3Normalize(&cp, &cp);
 
-		HR((*pTgt)->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
+			pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf);
 
-		pDither->SetOutputNative(0, pSrf);
-		pDither->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
-		pDither->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-		pDither->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+			pBlur->SetOutputNative(0, pSrf);
+			pBlur->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+			pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
 
-		if (!pDither->Execute()) {
-			LogErr("pDither Execute Failed");
-			return false;
+			if (!pBlur->Execute()) {
+				LogErr("pDither Execute Failed");
+				return false;
+			}
+
+			pBlrTemp[mip-1]->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTmp);
+			pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+			SAFE_RELEASE(pSrf);
+			SAFE_RELEASE(pTmp);
 		}
 
-		SAFE_RELEASE(pSrf);
+		pBlur->SetBool("bDir", true);
+
+		for (DWORD i = 0; i < 6; i++) {
+
+			EnvMapDirection(i, &dir, &up);
+			D3DXVec3Cross(&cp, &up, &dir);
+			D3DXVec3Normalize(&cp, &cp);
+
+			pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf);
+
+			pBlur->SetOutputNative(0, pSrf);
+			pBlur->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+			pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+
+			if (!pBlur->Execute()) {
+				LogErr("pDither Execute Failed");
+				return false;
+			}
+
+			pBlrTemp[mip]->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTmp);
+			pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+			SAFE_RELEASE(pSrf);
+			SAFE_RELEASE(pTmp);
+		}
 	}
-		
 
-	/*pBlur->SetTextureNative("tSrc", pBlrTemp, IPF_LINEAR);
-	for (DWORD i = 0; i < 6; i++) {
-		EnvMapDirection(i, &dir, &up);
-		D3DXVec3Cross(&cp, &up, &dir);
-		D3DXVec3Normalize(&cp, &cp);
-		HR((*pTgt)->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
-		pBlur->SetOutputNative(0, pSrf);
-		pBlur->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
-		pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-		pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
-		if (!pBlur->Execute()) {
-			LogErr("pBlur Execute Failed");
-			return false;
-		}
-		SAFE_RELEASE(pSrf);
-	}*/
+	D3D9SetTime(D3D9Stats.Timer.EnvBlur, tot_blur);
 
 	return true;
 }
@@ -1650,7 +1729,7 @@ void Scene::ClearOmitFlags()
 
 // ===========================================================================================
 //
-void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube)
+void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 {
 	if (!pCube) return;
 
@@ -1665,11 +1744,11 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube)
 	HR(pBack->GetDesc(&bdesc));
 	HR(pCube->GetLevelDesc(0, &ldesc));
 
-	DWORD x, y, h = min(ldesc.Height, bdesc.Height/3);
+	DWORD x, y, h = bdesc.Height / 3;
 
 	for (DWORD i=0;i<6;i++) {
 
-		HR(pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf));
+		HR(pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf));
 		
 		switch (i) {
 			case 0:	x = 2*h; y=h; break;
@@ -1917,7 +1996,9 @@ D3DXVECTOR3 Scene::GetPickingRay(short xpos, short ypos)
 //
 TILEPICK Scene::PickSurface(short xpos, short ypos)
 {
+
 	TILEPICK tp; memset(&tp, 0, sizeof(TILEPICK));
+	return tp;
 
 	vPlanet *vp = GetCameraProxyVisual();
 	if (!vp) return tp;
@@ -2330,31 +2411,18 @@ oapi::Pen * Scene::lblPen[6] = {0,0,0,0,0,0};
 
 
 
-/*
+
 float Rand()
 {
-float x = float(oapiRand()*2.0-1.0);
-if (x<0) return -(x*x);
-return x*x;
+	float x = float(oapiRand()*2.0-1.0);
+	if (x<0) return -(x*x);
+	return x*x;
 }
 
-static D3DXVECTOR2 kernel32[32];
-static D3DXVECTOR2 rotationX[32];
-static D3DXVECTOR2 rotationY[32];
-static bool bKernel32 = true;
-static bool bRotations = true;
-if (mode == 2) { bKernel32 = true; return false; }
-if (mode == 3) { bRotations = true;	return false; }
-if (bKernel32) {
-for (int i = 0; i < 32; i++) kernel32[i] = D3DXVECTOR2(Rand(), Rand());
-FILE *fp = fopen("SmpKernelOut.txt", "wt");	for (int i = 0; i < 32; i++) fprintf(fp, "%f %f\n", kernel32[i].x, kernel32[i].y); fclose(fp);	bKernel32 = false;
+
+void Scene::RandomizeKernel()
+{
+	//for (int i = 0; i < 32; i++) BlurKernel[i] = D3DXVECTOR3(Rand(), Rand(), 0.0f);
+	//for (int i = 0; i < 32; i++) BlurKernel[i].z = sqrt(BlurKernel[i].x*BlurKernel[i].x + BlurKernel[i].y*BlurKernel[i].y);
+	//FILE *fp = fopen("SmpKernelOut.txt", "wt");	for (int i = 0; i < 32; i++) fprintf(fp, "%f %f\n", kernel32[i].x, kernel32[i].y); fclose(fp);	bKernel32 = false;
 }
-if (bRotations) {
-for (int i = 0; i < 32; i++) {
-float a = float(PI2 * oapiRand());	float b = float(PI2 * oapiRand());
-rotationX[i] = D3DXVECTOR2(cos(a), sin(a));	rotationY[i] = D3DXVECTOR2(cos(b), sin(b));
-FILE *fp = fopen("RotationsOut.txt", "wt");
-for (int i = 0; i < 32; i++) fprintf(fp, "%f %f %f %f\n", rotationX[i].x, rotationX[i].y, rotationY[i].x, rotationY[i].y);
-fclose(fp);
-} bRotations = false;
-}*/

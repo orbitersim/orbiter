@@ -60,13 +60,17 @@ public:
 	int ShadowMapSize;				///< Shadow Map size
 	int CustomCamMode;				///< Custom Camera Mode
 	int TileMipmaps;				///< Enable surface tile mipmaps
+	int ShadeMethod;
+	int ShaderDebug;
 	double LODBias;					///< 3D Terrain resolution bias
 	int MeshRes;					///< Tile patch mesh resolution
 	int TileDebug;					///< Enable tile debugger
 	int TextureMips;				///< Texture mipmap autogen policy
+	int PostProcess;				///< Enable postprocessing effects
 	int MicroMode;			
 	int MicroFilter;
 	int BlendMode;
+	int PresentLocation;
 	int MicroBias;					///< Mipmap LOD Bias for surface micro textures
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")

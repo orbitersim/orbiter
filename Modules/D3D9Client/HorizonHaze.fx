@@ -32,8 +32,8 @@ technique HazeTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD HazeTechVS();
-        pixelShader  = compile PS_MOD HazeTechPS();
+        vertexShader = compile vs_3_0 HazeTechVS();
+        pixelShader  = compile ps_3_0 HazeTechPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;

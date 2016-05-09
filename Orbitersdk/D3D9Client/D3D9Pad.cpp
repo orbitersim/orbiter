@@ -148,7 +148,6 @@ void D3D9Pad::GlobalExit()
 // class GDIPad
 // ======================================================================
 
-
 D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 {
 	_TRACE;
@@ -157,7 +156,6 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	cpen   = NULL;
 	cbrush = NULL;
 	pTgt   = SURFACE(s);
-	pDev   = pTgt->GetDevice();
 	origx  = 0;
 	origy  = 0;
 	cx     = 0;
@@ -174,7 +172,9 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 	pencolor   = D3DXCOLOR(0,1,0,1);
 	linescale  = 1;
 	
-	HR(FX->SetMatrix(eVP, pTgt->pVP));
+	pVP = pTgt->pVP;
+
+	HR(FX->SetMatrix(eVP, pVP));
 
 	if (pTgt->IsBackBuffer()==false) {
 		if (pTgt->BindGPU()==false) { 
@@ -192,11 +192,46 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
 
 // ===============================================================================================
 //
+D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad(NULL)
+{
+	_TRACE;
+
+	cfont = deffont;
+	cpen = NULL;
+	cbrush = NULL;
+	pTgt = NULL;
+	origx = 0;
+	origy = 0;
+	cx = 0;
+	cy = 0;
+	bkmode = TRANSPARENT;
+	halign = TA_LEFT;
+	valign = TA_TOP;
+
+	brushcolor = D3DXCOLOR(0, 1, 0, 1);
+	bkcolor = D3DXCOLOR(0, 0, 0, 1);
+	textcolor = D3DXCOLOR(0, 1, 0, 1);
+	pencolor = D3DXCOLOR(0, 1, 0, 1);
+	linescale = 1;
+
+	D3DSURFACE_DESC desc;
+	pVP = &mVP;
+	s->GetDesc(&desc);
+
+	D3DXMatrixOrthoOffCenterLH(pVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
+
+	HR(FX->SetMatrix(eVP, pVP));	
+}
+
+// ===============================================================================================
+//
 D3D9Pad::~D3D9Pad ()
 {
 	_TRACE;
-	if (pTgt) if (pTgt->IsBackBuffer()==false) pTgt->ReleaseGPU();
-	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
+	if (GetSurface()) {
+		if (pTgt) if (pTgt->IsBackBuffer() == false) pTgt->ReleaseGPU();
+		SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
+	}
 	pTgt = NULL;
 }
 
@@ -425,8 +460,8 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	pText->SetRotation(((D3D9PadFont *)cfont)->rotation);
 
-	if (bkmode==OPAQUE) pText->Print(&textcolor, origx+x-1, origy+y-1, str, len, pTgt->pVP, &bkcolor);
-	else				pText->Print(&textcolor, origx+x-1, origy+y-1, str, len, pTgt->pVP);
+	if (bkmode==OPAQUE) pText->Print(&textcolor, origx+x-1, origy+y-1, str, len, pVP, &bkcolor);
+	else				pText->Print(&textcolor, origx+x-1, origy+y-1, str, len, pVP);
 
 	return true;
 }

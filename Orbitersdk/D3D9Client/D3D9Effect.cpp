@@ -44,10 +44,6 @@ D3DXHANDLE D3D9Effect::eArrowTech = 0;  // (Grapple point) arrows
 D3DXHANDLE D3D9Effect::eAxisTech = 0;
 D3DXHANDLE D3D9Effect::eSimpMesh = 0;
 
-// VC rendering techniques
-D3DXHANDLE D3D9Effect::eVCTech = 0;
-
-
 // Planet Rendering techniques
 D3DXHANDLE D3D9Effect::ePlanetTile = 0;
 D3DXHANDLE D3D9Effect::eCloudTech = 0;
@@ -79,9 +75,11 @@ D3DXHANDLE D3D9Effect::eTex1 = 0;		// Secondary texture
 D3DXHANDLE D3D9Effect::eTex3 = 0;		// Tertiary texture
 D3DXHANDLE D3D9Effect::eSpecMap = 0;
 D3DXHANDLE D3D9Effect::eEmisMap = 0;
-D3DXHANDLE D3D9Effect::eEnvMap = 0;
-D3DXHANDLE D3D9Effect::eDislMap = 0;
+D3DXHANDLE D3D9Effect::eEnvMapA = 0;
+D3DXHANDLE D3D9Effect::eEnvMapB = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
+D3DXHANDLE D3D9Effect::eRghnMap = 0;
+D3DXHANDLE D3D9Effect::eFrslMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
 
@@ -100,18 +98,13 @@ D3DXHANDLE D3D9Effect::eProxySize = 0;
 D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
 
 // Shader Flow Controls
+D3DXHANDLE D3D9Effect::eFlow = 0;
 D3DXHANDLE D3D9Effect::eModAlpha = 0;	// BOOL if true multiply material alpha with texture alpha
 D3DXHANDLE D3D9Effect::eFullyLit = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNormalMap = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eClamp = 0;		// BOOL
-D3DXHANDLE D3D9Effect::eUseSpec = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eUseEmis = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eFresnel = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eUseDisl = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eUseRefl = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eUseTransl = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eUseTransm = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
@@ -240,27 +233,31 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	ID3DXBuffer* errors = 0;
 	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
 
-	macro[0].Name = "VS_MOD";
-	macro[1].Name = "PS_MOD";
-
-	LogAlw("[Compiling Effects for Shader Model 3.0]");
-		
-	macro[0].Definition = "vs_3_0";
-	macro[1].Definition = "ps_3_0";
 	sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");
-	
-	macro[2].Name = "ANISOTROPY_MACRO";
-	macro[2].Definition = new char[32];
-	sprintf_s((char*)macro[2].Definition,32,"%d",max(2,Config->Anisotrophy));
 
-	int m = 3;
+	// ------------------------------------------------------------------------------
+	macro[0].Name = "ANISOTROPY_MACRO";
+	macro[0].Definition = new char[32];
+	sprintf_s((char*)macro[0].Definition,32,"%d",max(2,Config->Anisotrophy));
+	// ------------------------------------------------------------------------------
+	macro[1].Name = "SHADE";
+	macro[1].Definition = new char[4];
+	switch (Config->ShadeMethod) {
+		case 0:  strcpy_s((char*)macro[1].Definition, 4, "0"); break;	// Phong
+		case 1:  strcpy_s((char*)macro[1].Definition, 4, "1"); break;	// Blinn
+		default: strcpy_s((char*)macro[1].Definition, 4, "2"); break;	// Ward
+	}
+	// ------------------------------------------------------------------------------
+	int m = 2;
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
+	if (*(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT)) macro[m++].Name = "_LIGHTS";
+
+	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER, 0, &FX, &errors));
 	
-	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &FX, &errors));
-	
-	delete []macro[2].Definition;
+	delete []macro[0].Definition;
+	delete []macro[1].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -271,6 +268,18 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (FX==0) {
 		LogErr("Failed to create an Effect (%s)",name);
 		return;
+	}
+
+	if (Config->ShaderDebug) {
+		LPD3DXBUFFER pBuffer = NULL;
+		if (D3DXDisassembleEffect(FX, true, &pBuffer) == S_OK) {
+			FILE *fp = NULL;
+			if (!fopen_s(&fp, "D9D9Effect_asm.html", "w")) {
+				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
+				fclose(fp);
+			}
+			pBuffer->Release();
+		}
 	}
 
 
@@ -295,7 +304,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eSkyDomeTech = FX->GetTechniqueByName("SkyDomeTech");
 	eArrowTech   = FX->GetTechniqueByName("ArrowTech"); 
 	eAxisTech    = FX->GetTechniqueByName("AxisTech"); 
-	eVCTech		 = FX->GetTechniqueByName("VCTech");
 	eSimpMesh	 = FX->GetTechniqueByName("SimplifiedTech");
 	eVesselTech		 = FX->GetTechniqueByName("VesselTech");
 	eBaseShadowTech	 = FX->GetTechniqueByName("BaseShadowTech");
@@ -306,17 +314,12 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	// Flow Control Booleans -----------------------------------------------
 	eModAlpha	  = FX->GetParameterByName(0,"gModAlpha");
 	eFullyLit	  = FX->GetParameterByName(0,"gFullyLit");
-	eUseEmis	  = FX->GetParameterByName(0,"gUseEmis");
-	eUseSpec	  = FX->GetParameterByName(0,"gUseSpec");
+	eFlow		  = FX->GetParameterByName(0,"gCfg");
 	eDebugHL	  = FX->GetParameterByName(0,"gDebugHL");
 	eEnvMapEnable = FX->GetParameterByName(0,"gEnvMapEnable");
 	eNormalMap	  = FX->GetParameterByName(0,"gNormalMap");
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
-	eClamp		  = FX->GetParameterByName(0,"gClamp");
-	eUseDisl	  = FX->GetParameterByName(0,"gUseDisl");
-	eUseRefl	  = FX->GetParameterByName(0,"gUseRefl");
-	eUseTransl	  = FX->GetParameterByName(0,"gUseTransl");
-	eUseTransm	  = FX->GetParameterByName(0,"gUseTransm");
+	eFresnel      = FX->GetParameterByName(0,"gFresnel");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			
@@ -354,9 +357,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTex3		  = FX->GetParameterByName(0,"gTex3");
 	eSpecMap	  = FX->GetParameterByName(0,"gSpecMap");
 	eEmisMap	  = FX->GetParameterByName(0,"gEmisMap");
-	eEnvMap		  = FX->GetParameterByName(0,"gEnvMap");
-	eDislMap	  = FX->GetParameterByName(0,"gDislMap");
+	eEnvMapA	  = FX->GetParameterByName(0,"gEnvMapA");
+	eEnvMapB	  = FX->GetParameterByName(0,"gEnvMapB");
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
+	eRghnMap	  = FX->GetParameterByName(0,"gRghnMap");
+	eFrslMap	  = FX->GetParameterByName(0,"gFrslMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");

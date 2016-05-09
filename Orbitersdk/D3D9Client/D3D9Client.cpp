@@ -341,20 +341,18 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bVertexTex		 = false;
 	viewW = viewH    = 0;
 	viewBPP          = 0;
-	iDisl			 = 0;
 	frame_timer		 = 0;
 	scene            = NULL;
 	meshmgr          = NULL;
 	texmgr           = NULL;
 	pFramework       = NULL;
-	pd3dDevice       = NULL;
+	pDevice			 = NULL;
 	parser			 = NULL;
 	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
 	pNoiseTex		 = NULL;
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 
 	memset2(&D3D9Stats, 0, sizeof(D3D9Stats));
-	memset2(pDislMapList, 0, ARRAYSIZE(pDislMapList)*sizeof(SURFHANDLE));
 
 	D3DXMatrixIdentity(&ident);
 
@@ -397,7 +395,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	WriteLog("[3DDevice Initialized]");
 
-	pd3dDevice	= pFramework->GetD3DDevice();
+	pDevice	= pFramework->GetD3DDevice();
 	viewW		= pFramework->GetWidth();
 	viewH		= pFramework->GetHeight();
 	bFullscreen = (pFramework->IsFullscreen() == TRUE);
@@ -414,20 +412,20 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	//if (bGDIBB) Config->SketchpadMode = 1;
 
-	D3D9ClientSurface::D3D9TechInit(this, pd3dDevice, fld);
+	D3D9ClientSurface::D3D9TechInit(this, pDevice, fld);
 
-	HR(pd3dDevice->GetRenderTarget(0, &pBackBuffer));
+	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
 	LogAlw("Render Target = 0x%X", pBackBuffer);
 
 	meshmgr		= new MeshManager(this);
 	texmgr	    = new TextureManager(this);
 
 	// Bring Sketchpad Online
-	D3D9PadFont::D3D9TechInit(pd3dDevice);
-	D3D9PadPen::D3D9TechInit(pd3dDevice);
-	D3D9PadBrush::D3D9TechInit(pd3dDevice);
-	D3D9Text::D3D9TechInit(this, pd3dDevice, fld);
-	D3D9Pad::D3D9TechInit(this, pd3dDevice, fld);
+	D3D9PadFont::D3D9TechInit(pDevice);
+	D3D9PadPen::D3D9TechInit(pDevice);
+	D3D9PadBrush::D3D9TechInit(pDevice);
+	D3D9Text::D3D9TechInit(this, pDevice, fld);
+	D3D9Pad::D3D9TechInit(this, pDevice, fld);
 
 	deffont = (oapi::Font*) new D3D9PadFont(20, true, "fixed");
 	defpen  = (oapi::Pen*)  new D3D9PadPen(1, 1, 0x00FF00);
@@ -440,12 +438,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	if (pDefaultTex==NULL) LogErr("Null.dds not found");
 	if (pNoiseTex==NULL) LogErr("D3D9Noise.dds not found");
 
-	RegisterDissolveMap(clbkLoadTexture("Disl_Crystal.png"));
-	RegisterDissolveMap(clbkLoadTexture("Disl_Lines.png"));
-	RegisterDissolveMap(clbkLoadTexture("Disl_Lines2.png"));
-	RegisterDissolveMap(clbkLoadTexture("Disl_Noise.png"));
-	RegisterDissolveMap(clbkLoadTexture("Disl_Pool.png"));
-
 	int x=0;
 	if (viewW>1282) x=4;
 
@@ -456,7 +448,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	OutputLoadStatus("Building Shader Programs...",0);
 	
-	D3D9Effect::D3D9TechInit(this, pd3dDevice, fld);
+	D3D9Effect::D3D9TechInit(this, pDevice, fld);
 
 	// Device-specific initialisations
 
@@ -474,7 +466,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	OapiExtension::GlobalInit(*Config);
 
 	OutputLoadStatus("SceneTech.fx",1);
-	Scene::D3D9TechInit(pd3dDevice, fld);
+	Scene::D3D9TechInit(pDevice, fld);
 
 	// Create scene instance
 	scene = new Scene(this, viewW, viewH);
@@ -495,7 +487,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 		if (bEnabled) {
 			LogAlw("[nVidia Stereo mode is Enabled]");
-			if (NvAPI_Stereo_CreateHandleFromIUnknown(pd3dDevice, &pStereoHandle)!=NVAPI_OK) {
+			if (NvAPI_Stereo_CreateHandleFromIUnknown(pDevice, &pStereoHandle)!=NVAPI_OK) {
 				LogErr("Failed to get StereoHandle");
 			}
 			else {
@@ -512,6 +504,17 @@ HWND D3D9Client::clbkCreateRenderWindow()
 		else LogAlw("[nVidia Stereo mode is Disabled]");
 	}
 #endif
+
+	// Create status queries -----------------------------------------
+	//
+	if (pDevice->CreateQuery(D3DQUERYTYPE_PIPELINETIMINGS, NULL)==S_OK) LogAlw("D3DQUERYTYPE_PIPELINETIMINGS is supported by device");
+	else LogAlw("D3DQUERYTYPE_PIPELINETIMINGS not supported by device");
+
+	if (pDevice->CreateQuery(D3DQUERYTYPE_BANDWIDTHTIMINGS, NULL) == S_OK) LogAlw("D3DQUERYTYPE_BANDWIDTHTIMINGS is supported by device");
+	else LogAlw("D3DQUERYTYPE_BANDWIDTHTIMINGS not supported by device");
+
+	if (pDevice->CreateQuery(D3DQUERYTYPE_PIXELTIMINGS, NULL) == S_OK) LogAlw("D3DQUERYTYPE_PIXELTIMINGS is supported by device");
+	else LogAlw("D3DQUERYTYPE_PIXELTIMINGS not supported by device");
 
 	return hRenderWnd;
 }
@@ -610,13 +613,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	__TRY {
 
-		DWORD i = 0;
-		while (true) {
-			SURFHANDLE hSrf = GetDissolveMap(i++);
-			if (hSrf) clbkReleaseTexture(hSrf);
-			else break;
-		}
-
 		LogAlw("=========== Clearing Texture Repository =========");
 		SAFE_DELETE(texmgr);
 		
@@ -686,7 +682,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		GraphicsClient::clbkDestroyRenderWindow(fastclose);
 
 		hRenderWnd		 = NULL;
-		pd3dDevice		 = NULL;
+		pDevice		 = NULL;
 		bFailed			 = false;
 		viewW = viewH    = 0;
 		viewBPP          = 0;
@@ -705,10 +701,15 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 void D3D9Client::clbkUpdate(bool running)
 {
 	_TRACE;
+	double tot_update = D3D9GetTime();
 	if (bFailed==false && bRunning) scene->Update();
+	D3D9SetTime(D3D9Stats.Timer.Update, tot_update);
 }
 
 // ==============================================================
+
+double frame_time = 0.0;
+double scene_time = 0.0;
 
 void D3D9Client::clbkRenderScene()
 {
@@ -716,29 +717,33 @@ void D3D9Client::clbkRenderScene()
 	
 	char Label[7];
 
-	if (pd3dDevice==NULL || scene==NULL) return;
+	if (pDevice==NULL || scene==NULL) return;
 	if (bFailed) return;
 	if (!bRunning) return;
 
 	__TRY {
 
-		if (pd3dDevice->TestCooperativeLevel()!=S_OK) {
+		if (Config->PresentLocation == 1) PresentScene();
+
+		scene_time = D3D9GetTime();
+
+		if (pDevice->TestCooperativeLevel()!=S_OK) {
 			bFailed=true;
 			MessageBoxA(pFramework->GetRenderWindow(),"Connection to Direct3DDevice is lost\nExit the simulation with Ctrl+Q and restart.\n\nAlt-Tabing not supported in a true fullscreen mode.\nDialog windows won't work with multi-sampling in a true fullscreen mode.","D3D9Client: Lost Device",0);
 			return;
 		}
 
 		if (bHalt) {
-			pd3dDevice->BeginScene();
+			pDevice->BeginScene();
 			RECT rect2 = {0,viewH-60,viewW,viewH-20};
 			pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
 			rect2.left-=4; rect2.top-=4;
 			pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
-			pd3dDevice->EndScene();
+			pDevice->EndScene();
 			return;
 		}
 
-		UINT mem = pd3dDevice->GetAvailableTextureMem()>>20;
+		UINT mem = pDevice->GetAvailableTextureMem()>>20;
 		if (mem<32) TileBuffer::HoldThread(true);
 
 		scene->RenderMainScene();		// Render the main scene
@@ -753,18 +758,23 @@ void D3D9Client::clbkRenderScene()
 		}
 
 		if (Label[0]!=0) {
-			pd3dDevice->BeginScene();
+			pDevice->BeginScene();
 			RECT rect2 = {0,viewH-60,viewW,viewH-20};
 			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
 			rect2.left-=4; rect2.top-=4;
 			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
-			pd3dDevice->EndScene();
+			pDevice->EndScene();
 		}
+
+		D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
+
 
 		if (bControlPanel) RenderControlPanel();
 
+		// Compute total frame time
+		D3D9SetTime(D3D9Stats.Timer.FrameTotal, frame_time);
+		frame_time = D3D9GetTime();
 
-		memset2(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
 		memset2(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
 		memset2(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
 
@@ -788,6 +798,23 @@ void D3D9Client::clbkTimeJump(double simt, double simdt, double mjd)
 
 // ==============================================================
 
+void D3D9Client::PresentScene()
+{
+	double time = D3D9GetTime();
+
+	if (bFullscreen == false) {
+		RenderWithPopupWindows();
+		pDevice->Present(0, 0, 0, 0);
+	}
+	else {
+		if (!RenderWithPopupWindows()) pDevice->Present(0, 0, 0, 0);
+	}
+
+	D3D9SetTime(D3D9Stats.Timer.Display, time);
+}
+
+// ==============================================================
+
 double framer_rater_limit = 0.0;
 
 bool D3D9Client::clbkDisplayFrame()
@@ -798,17 +825,11 @@ bool D3D9Client::clbkDisplayFrame()
 	
 	if (!bRunning) {
 		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
-		pd3dDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
-		pd3dDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT);
+		pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
+		pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT);
 	}
 
-	if (bFullscreen==false) {
-		RenderWithPopupWindows();
-		pd3dDevice->Present(0, 0, 0, 0);
-	}
-	else {
-		if (!RenderWithPopupWindows()) pd3dDevice->Present(0, 0, 0, 0);
-	}
+	if (Config->PresentLocation == 0) PresentScene();
 
 	double frmt = (1000000.0/Config->FrameRate) - (time - framer_rater_limit);
 
@@ -1013,8 +1034,10 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
-	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
-	if (meshmat) UpdateMatExt((const D3DMATERIAL9 *)mat, meshmat);
+	D3D9MatExt meshmat;
+	//mesh->GetMaterial(&meshmat, matidx);
+	CreateMatExt((const D3DMATERIAL9 *)mat, &meshmat);
+	mesh->SetMaterial(&meshmat, matidx);
 	return 0;
 }
 
@@ -1026,7 +1049,7 @@ int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *m
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
-	D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
+	const D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
 	if (meshmat) GetMatExt(meshmat, (D3DMATERIAL9 *)mat);
 	return 0;	
 }
@@ -1156,7 +1179,7 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 			return true;
 
 		case RP_MAXLIGHTS:
-			*value = max(0, min(12, Config->MaxLights));
+			*value = MAX_SCENE_LIGHTS;
 			return true;
 
 		case RP_REQUIRETEXPOW2:
@@ -1519,10 +1542,10 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, Im
 
 	if (desc.Pool!=D3DPOOL_SYSTEMMEM) {
 
-		HR(pd3dDevice->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
-		HR(pd3dDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
-		HR(pd3dDevice->StretchRect(pSurf, NULL, pRTG, NULL, D3DTEXF_NONE));
-		HR(pd3dDevice->GetRenderTargetData(pRTG, pSystem));
+		HR(pDevice->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
+		HR(pDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
+		HR(pDevice->StretchRect(pSurf, NULL, pRTG, NULL, D3DTEXF_NONE));
+		HR(pDevice->GetRenderTargetData(pRTG, pSystem));
 
 		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK) {
 
@@ -1632,7 +1655,7 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 		attrib &= ~(OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
 	}
 
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, fname);
+	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, fname);
 	surf->LoadSurface(fname, attrib);
 	return surf;
 }
@@ -1671,7 +1694,7 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
 	_TRACE;
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurfaceEx");
+	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurfaceEx");
 	surf->CreateSurface(w, h, attrib);
 	return surf;
 }
@@ -1682,7 +1705,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
 	_TRACE;
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pd3dDevice, "clbkCreateSurface");
+	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurface");
 	surf->MakeEmptySurfaceEx(w, h);
 	return surf;
 }
@@ -1701,7 +1724,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
 	_TRACE;
-	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pd3dDevice, "clbkCreateTexture");
+	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pDevice, "clbkCreateTexture");
 	// DO NOT USE ALPHA
 	pSurf->MakeEmptyTextureEx(w, h);
 	return (SURFHANDLE)pSurf;
@@ -1835,6 +1858,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 
 	__TRY {
 
+		double time = D3D9GetTime();
+
 		if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
 		if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
@@ -1849,6 +1874,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 		}
 		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+
+		D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
 	}
 
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -1866,6 +1893,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 	_TRACE;
 
 	__TRY {
+		double time = D3D9GetTime();
+
 		if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
 		if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
@@ -1877,6 +1906,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 		}
 		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+
+		D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
 	}
 
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -1895,6 +1926,8 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	_TRACE;
 
 	__TRY {
+		double time = D3D9GetTime();
+
 		if (src==NULL) { LogErr("D3D9Client::clbkScaleBlt() Source surface is NULL"); return false; }
 		if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
@@ -1906,6 +1939,8 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 		}
 		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+
+		D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
 	}
 
 	__EXCEPT(ExcHandler(GetExceptionInformation()))
@@ -2068,35 +2103,6 @@ LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 	return SURFACE(pFramework->GetBackBufferHandle());
 }
 
-// =======================================================================
-
-void D3D9Client::RegisterDissolveMap(SURFHANDLE hSrf)
-{
-	if (iDisl<ARRAYSIZE(pDislMapList)) {
-		for (DWORD i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return;
-		pDislMapList[iDisl] = hSrf;
-		iDisl++;
-	}
-}
-
-// =======================================================================
-
-SURFHANDLE D3D9Client::GetDissolveMap(DWORD idx) const
-{
-	if (idx<ARRAYSIZE(pDislMapList)) return pDislMapList[idx];
-	return NULL;
-}
-
-// =======================================================================
-
-int D3D9Client::GetIndexOfDissolveMap(SURFHANDLE hSrf) const
-{
-	for (DWORD i=0;i<iDisl;i++) if (pDislMapList[i]==hSrf) return i;
-	return -1;
-}
-
-// =======================================================================
-
 void D3D9Client::MakeRenderProcCall(SURFHANDLE hSrf, DWORD id)
 {
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
@@ -2140,6 +2146,7 @@ void D3D9Client::WriteLog(const char *msg) const
 
 bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 {
+
 	if (bRunning) return false;
 
 	if (line==1) strcpy_s(pLoadItem, 127, txt);
@@ -2147,14 +2154,14 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 
 	if (bSkepchpadOpen==false && pTextScreen) {
 
-		if (pd3dDevice->TestCooperativeLevel()!=S_OK) {
+		if (pDevice->TestCooperativeLevel()!=S_OK) {
 			LogErr("TestCooperativeLevel() Failed");
 			return false;
 		}
 
 		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
 
-		pd3dDevice->StretchRect(pSplashScreen, &txt, pTextScreen, NULL, D3DTEXF_POINT);
+		pDevice->StretchRect(pSplashScreen, &txt, pTextScreen, NULL, D3DTEXF_POINT);
 
 		HDC hDC;
 		HR(pTextScreen->GetDC(&hDC));
@@ -2180,12 +2187,12 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		DeleteObject(pen);
 
 		HR(pTextScreen->ReleaseDC(hDC));
-		HR(pd3dDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT));
-		HR(pd3dDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT));
+		HR(pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT));
+		HR(pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT));
 		
 		IDirect3DSwapChain9 *pSwap;
 
-		if (pd3dDevice->GetSwapChain(0, &pSwap)==S_OK) { 
+		if (pDevice->GetSwapChain(0, &pSwap)==S_OK) { 
 			pSwap->Present(0, 0, 0, 0, D3DPRESENT_DONOTWAIT);
 			pSwap->Release();
 			return true;
@@ -2208,10 +2215,10 @@ void D3D9Client::SplashScreen()
 	loadd_w = viewW/3;
 	loadd_h = 80;
 
-	HR(pd3dDevice->TestCooperativeLevel());
-	HR(pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L));
-	HR(pd3dDevice->CreateOffscreenPlainSurface(loadd_w, loadd_h, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pTextScreen, NULL));
-	HR(pd3dDevice->CreateOffscreenPlainSurface(viewW, viewH, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pSplashScreen, NULL));
+	HR(pDevice->TestCooperativeLevel());
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L));
+	HR(pDevice->CreateOffscreenPlainSurface(loadd_w, loadd_h, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pTextScreen, NULL));
+	HR(pDevice->CreateOffscreenPlainSurface(viewW, viewH, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pSplashScreen, NULL));
 
 	D3DXIMAGE_INFO Info;
 
@@ -2233,7 +2240,7 @@ void D3D9Client::SplashScreen()
 		static_cast<LONG>( round(_w + _l) ),
 		static_cast<LONG>( round(_h + _t) )
 	};
-	HR(pd3dDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
+	HR(pDevice->ColorFill(pSplashScreen, NULL, D3DCOLOR_XRGB(0, 0, 0)));
 	HR(D3DXLoadSurfaceFromFileInMemory(pSplashScreen, NULL, &imgRect, pData, size, NULL, D3DX_FILTER_LINEAR, 0, &Info));
 
 	HDC hDC;
@@ -2264,9 +2271,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 23.4 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 23.8 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 23.4 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 23.8 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
@@ -2299,9 +2306,9 @@ void D3D9Client::SplashScreen()
 
 
 	RECT src = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
-	pd3dDevice->StretchRect(pSplashScreen, &src, pTextScreen, NULL, D3DTEXF_POINT);
-	pd3dDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
-	pd3dDevice->Present(0, 0, 0, 0);
+	pDevice->StretchRect(pSplashScreen, &src, pTextScreen, NULL, D3DTEXF_POINT);
+	pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
+	pDevice->Present(0, 0, 0, 0);
 }
 
 
@@ -2329,7 +2336,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	if (SURFACE(surf)->IsBackBuffer()) {
 		bool bScene = GetScene()->IsRendering();
 		if (bScene==true || bGDIBB==false) {
-			if (bScene==false) pd3dDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() of the main rendering routine
+			if (bScene==false) pDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() of the main rendering routine
 			bSkepchpadOpen = true;
 			return new D3D9Pad(surf);
 		}
@@ -2368,7 +2375,7 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 		}
 		if (SURFACE(surf)->GetSketchPadMode()==SKETCHPAD_DIRECTX) {
 			if (SURFACE(surf)->IsBackBuffer()) {
-				if (!GetScene()->IsRendering()) pd3dDevice->EndScene();
+				if (!GetScene()->IsRendering()) pDevice->EndScene();
 			}
 			D3D9Pad *gdip = (D3D9Pad*)sp;
 			delete gdip;

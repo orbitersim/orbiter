@@ -89,7 +89,7 @@ void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXM
 {
 	// render complete sphere (used at low LOD levels)
 	HR(FX->SetTechnique(ePlanetTile));
-	HR(FX->SetValue(eSun, gc->GetScene()->GetLight(-1), sizeof(D3D9Light)));
+	HR(FX->SetValue(eSun, gc->GetScene()->GetSun(), sizeof(D3D9Sun)));
 	HR(FX->SetMatrix(eW, mWrld));
 	HR(FX->SetValue(eWater, &watermat, sizeof(D3DMATERIAL9)));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));
@@ -147,7 +147,7 @@ void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXM
 void SurfaceManager::InitRenderTile()
 {
 	HR(FX->SetTechnique(ePlanetTile));
-	HR(FX->SetValue(eSun, gc->GetScene()->GetLight(-1), sizeof(D3D9Light)));
+	HR(FX->SetValue(eSun, gc->GetScene()->GetSun(), sizeof(D3D9Sun)));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));
 	HR(FX->SetValue(eWater, &watermat, sizeof(D3DMATERIAL9)));
 	HR(FX->SetValue(eColor, &D3DXCOLOR(cAmbient), sizeof(D3DXCOLOR)));

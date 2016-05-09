@@ -67,7 +67,7 @@ void CloudManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale,
 
 	HR(FX->SetTechnique(eCloudTech));
 	HR(FX->SetValue(eMat, &def_mat, sizeof(D3DMATERIAL9)));
-	HR(FX->SetValue(eSun, gc->GetScene()->GetLight(-1), sizeof(D3D9Light)));
+	HR(FX->SetValue(eSun, gc->GetScene()->GetSun(), sizeof(D3D9Sun)));
 	HR(FX->SetInt(eSpecularMode, 0));
 
 	if (microtex) {
@@ -97,7 +97,7 @@ void CloudManager::RenderShadow(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double 
 
 	HR(FX->SetTechnique(eCloudShadow)) 
 	HR(FX->SetValue(eMat, &cloudmat, sizeof(D3DMATERIAL9)));
-	HR(FX->SetValue(eSun, gc->GetScene()->GetLight(-1), sizeof(D3D9Light)));
+	HR(FX->SetValue(eSun, gc->GetScene()->GetSun(), sizeof(D3D9Sun)));
 	HR(FX->SetInt(eSpecularMode, 0));
 
 	if (microtex) {

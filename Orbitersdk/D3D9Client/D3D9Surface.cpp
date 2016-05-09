@@ -338,12 +338,6 @@ void D3D9ClientSurface::Clear()
 	pDCSub		= NULL;
 	hDefFont	= NULL;
 	pStencil	= NULL;
-	pNormalMap	= NULL;
-	pEmissionMap = NULL;
-	pSpecularMap = NULL;
-	pReflectionMap = NULL;
-	pTranslucenceMap = NULL;
-	pTransmittanceMap = NULL;
 	iBindCount  = 0;
 	Initial		= 0;
 	Active		= 0;
@@ -359,8 +353,10 @@ void D3D9ClientSurface::Clear()
 	bMainDC		= true;
 	bDCSys		= false;
 	bBltSys		= false;
+	bAdvanced   = false;
 	pDevice		= NULL;
 	memset2(&desc, 0, sizeof(D3DSURFACE_DESC));
+	memset2(pMap, 0, sizeof(pMap));
 }
 
 
@@ -383,17 +379,13 @@ D3D9ClientSurface::~D3D9ClientSurface()
 
 	SAFE_RELEASE(pSurf);
 	SAFE_RELEASE(pTex);
-	SAFE_RELEASE(pNormalMap);
-	SAFE_RELEASE(pEmissionMap);
-	SAFE_RELEASE(pSpecularMap);
-	SAFE_RELEASE(pReflectionMap);
-	SAFE_RELEASE(pTranslucenceMap);
-	SAFE_RELEASE(pTransmittanceMap);
 	SAFE_RELEASE(pStencil);
 	SAFE_RELEASE(pDCSub);
 	SAFE_RELEASE(pRTS);
 	SAFE_DELETE(pVP);
 	SAFE_DELETE(pViewPort);
+
+	for (int i = 0; i < ARRAYSIZE(pMap); i++) SAFE_RELEASE(pMap[i]);
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1330,26 +1322,44 @@ HDC	D3D9ClientSurface::GetDC()
 	// Attempting to acquire a hDC for a BackBuffer
 	//
 	if (bBackBuffer) {
+		double time = D3D9GetTime();
 		LogOk("GetDC() Surface=0x%X, BackBuffer", this);
-		if (pSurf->GetDC(&hDC)==S_OK) { bDCOpen=true; return hDC; }
+		if (pSurf->GetDC(&hDC)==S_OK) { 
+			bDCOpen=true; 
+			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			return hDC; 
+		}
 		goto skip;
 	}
 
 	if (desc.Usage&D3DUSAGE_DYNAMIC) {
+		double time = D3D9GetTime();
 		LogOk("GetDC() Surface=0x%X, Dynamic", this);
-		if (pSurf->GetDC(&hDC)==S_OK) { bDCOpen = true; return hDC; }
+		if (pSurf->GetDC(&hDC)==S_OK) {
+			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			bDCOpen = true; 
+			return hDC; 
+		}
 		goto skip;
 	}
 
 	if (desc.Pool==D3DPOOL_SYSTEMMEM) {
 		LogOk("GetDC() Surface=0x%X, SysMem", this);
-		if (pSurf->GetDC(&hDC)==S_OK) { bDCOpen = true; return hDC; }
+		if (pSurf->GetDC(&hDC)==S_OK) {
+			bDCOpen = true; 
+			return hDC; 
+		}
 		goto skip;
 	}
 
 	if ((desc.Usage&D3DUSAGE_RENDERTARGET) && bLockable) {
+		double time = D3D9GetTime();
 		LogOk("GetDC() Surface=0x%X, RT-Lock", this);
-		if (pSurf->GetDC(&hDC)==S_OK) { bDCOpen = true; return hDC; }
+		if (pSurf->GetDC(&hDC)==S_OK) { 
+			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			bDCOpen = true; 
+			return hDC;
+		}
 		goto skip;
 	}
 
@@ -1359,7 +1369,12 @@ HDC	D3D9ClientSurface::GetDC()
 		bMainDC = false;
 		LogOk("GetDC() Surface=0x%X, Sub-RT-Lock", this);
 		HR(pDevice->StretchRect(pSurf, NULL, pDCSub, NULL, D3DTEXF_POINT));
-		if (pDCSub->GetDC(&hDC)==S_OK) { bDCOpen = true; return hDC; }
+		double time = D3D9GetTime();
+		if (pDCSub->GetDC(&hDC)==S_OK) { 
+			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			bDCOpen = true; 
+			return hDC; 
+		}
 		goto skip;
 	}
 
@@ -1551,6 +1566,45 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 }
 
 
+// Load a special texture -------------------------------------------------------------------------------------------------
+//
+//
+bool D3D9ClientSurface::LoadSpecialTexture(const char *fname, const char *ext, int id)
+{
+	char name[128];
+	char xpath[256];
+
+	if (pMap[id]) return true;
+
+	CreateName(name, 128, fname, ext);
+
+	if (gc->TexturePath(name, xpath)) {
+		D3DXIMAGE_INFO info;
+		pMap[id] = NULL;
+		if (D3DXGetImageInfoFromFileA(xpath, &info) == S_OK) {
+			DWORD Mips = D3DFMT_FROM_FILE;
+			if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
+			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
+			if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pMap[id]) != S_OK) {
+				pMap[id] = NULL;
+				LogErr("Failed to load image (%s)", name);
+				return false;
+			}
+			else {
+				bAdvanced = true;
+				return true;
+			}
+		}
+		else {
+			LogErr("Failed to acquire image information for (%s)", name);
+			return false;
+		}
+	}
+
+	return false;
+}
+
+
 // Load a texture -------------------------------------------------------------------------------------------------
 //
 //
@@ -1563,24 +1617,10 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 	if (gc->TexturePath(fname, cpath)) {
 
 		char xpath[256];
-		char nname[128];
-		char sname[128];
-		char ename[128];
 		char bname[128];
-		char rname[128];
-		char tlname[128];			// Translucence
-		char tmname[128];			// Transmittance
-
-		if (Config->UseNormalMap) {
-			CreateName(nname, 128, fname, "norm");
-			CreateName(sname, 128, fname, "spec");
-			CreateName(ename, 128, fname, "emis");
-			CreateName(bname, 128, fname, "bump");
-			CreateName(rname, 128, fname, "refl");
-			CreateName(tlname, 128, fname, "transl");
-			CreateName(tmname, 128, fname, "transm");
-		}
-
+	
+		if (Config->UseNormalMap) CreateName(bname, 128, fname, "bump");
+		
 		// Get information about the file
 		//
 		D3DXIMAGE_INFO info;
@@ -1595,9 +1635,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		// Convert Non-supported format -------------------------
 		if (Format==D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
 
-		LPDIRECT3DTEXTURE9 pBumpMap = NULL;
-	
-
+		
 		// Diffuse Texture Section ====================================================================================================================
 		//
 		DWORD Mips = D3DFMT_FROM_FILE;
@@ -1620,6 +1658,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		//
 		if (Config->UseNormalMap) {
 
+			LPDIRECT3DTEXTURE9 pBumpMap = NULL;
 
 			// Bump Map Section =======================================================================================================================
 			//
@@ -1627,153 +1666,31 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 				D3DXIMAGE_INFO info;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
 					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pBumpMap)==S_OK) {
-						if (D3DXCreateTexture(pDevice, info.Width, info.Height, 0, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pNormalMap)==S_OK) {
+						if (D3DXCreateTexture(pDevice, info.Width, info.Height, 0, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pMap[MAP_NORMAL])==S_OK) {
 							DWORD Channel = D3DX_CHANNEL_RED;
 							if (info.Format==D3DFMT_A8) Channel = D3DX_CHANNEL_ALPHA;
 							if (info.Format==D3DFMT_L8) Channel = D3DX_CHANNEL_LUMINANCE;
-							if (D3DXComputeNormalMap(pNormalMap, pBumpMap, NULL, 0, Channel, float(Config->BumpAmp))==S_OK) {
-								LogAlw("Bump Map %s Loaded Successfully",bname);
-							}
-							else LogErr("BumpMap conversion Failed (%s)",bname);
+							if (D3DXComputeNormalMap(pMap[MAP_NORMAL], pBumpMap, NULL, 0, Channel, float(Config->BumpAmp))!=S_OK) LogErr("BumpMap conversion Failed (%s)", bname);
+							else bAdvanced = true;
 						}
 						pBumpMap->Release();
-					}
-					else {
-						pNormalMap = NULL;
+					} else {
+						pMap[MAP_NORMAL] = NULL;
 						LogErr("Failed to load image (%s)",bname);
 					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",sname);
+				} 
 			}
 
-
-			// Normal Map Section =======================================================================================================================
+			// Special Map Section =======================================================================================================================
 			//
-			if (gc->TexturePath(nname, xpath) && pBumpMap==NULL) {
-				D3DXIMAGE_INFO info;
-				pNormalMap = NULL;
-				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					Mips = D3DFMT_FROM_FILE;
-					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pNormalMap)==S_OK) {
-						LogAlw("Normal Map %s Loaded Successfully",nname);
-					}
-					else {
-						pNormalMap = NULL;
-						LogErr("Failed to load image (%s)",nname);
-					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",nname);
-			}
-
-
-			// Specular Map Section =======================================================================================================================
-			//
-			if (gc->TexturePath(sname, xpath)) {
-				D3DXIMAGE_INFO info;
-				pSpecularMap = NULL;
-				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					Mips = D3DFMT_FROM_FILE;
-					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSpecularMap)==S_OK) {
-						LogAlw("Specular Map %s Loaded Successfully",sname);
-					}
-					else {
-						pSpecularMap = NULL;
-						LogErr("Failed to load image (%s)",sname);
-					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",sname);
-			}
-
-
-			// Emission Map Section =======================================================================================================================
-			//
-			if (gc->TexturePath(ename, xpath)) {
-				D3DXIMAGE_INFO info;
-				pEmissionMap = NULL;
-				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					Mips = D3DFMT_FROM_FILE;
-					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pEmissionMap)==S_OK) {
-						LogAlw("Emission Map %s Loaded Successfully",ename);
-					}
-					else {
-						pEmissionMap = NULL;
-						LogErr("Failed to load image (%s)",ename);
-					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",ename);
-			}
-
-
-			// Reflection Map Section =======================================================================================================================
-			//
-			if (gc->TexturePath(rname, xpath)) {
-				D3DXIMAGE_INFO info;
-				pReflectionMap = NULL;
-				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					Mips = D3DFMT_FROM_FILE;
-					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pReflectionMap)==S_OK) {
-						LogAlw("Reflection Map %s Loaded Successfully",rname);
-						if (ComputeReflAlpha()==false) {
-							LogErr("Failed to create reflection map alpha for (%s)",rname);
-						}
-					}
-					else {
-						pReflectionMap = NULL;
-						LogErr("Failed to load image (%s)",rname);
-					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",rname);
-			}
-
-
-			// Translucence Map Section =======================================================================================================================
-			//
-			if (gc->TexturePath(tlname, xpath)) {
-				D3DXIMAGE_INFO info;
-				pTranslucenceMap = NULL;
-				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					Mips = D3DFMT_FROM_FILE;
-					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTranslucenceMap)==S_OK) {
-						LogAlw("Translucence Map %s Loaded Successfully",ename);
-					}
-					else {
-						pEmissionMap = NULL;
-						LogErr("Failed to load image (%s)",ename);
-					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",ename);
-			}
-
-
-			// Transmittance Map Section =======================================================================================================================
-			//
-			if (gc->TexturePath(tmname, xpath)) {
-				D3DXIMAGE_INFO info;
-				pTransmittanceMap = NULL;
-				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {
-					Mips = D3DFMT_FROM_FILE;
-					if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-					if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-					if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, Usage, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTransmittanceMap)==S_OK) {
-						LogAlw("Transmittance Map %s Loaded Successfully",ename);
-					}
-					else {
-						pEmissionMap = NULL;
-						LogErr("Failed to load image (%s)",ename);
-					}
-				}
-				else LogErr("Failed to acquire image information for (%s)",ename);
-			}
+			LoadSpecialTexture(fname, "frsl", MAP_FRESNEL);
+			LoadSpecialTexture(fname, "rghn", MAP_ROUGHNESS);
+			LoadSpecialTexture(fname, "norm", MAP_NORMAL);
+			LoadSpecialTexture(fname, "emis", MAP_EMISSION);
+			LoadSpecialTexture(fname, "transl", MAP_TRANSLUCENCE);
+			LoadSpecialTexture(fname, "transm", MAP_TRANSMITTANCE);
+			LoadSpecialTexture(fname, "refl", MAP_REFLECTION);
+			LoadSpecialTexture(fname, "spec", MAP_SPECULAR);
 		}
 
 		return pTex != NULL;
@@ -1784,43 +1701,6 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 	return false;
 }
 
-
-
-// -----------------------------------------------------------------------------------------------
-//
-bool D3D9ClientSurface::ComputeReflAlpha()
-{
-	if (pReflectionMap==NULL) return false;
-
-	D3DLOCKED_RECT pRect;
-	D3DSURFACE_DESC desc;
-
-	if (pReflectionMap->GetLevelDesc(0, &desc)!=S_OK) return false;
-
-	if (pReflectionMap->LockRect(0, &pRect, NULL, 0)==S_OK) {
-
-		BYTE *data = (BYTE *)pRect.pBits;
-
-		for (DWORD k=0;k<desc.Height;k++) {
-			for (DWORD i=0;i<desc.Width;i++) {
-				data[3+i*4] = max(max(data[0+i*4], data[1+i*4]), data[2+i*4]);
-			}
-			data += pRect.Pitch;
-		}
-		pReflectionMap->UnlockRect(0);
-
-		LPDIRECT3DTEXTURE9 pSys = pReflectionMap;
-
-		if (D3DXCreateTexture(pDevice, desc.Width, desc.Height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pReflectionMap)==S_OK) {
-			HR(pReflectionMap->SetAutoGenFilterType(D3DTEXF_ANISOTROPIC));
-			HR(pDevice->UpdateTexture(pSys, pReflectionMap));
-			pReflectionMap->GenerateMipSubLevels();
-			pSys->Release();
-		}
-		return true;
-	}
-	return false;
-}
 
 // -----------------------------------------------------------------------------------------------
 //
@@ -2118,48 +1998,6 @@ LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTexture()
 
 // -----------------------------------------------------------------------------------------------
 //
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetNormalMap()
-{
-	return pNormalMap;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetEmissionMap()
-{
-	return pEmissionMap;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetSpecularMap()
-{
-	return pSpecularMap;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetReflectionMap()
-{
-	return pReflectionMap;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTranslucenceMap()
-{
-	return pTranslucenceMap;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-LPDIRECT3DTEXTURE9 D3D9ClientSurface::GetTransmittanceMap()
-{
-	return pTransmittanceMap;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
 LPDIRECT3DSURFACE9 D3D9ClientSurface::GetDepthStencil()
 {
 	return pStencil;
@@ -2176,10 +2014,9 @@ LPDIRECT3DSURFACE9 D3D9ClientSurface::GetSurface()
 //
 DWORD D3D9ClientSurface::GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT)
 {
+	if (!pT) return 0;
 	D3DSURFACE_DESC d; pT->GetLevelDesc(0,&d);
-
 	DWORD size = GetSizeInBytes(d.Format, d.Height * d.Width);
-
 	if (pTex->GetLevelCount() > 1) size += ((size>>2) + (size>>4) + (size>>8));
 	return size;
 }
@@ -2205,12 +2042,8 @@ DWORD D3D9ClientSurface::GetSizeInBytes(D3DFORMAT Format, DWORD pixels)
 DWORD D3D9ClientSurface::GetSizeInBytes()
 {
 	if (pTex==NULL) return GetSizeInBytes(desc.Format, desc.Height * desc.Width);
-
-	DWORD             size  = GetTextureSizeInBytes(pTex);
-	if (pNormalMap)   size += GetTextureSizeInBytes(pNormalMap);
-	if (pSpecularMap) size += GetTextureSizeInBytes(pSpecularMap);
-	if (pEmissionMap) size += GetTextureSizeInBytes(pEmissionMap);
-
+	DWORD size = GetTextureSizeInBytes(pTex);
+	for (int i = 0; i < ARRAYSIZE(pMap);i++)  size += GetTextureSizeInBytes(pMap[i]);
 	return size;
 }
 

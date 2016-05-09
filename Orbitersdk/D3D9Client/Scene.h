@@ -30,6 +30,15 @@ class D3D9ParticleStream;
 class CSphereManager;
 class D3D9Text;
 
+#define GBUF_COLOR				0
+#define GBUF_BLUR				1
+#define GBUF_TEMP				2
+#define GBUF_COUNT				3
+
+#define TEX_NOISE				0
+#define TEX_CLUT				1
+#define TEX_COUNT				2
+
 #define RENDERPASS_MAINSCENE	0x0001
 #define RENDERPASS_ENVCAM		0x0002
 #define RENDERPASS_CUSTOMCAM	0x0003
@@ -118,6 +127,7 @@ public:
 	//inline const oapi::D3D9Client *GetClient() const { return gc; }
 	inline oapi::D3D9Client *GetClient() const { return gc; }
 
+	const D3D9Sun *Scene::GetSun() const { return &sunLight; }
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
@@ -274,6 +284,7 @@ public:
 	class vVessel *	GetFocusVisual() const { return vFocus; }
 	void			CheckVisual(OBJHANDLE hObj);
 
+	void			RandomizeKernel();
 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
@@ -303,12 +314,14 @@ protected:
 	void RenderObjectMarker(oapi::Sketchpad *pSkp, const VECTOR3 &gpos, const char *label1, const char *label2, int mode, int scale);
 
 private:
-	void	LoadSampler();
-	DWORD	GetActiveParticleEffectCount();
-	float	ComputeNearClipPlane();
-	void	VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube);
 
-	VOBJREC *FindVisual (OBJHANDLE hObj) const; 
+	HRESULT		BeginScene();
+	void		EndScene();
+	void		LoadSampler();
+	DWORD		GetActiveParticleEffectCount();
+	float		ComputeNearClipPlane();
+	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
+	VOBJREC *	FindVisual (OBJHANDLE hObj) const; 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
 
@@ -356,7 +369,7 @@ private:
 	std::stack<CAMERA>	CameraStack;
 
 	D3D9Light*	Lights;
-	D3D9Light	sunLight;
+	D3D9Sun	    sunLight;
 
 	VECTOR3		sky_color;
 
@@ -375,37 +388,23 @@ private:
 
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
-	ID3DXRenderToEnvMap *pENV;
-
-	class ImageProcessing *pIPI;
+	
+	class ImageProcessing *pLightBlur, *pIntegrate, *pBlur;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;
-
-
 	double dVisualAppRad;
 
 	// Blur Sampling Kernel ==============================================================
-	//
-	class ImageProcessing *pDither;
-	class ImageProcessing *pBlur;
-	
-	LPDIRECT3DCUBETEXTURE9 pBlrTemp;
-
-	D3DXVECTOR2 BlurKernel[32];
-	D3DXVECTOR2 rotationX[32];
-	D3DXVECTOR2 rotationY[32];
+	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
 
 	// Deferred Experiment ===============================================================
 	//
-	LPDIRECT3DSURFACE9 psgDepth;		// float32
-	LPDIRECT3DSURFACE9 psgNormal;		// RGB10A2
-	LPDIRECT3DSURFACE9 psgSpecular;		// G16R16F
-	LPDIRECT3DTEXTURE9 ptgDepth;
-	LPDIRECT3DTEXTURE9 ptgNormal;
-	LPDIRECT3DTEXTURE9 ptgSpecular;
-
-
+	LPDIRECT3DSURFACE9 psgBuffer[GBUF_COUNT];
+	LPDIRECT3DTEXTURE9 ptgBuffer[GBUF_COUNT];
+	LPDIRECT3DSURFACE9 pOffscreenTarget;
+	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
+	
 	// Rendering Technique related parameters ============================================
 	//
 	static ID3DXEffect	*FX;

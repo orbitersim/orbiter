@@ -498,6 +498,11 @@ void SurfTile::Render ()
 	bool has_specular = false;
 	bool has_shadows = false;
 	bool has_lights = false;
+	bool has_microtex = false;
+	bool has_atmosphere = vPlanet->HasAtmosphere();
+	bool has_ripples = vPlanet->HasRipples();
+
+
 	if (ltex || render_shadows) {
 		sdist = acos (dotp (mgr->prm.sdir, cnt));
 		rad = rad0/(double)(2<<lvl); // tile radius
@@ -506,7 +511,8 @@ void SurfTile::Render ()
 		has_lights = (render_lights && ltex && sdist > 1.45);
 	}
 
-	
+	if (vPlanet->CameraAltitude()>20e3) has_ripples = false;
+
 	HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(0, 0, 1, 1)));
 
 
@@ -515,14 +521,12 @@ void SurfTile::Render ()
 	SurfTile *pT = getTextureOwner();
 
 	if (pT && vPlanet->MicroCfg.bEnabled) {
-		HR(Shader->SetBool(TileManager2Base::sbMicro, true));
 		HR(Shader->SetVector(TileManager2Base::svMicroScale0, &MicroTexRange(pT, 0)));
 		HR(Shader->SetVector(TileManager2Base::svMicroScale1, &MicroTexRange(pT, 1)));
 		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroTexRange(pT, 2)));
+		has_microtex = true;
 	}
-	else {
-		HR(Shader->SetBool(TileManager2Base::sbMicro, false));	
-	}
+	
 
 	
 	// Setup cloud shadows -------------------------------------------------------
@@ -602,7 +606,7 @@ void SurfTile::Render ()
 	// ---------------------------------------------------------------------------------------------------
 	//HR(Shader->SetInt(TileManager2Base::siTileLvl, int(bIntersect)));
 	// ---------------------------------------------------------------------------------------------------
-	HR(Shader->SetBool(TileManager2Base::sbSpecular, has_specular));
+	//HR(Shader->SetBool(TileManager2Base::sbSpecular, has_specular));
 	HR(Shader->SetBool(TileManager2Base::sbCloudSh, has_shadows));
 	HR(Shader->SetBool(TileManager2Base::sbLights, has_lights));
 	// ---------------------------------------------------------------------------------------------------
@@ -618,12 +622,32 @@ void SurfTile::Render ()
 
 	Shader->CommitChanges();
 
+	// -------------------------------------------------------------------
+	// Find suitable technique
 	
+	int iTech = 0;
+	
+	if (has_atmosphere) {
+		if (has_shadows) {
+			if (has_ripples) iTech = 0;		// Earth
+			else			 iTech = 1;		// Earth, no ripples
+		}
+		else {
+			if (has_microtex) iTech = 2;	// Mars
+			else			  iTech = 3;	// Mars, no micro
+		}
+	}
+	else {
+		if (has_microtex) iTech = 4;	// Luna
+		else			  iTech = 5;	// Luna, no micro
+	}
+
+
 	// -------------------------------------------------------------------
 	// render surface mesh
-
+	//
 	HR(Shader->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(Shader->BeginPass(0));
+	HR(Shader->BeginPass(iTech));
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
 	pDev->SetStreamSource(0, mesh->pVB, 0, sizeof(VERTEX_2TEX));
 	pDev->SetIndices(mesh->pIB);
@@ -890,9 +914,16 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	// ---------------------------------------------------------------------
 	// Initialize shading technique and feed planet specific data to shaders
 	//
+	Shader()->SetTechnique(eTileTech);
 
-	if (use_zbuf) Shader()->SetTechnique(eTileTech);
-	else		  Shader()->SetTechnique(eTileTechNoZ);
+	if (use_zbuf) {
+		pDev->SetRenderState(D3DRS_ZENABLE, 1);
+		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
+	}
+	else {
+		pDev->SetRenderState(D3DRS_ZENABLE, 0);
+		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+	}
 
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetVector(svWater, &D3DXVECTOR4(spec_base*1.2f, spec_base*1.0f, spec_base*0.8f, 50.0f)));
@@ -918,11 +949,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		HR(Shader()->SetTexture(stMicroA, vp->MicroCfg.Level[0].pTex));
 		HR(Shader()->SetTexture(stMicroB, vp->MicroCfg.Level[1].pTex));
 		HR(Shader()->SetTexture(stMicroC, vp->MicroCfg.Level[2].pTex));
-		HR(Shader()->SetBool(sbMicro, true));
 		HR(Shader()->SetBool(sbMicroNormals, vp->MicroCfg.bNormals));
-	}
-	else {
-		HR(Shader()->SetBool(sbMicro, false));
 	}
 
 

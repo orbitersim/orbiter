@@ -34,7 +34,7 @@ TileVS PlanetTechVS(TILEVERTEX vrt)
 	
 	// A vector from the vertex to the camera
 	float3 tocam  = normalize(-posW);
-    float3 sundir = gSun.direction;
+    float3 sundir = gSun.Dir;
     
     float diff    = saturate(dot(-sundir, nrmW));
     float dotr    = max(dot(reflect(sundir, nrmW), tocam), 0.0f);
@@ -175,8 +175,8 @@ technique PlanetTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD PlanetTechVS();
-        pixelShader  = compile PS_MOD PlanetTechPS();
+        vertexShader = compile vs_3_0 PlanetTechVS();
+        pixelShader  = compile ps_3_0 PlanetTechPS();
 
         AlphaBlendEnable = false;
         ZEnable = false; 
@@ -188,8 +188,8 @@ technique PlanetCloudTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD PlanetTechVS();
-        pixelShader  = compile PS_MOD CloudTechPS();
+        vertexShader = compile vs_3_0 PlanetTechVS();
+        pixelShader  = compile ps_3_0 CloudTechPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -204,8 +204,8 @@ technique PlanetCloudShadowTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD CloudShadowTechVS();
-        pixelShader  = compile PS_MOD CloudShadowPS();
+        vertexShader = compile vs_3_0 CloudShadowTechVS();
+        pixelShader  = compile ps_3_0 CloudShadowPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;

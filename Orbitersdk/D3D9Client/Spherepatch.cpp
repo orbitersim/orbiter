@@ -102,8 +102,9 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 		HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&vtx->x, nv, sizeof(VERTEX_2TEX), &bsCnt, &bsRad));
 
 		if (pVB) {
+			double time = D3D9GetTime();
 			if (HROK(pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD))) {
-			//if (HROK(pVB->Lock(0, 0, (LPVOID*)&pVBuffer, 0))) {
+				D3D9SetTime(D3D9Stats.Timer.LockWait, time);
 				memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));
 				pVB->Unlock();
 			}
@@ -112,8 +113,9 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 
 	if (idx) {
 		if (pIB) {
+			double time = D3D9GetTime();
 			if (HROK(pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD))) {
-			//if (HROK(pIB->Lock(0, 0, (LPVOID*)&pIBuffer, 0))) {
+				D3D9SetTime(D3D9Stats.Timer.LockWait, time);
 				memcpy(pIBuffer, idx, nf*sizeof(WORD)*3);
 				pIB->Unlock();
 			}

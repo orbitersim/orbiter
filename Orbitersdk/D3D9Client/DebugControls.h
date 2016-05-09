@@ -58,11 +58,9 @@
 #define DBG_FLAGS_AMBIENT				0x0100	///< Add Ambient Light for Visual
 #define DBG_FLAGS_WIREFRAME				0x0200	///< Enable WireFrame
 #define DBG_FLAGS_DUALSIDED				0x0400	///< Dual Sided
-#define DBG_FLAGS_DSPENVMAP				0x0800	///< Display Environment map
 #define DBG_FLAGS_PICK					0x1000	///< Enable mesh picking with mouse
 #define DBG_FLAGS_FPSLIM				0x2000	///< FPS Limiter enabled
 #define DBG_FLAGS_TILEBOXES				0x4000	///< Tile Boxes
-#define DBG_FLAGS_DSPBLRMAP				0x8000	///< Display Blurred Environment map
 /// @}
 
 
@@ -116,6 +114,7 @@ namespace DebugControls {
 	void		SelectMesh(D3D9Mesh *pMesh);
 	void		SetGroupHighlight(bool bStat);
 	int			GetSceneDebug();
+	int			GetSelectedEnvMap();
 	
 	bool		IsActive();
 	bool		IsEquEnabled();

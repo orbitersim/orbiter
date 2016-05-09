@@ -181,24 +181,47 @@ typedef struct {
 typedef struct {
     int			  Type;             ///< Type of light source
 	float		  Dst2;				///< Square distance between camera and the light emitter
-    D3DXCOLOR     Diffuse;          ///< diffuse color of light
-    D3DXCOLOR     Specular;         ///< specular color of light
-    D3DXCOLOR     Ambient;          ///< ambient color of light
+    D3DXCOLOR     Diffuse;          ///< Color of light
     D3DXVECTOR3   Position;         ///< position in world space
     D3DXVECTOR3   Direction;        ///< direction in world space
     D3DXVECTOR3   Attenuation;      ///< Attenuation
 	D3DXVECTOR4   Param;            ///< range, falloff, theta, phi
-} D3D9Light;
+} LightStruct;
 
-#define D3D9MATEX_DIFFUSE	0x01
-#define D3D9MATEX_AMBIENT	0x02
-#define D3D9MATEX_SPECULAR	0x04
-#define D3D9MATEX_EMISSIVE	0x08
-#define D3D9MATEX_REFLECT	0x10
-#define D3D9MATEX_DISSOLVE	0x20
-#define D3D9MATEX_FRESNEL	0x40
 
-#define D3D9MATSIZE 104
+class D3D9Light : public LightStruct
+{
+public:
+				D3D9Light();
+				D3D9Light(const LightEmitter *le, const class vObject *vo);
+				~D3D9Light();
+
+		float	GetIlluminance(D3DXVECTOR3 &pos, float r) const;
+		void	UpdateLight(const LightEmitter *le, const class vObject *vo);
+		void	Reset();
+		const   LightEmitter *GetEmitter() const;
+private:
+		float	cosp, tanp, cosu;
+		float	range, range2;
+		float	intensity;
+		const   LightEmitter *le;
+};
+
+typedef struct {
+	D3DXVECTOR3	Dir;				///< Direction of sunlight
+	D3DXCOLOR Color;				///< Color of sunlight
+	D3DXCOLOR Ambient;				///< Ambient environment color
+} D3D9Sun;
+
+
+#define D3D9MATEX_DIFFUSE		0x01
+#define D3D9MATEX_AMBIENT		0x02
+#define D3D9MATEX_SPECULAR		0x04
+#define D3D9MATEX_EMISSIVE		0x08
+#define D3D9MATEX_REFLECT		0x10
+#define D3D9MATEX_FRESNEL		0x40
+
+
 /**
  * \brief Material structure used in D3D9Mesh. Only the upper part (23 floats) is loaded into a shadrs
  */
@@ -209,10 +232,8 @@ typedef struct {
     D3DCOLORVALUE Emissive;       
 	D3DCOLORVALUE Reflect;			///< Color multiplier and intensity (alpha)
 	D3DCOLORVALUE Fresnel;			///< Fresnel reflection
-	float		  DislScale;		///< Dissolve effect scale factor 0.20 to 3.0 (typical)
-	float		  DislMag;			///< Dissolve effect magnitude 0.01 to 0.1 (typical)
+	float		  Roughness;		///< Roughness = log2(spec_pow) * 0.1f
 	// -----------------------
-	SURFHANDLE	  pDissolve;		///< Pointer to Dissolve effect texture
 	DWORD		  ModFlags;			///< Modification flags
 } D3D9MatExt;
 
@@ -365,8 +386,8 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param=0);
 float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b);
 D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a);
 
-void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
-void OrbitalLighting(D3D9Light *light, class vPlanet *vP, VECTOR3 GO, float ao);
+void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
+void OrbitalLighting(D3D9Sun *light, class vPlanet *vP, VECTOR3 GO, float ao);
 
 const char *RemovePath(const char *in);
 
@@ -516,5 +537,6 @@ struct AutoFile
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETEA(p)  { if(p) { delete []p;     (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
+#define CLEARARRAY(p) { memset(&p, 0, sizeof(p)); }
 
 #endif // !__D3DUTIL_H

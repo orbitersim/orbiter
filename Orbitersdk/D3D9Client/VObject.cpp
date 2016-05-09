@@ -55,7 +55,7 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene): VisObject (_hObj)
 	dmWorld = identity4();
 	albedo = _V(1,1,1);
 	oapiGetObjectName(hObj, name, 64);
-	sunLight = *(scene->GetLight(-1));
+	sunLight = *scene->GetSun();
 }
 
 

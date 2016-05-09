@@ -20,7 +20,7 @@ ParticleVS ParticleDiffuseVS(NTVERTEX vrt)
 {
 	ParticleVS outVS = (ParticleVS)0;
 	outVS.tex0    = vrt.tex0;
-    outVS.light   = saturate(dot(-gSun.direction, vrt.nrmL)*2.0);
+    outVS.light   = saturate(dot(-gSun.Dir, vrt.nrmL)*2.0);
 	outVS.posH    = mul(float4(vrt.posL, 1.0f), gVP);
     return outVS;
 }
@@ -66,8 +66,8 @@ technique ParticleDiffuseTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD ParticleDiffuseVS();
-        pixelShader  = compile PS_MOD ParticleDiffusePS();
+        vertexShader = compile vs_3_0 ParticleDiffuseVS();
+        pixelShader  = compile ps_3_0 ParticleDiffusePS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -83,8 +83,8 @@ technique ParticleEmissiveTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD ParticleEmissiveVS();
-        pixelShader  = compile PS_MOD ParticleEmissivePS();
+        vertexShader = compile vs_3_0 ParticleEmissiveVS();
+        pixelShader  = compile ps_3_0 ParticleEmissivePS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -100,8 +100,8 @@ technique ParticleEmissiveTech
 	// ---------------------------------------------------------------------------------------------
     pass P1
     {
-        vertexShader = compile VS_MOD ParticleEmissiveVS();
-        pixelShader  = compile PS_MOD ParticleShadowPS();
+        vertexShader = compile vs_3_0 ParticleEmissiveVS();
+        pixelShader  = compile ps_3_0 ParticleShadowPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;

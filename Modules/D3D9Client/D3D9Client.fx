@@ -29,22 +29,44 @@ struct Mtrl
 	float4 specular;  
     float4 emissive;  
 	float4 reflect;
-	float4 fresnel;	
-	float  dislscale;		
-	float  dislmag;		  
+	float4 fresnel;
+	float  roughness;
+	int    iFlags;
 };
 
-struct Light {
+struct Sun 
+{
+	float3 Dir;
+	float3 Color;	float pad;
+	float3 Ambient; float pad2;
+};
+
+struct Light 
+{
     int      type;             /* Type of light source */
 	float    dst2;			   /* Camera-Light Emitter distance squared */
     float4   diffuse;          /* diffuse color of light */
-    float4   specular;         /* specular color of light */
-    float4   ambient;          /* ambient color of light */
     float3   position;         /* position in world space */
     float3   direction;        /* direction in world space */
     float3   attenuation;      /* Attenuation */
     float4   param;            /* range, falloff, theta, phi */  
 };
+
+// Must match with counterpart in D3D9Effect.h
+
+struct Flow 
+{
+	bool Emis;		// Enable Emission Maps
+	bool Spec;		// Enable Specular Maps
+	bool Refl;		// Enable Reflection Maps
+	bool Transl;	// Enble translucent effect
+	bool Transm;	// Enable transmissive effect
+	bool Rghn;		// Enable roughness map
+	bool Norm;		// Enable normal map
+	bool Frsl;		// Enable fresnel map
+	bool Transx;	// True of either of Transl or Transm is true
+};
+
 
 #define Range   0
 #define Falloff 1
@@ -66,10 +88,10 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
-uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector 
-uniform extern Light     gLights[12];     
+uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector    
+uniform extern Light	 gLights[8];
 uniform extern int       gLightCount;      
-uniform extern Light     gSun;			    // Sun light input structure
+uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
 uniform extern Mtrl      gMtrl;			    // Material input structure
@@ -77,16 +99,10 @@ uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations		
 uniform extern bool      gNormalMap;		// Enable Normal Maps
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
-uniform extern bool      gClamp;			// Texture addressing mode Clamp/Wrap
+uniform extern bool      gFresnel;			// Enable fresnel material
 uniform extern bool      gNight;			// Nighttime/Daytime
-uniform extern bool      gUseEmis;			// Enable Emission Maps
-uniform extern bool      gUseSpec;			// Enable Specular Maps
 uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
-uniform extern bool      gUseDisl;			// Enable dissolve effect
-uniform extern bool      gUseRefl;			// Enable Reflection Maps
-uniform extern bool      gUseTransl;		// Enble translucent effect
-uniform extern bool      gUseTransm;		// Enable transmissive effect
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
 uniform extern bool		 gNoColor;			// No color flag
 uniform extern bool		 gLocalLights;		// Local light sources enabled
@@ -102,6 +118,7 @@ uniform extern float     gTime;
 uniform extern float     gMix;				// General purpose parameter (multible uses)
 uniform extern float 	 gMtrlAlpha;
 uniform extern float	 gGlowConst;
+uniform extern Flow		 gCfg;
 
 // Textures -----------------------------------------------------------------
 
@@ -109,10 +126,12 @@ uniform extern texture   gTex0;			    // Diffuse texture
 uniform extern texture   gTex1;			    // Nightlights
 uniform extern texture   gTex3;				// Normal Map / Cloud Microtexture
 uniform extern texture   gSpecMap;			// Specular Map
+uniform extern texture   gRghnMap;			// Roughness Map
 uniform extern texture   gEmisMap;	    	// Emission Map
-uniform extern texture   gEnvMap;	    	// Environment Map
-uniform extern texture   gDislMap;   		// Dissolve Map
+uniform extern texture   gEnvMapA;	    	// Environment Map (Mirror clear)
+uniform extern texture   gEnvMapB;	    	// Environment Map (Mipmapped with different levels of blur)
 uniform extern texture   gReflMap;   		// Reflectivity Map
+uniform extern texture   gFrslMap;   		// Fresnel Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
 
@@ -166,9 +185,9 @@ struct SHADOW_VERTEX {
 struct SimpleVS
 {
     float4 posH     : POSITION0;
-    half2  tex0     : TEXCOORD0;
-    half3  nrmW     : TEXCOORD1;
-    half3  toCamW   : TEXCOORD2;
+    float2 tex0     : TEXCOORD0;
+    float3 nrmW     : TEXCOORD1;
+    float3 toCamW   : TEXCOORD2;
 };
 
 struct HazeVS
@@ -245,6 +264,30 @@ sampler ReflS = sampler_state       // Primary Mesh texture sampler
     MipMapLODBias = 0;
 	AddressU = WRAP;
     AddressV = WRAP;
+};
+
+sampler FrslS = sampler_state       // Primary Mesh texture sampler
+{
+	Texture = <gFrslMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	MipMapLODBias = 0;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler RghnS = sampler_state       // Primary Mesh texture sampler
+{
+	Texture = <gRghnMap>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	MipMapLODBias = 0;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 sampler TranslS = sampler_state       // Translucence texture sampler
@@ -348,9 +391,9 @@ sampler RingS = sampler_state       // Planetary rings sampler
     AddressV = WRAP;
 };
 
-sampler EnvMapS = sampler_state
+sampler EnvMapAS = sampler_state
 {
-	Texture = <gEnvMap>;
+	Texture = <gEnvMapA>;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -359,16 +402,16 @@ sampler EnvMapS = sampler_state
     AddressW = CLAMP;
 };
 
-sampler DislMapS = sampler_state
+sampler EnvMapBS = sampler_state
 {
-	Texture = <gDislMap>;
+	Texture = <gEnvMapB>;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
-	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	AddressW = CLAMP;
 };
-
 
 
 // Planet surface samplers -----------------------------------------------------
@@ -414,7 +457,7 @@ sampler Planet3S = sampler_state    // Planet/Cloud micro texture sampler
 // att = attennuation, ins = inscatter, depth = pixel depth [0 to 1], posW = camera centric world space position of the vertex
 // -------------------------------------------------------------------------------------------------------------
 
-void AtmosphericHaze(out half4 att, out half4 ins, in float depth, in float3 posW)
+void AtmosphericHaze(out float4 att, out float4 ins, in float depth, in float3 posW)
 {
     if (gHazeMode==0) {
         att = 1;
@@ -441,9 +484,9 @@ void AtmosphericHaze(out half4 att, out half4 ins, in float depth, in float3 pos
 //
 // -------------------------------------------------------------------------------------------------------------
 
-void LegacySunColor(out half4 diff, out float ambi, out float nigh, in float3 normalW)
+void LegacySunColor(out float4 diff, out float ambi, out float nigh, in float3 normalW)
 {
-	float   h = dot(-gSun.direction, normalW);
+	float   h = dot(-gSun.Dir, normalW);
 	float   s = saturate((h+gSunAppRad)/(2.0f*gSunAppRad));
 	float3 r0 = 1.0 - float3(0.65, 0.75, 1.0) * gDispersion;
 
@@ -490,12 +533,14 @@ void LocalVertexLight(out float3 diff, out float3 spec, out float3 dir, in float
         float dif = (att*spt);
 
         diffuse   += gLights[i].diffuse.rgb * (dif * d);
-        specular  += gLights[i].specular.rgb * (dif * s);
+        specular  += gLights[i].diffuse.rgb * (dif * s);
         direction += relpN * (dif * d);
     }  
    
-    diff = 1.5 - exp2(-diffuse.rgb)*1.5;
-    spec = 1.5 - exp2(-specular.rgb)*1.5;
+    //diff = 1.5 - exp2(-diffuse.rgb)*1.5;
+    //spec = 1.5 - exp2(-specular.rgb)*1.5;
+	diff = saturate(diffuse.rgb);
+	spec = saturate(specular.rgb);
     dir  = normalize(direction);
 }
 
@@ -578,8 +623,8 @@ technique ArrowTech
 {
     pass P0
     {
-	vertexShader = compile VS_MOD ArrowTechVS();
-	pixelShader = compile PS_MOD ArrowTechPS();
+	vertexShader = compile vs_3_0 ArrowTechVS();
+	pixelShader = compile ps_3_0 ArrowTechPS();
 
 	AlphaBlendEnable = true;
 	BlendOp = Add;
@@ -597,8 +642,8 @@ technique SimpleTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BasicVS();
-        pixelShader  = compile PS_MOD SimpleTechPS();
+        vertexShader = compile vs_3_0 BasicVS();
+        pixelShader  = compile ps_3_0 SimpleTechPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -615,8 +660,8 @@ technique PanelTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BasicVS();
-        pixelShader  = compile PS_MOD PanelTechPS();
+        vertexShader = compile vs_3_0 BasicVS();
+        pixelShader  = compile ps_3_0 PanelTechPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -631,8 +676,8 @@ technique PanelTechB
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BasicVS();
-        pixelShader  = compile PS_MOD PanelTechBPS();
+        vertexShader = compile vs_3_0 BasicVS();
+        pixelShader  = compile ps_3_0 PanelTechBPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -650,8 +695,8 @@ technique ExhaustTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BasicVS();
-        pixelShader  = compile PS_MOD ExhaustTechPS();
+        vertexShader = compile vs_3_0 BasicVS();
+        pixelShader  = compile ps_3_0 ExhaustTechPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -668,8 +713,8 @@ technique SpotTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BasicVS();
-        pixelShader  = compile PS_MOD SpotTechPS();
+        vertexShader = compile vs_3_0 BasicVS();
+        pixelShader  = compile ps_3_0 SpotTechPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;

@@ -433,10 +433,12 @@ void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
 				it->pMesh->SetRotation(it->mWorld);
 				it->pMesh->SetPosition(pos);
 				if (it->type) {
-					D3D9MatExt *pMat = it->pMesh->GetMaterial(0);
-					if (pMat) {
-						pMat->Diffuse  = it->vColor;
-						pMat->Emissive = (it->vColor * 0.25f);
+					D3D9MatExt Mat;
+					it->pMesh->GetMaterial(&Mat, 0);
+					if (it->pMesh->GetMaterial(&Mat, 0)==true) {
+						Mat.Diffuse  = it->vColor;
+						Mat.Emissive = (it->vColor * 0.25f);
+						it->pMesh->SetMaterial(&Mat, 0);
 					}
 				}
 				it->pMesh->SetSunLight(&sunLight);
@@ -544,7 +546,7 @@ bool vPlanet::Update (bool bMainScene)
 	vObject::Update(bMainScene);
 
 	// Update Sunlight direction -------------------------------------
-	D3DVEC(-sundir, sunLight.Direction);
+	D3DVEC(-sundir, sunLight.Dir);
 
 	if (patchres==0) return true;
 
@@ -814,7 +816,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 
 		if (mesh) {
-			mesh->SetSunLight((D3D9Light *)scn->GetLight(-1));
+			mesh->SetSunLight(scn->GetSun());
 			mesh->Render(&mWorld, RENDER_ASTEROID);
 		} else {
 			RenderSphere (dev);                               
@@ -856,6 +858,10 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 	float fogfactor;
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
+	bool bLog = false;
+	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE && scn->GetCameraProxyVisual() == this) bLog = true;
+	double tot_surf = D3D9GetTime();
+
 	if (surfmgr2) {
 		tile_cache = NULL;	// Clear tile cache
 		if (cdist>=1.3*size && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
@@ -870,6 +876,8 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 				hCursor[0]->bEnabled = false;
 			}
 		}
+
+		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
 	} 
 	else {
 		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
@@ -877,6 +885,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		surfmgr->SetAmbientColor(prm.AmbColor);
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
+		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
 	}
 
 	if (nbase) {
@@ -884,7 +893,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		RenderBaseShadows (dev, shadowalpha);         // base shadows
 	}
 	if (prm.bCloudShadow)
-		RenderCloudShadows (dev);                	// cloud shadows
+		RenderCloudShadows (dev);                		// cloud shadows
 
 	if (bVesselShadow && hObj == oapiCameraProxyGbody())
 	// cast shadows only on planet closest to camera
@@ -895,12 +904,19 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 {
+	bool bLog = false;
+	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE && scn->GetCameraProxyVisual() == this) bLog = true;
+	double tot_cloud = D3D9GetTime();
+
 	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, cullmode);
-	if (cloudmgr2)
-		cloudmgr2->Render (dmWorld, false, prm);
+	if (cloudmgr2) {	
+		cloudmgr2->Render(dmWorld, false, prm);
+	}
 	else
 		clouddata->cloudmgr->Render (dev, clouddata->mWorldC, dist_scale, min(patchres,8), clouddata->viewap); // clouds
 	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, D3DCULL_CCW);
+
+	if (bLog) D3D9SetTime(D3D9Stats.Timer.Clouds, tot_cloud);
 }
 
 // ==============================================================

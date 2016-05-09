@@ -50,17 +50,50 @@ void D3D9Client::Label(const char *format, ...)
 	LabelPos += 22;
 }
 
+double Get(D3D9Time &t)
+{
+	return t.time / max(1.0, min(1000.0, t.count));
+}
+
+void Reset(D3D9Time &t)
+{
+	t.count = t.time = 0.0;
+}
+
+void D3D9Client::DrawTimeBar(double t, double s, double f, DWORD color, const char *label)
+{
+	static double x = 8;
+	static int z = 100;
+	char legend[256];
+
+	if (color == 0) {
+		x = 8;
+		z = 100;
+		return;
+	}
+
+	sprintf_s(legend, 256, "%.64s, %0.2fms (%.2f%%)", label, (t/f)*0.001, t*0.0001);
+
+	D3D9PadBrush brush(color);
+	int y = viewH - 20;
+	int q = viewW - 640;
+	pItemsSkp->SetBrush(&brush);
+	pItemsSkp->Rectangle(int(x), y, int(x + t*s), y + 16);
+	pItemsSkp->Rectangle(q, z, q + 32, z + 16);
+	pItemsSkp->Text(q+40, z, legend, -1);
+	pItemsSkp->SetBrush(NULL);
+	x += t*s;
+	z += 32;
+}
 
 void D3D9Client::RenderControlPanel()
 {
 	static char *OnOff[]={"Off","On"};
 	static char *SkpU[]={"Auto","GDI"};
 
-	static double scene_avg = 0.0;
-	static double scene_pek = 0.0;
 	static double sim_time  = 0.0;
 
-	LPDIRECT3DDEVICE9 dev = pd3dDevice;
+	LPDIRECT3DDEVICE9 dev = pDevice;
 	
 	pItemsSkp = oapiGetSketchpad(GetBackBufferHandle());
 
@@ -130,17 +163,6 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
-	D3D9Stats.Timer.count += 1.0;
-
-	if (oapiGetSimTime()>(sim_time+1.2)) {
-		sim_time  = oapiGetSimTime();
-		scene_avg = D3D9Stats.Timer.Scene / D3D9Stats.Timer.count;
-		scene_pek = D3D9Stats.Timer.ScenePeak;
-		D3D9Stats.Timer.Scene = D3D9Stats.Timer.ScenePeak = D3D9Stats.Timer.count = 0.0;
-	}
-	else {
-		if (oapiGetSimTime()<sim_time) sim_time  = oapiGetSimTime();
-	}
 
 	Label("Available video mem..: %u MB", dev->GetAvailableTextureMem()>>20);
 	Label("Surface Handles......: %u", nSurf);
@@ -175,9 +197,9 @@ void D3D9Client::RenderControlPanel()
 	Label("Tile Vertex Cache....: %u (%u MB)", D3D9Stats.TilesCached, D3D9Stats.TilesCachedMB>>20);
 
 
-	
 
-	
+
+
 	DWORD tot_verts = 0;
 	DWORD tot_trans = 0;
 	DWORD tot_group = 0;
@@ -191,17 +213,136 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
+	static DWORD matchg = 0, texchg = 0;
+	static DWORD verts = 0, grps = 0, meshes = 0;
+
 	LabelPos += 22;
 	Label("Meshes Loaded........: %u ", mesh_count);
 	Label("Vertices Allocated...: %u (%u MB)", tot_verts, (tot_verts*sizeof(NMVERTEX))>>20); 
 	Label("Groups Allocated.....: %u", tot_group);
 	Label("Group Tarnsforms.....: %u", tot_trans); 
-	Label("Mesh vertices render.: %u", D3D9Stats.Mesh.Vertices);
-	Label("Mesh groups rendered.: %u", D3D9Stats.Mesh.MeshGrps);
-	Label("Meshes rendered......: %u", D3D9Stats.Mesh.Meshes);
-	LabelPos += 22;
-	Label("Scene rendering time.: %.0fus (%.0fus peak)", scene_avg, scene_pek); 
+	Label("Mesh vertices render.: %u", verts);
+	Label("Mesh groups rendered.: %u", grps);
+	Label("Meshes rendered......: %u", meshes);
+	Label("Texture changes......: %u", texchg);
+	Label("Material changes.....: %u", matchg);
 
+	
+	// DRAW TIME LINE ------------------------------------------------------------------
+
+	static double systime = 0.0;
+	static double frames = 1.0;
+	static double lock;
+	static double blit;
+	static double scene;
+	static double scale;
+	static double outside;
+	static double update;
+	static double display;
+	// -------------------------------------
+	static double pln_srf;
+	static double pln_cld;
+	// -------------------------------------
+	static double scn_pst;
+	static double scn_ves;
+	static double scn_vc;
+	static double scn_hud;
+	static double scn_cam;
+	// -------------------------------------
+	static double prt_cam;
+	static double prt_env;
+	static double prt_blr;
+	
+	if (oapiGetSysMJD() > systime) {
+		
+		systime = oapiGetSysMJD() + 0.8 / 86400.0;
+
+		frames = D3D9Stats.Timer.Scene.count;
+		double iframes = 1.0 / frames;
+
+		matchg = DWORD(double(D3D9Stats.Mesh.MtrlChanges) * iframes);
+		texchg = DWORD(double(D3D9Stats.Mesh.TexChanges) * iframes);
+		verts = DWORD(double(D3D9Stats.Mesh.Vertices) * iframes);
+		grps = DWORD(double(D3D9Stats.Mesh.MeshGrps) * iframes);
+		meshes = DWORD(double(D3D9Stats.Mesh.Meshes) * iframes);
+
+
+		// Time spend outside of client
+		double total  = D3D9Stats.Timer.FrameTotal.time;
+
+		scene   = D3D9Stats.Timer.Scene.time;
+		update  = D3D9Stats.Timer.Update.time;
+		display = D3D9Stats.Timer.Display.time;
+		lock    = D3D9Stats.Timer.LockWait.time;
+		blit    = D3D9Stats.Timer.BlitTime.time;
+		outside = total - (scene + update + display + lock + blit);
+
+		scale   = double(viewW - 16) / total;
+
+		// SCENE --------------------------------
+		prt_cam = D3D9Stats.Timer.CustCams.time;
+		prt_env = D3D9Stats.Timer.EnvMap.time;
+		prt_blr = D3D9Stats.Timer.EnvBlur.time;
+		// -------------------------------------
+		pln_srf = D3D9Stats.Timer.Surface.time;
+		pln_cld = D3D9Stats.Timer.Clouds.time;
+		// -------------------------------------
+		scn_cam = D3D9Stats.Timer.CamVis.time;
+		scn_pst = D3D9Stats.Timer.PostProcess.time;
+		scn_ves = D3D9Stats.Timer.Vessels.time;
+		scn_vc  = D3D9Stats.Timer.VirtualCP.time;
+		scn_hud = D3D9Stats.Timer.HUDOverlay.time;
+
+		// -------------------------------------
+		//scene -= prt_cam + prt_env + prt_blr + pln_srf + pln_cld + scn_cam + scn_pst + scn_ves + scn_vc + scn_hud;
+		// At this point scene contains a time spend in unmeasured sections
+
+		// -------------------------------------
+		Reset(D3D9Stats.Timer.CamVis);
+		Reset(D3D9Stats.Timer.Scene);
+		Reset(D3D9Stats.Timer.Update);
+		Reset(D3D9Stats.Timer.Display);
+		Reset(D3D9Stats.Timer.LockWait);
+		Reset(D3D9Stats.Timer.BlitTime);
+		Reset(D3D9Stats.Timer.FrameTotal);
+		// -------------------------------------
+		Reset(D3D9Stats.Timer.PostProcess);
+		Reset(D3D9Stats.Timer.Vessels);
+		Reset(D3D9Stats.Timer.VirtualCP);
+		Reset(D3D9Stats.Timer.HUDOverlay);
+		// -------------------------------------
+		Reset(D3D9Stats.Timer.CustCams);
+		Reset(D3D9Stats.Timer.EnvBlur);
+		Reset(D3D9Stats.Timer.EnvMap);
+		// -------------------------------------
+		Reset(D3D9Stats.Timer.Surface);
+		Reset(D3D9Stats.Timer.Clouds);
+		// -------------------------------------
+		memset2(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
+	}
+	
+	DrawTimeBar(0, 0, 0, 0);
+	DrawTimeBar(outside, scale, frames, 0x774411, "Non-client specific tasks");
+	DrawTimeBar(blit,    scale, frames, 0xFF5555, "Time used in Bliting");
+	DrawTimeBar(lock,    scale, frames, 0x3377FF, "Waiting Locks (CPU-IDLE)");
+	DrawTimeBar(display, scale, frames, 0x000099, "Waiting Present (CPU-IDLE)");
+	DrawTimeBar(scene,   scale, frames, 0x00CC00, "Drawing Scene");
+
+	//------------------------------
+	/*DrawTimeBar(scn_cam, scale, frames, 0x000055, "Visual updates");
+	DrawTimeBar(pln_srf, scale, frames, 0x005500, "Planet's surface");
+	DrawTimeBar(pln_cld, scale, frames, 0x55FF55, "Planet's cloud layer");
+	DrawTimeBar(scn_ves, scale, frames, 0xFF0000, "Vessel objects");
+	DrawTimeBar(scn_vc,  scale, frames, 0xFFFF00, "Virtual cockpit");
+	DrawTimeBar(scn_hud, scale, frames, 0x777700, "HUD and 2D panels");
+	DrawTimeBar(scn_pst, scale, frames, 0xFF00FF, "Post-processing effects");
+	//------------------------------
+	DrawTimeBar(prt_cam, scale, frames, 0x00FFFF, "Custom cameras");
+	DrawTimeBar(prt_env, scale, frames, 0x007777, "Environment map");
+	DrawTimeBar(prt_blr, scale, frames, 0x004444, "EnvMap blur");
+	//-------------------------------
+	DrawTimeBar(scene,   scale, frames, 0x777777, "Other rendering tasks");*/
+	
 	pItemsSkp->SetPen(NULL);
 	pItemsSkp->SetBrush(NULL);
 

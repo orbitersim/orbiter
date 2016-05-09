@@ -233,7 +233,7 @@ protected:
 	static D3D9ClientSurface *blobtex[3];  // beacon textures
 	static D3D9Mesh * hStockMesh[16];
 	
-	D3D9Light		sunLight;	// Local copy of sun light. (Can be freely edited)
+	D3D9Sun			sunLight;	// Local copy of sun light. (Can be freely edited)
 	D9BBox			BBox;
 	bool			bBSRecompute;
 

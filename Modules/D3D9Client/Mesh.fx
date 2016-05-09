@@ -45,7 +45,7 @@ MeshVS TinyMeshTechVS(MESH_VERTEX vrt)
     float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;          // Apply world transformation matri
     outVS.nrmW  = normalize(nrmW);
     outVS.CamW  = -posW;
-    outVS.tex0  = vrt.tex0;
+    outVS.tex0  = vrt.tex0.xy;
 
     return outVS;
 }
@@ -71,15 +71,15 @@ float4 TinyMeshTechPS(MeshVS frg) : COLOR
 	cTex.a *= gMtrlAlpha;
 	
 	// Sunlight calculations. Saturate with cSpec.a to gain an ability to disable specular light
-	float  d = saturate(-dot(gSun.direction, nrmW));
-	float  s = pow(saturate(dot(reflect(gSun.direction, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
+	float  d = saturate(-dot(gSun.Dir, nrmW));
+	float  s = pow(saturate(dot(reflect(gSun.Dir, nrmW), CamW)), cSpec.a) * saturate(cSpec.a);
 
 	if (d == 0) s = 0;
 
-	float3 diff = gMtrl.diffuse.rgb * (d * saturate(gSun.diffuse.rgb)); // Compute total diffuse light
-	diff += (gMtrl.ambient.rgb*gSun.ambient.rgb) + (gMtrl.emissive.rgb);
+	float3 diff = gMtrl.diffuse.rgb * (d * saturate(gSun.Color)); // Compute total diffuse light
+	diff += (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
-	float3 cTot = cSpec.rgb * (s * gSun.specular.rgb);	// Compute total specular light
+	float3 cTot = cSpec.rgb * (s * gSun.Color);	// Compute total specular light
 
 	cTex.rgb *= saturate(diff);	// Lit the diffuse texture
 								
@@ -104,7 +104,7 @@ float4 RingTechPS(MeshVS frg) : COLOR
     
     float3 pp = gCameraPos*gRadius[2] - frg.CamW*gDistScale;
     
-    float  da = dot(normalize(pp), gSun.direction);
+    float  da = dot(normalize(pp), gSun.Dir);
     float  r  = sqrt(dot(pp,pp) * (1.0-da*da));
     
     float sh  = max(0.05, smoothstep(gRadius[0], gRadius[1], r));
@@ -126,15 +126,17 @@ float4 RingTech2PS(MeshVS frg) : COLOR
     float4 color = tex2D(RingS, float2(len, 0.5));
     color.a = color.r*0.75;
      
-    float  da = dot(normalize(pp), gSun.direction);
+    float  da = dot(normalize(pp), gSun.Dir);
     float  r  = sqrt(dpp*(1.0-da*da));
     
     float sh  = max(0.05, smoothstep(gRadius[0], gRadius[1], r));
     
     if (da<0) sh = 1.0f;
     
-    if (dot(frg.nrmW, frg.CamW)>0) return float4(color.rgb*0.35f*sh, color.a);
-    return float4(color.rgb*sh, color.a);
+	color.rgb *= sh;
+
+    if (dot(frg.nrmW, frg.CamW)>0) return float4(color.rgb*0.35f, color.a);
+    return float4(color.rgb, color.a);
 }
 
 
@@ -157,7 +159,7 @@ TileMeshVS BaseTileVS(NTVERTEX vrt)
 
     AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
 
-    half4 diffuse;
+    float4 diffuse;
     float ambi, nigh;
 
     LegacySunColor(diffuse, ambi, nigh, outVS.nrmW);
@@ -178,13 +180,13 @@ float4 BaseTilePS(TileMeshVS frg) : COLOR
 	
 	float4 cTex = tex2D(ClampS, frg.tex0);
 	
-	float3 r = reflect(gSun.direction, nrmW);
+	float3 r = reflect(gSun.Dir, nrmW);
 	float  s = pow(saturate(dot(r, CamW)), 20.0f) * (1.0f-cTex.a);
-	float  d = saturate(dot(-gSun.direction, nrmW));
+	float  d = saturate(dot(-gSun.Dir, nrmW));
   
     if (d<=0) s = 0;
        
-    half3 clr = cTex.rgb * saturate(d * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
+    float3 clr = cTex.rgb * saturate(d * gSun.Color + s * gSun.Color + gSun.Ambient);
 
     if (gNight) clr += tex2D(Tex1S, frg.tex0).rgb;     
 
@@ -283,7 +285,7 @@ MeshVS AxisTechVS(MESH_VERTEX vrt)
 float4 AxisTechPS(MeshVS frg) : COLOR
 {
 	float3 nrmW = normalize(frg.nrmW);
-	float  d = saturate(dot(-gSun.direction, nrmW));
+	float  d = saturate(dot(-gSun.Dir, nrmW));
     float3 clr = gColor.rgb * saturate(max(d,0) + 0.5);
     return float4(clr, gColor.a);
 }	
@@ -292,8 +294,8 @@ technique AxisTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD AxisTechVS();
-        pixelShader  = compile PS_MOD AxisTechPS();
+        vertexShader = compile vs_3_0 AxisTechVS();
+        pixelShader  = compile ps_3_0 AxisTechPS();
 
         AlphaBlendEnable = true;
         SrcBlend = SrcAlpha;
@@ -340,8 +342,8 @@ technique ShadowTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD ShadowMeshTechVS();
-        pixelShader  = compile PS_MOD ShadowTechPS();
+        vertexShader = compile vs_3_0 ShadowMeshTechVS();
+        pixelShader  = compile ps_3_0 ShadowTechPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -359,8 +361,8 @@ technique ShadowTech
 
     pass P1
     {
-        vertexShader = compile VS_MOD ShadowMeshTechExVS();
-        pixelShader  = compile PS_MOD ShadowTechPS();
+        vertexShader = compile vs_3_0 ShadowMeshTechExVS();
+        pixelShader  = compile ps_3_0 ShadowTechPS();
 
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -416,8 +418,8 @@ technique TileBoxTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BoundingSphereVS();
-        pixelShader  = compile PS_MOD BoundingBoxPS();
+        vertexShader = compile vs_3_0 BoundingSphereVS();
+        pixelShader  = compile ps_3_0 BoundingBoxPS();
 
         AlphaBlendEnable = true;
         SrcBlend = SrcAlpha;
@@ -431,8 +433,8 @@ technique BoundingBoxTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BoundingBoxVS();
-        pixelShader  = compile PS_MOD BoundingBoxPS();
+        vertexShader = compile vs_3_0 BoundingBoxVS();
+        pixelShader  = compile ps_3_0 BoundingBoxPS();
 
         AlphaBlendEnable = true;
         SrcBlend = SrcAlpha;
@@ -446,8 +448,8 @@ technique BoundingSphereTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BoundingSphereVS();
-        pixelShader  = compile PS_MOD BoundingBoxPS();
+        vertexShader = compile vs_3_0 BoundingSphereVS();
+        pixelShader  = compile ps_3_0 BoundingBoxPS();
 
         AlphaBlendEnable = true;
         SrcBlend = SrcAlpha;
@@ -476,8 +478,8 @@ technique BaseTileTech
 
     pass P0
     {
-        vertexShader = compile VS_MOD BaseTileVS();
-        pixelShader  = compile PS_MOD BaseTilePS();
+        vertexShader = compile vs_3_0 BaseTileVS();
+        pixelShader  = compile ps_3_0 BaseTilePS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -493,8 +495,8 @@ technique RingTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD TinyMeshTechVS();
-        pixelShader  = compile PS_MOD RingTechPS();
+        vertexShader = compile vs_3_0 TinyMeshTechVS();
+        pixelShader  = compile ps_3_0 RingTechPS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -510,8 +512,8 @@ technique RingTech2
 {
     pass P0
     {
-        vertexShader = compile VS_MOD TinyMeshTechVS();
-        pixelShader  = compile PS_MOD RingTech2PS();
+        vertexShader = compile vs_3_0 TinyMeshTechVS();
+        pixelShader  = compile ps_3_0 RingTech2PS();
         
         AlphaBlendEnable = true;
         BlendOp = Add;
@@ -527,8 +529,8 @@ technique SimplifiedTech
 {
 	pass P0
 	{
-		vertexShader = compile VS_MOD TinyMeshTechVS();
-		pixelShader = compile PS_MOD TinyMeshTechPS();
+		vertexShader = compile vs_3_0 TinyMeshTechVS();
+		pixelShader = compile ps_3_0 TinyMeshTechPS();
 
 		AlphaBlendEnable = true;
 		BlendOp = Add;

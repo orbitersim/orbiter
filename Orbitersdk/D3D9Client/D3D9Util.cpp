@@ -89,6 +89,7 @@ void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut)
 	pOut->Diffuse = pIn->Diffuse;
 	pOut->Emissive = pIn->Emissive;
 	pOut->Specular = pIn->Specular;
+	pOut->Specular.a = 0.0f;
 	pOut->Power	= pIn->Specular.a;
 }
 
@@ -103,14 +104,11 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Fresnel.r = 0.0f;	// Offset (no longer used)
 	pOut->Fresnel.g = 0.0f;	// Mult
 	pOut->Fresnel.b = 0.0f;	// Power
-	pOut->DislMag = 0.0f;
-	pOut->DislScale = 0.0f;
-	pOut->pDissolve = NULL;
 	pOut->ModFlags = 0;
 }
 
 
-void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
+void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 {
 	// hP=hPlanet, hS=hSun
 	VECTOR3 GO, GS, GP;
@@ -158,9 +156,9 @@ void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 
-	light->Diffuse   = light->Specular = D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f); 
-	light->Ambient   = D3DXCOLOR(amb, amb, amb, 1.0f);
-	light->Direction = D3DXVEC(S) * (-1.0f/s);
+	light->Color =  D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f); 
+	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
+	light->Dir = D3DXVEC(S) * (-1.0f/s);
 }
 
 
@@ -169,7 +167,7 @@ void SurfaceLighting(D3D9Light *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 
 
 
-void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
+void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 {
 	VECTOR3 GS, GP;
 
@@ -189,9 +187,9 @@ void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
 	float pwr = 1.0f;
 
 	if (hP==hS) {
-		light->Diffuse   = light->Specular = D3DXCOLOR(pwr, pwr, pwr, 1.0f); 
-		light->Ambient   = D3DXCOLOR(ao, ao, ao, 1.0f);
-		light->Direction = D3DXVEC(S) * (-1.0f/float(s));
+		light->Color = D3DXCOLOR(pwr, pwr, pwr, 1.0f);
+		light->Ambient = D3DXCOLOR(ao, ao, ao, 1.0f);
+		light->Dir = D3DXVEC(S) * (-1.0f / float(s));
 		return;
 	}
 
@@ -251,9 +249,9 @@ void OrbitalLighting(D3D9Light *light, vPlanet *vP, VECTOR3 GO, float ao)
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 	
-	light->Diffuse   = light->Specular = D3DXCOLOR(lcol.x*pwr, lcol.y*pwr, lcol.z*pwr, 1.0f); 
-	light->Ambient   = D3DXCOLOR(amb, amb, amb, 1.0f);
-	light->Direction = D3DXVEC(S) * (-1.0f/float(s));
+	light->Color = D3DXCOLOR(lcol.x*pwr, lcol.y*pwr, lcol.z*pwr, 1.0f);
+	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
+	light->Dir = D3DXVEC(S) * (-1.0f / float(s));
 }
 
 
@@ -775,19 +773,22 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 
 	D3DXMACRO macro[16]; 
 	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+	bool bDisassemble = false;
 
 	if (options) {
 		int m = 0;
-		int l = strlen(options);
+		int l = strlen(options) + 1;
 		str = new char[l];
 		strcpy_s(str, l, options); 
 		tok = strtok(str,";, ");
 		while (tok!=NULL && m<16) {
-			macro[m++].Name = tok;
+			if (strcmp(tok, "PARTIAL") == 0) flags |= D3DXSHADER_PARTIALPRECISION;
+			if (strcmp(tok, "DISASM") == 0) bDisassemble = true;
+			else macro[m++].Name = tok;
 			tok = strtok(NULL, ";, ");
 		}
 	}
-	
+
 	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
 	
 	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
@@ -801,6 +802,20 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	if (!pCode) {
 		LogErr("Failed to compile a shader [%s] [%s]", file, function);
 		return NULL;
+	}
+
+	if (bDisassemble && pCode) {
+		LPD3DXBUFFER pBuffer = NULL;
+		if (D3DXDisassembleShader((DWORD*)pCode->GetBufferPointer(), true, NULL, &pBuffer) == S_OK) {
+			FILE *fp = NULL;
+			char name[256];
+			sprintf_s(name, 256, "%s_dis_asm.html", function);
+			if (!fopen_s(&fp, name, "w")) {
+				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
+				fclose(fp);
+			}
+			pBuffer->Release();
+		}
 	}
 
     HR(pDev->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pShader));
@@ -865,6 +880,8 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	return pShader;
 }
 
+// ============================================================================
+//
 const char *RemovePath(const char *in)
 {
 	int len = strlen(in);
@@ -873,7 +890,8 @@ const char *RemovePath(const char *in)
 	return ptr;
 }
 
-
+// ============================================================================
+//
 bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE9 *pIn, LPDIRECT3DVOLUMETEXTURE9 *pOut)
 {
 	if (count==0 || pDevice==NULL || pIn==NULL || pOut==NULL) return false;
@@ -935,3 +953,140 @@ bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE
 	}
 	return false;
 }
+
+
+
+
+// Light Emitter ============================================================================
+//
+D3D9Light::D3D9Light(const LightEmitter *le, const class vObject *vo)
+{
+	intensity = -1.0f;
+	Diffuse = D3DXCOLOR(DWORD(0));
+	UpdateLight(le, vo);
+}
+
+
+// ============================================================================
+//
+D3D9Light::D3D9Light() 
+{
+	intensity = -1.0f;
+	Diffuse = D3DXCOLOR(DWORD(0));
+}
+
+
+// ============================================================================
+//
+D3D9Light::~D3D9Light()
+{
+
+}
+
+
+// ============================================================================
+//
+void D3D9Light::Reset()
+{
+	intensity = -1.0f;
+}
+
+
+// ============================================================================
+//
+float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
+{
+	if (intensity < 0) return -1.0f;
+
+	D3DXVECTOR3 pos = _pos - Position;
+
+	float d = D3DXVec3Length(&pos);
+	float d2 = d*d;
+
+	if (d > (r + range)) return -1.0f;
+	
+	if ((d > r) && (Type == D3DLIGHT_SPOT) && (cosp>0.1)) {
+		float x = D3DXVec3Dot(&pos, &Direction);
+		if (x < -r) return -1.0f;
+		if ((sqrt(d2 - x*x) - x*tanp) * cosp > r) return -1.0f;
+	}
+
+	return intensity / (Attenuation.x + Attenuation.y*d + Attenuation.z*d2);
+}
+
+
+// ============================================================================
+//
+const LightEmitter *D3D9Light::GetEmitter() const
+{
+	return le;
+}
+
+
+// ============================================================================
+//
+void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
+{
+	le = _le;
+
+	// -----------------------------------------------------------------------------
+	
+	D3DXVec3TransformCoord(&Position, &D3DXVEC(le->GetPosition()), vo->MWorld());
+	Dst2 = D3DXVec3Dot(&Position, &Position);
+
+	// -----------------------------------------------------------------------------
+	
+	const double *att = ((PointLight*)le)->GetAttenuation();
+	Attenuation = D3DXVECTOR3((float)att[0], (float)att[1], (float)att[2]);
+
+	// -----------------------------------------------------------------------------
+
+	double c = att[0] - 100.0;
+	double b = att[1];
+	double a = att[2];
+
+	range = float((-b + sqrt(b*b - 4.0*a*c)) / (2.0*a));
+	range2 = range*range;
+	Param[D3D9LRange] = range;
+	
+	tanp = 0.0f;
+	cosu = 1.0f;
+	cosp = 1.0f;
+
+	// -----------------------------------------------------------------------------
+	switch (le->GetType()) {
+
+		case LightEmitter::LT_POINT: {
+			Type = D3DLIGHT_POINT;
+		} break;
+
+		case LightEmitter::LT_SPOT: {
+			Type = D3DLIGHT_SPOT;
+			cosp = cos(float(((SpotLight*)le)->GetPenumbra()) * 0.5f);
+			cosu = cos(float(((SpotLight*)le)->GetUmbra()) * 0.5f);
+			tanp = tan(float(((SpotLight*)le)->GetPenumbra()) * 0.5f);
+			Param[D3D9LFalloff] = 1.0f;
+			Param[D3D9LPhi] = cosp;
+			Param[D3D9LTheta] = 1.0f / (cosu - cosp);
+		} break;
+
+		default:
+			LogErr("Invalid Light Emitter Type");
+			break;
+	}
+
+	// -----------------------------------------------------------------------------
+	intensity = float(le->GetIntensity());
+	const COLOUR4 &col_d = le->GetDiffuseColour();
+	Diffuse.r = (col_d.r*intensity);
+	Diffuse.g = (col_d.g*intensity);
+	Diffuse.b = (col_d.b*intensity);
+	Diffuse.a = (col_d.a*intensity);
+
+	// -----------------------------------------------------------------------------
+	if (Type != D3DLIGHT_POINT) {
+		D3DXVec3TransformNormal(&Direction, &D3DXVEC(le->GetDirection()), vo->MWorld());
+	}
+}
+
+

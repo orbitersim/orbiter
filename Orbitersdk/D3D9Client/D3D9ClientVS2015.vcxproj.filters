@@ -357,8 +357,17 @@
     <None Include="..\..\Modules\D3D9Client\Vessel.fx">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\..\Modules\D3D9Client\PBR.fx">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="..\include\OGCI.cpp">
       <Filter>Ogci</Filter>
+    </None>
+    <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

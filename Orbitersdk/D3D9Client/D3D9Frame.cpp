@@ -85,7 +85,7 @@ void CD3DFramework9::Clear()
 	dwRenderWidth	  = 0;
 	dwRenderHeight	  = 0;
 	dwFSMode		  = 0;
-	pd3dDevice		  = NULL;
+	pDevice			  = NULL;
 	pLargeFont		  = NULL;
 	pSmallFont		  = NULL;
 	dwZBufferBitDepth = 0;
@@ -127,10 +127,10 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pShmDS);
 	SAFE_RELEASE(pShmRT);
 
-	if (pd3dDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
+	if (pDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
 	else									LogErr("[Failed to Reset DirectX Device]");
 
-	SAFE_RELEASE(pd3dDevice);
+	SAFE_RELEASE(pDevice);
 
 	return S_OK;
 }
@@ -368,7 +368,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		return hr;
 	}
 
-	LogOapi("Available Texture Memory = %u MB",pd3dDevice->GetAvailableTextureMem()>>20);
+	LogOapi("Available Texture Memory = %u MB",pDevice->GetAvailableTextureMem()>>20);
 
 	D3DVIEWPORT9 vp;
 
@@ -379,18 +379,18 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	vp.MinZ   = 0.0f;
 	vp.MaxZ   = 1.0f;
 
-	pd3dDevice->SetViewport(&vp);
+	pDevice->SetViewport(&vp);
 
-	HR(pd3dDevice->CreateVertexDeclaration(NTVertexDecl, &pNTVertexDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(BAVertexDecl, &pBAVertexDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(PosColorDecl, &pPosColorDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(PositionDecl, &pPositionDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(Vector4Decl,  &pVector4Decl));
-	HR(pd3dDevice->CreateVertexDeclaration(PosTexDecl,   &pPosTexDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(HazeVertexDecl,  &pHazeVertexDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(MeshVertexDecl,  &pMeshVertexDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(PatchVertexDecl, &pPatchVertexDecl));
-	HR(pd3dDevice->CreateVertexDeclaration(GPUBlitDecl, &pGPUBlitDecl));
+	HR(pDevice->CreateVertexDeclaration(NTVertexDecl, &pNTVertexDecl));
+	HR(pDevice->CreateVertexDeclaration(BAVertexDecl, &pBAVertexDecl));
+	HR(pDevice->CreateVertexDeclaration(PosColorDecl, &pPosColorDecl));
+	HR(pDevice->CreateVertexDeclaration(PositionDecl, &pPositionDecl));
+	HR(pDevice->CreateVertexDeclaration(Vector4Decl,  &pVector4Decl));
+	HR(pDevice->CreateVertexDeclaration(PosTexDecl,   &pPosTexDecl));
+	HR(pDevice->CreateVertexDeclaration(HazeVertexDecl,  &pHazeVertexDecl));
+	HR(pDevice->CreateVertexDeclaration(MeshVertexDecl,  &pMeshVertexDecl));
+	HR(pDevice->CreateVertexDeclaration(PatchVertexDecl, &pPatchVertexDecl));
+	HR(pDevice->CreateVertexDeclaration(GPUBlitDecl, &pGPUBlitDecl));
 
 	// Setup some default fomts
 	//
@@ -406,7 +406,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
 	strcpy(fontDesc.FaceName, "Arial");
 
-	HR(D3DXCreateFontIndirect(pd3dDevice, &fontDesc, &pLargeFont));
+	HR(D3DXCreateFontIndirect(pDevice, &fontDesc, &pLargeFont));
 
 	fontDesc.Height          = 16;
 	fontDesc.Width           = 10;
@@ -419,19 +419,19 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
 	strcpy(fontDesc.FaceName, "Arial");
 
-	HR(D3DXCreateFontIndirect(pd3dDevice, &fontDesc, &pSmallFont));
+	HR(D3DXCreateFontIndirect(pDevice, &fontDesc, &pSmallFont));
 
 	DWORD EnvMapSize = Config->EnvMapSize;
 	DWORD ShmMapSize = Config->ShadowMapSize;
 
 	if (Config->EnvMapMode) {
-		HR(pd3dDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
+		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
 	}
 	else pEnvDS = NULL;
 
 	if (Config->ShadowMapMode) {
-		HR(pd3dDevice->CreateDepthStencilSurface(ShmMapSize, ShmMapSize, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pShmDS, NULL));
-		HR(pd3dDevice->CreateTexture(ShmMapSize, ShmMapSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pShmRT, NULL));
+		HR(pDevice->CreateDepthStencilSurface(ShmMapSize, ShmMapSize, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pShmDS, NULL));
+		HR(pDevice->CreateTexture(ShmMapSize, ShmMapSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pShmRT, NULL));
 	}
 	else {
 		pShmDS = NULL;
@@ -493,12 +493,12 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 		hWnd,				// window associated with device
 		devBehaviorFlags|D3DCREATE_MULTITHREADED|D3DCREATE_FPU_PRESERVE,
 		&d3dPP,				// present parameters
-		&pd3dDevice));		// return created device
+		&pDevice));		// return created device
 
 	// Get Backbuffer
-	if (pd3dDevice) {
-		pd3dDevice->GetRenderTarget(0, &pRenderTarget);
-		pBackBuffer = new D3D9ClientSurface(pd3dDevice, "BackBuffer-Fullscreen");
+	if (pDevice) {
+		pDevice->GetRenderTarget(0, &pRenderTarget);
+		pBackBuffer = new D3D9ClientSurface(pDevice, "BackBuffer-Fullscreen");
 		pBackBuffer->MakeBackBuffer(pRenderTarget);
 		return S_OK;
 	}
@@ -584,7 +584,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 			hWnd,					// window associated with device
 			devBehaviorFlags|D3DCREATE_MULTITHREADED|D3DCREATE_FPU_PRESERVE,
 			&d3dPP,					// present parameters
-			&pd3dDevice);			// return created device
+			&pDevice);			// return created device
 	}
 	else {
 
@@ -594,15 +594,15 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 			hWnd,					// window associated with device
 			devBehaviorFlags|D3DCREATE_MULTITHREADED|D3DCREATE_FPU_PRESERVE,
 			&d3dPP,					// present parameters
-			&pd3dDevice);			// return created device
+			&pDevice);			// return created device
 	}
 
 	if (hr!=S_OK) LogErr("CreateDevice() Failed HR=0x%X",hr);
 
 	// Get Backbuffer
-	if (pd3dDevice) {
-		pd3dDevice->GetRenderTarget(0, &pRenderTarget);
-		pBackBuffer = new D3D9ClientSurface(pd3dDevice, "BackBuffer-Wnd");
+	if (pDevice) {
+		pDevice->GetRenderTarget(0, &pRenderTarget);
+		pBackBuffer = new D3D9ClientSurface(pDevice, "BackBuffer-Wnd");
 		pBackBuffer->MakeBackBuffer(pRenderTarget);
 		return S_OK;
 	}

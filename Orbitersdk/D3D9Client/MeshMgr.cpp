@@ -96,7 +96,9 @@ void MeshManager::UpdateMesh (MESHHANDLE hMesh)
 			}
 			DWORD nMtrl = oapiMeshMaterialCount(hMesh);
 			for (DWORD k=0;k<nMtrl;k++)	{
-				UpdateMatExt((const D3DMATERIAL9 *)oapiMeshMaterial(hMesh, k), mlist[i].mesh->GetMaterial(k)); 
+				D3D9MatExt meshmat;
+				CreateMatExt((const D3DMATERIAL9 *)oapiMeshMaterial(hMesh, k), &meshmat);
+				mlist[i].mesh->SetMaterial(&meshmat, k);
 			}
 		}
 		break;

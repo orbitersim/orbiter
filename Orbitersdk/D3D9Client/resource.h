@@ -90,7 +90,6 @@
 #define IDC_DBG_HSM                             2066
 #define IDC_DBG_LINK                            2067
 #define IDC_DBG_MATADJ                          2068
-#define IDC_DBG_MATEFF                          2069
 #define IDC_DBG_MATGRP                          2070
 #define IDC_DBG_MATPRP                          2071
 #define IDC_DBG_MATSAVE                         2072
@@ -154,4 +153,9 @@
 #define IDC_DBG_FMIPS                           2134
 #define IDC_DBG_ENCTER                          2135
 #define IDC_DBG_RESBIAS                         2136
-#define IDC_DBG_BLRMAP                          2137
+#define IDC_DBG_SPEC                            2138
+#define IDC_DBG_ENVSAVE                         2139
+#define IDC_POSTPROCESS                         2140
+#define IDC_DBG_RGHN                            2141
+#define IDC_SHADING                             2142
+

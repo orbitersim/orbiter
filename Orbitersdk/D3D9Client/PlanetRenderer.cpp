@@ -20,18 +20,15 @@
 class oapi::D3D9Client *PlanetRenderer::gc = NULL; 
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
 LPDIRECT3DTEXTURE9 PlanetRenderer::hOcean = NULL;
-LPDIRECT3DTEXTURE9 PlanetRenderer::hMicroRot = NULL;
 VECTOR3 PlanetRenderer::vLPosOld = _V(1,0,0);
 bool PlanetRenderer::bEnvMapEnabled = false;
 // ------------------------------------------------------------
 ID3DXEffect *PlanetRenderer::pShader = NULL;
 D3DXHANDLE PlanetRenderer::eTileTech = NULL;
-D3DXHANDLE PlanetRenderer::eTileTechNoZ = NULL;
 D3DXHANDLE PlanetRenderer::eCloudTech = NULL;
 D3DXHANDLE PlanetRenderer::eRingTech = NULL;
 D3DXHANDLE PlanetRenderer::eHorizonTech = NULL;
 D3DXHANDLE PlanetRenderer::eSkyDomeTech = NULL;
-D3DXHANDLE PlanetRenderer::eCloudShadowTech = NULL;
 // ------------------------------------------------------------  
 D3DXHANDLE PlanetRenderer::smWorld = NULL;
 D3DXHANDLE PlanetRenderer::smViewProj = NULL;
@@ -51,13 +48,11 @@ D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
 D3DXHANDLE PlanetRenderer::sfNight = NULL;
 // ------------------------------------------------------------
-D3DXHANDLE PlanetRenderer::sbSpecular = NULL;
 D3DXHANDLE PlanetRenderer::sbCloudSh = NULL;
 D3DXHANDLE PlanetRenderer::sbLights = NULL;
 D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
 D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
 D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
-D3DXHANDLE PlanetRenderer::sbMicro = NULL;
 D3DXHANDLE PlanetRenderer::sbMicroNormals = NULL;
 D3DXHANDLE PlanetRenderer::siTileLvl = NULL;
 D3DXHANDLE PlanetRenderer::siDebug = NULL;
@@ -140,25 +135,21 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	D3DXMACRO macro[16]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
+	bool bShadows = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDSHADOWS);
 
 	// ------------------------------------------------------------------------------
-	macro[0].Name = "VS_MOD";
-	macro[0].Definition = "vs_3_0";
-	macro[1].Name = "PS_MOD";
-	macro[1].Definition = "ps_3_0";
-	// ------------------------------------------------------------------------------
-	int m=2;
+	int m=0;
 	macro[m].Name = "ANISOTROPY_MACRO";
 	macro[m].Definition = new char[32];
 	sprintf_s((char*)macro[m].Definition,32,"%d",max(2,Config->Anisotrophy));
 	// ------------------------------------------------------------------------------
-	m=3;
+	m=1;
 	macro[m].Name = "MICRO_ANISOTROPY";
 	macro[m].Definition = new char[32];
 	int micro_aniso = (1 << (max(1,Config->MicroFilter) - 1));
 	sprintf_s((char*)macro[m].Definition,32,"%d", micro_aniso);
 	// ------------------------------------------------------------------------------
-	m=4;
+	m=2;
 	macro[m].Name = "MICRO_FILTER";
 	macro[m].Definition = new char[32];
 	switch(Config->MicroFilter) {
@@ -167,7 +158,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		default: strcpy_s((char*)macro[m].Definition, 32, "ANISOTROPIC"); break;
 	}
 	// ------------------------------------------------------------------------------
-	m=5;
+	m=3;
 	macro[m].Name = "BLEND";
 	macro[m].Definition = new char[4];
 	switch(Config->BlendMode) {
@@ -176,30 +167,28 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		default: strcpy_s((char*)macro[m].Definition, 4, "2"); break;
 	}
 	// ------------------------------------------------------------------------------
-	m=6;
+	m=4;
 	macro[m].Name = "MICRO_BIAS";
 	macro[m].Definition = new char[8];
 	sprintf_s((char*)macro[m].Definition,8,"%1.1f",float(Config->MicroBias)*0.1f);
 	// ------------------------------------------------------------------------------
-	m=7;
-	if (Config->MicroMode==2) macro[m++].Name = "_MICROROTATIONS";
-	if (Config->MicroMode==3) macro[m++].Name = "_DEVELOPPERMODE";
-	// ------------------------------------------------------------------------------
-	if (bRiples) macro[m++].Name = "_SURFACERIPPLES";
+	m=5;
 	// ------------------------------------------------------------------------------
 	if (Config->EnvMapMode && bRiples) {
 		macro[m++].Name = "_ENVMAP"; 
 		bEnvMapEnabled = true;
 	} else bEnvMapEnabled = false;
 	// ------------------------------------------------------------------------------
-	
+	if (bShadows) macro[m++].Name = "_CLOUDSHADOWS";
+	// ------------------------------------------------------------------------------
+
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
 	
+	delete []macro[0].Definition;
+	delete []macro[1].Definition;
 	delete []macro[2].Definition;
 	delete []macro[3].Definition;
 	delete []macro[4].Definition;
-	delete []macro[5].Definition;
-	delete []macro[6].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -212,18 +201,30 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		return;
 	}
 
+	if (Config->ShaderDebug) {
+		LPD3DXBUFFER pBuffer = NULL;
+		if (D3DXDisassembleEffect(pShader, true, &pBuffer) == S_OK) {
+			FILE *fp = NULL;
+			if (!fopen_s(&fp, "D9D9Planet_asm.html", "w")) {
+				pBuffer->GetBufferPointer();
+				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
+				fclose(fp);
+			}
+			pBuffer->Release();
+		}
+	}
+
+
 	// ---------------------------------------------------------------------
 	// Bind shader-side variables and constants to local handles
 	//
 
 	// Techniques ----------------------------------------------------------
 	eTileTech			= pShader->GetTechniqueByName("TileTech");
-	eTileTechNoZ		= pShader->GetTechniqueByName("TileTechNoZ");
 	eCloudTech			= pShader->GetTechniqueByName("CloudTech");
 	eRingTech			= pShader->GetTechniqueByName("RingTech");
 	eHorizonTech		= pShader->GetTechniqueByName("HorizonTech");
 	eSkyDomeTech		= pShader->GetTechniqueByName("SkyDomeTech");
-	eCloudShadowTech	= pShader->GetTechniqueByName("CloudShadowTech");
 	// ------------------------------------------------------------  
 	smWorld				= pShader->GetParameterByName(0,"mWorld");
 	smViewProj			= pShader->GetParameterByName(0,"mViewProj");
@@ -243,13 +244,11 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
 	sfNight				= pShader->GetParameterByName(0,"fNight");
 	// ------------------------------------------------------------
-	sbSpecular			= pShader->GetParameterByName(0,"bSpecular");
 	sbCloudSh			= pShader->GetParameterByName(0,"bCloudSh");
 	sbLights			= pShader->GetParameterByName(0,"bLights");
 	sbInSpace			= pShader->GetParameterByName(0,"bInSpace");
 	sbOnOff				= pShader->GetParameterByName(0,"bOnOff");
 	sbEnvEnable			= pShader->GetParameterByName(0,"bEnvEnable");
-	sbMicro				= pShader->GetParameterByName(0,"bMicro");
 	sbMicroNormals		= pShader->GetParameterByName(0,"bMicroNormals");
 	siTileLvl			= pShader->GetParameterByName(0,"iTileLvl");
 	siDebug				= pShader->GetParameterByName(0,"iDebug");
@@ -299,13 +298,10 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfTime				= pShader->GetParameterByName(0,"fTime");
 	// ------------------------------------------------------------
 	
-	
 	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Ocean.dds", &hOcean));
-	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9MicroRot.dds", &hMicroRot));
-	
+
 	if (hOcean) {
 		HR(pShader->SetTexture(stOcean, hOcean));
-		HR(pShader->SetTexture(stMicroRot, hMicroRot));
 	}
 }
 
@@ -315,7 +311,6 @@ void PlanetRenderer::GlobalExit ()
 {
 	SAFE_RELEASE(pShader);
 	SAFE_RELEASE(hOcean);
-	SAFE_RELEASE(hMicroRot);
 }
 
 // -----------------------------------------------------------------------

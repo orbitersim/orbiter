@@ -23,6 +23,8 @@
 #include <stdarg.h>
 #include <windows.h>
 #include <OrbiterAPI.h>
+#include <queue>
+#include <string>
 
 FILE *d3d9client_log = NULL;
 
@@ -45,7 +47,24 @@ __int64 qpcFrq = 0;
 __int64 qpcRef = 0; 
 __int64 qpcStart = 0;
 
+std::queue<std::string> D3D9DebugQueue;
+
 CRITICAL_SECTION LogCrit;
+
+//-------------------------------------------------------------------------------------------
+//
+void D3D9DebugLog(const char *format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
+	va_end(args);
+
+	D3D9DebugQueue.push(std::string(ErrBuf));
+}
+
+
+
 
 //-------------------------------------------------------------------------------------------
 //
@@ -79,6 +98,17 @@ double D3D9GetTime()
 	__int64 qpcCurrent;
 	QueryPerformanceCounter((LARGE_INTEGER*)&qpcCurrent);
 	return double(qpcCurrent) * 1e6 / double(qpcFrq);
+}
+
+//-------------------------------------------------------------------------------------------
+//
+void D3D9SetTime(D3D9Time &inout, double ref)
+{
+	__int64 qpcCurrent;
+	QueryPerformanceCounter((LARGE_INTEGER*)&qpcCurrent);
+	double time = double(qpcCurrent) * 1e6 / double(qpcFrq);
+	inout.time += (time - ref);
+	inout.count += 1.0;
 }
 
 //-------------------------------------------------------------------------------------------

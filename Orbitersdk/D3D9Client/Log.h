@@ -17,9 +17,17 @@
 // =================================================================================================================================
 
 #include <stdio.h>
+#include <queue>
+#include <string>
+
 
 #ifndef __LOGGING_H
 #define __LOGGING_H
+
+typedef struct {
+	double time;
+	double count;
+} D3D9Time;
 
 extern FILE *d3d9client_log;
 extern int uEnableLog;
@@ -28,6 +36,7 @@ extern int EnableLogStack[16];
 extern __int64 qpcRef;
 extern __int64 qpcFrq;
 extern __int64 qpcStart;
+extern std::queue<std::string> D3D9DebugQueue;
 
 #define _PUSHLOG EnableLogStack[iEnableLog++] = uEnableLog;
 #define _SETLOG(x) { EnableLogStack[iEnableLog++] = uEnableLog; if (uEnableLog>0) uEnableLog=x; } 
@@ -36,6 +45,7 @@ extern __int64 qpcStart;
 #define _UNDEBUGED LogWrn("[Undebuged/Unfinished code section reached in %s (File %s, Line %d)]",__FUNCTION__,__FILE__,__LINE__);
 //#define _UNDEBUGED
 
+void   D3D9DebugLog(const char *format, ...);
 void   D3D9InitLog(char *file);
 void   D3D9CloseLog();
 void   LogTrace(const char *format, ...);
@@ -46,6 +56,7 @@ void   LogBlu(const char *format, ...);
 void   LogOapi(const char *format, ...);
 void   LogAlw(const char *format, ...);
 
-double D3D9GetTime();
+double	D3D9GetTime();
+void	D3D9SetTime(D3D9Time &inout, double ref);
 
 #endif

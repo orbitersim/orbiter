@@ -77,7 +77,7 @@ void MatMgr::ResetCamera(DWORD idx)
 
 // ===========================================================================================
 //
-void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3D9MatExt *pM)
+void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, const D3D9MatExt *pM)
 {
 	if (nRec==mRec) {
 		mRec *= 2;
@@ -129,24 +129,22 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 			
 			if (idx>=pMesh->GetMaterialCount()) continue;
 
-			D3D9MatExt *pM = pMesh->GetMaterial(idx);
-
-			if (pM==NULL) continue;
+			D3D9MatExt Mat;
+		
+			if (!pMesh->GetMaterial(&Mat, idx)) continue;
 
 			DWORD flags = pRecord[i].Mat.ModFlags;
 
-			if (flags&D3D9MATEX_AMBIENT) pM->Ambient = pRecord[i].Mat.Ambient;
-			if (flags&D3D9MATEX_DIFFUSE) pM->Diffuse = pRecord[i].Mat.Diffuse;
-			if (flags&D3D9MATEX_EMISSIVE) pM->Emissive = pRecord[i].Mat.Emissive;
-			if (flags&D3D9MATEX_REFLECT) pM->Reflect = pRecord[i].Mat.Reflect;
-			if (flags&D3D9MATEX_SPECULAR) pM->Specular = pRecord[i].Mat.Specular;
-			if (flags&D3D9MATEX_FRESNEL) pM->Fresnel = pRecord[i].Mat.Fresnel;
-			if (flags&D3D9MATEX_DISSOLVE) {
-				pM->DislScale = pRecord[i].Mat.DislScale;
-				pM->DislMag = pRecord[i].Mat.DislMag;
-				pM->pDissolve = pRecord[i].Mat.pDissolve;
-			}
-			pM->ModFlags = flags;
+			if (flags&D3D9MATEX_AMBIENT) Mat.Ambient = pRecord[i].Mat.Ambient;
+			if (flags&D3D9MATEX_DIFFUSE) Mat.Diffuse = pRecord[i].Mat.Diffuse;
+			if (flags&D3D9MATEX_EMISSIVE) Mat.Emissive = pRecord[i].Mat.Emissive;
+			if (flags&D3D9MATEX_REFLECT) Mat.Reflect = pRecord[i].Mat.Reflect;
+			if (flags&D3D9MATEX_SPECULAR) Mat.Specular = pRecord[i].Mat.Specular;
+			if (flags&D3D9MATEX_FRESNEL) Mat.Fresnel = pRecord[i].Mat.Fresnel;
+			
+			Mat.ModFlags = flags;
+
+			pMesh->SetMaterial(&Mat, idx);
 
 			LogBlu("Material %u setup applied to mesh (%s) Flags=0x%X", idx, name, flags);
 		}
@@ -328,27 +326,6 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		}
 
 		// --------------------------------------------------------------------------------------------
-		if (!strncmp(cbuf, "DISSOLVE", 8)) {
-
-			char tex[128];
-			if (sscanf_s(cbuf, "DISSOLVE %s %f %f", tex, sizeof(tex), &a, &b)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			
-			pRecord[iRec].Mat.DislScale = a;
-			pRecord[iRec].Mat.DislMag = b;
-			pRecord[iRec].Mat.pDissolve = gc->clbkLoadTexture(tex, 0x8);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_DISSOLVE;
-			
-			if (pRecord[iRec].Mat.pDissolve==NULL) {
-				LogErr("Failed to load a texture (%s)",tex);
-				return false;
-			}
-			else {
-				gc->RegisterDissolveMap(pRecord[iRec].Mat.pDissolve);
-			}
-			continue;
-		}
-
-		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
 			n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
 			if (n!=2 && n!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
@@ -423,11 +400,7 @@ bool MatMgr::SaveConfiguration()
 
 			if (flags&D3D9MATEX_REFLECT) if (pM->Reflect.r<1e-3f && pM->Reflect.g<1e-3f && pM->Reflect.b<1e-3f) flags &= (~D3D9MATEX_REFLECT);
 			if (flags&D3D9MATEX_FRESNEL) if (pM->Fresnel.g<1e-3f) flags &= (~D3D9MATEX_FRESNEL);
-			if (flags&D3D9MATEX_DISSOLVE) {
-				const char *name = SURFACE(pM->pDissolve)->GetName();
-				if (name==0 || pM->DislScale<1e-3f || pM->DislMag<1e-3f) flags &= (~D3D9MATEX_DISSOLVE);
-			}
-
+		
 			if (flags==0) continue;
 
 			fprintf(file.pFile,"; ---------------------------------------------\n");
@@ -441,7 +414,6 @@ bool MatMgr::SaveConfiguration()
 			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
 			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b);
 			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, 0.0f, pM->Fresnel.g);
-			if (flags&D3D9MATEX_DISSOLVE) fprintf(file.pFile,"DISSOLVE %s %f %f\n", SURFACE(pM->pDissolve)->GetName(), pM->DislScale, pM->DislMag);
 		}
 	}
 	return true;

@@ -184,6 +184,14 @@ int GetSceneDebug()
 
 // =============================================================================================
 //
+int GetSelectedEnvMap()
+{
+	if (!hDlg) return 0;
+	return (int)SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_GETCURSEL, 0, 0);
+}
+
+// =============================================================================================
+//
 void Release()
 {
 	vObj=NULL;
@@ -207,8 +215,6 @@ void UpdateFlags()
 	SETFLAG(debugFlags, DBG_FLAGS_AMBIENT,	    (SendDlgItemMessageA(hDlg, IDC_DBG_AMBIENT, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_WIREFRAME,	(SendDlgItemMessageA(hDlg, IDC_DBG_WIRE, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_DUALSIDED,	(SendDlgItemMessageA(hDlg, IDC_DBG_DUAL, BM_GETCHECK, 0, 0)==BST_CHECKED));
-	SETFLAG(debugFlags, DBG_FLAGS_DSPENVMAP,	(SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, BM_GETCHECK, 0, 0)==BST_CHECKED));
-	SETFLAG(debugFlags, DBG_FLAGS_DSPBLRMAP,    (SendDlgItemMessageA(hDlg, IDC_DBG_BLRMAP, BM_GETCHECK, 0, 0) == BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_PICK,			(SendDlgItemMessageA(hDlg, IDC_DBG_PICK, BM_GETCHECK, 0, 0)==BST_CHECKED));
 	SETFLAG(debugFlags, DBG_FLAGS_FPSLIM,		(SendDlgItemMessageA(hDlg, IDC_DBG_FPSLIM, BM_GETCHECK, 0, 0)==BST_CHECKED));
 
@@ -257,7 +263,7 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Specular");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflect");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Dissolve");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"n/a");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Fresnel");
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
 
@@ -283,18 +289,19 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_ADDSTRING, 0, (LPARAM)"Assign to slot 2");
 	SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_SETCURSEL, 0, 0);
 
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"None");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Mirror");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 1");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 2");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 3");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 4");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_SETCURSEL, 0, 0);
+
+
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARA), "1.3");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARB), "0.01");
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_VARC), "0.00");
-
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)"None");
-	while (true) {
-		SURFHANDLE hSrf = g_client->GetDissolveMap(idx++);
-		if (hSrf) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_ADDSTRING, 0, (LPARAM)SURFACE(hSrf)->GetName());
-		else break;
-	}
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
 
 	// Speed slider
 	SendDlgItemMessage(hDlg, IDC_DBG_RESBIAS, TBM_SETRANGEMAX, 1,  10);
@@ -335,30 +342,6 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_DBG_VARC, hDlg, "Apply noise to main level and all mipmaps before attennuation (Fa,Fb)");
 }
 
-// =============================================================================================
-//
-void UpdateDissolveMap(SURFHANDLE hSrf)
-{
-	OBJHANDLE hObj = vObj->GetObjectA();
-
-	if (!oapiIsVessel(hObj)) return;
-
-	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
-
-	if (!hMesh) return;
-
-	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
-	
-	if (!pMat) return;
-
-	pMat->pDissolve = hSrf;
-	pMat->ModFlags |= D3D9MATEX_DISSOLVE;
-
-	vVessel *vVes = (vVessel *)vObj;
-
-	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat); 
-}
 
 // =============================================================================================
 //
@@ -373,98 +356,103 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	if (!hMesh) return;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
+	D3D9MatExt Mat;
 
-	if (!pMat) return;
+	if (!hMesh->GetMaterial(&Mat, matidx)) return;
+
+	bool bSpec = false;
+	if (hDlg) bSpec = (SendDlgItemMessageA(hDlg, IDC_DBG_SPEC, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+	// Copy Specular configuration to Reflect too
+	if (MatPrp == 2 && bSpec) UpdateMeshMaterial(value, 4, clr);
 
 	switch(MatPrp) {
 
 		case 0:	// Diffuse
 		{
-			pMat->ModFlags |= D3D9MATEX_DIFFUSE;
+			Mat.ModFlags |= D3D9MATEX_DIFFUSE;
 			switch(clr) {
-				case 0: pMat->Diffuse.r = CLAMP(value, 0.0f, 1.0f); break;
-				case 1: pMat->Diffuse.g = CLAMP(value, 0.0f, 1.0f); break;
-				case 2: pMat->Diffuse.b = CLAMP(value, 0.0f, 1.0f); break;
-				case 3: pMat->Diffuse.a = CLAMP(value, 0.0f, 1.0f); break;
+				case 0: Mat.Diffuse.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: Mat.Diffuse.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: Mat.Diffuse.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 3: Mat.Diffuse.a = CLAMP(value, 0.0f, 1.0f); break;
 			}
 			break;
 		}
 
 		case 1:	// Ambient
 		{
-			pMat->ModFlags |= D3D9MATEX_AMBIENT;
+			Mat.ModFlags |= D3D9MATEX_AMBIENT;
 			switch(clr) {
-				case 0: pMat->Ambient.r = CLAMP(value, 0.0f, 1.0f); break;
-				case 1: pMat->Ambient.g = CLAMP(value, 0.0f, 1.0f); break;
-				case 2: pMat->Ambient.b = CLAMP(value, 0.0f, 1.0f); break;
-				case 3: pMat->Ambient.a = 0.0; break;
+				case 0: Mat.Ambient.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: Mat.Ambient.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: Mat.Ambient.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 3: Mat.Ambient.a = 0.0; break;
 			}
 			break;
 		}
 
 		case 2:	// Specular
 		{
-			pMat->ModFlags |= D3D9MATEX_SPECULAR;
+			Mat.ModFlags |= D3D9MATEX_SPECULAR;
 			switch(clr) {
-				case 0: pMat->Specular.r = CLAMP(value, 0.0f, 1.0f); break;
-				case 1: pMat->Specular.g = CLAMP(value, 0.0f, 1.0f); break;
-				case 2: pMat->Specular.b = CLAMP(value, 0.0f, 1.0f); break;
-				case 3: pMat->Specular.a = CLAMP(value, 0.0f, 1000.0f); break;
+				case 0: Mat.Specular.r = CLAMP(value, 0.0f, 3.0f); break;
+				case 1: Mat.Specular.g = CLAMP(value, 0.0f, 3.0f); break;
+				case 2: Mat.Specular.b = CLAMP(value, 0.0f, 3.0f); break;
+				case 3: 
+					Mat.Specular.a = CLAMP(value, 0.0f, 1000.0f); 
+					Mat.Roughness = log2(max(1, Mat.Specular.a)) * 0.1f;
+					break;
+
 			}
 			break;
 		}
 
 		case 3:	// Emission
 		{
-			pMat->ModFlags |= D3D9MATEX_EMISSIVE;
+			Mat.ModFlags |= D3D9MATEX_EMISSIVE;
 			switch(clr) {
-				case 0: pMat->Emissive.r = CLAMP(value, 0.0f, 1.0f); break;
-				case 1: pMat->Emissive.g = CLAMP(value, 0.0f, 1.0f); break;
-				case 2: pMat->Emissive.b = CLAMP(value, 0.0f, 1.0f); break;
-				case 3: pMat->Emissive.a = 0.0; break;
+				case 0: Mat.Emissive.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: Mat.Emissive.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: Mat.Emissive.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 3: Mat.Emissive.a = 0.0; break;
 			}
 			break;
 		}
 
 		case 4:	// Reflectivity
 		{
-			pMat->ModFlags |= D3D9MATEX_REFLECT;
+			Mat.ModFlags |= D3D9MATEX_REFLECT;
 			switch(clr) {
-				case 0: pMat->Reflect.r = CLAMP(value, 0.0f, 1.0f); break;
-				case 1: pMat->Reflect.g = CLAMP(value, 0.0f, 1.0f); break;
-				case 2: pMat->Reflect.b = CLAMP(value, 0.0f, 1.0f); break;
+				case 0: Mat.Reflect.r = CLAMP(value, 0.0f, 1.0f); break;
+				case 1: Mat.Reflect.g = CLAMP(value, 0.0f, 1.0f); break;
+				case 2: Mat.Reflect.b = CLAMP(value, 0.0f, 1.0f); break;
 			}
-			pMat->Reflect.a = max(max(pMat->Reflect.r, pMat->Reflect.g), pMat->Reflect.b);
+			Mat.Reflect.a = max(max(Mat.Reflect.r, Mat.Reflect.g), Mat.Reflect.b);
 			break;
 		}
 
 		case 5:	// Dissolve
 		{
-			pMat->ModFlags |= D3D9MATEX_DISSOLVE;
-			switch(clr) {
-				case 0: pMat->DislScale = CLAMP(value, 0.0f, 12.0f); break;
-				case 1: pMat->DislMag = CLAMP(value, 0.0f, 0.2f); break;
-			}
 			break;
 		}
 
 		case 6:	// Fresnel
 		{
-			pMat->ModFlags |= D3D9MATEX_FRESNEL;
+			Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			switch(clr) {
-				case 0: pMat->Fresnel.b = CLAMP(value, 1.0f, 6.0f); 
+				case 0: Mat.Fresnel.b = CLAMP(value, 1.0f, 6.0f); 
 					break;
-				case 1: pMat->Fresnel.g = CLAMP(value, 0.0f, 1.0f); 
+				case 1: Mat.Fresnel.g = CLAMP(value, 0.0f, 1.0f); 
 					break;
 			}
 			break;
 		}
 	}
 
-
+	hMesh->SetMaterial(&Mat, matidx);
 	vVessel *vVes = (vVessel *)vObj;
-	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, pMat); 
+	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, &Mat); 
 }
 
 // =============================================================================================
@@ -480,7 +468,7 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	if (!hMesh) return 0.0f;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
-	D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
+	const D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
 	
 	if (!pMat) return 0.0f;
 
@@ -543,10 +531,6 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 
 		case 5:	// Dissolve
 		{
-			switch(clr) {
-				case 0: return pMat->DislScale;
-				case 1: return pMat->DislMag;
-			}
 			break;
 		}
 
@@ -572,10 +556,9 @@ void SetColorSlider()
 	float val = GetMaterialValue(MatPrp, SelColor);
 	
 	//if (MatPrp==2 && SelColor==3) val/=1000.0; // Specular Power
-	if (MatPrp==2 && SelColor==3) val = float(log(val) / 6.907755279); // Specular Power
-	if (MatPrp==5 && SelColor==0) val/=12.0;  // Dissolve scale
-	if (MatPrp==5 && SelColor==1) val/=0.2f;  // Dissolve scatter
-	if (MatPrp==6 && SelColor==0) val/=6.0f;  // Fresnel range
+	if (MatPrp == 2 && SelColor != 3) val = float(log(val+1.0f) / 1.38629f); // Specular color
+	if (MatPrp == 2 && SelColor == 3) val = float(log(val) / 6.907755279f); // Specular Power
+	if (MatPrp == 6 && SelColor == 0) val /= 6.0f; // Fresnel range
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -592,6 +575,13 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	float g = GetMaterialValue(MatPrp, 1);
 	float b = GetMaterialValue(MatPrp, 2);
 	float a = GetMaterialValue(MatPrp, 3);
+
+	if (MatPrp == 2) {
+		float rghn = log2(max(1.0f, a)) * 0.1f;
+		sprintf_s(lbl, 32, "Rghn: %1.3f", rghn);
+		SetWindowTextA(GetDlgItem(hDlg, IDC_DBG_RGHN), lbl);
+	}
+	else SetWindowTextA(GetDlgItem(hDlg, IDC_DBG_RGHN), "Rghn:");
 
 	if (bRed) sprintf_s(lbl,32,"%3.3f", r);
 	else	  sprintf_s(lbl,32,"");
@@ -667,7 +657,7 @@ void UpdateMaterialDisplay(bool bSetup)
 			if (bSetup) SelColor = 0;
 		break;
 		case 5:	// Dissolve
-			DisplayMat(true, true, false, false);
+			DisplayMat(false, false, false, false);
 			if (bSetup) SelColor = 0;
 		break;
 		case 6:	// Fresnel
@@ -689,14 +679,6 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
-
-	// Setup dissolve texture
-	D3D9MatExt * pMat = hMesh->GetMaterial(matidx);
-	if (pMat->pDissolve==NULL) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, 0, 0);
-	else {
-		int id = g_client->GetIndexOfDissolveMap(pMat->pDissolve);	
-		if (id>=0) SendDlgItemMessageA(hDlg, IDC_DBG_MATEFF, CB_SETCURSEL, id+1, 0);
-	}
 }
 
 // =============================================================================================
@@ -711,11 +693,9 @@ void UpdateColorSlider(WORD pos)
 	if (MatPrp==5 || MatPrp==6) bLink = false;
 	if (SelColor==3) bLink = false;
 
-	//if (MatPrp==2 && SelColor==3) val*=1000.0; // Specular Power
-	if (MatPrp==2 && SelColor==3) val = float(exp(val*6.907755279)); // Specular Power
-	if (MatPrp==5 && SelColor==0) val*=12.0;  // Dissolve scale
-	if (MatPrp==5 && SelColor==1) val*=0.2f;  // Dissolve scatter
-	if (MatPrp==6 && SelColor==0) val*=6.0f;  // Fresnel range
+	if (MatPrp == 2 && SelColor != 3) val = float(exp(val*1.38629f)-1.0f);		// Specular color
+	if (MatPrp == 2 && SelColor == 3) val = float(exp(val*6.907755279f));	// Specular Power
+	if (MatPrp == 6 && SelColor == 0) val *= 6.0f;  // Fresnel range
 	
 	float old = GetMaterialValue(MatPrp, SelColor);
 	float fct = val/old;
@@ -1074,6 +1054,24 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 }
 			
 
+// =============================================================================================
+//
+void SaveEnvMap()
+{
+	LPDIRECT3DDEVICE9 pDevice = g_client->GetDevice();
+
+	OBJHANDLE hObj = vObj->Object();
+
+	if (oapiIsVessel(hObj)) {
+		vVessel *vVes = (vVessel *)vObj;
+		LPDIRECT3DCUBETEXTURE9 pTex = vVes->GetEnvMap(ENVMAP_MIRROR);
+		if (D3DXSaveTextureToFileA("EnvMap.dds", D3DXIFF_DDS, pTex, NULL) != S_OK) {
+			LogErr("Failed to save envmap");
+		}
+	}
+}
+
+
 // ==============================================================
 // Dialog message handler
 
@@ -1214,16 +1212,6 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
-			case IDC_DBG_MATEFF:
-				if (HIWORD(wParam)==CBN_SELCHANGE) {
-					DWORD idx = SendDlgItemMessage(hWnd, IDC_DBG_MATEFF, CB_GETCURSEL, 0, 0);
-					if (idx==0) UpdateDissolveMap(NULL);
-					else        UpdateDissolveMap(g_client->GetDissolveMap(idx-1));
-					UpdateMaterialDisplay(true);
-					SetColorSlider();
-				}
-				break;
-
 			case IDC_DBG_DISPLAY:
 				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0);
 				break;
@@ -1302,6 +1290,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetWindowPos(hDlg, NULL, rect.left, rect.top, 298, rect.bottom - rect.top, SWP_SHOWWINDOW);
 				break;
 
+			case IDC_DBG_ENVSAVE:
+				SaveEnvMap();
+				break;
+
 			case IDC_DBG_GRPO:
 			case IDC_DBG_VISO:
 			case IDC_DBG_MSHO:
@@ -1312,8 +1304,6 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_DBG_AMBIENT:
 			case IDC_DBG_WIRE:
 			case IDC_DBG_DUAL:
-			case IDC_DBG_ENVMAP:
-			case IDC_DBG_BLRMAP:
 			case IDC_DBG_PICK:
 			case IDC_DBG_FPSLIM:
 			case IDC_DBG_TILEBB:

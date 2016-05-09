@@ -168,7 +168,7 @@ protected:
 	 * \return \e true if lighting modifications should be applied, \e false
 	 *   if global lighting conditions apply.
 	 */
-	bool ModLighting (D3D9Light *light);
+	bool ModLighting (D3D9Sun *light);
 
 	void Animate (UINT an, double state, UINT mshidx);
 	void AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T);

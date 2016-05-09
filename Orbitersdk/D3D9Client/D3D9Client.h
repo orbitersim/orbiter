@@ -31,6 +31,9 @@
 #include "OGCI_Const.h"
 #include <vector>
 
+#define MAX_SCENE_LIGHTS	24
+#define MAX_MESH_LIGHTS		8	// Must match the setting in D3D9Client.fx
+
 #define OAPISURFACE_VIDEOMEMORY	 0x8000
 
 //#define SKETCHPAD_NONE		 0x0
@@ -80,6 +83,8 @@ struct _D3D9Stats {
 		DWORD Vertices;		///< Number of vertices rendered
 		DWORD MeshGrps;		///< Number of mesh groups rendered
 		DWORD Meshes;		///< Number of meshes rendered
+		DWORD TexChanges;	///< Number of texture changes
+		DWORD MtrlChanges;	///< Number of material changes
 	} Mesh;					///< Mesh related statistics
 
 	struct {
@@ -93,10 +98,26 @@ struct _D3D9Stats {
 	} Surf;					///< Surface related statistics (new surface engine)
 
 	struct {
-		double Scene,		///< Total scene rendering time
-		       ScenePeak;	///< Peak scen rendering time
-		double count;		///< Number of scenes (to calculate average time)
-	} Timer;				///< Render timing related statistics
+		D3D9Time Update;		///< clbkUpdate
+		D3D9Time Scene;			///< clbkRenderScene
+		D3D9Time Display;		///< clbkDisplayFrame
+		D3D9Time FrameTotal;	///< Total frame time
+		//------------------------------------------------------------
+		D3D9Time Vessels;		///< Vessel objects
+		D3D9Time PostProcess;	///< Post processing features
+		D3D9Time VirtualCP;		///< Total time spend in virtual cockpit
+		D3D9Time HUDOverlay;	///< Total time spend in HUD, 2D Panel overlay
+		D3D9Time CamVis;		///< Object/camera updates
+		D3D9Time Surface;		///< Surface
+		D3D9Time Clouds;		///< Clouds
+		//-------------------------------------------------------------
+		D3D9Time EnvMap;		///< EnvMap frame (max)
+		D3D9Time EnvBlur;		///< EnvMap blurring
+		D3D9Time CustCams;		///< Custom camera views
+		//-------------------------------------------------------------
+		D3D9Time LockWait;		///< Time waiting GetDC or vertex buffer lock
+		D3D9Time BlitTime;		///<
+	} Timer;					///< Render timing related statistics
 
 	DWORD TilesCached;		///< Number of cached tiles
 	DWORD TilesCachedMB;	///< Total size of tile cache (MBytes)
@@ -967,13 +988,10 @@ public:
 	MeshManager *       GetMeshMgr() const { return meshmgr; }
 	const char *		GetOrbiterRoot() const	{ return pOrbiterRoot; }
 	void 				WriteLog (const char *msg) const;
-    LPDIRECT3DDEVICE9   GetDevice() const { return pd3dDevice; }
+    LPDIRECT3DDEVICE9   GetDevice() const { return pDevice; }
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
 	LPD3D9CLIENTSURFACE GetNoiseTex() const { return pNoiseTex; }
-	void				RegisterDissolveMap(SURFHANDLE hSrf);
-	SURFHANDLE			GetDissolveMap(DWORD idx) const;
-	int					GetIndexOfDissolveMap(SURFHANDLE hSrf) const;
 	void 				EmergencyShutdown();
 	void 				SplashScreen();
 	inline bool 		IsRunning() { return bRunning; }
@@ -1198,13 +1216,14 @@ public:
 
 private:
 
+	void PresentScene();
 	void Label(const char *format, ...);
 	bool CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const;
+	void DrawTimeBar(double t, double scale, double frames, DWORD color, const char *label=NULL);
 
 	mutable SURFHANDLE		pBltGrpTgt;
 
-	SURFHANDLE				pDislMapList[16];
-    LPDIRECT3DDEVICE9		pd3dDevice;
+    LPDIRECT3DDEVICE9		pDevice;
 	LPD3D9CLIENTSURFACE	    pDefaultTex;
 	LPD3D9CLIENTSURFACE		pNoiseTex;
 	LPD3D9CLIENTSURFACE	    pScatterTest;
@@ -1234,8 +1253,6 @@ private:
 
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
-	//DWORD ShaderModel;
-	DWORD iDisl;
 	DWORD frame_timer;
 	
 	// device enumeration callback function
@@ -1249,8 +1266,6 @@ private:
 
 	struct RenderProcData;
 	std::vector<RenderProcData> RenderProcs;
-
-	//LaunchpadItem *lpiCfg, *lpiPlanetRender;
 
 	HFONT hLblFont1;
 	HFONT hLblFont2;
@@ -1266,10 +1281,6 @@ private:
 	Sketchpad *pItemsSkp;
 
 	DWORD loadd_x, loadd_y, loadd_w, loadd_h;
-
-	WORD ItemList[256];
-	WORD Items;
-	WORD SelectedItem;
 	WORD LabelPos;
 
 }; // class D3D9Client

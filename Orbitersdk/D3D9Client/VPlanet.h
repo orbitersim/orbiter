@@ -71,6 +71,7 @@ public:
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
 	bool			CameraInAtmosphere() const;
+	double			CameraAltitude() const { return cdist - size; }
 	double			GetHorizonAlt() const;
 	double          GetMinElevation() const;
 	double			GetMaxElevation() const;
@@ -96,6 +97,8 @@ public:
 	void			SaveAtmoConfig(bool bOrbit);
 	void			UpdateAtmoConfig();
 	void			DumpDebugFile();
+	bool			HasAtmosphere() const { return bScatter; }
+	bool			HasRipples() const { return bRipple; }
 
 	// Object Interface -------------------------------------------------------
 	HSRFOBJ			AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot = 0.0f, bool bDual = false, float scale = 1.0f);

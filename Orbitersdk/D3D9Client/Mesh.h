@@ -36,7 +36,12 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define RENDER_CUSTOM		6
 
 #define ENVMAP_MIRROR		0
-#define ENVMAP_METALLIC		1
+
+
+struct _LightList {
+	int		idx;
+	float	illuminace;
+};
 
  
 /**
@@ -50,6 +55,9 @@ class D3D9Mesh : private D3D9Effect
 {
 
 public:
+
+	bool bCanRenderFast;		// Mesh doesn't contain any advanced features in any group
+	bool bIsReflective;			// Mesh has a reflective material in one or more groups
 
 	D9BBox BBox;
 
@@ -74,10 +82,12 @@ public:
 		WORD  zBias;
 		WORD  MFDScreenId;		// MFD screen ID + 1
 		bool  bTransform;
-		bool  bUpdate;
+		bool  bUpdate;			// Bounding box update required
 		bool  bGrouped;
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
+		bool  bRendered;		
+		bool  bReflective;		// Requires enabling env map 
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
@@ -115,8 +125,8 @@ public:
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, bool asTemplate);
 	void			UnLockVertexBuffer();
 	void			UnLockIndexBuffer();
-	NMVERTEX *		LockVertexBuffer(DWORD grp);
-	WORD *			LockIndexBuffer(DWORD grp);
+	NMVERTEX *		LockVertexBuffer(DWORD grp, DWORD flags);
+	WORD *			LockIndexBuffer(DWORD grp, DWORD flags);
 	
 	void			SetName(const char *name);
 	const char *	GetName() const { return name; }
@@ -135,9 +145,9 @@ public:
 	 * \param idx group index (>= 0)
 	 * \return Pointer to group structure.
 	 */
-	GROUPREC *		GetGroup(DWORD idx);
-
-	void			SetDualSided(DWORD idx, bool bState) { GetGroup(idx)->bDualSided = bState; }
+	const GROUPREC * GetGroup(DWORD idx) const;
+	void            SetMFDScreenId(DWORD idx, WORD id);
+	void			SetDualSided(DWORD idx, bool bState) { Grp[idx].bDualSided = bState; }
 
 	/**
 	 * \brief Returns number of material specifications.
@@ -145,14 +155,17 @@ public:
 	 */
 	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; } 
 	bool			HasTexture(SURFHANDLE hSurf);
-	bool			IsReflective();
+	bool			IsReflective() const { return bIsReflective; }
 
 	/**
 	 * \brief returns a pointer to a material definition.
 	 * \param idx material index (>= 0)
 	 * \return Pointer to material object.
 	 */
-	D3D9MatExt *	GetMaterial(DWORD idx);
+	const D3D9MatExt *	GetMaterial(DWORD idx) const;
+	bool			GetMaterial(D3D9MatExt *pMat, DWORD idx) const;
+	void			SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bUpdateStatus = true);
+	void			SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bUpdateStatus = true);
 
 	DWORD			GetGroupCount() const { return nGrp; }
 	DWORD			GetMaterialCount() const { return nMtrl; }
@@ -181,7 +194,6 @@ public:
 	bool			SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex);
 	void			SetTexMixture (DWORD ntex, float mix);
 
-	void			RenderSimplified(const LPD3DXMATRIX pW, bool bCull=true);
 	void			RenderGroup(const GROUPREC *grp);
 	void			RenderGroup(int idx);
 	void			RenderBaseTile(const LPD3DXMATRIX pW);
@@ -192,8 +204,8 @@ public:
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
 	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
-
-
+	
+	void			CheckMeshStatus();
 	void			ConvertToDynamic();
 	void			ResetTransformations();
 	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
@@ -203,7 +215,7 @@ public:
 	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 	void			UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
 
-	void			SetSunLight(D3D9Light *pLight);
+	void			SetSunLight(const D3D9Sun *pLight);
 	
 	D3D9Pick		Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir);
 	
@@ -238,7 +250,6 @@ private:
 	void ProcessInherit();
 	bool CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
 	void SetGroupRec(DWORD i, const MESHGROUPEX *mg);
-	bool CopyMaterial (int idx, const MATERIAL *mat);
 	void CreateGeometryBuffers();
 	void UpdateGeometryBuffer();
 	void Null();
@@ -263,8 +274,11 @@ private:
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
-	D3D9Light *sunLight;
+	const D3D9Sun *sunLight;
 	D3DCOLOR cAmbient;
+
+	_LightList LightList[MAX_SCENE_LIGHTS];
+	LightStruct Locals[MAX_MESH_LIGHTS];
 	
 	
 	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write 

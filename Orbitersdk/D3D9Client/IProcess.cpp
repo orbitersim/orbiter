@@ -9,6 +9,7 @@
 #include "IProcess.h"
 #include "D3D9Util.h"
 #include "D3D9Surface.h"
+#include <sstream>
 
 
 // ================================================================================================
@@ -31,7 +32,16 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 	if (!hVP) LogErr("Failed to get ImageProcessing::hVP handle");
 
 	strcpy_s(file, 256, _file);
-	strcpy_s(entry, 64, _entry);
+	strcpy_s(entry, 32, _entry);
+
+	// Create a database of defines ----------------------------------------------------------------
+	std::string line;
+	std::ifstream fs(_file);
+	while (std::getline(fs, line)) {
+		if (!line.length() || line.find("//") == 0) continue;
+		if (line.find("#define") == 0) def.push_front(line.substr(line.find("#define") + 8));
+	}
+	fs.close();
 }
 
 
@@ -45,6 +55,21 @@ ImageProcessing::~ImageProcessing()
 	SAFE_RELEASE(pPixel);
 }
 
+// ================================================================================================
+//
+int ImageProcessing::FindDefine(const char *_key)
+{
+	int retval;
+	std::string key;
+	auto it = def.begin();
+	while (it!=def.end()) {
+		std::istringstream iss(*it);
+		iss >> key >> retval;
+		if (key.compare(_key) == 0) return retval;
+		it++;
+	}
+	return 0;
+}
 
 // ================================================================================================
 //
@@ -96,6 +121,13 @@ bool ImageProcessing::SetupViewPort()
 //
 bool ImageProcessing::Execute()
 {
+	return Execute(0, 0, 0);
+}
+
+// ================================================================================================
+//
+bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest)
+{
 	if (!IsOK()) return false;
 	if (!SetupViewPort()) return false;
 
@@ -109,10 +141,15 @@ bool ImageProcessing::Execute()
 	HR(pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID));
 	HR(pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
+	HR(pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (blendop!=0)));
 	HR(pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, false));
 	HR(pDevice->SetRenderState(D3DRS_STENCILENABLE, false));
 
+	if (blendop) {
+		HR(pDevice->SetRenderState(D3DRS_BLENDOP, blendop));
+		HR(pDevice->SetRenderState(D3DRS_SRCBLEND, src));
+		HR(pDevice->SetRenderState(D3DRS_DESTBLEND, dest));
+	}
 
 	// Define vertices --------------------------------------------------------
 	//
@@ -196,7 +233,7 @@ void ImageProcessing::SetFloat(const char *var, const void *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		LogErr("IPInterface::SetFloat() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		//LogErr("IPInterface::SetFloat() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -213,7 +250,7 @@ void ImageProcessing::SetInt(const char *var, const int *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 	
 	if (!hVar) {
-		LogErr("IPInterface::SetInt() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		//LogErr("IPInterface::SetInt() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -230,7 +267,7 @@ void ImageProcessing::SetBool(const char *var, const bool *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		LogErr("IPInterface::SetBool() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		//LogErr("IPInterface::SetBool() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -252,7 +289,7 @@ void ImageProcessing::SetStruct(const char *var, const void *val, int bytes)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		LogErr("IPInterface::SetStruct() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		//LogErr("IPInterface::SetStruct() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -293,7 +330,7 @@ void ImageProcessing::SetTexture(const char *var, SURFHANDLE hTex, DWORD flags)
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		LogErr("IPInterface::SetTexture() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		//LogErr("IPInterface::SetTexture() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 
@@ -317,7 +354,7 @@ void ImageProcessing::SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 h
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
 
 	if (!hVar) {
-		LogErr("IPInterface::SetTextureNative() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
+		//LogErr("IPInterface::SetTextureNative() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;
 	}
 

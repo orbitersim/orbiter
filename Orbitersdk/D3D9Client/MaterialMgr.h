@@ -45,7 +45,7 @@ public:
 
 	DWORD			NewRecord(const char *name, DWORD midx);
 	void			ClearRecord(DWORD iRec);
-	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, D3D9MatExt *pM);
+	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, const D3D9MatExt *pM);
 	void			ApplyConfiguration(D3D9Mesh *pMesh);
 	bool			SaveConfiguration();
 	bool			LoadConfiguration(bool bAppend=false);

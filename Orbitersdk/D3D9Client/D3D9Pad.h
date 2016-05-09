@@ -42,6 +42,7 @@ public:
 	 * \param s surface handle
 	 */
 	explicit D3D9Pad(SURFHANDLE s);
+			 D3D9Pad(LPDIRECT3DSURFACE9 s);
 
 	/**
 	 * \brief Destructor. Destroys a drawing object.
@@ -325,6 +326,8 @@ private:
 	int origx, origy, cx, cy;
 
 	D3D9ClientSurface *pTgt;
+	LPD3DXMATRIX pVP;
+	D3DXMATRIX mVP;
 
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;

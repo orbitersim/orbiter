@@ -72,8 +72,8 @@ technique BeaconArrayTech
 {
     pass P0
     {
-        vertexShader = compile VS_MOD BeaconArrayVS();
-        pixelShader  = compile PS_MOD BeaconArrayPS();
+        vertexShader = compile vs_3_0 BeaconArrayVS();
+        pixelShader  = compile ps_3_0 BeaconArrayPS();
 
 		PointSpriteEnable = true;
         AlphaBlendEnable = true;

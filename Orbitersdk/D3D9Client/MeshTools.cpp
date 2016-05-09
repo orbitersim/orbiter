@@ -384,8 +384,8 @@ DWORD AdGroup::Append(const HGROUP hSrc, const LPD3DXMATRIX pW)
 DWORD AdGroup::Append(HMESH hMesh, DWORD grp, const LPD3DXMATRIX pW)
 {
 	DWORD nVtx = 0;
-	NMVERTEX *pV = hMesh->LockVertexBuffer(grp);
-	WORD *pI = hMesh->LockIndexBuffer(grp);
+	NMVERTEX *pV = hMesh->LockVertexBuffer(grp, D3DLOCK_READONLY);
+	WORD *pI = hMesh->LockIndexBuffer(grp, D3DLOCK_READONLY);
 	if (pV && pI) nVtx = Append(pV, ADMESH_NM_VTX, pI, hMesh->GetVertexCount(grp), hMesh->GetIndexCount(grp), pW);
 	if (pV) hMesh->UnLockVertexBuffer();
 	if (pI) hMesh->UnLockIndexBuffer();

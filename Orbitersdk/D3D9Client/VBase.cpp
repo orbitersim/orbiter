@@ -302,7 +302,7 @@ bool vBase::Update (bool bMainScene)
 	double simt = oapiGetSimTime();
 
 	if (fabs(simt-Tlghtchk)>0.1) {
-		sunLight = *scn->GetLight(-1);	
+		sunLight = *scn->GetSun();
 
 		DWORD dAmbient = *(DWORD*)gc->GetConfigParam(CFGPRM_AMBIENTLEVEL);
 		float fAmbient = float(dAmbient)*0.0039f;

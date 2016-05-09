@@ -14,6 +14,17 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 
+#define	MAP_NORMAL			0
+#define	MAP_SPECULAR		1
+#define	MAP_EMISSION		2
+#define	MAP_REFLECTION		3
+#define	MAP_TRANSLUCENCE	4
+#define	MAP_TRANSMITTANCE	5
+#define	MAP_ROUGHNESS		6
+#define	MAP_FRESNEL			7
+#define MAP_MAX_COUNT		8
+
+
 // Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
 
 class D3D9ClientSurface {
@@ -46,6 +57,7 @@ public:
 	bool				LoadSurface(const char *fname, DWORD flags, bool bDecompress=false);
 	bool				LoadTexture(const char *fname);
 	void				SaveSurface(const char *fname);
+	bool				LoadSpecialTexture(const char *fname, const char *ext, int id);
 
 	DWORD				GetMipMaps();
 	DWORD				GetWidth();
@@ -75,18 +87,15 @@ public:
 	inline bool			IsDynamic() { return (desc.Usage&D3DUSAGE_DYNAMIC)!=0; }
 	inline bool			IsPlainSurface() { return (desc.Usage==0 && pTex==NULL); }
 	inline bool			IsDualLayer() { return (pDCSub!=NULL); }
-
+	inline bool			IsAdvanced() { return bAdvanced; }
 
 	DWORD				GetAttribs(int What=1);
 	DWORD				GetFlags() { return Flags; }
 	LPDIRECT3DSURFACE9	GetDepthStencil();
 	LPDIRECT3DSURFACE9	GetSurface();
-	LPDIRECT3DTEXTURE9	GetNormalMap();
-	LPDIRECT3DTEXTURE9	GetEmissionMap();
-	LPDIRECT3DTEXTURE9	GetSpecularMap();
-	LPDIRECT3DTEXTURE9	GetReflectionMap();
-	LPDIRECT3DTEXTURE9	GetTranslucenceMap();
-	LPDIRECT3DTEXTURE9	GetTransmittanceMap();
+	LPDIRECT3DTEXTURE9	GetMap(int type) const { return pMap[type]; }
+	LPDIRECT3DTEXTURE9	GetMap(int type, int type2) const { return (pMap[type] ? pMap[type] : pMap[type2]); }
+
 	LPDIRECT3DTEXTURE9	GetTexture();
 	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
 	int					GetSketchPadMode() { return SketchPad; }
@@ -112,7 +121,6 @@ public:
 	HRESULT				BeginBlitGroup();
 	void				EndBlitGroup();
 	int					GetQueueSize();
-	bool				ComputeReflAlpha();
 
 private:
 
@@ -144,6 +152,7 @@ private:
 	bool				bMainDC;
 	bool				bDCSys;
 	bool				bBltSys;
+	bool				bAdvanced;		// Additional textures maps has been loaded
 	int					Refs;
 	int					Initial;		// Initial creation Attributes flags
 	int					Active;			// Active Attribute flags
@@ -154,12 +163,7 @@ private:
 	LPDIRECT3DSURFACE9	pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
 	LPDIRECT3DTEXTURE9	pTex;		// This is a NULL if Type==D3D9S_PLAIN or Creation==D3D9C_BACKBUF
 	LPDIRECT3DSURFACE9	pDCSub;		// Containing a temporary system memory copy of a render target texture
-	LPDIRECT3DTEXTURE9	pNormalMap;
-	LPDIRECT3DTEXTURE9	pSpecularMap;
-	LPDIRECT3DTEXTURE9	pEmissionMap;
-	LPDIRECT3DTEXTURE9	pReflectionMap;
-	LPDIRECT3DTEXTURE9	pTranslucenceMap;
-	LPDIRECT3DTEXTURE9	pTransmittanceMap;
+	LPDIRECT3DTEXTURE9	pMap[MAP_MAX_COUNT];
 	LPDIRECT3DDEVICE9	pDevice;
 	D3DXCOLOR			ClrKey;
 	DWORD				ColorKey;

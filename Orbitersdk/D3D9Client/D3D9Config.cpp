@@ -71,6 +71,10 @@ void D3D9Config::Reset ()
 	MicroFilter			= 2;
 	BlendMode			= 1;
 	MicroBias			= 3;
+	PostProcess			= 1;
+	ShadeMethod			= 0;
+	ShaderDebug			= 0;
+	PresentLocation     = 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -130,7 +134,11 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
 	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "MicroBias", i))					MicroBias = max(0,  min(10, i));
-	
+	if (oapiReadItem_int   (hFile, "PostProcess", i))				PostProcess = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "ShadeMethod", i))				ShadeMethod = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "ShaderDebug", i))				ShaderDebug = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "PresentLocation", i))			PresentLocation = max(0, min(1, i));
+
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
 
@@ -157,7 +165,6 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "EnableNormalMapping", UseNormalMap);
 	oapiWriteItem_int   (hFile, "NearClipPlaneMode", NearClipPlane);
 	oapiWriteItem_int   (hFile, "RwyLightAnimate", RwyLightAnimate);
-
 	oapiWriteItem_float (hFile, "RwyLightAngle", RwyLightAngle);
 	oapiWriteItem_float (hFile, "RwyBrightness", RwyBrightness);
 	oapiWriteItem_float (hFile, "NightLightsAngle", SunAngle);
@@ -188,6 +195,10 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "MicroFilter", MicroFilter);
 	oapiWriteItem_int   (hFile, "BlendMode", BlendMode);
 	oapiWriteItem_int   (hFile, "MicroBias", MicroBias);
+	oapiWriteItem_int	(hFile, "PostProcess", PostProcess);
+	oapiWriteItem_int	(hFile, "ShadeMethod", ShadeMethod);
+	oapiWriteItem_int   (hFile, "ShaderDebug", ShaderDebug);
+	oapiWriteItem_int	(hFile, "PresentLocation", PresentLocation);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		

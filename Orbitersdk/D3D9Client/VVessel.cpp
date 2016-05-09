@@ -45,7 +45,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	nanim = 0;
 	nEnv  = 0;
 	iFace = 0;
-	sunLight = *scene->GetLight(-1);
+	sunLight = *scene->GetSun();
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
 	bAMSO = false;
@@ -239,7 +239,7 @@ bool vVessel::Update(bool bMainScene)
 	UpdateAnimations();
 
 	if (fabs(oapiGetSimTime()-tCheckLight)>0.1) {
-		sunLight = *scn->GetLight(-1);
+		sunLight = *scn->GetSun();
 		ModLighting(&sunLight);
 	}
 
@@ -682,8 +682,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 		if (bVC && internalpass  && !lightprepass) {
 			for (mfd=0;mfd<MAXMFD;mfd++) {
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
-					D3D9Mesh::GROUPREC * MFDGrp = meshlist[i].mesh->GetGroup(mfdspec[mfd]->ngroup);
-					if (MFDGrp) MFDGrp->MFDScreenId = 1 + mfd;
+					meshlist[i].mesh->SetMFDScreenId(mfdspec[mfd]->ngroup, 1 + mfd);
 				}
 			}
 		}
@@ -698,8 +697,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 		//
 		if (bVC && internalpass && !lightprepass && gotHUDSpec) {
 			if (hudspec->nmesh == i) {
-				D3D9Mesh::GROUPREC * HUDGrp = meshlist[i].mesh->GetGroup(hudspec->ngroup);
-				if (HUDGrp) HUDGrp->MFDScreenId = 0x100;
+				meshlist[i].mesh->SetMFDScreenId(hudspec->ngroup, 0x100);
 			}
 		}
 	}
@@ -1061,19 +1059,22 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	if (iFace >= 6) {
 		iFace = 0;
-		scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MIRROR], &pEnv[ENVMAP_METALLIC]);
+		return scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MIRROR], NULL);					 // Construct mip sub-levels
 	}
 
+	
 
 	if (pEnv[0]==NULL) {
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
-		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[0])!=S_OK) {
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[0])!=S_OK) {
 			LogErr("Failed to create env cubemap for visual 0x%X",this);
 			return false;
 		}
 		nEnv = 1;
 	}
+
+	double tot_env = D3D9GetTime();
 
 	// -----------------------------------------------------------------------------------------------
 	//
@@ -1095,7 +1096,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
 				if (hAtcObj) {
 					vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
-					vObj->bOmit = true;
+					if (vObj) vObj->bOmit = true;
 				}
 			}
 		}
@@ -1111,7 +1112,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
 				if (hAtcObj) {
 					vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
-					vObj->bOmit = true;
+					if (vObj) vObj->bOmit = true;
 				}
 			}
 		}
@@ -1166,6 +1167,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	SAFE_RELEASE(pODS);
 	SAFE_RELEASE(pORT);
 
+	D3D9SetTime(D3D9Stats.Timer.EnvMap, tot_env);
+
 	return true;
 }
 
@@ -1181,7 +1184,7 @@ LPDIRECT3DCUBETEXTURE9 vVessel::GetEnvMap(int idx)
 
 // ============================================================================================
 //
-bool vVessel::ModLighting(D3D9Light *light)
+bool vVessel::ModLighting(D3D9Sun *light)
 {
 	VECTOR3 GV;
 
