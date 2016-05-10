@@ -340,6 +340,7 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_DBG_VARA, hDlg, "Attennuates high contrast components. Leaves low contrast parts unchanged [1.0 to 1.6]");
 	CreateToolTip(IDC_DBG_VARB, hDlg, "Attennuates everything equally. Typical range [0.00 to 0.03]");
 	CreateToolTip(IDC_DBG_VARC, hDlg, "Apply noise to main level and all mipmaps before attennuation (Fa,Fb)");
+	CreateToolTip(IDC_DBG_MORE, hDlg, "Click to show/hide more options");
 }
 
 
@@ -1080,6 +1081,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	char lbl[32];
 	RECT rect;
 	bool bPaused;
+	static bool isOpen = false; // IDC_DBG_MORE (full or reduced width)
 
 	OpenTex.hwndOwner = hWnd;
 
@@ -1089,6 +1091,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	case WM_INITDIALOG:
 	{
+		isOpen = false; // We always start with reduced width
 		return TRUE;	// All Init actions are done in OpenDlgClbk();
 	}
 
@@ -1282,12 +1285,9 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_MORE:
 				GetWindowRect(hDlg, &rect);
-				SetWindowPos(hDlg, NULL, rect.left, rect.top, origwidth, rect.bottom - rect.top, SWP_SHOWWINDOW);
-				break;
-
-			case IDC_DBG_LESS:
-				GetWindowRect(hDlg, &rect);
-				SetWindowPos(hDlg, NULL, rect.left, rect.top, 298, rect.bottom - rect.top, SWP_SHOWWINDOW);
+				SetWindowPos(hDlg, NULL, rect.left, rect.top, isOpen ?   298 : origwidth, rect.bottom - rect.top, SWP_SHOWWINDOW);
+				SetWindowText(GetDlgItem(hWnd, IDC_DBG_MORE), isOpen ? ">>>" : "<<<");
+				isOpen = !isOpen;
 				break;
 
 			case IDC_DBG_ENVSAVE:

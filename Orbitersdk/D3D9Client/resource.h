@@ -134,7 +134,6 @@
 #define IDC_MICROFILTER                         2114
 #define IDC_DBG_MORE                            2115
 #define IDC_DBG_SCENEDBG                        2116
-#define IDC_DBG_LESS                            2117
 #define IDC_BLENDMODE                           2118
 #define IDC_DBG_OPEN                            2119
 #define IDC_DBG_EXECUTE                         2120
