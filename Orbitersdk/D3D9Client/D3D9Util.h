@@ -178,7 +178,7 @@ typedef struct {
 	DWORD color;					///< beacon color
 } BAVERTEX;
 
-typedef struct {
+typedef struct _LightStruct  {
     int			  Type;             ///< Type of light source
 	float		  Dst2;				///< Square distance between camera and the light emitter
     D3DXCOLOR     Diffuse;          ///< Color of light
@@ -186,6 +186,12 @@ typedef struct {
     D3DXVECTOR3   Direction;        ///< direction in world space
     D3DXVECTOR3   Attenuation;      ///< Attenuation
 	D3DXVECTOR4   Param;            ///< range, falloff, theta, phi
+public : _LightStruct () :	Type(0),
+							Dst2(0.0),
+							Diffuse(D3DXCOLOR(0ul)),
+							Position(), Direction(), Attenuation(),
+							Param()
+							{}
 } LightStruct;
 
 

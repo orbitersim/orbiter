@@ -42,7 +42,7 @@ public:
 	 * \param s surface handle
 	 */
 	explicit D3D9Pad(SURFHANDLE s);
-			 D3D9Pad(LPDIRECT3DSURFACE9 s);
+	explicit D3D9Pad(LPDIRECT3DSURFACE9 s);
 
 	/**
 	 * \brief Destructor. Destroys a drawing object.
