@@ -960,7 +960,9 @@ bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE
 // Light Emitter ============================================================================
 //
 D3D9Light::D3D9Light(const LightEmitter *le, const class vObject *vo) :
-	D3D9Light()
+	cosp(0), tanp(0), cosu(0),
+	range(0), range2(0),
+	intensity(-1.0)
 {
 	UpdateLight(le, vo);
 }
