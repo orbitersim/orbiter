@@ -44,6 +44,7 @@ void D3D9Mesh::Null()
 	Grp = NULL;
 	nTex = 0;
 	Tex	= NULL;
+	pTune = NULL;
 	nMtrl = 0;
 	Mtrl = NULL;
 	pGrpTF = NULL;
@@ -330,6 +331,7 @@ D3D9Mesh::~D3D9Mesh()
 	if (Geom) delete []Geom;
 	if (nMtrl) delete []Mtrl;
 	if (pGrpTF) delete []pGrpTF;
+	if (pTune) delete []pTune;
 
 	if (pIB) pIB->Release();
 	if (pVB) pVB->Release();
@@ -1282,6 +1284,31 @@ void D3D9Mesh::SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bStat)
 
 // ===========================================================================================
 //
+bool D3D9Mesh::GetTexTune(D3D9Tune *pT, DWORD idx) const
+{
+	if (idx<nTex && idx!=0) {
+		if (!pTune) D3D9TuneInit(pT);
+		else memcpy(pT, &pTune[idx], sizeof(D3D9Tune));
+		return true;
+	}
+	return false;
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::SetTexTune(const D3D9Tune *pT, DWORD idx)
+{
+	if (idx < nTex && idx != 0) {
+		if (!pTune) {
+			pTune = new D3D9Tune[nTex];
+			for (DWORD i = 0; i < nTex; i++) D3D9TuneInit(&pTune[i]);
+		}
+		memcpy(&pTune[idx], pT, sizeof(D3D9Tune));
+	}
+}
+
+// ===========================================================================================
+//
 void D3D9Mesh::SetAmbientColor(D3DCOLOR c)
 {
 	_TRACE;
@@ -1461,6 +1488,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
+	FX->SetBool(eTuneEnabled, false);
+
+	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
+
 
 	TexFlow FC;	reset(FC);
 
@@ -1603,6 +1634,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				if (Tex[ti]!=old_tex) {
 
 					D3D9Stats.Mesh.TexChanges++;
+
+					if (DebugControls::IsActive()) if (pTune) {
+						FX->SetValue(eTune, &pTune[ti], sizeof(D3D9Tune));
+					}
 
 					old_tex = Tex[ti];
 					FX->SetTexture(eTex0, Tex[ti]->GetTexture());
@@ -2494,6 +2529,8 @@ void D3D9Mesh::RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, floa
 //
 DWORD D3D9Mesh::AddTexture(D3D9ClientSurface *pTex)
 {
+	SAFE_DELETEA(pTune);
+
 	void *pBak = Tex;
 
 	if (nTex==0) {

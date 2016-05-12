@@ -68,6 +68,22 @@ struct Flow
 };
 
 
+// Must match with counterpart D3D9Tune in D3D9Util.h
+
+struct Tune
+{
+	float4 Albedo;		// Tune Diffese Maps
+	float4 Emis;		// Tune Emission Maps
+	float4 Spec;		// Tune Specular Maps
+	float4 Refl;		// Tune Reflection Maps
+	float4 Transl;		// Tune translucent effect
+	float4 Transm;		// Tune transmissive effect
+	float4 Norm;		// Tune normal map
+	float4 Frsl;		// Tune fresnel map
+	float4 Rghn;		// Tune roughness map
+};
+
+
 #define Range   0
 #define Falloff 1
 #define Theta   2
@@ -95,6 +111,8 @@ uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
 uniform extern Mtrl      gMtrl;			    // Material input structure
+uniform extern Tune      gTune;			    // Texture tuning parameters
+uniform extern bool      gTuneEnabled;		
 uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations		
 uniform extern bool      gNormalMap;		// Enable Normal Maps

@@ -243,6 +243,20 @@ typedef struct {
 	DWORD		  ModFlags;			///< Modification flags
 } D3D9MatExt;
 
+
+typedef struct {
+	D3DCOLORVALUE	Albedo;		// Tune Albedo
+	D3DCOLORVALUE	Emis;		// Tune Emission Maps
+	D3DCOLORVALUE	Spec;		// Tune Specular Maps
+	D3DCOLORVALUE	Refl;		// Tune Reflection Maps
+	D3DCOLORVALUE	Transl;		// Tune translucent effect
+	D3DCOLORVALUE	Transm;		// Tune transmissive effect
+	D3DCOLORVALUE	Norm;		// Tune normal map
+	D3DCOLORVALUE	Frsl;		// Tune fresnel map
+	D3DCOLORVALUE	Rghn;		// Tune roughness map
+} D3D9Tune;
+
+
 typedef struct {
 	class D3D9Mesh *pMesh;			///< Mesh handle
 	class vObject  *vObj;			///< Visual handle
@@ -403,6 +417,7 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
 bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc);
+void D3D9TuneInit(D3D9Tune *);
 
 LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
 LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);

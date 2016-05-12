@@ -107,6 +107,18 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->ModFlags = 0;
 }
 
+void D3D9TuneInit(D3D9Tune *pTune)
+{
+	pTune->Albedo = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Emis = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Spec = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Refl = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Transl = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Transm = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Norm = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Rghn = D3DXCOLOR(1, 1, 1, 1);
+	pTune->Frsl = D3DXCOLOR(1, 1, 1, 1);
+}
 
 void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 {

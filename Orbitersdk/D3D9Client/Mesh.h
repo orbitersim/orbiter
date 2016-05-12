@@ -166,6 +166,8 @@ public:
 	bool			GetMaterial(D3D9MatExt *pMat, DWORD idx) const;
 	void			SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bUpdateStatus = true);
 	void			SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bUpdateStatus = true);
+	bool			GetTexTune(D3D9Tune *pT, DWORD idx) const;
+	void			SetTexTune(const D3D9Tune *pT, DWORD idx);
 
 	DWORD			GetGroupCount() const { return nGrp; }
 	DWORD			GetMaterialCount() const { return nMtrl; }
@@ -271,16 +273,17 @@ private:
 	DWORD nTex;                 // number of mesh textures
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
+	D3D9Tune *pTune;
 	D3DXMATRIX mTransform;
 	D3DXMATRIX mTransformInv;
 	D3DXMATRIX *pGrpTF;
 	const D3D9Sun *sunLight;
 	D3DCOLOR cAmbient;
-
+	
 	_LightList LightList[MAX_SCENE_LIGHTS];
 	LightStruct Locals[MAX_MESH_LIGHTS];
 	
-	
+
 	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write 
 	bool bTemplate;             // mesh used as template only (not for rendering)
 	bool bBSRecompute;			// Bounding sphere must be recomputed

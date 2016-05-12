@@ -258,13 +258,22 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Diffuse");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Ambient");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Specular");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflect");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"n/a");
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Fresnel");
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Diffuse");		// 0
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Ambient");		// 1
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Specular");		// 2
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");		// 3
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflect");		// 4
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"n/a");			// 5
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Fresnel");		// 6
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"---------");		// 7
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune Albedo");	// 8
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Emis");	// 9
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Refl");	// 10
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Rghn");	// 11
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Transl");	// 12
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Transm");	// 13
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Spec");	// 14
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Frsl");	// 15
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_RESETCONTENT, 0, 0);
@@ -343,6 +352,30 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_DBG_MORE, hDlg, "Click to show/hide more options");
 }
 
+// =============================================================================================
+//
+void SetTuningValue(D3DCOLORVALUE *pClr, DWORD clr, float value)
+{
+	switch (clr) {
+		case 0: pClr->r = CLAMP(value, 0.1f, 10.0f); break;
+		case 1: pClr->g = CLAMP(value, 0.1f, 10.0f); break;
+		case 2: pClr->b = CLAMP(value, 0.1f, 10.0f); break;
+		case 3: pClr->a = CLAMP(value, 0.1f, 10.0f); break;
+	}
+}
+
+// =============================================================================================
+//
+float GetTuningValue(D3DCOLORVALUE *pClr, DWORD clr)
+{
+	switch (clr) {
+		case 0: return pClr->r;
+		case 1: return pClr->g;
+		case 2: return pClr->b;
+		case 3: return pClr->a;
+	}
+	return 1.0f;
+}
 
 // =============================================================================================
 //
@@ -357,9 +390,14 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 	if (!hMesh) return;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
+
 	D3D9MatExt Mat;
+	D3D9Tune Tune;
 
 	if (!hMesh->GetMaterial(&Mat, matidx)) return;
+
+	bool bTune = hMesh->GetTexTune(&Tune, texidx);
 
 	bool bSpec = false;
 	if (hDlg) bSpec = (SendDlgItemMessageA(hDlg, IDC_DBG_SPEC, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -449,10 +487,60 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			}
 			break;
 		}
+
+		case 8:	// Tune Albedo
+		{
+			SetTuningValue(&Tune.Albedo, clr, value);
+			break;
+		}
+
+		case 9:	// Tune Emis
+		{
+			SetTuningValue(&Tune.Emis, clr, value);
+			break;
+		}
+
+		case 10:	// Tune Refl
+		{
+			SetTuningValue(&Tune.Refl, clr, value);
+			break;
+		}
+
+		case 11:	// Tune _Rghn
+		{
+			SetTuningValue(&Tune.Rghn, clr, value);
+			break;
+		}
+
+		case 12:	// Tune _Transl
+		{
+			SetTuningValue(&Tune.Transl, clr, value);
+			break;
+		}
+
+		case 13:	// Tune _Transm
+		{
+			SetTuningValue(&Tune.Transm, clr, value);
+			break;
+		}
+
+		case 14:	// Tune _Spec
+		{
+			SetTuningValue(&Tune.Spec, clr, value);
+			break;
+		}
+
+		case 15:	// Tune _Frsl
+		{
+			SetTuningValue(&Tune.Frsl, clr, value);
+			break;
+		}
 	}
 
+	if (bTune) hMesh->SetTexTune(&Tune, texidx);
 	hMesh->SetMaterial(&Mat, matidx);
 	vVessel *vVes = (vVessel *)vObj;
+
 	vVes->GetMaterialManager()->RegisterMaterialChange(hMesh, matidx, &Mat); 
 }
 
@@ -469,9 +557,14 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 	if (!hMesh) return 0.0f;
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
+	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
+
 	const D3D9MatExt *pMat = hMesh->GetMaterial(matidx);
 	
 	if (!pMat) return 0.0f;
+
+	D3D9Tune Tune;
+	bool bTune = hMesh->GetTexTune(&Tune, texidx);
 
 	switch(MatPrp) {
 
@@ -543,6 +636,46 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 			}
 			break;
 		}
+
+		case 8:	// Tune Albedo
+		{
+			return GetTuningValue(&Tune.Albedo, clr);
+		}
+
+		case 9:	// Tune Emis
+		{
+			return GetTuningValue(&Tune.Emis, clr);
+		}
+
+		case 10:	// Tune Refl
+		{
+			return GetTuningValue(&Tune.Refl, clr);
+		}
+
+		case 11:	// Tune _Rghn
+		{
+			return GetTuningValue(&Tune.Rghn, clr);
+		}
+
+		case 12:	// Tune _Transl
+		{
+			return GetTuningValue(&Tune.Transl, clr);
+		}
+
+		case 13:	// Tune _Transm
+		{
+			return GetTuningValue(&Tune.Transm, clr);
+		}
+
+		case 14:	// Tune _Spec
+		{
+			return GetTuningValue(&Tune.Spec, clr);
+		}
+
+		case 15:	// Tune _Frsl
+		{
+			return GetTuningValue(&Tune.Frsl, clr);
+		}
 	}
 
 	return 0.0f;
@@ -556,10 +689,10 @@ void SetColorSlider()
 
 	float val = GetMaterialValue(MatPrp, SelColor);
 	
-	//if (MatPrp==2 && SelColor==3) val/=1000.0; // Specular Power
 	if (MatPrp == 2 && SelColor != 3) val = float(log(val+1.0f) / 1.38629f); // Specular color
 	if (MatPrp == 2 && SelColor == 3) val = float(log(val) / 6.907755279f); // Specular Power
 	if (MatPrp == 6 && SelColor == 0) val /= 6.0f; // Fresnel range
+	if (MatPrp >= 8) val = float(log(val + 1.0f) / 2.39789f); // Tuning range
 	
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -640,31 +773,63 @@ void UpdateMaterialDisplay(bool bSetup)
 		case 0:	// Diffuse
 			DisplayMat(true, true, true, true);
 			if (bSetup) SelColor = 0;
-		break;
+			break;
 		case 1:	// Ambient
 			DisplayMat(true, true, true, false);
 			if (bSetup) SelColor = 0;
-		break;
+			break;
 		case 2:	// Specular
 			DisplayMat(true, true, true, true);
 			if (bSetup) SelColor = 3;
-		break;
+			break;
 		case 3:	// Emission
 			DisplayMat(true, true, true, false);
 			if (bSetup) SelColor = 0;
-		break;
+			break;
 		case 4:	// Reflectivity
 			DisplayMat(true, true, true, false);
 			if (bSetup) SelColor = 0;
-		break;
-		case 5:	// Dissolve
+			break;
+		case 5:	// N/A
 			DisplayMat(false, false, false, false);
 			if (bSetup) SelColor = 0;
-		break;
+			break;
 		case 6:	// Fresnel
 			DisplayMat(true, true, false, false);
 			if (bSetup) SelColor = 0;
-		break;
+			break;
+		case 8:	// Tune Albedo
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 0;
+			break;
+		case 9:	// Tune Emis
+			DisplayMat(true, true, true, false);
+			if (bSetup) SelColor = 0;
+			break;
+		case 10:	// Tune Refl
+			DisplayMat(true, true, true, false);
+			if (bSetup) SelColor = 0;
+			break;
+		case 11:	// Tune _Rghn
+			DisplayMat(false, true, false, false);
+			if (bSetup) SelColor = 0;
+			break;
+		case 12:	// Tune _Transl
+			DisplayMat(true, true, true, false);
+			if (bSetup) SelColor = 0;
+			break;
+		case 13:	// Tune _Transm
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 0;
+			break;
+		case 14:	// Tune _Spec
+			DisplayMat(true, true, true, true);
+			if (bSetup) SelColor = 0;
+			break;
+		case 15:	// Tune _Frsl
+			DisplayMat(false, true, false, false);
+			if (bSetup) SelColor = 0;
+			break;
 	}
 
 	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
@@ -697,6 +862,7 @@ void UpdateColorSlider(WORD pos)
 	if (MatPrp == 2 && SelColor != 3) val = float(exp(val*1.38629f)-1.0f);		// Specular color
 	if (MatPrp == 2 && SelColor == 3) val = float(exp(val*6.907755279f));	// Specular Power
 	if (MatPrp == 6 && SelColor == 0) val *= 6.0f;  // Fresnel range
+	if (MatPrp >= 8) val = float(exp(val*2.39789) - 1.0f); // Tuning range
 	
 	float old = GetMaterialValue(MatPrp, SelColor);
 	float fct = val/old;

@@ -138,6 +138,18 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 	float fN = 1.0f;
 
+
+	// Texture Tuning -------------------------------------------------------
+	//
+	if (gTuneEnabled) {
+		nrmT  *= gTune.Norm.rgb;
+		cTex  *= gTune.Albedo;
+		cRefl *= gTune.Refl.rgb;
+		fRghn *= gTune.Rghn.g;
+		cEmis *= gTune.Emis.rgb;
+	}
+
+
 	// Construct a proper world space normal --------------------------------
 	//
 	if (gCfg.Norm) {

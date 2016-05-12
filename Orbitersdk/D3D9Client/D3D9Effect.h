@@ -115,6 +115,7 @@ public:
 
 	// Lighting related parameters ------------------------------------
 	static D3DXHANDLE   eMtrl;
+	static D3DXHANDLE   eTune;
 	static D3DXHANDLE	eMat;        ///< Material
 	static D3DXHANDLE	eWater;      ///< Water
 	static D3DXHANDLE	eSun;        ///< Sun
@@ -131,6 +132,7 @@ public:
 	static D3DXHANDLE	eNoColor;      ///< BOOL
 	static D3DXHANDLE	eLocalLights;  ///< BOOL		
 	static D3DXHANDLE	eGlow;	       ///< BOOL
+	static D3DXHANDLE	eTuneEnabled;  ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
 	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
 	static D3DXHANDLE   eColor;        ///< Auxiliary color input

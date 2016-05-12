@@ -66,6 +66,7 @@ D3DXHANDLE D3D9Effect::eInstMatrix = 0;	// Instance Matrix array
 D3DXHANDLE D3D9Effect::eMat = 0;		// Material
 D3DXHANDLE D3D9Effect::eWater = 0;		// Water
 D3DXHANDLE D3D9Effect::eMtrl = 0;
+D3DXHANDLE D3D9Effect::eTune = 0;
 D3DXHANDLE D3D9Effect::eSun = 0;
 D3DXHANDLE D3D9Effect::eLights = 0;		// Additional light sources
 D3DXHANDLE D3D9Effect::eLightCount = 0;	// Number of additional light sources
@@ -110,6 +111,7 @@ D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eLocalLights  = 0;	// BOOL		
 D3DXHANDLE D3D9Effect::eGlow = 0;	// BOOL	
+D3DXHANDLE D3D9Effect::eTuneEnabled = 0; // BOOL
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
@@ -324,6 +326,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			
 	eGlow		  = FX->GetParameterByName(0,"gGlow");	
+	eTuneEnabled  = FX->GetParameterByName(0,"gTuneEnabled");
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
@@ -351,6 +354,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eMat		  = FX->GetParameterByName(0,"gMat");
 	eWater		  = FX->GetParameterByName(0,"gWater");
 	eMtrl		  = FX->GetParameterByName(0,"gMtrl");
+	eTune		  = FX->GetParameterByName(0,"gTune");
 	// ----------------------------------------------------------------------
 	eTex0		  = FX->GetParameterByName(0,"gTex0");
 	eTex1		  = FX->GetParameterByName(0,"gTex1");
