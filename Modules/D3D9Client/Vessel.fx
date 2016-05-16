@@ -5,11 +5,21 @@
 
 #define fDiffuseFactor  0.32	// Diffuse surface multiplier  1 / PI
 
+
+float3 cLuminosity = { 0.4, 0.7, 0.3 };
+
+
+inline float cmax(float3 color)
+{
+	return max(max(color.r, color.g), color.b);
+}
+
 // Sun light brightness for diffuse and specular lighting
 #include "LightBlur.hlsl"
 
 // Must be included here
 #include "PBR.fx"
+
 
 
 // ========================================================================================================================
@@ -65,18 +75,49 @@ float4 AdvancedPS(PBRData frg) : COLOR
 {
 	
 	float  fN = 1;
-	float4 cRefl;
 	float3 bitW;
-	float4 cTex = tex2D(WrapS, frg.tex0.xy);
-	float4 cSpec = gMtrl.specular;
+	float3 nrmT;
+	float3 cRefl;
+	float3 cEmis;
+	float4 cSpec;
+	float4 cTex;
+
+	if (gCfg.Norm) nrmT  = tex2D(Nrm0S, frg.tex0.xy).rgb;
+
+	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy);
+	else		   cSpec = gMtrl.specular;
+
+	if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
+	else		   cTex = 1;
+
+	if (gCfg.Refl) cRefl = tex2D(ReflS, frg.tex0.xy).rgb;
+	else		   cRefl = gMtrl.reflect.rgb;
+
+	// Sample emission map. (Note: Emissive materials and textures need to go different stages, material is added to light)
+	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
+	else		   cEmis = 0;
+	
+
 	float3 nrmW = frg.nrmW;
 	float3 tanW = frg.tanW.xyz;
 	float3 cSun = saturate(gSun.Color) * fSunIntensity;
+	float3 CamD = normalize(frg.camW);
+	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
+	// Texture Tuning -------------------------------------------------------
+	//
+	if (gTuneEnabled) {
+		nrmT *= gTune.Norm.rgb;
+		cTex *= gTune.Albedo;
+		cRefl *= gTune.Refl.rgb;
+		cEmis *= gTune.Emis.rgb;
+		cSpec *= gTune.Spec.rgba;
+	}
+
+	// Compute World space normal ------------------------------------------- 
+	//
 	if (gCfg.Norm) {
-	
-		float3 nrmT = tex2D(Nrm0S, frg.tex0.xy).rgb * 2.0 - 1.0;       //Sampler for R8G8B8, DXT1
-		nrmT.z = cos(nrmT.x * nrmT.y * 1.570796f);
+		nrmT = nrmT * 2.0 - 1.0;
 		bitW = cross(tanW, nrmW) * frg.tanW.w;
 		nrmW = nrmW*nrmT.z + tanW*nrmT.x + bitW*nrmT.y;
 
@@ -86,90 +127,139 @@ float4 AdvancedPS(PBRData frg) : COLOR
 #endif
 	}
 	
-	nrmW = normalize(nrmW);
+	nrmW  = normalize(nrmW);
 
 	float3 TnrmW = -nrmW;
-	float3 CamD  = normalize(frg.camW);
 	float3 RflW  = reflect(-CamD, nrmW);
-	float  dLN   = -dot(gSun.Dir, nrmW);
+	float  dLN   = saturate(-dot(gSun.Dir, nrmW));
 	
-	if (gCfg.Spec) {
-		cSpec = tex2D(SpecS, frg.tex0.xy);
-		cSpec.a *= 255.0f;
-	}
+	if (gCfg.Spec) cSpec.a *= 255.0f;
 
-	float4 cTransm = float4(cTex.rgb, 1.0f);
-
-	if (gCfg.Transm) {
-		cTransm = tex2D(TransmS, frg.tex0.xy);
-		cTransm.a *= 1024.0f;
-	}
-
-	float3 cTransl = cTex.rgb;
-
-	if (gCfg.Transl) {
-		cTransl = tex2D(TranslS, frg.tex0.xy).rgb;
-	}
+	// Approximate roughness 
+	float fRghn = log2(cSpec.a) * 0.1f;
 
 	// Sunlight calculation
-	float s = pow(saturate(-dot(RflW, gSun.Dir)), cSpec.a) * saturate(cSpec.a);
+	float fSun = pow(saturate(-dot(RflW, gSun.Dir)), cSpec.a) * saturate(cSpec.a);
 
-	if (dLN == 0) s = 0;
+	if (dLN == 0) fSun = 0;
 
-	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
-	float3 diff = Base + gMtrl.diffuse.rgb * (frg.cDif.rgb * fN + cSun * dLN * fDiffuseFactor);
-	
-	cTex.rgb *= saturate(diff);
+	// Special alpha only texture in use
+	if (gNoColor) cTex.rgb = 1;
 
+	// Lit the diffuse texture
+	cTex.rgb *= saturate(Base + gMtrl.diffuse.rgb * (frg.cDif.rgb * fN + cSun * dLN * fDiffuseFactor));
+
+	// Lit the specular surface 
 #if defined(_LIGHTS)
-	float3 cTot = cSpec.rgb * (frg.cSpe.rgb + s * cSun);
+	cSpec.rgb *= (frg.cSpe.rgb + fSun * cSun);
 #else
-	float3 cTot = cSpec.rgb * (s * cSun);
+	cSpec.rgb *= (fSun * cSun);
 #endif
 
+
+	// Compute Transluciency effect --------------------------------------------------------------
+	//
 	if (gCfg.Transx) {
 
+		float4 cTransm = float4(cTex.rgb, 1.0f);
+
+		if (gCfg.Transm) {
+			cTransm = tex2D(TransmS, frg.tex0.xy);
+			cTransm.a *= 1024.0f;
+		}
+
+		float3 cTransl = cTex.rgb;
+
+		if (gCfg.Transl) {
+			cTransl = tex2D(TranslS, frg.tex0.xy).rgb;
+		}
+
+		// Texture Tuning -------------------------------------------------------
+		//
+		if (gTuneEnabled) {
+			cTransm *= gTune.Transm.rgba;
+			cTransl *= gTune.Transl.rgb;
+		}
+
 		float Ts = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a) * saturate(cTransm.a);
-
 		Ts *= saturate(dLN * (-2.0f));  // Causes the transmittance effect to fall off at very shallow angles
-
 		float3 Tdiff = Base + gMtrl.diffuse.rgb * (frg.cDif.rgb - cSun * dLN * fDiffuseFactor);
-	
-		cTransl.rgb *= saturate(Tdiff);// * 0.5f;
+		cTransl.rgb *= saturate(Tdiff);
 
 		cTex.rgb += (1 - cTex.rgb) * cTransl.rgb;
-
-		cTot += cTransm.rgb * (Ts * cSun * fDiffuseFactor);
+		cTex.rgb += cTransm.rgb * (Ts * cSun * fDiffuseFactor);
 	}
+
+	float fFrsl = 1.0f;
+	float fInt = 0.0f;
+
+	// Compute reflectivity
+	float fRefl = cmax(cRefl);
+
 
 #if defined(_ENVMAP)
 
+
+	// Compute environment map/fresnel effects ------------------------------------------------- 
+	//
 	if (gEnvMapEnable) {
 
-		if (gCfg.Refl) {
-			cRefl = tex2D(ReflS, frg.tex0.xy);
-			cRefl.a = max(cRefl.r, max(cRefl.g, cRefl.b));
+		// Do we need fresnel code for this render pass ?
+
+		if (gFresnel) {
+
+			if (gCfg.Frsl) fFrsl = tex2D(FrslS, frg.tex0.xy).g;
+			else 		   fFrsl = gMtrl.fresnel.y;
+
+			// Get mirror reflection for fresnel
+			float3 cEnvFres = texCUBElod(EnvMapAS, float4(RflW, 0)).rgb;
+
+			float  dCN = saturate(dot(CamD, nrmW));
+			
+			// Compute a fresnel term with compensations included
+			fFrsl *= pow(1.0f - dCN, gMtrl.fresnel.z) * (1.0 - fRefl) * any(cRefl);
+
+			// Sunlight reflection for fresnel material
+			cSpec.rgb = saturate(cSpec.rgb + fSun * fFrsl * cSun);
+			
+			// Compute total reflected light with fresnel reflection
+			// and accummulate in cSpec
+			cSpec.rgb = saturate(cSpec.rgb + fFrsl * cEnvFres);
+
+			// Compute intensity
+			fInt = saturate(dot(cSpec.rgb, cLuminosity));
+		
+			// Attennuate diffuse surface
+			cTex.rgb *= (1.0f - fInt);
 		}
-		else cRefl = gMtrl.reflect;
 
-		float fresnel = gMtrl.fresnel.y * pow(1.0f - saturate(dot(CamD, nrmW)), gMtrl.fresnel.z);
+		// Compute LOD level for blur effect 
+		float fLOD = (1.0f - fRghn) * 10.0f;
 
-		cRefl = saturate(cRefl + (cRefl.a>0)*fresnel);
+		float3 cEnv = texCUBElod(EnvMapAS, float4(RflW, fLOD)).rgb;
 
-		cTex.rgb *= (1.0f - cRefl.a);
-		cTot.rgb += cRefl.rgb * texCUBE(EnvMapAS, RflW).rgb;
+		// Compute total reflected light, accummulate in cSpec 
+		cSpec.rgb += cRefl.rgb * cEnv;
 	}
-#endif
 
-	cTex.rgb += cTot.rgb;								// Apply reflections
+#endif	
 
-	if (gCfg.Emis) cTex.rgb += tex2D(EmisS, frg.tex0.xy).rgb;
+	// Attennuate diffuse surface
+	cTex.rgb *= (1.0f - fRefl);
+
+	// Re-compute output alpha for alpha blending stage
+	// NOTE: Without fresnel fInt remains zero
+	cTex.a = saturate(cTex.a + fInt);
+
+	// Add reflections to output
+	cTex.rgb += cSpec.rgb;
+
+	// Add emissive textures to output
+	cTex.rgb += cEmis;
 
 #if defined(_DEBUG)	
 	if (gDebugHL) cTex = cTex*0.5f + gColor;
 #endif
-
-	cTex.a = 1.0f;
 
 	return cTex;
 }

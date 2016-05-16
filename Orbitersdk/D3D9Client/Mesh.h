@@ -87,6 +87,7 @@ public:
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
 		bool  bRendered;		
+		bool  bAdvanced;		// This group reguires more advanced shader than default one
 		bool  bReflective;		// Requires enabling env map 
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
@@ -201,6 +202,7 @@ public:
 	void			RenderBaseTile(const LPD3DXMATRIX pW);
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
 	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
+	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
 	void			RenderShadows(float alpha, const LPD3DXMATRIX pW);
 	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);

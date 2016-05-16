@@ -1049,6 +1049,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 			if (BindGPU()) {
 				if (SketchRect(src, s, t, 1.0f)==S_OK) {
 					LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
+					return;
 				} else LogErr("SketchRect CC Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
 				ReleaseGPU();
 				goto error_report;

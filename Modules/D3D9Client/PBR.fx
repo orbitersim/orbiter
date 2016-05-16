@@ -34,12 +34,6 @@ struct PBRData
 };
 #endif
 
-float3 cLuminosity = { 0.4, 0.7, 0.3 };
-
-inline float cmax(float3 color)
-{
-	return max(max(color.r, color.g), color.b);
-}
 
 // ========================================================================================================================
 // Vertex shader for physics based rendering
@@ -187,8 +181,6 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 	
 	
-
-
 	// Compute sunlight reflection --------------------------------------------
 
 	// Compute total received specular light
