@@ -84,7 +84,7 @@ void BeaconArray::Update(DWORD nCount, vPlanet *vP)
 	if (!pVrt) return;
 	for (DWORD i=0;i<nCount;i++) {
 		double elv = 0;
-		if (vP->GetElevation(pBeaconPos[bidx].lat, pBeaconPos[bidx].lng, &elv)==1) {
+		if (vP->GetElevation(pBeaconPos[bidx].lng, pBeaconPos[bidx].lat, &elv)==1) {
 			VECTOR3 vLoc = pBeaconPos[bidx].vLoc * (meanelev+elv);
 			vB->FromLocal(vLoc, &pVrt[bidx].pos);
 		}
