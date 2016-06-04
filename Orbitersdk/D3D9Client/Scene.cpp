@@ -980,7 +980,7 @@ void Scene::RenderMainScene()
 	// Sketchpad for planetarium mode labels and markers
 	// -------------------------------------------------------------------------------------------------------
 
-	oapi::Sketchpad *pSketch = new D3D9Pad(pBackBuffer);
+	D3D9Pad *pSketch = new D3D9Pad(pBackBuffer);
 
 	pSketch->SetFont(pLabelFont);
 	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
@@ -1025,6 +1025,8 @@ void Scene::RenderMainScene()
 			}	
 		} 
 	}
+
+	pSketch->EndDrawing();
 
 	// Render Planets
 
@@ -1126,8 +1128,17 @@ void Scene::RenderMainScene()
 					}
 				}
 			}
+
+			pSketch->SetViewProjectionMatrix((float*)GetProjectionViewMatrix());
+			gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM);
+			pSketch->EndDrawing();
+
+			pSketch->Reset();
+			pSketch->SetFont(pLabelFont);
+			pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
 		} 
 	} 
+
 
     	
 	// -------------------------------------------------------------------------------------------------------
@@ -1157,7 +1168,9 @@ void Scene::RenderMainScene()
 				char name[256];
 				oapiGetGlobalPos(hObj, &gpos);
 				oapiGetObjectName(hObj, name, 256);
-				RenderObjectMarker(pSketch, gpos, name, 0, 0, viewH/80);		
+
+				RenderObjectMarker(pSketch, gpos, name, 0, 0, viewH/80);
+				pSketch->EndDrawing();
 			}
 		}
 	}
@@ -1209,6 +1222,7 @@ void Scene::RenderMainScene()
 	{
 		pSketch->SetFont(pAxisFont);
 		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::TOP);
+
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
 
 		for (pv=vobjFirst; pv; pv=pv->next) {
@@ -1352,13 +1366,18 @@ void Scene::RenderMainScene()
 		if (FAILED(BeginScene())) return;
 	}
 
-	double tot_hud = D3D9GetTime();
 
-	gc->MakeRenderProcCall(gc->GetBackBufferHandle(), RENDERPROC_HUD_1ST);
+	pSketch = new D3D9Pad(gc->GetBackBuffer());
+
+	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST);
+	pSketch->EndDrawing();
+
 	gc->Render2DOverlay();
-	gc->MakeRenderProcCall(gc->GetBackBufferHandle(), RENDERPROC_HUD_2ND);
+	
+	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND);
+	pSketch->EndDrawing();
+	SAFE_DELETE(pSketch);
 
-	D3D9SetTime(D3D9Stats.Timer.HUDOverlay, tot_hud);
 
 
 	// End Of HUD Rendering ---------------------------------------------
@@ -1366,7 +1385,6 @@ void Scene::RenderMainScene()
 	EndScene();
 
 
-		
 	// -------------------------------------------------------------------------------------------------------
 	// Render Custom Camera Views 
 	// -------------------------------------------------------------------------------------------------------
@@ -1567,44 +1585,9 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	EndScene();
 }
 
+
 // ===========================================================================================
 //
-void Scene::RenderLightPrePass()
-{
-	/*
-	_TRACE;
-	UpdateCamVis();
-	if (vFocus==NULL) return;
-	float znear = ComputeNearClipPlane();
-	SetCameraFrustumLimits(znear, 1e8f);
-
-	pDevice->SetRenderTarget(0, psgDepth);		// R32F
-	pDevice->SetRenderTarget(1, psgNormal);		// A2RGB10
-	pDevice->SetRenderTarget(2, psgSpecular);	// G16R16F
-
-	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
-
-	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
-	
-	if (FAILED (pDevice->BeginScene())) return;
-
-	VOBJREC *pv = NULL;
-
-	// render the vessel objects --------------------------------
-	// 
-	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
-		OBJHANDLE hObj = pv->vobj->Object();
-		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
-	}
-
-	HR(pDevice->EndScene());
-	*/
-}
-
-
 bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt)
 {
 	bool bQuality = true;
@@ -1792,6 +1775,33 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	LPDIRECT3DTEXTURE9 tex = 0;
 	for (DWORD j=0;j<nstream;j++) pstream[j]->RenderGroundShadow(pDevice, tex);
 }
+
+
+// ===========================================================================================
+//
+bool Scene::WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip)
+{
+	D3DXVECTOR3 homog;
+	D3DXVECTOR3 dir((float)-rdir.x, (float)-rdir.y, (float)-rdir.z);
+
+	if (D3DXVec3Dot(&dir, &Camera.z) > 0) return false;
+		
+	D3DXVec3TransformCoord(&homog, &dir, GetProjectionViewMatrix());
+
+	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) return false;
+
+	if (_hypot(homog.x, homog.y) < 1e-6) {
+		pt->x = viewW / 2;
+		pt->y = viewH / 2;
+	}
+	else {
+		pt->x = (long)(float(viewW) * 0.5f * (1.0f + homog.x));
+		pt->y = (long)(float(viewH) * 0.5f * (1.0f - homog.y));
+	}
+
+	return true;
+}
+
 
 // ===========================================================================================
 //

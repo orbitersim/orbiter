@@ -13,6 +13,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "Mesh.h"
+#include "DebugControls.h"
 
 using namespace oapi;
 
@@ -57,7 +58,7 @@ double Get(D3D9Time &t)
 
 void Reset(D3D9Time &t)
 {
-	t.count = t.time = 0.0;
+	t.count = t.time = t.peak = 0.0;
 }
 
 void D3D9Client::DrawTimeBar(double t, double s, double f, DWORD color, const char *label)
@@ -215,6 +216,8 @@ void D3D9Client::RenderControlPanel()
 
 	static DWORD matchg = 0, texchg = 0;
 	static DWORD verts = 0, grps = 0, meshes = 0;
+	static double DCPeak = 0.0;
+	static double LockPeak = 0.0;
 
 	LabelPos += 22;
 	Label("Meshes Loaded........: %u ", mesh_count);
@@ -226,7 +229,23 @@ void D3D9Client::RenderControlPanel()
 	Label("Meshes rendered......: %u", meshes);
 	Label("Texture changes......: %u", texchg);
 	Label("Material changes.....: %u", matchg);
+	Label("GetDC peak time......: %0.2fms", DCPeak*0.001);
+	Label("Lock wait peak time..: %0.2fms", LockPeak*0.001);
 
+	if (DebugControls::IsActive()) {
+
+		if (DebugControls::IsSelectedGroupRendered()) Label("Group is rendered....: Yes");
+		else Label("Group is rendered....: No");
+
+		vObject *vObj = DebugControls::GetVisual();
+		if (vObj) {
+			DWORD nMesh = vObj->GetMeshCount();
+			for (DWORD i = 0; i < nMesh; i++) {
+				D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(i);
+				hMesh->ResetRenderStatus();
+			}
+		}
+	}
 	
 	// DRAW TIME LINE ------------------------------------------------------------------
 
@@ -234,6 +253,7 @@ void D3D9Client::RenderControlPanel()
 	static double frames = 1.0;
 	static double lock;
 	static double blit;
+	static double getdc;
 	static double scene;
 	static double scale;
 	static double outside;
@@ -265,17 +285,20 @@ void D3D9Client::RenderControlPanel()
 		verts = DWORD(double(D3D9Stats.Mesh.Vertices) * iframes);
 		grps = DWORD(double(D3D9Stats.Mesh.MeshGrps) * iframes);
 		meshes = DWORD(double(D3D9Stats.Mesh.Meshes) * iframes);
+		DCPeak = D3D9Stats.Timer.GetDC.peak;
+		LockPeak = D3D9Stats.Timer.LockWait.peak;
 
-
-		// Time spend outside of client
-		double total  = D3D9Stats.Timer.FrameTotal.time;
+		double total = D3D9Stats.Timer.FrameTotal.time;
 
 		scene   = D3D9Stats.Timer.Scene.time;
 		update  = D3D9Stats.Timer.Update.time;
 		display = D3D9Stats.Timer.Display.time;
 		lock    = D3D9Stats.Timer.LockWait.time;
 		blit    = D3D9Stats.Timer.BlitTime.time;
-		outside = total - (scene + update + display + lock + blit);
+		getdc	= D3D9Stats.Timer.GetDC.time;
+
+		// Time spend outside of client
+		outside = total - (scene + update + display + lock + blit + getdc);
 
 		scale   = double(viewW - 16) / total;
 
@@ -304,6 +327,7 @@ void D3D9Client::RenderControlPanel()
 		Reset(D3D9Stats.Timer.Display);
 		Reset(D3D9Stats.Timer.LockWait);
 		Reset(D3D9Stats.Timer.BlitTime);
+		Reset(D3D9Stats.Timer.GetDC);
 		Reset(D3D9Stats.Timer.FrameTotal);
 		// -------------------------------------
 		Reset(D3D9Stats.Timer.PostProcess);
@@ -321,10 +345,12 @@ void D3D9Client::RenderControlPanel()
 		memset2(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
 	}
 	
+
 	DrawTimeBar(0, 0, 0, 0);
 	DrawTimeBar(outside, scale, frames, 0x774411, "Non-client specific tasks");
 	DrawTimeBar(blit,    scale, frames, 0xFF5555, "Time used in Bliting");
-	DrawTimeBar(lock,    scale, frames, 0x3377FF, "Waiting Locks (CPU-IDLE)");
+	DrawTimeBar(getdc,	 scale, frames, 0x33FFFF, "Time used in GetDC");
+	DrawTimeBar(lock,    scale, frames, 0x0066FF, "Waiting Locks (CPU-IDLE)");
 	DrawTimeBar(display, scale, frames, 0x000099, "Waiting Present (CPU-IDLE)");
 	DrawTimeBar(scene,   scale, frames, 0x00CC00, "Drawing Scene");
 

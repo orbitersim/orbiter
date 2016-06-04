@@ -16,9 +16,9 @@
 using namespace oapi;
 
 
-// ======================================================================
+// ===============================================================================================
 // class GDIPad
-// ======================================================================
+// ===============================================================================================
 
 GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 {
@@ -39,6 +39,8 @@ GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 	SelectObject(hDC, GetStockObject (NULL_BRUSH));
 }
 
+// ===============================================================================================
+//
 GDIPad::~GDIPad ()
 {
 	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
@@ -51,11 +53,15 @@ GDIPad::~GDIPad ()
 	LogOk("...GDI SketchPad Released for surface 0x%X", GetSurface());
 }
 
+// ===============================================================================================
+//
 HDC GDIPad::GetDC()
 {
 	return hDC;
 }
 
+// ===============================================================================================
+//
 Font *GDIPad::SetFont (Font *font) const
 {
 	Font *pfont = cfont;
@@ -70,6 +76,8 @@ Font *GDIPad::SetFont (Font *font) const
 	return pfont;
 }
 
+// ===============================================================================================
+//
 Pen *GDIPad::SetPen (Pen *pen) const
 {
 	Pen *ppen = cpen;
@@ -80,6 +88,8 @@ Pen *GDIPad::SetPen (Pen *pen) const
 	return ppen;
 }
 
+// ===============================================================================================
+//
 Brush *GDIPad::SetBrush (Brush *brush) const
 {
 	Brush *pbrush = cbrush;
@@ -89,6 +99,8 @@ Brush *GDIPad::SetBrush (Brush *brush) const
 	return pbrush;
 }
 
+// ===============================================================================================
+//
 void GDIPad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 {
 	UINT align = 0;
@@ -105,16 +117,22 @@ void GDIPad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 	::SetTextAlign (hDC, align);
 }
 
+// ===============================================================================================
+//
 DWORD GDIPad::SetTextColor (DWORD col)
 {
 	return (DWORD)::SetTextColor (hDC, (COLORREF)(col&0xFFFFFF));
 }
 
+// ===============================================================================================
+//
 DWORD GDIPad::SetBackgroundColor (DWORD col)
 {
 	return (DWORD)SetBkColor (hDC, (COLORREF)(col&0xFFFFFF));
 }
 
+// ===============================================================================================
+//
 void GDIPad::SetBackgroundMode (BkgMode mode)
 {
 	int bkmode;
@@ -126,6 +144,8 @@ void GDIPad::SetBackgroundMode (BkgMode mode)
 	SetBkMode (hDC, bkmode);
 }
 
+// ===============================================================================================
+//
 DWORD GDIPad::GetCharSize ()
 {
 	TEXTMETRIC tm;
@@ -133,8 +153,11 @@ DWORD GDIPad::GetCharSize ()
 	return MAKELONG(tm.tmHeight-tm.tmInternalLeading, tm.tmAveCharWidth);
 }
 
+// ===============================================================================================
+//
 DWORD GDIPad::GetTextWidth (const char *str, int len)
 {
+	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 1;
 	SIZE size;
 	if (!len) len = (int)strlen(str);
 	GetTextExtentPoint32 (hDC, str, len, &size);
@@ -165,6 +188,8 @@ bool GDIPad::Text (int x, int y, const char *str, int len)
 	return (TextOut (hDC, x, y, str, len) != FALSE);
 }
 
+// ===============================================================================================
+//
 bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 {
 	RECT r;
@@ -175,52 +200,72 @@ bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	return (DrawText (hDC, str, len, &r, DT_LEFT|DT_NOPREFIX|DT_WORDBREAK) != 0);
 }
 
+// ===============================================================================================
+//
 void GDIPad::Pixel (int x, int y, DWORD col)
 {
 	SetPixel (hDC, x, y, (COLORREF)col);
 }
 
+// ===============================================================================================
+//
 void GDIPad::MoveTo (int x, int y)
 {
 	MoveToEx (hDC, x, y, NULL);
 }
 
+// ===============================================================================================
+//
 void GDIPad::LineTo (int x, int y)
 {
 	::LineTo (hDC, x, y);
 }
 
+// ===============================================================================================
+//
 void GDIPad::Line (int x0, int y0, int x1, int y1)
 {
 	MoveToEx (hDC, x0, y0, NULL);
 	::LineTo (hDC, x1, y1);
 }
 
+// ===============================================================================================
+//
 void GDIPad::Rectangle (int x0, int y0, int x1, int y1)
 {
 	::Rectangle (hDC, x0, y0, x1, y1);
 }
 
+// ===============================================================================================
+//
 void GDIPad::Ellipse (int x0, int y0, int x1, int y1)
 {
 	::Ellipse (hDC, x0, y0, x1, y1);
 }
 
+// ===============================================================================================
+//
 void GDIPad::Polygon (const IVECTOR2 *pt, int npt)
 {
 	::Polygon (hDC, (const POINT*)pt, npt);
 }
 
+// ===============================================================================================
+//
 void GDIPad::Polyline (const IVECTOR2 *pt, int npt)
 {
 	::Polyline (hDC, (const POINT*)pt, npt);
 }
 
+// ===============================================================================================
+//
 void GDIPad::PolyPolygon (const IVECTOR2 *pt, const int *npt, const int nline)
 {
 	::PolyPolygon (hDC, (const POINT*)pt, npt, nline);
 }
 
+// ===============================================================================================
+//
 void GDIPad::PolyPolyline (const IVECTOR2 *pt, const int *npt, const int nline)
 {
 	::PolyPolyline (hDC, (const POINT*)pt, (const DWORD*)npt, nline);

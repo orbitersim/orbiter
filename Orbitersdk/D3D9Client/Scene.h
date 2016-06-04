@@ -167,7 +167,6 @@ public:
 	 */
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
 
-	void RenderLightPrePass();
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt);
 
 	/**
@@ -266,6 +265,7 @@ public:
 	vPlanet *		GetCameraProxyVisual() const { return Camera.vProxy; }
 	double			GetCameraAltitude() const { return Camera.alt_proxy; }	
 	void			GetCameraLngLat(double *lng, double *lat) const;
+	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f);
 
 	DWORD			GetRenderPass() const { return dwRenderPass; }
 	DWORD			GetFrameId() const { return dwFrameId; }

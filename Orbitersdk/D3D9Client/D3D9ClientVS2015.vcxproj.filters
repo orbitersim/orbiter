@@ -21,9 +21,6 @@
     <Filter Include="Externals">
       <UniqueIdentifier>{fb8da057-55a8-4e60-bca3-60ba1b5287e3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ogci">
-      <UniqueIdentifier>{b2aaf674-fe3f-446a-ba22-f1b5cc464fd2}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CelSphere.cpp">
@@ -162,6 +159,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OgciExtensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D9Pad2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -319,11 +319,8 @@
     <ClInclude Include="IProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\OGCI.h">
-      <Filter>Ogci</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\OGCI_Const.h">
-      <Filter>Ogci</Filter>
+    <ClInclude Include="..\include\Sketchpad2.h">
+      <Filter>Externals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -360,9 +357,6 @@
     <None Include="..\..\Modules\D3D9Client\PBR.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\include\OGCI.cpp">
-      <Filter>Ogci</Filter>
-    </None>
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
@@ -379,5 +373,10 @@
     <ResourceCompile Include="D3D9Client.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\Modules\D3D9Client\Sketchpad.fx">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

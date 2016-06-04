@@ -21,6 +21,7 @@
 
 #include "OrbiterAPI.h"
 #include "D3D9Client.h"
+#include "Sketchpad2.h"
 #include <d3d9.h> 
 #include <d3dx9.h>
 
@@ -29,12 +30,83 @@ using namespace oapi;
 extern oapi::Font *deffont;
 extern oapi::Pen  *defpen;
 
+
+#define SKETCHPAD_NONE		0x0000
+#define SKETCHPAD_GDI		0x0001
+#define SKETCHPAD_DIRECTX	0x0002
+
+
+#define SKPTECH_DRAW		0x01
+#define SKPTECH_BLIT		0x02
+#define SKPTECH_MESH		0x03
+#define SKPTECH_PIXLES		0x04
+
+
+#define SKPFNC_BLITCK		0.0f
+#define SKPFNC_BLIT			1.0f
+#define SKPFNC_TEXT			2.0f
+#define SKPFNC_BRUSH		3.0f
+#define SKPFNC_BACK			4.0f
+#define SKPFNC_PEN			5.0f
+
+// ===============================================================================================
+#define nLow 17
+#define nHigh 65
+#define nQueueMax 2048
+#define nIndexMax (nQueueMax * 3)
+
+struct SkpVtx {
+
+	SkpVtx() {
+		memset(this, 0, sizeof(SkpVtx));
+	};
+
+	float x, y;				// vertex x, y
+	float ix, iy;			// inbound direction
+	float ox, oy;			// outbound direction	
+	float fnc, l;			
+};
+
+
+inline void SkpVtxIC(SkpVtx &v, int _x, int _y, float _c)
+{
+	v.x = float(_x); v.y = float(_y);
+	v.fnc = _c;
+	v.l = 0.0f;
+}
+
+
+inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
+{
+	v.x = float(_x); v.y = float(_y);
+	v.ix = float(_tx); v.iy = float(_ty);
+	v.l = 0.0f;
+};
+
+
+inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
+{
+	v.x = _x; v.y = _y;
+	v.ix = float(_tx); v.iy = float(_ty);
+	v.l = 0.0f;
+};
+
+
+inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
+{
+	v.x = _x; v.y = _y;
+	v.ix = _tx; v.iy = _ty;
+	v.l = 0.0f;
+};
+
+
 /**
  * \brief The D3D9Pad class defines the context for 2-D drawing using
  *  DirectX calls.
  */
-class D3D9Pad : public oapi::Sketchpad 
+class D3D9Pad : public Sketchpad2
 {
+	friend D3D9Text;
 
 public:
 	/**
@@ -56,7 +128,7 @@ public:
 	 * \param folder shader folder (based on Orbiter's "Modules" path).
 	 *   Usually this should be set to "D3D9Client")
 	 */
-	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
+	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev);
 
 	/**
 	 * \brief Release global parameters
@@ -280,6 +352,7 @@ public:
 	 *   joined with the first one.
 	 * \note The outline of the polygon is drawn with the 
 	 *   current pen, and filled with the current brush.
+	 * \note Filled polygon has a maximum of 64 points.
 	 * \sa Polyline, PolyPolygon, Rectangle, Ellipse
 	 */
 	void Polygon (const oapi::IVECTOR2 *pt, int npt);
@@ -296,20 +369,60 @@ public:
 	 */
 	void Polyline (const oapi::IVECTOR2 *pt, int npt);
 
+
+
+
+	// ===============================================================================
+	// Sketchpad2 Additions
+	// ===============================================================================
+
+	void SetGlobalLineScale(float width = 1.0f);
+	void SetProjection(float fov = -1.0f, float zNear = 0.0f, float zFar = 1e5);
+	void SetViewProjectionMatrix(const float *pVP);
+	void SetWorldTransform(const MATRIX4 *pWT = NULL);
+	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
+	int  DrawMeshGroup(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE);
+	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
+	void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
+	void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
+	void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
+	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
+	void ClipRect(const LPRECT clip = NULL);
+	void FloatPolyline(const FVECTOR2 *pt, int npt, bool bConnect);
+	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
+
+	// D3D9Client Privates
+	LPD3DXMATRIX WorldMatrix();
+	void Reset();
+	void EndDrawing();
+	
+
 private:
 
 	bool HasPen();
 	bool HasBrush();
-	bool HasWidePen();
-	bool HasThinPen();
 	bool IsDashed();
+
+	void BeginDraw();
+	void EndDraw();
+	void BeginMesh();
+	void EndMesh();
 
 	float GetPenWidth();
 
+	bool Flush(int iTech);
+	void AddRectIdx(WORD aV);
+	void FillRect(int l, int t, int r, int b, float c);
+	void TexChange(SURFHANDLE hNew);
+	void TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
+	void FlushPrimitives();
+	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
+	
 	inline D3DXVECTOR2 _DXV2(const IVECTOR2 *pt);
-	int	 CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
-	int	 CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out);
-	void CreateLineVertexList(D3DXVECTOR3 *Vtx, const IVECTOR2 *pt, int npt, bool bLoop);
+	int	 CheckTriangle(short x, const IVECTOR2 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
+	int	 CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out);
+	void AppendLineVertexList(const IVECTOR2 *pt, int npt, bool bLoop);
+	void AppendLineVertexListFloat(const FVECTOR2 *pt, int npt, bool bLoop);
 	
 	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
@@ -319,34 +432,67 @@ private:
 	mutable D3DXCOLOR pencolor;
 	mutable D3DXCOLOR brushcolor;
 	mutable D3DXCOLOR bkcolor;
+	mutable bool bPenChange;
+	mutable bool bViewChange;
+	mutable bool bFontChange;
+	mutable bool bTriangles;
 	
+	SURFHANDLE hPrevSrc;
+	WORD vI, iI;
 	DWORD bkmode;
 	DWORD halign, valign;
-	DWORD linescale;
-	int origx, origy, cx, cy;
+	float linescale;
+	int cx, cy;
+	int CurrentTech;
+	bool bConvert;
 
+	class SketchMesh *hOldMesh;
+	D3DSURFACE_DESC tgt_desc;
 	D3D9ClientSurface *pTgt;
-	LPD3DXMATRIX pVP;
 	D3DXMATRIX mVP;
+	D3DXMATRIX mW;
+	D3DVIEWPORT9 vpBak;
+	RECT src;
 
+	static WORD *Idx;				// List of indices
+	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPDIRECT3DVERTEXBUFFER9 pCircleLow;
 	static LPDIRECT3DVERTEXBUFFER9 pCircleHigh;
-	static LPD3DXVECTOR2 pSinCosLow;
-	static LPD3DXVECTOR2 pSinCosHigh;
+	static LPD3DXVECTOR2 pSinCos;
+	// -------------------------------------------
+
 	
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//
 	static ID3DXEffect*	FX;				
-	static D3DXHANDLE	eEllipse;
-	static D3DXHANDLE	eLine;
+	static D3DXHANDLE	eDrawMesh;
+	static D3DXHANDLE	eSketch;
 	static D3DXHANDLE	eVP;	// Transformation matrix
-	static D3DXHANDLE	eColor;	
 	static D3DXHANDLE	eTex0;	
-	static D3DXHANDLE   eData;
-	static D3DXHANDLE   eDash;
+	static D3DXHANDLE   eDashEn;
+	static D3DXHANDLE   eW;
+	static D3DXHANDLE   ePen;
+	static D3DXHANDLE   eBrush;
+	static D3DXHANDLE   eText;
+	static D3DXHANDLE   eBack;
+	static D3DXHANDLE   eKey;
+	static D3DXHANDLE   eTexEn;
+	static D3DXHANDLE   eKeyEn;
+	static D3DXHANDLE   eWidth;
+	static D3DXHANDLE   eWide;
+	static D3DXHANDLE   eSize;
+	static D3DXHANDLE   eMtrl;
+	static D3DXHANDLE   eShade;
+	static D3DXHANDLE   ePos;
+	static D3DXHANDLE   eCov;
+	static D3DXHANDLE   eCovEn;
 };
+
+
+
+
 
 
 
@@ -386,18 +532,13 @@ public:
 
 	HFONT GetGDIFont () const;
 
-	void InitD3DFont();
-
 private:
 	class D3D9Text *pFont;
 	HFONT hFont;
 	float rotation;
 	static LPDIRECT3DDEVICE9 pDev;
-	int _height;
-	bool _prop;
-	char _face[64];
-	Style _style;
 };
+
 
 
 
@@ -434,6 +575,8 @@ private:
 
 
 
+
+
 class D3D9PadBrush: public oapi::Brush {
 	friend class D3D9Pad;
 	friend class GDIPad;
@@ -460,6 +603,51 @@ private:
 };
 
 
+
+
+
+
+class SketchMesh
+{
+
+public:
+
+	struct SKETCHGRP {			// mesh group definition
+		DWORD VertOff;			// Main mesh Vertex Offset
+		DWORD IdxOff;			// Main mesh Index Offset
+		DWORD nIdx;				// Index count
+		DWORD nVert;			// Vertex count
+		DWORD MtrlIdx;			// material index
+		DWORD TexIdx;			// texture index 0=None
+	};
+
+					SketchMesh(const char *name, LPDIRECT3DDEVICE9 pDev);
+					~SketchMesh();
+	
+	void			Init();
+	void			LoadMeshFromHandle(MESHHANDLE hMesh);
+	void			RenderGroup(DWORD idx);
+	SURFHANDLE		GetTexture(DWORD idx);
+	D3DXCOLOR		GetMaterial(DWORD idx);
+	DWORD			GroupCount() { return nGrp; }
+	
+private:
+
+	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
+	LPDIRECT3DINDEXBUFFER9 pIB;
+	
+	DWORD MaxVert;
+	DWORD MaxIdx;
+
+	DWORD nGrp;                 // number of mesh groups
+	DWORD nMtrl;                // number of mesh materials
+	DWORD nTex;                 // number of mesh textures
+
+	LPDIRECT3DDEVICE9 pDev;
+	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
+	SKETCHGRP *Grp;            // list of mesh groups
+	D3DXCOLOR *Mtrl;
+};
 
 #endif 
 

@@ -1358,6 +1358,21 @@ template <typename T> void reset (T& _p)
 #endif
 
 
+// ===========================================================================================
+//
+void D3D9Mesh::ResetRenderStatus()
+{
+	for (DWORD g = 0; g < nGrp; g++) Grp[g].bRendered = false;
+}
+
+
+// ===========================================================================================
+//
+bool D3D9Mesh::IsGroupRendered(DWORD idx) const
+{
+	return Grp[idx].bRendered;
+}
+
 
 // ================================================================================================
 // Analyze mesh. Must be called when ever there is a change in textures or materials
@@ -1442,7 +1457,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	switch (iTech) {
 		case RENDER_VC:
 			FX->SetBool(eGlow, false);
-			bMeshCull = false;
+			//bMeshCull = false;
 			break;
 		case RENDER_BASE:
 			FX->SetBool(eGlow, false);
@@ -1545,7 +1560,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		}
 	}
 	
-	for (DWORD g = 0; g < nGrp; g++) Grp[g].bRendered = false;
 
 	if (nEnv >= 1 && pEnv[0]) FX->SetTexture(eEnvMapA, pEnv[0]);
 	//else bIsReflective = false; // Disable reflections for this mesh
@@ -1858,7 +1872,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	switch (iTech) {
 		case RENDER_VC:
 			FX->SetBool(eGlow, false);
-			bMeshCull = false;
+			//bMeshCull = false;
 			//bGroupCull = false;
 			break;
 		case RENDER_BASE:
@@ -2011,7 +2025,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		if (ti == 0 && tni != 0) continue;
 
 		if (Tex[ti] == NULL || ti == 0) bTextured = false, old_tex = NULL;
-		else						bTextured = true;
+		else						    bTextured = true;
 
 
 		// Cull unvisible geometry =================================================================================
@@ -2131,6 +2145,8 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		}
 
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].FaceOff * 3, Grp[g].nFace);
+
+		Grp[g].bRendered = true;
 
 		if (Grp[g].bDualSided) {
 			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);

@@ -88,6 +88,7 @@ public:
 	inline bool			IsPlainSurface() { return (desc.Usage==0 && pTex==NULL); }
 	inline bool			IsDualLayer() { return (pDCSub!=NULL); }
 	inline bool			IsAdvanced() { return bAdvanced; }
+	inline bool			IsColorKeyEnabled() { return (ColorKey != 0); }
 
 	DWORD				GetAttribs(int What=1);
 	DWORD				GetFlags() { return Flags; }
@@ -108,11 +109,8 @@ public:
 	HRESULT				AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
 	HRESULT				FlushQueue();
 	void				CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
-
 	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
-	HRESULT				SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha=-1, VECTOR3 *clr=NULL);
-	HRESULT				SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha=-1, VECTOR3 *clr=NULL);
-
+	
 	bool				Fill(LPRECT r, DWORD color);
 	bool				Clear(DWORD color);
 	
@@ -172,6 +170,7 @@ private:
 	LPD3DXMATRIX		pVP;
 	D3DVIEWPORT9 *		pViewPort;
 	HFONT				hDefFont;
+	double				GetDCTime;
 
 	ID3DXRenderToSurface *pRTS;
 

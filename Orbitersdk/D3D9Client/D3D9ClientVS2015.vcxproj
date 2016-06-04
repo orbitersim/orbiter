@@ -69,7 +69,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/Zc:threadSafeInit- /D "D3D_DEBUG_INFO" /D PSAPI_VERSION=1 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Zc:threadSafeInit- /D "D3D_DEBUG_INFO" /D PSAPI_VERSION=1 /D SKP2_IMPLEMENTATION %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -183,7 +183,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\include\OGCI.cpp" />
     <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
@@ -197,6 +196,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="D3D9Effect.cpp" />
     <ClCompile Include="D3D9Frame.cpp" />
     <ClCompile Include="D3D9Pad.cpp" />
+    <ClCompile Include="D3D9Pad2.cpp" />
     <ClCompile Include="D3D9Surface.cpp" />
     <ClCompile Include="D3D9TextMgr.cpp" />
     <ClCompile Include="D3D9Util.cpp" />
@@ -236,10 +236,9 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\GraphicsAPI.h" />
-    <ClInclude Include="..\include\OGCI.h" />
-    <ClInclude Include="..\include\OGCI_Const.h" />
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
+    <ClInclude Include="..\include\Sketchpad2.h" />
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
@@ -319,6 +318,11 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

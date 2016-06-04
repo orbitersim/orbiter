@@ -753,7 +753,6 @@ void UpdateMaterialDisplay(bool bSetup)
 	OBJHANDLE hObj = vObj->GetObjectA();
 	if (!oapiIsVessel(hObj)) return;
 	
-	vVessel *vVes = (vVessel *)vObj;
 	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
 	if (!hMesh) return;
 
@@ -845,6 +844,16 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
+}
+
+// =============================================================================================
+//
+bool IsSelectedGroupRendered()
+{
+	if (!vObj) return false;
+	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+	if (hMesh) return hMesh->IsGroupRendered(sGroup);
+	return false;
 }
 
 // =============================================================================================

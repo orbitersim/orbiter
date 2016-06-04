@@ -718,7 +718,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 
 // ============================================================================================
 //
-void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, Sketchpad *pSkp)
+void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 {
 	const double threshold = 0;//0.25; // threshold for forces to be drawn
 	VECTOR3 vector;

@@ -157,4 +157,5 @@
 #define IDC_POSTPROCESS                         2140
 #define IDC_DBG_RGHN                            2141
 #define IDC_SHADING                             2142
+#define IDC_DBG_GROUPSTAT                       2143
 

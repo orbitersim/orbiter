@@ -27,6 +27,7 @@
 typedef struct {
 	double time;
 	double count;
+	double peak;
 } D3D9Time;
 
 extern FILE *d3d9client_log;

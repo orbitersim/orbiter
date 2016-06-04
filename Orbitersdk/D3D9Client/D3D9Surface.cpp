@@ -173,127 +173,6 @@ HRESULT D3D9ClientSurface::GPUCopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT 
 	return S_OK;
 }
 
-
-// -----------------------------------------------------------------------------------------------
-//
-HRESULT D3D9ClientSurface::SketchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha, VECTOR3 *clr)
-{
-	// ATTENTION:  Must use texture address mode CLAMP
-
-	D3D9ClientSurface *src = SURFACE(hSrc);
-
-	if (src->pTex==NULL) {
-		LogErr("ogciSketchBltEx: Source 0x%X isn't a texture", hSrc);
-		src->LogSpecs("Source");
-		assert(false);
-		return D3DERR_INVALIDCALL;
-	}
-
-	pDevice->SetVertexDeclaration(pPosTexDecl);
-
-	D3DXCOLOR color;
-
-	if (clr) color = D3DXCOLOR(float(clr->x), float(clr->y), float(clr->z), alpha);
-	else     color = D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha);
-
-	FX->SetTechnique(eSketch);
-	FX->SetMatrix(eVP, pVP);
-	FX->SetValue(eColor, &color, sizeof(D3DXCOLOR));
-	FX->SetTexture(eTex0, src->pTex);
-
-	float srw = 1.0f / float(src->desc.Width);
-	float srh = 1.0f / float(src->desc.Height);
-	float lwq = float(s->left) * srw;
-	float thq = float(s->top) * srh;
-	float rwq = float(s->right) * srw;
-	float bhq = float(s->bottom) * srh;
-
-	SMVERTEX Vertex[4] = {
-		{float(t->left),  float(t->top),    0, lwq, thq},
-		{float(t->left),  float(t->bottom), 0, lwq, bhq},
-		{float(t->right), float(t->bottom), 0, rwq, bhq},
-		{float(t->right), float(t->top),    0, rwq, thq}
-	};
-
-	static WORD cIndex[6] = {0,2,1,0,3,2};
-
-	UINT numPasses = 0;
-	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
-	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-	FX->EndPass();
-	FX->End();
-	return S_OK;
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-HRESULT D3D9ClientSurface::SketchRotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha, VECTOR3 *clr)
-{
-	// ATTENTION:  Must use texture address mode CLAMP
-
-	D3D9ClientSurface *src = SURFACE(hSrc);
-
-	if (src->pTex==NULL) {
-		LogErr("ogciSketchRotateBlt: Source 0x%X isn't a texture", hSrc);
-		src->LogSpecs("Source");
-		assert(false);
-		return D3DERR_INVALIDCALL;
-	}
-
-	pDevice->SetVertexDeclaration(pPosTexDecl);
-
-	D3DXCOLOR color;
-
-	if (clr) color = D3DXCOLOR(float(clr->x), float(clr->y), float(clr->z), alpha);
-	else     color = D3DXCOLOR(1.0f, 1.0f, 1.0f, alpha);
-
-	FX->SetTechnique(eRotate);
-	FX->SetMatrix(eVP, pVP);
-	FX->SetValue(eColor, &color, sizeof(D3DXCOLOR));
-	FX->SetTexture(eTex0, src->pTex);
-
-	float srw = 1.0f / float(src->desc.Width);
-	float srh = 1.0f / float(src->desc.Height);
-	float lwq = float(s->left) * srw;
-	float thq = float(s->top) * srh;
-	float rwq = float(s->right) * srw;
-	float bhq = float(s->bottom) * srh;
-
-	float san = sin(angle) * 0.5f;
-	float can = cos(angle) * 0.5f;
-
-	float ax  = float(tcx) + (-w * can + h * san);
-	float ay  = float(tcy) + (-w * san - h * can);
-
-	float bx  = float(tcx) + (-w * can - h * san);
-	float by  = float(tcy) + (-w * san + h * can);
-
-	float cx  = float(tcx) + (+w * can - h * san);
-	float cy  = float(tcy) + (+w * san + h * can);
-
-	float dx  = float(tcx) + (+w * can + h * san);
-	float dy  = float(tcy) + (+w * san - h * can);
-
-	SMVERTEX Vertex[4] = {
-		{float(ax), float(ay), 0, lwq, thq},
-		{float(bx), float(by), 0, lwq, bhq},
-		{float(cx), float(cy), 0, rwq, bhq},
-		{float(dx), float(dy), 0, rwq, thq}
-	};
-
-	static WORD cIndex[6] = {0,2,1,0,3,2};
-
-	UINT numPasses = 0;
-	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
-	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
-	FX->EndPass();
-	FX->End();
-	return S_OK;
-}
-
-
 // -----------------------------------------------------------------------------------------------
 //
 void D3D9ClientSurface::SetupViewPort()
@@ -1037,7 +916,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 			src->Active |= OAPISURFACE_TEXTURE;
 		}
 		if (bBackBuffer) {
-			if (SketchRect(src, s, t, 1.0f)==S_OK) {
+			if (GPUCopyRect(src, s, t)==S_OK) {
 				LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
 				return;
 			}
@@ -1047,7 +926,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 				Active |= OAPISURFACE_RENDERTARGET;
 			}
 			if (BindGPU()) {
-				if (SketchRect(src, s, t, 1.0f)==S_OK) {
+				if (GPUCopyRect(src, s, t)==S_OK) {
 					LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
 					return;
 				} else LogErr("SketchRect CC Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
@@ -1272,13 +1151,19 @@ bool D3D9ClientSurface::Clear(DWORD c)
 //
 HDC	D3D9ClientSurface::GetDCHard()
 {
+	GetDCTime = 0.0;
 	bHard = true;
 	HDC hDC;
 	if (iBindCount!=0) {
 		LogErr("Surface bind count is %d in D3D9ClientSurface::GetDCHard()",iBindCount);
 		return NULL;
 	}
-	if (pSurf->GetDC(&hDC)==S_OK) return hDC;
+	double time = D3D9GetTime();
+	if (pSurf->GetDC(&hDC) == S_OK) {
+		D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+		GetDCTime = D3D9GetTime();
+		return hDC;
+	}
 	LogErr("D3D9ClientSurface: GetDCHard() Failed");
 	LogSpecs("Surface");
 	assert(false);
@@ -1291,6 +1176,8 @@ HDC	D3D9ClientSurface::GetDCHard()
 HDC	D3D9ClientSurface::GetDC()
 {
 	bHard = false;
+
+	GetDCTime = 0.0;
 
 	if (!Exists()) ConvertToTexture(true);
 
@@ -1320,24 +1207,26 @@ HDC	D3D9ClientSurface::GetDC()
 	bMainDC = true;
 	HDC hDC = NULL;
 
+	double time = D3D9GetTime();
+
 	// Attempting to acquire a hDC for a BackBuffer
 	//
 	if (bBackBuffer) {
-		double time = D3D9GetTime();
 		LogOk("GetDC() Surface=0x%X, BackBuffer", this);
 		if (pSurf->GetDC(&hDC)==S_OK) { 
-			bDCOpen=true; 
 			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			GetDCTime = D3D9GetTime();
+			bDCOpen = true;
 			return hDC; 
 		}
 		goto skip;
 	}
 
 	if (desc.Usage&D3DUSAGE_DYNAMIC) {
-		double time = D3D9GetTime();
 		LogOk("GetDC() Surface=0x%X, Dynamic", this);
 		if (pSurf->GetDC(&hDC)==S_OK) {
 			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			GetDCTime = D3D9GetTime();
 			bDCOpen = true; 
 			return hDC; 
 		}
@@ -1347,6 +1236,8 @@ HDC	D3D9ClientSurface::GetDC()
 	if (desc.Pool==D3DPOOL_SYSTEMMEM) {
 		LogOk("GetDC() Surface=0x%X, SysMem", this);
 		if (pSurf->GetDC(&hDC)==S_OK) {
+			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			GetDCTime = D3D9GetTime();
 			bDCOpen = true; 
 			return hDC; 
 		}
@@ -1354,10 +1245,10 @@ HDC	D3D9ClientSurface::GetDC()
 	}
 
 	if ((desc.Usage&D3DUSAGE_RENDERTARGET) && bLockable) {
-		double time = D3D9GetTime();
 		LogOk("GetDC() Surface=0x%X, RT-Lock", this);
 		if (pSurf->GetDC(&hDC)==S_OK) { 
 			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			GetDCTime = D3D9GetTime();
 			bDCOpen = true; 
 			return hDC;
 		}
@@ -1370,9 +1261,9 @@ HDC	D3D9ClientSurface::GetDC()
 		bMainDC = false;
 		LogOk("GetDC() Surface=0x%X, Sub-RT-Lock", this);
 		HR(pDevice->StretchRect(pSurf, NULL, pDCSub, NULL, D3DTEXF_POINT));
-		double time = D3D9GetTime();
 		if (pDCSub->GetDC(&hDC)==S_OK) { 
 			D3D9SetTime(D3D9Stats.Timer.LockWait, time);
+			GetDCTime = D3D9GetTime();
 			bDCOpen = true; 
 			return hDC; 
 		}
@@ -1395,9 +1286,14 @@ skip:
 void D3D9ClientSurface::ReleaseDC(HDC hDC)
 {
 	bDCOpen = false;
-	if (bMainDC) { HR(pSurf->ReleaseDC(hDC)); return; }
+	if (bMainDC) { 
+		HR(pSurf->ReleaseDC(hDC)); 
+		if (GetDCTime != 0.0) D3D9SetTime(D3D9Stats.Timer.GetDC, GetDCTime);
+		return; 
+	}
 	if (pDCSub) {
 		if (pDCSub->ReleaseDC(hDC)==S_OK) {
+			if (GetDCTime != 0.0) D3D9SetTime(D3D9Stats.Timer.GetDC, GetDCTime);
 			HR(pDevice->StretchRect(pDCSub, NULL, pSurf, NULL, D3DTEXF_POINT));			
 			return;
 		}

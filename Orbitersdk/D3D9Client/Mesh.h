@@ -175,6 +175,7 @@ public:
 	DWORD			GetTextureCount() const { return nTex; }
 	DWORD			GetVertexCount(int grp=-1) const;
 	DWORD			GetIndexCount(int grp=-1) const;
+	bool			IsGroupRendered(DWORD grp) const;
 
 	DWORD			GetMeshGroupMaterialIdx(DWORD grp) const;
 	DWORD			GetMeshGroupTextureIdx(DWORD grp) const;
@@ -228,6 +229,7 @@ public:
 
 	void			SetAmbientColor(D3DCOLOR c);
 	void			SetupFog(const LPD3DXMATRIX pW);
+	void			ResetRenderStatus();
 
 	void			DumpTextures();
 	void			DumpGroups();

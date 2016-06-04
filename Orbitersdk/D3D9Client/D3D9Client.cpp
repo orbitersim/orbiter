@@ -49,7 +49,8 @@
 // Structure definitions
 
 struct D3D9Client::RenderProcData {
-	__ogciRenderProc proc;
+	__gcRenderProc proc;
+	void *pParam;
 	DWORD id;
 };
 
@@ -424,13 +425,11 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	D3D9PadFont::D3D9TechInit(pDevice);
 	D3D9PadPen::D3D9TechInit(pDevice);
 	D3D9PadBrush::D3D9TechInit(pDevice);
-	D3D9Text::D3D9TechInit(this, pDevice, fld);
-	D3D9Pad::D3D9TechInit(this, pDevice, fld);
+	D3D9Text::D3D9TechInit(this, pDevice);
+	D3D9Pad::D3D9TechInit(this, pDevice);
 
 	deffont = (oapi::Font*) new D3D9PadFont(20, true, "fixed");
 	defpen  = (oapi::Pen*)  new D3D9PadPen(1, 1, 0x00FF00);
-
-	for (auto it = g_fonts.begin(); it != g_fonts.end();it++) ((D3D9PadFont*)(*it))->InitD3DFont();
 	
 	pNoiseTex = SURFACE(clbkLoadTexture("D3D9Noise.dds"));
 	pDefaultTex = SURFACE(clbkLoadTexture("Null.dds"));
@@ -682,7 +681,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		GraphicsClient::clbkDestroyRenderWindow(fastclose);
 
 		hRenderWnd		 = NULL;
-		pDevice		 = NULL;
+		pDevice			 = NULL;
 		bFailed			 = false;
 		viewW = viewH    = 0;
 		viewBPP          = 0;
@@ -2103,21 +2102,24 @@ LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 	return SURFACE(pFramework->GetBackBufferHandle());
 }
 
-void D3D9Client::MakeRenderProcCall(SURFHANDLE hSrf, DWORD id)
+// =======================================================================
+
+void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id)
 {
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 		if (it->id == id) {
-			it->proc(hSrf);
+			((D3D9Pad *)pSkp)->Reset();
+			it->proc(pSkp, it->pParam);
 		}
 	}
 }
 
 // =======================================================================
 
-bool D3D9Client::RegisterRenderProc(__ogciRenderProc proc, DWORD id)
+bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 {
 	if (id)	{ // register (add)
-		RenderProcData data = { proc, id };
+		RenderProcData data = { proc, pParam, id };
 		RenderProcs.push_back(data);
 		return true;
 	}
@@ -2271,9 +2273,9 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 23.9 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 23.10 Debug Build [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 23.9 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client Beta 23.10 Build [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());

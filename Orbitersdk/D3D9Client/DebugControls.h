@@ -118,6 +118,7 @@ namespace DebugControls {
 	
 	bool		IsActive();
 	bool		IsEquEnabled();
+	bool		IsSelectedGroupRendered();
 
 	BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

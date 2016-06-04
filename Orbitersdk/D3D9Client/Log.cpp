@@ -109,6 +109,7 @@ void D3D9SetTime(D3D9Time &inout, double ref)
 	double time = double(qpcCurrent) * 1e6 / double(qpcFrq);
 	inout.time += (time - ref);
 	inout.count += 1.0;
+	inout.peak = max((time - ref), inout.peak);
 }
 
 //-------------------------------------------------------------------------------------------

@@ -593,12 +593,14 @@ float4 SimpleTechPS(SimpleVS frg) : COLOR
 
 float4 PanelTechPS(SimpleVS frg) : COLOR
 {
-	return tex2D(SimpleS, frg.tex0*gMix);
+	float4 cTex = tex2D(SimpleS, frg.tex0);
+	return float4(cTex.rgb, cTex.a*gMix);
 }
 
 float4 PanelTechBPS(SimpleVS frg) : COLOR
 {
-    return tex2D(Panel0S, frg.tex0*gMix);
+	float4 cTex = tex2D(Panel0S, frg.tex0);
+	return float4(cTex.rgb, cTex.a*gMix);
 }
 
 float4 ExhaustTechPS(SimpleVS frg) : COLOR

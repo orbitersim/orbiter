@@ -28,7 +28,7 @@
 #include <OrbiterAPI.h>
 #include "D3D9Frame.h"
 #include "nvapi.h"
-#include "OGCI_Const.h"
+#include "gcConst.h"
 #include <vector>
 
 #define MAX_SCENE_LIGHTS	24
@@ -36,9 +36,6 @@
 
 #define OAPISURFACE_VIDEOMEMORY	 0x8000
 
-//#define SKETCHPAD_NONE		 0x0
-//#define SKETCHPAD_GDI			 0x1
-//#define SKETCHPAD_DIRECTX		 0x2
 
 #ifdef _NVAPI_H
 extern StereoHandle	pStereoHandle;
@@ -117,6 +114,7 @@ struct _D3D9Stats {
 		//-------------------------------------------------------------
 		D3D9Time LockWait;		///< Time waiting GetDC or vertex buffer lock
 		D3D9Time BlitTime;		///<
+		D3D9Time GetDC;			///<
 	} Timer;					///< Render timing related statistics
 
 	DWORD TilesCached;		///< Number of cached tiles
@@ -1005,8 +1003,8 @@ public:
 	LPDIRECT3DTEXTURE9  GetShadowMapRenderTarget() { return pShmRT; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
 	const void *		GetConfigParam (DWORD paramtype) const;
-	bool				RegisterRenderProc(__ogciRenderProc proc, DWORD id);
-	void				MakeRenderProcCall(SURFHANDLE hSrf, DWORD id);
+	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam=NULL);
+	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id);
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 
 protected:

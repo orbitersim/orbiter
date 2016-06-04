@@ -19,6 +19,8 @@
 
 extern class D3D9Config *Config;
 
+class D3D9Pad;
+
 // ==============================================================
 // class vObject (interface)
 // ==============================================================
@@ -213,7 +215,7 @@ public:
     virtual void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev) {}  
 
 
-	virtual void RenderAxis (LPDIRECT3DDEVICE9 dev, oapi::Sketchpad *pSkp) {} 
+	virtual void RenderAxis (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp) {}
 
 	
 	void RenderDot(LPDIRECT3DDEVICE9 dev);
@@ -225,8 +227,8 @@ public:
 protected:
 
 	void RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape);
-	void RenderAxisVector(oapi::Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
-	void RenderAxisLabel(oapi::Sketchpad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
+	void RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog=false);
+	void RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog=false);
 	
 	
 	static oapi::D3D9Client *gc;			// graphics client instance pointer

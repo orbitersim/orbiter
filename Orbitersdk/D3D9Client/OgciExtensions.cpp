@@ -13,24 +13,51 @@
 extern D3D9Client *g_client;
 
 
-DLLCLBK bool ogciRegisterRenderProc(__ogciRenderProc proc, DWORD flags)
+DLLCLBK bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f)
 {
-	return g_client->RegisterRenderProc(proc, flags);
+	return g_client->GetScene()->WorldToScreenSpace(rdir, pt, clip);
 }
 
 
-DLLCLBK DWORD ogciClientID()
+DLLCLBK int gcSketchpadVersion(oapi::Sketchpad *pSkp)
+{
+	if (pSkp->GetTextWidth("_SkpVerInfo") == 2) return 2;
+	return 1;
+}
+
+
+DLLCLBK SKETCHMESH gcLoadSketchMesh(const char *name)
+{
+	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
+	return new SketchMesh(name, pDev);
+}
+
+
+DLLCLBK void gcDeleteSketchMesh(SKETCHMESH hMesh)
+{
+	if (hMesh) delete ((SketchMesh*)hMesh);
+}
+
+
+DLLCLBK bool gcRegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam)
+{
+	return g_client->RegisterRenderProc(proc, flags, pParam);
+}
+
+
+DLLCLBK DWORD gcClientID()
 {
 	return DWORD('D3D9');
 }
 
-DLLCLBK bool ogciGenerateMipMaps(SURFHANDLE hSurface, DWORD Filter)
+
+DLLCLBK bool gcGenerateMipMaps(SURFHANDLE hSurface, DWORD Filter)
 {
 	return SURFACE(hSurface)->GenerateMipMaps();
 }
 
 			
-DLLCLBK bool ogciRegisterSkinName(const VISHANDLE hVisual, const char *name)
+DLLCLBK bool gcRegisterSkinName(const VISHANDLE hVisual, const char *name)
 {
 	VisObject *pVis = (VisObject *)hVisual;
 	OBJHANDLE hObj = pVis->GetObject();
@@ -43,91 +70,25 @@ DLLCLBK bool ogciRegisterSkinName(const VISHANDLE hVisual, const char *name)
 }
 
 
-DLLCLBK SURFHANDLE ogciCreateSurfaceEx(int w, int h, DWORD attrib)
-{
-	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pDev, "oapiCreateSurfaceEx");
-	surf->CreateSurface(w, h, attrib);
-	return surf;
-}
-
-
-DLLCLBK DWORD ogciGetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
+DLLCLBK DWORD gcGetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
 {
 	return SURFACE(hSurf)->GetAttribs(bCreation);
 }
 
 
-DLLCLBK void ogciConvertSurface(SURFHANDLE hSurf, DWORD attrib)
+DLLCLBK void gcConvertSurface(SURFHANDLE hSurf, DWORD attrib)
 {
-	LogBlu("ogciConvertSurface(0x%X) Attribs = 0x%X", hSurf, attrib);
+	LogBlu("gcConvertSurface(0x%X) Attribs = 0x%X", hSurf, attrib);
 	SURFACE(hSurf)->ConvertSurface(attrib);
 }
 
 
 
-// Sketchpad Extensions ==================================================================
-//
-//
-DLLCLBK void ogciSketchBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, int tx, int ty)
-{
-	D3D9ClientSurface *pTgt = SURFACE(pSkp->GetSurface());
-
-	if (pTgt->GetSketchPadMode() == SKETCHPAD_DIRECTX) {
-
-		RECT src, tgt;
-
-		DWORD w = SURFACE(hSrc)->GetWidth();
-		DWORD h = SURFACE(hSrc)->GetHeight();
-
-		src.left = 0; 
-		src.top = 0;
-		src.right = w; 
-		src.bottom = h;
-		tgt.left = tx; 
-		tgt.top = ty;
-		tgt.right = tx + w;
-		tgt.bottom = ty + h;
-
-		pTgt->SketchRect(hSrc, &src, &tgt);
-		LogOk("ogciSketchBlt 0x%X (%s) -> 0x%X (%s) (%u,%u)", hSrc, SURFACE(hSrc)->GetName(), pTgt, pTgt->GetName(), w, h);
-	}
-}
-
-
-DLLCLBK void ogciSketchBltEx(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, LPRECT t, float alpha, VECTOR3 *color)
-{
-	D3D9ClientSurface *pTgt = SURFACE(pSkp->GetSurface());
-
-	if (pTgt->GetSketchPadMode() == SKETCHPAD_DIRECTX) {
-		pTgt->SketchRect(hSrc, s, t, alpha, color);
-		LogOk("ogciSketchBltEx 0x%X (%s) -> 0x%X (%s)", hSrc, SURFACE(hSrc)->GetName(), pTgt, pTgt->GetName());
-	}
-}
-
-
-DLLCLBK void ogciSketchRotateBlt(oapi::Sketchpad *pSkp, SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, int w, int h, float angle, float alpha, VECTOR3 *color)
-{
-	D3D9ClientSurface *pTgt = SURFACE(pSkp->GetSurface());
-
-	if (pTgt->GetSketchPadMode() == SKETCHPAD_DIRECTX) {
-		pTgt->SketchRotateRect(hSrc, s, tcx, tcy, w, h, angle, alpha, color);
-		LogOk("ogciSketchRotateBlt 0x%X (%s) -> 0x%X (%s) (%u,%u)", hSrc, SURFACE(hSrc)->GetName(), pTgt, pTgt->GetName(), w, h);
-	}
-}
-
-
-DLLCLBK int ogciSketchpadVersion(oapi::Sketchpad *pSkp)
-{
-	D3D9ClientSurface *pTgt = SURFACE(pSkp->GetSurface());
-	return pTgt->GetSketchPadMode();
-}
-
 
 // Custom Camera Interface ==================================================================
 //
 //
-DLLCLBK CAMERAHANDLE ogciSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags)
+DLLCLBK CAMERAHANDLE gcSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &pos, VECTOR3 &dir, VECTOR3 &up, double fov, SURFHANDLE hSurf, DWORD flags)
 {
 	VECTOR3 x = crossp(up, dir);
 	MATRIX3 mTake;
@@ -137,12 +98,14 @@ DLLCLBK CAMERAHANDLE ogciSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel,
 	return g_client->GetScene()->SetupCustomCamera(hCam, hVessel, mTake, pos, fov, hSurf, flags);
 }
 
-DLLCLBK void ogciCustomCameraOnOff(CAMERAHANDLE hCam, bool bOn)
+
+DLLCLBK void gcCustomCameraOnOff(CAMERAHANDLE hCam, bool bOn)
 {
 	g_client->GetScene()->CustomCameraOnOff(hCam, bOn);
 }
 
-DLLCLBK int ogciDeleteCustomCamera(CAMERAHANDLE hCam)
+
+DLLCLBK int gcDeleteCustomCamera(CAMERAHANDLE hCam)
 {
 	return g_client->GetScene()->DeleteCustomCamera(hCam);
 }

@@ -58,7 +58,7 @@ public:
 	 */
 	~D3D9Text();
 
-	static void D3D9TechInit(oapi::D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
+	static void D3D9TechInit(oapi::D3D9Client *gc, LPDIRECT3DDEVICE9 pDev);
 
 	/**
 	 * \brief Release global parameters
@@ -81,25 +81,24 @@ public:
 
 	void		SetColor(DWORD c);				// 0xAARRGGBB
 	void		SetColor(float red, float green, float blue, float alpha);
-	void		SetRotation(float deg); 
+	void		SetRotation(float deg);
+	void		SetScaling(float factor);
 
 	void		Reset();
 	float		Width();
 	int			GetLineSpace();
 	
 	float		Length(const char *format, ...);
-	float		Length2(const char *str, int len=-1);
+	float		Length2(const char *str);
 	float		Length(char c);
 
 	void		SetTextHAlign(int x); // 0-left, 1=center, 2=right
 	void		SetTextVAlign(int x); // 0-top, 1=base, 2=bottom
-	float		Print(LPD3DXCOLOR color, int x, int y, const char *str, int len=-1, D3DXMATRIX *pVP=NULL, LPD3DXCOLOR bbox=NULL);
-	
+
+	float		PrintSkp(class D3D9Pad *pSkp, float x, float y, const char *str, bool bBox = false);
 	void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy2(t, &tm, sizeof(TEXTMETRIC)); }
 
 private:
-
-	char	*Buffer;
 
 	float	red, green, blue, alpha;
 	
@@ -110,6 +109,7 @@ private:
 	int		linespacing;
 	float	max_len;		  // If several strings are printed. This is the wide of the widest one
 	float   rotation;
+	float	scaling;
 	int		last;
 	int		charset;
 	int		halign,valign;
@@ -118,20 +118,9 @@ private:
 	LPDIRECT3DTEXTURE9	pTex;
 	D3D9ClientSurface	*pTgtSurf;
 	D3D9FontData		*Data;
-	WORD				*indices;
-
-	TEXTMETRIC  tm;
-	D3DXMATRIX  mVP;
-
+	TEXTMETRIC			tm;
+	
 	// Rendering pipeline configuration
 	//
-	static oapi::D3D9Client * gc;
-	static ID3DXEffect*	FX;			
-	static D3DXHANDLE	eTech;	
-	static D3DXHANDLE	eClear;	
-	static D3DXHANDLE	eFill;
-	static D3DXHANDLE	eVP;	
-	static D3DXHANDLE	eColor;	
-	static D3DXHANDLE	eTex0;	
-	static D3DXHANDLE   eData;
+	static char *		Buffer;
 };

@@ -33,6 +33,7 @@ IDirect3DVertexDeclaration9	*pVector4Decl  = NULL;
 IDirect3DVertexDeclaration9	*pPosTexDecl   = NULL;
 IDirect3DVertexDeclaration9	*pPatchVertexDecl = NULL;
 IDirect3DVertexDeclaration9	*pGPUBlitDecl = NULL;
+IDirect3DVertexDeclaration9 *pSketchpadDecl = NULL;
 
 static char *d3dmessage={"Required DirectX version (June 2010 or newer) not found\0"};
 
@@ -123,6 +124,7 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pMeshVertexDecl);
 	SAFE_RELEASE(pPatchVertexDecl);
 	SAFE_RELEASE(pGPUBlitDecl);
+	SAFE_RELEASE(pSketchpadDecl);
 	SAFE_RELEASE(pEnvDS);
 	SAFE_RELEASE(pShmDS);
 	SAFE_RELEASE(pShmRT);
@@ -391,6 +393,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	HR(pDevice->CreateVertexDeclaration(MeshVertexDecl,  &pMeshVertexDecl));
 	HR(pDevice->CreateVertexDeclaration(PatchVertexDecl, &pPatchVertexDecl));
 	HR(pDevice->CreateVertexDeclaration(GPUBlitDecl, &pGPUBlitDecl));
+	HR(pDevice->CreateVertexDeclaration(SketchpadDecl, &pSketchpadDecl));
 
 	// Setup some default fomts
 	//

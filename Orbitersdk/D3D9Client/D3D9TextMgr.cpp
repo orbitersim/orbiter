@@ -27,6 +27,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Util.h"
 #include "D3D9Config.h"
+#include "D3D9Pad.h"
 
 // ----------------------------------------------------------------------------------------
 //
@@ -39,6 +40,7 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	tex_h      (),
 	sharing    (),
 	spacing    (),
+	scaling	   (1.0f),
 	linespacing(),
 	max_len    (),
 	rotation   (),
@@ -50,22 +52,9 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	pTex       (NULL),
 	pTgtSurf   (),
 	Data       (NULL),
-	tm         (),
-	mVP        ()
+	tm         ()
 {
-	Buffer   = new char[512];
-
-	indices = new WORD[6*258];
-
-	for (int i=0,k=0;i<256;i++) {
-		int j = i*4;
-		indices[k] = j;	k++;
-		indices[k] = j+1; k++;
-		indices[k] = j+2; k++;
-		indices[k] = j; k++;
-		indices[k] = j+2; k++;
-		indices[k] = j+3; k++;
-	}
+	
 }
 
 
@@ -73,10 +62,8 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 //
 D3D9Text::~D3D9Text()
 {
-	if (Buffer) delete[] Buffer;	Buffer=NULL;
-	if (Data)	delete[] Data;		Data=NULL;
-	if (pTex)   pTex->Release();	pTex=NULL;
-	if (indices) delete []indices;	indices=NULL;
+	SAFE_DELETEA(Data);
+	SAFE_RELEASE(pTex);
 }
 
 
@@ -297,12 +284,12 @@ restart:
 		TextOutA(hDC, x, y, text, 1);
 		GetTextExtentPoint32(hDC, text, 1, &fnts);
 		
-		Data[c].sp  = float(fnts.cx);	// Character spacing
-		Data[c].w   = float(fnts.cx+2);	// Texture Width
-		Data[c].h   = float(h);			// Texture Height
+		Data[c].sp  = float(fnts.cx);		// Char spacing
+		Data[c].w   = float(fnts.cx+3);		// Char Width
+		Data[c].h   = float(h);				// Char Height
 
 		Data[c].tx0 = float(x-1);
-		Data[c].tx1 = float(x-1 + fnts.cx+2);
+		Data[c].tx1 = float(x-1 + fnts.cx+3);
 		
 		Data[c].ty0 = float(y - a);
 		Data[c].ty1 = float(y + d);
@@ -346,6 +333,10 @@ restart:
 		LogErr("D3D9TextMgr: Surface Update Failed");
 		return false;
 	}
+
+	//char texname[256];
+	//sprintf_s(texname, 256, "_%s_%d_0x%X.dds", fl.lfFaceName, fl.lfHeight, DWORD(this));
+	//D3DXSaveSurfaceToFile(texname, D3DXIFF_DDS, pSurf, NULL, NULL);
 
 	pTgt->Release();	
 	pSurf->Release();
@@ -400,6 +391,13 @@ void D3D9Text::SetRotation(float deg)
 
 // ----------------------------------------------------------------------------------------
 //
+void D3D9Text::SetScaling(float factor)
+{
+	scaling = factor;
+}
+
+// ----------------------------------------------------------------------------------------
+//
 float D3D9Text::Length(const char *format, ...)
 {
 	va_list args; 
@@ -408,26 +406,25 @@ float D3D9Text::Length(const char *format, ...)
 	int count = _vsnprintf_s((char *)Buffer, 512, 512, format, args); 
 	va_end(args);
 
-	return Length2(Buffer, count);
+	return Length2(Buffer);
 }
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::Length2(const char *str, int le)
+float D3D9Text::Length2(const char *str)
 {
     float len = 0;
-	float spe = float(spacing);
+	unsigned char c = 1;
+	int i = 0;
 
-	if (le==0 || le==-1) le = strlen(str);
-
-	for (int i=0; i < le; i++) {
-		unsigned char c = str[i];
-		if (c<=last) len += (Data[c].sp + spe);
+	while (str[i]) {
+		if (str[i] <= last) len += (Data[str[i]].sp + float(spacing));
+		i++;
 	}
 
-	len = len - spe;
+	len -= float(spacing);
 	if (len<0) len=0;
-	return len;
+	return len * scaling;
 }
 
 
@@ -435,171 +432,120 @@ float D3D9Text::Length2(const char *str, int le)
 //
 float D3D9Text::Length(char c)
 {
-	return Data[c].sp + float(spacing);
+	return (Data[c].sp + float(spacing)) * scaling;
 }
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::Print(LPD3DXCOLOR color, int x, int y, const char *str, int len, D3DXMATRIX *pVP, LPD3DXCOLOR bbox)
+float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str, bool bBox)
 {
-	static WORD cIndex[6] = {0,2,1,0,3,2};
-
-	float xpos = float(x);
-	float ypos = float(y);
+	
 	float x_orig = xpos;
-	
-	if (len==0 || str==0) return 0;
-	if (len==-1) len = strlen(str);
 
-	if (len>250) {
-		LogErr("D3D9Text::Print() Buffer overload");
-		return 0.0f;
-	}
-	
-	if (halign==1) xpos -= Length2(str,len) * 0.5f;
-	if (halign==2) xpos -= Length2(str,len);
-	if (valign==1) ypos -= tm.tmAscent;
-	if (valign==2) ypos -= tm.tmHeight;
-	
-	UINT numPasses = 0;
+	if (halign == 1) xpos -= Length2(str) * 0.5f;
+	if (halign == 2) xpos -= Length2(str);
+	if (valign == 1) ypos -= tm.tmAscent;
+	if (valign == 2) ypos -= tm.tmHeight;
 
 	xpos = ceil(xpos);
 	ypos = ceil(ypos);
-
-	xpos-=0.5;
-	ypos-=0.5;
+	xpos -= 0.5;
+	ypos -= 0.5;
 
 	float h = Data[0].h;
 
-	SMVERTEX *VBuffer = new SMVERTEX[4*(len+1)];
-	SMVERTEX *wri = VBuffer;
+	float bbox_l = xpos - 2;
+	float bbox_t = ypos + 1;
+	float bbox_b = ypos + h - 1;
+	float bbox_r = xpos + 2;
+
+	unsigned char c = str[0];
+	DWORD idx = 1;
+
+	while (c && idx<255) {
+		bbox_r += ceil(Data[c].sp + float(spacing));
+		c = str[idx++];
+	}
+
+	D3DXMATRIX rot, out, mBak;
+	bool bRestore = false;
+
+	if (fabs(rotation)>1e-3 || fabs(scaling - 1.0f)>0.001f) {
+		D3DXVECTOR2 center = D3DXVECTOR2((bbox_l + bbox_r)*0.5f, bbox_t);
+		D3DXVECTOR2 scale = D3DXVECTOR2(scaling, scaling);
+		center.x = ceil(center.x);
+		center.y = ceil(center.y);
+		D3DXMatrixTransformation2D(&rot, &center, 0.0f, &scale, &center, -rotation*0.01745329f, NULL);
+
+		memcpy(&mBak, pSkp->WorldMatrix(), sizeof(D3DXMATRIX));
+		D3DXMatrixMultiply(pSkp->WorldMatrix(), &rot, &mBak);
+		bRestore = true;
+	}
+
+	if (bBox) {
+		pSkp->Flush(SKPTECH_BLIT);
+		pSkp->FillRect(int(bbox_l), int(bbox_t), int(bbox_r), int(bbox_b), SKPFNC_BACK);
+	}
+
+	idx = 1;
+	c = str[0];
+
+	pSkp->TexChangeNative(pTex);
+
+	SkpVtx *pVtx = pSkp->Vtx;
+	WORD *pIdx = pSkp->Idx;
+	WORD iI = pSkp->iI;
+	WORD vI = pSkp->vI;
 	
-	float bbox_l = xpos;
-	float bbox_t = ypos+1;
-	float bbox_b = ypos+h-1;
+	while (c && idx<255) {
 
-	for (int i=0;i<len;i++) {
-
-		unsigned char c = str[i];
+		pIdx[iI++] = vI;
+		pIdx[iI++] = vI + 1;
+		pIdx[iI++] = vI + 2;
+		pIdx[iI++] = vI;
+		pIdx[iI++] = vI + 2;
+		pIdx[iI++] = vI + 3;
 
 		float w = Data[c].w;
 
-		wri[0].x  = wri[3].x  = xpos;
-		wri[0].y  = wri[1].y  = ypos;
-		wri[0].tu = wri[3].tu = Data[c].tx0;
-		wri[0].tv = wri[1].tv = Data[c].ty0;
-		wri[1].x  = wri[2].x  = xpos+w;
-		wri[1].tu = wri[2].tu = Data[c].tx1;
-		wri[2].y  = wri[3].y  = ypos+h;
-		wri[2].tv = wri[3].tv = Data[c].ty1;
-		
-		wri+=4;
+		SkpVtxFF(pVtx[vI++], xpos, ypos, Data[c].tx0, Data[c].ty0);
+		SkpVtxFF(pVtx[vI++], xpos, ypos + h, Data[c].tx0, Data[c].ty1);
+		SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, Data[c].tx1, Data[c].ty1);
+		SkpVtxFF(pVtx[vI++], xpos + w, ypos, Data[c].tx1, Data[c].ty0);
+
+		pVtx[vI - 1].fnc = SKPFNC_TEXT;
+		pVtx[vI - 2].fnc = SKPFNC_TEXT;
+		pVtx[vI - 3].fnc = SKPFNC_TEXT;
+		pVtx[vI - 4].fnc = SKPFNC_TEXT;
 
 		xpos += ceil(Data[c].sp + float(spacing));
+
+		c = str[idx++];
 	}
 
-	float bbox_r = xpos+1;
-	D3DXMATRIX rot, out;
-
-	if (fabs(rotation)>1e-3) {
-		D3DXMatrixTransformation2D(&rot, NULL, 0.0f, NULL, &D3DXVECTOR2((bbox_l+bbox_r)*0.5f, bbox_t), -rotation*0.01745329f, NULL);
-		FX->SetMatrix(eVP, D3DXMatrixMultiply(&out,&rot,pVP));
-	}
-	else FX->SetMatrix(eVP, pVP);
-
-	if (bbox) {
-
-		D3DVECTOR Vtx[4] = {
-			{ bbox_l, bbox_t, 0.0f},
-			{ bbox_l, bbox_b, 0.0f},
-			{ bbox_r, bbox_b, 0.0f},
-			{ bbox_r, bbox_t, 0.0f}
-		};
-
-		pDev->SetVertexDeclaration(pPositionDecl);
-		FX->SetValue(eColor, bbox, sizeof(D3DXCOLOR));
-		FX->SetTechnique(eFill);
-		FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-		FX->BeginPass(0);
-		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vtx, sizeof(D3DXVECTOR3));
-		FX->EndPass();
-		FX->End();
-	}
-
-	HR(pDev->SetVertexDeclaration(pPosTexDecl));
+	pSkp->vI = vI;
+	pSkp->iI = iI;
 	
-	if (Config->SketchpadFont==2) FX->SetTechnique(eClear);
-	else					      FX->SetTechnique(eTech);
-
-	HR(FX->SetTexture(eTex0, pTex));
-	HR(FX->SetValue(eColor, color, sizeof(D3DXCOLOR)));
-	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
-
-	if (pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, len<<2, len<<1, indices, D3DFMT_INDEX16, VBuffer, sizeof(SMVERTEX))!=S_OK) {
-		LogErr("D3D9Text::DrawIndexedPrimitiveUP Failed");
+	if (bRestore) {
+		memcpy(pSkp->WorldMatrix(), &mBak, sizeof(D3DXMATRIX));
 	}
 
-	HR(FX->EndPass());
-	HR(FX->End());	
-
-	delete []VBuffer;
-	
 	float l = xpos - x_orig;
-	if (l>max_len) max_len=l;
+	if (l>max_len) max_len = l;
 	return l;
 }
 
 
 // -----------------------------------------------------------------------------------------------
 //
-void D3D9Text::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev, const char *folder)
+void D3D9Text::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDev)
 {
-	// Initialize Techniques -------------------------------------------------------------------------
-	//
-	gc = _gc;
-
-	char name[256];
-	sprintf_s(name,256,"Modules/%s/CKBlit.fx",folder);
-
-	// Create the Effect from a .fx file.
-	ID3DXBuffer* errors = 0;
-	
-	HR(D3DXCreateEffectFromFileA(pDev, name, 0, 0, 0, 0, &FX, &errors));
-	
-	if (errors) {
-		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
-		MessageBoxA(0, (char*)errors->GetBufferPointer(), "CKBlit.fx Error", 0);
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
-	
-	if (FX==0) {
-		LogErr("Failed to create an Effect (%s)",name);
-		MissingRuntimeError();
-		return;
-	}
-
-	eTech  = FX->GetTechniqueByName("FontTech");
-	eClear = FX->GetTechniqueByName("ClearTypeTech");
-	eFill  = FX->GetTechniqueByName("FillTech");
-	eVP    = FX->GetParameterByName(0,"gVP");
-	eTex0  = FX->GetParameterByName(0,"gTex0");
-	eColor = FX->GetParameterByName(0,"gColor");
-	eData  = FX->GetParameterByName(0,"gData");
+	Buffer = new char[512];
 }
 
 void D3D9Text::GlobalExit()
 {
-	SAFE_RELEASE(FX);
+	SAFE_DELETEA(Buffer);
 }
 
-
-oapi::D3D9Client * D3D9Text::gc = 0;
-ID3DXEffect* D3D9Text::FX = 0;			
-D3DXHANDLE   D3D9Text::eTech = 0;	
-D3DXHANDLE   D3D9Text::eClear = 0;
-D3DXHANDLE   D3D9Text::eFill = 0;	
-D3DXHANDLE   D3D9Text::eVP = 0;			
-D3DXHANDLE   D3D9Text::eColor = 0;	
-D3DXHANDLE   D3D9Text::eTex0 = 0;	
-D3DXHANDLE   D3D9Text::eData = 0;
+char *		 D3D9Text::Buffer = 0;

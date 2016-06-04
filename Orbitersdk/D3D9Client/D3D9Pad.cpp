@@ -24,6 +24,8 @@
 #include "D3D9TextMgr.h"
 #include "D3D9Config.h"
 #include "Log.h"
+#include "Mesh.h"
+#include "Sketchpad2.h"
 
 using namespace oapi;
 
@@ -46,58 +48,65 @@ oapi::Pen * defpen = 0;
 
 // ===============================================================================================
 //
-void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const char *folder)
+void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 {
 	memset2(fcache, 0, 256*sizeof(FontCache));
 	nfcache = 0;
 
 	pDev = pDevice;
 	gc = _gc;
+	
+	Idx = new WORD[3 * nQueueMax + 3];
+	Vtx = new SkpVtx[3 * nQueueMax + 3];
+
+	pSinCos = new D3DXVECTOR2[61];
+
 	pCircleLow = NULL;
 	pCircleHigh = NULL;
 
 	// Initialize Ellipses -------------------------------------------------------------------------
 	//
-	HR(pDev->CreateVertexBuffer(17*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pCircleLow, NULL));
-	HR(pDev->CreateVertexBuffer(65*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pCircleHigh, NULL));
+	HR(pDev->CreateVertexBuffer((nLow + 1) * sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pCircleLow, NULL));
+	HR(pDev->CreateVertexBuffer((nHigh + 1) * sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pCircleHigh, NULL));
 
-	D3DXVECTOR3 *pVert;
+	D3DXVECTOR3 *pVert = NULL;
 
-	pSinCosLow  = new D3DXVECTOR2[17];
-	pSinCosHigh = new D3DXVECTOR2[65];
+	// ------------------------------------------------------------------
+	for (int i = 0; i<60; i++) {
+		float angle = float(PI2)*float(i) / float(60);
+		pSinCos[i].x = sin(angle)*0.5f + 0.5f;
+		pSinCos[i].y = cos(angle)*0.5f + 0.5f;
+	}
 
-	float angle=0.0f, step=float(PI2)/15.0f;
-	
+	// ------------------------------------------------------------------
 	if (pCircleLow->Lock(0,0,(void **)&pVert,0)==S_OK) {
 		pVert[0] = D3DXVECTOR3(0.5f, 0.5f, 0);
-		for (int i=1;i<17;i++) {
-			pSinCosLow[i].x = pVert[i].x = sin(angle)*0.5f+0.5f;
-			pSinCosLow[i].y = pVert[i].y = cos(angle)*0.5f+0.5f;
+		for (int i=1;i<nLow;i++) {
+			float angle = float(PI2)*float(i) / float(nLow);
+			pVert[i].x = sin(angle)*0.5f+0.5f;
+			pVert[i].y = cos(angle)*0.5f+0.5f;
 			pVert[i].z = angle;
-			angle += step;
 		}
 		pCircleLow->Unlock();
-	} else LogErr("Failed to Lock vertex buffer");
+	} 
 	
-	angle=0.0; step=float(PI2)/63.0f;
-
-	
+	// ------------------------------------------------------------------
 	if (pCircleHigh->Lock(0,0,(void **)&pVert,0)==S_OK) {
 		pVert[0] = D3DXVECTOR3(0.5f, 0.5f, 0.0f);
-		for (int i=1;i<65;i++) {
-			pSinCosHigh[i].x = pVert[i].x = sin(angle)*0.5f+0.5f;
-			pSinCosHigh[i].y = pVert[i].y = cos(angle)*0.5f+0.5f;
+		for (int i=1;i<nHigh;i++) {
+			float angle = float(PI2)*float(i) / float(nHigh);
+			pVert[i].x = sin(angle)*0.5f+0.5f;
+			pVert[i].y = cos(angle)*0.5f+0.5f;
 			pVert[i].z = angle;
-			angle += step;
 		}
 		pCircleHigh->Unlock();
-	} else LogErr("Failed to Lock vertex buffer");
+	};
 	
 
 	// Initialize Techniques -------------------------------------------------------------------------
 	//
 	char name[256];
-	sprintf_s(name,256,"Modules/%s/CKBlit.fx",folder);
+	sprintf_s(name, 256, "Modules/D3D9Client/Sketchpad.fx");
 
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
@@ -106,7 +115,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const cha
 	
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
-		MessageBoxA(0, (char*)errors->GetBufferPointer(), "CKBlit.fx Error", 0);
+		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Sketchpad.fx Error", 0);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
 	
@@ -116,13 +125,27 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice, const cha
 		return;
 	}
 
-	eEllipse  = FX->GetTechniqueByName("EllipseTech");
-	eLine     = FX->GetTechniqueByName("LineTech");
-	eVP       = FX->GetParameterByName(0,"gVP");
-	eTex0     = FX->GetParameterByName(0,"gTex0");
-	eColor    = FX->GetParameterByName(0,"gColor");
-	eData     = FX->GetParameterByName(0,"gData");
-	eDash     = FX->GetParameterByName(0,"gDash");
+	eDrawMesh = FX->GetTechniqueByName("SketchMesh");
+	eSketch   = FX->GetTechniqueByName("SketchTech");
+	eVP       = FX->GetParameterByName(0, "gP");
+	eTex0     = FX->GetParameterByName(0, "gTex0");
+	eDashEn   = FX->GetParameterByName(0, "gDashEn");
+	eW		  = FX->GetParameterByName(0, "gW");
+	eKey	  = FX->GetParameterByName(0, "gKey");
+	ePen      = FX->GetParameterByName(0, "gPen");
+	eBrush    = FX->GetParameterByName(0, "gBrush");
+	eText	  = FX->GetParameterByName(0, "gText");
+	eBack	  = FX->GetParameterByName(0, "gBack");
+	eTexEn	  = FX->GetParameterByName(0, "gTexEn");
+	eKeyEn    = FX->GetParameterByName(0, "gKeyEn");
+	eWide	  = FX->GetParameterByName(0, "gWide");
+	eWidth	  = FX->GetParameterByName(0, "gWidth");
+	eSize	  = FX->GetParameterByName(0, "gSize");
+	eMtrl	  = FX->GetParameterByName(0, "gMtrl");
+	eShade    = FX->GetParameterByName(0, "gShade");
+	ePos	  = FX->GetParameterByName(0, "gPos");
+	eCov	  = FX->GetParameterByName(0, "gCov");
+	eCovEn	  = FX->GetParameterByName(0, "gClipEn");
 }
 
 
@@ -136,102 +159,101 @@ void D3D9Pad::GlobalExit()
 	SAFE_RELEASE(pCircleLow);
 	SAFE_RELEASE(pCircleHigh);
 	SAFE_RELEASE(FX);
-	SAFE_DELETEA(pSinCosLow);
-	SAFE_DELETEA(pSinCosHigh);
+	SAFE_DELETEA(Idx);
+	SAFE_DELETEA(Vtx);
+	SAFE_DELETEA(pSinCos);
 
 	memset2(fcache, 0, 256*sizeof(FontCache));
 }
 
+
+// ===============================================================================================
+//
+void D3D9Pad::Reset()
+{
+	cfont = deffont;
+	cpen = NULL;
+	cbrush = NULL;
+	hOldMesh = NULL;
+	cx = 0;
+	cy = 0;
+	vI = 0;
+	iI = 0;
+	bkmode = TRANSPARENT;
+	halign = TA_LEFT;
+	valign = TA_TOP;
+	linescale = 1.0f;
+	CurrentTech = 0;
+
+	bPenChange = true;	// New setup required
+	bFontChange = true;	// New setup required
+	bViewChange = true;	// New setup required
+
+	brushcolor = D3DXCOLOR(0, 1, 0, 1);
+	bkcolor = D3DXCOLOR(0, 0, 0, 1);
+	textcolor = D3DXCOLOR(0, 1, 0, 1);
+	pencolor = D3DXCOLOR(0, 1, 0, 1);
+
+	D3DXMatrixIdentity(&mW);
+
+	D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, 1.0f);
+
+	HR(FX->SetBool(eCovEn, false));
+}
 
 
 // ======================================================================
 // class GDIPad
 // ======================================================================
 
-D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad(s)
+D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s)
 {
 	_TRACE;
 
-	cfont  = deffont;
-	cpen   = NULL;
-	cbrush = NULL;
-	pTgt   = SURFACE(s);
-	origx  = 0;
-	origy  = 0;
-	cx     = 0;
-	cy     = 0;
-	bkmode = TRANSPARENT;
-	halign = TA_LEFT;
-	valign = TA_TOP;
-
-	SURFACE(GetSurface())->SketchPad = SKETCHPAD_DIRECTX;
-
-	brushcolor = D3DXCOLOR(0,1,0,1);
-	bkcolor    = D3DXCOLOR(0,0,0,1);
-	textcolor  = D3DXCOLOR(0,1,0,1);
-	pencolor   = D3DXCOLOR(0,1,0,1);
-	linescale  = 1;
+	pTgt = SURFACE(s);
 	
-	pVP = pTgt->pVP;
-
-	HR(FX->SetMatrix(eVP, pVP));
+	SURFACE(GetSurface())->SketchPad = SKETCHPAD_DIRECTX;
 
 	if (pTgt->IsBackBuffer()==false) {
 		if (pTgt->BindGPU()==false) { 
-			pTgt=NULL;  
+			pTgt=NULL;
 			LogErr("D3D9Pad creation failed");
 			return;
 		}
 	}
-	
-	//linescale = pTgt->GetWidth()>>8;
-	//if (linescale<1) linescale = 1;
-	//if (pTgt->GetFlags()&SRFFLAG_VC_MFD) linescale = pTgt->GetWidth()>>8;
+
+	pTgt->GetDesc(&tgt_desc);
+
+	Reset();
 }
 
 
 // ===============================================================================================
 //
-D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad(NULL)
+D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad2(NULL)
 {
 	_TRACE;
-
-	cfont = deffont;
-	cpen = NULL;
-	cbrush = NULL;
 	pTgt = NULL;
-	origx = 0;
-	origy = 0;
-	cx = 0;
-	cy = 0;
-	bkmode = TRANSPARENT;
-	halign = TA_LEFT;
-	valign = TA_TOP;
-
-	brushcolor = D3DXCOLOR(0, 1, 0, 1);
-	bkcolor = D3DXCOLOR(0, 0, 0, 1);
-	textcolor = D3DXCOLOR(0, 1, 0, 1);
-	pencolor = D3DXCOLOR(0, 1, 0, 1);
-	linescale = 1;
-
-	D3DSURFACE_DESC desc;
-	pVP = &mVP;
-	s->GetDesc(&desc);
-
-	D3DXMatrixOrthoOffCenterLH(pVP, 0.0f, (float)desc.Width, (float)desc.Height, 0.0f, 0.0f, 1.0f);
-
-	HR(FX->SetMatrix(eVP, pVP));	
+	s->GetDesc(&tgt_desc);
+	Reset();
 }
+
 
 // ===============================================================================================
 //
 D3D9Pad::~D3D9Pad ()
 {
 	_TRACE;
+	
+	pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0);
+
+	if (pTgt) EndDrawing();
+
 	if (GetSurface()) {
 		if (pTgt) if (pTgt->IsBackBuffer() == false) pTgt->ReleaseGPU();
 		SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
 	}
+
 	pTgt = NULL;
 }
 
@@ -253,6 +275,9 @@ HDC D3D9Pad::GetDC()
 //
 Font *D3D9Pad::SetFont(Font *font) const
 {
+
+	bFontChange = true;
+
 	Font *pfont = cfont;
 	if (font) cfont = font;
 	else      cfont = deffont;
@@ -264,6 +289,8 @@ Font *D3D9Pad::SetFont(Font *font) const
 //
 Brush *D3D9Pad::SetBrush (Brush *brush) const
 {
+	bPenChange = true;
+
 	Brush *pbrush = cbrush;
 	cbrush = brush;
 	if (cbrush) brushcolor = ((D3D9PadBrush *)cbrush)->fcolor;
@@ -276,6 +303,8 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 //
 Pen *D3D9Pad::SetPen (Pen *pen) const
 {
+	bPenChange = true;
+
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
 	else     cpen = NULL;
@@ -288,6 +317,8 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 //
 void D3D9Pad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 {
+	// Does not require a Flush
+
 	halign = 0; valign = 0;
 
 	switch (tah) {
@@ -307,6 +338,8 @@ void D3D9Pad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 //
 DWORD D3D9Pad::SetTextColor(DWORD col)
 {
+	bFontChange = true;
+
 	if ((col&0xFF000000)==0) col|=0xFF000000;
 	D3DXCOLOR prev = textcolor;
 	textcolor = D3DXCOLOR(col);
@@ -320,6 +353,8 @@ DWORD D3D9Pad::SetTextColor(DWORD col)
 //
 DWORD D3D9Pad::SetBackgroundColor(DWORD col)
 {
+	bFontChange = true;
+
 	if ((col&0xFF000000)==0) col|=0xFF000000;
 	D3DXCOLOR prev = bkcolor;
 	bkcolor = D3DXCOLOR(col);
@@ -333,6 +368,8 @@ DWORD D3D9Pad::SetBackgroundColor(DWORD col)
 //
 void D3D9Pad::SetBackgroundMode(BkgMode mode)
 {
+	// Does not require a Flush
+
 	switch (mode) {
 		case BK_TRANSPARENT: bkmode = TRANSPARENT; break;
 		case BK_OPAQUE:      bkmode = OPAQUE; break;
@@ -355,8 +392,9 @@ DWORD D3D9Pad::GetCharSize ()
 //
 DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 {
+	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 2;
 	if (cfont==NULL) return 0;
-	return DWORD(((D3D9PadFont *)cfont)->pFont->Length2(str, len));
+	return DWORD(((D3D9PadFont *)cfont)->pFont->Length2(str));
 }
 
 
@@ -364,17 +402,19 @@ DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 //
 void D3D9Pad::SetOrigin (int x, int y)
 {
-	origx = x;
-	origy = y;
+	bViewChange = true;
+
+	mW._41 = float(x);
+	mW._42 = float(y);
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::GetOrigin (int *x, int *y) const
+void D3D9Pad::GetOrigin(int *x, int *y) const
 {
-	if (x) *x = origx;	
-	if (y) *y = origy;
+	if (x) *x = int(mW._41);
+	if (y) *y = int(mW._42);
 }
 
 // ===============================================================================================
@@ -399,28 +439,6 @@ bool D3D9Pad::IsDashed()
 
 // ===============================================================================================
 //
-bool D3D9Pad::HasWidePen()
-{
-	if (cpen==NULL) return false;
-	if (linescale>1) return true;
-	if (((D3D9PadPen*)cpen)->width>1) return true;
-	return false;
-}
-
-
-// ===============================================================================================
-//
-bool D3D9Pad::HasThinPen()
-{
-	if (linescale>1) return false;
-	if (cpen==NULL) return false;
-	if (((D3D9PadPen*)cpen)->width<=1) return true;
-	return false;	
-}
-
-
-// ===============================================================================================
-//
 bool D3D9Pad::HasBrush()
 {
 	return (cbrush != NULL);
@@ -440,6 +458,7 @@ float D3D9Pad::GetPenWidth()
 //
 bool D3D9Pad::Text (int x, int y, const char *str, int len)
 {
+
 	if (cfont==NULL) return false;
 
 	D3D9Text *pText = ((D3D9PadFont *)cfont)->pFont;
@@ -459,10 +478,9 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 	}
 
 	pText->SetRotation(((D3D9PadFont *)cfont)->rotation);
-
-	if (bkmode==OPAQUE) pText->Print(&textcolor, origx+x-1, origy+y-1, str, len, pVP, &bkcolor);
-	else				pText->Print(&textcolor, origx+x-1, origy+y-1, str, len, pVP);
-
+	pText->SetScaling(1.0f);
+	pText->PrintSkp(this, float(x - 1), float(y - 1), str, (bkmode == OPAQUE));
+	
 	return true;
 }
 
@@ -471,8 +489,10 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 //
 void D3D9Pad::Pixel (int x, int y, DWORD col)
 {
-	RECT rect = { origx+x, origy+y, origx+x+1, origy+y+1 };
-	pDev->ColorFill(pTgt->pSurf, &rect, col); 
+	Flush(SKPTECH_PIXLES);
+
+	RECT rect = { x, y, x+1, y+1 };
+	if (pTgt) pDev->ColorFill(pTgt->pSurf, &rect, col); 
 }
 
 
@@ -499,46 +519,30 @@ void D3D9Pad::LineTo (int tx, int ty)
 //
 void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 {
-	UINT numPasses=0;
-	HR(pDev->SetVertexDeclaration(pPositionDecl));
+	Flush(SKPTECH_DRAW);
 
-	if (IsDashed()) FX->SetBool(eDash, true);
-	else			FX->SetBool(eDash, false);
+	IVECTOR2 pt[2];
 
-	HR(FX->SetTechnique(eLine));
-	HR(FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor));
-	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
+	pt[0].x = x0; pt[0].y = y0;
+	pt[1].x = x1; pt[1].y = y1;
 
-	if (HasWidePen()) {
-
-		IVECTOR2 pts[2];
-		pts[0].x = x0;	pts[0].y = y0;
-		pts[1].x = x1;	pts[1].y = y1;
+	AppendLineVertexList(pt, 2, false);
 		
-		D3DXVECTOR3 WLVtx[4];
-		CreateLineVertexList(WLVtx, pts, 2, false);
-
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, WLVtx, sizeof(D3DXVECTOR3));
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	}
-
-	if (HasThinPen()) {
-
-		D3DXVECTOR3 pts[2];
-		pts[0] = D3DXVECTOR3(float(x0+origx), float(y0+origy), 0.0f);
-		pts[1] = D3DXVECTOR3(float(x1+origx), float(y1+origy), 0.0f);
-
-		if (IsDashed()) pts[1].z = D3DXVec3Length(&(pts[0]-pts[1]));
-			
-		HR(pDev->DrawPrimitiveUP(D3DPT_LINELIST, 1, pts, sizeof(D3DXVECTOR3)));
-	}
-	
-	HR(FX->EndPass());
-	HR(FX->End());	
-
 	cx = x1; cy = y1;
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::FillRect(int l, int t, int r, int b, float c)
+{
+	assert(bTriangles);
+
+	AddRectIdx(vI);
+	SkpVtxIC(Vtx[vI++], l, t, c);
+	SkpVtxIC(Vtx[vI++], r, t, c);
+	SkpVtxIC(Vtx[vI++], r, b, c);
+	SkpVtxIC(Vtx[vI++], l, b, c);
 }
 
 
@@ -546,63 +550,28 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 //
 void D3D9Pad::Rectangle (int l, int t, int r, int b)
 {
-	static WORD indices[6] = {0,1,2,0,2,3};
-	static D3DVECTOR verts[5] = { { 0.0f, 0.0f, 0.0f}, { 1.0f, 0.0f, 0.0f}, { 1.0f, 1.0f, 0.0f}, { 0.0f, 1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f} };
-	
-	UINT numPasses=0;
-	pDev->SetVertexDeclaration(pPositionDecl);
+	Flush(SKPTECH_DRAW);
 
-	FX->SetTechnique(eEllipse);
-	FX->SetVector(eData, &D3DXVECTOR4(float(origx+l), float(origy+t), float(r-l-1), float(b-t-1)));	
-	FX->SetBool(eDash, false);
-	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
+	r--;
+	b--;
+
+	WORD iIdx = iI;
 
 	// Fill interion ----------------------------------------------
 	//
-	if (HasBrush()) {
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&brushcolor);
-		FX->CommitChanges();
-		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &indices, D3DFMT_INDEX16, &verts, sizeof(D3DXVECTOR3));
-	}
+	if (HasBrush()) FillRect(l, t, r, b, SKPFNC_BRUSH);
 
-	if (IsDashed()) FX->SetBool(eDash, true);
-	
-	// Draw thin outline ------------------------------------------
+	// Draw outline ------------------------------------------
 	//
-	if (HasThinPen()) {
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor);
-		FX->CommitChanges();
-		pDev->DrawPrimitiveUP(D3DPT_LINESTRIP, 4, &verts, sizeof(D3DXVECTOR3));
-	}
-
-	FX->EndPass();
-	FX->End();	
-
-	// Draw wide outline ------------------------------------------
-	//
-	if (HasWidePen()) {
+	if (HasPen()) {
 
 		IVECTOR2 pts[4];
-		pts[0].x = l;	pts[0].y = t;
-		pts[1].x = r;	pts[1].y = t;
-		pts[2].x = r;	pts[2].y = b;
-		pts[3].x = l;	pts[3].y = b;
-		
-		D3DXVECTOR3 WLVtx[2*4+2];
-		CreateLineVertexList(WLVtx, pts, 4, true);
-
-		FX->SetTechnique(eLine);
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor);
-		FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-		FX->BeginPass(0);
-
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 8, WLVtx, sizeof(D3DXVECTOR3));
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-		FX->EndPass();
-		FX->End();	
+		pts[0].x = pts[3].x = l;
+		pts[0].y = pts[1].y = t;
+		pts[1].x = pts[2].x = r;
+		pts[2].y = pts[3].y = b;
+	
+		AppendLineVertexList(pts, 4, true);
 	}
 }
 
@@ -611,81 +580,46 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 //
 void D3D9Pad::Ellipse (int l, int t, int r, int b)
 {
-	UINT numPasses=0;
-	UINT nPrim = 15;
-	bool bLow = true;
-	
-	if ((r-l)>32 || (b-t)>32) {
-		bLow=false;
-		nPrim = 63;
+	Flush(SKPTECH_DRAW);
+
+	float w = float(r - l); float h = float(b - t);	float fl = float(l); float ft = float(t);
+	DWORD s = max((r-l), (b-t));
+
+	WORD step = WORD(6 - min(5, s >> 4));
+	WORD nPrim = 60 / step;
+
+	IVECTOR2 pts[61];
+
+	for (WORD i = 0, k = 0; i<nPrim; i++) {
+		pts[i].x = long(fl + pSinCos[k].x * w);
+		pts[i].y = long(ft + pSinCos[k].y * h);
+		k += step;
 	}
 	
-	pDev->SetVertexDeclaration(pPositionDecl);
-	
-	if (bLow) pDev->SetStreamSource(0, pCircleLow, 0, sizeof(D3DXVECTOR3));
-	else 	  pDev->SetStreamSource(0, pCircleHigh, 0, sizeof(D3DXVECTOR3));
-		
-	FX->SetTechnique(eEllipse);
-	FX->SetBool(eDash, false);
-	FX->SetVector(eData, &D3DXVECTOR4(float(origx+l), float(origy+t), float(r-l-1), float(b-t-1)));
-	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
+	WORD iIdx = iI;
 
-	// Fill interion ----------------------------------------------
+	// Fill interion -------------------------------------------
 	//
 	if (HasBrush()) {
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&brushcolor);
-		FX->CommitChanges();
-		pDev->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, nPrim);
-	}
 
-	if (IsDashed()) FX->SetBool(eDash, true);
+		assert(bTriangles);
 
-	// Draw thin outline ------------------------------------------
-	//
-	if (HasThinPen()) {
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor);
-		FX->CommitChanges();
-		pDev->DrawPrimitive(D3DPT_LINESTRIP, 1, nPrim);
-	}
+		WORD aV = vI;
 
-	FX->EndPass();
-	FX->End();		
+		SkpVtxIC(Vtx[vI++], (r + l) / 2, (b + t) / 2, SKPFNC_BRUSH);
 
-	// Draw wide outline ------------------------------------------
-	//
-	if (HasWidePen()) {
-
-		float w = float(r-l); float h = float(b-t);	float fl = float(l); float ft = float(t);
-
-		IVECTOR2 pts[65];
-
-		if (bLow) {
-			for (UINT i=0;i<nPrim;i++) {
-				pts[i].x = long(fl + pSinCosLow[i+1].x * w);
-				pts[i].y = long(ft + pSinCosLow[i+1].y * h);
-			}
+		for (WORD i = 0; i < nPrim; i++) SkpVtxIC(Vtx[vI++], pts[i].x, pts[i].y, SKPFNC_BRUSH);
+		for (WORD i = 0; i < nPrim; i++) {
+			Idx[iI++] = aV;
+			Idx[iI++] = aV + i + 1;
+			Idx[iI++] = aV + i + 2;
 		}
-		else {
-			for (UINT i=0;i<nPrim+1;i++) {
-				pts[i].x = long(fl + pSinCosHigh[i+1].x * w);
-				pts[i].y = long(ft + pSinCosHigh[i+1].y * h);
-			}
-		}
-			
-		D3DXVECTOR3 WLVtx[2*64+2];
-		CreateLineVertexList(WLVtx, pts, nPrim, true);
-
-		FX->SetTechnique(eLine);
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor);
-		FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-		FX->BeginPass(0);
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, nPrim*2, WLVtx, sizeof(D3DXVECTOR3));
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		FX->EndPass();
-		FX->End();	
+		Idx[iI-1] = aV + 1;
 	}
+	
+	// Draw outline ------------------------------------------
+	//
+	if (HasPen()) AppendLineVertexList(pts, nPrim, true);
 }
 
 
@@ -693,82 +627,31 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 //
 void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 {
+	Flush(SKPTECH_DRAW);
+
 	if (npt<3) return;
+	if (HasBrush() && npt > 64) return;
 
-	UINT numPasses=0;
-	int nIdx = 0;
-
-	WORD *Idx = NULL;
-
-	// Allovate and prepare vertex buffers -----------------------------------------
-	//
-	D3DXVECTOR3 *Vtx = new D3DXVECTOR3[npt+1];
-	for (int i=0;i<npt;i++) Vtx[i].x = float(pt[i].x+origx), Vtx[i].y = float(pt[i].y+origy);
-	Vtx[npt].x = float(pt[0].x+origx), Vtx[npt].y = float(pt[0].y+origy);
-
-	// Create filled polygon interior ---------------------------------------------
+	// Create filled polygon interior -----------------------------------------
 	//
 	if (HasBrush()) {
-		Idx = new WORD[(npt-2)*3];
-		nIdx = CreatePolyIndexList(Vtx, npt, Idx);
+
+		assert(bTriangles);
+		int sIdx = vI;
+
+		// File a vertex buffer.
+		for (int i = 0; i<npt; i++) SkpVtxIC(Vtx[vI++], pt[i].x, pt[i].y, SKPFNC_BRUSH);
+
+		WORD qIdx[256];
+		int nIdx = CreatePolyIndexList(pt, npt, qIdx);
+
+		// Add indices to index buffer
+		for (int i = 0; i < nIdx; i++) Idx[iI++] = qIdx[i] + sIdx;
 	}
 
-	// Configure render pileline --------------------------------------------------
+	// Draw outline ------------------------------------------
 	//
-	pDev->SetVertexDeclaration(pPositionDecl);
-
-	FX->SetTechnique(eLine);
-	FX->SetBool(eDash, false);
-	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
-
-	// Draw filled interior -------------------------------------------------------
-	//
-	if (nIdx) {
-		FX->SetVector(eColor, (LPD3DXVECTOR4)&brushcolor);
-		FX->CommitChanges();
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, npt, nIdx/3, Idx, D3DFMT_INDEX16, Vtx, sizeof(D3DXVECTOR3));
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	}
-
-	// Re-configure for outlining --------------------------------------------------
-	//
-	if (IsDashed()) FX->SetBool(eDash, true);
-	FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor);
-	FX->CommitChanges();
-
-	// Draw a wide outline ---------------------------------------------------------
-	//
-	if (HasWidePen()) {
-		D3DXVECTOR3 *WLVtx = new D3DXVECTOR3[npt*2+2];
-		CreateLineVertexList(WLVtx, pt, npt, true);
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, npt*2, WLVtx, sizeof(D3DXVECTOR3));
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		delete []WLVtx;
-	}
-
-	// Draw thin outline -------------------------------------------------------------
-	//
-	if (HasThinPen()) {
-		if (IsDashed()) {
-			Vtx[0].z = 0;
-			for (int i=1;i<=npt;i++) {
-				D3DXVECTOR3 d = Vtx[i]-Vtx[i-1]; d.z = 0.0f;
-				Vtx[i].z = Vtx[i-1].z + D3DXVec3Length(&d);
-			}
-		}
-		pDev->DrawPrimitiveUP(D3DPT_LINESTRIP, npt, Vtx, sizeof(D3DXVECTOR3));
-	}
-	
-	// Cleanup ----------------------------------------------------------------------
-	//
-	FX->EndPass();
-	FX->End();	
-
-	SAFE_DELETEA(Idx);
-	SAFE_DELETEA(Vtx);
+	if (HasPen()) AppendLineVertexList(pt, npt, true);	
 }
 
 
@@ -776,53 +659,24 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 {
+	Flush(SKPTECH_DRAW);
 
-	UINT numPasses=0;
+	if (npt < 2) return;
 
-	// Prepare render pileline -------------------------------------------------------
-	//
-	pDev->SetVertexDeclaration(pPositionDecl);
-
-	FX->SetTechnique(eLine);
-
-	if (IsDashed()) FX->SetBool(eDash, true);
-	else			FX->SetBool(eDash, false);
-
-	FX->SetVector(eColor, (LPD3DXVECTOR4)&pencolor);
-	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
-	FX->BeginPass(0);
-
-	// Draw a wide line ---------------------------------------------------------------
-	//
-	if (HasWidePen()) {
-		D3DXVECTOR3 *Vtx = new D3DXVECTOR3[npt*2];
-		CreateLineVertexList(Vtx, pt, npt, false);
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, npt*2-2, Vtx, sizeof(D3DXVECTOR3));
-		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		SAFE_DELETEA(Vtx);
-	}
-
-	// Draw hairline ------------------------------------------------------------------
-	//
-	if (HasThinPen()) {
-		D3DXVECTOR3 *Vtx = new D3DXVECTOR3[npt];
-		for (int i=0;i<npt;i++) Vtx[i].x = float(pt[i].x+origx), Vtx[i].y = float(pt[i].y+origy);
-		if (IsDashed()) {
-			Vtx[0].z = 0;
-			for (int i=1;i<npt;i++) {
-				D3DXVECTOR3 d = Vtx[i]-Vtx[i-1]; d.z = 0.0f;
-				Vtx[i].z = Vtx[i-1].z + D3DXVec3Length(&d);
-			}
-		}
-		pDev->DrawPrimitiveUP(D3DPT_LINESTRIP, npt-1, Vtx, sizeof(D3DXVECTOR3));
-		SAFE_DELETEA(Vtx);
-	}
-
-	FX->EndPass();
-	FX->End();	
+	if (HasPen()) AppendLineVertexList(pt, npt, false);	
 }
 
+
+// ===============================================================================================
+//
+void D3D9Pad::FloatPolyline(const FVECTOR2 *pt, int npt, bool bConnect)
+{
+	if (npt < 2) return;
+
+	Flush(SKPTECH_DRAW);
+
+	if (HasPen()) AppendLineVertexListFloat(pt, npt, bConnect);
+}
 
 
 
@@ -842,16 +696,16 @@ short mod(short a, short b)
 
 // ===============================================================================================
 //
-int D3D9Pad::CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, float hd, short npt, bool bSharp)
+int D3D9Pad::CheckTriangle(short x, const IVECTOR2 *pt, const WORD *Idx, float hd, short npt, bool bSharp)
 {
 	WORD A = Idx[x];
 	WORD B = Idx[mod(x-1,npt)];
 	WORD C = Idx[mod(x+1,npt)];
 
-	float bx = pt[B].x - pt[A].x;
-	float by = pt[B].y - pt[A].y;
-	float ax = pt[C].x - pt[A].x;
-	float ay = pt[C].y - pt[A].y;
+	float bx = float(pt[B].x - pt[A].x);
+	float by = float(pt[B].y - pt[A].y);
+	float ax = float(pt[C].x - pt[A].x);
+	float ay = float(pt[C].y - pt[A].y);
 
 	if ((bx*ay-by*ax)*hd > 0) return 0;	// Check handiness
 
@@ -871,8 +725,8 @@ int D3D9Pad::CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, floa
 
 		if (P==B || P==A || P==C) continue;
 
-		float cx = pt[P].x - pt[A].x;
-		float cy = pt[P].y - pt[A].y;
+		float cx = float(pt[P].x - pt[A].x);
+		float cy = float(pt[P].y - pt[A].y);
 		float ac = ax*cx + ay*cy;	 if (ac<0) continue;	
 		float bc = bx*cx + by*cy;	 if (bc<0) continue;
 		float u  = (bb*ac - ab*bc) * id;
@@ -889,21 +743,21 @@ int D3D9Pad::CheckTriangle(short x, const D3DXVECTOR3 *pt, const WORD *Idx, floa
 
 // ===============================================================================================
 //
-int D3D9Pad::CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out)
+int D3D9Pad::CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out)
 {
-	if (npt<3) return 0;
+	if (npt > 255) return 0;
 	if (npt==3) { Out[0]=0; Out[1]=1; Out[2]=2;	return 3; }
 
 	short idx = 0;		// Number of indices written in the output
-	short x = npt-1;	// First ear to test is the last one in the list
+	short x = npt-1;		// First ear to test is the last one in the list
 	bool bSharp = true; // Avoid sharp ears
 	
 	// Build initial index list
-	WORD *In = new WORD[npt];
+	WORD In[256];
 	for (int i=0;i<npt;i++) In[i]=i;
 	float sum = 0;
 	int k = npt-1;
-	for (int i=0;i<k;i++) sum += (pt[i].x*pt[(i+1)%k].y - pt[(i+1)%k].x*pt[i].y);
+	for (int i=0;i<k;i++) sum += (float(pt[i].x)*float(pt[(i+1)%k].y) - float(pt[(i+1)%k].x)*float(pt[i].y));
 
 	if (sum>0) sum=1.0; else sum=-1.0;
 
@@ -915,7 +769,7 @@ int D3D9Pad::CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out)
 			{
 				x--; 
 				if (x<0) { // Restart
-					if (!bSharp) { delete []In;	return idx;	}
+					if (!bSharp) { return idx;	}
 					bSharp=false; 
 					x=npt-1; 
 				}
@@ -938,7 +792,7 @@ int D3D9Pad::CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out)
 	Out[idx] = In[0]; idx++;
 	Out[idx] = In[1]; idx++;
 	Out[idx] = In[2]; idx++;
-	delete []In;
+
 	return idx;
 }
 
@@ -947,89 +801,293 @@ int D3D9Pad::CreatePolyIndexList(const D3DXVECTOR3 *pt, short npt, WORD *Out)
 //
 inline D3DXVECTOR2 D3D9Pad::_DXV2(const IVECTOR2 *pt)
 {
-	return D3DXVECTOR2(float(pt->x+origx), float(pt->y+origy));
+	return D3DXVECTOR2(float(pt->x), float(pt->y));
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::CreateLineVertexList(D3DXVECTOR3 *Vtx, const IVECTOR2 *pt, int npt, bool bLoop)
+void D3D9Pad::AppendLineVertexList(const IVECTOR2 *pt, int _npt, bool bLoop)
 {
-	DWORD n = 0;
-	D3DXVECTOR2 jv, dp, d;	
+	if (_npt < 2) return;
+
+	WORD npt = WORD(_npt);
+	WORD wLoop = vI;
+	WORD li = WORD(npt - 1);
+	WORD aV;
+
+	float length = 0.0f;
+
+
+	// ----------------------------------------------------------------------
+	// Draw a thin hairline
+	// ----------------------------------------------------------------------
+
+	if (!bTriangles) {
+
+		// Create line segments -------------------------------------------------
+		//
+		for (WORD i = 0; i<npt; i++) {
+
+			Vtx[vI].x = float(pt[i].x);
+			Vtx[vI].y = float(pt[i].y);
+			Vtx[vI].l = length;
+			Vtx[vI].fnc = SKPFNC_PEN;
+			
+			if (IsDashed() && i!=li) {
+				float x = float(pt[i].x - pt[i+1].x);
+				float y = float(pt[i].y - pt[i+1].y);
+				length += sqrt(x*x + y*y);
+			}
+
+			vI++;
+		}
+
+		aV = wLoop;
+
+		for (WORD i = 0; i < (npt-1); i++) {
+			Idx[iI++] = aV;
+			aV++;
+			Idx[iI++] = aV;
+		}
+
+		// Last segment ---------------------------------------------------------
+		//
+		if (bLoop) {
+			Idx[iI++] = vI - 1;
+			Idx[iI++] = wLoop;
+		}
+	
+		return;
+	}
+
+
+
+	// ----------------------------------------------------------------------
+	// Wide line mode 
+	// ----------------------------------------------------------------------
+
+	D3DXVECTOR2 dp, d;
 
 	// Line Init ------------------------------------------------------------
 	//
-	if (bLoop) dp = _DXV2(&pt[0]) - _DXV2(&pt[npt-1]);
+	if (bLoop) dp = _DXV2(&pt[0]) - _DXV2(&pt[npt - 1]);
 	else	   dp = _DXV2(&pt[1]) - _DXV2(&pt[0]);
 
-	D3DXVec2Normalize(&dp, &dp);
-
-	int li = npt-1;
-	float length = 0.0f;
-	float width  = GetPenWidth();
-
+	WORD bV, cV, dV;
+	
+	
 	// Create line segments -------------------------------------------------
 	//
-	for (int i=0;i<npt;i++) {
-	
-		if (i!=li)		d = _DXV2(&pt[i+1]) - _DXV2(&pt[i]);
+	for (WORD i = 0; i<npt; i++) {
+
+		if (i != li)	d = _DXV2(&pt[i + 1]) - _DXV2(&pt[i]);
 		else {
-			if (bLoop)	d = _DXV2(&pt[0])  - _DXV2(&pt[li]);
+			if (bLoop)	d = _DXV2(&pt[0]) - _DXV2(&pt[li]);
 			else		d = dp;
 		}
 
-		float ld = D3DXVec2Length(&d);
+		// --------------------------------------
+		Vtx[vI].x = Vtx[vI+1].x = float(pt[i].x);
+		Vtx[vI].y = Vtx[vI+1].y = float(pt[i].y);
+		Vtx[vI].l = Vtx[vI+1].l = length;
+		// --------------------------------------
+		Vtx[vI].fnc = Vtx[vI+1].fnc = SKPFNC_PEN;
+		// --------------------------------------
+		Vtx[vI].ix = d.x;	Vtx[vI].iy = d.y;
+		Vtx[vI].ox = dp.x;	Vtx[vI].oy = dp.y;
+		aV = vI; vI++;
+		// --------------------------------------
+		Vtx[vI].ix = -d.x;	Vtx[vI].iy = -d.y;
+		Vtx[vI].ox = -dp.x;	Vtx[vI].oy = -dp.y;
+		bV = vI; vI++;
+		// --------------------------------------
 
-		d /= ld;
-	
-		float cd = (d.x*dp.x) + (d.y*dp.y);
-
-		if (fabs(cd-1.0f)>4e-3) {
-			D3DXVec2Normalize(&jv, &(D3DXVECTOR2(d.y, -d.x) + D3DXVECTOR2(dp.y, -dp.x)));
-			jv *= ((0.5f * width) / sqrt(0.5f * (1.0f+cd)));
+		if (i > 0) {
+			Idx[iI++] = cV;	Idx[iI++] = aV;
+			Idx[iI++] = dV;	Idx[iI++] = dV;
+			Idx[iI++] = aV;	Idx[iI++] = bV;
 		}
-		else {
-			jv = D3DXVECTOR2(d.y, -d.x) * (0.5f * width);
-		}
 
-		Vtx[n++] = D3DXVECTOR3(float(pt[i].x+origx) + jv.x, float(pt[i].y+origy) + jv.y, length);
-		Vtx[n++] = D3DXVECTOR3(float(pt[i].x+origx) - jv.x, float(pt[i].y+origy) - jv.y, length);
-
-		length += ld;
+		cV = aV;
+		dV = bV;
+		if (IsDashed()) length += D3DXVec2Length(&d);
 		dp = d;
 	}
 
 	// Last segment ---------------------------------------------------------
 	//
 	if (bLoop) {
-		Vtx[n++] = D3DXVECTOR3(Vtx[0].x, Vtx[0].y, length);
-		Vtx[n++] = D3DXVECTOR3(Vtx[1].x, Vtx[1].y, length);
+		Idx[iI++] = wLoop;
+		Idx[iI++] = aV;
+		Idx[iI++] = wLoop + 1;
+		Idx[iI++] = wLoop + 1;
+		Idx[iI++] = aV;
+		Idx[iI++] = bV;
 	}
 }
 
 
 // ===============================================================================================
 //
-ID3DXEffect* D3D9Pad::FX = 0;		
-D3DXHANDLE   D3D9Pad::eLine = 0;
-D3DXHANDLE   D3D9Pad::eEllipse = 0;
-D3DXHANDLE   D3D9Pad::eVP = 0;			
-D3DXHANDLE   D3D9Pad::eColor = 0;	
-D3DXHANDLE   D3D9Pad::eTex0 = 0;	
-D3DXHANDLE   D3D9Pad::eData = 0;
-D3DXHANDLE   D3D9Pad::eDash = 0;
-D3D9Client * D3D9Pad::gc = 0;
+void D3D9Pad::AppendLineVertexListFloat(const FVECTOR2 *_pt, int _npt, bool bLoop)
+{
+	if (_npt < 2) return;
 
-LPDIRECT3DVERTEXBUFFER9 D3D9Pad::pCircleLow = 0;
-LPDIRECT3DVERTEXBUFFER9 D3D9Pad::pCircleHigh = 0;
-LPD3DXVECTOR2 D3D9Pad::pSinCosLow = 0;
-LPD3DXVECTOR2 D3D9Pad::pSinCosHigh = 0;
+	D3DXVECTOR2 *pt = (D3DXVECTOR2 *)_pt;
+
+	WORD npt = WORD(_npt);
+	WORD wLoop = vI;
+	WORD li = WORD(npt - 1);
+	WORD aV;
+
+	float length = 0.0f;
+
+
+	// ----------------------------------------------------------------------
+	// Draw a thin hairline
+	// ----------------------------------------------------------------------
+
+	if (!bTriangles) {
+
+		// Create line segments -------------------------------------------------
+		//
+		for (WORD i = 0; i<npt; i++) {
+
+			Vtx[vI].x = pt[i].x;
+			Vtx[vI].y = pt[i].y;
+			Vtx[vI].l = length;
+			Vtx[vI].fnc = SKPFNC_PEN;
+
+			if (IsDashed() && i != li) {
+				float x = pt[i].x - pt[i + 1].x;
+				float y = pt[i].y - pt[i + 1].y;
+				length += sqrt(x*x + y*y);
+			}
+
+			vI++;
+		}
+
+		aV = wLoop;
+
+		for (WORD i = 0; i < (npt - 1); i++) {
+			Idx[iI++] = aV;
+			aV++;
+			Idx[iI++] = aV;
+		}
+
+		// Last segment ---------------------------------------------------------
+		//
+		if (bLoop) {
+			Idx[iI++] = vI - 1;
+			Idx[iI++] = wLoop;
+		}
+
+		return;
+	}
+
+
+
+	// ----------------------------------------------------------------------
+	// Wide line mode 
+	// ----------------------------------------------------------------------
+
+	D3DXVECTOR2 dp, d;
+
+	// Line Init ------------------------------------------------------------
+	//
+	if (bLoop) dp = pt[0] - pt[npt - 1];
+	else	   dp = pt[1] - pt[0];
+
+	WORD bV, cV, dV;
+
+
+	// Create line segments -------------------------------------------------
+	//
+	for (WORD i = 0; i<npt; i++) {
+
+		if (i != li)	d = pt[i + 1] - pt[i];
+		else {
+			if (bLoop)	d = pt[0] - pt[li];
+			else		d = dp;
+		}
+
+		// --------------------------------------
+		Vtx[vI].x = Vtx[vI + 1].x = pt[i].x;
+		Vtx[vI].y = Vtx[vI + 1].y = pt[i].y;
+		Vtx[vI].l = Vtx[vI + 1].l = length;
+		// --------------------------------------
+		Vtx[vI].fnc = Vtx[vI + 1].fnc = SKPFNC_PEN;
+		// --------------------------------------
+		Vtx[vI].ix = d.x;   Vtx[vI].iy = d.y;
+		Vtx[vI].ox = dp.x;	Vtx[vI].oy = dp.y;
+		aV = vI; vI++;
+		// --------------------------------------
+		Vtx[vI].ix = -d.x;	Vtx[vI].iy = -d.y;
+		Vtx[vI].ox = -dp.x;	Vtx[vI].oy = -dp.y;
+		bV = vI; vI++;
+		// --------------------------------------
+
+		if (i > 0) {
+			Idx[iI++] = cV;	Idx[iI++] = aV;
+			Idx[iI++] = dV;	Idx[iI++] = dV;
+			Idx[iI++] = aV;	Idx[iI++] = bV;
+		}
+
+		cV = aV;
+		dV = bV;
+		if (IsDashed()) length += D3DXVec2Length(&d);
+		dp = d;
+	}
+
+	// Last segment ---------------------------------------------------------
+	//
+	if (bLoop) {
+		Idx[iI++] = wLoop;
+		Idx[iI++] = aV;
+		Idx[iI++] = wLoop + 1;
+		Idx[iI++] = wLoop + 1;
+		Idx[iI++] = aV;
+		Idx[iI++] = bV;
+	}
+}
+
+
+// ===============================================================================================
+//	
+D3DXHANDLE   D3D9Pad::eSketch = 0;
+D3DXHANDLE   D3D9Pad::eDrawMesh = 0;
+D3DXHANDLE   D3D9Pad::eVP = 0;			
+D3DXHANDLE   D3D9Pad::eW = 0;
+D3DXHANDLE   D3D9Pad::eKey = 0;
+D3DXHANDLE   D3D9Pad::ePen = 0;
+D3DXHANDLE   D3D9Pad::eBrush = 0;
+D3DXHANDLE   D3D9Pad::eText = 0;
+D3DXHANDLE   D3D9Pad::eBack = 0;
+D3DXHANDLE   D3D9Pad::eTexEn = 0;
+D3DXHANDLE   D3D9Pad::eKeyEn = 0;
+D3DXHANDLE   D3D9Pad::eWidth = 0;
+D3DXHANDLE   D3D9Pad::eTex0 = 0;	
+D3DXHANDLE   D3D9Pad::eDashEn = 0;
+D3DXHANDLE   D3D9Pad::eSize = 0;
+D3DXHANDLE   D3D9Pad::eWide = 0;
+D3DXHANDLE   D3D9Pad::eMtrl = 0;
+D3DXHANDLE   D3D9Pad::eShade = 0;
+D3DXHANDLE   D3D9Pad::ePos = 0;
+D3DXHANDLE   D3D9Pad::eCov = 0;
+D3DXHANDLE   D3D9Pad::eCovEn = 0;
+
+ID3DXEffect* D3D9Pad::FX = 0;
+D3D9Client * D3D9Pad::gc = 0;
+WORD * D3D9Pad::Idx = 0;
+SkpVtx * D3D9Pad::Vtx = 0;
+LPD3DXVECTOR2 D3D9Pad::pSinCos = 0;
 LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
-
+LPDIRECT3DVERTEXBUFFER9 D3D9Pad::pCircleLow = 0;
+LPDIRECT3DVERTEXBUFFER9 D3D9Pad::pCircleHigh = 0;
 
 
 
@@ -1051,11 +1109,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		else if (_stricmp (face, def_fixedface) && _stricmp (face, def_sansface) && _stricmp (face, def_serifface)) face = (prop ? def_sansface : def_fixedface);
 	}
 	else face++;
-
-	_height = height;
-	_prop = prop;
-	_style = style;
-	strcpy_s(_face, 64, face);
 
 	pFont = NULL;
 	hFont = NULL;
@@ -1087,7 +1140,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
-	if (pFont==NULL && pDev) {
+	if (pFont==NULL) {
 	
 		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
 
@@ -1117,56 +1170,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	if (hFont==NULL) {
 		face  = (prop ? def_sansface : def_fixedface);
 		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
-	}
-}
-
-// -----------------------------------------------------------------------------------------------
-//
-void D3D9PadFont::InitD3DFont()
-{
-	if (pFont) return;
-
-	for (int i = 0; i<nfcache; i++) {
-		if (fcache[i].height != _height) continue;
-		if (fcache[i].style != _style) continue;
-		if (fcache[i].prop != _prop) continue;
-		if (_stricmp(fcache[i].face, _face) != 0) continue;
-		pFont = fcache[i].pFont;
-		break;
-	}
-
-	int weight = (_style & BOLD ? FW_BOLD : FW_NORMAL);
-	DWORD italic = (_style & ITALIC ? TRUE : FALSE);
-	DWORD underline = (_style & UNDERLINE ? TRUE : FALSE);
-
-	DWORD AAQuality = NONANTIALIASED_QUALITY;
-
-	if (Config->SketchpadFont == 1) AAQuality = DRAFT_QUALITY;
-	if (Config->SketchpadFont == 2) AAQuality = CLEARTYPE_QUALITY;
-	if (Config->SketchpadFont == 3) AAQuality = PROOF_QUALITY;
-
-	// Create DirectX accelerated font for a use with D3D9Pad ------------------
-	//
-	if (pFont == NULL) {
-
-		HFONT hNew = CreateFont(_height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, _face);
-
-		pFont = new D3D9Text(pDev);
-		pFont->Init(hNew, 255);
-		DeleteObject(hNew);
-
-		pFont->SetRotation(rotation);
-
-		if (nfcache>250) LogErr("Font Cache is Full.");
-		else {
-			// Fill the cache --------------------------------
-			fcache[nfcache].pFont = pFont;
-			fcache[nfcache].height = _height;
-			fcache[nfcache].style = _style;
-			fcache[nfcache].prop = _prop;
-			strcpy_s(fcache[nfcache].face, 64, _face);
-			nfcache++;
-		}
 	}
 }
 

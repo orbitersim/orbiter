@@ -305,7 +305,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 
 // ===========================================================================================
 //
-void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog)
+void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog)
 {
 	MATRIX3 grot;
 	D3DXMATRIX W;
@@ -346,7 +346,7 @@ void vObject::RenderAxisVector(Sketchpad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vect
 
 // ===========================================================================================
 //
-void vObject::RenderAxisLabel(Sketchpad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
+void vObject::RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
 {
 	D3DXVECTOR3 homog, ws;
 	MATRIX3 grot;
@@ -392,6 +392,7 @@ void vObject::RenderAxisLabel(Sketchpad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, 
 		int yc = (int)(scn->ViewH()*0.5*(1.0f - homog.y));
 		pSkp->SetTextColor(D3DXCOLOR(clr->b, clr->g, clr->r, clr->a));
 		pSkp->Text(xc + 10, yc, label, strlen(label));
+		pSkp->EndDrawing();
 	}
 }
 
