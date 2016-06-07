@@ -1129,16 +1129,16 @@ void Scene::RenderMainScene()
 				}
 			}
 
-			pSketch->SetViewProjectionMatrix((float*)GetProjectionViewMatrix());
-			gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM);
 			pSketch->EndDrawing();
-
-			pSketch->Reset();
-			pSketch->SetFont(pLabelFont);
-			pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
 		} 
 	} 
 
+
+	if (plnmode & PLN_ENABLE) {
+		D3DXMATRIX mP;
+		GetAdjProjViewMatrix(&mP, 100.0f, 1e10);
+		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, &mP);
+	}
 
     	
 	// -------------------------------------------------------------------------------------------------------
@@ -1147,6 +1147,9 @@ void Scene::RenderMainScene()
 
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
+	pSketch->Reset();
+	pSketch->SetFont(pLabelFont);
+	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
 	pSketch->SetTextColor(labelCol[0]);
 	pSketch->SetPen(lblPen[0]);
 
@@ -1369,13 +1372,10 @@ void Scene::RenderMainScene()
 
 	pSketch = new D3D9Pad(gc->GetBackBuffer());
 
-	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST);
-	pSketch->EndDrawing();
-
+	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL);
 	gc->Render2DOverlay();
+	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL);
 	
-	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND);
-	pSketch->EndDrawing();
 	SAFE_DELETE(pSketch);
 
 
@@ -2057,6 +2057,22 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 
 // ===========================================================================================
 //
+void Scene::GetAdjProjViewMatrix(LPD3DXMATRIX pMP, float znear, float zfar)
+{
+	float tanap = tan(Camera.aperture);
+	D3DXMATRIX mProj;
+	ZeroMemory(&mProj, sizeof(D3DXMATRIX));
+
+	mProj._11 = (Camera.aspect / tanap);
+	mProj._22 = (1.0f / tanap);
+	mProj._43 = (mProj._33 = zfar / (zfar - znear)) * (-znear);
+	mProj._34 = 1.0f;
+
+	D3DXMatrixMultiply(pMP, &Camera.mView, &mProj);
+}
+
+// ===========================================================================================
+//
 void Scene::SetCameraAperture(float ap, float as)
 {
 	Camera.aperture = ap;
@@ -2067,7 +2083,7 @@ void Scene::SetCameraAperture(float ap, float as)
 	ZeroMemory(&Camera.mProj, sizeof(D3DXMATRIX));
 
 	Camera.mProj._11 = (as / tanap);
-	Camera.mProj._22 = (1.0f    / tanap);
+	Camera.mProj._22 = (1.0f / tanap);
 	Camera.mProj._43 = (Camera.mProj._33 = Camera.farplane / (Camera.farplane-Camera.nearplane)) * (-Camera.nearplane);
 	Camera.mProj._34 = 1.0f;
 	
@@ -2083,7 +2099,6 @@ void Scene::SetCameraAperture(float ap, float as)
 	Camera.vwf  = Camera.vhf/as;
 
 	D3DXMatrixMultiply(&Camera.mProjView, &Camera.mView, &Camera.mProj);
-
 	D3D9Effect::SetViewProjMatrix(&Camera.mProjView);
 }
 

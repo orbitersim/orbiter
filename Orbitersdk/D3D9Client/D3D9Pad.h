@@ -40,14 +40,22 @@ extern oapi::Pen  *defpen;
 #define SKPTECH_BLIT		0x02
 #define SKPTECH_MESH		0x03
 #define SKPTECH_PIXLES		0x04
+#define SKPTECH_POLY		0x05
 
 
-#define SKPFNC_BLITCK		0.0f
-#define SKPFNC_BLIT			1.0f
-#define SKPFNC_TEXT			2.0f
-#define SKPFNC_BRUSH		3.0f
-#define SKPFNC_BACK			4.0f
-#define SKPFNC_PEN			5.0f
+//#define SKPFNC_BLITCK		0.0f
+//#define SKPFNC_BLIT		1.0f
+//#define SKPFNC_TEXT		2.0f
+//#define SKPFNC_BRUSH		3.0f
+//#define SKPFNC_BACK		4.0f
+//#define SKPFNC_PEN		5.0f
+
+#define SKPSW_NONE			0x80000000
+#define SKPSW_FONT			0x800000FF
+#define SKPSW_COLORKEY		0x8000FF00
+#define SKPSW_TEXTURE		0x80FF0000
+#define SKPSW_WIDEPEN_L		0x00000000
+#define SKPSW_WIDEPEN_R		0xFF000000
 
 // ===============================================================================================
 #define nLow 17
@@ -55,23 +63,46 @@ extern oapi::Pen  *defpen;
 #define nQueueMax 2048
 #define nIndexMax (nQueueMax * 3)
 
+
+struct SkpColor {
+
+	SkpColor() {
+		dclr = 0;
+		fclr = D3DXCOLOR(0, 0, 0, 0);
+	}
+
+	SkpColor(DWORD c) {
+		if ((c & 0xFF000000) == 0) c |= 0xFF000000;
+		dclr = c;
+		fclr = D3DXCOLOR(c);
+		D3DXCOLORSWAP(&fclr);
+	}
+
+	DWORD dclr;
+	D3DXCOLOR fclr;
+};
+
+
+
 struct SkpVtx {
 
 	SkpVtx() {
 		memset(this, 0, sizeof(SkpVtx));
 	};
 
-	float x, y;				// vertex x, y
-	float ix, iy;			// inbound direction
-	float ox, oy;			// outbound direction	
-	float fnc, l;			
+	float x, y, l;			// vertex x, y, length
+	float nx, ny;			// next point
+	float px, py;			// perivous point	
+	DWORD clr, fnc;			
 };
 
 
-inline void SkpVtxIC(SkpVtx &v, int _x, int _y, float _c)
+
+inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
 	v.x = float(_x); v.y = float(_y);
-	v.fnc = _c;
+	v.clr = c.dclr;
+	v.fnc = SKPSW_NONE;
 	v.l = 0.0f;
 }
 
@@ -79,7 +110,7 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, float _c)
 inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
 {
 	v.x = float(_x); v.y = float(_y);
-	v.ix = float(_tx); v.iy = float(_ty);
+	v.nx = float(_tx); v.ny = float(_ty);
 	v.l = 0.0f;
 };
 
@@ -87,7 +118,7 @@ inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
 inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 {
 	v.x = _x; v.y = _y;
-	v.ix = float(_tx); v.iy = float(_ty);
+	v.nx = float(_tx); v.ny = float(_ty);
 	v.l = 0.0f;
 };
 
@@ -95,7 +126,7 @@ inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
 	v.x = _x; v.y = _y;
-	v.ix = _tx; v.iy = _ty;
+	v.nx = _tx; v.ny = _ty;
 	v.l = 0.0f;
 };
 
@@ -107,6 +138,16 @@ inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 class D3D9Pad : public Sketchpad2
 {
 	friend D3D9Text;
+
+	mutable struct {
+		DWORD style;
+		float width;
+		bool  bEnabled;
+	} QPen;
+
+	mutable struct {
+		bool  bEnabled;
+	} QBrush;
 
 public:
 	/**
@@ -375,11 +416,11 @@ public:
 	// ===============================================================================
 	// Sketchpad2 Additions
 	// ===============================================================================
-
+	void QuickPen(DWORD color, float width = 1.0f, DWORD style = 0);
+	void QuickBrush(DWORD color);
 	void SetGlobalLineScale(float width = 1.0f);
-	void SetProjection(float fov = -1.0f, float zNear = 0.0f, float zFar = 1e5);
-	void SetViewProjectionMatrix(const float *pVP);
-	void SetWorldTransform(const MATRIX4 *pWT = NULL);
+	void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL);
+	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
 	int  DrawMeshGroup(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE);
 	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
@@ -388,10 +429,13 @@ public:
 	void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
 	void ClipRect(const LPRECT clip = NULL);
-	void FloatPolyline(const FVECTOR2 *pt, int npt, bool bConnect);
 	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
+	void DrawPoly(HPOLY hPoly, DWORD flags = 0);
 
+
+	// ===============================================================================
 	// D3D9Client Privates
+	// ===============================================================================
 	LPD3DXMATRIX WorldMatrix();
 	void Reset();
 	void EndDrawing();
@@ -412,7 +456,7 @@ private:
 
 	bool Flush(int iTech);
 	void AddRectIdx(WORD aV);
-	void FillRect(int l, int t, int r, int b, float c);
+	void FillRect(int l, int t, int r, int b, SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
 	void TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
 	void FlushPrimitives();
@@ -422,16 +466,16 @@ private:
 	int	 CheckTriangle(short x, const IVECTOR2 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
 	int	 CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out);
 	void AppendLineVertexList(const IVECTOR2 *pt, int npt, bool bLoop);
-	void AppendLineVertexListFloat(const FVECTOR2 *pt, int npt, bool bLoop);
 	
 	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
 	mutable oapi::Brush *cbrush; ///< currently selected brush (NULL if none)
 
-	mutable D3DXCOLOR textcolor;
-	mutable D3DXCOLOR pencolor;
-	mutable D3DXCOLOR brushcolor;
-	mutable D3DXCOLOR bkcolor;
+	mutable SkpColor textcolor;
+	mutable SkpColor pencolor;
+	mutable SkpColor brushcolor;
+	mutable SkpColor bkcolor;
+
 	mutable bool bPenChange;
 	mutable bool bViewChange;
 	mutable bool bFontChange;
@@ -442,6 +486,7 @@ private:
 	DWORD bkmode;
 	DWORD halign, valign;
 	float linescale;
+	float zfar;
 	int cx, cy;
 	int CurrentTech;
 	bool bConvert;
@@ -474,9 +519,8 @@ private:
 	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eW;
 	static D3DXHANDLE   ePen;
-	static D3DXHANDLE   eBrush;
-	static D3DXHANDLE   eText;
-	static D3DXHANDLE   eBack;
+	static D3DXHANDLE   eWP;
+	static D3DXHANDLE   eTarget;
 	static D3DXHANDLE   eKey;
 	static D3DXHANDLE   eTexEn;
 	static D3DXHANDLE   eKeyEn;
@@ -554,7 +598,7 @@ public:
 	 * \brief Pen constructor.
 	 * \param style line style (0=invisible, 1=solid, 2=dashed)
 	 * \param width line width [pixel]
-	 * \param col line colour (format: 0xBBGGRR)
+	 * \param col line colour (format: 0xAABBGGRR)
 	 * \note if \e width=0, the pen is drawn with a width of 1 pixel.
 	 * \note Dashed line styles are only valid if the width parameter is <= 1.
 	 */
@@ -568,7 +612,7 @@ public:
 private:
 	int style;
 	int width;
-	D3DXCOLOR fcolor;
+	SkpColor clr;
 	HPEN hPen;
 	static LPDIRECT3DDEVICE9 pDev;
 };
@@ -586,7 +630,7 @@ public:
 
 	/**
 	 * \brief Brush constructor.
-	 * \param col line colour (format: 0xBBGGRR)
+	 * \param col line colour (format: 0xAABBGGRR)
 	 * \Only solid GDI brushes are supported.
 	 */
 	explicit D3D9PadBrush (DWORD col);
@@ -597,7 +641,7 @@ public:
 	~D3D9PadBrush ();
 
 private:
-	D3DXCOLOR fcolor;
+	SkpColor clr;
 	HBRUSH hBrush;
 	static LPDIRECT3DDEVICE9 pDev;
 };
@@ -648,6 +692,24 @@ private:
 	SKETCHGRP *Grp;            // list of mesh groups
 	D3DXCOLOR *Mtrl;
 };
+
+
+class D3D9PolyLine {
+
+public:
+	D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, bool bConnect);
+	~D3D9PolyLine();
+
+	void Update(const FVECTOR2 *pt, int npt, bool bConnect);
+	void Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags);
+
+private:
+	bool bLoop;
+	WORD nVtx, nPt, nIdx, iI, vI;
+	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
+	LPDIRECT3DINDEXBUFFER9 pIB;
+};
+
 
 #endif 
 

@@ -46,21 +46,21 @@
 				// -----------------------------------------------------------------------------------------------------------------------------------
 
 				/**
-				* \brief Initialize Orbiter Graphics Client Interface (OGCI) 
+				* \brief Initialize Graphics Client interface (gc) 
 				* \return true, if connection to a graphics client was established, false otherwise.
 				*/
 bool			gcInitialize();
 
 				/**
-				* \brief Check if OGCI is initialized and operational
+				* \brief Check if GC is initialized and operational.
 				* \return true, if the interface is initialized and operational.
-				* \note Always returns flase if the ogciInitialize() is never called or the ogciInitialize() has failed.
+				* \note Always returns flase if the gcInitialize() is never called or the gcInitialize() has failed.
 				*/
 bool			gcEnabled();
 
 				/**
-				* \brief Get a client id DWORD
-				* \return Client id DWORD (e.g. 'D3D9') (not 0xD3D9)
+				* \brief Get a client id DWORD, if a client is present
+				* \return Client id DWORD (e.g. 'D3D9') or zero
 				*/
 DWORD			gcClientID();
 
@@ -145,16 +145,72 @@ CAMERAHANDLE	gcSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &
 				/**
 				* \brief Get the sketchpad version
 				* \param pSkp, handle to a sketchpad interface.
-				* \return 1 or 2
+				* \return Currently returns 1 or 2
 				*/
 int				gcSketchpadVersion(oapi::Sketchpad *pSkp);
 
+				/**
+				* \brief Load a mesh from a harddrive to be used with Sketchpad2::SketchMesh
+				* \param name Name of the mesh file without ".msh" identifier.
+				* \sa gcDeleteSketchMesh
+				* \note SKETCHMESH handle isn't compatible with MESHHANDLE nor DEVMESHHANDLE.
+				*/
 SKETCHMESH		gcLoadSketchMesh(const char *name);
+
+				/**
+				* \brief Delete a mesh previously loaded with gcLoadSketchMesh
+				* \sa gcLoadSketchMesh
+				*/
 void			gcDeleteSketchMesh(SKETCHMESH hMesh);
 
+				/**
+				* \brief Create or Update a polyline composed form piecewise straight segments. Support for filled polygon objects may be added later.
+				* \param hPoly Handle to a poly object to be updated or NULL to create a new one.
+				* \param pt list of vertex points.
+				* \param npt number of points in the list.
+				* \param PolyFlags additional flags
+				* \sa gcDeletePoly, Sketchpad2::DrawPoly
+				* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
+				* \note During update number of points must be equal or smaller than during initial creation of poly object.
+				*/
+HPOLY			gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags = NONE);
+
+				/**
+				* \brief Deletes a polyline created with gcCreatePolyPolyline()
+				* \param hPoly Handle to a polyline to be deleted
+				* \sa gcCreatePolyline
+				*/
+void			gcDeletePoly(HPOLY hPoly);
 
 
-void			gcWorldMatrix(MATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale);
+				// -----------------------------------------------------------------------------------------------------------------------------------
+				// Other Helper Function
+				// -----------------------------------------------------------------------------------------------------------------------------------
+
+				/**
+				* \brief Alters objects position. Matrix must be initially valid.
+				* \param mat [in/out] Pointer to a matrix to change
+				* \param pos New position
+				*/
+void			gcSetTranslation(FMATRIX4 *mat, const VECTOR3 &pos);
+
+				/**
+				* \brief Creates a world transformation matrix
+				* \param mat [out] Pointer to a matrix
+				* \param pos Objects position relative to a camera in ecliptic frame
+				* \param x X-axis, major axis [unit vector]
+				* \param z Z-axis, minor axis [unit vector]
+				* \param scale a sacle factor (default 1.0)
+				*/
+void			gcWorldMatrix(FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale = 1.0);
+
+				/**
+				* \brief Compute a screen space location for a point in camera centric ecliptic frame.
+				* \param rdir a position or a direction vector.
+				* \param pt [out] screen space position in pixels relative to upper-left corner.
+				* \param clip Visibility check. Value 1.0 uses actual screen broders where as other values can increase or decrease clipping region size.
+				* \return true if the point is in the clipping rectanble, false otherwise in which case pt remains unchanged.
+				*/
 bool			gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f);
 
 #endif

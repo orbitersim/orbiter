@@ -1004,7 +1004,7 @@ public:
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam=NULL);
-	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id);
+	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pVP);
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 
 protected:

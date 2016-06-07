@@ -100,6 +100,7 @@ class Scene {
 		D3DXMATRIX	mView;		// D3DX view matrix for current camera state
 		D3DXMATRIX	mProj;		// D3DX projection matrix for current camera state
 		D3DXMATRIX	mProjView;	// D3DX combined projection view matrix
+		D3DXMATRIX  mProjViewInf; // D3DX combined projection view matrix, far plane at infinity
 
 		OBJHANDLE	hObj_proxy;	// closest celestial body
 		vPlanet *	vProxy;		// closest celestial body (visual)
@@ -230,6 +231,7 @@ public:
 
 	// Camera Matrix Access =========================================================================================================
 	//
+	void			   GetAdjProjViewMatrix(LPD3DXMATRIX mP, float znear, float zfar);
 	const LPD3DXMATRIX GetProjectionViewMatrix() const { return (LPD3DXMATRIX)&Camera.mProjView; }
 	const LPD3DXMATRIX GetProjectionMatrix() const { return (LPD3DXMATRIX)&Camera.mProj; }
 	const LPD3DXMATRIX GetViewMatrix() const { return (LPD3DXMATRIX)&Camera.mView; }

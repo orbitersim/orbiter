@@ -39,6 +39,21 @@ DLLCLBK void gcDeleteSketchMesh(SKETCHMESH hMesh)
 }
 
 
+DLLCLBK HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags)
+{
+	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
+	if (!hPoly) return new D3D9PolyLine(pDev, pt, npt, (flags&CONNECT) != 0);
+	((D3D9PolyLine *)hPoly)->Update(pt, npt, (flags&CONNECT) != 0);
+	return hPoly;
+}
+
+
+DLLCLBK void gcDeletePoly(HPOLY hPoly)
+{
+	if (hPoly) delete ((D3D9PolyLine *)hPoly);
+}
+
+
 DLLCLBK bool gcRegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam)
 {
 	return g_client->RegisterRenderProc(proc, flags, pParam);

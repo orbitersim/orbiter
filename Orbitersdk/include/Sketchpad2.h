@@ -13,56 +13,54 @@
 #include "gcConst.h"
 
 
-
 enum SkpMeshFlags { 
 	SMOOTH_SHADE = 0x1,		///< Perform smooth shading (i.e. shallow angles gets darkened) 
 	CULL_NONE = 0x2			///< Do not perform front/back face culling
 };
 
-
-
 namespace oapi {
 
 
-	
-
 	class SKP2FUNC Sketchpad2 : public Sketchpad
 	{
+
 	public:
 
+
 							Sketchpad2(SURFHANDLE s) : Sketchpad(s) {}
+
 		virtual				~Sketchpad2() {}
+
+
+		/**
+		* \brief Setup a quick pen, removes any other pen from use
+		* \param color Pen color in 0xAABBGGRR
+		* \param width Pen width in pixels
+		* \param style 0 = Disabled, 1 = Solid, 2 = Dashed
+		* \param factor A width scale factor. (Default 1.0f)
+		*/
+		virtual void QuickPen(DWORD color, float width = 1.0f, DWORD style = 1) { assert(false); }
+
+
+		/**
+		* \brief Setup a quick brush, removes any other brush from use
+		* \param color Brush color in 0xAABBGGRR
+		*/
+		virtual void QuickBrush(DWORD color) { assert(false); }
 
 
 		/**
 		* \brief Set up a global line width scale factor
 		* \param factor A width scale factor. (Default 1.0f)
 		*/
-		virtual void SetGlobalLineScale(float factor=1.0f) { assert(false); }
-
-
-		/**
-		* \brief Set up a projection
-		* \param fov Field of view in radians. (y-direction, full angle)
-		* \param zNear Near clip plane.
-		* \param zFar Far clip plane.
-		* \param zEnable If true, then Z-Buffer is enabled and cleared. Must be enabled for every update. (Not yet Implemented)
-		* \note Fov of zero will enable orthographic projection where (0,0) is the upper left corner. If perspective projection is in use
-		*		then (0,0) is located in center of the screen. 
-		* \note zNear and zFar clip planes are in use even without z-buffer.
-		* \note Flat objects and convex objects do not require z-buffer.
-		* \warning Results from a CopyRect() and Text() can be blurry when non-default SetProjection() or SetWorldTransform() is set
-		*		due to source-target pixels miss aligments.
-		*/
-		virtual void SetProjection(float fov = 0.0f, float zNear = 0.0f, float zFar = 1e5) { assert(false); }
+		virtual void SetGlobalLineScale(float factor = 1.0f) { assert(false); }
 
 
 		/**
 		* \brief Set combined view and projection matrix.
-		* \param pVP a pointer to an array of 16 floats.
-		* \note Use SetProjection() to disable this. 
+		* \param pVP a pointer to an array of 16 floats or NULL to restore a default projection.
 		*/
-		virtual void SetViewProjectionMatrix(const float *pVP) { assert(false); }
+		virtual void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL) { assert(false); }
 
 
 		/**
@@ -73,15 +71,15 @@ namespace oapi {
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetProjection() or SetWorldTransform() is in use
 		*		due to source-target pixels miss aligments.
 		*/
-		virtual	void SetWorldTransform(const MATRIX4 *pWT = NULL) { assert(false); }
+		virtual	void SetWorldTransform(const FMATRIX4 *pWT = NULL) { assert(false); }
 
 
 		/**
 		* \brief Set up a global world transformation matrix.
 		* \param scale Graphics scale factor.
-		* \param scale Rotation angle [rad]
+		* \param rot Rotation angle [rad]
 		* \param ctr Pointer to a IVECTOR containing a rotation center or NULL for origin.
-		* \param ctr Pointer to a IVECTOR containing a translation or NULL.
+		* \param trl Pointer to a IVECTOR containing a translation or NULL.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
 		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetProjection() or SetWorldTransform() is in use
@@ -98,7 +96,7 @@ namespace oapi {
 
 
 		/**
-		* \brief Set up a world space clip sphere to clip pixels from behind the sphere.
+		* \brief Set up a world space clip sphere to clip pixels behind it. Does not work with orthographic projection.
 		* \param pPos a pointer to a vector containing sphere position in camera centric ecliptic frame, Set to NULL to disable clipping.
 		* \param rad Radius of the sphere.
 		*/
@@ -106,7 +104,7 @@ namespace oapi {
 
 
 		/**
-		* \brief Enable use of depth 'Z' buffer. (currently unimplemented)
+		* \brief Enable a use of depth buffer. (currently unimplemented)
 		* \param bEnable Toggle depth buffer.
 		*/
 		virtual void DepthEnable(bool bEnable) { assert(false); }
@@ -116,12 +114,11 @@ namespace oapi {
 		* \brief Draws a Mesh group in the render target. Usefull in rendering of complex static shapes and polygons.
 		* \param hMesh Pointer to device specific mesh containing the geometry.
 		* \param grp Group index to draw.
-		* \param flags SketchpadMeshFlags
+		* \param flags SkpMeshFlags
 		* \return Number of groups in the mesh or -1 if the group index is out of range.
 		* \note Use SetWorldTransform() to move, rotate and scale the object.
 		* \note Final color = Texture Color * Material Color * Pen Color
 		* \sa gcLoadSketchMesh(), gcDeleteSketchmesh();
-		* \note
 		*/
 		virtual int DrawMeshGroup(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE) { return -2; }
 
@@ -188,14 +185,12 @@ namespace oapi {
 
 
 		/**
-		* \brief Draw a line of piecewise straight segments using current Pen.
-		* \param pt list of vertex points
-		* \param npt number of points in the list
-		* \param bConnect connect line end points forming a loop
-		* \sa Polyline
+		* \brief Draw a pre-created polyline (or polygon later in the future, maybe)
+		* \param hPoly Handle to a poly object
+		* \param flags (reserved for later use, set to zero for now)
+		* \sa gcCreatePoly, gcDeletePoly
 		*/
-		virtual void FloatPolyline(const FVECTOR2 *pt, int npt, bool bConnect) { assert(false); }
-		
+		virtual void DrawPoly(HPOLY hPoly, DWORD flags = 0) { assert(false); }	
 	};
 
 } // namespace oapi

@@ -23,14 +23,25 @@
 #define RENDERPROC_HUD_2ND		0x0002
 #define RENDERPROC_PLANETARIUM	0x0003
 
+enum PolyFlags { 
+	NONE =		0x0,			
+	CONNECT =	0x1		//!< \details Connect line end-points forming a loop
+};
 
 typedef struct {
 	float x, y;
 } FVECTOR2;
 
 
+typedef union {
+	float data[16];
+	struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
+} FMATRIX4;
+
+
 typedef void * CAMERAHANDLE;
 typedef void * SKETCHMESH;
+typedef void * HPOLY;
 
 // --------------------------------------------------------------------------------------
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);

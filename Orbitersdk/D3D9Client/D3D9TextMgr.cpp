@@ -484,7 +484,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 
 	if (bBox) {
 		pSkp->Flush(SKPTECH_BLIT);
-		pSkp->FillRect(int(bbox_l), int(bbox_t), int(bbox_r), int(bbox_b), SKPFNC_BACK);
+		pSkp->FillRect(int(bbox_l), int(bbox_t), int(bbox_r), int(bbox_b), pSkp->bkcolor);
 	}
 
 	idx = 1;
@@ -497,6 +497,9 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 	WORD iI = pSkp->iI;
 	WORD vI = pSkp->vI;
 	
+	DWORD flags = SKPSW_FONT;
+	DWORD color = pSkp->textcolor.dclr;
+
 	while (c && idx<255) {
 
 		pIdx[iI++] = vI;
@@ -513,10 +516,14 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 		SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, Data[c].tx1, Data[c].ty1);
 		SkpVtxFF(pVtx[vI++], xpos + w, ypos, Data[c].tx1, Data[c].ty0);
 
-		pVtx[vI - 1].fnc = SKPFNC_TEXT;
-		pVtx[vI - 2].fnc = SKPFNC_TEXT;
-		pVtx[vI - 3].fnc = SKPFNC_TEXT;
-		pVtx[vI - 4].fnc = SKPFNC_TEXT;
+		pVtx[vI - 1].fnc = flags;
+		pVtx[vI - 1].clr = color;
+		pVtx[vI - 2].fnc = flags;
+		pVtx[vI - 2].clr = color;
+		pVtx[vI - 3].fnc = flags;
+		pVtx[vI - 3].clr = color;
+		pVtx[vI - 4].fnc = flags;
+		pVtx[vI - 4].clr = color;
 
 		xpos += ceil(Data[c].sp + float(spacing));
 
