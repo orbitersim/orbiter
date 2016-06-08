@@ -16,6 +16,11 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+/**
+* \file gcAPI.h
+* \brief Grapgics Client Application Programming Interface defination.
+*/
+
 #ifndef __OGCI_H
 #define __OGCI_H
 
@@ -40,10 +45,20 @@
 #define OGCI_FOR_2010P1
 #endif
 
+				// ===========================================================================
+				/**
+				* \defgroup gcAPI Graphics Client Application Programming Interface 
+				*
+				* These functions provides a way for user applications to interface with
+				* a graphics clients.
+				*/
+				// ===========================================================================
+				//@{
 
-				// -----------------------------------------------------------------------------------------------------------------------------------
-				// Some Generic functions
-				// -----------------------------------------------------------------------------------------------------------------------------------
+				// ===========================================================================
+				/// \name gcAPI Interface Initialization
+				// ===========================================================================
+				//@{
 
 				/**
 				* \brief Initialize Graphics Client interface (gc) 
@@ -63,88 +78,100 @@ bool			gcEnabled();
 				* \return Client id DWORD (e.g. 'D3D9') or zero
 				*/
 DWORD			gcClientID();
+				//@}
 
+				// ===========================================================================
+				/// \name 2D Surface related functions
+				// ===========================================================================
+				//@{
 				/**
 				* \brief Get Surface Attributes (e.g. OAPISURFACE_TEXTURE)
-				* \param hSurf, handle to a surface
-				* \param bCreation, if true return creation time attributes, if false return current attributes
+				* \param hSurf handle to a surface
+				* \param bCreation if true return creation time attributes, if false return current attributes
 				* \return Surface attributes
 				*/
 DWORD			gcGetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation=false);
 
 				/**
 				* \brief Convert an existing surface to an other type.
-				* \param hSurf, handle to a surface
-				* \param attrib, new attributes
+				* \param hSurf handle to a surface
+				* \param attrib new attributes
 				*/
 void			gcConvertSurface(SURFHANDLE hSurf, DWORD attrib);
 
 				/**
 				* \brief Auto-Generate a full chain of mipmaps from the main level.
-				* \param hSurface, handle to a surface
+				* \param hSurface handle to a surface
 				* \return false if an error occured, true otherwise.
 				* \note Surface must be created atleast with (OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS)
 				* \note Exact attribute requirements/conflicts are unknown.
 				*/
 bool			gcGenerateMipMaps(SURFHANDLE hSurface);
+				//@}
 
 		
+				// ===========================================================================
+				/// \name HUD and Planetarium mode access functions
+				// ===========================================================================
+				//@{
 				/**
 				* \brief This function will register a custom render callback function
-				* \param proc, function to be called when render event occur
-				* \param id, render event id
+				* \param proc function to be called when render event occur
+				* \param id render event id
 				* \param pParam a pointer to user data (to a class for an example)
 				* \return false if an error occured, true otherwise.
 				*/
 bool			gcRegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
+				//@}
 
 
-
-				// -----------------------------------------------------------------------------------------------------------------------------------
-				// Custom Camera Interface
-				// -----------------------------------------------------------------------------------------------------------------------------------
-
+				// ===========================================================================
+				/// \name Custom Camera Interface
+				// ===========================================================================
+				//@{
 				/**
 				* \brief Delete/Release a custom camera.
-				* \param hCam, camera handle to delete.
-				* \return zero, or an error code if the camara didn't work properly.
+				* \param hCam camera handle to delete.
+				* \return zero or an error code if the camara didn't work properly.
 				* \note Always delete all cameras bound to a render surface before releasing the rendering surface it-self.
 				*/
 int				gcDeleteCustomCamera(CAMERAHANDLE hCam);
 
 				/**
 				* \brief Toggle camera on and off
-				* \param hCam, camera handle to toggle
-				* \param bOn, true to turn on the camera.
+				* \param hCam camera handle to toggle
+				* \param bOn true to turn on the camera.
 				* \note If multible cameras are sharing the same rendering surface. Flickering will occur if more than one camera is turned on. 
 				*/
 void			gcCustomCameraOnOff(CAMERAHANDLE hCam, bool bOn);
 
 				/**
 				* \brief Create a new custom camera that can me used to render views into a surfaces and textures
-				* \param hCam, camera handle to modify an existing camera or, NULL
-				* \param hVessel, handle to a vessel where the camera is attached to.
-				* \param vPos, camara position in vessel's local coordinate system
-				* \param vDir, camara direction in vessel's local coordinate system. [Unit Vector]
-				* \param vUp, camara up vector. Must be perpendicular to vDir. [Unit Vector]
-				* \param dFow, camera field of view in radians
-				* \param hSurf, rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multible cameras can share the same surface.
-				* \param dwFlags, Flags to controls what is drawn and what is not.
+				* \param hCam camera handle to modify an existing camera or, NULL
+				* \param hVessel handle to a vessel where the camera is attached to.
+				* \param vPos camara position in vessel's local coordinate system
+				* \param vDir camara direction in vessel's local coordinate system. [Unit Vector]
+				* \param vUp camara up vector. Must be perpendicular to vDir. [Unit Vector]
+				* \param dFow camera field of view in radians
+				* \param hSurf rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multible cameras can share the same surface.
+				* \param dwFlags Flags to controls what is drawn and what is not.
 				* \return Camera handle, or NULL if an error occured or if the custom camera interface is disabled.
 				* \note Camera count is unlimited. 
 				* \note Only a cameras attached to currently active vessel are operational and recodring.
 				* \note Having multible cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 				*/
 CAMERAHANDLE	gcSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &vPos, VECTOR3 &vDir, VECTOR3 &vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags=0xFF);
+				//@}
 
 
-				// -----------------------------------------------------------------------------------------------------------------------------------
-				// Custom Sketchpad Goodies
-				// -----------------------------------------------------------------------------------------------------------------------------------
 
+				// ===========================================================================
+				/// \name Sketchpad related functions
+				// ===========================================================================
+				//@{
 				/**
 				* \brief Get the sketchpad version
-				* \param pSkp, handle to a sketchpad interface.
+				* \param pSkp handle to a sketchpad interface.
 				* \return Currently returns 1 or 2
 				*/
 int				gcSketchpadVersion(oapi::Sketchpad *pSkp);
@@ -169,11 +196,11 @@ void			gcDeleteSketchMesh(SKETCHMESH hMesh);
 				* \param pt list of vertex points.
 				* \param npt number of points in the list.
 				* \param PolyFlags additional flags
-				* \sa gcDeletePoly, Sketchpad2::DrawPoly
+				* \sa gcDeletePoly, DrawPoly()
 				* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
 				* \note During update number of points must be equal or smaller than during initial creation of poly object.
 				*/
-HPOLY			gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags = NONE);
+HPOLY			gcCreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, PolyFlags flags = NONE);
 
 				/**
 				* \brief Deletes a polyline created with gcCreatePolyPolyline()
@@ -181,18 +208,19 @@ HPOLY			gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags =
 				* \sa gcCreatePolyline
 				*/
 void			gcDeletePoly(HPOLY hPoly);
+				//@}
 
-
-				// -----------------------------------------------------------------------------------------------------------------------------------
-				// Other Helper Function
-				// -----------------------------------------------------------------------------------------------------------------------------------
-
+				
+				// ===========================================================================
+				/// \name Other Helper Function
+				// ===========================================================================
+				//@{
 				/**
 				* \brief Alters objects position. Matrix must be initially valid.
 				* \param mat [in/out] Pointer to a matrix to change
 				* \param pos New position
 				*/
-void			gcSetTranslation(FMATRIX4 *mat, const VECTOR3 &pos);
+void			gcSetTranslation(oapi::FMATRIX4 *mat, const VECTOR3 &pos);
 
 				/**
 				* \brief Creates a world transformation matrix
@@ -202,7 +230,7 @@ void			gcSetTranslation(FMATRIX4 *mat, const VECTOR3 &pos);
 				* \param z Z-axis, minor axis [unit vector]
 				* \param scale a sacle factor (default 1.0)
 				*/
-void			gcWorldMatrix(FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale = 1.0);
+void			gcWorldMatrix(oapi::FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale = 1.0);
 
 				/**
 				* \brief Compute a screen space location for a point in camera centric ecliptic frame.
@@ -213,4 +241,6 @@ void			gcWorldMatrix(FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const 
 				*/
 bool			gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f);
 
+				//@}
+				//@}
 #endif

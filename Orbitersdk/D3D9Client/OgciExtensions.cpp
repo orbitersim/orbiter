@@ -50,7 +50,10 @@ DLLCLBK HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags f
 
 DLLCLBK void gcDeletePoly(HPOLY hPoly)
 {
-	if (hPoly) delete ((D3D9PolyLine *)hPoly);
+	if (hPoly) {
+		((D3D9PolyLine *)hPoly)->Release();
+		delete ((D3D9PolyLine *)hPoly);
+	}
 }
 
 

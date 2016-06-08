@@ -16,32 +16,57 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+/**
+* \file gcConst.h
+* \brief Structures and definations
+*/
+
 #pragma once
 
-#define RENDERPROC_DELETE		0x0000
-#define RENDERPROC_HUD_1ST		0x0001
-#define RENDERPROC_HUD_2ND		0x0002
-#define RENDERPROC_PLANETARIUM	0x0003
+/// \defgroup RenderProc Specify a render HUD callback function
+///@{
+#define RENDERPROC_DELETE		0x0000	///< Unregister/Remove existing callback 
+#define RENDERPROC_HUD_1ST		0x0001	///< Register a HUD callback to draw under Orbiter's main HUD
+#define RENDERPROC_HUD_2ND		0x0002	///< Register a HUD callback to draw over Orbiter's main HUD
+#define RENDERPROC_PLANETARIUM	0x0003	///< Register a HUD callback to draw into a planetarium view using perspective projection
+///@}
 
+
+
+/**
+* \brief Flags for Poly object creation and update
+*/
 enum PolyFlags { 
 	NONE =		0x0,			
-	CONNECT =	0x1		//!< \details Connect line end-points forming a loop
+	CONNECT =	0x1		///< \details Connect line end-points forming a loop
 };
 
-typedef struct {
-	float x, y;
-} FVECTOR2;
+namespace oapi {
+
+	/**
+	* \brief 32-bit floating point 2D vector type.
+	* \note This structure is compatible with the D3DXVECTOR2 type.
+	*/
+	typedef struct {
+		float x, y;
+	} FVECTOR2;
 
 
-typedef union {
-	float data[16];
-	struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
-} FMATRIX4;
+	/**
+	* \brief Float-valued 4x4 matrix.
+	* \note This structure is compatible with the D3DXMATRIX.
+	*/
+	typedef union {
+		float data[16];
+		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
+	} FMATRIX4;
+}
 
-
+/// \brief Custom camera handle
 typedef void * CAMERAHANDLE;
+/// \brief Sketchmesh handle
 typedef void * SKETCHMESH;
+/// \brief Poly object handle
 typedef void * HPOLY;
-
-// --------------------------------------------------------------------------------------
+/// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);

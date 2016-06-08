@@ -46,7 +46,7 @@ typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 // Helper functiond
 typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip);
 
-
+bool bValid = false;
 
 HMODULE gcHandle = NULL;
 

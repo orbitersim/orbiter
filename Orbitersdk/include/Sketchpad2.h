@@ -12,24 +12,41 @@
 #include "DrawAPI.h"
 #include "gcConst.h"
 
+using namespace oapi;
 
-enum SkpMeshFlags { 
-	SMOOTH_SHADE = 0x1,		///< Perform smooth shading (i.e. shallow angles gets darkened) 
-	CULL_NONE = 0x2			///< Do not perform front/back face culling
-};
+/**
+* \file Sketchpad2.h
+* \brief 2-D surface drawing support interface extension 2.
+*/
+
 
 namespace oapi {
 
-
+	/**
+	* \brief Sketchpad2 adds some additional features to an existing Sketchpad interface.
+	*/
 	class SKP2FUNC Sketchpad2 : public Sketchpad
 	{
 
 	public:
 
+		/**
+		* \brief SketchMesh render flags
+		*/
+		enum SkpMeshFlags {
+			SMOOTH_SHADE = 0x1,		///< Perform smooth shading (i.e. shallow angles gets darkened) 
+			CULL_NONE = 0x2			///< Do not perform front/back face culling
+		};
 
-							Sketchpad2(SURFHANDLE s) : Sketchpad(s) {}
+		/**
+		* \brief Sketchpad2 constructor.
+		*/
+		Sketchpad2(SURFHANDLE s) : Sketchpad(s) {}
 
-		virtual				~Sketchpad2() {}
+		/**
+		* \brief Sketchpad2 destructor.
+		*/
+		virtual	~Sketchpad2() {}
 
 
 		/**
@@ -37,7 +54,6 @@ namespace oapi {
 		* \param color Pen color in 0xAABBGGRR
 		* \param width Pen width in pixels
 		* \param style 0 = Disabled, 1 = Solid, 2 = Dashed
-		* \param factor A width scale factor. (Default 1.0f)
 		*/
 		virtual void QuickPen(DWORD color, float width = 1.0f, DWORD style = 1) { assert(false); }
 
@@ -59,6 +75,7 @@ namespace oapi {
 		/**
 		* \brief Set combined view and projection matrix.
 		* \param pVP a pointer to an array of 16 floats or NULL to restore a default projection.
+		* \note Default clip planes are: zNear = 0, zFar = max(Width, Height). Everything closer and farther than that will be clipped.
 		*/
 		virtual void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL) { assert(false); }
 
@@ -68,7 +85,7 @@ namespace oapi {
 		* \param pWT A pointet to MATRIX4, NULL to reset default settings.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin(). 
 		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
-		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetProjection() or SetWorldTransform() is in use
+		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 		*		due to source-target pixels miss aligments.
 		*/
 		virtual	void SetWorldTransform(const FMATRIX4 *pWT = NULL) { assert(false); }
@@ -82,7 +99,7 @@ namespace oapi {
 		* \param trl Pointer to a IVECTOR containing a translation or NULL.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
 		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
-		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetProjection() or SetWorldTransform() is in use
+		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 		*		due to source-target pixels miss aligments.
 		*/
 		virtual void SetWorldTransform2D(float scale = 1.0f, float rot = 0.0f, IVECTOR2 *ctr = NULL, IVECTOR2 *trl = NULL) { assert(false); }
@@ -118,7 +135,7 @@ namespace oapi {
 		* \return Number of groups in the mesh or -1 if the group index is out of range.
 		* \note Use SetWorldTransform() to move, rotate and scale the object.
 		* \note Final color = Texture Color * Material Color * Pen Color
-		* \sa gcLoadSketchMesh(), gcDeleteSketchmesh();
+		* \sa gcLoadSketchMesh, gcDeleteSketchMesh;
 		*/
 		virtual int DrawMeshGroup(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE) { return -2; }
 

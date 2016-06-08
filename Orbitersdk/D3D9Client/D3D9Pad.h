@@ -42,14 +42,7 @@ extern oapi::Pen  *defpen;
 #define SKPTECH_PIXLES		0x04
 #define SKPTECH_POLY		0x05
 
-
-//#define SKPFNC_BLITCK		0.0f
-//#define SKPFNC_BLIT		1.0f
-//#define SKPFNC_TEXT		2.0f
-//#define SKPFNC_BRUSH		3.0f
-//#define SKPFNC_BACK		4.0f
-//#define SKPFNC_PEN		5.0f
-
+// Feature Switches
 #define SKPSW_NONE			0x80000000
 #define SKPSW_FONT			0x800000FF
 #define SKPSW_COLORKEY		0x8000FF00
@@ -100,7 +93,8 @@ struct SkpVtx {
 
 inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
-	v.x = float(_x); v.y = float(_y);
+	v.x = float(_x); 
+	v.y = float(_y);
 	v.clr = c.dclr;
 	v.fnc = SKPSW_NONE;
 	v.l = 0.0f;
@@ -109,24 +103,30 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 
 inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
 {
-	v.x = float(_x); v.y = float(_y);
-	v.nx = float(_tx); v.ny = float(_ty);
+	v.x = float(_x) - 0.5f; 
+	v.y = float(_y) - 0.5f;
+	v.nx = float(_tx); 
+	v.ny = float(_ty);
 	v.l = 0.0f;
 };
 
 
 inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 {
-	v.x = _x; v.y = _y;
-	v.nx = float(_tx); v.ny = float(_ty);
+	v.x = _x - 0.5f; 
+	v.y = _y - 0.5f;
+	v.nx = float(_tx); 
+	v.ny = float(_ty);
 	v.l = 0.0f;
 };
 
 
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
-	v.x = _x; v.y = _y;
-	v.nx = _tx; v.ny = _ty;
+	v.x = _x; 
+	v.y = _y;
+	v.nx = _tx; 
+	v.ny = _ty;
 	v.l = 0.0f;
 };
 
@@ -431,6 +431,7 @@ public:
 	void ClipRect(const LPRECT clip = NULL);
 	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
 	void DrawPoly(HPOLY hPoly, DWORD flags = 0);
+	void DepthEnable(bool bEnable);
 
 
 	// ===============================================================================
@@ -702,6 +703,7 @@ public:
 
 	void Update(const FVECTOR2 *pt, int npt, bool bConnect);
 	void Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags);
+	void Release();
 
 private:
 	bool bLoop;
