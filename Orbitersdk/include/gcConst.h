@@ -16,6 +16,8 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+#include "OrbiterAPI.h"
+
 /**
 * \file gcConst.h
 * \brief Structures and definations
@@ -32,14 +34,14 @@
 ///@}
 
 
-
 /**
 * \brief Flags for Poly object creation and update
 */
 enum PolyFlags { 
-	NONE =		0x0,			
-	CONNECT =	0x1		///< \details Connect line end-points forming a loop
+	NONE =	   0x000,	
+	CONNECT =  0x001,	///< \details Connect line end points 
 };
+
 
 namespace oapi {
 
@@ -51,6 +53,23 @@ namespace oapi {
 		float x, y;
 	} FVECTOR2;
 
+	/**
+	* \brief 32-bit floating point 4D vector type.
+	* \note This structure is compatible with the D3DXVECTOR2 type.
+	*/
+	/*typedef struct FVECTOR4 {
+		FVECTOR4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+		FVECTOR4(VECTOR3 &v, float _w) : x(v.x), y(v.y), z(v.z), w(_w) {}
+		float x, y, z, w;
+	} FVECTOR4;*/
+
+	typedef struct {
+		float x, y, z, w;
+	} FVECTOR4;
+
+
+	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f) { return { float(v.x), float(v.y), float(v.z), _w }; }
+		
 
 	/**
 	* \brief Float-valued 4x4 matrix.
@@ -58,6 +77,7 @@ namespace oapi {
 	*/
 	typedef union {
 		float data[16];
+		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
 	} FMATRIX4;
 }

@@ -538,7 +538,7 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 	pt[0].x = x0; pt[0].y = y0;
 	pt[1].x = x1; pt[1].y = y1;
 
-	AppendLineVertexList(pt, 2, false);
+	AppendLineVertexList<IVECTOR2>(pt, 2, false);
 		
 	cx = x1; cy = y1;
 }
@@ -583,7 +583,7 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 		pts[1].x = pts[2].x = r;
 		pts[2].y = pts[3].y = b;
 	
-		AppendLineVertexList(pts, 4, true);
+		AppendLineVertexList<IVECTOR2>(pts, 4, true);
 	}
 }
 
@@ -631,7 +631,7 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 	
 	// Draw outline ------------------------------------------
 	//
-	if (HasPen()) AppendLineVertexList(pts, nPrim, true);
+	if (HasPen()) AppendLineVertexList<IVECTOR2>(pts, nPrim, true);
 }
 
 
@@ -655,7 +655,7 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 		for (int i = 0; i<npt; i++) SkpVtxIC(Vtx[vI++], pt[i].x, pt[i].y, brushcolor);
 
 		WORD qIdx[256];
-		int nIdx = CreatePolyIndexList(pt, npt, qIdx);
+		int nIdx = CreatePolyIndexList<IVECTOR2>(pt, npt, qIdx);
 
 		// Add indices to index buffer
 		for (int i = 0; i < nIdx; i++) Idx[iI++] = qIdx[i] + sIdx;
@@ -663,7 +663,7 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 
 	// Draw outline ------------------------------------------
 	//
-	if (HasPen()) AppendLineVertexList(pt, npt, true);	
+	if (HasPen()) AppendLineVertexList<IVECTOR2>(pt, npt, true);
 }
 
 
@@ -675,18 +675,26 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 
 	if (npt < 2) return;
 
-	if (HasPen()) AppendLineVertexList(pt, npt, false);	
+	if (HasPen()) AppendLineVertexList<IVECTOR2>(pt, npt, false);
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::DrawPoly(HPOLY hPoly, DWORD flags)
+void D3D9Pad::DrawPoly (HPOLY hPoly, PolyFlags flags)
 { 
 	Flush(SKPTECH_POLY);
 	if (HasPen()) ((D3D9PolyLine *)hPoly)->Draw(pDev, flags);
 }
 
+
+// ===============================================================================================
+//
+void D3D9Pad::DrawPoly (FVECTOR2 *pt, int npt, PolyFlags flags)
+{
+	Flush(SKPTECH_DRAW);
+	if (HasPen()) AppendLineVertexList<FVECTOR2>(pt, npt, (flags&CONNECT)!=0);
+}
 
 
 
@@ -707,7 +715,8 @@ short mod(short a, short b)
 
 // ===============================================================================================
 //
-int D3D9Pad::CheckTriangle(short x, const IVECTOR2 *pt, const WORD *Idx, float hd, short npt, bool bSharp)
+template <typename Type>
+int D3D9Pad::CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt, bool bSharp)
 {
 	WORD A = Idx[x];
 	WORD B = Idx[mod(x-1,npt)];
@@ -754,7 +763,8 @@ int D3D9Pad::CheckTriangle(short x, const IVECTOR2 *pt, const WORD *Idx, float h
 
 // ===============================================================================================
 //
-int D3D9Pad::CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out)
+template <typename Type>
+int D3D9Pad::CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 {
 	if (npt > 255) return 0;
 	if (npt==3) { Out[0]=0; Out[1]=1; Out[2]=2;	return 3; }
@@ -774,7 +784,7 @@ int D3D9Pad::CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out)
 
 	while (npt>3) {
 
-		switch (CheckTriangle(x, pt, In, sum, npt, bSharp)) {
+		switch (CheckTriangle<Type>(x, pt, In, sum, npt, bSharp)) {
 
 			case 0: 
 			{
@@ -810,15 +820,20 @@ int D3D9Pad::CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out)
 
 // ===============================================================================================
 //
-inline D3DXVECTOR2 D3D9Pad::_DXV2(const IVECTOR2 *pt)
+inline D3DXVECTOR2 _DXV2(const IVECTOR2 &pt)
 {
-	return D3DXVECTOR2(float(pt->x), float(pt->y));
+	return D3DXVECTOR2(float(pt.x), float(pt.y));
 }
 
+inline D3DXVECTOR2 _DXV2(const FVECTOR2 &pt)
+{
+	return D3DXVECTOR2(pt.x, pt.y);
+}
 
 // ===============================================================================================
 //
-void D3D9Pad::AppendLineVertexList(const IVECTOR2 *pt, int _npt, bool bLoop)
+template <typename Type> 
+void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 {
 	if (_npt < 2) return;
 
@@ -880,17 +895,17 @@ void D3D9Pad::AppendLineVertexList(const IVECTOR2 *pt, int _npt, bool bLoop)
 
 	// Line Init ------------------------------------------------------------
 	//
-	if (bLoop) pp = _DXV2(&pt[npt - 1]);
-	else	   pp = _DXV2(&pt[0]) * 2.0 - _DXV2(&pt[1]);
+	if (bLoop) pp = _DXV2(pt[npt - 1]);
+	else	   pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
 
 	// Create line segments -------------------------------------------------
 	//
 	for (WORD i = 0; i<npt; i++) {
 
-		if (i != li)	np = _DXV2(&pt[i + 1]);
+		if (i != li)	np = _DXV2(pt[i + 1]);
 		else {
-			if (bLoop)	np = _DXV2(&pt[0]);
-			else		np = _DXV2(&pt[i]) * 2 - _DXV2(&pt[i-1]);
+			if (bLoop)	np = _DXV2(pt[0]);
+			else		np = _DXV2(pt[i]) * 2.0 - _DXV2(pt[i-1]);
 		}
 
 		WORD vII = vI + 1;
@@ -921,7 +936,7 @@ void D3D9Pad::AppendLineVertexList(const IVECTOR2 *pt, int _npt, bool bLoop)
 		cV = aV;
 		dV = bV;
 
-		pp = _DXV2(&pt[i]);
+		pp = _DXV2(pt[i]);
 
 		if (IsDashed()) length += D3DXVec2Length(&(np-pp));
 	}

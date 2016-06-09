@@ -290,6 +290,14 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 
 // ===============================================================================================
 //
+const FMATRIX4 *D3D9Pad::GetProjection()
+{
+	return (FMATRIX4 *)&mVP;
+}
+
+
+// ===============================================================================================
+//
 void D3D9Pad::SetGlobalLineScale(float width)
 {
 	linescale = width;
@@ -462,7 +470,7 @@ void D3D9Pad::FlushPrimitives()
 
 // ===============================================================================================
 //
-int D3D9Pad::DrawMeshGroup(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags)
+int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags)
 {
 	SketchMesh *hMesh = (SketchMesh *)_hMesh;
 
@@ -504,6 +512,52 @@ int D3D9Pad::DrawMeshGroup(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags)
 	}
 	return -1;
 }
+
+
+// ===============================================================================================
+//
+int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags, SURFHANDLE hTex)
+{
+	// Flush existing artwork out before starting a new one ------
+	//
+	Flush(SKPTECH_MESH);
+
+	MESHGROUP *gr = oapiMeshGroup(hMesh, grp);
+
+	if (!gr) return -1;
+
+	if (!hTex && gr->TexIdx>0) hTex = oapiGetTextureHandle(hMesh, gr->TexIdx);
+
+	MATERIAL *mat = oapiMeshMaterial(hMesh, gr->MtrlIdx);
+	
+	if (mat) {
+		HR(FX->SetValue(eMtrl, &mat->diffuse, sizeof(D3DXCOLOR)));
+	}
+	else {
+		HR(FX->SetValue(eMtrl, &D3DXCOLOR(1,1,1,1), sizeof(D3DXCOLOR)));
+	}
+
+	if (hTex) {
+		HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
+		HR(FX->SetBool(eTexEn, true));
+	}
+	else {
+		HR(FX->SetBool(eTexEn, false));
+	}
+
+	HR(FX->SetBool(eShade, (flags&SMOOTH_SHADE) != 0));
+	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
+
+	HR(FX->CommitChanges());
+
+	if (flags&CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	else				 pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, gr->nVtx, gr->nIdx/3, gr->Idx, D3DFMT_INDEX16, gr->Vtx, sizeof(NTVERTEX));
+
+	return oapiMeshGroupCount(hMesh);
+}
+
 
 // ===============================================================================================
 //
@@ -822,7 +876,7 @@ void D3D9PolyLine::Release()
 
 // ===============================================================================================
 //
-void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags)
+void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags)
 {
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	pDev->SetIndices(pIB);

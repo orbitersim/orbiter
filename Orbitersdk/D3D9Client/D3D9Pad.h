@@ -422,7 +422,8 @@ public:
 	void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
-	int  DrawMeshGroup(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE);
+	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE);
+	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL);
 	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
 	void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
@@ -430,8 +431,10 @@ public:
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
 	void ClipRect(const LPRECT clip = NULL);
 	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
-	void DrawPoly(HPOLY hPoly, DWORD flags = 0);
+	void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE);
+	void DrawPoly(FVECTOR2 *pt, int npt, PolyFlags flags = NONE);
 	void DepthEnable(bool bEnable);
+	const FMATRIX4 *GetProjection();
 
 
 	// ===============================================================================
@@ -463,10 +466,9 @@ private:
 	void FlushPrimitives();
 	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
 	
-	inline D3DXVECTOR2 _DXV2(const IVECTOR2 *pt);
-	int	 CheckTriangle(short x, const IVECTOR2 *pt, const WORD *Idx, float hd, short npt, bool bSharp);
-	int	 CreatePolyIndexList(const IVECTOR2 *pt, short npt, WORD *Out);
-	void AppendLineVertexList(const IVECTOR2 *pt, int npt, bool bLoop);
+	template <typename Type> int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt, bool bSharp);
+	template <typename Type> int CreatePolyIndexList(const Type *pt, short npt, WORD *Out);
+	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	
 	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
@@ -702,7 +704,7 @@ public:
 	~D3D9PolyLine();
 
 	void Update(const FVECTOR2 *pt, int npt, bool bConnect);
-	void Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags);
+	void Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags);
 	void Release();
 
 private:

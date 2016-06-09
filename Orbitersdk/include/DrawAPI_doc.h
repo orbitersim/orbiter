@@ -133,7 +133,7 @@ protected:
 	 * \brief Pen constructor.
 	 * \param style line style (0=invisible, 1=solid, 2=dashed)
 	 * \param width line width [pixel]
-	 * \param col line colour (format: 0xBBGGRR)
+	 * \param col line colour (format: 0xAABBGGRR)
 	 */
 	Pen (int style, int width, DWORD col) {}
 
@@ -156,7 +156,7 @@ class OAPIFUNC Brush: public DrawingTool {
 protected:
 	/**
 	 * \brief Brush constructor.
-	 * \param col brush colour (format: 0xBBGGRR)
+	 * \param col brush colour (format: 0xAABBGGRR)
 	 */
 	Brush (DWORD col) {};
 
@@ -252,7 +252,7 @@ public:
 
 	/**
 	 * \brief Set the foreground colour for text output.
-	 * \param col colour description (format: 0xBBGGRR)
+	 * \param col colour description (format: 0xAABBGGRR)
 	 * \return Previous colour setting.
 	 * \default None, returns 0.
 	 */
@@ -260,7 +260,7 @@ public:
 
 	/**
 	 * \brief Set the background colour for text output.
-	 * \param col background colour description (format: 0xBBGGRR)
+	 * \param col background colour description (format: 0xAABBGGRR)
 	 * \return Previous colour setting
 	 * \default None, returns 0.
 	 * \note The background colour is only used if the background mode

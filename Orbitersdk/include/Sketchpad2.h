@@ -92,6 +92,17 @@ namespace oapi {
 
 
 		/**
+		* \brief Set up a global world transformation matrix to draw into a specific location.
+		* \param pos Position vector in a current projection frame
+		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
+		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
+		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
+		*		due to source-target pixels miss aligments.
+		*/
+		virtual	const FMATRIX4 *GetProjection() { assert(false); return NULL; }
+
+
+		/**
 		* \brief Set up a global world transformation matrix.
 		* \param scale Graphics scale factor.
 		* \param rot Rotation angle [rad]
@@ -137,7 +148,23 @@ namespace oapi {
 		* \note Final color = Texture Color * Material Color * Pen Color
 		* \sa gcLoadSketchMesh, gcDeleteSketchMesh;
 		*/
-		virtual int DrawMeshGroup(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE) { return -2; }
+		virtual int DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE) { assert(false); return -2; }
+
+
+		/**
+		* \brief Draws a template mesh group (from a system memory) in the render target.
+		* \param hMesh Pointer to mesh containing the geometry.
+		* \param grp Group index to draw.
+		* \param flags SkpMeshFlags
+		* \param hTex a texture override, render with this texture regardless what ever is specified in the mesh.
+		* \return Number of groups in the mesh or -1 if the group index is out of range.
+		* \note Use SetWorldTransform() to move, rotate and scale the object.
+		* \note Vertex count should be kept low due to rendering from a system memory. This is a good choise when 
+		* a vertex data changes in a per frame basis. Bad for static vertex data.
+		* \note Final color = Texture Color * Material Color * Pen Color
+		* \sa DrawSketchMesh
+		*/
+		virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 
 
 		/**
@@ -207,7 +234,10 @@ namespace oapi {
 		* \param flags (reserved for later use, set to zero for now)
 		* \sa gcCreatePoly, gcDeletePoly
 		*/
-		virtual void DrawPoly(HPOLY hPoly, DWORD flags = 0) { assert(false); }	
+		virtual void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE) { assert(false); }
+
+
+		virtual void DrawPoly(FVECTOR2 *pt, int nPrim, PolyFlags flags = NONE) { assert(false); }
 	};
 
 } // namespace oapi
