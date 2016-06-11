@@ -185,6 +185,7 @@ void D3D9Pad::Reset()
 	halign = TA_LEFT;
 	valign = TA_TOP;
 	linescale = 1.0f;
+	pattern = 1.0f;
 
 	CurrentTech = 0;
 
@@ -207,7 +208,7 @@ void D3D9Pad::Reset()
 	D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
 
 	HR(FX->SetBool(eCovEn, false));
-	HR(FX->SetVector(eTarget, &D3DXVECTOR4(2.0f/(float)tgt_desc.Width, 2.0f/(float)tgt_desc.Height, 0, 0)));
+	HR(FX->SetVector(eTarget, &D3DXVECTOR4(2.0f/(float)tgt_desc.Width, 2.0f/(float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height)));
 }
 
 
@@ -538,7 +539,7 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 	pt[0].x = x0; pt[0].y = y0;
 	pt[1].x = x1; pt[1].y = y1;
 
-	AppendLineVertexList<IVECTOR2>(pt, 2, false);
+	AppendLineVertexList<IVECTOR2>(pt);
 		
 	cx = x1; cy = y1;
 }
@@ -690,10 +691,15 @@ void D3D9Pad::DrawPoly (HPOLY hPoly, PolyFlags flags)
 
 // ===============================================================================================
 //
-void D3D9Pad::DrawPoly (FVECTOR2 *pt, int npt, PolyFlags flags)
+void D3D9Pad::Lines(FVECTOR2 *pt, int nlines)
 {
 	Flush(SKPTECH_DRAW);
-	if (HasPen()) AppendLineVertexList<FVECTOR2>(pt, npt, (flags&CONNECT)!=0);
+	if (HasPen()) {
+		for (int i = 0; i < nlines; i++) {
+			AppendLineVertexList<FVECTOR2>(pt);
+			pt += 2;
+		}
+	}
 }
 
 
@@ -716,7 +722,7 @@ short mod(short a, short b)
 // ===============================================================================================
 //
 template <typename Type>
-int D3D9Pad::CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt, bool bSharp)
+int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt, bool bSharp)
 {
 	WORD A = Idx[x];
 	WORD B = Idx[mod(x-1,npt)];
@@ -764,7 +770,7 @@ int D3D9Pad::CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, s
 // ===============================================================================================
 //
 template <typename Type>
-int D3D9Pad::CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
+int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 {
 	if (npt > 255) return 0;
 	if (npt==3) { Out[0]=0; Out[1]=1; Out[2]=2;	return 3; }
@@ -830,6 +836,7 @@ inline D3DXVECTOR2 _DXV2(const FVECTOR2 &pt)
 	return D3DXVECTOR2(pt.x, pt.y);
 }
 
+
 // ===============================================================================================
 //
 template <typename Type> 
@@ -857,7 +864,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 			Vtx[vI].x = float(pt[i].x);
 			Vtx[vI].y = float(pt[i].y);
 			Vtx[vI].l = length;
-			Vtx[vI].fnc = SKPSW_NONE;
+			Vtx[vI].fnc = SKPSW_THINPEN;
 			Vtx[vI].clr = pencolor.dclr;
 			
 			if (IsDashed() && i!=li) {
@@ -948,6 +955,85 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 		Idx[iI++] = wL + 1;	Idx[iI++] = wL + 1;
 		Idx[iI++] = aV;		Idx[iI++] = bV;
 	}
+}
+
+
+// ===============================================================================================
+//
+template <typename Type>
+void D3D9Pad::AppendLineVertexList(const Type *pt)
+{
+	
+	// ----------------------------------------------------------------------
+	// Draw a thin hairline
+	// ----------------------------------------------------------------------
+
+	if (!bTriangles) {
+
+		Vtx[vI].x = float(pt[0].x);
+		Vtx[vI].y = float(pt[0].y);
+		Vtx[vI].fnc = SKPSW_THINPEN;
+		Vtx[vI].l = 0.0f;
+		Vtx[vI].clr = pencolor.dclr;
+		Idx[iI++] = vI;
+		vI++;
+
+		Vtx[vI].x = float(pt[1].x);
+		Vtx[vI].y = float(pt[1].y);
+		Vtx[vI].px = float(pt[0].x);
+		Vtx[vI].py = float(pt[0].y);
+		Vtx[vI].fnc = SKPSW_THINPEN | SKPSW_LENGTH;
+		Vtx[vI].clr = pencolor.dclr;
+		Idx[iI++] = vI;
+		vI++;
+
+		return;
+	}
+
+
+	// ----------------------------------------------------------------------
+	// Wide line mode 
+	// ----------------------------------------------------------------------
+
+	D3DXVECTOR2  pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
+	D3DXVECTOR2  np;
+
+	WORD vF = vI;
+
+	for (int i = 0; i < 2; i++) {
+
+		if (i == 0) np = _DXV2(pt[1]);
+		else np = _DXV2(pt[1]) * 2.0 - _DXV2(pt[0]);
+		
+		WORD vII = vI + 1;
+
+		// --------------------------------------
+		Vtx[vI].x = Vtx[vII].x = float(pt[i].x);
+		Vtx[vI].y = Vtx[vII].y = float(pt[i].y);
+		Vtx[vI].nx = Vtx[vII].nx = np.x;
+		Vtx[vI].ny = Vtx[vII].ny = np.y;
+		Vtx[vI].px = Vtx[vII].px = pp.x;
+		Vtx[vI].py = Vtx[vII].py = pp.y;
+		Vtx[vI].l = Vtx[vII].l = 0.0f;
+		Vtx[vI].clr = Vtx[vII].clr = pencolor.dclr;
+		// --------------------------------------
+		Vtx[vI].fnc = SKPSW_WIDEPEN_L;
+		if (i) Vtx[vI].fnc |= SKPSW_LENGTH;
+		vI++;
+		Vtx[vI].fnc = SKPSW_WIDEPEN_R;
+		if (i) Vtx[vI].fnc |= SKPSW_LENGTH;
+		vI++;
+		// --------------------------------------
+
+		pp = _DXV2(pt[i]);
+	}
+
+	Idx[iI++] = vF + 0;
+	Idx[iI++] = vF + 1;
+	Idx[iI++] = vF + 2;
+	Idx[iI++] = vF + 1;
+	Idx[iI++] = vF + 3;
+	Idx[iI++] = vF + 2;
 }
 
 

@@ -30,13 +30,13 @@ uniform extern texture   gTex0;			    // Diffuse texture
 // Colors
 uniform extern float4    gPen;	
 uniform extern float4    gKey;
-uniform extern float4    gTarget;
 uniform extern float4    gMtrl;
 
 uniform extern float3    gPos;				// Clipper sphere direction [unit vector]
 uniform extern float2    gCov;				// Clipper sphere coverage parameters
-uniform extern float4    gSize;				// Inverse Texture size
-uniform extern float     gWidth;			// Pen width
+uniform extern float4    gSize;				// Inverse Texture size in .xy [pixels]
+uniform extern float4    gTarget;			// Inverse Screen size in .xy [pixels], Screen Size in .zw
+uniform extern float3	 gWidth;			// Pen width in .x, and pattern scale in .y, pixel offset in .z
 uniform extern bool      gDashEn;
 uniform extern bool      gTexEn;
 uniform extern bool      gKeyEn;
@@ -66,17 +66,18 @@ struct InputVS
 	float4 fnc : COLOR1;				// Function switch
 };
 
-#define LEN 3	// Length
-#define TSW 0	// Texture switch
-#define CSW 1   // Color key switch
-#define FSW 2   // Font switch
+#define SSW 3	// Point side switch
+#define TSW 2	// Font/Texture/ColorKey switch
+#define ESW 1   // ExtColor switch
+#define LSW 0   // Length switch
 
 struct OutputVS
 {
 	float4 posH    : POSITION0;
 	float4 sw      : TEXCOORD0;
 	float2 tex     : TEXCOORD1;
-	float3 posW    : TEXCOORD2;
+	float  len	   : TEXCOORD2;
+	float4 posW    : TEXCOORD3;
 	float4 color   : COLOR0;
 };
 
@@ -103,32 +104,46 @@ OutputVS SketchpadVS(InputVS v)
 	OutputVS outVS = (OutputVS)0;
 
 	float3 posW = mul(float4(v.pos.xy, 0.0f, 1.0f), gW).xyz;
+	float  fLen = v.pos.z;
 	float2 latW = 0;
-
-	outVS.posW = posW;
-
-	float4 posH = mul(float4(posW.xyz, 1.0f), gP);
-	posH.xyz /= max(1, posH.w);
 	
+	float4 posH = mul(float4(posW.xyz, 1.0f), gP);
+	float4 prvH = mul(float4(v.dir.zw, 0.0f, 1.0f), gWP);	// Prev
+
+	posH.xyz /= max(1, posH.w);
+	prvH.xyz /= max(1, prvH.w);
+	
+	if (v.fnc[LSW]>0.5f) fLen = length((posH.xy - prvH.xy) * gTarget.zw * 0.5);
+
+	float3 posN = normalize(posW);
+	outVS.posW = float4(posN, dot(posN,posW));
+	outVS.len = fLen;
+
 	if (gWide) {
+
+		float4 nxtH = mul(float4(v.dir.xy, 0.0f, 1.0f), gWP);	// Next 	
+
+		nxtH.xyz /= max(1, nxtH.w);
+
+		float fSide = round(v.fnc[SSW] * 2.0 - 1.0);
+
+		float2 pixH = gTarget.xy * gWidth.z * abs(fSide);
+
+		nxtH.xy -= pixH;
+		posH.xy -= pixH;
+		prvH.xy -= pixH;
 		
-		float4 nxtH = mul(float4(v.dir.xy, 0.0f, 1.0f), gWP);	// Next 
-		float4 prvH = mul(float4(v.dir.zw, 0.0f, 1.0f), gWP);	// Prev
-		//float4 nxtH = mul(float4(nxtW.xyz, 1.0f), gP);
-		//float4 prvH = mul(float4(prvW.xyz, 1.0f), gP);
-
-		nxtH.xy /= max(1, nxtH.w);
-		prvH.xy /= max(1, prvH.w);
-
 		float2 nxtS = normalize(nxtH.xy - posH.xy);
 		float2 prvS = normalize(posH.xy - prvH.xy);
 
-		latW = normalize(nxtS + prvS) * (0.49f * gWidth) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
-		posH += float4(latW.y, -latW.x, 0, 0) * gTarget * round(v.fnc.a*2.0 - 1.0);
+		latW = normalize(nxtS + prvS) * (0.45*gWidth.x) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
+		posH += float4(latW.y, -latW.x, 0, 0) * gTarget * fSide;
 	}
 
-	outVS.color.rgba = v.clr.bgra;
-	outVS.sw = float4(v.fnc.rgb, v.pos.z);
+	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
+	else outVS.color.rgba = v.clr.bgra;
+
+	outVS.sw = v.fnc;
 	outVS.posH = float4(posH.xyz, 1.0f);
     outVS.tex = v.dir.xy * gSize.xy;
 
@@ -151,26 +166,23 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 		float4 t = tex2D(TexS, frg.tex);
 		float  a = saturate(t.r*0.3f + t.g*0.5f + t.b*0.2f);
 		
-		c = frg.sw[TSW] < 0.5f ? c : t;
-		c = frg.sw[FSW] < 0.5f ? c : float4(lerp(t.rgb, c.rgb, a), c.a*a);
+		if (frg.sw[TSW] > 0.1f) c = float4(lerp(t.rgb, c.rgb, a), c.a*a);
+		if (frg.sw[TSW] > 0.4f) c = t;
 
 		if (gKeyEn) {
 			float4 x = abs(c - gKey);
-			if ((x.r < tol) && (x.g < tol) && (x.b < tol) && (frg.sw[CSW] > 0.5f)) clip(-1);
+			if ((x.r < tol) && (x.g < tol) && (x.b < tol) && (frg.sw[TSW] > 0.9f)) clip(-1);
 		}
 	}
 	
-
 	if (gDashEn) {
 		float q;
-		if (modf(frg.sw[LEN]*0.13f, q) > 0.5f) clip(-1);
+		if (modf(frg.len*gWidth.y, q) > 0.5f) clip(-1);
 	}
 	
-	
 	if (gClipEn) {
-		float fDst2 = dot(frg.posW, frg.posW);
-		float dFP = dot(gPos, frg.posW * rsqrt(fDst2));
-		if ((dFP > gCov.x) && (fDst2 > gCov.y)) clip(-1);
+		float dFP = dot(gPos, normalize(frg.posW.xyz));
+		if ((dFP > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
 	}
 
 	return c;

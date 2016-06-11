@@ -45,6 +45,7 @@ typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 
 // Helper functiond
 typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip);
+typedef bool (OGCIFN *__gcGetCamera)(gcCameraParam *pCam);
 
 bool bValid = false;
 
@@ -64,6 +65,7 @@ __gcDeleteSketchMesh _gcDeleteSketchMesh = NULL;
 __gcWorldToScreenSpace _gcWorldToScreenSpace = NULL;
 __gcCreatePoly _gcCreatePoly = NULL;
 __gcDeletePoly _gcDeletePoly = NULL;
+__gcGetCamera _gcGetCamera = NULL;
 
 
 // ====================================================================================================
@@ -89,6 +91,7 @@ bool PostInit(HMODULE hClient)
 	_gcDeletePoly = (__gcDeletePoly)GetProcAddress(hClient, "gcDeletePoly");
 	// -------------
 	_gcWorldToScreenSpace = (__gcWorldToScreenSpace)GetProcAddress(hClient, "gcWorldToScreenSpace");
+	_gcGetCamera = (__gcGetCamera)GetProcAddress(hClient, "gcGetCamera");
 
 	return (_gcClientID!=NULL);
 }
@@ -214,8 +217,6 @@ void gcDeletePoly(HPOLY hPoly)
 	if (_gcDeletePoly) _gcDeletePoly(hPoly);
 }
 
-
-
 // ====================================================================================================
 //
 bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip)
@@ -224,6 +225,12 @@ bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip)
 	return false;
 }
 
+// ====================================================================================================
+//
+void gcGetCamera(gcCameraParam *pCam)
+{
+	if (_gcGetCamera) _gcGetCamera(pCam);
+}
 
 
 

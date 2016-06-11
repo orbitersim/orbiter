@@ -38,15 +38,24 @@ namespace oapi {
 			CULL_NONE = 0x2			///< Do not perform front/back face culling
 		};
 
+
 		/**
 		* \brief Sketchpad2 constructor.
 		*/
 		Sketchpad2(SURFHANDLE s) : Sketchpad(s) {}
 
+
 		/**
 		* \brief Sketchpad2 destructor.
 		*/
 		virtual	~Sketchpad2() {}
+
+
+		/**
+		* \brief Get a render surface size in pixels
+		* \param size Pointer to SIZE structure receiving the size 
+		*/
+		virtual void GetRenderSurfaceSize(LPSIZE size) { assert(false); }
 
 
 		/**
@@ -67,9 +76,10 @@ namespace oapi {
 
 		/**
 		* \brief Set up a global line width scale factor
-		* \param factor A width scale factor. (Default 1.0f)
+		* \param width A line width scale factor. (Default 1.0f)
+		* \param pattern Line pattern scale factor. (Default 1.0f)
 		*/
-		virtual void SetGlobalLineScale(float factor = 1.0f) { assert(false); }
+		virtual void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f) { assert(false); }
 
 
 		/**
@@ -143,12 +153,13 @@ namespace oapi {
 		* \param hMesh Pointer to device specific mesh containing the geometry.
 		* \param grp Group index to draw.
 		* \param flags SkpMeshFlags
+		* \param hTex a texture override, render with this texture regardless what ever is specified in the mesh.
 		* \return Number of groups in the mesh or -1 if the group index is out of range.
 		* \note Use SetWorldTransform() to move, rotate and scale the object.
 		* \note Final color = Texture Color * Material Color * Pen Color
 		* \sa gcLoadSketchMesh, gcDeleteSketchMesh;
 		*/
-		virtual int DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE) { assert(false); return -2; }
+		virtual int DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 
 
 		/**
@@ -229,15 +240,20 @@ namespace oapi {
 
 
 		/**
-		* \brief Draw a pre-created polyline (or polygon later in the future, maybe)
-		* \param hPoly Handle to a poly object
+		* \brief Draw a pre-created polyline
+		* \param hPoly Handle to a polyline object
 		* \param flags (reserved for later use, set to zero for now)
 		* \sa gcCreatePoly, gcDeletePoly
 		*/
 		virtual void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE) { assert(false); }
 
 
-		virtual void DrawPoly(FVECTOR2 *pt, int nPrim, PolyFlags flags = NONE) { assert(false); }
+		/**
+		* \brief Draw a list of independent lines. 0-1, 2-3, 4-5,...
+		* \param pt list of vertex points.
+		* \param nlines number of lines to draw
+		*/
+		virtual void Lines(FVECTOR2 *pt1, int nlines) { assert(false); }
 	};
 
 } // namespace oapi

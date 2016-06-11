@@ -77,6 +77,7 @@ class Scene {
 		CAMREC  *prev, *next;
 	} *camFirst, *camLast, *camCurrent;
 
+public:
 
 	// Camera frustum parameters ========================================================
 	//
@@ -106,11 +107,8 @@ class Scene {
 		vPlanet *	vProxy;		// closest celestial body (visual)
 		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
 		double		alt_proxy;	// camera distance to surface of hObj_proxy
-	} Camera;
+	};
 
-
-
-public:
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder);
 
@@ -276,6 +274,8 @@ public:
 	const D3DXVECTOR3 *GetCameraY() const { return &Camera.y; }
 	const D3DXVECTOR3 *GetCameraZ() const { return &Camera.z; }
 	
+	const CAMERA *	GetCamera() const { return &Camera; }
+
 	void			PushCamera();	// Push current camera onto a stack
 	void			PopCamera();	// Restore a camera from a stack
 
@@ -369,7 +369,7 @@ private:
 	int   labelSize[1];
 
 	std::stack<CAMERA>	CameraStack;
-
+	CAMERA		Camera;
 	D3D9Light*	Lights;
 	D3D9Sun	    sunLight;
 

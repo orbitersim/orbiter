@@ -191,8 +191,8 @@ SKETCHMESH		gcLoadSketchMesh(const char *name);
 void			gcDeleteSketchMesh(SKETCHMESH hMesh);
 
 				/**
-				* \brief Create or Update a polyline composed form piecewise straight segments. Support for filled polygon objects may be added later.
-				* \param hPoly Handle to a poly object to be updated or NULL to create a new one.
+				* \brief Create or Update a polyline composed form piecewise straight segments.
+				* \param hPoly Handle to a polyline to be updated or NULL to create a new one.
 				* \param pt list of vertex points.
 				* \param npt number of points in the list.
 				* \param PolyFlags additional flags
@@ -241,6 +241,7 @@ void			gcWorldMatrix(oapi::FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, 
 				*/
 bool			gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f);
 
+void			gcGetCamera(gcCameraParam *pCam);
 				//@}
 				//@}
 #endif

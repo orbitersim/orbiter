@@ -42,11 +42,15 @@ extern oapi::Pen  *defpen;
 #define SKPTECH_PIXLES		0x04
 #define SKPTECH_POLY		0x05
 
-// Feature Switches
-#define SKPSW_NONE			0x80000000
-#define SKPSW_FONT			0x800000FF
-#define SKPSW_COLORKEY		0x8000FF00
-#define SKPSW_TEXTURE		0x80FF0000
+// Feature Switches			//AARRGGBB
+#define SKPSW_FONT			0x80000040
+#define SKPSW_TEXTURE		0x80000080
+#define SKPSW_COLORKEY		0x800000FF
+//
+#define SKPSW_LENGTH		0x00FF0000
+#define SKPSW_EXTCOLOR		0x0000FF00
+//
+#define SKPSW_THINPEN		0x80000000
 #define SKPSW_WIDEPEN_L		0x00000000
 #define SKPSW_WIDEPEN_R		0xFF000000
 
@@ -96,7 +100,7 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 	v.x = float(_x); 
 	v.y = float(_y);
 	v.clr = c.dclr;
-	v.fnc = SKPSW_NONE;
+	v.fnc = SKPSW_THINPEN;
 	v.l = 0.0f;
 }
 
@@ -130,6 +134,8 @@ inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 	v.l = 0.0f;
 };
 
+template <typename Type> int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt, bool bSharp);
+template <typename Type> int CreatePolyIndexList(const Type *pt, short npt, WORD *Out);
 
 /**
  * \brief The D3D9Pad class defines the context for 2-D drawing using
@@ -416,13 +422,14 @@ public:
 	// ===============================================================================
 	// Sketchpad2 Additions
 	// ===============================================================================
+	void GetRenderSurfaceSize(LPSIZE size);
 	void QuickPen(DWORD color, float width = 1.0f, DWORD style = 0);
 	void QuickBrush(DWORD color);
-	void SetGlobalLineScale(float width = 1.0f);
+	void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f);
 	void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
-	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE);
+	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL);
 	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL);
 	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
@@ -432,7 +439,7 @@ public:
 	void ClipRect(const LPRECT clip = NULL);
 	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
 	void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE);
-	void DrawPoly(FVECTOR2 *pt, int npt, PolyFlags flags = NONE);
+	void Lines(FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
 	const FMATRIX4 *GetProjection();
 
@@ -466,9 +473,8 @@ private:
 	void FlushPrimitives();
 	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
 	
-	template <typename Type> int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt, bool bSharp);
-	template <typename Type> int CreatePolyIndexList(const Type *pt, short npt, WORD *Out);
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
+	template <typename Type> void AppendLineVertexList(const Type *pt);
 	
 	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
@@ -488,7 +494,7 @@ private:
 	WORD vI, iI;
 	DWORD bkmode;
 	DWORD halign, valign;
-	float linescale;
+	float linescale, pattern;
 	float zfar;
 	int cx, cy;
 	int CurrentTech;

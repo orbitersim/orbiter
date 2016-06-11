@@ -1779,14 +1779,17 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 
 // ===========================================================================================
 //
-bool Scene::WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip)
+bool Scene::WorldToScreenSpace(const VECTOR3 &pos, oapi::IVECTOR2 *pt, float clip)
 {
-	D3DXVECTOR3 homog;
-	D3DXVECTOR3 dir((float)-rdir.x, (float)-rdir.y, (float)-rdir.z);
+	D3DXVECTOR4 homog;
+	D3DXVECTOR3 dir(float(-pos.x), float(-pos.y), float(-pos.z));
 
 	if (D3DXVec3Dot(&dir, &Camera.z) > 0) return false;
 		
-	D3DXVec3TransformCoord(&homog, &dir, GetProjectionViewMatrix());
+	D3DXVec3Transform(&homog, &dir, GetProjectionViewMatrix());
+
+	homog.x /= homog.w;
+	homog.y /= homog.w;
 
 	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) return false;
 

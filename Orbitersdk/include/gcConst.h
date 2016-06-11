@@ -38,10 +38,21 @@
 * \brief Flags for Poly object creation and update
 */
 enum PolyFlags { 
-	NONE =	   0x000,	
-	CONNECT =  0x001,	///< \details Connect line end points 
+	NONE =		0x00,
+	CONNECT =   0x01	///< \details Connect line endpoints forming a loop
 };
 
+/**
+* \brief Camera parameters structure
+*/
+typedef struct {
+	OBJHANDLE hRef;		///< Camera proxy g-body
+	VECTOR3 gpos;		///< Camera global pos
+	VECTOR3 dir;		///< Camera direction [unit]
+	VECTOR3 up;			///< Cameta upvector [unit]
+	float fov;			///< Half field of view [rad]
+	float asp;			///< Aspect ration
+} gcCameraParam;
 
 namespace oapi {
 

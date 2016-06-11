@@ -8,6 +8,15 @@
 
 // ===============================================================================================
 //
+void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
+{
+	size->cx = tgt_desc.Width;
+	size->cy = tgt_desc.Height;
+}
+
+
+// ===============================================================================================
+//
 void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 {
 	cpen = NULL;
@@ -15,6 +24,7 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 	QPen.style = style;
 	QPen.width = width;
 	pencolor = SkpColor(color);
+	bPenChange = true;
 }
 
 
@@ -25,6 +35,7 @@ void D3D9Pad::QuickBrush(DWORD color)
 	cbrush = NULL;
 	QBrush.bEnabled = true;
 	brushcolor = SkpColor(color);
+	bPenChange = true;
 }
 
 
@@ -220,12 +231,12 @@ void D3D9Pad::ClipSphere(const VECTOR3 *pPos, double r)
 
 	if (pPos) {
 		double d2 = dotp(*pPos, *pPos);
-		float s = float(sqrt(d2 - r*r));
-		float f = float(1.0 / sqrt(d2));
-		float c = s * f;
-		D3DXVECTOR3 uPos = D3DXVEC(*pPos) * f;
+		double s = sqrt(d2 - r*r);
+		double f = 1.0 / sqrt(d2);
+		double c = s * f;
+		D3DXVECTOR3 uPos = D3DXVEC((*pPos)*f);
 		HR(FX->SetValue(ePos, &uPos, sizeof(D3DXVECTOR3)));
-		HR(FX->SetValue(eCov, &D3DXVECTOR2(c, s*s), sizeof(D3DXVECTOR2)));
+		HR(FX->SetValue(eCov, &D3DXVECTOR2(float(c), float(s)), sizeof(D3DXVECTOR2)));
 		HR(FX->SetBool(eCovEn, true));
 	}
 	else {
@@ -298,9 +309,10 @@ const FMATRIX4 *D3D9Pad::GetProjection()
 
 // ===============================================================================================
 //
-void D3D9Pad::SetGlobalLineScale(float width)
+void D3D9Pad::SetGlobalLineScale(float width, float pat)
 {
 	linescale = width;
+	pattern = pat;
 	bPenChange = true;
 }
 
@@ -470,7 +482,7 @@ void D3D9Pad::FlushPrimitives()
 
 // ===============================================================================================
 //
-int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags)
+int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags, SURFHANDLE hTex)
 {
 	SketchMesh *hMesh = (SketchMesh *)_hMesh;
 
@@ -490,12 +502,18 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags)
 	SURFHANDLE pTex = hMesh->GetTexture(grp);
 	D3DXCOLOR   Mat = hMesh->GetMaterial(grp);
 
-	if (pTex) {
-		HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
+	if (hTex) {
+		HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
 		HR(FX->SetBool(eTexEn, true));
 	}
 	else {
-		HR(FX->SetBool(eTexEn, false));
+		if (pTex) {
+			HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
+			HR(FX->SetBool(eTexEn, true));
+		}
+		else {
+			HR(FX->SetBool(eTexEn, false));
+		}
 	}
 
 	HR(FX->SetBool(eShade, (flags&SMOOTH_SHADE)!=0));
@@ -632,9 +650,12 @@ bool D3D9Pad::Flush(int iTech)
 	// Apply a new setup -----------------------------------------------------------------
 	//
 	if (bPenChange) {
+		float offset = 0.0f;
+		int w = int(ceil(GetPenWidth()));
+		if ((w&1)==0) offset = 0.5f;
 		HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
 		HR(FX->SetBool(eDashEn, IsDashed()));
-		HR(FX->SetFloat(eWidth, GetPenWidth()));
+		HR(FX->SetValue(eWidth, &D3DXVECTOR3(GetPenWidth(), pattern*0.13f, offset), sizeof(D3DXVECTOR3)));
 		bPenChange = false;
 	}
 
@@ -831,7 +852,7 @@ D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
 
 D3D9PolyLine::D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, bool bConnect)
 {
-	nPt = npt + 1;
+	nPt = npt + 2;
 	nVtx = 2 * nPt;
 	nIdx = 6 * nPt;
 
@@ -843,13 +864,15 @@ D3D9PolyLine::D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, 
 	HR(pIB->Lock(0, 0, (LPVOID*)&Idx, D3DLOCK_DISCARD));
 
 	iI = 0;
-	for (WORD i=0;i<nVtx;i+=2) {
+
+	for (WORD i=0,p=0;p<nPt;p++) {
 		Idx[iI++] = i+0;	
-		Idx[iI++] = i+2;
-		Idx[iI++] = i+1;	
 		Idx[iI++] = i+1;
-		Idx[iI++] = i+2;	  
-		Idx[iI++] = i+3;
+		Idx[iI++] = i+2;	
+		Idx[iI++] = i+1;
+		Idx[iI++] = i+3;	  
+		Idx[iI++] = i+2;
+		i += 2;
 	}
 
 	HR(pIB->Unlock());
@@ -880,8 +903,8 @@ void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags)
 {
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	pDev->SetIndices(pIB);
-	pDev->SetRenderState(D3DRS_ZENABLE, false);
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	pDev->SetRenderState(D3DRS_ZENABLE, false);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, vI, 0, vI-2);
 }
 
@@ -899,13 +922,16 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 	WORD li = WORD(npt - 1);
 
 	vI = 0;
+	float length = 0.0f;
 
 	D3DXVECTOR2 pp; // Prev point
 	D3DXVECTOR2 np;	// Next point
 
+	bLoop = bConnect;
+
 	// Line Init ------------------------------------------------------------
 	//
-	if (bLoop) pp = pt[npt - 1];
+	if (bLoop) pp = pt[li];
 	else	   pp = pt[0] * 2.0 - pt[1];
 
 	// Create line segments -------------------------------------------------
@@ -927,14 +953,14 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 		Vtx[vI].ny = Vtx[vII].ny = np.y;
 		Vtx[vI].px = Vtx[vII].px = pp.x;
 		Vtx[vI].py = Vtx[vII].py = pp.y;
-		Vtx[vI].l = Vtx[vII].l = 0.0f;
-		Vtx[vI].clr = Vtx[vII].clr = 0xFFFFFFFF;
+		Vtx[vI].l = Vtx[vII].l = length;
 		// --------------------------------------
-		Vtx[vI].fnc = SKPSW_WIDEPEN_L;
-		Vtx[vII].fnc = SKPSW_WIDEPEN_R;
+		Vtx[vI].fnc = SKPSW_WIDEPEN_L | SKPSW_EXTCOLOR;
+		Vtx[vII].fnc = SKPSW_WIDEPEN_R | SKPSW_EXTCOLOR;
 		vI+=2;
 		// --------------------------------------
 		pp = pt[i];
+		length += D3DXVec2Length(&(np - pp));
 	}
 
 	if (bLoop) {
