@@ -512,8 +512,6 @@ private:
 	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;
-	static LPDIRECT3DVERTEXBUFFER9 pCircleLow;
-	static LPDIRECT3DVERTEXBUFFER9 pCircleHigh;
 	static LPD3DXVECTOR2 pSinCos;
 	// -------------------------------------------
 

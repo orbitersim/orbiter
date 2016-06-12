@@ -59,49 +59,16 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	Idx = new WORD[3 * nQueueMax + 3];
 	Vtx = new SkpVtx[3 * nQueueMax + 3];
 
-	pSinCos = new D3DXVECTOR2[61];
+	pSinCos = new D3DXVECTOR2[64];
 
-	pCircleLow = NULL;
-	pCircleHigh = NULL;
-
-	// Initialize Ellipses -------------------------------------------------------------------------
-	//
-	HR(pDev->CreateVertexBuffer((nLow + 1) * sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pCircleLow, NULL));
-	HR(pDev->CreateVertexBuffer((nHigh + 1) * sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pCircleHigh, NULL));
-
-	D3DXVECTOR3 *pVert = NULL;
-
+	float q = 0.0f; // float(PI2) / 256.0f;
+	float s = float(PI2) / 64.0f;
 	// ------------------------------------------------------------------
-	for (int i = 0; i<60; i++) {
-		float angle = float(PI2)*float(i) / float(60);
-		pSinCos[i].x = sin(angle)*0.5f + 0.5f;
-		pSinCos[i].y = cos(angle)*0.5f + 0.5f;
+	for (int i = 0; i<64; i++) {
+		pSinCos[i].x = sin(q);
+		pSinCos[i].y = cos(q);
+		q += s;
 	}
-
-	// ------------------------------------------------------------------
-	if (pCircleLow->Lock(0,0,(void **)&pVert,0)==S_OK) {
-		pVert[0] = D3DXVECTOR3(0.5f, 0.5f, 0);
-		for (int i=1;i<nLow;i++) {
-			float angle = float(PI2)*float(i) / float(nLow);
-			pVert[i].x = sin(angle)*0.5f+0.5f;
-			pVert[i].y = cos(angle)*0.5f+0.5f;
-			pVert[i].z = angle;
-		}
-		pCircleLow->Unlock();
-	} 
-	
-	// ------------------------------------------------------------------
-	if (pCircleHigh->Lock(0,0,(void **)&pVert,0)==S_OK) {
-		pVert[0] = D3DXVECTOR3(0.5f, 0.5f, 0.0f);
-		for (int i=1;i<nHigh;i++) {
-			float angle = float(PI2)*float(i) / float(nHigh);
-			pVert[i].x = sin(angle)*0.5f+0.5f;
-			pVert[i].y = cos(angle)*0.5f+0.5f;
-			pVert[i].z = angle;
-		}
-		pCircleHigh->Unlock();
-	};
-	
 
 	// Initialize Techniques -------------------------------------------------------------------------
 	//
@@ -155,8 +122,6 @@ void D3D9Pad::GlobalExit()
 	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",nfcache);
 	for (int i=0;i<nfcache;i++) if (fcache[i].pFont) delete fcache[i].pFont;
 	
-	SAFE_RELEASE(pCircleLow);
-	SAFE_RELEASE(pCircleHigh);
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
 	SAFE_DELETEA(Vtx);
@@ -596,17 +561,25 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 	Flush(SKPTECH_DRAW);
 
 	float w = float(r - l); float h = float(b - t);	float fl = float(l); float ft = float(t);
-	DWORD s = max((r-l), (b-t));
+	DWORD z = max((r-l), (b-t));
 
-	WORD step = WORD(6 - min(5, s >> 4));
-	WORD nPrim = 60 / step;
+	w *= 0.5f;
+	h *= 0.5f;
+	fl += w;
+	ft += h;
 
-	IVECTOR2 pts[61];
+	IVECTOR2 pts[65];
 
-	for (WORD i = 0, k = 0; i<nPrim; i++) {
+	WORD k = 2;
+	WORD s = 4;
+	WORD n = 16;
+	if (z > 32) k = 1, s = 2, n = 32;
+	if (z > 64) k = 0, s = 1, n = 64;
+
+	for (WORD i = 0; i<n; i++) {
 		pts[i].x = long(fl + pSinCos[k].x * w);
 		pts[i].y = long(ft + pSinCos[k].y * h);
-		k += step;
+		k += s;
 	}
 	
 	WORD iIdx = iI;
@@ -621,8 +594,8 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 
 		SkpVtxIC(Vtx[vI++], (r + l) / 2, (b + t) / 2, brushcolor);
 
-		for (WORD i = 0; i < nPrim; i++) SkpVtxIC(Vtx[vI++], pts[i].x, pts[i].y, brushcolor);
-		for (WORD i = 0; i < nPrim; i++) {
+		for (WORD i = 0; i < n; i++) SkpVtxIC(Vtx[vI++], pts[i].x, pts[i].y, brushcolor);
+		for (WORD i = 0; i < n; i++) {
 			Idx[iI++] = aV;
 			Idx[iI++] = aV + i + 1;
 			Idx[iI++] = aV + i + 2;
@@ -632,7 +605,7 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 	
 	// Draw outline ------------------------------------------
 	//
-	if (HasPen()) AppendLineVertexList<IVECTOR2>(pts, nPrim, true);
+	if (HasPen()) AppendLineVertexList<IVECTOR2>(pts, n, true);
 }
 
 
@@ -1069,9 +1042,6 @@ LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
-LPDIRECT3DVERTEXBUFFER9 D3D9Pad::pCircleLow = 0;
-LPDIRECT3DVERTEXBUFFER9 D3D9Pad::pCircleHigh = 0;
-
 
 
 

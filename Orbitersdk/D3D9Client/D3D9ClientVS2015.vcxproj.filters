@@ -363,7 +363,9 @@
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx" />
+    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="VVessel.h">
