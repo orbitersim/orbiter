@@ -44,7 +44,7 @@ typedef HPOLY (OGCIFN *__gcCreatePoly)(HPOLY hPoly, const FVECTOR2 *pt, int npt,
 typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 
 // Helper functiond
-typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip);
+typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip);
 typedef bool (OGCIFN *__gcGetCamera)(gcCameraParam *pCam);
 
 bool bValid = false;
@@ -219,9 +219,9 @@ void gcDeletePoly(HPOLY hPoly)
 
 // ====================================================================================================
 //
-bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip)
+bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip)
 {
-	if (_gcWorldToScreenSpace) return _gcWorldToScreenSpace(rdir, pt, clip);
+	if (_gcWorldToScreenSpace) return _gcWorldToScreenSpace(rdir, pt, pVP, clip);
 	return false;
 }
 

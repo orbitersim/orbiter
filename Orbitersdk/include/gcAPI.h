@@ -239,7 +239,7 @@ void			gcWorldMatrix(oapi::FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, 
 				* \param clip Visibility check. Value 1.0 uses actual screen broders where as other values can increase or decrease clipping region size.
 				* \return true if the point is in the clipping rectanble, false otherwise in which case pt remains unchanged.
 				*/
-bool			gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f);
+bool			gcWorldToScreenSpace(const VECTOR3 &pos, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip = 1.0f);
 
 void			gcGetCamera(gcCameraParam *pCam);
 				//@}

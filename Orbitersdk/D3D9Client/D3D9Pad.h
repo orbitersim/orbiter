@@ -441,7 +441,7 @@ public:
 	void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE);
 	void Lines(FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
-	const FMATRIX4 *GetProjection();
+	const FMATRIX4 *GetViewProjection();
 
 
 	// ===============================================================================

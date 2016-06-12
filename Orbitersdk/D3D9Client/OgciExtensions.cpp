@@ -26,9 +26,9 @@ DLLCLBK void gcGetCamera(gcCameraParam *pCam)
 }
 
 
-DLLCLBK bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f)
+DLLCLBK bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, FMATRIX4 *pVP, float clip = 1.0f)
 {
-	return g_client->GetScene()->WorldToScreenSpace(rdir, pt, clip);
+	return g_client->GetScene()->WorldToScreenSpace(rdir, pt, (D3DXMATRIX *)pVP, clip);
 }
 
 

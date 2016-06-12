@@ -102,14 +102,9 @@ namespace oapi {
 
 
 		/**
-		* \brief Set up a global world transformation matrix to draw into a specific location.
-		* \param pos Position vector in a current projection frame
-		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
-		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
-		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
-		*		due to source-target pixels miss aligments.
+		* \brief Get a view projection matrix
 		*/
-		virtual	const FMATRIX4 *GetProjection() { assert(false); return NULL; }
+		virtual	const FMATRIX4 *GetViewProjection() { assert(false); return NULL; }
 
 
 		/**

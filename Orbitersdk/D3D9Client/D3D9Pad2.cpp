@@ -301,7 +301,7 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 
 // ===============================================================================================
 //
-const FMATRIX4 *D3D9Pad::GetProjection()
+const FMATRIX4 *D3D9Pad::GetViewProjection()
 {
 	return (FMATRIX4 *)&mVP;
 }

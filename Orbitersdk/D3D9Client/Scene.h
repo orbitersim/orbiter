@@ -265,7 +265,7 @@ public:
 	vPlanet *		GetCameraProxyVisual() const { return Camera.vProxy; }
 	double			GetCameraAltitude() const { return Camera.alt_proxy; }	
 	void			GetCameraLngLat(double *lng, double *lat) const;
-	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, float clip = 1.0f);
+	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
 
 	DWORD			GetRenderPass() const { return dwRenderPass; }
 	DWORD			GetFrameId() const { return dwFrameId; }

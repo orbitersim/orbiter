@@ -64,6 +64,17 @@ namespace oapi {
 		float x, y;
 	} FVECTOR2;
 
+	inline FVECTOR2 unit(FVECTOR2 &v)
+	{
+		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
+		return { v.x*f, v.y*f };
+	}
+
+	inline FVECTOR2 operator* (const FVECTOR2 &v, float f)
+	{
+		return { v.x * f, v.y * f };
+	}
+
 	/**
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR2 type.

@@ -570,9 +570,10 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 
 	IVECTOR2 pts[65];
 
-	WORD k = 2;
-	WORD s = 4;
-	WORD n = 16;
+	WORD k = 4;
+	WORD s = 8;
+	WORD n = 8;
+	if (z > 16) k = 2, s = 4, n = 16;
 	if (z > 32) k = 1, s = 2, n = 32;
 	if (z > 64) k = 0, s = 1, n = 64;
 

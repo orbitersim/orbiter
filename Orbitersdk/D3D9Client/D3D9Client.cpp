@@ -598,6 +598,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 {
 	_TRACE;
+	oapiWriteLog("D3D9: [Destroy Render Window Called]");
 	LogAlw("============= clbkDestroyRenderWindow ===========");
 
 #ifdef _NVAPI_H
