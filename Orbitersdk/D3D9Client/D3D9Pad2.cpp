@@ -230,6 +230,7 @@ void D3D9Pad::ClipSphere(const VECTOR3 *pPos, double r)
 	FlushPrimitives();
 
 	if (pPos) {
+		bClipSphere = true;
 		double d2 = dotp(*pPos, *pPos);
 		double s = sqrt(d2 - r*r);
 		double f = 1.0 / sqrt(d2);
@@ -240,6 +241,7 @@ void D3D9Pad::ClipSphere(const VECTOR3 *pPos, double r)
 		HR(FX->SetBool(eCovEn, true));
 	}
 	else {
+		bClipSphere = false;
 		HR(FX->SetBool(eCovEn, false));
 	}
 }
@@ -266,6 +268,15 @@ FMATRIX4 *D3D9Pad::ViewMatrix()
 FMATRIX4 *D3D9Pad::ProjectionMatrix()
 {
 	return (FMATRIX4*)&mP;
+}
+
+
+// ===============================================================================================
+//
+const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix()
+{
+	D3DXMatrixMultiply(&mVP, &mV, &mP);
+	return (const FMATRIX4 *)&mVP;
 }
 
 
@@ -654,14 +665,13 @@ bool D3D9Pad::Flush(int iTech)
 	//
 	if (bViewChange) {
 
-		D3DXMATRIX mWVP;
-		D3DXMATRIX mVP;
-
 		if (vmode == ORTHO) {
+			D3DXMATRIX mWVP;
 			D3DXMatrixMultiply(&mWVP, &mW, &mO);
 			HR(FX->SetMatrix(eWVP, &mWVP));
 			HR(FX->SetMatrix(eVP, &mO));
 			HR(FX->SetMatrix(eW, &mW));
+			HR(FX->SetBool(eCovEn, false));
 		}
 		else {
 			float d = float(tgt_desc.Height) * mP._22;
@@ -670,6 +680,7 @@ bool D3D9Pad::Flush(int iTech)
 			HR(FX->SetMatrix(eVP, &mVP));
 			HR(FX->SetMatrix(eW, &mW));
 			HR(FX->SetFloat(eFov, f));
+			HR(FX->SetBool(eCovEn, bClipSphere));
 		}
 
 		bViewChange = false;

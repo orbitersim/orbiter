@@ -1136,7 +1136,7 @@ void Scene::RenderMainScene()
 
 	if (plnmode & PLN_ENABLE) {
 		D3DXMATRIX mP;
-		GetAdjProjViewMatrix(&mP, 100.0f, 1e12f);
+		GetAdjProjViewMatrix(&mP, 1.0f, 1e9f);
 		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), &mP);
 	}
 

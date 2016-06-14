@@ -159,6 +159,7 @@ void D3D9Pad::Reset()
 	bPenChange = true;	// New setup required
 	bFontChange = true;	// New setup required
 	bViewChange = true;	// New setup required
+	bClipSphere = false;
 
 	QPen.bEnabled = false;
 	QBrush.bEnabled = false;

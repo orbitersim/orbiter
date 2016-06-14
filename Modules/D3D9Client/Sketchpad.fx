@@ -117,7 +117,8 @@ OutputVS Sketch3DVS(InputVS v)
 	float3 prvS = normalize(cross(posN - prvN, posN));
 	float3 latN = normalize(nxtS + prvS) * (0.45*gWidth.x) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
 
-	if (v.fnc[LSW]>0.5f) outVS.len = length(posN - prvN) / gFov;
+	//if (v.fnc[LSW]>0.5f) outVS.len = acos(dot(posN,prvN)) / gFov;
+	if (v.fnc[LSW]>0.5f) outVS.len = min(1, length(posN-prvN)) / gFov;
 	else				 outVS.len = v.pos.z;
 
 	float fSide = round(v.fnc[SSW] * 2.0 - 1.0);
@@ -128,10 +129,11 @@ OutputVS Sketch3DVS(InputVS v)
 	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
 	else				 outVS.color.rgba = v.clr.bgra;
 
-	outVS.posW = float4(normalize(posW), fPosD);
+	posW = normalize(posW);
+	outVS.posW = float4(posW, fPosD);
 
 	outVS.sw = v.fnc;
-	outVS.posH = mul(float4(posW.xyz, 1.0f), gVP);
+	outVS.posH = mul(float4(posW.xyz*100.0, 1.0f), gVP);
 	outVS.tex = v.dir.xy * gSize.xy;
 
 	return outVS;

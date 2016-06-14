@@ -39,8 +39,8 @@ namespace oapi {
 		};
 
 		enum SkpView { 
-			ORTHO = 0, 
-			USER = 1 
+			ORTHO = 0,				///< Default orthographic projection
+			USER = 1				///< User defined setup via ViewMatrix() and ProjectionMatrix()
 		};
 
 		/**
@@ -109,9 +109,17 @@ namespace oapi {
 		virtual	FMATRIX4 *ProjectionMatrix() { assert(false); return NULL; }
 
 		/**
-		* \brief Set a view mode
+		* \brief Get combined view projection matrix
+		*/
+		virtual	const FMATRIX4 *GetViewProjectionMatrix() { assert(false); return NULL; }
+
+
+		/**
+		* \brief Set an active view mode. Switch between modes doesn't reset the view matrices and setups.
+		* \param mode, SkpView mode setting.
 		*/
 		virtual void SetViewMode(SkpView mode = ORTHO) { assert(false); }
+
 
 		/**
 		* \brief Set up a global world transformation matrix.

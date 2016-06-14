@@ -442,9 +442,10 @@ public:
 	void DepthEnable(bool bEnable);
 
 	void SetViewMode(SkpView mode = ORTHO);
-
+	//-----------------------------------------
 	FMATRIX4 *ViewMatrix();
 	FMATRIX4 *ProjectionMatrix();
+	const FMATRIX4 *GetViewProjectionMatrix();
 
 	
 
@@ -494,6 +495,8 @@ private:
 	mutable bool bViewChange;
 	mutable bool bFontChange;
 	mutable bool bTriangles;
+
+	bool bClipSphere;
 	
 	SURFHANDLE hPrevSrc;
 	WORD vI, iI;
@@ -509,7 +512,7 @@ private:
 	SkpView vmode;
 	D3DSURFACE_DESC tgt_desc;
 	D3D9ClientSurface *pTgt;
-	D3DXMATRIX mV, mP, mW, mO;
+	D3DXMATRIX mV, mP, mW, mO, mVP;
 	D3DVIEWPORT9 vpBak;
 	RECT src;
 
