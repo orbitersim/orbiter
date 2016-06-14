@@ -1136,8 +1136,8 @@ void Scene::RenderMainScene()
 
 	if (plnmode & PLN_ENABLE) {
 		D3DXMATRIX mP;
-		GetAdjProjViewMatrix(&mP, 100.0f, 1e10);
-		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, &mP);
+		GetAdjProjViewMatrix(&mP, 100.0f, 1e12f);
+		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), &mP);
 	}
 
     	
@@ -1372,9 +1372,9 @@ void Scene::RenderMainScene()
 
 	pSketch = new D3D9Pad(gc->GetBackBuffer());
 
-	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL);
+	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL, NULL);
 	gc->Render2DOverlay();
-	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL);
+	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL, NULL);
 	
 	SAFE_DELETE(pSketch);
 
@@ -2063,15 +2063,11 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 void Scene::GetAdjProjViewMatrix(LPD3DXMATRIX pMP, float znear, float zfar)
 {
 	float tanap = tan(Camera.aperture);
-	D3DXMATRIX mProj;
-	ZeroMemory(&mProj, sizeof(D3DXMATRIX));
-
-	mProj._11 = (Camera.aspect / tanap);
-	mProj._22 = (1.0f / tanap);
-	mProj._43 = (mProj._33 = zfar / (zfar - znear)) * (-znear);
-	mProj._34 = 1.0f;
-
-	D3DXMatrixMultiply(pMP, &Camera.mView, &mProj);
+	ZeroMemory(pMP, sizeof(D3DXMATRIX));
+	pMP->_11 = (Camera.aspect / tanap);
+	pMP->_22 = (1.0f / tanap);
+	pMP->_43 = (pMP->_33 = zfar / (zfar - znear)) * (-znear);
+	pMP->_34 = 1.0f;
 }
 
 // ===========================================================================================

@@ -255,11 +255,26 @@ void D3D9Pad::DepthEnable(bool bEnable)
 
 // ===============================================================================================
 //
-void D3D9Pad::SetViewProjectionMatrix(const FMATRIX4 *pVP)
+FMATRIX4 *D3D9Pad::ViewMatrix()
 {
-	if (pVP) memcpy(&mVP, pVP, sizeof(D3DXMATRIX));
-	else D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
-	bViewChange = true;
+	return (FMATRIX4*)&mV;
+}
+
+
+// ===============================================================================================
+//
+FMATRIX4 *D3D9Pad::ProjectionMatrix()
+{
+	return (FMATRIX4*)&mP;
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::SetViewMode(SkpView mode)
+{
+	vmode = mode;
+	EndDrawing();
 }
 
 
@@ -296,14 +311,6 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 	else D3DXMatrixIdentity(&mW);
 
 	bViewChange = true;
-}
-
-
-// ===============================================================================================
-//
-const FMATRIX4 *D3D9Pad::GetViewProjection()
-{
-	return (FMATRIX4 *)&mVP;
 }
 
 
@@ -394,7 +401,13 @@ void D3D9Pad::BeginDraw()
 	UINT numPasses;
 	assert(FX->SetTechnique(eSketch)==S_OK);
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
+
+	if (vmode == ORTHO) {
+		HR(FX->BeginPass(0));
+	}
+	else {
+		HR(FX->BeginPass(1));
+	}
 	HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 	HR(pDev->SetVertexDeclaration(pSketchpadDecl));
 }
@@ -439,17 +452,17 @@ void D3D9Pad::EndMesh()
 
 // ===============================================================================================
 //
-void D3D9Pad::EndDrawing()
+void D3D9Pad::EndDrawing(bool bFlush)
 {
 	if (CurrentTech == SKPTECH_MESH) EndMesh();
 
 	if (CurrentTech == SKPTECH_DRAW) {
-		FlushPrimitives();
+		if (bFlush) FlushPrimitives();
 		EndDraw();
 	}
 
 	if (CurrentTech == SKPTECH_BLIT) {
-		FlushPrimitives();
+		if (bFlush) FlushPrimitives();
 		EndDraw();
 	}
 
@@ -457,6 +470,7 @@ void D3D9Pad::EndDrawing()
 		EndDraw();
 	}
 
+	hOldMesh = NULL;
 	CurrentTech = 0;
 }
 
@@ -605,6 +619,7 @@ bool D3D9Pad::Flush(int iTech)
 	if (GetPenWidth() > 1.1f) bTriangles = true;
 	if (iTech == SKPTECH_BLIT) bTriangles = true;
 	if (iTech == SKPTECH_POLY) bTriangles = true;
+	if (vmode == USER) bTriangles = true;
 
 
 	// Do we need a new tech ? -----------------------------------------
@@ -622,7 +637,7 @@ bool D3D9Pad::Flush(int iTech)
 			if (CurrentTech == SKPTECH_BLIT) EndDraw();
 			if (CurrentTech == SKPTECH_POLY) EndDraw();
 		}
-
+		
 		// Switch to  ----------------------------------------------------
 		//
 		if (iTech == SKPTECH_MESH) BeginMesh();
@@ -638,11 +653,25 @@ bool D3D9Pad::Flush(int iTech)
 	// Apply a new setup -----------------------------------------------
 	//
 	if (bViewChange) {
-		D3DXMATRIX mWP;
-		D3DXMatrixMultiply(&mWP, &mW, &mVP);
-		HR(FX->SetMatrix(eVP, &mVP));
-		HR(FX->SetMatrix(eW, &mW));
-		HR(FX->SetMatrix(eWP, &mWP));
+
+		D3DXMATRIX mWVP;
+		D3DXMATRIX mVP;
+
+		if (vmode == ORTHO) {
+			D3DXMatrixMultiply(&mWVP, &mW, &mO);
+			HR(FX->SetMatrix(eWVP, &mWVP));
+			HR(FX->SetMatrix(eVP, &mO));
+			HR(FX->SetMatrix(eW, &mW));
+		}
+		else {
+			float d = float(tgt_desc.Height) * mP._22;
+			float f = atan(1.0f / d) * 1.7f;
+			D3DXMatrixMultiply(&mVP, &mV, &mP);
+			HR(FX->SetMatrix(eVP, &mVP));
+			HR(FX->SetMatrix(eW, &mW));
+			HR(FX->SetFloat(eFov, f));
+		}
+
 		bViewChange = false;
 	}
 
@@ -897,6 +926,7 @@ void D3D9PolyLine::Release()
 	SAFE_RELEASE(pIB);
 }
 
+
 // ===============================================================================================
 //
 void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags)
@@ -904,7 +934,6 @@ void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags)
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	pDev->SetIndices(pIB);
 	pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	pDev->SetRenderState(D3DRS_ZENABLE, false);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, vI, 0, vI-2);
 }
 

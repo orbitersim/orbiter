@@ -426,7 +426,6 @@ public:
 	void QuickPen(DWORD color, float width = 1.0f, DWORD style = 0);
 	void QuickBrush(DWORD color);
 	void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f);
-	void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
 	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL);
@@ -441,7 +440,13 @@ public:
 	void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE);
 	void Lines(FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
-	const FMATRIX4 *GetViewProjection();
+
+	void SetViewMode(SkpView mode = ORTHO);
+
+	FMATRIX4 *ViewMatrix();
+	FMATRIX4 *ProjectionMatrix();
+
+	
 
 
 	// ===============================================================================
@@ -449,7 +454,7 @@ public:
 	// ===============================================================================
 	LPD3DXMATRIX WorldMatrix();
 	void Reset();
-	void EndDrawing();
+	void EndDrawing(bool bFlush = true);
 	
 
 private:
@@ -501,10 +506,10 @@ private:
 	bool bConvert;
 
 	class SketchMesh *hOldMesh;
+	SkpView vmode;
 	D3DSURFACE_DESC tgt_desc;
 	D3D9ClientSurface *pTgt;
-	D3DXMATRIX mVP;
-	D3DXMATRIX mW;
+	D3DXMATRIX mV, mP, mW, mO;
 	D3DVIEWPORT9 vpBak;
 	RECT src;
 
@@ -521,12 +526,13 @@ private:
 	static ID3DXEffect*	FX;				
 	static D3DXHANDLE	eDrawMesh;
 	static D3DXHANDLE	eSketch;
-	static D3DXHANDLE	eVP;	// Transformation matrix
+	static D3DXHANDLE	eWVP;	// Transformation matrix
 	static D3DXHANDLE	eTex0;	
 	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eW;
 	static D3DXHANDLE   ePen;
-	static D3DXHANDLE   eWP;
+	static D3DXHANDLE   eVP;
+	static D3DXHANDLE   eFov;
 	static D3DXHANDLE   eTarget;
 	static D3DXHANDLE   eKey;
 	static D3DXHANDLE   eTexEn;

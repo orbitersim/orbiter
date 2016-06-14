@@ -2105,13 +2105,14 @@ LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
 
 // =======================================================================
 
-void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pVP)
+void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP)
 {
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 		if (it->id == id) {
 			D3D9Pad *pSkp2 = (D3D9Pad *)pSkp;
 			pSkp2->Reset();
-			if (pVP) pSkp2->SetViewProjectionMatrix((FMATRIX4*)pVP);
+			if (pV) memcpy(pSkp2->ViewMatrix(), pV, sizeof(D3DXMATRIX));
+			if (pP) memcpy(pSkp2->ProjectionMatrix(), pP, sizeof(D3DXMATRIX));
 			it->proc(pSkp, it->pParam);
 			pSkp2->EndDrawing();
 		}

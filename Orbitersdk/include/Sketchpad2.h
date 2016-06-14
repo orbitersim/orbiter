@@ -38,6 +38,10 @@ namespace oapi {
 			CULL_NONE = 0x2			///< Do not perform front/back face culling
 		};
 
+		enum SkpView { 
+			ORTHO = 0, 
+			USER = 1 
+		};
 
 		/**
 		* \brief Sketchpad2 constructor.
@@ -83,14 +87,6 @@ namespace oapi {
 
 
 		/**
-		* \brief Set combined view and projection matrix.
-		* \param pVP a pointer to an array of 16 floats or NULL to restore a default projection.
-		* \note Default clip planes are: zNear = 0, zFar = max(Width, Height). Everything closer and farther than that will be clipped.
-		*/
-		virtual void SetViewProjectionMatrix(const FMATRIX4 *pVP = NULL) { assert(false); }
-
-
-		/**
 		* \brief Set up a global world transformation matrix. 
 		* \param pWT A pointet to MATRIX4, NULL to reset default settings.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin(). 
@@ -102,10 +98,20 @@ namespace oapi {
 
 
 		/**
-		* \brief Get a view projection matrix
+		* \brief Get/Set a View matrix
 		*/
-		virtual	const FMATRIX4 *GetViewProjection() { assert(false); return NULL; }
+		virtual	FMATRIX4 *ViewMatrix() { assert(false); return NULL; }
 
+
+		/**
+		* \brief Get/Set a Projection matrix
+		*/
+		virtual	FMATRIX4 *ProjectionMatrix() { assert(false); return NULL; }
+
+		/**
+		* \brief Set a view mode
+		*/
+		virtual void SetViewMode(SkpView mode = ORTHO) { assert(false); }
 
 		/**
 		* \brief Set up a global world transformation matrix.

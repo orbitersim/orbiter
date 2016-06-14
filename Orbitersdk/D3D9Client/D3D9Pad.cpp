@@ -94,13 +94,14 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 	eDrawMesh = FX->GetTechniqueByName("SketchMesh");
 	eSketch   = FX->GetTechniqueByName("SketchTech");
-	eVP       = FX->GetParameterByName(0, "gP");
+	eVP       = FX->GetParameterByName(0, "gVP");
 	eTex0     = FX->GetParameterByName(0, "gTex0");
 	eDashEn   = FX->GetParameterByName(0, "gDashEn");
 	eW		  = FX->GetParameterByName(0, "gW");
 	eKey	  = FX->GetParameterByName(0, "gKey");
 	ePen      = FX->GetParameterByName(0, "gPen");
-	eWP		  = FX->GetParameterByName(0, "gWP");
+	eWVP	  = FX->GetParameterByName(0, "gWVP");
+	eFov	  = FX->GetParameterByName(0, "gFov");
 	eTarget	  = FX->GetParameterByName(0, "gTarget");
 	eTexEn	  = FX->GetParameterByName(0, "gTexEn");
 	eKeyEn    = FX->GetParameterByName(0, "gKeyEn");
@@ -151,8 +152,9 @@ void D3D9Pad::Reset()
 	valign = TA_TOP;
 	linescale = 1.0f;
 	pattern = 1.0f;
-
 	CurrentTech = 0;
+	
+	vmode = ORTHO;
 
 	bPenChange = true;	// New setup required
 	bFontChange = true;	// New setup required
@@ -169,8 +171,10 @@ void D3D9Pad::Reset()
 	zfar = float(max(tgt_desc.Width, tgt_desc.Height));
 
 	D3DXMatrixIdentity(&mW);
-
-	D3DXMatrixOrthoOffCenterLH(&mVP, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
+	D3DXMatrixIdentity(&mP);
+	D3DXMatrixIdentity(&mV);
+	
+	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
 
 	HR(FX->SetBool(eCovEn, false));
 	HR(FX->SetVector(eTarget, &D3DXVECTOR4(2.0f/(float)tgt_desc.Width, 2.0f/(float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height)));
@@ -1019,7 +1023,8 @@ D3DXHANDLE   D3D9Pad::eVP = 0;
 D3DXHANDLE   D3D9Pad::eW = 0;
 D3DXHANDLE   D3D9Pad::eKey = 0;
 D3DXHANDLE   D3D9Pad::ePen = 0;
-D3DXHANDLE   D3D9Pad::eWP = 0;
+D3DXHANDLE   D3D9Pad::eWVP = 0;
+D3DXHANDLE   D3D9Pad::eFov = 0;
 D3DXHANDLE   D3D9Pad::eTarget = 0;
 D3DXHANDLE   D3D9Pad::eTexEn = 0;
 D3DXHANDLE   D3D9Pad::eKeyEn = 0;

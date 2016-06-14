@@ -22,9 +22,9 @@
 // Sketchpad Implementation
 // -------------------------------------------------------------------------------------------------------------
 
-uniform extern float4x4  gP;			    // Projection matrix
+uniform extern float4x4  gVP;			    // Projection matrix
 uniform extern float4x4  gW;			    // World matrix
-uniform extern float4x4  gWP;				// World Projection
+uniform extern float4x4  gWVP;				// World View Projection
 uniform extern texture   gTex0;			    // Diffuse texture
 
 // Colors
@@ -35,8 +35,9 @@ uniform extern float4    gMtrl;
 uniform extern float3    gPos;				// Clipper sphere direction [unit vector]
 uniform extern float2    gCov;				// Clipper sphere coverage parameters
 uniform extern float4    gSize;				// Inverse Texture size in .xy [pixels]
-uniform extern float4    gTarget;			// Inverse Screen size in .xy [pixels], Screen Size in .zw
+uniform extern float4    gTarget;			// Inverse Screen size in .xy [pixels], Screen Size in .zw [pixels]
 uniform extern float3	 gWidth;			// Pen width in .x, and pattern scale in .y, pixel offset in .z
+uniform extern float	 gFov;				// atan( 2 * tan(fov/2) / H )
 uniform extern bool      gDashEn;
 uniform extern bool      gTexEn;
 uniform extern bool      gKeyEn;
@@ -98,58 +99,89 @@ struct NTVERTEX {                        // D3D9Client Mesh vertex layout
 // -------------------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------
 
-OutputVS SketchpadVS(InputVS v)
+OutputVS Sketch3DVS(InputVS v)
 {
-    // Zero output.
+	// Zero output.
 	OutputVS outVS = (OutputVS)0;
 
 	float3 posW = mul(float4(v.pos.xy, 0.0f, 1.0f), gW).xyz;
-	float  fLen = v.pos.z;
-	float2 latW = 0;
-	
-	float4 posH = mul(float4(posW.xyz, 1.0f), gP);
-	float4 prvH = mul(float4(v.dir.zw, 0.0f, 1.0f), gWP);	// Prev
+	float3 prvW = mul(float4(v.dir.zw, 0.0f, 1.0f), gW).xyz;
+	float3 nxtW = mul(float4(v.dir.xy, 0.0f, 1.0f), gW).xyz;
 
-	posH.xyz /= max(1, posH.w);
-	prvH.xyz /= max(1, prvH.w);
-	
-	if (v.fnc[LSW]>0.5f) fLen = length((posH.xy - prvH.xy) * gTarget.zw * 0.5);
+	outVS.len = v.pos.z;
 
 	float3 posN = normalize(posW);
-	outVS.posW = float4(posN, dot(posN,posW));
-	outVS.len = fLen;
+	float3 prvN = normalize(prvW);
+	float3 nxtN = normalize(nxtW);	
+	float3 nxtS = normalize(cross(nxtN - posN, posN));
+	float3 prvS = normalize(cross(posN - prvN, posN));
+	float3 latN = normalize(nxtS + prvS) * (0.45*gWidth.x) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
 
+	if (v.fnc[LSW]>0.5f) outVS.len = length(posN - prvN) / gFov;
+	else				 outVS.len = v.pos.z;
+
+	float fSide = round(v.fnc[SSW] * 2.0 - 1.0);
+	float fPosD = dot(posN, posW);
+
+	posW += latN * (fSide * fPosD * gFov);
+	
+	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
+	else				 outVS.color.rgba = v.clr.bgra;
+
+	outVS.posW = float4(normalize(posW), fPosD);
+
+	outVS.sw = v.fnc;
+	outVS.posH = mul(float4(posW.xyz, 1.0f), gVP);
+	outVS.tex = v.dir.xy * gSize.xy;
+
+	return outVS;
+}
+
+
+
+// -------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------
+
+OutputVS OrthoVS(InputVS v)
+{
+	// Zero output.
+	OutputVS outVS = (OutputVS)0;
+
+	float4 posH = mul(float4(v.pos.xy, 0.0f, 1.0f), gWVP);
+	float4 prvH = mul(float4(v.dir.zw, 0.0f, 1.0f), gWVP);
+
+	if (v.fnc[LSW]>0.5f) outVS.len = length((posH.xy - prvH.xy) * gTarget.zw * 0.5);
+	else				 outVS.len = v.pos.z;
+
+	outVS.posW = 0;
+	
 	if (gWide) {
 
-		float4 nxtH = mul(float4(v.dir.xy, 0.0f, 1.0f), gWP);	// Next 	
-
-		nxtH.xyz /= max(1, nxtH.w);
-
+		float4 nxtH = mul(float4(v.dir.xy, 0.0f, 1.0f), gWVP);	
 		float fSide = round(v.fnc[SSW] * 2.0 - 1.0);
-
 		float2 pixH = gTarget.xy * gWidth.z * abs(fSide);
 
 		nxtH.xy -= pixH;
 		posH.xy -= pixH;
 		prvH.xy -= pixH;
-		
+
 		float2 nxtS = normalize(nxtH.xy - posH.xy);
 		float2 prvS = normalize(posH.xy - prvH.xy);
+		float2 latW = normalize(nxtS + prvS) * (0.45*gWidth.x) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
 
-		latW = normalize(nxtS + prvS) * (0.45*gWidth.x) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
 		posH += float4(latW.y, -latW.x, 0, 0) * gTarget * fSide;
 	}
 
 	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
-	else outVS.color.rgba = v.clr.bgra;
+	else				 outVS.color.rgba = v.clr.bgra;
 
 	outVS.sw = v.fnc;
 	outVS.posH = float4(posH.xyz, 1.0f);
-    outVS.tex = v.dir.xy * gSize.xy;
+	outVS.tex = v.dir.xy * gSize.xy;
 
-    return outVS;
-	
+	return outVS;
 }
+
 
 
 
@@ -166,7 +198,7 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 		float4 t = tex2D(TexS, frg.tex);
 		float  a = saturate(t.r*0.3f + t.g*0.5f + t.b*0.2f);
 		
-		if (frg.sw[TSW] > 0.1f) c = float4(lerp(t.rgb, c.rgb, a), c.a*a);
+		if (frg.sw[TSW] > 0.1f) c = float4(lerp(t.rgb, c.rgb, a)/max(0.1,a), c.a*a);
 		if (frg.sw[TSW] > 0.4f) c = t;
 
 		if (gKeyEn) {
@@ -193,7 +225,7 @@ technique SketchTech
 {
     pass P0
     {
-        vertexShader = compile vs_3_0 SketchpadVS();
+        vertexShader = compile vs_3_0 OrthoVS();
         pixelShader  = compile ps_3_0 SketchpadPS();
 		AlphaBlendEnable = true;
 		BlendOp = Add;
@@ -202,6 +234,18 @@ technique SketchTech
 		ZEnable = false;
 		ZWriteEnable = false;
     }
+
+	pass P1
+	{
+		vertexShader = compile vs_3_0 Sketch3DVS();
+		pixelShader = compile ps_3_0 SketchpadPS();
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
 
@@ -215,7 +259,7 @@ SkpMshVS SketchMeshVS(NTVERTEX v)
 	SkpMshVS outVS = (SkpMshVS)0;
 	float3 posW = mul(float4(v.posL, 1.0f), gW).xyz;
 	float3 nrmW = mul(float4(v.nrmL, 0.0f), gW).xyz;
-	outVS.posH  = mul(float4(posW, 1.0f), gP);
+	outVS.posH  = mul(float4(posW, 1.0f), gVP);
 	outVS.tex = v.tex0;
 	outVS.nrmW = nrmW;
 	return outVS;
