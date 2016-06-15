@@ -123,7 +123,10 @@ public:
 					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate=false);
 					~D3D9Mesh();
 
-	void			LoadMeshFromHandle(MESHHANDLE hMesh, bool asTemplate);
+	void			Release();
+
+	void			LoadMeshFromHandle(MESHHANDLE hMesh);
+	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			UnLockVertexBuffer();
 	void			UnLockIndexBuffer();
 	NMVERTEX *		LockVertexBuffer(DWORD grp, DWORD flags);
@@ -219,6 +222,7 @@ public:
 	void			DynamicGroup(DWORD idx);
 	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 	void			UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
+	void			UpdateGroup(MESHHANDLE hMesh, DWORD idx);
 
 	void			SetSunLight(const D3D9Sun *pLight);
 	
@@ -289,7 +293,6 @@ private:
 	
 
 	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write 
-	bool bTemplate;             // mesh used as template only (not for rendering)
 	bool bBSRecompute;			// Bounding sphere must be recomputed
 	bool bBSRecomputeAll;
 	bool bModulateMatAlpha;     // mix material and texture alpha channels

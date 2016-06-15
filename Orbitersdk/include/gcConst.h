@@ -54,6 +54,7 @@ typedef struct {
 	float asp;			///< Aspect ration
 } gcCameraParam;
 
+
 namespace oapi {
 
 	/**
@@ -63,17 +64,6 @@ namespace oapi {
 	typedef struct {
 		float x, y;
 	} FVECTOR2;
-
-	inline FVECTOR2 unit(FVECTOR2 &v)
-	{
-		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
-		return { v.x*f, v.y*f };
-	}
-
-	inline FVECTOR2 operator* (const FVECTOR2 &v, float f)
-	{
-		return { v.x * f, v.y * f };
-	}
 
 	/**
 	* \brief 32-bit floating point 4D vector type.
@@ -85,12 +75,19 @@ namespace oapi {
 		float x, y, z, w;
 	} FVECTOR4;*/
 
-	typedef struct {
-		float x, y, z, w;
+	typedef union { 
+		float data[4];
+		struct {
+			float x, y, z, w;
+		};
+		struct {
+			float r, g, b, a;
+		};
 	} FVECTOR4;
 
 
 	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f) { return { float(v.x), float(v.y), float(v.z), _w }; }
+	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a) { return { r, g, b, a }; }
 		
 
 	/**
@@ -112,3 +109,25 @@ typedef void * SKETCHMESH;
 typedef void * HPOLY;
 /// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);
+
+
+namespace oapi {
+
+	inline FVECTOR2 unit(FVECTOR2 &v)
+	{
+		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
+		return{ v.x*f, v.y*f };
+	}
+
+	inline FVECTOR2 operator* (const FVECTOR2 &v, float f)
+	{
+		return{ v.x * f, v.y * f };
+	}
+
+	inline FVECTOR4 operator* (const FVECTOR4 &v, float f)
+	{
+		return{ v.x * f, v.y * f, v.z * f, v.w * f };
+	}
+}
+
+

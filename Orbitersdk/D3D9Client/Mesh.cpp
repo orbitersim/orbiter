@@ -55,7 +55,6 @@ void D3D9Mesh::Null()
 	MaxFace  = 0;
 	MaxVert  = 0;
 	bDynamic = false;
-	bTemplate = false;
 	bGlobalTF = false;
 	bBSRecompute = true;
 	bBSRecomputeAll = true;
@@ -76,7 +75,7 @@ D3D9Mesh::D3D9Mesh(const char *name) : D3D9Effect()
 	MESHHANDLE hMesh = oapiLoadMesh(name);
 
 	if (hMesh) {
-		LoadMeshFromHandle(hMesh, false);
+		LoadMeshFromHandle(hMesh);
 		oapiDeleteMesh(hMesh);
 	}
 }
@@ -86,7 +85,7 @@ D3D9Mesh::D3D9Mesh(const char *name) : D3D9Effect()
 D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate) : D3D9Effect()
 {
 	Null();
-	LoadMeshFromHandle(hMesh, asTemplate);
+	LoadMeshFromHandle(hMesh);
 }
 
 
@@ -326,35 +325,43 @@ D3D9Mesh::~D3D9Mesh()
 	if (MeshCatalog->Remove(this)) LogAlw("Mesh 0x%X Removed from catalog",this);
 	else 						   LogErr("Mesh 0x%X wasn't in meshcatalog",this);
 
-	if (Grp) delete []Grp;
-	if (nTex) delete []Tex;
-	if (Geom) delete []Geom;
-	if (nMtrl) delete []Mtrl;
-	if (pGrpTF) delete []pGrpTF;
-	if (pTune) delete []pTune;
-
-	if (pIB) pIB->Release();
-	if (pVB) pVB->Release();
-	if (pGB) pGB->Release();
-	if (pGI) pGI->Release();
-
-	pIB = NULL;
-	pVB = NULL;
-	pGB = NULL;
-	pGI = NULL;
+	Release();
 
 	LogOk("Mesh 0x%X Deleted successfully -------------------------------",this);
 }
 
+// ===========================================================================================
+//
+void D3D9Mesh::Release()
+{
+	SAFE_DELETEA(Grp); 
+	SAFE_DELETEA(Tex);
+	SAFE_DELETEA(Mtrl);
+	SAFE_DELETEA(Geom);
+	SAFE_DELETEA(pGrpTF);
+	SAFE_DELETEA(pTune);
+
+	SAFE_RELEASE(pIB);
+	SAFE_RELEASE(pVB);
+	SAFE_RELEASE(pGB);
+	SAFE_RELEASE(pGI);
+}
 
 // ===========================================================================================
 //
-void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, bool asTemplate)
+void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
+{
+	Release();
+	Null();
+	LoadMeshFromHandle(hMesh);
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 {
 	nGrp = oapiMeshGroupCount(hMesh);
 	if (nGrp == 0) return;
-
-	bTemplate = asTemplate;
 
 	Grp = new GROUPREC[nGrp]; memset2(Grp, 0, sizeof(GROUPREC) * nGrp);
 	for (DWORD i = 0; i<nGrp; i++) SetGroupRec(i, oapiMeshGroupEx(hMesh, i));
@@ -900,6 +907,24 @@ bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg)
 
 
 // ===========================================================================================
+//
+void D3D9Mesh::UpdateGroup(MESHHANDLE hMesh, DWORD idx)
+{
+	_TRACE;
+	if (!pVB) return;
+	if (hMesh) {
+		MESHGROUPEX *mg = oapiMeshGroupEx(hMesh, idx);
+		if (mg) {
+			assert(mg->nVtx == Grp[idx].nVert);
+			assert(mg->nIdx == Grp[idx].nFace*3);
+			CopyVertices(&Grp[idx], mg);
+			UpdateGeometryBuffer();
+		}
+	}
+}
+
+
+// ===========================================================================================
 // Mesh Update routine for AMSO
 //
 void D3D9Mesh::UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg)
@@ -911,11 +936,13 @@ void D3D9Mesh::UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg)
 	NTVERTEX *pNT = mg->Vtx;
 
 	if (pVert) {
+
 		for (DWORD i=0;i<mg->nVtx;i++) {
 			pVert[i].x = pNT[i].x;
 			pVert[i].y = pNT[i].y;
 			pVert[i].z = pNT[i].z;
 		}
+
 		if (Config->UseNormalMap) {
 			WORD *idx=0;
 			if (pIB->Lock(grp->FaceOff*6, grp->nFace*6, (LPVOID*)&idx, 0)==S_OK) {

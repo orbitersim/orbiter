@@ -149,26 +149,22 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 		} break;
 
 		case EVENT_VESSEL_MODMESHGROUP:
-			LogErr("EVENT_VESSEL_MODMESHGROUP Not Implemented");
+			ResetMesh(context);
 			break;
 
 		case EVENT_VESSEL_RESETANIM:
-			LogBlu("EVENT_VESSEL_RESETANIM");
 			ResetAnimations();
 			break;
 
 		case EVENT_VESSEL_CLEARANIM:
-			LogBlu("EVENT_VESSEL_CLEARANIM");
 			ResetAnimations(context);
 			break;
 
 		case EVENT_VESSEL_DELANIM:
-			LogBlu("EVENT_VESSEL_DELANIM");
 			DelAnimation(context);
 			break;
 
 		case EVENT_VESSEL_NEWANIM:
-			LogBlu("EVENT_VESSEL_NEWANIM");
 			InitNewAnimation(context);
 			break;
 	}
@@ -376,6 +372,40 @@ void vVessel::InsertMesh(UINT idx)
 	UpdateAnimations(idx);
 
 	LogAlw("vVessel(0x%X)::InsertMesh(%u) hMesh=0x%X offset=(%g, %g, %g)",this,idx, hMesh, ofs.x, ofs.y, ofs.z);
+}
+
+
+// ============================================================================================
+//
+void vVessel::ResetMesh(UINT idx)
+{
+	LogAlw("MeshModified Event = 0x%X", idx);
+
+	VECTOR3 ofs = _V(0, 0, 0);
+
+	if (idx < nmesh) {
+
+		MESHHANDLE hMesh = vessel->GetMesh(this, idx);
+
+		if (hMesh) {
+
+			meshlist[idx].mesh->ReLoadMeshFromHandle(hMesh);
+
+			pMatMgr->ApplyConfiguration(meshlist[idx].mesh);
+
+			meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
+			vessel->GetMeshOffset(idx, ofs);
+
+			if (length(ofs)) {
+				if (!meshlist[idx].trans) meshlist[idx].trans = new D3DXMATRIX;
+				D3DMAT_Identity(meshlist[idx].trans);
+				D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
+			}
+			else {
+				SAFE_DELETE(meshlist[idx].trans);
+			}
+		}
+	}
 }
 
 

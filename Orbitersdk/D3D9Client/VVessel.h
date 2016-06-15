@@ -133,6 +133,7 @@ protected:
 	void InsertMesh(UINT idx);
 	void DisposeMeshes();
 	void DelMesh(UINT idx);
+	void ResetMesh(UINT idx);
 	//void InitAnimations();
 	//void InitAnimations(UINT meshidx);
 	void InitNewAnimation(UINT idx);

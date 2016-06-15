@@ -239,6 +239,29 @@ void gcGetCamera(gcCameraParam *pCam)
 // gcAPI Functions
 // =====================================================================================
 
+DWORD gcColor(const COLOUR4 *c)
+{
+	return gcColor((FVECTOR4 *)c);
+}
+
+
+DWORD gcColor(const FVECTOR4 *c)
+{
+	DWORD r = DWORD(c->r * 255.0f);
+	DWORD g = DWORD(c->g * 255.0f);
+	DWORD b = DWORD(c->b * 255.0f);
+	DWORD a = DWORD(c->a * 255.0f);
+
+	if (r > 0xFF) r = 0xFF;
+	if (g > 0xFF) g = 0xFF;
+	if (b > 0xFF) b = 0xFF;
+	if (a > 0xFF) a = 0xFF;
+	if (a == 0) a = 1;
+	
+	return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+
 void gcSetTranslation(FMATRIX4 *mat, const VECTOR3 &pos)
 {
 	mat->m41 = float(pos.x);

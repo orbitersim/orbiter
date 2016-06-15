@@ -241,6 +241,15 @@ void			gcWorldMatrix(oapi::FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, 
 				*/
 bool			gcWorldToScreenSpace(const VECTOR3 &pos, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip = 1.0f);
 
+				/**
+				* \brief Conver a floating point color to DWORD color value
+				* \param c A pointer to a color
+				* \return DWORD color in 0xAARRGGBB
+				* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
+				*/
+DWORD			gcColor(const COLOUR4 *c);
+DWORD			gcColor(const oapi::FVECTOR4 *c);
+
 void			gcGetCamera(gcCameraParam *pCam);
 				//@}
 				//@}
