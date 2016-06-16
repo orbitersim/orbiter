@@ -470,10 +470,20 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 // ===============================================================================================
 //
+void SwapRB(DWORD *c)
+{
+	DWORD r = ((*c) & 0x00FF0000) >> 16;
+	DWORD b = ((*c) & 0x000000FF) << 16;
+	*c = ((*c) & 0xFF00FF00) | b | r;
+}
+
+
+// ===============================================================================================
+//
 void D3D9Pad::Pixel (int x, int y, DWORD col)
 {
 	Flush(SKPTECH_PIXLES);
-
+	SwapRB(&col);
 	RECT rect = { x, y, x+1, y+1 };
 	if (pTgt) pDev->ColorFill(pTgt->pSurf, &rect, col); 
 }
@@ -533,6 +543,9 @@ void D3D9Pad::FillRect(int l, int t, int r, int b, SkpColor &c)
 //
 void D3D9Pad::Rectangle (int l, int t, int r, int b)
 {
+	if (r <= l) return;
+	if (b <= t) return;
+
 	Flush(SKPTECH_DRAW);
 
 	r--;
@@ -563,6 +576,9 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 //
 void D3D9Pad::Ellipse (int l, int t, int r, int b)
 {
+	if (r <= l) return;
+	if (b <= t) return;
+
 	Flush(SKPTECH_DRAW);
 
 	float w = float(r - l); float h = float(b - t);	float fl = float(l); float ft = float(t);

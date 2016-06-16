@@ -345,6 +345,8 @@ void D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 
 	if (hNew == hPrevSrc) return;
 
+	FlushPrimitives();
+
 	if (hNew) {
 		HR(FX->SetTexture(eTex0, hNew));
 	}
@@ -374,6 +376,8 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 	Flush(SKPTECH_BLIT);
 
 	if (hNew == hPrevSrc) return;
+
+	FlushPrimitives();
 
 	if (!SURFACE(hNew)->IsTexture() && bOnce) {
 		LogErr("Sketchpad2: Source is not a texture");
