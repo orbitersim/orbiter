@@ -234,12 +234,15 @@ void			gcWorldMatrix(oapi::FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, 
 
 				/**
 				* \brief Compute a screen space location for a point in camera centric ecliptic frame.
-				* \param rdir a position or a direction vector.
-				* \param pt [out] screen space position in pixels relative to upper-left corner.
+				* \param wpos a position in a world space
+				* \param spos [out] screen space position in pixels relative to upper-left corner.
+				* \param pVP a combined view and projection matrix
 				* \param clip Visibility check. Value 1.0 uses actual screen broders where as other values can increase or decrease clipping region size.
 				* \return true if the point is in the clipping rectanble, false otherwise in which case pt remains unchanged.
 				*/
-bool			gcWorldToScreenSpace(const VECTOR3 &pos, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip = 1.0f);
+bool			gcWorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *spos, const oapi::FMATRIX4 *pVP, float clip = 1.0f);
+
+MATRIX4			gcMatrix4(const oapi::FMATRIX4 *M);
 
 				/**
 				* \brief Conver a floating point color to DWORD color value

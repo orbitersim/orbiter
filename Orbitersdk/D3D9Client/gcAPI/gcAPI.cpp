@@ -262,6 +262,17 @@ DWORD gcColor(const FVECTOR4 *c)
 }
 
 
+MATRIX4 gcMatrix4(const FMATRIX4 *M)
+{
+	MATRIX4 D;
+	D.m11 = (double)M->m11;  D.m12 = (double)M->m12;  D.m13 = (double)M->m13;  D.m14 = (double)M->m14;
+	D.m21 = (double)M->m21;  D.m22 = (double)M->m22;  D.m23 = (double)M->m23;  D.m24 = (double)M->m24;
+	D.m31 = (double)M->m31;  D.m32 = (double)M->m32;  D.m33 = (double)M->m33;  D.m34 = (double)M->m34;
+	D.m41 = (double)M->m41;  D.m42 = (double)M->m42;  D.m43 = (double)M->m43;  D.m44 = (double)M->m44;
+	return D;
+}
+
+
 void gcSetTranslation(FMATRIX4 *mat, const VECTOR3 &pos)
 {
 	mat->m41 = float(pos.x);

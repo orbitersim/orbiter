@@ -1,14 +1,17 @@
+
 // =================================================================================================================================
-// The MIT Lisence:
 //
-// Copyright (C) 2012 - 2016 Jarmo Nikkanen
+// Copyright (C) 2012-2016 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
-// is furnished to do so, subject to the following conditions:
+// files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
+// of the Software, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+// a) You do not sell, rent or auction the Software.
+// b) You do not collect distribution fees.
+// c) If the Software is distributed in an object code form, it must inform that the source code is available and how to obtain it.
+// d) You do not remove or alter any copyright notices contained within the Software.
+// e) This copyright notice must be included in all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
@@ -111,6 +114,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	eMtrl	  = FX->GetParameterByName(0, "gMtrl");
 	eShade    = FX->GetParameterByName(0, "gShade");
 	ePos	  = FX->GetParameterByName(0, "gPos");
+	ePos2	  = FX->GetParameterByName(0, "gPos2");
 	eCov	  = FX->GetParameterByName(0, "gCov");
 	eCovEn	  = FX->GetParameterByName(0, "gClipEn");
 }
@@ -156,10 +160,11 @@ void D3D9Pad::Reset()
 	
 	vmode = ORTHO;
 
-	bPenChange = true;	// New setup required
-	bFontChange = true;	// New setup required
-	bViewChange = true;	// New setup required
+	bPenChange = true;		// New setup required
+	bFontChange = true;		// New setup required
+	bViewChange = true;		// New setup required
 	bClipSphere = false;
+	bClipCone = false;
 
 	QPen.bEnabled = false;
 	QBrush.bEnabled = false;
@@ -1053,6 +1058,7 @@ D3DXHANDLE   D3D9Pad::eWide = 0;
 D3DXHANDLE   D3D9Pad::eMtrl = 0;
 D3DXHANDLE   D3D9Pad::eShade = 0;
 D3DXHANDLE   D3D9Pad::ePos = 0;
+D3DXHANDLE   D3D9Pad::ePos2 = 0;
 D3DXHANDLE   D3D9Pad::eCov = 0;
 D3DXHANDLE   D3D9Pad::eCovEn = 0;
 

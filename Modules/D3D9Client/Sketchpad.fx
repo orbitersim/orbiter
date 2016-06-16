@@ -33,7 +33,8 @@ uniform extern float4    gKey;
 uniform extern float4    gMtrl;
 
 uniform extern float3    gPos;				// Clipper sphere direction [unit vector]
-uniform extern float2    gCov;				// Clipper sphere coverage parameters
+uniform extern float3    gPos2;				// Clipper cone direction [unit vector]
+uniform extern float4    gCov;				// Clipper sphere coverage parameters
 uniform extern float4    gSize;				// Inverse Texture size in .xy [pixels]
 uniform extern float4    gTarget;			// Inverse Screen size in .xy [pixels], Screen Size in .zw [pixels]
 uniform extern float3	 gWidth;			// Pen width in .x, and pattern scale in .y, pixel offset in .z
@@ -215,8 +216,9 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 	}
 	
 	if (gClipEn) {
-		float dFP = dot(gPos, normalize(frg.posW.xyz));
-		if ((dFP > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
+		float3 posN = normalize(frg.posW.xyz);
+		if ((dot(gPos, posN) > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
+		if (dot(gPos2, posN) > gCov.z) clip(-1);
 	}
 
 	return c;

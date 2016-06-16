@@ -437,6 +437,7 @@ public:
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
 	void ClipRect(const LPRECT clip = NULL);
 	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
+	void ClipCone(const VECTOR3 *pDir = NULL, double angle = 0.0);
 	void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE);
 	void Lines(FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
@@ -478,6 +479,7 @@ private:
 	void TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
 	void FlushPrimitives();
 	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
+	void InitClipping();
 	
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	template <typename Type> void AppendLineVertexList(const Type *pt);
@@ -497,6 +499,11 @@ private:
 	mutable bool bTriangles;
 
 	bool bClipSphere;
+	bool bClipCone;
+
+	float fClipA2, fClipA1;
+	float fClipD2, fClipD1;
+	D3DXVECTOR3 uClipV2, uClipV1;
 	
 	SURFHANDLE hPrevSrc;
 	WORD vI, iI;
@@ -546,6 +553,7 @@ private:
 	static D3DXHANDLE   eMtrl;
 	static D3DXHANDLE   eShade;
 	static D3DXHANDLE   ePos;
+	static D3DXHANDLE   ePos2;
 	static D3DXHANDLE   eCov;
 	static D3DXHANDLE   eCovEn;
 };

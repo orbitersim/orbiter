@@ -1779,30 +1779,31 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 
 // ===========================================================================================
 //
-bool Scene::WorldToScreenSpace(const VECTOR3 &pos, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip)
+bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip)
 {
 	D3DXVECTOR4 homog;
-	D3DXVECTOR3 dir(float(pos.x), float(pos.y), float(pos.z));
+	D3DXVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
 	
-	D3DXVec3Transform(&homog, &dir, pVP);
+	D3DXVec3Transform(&homog, &pos, pVP);
 
 	if (homog.w < 0.0f) return false;
 
 	homog.x /= homog.w;
 	homog.y /= homog.w;
 
-	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) return false;
+	bool bClip = false;
+	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bClip = true;
 
 	if (_hypot(homog.x, homog.y) < 1e-6) {
 		pt->x = viewW / 2;
 		pt->y = viewH / 2;
 	}
 	else {
-		pt->x = (long)((float(viewW) * 0.5f * (1.0f + homog.x))+0.5f);
-		pt->y = (long)((float(viewH) * 0.5f * (1.0f - homog.y))+0.5f);
+		pt->x = (long)((float(viewW) * 0.5f * (1.0f + homog.x)) + 0.5f);
+		pt->y = (long)((float(viewH) * 0.5f * (1.0f - homog.y)) + 0.5f);
 	}
-
-	return true;
+	
+	return !bClip;
 }
 
 

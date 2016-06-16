@@ -146,8 +146,18 @@ namespace oapi {
 		* \brief Set up a world space clip sphere to clip pixels behind it. Does not work with orthographic projection.
 		* \param pPos a pointer to a vector containing sphere position in camera centric ecliptic frame, Set to NULL to disable clipping.
 		* \param rad Radius of the sphere.
+		* \note This function is provided due to reasons that z-buffering doesn't really work in all cases.
 		*/
 		virtual void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0) { assert(false); }
+
+
+		/**
+		* \brief Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
+		* \param pPos a pointer to a unit vector containing cone direction in camera centric ecliptic frame, Set to NULL to disable clipping.
+		* \param angle cosine of the half-angle of the cone.
+		* \note This function is provided due to reasons that z-buffering doesn't really work in all cases.
+		*/
+		virtual void ClipCone(const VECTOR3 *pPos = NULL, double cos_angle = 0.0) { assert(false); }
 
 
 		/**
@@ -203,7 +213,7 @@ namespace oapi {
 		* \param hSrc Source surface handle
 		* \param src Source rectangle, (or NULL for whole surface)
 		* \param tgt Target rectangle, (must be defined) 
-		* \note Can alpha-blend
+		* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 		*/
 		virtual void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt) { assert(false); }
 

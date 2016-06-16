@@ -1,4 +1,24 @@
 
+// =================================================================================================================================
+//
+// Copyright (C) 2012-2016 Jarmo Nikkanen
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+// files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
+// of the Software, subject to the following conditions:
+//
+// a) You do not sell, rent or auction the Software.
+// b) You do not collect distribution fees.
+// c) If the Software is distributed in an object code form, it must inform that the source code is available and how to obtain it.
+// d) You do not remove or alter any copyright notices contained within the Software.
+// e) This copyright notice must be included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+// IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// =================================================================================================================================
+
 #include "D3D9Pad.h"
 #include "D3D9TextMgr.h"
 #include "D3D9Surface.h"
@@ -227,21 +247,56 @@ void D3D9Pad::ClipRect(LPRECT clip)
 //
 void D3D9Pad::ClipSphere(const VECTOR3 *pPos, double r)
 {
-	FlushPrimitives();
-
 	if (pPos) {
 		bClipSphere = true;
 		double d2 = dotp(*pPos, *pPos);
 		double s = sqrt(d2 - r*r);
 		double f = 1.0 / sqrt(d2);
-		double c = s * f;
-		D3DXVECTOR3 uPos = D3DXVEC((*pPos)*f);
-		HR(FX->SetValue(ePos, &uPos, sizeof(D3DXVECTOR3)));
-		HR(FX->SetValue(eCov, &D3DXVECTOR2(float(c), float(s)), sizeof(D3DXVECTOR2)));
+		fClipA1 = float(s * f);
+		fClipD1 = float(s);
+		uClipV1 = D3DXVEC((*pPos)*f);
+	}
+	else {
+		fClipA1 = 2.0f;
+		bClipSphere = false;
+	}
+
+	InitClipping();
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::ClipCone(const VECTOR3 *pDir, double angle)
+{
+	if (pDir) {
+		bClipCone = true;
+		fClipA2 = float(angle);
+		fClipD2 = 0.0f;
+		uClipV2 = D3DXVEC((*pDir));
+	}
+	else {
+		fClipA2 = 2.0f;
+		bClipCone = false;
+	}
+
+	InitClipping();
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::InitClipping()
+{
+	FlushPrimitives();
+
+	if (bClipCone || bClipSphere) {
+		HR(FX->SetValue(ePos,  &uClipV1, sizeof(D3DXVECTOR3)));
+		HR(FX->SetValue(ePos2, &uClipV2, sizeof(D3DXVECTOR3)));
+		HR(FX->SetValue(eCov, &D3DXVECTOR4(fClipA1, fClipD1, fClipA2, fClipD2), sizeof(D3DXVECTOR4)));
 		HR(FX->SetBool(eCovEn, true));
 	}
 	else {
-		bClipSphere = false;
 		HR(FX->SetBool(eCovEn, false));
 	}
 }
@@ -684,7 +739,7 @@ bool D3D9Pad::Flush(int iTech)
 			HR(FX->SetMatrix(eVP, &mVP));
 			HR(FX->SetMatrix(eW, &mW));
 			HR(FX->SetFloat(eFov, f));
-			HR(FX->SetBool(eCovEn, bClipSphere));
+			HR(FX->SetBool(eCovEn, bClipSphere|bClipCone));
 		}
 
 		bViewChange = false;
