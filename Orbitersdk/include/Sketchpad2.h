@@ -108,8 +108,9 @@ namespace oapi {
 		*/
 		virtual	FMATRIX4 *ProjectionMatrix() { assert(false); return NULL; }
 
+
 		/**
-		* \brief Get combined view projection matrix
+		* \brief Get combined view projection matrix. [Read only]
 		*/
 		virtual	const FMATRIX4 *GetViewProjectionMatrix() { assert(false); return NULL; }
 
@@ -153,7 +154,7 @@ namespace oapi {
 
 		/**
 		* \brief Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
-		* \param pPos a pointer to a unit vector containing cone direction in camera centric ecliptic frame, Set to NULL to disable clipping.
+		* \param pPos a pointer to a unit vector containing cone direction in camera centric frame, Set to NULL to disable clipping.
 		* \param angle cosine of the half-angle of the cone.
 		* \note This function is provided due to reasons that z-buffering doesn't really work in all cases.
 		*/

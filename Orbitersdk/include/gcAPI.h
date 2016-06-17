@@ -238,10 +238,15 @@ void			gcWorldMatrix(oapi::FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, 
 				* \param spos [out] screen space position in pixels relative to upper-left corner.
 				* \param pVP a combined view and projection matrix
 				* \param clip Visibility check. Value 1.0 uses actual screen broders where as other values can increase or decrease clipping region size.
-				* \return true if the point is in the clipping rectanble, false otherwise in which case pt remains unchanged.
+				* \return true if the point is in the clipping rectanble, false otherwise.
+				* \note If false is returned and the point is behind the camera spos remain unchanged. If not behind the camera then spos contains more or less valid coordinates.
 				*/
 bool			gcWorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *spos, const oapi::FMATRIX4 *pVP, float clip = 1.0f);
 
+				/**
+				* \brief Convert a 4x4 float matrix to 4x4 double matrix
+				* \param wpos a position in a world space
+				*/
 MATRIX4			gcMatrix4(const oapi::FMATRIX4 *M);
 
 				/**
@@ -251,9 +256,15 @@ MATRIX4			gcMatrix4(const oapi::FMATRIX4 *M);
 				* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 				*/
 DWORD			gcColor(const COLOUR4 *c);
+
+				/**
+				* \brief Conver a floating point color to DWORD color value
+				* \param c A pointer to a color
+				* \return DWORD color in 0xAARRGGBB
+				* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
+				*/
 DWORD			gcColor(const oapi::FVECTOR4 *c);
 
-void			gcGetCamera(gcCameraParam *pCam);
 				//@}
 				//@}
 #endif

@@ -42,18 +42,6 @@ enum PolyFlags {
 	CONNECT =   0x01	///< \details Connect line endpoints forming a loop
 };
 
-/**
-* \brief Camera parameters structure
-*/
-typedef struct {
-	OBJHANDLE hRef;		///< Camera proxy g-body
-	VECTOR3 gpos;		///< Camera global pos
-	VECTOR3 dir;		///< Camera direction [unit]
-	VECTOR3 up;			///< Cameta upvector [unit]
-	float fov;			///< Half field of view [rad]
-	float asp;			///< Aspect ration
-} gcCameraParam;
-
 
 namespace oapi {
 
@@ -69,12 +57,6 @@ namespace oapi {
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR2 type.
 	*/
-	/*typedef struct FVECTOR4 {
-		FVECTOR4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
-		FVECTOR4(VECTOR3 &v, float _w) : x(v.x), y(v.y), z(v.z), w(_w) {}
-		float x, y, z, w;
-	} FVECTOR4;*/
-
 	typedef union { 
 		float data[4];
 		struct {
@@ -86,8 +68,23 @@ namespace oapi {
 	} FVECTOR4;
 
 
-	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f) { return { float(v.x), float(v.y), float(v.z), _w }; }
-	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a) { return { r, g, b, a }; }
+	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f) 
+	{ 
+		FVECTOR4 q = { float(v.x), float(v.y), float(v.z), _w }; 
+		return q;
+	}
+
+	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a) 
+	{ 
+		FVECTOR4 q = { r, g, b, a }; 
+		return q;
+	}
+
+	inline FVECTOR2 _FVECTOR2(float x, float y) 
+	{ 
+		FVECTOR2 q = { x, y }; 
+		return q;
+	}
 		
 
 	/**
@@ -116,17 +113,17 @@ namespace oapi {
 	inline FVECTOR2 unit(FVECTOR2 &v)
 	{
 		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
-		return{ v.x*f, v.y*f };
+		return _FVECTOR2( v.x*f, v.y*f );
 	}
 
 	inline FVECTOR2 operator* (const FVECTOR2 &v, float f)
 	{
-		return{ v.x * f, v.y * f };
+		return _FVECTOR2( v.x * f, v.y * f );
 	}
 
 	inline FVECTOR4 operator* (const FVECTOR4 &v, float f)
 	{
-		return{ v.x * f, v.y * f, v.z * f, v.w * f };
+		return _FVECTOR4( v.x * f, v.y * f, v.z * f, v.w * f );
 	}
 }
 

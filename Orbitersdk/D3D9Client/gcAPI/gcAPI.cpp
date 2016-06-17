@@ -45,7 +45,6 @@ typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 
 // Helper functiond
 typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip);
-typedef bool (OGCIFN *__gcGetCamera)(gcCameraParam *pCam);
 
 bool bValid = false;
 
@@ -65,7 +64,6 @@ __gcDeleteSketchMesh _gcDeleteSketchMesh = NULL;
 __gcWorldToScreenSpace _gcWorldToScreenSpace = NULL;
 __gcCreatePoly _gcCreatePoly = NULL;
 __gcDeletePoly _gcDeletePoly = NULL;
-__gcGetCamera _gcGetCamera = NULL;
 
 
 // ====================================================================================================
@@ -91,7 +89,6 @@ bool PostInit(HMODULE hClient)
 	_gcDeletePoly = (__gcDeletePoly)GetProcAddress(hClient, "gcDeletePoly");
 	// -------------
 	_gcWorldToScreenSpace = (__gcWorldToScreenSpace)GetProcAddress(hClient, "gcWorldToScreenSpace");
-	_gcGetCamera = (__gcGetCamera)GetProcAddress(hClient, "gcGetCamera");
 
 	return (_gcClientID!=NULL);
 }
@@ -225,13 +222,6 @@ bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::F
 	return false;
 }
 
-// ====================================================================================================
-//
-void gcGetCamera(gcCameraParam *pCam)
-{
-	if (_gcGetCamera) _gcGetCamera(pCam);
-}
-
 
 
 
@@ -279,6 +269,7 @@ void gcSetTranslation(FMATRIX4 *mat, const VECTOR3 &pos)
 	mat->m42 = float(pos.y);
 	mat->m43 = float(pos.z);
 }
+
 
 void gcWorldMatrix(FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale)
 {

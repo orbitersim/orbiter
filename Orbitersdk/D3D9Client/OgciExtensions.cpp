@@ -13,19 +13,6 @@
 extern D3D9Client *g_client;
 
 
-DLLCLBK void gcGetCamera(gcCameraParam *pCam)
-{
-	const Scene::CAMERA *Cam = g_client->GetScene()->GetCamera();
-
-	pCam->asp = Cam->aspect;
-	pCam->fov = Cam->aperture;
-	pCam->gpos = Cam->pos;
-	pCam->dir = Cam->dir;
-	pCam->up = _VD3DX(Cam->y);
-	pCam->hRef = Cam->hObj_proxy;
-}
-
-
 DLLCLBK bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, FMATRIX4 *pVP, float clip = 1.0f)
 {
 	return g_client->GetScene()->WorldToScreenSpace(rdir, pt, (D3DXMATRIX *)pVP, clip);
