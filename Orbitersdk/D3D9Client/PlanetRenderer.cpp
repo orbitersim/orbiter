@@ -407,7 +407,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	float  h0 = float(atmo->height*1e3);				// Scale height
 	float hm0 = float(atmo->mheight*1e3);
 	float  mp = -float(atmo->mpow);
-	float  cs =  float(atmo->aux3);
+//	float  cs =  float(atmo->aux3);
 
 	double me = pPlanet->GetMinElevation();				// Minimum elevation
 	double mr = pr+me;									// Minimum radius
