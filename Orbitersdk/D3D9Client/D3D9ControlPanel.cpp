@@ -92,7 +92,7 @@ void D3D9Client::RenderControlPanel()
 	static char *OnOff[]={"Off","On"};
 	static char *SkpU[]={"Auto","GDI"};
 
-	static double sim_time  = 0.0;
+//	static double sim_time  = 0.0;
 
 	LPDIRECT3DDEVICE9 dev = pDevice;
 	
@@ -260,18 +260,18 @@ void D3D9Client::RenderControlPanel()
 	static double update;
 	static double display;
 	// -------------------------------------
-	static double pln_srf;
-	static double pln_cld;
+//	static double pln_srf;
+//	static double pln_cld;
 	// -------------------------------------
-	static double scn_pst;
-	static double scn_ves;
-	static double scn_vc;
-	static double scn_hud;
-	static double scn_cam;
+//	static double scn_pst;
+//	static double scn_ves;
+//	static double scn_vc;
+//	static double scn_hud;
+//	static double scn_cam;
 	// -------------------------------------
-	static double prt_cam;
-	static double prt_env;
-	static double prt_blr;
+//	static double prt_cam;
+//	static double prt_env;
+//	static double prt_blr;
 	
 	if (oapiGetSysMJD() > systime) {
 		
@@ -303,18 +303,18 @@ void D3D9Client::RenderControlPanel()
 		scale   = double(viewW - 16) / total;
 
 		// SCENE --------------------------------
-		prt_cam = D3D9Stats.Timer.CustCams.time;
-		prt_env = D3D9Stats.Timer.EnvMap.time;
-		prt_blr = D3D9Stats.Timer.EnvBlur.time;
+//		prt_cam = D3D9Stats.Timer.CustCams.time;
+//		prt_env = D3D9Stats.Timer.EnvMap.time;
+//		prt_blr = D3D9Stats.Timer.EnvBlur.time;
 		// -------------------------------------
-		pln_srf = D3D9Stats.Timer.Surface.time;
-		pln_cld = D3D9Stats.Timer.Clouds.time;
+//		pln_srf = D3D9Stats.Timer.Surface.time;
+//		pln_cld = D3D9Stats.Timer.Clouds.time;
 		// -------------------------------------
-		scn_cam = D3D9Stats.Timer.CamVis.time;
-		scn_pst = D3D9Stats.Timer.PostProcess.time;
-		scn_ves = D3D9Stats.Timer.Vessels.time;
-		scn_vc  = D3D9Stats.Timer.VirtualCP.time;
-		scn_hud = D3D9Stats.Timer.HUDOverlay.time;
+//		scn_cam = D3D9Stats.Timer.CamVis.time;
+//		scn_pst = D3D9Stats.Timer.PostProcess.time;
+//		scn_ves = D3D9Stats.Timer.Vessels.time;
+//		scn_vc  = D3D9Stats.Timer.VirtualCP.time;
+//		scn_hud = D3D9Stats.Timer.HUDOverlay.time;
 
 		// -------------------------------------
 		//scene -= prt_cam + prt_env + prt_blr + pln_srf + pln_cld + scn_cam + scn_pst + scn_ves + scn_vc + scn_hud;

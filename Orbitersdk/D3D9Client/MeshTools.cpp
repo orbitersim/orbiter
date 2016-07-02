@@ -37,7 +37,7 @@ AdMesh::AdMesh(MESHHANDLE hMesh)
 	for (DWORD i=0;i<nGrp;i++) {
 		const MESHGROUPEX *mg = oapiMeshGroupEx(hMesh, i); 
 		if (mg) {
-			HGROUP hGrp = AddGroup(mg->Vtx, ADMESH_NT_VTX, mg->Idx, mg->nVtx, mg->nIdx);
+			/*HGROUP hGrp = */AddGroup(mg->Vtx, ADMESH_NT_VTX, mg->Idx, mg->nVtx, mg->nIdx);
 		}
 	}
 }

@@ -508,7 +508,7 @@ BeaconArray *RunwayLights::BuildLights(VECTOR3 _start, VECTOR3 _end, double disp
 	
 	// Post process lights ------------------------------------------
 	OBJHANDLE hPlanet = oapiGetBasePlanet(hObj);
-	double size = oapiGetSize(hPlanet);
+//	double size = oapiGetSize(hPlanet);
 
 	for (int k=0;k<i;k++) beaconsEntry1[k].dir = _V(-beaconsEntry1[k].dir.x, beaconsEntry1[k].dir.y, -beaconsEntry1[k].dir.z);
 

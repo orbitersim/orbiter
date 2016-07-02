@@ -739,7 +739,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		RenderDot (dev);
 	} else {             // render as sphere
 		DWORD amb = prm.amb0col;
-		bool ringpostrender = false;
+//		bool ringpostrender = false;
 		float fogfactor;
 
 		D3DCOLOR bg		= scn->GetBgColour();
@@ -782,7 +782,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			double fog_0 = fog.dens_0;    // 5e-5;
 			double fog_ref = fog.dens_ref; // 3e-5;
 			double h_max = size*1.5; // At this altitude, fog effect drops to zero
-			double scl = h_ref*fog_ref;
+//			double scl = h_ref*fog_ref;
 
 			if (h < h_ref) {
 				// linear zone
@@ -1048,7 +1048,7 @@ void vPlanet::UpdateAtmoConfig()
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
 	double outer = size + SPrm.height * 12.0 * 1e3;
 	double height = size + SPrm.height * 5.0;
-	double angle = (PI-asin(size/height)) * DEG;
+//	double angle = (PI-asin(size/height)) * DEG;
 
 	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 96.0, 8);
 }

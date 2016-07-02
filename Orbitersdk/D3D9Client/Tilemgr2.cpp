@@ -290,7 +290,7 @@ void Tile::Extents (double *_latmin, double *_latmax, double *_lngmin, double *_
 VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double globelev,
 	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift, double bb_excess)
 {
-	const float TEX2_MULTIPLIER = 1.0f; // was: 4.0f was: 16.0f
+//	const float TEX2_MULTIPLIER = 1.0f; // was: 4.0f was: 16.0f
 	const float c1 = 1.0f, c2 = 0.0f;   // -1.0f/512.0f; // assumes 256x256 texture patches
 	int i, j, n, nofs0, nofs1;
 	int nlng = 2 << lvl;
@@ -305,8 +305,8 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	double radius = mgr->obj_size;
 	VECTOR3 pos, tpos, nml;
 	if (!range) range = &fullrange;
-	float turange = range->tumax-range->tumin;
-	float tvrange = range->tvmax-range->tvmin;
+	//float turange = range->tumax-range->tumin;
+	//float tvrange = range->tvmax-range->tvmin;
 
 	int nvtx = (grdlat+1)*(grdlng+1);         // patch mesh node grid
 	int nvtxbuf = nvtx + grdlat+1 + grdlng+1; // add buffer for storage of edges (for elevation matching)
@@ -443,16 +443,16 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	// regenerate normals for terrain
 	if (elev) {
 		const double shade_exaggerate = 1.0; // 1 = normal, <1 = more dramatic landscape shadows
-		double dy, dz, dydz, nz_x, ny_x, nx1, ny1, nz1;
+		double dy, dz, dydz, /*nz_x, ny_x,*/ nx1, ny1, nz1;
 		int en;
 		dy = radius * PI/(nlat*grdlat);  // y-distance between vertices
-		ny_x = shade_exaggerate*dy;
+//		ny_x = shade_exaggerate*dy;
 		for (i = n = 0; i <= grdlat; i++) {
 			lat = minlat + (maxlat-minlat) * (double)i/(double)grdlat;
 			slat = sin(lat), clat = cos(lat);
 			dz = radius * PI2*cos(lat) / (nlng*grdlng); // z-distance between vertices on unit sphere
 			dydz = dy*dz;
-			nz_x = shade_exaggerate*dz;
+//			nz_x = shade_exaggerate*dz;
 			for (j = 0; j <= grdlng; j++) {
 				lng = minlng + (maxlng-minlng) * (double)j/(double)grdlng;
 				slng = sin(lng), clng = cos(lng);

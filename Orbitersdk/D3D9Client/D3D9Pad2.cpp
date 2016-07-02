@@ -377,7 +377,7 @@ void D3D9Pad::SetGlobalLineScale(float width, float pat)
 //
 void D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 {
-	float srw, srh;
+//	float srw, srh;
 
 	Flush(SKPTECH_BLIT);
 
@@ -388,10 +388,10 @@ void D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 	if (hNew) {
 		HR(FX->SetTexture(eTex0, hNew));
 	}
-	else {
-		srw = 1.0f;
-		srh = 1.0f;
-	}
+//	else {
+//		srw = 1.0f;
+//		srh = 1.0f;
+//	}
 
 	HR(FX->SetVector(eSize, &D3DXVECTOR4(1, 1, 1, 1)));
 	HR(FX->SetValue(eKey, &D3DXCOLOR(0,0,0,0), sizeof(D3DXCOLOR)));
@@ -767,9 +767,12 @@ bool D3D9Pad::Flush(int iTech)
 // SketchMesh Interface
 // ======================================================================================
 
-SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev)
+SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev) :
+	pDev(_pDev),
+	Tex(NULL),
+	Grp(NULL),
+	Mtrl(NULL)
 {
-	pDev = _pDev;
 }
 
 

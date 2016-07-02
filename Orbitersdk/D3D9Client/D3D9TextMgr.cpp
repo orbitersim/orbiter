@@ -407,7 +407,7 @@ float D3D9Text::Length(const char *format, ...)
 	va_list args; 
     va_start(args, format); 
 	
-	int count = _vsnprintf_s((char *)Buffer, 512, 512, format, args); 
+//	int count = _vsnprintf_s((char *)Buffer, 512, 512, format, args); 
 	va_end(args);
 
 	return Length2(Buffer);
@@ -418,7 +418,7 @@ float D3D9Text::Length(const char *format, ...)
 float D3D9Text::Length2(const char *str)
 {
     float len = 0;
-	unsigned char c = 1;
+//	unsigned char c = 1;
 	int i = 0;
 
 	while (str[i]) {
