@@ -503,8 +503,8 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 	FX->SetFloat(eSunAppRad, rs); 
 
 	if (atm) {
-		FX->SetFloat(eAmbient0, min(0.7f, log(float(atm->rho0)+1.0f)*0.4f));
-		FX->SetFloat(eDispersion, max(0.02f, min(0.9f, log(float(atm->rho0)+1.0f))));
+		FX->SetFloat(eAmbient0, float(min(0.7, log1p(atm->rho0)*0.4)));
+		FX->SetFloat(eDispersion, float(max(0.02, min(0.9, log1p(atm->rho0)))));
 	}
 	else {
 		FX->SetFloat(eAmbient0, 0.0f);

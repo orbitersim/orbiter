@@ -149,8 +149,8 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 	const ATMCONST *atm = (oapiGetObjectType(hP)==OBJTP_PLANET ? oapiGetPlanetAtmConstants (hP) : NULL);
 
 	if (atm) {
-		amb0 = min (0.7f, log(float(atm->rho0)+1.0f)*0.4f);
-		disp = max (0.02f, min(0.9f, log(float(atm->rho0)+1.0f)));
+		amb0 = float(min (0.7, log1p(atm->rho0)*0.4));
+		disp = float(max (0.02, min(0.9, log1p(atm->rho0))));
 	}
 
 	D3DXVECTOR3 lcol;
@@ -238,8 +238,8 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 
 	if (atm) {
 		aalt = float(atm->p0 * log(atm->p0/pres) / (atm->rho0*grav));
-		amb0 = float(min (0.7, log(atm->rho0+1.0f)*0.4));
-		disp = float(max (0.02, min(0.9, log(atm->rho0+1.0))));
+		amb0 = float(min (0.7, log1p(atm->rho0)*0.4));
+		disp = float(max (0.02, min(0.9, log1p(atm->rho0))));
 	}
 
 	if (alt>10e3f) al = aalt / k;
