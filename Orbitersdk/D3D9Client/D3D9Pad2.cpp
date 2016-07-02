@@ -245,41 +245,24 @@ void D3D9Pad::ClipRect(LPRECT clip)
 
 // ===============================================================================================
 //
-void D3D9Pad::ClipSphere(const VECTOR3 *pPos, double r)
+void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dist)
 {
-	if (pPos) {
-		bClipSphere = true;
-		double d2 = dotp(*pPos, *pPos);
-		double s = sqrt(d2 - r*r);
-		double f = 1.0 / sqrt(d2);
-		fClipA1 = float(s * f);
-		fClipD1 = float(s);
-		uClipV1 = D3DXVEC((*pPos)*f);
+	if (idx < 0) idx = 0;
+	if (idx > 1) idx = 1;
+
+	if (uDir) {
+		ClipData[idx].uDir = D3DXVEC(*uDir);
+		ClipData[idx].ca = float(cos_angle);
+		ClipData[idx].dst = float(dist);
+		ClipData[idx].bEnable = true;
 	}
 	else {
-		fClipA1 = 2.0f;
-		bClipSphere = false;
+		ClipData[idx].uDir = D3DXVECTOR3(0,0,1);
+		ClipData[idx].ca = 2.0f;
+		ClipData[idx].dst = 0.0f;
+		ClipData[idx].bEnable = false;
 	}
-
-	InitClipping();
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::ClipCone(const VECTOR3 *pDir, double angle)
-{
-	if (pDir) {
-		bClipCone = true;
-		fClipA2 = float(angle);
-		fClipD2 = 0.0f;
-		uClipV2 = D3DXVEC((*pDir));
-	}
-	else {
-		fClipA2 = 2.0f;
-		bClipCone = false;
-	}
-
+	
 	InitClipping();
 }
 
@@ -290,10 +273,10 @@ void D3D9Pad::InitClipping()
 {
 	FlushPrimitives();
 
-	if (bClipCone || bClipSphere) {
-		HR(FX->SetValue(ePos,  &uClipV1, sizeof(D3DXVECTOR3)));
-		HR(FX->SetValue(ePos2, &uClipV2, sizeof(D3DXVECTOR3)));
-		HR(FX->SetValue(eCov, &D3DXVECTOR4(fClipA1, fClipD1, fClipA2, fClipD2), sizeof(D3DXVECTOR4)));
+	if (ClipData[0].bEnable || ClipData[1].bEnable) {
+		HR(FX->SetValue(ePos,  &ClipData[0].uDir, sizeof(D3DXVECTOR3)));
+		HR(FX->SetValue(ePos2, &ClipData[1].uDir, sizeof(D3DXVECTOR3)));
+		HR(FX->SetValue(eCov, &D3DXVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst), sizeof(D3DXVECTOR4)));
 		HR(FX->SetBool(eCovEn, true));
 	}
 	else {
@@ -566,7 +549,7 @@ void D3D9Pad::FlushPrimitives()
 
 // ===============================================================================================
 //
-int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags, SURFHANDLE hTex)
+int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
 	SketchMesh *hMesh = (SketchMesh *)_hMesh;
 
@@ -600,13 +583,13 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags, SU
 		}
 	}
 
-	HR(FX->SetBool(eShade, (flags&SMOOTH_SHADE)!=0));
+	HR(FX->SetBool(eShade, (flags&MF_SMOOTH_SHADE)!=0));
 	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
 	HR(FX->SetValue(eMtrl, &Mat, sizeof(D3DXCOLOR)));
 	HR(FX->CommitChanges());
 
-	if (flags&CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	else				 pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	if (flags&MF_CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	else				    pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	if (grp < hMesh->GroupCount()) {
 		hMesh->RenderGroup(grp);
@@ -618,7 +601,7 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, SkpMeshFlags flags, SU
 
 // ===============================================================================================
 //
-int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags, SURFHANDLE hTex)
+int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
 	// Flush existing artwork out before starting a new one ------
 	//
@@ -647,13 +630,13 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags, SURF
 		HR(FX->SetBool(eTexEn, false));
 	}
 
-	HR(FX->SetBool(eShade, (flags&SMOOTH_SHADE) != 0));
+	HR(FX->SetBool(eShade, (flags&MF_SMOOTH_SHADE) != 0));
 	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
 
 	HR(FX->CommitChanges());
 
-	if (flags&CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	else				 pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	if (flags&MF_CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	else				    pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, gr->nVtx, gr->nIdx/3, gr->Idx, D3DFMT_INDEX16, gr->Vtx, sizeof(NTVERTEX));
 
@@ -739,7 +722,7 @@ bool D3D9Pad::Flush(int iTech)
 			HR(FX->SetMatrix(eVP, &mVP));
 			HR(FX->SetMatrix(eW, &mW));
 			HR(FX->SetFloat(eFov, f));
-			HR(FX->SetBool(eCovEn, bClipSphere|bClipCone));
+			HR(FX->SetBool(eCovEn, ClipData[0].bEnable | ClipData[1].bEnable));
 		}
 
 		bViewChange = false;
@@ -784,18 +767,9 @@ bool D3D9Pad::Flush(int iTech)
 // SketchMesh Interface
 // ======================================================================================
 
-SketchMesh::SketchMesh(const char *name, LPDIRECT3DDEVICE9 _pDev)
+SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev)
 {
 	pDev = _pDev;
-
-	MESHHANDLE hMesh = oapiLoadMesh(name);
-
-	if (hMesh) {
-		LoadMeshFromHandle(hMesh);
-		oapiDeleteMesh(hMesh);
-	} else {
-		oapiWriteLogV("gcLoadSketchMesh(%s): Mesh not found", name);
-	}
 }
 
 
@@ -810,10 +784,26 @@ SketchMesh::~SketchMesh()
 	SAFE_RELEASE(pIB);
 }
 
+// ===============================================================================================
+//
+bool SketchMesh::LoadMesh(const char *name)
+{
+	MESHHANDLE hMesh = oapiLoadMesh(name);
+
+	if (hMesh) {
+		bool bRet = LoadMeshFromHandle(hMesh);
+		oapiDeleteMesh(hMesh);
+		return bRet;
+	}
+
+	oapiWriteLogV("gcLoadSketchMesh(%s): Mesh not found", name);
+		
+	return false;
+}
 
 // ===============================================================================================
 //
-void SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
+bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 {
 	pVB = NULL;
 	pIB = NULL;
@@ -824,7 +814,7 @@ void SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 	MaxVert = MaxIdx = 0;
 
 	nGrp = oapiMeshGroupCount(hMesh);
-	if (nGrp == 0) return;
+	if (nGrp == 0) return false;
 
 	Grp = new SKETCHGRP[nGrp];
 	memset2(Grp, 0, sizeof(SKETCHGRP) * nGrp);
@@ -864,7 +854,7 @@ void SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 		MaxIdx += pEx->nIdx;
 	}
 
-	if (MaxVert == 0 || MaxIdx == 0) return;
+	if (MaxVert == 0 || MaxIdx == 0) return false;
 
 	// -----------------------------------------------------------------------
 
@@ -897,6 +887,8 @@ void SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 		HR(pIB->Unlock());
 		HR(pVB->Unlock());
 	}
+
+	return true;
 }
 
 
@@ -999,7 +991,7 @@ void D3D9PolyLine::Release()
 
 // ===============================================================================================
 //
-void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags)
+void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags)
 {
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	pDev->SetIndices(pIB);

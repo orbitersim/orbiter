@@ -195,12 +195,12 @@ void			gcDeleteSketchMesh(SKETCHMESH hMesh);
 				* \param hPoly Handle to a polyline to be updated or NULL to create a new one.
 				* \param pt list of vertex points.
 				* \param npt number of points in the list.
-				* \param PolyFlags additional flags
+				* \param flags additional PolyFlags flags
 				* \sa gcDeletePoly, DrawPoly()
 				* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
 				* \note During update number of points must be equal or smaller than during initial creation of poly object.
 				*/
-HPOLY			gcCreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, PolyFlags flags = NONE);
+HPOLY			gcCreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, DWORD flags = 0);
 
 				/**
 				* \brief Deletes a polyline created with gcCreatePolyPolyline()

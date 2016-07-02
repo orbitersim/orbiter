@@ -222,12 +222,15 @@ restart:
 		return false;
 	}
 
+	LPDIRECT3DTEXTURE9 pSrcTex = NULL;
 	LPDIRECT3DSURFACE9 pSurf = NULL;
 
-	if (pDev->CreateOffscreenPlainSurface(tex_w, tex_h, D3DFMT_R5G6B5, D3DPOOL_SYSTEMMEM, &pSurf, NULL)!=S_OK) {
+	if (pDev->CreateTexture(tex_w, tex_h, 1, 0, D3DFMT_R5G6B5, D3DPOOL_SYSTEMMEM, &pSrcTex, NULL)!=S_OK) {
 		LogErr("D3D9Text::CreateOffscreenPlainSurface Fail");
 		return false;
 	}
+
+	HR(pSrcTex->GetSurfaceLevel(0, &pSurf));
 
 	HDC hDC = NULL;
 
@@ -309,37 +312,38 @@ restart:
 		}
 
 		if ((y+h) >= tex_h) {
-			//LogWrn("Charters doesn't fit in used texture (%dx%d)", tex_w, tex_h);	
 			pSurf->ReleaseDC(hDC);
 			pSurf->Release();
+			pSrcTex->Release();
 			tex_h *= 2;
 			goto restart;
 		}
 	}
 
 	SelectObject(hDC, hOld);
+
 	pSurf->ReleaseDC(hDC);
+	pSurf->Release();
 
 	DeleteObject(hFont);
 
-	HR(pDev->CreateTexture(tex_w, tex_h, 1, 0, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, &pTex, NULL));
+	HR(pDev->CreateTexture(tex_w, tex_h, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, &pTex, NULL));
 
 	LogAlw("Font Video Memory Usage = %u kb",tex_w*tex_h*2/1024);
 
-	LPDIRECT3DSURFACE9 pTgt;
-	pTex->GetSurfaceLevel(0,&pTgt);
 
-	if (pDev->UpdateSurface(pSurf, NULL, pTgt, NULL)!=S_OK) {
+	if (pDev->UpdateTexture(pSrcTex, pTex)!=S_OK) {
 		LogErr("D3D9TextMgr: Surface Update Failed");
 		return false;
 	}
+
+	pTex->GenerateMipSubLevels();
 
 	//char texname[256];
 	//sprintf_s(texname, 256, "_%s_%d_0x%X.dds", fl.lfFaceName, fl.lfHeight, DWORD(this));
 	//D3DXSaveSurfaceToFile(texname, D3DXIFF_DDS, pSurf, NULL, NULL);
 
-	pTgt->Release();	
-	pSurf->Release();
+	pSrcTex->Release();
 	
 	SetLineSpace(0);
 	SetTextShare(0);

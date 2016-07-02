@@ -155,6 +155,12 @@ class D3D9Pad : public Sketchpad2
 		bool  bEnabled;
 	} QBrush;
 
+	struct {
+		D3DXVECTOR3 uDir;
+		float ca, dst;
+		bool bEnable;
+	} ClipData[2];
+
 public:
 	/**
 	 * \brief Constructs a drawing object for a given surface.
@@ -428,17 +434,16 @@ public:
 	void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
-	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL);
-	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL);
+	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, DWORD flags = MF_SMOOTH_SHADE, SURFHANDLE hTex = NULL);
+	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags = MF_SMOOTH_SHADE, SURFHANDLE hTex = NULL);
 	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
 	void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
 	void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
 	void ClipRect(const LPRECT clip = NULL);
-	void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0);
-	void ClipCone(const VECTOR3 *pDir = NULL, double angle = 0.0);
-	void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE);
+	void Clipper(int idx, const VECTOR3 *pPos = NULL, double cos_angle = 0.0, double dist = 0.0);
+	void DrawPoly(HPOLY hPoly, DWORD flags = 0);
 	void Lines(FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
 
@@ -498,13 +503,6 @@ private:
 	mutable bool bFontChange;
 	mutable bool bTriangles;
 
-	bool bClipSphere;
-	bool bClipCone;
-
-	float fClipA2, fClipA1;
-	float fClipD2, fClipD1;
-	D3DXVECTOR3 uClipV2, uClipV1;
-	
 	SURFHANDLE hPrevSrc;
 	WORD vI, iI;
 	DWORD bkmode;
@@ -689,11 +687,12 @@ public:
 		DWORD TexIdx;			// texture index 0=None
 	};
 
-					SketchMesh(const char *name, LPDIRECT3DDEVICE9 pDev);
+					SketchMesh(LPDIRECT3DDEVICE9 pDev);
 					~SketchMesh();
 	
 	void			Init();
-	void			LoadMeshFromHandle(MESHHANDLE hMesh);
+	bool			LoadMesh(const char *name);
+	bool			LoadMeshFromHandle(MESHHANDLE hMesh);
 	void			RenderGroup(DWORD idx);
 	SURFHANDLE		GetTexture(DWORD idx);
 	D3DXCOLOR		GetMaterial(DWORD idx);
@@ -725,7 +724,7 @@ public:
 	~D3D9PolyLine();
 
 	void Update(const FVECTOR2 *pt, int npt, bool bConnect);
-	void Draw(LPDIRECT3DDEVICE9 pDev, PolyFlags flags);
+	void Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags);
 	void Release();
 
 private:

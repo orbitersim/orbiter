@@ -163,8 +163,8 @@ void D3D9Pad::Reset()
 	bPenChange = true;		// New setup required
 	bFontChange = true;		// New setup required
 	bViewChange = true;		// New setup required
-	bClipSphere = false;
-	bClipCone = false;
+
+	memset(ClipData, 0, sizeof(ClipData));
 
 	QPen.bEnabled = false;
 	QBrush.bEnabled = false;
@@ -682,7 +682,7 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 
 // ===============================================================================================
 //
-void D3D9Pad::DrawPoly (HPOLY hPoly, PolyFlags flags)
+void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 { 
 	Flush(SKPTECH_POLY);
 	if (HasPen()) ((D3D9PolyLine *)hPoly)->Draw(pDev, flags);

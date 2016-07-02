@@ -52,9 +52,10 @@ uniform extern bool      gClipEn;
 sampler TexS = sampler_state
 {
 	Texture = <gTex0>;
-	MinFilter = LINEAR;
+	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
+	MaxAnisotropy = 8;
 	AddressU = WRAP;
     AddressV = WRAP;
 };
@@ -217,8 +218,8 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 	
 	if (gClipEn) {
 		float3 posN = normalize(frg.posW.xyz);
-		if ((dot(gPos, posN) > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
-		if (dot(gPos2, posN) > gCov.z) clip(-1);
+		if ((dot(gPos,  posN) > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
+		if ((dot(gPos2, posN) > gCov.z) && (frg.posW.w > gCov.w)) clip(-1);
 	}
 
 	return c;

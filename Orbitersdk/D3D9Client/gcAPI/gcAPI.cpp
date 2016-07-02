@@ -40,7 +40,7 @@ typedef CAMERAHANDLE (OGCIFN *__gcSetupCustomCamera)(CAMERAHANDLE hCam, OBJHANDL
 typedef int   (OGCIFN *__gcSketchpadVersion)(oapi::Sketchpad *pSkp);
 typedef SKETCHMESH (OGCIFN *__gcLoadSketchMesh)(const char *name);
 typedef void (OGCIFN *__gcDeleteSketchMesh)(SKETCHMESH hMesh);
-typedef HPOLY (OGCIFN *__gcCreatePoly)(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags);
+typedef HPOLY (OGCIFN *__gcCreatePoly)(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags);
 typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 
 // Helper functiond
@@ -201,7 +201,7 @@ void gcDeleteSketchMesh(SKETCHMESH hMesh)
 
 // ====================================================================================================
 //
-HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags)
+HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 {
 	if (_gcCreatePoly) return _gcCreatePoly(hPoly, pt, npt, flags);
 	return NULL;

@@ -29,7 +29,10 @@ DLLCLBK int gcSketchpadVersion(oapi::Sketchpad *pSkp)
 DLLCLBK SKETCHMESH gcLoadSketchMesh(const char *name)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	return new SketchMesh(name, pDev);
+	SketchMesh *pSM = new SketchMesh(pDev);
+	if (pSM->LoadMesh(name)) return pSM;
+	delete pSM;
+	return NULL;
 }
 
 
@@ -39,11 +42,11 @@ DLLCLBK void gcDeleteSketchMesh(SKETCHMESH hMesh)
 }
 
 
-DLLCLBK HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, PolyFlags flags)
+DLLCLBK HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	if (!hPoly) return new D3D9PolyLine(pDev, pt, npt, (flags&CONNECT) != 0);
-	((D3D9PolyLine *)hPoly)->Update(pt, npt, (flags&CONNECT) != 0);
+	if (!hPoly) return new D3D9PolyLine(pDev, pt, npt, (flags&PF_CONNECT) != 0);
+	((D3D9PolyLine *)hPoly)->Update(pt, npt, (flags&PF_CONNECT) != 0);
 	return hPoly;
 }
 

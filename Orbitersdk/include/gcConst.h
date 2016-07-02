@@ -34,13 +34,10 @@
 ///@}
 
 
-/**
-* \brief Flags for Poly object creation and update
-*/
-enum PolyFlags { 
-	NONE =		0x00,
-	CONNECT =   0x01	///< \details Connect line endpoints forming a loop
-};
+/// \defgroup PolyFlags Poly object creation and update flags
+///@{
+#define	PF_CONNECT		0x01	///< Connect line endpoints forming a loop
+///@}
 
 
 namespace oapi {

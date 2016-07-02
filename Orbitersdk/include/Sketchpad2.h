@@ -20,6 +20,12 @@ using namespace oapi;
 */
 
 
+/// \defgroup SkpMeshFlags SketchMesh render flags
+///@{
+#define	MF_SMOOTH_SHADE		0x1		///< Perform smooth shading (i.e. shallow angles gets darkened) 
+#define	MF_CULL_NONE		0x2		///< Do not perform front/back face culling
+///@}
+
 namespace oapi {
 
 	/**
@@ -29,14 +35,6 @@ namespace oapi {
 	{
 
 	public:
-
-		/**
-		* \brief SketchMesh render flags
-		*/
-		enum SkpMeshFlags {
-			SMOOTH_SHADE = 0x1,		///< Perform smooth shading (i.e. shallow angles gets darkened) 
-			CULL_NONE = 0x2			///< Do not perform front/back face culling
-		};
 
 		enum SkpView { 
 			ORTHO = 0,				///< Default orthographic projection
@@ -144,21 +142,12 @@ namespace oapi {
 
 
 		/**
-		* \brief Set up a world space clip sphere to clip pixels behind it. Does not work with orthographic projection.
-		* \param pPos a pointer to a vector containing sphere position in camera centric ecliptic frame, Set to NULL to disable clipping.
-		* \param rad Radius of the sphere.
-		* \note This function is provided due to reasons that z-buffering doesn't really work in all cases.
-		*/
-		virtual void ClipSphere(const VECTOR3 *pPos = NULL, double rad = 0.0) { assert(false); }
-
-
-		/**
 		* \brief Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
 		* \param pPos a pointer to a unit vector containing cone direction in camera centric frame, Set to NULL to disable clipping.
 		* \param angle cosine of the half-angle of the cone.
 		* \note This function is provided due to reasons that z-buffering doesn't really work in all cases.
 		*/
-		virtual void ClipCone(const VECTOR3 *pPos = NULL, double cos_angle = 0.0) { assert(false); }
+		virtual void Clipper(int idx, const VECTOR3 *pPos = NULL, double cos_angle = 0.0, double dist = 0.0) { assert(false); }
 
 
 		/**
@@ -179,7 +168,7 @@ namespace oapi {
 		* \note Final color = Texture Color * Material Color * Pen Color
 		* \sa gcLoadSketchMesh, gcDeleteSketchMesh;
 		*/
-		virtual int DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
+		virtual int DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, DWORD flags = MF_SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 
 
 		/**
@@ -195,7 +184,7 @@ namespace oapi {
 		* \note Final color = Texture Color * Material Color * Pen Color
 		* \sa DrawSketchMesh
 		*/
-		virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, SkpMeshFlags flags = SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
+		virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags = MF_SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 
 
 		/**
@@ -265,7 +254,7 @@ namespace oapi {
 		* \param flags (reserved for later use, set to zero for now)
 		* \sa gcCreatePoly, gcDeletePoly
 		*/
-		virtual void DrawPoly(HPOLY hPoly, PolyFlags flags = NONE) { assert(false); }
+		virtual void DrawPoly(HPOLY hPoly, DWORD flags = 0) { assert(false); }
 
 
 		/**
