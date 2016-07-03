@@ -72,9 +72,9 @@ void D3D9Config::Reset ()
 	BlendMode			= 1;
 	MicroBias			= 3;
 	PostProcess			= 1;
-	ShadeMethod			= 0;
 	ShaderDebug			= 0;
 	PresentLocation     = 1;
+	PlanetTileLoadFlags = 0x3;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -135,9 +135,9 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "MicroBias", i))					MicroBias = max(0,  min(10, i));
 	if (oapiReadItem_int   (hFile, "PostProcess", i))				PostProcess = max(0, min(1, i));
-	if (oapiReadItem_int   (hFile, "ShadeMethod", i))				ShadeMethod = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "ShaderDebug", i))				ShaderDebug = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PresentLocation", i))			PresentLocation = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))		PlanetTileLoadFlags = max(1, min(3, i));
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -196,9 +196,9 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "BlendMode", BlendMode);
 	oapiWriteItem_int   (hFile, "MicroBias", MicroBias);
 	oapiWriteItem_int	(hFile, "PostProcess", PostProcess);
-	oapiWriteItem_int	(hFile, "ShadeMethod", ShadeMethod);
 	oapiWriteItem_int   (hFile, "ShaderDebug", ShaderDebug);
 	oapiWriteItem_int	(hFile, "PresentLocation", PresentLocation);
+	oapiWriteItem_int   (hFile, "PlanetTileLoadFlags", PlanetTileLoadFlags);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		

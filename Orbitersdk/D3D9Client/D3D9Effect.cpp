@@ -242,15 +242,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[0].Definition = new char[32];
 	sprintf_s((char*)macro[0].Definition,32,"%d",max(2,Config->Anisotrophy));
 	// ------------------------------------------------------------------------------
-	macro[1].Name = "SHADE";
-	macro[1].Definition = new char[4];
-	switch (Config->ShadeMethod) {
-		case 0:  strcpy_s((char*)macro[1].Definition, 4, "0"); break;	// Phong
-		case 1:  strcpy_s((char*)macro[1].Definition, 4, "1"); break;	// Blinn
-		default: strcpy_s((char*)macro[1].Definition, 4, "2"); break;	// Ward
-	}
-	// ------------------------------------------------------------------------------
-	int m = 2;
+	int m = 1;
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 

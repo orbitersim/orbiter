@@ -230,6 +230,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="VPlanet.cpp" />
     <ClCompile Include="VStar.cpp" />
     <ClCompile Include="VVessel.cpp" />
+    <ClCompile Include="ztreemgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="D3D9Client.rc" />
@@ -287,6 +288,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />
     <ClInclude Include="VStar.h" />
+    <ClInclude Include="ztreemgr.h" />
     <CustomBuildStep Include="VVessel.h" />
   </ItemGroup>
   <ItemGroup>

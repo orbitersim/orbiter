@@ -60,6 +60,7 @@ QuadTreeNode<TileType> *TileManager2Base::LoadChildNode (QuadTreeNode<TileType> 
 	else {
 		tile->PreLoad();
 		tile->Load();
+		tile->state = Tile::Inactive;
 	}
 	return child;
 }
@@ -225,6 +226,10 @@ template<class TileType>
 TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres, int _gridres)
 : TileManager2Base (vplanet, _maxres, _gridres)
 {
+	// Initialise the compressed packed tile archives
+	ntreeMgr = 0;
+	LoadZTrees();
+
 	// Load the low-res full-sphere tiles
 	for (int i = 0; i < 3; i++)
 		globtile[i] = new TileType (this, i-3, 0, 0);
@@ -246,6 +251,12 @@ TileManager2<TileType>::~TileManager2 ()
 		tiletree[i].DelChildren();
 	for (int i = 0; i < 3; i++)
 		delete globtile[i];
+
+	if (ntreeMgr) {
+		for (int i = 0; i < ntreeMgr; i++)
+			if (treeMgr[i]) delete treeMgr[i];
+		delete []treeMgr;
+	}
 }
 
 // -----------------------------------------------------------------------

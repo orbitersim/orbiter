@@ -85,6 +85,25 @@ bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre, bool 
 	return false;
 }
 
+// ------------------------------------------------------------------------
+// Pre Load routine for surface tiles
+// ------------------------------------------------------------------------
+
+bool Tile::LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug)
+{
+	DWORD Usage = 0, Mips = 1, Filter = D3DX_FILTER_NONE;
+	D3DFORMAT Format = D3DFMT_FROM_FILE;
+	if (Config->TileMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
+	if (Config->TileDebug && bEnableDebug) Usage = D3DUSAGE_DYNAMIC, Format = D3DFMT_R5G6B5;
+
+	if (D3DXCreateTextureFromFileInMemoryEx(mgr->Dev(), data, ndata, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_FILTER_NONE, Filter, 0, NULL, NULL, pPre) == S_OK) {
+		return true;
+	}
+
+	*pPre = NULL;
+	return false;
+}
+
 
 // ------------------------------------------------------------------------
 // Create a texture from a pre-loaded data
@@ -819,7 +838,7 @@ bool TileLoader::Unqueue (Tile *tile)
 }
 
 // -----------------------------------------------------------------------
-
+#ifdef UNDEF
 DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 {
 	TileLoader *loader = (TileLoader*)data;
@@ -856,6 +875,44 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 		}
 		else {
 			Sleep(1);
+		}
+	}
+	return 0;
+}
+#endif
+
+// -----------------------------------------------------------------------
+
+DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
+{
+	const int tile_packet_size = 8; // max number of tiles to process from queue
+	TileLoader *loader = (TileLoader*)data;
+	DWORD idle = 1000/loader->load_frequency;
+	Tile *tile[tile_packet_size];
+	int nload, i;
+
+	while (bRunThread) {
+		WaitForMutex ();
+		for (nload = 0; nqueue > 0 && nload < tile_packet_size; nload++) {
+			tile[nload] = queue[queue_out].tile;
+			tile[nload]->state = Tile::Loading; // lock tile and its ancestor tree
+			queue_out = (queue_out+1) % MAXQUEUE2; // remove from queue
+			nqueue--;
+		}
+		ReleaseMutex ();
+
+		if (nload) {
+			for (i = 0; i < nload; i++)
+				tile[i]->PreLoad(); // load/create the tile
+
+			WaitForMutex ();
+			for (i = 0; i < nload; i++) {
+				tile[i]->Load();
+				tile[i]->state = Tile::Inactive; // unlock tile
+			}
+			ReleaseMutex ();
+		} else {
+			Sleep (idle);
 		}
 	}
 	return 0;
@@ -938,6 +995,7 @@ void TileManager2Base::GlobalInit (class oapi::D3D9Client *gclient)
 	cprm.bCloudShadow = *(bool*)gclient->GetConfigParam (CFGPRM_CLOUDSHADOWS);
 	cprm.lightfac = *(double*)gclient->GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	cprm.elevMode = *(int*)gclient->GetConfigParam (CFGPRM_ELEVATIONMODE);
+	cprm.tileLoadFlags = Config->PlanetTileLoadFlags;
 	bTileLoadThread = *(bool*)gclient->GetConfigParam(CFGPRM_TILELOADTHREAD);
 
 	loader = new TileLoader (gc);

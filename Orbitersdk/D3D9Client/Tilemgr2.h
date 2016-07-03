@@ -19,6 +19,7 @@
 #include "VPlanet.h"
 #include "Spherepatch.h"
 #include "Qtree.h"
+#include "ztreemgr.h"
 #include <stack>
 #include <vector>
 #include <list>
@@ -134,7 +135,8 @@ protected:
 	virtual void Load () = 0;
 
 	bool	CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRECT3DTEXTURE9 *pTex);
-	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug=true);
+	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
+	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 
 	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double globelev=0.0, 
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
@@ -234,6 +236,8 @@ public:
 		bool bLights;		///< render planet night lights?
 		bool bCloudShadow;	///< render cloud shadows?
 		double lightfac;	///< city light brightness factor
+		DWORD tileLoadFlags;///< 0x0001: load tiles from directory tree
+		                    ///< 0x0002: load tiles from compressed archive
 	};
 
 	/**
@@ -396,11 +400,18 @@ public:
 	// The tile pointers are only valid for the current render pass. They are not guaranteed to exist any more
 	// after the next call to Render.
 
+	inline ZTreeMgr *ZTreeManager(int i) { return treeMgr[i]; }
+
 protected:
 	TileType *globtile[3];              // full-sphere tiles for resolution levels 1-3
 	QuadTreeNode<TileType> tiletree[2]; // quadtree roots for western and eastern hemisphere
-	
+
+	ZTreeMgr **treeMgr;  // access to tile layers in compressed archives
+	int ntreeMgr;
+
 	void CheckCoverage (const QuadTreeNode<TileType> *node, double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt, int *nfound) const;
+
+	void LoadZTrees();
 	const Tile *SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const;
 };
 

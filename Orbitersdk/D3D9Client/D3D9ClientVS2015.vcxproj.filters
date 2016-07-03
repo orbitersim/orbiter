@@ -164,6 +164,9 @@
     <ClCompile Include="D3D9Pad2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ztreemgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CelSphere.h">
@@ -321,6 +324,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Sketchpad2.h">
       <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="ztreemgr.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

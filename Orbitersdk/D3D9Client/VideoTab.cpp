@@ -665,13 +665,13 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_BLENDMODE, CB_ADDSTRING, 0, (LPARAM)"Hard light");
 	SendDlgItemMessage(hWnd,  IDC_BLENDMODE, CB_SETCURSEL, 0, 0);
 
-	// SHADING METHOD ------------------------------------------
+	// ARCHIVE METHOD ------------------------------------------
 
-	SendDlgItemMessage(hWnd, IDC_SHADING, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_SHADING, CB_ADDSTRING, 0, (LPARAM)"Phong");
-	SendDlgItemMessageA(hWnd, IDC_SHADING, CB_ADDSTRING, 0, (LPARAM)"Blinn");
-	SendDlgItemMessageA(hWnd, IDC_SHADING, CB_ADDSTRING, 0, (LPARAM)"Ward");
-	SendDlgItemMessage(hWnd, IDC_SHADING, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessage(hWnd, IDC_ARCHIVE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hWnd, IDC_ARCHIVE, CB_ADDSTRING, 0, (LPARAM)"Cache only");
+	SendDlgItemMessageA(hWnd, IDC_ARCHIVE, CB_ADDSTRING, 0, (LPARAM)"Archive only");
+	SendDlgItemMessageA(hWnd, IDC_ARCHIVE, CB_ADDSTRING, 0, (LPARAM)"Cache & Archive");
+	SendDlgItemMessage(hWnd, IDC_ARCHIVE, CB_SETCURSEL, 0, 0);
 
 	// Write values in controls ----------------
 
@@ -727,7 +727,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_MESHRES,     TBM_SETPOS, 1, int(Config->MeshRes));
 	SendDlgItemMessage(hWnd, IDC_MICROBIAS,   TBM_SETPOS, 1, int(Config->MicroBias));
 
-	SendDlgItemMessage(hWnd, IDC_SHADING, CB_SETCURSEL, Config->ShadeMethod, 0);
+	SendDlgItemMessage(hWnd, IDC_ARCHIVE, CB_SETCURSEL, Config->PlanetTileLoadFlags-1, 0);
 	SendDlgItemMessage(hWnd, IDC_BLENDMODE, CB_SETCURSEL, Config->BlendMode, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROMODE, CB_SETCURSEL, Config->MicroMode, 0);
 	SendDlgItemMessage(hWnd, IDC_MICROFILTER, CB_SETCURSEL, Config->MicroFilter, 0);
@@ -795,7 +795,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->MicroMode	  = SendDlgItemMessage (hWnd, IDC_MICROMODE, CB_GETCURSEL, 0, 0);
 	Config->MicroFilter	  = SendDlgItemMessage (hWnd, IDC_MICROFILTER, CB_GETCURSEL, 0, 0);
 	Config->BlendMode	  = SendDlgItemMessage (hWnd, IDC_BLENDMODE, CB_GETCURSEL, 0, 0);
-	Config->ShadeMethod   = SendDlgItemMessage (hWnd, IDC_SHADING, CB_GETCURSEL, 0, 0);
+	Config->PlanetTileLoadFlags = SendDlgItemMessage (hWnd, IDC_ARCHIVE, CB_GETCURSEL, 0, 0) + 1;
 	// Check boxes
 	Config->UseNormalMap  = SendDlgItemMessage (hWnd, IDC_NORMALMAPS, BM_GETCHECK, 0, 0);
 	Config->PreLBaseVis   = SendDlgItemMessage (hWnd, IDC_BASEVIS,    BM_GETCHECK, 0, 0);
