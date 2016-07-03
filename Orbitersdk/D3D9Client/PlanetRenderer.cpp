@@ -435,7 +435,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
     float fMult = saturate((h0-float(ca*0.1))/h0);
-	float fAmbLoc = fMult * min(0.7f, log(float(atm->rho0)+1.0f)*0.4f);
+	float fAmbLoc = fMult * float(min(0.7, log1p(atm->rho0)*0.4));
 
 	// Upload parameters to shaders
 	HR(Shader()->SetFloat(sfAmbient0, fAmbLoc));
