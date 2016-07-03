@@ -97,7 +97,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);
 		prm.atm_hzalt = atmc->horizonalt;
 		prm.atm_href = log(atmc->rho0)*2e4 + 2e4;
-		prm.atm_amb0 = min (0.7, log (atmc->rho0+1.0)*0.35);
+		prm.atm_amb0 = min (0.7, log1p(atmc->rho0)*0.35);
 		DWORD amb0 = *(DWORD*)gc->GetConfigParam (CFGPRM_AMBIENTLEVEL);
 		prm.amb0col = 0;
 		for (int i = 0; i < 4; i++) prm.amb0col |= amb0 << (i<<3);
