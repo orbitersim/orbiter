@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   D3D7 Client module
+//   D3D9 Client module
 //   Copyright (C) 2006-2016 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
@@ -133,9 +133,9 @@ bool ZTreeMgr::OpenArchive()
 	const char *name[5] = { "Surf", "Mask", "Elev", "Elev_mod", "Cloud" };
 	char fname[MAX_PATH];
 	sprintf_s (fname, MAX_PATH, "%s\\Archive\\%s.tree", path, name[layer]);
-	treef = fopen(fname, "rb");
-	if (!treef) return false;
-
+	if (!fopen_s(&treef, fname, "rb")) {
+		return false;
+	}
 	TreeFileHeader tfh;
 	if (!tfh.fread(treef)) {
 		fclose(treef);

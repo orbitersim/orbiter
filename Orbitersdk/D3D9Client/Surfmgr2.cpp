@@ -190,8 +190,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	// Elevation data
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		sprintf_s (path, MAX_PATH, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-		f = fopen (path, "rb");
-		if (f) {
+		if (fopen_s(&f, path, "rb")) {
 			e = new INT16[ndat];
 			// read the elevation file header
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
@@ -255,8 +254,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		bool ok = false;
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 			sprintf_s (path, MAX_PATH, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-			f = fopen (path, "rb");
-			if (f) {
+			if (fopen_s(&f, path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 					fseek (f, hdr.hdrsize, SEEK_SET);

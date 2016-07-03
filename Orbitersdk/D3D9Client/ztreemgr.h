@@ -1,6 +1,6 @@
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
-//   D3D7 Client module
+//   D3D9 Client module
 //   Copyright (C) 2006-2016 Martin Schweiger
 //   Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
