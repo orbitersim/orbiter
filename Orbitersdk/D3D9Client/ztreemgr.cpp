@@ -133,7 +133,7 @@ bool ZTreeMgr::OpenArchive()
 	const char *name[5] = { "Surf", "Mask", "Elev", "Elev_mod", "Cloud" };
 	char fname[MAX_PATH];
 	sprintf_s (fname, MAX_PATH, "%s\\Archive\\%s.tree", path, name[layer]);
-	if (!fopen_s(&treef, fname, "rb")) {
+	if (fopen_s(&treef, fname, "rb")) {
 		return false;
 	}
 	TreeFileHeader tfh;
