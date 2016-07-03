@@ -68,7 +68,7 @@ struct SkpColor {
 		fclr = D3DXCOLOR(0, 0, 0, 0);
 	}
 
-	SkpColor(DWORD c) {
+	explicit SkpColor (DWORD c) {
 		if ((c & 0xFF000000) == 0) c |= 0xFF000000;
 		dclr = c;
 		fclr = D3DXCOLOR(c);
@@ -687,7 +687,7 @@ public:
 		DWORD TexIdx;			// texture index 0=None
 	};
 
-					SketchMesh(LPDIRECT3DDEVICE9 pDev);
+	explicit		SketchMesh(LPDIRECT3DDEVICE9 pDev);
 					~SketchMesh();
 	
 	void			Init();

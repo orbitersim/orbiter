@@ -1047,7 +1047,7 @@ void vPlanet::UpdateAtmoConfig()
 	prm.SclHeight	 = float(SPrm.height*1e3);
 	prm.InvSclHeight = 1.0f / float(prm.SclHeight);
 	double outer = size + SPrm.height * 12.0 * 1e3;
-	double height = size + SPrm.height * 5.0;
+//	double height = size + SPrm.height * 5.0;
 //	double angle = (PI-asin(size/height)) * DEG;
 
 	SolveXScatter(prm.SclHeight, size, outer, prm.ScatterCoEff, 96.0, 8);
