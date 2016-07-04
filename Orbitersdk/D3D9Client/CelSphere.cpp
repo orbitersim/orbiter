@@ -98,7 +98,7 @@ void CelestialSphere::LoadStars ()
 		if (nv) {
 			if (nsbuf >= bufsize) { // grow vertex buffer list
 				LPDIRECT3DVERTEXBUFFER9 *tmp = new LPDIRECT3DVERTEXBUFFER9[bufsize+16];
-				memcpy2 (tmp, svtx, bufsize*sizeof(LPDIRECT3DVERTEXBUFFER9*));
+				memcpy2 (tmp, svtx, bufsize*sizeof(LPDIRECT3DVERTEXBUFFER9));
 				delete []svtx;
 				svtx = tmp;
 				bufsize += 16;
@@ -135,7 +135,7 @@ void CelestialSphere::LoadStars ()
 
 	if (bufsize > nsbuf) { // shrink buffer list to size
 		LPDIRECT3DVERTEXBUFFER9 *tmp = new LPDIRECT3DVERTEXBUFFER9[nsbuf];
-		memcpy2 (tmp, svtx, nsbuf*sizeof(LPDIRECT3DVERTEXBUFFER9*));
+		memcpy2 (tmp, svtx, nsbuf*sizeof(LPDIRECT3DVERTEXBUFFER9));
 		delete []svtx;
 		svtx = tmp;
 	}
