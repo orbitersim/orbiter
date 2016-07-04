@@ -48,6 +48,15 @@ inline float log2(float d)
 {
 	return log(d*1.442695040888963f);
 }
+
+inline double log1p(double d)
+{ 
+  return log(d+1.0);
+}
+// inline float log1p(float d)
+// { 
+// 	return log(d+1.0f);
+// }
 #define  _constexpr_
 #endif
 

@@ -31,7 +31,7 @@ if not "%VS140COMNTOOLS%"=="" (
 if not "%VS110COMNTOOLS%"=="" (
   set SETVCVARS="%VS110COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2012.sln
-  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vs2012.vcxproj
   goto :assign
 )
 if not "%VS100COMNTOOLS%"=="" (

@@ -127,7 +127,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -186,6 +186,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="D3D9Effect.cpp" />
     <ClCompile Include="D3D9Frame.cpp" />
     <ClCompile Include="D3D9Pad.cpp" />
+    <ClCompile Include="D3D9Pad2.cpp" />
     <ClCompile Include="D3D9Surface.cpp" />
     <ClCompile Include="D3D9TextMgr.cpp" />
     <ClCompile Include="D3D9Util.cpp" />
@@ -201,6 +202,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="MeshMgr.cpp" />
     <ClCompile Include="MeshTools.cpp" />
     <ClCompile Include="OapiExtension.cpp" />
+    <ClCompile Include="OgciExtensions.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="PlanetRenderer.cpp" />
     <ClCompile Include="RingMgr.cpp" />
@@ -218,6 +220,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="VPlanet.cpp" />
     <ClCompile Include="VStar.cpp" />
     <ClCompile Include="VVessel.cpp" />
+    <ClCompile Include="ztreemgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="D3D9Client.rc" />
@@ -226,6 +229,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="..\include\GraphicsAPI.h" />
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
+    <ClInclude Include="..\include\Sketchpad2.h" />
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
@@ -274,7 +278,8 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />
     <ClInclude Include="VStar.h" />
-    <CustomBuildStep Include="VVessel.h" />
+    <ClInclude Include="VVessel.h" />
+    <ClInclude Include="ztreemgr.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\BeaconArray.fx" />
@@ -282,10 +287,18 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
     <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
-    <None Include="..\..\Modules\D3D9Client\NormalMap.fx" />
     <None Include="..\..\Modules\D3D9Client\Particle.fx" />
     <None Include="..\..\Modules\D3D9Client\Planet.fx" />
     <None Include="..\..\Modules\D3D9Client\SceneTech.fx" />
+    <None Include="..\..\Modules\D3D9Client\Surface.fx" />
+    <None Include="..\..\Modules\D3D9Client\PBR.fx" />
+    <None Include="..\..\Modules\D3D9Client\Vessel.fx" />
+    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
