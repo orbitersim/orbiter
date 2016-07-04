@@ -19,37 +19,33 @@
 // =======================================================================
 // File header for compressed tree files
 
-TreeFileHeader::TreeFileHeader ()
+TreeFileHeader::TreeFileHeader () :
+	size(sizeof(TreeFileHeader)), dataOfs(sizeof(TreeFileHeader)),
+	flags(0), nodeCount(0),	dataLength(0)
 {
 	magic[0] = 'T';
 	magic[1] = 'X';
 	magic[2] = 1;
 	magic[3] = 0;
-	size = sizeof(TreeFileHeader);
-	flags = 0;
-	nodeCount = 0;
-	dataOfs = size;
-	dataLength = 0;
 	rootPos1 = rootPos2 = rootPos3 = rootPos4[0] = rootPos4[1] = (DWORD)-1;
 }
 
 // -----------------------------------------------------------------------
 
-size_t TreeFileHeader::fwrite(FILE *f)
+size_t TreeFileHeader::fwrite (FILE *f)
 {
 	return ::fwrite(this, sizeof(TreeFileHeader), 1, f);
 }
 
 // -----------------------------------------------------------------------
 
-bool TreeFileHeader::fread(FILE *f)
+bool TreeFileHeader::fread (FILE *f)
 {
 	BYTE buf[4];
-	DWORD sz, flags;
-	if (::fread(buf, 1, 4, f) < 4 || memcmp(buf, magic, 4))
-		return false;
-	if (::fread(&sz, sizeof(DWORD), 1, f) != 1 || sz != size)
-		return false;
+	DWORD sz;
+
+	if (::fread(buf, 1, 4, f) < 4 || memcmp(buf, magic, 4)) { return false; }
+	if (::fread(&sz, sizeof(DWORD), 1, f) != 1 || sz != size) { return false; }
 	::fread(&flags, sizeof(DWORD), 1, f);
 	::fread(&dataOfs, sizeof(DWORD), 1, f);
 	::fread(&dataLength, sizeof(__int64), 1, f);
@@ -64,29 +60,28 @@ bool TreeFileHeader::fread(FILE *f)
 // =======================================================================
 // Tree table of contents
 
-TreeTOC::TreeTOC()
+TreeTOC::TreeTOC () :
+	ntree(0),	ntreebuf(0), totlength(0),
+	tree(NULL)
 {
-	ntree = 0;
-	ntreebuf = 0;
-	tree = NULL;
-	totlength = 0;
 }
 
 // -----------------------------------------------------------------------
 
-TreeTOC::~TreeTOC()
+TreeTOC::~TreeTOC ()
 {
-	if (ntreebuf)
+	if (ntreebuf) {
 		delete []tree;
+	}
 }
 
 // -----------------------------------------------------------------------
 
-size_t TreeTOC::fread(DWORD size, FILE *f)
+size_t TreeTOC::fread (DWORD size, FILE *f)
 {
 	if (ntreebuf != size) {
 		TreeNode *tmp = new TreeNode[size];
-		if (ntreebuf) delete []tree;
+		if (ntreebuf) { delete []tree; }
 		tree = tmp;
 		ntree = ntreebuf = size;
 	}
@@ -96,39 +91,40 @@ size_t TreeTOC::fread(DWORD size, FILE *f)
 // =======================================================================
 // ZTreeMgr class: manage a single layer tree for a planet
 
-ZTreeMgr *ZTreeMgr::CreateFromFile(const char *PlanetPath, Layer _layer)
+ZTreeMgr *ZTreeMgr::CreateFromFile (const char *PlanetPath, Layer _layer)
 {
 	ZTreeMgr *mgr = new ZTreeMgr(PlanetPath, _layer);
 	if (!mgr->TOC().size()) {
 		delete mgr;
-		mgr = 0;
+		mgr = NULL;
 	}
 	return mgr;
 }
 
 // -----------------------------------------------------------------------
 
-ZTreeMgr::ZTreeMgr(const char *PlanetPath, Layer _layer)
+ZTreeMgr::ZTreeMgr (const char *PlanetPath, Layer _layer) :
+	layer(_layer), treef(NULL)
 {
-	int len = strlen(PlanetPath) + 1;
+  TreeFileHeader *tfh = new TreeFileHeader();
+
+  int len = strlen(PlanetPath) + 1;
 	path = new char[len];
 	strcpy_s(path, len, PlanetPath);
-	layer = _layer;
-	treef = 0;
 	OpenArchive();
 }
 
 // -----------------------------------------------------------------------
 
-ZTreeMgr::~ZTreeMgr()
+ZTreeMgr::~ZTreeMgr ()
 {
 	delete []path;
-	if (treef) fclose(treef);
+	if (treef) { fclose(treef); }
 }
 
 // -----------------------------------------------------------------------
 
-bool ZTreeMgr::OpenArchive()
+bool ZTreeMgr::OpenArchive ()
 {
 	const char *name[5] = { "Surf", "Mask", "Elev", "Elev_mod", "Cloud" };
 	char fname[MAX_PATH];
@@ -139,19 +135,20 @@ bool ZTreeMgr::OpenArchive()
 	TreeFileHeader tfh;
 	if (!tfh.fread(treef)) {
 		fclose(treef);
-		treef = 0;
+		treef = NULL;
 		return false;
 	}
 	rootPos1 = tfh.rootPos1;
 	rootPos2 = tfh.rootPos2;
 	rootPos3 = tfh.rootPos3;
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 2; ++i) {
 		rootPos4[i] = tfh.rootPos4[i];
+	}
 	dofs = (__int64)tfh.dataOfs;
 
 	if (!toc.fread(tfh.nodeCount, treef)) {
 		fclose(treef);
-		treef = 0;
+		treef = NULL;
 		return false;
 	}
 	toc.totlength = tfh.dataLength;
@@ -161,7 +158,7 @@ bool ZTreeMgr::OpenArchive()
 
 // -----------------------------------------------------------------------
 
-DWORD ZTreeMgr::Idx(int lvl, int ilat, int ilng)
+DWORD ZTreeMgr::Idx (int lvl, int ilat, int ilng)
 {
 	if (lvl <= 4) {
 		return (lvl == 1 ? rootPos1 : lvl == 2 ? rootPos2 : lvl == 3 ? rootPos3 : rootPos4[ilng]);
@@ -170,8 +167,7 @@ DWORD ZTreeMgr::Idx(int lvl, int ilat, int ilng)
 		int pilat = ilat/2;
 		int pilng = ilng/2;
 		DWORD pidx = Idx(plvl, pilat, pilng);
-		if (pidx == (DWORD)-1)
-			return pidx;
+		if (pidx == (DWORD)-1) { return pidx; }
 		int cidx = ((ilat&1) << 1) + (ilng&1);
 		return toc[pidx].child[cidx];
 	}
@@ -179,12 +175,13 @@ DWORD ZTreeMgr::Idx(int lvl, int ilat, int ilng)
 
 // -----------------------------------------------------------------------
 
-DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
+DWORD ZTreeMgr::ReadData (DWORD idx, BYTE **outp)
 {
-	if (idx == (DWORD)-1) return 0; // sanity check
+	if (idx == (DWORD)-1) { return 0; } // sanity check
 
-	if (_fseeki64(treef, toc[idx].pos+dofs, SEEK_SET))
+	if (_fseeki64(treef, toc[idx].pos+dofs, SEEK_SET)) {
 		return 0;
+	}
 
 	DWORD zsize = NodeSizeDeflated(idx);
 	BYTE *zbuf = new BYTE[zsize];
@@ -204,14 +201,14 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
 
 // -----------------------------------------------------------------------
 
-DWORD ZTreeMgr::Inflate(const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
+DWORD ZTreeMgr::Inflate (const BYTE *inp, DWORD ninp, BYTE *outp, DWORD noutp)
 {
 	return oapiInflate(inp, ninp, outp, noutp);
 }
 
 // -----------------------------------------------------------------------
 
-void ZTreeMgr::ReleaseData(BYTE *data)
+void ZTreeMgr::ReleaseData (BYTE *data)
 {
 	delete []data;
 }

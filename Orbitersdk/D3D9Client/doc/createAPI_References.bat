@@ -1,6 +1,7 @@
 @echo off
 :: ----------------------------------------------------------------------------
 :: Batch file to (re-)create the D3D9Client_API_Reference.chm
+::                           and gcAPI.chm files
 ::
 :: Notes:
 :: - you need to have doxygen (rsp.doxywizzard) installed (you might however
@@ -39,11 +40,11 @@ pause
 goto :eof
 
 
-:: --- Do the job ---
+:: --- Do the jobs ---
 :run
 
-::( type Doxyfile & echo PROJECT_NUMBER="Beta 12" ) | %DOXYGEN% -
 %DOXYGEN% Doxyfile
+%DOXYGEN% Doxyfile-gcAPI
 
 :: --- clean up ---
 set FOUND=

@@ -32,11 +32,11 @@ vb.Function.eval = function (func)
     });
     args[i] = '"' + args[i] + '"';
   }
-  
+
   var vbe;
   vbe = new ActiveXObject("ScriptControl");
   vbe.Language = "VBScript";
-  
+
   return vbe.eval(func + "(" + args.join(",") + ")");
 };
 
@@ -77,6 +77,11 @@ var tasks = [{
     subst : "{Major}.0.0.0"
   }, {
      file : "Orbitersdk\\D3D9Client\\doc\\Doxyfile",
+     rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta|R)?\s*([\d\.]+)\"/,
+    subst : "{MajorMinor}",
+     unix : true // UNIX EOL
+  }, {
+     file : "Orbitersdk\\D3D9Client\\doc\\Doxyfile-gcAPI",
      rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta|R)?\s*([\d\.]+)\"/,
     subst : "{MajorMinor}",
      unix : true // UNIX EOL
