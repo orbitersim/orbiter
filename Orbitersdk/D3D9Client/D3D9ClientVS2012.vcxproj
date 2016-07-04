@@ -44,14 +44,10 @@
     <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">-s "(Current state)"</LocalDebuggerCommandArguments>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files (x86)\Microsoft SDKs\DirectX\Lib\x86;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;$(IncludePath)</IncludePath>
-    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files (x86)\Microsoft SDKs\DirectX\Lib\x86;$(LibraryPath)</LibraryPath>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <IncludePath>C:\Program Files (x86)\Microsoft SDKs\DirectX\Include;C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\Microsoft SDKs\DirectX\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -59,7 +55,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>.\..\..\Modules\Plugin/D3D9Client.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\Modules\Plugin\D3D9Client.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -98,7 +94,7 @@
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\..\..\Modules\Plugin/D3D9Client.bsc</OutputFile>
+      <OutputFile>.\..\..\Modules\Plugin\D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
       <Command>if not exist ..\..\Modules\Plugin mkdir ..\..\Modules\Plugin
@@ -120,7 +116,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>.\Release/D3D9Client.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release\D3D9Client.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -156,7 +152,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release/D3D9Client.bsc</OutputFile>
+      <OutputFile>.\Release\D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
       <Command>if not exist ..\..\Modules\Plugin mkdir ..\..\Modules\Plugin
@@ -176,10 +172,10 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
+    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="CelSphere.cpp" />
     <ClCompile Include="CloudMgr.cpp" />
     <ClCompile Include="Cloudmgr2.cpp" />
-    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="D3D9Client.cpp" />
     <ClCompile Include="D3D9Config.cpp" />
     <ClCompile Include="D3D9ControlPanel.cpp" />
@@ -215,12 +211,12 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="TileMgr.cpp" />
     <ClCompile Include="Tilemgr2.cpp" />
     <ClCompile Include="VBase.cpp" />
-    <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="VObject.cpp" />
     <ClCompile Include="VPlanet.cpp" />
     <ClCompile Include="VStar.cpp" />
     <ClCompile Include="VVessel.cpp" />
-    <ClCompile Include="ztreemgr.cpp" />
+    <ClCompile Include="VideoTab.cpp" />
+    <ClCompile Include="ZTreeMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="D3D9Client.rc" />
@@ -233,10 +229,10 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
+    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
     <ClInclude Include="Cloudmgr2.h" />
-    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="D3D9Catalog.h" />
     <ClInclude Include="D3D9Client.h" />
     <ClInclude Include="D3D9Config.h" />
@@ -273,13 +269,13 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
-    <ClInclude Include="VectorHelpers.h" />
-    <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />
     <ClInclude Include="VStar.h" />
     <ClInclude Include="VVessel.h" />
-    <ClInclude Include="ztreemgr.h" />
+    <ClInclude Include="VectorHelpers.h" />
+    <ClInclude Include="VideoTab.h" />
+    <ClInclude Include="ZTreeMgr.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\BeaconArray.fx" />
@@ -287,13 +283,13 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
     <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
+    <None Include="..\..\Modules\D3D9Client\PBR.fx" />
     <None Include="..\..\Modules\D3D9Client\Particle.fx" />
     <None Include="..\..\Modules\D3D9Client\Planet.fx" />
     <None Include="..\..\Modules\D3D9Client\SceneTech.fx" />
-    <None Include="..\..\Modules\D3D9Client\Surface.fx" />
-    <None Include="..\..\Modules\D3D9Client\PBR.fx" />
-    <None Include="..\..\Modules\D3D9Client\Vessel.fx" />
     <None Include="..\..\Modules\D3D9Client\Sketchpad.fx" />
+    <None Include="..\..\Modules\D3D9Client\Surface.fx" />
+    <None Include="..\..\Modules\D3D9Client\Vessel.fx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />

@@ -6,14 +6,14 @@
 // ==============================================================
 
 // --------------------------------------------------------------
-// ztreemgr.cpp
+// ZTreeMgr.cpp
 // Class ZTreeMgr (implementation)
 //
 // Manage compressed and packed tile trees for planetary surface
 // and cloud layers.
 // --------------------------------------------------------------
 
-#include "ztreemgr.h"
+#include "ZTreeMgr.h"
 #include "OrbiterAPI.h"
 
 // =======================================================================
@@ -187,7 +187,7 @@ DWORD ZTreeMgr::ReadData(DWORD idx, BYTE **outp)
 		return 0;
 
 	DWORD zsize = NodeSizeDeflated(idx);
-	BYTE *zbuf = new BYTE[zsize];	
+	BYTE *zbuf = new BYTE[zsize];
 	fread(zbuf, 1, zsize, treef);
 
 	DWORD esize = NodeSizeInflated(idx);

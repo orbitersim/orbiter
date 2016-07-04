@@ -164,9 +164,20 @@
     <ClCompile Include="D3D9Pad2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ztreemgr.cpp">
+    <ClCompile Include="ZTreeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\GraphicsAPI.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\OrbiterAPI.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Orbitersdk.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CelSphere.h">
@@ -277,15 +288,6 @@
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\GraphicsAPI.h">
-      <Filter>Externals</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\OrbiterAPI.h">
-      <Filter>Externals</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\Orbitersdk.h">
-      <Filter>Externals</Filter>
-    </ClInclude>
     <ClInclude Include="AABBUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -325,11 +327,14 @@
     <ClInclude Include="..\include\Sketchpad2.h">
       <Filter>Externals</Filter>
     </ClInclude>
-    <ClInclude Include="ztreemgr.h">
+    <ClInclude Include="ZTreeMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\BeaconArray.fx">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="..\..\Modules\D3D9Client\CKBlit.fx">
       <Filter>Shaders</Filter>
     </None>
@@ -342,6 +347,9 @@
     <None Include="..\..\Modules\D3D9Client\Mesh.fx">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\..\Modules\D3D9Client\PBR.fx">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="..\..\Modules\D3D9Client\Particle.fx">
       <Filter>Shaders</Filter>
     </None>
@@ -351,7 +359,7 @@
     <None Include="..\..\Modules\D3D9Client\SceneTech.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\..\Modules\D3D9Client\BeaconArray.fx">
+    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx">
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\..\Modules\D3D9Client\Surface.fx">
@@ -360,16 +368,15 @@
     <None Include="..\..\Modules\D3D9Client\Vessel.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\..\Modules\D3D9Client\PBR.fx">
-      <Filter>Shaders</Filter>
-    </None>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
+    <None Include="..\..\Modules\D3D9Client\IPI.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx">
+    <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

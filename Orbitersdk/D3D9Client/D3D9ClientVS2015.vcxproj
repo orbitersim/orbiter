@@ -104,7 +104,7 @@
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\..\..\Modules\Plugin/D3D9Client.bsc</OutputFile>
+      <OutputFile>.\..\..\Modules\Plugin\D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
       <Command>if not exist ..\..\Modules\Plugin mkdir ..\..\Modules\Plugin
@@ -126,7 +126,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>.\Release/D3D9Client.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release\D3D9Client.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -166,7 +166,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release/D3D9Client.bsc</OutputFile>
+      <OutputFile>.\Release\D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
       <Command>if not exist ..\..\Modules\Plugin mkdir ..\..\Modules\Plugin
@@ -186,10 +186,10 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
+    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="CelSphere.cpp" />
     <ClCompile Include="CloudMgr.cpp" />
     <ClCompile Include="Cloudmgr2.cpp" />
-    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="D3D9Client.cpp" />
     <ClCompile Include="D3D9Config.cpp" />
     <ClCompile Include="D3D9ControlPanel.cpp" />
@@ -225,12 +225,12 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="TileMgr.cpp" />
     <ClCompile Include="Tilemgr2.cpp" />
     <ClCompile Include="VBase.cpp" />
-    <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="VObject.cpp" />
     <ClCompile Include="VPlanet.cpp" />
     <ClCompile Include="VStar.cpp" />
     <ClCompile Include="VVessel.cpp" />
-    <ClCompile Include="ztreemgr.cpp" />
+    <ClCompile Include="VideoTab.cpp" />
+    <ClCompile Include="ZTreeMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="D3D9Client.rc" />
@@ -243,10 +243,10 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
+    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
     <ClInclude Include="Cloudmgr2.h" />
-    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="D3D9Catalog.h" />
     <ClInclude Include="D3D9Client.h" />
     <ClInclude Include="D3D9Config.h" />
@@ -283,13 +283,13 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
-    <ClInclude Include="VectorHelpers.h" />
-    <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />
     <ClInclude Include="VStar.h" />
-    <ClInclude Include="ztreemgr.h" />
-    <CustomBuildStep Include="VVessel.h" />
+    <ClInclude Include="VVessel.h" />
+    <ClInclude Include="VectorHelpers.h" />
+    <ClInclude Include="VideoTab.h" />
+    <ClInclude Include="ZTreeMgr.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\BeaconArray.fx" />
@@ -297,36 +297,18 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
     <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
+    <None Include="..\..\Modules\D3D9Client\PBR.fx" />
     <None Include="..\..\Modules\D3D9Client\Particle.fx" />
     <None Include="..\..\Modules\D3D9Client\Planet.fx" />
     <None Include="..\..\Modules\D3D9Client\SceneTech.fx" />
+    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx" />
+    <None Include="..\..\Modules\D3D9Client\Surface.fx" />
+    <None Include="..\..\Modules\D3D9Client\Vessel.fx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\Surface.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\PBR.fx">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="..\..\Modules\D3D9Client\Vessel.fx">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\Sketchpad.fx">
-      <FileType>Document</FileType>
-    </None>
+    <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -6,7 +6,7 @@
 // ==============================================================
 
 // --------------------------------------------------------------
-// ztreemgr.h
+// ZTreeMgr.h
 // Class ZTreeMgr (interface)
 //
 // Manage compressed and packed tile trees for planetary surface

@@ -19,7 +19,7 @@
 #include "VPlanet.h"
 #include "Spherepatch.h"
 #include "Qtree.h"
-#include "ztreemgr.h"
+#include "ZTreeMgr.h"
 #include <stack>
 #include <vector>
 #include <list>
@@ -74,7 +74,7 @@ public:
 	inline int State() const { return state; }
 	inline int Level() const { return lvl; }
 	inline bool HasOwnTex() const { return owntex; }
-	
+
 	bool PreDelete();
 	// Prepare tile for deletion. Return false if tile is locked
 
@@ -138,7 +138,7 @@ protected:
 	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 
-	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double globelev=0.0, 
+	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double globelev=0.0,
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
 	// Creates a quadrilateral patch mesh
 
@@ -158,7 +158,7 @@ protected:
 	VECTOR3 cnt;               // tile centre in local planet coords
 	VECTOR3 vtxshift;          // tile frame shift of origin from planet centre
 	bool edgeok;               // edges have been checked in this frame
-	bool bIntersect;		
+	bool bIntersect;
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	DWORD FrameId;
@@ -291,8 +291,8 @@ public:
 	static HFONT GetDebugFont() { return hFont; }
 
 	void TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int ilng);
-	
-	
+
+
 	template<class TileType>
 	QuadTreeNode<TileType> *FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilng, int ilat);
 	// Returns the node at the specified position, or 0 if it doesn't exist
@@ -311,13 +311,13 @@ public:
 
 	/**
 	 * \brief Create and/or Recycle a vertex buffer
-	 * \param nVerts Number of vertices requested for a new buffer. Use "Zero" to recycle/release a buffer that is no-longer needed. 
+	 * \param nVerts Number of vertices requested for a new buffer. Use "Zero" to recycle/release a buffer that is no-longer needed.
 	 * \param pVB (in/out) Pointer to vertex buffer. The "old" input buffer is recycled and a new one is returned.
 	 * \return Number of vertices in a returned buffer. Could be larger than requested.
 	 */
 	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
 	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
-	
+
 	const class Scene * GetScene() const { return gc->GetScene(); }
 	const oapi::D3D9Client *GetClient() const { return gc; }
 	const vPlanet *GetPlanet() const { return vp; }
@@ -326,7 +326,7 @@ public:
 	const char *CbodyName() const { return cbody_name; }
 	const double CbodySize() const { return obj_size; }
 	const ELEVHANDLE ElevMgr() const { return emgr; }
-	
+
 	float GetMinElev() const {	return min_elev; }
 	float GetMaxElev() const {	return max_elev; }
 	void SetMinMaxElev(float min, float max);
@@ -338,7 +338,7 @@ public:
 protected:
 	MATRIX4 WorldMatrix (int ilng, int nlng, int ilat, int nlat);
 	MATRIX4 WorldMatrix(Tile *tile);
-	
+
 	template<class TileType>
 	QuadTreeNode<TileType> *LoadChildNode (QuadTreeNode<TileType> *node, int idx);
 	// loads one of the four subnodes of 'node', given by 'idx'
@@ -355,12 +355,12 @@ private:
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle
-	
+
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];
 	std::stack<LPDIRECT3DVERTEXBUFFER9> VtxPool[NPOOLS];
 	std::stack<LPDIRECT3DINDEXBUFFER9> IdxPool[NPOOLS];
-	
+
 	static HFONT hFont;
 	static double resolutionBias;
 	static double resolutionScale;
