@@ -444,6 +444,14 @@ float D3D9Pad::GetPenWidth()
 
 // ===============================================================================================
 //
+bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
+{
+	// ignore the box -for now- ;)
+	return Text(x1, y1, str, len);
+}
+	
+// ===============================================================================================
+//
 bool D3D9Pad::Text (int x, int y, const char *str, int len)
 {
 
@@ -467,7 +475,14 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	pText->SetRotation(((D3D9PadFont *)cfont)->rotation);
 	pText->SetScaling(1.0f);
-	pText->PrintSkp(this, float(x - 1), float(y - 1), str, (bkmode == OPAQUE));
+
+	// cut string to length
+	char *_str = new char[len + 1];
+	strncpy_s(_str, len + 1, str, len);
+
+	pText->PrintSkp(this, float(x - 1), float(y - 1), _str, (bkmode == OPAQUE));
+
+	delete[] _str;
 	
 	return true;
 }

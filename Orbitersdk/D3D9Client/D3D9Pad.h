@@ -340,6 +340,8 @@ public:
 	 */
 	void GetOrigin (int *x, int *y) const;
 
+	bool TextBox (int x1, int y1, int x2, int y2, const char *str, int len);
+
 	/**
 	 * \brief Draw a text string.
 	 * \param x reference x position [pixel]
