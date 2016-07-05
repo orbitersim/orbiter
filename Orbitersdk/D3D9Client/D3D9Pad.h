@@ -329,7 +329,6 @@ public:
 	 */
 	void SetOrigin (int x, int y);
 
-
 	/**
 	 * \brief Returns the position in the surface bitmap which is mapped to
 	 *   the origin of the coordinate system for all drawing functions.
@@ -339,8 +338,6 @@ public:
 	 * \sa SetOrigin
 	 */
 	void GetOrigin (int *x, int *y) const;
-
-	bool TextBox (int x1, int y1, int x2, int y2, const char *str, int len);
 
 	/**
 	 * \brief Draw a text string.
@@ -352,6 +349,18 @@ public:
 	 * \default None, returns false.
 	 */
 	bool Text (int x, int y, const char *str, int len);
+
+	/**
+	 * \brief Draw a text string into a rectangle.
+	 * \param x1 left edge [pixel]
+	 * \param y1 top edge [pixel]
+	 * \param x2 right edge [pixel]
+	 * \param y2 bottom edge [pixel]
+	 * \param str text string
+	 * \param len string length for output
+	 * \return \e true on success, \e false on failure.
+	 */
+	bool TextBox (int x1, int y1, int x2, int y2, const char *str, int len);
 
 	/**
 	 * \brief Draw a single pixel in a specified colour.
