@@ -3,9 +3,9 @@
 //
 // Copyright (C) 2012-2016 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 // is furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -22,7 +22,7 @@
 #include "OrbiterAPI.h"
 #include "D3D9Client.h"
 #include "Sketchpad2.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 using namespace oapi;
@@ -89,15 +89,15 @@ struct SkpVtx {
 
 	float x, y, l;			// vertex x, y, length
 	float nx, ny;			// next point
-	float px, py;			// perivous point	
-	DWORD clr, fnc;			
+	float px, py;			// perivous point
+	DWORD clr, fnc;
 };
 
 
 
 inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
-	v.x = float(_x); 
+	v.x = float(_x);
 	v.y = float(_y);
 	v.clr = c.dclr;
 	v.fnc = SKPSW_THINPEN;
@@ -107,9 +107,9 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 
 inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
 {
-	v.x = float(_x) - 0.5f; 
+	v.x = float(_x) - 0.5f;
 	v.y = float(_y) - 0.5f;
-	v.nx = float(_tx); 
+	v.nx = float(_tx);
 	v.ny = float(_ty);
 	v.l = 0.0f;
 };
@@ -117,9 +117,9 @@ inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
 
 inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 {
-	v.x = _x - 0.5f; 
+	v.x = _x - 0.5f;
 	v.y = _y - 0.5f;
-	v.nx = float(_tx); 
+	v.nx = float(_tx);
 	v.ny = float(_ty);
 	v.l = 0.0f;
 };
@@ -127,9 +127,9 @@ inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
-	v.x = _x; 
+	v.x = _x;
 	v.y = _y;
-	v.nx = _tx; 
+	v.nx = _tx;
 	v.ny = _ty;
 	v.l = 0.0f;
 };
@@ -414,7 +414,7 @@ public:
 	 * \default None.
 	 * \note The polygon should be closed, i.e. the last point
 	 *   joined with the first one.
-	 * \note The outline of the polygon is drawn with the 
+	 * \note The outline of the polygon is drawn with the
 	 *   current pen, and filled with the current brush.
 	 * \note Filled polygon has a maximum of 64 points.
 	 * \sa Polyline, PolyPolygon, Rectangle, Ellipse
@@ -464,7 +464,7 @@ public:
 	FMATRIX4 *ProjectionMatrix();
 	const FMATRIX4 *GetViewProjectionMatrix();
 
-	
+
 
 
 	// ===============================================================================
@@ -473,7 +473,7 @@ public:
 	LPD3DXMATRIX WorldMatrix();
 	void Reset();
 	void EndDrawing(bool bFlush = true);
-	
+
 
 private:
 
@@ -496,10 +496,10 @@ private:
 	void FlushPrimitives();
 	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
 	void InitClipping();
-	
+
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	template <typename Type> void AppendLineVertexList(const Type *pt);
-	
+
 	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
 	mutable oapi::Brush *cbrush; ///< currently selected brush (NULL if none)
@@ -548,14 +548,14 @@ private:
 	static LPD3DXVECTOR2 pSinCos;
 	// -------------------------------------------
 
-	
+
 	// Rendering pipeline configuration. Applies to every instance of this class
 	//
-	static ID3DXEffect*	FX;				
+	static ID3DXEffect*	FX;
 	static D3DXHANDLE	eDrawMesh;
 	static D3DXHANDLE	eSketch;
 	static D3DXHANDLE	eWVP;	// Transformation matrix
-	static D3DXHANDLE	eTex0;	
+	static D3DXHANDLE	eTex0;
 	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eW;
 	static D3DXHANDLE   ePen;
@@ -587,13 +587,13 @@ class D3D9PadFont: public oapi::Font {
 
 	friend class D3D9Pad;
 	friend class GDIPad;
-	
+
 public:
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev);
-	
+
 	/**
-	 * \brief Font constructor. 
+	 * \brief Font constructor.
 	 * \param height cell or character height [pixel]
 	 * \param prop proportional/fixed width flag
 	 * \param face font face name
@@ -610,7 +610,7 @@ public:
 	 *   selected for \e prop==true, and 'fixed' is selected for \e prop==false.
 	 */
 	D3D9PadFont (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0);
-	
+
 	/**
 	 * \brief Font destructor.
 	 */
@@ -666,7 +666,7 @@ private:
 class D3D9PadBrush: public oapi::Brush {
 	friend class D3D9Pad;
 	friend class GDIPad;
-	
+
 public:
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev);
 
@@ -709,7 +709,7 @@ public:
 
 	explicit		SketchMesh(LPDIRECT3DDEVICE9 pDev);
 					~SketchMesh();
-	
+
 	void			Init();
 	bool			LoadMesh(const char *name);
 	bool			LoadMeshFromHandle(MESHHANDLE hMesh);
@@ -717,12 +717,12 @@ public:
 	SURFHANDLE		GetTexture(DWORD idx);
 	D3DXCOLOR		GetMaterial(DWORD idx);
 	DWORD			GroupCount() { return nGrp; }
-	
+
 private:
 
 	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
 	LPDIRECT3DINDEXBUFFER9 pIB;
-	
+
 	DWORD MaxVert;
 	DWORD MaxIdx;
 
@@ -755,5 +755,5 @@ private:
 };
 
 
-#endif 
+#endif
 

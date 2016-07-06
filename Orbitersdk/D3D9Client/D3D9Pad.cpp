@@ -1,9 +1,8 @@
-
 // =================================================================================================================================
 //
 // Copyright (C) 2012-2016 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 // files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
 // of the Software, subject to the following conditions:
 //
@@ -58,7 +57,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 	pDev = pDevice;
 	gc = _gc;
-	
+
 	Idx = new WORD[3 * nQueueMax + 3];
 	Vtx = new SkpVtx[3 * nQueueMax + 3];
 
@@ -80,15 +79,15 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	
+
 	HR(D3DXCreateEffectFromFileA(pDev, name, 0, 0, 0, 0, &FX, &errors));
-	
+
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
 		MessageBoxA(0, (char*)errors->GetBufferPointer(), "Sketchpad.fx Error", 0);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
-	
+
 	if (FX==0) {
 		LogErr("Failed to create an Effect (%s)",name);
 		MissingRuntimeError();
@@ -126,7 +125,7 @@ void D3D9Pad::GlobalExit()
 {
 	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",nfcache);
 	for (int i=0;i<nfcache;i++) if (fcache[i].pFont) delete fcache[i].pFont;
-	
+
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
 	SAFE_DELETEA(Vtx);
@@ -140,7 +139,7 @@ void D3D9Pad::GlobalExit()
 //
 void D3D9Pad::Reset()
 {
-	
+
 	assert(CurrentTech == 0);	// Must EndDrawing before calling reset
 
 	cfont = deffont;
@@ -157,7 +156,7 @@ void D3D9Pad::Reset()
 	linescale = 1.0f;
 	pattern = 1.0f;
 	CurrentTech = 0;
-	
+
 	vmode = ORTHO;
 
 	bPenChange = true;		// New setup required
@@ -179,7 +178,7 @@ void D3D9Pad::Reset()
 	D3DXMatrixIdentity(&mW);
 	D3DXMatrixIdentity(&mP);
 	D3DXMatrixIdentity(&mV);
-	
+
 	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
 
 	HR(FX->SetBool(eCovEn, false));
@@ -199,11 +198,11 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s),
 	_TRACE;
 
 	pTgt = SURFACE(s);
-	
+
 	SURFACE(GetSurface())->SketchPad = SKETCHPAD_DIRECTX;
 
 	if (pTgt->IsBackBuffer()==false) {
-		if (pTgt->BindGPU()==false) { 
+		if (pTgt->BindGPU()==false) {
 			pTgt=NULL;
 			LogErr("D3D9Pad creation failed");
 			return;
@@ -228,7 +227,7 @@ D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad2(NULL),
 	_TRACE;
 	pTgt = NULL;
 	s->GetDesc(&tgt_desc);
-	
+
 	CurrentTech = 0;
 
 	Reset();
@@ -240,7 +239,7 @@ D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad2(NULL),
 D3D9Pad::~D3D9Pad ()
 {
 	_TRACE;
-	
+
 	EndDrawing();
 
 	pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0);
@@ -258,8 +257,8 @@ D3D9Pad::~D3D9Pad ()
 
 // ===============================================================================================
 //
-HDC D3D9Pad::GetDC() 
-{ 
+HDC D3D9Pad::GetDC()
+{
 	if (pTgt->IsBackBuffer()) return NULL;
 	if (!pTgt->bSkpGetDCEr) {
 		LogWrn(" - ! - Never Use Sketchpad::GetDC() !! hDC not available, the surface is active render target at a moment - ! -");
@@ -307,7 +306,7 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
 	else     cpen = NULL;
-	if (cpen) pencolor = ((D3D9PadPen *)cpen)->clr;	
+	if (cpen) pencolor = ((D3D9PadPen *)cpen)->clr;
 	return ppen;
 }
 
@@ -446,7 +445,7 @@ float D3D9Pad::GetPenWidth()
 {
 	if (QPen.bEnabled) return linescale * QPen.width;
 	if (cpen==NULL) return 1.0f;
-	return float(((D3D9PadPen*)cpen)->width*linescale);	
+	return float(((D3D9PadPen*)cpen)->width*linescale);
 }
 
 
@@ -474,7 +473,7 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	_releaseBuffer();
 	return result;
 }
-	
+
 // ===============================================================================================
 //
 bool D3D9Pad::Text (int x, int y, const char *str, int len)
@@ -531,7 +530,7 @@ void D3D9Pad::Pixel (int x, int y, DWORD col)
 	Flush(SKPTECH_PIXLES);
 	SwapRB(&col);
 	RECT rect = { x, y, x+1, y+1 };
-	if (pTgt) pDev->ColorFill(pTgt->pSurf, &rect, col); 
+	if (pTgt) pDev->ColorFill(pTgt->pSurf, &rect, col);
 }
 
 
@@ -539,7 +538,7 @@ void D3D9Pad::Pixel (int x, int y, DWORD col)
 //
 void D3D9Pad::MoveTo (int x, int y)
 {
-	cx = x; 
+	cx = x;
 	cy = y;
 }
 
@@ -566,7 +565,7 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 	pt[1].x = x1; pt[1].y = y1;
 
 	AppendLineVertexList<IVECTOR2>(pt);
-		
+
 	cx = x1; cy = y1;
 }
 
@@ -612,7 +611,7 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 		pts[0].y = pts[1].y = t;
 		pts[1].x = pts[2].x = r;
 		pts[2].y = pts[3].y = b;
-	
+
 		AppendLineVertexList<IVECTOR2>(pts, 4, true);
 	}
 }
@@ -649,7 +648,7 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 		pts[i].y = long(ft + pSinCos[k].y * h);
 		k += s;
 	}
-	
+
 	WORD iIdx = iI;
 
 	// Fill interion -------------------------------------------
@@ -670,7 +669,7 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 		}
 		Idx[iI-1] = aV + 1;
 	}
-	
+
 	// Draw outline ------------------------------------------
 	//
 	if (HasPen()) AppendLineVertexList<IVECTOR2>(pts, n, true);
@@ -724,7 +723,7 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 // ===============================================================================================
 //
 void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
-{ 
+{
 	Flush(SKPTECH_POLY);
 	if (HasPen()) ((D3D9PolyLine *)hPoly)->Draw(pDev, flags);
 }
@@ -806,7 +805,7 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 	float qw = fabs(ab) / sqrt(aa*bb);	// abs(cos(a,b))
 	if (bSharp && qw>0.9f) return 0;	// Bad Ear
 	if (qw>0.9999f) return 0;			// All three points are lined up
-	
+
 	float id = 1.0f / (aa * bb - ab * ab);
 
 	for (int i=0;i<npt;i++) {
@@ -817,7 +816,7 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 
 		float cx = float(pt[P].x - pt[A].x);
 		float cy = float(pt[P].y - pt[A].y);
-		float ac = ax*cx + ay*cy;	 if (ac<0) continue;	
+		float ac = ax*cx + ay*cy;	 if (ac<0) continue;
 		float bc = bx*cx + by*cy;	 if (bc<0) continue;
 		float u  = (bb*ac - ab*bc) * id;
 		float v  = (aa*bc - ab*ac) * id;
@@ -842,7 +841,7 @@ int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 	short idx = 0;		// Number of indices written in the output
 	short x = npt-1;		// First ear to test is the last one in the list
 	bool bSharp = true; // Avoid sharp ears
-	
+
 	// Build initial index list
 	WORD In[256];
 	for (int i=0;i<npt;i++) In[i]=i;
@@ -856,18 +855,18 @@ int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 
 		switch (CheckTriangle<Type>(x, pt, In, sum, npt, bSharp)) {
 
-			case 0: 
+			case 0:
 			{
-				x--; 
+				x--;
 				if (x<0) { // Restart
 					if (!bSharp) { return idx;	}
-					bSharp=false; 
-					x=npt-1; 
+					bSharp=false;
+					x=npt-1;
 				}
 				break;
 			}
 
-			case 1: 
+			case 1:
 			{
 				Out[idx] = In[mod(x-1,npt)]; idx++;
 				Out[idx] = In[mod(x,npt)]; idx++;
@@ -903,7 +902,7 @@ inline D3DXVECTOR2 _DXV2(const FVECTOR2 &pt)
 
 // ===============================================================================================
 //
-template <typename Type> 
+template <typename Type>
 void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 {
 	if (_npt < 2) return;
@@ -930,7 +929,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 			Vtx[vI].l = length;
 			Vtx[vI].fnc = SKPSW_THINPEN;
 			Vtx[vI].clr = pencolor.dclr;
-			
+
 			if (IsDashed() && i!=li) {
 				float x = float(pt[i].x - pt[i+1].x);
 				float y = float(pt[i].y - pt[i+1].y);
@@ -958,7 +957,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 
 
 	// ----------------------------------------------------------------------
-	// Wide line mode 
+	// Wide line mode
 	// ----------------------------------------------------------------------
 
 	D3DXVECTOR2 pp; // Prev point
@@ -1027,7 +1026,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 template <typename Type>
 void D3D9Pad::AppendLineVertexList(const Type *pt)
 {
-	
+
 	// ----------------------------------------------------------------------
 	// Draw a thin hairline
 	// ----------------------------------------------------------------------
@@ -1056,7 +1055,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 
 
 	// ----------------------------------------------------------------------
-	// Wide line mode 
+	// Wide line mode
 	// ----------------------------------------------------------------------
 
 	D3DXVECTOR2  pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
@@ -1068,7 +1067,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 
 		if (i == 0) np = _DXV2(pt[1]);
 		else np = _DXV2(pt[1]) * 2.0 - _DXV2(pt[0]);
-		
+
 		WORD vII = vI + 1;
 
 		// --------------------------------------
@@ -1102,10 +1101,10 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 
 
 // ===============================================================================================
-//	
+//
 D3DXHANDLE   D3D9Pad::eSketch = 0;
 D3DXHANDLE   D3D9Pad::eDrawMesh = 0;
-D3DXHANDLE   D3D9Pad::eVP = 0;			
+D3DXHANDLE   D3D9Pad::eVP = 0;
 D3DXHANDLE   D3D9Pad::eW = 0;
 D3DXHANDLE   D3D9Pad::eKey = 0;
 D3DXHANDLE   D3D9Pad::ePen = 0;
@@ -1115,7 +1114,7 @@ D3DXHANDLE   D3D9Pad::eTarget = 0;
 D3DXHANDLE   D3D9Pad::eTexEn = 0;
 D3DXHANDLE   D3D9Pad::eKeyEn = 0;
 D3DXHANDLE   D3D9Pad::eWidth = 0;
-D3DXHANDLE   D3D9Pad::eTex0 = 0;	
+D3DXHANDLE   D3D9Pad::eTex0 = 0;
 D3DXHANDLE   D3D9Pad::eDashEn = 0;
 D3DXHANDLE   D3D9Pad::eSize = 0;
 D3DXHANDLE   D3D9Pad::eWide = 0;
@@ -1158,13 +1157,13 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 	pFont = NULL;
 	hFont = NULL;
-	
+
 	if (orientation!=0) rotation = float(orientation) * 0.1f;
 	else                rotation = 0.0f;
-	
+
 	// Browse cache ---------------------------------------------------
 	//
-	
+
 	for (int i=0;i<nfcache;i++) {
 		if (fcache[i].height!=height) continue;
 		if (fcache[i].style!=style) continue;
@@ -1173,7 +1172,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		pFont = fcache[i].pFont;
 		break;
 	}
-	
+
 	int weight = (style & BOLD ? FW_BOLD : FW_NORMAL);
 	DWORD italic = (style & ITALIC ? TRUE : FALSE);
 	DWORD underline = (style & UNDERLINE ? TRUE : FALSE);
@@ -1187,7 +1186,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
 	if (pFont==NULL) {
-	
+
 		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
 
 		pFont = new D3D9Text(pDev);
@@ -1196,7 +1195,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		DeleteObject(hNew);
 
 		pFont->SetRotation(rotation);
-		
+
 		if (nfcache>250) LogErr("Font Cache is Full.");
 		else {
 			// Fill the cache --------------------------------
@@ -1232,7 +1231,7 @@ D3D9PadFont::~D3D9PadFont ()
 //
 HFONT D3D9PadFont::GetGDIFont () const
 {
-	return hFont;	
+	return hFont;
 }
 
 
