@@ -532,6 +532,15 @@ private:
 	D3DVIEWPORT9 vpBak;
 	RECT src;
 
+	// -------------------------------------------------------------------------
+	bool  _isSaveBuffer;   ///< Flag indicasting that the 'save buffer' can be used
+	char* _saveBuffer;     ///< 'Save' string buffer  (null-terminated @ len)
+	int   _saveBufferSize; ///< Current size of the 'save' string buffer
+
+	void _toSaveBuffer (const char *str, int len); ///< Store len sized string into internal 'save' buffer
+	inline void _releaseBuffer ();                 ///< Mark the buffer as "not save"
+	// -------------------------------------------------------------------------
+
 	static WORD *Idx;				// List of indices
 	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;

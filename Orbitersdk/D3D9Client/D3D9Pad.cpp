@@ -191,7 +191,10 @@ void D3D9Pad::Reset()
 // class GDIPad
 // ======================================================================
 
-D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s)
+D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s),
+	_isSaveBuffer(false),
+	_saveBuffer(NULL),
+	_saveBufferSize(0)
 {
 	_TRACE;
 
@@ -217,7 +220,10 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s)
 
 // ===============================================================================================
 //
-D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad2(NULL)
+D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad2(NULL),
+	_isSaveBuffer(false),
+	_saveBuffer(NULL),
+	_saveBufferSize(0)
 {
 	_TRACE;
 	pTgt = NULL;
@@ -243,6 +249,8 @@ D3D9Pad::~D3D9Pad ()
 		if (pTgt) if (pTgt->IsBackBuffer() == false) pTgt->ReleaseGPU();
 		SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
 	}
+
+	SAFE_DELETEA(_saveBuffer);
 
 	pTgt = NULL;
 }
@@ -446,8 +454,25 @@ float D3D9Pad::GetPenWidth()
 //
 bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 {
-	// ignore the box -for now- ;)
-	return Text(x1, y1, str, len);
+	if (cfont==NULL) return false;
+
+	bool result = true;
+	int lineSpace = static_cast<D3D9PadFont *>(cfont)->pFont->GetLineSpace();
+
+	_toSaveBuffer(str, len);
+
+	// Split multi-lines
+	char * pch;
+	pch = strtok(_saveBuffer, "\n");
+	while (pch != NULL && result)
+	{
+		result = Text(x1, y1, pch, -1); // len is irrelevant for pointer into 'save' buffer
+		pch = strtok(NULL, "\n");
+		y1 += lineSpace;
+	}
+
+	_releaseBuffer();
+	return result;
 }
 	
 // ===============================================================================================
@@ -476,14 +501,15 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 	pText->SetRotation(((D3D9PadFont *)cfont)->rotation);
 	pText->SetScaling(1.0f);
 
-	// cut string to length
-	char *_str = new char[len + 1];
-	strncpy_s(_str, len + 1, str, len);
+	// If we were called by ::TextBox (internal) the buffer is already 'save'
+	if (_isSaveBuffer) {
+		pText->PrintSkp(this, float(x - 1), float(y - 1), str, (bkmode == OPAQUE));
+	} else {
+		_toSaveBuffer(str, len); // null-terminated string!
+		pText->PrintSkp(this, float(x - 1), float(y - 1), _saveBuffer, (bkmode == OPAQUE));
+		_releaseBuffer();
+	}
 
-	pText->PrintSkp(this, float(x - 1), float(y - 1), _str, (bkmode == OPAQUE));
-
-	delete[] _str;
-	
 	return true;
 }
 
@@ -718,6 +744,29 @@ void D3D9Pad::Lines(FVECTOR2 *pt, int nlines)
 }
 
 
+// -----------------------------------------------------------------------------------------------
+// Save buffer helpers (null-terminated string for Text & TextBox)
+// -----------------------------------------------------------------------------------------------
+
+// ===============================================================================================
+// Copy string to internal 'save' buffer, so it can be changed (adding terminating zeroes, etc.)
+void D3D9Pad::_toSaveBuffer (const char *str, int len)
+{
+	if (_saveBufferSize < len)
+	{ // re-allloc bigger space
+		if (_saveBuffer) { delete[] _saveBuffer; }
+		_saveBuffer = new char[len + 1];
+		_saveBufferSize = len;
+	}
+	strncpy_s(_saveBuffer, len + 1, str, len);
+	_isSaveBuffer = true;
+}
+
+// ===============================================================================================
+//
+void D3D9Pad::_releaseBuffer () {
+	_isSaveBuffer = false;
+}
 
 
 // -----------------------------------------------------------------------------------------------
