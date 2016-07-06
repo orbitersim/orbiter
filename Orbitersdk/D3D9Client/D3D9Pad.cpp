@@ -290,7 +290,7 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 
 	Brush *pbrush = cbrush;
 	cbrush = brush;
-	if (cbrush) brushcolor = ((D3D9PadBrush *)cbrush)->clr;
+	if (cbrush) brushcolor = static_cast<D3D9PadBrush *>(cbrush)->clr;
 	else	    brushcolor = SkpColor(0);
 	return pbrush;
 }
@@ -306,7 +306,7 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
 	else     cpen = NULL;
-	if (cpen) pencolor = ((D3D9PadPen *)cpen)->clr;
+	if (cpen) pencolor = static_cast<D3D9PadPen *>(cpen)->clr;
 	return ppen;
 }
 
@@ -373,7 +373,7 @@ DWORD D3D9Pad::GetCharSize ()
 {
 	TEXTMETRIC tm;
 	if (cfont==NULL) return 0;
-	((D3D9PadFont *)cfont)->pFont->GetD3D9TextMetrics(&tm);
+	static_cast<D3D9PadFont *>(cfont)->pFont->GetD3D9TextMetrics(&tm);
 	return MAKELONG(tm.tmHeight-tm.tmInternalLeading, tm.tmAveCharWidth);
 }
 
@@ -384,7 +384,7 @@ DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 {
 	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 2;
 	if (cfont==NULL) return 0;
-	return DWORD(((D3D9PadFont *)cfont)->pFont->Length2(str));
+	return DWORD(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str));
 }
 
 
@@ -414,7 +414,7 @@ bool D3D9Pad::HasPen()
 {
 	if (QPen.bEnabled) return true;
 	if (cpen==NULL) return false;
-	if (((D3D9PadPen*)cpen)->style==PS_NULL) return false;
+	if (static_cast<D3D9PadPen*>(cpen)->style==PS_NULL) return false;
 	return true;
 }
 
@@ -425,7 +425,7 @@ bool D3D9Pad::IsDashed()
 {
 	if (QPen.bEnabled) return QPen.style == 2;
 	if (cpen==NULL) return false;
-	if (((D3D9PadPen*)cpen)->style==PS_DOT) return true;
+	if (static_cast<D3D9PadPen*>(cpen)->style==PS_DOT) return true;
 	return false;
 }
 
@@ -445,7 +445,7 @@ float D3D9Pad::GetPenWidth()
 {
 	if (QPen.bEnabled) return linescale * QPen.width;
 	if (cpen==NULL) return 1.0f;
-	return float(((D3D9PadPen*)cpen)->width*linescale);
+	return float(static_cast<D3D9PadPen*>(cpen)->width*linescale);
 }
 
 
@@ -481,7 +481,7 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	if (cfont==NULL) return false;
 
-	D3D9Text *pText = ((D3D9PadFont *)cfont)->pFont;
+	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
 	switch(halign) {
 		default:
@@ -497,7 +497,7 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 		case TA_BOTTOM:   pText->SetTextVAlign(2); break;
 	}
 
-	pText->SetRotation(((D3D9PadFont *)cfont)->rotation);
+	pText->SetRotation(static_cast<D3D9PadFont *>(cfont)->rotation);
 	pText->SetScaling(1.0f);
 
 	// If we were called by ::TextBox (internal) the buffer is already 'save'
@@ -725,7 +725,7 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 {
 	Flush(SKPTECH_POLY);
-	if (HasPen()) ((D3D9PolyLine *)hPoly)->Draw(pDev, flags);
+	if (HasPen()) static_cast<D3D9PolyLine *>(hPoly)->Draw(pDev, flags);
 }
 
 
@@ -1173,9 +1173,9 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		break;
 	}
 
-	int weight = (style & BOLD ? FW_BOLD : FW_NORMAL);
-	DWORD italic = (style & ITALIC ? TRUE : FALSE);
-	DWORD underline = (style & UNDERLINE ? TRUE : FALSE);
+	int weight = (style & BOLD) ? FW_BOLD : FW_NORMAL;
+	DWORD italic = (style & ITALIC) ? TRUE : FALSE;
+	DWORD underline = (style & UNDERLINE) ? TRUE : FALSE;
 
 	DWORD AAQuality = NONANTIALIASED_QUALITY;
 

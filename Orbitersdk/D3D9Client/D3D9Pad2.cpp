@@ -204,7 +204,7 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 {
 	if (cfont == NULL) return;
 
-	D3D9Text *pText = ((D3D9PadFont *)cfont)->pFont;
+	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
 	switch (halign) {
 		default:
@@ -551,7 +551,7 @@ void D3D9Pad::FlushPrimitives()
 //
 int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
-	SketchMesh *hMesh = (SketchMesh *)_hMesh;
+	SketchMesh *hMesh = static_cast<SketchMesh *>(_hMesh);
 
 	// Flush existing artwork out before starting a new one ------
 	//
@@ -649,7 +649,7 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 bool D3D9Pad::Flush(int iTech)
 {
 
-	bool bStateChnage = bPenChange | bViewChange | bFontChange | (iTech != CurrentTech);
+	bool bStateChnage = bPenChange || bViewChange || bFontChange || (iTech != CurrentTech);
 
 
 	// Is the drawing queue full ? -------------------------------------
@@ -722,7 +722,7 @@ bool D3D9Pad::Flush(int iTech)
 			HR(FX->SetMatrix(eVP, &mVP));
 			HR(FX->SetMatrix(eW, &mW));
 			HR(FX->SetFloat(eFov, f));
-			HR(FX->SetBool(eCovEn, ClipData[0].bEnable | ClipData[1].bEnable));
+			HR(FX->SetBool(eCovEn, ClipData[0].bEnable || ClipData[1].bEnable));
 		}
 
 		bViewChange = false;
