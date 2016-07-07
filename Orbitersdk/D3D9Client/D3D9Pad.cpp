@@ -384,7 +384,7 @@ DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 {
 	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 2;
 	if (cfont==NULL) return 0;
-	return DWORD(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str));
+	return DWORD(static_cast<D3D9PadFont *>(cfont)->pFont->Length2(str, len));
 }
 
 
@@ -499,15 +499,16 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	pText->SetRotation(static_cast<D3D9PadFont *>(cfont)->rotation);
 	pText->SetScaling(1.0f);
+	pText->PrintSkp(this, float(x - 1), float(y - 1), str, len, (bkmode == OPAQUE));
 
-	// If we were called by ::TextBox (internal) the buffer is already 'save'
+	/*// If we were called by ::TextBox (internal) the buffer is already 'save'
 	if (_isSaveBuffer) {
 		pText->PrintSkp(this, float(x - 1), float(y - 1), str, (bkmode == OPAQUE));
 	} else {
 		_toSaveBuffer(str, len); // null-terminated string!
 		pText->PrintSkp(this, float(x - 1), float(y - 1), _saveBuffer, (bkmode == OPAQUE));
 		_releaseBuffer();
-	}
+	}*/
 
 	return true;
 }

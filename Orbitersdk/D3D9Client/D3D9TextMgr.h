@@ -88,14 +88,13 @@ public:
 	float		Width();
 	int			GetLineSpace();
 	
-	float		Length(const char *format, ...);
-	float		Length2(const char *str);
+	float		Length2(const char *str, int len = -1);
 	float		Length(char c);
 
 	void		SetTextHAlign(int x); // 0-left, 1=center, 2=right
 	void		SetTextVAlign(int x); // 0-top, 1=base, 2=bottom
 
-	float		PrintSkp(class D3D9Pad *pSkp, float x, float y, const char *str, bool bBox = false);
+	float		PrintSkp(class D3D9Pad *pSkp, float x, float y, const char *str, int len = -1, bool bBox = false);
 	void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy2(t, &tm, sizeof(TEXTMETRIC)); }
 
 private:

@@ -402,26 +402,12 @@ void D3D9Text::SetScaling(float factor)
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::Length(const char *format, ...)
-{
-	va_list args; 
-    va_start(args, format); 
-	
-//	int count = _vsnprintf_s((char *)Buffer, 512, 512, format, args); 
-	va_end(args);
-
-	return Length2(Buffer);
-}
-
-// ----------------------------------------------------------------------------------------
-//
-float D3D9Text::Length2(const char *str)
+float D3D9Text::Length2(const char *str, int l)
 {
     float len = 0;
-//	unsigned char c = 1;
 	int i = 0;
 
-	while (str[i]) {
+	while (str[i] && (i<l || l<0)) {
 		if (str[i] <= last) len += (Data[str[i]].sp + float(spacing));
 		i++;
 	}
@@ -441,13 +427,13 @@ float D3D9Text::Length(char c)
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str, bool bBox)
+float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str, int len, bool bBox)
 {
 	
 	float x_orig = xpos;
 
-	if (halign == 1) xpos -= Length2(str) * 0.5f;
-	if (halign == 2) xpos -= Length2(str);
+	if (halign == 1) xpos -= Length2(str, len) * 0.5f;
+	if (halign == 2) xpos -= Length2(str, len);
 	if (valign == 1) ypos -= tm.tmAscent;
 	if (valign == 2) ypos -= tm.tmHeight;
 
@@ -464,9 +450,9 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 	float bbox_r = xpos + 2;
 
 	unsigned char c = str[0];
-	DWORD idx = 1;
+	int idx = 1;
 
-	while (c && idx<255) {
+	while (c && (idx<=len || len<0)) {
 		bbox_r += ceil(Data[c].sp + float(spacing));
 		c = str[idx++];
 	}
@@ -504,7 +490,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 	DWORD flags = SKPSW_FONT;
 	DWORD color = pSkp->textcolor.dclr;
 
-	while (c && idx<255) {
+	while (c && (idx<=len || len<0)) {
 
 		pIdx[iI++] = vI;
 		pIdx[iI++] = vI + 1;
