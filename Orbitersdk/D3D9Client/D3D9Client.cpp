@@ -506,6 +506,9 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	// Create status queries -----------------------------------------
 	//
+	if (pDevice->CreateQuery(D3DQUERYTYPE_OCCLUSION, NULL) == S_OK) LogAlw("D3DQUERYTYPE_OCCLUSION is supported by device");
+	else LogAlw("D3DQUERYTYPE_OCCLUSION not supported by device");
+
 	if (pDevice->CreateQuery(D3DQUERYTYPE_PIPELINETIMINGS, NULL)==S_OK) LogAlw("D3DQUERYTYPE_PIPELINETIMINGS is supported by device");
 	else LogAlw("D3DQUERYTYPE_PIPELINETIMINGS not supported by device");
 
