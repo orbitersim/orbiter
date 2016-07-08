@@ -451,6 +451,24 @@ float D3D9Pad::GetPenWidth()
 
 // ===============================================================================================
 //
+void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
+{
+	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+
+	if (pText->Length2(str) > maxWidth) {
+		char *pch = str + len;
+		int _len = len;
+		do {
+			--pch;
+			while (*pch != ' ') { --pch; --_len; }
+		} while (pText->Length2(str, _len) > maxWidth);
+
+		if (pch!=NULL && pch>str) { *pch = '\n'; }
+	}
+}
+
+// ===============================================================================================
+//
 bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 {
 	if (cfont==NULL) return false;
@@ -458,19 +476,23 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	bool result = true;
 	int lineSpace = static_cast<D3D9PadFont *>(cfont)->pFont->GetLineSpace();
 
-	_toSaveBuffer(str, len);
+	ToSaveBuffer(str, len);
 
-	// Split multi-lines
-	char * pch;
-	pch = strtok(_saveBuffer, "\n");
-	while (pch != NULL && result)
+	char *pch, *pEnd =_saveBuffer+len; // <= point to terminating zero
+	for (pch = strtok(_saveBuffer, "\n"); pch != NULL; pch = strtok(NULL, "\n"))
 	{
+		int _len = strlen(pch);
+		if (_len>1) { WrapOneLine(pch, _len, x2-x1); }
+		if (pch+_len < pEnd) { *(pch+_len) = '\n'; } // strtok splits by inserting '\0's => revert'em
+	}
+
+	// "forEach(line...)" split multi-lines
+	for (pch = strtok(_saveBuffer, "\n"); pch != NULL; pch = strtok(NULL, "\n")) {
 		result = Text(x1, y1, pch, -1); // len is irrelevant for pointer into 'save' buffer
-		pch = strtok(NULL, "\n");
 		y1 += lineSpace;
 	}
 
-	_releaseBuffer();
+	ReleaseSaveBuffer();
 	return result;
 }
 
@@ -492,7 +514,7 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	switch(valign) {
 		default:
-		case TA_TOP:	  pText->SetTextVAlign(0); break;
+		case TA_TOP:      pText->SetTextVAlign(0); break;
 		case TA_BASELINE: pText->SetTextVAlign(1); break;
 		case TA_BOTTOM:   pText->SetTextVAlign(2); break;
 	}
@@ -500,15 +522,6 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 	pText->SetRotation(static_cast<D3D9PadFont *>(cfont)->rotation);
 	pText->SetScaling(1.0f);
 	pText->PrintSkp(this, float(x - 1), float(y - 1), str, len, (bkmode == OPAQUE));
-
-	/*// If we were called by ::TextBox (internal) the buffer is already 'save'
-	if (_isSaveBuffer) {
-		pText->PrintSkp(this, float(x - 1), float(y - 1), str, (bkmode == OPAQUE));
-	} else {
-		_toSaveBuffer(str, len); // null-terminated string!
-		pText->PrintSkp(this, float(x - 1), float(y - 1), _saveBuffer, (bkmode == OPAQUE));
-		_releaseBuffer();
-	}*/
 
 	return true;
 }
@@ -750,7 +763,7 @@ void D3D9Pad::Lines(FVECTOR2 *pt, int nlines)
 
 // ===============================================================================================
 // Copy string to internal 'save' buffer, so it can be changed (adding terminating zeroes, etc.)
-void D3D9Pad::_toSaveBuffer (const char *str, int len)
+void D3D9Pad::ToSaveBuffer (const char *str, int len)
 {
 	if (_saveBufferSize < len)
 	{ // re-allloc bigger space
@@ -764,7 +777,7 @@ void D3D9Pad::_toSaveBuffer (const char *str, int len)
 
 // ===============================================================================================
 //
-void D3D9Pad::_releaseBuffer () {
+void D3D9Pad::ReleaseSaveBuffer () {
 	_isSaveBuffer = false;
 }
 

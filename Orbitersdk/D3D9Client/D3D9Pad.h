@@ -537,8 +537,9 @@ private:
 	char* _saveBuffer;     ///< 'Save' string buffer  (null-terminated @ len)
 	int   _saveBufferSize; ///< Current size of the 'save' string buffer
 
-	void _toSaveBuffer (const char *str, int len); ///< Store len sized string into internal 'save' buffer
-	inline void _releaseBuffer ();                 ///< Mark the buffer as "not save"
+	void        ToSaveBuffer (const char *str, int len);        ///< Store len sized string into internal 'save' buffer
+	inline void ReleaseSaveBuffer ();                           ///< Mark the buffer as "not save"
+	void        WrapOneLine (char* str, int len, int maxWidth); ///< Wraps one text line at maxLenght pixels
 	// -------------------------------------------------------------------------
 
 	static WORD *Idx;				// List of indices
