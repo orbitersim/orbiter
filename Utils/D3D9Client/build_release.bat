@@ -76,6 +76,9 @@ call %SETVCVARS% x86 || goto exit_nok
 :: gcAPI_dbg.lib (DEBUG)
 call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG% || goto exit_nok
 
+:: gcAPI_dbg.lib (RELEASE)
+call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG% || goto exit_nok
+
 :: D3D9Client & gcAPI.lib (RELEASE)
 call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG% || goto exit_nok
 
