@@ -21,10 +21,6 @@
 
 // =======================================================================
 // Externals
-
-static int maxres = 14;    // max tree resolution depth    
-static int patch_res = 32; // patch node grid dimensions
-static int elev_stride = patch_res*8+3;
 static TEXCRDRANGE2 fullrange = {0,1,0,1};
 
 int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
@@ -372,7 +368,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 			slng = sin(lng), clng = cos(lng);
 
 			eradius = radius + globelev; // radius including node elevation
-			if (elev) eradius += (double)elev[(i+1)*elev_stride + j+1];
+			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1];
 
 			float felev = float(eradius - radius);
 			max_elev = max(max_elev, felev);
@@ -416,15 +412,15 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 		for (i = n = nofs0 = 0; i < grdlat; i++) {
 			nofs1 = nofs0+grdlng+1;
 			for (j = 0; j < grdlng; j++) {
-				elev1  = elev + elev_stride+2+j+elev_stride*i;
-				elev2  = elev1 + elev_stride-1;
-				elev1n = elev1 - elev_stride+1;
-				elev2n = elev2 + elev_stride-1;
+				elev1  = elev + TILE_ELEVSTRIDE+2+j+TILE_ELEVSTRIDE*i;
+				elev2  = elev1 + TILE_ELEVSTRIDE-1;
+				elev1n = elev1 - TILE_ELEVSTRIDE+1;
+				elev2n = elev2 + TILE_ELEVSTRIDE-1;
 				err1 = abs(*elev1 * 2 - *elev2 - *elev1n) + abs(*elev2 * 2 - *elev1 - *elev2n);
-				elev1  = elev + elev_stride+1+j+elev_stride*i;
-				elev2  = elev1 + elev_stride+1;
-				elev1n = elev1 - elev_stride-1;
-				elev2n = elev2 + elev_stride+1;
+				elev1  = elev + TILE_ELEVSTRIDE+1+j+TILE_ELEVSTRIDE*i;
+				elev2  = elev1 + TILE_ELEVSTRIDE+1;
+				elev1n = elev1 - TILE_ELEVSTRIDE-1;
+				elev2n = elev2 + TILE_ELEVSTRIDE+1;
 				err2 = abs(*elev1 * 2 - *elev2 - *elev1n) + abs(*elev2 * 2 - *elev1 - *elev2n);
 				if (err1 < err2) {
 					idx[n++] = nofs0+j;
@@ -475,11 +471,11 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 			for (j = 0; j <= grdlng; j++) {
 				lng = minlng + (maxlng-minlng) * (double)j/(double)grdlng;
 				slng = sin(lng), clng = cos(lng);
-				en = (i+1)*elev_stride + (j+1);
+				en = (i+1)*TILE_ELEVSTRIDE + (j+1);
 
 				// This version avoids the normalisation of the 4 intermediate face normals
 				// It's faster and doesn't seem to make much difference
-				VECTOR3 nml = {2.0*dydz, dz*(elev[en-elev_stride]-elev[en+elev_stride]), dy*(elev[en-1]-elev[en+1])};
+				VECTOR3 nml = {2.0*dydz, dz*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*(elev[en-1]-elev[en+1])};
 				normalise (nml);
 				// rotate into place
 				nx1 = nml.x*clat - nml.y*slat;
@@ -922,7 +918,6 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 // =======================================================================
 
 TileManager2Base::configPrm TileManager2Base::cprm = {
-	32,                 // gridRes
 	2,                  // elevInterpol
 	false,				// bSpecular
 	false,				// bLights
@@ -938,11 +933,10 @@ HFONT TileManager2Base::hFont = NULL;
 // -----------------------------------------------------------------------
 
 TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gridres)
-: vp(vplanet)
+: vp(vplanet), gridRes(_gridres)
 {
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);
-	cprm.gridRes = _gridres;
 	obj = vp->Object();
 	obj_size = oapiGetSize (obj);
 	oapiGetObjectName (obj, cbody_name, 256);

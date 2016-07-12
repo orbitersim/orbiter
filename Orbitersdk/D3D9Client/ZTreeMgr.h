@@ -51,7 +51,7 @@ public:
 					bool   TreeFileHeader::fread (FILE *f);
 
 private:
-	BYTE    magic[4];    ///< file ID and version
+	DWORD   magic;       ///< file ID and version
 	DWORD   size;        ///< header size [bytes]
 	DWORD   flags;       ///< bit flags
 	DWORD   dataOfs;     ///< file offset of start of data block (header + TOC)

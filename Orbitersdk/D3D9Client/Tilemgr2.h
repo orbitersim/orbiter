@@ -30,7 +30,6 @@
 #define TILE_VALID  0x0001
 #define TILE_ACTIVE 0x0002
 
-//#define TILE_PATCHRES 32
 #define TILE_FILERES 256
 #define TILE_ELEVSTRIDE (TILE_FILERES+3)
 
@@ -230,14 +229,13 @@ public:
 	 * \brief Global configuration parameters
 	 */
 	struct configPrm {
-		int gridRes;		///< mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
-		int elevMode;		///< elevation mode (0=none, 1=linear, 2=cubic)
-		bool bSpecular;		///< render specular surface reflections?
-		bool bLights;		///< render planet night lights?
-		bool bCloudShadow;	///< render cloud shadows?
-		double lightfac;	///< city light brightness factor
-		DWORD tileLoadFlags;///< 0x0001: load tiles from directory tree
-		                    ///< 0x0002: load tiles from compressed archive
+		int elevMode;         ///< elevation mode (0=none, 1=linear, 2=cubic)
+		bool bSpecular;       ///< render specular surface reflections?
+		bool bLights;         ///< render planet night lights?
+		bool bCloudShadow;    ///< render cloud shadows?
+		double lightfac;      ///< city light brightness factor
+		DWORD tileLoadFlags;  ///< 0x0001: load tiles from directory tree
+		                      ///< 0x0002: load tiles from compressed archive
 	};
 
 	/**
@@ -318,17 +316,18 @@ public:
 	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
 	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
 
-	const class Scene * GetScene() const { return gc->GetScene(); }
-	const oapi::D3D9Client *GetClient() const { return gc; }
-	const vPlanet *GetPlanet() const { return vp; }
+	inline const class Scene * GetScene() const { return gc->GetScene(); }
+	inline const oapi::D3D9Client *GetClient() const { return gc; }
+	inline const vPlanet *GetPlanet() const { return vp; }
 
-	const configPrm &Cprm() const { return cprm; }
-	const char *CbodyName() const { return cbody_name; }
-	const double CbodySize() const { return obj_size; }
-	const ELEVHANDLE ElevMgr() const { return emgr; }
+	inline const configPrm &Cprm() const { return cprm; }
+	inline const char *CbodyName() const { return cbody_name; }
+	inline const double CbodySize() const { return obj_size; }
+	inline const ELEVHANDLE ElevMgr() const { return emgr; }
+	inline const int GridRes() const { return gridRes; }
 
-	float GetMinElev() const {	return min_elev; }
-	float GetMaxElev() const {	return max_elev; }
+	float GetMinElev() const { return min_elev; }
+	float GetMaxElev() const { return max_elev; }
 	void SetMinMaxElev(float min, float max);
 	void ResetMinMaxElev();
 	Tile *GetPickedTile() const { return pPicked; }
@@ -355,6 +354,7 @@ private:
 	OBJHANDLE obj;                   // the planet object
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle
+	int gridRes;                     // mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
 
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];

@@ -20,13 +20,10 @@
 // File header for compressed tree files
 
 TreeFileHeader::TreeFileHeader () :
+	magic(MAKEFOURCC('T','X',1,0)),
 	size(sizeof(TreeFileHeader)), dataOfs(sizeof(TreeFileHeader)),
 	flags(0), nodeCount(0),	dataLength(0)
 {
-	magic[0] = 'T';
-	magic[1] = 'X';
-	magic[2] = 1;
-	magic[3] = 0;
 	rootPos1 = rootPos2 = rootPos3 = rootPos4[0] = rootPos4[1] = (DWORD)-1;
 }
 
@@ -41,10 +38,9 @@ size_t TreeFileHeader::fwrite (FILE *f)
 
 bool TreeFileHeader::fread (FILE *f)
 {
-	BYTE buf[4];
-	DWORD sz;
+	DWORD mg, sz;
 
-	if (::fread(buf, 1, 4, f) < 4 || memcmp(buf, magic, 4)) { return false; }
+	if (::fread(&mg, sizeof(DWORD), 1, f) != 1 || mg != magic) { return false; }
 	if (::fread(&sz, sizeof(DWORD), 1, f) != 1 || sz != size) { return false; }
 	::fread(&flags, sizeof(DWORD), 1, f);
 	::fread(&dataOfs, sizeof(DWORD), 1, f);
@@ -179,6 +175,11 @@ DWORD ZTreeMgr::ReadData (DWORD idx, BYTE **outp)
 {
 	if (idx == (DWORD)-1) { return 0; } // sanity check
 
+	DWORD esize = NodeSizeInflated(idx);
+	if (!esize) {// node doesn't have data, but has descendants with data
+		return 0;
+	}
+
 	if (_fseeki64(treef, toc[idx].pos+dofs, SEEK_SET)) {
 		return 0;
 	}
@@ -187,7 +188,6 @@ DWORD ZTreeMgr::ReadData (DWORD idx, BYTE **outp)
 	BYTE *zbuf = new BYTE[zsize];
 	fread(zbuf, 1, zsize, treef);
 
-	DWORD esize = NodeSizeInflated(idx);
 	BYTE *ebuf = new BYTE[esize];
 
 	DWORD ndata = Inflate(zbuf, zsize, ebuf, esize);
