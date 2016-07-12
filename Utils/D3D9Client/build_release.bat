@@ -15,7 +15,7 @@
 :: --- Setup
 set BASE_DIR=..\..
 set OUT_DIR=_release
-set VERSION=Beta24
+set VERSION=Beta24.1
 
 :: Enhance Version by Orbiter Version
 for /F "tokens=* USEBACKQ" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
