@@ -40,8 +40,9 @@ void CloudTile::PreLoad()
 	bool ok = false;
 
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf_s (path, MAX_PATH, "Textures\\%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = LoadTextureFile(path, &pPreSrf, false);
+		sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		ok = mgr->GetClient()->TexturePath(path, path);
+		ok = ok && LoadTextureFile(path, &pPreSrf, false);
 	}
 	if (!ok && cmgr->ZTreeManager(0)) { // try loading from compressed archive
 		BYTE *buf;
@@ -213,8 +214,8 @@ void TileManager2<CloudTile>::LoadZTrees()
 {
 	treeMgr = new ZTreeMgr*[ntreeMgr = 1];
 	if (cprm.tileLoadFlags & 0x0002) {
-		char cbuf[256];
-		sprintf_s(cbuf, 256, "Textures\\%s", CbodyName());
+		char cbuf[MAX_PATH];
+		GetClient()->TexturePath(CbodyName(), cbuf);
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_CLOUD);
 	} else
 		treeMgr[0] = 0;

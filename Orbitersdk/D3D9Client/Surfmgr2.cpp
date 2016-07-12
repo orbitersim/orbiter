@@ -97,8 +97,9 @@ void SurfTile::PreLoad()
 	// Load surface texture
 	
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf_s (path, MAX_PATH, "Textures\\%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = LoadTextureFile(path, &pPreSrf);
+		sprintf_s (path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		ok = mgr->GetClient()->TexturePath(path, path);
+		ok = ok && LoadTextureFile(path, &pPreSrf);
 	}
 
 	if (!ok && smgr->ZTreeManager(0)) { // try loading from compressed archive
@@ -113,8 +114,9 @@ void SurfTile::PreLoad()
 	// Load mask texture
 	if (ok && (mgr->Cprm().bSpecular || mgr->Cprm().bLights)) {
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf_s(path, MAX_PATH, "Textures\\%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl + 4, ilat, ilng);
-			ok = LoadTextureFile(path, &pPreMsk);
+			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl + 4, ilat, ilng);
+			ok = mgr->GetClient()->TexturePath(path, path);
+			ok = ok && LoadTextureFile(path, &pPreMsk);
 		}
 		if (!ok && smgr->ZTreeManager(1)) { // try loading from compressed archive
 			BYTE *buf;
@@ -189,8 +191,9 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 
 	// Elevation data
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf_s (path, MAX_PATH, "Textures\\%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-		if (!fopen_s(&f, path, "rb")) {
+		sprintf_s (path, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+		bool found = mgr->GetClient()->TexturePath(path, path);
+		if (found && !fopen_s(&f, path, "rb")) {
 			e = new INT16[ndat];
 			// read the elevation file header
 			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
@@ -253,8 +256,9 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	if (e) {
 		bool ok = false;
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf_s (path, MAX_PATH, "Textures\\%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-			if (!fopen_s(&f, path, "rb")) {
+			sprintf_s (path, MAX_PATH, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+			bool found = mgr->GetClient()->TexturePath(path, path);
+			if (found && !fopen_s(&f, path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
 					fseek (f, hdr.hdrsize, SEEK_SET);
@@ -1078,7 +1082,7 @@ void TileManager2<SurfTile>::LoadZTrees()
 	treeMgr = new ZTreeMgr*[ntreeMgr = 4];
 	if (cprm.tileLoadFlags & 0x0002) {
 		char cbuf[MAX_PATH];
-		sprintf_s(cbuf, MAX_PATH, "Textures\\%s", CbodyName());
+		GetClient()->TexturePath(CbodyName(), cbuf);
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_SURF);
 		treeMgr[1] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_MASK);
 		treeMgr[2] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEV);
