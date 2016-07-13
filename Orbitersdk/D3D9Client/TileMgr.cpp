@@ -1117,7 +1117,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 			if (tidx == NOTILE)
 				tex = NULL; // "no texture" flag
 			else {
-				ofs = (td->flag & 0x40 ? (long)tidx * TILESIZE : (long)tidx);
+				ofs = (td->flag & 0x40) ? (long)tidx * TILESIZE : (long)tidx;
 				strcpy_s (fname, 256, qd.name);
 				strcat_s (fname, 256, "_tile.tex");
 
@@ -1134,7 +1134,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 				if (midx == (DWORD)-1)
 					mask = NULL; // "no mask" flag
 				else {
-					ofs = (td->flag & 0x40 ? (long)midx * TILESIZE : (long)midx);
+					ofs = (td->flag & 0x40) ? (long)midx * TILESIZE : (long)midx;
 					strcpy_s (fname, 256, qd.name);
 					strcat_s (fname, 256, "_tile_lmask.tex");
 					if (ReadDDSSurface (gc->GetDevice(), fname, ofs, &mask, false) != S_OK) mask = NULL;
