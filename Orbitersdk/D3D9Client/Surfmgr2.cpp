@@ -115,13 +115,13 @@ void SurfTile::PreLoad()
 	if (ok && (mgr->Cprm().bSpecular || mgr->Cprm().bLights)) {
 		ok = false; // <= in case tileLoadFlags is set to "Archive only", we have to reset this, else no (compressed) Mask would be loaded
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl + 4, ilat, ilng);
+			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 			ok = mgr->GetClient()->TexturePath(path, path);
 			ok = ok && LoadTextureFile(path, &pPreMsk);
 		}
 		if (!ok && smgr->ZTreeManager(1)) { // try loading from compressed archive
 			BYTE *buf;
-			DWORD ndata = smgr->ZTreeManager(1)->ReadData(lvl + 4, ilat, ilng, &buf);
+			DWORD ndata = smgr->ZTreeManager(1)->ReadData(lvl+4, ilat, ilng, &buf);
 			if (ndata) {
 				LoadTextureFromMemory(buf, ndata, &pPreMsk);
 				smgr->ZTreeManager(1)->ReleaseData(buf);
