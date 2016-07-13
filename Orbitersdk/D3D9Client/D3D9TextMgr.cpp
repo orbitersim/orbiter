@@ -404,10 +404,10 @@ void D3D9Text::SetScaling(float factor)
 //
 float D3D9Text::Length2(const char *str, int l)
 {
-    float len = 0;
+	float len = 0;
 	int i = 0;
 
-	while (str[i] && (i<l || l<0)) {
+	while ((i<l || l<0) && str[i]) {
 		if (str[i] <= last) len += (Data[str[i]].sp + float(spacing));
 		i++;
 	}
