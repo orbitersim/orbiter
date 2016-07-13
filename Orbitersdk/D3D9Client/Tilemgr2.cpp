@@ -917,7 +917,7 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 // =======================================================================
 // =======================================================================
 
-TileManager2Base::configPrm TileManager2Base::cprm = {
+TileManager2Base::ConfigPrm TileManager2Base::cprm = {
 	2,                  // elevInterpol
 	false,				// bSpecular
 	false,				// bLights

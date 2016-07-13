@@ -228,7 +228,7 @@ public:
 	/**
 	 * \brief Global configuration parameters
 	 */
-	struct configPrm {
+	static struct ConfigPrm {
 		int elevMode;         ///< elevation mode (0=none, 1=linear, 2=cubic)
 		bool bSpecular;       ///< render specular surface reflections?
 		bool bLights;         ///< render planet night lights?
@@ -236,7 +236,7 @@ public:
 		double lightfac;      ///< city light brightness factor
 		DWORD tileLoadFlags;  ///< 0x0001: load tiles from directory tree
 		                      ///< 0x0002: load tiles from compressed archive
-	};
+	} cprm;
 
 	/**
 	 * \brief Global rendering parameters
@@ -320,7 +320,7 @@ public:
 	inline const oapi::D3D9Client *GetClient() const { return gc; }
 	inline const vPlanet *GetPlanet() const { return vp; }
 
-	inline const configPrm &Cprm() const { return cprm; }
+	inline const ConfigPrm &Cprm() const { return cprm; }
 	inline const char *CbodyName() const { return cbody_name; }
 	inline const double CbodySize() const { return obj_size; }
 	inline const ELEVHANDLE ElevMgr() const { return emgr; }
@@ -342,7 +342,6 @@ protected:
 	QuadTreeNode<TileType> *LoadChildNode (QuadTreeNode<TileType> *node, int idx);
 	// loads one of the four subnodes of 'node', given by 'idx'
 
-	static configPrm cprm;
 	double obj_size;                 // planet radius
 	float min_elev;					 // minimum renderred elevation
 	float max_elev;					 // maximum renderred elevation
