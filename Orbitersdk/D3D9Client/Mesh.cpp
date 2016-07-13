@@ -1550,11 +1550,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
-	int nMeshLights = 0;
-
 
 	if (pLights && nSceneLights>0) {
 
+		int nMeshLights = 0;
 		D3DXVECTOR3 pos;
 		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
 		
@@ -1820,7 +1819,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			bool bReflect = Grp[g].bReflective;
 			bool bFrslMap = FC.Frsl != 0;
 			FX->SetBool(eEnvMapEnable, bReflect);
-			FX->SetBool(eFresnel, ((bFresnel | bFrslMap) & bReflect));
+			FX->SetBool(eFresnel, (bFresnel || bFrslMap) && bReflect);
 		}
 
 		FX->CommitChanges();
@@ -1963,11 +1962,10 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
-	int nMeshLights = 0;
-
 
 	if (pLights && nSceneLights>0) {
 
+		int nMeshLights = 0;
 		D3DXVECTOR3 pos;
 		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
 
