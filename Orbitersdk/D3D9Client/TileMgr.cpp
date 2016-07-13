@@ -237,8 +237,8 @@ bool TileManager::LoadTileData ()
 
 int compare_idx (const void *el1, const void *el2)
 {
-	IDXLIST *idx1 = (IDXLIST*)el1;
-	IDXLIST *idx2 = (IDXLIST*)el2;
+	register const IDXLIST *idx1 = static_cast<const IDXLIST*>(el1);
+	register const IDXLIST *idx2 = static_cast<const IDXLIST*>(el2);
 	return (idx1->ofs < idx2->ofs ? -1 : idx1->ofs > idx2->ofs ? 1 : 0);
 }
 
@@ -1082,7 +1082,7 @@ bool TileBuffer::LoadTileAsync (const char *name, TILEDESC *tile)
 DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 {
 	static const long TILESIZE = 32896; // default texture size for old-style texture files
-	TileBuffer *tb = (TileBuffer*)data;
+	TileBuffer *tb = static_cast<TileBuffer*>(data);
 	const oapi::D3D9Client *gc = tb->gc;
 	bool load;
 	static QUEUEDESC qd;

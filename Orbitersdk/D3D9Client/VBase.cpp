@@ -36,7 +36,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 	vP = _vP;
 	hPlanet = oapiGetBasePlanet(hObj);
 
-	if (!vP) vP = (vPlanet *)scene->GetVisObject(hPlanet);
+	if (!vP) vP = static_cast<vPlanet*>( scene->GetVisObject(hPlanet) );
 	
 	structure_bs	= NULL;
 	structure_as	= NULL;

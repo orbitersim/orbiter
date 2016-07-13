@@ -25,8 +25,8 @@ using namespace oapi;
 
 int compare_lights(const void * a, const void * b)
 {
-	float fa = ((_LightList*)a)->illuminace;
-	float fb = ((_LightList*)b)->illuminace;
+	register float fa = static_cast<const _LightList*>(a)->illuminace;
+	register float fb = static_cast<const _LightList*>(b)->illuminace;
 	if (fa < fb) return  1;
 	if (fa > fb) return -1;
 	return 0;

@@ -241,7 +241,7 @@ void D3D9Client::RenderControlPanel()
 		if (vObj) {
 			DWORD nMesh = vObj->GetMeshCount();
 			for (DWORD i = 0; i < nMesh; i++) {
-				D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(i);
+				D3D9Mesh *hMesh = static_cast<D3D9Mesh *>(vObj->GetMesh(i));
 				hMesh->ResetRenderStatus();
 			}
 		}

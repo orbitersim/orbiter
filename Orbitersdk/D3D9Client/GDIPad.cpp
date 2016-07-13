@@ -66,7 +66,7 @@ Font *GDIPad::SetFont (Font *font) const
 {
 	Font *pfont = cfont;
 	if (font) {
-		HFONT hFont = (HFONT)SelectObject (hDC, ((D3D9PadFont*)font)->hFont);
+		HFONT hFont = (HFONT)SelectObject (hDC, static_cast<D3D9PadFont*>(font)->hFont);
 		if (!cfont) hFont0 = hFont;
 	} else if (hFont0) { // restore original font
 		SelectObject (hDC, hFont0);
@@ -83,7 +83,7 @@ Pen *GDIPad::SetPen (Pen *pen) const
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
 	else     cpen = NULL;
-	if (cpen) SelectObject (hDC, ((D3D9PadPen*)cpen)->hPen);
+	if (cpen) SelectObject (hDC, static_cast<D3D9PadPen*>(cpen)->hPen);
 	else      SelectObject (hDC, GetStockObject (NULL_BRUSH));
 	return ppen;
 }
@@ -94,7 +94,7 @@ Brush *GDIPad::SetBrush (Brush *brush) const
 {
 	Brush *pbrush = cbrush;
 	cbrush = brush;
-	if (brush) SelectObject (hDC, ((D3D9PadBrush*)cbrush)->hBrush);
+	if (brush) SelectObject (hDC, static_cast<D3D9PadBrush*>(cbrush)->hBrush);
 	else SelectObject (hDC, GetStockObject (NULL_BRUSH));
 	return pbrush;
 }

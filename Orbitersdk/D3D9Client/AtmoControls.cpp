@@ -183,7 +183,7 @@ void OpenDlgClbk(void *context)
 	
 	if (scene) {
 		OBJHANDLE hBody = scene->GetCameraProxyBody();
-		if (hBody) vObj = (vPlanet *) scene->GetVisObject(hBody);
+		if (hBody) vObj = static_cast<vPlanet *>(scene->GetVisObject(hBody));
 	}
 
 	if (vObj) param = vObj->GetAtmoParams(atmmode);
@@ -390,7 +390,7 @@ void SetVisual(vObject *vo)
 		return;
 	}
 
-	vObj = (vPlanet *)vo;
+	vObj = static_cast<vPlanet *>(vo);
 
 	if (vObj) param = vObj->GetAtmoParams();
 	else	  param = &defs;
