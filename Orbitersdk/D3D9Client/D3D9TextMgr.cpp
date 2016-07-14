@@ -407,7 +407,7 @@ float D3D9Text::Length2(const char *str, int l)
 	float len = 0;
 	int i = 0;
 
-	while ((i<l || l<0) && str[i]) {
+	while ((i<l || l<=0) && str[i]) {
 		if (str[i] <= last) len += (Data[str[i]].sp + float(spacing));
 		i++;
 	}
@@ -452,7 +452,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 	unsigned char c = str[0];
 	int idx = 1;
 
-	while (c && (idx<=len || len<0)) {
+	while (c && (idx<=len || len<=0)) {
 		bbox_r += ceil(Data[c].sp + float(spacing));
 		c = str[idx++];
 	}
@@ -490,7 +490,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str,
 	DWORD flags = SKPSW_FONT;
 	DWORD color = pSkp->textcolor.dclr;
 
-	while (c && (idx<=len || len<0)) {
+	while (c && (idx<=len || len<=0)) {
 
 		pIdx[iI++] = vI;
 		pIdx[iI++] = vI + 1;
