@@ -74,10 +74,10 @@ mkdir "%OUT_DIR%"
 call %SETVCVARS% x86 || goto exit_nok
 
 :: gcAPI_dbg.lib (DEBUG)
-call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG% || goto exit_nok
+:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG% || goto exit_nok
 
 :: gcAPI_dbg.lib (RELEASE)
-call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG% || goto exit_nok
+:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG% || goto exit_nok
 
 :: D3D9Client & gcAPI.lib (RELEASE)
 call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG% || goto exit_nok
@@ -102,8 +102,8 @@ copy /y %BASE_DIR%\Modules\Plugin\D3D9Client.dll ^
          %OUT_DIR%\Modules\Plugin\D3D9Client.dll > nul
 copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI.lib ^
          %OUT_DIR%\Orbitersdk\lib\gcAPI.lib > nul
-copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI_dbg.lib ^
-         %OUT_DIR%\Orbitersdk\lib\gcAPI_dbg.lib > nul
+:: copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI_dbg.lib ^
+::          %OUT_DIR%\Orbitersdk\lib\gcAPI_dbg.lib > nul
 
 
 :: --- Packing
