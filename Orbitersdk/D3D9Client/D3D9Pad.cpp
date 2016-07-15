@@ -320,14 +320,14 @@ void D3D9Pad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
 	halign = 0; valign = 0;
 
 	switch (tah) {
-		case LEFT:     halign |= TA_LEFT;     break;
-		case CENTER:   halign |= TA_CENTER;   break;
-		case RIGHT:    halign |= TA_RIGHT;    break;
+		case LEFT:     halign = TA_LEFT;     break;
+		case CENTER:   halign = TA_CENTER;   break;
+		case RIGHT:    halign = TA_RIGHT;    break;
 	}
 	switch (tav) {
-		case TOP:      valign |= TA_TOP;      break;
-		case BASELINE: valign |= TA_BASELINE; break;
-		case BOTTOM:   valign |= TA_BOTTOM;   break;
+		case TOP:      valign = TA_TOP;      break;
+		case BASELINE: valign = TA_BASELINE; break;
+		case BOTTOM:   valign = TA_BOTTOM;   break;
 	}
 }
 
@@ -830,14 +830,14 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 
 		float cx = float(pt[P].x - pt[A].x);
 		float cy = float(pt[P].y - pt[A].y);
-		float ac = ax*cx + ay*cy;	 if (ac<0) continue;
-		float bc = bx*cx + by*cy;	 if (bc<0) continue;
+		float ac = ax*cx + ay*cy;
+		float bc = bx*cx + by*cy;
 		float u  = (bb*ac - ab*bc) * id;
 		float v  = (aa*bc - ab*ac) * id;
 
 		// Check if the point is inside the triangle
 		// NOTE: Having u+v slightly above 1.0 is a bad condition, should find a better ear.
-		if  ((u>0.0f) && (v>0.0f) && ((u+v)<1.0f)) return 0;
+		if  ((u>-0.001) && (v>-0.001) && ((u+v)<1.001f)) return 0;
 	}
 
 	return 1; // It's an ear
@@ -873,7 +873,10 @@ int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 			{
 				x--;
 				if (x<0) { // Restart
-					if (!bSharp) { return idx;	}
+					if (!bSharp) { 
+						LogErr("bSharp Exiting PolyTri");
+						return idx;	
+					}
 					bSharp=false;
 					x=npt-1;
 				}
