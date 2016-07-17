@@ -40,8 +40,9 @@ void CloudTile::PreLoad()
 
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		char path[MAX_PATH];
-		sprintf_s (path, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = mgr->GetClient()->TexturePath(path, path);
+		char temp[MAX_PATH];
+		sprintf_s (temp, MAX_PATH, "%s\\Cloud\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		ok = mgr->GetClient()->TexturePath(temp, path);
 		ok = ok && LoadTextureFile(path, &pPreSrf, false);
 	}
 	if (!ok && cmgr->ZTreeManager(0)) { // try loading from compressed archive
