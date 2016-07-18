@@ -651,9 +651,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 
 	SendDlgItemMessage(hWnd,  IDC_MICROMODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_MICROMODE, CB_ADDSTRING, 0, (LPARAM)"Disabled");
-	SendDlgItemMessageA(hWnd, IDC_MICROMODE, CB_ADDSTRING, 0, (LPARAM)"Non-rotated");
-	SendDlgItemMessageA(hWnd, IDC_MICROMODE, CB_ADDSTRING, 0, (LPARAM)"Rotated");
-	SendDlgItemMessageA(hWnd, IDC_MICROMODE, CB_ADDSTRING, 0, (LPARAM)"Develp.Mode");
+	SendDlgItemMessageA(hWnd, IDC_MICROMODE, CB_ADDSTRING, 0, (LPARAM)"Enabled");
 	SendDlgItemMessage(hWnd,  IDC_MICROMODE, CB_SETCURSEL, 0, 0);
 
 

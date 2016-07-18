@@ -341,8 +341,6 @@ void OpenDlgClbk(void *context)
 	UpdateFlags();
 
 	CreateToolTip(IDC_DBG_TARGET, hDlg, "Select a target where the resulting image is assigned");
-	CreateToolTip(IDC_DBG_FMIPS, hDlg, "Load mipmaps from file. Do not autogenerate them.");
-	CreateToolTip(IDC_DBG_ALPHAG, hDlg, "Check if source image contains normal information in alpha(X) and green(Y) channels");
 	CreateToolTip(IDC_DBG_SEAMS, hDlg, "Enable seams reduction at each mipmap level");
 	CreateToolTip(IDC_DBG_FADE, hDlg, "Enable mipmap post processing. Contrast and detail is reduced from each mipmap to prevent 'stripes' (See:Fa,Fb)");
 	CreateToolTip(IDC_DBG_NORM, hDlg, "Center color channels at 0.5f to prevent lightening/darkening the results");
@@ -1049,7 +1047,7 @@ D3DXCOLOR ProcessColor(D3DXVECTOR4 &C, PCParam *prm, int x, int y)
 	float c = prm->c;
 
 	// Swap color channels
-	if ((prm->Func&0x8)==0) C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
+	C = D3DXVECTOR4(C.z, C.y, C.z, C.x);
 	
 	if (c>0.001) {
 		D3DXVECTOR4 rnd((float)oapiRand(),(float)oapiRand(), (float)oapiRand(), (float)oapiRand());
@@ -1091,8 +1089,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_NORM, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x1;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_FADE, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x2;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_SEAMS, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x4;
-	if (SendDlgItemMessageA(hDlg, IDC_DBG_ALPHAG, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x8;
-
+	
 	if (Action>=0 && Action<=2) {
 
 		LPDIRECT3DTEXTURE9 pTex = NULL;
@@ -1100,10 +1097,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 		LPDIRECT3DTEXTURE9 pSave = NULL;
 		D3DXIMAGE_INFO info;
 
-		DWORD Mips = 0;
-		if (SendDlgItemMessageA(hDlg, IDC_DBG_FMIPS, BM_GETCHECK, 0, 0)==BST_CHECKED) Mips = D3DX_FROM_FILE;
-	
-		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, Mips, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));	
+		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, D3DX_FROM_FILE, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));
 		
 		if (!pTex) {
 			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 

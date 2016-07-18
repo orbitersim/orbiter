@@ -65,9 +65,9 @@ void D3D9Config::Reset ()
 	TileMipmaps			= 0;
 	TextureMips			= 1;
 	LODBias				= 0.0;
-	MeshRes				= 0;
+	MeshRes				= 1;
 	TileDebug			= 0;
-	MicroMode			= 2;
+	MicroMode			= 1;
 	MicroFilter			= 2;
 	BlendMode			= 1;
 	MicroBias			= 3;
@@ -130,7 +130,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
 	if (oapiReadItem_float (hFile, "LODBias",d))					LODBias = max (-2.0, min (2.0, d));
 	if (oapiReadItem_int   (hFile, "MeshRes",i))					MeshRes = max (0, min (3, i));
-	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (3, i));
+	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
 	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "MicroBias", i))					MicroBias = max(0,  min(10, i));

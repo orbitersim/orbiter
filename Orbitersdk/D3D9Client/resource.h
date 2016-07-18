@@ -148,8 +148,6 @@
 #define IDC_DBG_FADE                            2130
 #define IDC_DBG_SEAMS                           2131
 #define IDC_DBG_TILEBB                          2132
-#define IDC_DBG_ALPHAG                          2133
-#define IDC_DBG_FMIPS                           2134
 #define IDC_DBG_ENCTER                          2135
 #define IDC_DBG_RESBIAS                         2136
 #define IDC_DBG_SPEC                            2138
