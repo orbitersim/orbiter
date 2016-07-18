@@ -577,6 +577,7 @@ bool vPlanet::Update (bool bMainScene)
 	if (prm.bCloud) {
 		double cloudrad = size + prm.cloudalt;
 		prm.cloudrot = *(double*)oapiGetObjectParam (hObj, OBJPRM_PLANET_CLOUDROTATION);
+		prm.cloudrot = posangle(prm.cloudrot);
 		prm.cloudvis = (cdist < cloudrad ? 1:0);
 		if (cdist > cloudrad*(1.0-1.5e-4)) prm.cloudvis |= 2;
 		//prm.bCloudFlatShadows = (cdist >= 1.05*size);
