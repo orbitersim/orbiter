@@ -402,10 +402,12 @@ void D3D9Text::SetScaling(float factor)
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::Length2(const char *str, int l)
+float D3D9Text::Length2(const char *_str, int l)
 {
 	float len = 0;
 	int i = 0;
+
+	const BYTE *str = (const BYTE *)_str; // Negative index may occur without this
 
 	while ((i<l || l<=0) && str[i]) {
 		if (str[i] <= last) len += (Data[str[i]].sp + float(spacing));
@@ -420,22 +422,24 @@ float D3D9Text::Length2(const char *str, int l)
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::Length(char c)
+float D3D9Text::Length(BYTE c)
 {
 	return (Data[c].sp + float(spacing)) * scaling;
 }
 
 // ----------------------------------------------------------------------------------------
 //
-float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *str, int len, bool bBox)
+float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str, int len, bool bBox)
 {
 	
 	float x_orig = xpos;
 
-	if (halign == 1) xpos -= Length2(str, len) * 0.5f;
-	if (halign == 2) xpos -= Length2(str, len);
+	if (halign == 1) xpos -= Length2(_str, len) * 0.5f;
+	if (halign == 2) xpos -= Length2(_str, len);
 	if (valign == 1) ypos -= tm.tmAscent;
 	if (valign == 2) ypos -= tm.tmHeight;
+
+	const BYTE *str = (const BYTE *)_str;
 
 	xpos = ceil(xpos);
 	ypos = ceil(ypos);

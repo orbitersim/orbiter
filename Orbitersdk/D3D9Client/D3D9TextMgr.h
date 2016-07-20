@@ -89,7 +89,7 @@ public:
 	int			GetLineSpace();
 	
 	float		Length2(const char *str, int len = -1);
-	float		Length(char c);
+	float		Length(BYTE c);
 
 	void		SetTextHAlign(int x); // 0-left, 1=center, 2=right
 	void		SetTextVAlign(int x); // 0-top, 1=base, 2=bottom
