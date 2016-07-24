@@ -44,7 +44,6 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	linespacing(),
 	max_len    (),
 	rotation   (),
-	last       (),
 	charset    (ANSI_CHARSET),
 	halign     (),
 	valign     (),
@@ -122,7 +121,7 @@ int D3D9Text::GetLineSpace()
 
 // ----------------------------------------------------------------------------------------
 //
-bool D3D9Text::Init(int size, char *fontname, int weight, int last)
+bool D3D9Text::Init(int size, char *fontname, int weight)
 {
 	// Create A Font
 	//
@@ -146,13 +145,13 @@ bool D3D9Text::Init(int size, char *fontname, int weight, int last)
 
 	if (fontname) strncpy_s(fnt.lfFaceName, 31, fontname, 30); 
 
-	return Init(&fnt, last);
+	return Init(&fnt);
 }
 
 
 // ----------------------------------------------------------------------------------------
 //
-bool D3D9Text::Init(int size, int style, int weight, int last)
+bool D3D9Text::Init(int size, int style, int weight)
 {
 	// Create A Font
 	//
@@ -174,18 +173,18 @@ bool D3D9Text::Init(int size, int style, int weight, int last)
 	fnt.lfQuality		 = ANTIALIASED_QUALITY; 
 	fnt.lfPitchAndFamily = style; 
  
-	return Init(&fnt, last);
+	return Init(&fnt);
 }
 
-bool D3D9Text::Init(LOGFONT *fnt, int final)
+bool D3D9Text::Init(LOGFONT *fnt)
 {
 	HFONT hF = CreateFontIndirect(fnt);
-	return Init(hF, final);
+	return Init(hF);
 }
 
 // ----------------------------------------------------------------------------------------
 //
-bool D3D9Text::Init(HFONT hFont, int final)
+bool D3D9Text::Init(HFONT hFont)
 {
 	if (hFont==NULL) {
 		LogErr("NULL Font in D3D9Text::Init()");
@@ -198,14 +197,13 @@ bool D3D9Text::Init(HFONT hFont, int final)
 
 	tex_w = 2048;	// Texture Width
 	tex_h = 32;
-	last  = final;
-
+	
 	int first = 33;		// ANSI code of the First Charter
 	
 	// Allocate space for data
 	//
 	try {
-		Data = new D3D9FontData[last]();	// zero-initialized
+		Data = new D3D9FontData[256]();	// zero-initialized
 	}
 	catch (std::bad_alloc&) {
 		return false;
@@ -279,7 +277,7 @@ restart:
 	float tw = 1.0f / float(tex_w);
 	float th = 1.0f / float(tex_h);
 	
-	while ( c < last ) {
+	while ( c < 256 ) {
 		
 		text[0] = c;
 		text[1] = 0;
@@ -410,7 +408,7 @@ float D3D9Text::Length2(const char *_str, int l)
 	const BYTE *str = (const BYTE *)_str; // Negative index may occur without this
 
 	while ((i<l || l<=0) && str[i]) {
-		if (str[i] <= last) len += (Data[str[i]].sp + float(spacing));
+		if (str[i] <= 255) len += (Data[str[i]].sp + float(spacing));
 		i++;
 	}
 

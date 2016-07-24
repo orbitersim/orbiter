@@ -1207,7 +1207,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
 
 		pFont = new D3D9Text(pDev);
-		pFont->Init(hNew, 255);
+		pFont->Init(hNew);
 
 		DeleteObject(hNew);
 

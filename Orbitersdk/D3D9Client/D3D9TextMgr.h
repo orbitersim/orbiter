@@ -68,10 +68,10 @@ public:
 	void		SetCharSet(int charset=ANSI_CHARSET);	// Must be set before Init
 
 				// Init Will Create Charters from 33 to "last"=255
-	bool        Init(HFONT hFont, int last=255);
-	bool        Init(LOGFONT *fnt, int last=255);
-	bool		Init(int size=24, int Style=FIXED_PITCH|FF_MODERN, int weight=500, int last=255);
-	bool		Init(int size=24, char *fontname=NULL, int weight=500, int last=255);
+	bool        Init(HFONT hFont);
+	bool        Init(LOGFONT *fnt);
+	bool		Init(int size=24, int Style=FIXED_PITCH|FF_MODERN, int weight=500);
+	bool		Init(int size=24, char *fontname=NULL, int weight=500);
 
 	LPDIRECT3DTEXTURE9	GetTexture() { return pTex; }			
 	
@@ -109,7 +109,6 @@ private:
 	float	max_len;		  // If several strings are printed. This is the wide of the widest one
 	float   rotation;
 	float	scaling;
-	int		last;
 	int		charset;
 	int		halign,valign;
 
