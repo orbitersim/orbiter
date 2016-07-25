@@ -26,6 +26,16 @@ using namespace oapi;
 #define	MF_CULL_NONE		0x2		///< Do not perform front/back face culling
 ///@}
 
+/// \defgroup FntCreation Font creation flags
+///@{
+#define FNT_BOLD			0x1 
+#define FNT_ITALIC			0x2
+#define FNT_UNDERLINE		0x4
+#define FNT_CRISP			0x8
+// Additional code pages
+#define FNT_GREEK			0x1000
+///@}
+
 namespace oapi {
 
 	/**

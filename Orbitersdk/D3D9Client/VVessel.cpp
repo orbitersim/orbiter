@@ -110,13 +110,11 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 	switch (evnt) {
 
 		case EVENT_VESSEL_INSMESH:
-			LogBlu("EVENT_VESSEL_INSMESH");
 			bBSRecompute = true;
 			InsertMesh(context);
 			break;
 
 		case EVENT_VESSEL_DELMESH:
-			LogBlu("EVENT_VESSEL_DELMESH");
 			bBSRecompute = true;
 			DelMesh(context);
 			break;
@@ -131,7 +129,6 @@ void vVessel::clbkEvent(DWORD evnt, UINT context)
 
 		case EVENT_VESSEL_MESHOFS:
 		{
-			LogBlu("EVENT_VESSEL_MESHOFS");
 			bBSRecompute = true;
 			DWORD idx = (DWORD)context;
 			if (idx < nmesh) {
@@ -443,57 +440,6 @@ void vVessel::DelMesh(UINT idx)
 
 
 // ============================================================================================
-// This is called only from a class constructor
-//
-/*
-void vVessel::InitAnimations()
-{
-	bBSRecompute = true;
-
-	// This is the AMSO VISOR fix
-	for (DWORD i=0;i<nmesh;i++) { if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations(); }
-
-	UINT oldnanim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-
-	char name[64]; oapiGetObjectName(hObj, name, 63);
-	if (nanim > oldnanim) {
-		LogAlw("Vessel(%s) Vis=0x%X has %u animations", name, this, nanim);
-		for (UINT i = oldnanim; i < nanim; ++i) {
-			//LogBlu("Anim(%u): Has %u animcomps. AnimState=%g, DefState=%g", i, anim[i].ncomp, anim[i].state, anim[i].defstate);
-			animstate[i] = anim[i].defstate; // reset to default mesh states
-		}
-	}
-	else LogAlw("Vessel(%s) Vis=0x%X has no animations", name, this);
-
-	UpdateAnimations(); // Must update immediately to prevent RMS grapple target displacement
-}
-
-
-
-// ============================================================================================
-// Called when a new mesh is inserted to a vessel
-//
-void vVessel::InitAnimations(UINT meshidx)
-{
-	bBSRecompute = true;
-
-	if (meshlist[meshidx].mesh) { meshlist[meshidx].mesh->ResetTransformations(); }
-
-	UINT oldnanim = GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-
-	for (UINT i = 0; i < nanim; ++i) {
-		for (UINT k = 0; k < anim[i].ncomp; ++k) {
-			if (anim[i].comp[k]->trans->mesh == meshidx) {
-				animstate[i] = anim[i].defstate;
-			}
-		}
-	}
-	
-	UpdateAnimations(); // Must update immediately to prevent RMS grapple target displacement
-}
-*/
-
-// ============================================================================================
 //
 void vVessel::InitNewAnimation (UINT idx)
 {
@@ -620,20 +566,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 	return bRet;
 }
 
-// ============================================================================================
-//
-/*
-bool vVessel::RenderLightPrePass(LPDIRECT3DDEVICE9 dev)
-{
-	_TRACE;
-	if (!active) return false;
-	UpdateBoundingBox();
-	return Render(dev, 
-}*/
 
 // ============================================================================================
 //
-bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
+bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 {
 	_TRACE;
 	if (!active) return false;
@@ -654,13 +590,10 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 	static bool gotHUDSpec(false);
 	const VCMFDSPEC *mfdspec[MAXMFD] = { NULL };
 	
-	if (vessel->GetAtmPressure()>1.0 && !bCockpit) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false); // turn on  fog
-	else										   D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);  // turn off fog
+	if (vessel->GetAtmPressure()>1.0) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false);
+	else							  D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
-
-	bool internalpass = (dwRenderPass&RP_VESSEL_INTERIOR)!=0;
-	bool lightprepass = (dwRenderPass&RP_VESSEL_LIGHTPP)!=0;
 
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
@@ -709,7 +642,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 		meshlist[i].mesh->SetSunLight(&sunLight);
 
 
-		if (bVC && internalpass  && !lightprepass) {
+		if (bVC && internalpass) {
 			for (mfd=0;mfd<MAXMFD;mfd++) {
 				if (mfdspec[mfd] && mfdspec[mfd]->nmesh == i) {
 					meshlist[i].mesh->SetMFDScreenId(mfdspec[mfd]->ngroup, 1 + mfd);
@@ -717,26 +650,34 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, DWORD dwRenderPass)
 			}
 		}
 
+
 		// Render vessel meshes --------------------------------------------------------------------------
 		//
-		if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
-		else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);
+		if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) meshlist[i].mesh->RenderShadows(0.0f, pWT, true);
+		else {
+			if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
+			else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);
+		}
 		
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//
-		if (bVC && internalpass && !lightprepass && gotHUDSpec) {
-			if (hudspec->nmesh == i) {
-				meshlist[i].mesh->SetMFDScreenId(hudspec->ngroup, 0x100);
+		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
+			if (bVC && internalpass && gotHUDSpec) {
+				if (hudspec->nmesh == i) {
+					meshlist[i].mesh->SetMFDScreenId(hudspec->ngroup, 0x100);
+				}
 			}
 		}
 	}
 
-	if (DebugControls::IsActive()) {
-		if (flags&DBG_FLAGS_SELVISONLY && this!=DebugControls::GetVisual()) return true;
-		if (flags&DBG_FLAGS_BOXES && !internalpass) {
-			D3DXMATRIX id;
-			D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, &D3DXVECTOR4(1,0,0,0.75f));
+	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
+		if (DebugControls::IsActive()) {
+			if (flags&DBG_FLAGS_SELVISONLY && this != DebugControls::GetVisual()) return true;
+			if (flags&DBG_FLAGS_BOXES && !internalpass) {
+				D3DXMATRIX id;
+				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, &D3DXVECTOR4(1, 0, 0, 0.75f));
+			}
 		}
 	}
 
@@ -1109,7 +1050,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	// -----------------------------------------------------------------------------------------------
 	//
 
-	gc->GetScene()->ClearOmitFlags();
+	scn->ClearOmitFlags();
 
 	ENVCAMREC *eCam = pMatMgr->GetCamera(0);
 
@@ -1148,7 +1089,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		}
 	}
 
-	gc->GetScene()->SetCameraFrustumLimits(eCam->near_clip, 2e7f);
+	scn->SetCameraFrustumLimits(eCam->near_clip, 2e7f);
 
 	// -----------------------------------------------------------------------------------------------
 	//
@@ -1157,23 +1098,27 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
 
 	// Prepare camera and scene for env map rendering
-	gc->GetScene()->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0, true, RENDERPASS_ENVCAM);
+	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0, true, RENDERPASS_ENVCAM);
 
 	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;
 
-	LPDIRECT3DSURFACE9 pORT = NULL;
-	LPDIRECT3DSURFACE9 pODS = NULL;
+	//LPDIRECT3DSURFACE9 pORT = NULL;
+	//LPDIRECT3DSURFACE9 pODS = NULL;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 
-	HR(pDev->GetRenderTarget(0, &pORT));
-	HR(pDev->GetDepthStencilSurface(&pODS));
-    HR(pDev->SetDepthStencilSurface(pEnvDS));
+	//HR(pDev->GetRenderTarget(0, &pORT));
+	//HR(pDev->GetDepthStencilSurface(&pODS));
+    //HR(pDev->SetDepthStencilSurface(pEnvDS));
+
+	scn->SetRenderTarget(NULL, pEnvDS, true);
 
 	for (DWORD i=0;i<cnt;i++) {
 
 		HR(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
-		HR(pDev->SetRenderTarget(0, pSrf));
+		//HR(pDev->SetRenderTarget(0, pSrf));
+
+		scn->SetRenderTarget(pSrf, CURRENT);
 
 		EnvMapDirection(iFace, &dir, &up);
 
@@ -1183,19 +1128,22 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
 		
-		gc->GetScene()->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0, false, RENDERPASS_ENVCAM);
-		gc->GetScene()->RenderSecondaryScene(this, true, flags);
+		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0, false, RENDERPASS_ENVCAM);
+		scn->RenderSecondaryScene(this, true, flags);
 
 		iFace++;
 
 		SAFE_RELEASE(pSrf);
 	}
 
-	HR(pDev->SetDepthStencilSurface(pODS));
-	HR(pDev->SetRenderTarget(0, pORT));
+	scn->SetRenderTarget(RESTORE, RESTORE);
 
-	SAFE_RELEASE(pODS);
-	SAFE_RELEASE(pORT);
+	//HR(pDev->SetDepthStencilSurface(pODS));
+	//HR(pDev->SetRenderTarget(0, pORT));
+	//SAFE_RELEASE(pODS);
+	//SAFE_RELEASE(pORT);
+
+
 
 	D3D9SetTime(D3D9Stats.Timer.EnvMap, tot_env);
 

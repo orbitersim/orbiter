@@ -43,6 +43,7 @@ D3DXHANDLE D3D9Effect::eShadowTech = 0; // Vessel ground shadows
 D3DXHANDLE D3D9Effect::eArrowTech = 0;  // (Grapple point) arrows
 D3DXHANDLE D3D9Effect::eAxisTech = 0;
 D3DXHANDLE D3D9Effect::eSimpMesh = 0;
+D3DXHANDLE D3D9Effect::eGeometry = 0;
 
 // Planet Rendering techniques
 D3DXHANDLE D3D9Effect::ePlanetTile = 0;
@@ -299,6 +300,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eArrowTech   = FX->GetTechniqueByName("ArrowTech"); 
 	eAxisTech    = FX->GetTechniqueByName("AxisTech"); 
 	eSimpMesh	 = FX->GetTechniqueByName("SimplifiedTech");
+	eGeometry    = FX->GetTechniqueByName("GeometryTech");
 	eVesselTech		 = FX->GetTechniqueByName("VesselTech");
 	eBaseShadowTech	 = FX->GetTechniqueByName("BaseShadowTech");
 	eBeaconArrayTech = FX->GetTechniqueByName("BeaconArrayTech");

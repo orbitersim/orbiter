@@ -60,16 +60,10 @@ public:
 	bool bIsReflective;			// Mesh has a reflective material in one or more groups
 
 	D9BBox BBox;
-
-	D3DXMATRIX InstMatrix[8];
 	
 	struct GROUPREC {			// mesh group definition
 		DWORD VertOff;			// Main mesh Vertex Offset
 		DWORD FaceOff;			// Main mesh Index Offset
-		//------------------------------------------------
-		DWORD GeoVOff;			// Geometry Vertex Offset
-		DWORD GeoFOff;			// Geometry Face Offset
-		DWORD GeoBIdx;			// Geometry Base Index
 		//------------------------------------------------
 		DWORD nFace;			// Face count
 		DWORD nVert;			// Vertex count
@@ -78,7 +72,6 @@ public:
 		DWORD TexIdx;			// texture index 0=None
 		DWORD UsrFlag;			// user-defined flag
 		WORD  IntFlag;			// internal flags
-		WORD  GeometryRec;		// Geometry record ID
 		WORD  zBias;
 		WORD  MFDScreenId;		// MFD screen ID + 1
 		bool  bTransform;
@@ -93,18 +86,6 @@ public:
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
 		float TexMixEx[MAXTEX];
-	};
-
-	struct GEOMREC {
-		DWORD  nVert;
-		DWORD  nFace;
-		DWORD  nGrp;
-		DWORD  VertOff;
-		DWORD  FaceOff;
-		DWORD  Flags;
-		WORD   GrpIdx[8];
-		bool   bBroken;
-		bool   bNoShadow;
 	};
 
 	explicit		D3D9Mesh(const char *name);
@@ -207,7 +188,7 @@ public:
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
 	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
-	void			RenderShadows(float alpha, const LPD3DXMATRIX pW);
+	void			RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap = false);
 	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
@@ -219,7 +200,6 @@ public:
 	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
 	void			Transform(const D3DXMATRIX *m);
 	int				GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
-	void			DynamicGroup(DWORD idx);
 	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
 	void			UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
 	void			UpdateGroup(MESHHANDLE hMesh, DWORD idx);
@@ -256,27 +236,23 @@ public:
 
 private:
 
-	void UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
-	void ProcessInherit();
-	bool CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
-	void SetGroupRec(DWORD i, const MESHGROUPEX *mg);
-	void CreateGeometryBuffers();
-	void UpdateGeometryBuffer();
-	void Null();
+	void			UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
+	void			ProcessInherit();
+	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
+	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
+	void			UpdateGeometryBuffer(int grp=-1);
+	void			Null();
 
 	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
 	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
-	LPDIRECT3DINDEXBUFFER9  pGI;
 	
 	DWORD	MaxVert;
 	DWORD	MaxFace;
 	DWORD   Constr;
 
 	GROUPREC *Grp;              // list of mesh groups
-	GEOMREC *Geom;				// Geometry record
 	DWORD nGrp;                 // number of mesh groups
-	DWORD nGeom;				// number of geometry groups
 	DWORD nMtrl;                // number of mesh materials
 	DWORD nTex;                 // number of mesh textures
 	D3D9MatExt *Mtrl;           // list of mesh materials

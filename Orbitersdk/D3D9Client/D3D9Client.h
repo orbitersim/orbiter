@@ -904,6 +904,7 @@ public:
 	 * \sa clbkReleaseFont, oapi::Font
 	 */
 	Font *clbkCreateFont (int height, bool prop, const char *face, oapi::Font::Style style = oapi::Font::NORMAL, int orientation = 0) const;
+	Font *clbkCreateFontEx(int height, int width, bool prop, const char *face, DWORD flags, int orientation) const;
 
 	/**
 	 * \brief De-allocate a font resource.

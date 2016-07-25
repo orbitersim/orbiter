@@ -92,6 +92,7 @@ public:
 	static D3DXHANDLE	eRingTech;       ///< Planet rings technique
 	static D3DXHANDLE	eRingTech2;      ///< Planet rings technique
 	static D3DXHANDLE	eShadowTech;     ///< Vessel ground shadows
+	static D3DXHANDLE	eGeometry;
 	static D3DXHANDLE	eBaseShadowTech; ///< Used to draw transparent surface without texture
 	static D3DXHANDLE	eBeaconArrayTech;
 	static D3DXHANDLE	eArrowTech;      ///< (Grapple point) arrows

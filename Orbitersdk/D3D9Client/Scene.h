@@ -33,7 +33,8 @@ class D3D9Text;
 #define GBUF_COLOR				0
 #define GBUF_BLUR				1
 #define GBUF_TEMP				2
-#define GBUF_COUNT				3
+#define GBUF_DEPTH				3
+#define GBUF_COUNT				4
 
 #define TEX_NOISE				0
 #define TEX_CLUT				1
@@ -42,9 +43,11 @@ class D3D9Text;
 #define RENDERPASS_MAINSCENE	0x0001
 #define RENDERPASS_ENVCAM		0x0002
 #define RENDERPASS_CUSTOMCAM	0x0003
-#define RENDERPASS_SCENEDEPTH	0x0004
+#define RENDERPASS_SHADOWMAP	0x0004
 #define RENDERPASS_PICKSCENE	0x0005
 
+#define RESTORE ((LPDIRECT3DSURFACE9)(-1))
+#define CURRENT ((LPDIRECT3DSURFACE9)(-2))
 
 #define RENDERTURN_ENVCAM		0
 #define RENDERTURN_CUSTOMCAM	1
@@ -165,6 +168,7 @@ public:
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
+	void RenderShadowMap();
 
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt);
 
@@ -214,7 +218,7 @@ public:
 
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
-
+	void			SetRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStensil, bool bBackup = false);
 	
 	
 
@@ -266,6 +270,7 @@ public:
 	double			GetCameraAltitude() const { return Camera.alt_proxy; }	
 	void			GetCameraLngLat(double *lng, double *lat) const;
 	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
+	float			VisibilityQuery(const VECTOR3 &gpos, double radius);
 
 	DWORD			GetRenderPass() const { return dwRenderPass; }
 	DWORD			GetFrameId() const { return dwFrameId; }
@@ -285,8 +290,6 @@ public:
 	class vObject *	GetVisObject(OBJHANDLE hObj) const;
 	class vVessel *	GetFocusVisual() const { return vFocus; }
 	void			CheckVisual(OBJHANDLE hObj);
-
-	void			RandomizeKernel();
 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
@@ -319,7 +322,6 @@ private:
 
 	HRESULT		BeginScene();
 	void		EndScene();
-	void		LoadSampler();
 	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
@@ -369,6 +371,7 @@ private:
 	int   labelSize[1];
 
 	std::stack<CAMERA>	CameraStack;
+
 	CAMERA		Camera;
 	D3D9Light*	Lights;
 	D3D9Sun	    sunLight;
@@ -391,7 +394,7 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 	
-	class ImageProcessing *pLightBlur, *pIntegrate, *pBlur;
+	class ImageProcessing *pLightBlur, *pBlur;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;

@@ -196,72 +196,6 @@ float4 BaseTilePS(TileMeshVS frg) : COLOR
 
 
 // =============================================================================
-// Base Tile Rendering Technique
-// =============================================================================
-/*
-TileMeshNMVS BaseTileNMVS(MESH_VERTEX vrt)
-{
-    // Null the output
-	TileMeshNMVS outVS = (TileMeshNMVS)0;
-
-    float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
-	float3 nrmW = mul(half4(vrt.nrmL, 0.0f), gW).xyz;
-	outVS.posH  = mul(float4(posW, 1.0f), gVP);
-
-    half3x3 TBN;
-	TBN[0] = vrt.tanL.xyz;
-	TBN[1] = cross(vrt.tanL, vrt.nrmL);
-	TBN[2] = vrt.nrmL.xyz;
-
-    TBN = mul(TBN, gW);
-    
-	outVS.nrmT  = TBN[2];
-	outVS.tanT  = TBN[0];
-    outVS.camW  = -posW * gDistScale;
-    outVS.tex0  = vrt.tex0;
-	
-    // Atmospheric haze --------------------------------------------------------
-
-    AtmosphericHaze(outVS.atten, outVS.insca, outVS.posH.z, posW);
-
-    half4 diffuse;
-    float ambi, nigh;
-
-    LegacySunColor(diffuse, ambi, nigh, nrmW);
-
-    outVS.insca *= (diffuse+ambi);
-    return outVS;
-}
-
-
-float4 BaseTileNMPS(TileMeshNMVS frg) : COLOR
-{
-    // Normalize input
-    float3 CamW = normalize(frg.camW);
-	
-    float4 cTex = tex2D(ClampS, frg.tex0); 
-    float3 nrmT = tex2D(Nrm0S, frg.tex0).rgb*2.0-1.0;
-   
-    float3x3 TBN;
-    TBN[0] = frg.tanT;
-    TBN[1] = cross(frg.tanT, frg.nrmT);
-    TBN[2] = frg.nrmT; 
-    
-    float3 nrmW = mul(nrmT, TBN);
-    
-	float3 r = reflect(gSun.direction, nrmW);
-	float  s = pow(max(dot(r, CamW), 0.0f), 20.0f) * (1.0f-cTex.a);
-	float  d = saturate(-dot(gSun.direction, nrmW)*1.5);
-  
-    if (d<=0) s = 0;
-       
-    float3 clr = cTex.rgb * (max(d,0) * gSun.diffuse.rgb + s * gSun.specular.rgb + gSun.ambient.rgb);
-    
-    return float4(clr.rgb*frg.atten.rgb+frg.insca.rgb, cTex.a);
-}*/
-
-
-// =============================================================================
 // Vessel Axis vector technique 
 // =============================================================================
 
@@ -315,8 +249,9 @@ BShadowVS ShadowMeshTechVS(SHADOW_VERTEX vrt)
 {
     // Zero output.
 	BShadowVS outVS = (BShadowVS)0;
-	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gGrpInst[vrt.posL.w]).xyz;
+	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gW).xyz;
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
+	outVS.dstW  = outVS.posH.zw;
     return outVS;
 }
 
@@ -328,15 +263,37 @@ BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
     float3 posX = mul(float4(vrt.posL.xyz, 1.0f), gGrpT).xyz;
     float3 posW = mul(float4(posX-gColor.xyz*(gTexOff.x*d+gTexOff.y*d*d), 1.0f), gW).xyz;
     outVS.posH  = mul(float4(posW, 1.0f), gVP);
+	outVS.dstW  = outVS.posH.zw;
     return outVS;
 }
 
-
 float4 ShadowTechPS(BShadowVS frg) : COLOR
 {
-    return float4(0.0f, 0.0f, 0.0f, gMix);
+	return float4(0.0f, 0.0f, 0.0f, gMix);
 }
 
+// return 4 components even if the target surface has just one
+float4 GeometryTechPS(BShadowVS frg) : COLOR
+{
+	return frg.dstW.x / frg.dstW.y;
+}
+
+technique GeometryTech
+{
+	pass P0
+	{
+		vertexShader = compile vs_3_0 ShadowMeshTechVS();
+		pixelShader = compile ps_3_0 GeometryTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Max;
+		SrcBlend = One;
+		DestBlend = One;
+		ZEnable = false;
+		ZWriteEnable = false;
+		StencilEnable = false;
+	}
+}
 
 technique ShadowTech
 {

@@ -106,12 +106,12 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	InitGDIResources();
 
 	cspheremgr = new CSphereManager(_gc, this);
-
-	LoadSampler();
 	
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
 	pLightBlur = NULL;
+
+	//HR(D3DXCreateTexture(pDevice, viewW / 2, viewH / 2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 
 	if (Config->PostProcess) {
 
@@ -133,6 +133,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 			HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_COLOR]));
 			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
 			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_TEMP]));
+
 		}
 		else {
 			LogErr("Creation of Offscreen render target failed");
@@ -179,38 +180,6 @@ Scene::~Scene ()
 	DeleteAllCustomCameras();
 	DeleteAllVisuals();
 	ExitGDIResources();
-}
-
-// ===========================================================================================
-//
-void Scene::LoadSampler()
-{
-	/*std::string line;
-	std::ifstream fs("Modules/D3D9Client/Sampler.cfg");
-
-	while (std::getline(fs, line)) {
-		if (!line.length() || line.find("//") == 0) continue;
-		if (line.find("KERNEL") == 0) {
-			int i = 0;
-			while (std::getline(fs, line) && i<ARRAYSIZE(BlurKernel)) {
-				if (line.find("END") == 0) break;
-				std::istringstream iss(line);
-				iss >> BlurKernel[i].x >> BlurKernel[i].y;
-				BlurKernel[i].z = sqrt(BlurKernel[i].x*BlurKernel[i].x + BlurKernel[i].y*BlurKernel[i].y);
-				i++;
-			}
-		}
-		if (line.find("ROTATIONS") == 0) {
-			int i = 0;
-			while (std::getline(fs, line) && i<ARRAYSIZE(rotationX) && i<ARRAYSIZE(rotationY)) {
-				if (line.find("END") == 0) break;
-				std::istringstream iss(line);
-				iss >> rotationX[i].x >> rotationX[i].y >> rotationY[i].x >> rotationY[i].y;
-				i++;
-			}
-		}
-	}
-	fs.close();*/
 }
 
 
@@ -840,6 +809,24 @@ void Scene::EndScene()
 
 // ===========================================================================================
 //
+void Scene::SetRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStensil, bool bBackup)
+{
+	static LPDIRECT3DSURFACE9 pColorBak = 0;
+	static LPDIRECT3DSURFACE9 pDepthStensilBak = 0;
+
+	if (bBackup) pDevice->GetRenderTarget(0, &pColorBak);
+	if (bBackup) pDevice->GetDepthStencilSurface(&pDepthStensilBak);
+
+	if (pColor == RESTORE) pDevice->SetRenderTarget(0, pColorBak);
+	else if (pColor != CURRENT) pDevice->SetRenderTarget(0, pColor);
+
+	if (pDepthStensil == RESTORE) pDevice->SetDepthStencilSurface(pDepthStensilBak);
+	else if (pDepthStensil != CURRENT) pDevice->SetDepthStencilSurface(pDepthStensil);
+}
+
+
+// ===========================================================================================
+//
 void Scene::RenderMainScene()
 {
 	_TRACE;
@@ -855,7 +842,8 @@ void Scene::RenderMainScene()
 	if (pOffscreenTarget) pBackBuffer = pOffscreenTarget;
 	else				  pBackBuffer = gc->GetBackBuffer();
 
-	pDevice->SetRenderTarget(0, pBackBuffer);
+	//pDevice->SetRenderTarget(0, pBackBuffer);
+	SetRenderTarget(pBackBuffer, CURRENT);
 
 	if (DebugControls::IsActive()) {
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
@@ -1280,8 +1268,31 @@ void Scene::RenderMainScene()
 
 	SAFE_DELETE(pSketch);
 
-
 	if (pOffscreenTarget) EndScene();
+
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render Scene depth into a depth texture. Before execution:
+	// - SketchPad must be release
+	// - Scene rendering must be ended
+	// -------------------------------------------------------------------------------------------------------
+
+	
+	if (psgBuffer[GBUF_DEPTH]) {
+
+		SetRenderTarget(psgBuffer[GBUF_DEPTH], CURRENT, true);
+
+		UpdateCameraFromOrbiter(RENDERPASS_SHADOWMAP);
+
+		RenderShadowMap();
+
+		SetRenderTarget(RESTORE, RESTORE);
+	}
+
+
+
+
 
 	// -------------------------------------------------------------------------------------------------------
 	// Copy Offscreen render target to backbuffer
@@ -1519,14 +1530,14 @@ void Scene::RenderMainScene()
 
 // ===========================================================================================
 //
-void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
+void Scene::RenderShadowMap()
 {
 	_TRACE;
 
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
-	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L));
 	
 	if (FAILED (BeginScene())) return;
 
@@ -1534,18 +1545,52 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 	// render planets -------------------------------------------
 	//
-	if (flags&0x01) {
-		for (DWORD i=0;i<nplanets;i++) {
+	//vPlanet *vP = GetCameraProxyVisual();
+	//if (vP) vP->Render(pDevice); 
+	
+	// render the vessel objects --------------------------------
+	// 
+	for (pv=vobjFirst; pv; pv=pv->next) {
+		if (!pv->vobj->IsActive()) continue;
+		if (!pv->vobj->IsVisible()) continue;
+		OBJHANDLE hObj = pv->vobj->Object();
+		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
+	}
+	
+
+	EndScene();
+}
+
+
+// ===========================================================================================
+//
+void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
+{
+	_TRACE;
+
+	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
+
+	// Clear the viewport
+	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+
+	if (FAILED(BeginScene())) return;
+
+	VOBJREC *pv = NULL;
+
+	// render planets -------------------------------------------
+	//
+	if (flags & 0x01) {
+		for (DWORD i = 0; i<nplanets; i++) {
 			bool isActive = plist[i].vo->IsActive();
 			if (isActive) plist[i].vo->Render(pDevice);  // TODO: Should pass the flags to surface base level
 			else		  plist[i].vo->RenderDot(pDevice);
-		} 
+		}
 	}
 
 	// render the vessel objects --------------------------------
 	// 
-	if (flags&0x02) {
-		for (pv=vobjFirst; pv; pv=pv->next) {
+	if (flags & 0x02) {
+		for (pv = vobjFirst; pv; pv = pv->next) {
 			if (!pv->vobj->IsActive()) continue;
 			if (!pv->vobj->IsVisible()) continue;
 			if (pv->vobj->bOmit) continue;
@@ -1557,8 +1602,8 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 	// render exhausts -------------------------------------------
 	//
-	if (flags&0x04) {
-		for (pv=vobjFirst; pv; pv=pv->next) {
+	if (flags & 0x04) {
+		for (pv = vobjFirst; pv; pv = pv->next) {
 			if (!pv->vobj->IsActive()) continue;
 			if (!pv->vobj->IsVisible()) continue;
 			if (pv->vobj->bOmit) continue;
@@ -1569,8 +1614,8 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 	// render beacons -------------------------------------------
 	//
-	if (flags&0x08) {
-		for (pv=vobjFirst; pv; pv=pv->next) {
+	if (flags & 0x08) {
+		for (pv = vobjFirst; pv; pv = pv->next) {
 			if (!pv->vobj->IsActive()) continue;
 			if (pv->vobj->bOmit) continue;
 			pv->vobj->RenderBeacons(pDevice);
@@ -1578,10 +1623,10 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	}
 
 	// render exhaust particle system ----------------------------
-	if (flags&0x10) {
+	if (flags & 0x10) {
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
-	
+
 	EndScene();
 }
 
@@ -1776,6 +1821,38 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	for (DWORD j=0;j<nstream;j++) pstream[j]->RenderGroundShadow(pDevice, tex);
 }
 
+
+// ===========================================================================================
+//
+float Scene::VisibilityQuery(const VECTOR3 &gpos, double radius)
+{
+	return 0.0f;
+	/* if (!pQueryOcclusion) return 0.0f;
+	VECTOR3 cpos = gpos - GetCameraGPos();
+	D3DXVECTOR3 pos = D3DXVEC(cpos);
+
+	if (IsVisibleInCamera(&pos, float(radius))) {
+
+		D3DXMATRIX ident;
+		D3DXMatrixIdentity(&ident);
+
+		double dst = length(cpos);
+		double app = (radius*double(viewH)) / (dst*GetTanAp());
+
+		D3D9MatExt Mat;
+		hSphere->GetMaterial(&Mat, 0);
+
+		Mat.Diffuse = D3DXCOLOR(0, 0, 0, 0);
+		Mat.Emissive = D3DXCOLOR(0, 0, 0, 0);
+		hSphere->SetMaterial(&Mat, 0);
+		hSphere->SetRotation(ident);
+		hSphere->SetPosition(cpos);
+
+		pQueryOcclusion->Issue(D3DISSUE_BEGIN);
+		hSphere->Render(&ident, RENDER_BASE);
+		pQueryOcclusion->Issue(D3DISSUE_END);
+	}*/
+}
 
 // ===========================================================================================
 //
@@ -2433,21 +2510,3 @@ int distcomp (const void *arg1, const void *arg2)
 
 COLORREF Scene::labelCol[6] = {0x00FFFF, 0xFFFF00, 0x4040FF, 0xFF00FF, 0x40FF40, 0xFF8080};
 oapi::Pen * Scene::lblPen[6] = {0,0,0,0,0,0};
-
-
-
-
-float Rand()
-{
-	float x = float(oapiRand()*2.0-1.0);
-	if (x<0) return -(x*x);
-	return x*x;
-}
-
-
-void Scene::RandomizeKernel()
-{
-	//for (int i = 0; i < 32; i++) BlurKernel[i] = D3DXVECTOR3(Rand(), Rand(), 0.0f);
-	//for (int i = 0; i < 32; i++) BlurKernel[i].z = sqrt(BlurKernel[i].x*BlurKernel[i].x + BlurKernel[i].y*BlurKernel[i].y);
-	//FILE *fp = fopen("SmpKernelOut.txt", "wt");	for (int i = 0; i < 32; i++) fprintf(fp, "%f %f\n", kernel32[i].x, kernel32[i].y); fclose(fp);	bKernel32 = false;
-}

@@ -1220,39 +1220,6 @@ void D3D9Client::EmergencyShutdown()
 	bHalt = true;
 }
 
-LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-	bool eatKeystroke = false;
-
-	if (nCode == HC_ACTION) 
-	{
-		switch (wParam) 
-		{
-			case WM_KEYDOWN:  
-			case WM_SYSKEYDOWN:
-			case WM_KEYUP:    
-			case WM_SYSKEYUP:
-			{
-				PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT) lParam;
-				// eatKeystroke = (p->vkCode == VK_SNAPSHOT);
-				switch (p->vkCode) {
-				case 'W': case 'w':
-				case 'A': case 'a':
-				case 'S': case 's':
-				case 'D': case 'd':
-					// Here goes your code...
-					eatKeystroke = true;
-					break;
-				}
-				break;
-			}
-		}
-	}
-
-	return eatKeystroke
-		 ? 1
-		 : CallNextHookEx(NULL, nCode, wParam, lParam);
-}
 
 // ==============================================================
 // Message handler for render window
@@ -1260,19 +1227,6 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	_TRACE;
-
-	// -----------------------------------------------------------------------
-	/*
-	static bool hooked = false;
-	if (!hooked && hRenderWnd == hWnd) {
-		// Install the low-level keyboard & mouse hooks
-		HINSTANCE hInstance = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
-		HHOOK hhkLowLevelKybd  = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, hInstance, 0);
-		hooked = true;
-	}*/
-	// -----------------------------------------------------------------------
-
-
 
 	static bool bTrackMouse = false;
 	static short xpos=0, ypos=0;
@@ -2399,6 +2353,24 @@ Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::
 {
 	_TRACE;
 	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
+}
+
+
+/*Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
+{
+	_TRACE;
+	DWORD flags = 0;
+	flags |= (style & Font::BOLD) ? FNT_BOLD : 0;
+	flags |= (style & Font::ITALIC) ? FNT_ITALIC : 0;
+	flags |= (style & Font::UNDERLINE) ? FNT_UNDERLINE : 0;
+	return clbkCreateFontEx(height, 0, prop, face, flags, orientation);
+}*/
+
+Font *D3D9Client::clbkCreateFontEx(int height, int width, bool prop, const char *face, DWORD flags, int orientation) const
+{
+	_TRACE;
+	return NULL;
+	//return *g_fonts.insert(new D3D9PadFont(height, width, prop, face, flags, orientation)).first;
 }
 
 void D3D9Client::clbkReleaseFont(Font *font) const

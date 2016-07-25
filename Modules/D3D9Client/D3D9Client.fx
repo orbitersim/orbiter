@@ -90,8 +90,6 @@ struct Tune
 #define Phi     3
 
 // -------------------------------------------------------------------------
-uniform extern float4x4  gGrpInst[8];		// Instance Matrices
-// -------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix
 uniform extern float4x4  gWI;			    // Inverse World matrix
 uniform extern float4x4  gVP;			    // Combined View and Projection matrix
@@ -218,6 +216,7 @@ struct HazeVS
 struct BShadowVS
 {
     float4 posH    : POSITION0;
+	float2 dstW    : TEXCOORD0;
 };
 
 // -------------------------------------------------------------------------------------------------------------
