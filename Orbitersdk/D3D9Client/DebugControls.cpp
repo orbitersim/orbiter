@@ -1097,28 +1097,30 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 		LPDIRECT3DTEXTURE9 pSave = NULL;
 		D3DXIMAGE_INFO info;
 
-		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, D3DX_FROM_FILE, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));
-		
+		HR(D3DXCreateTextureFromFileExA(pDevice, pOF->lpstrFile, D3DX_DEFAULT, D3DX_DEFAULT, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &pTex));
+
 		if (!pTex) {
 			LogErr("Failed to open a file [%s]", pOF->lpstrFile); 
 			return false;
 		}
 
+		DWORD mips = pTex->GetLevelCount();
+
 		if (true) {
 
-			HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));	
+			HR(D3DXCreateTexture(pDevice, info.Width, info.Height, mips, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pWork));
 			if (!pWork) return false;
 
-			if (Action==0) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave)); }
-			if (Action==1) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pSave)); }
-			if (Action==2) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, info.MipLevels, 0, D3DFMT_A4R4G4B4, D3DPOOL_SYSTEMMEM, &pSave)); }
+			if (Action==0) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, mips, 0, D3DFMT_DXT5, D3DPOOL_SYSTEMMEM, &pSave)); }
+			if (Action==1) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, mips, 0, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &pSave)); }
+			if (Action==2) { HR(D3DXCreateTexture(pDevice, info.Width, info.Height, mips, 0, D3DFMT_A4R4G4B4, D3DPOOL_SYSTEMMEM, &pSave)); }
 
 			if (!pSave) return false;
 
 			
 			// Process texture ----------------------------------------------
 			//
-			for (DWORD n=0;n<info.MipLevels;n++) {
+			for (DWORD n=0;n<mips;n++) {
 
 				D3DXCOLOR seam;
 
@@ -1178,7 +1180,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 
 			// Convert texture format --------------------------------------
 			//
-			for (DWORD n=0;n<info.MipLevels;n++) {
+			for (DWORD n=0;n<mips;n++) {
 				LPDIRECT3DSURFACE9 pIn, pOut;
 				pWork->GetSurfaceLevel(n, &pIn);
 				pSave->GetSurfaceLevel(n, &pOut);
