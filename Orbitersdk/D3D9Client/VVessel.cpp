@@ -1102,22 +1102,14 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;
-
-	//LPDIRECT3DSURFACE9 pORT = NULL;
-	//LPDIRECT3DSURFACE9 pODS = NULL;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
-
-	//HR(pDev->GetRenderTarget(0, &pORT));
-	//HR(pDev->GetDepthStencilSurface(&pODS));
-    //HR(pDev->SetDepthStencilSurface(pEnvDS));
 
 	scn->SetRenderTarget(NULL, pEnvDS, true);
 
 	for (DWORD i=0;i<cnt;i++) {
 
 		HR(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
-		//HR(pDev->SetRenderTarget(0, pSrf));
-
+	
 		scn->SetRenderTarget(pSrf, CURRENT);
 
 		EnvMapDirection(iFace, &dir, &up);
@@ -1137,15 +1129,6 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	}
 
 	scn->SetRenderTarget(RESTORE, RESTORE);
-
-	//HR(pDev->SetDepthStencilSurface(pODS));
-	//HR(pDev->SetRenderTarget(0, pORT));
-	//SAFE_RELEASE(pODS);
-	//SAFE_RELEASE(pORT);
-
-
-
-	D3D9SetTime(D3D9Stats.Timer.EnvMap, tot_env);
 
 	return true;
 }

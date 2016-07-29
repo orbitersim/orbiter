@@ -330,17 +330,7 @@ void D3D9Client::RenderControlPanel()
 		Reset(D3D9Stats.Timer.GetDC);
 		Reset(D3D9Stats.Timer.FrameTotal);
 		// -------------------------------------
-		Reset(D3D9Stats.Timer.PostProcess);
-		Reset(D3D9Stats.Timer.Vessels);
-		Reset(D3D9Stats.Timer.VirtualCP);
 		Reset(D3D9Stats.Timer.HUDOverlay);
-		// -------------------------------------
-		Reset(D3D9Stats.Timer.CustCams);
-		Reset(D3D9Stats.Timer.EnvBlur);
-		Reset(D3D9Stats.Timer.EnvMap);
-		// -------------------------------------
-		Reset(D3D9Stats.Timer.Surface);
-		Reset(D3D9Stats.Timer.Clouds);
 		// -------------------------------------
 		memset2(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
 	}

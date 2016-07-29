@@ -535,6 +535,15 @@ void Scene::Update ()
 }
 
 
+// ===========================================================================================
+//
+double Scene::GetFocusGroundAltitude() const
+{
+	VESSEL *hVes = oapiGetFocusInterface();
+	if (hVes) return hVes->GetAltitude() - hVes->GetSurfaceElevation();
+	return 0.0;
+}
+
 
 // ===========================================================================================
 // Compute a distance to a near/far plane
@@ -865,14 +874,21 @@ void Scene::RenderMainScene()
 	
 	if (FAILED (BeginScene())) return;
 	
-	float znear = ComputeNearClipPlane();
+	float znear_for_vessels = ComputeNearClipPlane();
 	
+	// Do we use z-clear render mode or not ?
+	bool bClearZBuffer = false;
+	if ( (GetFocusGroundAltitude() > 10e3) && (oapiCameraInternal() == false) ) bClearZBuffer = true;
+
+
 	if (DebugControls::IsActive()) {
 		DWORD camMode = *(DWORD*)gc->GetConfigParam(CFGPRM_GETCAMERAMODE);
-		if (camMode!=0) znear = 0.1f;
+		if (camMode!=0) znear_for_vessels = 0.1f;
 	}
 
-	SetCameraFrustumLimits(znear, 1e8f);
+	// Set Initial Near clip plane distance
+	if (bClearZBuffer) SetCameraFrustumLimits(1e3, 1e8f);
+	else			   SetCameraFrustumLimits(znear_for_vessels, 1e8f);
 
 	// -------------------------------------------------------------------------------------------------------
 	// render celestial sphere background
@@ -1140,6 +1156,13 @@ void Scene::RenderMainScene()
 	// render the vessel objects
 	// -------------------------------------------------------------------------------------------------------
 
+	// Set near clip plane for vessel exterior rendering
+	if (bClearZBuffer) {
+		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L); // clear z-buffer
+		SetCameraFrustumLimits(znear_for_vessels, 1e8f);
+	}
+
+
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
 	pSketch->Reset();
@@ -1149,8 +1172,6 @@ void Scene::RenderMainScene()
 	pSketch->SetPen(lblPen[0]);
 
 	VOBJREC *pv = NULL;
-
-	double tot_vessels = D3D9GetTime();
 
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
@@ -1172,8 +1193,6 @@ void Scene::RenderMainScene()
 			}
 		}
 	}
-
-	D3D9SetTime(D3D9Stats.Timer.Vessels, tot_vessels);
 
 	// -------------------------------------------------------------------------------------------------------
 	// render the vessel sub-systems
@@ -1240,8 +1259,6 @@ void Scene::RenderMainScene()
 
 	if (oapiCameraInternal() && vFocus) {
 
-		double tot_vc = D3D9GetTime();
-
 		// switch cockpit lights on, external-only lights off
 		//
 		if (bLocalLight) {
@@ -1261,8 +1278,6 @@ void Scene::RenderMainScene()
 		OBJHANDLE hFocus = oapiGetFocusObject();
 		SetCameraFrustumLimits(znear, oapiGetSize(hFocus));
 		vFocus->Render(pDevice, true);
-
-		D3D9SetTime(D3D9Stats.Timer.VirtualCP, tot_vc);
 	}
 
 	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
@@ -1306,8 +1321,6 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 
 	if (pOffscreenTarget && pLightBlur) {
-
-		double tot_pp = D3D9GetTime();
 
 		int iGensPerFrame = pLightBlur->FindDefine("PassCount");
 
@@ -1371,8 +1384,6 @@ void Scene::RenderMainScene()
 		else {
 			LogErr("pLightBlur is not o.k.");
 		}
-
-		D3D9SetTime(D3D9Stats.Timer.PostProcess, tot_pp);
 	}
 
 
@@ -1417,7 +1428,6 @@ void Scene::RenderMainScene()
 	// Render Custom Camera view for a focus vessel
 	//
 	if (dwTurn==RENDERTURN_CUSTOMCAM) {
-		double tot_cam = D3D9GetTime();
 		if (Config->CustomCamMode && vFocus) {
 			if (camCurrent==NULL) camCurrent = camFirst;
 			OBJHANDLE hVessel = vFocus->GetObjectA();
@@ -1430,7 +1440,6 @@ void Scene::RenderMainScene()
 				camCurrent = camCurrent->next;
 			}
 		}
-		D3D9SetTime(D3D9Stats.Timer.CustCams, tot_cam);
 	}
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1679,8 +1688,6 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 	LPDIRECT3DSURFACE9 pTmp = NULL;
 
-	double tot_blur = D3D9GetTime();
-
 	// Create clurred mip sub-levels
 	//
 	for (DWORD i = 0; i < 6; i++) {
@@ -1747,8 +1754,6 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 			SAFE_RELEASE(pTmp);
 		}
 	}
-
-	D3D9SetTime(D3D9Stats.Timer.EnvBlur, tot_blur);
 
 	return true;
 }

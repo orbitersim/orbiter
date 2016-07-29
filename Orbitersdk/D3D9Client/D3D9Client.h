@@ -100,17 +100,10 @@ struct _D3D9Stats {
 		D3D9Time Display;		///< clbkDisplayFrame
 		D3D9Time FrameTotal;	///< Total frame time
 		//------------------------------------------------------------
-		D3D9Time Vessels;		///< Vessel objects
-		D3D9Time PostProcess;	///< Post processing features
-		D3D9Time VirtualCP;		///< Total time spend in virtual cockpit
 		D3D9Time HUDOverlay;	///< Total time spend in HUD, 2D Panel overlay
 		D3D9Time CamVis;		///< Object/camera updates
 		D3D9Time Surface;		///< Surface
 		D3D9Time Clouds;		///< Clouds
-		//-------------------------------------------------------------
-		D3D9Time EnvMap;		///< EnvMap frame (max)
-		D3D9Time EnvBlur;		///< EnvMap blurring
-		D3D9Time CustCams;		///< Custom camera views
 		//-------------------------------------------------------------
 		D3D9Time LockWait;		///< Time waiting GetDC or vertex buffer lock
 		D3D9Time BlitTime;		///<

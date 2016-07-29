@@ -290,6 +290,7 @@ public:
 	class vObject *	GetVisObject(OBJHANDLE hObj) const;
 	class vVessel *	GetFocusVisual() const { return vFocus; }
 	void			CheckVisual(OBJHANDLE hObj);
+	double			GetFocusGroundAltitude() const;
 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
