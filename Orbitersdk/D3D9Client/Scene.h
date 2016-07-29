@@ -400,6 +400,9 @@ private:
 	VOBJREC *vobjEnv;
 	double dVisualAppRad;
 
+	LPDIRECT3DSURFACE9 pColorBak;
+	LPDIRECT3DSURFACE9 pDepthStensilBak;
+
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
 

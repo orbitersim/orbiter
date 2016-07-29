@@ -64,6 +64,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pDebugFont = NULL;
 	pBlur = NULL;
 	pOffscreenTarget = NULL;
+	pColorBak = NULL;
+	pDepthStensilBak = NULL;
 	viewH = h;
 	viewW = w;
 	nLights = 0;
@@ -165,6 +167,8 @@ Scene::~Scene ()
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
+	SAFE_RELEASE(pColorBak);
+	SAFE_RELEASE(pDepthStensilBak);
 	
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 
@@ -811,16 +815,19 @@ void Scene::EndScene()
 //
 void Scene::SetRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStensil, bool bBackup)
 {
-	static LPDIRECT3DSURFACE9 pColorBak = 0;
-	static LPDIRECT3DSURFACE9 pDepthStensilBak = 0;
-
 	if (bBackup) pDevice->GetRenderTarget(0, &pColorBak);
 	if (bBackup) pDevice->GetDepthStencilSurface(&pDepthStensilBak);
 
-	if (pColor == RESTORE) pDevice->SetRenderTarget(0, pColorBak);
+	if (pColor == RESTORE) {
+		pDevice->SetRenderTarget(0, pColorBak);
+		SAFE_RELEASE(pColorBak);
+	}
 	else if (pColor != CURRENT) pDevice->SetRenderTarget(0, pColor);
 
-	if (pDepthStensil == RESTORE) pDevice->SetDepthStencilSurface(pDepthStensilBak);
+	if (pDepthStensil == RESTORE) {
+		pDevice->SetDepthStencilSurface(pDepthStensilBak);
+		SAFE_RELEASE(pDepthStensilBak);
+	}
 	else if (pDepthStensil != CURRENT) pDevice->SetDepthStencilSurface(pDepthStensil);
 }
 
