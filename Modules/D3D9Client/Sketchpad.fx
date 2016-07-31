@@ -200,9 +200,9 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 	if (gTexEn) {
 
 		float4 t = tex2D(TexS, frg.tex);
-		float  a = saturate(t.r*0.3f + t.g*0.5f + t.b*0.2f);
-		
-		if (frg.sw[TSW] > 0.1f) c = float4(lerp(t.rgb, c.rgb, a)/max(0.1,a), c.a*a);
+		float  a = saturate(t.r*0.7f + t.g*0.8f + t.b*0.6f);
+
+		if (frg.sw[TSW] > 0.1f) c = float4(t.rgb*c.rgb / max(0.1, a), c.a*a);
 		if (frg.sw[TSW] > 0.4f) c = t;
 
 		if (gKeyEn) {

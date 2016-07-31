@@ -93,8 +93,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
 	memset2(&sunLight, 0, sizeof(D3D9Sun));
-	memset2(pBlrTemp, 0, sizeof(pBlrTemp));
-
+	
 	CLEARARRAY(pBlrTemp);
 	CLEARARRAY(pTextures);
 	CLEARARRAY(ptgBuffer);

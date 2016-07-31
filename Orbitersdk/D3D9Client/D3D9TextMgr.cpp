@@ -202,13 +202,8 @@ bool D3D9Text::Init(HFONT hFont)
 	
 	// Allocate space for data
 	//
-	try {
-		Data = new D3D9FontData[256]();	// zero-initialized
-	}
-	catch (std::bad_alloc&) {
-		return false;
-	}
-
+	Data = new D3D9FontData[256]();	// zero-initialized
+	
 	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d Pitch&Family=%x",fl.lfFaceName, fl.lfHeight, fl.lfWeight, fl.lfPitchAndFamily); 
 
 	bool bFirst = true;
@@ -430,8 +425,6 @@ float D3D9Text::Length(BYTE c)
 float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str, int len, bool bBox)
 {
 	
-	float x_orig = xpos;
-
 	if (halign == 1) xpos -= Length2(_str, len) * 0.5f;
 	if (halign == 2) xpos -= Length2(_str, len);
 	if (valign == 1) ypos -= tm.tmAscent;
@@ -443,6 +436,8 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 	ypos = ceil(ypos);
 	xpos -= 0.5;
 	ypos -= 0.5;
+
+	float x_orig = xpos;
 
 	float h = Data[0].h;
 

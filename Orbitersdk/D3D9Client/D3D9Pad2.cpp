@@ -206,18 +206,18 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 
 	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
-	switch (halign) {
+	switch (tah) {
 		default:
-		case TA_LEFT:   pText->SetTextHAlign(0); break;
-		case TA_CENTER: pText->SetTextHAlign(1); break;
-		case TA_RIGHT:  pText->SetTextHAlign(2); break;
+		case LEFT:   pText->SetTextHAlign(0); break;
+		case CENTER: pText->SetTextHAlign(1); break;
+		case RIGHT:  pText->SetTextHAlign(2); break;
 	}
 
-	switch (valign) {
+	switch (tav) {
 		default:
-		case TA_TOP:	  pText->SetTextVAlign(0); break;
-		case TA_BASELINE: pText->SetTextVAlign(1); break;
-		case TA_BOTTOM:   pText->SetTextVAlign(2); break;
+		case TOP:      pText->SetTextVAlign(0); break;
+		case BASELINE: pText->SetTextVAlign(1); break;
+		case BOTTOM:   pText->SetTextVAlign(2); break;
 	}
 
 	pText->SetRotation(angle);

@@ -517,7 +517,8 @@ private:
 	SURFHANDLE hPrevSrc;
 	WORD vI, iI;
 	DWORD bkmode;
-	DWORD halign, valign;
+	TAlign_horizontal tah;
+	TAlign_vertical tav;
 	float linescale, pattern;
 	float zfar;
 	int cx, cy;

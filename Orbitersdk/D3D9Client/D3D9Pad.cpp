@@ -151,8 +151,8 @@ void D3D9Pad::Reset()
 	vI = 0;
 	iI = 0;
 	bkmode = TRANSPARENT;
-	halign = TA_LEFT;
-	valign = TA_TOP;
+	tah = LEFT;
+	tav = TOP;
 	linescale = 1.0f;
 	pattern = 1.0f;
 	CurrentTech = 0;
@@ -313,22 +313,10 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 
 // ===============================================================================================
 //
-void D3D9Pad::SetTextAlign (TAlign_horizontal tah, TAlign_vertical tav)
+void D3D9Pad::SetTextAlign (TAlign_horizontal _tah, TAlign_vertical _tav)
 {
-	// Does not require a Flush
-
-	halign = 0; valign = 0;
-
-	switch (tah) {
-		case LEFT:     halign = TA_LEFT;     break;
-		case CENTER:   halign = TA_CENTER;   break;
-		case RIGHT:    halign = TA_RIGHT;    break;
-	}
-	switch (tav) {
-		case TOP:      valign = TA_TOP;      break;
-		case BASELINE: valign = TA_BASELINE; break;
-		case BOTTOM:   valign = TA_BOTTOM;   break;
-	}
+	tah = _tah;
+	tav = _tav;
 }
 
 
@@ -505,18 +493,18 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
-	switch(halign) {
+	switch(tah) {
 		default:
-		case TA_LEFT:   pText->SetTextHAlign(0); break;
-		case TA_CENTER: pText->SetTextHAlign(1); break;
-		case TA_RIGHT:  pText->SetTextHAlign(2); break;
+		case LEFT:   pText->SetTextHAlign(0); break;
+		case CENTER: pText->SetTextHAlign(1); break;
+		case RIGHT:  pText->SetTextHAlign(2); break;
 	}
 
-	switch(valign) {
+	switch(tav) {
 		default:
-		case TA_TOP:      pText->SetTextVAlign(0); break;
-		case TA_BASELINE: pText->SetTextVAlign(1); break;
-		case TA_BOTTOM:   pText->SetTextVAlign(2); break;
+		case TOP:      pText->SetTextVAlign(0); break;
+		case BASELINE: pText->SetTextVAlign(1); break;
+		case BOTTOM:   pText->SetTextVAlign(2); break;
 	}
 
 	pText->SetRotation(static_cast<D3D9PadFont *>(cfont)->rotation);
