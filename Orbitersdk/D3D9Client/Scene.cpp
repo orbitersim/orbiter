@@ -1276,7 +1276,7 @@ void Scene::RenderMainScene()
 		if (znear<0.01) znear=0.01;
 		if (znear>1.0)  znear=1.0;
 		OBJHANDLE hFocus = oapiGetFocusObject();
-		SetCameraFrustumLimits(znear, oapiGetSize(hFocus));
+		SetCameraFrustumLimits(znear, oapiGetSize(hFocus)*2.0);
 		vFocus->Render(pDevice, true);
 	}
 

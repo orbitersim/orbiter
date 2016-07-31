@@ -602,6 +602,11 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		gotHUDSpec = !!gc->GetVCHUDSurface(&hudspec);
 	}
 
+	// Reduce sunlight for virtual cockpit
+	//
+	D3D9Sun sunLightVC = sunLight;
+	sunLightVC.Color *= 0.5f;
+
 
 	// Render Exterior and Interior (VC) meshes --------------------------------------------
 	//
@@ -639,7 +644,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
 		else pWT = &mWorld;
 
-		meshlist[i].mesh->SetSunLight(&sunLight);
+
+		if (bVC && internalpass) meshlist[i].mesh->SetSunLight(&sunLightVC);
+		else					 meshlist[i].mesh->SetSunLight(&sunLight);
 
 
 		if (bVC && internalpass) {
