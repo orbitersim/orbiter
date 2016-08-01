@@ -151,6 +151,7 @@ protected:
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
 	LPDIRECT3DTEXTURE9 pPreSrf;
 	LPDIRECT3DTEXTURE9 pPreMsk;
+	bool bMipmaps;			   // create mipmaps for the tile
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
 	TEXCRDRANGE2 texrange;     // texture coordinate subrange (if using ancestor subtexture)
 	VBMESH *mesh;              // vertex-buffered tile mesh

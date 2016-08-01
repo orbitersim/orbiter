@@ -24,6 +24,8 @@ CloudTile::CloudTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	cmgr = static_cast<TileManager2<CloudTile>* > (_mgr);
 	node = 0;
 	mean_elev = mgr->GetPlanet()->prm.cloudalt;
+	if (Config->TileMipmaps == 2) bMipmaps = true;
+	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
 }
 
 // -----------------------------------------------------------------------

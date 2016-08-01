@@ -68,9 +68,10 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	ggelev = NULL;
 	ltex = NULL;
 	htex = NULL;
-
 	has_elevfile = false;
 	MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
+	if (Config->TileMipmaps == 2) bMipmaps = true;
+	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
 }
 
 // -----------------------------------------------------------------------

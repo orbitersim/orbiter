@@ -114,7 +114,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "ShadowMapSize", i))			ShadowMapSize = max(512, min(4096, i));
 	if (oapiReadItem_int   (hFile, "EnableGlass", i))			EnableGlass = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "EnableMeshDbg", i))			EnableMeshDbg = max(0, min(1, i));
-	if (oapiReadItem_int   (hFile, "TileMipmaps", i))			TileMipmaps = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "TileMipmaps", i))			TileMipmaps = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "TextureMips", i))			TextureMips = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "TileDebug", i))				TileDebug = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));

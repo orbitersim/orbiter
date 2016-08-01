@@ -46,6 +46,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	Extents(&minlat, &maxlat, &minlng, &maxlng);
 	D3D9Stats.TilesAllocated++;
 	bIntersect = false;
+	bMipmaps = false;
 }
 
 // -----------------------------------------------------------------------
@@ -70,7 +71,7 @@ bool Tile::LoadTextureFile(const char *fullpath, LPDIRECT3DTEXTURE9 *pPre, bool 
 {
 	DWORD Usage = 0, Mips = 1, Filter = D3DX_FILTER_NONE;
 	D3DFORMAT Format = D3DFMT_FROM_FILE;
-	if (Config->TileMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
+	if (bMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
 	if (Config->TileDebug && bEnableDebug) Usage = D3DUSAGE_DYNAMIC, Format = D3DFMT_R5G6B5;
 
 	if (D3DXCreateTextureFromFileEx(mgr->Dev(), fullpath, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_FILTER_NONE, Filter, 0, NULL, NULL, pPre)==S_OK) {
@@ -89,7 +90,7 @@ bool Tile::LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pP
 {
 	DWORD Usage = 0, Mips = 1, Filter = D3DX_FILTER_NONE;
 	D3DFORMAT Format = D3DFMT_FROM_FILE;
-	if (Config->TileMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
+	if (bMipmaps && !Config->TileDebug) Filter = D3DX_FILTER_BOX, Mips = 4;
 	if (Config->TileDebug && bEnableDebug) Usage = D3DUSAGE_DYNAMIC, Format = D3DFMT_R5G6B5;
 
 	if (D3DXCreateTextureFromFileInMemoryEx(mgr->Dev(), data, ndata, 0, 0, Mips, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_FILTER_NONE, Filter, 0, NULL, NULL, pPre) == S_OK) {
