@@ -116,6 +116,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	ePos2	  = FX->GetParameterByName(0, "gPos2");
 	eCov	  = FX->GetParameterByName(0, "gCov");
 	eCovEn	  = FX->GetParameterByName(0, "gClipEn");
+	eClearEn  = FX->GetParameterByName(0, "gClearEn");
 }
 
 
@@ -1129,6 +1130,7 @@ D3DXHANDLE   D3D9Pad::ePos = 0;
 D3DXHANDLE   D3D9Pad::ePos2 = 0;
 D3DXHANDLE   D3D9Pad::eCov = 0;
 D3DXHANDLE   D3D9Pad::eCovEn = 0;
+D3DXHANDLE   D3D9Pad::eClearEn = 0;
 
 ID3DXEffect* D3D9Pad::FX = 0;
 D3D9Client * D3D9Pad::gc = 0;
@@ -1146,7 +1148,7 @@ LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
 // class GDIFont
 // ======================================================================
 
-D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, int orientation) : Font(height, prop, face, style, orientation)
+D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, int orientation, DWORD flags) : Font(height, prop, face, style, orientation)
 {
 	char *def_fixedface = "Courier New";
 	char *def_sansface = "Arial";
@@ -1182,17 +1184,22 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	DWORD italic = (style & ITALIC) ? TRUE : FALSE;
 	DWORD underline = (style & UNDERLINE) ? TRUE : FALSE;
 
-	DWORD AAQuality = NONANTIALIASED_QUALITY;
+	Quality = NONANTIALIASED_QUALITY;
 
-	if (Config->SketchpadFont==1) AAQuality = DRAFT_QUALITY;
-	if (Config->SketchpadFont==2) AAQuality = CLEARTYPE_QUALITY;
-	if (Config->SketchpadFont==3) AAQuality = PROOF_QUALITY;
+	if ((flags & 0xF) == 0) {
+		if (Config->SketchpadFont == 1) Quality = DRAFT_QUALITY;
+		if (Config->SketchpadFont == 2) Quality = CLEARTYPE_QUALITY;
+	}
+	else {
+		if (flags&SKP_FONT_ANTIALIAS) Quality = DRAFT_QUALITY;
+		if (flags&SKP_FONT_CLEARTYPE) Quality = CLEARTYPE_QUALITY;
+	}
 
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
 	if (pFont==NULL) {
 
-		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
 
 		pFont = new D3D9Text(pDev);
 		pFont->Init(hNew);
@@ -1215,11 +1222,11 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 	// Create Rotated windows GDI Font for a use with GDIPad ---------------------------
 	//
-	hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+	hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
 
 	if (hFont==NULL) {
 		face  = (prop ? def_sansface : def_fixedface);
-		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, AAQuality, 49, face);
+		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
 	}
 }
 

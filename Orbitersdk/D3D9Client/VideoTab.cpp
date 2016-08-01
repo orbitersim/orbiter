@@ -596,14 +596,10 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	
 	// SKETCHPAD --------------------------------------
 
-	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hWnd, IDC_DEVICE, CB_ADDSTRING, 0, (LPARAM)"n/a");
-
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Crisp");
-	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Default");
+	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Antialiased");
 	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Cleartype");
-	SendDlgItemMessageA(hWnd, IDC_FONT, CB_ADDSTRING, 0, (LPARAM)"Proof Quality");
 	
 	// ENVMAP MODE --------------------------------------
 
@@ -684,13 +680,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 		EnableWindow(GetDlgItem(hWnd, IDC_AA), true);
 	}
 
-	if (bGB) {
-		//Config->SketchpadMode = 1;
-		EnableWindow(GetDlgItem(hWnd, IDC_DEVICE), false);
-	}
-	else {
-		EnableWindow(GetDlgItem(hWnd, IDC_DEVICE), true);
-	}
 
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETRANGEMAX, 1, 100);
 	SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_SETRANGEMIN, 1, 5);
@@ -733,7 +722,6 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_ENVMODE, CB_SETCURSEL, Config->EnvMapMode, 0);
 	SendDlgItemMessage(hWnd, IDC_CAMMODE, CB_SETCURSEL, Config->CustomCamMode, 0);
 	SendDlgItemMessage(hWnd, IDC_ENVFACES, CB_SETCURSEL, Config->EnvMapFaces-1, 0);
-	SendDlgItemMessage(hWnd, IDC_DEVICE, CB_SETCURSEL, Config->SketchpadMode, 0);
 	SendDlgItemMessage(hWnd, IDC_FONT, CB_SETCURSEL, Config->SketchpadFont, 0);
 	SendDlgItemMessage(hWnd, IDC_DEBUG, CB_SETCURSEL, Config->DebugLvl, 0);
 	SendDlgItemMessage(hWnd, IDC_DEMAND, BM_SETCHECK, Config->PlanetPreloadMode==0, 0);
@@ -784,7 +772,6 @@ void VideoTab::SaveSetupState(HWND hWnd)
 {
 	char cbuf[32];
 	// Combo boxes
-	Config->SketchpadMode = SendDlgItemMessage (hWnd, IDC_DEVICE, CB_GETCURSEL, 0, 0);
 	Config->SketchpadFont = SendDlgItemMessage (hWnd, IDC_FONT, CB_GETCURSEL, 0, 0);
 	Config->EnvMapMode	  = SendDlgItemMessage (hWnd, IDC_ENVMODE, CB_GETCURSEL, 0, 0);
 	Config->CustomCamMode = SendDlgItemMessage (hWnd, IDC_CAMMODE, CB_GETCURSEL, 0, 0);

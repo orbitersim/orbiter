@@ -576,12 +576,17 @@ private:
 	static D3DXHANDLE   ePos2;
 	static D3DXHANDLE   eCov;
 	static D3DXHANDLE   eCovEn;
+	static D3DXHANDLE   eClearEn;
 };
 
 
 
 
 
+#define SKP_FONT_CRISP		0x1
+#define SKP_FONT_ANTIALIAS	0x2
+#define SKP_FONT_CLEARTYPE	0x3
+#define SKP_FONT_CP_GREEK	0x10
 
 
 
@@ -611,7 +616,7 @@ public:
 	 * \note if the specified face name is not recognised, then 'sans' is
 	 *   selected for \e prop==true, and 'fixed' is selected for \e prop==false.
 	 */
-	D3D9PadFont (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0);
+	D3D9PadFont (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0, DWORD flags=0);
 
 	/**
 	 * \brief Font destructor.
@@ -619,10 +624,12 @@ public:
 	~D3D9PadFont ();
 
 	HFONT GetGDIFont () const;
+	DWORD GetQuality() const { return Quality; }
 
 private:
 	class D3D9Text *pFont;
 	HFONT hFont;
+	DWORD Quality;
 	float rotation;
 	static LPDIRECT3DDEVICE9 pDev;
 };

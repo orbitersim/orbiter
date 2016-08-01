@@ -42,7 +42,6 @@ void D3D9Config::Reset ()
 	PreLBaseVis			= 0;
 	DebugFontSize		= 18;
 	UseNormalMap		= 1;
-	SketchpadMode		= 0;
 	SketchpadFont		= 1;
 	RwyLightAnimate		= 1;
 	RwyLightAngle		= 120.0;
@@ -98,7 +97,6 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "PlanetTexLoadFreq", i))		PlanetLoadFrequency = max (1, min (1000, i));
 	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max (1, min (16, i));
 	if (oapiReadItem_int   (hFile, "SceneAntialias", i))		SceneAntialias = i;
-	if (oapiReadItem_int   (hFile, "SketchpadMode",i))			SketchpadMode = i;
 	if (oapiReadItem_int   (hFile, "SketchpadFont",i))			SketchpadFont =  max (0, min (3, i));
 	if (oapiReadItem_int   (hFile, "PreLoadBaseVisuals", i))	PreLBaseVis =  max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "EnableNormalMapping", i))	UseNormalMap =  max (0, min (1, i));
@@ -159,7 +157,6 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "PlanetTexLoadFreq", PlanetLoadFrequency);
 	oapiWriteItem_int   (hFile, "Anisotrophy", Anisotrophy);
 	oapiWriteItem_int   (hFile, "SceneAntialias", SceneAntialias);
-	oapiWriteItem_int   (hFile, "SketchpadMode", SketchpadMode);
 	oapiWriteItem_int   (hFile, "SketchpadFont", SketchpadFont);
 	oapiWriteItem_int   (hFile, "PreLoadBaseVisuals", PreLBaseVis);
 	oapiWriteItem_int   (hFile, "EnableNormalMapping", UseNormalMap);

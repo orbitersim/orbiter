@@ -121,6 +121,7 @@ int D3D9Text::GetLineSpace()
 
 // ----------------------------------------------------------------------------------------
 //
+/*
 bool D3D9Text::Init(int size, char *fontname, int weight)
 {
 	// Create A Font
@@ -146,11 +147,12 @@ bool D3D9Text::Init(int size, char *fontname, int weight)
 	if (fontname) strncpy_s(fnt.lfFaceName, 31, fontname, 30); 
 
 	return Init(&fnt);
-}
+}*/
 
 
 // ----------------------------------------------------------------------------------------
 //
+/*
 bool D3D9Text::Init(int size, int style, int weight)
 {
 	// Create A Font
@@ -174,13 +176,14 @@ bool D3D9Text::Init(int size, int style, int weight)
 	fnt.lfPitchAndFamily = style; 
  
 	return Init(&fnt);
-}
+}*/
 
+/*
 bool D3D9Text::Init(LOGFONT *fnt)
 {
 	HFONT hF = CreateFontIndirect(fnt);
 	return Init(hF);
-}
+}*/
 
 // ----------------------------------------------------------------------------------------
 //

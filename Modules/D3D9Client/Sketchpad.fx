@@ -45,6 +45,7 @@ uniform extern bool      gKeyEn;
 uniform extern bool      gWide;
 uniform extern bool      gShade;
 uniform extern bool      gClipEn;
+uniform extern bool		 gClearEn;
 
 // ColorKey tolarance
 #define tol 0.01f
@@ -200,9 +201,17 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 	if (gTexEn) {
 
 		float4 t = tex2D(TexS, frg.tex);
-		float  a = saturate(t.r*0.7f + t.g*0.8f + t.b*0.6f);
 
-		if (frg.sw[TSW] > 0.1f) c = float4(t.rgb*c.rgb / max(0.1, a), c.a*a);
+		if (gClearEn) {
+			// Clear type text
+			float  a = saturate(t.r*0.7f + t.g*0.8f + t.b*0.6f);
+			if (frg.sw[TSW] > 0.1f) c = float4(t.rgb*c.rgb / max(0.1, a), c.a*a);
+		}
+		else {
+			// Antialised or crisp text
+			if (frg.sw[TSW] > 0.1f) c = float4(c.rgb, c.a*t.g);
+		}
+
 		if (frg.sw[TSW] > 0.4f) c = t;
 
 		if (gKeyEn) {

@@ -35,7 +35,6 @@ public:
 	int PreLBaseVis;				///< Preload base visuals (0=load on demand, 1=preload)
 	int DebugFontSize;				///< Debug font height \[pixel\] (default=18px)
 	int UseNormalMap;				///< Enable normal mapping (0,1)
-	int SketchpadMode;				///< Sketckpad mode to use (0=auto select DirectX/GDI, 1=use GDI only)
 	int SketchpadFont;				///< Sketchpad Font (0=Crisp, 1=Default, 2=Cleartype, 3=Proof Quality)
 	int RwyLightAnimate;			///< Runway light animate (0,1)
 	double RwyLightAngle;			///< Runway light angle \[deg\] (10...180)

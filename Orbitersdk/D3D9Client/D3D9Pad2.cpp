@@ -745,6 +745,8 @@ bool D3D9Pad::Flush(int iTech)
 	// Apply a new setup -----------------------------------------------------------------
 	//
 	if (bFontChange) {
+		DWORD Quality = static_cast<D3D9PadFont *>(cfont)->GetQuality();
+		HR(FX->SetBool(eClearEn, Quality == CLEARTYPE_QUALITY));
 		bFontChange = false;
 	}
 

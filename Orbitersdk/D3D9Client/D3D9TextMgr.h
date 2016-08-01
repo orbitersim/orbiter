@@ -69,9 +69,9 @@ public:
 
 				// Init Will Create Charters from 33 to "last"=255
 	bool        Init(HFONT hFont);
-	bool        Init(LOGFONT *fnt);
-	bool		Init(int size=24, int Style=FIXED_PITCH|FF_MODERN, int weight=500);
-	bool		Init(int size=24, char *fontname=NULL, int weight=500);
+	//bool        Init(LOGFONT *fnt);
+	//bool		Init(int size=24, int Style=FIXED_PITCH|FF_MODERN, int weight=500);
+	//bool		Init(int size=24, char *fontname=NULL, int weight=500);
 
 	LPDIRECT3DTEXTURE9	GetTexture() { return pTex; }			
 	

@@ -110,7 +110,6 @@
 #define IDC_DBG_WIRE                            2090
 #define IDC_DEBUG                               2091
 #define IDC_DEMAND                              2092
-#define IDC_DEVICE                              2093
 #define IDC_ENVFACES                            2094
 #define IDC_ENVMODE                             2095
 #define IDC_FONT                                2096
