@@ -55,7 +55,8 @@ extern int SURF_MAX_PATCHLEVEL;
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	char path[MAX_PATH];
+	char path[MAX_PATH] = { '\0' };
+	char temp[MAX_PATH] = { '\0' };
 
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
 	vRefPoint = _V(1,0,0);
@@ -71,8 +72,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		surfmgr2 = NULL;
 
 		// Check existance of tileformat (1) texture data
-		sprintf_s(path, MAX_PATH, "%s.tex", name);
-		if (GetClient()->TexturePath(path, path)) {
+		sprintf_s(temp, MAX_PATH, "%s.tex", name);
+		if (GetClient()->TexturePath(temp, path)) {
 			LogErr("WARNING: No texture data found for %s (TileFormat = 1)", name);
 		}
 	} else {
@@ -85,8 +86,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
 
 		// Check existance of tileformat (2) texture data
-		sprintf_s(path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", name, 1, 0, 0);
-		if (GetClient()->TexturePath(path, path)) {
+		sprintf_s(temp, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", name, 1, 0, 0);
+		if (GetClient()->TexturePath(temp, path)) {
 			LogErr("WARNING: No texture data found for %s (TileFormat = 2)", name);
 		}
 	}

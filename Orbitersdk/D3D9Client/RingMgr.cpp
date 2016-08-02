@@ -63,8 +63,10 @@ void RingManager::SetMeshRes(DWORD res)
 
 DWORD RingManager::LoadTextures ()
 {
-	char fname[256];
-	char path[512];
+	char fname[256] = { '\0' };
+	char temp[MAX_PATH] = { '\0' };
+	char path[512] = { '\0' };
+
 
 	oapiGetObjectName (vp->Object(), fname, 256);
 
@@ -74,8 +76,8 @@ DWORD RingManager::LoadTextures ()
 
 	int size = max(min(caps->MaxTextureWidth, 8192), 2048);
 
-	sprintf_s(path, 512, "%s_ring_%d.dds", fname, size);
-	gc->TexturePath(path, path);
+	sprintf_s(temp, MAX_PATH, "%s_ring_%d.dds", fname, size);
+	gc->TexturePath(temp, path);
 	
 	if (D3DXCreateTextureFromFileExA(pDev, path, 0, 0, D3DFMT_FROM_FILE, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 		LogAlw("High resolution ring texture loaded [%s]",path);
