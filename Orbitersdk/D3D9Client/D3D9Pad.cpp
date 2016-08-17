@@ -448,7 +448,7 @@ void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 		     *it = pStr,  // 'iterator' char
 		     *pEnd = str + len, // <= point to terminating zero
 		     *pLastSpace = NULL;
-		int currentWidth = 0;
+		float currentWidth = 0;
 		while (it < pEnd)
 		{
 			while (it < pEnd && currentWidth < maxWidth) {
