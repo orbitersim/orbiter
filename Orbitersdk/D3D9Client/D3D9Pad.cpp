@@ -443,16 +443,27 @@ float D3D9Pad::GetPenWidth()
 void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 {
 	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
-
 	if (pText->Length2(str) > maxWidth) {
-		char *pch = str + len;
-		int _len = len;
-		do {
-			--pch;
-			while (*pch != ' ') { --pch; --_len; }
-		} while (pText->Length2(str, _len) > maxWidth);
-
-		if (pch!=NULL && pch>str) { *pch = '\n'; }
+		char *pStr = str, // sub-string start
+		     *it = pStr,  // 'iterator' char
+		     *pEnd = str + len, // <= point to terminating zero
+		     *pLastSpace = NULL;
+		int currentWidth = 0;
+		while (it < pEnd)
+		{
+			while (it < pEnd && currentWidth < maxWidth) {
+				if (*it == ' ') { pLastSpace = it; }
+				currentWidth = pText->Length2( pStr, (it - pStr + 1) );
+				++it;
+			}
+			// only split if we have space for it AND we have to (avoids cutting the last word)
+			if (pLastSpace != NULL && currentWidth >= maxWidth) {
+				*pLastSpace = '\n';
+				pStr = pLastSpace + 1; // skip the space (now a newline)
+				currentWidth = 0;
+				pLastSpace = NULL;
+			}
+		}
 	}
 }
 
