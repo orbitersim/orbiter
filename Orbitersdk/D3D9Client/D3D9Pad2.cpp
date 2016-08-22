@@ -3,7 +3,7 @@
 //
 // Copyright (C) 2012-2016 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 // files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
 // of the Software, subject to the following conditions:
 //
@@ -262,7 +262,7 @@ void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dis
 		ClipData[idx].dst = 0.0f;
 		ClipData[idx].bEnable = false;
 	}
-	
+
 	InitClipping();
 }
 
@@ -533,7 +533,7 @@ void D3D9Pad::EndDrawing(bool bFlush)
 void D3D9Pad::FlushPrimitives()
 {
 	if (iI > 0) {
-		
+
 		hOldMesh = NULL;
 
 		if (bTriangles) {
@@ -614,7 +614,7 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 	if (!hTex && gr->TexIdx>0) hTex = oapiGetTextureHandle(hMesh, gr->TexIdx);
 
 	MATERIAL *mat = oapiMeshMaterial(hMesh, gr->MtrlIdx);
-	
+
 	if (mat) {
 		HR(FX->SetValue(eMtrl, &mat->diffuse, sizeof(D3DXCOLOR)));
 	}
@@ -655,7 +655,7 @@ bool D3D9Pad::Flush(int iTech)
 	// Is the drawing queue full ? -------------------------------------
 	//
 	if (iI >= WORD(nIndexMax - 1800)) FlushPrimitives();
-	
+
 
 	// Has something changed ?
 	//
@@ -690,7 +690,7 @@ bool D3D9Pad::Flush(int iTech)
 			if (CurrentTech == SKPTECH_BLIT) EndDraw();
 			if (CurrentTech == SKPTECH_POLY) EndDraw();
 		}
-		
+
 		// Switch to  ----------------------------------------------------
 		//
 		if (iTech == SKPTECH_MESH) BeginMesh();
@@ -701,7 +701,7 @@ bool D3D9Pad::Flush(int iTech)
 			if (iTech == SKPTECH_POLY) BeginDraw();
 		}
 	}
-	
+
 
 	// Apply a new setup -----------------------------------------------
 	//
@@ -755,7 +755,7 @@ bool D3D9Pad::Flush(int iTech)
 	HR(FX->CommitChanges());
 
 	CurrentTech = iTech;
-	
+
 	return true;
 }
 
@@ -770,6 +770,8 @@ bool D3D9Pad::Flush(int iTech)
 // ======================================================================================
 
 SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev) :
+	MaxVert(0), MaxIdx(0),
+	nGrp(0), nMtrl(0), nTex(0),
 	pDev(_pDev),
 	Tex(NULL),
 	Grp(NULL),
@@ -802,7 +804,7 @@ bool SketchMesh::LoadMesh(const char *name)
 	}
 
 	oapiWriteLogV("gcLoadSketchMesh(%s): Mesh not found", name);
-		
+
 	return false;
 }
 
@@ -865,7 +867,7 @@ bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 
 	if (Grp[0].MtrlIdx == SPEC_INHERIT) Grp[0].MtrlIdx = SPEC_DEFAULT;
 	if (Grp[0].TexIdx == SPEC_INHERIT) Grp[0].TexIdx = SPEC_DEFAULT;
-	
+
 	for (DWORD i = 0; i<nGrp; i++) {
 
 		if (Grp[i].MtrlIdx == SPEC_INHERIT) Grp[i].MtrlIdx = Grp[i - 1].MtrlIdx;
@@ -962,11 +964,11 @@ D3D9PolyLine::D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, 
 	iI = 0;
 
 	for (WORD i=0,p=0;p<nPt;p++) {
-		Idx[iI++] = i+0;	
+		Idx[iI++] = i+0;
 		Idx[iI++] = i+1;
-		Idx[iI++] = i+2;	
+		Idx[iI++] = i+2;
 		Idx[iI++] = i+1;
-		Idx[iI++] = i+3;	  
+		Idx[iI++] = i+3;
 		Idx[iI++] = i+2;
 		i += 2;
 	}
@@ -981,7 +983,7 @@ D3D9PolyLine::D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, 
 //
 D3D9PolyLine::~D3D9PolyLine()
 {
-	
+
 }
 
 
