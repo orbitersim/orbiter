@@ -34,7 +34,7 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 		HR(pDst->GetDesc(&dst_desc));
 
 		if (dst_desc.Size<src_desc.Size) return false;
-		
+
 		HR(pSrc->Lock(0, 0, &pSrcData, D3DLOCK_READONLY));
 		HR(pDst->Lock(0, 0, &pDstData, 0));
 
@@ -58,7 +58,7 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 
 		if (dst_desc.Size<src_desc.Size) return false;
 		if (dst_desc.Format!=src_desc.Format) return false;
-		
+
 		HR(pSrc->Lock(0, 0, &pSrcData, D3DLOCK_READONLY));
 		HR(pDst->Lock(0, 0, &pDstData, 0));
 
@@ -72,7 +72,7 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 
 	return false;
 }
-	
+
 
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
@@ -124,7 +124,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 {
 	// hP=hPlanet, hS=hSun
 	VECTOR3 GO, GS, GP;
-	
+
 	D3DXVECTOR3 _one(1,1,1);
 
 	OBJHANDLE hS = oapiGetGbodyByIndex(0);	// the central star
@@ -134,14 +134,14 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 
 	VECTOR3 S = GS-GO;							// sun's position from base
 	VECTOR3 P = unit(GO-GP);
-	
+
 	float s  = float(length(S));				// sun's distance
 	float rs = float(oapiGetSize(hS)) / s;
 	float h  = float(dotp(S,P)) / s;			// sun elevation
 	float d  = 0.173f;							// sun elevation for dispersion
 	float ae = 0.242f;							// sun elevation for ambient
 	float aq = 0.342f;
-	
+
 	float amb0 = 0.0f;
 	float disp = 0.0f;
 	float amb  = 0.0f;
@@ -157,18 +157,18 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
 
 	if (atm) { // case 1: planet has atmosphere
-		lcol = (r0 + (_one-r0) * saturate(h/d)) * saturate((h+rs)/(2.0f*rs)); 
-		amb  = saturate((h+ae)/aq);	
+		lcol = (r0 + (_one-r0) * saturate(h/d)) * saturate((h+rs)/(2.0f*rs));
+		amb  = saturate((h+ae)/aq);
 		amb  = saturate(max(amb0*amb-0.05f,ao));
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
-	} 
+	}
 	else {   // case 2: planet has no atmosphere
-		lcol = r0 * saturate((h+rs)/(2.0f*rs)); 
+		lcol = r0 * saturate((h+rs)/(2.0f*rs));
 		amb  = ao;
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
 
-	light->Color =  D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f); 
+	light->Color =  D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1.0f);
 	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
 	light->Dir = D3DXVEC(S) * (-1.0f/s);
 }
@@ -184,7 +184,7 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 	VECTOR3 GS, GP;
 
 	OBJHANDLE hP = vP->GetObject();
-	
+
 	D3DXVECTOR3 _one(1,1,1);
 
 	OBJHANDLE hS = oapiGetGbodyByIndex(0);	// the central star
@@ -194,7 +194,7 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 	VECTOR3 S = GS-GO;						// sun's position from object
 	VECTOR3 P = GO-GP;
 
-	double s  = length(S);	
+	double s  = length(S);
 
 	float pwr = 1.0f;
 
@@ -206,7 +206,7 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 	}
 
 	double r   = length(P);
-	double pres = 1.0;  
+	double pres = 1.0;
 	double size = oapiGetSize(hP) + vP->GetMinElevation();
 	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
 
@@ -215,8 +215,8 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 	float disp = 0.0f;
 	float amb  = 0.0f;
 	float aq   = 0.342f;
-	float ae   = 0.242f;							
-	float al   = 0.0f;		
+	float ae   = 0.242f;
+	float al   = 0.0f;
 	float k    = float(sqrt(r*r-size*size));		// HOrizon distance
 	float alt  = float(r-size);
 	float rs   = float(oapiGetSize(hS) / s);
@@ -228,7 +228,7 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 	if (ac>1.0f) ac=1.0f; if (ac<-1.0f) ac=-1.0f;
 
 	ac = acos(ac) - asin(float(size/r));
-	
+
 	if (ac>1.39f)  ac = 1.39f;
 	if (ac<-1.39f) ac = -1.39f;
 
@@ -244,23 +244,23 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 
 	if (alt>10e3f) al = aalt / k;
 	else           al = 0.173f;
-	
+
 	D3DXVECTOR3 lcol(1,1,1);
 	//D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
 	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(1.15f, 1.65f, 2.35f) * disp;
 
-	if (atm) { 
+	if (atm) {
 		lcol = (r0 + (_one-r0) * saturate((h/al))) * saturate((h+rs)/(2.0f*rs));
 		amb = amb0 / (alt*0.5e-4f + 1.0f);
 		amb  = saturate(max(amb*saturate(((h+ae)/aq)-0.05f), ao));
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
-	} 
+	}
 	else {
-		lcol = r0 * saturate((h+rs)/(2.0f*rs)); 
+		lcol = r0 * saturate((h+rs)/(2.0f*rs));
 		amb  = ao;
 		lcol *= 1.0f-amb*0.5f; // reduce direct light component to avoid overexposure
 	}
-	
+
 	light->Color = D3DXCOLOR(lcol.x*pwr, lcol.y*pwr, lcol.z*pwr, 1.0f);
 	light->Ambient = D3DXCOLOR(amb, amb, amb, 1.0f);
 	light->Dir = D3DXVEC(S) * (-1.0f / float(s));
@@ -275,7 +275,7 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 /*
 char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace)
 {
-	
+
 	cbuf[0] = '\0';
 
 	char* temp = new char[num];
@@ -342,7 +342,7 @@ char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace)
 	}
 
 	delete[] temp;
-	
+
 	return cbuf;
 }
 */
@@ -366,7 +366,7 @@ void strremchr(char *str, int idx)
 // -1 = eof
 //  0 = invalid string
 //  1 = success without '=' in string
-//  2 = success with '=' in string 
+//  2 = success with '=' in string
 //
 // param:
 //  0x01 = Don't Remove spaces from both sides of '='
@@ -388,7 +388,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 	int num = strlen(buf);
 
 	if (num==(cmax-1)) LogErr("Insufficient buffer size in fgets2() size=%d, string=(%s)",cmax,buf);
-		
+
 	// Replace tabs with spaces and cut a comment parts and unwanted chars
 	// Check the existance of equality sign '='
 	for (int i=0;i<num;i++) {
@@ -403,7 +403,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 		}
 	}
 
-	num = strlen(buf);	
+	num = strlen(buf);
 	if (num==0) return 0;
 
 	// Remove spaces from the end of the line
@@ -416,20 +416,20 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 	// Remove spaces from the front of the line
 	while (buf[0]==' ') strremchr(buf,0);
 
-	num = strlen(buf);	
+	num = strlen(buf);
 	if (num==0) return 0;
 
 	// Remove repeatitive spaces if exists. (double trible spaces and so on)
 	// At this point a space can not be the last char, therefore [i+1] is not a problem
 	for (int i=0;i<num;) {
-		if (buf[i]==' ' && buf[i+1]==' ') { 
+		if (buf[i]==' ' && buf[i+1]==' ') {
 			strremchr(buf, i);
-			num--; 
+			num--;
 		}
 		else i++;
 	}
 
-	num = strlen(buf);	
+	num = strlen(buf);
 	if (num==0) return 0;
 
 	// Remove spaces from both sides of '=' if exists
@@ -476,7 +476,7 @@ D3DXVECTOR3 Perpendicular(D3DXVECTOR3 *a)
 	float z = fabs(a->z);
 	float m = min(min(x, y), z);
 	if (m==x) return D3DXVECTOR3(0, a->z,  a->y);
-	if (m==y) return D3DXVECTOR3(a->z, 0, -a->x);	
+	if (m==y) return D3DXVECTOR3(a->z, 0, -a->x);
 	else      return D3DXVECTOR3(a->y, -a->x, 0);
 }
 
@@ -553,7 +553,7 @@ void D3DMAT_Identity (D3DXMATRIX *mat)
 
 void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src)
 {
-	 memcpy2(tgt, src, sizeof (D3DXMATRIX)); 
+	 memcpy2(tgt, src, sizeof (D3DXMATRIX));
 }
 
 // ============================================================================
@@ -563,11 +563,11 @@ void D3DMAT_FromAxis(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, co
 	mat->_11 = x->x;
 	mat->_21 = x->y;
 	mat->_31 = x->z;
-	
+
 	mat->_12 = y->x;
 	mat->_22 = y->y;
 	mat->_32 = y->z;
-	
+
 	mat->_13 = z->x;
 	mat->_23 = z->y;
 	mat->_33 = z->z;
@@ -580,11 +580,11 @@ void D3DMAT_FromAxis(D3DXMATRIX *mat, const VECTOR3 *x, const VECTOR3 *y, const 
 	mat->_11 = float(x->x);
 	mat->_21 = float(x->y);
 	mat->_31 = float(x->z);
-	
+
 	mat->_12 = float(y->x);
 	mat->_22 = float(y->y);
 	mat->_32 = float(y->z);
-	
+
 	mat->_13 = float(z->x);
 	mat->_23 = float(z->y);
 	mat->_33 = float(z->z);
@@ -597,11 +597,11 @@ void D3DMAT_FromAxisT(D3DXMATRIX *mat, const D3DVECTOR *x, const D3DVECTOR *y, c
 	mat->_11 = x->x;
 	mat->_12 = x->y;
 	mat->_13 = x->z;
-	
+
 	mat->_21 = y->x;
 	mat->_22 = y->y;
 	mat->_23 = y->z;
-	
+
 	mat->_31 = z->x;
 	mat->_32 = z->y;
 	mat->_33 = z->z;
@@ -697,9 +697,9 @@ void D3DMAT_RotY (D3DXMATRIX *mat, double r)
 //
 float D3DMAT_BSScaleFactor(const D3DXMATRIX *mat)
 {
-	float lx = mat->_11*mat->_11 + mat->_12*mat->_12 + mat->_13*mat->_13; 
-    float ly = mat->_21*mat->_21 + mat->_22*mat->_22 + mat->_23*mat->_23; 
-    float lz = mat->_31*mat->_31 + mat->_32*mat->_32 + mat->_33*mat->_33; 
+	float lx = mat->_11*mat->_11 + mat->_12*mat->_12 + mat->_13*mat->_13;
+    float ly = mat->_21*mat->_21 + mat->_22*mat->_22 + mat->_23*mat->_23;
+    float lz = mat->_31*mat->_31 + mat->_32*mat->_32 + mat->_33*mat->_33;
 	return sqrt(max(max(lx,ly),lz));
 }
 
@@ -722,7 +722,7 @@ bool D3DMAT_VectorMatrixMultiply (D3DXVECTOR3 *res, const D3DXVECTOR3 *v, const 
     float y = v->x*mat->_12 + v->y*mat->_22 + v->z* mat->_32 + mat->_42;
     float z = v->x*mat->_13 + v->y*mat->_23 + v->z* mat->_33 + mat->_43;
     float w = v->x*mat->_14 + v->y*mat->_24 + v->z* mat->_34 + mat->_44;
-    
+
     if (fabs (w) < 1e-5f) return false;
 
     res->x = x/w;
@@ -775,7 +775,6 @@ HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a)
 //
 LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
 {
-	
 	ID3DXBuffer* pErrors = NULL;
 	ID3DXBuffer* pCode = NULL;
 	LPDIRECT3DPIXELSHADER9 pShader = NULL;
@@ -783,7 +782,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	char *str = NULL;
 	char *tok = NULL;
 
-	D3DXMACRO macro[16]; 
+	D3DXMACRO macro[16];
 	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
 	bool bDisassemble = false;
 
@@ -791,7 +790,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 		int m = 0;
 		int l = strlen(options) + 1;
 		str = new char[l];
-		strcpy_s(str, l, options); 
+		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");
 		while (tok!=NULL && m<16) {
 			if (strcmp(tok, "PARTIAL") == 0) flags |= D3DXSHADER_PARTIALPRECISION;
@@ -802,9 +801,9 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	}
 
 	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
-	
+
 	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "ps_3_0", flags, &pCode, &pErrors, pConst));
-	
+
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
 		MessageBoxA(0, (char*)pErrors->GetBufferPointer(), "Failed to compile a shader", 0);
@@ -813,6 +812,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 
 	if (!pCode) {
 		LogErr("Failed to compile a shader [%s] [%s]", file, function);
+		SAFE_DELETEA(str);
 		return NULL;
 	}
 
@@ -830,9 +830,9 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 		}
 	}
 
-    HR(pDev->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pShader));
+	HR(pDev->CreatePixelShader((DWORD*)pCode->GetBufferPointer(), &pShader));
 
-    SAFE_RELEASE(pCode);
+	SAFE_RELEASE(pCode);
 	SAFE_RELEASE(pErrors);
 	SAFE_DELETEA(str);
 
@@ -844,7 +844,6 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 //
 LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
 {
-
 	ID3DXBuffer* pErrors = NULL;
 	ID3DXBuffer* pCode = NULL;
 	LPDIRECT3DVERTEXSHADER9 pShader = NULL;
@@ -853,14 +852,14 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	char *str = NULL;
 	char *tok = NULL;
 
-	D3DXMACRO macro[16]; 
+	D3DXMACRO macro[16];
 	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	if (options) {
 		int m = 0;
 		int l = strlen(options);
 		str = new char[l];
-		strcpy_s(str, l, options); 
+		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");
 		while (tok!=NULL && m<16) {
 			macro[m++].Name = tok;
@@ -869,9 +868,9 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	}
 
 	LogAlw("Compiling a Shader [%s] function [%s]...", file, function);
-	
+
 	HR(D3DXCompileShaderFromFileA(file, macro, NULL, function, "vs_3_0", flags, &pCode, &pErrors, pConst));
-	
+
 	if (pErrors) {
 		LogErr("Compiling a Shader [%s] function [%s] Failed:\n %s", file, function, (char*)pErrors->GetBufferPointer());
 		MessageBoxA(0, (char*)pErrors->GetBufferPointer(), "Failed to compile a shader", 0);
@@ -880,12 +879,13 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 
 	if (!pCode) {
 		LogErr("Failed to compile a shader [%s] [%s]", file, function);
+		SAFE_DELETEA(str);
 		return NULL;
 	}
 
-    HR(pDev->CreateVertexShader((DWORD*)pCode->GetBufferPointer(), &pShader));
+	HR(pDev->CreateVertexShader((DWORD*)pCode->GetBufferPointer(), &pShader));
 
-    SAFE_RELEASE(pCode);
+	SAFE_RELEASE(pCode);
 	SAFE_RELEASE(pErrors);
 	SAFE_DELETEA(str);
 
@@ -918,7 +918,7 @@ bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE
 
 	pIn[0]->GetLevelDesc(0, &desc);
 	DWORD mips = pIn[0]->GetLevelCount();
-	
+
 	if (D3DXCreateVolumeTexture(pDevice, desc.Width, desc.Height, count, mips, 0, desc.Format, D3DPOOL_SYSTEMMEM, &pTemp)==S_OK) {
 
 		DWORD height = desc.Height;
@@ -1020,7 +1020,7 @@ float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
 	float d2 = d*d;
 
 	if (d > (r + range)) return -1.0f;
-	
+
 	if ((d > r) && (Type == D3DLIGHT_SPOT) && (cosp>0.1)) {
 		float x = D3DXVec3Dot(&pos, &Direction);
 		if (x < -r) return -1.0f;
@@ -1046,12 +1046,12 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	le = _le;
 
 	// -----------------------------------------------------------------------------
-	
+
 	D3DXVec3TransformCoord(&Position, &D3DXVEC(le->GetPosition()), vo->MWorld());
 	Dst2 = D3DXVec3Dot(&Position, &Position);
 
 	// -----------------------------------------------------------------------------
-	
+
 	const double *att = ((PointLight*)le)->GetAttenuation();
 	Attenuation = D3DXVECTOR3((float)att[0], (float)att[1], (float)att[2]);
 
@@ -1064,7 +1064,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	range = float((-b + sqrt(b*b - 4.0*a*c)) / (2.0*a));
 	range2 = range*range;
 	Param[D3D9LRange] = range;
-	
+
 	tanp = 0.0f;
 	cosu = 1.0f;
 	cosp = 1.0f;
