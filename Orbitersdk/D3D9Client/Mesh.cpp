@@ -831,9 +831,10 @@ int D3D9Mesh::EditGroup(DWORD grp, GROUPEDITSPEC *ges)
 	else if (flag & GRPEDIT_ADDUSERFLAG) g->UsrFlag |= ges->UsrFlag;
 	else if (flag & GRPEDIT_DELUSERFLAG) g->UsrFlag &= ~ges->UsrFlag;
 
-	if (!bDynamic) ConvertToDynamic();
-
 	if (flag & GRPEDIT_VTX) {
+
+		if (!bDynamic) ConvertToDynamic();
+
 		NMVERTEX *vtx = LockVertexBuffer(grp,0);
 		DWORD i, vi;
 		if (vtx) {
