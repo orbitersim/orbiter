@@ -97,7 +97,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "PlanetTexLoadFreq", i))		PlanetLoadFrequency = max (1, min (1000, i));
 	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max (1, min (16, i));
 	if (oapiReadItem_int   (hFile, "SceneAntialias", i))		SceneAntialias = i;
-	if (oapiReadItem_int   (hFile, "SketchpadFont",i))			SketchpadFont =  max (0, min (3, i));
+	if (oapiReadItem_int   (hFile, "SketchpadFont",i))			SketchpadFont =  max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "PreLoadBaseVisuals", i))	PreLBaseVis =  max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "EnableNormalMapping", i))	UseNormalMap =  max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "NearClipPlaneMode", i))		NearClipPlane =  max (0, min (1, i));

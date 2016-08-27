@@ -1154,8 +1154,6 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	char name[32];
 	char path[256];
 
-	if (!oapiPlanetHasAtmosphere(hObj)) return false;
-
 	oapiGetObjectName(hObj, name, 32);
 
 	if (bOrbit) sprintf_s(path,"GC/%s.atmo.cfg",name);
@@ -1200,6 +1198,8 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	// -----------------------------------------------------------------
 	
 	oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
+
+	if (!oapiPlanetHasAtmosphere(hObj)) return false;
 
 	UpdateAtmoConfig();
 	return true;

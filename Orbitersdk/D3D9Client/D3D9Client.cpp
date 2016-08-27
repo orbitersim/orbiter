@@ -2235,16 +2235,16 @@ void D3D9Client::SplashScreen()
 	if (m>12) m=0;
 
 #ifdef _DEBUG
-	char dataA[]={"D3D9Client Beta 24.3 Debug Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client 2016 Edition RC-1 (Debug Build) [" __DATE__ "]"};
 #else
-	char dataA[]={"D3D9Client Beta 24.3 Build [" __DATE__ "]"};
+	char dataA[]={"D3D9Client 2016 Edition RC-1 [" __DATE__ "]"};
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Please create symbolic link."};
 
-	int xc = viewW*814/1280;
+	int xc = viewW*750/1280;
 	int yc = viewH*545/800;
 
 	TextOut(hDC, xc, yc + 0*20, "ORBITER Space Flight Simulator",30);
