@@ -189,6 +189,8 @@ DWORD ZTreeMgr::ReadData (DWORD idx, BYTE **outp)
 	BYTE *ebuf = new BYTE[esize];
 
 	DWORD ndata = Inflate(zbuf, zsize, ebuf, esize);
+	delete []zbuf;
+
 	if (!ndata) {
 		delete []ebuf;
 		ebuf = 0;
