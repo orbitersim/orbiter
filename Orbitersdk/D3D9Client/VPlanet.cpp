@@ -70,12 +70,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);
 		surfmgr2 = NULL;
-
-		// Check existance of tileformat (1) texture data
-		sprintf_s(temp, MAX_PATH, "%s.tex", name);
-		if (!GetClient()->TexturePath(temp, path)) {
-			LogErr("WARNING: No texture data found for %s (TileFormat = 1)", name);
-		}
 	} else {
 		bScatter = LoadAtmoConfig(false);
 		if (bScatter) LoadAtmoConfig(true);
@@ -84,12 +78,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		surfmgr2 = new TileManager2<SurfTile> (this, max_patchres, patchlvl);
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
-
-		// Check existance of tileformat (2) texture data
-		sprintf_s(temp, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", name, 1, 0, 0);
-		if (!GetClient()->TexturePath(temp, path)) {
-			LogErr("WARNING: No texture data found for %s (TileFormat = 2)", name);
-		}
 	}
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
