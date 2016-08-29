@@ -86,11 +86,9 @@ uniform extern float     fDistScale;		// UNUSED: Scale factor
 uniform extern float 	 fAlpha;			// Cloud shodow alpha
 uniform extern float 	 fNight;			// Nightlights intensity
 // ------------------------------------------------------------
-//uniform extern bool      bSpecular;			// Enable water
 uniform extern bool      bCloudSh;			// Enable cloud shadows
 uniform extern bool      bLights;			// Enable night-lights
 uniform extern bool      bEnvEnable;		// Enable environment maps
-//uniform extern bool      bMicro;			// Enable micro texture
 uniform extern bool      bMicroNormals;		// Enable micro texture normal maps
 uniform extern int		 iTileLvl;			// Surface tile level being rendered
 uniform extern int		 iDebug;			// Debug Mode identifier
@@ -608,28 +606,31 @@ float4 SurfaceTechPS(TileVS frg,
 		// Specular Mask
 		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
 		float f4 = 0;
+		
+		// Specular intensity 
+		float fInts = saturate(1.0 - fCameraAlt * 0.2e-4);
 
 		if (sbRipples) {
 
-			float3 vPlN = normalize(vVrt);			// Planet mean normal	
+			float3 vPlN = normalize(vVrt);			// Planet mean normal
 
-			cNrm = (cNrm - 0.5f) * 2.0f;
+			cNrm = (cNrm - 0.5f) * fInts * 5.0f;
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
 
 			// Compute world space normal 
 			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
 			nrmW = lerp(nvrW, nrmW, m);
-
-			// Compute Fresnel term
-			float f = 1.0 - saturate(dot(camW, nrmW));
-			float f2 = f*f;
-			f4 = f2*f2;
 		}
+
+		// Compute Fresnel term
+		float f = 1.0 - saturate(dot(camW, nrmW));
+		float f2 = f*f;
+		f4 = f2*f2;
 
 		// Compute specular reflection intensity 
 		float s = dot(reflect(-vSunDir, nrmW), camW);
 
-		cSpe = m * pow(saturate(s), 200.0f) * vWater.rgb * 2.0f;
+		cSpe = m * pow(saturate(s), 40.0f) * float3(1.0,1.0,0.8) * max(0.6, fInts*1.5);
 
 		// Apply fresnel reflection
 		cTex.rgb = lerp(cTex.rgb, cSky, m * f4);
