@@ -575,7 +575,7 @@ void ExhaustStream::Update ()
 
 	if (np) {
 		ParticleSpec *p;
-		double lng, lat, r1, r2, rad;
+		double lng, lat, r1, r2, rad, pref, slow;
 		int i;
 		if (vessel) hPlanet = vessel->GetSurfaceRef();
 		if (hPlanet) {
@@ -587,16 +587,21 @@ void ExhaustStream::Update ()
 			dv *= GGRAV * oapiGetMass(hPlanet)/(d*d*d) * dt;
 
 			ATMPARAM prm;
+			oapiGetPlanetAtmParams (hPlanet, d, &prm);
+			if (prm.rho) {
+				pref = sqrt(prm.rho) / 1.1371;
+				slow = exp(-beta*pref*dt);
+				dv *= exp(-prm.rho*2.0); // reduce gravitational effect in atmosphere (buoyancy)
+			} else {
+			//	pref = 0.0;
+				slow = 1.0;
+			}
 			oapiGlobalToEqu (hPlanet, pfirst->pos, &lng, &lat, &r1);
 			VECTOR3 av1 = oapiGetWindVector (hPlanet, lng, lat, r1-rad, 3);
 			oapiGlobalToEqu (hPlanet, plast->pos, &lng, &lat, &r2);
 			VECTOR3 av2 = oapiGetWindVector (hPlanet, lng, lat, r2-rad, 3);
 			VECTOR3 dav = (av2-av1)/np;
 			double r = oapiGetSize (hPlanet);
-			if (vessel) r += vessel->GetSurfaceElevation();
-			oapiGetPlanetAtmParams (hPlanet, d, &prm);
-			double pref = sqrt(prm.p)/300.0;
-			double slow = exp(-beta*pref*dt);
 
 			for (p = pfirst, i = 0; p; p = p->next, i++) {
 				p->vel += dv;
@@ -620,7 +625,7 @@ void ExhaustStream::Update ()
 					VECTOR3 vv2 = dv - s*dotp(s,dv);
 					if (length(vv2)) vv2 *= 0.5*length(vv)/length(vv2);
 					vv2 += s*(((double)rand()/(double)RAND_MAX)*dv_scale);
-					p->vel = vv2*1.0+av;   //p->vel = vv2*2.0+av;
+					p->vel = vv2*1.0/*2.0*/+av;
 					double r = (double)rand()/(double)RAND_MAX;
 					p->pos += (vv2-vv) * dt * r;
 					//p->size *= (1.0+r);
