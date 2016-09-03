@@ -92,16 +92,15 @@ SurfTile::~SurfTile ()
 
 void SurfTile::PreLoad()
 {
-	char path[MAX_PATH] = { '\0' };
-	char temp[MAX_PATH] = { '\0' };
+	char path[MAX_PATH] = {};
 	bool ok = false;
-	
+
 	// Load surface texture
-	
+
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf_s (temp, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = mgr->GetClient()->TexturePath(temp, path);
-		ok = ok && LoadTextureFile(path, &pPreSrf);
+		sprintf_s (path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		ok = mgr->GetClient()->TexturePath(path, path)
+		                && LoadTextureFile(path, &pPreSrf);
 	}
 
 	if (!ok && smgr->ZTreeManager(0)) { // try loading from compressed archive
@@ -114,12 +113,14 @@ void SurfTile::PreLoad()
 	}
 
 	// Load mask texture
+
 	if (ok && (mgr->Cprm().bSpecular || mgr->Cprm().bLights)) {
 		ok = false; // <= in case tileLoadFlags is set to "Archive only", we have to reset this, else no (compressed) Mask would be loaded
+
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf_s(temp, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-			ok = mgr->GetClient()->TexturePath(temp, path);
-			ok = ok && LoadTextureFile(path, &pPreMsk);
+			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+			ok = mgr->GetClient()->TexturePath(path, path)
+			                && LoadTextureFile(path, &pPreMsk);
 		}
 		if (!ok && smgr->ZTreeManager(1)) { // try loading from compressed archive
 			BYTE *buf;
@@ -1083,17 +1084,15 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 template<>
 void TileManager2<SurfTile>::LoadZTrees()
 {
-	treeMgr = new ZTreeMgr*[ntreeMgr = 4];
+	treeMgr = new ZTreeMgr*[ntreeMgr = 4]();
 	if (cprm.tileLoadFlags & 0x0002) {
-		char cbuf[MAX_PATH];
-		GetClient()->TexturePath(CbodyName(), cbuf);
-		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_SURF);
-		treeMgr[1] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_MASK);
-		treeMgr[2] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEV);
-		treeMgr[3] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEVMOD);
-	} else {
-		for (int i = 0; i < ntreeMgr; i++)
-			treeMgr[i] = 0;
+		char path[MAX_PATH];
+		if (GetClient()->TexturePath(CbodyName(), path)) {
+			treeMgr[0] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_SURF);
+			treeMgr[1] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_MASK);
+			treeMgr[2] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_ELEV);
+			treeMgr[3] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_ELEVMOD);
+		}
 	}
 }
 

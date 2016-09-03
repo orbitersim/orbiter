@@ -118,11 +118,10 @@ PlanetRenderer::~PlanetRenderer()
 
 void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 {
-	char sh_name[32];
-	char name[256];
+	char name[MAX_PATH] = "Modules\\D3D9Client\\";
+	char *sh_name = "Surface.fx";
 
-	strcpy_s(sh_name,32,"Surface.fx");
-	sprintf_s(name,256,"Modules/D3D9Client/%s",sh_name);
+	strcat_s(name, ARRAYSIZE(name), sh_name);
 
 	LogAlw("Starting to initialize %s a shading technique...", sh_name);
 	
@@ -298,7 +297,10 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfTime				= pShader->GetParameterByName(0,"fTime");
 	// ------------------------------------------------------------
 	
-	HR(D3DXCreateTextureFromFileA(pDev, "Textures/D3D9Ocean.dds", &hOcean));
+	strncpy_s(name, "D3D9Ocean.dds", ARRAYSIZE(name));
+	if (gc->TexturePath(name, name)) {
+		HR(D3DXCreateTextureFromFileA(pDev, name, &hOcean));
+	}
 
 	if (hOcean) {
 		HR(pShader->SetTexture(stOcean, hOcean));

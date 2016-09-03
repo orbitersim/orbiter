@@ -215,13 +215,12 @@ int TileManager2<CloudTile>::Coverage (double latmin, double latmax, double lngm
 template<>
 void TileManager2<CloudTile>::LoadZTrees()
 {
-	treeMgr = new ZTreeMgr*[ntreeMgr = 1];
+	treeMgr = new ZTreeMgr*[ntreeMgr = 1]();
 	if (cprm.tileLoadFlags & 0x0002) {
-		char cbuf[MAX_PATH];
-		GetClient()->TexturePath(CbodyName(), cbuf);
-		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_CLOUD);
-	} else
-		treeMgr[0] = 0;
+		char path[MAX_PATH];
+		GetClient()->TexturePath(CbodyName(), path);
+		treeMgr[0] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_CLOUD);
+	}
 }
 
 // -----------------------------------------------------------------------

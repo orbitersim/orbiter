@@ -1323,7 +1323,7 @@ bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const
 //
 bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecompress)
 {
-	char cpath[256];
+	char cpath[MAX_PATH];
 
 	if (gc==NULL) {
 		LogErr("D3D9ClientSurface::LoadTexture() No Client Pointer");
@@ -1468,36 +1468,29 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 //
 bool D3D9ClientSurface::LoadSpecialTexture(const char *fname, const char *ext, int id)
 {
-	char name[128];
-	char xpath[256];
-
 	if (pMap[id]) return true;
 
-	CreateName(name, 128, fname, ext);
+	char name[128];
+	CreateName(name, ARRAYSIZE(name), fname, ext);
 
-	if (gc->TexturePath(name, xpath)) {
+	char xpath[MAX_PATH];
+	if ( gc->TexturePath(name, xpath) ) {
 		D3DXIMAGE_INFO info;
 		pMap[id] = NULL;
 		if (D3DXGetImageInfoFromFileA(xpath, &info) == S_OK) {
 			DWORD Mips = D3DFMT_FROM_FILE;
-			if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
-			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
-			if (D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pMap[id]) != S_OK) {
-				pMap[id] = NULL;
-				LogErr("Failed to load image (%s)", name);
-				return false;
-			}
-			else {
+			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
+			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
+
+			if (S_OK == D3DXCreateTextureFromFileExA(pDevice, xpath, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pMap[id])) {
 				bAdvanced = true;
 				return true;
 			}
-		}
-		else {
-			LogErr("Failed to acquire image information for (%s)", name);
-			return false;
+			// ...failed to create texture from file
+			pMap[id] = NULL;
+			LogErr("Failed to load image (%s)", name);
 		}
 	}
-
 	return false;
 }
 
@@ -1507,17 +1500,12 @@ bool D3D9ClientSurface::LoadSpecialTexture(const char *fname, const char *ext, i
 //
 bool D3D9ClientSurface::LoadTexture(const char *fname)
 {
-	char cpath[256];
+	char cpath[MAX_PATH];
 
 	// Construct normal map name
 	//
 	if (gc->TexturePath(fname, cpath)) {
 
-		char xpath[256];
-		char bname[128];
-	
-		if (Config->UseNormalMap) CreateName(bname, 128, fname, "bump");
-		
 		// Get information about the file
 		//
 		D3DXIMAGE_INFO info;
@@ -1559,6 +1547,11 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 
 			// Bump Map Section =======================================================================================================================
 			//
+			char bname[128] = {};
+			char xpath[MAX_PATH];
+
+			CreateName(bname, ARRAYSIZE(bname), fname, "bump");
+
 			if (gc->TexturePath(bname, xpath)) {
 				D3DXIMAGE_INFO info;
 				if (D3DXGetImageInfoFromFileA(xpath, &info)==S_OK) {

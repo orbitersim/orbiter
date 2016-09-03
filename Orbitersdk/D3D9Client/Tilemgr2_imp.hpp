@@ -224,10 +224,10 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 
 template<class TileType>
 TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres, int _gridres)
-: TileManager2Base (vplanet, _maxres, _gridres)
+	: TileManager2Base (vplanet, _maxres, _gridres),
+	ntreeMgr(0)
 {
 	// Initialise the compressed packed tile archives
-	ntreeMgr = 0;
 	LoadZTrees();
 
 	// Load the low-res full-sphere tiles

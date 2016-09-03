@@ -133,6 +133,9 @@ class D3D9Client: public GraphicsClient {
 
 public:
 
+	// overridden
+	bool TexturePath (const char *fname, char *path) const;
+
 	/**
 	 * \brief Create a graphics object.
 	 *
