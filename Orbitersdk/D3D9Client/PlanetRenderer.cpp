@@ -297,8 +297,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sfTime				= pShader->GetParameterByName(0,"fTime");
 	// ------------------------------------------------------------
 	
-	strncpy_s(name, "D3D9Ocean.dds", ARRAYSIZE(name));
-	if (gc->TexturePath(name, name)) {
+	if (gc->TexturePath("D3D9Ocean.dds", name)) {
 		HR(D3DXCreateTextureFromFileA(pDev, name, &hOcean));
 	}
 

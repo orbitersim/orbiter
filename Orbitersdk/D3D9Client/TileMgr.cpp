@@ -109,11 +109,11 @@ bool TileManager::LoadPatchData ()
 	BYTE minres, maxres, flag;
 	int i, idx, npatch;
 	nmask = 0;
-	char fname[256], cpath[256];
-	strcpy_s(fname, 256, objname);
-	strcat_s(fname, 256, "_lmask.bin");
+	char fname[128], path[MAX_PATH];
+	strcpy_s(fname, ARRAYSIZE(fname), objname);
+	strcat_s(fname, ARRAYSIZE(fname), "_lmask.bin");
 
-	if (!(bGlobalSpecular || bGlobalLights) || !gc->TexturePath (fname, cpath) || fopen_s (&binf, cpath, "rb")) {
+	if (!(bGlobalSpecular || bGlobalLights) || !gc->TexturePath(fname, path) || fopen_s(&binf, path, "rb")) {
 
 		for (i = 0; i < patchidx[maxbaselvl]; i++)
 			tiledesc[i].flag = 1;
@@ -170,16 +170,16 @@ bool TileManager::LoadTileData ()
 	if (maxlvl <= 8) // no tile data required
 		return false;
 
-	char fname[256], cpath[256];
-	strcpy_s (fname, 256, objname);
-	strcat_s (fname, 256, "_tile.bin");
+	char fname[128], path[MAX_PATH];
+	strcpy_s (fname, ARRAYSIZE(fname), objname);
+	strcat_s (fname, ARRAYSIZE(fname), "_tile.bin");
 	
-	if (!gc->TexturePath (fname, cpath) || fopen_s (&file, cpath, "rb")) {
-		LogWrn("Surface Tile TOC not found for %s",fname);	
+	if (!gc->TexturePath (fname, path) || fopen_s (&file, path, "rb")) {
+		LogWrn("Surface Tile TOC not found for %s", fname);	
 		return false; // TOC file not found
 	}
 
-	LogAlw("Reading Tile Data for %s",fname);
+	LogAlw("Reading Tile Data for %s", fname);
 
 	// read file header
 	char idstr[9] = "        ";

@@ -92,14 +92,15 @@ SurfTile::~SurfTile ()
 
 void SurfTile::PreLoad()
 {
-	char path[MAX_PATH] = {};
+	char fname[128];
+	char path[MAX_PATH];
 	bool ok = false;
 
 	// Load surface texture
 
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf_s (path, MAX_PATH, "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-		ok = mgr->GetClient()->TexturePath(path, path)
+		sprintf_s (fname, ARRAYSIZE(fname), "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+		ok = mgr->GetClient()->TexturePath(fname, path)
 		                && LoadTextureFile(path, &pPreSrf);
 	}
 
@@ -118,8 +119,8 @@ void SurfTile::PreLoad()
 		ok = false; // <= in case tileLoadFlags is set to "Archive only", we have to reset this, else no (compressed) Mask would be loaded
 
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf_s(path, MAX_PATH, "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
-			ok = mgr->GetClient()->TexturePath(path, path)
+			sprintf_s(fname, ARRAYSIZE(fname), "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
+			ok = mgr->GetClient()->TexturePath(fname, path)
 			                && LoadTextureFile(path, &pPreMsk);
 		}
 		if (!ok && smgr->ZTreeManager(1)) { // try loading from compressed archive
@@ -190,14 +191,14 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	INT16 *e = NULL;
 	INT16 ofs;
 	char path[MAX_PATH];
-	char temp[MAX_PATH];
+	char fname[128];
 	FILE *f;
 	int i;
 
 	// Elevation data
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-		sprintf_s (temp, MAX_PATH, "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-		bool found = mgr->GetClient()->TexturePath(temp, path);
+		sprintf_s (fname, ARRAYSIZE(fname), "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+		bool found = mgr->GetClient()->TexturePath(fname, path);
 		if (found && !fopen_s(&f, path, "rb")) {
 			e = new INT16[ndat];
 			// read the elevation file header
@@ -261,8 +262,8 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	if (e) {
 		bool ok = false;
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
-			sprintf_s (temp, MAX_PATH, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-			bool found = mgr->GetClient()->TexturePath(temp, path);
+			sprintf_s (fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
+			bool found = mgr->GetClient()->TexturePath(fname, path);
 			if (found && !fopen_s(&f, path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {

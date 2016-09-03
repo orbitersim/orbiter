@@ -65,13 +65,13 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 {
 	_TRACE;
 
-	char cpath[256];
+	char path[MAX_PATH];
 
-	if (gc->TexturePath (fname, cpath)) {
+	if (gc->TexturePath (fname, path)) {
 
 		FILE *f;
 
-		if (fopen_s(&f, cpath, "rb")) return 0;
+		if (fopen_s(&f, path, "rb")) return 0;
 
 		int ntex = 0;
 		char *buffer, *location;

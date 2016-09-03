@@ -285,18 +285,6 @@ D3D9Client::~D3D9Client()
 	}
 }
 
-// ==============================================================
-// Overridden
-//
-bool D3D9Client::TexturePath (const char *fname, char *path) const
-{
-	char buffer[MAX_PATH];
-	bool found = GraphicsClient::TexturePath(fname, buffer);
-#pragma warning(disable: 4996)
-	if (found) strcpy(path, buffer); // <= *not* really save as we don't know the size of path
-#pragma warning(default: 4996)
-	return found;
-}
 
 // ==============================================================
 // Overridden
@@ -1587,10 +1575,10 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 	_TRACE;
 	LPD3D9CLIENTSURFACE pTex = NULL;
 
-	char cpath[MAX_PATH];
+	char path[MAX_PATH];
 
-	if (TexturePath(fname, cpath)==false) {
-		LogWrn("Texture %s not found.",fname);
+	if (TexturePath(fname, path)==false) {
+		LogWrn("Texture %s not found.", fname);
 		return NULL;
 	}
 
