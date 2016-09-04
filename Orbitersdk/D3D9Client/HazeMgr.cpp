@@ -103,6 +103,11 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 	h2 = h1 + (float)(hralt*id);
 	r1 = (float)sinv, r2 = (1.0f+hralt)*r1;
 
+	if (!dual) { // pull lower horizon edge below surface to avoid problems with elevations < 0
+		h1 *= (float)(vp->prm.horizon_minrad);
+		r1 *= (float)(vp->prm.horizon_minrad);
+	}
+
 	if (hshift) {
 		if (cdist-1.0 > cloudalt/rad) {
 			float dr = (float)(hshift*sinv);

@@ -79,6 +79,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
 	}
+	prm.horizon_minrad = min (1.0 + *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_MINELEVATION) / size, 1.0 - 1e-4);
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
 		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);

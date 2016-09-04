@@ -124,6 +124,7 @@ public:
 		double shadowalpha;     ///< opacity of shadows (0-1)
 		double horizon_excess;  ///< extend horizon visibility radius
 		double tilebb_excess;   ///< extend tile visibility bounding box
+		double horizon_minrad;  ///< scale factor for lower edge of rendered horizon (account for negative elevations)
 
 		// frame-by-frame options
 		bool bAddBkg;		    ///< render additive to sky background (i.e. planet seen through atm.layer of another planet)
