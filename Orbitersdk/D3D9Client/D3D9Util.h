@@ -248,7 +248,7 @@ typedef struct {
 	D3DXVECTOR3   Emissive;
 	D3DXVECTOR3   Reflect;			///< Color multiplier and intensity (alpha)
 	D3DXVECTOR3	  Emission2;		///< 
-	D3DXVECTOR2	  Fresnel;			///< Fresnel reflection
+	D3DXVECTOR3	  Fresnel;			///< Fresnel reflection
 	float		  Roughness;		///< Roughness = log2(spec_pow) * 0.1f
 	// -----------------------
 	DWORD		  ModFlags;			///< Modification flags

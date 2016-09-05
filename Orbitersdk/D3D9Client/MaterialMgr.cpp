@@ -316,10 +316,8 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
-			int n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
-			if (n!=2 && n!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			if (n == 2) pRecord[iRec].Mat.Fresnel = D3DXVECTOR2(a, b);
-			if (n == 3) pRecord[iRec].Mat.Fresnel = D3DXVECTOR2(a, c);
+			if (sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Fresnel = D3DXVECTOR3(a, c, b);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			continue;
 		}
@@ -405,7 +403,7 @@ bool MatMgr::SaveConfiguration()
 			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.x, pM->Specular.y, pM->Specular.z, pM->Specular.w);
 			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.x, pM->Emissive.y, pM->Emissive.z);
 			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.x, pM->Reflect.y, pM->Reflect.z);
-			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f\n", pM->Fresnel.x, pM->Fresnel.y);
+			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.x, pM->Fresnel.z, pM->Fresnel.y);
 			if (flags&D3D9MATEX_EMISSION2) fprintf(file.pFile, "EMISSION2 %f %f %f\n", pM->Emission2.x, pM->Emission2.y, pM->Emission2.z);
 			if (flags&D3D9MATEX_ROUGHNESS)  fprintf(file.pFile, "ROUGHNESS %f\n", pM->Roughness);
 		}

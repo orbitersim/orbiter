@@ -30,7 +30,7 @@ struct Mtrl
     float3 emissive;  
 	float3 reflect;
 	float3 emission2;
-	float2 fresnel;
+	float3 fresnel;
 	float  roughness;
 };
 

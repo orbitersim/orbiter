@@ -411,7 +411,7 @@ void OpenDlgClbk(void *context)
 	Params[2].var[0] = DefVar(0, 3, true, "Red");
 	Params[2].var[1] = DefVar(0, 3, true, "Green");
 	Params[2].var[2] = DefVar(0, 3, true, "Blue");
-	Params[2].var[3] = DefVar(1, 1000, true, "Specular power");
+	Params[2].var[3] = DefVar(1, 4096.0f, true, "Specular power");
 
 	// Emission
 	Params[3].var[0] = DefVar(0, 1, false, "Red");
@@ -429,6 +429,7 @@ void OpenDlgClbk(void *context)
 	// Fresnel
 	Params[6].var[0] = DefVar(1, 6, false, "Angle dependency");
 	Params[6].var[1] = DefVar(0, 1, false, "Maximum intensity");
+	Params[6].var[2] = DefVar(10.0f, 4096.0f, true, "Specular lobe size");
 	
 	// Emission2
 	Params[7].var[0] = DefVar(0, 3, false, "Red");
@@ -777,8 +778,9 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		case 6:	// Fresnel
 		{
 			switch(clr) {
-				case 0: return pMat->Fresnel.x;	// Power
+				case 0: return pMat->Fresnel.x;	// Angle
 				case 1: return pMat->Fresnel.y; // Multiplier
+				case 2: return pMat->Fresnel.z; // SpecPower
 			}
 			break;
 		}
