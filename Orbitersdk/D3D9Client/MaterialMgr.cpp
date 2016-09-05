@@ -141,6 +141,8 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 			if (flags&D3D9MATEX_REFLECT) Mat.Reflect = pRecord[i].Mat.Reflect;
 			if (flags&D3D9MATEX_SPECULAR) Mat.Specular = pRecord[i].Mat.Specular;
 			if (flags&D3D9MATEX_FRESNEL) Mat.Fresnel = pRecord[i].Mat.Fresnel;
+			if (flags&D3D9MATEX_EMISSION2) Mat.Emission2 = pRecord[i].Mat.Emission2;
+			if (flags&D3D9MATEX_ROUGHNESS) Mat.Roughness = pRecord[i].Mat.Roughness;
 			
 			Mat.ModFlags = flags;
 
@@ -267,10 +269,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SPECULAR", 8)) {
 			if (sscanf_s(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Specular.r = a;
-			pRecord[iRec].Mat.Specular.g = b;
-			pRecord[iRec].Mat.Specular.b = c;
-			pRecord[iRec].Mat.Specular.a = d;
+			pRecord[iRec].Mat.Specular = D3DXVECTOR4(a, b, c, d);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_SPECULAR;
 			continue;
 		}
@@ -278,10 +277,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "DIFFUSE", 7)) {
 			if (sscanf_s(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Diffuse.r = a;
-			pRecord[iRec].Mat.Diffuse.g = b;
-			pRecord[iRec].Mat.Diffuse.b = c;
-			pRecord[iRec].Mat.Diffuse.a = d;
+			pRecord[iRec].Mat.Diffuse = D3DXVECTOR4(a, b, c, d);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_DIFFUSE;
 			continue;
 		}
@@ -289,51 +285,50 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "EMISSIVE", 8)) {
 			if (sscanf_s(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Emissive.r = a;
-			pRecord[iRec].Mat.Emissive.g = b;
-			pRecord[iRec].Mat.Emissive.b = c;
-			pRecord[iRec].Mat.Emissive.a = 1.0;
+			pRecord[iRec].Mat.Emissive = D3DXVECTOR3(a, b, c);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_EMISSIVE;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "EMISSION2", 9)) {
+			if (sscanf_s(cbuf, "EMISSION2 %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Emission2 = D3DXVECTOR3(a, b, c);
+			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_EMISSION2;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "AMBIENT", 7)) {
 			if (sscanf_s(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Ambient.r = a;
-			pRecord[iRec].Mat.Ambient.g = b;
-			pRecord[iRec].Mat.Ambient.b = c;
-			pRecord[iRec].Mat.Ambient.a = 1.0;
+			pRecord[iRec].Mat.Ambient = D3DXVECTOR3(a, b, c);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_AMBIENT;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "REFLECT", 7)) {
-			n = sscanf_s(cbuf, "REFLECT %f %f %f %f", &a, &b, &c, &d);
-			if (n!=3 && n!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Reflect.r = a;
-			pRecord[iRec].Mat.Reflect.g = b;
-			pRecord[iRec].Mat.Reflect.b = c;
-			if (n==4) {
-				pRecord[iRec].Mat.Reflect.r *= d;
-				pRecord[iRec].Mat.Reflect.g *= d;
-				pRecord[iRec].Mat.Reflect.b *= d;
-			}
-			pRecord[iRec].Mat.Reflect.a = max(max(pRecord[iRec].Mat.Reflect.r, pRecord[iRec].Mat.Reflect.g), pRecord[iRec].Mat.Reflect.b);
+			if (sscanf_s(cbuf, "REFLECT %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Reflect = D3DXVECTOR3(a, b, c);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_REFLECT;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
-			n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
+			int n = sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c);
 			if (n!=2 && n!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Fresnel.b = a; // Power
-			pRecord[iRec].Mat.Fresnel.r = 0.0f; // Offset
-			pRecord[iRec].Mat.Fresnel.g = c;
-			if (a==0.0f) pRecord[iRec].Mat.Fresnel.g = 0.0f;
+			if (n == 2) pRecord[iRec].Mat.Fresnel = D3DXVECTOR2(a, b);
+			if (n == 3) pRecord[iRec].Mat.Fresnel = D3DXVECTOR2(a, c);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "ROUGHNESS", 9)) {
+			if (sscanf_s(cbuf, "ROUGHNESS %f", &a) != 1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Roughness = a;
+			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
 			continue;
 		}
 	}
@@ -398,9 +393,6 @@ bool MatMgr::SaveConfiguration()
 			DWORD flags = pRecord[i].Mat.ModFlags;
 			D3D9MatExt *pM = &pRecord[i].Mat; 
 
-			if (flags&D3D9MATEX_REFLECT) if (pM->Reflect.r<1e-3f && pM->Reflect.g<1e-3f && pM->Reflect.b<1e-3f) flags &= (~D3D9MATEX_REFLECT);
-			if (flags&D3D9MATEX_FRESNEL) if (pM->Fresnel.g<1e-3f) flags &= (~D3D9MATEX_FRESNEL);
-		
 			if (flags==0) continue;
 
 			fprintf(file.pFile,"; ---------------------------------------------\n");
@@ -408,12 +400,14 @@ bool MatMgr::SaveConfiguration()
 			
 			pRecord[i].bSaved = true;
 			
-			if (flags&D3D9MATEX_AMBIENT)  fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.r, pM->Ambient.g, pM->Ambient.b);
-			if (flags&D3D9MATEX_DIFFUSE)  fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.r, pM->Diffuse.g, pM->Diffuse.b, pM->Diffuse.a);
-			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.r, pM->Specular.g, pM->Specular.b, pM->Specular.a);
-			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.r, pM->Emissive.g, pM->Emissive.b);
-			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.r, pM->Reflect.g, pM->Reflect.b);
-			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.b, 0.0f, pM->Fresnel.g);
+			if (flags&D3D9MATEX_AMBIENT)  fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.x, pM->Ambient.y, pM->Ambient.z);
+			if (flags&D3D9MATEX_DIFFUSE)  fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.x, pM->Diffuse.y, pM->Diffuse.z, pM->Diffuse.w);
+			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.x, pM->Specular.y, pM->Specular.z, pM->Specular.w);
+			if (flags&D3D9MATEX_EMISSIVE) fprintf(file.pFile,"EMISSIVE %f %f %f\n", pM->Emissive.x, pM->Emissive.y, pM->Emissive.z);
+			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.x, pM->Reflect.y, pM->Reflect.z);
+			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f\n", pM->Fresnel.x, pM->Fresnel.y);
+			if (flags&D3D9MATEX_EMISSION2) fprintf(file.pFile, "EMISSION2 %f %f %f\n", pM->Emission2.x, pM->Emission2.y, pM->Emission2.z);
+			if (flags&D3D9MATEX_ROUGHNESS)  fprintf(file.pFile, "ROUGHNESS %f\n", pM->Roughness);
 		}
 	}
 	return true;

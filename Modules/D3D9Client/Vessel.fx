@@ -104,15 +104,6 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	float3 CamD = normalize(frg.camW);
 	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
-	// Texture Tuning -------------------------------------------------------
-	//
-	if (gTuneEnabled) {
-		nrmT *= gTune.Norm.rgb;
-		cTex *= gTune.Albedo;
-		cRefl *= gTune.Refl.rgb;
-		cEmis *= gTune.Emis.rgb;
-		cSpec *= gTune.Spec.rgba;
-	}
 
 	// Compute World space normal ------------------------------------------- 
 	//
@@ -217,7 +208,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 			float  dCN = saturate(dot(CamD, nrmW));
 			
 			// Compute a fresnel term with compensations included
-			fFrsl *= pow(1.0f - dCN, gMtrl.fresnel.z) * (1.0 - fRefl) * any(cRefl);
+			fFrsl *= pow(1.0f - dCN, gMtrl.fresnel.x) * (1.0 - fRefl) * any(cRefl);
 
 			// Sunlight reflection for fresnel material
 			cSpec.rgb = saturate(cSpec.rgb + fSun * fFrsl * cSun);

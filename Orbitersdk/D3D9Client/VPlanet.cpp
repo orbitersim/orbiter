@@ -79,7 +79,9 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		prm.horizon_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_HORIZONEXCESS);
 		prm.tilebb_excess = *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEBBEXCESS);
 	}
-	prm.horizon_minrad = min (1.0 + *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_MINELEVATION) / size, 1.0 - 1e-4);
+	prm.horizon_minelev = *(double*)oapiGetObjectParam(_hObj, OBJPRM_PLANET_MINELEVATION);
+	prm.horizon_minrad = min (1.0 + prm.horizon_minelev / size, 1.0 - 1e-4);
+	
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
 		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);
@@ -425,7 +427,7 @@ void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
 					it->pMesh->GetMaterial(&Mat, 0);
 					if (it->pMesh->GetMaterial(&Mat, 0)==true) {
 						Mat.Diffuse  = it->vColor;
-						Mat.Emissive = (it->vColor * 0.25f);
+						Mat.Emissive = D3DXVECTOR3f4(it->vColor * 0.25f);
 						it->pMesh->SetMaterial(&Mat, 0);
 					}
 				}
@@ -471,7 +473,7 @@ HSRFOBJ	vPlanet::AddMarker(int type, double lng, double lat, float scale, D3DXCO
 	m.rot = 0.0f;
 	m.scl = scale;
 	m.uPos = GetUnitSurfacePos(lng, lat);
-	m.vColor = *color;
+	m.vColor = D3DXC2V(*color);
 	m.type = WORD(type);
 	m.bEnabled = true;
 	

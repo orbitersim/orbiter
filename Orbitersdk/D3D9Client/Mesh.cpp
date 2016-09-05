@@ -1149,12 +1149,10 @@ void D3D9Mesh::SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bStat)
 	if (idx < nMtrl) {
 		memcpy2(&Mtrl[idx], pMat, sizeof(D3D9MatExt));
 
-		Mtrl[idx].Roughness = log2(max(1.0f, Mtrl[idx].Specular.a)) * 0.1f;
-		
-		if (Mtrl[idx].Specular.a < 0.1f) {
-			Mtrl[idx].Specular.r = 0.0f;
-			Mtrl[idx].Specular.g = 0.0f;
-			Mtrl[idx].Specular.b = 0.0f;
+		if (Mtrl[idx].Specular.w < 0.1f) {
+			Mtrl[idx].Specular.x = 0.0f;
+			Mtrl[idx].Specular.y = 0.0f;
+			Mtrl[idx].Specular.z = 0.0f;
 		}
 	}
 	if (bStat) CheckMeshStatus();
@@ -1265,6 +1263,7 @@ void D3D9Mesh::CheckMeshStatus()
 
 		Grp[g].bReflective = false;
 		Grp[g].bAdvanced = false;
+		Grp[g].PBRStatus = 0;	// PBR status is inabled if PBRStatus = 3
 
 		DWORD ti = Grp[g].TexIdx;
 
@@ -1273,16 +1272,21 @@ void D3D9Mesh::CheckMeshStatus()
 				bCanRenderFast = false;
 				if (Tex[ti]->GetMap(MAP_FRESNEL)) Grp[g].bReflective = bIsReflective = true;
 				if (Tex[ti]->GetMap(MAP_REFLECTION)) Grp[g].bReflective = bIsReflective = true;
-				if (Tex[ti]->GetMap(MAP_SPECULAR)) Grp[g].bAdvanced = true;
+				if (Tex[ti]->GetMap(MAP_ROUGHNESS)) Grp[g].bReflective = bIsReflective = true;
 				if (Tex[ti]->GetMap(MAP_TRANSLUCENCE)) Grp[g].bAdvanced = true;
 				if (Tex[ti]->GetMap(MAP_TRANSMITTANCE)) Grp[g].bAdvanced = true;
+				if (Tex[ti]->GetMap(MAP_REFLECTION)) Grp[g].PBRStatus |= 0x1;
+				if (Tex[ti]->GetMap(MAP_ROUGHNESS)) Grp[g].PBRStatus |= 0x2;
 			}
 		}
 
 		if (Grp[g].MtrlIdx == SPEC_DEFAULT) mat = &defmat;
 		else mat = &Mtrl[Grp[g].MtrlIdx];
 
-		if (mat->ModFlags&D3D9MATEX_REFLECT || mat->ModFlags&D3D9MATEX_FRESNEL) {
+		if (mat->ModFlags&D3D9MATEX_REFLECT) Grp[g].PBRStatus |= 0x1;
+		if (mat->ModFlags&D3D9MATEX_ROUGHNESS) Grp[g].PBRStatus |= 0x2;
+
+		if (mat->ModFlags&D3D9MATEX_REFLECT || mat->ModFlags&D3D9MATEX_FRESNEL || mat->ModFlags&D3D9MATEX_ROUGHNESS) {
 			Grp[g].bReflective = true;
 			bCanRenderFast = false;
 			bIsReflective = true;
@@ -1335,7 +1339,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	switch (iTech) {
 		case RENDER_VC:
 			FX->SetBool(eGlow, false);
-			//bMeshCull = false;
 			break;
 		case RENDER_BASE:
 			FX->SetBool(eGlow, false);
@@ -1526,7 +1529,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			if (bTextured) {
 				if (Tex[ti]->GetMap(MAP_TRANSLUCENCE)) break;	 
 				if (Tex[ti]->GetMap(MAP_TRANSMITTANCE)) break;
-				if (Tex[ti]->GetMap(MAP_SPECULAR)) break;
 			}
 		}
 
@@ -1559,7 +1561,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				
 				LPDIRECT3DTEXTURE9 pTransl = NULL;
 				LPDIRECT3DTEXTURE9 pTransm = NULL;
-				LPDIRECT3DTEXTURE9 pSpec = NULL;
+				LPDIRECT3DTEXTURE9 pSpec = Tex[ti]->GetMap(MAP_SPECULAR);
 				LPDIRECT3DTEXTURE9 pNorm = Tex[ti]->GetMap(MAP_NORMAL);
 				LPDIRECT3DTEXTURE9 pRefl = Tex[ti]->GetMap(MAP_REFLECTION);
 				LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
@@ -1570,13 +1572,12 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				if (pRefl) FX->SetTexture(eReflMap, pRefl);
 				if (pFrsl) FX->SetTexture(eFrslMap, pFrsl);
 
+
 				if (pass == ADV) {
 
-					pSpec = Tex[ti]->GetMap(MAP_SPECULAR);
 					pTransl = Tex[ti]->GetMap(MAP_TRANSLUCENCE);
 					pTransm = Tex[ti]->GetMap(MAP_TRANSMITTANCE);
 	
-					if (pSpec) FX->SetTexture(eSpecMap, pSpec);
 					if (pTransl) FX->SetTexture(eTranslMap, pTransl);
 					if (pTransm) FX->SetTexture(eTransmMap, pTransm);
 				}
@@ -1613,10 +1614,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			if (Grp[g].MtrlIdx==SPEC_DEFAULT) mat = &mfdmat;
 			else							  mat = &Mtrl[Grp[g].MtrlIdx];
 
-			if (bModulateMatAlpha || bTextured==false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+			if (bModulateMatAlpha || bTextured==false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 			else										FX->SetFloat(eMtrlAlpha, 1.0f);
 
-			FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt));
+			FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt)-4);
 			FX->SetBool(eEnvMapEnable, false);
 			FX->SetBool(eFresnel, false);
 		}
@@ -1634,9 +1635,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 				old_mat = mat;
 
-				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt));
+				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt)-4);
 
-				if (bModulateMatAlpha || bTextured==false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+				if (bModulateMatAlpha || bTextured==false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 				else										FX->SetFloat(eMtrlAlpha, 1.0f);
 			}
 		}
@@ -1663,6 +1664,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, (Grp[g].UsrFlag&0x4)!=0);
 		FX->SetBool(eNoColor,  (Grp[g].UsrFlag&0x10)!=0);
+		FX->SetBool(eSwitch, (Grp[g].PBRStatus==0x3));
 
 		// Update envmap and fresnel status as required
 		if (bIsReflective) {
@@ -1955,10 +1957,10 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 			if (Grp[g].MtrlIdx == SPEC_DEFAULT) mat = &mfdmat;
 			else							    mat = &Mtrl[Grp[g].MtrlIdx];
 
-			if (bModulateMatAlpha || bTextured == false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+			if (bModulateMatAlpha || bTextured == false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 			else										  FX->SetFloat(eMtrlAlpha, 1.0f);
 
-			FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt));
+			FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt)-4);
 			FX->SetBool(eEnvMapEnable, false);
 			FX->SetBool(eFresnel, false);
 		}
@@ -1976,9 +1978,9 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 				old_mat = mat;
 
-				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt));
+				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt)-4);
 
-				if (bModulateMatAlpha || bTextured == false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+				if (bModulateMatAlpha || bTextured == false)  FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 				else										  FX->SetFloat(eMtrlAlpha, 1.0f);
 			}
 		}
@@ -2149,8 +2151,8 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 
 			if (mat!=old_mat) {
 				old_mat = mat;
-				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt));
-				if (bModulateMatAlpha || bTextured==false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.a);
+				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt)-4);
+				if (bModulateMatAlpha || bTextured==false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
 				else FX->SetFloat(eMtrlAlpha, 1.0f);
 			}
 
@@ -2696,7 +2698,7 @@ void D3D9Mesh::RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex)
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
-	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)));
+	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	RenderGroup(0);
@@ -2720,7 +2722,7 @@ void D3D9Mesh::RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, floa
 	HR(FX->SetMatrix(eW, pW));
 	HR(FX->SetTexture(eTex0, pTex));
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
-	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)));
+	HR(FX->SetValue(eMtrl, &defmat, sizeof(D3D9MatExt)-4));
 	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(irad, orad, 0, 0)));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));

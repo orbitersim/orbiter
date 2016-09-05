@@ -25,13 +25,13 @@ struct Mat
 struct Mtrl
 {
 	float4 diffuse;	  
-	float4 ambient;   
-	float4 specular;  
-    float4 emissive;  
-	float4 reflect;
-	float4 fresnel;
+	float4 specular;
+	float3 ambient;    
+    float3 emissive;  
+	float3 reflect;
+	float3 emission2;
+	float2 fresnel;
 	float  roughness;
-	int    iFlags;
 };
 
 struct Sun 
@@ -43,7 +43,7 @@ struct Sun
 
 struct Light 
 {
-    int      type;             /* Type of light source */
+    bool     bSpotlight;       /* Is is spotlight */
 	float    dst2;			   /* Camera-Light Emitter distance squared */
     float4   diffuse;          /* diffuse color of light */
     float3   position;         /* position in world space */
@@ -72,7 +72,7 @@ struct Flow
 
 struct Tune
 {
-	float4 Albedo;		// Tune Diffese Maps
+	float4 Albe;		// Tune Diffese Maps
 	float4 Emis;		// Tune Emission Maps
 	float4 Spec;		// Tune Specular Maps
 	float4 Refl;		// Tune Reflection Maps
@@ -113,9 +113,9 @@ uniform extern Tune      gTune;			    // Texture tuning parameters
 uniform extern bool      gTuneEnabled;		
 uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations		
-uniform extern bool      gNormalMap;		// Enable Normal Maps
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
 uniform extern bool      gFresnel;			// Enable fresnel material
+uniform extern bool      gPBRSw;			// Legacy / PBR Switch
 uniform extern bool      gNight;			// Nighttime/Daytime
 uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
@@ -545,7 +545,7 @@ void LocalVertexLight(out float3 diff, out float3 spec, out float3 dir, in float
         float s      = pow(saturate(dot(reflect(relpN, nrmW), normalize(-posW))), sp);
 
         if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
-        if (gLights[i].type==1) spt = 1.0f;         // Point light -> set spotlight factor to 1
+        if (gLights[i].bSpotlight) spt = 1.0f;         // Point light -> set spotlight factor to 1
 
         float dif = (att*spt);
 

@@ -20,7 +20,7 @@ class CloudTile;
 typedef struct {
 	class vBase *	hBase;					// Reference base handle or NULL for planet geocentre		
 	D3DXMATRIX		mWorld;					// Object orientation, and location (if the reference is a base)
-	D3DXCOLOR		vColor;
+	D3DXVECTOR4		vColor;
 	VECTOR3			uPos;					// Geocentric position (unit vector), if the reference is geocentre
 	double			lng, lat, elv;			// Location, if the reference is geocentre
 	float			rot, scl;				// Object rotation and scale factor
@@ -124,7 +124,8 @@ public:
 		double shadowalpha;     ///< opacity of shadows (0-1)
 		double horizon_excess;  ///< extend horizon visibility radius
 		double tilebb_excess;   ///< extend tile visibility bounding box
-		double horizon_minrad;  ///< scale factor for lower edge of rendered horizon (account for negative elevations)
+		double horizon_minrad;  ///< scale factor for lower edge of rendered horizon (account for negative elevations) (unit sphere radius)
+		double horizon_minelev; ///< scale factor for lower edge of rendered horizon (account for negative elevations) (elevation [m] e.g -7000 for Mars)
 
 		// frame-by-frame options
 		bool bAddBkg;		    ///< render additive to sky background (i.e. planet seen through atm.layer of another planet)

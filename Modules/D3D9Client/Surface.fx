@@ -630,7 +630,7 @@ float4 SurfaceTechPS(TileVS frg,
 		// Compute specular reflection intensity 
 		float s = dot(reflect(-vSunDir, nrmW), camW);
 
-		cSpe = m * pow(saturate(s), 40.0f) * float3(1.0,1.0,0.8) * max(0.6, fInts*1.5);
+		cSpe = m * pow(saturate(s), 50.0f) * max(0.7, fInts*1.5);
 
 		// Apply fresnel reflection
 		cTex.rgb = lerp(cTex.rgb, cSky, m * f4);

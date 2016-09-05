@@ -228,24 +228,27 @@ typedef struct {
 } D3D9Sun;
 
 
-#define D3D9MATEX_DIFFUSE		0x01
-#define D3D9MATEX_AMBIENT		0x02
-#define D3D9MATEX_SPECULAR		0x04
-#define D3D9MATEX_EMISSIVE		0x08
-#define D3D9MATEX_REFLECT		0x10
-#define D3D9MATEX_FRESNEL		0x40
+#define D3D9MATEX_DIFFUSE		0x001
+#define D3D9MATEX_AMBIENT		0x002
+#define D3D9MATEX_SPECULAR		0x004
+#define D3D9MATEX_EMISSIVE		0x008
+#define D3D9MATEX_REFLECT		0x010
+#define D3D9MATEX_FRESNEL		0x040
+#define D3D9MATEX_ROUGHNESS		0x080
+#define D3D9MATEX_EMISSION2		0x100
 
 
 /**
- * \brief Material structure used in D3D9Mesh. Only the upper part (23 floats) is loaded into a shadrs
+ * \brief Material structure used in D3D9Mesh. ModFlags is not loaded to shaders
  */
 typedef struct {
-	D3DCOLORVALUE Diffuse;        
-    D3DCOLORVALUE Ambient;        
-    D3DCOLORVALUE Specular;			///< Specular color, power in alpha  
-    D3DCOLORVALUE Emissive;       
-	D3DCOLORVALUE Reflect;			///< Color multiplier and intensity (alpha)
-	D3DCOLORVALUE Fresnel;			///< Fresnel reflection
+	D3DXVECTOR4	  Diffuse;
+	D3DXVECTOR4   Specular;			///< Specular color, power in alpha 
+	D3DXVECTOR3	  Ambient;
+	D3DXVECTOR3   Emissive;
+	D3DXVECTOR3   Reflect;			///< Color multiplier and intensity (alpha)
+	D3DXVECTOR3	  Emission2;		///< 
+	D3DXVECTOR2	  Fresnel;			///< Fresnel reflection
 	float		  Roughness;		///< Roughness = log2(spec_pow) * 0.1f
 	// -----------------------
 	DWORD		  ModFlags;			///< Modification flags
@@ -371,6 +374,11 @@ inline void D3DVEC (const VECTOR3 &v, D3DVECTOR &d3dv)
 	d3dv.x = (float)v.x;
 	d3dv.y = (float)v.y;
 	d3dv.z = (float)v.z;
+}
+
+inline D3DXVECTOR4 D3DXC2V(const D3DXCOLOR &v)
+{
+	return D3DXVECTOR4(v.r, v.g, v.b, v.a);
 }
 
 inline D3DXVECTOR3 D3DXVEC(const VECTOR3 &v)

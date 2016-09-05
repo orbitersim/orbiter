@@ -74,6 +74,7 @@ public:
 		WORD  IntFlag;			// internal flags
 		WORD  zBias;
 		WORD  MFDScreenId;		// MFD screen ID + 1
+		WORD  PBRStatus;
 		bool  bTransform;
 		bool  bUpdate;			// Bounding box update required
 		bool  bGrouped;

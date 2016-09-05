@@ -446,6 +446,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	SplashScreen();  // Warning D3D9ClientSurface is not yet fully initialized here
 
+	ShowWindow(hRenderWnd, SW_SHOW);
+
 	OutputLoadStatus("Building Shader Programs...",0);
 	
 	D3D9Effect::D3D9TechInit(this, pDevice, fld);

@@ -73,37 +73,61 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 	return false;
 }
 
+inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in) 
+{
+	return D3DXVECTOR4(in.r, in.g, in.b, in.a);
+}
+
+inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in, float w)
+{
+	return D3DXVECTOR4(in.r, in.g, in.b, w);
+}
+
+inline D3DXVECTOR3 CV2VEC3(const D3DCOLORVALUE &in)
+{
+	return D3DXVECTOR3(in.r, in.g, in.b);
+}
+
+inline D3DCOLORVALUE VECtoCV(const D3DXVECTOR3 &in, float w)
+{
+	D3DCOLORVALUE c = { in.x, in.y, in.z, w };
+	return c;
+}
+
+inline D3DCOLORVALUE VECtoCV(const D3DXVECTOR4 &in)
+{
+	D3DCOLORVALUE c = { in.x, in.y, in.z, in.w };
+	return c;
+}
 
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
-	pOut->Ambient = pIn->Ambient;
-	pOut->Diffuse = pIn->Diffuse;
-	pOut->Emissive = pIn->Emissive;
-	pOut->Specular = pIn->Specular;
-	pOut->Specular.a = pIn->Power;
+	pOut->Ambient = CV2VEC3(pIn->Ambient);
+	pOut->Diffuse = CV2VEC4(pIn->Diffuse);
+	pOut->Emissive = CV2VEC3(pIn->Emissive);
+	pOut->Specular = CV2VEC4(pIn->Specular, pIn->Power);
 }
 
 void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut)
 {
-	pOut->Ambient = pIn->Ambient;
-	pOut->Diffuse = pIn->Diffuse;
-	pOut->Emissive = pIn->Emissive;
-	pOut->Specular = pIn->Specular;
+	pOut->Ambient = VECtoCV(pIn->Ambient, 0);
+	pOut->Diffuse = VECtoCV(pIn->Diffuse);
+	pOut->Emissive = VECtoCV(pIn->Emissive, 0);
+	pOut->Specular = VECtoCV(pIn->Specular);
 	pOut->Specular.a = 0.0f;
-	pOut->Power	= pIn->Specular.a;
+	pOut->Power	= pIn->Specular.w;
 }
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 {
-	memcpy2(pOut, pIn, 64);
-	pOut->Specular.a = pIn->Power;
-	pOut->Reflect.r = 0.0f;
-	pOut->Reflect.g = 0.0f;
-	pOut->Reflect.b = 0.0f;
-	pOut->Reflect.a = 0.0f;
-	pOut->Fresnel.r = 0.0f;	// Offset (no longer used)
-	pOut->Fresnel.g = 0.0f;	// Mult
-	pOut->Fresnel.b = 0.0f;	// Power
+	pOut->Ambient = CV2VEC3(pIn->Ambient);
+	pOut->Diffuse = CV2VEC4(pIn->Diffuse);
+	pOut->Emissive = CV2VEC3(pIn->Emissive);
+	pOut->Specular = CV2VEC4(pIn->Specular, pIn->Power);
+	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
+	pOut->Fresnel = D3DXVECTOR2(1, 0);
+	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
+	pOut->Roughness = 0.0f;
 	pOut->ModFlags = 0;
 }
 

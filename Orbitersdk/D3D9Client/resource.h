@@ -147,11 +147,10 @@
 #define IDC_DBG_FADE                            2130
 #define IDC_DBG_SEAMS                           2131
 #define IDC_DBG_TILEBB                          2132
-#define IDC_DBG_ENCTER                          2135
 #define IDC_DBG_RESBIAS                         2136
-#define IDC_DBG_SPEC                            2138
 #define IDC_DBG_ENVSAVE                         2139
 #define IDC_POSTPROCESS                         2140
-#define IDC_DBG_RGHN                            2141
 #define IDC_ARCHIVE                             2142
 #define IDC_DBG_GROUPSTAT                       2143
+#define IDC_ATM_GAMMATEST                       2144
+#define IDC_DBG_DEFINED                         2145

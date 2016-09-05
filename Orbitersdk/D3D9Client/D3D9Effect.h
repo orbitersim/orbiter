@@ -134,6 +134,9 @@ public:
 	static D3DXHANDLE	eLocalLights;  ///< BOOL		
 	static D3DXHANDLE	eGlow;	       ///< BOOL
 	static D3DXHANDLE	eTuneEnabled;  ///< BOOL
+	static D3DXHANDLE	eFresnel;	   ///< BOOL
+	static D3DXHANDLE   eSwitch;	   ///< BOOL
+	static D3DXHANDLE	eTextured;	   ///< BOOL
 	static D3DXHANDLE	eInvProxySize;
 	static D3DXHANDLE	eMix;          ///< FLOAT Auxiliary factor/multiplier
 	static D3DXHANDLE   eColor;        ///< Auxiliary color input
@@ -141,10 +144,6 @@ public:
 	static D3DXHANDLE   eTexOff;       ///< Surface tile texture offsets
 	static D3DXHANDLE	eSpecularMode;
 	static D3DXHANDLE	eHazeMode;
-	static D3DXHANDLE	eNormalMap;
-	static D3DXHANDLE	eRghnMap;
-	static D3DXHANDLE	eTextured;
-	static D3DXHANDLE	eFresnel;
 	static D3DXHANDLE   eTime;         ///< FLOAT Simulation elapsed time
 	static D3DXHANDLE	eExposure;
 	static D3DXHANDLE	eCameraPos;	
@@ -169,6 +168,7 @@ public:
 	static D3DXHANDLE	eEnvMapB;
 	static D3DXHANDLE	eReflMap;
 	static D3DXHANDLE	eFrslMap;
+	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;
 
