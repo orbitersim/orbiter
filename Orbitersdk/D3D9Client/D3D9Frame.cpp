@@ -181,6 +181,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 		switch(dwFSMode) {
 
+			// True Fullscreen
 			case 0:
 			{
 				D3DDISPLAYMODE mode;
@@ -194,6 +195,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			}
 			break;
 
+			// Fullscreen Window
 			case 1:
 			{
 				int x = GetSystemMetrics(SM_CXSCREEN);
@@ -205,6 +207,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			}
 			break;
 
+			// Fullscreen Window with Taskbar
 			case 2:
 			{
 				RECT rect;
@@ -520,8 +523,10 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 
 	// Get the dimensions of the viewport and screen bounds
 	GetClientRect(hWnd, &rcScreenRect);
-	ClientToScreen(hWnd, (POINT*)&rcScreenRect.left);
-	ClientToScreen(hWnd, (POINT*)&rcScreenRect.right);
+	
+	// What is this ?!!
+	//ClientToScreen(hWnd, (POINT*)&rcScreenRect.left);
+	//ClientToScreen(hWnd, (POINT*)&rcScreenRect.right);
 
 	dwRenderWidth	  = rcScreenRect.right  - rcScreenRect.left;
 	dwRenderHeight	  = rcScreenRect.bottom - rcScreenRect.top;
@@ -529,6 +534,7 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	dwStencilBitDepth = 8;
 
 	LogAlw("Window Size = [%u, %u]", dwRenderWidth, dwRenderHeight);
+	LogAlw("Window LeftTop = [%d, %d]", rcScreenRect.left, rcScreenRect.top);
 
 	if (MultiSample) {
 
