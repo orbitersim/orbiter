@@ -57,7 +57,7 @@ var MsgBox = vb.Function("MsgBox");
 // -----------------------------------------------------------------------------
 var tasks = [{
      file : "Orbitersdk\\D3D9Client\\D3D9Client.cpp",
-     rexp : /D3D9Client(?:\s+Beta)?\s+(?:R)?([\d\.]+)(?:\s+Debug)?\s+Build/,
+     rexp : /D3D9Client(?:\s+Beta)?\s+(?:R)?([\d\.]+)\s/,
     subst : "{MajorMinor}" // "{Major}.{Minor}"
   }, {
      file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
