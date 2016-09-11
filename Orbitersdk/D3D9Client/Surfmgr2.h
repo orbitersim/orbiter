@@ -41,7 +41,7 @@ protected:
 
 	void Load ();
 	void PreLoad ();
-	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double *mean_elev=0);
+	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev = 0);
 	bool LoadElevationData ();
 	void Render ();
 	void StepIn ();

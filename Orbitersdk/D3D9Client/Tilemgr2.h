@@ -137,7 +137,7 @@ protected:
 	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 
-	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double globelev=0.0,
+	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev=0, double elev_scale = 1.0, double globelev=0.0,
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
 	// Creates a quadrilateral patch mesh
 
@@ -326,6 +326,7 @@ public:
 	inline const double CbodySize() const { return obj_size; }
 	inline const ELEVHANDLE ElevMgr() const { return emgr; }
 	inline const int GridRes() const { return gridRes; }
+	inline const double ElevRes() const { return elevRes; }
 
 	float GetMinElev() const { return min_elev; }
 	float GetMaxElev() const { return max_elev; }
@@ -355,6 +356,7 @@ private:
 	char cbody_name[256];
 	ELEVHANDLE emgr;                 // elevation data query handle
 	int gridRes;                     // mesh grid resolution. must be multiple of 2. Default: 64 for surfaces, 32 for clouds
+	double elevRes;                  // target elevation resolution
 
 	DWORD VtxPoolSize[NPOOLS];
 	DWORD IdxPoolSize[NPOOLS];
