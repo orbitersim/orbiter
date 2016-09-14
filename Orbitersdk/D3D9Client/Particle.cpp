@@ -602,6 +602,7 @@ void ExhaustStream::Update ()
 			VECTOR3 av2 = oapiGetWindVector (hPlanet, lng, lat, r2-rad, 3);
 			VECTOR3 dav = (av2-av1)/np;
 			double r = oapiGetSize (hPlanet);
+			if (vessel) r += vessel->GetSurfaceElevation();
 
 			for (p = pfirst, i = 0; p; p = p->next, i++) {
 				p->vel += dv;
