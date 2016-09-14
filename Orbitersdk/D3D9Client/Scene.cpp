@@ -1412,6 +1412,9 @@ void Scene::RenderMainScene()
 	//
 	EndScene();
 
+	// Enable Freeze mode after the main scene is complete
+	//
+	if (bFreezeEnable) bFreeze = true;
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render Custom Camera Views 

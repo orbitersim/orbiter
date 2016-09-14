@@ -117,6 +117,7 @@ struct _D3D9Stats {
 
 extern _D3D9Stats D3D9Stats;
 extern bool bFreeze;
+extern bool bFreezeEnable;
 
 namespace oapi {
 

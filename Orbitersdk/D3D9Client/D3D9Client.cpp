@@ -71,6 +71,7 @@ _D3D9Stats D3D9Stats;
 #endif
 
 bool bFreeze = false;
+bool bFreezeEnable = false;
 bool bSkepchpadOpen = false;
 
 // Module local constellation marker storage
@@ -1316,7 +1317,10 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			case WM_KEYDOWN:
 			{
 				if (DebugControls::IsActive()) {
-					if (wParam == 'F') bFreeze = !bFreeze;
+					if (wParam == 'F') {
+						if (bFreeze) bFreezeEnable = bFreeze = false;
+						else bFreezeEnable = true;
+					}
 				}
 				bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
 				bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
