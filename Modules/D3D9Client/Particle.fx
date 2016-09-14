@@ -20,7 +20,7 @@ ParticleVS ParticleDiffuseVS(NTVERTEX vrt)
 {
 	ParticleVS outVS = (ParticleVS)0;
 	outVS.tex0    = vrt.tex0;
-    outVS.light   = saturate(dot(-gSun.Dir, vrt.nrmL)*2.0);
+	outVS.light   = 1.0f; // saturate(dot(-gSun.Dir, vrt.nrmL) * 2.0f);
 	outVS.posH    = mul(float4(vrt.posL, 1.0f), gVP);
     return outVS;
 }
