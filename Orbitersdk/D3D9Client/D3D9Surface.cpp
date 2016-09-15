@@ -277,6 +277,8 @@ bool D3D9ClientSurface::BindGPU()
 		return true;
 	}
 
+	if (IsCompressed()) Decompress();
+
 	if ((desc.Usage&D3DUSAGE_RENDERTARGET)==0) {
 		LogErr("BindGPU() Failed for 0x%X not a render target",this);
 		return false;
