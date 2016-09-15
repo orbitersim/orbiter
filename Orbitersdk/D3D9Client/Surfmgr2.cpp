@@ -622,8 +622,6 @@ void SurfTile::Render ()
 
 	if (!mesh) return; // DEBUG : TEMPORARY
 
-	mgr->SetMinMaxElev(min_elev, max_elev);
-
 	UINT numPasses = 0;
 
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
@@ -1100,8 +1098,6 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		ProcessNode (tiletree+i);
 
 	vp->tile_cache = NULL;
-
-	ResetMinMaxElev();
 
 	// render the tree
 	for (i = 0; i < 2; i++)

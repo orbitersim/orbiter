@@ -164,8 +164,6 @@ protected:
 	DWORD FrameId;
 	float width;			   // tile width [rad] (widest section i.e base)
 	float height;			   // tile height [rad]
-	float max_elev;
-	float min_elev;
 	mutable double mean_elev;  // mean tile elevation [m]
 
 public:
@@ -328,10 +326,6 @@ public:
 	inline const int GridRes() const { return gridRes; }
 	inline const double ElevRes() const { return elevRes; }
 
-	float GetMinElev() const { return min_elev; }
-	float GetMaxElev() const { return max_elev; }
-	void SetMinMaxElev(float min, float max);
-	void ResetMinMaxElev();
 	Tile *GetPickedTile() const { return pPicked; }
 	void SetPickedTile(Tile *pTile) { pPicked = pTile; }
 
@@ -345,8 +339,6 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	double obj_size;                 // planet radius
-	float min_elev;					 // minimum renderred elevation
-	float max_elev;					 // maximum renderred elevation
 	static TileLoader *loader;
 	const vPlanet *vp;				 // the planet visual
 	class Tile *pPicked;			 // Selected tile via picking

@@ -74,7 +74,6 @@ public:
 	double			CameraAltitude() const { return cdist - size; }
 	double			GetHorizonAlt() const;
 	double          GetMinElevation() const;
-	double			GetMaxElevation() const;
 	VECTOR3			GetUnitSurfacePos(double lng, double lat) const;
 	VECTOR3			GetRotationAxis() const { return axis; }
 	VECTOR3			ToLocal(VECTOR3 &glob) const;

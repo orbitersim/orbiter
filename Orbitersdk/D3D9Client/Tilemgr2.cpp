@@ -35,7 +35,7 @@ Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
   texrange(fullrange), cnt(Centre()),
   mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL),
   FrameId(0),
-  mean_elev(0.0), min_elev(0.0), max_elev(0.0),
+  mean_elev(0.0),
   state(Invalid),
   edgeok(false), owntex (true)
 {
@@ -344,9 +344,6 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	VECTOR3 pref = {radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)}; // origin
 	VECTOR3 tpmin, tpmax; 
 
-	max_elev = -1e30f;
-	min_elev = +1e30f;
-
 	// patch translation vector
 	if (shift_origin) {
 		dx = (north ? clat0:clat1)*radius;
@@ -370,10 +367,6 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 			eradius = radius + globelev; // radius including node elevation
 			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1] * elev_scale;
-
-			float felev = float(eradius - radius);
-			max_elev = max(max_elev, felev);
-			min_elev = min(min_elev, felev);
 
 			nml = _V(clat*clng, slat, clat*slng);
 			pos = nml*eradius;
@@ -944,7 +937,6 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	emgr = oapiElevationManager(obj);
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
-	ResetMinMaxElev();
 }
 
 // -----------------------------------------------------------------------
@@ -1047,29 +1039,6 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	// Add 5km threshold to allow slight camera movement with out causing surface tiles to unload
 	prm.viewap = acos (1.0/(max ((cdist+5e3) / obj_size, 1.0+minalt)));
 	prm.scale = 1.0;
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::ResetMinMaxElev()
-{
-	min_elev = 0.0f;
-	max_elev = 0.0f;
-	bSet = true;
-}
-
-// -----------------------------------------------------------------------
-
-void TileManager2Base::SetMinMaxElev(float mi, float ma)
-{
-	if (bSet) {
-		min_elev = mi;
-		max_elev = ma;
-		bSet = false;
-		return;
-	}
-	min_elev = min(min_elev, mi);
-	max_elev = max(max_elev, ma);
 }
 
 // -----------------------------------------------------------------------
