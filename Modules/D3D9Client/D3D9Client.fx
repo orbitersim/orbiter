@@ -116,6 +116,7 @@ uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calcul
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
 uniform extern bool      gFresnel;			// Enable fresnel material
 uniform extern bool      gPBRSw;			// Legacy / PBR Switch
+uniform extern bool      gRghnSw;			// Roughness converter switch
 uniform extern bool      gNight;			// Nighttime/Daytime
 uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping

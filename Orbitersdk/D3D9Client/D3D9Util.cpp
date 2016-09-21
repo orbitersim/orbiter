@@ -125,7 +125,7 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Emissive = CV2VEC3(pIn->Emissive);
 	pOut->Specular = CV2VEC4(pIn->Specular, pIn->Power);
 	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
-	pOut->Fresnel = D3DXVECTOR3(1, 0, 512.0f);
+	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
 	pOut->Roughness = 0.0f;
 	pOut->ModFlags = 0;

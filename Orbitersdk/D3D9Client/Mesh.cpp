@@ -1159,6 +1159,132 @@ void D3D9Mesh::SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bStat)
 }
 
 // ===========================================================================================
+// -1 = idx out of range
+// -2 = material property not defined cannot get it
+// -3 = invalid marerial id (mid)
+// -4 = invalid input parameters
+//
+int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
+{
+
+	if (idx >= nMtrl) return -1;
+
+	// SET ---------------------------------------------------------------
+	if (bSet && value) {
+		switch (mid) {
+		case MESHM_DIFFUSE: 
+			Mtrl[idx].Diffuse = *((D3DXVECTOR4*)value); 
+			Mtrl[idx].ModFlags |= D3D9MATEX_DIFFUSE | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_AMBIENT: 
+			Mtrl[idx].Ambient = *((D3DXVECTOR3*)value); 
+			Mtrl[idx].ModFlags |= D3D9MATEX_AMBIENT | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_SPECULAR: 
+			Mtrl[idx].Specular = *((D3DXVECTOR4*)value); 
+			Mtrl[idx].ModFlags |= D3D9MATEX_SPECULAR | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_EMISSION:
+			Mtrl[idx].Emissive = *((D3DXVECTOR3*)value); 
+			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSIVE | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_EMISSION2: 
+			Mtrl[idx].Emission2 = *((D3DXVECTOR3*)value); 
+			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSION2 | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_REFLECT: 
+			Mtrl[idx].Reflect = *((D3DXVECTOR3*)value); 
+			Mtrl[idx].ModFlags |= D3D9MATEX_REFLECT | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_ROUGHNESS:
+			Mtrl[idx].Roughness = value->g; 
+			Mtrl[idx].ModFlags |= D3D9MATEX_ROUGHNESS | D3D9MATEX_PARSE;
+			return 0;
+		case MESHM_FRESNEL: 
+			Mtrl[idx].Fresnel = *((D3DXVECTOR3*)value);
+			Mtrl[idx].ModFlags |= D3D9MATEX_FRESNEL | D3D9MATEX_PARSE;
+			return 0;
+		}
+		return -3;
+	}
+
+	// GET ---------------------------------------------------------------
+	if (bSet && value) {
+		switch (mid) {
+		case MESHM_DIFFUSE:
+			*((D3DXVECTOR4*)value) = Mtrl[idx].Diffuse;
+			return 0;
+		case MESHM_AMBIENT:
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Ambient;
+			return 0;
+		case MESHM_SPECULAR:
+			*((D3DXVECTOR4*)value) = Mtrl[idx].Specular;
+			return 0;
+		case MESHM_EMISSION:
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Emissive;
+			return 0;
+		case MESHM_EMISSION2:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_EMISSION2) == 0) return -2;
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Emission2;
+			return 0;
+		case MESHM_REFLECT:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_REFLECT) == 0) return -2;
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Reflect;
+			return 0;
+		case MESHM_ROUGHNESS:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_ROUGHNESS) == 0) return -2;
+			value->g = Mtrl[idx].Roughness;
+			return 0;
+		case MESHM_FRESNEL:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_FRESNEL) == 0) return -2;
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Fresnel;
+			return 0;
+		}
+		return -3;
+	}
+
+	// CLEAR -------------------------------------------------------------
+	if (bSet && value==NULL) {
+		switch (mid) {
+		case MESHM_DIFFUSE:
+			Mtrl[idx].Diffuse = D3DXVECTOR4(1, 1, 1, 1);
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_DIFFUSE);
+			return 0;
+		case MESHM_AMBIENT:
+			Mtrl[idx].Ambient = D3DXVECTOR3(1, 1, 1);
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_AMBIENT);
+			return 0;
+		case MESHM_SPECULAR:
+			Mtrl[idx].Specular = D3DXVECTOR4(1, 1, 1, 20.0);
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_SPECULAR);
+			return 0;
+		case MESHM_EMISSION:
+			Mtrl[idx].Emissive = D3DXVECTOR3(0, 0, 0);
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_EMISSIVE);
+			return 0;
+		case MESHM_EMISSION2: 
+			Mtrl[idx].Emission2 = D3DXVECTOR3(1, 1, 1); 
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_EMISSION2); 
+			return 0;
+		case MESHM_REFLECT: 
+			Mtrl[idx].Reflect = D3DXVECTOR3(0,0,0); 
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_REFLECT); 
+			return 0;
+		case MESHM_ROUGHNESS: 
+			Mtrl[idx].Roughness = 0.0f;  
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_ROUGHNESS); 
+			return 0;
+		case MESHM_FRESNEL: 
+			Mtrl[idx].Fresnel = D3DXVECTOR3(1, 0, 1024.0f); 
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_FRESNEL); 
+			return 0;
+		}
+		return -3;
+	}
+	return -4;
+}
+
+// ===========================================================================================
 //
 bool D3D9Mesh::GetTexTune(D3D9Tune *pT, DWORD idx) const
 {
@@ -1261,36 +1387,35 @@ void D3D9Mesh::CheckMeshStatus()
 
 	for (DWORD g = 0; g < nGrp; g++) {
 
-		Grp[g].bReflective = false;
 		Grp[g].bAdvanced = false;
-		Grp[g].PBRStatus = 0;	// PBR status is inabled if PBRStatus = 3
-
+		Grp[g].PBRStatus = 0;
+	
 		DWORD ti = Grp[g].TexIdx;
 
 		if (Tex[ti] != NULL) {
 			if (Tex[ti]->IsAdvanced()) {
 				bCanRenderFast = false;
-				if (Tex[ti]->GetMap(MAP_FRESNEL)) Grp[g].bReflective = bIsReflective = true;
-				if (Tex[ti]->GetMap(MAP_REFLECTION)) Grp[g].bReflective = bIsReflective = true;
-				if (Tex[ti]->GetMap(MAP_ROUGHNESS)) Grp[g].bReflective = bIsReflective = true;
+				if (Tex[ti]->GetMap(MAP_SPECULAR)) Grp[g].PBRStatus |= 0x2;
+				if (Tex[ti]->GetMap(MAP_ROUGHNESS)) Grp[g].PBRStatus |= 0x4;
+				if (Tex[ti]->GetMap(MAP_REFLECTION)) Grp[g].PBRStatus |= 0x8;
 				if (Tex[ti]->GetMap(MAP_TRANSLUCENCE)) Grp[g].bAdvanced = true;
 				if (Tex[ti]->GetMap(MAP_TRANSMITTANCE)) Grp[g].bAdvanced = true;
-				if (Tex[ti]->GetMap(MAP_REFLECTION)) Grp[g].PBRStatus |= 0x1;
-				if (Tex[ti]->GetMap(MAP_ROUGHNESS)) Grp[g].PBRStatus |= 0x2;
 			}
 		}
 
 		if (Grp[g].MtrlIdx == SPEC_DEFAULT) mat = &defmat;
 		else mat = &Mtrl[Grp[g].MtrlIdx];
 
-		if (mat->ModFlags&D3D9MATEX_REFLECT) Grp[g].PBRStatus |= 0x1;
-		if (mat->ModFlags&D3D9MATEX_ROUGHNESS) Grp[g].PBRStatus |= 0x2;
+		if (mat->ModFlags&D3D9MATEX_SPECULAR) Grp[g].PBRStatus |= 0x1;
+		if (mat->ModFlags&D3D9MATEX_REFLECT) Grp[g].PBRStatus |= 0x8;
+		if (mat->ModFlags&D3D9MATEX_ROUGHNESS) Grp[g].PBRStatus |= 0x4;
+		if (mat->ModFlags&D3D9MATEX_FRESNEL) Grp[g].PBRStatus |= 0x10;
+	}
 
-		if (mat->ModFlags&D3D9MATEX_REFLECT || mat->ModFlags&D3D9MATEX_FRESNEL || mat->ModFlags&D3D9MATEX_ROUGHNESS) {
-			Grp[g].bReflective = true;
-			bCanRenderFast = false;
-			bIsReflective = true;
-		}
+
+	for (DWORD g = 0; g < nGrp; g++) {
+		if (Grp[g].PBRStatus >= (0x8|0x2)) bIsReflective = true;
+		if (Grp[g].PBRStatus >= 0x2) bCanRenderFast = false;
 	}
 }
 
@@ -1316,7 +1441,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	if (!pVB) return;
 
-	enum passtype { FAST, PBR, ADV };
+	enum passtype { PBR, ADV };
 
 	if (DebugControls::IsActive()) {
 		flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
@@ -1521,17 +1646,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		if (bGroupCull) if (!D9IsBSVisible(&Grp[g].BBox, &mWorldView, &Field)) continue;
 
 
-		// ======================================================================================
-		// Check pass validity 
-		// ======================================================================================
-
-		if (pass == PBR) {
-			if (bTextured) {
-				if (Tex[ti]->GetMap(MAP_TRANSLUCENCE)) break;	 
-				if (Tex[ti]->GetMap(MAP_TRANSMITTANCE)) break;
-			}
-		}
-
 		// Setup Textures and Normal Maps ==========================================================================
 		//
 		if (bTextured) {
@@ -1618,8 +1732,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			else										FX->SetFloat(eMtrlAlpha, 1.0f);
 
 			FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt)-4);
-			FX->SetBool(eEnvMapEnable, false);
-			FX->SetBool(eFresnel, false);
+			//FX->SetBool(eEnvMapEnable, false);
+			//FX->SetBool(eFresnel, false);
 		}
 
 		// Setup Mesh group material  ==========================================================================
@@ -1659,20 +1773,23 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			HR(FX->SetValue(eFlow, &FC, sizeof(TexFlow)));
 		}
 
+	
+		bool bPBR = (Grp[g].PBRStatus & 0xF) == (0x8 + 0x4);
+		bool bRGH = (Grp[g].PBRStatus & 0xE) == (0x8 + 0x2);
+
 		// Setup Mesh drawing options =================================================================================
 		//
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, (Grp[g].UsrFlag&0x4)!=0);
 		FX->SetBool(eNoColor,  (Grp[g].UsrFlag&0x10)!=0);
-		FX->SetBool(eSwitch, (Grp[g].PBRStatus==0x3));
 
+		FX->SetBool(eFresnel, (Grp[g].PBRStatus & 0x1E) >= 0x10);
+		FX->SetBool(eSwitch, bPBR);
+		FX->SetBool(eRghnSw, bRGH);
+	
 		// Update envmap and fresnel status as required
 		if (bIsReflective) {
-			bool bFresnel = (mat->ModFlags&D3D9MATEX_FRESNEL) != 0;
-			bool bReflect = Grp[g].bReflective;
-			bool bFrslMap = FC.Frsl != 0;
-			FX->SetBool(eEnvMapEnable, bReflect);
-			FX->SetBool(eFresnel, (bFresnel || bFrslMap) && bReflect);
+			FX->SetBool(eEnvMapEnable, (Grp[g].PBRStatus&0x1E) >= 0xA);
 		}
 
 		FX->CommitChanges();

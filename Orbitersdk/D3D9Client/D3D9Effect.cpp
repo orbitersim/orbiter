@@ -106,6 +106,7 @@ D3DXHANDLE D3D9Effect::eFullyLit = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eFresnel = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eSwitch = 0;		// BOOL
+D3DXHANDLE D3D9Effect::eRghnSw = 0;
 D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
@@ -316,6 +317,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
 	eFresnel      = FX->GetParameterByName(0,"gFresnel");
 	eSwitch		  = FX->GetParameterByName(0,"gPBRSw");
+	eRghnSw		  = FX->GetParameterByName(0,"gRghnSw");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
 	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			

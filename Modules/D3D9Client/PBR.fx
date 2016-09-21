@@ -108,17 +108,21 @@ float4 PBR_PS(PBRData frg) : COLOR
 	//
 	if (gCfg.Norm) nrmT = tex2D(Nrm0S, frg.tex0.xy).rgb;
 
+
+	// Sample specular map
+	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy).rgba * sMask;
+	else		   cSpec = gMtrl.specular.rgba * fInvSunIntensity;
+
+
 	// Use _refl color for both
 	if (gCfg.Refl) cRefl = tex2D(ReflS, frg.tex0.xy).rgb;
 	else		   cRefl = gMtrl.reflect.rgb;
+
 
 	// Roughness map 
 	if (gCfg.Rghn) fRghn = tex2D(RghnS, frg.tex0.xy).g;
 	else		   fRghn = gMtrl.roughness;
 
-	// Sample specular map
-	if (gCfg.Spec) cSpec = tex2D(RghnS, frg.tex0.xy).rgba * sMask;
-	else           cSpec = gMtrl.specular.rgba;
 
 	// Sample emission map. (Note: Emissive materials and textures need to go different stages, material is added to light)
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
@@ -127,7 +131,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 #if defined(_GLASS)
 	// Sample fresnel map
 	if (gCfg.Frsl) cFrsl = tex2D(FrslS, frg.tex0.xy).rgb;
-	else 		   cFrsl = gMtrl.fresnel.y;
+	else 		   cFrsl = 1;
 #endif
 
 
@@ -190,6 +194,15 @@ float4 PBR_PS(PBRData frg) : COLOR
 	}
 
 
+	// ----------------------------------------------------------------------
+	// cSpec.pwr to fRghn Converter
+	// ----------------------------------------------------------------------
+
+	if (gRghnSw) {
+		fRghn = log2(cSpec.a) * 0.1f;
+	}
+
+
 	
 
 	// ----------------------------------------------------------------------
@@ -215,10 +228,10 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Compute reflection vector and some required dot products 
 	// ----------------------------------------------------------------------
 
-	float3 RflW = reflect(-CamD, nrmW);
-	float dRS = saturate(-dot(RflW, gSun.Dir));
-	float dLN = saturate(-dot(gSun.Dir, nrmW));
-	float dLNx = saturate(dLN * 20.0f);
+	float3 RflW = reflect(-CamD, nrmW);				// Reflection vector
+	float dRS = saturate(-dot(RflW, gSun.Dir));		// Reflection/sun angle
+	float dLN = saturate(-dot(gSun.Dir, nrmW));		// Diffuse lighting term
+	float dLNx = saturate(dLN * 80.0f);				// Specular, Fresnel shadowing term
 
 
 	// ----------------------------------------------------------------------
@@ -241,7 +254,10 @@ float4 PBR_PS(PBRData frg) : COLOR
 		// Compute a specular lobe for fresnel reflection
 		fFLbe = pow(dRS, gMtrl.fresnel.z) * dLNx * any(cRefl);
 
-		// Compute intensity term. Fresnel is always on a top of multi-layer material
+		// Modulate with material 
+		cFrsl *= gMtrl.fresnel.y;
+
+		// Compute intensity term. Fresnel is always on a top of a multi-layer material
 		// therefore it remains strong and attennuates other properties to maintain energy conservation using (1.0 - iFrsl)
 		iFrsl = cmax(cFrsl) * fFrsl;
 	}
@@ -267,7 +283,8 @@ float4 PBR_PS(PBRData frg) : COLOR
 	cSun += frg.cSpe;	// Add local light sources
 #endif
 
-	// Special alpha only texture in use
+	// Special alpha only texture in use, set the .rgb to 1.0f
+	// Used for panel background lighting in Delta Glider
 	if (gNoColor) cDiff.rgb = 1;
 
 	// ------------------------------------------------------------------------
@@ -285,7 +302,6 @@ float4 PBR_PS(PBRData frg) : COLOR
 #endif
 
 	cSpec.rgb = cSun * saturate(cBase);
-	cSpec.rgb *= 1.5f;  // Give a boost for a better look
 	
 
 
@@ -308,7 +324,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 		if (gFresnel) {
 			
 			// Compute LOD level for fresnel reflection
-			float fLOD = (8.0f - log2(gMtrl.fresnel.z) * 0.666666f);
+			float fLOD = max(0, (10.0f - log2(gMtrl.fresnel.z)));
 			
 			// Always mirror clear reflection for low angles
 			fLOD *= (1.0f - fFrsl);

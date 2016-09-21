@@ -2182,9 +2182,16 @@ void D3D9Client::SplashScreen()
 {
 
 	loadd_x = 279*viewW/1280;
-	loadd_y = 545*viewH/800;
+	loadd_y = 545*viewH/800; 
 	loadd_w = viewW/3;
 	loadd_h = 80;
+
+	RECT rS;
+	
+	GetWindowRect(hRenderWnd, &rS);
+
+	LogAlw("Splash Window Size = [%u, %u]", rS.right - rS.left, rS.bottom - rS.top);
+	LogAlw("Splash Window LeftTop = [%d, %d]", rS.left, rS.top);
 
 	HR(pDevice->TestCooperativeLevel());
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L));

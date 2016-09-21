@@ -317,6 +317,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
 			if (sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			if (b < 10.0f) b = 1024.0f;
 			pRecord[iRec].Mat.Fresnel = D3DXVECTOR3(a, c, b);
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			continue;

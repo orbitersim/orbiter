@@ -16,12 +16,13 @@
 
 // Orher configurations ------------------------------------------------
 //
-#define fSunIntensity	3.14	// Sunlight intensity
+#define fSunIntensity		3.14	// Sunlight intensity
+#define fInvSunIntensity	(1.0/fSunIntensity)
 
 // ---------------------------------------------------------------------
 // Client configuration parameters
 //
-#define BufferDivider	2		// Blur buffer size in pixels = ScreenSize / BufferDivider
+#define BufferDivider	3		// Blur buffer size in pixels = ScreenSize / BufferDivider
 #define PassCount		2		// Number of "bBlur" passes
 #define BufferFormat	1		// Render buffer format, 0=RGB10A2, 1 = RGBA_16F
 // ---------------------------------------------------------------------

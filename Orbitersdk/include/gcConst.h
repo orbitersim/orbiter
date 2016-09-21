@@ -40,6 +40,18 @@
 ///@}
 
 
+/// \defgroup MeshMaterialFlags Mesh material flags for gcMeshMaterial function
+///@{
+#define	MESHM_DIFFUSE		0x01	///< Stock material
+#define	MESHM_AMBIENT		0x02	///< Stock material
+#define	MESHM_SPECULAR		0x04	///< Stock material
+#define	MESHM_EMISSION		0x08	///< Stock material
+#define	MESHM_EMISSION2		0x10	///< D3D9 material
+#define	MESHM_REFLECT		0x20	///< D3D9 material
+#define	MESHM_ROUGHNESS		0x40	///< D3D9 material
+#define	MESHM_FRESNEL		0x80	///< D3D9 material
+///@}
+
 namespace oapi {
 
 	/**

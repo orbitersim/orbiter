@@ -12,6 +12,13 @@
 
 extern D3D9Client *g_client;
 
+DLLCLBK int gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, COLOUR4 *value, bool bSet)
+{
+	if (!hMesh) return -4;
+	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
+	return pMesh->Material(idx, param, value, bSet);
+}
+
 
 DLLCLBK bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, FMATRIX4 *pVP, float clip = 1.0f)
 {

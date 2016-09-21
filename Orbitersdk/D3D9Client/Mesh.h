@@ -77,12 +77,10 @@ public:
 		WORD  PBRStatus;
 		bool  bTransform;
 		bool  bUpdate;			// Bounding box update required
-		bool  bGrouped;
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
 		bool  bRendered;		
 		bool  bAdvanced;		// This group reguires more advanced shader than default one
-		bool  bReflective;		// Requires enabling env map 
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
@@ -152,6 +150,7 @@ public:
 	bool			GetMaterial(D3D9MatExt *pMat, DWORD idx) const;
 	void			SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bUpdateStatus = true);
 	void			SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bUpdateStatus = true);
+	int				Material(DWORD grp, int mid, COLOUR4 *value, bool bSet);
 	bool			GetTexTune(D3D9Tune *pT, DWORD idx) const;
 	void			SetTexTune(const D3D9Tune *pT, DWORD idx);
 
