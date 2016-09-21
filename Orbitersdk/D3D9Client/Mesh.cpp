@@ -1443,8 +1443,15 @@ void D3D9Mesh::CheckMeshStatus()
 //
 void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv)
 {
-	
 	_TRACE;
+
+	// Check material status
+	//
+	if (bMtrlModidied) {
+		CheckMeshStatus();
+		bMtrlModidied = false;
+	}
+
 
 	if (bCanRenderFast) {
 		RenderFast(pW, iTech);
@@ -1583,11 +1590,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	}
 	
 
-	// Check material status
-	//
-	if (bMtrlModidied) CheckMeshStatus();
-	
-	
 	if (nEnv >= 1 && pEnv[0]) FX->SetTexture(eEnvMapA, pEnv[0]);
 	//else bIsReflective = false; // Disable reflections for this mesh
 
