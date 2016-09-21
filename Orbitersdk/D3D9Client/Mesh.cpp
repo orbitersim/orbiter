@@ -58,6 +58,7 @@ void D3D9Mesh::Null()
 	bModulateMatAlpha = false;
 	bIsReflective = false;
 	bCanRenderFast = false;
+	bMtrlModidied = false;
 
 	memset(Locals, 0, sizeof(Locals));
 	memset(LightList, 0, sizeof(LightList));
@@ -1174,35 +1175,43 @@ int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
 		switch (mid) {
 		case MESHM_DIFFUSE: 
 			Mtrl[idx].Diffuse = *((D3DXVECTOR4*)value); 
-			Mtrl[idx].ModFlags |= D3D9MATEX_DIFFUSE | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_DIFFUSE;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_AMBIENT: 
 			Mtrl[idx].Ambient = *((D3DXVECTOR3*)value); 
-			Mtrl[idx].ModFlags |= D3D9MATEX_AMBIENT | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_AMBIENT;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_SPECULAR: 
 			Mtrl[idx].Specular = *((D3DXVECTOR4*)value); 
-			Mtrl[idx].ModFlags |= D3D9MATEX_SPECULAR | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_SPECULAR;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_EMISSION:
 			Mtrl[idx].Emissive = *((D3DXVECTOR3*)value); 
-			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSIVE | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSIVE;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_EMISSION2: 
 			Mtrl[idx].Emission2 = *((D3DXVECTOR3*)value); 
-			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSION2 | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSION2;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_REFLECT: 
 			Mtrl[idx].Reflect = *((D3DXVECTOR3*)value); 
-			Mtrl[idx].ModFlags |= D3D9MATEX_REFLECT | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_REFLECT;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_ROUGHNESS:
 			Mtrl[idx].Roughness = value->g; 
-			Mtrl[idx].ModFlags |= D3D9MATEX_ROUGHNESS | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_ROUGHNESS;
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_FRESNEL: 
 			Mtrl[idx].Fresnel = *((D3DXVECTOR3*)value);
-			Mtrl[idx].ModFlags |= D3D9MATEX_FRESNEL | D3D9MATEX_PARSE;
+			Mtrl[idx].ModFlags |= D3D9MATEX_FRESNEL;
+			bMtrlModidied = true;
 			return 0;
 		}
 		return -3;
@@ -1249,34 +1258,42 @@ int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
 		case MESHM_DIFFUSE:
 			Mtrl[idx].Diffuse = D3DXVECTOR4(1, 1, 1, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_DIFFUSE);
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_AMBIENT:
 			Mtrl[idx].Ambient = D3DXVECTOR3(1, 1, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_AMBIENT);
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_SPECULAR:
 			Mtrl[idx].Specular = D3DXVECTOR4(1, 1, 1, 20.0);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_SPECULAR);
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_EMISSION:
 			Mtrl[idx].Emissive = D3DXVECTOR3(0, 0, 0);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_EMISSIVE);
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_EMISSION2: 
 			Mtrl[idx].Emission2 = D3DXVECTOR3(1, 1, 1); 
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_EMISSION2); 
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_REFLECT: 
 			Mtrl[idx].Reflect = D3DXVECTOR3(0,0,0); 
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_REFLECT); 
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_ROUGHNESS: 
 			Mtrl[idx].Roughness = 0.0f;  
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_ROUGHNESS); 
+			bMtrlModidied = true;
 			return 0;
 		case MESHM_FRESNEL: 
 			Mtrl[idx].Fresnel = D3DXVECTOR3(1, 0, 1024.0f); 
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_FRESNEL); 
+			bMtrlModidied = true;
 			return 0;
 		}
 		return -3;
@@ -1566,6 +1583,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	}
 	
 
+	// Check material status
+	//
+	if (bMtrlModidied) CheckMeshStatus();
+	
+	
 	if (nEnv >= 1 && pEnv[0]) FX->SetTexture(eEnvMapA, pEnv[0]);
 	//else bIsReflective = false; // Disable reflections for this mesh
 

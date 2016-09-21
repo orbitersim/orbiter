@@ -58,6 +58,7 @@ public:
 
 	bool bCanRenderFast;		// Mesh doesn't contain any advanced features in any group
 	bool bIsReflective;			// Mesh has a reflective material in one or more groups
+	bool bMtrlModidied;
 
 	D9BBox BBox;
 	

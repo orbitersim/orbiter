@@ -707,7 +707,10 @@ float4 SurfaceTechPS(TileVS frg,
 		}
 
 		// Night lights ?
-		if (bLights) cNgt *= cMsk.rgb;
+		if (bLights) {
+			cMsk.b = min(cMsk.r, cMsk.g); // Blue dirt filter
+			cNgt *= cMsk.rgb;
+		}
 
 		// Lambertian shading term
 		float fDNS = dot(nrmW, vSunDir);

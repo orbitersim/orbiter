@@ -236,7 +236,6 @@ typedef struct {
 #define D3D9MATEX_FRESNEL		0x040
 #define D3D9MATEX_ROUGHNESS		0x080
 #define D3D9MATEX_EMISSION2		0x100
-#define D3D9MATEX_PARSE			0x1000
 
 
 /**
