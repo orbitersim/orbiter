@@ -111,7 +111,14 @@ public:
 		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
 		double		alt_proxy;	// camera distance to surface of hObj_proxy
 	};
-
+	// Screen space sun visual parameters ==================================================
+	//
+	struct SUNVISPARAMS {
+		float		brightness;
+		bool		visible;
+		D3DXVECTOR2 position;
+		D3DXCOLOR	color;
+	};
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder);
 
@@ -133,7 +140,7 @@ public:
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
- 
+
 	inline DWORD GetStencilDepth() const { return stencilDepth; }
 
 	/**
@@ -163,6 +170,16 @@ public:
 	 * \brief Render the whole main scene
 	 */
 	void RenderMainScene();
+
+	/**
+	 * \brief Returns screen space sun visual parameters for Lens Flare rendering.
+	*/
+	SUNVISPARAMS GetSunScreenVisualState();
+
+	/**
+	 * \brief Gets sun diffuse color (accounting for atmospheric shift)
+	 */
+	D3DXCOLOR GetSunDiffColor();
 
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
@@ -219,8 +236,8 @@ public:
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
 	void			SetRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStensil, bool bBackup = false);
-	
-	
+
+
 
 	// Custom Camera Interface ======================================================================================================
 	//
@@ -250,13 +267,13 @@ public:
 
 					// Manually initialize client's internal camera setup
 	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp, bool bUpdate, DWORD dwRenderPass);
-	
+
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);
 
 	D3DXVECTOR3		GetPickingRay(short x, short y);
 
-					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera 
+					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera
 	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
 	double			GetTanAp() const { return tan(Camera.aperture); }
 	float			GetCameraAspect() const { return (float)Camera.aspect; }
@@ -267,7 +284,7 @@ public:
 	VECTOR3			GetCameraGDir() const { return Camera.dir; }
 	OBJHANDLE		GetCameraProxyBody() const { return Camera.hObj_proxy; }
 	vPlanet *		GetCameraProxyVisual() const { return Camera.vProxy; }
-	double			GetCameraAltitude() const { return Camera.alt_proxy; }	
+	double			GetCameraAltitude() const { return Camera.alt_proxy; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
 	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
 	float			VisibilityQuery(const VECTOR3 &gpos, double radius);
@@ -278,7 +295,7 @@ public:
 	const D3DXVECTOR3 *GetCameraX() const { return &Camera.x; }
 	const D3DXVECTOR3 *GetCameraY() const { return &Camera.y; }
 	const D3DXVECTOR3 *GetCameraZ() const { return &Camera.z; }
-	
+
 	const CAMERA *	GetCamera() const { return &Camera; }
 
 	void			PushCamera();	// Push current camera onto a stack
@@ -307,7 +324,7 @@ protected:
 	 * \param scale marker size
 	 */
 	void RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, const char *label1, const char *label2, int mode, int scale);
-	
+
 	/**
 	 * \brief Render a single marker at a given global position
 	 * \param hDC device context
@@ -326,7 +343,7 @@ private:
 	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
-	VOBJREC *	FindVisual (OBJHANDLE hObj) const; 
+	VOBJREC *	FindVisual (OBJHANDLE hObj) const;
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
 
@@ -343,8 +360,8 @@ private:
 	void InitGDIResources();
 	void ExitGDIResources();
 
-	
-	
+
+
 
 	// Scene variables ================================================================
 	//
@@ -356,7 +373,7 @@ private:
 	DWORD iVCheck;             // index of last object checked for visibility
 	DWORD dwRenderPass;		   // Currently active render pass
 	bool  bLocalLight;
-	
+
 	OBJHANDLE hSun;
 
 	D3D9ParticleStream **pstream; // list of particle streams
@@ -394,8 +411,8 @@ private:
 
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
-	
-	class ImageProcessing *pLightBlur, *pBlur;
+
+	class ImageProcessing *pLightBlur, *pBlur, *pFlare;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;
@@ -413,7 +430,7 @@ private:
 	LPDIRECT3DTEXTURE9 ptgBuffer[GBUF_COUNT];
 	LPDIRECT3DSURFACE9 pOffscreenTarget;
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
-	
+
 	// Rendering Technique related parameters ============================================
 	//
 	static ID3DXEffect	*FX;

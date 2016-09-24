@@ -31,6 +31,9 @@
 #include "gcConst.h"
 #include <vector>
 
+#define PP_DEFAULT			0x1
+#define PP_LENSFLARE		0x2
+
 #define MAX_SCENE_LIGHTS	24
 #define MAX_MESH_LIGHTS		8	// Must match the setting in D3D9Client.fx
 

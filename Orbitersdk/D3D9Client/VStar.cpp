@@ -14,6 +14,7 @@
 #include "Texture.h"
 #include "VStar.h"
 #include "D3D9Surface.h"
+#include "D3D9Config.h"
 
 LPD3D9CLIENTSURFACE vStar::deftex = 0;
 
@@ -50,6 +51,7 @@ bool vStar::Update (bool bMainScene)
 bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
+	if (Config->PostProcess == PP_LENSFLARE) return false;
 
 	double dist_scale;
 	float rad_scale = float(size);

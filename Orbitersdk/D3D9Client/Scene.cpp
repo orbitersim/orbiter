@@ -24,7 +24,7 @@
 #include "IProcess.h"
 #include <sstream>
 
-
+#define saturate(x)	max(min(x, 1.0f), 0.0f)
 
 using namespace oapi;
 
@@ -71,13 +71,13 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	nLights = 0;
 	dwTurn = 0;
 	dwFrameId = 0;
-	
+
 	pDevice = _gc->GetDevice();
-	
+
 	memset(&Camera, 0, sizeof(Camera));
 
 	D3DXMatrixIdentity(&ident);
-	
+
 	SetCameraAperture(float(RAD*50.0), float(viewH)/float(viewW));
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
@@ -93,7 +93,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
 	memset2(&sunLight, 0, sizeof(D3D9Sun));
-	
+
 	CLEARARRAY(pBlrTemp);
 	CLEARARRAY(pTextures);
 	CLEARARRAY(ptgBuffer);
@@ -107,43 +107,64 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	InitGDIResources();
 
 	cspheremgr = new CSphereManager(_gc, this);
-	
+
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
 	pLightBlur = NULL;
+	pFlare = NULL;
 
 	//HR(D3DXCreateTexture(pDevice, viewW / 2, viewH / 2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 
 	if (Config->PostProcess) {
 
-		pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain");
-		
-		int BufSize = pLightBlur->FindDefine("BufferDivider");
-		int BufFmt = pLightBlur->FindDefine("BufferFormat");
+		int BufSize = 1;
+		int BufFmt = 0;
 
-		D3DFORMAT BackBuffer = D3DFMT_A2R10G10B10;
-		if (BufFmt == 1) BackBuffer = D3DFMT_A16B16G16R16F;
-
-		LPDIRECT3DSURFACE9 pBack = gc->GetBackBuffer();
+		// Get the actual back buffer description
 		D3DSURFACE_DESC desc;
-		pBack->GetDesc(&desc);
+		gc->GetBackBuffer()->GetDesc(&desc);
 
-		if (pDevice->CreateRenderTarget(viewW, viewH, BackBuffer, desc.MultiSampleType, desc.MultiSampleQuality, false, &pOffscreenTarget, NULL) == S_OK) {
-			HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pTextures[TEX_NOISE]));
-			HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9CLUT.dds", &pTextures[TEX_CLUT]));
-			HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_COLOR]));
+
+		// Load postprocessing effects
+		if (Config->PostProcess == PP_DEFAULT)
+			pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain");
+
+		if (Config->PostProcess == PP_LENSFLARE) 
+			pFlare = new ImageProcessing(pDevice, "Modules/D3D9Client/LensFlare.hlsl", "PSMain");
+
+		
+		if (pLightBlur) {
+			BufSize = pLightBlur->FindDefine("BufferDivider");
+			BufFmt = pLightBlur->FindDefine("BufferFormat");
+		}
+
+		D3DFORMAT BackBuffer = desc.Format;
+		if (BufFmt == 1) BackBuffer = D3DFMT_A16B16G16R16F;
+		if (BufFmt == 2) BackBuffer = D3DFMT_A2R10G10B10;
+
+		// Create auxiliary color buffer for color operations
+		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_COLOR]));
+
+		// Load some textures
+		HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pTextures[TEX_NOISE]));
+		HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9CLUT.dds", &pTextures[TEX_CLUT]));
+
+		if (pLightBlur) {
 			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
 			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_TEMP]));
-
 		}
-		else {
-			LogErr("Creation of Offscreen render target failed");
-			SAFE_DELETE(pLightBlur);
+
+		if (pLightBlur) {
+			// Construct an offscreen backbuffer with custom pixel format
+			if (pDevice->CreateRenderTarget(viewW, viewH, BackBuffer, desc.MultiSampleType, desc.MultiSampleQuality, false, &pOffscreenTarget, NULL) != S_OK) {
+				LogErr("Creation of Offscreen render target failed");
+				SAFE_DELETE(pLightBlur);
+			}
 		}
 	}
 
 	for (int i = 0; i < ARRAYSIZE(ptgBuffer);i++)  if (ptgBuffer[i]) ptgBuffer[i]->GetSurfaceLevel(0, &psgBuffer[i]);
-	
+
 	LogAlw("================ Scene Created ===============");
 }
 
@@ -161,14 +182,14 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(psgBuffer); i++) SAFE_RELEASE(psgBuffer[i]);
 	for (int i = 0; i < ARRAYSIZE(ptgBuffer); i++) SAFE_RELEASE(ptgBuffer[i]);
 	for (int i = 0; i < ARRAYSIZE(pTextures); i++) SAFE_RELEASE(pTextures[i]);
-	
+
 	SAFE_DELETE(pBlur);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pColorBak);
 	SAFE_RELEASE(pDepthStensilBak);
-	
+
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 
 	if (Lights) delete []Lights;
@@ -200,7 +221,7 @@ void Scene::Initialise()
 	//
 	float pwr = 1.0f;
 
-	sunLight.Color.r = pwr; 
+	sunLight.Color.r = pwr;
 	sunLight.Color.g = pwr;
 	sunLight.Color.b = pwr;
 	sunLight.Color.a = 1.0f;
@@ -208,7 +229,7 @@ void Scene::Initialise()
 	sunLight.Ambient.g = float(ambient)*0.0039f;
 	sunLight.Ambient.b = float(ambient)*0.0039f;
 	sunLight.Ambient.a = 1.0f;
-	
+
 	// Update Sunlight direction -------------------------------------
 	//
 	VECTOR3 rpos, cpos;
@@ -328,7 +349,7 @@ void Scene::DeleteAllVisuals()
 	VOBJREC *pv = vobjFirst;
 	while (pv) {
 		VOBJREC *pvn = pv->next;
-		
+
 		DebugControls::RemoveVisual(pv->vobj);
 
 		__TRY {
@@ -395,7 +416,7 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 	// Initialize Meshes
 	pv->vobj->PreInitObject();
-	
+
 	return pv;
 }
 
@@ -470,7 +491,7 @@ void Scene::Update ()
 		if (iVCheck >= nobj) iVCheck = 0;
 
 		// This function will browse through vessels and planets. (not bases)
-		// Base visuals don't exist in the visual record. 
+		// Base visuals don't exist in the visual record.
 		OBJHANDLE hObj = oapiGetObjectByIndex(iVCheck++);
 		CheckVisual(hObj);
 	}
@@ -481,7 +502,7 @@ void Scene::Update ()
 	OBJHANDLE hTgt = oapiCameraTarget();
 
 	if (hTgt!=Camera.hTarget && hTgt!=NULL) {
-		
+
 		Camera.hTarget = hTgt;
 
 		if (oapiGetObjectType(hTgt)==OBJTP_SURFBASE) {
@@ -493,14 +514,14 @@ void Scene::Update ()
 					if (DebugControls::IsActive()) {
 						DebugControls::SetVisual(vb);
 					}
-					
+
 				}
 			}
 			return;
 		}
 
 		vObject *vo = GetVisObject(hTgt);
-		
+
 		if (vo) {
 
 			if (DebugControls::IsActive()) {
@@ -552,10 +573,10 @@ float Scene::ComputeNearClipPlane()
 {
 	float zsurf = 1000.0f;
 	VOBJREC *pv = NULL;
-	
+
 	OBJHANDLE hObj = oapiCameraProxyGbody();
 	VESSEL *hVes = oapiGetFocusInterface();
-	
+
 	if (hObj && hVes) {
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
@@ -592,7 +613,7 @@ float Scene::ComputeNearClipPlane()
 
 		bool bCockpit = false;
 
-		if (pv->type==OBJTP_VESSEL) {	
+		if (pv->type==OBJTP_VESSEL) {
 			if (pv->vobj==vFocus) {
 				bCockpit = oapiCameraInternal();
 			}
@@ -612,7 +633,7 @@ float Scene::ComputeNearClipPlane()
 			}
 
 			if (pv->type==OBJTP_VESSEL) {
-		
+
 				if (obj->IsVisible()) {
 
 					if (bCockpit) if (vFocus->HasExtPass()==false) continue; // Ignore MinMax
@@ -687,19 +708,19 @@ void Scene::UpdateCamVis()
 	// Update camera parameters --------------------------------------
 	// and call vObject::Update() for all visuals
 	//
-	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);	
+	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
 
 	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
-	
+
 	// Update Sunlight direction -------------------------------------
-	// 
+	//
 	VECTOR3 rpos;
 	oapiGetGlobalPos(hSun, &rpos);
-	rpos -= Camera.pos; 
+	rpos -= Camera.pos;
 	D3DVEC(-unit(rpos), sunLight.Dir);
-	
+
 	// Get focus visual -----------------------------------------------
-	// 
+	//
 	OBJHANDLE hFocus = oapiGetFocusObject();
 	vFocus = NULL;
 	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) {
@@ -777,7 +798,7 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 {
 	if (Lights==NULL) return;
 	if (le->IsActive()==false || le->GetIntensity()==0.0) return;
-	
+
 	assert(vo != NULL);
 
 	D3D9Light lght(le, vo);
@@ -788,7 +809,7 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 		if (lght.Dst2 > lmaxdst2) return;
 		Lights[lmaxidx] = lght;
 		lmaxdst2 = 0.0f;
-		for (DWORD i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;	
+		for (DWORD i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;
 	}
 	else {
 		Lights[nLights] = lght;
@@ -870,11 +891,11 @@ void Scene::RenderMainScene()
 		// Clear the viewport
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	}
-	
+
 	if (FAILED (BeginScene())) return;
-	
+
 	float znear_for_vessels = ComputeNearClipPlane();
-	
+
 	// Do we use z-clear render mode or not ?
 	bool bClearZBuffer = false;
 	if ( (GetFocusGroundAltitude() > 10e3) && (oapiCameraInternal() == false) ) bClearZBuffer = true;
@@ -905,13 +926,13 @@ void Scene::RenderMainScene()
 
 	vPlanet *vPl = GetCameraProxyVisual();
 
-	if (vPl) {		
+	if (vPl) {
 		bEnableAtmosphere = vPl->CameraInAtmosphere();
 		PlanetRenderer::InitializeScattering(vPl);
 	}
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Celestial Sphere Background Image 
+	// Render Celestial Sphere Background Image
 	// -------------------------------------------------------------------------------------------------------
 
 	cspheremgr->Render(pDevice, 8, bglvl);
@@ -930,14 +951,14 @@ void Scene::RenderMainScene()
 
 		HR(FX->SetTechnique(eLine));
 		HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
-		
+
 		// render ecliptic grid ----------------------------------------------------------------------------
 		//
 		if (plnmode & PLN_EGRID) {
 			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.4f*linebrt, 1.0f);
 			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderGrid(FX, !(plnmode & PLN_ECL));	
-			
+			csphere->RenderGrid(FX, !(plnmode & PLN_ECL));
+
 		}
 		if (plnmode & PLN_ECL)	 {
 			D3DXVECTOR4 vColor(0.0f, 0.0f, 0.8f*linebrt, 1.0f);
@@ -951,7 +972,7 @@ void Scene::RenderMainScene()
 			double obliquity = 0.4092797095927;
 			double coso = cos(obliquity), sino = sin(obliquity);
 			D3DXMATRIX rot(1.0f,0.0f,0.0f,0.0f,  0.0f,(float)coso,(float)sino,0.0f,  0.0f,-(float)sino,(float)coso,0.0f,  0.0f,0.0f,0.0f,1.0f);
-			
+
 			D3DXMatrixMultiply(&rot, &rot, GetProjectionViewMatrix());
 			HR(FX->SetMatrix(eWVP, &rot));
 
@@ -973,7 +994,7 @@ void Scene::RenderMainScene()
 			HR(FX->SetMatrix(eWVP, GetProjectionViewMatrix()));
 			D3DXVECTOR4 vColor(0.4f*linebrt, 0.3f*linebrt, 0.2f*linebrt, 1.0f);
 			HR(FX->SetVector(eColor, &vColor));
-			csphere->RenderConstellations(FX);		
+			csphere->RenderConstellations(FX);
 		}
 	}
 
@@ -994,7 +1015,7 @@ void Scene::RenderMainScene()
 
 	pSketch->SetFont(pLabelFont);
 	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
-	
+
 	// -------------------------------------------------------------------------------------------------------
 	// render star markers
 	// -------------------------------------------------------------------------------------------------------
@@ -1015,25 +1036,25 @@ void Scene::RenderMainScene()
 				label = (plnmode & PLN_CNSTLONG) ? ls[n].label[0] : ls[n].label[1];
 				RenderDirectionMarker(pSketch, ls[n].pos, NULL, label, -1, 0);
 			}
-		} 
+		}
 		// celestial marker (stars) names ----------------------------------------
 		if (plnmode & PLN_CCMARK) {
 			const GraphicsClient::LABELLIST *list;
 			DWORD n, nlist;
 			nlist = gc->GetCelestialMarkers(&list);
-				
+
 			for (n = 0; n < nlist; n++) {
-				if (list[n].active) {		
+				if (list[n].active) {
 					int size = (int)(viewH/80.0*list[n].size+0.5);
-				
+
 					pSketch->SetTextColor(labelCol[list[n].colour]);
 					pSketch->SetPen(lblPen[list[n].colour]);
 
 					const GraphicsClient::LABELSPEC *ls = list[n].list;
 					for (int i=0;i<list[n].length;i++) RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
 				}
-			}	
-		} 
+			}
+		}
 	}
 
 	pSketch->EndDrawing();
@@ -1087,7 +1108,7 @@ void Scene::RenderMainScene()
 					for (n=0;n<nlist;n++) {
 
 						if (list[n].active && apprad*list[n].distfac > LABEL_DISTLIMIT) {
-								
+
 							int size = (int)(viewH/80.0*list[n].size+0.5);
 							int col = list[n].colour;
 
@@ -1140,8 +1161,8 @@ void Scene::RenderMainScene()
 			}
 
 			pSketch->EndDrawing();
-		} 
-	} 
+		}
+	}
 
 
 	if (plnmode & PLN_ENABLE) {
@@ -1150,7 +1171,7 @@ void Scene::RenderMainScene()
 		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), &mP);
 	}
 
-    	
+
 	// -------------------------------------------------------------------------------------------------------
 	// render the vessel objects
 	// -------------------------------------------------------------------------------------------------------
@@ -1175,12 +1196,12 @@ void Scene::RenderMainScene()
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
 		if (!pv->vobj->IsVisible()) continue;
-	
+
 		OBJHANDLE hObj = pv->vobj->Object();
 		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
 
 			pv->vobj->Render(pDevice);
-			
+
 			if ((plnmode & (PLN_ENABLE|PLN_VMARK)) == (PLN_ENABLE|PLN_VMARK)) {
 				VECTOR3 gpos;
 				char name[256];
@@ -1220,12 +1241,12 @@ void Scene::RenderMainScene()
     for (pv=vobjFirst; pv; pv=pv->next) {
         if (!pv->vobj->IsActive()) continue;
         pv->vobj->RenderGrapplePoints(pDevice);
-    }  
+    }
 
 	// render exhaust particle system
 	//
 	for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
-	
+
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render vessel axis vectors
@@ -1280,8 +1301,8 @@ void Scene::RenderMainScene()
 	}
 
 	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	
-	
+
+
 	// End Of Main Scene Rendering ---------------------------------------------
 	//
 	pSketch->SetFont(NULL);
@@ -1289,9 +1310,7 @@ void Scene::RenderMainScene()
 
 	SAFE_DELETE(pSketch);
 
-	if (pOffscreenTarget) EndScene();
-
-
+	EndScene();
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render Scene depth into a depth texture. Before execution:
@@ -1299,7 +1318,7 @@ void Scene::RenderMainScene()
 	// - Scene rendering must be ended
 	// -------------------------------------------------------------------------------------------------------
 
-	
+	/*
 	if (psgBuffer[GBUF_DEPTH]) {
 
 		SetRenderTarget(psgBuffer[GBUF_DEPTH], CURRENT, true);
@@ -1309,7 +1328,7 @@ void Scene::RenderMainScene()
 		RenderShadowMap();
 
 		SetRenderTarget(RESTORE, RESTORE);
-	}
+	}*/
 
 
 
@@ -1325,24 +1344,24 @@ void Scene::RenderMainScene()
 
 		D3DSURFACE_DESC colr;
 		D3DSURFACE_DESC blur;
-		
+
 		psgBuffer[GBUF_BLUR]->GetDesc(&blur);
 		psgBuffer[GBUF_COLOR]->GetDesc(&colr);
 
 		D3DXVECTOR2 scr = D3DXVECTOR2(1.0f / float(colr.Width), 1.0f / float(colr.Height));
 		D3DXVECTOR2 sbf = D3DXVECTOR2(1.0f / float(blur.Width), 1.0f / float(blur.Height));
-	
+
 
 		if (pLightBlur->IsOK()) {
 
 			// Grap a copy of a backbuffer
 			pDevice->StretchRect(pOffscreenTarget, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
-			
+
 			pLightBlur->SetFloat("vSB", &sbf, sizeof(D3DXVECTOR2));
 			pLightBlur->SetFloat("vBB", &scr, sizeof(D3DXVECTOR2));
 			pLightBlur->SetBool("bBlendIn", false);
 			pLightBlur->SetBool("bBlur", false);
-			
+
 			// -----------------------------------------------------
 			pLightBlur->SetBool("bSample", true);
 			pLightBlur->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_POINT | IPF_CLAMP);
@@ -1350,15 +1369,15 @@ void Scene::RenderMainScene()
 			pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
 
 			if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
-	
+
 			// -----------------------------------------------------
 			pLightBlur->SetBool("bSample", false);
 			pLightBlur->SetBool("bBlur", true);
-				
+
 			for (int i = 0; i < iGensPerFrame; i++) {
 
 				pLightBlur->SetInt("PassId", i);
-				
+
 				pLightBlur->SetBool("bDir", false);
 				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_POINT | IPF_CLAMP);
 				pLightBlur->SetOutputNative(0, psgBuffer[GBUF_TEMP]);
@@ -1371,7 +1390,7 @@ void Scene::RenderMainScene()
 
 				if (!pLightBlur->Execute()) 	LogErr("pLightBlur Execute Failed");
 			}
-			
+
 			pLightBlur->SetBool("bBlendIn", true);
 			pLightBlur->SetBool("bBlur", false);
 			pLightBlur->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_LINEAR | IPF_CLAMP);
@@ -1385,17 +1404,63 @@ void Scene::RenderMainScene()
 		}
 	}
 
+	// -------------------------------------------------------------------------------------------------------
+	// Render Lens Flare
+	// -------------------------------------------------------------------------------------------------------
 
+	if (pFlare) {
+
+		D3DSURFACE_DESC colr;
+
+		psgBuffer[GBUF_COLOR]->GetDesc(&colr);
+
+		if (pFlare->IsOK())
+		{
+			OBJHANDLE hSun = oapiGetObjectByIndex(0);
+			VECTOR3 sunPos = _V(0, 0, 0);
+			oapiGetGlobalPos(hSun, &sunPos);
+			sunPos -= GetCameraGPos();
+			SUNVISPARAMS sunParams = GetSunScreenVisualState();
+
+			pDevice->StretchRect(pBackBuffer, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
+			pFlare->SetTextureNative("tBack", ptgBuffer[GBUF_COLOR], IPF_LINEAR | IPF_CLAMP);
+			pFlare->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_CLAMP | IPF_LINEAR);
+
+			/*D3DXVECTOR3 vLightPos = D3DXVEC(sunPos);
+			pFlare->SetFloat("vLightPos", &sunParams.position, sizeof(D3DXVECTOR2));
+			pFlare->SetFloat("vLightColor", &sunParams.color, sizeof(D3DXCOLOR));
+			pFlare->SetBool("bVisible", &sunParams.visible);*/
+			pFlare->SetStruct("sunParams", &sunParams, sizeof(SUNVISPARAMS));
+			pFlare->SetBool("bCockpitCamera", oapiCameraInternal());
+
+			D3DXVECTOR2 vResolution = D3DXVECTOR2(float(colr.Width), float(colr.Height));
+			pFlare->SetFloat("vResolution", &vResolution, sizeof(D3DXVECTOR2));
+
+			float fSize = float(length(sunPos / 150e9));
+			pFlare->SetFloat("fSize", &fSize, sizeof(float));
+
+			float fBrightness = 1.0f; //TODO: Implement brightness config
+			pFlare->SetFloat("fBrightness", &sunParams.brightness, sizeof(float));
+
+			// -------------------------
+			pFlare->SetOutputNative(0, gc->GetBackBuffer());
+
+			if (!pFlare->Execute()) LogErr("pFlare Execute Failed");
+		}
+		else
+		{
+			LogErr("pFlare is not OK.");
+		}
+	}
 
 
 	// -------------------------------------------------------------------------------------------------------
 	// Render HUD Overlay to backbuffer directly
 	// -------------------------------------------------------------------------------------------------------
 
-	if (pOffscreenTarget) {
-		pDevice->SetRenderTarget(0, gc->GetBackBuffer());
-		if (FAILED(BeginScene())) return;
-	}
+	pDevice->SetRenderTarget(0, gc->GetBackBuffer());
+	if (FAILED(BeginScene())) return;
+	
 
 
 	pSketch = new D3D9Pad(gc->GetBackBuffer());
@@ -1403,7 +1468,7 @@ void Scene::RenderMainScene()
 	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL, NULL);
 	gc->Render2DOverlay();
 	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL, NULL);
-	
+
 	SAFE_DELETE(pSketch);
 
 
@@ -1417,7 +1482,7 @@ void Scene::RenderMainScene()
 	if (bFreezeEnable) bFreeze = true;
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Custom Camera Views 
+	// Render Custom Camera Views
 	// -------------------------------------------------------------------------------------------------------
 
 	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
@@ -1425,7 +1490,7 @@ void Scene::RenderMainScene()
 	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
 
 	int RenderCount = max(1, Config->EnvMapFaces);
-	
+
 	// --------------------------------------------------------------------------------------------------------
 	// Render Custom Camera view for a focus vessel
 	//
@@ -1445,25 +1510,25 @@ void Scene::RenderMainScene()
 	}
 
 	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Focus Vessel 
-	// 
+	// Render Environmental Map For the Focus Vessel
+	//
 	if (dwTurn==RENDERTURN_ENVCAM) {
 
 		if (Config->EnvMapMode) {
 			DWORD flags = 0;
-			if (Config->EnvMapMode==1) flags |= 0x01; 
+			if (Config->EnvMapMode==1) flags |= 0x01;
 			if (Config->EnvMapMode==2) flags |= 0x03;
 
 			if (vobjEnv==NULL) vobjEnv = vobjFirst;
 
-			while (vobjEnv) {	
+			while (vobjEnv) {
 				if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
 					if (vobjEnv->vobj) {
 						vVessel *vVes = (vVessel *)vobjEnv->vobj;
 						if (vVes->RenderENVMap(pDevice, RenderCount, flags)) {
 							vobjEnv = vobjEnv->next;
 							break;
-						}	
+						}
 					}
 				}
 				vobjEnv = vobjEnv->next;
@@ -1477,7 +1542,7 @@ void Scene::RenderMainScene()
 	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
 	// -------------------------------------------------------------------------------------------------------
 	// pDevice->StretchRect(psgNormal, NULL, gc->GetBackBuffer(), NULL, D3DTEXF_LINEAR);
-	
+
 	if (DebugControls::IsActive()) {
 		int sel = DebugControls::GetSelectedEnvMap();
 		if (sel>0) {
@@ -1536,15 +1601,143 @@ void Scene::RenderMainScene()
 
 		oapiReleasePen(nullp);
 		oapiReleaseBrush(brush);
-	
+
 		SAFE_DELETE(pSketch);
 
 		EndScene();
 	}
-	
+
 	dwTurn++;
 }
 
+Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
+{
+	SUNVISPARAMS result = SUNVISPARAMS();
+
+	VECTOR3 cam = GetCameraGPos();
+	VECTOR3 sunGPos;
+	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &sunGPos);
+	sunGPos -= cam;
+	DWORD w, h;
+	oapiGetViewportSize(&w, &h);
+
+	MATRIX4 mVP = _MATRIX4(GetProjectionViewMatrix());
+	VECTOR4 temp = _V(sunGPos.x, sunGPos.y, sunGPos.z, 1.0);
+	VECTOR4 pos = mul(temp, mVP);
+
+	result.brightness = float(saturate(pos.z));
+
+	D3DXVECTOR2 scrPos = D3DXVECTOR2(float(pos.x), float(pos.y));
+	scrPos /= float(pos.w);
+	scrPos *= 0.5f;
+	scrPos.x *= float(w / h);
+
+	result.position = scrPos;
+	result.position.x *= 1.8f;
+
+	short xpos = short((scrPos.x + 0.5f) * w);
+	short ypos = short((1 - (scrPos.y + 0.5f)) * h);
+
+	D3D9Pick pick = PickScene(xpos, ypos);
+
+	if (pick.pMesh != NULL)
+	{
+		DWORD matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
+		D3D9MatExt material;
+		pick.pMesh->GetMaterial(&material, matIndex);
+		D3DXCOLOR surfCol = material.Diffuse;
+
+		result.visible = (surfCol.a != 1.0f);
+		if (result.visible)
+		{
+			D3DXCOLOR color = D3DXCOLOR(surfCol.r*surfCol.a, surfCol.g*surfCol.a, surfCol.b*surfCol.a, 1.0f);
+			color += GetSunDiffColor() * (1 - surfCol.a);
+
+			result.color = color;
+		}
+		return result;
+	}
+	result.visible = true;
+	result.color = GetSunDiffColor();
+
+	return result;
+}
+
+D3DXCOLOR Scene::GetSunDiffColor()
+{
+	vPlanet *vP = Camera.vProxy;
+
+	D3DXVECTOR3 _one(1, 1, 1);
+	VECTOR3 GS, GP, GO;
+	oapiCameraGlobalPos(&GO);
+
+	OBJHANDLE hS = oapiGetGbodyByIndex(0);	// the central star
+	OBJHANDLE hP = vP->Object();			// the planet object
+	oapiGetGlobalPos(hS, &GS);				// sun position
+	oapiGetGlobalPos(hP, &GP);				// planet position
+
+	VECTOR3 S = GS - GO;						// sun's position from object
+	VECTOR3 P = GO - GP;
+
+	double s = length(S);
+
+	float pwr = 1.0f;
+
+	if (hP == hS) return GetSun()->Color;
+
+	double r = length(P);
+	double pres = 1.0;
+	double size = oapiGetSize(hP) + vP->GetMinElevation();
+	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
+
+	float aalt = 1.0f;
+	float amb0 = 0.0f;
+	float disp = 0.0f;
+	float amb = 0.0f;
+	float aq = 0.342f;
+	float ae = 0.242f;
+	float al = 0.0f;
+	float k = float(sqrt(r*r - size*size));		// Horizon distance
+	float alt = float(r - size);
+	float rs = float(oapiGetSize(hS) / s);
+	float ac = float(-dotp(S, P) / (r*s));					// sun elevation
+
+															// Avoid some fault conditions
+	if (alt<0) alt = 0, k = 1e3, size = r;
+
+	if (ac>1.0f) ac = 1.0f; if (ac<-1.0f) ac = -1.0f;
+
+	ac = acos(ac) - asin(float(size / r));
+
+	if (ac>1.39f)  ac = 1.39f;
+	if (ac<-1.39f) ac = -1.39f;
+
+	float h = tan(ac);
+
+	const ATMCONST *atm = (oapiGetObjectType(hP) == OBJTP_PLANET ? oapiGetPlanetAtmConstants(hP) : NULL);
+
+	if (atm) {
+		aalt = float(atm->p0 * log(atm->p0 / pres) / (atm->rho0*grav));
+		amb0 = float(min(0.7, log(atm->rho0 + 1.0f)*0.4));
+		disp = float(max(0.02, min(0.9, log(atm->rho0 + 1.0))));
+	}
+
+	if (alt>10e3f) al = aalt / k;
+	else           al = 0.173f;
+
+	D3DXVECTOR3 lcol(1, 1, 1);
+	//D3DXVECTOR3 r0 = _one - D3DXVECTOR3(0.65f, 0.75f, 1.0f) * disp;
+	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(1.15f, 1.65f, 2.35f) * disp;
+
+	if (atm) {
+		lcol = (r0 + (_one - r0) * saturate((h / al))) * saturate((h + rs) / (2.0f*rs));
+	}
+	else {
+		lcol = r0 * saturate((h + rs) / (2.0f*rs));
+	}
+
+	return D3DXCOLOR(lcol.x, lcol.y, lcol.z, 1);
+}
 
 // ===========================================================================================
 //
@@ -1556,7 +1749,7 @@ void Scene::RenderShadowMap()
 
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L));
-	
+
 	if (FAILED (BeginScene())) return;
 
 	VOBJREC *pv = NULL;
@@ -1564,17 +1757,17 @@ void Scene::RenderShadowMap()
 	// render planets -------------------------------------------
 	//
 	//vPlanet *vP = GetCameraProxyVisual();
-	//if (vP) vP->Render(pDevice); 
-	
+	//if (vP) vP->Render(pDevice);
+
 	// render the vessel objects --------------------------------
-	// 
+	//
 	for (pv=vobjFirst; pv; pv=pv->next) {
 		if (!pv->vobj->IsActive()) continue;
 		if (!pv->vobj->IsVisible()) continue;
 		OBJHANDLE hObj = pv->vobj->Object();
 		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
 	}
-	
+
 
 	EndScene();
 }
@@ -1606,7 +1799,7 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	}
 
 	// render the vessel objects --------------------------------
-	// 
+	//
 	if (flags & 0x02) {
 		for (pv = vobjFirst; pv; pv = pv->next) {
 			if (!pv->vobj->IsActive()) continue;
@@ -1705,7 +1898,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 		pBlur->SetFloat("fD", 4.0f / float(width >> (mip-1)));
 		pBlur->SetBool("bDir", false);
 		pBlur->SetTextureNative("tCube", pBlrTemp[mip-1], IPF_LINEAR);
-	
+
 		for (DWORD i = 0; i < 6; i++) {
 
 			EnvMapDirection(i, &dir, &up);
@@ -1791,7 +1984,7 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 	for (DWORD i=0;i<6;i++) {
 
 		HR(pCube->GetCubeMapSurface(D3DCUBEMAP_FACES(i), mip, &pSrf));
-		
+
 		switch (i) {
 			case 0:	x = 2*h; y=h; break;
 			case 1:	x = 0;   y=h; break;
@@ -1809,7 +2002,7 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 
 		HR(pDevice->StretchRect(pSrf, NULL, pBack, &dr, D3DTEXF_LINEAR));
 
-		SAFE_RELEASE(pSrf);	
+		SAFE_RELEASE(pSrf);
 	}
 }
 
@@ -1825,11 +2018,11 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 		if (!pv->vobj->IsActive()) continue;
 		if (oapiGetObjectType(pv->vobj->Object()) == OBJTP_VESSEL)
 			((vVessel*)(pv->vobj))->RenderGroundShadow(pDevice, hPlanet, depth);
-	}	
+	}
 
 	// reset device parameters
 	pDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	
+
 	// render particle shadows
 	LPDIRECT3DTEXTURE9 tex = 0;
 	for (DWORD j=0;j<nstream;j++) pstream[j]->RenderGroundShadow(pDevice, tex);
@@ -1874,7 +2067,7 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 {
 	D3DXVECTOR4 homog;
 	D3DXVECTOR3 pos(float(wpos.x), float(wpos.y), float(wpos.z));
-	
+
 	D3DXVec3Transform(&homog, &pos, pVP);
 
 	if (homog.w < 0.0f) return false;
@@ -1893,7 +2086,7 @@ bool Scene::WorldToScreenSpace(const VECTOR3 &wpos, oapi::IVECTOR2 *pt, D3DXMATR
 		pt->x = (long)((float(viewW) * 0.5f * (1.0f + homog.x)) + 0.5f);
 		pt->y = (long)((float(viewH) * 0.5f * (1.0f - homog.y)) + 0.5f);
 	}
-	
+
 	return !bClip;
 }
 
@@ -1916,7 +2109,7 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 		if (_hypot (homog.x, homog.y) < 1e-6) {
 			x = viewW/2;
 			y = viewH/2;
-		} 
+		}
 		else {
 			x = (int)(viewW*0.5*(1.0f+homog.x));
 			y = (int)(viewH*0.5*(1.0f-homog.y));
@@ -1931,7 +2124,7 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 			case 1: // circle
 				pSkp->Ellipse(x-scale, y-scale, x+scale+1, y+scale+1);
 				break;
-		
+
 			case 2: // diamond
 				pSkp->MoveTo(x, y-scale);
 				pSkp->LineTo(x+scale, y); pSkp->LineTo(x, y+scale);
@@ -1964,9 +2157,9 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 				pSkp->MoveTo(x-scale, y+scale); pSkp->LineTo(x-scl1, y+scl1);
 				pSkp->MoveTo(x+scale, y-scale); pSkp->LineTo(x+scl1, y-scl1);
 				pSkp->MoveTo(x+scale, y+scale); pSkp->LineTo(x+scl1, y+scl1);
-			} break;	
+			} break;
 		}
-	
+
 		if (label1) pSkp->Text(x, y-scale, label1, strlen(label1));
 		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, strlen(label2));
 	}
@@ -2000,7 +2193,7 @@ void Scene::DeleteVessel(OBJHANDLE hVessel)
 //
 void Scene::AddParticleStream (class D3D9ParticleStream *_pstream)
 {
-	
+
 	D3D9ParticleStream **tmp = new D3D9ParticleStream*[nstream+1];
 	if (nstream) {
 		memcpy2 (tmp, pstream, nstream*sizeof(D3D9ParticleStream*));
@@ -2008,14 +2201,14 @@ void Scene::AddParticleStream (class D3D9ParticleStream *_pstream)
 	}
 	pstream = tmp;
 	pstream[nstream++] = _pstream;
-	
+
 }
 
 // ===========================================================================================
 //
 void Scene::DelParticleStream (DWORD idx)
 {
-	
+
 	D3D9ParticleStream **tmp;
 	if (nstream > 1) {
 		DWORD i, j;
@@ -2027,7 +2220,7 @@ void Scene::DelParticleStream (DWORD idx)
 	delete []pstream;
 	pstream = tmp;
 	nstream--;
-	
+
 }
 
 // ===========================================================================================
@@ -2054,9 +2247,9 @@ void Scene::ExitGDIResources ()
 
 // ===========================================================================================
 //
-float Scene::GetDepthResolution(float dist) const 
-{ 
-	return fabs( (Camera.nearplane-Camera.farplane)*(dist*dist) / (Camera.farplane * Camera.nearplane * 16777215.0f) ); 
+float Scene::GetDepthResolution(float dist) const
+{
+	return fabs( (Camera.nearplane-Camera.farplane)*(dist*dist) / (Camera.farplane * Camera.nearplane * 16777215.0f) );
 }
 
 // ===========================================================================================
@@ -2073,16 +2266,16 @@ void Scene::GetCameraLngLat(double *lng, double *lat) const
 
 // ===========================================================================================
 //
-void Scene::PushCamera() 
-{ 
-	CameraStack.push(Camera); 
+void Scene::PushCamera()
+{
+	CameraStack.push(Camera);
 }
 
 // ===========================================================================================
 //
-void Scene::PopCamera() 
-{ 
-	Camera = CameraStack.top(); 
+void Scene::PopCamera()
+{
+	Camera = CameraStack.top();
 	CameraStack.pop();
 }
 
@@ -2114,7 +2307,7 @@ TILEPICK Scene::PickSurface(short xpos, short ypos)
 	tp.cLng = cLng;
 	tp.cLat = cLat;
 	tp.vRay = _VD3DX(GetPickingRay(xpos, ypos));
-	
+
 	vp->PickSurface(&tp);
 	return tp;
 }
@@ -2124,7 +2317,7 @@ TILEPICK Scene::PickSurface(short xpos, short ypos)
 D3D9Pick Scene::PickScene(short xpos, short ypos)
 {
 	D3DXVECTOR3 vPick = GetPickingRay(xpos, ypos);
-	
+
 	D3D9Pick result;
 	result.dist  = 1e30f;
 	result.pMesh = NULL;
@@ -2137,14 +2330,14 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 		if (pv->type!=OBJTP_VESSEL) continue;
 		if (!pv->vobj->IsActive()) continue;
 		if (!pv->vobj->IsVisible()) continue;
-		
+
 		vVessel *vVes = (vVessel *)pv->vobj;
 		double cd = vVes->CamDist();
 
 		if (cd<5e3 && cd>1e-3) {
 			D3D9Pick pick = vVes->Pick(&vPick);
 			if (pick.pMesh) if (pick.dist<result.dist) result = pick;
-		}	
+		}
 	}
 
 	return result;
@@ -2170,18 +2363,18 @@ void Scene::SetCameraAperture(float ap, float as)
 	Camera.aspect = as;
 
 	float tanap = tan(ap);
-	
+
 	ZeroMemory(&Camera.mProj, sizeof(D3DXMATRIX));
 
 	Camera.mProj._11 = (as / tanap);
 	Camera.mProj._22 = (1.0f / tanap);
 	Camera.mProj._43 = (Camera.mProj._33 = Camera.farplane / (Camera.farplane-Camera.nearplane)) * (-Camera.nearplane);
 	Camera.mProj._34 = 1.0f;
-	
+
 	float x = tanap / as;
 	float y = tanap;
 	float z = as / tanap;
-	
+
 	Camera.apsq = sqrt(x*x*x*z + y*y);
 
 	Camera.vh   = tan(ap);
@@ -2266,7 +2459,7 @@ void Scene::UpdateCameraFromOrbiter(DWORD dwPass)
 	// translational transformation between orbiter global coordinates
 	// and render coordinates.
 
-	SetupInternalCamera(&Camera.mView, &Camera.pos, oapiCameraAperture(), double(viewH)/double(viewW), true, dwPass); 
+	SetupInternalCamera(&Camera.mView, &Camera.pos, oapiCameraAperture(), double(viewH)/double(viewW), true, dwPass);
 }
 
 
@@ -2294,7 +2487,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	// find the visual
 	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
-	
+
 	// Camera altitude over the proxy
 	VECTOR3 pos;
 	oapiGetGlobalPos(Camera.hObj_proxy, &pos);
@@ -2304,7 +2497,7 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	SetCameraAperture(float(apr), float(asp));
 
 	// Finally update world matrices from all visuals if camera position vector is provided and update is requested
-	// Othervice the world status remains unchanged 
+	// Othervice the world status remains unchanged
 	//
 	if (gpos && bUpdate) for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) pv->vobj->Update(dwPass==RENDERPASS_MAINSCENE);
 }
@@ -2355,7 +2548,7 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 	if (!hSurf) return NULL;
 	if (Config->CustomCamMode==0) return NULL;
 	if (SURFACE(hSurf)->Is3DRenderTarget()==false) return NULL;
-	
+
 	if (hCamera==NULL) {
 
 		pv = new CAMREC;
@@ -2419,7 +2612,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 
 	pVes->GetRotationMatrix(grot);
 	pVes->Local2Global(cCur->vPosition, gpos);
-	
+
 	D3DXMATRIX mEnv, mGlo;
 
 	D3DXMatrixIdentity(&mGlo);
@@ -2427,10 +2620,10 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	D3DXMatrixIdentity(&mEnv);
 	D3DMAT_SetRotation(&mEnv, &cCur->mRotation);
 	D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
-	
+
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w), true, RENDERPASS_CUSTOMCAM);
-	
+
 	ClearOmitFlags();
 
 	HR(pDevice->GetRenderTarget(0, &pORT));
@@ -2453,11 +2646,11 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
 {
 	float z = Camera.z.x*pCnt->x + Camera.z.y*pCnt->y + Camera.z.z*pCnt->z;
-	if (z<(-radius)) return false; 
+	if (z<(-radius)) return false;
 	if (z<0) z=-z;
 	float y = Camera.y.x*pCnt->x + Camera.y.y*pCnt->y + Camera.y.z*pCnt->z;
 	if (y<0) y=-y;
-	if (y-(radius*Camera.vhf) > (Camera.vh*z)) return false; 
+	if (y-(radius*Camera.vhf) > (Camera.vh*z)) return false;
 	float x = Camera.x.x*pCnt->x + Camera.x.y*pCnt->y + Camera.x.z*pCnt->z;
 	if (x<0) x=-x;
 	if (x-(radius*Camera.vwf) > (Camera.vw*z)) return false;
@@ -2480,11 +2673,11 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	
+
 	HR(D3DXCreateEffectFromFile(pDev, name, 0, 0, 0, 0, &FX, &errors));
-	
+
 	if (errors) {
-		
+
 		// It's an error
 		//
 		if (strstr((char*)errors->GetBufferPointer(),"warning")==NULL) {
@@ -2500,7 +2693,7 @@ void Scene::D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder)
 			//MessageBoxA(0, (char*)errors->GetBufferPointer(), "CelSphereTech.fx Warning", 0);
 		}
 	}
-	
+
 	if (FX==0) {
 		LogErr("Failed to create an Effect (%s)",name);
 		return;

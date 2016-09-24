@@ -70,7 +70,7 @@ void D3D9Config::Reset ()
 	MicroFilter			= 2;
 	BlendMode			= 1;
 	MicroBias			= 3;
-	PostProcess			= 1;
+	PostProcess			= 0;
 	ShaderDebug			= 0;
 	PresentLocation     = 1;
 	PlanetTileLoadFlags = 0x3;
@@ -132,7 +132,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
 	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
 	if (oapiReadItem_int   (hFile, "MicroBias", i))					MicroBias = max(0,  min(10, i));
-	if (oapiReadItem_int   (hFile, "PostProcess", i))				PostProcess = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "PostProcess", i))				PostProcess = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "ShaderDebug", i))				ShaderDebug = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PresentLocation", i))			PresentLocation = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))		PlanetTileLoadFlags = max(1, min(3, i));

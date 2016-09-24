@@ -24,7 +24,7 @@
 //
 #define BufferDivider	3		// Blur buffer size in pixels = ScreenSize / BufferDivider
 #define PassCount		2		// Number of "bBlur" passes
-#define BufferFormat	1		// Render buffer format, 0=RGB10A2, 1 = RGBA_16F
+#define BufferFormat	1		// Render buffer format, 2=RGB10A2, 1 = RGBA_16F, 0=DEFAULT (RGBX8)
 // ---------------------------------------------------------------------
 
 uniform extern float2  vSB;
