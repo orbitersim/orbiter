@@ -1343,7 +1343,10 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 	if (flags&OAPISURFACE_RENDERTARGET) bGoTex = false;
 	if (flags&OAPISURFACE_NOMIPMAPS) bGoTex = false;
 	if (flags&OAPISURFACE_GDI) bGoTex = false;
-	if (flags&OAPISURFACE_SKETCHPAD) bGoTex = false;
+
+	if (flags&OAPISURFACE_SKETCHPAD) {
+		LogErr("OAPISURFACE_SKETCHPAD in D3D9ClientSurface::LoadSurface (should not happen)");
+	}
 
 	if (bGoTex) return LoadTexture(fname);
 
@@ -1356,18 +1359,34 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 
 		if (info.Height>8192 || info.Width>8192) LogErr("Loading a large surface Handle=0x%X (%u,%u)", this, info.Width, info.Height);
 
-		DWORD Usage = 0;
-		if (flags&OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET, flags |= OAPISURFACE_UNCOMPRESS;
 
-		// System Memory requested ------------------------------
+		// Uncompress these cases
+		if (flags&OAPISURFACE_RENDERTARGET) flags |= OAPISURFACE_UNCOMPRESS;
+		if (flags&OAPISURFACE_SYSMEM) flags |= (OAPISURFACE_UNCOMPRESS | OAPISURFACE_NOMIPMAPS);
+		if (flags&OAPISURFACE_GDI) flags |= (OAPISURFACE_UNCOMPRESS | OAPISURFACE_NOMIPMAPS);
+
+		// Check render target mipmap support
+		if ((flags&OAPISURFACE_RENDERTARGET) && !(flags&OAPISURFACE_TEXTURE)) flags |= OAPISURFACE_NOMIPMAPS;
+
+
+
+		// Check usage and pool ---------------------------------
+		DWORD Usage = 0;
 		D3DPOOL Pool = D3DPOOL_DEFAULT;
+
 		if (flags&OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM, flags |= OAPISURFACE_TEXTURE;
-		
+		else {
+			if (flags&OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET;
+			else if ((flags&OAPISURFACE_GDI) && (flags&OAPISURFACE_TEXTURE)) Usage = D3DUSAGE_DYNAMIC;
+		}
+
+
 		// Mipmaps ----------------------------------------------
 		DWORD Mips = info.MipLevels;
 		if (Mips>1) Mips=0;
 		if (flags&OAPISURFACE_NOMIPMAPS) Mips = 1;
 		if (flags&OAPISURFACE_MIPMAPS) Mips = 0;
+
 
 		// Decompress -------------------------------------------
 		D3DFORMAT Format = info.Format;
@@ -1377,25 +1396,31 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 			if (Format==D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
 		}
 
+
 		// Alpha ------------------------------------------------
 		if (flags&OAPISURFACE_ALPHA) Format = D3DFMT_A8R8G8B8;
 		if (flags&OAPISURFACE_NOALPHA) Format = D3DFMT_X8R8G8B8;
 
+
 		// Convert Non-supported format -------------------------
 		if (Format==D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
 
+
+		// Check Autogen status ---------------------------------
+		if ((Mips != 1) && (flags&OAPISURFACE_UNCOMPRESS) && (flags&OAPISURFACE_TEXTURE)) Usage |= D3DUSAGE_AUTOGENMIPMAP;
 		
+
 		// Load Texture Section ====================================================================================================================
 		//
 		if (flags&OAPISURFACE_TEXTURE) {
 
-			if ((flags&OAPISURFACE_GDI) && (Pool!=D3DPOOL_SYSTEMMEM)) Usage |= D3DUSAGE_DYNAMIC;
+			if (flags&OAPISURFACE_RENDERTARGET) {
 
-			if ((flags&OAPISURFACE_UNCOMPRESS) && (flags&OAPISURFACE_NOMIPMAPS)==0) {
 				LPDIRECT3DTEXTURE9 pSys = NULL;
 				LPDIRECT3DSURFACE9 pTemp = NULL;
-				Usage |= D3DUSAGE_AUTOGENMIPMAP;
+
 				HR(pDevice->CreateTexture(info.Width, info.Height, Mips, Usage, Format, Pool, &pTex, NULL));
+
 				if (pTex) {
 					HR(D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 0, 0, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSys));
 					if (pSys) {
@@ -1428,17 +1453,13 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 
 		// Load Surface Section ====================================================================================================================
 		//
-		else {			
+		else {	
+
 			bLockable = false;
+			if (flags&OAPISURFACE_GDI) bLockable = true;
 
-			if (flags&OAPISURFACE_RENDERTARGET) {
-				if (flags&OAPISURFACE_GDI) bLockable = true;
-				HR(pDevice->CreateRenderTarget(info.Width, info.Height, Format, D3DMULTISAMPLE_NONE, 0, bLockable, &pSurf, NULL));
-			}
-			else {
-				HR(pDevice->CreateOffscreenPlainSurface(info.Width, info.Height, Format, D3DPOOL_DEFAULT, &pSurf, NULL));
-			}
-
+			HR(pDevice->CreateRenderTarget(info.Width, info.Height, Format, D3DMULTISAMPLE_NONE, 0, bLockable, &pSurf, NULL));
+			
 			if (pSurf) {
 				if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 1, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 					SetName(fname);

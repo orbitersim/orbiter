@@ -13,6 +13,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
 #include "Mesh.h"
+#include "psapi.h"
 #include "DebugControls.h"
 
 using namespace oapi;
@@ -95,6 +96,12 @@ void D3D9Client::RenderControlPanel()
 //	static double sim_time  = 0.0;
 
 	LPDIRECT3DDEVICE9 dev = pDevice;
+
+	PROCESS_MEMORY_COUNTERS_EX memstats;
+	memstats.cb = sizeof(PROCESS_MEMORY_COUNTERS_EX);
+	GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS)&memstats, sizeof(memstats));
+
+
 	
 	pItemsSkp = oapiGetSketchpad(GetBackBufferHandle());
 
@@ -164,7 +171,7 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
-
+	Label("Application Size.....: %u MB", memstats.PrivateUsage >> 20);
 	Label("Available video mem..: %u MB", dev->GetAvailableTextureMem()>>20);
 	Label("Surface Handles......: %u", nSurf);
 	Label("SystemMem Surfaces...: %u (%u MB)", sysme_count, sysme_size>>20);

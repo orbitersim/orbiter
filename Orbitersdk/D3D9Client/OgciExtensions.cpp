@@ -12,6 +12,12 @@
 
 extern D3D9Client *g_client;
 
+DLLCLBK SURFHANDLE gcLoadSurface(const char *fname, DWORD flags)
+{
+	return g_client->clbkLoadSurface(fname, flags);
+}
+
+
 DLLCLBK int gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, COLOUR4 *value, bool bSet)
 {
 	if (!hMesh) return -4;
