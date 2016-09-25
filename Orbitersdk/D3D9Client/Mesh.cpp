@@ -1599,7 +1599,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	passtype pass;
 	bool bAdvOld = false;
+	bool bRefl = true;
 
+	if (iTech == RENDER_VC) bRefl = false;	// No reflections in VC
 	if (iTech == RENDER_BASEBS) pDev->SetRenderState(D3DRS_ZENABLE, 0);	// Must be here because BeginPass() sets it enabled
 
 	for (DWORD g=0; g<nGrp; g++) {
@@ -1806,14 +1808,15 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		FX->SetBool(eTextured, bTextured);
 		FX->SetBool(eFullyLit, (Grp[g].UsrFlag&0x4)!=0);
 		FX->SetBool(eNoColor,  (Grp[g].UsrFlag&0x10)!=0);
-
-		FX->SetBool(eFresnel, (Grp[g].PBRStatus & 0x1E) >= 0x10);
 		FX->SetBool(eSwitch, bPBR);
 		FX->SetBool(eRghnSw, bRGH);
 	
 		// Update envmap and fresnel status as required
-		if (bIsReflective) {
-			FX->SetBool(eEnvMapEnable, (Grp[g].PBRStatus&0x1E) >= 0xA);
+		if (bRefl) {
+			FX->SetBool(eFresnel, (Grp[g].PBRStatus & 0x1E) >= 0x10);
+			if (bIsReflective) {
+				FX->SetBool(eEnvMapEnable, (Grp[g].PBRStatus & 0x1E) >= 0xA);
+			}
 		}
 
 		FX->CommitChanges();
