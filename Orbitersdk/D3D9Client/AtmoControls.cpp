@@ -255,9 +255,8 @@ void OpenDlgClbk(void *context)
 
 	SetTimer(hDlg, 0, 200, NULL);
 
-	char title[256];
-
 	if (vObj) {
+		char title[256];
 		if (param->orbit) sprintf_s(title,256,"Atmospheric Controls [%s] [Orbital]", vObj->GetName());
 		else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
 
