@@ -250,7 +250,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
 	if (*(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT)) macro[m++].Name = "_LIGHTS";
 
-	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER, 0, &FX, &errors));
+	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
 	
 	delete []macro[0].Definition;
 	delete []macro[1].Definition;

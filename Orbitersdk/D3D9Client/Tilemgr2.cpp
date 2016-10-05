@@ -1085,6 +1085,7 @@ MATRIX4 TileManager2Base::WorldMatrix (int ilng, int nlng, int ilat, int nlat)
 
 // -----------------------------------------------------------------------
 
+// TODO:   This should be global not a tile manager (i.e. planet specific)
 
 DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *pVB)
 {

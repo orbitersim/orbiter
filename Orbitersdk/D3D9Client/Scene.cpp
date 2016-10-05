@@ -124,13 +124,15 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		D3DSURFACE_DESC desc;
 		gc->GetBackBuffer()->GetDesc(&desc);
 
-
+		char flags[32] = { 0 };
+		if (Config->ShaderDebug) strcpy_s(flags, 32, "DISASM");
+			
 		// Load postprocessing effects
 		if (Config->PostProcess == PP_DEFAULT)
-			pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain");
+			pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain", flags);
 
 		if (Config->PostProcess == PP_LENSFLARE) 
-			pFlare = new ImageProcessing(pDevice, "Modules/D3D9Client/LensFlare.hlsl", "PSMain");
+			pFlare = new ImageProcessing(pDevice, "Modules/D3D9Client/LensFlare.hlsl", "PSMain", flags);
 
 		
 		if (pLightBlur) {

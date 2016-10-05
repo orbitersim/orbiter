@@ -641,8 +641,8 @@ void SurfTile::Render ()
 	if (ltex || render_shadows) {
 		sdist = acos (dotp (mgr->prm.sdir, cnt));
 		rad = rad0/(double)(2<<lvl); // tile radius
-		has_specular = (ltex && sdist < PI05+rad);
-		has_shadows = (render_shadows && sdist < PI05+rad);
+		has_specular = (ltex && sdist < (1.75 + rad));
+		has_shadows = (render_shadows && sdist < (PI05+rad));
 		has_lights = (render_lights && ltex && sdist > 1.45);
 	}
 
@@ -763,7 +763,7 @@ void SurfTile::Render ()
 	int iTech = 0;
 	
 	if (has_atmosphere) {
-		if (has_shadows) {
+		if (has_specular) {
 			if (has_ripples) iTech = 0;		// Earth
 			else			 iTech = 1;		// Earth, no ripples
 		}

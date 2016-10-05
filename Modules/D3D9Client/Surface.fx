@@ -447,7 +447,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 
     vIns = (1.0f - exp2(vIns * vColorShift)) * vWhiteBalance;
 
-	vIns = pow(abs(vIns), fAux4);  
+	vIns = pow(abs(vIns*0.98f), fAux4*1.5);  
 }
 
 
@@ -604,7 +604,7 @@ float4 SurfaceTechPS(TileVS frg,
 	if (sbSpecular) {
 
 		// Specular Mask
-		float m = (1.0 - cMsk.a) * saturate(0.5f-frg.aux[AUX_NIGHT]*2.0f);
+		float m = (1.0 - cMsk.a) * saturate(0.5f - frg.aux[AUX_NIGHT] * 2.0f);
 		float f4 = 0;
 		
 		// Specular intensity 

@@ -845,7 +845,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 		if (D3DXDisassembleShader((DWORD*)pCode->GetBufferPointer(), true, NULL, &pBuffer) == S_OK) {
 			FILE *fp = NULL;
 			char name[256];
-			sprintf_s(name, 256, "%s_dis_asm.html", function);
+			sprintf_s(name, 256, "%s_%s_asm.html", RemovePath(file), function);
 			if (!fopen_s(&fp, name, "w")) {
 				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
 				fclose(fp);
