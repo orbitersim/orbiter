@@ -702,7 +702,7 @@ float4 SurfaceTechPS(TileVS frg,
 		if (sbShadows) {
 			if (bCloudSh) {
 				float fShd = (vUVCld.x < 1.0 ? fChA : fChB);
-				cTex.rgb *= (1.0 - fShd) * fAlpha;
+				cTex.rgb *= (1.0 - fShd*fAlpha);
 			}
 		}
 
