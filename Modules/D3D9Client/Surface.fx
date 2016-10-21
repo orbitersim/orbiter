@@ -435,7 +435,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 	float  fSgt = sqrt(fAtmRad2 - fRd2);
 
 	// Evaluate a Gauss-Lobatto integral. Will give optical depth for the ray
-    float  fDep = fMnD * fSgt * fInvScaleHeight * 0.6931471806f;
+    float  fDep = fMnD * fSgt * fInvScaleHeight * 0.6931471806f * 0.5f;
 
 	// Optical depth for incoming sunlight	
 	float fCoEff = fAux2 * AngleCoEff(fDNS);
@@ -447,7 +447,7 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
 
     vIns = (1.0f - exp2(vIns * vColorShift)) * vWhiteBalance;
 
-	vIns = pow(abs(vIns*0.98f), fAux4*1.5);  
+	vIns = pow(abs(vIns*0.99f), fAux4*1.5);  
 }
 
 
