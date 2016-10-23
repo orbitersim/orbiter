@@ -209,12 +209,12 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_EXPO,	   0.2, 5.0);
 	ConfigSlider(IDC_ATM_BALANCE,  -0.3, 0.7);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0);
+	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.5, 2.0);
 	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MOFFSET,  0.1, 10.0, 1|2);
-	ConfigSlider(IDC_ATM_MIE,      0.0, 2.0);
+	ConfigSlider(IDC_ATM_MIE,      0.0, 2.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.80, 0.999);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX1,	   0.0, 0.3);
@@ -260,11 +260,8 @@ void OpenDlgClbk(void *context)
 		if (param->orbit) sprintf_s(title,256,"Atmospheric Controls [%s] [Orbital]", vObj->GetName());
 		else			  sprintf_s(title,256,"Atmospheric Controls [%s] [Surface]", vObj->GetName());
 
-		// Not working for some reason !!!
 		if (param->orbit) SetWindowText(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Surface");
 		else			  SetWindowText(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to Orbital");
-
-		//SetWindowTextA(GetDlgItem(hDlg, IDC_ATM_COPYTO), "Copy to other config");
 
 		SetWindowTextA(hDlg, title);
 	}

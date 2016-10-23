@@ -25,6 +25,10 @@
 #define MAP_MAX_COUNT		8
 
 
+#define ERR_DC_NOT_AVAILABLE		0x1
+#define ERR_USED_NOT_DEFINED		0x2
+
+
 // Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
 
 class D3D9ClientSurface {
@@ -63,9 +67,6 @@ public:
 	DWORD				GetWidth();
 	DWORD				GetHeight();
 	DWORD				GetSizeInBytes();
-
-	void				SetFlag(DWORD flag) { Flags |= flag; }
-	void				RemoveFlag(DWORD flag) { Flags &= (~flag); }
 	
 	void				IncRef();	// Increase surface reference counter
 	bool				Release();	// Decrease the counter
@@ -91,7 +92,6 @@ public:
 	inline bool			IsColorKeyEnabled() { return (ColorKey != 0); }
 
 	DWORD				GetAttribs(int What=1);
-	DWORD				GetFlags() { return Flags; }
 	LPDIRECT3DSURFACE9	GetDepthStencil();
 	LPDIRECT3DSURFACE9	GetSurface();
 	LPDIRECT3DTEXTURE9	GetMap(int type) const { return pMap[type]; }
@@ -120,6 +120,8 @@ public:
 	void				EndBlitGroup();
 	int					GetQueueSize();
 
+	void				PrintError(int err);
+
 private:
 
 	bool				ConvertToRenderTargetTexture();
@@ -142,8 +144,6 @@ private:
 	bool				bCompressed;	// True if the surface is compressed
 	bool				bDCOpen;		// DC is Open. This is TRUE between GetDC() and ReleaseDC() calls.
 	bool				bHard;			// hDC is acquired using GetDCHard()
-	bool				bDCHack;		// DC Hack for SketchPad::GetDC() 
-	bool				bSkpGetDCEr;
 	bool				bBltGroup;		// BlitGroup operation is active
 	bool				bBackBuffer;
 	bool				bLockable;
@@ -156,6 +156,7 @@ private:
 	int					Active;			// Active Attribute flags
 	int					SketchPad;		// Currently Active Sketchpad 0=None, 1=GDI, 2=GPU
 	int					iBindCount;		// GPU Bind reference counter
+	int					ErrWrn;
 	D3DSURFACE_DESC		desc;
 	LPDIRECT3DSURFACE9	pStencil;		
 	LPDIRECT3DSURFACE9	pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
@@ -165,7 +166,7 @@ private:
 	LPDIRECT3DDEVICE9	pDevice;
 	D3DXCOLOR			ClrKey;
 	DWORD				ColorKey;
-	DWORD				Flags;
+	//DWORD				Flags;
 	DWORD				GDIBltCtr;
 	LPD3DXMATRIX		pVP;
 	D3DVIEWPORT9 *		pViewPort;

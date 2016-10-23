@@ -260,11 +260,7 @@ D3D9Pad::~D3D9Pad ()
 //
 HDC D3D9Pad::GetDC()
 {
-	if (pTgt->IsBackBuffer()) return NULL;
-	if (!pTgt->bSkpGetDCEr) {
-		LogWrn(" - ! - Never Use Sketchpad::GetDC() !! hDC not available, the surface is active render target at a moment - ! -");
-		pTgt->bSkpGetDCEr = true;
-	}
+	pTgt->PrintError(ERR_DC_NOT_AVAILABLE);
 	return NULL;
 }
 

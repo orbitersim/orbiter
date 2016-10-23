@@ -33,6 +33,16 @@ WORD 		 D3D9ClientSurface::GPUBltIdx = 0;
 D3D9Client * D3D9ClientSurface::gc = 0;
 D3D9ClientSurface * D3D9ClientSurface::pPrevSrc = 0;
 
+
+void D3D9ClientSurface::PrintError(int err)
+{
+	if ((err == ERR_DC_NOT_AVAILABLE) && (ErrWrn&err) == 0) LogWrn("SurfHandle=0x%X, Never use Sketchpad::GetDC() hDC not available", this);
+	if ((err == ERR_USED_NOT_DEFINED) && (ErrWrn&err) == 0) LogWrn("SurfHandle=0x%X, Surface is being read without being initialized first", this);
+	ErrWrn |= err;
+}
+
+
+
 HRESULT D3D9ClientSurface::AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t)
 {
 
@@ -206,6 +216,7 @@ D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name/*=
 //
 void D3D9ClientSurface::Clear()
 {
+	ErrWrn		= 0;
 	Refs		= 1;
 	ColorKey	= 0;
 	ClrKey		= D3DXCOLOR(ColorKey);
@@ -220,14 +231,11 @@ void D3D9ClientSurface::Clear()
 	iBindCount  = 0;
 	Initial		= 0;
 	Active		= 0;
-	Flags		= 0;
 	GDIBltCtr	= 0;
 	SketchPad	= SKETCHPAD_NONE;
 	bDCOpen		= false;
-	bSkpGetDCEr	= false;
 	bBltGroup   = false;
 	bBackBuffer = false;
-	bDCHack		= false;
 	bLockable	= false;
 	bMainDC		= true;
 	bDCSys		= false;
@@ -841,8 +849,8 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	// If source not yet exists
 	//
 	if (!src->Exists()) {
-		LogErr("Blitting graphics from uninitialized source surface !! Handle = 0x%X", src);
-		assert(false);
+		src->PrintError(ERR_USED_NOT_DEFINED);
+		src->Clear(0xFF000000);
 	}
 
 
