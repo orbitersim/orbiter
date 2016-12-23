@@ -1640,6 +1640,8 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	short xpos = short((scrPos.x + 0.5f) * w);
 	short ypos = short((1 - (scrPos.y + 0.5f)) * h);
 
+	// Disabled due to severe performance issues
+	/*
 	D3D9Pick pick = PickScene(xpos, ypos);
 
 	if (pick.pMesh != NULL)
@@ -1659,6 +1661,8 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 		}
 		return result;
 	}
+	*/
+
 	result.visible = true;
 	result.color = GetSunDiffColor();
 
