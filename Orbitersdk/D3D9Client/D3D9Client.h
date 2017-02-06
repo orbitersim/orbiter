@@ -991,6 +991,7 @@ public:
 	void 				EmergencyShutdown();
 	void 				SplashScreen();
 	inline bool 		IsRunning() { return bRunning; }
+	inline bool			IsLimited() { return ((caps.TextureCaps&D3DPTEXTURECAPS_POW2) && (caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
 	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
 	HWND 				GetWindow();
 	bool 				HasVertexTextureSupport() { return bVertexTex; }

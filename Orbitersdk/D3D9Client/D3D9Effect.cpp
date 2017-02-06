@@ -516,8 +516,8 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pT
 {
 	UINT numPasses = 0;
 
-	if (pTex->IsPowerOfTwo()) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
-	else					  FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
+	if (pTex->IsPowerOfTwo() || (!gc->IsLimited())) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
+	else FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
 	
 	HR(FX->SetMatrix(eW, pW));
 
