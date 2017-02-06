@@ -833,7 +833,8 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	// Is scaling operation required -------------------------------------------------------------
 	//
 	bool bStretch = true;
-	if (Width==TgtWidth && Height==TgtHeight) bStretch = false;
+	D3DTEXTUREFILTERTYPE Filter = D3DTEXF_LINEAR;
+	if (Width==TgtWidth && Height==TgtHeight) bStretch = false, Filter = D3DTEXF_POINT;
 
 
 	// =====================================================================================================
@@ -987,7 +988,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 	// StretchRect Blitting Technique
 	//
 	if (desc.Pool==D3DPOOL_DEFAULT && src->desc.Pool==D3DPOOL_DEFAULT) {
-		if (pDevice->StretchRect(src->pSurf, s, pSurf, t, D3DTEXF_POINT)==S_OK) {
+		if (pDevice->StretchRect(src->pSurf, s, pSurf, t, Filter)==S_OK) {
 			LogOk("StretchRect 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
 			return;
 		}

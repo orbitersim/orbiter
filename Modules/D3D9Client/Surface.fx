@@ -264,7 +264,7 @@ const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
 const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};			
 const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
 const  float3 cSky = {0.84f, 1.0f, 2.45f};
-
+const  float3 cHrzMax = { 0.9, 0.9, 0.9 };
 const float srfoffset = -0.04;
 
 // -------------------------------------------------------------------------------------------------------------
@@ -389,6 +389,8 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
     vIns = (1.0f - exp2(vIns * vColorShift)) * vWhiteBalance;
 
 	vIns = pow(abs(vIns), fAux4);  
+
+	vIns = saturate(vIns) * cHrzMax;
 }
 
 
@@ -448,6 +450,8 @@ void HorizonColor(out float3 vIns, in float3 vUnitRay)
     vIns = (1.0f - exp2(vIns * vColorShift)) * vWhiteBalance;
 
 	vIns = pow(abs(vIns*0.99f), fAux4*1.5);  
+
+	vIns = saturate(vIns) * cHrzMax;
 }
 
 
@@ -708,7 +712,7 @@ float4 SurfaceTechPS(TileVS frg,
 
 		// Night lights ?
 		if (bLights) {
-			cMsk.b = min(cMsk.r, cMsk.g); // Blue dirt filter
+			cMsk.b = (cMsk.b > 0.15f ? cMsk.b : 0.0f); // Blue dirt filter
 			cNgt *= cMsk.rgb;
 		}
 
@@ -716,7 +720,7 @@ float4 SurfaceTechPS(TileVS frg,
 		float fDNS = dot(nrmW, vSunDir);
 
 		// Compose final color, take atmospheric attennuation and inscatter in account
-		float3 color = cTex.rgb * frg.atten.rgb * saturate(fDNS) + frg.insca.rgb;
+		float3 color = cTex.rgb * 1.2f * frg.atten.rgb * saturate(fDNS) + frg.insca.rgb;
 
 		// Add Specular component and Night lights
 		color += cSpe + cTex.rgb * cNgt;
@@ -724,9 +728,9 @@ float4 SurfaceTechPS(TileVS frg,
 		// Apply color exposure and "white balance"
 		color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;
 
-		//return float4(color, 1.0f);
 		// Apply gamma correction
-		return float4(pow(abs(color), fAux4), 1.0f);
+		return float4(pow(saturate(color), fAux4)*cHrzMax, 1.0f);
+		//return float4(pow(saturate(color), fAux4), 1.0f);
 	}
 }
 
@@ -805,7 +809,9 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 {
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
 	float3 color = cTex.rgb * frg.atten.rgb + frg.insca.rgb;
-   	return float4((1.0f - exp2(-color*fExposure))*vWhiteBalance, cTex.a); 
+	color = (1.0f - exp2(-color*fExposure)) * vWhiteBalance;
+	return float4(saturate(color) * cHrzMax, cTex.a);
+	//return float4(color, cTex.a);
 }
 
 
