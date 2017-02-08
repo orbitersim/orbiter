@@ -90,7 +90,7 @@
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\..\Orbitersdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -151,7 +151,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\..\Orbitersdk\lib;.\..\..\Modules\Server;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -186,10 +186,10 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
-    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="CelSphere.cpp" />
     <ClCompile Include="CloudMgr.cpp" />
     <ClCompile Include="Cloudmgr2.cpp" />
+    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="D3D9Client.cpp" />
     <ClCompile Include="D3D9Config.cpp" />
     <ClCompile Include="D3D9ControlPanel.cpp" />
@@ -225,11 +225,11 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="TileMgr.cpp" />
     <ClCompile Include="Tilemgr2.cpp" />
     <ClCompile Include="VBase.cpp" />
+    <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="VObject.cpp" />
     <ClCompile Include="VPlanet.cpp" />
     <ClCompile Include="VStar.cpp" />
     <ClCompile Include="VVessel.cpp" />
-    <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="ZTreeMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -240,13 +240,14 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
     <ClInclude Include="..\include\Sketchpad2.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
-    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
     <ClInclude Include="Cloudmgr2.h" />
+    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="D3D9Catalog.h" />
     <ClInclude Include="D3D9Client.h" />
     <ClInclude Include="D3D9Config.h" />
@@ -271,7 +272,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Particle.h" />
     <ClInclude Include="PlanetRenderer.h" />
     <ClInclude Include="Qtree.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="RingMgr.h" />
     <ClInclude Include="RunwayLights.h" />
     <ClInclude Include="Scene.h" />
@@ -283,12 +283,12 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
+    <ClInclude Include="VectorHelpers.h" />
+    <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />
     <ClInclude Include="VStar.h" />
     <ClInclude Include="VVessel.h" />
-    <ClInclude Include="VectorHelpers.h" />
-    <ClInclude Include="VideoTab.h" />
     <ClInclude Include="ZTreeMgr.h" />
   </ItemGroup>
   <ItemGroup>
@@ -309,11 +309,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
     <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\LensFlare.hlsl">
-      <FileType>Document</FileType>
-    </None>
+    <None Include="..\..\Modules\D3D9Client\LensFlare.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

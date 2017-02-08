@@ -178,8 +178,8 @@
     <ClInclude Include="..\include\Orbitersdk.h">
       <Filter>Externals</Filter>
     </ClInclude>
-    <ClInclude Include="VVessel.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\include\Sketchpad2.h">
+      <Filter>Externals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -288,9 +288,6 @@
     <ClInclude Include="Junction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="AABBUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -327,8 +324,8 @@
     <ClInclude Include="IProcess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Sketchpad2.h">
-      <Filter>Externals</Filter>
+    <ClInclude Include="VVessel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZTreeMgr.h">
       <Filter>Header Files</Filter>
@@ -379,18 +376,19 @@
     <None Include="..\..\Modules\D3D9Client\IPI.hlsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\..\Modules\D3D9Client\LensFlare.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
     <ResourceCompile Include="D3D9Client.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\Modules\D3D9Client\LensFlare.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
