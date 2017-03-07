@@ -36,8 +36,8 @@ D3D9ClientSurface * D3D9ClientSurface::pPrevSrc = 0;
 
 void D3D9ClientSurface::PrintError(int err)
 {
-	if ((err == ERR_DC_NOT_AVAILABLE) && (ErrWrn&err) == 0) LogWrn("SurfHandle=0x%X, Never use Sketchpad::GetDC() hDC not available", this);
-	if ((err == ERR_USED_NOT_DEFINED) && (ErrWrn&err) == 0) LogWrn("SurfHandle=0x%X, Surface is being read without being initialized first", this);
+	if ((err == ERR_DC_NOT_AVAILABLE) && (ErrWrn&err) == 0) LogErr("SurfHandle=0x%X, Never use Sketchpad::GetDC() hDC not available", this);
+	if ((err == ERR_USED_NOT_DEFINED) && (ErrWrn&err) == 0) LogErr("SurfHandle=0x%X, Surface is being read without being initialized first", this);
 	ErrWrn |= err;
 }
 
@@ -307,7 +307,7 @@ bool D3D9ClientSurface::BindGPU()
 			iBindCount++;
 			return true;
 		}
-		LogErr("D3D9ClientSurface::BindGPU() Failed");
+		LogErr("D3D9ClientSurface::BindGPU() Failed for surface 0x%X", this);
 	}
 	return false;
 }
@@ -939,6 +939,7 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 			if (BindGPU()) {
 				if (GPUCopyRect(src, s, t)==S_OK) {
 					LogOk("GPU Blitting 0x%X (%s) -> 0x%X (%s) (%u,%u)", src, src->name, this, name, Width, Height);
+					ReleaseGPU();
 					return;
 				} else LogErr("SketchRect CC Failed 0x%X (%s) -> 0x%X (%s)", src, src->name, this, name);
 				ReleaseGPU();
