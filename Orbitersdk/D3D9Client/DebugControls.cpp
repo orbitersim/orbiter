@@ -37,7 +37,9 @@ double resbias = 4.0;
 char visual[64];
 int  origwidth;
 HWND hDlg = NULL;
+HWND hDataWnd = NULL;
 vObject *vObj = NULL;
+char *buffer = NULL;
 
 HWND hTipRed, hTipGrn, hTipBlu, hTipAlp;
 
@@ -51,6 +53,7 @@ struct _Variable {
 	float min, max, def;
 	bool bLog;
 	bool bUsed;
+	bool bGamma;
 	char tip[80];
 };
 
@@ -254,11 +257,12 @@ void SetGroupHighlight(bool bStat)
 }
 
 
-inline _Variable DefVar(float min, float max, bool bLog, const char *tip)
+inline _Variable DefVar(float min, float max, bool bLog, const char *tip, bool bGamma=false)
 {
 	_Variable var;
 	var.bUsed = true;
 	var.bLog = bLog;
+	var.bGamma = bGamma;
 	var.max = max;
 	var.min = min;
 	strncpy_s(var.tip, 80, tip, 80);
@@ -408,9 +412,9 @@ void OpenDlgClbk(void *context)
 	Params[1].var[2] = DefVar(0, 1, false, "Blue");
 
 	// Specular
-	Params[2].var[0] = DefVar(0, 3, true, "Red");
-	Params[2].var[1] = DefVar(0, 3, true, "Green");
-	Params[2].var[2] = DefVar(0, 3, true, "Blue");
+	Params[2].var[0] = DefVar(0, 1, true, "Red");
+	Params[2].var[1] = DefVar(0, 1, true, "Green");
+	Params[2].var[2] = DefVar(0, 1, true, "Blue");
 	Params[2].var[3] = DefVar(1, 4096.0f, true, "Specular power");
 
 	// Emission
@@ -438,46 +442,68 @@ void OpenDlgClbk(void *context)
 
 	// Unused index 8
 	
-	// Tuning
+	// Tuning -------------------------------------------------------------------------------------
+	// Albedo
 	Params[9].var[0] = DefVar(0.2f, 5.0f, true, "Red");
 	Params[9].var[1] = DefVar(0.2f, 5.0f, true, "Green");
 	Params[9].var[2] = DefVar(0.2f, 5.0f, true, "Blue");
-	Params[9].var[3] = DefVar(0.2f, 5.0f, true, "Gamma");
+	Params[9].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
 
-	Params[10] = Params[9];
-	Params[11] = Params[9];
-	Params[12] = Params[9];
-	Params[13] = Params[9];
-	Params[14] = Params[9];
-	Params[15] = Params[9];
-	Params[16] = Params[9];
+	Params[10] = Params[9];	 // Emis
+	Params[10].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+
+	Params[11] = Params[9];	 // Refl
+	Params[11].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+
+	Params[12] = Params[9];  // Regn
+	Params[12].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+
+	Params[13] = Params[9];  // Transl
+	Params[13].var[3] = DefVar(0.2f, 5.0f, true, "???");
+
+	Params[14] = Params[9];  // Transm
+	Params[14].var[3] = DefVar(0.2f, 5.0f, true, "???");
+
+	Params[15] = Params[9];	 // Spec
+	Params[15].var[3] = DefVar(0.1f, 9.9f, true, "Power", false);
+
+	Params[16] = Params[9];  // Frsl
+	Params[16].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
 }
 
 
 // =============================================================================================
 //
-void SetTuningValue(D3DCOLORVALUE *pClr, DWORD clr, float value)
+void SetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr, float value)
 {
-	float mi = Params[9].var[0].min;
-	float mx = Params[9].var[0].max;
+	float mi = Params[idx].var[clr].min;
+	float mx = Params[idx].var[clr].max;
 
 	switch (clr) {
 		case 0: pClr->r = CLAMP(value, mi, mx); break;
 		case 1: pClr->g = CLAMP(value, mi, mx); break;
 		case 2: pClr->b = CLAMP(value, mi, mx); break;
-		case 3: pClr->a = CLAMP(value, mi, mx); break;
+		case 3: 
+		{
+			if (Params[idx].var[clr].bGamma) pClr->a = 1.0f / CLAMP(value, mi, mx);		
+			else pClr->a = CLAMP(value, mi, mx);			
+		} break;
 	}
 }
 
 // =============================================================================================
 //
-float GetTuningValue(D3DCOLORVALUE *pClr, DWORD clr)
+float GetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr)
 {
 	switch (clr) {
 		case 0: return pClr->r;
 		case 1: return pClr->g;
 		case 2: return pClr->b;
-		case 3: return pClr->a;
+		case 3: 
+		{
+			if (Params[idx].var[clr].bGamma) return 1.0f / pClr->a;
+			else return pClr->a;
+		}
 	}
 	return 1.0f;
 }
@@ -569,51 +595,51 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 9:	// Tune Albedo
+		case 9:		// Tune Albedo
 		{
-			SetTuningValue(&Tune.Albedo, clr, value);
+			SetTuningValue(MatPrp, &Tune.Albedo, clr, value);
 			break;
 		}
 
 		case 10:	// Tune Emis
 		{
-			SetTuningValue(&Tune.Emis, clr, value);
+			SetTuningValue(MatPrp, &Tune.Emis, clr, value);
 			break;
 		}
 
 		case 11:	// Tune Refl
 		{
-			SetTuningValue(&Tune.Refl, clr, value);
+			SetTuningValue(MatPrp, &Tune.Refl, clr, value);
 			break;
 		}
 
 		case 12:	// Tune _Rghn
 		{
-			SetTuningValue(&Tune.Rghn, clr, value);
+			SetTuningValue(MatPrp, &Tune.Rghn, clr, value);
 			break;
 		}
 
 		case 13:	// Tune _Transl
 		{
-			SetTuningValue(&Tune.Transl, clr, value);
+			SetTuningValue(MatPrp, &Tune.Transl, clr, value);
 			break;
 		}
 
 		case 14:	// Tune _Transm
 		{
-			SetTuningValue(&Tune.Transm, clr, value);
+			SetTuningValue(MatPrp, &Tune.Transm, clr, value);
 			break;
 		}
 
 		case 15:	// Tune _Spec
 		{
-			SetTuningValue(&Tune.Spec, clr, value);
+			SetTuningValue(MatPrp, &Tune.Spec, clr, value);
 			break;
 		}
 
 		case 16:	// Tune _Frsl
 		{
-			SetTuningValue(&Tune.Frsl, clr, value);
+			SetTuningValue(MatPrp, &Tune.Frsl, clr, value);
 			break;
 		}
 	}
@@ -797,42 +823,42 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 
 		case 9:	// Tune Albedo
 		{
-			return GetTuningValue(&Tune.Albedo, clr);
+			return GetTuningValue(MatPrp, &Tune.Albedo, clr);
 		}
 
 		case 10:	// Tune Emis
 		{
-			return GetTuningValue(&Tune.Emis, clr);
+			return GetTuningValue(MatPrp, &Tune.Emis, clr);
 		}
 
 		case 11:	// Tune Refl
 		{
-			return GetTuningValue(&Tune.Refl, clr);
+			return GetTuningValue(MatPrp, &Tune.Refl, clr);
 		}
 
 		case 12:	// Tune _Rghn
 		{
-			return GetTuningValue(&Tune.Rghn, clr);
+			return GetTuningValue(MatPrp, &Tune.Rghn, clr);
 		}
 
 		case 13:	// Tune _Transl
 		{
-			return GetTuningValue(&Tune.Transl, clr);
+			return GetTuningValue(MatPrp, &Tune.Transl, clr);
 		}
 
 		case 14:	// Tune _Transm
 		{
-			return GetTuningValue(&Tune.Transm, clr);
+			return GetTuningValue(MatPrp, &Tune.Transm, clr);
 		}
 
 		case 15:	// Tune _Spec
 		{
-			return GetTuningValue(&Tune.Spec, clr);
+			return GetTuningValue(MatPrp, &Tune.Spec, clr);
 		}
 
 		case 16:	// Tune _Frsl
 		{
-			return GetTuningValue(&Tune.Frsl, clr);
+			return GetTuningValue(MatPrp, &Tune.Frsl, clr);
 		}
 	}
 
@@ -1346,6 +1372,63 @@ void SaveEnvMap()
 	}
 }
 
+//-------------------------------------------------------------------------------------------
+//
+void Append(const char *format, ...)
+{
+	if (buffer == NULL || hDataWnd == NULL) return;
+	char buf[256];
+	va_list args;
+	va_start(args, format);
+	_vsnprintf_s(buf, 256, 256, format, args);
+	va_end(args);
+	strcat_s(buffer, 9000, buf);
+}
+
+//-------------------------------------------------------------------------------------------
+//
+void Refresh()
+{
+	if (buffer == NULL || hDataWnd == NULL) return;
+	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW), buffer);
+	strcpy(buffer, "");
+}
+
+
+// ==============================================================
+// Dialog message handler
+
+BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	static bool isOpen = false; // IDC_DBG_MORE (full or reduced width)
+
+	DWORD Prp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+
+	switch (uMsg) {
+
+	case WM_INITDIALOG:
+	{
+		SetWindowTextA(GetDlgItem(hWnd, IDC_DBG_DATAVIEW), "-- Select a mesh group --");
+		buffer = new char[10000];
+		return TRUE;	// All Init actions are done in OpenDlgClbk();
+	}
+
+	case WM_COMMAND:
+
+		switch (LOWORD(wParam)) {
+
+		case IDCANCEL:
+			oapiCloseDialog(hWnd);
+			if (buffer) delete[]buffer;
+			hDataWnd = NULL;
+			return TRUE;
+		}
+		break;
+	}
+
+	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
+}
+
 
 // ==============================================================
 // Dialog message handler
@@ -1412,6 +1495,13 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 			}
+
+			case IDC_DBG_DATAWND:
+			{
+				HWND hW = oapiOpenDialog(g_hInst, IDD_DEBUGVIEW, ViewProc);
+				if (hW) hDataWnd = hW;
+			}
+				break;
 
 			case IDC_DBG_LINK:
 				break;

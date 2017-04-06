@@ -117,10 +117,13 @@ namespace DebugControls {
 	int			GetSelectedEnvMap();
 	
 	bool		IsActive();
-	bool		IsEquEnabled();
 	bool		IsSelectedGroupRendered();
 
+	void		Append(const char *format, ...);
+	void		Refresh();
+
 	BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__DEBUGCONTROLS_H

@@ -230,7 +230,7 @@ void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
 	}
 
 	double r   = length(P);
-	double pres = 1.0;
+	double pres = 1000.0;
 	double size = oapiGetSize(hP) + vP->GetMinElevation();
 	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
 
@@ -1045,7 +1045,7 @@ float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
 
 	if (d > (r + range)) return -1.0f;
 
-	if ((d > r) && (Type == D3DLIGHT_SPOT) && (cosp>0.1)) {
+	if ((d > r) && (Type == 1) && (cosp>0.1)) {
 		float x = D3DXVec3Dot(&pos, &Direction);
 		if (x < -r) return -1.0f;
 		if ((sqrt(d2 - x*x) - x*tanp) * cosp > r) return -1.0f;
@@ -1097,11 +1097,11 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	switch (le->GetType()) {
 
 		case LightEmitter::LT_POINT: {
-			Type = D3DLIGHT_POINT;
+			Type = 0;
 		} break;
 
 		case LightEmitter::LT_SPOT: {
-			Type = D3DLIGHT_SPOT;
+			Type = 1;
 			cosp = cos(float(((SpotLight*)le)->GetPenumbra()) * 0.5f);
 			cosu = cos(float(((SpotLight*)le)->GetUmbra()) * 0.5f);
 			tanp = tan(float(((SpotLight*)le)->GetPenumbra()) * 0.5f);
@@ -1124,7 +1124,7 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	Diffuse.a = (col_d.a*intensity);
 
 	// -----------------------------------------------------------------------------
-	if (Type != D3DLIGHT_POINT) {
+	if (Type != 0) {
 		D3DXVec3TransformNormal(&Direction, &D3DXVEC(le->GetDirection()), vo->MWorld());
 	}
 }

@@ -21,6 +21,7 @@
 #define IDD_D3D9MESHDEBUG                       102
 #define IDD_D3D9SCATTER                         103
 #define IDD_D3D9SETUP                           104
+#define IDD_DEBUGVIEW                           105
 #define IDS_INFO                                1000 // never change these!
 #define IDS_TYPE                                1001 //   "      "     "
 #define IDC_AA                                  2002
@@ -28,8 +29,6 @@
 #define IDC_ATD_AUX1                            2004
 #define IDC_ATD_AUX2                            2005
 #define IDC_ATD_AUX3                            2006
-#define IDC_ATD_AUX4                            2007
-#define IDC_ATD_BALANCE                         2008
 #define IDC_ATD_BLUE                            2009
 #define IDC_ATD_DEPTH                           2010
 #define IDC_ATD_EXPO                            2011
@@ -37,7 +36,6 @@
 #define IDC_ATD_HEIGHT                          2013
 #define IDC_ATD_IN                              2014
 #define IDC_ATD_MIE                             2015
-#define IDC_ATD_MOFFSET                         2016
 #define IDC_ATD_MPHASE                          2017
 #define IDC_ATD_MPOW                            2018
 #define IDC_ATD_OUT                             2019
@@ -47,8 +45,6 @@
 #define IDC_ATM_AUX1                            2023
 #define IDC_ATM_AUX2                            2024
 #define IDC_ATM_AUX3                            2025
-#define IDC_ATM_AUX4                            2026
-#define IDC_ATM_BALANCE                         2027
 #define IDC_ATM_BLUE                            2028
 #define IDC_ATM_DEPTH                           2029
 #define IDC_ATM_EXPO                            2030
@@ -58,7 +54,6 @@
 #define IDC_ATM_LOAD                            2034
 #define IDC_ATM_MIE                             2035
 #define IDC_ATM_MODE                            2036
-#define IDC_ATM_MOFFSET                         2037
 #define IDC_ATM_MPHASE                          2038
 #define IDC_ATM_MPOW                            2039
 #define IDC_ATM_OUT                             2040
@@ -154,3 +149,13 @@
 #define IDC_DBG_GROUPSTAT                       2143
 #define IDC_ATM_GAMMATEST                       2144
 #define IDC_DBG_DEFINED                         2145
+#define IDC_ATM_TRGAMMA                         2146
+#define IDC_ATD_TRGAMMA                         2147
+#define IDC_ATD_HAZECLR                         2148
+#define IDC_ATM_HAZECLR                         2149
+#define IDC_ATD_HAZEITS                         2150
+#define IDC_ATM_HAZEITS                         2151
+#define IDC_ATD_ATMGAMMA                        2152
+#define IDC_ATM_ATMGAMMA                        2153
+#define IDC_DBG_DATAWND                         2154
+#define IDC_DBG_DATAVIEW                        2155

@@ -61,6 +61,7 @@ public:
 	bool				LoadSurface(const char *fname, DWORD flags, bool bDecompress=false);
 	bool				LoadTexture(const char *fname);
 	void				SaveSurface(const char *fname);
+	void				LoadSpecials(const char *fname);
 	bool				LoadSpecialTexture(const char *fname, const char *ext, int id);
 
 	DWORD				GetMipMaps();

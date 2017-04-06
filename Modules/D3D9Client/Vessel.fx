@@ -3,7 +3,6 @@
 // Dual licensed under GPL v3 and LGPL v3
 // ==============================================================
 
-#define fDiffuseFactor  0.32	// Diffuse surface multiplier  1 / PI
 
 
 float3 cLuminosity = { 0.4, 0.7, 0.3 };
@@ -100,7 +99,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 
 	float3 nrmW = frg.nrmW;
 	float3 tanW = frg.tanW.xyz;
-	float3 cSun = saturate(gSun.Color) * fSunIntensity;
+	float3 cSun = saturate(gSun.Color);
 	float3 CamD = normalize(frg.camW);
 	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
@@ -138,7 +137,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	if (gNoColor) cTex.rgb = 1;
 
 	// Lit the diffuse texture
-	cTex.rgb *= saturate(Base + gMtrl.diffuse.rgb * (frg.cDif.rgb * fN + cSun * dLN * fDiffuseFactor));
+	cTex.rgb *= saturate(Base + gMtrl.diffuse.rgb * (frg.cDif.rgb * fN + cSun * dLN));
 
 	// Lit the specular surface 
 #if defined(_LIGHTS)
@@ -174,11 +173,11 @@ float4 AdvancedPS(PBRData frg) : COLOR
 
 		float Ts = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a) * saturate(cTransm.a);
 		Ts *= saturate(dLN * (-2.0f));  // Causes the transmittance effect to fall off at very shallow angles
-		float3 Tdiff = Base + gMtrl.diffuse.rgb * (frg.cDif.rgb - cSun * dLN * fDiffuseFactor);
+		float3 Tdiff = Base + gMtrl.diffuse.rgb * (frg.cDif.rgb - cSun * dLN);
 		cTransl.rgb *= saturate(Tdiff);
 
 		cTex.rgb += (1 - cTex.rgb) * cTransl.rgb;
-		cTex.rgb += cTransm.rgb * (Ts * cSun * fDiffuseFactor);
+		cTex.rgb += cTransm.rgb * (Ts * cSun);
 	}
 
 	float fFrsl = 1.0f;

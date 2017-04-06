@@ -1443,6 +1443,10 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 						SAFE_RELEASE(pTemp);
 						SAFE_RELEASE(pSys);
 						if (!bDecompress) LogBlu("Surface %s found. Handle=0x%X, (%ux%u), MipMaps=%u, Flags=0x%X, Format=0x%X", fname, this, desc.Width, desc.Height, pTex->GetLevelCount(), flags, DWORD(Format));
+						
+						// Load special texture maps
+						LoadSpecials(fname);
+
 						return true;
 					}
 				}
@@ -1452,6 +1456,10 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 				HR(pTex->GetSurfaceLevel(0, &pSurf));
 				GetDesc(&desc);
 				if (!bDecompress) LogBlu("Surface %s found. Handle=0x%X, (%ux%u), MipMaps=%u, Flags=0x%X, Format=0x%X",fname, this, desc.Width, desc.Height, pTex->GetLevelCount(), flags, DWORD(Format));
+				
+				// Load special texture maps
+				LoadSpecials(fname);
+
 				return true;
 			}
 
@@ -1480,6 +1488,10 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 						SAFE_RELEASE(pTemp); SAFE_RELEASE(pTex);
 						GetDesc(&desc);
 						if (!bDecompress) LogBlu("Surface %s loaded. Handle=0x%X, (%ux%u), Flags=0x%X, Format=0x%X",fname, this, desc.Width, desc.Height, flags, DWORD(Format));
+						
+						// Load special texture maps
+						LoadSpecials(fname);
+
 						return true;
 					}
 				}
@@ -1516,24 +1528,27 @@ bool D3D9ClientSurface::LoadSpecialTexture(const char *fname, const char *ext, i
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
 			if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pMap[id])) {
+				LogBlu("SpecialTexture %s Loaded, (%ux%u), MipMaps=%u, Format=0x%X", name, info.Width, info.Height, info.MipLevels, info.Format);
 				bAdvanced = true;
 				return true;
 			}
 			// ...failed to create texture from file
 			pMap[id] = NULL;
-			LogErr("Failed to load image (%s)", name);
 		}
+		LogErr("Failed to load image (%s)", name);
 	}
 	return false;
 }
 
 
+
 // Load a texture -------------------------------------------------------------------------------------------------
-//
 //
 bool D3D9ClientSurface::LoadTexture(const char *fname)
 {
 	char path[MAX_PATH];
+
+	SetName(fname);
 
 	// Construct normal map name
 	//
@@ -1547,80 +1562,85 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		if (info.Height>8192 || info.Width>8192) LogErr("Loading a large surface Handle=0x%X (%u,%u)", this, info.Width, info.Height);
 
 		D3DFORMAT Format = info.Format;
-		D3DPOOL Pool = D3DPOOL_DEFAULT;
-		DWORD Usage = 0;
 		
 		// Convert Non-supported format -------------------------
 		if (Format==D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
 
-		
 		// Diffuse Texture Section ====================================================================================================================
 		//
 		DWORD Mips = D3DFMT_FROM_FILE;
 		if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
 		if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
 
-		if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK) {
-			SetName(fname);
+		if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, Mips, 0, Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK) {
 			HR(pTex->GetSurfaceLevel(0, &pSurf));
 			GetDesc(&desc);
 			LogBlu("Texture %s Loaded. Handle=0x%X, (%ux%u), MipMaps=%u, Format=0x%X", fname, this, desc.Width, desc.Height, pTex->GetLevelCount(), DWORD(Format));
+
+			// Load special texture maps
+			LoadSpecials(fname);
+			return true;
 		}
 		else {
 			LogErr("Texture %s failed to load", fname);
 			return false;
 		}
-
-
-		// Load Additional Textures ===================================================================================================================
-		//
-		if (Config->UseNormalMap) {
-
-			LPDIRECT3DTEXTURE9 pBumpMap = NULL;
-
-			// Bump Map Section =======================================================================================================================
-			//
-			char bname[128] = {};
-
-			CreateName(bname, ARRAYSIZE(bname), fname, "bump");
-
-			if (gc->TexturePath(bname, path)) {
-				D3DXIMAGE_INFO info;
-				if (D3DXGetImageInfoFromFileA(path, &info)==S_OK) {
-					if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 0, Usage, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pBumpMap)==S_OK) {
-						if (D3DXCreateTexture(pDevice, info.Width, info.Height, 0, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pMap[MAP_NORMAL])==S_OK) {
-							DWORD Channel = D3DX_CHANNEL_RED;
-							if (info.Format==D3DFMT_A8) Channel = D3DX_CHANNEL_ALPHA;
-							if (info.Format==D3DFMT_L8) Channel = D3DX_CHANNEL_LUMINANCE;
-							if (D3DXComputeNormalMap(pMap[MAP_NORMAL], pBumpMap, NULL, 0, Channel, float(Config->BumpAmp))!=S_OK) LogErr("BumpMap conversion Failed (%s)", bname);
-							else bAdvanced = true;
-						}
-						pBumpMap->Release();
-					} else {
-						pMap[MAP_NORMAL] = NULL;
-						LogErr("Failed to load image (%s)",bname);
-					}
-				} 
-			}
-
-			// Special Map Section =======================================================================================================================
-			//
-			LoadSpecialTexture(fname, "frsl", MAP_FRESNEL);
-			LoadSpecialTexture(fname, "rghn", MAP_ROUGHNESS);
-			LoadSpecialTexture(fname, "norm", MAP_NORMAL);
-			LoadSpecialTexture(fname, "emis", MAP_EMISSION);
-			LoadSpecialTexture(fname, "transl", MAP_TRANSLUCENCE);
-			LoadSpecialTexture(fname, "transm", MAP_TRANSMITTANCE);
-			LoadSpecialTexture(fname, "refl", MAP_REFLECTION);
-			LoadSpecialTexture(fname, "spec", MAP_SPECULAR);
-		}
-
-		return pTex != NULL;
 	}
 
 	LogWrn("Texture %s not found. Handle=0x%X",fname,this);
-	SetName(fname);
 	return false;
+}
+
+
+
+
+
+// Load special texture maps -------------------------------------------------------------------------------------------
+//
+void D3D9ClientSurface::LoadSpecials(const char *fname)
+{
+	char path[MAX_PATH];
+
+	if (!Config->UseNormalMap) return;
+
+	LPDIRECT3DTEXTURE9 pBumpMap = NULL;
+
+	// Bump Map Section =======================================================================================================================
+	//
+	char bname[128] = {};
+
+	CreateName(bname, ARRAYSIZE(bname), fname, "bump");
+
+	if (gc->TexturePath(bname, path)) {
+		D3DXIMAGE_INFO info;
+		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK) {
+			if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pBumpMap) == S_OK) {
+				if (D3DXCreateTexture(pDevice, info.Width, info.Height, 0, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pMap[MAP_NORMAL]) == S_OK) {
+					DWORD Channel = D3DX_CHANNEL_RED;
+					if (info.Format == D3DFMT_A8) Channel = D3DX_CHANNEL_ALPHA;
+					if (info.Format == D3DFMT_L8) Channel = D3DX_CHANNEL_LUMINANCE;
+					if (D3DXComputeNormalMap(pMap[MAP_NORMAL], pBumpMap, NULL, 0, Channel, float(Config->BumpAmp)) != S_OK) LogErr("BumpMap conversion Failed (%s)", bname);
+					else bAdvanced = true;
+				}
+				pBumpMap->Release();
+			}
+			else {
+				pMap[MAP_NORMAL] = NULL;
+				LogErr("Failed to load image (%s)", bname);
+			}
+		}
+	}
+
+	// Special Map Section =======================================================================================================================
+	//
+	LoadSpecialTexture(fname, "frsl", MAP_FRESNEL);
+	LoadSpecialTexture(fname, "rghn", MAP_ROUGHNESS);
+	LoadSpecialTexture(fname, "norm", MAP_NORMAL);
+	LoadSpecialTexture(fname, "emis", MAP_EMISSION);
+	LoadSpecialTexture(fname, "transl", MAP_TRANSLUCENCE);
+	LoadSpecialTexture(fname, "transm", MAP_TRANSMITTANCE);
+	LoadSpecialTexture(fname, "refl", MAP_REFLECTION);
+	LoadSpecialTexture(fname, "spec", MAP_SPECULAR);
 }
 
 

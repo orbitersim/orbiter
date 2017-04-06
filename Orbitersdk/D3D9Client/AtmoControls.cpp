@@ -34,20 +34,21 @@ ScatterParams::ScatterParams() :
 	depth    ( 1.0 ),    // 0.0 ... 1.5
 	// ----------------------------------------
 	expo     ( 1.0 ),    // 0.2 ... 3.0
-	balance  ( 0.0 ),    // -0.5 ... 0.5
 	// ----------------------------------------
 	rin      ( 1.0 ),    // 0.0 ... 3.0
 	rout     ( 0.592 ),  // 0.0 ... 4.0
 	rphase   ( 0.3395 ), // 0.0 ... 3.5
 	// ----------------------------------------
-	mheight  ( 4.0 ),    // 0.0 ... 2.0
 	mie      ( 0.0869 ), // 0.0 ... 8.0
 	mphase   ( 0.9831 ), // 0.85 ... 0.999
 	// ----------------------------------------
 	aux1	 ( 0.0 ),    // 0.0 ... 2.0
 	aux2	 ( 0.0 ),    // 0.0 ... 2.0
 	aux3	 ( 0.0 ),
-	aux4	 ( 0.9 ),
+	tgamma	 ( 1.0 ),
+	hazec    ( 0.0 ),		
+	hazei    ( 1.7 ),
+	agamma	 ( 1.0 ),
 	// ----------------------------------------
 	orbit	 ( false )   // [true|false]
 {
@@ -112,7 +113,7 @@ void Create()
 	
 	memset(Slider,0,sizeof(Slider));
 	
-	// ATTENTION: Order of params must match with slider indexes
+	// ATTENTION: Order of ScatterParams must match with slider indexes
 
 	Slider[0].id = IDC_ATM_RED;
 	Slider[1].id = IDC_ATM_GREEN;
@@ -123,16 +124,18 @@ void Create()
 	Slider[6].id = IDC_ATM_RPHASE;
 	Slider[7].id = IDC_ATM_MIE;
 	Slider[8].id = IDC_ATM_MPHASE;
-	Slider[9].id = IDC_ATM_BALANCE;
-	Slider[10].id = IDC_ATM_HEIGHT;
-	Slider[11].id = IDC_ATM_AUX2;
-	Slider[12].id = IDC_ATM_DEPTH;
-	Slider[13].id = IDC_ATM_MPOW;
-	Slider[14].id = IDC_ATM_EXPO;
-	Slider[15].id = IDC_ATM_MOFFSET;
-	Slider[16].id = IDC_ATM_AUX1;
-	Slider[17].id = IDC_ATM_AUX3;
-	Slider[18].id = IDC_ATM_AUX4;
+	Slider[9].id = IDC_ATM_HEIGHT;
+	Slider[10].id = IDC_ATM_AUX2;
+	Slider[11].id = IDC_ATM_DEPTH;
+	Slider[12].id = IDC_ATM_MPOW;
+	Slider[13].id = IDC_ATM_EXPO;
+	Slider[14].id = IDC_ATM_AUX1;
+	Slider[15].id = IDC_ATM_AUX3;
+	Slider[16].id = IDC_ATM_TRGAMMA;
+	Slider[17].id = IDC_ATM_HAZECLR;
+	Slider[18].id = IDC_ATM_HAZEITS;
+	Slider[19].id = IDC_ATM_ATMGAMMA;
+
 
 	Slider[0].dsp = IDC_ATD_RED;
 	Slider[1].dsp = IDC_ATD_GREEN;
@@ -143,16 +146,17 @@ void Create()
 	Slider[6].dsp = IDC_ATD_RPHASE;
 	Slider[7].dsp = IDC_ATD_MIE;
 	Slider[8].dsp = IDC_ATD_MPHASE;
-	Slider[9].dsp = IDC_ATD_BALANCE;
-	Slider[10].dsp = IDC_ATD_HEIGHT;
-	Slider[11].dsp = IDC_ATD_AUX2;
-	Slider[12].dsp = IDC_ATD_DEPTH;
-	Slider[13].dsp = IDC_ATD_MPOW;
-	Slider[14].dsp = IDC_ATD_EXPO;
-	Slider[15].dsp = IDC_ATD_MOFFSET;
-	Slider[16].dsp = IDC_ATD_AUX1;
-	Slider[17].dsp = IDC_ATD_AUX3;
-	Slider[18].dsp = IDC_ATD_AUX4;
+	Slider[9].dsp = IDC_ATD_HEIGHT;
+	Slider[10].dsp = IDC_ATD_AUX2;
+	Slider[11].dsp = IDC_ATD_DEPTH;
+	Slider[12].dsp = IDC_ATD_MPOW;
+	Slider[13].dsp = IDC_ATD_EXPO;
+	Slider[14].dsp = IDC_ATD_AUX1;
+	Slider[15].dsp = IDC_ATD_AUX3;
+	Slider[16].dsp = IDC_ATD_TRGAMMA;
+	Slider[17].dsp = IDC_ATD_HAZECLR;
+	Slider[18].dsp = IDC_ATD_HAZEITS;
+	Slider[19].dsp = IDC_ATD_ATMGAMMA;
 }
 
 // ==============================================================
@@ -202,50 +206,53 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_GREEN,    0.400, 0.700);
 	ConfigSlider(IDC_ATM_BLUE,     0.400, 0.700);
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
-	ConfigSlider(IDC_ATM_MPOW,     -4.0, 4.0);
+	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   2.0, 400.0, 1|2|4|8);
-	ConfigSlider(IDC_ATM_DEPTH,    0.0, 0.3);
+	ConfigSlider(IDC_ATM_DEPTH,    -0.3, 0.3);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_EXPO,	   0.2, 5.0);
-	ConfigSlider(IDC_ATM_BALANCE,  -0.3, 0.7);
+	ConfigSlider(IDC_ATM_EXPO,	   0.5, 2.0);
+	ConfigSlider(IDC_ATM_TRGAMMA,  0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_OUT,      0.0, 2.0, 8);
+	ConfigSlider(IDC_ATM_OUT,      0.0, 3.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.5, 2.0);
 	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
+	ConfigSlider(IDC_ATM_ATMGAMMA, 0.3, 3.0);
 	// -------------------------------------------------------
-	ConfigSlider(IDC_ATM_MOFFSET,  0.1, 10.0, 1|2);
 	ConfigSlider(IDC_ATM_MIE,      0.0, 2.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.80, 0.999);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_AUX1,	   0.0, 0.3);
-	ConfigSlider(IDC_ATM_AUX2,	   0.0, 1.0);
+	ConfigSlider(IDC_ATM_AUX2,	   0.0, 1.0, 8);
 	ConfigSlider(IDC_ATM_AUX3,	   0.0, 2.0);
-	ConfigSlider(IDC_ATM_AUX4,	   0.1, 4.4);
+	// -------------------------------------------------------
+	ConfigSlider(IDC_ATM_HAZECLR,  -1.5, 1.5);
+	ConfigSlider(IDC_ATM_HAZEITS,  1.1, 1.8);
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_RED,		hDlg, "Wavelength setting for red light (default 0.650)");
 	CreateToolTip(IDC_ATM_GREEN,	hDlg, "Wavelength setting for green light (default 0.600)");
 	CreateToolTip(IDC_ATM_BLUE,		hDlg, "Wavelength setting for blue light (default 0.480)");
 	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
-	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition (1.0 for the Earth)");
+	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition");
 	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere scale height (7km - 10km for the Earth)");
-	CreateToolTip(IDC_ATM_DEPTH,	hDlg, "Sunset color boost");
+	CreateToolTip(IDC_ATM_DEPTH,	hDlg, "Sunset color boost. Increases optical depth during sunset");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_EXPO,		hDlg, "[PostProcess] Overall brightness control (i.e. Camera \"exposure\" control) (default 1.0)");
-	CreateToolTip(IDC_ATM_BALANCE,	hDlg, "[PostProcess] Camera White balance control (default 1.0)");
+	CreateToolTip(IDC_ATM_EXPO,		hDlg, "Terrain/Ocean brightness control (default 1.0)");
+	CreateToolTip(IDC_ATM_TRGAMMA,	hDlg, "Terrain/Ocean gamma control value (default 1.0)");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_OUT,		hDlg, "Overall control for rayleigh scattering (i.e. Haze stickness)");
-	CreateToolTip(IDC_ATM_IN,		hDlg, "Controls an intensity of in-scattered sunlight (i.e. Haze glow intensity) (default 1.0)");
+	CreateToolTip(IDC_ATM_IN,		hDlg, "Controls in-scatter out-scatter ratio (default 1.0)");
 	CreateToolTip(IDC_ATM_RPHASE,	hDlg, "Controls a directional dependency of in-scattered sunlight (Most visible when camera, planet and the sun are aligned)");
+	CreateToolTip(IDC_ATM_ATMGAMMA, hDlg, "Gamma control for atmospheric haze");
 	// -------------------------------------------------------
-	CreateToolTip(IDC_ATM_MOFFSET,	hDlg, "Atmosphere scale height for Mie");
-	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering");
+	CreateToolTip(IDC_ATM_MIE,		hDlg, "Overall scale factor for mie scattering.");
 	CreateToolTip(IDC_ATM_MPHASE,	hDlg, "Directional strength of Henyey-Greenstein phase function");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_AUX1,		hDlg, "Distance of light transfer in atmosphere behind terminator");
-	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Horizon intensity");
+	CreateToolTip(IDC_ATM_AUX2,		hDlg, "Horizon intensity (Twilight and Sunset setting)");
 	CreateToolTip(IDC_ATM_AUX3,		hDlg, "Sky color boost to compensate a lack of multible scattering. (Orbital sunrise color)");
-	CreateToolTip(IDC_ATM_AUX4,		hDlg, "[PostProcess] Gamma correction");
 	// -------------------------------------------------------
+	CreateToolTip(IDC_ATM_HAZECLR, hDlg, "Additional (for R-POW) haze color control for max intensity (default 1.0)");
+	CreateToolTip(IDC_ATM_HAZEITS, hDlg, "Controls the maximum intensity of horizon haze (default 1.7)");
 	
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_ATM_MODE, CB_ADDSTRING, 0, (LPARAM)"Auto");

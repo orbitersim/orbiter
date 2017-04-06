@@ -7,11 +7,11 @@
 
 // Shader configurations -----------------------------------------------
 //
-#define fGlowIntensity	1.05	// Overal glow brightness multiplier
-#define radius			8		// Radius of the glow
+#define fGlowIntensity	1.08	// Overal glow brightness multiplier
+#define radius			12		// Radius of the glow
 #define rate			0.95	// glow "linearity" [0.7 to 0.95]
-#define fMinThreshold	0.65	// Glow starts to appear when back buffer intensity reaches this level
-#define fMaxThreshold	1.20	// Glow reaches it's maximum intensity when backbuffer goes above this level 
+#define fMinThreshold	0.85	// Glow starts to appear when back buffer intensity reaches this level
+#define fMaxThreshold	1.00	// Glow reaches it's maximum intensity when backbuffer goes above this level 
 
 
 // Orher configurations ------------------------------------------------
@@ -22,7 +22,7 @@
 // ---------------------------------------------------------------------
 // Client configuration parameters
 //
-#define BufferDivider	4		// Blur buffer size in pixels = ScreenSize / BufferDivider
+#define BufferDivider	2		// Blur buffer size in pixels = ScreenSize / BufferDivider
 #define PassCount		2		// Number of "bBlur" passes
 #define BufferFormat	1		// Render buffer format, 2=RGB10A2, 1 = RGBA_16F, 0=DEFAULT (RGBX8)
 // ---------------------------------------------------------------------

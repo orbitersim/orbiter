@@ -546,7 +546,7 @@ void LocalVertexLight(out float3 diff, out float3 spec, out float3 dir, in float
         float s      = pow(saturate(dot(reflect(relpN, nrmW), normalize(-posW))), sp);
 
         if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
-        if (gLights[i].bSpotlight) spt = 1.0f;         // Point light -> set spotlight factor to 1
+        if (!gLights[i].bSpotlight) spt = 1.0f;         // Point light -> set spotlight factor to 1
 
         float dif = (att*spt);
 

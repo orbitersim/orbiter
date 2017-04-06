@@ -103,7 +103,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	}
 
 	shadowalpha = (float)(/*1.0f -*/ *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
-	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) && (shadowalpha >= 0.01);
+	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) && (shadowalpha < 0.98);
+	bObjectShadow = *(bool*)gc->GetConfigParam(CFGPRM_OBJECTSHADOWS) && (shadowalpha < 0.98);
 
 	clouddata = 0;
 	cloudmgr2 = 0;
@@ -285,7 +286,7 @@ double vPlanet::GetHorizonAlt() const
 {
 	if (!prm.bAtm) return 0.0;
 	if (!bScatter) return prm.atm_hzalt;
-	return SPrm.height*9e3;
+	return SPrm.height*11e3;
 }
 
 // ==============================================================
@@ -1105,8 +1106,6 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 	CPrm.aux1   = lerp(SPrm.aux1,	OPrm.aux1,		alt);
 	CPrm.aux2   = lerp(SPrm.aux2,	OPrm.aux2,		alt);
 	CPrm.aux3	= lerp(SPrm.aux3,	OPrm.aux3,		alt);
-	CPrm.aux4	= lerp(SPrm.aux4,	OPrm.aux4,		alt);
-	CPrm.balance= lerp(SPrm.balance,OPrm.balance,	alt);
 	CPrm.depth  = lerp(SPrm.depth,	OPrm.depth,		alt);
 	CPrm.expo   = lerp(SPrm.expo,	OPrm.expo,		alt);
 	CPrm.mie    = lerp(SPrm.mie,	OPrm.mie,		alt);
@@ -1116,11 +1115,16 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 	CPrm.rout	= lerp(SPrm.rout,	OPrm.rout,		alt);
 	CPrm.rpow	= lerp(SPrm.rpow,	OPrm.rpow,		alt);
 	// ----------------------------------------------------
-	CPrm.red	= SPrm.red;
-	CPrm.green	= SPrm.green;
-	CPrm.blue   = SPrm.blue;
+	CPrm.red	= lerp(SPrm.red,	OPrm.red,		alt);
+	CPrm.green  = lerp(SPrm.green,	OPrm.green,		alt);
+	CPrm.blue	= lerp(SPrm.blue,	OPrm.blue,		alt);
+	// ----------------------------------------------------
+	CPrm.agamma = lerp(SPrm.agamma,	OPrm.agamma,	alt);
+	CPrm.tgamma = lerp(SPrm.tgamma,	OPrm.tgamma,	alt);
+	CPrm.hazec	= lerp(SPrm.hazec,	OPrm.hazec,		alt);
+	CPrm.hazei	= lerp(SPrm.hazei,	OPrm.hazei,		alt);
+	// ----------------------------------------------------
 	CPrm.height = SPrm.height;
-	CPrm.mheight= SPrm.mheight;
 	CPrm.rphase = SPrm.rphase;
 
 	return &CPrm;
@@ -1162,21 +1166,22 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	oapiReadItem_float(hFile, "DepthClamp", prm->depth);
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, "Exposure", prm->expo);
-	oapiReadItem_float(hFile, "Balance", prm->balance);
+	oapiReadItem_float(hFile, "TGamma", prm->tgamma);
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, "OutScatter", prm->rout);
 	oapiReadItem_float(hFile, "InScatter", prm->rin);
 	oapiReadItem_float(hFile, "RayleighPhase", prm->rphase);
 	// -----------------------------------------------------------------
-	oapiReadItem_float(hFile, "MieOffset", prm->mheight);
 	oapiReadItem_float(hFile, "MiePower", prm->mie);
 	oapiReadItem_float(hFile, "MiePhase", prm->mphase);
 	// -----------------------------------------------------------------
 	oapiReadItem_float(hFile, "Aux1", prm->aux1);
 	oapiReadItem_float(hFile, "Aux2", prm->aux2);
 	oapiReadItem_float(hFile, "Aux3", prm->aux3);
-	oapiReadItem_float(hFile, "Aux4", prm->aux4);
 	// -----------------------------------------------------------------
+	oapiReadItem_float(hFile, "AGamma", prm->agamma);
+	oapiReadItem_float(hFile, "HazeClr", prm->hazec);
+	oapiReadItem_float(hFile, "HazeIts", prm->hazei);
 	
 	oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
 
@@ -1215,21 +1220,22 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 	oapiWriteItem_float(hFile, "DepthClamp", prm->depth);
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, "Exposure", prm->expo);
-	oapiWriteItem_float(hFile, "Balance", prm->balance);
+	oapiWriteItem_float(hFile, "TGamma", prm->tgamma);
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, "OutScatter", prm->rout);
 	oapiWriteItem_float(hFile, "InScatter", prm->rin);
 	oapiWriteItem_float(hFile, "RayleighPhase", prm->rphase);
 	// -----------------------------------------------------------------
-	oapiWriteItem_float(hFile, "MieOffset", prm->mheight);
 	oapiWriteItem_float(hFile, "MiePower", prm->mie);
 	oapiWriteItem_float(hFile, "MiePhase", prm->mphase);
 	// -----------------------------------------------------------------	
 	oapiWriteItem_float(hFile, "Aux1", prm->aux1);
 	oapiWriteItem_float(hFile, "Aux2", prm->aux2);
 	oapiWriteItem_float(hFile, "Aux3", prm->aux3);
-	oapiWriteItem_float(hFile, "Aux4", prm->aux4);
 	// -----------------------------------------------------------------
+	oapiWriteItem_float(hFile, "AGamma", prm->agamma);
+	oapiWriteItem_float(hFile, "HazeClr", prm->hazec);
+	oapiWriteItem_float(hFile, "HazeIts", prm->hazei);
 	
 	oapiCloseFile(hFile, FILE_OUT);
 

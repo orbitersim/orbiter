@@ -750,10 +750,10 @@ void SurfTile::Render ()
 
 	D3DXVECTOR4 vBackup;
 
-	if (mgr->GetPickedTile()==this) {
+	/*if (mgr->GetPickedTile()==this) {
 		Shader->GetVector(TileManager2Base::svWhiteBalance, &vBackup);
 		Shader->SetVector(TileManager2Base::svWhiteBalance, &D3DXVECTOR4(1.5f, 0.5f, 0.5f, 1.0f));
-	}
+	}*/
 
 	Shader->CommitChanges();
 
@@ -763,7 +763,7 @@ void SurfTile::Render ()
 	int iTech = 0;
 	
 	if (has_atmosphere) {
-		if (has_specular) {
+		if (has_shadows) {
 			if (has_ripples) iTech = 0;		// Earth
 			else			 iTech = 1;		// Earth, no ripples
 		}
@@ -790,9 +790,10 @@ void SurfTile::Render ()
 	HR(Shader->EndPass());
 	HR(Shader->End());	
 
+	/*
 	if (mgr->GetPickedTile() == this) {
 		Shader->SetVector(TileManager2Base::svWhiteBalance, &vBackup);
-	}
+	}*/
 
 	// Render tile bounding box
 	//

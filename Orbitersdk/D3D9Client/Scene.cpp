@@ -577,7 +577,8 @@ float Scene::ComputeNearClipPlane()
 	VOBJREC *pv = NULL;
 
 	OBJHANDLE hObj = oapiCameraProxyGbody();
-	VESSEL *hVes = oapiGetFocusInterface();
+	OBJHANDLE hTgt = oapiCameraTarget();
+	VESSEL *hVes = oapiGetVesselInterface(hTgt);
 
 	if (hObj && hVes) {
 		VECTOR3 pos;
@@ -1692,12 +1693,12 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	if (hP == hS) return GetSun()->Color;
 
 	double r = length(P);
-	double pres = 1.0;
+	double pres = 1000.0;
 	double size = oapiGetSize(hP) + vP->GetMinElevation();
 	double grav = oapiGetMass(hP) * 6.67259e-11 / (size*size);
 
 	float aalt = 1.0f;
-	float amb0 = 0.0f;
+	//float amb0 = 0.0f;
 	float disp = 0.0f;
 	float amb = 0.0f;
 	float aq = 0.342f;
@@ -1724,7 +1725,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 	if (atm) {
 		aalt = float(atm->p0 * log(atm->p0 / pres) / (atm->rho0*grav));
-		amb0 = float(min(0.7, log(atm->rho0 + 1.0f)*0.4));
+		//amb0 = float(min(0.7, log(atm->rho0 + 1.0f)*0.4));
 		disp = float(max(0.02, min(0.9, log(atm->rho0 + 1.0))));
 	}
 
@@ -1736,7 +1737,9 @@ D3DXCOLOR Scene::GetSunDiffColor()
 	D3DXVECTOR3 r0 = _one - D3DXVECTOR3(1.15f, 1.65f, 2.35f) * disp;
 
 	if (atm) {
-		lcol = (r0 + (_one - r0) * saturate((h / al))) * saturate((h + rs) / (2.0f*rs));
+		float x = sqrt(saturate(h / al));
+		float y = sqrt(saturate((h + rs) / (2.0f*rs)));
+		lcol = (r0 + (_one - r0) * x) * y;
 	}
 	else {
 		lcol = r0 * saturate((h + rs) / (2.0f*rs));

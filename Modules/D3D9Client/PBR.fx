@@ -31,6 +31,14 @@ struct PBRData
 #endif
 
 
+
+float3 Light_fx(float3 x)
+{
+	return saturate(x);  //1.5 - exp2(-x.rgb)*1.5f;
+}
+
+
+
 // ========================================================================================================================
 // Vertex shader for physics based rendering
 //
@@ -88,11 +96,11 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float3 nrmT;
 	float3 nrmW;
 	float3 cEmis;
-	float3 cRefl;
+	float3 cRefl, cRefl2, cRefl3;
 	float3 cFrsl;
 	float4 cDiff;
 	float4 cSpec;
-	float4 sMask = float4(1, 1, 1, 1024);
+	float4 sMask = float4(1.0f, 1.0f, 1.0f, 1024.0f);
 	float  fRghn;
 
 
@@ -111,8 +119,8 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 	// Sample specular map
 	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy).rgba * sMask;
-	else		   cSpec = gMtrl.specular.rgba * fInvSunIntensity;
-
+	else 		   cSpec = gMtrl.specular.rgba;
+	
 
 	// Use _refl color for both
 	if (gCfg.Refl) cRefl = tex2D(ReflS, frg.tex0.xy).rgb;
@@ -143,7 +151,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 	float3 CamD = normalize(frg.camW);
 	float3 cMrtlBase = (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb;
-	float3 cSun = saturate(gSun.Color) * fSunIntensity;
+	float3 cSun = saturate(gSun.Color);
 	float  fN = 1.0f;
 
 
@@ -174,32 +182,32 @@ float4 PBR_PS(PBRData frg) : COLOR
 #endif
 
 
-	// ----------------------------------------------------------------------
-	// Convert reflection map from sRGB to Linear
-	// ----------------------------------------------------------------------
-
-	float3 cRefl2 = cRefl*cRefl;
-	float3 cRefl3 = cRefl2*cRefl;
-	float fRefl = cmax(cRefl3);
-
-
+	// Use alpha zero to mask off specular reflections
+	cSpec.rgb *= saturate(cSpec.a);
 
 	// ----------------------------------------------------------------------
 	// "Legacy/PBR" switch
 	// ----------------------------------------------------------------------
 
 	if (gPBRSw) {
+		cRefl2 = cRefl*cRefl;
+		cRefl3 = cRefl2*cRefl;
 		cSpec.rgb = cRefl2;
 		cSpec.a = exp2(fRghn * 12.0f);					// Compute specular power
 	}
+	else {
+		cRefl3 = cRefl2 = cRefl;
+	}
 
+	float fRefl = cmax(cRefl3);
 
+	
 	// ----------------------------------------------------------------------
 	// cSpec.pwr to fRghn Converter
 	// ----------------------------------------------------------------------
 
 	if (gRghnSw) {
-		fRghn = log2(cSpec.a) * 0.1f;
+		fRghn = log2(cSpec.a+1.0f) * 0.1f;
 	}
 
 
@@ -274,13 +282,13 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float fLobe = pow(dRS, cSpec.a) * dLNx;
 
 	// Compute received diffuse light
-	float3 diffLight = dLN * cSun * fDiffuseFactor + frg.cDif * fN;
+	float3 diffLight = Light_fx(dLN * cSun + frg.cDif * fN);
 
 	// Bake material props and lights together
 	float3 diffBaked = (gMtrl.diffuse.rgb*diffLight) + cMrtlBase;
 
 #if defined(_LIGHTS)
-	cSun += frg.cSpe;	// Add local light sources
+	cSun = Light_fx(cSun + frg.cSpe);	// Add local light sources
 #endif
 
 	// Special alpha only texture in use, set the .rgb to 1.0f
@@ -353,11 +361,15 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Compute total reflected light
 	float fTot = cmax(cEnv + cSpec.rgb);
 
+	// Attennuate diffuse surface beneath
+	cDiff.rgb *= (1.0f - fTot);
+
 #if defined(_ENVMAP)
 	// Attennuate diffuse surface beneath
-	cDiff.rgb *= (1.0f - fRefl);
+	//cDiff.rgb *= (1.0f - fRefl);
 
 #if defined(_GLASS)
+	// Further attennuate diffuse surface beneath
 	cDiff.rgb *= (1.0f - iFrsl*iFrsl);			// note: (1-iFrsl) goes black too quick
 #endif	
 #endif
@@ -482,14 +494,14 @@ float4 FAST_PS(FASTData frg) : COLOR
 
 		float3 nrmW  = normalize(frg.nrmW);
 		float4 cSpec = gMtrl.specular.rgba;
-		float3 cSun  = saturate(gSun.Color) * fSunIntensity;
+		float3 cSun  = saturate(gSun.Color);
 		float  dLN   = saturate(-dot(gSun.Dir, nrmW));
 		
 		cSpec.rgb *= 0.33333f;
 
 		if (gNoColor) cDiff.rgb = 1;
 
-		cDiff.rgb *= (gMtrl.diffuse.rgb*(dLN * cSun * fDiffuseFactor + frg.cDif)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb;
+		cDiff.rgb *= ( (gMtrl.diffuse.rgb*Light_fx(dLN * cSun + frg.cDif)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb );
 
 		float3 CamD = normalize(frg.camW);
 		float3 HlfW = normalize(CamD - gSun.Dir);
@@ -498,7 +510,7 @@ float4 FAST_PS(FASTData frg) : COLOR
 		if (dLN == 0) fSun = 0;
 
 #if defined(_LIGHTS)
-		float3 specLight = (fSun * cSun) + frg.cSpe;
+		float3 specLight = Light_fx((fSun * cSun) + frg.cSpe);
 #else
 		float3 specLight = (fSun * cSun);
 #endif

@@ -8,7 +8,7 @@
 #ifndef __ATMOCONTROLS_H
 #define __ATMOCONTROLS_H
 
-#define ATM_SLIDER_COUNT 19
+#define ATM_SLIDER_COUNT 20
 
 
 typedef struct ScatterParams {
@@ -25,16 +25,17 @@ typedef struct ScatterParams {
 			double rphase;		///< Rayleigh phase
 			double mie;			///< scale factor for mie scattering
 			double mphase;		///< g-constant in HG phase function
-			double balance;		///< White balance
 			double height;		///< atmospheric scale height
 			double aux2;		///< auxiliary parameter
-			double depth;		///< depth clamp
+			double depth;		///< ---UnUsed---
 			double mpow;		///< Mie power
-			double expo;		///< exposure
-			double mheight;		///< Constant Mie level
+			double expo;		///< exposure for terrain
 			double aux1;		///< auxiliary parameter
 			double aux3;		///< auxiliary parameter
-			double aux4;		///< auxiliary parameter
+			double tgamma;		///< Terrain gamma
+			double hazec;		///< Haze color
+			double hazei;		///< Haze intensity
+			double agamma;		///< Atmosphere gamma	
 		};
 	};
 	bool orbit;

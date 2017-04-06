@@ -111,11 +111,11 @@ public:
 	static D3DXHANDLE svRayInSct;
 	static D3DXHANDLE svTotOutSct;
 	static D3DXHANDLE svColorShift;
-	static D3DXHANDLE svWhiteBalance;
+	static D3DXHANDLE svHazeMax;
 	static D3DXHANDLE svCameraPos;		
 	static D3DXHANDLE svUnitCameraPos;		
 	static D3DXHANDLE sfSunset;
-	static D3DXHANDLE sfInvMieScaleHeight;
+	static D3DXHANDLE sfSunAlt;
 	static D3DXHANDLE sfScaleHeight;		
 	static D3DXHANDLE sfInvScaleHeight;
 	static D3DXHANDLE sfRadius;
@@ -127,7 +127,8 @@ public:
 	static D3DXHANDLE sfExposure;			
 	static D3DXHANDLE sfAux1;			
 	static D3DXHANDLE sfAux2;	
-	static D3DXHANDLE sfAux4;
+	static D3DXHANDLE sfTrGamma;
+	static D3DXHANDLE sfAtmGamma;
 	static D3DXHANDLE sfInvAux1;
 	static D3DXHANDLE sfInvParameter;
 	static D3DXHANDLE sfTime;

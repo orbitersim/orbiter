@@ -1452,10 +1452,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		bMtrlModidied = false;
 	}
 
-
-	if (bCanRenderFast) {
-		RenderFast(pW, iTech);
-		return;
+	if (DebugControls::IsActive() == false) {
+		if (bCanRenderFast) {
+			RenderFast(pW, iTech);
+			return;
+		}
 	}
 
 	DWORD flags=0, selmsh=0, selgrp=0, displ=0; // Debug Variables
@@ -1528,8 +1529,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	D3D9MatExt *mat, *old_mat = NULL;
 	LPD3D9CLIENTSURFACE old_tex = NULL;
-	LPDIRECT3DTEXTURE9 pEmis_old = NULL;
-
+	
 	pDev->SetVertexDeclaration(pMeshVertexDecl);
 	pDev->SetStreamSource(0, pVB, 0, sizeof(NMVERTEX));
 	pDev->SetIndices(pIB);
@@ -1626,7 +1626,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	
 
 		// This mesh group must be skipped by user orders
-		if ((Grp[g].UsrFlag&0x2) && (Grp[g].MFDScreenId==0)) continue;
+		//if ((Grp[g].UsrFlag & 0x2) && (Grp[g].MFDScreenId == 0)) continue;
+		if ((Grp[g].UsrFlag & 0x2)) continue;
 
 		bool bHUD = Grp[g].MFDScreenId == 0x100;
 
@@ -1662,9 +1663,16 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		DWORD tni=Grp[g].TexIdxEx[0];
 
 		if (ti==0 && tni!=0) continue;
-				
-		if (Tex[ti]==NULL || ti==0) bTextured = false, old_tex = NULL;
-		else						bTextured = true;
+		
+		if (Tex[ti] != old_tex) {
+			if (Tex[ti] == NULL) {
+				reset(FC);
+				bUpdateFlow = true;
+			}
+		}
+
+		if (Tex[ti]==NULL) bTextured = false, old_tex = NULL;
+		else bTextured = true;
 
 
 		// Cull unvisible geometry =================================================================================
@@ -1685,20 +1693,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				}
 
 				old_tex = Tex[ti];
+
 				FX->SetTexture(eTex0, Tex[ti]->GetTexture());
 
-				LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
-
-				if (tni && Grp[g].TexMixEx[0]<0.5f) tni = 0;
-				if (!pEmis && tni && Tex[tni]) pEmis = Tex[tni]->GetTexture();
-					
-				if (pEmis != pEmis_old) {
-					FX->SetTexture(eEmisMap, pEmis);
-					pEmis_old = pEmis;
-					FC.Emis = (pEmis != NULL);
-					bUpdateFlow = true;
-				}
-				
 				LPDIRECT3DTEXTURE9 pTransl = NULL;
 				LPDIRECT3DTEXTURE9 pTransm = NULL;
 				LPDIRECT3DTEXTURE9 pSpec = Tex[ti]->GetMap(MAP_SPECULAR);
@@ -1706,11 +1703,17 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				LPDIRECT3DTEXTURE9 pRefl = Tex[ti]->GetMap(MAP_REFLECTION);
 				LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
 				LPDIRECT3DTEXTURE9 pFrsl = Tex[ti]->GetMap(MAP_FRESNEL);
+				LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
+
+				if (tni && Grp[g].TexMixEx[0]<0.5f) tni = 0;
+				if (!pEmis && tni && Tex[tni]) pEmis = Tex[tni]->GetTexture();
 
 				if (pNorm) FX->SetTexture(eTex3, pNorm);
 				if (pRghn) FX->SetTexture(eRghnMap, pRghn);
 				if (pRefl) FX->SetTexture(eReflMap, pRefl);
 				if (pFrsl) FX->SetTexture(eFrslMap, pFrsl);
+				if (pSpec) FX->SetTexture(eSpecMap, pSpec);
+				if (pEmis) FX->SetTexture(eEmisMap, pEmis);
 
 
 				if (pass == ADV) {
@@ -1720,17 +1723,24 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	
 					if (pTransl) FX->SetTexture(eTranslMap, pTransl);
 					if (pTransm) FX->SetTexture(eTransmMap, pTransm);
+
+					FC.Transl = (pTransl != NULL);
+					FC.Transm = (pTransm != NULL);
+					FC.Transx = FC.Transl || FC.Transm;
+				}
+				else {
+					FC.Transl = false;
+					FC.Transm = false;
+					FC.Transx = false;
 				}
 
+				FC.Emis = (pEmis != NULL);
 				FC.Frsl = (pFrsl != NULL);
 				FC.Norm = (pNorm != NULL);
 				FC.Rghn = (pRghn != NULL);
 				FC.Spec = (pSpec != NULL);
 				FC.Refl = (pRefl != NULL);
-				FC.Transl = (pTransl != NULL);
-				FC.Transm = (pTransm != NULL);
-				FC.Transx = FC.Transl || FC.Transm;
-
+			
 				bUpdateFlow = true;
 			}
 		}
@@ -1802,6 +1812,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	
 		bool bPBR = (Grp[g].PBRStatus & 0xF) == (0x8 + 0x4);
 		bool bRGH = (Grp[g].PBRStatus & 0xE) == (0x8 + 0x2);
+		bool bENV = false;
+		bool bFRS = false;
 
 		// Setup Mesh drawing options =================================================================================
 		//
@@ -1811,16 +1823,62 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		FX->SetBool(eSwitch, bPBR);
 		FX->SetBool(eRghnSw, bRGH);
 	
+
 		// Update envmap and fresnel status as required
 		if (bRefl) {
-			FX->SetBool(eFresnel, (Grp[g].PBRStatus & 0x1E) >= 0x10);
+			bFRS = (Grp[g].PBRStatus & 0x1E) >= 0x10;
+			FX->SetBool(eFresnel, bFRS);
 			if (bIsReflective) {
-				FX->SetBool(eEnvMapEnable, (Grp[g].PBRStatus & 0x1E) >= 0xA);
+				bENV = (Grp[g].PBRStatus & 0x1E) >= 0xA;
+				FX->SetBool(eEnvMapEnable, bENV);
 			}
 		}
 
+
 		FX->CommitChanges();
 
+
+
+		// Mesh Debugger -------------------------------------------------------------------------------------------
+		//
+		if (DebugControls::IsActive()) {
+
+			static const char *YesNo[2] = { "No", "Yes" };
+			static const char *LPW[2] = { "Legacy", "PBR" };
+			static const char *RGH[2] = { "Disabled", "Enabled" };
+
+			if ((bActiveVisual) && (g == selgrp) && (uCurrentMesh == selmsh)) {
+
+				DebugControls::Append("MeshIdx = %d, GrpIdx = %d\n", uCurrentMesh, g);
+				DebugControls::Append("MtrlIdx = %d, TexIdx = %d\n", Grp[g].MtrlIdx, Grp[g].TexIdx);
+				DebugControls::Append("FaceCnt = %d, VtxCnt = %d\n", Grp[g].nFace, Grp[g].nVert);
+
+				DebugControls::Append("Textured.... = %s\n", YesNo[bTextured]);
+				DebugControls::Append("PBR-Switch.. = %s\n", LPW[bPBR]);
+				DebugControls::Append("Rghn-Conver. = %s\n", RGH[bRGH]);
+				DebugControls::Append("Fresnel Mode = %s\n", RGH[bFRS]);
+				DebugControls::Append("Env Mapping. = %s\n", RGH[bENV]);
+				DebugControls::Append("ModMatAlpha. = %s\n", YesNo[bModulateMatAlpha]);
+				DebugControls::Append("RenderFast.. = %s\n", YesNo[bCanRenderFast]);
+
+				DebugControls::Append("TextureMaps = [ ");
+				if (FC.Emis) DebugControls::Append("emis ");
+				if (FC.Frsl) DebugControls::Append("frsl ");
+				if (FC.Norm) DebugControls::Append("norm ");
+				if (FC.Rghn) DebugControls::Append("rghn ");
+				if (FC.Spec) DebugControls::Append("spec ");
+				if (FC.Refl) DebugControls::Append("refl ");
+				if (FC.Transl) DebugControls::Append("transl ");
+				if (FC.Transm) DebugControls::Append("transm ");
+				DebugControls::Append("]\n");
+
+				DebugControls::Refresh();
+			}
+		}
+
+
+		// Start rendering -------------------------------------------------------------------------------------------
+		//
 		if (bHUD) {
 			pDev->SetRenderState(D3DRS_ZENABLE, 0);
 			pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);

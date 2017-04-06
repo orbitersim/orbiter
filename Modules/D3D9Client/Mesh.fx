@@ -269,7 +269,7 @@ BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
 
 float4 ShadowTechPS(BShadowVS frg) : COLOR
 {
-	return float4(0.0f, 0.0f, 0.0f, gMix);
+	return float4(0.0f, 0.0f, 0.0f, 1-gMix);
 }
 
 // return 4 components even if the target surface has just one
