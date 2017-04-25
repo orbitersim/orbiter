@@ -20,6 +20,7 @@
 #include "D3D9Surface.h"
 #include "Log.h"
 #include "D3D9Config.h"
+#include "OapiExtension.h"
 
 using namespace oapi;
 
@@ -351,6 +352,10 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_4) LogOapi("D3DDTCAPS_FLOAT16_4....: Yes");
 	else								    LogOapi("D3DDTCAPS_FLOAT16_4....: No");
+
+	// Check (Log) whether orbiter runs on WINE
+	//
+	LogOapi("Runs under WINE........: %s", OapiExtension::RunsUnderWINE() ? "Yes" : "No");
 
 	// Check MipMap autogeneration
 	//

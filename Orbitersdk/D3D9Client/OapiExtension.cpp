@@ -2,7 +2,7 @@
 // OapiExtension.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012 - 2016 Peter Schneider (Kuddel)
+// Copyright (C) 2012 - 2017 Peter Schneider (Kuddel)
 // ==============================================================
 
 #include "OapiExtension.h"
@@ -57,7 +57,7 @@ bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
 bool OapiExtension::orbiterSound40 = false;
 bool OapiExtension::tileLoadThread = true;
-
+bool OapiExtension::runsUnderWINE = false;
 
 // hooking
 DWORD OapiExtension::hookMap = 0L;
@@ -231,6 +231,17 @@ bool OapiExtension::GetConfigParameter(void)
 		}
 		oapiCloseFile(f, FILE_IN_ZEROONFAIL);
 	}
+
+	// Check for WINE environment
+	HMODULE hntdll = GetModuleHandle("ntdll.dll");
+	if (NULL != hntdll)
+	{
+		// static const char * (CDECL *pwine_get_version)(void);
+		void *pWineGetVersion = (void *)GetProcAddress(hntdll, "wine_get_version");
+		if (NULL != pWineGetVersion) {
+			runsUnderWINE = true;
+		} // else { Not running WINE }
+	} // else { Not running on NT ?! }
 
 	return true;
 }

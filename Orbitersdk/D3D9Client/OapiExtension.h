@@ -2,7 +2,7 @@
 // OapiExtension.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012-2016 Peter Schneider (Kuddel)
+// Copyright (C) 2012-2017 Peter Schneider (Kuddel)
 // ==============================================================
 
 #ifndef __OAPIEXTENSION_H
@@ -164,6 +164,13 @@ public:
 	static const bool RunsOrbiterSound40() { return orbiterSound40; }
 
 	/**
+	 * \brief Returns whether Orbiter runs under WINE
+	 *
+	 * \return Whether Orbiter runs under WINE
+	 */
+	static const bool RunsUnderWINE() { return runsUnderWINE; }
+
+	/**
 	 * \brief Returns the current path to Config folder
 	 *
 	 * \return Path to Config folder
@@ -219,6 +226,8 @@ private:
 	static std::string textureDir;  ///< Value of Orbiters TextureDir parameter
 	static std::string hightexDir;  ///< Value of Orbiters HightexDir parameter
 	static std::string scenarioDir; ///< Value of Orbiters ScenarioDir config parameter
+	// WINE detection
+	static bool runsUnderWINE; ///< Whether Orbiter runs under WINE
 
 	// Hooking
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets
