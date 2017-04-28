@@ -3,14 +3,11 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2012 - 2016 Jarmo Nikkanen
-//				 2012 - 2016 Émile "Bibi Uncle" Grégoire
+//				 2012 - 2016 ï¿½mile "Bibi Uncle" Grï¿½goire
 //				 2012 - 2016 Peter Schneider (Kuddel)
 // ==============================================================
 
-#include <functional> 
-#include <algorithm>
 #include <sstream>
-#include <cctype>
 
 #include "FileParser.h"
 #include "D3D9Config.h"
@@ -18,31 +15,10 @@
 #include "Log.h"
 #include "OapiExtension.h"
 
+extern oapi::D3D9Client *g_client;
 
 // ===========================================================================================
 // string helper
-
-// trim from start
-static inline std::string &ltrim (std::string &s) {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
-}
-
-// trim from end
-static inline std::string &rtrim (std::string &s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
-}
-
-// trim from both ends
-static inline std::string &trim (std::string &s) {
-	return ltrim(rtrim(s));
-}
-
-// lowercase complete string
-static inline void toLower (std::string &s) {
-	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
-}
 
 // case insensitive compare
 static inline bool startsWith (const std::string &haystack, const std::string &needle) {
@@ -76,7 +52,7 @@ static std::pair<std::string, std::string> &splitAssignment (const std::string &
 FileParser::FileParser (const std::string &scenario) :
 	system(),
 	context(),
-	mjd(51981.0)
+  mjd(oapiGetSimMJD())
 {
 	_TRACE;
 
@@ -209,9 +185,17 @@ void FileParser::LogContent ()
 bool FileParser::ParseScenario (const std::string &name)
 {
 	std::ifstream fs(name);
-	if (fs.fail()) {
-		LogErr("Could not open a scenario '%s'", name.c_str());
-		return false;
+	if (fs.fail())
+	{
+		// try to get it from "-s <scenario_name>" option
+		// by setting D3D9Client instances value we chage 'name' reference accordingly!
+		g_client->SetScenarioName(OapiExtension::GetStartupScenario());
+		// try again
+		fs.open(name);
+		if (fs.fail()) {
+			LogErr("Could not open a scenario '%s'", name.c_str());
+			return false;
+		}
 	}
 
 	std::string line, // One file line

@@ -10,6 +10,9 @@
 
 #include <Windows.h>
 #include <string>
+#include <functional> 
+#include <algorithm>
+#include <cctype>
 
 class D3D9Config;
 
@@ -99,6 +102,33 @@ typedef struct {
 	HWND    hWndScaleGauge;   ///< Scale gauge handle
 	HWND    hWndOpacityGauge; ///< Opacity gauge handle
 } HOOKINFO, *LPHOOKINFO;
+
+
+
+// ===========================================================================================
+// string helper
+
+// trim from start
+static inline std::string &ltrim (std::string &s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	return s;
+}
+
+// trim from end
+static inline std::string &rtrim (std::string &s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	return s;
+}
+
+// trim from both ends
+static inline std::string &trim (std::string &s) {
+	return ltrim(rtrim(s));
+}
+
+// lowercase complete string
+static inline void toLower (std::string &s) {
+	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+}
 
 
 
@@ -205,6 +235,13 @@ public:
 	 */
 	static const char *GetScenarioDir() { return scenarioDir.c_str(); }
 
+	/**
+	 * \brief Returns the value of a Startup Scenario (-s CLI option)
+	 *
+	 * \return Path to Startup Scenario ("" if not given via CLI)
+	 */
+	static const char *GetStartupScenario() { return startupScenario.c_str(); }
+
 private:
 	OapiExtension(void); // avoid default constructor creation & instantiation
 	~OapiExtension(void);
@@ -221,11 +258,12 @@ private:
 	static float coordinateAxesOpacity; // [0...1]
 	// OrbiterSound 4.0 helper
 	static bool orbiterSound40;
-	static std::string configDir;   ///< Value of Orbiters ConfigDir parameter
-	static std::string meshDir;     ///< Value of Orbiters MeshDir parameter
-	static std::string textureDir;  ///< Value of Orbiters TextureDir parameter
-	static std::string hightexDir;  ///< Value of Orbiters HightexDir parameter
-	static std::string scenarioDir; ///< Value of Orbiters ScenarioDir config parameter
+	static std::string configDir;       ///< Value of Orbiters ConfigDir parameter
+	static std::string meshDir;         ///< Value of Orbiters MeshDir parameter
+	static std::string textureDir;      ///< Value of Orbiters TextureDir parameter
+	static std::string hightexDir;      ///< Value of Orbiters HightexDir parameter
+	static std::string scenarioDir;     ///< Value of Orbiters ScenarioDir config parameter
+	static std::string startupScenario; ///< Scenario-Path if Orbiters was started with "-s {Scenario}" command line parameter
 	// WINE detection
 	static bool runsUnderWINE; ///< Whether Orbiter runs under WINE
 
@@ -235,6 +273,7 @@ private:
 
 	static bool configParameterRead;      ///< Indication that Orbiter_NG.cfg has been read
 	static bool GetConfigParameter(void); ///< Tries to read parameter from Orbiter_NG.cfg
+	static std::string ScanCommandLine(void); ///< Tries to read a Startup Scenario given by "-s" command line parameter
 
 	static bool AllHooksAttached(void) {return hookMap == 0x7FFF;}
 	static const LPHOOKINFO GetHookInfo(DWORD cid);

@@ -5,6 +5,7 @@
 // Copyright (C) 2012 - 2017 Peter Schneider (Kuddel)
 // ==============================================================
 
+#include <algorithm>
 #include "OapiExtension.h"
 #include "D3D9Config.h"
 #include "OrbiterAPI.h"
@@ -52,6 +53,8 @@ std::string OapiExtension::meshDir(".\\Meshes\\");
 std::string OapiExtension::textureDir(".\\Textures\\");
 std::string OapiExtension::hightexDir(".\\Textures2\\");
 std::string OapiExtension::scenarioDir(".\\Scenarios\\");
+
+std::string OapiExtension::startupScenario = OapiExtension::ScanCommandLine();
 
 bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 
@@ -244,6 +247,30 @@ bool OapiExtension::GetConfigParameter(void)
 	} // else { Not running on NT ?! }
 
 	return true;
+}
+
+// ===========================================================================
+// Try to read a startup scenario given by "-s" command line parameter
+//
+std::string OapiExtension::ScanCommandLine (void)
+{
+	std::string commandLine(GetCommandLine());
+	toLower( commandLine );
+
+	// Is there a "-s <scenario_name>" option at all?
+	unsigned pos = commandLine.rfind("-s");
+	if (pos != std::string::npos)
+	{
+		std::string scenarioName = trim( commandLine.substr(pos+2, std::string::npos) );
+
+		// Remove (optional) quotes
+		std::replace(scenarioName.begin(), scenarioName.end(), '"', ' ');
+
+		// Build the path (like ".\\Scenarios\\(Current State).scn"
+		//startupScenario = GetScenarioDir() + trim(scenarioName) + ".scn";
+		return GetScenarioDir() + trim(scenarioName) + ".scn";
+	}
+	return "";
 }
 
 // ===========================================================================
