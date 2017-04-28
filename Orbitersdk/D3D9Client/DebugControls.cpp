@@ -39,13 +39,13 @@ int  origwidth;
 HWND hDlg = NULL;
 HWND hDataWnd = NULL;
 vObject *vObj = NULL;
-char *buffer = NULL;
+std::string buffer("");
 
 HWND hTipRed, hTipGrn, hTipBlu, hTipAlp;
 
 OPENFILENAMEA OpenTex, SaveTex;
 char OpenFileName[255];
-char SaveFileName[255];    
+char SaveFileName[255];
 
 void UpdateMaterialDisplay(bool bSetup=false);
 
@@ -1376,22 +1376,22 @@ void SaveEnvMap()
 //
 void Append(const char *format, ...)
 {
-	if (buffer == NULL || hDataWnd == NULL) return;
+	if (hDataWnd == NULL) return;
 	char buf[256];
 	va_list args;
 	va_start(args, format);
 	_vsnprintf_s(buf, 256, 256, format, args);
 	va_end(args);
-	strcat_s(buffer, 9000, buf);
+	buffer += buf;
 }
 
 //-------------------------------------------------------------------------------------------
 //
 void Refresh()
 {
-	if (buffer == NULL || hDataWnd == NULL) return;
-	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW), buffer);
-	strcpy(buffer, "");
+	if (hDataWnd == NULL) return;
+	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW), buffer.c_str());
+	buffer.clear();
 }
 
 
@@ -1409,7 +1409,7 @@ BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_INITDIALOG:
 	{
 		SetWindowTextA(GetDlgItem(hWnd, IDC_DBG_DATAVIEW), "-- Select a mesh group --");
-		buffer = new char[10000];
+		buffer.clear();
 		return TRUE;	// All Init actions are done in OpenDlgClbk();
 	}
 
@@ -1419,7 +1419,7 @@ BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDCANCEL:
 			oapiCloseDialog(hWnd);
-			if (buffer) delete[]buffer;
+			if (!buffer.empty()) buffer.clear();
 			hDataWnd = NULL;
 			return TRUE;
 		}
