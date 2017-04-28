@@ -72,6 +72,7 @@ void D3D9InitLog(char *file)
 {
 	if (fopen_s(&d3d9client_log,file,"w+")) { d3d9client_log=NULL; } // Failed
 	else {
+		QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
 		InitializeCriticalSectionAndSpinCount(&LogCrit, 256); 
 		fprintf_s(d3d9client_log,"<html><head><title>D3D9Client Log</title></head><body bgcolor=0x000000 text=0xFFFFFF>"); 
 		fprintf_s(d3d9client_log,"<center><h2>D3D9Client Log</h2><br>");
@@ -134,7 +135,7 @@ void LogTrace(const char *format, ...)
 	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>3) {
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=DarkGrey>", my_ctime(), th);
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=DarkGrey> ", my_ctime(), th);
 		
 		va_list args; 
 		va_start(args, format); 
@@ -214,7 +215,7 @@ void LogErr(const char *format, ...)
 	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Red>[ERROR] ", my_ctime(), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Red> [ERROR] ", my_ctime(), th);
 
 		va_list args; 
 		va_start(args, format); 
@@ -266,7 +267,7 @@ void LogWrn(const char *format, ...)
 	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>1) {
 		DWORD th = GetCurrentThreadId();
-		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Yellow>[WARNING] ", my_ctime(), th);
+		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
 
 		va_list args; 
 		va_start(args, format); 
@@ -306,4 +307,4 @@ void LogOk(const char *format, ...)
 		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
-}	
+}
