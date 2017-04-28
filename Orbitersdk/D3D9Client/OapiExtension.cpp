@@ -61,6 +61,7 @@ bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
 bool OapiExtension::orbiterSound40 = false;
 bool OapiExtension::tileLoadThread = true;
 bool OapiExtension::runsUnderWINE = false;
+bool OapiExtension::runsSpacecraftDll = false;
 
 // hooking
 DWORD OapiExtension::hookMap = 0L;

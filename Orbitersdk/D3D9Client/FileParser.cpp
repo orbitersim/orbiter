@@ -198,6 +198,7 @@ bool FileParser::ParseScenario (const std::string &name)
 		}
 	}
 
+	bool result = false;
 	std::string line, // One file line
 	            dummy;
 	std::istringstream iss;
@@ -245,16 +246,35 @@ bool FileParser::ParseScenario (const std::string &name)
 		}
 		else if (startsWith(line, "END_ENVIRONMENT")) {
 			if (!system.empty()) {
-				ParseSystem(system);
-				return true;
+				result = ParseSystem(system); // Most likely 'result = true;' ;)
+				break;
 			}
-			LogErr("Failed to find a system from scenario '%s'", name.c_str());
-			return false;
+			else {
+				LogErr("Failed to find a system from scenario '%s'", name.c_str());
+			}
+			break;
 		}
 	}
 
-	LogErr("Failed to parse a scenario '%s'", name.c_str());
-	return false;
+	// Spacecraft.dll detection
+	//
+
+	// skip until BEGIN_SHIPS
+	while (std::getline(fs, line) && !startsWith(trim(line), "BEGIN_SHIPS")) {}
+
+	while (std::getline(fs, line))
+	{
+		toLower(line);
+		if (line.find(":spacecraft\\spacecraft") != std::string::npos) {
+			OapiExtension::SetSpacecraftDllUsed();
+			break;
+		}
+	}
+
+	if (!result) {
+		LogErr("Failed to parse a scenario '%s'", name.c_str());
+	}
+	return result;
 }
 
 // ===========================================================================================

@@ -201,6 +201,13 @@ public:
 	static const bool RunsUnderWINE() { return runsUnderWINE; }
 
 	/**
+	* \brief Returns whether the current Scenario uses Spacecraft.dll
+	*
+	* \return Whether the current Scenario uses Spacecraft.dll
+	*/
+	static const bool RunsSpacecraftDll() { return runsSpacecraftDll; }
+
+	/**
 	 * \brief Returns the current path to Config folder
 	 *
 	 * \return Path to Config folder
@@ -242,6 +249,9 @@ public:
 	 */
 	static const char *GetStartupScenario() { return startupScenario.c_str(); }
 
+	// NOT REALLY PUBLIC! (Only to be used by FileParser class!)
+	static void SetSpacecraftDllUsed(bool value = true) { runsSpacecraftDll = value; }
+
 private:
 	OapiExtension(void); // avoid default constructor creation & instantiation
 	~OapiExtension(void);
@@ -265,7 +275,9 @@ private:
 	static std::string scenarioDir;     ///< Value of Orbiters ScenarioDir config parameter
 	static std::string startupScenario; ///< Scenario-Path if Orbiters was started with "-s {Scenario}" command line parameter
 	// WINE detection
-	static bool runsUnderWINE; ///< Whether Orbiter runs under WINE
+	static bool runsUnderWINE;          ///< Whether Orbiter runs under WINE
+	// Spacecraft.dll detection
+	static bool runsSpacecraftDll;      ///< Whether the current Scenario uses Spacecraft.dll
 
 	// Hooking
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets
