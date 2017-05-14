@@ -1035,26 +1035,51 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		return false;
 	}
 
-	if (iFace >= 6) {
-		iFace = 0;
-		return scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MIRROR], NULL);					 // Construct mip sub-levels
-	}
 
-	
-
-	if (pEnv[0]==NULL) {
+	// Create a main EnvMap with mipmap chain for blurred maps --------------------------------------------------------------------
+	//
+	if (pEnv[ENVMAP_MAIN] == NULL) {
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
-		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[0])!=S_OK) {
-			LogErr("Failed to create env cubemap for visual 0x%X",this);
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[ENVMAP_MAIN]) != S_OK) {
+			LogErr("Failed to create env cubemap for visual 0x%X", this);
 			return false;
 		}
 		nEnv = 1;
 	}
 
+
+	// Create a main EnvMap with mipmap chain for blurred maps --------------------------------------------------------------------
+	//
+	/*
+	if (pEnv[ENVMAP_IRAD] == NULL) {
+		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[ENVMAP_IRAD]) != S_OK) {
+			LogErr("Failed to create irradiance cubemap for visual 0x%X", this);
+			return false;
+		}
+	}*/
+
+
+
+	// Create blurred maps and Irradiance map ----------------------------------------------------------------
+	//
+	if (iFace == 6) {
+		iFace++;
+		return scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MAIN]);
+	}
+
+	if (iFace >= 7) {
+		iFace = 0;
+		return scn->RenderIrradianceMap(pDev, pEnv[ENVMAP_MAIN], pEnv[ENVMAP_IRAD]);
+	}
+
+
 	double tot_env = D3D9GetTime();
 
-	// -----------------------------------------------------------------------------------------------
+
+
+
+	// Render EnvMaps ---------------------------------------------------------------------------------------
 	//
 
 	scn->ClearOmitFlags();
@@ -1130,9 +1155,10 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0, false, RENDERPASS_ENVCAM);
 		scn->RenderSecondaryScene(this, true, flags);
 
-		iFace++;
-
 		SAFE_RELEASE(pSrf);
+
+		iFace++;
+		if (iFace >= 6) break;
 	}
 
 	scn->SetRenderTarget(RESTORE, RESTORE);

@@ -63,6 +63,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pLabelFont = NULL;
 	pDebugFont = NULL;
 	pBlur = NULL;
+	pIrradiance = NULL;
+	pIrradianceTemp = NULL;
 	pOffscreenTarget = NULL;
 	pColorBak = NULL;
 	pDepthStensilBak = NULL;
@@ -186,11 +188,13 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(pTextures); i++) SAFE_RELEASE(pTextures[i]);
 
 	SAFE_DELETE(pBlur);
+	SAFE_DELETE(pIrradiance);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pColorBak);
 	SAFE_RELEASE(pDepthStensilBak);
+	SAFE_RELEASE(pIrradianceTemp);
 
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 
@@ -1548,8 +1552,13 @@ void Scene::RenderMainScene()
 
 	if (DebugControls::IsActive()) {
 		int sel = DebugControls::GetSelectedEnvMap();
-		if (sel>0) {
-			VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MIRROR), sel - 1);
+		if (sel > 0) {
+			if (sel < 6) {
+				VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MAIN), sel - 1);
+			}
+			else {
+				VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_IRAD), 0);
+			}
 		}
 	}
 
@@ -1853,9 +1862,11 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 // ===========================================================================================
 //
-bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt)
+bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc)
 {
 	bool bQuality = true;
+
+	if (!pSrc) return false;
 
 	if (!pBlur) {
 		pBlur = new ImageProcessing(pDev, "Modules/D3D9Client/EnvMapBlur.hlsl", "PSBlur");
@@ -1877,7 +1888,6 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	pEnvDS->GetDesc(&desc);
 	DWORD width = min(512, desc.Width);
 
-	if (pTgt) if (!*pTgt) if (D3DXCreateCubeTexture(pDev, width, 4, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, pTgt) != S_OK) return false;
 
 	if (!pBlrTemp[0]) {
 		if (D3DXCreateCubeTexture(pDev, width >> 0, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pBlrTemp[0]) != S_OK) return false;
@@ -1894,7 +1904,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 	// Create clurred mip sub-levels
 	//
-	for (DWORD i = 0; i < 6; i++) {
+		for (DWORD i = 0; i < 6; i++) {
 		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
 		pBlrTemp[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTmp);
 		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
@@ -1902,9 +1912,12 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 		SAFE_RELEASE(pTmp);
 	}
 
+
+	// Create clurred mip sub-levels
+	//
 	for (int mip = 1; mip < 5; mip++) {
 
-		pBlur->SetFloat("fD", 4.0f / float(width >> (mip-1)));
+		pBlur->SetFloat("fD", (4.0f / float(width >> (mip-1))));
 		pBlur->SetBool("bDir", false);
 		pBlur->SetTextureNative("tCube", pBlrTemp[mip-1], IPF_LINEAR);
 
@@ -1922,7 +1935,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
 
 			if (!pBlur->Execute()) {
-				LogErr("pDither Execute Failed");
+				LogErr("pBlur Execute Failed");
 				return false;
 			}
 
@@ -1948,7 +1961,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
 
 			if (!pBlur->Execute()) {
-				LogErr("pDither Execute Failed");
+				LogErr("pBlur Execute Failed");
 				return false;
 			}
 
@@ -1965,11 +1978,110 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 // ===========================================================================================
 //
+bool Scene::RenderIrradianceMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 pTgt)
+{
+
+	if (!pSrc || !pTgt) return false;
+
+	if (!pIrradiance) {
+		pIrradiance = new ImageProcessing(pDev, "Modules/D3D9Client/Irradiance.hlsl", "PSMain");
+	}
+
+	if (!pIrradiance->IsOK()) {
+		LogErr("pIrradiance is not OK");
+		return false;
+	}
+
+	D3DSURFACE_DESC desc;
+	pTgt->GetLevelDesc(0, &desc);
+
+	// Create temp if not existing
+	if (pIrradianceTemp == NULL) if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradianceTemp) != S_OK) return false;
+	
+
+	D3DXVECTOR3 dir, up, cp;
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+	LPDIRECT3DSURFACE9 pTmp = NULL;
+
+
+	// Copy data from source-map to target-map
+	//
+	for (DWORD i = 0; i < 6; i++) {
+		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
+		pTgt->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTmp);
+		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+		SAFE_RELEASE(pSrf);
+		SAFE_RELEASE(pTmp);
+	}
+	
+
+	// Radiate the target map through temp
+	//
+	for (int pass = 0; pass < 1; pass++) {
+
+		pIrradiance->SetBool("bDir", false);
+		pIrradiance->SetTextureNative("tCube", pTgt, IPF_LINEAR);
+		pIrradiance->SetFloat("fdX", 0.9f);
+
+		for (DWORD i = 0; i < 6; i++) {
+
+			EnvMapDirection(i, &dir, &up);
+			D3DXVec3Cross(&cp, &up, &dir);
+			D3DXVec3Normalize(&cp, &cp);
+
+			pIrradianceTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
+
+			pIrradiance->SetOutputNative(0, pSrf);
+			pIrradiance->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+			pIrradiance->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+			pIrradiance->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+
+			if (!pIrradiance->Execute()) {
+				LogErr("pIrradiance Execute Failed");
+				return false;
+			}
+
+			SAFE_RELEASE(pSrf);
+		}
+
+		pIrradiance->SetBool("bDir", true);
+		pIrradiance->SetTextureNative("tCube", pIrradianceTemp, IPF_LINEAR);
+
+		for (DWORD i = 0; i < 6; i++) {
+
+			EnvMapDirection(i, &dir, &up);
+			D3DXVec3Cross(&cp, &up, &dir);
+			D3DXVec3Normalize(&cp, &cp);
+
+			pTgt->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
+
+			pIrradiance->SetOutputNative(0, pSrf);
+			pIrradiance->SetFloat("vDir", &dir, sizeof(D3DXVECTOR3));
+			pIrradiance->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+			pIrradiance->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+
+			if (!pIrradiance->Execute()) {
+				LogErr("pIrradiance Execute Failed");
+				return false;
+			}
+
+			SAFE_RELEASE(pSrf);
+		}
+	}
+
+	return true;
+}
+
+
+
+// ===========================================================================================
+//
 void Scene::ClearOmitFlags()
 {
 	VOBJREC *pv = NULL;
 	for (pv=vobjFirst; pv; pv=pv->next) pv->vobj->bOmit = false;
 }
+
 
 // ===========================================================================================
 //
@@ -1980,14 +2092,12 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 	LPDIRECT3DSURFACE9 pBack = gc->GetBackBuffer();
 
-	D3DSURFACE_DESC ldesc;
 	D3DSURFACE_DESC bdesc;
 
 	if (!pBack) return;
 
 	HR(pBack->GetDesc(&bdesc));
-	HR(pCube->GetLevelDesc(0, &ldesc));
-
+	
 	DWORD x, y, h = bdesc.Height / 3;
 
 	for (DWORD i=0;i<6;i++) {

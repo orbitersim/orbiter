@@ -187,7 +187,8 @@ public:
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
 	void RenderShadowMap();
 
-	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 *pTgt);
+	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
+	bool RenderIrradianceMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 pTgt);
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -412,7 +413,7 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pFlare;
+	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pIrradiance;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;
@@ -423,6 +424,7 @@ private:
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
+	LPDIRECT3DCUBETEXTURE9 pIrradianceTemp;
 
 	// Deferred Experiment ===============================================================
 	//

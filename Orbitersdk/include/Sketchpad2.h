@@ -22,8 +22,8 @@ using namespace oapi;
 
 /// \defgroup SkpMeshFlags SketchMesh render flags
 ///@{
-#define	MF_SMOOTH_SHADE		0x1		///< Perform smooth shading (i.e. shallow angles gets darkened) 
-#define	MF_CULL_NONE		0x2		///< Do not perform front/back face culling
+#define	MF_SMOOTH_SHADE		0x1					///< Perform smooth shading (i.e. shallow angles gets darkened) 
+#define	MF_CULL_NONE		0x2					///< Do not perform front/back face culling
 ///@}
 
 /// \defgroup FntCreation Font creation flags
@@ -31,9 +31,9 @@ using namespace oapi;
 #define FNT_BOLD			0x1 
 #define FNT_ITALIC			0x2
 #define FNT_UNDERLINE		0x4
-#define FNT_CRISP			0x8
+#define FNT_CRISP			0x8					///< Create a crisp font without anti-aliasing
 // Additional code pages
-#define FNT_GREEK			0x1000
+#define FNT_GREEK			0x1000				///< Request additional code page
 ///@}
 
 namespace oapi {

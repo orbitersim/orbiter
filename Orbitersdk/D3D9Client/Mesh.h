@@ -35,7 +35,8 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define RENDER_BASEBS		5
 #define RENDER_CUSTOM		6
 
-#define ENVMAP_MIRROR		0
+#define ENVMAP_MAIN			0
+#define ENVMAP_IRAD			1
 
 
 struct _LightList {

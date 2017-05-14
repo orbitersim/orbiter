@@ -78,7 +78,7 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 
 	rad_scale *= max(size_hack, 7.5f);
 
-	maxdist = 0.3*scn->GetCameraFarPlane();
+	maxdist = 0.1*scn->GetCameraFarPlane();
 
 	if (cdist > maxdist) {
 		dist_scale = maxdist/cdist;

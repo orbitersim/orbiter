@@ -366,7 +366,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 #if defined(_ENVMAP)
 	// Attennuate diffuse surface beneath
-	//cDiff.rgb *= (1.0f - fRefl);
+	cDiff.rgb *= (1.0f - fRefl);
 
 #if defined(_GLASS)
 	// Further attennuate diffuse surface beneath
