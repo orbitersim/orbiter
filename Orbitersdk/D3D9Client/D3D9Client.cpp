@@ -72,7 +72,7 @@ _D3D9Stats D3D9Stats;
 
 bool bFreeze = false;
 bool bFreezeEnable = false;
-bool bSkepchpadOpen = false;
+bool bSketchpadOpen = false;
 
 // Module local constellation marker storage
 static GraphicsClient::LABELSPEC *g_cm_list = NULL;
@@ -235,7 +235,9 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	GraphicsClient(hInstance),
 	vtab(NULL),
-	scenarioName("(none selected)")
+	scenarioName("(none selected)"),
+	pLoadLabel(""),
+	pLoadItem("")
 {
 }
 
@@ -2120,10 +2122,10 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 
 	if (bRunning) return false;
 
-	if (line==1) strcpy_s(pLoadItem, 127, txt);
-	if (line==0) strcpy_s(pLoadLabel, 127, txt);
+	if (line == 1) strcpy_s(pLoadItem, 127, txt); else
+	if (line == 0) strcpy_s(pLoadLabel, 127, txt), pLoadItem[0] = '\0'; // New top line => clear 2nd line
 
-	if (bSkepchpadOpen==false && pTextScreen) {
+	if (bSketchpadOpen==false && pTextScreen) {
 
 		if (pDevice->TestCooperativeLevel()!=S_OK) {
 			LogErr("TestCooperativeLevel() Failed");
@@ -2303,7 +2305,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	_TRACE;
 	
 	sketching_time = D3D9GetTime();
-	if (bSkepchpadOpen) LogErr("an other Sketchpad is already open");
+	if (bSketchpadOpen) LogErr("an other Sketchpad is already open");
 
 	if (surf == NULL) surf = GetBackBufferHandle();
 
@@ -2315,7 +2317,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 		bool bScene = GetScene()->IsRendering();
 		if (bScene==true || bGDIBB==false) {
 			if (bScene==false) pDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() of the main rendering routine
-			bSkepchpadOpen = true;
+			bSketchpadOpen = true;
 			return new D3D9Pad(surf);
 		}
 	}
@@ -2323,13 +2325,13 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	// Auto-select a sketchpad -----------------------------------------------------
 	//
 	if (SURFACE(surf)->IsRenderTarget()) {
-		bSkepchpadOpen = true;
+		bSketchpadOpen = true;
 		return new D3D9Pad(surf);	
 	}
 	else {
 		HDC hDC = clbkGetSurfaceDC(surf);
 		if (hDC) {
-			bSkepchpadOpen = true;
+			bSketchpadOpen = true;
 			return new GDIPad(surf, hDC);
 		}
 	}
@@ -2341,7 +2343,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 {
 	_TRACE;
-	bSkepchpadOpen = false;
+	bSketchpadOpen = false;
 
 	SURFHANDLE surf = sp->GetSurface();
 
