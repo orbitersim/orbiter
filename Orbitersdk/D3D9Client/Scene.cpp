@@ -187,7 +187,9 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(ptgBuffer); i++) SAFE_RELEASE(ptgBuffer[i]);
 	for (int i = 0; i < ARRAYSIZE(pTextures); i++) SAFE_RELEASE(pTextures[i]);
 
-	SAFE_DELETE(pBlur);
+	SAFE_DELETE(pLightBlur);
+	SAFE_DELETE(pFlare);
+    SAFE_DELETE(pBlur);
 	SAFE_DELETE(pIrradiance);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(csphere);

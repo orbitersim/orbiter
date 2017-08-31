@@ -123,17 +123,15 @@ CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : Plane
 
 CSphereManager::~CSphereManager ()
 {
-	if (disabled) return;
-
-	// DWORD i, maxidx = patchidx[maxbaselvl];
-
-	if (ntex) {
-		for (DWORD i = 0; i < ntex; ++i)
-			ReleaseTex(texbuf[i]);
-		delete []texbuf;
+	if (!disabled)
+	{
+		if (ntex) {
+			for (DWORD i = 0; i < ntex; ++i)
+				ReleaseTex(texbuf[i]);
+			delete []texbuf;
+		}
 	}
-
-	delete []tiledesc;	
+	delete []tiledesc;
 }
 
 // =======================================================================
