@@ -982,7 +982,6 @@ public:
 	Scene *             GetScene() const { return scene; }
 	TextureManager *    GetTexMgr() const { return texmgr; }
 	MeshManager *       GetMeshMgr() const { return meshmgr; }
-	const char *		GetOrbiterRoot() const	{ return pOrbiterRoot; }
 	void 				WriteLog (const char *msg) const;
     LPDIRECT3DDEVICE9   GetDevice() const { return pDevice; }
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
@@ -1267,7 +1266,6 @@ private:
 	HFONT hLblFont1;
 	HFONT hLblFont2;
 
-	char pOrbiterRoot[256];
 	char pLoadLabel[128];
 	char pLoadItem[128];
 	
