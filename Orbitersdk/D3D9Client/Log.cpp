@@ -51,6 +51,19 @@ std::queue<std::string> D3D9DebugQueue;
 
 CRITICAL_SECTION LogCrit;
 
+// ===========================================================================================
+// string helper
+
+static std::string::size_type replace_all (std::string &subj, const std::string &s, const std::string &t) {
+	std::string::size_type n = 0, c = 0;
+	while ( ( n = subj.find( s, n ) ) != std::string::npos ) {
+		subj.replace(n, s.size(), t);
+		n += t.size();
+		++c;
+	}
+	return c;
+}
+
 //-------------------------------------------------------------------------------------------
 //
 void D3D9DebugLog(const char *format, ...)
@@ -74,7 +87,7 @@ void D3D9InitLog(char *file)
 	else {
 		QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
 		InitializeCriticalSectionAndSpinCount(&LogCrit, 256); 
-		fprintf_s(d3d9client_log,"<html><head><title>D3D9Client Log</title></head><body bgcolor=0x000000 text=0xFFFFFF>"); 
+		fprintf_s(d3d9client_log,"<!DOCTYPE html><html><head><title>D3D9Client Log</title></head><body bgcolor=black text=white>"); 
 		fprintf_s(d3d9client_log,"<center><h2>D3D9Client Log</h2><br>");
 		fprintf_s(d3d9client_log,"</center><hr><br><br>"); 
 	}
@@ -121,9 +134,22 @@ char *my_ctime()
 	QueryPerformanceCounter((LARGE_INTEGER*)&qpcCurrent);
 	double time = double(qpcCurrent-qpcRef) * 1e3 / double(qpcFrq);
 	double start = double(qpcCurrent-qpcStart) / double(qpcFrq);
-	sprintf_s(OprBuf,OPRBUF,"%d: %.1fs %05.2fms", iLine, start, time); iLine++;
+	sprintf_s(OprBuf,OPRBUF,"%d: %.1fs %05.2fms", iLine++, start, time);
 	qpcRef = qpcCurrent;
 	return OprBuf;
+}
+
+//-------------------------------------------------------------------------------------------
+//
+void escape_ErrBuf () {
+	std::string buf(ErrBuf);
+	int n = 0;
+	n += replace_all(buf, "&", "&amp;");
+	n += replace_all(buf, "<", "&lt;");
+	n += replace_all(buf, ">", "&gt;");
+	if (n) {
+		strcpy_s(ErrBuf, ARRAYSIZE(ErrBuf), buf.c_str());
+	}
 }
 
 //-------------------------------------------------------------------------------------------
@@ -142,6 +168,7 @@ void LogTrace(const char *format, ...)
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 		va_end(args);
 
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
@@ -167,6 +194,7 @@ void LogAlw(const char *format, ...)
 	
 		va_end(args);
 
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
@@ -185,23 +213,18 @@ void LogOapi(const char *format, ...)
 	if (uEnableLog>0) {
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
-		
+
 		va_list args; 
 		va_start(args, format); 
-		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
-	
 		va_end(args);
 
+		oapiWriteLogV("D3D9: %s", ErrBuf);
+
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
-	
-		int len = strlen(ErrBuf) + 16;
-		char *text = new char[len];
-		sprintf_s(text, len, "D3D9: %s", ErrBuf);
-		oapiWriteLog(text);
-		delete[] text;
 	}
 	LeaveCriticalSection(&LogCrit);
 }
@@ -219,16 +242,15 @@ void LogErr(const char *format, ...)
 
 		va_list args; 
 		va_start(args, format); 
-		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
-		
 		va_end(args);
 
+		oapiWriteLogV("D3D9: ERROR: %s", ErrBuf);
+
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
-
-		oapiWriteLogV("D3D9: ERROR: %s", ErrBuf);
 	}
 	LeaveCriticalSection(&LogCrit);
 }	
@@ -246,11 +268,10 @@ void LogBlu(const char *format, ...)
 
 		va_list args; 
 		va_start(args, format); 
-		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
-	
 		va_end(args);
 
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
@@ -271,11 +292,10 @@ void LogWrn(const char *format, ...)
 
 		va_list args; 
 		va_start(args, format); 
-		
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
-
 		va_end(args);
 
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
@@ -297,11 +317,10 @@ void LogOk(const char *format, ...)
 
 		va_list args; 
 		va_start(args, format); 
-		
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
-	
-		va_end(args);
+        _vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+        va_end(args);
 
+		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
