@@ -227,7 +227,7 @@ D3D9Mesh::D3D9Mesh(class AdMesh &mesh, bool bHasUV) : D3D9Effect()
 
 // ===========================================================================================
 //
-D3D9Mesh::D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect()
+void D3D9Mesh::Copy(const D3D9Mesh &mesh)
 {
 	Null();
 

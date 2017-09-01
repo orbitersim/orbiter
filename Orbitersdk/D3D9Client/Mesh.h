@@ -90,7 +90,7 @@ public:
 	};
 
 	explicit		D3D9Mesh(const char *name);
-					D3D9Mesh(const D3D9Mesh &mesh);
+					D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect() { Copy(mesh); }
 					D3D9Mesh(class AdMesh &mesh, bool bHasUV=true);
 					
 					/**
@@ -104,6 +104,8 @@ public:
 					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
 					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate=false);
 					~D3D9Mesh();
+
+	D3D9Mesh		&operator =(const D3D9Mesh &mesh) { Copy(mesh); return *this; }
 
 	void			Release();
 
@@ -238,6 +240,7 @@ public:
 
 private:
 
+	void			Copy(const D3D9Mesh &mesh);
 	void			UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
 	void			ProcessInherit();
 	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
