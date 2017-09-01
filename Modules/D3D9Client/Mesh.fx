@@ -135,7 +135,7 @@ float4 RingTech2PS(MeshVS frg) : COLOR
 
 	color.rgb *= sh;
 
-	if (dot(frg.nrmW, frg.CamW)>0) return float4(color.rgb*0.35f, color.a);
+	if ((dot(frg.nrmW, frg.CamW)*dot(frg.nrmW, gSun.Dir))>0) return float4(color.rgb*0.35f, color.a);
 	return float4(color.rgb, color.a);
 }
 
