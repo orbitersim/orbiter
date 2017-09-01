@@ -1,72 +1,72 @@
-// =============================================================================================================
+// ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2014 - 2016 Jarmo Nikkanen
-// =============================================================================================================
+// ============================================================================
 
 
-// =============================================================================================================
+// ============================================================================
 // Shader File for TileManager2 and 3D Terrain implementation
-// Contains a light weight implementation 
-// =============================================================================================================
+// Contains a light weight implementation
+// ============================================================================
 
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
-struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles and cloud layer 
-{                         
-    float3 posL     : POSITION0;
-    float3 normalL  : NORMAL0;
-    float2 tex0     : TEXCOORD0;
+struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles and cloud layer
+{
+	float3 posL     : POSITION0;
+	float3 normalL  : NORMAL0;
+	float2 tex0     : TEXCOORD0;
 };
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Vertex Shader to Pixel Shader datafeeds
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 struct TileVS
 {
-    float4 posH     : POSITION0;
-    float4 texUV    : TEXCOORD0;  // Texture coordinate
-    float3 aux      : TEXCOORD1;  // Night lights
+	float4 posH     : POSITION0;
+	float4 texUV    : TEXCOORD0;  // Texture coordinate
+	float3 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
 	float3 nrmW		: TEXCOORD3;
 	float3 atten    : COLOR0;     // Attennuation
-    float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
+	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
 };
 
 struct CloudVS
 {
-    float4 posH     : POSITION0;
-    float2 texUV    : TEXCOORD0;  // Texture coordinate
+	float4 posH     : POSITION0;
+	float2 texUV    : TEXCOORD0;  // Texture coordinate
 	float3 atten    : COLOR0;     // Attennuation
-    float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color 
+	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
 };
 
 struct HazeVS
 {
-    float4 posH    : POSITION0;
+	float4 posH    : POSITION0;
 	float2 texUV   : TEXCOORD0;
-    float3 insca   : COLOR0;
-    float  alpha   : COLOR1;
+	float3 insca   : COLOR0;
+	float  alpha   : COLOR1;
 };
 
 struct CelSphereVS
 {
-    float4 posH    : POSITION0;
-    float2 tex0    : TEXCOORD0;
+	float4 posH    : POSITION0;
+	float2 tex0    : TEXCOORD0;
 };
 
 
 
 
-// -------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Global shader variables
-// -------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 uniform extern float4x4  mWorld;		    // World matrix
 uniform extern float4x4  mViewProj;			// Combined View and Projection matrix
@@ -76,11 +76,11 @@ uniform extern float4    vMSc1;				// Micro Texture B scale factors
 uniform extern float4    vMSc2;				// Micro texture C scale factors
 uniform extern float4    vTexOff;			// Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vCloudOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
-uniform extern float4    vWater;			// Water material input structure (specular rgb, power) 
+uniform extern float4    vWater;			// Water material input structure (specular rgb, power)
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float3    vTangent;			// Unit Vector
 uniform extern float3    vBiTangent;		// Unit Vector
-uniform extern float3    vMapUVOffset;		// 
+uniform extern float3    vMapUVOffset;		//
 // ------------------------------------------------------------
 uniform extern float     fDistScale;		// UNUSED: Scale factor
 uniform extern float 	 fAlpha;			// Cloud shodow alpha
@@ -92,23 +92,23 @@ uniform extern bool      bEnvEnable;		// Enable environment maps
 uniform extern bool      bMicroNormals;		// Enable micro texture normal maps
 uniform extern int		 iTileLvl;			// Surface tile level being rendered
 uniform extern int		 iDebug;			// Debug Mode identifier
-uniform extern bool		 bDebug;			// Debug Mode enabled 
+uniform extern bool		 bDebug;			// Debug Mode enabled
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tCloud;
 uniform extern texture   tCloud2;
-uniform extern texture   tNoise;			// 
+uniform extern texture   tNoise;			//
 uniform extern texture	 tOcean;			// Ocean Texture
-uniform extern texture	 tEnvMap;	
-uniform extern texture	 tMicroA;	
+uniform extern texture	 tEnvMap;
+uniform extern texture	 tMicroA;
 uniform extern texture	 tMicroB;
 uniform extern texture	 tMicroC;
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Texture Sampler implementations
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 sampler DiffTexS = sampler_state
 {
@@ -117,9 +117,9 @@ sampler DiffTexS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0.0;
+	MipMapLODBias = 0.0;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 
@@ -131,7 +131,7 @@ sampler CloudTexS = sampler_state	// Cloud shadow sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = 2;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler Cloud2TexS = sampler_state
@@ -141,7 +141,7 @@ sampler Cloud2TexS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler MaskTexS = sampler_state
@@ -151,9 +151,9 @@ sampler MaskTexS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler NoiseTexS = sampler_state
@@ -163,7 +163,7 @@ sampler NoiseTexS = sampler_state
 	MagFilter = POINT;
 	MipFilter = POINT;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler OceaTexS = sampler_state
@@ -173,7 +173,7 @@ sampler OceaTexS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler EnvMapS = sampler_state
@@ -183,7 +183,7 @@ sampler EnvMapS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler MicroAS = sampler_state
@@ -195,7 +195,7 @@ sampler MicroAS = sampler_state
 	MaxAnisotropy = MICRO_ANISOTROPY;
 	MipMapLodBias = MICRO_BIAS;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler MicroBS = sampler_state
@@ -207,7 +207,7 @@ sampler MicroBS = sampler_state
 	MaxAnisotropy = MICRO_ANISOTROPY;
 	MipMapLODBias = MICRO_BIAS;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler MicroCS = sampler_state
@@ -219,12 +219,12 @@ sampler MicroCS = sampler_state
 	MaxAnisotropy = MICRO_ANISOTROPY;
 	MipMapLODBias = MICRO_BIAS;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
-// -------------------------------------------------------------------------------------------------------------
-// Atmospheric scattering model 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Atmospheric scattering model
+// ----------------------------------------------------------------------------
 
 uniform extern float4	vMPhase;			// Pre-computed factors used in Mie phase function
 uniform extern float4	vODCoEff;			// Optical Depth Taylor co-efficients
@@ -233,12 +233,12 @@ uniform extern float3	vMieInSct;			// Mie scattering factor = Mie/(lambda^m) (sl
 uniform extern float3	vRayInSct;			// Rayleigh in-scattering = (ROut*RIn)/(lambda^r) (slider)
 uniform extern float3	vTotOutSct;			// Total out-scattering = ROut/(lambda^r) + Mie/(lambda^m) (slider)
 uniform extern float3	vHazeMax;			// Horizon haze limitter (slider)
-uniform extern float3	vColorShift;		// lerp([1,1,1], 1.0/lambda^r, Aux3)	
-uniform extern float3   vCameraPos;         // Geo-centric camera position 
+uniform extern float3	vColorShift;		// lerp([1,1,1], 1.0/lambda^r, Aux3)
+uniform extern float3   vCameraPos;         // Geo-centric camera position
 uniform extern float3   vUnitCameraPos;     // Geo-centric camera position (Unit vector)
 uniform extern float	fSunset;			// Orbital sunrise condition detector
-uniform extern float	fScaleHeight;		// Atmosphere scaleheight 
-uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight	
+uniform extern float	fScaleHeight;		// Atmosphere scaleheight
+uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight
 uniform extern float	fSunAlt;			// Altitude of sunlight in the horizon ring, [meters]
 uniform extern float    fRadius;            // PlanetRad
 uniform extern float    fCameraAlt;         // Camera Altitude
@@ -255,21 +255,21 @@ uniform extern float	fAtmGamma;			// Atmosphere gamma control
 uniform extern float	fInvParameter;		// Inverse of optical parameter 1.0/AngleCoEff(0)
 uniform extern float	fAmbient;			// Planet specific ambient level pre-multiplied with camera altitude factor
 uniform extern float	fGlobalAmb;
-uniform extern float	fTime;				// 
-uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt) 
-uniform extern bool		bOnOff;				
+uniform extern float	fTime;				//
+uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt)
+uniform extern bool		bOnOff;
 
-// Numeric integration points and weights for Gauss–Lobatto integral
+// Numeric integration points and weights for Gauss?Lobatto integral
 //
 const  float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};
-const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};	
-const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};			
+const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
+const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};
 const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
 const  float3 cSky = {0.9f, 1.1f, 1.8f};
 const  float3 cSun = { 1.1, 1.1, 0.95 };
 const float srfoffset = -0.2;
 const float ATMNOISE = 0.01;
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Henyey-Greenstein Phase function
 // x = (1-g^2)/(4pi), y = 1+g^2, w = -2*g
 //
@@ -278,7 +278,7 @@ float MPhase(float cw)
 	return max(1, vMPhase.x * pow(abs(vMPhase.y-vMPhase.w*cw), -1.5f));
 }
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Rayleigh Phase function
 //
 float RPhase(float cw)
@@ -286,13 +286,13 @@ float RPhase(float cw)
 	return (1.0 + cw*cw*fRPhase) * (-cw*abs(cw) + 1.5f) * 0.4f;
 }
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Optical depth angle co-efficiency factor. (Accurate and valid for angles 0 to 96deg)
 // c = cosine of the ray direction (1.0 is up)
 //
 float AngleCoEff(float c)
 {
-	float  c1 = rcp(max(0.0954, c+0.2)); 
+	float  c1 = rcp(max(0.0954, c+0.2));
 	float  c2 = c1*c1;
 	float4 v1 = float4(1.0f, c1, c2, c2*c1);
 	return dot(v1, vODCoEff) + dot(v1*(c2*c2), vODCoEffEx);
@@ -301,13 +301,13 @@ float AngleCoEff(float c)
 float Shadow(float c, float f)
 {
 	float fC = saturate((c+fAux1+f)*fInvAux1);
-    return (3.0 - 2.0 * fC) * (fC*fC);
+	return (3.0 - 2.0 * fC) * (fC*fC);
 }
 
 float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
 {
 	float a = (fRad - fRadius) / 7000.0f;
-	
+
 	if (iDebug==1) return float4((nrmW + 1.0) * 0.5, 1.0);
 
 	if (iDebug==2) {
@@ -316,37 +316,37 @@ float4 DebugProg(in float3 nrmW, in float3 color, in float fRad)
 		float z = dot(nrmW, vUnitCameraPos) + 1;
 		return float4(x, y, z, 2.0) * 0.5;
 	}
-	
+
 	if (iDebug==3) {
-		if (a<-1)		return saturate(float4(0,   0, 2+a, 1.0));	
-		else if (a<0)	return saturate(float4(0, 1+a,   1, 1.0));	
-		else if (a<1)	return saturate(float4(a,   1, 1-a, 1.0));	
-		else if (a<2)	return saturate(float4(1, 2-a,	 0, 1.0));	
+		if (a<-1)		return saturate(float4(0,   0, 2+a, 1.0));
+		else if (a<0)	return saturate(float4(0, 1+a,   1, 1.0));
+		else if (a<1)	return saturate(float4(a,   1, 1-a, 1.0));
+		else if (a<2)	return saturate(float4(1, 2-a,	 0, 1.0));
 		else 			return saturate(float4(1, a-2, a-2, 1.0));
 	}
-	
+
 	if (iDebug==4) {
 		a = saturate(a*0.5 + 0.5);
 		return float4(a, a, a, 1.0);
 	}
-	
+
 	if (iDebug==5) {
 		return float4(color, 1);
 	}
-	
+
 	return float4(0,0,0,1);
 }
 
 
-// =============================================================================================================
+// ============================================================================
 // Atmospheric scattering implementation. (Will render horizon and sky-color)
-// -------------------------------------------------------------------------------------------------------------
-// vIns = Light in scattering 
+// ----------------------------------------------------------------------------
+// vIns = Light in scattering
 // vUnitRay = Unit Vector pointing in ray direction. (away from the camera)
-// =============================================================================================================    
+// ============================================================================
 
 void SkyColor(out float3 vIns, in float3 vUnitRay)
-{    
+{
 	float  fDRC = dot(vUnitRay, vUnitCameraPos);
 	float  fCam = fCameraAlt + fRadius;
 	float  fCm2 = fCam * fCam;
@@ -369,39 +369,39 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 		fRay *= 2.0f;
 		vRay = vUnitRay * abs(fPrm);
 	}
-	
-	
+
+
 	float  fDRS = -dot(vUnitRay, vSunDir);
 	float3 vPos = vCameraPos + vRay;
 	float3 vNr1 = normalize(vPos);
 	float  fAlt = dot(vNr1, vPos)-fRadius;
 	float  fDNS = dot(vNr1, vSunDir);
 	float  fDNR = dot(vNr1, vUnitRay);
-	
+
 	// Setup altitudes for all sample points
 	float3 vAlt;
 
 	if (fCm2 < fAtmRad2) vAlt = float3(fCameraAlt, fAlt, fHorizonAlt);
 	else				 vAlt = float3(fHorizonAlt, fAlt, fHorizonAlt);
 
-	// Atmospheric densities for sample points	
-    float3 vDns = exp2(-vAlt*fInvScaleHeight);	
+	// Atmospheric densities for sample points
+	float3 vDns = exp2(-vAlt*fInvScaleHeight);
 
 	// Mean atmospheric density for a viewing ray
 	float  fMnD = dot(vDns, vWeight3);
 
 	// Evaluate a Gauss-Lobatto integral (from camera to skydome). Will give optical depth for the ray
-    float  fDep = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
+	float  fDep = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
 
 	float  fASn = AngleCoEff(fDNS);
 
 	// Color of inscattered sunlight
 	float3 vSun = cSun * exp2(-vTotOutSct * fAux2*((vDns[0]+vDns[2]) * fASn)) * fDep * Shadow(fDNS, srfoffset);
 
-	// Compute in-scattering 
-    vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun;
+	// Compute in-scattering
+	vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun;
 
-    float fNgt = saturate(fDNS*2.924f+0.657f); 
+	float fNgt = saturate(fDNS*2.924f+0.657f);
 
 	// Compute ambient light level for the sky
 	float3 vAmb = (vRayInSct + 0.5f) * (3.0*fAmbient * fNgt); // *saturate(1.0f - max(vIns.b, vIns.r));
@@ -416,9 +416,9 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 
 
 
-// =============================================================================================================
+// ============================================================================
 // Planet Surface Renderer
-// =============================================================================================================
+// ============================================================================
 
 #define AUX_DIST		0	// Vertex distance
 #define AUX_NIGHT		1	// Night lights intensity
@@ -428,14 +428,14 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	uniform bool sbRipples,
 	uniform bool sbNoAtmo)
 {
-    // Zero output.
+	// Zero output.
 	TileVS outVS = (TileVS)0;
-	
-    // Apply a world transformation matrix
-    float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
-    float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
+
+	// Apply a world transformation matrix
+	float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
+	float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
-	
+
 	outVS.texUV.xy = vrt.tex0.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
 	outVS.texUV.zw = vrt.tex0.xy;						// Note: vrt.tex1 range [0 to 1] for all tiles
 
@@ -444,7 +444,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
 	float  fRay  = abs(dot(vPosW, vRay));				// Vertex camera distance
-	float  fNgt	 = fDPS * 4.0f - 0.05f; 
+	float  fNgt	 = fDPS * 4.0f - 0.05f;
 	float  fTrA  = saturate(fDPS*2.924f + 0.657f);
 	outVS.camW   = -vPosW;
 	outVS.nrmW   = vNrmW;
@@ -452,7 +452,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	outVS.aux[AUX_NIGHT] = -fNgt;
 	outVS.aux[AUX_DIST]  =  fRay;
 
-	
+
 
 	// If no atmosphere skip the rest
 	if (sbNoAtmo) return outVS;
@@ -461,7 +461,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	if (sbRipples) {
 		outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
 		outVS.texUV.zw *= 1e-3f; // Water scale factor
-		outVS.texUV.zw += 64.0f; 
+		outVS.texUV.zw += 64.0f;
 		outVS.texUV.z  += fTime*0.008f;
 	}
 
@@ -479,50 +479,50 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 
 	float  fCamAlt = fCameraAlt;
 
-	if (bInSpace) { 
+	if (bInSpace) {
 		float  fCm2 = fDst * fDst;
 		float  fPrm = fDst * fDPR;
 		fCamAlt = fHorizonAlt;
 		fRay = sqrt(fAtmRad2 - (fCm2 - fPrm*fPrm)) - fPrm;	// Length of the ray inside atmosphere
 	}
 
-	
+
 	// Altitude vector for sample points
 	float3 vAlt = float3(fAlt, (fAlt + fCamAlt)*0.5, fCamAlt);
-		
+
 	// Compute atmospheric density for all sample points
 	float3 vDns = exp2(-vAlt*fInvScaleHeight);		// Compute atmospheric density for all sample points
-	    
+
 	// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 	float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
-	
+
 	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.125f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
-		
+
 	// Compute surface texture color attennuation (i.e. extinction term)
 	outVS.atten = exp2(-vTotOutSct * fDRay);
-	    
+
 	// Multiply in-coming light with phase and light scattering factors
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
-	
+
 	outVS.insca = (1.0f - exp2(-outVS.insca));
 	outVS.atten *= max(vSunLight, (vRayInSct+1.0f) * fAmb);
-	
-    return outVS;
-}	
+
+	return outVS;
+}
 
 
 
 
 
 
-float4 SurfaceTechPS(TileVS frg, 
-	uniform bool sbSpecular, 
-	uniform bool sbRipples, 
-	uniform bool sbMicro, 
+float4 SurfaceTechPS(TileVS frg,
+	uniform bool sbSpecular,
+	uniform bool sbRipples,
+	uniform bool sbMicro,
 	uniform bool sbNoAtmos,
 	uniform bool sbShadows) : COLOR
 {
-	
+
 	float2 vUVSrf = frg.texUV.xy * vTexOff.zw + vTexOff.xy;
 	float2 vUVCld;
 
@@ -563,15 +563,15 @@ float4 SurfaceTechPS(TileVS frg,
 	float3 cNgt = 3.0f * (saturate(frg.aux[AUX_NIGHT]) * fNight);
 
 
-	// Render with specular ripples and fresnel water ----------------------------
+	// Render with specular ripples and fresnel water -------------------------
 	//
 	if (sbSpecular) {
 
 		// Specular Mask
 		float m = (1.0 - cMsk.a) * saturate(0.5f - frg.aux[AUX_NIGHT] * 2.0f);
 		float f4 = 0;
-		
-		// Specular intensity 
+
+		// Specular intensity
 		float fInts = saturate(1.0 - fCameraAlt * 0.2e-4);
 
 		if (sbRipples) {
@@ -581,7 +581,7 @@ float4 SurfaceTechPS(TileVS frg,
 			cNrm = (cNrm - 0.5f) * fInts * 5.0f;
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
 
-			// Compute world space normal 
+			// Compute world space normal
 			nrmW = (vTangent * cNrm.r) + (vBiTangent * cNrm.g) + (vPlN * cNrm.b);
 			nrmW = lerp(nvrW, nrmW, m);
 		}
@@ -591,7 +591,7 @@ float4 SurfaceTechPS(TileVS frg,
 		float f2 = f*f;
 		f4 = f2*f2;
 
-		// Compute specular reflection intensity 
+		// Compute specular reflection intensity
 		float s = dot(reflect(-vSunDir, nrmW), camW);
 
 		cSpe = m * float3(1.2f, 1.1f, 1.0f) * pow(saturate(s), 35.0f) * max(0.7, fInts*1.5);
@@ -600,57 +600,57 @@ float4 SurfaceTechPS(TileVS frg,
 		cTex.rgb = lerp(cTex.rgb, cSky, m * f4);
 	}
 
-	
-	// Render with surface microtextures -----------------------------------------
+
+	// Render with surface microtextures --------------------------------------
 	//
 	if (sbMicro) {
 
 		float dist  = frg.aux[AUX_DIST];
 		float step1 = smoothstep(50000, 20000, dist);
 		float3 cFnl = max(0, min(2, 1.333f*(cFar+cMed+cLow)-1));
-			
+
 		// Create normals
 		if (bMicroNormals) {
 
 			cFnl = cFnl.bbb;
 
-			#if BLEND==0 
+			#if BLEND==0
 				float2 cMix = (cFar.rg + cMed.rg + cLow.rg) * 0.6666f;			// SOFT BLEND
-			#elif BLEND==1 
+			#elif BLEND==1
 				float2 cMix = (cFar.rg+0.5f) * (cMed.rg+0.5f) * (cLow.rg+0.5f);	// MEDIUM BLEND
-			#else 
+			#else
 				float2 cMix = cFar.rg * cMed.rg * cLow.rg * 8.0f;				// HARD BLEND
 			#endif
 
 			float3 cNrm  = float3((cMix - 1.0f) * 2.0f, 0) * step1;
-			cNrm.z = cos(cNrm.x * cNrm.y * 1.57); 
+			cNrm.z = cos(cNrm.x * cNrm.y * 1.57);
 			// Approximate world space normal
 			nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nvrW * cNrm.z));
 		}
 		// Apply luminance
 		cTex.rgb *= lerp(1.0f, cFnl, step1);
 	}
-	
+
 
 
 	// Is Debug mode enabled
 	/*
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	if (bDebug) {
 		float3 vPlN = normalize(vVrt);
 		float  fRad = dot(vVrt, vPlN);
 		return DebugProg(nrmW, cTex.rgb, fRad);
 	}
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	*/
-	
-	
+
+
 
 	// Do we have an atmosphere or not ?
 	//
 	if (sbNoAtmos) {
 
-		float3 vPlN = normalize(vVrt);								// Planet mean normal	
+		float3 vPlN = normalize(vVrt);								// Planet mean normal
 		float fTrS = saturate(dot(nvrW, vSunDir)*10.0f);			// Shadowing by terrain
 		float fPlS = saturate(dot(vPlN, vSunDir)*10.0f);			// Shadowing by planet
 
@@ -693,7 +693,7 @@ float4 SurfaceTechPS(TileVS frg,
 
 		// Terrain, Specular and Night lights
 		float3 color = cTex.rgb * sqrt(saturate(fDNS)+0.02f) + cSpe;
-		
+
 		// Terrain with gamma correction and attennuation
 		color = pow(abs(color * fExposure), fTrGamma) * frg.atten.rgb;
 
@@ -709,13 +709,13 @@ float4 SurfaceTechPS(TileVS frg,
 
 
 
-// =============================================================================================================
+// ============================================================================
 // Cloud Layer Renderer
-// =============================================================================================================
+// ============================================================================
 
 CloudVS CloudTechVS(TILEVERTEX vrt)
 {
-    // Zero output.
+	// Zero output.
 	CloudVS outVS = (CloudVS)0;
 
 	// Apply a world transformation matrix
@@ -788,18 +788,18 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 
 technique CloudTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 CloudTechVS();
-        pixelShader  = compile ps_3_0 CloudTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false; 
-        ZWriteEnable = false;
-    }
+	pass P0
+	{
+		vertexShader = compile vs_3_0 CloudTechVS();
+		pixelShader  = compile ps_3_0 CloudTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
 
@@ -810,11 +810,11 @@ technique CloudTech
 #endif
 
 
-// This is used for high resolution base tiles ---------------------------------
+// This is used for high resolution base tiles --------------------------------
 //
 technique TileTech
 {
-   
+
 	pass P0	// Earth
 	{
 												 //Spec, Rippl, Mic,   NoAtm, Shadows
@@ -841,7 +841,7 @@ technique TileTech
 
 	pass P3	// Mars, no micro
 	{
-											     //Spec,  Rippl, Mic,   NoAtm, Shadows
+												 //Spec,  Rippl, Mic,   NoAtm, Shadows
 		pixelShader = compile ps_3_0 SurfaceTechPS(false, false, false, false, false);
 		vertexShader = compile vs_3_0 SurfaceTechVS(false, false);
 		AlphaBlendEnable = false;				  //Rippl, NoAtm
@@ -866,47 +866,47 @@ technique TileTech
 
 
 
-// =============================================================================================================
+// ============================================================================
 // Render Horizon "Ring" from the space
-// =============================================================================================================
+// ============================================================================
 
 HazeVS RingTechVS(float3 posL : POSITION0)
 {
-    // Zero output.
+	// Zero output.
 	HazeVS outVS = (HazeVS)0;
-	
+
 	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
 	posL.y   = lerp(vTexOff[2], vTexOff[3], posL.y);
-	
-    float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
+
+	float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
-	
+
 	if (bOnOff) SkyColor(outVS.insca, normalize(posW)); // HorizonColor(outVS.insca, normalize(posW));
 	else outVS.insca = float3(0, 0, 0);
 
-    return outVS;
+	return outVS;
 }
 
 float4 RingTechPS(HazeVS frg) : COLOR
 {
 	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV,0,0)).r - 0.5f) * ATMNOISE;
-    return float4(frg.insca.rgb+a, 1.0f);
+	return float4(frg.insca.rgb+a, 1.0f);
 }
 
 technique RingTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 RingTechVS();
-        pixelShader  = compile ps_3_0 RingTechPS();
+	pass P0
+	{
+		vertexShader = compile vs_3_0 RingTechVS();
+		pixelShader  = compile ps_3_0 RingTechPS();
 
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = One;
-        DestBlend = One;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = One;
+		DestBlend = One;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
 
@@ -914,83 +914,83 @@ technique RingTech
 
 
 
-// =============================================================================================================
+// ============================================================================
 // Render SkyDome and Horizon
-// =============================================================================================================
+// ============================================================================
 
 HazeVS HorizonTechVS(float3 posL : POSITION0)
 {
-    // Zero output.
+	// Zero output.
 	HazeVS outVS = (HazeVS)0;
-	
+
 	outVS.texUV = posL.xy*10.0;
 
 	posL.xz *= lerp(vTexOff[0], vTexOff[1], posL.y);
 	posL.y   = lerp(vTexOff[2], vTexOff[3], posL.y);
-	
-    float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
+
+	float3 posW = mul(float4(posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
-	
+
 	if (bOnOff) SkyColor(outVS.insca, normalize(posW));
 	else outVS.insca = float3(0, 0, 0);
-	
-    return outVS;
+
+	return outVS;
 }
 
 
 float4 HorizonTechPS(HazeVS frg) : COLOR
 {
 	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV,0,0)).r - 0.5f) * 0.008;
-    return float4(frg.insca.rgb+a, 1.0f);
+	return float4(frg.insca.rgb+a, 1.0f);
 }
 
 technique HorizonTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 HorizonTechVS();
-        pixelShader  = compile ps_3_0 HorizonTechPS();
+	pass P0
+	{
+		vertexShader = compile vs_3_0 HorizonTechVS();
+		pixelShader  = compile ps_3_0 HorizonTechPS();
 
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = One;
-        DestBlend = One;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = One;
+		DestBlend = One;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
 
 
-// =============================================================================================================
-// Render Skydome (i.e. Celestial Sphere Background Image Manager) from the Space
-// =============================================================================================================
+// ============================================================================
+// Render Skydome (i.e. Celestial Sphere Background Image Manager) from Space
+// ============================================================================
 
 CelSphereVS SpaceTechVS(TILEVERTEX vrt)
 {
-    // Zero output.
+	// Zero output.
 	CelSphereVS outVS = (CelSphereVS)0;
-    float3 posW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
+	float3 posW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
 	outVS.posH  = mul(float4(posW, 1.0f), mViewProj);
 	outVS.tex0	= vrt.tex0;
-    return outVS;
+	return outVS;
 }
 
 float4 SpaceTechPS(CelSphereVS frg) : COLOR
 {
 	float3 vColor = tex2D(DiffTexS, frg.tex0).rgb * fAlpha;
-    return float4(vColor, 1.0);
+	return float4(vColor, 1.0);
 }
 
 technique SkyDomeTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 SpaceTechVS();
-        pixelShader  = compile ps_3_0 SpaceTechPS();
+	pass P0
+	{
+		vertexShader = compile vs_3_0 SpaceTechVS();
+		pixelShader  = compile ps_3_0 SpaceTechPS();
 
-        AlphaBlendEnable = false;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }
+		AlphaBlendEnable = false;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }

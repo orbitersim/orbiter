@@ -25,20 +25,20 @@ uniform extern float2 vResolution;
 uniform extern float fSize;
 uniform extern float fBrightness;
 #define EPSILON					1e-10
-#define CLUT_SIZE      			float2(256, 16)
+#define CLut_pSize				float2(256, 16)
 
 float2 GetDistOffset(float2 uv, float2 pxoffset, float dist)
 {
-    if(dist == 0.0) return pxoffset;
+	if(dist == 0.0) return pxoffset;
 	float2 tocenter = uv.xy;
-    float3 prep = normalize(float3(tocenter.y, -tocenter.x, 0.0));
-    
-    float angle = length(tocenter.xy)*2.221*saturate(dist);
-    float3 oldoffset = float3(pxoffset,0.0);
-    
-    float3 rotated = oldoffset * cos(angle) /*+ cross(prep, oldoffset) * sin(angle) + prep * dot(prep, oldoffset) * (1.0-cos(angle))*/;
-    
-    return rotated.xy;
+	float3 prep = normalize(float3(tocenter.y, -tocenter.x, 0.0));
+
+	float angle = length(tocenter.xy)*2.221*saturate(dist);
+	float3 oldoffset = float3(pxoffset,0.0);
+
+	float3 rotated = oldoffset * cos(angle) /*+ cross(prep, oldoffset) * sin(angle) + prep * dot(prep, oldoffset) * (1.0-cos(angle))*/;
+
+	return rotated.xy;
 }
 
 float3 HUEtoRGB(in float H)
@@ -95,9 +95,9 @@ float3 CLUT(float3 color)
 // Renders the main light glare, along with added streaks
 float glare(float2 uv, float2 pos, float size, float streakCount, float streakMix)
 {
-    float2 p = uv-pos;
+	float2 p = uv-pos;
 
-    float angle = atan2(p.y, p.x);
+	float angle = atan2(p.y, p.x);
 	float dist = length(p);
 
 	float bright = size-pow(dist, 0.1)*size;
@@ -109,31 +109,31 @@ float glare(float2 uv, float2 pos, float size, float streakCount, float streakMi
 // Render circular blobs, colors dissociate and separate with distance of the light form the center
 float flare (float2 uv, float2 pos, float dist, float size)
 {
-    return max(0.01 - pow(length(uv+dist*pos), 10.0*size), 0.0)*6.0;
+	return max(0.01 - pow(length(uv+dist*pos), 10.0*size), 0.0)*6.0;
 }
 float3 flare(float2 uv, float2 pos, float dist, float size, float barrel, float3 color)
 {
-    pos = GetDistOffset(uv, pos, barrel);
-	
-	float r = flare(uv, pos, dist-0.02, size);
-    float g = flare(uv, pos, dist     , size);
-    float b = flare(uv, pos, dist+0.02, size);
+	pos = GetDistOffset(uv, pos, barrel);
 
-    return max(0.0, color*float3(r,g,b));
+	float r = flare(uv, pos, dist-0.02, size);
+	float g = flare(uv, pos, dist     , size);
+	float b = flare(uv, pos, dist+0.02, size);
+
+	return max(0.0, color*float3(r,g,b));
 }
 
 // Renders an arc lined with the light source and the center of screen (dist only changes the side the ring is rendered)
 float3 ring(float2 uv, float2 pos)
 {
-    float2 uvd = uv*length(uv);
-    float3 col = 0;
-    col.r = max(0.0, pow(abs(1.0-pow(length(uvd*0.90), 4.0)) * length(uvd), 3.5));
-    col.g = max(0.0, pow(abs(1.0-pow(length(uvd*0.95), 4.0)) * length(uvd), 3.2));
-    col.b = max(0.0, pow(abs(1.0-pow(length(uvd*1.00), 4.0)) * length(uvd), 3.0));
+	float2 uvd = uv*length(uv);
+	float3 col = 0;
+	col.r = max(0.0, pow(abs(1.0-pow(length(uvd*0.90), 4.0)) * length(uvd), 3.5));
+	col.g = max(0.0, pow(abs(1.0-pow(length(uvd*0.95), 4.0)) * length(uvd), 3.2));
+	col.b = max(0.0, pow(abs(1.0-pow(length(uvd*1.00), 4.0)) * length(uvd), 3.0));
 
-    float s = max(0.0, 1.0/(1.0 + 32.0 * pow(length(uvd+pos), 4.0)));
+	float s = max(0.0, 1.0/(1.0 + 32.0 * pow(length(uvd+pos), 4.0)));
 
-    return col * s*4.0;
+	return col * s*4.0;
 }
 
 float3 LensFlare_Exterior(float2 uv, float2 pos, float brightness, float size, float3 color)
@@ -189,7 +189,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 		uv.y = -uv.y;
 
 		flare = bCockpitCamera?
-			LensFlare_Cockpit (uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414 : 
+			LensFlare_Cockpit (uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414 :
 			LensFlare_Exterior(uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414;
 	}
 

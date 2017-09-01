@@ -1,12 +1,12 @@
-// ==============================================================
+// ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2012 - 2016 Jarmo Nikkanen
-// ==============================================================
+// ============================================================================
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // D3D9Client rendering techniques for Orbiter Spaceflight simulator
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 
 #define NIGHT_CLOUDS 0.05f          // range(0.0f-0.1f) Cloud ambient level at night
@@ -15,46 +15,46 @@
 
 struct Mat
 {
-	float4 diffuse;	  
-	float4 ambient;   
-	float4 specular;  
-    float4 emissive;  
-	float  specPower; 
+	float4 diffuse;
+	float4 ambient;
+	float4 specular;
+	float4 emissive;
+	float  specPower;
 };
 
 struct Mtrl
 {
-	float4 diffuse;	  
+	float4 diffuse;
 	float4 specular;
-	float3 ambient;    
-    float3 emissive;  
+	float3 ambient;
+	float3 emissive;
 	float3 reflect;
 	float3 emission2;
 	float3 fresnel;
 	float  roughness;
 };
 
-struct Sun 
+struct Sun
 {
 	float3 Dir;
 	float3 Color;	float pad;
 	float3 Ambient; float pad2;
 };
 
-struct Light 
+struct Light
 {
-    bool     bSpotlight;       /* Is is spotlight */
+	bool     bSpotlight;       /* Is is spotlight */
 	float    dst2;			   /* Camera-Light Emitter distance squared */
-    float4   diffuse;          /* diffuse color of light */
-    float3   position;         /* position in world space */
-    float3   direction;        /* direction in world space */
-    float3   attenuation;      /* Attenuation */
-    float4   param;            /* range, falloff, theta, phi */  
+	float4   diffuse;          /* diffuse color of light */
+	float3   position;         /* position in world space */
+	float3   direction;        /* direction in world space */
+	float3   attenuation;      /* Attenuation */
+	float4   param;            /* range, falloff, theta, phi */
 };
 
 // Must match with counterpart in D3D9Effect.h
 
-struct Flow 
+struct Flow
 {
 	bool Emis;		// Enable Emission Maps
 	bool Spec;		// Enable Specular Maps
@@ -89,7 +89,7 @@ struct Tune
 #define Theta   2
 #define Phi     3
 
-// -------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix
 uniform extern float4x4  gWI;			    // Inverse World matrix
 uniform extern float4x4  gVP;			    // Combined View and Projection matrix
@@ -102,17 +102,17 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
-uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector    
+uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern Light	 gLights[8];
-uniform extern int       gLightCount;      
+uniform extern int       gLightCount;
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
 uniform extern Mtrl      gMtrl;			    // Material input structure
 uniform extern Tune      gTune;			    // Texture tuning parameters
-uniform extern bool      gTuneEnabled;		
+uniform extern bool      gTuneEnabled;
 uniform extern bool      gModAlpha;		    // Configuration input
-uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations		
+uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
 uniform extern bool      gFresnel;			// Enable fresnel material
 uniform extern bool      gPBRSw;			// Legacy / PBR Switch
@@ -131,13 +131,13 @@ uniform extern float	 gInvProxySize;		// = 1.0 / (1.0f-gProxySize)
 uniform extern float     gPointScale;
 uniform extern float     gDistScale;
 uniform extern float     gFogDensity;
-uniform extern float     gTime;			  
+uniform extern float     gTime;
 uniform extern float     gMix;				// General purpose parameter (multible uses)
 uniform extern float 	 gMtrlAlpha;
 uniform extern float	 gGlowConst;
 uniform extern Flow		 gCfg;
 
-// Textures -----------------------------------------------------------------
+// Textures -------------------------------------------------------------------
 
 uniform extern texture   gTex0;			    // Diffuse texture
 uniform extern texture   gTex1;			    // Nightlights
@@ -152,77 +152,77 @@ uniform extern texture   gFrslMap;   		// Fresnel Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
 
-// Legacy Atmosphere --------------------------------------------------------
+// Legacy Atmosphere ----------------------------------------------------------
 
-uniform extern float     gGlobalAmb;        // Global Ambient Level        
+uniform extern float     gGlobalAmb;        // Global Ambient Level
 uniform extern float     gSunAppRad;        // Sun apparent size (Radius / Distance)
-uniform extern float     gDispersion;       
-uniform extern float     gAmbient0;         
+uniform extern float     gDispersion;
+uniform extern float     gAmbient0;
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Vertex layouts
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 struct MESH_VERTEX {                        // D3D9Client Mesh vertex layout
-    float3 posL   : POSITION0;
-    float3 nrmL   : NORMAL0;
-    float3 tanL   : TANGENT0;
-    float3 tex0   : TEXCOORD0;
+	float3 posL   : POSITION0;
+	float3 nrmL   : NORMAL0;
+	float3 tanL   : TANGENT0;
+	float3 tex0   : TEXCOORD0;
 };
 
 struct NTVERTEX {                           // Orbiter Mesh vertex layout
-    float3 posL     : POSITION0;
-    float3 nrmL     : NORMAL0;
-    float2 tex0     : TEXCOORD0;
+	float3 posL     : POSITION0;
+	float3 nrmL     : NORMAL0;
+	float2 tex0     : TEXCOORD0;
 };
 
 struct TILEVERTEX {                         // Vertex declaration used for surface tiles and cloud layer
-    float3 posL     : POSITION0;
-    float3 normalL  : NORMAL0;
-    float2 tex0     : TEXCOORD0;
-    float2 tex1     : TEXCOORD1;
+	float3 posL     : POSITION0;
+	float3 normalL  : NORMAL0;
+	float2 tex0     : TEXCOORD0;
+	float2 tex1     : TEXCOORD1;
 };
 
 struct HZVERTEX {
-    float3 posL     : POSITION0;
-    float4 color    : COLOR0;
-    float2 tex0     : TEXCOORD0;
+	float3 posL     : POSITION0;
+	float4 color    : COLOR0;
+	float2 tex0     : TEXCOORD0;
 };
 
 struct SHADOW_VERTEX {
-    float4 posL     : POSITION0;
+	float4 posL     : POSITION0;
 };
- 
 
-// -------------------------------------------------------------------------------------------------------------
-// Vertex shader outputs 
-// -------------------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+// Vertex shader outputs
+// ----------------------------------------------------------------------------
 
 struct SimpleVS
 {
-    float4 posH     : POSITION0;
-    float2 tex0     : TEXCOORD0;
-    float3 nrmW     : TEXCOORD1;
-    float3 toCamW   : TEXCOORD2;
+	float4 posH     : POSITION0;
+	float2 tex0     : TEXCOORD0;
+	float3 nrmW     : TEXCOORD1;
+	float3 toCamW   : TEXCOORD2;
 };
 
 struct HazeVS
 {
-    float4 posH    : POSITION0;
-    float4 color   : TEXCOORD0;
-    float2 tex0    : TEXCOORD1;
+	float4 posH    : POSITION0;
+	float4 color   : TEXCOORD0;
+	float2 tex0    : TEXCOORD1;
 };
 
 struct BShadowVS
 {
-    float4 posH    : POSITION0;
+	float4 posH    : POSITION0;
 	float2 dstW    : TEXCOORD0;
 };
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Texture Sampler implementations
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 sampler WrapS = sampler_state       // Primary Mesh texture sampler
 {
@@ -231,9 +231,9 @@ sampler WrapS = sampler_state       // Primary Mesh texture sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler ClampS = sampler_state      // Base tile sampler
@@ -243,9 +243,9 @@ sampler ClampS = sampler_state      // Base tile sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler SpecS = sampler_state       // Primary Mesh texture sampler
@@ -255,9 +255,9 @@ sampler SpecS = sampler_state       // Primary Mesh texture sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler EmisS = sampler_state       // Primary Mesh texture sampler
@@ -267,9 +267,9 @@ sampler EmisS = sampler_state       // Primary Mesh texture sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler ReflS = sampler_state       // Primary Mesh texture sampler
@@ -279,9 +279,9 @@ sampler ReflS = sampler_state       // Primary Mesh texture sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler FrslS = sampler_state       // Primary Mesh texture sampler
@@ -315,9 +315,9 @@ sampler TranslS = sampler_state       // Translucence texture sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 sampler TransmS = sampler_state       // Transmittance texture sampler
 {
@@ -326,12 +326,12 @@ sampler TransmS = sampler_state       // Transmittance texture sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
-sampler Tex1S = sampler_state       // Secundary mesh texture sampler (i.e. night texture) 
+sampler Tex1S = sampler_state       // Secundary mesh texture sampler (i.e. night texture)
 {
 	Texture = <gTex1>;
 	MinFilter = ANISOTROPIC;
@@ -339,7 +339,7 @@ sampler Tex1S = sampler_state       // Secundary mesh texture sampler (i.e. nigh
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler Nrm0S = sampler_state       // Normal Map Sampler
@@ -349,9 +349,9 @@ sampler Nrm0S = sampler_state       // Normal Map Sampler
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler MFDSamp = sampler_state     // Virtual Cockpit MFD screen sampler
@@ -362,7 +362,7 @@ sampler MFDSamp = sampler_state     // Virtual Cockpit MFD screen sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler Panel0S = sampler_state     // Sampler for mesh based panels, Panel MFDs. Must be compatible with Non-power of two conditional due to MFD screens.
@@ -372,7 +372,7 @@ sampler Panel0S = sampler_state     // Sampler for mesh based panels, Panel MFDs
 	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU  = CLAMP;
-    AddressV  = CLAMP;
+	AddressV  = CLAMP;
 };
 
 sampler SimpleS = sampler_state       // Sampler used for SimpleTech. (Star, VC HUD)
@@ -382,9 +382,9 @@ sampler SimpleS = sampler_state       // Sampler used for SimpleTech. (Star, VC 
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
-    MipMapLODBias = 0;
+	MipMapLODBias = 0;
 	AddressU = CLAMP; // Modified for RC29 to fix the line issue in top-right corner
-    AddressV = CLAMP; 
+	AddressV = CLAMP;
 };
 
 sampler ExhaustS = sampler_state
@@ -395,7 +395,7 @@ sampler ExhaustS = sampler_state
 	MipFilter = NONE;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler RingS = sampler_state       // Planetary rings sampler
@@ -406,7 +406,7 @@ sampler RingS = sampler_state       // Planetary rings sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 sampler EnvMapAS = sampler_state
@@ -416,8 +416,8 @@ sampler EnvMapAS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
-    AddressW = CLAMP;
+	AddressV = CLAMP;
+	AddressW = CLAMP;
 };
 
 sampler EnvMapBS = sampler_state
@@ -432,7 +432,7 @@ sampler EnvMapBS = sampler_state
 };
 
 
-// Planet surface samplers -----------------------------------------------------
+// Planet surface samplers ----------------------------------------------------
 
 sampler Planet0S = sampler_state    // Planet/Cloud diffuse texture sampler
 {
@@ -442,7 +442,7 @@ sampler Planet0S = sampler_state    // Planet/Cloud diffuse texture sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler Planet1S = sampler_state    // Planet nightlights/specular mask sampler
@@ -453,7 +453,7 @@ sampler Planet1S = sampler_state    // Planet nightlights/specular mask sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = CLAMP;
-    AddressV = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler Planet3S = sampler_state    // Planet/Cloud micro texture sampler
@@ -464,43 +464,43 @@ sampler Planet3S = sampler_state    // Planet/Cloud micro texture sampler
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Atmospheric Haze implementation
 //
-// att = attennuation, ins = inscatter, depth = pixel depth [0 to 1], posW = camera centric world space position of the vertex
-// -------------------------------------------------------------------------------------------------------------
+// att = attennuation, ins = inscatter, depth = pixel depth [0 to 1],
+// posW = camera centric world space position of the vertex
+// ----------------------------------------------------------------------------
 
 void AtmosphericHaze(out float4 att, out float4 ins, in float depth, in float3 posW)
 {
-    if (gHazeMode==0) {
-        att = 1;
-        ins = 0;
-        return;
-    }
-    else if (gHazeMode==1) {
-        att = gAttennuate;
-        ins = gInScatter;
-        return;
-    }
-    else if (gHazeMode==2) {
-        float fogFact = 1.0f / exp(max(0,depth) * gFogDensity);
-        att = fogFact; 
-        ins = half4((1.0f-fogFact) * gFogColor.rgb, 0.0f);
-        return;
-    }
+	if (gHazeMode==0) {
+		att = 1;
+		ins = 0;
+		return;
+	}
+	else if (gHazeMode==1) {
+		att = gAttennuate;
+		ins = gInScatter;
+		return;
+	}
+	else if (gHazeMode==2) {
+		float fogFact = 1.0f / exp(max(0,depth) * gFogDensity);
+		att = fogFact;
+		ins = half4((1.0f-fogFact) * gFogColor.rgb, 0.0f);
+		return;
+	}
 }
 
 
-// -------------------------------------------------------------------------------------------------------------
-// Legacy sun color on planet surface. Used for planet surface, base tiles and buildings.
-// See SurfaceLighting() in D3D9Util.cpp
-//
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Legacy sun color on planet surface. Used for planet surface, base tiles and
+// buildings.  See SurfaceLighting() in D3D9Util.cpp
+// ----------------------------------------------------------------------------
 
 void LegacySunColor(out float4 diff, out float ambi, out float nigh, in float3 normalW)
 {
@@ -509,18 +509,18 @@ void LegacySunColor(out float4 diff, out float ambi, out float nigh, in float3 n
 	float3 r0 = 1.0 - float3(0.65, 0.75, 1.0) * gDispersion;
 
 	if (gDispersion!=0) { // case 1: planet has atmosphere
-		float3 di = (r0 + (1.0-r0) * saturate(h*5.780)) * s; 
-		float  ni = (h+0.242)*2.924;	
+		float3 di = (r0 + (1.0-r0) * saturate(h*5.780)) * s;
+		float  ni = (h+0.242)*2.924;
 		float  am = saturate(max(gAmbient0*saturate(ni)-0.05, gGlobalAmb));
-	
-        diff = float4(di*(1.0-am*0.5),1);
-        ambi = am;
-        nigh = saturate(-ni-0.2);
-	} 
+
+		diff = float4(di*(1.0-am*0.5),1);
+		ambi = am;
+		nigh = saturate(-ni-0.2);
+	}
 	else { // case 2: planet has no atmosphere
-        diff = float4(r0*s, 1);
-        ambi = gGlobalAmb;
-        nigh = 0;
+		diff = float4(r0*s, 1);
+		ambi = gGlobalAmb;
+		nigh = 0;
 	}
 }
 
@@ -528,45 +528,45 @@ void LegacySunColor(out float4 diff, out float ambi, out float nigh, in float3 n
 
 void LocalVertexLight(out float3 diff, out float3 spec, out float3 dir, in float3 nrmW, in float3 posW, in float sp)
 {
-    float3 diffuse = 0;
-    float3 specular = 0;
-    float3 direction = 0;
+	float3 diffuse = 0;
+	float3 specular = 0;
+	float3 direction = 0;
 
-    int i;
-    for (i=0;i<gLightCount;i++) 
-    {
-        float3 relpW = posW - gLights[i].position;
-        float3 relpN = normalize(relpW);
+	int i;
+	for (i=0;i<gLightCount;i++)
+	{
+		float3 relpW = posW - gLights[i].position;
+		float3 relpN = normalize(relpW);
 		float  dst   = dot(relpW, relpN);
 
-        float att    = rcp(dot(gLights[i].attenuation.xyz, float3(1.0, dst, dst*dst)));
-        float spt    = saturate((dot(relpN, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
-        
-        float d      = saturate(dot(-relpN, nrmW));
-        float s      = pow(saturate(dot(reflect(relpN, nrmW), normalize(-posW))), sp);
+		float att    = rcp(dot(gLights[i].attenuation.xyz, float3(1.0, dst, dst*dst)));
+		float spt    = saturate((dot(relpN, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
 
-        if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
-        if (!gLights[i].bSpotlight) spt = 1.0f;         // Point light -> set spotlight factor to 1
+		float d      = saturate(dot(-relpN, nrmW));
+		float s      = pow(saturate(dot(reflect(relpN, nrmW), normalize(-posW))), sp);
 
-        float dif = (att*spt);
+		if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
+		if (!gLights[i].bSpotlight) spt = 1.0f;         // Point light -> set spotlight factor to 1
 
-        diffuse   += gLights[i].diffuse.rgb * (dif * d);
-        specular  += gLights[i].diffuse.rgb * (dif * s);
-        direction += relpN * (dif * d);
-    }  
-   
-    //diff = 1.5 - exp2(-diffuse.rgb)*1.5;
-    //spec = 1.5 - exp2(-specular.rgb)*1.5;
+		float dif = (att*spt);
+
+		diffuse   += gLights[i].diffuse.rgb * (dif * d);
+		specular  += gLights[i].diffuse.rgb * (dif * s);
+		direction += relpN * (dif * d);
+	}
+
+	//diff = 1.5 - exp2(-diffuse.rgb)*1.5;
+	//spec = 1.5 - exp2(-specular.rgb)*1.5;
 	diff = saturate(diffuse.rgb);
 	spec = saturate(specular.rgb);
-    dir  = normalize(direction);
+	dir  = normalize(direction);
 }
 
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Vertex shader implementations
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 
 SimpleVS BasicVS(NTVERTEX vrt)
@@ -574,21 +574,21 @@ SimpleVS BasicVS(NTVERTEX vrt)
 	SimpleVS outVS = (SimpleVS)0;
 	float3 posW  = mul(float4(vrt.posL, 1.0f), gW).xyz;
 	outVS.posH   = mul(float4(posW, 1.0f), gVP);
-    outVS.nrmW   = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
-    outVS.toCamW = -posW;
+	outVS.nrmW   = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
+	outVS.toCamW = -posW;
 	outVS.tex0   = vrt.tex0;
-    return outVS;
+	return outVS;
 }
 
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // PixelShader Implementations
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 float4 SimpleTechPS(SimpleVS frg) : COLOR
 {
-    return tex2D(SimpleS, frg.tex0);
+	return tex2D(SimpleS, frg.tex0);
 }
 
 float4 PanelTechPS(SimpleVS frg) : COLOR
@@ -605,13 +605,13 @@ float4 PanelTechBPS(SimpleVS frg) : COLOR
 
 float4 ExhaustTechPS(SimpleVS frg) : COLOR
 {
-    float4 c = tex2D(ExhaustS, frg.tex0);
-    return float4(c.rgb, c.a*gMix);
+	float4 c = tex2D(ExhaustS, frg.tex0);
+	return float4(c.rgb, c.a*gMix);
 }
 
 float4 SpotTechPS(SimpleVS frg) : COLOR
 {
-    return (tex2D(SimpleS, frg.tex0) * gColor) * gMix;
+	return (tex2D(SimpleS, frg.tex0) * gColor) * gMix;
 }
 
 #include "Particle.fx"
@@ -637,12 +637,12 @@ float4 ArrowTechPS(BShadowVS frg) : COLOR
 }
 
 
-// This is used for rendering grapple points ------------------------------------------
+// This is used for rendering grapple points ----------------------------------
 //
 technique ArrowTech
 {
-    pass P0
-    {
+	pass P0
+	{
 	vertexShader = compile vs_3_0 ArrowTechVS();
 	pixelShader = compile ps_3_0 ArrowTechPS();
 
@@ -652,95 +652,95 @@ technique ArrowTech
 	DestBlend = InvSrcAlpha;
 	ZWriteEnable = false;
 	ZEnable = true;
-    } 
+	}
 }
 
 
-// This is used for many simple renderings -------------------------------------
+// This is used for many simple renderings ------------------------------------
 //
 technique SimpleTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 BasicVS();
-        pixelShader  = compile ps_3_0 SimpleTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }   
+	pass P0
+	{
+		vertexShader = compile vs_3_0 BasicVS();
+		pixelShader  = compile ps_3_0 SimpleTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
-// This is used for 2DPanel and Glass cockpit ----------------------------------
+// This is used for 2DPanel and Glass cockpit ---------------------------------
 //
 technique PanelTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 BasicVS();
-        pixelShader  = compile ps_3_0 PanelTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
+	pass P0
+	{
+		vertexShader = compile vs_3_0 BasicVS();
+		pixelShader  = compile ps_3_0 PanelTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
 		SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }   
+		DestBlend = InvSrcAlpha;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
 technique PanelTechB
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 BasicVS();
-        pixelShader  = compile ps_3_0 PanelTechBPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZEnable = false;
-        ZWriteEnable = false;
-    }   
+	pass P0
+	{
+		vertexShader = compile vs_3_0 BasicVS();
+		pixelShader  = compile ps_3_0 PanelTechBPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZEnable = false;
+		ZWriteEnable = false;
+	}
 }
 
 
-// Thil will render exhaust textures -------------------------------------------
+// Thil will render exhaust textures ------------------------------------------
 //
 technique ExhaustTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 BasicVS();
-        pixelShader  = compile ps_3_0 ExhaustTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZWriteEnable = false;
-        ZEnable = true;
-    }   
+	pass P0
+	{
+		vertexShader = compile vs_3_0 BasicVS();
+		pixelShader  = compile ps_3_0 ExhaustTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = false;
+		ZEnable = true;
+	}
 }
 
-// This is used for rendering beacons ------------------------------------------
+// This is used for rendering beacons -----------------------------------------
 //
 technique SpotTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 BasicVS();
-        pixelShader  = compile ps_3_0 SpotTechPS();
-        
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;
-        ZWriteEnable = false;
-        ZEnable = true;
-    }   
+	pass P0
+	{
+		vertexShader = compile vs_3_0 BasicVS();
+		pixelShader  = compile ps_3_0 SpotTechPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = false;
+		ZEnable = true;
+	}
 }

@@ -21,7 +21,7 @@ inline float cmax(float3 color)
 
 
 
-// ========================================================================================================================
+// ============================================================================
 // Vertex shader for physics based rendering
 //
 PBRData AdvancedVS(MESH_VERTEX vrt)
@@ -38,7 +38,7 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 	outVS.camW = -posW;
 	outVS.tex0 = vrt.tex0.xy;
 
-	// Local light sources ------------------------------------------------------
+	// Local light sources ----------------------------------------------------
 	//
 #if defined(_LIGHTS)
 	if (gLocalLights) {
@@ -56,7 +56,7 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 #endif
 
 
-	// Earth "glow" ------------------------------------------------------------
+	// Earth "glow" -----------------------------------------------------------
 	//
 	if (gGlow) {
 		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
@@ -68,11 +68,11 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 
 
 
-// ========================================================================================================================
+// ============================================================================
 //
 float4 AdvancedPS(PBRData frg) : COLOR
 {
-	
+
 	float  fN = 1;
 	float3 bitW;
 	float3 nrmT;
@@ -95,7 +95,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	// Sample emission map. (Note: Emissive materials and textures need to go different stages, material is added to light)
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
-	
+
 
 	float3 nrmW = frg.nrmW;
 	float3 tanW = frg.tanW.xyz;
@@ -104,7 +104,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
 
-	// Compute World space normal ------------------------------------------- 
+	// Compute World space normal ---------------------------------------------
 	//
 	if (gCfg.Norm) {
 		nrmT = nrmT * 2.0 - 1.0;
@@ -116,16 +116,16 @@ float4 AdvancedPS(PBRData frg) : COLOR
 		fN *= fN;
 #endif
 	}
-	
+
 	nrmW  = normalize(nrmW);
 
 	float3 TnrmW = -nrmW;
 	float3 RflW  = reflect(-CamD, nrmW);
 	float  dLN   = saturate(-dot(gSun.Dir, nrmW));
-	
+
 	if (gCfg.Spec) cSpec.a *= 255.0f;
 
-	// Approximate roughness 
+	// Approximate roughness
 	float fRghn = log2(cSpec.a) * 0.1f;
 
 	// Sunlight calculation
@@ -139,7 +139,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	// Lit the diffuse texture
 	cTex.rgb *= saturate(Base + gMtrl.diffuse.rgb * (frg.cDif.rgb * fN + cSun * dLN));
 
-	// Lit the specular surface 
+	// Lit the specular surface
 #if defined(_LIGHTS)
 	cSpec.rgb *= (frg.cSpe.rgb + fSun * cSun);
 #else
@@ -147,7 +147,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 #endif
 
 
-	// Compute Transluciency effect --------------------------------------------------------------
+	// Compute Transluciency effect -------------------------------------------
 	//
 	if (gCfg.Transx) {
 
@@ -164,7 +164,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 			cTransl = tex2D(TranslS, frg.tex0.xy).rgb;
 		}
 
-		// Texture Tuning -------------------------------------------------------
+		// Texture Tuning -----------------------------------------------------
 		//
 		if (gTuneEnabled) {
 			cTransm *= gTune.Transm.rgba;
@@ -190,7 +190,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 #if defined(_ENVMAP)
 
 
-	// Compute environment map/fresnel effects ------------------------------------------------- 
+	// Compute environment map/fresnel effects --------------------------------
 	//
 	if (gEnvMapEnable) {
 
@@ -205,34 +205,34 @@ float4 AdvancedPS(PBRData frg) : COLOR
 			float3 cEnvFres = texCUBElod(EnvMapAS, float4(RflW, 0)).rgb;
 
 			float  dCN = saturate(dot(CamD, nrmW));
-			
+
 			// Compute a fresnel term with compensations included
 			fFrsl *= pow(1.0f - dCN, gMtrl.fresnel.x) * (1.0 - fRefl) * any(cRefl);
 
 			// Sunlight reflection for fresnel material
 			cSpec.rgb = saturate(cSpec.rgb + fSun * fFrsl * cSun);
-			
+
 			// Compute total reflected light with fresnel reflection
 			// and accummulate in cSpec
 			cSpec.rgb = saturate(cSpec.rgb + fFrsl * cEnvFres);
 
 			// Compute intensity
 			fInt = saturate(dot(cSpec.rgb, cLuminosity));
-		
+
 			// Attennuate diffuse surface
 			cTex.rgb *= (1.0f - fInt);
 		}
 
-		// Compute LOD level for blur effect 
+		// Compute LOD level for blur effect
 		float fLOD = (1.0f - fRghn) * 10.0f;
 
 		float3 cEnv = texCUBElod(EnvMapAS, float4(RflW, fLOD)).rgb;
 
-		// Compute total reflected light, accummulate in cSpec 
+		// Compute total reflected light, accummulate in cSpec
 		cSpec.rgb += cRefl.rgb * cEnv;
 	}
 
-#endif	
+#endif
 
 	// Attennuate diffuse surface
 	cTex.rgb *= (1.0f - fRefl);
@@ -247,7 +247,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	// Add emissive textures to output
 	cTex.rgb += cEmis;
 
-#if defined(_DEBUG)	
+#if defined(_DEBUG)
 	if (gDebugHL) cTex = cTex*0.5f + gColor;
 #endif
 
@@ -258,8 +258,8 @@ float4 AdvancedPS(PBRData frg) : COLOR
 
 
 
-// ========================================================================================================================
-// This is the default mesh rendering technique 
+// ============================================================================
+// This is the default mesh rendering technique
 //
 technique VesselTech
 {
@@ -277,17 +277,17 @@ technique VesselTech
 	}
 
 	pass P1
-    {
-        vertexShader = compile vs_3_0 AdvancedVS();
-        pixelShader  = compile ps_3_0 AdvancedPS();
+	{
+		vertexShader = compile vs_3_0 AdvancedVS();
+		pixelShader  = compile ps_3_0 AdvancedPS();
 
-        AlphaBlendEnable = true;
-        BlendOp = Add;
-        ZEnable = true; 
-        SrcBlend = SrcAlpha;
-        DestBlend = InvSrcAlpha;    
-        ZWriteEnable = true;
-    }
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		ZEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = true;
+	}
 
 	pass P2
 	{

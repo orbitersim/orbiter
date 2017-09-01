@@ -1,8 +1,8 @@
-// ==============================================================
+// ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2014 - 2016 Jarmo Nikkanen
-// ==============================================================
+// ============================================================================
 
 
 #if defined(_LIGHTS)
@@ -39,27 +39,27 @@ float3 Light_fx(float3 x)
 
 
 
-// ========================================================================================================================
+// ============================================================================
 // Vertex shader for physics based rendering
 //
 PBRData PBR_VS(MESH_VERTEX vrt)
 {
-    // Zero output.
+	// Zero output.
 	PBRData outVS = (PBRData)0;
 
 	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
 	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
-	
+
 	outVS.nrmW = nrmW;
 	outVS.tanW = float4(mul(float4(vrt.tanL, 0.0f), gW).xyz, vrt.tex0.z);
 	outVS.posH = mul(float4(posW, 1.0f), gVP);
-    outVS.camW = -posW;
-    outVS.tex0 = vrt.tex0.xy;
-	
-	// Local light sources ------------------------------------------------------
+	outVS.camW = -posW;
+	outVS.tex0 = vrt.tex0.xy;
+
+	// Local light sources ----------------------------------------------------
 	//
 #if defined(_LIGHTS)
-	if (gLocalLights) {	
+	if (gLocalLights) {
 		float3 locW;
 		LocalVertexLight(outVS.cDif, outVS.cSpe, locW, nrmW, posW, gMtrl.specular.a);
 		outVS.locW = float4(-locW.xyz, 1.0f - saturate(dot(-locW.xyz, nrmW)));
@@ -74,14 +74,14 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 #endif
 
 
-	// Earth "glow" ------------------------------------------------------------
+	// Earth "glow" -----------------------------------------------------------
 	//
 	if (gGlow) {
 		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 		outVS.cDif += gAtmColor.rgb * max(0, angl*gGlowConst);
 	}
 
-    return outVS;
+	return outVS;
 }
 
 
@@ -89,7 +89,7 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 
 
 
-// ========================================================================================================================
+// ============================================================================
 //
 float4 PBR_PS(PBRData frg) : COLOR
 {
@@ -104,15 +104,15 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float  fRghn;
 
 
-	// ----------------------------------------------------------------------
-	// Start fetching texture data 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Start fetching texture data
+	// ------------------------------------------------------------------------
 
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
 
 
-	// Fetch a normal map 
+	// Fetch a normal map
 	//
 	if (gCfg.Norm) nrmT = tex2D(Nrm0S, frg.tex0.xy).rgb;
 
@@ -120,14 +120,14 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Sample specular map
 	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy).rgba * sMask;
 	else 		   cSpec = gMtrl.specular.rgba;
-	
+
 
 	// Use _refl color for both
 	if (gCfg.Refl) cRefl = tex2D(ReflS, frg.tex0.xy).rgb;
 	else		   cRefl = gMtrl.reflect.rgb;
 
 
-	// Roughness map 
+	// Roughness map
 	if (gCfg.Rghn) fRghn = tex2D(RghnS, frg.tex0.xy).g;
 	else		   fRghn = gMtrl.roughness;
 
@@ -145,9 +145,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ----------------------------------------------------------------------
-	// Now do other calculations while textures are being fetched 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Now do other calculations while textures are being fetched
+	// ------------------------------------------------------------------------
 
 	float3 CamD = normalize(frg.camW);
 	float3 cMrtlBase = (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb;
@@ -157,9 +157,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	// Texture tuning controls for add-on developpers
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 #if defined(_DEBUG)
 	if (gTuneEnabled) {
@@ -172,7 +172,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 		cFrsl.rgb = pow(abs(cFrsl.rgb), gTune.Frsl.a) * gTune.Frsl.rgb;
 		fRghn = pow(abs(fRghn), gTune.Rghn.a) * gTune.Rghn.g;
 		cSpec.rgba = cSpec.rgba * gTune.Spec.rgba;
-		
+
 		cDiff = saturate(cDiff);
 		cRefl = saturate(cRefl);
 		cFrsl = saturate(cFrsl);
@@ -185,9 +185,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Use alpha zero to mask off specular reflections
 	cSpec.rgb *= saturate(cSpec.a);
 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	// "Legacy/PBR" switch
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	if (gPBRSw) {
 		cRefl2 = cRefl*cRefl;
@@ -201,21 +201,21 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 	float fRefl = cmax(cRefl3);
 
-	
-	// ----------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
 	// cSpec.pwr to fRghn Converter
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	if (gRghnSw) {
 		fRghn = log2(cSpec.a+1.0f) * 0.1f;
 	}
 
 
-	
 
-	// ----------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
 	// Construct a proper world space normal
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	if (gCfg.Norm) {
 		float3 bitW = cross(frg.tanW.xyz, frg.nrmW) * frg.tanW.w;
@@ -232,9 +232,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ----------------------------------------------------------------------
-	// Compute reflection vector and some required dot products 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Compute reflection vector and some required dot products
+	// ------------------------------------------------------------------------
 
 	float3 RflW = reflect(-CamD, nrmW);				// Reflection vector
 	float dRS = saturate(-dot(RflW, gSun.Dir));		// Reflection/sun angle
@@ -242,27 +242,27 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float dLNx = saturate(dLN * 80.0f);				// Specular, Fresnel shadowing term
 
 
-	// ----------------------------------------------------------------------
-	// Compute a fresnel terms fFrsl, iFrsl, fFLbe 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Compute a fresnel terms fFrsl, iFrsl, fFLbe
+	// ------------------------------------------------------------------------
 
 	float fFrsl = 0;	// Fresnel angle co-efficiency factor
 	float iFrsl = 0;	// Fresnel intensity
 	float fFLbe = 0;	// Fresnel lobe
-	
+
 #if defined(_GLASS)
 
 	if (gFresnel) {
 
 		float dCN = saturate(dot(CamD, nrmW));
 
-		// Compute a fresnel term 
+		// Compute a fresnel term
 		fFrsl = pow(1.0f - dCN, gMtrl.fresnel.x);
 
 		// Compute a specular lobe for fresnel reflection
 		fFLbe = pow(dRS, gMtrl.fresnel.z) * dLNx * any(cRefl);
 
-		// Modulate with material 
+		// Modulate with material
 		cFrsl *= gMtrl.fresnel.y;
 
 		// Compute intensity term. Fresnel is always on a top of a multi-layer material
@@ -274,9 +274,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	// Compute a specular and diffuse lighting
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	// Compute a specular lobe for base material
 	float fLobe = pow(dRS, cSpec.a) * dLNx;
@@ -310,19 +310,19 @@ float4 PBR_PS(PBRData frg) : COLOR
 #endif
 
 	cSpec.rgb = cSun * saturate(cBase);
-	
 
 
 
 
 
 
-	// ----------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
 	// Compute a environment reflections
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	float3 cEnv = 0;
-	
+
 #if defined(_ENVMAP)
 
 	if (gEnvMapEnable) {
@@ -330,10 +330,10 @@ float4 PBR_PS(PBRData frg) : COLOR
 #if defined(_GLASS)
 
 		if (gFresnel) {
-			
+
 			// Compute LOD level for fresnel reflection
 			float fLOD = max(0, (10.0f - log2(gMtrl.fresnel.z)));
-			
+
 			// Always mirror clear reflection for low angles
 			fLOD *= (1.0f - fFrsl);
 
@@ -342,21 +342,21 @@ float4 PBR_PS(PBRData frg) : COLOR
 		}
 #endif
 
-		// Compute LOD level for blur effect 
+		// Compute LOD level for blur effect
 		float fLOD = (1.0f - fRghn) * 8.0f;
 
-		// Add a metallic reflections from a base material 
+		// Add a metallic reflections from a base material
 		cEnv += cRefl3 * (1.0f-iFrsl) * texCUBElod(EnvMapAS, float4(RflW, fLOD)).rgb;
 	}
 
-#endif	
+#endif
 
 
 
 
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 	// Combine all results together
-	// ----------------------------------------------------------------------
+	// ------------------------------------------------------------------------
 
 	// Compute total reflected light
 	float fTot = cmax(cEnv + cSpec.rgb);
@@ -371,7 +371,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 #if defined(_GLASS)
 	// Further attennuate diffuse surface beneath
 	cDiff.rgb *= (1.0f - iFrsl*iFrsl);			// note: (1-iFrsl) goes black too quick
-#endif	
+#endif
 #endif
 
 	// Re-compute output alpha for alpha blending stage
@@ -386,7 +386,7 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Add emission texture to output, modulate with material
 	cDiff.rgb = max(cDiff.rgb, cEmis * gMtrl.emission2.rgb);
 
-#if defined(_DEBUG)	
+#if defined(_DEBUG)
 	if (gDebugHL) cDiff = cDiff*0.5f + gColor;
 #endif
 
@@ -399,9 +399,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-// ================================================================================================
+// ============================================================================
 // Fast legacy Implementation no additional textures
-// ================================================================================================
+// ============================================================================
 
 
 #if defined(_LIGHTS)
@@ -426,7 +426,7 @@ struct FASTData
 #endif
 
 
-// ========================================================================================================================
+// ============================================================================
 // Vertex shader for physics based rendering
 //
 FASTData FAST_VS(MESH_VERTEX vrt)
@@ -442,7 +442,7 @@ FASTData FAST_VS(MESH_VERTEX vrt)
 	outVS.camW = -posW;
 	outVS.tex0 = vrt.tex0.xy;
 
-	// Local light sources ------------------------------------------------------
+	// Local light sources ----------------------------------------------------
 	//
 #if defined(_LIGHTS)
 	if (gLocalLights) {
@@ -451,14 +451,14 @@ FASTData FAST_VS(MESH_VERTEX vrt)
 	}
 	else {
 		outVS.cDif = 0;
-		outVS.cSpe = 0;	
+		outVS.cSpe = 0;
 	}
 #else
 	outVS.cDif = 0;
 #endif
 
 
-	// Earth "glow" ------------------------------------------------------------
+	// Earth "glow" -----------------------------------------------------------
 	//
 	if (gGlow) {
 		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
@@ -469,15 +469,15 @@ FASTData FAST_VS(MESH_VERTEX vrt)
 }
 
 
-// ========================================================================================================================
+// ============================================================================
 //
 float4 FAST_PS(FASTData frg) : COLOR
 {
 
 	float3 cEmis;
 	float4 cDiff;
-	
-	// Start fetching texture data -------------------------------------------
+
+	// Start fetching texture data --------------------------------------------
 	//
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
@@ -496,7 +496,7 @@ float4 FAST_PS(FASTData frg) : COLOR
 		float4 cSpec = gMtrl.specular.rgba;
 		float3 cSun  = saturate(gSun.Color);
 		float  dLN   = saturate(-dot(gSun.Dir, nrmW));
-		
+
 		cSpec.rgb *= 0.33333f;
 
 		if (gNoColor) cDiff.rgb = 1;
@@ -515,11 +515,11 @@ float4 FAST_PS(FASTData frg) : COLOR
 		float3 specLight = (fSun * cSun);
 #endif
 		cDiff.rgb += (cSpec.rgb * specLight);
-		
+
 		cDiff.rgb += cEmis;
 	}
 
-#if defined(_DEBUG)	
+#if defined(_DEBUG)
 	if (gDebugHL) cDiff = cDiff*0.5f + gColor;
 #endif
 

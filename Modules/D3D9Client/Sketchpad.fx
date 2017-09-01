@@ -3,9 +3,9 @@
 //
 // Copyright (C) 2013-2016 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 // is furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -18,9 +18,9 @@
 
 
 
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Sketchpad Implementation
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 uniform extern float4x4  gVP;			    // Projection matrix
 uniform extern float4x4  gW;			    // World matrix
@@ -28,7 +28,7 @@ uniform extern float4x4  gWVP;				// World View Projection
 uniform extern texture   gTex0;			    // Diffuse texture
 
 // Colors
-uniform extern float4    gPen;	
+uniform extern float4    gPen;
 uniform extern float4    gKey;
 uniform extern float4    gMtrl;
 
@@ -58,14 +58,14 @@ sampler TexS = sampler_state
 	MipFilter = LINEAR;
 	MaxAnisotropy = 8;
 	AddressU = WRAP;
-    AddressV = WRAP;
+	AddressV = WRAP;
 };
 
 
 struct InputVS
 {
 	float3 pos : POSITION0;				// vertex x, y
-	float4 dir : TEXCOORD0;				// Texture coord or inbound direction	
+	float4 dir : TEXCOORD0;				// Texture coord or inbound direction
 	float4 clr : COLOR0;				// Color
 	float4 fnc : COLOR1;				// Function switch
 };
@@ -99,8 +99,8 @@ struct NTVERTEX {                        // D3D9Client Mesh vertex layout
 };
 
 
-// -------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 OutputVS Sketch3DVS(InputVS v)
 {
@@ -115,7 +115,7 @@ OutputVS Sketch3DVS(InputVS v)
 
 	float3 posN = normalize(posW);
 	float3 prvN = normalize(prvW);
-	float3 nxtN = normalize(nxtW);	
+	float3 nxtN = normalize(nxtW);
 	float3 nxtS = normalize(cross(nxtN - posN, posN));
 	float3 prvS = normalize(cross(posN - prvN, posN));
 	float3 latN = normalize(nxtS + prvS) * (0.45*gWidth.x) * rsqrt(max(0.1, 0.5f + dot(nxtS, prvS)*0.5f));
@@ -128,7 +128,7 @@ OutputVS Sketch3DVS(InputVS v)
 	float fPosD = dot(posN, posW);
 
 	posW += latN * (fSide * fPosD * gFov);
-	
+
 	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
 	else				 outVS.color.rgba = v.clr.bgra;
 
@@ -144,8 +144,8 @@ OutputVS Sketch3DVS(InputVS v)
 
 
 
-// -------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 OutputVS OrthoVS(InputVS v)
 {
@@ -159,10 +159,10 @@ OutputVS OrthoVS(InputVS v)
 	else				 outVS.len = v.pos.z;
 
 	outVS.posW = 0;
-	
+
 	if (gWide) {
 
-		float4 nxtH = mul(float4(v.dir.xy, 0.0f, 1.0f), gWVP);	
+		float4 nxtH = mul(float4(v.dir.xy, 0.0f, 1.0f), gWVP);
 		float fSide = round(v.fnc[SSW] * 2.0 - 1.0);
 		float2 pixH = gTarget.xy * gWidth.z * abs(fSide);
 
@@ -191,8 +191,8 @@ OutputVS OrthoVS(InputVS v)
 
 
 
-// -------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 float4 SketchpadPS(OutputVS frg) : COLOR
 {
@@ -219,12 +219,12 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 			if ((x.r < tol) && (x.g < tol) && (x.b < tol) && (frg.sw[TSW] > 0.9f)) clip(-1);
 		}
 	}
-	
+
 	if (gDashEn) {
 		float q;
 		if (modf(frg.len*gWidth.y, q) > 0.5f) clip(-1);
 	}
-	
+
 	if (gClipEn) {
 		float3 posN = normalize(frg.posW.xyz);
 		if ((dot(gPos,  posN) > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
@@ -237,17 +237,17 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 
 technique SketchTech
 {
-    pass P0
-    {
-        vertexShader = compile vs_3_0 OrthoVS();
-        pixelShader  = compile ps_3_0 SketchpadPS();
+	pass P0
+	{
+		vertexShader = compile vs_3_0 OrthoVS();
+		pixelShader  = compile ps_3_0 SketchpadPS();
 		AlphaBlendEnable = true;
 		BlendOp = Add;
 		SrcBlend = SrcAlpha;
 		DestBlend = InvSrcAlpha;
 		ZEnable = false;
 		ZWriteEnable = false;
-    }
+	}
 
 	pass P1
 	{
@@ -264,8 +264,8 @@ technique SketchTech
 
 
 
-// -------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 SkpMshVS SketchMeshVS(NTVERTEX v)
 {

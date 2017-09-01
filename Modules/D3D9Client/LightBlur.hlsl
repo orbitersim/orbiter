@@ -5,27 +5,27 @@
 //				 2016 SolarLiner (Nathan Graule)
 // ==============================================================
 
-// Shader configurations -----------------------------------------------
+// Shader configurations ------------------------------------------------------
 //
 #define fGlowIntensity	1.08	// Overal glow brightness multiplier
 #define radius			12		// Radius of the glow
 #define rate			0.95	// glow "linearity" [0.7 to 0.95]
 #define fMinThreshold	0.85	// Glow starts to appear when back buffer intensity reaches this level
-#define fMaxThreshold	1.00	// Glow reaches it's maximum intensity when backbuffer goes above this level 
+#define fMaxThreshold	1.00	// Glow reaches it's maximum intensity when backbuffer goes above this level
 
 
-// Orher configurations ------------------------------------------------
+// Orher configurations -------------------------------------------------------
 //
 #define fSunIntensity		3.14	// Sunlight intensity
 #define fInvSunIntensity	(1.0/fSunIntensity)
 
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // Client configuration parameters
 //
 #define BufferDivider	2		// Blur buffer size in pixels = ScreenSize / BufferDivider
 #define PassCount		2		// Number of "bBlur" passes
 #define BufferFormat	1		// Render buffer format, 2=RGB10A2, 1 = RGBA_16F, 0=DEFAULT (RGBX8)
-// ---------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 uniform extern float2  vSB;
 uniform extern float2  vBB;
@@ -52,16 +52,16 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 {
 	float2 vPos = float2(x,y);
 
-	float2 vX = float2(vSB.x, 0);		// Delta between two pixels in a "glow" buffer 
+	float2 vX = float2(vSB.x, 0);		// Delta between two pixels in a "glow" buffer
 	float2 vY = float2(0, vSB.y);
 
-	float2 sX = float2(vBB.x, 0);		// Delta between two pixels in backbuffer 
+	float2 sX = float2(vBB.x, 0);		// Delta between two pixels in backbuffer
 	float2 sY = float2(0, vBB.y);
 
 	float3 color = 0;
-	
 
-	// Sample a backbuffer into a glow buffer --------------------------------
+
+	// Sample a backbuffer into a glow buffer ---------------------------------
 	//
 	if (bSample) {
 		float3 res = tex2D(tBack, vPos).rgb;
@@ -70,7 +70,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 	}
 
 
-	// Construct a glow gradient ---------------------------------------------
+	// Construct a glow gradient ----------------------------------------------
 	//
 	if (bBlur) {
 
@@ -99,9 +99,9 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 
 		float3 L = tex2D(tBlur, vPos).rgb;
 		float3 B = tex2D(tBack, vPos).rgb;
-		
+
 		color = 1 - ((1 - B)*(1 - L)); // Screen add
-	
+
 		return float4(color / max(1, max(color.r, max(color.g, color.b))), 1.0);			// Normalize color
 	}
 
