@@ -291,7 +291,7 @@ public:
 
 
 	template<class TileType>
-	QuadTreeNode<TileType> *FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilng, int ilat);
+	QuadTreeNode<TileType> *FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilat, int ilng);
 	// Returns the node at the specified position, or 0 if it doesn't exist
 
 	template<class TileType>
@@ -377,8 +377,8 @@ public:
 
 	void Pick(TILEPICK *pPick);
 
-	QuadTreeNode<TileType> *FindNode (int lvl, int ilng, int ilat)
-	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilng, ilat); }
+	QuadTreeNode<TileType> *FindNode (int lvl, int ilat, int ilng)
+	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilat, ilng); }
 	// Returns the node at the specified position, or 0 if it doesn't exist
 
 	const Tile *SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const;
