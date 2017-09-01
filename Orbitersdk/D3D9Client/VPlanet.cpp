@@ -55,9 +55,6 @@ extern int SURF_MAX_PATCHLEVEL;
 
 vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-	char path[MAX_PATH] = { '\0' };
-	char temp[MAX_PATH] = { '\0' };
-
 	memset(&MicroCfg, 0, sizeof(MicroCfg));
 	vRefPoint = _V(1,0,0);
 	bScatter = false;
