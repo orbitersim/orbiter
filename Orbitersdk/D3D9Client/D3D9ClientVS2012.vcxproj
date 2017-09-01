@@ -14,18 +14,17 @@
     <ProjectName>D3D9Client</ProjectName>
     <ProjectGuid>{5B2C5D1A-7B8E-4343-BC33-836ABD122D3A}</ProjectGuid>
     <RootNamespace>D3D9Client</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>NotSet</CharacterSet>
     <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>NotSet</CharacterSet>
     <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -49,6 +48,12 @@
     <IncludePath>$(DXSDK_DIR)\Include;C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;$(IncludePath)</IncludePath>
     <LibraryPath>$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -60,7 +65,7 @@
       </HeaderFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/D "D3D_DEBUG_INFO" /D PSAPI_VERSION=1 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/D "D3D_DEBUG_INFO" /D PSAPI_VERSION=1 /D_WIN32_WINNT=0x0502 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Microsoft SDKs\Platform SDK\Include\mfc;$(DXSDK_DIR)\Include;..\..\Orbitersdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -80,7 +85,7 @@
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\..\Orbitersdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -130,7 +135,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalOptions>/D PSAPI_VERSION=1 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/D PSAPI_VERSION=1 /D_WIN32_WINNT=0x0502 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
@@ -140,13 +145,16 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>..\..\Orbitersdk\lib;.\..\..\Modules\Server;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>$(Configuration)\$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
+      <FullProgramDatabaseFile>false</FullProgramDatabaseFile>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
       <LargeAddressAware>true</LargeAddressAware>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -172,10 +180,10 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="AABBUtil.cpp" />
     <ClCompile Include="AtmoControls.cpp" />
     <ClCompile Include="BeaconArray.cpp" />
-    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="CelSphere.cpp" />
     <ClCompile Include="CloudMgr.cpp" />
     <ClCompile Include="Cloudmgr2.cpp" />
+    <ClCompile Include="CSphereMgr.cpp" />
     <ClCompile Include="D3D9Client.cpp" />
     <ClCompile Include="D3D9Config.cpp" />
     <ClCompile Include="D3D9ControlPanel.cpp" />
@@ -211,11 +219,11 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="TileMgr.cpp" />
     <ClCompile Include="Tilemgr2.cpp" />
     <ClCompile Include="VBase.cpp" />
+    <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="VObject.cpp" />
     <ClCompile Include="VPlanet.cpp" />
     <ClCompile Include="VStar.cpp" />
     <ClCompile Include="VVessel.cpp" />
-    <ClCompile Include="VideoTab.cpp" />
     <ClCompile Include="ZTreeMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -226,13 +234,14 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />
     <ClInclude Include="..\include\Sketchpad2.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
-    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="CelSphere.h" />
     <ClInclude Include="CloudMgr.h" />
     <ClInclude Include="Cloudmgr2.h" />
+    <ClInclude Include="CSphereMgr.h" />
     <ClInclude Include="D3D9Catalog.h" />
     <ClInclude Include="D3D9Client.h" />
     <ClInclude Include="D3D9Config.h" />
@@ -257,7 +266,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Particle.h" />
     <ClInclude Include="PlanetRenderer.h" />
     <ClInclude Include="Qtree.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="RingMgr.h" />
     <ClInclude Include="RunwayLights.h" />
     <ClInclude Include="Scene.h" />
@@ -269,12 +277,12 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />
     <ClInclude Include="VBase.h" />
+    <ClInclude Include="VectorHelpers.h" />
+    <ClInclude Include="VideoTab.h" />
     <ClInclude Include="VObject.h" />
     <ClInclude Include="VPlanet.h" />
     <ClInclude Include="VStar.h" />
     <ClInclude Include="VVessel.h" />
-    <ClInclude Include="VectorHelpers.h" />
-    <ClInclude Include="VideoTab.h" />
     <ClInclude Include="ZTreeMgr.h" />
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +303,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
     <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\LensFlare.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

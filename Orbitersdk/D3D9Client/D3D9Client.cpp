@@ -235,10 +235,10 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	GraphicsClient(hInstance),
 	vtab(NULL),
-	scenarioName("(none selected)"),
-	pLoadLabel(""),
-	pLoadItem("")
+	scenarioName("(none selected)")
 {
+	pLoadLabel[0] = '\0';
+    pLoadItem[0] = '\0';
 }
 
 // ==============================================================
