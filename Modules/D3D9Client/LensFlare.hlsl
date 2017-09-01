@@ -25,7 +25,7 @@ uniform extern float2 vResolution;
 uniform extern float fSize;
 uniform extern float fBrightness;
 #define EPSILON					1e-10
-#define CLut_pSize				float2(256, 16)
+#define CLUT_SIZE				float2(256, 16)
 
 float2 GetDistOffset(float2 uv, float2 pxoffset, float dist)
 {
