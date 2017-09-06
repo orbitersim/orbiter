@@ -276,6 +276,7 @@ public:
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera
 	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);
+	bool            IsCameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y);
 	double			GetTanAp() const { return tan(Camera.aperture); }
 	float			GetCameraAspect() const { return (float)Camera.aspect; }
 	float			GetCameraFarPlane() const { return Camera.farplane; }
@@ -373,7 +374,9 @@ private:
 	CelestialSphere *csphere;  // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
 	DWORD dwRenderPass;		   // Currently active render pass
-	bool  bLocalLight;
+	bool  bLocalLight;         // enable local light sources
+	bool  surfLabelsActive;    // v.2 surface labels activated?
+
 
 	OBJHANDLE hSun;
 
@@ -388,6 +391,9 @@ private:
 	static COLORREF labelCol[6];
 	static oapi::Pen *lblPen[6];
 	int   labelSize[1];
+
+	oapi::Font *label_font[4];
+	oapi::Pen  *label_pen;
 
 	std::stack<CAMERA>	CameraStack;
 

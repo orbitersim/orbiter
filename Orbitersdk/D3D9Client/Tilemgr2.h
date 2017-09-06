@@ -18,6 +18,7 @@
 #include "PlanetRenderer.h"
 #include "VPlanet.h"
 #include "Spherepatch.h"
+#include "Sketchpad2.h"
 #include "Qtree.h"
 #include "ZTreeMgr.h"
 #include <stack>
@@ -303,6 +304,8 @@ public:
 	template<class TileType>
 	void QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles);
 
+	template<class TileType>
+	void RenderNodeLabels(QuadTreeNode<TileType> *node, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
@@ -319,6 +322,7 @@ public:
 	inline const oapi::D3D9Client *GetClient() const { return gc; }
 	inline const vPlanet *GetPlanet() const { return vp; }
 
+	inline const OBJHANDLE &Cbody() const { return obj; }
 	inline const ConfigPrm &Cprm() const { return cprm; }
 	inline const char *CbodyName() const { return cbody_name; }
 	inline const double CbodySize() const { return obj_size; }
@@ -373,9 +377,14 @@ public:
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
+	void RenderLabels(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
+
 	int GetElevation(double lng, double lat, double *elev, SurfTile **cache);
 
 	void Pick(TILEPICK *pPick);
+	void CreateLabels();
+	void DeleteLabels();
+	void SetSubtreeLabels(QuadTreeNode<TileType> *node, bool activate);
 
 	QuadTreeNode<TileType> *FindNode (int lvl, int ilat, int ilng)
 	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilat, ilng); }
@@ -383,9 +392,10 @@ public:
 
 	const Tile *SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const;
 
-	inline TileType *GlobalTile (int lvl)
-	{ return globtile[lvl]; }
-	// Returns a low-res global tile
+	inline TileType *GlobalTile (int lvl) {	return (lvl >= -3 && lvl < 0 ? globtile[lvl + 3] : NULL); }
+//	{ return globtile[lvl]; } @todo: Is that ( above) OK for us?
+
+// Returns a low-res global tile
 
 	int Coverage (double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt) const;
 	// fills tbuf with a list of tiles up to maxlvl currently covering the area latmin,latmax,lngmin,lngmax

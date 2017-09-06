@@ -98,7 +98,7 @@ private:
  */
 class ZTreeMgr {
 public:
-	enum Layer { LAYER_SURF, LAYER_MASK, LAYER_ELEV, LAYER_ELEVMOD, LAYER_CLOUD };
+	enum Layer { LAYER_SURF, LAYER_MASK, LAYER_ELEV, LAYER_ELEVMOD, LAYER_LABEL, LAYER_CLOUD };
 	static ZTreeMgr *CreateFromFile (const char *PlanetPath, Layer _layer);
 
 	ZTreeMgr (const char *PlanetPath, Layer _layer);

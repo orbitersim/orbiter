@@ -350,6 +350,8 @@ public:
 	 */
 	bool Text (int x, int y, const char *str, int len);
 
+//	bool TextW(int x, int y, const LPCWSTR str, int len);
+
 	/**
 	 * \brief Draw a text string into a rectangle.
 	 * \param x1 left edge [pixel]

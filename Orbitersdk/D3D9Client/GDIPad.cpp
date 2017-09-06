@@ -190,6 +190,13 @@ bool GDIPad::Text (int x, int y, const char *str, int len)
 
 // ===============================================================================================
 //
+bool GDIPad::TextW(int x, int y, const LPWSTR str, int len)
+{
+	return (TextOutW(hDC, x, y, str, len) != FALSE);
+}
+
+// ===============================================================================================
+//
 bool GDIPad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 {
 	RECT r;

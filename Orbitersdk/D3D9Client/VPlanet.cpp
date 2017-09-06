@@ -832,6 +832,27 @@ void vPlanet::RenderSurfaceMicroDetails(LPDIRECT3DDEVICE9 dev)
 */
 // ==============================================================
 
+void vPlanet::ActivateLabels(bool activate)
+{
+	if (surfmgr2 && *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE) == 2)
+	{
+		if (activate) surfmgr2->CreateLabels();
+		else          surfmgr2->DeleteLabels();
+	}
+}
+
+// ==============================================================
+
+void vPlanet::RenderLabels(LPDIRECT3DDEVICE9 dev, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+{
+	if (surfmgr2 && *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE) == 2)
+	{
+		surfmgr2->RenderLabels(skp, labelfont, fontidx);
+	}
+}
+
+// ==============================================================
+
 void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
 	float fogfactor;

@@ -73,6 +73,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	nLights = 0;
 	dwTurn = 0;
 	dwFrameId = 0;
+	surfLabelsActive = false;
 
 	pDevice = _gc->GetDevice();
 
@@ -1068,7 +1069,9 @@ void Scene::RenderMainScene()
 
 	pSketch->EndDrawing();
 
+	// -------------------------------------------------------------------------------------------------------
 	// Render Planets
+	// -------------------------------------------------------------------------------------------------------
 
 	for (DWORD i=0;i<nplanets;i++) {
 
@@ -1097,9 +1100,11 @@ void Scene::RenderMainScene()
 				RenderObjectMarker(pSketch, pp, name, 0, 0, viewH/80);
 			}
 
-			if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType (hObj) == OBJTP_PLANET)) {
-
-				if (plnmode & PLN_LMARK) { // user-defined planetary surface labels
+			if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType (hObj) == OBJTP_PLANET))
+			{
+				int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
+				if (label_format < 2 && (plnmode & PLN_LMARK)) // user-defined planetary surface labels
+				{
 					double rad = oapiGetSize (hObj);
 					double apprad = rad/(plist[i].dist * tan(GetCameraAperture()));
 					const GraphicsClient::LABELLIST *list;
@@ -1180,6 +1185,65 @@ void Scene::RenderMainScene()
 		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), &mP);
 	}
 
+	// -------------------------------------------------------------------------------------------------------
+	// render new-style surface markers
+	// -------------------------------------------------------------------------------------------------------
+	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
+	{
+		oapi::Sketchpad2 *skp = NULL;
+		int fontidx = -1;
+		for (DWORD i = 0; i < nplanets; ++i)
+		{
+			OBJHANDLE hObj = plist[i].vo->Object();
+			if (oapiGetObjectType(hObj) != OBJTP_PLANET) { continue; }
+			if (!surfLabelsActive) {
+				static_cast<vPlanet*>( plist[i].vo )->ActivateLabels(true);
+			}
+	
+			int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
+			if (label_format == 2)
+			{
+				if (!skp) {
+					skp = dynamic_cast<Sketchpad2*>(gc->clbkGetSketchpad(0));
+					skp->SetPen(label_pen);
+				}
+				static_cast<vPlanet*>(plist[i].vo)->RenderLabels(pDevice, skp, label_font, &fontidx);
+			}
+		}
+		surfLabelsActive = true;
+		if (skp) {
+			gc->clbkReleaseSketchpad(skp);
+		}
+	}
+	else {
+		surfLabelsActive = false;
+	}
+	/*
+if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK)) {
+oapi::Sketchpad *skp = 0;
+int fontidx = -1;
+for (i = 0; i < np; i++) {
+OBJHANDLE hObj = plist[i].vo->Object();
+if (oapiGetObjectType(hObj) != OBJTP_PLANET) continue;
+if (!surfLabelsActive)
+plist[i].vo->ActivateLabels(true);
+int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
+if (label_format == 2) {
+if (!skp) {
+skp = gc->clbkGetSketchpad(0);
+skp->SetPen(label_pen);
+}
+((vPlanet*)plist[i].vo)->RenderLabels(dev, skp, label_font, &fontidx);
+}
+}
+surfLabelsActive = true;
+if (skp)
+gc->clbkReleaseSketchpad(skp);
+} else {
+if (surfLabelsActive)
+surfLabelsActive = false;
+}
+	*/
 
 	// -------------------------------------------------------------------------------------------------------
 	// render the vessel objects
@@ -2354,6 +2418,13 @@ void Scene::InitGDIResources ()
 	pLabelFont = oapiCreateFont(15, false, "Arial", FONT_NORMAL, 0);
 	pDebugFont = oapiCreateFont(Config->DebugFontSize, true, dbgfnt, FONT_NORMAL, 0);
 	for (int i=0;i<6;i++) lblPen[i] = oapiCreatePen(1,1,labelCol[i]);
+
+	const int fsize[4] = { 12, 16, 20, 26 };
+	for (int i = 0; i < 4; ++i) {
+		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", oapi::Font::BOLD);
+	}
+	//@todo: different pens for different fonts?
+	label_pen = gc->clbkCreatePen(1, 0, RGB(255, 255, 255));
 }
 
 // ===========================================================================================
@@ -2364,6 +2435,11 @@ void Scene::ExitGDIResources ()
 	oapiReleaseFont(pLabelFont);
 	oapiReleaseFont(pDebugFont);
 	for (int i=0;i<6;i++) oapiReleasePen(lblPen[i]);
+
+	for (int i = 0; i < 4; ++i) {
+		gc->clbkReleaseFont(label_font[i]);
+	}
+	gc->clbkReleasePen(label_pen);
 }
 
 // ===========================================================================================
@@ -2776,6 +2852,25 @@ bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
 	if (x<0) x=-x;
 	if (x-(radius*Camera.vwf) > (Camera.vw*z)) return false;
 	return true;
+}
+
+// ===========================================================================================
+//
+bool Scene::IsCameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
+{
+	D3DXVECTOR3 homog;
+	D3DXVECTOR3 idir = { -float(dir.x), -float(dir.y), -float(dir.z) };
+	D3DMAT_VectorMatrixMultiply(&homog, &idir, &Camera.mProjView);
+	if (homog.x >= -1.0f && homog.y <= 1.0f && homog.z >= 0.0) {
+		if (_hypot(homog.x, homog.y) < 1e-6) {
+			x = viewW / 2, y = viewH / 2;
+		} else {
+			x = (int)(viewW*0.5f*(1.0f + homog.x));
+			y = (int)(viewH*0.5f*(1.0f - homog.y));
+		}
+		return true;
+	}
+	return false;
 }
 
 // ===========================================================================================

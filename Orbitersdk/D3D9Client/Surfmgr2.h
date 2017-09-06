@@ -8,6 +8,9 @@
 #define __SURFMGR2_H
 
 #include "Tilemgr2_imp.hpp"
+#include "TileLabel.h"
+#include "Sketchpad2.h"
+
 
 /**
  * \brief Planetary surface rendering engine.
@@ -18,6 +21,7 @@
 class SurfTile: public Tile {
 	friend class TileManager2Base;
 	template<class SurfTile> friend class TileManager2;
+	friend class TileLabel;
 
 	void MatchEdges ();
 
@@ -33,8 +37,8 @@ public:
 	double GetCameraDistance();
 
 protected:
-	virtual Tile *getParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
-	inline SurfTile *getSurfParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
+	virtual Tile *getParent() { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
+	inline SurfTile *getSurfParent() { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
 	SurfTile *getTextureOwner();
 
 	// Return pointer to parent tile, if exists
@@ -44,6 +48,7 @@ protected:
 	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev = 0);
 	bool LoadElevationData ();
 	void Render ();
+	void RenderLabels(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 	void StepIn ();
 	//void Pick(MATRIX4 &dwMatrix, TILEPICK *pPick);
 
@@ -59,6 +64,9 @@ protected:
 	void FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner=false);
 	// Match latitude edge elevation to neighbour. If keep_corner==true, skip corner node
 
+	void CreateLabels();    ///< create the label object from the label tile file, if available
+	void DeleteLabels();    ///< delete the TileLabel object if it exists
+
 private:
 	INT16 *ElevationData () const;
 	double GetMeanElevation (const INT16 *elev) const;
@@ -68,10 +76,12 @@ private:
 	LPDIRECT3DTEXTURE9 htex;
 	D3DXVECTOR2 MicroRep[3];
 	DWORD MaxRep;
-	LPDIRECT3DTEXTURE9 ltex;		// landmask/nightlight texture, if applicable
-	INT16 *elev;               // elevation data [m] (8x subsampled)
-	mutable INT16 *ggelev;     // pointer to my elevation data in the great-grandparent
-	bool has_elevfile;          // true if the elevation data for this tile were read from file
+	LPDIRECT3DTEXTURE9 ltex;   ///< landmask/nightlight texture, if applicable
+	INT16 *elev;               ///< elevation data [m] (8x subsampled)
+	mutable INT16 *ggelev;     ///< pointer to my elevation data in the great-grandparent
+	bool has_elevfile;         ///< true if the elevation data for this tile were read from file
+
+	TileLabel *label;          ///< surface labels associated with this tile
 };
 
 #endif // !__SURFMGR2_H

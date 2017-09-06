@@ -139,6 +139,8 @@ public:
 	 */
 	bool Text (int x, int y, const char *str, int len);
 
+	bool TextW(int x, int y, const LPWSTR str, int len); // @todo: Text(...) with different signature should be enought, right?
+
 	/**
 	 * \brief Draw a text string into a rectangle.
 	 * \param x1 left edge [pixel]

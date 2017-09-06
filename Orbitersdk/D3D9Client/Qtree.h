@@ -30,6 +30,11 @@ public:
 	inline QuadTreeNode *Parent() { return parent; }
 	// Returns the node's parent, or 0 if node is root
 
+	QuadTreeNode *Ancestor(int dlvl);
+	// Returns an ancestor node from the tree. dlvl specifies how many nodes to step back
+	// Ancestor(1) is equivalent to Parent()
+	// If the ancestor does not exist (e.g. trying to step beyond tree root), returns 0
+
 	inline QuadTreeNode *Child (int idx) { _ASSERT(idx < 4); return child[idx]; }
 	inline const QuadTreeNode *Child (int idx) const { _ASSERT(idx < 4); return child[idx]; }
 	// Returns the node's idx-th child (0<=idx<4), or 0 if child doesn't exist
@@ -75,6 +80,16 @@ QuadTreeNode<T>::~QuadTreeNode ()
 	if (entry) {
 		delete entry;
 	}
+}
+
+template<typename T>
+QuadTreeNode<T> *QuadTreeNode<T>::Ancestor(int dlvl)
+{
+	QuadTreeNode<T> *ancestor = this;
+	for (int i = 0; i < dlvl && ancestor; ++i) {
+		ancestor = ancestor->parent;
+	}
+	return ancestor;
 }
 
 template<typename T>

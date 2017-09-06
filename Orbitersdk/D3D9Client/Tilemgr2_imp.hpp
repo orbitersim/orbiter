@@ -15,6 +15,7 @@
 
 #include "tilemgr2.h"
 #include "DebugControls.h"
+#include "Sketchpad2.h"
 
 // -----------------------------------------------------------------------
 
@@ -218,6 +219,24 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 	}
 }
 
+// -----------------------------------------------------------------------
+
+template<class TileType>
+void TileManager2Base::RenderNodeLabels(QuadTreeNode<TileType> *node, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+{
+	TileType *tile = node->Entry();
+	if (tile->state == Tile::ForRender || tile->state == Tile::Active) {
+		tile->RenderLabels(skp, labelfont, fontidx);
+
+		// step down to next quadtree level
+		if (tile->state == Tile::Active) {
+			for (int i = 0; i < 4; i++)
+				if (node->Child(i))
+					if (node->Child(i)->Entry() && (node->Child(i)->Entry()->state & TILE_ACTIVE))
+						RenderNodeLabels(node->Child(i), skp, labelfont, fontidx);
+		}
+	}
+}
 
 // =======================================================================
 // =======================================================================
@@ -232,7 +251,10 @@ TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres, int _
 
 	// Load the low-res full-sphere tiles
 	for (int i = 0; i < 3; i++)
-		globtile[i] = new TileType (this, i-3, 0, 0);
+	{
+		globtile[i] = new TileType(this, i - 3, 0, 0);
+		globtile[i]->Load();
+	}
 
 	// Set the root tiles for level 0
 	for (int i = 0; i < 2; i++) {
@@ -314,6 +336,6 @@ const Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> 
 		if (check) return check;
 	} 
 	return t;
-}
+};
 
 #endif // !__TILEMGR2_IMP_HPP

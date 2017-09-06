@@ -11,6 +11,7 @@
 
 #include "VObject.h"
 #include "AtmoControls.h"
+#include "Sketchpad2.h"
 #include <list>
 
 class D3D9Mesh;
@@ -70,6 +71,7 @@ public:
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
+	void            RenderLabels(LPDIRECT3DDEVICE9 dev, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 	bool			CameraInAtmosphere() const;
 	double			CameraAltitude() const { return cdist - size; }
 	double			GetHorizonAlt() const;
@@ -105,8 +107,7 @@ public:
 	void			SetPosition(HSRFOBJ hItem, double lng, double lat);
 	void			DeleteObject(HSRFOBJ hItem);
 	void			SetEnabled(HSRFOBJ hItem, bool bEnabled);
-
-
+	void            ActivateLabels(bool activate);
 
 	struct RenderPrm { //< misc. parameters for rendering the planet
 		// persistent options
