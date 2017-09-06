@@ -200,6 +200,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TileMgr.cpp" />
     <ClCompile Include="Tilemgr2.cpp" />
+    <ClCompile Include="TileLabel.cpp" />
     <ClCompile Include="VBase.cpp" />
     <ClCompile Include="VObject.cpp" />
     <ClCompile Include="VPlanet.cpp" />
@@ -255,6 +256,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="SurfMgr.h" />
     <ClInclude Include="Surfmgr2.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TileLabel.h" />
     <ClInclude Include="TileMgr.h" />
     <ClInclude Include="Tilemgr2.h" />
     <ClInclude Include="Tilemgr2_imp.hpp" />

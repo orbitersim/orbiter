@@ -522,6 +522,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TileLabel.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Tilemgr2_imp.hpp"
 				>
 			</File>
@@ -786,6 +790,10 @@
 			</File>
 			<File
 				RelativePath="Texture.h"
+				>
+			</File>
+			<File
+				RelativePath="TileLabel.h"
 				>
 			</File>
 			<File
