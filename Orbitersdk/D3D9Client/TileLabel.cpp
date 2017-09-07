@@ -54,14 +54,37 @@ TileLabel::~TileLabel()
 	}
 }
 
+
+// ---------------------------------------------------------------------------
+// String Helper
+// ---------------------------------------------------------------------------
+
+#define toDoubleOrNaN(str) (str[0] == 'n' || str[0] == 'N') \
+							? std::numeric_limits<double>::quiet_NaN() \
+							: atof(str.c_str())
+
+#pragma warning(disable : 4996)
+static char *nameBuffer (const std::string &name)
+{
+	int len = name.size();
+	char *dst = new char[len+1];
+	dst[name.copy(dst, len)] = '\0';
+	return dst;
+}
+#pragma warning(default : 4996)
+
+// ---------------------------------------------------------------------------
+
+
 bool TileLabel::Read()
 {
 	char path[MAX_PATH], texpath[MAX_PATH];
 	int lvl = tile->lvl;
 	int ilat = tile->ilat;
 	int ilng = tile->ilng;
-	double lat, lng, alt;
-	char typestr[16], altstr[256], name[256];
+	double lat, lng;
+	char typestr;
+	std::string altstr, name;
 
 	if (tile->mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Label\\%02d\\%06d\\%06d.lab", tile->mgr->CbodyName(), lvl+4, ilat, ilng);
@@ -70,11 +93,8 @@ bool TileLabel::Read()
 		std::ifstream ifs(texpath);
 		if (ifs.good()) {
 			ifs >> typestr >> lat >> lng >> altstr;
+			std::getline(ifs, name, '\n');
 
-			alt = _stricmp(altstr, "nan") // if (not nan)
-				? std::atof(altstr)
-				: std::numeric_limits<double>::quiet_NaN();
-			ifs.getline(name, 256);
 			while(ifs.good()) {
 				if (nlabel == nbuf) { // grow buffer
 					TLABEL **tmp = new TLABEL*[nbuf+=16];
@@ -85,67 +105,48 @@ bool TileLabel::Read()
 					label = tmp;
 				}
 				label[nlabel] = new TLABEL;
-				lat *= RAD;
-				lng *= RAD;
-				label[nlabel]->lat = lat;
-				label[nlabel]->lng = lng;
-				label[nlabel]->alt = alt;
-				label[nlabel]->labeltype = typestr[0];
+				label[nlabel]->lat = lat * RAD;
+				label[nlabel]->lng = lng * RAD;
+				label[nlabel]->alt = toDoubleOrNaN(altstr);
+				label[nlabel]->labeltype = typestr;
 				label[nlabel]->pos.x = label[nlabel]->pos.y = label[nlabel]->pos.z = 0.0;
-				char *lb = name;
-				int len = strlen(lb);
-				label[nlabel]->label = new char[len+1];
-				strcpy_s(label[nlabel]->label, len+1, lb);
-				nlabel++;
+				label[nlabel++]->label = nameBuffer(name);
+
 				ifs >> typestr >> lat >> lng >> altstr;
-				alt = _stricmp(altstr, "nan") // if (not nan)
-					? std::atof(altstr)
-					: std::numeric_limits<double>::quiet_NaN();
-				ifs.getline(name, 256);
+				std::getline(ifs, name, '\n');
 			}
 		}
 	}
-	if (!nlabel && tile->smgr->ZTreeManager(4)) { // try loading from compressed archive
+	if (!nlabel && tile->smgr->ZTreeManager(ZTreeMgr::Layer::LAYER_LABEL)) { // try loading from compressed archive
 		BYTE *buf;
-		DWORD ndata = tile->smgr->ZTreeManager(4)->ReadData(lvl+4, ilat, ilng, &buf);
+		static ZTreeMgr *mgr = tile->smgr->ZTreeManager(ZTreeMgr::Layer::LAYER_LABEL);
+		DWORD ndata = mgr->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
-			{
-				std::istringstream iss((char*)buf);
-				iss >> typestr >> lat >> lng >> altstr;
-				alt = _stricmp(altstr, "nan")
-					? std::atof(altstr)
-					: std::numeric_limits<double>::quiet_NaN();
-				iss.getline(name, 256);
-				while (iss.good()) {
-					if (nlabel == nbuf) { // grow buffer
-						TLABEL **tmp = new TLABEL*[nbuf+=16];
-						if (nlabel) {
-							memcpy(tmp, label, nlabel*sizeof(TLABEL*));
-							delete []label;
-						}
-						label = tmp;
+			std::istringstream iss((char*)buf);
+			iss >> typestr >> lat >> lng >> altstr;
+			std::getline(iss, name, '\n');
+
+			while (iss.good()) {
+				if (nlabel == nbuf) { // grow buffer
+					TLABEL **tmp = new TLABEL*[nbuf+=16];
+					if (nlabel) {
+						memcpy(tmp, label, nlabel*sizeof(TLABEL*));
+						delete []label;
 					}
-					label[nlabel] = new TLABEL;
-					lat *= RAD;
-					lng *= RAD;
-					label[nlabel]->lat = lat;
-					label[nlabel]->lng = lng;
-					label[nlabel]->alt = alt;
-					label[nlabel]->labeltype = typestr[0];
-					label[nlabel]->pos.x = label[nlabel]->pos.y = label[nlabel]->pos.z = 0.0;
-					char *lb = name;
-					while (*lb == ' ') { ++lb; } // @ todo: [0] seems to be a space, always!
-					int len = strlen(lb);
-					label[nlabel]->label = new char[len+1];
-					strcpy_s(label[nlabel]->label, len+1, lb);
-					nlabel++;
-					if (iss.tellg() >= ndata) break;
-					iss >> typestr >> lat >> lng >> altstr;
-					alt = _stricmp(altstr, "nan")
-						? std::atof(altstr)
-						: std::numeric_limits<double>::quiet_NaN();
-					iss.getline(name, 256);
+					label = tmp;
 				}
+				label[nlabel] = new TLABEL;
+				label[nlabel]->lat = lat * RAD;
+				label[nlabel]->lng = lng * RAD;
+				label[nlabel]->alt = toDoubleOrNaN(altstr);
+				label[nlabel]->labeltype = typestr;
+				label[nlabel]->pos.x = label[nlabel]->pos.y = label[nlabel]->pos.z = 0.0;
+				label[nlabel++]->label = nameBuffer(name);
+
+				if (iss.tellg() >= ndata) break;
+
+				iss >> typestr >> lat >> lng >> altstr;
+				std::getline(iss, name, '\n');
 			}
 			tile->smgr->ZTreeManager(4)->ReleaseData(buf);
 		}
