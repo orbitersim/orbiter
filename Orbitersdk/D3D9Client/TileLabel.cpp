@@ -68,7 +68,7 @@ static char *nameBuffer (const std::string &name)
 {
 	int len = name.size();
 	char *dst = new char[len+1];
-	dst[name.copy(dst, len)] = '\0';
+	dst[name.copy(dst, len, 1)] = '\0';
 	return dst;
 }
 #pragma warning(default : 4996)
@@ -219,8 +219,6 @@ void TileLabel::Render(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fonti
 	int x, y, nl, scale;
 	const oapi::GraphicsClient::LABELTYPE *lspec;
 	VECTOR3 sp, dir;
-//	D3DVECTOR homog;
-	//WCHAR wlabel[256];
 	bool active;
 	const OBJHANDLE &hPlanet = tile->mgr->Cbody();
 	//Camera *cam = tile->mgr->Client()->GetScene()->GetCamera();
@@ -263,7 +261,6 @@ void TileLabel::Render(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fonti
 					symbol = 'S';
 					col = RGB(255,255,255);
 				}
-				//MultiByteToWideChar(CP_UTF8, 0, renderlabel[i]->label, -1, wlabel, 256);
 				if (col != pcol) {
 					skp->SetTextColor(col);
 					pcol = col;
@@ -288,8 +285,15 @@ void TileLabel::Render(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fonti
 					skp->Rectangle(x-scale, y-scale, x+scale+1, y+scale+1);
 					break;
 				}
+
+				// Crude, but seems to work (UTF-8 -> WC -> ANSI)
+				static WCHAR wlabel[256];
+				static CHAR label[256];
+				MultiByteToWideChar(CP_UTF8, 0, renderlabel[i]->label, -1, wlabel, 256);
+				WideCharToMultiByte(CP_ACP, 0, wlabel, -1, label, 256, NULL, false);
+
 				//skp->TextW(x+scale+2, y-scale-1, wlabel, wcslen(wlabel));
-				skp->TextEx(float(x + scale + 2), float(y - scale - 1), renderlabel[i]->label);
+				skp->TextEx(float(x + scale + 2), float(y - scale - 1), label);
 			}
 		}
 	}
