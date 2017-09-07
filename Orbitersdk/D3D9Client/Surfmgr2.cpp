@@ -1199,7 +1199,7 @@ void TileManager2<SurfTile>::SetSubtreeLabels(QuadTreeNode<SurfTile> *node, bool
 template<>
 void TileManager2<SurfTile>::LoadZTrees()
 {
-	treeMgr = new ZTreeMgr*[ntreeMgr = 5]();
+	treeMgr = new ZTreeMgr*[ntreeMgr = 6]();
 	if (cprm.tileLoadFlags & 0x0002) {
 		char path[MAX_PATH];
 		if (GetClient()->TexturePath(CbodyName(), path)) {
@@ -1208,6 +1208,7 @@ void TileManager2<SurfTile>::LoadZTrees()
 			treeMgr[2] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_ELEV);
 			treeMgr[3] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_ELEVMOD);
 			treeMgr[4] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_LABEL);
+			treeMgr[5] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_CLOUD);
 		}
 	}
 }
