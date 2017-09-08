@@ -1,19 +1,22 @@
-//#include "Surfmgr2.h"
+// ==============================================================
+// TileLabel.cpp
+// Part of the ORBITER VISUALISATION PROJECT (OVP)
+// Dual licensed under GPL v3 and LGPL v3
+// Copyright (C) 2017 Martin Schweiger (martins/apogee)
+//                    Peter Schneider (Kuddel)
+// ==============================================================
+
 #include "TileLabel.h"
-//#include "camera.h"
 #include <limits>
 #include <sstream>
 
-//extern Orbiter *g_pOrbiter;
-//extern Camera *g_camera;
-
-TileLabel *TileLabel::Create(const SurfTile *stile)
+TileLabel *TileLabel::Create (const SurfTile *stile)
 {
 	TileLabel *label = new TileLabel(stile);
 	label->Read();  // read label list from tile file
 
 	const int lvlshift = 5;
-	SurfTile *ancestor = 0;
+	SurfTile *ancestor = NULL;
 	if (stile->lvl >= lvlshift) {
 		QuadTreeNode<SurfTile> *nd4 = stile->node->Ancestor(lvlshift);
 		if (nd4) ancestor = nd4->Entry();
@@ -30,14 +33,14 @@ TileLabel *TileLabel::Create(const SurfTile *stile)
 	}
 }
 
-TileLabel::TileLabel(const SurfTile *stile)
+TileLabel::TileLabel (const SurfTile *stile)
 	: tile(stile)
 	, nlabel(0), nrenderlabel(0),
 	nbuf(0), nrenderbuf(0)
 {
 }
 
-TileLabel::~TileLabel()
+TileLabel::~TileLabel ()
 {
 	if (nbuf)
 	{
@@ -59,9 +62,12 @@ TileLabel::~TileLabel()
 // String Helper
 // ---------------------------------------------------------------------------
 
-#define toDoubleOrNaN(str) (str[0] == 'n' || str[0] == 'N') \
-							? std::numeric_limits<double>::quiet_NaN() \
-							: atof(str.c_str())
+static double toDoubleOrNaN (const std::string &str)
+{
+	return (str[0] == 'N' || str[0] == 'n') // "NaN" or "nan"?
+		? std::numeric_limits<double>::quiet_NaN()
+        : atof(str.c_str());
+}
 
 #pragma warning(disable : 4996)
 static char *nameBuffer (const std::string &name)
@@ -76,7 +82,7 @@ static char *nameBuffer (const std::string &name)
 // ---------------------------------------------------------------------------
 
 
-bool TileLabel::Read()
+bool TileLabel::Read ()
 {
 	char path[MAX_PATH], texpath[MAX_PATH];
 	int lvl = tile->lvl;
@@ -154,7 +160,7 @@ bool TileLabel::Read()
 	return (nlabel > 0);
 }
 
-bool TileLabel::ExtractAncestorData(const SurfTile *atile)
+bool TileLabel::ExtractAncestorData (const SurfTile *atile)
 {
 	if (!atile) { return false; }
 
@@ -188,7 +194,7 @@ bool TileLabel::ExtractAncestorData(const SurfTile *atile)
 	return (nrenderlabel > 0);
 }
 
-double TileLabel::Elevation(double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const
+double TileLabel::Elevation (double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const
 {
 	INT16 *elev = tile->ggelev;
 	if (!elev) return 0.0;
@@ -208,7 +214,7 @@ double TileLabel::Elevation(double lat, double lng, double latmin, double latmax
 	return e*elev_res;
 }
 
-void TileLabel::Render(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
 {
 	if (!nrenderlabel) { return; }// nothing to render
 
@@ -221,14 +227,13 @@ void TileLabel::Render(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fonti
 	VECTOR3 sp, dir;
 	bool active;
 	const OBJHANDLE &hPlanet = tile->mgr->Cbody();
-	//Camera *cam = tile->mgr->Client()->GetScene()->GetCamera();
 	Scene *pScene = tile->mgr->Client()->GetScene();
 	VECTOR3 Ppl;
-	oapiGetGlobalPos(hPlanet, &Ppl); // planet global position
-	const VECTOR3 *Pcam = &pScene->GetCamera()->pos; //const VECTOR3 *Pcam = cam->GetGPos(); // camera global position
+	oapiGetGlobalPos(hPlanet, &Ppl);                 // planet global position
+	const VECTOR3 *Pcam = &pScene->GetCamera()->pos; // camera global position
 	MATRIX3 Rpl;
-	oapiGetRotationMatrix(hPlanet, &Rpl); // planet rotation matrix
-	VECTOR3 campos = tmul(Rpl, *Pcam - Ppl); // camera pos in planet frame
+	oapiGetRotationMatrix(hPlanet, &Rpl);            // planet rotation matrix
+	VECTOR3 campos = tmul(Rpl, *Pcam - Ppl);         // camera pos in planet frame
 
 	for (i = 0; i < nrenderlabel; ++i) {
 		VECTOR3 camlabelpos = campos-renderlabel[i]->pos;
@@ -246,7 +251,7 @@ void TileLabel::Render(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fonti
 
 				symbol = 0; // undefined
 				if (nl = tile->smgr->Client()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {
-					for (int j = 0; j < nl; j++) {
+					for (int j = 0; j < nl; ++j) {
 						if (renderlabel[i]->labeltype == lspec[j].labelId) {
 							symbol = lspec[j].markerId;
 							col = lspec[j].col;
