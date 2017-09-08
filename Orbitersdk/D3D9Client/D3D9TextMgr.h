@@ -38,7 +38,6 @@ struct D3D9FontData {
 	float sp;
 	float tx0, ty0;
 	float tx1, ty1;	
-	byte s, e;		// s=special charter flag, e=extend charter height
 };
 
 
@@ -67,11 +66,8 @@ public:
 	
 	void		SetCharSet(int charset=ANSI_CHARSET);	// Must be set before Init
 
-				// Init Will Create Charters from 33 to "last"=255
+				// Init Will Create Charters from "first" (32:space) to "last" (255 ???)
 	bool        Init(HFONT hFont);
-	//bool        Init(LOGFONT *fnt);
-	//bool		Init(int size=24, int Style=FIXED_PITCH|FF_MODERN, int weight=500);
-	//bool		Init(int size=24, char *fontname=NULL, int weight=500);
 
 	LPDIRECT3DTEXTURE9	GetTexture() { return pTex; }			
 	
@@ -110,12 +106,15 @@ private:
 	float   rotation;
 	float	scaling;
 	int		charset;
+	int     first;            ///< ANSI code of the first charter (FontData[0])
 	int		halign,valign;
+
+	D3D9FontData *Data (int c); ///< Returns FontData reference of a character
 
 	LPDIRECT3DDEVICE9	pDev;
 	LPDIRECT3DTEXTURE9	pTex;
 	D3D9ClientSurface	*pTgtSurf;
-	D3D9FontData		*Data;
+	D3D9FontData		*FontData;  ///< Array of font data information ( [c - first] )
 	TEXTMETRIC			tm;
 	
 	// Rendering pipeline configuration

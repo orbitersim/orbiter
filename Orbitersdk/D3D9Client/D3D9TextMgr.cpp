@@ -50,8 +50,9 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	pDev       (pDevice),
 	pTex       (NULL),
 	pTgtSurf   (),
-	Data       (NULL),
-	tm         ()
+	FontData   (NULL),
+	tm         (),
+	first      (32)
 {
 	
 }
@@ -61,7 +62,7 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 //
 D3D9Text::~D3D9Text()
 {
-	SAFE_DELETEA(Data);
+	SAFE_DELETEA(FontData);
 	SAFE_RELEASE(pTex);
 }
 
@@ -121,72 +122,6 @@ int D3D9Text::GetLineSpace()
 
 // ----------------------------------------------------------------------------------------
 //
-/*
-bool D3D9Text::Init(int size, char *fontname, int weight)
-{
-	// Create A Font
-	//
-	LOGFONT fnt;
-
-	memset2((void *)&fnt, 0, sizeof(LOGFONT));
-
-	fnt.lfHeight		 = size; 
-	fnt.lfWidth			 = 0; 
-	fnt.lfEscapement	 = 0; 
-	fnt.lfOrientation    = 0; 
-	fnt.lfWeight		 = weight; 
-	fnt.lfItalic		 = false; 
-	fnt.lfUnderline		 = false; 
-	fnt.lfStrikeOut		 = false; 
-	fnt.lfCharSet		 = charset;
-	fnt.lfOutPrecision	 = OUT_DEFAULT_PRECIS; 
-	fnt.lfClipPrecision	 = CLIP_DEFAULT_PRECIS; 
-	fnt.lfQuality		 = ANTIALIASED_QUALITY; 
-	fnt.lfPitchAndFamily = DEFAULT_PITCH | FF_MODERN; 
-
-	if (fontname) strncpy_s(fnt.lfFaceName, 31, fontname, 30); 
-
-	return Init(&fnt);
-}*/
-
-
-// ----------------------------------------------------------------------------------------
-//
-/*
-bool D3D9Text::Init(int size, int style, int weight)
-{
-	// Create A Font
-	//
-	LOGFONT fnt;
-
-	memset2((void *)&fnt, 0, sizeof(LOGFONT));
-
-	fnt.lfHeight		 = size; 
-	fnt.lfWidth			 = 0; 
-	fnt.lfEscapement	 = 0; 
-	fnt.lfOrientation    = 0; 
-	fnt.lfWeight		 = weight; 
-	fnt.lfItalic		 = false; 
-	fnt.lfUnderline		 = false; 
-	fnt.lfStrikeOut		 = false; 
-	fnt.lfCharSet		 = charset; 
-	fnt.lfOutPrecision	 = OUT_DEFAULT_PRECIS; 
-	fnt.lfClipPrecision	 = CLIP_DEFAULT_PRECIS; 
-	fnt.lfQuality		 = ANTIALIASED_QUALITY; 
-	fnt.lfPitchAndFamily = style; 
- 
-	return Init(&fnt);
-}*/
-
-/*
-bool D3D9Text::Init(LOGFONT *fnt)
-{
-	HFONT hF = CreateFontIndirect(fnt);
-	return Init(hF);
-}*/
-
-// ----------------------------------------------------------------------------------------
-//
 bool D3D9Text::Init(HFONT hFont)
 {
 	if (hFont==NULL) {
@@ -201,11 +136,9 @@ bool D3D9Text::Init(HFONT hFont)
 	tex_w = 2048;	// Texture Width
 	tex_h = 32;
 	
-	int first = 33;		// ANSI code of the First Charter
-	
 	// Allocate space for data
 	//
-	Data = new D3D9FontData[256]();	// zero-initialized
+	FontData = new D3D9FontData[256]();	// zero-initialized
 	
 	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d Pitch&Family=%x",fl.lfFaceName, fl.lfHeight, fl.lfWeight, fl.lfPitchAndFamily); 
 
@@ -263,8 +196,9 @@ restart:
 	int h = a+d;
 	int x = 5;
 	int y = 5 + h;
-	int c = 0;
-	
+	int c = first; // ANSI code of the First Charter
+	D3D9FontData *pData;
+
 	SIZE fnts;
 
 	SetTextAlign(hDC, TA_BASELINE | TA_LEFT);
@@ -276,27 +210,28 @@ restart:
 	float th = 1.0f / float(tex_h);
 	
 	while ( c < 256 ) {
-		
+		pData = Data(c);
+
 		text[0] = c;
 		text[1] = 0;
 	
 		TextOutA(hDC, x, y, text, 1);
 		GetTextExtentPoint32(hDC, text, 1, &fnts);
 		
-		Data[c].sp  = float(fnts.cx);		// Char spacing
-		Data[c].w   = float(fnts.cx+3);		// Char Width
-		Data[c].h   = float(h);				// Char Height
+		pData->sp  = float(fnts.cx);		// Char spacing
+		pData->w   = float(fnts.cx+3);		// Char Width
+		pData->h   = float(h);				// Char Height
 
-		Data[c].tx0 = float(x-1);
-		Data[c].tx1 = float(x-1 + fnts.cx+3);
+		pData->tx0 = float(x-1);
+		pData->tx1 = float(x-1 + fnts.cx+3);
 		
-		Data[c].ty0 = float(y - a);
-		Data[c].ty1 = float(y + d);
+		pData->ty0 = float(y - a);
+		pData->ty1 = float(y + d);
 		
-		Data[c].tx0 *= tw;
-		Data[c].tx1 *= tw;
-		Data[c].ty0 *= th;
-		Data[c].ty1 *= th;
+		pData->tx0 *= tw;
+		pData->tx1 *= tw;
+		pData->ty0 *= th;
+		pData->ty1 *= th;
 
 		c++;	// Next Charter
 
@@ -348,6 +283,15 @@ restart:
 	LogAlw("Font and Charter set creation succesfull");
 
 	return true;
+}
+
+// ----------------------------------------------------------------------------------------
+//
+D3D9FontData *D3D9Text::Data (int c) {
+#ifdef _DEBUG
+	if (c < first) { c = first; } // <= did *never* happen, but better save than sorry
+#endif
+	return &FontData[c - first];
 }
 
 // ----------------------------------------------------------------------------------------
@@ -406,7 +350,7 @@ float D3D9Text::Length2(const char *_str, int l)
 	const BYTE *str = (const BYTE *)_str; // Negative index may occur without this
 
 	while ((i<l || l<=0) && str[i]) {
-		if (str[i] <= 255) len += (Data[str[i]].sp + float(spacing));
+		if (str[i] <= 255) len += (Data(str[i])->sp + float(spacing));
 		i++;
 	}
 
@@ -420,7 +364,7 @@ float D3D9Text::Length2(const char *_str, int l)
 //
 float D3D9Text::Length(BYTE c)
 {
-	return (Data[c].sp + float(spacing)) * scaling;
+	return (Data(c)->sp + float(spacing)) * scaling;
 }
 
 // ----------------------------------------------------------------------------------------
@@ -442,7 +386,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 
 	float x_orig = xpos;
 
-	float h = Data[0].h;
+	float h = FontData[0].h;
 
 	float bbox_l = xpos - 2;
 	float bbox_t = ypos + 1;
@@ -453,7 +397,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 	int idx = 1;
 
 	while (c && (idx<=len || len<=0)) {
-		bbox_r += ceil(Data[c].sp + float(spacing));
+		bbox_r += ceil(Data(c)->sp + float(spacing));
 		c = str[idx++];
 	}
 
@@ -492,6 +436,8 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 
 	while (c && (idx<=len || len<=0)) {
 
+		D3D9FontData *pData = Data(c);
+
 		pIdx[iI++] = vI;
 		pIdx[iI++] = vI + 1;
 		pIdx[iI++] = vI + 2;
@@ -499,12 +445,12 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 		pIdx[iI++] = vI + 2;
 		pIdx[iI++] = vI + 3;
 
-		float w = Data[c].w;
+		float w = pData->w;
 
-		SkpVtxFF(pVtx[vI++], xpos, ypos, Data[c].tx0, Data[c].ty0);
-		SkpVtxFF(pVtx[vI++], xpos, ypos + h, Data[c].tx0, Data[c].ty1);
-		SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, Data[c].tx1, Data[c].ty1);
-		SkpVtxFF(pVtx[vI++], xpos + w, ypos, Data[c].tx1, Data[c].ty0);
+		SkpVtxFF(pVtx[vI++], xpos, ypos, pData->tx0, pData->ty0);
+		SkpVtxFF(pVtx[vI++], xpos, ypos + h, pData->tx0, pData->ty1);
+		SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, pData->tx1, pData->ty1);
+		SkpVtxFF(pVtx[vI++], xpos + w, ypos, pData->tx1, pData->ty0);
 
 		pVtx[vI - 1].fnc = flags;
 		pVtx[vI - 1].clr = color;
@@ -515,7 +461,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 		pVtx[vI - 4].fnc = flags;
 		pVtx[vI - 4].clr = color;
 
-		xpos += ceil(Data[c].sp + float(spacing));
+		xpos += ceil(pData->sp + float(spacing));
 
 		c = str[idx++];
 	}

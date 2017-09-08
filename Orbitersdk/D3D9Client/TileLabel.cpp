@@ -298,7 +298,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 				WideCharToMultiByte(CP_ACP, 0, wlabel, -1, label, 256, NULL, false);
 
 				//skp->TextW(x+scale+2, y-scale-1, wlabel, wcslen(wlabel));
-				skp->TextEx(float(x + scale + 2), float(y - scale - 1), label);
+				skp->TextEx(float(x + scale + 4), float(y - scale - 1), label);
 			}
 		}
 	}
