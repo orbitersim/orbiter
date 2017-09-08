@@ -125,7 +125,7 @@ bool TileLabel::Read ()
 	}
 	if (!nlabel && tile->smgr->ZTreeManager(ZTreeMgr::Layer::LAYER_LABEL)) { // try loading from compressed archive
 		BYTE *buf;
-		static ZTreeMgr *mgr = tile->smgr->ZTreeManager(ZTreeMgr::Layer::LAYER_LABEL);
+		ZTreeMgr *mgr = tile->smgr->ZTreeManager(ZTreeMgr::Layer::LAYER_LABEL);
 		DWORD ndata = mgr->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
 			std::istringstream iss((char*)buf);
