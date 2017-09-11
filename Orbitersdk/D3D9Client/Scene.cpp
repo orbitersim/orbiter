@@ -564,11 +564,23 @@ void Scene::Update ()
 }
 
 
+
 // ===========================================================================================
 //
 double Scene::GetFocusGroundAltitude() const
 {
 	VESSEL *hVes = oapiGetFocusInterface();
+	if (hVes) return hVes->GetAltitude() - hVes->GetSurfaceElevation();
+	return 0.0;
+}
+
+
+
+// ===========================================================================================
+//
+double Scene::GetTargetGroundAltitude() const
+{
+	VESSEL *hVes = oapiGetVesselInterface(Camera.hTarget);
 	if (hVes) return hVes->GetAltitude() - hVes->GetSurfaceElevation();
 	return 0.0;
 }
@@ -583,10 +595,10 @@ float Scene::ComputeNearClipPlane()
 	float zsurf = 1000.0f;
 	VOBJREC *pv = NULL;
 
-	OBJHANDLE hObj = oapiCameraProxyGbody();
-	OBJHANDLE hTgt = oapiCameraTarget();
+	OBJHANDLE hObj = Camera.hObj_proxy;
+	OBJHANDLE hTgt = Camera.hTarget;
 	VESSEL *hVes = oapiGetVesselInterface(hTgt);
-
+	
 	if (hObj && hVes) {
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
@@ -594,7 +606,7 @@ float Scene::ComputeNearClipPlane()
 		double t = dotp(unit(Camera.pos-pos), unit(Camera.dir));
 		if (t<-1.0) t=1.0; if (t>1.0) t=1.0f;
 		double a = PI - acos(t);
-		double R = oapiGetSize(Camera.hObj_proxy) + hVes->GetSurfaceElevation();
+		double R = oapiGetSize(hObj) + hVes->GetSurfaceElevation();
 		double r = length(Camera.pos-pos);
 		double h = r - R;
 		if (h<10e3) {
@@ -908,7 +920,7 @@ void Scene::RenderMainScene()
 
 	// Do we use z-clear render mode or not ?
 	bool bClearZBuffer = false;
-	if ( (GetFocusGroundAltitude() > 10e3) && (oapiCameraInternal() == false) ) bClearZBuffer = true;
+	if ( (GetTargetGroundAltitude() > 10e3) && (oapiCameraInternal() == false) ) bClearZBuffer = true;
 
 
 	if (DebugControls::IsActive()) {
