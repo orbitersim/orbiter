@@ -404,7 +404,8 @@ public:
 	// The tile pointers are only valid for the current render pass. They are not guaranteed to exist any more
 	// after the next call to Render.
 
-	inline ZTreeMgr *ZTreeManager(int i) { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
+	inline ZTreeMgr *ZTreeManager (int i) { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
+	inline bool DoLoadIndividualFiles (int i) const { return (i < ntreeMgr) ? hasIndividualFiles[i] : true; }
 
 protected:
 	TileType *globtile[3];              // full-sphere tiles for resolution levels 1-3
@@ -413,9 +414,12 @@ protected:
 	ZTreeMgr **treeMgr;  // access to tile layers in compressed archives
 	int ntreeMgr;
 
+	bool *hasIndividualFiles; // whether to check for individual texture files (per Layer-type) flags
+
 	void CheckCoverage (const QuadTreeNode<TileType> *node, double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt, int *nfound) const;
 
 	void LoadZTrees();
+	void InitHasIndividualFiles();
 	const Tile *SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const;
 };
 

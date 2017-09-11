@@ -92,7 +92,7 @@ bool TileLabel::Read ()
 	char typestr;
 	std::string altstr, name;
 
-	if (tile->mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
+	if (tile->smgr->DoLoadIndividualFiles(4)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Label\\%02d\\%06d\\%06d.lab", tile->mgr->CbodyName(), lvl+4, ilat, ilng);
 		tile->mgr->Client()->TexturePath(path, texpath);
 

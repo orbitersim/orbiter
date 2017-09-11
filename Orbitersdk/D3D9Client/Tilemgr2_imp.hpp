@@ -248,6 +248,7 @@ TileManager2<TileType>::TileManager2 (const vPlanet *vplanet, int _maxres, int _
 {
 	// Initialise the compressed packed tile archives
 	LoadZTrees();
+	InitHasIndividualFiles();
 
 	// Load the low-res full-sphere tiles
 	for (int i = 0; i < 3; i++)
@@ -278,6 +279,7 @@ TileManager2<TileType>::~TileManager2 ()
 		for (int i = 0; i < ntreeMgr; i++)
 			if (treeMgr[i]) delete treeMgr[i];
 		delete []treeMgr;
+		delete[]hasIndividualFiles;
 	}
 }
 

@@ -100,7 +100,7 @@ void SurfTile::PreLoad()
 
 	// Load surface texture
 
-	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
+	if (smgr->DoLoadIndividualFiles(0)) { // try loading from individual tile file
 		sprintf_s (fname, ARRAYSIZE(fname), "%s\\Surf\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 		ok = mgr->GetClient()->TexturePath(fname, path)
 		                && LoadTextureFile(path, &pPreSrf);
@@ -120,7 +120,7 @@ void SurfTile::PreLoad()
 	if (ok && (mgr->Cprm().bSpecular || mgr->Cprm().bLights)) {
 		ok = false; // <= in case tileLoadFlags is set to "Archive only", we have to reset this, else no (compressed) Mask would be loaded
 
-		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
+		if (smgr->DoLoadIndividualFiles(1)) { // try loading from individual tile file
 			sprintf_s(fname, ARRAYSIZE(fname), "%s\\Mask\\%02d\\%06d\\%06d.dds", mgr->CbodyName(), lvl+4, ilat, ilng);
 			ok = mgr->GetClient()->TexturePath(fname, path)
 			                && LoadTextureFile(path, &pPreMsk);
@@ -205,7 +205,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	int i;
 
 	// Elevation data
-	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
+	if (smgr->DoLoadIndividualFiles(2)) { // try loading from individual tile file
 		sprintf_s (fname, ARRAYSIZE(fname), "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 		bool found = mgr->GetClient()->TexturePath(fname, path);
 		if (found && !fopen_s(&f, path, "rb")) {
@@ -285,7 +285,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		double rescale;
 		INT16 offset;
 		bool do_rescale, do_shift;
-		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
+		if (smgr->DoLoadIndividualFiles(3)) { // try loading from individual tile file
 			sprintf_s (fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 			bool found = mgr->GetClient()->TexturePath(fname, path);
 			if (found && !fopen_s(&f, path, "rb")) {
@@ -1207,6 +1207,22 @@ void TileManager2<SurfTile>::LoadZTrees()
 			treeMgr[2] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_ELEV);
 			treeMgr[3] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_ELEVMOD);
 			treeMgr[4] = ZTreeMgr::CreateFromFile(path, ZTreeMgr::LAYER_LABEL);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------
+
+template<>
+void TileManager2<SurfTile>::InitHasIndividualFiles()
+{
+	hasIndividualFiles = new bool[ntreeMgr]();
+	if (cprm.tileLoadFlags & 0x0001) {
+		const char *name[] = { "Surf", "Mask", "Elev", "Elev_mod", "Label" };
+		char path[MAX_PATH], dummy[MAX_PATH];
+		for (int i = 0; i < ARRAYSIZE(name); ++i) {
+			sprintf_s(path, "%s\\%s", CbodyName(), name[i]);
+			hasIndividualFiles[i] = GetClient()->TexturePath(path, dummy);
 		}
 	}
 }
