@@ -247,7 +247,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 			scale = symscale[idx];
 			sp = mul(Rpl, renderlabel[i]->pos) + Ppl - *Pcam;
 			dir = unit(sp);
-			if (pScene->IsCameraDirection2Viewport(dir, x, y)) {
+			if (pScene->CameraDirection2Viewport(dir, x, y)) {
 
 				symbol = 0; // undefined
 				if (nl = tile->smgr->Client()->GetSurfaceMarkerLegend(hPlanet, &lspec)) {

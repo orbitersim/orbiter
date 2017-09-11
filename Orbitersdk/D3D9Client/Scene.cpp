@@ -2856,7 +2856,7 @@ bool Scene::IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius)
 
 // ===========================================================================================
 //
-bool Scene::IsCameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
+bool Scene::CameraDirection2Viewport(const VECTOR3 &dir, int &x, int &y)
 {
 	D3DXVECTOR3 homog;
 	D3DXVECTOR3 idir = D3DXVECTOR3( -float(dir.x), -float(dir.y), -float(dir.z) );
