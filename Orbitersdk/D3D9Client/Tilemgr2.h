@@ -404,7 +404,7 @@ public:
 	// The tile pointers are only valid for the current render pass. They are not guaranteed to exist any more
 	// after the next call to Render.
 
-	inline ZTreeMgr *ZTreeManager(int i) { return treeMgr[i]; }
+	inline ZTreeMgr *ZTreeManager(int i) { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
 
 protected:
 	TileType *globtile[3];              // full-sphere tiles for resolution levels 1-3
