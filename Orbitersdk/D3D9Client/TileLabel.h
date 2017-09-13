@@ -23,7 +23,7 @@ public:
 	void Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 
 	struct TLABEL {
-		TLABEL() : labeltype(0), label(NULL) {}
+		TLABEL() : labeltype(0), label(NULL), pos() {}
 		~TLABEL() { SAFE_DELETEA(label); }
 		double  lat, lng, alt; ///< spheric coordinates of the label
 		VECTOR3 pos;           ///< position of the label
@@ -37,6 +37,8 @@ protected:
 	double Elevation (double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const;
 
 private:
+	void   StoreLabel (TLABEL *l);  ///< store (new) label to label-storage (**label)
+
 	const SurfTile *tile;           ///< associated surface tile
 	DWORD nlabel, nbuf;             ///< number of allocated labels and label buffer size
 	TLABEL **label;                 ///< the list read from file

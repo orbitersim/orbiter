@@ -81,6 +81,20 @@ static char *nameBuffer (const std::string &name)
 
 // ---------------------------------------------------------------------------
 
+void TileLabel::StoreLabel (TLABEL *l)
+{
+	if (nlabel == nbuf) { // grow buffer
+		TLABEL **tmp = new TLABEL*[nbuf += 16];
+		if (nlabel) {
+			memcpy(tmp, label, nlabel * sizeof(TLABEL*));
+			delete[]label;
+		}
+		label = tmp;
+	}
+	label[nlabel++]= l;
+}
+
+// ---------------------------------------------------------------------------
 
 bool TileLabel::Read ()
 {
@@ -102,21 +116,13 @@ bool TileLabel::Read ()
 			std::getline(ifs, name, '\n');
 
 			while(ifs.good()) {
-				if (nlabel == nbuf) { // grow buffer
-					TLABEL **tmp = new TLABEL*[nbuf+=16];
-					if (nlabel) {
-						memcpy(tmp, label, nlabel*sizeof(TLABEL*));
-						delete []label;
-					}
-					label = tmp;
-				}
-				label[nlabel] = new TLABEL;
-				label[nlabel]->lat = lat * RAD;
-				label[nlabel]->lng = lng * RAD;
-				label[nlabel]->alt = toDoubleOrNaN(altstr);
-				label[nlabel]->labeltype = typestr;
-				label[nlabel]->pos.x = label[nlabel]->pos.y = label[nlabel]->pos.z = 0.0;
-				label[nlabel++]->label = nameBuffer(name);
+				TLABEL *item = new TLABEL;
+				item->lat = lat * RAD;
+				item->lng = lng * RAD;
+				item->alt = toDoubleOrNaN(altstr);
+				item->labeltype = typestr;
+				item->label = nameBuffer(name);
+				StoreLabel(item);
 
 				ifs >> typestr >> lat >> lng >> altstr;
 				std::getline(ifs, name, '\n');
@@ -133,21 +139,13 @@ bool TileLabel::Read ()
 			std::getline(iss, name, '\n');
 
 			while (iss.good()) {
-				if (nlabel == nbuf) { // grow buffer
-					TLABEL **tmp = new TLABEL*[nbuf+=16];
-					if (nlabel) {
-						memcpy(tmp, label, nlabel*sizeof(TLABEL*));
-						delete []label;
-					}
-					label = tmp;
-				}
-				label[nlabel] = new TLABEL;
-				label[nlabel]->lat = lat * RAD;
-				label[nlabel]->lng = lng * RAD;
-				label[nlabel]->alt = toDoubleOrNaN(altstr);
-				label[nlabel]->labeltype = typestr;
-				label[nlabel]->pos.x = label[nlabel]->pos.y = label[nlabel]->pos.z = 0.0;
-				label[nlabel++]->label = nameBuffer(name);
+				TLABEL *item = new TLABEL;
+				item->lat = lat * RAD;
+				item->lng = lng * RAD;
+				item->alt = toDoubleOrNaN(altstr);
+				item->labeltype = typestr;
+				item->label = nameBuffer(name);
+				StoreLabel(item);
 
 				if (iss.tellg() >= ndata) break;
 
