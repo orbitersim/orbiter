@@ -228,6 +228,9 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 	bool active;
 	const OBJHANDLE &hPlanet = tile->mgr->Cbody();
 	Scene *pScene = tile->mgr->Client()->GetScene();
+
+    if (pScene->GetCameraProxyBody() != hPlanet) { return; } // do not render other body's labels
+
 	VECTOR3 Ppl;
 	oapiGetGlobalPos(hPlanet, &Ppl);                 // planet global position
 	const VECTOR3 *Pcam = &pScene->GetCamera()->pos; // camera global position
