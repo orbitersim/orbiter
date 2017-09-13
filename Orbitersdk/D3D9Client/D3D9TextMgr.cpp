@@ -188,7 +188,7 @@ restart:
 	// Draw Charters
 	//
 	
-	char text[4];	text[1]=0;
+	char text[] = "c";
 
 	int s = tm.tmMaxCharWidth;
 	int a = tm.tmAscent + 1;
@@ -213,7 +213,6 @@ restart:
 		pData = Data(c);
 
 		text[0] = c;
-		text[1] = 0;
 	
 		TextOutA(hDC, x, y, text, 1);
 		GetTextExtentPoint32(hDC, text, 1, &fnts);
