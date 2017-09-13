@@ -19,33 +19,33 @@ static float TEX2_MULTIPLIER = 4.0f; // microtexture multiplier
 // struct VBMESH
 
 VBMESH::VBMESH (class TileManager2Base *pmgr)
+	: pIB(NULL)
+	, pVB(NULL)
+	, idx(NULL)
+	, vtx(NULL)
+	, nv(0)
+	, nf(0)
+	, bBox(false)
+	, nv_cur(0)
+	, nf_cur(0)
+	, pMgr(pmgr)
+	, bsRad(0.0)
 {
-	pIB = NULL;
-	pVB = NULL;
-	idx = NULL;
-	vtx = NULL;	
-	nv  = 0;
-	nf  = 0;
-	bBox = false;
-	nv_cur = 0;
-	nf_cur = 0;
-	pMgr = pmgr;
-	bsRad = 0.0;
 }
 
 VBMESH::VBMESH ()
+	: pIB(NULL)
+	, pVB(NULL)
+	, idx(NULL)
+	, vtx(NULL)
+	, nv(0)
+	, nf(0)
+	, bBox(false)
+	, pMgr(NULL)
+	, nv_cur(0)
+	, nf_cur(0)
+	, bsRad(0.0)
 {
-	pIB = NULL;
-	pVB = NULL;
-	idx = NULL;
-	vtx = NULL;	
-	nv  = 0;
-	nf  = 0;
-	bBox = false;
-	pMgr = NULL;
-	nv_cur = 0;
-	nf_cur = 0;
-	bsRad = 0.0;
 }
 
 VBMESH::~VBMESH ()
@@ -66,7 +66,7 @@ VBMESH::~VBMESH ()
 void VBMESH::ComputeSphere()
 {
 	bsCnt = D3DXVECTOR3(float(Box[0].x + Box[7].x), float(Box[0].y + Box[7].y), float(Box[0].z + Box[7].z)) * 0.5f;
-	bsRad = D3DXVec3Length(&(D3DXVECTOR3(float(Box[0].x + Box[7].x), float(Box[0].y + Box[7].y), float(Box[0].z + Box[7].z)) * 0.5f));
+	bsRad = D3DXVec3Length(&bsCnt);
 }
 
 
