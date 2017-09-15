@@ -197,6 +197,20 @@ void D3D9Pad::ColorKey(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 	Vtx[vI - 4].fnc = f;
 }
 
+// ===============================================================================================
+//
+bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
+{
+	if (!cfont) return false;
+	if (len == -1) len = wcslen(str);
+	if (!len) return true;
+
+	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+
+	pText->PrintSkp(this, x - 1.0f, y - 1.0f, str, len);
+
+	return true;
+}
 
 // ===============================================================================================
 //
@@ -222,7 +236,7 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 
 	pText->SetRotation(angle);
 	pText->SetScaling(scale);
-	pText->PrintSkp(this, x - 1.0f, y - 1.0f, str, (bkmode == OPAQUE));
+	pText->PrintSkp(this, x - 1.0f, y - 1.0f, str, -1, (bkmode == OPAQUE));
 }
 
 

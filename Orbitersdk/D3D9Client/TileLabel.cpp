@@ -292,14 +292,9 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				// Crude, but seems to work (UTF-8 -> WC -> ANSI)
-				static WCHAR wlabel[256];
-				static CHAR label[256];
-				MultiByteToWideChar(CP_UTF8, 0, renderlabel[i]->label, -1, wlabel, 256);
-				WideCharToMultiByte(CP_ACP, 0, wlabel, -1, label, 256, NULL, false);
-
-				//skp->TextW(x+scale+2, y-scale-1, wlabel, wcslen(wlabel));
-				skp->TextEx(float(x + scale + 4), float(y - scale - 1), label);
+				WCHAR wlabel[256];
+				int size = MultiByteToWideChar(CP_UTF8, 0, renderlabel[i]->label, -1, wlabel, ARRAYSIZE(wlabel));
+				skp->TextW(x + scale + 2, y - scale - 1, wlabel, size-1);
 			}
 		}
 	}

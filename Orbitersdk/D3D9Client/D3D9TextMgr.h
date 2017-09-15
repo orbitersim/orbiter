@@ -90,8 +90,10 @@ public:
 	void		SetTextHAlign(int x); // 0-left, 1=center, 2=right
 	void		SetTextVAlign(int x); // 0-top, 1=base, 2=bottom
 
-	float		PrintSkp(class D3D9Pad *pSkp, float x, float y, const char *str, int len = -1, bool bBox = false);
-	void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy2(t, &tm, sizeof(TEXTMETRIC)); }
+	float		PrintSkp (class D3D9Pad *pSkp, float x, float y, const char *str, int len = -1, bool bBox = false);
+	float		PrintSkp (class D3D9Pad *pSkp, float x, float y, LPCWSTR str, int len = -1, bool bBox = false);
+
+    void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy2(t, &tm, sizeof(TEXTMETRIC)); }
 
 private:
 
@@ -115,7 +117,9 @@ private:
 	LPDIRECT3DTEXTURE9	pTex;
 	D3D9ClientSurface	*pTgtSurf;
 	D3D9FontData		*FontData;  ///< Array of font data information ( [c - first] )
-	TEXTMETRIC			tm;
+	TEXTMETRIC			tm;         ///< Font attributes
+	LOGFONT             lf;         ///< Font attributes
+	ID3DXFont           *wfont;     ///< WCHAR font
 	
 	// Rendering pipeline configuration
 	//

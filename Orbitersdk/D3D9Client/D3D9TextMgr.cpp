@@ -29,6 +29,10 @@
 #include "D3D9Config.h"
 #include "D3D9Pad.h"
 
+#if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
+#define round(v) floor(v+0.5)
+#endif
+
 // ----------------------------------------------------------------------------------------
 //
 D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
@@ -51,10 +55,11 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	pTex       (NULL),
 	pTgtSurf   (),
 	FontData   (NULL),
-	tm         (),
+	wfont      (NULL),
 	first      (32)
 {
-	
+	ZeroMemory(&tm, sizeof(TEXTMETRIC));
+	ZeroMemory(&lf, sizeof(LOGFONT));	
 }
 
 
@@ -64,6 +69,7 @@ D3D9Text::~D3D9Text()
 {
 	SAFE_DELETEA(FontData);
 	SAFE_RELEASE(pTex);
+	SAFE_RELEASE(wfont);
 }
 
 
@@ -129,9 +135,8 @@ bool D3D9Text::Init(HFONT hFont)
 		return false;
 	}
 
-	LOGFONT fl;
-	memset2((void *)&fl, 0, sizeof(LOGFONT));
-	GetObject(hFont, sizeof(LOGFONT), &fl);
+	// Receive font attributes
+	GetObject(hFont, sizeof(LOGFONT), &lf);
 
 	tex_w = 2048;	// Texture Width
 	tex_h = 32;
@@ -140,7 +145,7 @@ bool D3D9Text::Init(HFONT hFont)
 	//
 	FontData = new D3D9FontData[256]();	// zero-initialized
 	
-	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d Pitch&Family=%x",fl.lfFaceName, fl.lfHeight, fl.lfWeight, fl.lfPitchAndFamily); 
+	LogAlw("[NEW FONT] (%31s), Size=%d, Weight=%d Pitch&Family=%x", lf.lfFaceName, lf.lfHeight, lf.lfWeight, lf.lfPitchAndFamily);
 
 	bool bFirst = true;
 
@@ -274,7 +279,23 @@ restart:
 	//D3DXSaveSurfaceToFile(texname, D3DXIFF_DDS, pSurf, NULL, NULL);
 
 	pSrcTex->Release();
-	
+
+	// Init WCHAR font
+	HR(D3DXCreateFont(
+		pDev,                 // D3D Device
+		lf.lfHeight,          // Font height
+		lf.lfWidth,           // Font width
+		lf.lfWeight,          // Font Weight
+		1,                    // MipLevels
+		lf.lfItalic,          // Italic
+		lf.lfCharSet,         // CharSet
+		lf.lfOutPrecision,    // OutputPrecision
+		lf.lfQuality,         // Quality
+		lf.lfPitchAndFamily,  // PitchAndFamily
+		lf.lfFaceName,        // pFacename,
+		&wfont                // ppFont
+	));
+
 	SetLineSpace(0);
 	SetTextShare(0);
 	SetTextSpace(0);
@@ -477,6 +498,43 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 	return l;
 }
 
+// ----------------------------------------------------------------------------------------
+//
+float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, int len, bool bBox)
+{
+	if (len == -1) len = wcslen(str);
+
+	LONG x = LONG(round(xpos)),
+	     y = LONG(round(ypos));
+	RECT rect = { x, y, 0, 0 };
+
+	wfont->DrawTextW(
+		NULL,                     // pSprite
+		str,                      // pString
+		len,                      // Count
+		&rect,                    // pRect
+		DT_CALCRECT | DT_NOCLIP,  // Format
+		pSkp->textcolor.dclr      // Color
+	);
+
+	if (bBox)
+	{
+		pSkp->Flush(SKPTECH_BLIT);
+		pSkp->FillRect(rect.left-2, rect.top+1, rect.right+2, rect.bottom-1, pSkp->bkcolor);
+		pSkp->Flush(SKPTECH_DRAW);
+	}
+
+	wfont->DrawTextW(
+		NULL,                              // pSprite
+		str,                               // pString
+		len,                               // Count
+		&rect,                             // pRect
+		DT_VCENTER | DT_LEFT | DT_NOCLIP,  // Format
+		pSkp->textcolor.dclr               // Color
+	);
+
+	return float(rect.right - rect.left);
+}
 
 // -----------------------------------------------------------------------------------------------
 //
