@@ -23,12 +23,13 @@ public:
 	void Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 
 	struct TLABEL {
-		TLABEL() : labeltype(0), label(NULL), pos() {}
+		TLABEL() : labeltype(0), len(0), label(NULL), pos() {}
 		~TLABEL() { SAFE_DELETEA(label); }
 		double  lat, lng, alt; ///< spheric coordinates of the label
 		VECTOR3 pos;           ///< position of the label
 		char    labeltype;     ///< label type ID (what feature group it belongs to)
-		char   *label;         ///< the label (its text)
+		int     len;           ///< label length
+		LPWSTR  label;         ///< the label (its text) WITHOUT terminating zero!
 	};
 
 protected:

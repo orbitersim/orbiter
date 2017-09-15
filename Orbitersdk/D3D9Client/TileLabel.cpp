@@ -69,15 +69,17 @@ static double toDoubleOrNaN (const std::string &str)
         : atof(str.c_str());
 }
 
-#pragma warning(disable : 4996)
-static char *nameBuffer (const std::string &name)
+static LPWSTR nameBuffer (const std::string &name, int *_len)
 {
-	int len = name.size();
-	char *dst = new char[len+1];
-	dst[name.copy(dst, len, 1)] = '\0';
+	LPWSTR dst = NULL; // Buffer with *NO* terminating zero!
+	int len = MultiByteToWideChar(CP_UTF8, 0, name.c_str()+1, -1, NULL, 0) - 1;
+	if (len) {
+		dst = new WCHAR[len];
+		MultiByteToWideChar(CP_UTF8, 0, name.c_str()+1, -1, dst, len);
+	}
+	*_len = len;
 	return dst;
 }
-#pragma warning(default : 4996)
 
 // ---------------------------------------------------------------------------
 
@@ -121,7 +123,7 @@ bool TileLabel::Read ()
 				item->lng = lng * RAD;
 				item->alt = toDoubleOrNaN(altstr);
 				item->labeltype = typestr;
-				item->label = nameBuffer(name);
+				item->label = nameBuffer(name, &item->len);
 				StoreLabel(item);
 
 				ifs >> typestr >> lat >> lng >> altstr;
@@ -144,7 +146,7 @@ bool TileLabel::Read ()
 				item->lng = lng * RAD;
 				item->alt = toDoubleOrNaN(altstr);
 				item->labeltype = typestr;
-				item->label = nameBuffer(name);
+				item->label = nameBuffer(name, &item->len);
 				StoreLabel(item);
 
 				if (iss.tellg() >= ndata) break;
@@ -292,9 +294,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				WCHAR wlabel[256];
-				int size = MultiByteToWideChar(CP_UTF8, 0, renderlabel[i]->label, -1, wlabel, ARRAYSIZE(wlabel));
-				skp->TextW(x + scale + 2, y - scale - 1, wlabel, size-1);
+				skp->TextW(x + scale + 2, y - scale - 1, renderlabel[i]->label, renderlabel[i]->len);
 			}
 		}
 	}
