@@ -24,6 +24,7 @@
 #include "Sketchpad2.h"
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <memory>
 
 using namespace oapi;
 
@@ -60,6 +61,7 @@ extern oapi::Pen  *defpen;
 #define nQueueMax 2048
 #define nIndexMax (nQueueMax * 3)
 
+typedef std::shared_ptr<D3D9Text> D3D9TextPtr;
 
 struct SkpColor {
 
@@ -629,7 +631,7 @@ public:
 	DWORD GetQuality() const { return Quality; }
 
 private:
-	class D3D9Text *pFont;
+	D3D9TextPtr pFont;
 	HFONT hFont;
 	DWORD Quality;
 	float rotation;

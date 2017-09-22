@@ -205,7 +205,7 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 	if (len == -1) len = wcslen(str);
 	if (!len) return true;
 
-	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
 	pText->PrintSkp(this, x - 1.0f, y - 1.0f, str, len);
 
@@ -218,7 +218,7 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 {
 	if (cfont == NULL) return;
 
-	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
 	switch (tah) {
 		default:

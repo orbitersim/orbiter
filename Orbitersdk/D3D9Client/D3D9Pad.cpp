@@ -32,17 +32,20 @@
 using namespace oapi;
 
 
+// ======================================================================
+// Font cache
+// ======================================================================
+
 struct FontCache {
-	int height;
-	int orient;
-	bool prop;
-	char face[64];
+	int         height;
+	int         orient;
+	bool        prop;
+	char        face[64];
 	Font::Style style;
-	class D3D9Text *pFont;
-} fcache[256];
+	D3D9TextPtr pFont;
+};
+std::vector<FontCache *> fcache;
 
-
-int nfcache = 0;
 
 oapi::Font * deffont = 0;
 oapi::Pen * defpen = 0;
@@ -52,9 +55,6 @@ oapi::Pen * defpen = 0;
 //
 void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 {
-	memset2(fcache, 0, 256*sizeof(FontCache));
-	nfcache = 0;
-
 	pDev = pDevice;
 	gc = _gc;
 
@@ -124,15 +124,13 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 //
 void D3D9Pad::GlobalExit()
 {
-	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",nfcache);
-	for (int i=0;i<nfcache;i++) if (fcache[i].pFont) delete fcache[i].pFont;
+	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",fcache.size());
+	fcache.clear();
 
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
 	SAFE_DELETEA(Vtx);
 	SAFE_DELETEA(pSinCos);
-
-	memset2(fcache, 0, 256*sizeof(FontCache));
 }
 
 
@@ -438,7 +436,7 @@ float D3D9Pad::GetPenWidth()
 //
 void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 {
-	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 	if (pText->Length2(str) > maxWidth) {
 		char *pStr = str, // sub-string start
 		     *it = pStr,  // 'iterator' char
@@ -499,7 +497,7 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 
 	if (cfont==NULL) return false;
 
-	D3D9Text *pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
 	switch(tah) {
 		default:
@@ -1175,7 +1173,6 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	}
 	else face++;
 
-	pFont = NULL;
 	hFont = NULL;
 
 	if (orientation!=0) rotation = float(orientation) * 0.1f;
@@ -1184,12 +1181,12 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	// Browse cache ---------------------------------------------------
 	//
 
-	for (int i=0;i<nfcache;i++) {
-		if (fcache[i].height!=height) continue;
-		if (fcache[i].style!=style) continue;
-		if (fcache[i].prop!=prop) continue;
-		if (_stricmp(fcache[i].face,face)!=0) continue;
-		pFont = fcache[i].pFont;
+	for (size_t i = 0; i < fcache.size(); ++i) {
+		if (fcache[i]->height!=height) continue;
+		if (fcache[i]->style!=style) continue;
+		if (fcache[i]->prop!=prop) continue;
+		if (_stricmp(fcache[i]->face,face)!=0) continue;
+		pFont = fcache[i]->pFont;
 		break;
 	}
 
@@ -1214,23 +1211,21 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
 
-		pFont = new D3D9Text(pDev);
+		pFont = std::make_shared<D3D9Text>(pDev);
 		pFont->Init(hNew);
 
 		DeleteObject(hNew);
 
 		pFont->SetRotation(rotation);
 
-		if (nfcache>250) LogErr("Font Cache is Full.");
-		else {
-			// Fill the cache --------------------------------
-			fcache[nfcache].pFont  = pFont;
-			fcache[nfcache].height = height;
-			fcache[nfcache].style  = style;
-			fcache[nfcache].prop   = prop;
-			strcpy_s(fcache[nfcache].face, 64, face);
-			nfcache++;
-		}
+		// Fill the cache --------------------------------
+		FontCache *p = new FontCache();
+		p->pFont  = pFont;
+		p->height = height;
+		p->style  = style;
+		p->prop   = prop;
+		strcpy_s(p->face, 64, face);
+		fcache.push_back(p);
 	}
 
 	// Create Rotated windows GDI Font for a use with GDIPad ---------------------------
@@ -1247,7 +1242,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 //
 D3D9PadFont::~D3D9PadFont ()
 {
-	if (pFont) pFont->SetRotation(0.0f);
+	if (pFont) pFont->SetRotation(0.0f), pFont.reset();
 	if (hFont) DeleteObject(hFont);
 }
 
