@@ -69,12 +69,20 @@ static double toDoubleOrNaN (const std::string &str)
         : atof(str.c_str());
 }
 
+static int _wbufferSize = 0;
+static std::auto_ptr<WCHAR> _wbuffer; // this should get destroyed @ shutdown
+
 static LPWSTR GetWBuffer (const std::string &name, int *_len)
 {
 	LPWSTR dst = NULL;
 	int len = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
 	if (len) {
-		dst = new WCHAR[len];
+		// Grow buffer?
+		if (len > _wbufferSize) {
+			_wbuffer.reset(new WCHAR[len]);
+			_wbufferSize = len;
+		}
+		dst = _wbuffer.get();
 		MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, dst, len);
 	}
 	*_len = len ? len - 1 : 0;
@@ -336,7 +344,6 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 
 				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len);
 				skp->TextW(x + scale + 2, y - scale - 1, wname, len);
-				delete[] wname;
 			}
 		}
 	}
