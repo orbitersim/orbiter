@@ -25,6 +25,7 @@
 #include "Scene.h"
 #include "Mesh.h"
 #include <d3dx9.h>
+#include <sstream>
 
 // ===============================================================================================
 //
@@ -207,7 +208,18 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 
 	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
-	pText->PrintSkp(this, x - 1.0f, y - 1.0f, str, len);
+	int lineSpace = pText->GetLineSpace();
+
+	std::wstring _str(str, str + len);
+
+	std::vector<std::wstring> strings;
+	std::wistringstream f(_str);
+	std::wstring s;
+	int _y = y;
+	while (getline(f, s, L'\n')) {
+		pText->PrintSkp(this, x - 1.0f, _y - 1.0f, s.c_str(), -1);
+		_y += lineSpace;
+	}
 
 	return true;
 }
