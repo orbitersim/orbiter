@@ -69,23 +69,62 @@ static double toDoubleOrNaN (const std::string &str)
         : atof(str.c_str());
 }
 
-static LPWSTR nameBuffer (const std::string &name, int *_len)
+static LPWSTR GetWBuffer (const std::string &name, int *_len)
 {
-	LPWSTR dst = NULL; // Buffer with *NO* terminating zero!
-	int len = MultiByteToWideChar(CP_UTF8, 0, name.c_str()+1, -1, NULL, 0) - 1;
+	LPWSTR dst = NULL;
+	int len = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
 	if (len) {
 		dst = new WCHAR[len];
-		MultiByteToWideChar(CP_UTF8, 0, name.c_str()+1, -1, dst, len);
+		MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, dst, len);
 	}
-	*_len = len;
+	*_len = len ? len - 1 : 0;
 	return dst;
 }
 
 // ---------------------------------------------------------------------------
 
-void TileLabel::StoreLabel (TLABEL *l)
+static void appendName (LPSTR *buffer, int *len, const std::string &name)
 {
-	if (nlabel == nbuf) { // grow buffer
+	size_t _len = name.size();
+	if (!_len) return;
+
+	--_len; // We know, 'name's all have one trailing space
+
+	// Create new name buffer
+	size_t size = *len + _len + (*len ? 2 : 1); // either '\n' + '\0' or just '\0'
+	LPSTR dst = new CHAR[size];
+
+	// Previous content?
+	size_t offs = 0;
+	if (*len) {
+		strcpy_s(dst, size, *buffer);
+		dst[*len] = '\n';
+		offs = *len + 1;
+		delete[] *buffer;
+	}
+
+	// Copy new 'name'
+	strcpy_s(dst+ offs, size-offs, name.c_str() + 1);
+
+	*buffer = dst;
+	*len = size - 1; // length is WITHOUT terminating zero
+}
+
+// ---------------------------------------------------------------------------
+
+void TileLabel::StoreLabel (TLABEL *l, const std::string &name)
+{
+	// Check if we've already a location..
+	for (DWORD i = 0; i < nlabel; ++i) {
+		if (l->lat == label[i]->lat && l->lng == label[i]->lng && l->labeltype == label[i]->labeltype) {
+			appendName(&label[i]->label, &label[i]->len, name);//label[i]->names.push_back(dst);
+			delete l;
+			return;
+		}
+	}
+
+	// Grow buffer?
+	if (nlabel == nbuf) {
 		TLABEL **tmp = new TLABEL*[nbuf += 16];
 		if (nlabel) {
 			memcpy(tmp, label, nlabel * sizeof(TLABEL*));
@@ -93,7 +132,10 @@ void TileLabel::StoreLabel (TLABEL *l)
 		}
 		label = tmp;
 	}
-	label[nlabel++]= l;
+
+	// new loation
+	appendName(&l->label, &l->len, name);//l->names.push_back(dst);
+	label[nlabel++] = l;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,8 +165,7 @@ bool TileLabel::Read ()
 				item->lng = lng * RAD;
 				item->alt = toDoubleOrNaN(altstr);
 				item->labeltype = typestr;
-				item->label = nameBuffer(name, &item->len);
-				StoreLabel(item);
+				StoreLabel(item, name);
 
 				ifs >> typestr >> lat >> lng >> altstr;
 				std::getline(ifs, name, '\n');
@@ -146,8 +187,7 @@ bool TileLabel::Read ()
 				item->lng = lng * RAD;
 				item->alt = toDoubleOrNaN(altstr);
 				item->labeltype = typestr;
-				item->label = nameBuffer(name, &item->len);
-				StoreLabel(item);
+				StoreLabel(item, name);
 
 				if (iss.tellg() >= ndata) break;
 
@@ -222,7 +262,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 	DWORD i;
 	COLORREF col, pcol = 0;
 	char symbol;
-	int x, y, nl, scale;
+	int x, y, nl, scale, len;
 	const oapi::GraphicsClient::LABELTYPE *lspec;
 	VECTOR3 sp, dir;
 	bool active;
@@ -294,7 +334,9 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				skp->TextW(x + scale + 2, y - scale - 1, renderlabel[i]->label, renderlabel[i]->len);
+				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len);
+				skp->TextW(x + scale + 2, y - scale - 1, wname, len);
+				delete[] wname;
 			}
 		}
 	}

@@ -28,8 +28,8 @@ public:
 		double  lat, lng, alt; ///< spheric coordinates of the label
 		VECTOR3 pos;           ///< position of the label
 		char    labeltype;     ///< label type ID (what feature group it belongs to)
-		int     len;           ///< label length
-		LPWSTR  label;         ///< the label (its text) WITHOUT terminating zero!
+		int     len;           ///< label length WITHOUT terminating zero!
+		LPSTR   label;         ///< the label (might contain multiple lines)
 	};
 
 protected:
@@ -38,7 +38,7 @@ protected:
 	double Elevation (double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const;
 
 private:
-	void   StoreLabel (TLABEL *l);  ///< store (new) label to label-storage (**label)
+	void   StoreLabel (TLABEL *l, const std::string &name);  ///< store (new) label to label-storage (**label)
 
 	const SurfTile *tile;           ///< associated surface tile
 	DWORD nlabel, nbuf;             ///< number of allocated labels and label buffer size
