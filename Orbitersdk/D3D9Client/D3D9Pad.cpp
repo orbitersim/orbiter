@@ -125,6 +125,9 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 void D3D9Pad::GlobalExit()
 {
 	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",fcache.size());
+	for (auto it = fcache.begin(); it != fcache.end(); ++it) {
+		delete *it;
+	}
 	fcache.clear();
 
 	SAFE_RELEASE(FX);
