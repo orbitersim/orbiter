@@ -79,8 +79,8 @@ static LPWSTR GetWBuffer (const std::string &name, int *_len)
 	if (len) {
 		// Grow buffer?
 		if (len > _wbufferSize) {
-			_wbuffer.reset(new WCHAR[len]);
-			_wbufferSize = len;
+			_wbuffer.reset(new WCHAR[len+16]);
+			_wbufferSize = len+16;
 		}
 		dst = _wbuffer.get();
 		MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, dst, len);
@@ -157,6 +157,18 @@ bool TileLabel::Read ()
 	double lat, lng;
 	char typestr;
 	std::string altstr, name;
+
+	// --- Easter Egg ;) ---
+	//static bool done = false;
+	//if (!done && lvl==8 && ilat==53 && ilng==265 && !strcmp(tile->mgr->CbodyName(),"Earth")) {
+	//	TLABEL *item = new TLABEL;
+	//	item->lat = 52.12949 * RAD;
+	//	item->lng = 6.90243 * RAD;
+	//	item->alt = 40;
+	//	item->labeltype = 'C';
+	//	StoreLabel(item, " Kuddel\nwas here!");
+	//	done = true;
+	//}
 
 	if (tile->smgr->DoLoadIndividualFiles(4)) { // try loading from individual tile file
 		sprintf_s(path, MAX_PATH, "%s\\Label\\%02d\\%06d\\%06d.lab", tile->mgr->CbodyName(), lvl+4, ilat, ilng);
