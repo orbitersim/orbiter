@@ -96,8 +96,6 @@ static void appendName (LPSTR *buffer, int *len, const std::string &name)
 	size_t _len = name.size();
 	if (!_len) return;
 
-	--_len; // We know, 'name's all have one trailing space
-
 	// Create new name buffer
 	size_t size = *len + _len + (*len ? 2 : 1); // either '\n' + '\0' or just '\0'
 	LPSTR dst = new CHAR[size];
@@ -112,7 +110,7 @@ static void appendName (LPSTR *buffer, int *len, const std::string &name)
 	}
 
 	// Copy new 'name'
-	strcpy_s(dst+ offs, size-offs, name.c_str() + 1);
+	strcpy_s(dst+ offs, size-offs, name.c_str());
 
 	*buffer = dst;
 	*len = size - 1; // length is WITHOUT terminating zero
@@ -125,7 +123,7 @@ void TileLabel::StoreLabel (TLABEL *l, const std::string &name)
 	// Check if we've already a location..
 	for (DWORD i = 0; i < nlabel; ++i) {
 		if (l->lat == label[i]->lat && l->lng == label[i]->lng && l->labeltype == label[i]->labeltype) {
-			appendName(&label[i]->label, &label[i]->len, name);//label[i]->names.push_back(dst);
+			appendName(&label[i]->label, &label[i]->len, name);
 			delete l;
 			return;
 		}
@@ -142,7 +140,7 @@ void TileLabel::StoreLabel (TLABEL *l, const std::string &name)
 	}
 
 	// new loation
-	appendName(&l->label, &l->len, name);//l->names.push_back(dst);
+	appendName(&l->label, &l->len, name);
 	label[nlabel++] = l;
 }
 
@@ -175,21 +173,14 @@ bool TileLabel::Read ()
 		tile->mgr->Client()->TexturePath(path, texpath);
 
 		std::ifstream ifs(texpath);
-		if (ifs.good()) {
-			ifs >> typestr >> lat >> lng >> altstr;
+		while (ifs >> typestr >> lat >> lng >> altstr >> std::ws) {
 			std::getline(ifs, name, '\n');
-
-			while(ifs.good()) {
-				TLABEL *item = new TLABEL;
-				item->lat = lat * RAD;
-				item->lng = lng * RAD;
-				item->alt = toDoubleOrNaN(altstr);
-				item->labeltype = typestr;
-				StoreLabel(item, name);
-
-				ifs >> typestr >> lat >> lng >> altstr;
-				std::getline(ifs, name, '\n');
-			}
+			TLABEL *item = new TLABEL;
+			item->lat = lat * RAD;
+			item->lng = lng * RAD;
+			item->alt = toDoubleOrNaN(altstr);
+			item->labeltype = typestr;
+			StoreLabel(item, name);
 		}
 	}
 	if (!nlabel && tile->smgr->ZTreeManager(4)) { // try loading from compressed archive
@@ -198,21 +189,15 @@ bool TileLabel::Read ()
 		DWORD ndata = mgr->ReadData(lvl+4, ilat, ilng, &buf);
 		if (ndata) {
 			std::istringstream iss((char*)buf);
-			iss >> typestr >> lat >> lng >> altstr;
-			std::getline(iss, name, '\n');
+			while (/*iss.tellg() < ndata &&*/ iss >> typestr >> lat >> lng >> altstr >> std::ws) {
+				std::getline(iss, name, '\n');
 
-			while (iss.good()) {
 				TLABEL *item = new TLABEL;
 				item->lat = lat * RAD;
 				item->lng = lng * RAD;
 				item->alt = toDoubleOrNaN(altstr);
 				item->labeltype = typestr;
 				StoreLabel(item, name);
-
-				if (iss.tellg() >= ndata) break;
-
-				iss >> typestr >> lat >> lng >> altstr;
-				std::getline(iss, name, '\n');
 			}
 			tile->smgr->ZTreeManager(4)->ReleaseData(buf);
 		}
