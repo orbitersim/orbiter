@@ -29,6 +29,7 @@ class vPlanet;
 class D3D9ParticleStream;
 class CSphereManager;
 class D3D9Text;
+class D3D9Pad;
 
 #define GBUF_COLOR				0
 #define GBUF_BLUR				1
@@ -363,6 +364,8 @@ private:
 	void InitGDIResources();
 	void ExitGDIResources();
 
+	D3D9Pad *GetPooledSketchpad(int id); ///< Get pooled Sketchpad instance (lazy instantiation)
+	void    FreePooledSketchpads();      ///< Release pooled Sketchpad instances
 
 
 

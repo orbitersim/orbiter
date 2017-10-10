@@ -213,6 +213,8 @@ Scene::~Scene ()
 	DeleteAllCustomCameras();
 	DeleteAllVisuals();
 	ExitGDIResources();
+
+	FreePooledSketchpads();
 }
 
 
@@ -247,6 +249,65 @@ void Scene::Initialise()
 	D3DVEC(-unit(rpos), sunLight.Dir);
 
 	// Do not "pre-create" visuals here. Will cause changed call order for vessel callbacks
+}
+
+
+// ===========================================================================================
+// Pooled Sketchpad API
+// ===========================================================================================
+
+static D3D9Pad *_pad[3] = { NULL };
+
+#define SKETCHPAD_LABELS        0  ///< Sketchpad for planetarium mode labels and markers
+#define SKETCHPAD_2D_OVERLAY    1  ///< Sketchpad for HUD Overlay render to backbuffer directly
+#define SKETCHPAD_DEBUG_TEXT    2  ///< Sketchpad to draw Debug String on a bottom of the screen
+
+// ===========================================================================================
+// Get pooled Sketchpad instance
+D3D9Pad *Scene::GetPooledSketchpad (int id) // one of SKETCHPAD_xxx
+{
+	assert(id <= SKETCHPAD_DEBUG_TEXT);
+
+	if (_pad[id]) { return _pad[id]; } // return pooled instance
+
+	D3D9Pad *p = NULL;
+	switch (id)
+	{
+	case SKETCHPAD_LABELS:
+		p = _pad[id] = new D3D9Pad(pOffscreenTarget ? pOffscreenTarget : gc->GetBackBuffer());
+		p->SetFont(pLabelFont);
+		p->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
+		break;
+
+	case SKETCHPAD_2D_OVERLAY:
+		p = _pad[id] = new D3D9Pad(gc->GetBackBuffer());
+		break;
+
+	case SKETCHPAD_DEBUG_TEXT:
+		p = _pad[id] = new D3D9Pad(gc->GetBackBuffer());
+		p->SetFont(pDebugFont);
+		p->SetTextColor(0xFFFFFF);
+		p->SetTextAlign(Sketchpad::LEFT, Sketchpad::BOTTOM);
+		p->SetPen(oapiCreatePen(0, 1, 0x000000));
+		p->SetBrush(oapiCreateBrush(0xB0000000));
+		break;
+	}
+
+	return p;
+}
+
+// ===========================================================================================
+// Release pooled Sketchpad instances
+void Scene::FreePooledSketchpads()
+{
+	if (_pad[SKETCHPAD_DEBUG_TEXT])
+	{
+		oapiReleasePen(_pad[SKETCHPAD_DEBUG_TEXT]->SetPen(NULL));
+		oapiReleaseBrush(_pad[SKETCHPAD_DEBUG_TEXT]->SetBrush(NULL));
+	}
+	SAFE_DELETE(_pad[SKETCHPAD_LABELS]);
+	SAFE_DELETE(_pad[SKETCHPAD_2D_OVERLAY]);
+	SAFE_DELETE(_pad[SKETCHPAD_DEBUG_TEXT]);
 }
 
 // ===========================================================================================
@@ -458,8 +519,8 @@ VECTOR3 Scene::SkyColour ()
 			normalise (rp);
 			double coss = dotp (pc, rp) / -cdist;
 			double intens = min (1.0,(1.0839*coss+0.4581)) * sqrt (prm.rho/atmp->rho0);
-			// => intensity=0 at sun zenith distance 115°
-			//    intensity=1 at sun zenith distance 60°
+			// => intensity=0 at sun zenith distance 115ï¿½
+			//    intensity=1 at sun zenith distance 60ï¿½
 			if (intens > 0.0)
 				col += _V(atmp->color0.x*intens, atmp->color0.y*intens, atmp->color0.z*intens);
 		}
@@ -1033,7 +1094,7 @@ void Scene::RenderMainScene()
 	// Sketchpad for planetarium mode labels and markers
 	// -------------------------------------------------------------------------------------------------------
 
-	D3D9Pad *pSketch = new D3D9Pad(pBackBuffer);
+	D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 
 	pSketch->SetFont(pLabelFont);
 	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
@@ -1393,8 +1454,6 @@ surfLabelsActive = false;
 	pSketch->SetFont(NULL);
 	pSketch->SetPen(NULL);
 
-	SAFE_DELETE(pSketch);
-
 	EndScene();
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1548,14 +1607,11 @@ surfLabelsActive = false;
 	
 
 
-	pSketch = new D3D9Pad(gc->GetBackBuffer());
+	pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 
 	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL, NULL);
 	gc->Render2DOverlay();
 	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL, NULL);
-
-	SAFE_DELETE(pSketch);
-
 
 
 	// End Of HUD Rendering ---------------------------------------------
@@ -1652,16 +1708,7 @@ surfLabelsActive = false;
 
 		BeginScene();
 
-		oapi::Sketchpad *pSketch = new D3D9Pad(gc->GetBackBuffer());
-
-		oapi::Pen * nullp = oapiCreatePen(0, 1, 0x000000);
-		oapi::Brush *brush = oapiCreateBrush(0xB0000000);
-
-		pSketch->SetFont(pDebugFont);
-		pSketch->SetTextColor(0xFFFFFF);
-		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::BOTTOM);
-		pSketch->SetPen(nullp);
-		pSketch->SetBrush(brush);
+		pSketch = GetPooledSketchpad(SKETCHPAD_DEBUG_TEXT);
 
 		DWORD height = Config->DebugFontSize;
 
@@ -1685,14 +1732,6 @@ surfLabelsActive = false;
 			pSketch->Text(2, pos - 2, str.c_str(), len);
 			D3D9DebugQueue.pop();
 		}
-
-		pSketch->SetPen(NULL);
-		pSketch->SetBrush(NULL);
-
-		oapiReleasePen(nullp);
-		oapiReleaseBrush(brush);
-
-		SAFE_DELETE(pSketch);
 
 		EndScene();
 	}
