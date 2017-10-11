@@ -302,7 +302,7 @@ STRINGTABLE
 //
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 1 VERSIONINFO
-    FILEVERSION     25,2,0,0
+    FILEVERSION     25,3,0,0
     PRODUCTVERSION  25,0,0,0
     FILEOS          VOS_NT_WINDOWS32
     FILETYPE        VFT_DLL
@@ -315,7 +315,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
         BLOCK "080904E4"
         {
             VALUE "FileDescription", "Render engine plugin for Orbiter Space Flight Simulator"
-            VALUE "FileVersion", "25.2.0.0"
+            VALUE "FileVersion", "25.3.0.0"
             VALUE "InternalName", "D3D9Client"
             VALUE "LegalCopyright", "Copyright © 2010 - 2017"
             VALUE "OriginalFilename", "D3D9Client.dll"
