@@ -72,10 +72,10 @@ static double toDoubleOrNaN (const std::string &str)
 static int _wbufferSize = 0;
 static std::auto_ptr<WCHAR> _wbuffer; // this should get destroyed @ shutdown
 
-static LPWSTR GetWBuffer (const std::string &name, int *_len)
+static LPWSTR GetWBuffer (const std::string &name, int *_len, int _stopLen = -1)
 {
 	LPWSTR dst = NULL;
-	int len = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
+	int len = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), _stopLen, NULL, 0);
 	if (len) {
 		// Grow buffer?
 		if (len > _wbufferSize) {
@@ -83,7 +83,7 @@ static LPWSTR GetWBuffer (const std::string &name, int *_len)
 			_wbufferSize = len+16;
 		}
 		dst = _wbuffer.get();
-		MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, dst, len);
+		MultiByteToWideChar(CP_UTF8, 0, name.c_str(), _stopLen, dst, len);
 	}
 	*_len = len ? len - 1 : 0;
 	return dst;
@@ -283,6 +283,17 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 	oapiGetRotationMatrix(hPlanet, &Rpl);            // planet rotation matrix
 	VECTOR3 campos = tmul(Rpl, *Pcam - Ppl);         // camera pos in planet frame
 
+
+	// Get current "rotation step"
+	static bool currentRotStep = false;
+	double now = oapiGetSysTime();
+	static double lastT = now;
+	if (now - lastT > 1.5)
+	{
+		lastT = now;
+		currentRotStep = !currentRotStep;
+	}
+
 	for (i = 0; i < nrenderlabel; ++i) {
 		VECTOR3 camlabelpos = campos-renderlabel[i]->pos;
 		if (dotp (renderlabel[i]->pos, camlabelpos) >= 0.0) {
@@ -339,9 +350,106 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len);
+				int partLen = LimitAndRotateLongLabelList(renderlabel[i], currentRotStep);
+
+				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len, partLen);
 				skp->TextW(x + scale + 2, y - scale - 1, wname, len);
 			}
 		}
 	}
+}
+
+//std::vector<std::wstring> split(std::wstring s)
+//{
+//	static std::vector<std::wstring> parts;
+//	std::wstringstream iss(s);
+//	std::wstring part;
+//
+//	parts.clear();
+//	while (std::getline(iss, part, L'\n')) {
+//		parts.push_back(part);
+//	}
+//
+//	return parts;
+//}
+
+//std::wstring join(std::vector<std::wstring> v)
+//{
+//	static std::wstring s;
+//	std::wstring first(v.front());
+//	v.erase(v.begin());
+//	s = first;
+//	for (auto it = v.begin(); it != v.end(); ++it) {
+//		s += L'\n' + *it;
+//	}
+//	return s;
+//}
+
+std::vector<std::string> split (std::string s)
+{
+	static std::vector<std::string> parts;
+	std::stringstream iss(s);
+	std::string part;
+
+	parts.clear();
+	while (std::getline(iss, part, '\n')) {
+		parts.push_back(part);
+	}
+
+	return parts;
+}
+
+std::string join (std::vector<std::string> v)
+{
+	static std::string s;
+	std::string first(v.front());
+	v.erase(v.begin());
+	s = first;
+	for (auto it = v.begin(); it != v.end(); ++it) {
+		s += '\n' + *it;
+	}
+	return s;
+}
+
+int TileLabel::LimitAndRotateLongLabelList(TLABEL *l, bool rotStep)
+{
+	int partLen = l->len;
+
+	// Count lines
+	int nLines = 1;
+	for (CHAR *c = l->label; *c; ++c) {
+		if (*c == '\n') {
+			++nLines;
+		}
+	}
+
+	if (nLines > 3)
+	{
+		if (rotStep == l->rotStep)
+		{
+			l->rotStep = !l->rotStep;
+			// split
+			auto lines = split(l->label);
+			// roll over
+			std::string first = lines.front();
+			lines.erase(lines.begin());
+			lines.push_back(first);
+			// re-join
+			std::string label = join(lines);
+			strcpy_s(l->label, l->len+1, label.c_str());
+		}
+
+		// Calculate "render stop" length
+		nLines = 0;
+		for (CHAR *c = l->label; *c; ++c) {
+			if (*c == '\n') {
+				if (++nLines == 4) { // render 4 lines
+					partLen = c - l->label;
+					break;
+				}
+			}
+		}
+
+	}
+	return partLen;
 }

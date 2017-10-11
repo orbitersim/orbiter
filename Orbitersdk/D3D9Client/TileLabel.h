@@ -23,13 +23,14 @@ public:
 	void Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 
 	struct TLABEL {
-		TLABEL() : labeltype(0), len(0), label(NULL), pos() {}
+		TLABEL() : labeltype(0), len(0), label(NULL), pos(), rotStep(false) {}
 		~TLABEL() { SAFE_DELETEA(label); }
 		double  lat, lng, alt; ///< spheric coordinates of the label
 		VECTOR3 pos;           ///< position of the label
 		char    labeltype;     ///< label type ID (what feature group it belongs to)
 		int     len;           ///< label length WITHOUT terminating zero!
 		LPSTR   label;         ///< the label (might contain multiple lines)
+		bool    rotStep;       ///< rotation step flag (for labels with more than 3 names)
 	};
 
 protected:
@@ -38,7 +39,8 @@ protected:
 	double Elevation (double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const;
 
 private:
-	void   StoreLabel (TLABEL *l, const std::string &name);  ///< store (new) label to label-storage (**label)
+	void   StoreLabel (TLABEL *l, const std::string &name);       ///< store (new) label to label-storage (**label)
+	int    LimitAndRotateLongLabelList (TLABEL *l, bool rotStep); ///< Get render-length-limit & rotate long-label list
 
 	const SurfTile *tile;           ///< associated surface tile
 	DWORD nlabel, nbuf;             ///< number of allocated labels and label buffer size
