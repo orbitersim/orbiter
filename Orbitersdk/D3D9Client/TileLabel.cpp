@@ -430,13 +430,12 @@ int TileLabel::LimitAndRotateLongLabelList(TLABEL *l)
 			l->rotStep = rotStep;
 
 			// split
-			auto lines = split(l->label);
-			// roll over
-			std::string first = lines.front();
-			lines.erase(lines.begin());
-			lines.push_back(first);
+			auto v = split(l->label);
+			// rotate
+			//std::rotate(v.begin(), v.begin() + 1, v.end());  // rot left
+			std::rotate(v.rbegin(), v.rbegin() + 1, v.rend()); // rot right
 			// re-join
-			std::string label = join(lines);
+			std::string label = join(v);
 			strcpy_s(l->label, l->len+1, label.c_str());
 
 			// Calculate/Update "render stop" length
