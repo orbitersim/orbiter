@@ -267,7 +267,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 	DWORD i;
 	COLORREF col, pcol = 0;
 	char symbol;
-	int x, y, nl, scale, len;
+	int x, y, nl, scale, len, partLen;
 	const oapi::GraphicsClient::LABELTYPE *lspec;
 	VECTOR3 sp, dir;
 	bool active;
@@ -350,9 +350,9 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				int partLen = LimitAndRotateLongLabelList(renderlabel[i], currentRotStep);
+				partLen = LimitAndRotateLongLabelList(renderlabel[i], currentRotStep);
 
-				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len, partLen);
+				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len, partLen+1);
 				skp->TextW(x + scale + 2, y - scale - 1, wname, len);
 			}
 		}
