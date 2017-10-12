@@ -261,6 +261,10 @@ double TileLabel::Elevation (double lat, double lng, double latmin, double latma
 	return e*elev_res;
 }
 
+// collect for kgv (https://stackoverflow.com/questions/4229870/c-algorithm-to-calculate-least-common-multiple-for-multiple-numbers)
+//#include <set>
+//std::set<DWORD> hs;
+
 void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
 {
 	if (!nrenderlabel) { return; }// nothing to render
@@ -343,7 +347,10 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				partLen = LimitAndRotateLongLabelList(renderlabel[i]);
+				DWORD H = LOWORD(skp->GetCharSize());
+				//hs.insert(H); <= collect for kgv
+				
+				partLen = LimitAndRotateLongLabelList(renderlabel[i], H, &y);
 
 				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len, partLen+1);
 				skp->TextW(x + scale + 2, y - scale - 1, wname, len);
@@ -356,7 +363,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 // Long label list rotation
 // ---------------------------------------------------------------------------
 
-BYTE TileLabel::rotStep = 0;
+DWORD TileLabel::rotStep = 0;
 
 //const std::vector<std::wstring> &split (const std::wstring &s)
 //{
@@ -412,42 +419,49 @@ void TileLabel::Tick ()
 	static double lastT = now;
 
 	// Update current rotation step (to rotate long lists every 1.3 seconds)
-	if (now - lastT > 1.3)
+	if (now - lastT > 0.1)
 	{
 		lastT = now;
 		++rotStep;
 	}
 }
 
-int TileLabel::LimitAndRotateLongLabelList(TLABEL *l)
+int TileLabel::LimitAndRotateLongLabelList(TLABEL *l, DWORD H, int *y)
 {
 	int partLen = l->len;
 
 	if (l->nLines > 3)
 	{
-		if (rotStep != l->rotStep)
+		if ((BYTE)rotStep != l->rotStep)
 		{
-			l->rotStep = rotStep;
+			++H; // height+1 to let the modulo OPs fit
+			if (rotStep % H == 0)
+			{
+				l->rotStep = (BYTE)rotStep;
 
-			// split
-			auto v = split(l->label);
-			// rotate
-			//std::rotate(v.begin(), v.begin() + 1, v.end());  // rot left
-			std::rotate(v.rbegin(), v.rbegin() + 1, v.rend()); // rot right
-			// re-join
-			std::string label = join(v);
-			strcpy_s(l->label, l->len+1, label.c_str());
+				// split
+				auto v = split(l->label);
+				// rotate
+				std::rotate(v.begin(), v.begin() + 1, v.end());  // rot left
+				//std::rotate(v.rbegin(), v.rbegin() + 1, v.rend()); // rot right
+				// re-join
+				std::string label = join(v);
+				strcpy_s(l->label, l->len + 1, label.c_str());
 
-			// Calculate/Update "render stop" length
-			int n = 0;
-			for (CHAR *c = l->label; *c; ++c) {
-				if (*c == '\n' && ++n == 4) { // render 4 lines
-					l->stopLen = c - l->label;
-					break;
+				// Calculate/Update "render stop" length
+				int n = 0;
+				for (CHAR *c = l->label; *c; ++c) {
+					if (*c == '\n' && ++n == 4) { // render 4 lines
+						l->stopLen = c - l->label;
+						break;
+					}
 				}
 			}
+			else { // shift "up" a pixel
+				*y -= (rotStep % H);
+			}
 
-		} // end-if (rotate)
+		} // end-if (rotStep != l->rotStep)
 
 		partLen = l->stopLen;
 	}
