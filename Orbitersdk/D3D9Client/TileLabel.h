@@ -22,26 +22,31 @@ public:
 
 	void Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
 
-	struct TLABEL {
-		TLABEL() : labeltype(0), len(0), label(NULL), pos(), rotStep(false) {}
-		~TLABEL() { SAFE_DELETEA(label); }
-		double  lat, lng, alt; ///< spheric coordinates of the label
-		VECTOR3 pos;           ///< position of the label
-		char    labeltype;     ///< label type ID (what feature group it belongs to)
-		int     len;           ///< label length WITHOUT terminating zero!
-		LPSTR   label;         ///< the label (might contain multiple lines)
-		bool    rotStep;       ///< rotation step flag (for labels with more than 3 names)
-	};
-
 protected:
 	bool   Read ();
 	bool   ExtractAncestorData (const SurfTile *atile);
 	double Elevation (double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const;
 
 private:
-	void   StoreLabel (TLABEL *l, const std::string &name);       ///< store (new) label to label-storage (**label)
-	int    LimitAndRotateLongLabelList (TLABEL *l, bool rotStep); ///< Get render-length-limit & rotate long-label list
+	struct TLABEL {
+		TLABEL() : labeltype(0), len(0), stopLen(0), label(NULL), pos(), nLines(1), rotStep(0) {}
+		~TLABEL() { SAFE_DELETEA(label); }
+		double  lat, lng, alt; ///< spheric coordinates of the label
+		VECTOR3 pos;           ///< position of the label
+		char    labeltype;     ///< label type ID (what feature group it belongs to)
+		int     len;           ///< label length WITHOUT terminating zero!
+		LPSTR   label;         ///< the label (might contain multiple lines)
 
+		int     nLines;        ///< number of lines (for labels with multiple names)
+		int     stopLen;       ///< end of the 4rd line position for multiline labels (renderd only 'til here)
+		BYTE    rotStep;       ///< rotation step state (for labels with more than 3 names)
+	};
+
+	void   StoreLabel (TLABEL *l, const std::string &name); ///< store (new) label to label-storage (**label)
+	void   Tick();                                          ///< updates current rotation step every 1.3 seconds
+	int    LimitAndRotateLongLabelList (TLABEL *l);         ///< get render-length-limit & rotate long-label list
+
+	static BYTE rotStep;            ///< current step-state (to rotate labels with more than 3 names)
 	const SurfTile *tile;           ///< associated surface tile
 	DWORD nlabel, nbuf;             ///< number of allocated labels and label buffer size
 	TLABEL **label;                 ///< the list read from file

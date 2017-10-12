@@ -124,6 +124,7 @@ void TileLabel::StoreLabel (TLABEL *l, const std::string &name)
 	for (DWORD i = 0; i < nlabel; ++i) {
 		if (l->lat == label[i]->lat && l->lng == label[i]->lng && l->labeltype == label[i]->labeltype) {
 			appendName(&label[i]->label, &label[i]->len, name);
+			++label[i]->nLines;
 			delete l;
 			return;
 		}
@@ -164,7 +165,8 @@ bool TileLabel::Read ()
 	//	item->lng = 6.90243 * RAD;
 	//	item->alt = 40;
 	//	item->labeltype = 'C';
-	//	StoreLabel(item, " Kuddel\nwas here!");
+	//	item->nLines = 2;
+	//	StoreLabel(item, "Kuddel\nwas here!");
 	//	done = true;
 	//}
 
@@ -283,16 +285,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 	oapiGetRotationMatrix(hPlanet, &Rpl);            // planet rotation matrix
 	VECTOR3 campos = tmul(Rpl, *Pcam - Ppl);         // camera pos in planet frame
 
-
-	// Get current "rotation step"
-	static bool currentRotStep = false;
-	double now = oapiGetSysTime();
-	static double lastT = now;
-	if (now - lastT > 1.5)
-	{
-		lastT = now;
-		currentRotStep = !currentRotStep;
-	}
+	Tick();
 
 	for (i = 0; i < nrenderlabel; ++i) {
 		VECTOR3 camlabelpos = campos-renderlabel[i]->pos;
@@ -350,7 +343,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 					break;
 				}
 
-				partLen = LimitAndRotateLongLabelList(renderlabel[i], currentRotStep);
+				partLen = LimitAndRotateLongLabelList(renderlabel[i]);
 
 				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len, partLen+1);
 				skp->TextW(x + scale + 2, y - scale - 1, wname, len);
@@ -358,6 +351,12 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 		}
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Long label list rotation
+// ---------------------------------------------------------------------------
+
+BYTE TileLabel::rotStep = 0;
 
 //std::vector<std::wstring> split(std::wstring s)
 //{
@@ -411,23 +410,29 @@ std::string join (std::vector<std::string> v)
 	return s;
 }
 
-int TileLabel::LimitAndRotateLongLabelList(TLABEL *l, bool rotStep)
+void TileLabel::Tick ()
+{
+	double now = oapiGetSysTime();
+	static double lastT = now;
+
+	// Update current rotation step (to rotate long lists every 1.3 seconds)
+	if (now - lastT > 1.3)
+	{
+		lastT = now;
+		++rotStep;
+	}
+}
+
+int TileLabel::LimitAndRotateLongLabelList(TLABEL *l)
 {
 	int partLen = l->len;
 
-	// Count lines
-	int nLines = 1;
-	for (CHAR *c = l->label; *c; ++c) {
-		if (*c == '\n') {
-			++nLines;
-		}
-	}
-
-	if (nLines > 3)
+	if (l->nLines > 3)
 	{
-		if (rotStep == l->rotStep)
+		if (rotStep != l->rotStep)
 		{
-			l->rotStep = !l->rotStep;
+			l->rotStep = rotStep;
+
 			// split
 			auto lines = split(l->label);
 			// roll over
@@ -437,19 +442,20 @@ int TileLabel::LimitAndRotateLongLabelList(TLABEL *l, bool rotStep)
 			// re-join
 			std::string label = join(lines);
 			strcpy_s(l->label, l->len+1, label.c_str());
-		}
 
-		// Calculate "render stop" length
-		nLines = 0;
-		for (CHAR *c = l->label; *c; ++c) {
-			if (*c == '\n') {
-				if (++nLines == 4) { // render 4 lines
-					partLen = c - l->label;
+			// Calculate/Update "render stop" length
+			int n = 0;
+			for (CHAR *c = l->label; *c; ++c) {
+				if (*c == '\n' && ++n == 4) { // render 4 lines
+					l->stopLen = c - l->label;
 					break;
 				}
 			}
-		}
 
+		} // end-if (rotate)
+
+		partLen = l->stopLen;
 	}
+
 	return partLen;
 }
