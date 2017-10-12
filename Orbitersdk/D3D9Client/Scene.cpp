@@ -1733,6 +1733,7 @@ surfLabelsActive = false;
 			D3D9DebugQueue.pop();
 		}
 
+		pSketch->EndDrawing();
 		EndScene();
 	}
 
