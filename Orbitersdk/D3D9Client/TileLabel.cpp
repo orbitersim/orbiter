@@ -358,7 +358,7 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 
 BYTE TileLabel::rotStep = 0;
 
-//std::vector<std::wstring> split(std::wstring s)
+//const std::vector<std::wstring> &split (const std::wstring &s)
 //{
 //	static std::vector<std::wstring> parts;
 //	std::wstringstream iss(s);
@@ -372,19 +372,17 @@ BYTE TileLabel::rotStep = 0;
 //	return parts;
 //}
 
-//std::wstring join(std::vector<std::wstring> v)
+//const std::wstring &join (const std::vector<std::wstring> &v)
 //{
 //	static std::wstring s;
-//	std::wstring first(v.front());
-//	v.erase(v.begin());
-//	s = first;
-//	for (auto it = v.begin(); it != v.end(); ++it) {
+//	s = v.front();
+//	for (auto it = v.begin()+1; it != v.end(); ++it) {
 //		s += L'\n' + *it;
 //	}
 //	return s;
 //}
 
-std::vector<std::string> split (std::string s)
+const std::vector<std::string> &split (const std::string &s)
 {
 	static std::vector<std::string> parts;
 	std::stringstream iss(s);
@@ -398,13 +396,11 @@ std::vector<std::string> split (std::string s)
 	return parts;
 }
 
-std::string join (std::vector<std::string> v)
+const std::string &join (const std::vector<std::string> &v)
 {
 	static std::string s;
-	std::string first(v.front());
-	v.erase(v.begin());
-	s = first;
-	for (auto it = v.begin(); it != v.end(); ++it) {
+	s = v.front();
+	for (auto it = v.begin()+1; it != v.end(); ++it) {
 		s += '\n' + *it;
 	}
 	return s;
