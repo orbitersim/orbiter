@@ -11,7 +11,7 @@
 
 #include "Surfmgr2.h"
 #include "ZTreeMgr.h"
-#include "Sketchpad2.h"
+#include "D3D9Pad.h"
 
 class TileLabel {
 public:
@@ -20,7 +20,7 @@ public:
 	TileLabel (const SurfTile *stile);
 	~TileLabel ();
 
-	void Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
+	void Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 protected:
 	bool   Read ();

@@ -222,7 +222,7 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 // -----------------------------------------------------------------------
 
 template<class TileType>
-void TileManager2Base::RenderNodeLabels(QuadTreeNode<TileType> *node, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+void TileManager2Base::RenderNodeLabels(QuadTreeNode<TileType> *node, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 {
 	TileType *tile = node->Entry();
 	if (tile->state == Tile::ForRender || tile->state == Tile::Active) {

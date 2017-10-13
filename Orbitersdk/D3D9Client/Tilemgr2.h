@@ -18,7 +18,7 @@
 #include "PlanetRenderer.h"
 #include "VPlanet.h"
 #include "Spherepatch.h"
-#include "Sketchpad2.h"
+#include "D3D9Pad.h"
 #include "Qtree.h"
 #include "ZTreeMgr.h"
 #include <stack>
@@ -305,7 +305,7 @@ public:
 	void QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles);
 
 	template<class TileType>
-	void RenderNodeLabels(QuadTreeNode<TileType> *node, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
+	void RenderNodeLabels(QuadTreeNode<TileType> *node, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 	void SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
@@ -377,7 +377,7 @@ public:
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
-	void RenderLabels(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
+	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 	int GetElevation(double lng, double lat, double *elev, SurfTile **cache);
 

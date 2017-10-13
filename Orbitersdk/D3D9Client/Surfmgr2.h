@@ -9,7 +9,7 @@
 
 #include "Tilemgr2_imp.hpp"
 #include "TileLabel.h"
-#include "Sketchpad2.h"
+#include "D3D9Pad.h"
 
 
 /**
@@ -48,7 +48,7 @@ protected:
 	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev = 0);
 	bool LoadElevationData ();
 	void Render ();
-	void RenderLabels(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
+	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 	void StepIn ();
 	//void Pick(MATRIX4 &dwMatrix, TILEPICK *pPick);
 

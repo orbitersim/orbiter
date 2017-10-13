@@ -11,7 +11,7 @@
 
 #include "VObject.h"
 #include "AtmoControls.h"
-#include "Sketchpad2.h"
+#include "D3D9Pad.h"
 #include <list>
 
 class D3D9Mesh;
@@ -71,7 +71,7 @@ public:
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
-	void            RenderLabels(LPDIRECT3DDEVICE9 dev, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx);
+	void            RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 	bool			CameraInAtmosphere() const;
 	double			CameraAltitude() const { return cdist - size; }
 	double			GetHorizonAlt() const;

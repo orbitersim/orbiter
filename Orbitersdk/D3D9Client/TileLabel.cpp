@@ -261,7 +261,7 @@ double TileLabel::Elevation (double lat, double lng, double latmin, double latma
 	return e*elev_res;
 }
 
-void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 {
 	if (!nrenderlabel) { return; }// nothing to render
 

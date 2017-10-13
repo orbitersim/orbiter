@@ -1263,7 +1263,7 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
 	{
-		oapi::Sketchpad2 *skp = NULL;
+		D3D9Pad *skp = NULL;
 		int fontidx = -1;
 		for (DWORD i = 0; i < nplanets; ++i)
 		{
@@ -1277,7 +1277,7 @@ void Scene::RenderMainScene()
 			if (label_format == 2)
 			{
 				if (!skp) {
-					skp = dynamic_cast<Sketchpad2*>(gc->clbkGetSketchpad(0));
+					skp = static_cast<D3D9Pad*>(gc->clbkGetSketchpad(0));
 					skp->SetPen(label_pen);
 				}
 				static_cast<vPlanet*>(plist[i].vo)->RenderLabels(pDevice, skp, label_font, &fontidx);

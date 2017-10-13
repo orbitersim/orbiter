@@ -843,7 +843,7 @@ void vPlanet::ActivateLabels(bool activate)
 
 // ==============================================================
 
-void vPlanet::RenderLabels(LPDIRECT3DDEVICE9 dev, oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+void vPlanet::RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 {
 	if (surfmgr2 && *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE) == 2)
 	{

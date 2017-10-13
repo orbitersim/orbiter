@@ -1037,7 +1037,7 @@ inline void SurfTile::DeleteLabels()
 
 // -----------------------------------------------------------------------
 
-void SurfTile::RenderLabels(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+void SurfTile::RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 {
 	if (!label) return;
 	label->Render(skp, labelfont, fontidx);
@@ -1146,7 +1146,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 // -----------------------------------------------------------------------
 
 template<>
-void TileManager2<SurfTile>::RenderLabels(oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
+void TileManager2<SurfTile>::RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 {
 	for (int i = 0; i < 2; ++i) {
 		RenderNodeLabels(tiletree + i, skp, labelfont, fontidx);
