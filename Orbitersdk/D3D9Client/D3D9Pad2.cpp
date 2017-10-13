@@ -675,7 +675,7 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 bool D3D9Pad::Flush(int iTech)
 {
 
-	bool bStateChnage = bPenChange || bViewChange || bFontChange || (iTech != CurrentTech);
+	bool bStateChange = bPenChange || bViewChange || bFontChange || (iTech != CurrentTech);
 
 
 	// Is the drawing queue full ? -------------------------------------
@@ -685,7 +685,7 @@ bool D3D9Pad::Flush(int iTech)
 
 	// Has something changed ?
 	//
-	if (!bStateChnage) return false;
+	if (!bStateChange) return false;
 
 	FlushPrimitives();
 

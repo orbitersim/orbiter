@@ -38,7 +38,7 @@ private:
 		LPSTR   label;         ///< the label (might contain multiple lines)
 
 		int     nLines;        ///< number of lines (for labels with multiple names)
-		int     stopLen;       ///< end of the 4rd line position for multiline labels (renderd only 'til here)
+		int     stopLen;       ///< end of the 4th line position for multiline labels (renderd only 'til here)
 		BYTE    rotStep;       ///< rotation step state (for labels with more than 3 names)
 	};
 

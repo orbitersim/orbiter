@@ -261,10 +261,6 @@ double TileLabel::Elevation (double lat, double lng, double latmin, double latma
 	return e*elev_res;
 }
 
-// collect for kgv (https://stackoverflow.com/questions/4229870/c-algorithm-to-calculate-least-common-multiple-for-multiple-numbers)
-//#include <set>
-//std::set<DWORD> hs;
-
 void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *fontidx)
 {
 	if (!nrenderlabel) { return; }// nothing to render
@@ -348,7 +344,6 @@ void TileLabel::Render (oapi::Sketchpad2 *skp, oapi::Font **labelfont, int *font
 				}
 
 				DWORD H = LOWORD(skp->GetCharSize());
-				//hs.insert(H); <= collect for kgv
 				
 				partLen = LimitAndRotateLongLabelList(renderlabel[i], H, &y);
 
