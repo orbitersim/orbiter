@@ -478,6 +478,9 @@ public:
 	void Reset();
 	void EndDrawing(bool bFlush = true);
 
+	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
+
+
 
 private:
 

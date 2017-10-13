@@ -366,6 +366,17 @@ DWORD D3D9Pad::GetCharSize ()
 
 // ===============================================================================================
 //
+DWORD D3D9Pad::GetLineHeight () // ... *with* "internal leading"
+{
+	TEXTMETRIC tm;
+	if (cfont == NULL) return 0;
+	static_cast<D3D9PadFont *>(cfont)->pFont->GetD3D9TextMetrics(&tm);
+	return tm.tmHeight;
+}
+
+
+// ===============================================================================================
+//
 DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 {
 	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 2;

@@ -343,7 +343,7 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 					break;
 				}
 
-				DWORD H = LOWORD(skp->GetCharSize());
+				DWORD H = skp->GetLineHeight();
 				
 				partLen = LimitAndRotateLongLabelList(renderlabel[i], H, &y);
 
