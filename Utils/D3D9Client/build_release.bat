@@ -11,6 +11,7 @@
 ::   This should *not* be a officially released version!
 ::
 :: ----------------------------------------------------------------------------
+setlocal
 
 :: --- Setup
 set BASE_DIR=..\..
@@ -18,33 +19,45 @@ set OUT_DIR=_release
 set VERSION=Beta25.4
 
 :: Enhance Version by Orbiter Version
-for /F "tokens=* USEBACKQ" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
+for /F "usebackq tokens=*" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
 set VERSION=%VERSION%-for%OVER%
 
-:: Try to get the Visual Studio version
+if "%VS150COMNTOOLS%"=="" call helper_vswhere.bat
+
+:: Visual Studio 2017
+if not "%VS150COMNTOOLS%"=="" (
+  set "SETVCVARS=%VS150COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
+  set SOLUTIONFILE=D3D9ClientVS2017.sln
+  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vs2017.vcxproj
+  goto assign
+)
+:: Visual Studio 2015
 if not "%VS140COMNTOOLS%"=="" (
-  set SETVCVARS="%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
+  set "SETVCVARS=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2015.sln
   set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
-  goto :assign
+  goto assign
 )
+:: Visual Studio 2012
 if not "%VS110COMNTOOLS%"=="" (
-  set SETVCVARS="%VS110COMNTOOLS%vsvars32.bat"
+  set "SETVCVARS=%VS110COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2012.sln
   set GCAPI_PROJECTFILE=gcAPI\gcAPI.vs2012.vcxproj
-  goto :assign
+  goto assign
 )
+:: Visual Studio 2010
 if not "%VS100COMNTOOLS%"=="" (
-  set SETVCVARS="%VS100COMNTOOLS%vsvars32.bat"
+  set "SETVCVARS=%VS100COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2010.sln
   set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
-  goto :assign
+  goto assign
 )
+:: Visual Studio 2008
 if not "%VS90COMNTOOLS%"=="" (
-  set SETVCVARS="%VS90COMNTOOLS%vsvars32.bat"
+  set "SETVCVARS=%VS90COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2008.sln
   set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
-  goto :assign
+  goto assign
 )
 
 :assign
@@ -53,7 +66,7 @@ set VC=msbuild.exe
 set BUILD_FLAG=/t:build
 set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%SOLUTIONFILE%"
 set GCAPI_PROJECTFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%GCAPI_PROJECTFILE%"
-set CONFIG=/p:Configuration=Release
+set CONFIG=/p:Configuration=Release /p:Platform=Win32
 set CONFIG_DBG=/p:Configuration=Debug
 set ZIP_CMD="C:\Program Files\7-Zip\7z.exe"
 
@@ -70,17 +83,29 @@ if exist "%OUT_DIR%" (
 mkdir "%OUT_DIR%"
 
 
+:: DEBUG (when we like to have no_logo ...)
+:: call "%VS150COMNTOOLS%VsDevCmd.bat" -no_logo -arch=x86 -host_arch=x86
+:: call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG%
+:: if errorlevel 1 goto exit_nok
+:: goto exit_ok
+:: DEBUG-END
+
+
 :: --- Start build environment
-call %SETVCVARS% x86 || goto exit_nok
+call "%SETVCVARS%" x86
+if errorlevel 1 goto exit_nok
 
 :: gcAPI_dbg.lib (DEBUG)
-:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG% || goto exit_nok
+:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG%
+:: if errorlevel 1 goto exit_nok
 
-:: gcAPI_dbg.lib (RELEASE)
-:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG% || goto exit_nok
+:: gcAPI.lib (RELEASE)
+:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG%
+:: if errorlevel 1 goto exit_nok
 
 :: D3D9Client & gcAPI.lib (RELEASE)
-call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG% || goto exit_nok
+call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG%
+if errorlevel 1 goto exit_nok
 
 
 :: --- Export
@@ -131,18 +156,4 @@ exit /B 1
 :: --- Cleanup
 :cleanup
 rmdir /S /Q "%OUT_DIR%"
-set BASE_DIR=
-set OUT_DIR=
-set VERSION=
-set REVISION=
-set SETVCVARS=
-set VC=
-set BUILD_FLAG=
-set SOLUTIONFILE=
-set GCAPI_PROJECTFILE=
-set CONFIG=
-set CONFIG_DBG=
-set ABS_PATH=
-set ZIP_CMD=
-set ZIP_NAME=
-set SETVCVARS=
+endlocal
