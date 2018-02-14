@@ -173,8 +173,8 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	D3DADAPTER_IDENTIFIER9 info;
 	pD3D->GetAdapterIdentifier(Adapter, 0, &info);
-	LogOapi("3D-Adapter = %s",info.Description);
-	LogAlw("dwFSMode = %u",dwFSMode);
+	LogOapi("3D-Adapter.............. : %s",info.Description);
+	LogAlw("dwFSMode................ : %u",dwFSMode);
 
 	// Get DisplayMode Resolution ---------------------------------------
 	//
@@ -244,39 +244,39 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	if (bGDIBB) MultiSample=0, bNoVSync = true;
 	if (MultiSample==1) MultiSample = 0;
 
-	LogAlw("MaxTextureBlendStages..: %u",caps.MaxTextureBlendStages);
-	LogOapi("MaxTextureWidth........: %u",caps.MaxTextureWidth);
-	LogOapi("MaxTextureHeight.......: %u",caps.MaxTextureHeight);
-	LogOapi("MaxTextureRepeat.......: %u",caps.MaxTextureRepeat);
-	LogOapi("VolTexAddressCaps......: 0x%X",caps.VolumeTextureAddressCaps);
-	LogAlw("MaxVolumeExtent........: %u",caps.MaxVolumeExtent);
-	LogAlw("MaxPrimitiveCount......: %u",caps.MaxPrimitiveCount);
-	LogAlw("MaxVertexIndex.........: %u",caps.MaxVertexIndex);
-	LogAlw("MaxAnisotropy..........: %u",caps.MaxAnisotropy);
-	LogAlw("MaxSimultaneousTextures: %u",caps.MaxSimultaneousTextures);
-	LogAlw("MaxStreams.............: %u",caps.MaxStreams);
-	LogAlw("MaxStreamStride........: %u",caps.MaxStreamStride);
-	LogAlw("MaxVertexBlendMatrices.: %u",caps.MaxVertexBlendMatrices);
-	LogAlw("MaxVShaderInstrExecuted: %u",caps.MaxVShaderInstructionsExecuted);
-	LogAlw("MaxPointSize...........: %f",caps.MaxPointSize);
-	LogAlw("VertexShaderVersion....: 0x%hX",(caps.VertexShaderVersion&0xFFFF));
-	LogAlw("PixelShaderVersion.....: 0x%hX",(caps.PixelShaderVersion&0xFFFF));
-	LogOapi("NumSimultaneousRTs.....: %u",caps.NumSimultaneousRTs);
-	LogAlw("D3DPTEXTURECAPS_POW2...: %d",(caps.TextureCaps&D3DPTEXTURECAPS_POW2)>0);
-	LogAlw("NONPOW2CONDITIONAL.....: %d",(caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)>0);
-	LogOapi("VertexDeclCaps.........: 0x%X",caps.DeclTypes);
-	LogAlw("DevCaps................: 0x%X",caps.DevCaps);
-	LogAlw("DevCaps2...............: 0x%X",caps.DevCaps2);
+	LogAlw("MaxTextureBlendStages... : %u",caps.MaxTextureBlendStages);
+	LogOapi("MaxTextureWidth......... : %u",caps.MaxTextureWidth);
+	LogOapi("MaxTextureHeight........ : %u",caps.MaxTextureHeight);
+	LogOapi("MaxTextureRepeat........ : %u",caps.MaxTextureRepeat);
+	LogOapi("VolTexAddressCaps....... : 0x%X",caps.VolumeTextureAddressCaps);
+	LogAlw("MaxVolumeExtent......... : %u",caps.MaxVolumeExtent);
+	LogAlw("MaxPrimitiveCount....... : %u",caps.MaxPrimitiveCount);
+	LogAlw("MaxVertexIndex.......... : %u",caps.MaxVertexIndex);
+	LogAlw("MaxAnisotropy........... : %u",caps.MaxAnisotropy);
+	LogAlw("MaxSimultaneousTextures. : %u",caps.MaxSimultaneousTextures);
+	LogAlw("MaxStreams.............. : %u",caps.MaxStreams);
+	LogAlw("MaxStreamStride......... : %u",caps.MaxStreamStride);
+	LogAlw("MaxVertexBlendMatrices.. : %u",caps.MaxVertexBlendMatrices);
+	LogAlw("MaxVShaderInstrExecuted. : %u",caps.MaxVShaderInstructionsExecuted);
+	LogAlw("MaxPointSize............ : %f",caps.MaxPointSize);
+	LogAlw("VertexShaderVersion..... : 0x%hX",(caps.VertexShaderVersion&0xFFFF));
+	LogAlw("PixelShaderVersion...... : 0x%hX",(caps.PixelShaderVersion&0xFFFF));
+	LogOapi("NumSimultaneousRTs...... : %u",caps.NumSimultaneousRTs);
+	LogAlw("D3DPTEXTURECAPS_POW2.... : %d",(caps.TextureCaps&D3DPTEXTURECAPS_POW2)>0);
+	LogAlw("NONPOW2CONDITIONAL...... : %d",(caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)>0);
+	LogOapi("VertexDeclCaps.......... : 0x%X",caps.DeclTypes);
+	LogAlw("DevCaps................. : 0x%X",caps.DevCaps);
+	LogAlw("DevCaps2................ : 0x%X",caps.DevCaps2);
 	
 	BOOL bXna = XMVerifyCPUSupport();
 
 	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) Pure = false;
 
 	if (bXna) {
-		LogOapi("XNA Math Support.......: Yes");
+		LogOapi("XNA Math Support........ : Yes");
 	}
 	else {
-		LogOapi("XNA Math Support.......: No");
+		LogOapi("XNA Math Support........ : No");
 		bFail=true;
 	}
 
@@ -304,11 +304,11 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	//
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F)==S_OK) {
 		bVertexTexture = true;
-		LogOapi("Vertex Texture.........: Yes");
+		LogOapi("Vertex Texture.......... : Yes");
 	}
 	else {
 		bVertexTexture = false;
-		LogOapi("Vertex Texture.........: No");
+		LogOapi("Vertex Texture.......... : No");
 	}
 
 	// Check shadow mapping support
@@ -317,45 +317,58 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_R32F)!=S_OK) bShadowMap = false;
 	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_R32F, D3DFMT_D24X8)!=S_OK) bShadowMap = false;
 
-	if (bShadowMap) LogOapi("Shadow Mapping.........: Yes");
-	else			LogOapi("Shadow Mapping.........: No");
+	if (bShadowMap) LogOapi("Shadow Mapping.......... : Yes");
+	else			LogOapi("Shadow Mapping.......... : No");
 
 	bool bFloat16BB = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)!=S_OK) bFloat16BB = false;
 	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_A16B16G16R16F, D3DFMT_D24X8)!=S_OK) bFloat16BB = false;
 				  
-	if (bFloat16BB) LogOapi("D3DFMT_A16B16G16R16F...: Yes");
-	else		    LogOapi("D3DFMT_A16B16G16R16F...: No");
+	if (bFloat16BB) LogOapi("D3DFMT_A16B16G16R16F.... : Yes");
+	else		    LogOapi("D3DFMT_A16B16G16R16F.... : No");
 
 	bool bFloat32BB = true;
 	if (pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)!=S_OK) bFloat32BB = false;
 			  
-	if (bFloat32BB) LogOapi("D3DFMT_A32B32G32R32F...: Yes");
-	else		    LogOapi("D3DFMT_A32B32G32R32F...: No");
+	if (bFloat32BB) LogOapi("D3DFMT_A32B32G32R32F.... : Yes");
+	else		    LogOapi("D3DFMT_A32B32G32R32F.... : No");
 
 	HRESULT D32F = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32F_LOCKABLE);
 
-	if (D32F==S_OK) LogOapi("D3DFMT_D32F_LOCKABLE...: Yes"); 
-	else		    LogOapi("D3DFMT_D32F_LOCKABLE...: No");
+	if (D32F==S_OK) LogOapi("D3DFMT_D32F_LOCKABLE.... : Yes"); 
+	else		    LogOapi("D3DFMT_D32F_LOCKABLE.... : No");
 
 	HRESULT AR10 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_A2R10G10B10);
 
-	if (AR10==S_OK) LogOapi("D3DFMT_A2R10G10B10.....: Yes"); 
-	else		    LogOapi("D3DFMT_A2R10G10B10.....: No");
+	if (AR10==S_OK) LogOapi("D3DFMT_A2R10G10B10...... : Yes"); 
+	else		    LogOapi("D3DFMT_A2R10G10B10...... : No");
 	
 
-	if (caps.DeclTypes&D3DDTCAPS_DEC3N) LogOapi("D3DDTCAPS_DEC3N........: Yes");
-	else								LogOapi("D3DDTCAPS_DEC3N........: No");
+	if (caps.DeclTypes&D3DDTCAPS_DEC3N) LogOapi("D3DDTCAPS_DEC3N......... : Yes");
+	else								LogOapi("D3DDTCAPS_DEC3N......... : No");
 
-	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_2) LogOapi("D3DDTCAPS_FLOAT16_2....: Yes");
-	else								    LogOapi("D3DDTCAPS_FLOAT16_2....: No");
+	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_2) LogOapi("D3DDTCAPS_FLOAT16_2..... : Yes");
+	else								    LogOapi("D3DDTCAPS_FLOAT16_2..... : No");
 
-	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_4) LogOapi("D3DDTCAPS_FLOAT16_4....: Yes");
-	else								    LogOapi("D3DDTCAPS_FLOAT16_4....: No");
+	if (caps.DeclTypes&D3DDTCAPS_FLOAT16_4) LogOapi("D3DDTCAPS_FLOAT16_4..... : Yes");
+	else								    LogOapi("D3DDTCAPS_FLOAT16_4..... : No");
 
 	// Check (Log) whether orbiter runs on WINE
 	//
-	LogOapi("Runs under WINE........: %s", OapiExtension::RunsUnderWINE() ? "Yes" : "No");
+	LogOapi("Runs under WINE......... : %s", OapiExtension::RunsUnderWINE() ? "Yes" : "No");
+
+	// Log some locale information
+	//
+	int size = max( GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL, NULL, 0),
+	                GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SENGLISHDISPLAYNAME, NULL, 0) );
+	auto buff = new WCHAR[size];
+
+	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL, buff, size);
+	LogOapi("Decimal separator....... : %ls", buff);
+	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SENGLISHDISPLAYNAME, buff, size);
+	LogOapi("Locale.................. : %ls", buff);
+
+	delete[] buff;
 
 	// Check MipMap autogeneration
 	//
@@ -378,7 +391,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		return hr;
 	}
 
-	LogOapi("Available Texture Memory = %u MB",pDevice->GetAvailableTextureMem()>>20);
+	LogOapi("Available Texture Memory : %u MB", pDevice->GetAvailableTextureMem() >> 20);
 
 	D3DVIEWPORT9 vp;
 

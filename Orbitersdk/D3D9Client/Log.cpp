@@ -219,7 +219,7 @@ void LogOapi(const char *format, ...)
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
 		va_end(args);
 
-		oapiWriteLogV("D3D9: %s", ErrBuf);
+		oapiWriteLogV("            D3D9: %s", ErrBuf);
 
 		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
