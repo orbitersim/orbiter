@@ -2,7 +2,7 @@
 // OapiExtension.h
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012-2017 Peter Schneider (Kuddel)
+// Copyright (C) 2012-2018 Peter Schneider (Kuddel)
 // ==============================================================
 
 #ifndef __OAPIEXTENSION_H
@@ -187,6 +187,13 @@ public:
 	static const void *GetConfigParam (DWORD paramtype);
 
 	/**
+	 * \brief Returns whether we run Orbiter 2010 (and derivatives)
+	 *
+	 * \return Whether we run Orbiter 2010
+	 */
+	static const bool RunsOrbiter2010 () { return isOrbiter2010; }
+
+	/**
 	 * \brief Returns whether OrbiterSound 4.0 is up and running
 	 *
 	 * \return Whether OrbiterSound 4.0 is active
@@ -267,6 +274,7 @@ private:
 	static float coordinateAxesScale;   // [0.25...4.0]
 	static float coordinateAxesOpacity; // [0...1]
 	// OrbiterSound 4.0 helper
+	static bool isOrbiter2010;          ///< Whether we run Orbiter  2010 (and derivatives)
 	static bool orbiterSound40;
 	static std::string configDir;       ///< Value of Orbiters ConfigDir parameter
 	static std::string meshDir;         ///< Value of Orbiters MeshDir parameter

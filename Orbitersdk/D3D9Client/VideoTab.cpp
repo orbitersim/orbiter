@@ -885,29 +885,35 @@ void VideoTab::CreateSymbolicLinks()
 
 	// Sound -> Modules/Server/Sound
 	//
-	result += "Sound: ";
-	if (junction::TargetDirectoryExists("Sound"))
+	if (OapiExtension::RunsOrbiter2010())
 	{
-		if (OapiExtension::RunsOrbiterSound40()) {
-			result += "OK. OrbiterSound (4.0) detected. No link necessary.";
-		}
-		else if (!junction::IsDirectoryJunction("Modules\\Server\\Sound"))
+		result += "Sound: ";
+		if (junction::TargetDirectoryExists("Sound"))
 		{
-			if(!junction::CreateJunctionPoint("Sound", "Modules\\Server\\Sound"))
-			{
-				result += (GetLastError() == ERROR_DIR_NOT_EMPTY)
-						? "OK. A non-empty 'Sound' directory already exists."
-						: "FAIL. Could not create link.";
-			} else {
-				result += "OK. Link created.";
+			if (OapiExtension::RunsOrbiterSound40()) {
+				result += "OK. OrbiterSound (4.0) detected. No link necessary.";
 			}
-		} else {
-			result += "OK. Link exists.";
+			else if (!junction::IsDirectoryJunction("Modules\\Server\\Sound"))
+			{
+				if (!junction::CreateJunctionPoint("Sound", "Modules\\Server\\Sound"))
+				{
+					result += (GetLastError() == ERROR_DIR_NOT_EMPTY)
+							? "OK. A non-empty 'Sound' directory already exists."
+							: "FAIL. Could not create link.";
+				}
+				else {
+					result += "OK. Link created.";
+				}
+			}
+			else {
+				result += "OK. Link exists.";
+			}
 		}
-	} else {
-		result += "OK. OrbiterSound not installed.";
+		else {
+			result += "OK. OrbiterSound not installed.";
+		}
+		result += "\r\n";
 	}
-	result += "\r\n";
 
 	MessageBox(NULL, result.c_str(), "D3D9Client Configuration", MB_OK);
 }

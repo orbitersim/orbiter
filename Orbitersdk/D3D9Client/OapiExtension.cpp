@@ -2,7 +2,7 @@
 // OapiExtension.cpp
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2012 - 2017 Peter Schneider (Kuddel)
+// Copyright (C) 2012 - 2018 Peter Schneider (Kuddel)
 // ==============================================================
 
 #include <algorithm>
@@ -57,6 +57,12 @@ std::string OapiExtension::scenarioDir(".\\Scenarios\\");
 std::string OapiExtension::startupScenario = OapiExtension::ScanCommandLine();
 
 bool OapiExtension::configParameterRead = OapiExtension::GetConfigParameter();
+
+// 2010       100606
+// 2010-P1    100830
+// 2010-P2    110822
+// 2010-P2.1  110824
+bool OapiExtension::isOrbiter2010 = (oapiGetOrbiterVersion() <= 110824 && oapiGetOrbiterVersion() >= 100606);
 
 bool OapiExtension::orbiterSound40 = false;
 bool OapiExtension::tileLoadThread = true;

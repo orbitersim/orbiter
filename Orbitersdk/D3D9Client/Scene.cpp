@@ -32,12 +32,6 @@ static D3DXMATRIX ident;
 
 const double LABEL_DISTLIMIT = 0.6;
 
-// 2010       100606
-// 2010-P1    100830
-// 2010-P2    110822
-// 2010-P2.1  110824
-const bool RUNS_ORBITER_2010 = (oapiGetOrbiterVersion() <= 110824 && oapiGetOrbiterVersion() >= 100606);
-
 struct PList { // auxiliary structure for object distance sorting
 	vObject *vo;
 	double dist;
@@ -616,7 +610,7 @@ void Scene::Update ()
 			//         and following...
 
 			// OrbiterSound 4.0 'playback helper'
-			if (RUNS_ORBITER_2010 &&
+			if (OapiExtension::RunsOrbiter2010() &&
 			    OapiExtension::RunsOrbiterSound40() &&
 				oapiIsVessel(hTgt) && // oapiGetObjectType(vo->Object()) == OBJTP_VESSEL &&
 				dynamic_cast<vVessel*>(vo)->Playback()
