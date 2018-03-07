@@ -359,16 +359,16 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	// Log some locale information
 	//
-	int size = max( GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL, NULL, 0),
-	                GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SENGLISHDISPLAYNAME, NULL, 0) );
-	auto buff = new WCHAR[size];
+	//int size = max( GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL, NULL, 0),
+	//                GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SENGLISHDISPLAYNAME, NULL, 0) );
+	//auto buff = new WCHAR[size];
 
-	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL, buff, size);
-	LogOapi("Decimal separator....... : %ls", buff);
-	GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SENGLISHDISPLAYNAME, buff, size);
-	LogOapi("Locale.................. : %ls", buff);
+	//GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL, buff, size);
+	//LogOapi("Decimal separator....... : %ls", buff);
+	//GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SENGLISHDISPLAYNAME, buff, size);
+	//LogOapi("Locale.................. : %ls", buff);
 
-	delete[] buff;
+	//delete[] buff;
 
 	// Check MipMap autogeneration
 	//
