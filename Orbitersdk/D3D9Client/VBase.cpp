@@ -219,6 +219,10 @@ vBase::~vBase ()
 		}
 		delete[] taxiLights;
 	}
+
+	if (DebugControls::IsActive()) {
+		DebugControls::RemoveVisual(this);
+	}
 }
 
 // ===========================================================================================

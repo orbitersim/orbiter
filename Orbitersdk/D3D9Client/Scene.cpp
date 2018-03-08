@@ -575,19 +575,18 @@ void Scene::Update ()
 
 		Camera.hTarget = hTgt;
 
-		if (oapiGetObjectType(hTgt)==OBJTP_SURFBASE) {
-			OBJHANDLE hPlanet = oapiGetBasePlanet(hTgt);
-			vPlanet *vp = (vPlanet *)GetVisObject(hPlanet);
-			if (vp) {
-				vBase *vb = vp->GetBaseByHandle(hTgt);
-				if (vb) {
-					if (DebugControls::IsActive()) {
+		if (DebugControls::IsActive()) {
+			if (oapiGetObjectType(hTgt) == OBJTP_SURFBASE) {
+				OBJHANDLE hPlanet = oapiGetBasePlanet(hTgt);
+				vPlanet *vp = static_cast<vPlanet *>(GetVisObject(hPlanet));
+				if (vp) {
+					vBase *vb = vp->GetBaseByHandle(hTgt);
+					if (vb) {
 						DebugControls::SetVisual(vb);
 					}
-
 				}
+				return; // why?
 			}
-			return;
 		}
 
 		vObject *vo = GetVisObject(hTgt);
