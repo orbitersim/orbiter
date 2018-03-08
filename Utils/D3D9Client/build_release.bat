@@ -92,6 +92,8 @@ mkdir "%OUT_DIR%"
 
 
 :: --- Start build environment
+:: Prevent vcvarsall.bat of Visual Studio 2017 from changing the current working directory
+set "VSCMD_START_DIR=%CD%"
 call "%SETVCVARS%" x86
 if errorlevel 1 goto exit_nok
 
