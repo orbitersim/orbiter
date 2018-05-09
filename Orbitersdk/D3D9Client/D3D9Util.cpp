@@ -73,6 +73,15 @@ bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 	return false;
 }
 
+void LogMatrix(D3DXMATRIX *pM, const char *name)
+{
+	LogAlw("%s", name);
+	LogAlw("[%2.2g, %2.2g, %2.2g %2.2g]", pM->_11, pM->_12, pM->_13, pM->_14);
+	LogAlw("[%2.2g, %2.2g, %2.2g %2.2g]", pM->_21, pM->_22, pM->_23, pM->_24);
+	LogAlw("[%2.2g, %2.2g, %2.2g %2.2g]", pM->_31, pM->_32, pM->_33, pM->_34);
+	LogAlw("[%2.2g, %2.2g, %2.2g %2.2g]", pM->_41, pM->_42, pM->_43, pM->_44);
+}
+
 inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in) 
 {
 	return D3DXVECTOR4(in.r, in.g, in.b, in.a);
@@ -732,6 +741,13 @@ float D3DMAT_BSScaleFactor(const D3DXMATRIX *mat)
 // Apply a translation vector toa D3D transformation matrix
 
 void D3DMAT_SetTranslation (D3DXMATRIX *mat, const VECTOR3 *trans)
+{
+	mat->_41 = (FLOAT)trans->x;
+	mat->_42 = (FLOAT)trans->y;
+	mat->_43 = (FLOAT)trans->z;
+}
+
+void D3DMAT_SetTranslation(D3DXMATRIX *mat, const D3DXVECTOR3 *trans)
 {
 	mat->_41 = (FLOAT)trans->x;
 	mat->_42 = (FLOAT)trans->y;

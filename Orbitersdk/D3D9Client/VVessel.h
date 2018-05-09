@@ -60,7 +60,11 @@ public:
 
 	MESHHANDLE GetMesh (UINT idx);
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
+	bool GetMinMaxLightDist(float *mind, float *maxd);
 	void UpdateBoundingBox();
+	bool IsInsideShadows();
+	bool IntersectShadowTarget();
+
 	inline DWORD GetMeshCount();
 
 	void PreInitObject();

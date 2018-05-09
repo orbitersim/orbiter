@@ -102,14 +102,14 @@ public:
 					 */
 					D3D9Mesh(DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
 					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
-					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate=false);
+					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL);
 					~D3D9Mesh();
 
 	D3D9Mesh		&operator =(const D3D9Mesh &mesh) { Copy(mesh); return *this; }
 
 	void			Release();
 
-	void			LoadMeshFromHandle(MESHHANDLE hMesh);
+	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 	void			UnLockVertexBuffer();
 	void			UnLockIndexBuffer();
@@ -243,7 +243,7 @@ private:
 	void			Copy(const D3D9Mesh &mesh);
 	void			UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
 	void			ProcessInherit();
-	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg);
+	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL);
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
 	void			UpdateGeometryBuffer(int grp=-1);
 	void			Null();

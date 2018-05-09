@@ -65,6 +65,7 @@ public:
 	// ------------------------------------------------------------  
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;
+	static D3DXHANDLE smLVP;
 	// ------------------------------------------------------------  
 	static D3DXHANDLE svTexOff;
 	static D3DXHANDLE svWater;
@@ -76,6 +77,7 @@ public:
 	static D3DXHANDLE svMicroScale0;
 	static D3DXHANDLE svMicroScale1;		
 	static D3DXHANDLE svMicroScale2;	
+	static D3DXHANDLE svSHD;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
 	static D3DXHANDLE sfAlpha;
@@ -91,6 +93,7 @@ public:
 	static D3DXHANDLE siTileLvl;
 	static D3DXHANDLE siDebug;
 	static D3DXHANDLE sbDebug;
+	static D3DXHANDLE sbShadows;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
@@ -103,6 +106,7 @@ public:
 	static D3DXHANDLE stMicroB;
 	static D3DXHANDLE stMicroC;
 	static D3DXHANDLE stMicroRot;
+	static D3DXHANDLE stShadowMap;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;

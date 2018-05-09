@@ -1,8 +1,8 @@
-// ============================================================================
+// ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2012-2016 Jarmo Nikkanen
-// ============================================================================
+// ==============================================================
 
 
 struct TileMeshVS
@@ -271,25 +271,35 @@ float4 ShadowTechPS(BShadowVS frg) : COLOR
 	return float4(0.0f, 0.0f, 0.0f, 1-gMix);
 }
 
-// return 4 components even if the target surface has just one
-float4 GeometryTechPS(BShadowVS frg) : COLOR
+// -----------------------------------------------------------------------------------
+
+BShadowVS ShadowMapVS(SHADOW_VERTEX vrt)
+{
+	// Zero output.
+	BShadowVS outVS = (BShadowVS)0;
+	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gW).xyz;
+	outVS.posH = mul(float4(posW, 1.0f), gLVP);
+	outVS.dstW = outVS.posH.zw;
+	return outVS;
+}
+
+float4 ShadowMapPS(BShadowVS frg) : COLOR
 {
 	return frg.dstW.x / frg.dstW.y;
 }
+
+// -----------------------------------------------------------------------------------
 
 technique GeometryTech
 {
 	pass P0
 	{
-		vertexShader = compile vs_3_0 ShadowMeshTechVS();
-		pixelShader = compile ps_3_0 GeometryTechPS();
+		vertexShader = compile vs_3_0 ShadowMapVS();
+		pixelShader = compile ps_3_0 ShadowMapPS();
 
-		AlphaBlendEnable = true;
-		BlendOp = Max;
-		SrcBlend = One;
-		DestBlend = One;
-		ZEnable = false;
-		ZWriteEnable = false;
+		AlphaBlendEnable = false;
+		ZEnable = true;
+		ZWriteEnable = true;
 		StencilEnable = false;
 	}
 }

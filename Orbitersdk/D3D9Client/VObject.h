@@ -128,6 +128,7 @@ public:
 	virtual bool IsVisible();
 	virtual DWORD GetMeshCount();
 
+	D3DXVECTOR3 GetBoundingSpherePosDX();
 	VECTOR3 GetBoundingSpherePos();
 	float GetBoundingSphereRadius();
 	const char *GetName();
@@ -179,6 +180,7 @@ public:
 	 * \sa Render, CheckResolution
 	 */
 	virtual bool Update (bool bMainScene);
+	virtual void ReOrigin(VECTOR3 global_pos);
 
 	/**
 	 * \brief Level-of-detail check
@@ -223,6 +225,7 @@ public:
 	
 
 	bool bOmit;			// Omit this object from scene rendering
+	D9BBox			BBox;
 
 protected:
 
@@ -236,17 +239,16 @@ protected:
 	static D3D9Mesh * hStockMesh[16];
 	
 	D3D9Sun			sunLight;	// Local copy of sun light. (Can be freely edited)
-	D9BBox			BBox;
 	bool			bBSRecompute;
 
 	bool active;		// visual is active (within camera range)
 	Scene *scn;			// The scene to which the object belongs
 	D3DXMATRIX mWorld;	// D3D world matrix for the object
-	D3DXMATRIX mWorldInv;
 	VECTOR3	axis;
 	VECTOR3 cpos;		// camera-relative object position
 	VECTOR3 sundir;		// Sun direction (unit vector)
 	VECTOR3 albedo;
+	VECTOR3 gpos;
 	MATRIX4 dmWorld;    // world matrix in double precision
 	double size;        // object radius [m]
 	double cdist;		// current camera distance

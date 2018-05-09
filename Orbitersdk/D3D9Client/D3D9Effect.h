@@ -50,6 +50,7 @@ public:
 	D3D9Effect();
 	~D3D9Effect();
 
+	static void EnablePlanetGlow(bool bEnabled);
 	static void UpdateEffectCamera(OBJHANDLE hPlanet);
 	static void InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient);
 	static void SetViewProjMatrix(LPD3DXMATRIX pVP);
@@ -69,6 +70,8 @@ public:
 	static LPDIRECT3DTEXTURE9 pNoise;   ///< Static (global) noise texture
 	static SURFHANDLE hNoise;           ///< Static (global) noise surface handle
 	
+	static D3DXVECTOR4 atm_color;		///< Earth glow color
+
 	// Rendering Technique related parameters
 	static ID3DXEffect	*FX;
 	static D3D9Client   *gc; ///< The graphics client instance
@@ -109,10 +112,8 @@ public:
 	// Transformation Matrices ----------------------------------------
 	static D3DXHANDLE	eVP;         ///< Combined View & Projection Matrix
 	static D3DXHANDLE	eW;          ///< World Matrix
-	static D3DXHANDLE	eWI;         ///< World inverse Matrix
+	static D3DXHANDLE	eLVP;        ///< Light view projection
 	static D3DXHANDLE	eGT;         ///< MeshGroup transformation matrix
-	static D3DXHANDLE	eGTI;        ///< Inverse mesh grp transformation matrix
-	static D3DXHANDLE	eInstMatrix; ///< Instance Matrix array
 
 	// Lighting related parameters ------------------------------------
 	static D3DXHANDLE   eMtrl;
@@ -121,16 +122,18 @@ public:
 	static D3DXHANDLE	eWater;      ///< Water
 	static D3DXHANDLE	eSun;        ///< Sun
 	static D3DXHANDLE	eLights;     ///< Additional light sources
+	static D3DXHANDLE	eKernel;
 
 	// Auxilliary params ----------------------------------------------
 	static D3DXHANDLE   eModAlpha;     ///< BOOL multiply material alpha with texture alpha
 	static D3DXHANDLE	eFullyLit;     ///< BOOL
 	static D3DXHANDLE	eFlow;		   ///< BOOL
-	static D3DXHANDLE	eDebugHL;	   ///< BOOL
+	static D3DXHANDLE	eShadowToggle; ///< BOOL
 	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
 	static D3DXHANDLE	eInSpace;      ///< BOOL
 	static D3DXHANDLE	eNoColor;      ///< BOOL
-	static D3DXHANDLE	eGlow;	       ///< BOOL
+	static D3DXHANDLE	eLightsEnabled;///< BOOL
+	static D3DXHANDLE	eBaseBuilding; ///< BOOL
 	static D3DXHANDLE	eTuneEnabled;  ///< BOOL
 	static D3DXHANDLE	eFresnel;	   ///< BOOL
 	static D3DXHANDLE   eSwitch;	   ///< BOOL
@@ -156,6 +159,7 @@ public:
 	static D3DXHANDLE	eMtrlAlpha;
 	static D3DXHANDLE	eAttennuate;
 	static D3DXHANDLE	eInScatter;
+	static D3DXHANDLE	eSHD;
 
 	// Textures --------------------------------------------------------
 	static D3DXHANDLE	eTex0;    ///< Primary texture
@@ -170,6 +174,7 @@ public:
 	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;
+	static D3DXHANDLE	eShadowMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 	static D3DXHANDLE	eGlobalAmb;	 

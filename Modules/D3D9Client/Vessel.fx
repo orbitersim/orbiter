@@ -83,7 +83,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
 
-	// Compute World space normal ---------------------------------------------
+	// Compute World space normal ------------------------------------------- 
 	//
 	if (gCfg.Norm) {
 		nrmT = nrmT * 2.0 - 1.0;
@@ -227,7 +227,8 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	cTex.rgb += cEmis;
 
 #if defined(_DEBUG)
-	if (gDebugHL) cTex = cTex*0.5f + gColor;
+	//if (gDebugHL) cTex = cTex*0.5f + gColor;
+	cTex = cTex * (1 - gColor*0.5f) + gColor;
 #endif
 	
 	return cTex;

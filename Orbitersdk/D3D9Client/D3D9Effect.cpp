@@ -18,6 +18,7 @@ ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::VB = 0;
 LPDIRECT3DTEXTURE9 D3D9Effect::pNoise = 0;
 SURFHANDLE D3D9Effect::hNoise = 0;
+D3DXVECTOR4 D3D9Effect::atm_color;			// Earth glow color
 
 D3D9MatExt D3D9Effect::mfdmat;
 D3D9MatExt D3D9Effect::defmat;
@@ -60,10 +61,8 @@ D3DXHANDLE D3D9Effect::eEmissiveTech = 0;
 
 D3DXHANDLE D3D9Effect::eVP = 0;			// Combined View & Projection Matrix
 D3DXHANDLE D3D9Effect::eW = 0;			// World matrix
-D3DXHANDLE D3D9Effect::eWI = 0;			// World inverse matrix
+D3DXHANDLE D3D9Effect::eLVP = 0;		// Light view projection
 D3DXHANDLE D3D9Effect::eGT = 0;			// Mesh group transformation matrix
-D3DXHANDLE D3D9Effect::eGTI = 0;		// Inverse mesh grp ...
-D3DXHANDLE D3D9Effect::eInstMatrix = 0;	// Instance Matrix array
 D3DXHANDLE D3D9Effect::eMat = 0;		// Material
 D3DXHANDLE D3D9Effect::eWater = 0;		// Water
 D3DXHANDLE D3D9Effect::eMtrl = 0;
@@ -81,6 +80,7 @@ D3DXHANDLE D3D9Effect::eEnvMapB = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
 D3DXHANDLE D3D9Effect::eRghnMap = 0;
 D3DXHANDLE D3D9Effect::eFrslMap = 0;
+D3DXHANDLE D3D9Effect::eShadowMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
 
@@ -93,10 +93,12 @@ D3DXHANDLE D3D9Effect::eTime = 0;		// FLOAT Simulation elapsed time
 D3DXHANDLE D3D9Effect::eMix = 0;		// FLOAT Auxiliary factor/multiplier
 D3DXHANDLE D3D9Effect::eFogDensity = 0;	// 
 D3DXHANDLE D3D9Effect::ePointScale = 0;
+D3DXHANDLE D3D9Effect::eSHD = 0;
 
 D3DXHANDLE D3D9Effect::eAtmColor = 0;
 D3DXHANDLE D3D9Effect::eProxySize = 0;
 D3DXHANDLE D3D9Effect::eMtrlAlpha = 0;
+D3DXHANDLE D3D9Effect::eKernel = 0;
 
 // Shader Flow Controls
 D3DXHANDLE D3D9Effect::eFlow = 0;
@@ -106,12 +108,13 @@ D3DXHANDLE D3D9Effect::eTextured = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eFresnel = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eSwitch = 0;		// BOOL
 D3DXHANDLE D3D9Effect::eRghnSw = 0;
-D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
+D3DXHANDLE D3D9Effect::eShadowToggle = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eGlow = 0;	// BOOL	
+D3DXHANDLE D3D9Effect::eLightsEnabled = 0;	// BOOL	
 D3DXHANDLE D3D9Effect::eTuneEnabled = 0; // BOOL
+D3DXHANDLE D3D9Effect::eBaseBuilding = 0;
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
@@ -181,6 +184,39 @@ NTVERTEX exhaust_vtx[8] = {
 	{0,0,0, 0,0,0, 0.99609375f, 0.49609375f}
 };
 
+
+// TotalWeight = 21.337518, Count = 27, x - balance = -0.145075, y - balance = -0.012734
+static D3DXVECTOR3 shadow_kernel[27] = {
+	{ -0.2607f, -0.9643f, 0.9995f },
+	{ -0.7879f, -0.5824f, 0.9898f },
+	{ -0.3796f, -0.6389f, 0.8620f },
+	{ -0.1287f, -0.6631f, 0.8219f },
+	{ 0.4393f, -0.6945f, 0.9065f },
+	{ -0.5448f, -0.4505f, 0.8408f },
+	{ -0.2330f, -0.3496f, 0.6482f },
+	{ -0.1185f, -0.2572f, 0.5322f },
+	{ 0.4340f, -0.4138f, 0.7744f },
+	{ 0.6976f, -0.4110f, 0.8998f },
+	{ -0.5738f, 0.0418f, 0.7585f },
+	{ -0.3732f, -0.1313f, 0.6290f },
+	{ -0.1242f, 0.0847f, 0.3877f },
+	{ 0.4157f, 0.0066f, 0.6448f },
+	{ 0.7117f, 0.0726f, 0.8458f },
+	{ 0.8990f, 0.0801f, 0.9500f },
+	{ -0.8740f, 0.2448f, 0.9527f },
+	{ -0.5545f, 0.3910f, 0.8237f },
+	{ -0.3458f, 0.3380f, 0.6954f },
+	{ -0.1168f, 0.2083f, 0.4887f },
+	{ 0.2998f, 0.4449f, 0.7325f },
+	{ 0.5572f, 0.2251f, 0.7752f },
+	{ -0.2250f, 0.5790f, 0.7882f },
+	{ 0.0300f, 0.5853f, 0.7656f },
+	{ 0.3031f, 0.6734f, 0.8594f },
+	{ 0.7652f, 0.6273f, 0.9947f },
+	{ -0.0571f, 0.9407f, 0.9708f }
+};
+
+
 // ===========================================================================================
 //
 D3D9Effect::D3D9Effect() : d3d9id('D3D9')
@@ -237,6 +273,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");
 
+	if (Config->ShadowMapMode == 0) Config->ShadowFilter = -1;
+
 	// ------------------------------------------------------------------------------
 	macro[0].Name = "ANISOTROPY_MACRO";
 	macro[0].Definition = new char[32];
@@ -250,18 +288,22 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[2].Definition = new char[32];
 	sprintf_s((char*)macro[2].Definition, 32, "%d", Config->MaxLights());
 	// ------------------------------------------------------------------------------
-	int m = 3;
+	macro[3].Name = "SHDMAP";
+	macro[3].Definition = new char[32];
+	sprintf_s((char*)macro[3].Definition, 32, "%d", Config->ShadowFilter + 1);
+	// ------------------------------------------------------------------------------
+	int m = 4;
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
 	
-
-
+	
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
 	
 	delete []macro[0].Definition;
 	delete []macro[1].Definition;
 	delete []macro[2].Definition;
+	delete []macro[3].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -320,7 +362,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eModAlpha	  = FX->GetParameterByName(0,"gModAlpha");
 	eFullyLit	  = FX->GetParameterByName(0,"gFullyLit");
 	eFlow		  = FX->GetParameterByName(0,"gCfg");
-	eDebugHL	  = FX->GetParameterByName(0,"gDebugHL");
+	eShadowToggle = FX->GetParameterByName(0,"gShadowsEnabled");
 	eEnvMapEnable = FX->GetParameterByName(0,"gEnvMapEnable");
 	eTextured	  = FX->GetParameterByName(0,"gTextured");
 	eFresnel      = FX->GetParameterByName(0,"gFresnel");
@@ -328,8 +370,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eRghnSw		  = FX->GetParameterByName(0,"gRghnSw");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
-	eGlow		  = FX->GetParameterByName(0,"gGlow");	
+	eLightsEnabled = FX->GetParameterByName(0,"gLightsEnabled");	
 	eTuneEnabled  = FX->GetParameterByName(0,"gTuneEnabled");
+	eBaseBuilding = FX->GetParameterByName(0,"gBaseBuilding");
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
@@ -344,13 +387,13 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTime		  = FX->GetParameterByName(0,"gTime");
 	eMtrlAlpha	  = FX->GetParameterByName(0,"gMtrlAlpha");
 	eGlowConst    = FX->GetParameterByName(0,"gGlowConst");
+	eSHD		  = FX->GetParameterByName(0,"gSHD");
+	eKernel		  = FX->GetParameterByName(0,"kernel");
 	// ----------------------------------------------------------------------
 	eVP			  = FX->GetParameterByName(0,"gVP");
 	eW			  = FX->GetParameterByName(0,"gW");
-	eWI			  = FX->GetParameterByName(0,"gWI");
+	eLVP		  = FX->GetParameterByName(0,"gLVP");
 	eGT			  = FX->GetParameterByName(0,"gGrpT");
-	eGTI		  = FX->GetParameterByName(0,"gGrpTI");
-	eInstMatrix   = FX->GetParameterByName(0,"gGrpInst");
 	// ----------------------------------------------------------------------
 	eSun		  = FX->GetParameterByName(0,"gSun");
 	eMat		  = FX->GetParameterByName(0,"gMat");
@@ -368,6 +411,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
 	eRghnMap	  = FX->GetParameterByName(0,"gRghnMap");
 	eFrslMap	  = FX->GetParameterByName(0,"gFrslMap");
+	eShadowMap	  = FX->GetParameterByName(0,"gShadowMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
@@ -387,10 +431,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	// Initialize default values --------------------------------------
 	//
 	FX->SetInt(eHazeMode, 0);
-	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eInSpace, false);
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetValue(eKernel, &shadow_kernel, sizeof(shadow_kernel));
 
 	CreateMatExt(&_mfdmat, &mfdmat);
 	CreateMatExt(&_defmat, &defmat);
@@ -448,7 +493,7 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	float radlimit = float(rad) + 1.0f;
 	float rho0 = 1.0f;
 	
-	D3DXVECTOR4 atm_color(0.5f, 0.5f, 0.5f, 1.0f);
+	atm_color = D3DXVECTOR4(0.5f, 0.5f, 0.5f, 1.0f);
 
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
 	VESSEL *hVessel = oapiGetFocusInterface();
@@ -479,13 +524,22 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	else atm_color = D3DXVECTOR4(0,0,0,1);
 
 	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
-	FX->SetVector(eAtmColor, &atm_color);
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));
 	FX->SetFloat(eInvProxySize, 1.0f/(1.0f-cos(proxy_size)));
 	FX->SetFloat(eGlowConst, saturate(float(dotp(cam, sun))));
 }
+
+
+// ===========================================================================================
+//
+void D3D9Effect::EnablePlanetGlow(bool bEnabled)
+{
+	if (bEnabled) FX->SetVector(eAtmColor, &atm_color);
+	else FX->SetVector(eAtmColor, &D3DXVECTOR4(0,0,0,0));
+}
+
 
 // ===========================================================================================
 //

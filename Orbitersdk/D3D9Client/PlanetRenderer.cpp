@@ -34,6 +34,7 @@ D3DXHANDLE PlanetRenderer::ssLight = NULL;
 // ------------------------------------------------------------  
 D3DXHANDLE PlanetRenderer::smWorld = NULL;
 D3DXHANDLE PlanetRenderer::smViewProj = NULL;
+D3DXHANDLE PlanetRenderer::smLVP = NULL;
 // ------------------------------------------------------------  
 D3DXHANDLE PlanetRenderer::svTexOff = NULL;
 D3DXHANDLE PlanetRenderer::svWater = NULL;
@@ -45,6 +46,7 @@ D3DXHANDLE PlanetRenderer::svMapUVOffset = NULL;
 D3DXHANDLE PlanetRenderer::svMicroScale0 = NULL;
 D3DXHANDLE PlanetRenderer::svMicroScale1 = NULL;
 D3DXHANDLE PlanetRenderer::svMicroScale2 = NULL;
+D3DXHANDLE PlanetRenderer::svSHD = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfDistScale = NULL;
 D3DXHANDLE PlanetRenderer::sfAlpha = NULL;
@@ -60,6 +62,7 @@ D3DXHANDLE PlanetRenderer::sbMicroNormals = NULL;
 D3DXHANDLE PlanetRenderer::siTileLvl = NULL;
 D3DXHANDLE PlanetRenderer::siDebug = NULL;
 D3DXHANDLE PlanetRenderer::sbDebug = NULL;
+D3DXHANDLE PlanetRenderer::sbShadows = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -72,6 +75,7 @@ D3DXHANDLE PlanetRenderer::stMicroA = NULL;
 D3DXHANDLE PlanetRenderer::stMicroB = NULL;
 D3DXHANDLE PlanetRenderer::stMicroC = NULL;
 D3DXHANDLE PlanetRenderer::stMicroRot = NULL;
+D3DXHANDLE PlanetRenderer::stShadowMap = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -184,6 +188,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------------------------
 	if (bShadows) macro[m++].Name = "_CLOUDSHADOWS";
 	// ------------------------------------------------------------------------------
+	if (Config->ShadowMapMode) macro[m++].Name = "_SHDMAP";
 
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
 	
@@ -222,6 +227,9 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// Bind shader-side variables and constants to local handles
 	//
 
+	
+	
+
 	// Techniques ----------------------------------------------------------
 	eTileTech			= pShader->GetTechniqueByName("TileTech");
 	eCloudTech			= pShader->GetTechniqueByName("CloudTech");
@@ -233,6 +241,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------  
 	smWorld				= pShader->GetParameterByName(0,"mWorld");
 	smViewProj			= pShader->GetParameterByName(0,"mViewProj");
+	smLVP				= pShader->GetParameterByName(0,"mLVP");
 	// ------------------------------------------------------------  
 	svTexOff			= pShader->GetParameterByName(0,"vTexOff");
 	svCloudOff			= pShader->GetParameterByName(0,"vCloudOff");
@@ -244,6 +253,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svMicroScale0		= pShader->GetParameterByName(0,"vMSc0");	
 	svMicroScale1		= pShader->GetParameterByName(0,"vMSc1");	
 	svMicroScale2		= pShader->GetParameterByName(0,"vMSc2");
+	svSHD				= pShader->GetParameterByName(0,"vSHD");
 	// ------------------------------------------------------------
 	sfDistScale			= pShader->GetParameterByName(0,"fDistScale");
 	sfAlpha				= pShader->GetParameterByName(0,"fAlpha");
@@ -259,6 +269,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	siDebug				= pShader->GetParameterByName(0,"iDebug");
 	sbDebug				= pShader->GetParameterByName(0,"bDebug");
 	sbLocals			= pShader->GetParameterByName(0,"bLocals");
+	sbShadows			= pShader->GetParameterByName(0,"bShadows");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
@@ -271,6 +282,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stMicroB			= pShader->GetParameterByName(0,"tMicroB");
 	stMicroC			= pShader->GetParameterByName(0,"tMicroC");
 	stMicroRot			= pShader->GetParameterByName(0,"tMicroRot");
+	stShadowMap			= pShader->GetParameterByName(0,"tShadowMap");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");

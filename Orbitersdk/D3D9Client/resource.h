@@ -160,3 +160,7 @@
 #define IDC_DBG_DATAWND                         2154
 #define IDC_DBG_DATAVIEW                        2155
 #define IDC_LIGHTCONFIG                         2156
+#define IDC_DBG_KERNEL                          2157
+#define IDC_SELFSHADOWS                         2158
+#define IDC_SHADOWFILTER                        2159
+#define IDC_TERRAIN                             2160

@@ -348,7 +348,7 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 2");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 3");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 4");
-	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Irradiance");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"ShadowMap");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_SETCURSEL, 0, 0);
 
 
@@ -1396,6 +1396,105 @@ void Refresh()
 }
 
 
+//-------------------------------------------------------------------------------------------
+//
+void CreateSamplingKernel()
+{
+	int s = 7;
+
+	VECTOR3 *data = new VECTOR3[s*s];
+
+	
+	int j = 0;
+	double dx = 2.0 / double(s-1);
+
+	double y = -1.0;
+	for (int i = 0; i < s; i++) {
+		double x = -1.0;
+		for (int k = 0; k < s; k++) {
+			data[j].x = x;
+			data[j].y = y;
+			x += dx;
+			j++;
+		}
+		y += dx;
+	}
+
+	dx *= 0.4;
+
+	for (int i = 0; i < j; i++) {
+		data[i].x += (oapiRand()*2.0 - 1.0) * dx;
+		data[i].y += (oapiRand()*2.0 - 1.0) * dx;
+	}
+
+	VECTOR3 *out = new VECTOR3[s*s];
+
+	int k = 0;
+
+	for (int i = 0; i < j; i++) {
+		double d = sqrt(data[i].x*data[i].x + data[i].y*data[i].y);
+		if (d <= 1.0) {
+			out[k] = data[i];
+			out[k].z = sqrt(d);
+			k++;
+		}
+	}
+
+	double w = 0, xb = 0, yb = 0;
+
+	for (int i = 0; i < k; i++) {
+		oapiWriteLogV("{%4.4ff, %4.4ff, %4.4ff},", out[i].x, out[i].y, out[i].z);
+		w += out[i].z;
+		xb += out[i].x;
+		yb += out[i].y;
+	}
+
+	delete[]data;
+	delete[]out;
+
+	oapiWriteLogV("TotalWeight = %f, Count = %u, x-balance = %f, y-balance = %f", w, k, xb, yb);
+	sprintf_s(oapiDebugString(), 256, "TotalWeight = %f, Count = %u, x-balance = %f, y-balance = %f", w, k, xb, yb);
+}
+
+/*
+//-------------------------------------------------------------------------------------------
+//
+void CreateSamplingKernel()
+{
+VECTOR3 *data = new VECTOR3[64];
+
+while (true) {
+
+double ava = 0, avb = 0;
+
+for (int i = 0; i < 64; i++) {
+
+double a = oapiRand();
+double b = oapiRand() * PI2;
+double c = cos(a*PI05);
+
+data[i] = _V(sin(b)*a, cos(b)*a, c);
+
+ava += data[i].x;
+avb += data[i].y;
+}
+
+// Ensure proper balance
+if (ava < 0.1 && avb < 0.1) break;
+}
+
+double w = 0.0f;
+
+for (int i = 0; i < 64; i++) {
+oapiWriteLogV("{%4.4ff, %4.4ff, %4.4ff},", data[i].x, data[i].y, data[i].z);
+w += data[i].z;
+}
+
+oapiWriteLogV("TotalWeight = %f", w);
+}
+*/
+
+
 // ==============================================================
 // Dialog message handler
 
@@ -1487,6 +1586,12 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				Close();
 				break;
 		
+			case IDC_DBG_KERNEL:
+			{
+				CreateSamplingKernel();
+				break;
+			}
+
 			case IDC_DBG_MATSAVE:
 			{
 				OBJHANDLE hObj = vObj->GetObjectA();

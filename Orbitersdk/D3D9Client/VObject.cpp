@@ -127,13 +127,30 @@ DWORD vObject::GetMeshCount()
 
 // ===========================================================================================
 //
+void vObject::ReOrigin(VECTOR3 global_pos)
+{
+	cpos = gpos - global_pos;
+
+	cdist = length(cpos);
+
+	dmWorld.m41 = cpos.x;
+	dmWorld.m42 = cpos.y;
+	dmWorld.m43 = cpos.z;
+
+	D3DMAT_SetTranslation(&mWorld, &cpos);
+}
+
+
+// ===========================================================================================
+//
 bool vObject::Update(bool bMainScene)
 {
 	if (!active) return false;
 
-	MATRIX3 grot;
-	VECTOR3 gpos;
+	assert(bMainScene==true);
 
+	MATRIX3 grot;
+	
 	oapiGetRotationMatrix(hObj, &grot);
 	oapiGetGlobalPos(hObj, &gpos);
 	
@@ -153,17 +170,15 @@ bool vObject::Update(bool bMainScene)
 	D3DMAT_SetInvRotation(&mWorld, &grot);
 	D3DMAT_SetTranslation(&mWorld, &cpos);
 
-	D3DXMatrixInverse(&mWorldInv, NULL, &mWorld);
 
-	if (bMainScene) {
-		OBJHANDLE hSun = oapiGetGbodyByIndex(0);
-		oapiGetGlobalPos(hSun, &sundir);
+	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
+	oapiGetGlobalPos(hSun, &sundir);
 
-		sundst = length(sundir-gpos);
-		sundir = unit(sundir-gpos);
-		sunapprad = oapiGetSize(hSun) / sundst;
-		CheckResolution();
-	}
+	sundst = length(sundir-gpos);
+	sundir = unit(sundir-gpos);
+	sunapprad = oapiGetSize(hSun) / sundst;
+	CheckResolution();
+	
 
 	return true;
 }
@@ -176,14 +191,21 @@ void vObject::UpdateBoundingBox()
 	
 }
 
+// ===========================================================================================
+//
+D3DXVECTOR3 vObject::GetBoundingSpherePosDX()
+{
+	if (bBSRecompute) UpdateBoundingBox();
+	D3DXVECTOR3 pos;
+	D3DXVec3TransformCoord(&pos, (LPD3DXVECTOR3)&BBox.bs, &mWorld);
+	return pos;
+}
 
 // ===========================================================================================
 //
 VECTOR3 vObject::GetBoundingSpherePos()
 {
-	if (bBSRecompute) UpdateBoundingBox();
-	D3DXVECTOR3 pos;
-	D3DXVec3TransformCoord(&pos, (LPD3DXVECTOR3)&BBox.bs, &mWorld);
+	D3DXVECTOR3 pos = GetBoundingSpherePosDX();
 	return _V((double)pos.x, (double)pos.y, (double)pos.z);
 }
 

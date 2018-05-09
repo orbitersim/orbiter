@@ -786,6 +786,79 @@ bool D3D9Pad::Flush(int iTech)
 }
 
 
+// ===============================================================================================
+//
+void D3D9Pad::CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty)
+{
+	TexChangeNative(pSrc);
+
+	D3DSURFACE_DESC desc;
+	pSrc->GetLevelDesc(0, &desc);
+
+	RECT rect;
+	rect.left = rect.top = 0;
+	rect.right = desc.Width;
+	rect.bottom = desc.Height;
+
+	float srw = 1.0f / float(desc.Width);
+	float srh = 1.0f / float(desc.Height);
+
+	HR(FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1)));
+	HR(FX->CommitChanges());
+
+	if (!s) s = &rect;
+
+	int h = s->bottom - s->top;
+	int w = s->right - s->left;
+
+	AddRectIdx(vI);
+
+	SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
+	SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
+	SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
+	SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
+
+	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
+	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
+	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
+	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+}
+
+// ===============================================================================================
+//
+void D3D9Pad::StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t)
+{
+	TexChangeNative(pSrc);
+
+	D3DSURFACE_DESC desc;
+	pSrc->GetLevelDesc(0, &desc);
+
+	RECT rect;
+	rect.left = rect.top = 0;
+	rect.right = desc.Width;
+	rect.bottom = desc.Height;
+
+	float srw = 1.0f / float(desc.Width);
+	float srh = 1.0f / float(desc.Height);
+
+	HR(FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1)));
+	HR(FX->CommitChanges());
+
+	if (!s) s = &rect;
+
+	AddRectIdx(vI);
+
+	SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
+	SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
+	SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
+	SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
+
+	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
+	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
+	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
+	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+}
+
 
 
 

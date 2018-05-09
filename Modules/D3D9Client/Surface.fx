@@ -49,8 +49,11 @@ struct TileVS
     float4 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
 	float3 nrmW		: TEXCOORD3;
-	float3 sunlight : COLOR0;     // Color of the sunlight received by terrain
+	float4 sunlight : COLOR0;     // Color of the sunlight received by terrain
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
+#if defined(_SHDMAP)
+	float4 shdH     : TEXCOORD4;
+#endif
 };
 
 struct CloudVS
@@ -84,6 +87,7 @@ struct CelSphereVS
 
 uniform extern Light	 sLights[4];		// Local light sources
 
+uniform extern float4x4  mLVP;
 uniform extern float4x4  mWorld;		    // World matrix
 uniform extern float4x4  mViewProj;			// Combined View and Projection matrix
 // ------------------------------------------------------------
@@ -97,6 +101,7 @@ uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float3    vTangent;			// Unit Vector
 uniform extern float3    vBiTangent;		// Unit Vector
 uniform extern float3    vMapUVOffset;		//
+uniform extern float4    vSHD;
 // ------------------------------------------------------------
 uniform extern float     fDistScale;		// UNUSED: Scale factor
 uniform extern float 	 fAlpha;			// Cloud shodow alpha
@@ -110,6 +115,7 @@ uniform extern int		 iTileLvl;			// Surface tile level being rendered
 uniform extern int		 iDebug;			// Debug Mode identifier
 uniform extern bool		 bDebug;			// Debug Mode enabled
 uniform extern bool		 bLocals;			// Local light sources enabled for this tile
+uniform extern bool		 bShadows;			// Enable shadow projection
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -121,11 +127,22 @@ uniform extern texture	 tEnvMap;
 uniform extern texture	 tMicroA;
 uniform extern texture	 tMicroB;
 uniform extern texture	 tMicroC;
+uniform extern texture	 tShadowMap;
 
 
 // ----------------------------------------------------------------------------
 // Texture Sampler implementations
 // ----------------------------------------------------------------------------
+
+sampler ShadowS = sampler_state
+{
+	Texture = <tShadowMap>;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = NONE;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
 
 sampler DiffTexS = sampler_state
 {
@@ -282,11 +299,41 @@ const  float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};
 const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
 const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};
 const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
-const  float3 cSky = {0.9f, 1.1f, 1.8f};
+const  float3 cSky = {0.7f, 0.9f, 1.2f};
 const  float3 cSun = { 1.0f, 1.0f, 1.0f };
 const float srfoffset = -0.2;
 const float ATMNOISE = 0.02;
 
+
+
+// -------------------------------------------------------------------------------------------------------------
+// Project shadows on surface
+//
+float ProjectShadows(float2 sp)
+{
+	if (sp.x < 0 || sp.y < 0) return 1.0f;
+	if (sp.x > 1 || sp.y > 1) return 1.0f;
+
+	float2 dx = float2(vSHD[1], 0) * 1.5f;
+	float2 dy = float2(0, vSHD[1]) * 1.5f;
+	float  va = 0;
+	float  pd = 1e-4;
+
+	sp -= dy;
+	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp).r) < pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp).r) < pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp).r) < pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+
+	return va / 9.0f;
+}
 
 // -------------------------------------------------------------------------------------------------------------
 // Local light sources
@@ -517,6 +564,10 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
 
+#if defined(_SHDMAP)
+	outVS.shdH = mul(float4(vPosW, 1.0f), mLVP);
+#endif
+
 	outVS.texUV.xy = vrt.tex0.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
 	outVS.texUV.zw = vrt.tex0.xy;						// Note: vrt.tex1 range [0 to 1] for all tiles
 
@@ -585,7 +636,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
 	outVS.insca = (1.0f - exp2(-outVS.insca));
 
-	outVS.sunlight = max(vSunLight, float3(0.9, 0.9, 1.0) * fAmb);
+	outVS.sunlight = float4(vSunLight, fAmb);
 
 	return outVS;
 }
@@ -621,6 +672,16 @@ float4 SurfaceTechPS(TileVS frg,
 			fChB = tex2D(Cloud2TexS, vUVCld - float2(1, 0)).a;
 		}
 	}
+
+	float fShadow = 1.0f;
+
+#if defined(_SHDMAP)
+	if (bShadows) {
+		frg.shdH.xyz /= frg.shdH.w;
+		float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+		fShadow = ProjectShadows(sp);
+	}
+#endif
 
 	float3 cFar, cMed, cLow;
 
@@ -683,7 +744,7 @@ float4 SurfaceTechPS(TileVS frg,
 		// Compute specular reflection intensity
 		float s = dot(reflect(-vSunDir, nrmW), camW);
 
-		cSpe = m * float3(1.2f, 1.1f, 1.0f) * pow(saturate(s), 35.0f) * max(0.7, fInts*1.5);
+		cSpe = m * float3(1.2f, 1.1f, 1.0f) * pow(saturate(s), 35.0f) * max(0.7, fInts*1.5) * fShadow;
 
 		// Apply fresnel reflection
 		cTex.rgb = lerp(cTex.rgb, cSky, m * f4);
@@ -755,7 +816,7 @@ float4 SurfaceTechPS(TileVS frg,
 
 		fLvl *= (fTrS * fPlS);										// Apply shadows
 
-		float3 color = cTex.rgb * saturate(cSun*max(fLvl, 0) + cDiffLocal);
+		float3 color = cTex.rgb * saturate(cSun*max(fLvl, 0) * fShadow + cDiffLocal);
 
 		//float3 color = cTex.rgb * max(fLvl, 0);						// Apply sunlight
 
@@ -781,12 +842,13 @@ float4 SurfaceTechPS(TileVS frg,
 		}
 
 		// Lambertian shading term
-		float fDNS = dot(nrmW, vSunDir);
+		//float fDNS = dot(nrmW, vSunDir);
 
-		float fSunLight = sqrt(saturate(fDNS) + 0.02f);
+		//float fSunLight = sqrt(saturate(fDNS) + 0.02f);
 
 		// Terrain, Specular and Night lights
-		float3 color = cTex.rgb * saturate(frg.sunlight + cDiffLocal + cNgt);
+		float3 sun = max(frg.sunlight.rgb * fShadow, float3(0.9, 0.9, 1.0) * frg.sunlight.w);
+		float3 color = cTex.rgb * saturate(sun + cDiffLocal + cNgt);
 		float3 atten = exp2(-vTotOutSct * frg.aux[AUX_RAYDEPTH]);
 
 		// Terrain with gamma correction and attennuation

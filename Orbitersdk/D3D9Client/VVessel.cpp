@@ -13,6 +13,7 @@
 #include "AABBUtil.h"
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
+#include "D3D9Config.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "D3D9Util.h"
@@ -555,6 +556,54 @@ void vVessel::UpdateAnimations (int mshidx)
 
 // ============================================================================================
 //
+bool vVessel::IsInsideShadows()
+{
+	D3DXVECTOR3 bc;
+	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	bc = bc - shd->pos;
+	float x = D3DXVec3Dot(&bc, &(shd->ld));
+
+	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) < (shd->rad - BBox.bs.w)) return true;
+
+	return false;
+}
+
+
+// ============================================================================================
+//
+bool vVessel::IntersectShadowTarget()
+{
+	D3DXVECTOR3 bc;
+	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	bc = bc - shd->pos;
+	if (D3DXVec3Length(&bc) < (shd->rad + BBox.bs.w)) return true;
+	return false;
+}
+
+
+// ============================================================================================
+//
+bool vVessel::GetMinMaxLightDist(float *mind, float *maxd)
+{
+	D3DXVECTOR3 bc;
+	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	bc = bc - shd->pos;
+	float x = D3DXVec3Dot(&bc, &(shd->ld));
+
+	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) > (shd->rad + BBox.bs.w)) return false;
+
+	*mind = min(*mind, x - shd->rad);
+	*maxd = max(*maxd, x + shd->rad);
+
+	return true;
+}
+
+
+// ============================================================================================
+//
 bool vVessel::Render(LPDIRECT3DDEVICE9 dev)
 {
 	_TRACE;
@@ -593,7 +642,24 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (vessel->GetAtmPressure()>1.0) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false);
 	else							  D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);
 
+	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+
+	float s = float(shd->size);
+	float is = 1.0f / s;
+	float qw = 1.0f / float(Config->ShadowMapSize);
+
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+
+	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
+		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, float(CamDist()))));
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+	}
+	else {
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+	}
+
 
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
@@ -677,6 +743,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			}
 		}
 	}
+
+	// Shutdown shadows to prevent from causing problems
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 
 	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
 		if (DebugControls::IsActive()) {
@@ -925,6 +994,9 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 //
 void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float alpha)
 {
+	if (vessel == oapiGetFocusInterface() && Config->TerrainShadowing == 2) return;
+	if (Config->TerrainShadowing == 0) return;
+
 	static const double eps = 1e-2;
 	static const double shadow_elev_limit = 0.07;
 	double d, alt, R;
@@ -1051,8 +1123,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	// Create blurred maps and Irradiance map ----------------------------------------------------------------
 	//
-	if (iFace == 6) {
-		iFace++;
+	if (iFace >= 6) {
+		iFace = 0;
 		return scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MAIN]);
 	}
 
@@ -1118,7 +1190,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
 
 	// Prepare camera and scene for env map rendering
-	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0, true, RENDERPASS_ENVCAM);
+	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
+	scn->BeginPass(RENDERPASS_ENVCAM);
 
 	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;
@@ -1128,8 +1201,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	for (DWORD i=0;i<cnt;i++) {
 
-		HR(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
-	
+		assert(SUCCEEDED(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
+
 		scn->SetRenderTarget(pSrf, CURRENT);
 
 		EnvMapDirection(iFace, &dir, &up);
@@ -1139,17 +1212,18 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DXVec3Normalize(&cp, &cp);
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
-		
-		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0, false, RENDERPASS_ENVCAM);
+
+		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
 		scn->RenderSecondaryScene(this, true, flags);
-
+			
 		SAFE_RELEASE(pSrf);
-
+		
 		iFace++;
 		if (iFace >= 6) break;
 	}
 
 	scn->SetRenderTarget(RESTORE, RESTORE);
+	scn->PopPass();
 
 	return true;
 }

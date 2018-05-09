@@ -342,6 +342,12 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 
 	if (AR10==S_OK) LogOapi("D3DFMT_A2R10G10B10...... : Yes"); 
 	else		    LogOapi("D3DFMT_A2R10G10B10...... : No");
+
+	HRESULT L8 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_L8);
+
+	if (L8 == S_OK) LogOapi("D3DFMT_L8............... : Yes");
+	else		    LogOapi("D3DFMT_L8............... : No");
+
 	
 
 	if (caps.DeclTypes&D3DDTCAPS_DEC3N) LogOapi("D3DDTCAPS_DEC3N......... : Yes");

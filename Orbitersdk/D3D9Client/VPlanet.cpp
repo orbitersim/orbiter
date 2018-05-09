@@ -100,8 +100,9 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	}
 
 	shadowalpha = (float)(/*1.0f -*/ *(double*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SHADOWCOLOUR));
-	bVesselShadow = *(bool*)gc->GetConfigParam (CFGPRM_VESSELSHADOWS) && (shadowalpha < 0.98);
-	bObjectShadow = *(bool*)gc->GetConfigParam(CFGPRM_OBJECTSHADOWS) && (shadowalpha < 0.98);
+
+	bVesselShadow = (shadowalpha < 0.98);
+	bObjectShadow = (shadowalpha < 0.98);
 
 	clouddata = 0;
 	cloudmgr2 = 0;
@@ -698,6 +699,26 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 	D3D9Effect::UpdateEffectCamera(hObj);
 	D3D9Effect::FX->SetFloat(D3D9Effect::eDistScale, 1.0f/float(dist_scale));
 
+	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+
+	float s = float(shd->size);
+	float is = 1.0f / s;
+	float qw = 1.0f / float(Config->ShadowMapSize);
+
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+
+
+	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
+		if (scn->GetCameraAltitude() < 10e3) {
+			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
+			HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+		}
+	}
+	
+
 	PlanetRenderer::InitializeScattering(this);
 	PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
 
@@ -813,6 +834,10 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		}
 
 	}
+
+	// Shutdown shadows to prevent from causing problems
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+
 	return true;
 }
 

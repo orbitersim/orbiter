@@ -477,6 +477,8 @@ public:
 	LPD3DXMATRIX WorldMatrix();
 	void Reset();
 	void EndDrawing(bool bFlush = true);
+	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty);
+	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t);
 
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
 

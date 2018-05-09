@@ -1,8 +1,8 @@
-// ============================================================================
+// ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2014 - 2018 Jarmo Nikkanen
-// ============================================================================
+// ==============================================================
 
 
 
@@ -13,15 +13,115 @@ struct PBRData
 	float2 tex0     : TEXCOORD1;
 	float3 nrmW     : TEXCOORD2;
 	float4 tanW     : TEXCOORD3;	 // Handiness in .w
+#if SHDMAP > 0
+	float4 shdH     : TEXCOORD4;
+#endif
 };
-
 
 
 #include "Lights.inc"
 
 
+float ProjectShadows(float2 sp)
+{
+	if (!gShadowsEnabled) return 1.0f;
 
-// ============================================================================
+	if (sp.x < 0 || sp.y < 0) return 1.0f;
+	if (sp.x > 1 || sp.y > 1) return 1.0f;
+
+	float2 dx = float2(gSHD[1], 0) * 1.5f;
+	float2 dy = float2(0, gSHD[1]) * 1.5f;
+	float  va = 0;
+	float  pd = 1e-4;
+
+	sp -= dy;
+	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp).r) < pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp).r) < pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp).r) < pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+
+	return va / 9.0f;
+}
+
+
+float SampleShadows(float2 sp, float pd)
+{
+	if (!gShadowsEnabled) return 1.0f;
+
+	float2 dx = float2(gSHD[1], 0) * 1.5f;
+	float2 dy = float2(0, gSHD[1]) * 1.5f;
+	float  va = 0;
+
+	sp -= dy;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
+
+	return va * 0.1111111f;
+}
+
+
+
+float SampleShadows2(float2 sp, float pd)
+{
+	if (!gShadowsEnabled) return 1.0f;
+
+	float val = 0;
+	float m = 3.0f * gSHD[1];
+
+	[unroll] for (int i = 0; i < 27; i++) {
+		if ((tex2D(ShadowS, sp + kernel[i].xy * m).r) > pd) val += kernel[i].z;
+	}
+
+	return saturate(val * 0.066666f);
+}
+
+
+float SampleShadows3(float2 sp, float pd, float4 frame)
+{
+	if (!gShadowsEnabled) return 1.0f;
+
+	float val = 0;
+	frame *= 3.0f * gSHD[1];
+
+	[unroll] for (int i = 0; i < 27; i++) {
+		float2 ofs = frame.xy*kernel[i].x + frame.zw*kernel[i].y;
+		if ((tex2D(ShadowS, sp + ofs).r) > pd) val += kernel[i].z;
+	}
+
+	return saturate(val * 0.066666f);
+}
+
+
+float SampleShadowsEx(float2 sp, float pd, float4 sc)
+{
+#if SHDMAP == 1
+	return SampleShadows(sp, pd);
+#elif SHDMAP == 2
+	return SampleShadows2(sp, pd);
+#else
+	float si, co;
+	sincos(sc.y + sc.x*14.0f, si, co);
+	return SampleShadows3(sp, pd, float4(si, co, co, -si));
+#endif
+}
+
+// ========================================================================================================================
 // Vertex shader for physics based rendering
 //
 PBRData PBR_VS(MESH_VERTEX vrt)
@@ -35,6 +135,11 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 	outVS.nrmW = nrmW;
 	outVS.tanW = float4(mul(float4(vrt.tanL, 0.0f), gW).xyz, vrt.tex0.z);
 	outVS.posH = mul(float4(posW, 1.0f), gVP);
+
+#if SHDMAP > 0
+	outVS.shdH = mul(float4(posW, 1.0f), gLVP);
+#endif
+
     outVS.camW = -posW;
     outVS.tex0 = vrt.tex0.xy;
 	
@@ -48,7 +153,7 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 
 // ============================================================================
 //
-float4 PBR_PS(PBRData frg) : COLOR
+float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 {
 	float3 nrmT;
 	float3 nrmW;
@@ -63,9 +168,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float3 cSpecLocal;
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Start fetching texture data
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
@@ -97,18 +202,18 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Now do other calculations while textures are being fetched
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	float3 CamD = normalize(frg.camW);
 	float3 cMrtlBase = (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb;
 	float3 cSun = saturate(gSun.Color);
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Texture tuning controls for add-on developpers
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 #if defined(_DEBUG)
 	if (gTuneEnabled) {
@@ -132,9 +237,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Use alpha zero to mask off specular reflections
 	cSpec.rgb *= saturate(cSpec.a);
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// "Legacy/PBR" switch
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	if (gPBRSw) {
 		cRefl2 = cRefl*cRefl;
@@ -149,9 +254,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float fRefl = cmax(cRefl3);
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// cSpec.pwr to fRghn Converter
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	if (gRghnSw) {
 		fRghn = log2(cSpec.a+1.0f) * 0.1f;
@@ -160,9 +265,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Construct a proper world space normal
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	if (gCfg.Norm) {
 		float3 bitW = cross(frg.tanW.xyz, frg.nrmW) * frg.tanW.w;
@@ -175,9 +280,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Compute reflection vector and some required dot products
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	float3 RflW = reflect(-CamD, nrmW);				// Reflection vector
 	float dRS = saturate(-dot(RflW, gSun.Dir));		// Reflection/sun angle
@@ -185,9 +290,34 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float dLNx = saturate(dLN * 80.0f);				// Specular, Fresnel shadowing term
 
 
-	// ------------------------------------------------------------------------
-	// Compute a fresnel terms fFrsl, iFrsl, fFLbe
-	// ------------------------------------------------------------------------
+#if SHDMAP > 0
+	frg.shdH.xyz /= frg.shdH.w;
+	float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+	float fShadow;
+	float  x = 1 - sqrt(dLN);
+
+	if (gBaseBuilding) {
+		// It's a surface base building
+		fShadow = ProjectShadows(sp);
+	}
+	else {
+		// It's a vessel
+		
+		float  pd = frg.shdH.z - 1e-3;
+		pd -= x * 6e-3;
+		pd -= min(15e-3, gSHD[3] * 10e-5);
+		fShadow = SampleShadowsEx(sp, pd, sc);
+		fShadow = smoothstep(0, 0.75, fShadow);	
+	}
+
+	dLN *= fShadow;
+	dLNx *= fShadow;
+#endif
+
+
+	// ----------------------------------------------------------------------
+	// Compute a fresnel terms fFrsl, iFrsl, fFLbe 
+	// ----------------------------------------------------------------------
 
 	float fFrsl = 0;	// Fresnel angle co-efficiency factor
 	float iFrsl = 0;	// Fresnel intensity
@@ -217,9 +347,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Compute a specular and diffuse lighting
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	// Compute a specular lobe for base material
 	float fLobe = pow(dRS, cSpec.a) * dLNx;
@@ -276,9 +406,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Compute a environment reflections
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	float3 cEnv = 0;
 
@@ -313,9 +443,9 @@ float4 PBR_PS(PBRData frg) : COLOR
 
 
 
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	// Combine all results together
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 
 	// Compute total reflected light
 	float fTot = cmax(cEnv + cSpec.rgb);
@@ -346,7 +476,8 @@ float4 PBR_PS(PBRData frg) : COLOR
 	cDiff.rgb = max(cDiff.rgb, cEmis * gMtrl.emission2.rgb);
 
 #if defined(_DEBUG)
-	if (gDebugHL) cDiff = cDiff*0.5f + gColor;
+	//if (gDebugHL) cDiff = cDiff*0.5f + gColor;
+	cDiff = cDiff * (1 - gColor*0.5f) + gColor;
 #endif
 
 	return cDiff;
@@ -369,6 +500,9 @@ struct FASTData
 	float3 camW     : TEXCOORD0;
 	float2 tex0     : TEXCOORD1;
 	float3 nrmW     : TEXCOORD2;
+#if SHDMAP > 0
+	float4 shdH     : TEXCOORD4;
+#endif
 };
 
 
@@ -388,13 +522,17 @@ FASTData FAST_VS(MESH_VERTEX vrt)
 	outVS.camW = -posW;
 	outVS.tex0 = vrt.tex0.xy;
 
+#if SHDMAP > 0
+	outVS.shdH = mul(float4(posW, 1.0f), gLVP);
+#endif
+
 	return outVS;
 }
 
 
 // ============================================================================
 //
-float4 FAST_PS(FASTData frg) : COLOR
+float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 {
 
 	float3 cEmis;
@@ -426,6 +564,27 @@ float4 FAST_PS(FASTData frg) : COLOR
 
 		if (gNoColor) cDiff.rgb = 1;
 
+#if SHDMAP > 0
+		frg.shdH.xyz /= frg.shdH.w;
+		float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+		float fShadow;
+		float x = 1 - sqrt(dLN);
+
+		if (gBaseBuilding) {
+			// It's a surface base building
+			fShadow = ProjectShadows(sp);
+		}
+		else {
+			// It's a vessel
+			float  pd = frg.shdH.z - 1e-3;
+			pd -= x * 6e-3;
+			pd -= min(15e-3, gSHD[3] * 10e-5);
+			fShadow = SampleShadowsEx(sp, pd, sc);
+			fShadow = smoothstep(0, 0.75, fShadow);
+		}
+
+		dLN *= fShadow;
+#endif
 
 		// ----------------------------------------------------------------------
 		// Compute Local Light Sources
@@ -448,6 +607,11 @@ float4 FAST_PS(FASTData frg) : COLOR
 		float3 HlfW = normalize(CamD - gSun.Dir);
 		float  fSun = pow(saturate(dot(HlfW, nrmW)), gMtrl.specular.a);
 
+#if SHDMAP > 0
+		fSun *= fShadow;
+#endif
+
+
 		if (dLN == 0) fSun = 0;
 
 #if LMODE > 0
@@ -461,7 +625,8 @@ float4 FAST_PS(FASTData frg) : COLOR
 	}
 
 #if defined(_DEBUG)
-	if (gDebugHL) cDiff = cDiff*0.5f + gColor;
+	//if (gDebugHL) cDiff = cDiff*0.5f + gColor;
+	cDiff = cDiff * (1 - gColor*0.5f) + gColor;
 #endif
 
 	cDiff.a *= gMtrlAlpha;

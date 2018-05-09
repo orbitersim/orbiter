@@ -97,7 +97,6 @@ void SurfaceManager::RenderSimple(int level, int npatch, TILEDESC *tile, LPD3DXM
 	HR(FX->SetFloat(eTime, float(fmod(oapiGetSimTime(),60.0))));
 	HR(FX->SetVector(eTexOff, &D3DXVECTOR4(1.0f, 0.0f, 1.0f, 0.0f)));
 	HR(FX->SetFloat(eMix, 0.0f));
-	HR(FX->SetBool(eDebugHL, false));
 
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
@@ -152,7 +151,6 @@ void SurfaceManager::InitRenderTile()
 	HR(FX->SetValue(eWater, &watermat, sizeof(D3DMATERIAL9)));
 	HR(FX->SetValue(eColor, &D3DXCOLOR(cAmbient), sizeof(D3DXCOLOR)));
 	HR(FX->SetFloat(eTime, float(fmod(oapiGetSimTime(),60.0))));
-	HR(FX->SetBool(eDebugHL, false));
 
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
@@ -192,7 +190,6 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	if (DebugControls::IsActive()) {
 		if (flags&DBG_FLAGS_TILES) {
 			float x = 0.6f;
-			FX->SetBool(eDebugHL, true);
 			switch(lvl) {
 				case 14: FX->SetVector(eColor, &D3DXVECTOR4(x, 0, 0, 0)); break;
 				case 13: FX->SetVector(eColor, &D3DXVECTOR4(0, x, 0, 0)); break;

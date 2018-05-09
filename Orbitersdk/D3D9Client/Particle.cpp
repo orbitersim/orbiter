@@ -12,6 +12,7 @@
 #include "Scene.h"
 #include "Texture.h"
 #include "D3D9Surface.h"
+#include "D3D9Config.h"
 #include <stdio.h>
 
 static bool needsetup = true;
@@ -682,6 +683,7 @@ void ExhaustStream::Update ()
 void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE9 &prevtex)
 {
 	if (!diffuse || !hPlanet || !pfirst) return;
+	if (Config->TerrainShadowing == 0) return;
 
 	ParticleSpec *p = pfirst;
 

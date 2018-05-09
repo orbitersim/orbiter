@@ -316,6 +316,8 @@ inline double wrap(double a)
 	return a;
 }
 
+void LogMatrix(D3DXMATRIX *pM, const char *name);
+
 // -----------------------------------------------------------------------------------
 // Conversion functions
 // ------------------------------------------------------------------------------------
@@ -462,6 +464,7 @@ void D3DMAT_RotX (D3DXMATRIX *mat, double r);
 void D3DMAT_RotY (D3DXMATRIX *mat, double r);
 
 void D3DMAT_SetTranslation (D3DXMATRIX *mat, const VECTOR3 *trans);
+void D3DMAT_SetTranslation(D3DXMATRIX *mat, const D3DXVECTOR3 *trans);
 bool D3DMAT_VectorMatrixMultiply (D3DXVECTOR3 *res, const D3DXVECTOR3 *v, const D3DXMATRIX *mat);
 HRESULT D3DMAT_MatrixInvert (D3DXMATRIX *res, D3DXMATRIX *a);
 

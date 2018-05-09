@@ -762,31 +762,65 @@ void SurfTile::Render ()
 	else {			  HR(Shader->SetFloat(TileManager2Base::sfNight, 0.0f));	}
 
 
+
+
+	// ---------------------------------------------------------------------
+	// Setup shadow maps
+	// ---------------------------------------------------------------------
+
+	D3DXMATRIX wmx;
+	HR(Shader->GetMatrix(TileManager2Base::smWorld, &wmx));
+	HR(Shader->SetBool(TileManager2Base::sbShadows, false));
+
+	D3DXVECTOR3 bs_pos;
+	D3DXVec3TransformCoord(&bs_pos, &mesh->bsCnt, &wmx);
+
+	const Scene::SHADOWMAPPARAM *shd = scene->GetSMapData();
+	
+	D3DXVECTOR3 bc = bs_pos - shd->pos;
+
+	if (scene->GetCameraAltitude() < 10e3) {
+
+		if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
+
+			float x = D3DXVec3Dot(&bc, &(shd->ld));
+
+			if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) < (shd->rad + mesh->bsRad)) {
+				float s = float(shd->size);
+				float qw = 1.0f / float(Config->ShadowMapSize);
+				HR(Shader->SetMatrix(TileManager2Base::smLVP, &shd->mViewProj));
+				HR(Shader->SetVector(TileManager2Base::svSHD, &D3DXVECTOR4(s, 1.0f / s, qw, 0)));
+				HR(Shader->SetTexture(TileManager2Base::stShadowMap, shd->pShadowMap));
+				HR(Shader->SetBool(TileManager2Base::sbShadows, true));
+			}
+		}
+	}
+	
+
+
+
 	// ---------------------------------------------------------------------
 	// Setup local light sources
-	//
+	//---------------------------------------------------------------------
+
 	const D3D9Light *pLights = scene->GetLights();
 	int nSceneLights = scene->GetLightCount();
 
 	LightStruct Locals[4];
 
-	D3DXMATRIX wmx;
-	HR(Shader->GetMatrix(TileManager2Base::smWorld, &wmx));
 	HR(Shader->SetBool(TileManager2Base::sbLocals, false));
 
 	
 	if (pLights && nSceneLights>0) {
 
 		int nMeshLights = 0;
-		D3DXVECTOR3 pos;
-		D3DXVec3TransformCoord(&pos, &mesh->bsCnt, &wmx);
-
+		
 		_LightList LightList[MAX_SCENE_LIGHTS];
 
 		// Find all local lights effecting this mesh ------------------------------------------
 		//
 		for (int i = 0; i < nSceneLights; i++) {
-			float il = pLights[i].GetIlluminance(pos, mesh->bsRad);
+			float il = pLights[i].GetIlluminance(bs_pos, mesh->bsRad);
 			if (il > 0.005f) {
 				LightList[nMeshLights].illuminace = il;
 				LightList[nMeshLights++].idx = i;

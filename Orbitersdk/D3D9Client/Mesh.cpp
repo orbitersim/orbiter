@@ -82,10 +82,10 @@ D3D9Mesh::D3D9Mesh(const char *name) : D3D9Effect()
 
 // ===========================================================================================
 //
-D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate) : D3D9Effect()
+D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig) : D3D9Effect()
 {
 	Null();
-	LoadMeshFromHandle(hMesh);
+	LoadMeshFromHandle(hMesh, reorig);
 }
 
 
@@ -346,7 +346,7 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 
 // ===========================================================================================
 //
-void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh)
+void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig)
 {
 	nGrp = oapiMeshGroupCount(hMesh);
 	if (nGrp == 0) return;
@@ -371,7 +371,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 
 	ProcessInherit();
 
-	for (DWORD i = 0; i<nGrp; i++) CopyVertices(&Grp[i], oapiMeshGroupEx(hMesh, i));
+	for (DWORD i = 0; i<nGrp; i++) CopyVertices(&Grp[i], oapiMeshGroupEx(hMesh, i), reorig);
 
 	pGrpTF = new D3DXMATRIX[nGrp];
 
@@ -704,7 +704,7 @@ void D3D9Mesh::SetGroupRec(DWORD i, const MESHGROUPEX *mg)
 
 // ===========================================================================================
 //
-bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg)
+bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig)
 {
 	if (!pVB) return false;
 
@@ -738,6 +738,12 @@ bool D3D9Mesh::CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg)
 		pVert[i].tx = 1.0f;
 		pVert[i].ty = 0.0f;
 		pVert[i].tz = 0.0f;
+
+		if (reorig) {
+			pVert[i].x += reorig->x;
+			pVert[i].y += reorig->y;
+			pVert[i].z += reorig->z;
+		}
 	}
 
 	// Check vertex index errors (This is important)
@@ -1488,28 +1494,36 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	bool bTextured = true;
 	bool bGroupCull = true;
 	bool bUpdateFlow = true;	
+	bool bShadowProjection = false;
+
+	
 	
 	switch (iTech) {
 		case RENDER_VC:
-			FX->SetBool(eGlow, false);
+			EnablePlanetGlow(false);
 			break;
 		case RENDER_BASE:
-			FX->SetBool(eGlow, false);
+			EnablePlanetGlow(false);
 			bMeshCull = false;
+			bShadowProjection = true;
 			break;
 		case RENDER_BASEBS:
-			FX->SetBool(eGlow, false);
+			EnablePlanetGlow(false);
 			bMeshCull = false;
+			bShadowProjection = true;
 			break;
 		case RENDER_ASTEROID:
-			FX->SetBool(eGlow, true);
+			EnablePlanetGlow(false);
 			bMeshCull = false;
 			bGroupCull = false;
+			bShadowProjection = true;
 			break;
 		case RENDER_VESSEL:
-			FX->SetBool(eGlow, true);
+			EnablePlanetGlow(true);
 			break;
 	}
+
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, bShadowProjection));
 
 	D3DXVECTOR4 Field;
 	D3DXMATRIX mWorldView,  q;
@@ -1542,10 +1556,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eVesselTech);
-	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
 	FX->SetBool(eTuneEnabled, false);
+	FX->SetBool(eLightsEnabled, false);
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
@@ -1574,6 +1589,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		}
 
 		if (nMeshLights > 0) {
+
+			FX->SetBool(eLightsEnabled, true);
 
 			// If any, Sort the list based on illuminance ------------------------------------------- 
 			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
@@ -1637,18 +1654,16 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 				if (displ==3 && g!=selgrp) continue;
 
-				FX->SetBool(eDebugHL, false);
+				FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 
 				if (flags&DBG_FLAGS_HLMESH) {
 					if (uCurrentMesh==selmsh) {
 						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f));
-						FX->SetBool(eDebugHL, true);
 					}
 				}
 				if (flags&DBG_FLAGS_HLGROUP) {
 					if (g==selgrp && uCurrentMesh==selmsh) {
 						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f));
-						FX->SetBool(eDebugHL, true);
 					}
 				}
 			}
@@ -1911,7 +1926,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	HR(FX->End());
 
 	if (flags&(DBG_FLAGS_BOXES|DBG_FLAGS_SPHERES)) RenderBoundingBox(pW);
-	FX->SetBool(eDebugHL, false);
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
@@ -1947,30 +1962,36 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	bool bTextured = true;
 	bool bGroupCull = true;
 	bool bUpdateFlow = true;
+	bool bShadowProjection = false;
 
 	switch (iTech) {
 		case RENDER_VC:
-			FX->SetBool(eGlow, false);
+			EnablePlanetGlow(false);
 			//bMeshCull = false;
 			//bGroupCull = false;
 			break;
 		case RENDER_BASE:
-			FX->SetBool(eGlow, false);
+			EnablePlanetGlow(false);
 			bMeshCull = false;
+			bShadowProjection = true;
 			break;
 		case RENDER_BASEBS:
-			FX->SetBool(eGlow, false);
+			EnablePlanetGlow(false);
 			bMeshCull = false;
+			bShadowProjection = true;
 			break;
 		case RENDER_ASTEROID:
-			FX->SetBool(eGlow, true);
+			EnablePlanetGlow(false);
 			bMeshCull = false;
 			bGroupCull = false;
+			bShadowProjection = true;
 			break;
 		case RENDER_VESSEL:
-			FX->SetBool(eGlow, true);
+			EnablePlanetGlow(true);
 			break;
 	}
+
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, bShadowProjection));
 
 	D3DXVECTOR4 Field;
 	D3DXMATRIX mWorldView, q;
@@ -2004,8 +2025,9 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eVesselTech);
-	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eTuneEnabled, false);
+	FX->SetBool(eLightsEnabled, false);
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 
 	if (DebugControls::IsActive()) if (pTune) FX->SetBool(eTuneEnabled, true);
 
@@ -2033,6 +2055,8 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 		}
 
 		if (nMeshLights > 0) {
+
+			FX->SetBool(eLightsEnabled, true);
 
 			// If any, Sort the list based on illuminance ------------------------------------------- 
 			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
@@ -2072,18 +2096,16 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 				if (displ == 3 && g != selgrp) continue;
 
-				FX->SetBool(eDebugHL, false);
+				FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 
 				if (flags&DBG_FLAGS_HLMESH) {
 					if (uCurrentMesh == selmsh) {
 						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.0f, 0.5f, 0.5f));
-						FX->SetBool(eDebugHL, true);
 					}
 				}
 				if (flags&DBG_FLAGS_HLGROUP) {
 					if (g == selgrp && uCurrentMesh == selmsh) {
 						FX->SetVector(eColor, &D3DXVECTOR4(0.0f, 0.5f, 0.0f, 0.5f));
-						FX->SetBool(eDebugHL, true);
 					}
 				}
 			}
@@ -2238,7 +2260,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	HR(FX->End());
 
 	if (flags&(DBG_FLAGS_BOXES | DBG_FLAGS_SPHERES)) RenderBoundingBox(pW);
-	FX->SetBool(eDebugHL, false);
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
@@ -2271,12 +2293,13 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eBaseTile);
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
 	FX->SetMatrix(eGT, gc->GetIdentity());
 	FX->SetMatrix(eW, pW);
 	//FX->SetBool(eUseSpec, false);
 	//FX->SetBool(eUseEmis, false);
 	//FX->SetBool(eUseRefl, false);
-	FX->SetBool(eDebugHL, false);
+	
 	
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -2385,6 +2408,8 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 	pDev->SetStreamSource(0, pGB, 0, sizeof(D3DXVECTOR4));
 	pDev->SetIndices(pIB);
 
+	//if (bShadowMap) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+
 	if (bShadowMap) FX->SetTechnique(eGeometry);
 	else			FX->SetTechnique(eShadowTech);
 
@@ -2421,6 +2446,8 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 
 	FX->EndPass();
 	FX->End();
+
+	if (bShadowMap) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
 
 

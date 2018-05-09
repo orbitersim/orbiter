@@ -27,6 +27,45 @@
 #include "DebugControls.h"
 #include "D3D9Config.h"
 #include "VPlanet.h"
+#include <xnamath.h>
+
+typedef struct {
+	float rad;
+	float width, length, height;
+	D3DXVECTOR3 pos, min, max;
+} MeshStats;
+
+
+void CheckMeshStats(MESHHANDLE hMesh, MeshStats *stats)
+{
+	int nGrp = oapiMeshGroupCount(hMesh);
+	if (nGrp == 0) return;
+
+	XMVECTOR mi = XMLoadFloat3(&XMFLOAT3(1e12f, 1e12f, 1e12f));
+	XMVECTOR mx = -mi;
+
+	for (int i = 0; i < nGrp; i++) {
+
+		MESHGROUPEX *grp = oapiMeshGroupEx(hMesh, i);
+		
+		for (DWORD v = 0; v < grp->nVtx; v++) {
+			XMVECTOR x = XMLoadFloat3((XMFLOAT3 *)&grp->Vtx[v].x);
+			mi = XMVectorMin(mi, x);
+			mx = XMVectorMax(mx, x);
+		}
+	}
+
+	XMStoreFloat3((XMFLOAT3 *)&stats->min.x, mi);
+	XMStoreFloat3((XMFLOAT3 *)&stats->max.x, mx);
+
+	stats->width = stats->max.x - stats->min.x;
+	stats->height = stats->max.y - stats->min.y;
+	stats->length = stats->max.z - stats->min.z;
+	stats->pos = (stats->max + stats->min) * 0.5f;
+	stats->rad = D3DXVec3Length(&(stats->max + stats->min)) * 0.5f;
+}
+
+
 
 vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj, scene)
 {
@@ -427,6 +466,7 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	if (!nstructure_as) return; // nothing to do
 	if (!active) return;
 	if (!IsVisible()) return;
+	if (Config->TerrainShadowing == 0) return;
 
 	pCurrentVisual = this;
 
@@ -435,6 +475,8 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	
 	D3DXVECTOR3 gsun = D3DXVEC(sd);
 	D3DXVECTOR3 lsun;
+	D3DXMATRIX mWorldInv;
+	D3DXMatrixInverse(&mWorldInv, NULL, &mWorld);
 	D3DXVec3TransformNormal(&lsun, &gsun, &mWorldInv);
 
 	if (lsun.y>0) return;

@@ -23,6 +23,7 @@
 #include "CelSphere.h"
 #include "VObject.h"
 #include <stack>
+#include <list>
 
 class vObject;
 class vPlanet;
@@ -37,7 +38,7 @@ class D3D9Pad;
 #define GBUF_DEPTH				3
 #define GBUF_COUNT				4
 
-#define CASCADE_COUNT			1
+#define SHM_LOD_COUNT			5
 
 #define TEX_NOISE				0
 #define TEX_CLUT				1
@@ -55,6 +56,11 @@ class D3D9Pad;
 #define RENDERTURN_ENVCAM		0
 #define RENDERTURN_CUSTOMCAM	1
 #define RENDERTURN_LAST			1
+
+#define SMAP_MODE_FOCUS			1
+#define SMAP_MODE_SCENE			2
+
+#define OBJTP_BUILDING			1000
 
 class Scene {
 
@@ -114,6 +120,7 @@ public:
 		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
 		double		alt_proxy;	// camera distance to surface of hObj_proxy
 	};
+
 	// Screen space sun visual parameters ==================================================
 	//
 	struct SUNVISPARAMS {
@@ -122,6 +129,17 @@ public:
 		D3DXVECTOR2 position;
 		D3DXCOLOR	color;
 	};
+
+	struct SHADOWMAPPARAM {
+		LPDIRECT3DTEXTURE9 pShadowMap;
+		D3DXMATRIX	mProj, mView, mViewProj;
+		D3DXVECTOR3	pos;
+		D3DXVECTOR3	ld;
+		float		rad;
+		float		dist;
+		int			lod;
+		int			size;
+	} smap;
 
 	static void D3D9TechInit(LPDIRECT3DDEVICE9 pDev, const char *folder);
 
@@ -143,9 +161,14 @@ public:
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
+	
+
+	DWORD GetRenderPass() const;
+	void BeginPass(DWORD dwPass);
+	void PopPass();
 
 	inline DWORD GetStencilDepth() const { return stencilDepth; }
-
+	inline const SHADOWMAPPARAM * GetSMapData() const { return &smap; }
 	/**
 	 * \brief Get the ambient background colour
 	 */
@@ -188,7 +211,7 @@ public:
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
-	void RenderShadowMap();
+	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad);
 
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 	bool RenderIrradianceMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 pTgt);
@@ -270,7 +293,7 @@ public:
 	void			UpdateCameraFromOrbiter(DWORD dwPass);
 
 					// Manually initialize client's internal camera setup
-	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp, bool bUpdate, DWORD dwRenderPass);
+	void			SetupInternalCamera(D3DXMATRIX *mView, VECTOR3 *pos, double apr, double asp);
 
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);
@@ -292,9 +315,7 @@ public:
 	double			GetCameraAltitude() const { return Camera.alt_proxy; }
 	void			GetCameraLngLat(double *lng, double *lat) const;
 	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
-	float			VisibilityQuery(const VECTOR3 &gpos, double radius);
 
-	DWORD			GetRenderPass() const { return dwRenderPass; }
 	DWORD			GetFrameId() const { return dwFrameId; }
 
 	const D3DXVECTOR3 *GetCameraX() const { return &Camera.x; }
@@ -379,7 +400,7 @@ private:
 	DWORD stencilDepth;        // stencil buffer bit depth
 	CelestialSphere *csphere;  // celestial sphere background
 	DWORD iVCheck;             // index of last object checked for visibility
-	DWORD dwRenderPass;		   // Currently active render pass
+	//DWORD dwRenderPass;		   // Currently active render pass
 	bool  bLocalLight;         // enable local light sources
 	bool  surfLabelsActive;    // v.2 surface labels activated?
 
@@ -401,7 +422,11 @@ private:
 	oapi::Font *label_font[4];
 	oapi::Pen  *label_pen;
 
+	std::list<vVessel *> RenderList;
+	std::list<vVessel *> SmapRenderList;
 	std::stack<CAMERA>	CameraStack;
+	std::stack<DWORD>	PassStack;
+	
 
 	CAMERA		Camera;
 	D3D9Light*	Lights;
@@ -446,8 +471,9 @@ private:
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
 
 	LPDIRECT3DSURFACE9 pEnvDS;
-	LPDIRECT3DSURFACE9 pShmDS;
-	LPDIRECT3DTEXTURE9 pShmRT[CASCADE_COUNT];
+	LPDIRECT3DSURFACE9 psShmDS[SHM_LOD_COUNT];
+	LPDIRECT3DSURFACE9 psShmRT[SHM_LOD_COUNT];
+	LPDIRECT3DTEXTURE9 ptShmRT[SHM_LOD_COUNT];
 
 	// Rendering Technique related parameters ============================================
 	//

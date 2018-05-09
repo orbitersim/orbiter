@@ -57,7 +57,9 @@ public:
 	int EnableGlass;				///< Enable improved glass shading (Fresnel reflection)
 	int EnableMeshDbg;				///< Enable mesh debugger
 	int ShadowMapMode;				///< Shadow Mapping Mode
+	int ShadowFilter;				///< Shadow Mapping Filter
 	int ShadowMapSize;				///< Shadow Map size
+	int TerrainShadowing;
 	int CustomCamMode;				///< Custom Camera Mode
 	int TileMipmaps;				///< Enable surface tile mipmaps
 	int ShaderDebug;

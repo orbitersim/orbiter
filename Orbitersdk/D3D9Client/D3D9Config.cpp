@@ -57,7 +57,8 @@ void D3D9Config::Reset ()
 	EnableGlass			= 1;
 	EnableMeshDbg		= 1;
 	ShadowMapMode		= 1;
-	ShadowMapSize		= 1024;
+	ShadowFilter		= 0;
+	ShadowMapSize		= 2048;
 	FrameRate			= 200.0;
 	EnableLimiter		= 0;
 	CustomCamMode		= 1;
@@ -74,6 +75,7 @@ void D3D9Config::Reset ()
 	ShaderDebug			= 0;
 	PresentLocation     = 1;
 	PlanetTileLoadFlags = 0x3;
+	TerrainShadowing	= 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -117,9 +119,11 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
-	if (oapiReadItem_int   (hFile, "ShadowMapMode", i))			ShadowMapMode = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "ShadowMapMode", i))			ShadowMapMode = max(0, min(3, i));
+	if (oapiReadItem_int   (hFile, "ShadowMapFilter", i))	 	ShadowFilter = max(0, min(3, i));
 	if (oapiReadItem_int   (hFile, "ShadowMapSize", i))			ShadowMapSize = max(512, min(4096, i));
 	if (oapiReadItem_int   (hFile, "EnableGlass", i))			EnableGlass = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "TerrainShadowing", i))		TerrainShadowing = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnableMeshDbg", i))			EnableMeshDbg = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "TileMipmaps", i))			TileMipmaps = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "TextureMips", i))			TextureMips = max(0, min(2, i));
@@ -178,7 +182,9 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "EnvMapMode", EnvMapMode);
 	oapiWriteItem_int   (hFile, "EnvMapFaces", EnvMapFaces);
 	oapiWriteItem_int   (hFile, "ShadowMapMode", ShadowMapMode);
+	oapiWriteItem_int	(hFile, "ShadowMapFilter", ShadowFilter);
 	oapiWriteItem_int   (hFile, "ShadowMapSize", ShadowMapSize);
+	oapiWriteItem_int	(hFile, "TerrainShadowing", TerrainShadowing);
 	oapiWriteItem_int   (hFile, "EnableGlass", EnableGlass);
 	oapiWriteItem_int   (hFile, "EnableMeshDbg", EnableMeshDbg);
 	oapiWriteItem_int   (hFile, "TileMipmaps", TileMipmaps);

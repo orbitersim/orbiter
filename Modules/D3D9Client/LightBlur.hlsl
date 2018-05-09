@@ -5,7 +5,7 @@
 //				 2016 SolarLiner (Nathan Graule)
 // ==============================================================
 
-// Shader configurations ------------------------------------------------------
+// Shader configurations -----------------------------------------------
 //
 #define fGlowIntensity	1.08	// Overal glow brightness multiplier
 #define radius			12		// Radius of the glow
@@ -14,18 +14,18 @@
 #define fMaxThreshold	1.00	// Glow reaches it's maximum intensity when backbuffer goes above this level
 
 
-// Orher configurations -------------------------------------------------------
+// Orher configurations ------------------------------------------------
 //
 #define fSunIntensity		3.14	// Sunlight intensity
 #define fInvSunIntensity	(1.0/fSunIntensity)
 
-// ----------------------------------------------------------------------------
+// ---------------------------------------------------------------------
 // Client configuration parameters
 //
 #define BufferDivider	2		// Blur buffer size in pixels = ScreenSize / BufferDivider
 #define PassCount		2		// Number of "bBlur" passes
 #define BufferFormat	1		// Render buffer format, 2=RGB10A2, 1 = RGBA_16F, 0=DEFAULT (RGBX8)
-// ----------------------------------------------------------------------------
+// ---------------------------------------------------------------------
 
 uniform extern float2  vSB;
 uniform extern float2  vBB;
@@ -61,7 +61,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 	float3 color = 0;
 
 
-	// Sample a backbuffer into a glow buffer ---------------------------------
+	// Sample a backbuffer into a glow buffer --------------------------------
 	//
 	if (bSample) {
 		float3 res = tex2D(tBack, vPos).rgb;
@@ -70,7 +70,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 	}
 
 
-	// Construct a glow gradient ----------------------------------------------
+	// Construct a glow gradient ---------------------------------------------
 	//
 	if (bBlur) {
 

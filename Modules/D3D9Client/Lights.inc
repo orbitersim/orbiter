@@ -83,6 +83,13 @@ void LocalLights(
 void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW, in float3 posW, in float sp)
 {
 
+#if LMODE !=0
+	if (!gLightsEnabled) {
+		cDiffLocal = 0;
+		cSpecLocal = 0;
+	}
+#endif
+
 #if LMODE == 1
 	LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
 

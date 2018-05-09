@@ -1,8 +1,8 @@
-// ============================================================================
+// ==============================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2012 - 2016 Jarmo Nikkanen
-// ============================================================================
+// ==============================================================
 
 // ----------------------------------------------------------------------------
 // D3D9Client rendering techniques for Orbiter Spaceflight simulator
@@ -89,19 +89,25 @@ struct Tune
 #define Theta   2
 #define Phi     3
 
-// ----------------------------------------------------------------------------
+
+#define SH_SIZE		0
+#define SH_INVSIZE	1
+
+uniform extern float3    kernel[27];
+
+// -------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix
-uniform extern float4x4  gWI;			    // Inverse World matrix
+uniform extern float4x4  gLVP;			    // Light view projection
 uniform extern float4x4  gVP;			    // Combined View and Projection matrix
 uniform extern float4x4  gGrpT;	            // Mesh group transformation matrix
-uniform extern float4x4  gGrpTI;	        // Inverse mesh group transformation matrix
 uniform extern float4    gAttennuate;       // (Mesh Constant Fog) Attennuation of fragment color
 uniform extern float4    gInScatter;        // (Mesh Constant Fog) In scattering light
 uniform extern float4    gColor;            // General purpose color parameter
 uniform extern float4    gFogColor;         // Distance fog color in "Legacy" implementation
-uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
+uniform extern float4    gAtmColor;         // Earth glow color
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
+uniform extern float4    gSHD;				// ShadowMap data
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector         
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
@@ -109,6 +115,7 @@ uniform extern Mat       gWater;			// Water material input structure
 uniform extern Mtrl      gMtrl;			    // Material input structure
 uniform extern Tune      gTune;			    // Texture tuning parameters
 uniform extern Light	 gLights[MAX_LIGHTS];
+uniform extern bool		 gLightsEnabled;
 uniform extern bool      gTuneEnabled;		
 uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
@@ -117,10 +124,11 @@ uniform extern bool      gFresnel;			// Enable fresnel material
 uniform extern bool      gPBRSw;			// Legacy / PBR Switch
 uniform extern bool      gRghnSw;			// Roughness converter switch
 uniform extern bool      gNight;			// Nighttime/Daytime
-uniform extern bool      gDebugHL;			// Enable Debug Highlighting
+uniform extern bool      gShadowsEnabled;	// Enable shadow maps
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
 uniform extern bool		 gNoColor;			// No color flag
+uniform extern bool		 gBaseBuilding;
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
@@ -134,7 +142,7 @@ uniform extern float 	 gMtrlAlpha;
 uniform extern float	 gGlowConst;
 uniform extern Flow		 gCfg;
 
-// Textures -------------------------------------------------------------------
+// Textures -----------------------------------------------------------------
 
 uniform extern texture   gTex0;			    // Diffuse texture
 uniform extern texture   gTex1;			    // Nightlights
@@ -148,8 +156,9 @@ uniform extern texture   gReflMap;   		// Reflectivity Map
 uniform extern texture   gFrslMap;   		// Fresnel Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
+uniform extern texture   gShadowMap;	    // Shadow Map
 
-// Legacy Atmosphere ----------------------------------------------------------
+// Legacy Atmosphere --------------------------------------------------------
 
 uniform extern float     gGlobalAmb;        // Global Ambient Level
 uniform extern float     gSunAppRad;        // Sun apparent size (Radius / Distance)
@@ -220,6 +229,16 @@ struct BShadowVS
 // ----------------------------------------------------------------------------
 // Texture Sampler implementations
 // ----------------------------------------------------------------------------
+
+sampler ShadowS = sampler_state      // Base tile sampler
+{
+	Texture = <gShadowMap>;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = POINT;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
 
 sampler WrapS = sampler_state       // Primary Mesh texture sampler
 {
