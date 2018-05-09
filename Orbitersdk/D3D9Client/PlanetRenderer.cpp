@@ -30,6 +30,8 @@ D3DXHANDLE PlanetRenderer::eRingTech = NULL;
 D3DXHANDLE PlanetRenderer::eHorizonTech = NULL;
 D3DXHANDLE PlanetRenderer::eSkyDomeTech = NULL;
 // ------------------------------------------------------------  
+D3DXHANDLE PlanetRenderer::ssLight = NULL;
+// ------------------------------------------------------------  
 D3DXHANDLE PlanetRenderer::smWorld = NULL;
 D3DXHANDLE PlanetRenderer::smViewProj = NULL;
 // ------------------------------------------------------------  
@@ -50,6 +52,7 @@ D3DXHANDLE PlanetRenderer::sfNight = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sbCloudSh = NULL;
 D3DXHANDLE PlanetRenderer::sbLights = NULL;
+D3DXHANDLE PlanetRenderer::sbLocals = NULL;
 D3DXHANDLE PlanetRenderer::sbInSpace = NULL;
 D3DXHANDLE PlanetRenderer::sbOnOff = NULL;
 D3DXHANDLE PlanetRenderer::sbEnvEnable = NULL;
@@ -226,6 +229,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	eHorizonTech		= pShader->GetTechniqueByName("HorizonTech");
 	eSkyDomeTech		= pShader->GetTechniqueByName("SkyDomeTech");
 	// ------------------------------------------------------------  
+	ssLight				= pShader->GetParameterByName(0,"sLights");
+	// ------------------------------------------------------------  
 	smWorld				= pShader->GetParameterByName(0,"mWorld");
 	smViewProj			= pShader->GetParameterByName(0,"mViewProj");
 	// ------------------------------------------------------------  
@@ -253,6 +258,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	siTileLvl			= pShader->GetParameterByName(0,"iTileLvl");
 	siDebug				= pShader->GetParameterByName(0,"iDebug");
 	sbDebug				= pShader->GetParameterByName(0,"bDebug");
+	sbLocals			= pShader->GetParameterByName(0,"bLocals");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");

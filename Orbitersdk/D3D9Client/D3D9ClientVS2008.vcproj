@@ -879,6 +879,9 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Modules\D3D9Client\Lights.inc"
+				>
+			<File
 				RelativePath="..\..\Modules\D3D9Client\IPI.hlsl"
 				>
 			</File>

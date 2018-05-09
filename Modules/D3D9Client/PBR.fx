@@ -1,11 +1,11 @@
 // ============================================================================
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
-// Copyright (C) 2014 - 2016 Jarmo Nikkanen
+// Copyright (C) 2014 - 2018 Jarmo Nikkanen
 // ============================================================================
 
 
-#if defined(_LIGHTS)
+
 struct PBRData
 {
 	float4 posH     : POSITION0;
@@ -13,29 +13,11 @@ struct PBRData
 	float2 tex0     : TEXCOORD1;
 	float3 nrmW     : TEXCOORD2;
 	float4 tanW     : TEXCOORD3;	 // Handiness in .w
-	// Local vertex lights
-	float4 locW     : TEXCOORD4;	 // Local light source average dir
-	float3 cDif		: COLOR0;		 // Local lights diffuse color
-	float3 cSpe		: COLOR1;		 // Local lights specular color
 };
-#else
-struct PBRData
-{
-	float4 posH     : POSITION0;
-	float3 camW     : TEXCOORD0;
-	float2 tex0     : TEXCOORD1;
-	float3 nrmW     : TEXCOORD2;
-	float4 tanW     : TEXCOORD3;	 // Handiness in .w
-	float3 cDif		: COLOR0;		 // Local lights diffuse color
-};
-#endif
 
 
 
-float3 Light_fx(float3 x)
-{
-	return saturate(x);  //1.5 - exp2(-x.rgb)*1.5f;
-}
+#include "Lights.inc"
 
 
 
@@ -53,34 +35,9 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 	outVS.nrmW = nrmW;
 	outVS.tanW = float4(mul(float4(vrt.tanL, 0.0f), gW).xyz, vrt.tex0.z);
 	outVS.posH = mul(float4(posW, 1.0f), gVP);
-	outVS.camW = -posW;
-	outVS.tex0 = vrt.tex0.xy;
-
-	// Local light sources ----------------------------------------------------
-	//
-#if defined(_LIGHTS)
-	if (gLocalLights) {
-		float3 locW;
-		LocalVertexLight(outVS.cDif, outVS.cSpe, locW, nrmW, posW, gMtrl.specular.a);
-		outVS.locW = float4(-locW.xyz, 1.0f - saturate(dot(-locW.xyz, nrmW)));
-	}
-	else {
-		outVS.cDif = 0;
-		outVS.cSpe = 0;
-		outVS.locW = float4(0, 0, 0, 1);
-	}
-#else
-	outVS.cDif = 0;
-#endif
-
-
-	// Earth "glow" -----------------------------------------------------------
-	//
-	if (gGlow) {
-		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
-		outVS.cDif += gAtmColor.rgb * max(0, angl*gGlowConst);
-	}
-
+    outVS.camW = -posW;
+    outVS.tex0 = vrt.tex0.xy;
+	
 	return outVS;
 }
 
@@ -97,11 +54,13 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float3 nrmW;
 	float3 cEmis;
 	float3 cRefl, cRefl2, cRefl3;
-	float3 cFrsl;
+	float3 cFrsl = 1;
 	float4 cDiff;
 	float4 cSpec;
 	float4 sMask = float4(1.0f, 1.0f, 1.0f, 1024.0f);
 	float  fRghn;
+	float3 cDiffLocal;
+	float3 cSpecLocal;
 
 
 	// ------------------------------------------------------------------------
@@ -136,13 +95,6 @@ float4 PBR_PS(PBRData frg) : COLOR
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
 
-#if defined(_GLASS)
-	// Sample fresnel map
-	if (gCfg.Frsl) cFrsl = tex2D(FrslS, frg.tex0.xy).rgb;
-	else 		   cFrsl = 1;
-#endif
-
-
 
 
 	// ------------------------------------------------------------------------
@@ -152,9 +104,6 @@ float4 PBR_PS(PBRData frg) : COLOR
 	float3 CamD = normalize(frg.camW);
 	float3 cMrtlBase = (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb;
 	float3 cSun = saturate(gSun.Color);
-	float  fN = 1.0f;
-
-
 
 
 	// ------------------------------------------------------------------------
@@ -169,13 +118,11 @@ float4 PBR_PS(PBRData frg) : COLOR
 		cDiff.rgb = pow(abs(cDiff.rgb), gTune.Albe.a) * gTune.Albe.rgb;
 		cRefl.rgb = pow(abs(cRefl.rgb), gTune.Refl.a) * gTune.Refl.rgb;
 		cEmis.rgb = pow(abs(cEmis.rgb), gTune.Emis.a) * gTune.Emis.rgb;
-		cFrsl.rgb = pow(abs(cFrsl.rgb), gTune.Frsl.a) * gTune.Frsl.rgb;
 		fRghn = pow(abs(fRghn), gTune.Rghn.a) * gTune.Rghn.g;
 		cSpec.rgba = cSpec.rgba * gTune.Spec.rgba;
 
 		cDiff = saturate(cDiff);
 		cRefl = saturate(cRefl);
-		cFrsl = saturate(cFrsl);
 		fRghn = saturate(fRghn);
 		cSpec = min(cSpec, sMask);
 	}
@@ -221,10 +168,6 @@ float4 PBR_PS(PBRData frg) : COLOR
 		float3 bitW = cross(frg.tanW.xyz, frg.nrmW) * frg.tanW.w;
 		nrmT.rg = nrmT.rg * 2.0f - 1.0f;
 		nrmW = frg.nrmW*nrmT.z + frg.tanW.xyz*nrmT.x + bitW*nrmT.y;
-	#if defined(_LIGHTS)
-		fN = max(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f);
-		fN *= fN;
-	#endif
 	}
 	else nrmW = frg.nrmW;
 
@@ -281,14 +224,30 @@ float4 PBR_PS(PBRData frg) : COLOR
 	// Compute a specular lobe for base material
 	float fLobe = pow(dRS, cSpec.a) * dLNx;
 
+
+	// ----------------------------------------------------------------------
+	// Compute Local Light Sources
+	// ----------------------------------------------------------------------
+
+	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a);
+
+
+	// ----------------------------------------------------------------------
+	// Compute Earth glow
+	// ----------------------------------------------------------------------
+
+	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
+	cDiffLocal += gAtmColor.rgb * max(0, angl*gGlowConst);
+	
+
 	// Compute received diffuse light
-	float3 diffLight = Light_fx(dLN * cSun + frg.cDif * fN);
+	float3 diffLight = Light_fx(dLN * cSun + cDiffLocal);
 
 	// Bake material props and lights together
 	float3 diffBaked = (gMtrl.diffuse.rgb*diffLight) + cMrtlBase;
 
-#if defined(_LIGHTS)
-	cSun = Light_fx(cSun + frg.cSpe);	// Add local light sources
+#if LMODE > 0
+	cSun = Light_fx(cSun + cSpecLocal);	// Add local light sources
 #endif
 
 	// Special alpha only texture in use, set the .rgb to 1.0f
@@ -404,26 +363,13 @@ float4 PBR_PS(PBRData frg) : COLOR
 // ============================================================================
 
 
-#if defined(_LIGHTS)
 struct FASTData
 {
 	float4 posH     : POSITION0;
 	float3 camW     : TEXCOORD0;
 	float2 tex0     : TEXCOORD1;
 	float3 nrmW     : TEXCOORD2;
-	float3 cDif		: COLOR0;		 // Local lights diffuse color
-	float3 cSpe		: COLOR1;		 // Local lights specular color
 };
-#else
-struct FASTData
-{
-	float4 posH     : POSITION0;
-	float3 camW     : TEXCOORD0;
-	float2 tex0     : TEXCOORD1;
-	float3 nrmW     : TEXCOORD2;
-	float3 cDif		: COLOR0;		 // Local lights diffuse color
-};
-#endif
 
 
 // ============================================================================
@@ -442,29 +388,6 @@ FASTData FAST_VS(MESH_VERTEX vrt)
 	outVS.camW = -posW;
 	outVS.tex0 = vrt.tex0.xy;
 
-	// Local light sources ----------------------------------------------------
-	//
-#if defined(_LIGHTS)
-	if (gLocalLights) {
-		float3 locW;
-		LocalVertexLight(outVS.cDif, outVS.cSpe, locW, nrmW, posW, gMtrl.specular.a);
-	}
-	else {
-		outVS.cDif = 0;
-		outVS.cSpe = 0;
-	}
-#else
-	outVS.cDif = 0;
-#endif
-
-
-	// Earth "glow" -----------------------------------------------------------
-	//
-	if (gGlow) {
-		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
-		outVS.cDif += gAtmColor.rgb * max(0, angl*gGlowConst);
-	}
-
 	return outVS;
 }
 
@@ -476,8 +399,10 @@ float4 FAST_PS(FASTData frg) : COLOR
 
 	float3 cEmis;
 	float4 cDiff;
-
-	// Start fetching texture data --------------------------------------------
+	float3 cDiffLocal;
+	float3 cSpecLocal;
+	
+	// Start fetching texture data -------------------------------------------
 	//
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
 	else		   cDiff = 1;
@@ -501,7 +426,23 @@ float4 FAST_PS(FASTData frg) : COLOR
 
 		if (gNoColor) cDiff.rgb = 1;
 
-		cDiff.rgb *= ( (gMtrl.diffuse.rgb*Light_fx(dLN * cSun + frg.cDif)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb );
+
+		// ----------------------------------------------------------------------
+		// Compute Local Light Sources
+		// ----------------------------------------------------------------------
+
+		LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a);
+
+
+		// ----------------------------------------------------------------------
+		// Compute Earth glow
+		// ----------------------------------------------------------------------
+
+		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
+		cDiffLocal += gAtmColor.rgb * max(0, angl*gGlowConst);
+		
+
+		cDiff.rgb *= ( (gMtrl.diffuse.rgb*Light_fx(dLN * cSun + cDiffLocal)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb );
 
 		float3 CamD = normalize(frg.camW);
 		float3 HlfW = normalize(CamD - gSun.Dir);
@@ -509,8 +450,8 @@ float4 FAST_PS(FASTData frg) : COLOR
 
 		if (dLN == 0) fSun = 0;
 
-#if defined(_LIGHTS)
-		float3 specLight = Light_fx((fSun * cSun) + frg.cSpe);
+#if LMODE > 0
+		float3 specLight = Light_fx((fSun * cSun) + cSpecLocal);
 #else
 		float3 specLight = (fSun * cSun);
 #endif

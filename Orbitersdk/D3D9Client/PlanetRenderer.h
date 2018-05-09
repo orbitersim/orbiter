@@ -60,6 +60,8 @@ public:
 	static D3DXHANDLE eRingTech;
 	static D3DXHANDLE eHorizonTech;
 	static D3DXHANDLE eSkyDomeTech;
+	// ------------------------------------------------------------ 
+	static D3DXHANDLE ssLight;
 	// ------------------------------------------------------------  
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;
@@ -81,6 +83,7 @@ public:
 	// ------------------------------------------------------------
 	static D3DXHANDLE sbCloudSh;
 	static D3DXHANDLE sbLights;
+	static D3DXHANDLE sbLocals;
 	static D3DXHANDLE sbInSpace;
 	static D3DXHANDLE sbOnOff;
 	static D3DXHANDLE sbEnvEnable;

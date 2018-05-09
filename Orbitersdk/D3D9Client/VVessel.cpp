@@ -1049,18 +1049,6 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	}
 
 
-	// Create a main EnvMap with mipmap chain for blurred maps --------------------------------------------------------------------
-	//
-	/*
-	if (pEnv[ENVMAP_IRAD] == NULL) {
-		if (D3DXCreateCubeTexture(pDev, 32, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[ENVMAP_IRAD]) != S_OK) {
-			LogErr("Failed to create irradiance cubemap for visual 0x%X", this);
-			return false;
-		}
-	}*/
-
-
-
 	// Create blurred maps and Irradiance map ----------------------------------------------------------------
 	//
 	if (iFace == 6) {

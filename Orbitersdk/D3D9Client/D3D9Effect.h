@@ -121,7 +121,6 @@ public:
 	static D3DXHANDLE	eWater;      ///< Water
 	static D3DXHANDLE	eSun;        ///< Sun
 	static D3DXHANDLE	eLights;     ///< Additional light sources
-	static D3DXHANDLE	eLightCount; ///< Number of additional light sources
 
 	// Auxilliary params ----------------------------------------------
 	static D3DXHANDLE   eModAlpha;     ///< BOOL multiply material alpha with texture alpha
@@ -131,7 +130,6 @@ public:
 	static D3DXHANDLE	eEnvMapEnable; ///< BOOL
 	static D3DXHANDLE	eInSpace;      ///< BOOL
 	static D3DXHANDLE	eNoColor;      ///< BOOL
-	static D3DXHANDLE	eLocalLights;  ///< BOOL		
 	static D3DXHANDLE	eGlow;	       ///< BOOL
 	static D3DXHANDLE	eTuneEnabled;  ///< BOOL
 	static D3DXHANDLE	eFresnel;	   ///< BOOL

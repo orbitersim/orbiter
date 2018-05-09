@@ -1043,14 +1043,16 @@ float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
 	float d = D3DXVec3Length(&pos);
 	float d2 = d*d;
 
-	if (d > (r + range)) return -1.0f;
+	if (d < r) return 1e6;	// Light is inside the sphere
+	if (d > (r + range)) return -1.0f; // Light can't reach the sphere
 
 	if ((d > r) && (Type == 1) && (cosp>0.1)) {
 		float x = D3DXVec3Dot(&pos, &Direction);
-		if (x < -r) return -1.0f;
-		if ((sqrt(d2 - x*x) - x*tanp) * cosp > r) return -1.0f;
+		if (x < -r) return -1.0f;	// The sphere is a way behind the spotlight
+		if ((sqrt(d2 - x*x) - x*tanp) * cosp > r) return -1.0f; // Light cone doesn't intersect the sphere
 	}
 
+	// The sphere is lit from outside
 	return intensity / (Attenuation.x + Attenuation.y*d + Attenuation.z*d2);
 }
 

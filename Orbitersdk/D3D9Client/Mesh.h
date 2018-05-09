@@ -268,9 +268,10 @@ private:
 	D3DXMATRIX *pGrpTF;
 	const D3D9Sun *sunLight;
 	D3DCOLOR cAmbient;
-	
+	LightStruct null_light;
+
 	_LightList LightList[MAX_SCENE_LIGHTS];
-	LightStruct Locals[MAX_MESH_LIGHTS];
+	LightStruct *Locals;
 	
 
 	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write 
@@ -280,6 +281,8 @@ private:
 	bool bGlobalTF;				// Mesh has a valid mTransform matrix
 
 	char name[128];
+
+	
 };
 
 #endif // !__MESH_H

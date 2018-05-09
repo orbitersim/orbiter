@@ -66,7 +66,7 @@ VBMESH::~VBMESH ()
 void VBMESH::ComputeSphere()
 {
 	bsCnt = D3DXVECTOR3(float(Box[0].x + Box[7].x), float(Box[0].y + Box[7].y), float(Box[0].z + Box[7].z)) * 0.5f;
-	bsRad = D3DXVec3Length(&bsCnt);
+	bsRad = D3DXVec3Length(&(D3DXVECTOR3(float(Box[0].x - Box[7].x), float(Box[0].y - Box[7].y), float(Box[0].z - Box[7].z)) * 0.5f));
 }
 
 

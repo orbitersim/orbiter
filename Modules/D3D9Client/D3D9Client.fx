@@ -43,13 +43,13 @@ struct Sun
 
 struct Light
 {
-	bool     bSpotlight;       /* Is is spotlight */
+    int      type;       	   /* Is is spotlight */
 	float    dst2;			   /* Camera-Light Emitter distance squared */
 	float4   diffuse;          /* diffuse color of light */
 	float3   position;         /* position in world space */
 	float3   direction;        /* direction in world space */
 	float3   attenuation;      /* Attenuation */
-	float4   param;            /* range, falloff, theta, phi */
+    float4   param;            /* range, falloff, theta, phi */  
 };
 
 // Must match with counterpart in D3D9Effect.h
@@ -102,15 +102,14 @@ uniform extern float4    gFogColor;         // Distance fog color in "Legacy" im
 uniform extern float4    gAtmColor;         // Atmospheric Color of the Proxy Gbody.
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
-uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
-uniform extern Light	 gLights[8];
-uniform extern int       gLightCount;
+uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector         
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
 uniform extern Mtrl      gMtrl;			    // Material input structure
 uniform extern Tune      gTune;			    // Texture tuning parameters
-uniform extern bool      gTuneEnabled;
+uniform extern Light	 gLights[MAX_LIGHTS];
+uniform extern bool      gTuneEnabled;		
 uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
 uniform extern bool      gTextured;			// Enable Diffuse Texturing
@@ -122,8 +121,6 @@ uniform extern bool      gDebugHL;			// Enable Debug Highlighting
 uniform extern bool      gEnvMapEnable;		// Enable Environment mapping
 uniform extern bool		 gInSpace;			// True if a mesh is located in space
 uniform extern bool		 gNoColor;			// No color flag
-uniform extern bool		 gLocalLights;		// Local light sources enabled
-uniform extern bool		 gGlow;				// Planet glow enabled
 uniform extern int       gSpecMode;
 uniform extern int       gHazeMode;
 uniform extern float     gProxySize;		// Cosine of the angular size of the Proxy Gbody. (one half)
@@ -522,44 +519,6 @@ void LegacySunColor(out float4 diff, out float ambi, out float nigh, in float3 n
 		ambi = gGlobalAmb;
 		nigh = 0;
 	}
-}
-
-
-
-void LocalVertexLight(out float3 diff, out float3 spec, out float3 dir, in float3 nrmW, in float3 posW, in float sp)
-{
-	float3 diffuse = 0;
-	float3 specular = 0;
-	float3 direction = 0;
-
-	int i;
-	for (i=0;i<gLightCount;i++)
-	{
-		float3 relpW = posW - gLights[i].position;
-		float3 relpN = normalize(relpW);
-		float  dst   = dot(relpW, relpN);
-
-		float att    = rcp(dot(gLights[i].attenuation.xyz, float3(1.0, dst, dst*dst)));
-		float spt    = saturate((dot(relpN, gLights[i].direction)-gLights[i].param[Phi]) * gLights[i].param[Theta]);
-
-		float d      = saturate(dot(-relpN, nrmW));
-		float s      = pow(saturate(dot(reflect(relpN, nrmW), normalize(-posW))), sp);
-
-		if (gMtrl.specular.a<2.0 || d==0) s = 0.0f;
-		if (!gLights[i].bSpotlight) spt = 1.0f;         // Point light -> set spotlight factor to 1
-
-		float dif = (att*spt);
-
-		diffuse   += gLights[i].diffuse.rgb * (dif * d);
-		specular  += gLights[i].diffuse.rgb * (dif * s);
-		direction += relpN * (dif * d);
-	}
-
-	//diff = 1.5 - exp2(-diffuse.rgb)*1.5;
-	//spec = 1.5 - exp2(-specular.rgb)*1.5;
-	diff = saturate(diffuse.rgb);
-	spec = saturate(specular.rgb);
-	dir  = normalize(direction);
 }
 
 

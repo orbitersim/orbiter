@@ -10,7 +10,21 @@
 // Contains a light weight implementation
 // ============================================================================
 
+struct Light
+{
+	int		 type;			   /* Type of the light emitter 0=point, 1=spot */
+	float    dst2;			   /* Camera-Light Emitter distance squared */
+	float4   diffuse;          /* diffuse color of light */
+	float3   position;         /* position in world space */
+	float3   direction;        /* direction in world space */
+	float3   attenuation;      /* Attenuation */
+	float4   param;            /* range, falloff, theta, phi */
+};
 
+#define Range   0
+#define Falloff 1
+#define Theta   2
+#define Phi     3
 
 // ----------------------------------------------------------------------------
 // Vertex input layouts from Vertex buffers to vertex shader
@@ -30,12 +44,12 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
 
 struct TileVS
 {
-	float4 posH     : POSITION0;
-	float4 texUV    : TEXCOORD0;  // Texture coordinate
-	float3 aux      : TEXCOORD1;  // Night lights
+    float4 posH     : POSITION0;
+    float4 texUV    : TEXCOORD0;  // Texture coordinate
+    float4 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
 	float3 nrmW		: TEXCOORD3;
-	float3 atten    : COLOR0;     // Attennuation
+	float3 sunlight : COLOR0;     // Color of the sunlight received by terrain
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
 };
 
@@ -68,6 +82,8 @@ struct CelSphereVS
 // Global shader variables
 // ----------------------------------------------------------------------------
 
+uniform extern Light	 sLights[4];		// Local light sources
+
 uniform extern float4x4  mWorld;		    // World matrix
 uniform extern float4x4  mViewProj;			// Combined View and Projection matrix
 // ------------------------------------------------------------
@@ -93,6 +109,7 @@ uniform extern bool      bMicroNormals;		// Enable micro texture normal maps
 uniform extern int		 iTileLvl;			// Surface tile level being rendered
 uniform extern int		 iDebug;			// Debug Mode identifier
 uniform extern bool		 bDebug;			// Debug Mode enabled
+uniform extern bool		 bLocals;			// Local light sources enabled for this tile
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -266,10 +283,69 @@ const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
 const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};
 const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
 const  float3 cSky = {0.9f, 1.1f, 1.8f};
-const  float3 cSun = { 1.1, 1.1, 0.95 };
+const  float3 cSun = { 1.0f, 1.0f, 1.0f };
 const float srfoffset = -0.2;
-const float ATMNOISE = 0.01;
-// ----------------------------------------------------------------------------
+const float ATMNOISE = 0.02;
+
+
+// -------------------------------------------------------------------------------------------------------------
+// Local light sources
+//
+void LocalLights(
+	out float3 diff_out,
+	in float3 nrmW,
+	in float3 posW)
+{
+
+	if (!bLocals) return;
+
+	float3 posWN = normalize(-posW);
+	float3 p[4];
+	int i;
+
+	// Relative positions
+	[unroll] for (i = 0; i < 4; i++) p[i] = posW - sLights[i].position;
+
+	// Square distances
+	float4 sd;
+	[unroll] for (i = 0; i < 4; i++) sd[i] = dot(p[i], p[i]);
+
+	// Normalize
+	sd = rsqrt(sd);
+	[unroll] for (i = 0; i < 4; i++) p[i] *= sd[i];
+
+	// Distances
+	float4 dst = rcp(sd);
+
+	// Attennuation factors
+	float4 att;
+	[unroll] for (i = 0; i < 4; i++) att[i] = dot(sLights[i].attenuation.xyz, float3(1.0, dst[i], dst[i] * dst[i]));
+
+	att = rcp(att);
+
+	// Spotlight factors
+	float4 spt;
+	[unroll] for (i = 0; i < 4; i++) {
+		spt[i] = (dot(p[i], sLights[i].direction) - sLights[i].param[Phi]) * sLights[i].param[Theta];
+		if (sLights[i].type == 0) spt[i] = 1.0f;
+	}
+
+	spt = saturate(spt);
+
+	// Diffuse light factors
+	float4 dif;
+	[unroll] for (i = 0; i < 4; i++) dif[i] = dot(-p[i], nrmW);
+
+	dif = saturate(dif);
+	dif *= (att*spt);
+
+	diff_out = 0;
+	
+	[unroll] for (i = 0; i < 4; i++) diff_out += sLights[i].diffuse.rgb * dif[i];
+}
+
+
+// -------------------------------------------------------------------------------------------------------------
 // Henyey-Greenstein Phase function
 // x = (1-g^2)/(4pi), y = 1+g^2, w = -2*g
 //
@@ -283,7 +359,10 @@ float MPhase(float cw)
 //
 float RPhase(float cw)
 {
-	return (1.0 + cw*cw*fRPhase) * (-cw*abs(cw) + 1.5f) * 0.4f;
+	
+	//return (1.0 + cw*fRPhase) * (0.75 + cw*cw*0.5f);
+	//return (1.0 + cw*cw*fRPhase);
+	return (1.0 + cw*fRPhase);
 }
 
 // ----------------------------------------------------------------------------
@@ -404,7 +483,7 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 	float fNgt = saturate(fDNS*2.924f+0.657f);
 
 	// Compute ambient light level for the sky
-	float3 vAmb = (vRayInSct + 0.5f) * (3.0*fAmbient * fNgt); // *saturate(1.0f - max(vIns.b, vIns.r));
+	float3 vAmb = (vRayInSct + 0.5f) * (3.0*fAmbient * fNgt);
 
 	vIns = 1.0f - exp2(-(vAmb + vIns) * vColorShift);
 	//vIns = 1.0f - exp2(-(vIns) * vColorShift);
@@ -423,6 +502,8 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 #define AUX_DIST		0	// Vertex distance
 #define AUX_NIGHT		1	// Night lights intensity
 #define AUX_SLOPE		2   // Terrain slope factor 0.0=flat, 1.0=sloped
+#define AUX_RAYDEPTH	3   // Optical depth of a ray
+
 
 TileVS SurfaceTechVS(TILEVERTEX vrt,
 	uniform bool sbRipples,
@@ -468,7 +549,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	// Camara altitude dependency multiplier for ambient color of atmosphere
 	//float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
 
-	float fAmb = max(saturate(fTrA*8.0*fAmbient), fGlobalAmb) * 0.25f;
+	float fAmb = max(saturate(fTrA*fAmbient), fGlobalAmb);
 
 	float  fDPR  = dot(vPlN,  vRay);					// Dot mean normal, viewing ray
 	float  fDNR	 = dot(vNrmW, vRay);
@@ -496,16 +577,15 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 	float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
 
-	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.125f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
+	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.12f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
 
-	// Compute surface texture color attennuation (i.e. extinction term)
-	outVS.atten = exp2(-vTotOutSct * fDRay);
+	outVS.aux[AUX_RAYDEPTH] = fDRay;
 
 	// Multiply in-coming light with phase and light scattering factors
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
-
 	outVS.insca = (1.0f - exp2(-outVS.insca));
-	outVS.atten *= max(vSunLight, (vRayInSct+1.0f) * fAmb);
+
+	outVS.sunlight = max(vSunLight, float3(0.9, 0.9, 1.0) * fAmb);
 
 	return outVS;
 }
@@ -546,10 +626,19 @@ float4 SurfaceTechPS(TileVS frg,
 
 	if (sbMicro) {
 		float2 UV = frg.texUV.xy;
-		// Normal in .ag luminance in .b
-		cFar = tex2D(MicroCS, UV*vMSc2.zw + vMSc2.xy).agb;	// High altitude micro texture C
-		cMed = tex2D(MicroBS, UV*vMSc1.zw + vMSc1.xy).agb;	// Medimum altitude micro texture B
-		cLow = tex2D(MicroAS, UV*vMSc0.zw + vMSc0.xy).agb;	// Low altitude micro texture A
+		// Create normals
+		if (bMicroNormals) {
+			// Normal in .ag luminance in .b
+			cFar = tex2D(MicroCS, UV*vMSc2.zw + vMSc2.xy).agb;	// High altitude micro texture C
+			cMed = tex2D(MicroBS, UV*vMSc1.zw + vMSc1.xy).agb;	// Medimum altitude micro texture B
+			cLow = tex2D(MicroAS, UV*vMSc0.zw + vMSc0.xy).agb;	// Low altitude micro texture A
+		}
+		else {
+			// Color in .rgb no normals
+			cFar = tex2D(MicroCS, UV*vMSc2.zw + vMSc2.xy).rgb;	// High altitude micro texture C
+			cMed = tex2D(MicroBS, UV*vMSc1.zw + vMSc1.xy).rgb;	// Medimum altitude micro texture B
+			cLow = tex2D(MicroAS, UV*vMSc0.zw + vMSc0.xy).rgb;	// Low altitude micro texture A
+		}
 	}
 
 
@@ -568,7 +657,7 @@ float4 SurfaceTechPS(TileVS frg,
 	if (sbSpecular) {
 
 		// Specular Mask
-		float m = (1.0 - cMsk.a) * saturate(0.5f - frg.aux[AUX_NIGHT] * 2.0f);
+		float m = (1.0 - cMsk.a) * saturate(0.2f - frg.aux[AUX_NIGHT] * 4.0f);
 		float f4 = 0;
 
 		// Specular intensity
@@ -643,8 +732,9 @@ float4 SurfaceTechPS(TileVS frg,
 	}
 	// ------------------------------------------------------------------------
 	*/
+	float3 cDiffLocal = 0;
 
-
+	LocalLights(cDiffLocal, nrmW, -frg.camW);
 
 	// Do we have an atmosphere or not ?
 	//
@@ -665,7 +755,9 @@ float4 SurfaceTechPS(TileVS frg,
 
 		fLvl *= (fTrS * fPlS);										// Apply shadows
 
-		float3 color = cTex.rgb * max(fLvl, 0);						// Apply sunlight
+		float3 color = cTex.rgb * saturate(cSun*max(fLvl, 0) + cDiffLocal);
+
+		//float3 color = cTex.rgb * max(fLvl, 0);						// Apply sunlight
 
 		return float4(pow(abs(color), fTrGamma), 1.0f);				// Gamma corrention
 	}
@@ -691,18 +783,21 @@ float4 SurfaceTechPS(TileVS frg,
 		// Lambertian shading term
 		float fDNS = dot(nrmW, vSunDir);
 
+		float fSunLight = sqrt(saturate(fDNS) + 0.02f);
+
 		// Terrain, Specular and Night lights
-		float3 color = cTex.rgb * sqrt(saturate(fDNS)+0.02f) + cSpe;
+		float3 color = cTex.rgb * saturate(frg.sunlight + cDiffLocal + cNgt);
+		float3 atten = exp2(-vTotOutSct * frg.aux[AUX_RAYDEPTH]);
 
 		// Terrain with gamma correction and attennuation
-		color = pow(abs(color * fExposure), fTrGamma) * frg.atten.rgb;
+		color = pow(abs(color * fExposure), fTrGamma) * atten;
 
 		// Add atmosphere with gamma correction
 		color += pow(abs(frg.insca.rgb * vHazeMax), fAtmGamma);
 
-		// Add nightlights
-		color += cTex.rgb * cNgt;
-
+		// Add Specular component
+		color += cSpe * atten;
+	
 		return float4(color+a, 1.0f);
 	}
 }

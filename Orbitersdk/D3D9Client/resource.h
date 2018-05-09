@@ -159,3 +159,4 @@
 #define IDC_ATM_ATMGAMMA                        2153
 #define IDC_DBG_DATAWND                         2154
 #define IDC_DBG_DATAVIEW                        2155
+#define IDC_LIGHTCONFIG                         2156

@@ -197,8 +197,8 @@ typedef struct _LightStruct  {
 public : _LightStruct () :	Type(0),
 							Dst2(0.0),
 							Diffuse(D3DXCOLOR(0ul)),
-							Position(), Direction(), Attenuation(),
-							Param()
+							Position(0,0,0), Direction(1.0f, 0.0f, 0.0f), Attenuation(1.0f, 1.0f, 1.0f),
+							Param(0,0,0,0)
 							{}
 } LightStruct;
 

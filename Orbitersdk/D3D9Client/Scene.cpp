@@ -75,6 +75,11 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	dwFrameId = 0;
 	surfLabelsActive = false;
 
+	pEnvDS = NULL;
+	pShmDS = NULL;
+	memset(&pShmRT, 0, sizeof(pShmRT));
+
+
 	pDevice = _gc->GetDevice();
 
 	memset(&Camera, 0, sizeof(Camera));
@@ -111,12 +116,34 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	cspheremgr = new CSphereManager(_gc, this);
 
+
+	// Initialize envmapping and shadow maps -----------------------------------------------------------------------------------------------
+	//
+	DWORD EnvMapSize = Config->EnvMapSize;
+	DWORD ShmMapSize = Config->ShadowMapSize;
+
+	if (Config->EnvMapMode) {
+		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
+	}
+	else pEnvDS = NULL;
+
+	if (Config->ShadowMapMode) {
+		HR(pDevice->CreateDepthStencilSurface(ShmMapSize, ShmMapSize, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pShmDS, NULL));
+		for (int i = 0; i < CASCADE_COUNT; i++) {
+			HR(pDevice->CreateTexture(ShmMapSize, ShmMapSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pShmRT[i], NULL));
+		}
+	}
+	else {
+		pShmDS = NULL;
+		for (int i = 0; i < CASCADE_COUNT; i++) pShmRT[i] = NULL;
+	}
+
+
+
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
 	//
 	pLightBlur = NULL;
 	pFlare = NULL;
-
-	//HR(D3DXCreateTexture(pDevice, viewW / 2, viewH / 2, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_DEPTH]));
 
 	if (Config->PostProcess) {
 
@@ -198,6 +225,9 @@ Scene::~Scene ()
 	SAFE_RELEASE(pColorBak);
 	SAFE_RELEASE(pDepthStensilBak);
 	SAFE_RELEASE(pIrradianceTemp);
+	SAFE_RELEASE(pEnvDS);
+	SAFE_RELEASE(pShmDS);
+	for (int i = 0; i < ARRAYSIZE(pShmRT); i++) SAFE_RELEASE(pShmRT[i]);
 
 	for (int i = 0; i < ARRAYSIZE(pBlrTemp); i++) SAFE_RELEASE(pBlrTemp[i]);
 

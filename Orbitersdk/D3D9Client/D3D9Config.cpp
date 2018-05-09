@@ -36,7 +36,7 @@ void D3D9Config::Reset ()
 	SceneAntialias		= 4;
 	DebugLvl			= 1;
 	VCNearPlane		    = 0.1; 
-	MaxLights			= 12;
+	LightConfig			= 0;
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
 	PreLBaseVis			= 0;
@@ -82,6 +82,13 @@ void D3D9Config::Reset ()
 	DebugFont		    = new char[64];   strcpy_s(DebugFont,64,"Fixed");
 }
 
+int D3D9Config::MaxLights()
+{
+	if (LightConfig == 0) return 1;
+	if (LightConfig <= 2) return 4;
+	return 8;
+}
+
 bool D3D9Config::ReadParams ()
 {
 	int i;
@@ -121,7 +128,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
 	if (oapiReadItem_int   (hFile, "DebugLvl", i))					DebugLvl = i;
 	if (oapiReadItem_float (hFile, "VCNearPlane", d))				VCNearPlane = max (-1.0, min (1.0, d));
-	if (oapiReadItem_int   (hFile, "LightSourcesInUse", i))			MaxLights = i;
+	if (oapiReadItem_int   (hFile, "LightCongiguration", i))		LightConfig = max(min(4, i), 0);
 	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))				DisableDriverManagement = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))					NVPerfHUD = max (0, min (1, i));
 	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))			DebugFontSize = i;	
@@ -181,7 +188,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "StereoConvergence", Convergence);
 	oapiWriteItem_int   (hFile, "DebugLvl", DebugLvl);
 	oapiWriteItem_float (hFile, "VCNearPlane", VCNearPlane);
-	oapiWriteItem_int   (hFile, "LightSourcesInUse", MaxLights);
+	oapiWriteItem_int   (hFile, "LightCongiguration", LightConfig);
 	oapiWriteItem_int   (hFile, "DisableDrvMgm", DisableDriverManagement);
 	oapiWriteItem_int   (hFile, "NVPerfHUD", NVPerfHUD);
 	oapiWriteItem_int   (hFile, "DebugLineFontSize", DebugFontSize);	

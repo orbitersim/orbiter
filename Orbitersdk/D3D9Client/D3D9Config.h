@@ -24,6 +24,7 @@ public:
 	void Reset();
 	bool ReadParams();
 	void WriteParams();
+	int  MaxLights();
 
 	int PlanetPreloadMode;			///< Planet preload mode setting (0=load on demand, 1=preload)
 	int PlanetLoadFrequency;		///< Load frequency for on-demand textures \[Hz\] (1...1000)
@@ -48,7 +49,7 @@ public:
 	double FrameRate;				///< Framerate limiter
 	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
-	int MaxLights;					///< Maximum number of light sources in use (0...12, default=12)
+	int LightConfig;				///< Light emitter configuration
 	int NVPerfHUD;					///< ??? (0,1)
 	int EnvMapSize;					///< Environment map size (64...512)
 	int EnvMapMode;					///< Environment map mode (0=disabled, 1=planet only, 2=fullscene)

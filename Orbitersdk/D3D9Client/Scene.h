@@ -37,6 +37,8 @@ class D3D9Pad;
 #define GBUF_DEPTH				3
 #define GBUF_COUNT				4
 
+#define CASCADE_COUNT			1
+
 #define TEX_NOISE				0
 #define TEX_CLUT				1
 #define TEX_COUNT				2
@@ -442,6 +444,10 @@ private:
 	LPDIRECT3DTEXTURE9 ptgBuffer[GBUF_COUNT];
 	LPDIRECT3DSURFACE9 pOffscreenTarget;
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
+
+	LPDIRECT3DSURFACE9 pEnvDS;
+	LPDIRECT3DSURFACE9 pShmDS;
+	LPDIRECT3DTEXTURE9 pShmRT[CASCADE_COUNT];
 
 	// Rendering Technique related parameters ============================================
 	//

@@ -60,7 +60,9 @@ void D3D9Mesh::Null()
 	bCanRenderFast = false;
 	bMtrlModidied = false;
 
-	memset(Locals, 0, sizeof(Locals));
+	Locals = new LightStruct[Config->MaxLights()];
+
+	memset(Locals, 0, sizeof(LightStruct) * Config->MaxLights());
 	memset(LightList, 0, sizeof(LightList));
 	strcpy_s(name, 128, "???");
 }
@@ -320,6 +322,7 @@ D3D9Mesh::~D3D9Mesh()
 //
 void D3D9Mesh::Release()
 {
+	SAFE_DELETEA(Locals);
 	SAFE_DELETEA(Grp); 
 	SAFE_DELETEA(Tex);
 	SAFE_DELETEA(Mtrl);
@@ -1539,8 +1542,6 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eVesselTech);
-	FX->SetInt(eLightCount, 0);
-	FX->SetBool(eLocalLights, false);
 	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eFresnel, false);
 	FX->SetBool(eEnvMapEnable, false);
@@ -1554,6 +1555,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
+
 	if (pLights && nSceneLights>0) {
 
 		int nMeshLights = 0;
@@ -1564,7 +1567,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		//
 		for (int i = 0; i < nSceneLights; i++) {
 			float il = pLights[i].GetIlluminance(pos, BBox.bs.w);
-			if (il > 0.0) {
+			if (il > 0.005f) {
 				LightList[nMeshLights].illuminace = il;
 				LightList[nMeshLights++].idx = i;
 			}
@@ -1575,19 +1578,14 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			// If any, Sort the list based on illuminance ------------------------------------------- 
 			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
 
-			nMeshLights = min(nMeshLights, min(MAX_MESH_LIGHTS, Config->MaxLights));
+			nMeshLights = min(nMeshLights, Config->MaxLights());
 
 			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
-			
-			// Reset Unused lights
-			if (nMeshLights<MAX_MESH_LIGHTS) memset2(&Locals[nMeshLights], 0, (MAX_MESH_LIGHTS - nMeshLights) * sizeof(LightStruct));
-
-			FX->SetValue(eLights, Locals, sizeof(Locals));
-			FX->SetInt(eLightCount, nMeshLights);
-			FX->SetBool(eLocalLights, true);
+			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));		
 		}
 	}
+
+	FX->SetValue(eLights, Locals, sizeof(LightStruct) * Config->MaxLights());
 	
 
 	if (nEnv >= 1 && pEnv[0]) FX->SetTexture(eEnvMapA, pEnv[0]);
@@ -2006,8 +2004,6 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
 
 	FX->SetTechnique(eVesselTech);
-	FX->SetInt(eLightCount, 0);
-	FX->SetBool(eLocalLights, false);
 	FX->SetBool(eDebugHL, false);
 	FX->SetBool(eTuneEnabled, false);
 
@@ -2017,6 +2013,8 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
+
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
 
 	if (pLights && nSceneLights>0) {
 
@@ -2039,20 +2037,15 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 			// If any, Sort the list based on illuminance ------------------------------------------- 
 			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
 
-			nMeshLights = min(nMeshLights, min(MAX_MESH_LIGHTS, Config->MaxLights));
+			nMeshLights = min(nMeshLights, Config->MaxLights());
 
 			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
-
-			// Reset Unused lights
-			if (nMeshLights<MAX_MESH_LIGHTS) memset2(&Locals[nMeshLights], 0, (MAX_MESH_LIGHTS - nMeshLights) * sizeof(LightStruct));
-
-			FX->SetValue(eLights, Locals, sizeof(Locals));
-			FX->SetInt(eLightCount, nMeshLights);
-			FX->SetBool(eLocalLights, true);
+			int i;
+			for (i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));		
 		}
 	}
-
+	
+	FX->SetValue(eLights, Locals, sizeof(LightStruct) * Config->MaxLights());
 
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
@@ -2284,7 +2277,6 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 	//FX->SetBool(eUseEmis, false);
 	//FX->SetBool(eUseRefl, false);
 	FX->SetBool(eDebugHL, false);
-	FX->SetInt(eLightCount, 0);
 	
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));

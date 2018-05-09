@@ -56,6 +56,10 @@ static void VtxInterpolate (VERTEX_2TEX &res, const VERTEX_2TEX &a, const VERTEX
 	res.nz = a.nz*w0 + b.nz*w1;
 }
 
+
+int compare_lights(const void * a, const void * b);
+
+
 // =======================================================================
 // =======================================================================
 
@@ -635,6 +639,7 @@ void SurfTile::Render ()
 	LPDIRECT3DDEVICE9 pDev = mgr->Dev();
 	ID3DXEffect *Shader = mgr->Shader();
 	const vPlanet *vPlanet = mgr->GetPlanet();
+	const Scene *scene = mgr->GetScene();
 
 	static const double rad0 = sqrt(2.0)*PI05;
 	double sdist, rad;
@@ -651,7 +656,7 @@ void SurfTile::Render ()
 		rad = rad0/(double)(2<<lvl); // tile radius
 		has_specular = (ltex && sdist < (1.75 + rad));
 		has_shadows = (render_shadows && sdist < (PI05+rad));
-		has_lights = (render_lights && ltex && sdist > 1.45);
+		has_lights = (render_lights && ltex && sdist > 1.35);
 	}
 
 	if (vPlanet->CameraAltitude()>20e3) has_ripples = false;
@@ -755,6 +760,63 @@ void SurfTile::Render ()
 	// ---------------------------------------------------------------------------------------------------
 	if (has_lights) { HR(Shader->SetFloat(TileManager2Base::sfNight, float(mgr->Cprm().lightfac))); }
 	else {			  HR(Shader->SetFloat(TileManager2Base::sfNight, 0.0f));	}
+
+
+	// ---------------------------------------------------------------------
+	// Setup local light sources
+	//
+	const D3D9Light *pLights = scene->GetLights();
+	int nSceneLights = scene->GetLightCount();
+
+	LightStruct Locals[4];
+
+	D3DXMATRIX wmx;
+	HR(Shader->GetMatrix(TileManager2Base::smWorld, &wmx));
+	HR(Shader->SetBool(TileManager2Base::sbLocals, false));
+
+	
+	if (pLights && nSceneLights>0) {
+
+		int nMeshLights = 0;
+		D3DXVECTOR3 pos;
+		D3DXVec3TransformCoord(&pos, &mesh->bsCnt, &wmx);
+
+		_LightList LightList[MAX_SCENE_LIGHTS];
+
+		// Find all local lights effecting this mesh ------------------------------------------
+		//
+		for (int i = 0; i < nSceneLights; i++) {
+			float il = pLights[i].GetIlluminance(pos, mesh->bsRad);
+			if (il > 0.005f) {
+				LightList[nMeshLights].illuminace = il;
+				LightList[nMeshLights++].idx = i;
+			}
+		}
+
+		if (nMeshLights > 0) {
+
+			// If any, Sort the list based on illuminance ------------------------------------------- 
+			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
+
+			nMeshLights = min(nMeshLights, 4);
+
+			// Create a list of N most effective lights ---------------------------------------------
+			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+
+			HR(Shader->SetBool(TileManager2Base::sbLocals, true));
+			HR(Shader->SetValue(TileManager2Base::ssLight, &Locals, sizeof(Locals)));
+		}
+	}
+
+	/*
+	if (pLights && nSceneLights > 0) {
+
+		// Create a list of N most effective lights ---------------------------------------------
+		for (int i = 0; i < nSceneLights; i++) memcpy2(&Locals[i], &pLights[i], sizeof(LightStruct));
+		HR(Shader->SetBool(TileManager2Base::sbLocals, true));
+		
+	}*/
+
 
 	D3DXVECTOR4 vBackup;
 

@@ -229,6 +229,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     COMBOBOX        IDC_FONT, 270, 23, 80, 15, WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     COMBOBOX        IDC_DEBUG, 270, 65, 80, 15, WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     COMBOBOX        IDC_MIPMAPS, 270, 192, 80, 15, WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
+    COMBOBOX        IDC_LIGHTCONFIG, 200, 235, 150, 15, WS_TABSTOP | CBS_DROPDOWNLIST | CBS_HASSTRINGS, WS_EX_LEFT
     AUTOCHECKBOX    "Enable mesh debugger", IDC_MESH_DEBUGGER, 200, 85, 89, 8, 0, WS_EX_LEFT
     CONTROL         "", IDC_CONVERGENCE, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 425, 20, 85, 20, WS_EX_LEFT
     CONTROL         "", IDC_SEPARATION, TRACKBAR_CLASS, WS_TABSTOP | TBS_AUTOTICKS | TBS_TOP, 425, 40, 85, 20, WS_EX_LEFT
@@ -263,6 +264,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     LTEXT           "Custom Cameras", IDC_STATIC, 380, 109, 54, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Update Rate", IDC_STATIC, 380, 125, 42, 8, SS_LEFT, WS_EX_LEFT
     GROUPBOX        "Terrain Resolution", 0, 190, 105, 170, 110, 0, WS_EX_LEFT
+    GROUPBOX        "Local lights", IDC_STATIC, 190, 220, 170, 40, 0, WS_EX_LEFT
     LTEXT           "Lower", IDC_STATIC, 255, 118, 20, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "32", IDC_STATIC, 287, 150, 9, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "16", IDC_STATIC, 260, 150, 9, 8, SS_LEFT, WS_EX_LEFT
@@ -302,8 +304,8 @@ STRINGTABLE
 //
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 1 VERSIONINFO
-    FILEVERSION     25,4,0,0
-    PRODUCTVERSION  25,0,0,0
+    FILEVERSION     26,0,0,0
+    PRODUCTVERSION  26,0,0,0
     FILEOS          VOS_NT_WINDOWS32
     FILETYPE        VFT_DLL
     FILESUBTYPE     VFT2_UNKNOWN
@@ -315,12 +317,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
         BLOCK "080904E4"
         {
             VALUE "FileDescription", "Render engine plugin for Orbiter Space Flight Simulator"
-            VALUE "FileVersion", "25.4.0.0"
+            VALUE "FileVersion", "26.0.0.0"
             VALUE "InternalName", "D3D9Client"
             VALUE "LegalCopyright", "Copyright © 2010 - 2017"
             VALUE "OriginalFilename", "D3D9Client.dll"
             VALUE "ProductName", "D3D9Client"
-            VALUE "ProductVersion", "25.0.0.0"
+            VALUE "ProductVersion", "26.0.0.0"
         }
     }
     BLOCK "VarFileInfo"

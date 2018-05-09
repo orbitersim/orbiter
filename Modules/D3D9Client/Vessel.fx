@@ -38,31 +38,6 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 	outVS.camW = -posW;
 	outVS.tex0 = vrt.tex0.xy;
 
-	// Local light sources ----------------------------------------------------
-	//
-#if defined(_LIGHTS)
-	if (gLocalLights) {
-		float3 locW;
-		LocalVertexLight(outVS.cDif, outVS.cSpe, locW, nrmW, posW, gMtrl.specular.a);
-		outVS.locW = float4(-locW.xyz, 1.0f - saturate(dot(-locW.xyz, nrmW)));
-	}
-	else {
-		outVS.cDif = 0;
-		outVS.cSpe = 0;
-		outVS.locW = float4(0, 0, 0, 1);
-	}
-#else
-	outVS.cDif = 0;
-#endif
-
-
-	// Earth "glow" -----------------------------------------------------------
-	//
-	if (gGlow) {
-		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
-		outVS.cDif += gAtmColor.rgb * max(0, angl*gGlowConst);
-	}
-
 	return outVS;
 }
 
@@ -72,8 +47,6 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 //
 float4 AdvancedPS(PBRData frg) : COLOR
 {
-
-	float  fN = 1;
 	float3 bitW;
 	float3 nrmT;
 	float3 cRefl;
@@ -81,13 +54,19 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	float4 cSpec;
 	float4 cTex;
 
+	float3 cDiffLocal;
+	float3 cSpecLocal;
+
+	
 	if (gCfg.Norm) nrmT  = tex2D(Nrm0S, frg.tex0.xy).rgb;
 
 	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy);
 	else		   cSpec = gMtrl.specular;
+	
 
 	if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
 	else		   cTex = 1;
+
 
 	if (gCfg.Refl) cRefl = tex2D(ReflS, frg.tex0.xy).rgb;
 	else		   cRefl = gMtrl.reflect.rgb;
@@ -110,11 +89,6 @@ float4 AdvancedPS(PBRData frg) : COLOR
 		nrmT = nrmT * 2.0 - 1.0;
 		bitW = cross(tanW, nrmW) * frg.tanW.w;
 		nrmW = nrmW*nrmT.z + tanW*nrmT.x + bitW*nrmT.y;
-
-#if defined(_LIGHTS)
-		fN = max(dot(frg.locW.xyz, nrmW) + frg.locW.w, 0.0f);
-		fN *= fN;
-#endif
 	}
 
 	nrmW  = normalize(nrmW);
@@ -136,19 +110,23 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	// Special alpha only texture in use
 	if (gNoColor) cTex.rgb = 1;
 
+	// ----------------------------------------------------------------------
+	// Compute Local Light Sources
+	// ----------------------------------------------------------------------
+
+	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a);
+
+
 	// Lit the diffuse texture
-	cTex.rgb *= saturate(Base + gMtrl.diffuse.rgb * (frg.cDif.rgb * fN + cSun * dLN));
+	cTex.rgb *= saturate(Base + gMtrl.diffuse.rgb * Light_fx(cDiffLocal + cSun * dLN));
 
 	// Lit the specular surface
-#if defined(_LIGHTS)
-	cSpec.rgb *= (frg.cSpe.rgb + fSun * cSun);
-#else
-	cSpec.rgb *= (fSun * cSun);
-#endif
+	cSpec.rgb *= saturate(cSpecLocal + fSun * cSun);
 
 
 	// Compute Transluciency effect -------------------------------------------
 	//
+	/*
 	if (gCfg.Transx) {
 
 		float4 cTransm = float4(cTex.rgb, 1.0f);
@@ -171,14 +149,15 @@ float4 AdvancedPS(PBRData frg) : COLOR
 			cTransl *= gTune.Transl.rgb;
 		}
 
-		float Ts = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a) * saturate(cTransm.a);
+		float Ts = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a);// *saturate(cTransm.a);
 		Ts *= saturate(dLN * (-2.0f));  // Causes the transmittance effect to fall off at very shallow angles
-		float3 Tdiff = Base + gMtrl.diffuse.rgb * (frg.cDif.rgb - cSun * dLN);
+		float3 Tdiff = Base + gMtrl.diffuse.rgb * (cSun * dLN);
 		cTransl.rgb *= saturate(Tdiff);
 
 		cTex.rgb += (1 - cTex.rgb) * cTransl.rgb;
 		cTex.rgb += cTransm.rgb * (Ts * cSun);
 	}
+	*/
 
 	float fFrsl = 1.0f;
 	float fInt = 0.0f;
@@ -250,7 +229,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 #if defined(_DEBUG)
 	if (gDebugHL) cTex = cTex*0.5f + gColor;
 #endif
-
+	
 	return cTex;
 }
 

@@ -70,7 +70,6 @@ D3DXHANDLE D3D9Effect::eMtrl = 0;
 D3DXHANDLE D3D9Effect::eTune = 0;
 D3DXHANDLE D3D9Effect::eSun = 0;
 D3DXHANDLE D3D9Effect::eLights = 0;		// Additional light sources
-D3DXHANDLE D3D9Effect::eLightCount = 0;	// Number of additional light sources
 
 D3DXHANDLE D3D9Effect::eTex0 = 0;		// Primary texture
 D3DXHANDLE D3D9Effect::eTex1 = 0;		// Secondary texture
@@ -111,7 +110,6 @@ D3DXHANDLE D3D9Effect::eDebugHL = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eEnvMapEnable = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eInSpace = 0;	// BOOL
 D3DXHANDLE D3D9Effect::eNoColor = 0;	// BOOL
-D3DXHANDLE D3D9Effect::eLocalLights  = 0;	// BOOL		
 D3DXHANDLE D3D9Effect::eGlow = 0;	// BOOL	
 D3DXHANDLE D3D9Effect::eTuneEnabled = 0; // BOOL
 // --------------------------------------------------------------
@@ -244,16 +242,26 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[0].Definition = new char[32];
 	sprintf_s((char*)macro[0].Definition,32,"%d",max(2,Config->Anisotrophy));
 	// ------------------------------------------------------------------------------
-	int m = 1;
+	macro[1].Name = "LMODE";
+	macro[1].Definition = new char[32];
+	sprintf_s((char*)macro[1].Definition, 32, "%d", Config->LightConfig);
+	// ------------------------------------------------------------------------------
+	macro[2].Name = "MAX_LIGHTS";
+	macro[2].Definition = new char[32];
+	sprintf_s((char*)macro[2].Definition, 32, "%d", Config->MaxLights());
+	// ------------------------------------------------------------------------------
+	int m = 3;
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
-	if (*(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT)) macro[m++].Name = "_LIGHTS";
+	
+
 
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
 	
 	delete []macro[0].Definition;
 	delete []macro[1].Definition;
+	delete []macro[2].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -320,13 +328,11 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eRghnSw		  = FX->GetParameterByName(0,"gRghnSw");
 	eInSpace	  = FX->GetParameterByName(0,"gInSpace");			
 	eNoColor	  = FX->GetParameterByName(0,"gNoColor");	
-	eLocalLights  = FX->GetParameterByName(0,"gLocalLights");			
 	eGlow		  = FX->GetParameterByName(0,"gGlow");	
 	eTuneEnabled  = FX->GetParameterByName(0,"gTuneEnabled");
 	// General parameters -------------------------------------------------- 
 	eSpecularMode = FX->GetParameterByName(0,"gSpecMode");
 	eLights		  = FX->GetParameterByName(0,"gLights");
-	eLightCount	  = FX->GetParameterByName(0,"gLightCount");
 	eColor		  = FX->GetParameterByName(0,"gColor");
 	eDistScale    = FX->GetParameterByName(0,"gDistScale");
 	eProxySize    = FX->GetParameterByName(0,"gProxySize");
