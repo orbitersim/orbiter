@@ -44,9 +44,9 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
 
 struct TileVS
 {
-    float4 posH     : POSITION0;
-    float4 texUV    : TEXCOORD0;  // Texture coordinate
-    float4 aux      : TEXCOORD1;  // Night lights
+	float4 posH     : POSITION0;
+	float4 texUV    : TEXCOORD0;  // Texture coordinate
+	float4 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
 	float3 nrmW		: TEXCOORD3;
 	float4 sunlight : COLOR0;     // Color of the sunlight received by terrain
@@ -293,7 +293,7 @@ uniform extern float	fTime;				//
 uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt)
 uniform extern bool		bOnOff;
 
-// Numeric integration points and weights for Gauss?Lobatto integral
+// Numeric integration points and weights for Gauss-Lobatto integral
 //
 const  float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};
 const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
@@ -387,7 +387,7 @@ void LocalLights(
 	dif *= (att*spt);
 
 	diff_out = 0;
-	
+
 	[unroll] for (i = 0; i < 4; i++) diff_out += sLights[i].diffuse.rgb * dif[i];
 }
 
@@ -406,7 +406,7 @@ float MPhase(float cw)
 //
 float RPhase(float cw)
 {
-	
+
 	//return (1.0 + cw*fRPhase) * (0.75 + cw*cw*0.5f);
 	//return (1.0 + cw*cw*fRPhase);
 	return (1.0 + cw*fRPhase);
@@ -785,13 +785,13 @@ float4 SurfaceTechPS(TileVS frg,
 
 	// Is Debug mode enabled
 	/*
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	if (bDebug) {
 		float3 vPlN = normalize(vVrt);
 		float  fRad = dot(vVrt, vPlN);
 		return DebugProg(nrmW, cTex.rgb, fRad);
 	}
-	// ------------------------------------------------------------------------
+	// ----------------------------------------------------------------------
 	*/
 	float3 cDiffLocal = 0;
 
@@ -859,7 +859,7 @@ float4 SurfaceTechPS(TileVS frg,
 
 		// Add Specular component
 		color += cSpe * atten;
-	
+
 		return float4(color+a, 1.0f);
 	}
 }
@@ -929,7 +929,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 
 	outVS.insca = (1.0f - exp2(-outVS.insca));
 	outVS.atten *= max(vSunLight, (vRayInSct + 1.0f) * fAmb) * 1.3f;
-	//outVS.atten *= sqrt(fDNS);
+
 	return outVS;
 }
 

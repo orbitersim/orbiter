@@ -57,12 +57,12 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	float3 cDiffLocal;
 	float3 cSpecLocal;
 
-	
+
 	if (gCfg.Norm) nrmT  = tex2D(Nrm0S, frg.tex0.xy).rgb;
 
 	if (gCfg.Spec) cSpec = tex2D(SpecS, frg.tex0.xy);
 	else		   cSpec = gMtrl.specular;
-	
+
 
 	if (gTextured) cTex = tex2D(WrapS, frg.tex0.xy);
 	else		   cTex = 1;
@@ -83,7 +83,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	float3 Base = (gMtrl.ambient.rgb*gSun.Ambient) + (gMtrl.emissive.rgb);
 
 
-	// Compute World space normal ------------------------------------------- 
+	// Compute World space normal -------------------------------------------
 	//
 	if (gCfg.Norm) {
 		nrmT = nrmT * 2.0 - 1.0;
@@ -230,7 +230,7 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	//if (gDebugHL) cTex = cTex*0.5f + gColor;
 	cTex = cTex * (1 - gColor*0.5f) + gColor;
 #endif
-	
+
 	return cTex;
 }
 

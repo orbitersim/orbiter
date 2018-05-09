@@ -8,10 +8,10 @@ float3 Light_fx(float3 x)
 
 
 void LocalLights(
-	out float3 diff_out, 
-	out float3 spec_out, 
-	in float3 nrmW, 
-	in float3 posW, 
+	out float3 diff_out,
+	out float3 spec_out,
+	in float3 nrmW,
+	in float3 posW,
 	in float sp,
 	uniform int x,
 	uniform bool bSpec)

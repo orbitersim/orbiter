@@ -43,13 +43,13 @@ struct Sun
 
 struct Light
 {
-    int      type;       	   /* Is is spotlight */
+	int      type;       	   /* Is is spotlight */
 	float    dst2;			   /* Camera-Light Emitter distance squared */
 	float4   diffuse;          /* diffuse color of light */
 	float3   position;         /* position in world space */
 	float3   direction;        /* direction in world space */
 	float3   attenuation;      /* Attenuation */
-    float4   param;            /* range, falloff, theta, phi */  
+	float4   param;            /* range, falloff, theta, phi */
 };
 
 // Must match with counterpart in D3D9Effect.h
@@ -108,7 +108,7 @@ uniform extern float4    gAtmColor;         // Earth glow color
 uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
 uniform extern float4    gSHD;				// ShadowMap data
-uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector         
+uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
@@ -116,7 +116,7 @@ uniform extern Mtrl      gMtrl;			    // Material input structure
 uniform extern Tune      gTune;			    // Texture tuning parameters
 uniform extern Light	 gLights[MAX_LIGHTS];
 uniform extern bool		 gLightsEnabled;
-uniform extern bool      gTuneEnabled;		
+uniform extern bool      gTuneEnabled;
 uniform extern bool      gModAlpha;		    // Configuration input
 uniform extern bool      gFullyLit;			// Always fully lit bypass lighting calculations
 uniform extern bool      gTextured;			// Enable Diffuse Texturing

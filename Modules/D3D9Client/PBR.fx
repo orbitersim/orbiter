@@ -140,9 +140,9 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 	outVS.shdH = mul(float4(posW, 1.0f), gLVP);
 #endif
 
-    outVS.camW = -posW;
-    outVS.tex0 = vrt.tex0.xy;
-	
+	outVS.camW = -posW;
+	outVS.tex0 = vrt.tex0.xy;
+
 	return outVS;
 }
 
@@ -302,12 +302,12 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	}
 	else {
 		// It's a vessel
-		
+
 		float  pd = frg.shdH.z - 1e-3;
 		pd -= x * 6e-3;
 		pd -= min(15e-3, gSHD[3] * 10e-5);
 		fShadow = SampleShadowsEx(sp, pd, sc);
-		fShadow = smoothstep(0, 0.75, fShadow);	
+		fShadow = smoothstep(0, 0.75, fShadow);
 	}
 
 	dLN *= fShadow;
@@ -316,7 +316,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 
 
 	// ----------------------------------------------------------------------
-	// Compute a fresnel terms fFrsl, iFrsl, fFLbe 
+	// Compute a fresnel terms fFrsl, iFrsl, fFLbe
 	// ----------------------------------------------------------------------
 
 	float fFrsl = 0;	// Fresnel angle co-efficiency factor
@@ -368,7 +368,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 
 	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 	cDiffLocal += gAtmColor.rgb * max(0, angl*gGlowConst);
-	
+
 
 	// Compute received diffuse light
 	float3 diffLight = Light_fx(dLN * cSun + cDiffLocal);
@@ -539,7 +539,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 	float4 cDiff;
 	float3 cDiffLocal;
 	float3 cSpecLocal;
-	
+
 	// Start fetching texture data -------------------------------------------
 	//
 	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
@@ -599,7 +599,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 
 		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 		cDiffLocal += gAtmColor.rgb * max(0, angl*gGlowConst);
-		
+
 
 		cDiff.rgb *= ( (gMtrl.diffuse.rgb*Light_fx(dLN * cSun + cDiffLocal)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb );
 
