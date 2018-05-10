@@ -189,8 +189,8 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 		uv.y = -uv.y;
 
 		flare = bCockpitCamera?
-			LensFlare_Cockpit (uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414 :
-			LensFlare_Exterior(uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414;
+		LensFlare_Cockpit (uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414 :
+		LensFlare_Exterior(uv, sunParams.position, sunParams.brightness*sunParams.color.a, 0.4/(fSize), sunParams.color.rgb)*1.414;
 	}
 
 	//float3 color = pow(max(0.0, Screen(orig, flare)), 2.2);

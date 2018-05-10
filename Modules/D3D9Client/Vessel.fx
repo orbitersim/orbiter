@@ -281,4 +281,17 @@ technique VesselTech
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = true;
 	}
+
+	pass P3	// XR2 HUD PASS
+	{
+		vertexShader = compile vs_3_0 FAST_VS();
+		pixelShader = compile ps_3_0 XRHUD_PS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		ZEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = true;
+	}
 }

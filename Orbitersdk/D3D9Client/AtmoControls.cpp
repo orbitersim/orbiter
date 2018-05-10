@@ -208,15 +208,15 @@ void OpenDlgClbk(void *context)
 	ConfigSlider(IDC_ATM_RPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_MPOW,     -8.0, 8.0);
 	ConfigSlider(IDC_ATM_HEIGHT,   2.0, 400.0, 1|2|4|8);
-	ConfigSlider(IDC_ATM_DEPTH,    -0.3, 0.3);
+	ConfigSlider(IDC_ATM_DEPTH,    0.0, 1.25);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_EXPO,	   0.5, 2.0);
-	ConfigSlider(IDC_ATM_TRGAMMA,  0.3, 3.0);
+	ConfigSlider(IDC_ATM_TRGAMMA,  0.3, 1.5);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_OUT,      0.0, 3.0, 8);
 	ConfigSlider(IDC_ATM_IN,       0.5, 2.0);
-	ConfigSlider(IDC_ATM_RPHASE,   0.0, 1.5);
-	ConfigSlider(IDC_ATM_ATMGAMMA, 0.3, 3.0);
+	ConfigSlider(IDC_ATM_RPHASE,   -0.75, 0.75);
+	ConfigSlider(IDC_ATM_ATMGAMMA, 0.3, 1.5);
 	// -------------------------------------------------------
 	ConfigSlider(IDC_ATM_MIE,      0.0, 2.0, 8);
 	ConfigSlider(IDC_ATM_MPHASE,   0.80, 0.999);
@@ -234,7 +234,7 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_ATM_RPOW,		hDlg, "Main control for atmospheric rayleigh color composition (4.0 for the Earth)");
 	CreateToolTip(IDC_ATM_MPOW,		hDlg, "Main control for atmospheric mie color composition");
 	CreateToolTip(IDC_ATM_HEIGHT,	hDlg, "Atmosphere scale height (7km - 10km for the Earth)");
-	CreateToolTip(IDC_ATM_DEPTH,	hDlg, "Sunset color boost. Increases optical depth during sunset");
+	CreateToolTip(IDC_ATM_DEPTH,	hDlg, "Cloud layer intensity");
 	// -------------------------------------------------------
 	CreateToolTip(IDC_ATM_EXPO,		hDlg, "Terrain/Ocean brightness control (default 1.0)");
 	CreateToolTip(IDC_ATM_TRGAMMA,	hDlg, "Terrain/Ocean gamma control value (default 1.0)");

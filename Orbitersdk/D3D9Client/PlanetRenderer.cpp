@@ -90,7 +90,7 @@ D3DXHANDLE PlanetRenderer::svColorShift = NULL;
 D3DXHANDLE PlanetRenderer::svHazeMax = NULL;
 D3DXHANDLE PlanetRenderer::svCameraPos = NULL;		
 D3DXHANDLE PlanetRenderer::svUnitCameraPos = NULL;		
-D3DXHANDLE PlanetRenderer::sfSunset = NULL;
+D3DXHANDLE PlanetRenderer::sfCloudInts = NULL;
 D3DXHANDLE PlanetRenderer::sfScaleHeight = NULL;		
 D3DXHANDLE PlanetRenderer::sfInvScaleHeight = NULL;
 D3DXHANDLE PlanetRenderer::sfSunAlt = NULL;
@@ -297,7 +297,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svHazeMax			= pShader->GetParameterByName(0,"vHazeMax");
 	svCameraPos			= pShader->GetParameterByName(0,"vCameraPos");		
 	svUnitCameraPos		= pShader->GetParameterByName(0,"vUnitCameraPos");		
-	sfSunset			= pShader->GetParameterByName(0,"fSunset");
+	sfCloudInts			= pShader->GetParameterByName(0,"fCloudInts");
 	sfScaleHeight		= pShader->GetParameterByName(0,"fScaleHeight");		
 	sfInvScaleHeight	= pShader->GetParameterByName(0,"fInvScaleHeight");
 	sfSunAlt			= pShader->GetParameterByName(0,"fSunAlt");
@@ -497,7 +497,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetValue(svColorShift, &vColorShift, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svHazeMax, &vHaze, sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetFloat(sfAtmGamma, 1.0f/float(atmo->agamma)));
-	HR(Shader()->SetFloat(sfSunset, fSuns));
+	HR(Shader()->SetFloat(sfCloudInts, float(atmo->depth)));
 	HR(Shader()->SetFloat(sfRPhase, float(atmo->rphase)));
 	HR(Shader()->SetFloat(sfAux1, float(atmo->aux1)));
 	HR(Shader()->SetFloat(sfAux2, float(atmo->aux2)));

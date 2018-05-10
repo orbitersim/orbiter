@@ -338,6 +338,6 @@ const Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> 
 		if (check) return check;
 	} 
 	return t;
-};
+}
 
 #endif // !__TILEMGR2_IMP_HPP

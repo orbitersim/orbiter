@@ -190,7 +190,7 @@ private:
 	} *meshlist;			// list of associated meshes
 
 	UINT nmesh;				// number of meshes
-	bool bAMSO;
+	UINT vClass;
 	ANIMATION *anim;		// list of animations (defined in the vessel object)
 	double *animstate;		// list of visual animation states
 	UINT nanim;				// number of animations

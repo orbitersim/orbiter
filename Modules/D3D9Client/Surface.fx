@@ -62,6 +62,7 @@ struct CloudVS
 	float2 texUV    : TEXCOORD0;  // Texture coordinate
 	float3 atten    : COLOR0;     // Attennuation
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
+	float  fade     : TEXCOORD1;
 };
 
 struct HazeVS
@@ -270,7 +271,7 @@ uniform extern float3	vHazeMax;			// Horizon haze limitter (slider)
 uniform extern float3	vColorShift;		// lerp([1,1,1], 1.0/lambda^r, Aux3)
 uniform extern float3   vCameraPos;         // Geo-centric camera position
 uniform extern float3   vUnitCameraPos;     // Geo-centric camera position (Unit vector)
-uniform extern float	fSunset;			// Orbital sunrise condition detector
+uniform extern float	fCloudInts;			// Cloud layer intensity
 uniform extern float	fScaleHeight;		// Atmosphere scaleheight
 uniform extern float	fInvScaleHeight;	// Inverse Scale Height 1.0f/fScaleHeight
 uniform extern float	fSunAlt;			// Altitude of sunlight in the horizon ring, [meters]
@@ -522,7 +523,8 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 	float  fASn = AngleCoEff(fDNS);
 
 	// Color of inscattered sunlight
-	float3 vSun = cSun * exp2(-vTotOutSct * fAux2*((vDns[0]+vDns[2]) * fASn)) * fDep * Shadow(fDNS, srfoffset);
+	float3 vSun = cSun * exp2(-vTotOutSct * fAux2*((vDns[0]+vDns[1]) * 0.5f * fASn)) * fDep * Shadow(fDNS, srfoffset);
+	//float3 vSun = cSun * exp2(-vTotOutSct * fAux2*(vDns[1] * fASn)) * fDep * Shadow(fDNS, srfoffset);
 
 	// Compute in-scattering
 	vIns = (vRayInSct*RPhase(fDRS) + vMieInSct*MPhase(fDRS)) * vSun;
@@ -919,10 +921,11 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 													// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 	float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
 
-	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.05f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
+	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.25f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
 
 	// Compute surface texture color attennuation (i.e. extinction term)
-	outVS.atten = exp2(-vTotOutSct * fDRay);
+	outVS.atten = exp2(-vTotOutSct * fDRay * 0.33f);
+	outVS.fade = exp2(-fDRay * 0.5f) * 2.0f;
 
 	// Multiply in-coming light with phase and light scattering factors
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
@@ -938,8 +941,8 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 {
 	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV,0,0)).r - 0.5f) * ATMNOISE;
 	float4 cTex = tex2D(DiffTexS, frg.texUV);
-	float3 color = cTex.rgb * (frg.atten.rgb) + frg.insca.rgb*vHazeMax;
-	return float4(saturate(color+a)*0.95f, cTex.a*saturate(frg.atten.g*10.0f)+a);
+	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
+	return float4(saturate(color + a), cTex.a*saturate(frg.fade*fCloudInts*fCloudInts));
 }
 
 

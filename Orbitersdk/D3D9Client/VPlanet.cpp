@@ -1153,6 +1153,7 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 	CPrm.expo   = lerp(SPrm.expo,	OPrm.expo,		alt);
 	CPrm.mie    = lerp(SPrm.mie,	OPrm.mie,		alt);
 	CPrm.mphase = lerp(SPrm.mphase, OPrm.mphase,	alt);
+	CPrm.rphase = lerp(SPrm.rphase, OPrm.rphase,	alt);
 	CPrm.mpow	= lerp(SPrm.mpow,	OPrm.mpow,		alt);
 	CPrm.rin	= lerp(SPrm.rin,	OPrm.rin,		alt);
 	CPrm.rout	= lerp(SPrm.rout,	OPrm.rout,		alt);
@@ -1168,8 +1169,7 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 	CPrm.hazei	= lerp(SPrm.hazei,	OPrm.hazei,		alt);
 	// ----------------------------------------------------
 	CPrm.height = SPrm.height;
-	CPrm.rphase = SPrm.rphase;
-
+	
 	return &CPrm;
 }
 	

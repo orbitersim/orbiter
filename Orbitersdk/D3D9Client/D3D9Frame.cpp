@@ -97,10 +97,7 @@ void CD3DFramework9::Clear()
 	MultiSample		  = 0;
 	pRenderTarget	  = NULL;
 	pBackBuffer		  = NULL;
-	pEnvDS			  = NULL;
-	pShmDS			  = NULL;
-	pShmRT			  = NULL;
-
+	
 	memset2((void *)&rcScreenRect, 0, sizeof(RECT));
 	memset2((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
 	memset2((void *)&caps, 0, sizeof(D3DCAPS9));
@@ -126,9 +123,6 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pPatchVertexDecl);
 	SAFE_RELEASE(pGPUBlitDecl);
 	SAFE_RELEASE(pSketchpadDecl);
-	SAFE_RELEASE(pEnvDS);
-	SAFE_RELEASE(pShmDS);
-	SAFE_RELEASE(pShmRT);
 
 	if (pDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
 	else								LogErr("[Failed to Reset DirectX Device] (Likely blocked by undeleted resources)");
@@ -451,23 +445,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	strcpy(fontDesc.FaceName, "Arial");
 
 	HR(D3DXCreateFontIndirect(pDevice, &fontDesc, &pSmallFont));
-
-	DWORD EnvMapSize = Config->EnvMapSize;
-	DWORD ShmMapSize = Config->ShadowMapSize;
-
-	if (Config->EnvMapMode) {
-		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
-	}
-	else pEnvDS = NULL;
-
-	if (Config->ShadowMapMode) {
-		HR(pDevice->CreateDepthStencilSurface(ShmMapSize, ShmMapSize, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, true, &pShmDS, NULL));
-		HR(pDevice->CreateTexture(ShmMapSize, ShmMapSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pShmRT, NULL));
-	}
-	else {
-		pShmDS = NULL;
-		pShmRT = NULL;
-	}
 
 	LogAlw("=== [3DDevice Initialized] ===");
 	return S_OK;

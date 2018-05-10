@@ -39,6 +39,14 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define ENVMAP_IRAD			1
 
 
+#define SHADER_PBR			0
+#define SHADER_ADV			1
+#define SHADER_LEGACY		2			// Shader most compatible with DX7 Inline
+#define SHADER_XR2HUD		3			// XR2 HUD shader
+
+#define VCLASS_AMSO			1
+#define VCLASS_XR2			2
+
 struct _LightList {
 	int		idx;
 	float	illuminace;
@@ -77,12 +85,13 @@ public:
 		WORD  zBias;
 		WORD  MFDScreenId;		// MFD screen ID + 1
 		WORD  PBRStatus;
+		WORD  Shader;
 		bool  bTransform;
 		bool  bUpdate;			// Bounding box update required
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
 		bool  bRendered;		
-		bool  bAdvanced;		// This group reguires more advanced shader than default one
+		//bool  bAdvanced;		// This group reguires more advanced shader than default one
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
@@ -119,7 +128,7 @@ public:
 	void			SetName(const char *name);
 	const char *	GetName() const { return name; }
 
-	
+	void			SetClass(DWORD cl) { vClass = cl; }
 	
 
 	/**
@@ -260,6 +269,7 @@ private:
 	DWORD nGrp;                 // number of mesh groups
 	DWORD nMtrl;                // number of mesh materials
 	DWORD nTex;                 // number of mesh textures
+	DWORD vClass;
 	D3D9MatExt *Mtrl;           // list of mesh materials
 	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
 	D3D9Tune *pTune;

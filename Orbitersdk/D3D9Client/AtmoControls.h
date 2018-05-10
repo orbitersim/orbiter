@@ -27,7 +27,7 @@ typedef struct ScatterParams {
 			double mphase;		///< g-constant in HG phase function
 			double height;		///< atmospheric scale height
 			double aux2;		///< auxiliary parameter
-			double depth;		///< ---UnUsed---
+			double depth;		///< Cloud layer intensity
 			double mpow;		///< Mie power
 			double expo;		///< exposure for terrain
 			double aux1;		///< auxiliary parameter

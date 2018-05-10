@@ -635,3 +635,12 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 
 	return cDiff;
 }
+
+
+
+// ========================================================================================================================
+//
+float4 XRHUD_PS(FASTData frg) : COLOR
+{
+	return tex2D(WrapS, frg.tex0.xy);
+}

@@ -49,13 +49,14 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	sunLight = *scene->GetSun();
 	tCheckLight = oapiGetSimTime()-1.0;
 	animstate = NULL;
-	bAMSO = false;
+	vClass = 0;
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	skinname[0] = NULL;
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
 	
-	if (strncmp(vessel->GetClassNameA(),"AMSO",4)==0) bAMSO=true;
+	if (strncmp(vessel->GetClassNameA(), "AMSO", 4) == 0) vClass = VCLASS_AMSO;
+	if (strncmp(vessel->GetClassNameA(), "XR2Ravenstar", 12) == 0) vClass = VCLASS_XR2;
 
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
@@ -268,12 +269,13 @@ void vVessel::LoadMeshes()
 	for (idx=0;idx<nmesh;idx++) {
 
 		hMesh = vessel->GetMeshTemplate(idx);
-		if (bAMSO) mmgr->UpdateMesh(hMesh);
+		if (vClass==VCLASS_AMSO) mmgr->UpdateMesh(hMesh);
 		mesh = mmgr->GetMesh(hMesh);
 
 		if (hMesh!=NULL && mesh!=NULL) {
 			// copy from preloaded template
 			meshlist[idx].mesh = new D3D9Mesh(*mesh);
+			meshlist[idx].mesh->SetClass(vClass);
 		}
 		else {
 			// It's vital to use copy here for some reason
@@ -281,6 +283,7 @@ void vVessel::LoadMeshes()
 			if (hMesh) {
 				// load on the fly and discard after copying
 				meshlist[idx].mesh = new D3D9Mesh(hMesh, false);
+				meshlist[idx].mesh->SetClass(vClass);
 				oapiDeleteMesh(hMesh);
 			}
 		}
@@ -340,14 +343,16 @@ void vVessel::InsertMesh(UINT idx)
 	// now add the new mesh
 	MeshManager *mmgr = gc->GetMeshMgr();
 	MESHHANDLE hMesh = vessel->GetMeshTemplate(idx);
-	if (bAMSO) mmgr->UpdateMesh(hMesh);
+	if (vClass==VCLASS_AMSO) mmgr->UpdateMesh(hMesh);
 	const D3D9Mesh *mesh = mmgr->GetMesh(hMesh);
 
 
 	if (hMesh && mesh) {
 		meshlist[idx].mesh = new D3D9Mesh (*mesh);
+		meshlist[idx].mesh->SetClass(vClass);
 	} else if (hMesh = vessel->CopyMeshFromTemplate (idx)) {	// It's vital to use a copy here for some reason
 		meshlist[idx].mesh = new D3D9Mesh (hMesh);
+		meshlist[idx].mesh->SetClass(vClass);
 		oapiDeleteMesh (hMesh);
 	} else {
 		meshlist[idx].mesh = 0;
@@ -1102,7 +1107,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	if (!bReflective) return false;
 
-	LPDIRECT3DSURFACE9 pEnvDS = gc->GetEnvDepthStencil();
+	LPDIRECT3DSURFACE9 pEnvDS = GetScene()->GetEnvDepthStencil();
 
 	if (!pEnvDS) {
 		LogErr("EnvDepthStencil doesn't exists");
@@ -1123,21 +1128,14 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	}
 
 
-	// Create blurred maps and Irradiance map ----------------------------------------------------------------
+	// Create blurred maps  -------------------------------------------------------------------------------
 	//
 	if (iFace >= 6) {
 		iFace = 0;
 		return scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MAIN]);
 	}
 
-	if (iFace >= 7) {
-		iFace = 0;
-		return scn->RenderIrradianceMap(pDev, pEnv[ENVMAP_MAIN], pEnv[ENVMAP_IRAD]);
-	}
-
-
 	double tot_env = D3D9GetTime();
-
 
 
 

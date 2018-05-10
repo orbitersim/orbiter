@@ -121,7 +121,7 @@ public:
 	static D3DXHANDLE svHazeMax;
 	static D3DXHANDLE svCameraPos;		
 	static D3DXHANDLE svUnitCameraPos;		
-	static D3DXHANDLE sfSunset;
+	static D3DXHANDLE sfCloudInts;
 	static D3DXHANDLE sfSunAlt;
 	static D3DXHANDLE sfScaleHeight;		
 	static D3DXHANDLE sfInvScaleHeight;

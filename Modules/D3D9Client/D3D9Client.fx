@@ -621,15 +621,15 @@ technique ArrowTech
 {
 	pass P0
 	{
-	vertexShader = compile vs_3_0 ArrowTechVS();
-	pixelShader = compile ps_3_0 ArrowTechPS();
+		vertexShader = compile vs_3_0 ArrowTechVS();
+		pixelShader = compile ps_3_0 ArrowTechPS();
 
-	AlphaBlendEnable = true;
-	BlendOp = Add;
-	SrcBlend = SrcAlpha;
-	DestBlend = InvSrcAlpha;
-	ZWriteEnable = false;
-	ZEnable = true;
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = false;
+		ZEnable = true;
 	}
 }
 

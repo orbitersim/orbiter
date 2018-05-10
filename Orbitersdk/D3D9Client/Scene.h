@@ -214,7 +214,8 @@ public:
 	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad);
 
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
-	bool RenderIrradianceMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DCUBETEXTURE9 pTgt);
+
+	LPDIRECT3DSURFACE9 GetEnvDepthStencil() { return pEnvDS; }
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -404,7 +405,6 @@ private:
 	bool  bLocalLight;         // enable local light sources
 	bool  surfLabelsActive;    // v.2 surface labels activated?
 
-
 	OBJHANDLE hSun;
 
 	D3D9ParticleStream **pstream; // list of particle streams
@@ -450,7 +450,7 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pIrradiance;
+	class ImageProcessing *pLightBlur, *pBlur, *pFlare;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;
@@ -461,7 +461,6 @@ private:
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
-	LPDIRECT3DCUBETEXTURE9 pIrradianceTemp;
 
 	// Deferred Experiment ===============================================================
 	//

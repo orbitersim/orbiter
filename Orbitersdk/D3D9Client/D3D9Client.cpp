@@ -407,9 +407,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bGDIBB		= (pFramework->IsGDIBB() == TRUE);
 	bAAEnabled  = (pFramework->IsAAEnabled() == TRUE);
 	viewBPP		= 32;
-	pEnvDS		= pFramework->GetEnvDepthStencil();
-	pShmDS		= pFramework->GetShadowMapDepthStencil();
-	pShmRT		= pFramework->GetShadowMapRenderTarget();
 	bVertexTex  = (pFramework->HasVertexTextureSup() == TRUE);
 	bVSync		= (pFramework->GetVSync() == TRUE);
 

@@ -54,7 +54,7 @@ BeaconVS BeaconArrayVS(BAVERTEX vrt)
 	if (gTime<vrt.data[2] || gTime>vrt.data[3]) disp = 0.0f;
 
 	outVS.colr    = float4(vrt.colr.rgb, min(1, vrt.colr.a * disp * att1));
-	outVS.size    = (2.0 + vrt.data[0] * gPointScale / dist) * disp;
+	outVS.size    = (4.0 + vrt.data[0] * gPointScale / dist) * disp;
 	outVS.haze    = clamp(fog*1.8f, 0.3f, 1.8f);
 
 	return outVS;

@@ -67,9 +67,6 @@ private:
     DWORD                Mode;
     DWORD                MultiSample;
     LPDIRECT3DSURFACE9   pRenderTarget;
-    LPDIRECT3DSURFACE9   pEnvDS;
-    LPDIRECT3DSURFACE9   pShmDS;
-    LPDIRECT3DTEXTURE9   pShmRT;
     D3D9ClientSurface *  pBackBuffer;
 
     RECT                 rcScreenRect;       // Screen rect for window
@@ -97,9 +94,6 @@ public:
     inline DWORD               GetHeight() const                { return dwRenderHeight; }
     inline const RECT          GetScreenRect() const            { return rcScreenRect; }
     inline LPDIRECT3DSURFACE9  GetBackBuffer() const            { return pRenderTarget; }
-    inline LPDIRECT3DSURFACE9  GetEnvDepthStencil() const       { return pEnvDS; }
-    inline LPDIRECT3DSURFACE9  GetShadowMapDepthStencil() const { return pShmDS; }
-    inline LPDIRECT3DTEXTURE9  GetShadowMapRenderTarget() const { return pShmRT; }
     inline SURFHANDLE          GetBackBufferHandle() const      { return pBackBuffer; }
     inline LPD3DXFONT          GetLargeFont() const             { return pLargeFont; }
     inline LPD3DXFONT          GetSmallFont() const             { return pSmallFont; }
