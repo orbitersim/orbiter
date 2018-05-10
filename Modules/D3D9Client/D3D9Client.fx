@@ -93,7 +93,7 @@ struct Tune
 #define SH_SIZE		0
 #define SH_INVSIZE	1
 
-uniform extern float3    kernel[27];
+uniform extern float3    kernel[KERNEL_SIZE];
 
 // -------------------------------------------------------------------------
 uniform extern float4x4  gW;			    // World matrix

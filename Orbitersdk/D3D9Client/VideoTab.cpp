@@ -697,11 +697,14 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_SELFSHADOWS, CB_ADDSTRING, 0, (LPARAM)"None");
 	SendDlgItemMessageA(hWnd, IDC_SELFSHADOWS, CB_ADDSTRING, 0, (LPARAM)"Focus + payload");
 	SendDlgItemMessageA(hWnd, IDC_SELFSHADOWS, CB_ADDSTRING, 0, (LPARAM)"Near by objects");
+	SendDlgItemMessageA(hWnd, IDC_SELFSHADOWS, CB_ADDSTRING, 0, (LPARAM)"All visible objects");
 
 	SendDlgItemMessage(hWnd, IDC_SHADOWFILTER, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_SHADOWFILTER, CB_ADDSTRING, 0, (LPARAM)"9 samples");
 	SendDlgItemMessageA(hWnd, IDC_SHADOWFILTER, CB_ADDSTRING, 0, (LPARAM)"27 samples");
 	SendDlgItemMessageA(hWnd, IDC_SHADOWFILTER, CB_ADDSTRING, 0, (LPARAM)"27s dither");
+	//SendDlgItemMessageA(hWnd, IDC_SHADOWFILTER, CB_ADDSTRING, 0, (LPARAM)"40 samples");
+	//SendDlgItemMessageA(hWnd, IDC_SHADOWFILTER, CB_ADDSTRING, 0, (LPARAM)"40s dither");
 
 	SendDlgItemMessage(hWnd, IDC_TERRAIN, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hWnd, IDC_TERRAIN, CB_ADDSTRING, 0, (LPARAM)"None");

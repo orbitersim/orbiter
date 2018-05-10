@@ -593,6 +593,8 @@ bool vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 	bc = bc - shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
 
+	if (x > BBox.bs.w) return false; //Behind
+
 	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) > (shd->rad + BBox.bs.w)) return false;
 
 	*mind = min(*mind, x - shd->rad);

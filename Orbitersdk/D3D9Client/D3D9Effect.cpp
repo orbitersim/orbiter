@@ -269,7 +269,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[8]; memset2(&macro, 0, 8*sizeof(D3DXMACRO));
+	D3DXMACRO macro[16]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");
 
@@ -292,7 +292,18 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	macro[3].Definition = new char[32];
 	sprintf_s((char*)macro[3].Definition, 32, "%d", Config->ShadowFilter + 1);
 	// ------------------------------------------------------------------------------
-	int m = 4;
+	macro[4].Name = "KERNEL_SIZE";
+	macro[4].Definition = new char[32];
+	if (Config->ShadowFilter >= 3)  sprintf_s((char*)macro[4].Definition, 32, "%d", 35);
+	else							sprintf_s((char*)macro[4].Definition, 32, "%d", 27);
+	// ------------------------------------------------------------------------------
+	macro[5].Name = "KERNEL_WEIGHT";
+	macro[5].Definition = new char[32];
+	if (Config->ShadowFilter >= 3)  sprintf_s((char*)macro[5].Definition, 32, "%f", 0.0285f);
+	else							sprintf_s((char*)macro[5].Definition, 32, "%f", 0.04634f);
+	// ------------------------------------------------------------------------------
+
+	int m = 6;
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
@@ -304,6 +315,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	delete []macro[1].Definition;
 	delete []macro[2].Definition;
 	delete []macro[3].Definition;
+	delete []macro[4].Definition;
+	delete []macro[5].Definition;
 
 	if (errors) {
 		LogErr("Effect Error: %s",(char*)errors->GetBufferPointer());
@@ -435,6 +448,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	FX->SetVector(eAttennuate, &D3DXVECTOR4(1,1,1,1)); 
 	FX->SetVector(eInScatter,  &D3DXVECTOR4(0,0,0,0));
 	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+
+	//if (Config->ShadowFilter>=3) FX->SetValue(eKernel, &shadow_kernel2, sizeof(shadow_kernel2));
 	FX->SetValue(eKernel, &shadow_kernel, sizeof(shadow_kernel));
 
 	CreateMatExt(&_mfdmat, &mfdmat);

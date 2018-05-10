@@ -1506,6 +1506,52 @@ surfLabelsActive = false;
 	}
 
 
+
+	if ((Config->ShadowMapMode >= 3) && (DebugControls::IsActive() == false)) {
+		// Don't render more shadows if debug controls are open
+
+		std::list<vVessel *> Intersect;
+
+		// List of visible objects near by
+		for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
+			if ((*it)->CamDist() < 1e3) {
+				if ((*it)->IsVisible()) Intersect.push_back((*it));
+			}
+		}
+
+	
+		while (!Intersect.empty()) {
+
+			D3DXVECTOR3 ld = sunLight.Dir;
+			D3DXVECTOR3 pos = Intersect.front()->GetBoundingSpherePosDX();
+			float rad = Intersect.front()->GetBoundingSphereRadius();
+
+			Intersect.pop_front();
+
+			int lod = RenderShadowMap(pos, ld, rad);
+
+			if (lod >= 0) {
+
+				std::list<vVessel *> Temp;
+
+				// Render objects in shadow
+				for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
+					if ((*it)->IsInsideShadows()) {
+						(*it)->Render(pDevice);
+						Temp.push_back((*it));
+					}
+				}
+
+				while (!Temp.empty()) {
+					RenderList.remove(Temp.front());
+					Intersect.remove(Temp.front());
+					Temp.pop_front();
+				}
+			}
+		}
+	}
+
+
 	
 
 	// Render the remaining vessels those are not yet renderred
@@ -2042,7 +2088,6 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 		if (pv->type != OBJTP_VESSEL) continue;
 		vVessel *vV = (vVessel *)pv->vobj;
 		if (!vV->IsActive()) continue;
-		if (!vV->IsVisible()) continue;
 		if (vV->GetMinMaxLightDist(&mnd, &mxd)) SmapRenderList.push_back(vV);
 	}
 
@@ -2062,10 +2107,12 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 
 	float rs = float(ViewH()) * rad / (float(GetTanAp()) * D3DXVec3Length(&pos));
 	float lod = log2f(float(Config->ShadowMapSize) / (rs));
-	
-	smap.lod = min(int(lod), SHM_LOD_COUNT - 1);
+
+	smap.lod = min(int(round(lod)), SHM_LOD_COUNT - 1);
 	smap.lod = max(smap.lod, 0);
 	smap.size = Config->ShadowMapSize >> smap.lod;
+
+	//sprintf_s(oapiDebugString(), 256, "rs=%f, flod=%f, ilod=%d", rs, lod, smap.lod);
 
 	SetRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod], true);
 

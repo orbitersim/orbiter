@@ -5,6 +5,7 @@
 // ==============================================================
 
 
+#define KERNEL_RADIUS 3.0f
 
 struct PBRData
 {
@@ -82,13 +83,13 @@ float SampleShadows2(float2 sp, float pd)
 	if (!gShadowsEnabled) return 1.0f;
 
 	float val = 0;
-	float m = 3.0f * gSHD[1];
+	float m = KERNEL_RADIUS * gSHD[1];
 
-	[unroll] for (int i = 0; i < 27; i++) {
+	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
 		if ((tex2D(ShadowS, sp + kernel[i].xy * m).r) > pd) val += kernel[i].z;
 	}
 
-	return saturate(val * 0.066666f);
+	return saturate(val * KERNEL_WEIGHT);
 }
 
 
@@ -97,14 +98,14 @@ float SampleShadows3(float2 sp, float pd, float4 frame)
 	if (!gShadowsEnabled) return 1.0f;
 
 	float val = 0;
-	frame *= 3.0f * gSHD[1];
+	frame *= KERNEL_RADIUS * gSHD[1];
 
-	[unroll] for (int i = 0; i < 27; i++) {
+	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
 		float2 ofs = frame.xy*kernel[i].x + frame.zw*kernel[i].y;
-		if ((tex2D(ShadowS, sp + ofs).r) > pd) val += kernel[i].z;
+		if ((tex2D(ShadowS, sp + ofs).r) > pd) val += kernel[i].z;	
 	}
 
-	return saturate(val * 0.066666f);
+	return saturate(val * KERNEL_WEIGHT);
 }
 
 
@@ -112,7 +113,7 @@ float SampleShadowsEx(float2 sp, float pd, float4 sc)
 {
 #if SHDMAP == 1
 	return SampleShadows(sp, pd);
-#elif SHDMAP == 2
+#elif SHDMAP == 2 || SHDMAP == 4
 	return SampleShadows2(sp, pd);
 #else
 	float si, co;
@@ -126,7 +127,7 @@ float SampleShadowsEx(float2 sp, float pd, float4 sc)
 //
 PBRData PBR_VS(MESH_VERTEX vrt)
 {
-	// Zero output.
+    // Zero output.
 	PBRData outVS = (PBRData)0;
 
 	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
@@ -140,10 +141,10 @@ PBRData PBR_VS(MESH_VERTEX vrt)
 	outVS.shdH = mul(float4(posW, 1.0f), gLVP);
 #endif
 
-	outVS.camW = -posW;
-	outVS.tex0 = vrt.tex0.xy;
+    outVS.camW = -posW;
+    outVS.tex0 = vrt.tex0.xy;
 
-	return outVS;
+    return outVS;
 }
 
 
@@ -293,8 +294,8 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 #if SHDMAP > 0
 	frg.shdH.xyz /= frg.shdH.w;
 	float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+	sp += gSHD[1] * 0.5f;
 	float fShadow;
-	float  x = 1 - sqrt(dLN);
 
 	if (gBaseBuilding) {
 		// It's a surface base building
@@ -304,14 +305,14 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 		// It's a vessel
 
 		float  pd = frg.shdH.z - 1e-3;
-		pd -= x * 6e-3;
 		pd -= min(15e-3, gSHD[3] * 10e-5);
 		fShadow = SampleShadowsEx(sp, pd, sc);
 		fShadow = smoothstep(0, 0.75, fShadow);
 	}
 
-	dLN *= fShadow;
-	dLNx *= fShadow;
+	cSun *= fShadow;
+	//dLN *= fShadow;
+	//dLNx *= fShadow;
 #endif
 
 
@@ -567,6 +568,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 #if SHDMAP > 0
 		frg.shdH.xyz /= frg.shdH.w;
 		float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+		sp += gSHD[1] * 0.5f;
 		float fShadow;
 		float x = 1 - sqrt(dLN);
 

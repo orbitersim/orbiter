@@ -1400,53 +1400,65 @@ void Refresh()
 //
 void CreateSamplingKernel()
 {
-	int s = 7;
+	int s = 8;
+	int k = 0;
+	
+	double w = 0, xb = 0, yb = 0;
 
 	VECTOR3 *data = new VECTOR3[s*s];
-
-	
-	int j = 0;
-	double dx = 2.0 / double(s-1);
-
-	double y = -1.0;
-	for (int i = 0; i < s; i++) {
-		double x = -1.0;
-		for (int k = 0; k < s; k++) {
-			data[j].x = x;
-			data[j].y = y;
-			x += dx;
-			j++;
-		}
-		y += dx;
-	}
-
-	dx *= 0.4;
-
-	for (int i = 0; i < j; i++) {
-		data[i].x += (oapiRand()*2.0 - 1.0) * dx;
-		data[i].y += (oapiRand()*2.0 - 1.0) * dx;
-	}
-
 	VECTOR3 *out = new VECTOR3[s*s];
 
-	int k = 0;
+	while (true) {
 
-	for (int i = 0; i < j; i++) {
-		double d = sqrt(data[i].x*data[i].x + data[i].y*data[i].y);
-		if (d <= 1.0) {
-			out[k] = data[i];
-			out[k].z = sqrt(d);
-			k++;
+		int j = 0;
+		double dx = 2.0 / double(s - 1);
+
+		double y = -1.0;
+		for (int i = 0; i < s; i++) {
+			double x = -1.0;
+			for (int k = 0; k < s; k++) {
+				data[j].x = x;
+				data[j].y = y;
+				x += dx;
+				j++;
+			}
+			y += dx;
 		}
-	}
 
-	double w = 0, xb = 0, yb = 0;
+		dx *= 0.6;
+		double pw = 1.0;
+
+		for (int i = 0; i < j; i++) {
+			data[i].x += (oapiRand()*2.0 - 1.0) * dx;
+			data[i].y += (oapiRand()*2.0 - 1.0) * dx;
+			data[i].x = pow(abs(data[i].x), pw) * sign(data[i].x);
+			data[i].y = pow(abs(data[i].y), pw) * sign(data[i].y);
+		}
+
+		k = 0;
+
+		for (int i = 0; i < j; i++) {
+			double d = sqrt(data[i].x*data[i].x + data[i].y*data[i].y);
+			if (d <= 1.0) {
+				out[k] = data[i];
+				out[k].z = 1.0;
+				k++;
+			}
+		}
+
+		w = 0, xb = 0, yb = 0;
+
+		for (int i = 0; i < k; i++) {
+			w += out[i].z;
+			xb += out[i].x;
+			yb += out[i].y;
+		}
+
+		if (abs(xb) < 0.4f && abs(yb) < 0.4f) break;
+	}
 
 	for (int i = 0; i < k; i++) {
 		oapiWriteLogV("{%4.4ff, %4.4ff, %4.4ff},", out[i].x, out[i].y, out[i].z);
-		w += out[i].z;
-		xb += out[i].x;
-		yb += out[i].y;
 	}
 
 	delete[]data;

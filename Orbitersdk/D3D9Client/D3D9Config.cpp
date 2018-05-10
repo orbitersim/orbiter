@@ -120,7 +120,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
 	if (oapiReadItem_int   (hFile, "ShadowMapMode", i))			ShadowMapMode = max(0, min(3, i));
-	if (oapiReadItem_int   (hFile, "ShadowMapFilter", i))	 	ShadowFilter = max(0, min(3, i));
+	if (oapiReadItem_int   (hFile, "ShadowMapFilter", i))	 	ShadowFilter = max(0, min(5, i));
 	if (oapiReadItem_int   (hFile, "ShadowMapSize", i))			ShadowMapSize = max(512, min(4096, i));
 	if (oapiReadItem_int   (hFile, "EnableGlass", i))			EnableGlass = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "TerrainShadowing", i))		TerrainShadowing = max(0, min(2, i));

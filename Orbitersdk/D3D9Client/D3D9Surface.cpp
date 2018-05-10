@@ -1637,8 +1637,8 @@ void D3D9ClientSurface::LoadSpecials(const char *fname)
 	LoadSpecialTexture(fname, "rghn", MAP_ROUGHNESS);
 	LoadSpecialTexture(fname, "norm", MAP_NORMAL);
 	LoadSpecialTexture(fname, "emis", MAP_EMISSION);
-	LoadSpecialTexture(fname, "transl", MAP_TRANSLUCENCE);
-	LoadSpecialTexture(fname, "transm", MAP_TRANSMITTANCE);
+	//LoadSpecialTexture(fname, "transl", MAP_TRANSLUCENCE);
+	//LoadSpecialTexture(fname, "transm", MAP_TRANSMITTANCE);
 	LoadSpecialTexture(fname, "refl", MAP_REFLECTION);
 	LoadSpecialTexture(fname, "spec", MAP_SPECULAR);
 }

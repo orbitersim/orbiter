@@ -780,8 +780,8 @@ void SurfTile::Render ()
 	
 	D3DXVECTOR3 bc = bs_pos - shd->pos;
 
-	if (scene->GetCameraAltitude() < 10e3) {
-
+	if ((scene->GetCameraAltitude() < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
+	
 		if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 
 			float x = D3DXVec3Dot(&bc, &(shd->ld));
