@@ -160,6 +160,7 @@ public:
 	 * \sa CamDist
 	 */
 	inline const VECTOR3 &PosFromCamera() const { return cpos; }
+	inline const VECTOR3 &GlobalPos() const { return gpos; }
 
 	/**
 	 * \brief Returns a unit vertor pointing towards the sun

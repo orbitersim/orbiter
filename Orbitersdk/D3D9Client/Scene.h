@@ -372,6 +372,8 @@ private:
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
 	VOBJREC *	FindVisual (OBJHANDLE hObj) const;
+	void		RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch);
+
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
 

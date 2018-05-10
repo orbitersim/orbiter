@@ -1413,7 +1413,7 @@ surfLabelsActive = false;
 
 
 
-	// Create shadows and Render the vFocus
+	// Render the vessels inside the shadows
 	//
 	if (Config->ShadowMapMode >= 1) {
 
@@ -1421,34 +1421,15 @@ surfLabelsActive = false;
 
 			pShdMap = ptShmRT[shadow_lod];
 
-			vFocus->Render(pDevice);
-			RenderList.remove(vFocus);
+			auto it = RenderList.begin();
 
-			// Render other objects such as payloads
-			//
-			std::list<vVessel *> Temp;	// Temporary stogare for removed objects
-
-			for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
+			while (it != RenderList.end()) {
 				if ((*it)->IsInsideShadows()) {
 					(*it)->Render(pDevice);
-					//RenderList.remove((*it)); // doesn't work in a loop
-					Temp.push_back((*it));
+					RenderVesselMarker((*it), pSketch);
+					it = RenderList.erase(it);
 				}
-			}
-
-			while (!Temp.empty()) {
-				RenderList.remove(Temp.front());
-				Temp.pop_front();
-			}
-
-			if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
-				VECTOR3 gpos;
-				OBJHANDLE hObj = vFocus->GetObjectA();
-				char name[256];
-				oapiGetGlobalPos(hObj, &gpos);
-				oapiGetObjectName(hObj, name, 256);
-				RenderObjectMarker(pSketch, gpos, name, 0, 0, viewH / 80);
-				pSketch->EndDrawing();
+				else ++it;
 			}
 		}
 	} 
@@ -1460,16 +1441,19 @@ surfLabelsActive = false;
 
 		std::list<vVessel *> Intersect;
 
-		// List of intersecting objects
-		for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
-			if ((*it)->IntersectShadowTarget()) {
-				Intersect.push_back((*it));
+		// Select the objects to shadow map
+		//
+		if (Config->ShadowMapMode >= 3) {
+			for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
+				if ((*it)->CamDist() < 1e3) Intersect.push_back((*it));
+			}
+		}
+		else {
+			for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
+				if ((*it)->IntersectShadowTarget()) Intersect.push_back((*it));
 			}
 		}
 
-		// Biggest one first (doesn't appear to be working, forget it)
-		//Intersect.sort(sort_vessels);
-	
 
 		while (!Intersect.empty()) {
 
@@ -1483,93 +1467,30 @@ surfLabelsActive = false;
 
 			if (lod >= 0) {
 
-				std::list<vVessel *> Temp;
-
 				// Render objects in shadow
-				for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
+				auto it = RenderList.begin();
+
+				while (it != RenderList.end()) {
 					if ((*it)->IsInsideShadows()) {
 						(*it)->Render(pDevice);
-						Temp.push_back((*it));
+						RenderVesselMarker((*it), pSketch);
+						Intersect.remove((*it));
+						it = RenderList.erase(it);	
 					}
-				}
-
-				while (!Temp.empty()) {
-					RenderList.remove(Temp.front());
-					Intersect.remove(Temp.front());
-					Temp.pop_front();
+					else ++it;
 				}
 			}	
 		}
 	}
 
 
-
-	if ((Config->ShadowMapMode >= 3) && (DebugControls::IsActive() == false)) {
-		// Don't render more shadows if debug controls are open
-
-		std::list<vVessel *> Intersect;
-
-		// List of visible objects near by
-		for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
-			if ((*it)->CamDist() < 1e3) {
-				if ((*it)->IsVisible()) Intersect.push_back((*it));
-			}
-		}
-
-	
-		while (!Intersect.empty()) {
-
-			D3DXVECTOR3 ld = sunLight.Dir;
-			D3DXVECTOR3 pos = Intersect.front()->GetBoundingSpherePosDX();
-			float rad = Intersect.front()->GetBoundingSphereRadius();
-
-			Intersect.pop_front();
-
-			int lod = RenderShadowMap(pos, ld, rad);
-
-			if (lod >= 0) {
-
-				std::list<vVessel *> Temp;
-
-				// Render objects in shadow
-				for (auto it = RenderList.begin(); it != RenderList.end(); ++it) {
-					if ((*it)->IsInsideShadows()) {
-						(*it)->Render(pDevice);
-						Temp.push_back((*it));
-					}
-				}
-
-				while (!Temp.empty()) {
-					RenderList.remove(Temp.front());
-					Intersect.remove(Temp.front());
-					Temp.pop_front();
-				}
-			}
-		}
-	}
-
-
-	
-
 	// Render the remaining vessels those are not yet renderred
 	//
 	smap.pShadowMap = NULL;
 
 	while (RenderList.empty()==false) {
-	
 		RenderList.front()->Render(pDevice);
-		
-		if ((plnmode & (PLN_ENABLE|PLN_VMARK)) == (PLN_ENABLE|PLN_VMARK)) {
-			VECTOR3 gpos;
-			OBJHANDLE hObj = RenderList.front()->GetObjectA();
-			char name[256];
-			oapiGetGlobalPos(hObj, &gpos);
-			oapiGetObjectName(hObj, name, 256);
-
-			RenderObjectMarker(pSketch, gpos, name, 0, 0, viewH/80);
-			pSketch->EndDrawing();
-		}
-
+		RenderVesselMarker(RenderList.front(), pSketch);
 		RenderList.pop_front();
 	}
 
@@ -1942,6 +1863,17 @@ surfLabelsActive = false;
 
 
 
+// ===========================================================================================
+//
+void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
+{
+	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
+	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
+		RenderObjectMarker(pSketch, vV->GlobalPos(), vV->GetName(), 0, 0, viewH / 80);
+		pSketch->EndDrawing();
+	}
+}
+
 
 // ===========================================================================================
 // Lens flare code (SolarLiner)
@@ -2108,8 +2040,6 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	smap.lod = min(int(round(lod)), SHM_LOD_COUNT - 1);
 	smap.lod = max(smap.lod, 0);
 	smap.size = Config->ShadowMapSize >> smap.lod;
-
-	//sprintf_s(oapiDebugString(), 256, "rs=%f, flod=%f, ilod=%d", rs, lod, smap.lod);
 
 	SetRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod], true);
 
