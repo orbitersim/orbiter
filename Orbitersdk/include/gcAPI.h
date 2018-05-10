@@ -16,9 +16,19 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+
+/*! \mainpage Graphics Client Application Programming Interface (gcAPI)
+
+	The gcAPI is create to allow a user application to interact directly with a graphics clients. 
+
+	- gcAPI Functions (\ref gcAPI)
+	- SketchPad2 extension (\ref oapi::Sketchpad2)
+*/
+
+
 /**
 * \file gcAPI.h
-* \brief Grapgics Client Application Programming Interface defination.
+* \brief Graphics Client Application Programming Interface defination.
 */
 
 #ifndef __OGCI_H
@@ -47,7 +57,7 @@
 
 				// ===========================================================================
 				/**
-				* \defgroup gcAPI Graphics Client Application Programming Interface 
+				* \defgroup gcAPI List of API functions
 				*
 				* These functions provides a way for user applications to interface with
 				* a graphics clients.
@@ -122,6 +132,23 @@ bool			gcGenerateMipMaps(SURFHANDLE hSurface);
 				* \return false if an error occured, true otherwise.
 				*/
 bool			gcRegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
+				//@}
+
+
+				// ===========================================================================
+				/// \name Mesh interface functions
+				// ===========================================================================
+				//@{
+				/**
+				* \brief This function will register a custom render callback function
+				* \param hMesh Handle to a devmesh containing the material
+				* \param idx Material index
+				* \param prop material property identifier (\ref MeshMaterialFlags)
+				* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
+				* \param bSet \e true to set material value, \e false to get a meterial value
+				* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
+				*/
+int				gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
 				//@}
 
 

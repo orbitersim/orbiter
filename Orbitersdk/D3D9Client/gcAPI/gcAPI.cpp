@@ -43,6 +43,9 @@ typedef void (OGCIFN *__gcDeleteSketchMesh)(SKETCHMESH hMesh);
 typedef HPOLY (OGCIFN *__gcCreatePoly)(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags);
 typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 
+// Mesh interface functions
+typedef int	(OGCIFN *__gcMeshMaterial)(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
+
 // Helper functiond
 typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip);
 
@@ -64,6 +67,7 @@ __gcDeleteSketchMesh _gcDeleteSketchMesh = NULL;
 __gcWorldToScreenSpace _gcWorldToScreenSpace = NULL;
 __gcCreatePoly _gcCreatePoly = NULL;
 __gcDeletePoly _gcDeletePoly = NULL;
+__gcMeshMaterial _gcMeshMaterial = NULL;
 
 
 // ====================================================================================================
@@ -89,6 +93,8 @@ bool PostInit(HMODULE hClient)
 	_gcDeletePoly = (__gcDeletePoly)GetProcAddress(hClient, "gcDeletePoly");
 	// -------------
 	_gcWorldToScreenSpace = (__gcWorldToScreenSpace)GetProcAddress(hClient, "gcWorldToScreenSpace");
+	// -------------
+	_gcMeshMaterial = (__gcMeshMaterial)GetProcAddress(hClient, "gcMeshMaterial");
 
 	return (_gcClientID!=NULL);
 }
@@ -128,6 +134,14 @@ bool gcGenerateMipMaps(SURFHANDLE hSurface)
 {
 	if (_gcGenerateMipMaps) return _gcGenerateMipMaps(hSurface);	
 	return false;	
+}
+
+// ====================================================================================================
+//
+int	gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet)
+{
+	if (_gcMeshMaterial) return _gcMeshMaterial(hMesh, idx, prop, value, bSet);	
+	return -5;	
 }
 		
 // ====================================================================================================
