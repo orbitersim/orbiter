@@ -514,11 +514,12 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, SurfTile **cach
 		if (!ggelev) { *elev = 0.0; return 1; }
 		else {
 			double fRes = double(mgr->GridRes());
+			double fElv = mgr->ElevRes();
 
 			if (!bFilter) {
 				int i = int( (lat-minlat) * fRes / (maxlat-minlat) ) + 1;
 				int j = int( (lng-minlng) * fRes / (maxlng-minlng) ) + 1;
-				*elev = double(ggelev[j+i*TILE_ELEVSTRIDE]);
+				*elev = double(ggelev[j+i*TILE_ELEVSTRIDE]) * fElv;
 			}
 			else {
 
@@ -538,7 +539,7 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, SurfTile **cach
 				float q = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx); j0++;
 				float w = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx);
 
-				*elev = double(lerp(q,w,fy));
+				*elev = double(lerp(q,w,fy)) * fElv;
 			}
 
 			return 1;
