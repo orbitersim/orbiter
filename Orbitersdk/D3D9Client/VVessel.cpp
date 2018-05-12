@@ -1086,8 +1086,8 @@ void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float
 }
 
 // ============================================================================================
-// Return true if faces were rendered during this pass
-// Return false is all rendering operations were omitted or failed
+// Return true if it's time to move to a next vessel
+// false, if more rendereing is required here.
 //
 bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 {
@@ -1105,13 +1105,13 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		}
 	}
 
-	if (!bReflective) return false;
+	if (!bReflective) return true;
 
 	LPDIRECT3DSURFACE9 pEnvDS = GetScene()->GetEnvDepthStencil();
 
 	if (!pEnvDS) {
 		LogErr("EnvDepthStencil doesn't exists");
-		return false;
+		return true;
 	}
 
 
@@ -1122,7 +1122,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		pEnvDS->GetDesc(&desc);
 		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[ENVMAP_MAIN]) != S_OK) {
 			LogErr("Failed to create env cubemap for visual 0x%X", this);
-			return false;
+			return true;
 		}
 		nEnv = 1;
 	}
@@ -1132,7 +1132,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	//
 	if (iFace >= 6) {
 		iFace = 0;
-		return scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MAIN]);
+		scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MAIN]);
+		return true;
 	}
 
 	double tot_env = D3D9GetTime();
@@ -1181,24 +1182,23 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		}
 	}
 
-	scn->SetCameraFrustumLimits(eCam->near_clip, 2e7f);
-
+	
 	// -----------------------------------------------------------------------------------------------
 	//
-
 	VECTOR3 gpos;
 	vessel->Local2Global(_V(eCam->lPos.x, eCam->lPos.y, eCam->lPos.z), gpos);
 
 	// Prepare camera and scene for env map rendering
+	scn->PushCamera();
 	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
 	scn->BeginPass(RENDERPASS_ENVCAM);
+	scn->SetRenderTarget(NULL, pEnvDS, true);
 
 	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 
-	scn->SetRenderTarget(NULL, pEnvDS, true);
-
+	
 	for (DWORD i=0;i<cnt;i++) {
 
 		assert(SUCCEEDED(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
@@ -1224,8 +1224,9 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	scn->SetRenderTarget(RESTORE, RESTORE);
 	scn->PopPass();
+	scn->PopCamera();
 
-	return true;
+	return false;
 }
 
 

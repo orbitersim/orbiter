@@ -1756,7 +1756,7 @@ surfLabelsActive = false;
 	// Render Custom Camera view for a focus vessel
 	//
 	if (dwTurn==RENDERTURN_CUSTOMCAM) {
-		if (Config->CustomCamMode && vFocus) {
+		if (Config->CustomCamMode) {
 			if (camCurrent==NULL) camCurrent = camFirst;
 			OBJHANDLE hVessel = vFocus->GetObjectA();
 			while (camCurrent) {
@@ -1786,13 +1786,10 @@ surfLabelsActive = false;
 				if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
 					if (vobjEnv->vobj) {
 						vVessel *vVes = (vVessel *)vobjEnv->vobj;
-						if (vVes->RenderENVMap(pDevice, RenderCount, flags)) {
-							vobjEnv = vobjEnv->next;
-							break;
-						}
+						if (vVes->RenderENVMap(pDevice, RenderCount, flags) == false) break; // Not yet done with this vessel
 					}
 				}
-				vobjEnv = vobjEnv->next;
+				vobjEnv = vobjEnv->next; // Move to the next one
 			}
 		}
 	}
@@ -2000,7 +1997,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 //
 int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 {
-	rad *= 1.001f;
+	rad *= 1.02f;
 
 	smap.pos = pos;
 	smap.ld = ld;
@@ -2920,6 +2917,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	D3DMAT_SetRotation(&mEnv, &cCur->mRotation);
 	D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
 
+	PushCamera();
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w));
 
@@ -2932,6 +2930,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 
 	SetRenderTarget(RESTORE, RESTORE);
 	PopPass();
+	PopCamera();
 }
 
 
