@@ -5,7 +5,8 @@
   <style type="text/css">
    .brk  { page-break-before:always; }
    .nbrk { page-break-inside:avoid; }
-    p    { page-break-inside:avoid; text-align: justify }
+    body { font-size: 16pt; }
+    p    { page-break-inside:avoid; text-align: justify; }
     dt   { margin-top:10px; }
     dd   { margin-left:20px; }
     li   { text-decoration:underline; font-weight:bold; page-break-inside:avoid; }
@@ -25,7 +26,7 @@
   D3D9Client uses external libraries that need support for the SSE2
   Instruction set (GPSVC.DLL e.g.) and requires XNA Math support, so that the
   processor must support those
-  <a href="http://en.wikipedia.org/wiki/SSE2">Streaming SIMD Extensions</a>.
+  <a href="http://en.wikipedia.org/wiki/SSE2" target="_blank">Streaming SIMD Extensions</a>.
 </p>
 
 <hr />
@@ -53,7 +54,7 @@
   the installation files.
 </p>
 <p>
-  Here is a link: <a href="https://www.microsoft.com/en-us/download/details.aspx?id=8109">
+  Here is a link: <a href="https://www.microsoft.com/en-us/download/details.aspx?id=8109" target="_blank">
                https://www.microsoft.com/en-us/download/details.aspx?id=8109</a>
 </p>
 
@@ -86,7 +87,7 @@
   manually.
 </p>
 <p>
-  Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html">
+  Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html" target="_blank">
           http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
 </p>
 
@@ -145,6 +146,38 @@
       With this option selected the D3D9Client will load all surface textures
       at startup of a scenario which results in a longer loading time.
     </p>
+  <li>Tile Archive</li>
+    <p>
+      The tile archive selector lets you choose the type and order of planetary
+      body rendering option.
+      The planetary body data is located under the
+      <code>/Textures/&lt;Planet&gt;</code> folder and comes in two "flavors".
+      The <code>Archive</code> sub folder contains compressed data, while the
+      <code>Elev_mod</code>, <code>Label</code>, <code>Mask</code> and
+      <code>Surf</code> folders contain the data structures as file system
+      folders and files.<br/>
+      Access through the archive files is generally faster and should be
+      preferred over cache access.<br/>
+      <p style="margin-bottom: 5px;">
+       The tile archive selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Cache only</em></b>:
+            Planetary body data will be loaded from cache only.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Archive only</em></b>:
+            Planetary body data will be loaded from archive only.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Cache &amp; Archive</em></b>:
+            Planetary body data will be loaded from archive but if tiles were
+            found in cache, those will be taken.<br/>
+            This is useful to "overwrite" some parts of a planet, which could
+            be a correction of a erroneous archive part or just some additional
+            details provided by an add-on.
+        </div>
+      </p>
+    </p>
 </ul>
 
 <h2>Graphics options</h2>
@@ -161,7 +194,7 @@
     <p>
       Depending on your hardware you can select the level of anisotropic
       filtering. For further details about this topic take a look at
-      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering">Anisotropic
+      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering" target="_blank">Anisotropic
       filtering</a> in the wikipedia.
     </p>
     <li>Planet glow</li>
@@ -172,7 +205,7 @@
       The supported value range is from 0.01 to 2.0. Although you might be able
       to enter bigger or smaller values, those will be clipped to that range.
     </p>
-    <li>Texture Mipmaps</li>
+    <li class="brk">Texture Mipmaps</li>
     <p>
       The texture mipmaps selector lets you choose the texture mipmap auto
       generation policy. The select box lets you decide how to deal with
@@ -195,6 +228,28 @@
         </div>
       </p>
     </p>
+    <li>Post Processing</li>
+    <p>
+      The post processing selector lets you choose whether to add one of two
+      additional post processing shaders.<br/>
+      Note that enabling any post processing will impact framerates.<br/>
+      <p style="margin-bottom: 5px;">
+        The post processing selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+            No post processing shader will be applied.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Light glow</em></b>:
+            The light glow post processing will "enhance" bright surfaces.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>LensFlare</em></b>:
+            The lens flare post processing will create the (infamous) lens
+            flare effect for the sun.
+        </div>
+      </p>
+    </p>
 </ul>
 <p>
   Following checkboxes can be checked (enabled) or unchecked (disabled) to
@@ -211,7 +266,7 @@
       will only load base visuals when they come into view while you are e.g.
       flying through the atmosphere or orbiting a planet.
     </p>
-  <li class="brk">Enable advanced texture maps</li>
+  <li>Enable advanced texture maps</li>
     <p>
       With this option enabled D3D9Client will try to add additional texture
       information for meshes that supply them. This advanced texture maps
@@ -252,16 +307,111 @@
       near clip-plane distance is defined in D3D9Client.cfg and the default
       value is 0.1 meters.
     </p>
-    <li>Enable surface tile mipmaps</li>
+  <!-- removed
+  <li>Enable surface tile mipmaps</li>
     <p>
       In some situations planetary (or minor body) surfaces appear to be noisy
       and are flickering.
-      <a href="http://en.wikipedia.org/wiki/Mipmap">Mipmaps</a> are one
+      <a href="http://en.wikipedia.org/wiki/Mipmap" target="_blank">Mipmaps</a> are one
       solution to address these problems. By enabling this option these
       artifacts should greatly be reduced and the surface will appear smooth.
       <br/>
       The impact of enabling mipmaps is an increased load time because the
       mipmaps are generated during texture loading.
+    </p>
+  -->
+</ul>
+
+<h2 class="brk">Self Shadows</h2>
+<p>
+  Here you can change settings that will affect the rendering of shadows that
+  vessels will cast onto themselves or onto other vessel structures.
+</p>
+<ul>
+  <li>Vessel mapping</li>
+    <p>
+      This will control how many vessels will receive shadowing feature,
+      varying from "None" to "All visible" vessels.
+      <p style="margin-bottom: 5px;">
+        The vessel mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No vessels will receive shadowing feature.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Focus + payload</em></b>:
+          The vessel in focus and its payload will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Near by objects</em></b>:
+          All nearby vessels (objects) will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>All visible objects</em></b>:
+          All visible vessels (objects) will cast shadows.
+        </div>
+      </p>
+    </p>
+  <li>Filter options</li>
+    <p>
+      This will select filtering for shadow maps. "9 Samples" is the fastest
+      setting for older computers and "27s dither" is the best that is
+      currently available.<br/>
+      Better filtering produce smoother (better) edges for shadows. The
+      difference becomes more visible when zooming the camera into a shadow.
+      <p style="margin-bottom: 5px;">
+        The filter options selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>9 samples</em></b>:
+          Shadow maps use 9 samples (fastest setting for older computers).
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27 samples</em></b>:
+          Shadow maps using 27 samples.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27s dither</em></b>:
+          Shadow maps using 27 samples with dithering.
+        </div>
+        <!--
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>40 samples</em></b>:
+          ToDo...
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>40s dither</em></b>:
+          ToDo...
+        </div>
+        -->
+      </p>
+    </p>
+  <li>Terrain mapping</li>
+    <p>
+      This setting will choose the shadowing mode for planetary surface and
+      base-objects.
+      "Stencil" is the legacy mode that's been there for ages.
+      "Projective" produces more realistic surface shadows for the focused
+      (i.e. currently active) vessel but doesn't effect any other vessels (all
+      the other vessels are using Stencil shadows).<br/>
+      In this mode the focus vessel can cast shadows on base objects. This
+      shadowing option doesn't work well if the vessel is inside a base object.
+      <p style="margin-bottom: 5px;">
+        The terrain mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No shadowing for planetary surface and base-objects.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Stencil</em></b>:
+          This is the legacy mode that's been there for ages.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Projected</em></b>:
+          Produces more realistic surface shadows for the focused (i.e.
+          currently active) vessel but doesn't effect any other vessels (all
+          the other vessels are using Stencil shadows).
+        </div>
+      </p>
     </p>
 </ul>
 
@@ -393,12 +543,12 @@
       "left eye objects" are overlapping exactly and switch their
       position when further away or closer that that "point".
       For further details about this topic take a look at
-      <a href ="http://en.wikipedia.org/wiki/Depth_of_field">Depth of field</a>
+      <a href ="http://en.wikipedia.org/wiki/Depth_of_field" target="_blank">Depth of field</a>
       in the wikipedia.
     </p>
 </ul>
 
-<h2 class="brk">Reflections and Custom camera settings</h2>
+<h2>Reflections and Custom camera settings</h2>
 <p>
   The reflections and custom camera settings allow you to tweak the parameters
   that define the behavior of the environment mapping feature. Environment
@@ -676,7 +826,7 @@
       produce a stable frame rate. Improper setting can cause extreme tearing
       on the screen. Setting the frame rate limiter to 200fps usually works
       pretty well. It is recommended to use vertical sync feature from a video
-      tab instead of this. 
+      tab instead of this.
     </p>
 
 </ul>
@@ -753,7 +903,7 @@
     Copy and paste buttons can be used to copy [RGB] values from different
     material properties for an example from specular color to reflect color.
   </p>
-  <li class="brk">Link channels</li>
+  <li>Link channels</li>
   <p>
     The link checkbox allows the link the R, G and B fields and after that
     they can be adjusted simultaneously with the slider.
