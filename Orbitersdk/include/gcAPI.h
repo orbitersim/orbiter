@@ -57,7 +57,7 @@
 
 				// ===========================================================================
 				/**
-				* \defgroup gcAPI List of API functions
+				* \defgroup gcAPI Graphics Client Application Programming Interface 
 				*
 				* These functions provides a way for user applications to interface with
 				* a graphics clients.
@@ -168,24 +168,24 @@ int				gcDeleteCustomCamera(CAMERAHANDLE hCam);
 				* \brief Toggle camera on and off
 				* \param hCam camera handle to toggle
 				* \param bOn true to turn on the camera.
-				* \note If multible cameras are sharing the same rendering surface. Flickering will occur if more than one camera is turned on. 
+				* \note If multiple cameras are sharing the same rendering surface. Flickering will occur if more than one camera is turned on. 
 				*/
 void			gcCustomCameraOnOff(CAMERAHANDLE hCam, bool bOn);
 
 				/**
-				* \brief Create a new custom camera that can me used to render views into a surfaces and textures
+				* \brief Create a new custom camera that can be used to render views into a surfaces and textures
 				* \param hCam camera handle to modify an existing camera or, NULL
 				* \param hVessel handle to a vessel where the camera is attached to.
 				* \param vPos camara position in vessel's local coordinate system
 				* \param vDir camara direction in vessel's local coordinate system. [Unit Vector]
 				* \param vUp camara up vector. Must be perpendicular to vDir. [Unit Vector]
 				* \param dFow camera field of view in radians
-				* \param hSurf rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multible cameras can share the same surface.
+				* \param hSurf rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multiple cameras can share the same surface.
 				* \param dwFlags Flags to controls what is drawn and what is not.
 				* \return Camera handle, or NULL if an error occured or if the custom camera interface is disabled.
 				* \note Camera count is unlimited. 
 				* \note Only a cameras attached to currently active vessel are operational and recodring.
-				* \note Having multible cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
+				* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 				*/
 CAMERAHANDLE	gcSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &vPos, VECTOR3 &vDir, VECTOR3 &vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags=0xFF);
 				//@}
