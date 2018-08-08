@@ -212,7 +212,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 
 
 
-void OrbitalLighting(D3D9Sun *light, vPlanet *vP, VECTOR3 GO, float ao)
+void OrbitalLighting(D3D9Sun *light, const vPlanet *vP, const VECTOR3 &GO, float ao)
 {
 	VECTOR3 GS, GP;
 

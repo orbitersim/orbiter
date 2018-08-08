@@ -27,7 +27,7 @@ public:
 	// Register the tile to a quad tree node
 
 protected:
-	virtual Tile *getParent() { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
+	virtual Tile *getParent() { return node->Parent() ? node->Parent()->Entry() : NULL; }
 	// Return pointer to parent tile, if exists
 
 	virtual void Load ();
