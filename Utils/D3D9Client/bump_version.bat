@@ -56,43 +56,47 @@ var MsgBox = vb.Function("MsgBox");
 // Replacement tasks setup
 // -----------------------------------------------------------------------------
 var tasks = [{
-     file : "Orbitersdk\\D3D9Client\\D3D9Client.cpp",
+     file : "Orbitersdk/D3D9Client/D3D9Client.cpp",
      rexp : /D3D9Client(?:\s+Beta)?\s+(?:R)?([\d\.]+)\s/,
     subst : "{Major}.{Minor}" // "{MajorMinor}"
   }, {
-     file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
+     file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /FILEVERSION\s+((\d+),(\d+),(\d+),(\d+))/,
     subst : "{Major},{Minor},{Build},{Release}"
   }, {
-     file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
+     file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /PRODUCTVERSION\s+((\d+),(\d+),(\d+),(\d+))/,
     subst : "{Major},0,0,0"
   }, {
-     file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
+     file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /VALUE\s+\"FileVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
     subst : "{Major}.{Minor}.{Build}.{Release}"
   }, {
-     file : "Orbitersdk\\D3D9Client\\D3D9Client.rc",
+     file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /VALUE\s+\"ProductVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
     subst : "{Major}.0.0.0"
   }, {
-     file : "Orbitersdk\\D3D9Client\\doc\\Doxyfile",
+     file : "Orbitersdk/D3D9Client/doc/Doxyfile",
      rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta|R)?\s*([\d\.]+)\"/,
     subst : "{MajorMinor}",
-     unix : true // UNIX EOL
+     unix : !true // UNIX EOL
   }, {
-     file : "Orbitersdk\\D3D9Client\\doc\\Doxyfile-gcAPI",
+     file : "Orbitersdk/D3D9Client/doc/Doxyfile-gcAPI",
      rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta|R)?\s*([\d\.]+)\"/,
     subst : "{MajorMinor}",
-     unix : true // UNIX EOL
+     unix : !true // UNIX EOL
   }, {
-     file : "Utils\\D3D9Client\\build_release.bat",
+     file : "Utils/D3D9Client/build_release.bat",
      rexp : /set VERSION=(?:Beta)?(?:R)?([\d\.]+)$/,
     subst : "{Major}.{Minor}" // "{MajorMinor}"
   }
 ];
 // -----------------------------------------------------------------------------
 
+// Convert to DOS path-separators
+for (var i=0; i<tasks.length; ++i) {
+  tasks[i].file = tasks[i].file.replace('/','\\');
+}
 
 // -----------------------------------------------------------------------------
 // Main

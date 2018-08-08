@@ -28,35 +28,35 @@ if "%VS150COMNTOOLS%"=="" call helper_vswhere.bat
 if not "%VS150COMNTOOLS%"=="" (
   set "SETVCVARS=%VS150COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2017.sln
-  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vs2017.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
   goto assign
 )
 :: Visual Studio 2015
 if not "%VS140COMNTOOLS%"=="" (
   set "SETVCVARS=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2015.sln
-  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vcxproj
   goto assign
 )
 :: Visual Studio 2012
 if not "%VS110COMNTOOLS%"=="" (
   set "SETVCVARS=%VS110COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2012.sln
-  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vs2012.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs2012.vcxproj
   goto assign
 )
 :: Visual Studio 2010
 if not "%VS100COMNTOOLS%"=="" (
   set "SETVCVARS=%VS100COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2010.sln
-  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vcxproj
   goto assign
 )
 :: Visual Studio 2008
 if not "%VS90COMNTOOLS%"=="" (
   set "SETVCVARS=%VS90COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2008.sln
-  set GCAPI_PROJECTFILE=gcAPI\gcAPI.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vcxproj
   goto assign
 )
 
@@ -65,7 +65,7 @@ set ZIP_NAME=D3D9Client%VERSION%
 set VC=msbuild.exe
 set BUILD_FLAG=/t:build
 set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%SOLUTIONFILE%"
-set GCAPI_PROJECTFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%GCAPI_PROJECTFILE%"
+set GCAPI_PROJECTFILE="%BASE_DIR%\Orbitersdk\D3D9Client\gcAPI\%GCAPI_PROJECTFILE%"
 set CONFIG=/p:Configuration=Release /p:Platform=Win32
 set CONFIG_DBG=/p:Configuration=Debug
 set ZIP_CMD="C:\Program Files\7-Zip\7z.exe"
