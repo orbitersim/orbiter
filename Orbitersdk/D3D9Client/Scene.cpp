@@ -2820,6 +2820,8 @@ int Scene::DeleteCustomCamera(CAMERAHANDLE hCam)
 	if (pv->next) pv->next->prev = pv->prev;
 	else          camLast = pv->prev;
 
+	if (pv == camCurrent) camCurrent = NULL;
+
 	delete pv;
 	return iError;
 }
