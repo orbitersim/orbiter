@@ -28,7 +28,8 @@ DLLCLBK int gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, COLOUR4 *v
 
 DLLCLBK bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, FMATRIX4 *pVP, float clip = 1.0f)
 {
-	return g_client->GetScene()->WorldToScreenSpace(rdir, pt, (D3DXMATRIX *)pVP, clip);
+	Scene *pScene = g_client->GetScene();
+	return pScene ? pScene->WorldToScreenSpace(rdir, pt, (D3DXMATRIX *)pVP, clip) : false;
 }
 
 
@@ -129,18 +130,23 @@ DLLCLBK CAMERAHANDLE gcSetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, V
 	mTake.m11 = x.x;	mTake.m21 = x.y;	mTake.m31 = x.z;
 	mTake.m12 = up.x;	mTake.m22 = up.y;	mTake.m32 = up.z;
 	mTake.m13 = dir.x;	mTake.m23 = dir.y;	mTake.m33 = dir.z;
-	return g_client->GetScene()->SetupCustomCamera(hCam, hVessel, mTake, pos, fov, hSurf, flags);
+	Scene *pScene = g_client->GetScene();
+	return pScene ? pScene->SetupCustomCamera(hCam, hVessel, mTake, pos, fov, hSurf, flags) : NULL;
 }
 
 
 DLLCLBK void gcCustomCameraOnOff(CAMERAHANDLE hCam, bool bOn)
 {
-	g_client->GetScene()->CustomCameraOnOff(hCam, bOn);
+	Scene *pScene = g_client->GetScene();
+	if (pScene) {
+		pScene->CustomCameraOnOff(hCam, bOn);
+	}
 }
 
 
 DLLCLBK int gcDeleteCustomCamera(CAMERAHANDLE hCam)
 {
-	return g_client->GetScene()->DeleteCustomCamera(hCam);
+	Scene *pScene = g_client->GetScene();
+	return pScene ? pScene->DeleteCustomCamera(hCam) : 0;
 }
 
