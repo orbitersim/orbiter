@@ -2926,7 +2926,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	ClearOmitFlags();
 
 	BeginPass(RENDERPASS_CUSTOMCAM);
-	SetRenderTarget(pSrf, pDSs);
+	SetRenderTarget(pSrf, pDSs, true);
 
 	RenderSecondaryScene(NULL, false, 0xFF);
 
