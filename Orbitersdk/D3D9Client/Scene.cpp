@@ -1181,7 +1181,24 @@ void Scene::RenderMainScene()
 	pSketch->EndDrawing();
 
 
-	
+	// ---------------------------------------------------------------------------------------------
+	// Create a render list for shadow mapping
+	// ---------------------------------------------------------------------------------------------
+
+	VOBJREC *pv = NULL;
+	LPDIRECT3DTEXTURE9 pShdMap = NULL;
+
+	RenderList.clear();
+
+	for (pv = vobjFirst; pv; pv = pv->next) {
+		if (!pv->vobj->IsActive()) continue;
+		if (!pv->vobj->IsVisible()) continue;
+		if (pv->type == OBJTP_VESSEL) {
+			vVessel *vV = (vVessel *)pv->vobj;
+			RenderList.push_back(vV);
+		}
+	}
+
 
 	// ---------------------------------------------------------------------------------------------
 	// Render shadow map for vFocus early for surface base and planet rendering
@@ -1192,8 +1209,34 @@ void Scene::RenderMainScene()
 	if (Config->ShadowMapMode >= 1) {
 
 		D3DXVECTOR3 ld = sunLight.Dir;
-		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
-		float rad = vFocus->GetBoundingSphereRadius();
+
+		D3DXVECTOR3 fo_pos = vFocus->GetBoundingSpherePosDX();
+		float fo_rad = vFocus->GetBoundingSphereRadius();
+
+		D3DXVECTOR3 pos = fo_pos;
+		float rad = fo_rad;
+
+		// What else should be included besides vFocus ?
+
+		for each (vVessel *v in RenderList)
+		{
+			D3DXVECTOR3 bs_pos = v->GetBoundingSpherePosDX();
+			float bs_rad = v->GetBoundingSphereRadius();
+
+			D3DXVECTOR3 bc = bs_pos - fo_pos;
+
+			if (D3DXVec3Length(&bc) < (bs_rad + fo_rad)) {
+
+				bc = bs_pos - pos;
+				bc -= ld * D3DXVec3Dot(&ld, &bc);
+
+				float dst = D3DXVec3Length(&bc);
+				float nrd = (rad + dst + bs_rad) * 0.5f;
+
+				pos += bc * ((nrd - rad) / dst);
+				rad = nrd;
+			}
+		}
 
 		shadow_lod = RenderShadowMap(pos, ld, rad);
 	}
@@ -1395,27 +1438,16 @@ surfLabelsActive = false;
 	pSketch->SetTextColor(labelCol[0]);
 	pSketch->SetPen(lblPen[0]);
 
-	VOBJREC *pv = NULL;
-	LPDIRECT3DTEXTURE9 pShdMap = NULL;
-
-	
-
-	RenderList.clear();
-	
-	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
-		if (pv->type == OBJTP_VESSEL) {
-			vVessel *vV = (vVessel *)pv->vobj;
-			RenderList.push_back(vV);
-		}
-	}
-
-
 
 	// Render the vessels inside the shadows
 	//
 	if (Config->ShadowMapMode >= 1) {
+
+		D3DXVECTOR3 ld = sunLight.Dir;
+		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
+		float rad = vFocus->GetBoundingSphereRadius();
+
+		int shadow_lod = RenderShadowMap(pos, ld, rad);
 
 		if (shadow_lod >= 0) {
 
