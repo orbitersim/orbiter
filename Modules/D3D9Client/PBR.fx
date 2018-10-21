@@ -5,7 +5,7 @@
 // ==============================================================
 
 
-#define KERNEL_RADIUS 3.0f
+
 
 struct PBRData
 {
@@ -20,107 +20,6 @@ struct PBRData
 };
 
 
-#include "Lights.inc"
-
-
-float ProjectShadows(float2 sp)
-{
-	if (!gShadowsEnabled) return 1.0f;
-
-	if (sp.x < 0 || sp.y < 0) return 1.0f;
-	if (sp.x > 1 || sp.y > 1) return 1.0f;
-
-	float2 dx = float2(gSHD[1], 0) * 1.5f;
-	float2 dy = float2(0, gSHD[1]) * 1.5f;
-	float  va = 0;
-	float  pd = 1e-4;
-
-	sp -= dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
-
-	return va / 9.0f;
-}
-
-
-float SampleShadows(float2 sp, float pd)
-{
-	if (!gShadowsEnabled) return 1.0f;
-
-	float2 dx = float2(gSHD[1], 0) * 1.5f;
-	float2 dy = float2(0, gSHD[1]) * 1.5f;
-	float  va = 0;
-
-	sp -= dy;
-	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
-	if ((tex2D(ShadowS, sp).r) > pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
-	if ((tex2D(ShadowS, sp).r) > pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
-	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
-	if ((tex2D(ShadowS, sp).r) > pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
-
-	return va * 0.1111111f;
-}
-
-
-
-float SampleShadows2(float2 sp, float pd)
-{
-	if (!gShadowsEnabled) return 1.0f;
-
-	float val = 0;
-	float m = KERNEL_RADIUS * gSHD[1];
-
-	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
-		if ((tex2D(ShadowS, sp + kernel[i].xy * m).r) > pd) val += kernel[i].z;
-	}
-
-	return saturate(val * KERNEL_WEIGHT);
-}
-
-
-float SampleShadows3(float2 sp, float pd, float4 frame)
-{
-	if (!gShadowsEnabled) return 1.0f;
-
-	float val = 0;
-	frame *= KERNEL_RADIUS * gSHD[1];
-
-	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
-		float2 ofs = frame.xy*kernel[i].x + frame.zw*kernel[i].y;
-		if ((tex2D(ShadowS, sp + ofs).r) > pd) val += kernel[i].z;	
-	}
-
-	return saturate(val * KERNEL_WEIGHT);
-}
-
-
-float SampleShadowsEx(float2 sp, float pd, float4 sc)
-{
-#if SHDMAP == 1
-	return SampleShadows(sp, pd);
-#elif SHDMAP == 2 || SHDMAP == 4
-	return SampleShadows2(sp, pd);
-#else
-	float si, co;
-	sincos(sc.y + sc.x*14.0f, si, co);
-	return SampleShadows3(sp, pd, float4(si, co, co, -si));
-#endif
-}
 
 // ========================================================================================================================
 // Vertex shader for physics based rendering
@@ -291,28 +190,12 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float dLNx = saturate(dLN * 80.0f);				// Specular, Fresnel shadowing term
 
 
+	// ----------------------------------------------------------------------
+	// Add vessel self-shadows
+	// ----------------------------------------------------------------------
+
 #if SHDMAP > 0
-	frg.shdH.xyz /= frg.shdH.w;
-	float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
-	sp += gSHD[1] * 0.5f;
-	float fShadow;
-
-	if (gBaseBuilding) {
-		// It's a surface base building
-		fShadow = ProjectShadows(sp);
-	}
-	else {
-		// It's a vessel
-
-		float  pd = frg.shdH.z - 1e-3;
-		pd -= min(15e-3, gSHD[3] * 10e-5);
-		fShadow = SampleShadowsEx(sp, pd, sc);
-		fShadow = smoothstep(0, 0.75, fShadow);
-	}
-
-	cSun *= fShadow;
-	//dLN *= fShadow;
-	//dLNx *= fShadow;
+	cSun *= ComputeShadow(frg.shdH, dLN, sc);
 #endif
 
 
@@ -565,26 +448,12 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 
 		if (gNoColor) cDiff.rgb = 1;
 
+		// ----------------------------------------------------------------------
+		// Add vessel self-shadows
+		// ----------------------------------------------------------------------
+
 #if SHDMAP > 0
-		frg.shdH.xyz /= frg.shdH.w;
-		float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
-		sp += gSHD[1] * 0.5f;
-		float fShadow;
-		float x = 1 - sqrt(dLN);
-
-		if (gBaseBuilding) {
-			// It's a surface base building
-			fShadow = ProjectShadows(sp);
-		}
-		else {
-			// It's a vessel
-			float  pd = frg.shdH.z - 1e-3;
-			pd -= x * 6e-3;
-			pd -= min(15e-3, gSHD[3] * 10e-5);
-			fShadow = SampleShadowsEx(sp, pd, sc);
-			fShadow = smoothstep(0, 0.75, fShadow);
-		}
-
+		float fShadow = ComputeShadow(frg.shdH, dLN, sc);
 		dLN *= fShadow;
 #endif
 

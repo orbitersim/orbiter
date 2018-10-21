@@ -137,6 +137,7 @@ public:
 		D3DXVECTOR3	ld;
 		float		rad;
 		float		dist;
+		float		depth;
 		int			lod;
 		int			size;
 	} smap;

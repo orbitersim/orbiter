@@ -1400,72 +1400,32 @@ void Refresh()
 //
 void CreateSamplingKernel()
 {
-	int s = 8;
+	int s = 27;
 	int k = 0;
 	
-	double w = 0, xb = 0, yb = 0;
-
-	VECTOR3 *data = new VECTOR3[s*s];
-	VECTOR3 *out = new VECTOR3[s*s];
-
-	while (true) {
-
-		int j = 0;
-		double dx = 2.0 / double(s - 1);
-
-		double y = -1.0;
-		for (int i = 0; i < s; i++) {
-			double x = -1.0;
-			for (int k = 0; k < s; k++) {
-				data[j].x = x;
-				data[j].y = y;
-				x += dx;
-				j++;
-			}
-			y += dx;
-		}
-
-		dx *= 0.6;
-		double pw = 1.0;
-
-		for (int i = 0; i < j; i++) {
-			data[i].x += (oapiRand()*2.0 - 1.0) * dx;
-			data[i].y += (oapiRand()*2.0 - 1.0) * dx;
-			data[i].x = pow(abs(data[i].x), pw) * sign(data[i].x);
-			data[i].y = pow(abs(data[i].y), pw) * sign(data[i].y);
-		}
-
-		k = 0;
-
-		for (int i = 0; i < j; i++) {
-			double d = sqrt(data[i].x*data[i].x + data[i].y*data[i].y);
-			if (d <= 1.0) {
-				out[k] = data[i];
-				out[k].z = 1.0;
-				k++;
-			}
-		}
-
-		w = 0, xb = 0, yb = 0;
-
-		for (int i = 0; i < k; i++) {
-			w += out[i].z;
-			xb += out[i].x;
-			yb += out[i].y;
-		}
-
-		if (abs(xb) < 0.4f && abs(yb) < 0.4f) break;
+	VECTOR3 *data = new VECTOR3[s];
+	
+	double d = 0.0;
+	double a = 0.0;
+	
+	for (int i = 0; i < s; i++) {	
+		double z = (oapiRand()*2.0 - 1.0) * (PI2 / 8);
+		data[i].x = sqrt(d) * sin(a+z);
+		data[i].y = sqrt(d) * cos(a+z);
+		//data[i].x = d * sin(a + z);
+		//data[i].y = d * cos(a + z);
+		data[i].z = sqrt(data[i].x*data[i].x + data[i].y*data[i].y);
+		data[i].z = sqrt(data[i].z);
+		data[i].z = 1.0;
+		a += PI2 / 4;
+		d += 1.0 / double(s);
 	}
 
-	for (int i = 0; i < k; i++) {
-		oapiWriteLogV("{%4.4ff, %4.4ff, %4.4ff},", out[i].x, out[i].y, out[i].z);
+	for (int i = 0; i < s; i++) {
+		oapiWriteLogV("{%4.4ff, %4.4ff, %4.4ff},", data[i].x, data[i].y, data[i].z);
 	}
 
 	delete[]data;
-	delete[]out;
-
-	oapiWriteLogV("TotalWeight = %f, Count = %u, x-balance = %f, y-balance = %f", w, k, xb, yb);
-	sprintf_s(oapiDebugString(), 256, "TotalWeight = %f, Count = %u, x-balance = %f, y-balance = %f", w, k, xb, yb);
 }
 
 /*

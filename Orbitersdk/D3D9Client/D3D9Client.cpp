@@ -1265,10 +1265,29 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				bTrackMouse = true;
 				xpos = GET_X_LPARAM(lParam);
 				ypos = GET_Y_LPARAM(lParam);
-				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags=TME_LEAVE; te.hwndTrack=hRenderWnd;
+				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
 				TrackMouseEvent(&te);
 
-				if (DebugControls::IsActive()) {
+				bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+				bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+
+				// No Debug Controls
+				if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
+
+					D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
+
+					if (!pick.pMesh) break;
+
+					OBJHANDLE hObj = pick.vObj->Object();
+					if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+						oapiSetFocusObject(hObj);
+					}
+
+					break;
+				}
+			
+				// With Debug Controls
+				else if (bShift && bCtrl && DebugControls::IsActive()) {
 
 					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 
@@ -1279,10 +1298,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 						if (!pick.pMesh) break;
 				
 						//sprintf_s(oapiDebugString(),256,"vObj=0x%X, Mesh=0x%X, Grp=%d, Face=%d", pick.vObj, pick.pMesh, pick.group, pick.face);
-
-						bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
-						bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;	
-	
+			
 						if (bShift && bCtrl) {
 							OBJHANDLE hObj = pick.vObj->Object();
 							if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
@@ -1298,6 +1314,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 						}
 					}
 				}
+
 				break;
 			}
 

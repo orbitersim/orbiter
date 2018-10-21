@@ -225,7 +225,8 @@ public:
 	
 	
 
-	bool bOmit;			// Omit this object from scene rendering
+	bool bStencilShadow;	// Use Stencil shadow for this object
+	bool bOmit;				// Omit this object from scene rendering
 	D9BBox			BBox;
 
 protected:

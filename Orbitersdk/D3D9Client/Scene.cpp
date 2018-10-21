@@ -1196,6 +1196,7 @@ void Scene::RenderMainScene()
 		if (pv->type == OBJTP_VESSEL) {
 			vVessel *vV = (vVessel *)pv->vobj;
 			RenderList.push_back(vV);
+			vV->bStencilShadow = true;
 		}
 	}
 
@@ -1206,7 +1207,7 @@ void Scene::RenderMainScene()
 
 	int shadow_lod = -1;
 
-	if (Config->ShadowMapMode >= 1) {
+	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2) {
 
 		D3DXVECTOR3 ld = sunLight.Dir;
 
@@ -1220,6 +1221,8 @@ void Scene::RenderMainScene()
 
 		for each (vVessel *v in RenderList)
 		{
+			if (v == vFocus) continue;
+
 			D3DXVECTOR3 bs_pos = v->GetBoundingSpherePosDX();
 			float bs_rad = v->GetBoundingSphereRadius();
 
@@ -1233,7 +1236,8 @@ void Scene::RenderMainScene()
 				float dst = D3DXVec3Length(&bc);
 				float nrd = (rad + dst + bs_rad) * 0.5f;
 
-				pos += bc * ((nrd - rad) / dst);
+				if (dst > 0.01f) pos += bc * ((nrd - rad) / dst);
+
 				rad = nrd;
 			}
 		}
@@ -2056,6 +2060,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 
 	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, 50.0f, 60.0f + depth);
 	
+	smap.depth = depth;
 	smap.dist = mnd - 55.0f;
 	
 	D3DXVECTOR3 lp = pos + ld * smap.dist;
@@ -2081,6 +2086,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	BeginPass(RENDERPASS_SHADOWMAP);
 
 	while(SmapRenderList.size()>0) {
+		SmapRenderList.front()->bStencilShadow = false;	
 		SmapRenderList.front()->Render(pDevice);
 		SmapRenderList.pop_front();
 	}

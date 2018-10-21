@@ -16,6 +16,9 @@ inline float cmax(float3 color)
 // Sun light brightness for diffuse and specular lighting
 #include "LightBlur.hlsl"
 
+// Incluse Light and Shadow
+#include "Common.hlsl"
+
 // Must be included here
 #include "PBR.fx"
 
@@ -32,6 +35,10 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 	float3 posW = mul(float4(vrt.posL, 1.0f), gW).xyz;
 	float3 nrmW = mul(float4(vrt.nrmL, 0.0f), gW).xyz;
 
+#if SHDMAP > 0
+	outVS.shdH = mul(float4(posW, 1.0f), gLVP);
+#endif
+
 	outVS.nrmW = nrmW;
 	outVS.tanW = float4(mul(float4(vrt.tanL, 0.0f), gW).xyz, vrt.tex0.z);
 	outVS.posH = mul(float4(posW, 1.0f), gVP);
@@ -45,7 +52,7 @@ PBRData AdvancedVS(MESH_VERTEX vrt)
 
 // ============================================================================
 //
-float4 AdvancedPS(PBRData frg) : COLOR
+float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 {
 	float3 bitW;
 	float3 nrmT;
@@ -110,6 +117,17 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	// Special alpha only texture in use
 	if (gNoColor) cTex.rgb = 1;
 
+
+	// ----------------------------------------------------------------------
+	// Add vessel self-shadows
+	// ----------------------------------------------------------------------
+
+#if SHDMAP > 0
+	cSun.rgb *= ComputeShadow(frg.shdH, dLN, sc);
+#endif
+
+
+
 	// ----------------------------------------------------------------------
 	// Compute Local Light Sources
 	// ----------------------------------------------------------------------
@@ -124,9 +142,9 @@ float4 AdvancedPS(PBRData frg) : COLOR
 	cSpec.rgb *= saturate(cSpecLocal + fSun * cSun);
 
 
-	// Compute Transluciency effect -------------------------------------------
+	// Compute Transluciency effect --------------------------------------------------------------
 	//
-	/*
+
 	if (gCfg.Transx) {
 
 		float4 cTransm = float4(cTex.rgb, 1.0f);
@@ -142,22 +160,23 @@ float4 AdvancedPS(PBRData frg) : COLOR
 			cTransl = tex2D(TranslS, frg.tex0.xy).rgb;
 		}
 
-		// Texture Tuning -----------------------------------------------------
+		// Texture Tuning -------------------------------------------------------
 		//
 		if (gTuneEnabled) {
 			cTransm *= gTune.Transm.rgba;
 			cTransl *= gTune.Transl.rgb;
 		}
 
-		float Ts = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a);// *saturate(cTransm.a);
-		Ts *= saturate(dLN * (-2.0f));  // Causes the transmittance effect to fall off at very shallow angles
-		float3 Tdiff = Base + gMtrl.diffuse.rgb * (cSun * dLN);
-		cTransl.rgb *= saturate(Tdiff);
+		float sunLightFromBehind = saturate(dot(gSun.Dir, nrmW));
+		float sunSpotFromBehind = pow(saturate(dot(gSun.Dir, CamD)), cTransm.a);
+		sunSpotFromBehind *= saturate(sunLightFromBehind * 3.0f);// Causes the transmittance (sun spot) effect to fall off at very shallow angles
+
+		cTransl.rgb *= saturate(cSun * sunLightFromBehind);
 
 		cTex.rgb += (1 - cTex.rgb) * cTransl.rgb;
-		cTex.rgb += cTransm.rgb * (Ts * cSun);
+		cTex.rgb += cTransm.rgb * (sunSpotFromBehind * cSun);
 	}
-	*/
+
 
 	float fFrsl = 1.0f;
 	float fInt = 0.0f;

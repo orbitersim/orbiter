@@ -652,7 +652,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 
 	float s = float(shd->size);
-	float is = 1.0f / s;
+	float sr = 2.0f * shd->rad / s;
 	float qw = 1.0f / float(Config->ShadowMapSize);
 
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eEnvMapEnable, false));
@@ -660,7 +660,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE)) {
 		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
-		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, float(CamDist()))));
+		//HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(sr, 1.0f/s, float(oapiRand()), float(CamDist()))));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f/shd->depth)));
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 	}
 	else {
@@ -1001,7 +1002,7 @@ void vVessel::RenderGrapplePoints (LPDIRECT3DDEVICE9 dev)
 //
 void vVessel::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float alpha)
 {
-	if (vessel == oapiGetFocusInterface() && Config->TerrainShadowing == 2) return;
+	if (!bStencilShadow) return;
 	if (Config->TerrainShadowing == 0) return;
 
 	static const double eps = 1e-2;
