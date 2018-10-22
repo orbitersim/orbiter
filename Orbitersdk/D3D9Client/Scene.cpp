@@ -1796,7 +1796,11 @@ surfLabelsActive = false;
 			if (camCurrent==NULL) camCurrent = camFirst;
 			OBJHANDLE hVessel = vFocus->GetObjectA();
 			while (camCurrent) {
-				if (camCurrent->hVessel==hVessel && camCurrent->bActive) {
+
+				vObject *vO = GetVisObject(camCurrent->hVessel);
+				double maxd = min(500e3, GetCameraAltitude() + 15e3);
+
+				if (vO->CamDist() < maxd && camCurrent->bActive) {
 					RenderCustomCameraView(camCurrent);
 					camCurrent = camCurrent->next;
 					break;
