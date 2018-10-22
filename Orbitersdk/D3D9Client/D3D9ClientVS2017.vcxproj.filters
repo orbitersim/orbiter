@@ -362,7 +362,7 @@
     <None Include="$(ModuleDir)\D3D9Client\LightBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="$(ModuleDir)\D3D9Client\Lights.inc">
+    <None Include="$(ModuleDir)\D3D9Client\Common.hlsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(ModuleDir)\D3D9Client\Mesh.fx">

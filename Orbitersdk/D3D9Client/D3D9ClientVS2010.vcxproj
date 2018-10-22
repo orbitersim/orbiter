@@ -274,7 +274,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\CKBlit.fx" />
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
-    <None Include="..\..\Modules\D3D9Client\Lights.inc" />
     <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
     <None Include="..\..\Modules\D3D9Client\PBR.fx" />
     <None Include="..\..\Modules\D3D9Client\Particle.fx" />
@@ -285,6 +284,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\Vessel.fx" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\Common.hlsl" />
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
     <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />

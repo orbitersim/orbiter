@@ -299,7 +299,6 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(ModuleDir)\D3D9Client\CKBlit.fx" />
     <None Include="$(ModuleDir)\D3D9Client\D3D9Client.fx" />
     <None Include="$(ModuleDir)\D3D9Client\HorizonHaze.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Lights.inc" />
     <None Include="$(ModuleDir)\D3D9Client\Mesh.fx" />
     <None Include="$(ModuleDir)\D3D9Client\PBR.fx" />
     <None Include="$(ModuleDir)\D3D9Client\Particle.fx" />
@@ -310,6 +309,7 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(ModuleDir)\D3D9Client\Vessel.fx" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(ModuleDir)\D3D9Client\Common.hlsl" />
     <None Include="$(ModuleDir)\D3D9Client\EnvMapBlur.hlsl" />
     <None Include="$(ModuleDir)\D3D9Client\IPI.hlsl" />
     <None Include="$(ModuleDir)\D3D9Client\LensFlare.hlsl" />
