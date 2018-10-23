@@ -1286,7 +1286,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 				}
 			
 				// With Debug Controls
-				else if (bShift && bCtrl && DebugControls::IsActive()) {
+				if (DebugControls::IsActive()) {
 
 					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 
