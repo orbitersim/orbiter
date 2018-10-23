@@ -16,8 +16,6 @@
 D3D9Client  * D3D9Effect::gc = 0;
 ID3DXEffect * D3D9Effect::FX = 0;
 LPDIRECT3DVERTEXBUFFER9 D3D9Effect::VB = 0;
-LPDIRECT3DTEXTURE9 D3D9Effect::pNoise = 0;
-SURFHANDLE D3D9Effect::hNoise = 0;
 D3DXVECTOR4 D3D9Effect::atm_color;			// Earth glow color
 
 D3D9MatExt D3D9Effect::mfdmat;
@@ -282,7 +280,6 @@ void D3D9Effect::ShutDown()
 	FX->SetTexture(eTex3, NULL);
 	FX->SetTexture(eSpecMap, NULL);
 	FX->SetTexture(eEmisMap, NULL);
-	oapiReleaseTexture(hNoise);
 }
 
 
@@ -506,10 +503,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 		}
 		VB->Unlock();
 	} else LogErr("Failed to Lock vertex buffer");
-
-	hNoise = oapiLoadTexture("D3D9LENoise.dds");
-	if (hNoise) pNoise = SURFACE(hNoise)->GetTexture();
-	else pNoise = NULL;
 }
 
 

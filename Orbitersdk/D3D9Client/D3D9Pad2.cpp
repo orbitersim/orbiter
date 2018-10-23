@@ -27,6 +27,16 @@
 #include <d3dx9.h>
 #include <sstream>
 
+
+
+
+// ===============================================================================================
+// Sketchpad2 Interface
+// ===============================================================================================
+
+
+
+
 // ===============================================================================================
 //
 void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
@@ -41,7 +51,8 @@ void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
 void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 {
 	cpen = NULL;
-	QPen.bEnabled = true;
+	if (color==0) QPen.bEnabled = false;
+	else QPen.bEnabled = true;
 	QPen.style = style;
 	QPen.width = width;
 	pencolor = SkpColor(color);
@@ -54,7 +65,8 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 void D3D9Pad::QuickBrush(DWORD color)
 {
 	cbrush = NULL;
-	QBrush.bEnabled = true;
+	if (color == 0) QBrush.bEnabled = false;
+	else QBrush.bEnabled = true;
 	brushcolor = SkpColor(color);
 	bPenChange = true;
 }
@@ -675,7 +687,7 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 bool D3D9Pad::Flush(int iTech)
 {
 
-	bool bStateChange = bPenChange || bViewChange || bFontChange || (iTech != CurrentTech);
+	bool bStateChange = bConfigChange || bPenChange || bViewChange || bFontChange || (iTech != CurrentTech);
 
 
 	// Is the drawing queue full ? -------------------------------------
@@ -776,7 +788,19 @@ bool D3D9Pad::Flush(int iTech)
 		bFontChange = false;
 	}
 
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (bConfigChange) {
+		HR(FX->SetValue(eNoiseColor, &Noise, sizeof(FVECTOR4)));
+		HR(FX->SetValue(eGamma, &Gamma, sizeof(FVECTOR4)));
+		HR(FX->SetTexture(eNoiseTex, pNoise));
+		HR(FX->SetValue(eColorMatrix, &ColorMatrix, sizeof(FMATRIX4)));
+	}
+
+	HR(FX->SetBool(eEffectsEn, Enable!=0));
 	HR(FX->SetBool(eWide, bTriangles));
+	HR(FX->SetFloat(eRandom, float(oapiRand())));
 
 	HR(FX->CommitChanges());
 

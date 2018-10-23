@@ -55,6 +55,13 @@ extern oapi::Pen  *defpen;
 #define SKPSW_WIDEPEN_L		0x00000000
 #define SKPSW_WIDEPEN_R		0xFF000000
 
+
+
+#define SKP3E_GAMMA			0x00000001
+#define SKP3E_NOISE			0x00000002
+#define SKP3E_CMATR			0x00000004
+
+
 // ===============================================================================================
 #define nLow 17
 #define nHigh 65
@@ -143,7 +150,7 @@ template <typename Type> int CreatePolyIndexList(const Type *pt, short npt, WORD
  * \brief The D3D9Pad class defines the context for 2-D drawing using
  *  DirectX calls.
  */
-class D3D9Pad : public Sketchpad2
+class D3D9Pad : public Sketchpad3
 {
 	friend D3D9Text;
 
@@ -472,6 +479,18 @@ public:
 
 
 	// ===============================================================================
+	// Sketchpad3 Additions
+	// ===============================================================================
+	const FMATRIX4 *GetColorMatrix();
+	void SetColorMatrix(FMATRIX4 *pMatrix = NULL);
+	void SetBrightness(FVECTOR4 *pBrightness = NULL);
+	FVECTOR4 GetRenderParam(int param);
+	void SetRenderParam(int param, FVECTOR4 *data = NULL);
+
+
+
+
+	// ===============================================================================
 	// D3D9Client Privates
 	// ===============================================================================
 	LPD3DXMATRIX WorldMatrix();
@@ -485,6 +504,9 @@ public:
 
 
 private:
+
+	void SetEnable(DWORD config);
+	void ClearEnable(DWORD config);
 
 	bool HasPen();
 	bool HasBrush();
@@ -521,6 +543,7 @@ private:
 	mutable bool bPenChange;
 	mutable bool bViewChange;
 	mutable bool bFontChange;
+	mutable bool bConfigChange;
 	mutable bool bTriangles;
 
 	SURFHANDLE hPrevSrc;
@@ -532,7 +555,6 @@ private:
 	float zfar;
 	int cx, cy;
 	int CurrentTech;
-	bool bConvert;
 
 	class SketchMesh *hOldMesh;
 	SkpView vmode;
@@ -541,6 +563,14 @@ private:
 	D3DXMATRIX mV, mP, mW, mO, mVP;
 	D3DVIEWPORT9 vpBak;
 	RECT src;
+
+	
+	// Sketchpad3 --------------------------------------------------------------
+	DWORD RenderConfig;
+	DWORD Enable;
+	FMATRIX4 ColorMatrix;
+	FVECTOR4 Gamma, Noise;
+
 
 	// -------------------------------------------------------------------------
 	bool  _isSaveBuffer;   ///< Flag indicasting that the 'save buffer' can be used
@@ -557,6 +587,7 @@ private:
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;
 	static LPD3DXVECTOR2 pSinCos;
+	static LPDIRECT3DTEXTURE9 pNoise;
 	// -------------------------------------------
 
 
@@ -565,13 +596,18 @@ private:
 	static ID3DXEffect*	FX;
 	static D3DXHANDLE	eDrawMesh;
 	static D3DXHANDLE	eSketch;
-	static D3DXHANDLE	eWVP;	// Transformation matrix
-	static D3DXHANDLE	eTex0;
+	static D3DXHANDLE	eWVP;			// Transformation matrix
+	static D3DXHANDLE	eTex0;	
+	static D3DXHANDLE	eNoiseTex;
+	static D3DXHANDLE   eNoiseColor;
+	static D3DXHANDLE   eColorMatrix;
+	static D3DXHANDLE   eGamma;
 	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eW;
 	static D3DXHANDLE   ePen;
 	static D3DXHANDLE   eVP;
 	static D3DXHANDLE   eFov;
+	static D3DXHANDLE   eRandom;
 	static D3DXHANDLE   eTarget;
 	static D3DXHANDLE   eKey;
 	static D3DXHANDLE   eTexEn;
@@ -586,6 +622,7 @@ private:
 	static D3DXHANDLE   eCov;
 	static D3DXHANDLE   eCovEn;
 	static D3DXHANDLE   eClearEn;
+	static D3DXHANDLE   eEffectsEn;
 };
 
 

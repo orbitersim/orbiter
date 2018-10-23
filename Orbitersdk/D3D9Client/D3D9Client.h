@@ -986,7 +986,7 @@ public:
     LPDIRECT3DDEVICE9   GetDevice() const { return pDevice; }
 	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
 	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
-	LPD3D9CLIENTSURFACE GetNoiseTex() const { return pNoiseTex; }
+	LPDIRECT3DTEXTURE9  GetNoiseTex() const { return pNoiseTex; }
 	void 				EmergencyShutdown();
 	void 				SplashScreen();
 	inline bool 		IsRunning() { return bRunning; }
@@ -1218,7 +1218,7 @@ private:
 
     LPDIRECT3DDEVICE9		pDevice;
 	LPD3D9CLIENTSURFACE	    pDefaultTex;
-	LPD3D9CLIENTSURFACE		pNoiseTex;
+	LPDIRECT3DTEXTURE9		pNoiseTex;
 	LPD3D9CLIENTSURFACE	    pScatterTest;
 	LPDIRECT3DSURFACE9		pSplashScreen;
 	LPDIRECT3DSURFACE9		pTextScreen;

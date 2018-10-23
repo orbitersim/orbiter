@@ -391,7 +391,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	HR(Shader()->SetFloat(sfRadius, float(pr)));
 	HR(Shader()->SetFloat(sfCameraAlt, float(ca)));
 	HR(Shader()->SetFloat(sfSunAlt, fSunAlt));
-	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()->GetTexture()));
+	HR(Shader()->SetTexture(stNoise, gc->GetNoiseTex()));
 
 	// ---------------------------------------------------------------------
 	// Initialize camera centric tangent frame for normal mapped water

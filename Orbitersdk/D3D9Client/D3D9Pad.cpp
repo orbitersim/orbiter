@@ -94,6 +94,8 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 		return;
 	}
 
+	pNoise	  = gc->GetNoiseTex();
+
 	eDrawMesh = FX->GetTechniqueByName("SketchMesh");
 	eSketch   = FX->GetTechniqueByName("SketchTech");
 	eVP       = FX->GetParameterByName(0, "gVP");
@@ -104,6 +106,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	ePen      = FX->GetParameterByName(0, "gPen");
 	eWVP	  = FX->GetParameterByName(0, "gWVP");
 	eFov	  = FX->GetParameterByName(0, "gFov");
+	eRandom   = FX->GetParameterByName(0, "gRandom");
 	eTarget	  = FX->GetParameterByName(0, "gTarget");
 	eTexEn	  = FX->GetParameterByName(0, "gTexEn");
 	eKeyEn    = FX->GetParameterByName(0, "gKeyEn");
@@ -117,6 +120,12 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	eCov	  = FX->GetParameterByName(0, "gCov");
 	eCovEn	  = FX->GetParameterByName(0, "gClipEn");
 	eClearEn  = FX->GetParameterByName(0, "gClearEn");
+	eEffectsEn= FX->GetParameterByName(0, "gEffectsEn");
+	eNoiseTex = FX->GetParameterByName(0, "gNoiseTex");
+	eGamma	  = FX->GetParameterByName(0, "gGamma");
+	eNoiseColor = FX->GetParameterByName(0, "gNoiseColor");
+	eColorMatrix = FX->GetParameterByName(0, "gColorMatrix");
+	
 }
 
 
@@ -158,12 +167,15 @@ void D3D9Pad::Reset()
 	linescale = 1.0f;
 	pattern = 1.0f;
 	CurrentTech = 0;
+	Enable = 0;
+	RenderConfig = 0;
 
 	vmode = ORTHO;
 
 	bPenChange = true;		// New setup required
 	bFontChange = true;		// New setup required
 	bViewChange = true;		// New setup required
+	bConfigChange = true;	// New setup required
 
 	memset(ClipData, 0, sizeof(ClipData));
 
@@ -180,6 +192,9 @@ void D3D9Pad::Reset()
 	D3DXMatrixIdentity(&mW);
 	D3DXMatrixIdentity(&mP);
 	D3DXMatrixIdentity(&mV);
+	D3DXMatrixIdentity((D3DXMATRIX*)&ColorMatrix);
+	Gamma = _FVECTOR4(1, 1, 1, 1);
+	Noise = _FVECTOR4(0, 0, 0, 0);
 
 	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
 
@@ -192,7 +207,7 @@ void D3D9Pad::Reset()
 // class GDIPad
 // ======================================================================
 
-D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s),
+D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad3(s),
 	_isSaveBuffer(false),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
@@ -221,7 +236,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad2(s),
 
 // ===============================================================================================
 //
-D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad2(NULL),
+D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad3(NULL),
 	_isSaveBuffer(false),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
@@ -1141,6 +1156,7 @@ D3DXHANDLE   D3D9Pad::eKey = 0;
 D3DXHANDLE   D3D9Pad::ePen = 0;
 D3DXHANDLE   D3D9Pad::eWVP = 0;
 D3DXHANDLE   D3D9Pad::eFov = 0;
+D3DXHANDLE   D3D9Pad::eRandom = 0;
 D3DXHANDLE   D3D9Pad::eTarget = 0;
 D3DXHANDLE   D3D9Pad::eTexEn = 0;
 D3DXHANDLE   D3D9Pad::eKeyEn = 0;
@@ -1156,6 +1172,12 @@ D3DXHANDLE   D3D9Pad::ePos2 = 0;
 D3DXHANDLE   D3D9Pad::eCov = 0;
 D3DXHANDLE   D3D9Pad::eCovEn = 0;
 D3DXHANDLE   D3D9Pad::eClearEn = 0;
+D3DXHANDLE   D3D9Pad::eEffectsEn = 0;
+
+D3DXHANDLE	 D3D9Pad::eNoiseTex = 0;
+D3DXHANDLE   D3D9Pad::eNoiseColor = 0;
+D3DXHANDLE   D3D9Pad::eColorMatrix = 0;
+D3DXHANDLE   D3D9Pad::eGamma = 0;
 
 ID3DXEffect* D3D9Pad::FX = 0;
 D3D9Client * D3D9Pad::gc = 0;
@@ -1166,6 +1188,7 @@ LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
+LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;
 
 
 

@@ -71,7 +71,7 @@ namespace oapi {
 
 
 		/**
-		* \brief Setup a quick pen, removes any other pen from use
+		* \brief Setup a quick pen, removes any other pen from use. Set to zero to disable a pen from use.
 		* \param color Pen color in 0xAABBGGRR
 		* \param width Pen width in pixels
 		* \param style 0 = Disabled, 1 = Solid, 2 = Dashed
@@ -80,7 +80,7 @@ namespace oapi {
 
 
 		/**
-		* \brief Setup a quick brush, removes any other brush from use
+		* \brief Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
 		* \param color Brush color in 0xAABBGGRR
 		*/
 		virtual void QuickBrush(DWORD color) { assert(false); }
@@ -153,8 +153,10 @@ namespace oapi {
 
 		/**
 		* \brief Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
+		* \param idx Index of the clipper object. Valids are "0" and "1".
 		* \param pPos a pointer to a unit vector containing cone direction in camera centric frame, Set to NULL to disable clipping.
 		* \param angle cosine of the half-angle of the cone.
+		* \param dist clip-plane distance, clipping only occur beyond this distance.
 		* \note This function is provided due to reasons that z-buffering doesn't really work in all cases.
 		*/
 		virtual void Clipper(int idx, const VECTOR3 *pPos = NULL, double cos_angle = 0.0, double dist = 0.0) { assert(false); }
@@ -239,7 +241,7 @@ namespace oapi {
 		* \param src Source rectangle, (or NULL for whole surface)
 		* \param tx Target x-coordinate
 		* \param ty Target y-coordinate
-		* \note ColorKey() does not work properly with SetWorldTransform() 
+		* \note ColorKey() does not work properly with SetWorldTransform() due to color interpolation 
 		*/
 		virtual void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
@@ -273,6 +275,77 @@ namespace oapi {
 		* \param nlines number of lines to draw
 		*/
 		virtual void Lines(FVECTOR2 *pt1, int nlines) { assert(false); }
+	};
+
+
+
+
+
+
+#define SKP3_PRM_GAMMA				1
+#define SKP3_PRM_NOISE				2
+
+
+	/**
+	* \brief Sketchpad3 adds some additional features to an existing Sketchpad interface.
+	*/
+	class SKP2FUNC Sketchpad3 : public Sketchpad2
+	{
+
+	public:
+
+		/**
+		* \brief Sketchpad3 constructor.
+		*/
+		Sketchpad3(SURFHANDLE s) : Sketchpad2(s) {}
+
+
+		/**
+		* \brief Sketchpad2 destructor.
+		*/
+		virtual	~Sketchpad3() {}
+
+
+		/**
+		* \brief Get a read only pointer to current ColorMatrix. 
+		* \sa SetColorMatrix, SetBrightness
+		*/
+		virtual const FMATRIX4 *GetColorMatrix() { assert(false); return NULL; }
+
+
+		/**
+		* \brief Set a ColorMatrix for color correrctions. Reset to default by passing NULL pointer
+		* \param pMatrix Pointer to a matrix or NULL.
+		* \sa GetColorMatrix, SetBrightness
+		*/
+		virtual void SetColorMatrix(FMATRIX4 *pMatrix = NULL) { assert(false); }
+
+
+		/**
+		* \brief Automatically set a ColorMatrix for brightness control. NULL to restore default settings.
+		* \param pBrightness Pointer into a float values color vector, or NULL.
+		* \sa GetColorMatrix, SetColorMatrix
+		*/
+		virtual void SetBrightness(FVECTOR4 *pBrightness = NULL) { assert(false); }
+
+
+		/**
+		* \brief Get a render configuration setting or "effect".
+		* \param param A setting ID to get.
+		* \note Valid ID Flags:
+		* \note SKP3_PRM_GAMMA, Get Gamma correction value (.rgb)
+		* \note SKP3_PRM_NOISE, Get Noise configuration. Noise color in (.rgb) and (.a) controls blending between input color (.rgb) and target color. 
+		* \sa SetRenderParam
+		*/
+		virtual FVECTOR4 GetRenderParam(int param) { assert(false); return _FVECTOR4(0, 0, 0, 0); }
+
+
+		/**
+		* \brief Set a render configuration paramater or "effect".
+		* \param param A setting ID to set, or NULL to disable effect from use.
+		* \sa SetRenderParam
+		*/
+		virtual void SetRenderParam(int param, FVECTOR4 *data = NULL) { assert(false); }
 	};
 
 } // namespace oapi

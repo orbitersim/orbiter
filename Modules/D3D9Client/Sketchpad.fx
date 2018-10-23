@@ -22,15 +22,21 @@
 // Sketchpad Implementation
 // ----------------------------------------------------------------------------
 
+uniform extern float4x4	 gColorMatrix;
 uniform extern float4x4  gVP;			    // Projection matrix
 uniform extern float4x4  gW;			    // World matrix
 uniform extern float4x4  gWVP;				// World View Projection
+
+// Textures
 uniform extern texture   gTex0;			    // Diffuse texture
+uniform extern texture	 gNoiseTex;
 
 // Colors
 uniform extern float4    gPen;
 uniform extern float4    gKey;
 uniform extern float4    gMtrl;
+uniform extern float4    gNoiseColor;
+uniform extern float4    gGamma;
 
 uniform extern float3    gPos;				// Clipper sphere direction [unit vector]
 uniform extern float3    gPos2;				// Clipper cone direction [unit vector]
@@ -39,6 +45,7 @@ uniform extern float4    gSize;				// Inverse Texture size in .xy [pixels]
 uniform extern float4    gTarget;			// Inverse Screen size in .xy [pixels], Screen Size in .zw [pixels]
 uniform extern float3	 gWidth;			// Pen width in .x, and pattern scale in .y, pixel offset in .z
 uniform extern float	 gFov;				// atan( 2 * tan(fov/2) / H )
+uniform extern float	 gRandom;
 uniform extern bool      gDashEn;
 uniform extern bool      gTexEn;
 uniform extern bool      gKeyEn;
@@ -46,6 +53,7 @@ uniform extern bool      gWide;
 uniform extern bool      gShade;
 uniform extern bool      gClipEn;
 uniform extern bool		 gClearEn;
+uniform extern bool		 gEffectsEn;
 
 // ColorKey tolarance
 #define tol 0.01f
@@ -57,6 +65,16 @@ sampler TexS = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = 8;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler NoiseS = sampler_state
+{
+	Texture = <gNoiseTex>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
 	AddressU = WRAP;
 	AddressV = WRAP;
 };
@@ -194,7 +212,7 @@ OutputVS OrthoVS(InputVS v)
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-float4 SketchpadPS(OutputVS frg) : COLOR
+float4 SketchpadPS(float4 sc : VPOS, OutputVS frg) : COLOR
 {
 	float4 c = frg.color;
 
@@ -229,6 +247,22 @@ float4 SketchpadPS(OutputVS frg) : COLOR
 		float3 posN = normalize(frg.posW.xyz);
 		if ((dot(gPos,  posN) > gCov.x) && (frg.posW.w > gCov.y)) clip(-1);
 		if ((dot(gPos2, posN) > gCov.z) && (frg.posW.w > gCov.w)) clip(-1);
+	}
+
+	if (gEffectsEn) {
+
+		// Apply gamma correction
+		c.rgb = pow(abs(c.rgb), gGamma.rgb);
+
+		// Apply color matrix
+		c = mul(c, gColorMatrix);
+
+		// Color overboost correction beyond 0-1 range
+		c.rgb += saturate(length(c.rgb) - 1.0f);
+
+		// Apply noise
+		float noise = (tex2D(NoiseS, sc.xy*(1.0f / 128.0f) + float2(gRandom, gRandom*7.0)).r * 2.0f) - 1.0f;
+		c.rgb = saturate(c.rgb + lerp(float3(1, 1, 1), c.rgb, gNoiseColor.a)*gNoiseColor.rgb*noise);	
 	}
 
 	return c;

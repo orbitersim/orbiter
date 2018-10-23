@@ -414,6 +414,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	//if (bGDIBB) Config->SketchpadMode = 1;
 
+	HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pNoiseTex));
+
 	D3D9ClientSurface::D3D9TechInit(this, pDevice, fld);
 
 	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
@@ -432,12 +434,9 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	deffont = (oapi::Font*) new D3D9PadFont(20, true, "fixed");
 	defpen  = (oapi::Pen*)  new D3D9PadPen(1, 1, 0x00FF00);
 	
-	pNoiseTex = SURFACE(clbkLoadTexture("D3D9Noise.dds"));
 	pDefaultTex = SURFACE(clbkLoadTexture("Null.dds"));
-
 	if (pDefaultTex==NULL) LogErr("Null.dds not found");
-	if (pNoiseTex==NULL) LogErr("D3D9Noise.dds not found");
-
+	
 	int x=0;
 	if (viewW>1282) x=4;
 
@@ -653,7 +652,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 		SAFE_DELETE(pBBuf);
 		SAFE_DELETE(pDefaultTex);
-		SAFE_DELETE(pNoiseTex);
+		SAFE_RELEASE(pNoiseTex);
 
 		LogAlw("============ Checking Object Catalogs ===========");
 		

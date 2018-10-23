@@ -67,8 +67,6 @@ public:
 	
 	static LPDIRECT3DDEVICE9 pDev;      ///< Static (global) render device
 	static LPDIRECT3DVERTEXBUFFER9 VB;  ///< Static (global) Vertex buffer pointer
-	static LPDIRECT3DTEXTURE9 pNoise;   ///< Static (global) noise texture
-	static SURFHANDLE hNoise;           ///< Static (global) noise surface handle
 	
 	static D3DXVECTOR4 atm_color;		///< Earth glow color
 
