@@ -164,6 +164,9 @@
     <ClCompile Include="D3D9Pad2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D3D9Pad3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ZTreeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

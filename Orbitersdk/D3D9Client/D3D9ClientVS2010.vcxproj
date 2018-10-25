@@ -173,6 +173,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="D3D9Frame.cpp" />
     <ClCompile Include="D3D9Pad.cpp" />
     <ClCompile Include="D3D9Pad2.cpp" />
+    <ClCompile Include="D3D9Pad3.cpp" />
     <ClCompile Include="D3D9Surface.cpp" />
     <ClCompile Include="D3D9TextMgr.cpp" />
     <ClCompile Include="D3D9Util.cpp" />

@@ -164,6 +164,9 @@
     <ClCompile Include="D3D9Pad2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D3D9Pad3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ZTreeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -347,22 +350,7 @@
     <None Include="$(ModuleDir)\D3D9Client\D3D9Client.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="$(ModuleDir)\D3D9Client\EnvMapBlur.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="$(ModuleDir)\D3D9Client\HorizonHaze.fx">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="$(ModuleDir)\D3D9Client\IPI.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="$(ModuleDir)\D3D9Client\LensFlare.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="$(ModuleDir)\D3D9Client\LightBlur.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="$(ModuleDir)\D3D9Client\Common.hlsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(ModuleDir)\D3D9Client\Mesh.fx">
@@ -387,6 +375,23 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(ModuleDir)\D3D9Client\Vessel.fx">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(ModuleDir)\D3D9Client\Common.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(ModuleDir)\D3D9Client\EnvMapBlur.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(ModuleDir)\D3D9Client\IPI.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(ModuleDir)\D3D9Client\LensFlare.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(ModuleDir)\D3D9Client\LightBlur.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
