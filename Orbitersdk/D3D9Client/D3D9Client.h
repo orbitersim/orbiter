@@ -1270,7 +1270,7 @@ private:
 	Sketchpad *pItemsSkp;
 
 	DWORD loadd_x, loadd_y, loadd_w, loadd_h;
-	WORD LabelPos;
+	int LabelPos;
 
 }; // class D3D9Client
 

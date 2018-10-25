@@ -237,7 +237,40 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	vtab(NULL),
 	scenarioName("(none selected)"),
 	pLoadLabel(""),
-	pLoadItem("")
+	pLoadItem(""),
+	pDevice     (NULL),
+	pDefaultTex (NULL),
+	pScatterTest(NULL),
+	pFramework  (NULL),
+	pItemsSkp   (NULL),
+	texmgr      (NULL),
+	hLblFont1   (NULL),
+	hLblFont2   (NULL),
+	caps      (),
+	parser    (),
+	hRenderWnd(),
+	scene     (),
+	meshmgr   (),
+	bControlPanel (false),
+	bScatterUpdate(false),
+	bFullscreen   (false),
+	bGDIBB        (false),
+	bAAEnabled    (false),
+	bFailed       (false),
+	bRunning      (false),
+	bHalt         (false),
+	bVertexTex    (false),
+	bVSync        (false),
+	viewW         (0),
+	viewH         (0),
+	viewBPP       (0),
+	frame_timer   (0),
+	loadd_x       (0),
+	loadd_y       (0),
+	loadd_w       (0),
+	loadd_h       (0),
+	LabelPos (0)
+
 {
 }
 
@@ -720,8 +753,6 @@ void D3D9Client::clbkRenderScene()
 {
 	_TRACE;
 	
-	char Label[7];
-
 	if (pDevice==NULL || scene==NULL) return;
 	if (bFailed) return;
 	if (!bRunning) return;
@@ -753,22 +784,21 @@ void D3D9Client::clbkRenderScene()
 
 		scene->RenderMainScene();		// Render the main scene
 		
-		Label[0]=0;
-
 		VESSEL *hVes = oapiGetFocusInterface();
 
 		if (hVes) {
+			char Label[7] = "";
 			if (hVes->Recording()) strcpy_s(Label, 7, "Record");
 			if (hVes->Playback()) strcpy_s(Label, 7, "Replay");
-		}
 
-		if (Label[0]!=0) {
-			pDevice->BeginScene();
-			RECT rect2 = {0,viewH-60,viewW,viewH-20};
-			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
-			rect2.left-=4; rect2.top-=4;
-			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
-			pDevice->EndScene();
+			if (Label[0]!=0) {
+				pDevice->BeginScene();
+				RECT rect2 = {0,viewH-60,viewW,viewH-20};
+				pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
+				rect2.left-=4; rect2.top-=4;
+				pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
+				pDevice->EndScene();
+			}
 		}
 
 		D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
@@ -825,7 +855,7 @@ double framer_rater_limit = 0.0;
 bool D3D9Client::clbkDisplayFrame()
 {
 	_TRACE;
-	static int iRefrState = 0;
+//	static int iRefrState = 0;
 	double time = D3D9GetTime();
 	
 	if (!bRunning) {
@@ -2269,7 +2299,7 @@ void D3D9Client::SplashScreen()
 	char dataA[]={"D3D9Client Beta R28.0 [" __DATE__ "]"};
 #endif
 
-	char dataB[128]; sprintf_s(dataB,128,"Build %s %u 20%u [%u]", months[m], d, y, oapiGetOrbiterVersion());
+	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Please create symbolic link."};
 

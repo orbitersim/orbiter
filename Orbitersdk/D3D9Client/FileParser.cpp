@@ -413,7 +413,7 @@ bool FileParser::ParsePlanet (const std::string &_name)
 
 					if (bPth && bCtx && bPer) {
 						bHasPath = true;
-						ScanBases(hPlanet, dir.c_str());
+						ScanBases(hPlanet, dir);
 					}
 				}
 			}
@@ -421,7 +421,7 @@ bool FileParser::ParsePlanet (const std::string &_name)
 
 		// Is the default path already searched ?
 		if (!bHasPath && hPlanet) {
-			ScanBases(hPlanet, def.c_str());
+			ScanBases(hPlanet, def);
 		}
 	}
 	__EXCEPT(ExcHandler(GetExceptionInformation()))

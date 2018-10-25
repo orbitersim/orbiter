@@ -32,8 +32,8 @@ protected:
 	void RenderTile(int lvl, int hemisp, int ilat, int nlat, int ilng, int nlng, double sdist,
 		TILEDESC *tile, const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag);
 
-private:
-	int cloudtexidx;
+//private:
+//	int cloudtexidx;
 };
 
 #endif // !__CLOUDMGR_H

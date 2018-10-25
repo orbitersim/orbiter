@@ -486,7 +486,7 @@ struct VERTEX_2TEX  {
 	float tu0, tv0; // , tu1, tv1;
 	inline VERTEX_2TEX() : x(0.0f), y(0.0f), z(0.0f), nx(0.0f), ny(0.0f), nz(0.0f),
 		tu0(0.0f), tv0(0.0f) {} //, tu1(0.0f), tv1(0.0f) {}
-	inline VERTEX_2TEX(D3DVECTOR p, D3DVECTOR n, float u0, float v0, float u1, float v1)
+	inline VERTEX_2TEX(const D3DVECTOR& p, const D3DVECTOR& n, float u0, float v0, float u1, float v1)
 		: x(p.x), y(p.y), z(p.z), nx(n.x), ny(n.y), nz(n.z),
 		tu0(u0), tv0(v0) {} //, tu1(u1), tv1(v1) {}
 };

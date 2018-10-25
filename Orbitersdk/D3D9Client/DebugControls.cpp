@@ -1212,7 +1212,7 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 	D3DLOCKED_RECT in, out;
 	PCParam prm;
 
-	DWORD Func;
+	DWORD Func = 0;
 	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);
 	DWORD Target = SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_GETCURSEL, 0, 0);
 

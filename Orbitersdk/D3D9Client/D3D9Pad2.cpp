@@ -473,7 +473,7 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 	}
 
 	HR(FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1)));
-	HR(FX->SetValue(eKey, &SURFACE(hNew)->ClrKey, sizeof(D3DXCOLOR)));
+	if (hNew) HR(FX->SetValue(eKey, &SURFACE(hNew)->ClrKey, sizeof(D3DXCOLOR)));
 	HR(FX->SetBool(eTexEn, (hNew != NULL)));
 	HR(FX->SetBool(eWide, false));
 	HR(FX->CommitChanges());

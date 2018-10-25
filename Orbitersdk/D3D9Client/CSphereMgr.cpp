@@ -54,7 +54,7 @@ void ReleaseTex(LPDIRECT3DTEXTURE9 pTex);
 // =======================================================================
 // Class CSphereManager
 
-CSphereManager::CSphereManager (D3D9Client *gclient, const Scene *scene) : PlanetRenderer()
+CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : PlanetRenderer(), texname(), RenderParam()
 {
 	scn = scene;
 

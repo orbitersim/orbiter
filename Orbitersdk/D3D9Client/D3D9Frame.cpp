@@ -338,7 +338,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	else		    LogOapi("D3DFMT_A2R10G10B10...... : No");
 
 	HRESULT L8 = pD3D->CheckDeviceFormat(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_TEXTURE, D3DFMT_L8);
-	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_L8, D3DFMT_D24X8) != S_OK) L8 = -1;
+	if (pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_L8, D3DFMT_D24X8) != S_OK) L8 = S_FALSE;//-1;
 
 	if (L8 == S_OK) LogOapi("D3DFMT_L8............... : Yes");
 	else		    LogOapi("D3DFMT_L8............... : No");

@@ -1160,7 +1160,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		double D = prm.cdist*R;
 		double zmax = (D - R*R/D) * 1.5;
 		double zmin = max (2.0, min (zmax*1e-4, (D-R) * 0.8));
-		double zscale = 1.0;
+	//double zscale = 1.0;
 
 		np = scene->GetCameraNearPlane();
 		fp = scene->GetCameraFarPlane();
