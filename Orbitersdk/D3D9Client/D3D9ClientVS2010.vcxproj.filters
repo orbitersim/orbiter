@@ -170,6 +170,9 @@
     <ClCompile Include="ZTreeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TileLabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\GraphicsAPI.h">
@@ -183,6 +186,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Sketchpad2.h">
       <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="TileLabel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
