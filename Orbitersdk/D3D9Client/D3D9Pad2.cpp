@@ -105,8 +105,8 @@ void D3D9Pad::CopyRect(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 
 	if (!s) CheckRect(hSrc, &s);
 
-	int h = s->bottom - s->top;
-	int w = s->right - s->left;
+	int h = abs(s->bottom - s->top);
+	int w = abs(s->right - s->left);
 
 	AddRectIdx(vI);
 
@@ -192,8 +192,8 @@ void D3D9Pad::ColorKey(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 
 	if (!s) CheckRect(hSrc, &s);
 
-	int h = s->bottom - s->top;
-	int w = s->right - s->left;
+	int h = abs(s->bottom - s->top);
+	int w = abs(s->right - s->left);
 
 	AddRectIdx(vI);
 

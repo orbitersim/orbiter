@@ -1,6 +1,6 @@
 // =================================================================================================================================
 //
-// Copyright (C) 2016 Jarmo Nikkanen
+// Copyright (C) 2018 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense
@@ -30,9 +30,12 @@
 #include "gcAPI.h"
 
 class CameraMFD : public MFD2 {
+
 public:
 	CameraMFD(DWORD w, DWORD h, VESSEL *vessel);
 	~CameraMFD();
+
+	void UpdateDimensions(DWORD w, DWORD h);
 	char *ButtonLabel (int bt);
 	int ButtonMenu (const MFDBUTTONMENU **menu) const;
 	bool Update (oapi::Sketchpad *skp);
@@ -41,9 +44,14 @@ public:
 	
 	bool ConsumeKeyBuffered(DWORD key);
 	bool ConsumeButton(int bt, int event);
+
+	void WriteStatus(FILEHANDLE scn) const;
+	void ReadStatus(FILEHANDLE scn);
+
+	void FocusChanged(bool bGained);
 	
 	static bool DataInput(void *id, char *str, void *data);
-	static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	//static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 protected:
 	oapi::Font *		font;
@@ -55,10 +63,15 @@ protected:
 	SKETCHMESH			hMesh;
 	bool				bNightVis;
 	bool				bParent;
+	bool				bCross;
 	int					index, type;
 	VESSEL *			hVessel;
 	VESSEL *			hFocus;
 	double				offset, fov;
+
+	class ShellMFD	*hShell;
+
+	friend ShellMFD;
 };
 
 #endif

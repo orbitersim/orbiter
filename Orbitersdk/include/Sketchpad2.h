@@ -205,7 +205,7 @@ namespace oapi {
 		* \param src Source rectangle, (or NULL for whole surface)
 		* \param tx Target x-coordinate
 		* \param ty Target y-coordinate
-		* \note Can alpha-blend
+		* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 		*/
 		virtual void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
@@ -230,7 +230,7 @@ namespace oapi {
 		* \param sw Width scale factor
 		* \param sh Height scale factor
 		* \note Does not change or effect in SetWorldTransform()
-		* \note Can alpha-blend
+		* \note Can alpha-blend, should be able to mirror via negative scale factor.
 		*/
 		virtual void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
 
@@ -242,6 +242,7 @@ namespace oapi {
 		* \param tx Target x-coordinate
 		* \param ty Target y-coordinate
 		* \note ColorKey() does not work properly with SetWorldTransform() due to color interpolation 
+		* \note Can mirror by a use of negative width/height in source rectangle
 		*/
 		virtual void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 

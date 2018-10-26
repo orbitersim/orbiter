@@ -1,6 +1,6 @@
 // =================================================================================================================================
 //
-// Copyright (C) 2016 Jarmo Nikkanen
+// Copyright (C) 2018 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense
@@ -31,6 +31,7 @@
 #include "MFD.h"
 #include "gcAPI.h"
 #include "Sketchpad2.h"
+#include "Shell.h"
 
 // ============================================================================================================
 // Global variables
@@ -38,17 +39,50 @@
 int g_MFDmode; // identifier for new MFD mode
 
 
+class GenericModule : public oapi::Module
+{
+
+public:
+
+	GenericModule(HINSTANCE hInst) : Module(hInst) {	}
+
+	~GenericModule() {	}
+
+	void clbkSimulationStart(RenderMode rm) {	}
+
+	void clbkSimulationEnd() {	}
+
+	void clbkFocusChanged(OBJHANDLE hNew, OBJHANDLE hOld)
+	{
+	
+		VESSEL *o = NULL;
+		if (hOld) o = oapiGetVesselInterface(hOld);
+
+		for (int i = 0; i < mfdLast; i++) {
+			if (MFDList[i].hTrue) {
+				if (o) if (MFDList[i].hVessel == o) MFDList[i].hTrue->FocusChanged(false);
+			}
+		}
+	}
+};
+
+
 // ============================================================================================================
 // API interface
 
 DLLCLBK void InitModule (HINSTANCE hDLL)
 {
+	GenericModule *pFly = new GenericModule(hDLL);
+	oapiRegisterModule(pFly);
+
+	ShellMFD::InitModule(hDLL);
+
 	static char *name = "Generic Camera";   // MFD mode name
 	MFDMODESPECEX spec;
 	spec.name = name;
 	spec.key = OAPI_KEY_C;                // MFD mode selection key
 	spec.context = NULL;
-	spec.msgproc = CameraMFD::MsgProc;  // MFD mode callback function
+	spec.msgproc = ShellMFD::MsgProc;  // MFD mode callback function
 
 	// Register the new MFD mode with Orbiter
 	g_MFDmode = oapiRegisterMFDMode (spec);
@@ -60,7 +94,17 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	// Unregister the custom MFD mode when the module is unloaded
 	oapiUnregisterMFDMode (g_MFDmode);
+	ShellMFD::ExitModule(hDLL);
 }
+
+
+
+
+
+
+
+
+
 
 
 // ============================================================================================================
@@ -69,6 +113,7 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 : MFD2 (w, h, vessel)
 {
+
 	font = oapiCreateFont (w/20, true, "Arial", (FontStyle)(FONT_BOLD | FONT_ITALIC), 450);
 	
 	hRenderSrf = NULL;
@@ -85,10 +130,11 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 	offset = 0.0;
 	bParent = false;
 	bNightVis = false;
+	bCross = true;
 
 	if (gcInitialize()) {
 
-		hTexture = oapiLoadTexture("DG/dg_instr.dds");
+		hTexture = oapiLoadTexture("samples/Crosshairs.dds");
 
 		// Create 3D render target
 		hRenderSrf = oapiCreateSurfaceEx(w, h, OAPISURFACE_RENDER3D|OAPISURFACE_TEXTURE|OAPISURFACE_RENDERTARGET|OAPISURFACE_NOMIPMAPS);
@@ -98,7 +144,10 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 	}
 
 	SelectVessel(hVessel, 1);
+
+	//oapiWriteLogV("CTR-Starting custom camera for vessel 0x%X", pV);
 }
+
 
 // ============================================================================================================
 //
@@ -111,6 +160,46 @@ CameraMFD::~CameraMFD()
 	if (hRenderSrf) oapiDestroySurface(hRenderSrf);
 	if (hTexture) oapiReleaseTexture(hTexture);
 }
+
+
+// ============================================================================================================
+//
+void CameraMFD::FocusChanged(bool bGained)
+{
+	//if (bGained) oapiWriteLogV("Starting custom camera for vessel 0x%X", pV);
+	//else oapiWriteLogV("Shutting down custom camera for vessel 0x%X", pV);
+
+	if (gcEnabled()) {
+
+		// Always delete the camera first
+		if (hCamera) gcDeleteCustomCamera(hCamera);
+		if (hRenderSrf) oapiDestroySurface(hRenderSrf);
+
+		hCamera = NULL;
+		hRenderSrf = NULL;
+
+		if (bGained) {
+
+			// Create 3D render target
+			hRenderSrf = oapiCreateSurfaceEx(W, H, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
+
+			// Clear the surface
+			oapiClearSurface(hRenderSrf);
+
+			SelectVessel(hVessel, 1);
+		}
+	}
+}
+
+
+// ============================================================================================================
+//
+void CameraMFD::UpdateDimensions(DWORD w, DWORD h)
+{
+	W = w; H = h;
+	FocusChanged(true);	
+}
+
 
 // ============================================================================================================
 //
@@ -190,7 +279,7 @@ void CameraMFD::SelectVessel(VESSEL *hVes, int _type)
 char *CameraMFD::ButtonLabel (int bt)
 {
 	// The labels for the two buttons used by our MFD mode
-	static char *label[] = {"NA", "PA", "ND", "PD", "FWD", "BWD", "VES", "NV", "ZM+", "ZM-", "PAR"};
+	static char *label[] = {"NA", "PA", "ND", "PD", "FWD", "BWD", "VES", "NV", "ZM+", "ZM-", "PAR", "CRS"};
 	return (bt < ARRAYSIZE(label) ? label[bt] : 0);
 }
 
@@ -211,7 +300,8 @@ int CameraMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 		{ "Night Vision", 0, '8' },
 		{ "Zoom In", 0, '9' },
 		{ "Zoom Out", 0, '0' },
-		{ "Parent Mode", 0, 'B' }
+		{ "Parent Mode", 0, 'B' },
+		{ "Cross-hairs", 0, 'C' }
 	};
 
 	if (menu) *menu = mnu;
@@ -224,22 +314,27 @@ int CameraMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 //
 bool CameraMFD::Update(oapi::Sketchpad *skp)
 {
-
-	InvalidateDisplay();
-
+	
+	hShell->InvalidateDisplay();
+	
 	// Call to update attachments
 	SelectVessel(hVessel, type);
 
 	int nDock = hVessel->DockCount();
 	int nAtch = hVessel->AttachmentCount(bParent);
 
-	RECT sr;
+	RECT ch, sr, clip;
+	
 	sr.left = 0; sr.top = 0;
 	sr.right = W - 2; sr.bottom = H - 2;
+
+	clip.left = 25; clip.top = 25;
+	clip.right = W - 27; clip.bottom = H - 27;
 
 	if (hRenderSrf && gcSketchpadVersion(skp) == 2) {
 
 		oapi::Sketchpad3 *pSkp2 = (oapi::Sketchpad3 *)skp;
+
 
 		if (bNightVis) {
 			pSkp2->SetBrightness(&_FVECTOR4(0.0, 4.0, 0.0, 1));
@@ -258,11 +353,46 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 			pSkp2->SetRenderParam(SKP3_PRM_NOISE, NULL);
 		}
 
-		// The source texture would need to have an alpha channel to get this work properly.
-		//pSkp2->RotateRect(hTexture, &sr, W/2, H/2, float(pV->GetYaw()), 1.0f, 1.0f);
+
+		// Draw the cross-hairs
+		if (bCross) {
+
+			pSkp2->ClipRect(&clip);
+
+			IVECTOR2 rc;
+			rc.x = W / 2;
+			rc.y = H / 2;
+
+			int y = H / 2 - 2;
+			int x = W / 2;
+
+			ch = { 0, 0, 255, 4 };
+			pSkp2->CopyRect(hTexture, &ch, x - 256, y);
+			ch = { 255, 0, 0, 4 };
+			pSkp2->CopyRect(hTexture, &ch, x - 1, y);
+
+			pSkp2->SetWorldTransform2D(1.0f, float(PI05), &rc, NULL);
+
+			y = H / 2;
+			ch = { 0, 0, 255, 4 };
+			pSkp2->CopyRect(hTexture, &ch, x - 256, y);
+			ch = { 255, 0, 0, 4 };
+			pSkp2->CopyRect(hTexture, &ch, x, y);
+
+			// Back to defaults
+			pSkp2->SetWorldTransform();
+			pSkp2->ClipRect(NULL);
+		}
 	}
 	else {
 		static char *msg = { "No Graphics API" };
+		skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
+		skp->Text(W / 2, H / 2, msg, strlen(msg));
+		return true;
+	}
+	
+	if (!hCamera) {
+		static char *msg = { "Custom Cameras Disabled" };
 		skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 		skp->Text(W / 2, H / 2, msg, strlen(msg));
 		return true;
@@ -275,6 +405,7 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 		return true;
 	}
 
+
 	skp->SetTextAlign();
 
 	char text[256];
@@ -285,13 +416,13 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 	if (gcSketchpadVersion(skp) == 2) {
 		oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)skp;
-		pSkp2->QuickBrush(0x80000000);
+		pSkp2->QuickBrush(0xA0000000);
 		pSkp2->QuickPen(0);
 		pSkp2->Rectangle(1, 1, W - 1, 25);
 		pSkp2->Rectangle(1, H - 25, W - 1, H - 1);
 	}
 
-	Title (skp, text);
+	hShell->Title (skp, text);
 
 	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
 
@@ -371,6 +502,10 @@ bool CameraMFD::ConsumeKeyBuffered(DWORD key)
 		SelectVessel(hVessel, type);
 		return true;
 
+	case OAPI_KEY_C:	// Crosshairs
+		bCross = !bCross;
+		return true;
+
 	}
 
 	return false;
@@ -382,7 +517,7 @@ bool CameraMFD::ConsumeKeyBuffered(DWORD key)
 bool CameraMFD::ConsumeButton(int bt, int event)
 {
 	static const DWORD btkey[12] = { OAPI_KEY_1, OAPI_KEY_2, OAPI_KEY_3, OAPI_KEY_4, OAPI_KEY_5, OAPI_KEY_6,
-		OAPI_KEY_7, OAPI_KEY_8, OAPI_KEY_9, OAPI_KEY_0, OAPI_KEY_B, OAPI_KEY_X };
+		OAPI_KEY_7, OAPI_KEY_8, OAPI_KEY_9, OAPI_KEY_0, OAPI_KEY_B, OAPI_KEY_C };
 
 	if (event&PANEL_MOUSE_LBDOWN) {					
 		return ConsumeKeyBuffered(btkey[bt]);
@@ -408,23 +543,25 @@ bool CameraMFD::DataInput(void *id, char *str)
 
 
 // ============================================================================================================
-// MFD message parser
-int CameraMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+//
+bool CameraMFD::DataInput(void *id, char *str, void *data)
 {
-	switch (msg) {
-	case OAPI_MSG_MFD_OPENED:
-		// Our new MFD mode has been selected, so we create the MFD and
-		// return a pointer to it.
-		return (int)(new CameraMFD(LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
-	}
-	return 0;
+	return ((CameraMFD*)data)->DataInput(id, str);
 }
 
 
 // ============================================================================================================
 //
-bool CameraMFD::DataInput(void *id, char *str, void *data)
+void CameraMFD::WriteStatus(FILEHANDLE scn) const
 {
-	return ((CameraMFD*)data)->DataInput(id, str);
+
+}
+
+
+// ============================================================================================================
+//
+void CameraMFD::ReadStatus(FILEHANDLE scn)
+{
+	
 }
 
