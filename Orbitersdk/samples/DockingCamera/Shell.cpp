@@ -89,8 +89,11 @@ void ShellMFD::ExitModule(HINSTANCE hDLL)
 		//
 		for (int i=0;i<256;i++) {
 			if (MFDList[i].hTrue) {
+
+#ifdef NDEBUG  // Removed for DEBUG builds, as is causes access violation exceptions @ shutdown! No idea why :/
 				delete MFDList[i].hTrue;
 				MFDList[i].hTrue=NULL;
+#endif
 			}
 		}
 
