@@ -74,9 +74,7 @@ ShellMFD::~ShellMFD ()
 void ShellMFD::InitModule(HINSTANCE hDLL)
 {
 	// Construct MFD List
-	int size = 256 * sizeof(mfd_list);
-	MFDList = (struct mfd_list *) malloc ( size );
-	memset((void *)MFDList, 0, size);
+	MFDList = new mfd_list[256]();
 }
 
 // ============================================================================================================
@@ -97,7 +95,7 @@ void ShellMFD::ExitModule(HINSTANCE hDLL)
 			}
 		}
 
-		free(MFDList); MFDList=NULL;
+		delete[] MFDList; MFDList=NULL;
 	}
 }
 
