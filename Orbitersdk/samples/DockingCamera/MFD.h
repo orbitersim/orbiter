@@ -35,12 +35,17 @@ public:
 	CameraMFD(DWORD w, DWORD h, VESSEL *vessel);
 	~CameraMFD();
 
+	void FocusChanged(bool bGained);
+
+private:
+	enum Type { Atch = 0, Dock = 1 };
+
 	void UpdateDimensions(DWORD w, DWORD h);
 	char *ButtonLabel (int bt);
 	int ButtonMenu (const MFDBUTTONMENU **menu) const;
 	bool Update (oapi::Sketchpad *skp);
 	bool DataInput(void *id, char *str);
-	void SelectVessel(VESSEL *hVes, int type);
+	void SelectVessel(VESSEL *hVes, Type type);
 	
 	bool ConsumeKeyBuffered(DWORD key);
 	bool ConsumeButton(int bt, int event);
@@ -48,12 +53,9 @@ public:
 	void WriteStatus(FILEHANDLE scn) const;
 	void ReadStatus(FILEHANDLE scn);
 
-	void FocusChanged(bool bGained);
-	
 	static bool DataInput(void *id, char *str, void *data);
 	//static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
-protected:
 	oapi::Font *		font;
 	SURFHANDLE			hRenderSrf;
 	SURFHANDLE			hTexture;
@@ -64,7 +66,8 @@ protected:
 	bool				bNightVis;
 	bool				bParent;
 	bool				bCross;
-	int					index, type;
+	Type                type;
+	int					index;
 	VESSEL *			hVessel;
 	VESSEL *			hFocus;
 	double				offset, fov;

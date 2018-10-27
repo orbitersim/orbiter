@@ -111,39 +111,38 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 // MFD class implementation
 
 CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
-: MFD2 (w, h, vessel)
+	: MFD2 (w, h, vessel)
+	, hVessel(vessel)
+	, hFocus(vessel)
+	, hRenderSrf(NULL)
+	, hTexture(NULL)
+	, hCamera(NULL)
+	, hDock(NULL)
+	, hAttach(NULL)
+	, type(Type::Dock)
+	, index(0)
+	, bParent(false)
+	, bNightVis(false)
+	, bCross(true)
+	, fov(30.0)	  // fov (i.e. Aparture) which is 1/2 of the vertical fov see oapiCameraAperture()
+	, offset(0.0) // -0.2 "looks" better ?!
 {
 
 	font = oapiCreateFont (w/20, true, "Arial", (FontStyle)(FONT_BOLD | FONT_ITALIC), 450);
 	
-	hRenderSrf = NULL;
-	hTexture = NULL;
-	hCamera = NULL;
-	hDock = NULL;
-	hAttach = NULL;
-	hFocus = vessel;
-	hVessel = vessel;
-
-	index = 0;
-	type = 0;
-	fov = 30.0;	// fov (i.e. Aparture) which is 1/2 of the vertical fov see oapiCameraAperture()
-	offset = 0.0;
-	bParent = false;
-	bNightVis = false;
-	bCross = true;
-
 	if (gcInitialize()) {
 
 		hTexture = oapiLoadTexture("samples/Crosshairs.dds");
 
 		// Create 3D render target
-		hRenderSrf = oapiCreateSurfaceEx(w, h, OAPISURFACE_RENDER3D|OAPISURFACE_TEXTURE|OAPISURFACE_RENDERTARGET|OAPISURFACE_NOMIPMAPS);
+		hRenderSrf = oapiCreateSurfaceEx(w, h, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE |
+		                                       OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
 
 		// Clear the surface
 		oapiClearSurface(hRenderSrf);	
 	}
 
-	SelectVessel(hVessel, 1);
+	SelectVessel(hVessel, Type::Dock);
 
 	//oapiWriteLogV("CTR-Starting custom camera for vessel 0x%X", pV);
 }
@@ -181,12 +180,13 @@ void CameraMFD::FocusChanged(bool bGained)
 		if (bGained) {
 
 			// Create 3D render target
-			hRenderSrf = oapiCreateSurfaceEx(W, H, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
+			hRenderSrf = oapiCreateSurfaceEx(W, H, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE |
+			                                       OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
 
 			// Clear the surface
 			oapiClearSurface(hRenderSrf);
 
-			SelectVessel(hVessel, 1);
+			SelectVessel(hVessel, Type::Dock);
 		}
 	}
 }
@@ -203,7 +203,7 @@ void CameraMFD::UpdateDimensions(DWORD w, DWORD h)
 
 // ============================================================================================================
 //
-void CameraMFD::SelectVessel(VESSEL *hVes, int _type)
+void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 {
 	VECTOR3 pos, dir, rot;
 
@@ -215,9 +215,9 @@ void CameraMFD::SelectVessel(VESSEL *hVes, int _type)
 
 	if (hVes != hVessel) {
 		// New Vessel Selected
-		offset = 0.0;
+		offset = 0.0; // -0.2 "looks" better ?!
 		index = 0;
-		type = 0;
+		type = Type::Dock;
 	}
 
 	hVessel = hVes;
@@ -229,14 +229,14 @@ void CameraMFD::SelectVessel(VESSEL *hVes, int _type)
 
 	if (nDock == 0 && nAtch == 0) return;
 
-	if (type == 0 && nAtch == 0) type = 1;
-	if (type == 1 && nDock == 0) type = 0;
+	if (type == Type::Atch && nAtch == 0) type = Type::Dock;
+	if (type == Type::Dock && nDock == 0) type = Type::Atch;
 
 	if (fov < 5.0) fov = 5.0;
 	if (fov > 70.0) fov = 70.0;
 
 	// Attachemnts
-	if (type == 0) {
+	if (type == Type::Atch) {
 
 		if (index < 0) index = nAtch - 1;
 		if (index >= nAtch) index = 0;
@@ -251,7 +251,7 @@ void CameraMFD::SelectVessel(VESSEL *hVes, int _type)
 	}
 
 	// Docking ports
-	if (type == 1) {
+	if (type == Type::Dock) {
 
 		if (index < 0) index = nDock - 1;
 		if (index >= nDock) index = 0;
@@ -323,7 +323,7 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	int nDock = hVessel->DockCount();
 	int nAtch = hVessel->AttachmentCount(bParent);
 
-	RECT ch, sr, clip;
+	RECT /*ch,*/ sr, clip;
 	
 	sr.left = 0; sr.top = 0;
 	sr.right = W - 2; sr.bottom = H - 2;
@@ -333,31 +333,31 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 	if (hRenderSrf && gcSketchpadVersion(skp) == 2) {
 
-		oapi::Sketchpad3 *pSkp2 = (oapi::Sketchpad3 *)skp;
+		oapi::Sketchpad3 *pSkp3 = (oapi::Sketchpad3 *)skp;
 
 
 		if (bNightVis) {
-			pSkp2->SetBrightness(&_FVECTOR4(0.0, 4.0, 0.0, 1));
-			pSkp2->SetRenderParam(SKP3_PRM_GAMMA, &_FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
-			pSkp2->SetRenderParam(SKP3_PRM_NOISE, &_FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
+			pSkp3->SetBrightness(&_FVECTOR4(0.0, 4.0, 0.0, 1));
+			pSkp3->SetRenderParam(SKP3_PRM_GAMMA, &_FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
+			pSkp3->SetRenderParam(SKP3_PRM_NOISE, &_FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
 		}
 
 
 		// Blit the camera view into the sketchpad.
-		pSkp2->CopyRect(hRenderSrf, &sr, 1, 1);
+		pSkp3->CopyRect(hRenderSrf, &sr, 1, 1);
 
 
 		if (bNightVis) {
-			pSkp2->SetBrightness(NULL);
-			pSkp2->SetRenderParam(SKP3_PRM_GAMMA, NULL);
-			pSkp2->SetRenderParam(SKP3_PRM_NOISE, NULL);
+			pSkp3->SetBrightness(NULL);
+			pSkp3->SetRenderParam(SKP3_PRM_GAMMA, NULL);
+			pSkp3->SetRenderParam(SKP3_PRM_NOISE, NULL);
 		}
 
 
 		// Draw the cross-hairs
 		if (bCross) {
 
-			pSkp2->ClipRect(&clip);
+			pSkp3->ClipRect(&clip);
 
 			IVECTOR2 rc;
 			rc.x = W / 2;
@@ -366,22 +366,26 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 			int y = H / 2 - 2;
 			int x = W / 2;
 
-			ch = { 0, 0, 255, 4 };
-			pSkp2->CopyRect(hTexture, &ch, x - 256, y);
-			ch = { 255, 0, 0, 4 };
-			pSkp2->CopyRect(hTexture, &ch, x - 1, y);
+			//ch = { 0, 0, 255, 4 };
+			//pSkp3->CopyRect(hTexture, &ch, x - 256, y);
+			//ch = { 255, 0, 0, 4 };
+			//pSkp3->CopyRect(hTexture, &ch, x - 1, y);
+			pSkp3->CopyRect(hTexture, NULL, x - 254, y);
+			pSkp3->CopyRect(hTexture, NULL, x + 2, y);
 
-			pSkp2->SetWorldTransform2D(1.0f, float(PI05), &rc, NULL);
+			pSkp3->SetWorldTransform2D(1.0f, float(PI05), &rc, NULL);
 
-			y = H / 2;
-			ch = { 0, 0, 255, 4 };
-			pSkp2->CopyRect(hTexture, &ch, x - 256, y);
-			ch = { 255, 0, 0, 4 };
-			pSkp2->CopyRect(hTexture, &ch, x, y);
+			pSkp3->CopyRect(hTexture, NULL, x - 254, y);
+			pSkp3->CopyRect(hTexture, NULL, x + 2, y);
+			//y = H / 2;
+			//ch = { 0, 0, 255, 4 };
+			//pSkp3->CopyRect(hTexture, &ch, x - 256, y);
+			//ch = { 255, 0, 0, 4 };
+			//pSkp3->CopyRect(hTexture, &ch, x, y);
 
 			// Back to defaults
-			pSkp2->SetWorldTransform();
-			pSkp2->ClipRect(NULL);
+			pSkp3->SetWorldTransform();
+			pSkp3->ClipRect(NULL);
 		}
 	}
 	else {
@@ -409,8 +413,8 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	skp->SetTextAlign();
 
 	char text[256];
-	static char* mode[] = { "Attach(", "Dock(" };
-	static char* paci[] = { "Child", "Parent" };
+	static const char* mode[] = { "Attach(", "Dock(" };
+	static const char* paci[] = { "Child", "Parent" };
 
 	sprintf_s(text, 256, "Viewing %s %s%d)", hVessel->GetName(), mode[type], index);
 
@@ -442,25 +446,25 @@ bool CameraMFD::ConsumeKeyBuffered(DWORD key)
 
 	case OAPI_KEY_1:	// Next Attachment
 		index++;
-		SelectVessel(hVessel, 0);
+		SelectVessel(hVessel, Type::Atch);
 		return true;
 
 
 	case OAPI_KEY_2:	// Prev Attachment
 		index--;
-		SelectVessel(hVessel, 0);
+		SelectVessel(hVessel, Type::Atch);
 		return true;
 
 
 	case OAPI_KEY_3:	// Next dock
 		index++;
-		SelectVessel(hVessel, 1);
+		SelectVessel(hVessel, Type::Dock);
 		return true;
 
 
 	case OAPI_KEY_4:	// Prev dock
 		index--;
-		SelectVessel(hVessel, 1);
+		SelectVessel(hVessel, Type::Dock);
 		return true;
 
 
