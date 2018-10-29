@@ -301,7 +301,7 @@ int CameraMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 		{ "Zoom In", 0, '9' },
 		{ "Zoom Out", 0, '0' },
 		{ "Parent Mode", 0, 'B' },
-		{ "Cross-hairs", 0, 'C' }
+		{ "Crosshairs", 0, 'C' }
 	};
 
 	if (menu) *menu = mnu;
@@ -323,13 +323,12 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	int nDock = hVessel->DockCount();
 	int nAtch = hVessel->AttachmentCount(bParent);
 
-	RECT /*ch,*/ sr, clip;
-	
-	sr.left = 0; sr.top = 0;
-	sr.right = W - 2; sr.bottom = H - 2;
+	int tbgh = 27;		 // Text backgound height
+	int edge = tbgh + 2; // Minumum spacing between cross endpoints and MFD screen edge
 
-	clip.left = 25; clip.top = 25;
-	clip.right = W - 27; clip.bottom = H - 27;
+	RECT sr = { 0, 0, long(W - 2), long(H - 3) };
+	
+	skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 
 	if (hRenderSrf && gcSketchpadVersion(skp) == 2) {
 
@@ -357,54 +356,42 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 		// Draw the cross-hairs
 		if (bCross) {
 
-			pSkp3->ClipRect(&clip);
-
-			IVECTOR2 rc;
-			rc.x = W / 2;
-			rc.y = H / 2;
+			IVECTOR2 rc = { long(W / 2), long(H / 2) };
 
 			int y = H / 2 - 2;
-			int x = W / 2;
+			int x = W / 2 + 1;
 
-			//ch = { 0, 0, 255, 4 };
-			//pSkp3->CopyRect(hTexture, &ch, x - 256, y);
-			//ch = { 255, 0, 0, 4 };
-			//pSkp3->CopyRect(hTexture, &ch, x - 1, y);
-			pSkp3->CopyRect(hTexture, NULL, x - 254, y);
-			pSkp3->CopyRect(hTexture, NULL, x + 2, y);
+			int nseg = ((H / 2) - edge) / 16;	 // Number of segments
+			int len = min(248, (nseg * 16) - 8); // Lenght (start and end to a white segment)
+
+			RECT ch = { 0, 0, len, 4 };
+		
+			pSkp3->CopyRect(hTexture, &ch, x - len, y);
+			pSkp3->CopyRect(hTexture, &ch, x, y);
 
 			pSkp3->SetWorldTransform2D(1.0f, float(PI05), &rc, NULL);
 
-			pSkp3->CopyRect(hTexture, NULL, x - 254, y);
-			pSkp3->CopyRect(hTexture, NULL, x + 2, y);
-			//y = H / 2;
-			//ch = { 0, 0, 255, 4 };
-			//pSkp3->CopyRect(hTexture, &ch, x - 256, y);
-			//ch = { 255, 0, 0, 4 };
-			//pSkp3->CopyRect(hTexture, &ch, x, y);
+			pSkp3->CopyRect(hTexture, &ch, x - len, y);
+			pSkp3->CopyRect(hTexture, &ch, x, y);
 
 			// Back to defaults
 			pSkp3->SetWorldTransform();
-			pSkp3->ClipRect(NULL);
 		}
 	}
 	else {
 		static char *msg = { "No Graphics API" };
-		skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 		skp->Text(W / 2, H / 2, msg, strlen(msg));
 		return true;
 	}
 	
 	if (!hCamera) {
 		static char *msg = { "Custom Cameras Disabled" };
-		skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 		skp->Text(W / 2, H / 2, msg, strlen(msg));
 		return true;
 	}
 
 	if (nDock == 0 && nAtch == 0) {
 		static char *msg = { "No Dock/Attachment points" };
-		skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 		skp->Text(W / 2, H / 2, msg, strlen(msg));
 		return true;
 	}
@@ -422,15 +409,15 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 		oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)skp;
 		pSkp2->QuickBrush(0xA0000000);
 		pSkp2->QuickPen(0);
-		pSkp2->Rectangle(1, 1, W - 1, 25);
-		pSkp2->Rectangle(1, H - 25, W - 1, H - 1);
+		pSkp2->Rectangle(1, 1, W - 1, tbgh);
+		pSkp2->Rectangle(1, H - tbgh, W - 1, H - 1);
 	}
 
 	hShell->Title (skp, text);
 
 	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
 
-	skp->Text(10, H - 25, text, strlen(text));
+	skp->Text(10, H - tbgh, text, strlen(text));
 	
 	return true;
 }
