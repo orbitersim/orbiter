@@ -1432,7 +1432,7 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 				HR(pDevice->CreateTexture(info.Width, info.Height, Mips, Usage, Format, Pool, &pTex, NULL));
 
 				if (pTex) {
-					HR(D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 0, 0, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSys));
+					HR(D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, 0, 0, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pSys));
 					if (pSys) {
 						HR(pTex->GetSurfaceLevel(0, &pSurf));
 						HR(pSys->GetSurfaceLevel(0, &pTemp));
@@ -1451,7 +1451,7 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 					}
 				}
 			}
-			else if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
+			else if (D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, Mips, Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 				SetName(fname);
 				HR(pTex->GetSurfaceLevel(0, &pSurf));
 				GetDesc(&desc);
@@ -1479,7 +1479,7 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 			HR(pDevice->CreateRenderTarget(info.Width, info.Height, Format, D3DMULTISAMPLE_NONE, 0, bLockable, &pSurf, NULL));
 			
 			if (pSurf) {
-				if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 1, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
+				if (D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, 1, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 					SetName(fname);
 					LPDIRECT3DSURFACE9 pTemp;
 					if (pTex) {
@@ -1527,7 +1527,7 @@ bool D3D9ClientSurface::LoadSpecialTexture(const char *fname, const char *ext, i
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
 			if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;  // Autogen missing
 
-			if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pMap[id])) {
+			if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, Mips, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pMap[id])) {
 				LogBlu("SpecialTexture %s Loaded, (%ux%u), MipMaps=%u, Format=0x%X", name, info.Width, info.Height, info.MipLevels, info.Format);
 				bAdvanced = true;
 				return true;
@@ -1572,7 +1572,7 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		if (Config->TextureMips == 2) Mips = 0;							 // Autogen all
 		if (Config->TextureMips == 1 && info.MipLevels == 1) Mips = 0;	 // Autogen missing
 
-		if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, Mips, 0, Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK) {
+		if (D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, Mips, 0, Format, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex) == S_OK) {
 			HR(pTex->GetSurfaceLevel(0, &pSurf));
 			GetDesc(&desc);
 			LogBlu("Texture %s Loaded. Handle=0x%X, (%ux%u), MipMaps=%u, Format=0x%X", fname, this, desc.Width, desc.Height, pTex->GetLevelCount(), DWORD(Format));
@@ -1614,7 +1614,7 @@ void D3D9ClientSurface::LoadSpecials(const char *fname)
 	if (gc->TexturePath(bname, path)) {
 		D3DXIMAGE_INFO info;
 		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK) {
-			if (D3DXCreateTextureFromFileExA(pDevice, path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pBumpMap) == S_OK) {
+			if (D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pBumpMap) == S_OK) {
 				if (D3DXCreateTexture(pDevice, info.Width, info.Height, 0, 0, D3DFMT_R8G8B8, D3DPOOL_DEFAULT, &pMap[MAP_NORMAL]) == S_OK) {
 					DWORD Channel = D3DX_CHANNEL_RED;
 					if (info.Format == D3DFMT_A8) Channel = D3DX_CHANNEL_ALPHA;
