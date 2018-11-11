@@ -46,7 +46,9 @@ private:
 	bool Update (oapi::Sketchpad *skp);
 	bool DataInput(void *id, char *str);
 	void SelectVessel(VESSEL *hVes, Type type);
-	
+	void NextAttachment();
+	void PreviousAttachment();
+
 	bool ConsumeKeyBuffered(DWORD key);
 	bool ConsumeButton(int bt, int event);
 
@@ -71,6 +73,8 @@ private:
 	VESSEL *			hVessel;
 	VESSEL *			hFocus;
 	double				offset, fov;
+
+	char *              pMask;
 
 	class ShellMFD	*hShell;
 

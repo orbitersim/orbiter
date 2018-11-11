@@ -119,6 +119,7 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 	, hCamera(NULL)
 	, hDock(NULL)
 	, hAttach(NULL)
+	, pMask(NULL)
 	, type(Type::Dock)
 	, index(0)
 	, bParent(false)
@@ -273,6 +274,44 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 	hCamera = gcSetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, 0xFF);
 }
 
+// ============================================================================================================
+//
+void CameraMFD::NextAttachment()
+{
+	if (pMask) {
+		int nAtch = hVessel->AttachmentCount(bParent);
+		for (int i = 1; i < nAtch; ++i) {
+			auto h = hVessel->GetAttachmentHandle(bParent, (index+i)%nAtch);
+			if (h) {
+				auto attachmentId = hVessel->GetAttachmentId(h);
+				if (!strcmp(attachmentId, pMask)) {
+					index = i;
+					return;
+				}
+			}
+		}
+	}
+	else index++;
+}
+// ============================================================================================================
+//
+void CameraMFD::PreviousAttachment()
+{
+	if (pMask) {
+		int nAtch = hVessel->AttachmentCount(bParent);
+		for (int i = 1; i < nAtch; ++i) {
+			auto h = hVessel->GetAttachmentHandle(bParent, (index + nAtch - i) % nAtch);
+			if (h) {
+				auto attachmentId = hVessel->GetAttachmentId(h);
+				if (!strcmp(attachmentId, pMask)) {
+					index = i;
+					return;
+				}
+			}
+		}
+	}
+	else index--;
+}
 
 // ============================================================================================================
 //
@@ -403,7 +442,11 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	static const char* mode[] = { "Attach(", "Dock(" };
 	static const char* paci[] = { "Child", "Parent" };
 
-	sprintf_s(text, 256, "Viewing %s %s%d)", hVessel->GetName(), mode[type], index);
+	auto atchId = (type == Atch)
+	            ? std::string(" [ID:") + hVessel->GetAttachmentId(hVessel->GetAttachmentHandle(bParent, index)) + "]"
+	            : "";
+
+	sprintf_s(text, 256, "Viewing %s %s%d)%s", hVessel->GetName(), mode[type], index, atchId.c_str());
 
 	if (gcSketchpadVersion(skp) == 2) {
 		oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)skp;
@@ -432,13 +475,13 @@ bool CameraMFD::ConsumeKeyBuffered(DWORD key)
 
 
 	case OAPI_KEY_1:	// Next Attachment
-		index++;
+		NextAttachment();
 		SelectVessel(hVessel, Type::Atch);
 		return true;
 
 
 	case OAPI_KEY_2:	// Prev Attachment
-		index--;
+		PreviousAttachment();
 		SelectVessel(hVessel, Type::Atch);
 		return true;
 
@@ -545,7 +588,9 @@ bool CameraMFD::DataInput(void *id, char *str, void *data)
 //
 void CameraMFD::WriteStatus(FILEHANDLE scn) const
 {
-
+	if (pMask) {
+		oapiWriteScenario_string(scn, "ATCH_MASK", pMask);
+	}
 }
 
 
@@ -553,6 +598,24 @@ void CameraMFD::WriteStatus(FILEHANDLE scn) const
 //
 void CameraMFD::ReadStatus(FILEHANDLE scn)
 {
-	
+	char *line;
+
+	char mask[256] = "";
+
+	while (oapiReadScenario_nextline(scn, line)) {
+		if (1 == sscanf_s(line, "ATCH_MASK %s", mask, _countof(mask))) {
+
+			if (pMask) delete[] pMask; // <= can this really happen?
+
+			pMask = new char[strlen(mask) + 1];
+			strcpy_s(pMask, strlen(mask) + 1, mask);
+
+			type = Type::Atch;
+			NextAttachment();
+			PreviousAttachment();
+
+			return; // we've got what we've been looking for!
+		}
+	}
 }
 
