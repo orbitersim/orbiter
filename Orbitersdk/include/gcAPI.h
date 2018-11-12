@@ -57,7 +57,7 @@
 
 				// ===========================================================================
 				/**
-				* \defgroup gcAPI Graphics Client Application Programming Interface 
+				* \defgroup gcAPI List of API functions
 				*
 				* These functions provides a way for user applications to interface with
 				* a graphics clients.

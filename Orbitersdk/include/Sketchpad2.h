@@ -38,9 +38,17 @@ using namespace oapi;
 
 namespace oapi {
 
+	// ===========================================================================
 	/**
-	* \brief Sketchpad2 adds some additional features to an existing Sketchpad interface.
+	* \class Sketchpad2
+	* \brief Advanced drawing interface
+	* \details SketchPad2 interface adds following key features:
+	* - A Viewport transformation
+	* - Mesh rendering
+	* - Blitting support
 	*/
+	// ===========================================================================
+
 	class SKP2FUNC Sketchpad2 : public Sketchpad
 	{
 
