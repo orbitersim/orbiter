@@ -582,9 +582,6 @@ private:
 	bool			 bDepthEnable;
 	bool			 bMustEndScene;
 	bool			 bBeginDraw;
-	bool			 bDirty;
-	bool			 bRestore;
-	bool			 bOnce;
 	RECT			 ScissorRect;
 	D3DXCOLOR		 cColorKey;
 	SkpView			 vmode;

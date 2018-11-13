@@ -219,9 +219,6 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 
 	// Don't put these in LoadDefaults() 
 	bBeginDraw = false;
-	bRestore = false;
-	bDirty = true;
-	bOnce = true;
 	vI = 0;
 	iI = 0;
 
@@ -244,9 +241,6 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
 
 	// Don't put these in Reset() 
 	bBeginDraw = false;
-	bRestore = false;
-	bDirty = true;
-	bOnce = true;
 	vI = 0;
 	iI = 0;
 
@@ -314,8 +308,6 @@ void D3D9Pad::EndDrawing()
 {
 	if (bBeginDraw == false) _wassert(L"D3D9Pad::EndDrawing() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
 
-	bRestore = true;
-
 	Flush();
 
 	bBeginDraw = false;
@@ -338,30 +330,26 @@ bool D3D9Pad::Flush()
 
 	if (iI > 0) {
 
-		if (bDirty || bOnce) {
-			
-			bOnce = false;
+		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
+		HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
+		HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
+		HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
 
-			HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
-			HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
-			HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
-			HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
+		HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+		HR(pDev->SetVertexDeclaration(pSketchpadDecl));
 
-			HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-			HR(pDev->SetVertexDeclaration(pSketchpadDecl));
+		if (dwBlendState == SKPBS_ALPHABLEND) pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
+		else pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
 
-			if (dwBlendState == SKPBS_ALPHABLEND) pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
-			else pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
-
-			if (bDepthEnable && pDep) {
-				pDev->SetRenderState(D3DRS_ZENABLE, 1);
-				pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
-			}
-			else {
-				pDev->SetRenderState(D3DRS_ZENABLE, 0);
-				pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
-			}
+		if (bDepthEnable && pDep) {
+			pDev->SetRenderState(D3DRS_ZENABLE, 1);
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
 		}
+		else {
+			pDev->SetRenderState(D3DRS_ZENABLE, 0);
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+		}
+		
 
 		HR(FX->SetFloat(eRandom, float(oapiRand())));
 		HR(FX->SetVector(eTarget, &vTarget));
@@ -381,15 +369,13 @@ bool D3D9Pad::Flush()
 
 		HR(FX->EndPass());
 		HR(FX->End());
-
-		if (bDirty || bRestore) {
-			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkALPHA));
-			HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
-			HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
-			HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
-			HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
-		}
-
+	
+		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkALPHA));
+		HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
+		HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
+		HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
+		HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
+		
 		iI = vI = 0;
 
 		return true;
