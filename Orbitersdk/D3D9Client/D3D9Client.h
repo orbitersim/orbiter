@@ -30,6 +30,7 @@
 #include "nvapi.h"
 #include "gcConst.h"
 #include <vector>
+#include <stack>
 
 #define PP_DEFAULT			0x1
 #define PP_LENSFLARE		0x2
@@ -57,6 +58,7 @@ class D3D9Text;
 class CSphereManager;
 class FileParser;
 class OapiExtension;
+class D3D9Pad;
 
 extern DWORD			uCurrentMesh;
 extern class vObject *	pCurrentVisual;
@@ -117,6 +119,14 @@ struct _D3D9Stats {
 	DWORD TilesCachedMB;	///< Total size of tile cache (MBytes)
 	DWORD TilesAllocated;	///< Number of allocated tiles
 };
+
+
+struct RenderTgtData {
+	LPDIRECT3DSURFACE9 pColor;
+	LPDIRECT3DSURFACE9 pDepthStencil;
+	class D3D9Pad *pSkp;
+};
+
 
 extern _D3D9Stats D3D9Stats;
 extern bool bFreeze;
@@ -997,10 +1007,26 @@ public:
 	D3DCAPS9 *			GetHardwareCaps() { return &caps; }
 	FileParser *		GetFileParser() { return parser; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
+	LPDIRECT3DSURFACE9	GetDepthStencil() { return pDepthStencil; }
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam=NULL);
 	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
+
+
+	// ==================================================================
+	//
+	HRESULT				BeginScene();
+	void				EndScene();
+	bool				IsInScene() const { return bRendering; }
+	void				PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp);
+	void				PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL);
+	void				AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL);
+	void				PopRenderTargets();
+	LPDIRECT3DSURFACE9  GetTopDepthStencil();
+	LPDIRECT3DSURFACE9  GetTopRenderTarget();
+	class D3D9Pad *		GetTopInterface();
+
 
 protected:
 
@@ -1223,6 +1249,7 @@ private:
 	LPDIRECT3DSURFACE9		pSplashScreen;
 	LPDIRECT3DSURFACE9		pTextScreen;
 	LPDIRECT3DSURFACE9		pBackBuffer;
+	LPDIRECT3DSURFACE9		pDepthStencil;
 	CD3DFramework9*		    pFramework;
 	D3DCAPS9				caps;
 	FileParser *		    parser;
@@ -1232,14 +1259,14 @@ private:
 
 	bool bControlPanel;
 	bool bScatterUpdate;
-	bool bFullscreen;       // fullscreen render mode flag
-	bool bGDIBB;		
+	bool bFullscreen;       // fullscreen render mode flag	
 	bool bAAEnabled;	
 	bool bFailed;
 	bool bRunning;
 	bool bHalt;
 	bool bVertexTex;
 	bool bVSync;
+	bool bRendering;
 
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
@@ -1256,6 +1283,7 @@ private:
 
 	struct RenderProcData;
 	std::vector<RenderProcData> RenderProcs;
+	std::stack<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;
 	HFONT hLblFont2;

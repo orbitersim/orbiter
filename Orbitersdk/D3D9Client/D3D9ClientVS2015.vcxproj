@@ -239,6 +239,8 @@ if not exist "$(SolutionDir)nvapi.h" (
     <ResourceCompile Include="D3D9Client.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\gcAPI.h" />
+    <ClInclude Include="..\include\gcConst.h" />
     <ClInclude Include="..\include\GraphicsAPI.h" />
     <ClInclude Include="..\include\OrbiterAPI.h" />
     <ClInclude Include="..\include\Orbitersdk.h" />

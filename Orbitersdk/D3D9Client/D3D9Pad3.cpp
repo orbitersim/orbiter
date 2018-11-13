@@ -110,7 +110,7 @@ void D3D9Pad::SetRenderParam(int param, FVECTOR4 *d)
 //
 void D3D9Pad::SetEnable(DWORD config)
 {
-	bConfigChange = true;
+	Change |= SKPCHG_EFFECTS;
 	Enable |= config;
 }
 
@@ -119,6 +119,16 @@ void D3D9Pad::SetEnable(DWORD config)
 //
 void D3D9Pad::ClearEnable(DWORD config)
 {
-	bConfigChange = true;
+	Change |= SKPCHG_EFFECTS;
 	Enable &= (~config);
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::SetBlendState(DWORD dwState)
+{
+	// Must Flush() here before a mode change
+	Flush();
+	dwBlendState = dwState;
 }

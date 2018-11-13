@@ -70,8 +70,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	pDebugFont = NULL;
 	pBlur = NULL;
 	pOffscreenTarget = NULL;
-	pColorBak = NULL;
-	pDepthStensilBak = NULL;
 	viewH = h;
 	viewW = w;
 	nLights = 0;
@@ -230,9 +228,6 @@ Scene::~Scene ()
 	SAFE_DELETE(pFlare);
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
-	SAFE_RELEASE(pColorBak);
-	SAFE_RELEASE(pDepthStensilBak);
-
 	SAFE_RELEASE(pEnvDS);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
@@ -295,58 +290,56 @@ void Scene::Initialise()
 // Pooled Sketchpad API
 // ===========================================================================================
 
-static D3D9Pad *_pad[3] = { NULL };
+static D3D9Pad *_pad = NULL;
 
 #define SKETCHPAD_LABELS        0  ///< Sketchpad for planetarium mode labels and markers
 #define SKETCHPAD_2D_OVERLAY    1  ///< Sketchpad for HUD Overlay render to backbuffer directly
 #define SKETCHPAD_DEBUG_TEXT    2  ///< Sketchpad to draw Debug String on a bottom of the screen
+#define SKETCHPAD_PLANETARIUM   3  ///< Sketchpad to draw user defined planetarium
 
 // ===========================================================================================
 // Get pooled Sketchpad instance
+//
 D3D9Pad *Scene::GetPooledSketchpad (int id) // one of SKETCHPAD_xxx
 {
-	assert(id <= SKETCHPAD_DEBUG_TEXT);
+	assert(id <= SKETCHPAD_PLANETARIUM);
 
-	if (_pad[id]) { return _pad[id]; } // return pooled instance
+	if (!_pad) _pad = new D3D9Pad("POOLED_SKETCHPAD");
+	
+	// Automatically binds a Sketchpad to a top render target
+	_pad->BeginDrawing();
+	_pad->LoadDefaults();
 
-	D3D9Pad *p = NULL;
 	switch (id)
 	{
 	case SKETCHPAD_LABELS:
-		p = _pad[id] = new D3D9Pad(pOffscreenTarget ? pOffscreenTarget : gc->GetBackBuffer());
-		p->SetFont(pLabelFont);
-		p->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
+		_pad->SetFont(pLabelFont);
+		_pad->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
 		break;
 
 	case SKETCHPAD_2D_OVERLAY:
-		p = _pad[id] = new D3D9Pad(gc->GetBackBuffer());
 		break;
 
 	case SKETCHPAD_DEBUG_TEXT:
-		p = _pad[id] = new D3D9Pad(gc->GetBackBuffer());
-		p->SetFont(pDebugFont);
-		p->SetTextColor(0xFFFFFF);
-		p->SetTextAlign(Sketchpad::LEFT, Sketchpad::BOTTOM);
-		p->SetPen(oapiCreatePen(0, 1, 0x000000));
-		p->SetBrush(oapiCreateBrush(0xB0000000));
+		_pad->SetFont(pDebugFont);
+		_pad->SetTextColor(0xFFFFFF);
+		_pad->SetTextAlign(Sketchpad::LEFT, Sketchpad::BOTTOM);
+		_pad->QuickPen(0xFF000000);
+		_pad->QuickBrush(0xB0000000);
+		break;
+
+	case SKETCHPAD_PLANETARIUM:
 		break;
 	}
 
-	return p;
+	return _pad;
 }
 
 // ===========================================================================================
 // Release pooled Sketchpad instances
 void Scene::FreePooledSketchpads()
 {
-	if (_pad[SKETCHPAD_DEBUG_TEXT])
-	{
-		oapiReleasePen(_pad[SKETCHPAD_DEBUG_TEXT]->SetPen(NULL));
-		oapiReleaseBrush(_pad[SKETCHPAD_DEBUG_TEXT]->SetBrush(NULL));
-	}
-	SAFE_DELETE(_pad[SKETCHPAD_LABELS]);
-	SAFE_DELETE(_pad[SKETCHPAD_2D_OVERLAY]);
-	SAFE_DELETE(_pad[SKETCHPAD_DEBUG_TEXT]);
+	SAFE_DELETE(_pad);
 }
 
 // ===========================================================================================
@@ -940,48 +933,6 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 }
 
 
-
-
-// ===========================================================================================
-//
-HRESULT Scene::BeginScene()
-{
-	bRendering = false;
-	HRESULT hr = pDevice->BeginScene();
-	if (hr == S_OK) bRendering = true;
-	return hr;
-}
-
-// ===========================================================================================
-//
-void Scene::EndScene()
-{
-	pDevice->EndScene();
-	bRendering = false;
-}
-
-
-// ===========================================================================================
-//
-void Scene::SetRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStensil, bool bBackup)
-{
-	if (bBackup) pDevice->GetRenderTarget(0, &pColorBak);
-	if (bBackup) pDevice->GetDepthStencilSurface(&pDepthStensilBak);
-
-	if (pColor == RESTORE) {
-		pDevice->SetRenderTarget(0, pColorBak);
-		SAFE_RELEASE(pColorBak);
-	}
-	else if (pColor != CURRENT) pDevice->SetRenderTarget(0, pColor);
-
-	if (pDepthStensil == RESTORE) {
-		pDevice->SetDepthStencilSurface(pDepthStensilBak);
-		SAFE_RELEASE(pDepthStensilBak);
-	}
-	else if (pDepthStensil != CURRENT) pDevice->SetDepthStencilSurface(pDepthStensil);
-}
-
-
 // ===========================================================================================
 //
 void Scene::RenderMainScene()
@@ -999,8 +950,10 @@ void Scene::RenderMainScene()
 	if (pOffscreenTarget) pBackBuffer = pOffscreenTarget;
 	else				  pBackBuffer = gc->GetBackBuffer();
 
-	//pDevice->SetRenderTarget(0, pBackBuffer);
-	SetRenderTarget(pBackBuffer, CURRENT);
+
+	// Push main render target and depth surfaces
+	gc->PushRenderTarget(pBackBuffer, gc->GetDepthStencil());	// Main Scene
+
 
 	if (DebugControls::IsActive()) {
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
@@ -1013,7 +966,12 @@ void Scene::RenderMainScene()
 		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	}
 
-	if (FAILED (BeginScene())) return;
+
+	// Begin a Scene ------------------------------------------------------------------------------------
+	//
+	if (FAILED (gc->BeginScene())) return;
+
+
 
 	float znear_for_vessels = ComputeNearClipPlane();
 
@@ -1134,51 +1092,54 @@ void Scene::RenderMainScene()
 
 	D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 
-	pSketch->SetFont(pLabelFont);
-	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
+	if (pSketch) {
 
-	// -------------------------------------------------------------------------------------------------------
-	// render star markers
-	// -------------------------------------------------------------------------------------------------------
+		pSketch->SetFont(pLabelFont);
+		pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
 
-	if (plnmode & PLN_ENABLE) {
+		// -------------------------------------------------------------------------------------------------------
+		// render star markers
+		// -------------------------------------------------------------------------------------------------------
 
-		// constellation labels --------------------------------------------------
-		if (plnmode & PLN_CNSTLABEL) {
-			const GraphicsClient::LABELSPEC *ls;
-			DWORD n, nlist;
-			char *label;
+		if (plnmode & PLN_ENABLE) {
 
-			pSketch->SetTextColor(labelCol[5]);
-			pSketch->SetPen(lblPen[5]);
+			// constellation labels --------------------------------------------------
+			if (plnmode & PLN_CNSTLABEL) {
+				const GraphicsClient::LABELSPEC *ls;
+				DWORD n, nlist;
+				char *label;
 
-			nlist = gc->GetConstellationMarkers(&ls);
-			for (n = 0; n < nlist; ++n) {
-				label = (plnmode & PLN_CNSTLONG) ? ls[n].label[0] : ls[n].label[1];
-				RenderDirectionMarker(pSketch, ls[n].pos, NULL, label, -1, 0);
+				pSketch->SetTextColor(labelCol[5]);
+				pSketch->SetPen(lblPen[5]);
+
+				nlist = gc->GetConstellationMarkers(&ls);
+				for (n = 0; n < nlist; ++n) {
+					label = (plnmode & PLN_CNSTLONG) ? ls[n].label[0] : ls[n].label[1];
+					RenderDirectionMarker(pSketch, ls[n].pos, NULL, label, -1, 0);
+				}
 			}
-		}
-		// celestial marker (stars) names ----------------------------------------
-		if (plnmode & PLN_CCMARK) {
-			const GraphicsClient::LABELLIST *list;
-			DWORD n, nlist;
-			nlist = gc->GetCelestialMarkers(&list);
+			// celestial marker (stars) names ----------------------------------------
+			if (plnmode & PLN_CCMARK) {
+				const GraphicsClient::LABELLIST *list;
+				DWORD n, nlist;
+				nlist = gc->GetCelestialMarkers(&list);
 
-			for (n = 0; n < nlist; n++) {
-				if (list[n].active) {
-					int size = (int)(viewH/80.0*list[n].size+0.5);
+				for (n = 0; n < nlist; n++) {
+					if (list[n].active) {
+						int size = (int)(viewH / 80.0*list[n].size + 0.5);
 
-					pSketch->SetTextColor(labelCol[list[n].colour]);
-					pSketch->SetPen(lblPen[list[n].colour]);
+						pSketch->SetTextColor(labelCol[list[n].colour]);
+						pSketch->SetPen(lblPen[list[n].colour]);
 
-					const GraphicsClient::LABELSPEC *ls = list[n].list;
-					for (int i=0;i<list[n].length;i++) RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
+						const GraphicsClient::LABELSPEC *ls = list[n].list;
+						for (int i = 0; i < list[n].length; i++) RenderDirectionMarker(pSketch, ls[i].pos, ls[i].label[0], ls[i].label[1], list[n].shape, size);
+					}
 				}
 			}
 		}
-	}
 
-	pSketch->EndDrawing();
+		pSketch->EndDrawing(); //SKETCHPAD_LABELS
+	}
 
 
 	// ---------------------------------------------------------------------------------------------
@@ -1265,110 +1226,126 @@ void Scene::RenderMainScene()
 		if (isActive) plist[i].vo->Render(pDevice);
 		else		  plist[i].vo->RenderDot(pDevice);
 
-		if (plnmode & PLN_ENABLE) {
 
-			if (plnmode & PLN_CMARK) {
-				VECTOR3 pp;
-				char name[256];
-				oapiGetObjectName(hObj, name, 256);
-				oapiGetGlobalPos(hObj, &pp);
+		D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 
-				pSketch->SetTextColor(labelCol[0]);
-				pSketch->SetPen(lblPen[0]);
-				RenderObjectMarker(pSketch, pp, name, 0, 0, viewH/80);
-			}
+		if (pSketch) {
 
-			if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType (hObj) == OBJTP_PLANET))
-			{
-				int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
-				if (label_format < 2 && (plnmode & PLN_LMARK)) // user-defined planetary surface labels
+			if (plnmode & PLN_ENABLE) {
+
+				if (plnmode & PLN_CMARK) {
+					VECTOR3 pp;
+					char name[256];
+					oapiGetObjectName(hObj, name, 256);
+					oapiGetGlobalPos(hObj, &pp);
+
+					pSketch->SetTextColor(labelCol[0]);
+					pSketch->SetPen(lblPen[0]);
+					RenderObjectMarker(pSketch, pp, name, 0, 0, viewH / 80);
+				}
+
+				if (isActive && (plnmode & PLN_SURFMARK) && (oapiGetObjectType(hObj) == OBJTP_PLANET))
 				{
-					double rad = oapiGetSize (hObj);
-					double apprad = rad/(plist[i].dist * tan(GetCameraAperture()));
-					const GraphicsClient::LABELLIST *list;
-					DWORD n, nlist;
-					MATRIX3 prot;
-					VECTOR3 ppos, cpos;
+					int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
+					if (label_format < 2 && (plnmode & PLN_LMARK)) // user-defined planetary surface labels
+					{
+						double rad = oapiGetSize(hObj);
+						double apprad = rad / (plist[i].dist * tan(GetCameraAperture()));
+						const GraphicsClient::LABELLIST *list;
+						DWORD n, nlist;
+						MATRIX3 prot;
+						VECTOR3 ppos, cpos;
 
-					nlist = gc->GetSurfaceMarkers (hObj, &list);
+						nlist = gc->GetSurfaceMarkers(hObj, &list);
 
-					oapiGetRotationMatrix (hObj, &prot);
-					oapiGetGlobalPos (hObj, &ppos);
-					VECTOR3 cp = GetCameraGPos();
-					cpos = tmul (prot, cp-ppos); // camera in local planet coords
+						oapiGetRotationMatrix(hObj, &prot);
+						oapiGetGlobalPos(hObj, &ppos);
+						VECTOR3 cp = GetCameraGPos();
+						cpos = tmul(prot, cp - ppos); // camera in local planet coords
 
-					for (n=0;n<nlist;n++) {
+						for (n = 0; n < nlist; n++) {
 
-						if (list[n].active && apprad*list[n].distfac > LABEL_DISTLIMIT) {
+							if (list[n].active && apprad*list[n].distfac > LABEL_DISTLIMIT) {
 
-							int size = (int)(viewH/80.0*list[n].size+0.5);
-							int col = list[n].colour;
+								int size = (int)(viewH / 80.0*list[n].size + 0.5);
+								int col = list[n].colour;
 
-							pSketch->SetTextColor(labelCol[col]);
-							pSketch->SetPen(lblPen[col]);
+								pSketch->SetTextColor(labelCol[col]);
+								pSketch->SetPen(lblPen[col]);
 
-							const GraphicsClient::LABELSPEC *ls = list[n].list;
-							VECTOR3 sp;
-							for (int j=0;j<list[n].length;j++) {
-								if (dotp (ls[j].pos, cpos-ls[j].pos) >= 0.0) { // surface point visible?
-									sp = mul (prot, ls[j].pos) + ppos;
-									RenderObjectMarker(pSketch, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
+								const GraphicsClient::LABELSPEC *ls = list[n].list;
+								VECTOR3 sp;
+								for (int j = 0; j < list[n].length; j++) {
+									if (dotp(ls[j].pos, cpos - ls[j].pos) >= 0.0) { // surface point visible?
+										sp = mul(prot, ls[j].pos) + ppos;
+										RenderObjectMarker(pSketch, sp, ls[j].label[0], ls[j].label[1], list[n].shape, size);
+									}
 								}
 							}
 						}
 					}
-				}
 
-				if (plnmode & PLN_BMARK) {
+					if (plnmode & PLN_BMARK) {
 
-					DWORD n = oapiGetBaseCount(hObj);
-					MATRIX3 prot;
-					oapiGetRotationMatrix (hObj, &prot);
-					int size = (int)(viewH/80.0);
+						DWORD n = oapiGetBaseCount(hObj);
+						MATRIX3 prot;
+						oapiGetRotationMatrix(hObj, &prot);
+						int size = (int)(viewH / 80.0);
 
-					pSketch->SetTextColor(labelCol[0]);
-					pSketch->SetPen(lblPen[0]);
+						pSketch->SetTextColor(labelCol[0]);
+						pSketch->SetPen(lblPen[0]);
 
-					for (DWORD i=0;i<n;i++) {
+						for (DWORD i = 0; i < n; i++) {
 
-						OBJHANDLE hBase = oapiGetBaseByIndex(hObj, i);
+							OBJHANDLE hBase = oapiGetBaseByIndex(hObj, i);
 
-						VECTOR3 ppos, cpos, bpos;
+							VECTOR3 ppos, cpos, bpos;
 
-						oapiGetGlobalPos(hObj, &ppos);
-						oapiGetGlobalPos(hBase, &bpos);
-						VECTOR3 cp = GetCameraGPos();
-						cpos = tmul (prot, cp-ppos); // camera in local planet coords
-						bpos = tmul (prot, bpos-ppos);
+							oapiGetGlobalPos(hObj, &ppos);
+							oapiGetGlobalPos(hBase, &bpos);
+							VECTOR3 cp = GetCameraGPos();
+							cpos = tmul(prot, cp - ppos); // camera in local planet coords
+							bpos = tmul(prot, bpos - ppos);
 
-						double apprad = 8000e3 / (length(cpos-bpos) * tan(GetCameraAperture()));
+							double apprad = 8000e3 / (length(cpos - bpos) * tan(GetCameraAperture()));
 
-						if (dotp(bpos, cpos-bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
-							char name[64]; oapiGetObjectName(hBase, name, 63);
-							VECTOR3 sp = mul (prot, bpos) + ppos;
-							RenderObjectMarker(pSketch, sp, name, NULL, 0, size);
+							if (dotp(bpos, cpos - bpos) >= 0.0 && apprad > LABEL_DISTLIMIT) { // surface point visible?
+								char name[64]; oapiGetObjectName(hBase, name, 63);
+								VECTOR3 sp = mul(prot, bpos) + ppos;
+								RenderObjectMarker(pSketch, sp, name, NULL, 0, size);
+							}
 						}
 					}
 				}
 			}
 
-			pSketch->EndDrawing();
+			pSketch->EndDrawing();	// SKETCHPAD_LABELS
 		}
 	}
 
 
+	// -------------------------------------------------------------------------------------------------------
+	// render a user defined planetarium art
+	// -------------------------------------------------------------------------------------------------------
+
 	if (plnmode & PLN_ENABLE) {
 		D3DXMATRIX mP;
 		GetAdjProjViewMatrix(&mP, 5.0f, 1e9f);
+		D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_PLANETARIUM);
 		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), &mP);
+		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
 	}
+
 
 	// -------------------------------------------------------------------------------------------------------
 	// render new-style surface markers
 	// -------------------------------------------------------------------------------------------------------
+	
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
 	{
-		D3D9Pad *skp = NULL;
+		pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+		pSketch->SetPen(label_pen);
+
 		int fontidx = -1;
 		for (DWORD i = 0; i < nplanets; ++i)
 		{
@@ -1379,23 +1356,21 @@ void Scene::RenderMainScene()
 			}
 	
 			int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
+
 			if (label_format == 2)
 			{
-				if (!skp) {
-					skp = static_cast<D3D9Pad*>(gc->clbkGetSketchpad(0));
-					skp->SetPen(label_pen);
-				}
-				static_cast<vPlanet*>(plist[i].vo)->RenderLabels(pDevice, skp, label_font, &fontidx);
+				static_cast<vPlanet*>(plist[i].vo)->RenderLabels(pDevice, pSketch, label_font, &fontidx);
 			}
 		}
+
+		pSketch->EndDrawing();	// SKETCHPAD_LABELS
+
 		surfLabelsActive = true;
-		if (skp) {
-			gc->clbkReleaseSketchpad(skp);
-		}
 	}
 	else {
 		surfLabelsActive = false;
 	}
+
 	/*
 if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK)) {
 oapi::Sketchpad *skp = 0;
@@ -1436,9 +1411,8 @@ surfLabelsActive = false;
 
 	D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
 
-	pSketch->Reset();
-	pSketch->SetFont(pLabelFont);
-	pSketch->SetTextAlign(Sketchpad::CENTER, Sketchpad::BOTTOM);
+
+	pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
 	pSketch->SetTextColor(labelCol[0]);
 	pSketch->SetPen(lblPen[0]);
 
@@ -1530,7 +1504,8 @@ surfLabelsActive = false;
 		RenderList.pop_front();
 	}
 
-
+	pSketch->EndDrawing();	// SKETCHPAD_LABELS
+	
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1576,10 +1551,12 @@ surfLabelsActive = false;
 
 	if (bfvmode&BFV_ENABLE || scamode&SCA_ENABLE)
 	{
-		pSketch->SetFont(pAxisFont);
-		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::TOP);
 
 		pDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER,  0, 1.0f, 0L); // clear z-buffer
+
+		pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
+		pSketch->SetFont(pAxisFont);
+		pSketch->SetTextAlign(Sketchpad::LEFT, Sketchpad::TOP);
 
 		for (pv=vobjFirst; pv; pv=pv->next) {
 			if (!pv->vobj->IsActive()) continue;
@@ -1588,7 +1565,11 @@ surfLabelsActive = false;
 
 			pv->vobj->RenderAxis(pDevice, pSketch);
 		}
+
+		pSketch->EndDrawing();	// SKETCHPAD_LABELS
 	}
+
+
 
 
 
@@ -1624,19 +1605,18 @@ surfLabelsActive = false;
 
 	// End Of Main Scene Rendering ---------------------------------------------
 	//
-	pSketch->SetFont(NULL);
-	pSketch->SetPen(NULL);
-
-	EndScene();
+	
 
 
+	
 
-
+	
 
 
 	// -------------------------------------------------------------------------------------------------------
 	// Copy Offscreen render target to backbuffer
 	// -------------------------------------------------------------------------------------------------------
+
 
 	if (pOffscreenTarget && pLightBlur) {
 
@@ -1668,7 +1648,7 @@ surfLabelsActive = false;
 			pLightBlur->SetTextureNative("tCLUT", pTextures[TEX_CLUT], IPF_LINEAR | IPF_CLAMP);
 			pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
 
-			if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
+			if (!pLightBlur->Execute(true)) LogErr("pLightBlur Execute Failed");
 
 			// -----------------------------------------------------
 			pLightBlur->SetBool("bSample", false);
@@ -1682,13 +1662,13 @@ surfLabelsActive = false;
 				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_POINT | IPF_CLAMP);
 				pLightBlur->SetOutputNative(0, psgBuffer[GBUF_TEMP]);
 
-				if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
+				if (!pLightBlur->Execute(true)) LogErr("pLightBlur Execute Failed");
 
 				pLightBlur->SetBool("bDir", true);
 				pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_TEMP], IPF_POINT | IPF_CLAMP);
 				pLightBlur->SetOutputNative(0, psgBuffer[GBUF_BLUR]);
 
-				if (!pLightBlur->Execute()) 	LogErr("pLightBlur Execute Failed");
+				if (!pLightBlur->Execute(true)) LogErr("pLightBlur Execute Failed");
 			}
 
 			pLightBlur->SetBool("bBlendIn", true);
@@ -1697,7 +1677,7 @@ surfLabelsActive = false;
 			pLightBlur->SetTextureNative("tBlur", ptgBuffer[GBUF_BLUR], IPF_LINEAR | IPF_CLAMP);
 			pLightBlur->SetOutputNative(0, gc->GetBackBuffer());
 
-			if (!pLightBlur->Execute()) LogErr("pLightBlur Execute Failed");
+			if (!pLightBlur->Execute(true)) LogErr("pLightBlur Execute Failed");
 		}
 		else {
 			LogErr("pLightBlur is not o.k.");
@@ -1745,7 +1725,7 @@ surfLabelsActive = false;
 			// -------------------------
 			pFlare->SetOutputNative(0, gc->GetBackBuffer());
 
-			if (!pFlare->Execute()) LogErr("pFlare Execute Failed");
+			if (!pFlare->Execute(true)) LogErr("pFlare Execute Failed");
 		}
 		else
 		{
@@ -1758,21 +1738,17 @@ surfLabelsActive = false;
 	// Render HUD Overlay to backbuffer directly
 	// -------------------------------------------------------------------------------------------------------
 
-	pDevice->SetRenderTarget(0, gc->GetBackBuffer());
-	if (FAILED(BeginScene())) return;
+	gc->PushRenderTarget(gc->GetBackBuffer());	// Overlay
 	
-
-
 	pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 
-	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL, NULL);
-	gc->Render2DOverlay();
-	gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL, NULL);
+	if (pSketch) {
+		gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_1ST, NULL, NULL);
+		gc->Render2DOverlay();
+		gc->MakeRenderProcCall(pSketch, RENDERPROC_HUD_2ND, NULL, NULL);
+		pSketch->EndDrawing(); // SKETCHPAD_2D_OVERLAY
+	}
 
-
-	// End Of HUD Rendering ---------------------------------------------
-	//
-	EndScene();
 
 	// Enable Freeze mode after the main scene is complete
 	//
@@ -1801,7 +1777,15 @@ surfLabelsActive = false;
 				double maxd = min(500e3, GetCameraAltitude() + 15e3);
 
 				if (vO->CamDist() < maxd && camCurrent->bActive) {
+
 					RenderCustomCameraView(camCurrent);
+
+					if (camCurrent->dwFlags & CUSTOMCAM_OVERLAY) {
+						oapi::Sketchpad *pSkp = gc->clbkGetSketchpad(camCurrent->hSurface);
+						gc->MakeRenderProcCall(pSkp, RENDERPROC_CUSTOMCAM_OVERLAY, NULL, NULL);
+						gc->clbkReleaseSketchpad(pSkp);
+					}
+
 					camCurrent = camCurrent->next;
 					break;
 				}
@@ -1846,9 +1830,9 @@ surfLabelsActive = false;
 			}
 			else {
 				if (pShdMap) {
-					D3D9Pad *pSketch = new D3D9Pad(gc->GetBackBuffer());
+					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 					pSketch->CopyRectNative(pShdMap, NULL, 0, 0);
-					SAFE_DELETE(pSketch);
+					pSketch->EndDrawing(); // SKETCHPAD_2D_OVERLAY
 				}
 			}
 		}
@@ -1863,8 +1847,6 @@ surfLabelsActive = false;
 	int len = strlen(dbgString);
 
 	if (len>0 || !D3D9DebugQueue.empty()) {
-
-		BeginScene();
 
 		pSketch = GetPooledSketchpad(SKETCHPAD_DEBUG_TEXT);
 
@@ -1891,9 +1873,13 @@ surfLabelsActive = false;
 			D3D9DebugQueue.pop();
 		}
 
-		pSketch->EndDrawing();
-		EndScene();
+		pSketch->EndDrawing(); // SKETCHPAD_DEBUG_TEXT
 	}
+
+
+	gc->PopRenderTargets();	// Overlay
+	gc->PopRenderTargets();	// Main Scene
+	gc->EndScene();
 
 	dwTurn++;
 }
@@ -1907,7 +1893,6 @@ void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 	DWORD plnmode = *(DWORD*)gc->GetConfigParam(CFGPRM_PLANETARIUMFLAG);
 	if ((plnmode & (PLN_ENABLE | PLN_VMARK)) == (PLN_ENABLE | PLN_VMARK)) {
 		RenderObjectMarker(pSketch, vV->GlobalPos(), vV->GetName(), 0, 0, viewH / 80);
-		pSketch->EndDrawing();
 	}
 }
 
@@ -2079,7 +2064,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	smap.lod = max(smap.lod, 0);
 	smap.size = Config->ShadowMapSize >> smap.lod;
 
-	SetRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod], true);
+	gc->PushRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod]);
 
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
@@ -2097,7 +2082,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 
 	PopPass();
 
-	SetRenderTarget(RESTORE, RESTORE);
+	gc->PopRenderTargets();
 	
 	smap.pShadowMap = ptShmRT[smap.lod];
 
@@ -2116,8 +2101,6 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
-
-	if (FAILED(BeginScene())) return;
 
 	VOBJREC *pv = NULL;
 
@@ -2170,8 +2153,6 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	if (flags & 0x10) {
 		for (DWORD n = 0; n < nstream; n++) pstream[n]->Render(pDevice);
 	}
-
-	EndScene();
 }
 
 
@@ -2247,7 +2228,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 			pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
 			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
 
-			if (!pBlur->Execute()) {
+			if (!pBlur->Execute(true)) {
 				LogErr("pBlur Execute Failed");
 				return false;
 			}
@@ -2273,7 +2254,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 			pBlur->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
 			pBlur->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
 
-			if (!pBlur->Execute()) {
+			if (!pBlur->Execute(true)) {
 				LogErr("pBlur Execute Failed");
 				return false;
 			}
@@ -2962,17 +2943,20 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	D3DXMatrixMultiply(&mEnv, &mGlo, &mEnv);
 
 	PushCamera();
+
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w));
 
 	ClearOmitFlags();
 
 	BeginPass(RENDERPASS_CUSTOMCAM);
-	SetRenderTarget(pSrf, pDSs, true);
+
+	gc->PushRenderTarget(pSrf, pDSs);
 
 	RenderSecondaryScene(NULL, false, 0xFF);
 
-	SetRenderTarget(RESTORE, RESTORE);
+	gc->PopRenderTargets();
+
 	PopPass();
 	PopCamera();
 }

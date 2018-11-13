@@ -113,10 +113,8 @@ void D3D9Client::RenderControlPanel()
 
 	pItemsSkp->SetPen(nullp);
 
-	if (bGDIBB==false) {
-		pItemsSkp->SetBrush(brush);
-		pItemsSkp->Rectangle(-1, -1, viewW+1, viewH+1);
-	}
+	pItemsSkp->SetBrush(brush);
+	pItemsSkp->Rectangle(-1, -1, viewW+1, viewH+1);
 	
 	
 	pItemsSkp->SetTextColor(0x00FF00);

@@ -28,6 +28,7 @@ uniform extern float4x4  gW;			    // World matrix
 uniform extern float4x4  gWVP;				// World View Projection
 
 // Textures
+uniform extern texture   gFnt0;
 uniform extern texture   gTex0;			    // Diffuse texture
 uniform extern texture	 gNoiseTex;
 
@@ -48,12 +49,14 @@ uniform extern float	 gFov;				// atan( 2 * tan(fov/2) / H )
 uniform extern float	 gRandom;
 uniform extern bool      gDashEn;
 uniform extern bool      gTexEn;
+uniform extern bool		 gFntEn;
 uniform extern bool      gKeyEn;
-uniform extern bool      gWide;
+uniform extern bool      gWide;				// Unused
 uniform extern bool      gShade;
 uniform extern bool      gClipEn;
-uniform extern bool		 gClearEn;
+uniform extern bool		 gClearEn;			// Unused
 uniform extern bool		 gEffectsEn;
+
 
 // ColorKey tolarance
 #define tol 0.01f
@@ -61,6 +64,17 @@ uniform extern bool		 gEffectsEn;
 sampler TexS = sampler_state
 {
 	Texture = <gTex0>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = 8;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler FntS = sampler_state
+{
+	Texture = <gFnt0>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -89,15 +103,15 @@ struct InputVS
 };
 
 #define SSW 3	// Point side switch
-#define TSW 2	// Font/Texture/ColorKey switch
-#define ESW 1   // ExtColor switch
+#define TSW 2	// Fragment, Pen, Texture switch
+#define CSW 1   // ColorKey, Font switch
 #define LSW 0   // Length switch
 
 struct OutputVS
 {
 	float4 posH    : POSITION0;
 	float4 sw      : TEXCOORD0;
-	float2 tex     : TEXCOORD1;
+	float4 tex     : TEXCOORD1;
 	float  len	   : TEXCOORD2;
 	float4 posW    : TEXCOORD3;
 	float4 color   : COLOR0;
@@ -146,16 +160,13 @@ OutputVS Sketch3DVS(InputVS v)
 	float fPosD = dot(posN, posW);
 
 	posW += latN * (fSide * fPosD * gFov);
-
-	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
-	else				 outVS.color.rgba = v.clr.bgra;
-
 	posW = normalize(posW);
-	outVS.posW = float4(posW, fPosD);
 
+	outVS.color.rgba = v.clr.bgra;
+	outVS.posW = float4(posW, fPosD);
 	outVS.sw = v.fnc;
 	outVS.posH = mul(float4(posW.xyz*100.0, 1.0f), gVP);
-	outVS.tex = v.dir.xy * gSize.xy;
+	outVS.tex = float4(v.dir.xy * gSize.xy, v.dir.xy * gSize.zw);
 
 	return outVS;
 }
@@ -195,12 +206,11 @@ OutputVS OrthoVS(InputVS v)
 		posH += float4(latW.y, -latW.x, 0, 0) * gTarget * fSide;
 	}
 
-	if (v.fnc[ESW]>0.5f) outVS.color.rgba = gPen;
-	else				 outVS.color.rgba = v.clr.bgra;
-
+	
+	outVS.color.rgba = v.clr.bgra;
 	outVS.sw = v.fnc;
 	outVS.posH = float4(posH.xyz, 1.0f);
-	outVS.tex = v.dir.xy * gSize.xy;
+	outVS.tex = float4(v.dir.xy * gSize.xy, v.dir.xy * gSize.zw);
 
 	return outVS;
 }
@@ -214,30 +224,26 @@ OutputVS OrthoVS(InputVS v)
 
 float4 SketchpadPS(float4 sc : VPOS, OutputVS frg) : COLOR
 {
+	float f = 1;
+	float4 t = 1;
+
+	if (gFntEn)	f = tex2D(FntS, frg.tex.zw).g;
+	if (gTexEn) t = tex2D(TexS, frg.tex.xy);
+	
+	// Select Color source
 	float4 c = frg.color;
+	if (frg.sw[TSW] > 0.2f) c = gPen;
+	if (frg.sw[TSW] > 0.8f) c = t;
+	if (frg.sw[CSW] > 0.8f) c.a *= f;
 
-	if (gTexEn) {
-
-		float4 t = tex2D(TexS, frg.tex);
-
-		if (gClearEn) {
-			// Clear type text
-			float  a = saturate(t.r*0.7f + t.g*0.8f + t.b*0.6f);
-			if (frg.sw[TSW] > 0.1f) c = float4(t.rgb*c.rgb / max(0.1, a), c.a*a);
-		}
-		else {
-			// Antialised or crisp text
-			if (frg.sw[TSW] > 0.1f) c = float4(c.rgb, c.a*t.g);
-		}
-
-		if (frg.sw[TSW] > 0.4f) c = t;
-
-		if (gKeyEn) {
-			float4 x = abs(c - gKey);
-			if ((x.r < tol) && (x.g < tol) && (x.b < tol) && (frg.sw[TSW] > 0.9f)) clip(-1);
+	// Color keying
+	if (gTexEn && gKeyEn) {
+		float4 x = abs(c - gKey);
+		if ((x.r < tol) && (x.g < tol) && (x.b < tol)) {
+			if (frg.sw[CSW] > 0.2f && frg.sw[CSW] < 0.8) clip(-1);
 		}
 	}
-
+	
 	if (gDashEn) {
 		float q;
 		if (modf(frg.len*gWidth.y, q) > 0.5f) clip(-1);
@@ -281,6 +287,7 @@ technique SketchTech
 		DestBlend = InvSrcAlpha;
 		ZEnable = false;
 		ZWriteEnable = false;
+		CullMode = None;
 	}
 
 	pass P1
@@ -293,6 +300,7 @@ technique SketchTech
 		DestBlend = InvSrcAlpha;
 		ZEnable = false;
 		ZWriteEnable = false;
+		CullMode = None;
 	}
 }
 

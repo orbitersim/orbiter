@@ -50,13 +50,16 @@ void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
 //
 void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 {
+	Change |= SKPCHG_PEN;
+
 	cpen = NULL;
 	if (color==0) QPen.bEnabled = false;
 	else QPen.bEnabled = true;
 	QPen.style = style;
 	QPen.width = width;
 	pencolor = SkpColor(color);
-	bPenChange = true;
+
+	IsLineTopologyAllowed();
 }
 
 
@@ -64,11 +67,13 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 //
 void D3D9Pad::QuickBrush(DWORD color)
 {
+	// No Change flags here
 	cbrush = NULL;
 	if (color == 0) QBrush.bEnabled = false;
 	else QBrush.bEnabled = true;
 	brushcolor = SkpColor(color);
-	bPenChange = true;
+
+	IsLineTopologyAllowed();
 }
 
 
@@ -101,24 +106,30 @@ void D3D9Pad::CheckRect(SURFHANDLE hSrc, LPRECT *s)
 //
 void D3D9Pad::CopyRect(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 {
+
 	TexChange(hSrc);
 
-	if (!s) CheckRect(hSrc, &s);
+	if (Topology(TRIANGLE)) {
 
-	int h = abs(s->bottom - s->top);
-	int w = abs(s->right - s->left);
+		if (!s) CheckRect(hSrc, &s);
 
-	AddRectIdx(vI);
+		int h = abs(s->bottom - s->top);
+		int w = abs(s->right - s->left);
 
-	SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-	SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
-	SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
-	SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
+		AddRectIdx(vI);
 
-	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
+		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
 }
 
 
@@ -126,21 +137,27 @@ void D3D9Pad::CopyRect(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 //
 void D3D9Pad::StretchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t)
 {
+
 	TexChange(hSrc);
 
-	if (!s) CheckRect(hSrc, &s);
+	if (Topology(TRIANGLE)) {
 
-	AddRectIdx(vI);
+		if (!s) CheckRect(hSrc, &s);
 
-	SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
-	SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
-	SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
-	SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
+		AddRectIdx(vI);
 
-	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
+		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
+		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
+		SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
 }
 
 
@@ -148,39 +165,45 @@ void D3D9Pad::StretchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t)
 //
 void D3D9Pad::RotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, float angle, float sw, float sh)
 {
+
 	TexChange(hSrc);
 
-	if (!s) CheckRect(hSrc, &s);
+	if (Topology(TRIANGLE)) {
 
-	float w = float(s->right - s->left) * sw;
-	float h = float(s->bottom - s->top) * sh;
+		if (!s) CheckRect(hSrc, &s);
 
-	float san = sin(angle) * 0.5f;
-	float can = cos(angle) * 0.5f;
+		float w = float(s->right - s->left) * sw;
+		float h = float(s->bottom - s->top) * sh;
 
-	float ax = float(tcx) + (-w * can + h * san);
-	float ay = float(tcy) + (-w * san - h * can);
+		float san = sin(angle) * 0.5f;
+		float can = cos(angle) * 0.5f;
 
-	float bx = float(tcx) + (-w * can - h * san);
-	float by = float(tcy) + (-w * san + h * can);
+		float ax = float(tcx) + (-w * can + h * san);
+		float ay = float(tcy) + (-w * san - h * can);
 
-	float cx = float(tcx) + (+w * can - h * san);
-	float cy = float(tcy) + (+w * san + h * can);
+		float bx = float(tcx) + (-w * can - h * san);
+		float by = float(tcy) + (-w * san + h * can);
 
-	float dx = float(tcx) + (+w * can + h * san);
-	float dy = float(tcy) + (+w * san - h * can);
+		float cx = float(tcx) + (+w * can - h * san);
+		float cy = float(tcy) + (+w * san + h * can);
 
-	AddRectIdx(vI);
+		float dx = float(tcx) + (+w * can + h * san);
+		float dy = float(tcy) + (+w * san - h * can);
 
-	SkpVtxFI(Vtx[vI++], ax, ay, s->left, s->top);
-	SkpVtxFI(Vtx[vI++], bx, by, s->left, s->bottom);
-	SkpVtxFI(Vtx[vI++], cx, cy, s->right, s->bottom);
-	SkpVtxFI(Vtx[vI++], dx, dy, s->right, s->top);
+		AddRectIdx(vI);
 
-	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+		SkpVtxFI(Vtx[vI++], ax, ay, s->left, s->top);
+		SkpVtxFI(Vtx[vI++], bx, by, s->left, s->bottom);
+		SkpVtxFI(Vtx[vI++], cx, cy, s->right, s->bottom);
+		SkpVtxFI(Vtx[vI++], dx, dy, s->right, s->top);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
 }
 
 
@@ -188,32 +211,39 @@ void D3D9Pad::RotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, float angl
 //
 void D3D9Pad::ColorKey(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 {
+
 	TexChange(hSrc);
 
-	if (!s) CheckRect(hSrc, &s);
+	if (Topology(TRIANGLE)) {
 
-	int h = abs(s->bottom - s->top);
-	int w = abs(s->right - s->left);
+		if (!s) CheckRect(hSrc, &s);
 
-	AddRectIdx(vI);
+		int h = abs(s->bottom - s->top);
+		int w = abs(s->right - s->left);
 
-	SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-	SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
-	SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
-	SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
+		AddRectIdx(vI);
 
-	DWORD f = SKPSW_TEXTURE | SKPSW_COLORKEY;
+		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
+		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
 
-	Vtx[vI - 1].fnc = f;
-	Vtx[vI - 2].fnc = f;
-	Vtx[vI - 3].fnc = f;
-	Vtx[vI - 4].fnc = f;
+		DWORD f = SKPSW_TEXTURE | SKPSW_COLORKEY | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = f;
+		Vtx[vI - 2].fnc = f;
+		Vtx[vI - 3].fnc = f;
+		Vtx[vI - 4].fnc = f;
+	}
 }
+
 
 // ===============================================================================================
 //
 bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 {
+	// No "Setup" here, done in PrintSkp()
+
 	if (!cfont) return false;
 	if (len == -1) len = wcslen(str);
 	if (!len) return true;
@@ -236,10 +266,13 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 	return true;
 }
 
+
 // ===============================================================================================
 //
 void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle)
 {
+	// No "Setup" here, done in PrintSkp()
+
 	if (cfont == NULL) return;
 
 	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
@@ -268,16 +301,11 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 //
 void D3D9Pad::ClipRect(LPRECT clip)
 {
-	// Flush all out before a state change
-	FlushPrimitives();
+	Change |= SKPCHG_CLIPRECT;
 
-	if (clip) {
-		pDev->SetScissorRect(clip);
-		pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 1);
-	}
-	else {
-		pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0);
-	}
+	bEnableScissor = (clip != NULL);
+	if (clip) ScissorRect = (*clip);
+	else ScissorRect = { 0,0,0,0 };
 }
 
 
@@ -285,6 +313,8 @@ void D3D9Pad::ClipRect(LPRECT clip)
 //
 void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dist)
 {
+	Change |= SKPCHG_CLIPCONE;
+
 	if (idx < 0) idx = 0;
 	if (idx > 1) idx = 1;
 
@@ -300,26 +330,6 @@ void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dis
 		ClipData[idx].dst = 0.0f;
 		ClipData[idx].bEnable = false;
 	}
-
-	InitClipping();
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::InitClipping()
-{
-	FlushPrimitives();
-
-	if (ClipData[0].bEnable || ClipData[1].bEnable) {
-		HR(FX->SetValue(ePos,  &ClipData[0].uDir, sizeof(D3DXVECTOR3)));
-		HR(FX->SetValue(ePos2, &ClipData[1].uDir, sizeof(D3DXVECTOR3)));
-		HR(FX->SetValue(eCov, &D3DXVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst), sizeof(D3DXVECTOR4)));
-		HR(FX->SetBool(eCovEn, true));
-	}
-	else {
-		HR(FX->SetBool(eCovEn, false));
-	}
 }
 
 
@@ -327,29 +337,35 @@ void D3D9Pad::InitClipping()
 //
 void D3D9Pad::DepthEnable(bool bEnable)
 {
+	Flush(); // Must Flush() here before a mode change
 
+	if (pDep) {
+		Change |= SKPCHG_DEPTH;
+		bDepthEnable = bEnable;
+	}
+	else bDepthEnable = false;
 }
 
 
 // ===============================================================================================
 //
-FMATRIX4 *D3D9Pad::ViewMatrix()
+const FMATRIX4 *D3D9Pad::ViewMatrix() const
 {
-	return (FMATRIX4*)&mV;
+	return (const FMATRIX4*)&mV;
 }
 
 
 // ===============================================================================================
 //
-FMATRIX4 *D3D9Pad::ProjectionMatrix()
+const FMATRIX4 *D3D9Pad::ProjectionMatrix() const
 {
-	return (FMATRIX4*)&mP;
+	return (const FMATRIX4*)&mP;
 }
 
 
 // ===============================================================================================
 //
-const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix()
+const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix() const
 {
 	D3DXMatrixMultiply(&mVP, &mV, &mP);
 	return (const FMATRIX4 *)&mVP;
@@ -358,19 +374,40 @@ const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix()
 
 // ===============================================================================================
 //
-void D3D9Pad::SetViewMode(SkpView mode)
+void D3D9Pad::SetViewMatrix(const FMATRIX4 *pV)
 {
-	vmode = mode;
-	EndDrawing();
+	Change |= SKPCHG_TRANSFORM;
+	if (pV) memcpy(&mV, pV, sizeof(FMATRIX4));
+	else D3DXMatrixIdentity(&mV);
 }
 
 
 // ===============================================================================================
 //
+void D3D9Pad::SetProjectionMatrix(const FMATRIX4 *pP)
+{
+	Change |= SKPCHG_TRANSFORM;
+	if (pP) memcpy(&mP, pP, sizeof(FMATRIX4));
+	else D3DXMatrixIdentity(&mP);
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::SetViewMode(SkpView mode)
+{
+	Flush();	// Must Flush() here before a mode change
+	vmode = mode;
+}
+
+
+// ===============================================================================================
+// !! For a private use in D3D9Client !!
+//
 LPD3DXMATRIX D3D9Pad::WorldMatrix()
 {
-	bViewChange = true;
-	return &mW;
+	Change |= SKPCHG_TRANSFORM;
+	return (LPD3DXMATRIX)&mW;
 }
 
 
@@ -378,6 +415,8 @@ LPD3DXMATRIX D3D9Pad::WorldMatrix()
 //
 void D3D9Pad::SetWorldTransform2D(float scale, float rot, IVECTOR2 *c, IVECTOR2 *t)
 {
+	Change |= SKPCHG_TRANSFORM;
+
 	D3DXVECTOR2 ctr = D3DXVECTOR2(0, 0);
 	D3DXVECTOR2 trl = D3DXVECTOR2(0, 0);
 
@@ -385,8 +424,6 @@ void D3D9Pad::SetWorldTransform2D(float scale, float rot, IVECTOR2 *c, IVECTOR2 
 	if (t) trl = D3DXVECTOR2(float(t->x), float(t->y));
 
 	D3DXMatrixAffineTransformation2D(&mW, scale, &ctr, rot, &trl);
-
-	bViewChange = true;
 }
 
 
@@ -394,10 +431,10 @@ void D3D9Pad::SetWorldTransform2D(float scale, float rot, IVECTOR2 *c, IVECTOR2 
 //
 void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 {
-	if (pWT) memcpy(mW, pWT, sizeof(FMATRIX4));
-	else D3DXMatrixIdentity(&mW);
+	Change |= SKPCHG_TRANSFORM;
 
-	bViewChange = true;
+	if (pWT) memcpy(&mW, pWT, sizeof(FMATRIX4));
+	else D3DXMatrixIdentity(&mW);
 }
 
 
@@ -405,40 +442,30 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 //
 void D3D9Pad::SetGlobalLineScale(float width, float pat)
 {
+	Change |= SKPCHG_PEN;
 	linescale = width;
 	pattern = pat;
-	bPenChange = true;
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
+void D3D9Pad::SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew)
 {
-//	float srw, srh;
+	if (hNew == hFontTex) return;
+	Change |= SKPCHG_FONT;
+	hFontTex = hNew;
+}
 
-	Flush(SKPTECH_BLIT);
 
-	if (hNew == hPrevSrc) return;
-
-	FlushPrimitives();
-
-	if (hNew) {
-		HR(FX->SetTexture(eTex0, hNew));
-	}
-//	else {
-//		srw = 1.0f;
-//		srh = 1.0f;
-//	}
-
-	HR(FX->SetVector(eSize, &D3DXVECTOR4(1, 1, 1, 1)));
-	HR(FX->SetValue(eKey, &D3DXCOLOR(0,0,0,0), sizeof(D3DXCOLOR)));
-	HR(FX->SetBool(eTexEn, (hNew != NULL)));
-	HR(FX->SetBool(eKeyEn, false));
-	HR(FX->SetBool(eWide, false));
-	HR(FX->CommitChanges());
-
-	hPrevSrc = hNew;
+// ===============================================================================================
+//
+bool D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
+{
+	if (hNew == hTexture) return false;
+	Change |= SKPCHG_TEXTURE;
+	hTexture = hNew;
+	return true;
 }
 
 
@@ -446,141 +473,26 @@ void D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 //
 void D3D9Pad::TexChange(SURFHANDLE hNew)
 {
-	float srw, srh;
 	static bool bOnce = true;
 
-	Flush(SKPTECH_BLIT);
-
-	if (hNew == hPrevSrc) return;
-
-	FlushPrimitives();
-
-	if (!SURFACE(hNew)->IsTexture() && bOnce) {
-		LogErr("Sketchpad2: Source is not a texture");
-		bOnce = false;
+	if (!SURFACE(hNew)->IsTexture()) {
+		if (bOnce) {
+			LogErr("Sketchpad2: Source is not a texture");
+			bOnce = false;
+		}
+		return;
 	}
+	
+	if (TexChangeNative(SURFACE(hNew)->GetTexture())) {
 
-	if (hNew) {
-		srw = 1.0f / float(SURFACE(hNew)->desc.Width);
-		srh = 1.0f / float(SURFACE(hNew)->desc.Height);
-
-		HR(FX->SetTexture(eTex0, SURFACE(hNew)->GetTexture()));
-		HR(FX->SetBool(eKeyEn, (SURFACE(hNew)->IsColorKeyEnabled())));
-	}
-	else {
-		srw = 1.0f;
-		srh = 1.0f;
-	}
-
-	HR(FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1)));
-	if (hNew) HR(FX->SetValue(eKey, &SURFACE(hNew)->ClrKey, sizeof(D3DXCOLOR)));
-	HR(FX->SetBool(eTexEn, (hNew != NULL)));
-	HR(FX->SetBool(eWide, false));
-	HR(FX->CommitChanges());
-
-	hPrevSrc = hNew;
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::BeginDraw()
-{
-	bViewChange = true;
-	bPenChange = true;
-
-	UINT numPasses;
-	assert(FX->SetTechnique(eSketch)==S_OK);
-	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-
-	if (vmode == ORTHO) {
-		HR(FX->BeginPass(0));
-	}
-	else {
-		HR(FX->BeginPass(1));
-	}
-	HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-	HR(pDev->SetVertexDeclaration(pSketchpadDecl));
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::EndDraw()
-{
-	HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
-	HR(FX->EndPass());
-	HR(FX->End());
-	hPrevSrc = NULL;
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::BeginMesh()
-{
-	bViewChange = true;
-	bPenChange = true;
-
-	hOldMesh = NULL;
-
-	UINT num;
-	pDev->SetVertexDeclaration(pNTVertexDecl);
-	HR(FX->SetTechnique(eDrawMesh));
-	HR(FX->Begin(&num, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::EndMesh()
-{
-	HR(FX->EndPass());
-	HR(FX->End());
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::EndDrawing(bool bFlush)
-{
-	if (CurrentTech == SKPTECH_MESH) EndMesh();
-
-	if (CurrentTech == SKPTECH_DRAW) {
-		if (bFlush) FlushPrimitives();
-		EndDraw();
-	}
-
-	if (CurrentTech == SKPTECH_BLIT) {
-		if (bFlush) FlushPrimitives();
-		EndDraw();
-	}
-
-	if (CurrentTech == SKPTECH_POLY) {
-		EndDraw();
-	}
-
-	hOldMesh = NULL;
-	CurrentTech = 0;
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::FlushPrimitives()
-{
-	if (iI > 0) {
-
-		hOldMesh = NULL;
-
-		if (bTriangles) {
-			assert(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)) == S_OK);
+		if (SURFACE(hNew)->IsColorKeyEnabled()) {
+			bColorKey = true;
+			cColorKey = SURFACE(hNew)->ClrKey;
 		}
 		else {
-			assert(pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, vI, iI / 2, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)) == S_OK);
+			bColorKey = false;
+			cColorKey = D3DXCOLOR(DWORD(0));
 		}
-		iI = vI = 0;
 	}
 }
 
@@ -589,51 +501,71 @@ void D3D9Pad::FlushPrimitives()
 //
 int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
+	UINT num;
+
 	SketchMesh *hMesh = static_cast<SketchMesh *>(_hMesh);
 
-	// Flush existing artwork out before starting a new one ------
+	DWORD nGrp = hMesh->GroupCount();
+
+	if (grp >= nGrp) return -1;
+
+	// Flush Pending graphics ------------------------------------
 	//
-	Flush(SKPTECH_MESH);
+	Flush();
 
-	// Do we have a new mesh -------------------------------------
+
+	// Initialize device for drawing a mesh ----------------------
 	//
-	if (hOldMesh != hMesh) {
-		hMesh->Init();
-		hOldMesh = hMesh;
-	}
-
-	// Draw a mesh group ----------------------------------------
-	//
-	SURFHANDLE pTex = hMesh->GetTexture(grp);
-	D3DXCOLOR   Mat = hMesh->GetMaterial(grp);
-
-	if (hTex) {
-		HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
-		HR(FX->SetBool(eTexEn, true));
-	}
-	else {
-		if (pTex) {
-			HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
-			HR(FX->SetBool(eTexEn, true));
-		}
-		else {
-			HR(FX->SetBool(eTexEn, false));
-		}
-	}
-
-	HR(FX->SetBool(eShade, (flags&MF_SMOOTH_SHADE)!=0));
-	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
-	HR(FX->SetValue(eMtrl, &Mat, sizeof(D3DXCOLOR)));
-	HR(FX->CommitChanges());
-
+	hMesh->Init();
+	pDev->SetVertexDeclaration(pNTVertexDecl);
+	
 	if (flags&MF_CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	else				    pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-	if (grp < hMesh->GroupCount()) {
+	if (flags&MF_RENDER_ALL) grp = 0;
+	else nGrp = grp + 1;
+
+	HR(FX->SetTechnique(eDrawMesh));
+	HR(FX->Begin(&num, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
+
+	HR(FX->SetBool(eShade, (flags&MF_SMOOTH_SHADE) != 0));
+	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
+
+
+	// Draw a mesh group(s) ----------------------------------------
+	//
+	while (grp < nGrp) {
+
+		SURFHANDLE pTex = hMesh->GetTexture(grp);
+		D3DXCOLOR   Mat = hMesh->GetMaterial(grp);
+
+		if (hTex) {
+			HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
+			HR(FX->SetBool(eTexEn, true));
+		}
+		else {
+			if (pTex) {
+				HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
+				HR(FX->SetBool(eTexEn, true));
+			}
+			else {
+				HR(FX->SetBool(eTexEn, false));
+			}
+		}
+
+		HR(FX->SetValue(eMtrl, &Mat, sizeof(D3DXCOLOR)));
+		HR(FX->CommitChanges());
+
 		hMesh->RenderGroup(grp);
-		return hMesh->GroupCount();
+
+		grp++;
 	}
-	return -1;
+
+	HR(FX->EndPass());
+	HR(FX->End());
+
+	return hMesh->GroupCount();
 }
 
 
@@ -641,13 +573,23 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDL
 //
 int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
-	// Flush existing artwork out before starting a new one ------
-	//
-	Flush(SKPTECH_MESH);
+	UINT num;
 
 	MESHGROUP *gr = oapiMeshGroup(hMesh, grp);
 
 	if (!gr) return -1;
+
+	// Flush Pending graphics ------------------------------------
+	//
+	Flush();
+
+
+	// Initialize device for drawing a mesh ----------------------
+	//
+	pDev->SetVertexDeclaration(pNTVertexDecl);
+	HR(FX->SetTechnique(eDrawMesh));
+	HR(FX->Begin(&num, D3DXFX_DONOTSAVESTATE));
+	HR(FX->BeginPass(0));
 
 	if (!hTex && gr->TexIdx>0) hTex = oapiGetTextureHandle(hMesh, gr->TexIdx);
 
@@ -678,136 +620,14 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, gr->nVtx, gr->nIdx/3, gr->Idx, D3DFMT_INDEX16, gr->Vtx, sizeof(NTVERTEX));
 
+	HR(FX->EndPass());
+	HR(FX->End());
+
 	return oapiMeshGroupCount(hMesh);
 }
 
 
-// ===============================================================================================
-//
-bool D3D9Pad::Flush(int iTech)
-{
 
-	bool bStateChange = bConfigChange || bPenChange || bViewChange || bFontChange || (iTech != CurrentTech);
-
-
-	// Is the drawing queue full ? -------------------------------------
-	//
-	if (iI >= WORD(nIndexMax - 1800)) FlushPrimitives();
-
-
-	// Has something changed ?
-	//
-	if (!bStateChange) return false;
-
-	FlushPrimitives();
-
-
-	// Check needed primitive type -------------------------------------
-	//
-	bTriangles = false;
-
-	if (HasBrush()) bTriangles = true;
-	if (GetPenWidth() > 1.1f) bTriangles = true;
-	if (iTech == SKPTECH_BLIT) bTriangles = true;
-	if (iTech == SKPTECH_POLY) bTriangles = true;
-	if (vmode == USER) bTriangles = true;
-
-
-	// Do we need a new tech ? -----------------------------------------
-	//
-	if (iTech != CurrentTech) {
-
-		hOldMesh = NULL;
-
-		// Switch from  -------------------------------------------------
-		//
-		if (CurrentTech == SKPTECH_MESH) EndMesh();
-
-		if (iTech == SKPTECH_MESH) {
-			if (CurrentTech == SKPTECH_DRAW) EndDraw();
-			if (CurrentTech == SKPTECH_BLIT) EndDraw();
-			if (CurrentTech == SKPTECH_POLY) EndDraw();
-		}
-
-		// Switch to  ----------------------------------------------------
-		//
-		if (iTech == SKPTECH_MESH) BeginMesh();
-
-		if (CurrentTech == SKPTECH_MESH || CurrentTech == 0) {
-			if (iTech == SKPTECH_DRAW) BeginDraw();
-			if (iTech == SKPTECH_BLIT) BeginDraw();
-			if (iTech == SKPTECH_POLY) BeginDraw();
-		}
-	}
-
-
-	// Apply a new setup -----------------------------------------------
-	//
-	if (bViewChange) {
-
-		if (vmode == ORTHO) {
-			D3DXMATRIX mWVP;
-			D3DXMatrixMultiply(&mWVP, &mW, &mO);
-			HR(FX->SetMatrix(eWVP, &mWVP));
-			HR(FX->SetMatrix(eVP, &mO));
-			HR(FX->SetMatrix(eW, &mW));
-			HR(FX->SetBool(eCovEn, false));
-		}
-		else {
-			float d = float(tgt_desc.Height) * mP._22;
-			float f = atan(1.0f / d) * 1.7f;
-			D3DXMatrixMultiply(&mVP, &mV, &mP);
-			HR(FX->SetMatrix(eVP, &mVP));
-			HR(FX->SetMatrix(eW, &mW));
-			HR(FX->SetFloat(eFov, f));
-			HR(FX->SetBool(eCovEn, ClipData[0].bEnable || ClipData[1].bEnable));
-		}
-
-		bViewChange = false;
-	}
-
-
-	// Apply a new setup -----------------------------------------------------------------
-	//
-	if (bPenChange) {
-		float offset = 0.0f;
-		int w = int(ceil(GetPenWidth()));
-		if ((w&1)==0) offset = 0.5f;
-		HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
-		HR(FX->SetBool(eDashEn, IsDashed()));
-		HR(FX->SetValue(eWidth, &D3DXVECTOR3(GetPenWidth(), pattern*0.13f, offset), sizeof(D3DXVECTOR3)));
-		bPenChange = false;
-	}
-
-
-	// Apply a new setup -----------------------------------------------------------------
-	//
-	if (bFontChange) {
-		DWORD Quality = static_cast<D3D9PadFont *>(cfont)->GetQuality();
-		HR(FX->SetBool(eClearEn, Quality == CLEARTYPE_QUALITY));
-		bFontChange = false;
-	}
-
-
-	// Apply a new setup -----------------------------------------------------------------
-	//
-	if (bConfigChange) {
-		HR(FX->SetValue(eNoiseColor, &Noise, sizeof(FVECTOR4)));
-		HR(FX->SetValue(eGamma, &Gamma, sizeof(FVECTOR4)));
-		HR(FX->SetTexture(eNoiseTex, pNoise));
-		HR(FX->SetValue(eColorMatrix, &ColorMatrix, sizeof(FMATRIX4)));
-	}
-
-	HR(FX->SetBool(eEffectsEn, Enable!=0));
-	HR(FX->SetBool(eWide, bTriangles));
-	HR(FX->SetFloat(eRandom, float(oapiRand())));
-
-	HR(FX->CommitChanges());
-
-	CurrentTech = iTech;
-
-	return true;
-}
 
 
 // ===============================================================================================
@@ -816,37 +636,29 @@ void D3D9Pad::CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty)
 {
 	TexChangeNative(pSrc);
 
-	D3DSURFACE_DESC desc;
-	pSrc->GetLevelDesc(0, &desc);
+	if (Topology(TRIANGLE)) {
 
-	RECT rect;
-	rect.left = rect.top = 0;
-	rect.right = desc.Width;
-	rect.bottom = desc.Height;
+		if (!s) CheckRectNative(pSrc, &s);
 
-	float srw = 1.0f / float(desc.Width);
-	float srh = 1.0f / float(desc.Height);
+		int h = abs(s->bottom - s->top);
+		int w = abs(s->right - s->left);
 
-	HR(FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1)));
-	HR(FX->CommitChanges());
+		AddRectIdx(vI);
 
-	if (!s) s = &rect;
+		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
+		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
+		SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
 
-	int h = s->bottom - s->top;
-	int w = s->right - s->left;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
-	AddRectIdx(vI);
-
-	SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-	SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
-	SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
-	SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
-
-	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
 }
+
 
 // ===============================================================================================
 //
@@ -854,35 +666,41 @@ void D3D9Pad::StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t)
 {
 	TexChangeNative(pSrc);
 
-	D3DSURFACE_DESC desc;
-	pSrc->GetLevelDesc(0, &desc);
+	if (Topology(TRIANGLE)) {
 
-	RECT rect;
-	rect.left = rect.top = 0;
-	rect.right = desc.Width;
-	rect.bottom = desc.Height;
+		if (!s) CheckRectNative(pSrc, &s);
 
-	float srw = 1.0f / float(desc.Width);
-	float srh = 1.0f / float(desc.Height);
+		AddRectIdx(vI);
 
-	HR(FX->SetVector(eSize, &D3DXVECTOR4(srw, srh, 1, 1)));
-	HR(FX->CommitChanges());
+		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
+		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
+		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
+		SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
 
-	if (!s) s = &rect;
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
 
-	AddRectIdx(vI);
-
-	SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
-	SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
-	SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
-	SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
-
-	Vtx[vI - 1].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 2].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 3].fnc = SKPSW_TEXTURE;
-	Vtx[vI - 4].fnc = SKPSW_TEXTURE;
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
 }
 
+
+// ===============================================================================================
+//
+void D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, LPRECT *s)
+{
+	D3DSURFACE_DESC desc;
+
+	hSrc->GetLevelDesc(0, &desc);
+	*s = &src;
+
+	src.left = 0;
+	src.top = 0;
+	src.right = desc.Width;
+	src.bottom = desc.Height;
+}
 
 
 
@@ -1176,8 +994,8 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 		Vtx[vI].py = Vtx[vII].py = pp.y;
 		Vtx[vI].l = Vtx[vII].l = length;
 		// --------------------------------------
-		Vtx[vI].fnc = SKPSW_WIDEPEN_L | SKPSW_EXTCOLOR;
-		Vtx[vII].fnc = SKPSW_WIDEPEN_R | SKPSW_EXTCOLOR;
+		Vtx[vI].fnc = SKPSW_WIDEPEN_L | SKPSW_PENCOLOR;
+		Vtx[vII].fnc = SKPSW_WIDEPEN_R | SKPSW_PENCOLOR;
 		vI+=2;
 		// --------------------------------------
 		pp = pt[i];

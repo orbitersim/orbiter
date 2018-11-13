@@ -1,14 +1,16 @@
 // =================================================================================================================================
-// The MIT Lisence:
 //
-// Copyright (C) 2012-2016 Jarmo Nikkanen
+// Copyright (C) 2012-2018 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
-// is furnished to do so, subject to the following conditions:
+// files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
+// of the Software, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+// a) You do not sell, rent or auction the Software.
+// b) You do not collect distribution fees.
+// c) If the Software is distributed in an object code form, it must inform that the source code is available and how to obtain it.
+// d) You do not remove or alter any copyright notices contained within the Software.
+// e) This copyright notice must be included in all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
@@ -25,44 +27,59 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <memory>
+#include <stack>
 
 using namespace oapi;
 
 extern oapi::Font *deffont;
 extern oapi::Pen  *defpen;
 
+#define SKPCHG_ALL			0xFFFF
+#define SKPCHG_PEN			0x0001
+#define SKPCHG_FONT			0x0004
+#define SKPCHG_TEXTURE		0x0008
+#define SKPCHG_CLIPCONE		0x0010
+#define SKPCHG_CLIPRECT		0x0020
+#define SKPCHG_TRANSFORM	0x0040
+#define SKPCHG_EFFECTS		0x0080
+#define SKPCHG_DEPTH		0x0100
+#define SKPCHG_TOPOLOGY		0x0200
+
 
 #define SKETCHPAD_NONE		0x0000
 #define SKETCHPAD_GDI		0x0001
 #define SKETCHPAD_DIRECTX	0x0002
 
-
-#define SKPTECH_DRAW		0x01
-#define SKPTECH_BLIT		0x02
-#define SKPTECH_MESH		0x03
-#define SKPTECH_PIXLES		0x04
-#define SKPTECH_POLY		0x05
-
+// ===============================================================================================
 // Feature Switches			//AARRGGBB
-#define SKPSW_FONT			0x80000040
-#define SKPSW_TEXTURE		0x80000080
-#define SKPSW_COLORKEY		0x800000FF
 //
-#define SKPSW_LENGTH		0x00FF0000
-#define SKPSW_EXTCOLOR		0x0000FF00
+// Color source:
+#define SKPSW_FRAGMENT		0x00000000	// Index 2
+#define SKPSW_PENCOLOR		0x00000080	// Index 2
+#define SKPSW_TEXTURE		0x000000FF	// Index 2
+
+// Specials: 
+#define SKPSW_FONT			0x0000FF00	// Index 1
+#define SKPSW_COLORKEY		0x00008000	// Index 1
+#define SKPSW_LENGTH		0x00FF0000	// Index 0
+
+// Vertex alignment:
+#define SKPSW_CENTER		0x80000000	// Index 3
+#define SKPSW_WIDEPEN_L		0x00000000	// Index 3
+#define SKPSW_WIDEPEN_R		0xFF000000	// Index 3
+
+
+
+// ===============================================================================================
+// Special properties
 //
-#define SKPSW_THINPEN		0x80000000
-#define SKPSW_WIDEPEN_L		0x00000000
-#define SKPSW_WIDEPEN_R		0xFF000000
-
-
-
 #define SKP3E_GAMMA			0x00000001
 #define SKP3E_NOISE			0x00000002
 #define SKP3E_CMATR			0x00000004
 
 
 // ===============================================================================================
+//
 #define nLow 17
 #define nHigh 65
 #define nQueueMax 2048
@@ -109,7 +126,7 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 	v.x = float(_x);
 	v.y = float(_y);
 	v.clr = c.dclr;
-	v.fnc = SKPSW_THINPEN;
+	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 	v.l = 0.0f;
 }
 
@@ -170,13 +187,15 @@ class D3D9Pad : public Sketchpad3
 		bool bEnable;
 	} ClipData[2];
 
+	enum Topo { NONE, TRIANGLE, LINE };
+
 public:
 	/**
 	 * \brief Constructs a drawing object for a given surface.
 	 * \param s surface handle
 	 */
-	explicit D3D9Pad(SURFHANDLE s);
-	explicit D3D9Pad(LPDIRECT3DSURFACE9 s);
+	explicit D3D9Pad(SURFHANDLE s, const char *name = NULL);
+	explicit D3D9Pad(const char *name = NULL);
 
 	/**
 	 * \brief Destructor. Destroys a drawing object.
@@ -471,9 +490,11 @@ public:
 
 	void SetViewMode(SkpView mode = ORTHO);
 	//-----------------------------------------
-	FMATRIX4 *ViewMatrix();
-	FMATRIX4 *ProjectionMatrix();
-	const FMATRIX4 *GetViewProjectionMatrix();
+	const FMATRIX4 *ViewMatrix() const;
+	const FMATRIX4 *ProjectionMatrix() const;
+	const FMATRIX4 *GetViewProjectionMatrix() const;
+	void SetViewMatrix(const FMATRIX4 *pV = NULL);
+	void SetProjectionMatrix(const FMATRIX4 *pP = NULL);
 
 
 
@@ -481,53 +502,66 @@ public:
 	// ===============================================================================
 	// Sketchpad3 Additions
 	// ===============================================================================
+
 	const FMATRIX4 *GetColorMatrix();
 	void SetColorMatrix(FMATRIX4 *pMatrix = NULL);
 	void SetBrightness(FVECTOR4 *pBrightness = NULL);
 	FVECTOR4 GetRenderParam(int param);
 	void SetRenderParam(int param, FVECTOR4 *data = NULL);
-
-
+	void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND);
 
 
 	// ===============================================================================
 	// D3D9Client Privates
 	// ===============================================================================
+
+	/**
+	*  BeginDrawing(), EndDrawing().
+	*  - All the other D3D9Pad functions can be only called/used between the BeginDrawing(), EndDrawing() pairs.
+	*  - All rendering that is NOT a part of D3D9Pad is prohibited between the Begin/End pairs.
+	*  - Calling Begin/End doesn't alter the D3D9Pad state such as Pens, Brushes, etc...
+	*  - EndDrawing() will flush all pending instructions from the draw queue.
+	*/
+	void EndDrawing();
+	void BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil = NULL);
+	void BeginDrawing();
+
+
+	// ===============================================================================
+	// D3D9Client Privates
+	// ===============================================================================
+	void LoadDefaults();
 	LPD3DXMATRIX WorldMatrix();
-	void Reset();
-	void EndDrawing(bool bFlush = true);
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty);
 	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t);
-
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
-
-
+	const char *GetName() { return name; }
+	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
+	bool IsStillDrawing() const { return bBeginDraw; }
 
 private:
 
+	bool Topology(Topo tRequest);
 	void SetEnable(DWORD config);
 	void ClearEnable(DWORD config);
 
-	bool HasPen();
-	bool HasBrush();
-	bool IsDashed();
+	bool HasPen() const;
+	bool HasBrush() const;
+	bool IsDashed() const;
 
-	void BeginDraw();
-	void EndDraw();
-	void BeginMesh();
-	void EndMesh();
+	float GetPenWidth() const;
 
-	float GetPenWidth();
-
-	bool Flush(int iTech);
+	bool Flush();		// "const" due to SetFont, SetPen, SetBrush
 	void AddRectIdx(WORD aV);
 	void FillRect(int l, int t, int r, int b, SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
-	void TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
-	void FlushPrimitives();
+	bool TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
+	void CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, LPRECT *s);
+	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
+	void SetupDevice(Topo tNew);
 	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
-	void InitClipping();
-
+	void IsLineTopologyAllowed() const;
+	
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	template <typename Type> void AppendLineVertexList(const Type *pt);
 
@@ -539,30 +573,42 @@ private:
 	mutable SkpColor pencolor;
 	mutable SkpColor brushcolor;
 	mutable SkpColor bkcolor;
+	mutable DWORD	 Change;
+	mutable bool	 bLine;
+	mutable D3DXMATRIX mVP;
 
-	mutable bool bPenChange;
-	mutable bool bViewChange;
-	mutable bool bFontChange;
-	mutable bool bConfigChange;
-	mutable bool bTriangles;
+	bool			 bColorKey;
+	bool			 bEnableScissor;
+	bool			 bDepthEnable;
+	bool			 bMustEndScene;
+	bool			 bBeginDraw;
+	bool			 bDirty;
+	bool			 bRestore;
+	bool			 bOnce;
+	RECT			 ScissorRect;
+	D3DXCOLOR		 cColorKey;
+	SkpView			 vmode;
+	Topo			 tCurrent;
 
-	SURFHANDLE hPrevSrc;
+
 	WORD vI, iI;
+	D3DXMATRIX mV, mP, mW, mO;
+	D3DXVECTOR4 vTarget;
 	DWORD bkmode;
+	DWORD dwBlendState;
 	TAlign_horizontal tah;
 	TAlign_vertical tav;
 	float linescale, pattern;
 	float zfar;
 	int cx, cy;
-	int CurrentTech;
-
-	class SketchMesh *hOldMesh;
-	SkpView vmode;
-	D3DSURFACE_DESC tgt_desc;
-	D3D9ClientSurface *pTgt;
-	D3DXMATRIX mV, mP, mW, mO, mVP;
-	D3DVIEWPORT9 vpBak;
 	RECT src;
+
+	D3DSURFACE_DESC	   tgt_desc;
+	LPDIRECT3DSURFACE9 pTgt;		
+	LPDIRECT3DSURFACE9 pDep;
+	LPDIRECT3DTEXTURE9 hTexture;
+	LPDIRECT3DTEXTURE9 hFontTex;
+
 
 	
 	// Sketchpad3 --------------------------------------------------------------
@@ -570,6 +616,7 @@ private:
 	DWORD Enable;
 	FMATRIX4 ColorMatrix;
 	FVECTOR4 Gamma, Noise;
+
 
 
 	// -------------------------------------------------------------------------
@@ -581,6 +628,7 @@ private:
 	inline void ReleaseSaveBuffer ();                           ///< Mark the buffer as "not save"
 	void        WrapOneLine (char* str, int len, int maxWidth); ///< Wraps one text line at maxLenght pixels
 	// -------------------------------------------------------------------------
+	char name[32];
 
 	static WORD *Idx;				// List of indices
 	static SkpVtx *Vtx;		// List of vertices
@@ -598,6 +646,7 @@ private:
 	static D3DXHANDLE	eSketch;
 	static D3DXHANDLE	eWVP;			// Transformation matrix
 	static D3DXHANDLE	eTex0;	
+	static D3DXHANDLE	eFnt0;
 	static D3DXHANDLE	eNoiseTex;
 	static D3DXHANDLE   eNoiseColor;
 	static D3DXHANDLE   eColorMatrix;
@@ -612,6 +661,7 @@ private:
 	static D3DXHANDLE   eKey;
 	static D3DXHANDLE   eTexEn;
 	static D3DXHANDLE   eKeyEn;
+	static D3DXHANDLE   eFntEn;
 	static D3DXHANDLE   eWidth;
 	static D3DXHANDLE   eWide;
 	static D3DXHANDLE   eSize;

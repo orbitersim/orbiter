@@ -27,12 +27,18 @@
 
 /// \defgroup RenderProc Specify a render HUD callback function
 ///@{
-#define RENDERPROC_DELETE		0x0000	///< Unregister/Remove existing callback 
-#define RENDERPROC_HUD_1ST		0x0001	///< Register a HUD callback to draw under Orbiter's main HUD
-#define RENDERPROC_HUD_2ND		0x0002	///< Register a HUD callback to draw over Orbiter's main HUD
-#define RENDERPROC_PLANETARIUM	0x0003	///< Register a HUD callback to draw into a planetarium view using perspective projection
+#define RENDERPROC_DELETE				0x0000	///< Unregister/Remove existing callback 
+#define RENDERPROC_HUD_1ST				0x0001	///< Register a HUD callback to draw under Orbiter's main HUD
+#define RENDERPROC_HUD_2ND				0x0002	///< Register a HUD callback to draw over Orbiter's main HUD
+#define RENDERPROC_PLANETARIUM			0x0003	///< Register a HUD callback to draw into a planetarium view using perspective projection
+#define RENDERPROC_CUSTOMCAM_OVERLAY	0x0004  ///< Register a callback to draw overlay into a custom camerea view
 ///@}
 
+/// \defgroup dwFlags for gcSetupCustomCamera() API function
+///@{
+#define CUSTOMCAM_DEFAULTS				0x00FF
+#define CUSTOMCAM_OVERLAY				0x0100
+///@}
 
 /// \defgroup PolyFlags Poly object creation and update flags
 ///@{

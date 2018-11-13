@@ -415,7 +415,6 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, fl
 		int yc = (int)(scn->ViewH()*0.5*(1.0f - homog.y));
 		pSkp->SetTextColor(D3DXCOLOR(clr->b, clr->g, clr->r, clr->a));
 		pSkp->Text(xc + 10, yc, label, strlen(label));
-		pSkp->EndDrawing();
 	}
 }
 

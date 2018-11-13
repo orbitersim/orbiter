@@ -264,9 +264,7 @@ public:
 
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
-	void			SetRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStensil, bool bBackup = false);
-
-
+	
 
 	// Custom Camera Interface ======================================================================================================
 	//
@@ -367,8 +365,6 @@ protected:
 
 private:
 
-	HRESULT		BeginScene();
-	void		EndScene();
 	DWORD		GetActiveParticleEffectCount();
 	float		ComputeNearClipPlane();
 	void		VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip);
@@ -458,9 +454,6 @@ private:
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;
 	double dVisualAppRad;
-
-	LPDIRECT3DSURFACE9 pColorBak;
-	LPDIRECT3DSURFACE9 pDepthStensilBak;
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];

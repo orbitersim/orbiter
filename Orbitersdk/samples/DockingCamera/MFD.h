@@ -48,15 +48,17 @@ private:
 	void SelectVessel(VESSEL *hVes, Type type);
 	void NextAttachment();
 	void PreviousAttachment();
+	void DrawOverlay(oapi::Sketchpad *pSkp);
 
 	bool ConsumeKeyBuffered(DWORD key);
 	bool ConsumeButton(int bt, int event);
 
 	void WriteStatus(FILEHANDLE scn) const;
 	void ReadStatus(FILEHANDLE scn);
-
+	
 	static bool DataInput(void *id, char *str, void *data);
-	//static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static void DrawOverlay(oapi::Sketchpad *pSkp, void *pParam);
+
 
 	oapi::Font *		font;
 	SURFHANDLE			hRenderSrf;

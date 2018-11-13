@@ -101,6 +101,7 @@ public:
 	LPDIRECT3DTEXTURE9	GetTexture();
 	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
 	int					GetSketchPadMode() { return SketchPad; }
+	D3D9Pad *			GetD3D9Pad();
 
 	void				SetColorKey(DWORD ck);			// Enable and set color key
 
@@ -173,6 +174,7 @@ private:
 	D3DVIEWPORT9 *		pViewPort;
 	HFONT				hDefFont;
 	double				GetDCTime;
+	D3D9Pad *			pSkp;
 
 	ID3DXRenderToSurface *pRTS;
 

@@ -391,7 +391,9 @@ float D3D9Text::Length(BYTE c)
 //
 float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str, int len, bool bBox)
 {
-	
+
+	pSkp->SetFontTextureNative(pTex);
+
 	if (halign == 1) xpos -= Length2(_str, len) * 0.5f;
 	if (halign == 2) xpos -= Length2(_str, len);
 	if (valign == 1) ypos -= tm.tmAscent;
@@ -437,58 +439,61 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 	}
 
 	if (bBox) {
-		pSkp->Flush(SKPTECH_BLIT);
-		pSkp->FillRect(int(bbox_l), int(bbox_t), int(bbox_r), int(bbox_b), pSkp->bkcolor);
+		pSkp->FillRect(int(bbox_l), int(bbox_t+2), int(bbox_r), int(bbox_b), pSkp->bkcolor);
 	}
 
 	idx = 1;
 	c = str[0];
 
-	pSkp->TexChangeNative(pTex);
+	// Feed data directly into a drawing queue
+	//
+	if (pSkp->Topology(D3D9Pad::Topo::TRIANGLE)) {
 
-	SkpVtx *pVtx = pSkp->Vtx;
-	WORD *pIdx = pSkp->Idx;
-	WORD iI = pSkp->iI;
-	WORD vI = pSkp->vI;
+		SkpVtx *pVtx = pSkp->Vtx;
+		WORD *pIdx = pSkp->Idx;
+		WORD iI = pSkp->iI;
+		WORD vI = pSkp->vI;
 	
-	DWORD flags = SKPSW_FONT;
-	DWORD color = pSkp->textcolor.dclr;
+		DWORD flags = SKPSW_FONT | SKPSW_CENTER | SKPSW_FRAGMENT;
+		DWORD color = pSkp->textcolor.dclr;
 
-	while (c && (idx<=len || len<=0)) {
+		while (c && (idx <= len || len <= 0)) {
 
-		D3D9FontData *pData = Data(c);
+			D3D9FontData *pData = Data(c);
 
-		pIdx[iI++] = vI;
-		pIdx[iI++] = vI + 1;
-		pIdx[iI++] = vI + 2;
-		pIdx[iI++] = vI;
-		pIdx[iI++] = vI + 2;
-		pIdx[iI++] = vI + 3;
+			pIdx[iI++] = vI;
+			pIdx[iI++] = vI + 1;
+			pIdx[iI++] = vI + 2;
+			pIdx[iI++] = vI;
+			pIdx[iI++] = vI + 2;
+			pIdx[iI++] = vI + 3;
 
-		float w = pData->w;
+			float w = pData->w;
 
-		SkpVtxFF(pVtx[vI++], xpos, ypos, pData->tx0, pData->ty0);
-		SkpVtxFF(pVtx[vI++], xpos, ypos + h, pData->tx0, pData->ty1);
-		SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, pData->tx1, pData->ty1);
-		SkpVtxFF(pVtx[vI++], xpos + w, ypos, pData->tx1, pData->ty0);
+			SkpVtxFF(pVtx[vI++], xpos, ypos, pData->tx0, pData->ty0);
+			SkpVtxFF(pVtx[vI++], xpos, ypos + h, pData->tx0, pData->ty1);
+			SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, pData->tx1, pData->ty1);
+			SkpVtxFF(pVtx[vI++], xpos + w, ypos, pData->tx1, pData->ty0);
 
-		pVtx[vI - 1].fnc = flags;
-		pVtx[vI - 1].clr = color;
-		pVtx[vI - 2].fnc = flags;
-		pVtx[vI - 2].clr = color;
-		pVtx[vI - 3].fnc = flags;
-		pVtx[vI - 3].clr = color;
-		pVtx[vI - 4].fnc = flags;
-		pVtx[vI - 4].clr = color;
+			pVtx[vI - 1].fnc = flags;
+			pVtx[vI - 1].clr = color;
+			pVtx[vI - 2].fnc = flags;
+			pVtx[vI - 2].clr = color;
+			pVtx[vI - 3].fnc = flags;
+			pVtx[vI - 3].clr = color;
+			pVtx[vI - 4].fnc = flags;
+			pVtx[vI - 4].clr = color;
 
-		xpos += ceil(pData->sp + float(spacing));
+			xpos += ceil(pData->sp + float(spacing));
 
-		c = str[idx++];
+			c = str[idx++];
+		}
+
+		pSkp->vI = vI;
+		pSkp->iI = iI;
 	}
-
-	pSkp->vI = vI;
-	pSkp->iI = iI;
 	
+
 	if (bRestore) {
 		memcpy(pSkp->WorldMatrix(), &mBak, sizeof(D3DXMATRIX));
 	}
@@ -502,11 +507,15 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 //
 float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, int len, bool bBox)
 {
+
 	if (len == -1) len = wcslen(str);
 
 	LONG x = LONG(round(xpos)),
 	     y = LONG(round(ypos));
 	RECT rect = { x, y, 0, 0 };
+
+	// Must Flush() pending graphics before using ID3DXFont interface
+	pSkp->Flush();
 
 	wfont->DrawTextW(
 		NULL,                     // pSprite
@@ -519,10 +528,11 @@ float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, in
 
 	if (bBox)
 	{
-		pSkp->Flush(SKPTECH_BLIT);
 		pSkp->FillRect(rect.left-2, rect.top+1, rect.right+2, rect.bottom-1, pSkp->bkcolor);
-		pSkp->Flush(SKPTECH_DRAW);
 	}
+
+	// Must Flush() pending graphics before using ID3DXFont interface
+	pSkp->Flush();
 
 	wfont->DrawTextW(
 		NULL,                              // pSprite

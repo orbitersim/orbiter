@@ -220,6 +220,7 @@ void D3D9ClientSurface::Clear()
 	Refs		= 1;
 	ColorKey	= 0;
 	ClrKey		= D3DXCOLOR(ColorKey);
+	pSkp		= NULL;
 	pVP			= NULL;
 	pViewPort	= NULL;
 	pTex		= NULL;
@@ -253,6 +254,11 @@ D3D9ClientSurface::~D3D9ClientSurface()
 {
 	if (SurfaceCatalog->Remove(this)==false) {
 		LogErr("Surface 0x%X wasn't in the catalog",this);
+	}
+
+	if (pSkp) {
+		if (pSkp->IsStillDrawing()) LogErr("SketchPad 0x%X not released properly", pSkp);
+		SAFE_DELETE(pSkp);
 	}
 
 	if (bBackBuffer) {
@@ -1352,7 +1358,10 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 	if (flags&OAPISURFACE_UNCOMPRESS) bGoTex = false;
 	if (flags&OAPISURFACE_RENDERTARGET) bGoTex = false;
 	if (flags&OAPISURFACE_NOMIPMAPS) bGoTex = false;
+	if (flags&OAPISURFACE_MIPMAPS) bGoTex = false;
 	if (flags&OAPISURFACE_GDI) bGoTex = false;
+	if (flags&OAPISURFACE_ALPHA) bGoTex = false;
+	if (flags&OAPISURFACE_NOALPHA) bGoTex = false;
 
 	if (flags&OAPISURFACE_SKETCHPAD) {
 		LogErr("OAPISURFACE_SKETCHPAD in D3D9ClientSurface::LoadSurface (should not happen)");
@@ -1368,6 +1377,7 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 		HR(D3DXGetImageInfoFromFile(path, &info));
 
 		if (info.Height>8192 || info.Width>8192) LogErr("Loading a large surface Handle=0x%X (%u,%u)", this, info.Width, info.Height);
+
 
 
 		// Uncompress these cases
@@ -1988,6 +1998,22 @@ DWORD D3D9ClientSurface::GetSizeInBytes()
 	for (int i = 0; i < ARRAYSIZE(pMap);i++)  size += GetTextureSizeInBytes(pMap[i]);
 	return size;
 }
+
+
+// -----------------------------------------------------------------------------------------------
+//
+D3D9Pad *D3D9ClientSurface::GetD3D9Pad()
+{
+	if (!IsRenderTarget()) {
+		LogErr("Can't optain a Sketchpad to a non-render target surface 0x%X", this);
+		return NULL;
+	}
+	if (!pSkp) pSkp = new D3D9Pad(this, "D3D9SurfacePad");
+	return pSkp;
+}
+
+
+
 
 // -----------------------------------------------------------------------------------------------
 //

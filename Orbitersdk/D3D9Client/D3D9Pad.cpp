@@ -32,9 +32,9 @@
 using namespace oapi;
 
 
-// ======================================================================
+// ===============================================================================================
 // Font cache
-// ======================================================================
+// ===============================================================================================
 
 struct FontCache {
 	int         height;
@@ -100,6 +100,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	eSketch   = FX->GetTechniqueByName("SketchTech");
 	eVP       = FX->GetParameterByName(0, "gVP");
 	eTex0     = FX->GetParameterByName(0, "gTex0");
+	eFnt0	  = FX->GetParameterByName(0, "gFnt0");
 	eDashEn   = FX->GetParameterByName(0, "gDashEn");
 	eW		  = FX->GetParameterByName(0, "gW");
 	eKey	  = FX->GetParameterByName(0, "gKey");
@@ -109,6 +110,7 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	eRandom   = FX->GetParameterByName(0, "gRandom");
 	eTarget	  = FX->GetParameterByName(0, "gTarget");
 	eTexEn	  = FX->GetParameterByName(0, "gTexEn");
+	eFntEn    = FX->GetParameterByName(0, "gFntEn");
 	eKeyEn    = FX->GetParameterByName(0, "gKeyEn");
 	eWide	  = FX->GetParameterByName(0, "gWide");
 	eWidth	  = FX->GetParameterByName(0, "gWidth");
@@ -147,136 +149,441 @@ void D3D9Pad::GlobalExit()
 
 
 // ===============================================================================================
+// Restore Default Settings: Fonts, Pens, Colors, etc...
 //
-void D3D9Pad::Reset()
+void D3D9Pad::LoadDefaults()
 {
-
-	assert(CurrentTech == 0);	// Must EndDrawing before calling reset
+	
+	// Flush pending graphics before reset
+	Flush();
 
 	cfont = deffont;
 	cpen = NULL;
 	cbrush = NULL;
-	hOldMesh = NULL;
+	hTexture = NULL;
+	hFontTex = NULL;
 	cx = 0;
 	cy = 0;
-	vI = 0;
-	iI = 0;
-	bkmode = TRANSPARENT;
-	tah = LEFT;
-	tav = TOP;
 	linescale = 1.0f;
 	pattern = 1.0f;
-	CurrentTech = 0;
 	Enable = 0;
 	RenderConfig = 0;
 
+	tah = LEFT;
+	tav = TOP;
 	vmode = ORTHO;
+	tCurrent = NONE;
+	Change = SKPCHG_ALL;
+	bkmode = TRANSPARENT;
+	dwBlendState = SKPBS_ALPHABLEND;
 
-	bPenChange = true;		// New setup required
-	bFontChange = true;		// New setup required
-	bViewChange = true;		// New setup required
-	bConfigChange = true;	// New setup required
-
-	memset(ClipData, 0, sizeof(ClipData));
-
+	bLine = false;
+	bEnableScissor = false;
+	bDepthEnable = false;
+	bColorKey = false;
 	QPen.bEnabled = false;
 	QBrush.bEnabled = false;
 
+	memset(ClipData, 0, sizeof(ClipData));
+	ScissorRect = { 0,0,0,0 };
+
+	cColorKey  = D3DXCOLOR(DWORD(0));
 	brushcolor = SkpColor(0xFF00FF00);
 	bkcolor    = SkpColor(0xFF000000);
 	textcolor  = SkpColor(0xFF00FF00);
 	pencolor   = SkpColor(0xFF00FF00);
 
-	zfar = float(max(tgt_desc.Width, tgt_desc.Height));
-
 	D3DXMatrixIdentity(&mW);
 	D3DXMatrixIdentity(&mP);
 	D3DXMatrixIdentity(&mV);
 	D3DXMatrixIdentity((D3DXMATRIX*)&ColorMatrix);
+
 	Gamma = _FVECTOR4(1, 1, 1, 1);
 	Noise = _FVECTOR4(0, 0, 0, 0);
-
-	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
-
-	HR(FX->SetBool(eCovEn, false));
-	HR(FX->SetVector(eTarget, &D3DXVECTOR4(2.0f/(float)tgt_desc.Width, 2.0f/(float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height)));
-}
-
-
-// ======================================================================
-// class GDIPad
-// ======================================================================
-
-D3D9Pad::D3D9Pad(SURFHANDLE s) : Sketchpad3(s),
-	_isSaveBuffer(false),
-	_saveBuffer(NULL),
-	_saveBufferSize(0)
-{
-	_TRACE;
-
-	pTgt = SURFACE(s);
-
-	SURFACE(GetSurface())->SketchPad = SKETCHPAD_DIRECTX;
-
-	if (pTgt->IsBackBuffer()==false) {
-		if (pTgt->BindGPU()==false) {
-			pTgt=NULL;
-			LogErr("D3D9Pad creation failed");
-			return;
-		}
-	}
-
-	pTgt->GetDesc(&tgt_desc);
-
-	CurrentTech = 0;
-
-	Reset();
 }
 
 
 // ===============================================================================================
+// class D3D9Pad
+// ===============================================================================================
+// Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
+// BeginDrawing() must be called
 //
-D3D9Pad::D3D9Pad(LPDIRECT3DSURFACE9 s) : Sketchpad3(NULL),
+D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 	_isSaveBuffer(false),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
 {
-	_TRACE;
-	pTgt = NULL;
-	s->GetDesc(&tgt_desc);
+	if (_name) strcpy_s(name, 32, _name);
+	else strcpy_s(name, 32, "NoName");
 
-	CurrentTech = 0;
+	// Don't put these in LoadDefaults() 
+	bBeginDraw = false;
+	bRestore = false;
+	bDirty = true;
+	bOnce = true;
+	vI = 0;
+	iI = 0;
 
-	Reset();
+	LoadDefaults();
 }
+
+
+
+// ===============================================================================================
+// Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
+// BeginDrawing() must be called
+//
+D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
+	_isSaveBuffer(false),
+	_saveBuffer(NULL),
+	_saveBufferSize(0)
+{
+	if (_name) strcpy_s(name, 32, _name);
+	else strcpy_s(name, 32, "NoName");
+
+	// Don't put these in Reset() 
+	bBeginDraw = false;
+	bRestore = false;
+	bDirty = true;
+	bOnce = true;
+	vI = 0;
+	iI = 0;
+
+	LoadDefaults();
+}
+
 
 
 // ===============================================================================================
 //
 D3D9Pad::~D3D9Pad ()
 {
-	_TRACE;
+	assert(bBeginDraw == false);
+	SAFE_DELETEA(_saveBuffer);
+}
 
-	EndDrawing();
 
-	pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0);
 
-	if (GetSurface()) {
-		if (pTgt) if (pTgt->IsBackBuffer() == false) pTgt->ReleaseGPU();
-		SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
+// ===============================================================================================
+// Bind existing Sketchpad interface to TOP render targets and prepare for rendering
+//
+void D3D9Pad::BeginDrawing() 
+{
+	// Acquire render targets from Stack
+	BeginDrawing(gc->GetTopRenderTarget(), gc->GetTopDepthStencil());
+}
+
+
+
+// ===============================================================================================
+// Bind existing Sketchpad interface to render targets and prepare for rendering
+//
+void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil)
+{
+	if (bBeginDraw == true) _wassert(L"D3D9Pad::BeginDrawing() called multiple times", _CRT_WIDE(__FILE__), __LINE__);
+	
+	bBeginDraw = true;
+
+	// If not already in scene, then start a new one
+	if (gc->IsInScene() == false) {
+		gc->BeginScene();
+		bMustEndScene = true;
+	}
+	else bMustEndScene = false;
+
+
+	if (pTgt != pRenderTgt) {
+		pRenderTgt->GetDesc(&tgt_desc);
+		zfar = float(max(tgt_desc.Width, tgt_desc.Height));
+		D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
+		vTarget = D3DXVECTOR4(2.0f / (float)tgt_desc.Width, 2.0f / (float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height);
 	}
 
-	SAFE_DELETEA(_saveBuffer);
+	pTgt = pRenderTgt;
+	pDep = pDepthStensil;
 
-	pTgt = NULL;
+	Change |= SKPCHG_ALL;
 }
+
+
+
+// ===============================================================================================
+//
+void D3D9Pad::EndDrawing()
+{
+	if (bBeginDraw == false) _wassert(L"D3D9Pad::EndDrawing() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
+
+	bRestore = true;
+
+	Flush();
+
+	bBeginDraw = false;
+
+	if (bMustEndScene) {
+		gc->EndScene();
+		bMustEndScene = false;
+	}
+}
+
+
+
+// ===============================================================================================
+//
+bool D3D9Pad::Flush()
+{
+	UINT numPasses;
+
+	static DWORD bkALPHA, bkZEN, bkZW, bkCULL;
+
+	if (iI > 0) {
+
+		if (bDirty || bOnce) {
+			
+			bOnce = false;
+
+			HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
+			HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
+			HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
+			HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
+
+			HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+			HR(pDev->SetVertexDeclaration(pSketchpadDecl));
+
+			if (dwBlendState == SKPBS_ALPHABLEND) pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
+			else pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
+
+			if (bDepthEnable && pDep) {
+				pDev->SetRenderState(D3DRS_ZENABLE, 1);
+				pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
+			}
+			else {
+				pDev->SetRenderState(D3DRS_ZENABLE, 0);
+				pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+			}
+		}
+
+		HR(FX->SetFloat(eRandom, float(oapiRand())));
+		HR(FX->SetVector(eTarget, &vTarget));
+
+		HR(FX->SetTechnique(eSketch));
+		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+
+		if (vmode == ORTHO) {
+			HR(FX->BeginPass(0));
+		}
+		else {
+			HR(FX->BeginPass(1));
+		}
+
+		if (tCurrent == TRIANGLE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+		if (tCurrent == LINE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, vI, iI / 2, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+
+		HR(FX->EndPass());
+		HR(FX->End());
+
+		if (bDirty || bRestore) {
+			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkALPHA));
+			HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
+			HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
+			HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
+			HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
+		}
+
+		iI = vI = 0;
+
+		return true;
+	}
+
+	return false;
+}
+
+
+// ===============================================================================================
+//
+bool D3D9Pad::Topology(Topo tRequest)
+{
+	if (tRequest == LINE) {
+		if (bLine) { // Can we do LINE Topology ?
+			if (tRequest != tCurrent) Change |= SKPCHG_TOPOLOGY;
+			SetupDevice(tRequest);
+			return true;
+		}
+		return false;
+	}
+
+	if (tRequest != tCurrent) Change |= SKPCHG_TOPOLOGY;
+
+	SetupDevice(tRequest);
+
+	return true;
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::SetupDevice(Topo tNew)
+{
+
+	// Check that this is the top one. Only do the check for ones created with oapiGetSketchpad()
+	if (GetSurface()) assert(gc->GetTopInterface() == this);
+
+	// If the queue is filling up, Flush it
+	//
+	if (iI > (nQueueMax >> 1)) Flush();
+
+
+	// Has something changed ?
+	//
+	if (!Change) return;
+
+
+	// Flush pending drawing instructions before changing a device state
+	//
+	Flush();
+
+	tCurrent = tNew;
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change == SKPCHG_TOPOLOGY) {
+		HR(FX->SetBool(eWide, (tCurrent == TRIANGLE)));
+		Change = 0;
+		return;
+	}
+
+
+	// Apply a new setup -----------------------------------------------
+	//
+	if (Change & (SKPCHG_TRANSFORM | SKPCHG_CLIPCONE)) {
+
+		if (vmode == ORTHO) {
+			D3DXMATRIX mWVP;
+			D3DXMatrixMultiply(&mWVP, &mW, &mO);
+			HR(FX->SetMatrix(eWVP, &mWVP));
+			HR(FX->SetMatrix(eVP, &mO));
+			HR(FX->SetMatrix(eW, &mW));
+			HR(FX->SetBool(eCovEn, false));
+		}
+		else {
+			float d = float(tgt_desc.Height) * mP._22;
+			float f = atan(1.0f / d) * 1.7f;
+			D3DXMatrixMultiply(&mVP, &mV, &mP);
+			HR(FX->SetMatrix(eVP, &mVP));
+			HR(FX->SetMatrix(eW, &mW));
+			HR(FX->SetFloat(eFov, f));
+			HR(FX->SetBool(eCovEn, ClipData[0].bEnable || ClipData[1].bEnable));
+		}
+	}
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change & SKPCHG_PEN) {
+		float offset = 0.0f;
+		int w = int(ceil(GetPenWidth()));
+		if ((w & 1) == 0) offset = 0.5f;
+		HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
+		HR(FX->SetBool(eDashEn, IsDashed()));
+		HR(FX->SetValue(eWidth, &D3DXVECTOR3(GetPenWidth(), pattern*0.13f, offset), sizeof(D3DXVECTOR3)));
+	}
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change & SKPCHG_EFFECTS) {
+		HR(FX->SetValue(eNoiseColor, &Noise, sizeof(FVECTOR4)));
+		HR(FX->SetValue(eGamma, &Gamma, sizeof(FVECTOR4)));
+		HR(FX->SetTexture(eNoiseTex, pNoise));
+		HR(FX->SetValue(eColorMatrix, &ColorMatrix, sizeof(FMATRIX4)));
+		HR(FX->SetBool(eEffectsEn, Enable != 0));
+	}
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change & SKPCHG_CLIPRECT) {
+		if (bEnableScissor) {
+			pDev->SetScissorRect(&ScissorRect);
+			pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 1);
+		}
+		else {
+			pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0);
+		}
+	}
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change & SKPCHG_CLIPCONE) {
+		if (ClipData[0].bEnable || ClipData[1].bEnable) {
+			HR(FX->SetValue(ePos, &ClipData[0].uDir, sizeof(D3DXVECTOR3)));
+			HR(FX->SetValue(ePos2, &ClipData[1].uDir, sizeof(D3DXVECTOR3)));
+			HR(FX->SetValue(eCov, &D3DXVECTOR4(ClipData[0].ca, ClipData[0].dst, ClipData[1].ca, ClipData[1].dst), sizeof(D3DXVECTOR4)));
+		}
+	}
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change & (SKPCHG_TEXTURE | SKPCHG_FONT)) {
+
+		float tw = 1.0f, th = 1.0f;
+
+		D3DSURFACE_DESC desc;
+
+		if (hTexture) {
+
+			hTexture->GetLevelDesc(0, &desc);
+
+			tw = 1.0f / float(desc.Width);
+			th = 1.0f / float(desc.Height);
+
+			if (Change & SKPCHG_TEXTURE) {
+				HR(FX->SetTexture(eTex0, hTexture));
+				HR(FX->SetBool(eKeyEn, bColorKey));
+				HR(FX->SetValue(eKey, &cColorKey, sizeof(D3DXCOLOR)));
+			}
+		}
+
+		if (hFontTex) {
+			if (Change & SKPCHG_FONT) {
+				HR(FX->SetTexture(eFnt0, hFontTex));
+			}
+		}
+
+		HR(FX->SetVector(eSize, &D3DXVECTOR4(tw, th, 1.0f, 1.0f)));
+		HR(FX->SetBool(eTexEn, (hTexture != NULL)));
+		HR(FX->SetBool(eFntEn, (hFontTex != NULL)));
+	}
+
+
+	// Apply a new setup -----------------------------------------------------------------
+	//
+	if (Change & SKPCHG_TOPOLOGY) {
+		HR(FX->SetBool(eWide, (tCurrent == TRIANGLE)));
+	}
+
+	// All Clear
+	Change = 0;
+
+	return;
+}
+
+
+
+
+
+
+
 
 
 // ===============================================================================================
 //
 HDC D3D9Pad::GetDC()
 {
-	pTgt->PrintError(ERR_DC_NOT_AVAILABLE);
+	if (GetSurface()) SURFACE(GetSurface())->PrintError(ERR_DC_NOT_AVAILABLE);
 	return NULL;
 }
 
@@ -285,7 +592,7 @@ HDC D3D9Pad::GetDC()
 //
 Font *D3D9Pad::SetFont(Font *font) const
 {
-	bFontChange = true;
+	// No "Change" falgs required here, covered in SetFontTextureNative()
 
 	Font *pfont = cfont;
 	if (font) cfont = font;
@@ -298,13 +605,17 @@ Font *D3D9Pad::SetFont(Font *font) const
 //
 Brush *D3D9Pad::SetBrush (Brush *brush) const
 {
-	bPenChange = true;
+	// No "Change" falgs required here, color stored in vertex data
+
 	QBrush.bEnabled = false;
 
 	Brush *pbrush = cbrush;
 	cbrush = brush;
 	if (cbrush) brushcolor = static_cast<D3D9PadBrush *>(cbrush)->clr;
 	else	    brushcolor = SkpColor(0);
+
+	IsLineTopologyAllowed();
+
 	return pbrush;
 }
 
@@ -313,13 +624,18 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 //
 Pen *D3D9Pad::SetPen (Pen *pen) const
 {
-	bPenChange = true;
+	// Change required due to pen width and style change
+	Change |= SKPCHG_PEN;
+
 	QPen.bEnabled = false;
 
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
 	else     cpen = NULL;
 	if (cpen) pencolor = static_cast<D3D9PadPen *>(cpen)->clr;
+
+	IsLineTopologyAllowed();
+
 	return ppen;
 }
 
@@ -328,6 +644,7 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 //
 void D3D9Pad::SetTextAlign (TAlign_horizontal _tah, TAlign_vertical _tav)
 {
+	// No Change flags
 	tah = _tah;
 	tav = _tav;
 }
@@ -337,7 +654,7 @@ void D3D9Pad::SetTextAlign (TAlign_horizontal _tah, TAlign_vertical _tav)
 //
 DWORD D3D9Pad::SetTextColor(DWORD col)
 {
-	bFontChange = true;
+	// Color stored in vertex data, no Change required
 	DWORD prev = textcolor.dclr;
 	textcolor = SkpColor(col);
 	return prev;
@@ -348,7 +665,7 @@ DWORD D3D9Pad::SetTextColor(DWORD col)
 //
 DWORD D3D9Pad::SetBackgroundColor(DWORD col)
 {
-	bFontChange = true;
+	// Color stored in vertex data, no Change required
 	DWORD prev = bkcolor.dclr;
 	bkcolor = SkpColor(col);
 	return prev;
@@ -359,7 +676,7 @@ DWORD D3D9Pad::SetBackgroundColor(DWORD col)
 //
 void D3D9Pad::SetBackgroundMode(BkgMode mode)
 {
-	// Does not require a Flush
+	// No Change required
 
 	switch (mode) {
 		case BK_TRANSPARENT: bkmode = TRANSPARENT; break;
@@ -404,7 +721,7 @@ DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 //
 void D3D9Pad::SetOrigin (int x, int y)
 {
-	bViewChange = true;
+	Change |= SKPCHG_TRANSFORM;
 
 	mW._41 = float(x);
 	mW._42 = float(y);
@@ -422,7 +739,7 @@ void D3D9Pad::GetOrigin(int *x, int *y) const
 
 // ===============================================================================================
 //
-bool D3D9Pad::HasPen()
+bool D3D9Pad::HasPen() const
 {
 	if (QPen.bEnabled) return true;
 	if (cpen==NULL) return false;
@@ -433,7 +750,16 @@ bool D3D9Pad::HasPen()
 
 // ===============================================================================================
 //
-bool D3D9Pad::IsDashed()
+void D3D9Pad::IsLineTopologyAllowed() const
+{
+	bLine = false;
+	if ((HasPen() == true) && (GetPenWidth() < 1.1f)) bLine = true;
+}
+
+
+// ===============================================================================================
+//
+bool D3D9Pad::IsDashed() const
 {
 	if (QPen.bEnabled) return QPen.style == 2;
 	if (cpen==NULL) return false;
@@ -444,7 +770,7 @@ bool D3D9Pad::IsDashed()
 
 // ===============================================================================================
 //
-bool D3D9Pad::HasBrush()
+bool D3D9Pad::HasBrush() const
 {
 	if (QBrush.bEnabled) return true;
 	return (cbrush != NULL);
@@ -453,7 +779,7 @@ bool D3D9Pad::HasBrush()
 
 // ===============================================================================================
 //
-float D3D9Pad::GetPenWidth()
+float D3D9Pad::GetPenWidth() const
 {
 	if (QPen.bEnabled) return linescale * QPen.width;
 	if (cpen==NULL) return 1.0f;
@@ -494,6 +820,8 @@ void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 //
 bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 {
+	// No "Setup" required, done on PrintSkp
+
 	if (cfont==NULL) return false;
 
 	bool result = true;
@@ -523,6 +851,7 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 //
 bool D3D9Pad::Text (int x, int y, const char *str, int len)
 {
+	// No "Setup" required, done on PrintSkp
 
 	if (cfont==NULL) return false;
 
@@ -570,10 +899,7 @@ void SwapRB(DWORD *c)
 //
 void D3D9Pad::Pixel (int x, int y, DWORD col)
 {
-	Flush(SKPTECH_PIXLES);
-	SwapRB(&col);
-	RECT rect = { x, y, x+1, y+1 };
-	if (pTgt) pDev->ColorFill(pTgt->pSurf, &rect, col);
+	FillRect(x, y, x + 1, y + 2, SkpColor(col));
 }
 
 
@@ -600,7 +926,7 @@ void D3D9Pad::LineTo (int tx, int ty)
 //
 void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 {
-	Flush(SKPTECH_DRAW);
+	if (!HasPen()) return;
 
 	IVECTOR2 pt[2];
 
@@ -617,13 +943,13 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 //
 void D3D9Pad::FillRect(int l, int t, int r, int b, SkpColor &c)
 {
-	assert(bTriangles);
-
-	AddRectIdx(vI);
-	SkpVtxIC(Vtx[vI++], l, t, c);
-	SkpVtxIC(Vtx[vI++], r, t, c);
-	SkpVtxIC(Vtx[vI++], r, b, c);
-	SkpVtxIC(Vtx[vI++], l, b, c);
+	if (Topology(TRIANGLE)) {
+		AddRectIdx(vI);
+		SkpVtxIC(Vtx[vI++], l, t, c);
+		SkpVtxIC(Vtx[vI++], r, t, c);
+		SkpVtxIC(Vtx[vI++], r, b, c);
+		SkpVtxIC(Vtx[vI++], l, b, c);
+	}
 }
 
 
@@ -634,12 +960,8 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 	if (r <= l) return;
 	if (b <= t) return;
 
-	Flush(SKPTECH_DRAW);
-
 	r--;
 	b--;
-
-	WORD iIdx = iI;
 
 	// Fill interion ----------------------------------------------
 	//
@@ -667,8 +989,6 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 	if (r <= l) return;
 	if (b <= t) return;
 
-	Flush(SKPTECH_DRAW);
-
 	float w = float(r - l); float h = float(b - t);	float fl = float(l); float ft = float(t);
 	DWORD z = max((r-l), (b-t));
 
@@ -692,25 +1012,24 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 		k += s;
 	}
 
-	WORD iIdx = iI;
-
+	
 	// Fill interion -------------------------------------------
 	//
 	if (HasBrush()) {
+		if (Topology(TRIANGLE)) {
 
-		assert(bTriangles);
+			WORD aV = vI;
 
-		WORD aV = vI;
+			SkpVtxIC(Vtx[vI++], (r + l) / 2, (b + t) / 2, brushcolor);
 
-		SkpVtxIC(Vtx[vI++], (r + l) / 2, (b + t) / 2, brushcolor);
-
-		for (WORD i = 0; i < n; i++) SkpVtxIC(Vtx[vI++], pts[i].x, pts[i].y, brushcolor);
-		for (WORD i = 0; i < n; i++) {
-			Idx[iI++] = aV;
-			Idx[iI++] = aV + i + 1;
-			Idx[iI++] = aV + i + 2;
+			for (WORD i = 0; i < n; i++) SkpVtxIC(Vtx[vI++], pts[i].x, pts[i].y, brushcolor);
+			for (WORD i = 0; i < n; i++) {
+				Idx[iI++] = aV;
+				Idx[iI++] = aV + i + 1;
+				Idx[iI++] = aV + i + 2;
+			}
+			Idx[iI - 1] = aV + 1;
 		}
-		Idx[iI-1] = aV + 1;
 	}
 
 	// Draw outline ------------------------------------------
@@ -723,26 +1042,26 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 //
 void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 {
-	Flush(SKPTECH_DRAW);
-
 	if (npt<3) return;
 	if (HasBrush() && npt > 64) return;
+
 
 	// Create filled polygon interior -----------------------------------------
 	//
 	if (HasBrush()) {
+		if (Topology(TRIANGLE)) {
 
-		assert(bTriangles);
-		int sIdx = vI;
+			int sIdx = vI;
 
-		// File a vertex buffer.
-		for (int i = 0; i<npt; i++) SkpVtxIC(Vtx[vI++], pt[i].x, pt[i].y, brushcolor);
+			// File a vertex buffer.
+			for (int i = 0; i < npt; i++) SkpVtxIC(Vtx[vI++], pt[i].x, pt[i].y, brushcolor);
 
-		WORD qIdx[256];
-		int nIdx = CreatePolyIndexList<IVECTOR2>(pt, npt, qIdx);
+			WORD qIdx[256];
+			int nIdx = CreatePolyIndexList<IVECTOR2>(pt, npt, qIdx);
 
-		// Add indices to index buffer
-		for (int i = 0; i < nIdx; i++) Idx[iI++] = qIdx[i] + sIdx;
+			// Add indices to index buffer
+			for (int i = 0; i < nIdx; i++) Idx[iI++] = qIdx[i] + sIdx;
+		}
 	}
 
 	// Draw outline ------------------------------------------
@@ -755,10 +1074,7 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 {
-	Flush(SKPTECH_DRAW);
-
 	if (npt < 2) return;
-
 	if (HasPen()) AppendLineVertexList<IVECTOR2>(pt, npt, false);
 }
 
@@ -767,8 +1083,12 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 {
-	Flush(SKPTECH_POLY);
-	if (HasPen()) static_cast<D3D9PolyLine *>(hPoly)->Draw(pDev, flags);
+	if (!HasPen()) return;
+
+	// Flush pending graphics before a use of different interface 
+	Flush();
+
+	static_cast<D3D9PolyLine *>(hPoly)->Draw(pDev, flags);
 }
 
 
@@ -776,14 +1096,14 @@ void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 //
 void D3D9Pad::Lines(FVECTOR2 *pt, int nlines)
 {
-	Flush(SKPTECH_DRAW);
-	if (HasPen()) {
-		for (int i = 0; i < nlines; i++) {
-			AppendLineVertexList<FVECTOR2>(pt);
-			pt += 2;
-		}
+	if (!HasPen()) return;
+	for (int i = 0; i < nlines; i++) {
+		AppendLineVertexList<FVECTOR2>(pt);
+		pt += 2;
 	}
 }
+
+
 
 
 // -----------------------------------------------------------------------------------------------
@@ -953,18 +1273,18 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 {
 	if (_npt < 2) return;
 
-	WORD npt = WORD(_npt);
-	WORD wL = vI;
-	WORD li = WORD(npt - 1);
-	WORD aV, bV, cV, dV;
-
-	float length = 0.0f;
 
 	// ----------------------------------------------------------------------
 	// Draw a thin hairline
 	// ----------------------------------------------------------------------
 
-	if (!bTriangles) {
+	if (Topology(LINE)) {
+
+		WORD npt = WORD(_npt);
+		WORD wL = vI;
+		WORD li = WORD(npt - 1);
+		WORD aV;
+		float length = 0.0f;
 
 		// Create line segments -------------------------------------------------
 		//
@@ -973,7 +1293,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 			Vtx[vI].x = float(pt[i].x);
 			Vtx[vI].y = float(pt[i].y);
 			Vtx[vI].l = length;
-			Vtx[vI].fnc = SKPSW_THINPEN;
+			Vtx[vI].fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 			Vtx[vI].clr = pencolor.dclr;
 
 			if (IsDashed() && i!=li) {
@@ -1006,63 +1326,72 @@ void D3D9Pad::AppendLineVertexList(const Type *pt, int _npt, bool bLoop)
 	// Wide line mode
 	// ----------------------------------------------------------------------
 
-	D3DXVECTOR2 pp; // Prev point
-	D3DXVECTOR2 np;	// Next point
+	if (Topology(TRIANGLE)) {
 
-	// Line Init ------------------------------------------------------------
-	//
-	if (bLoop) pp = _DXV2(pt[npt - 1]);
-	else	   pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
+		WORD npt = WORD(_npt);
+		WORD wL = vI;
+		WORD li = WORD(npt - 1);
+		WORD aV, bV, cV, dV;
+		float length = 0.0f;
 
-	// Create line segments -------------------------------------------------
-	//
-	for (WORD i = 0; i<npt; i++) {
+		D3DXVECTOR2 pp; // Prev point
+		D3DXVECTOR2 np;	// Next point
 
-		if (i != li)	np = _DXV2(pt[i + 1]);
-		else {
-			if (bLoop)	np = _DXV2(pt[0]);
-			else		np = _DXV2(pt[i]) * 2.0 - _DXV2(pt[i-1]);
+		// Line Init ------------------------------------------------------------
+		//
+		if (bLoop) pp = _DXV2(pt[npt - 1]);
+		else	   pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
+
+		// Create line segments -------------------------------------------------
+		//
+		for (WORD i = 0; i < npt; i++) {
+
+			if (i != li)	np = _DXV2(pt[i + 1]);
+			else {
+				if (bLoop)	np = _DXV2(pt[0]);
+				else		np = _DXV2(pt[i]) * 2.0 - _DXV2(pt[i - 1]);
+			}
+
+			WORD vII = vI + 1;
+
+			// --------------------------------------
+			Vtx[vI].x = Vtx[vII].x = float(pt[i].x);
+			Vtx[vI].y = Vtx[vII].y = float(pt[i].y);
+			Vtx[vI].nx = Vtx[vII].nx = np.x;
+			Vtx[vI].ny = Vtx[vII].ny = np.y;
+			Vtx[vI].px = Vtx[vII].px = pp.x;
+			Vtx[vI].py = Vtx[vII].py = pp.y;
+			Vtx[vI].l = Vtx[vII].l = length;
+			Vtx[vI].clr = Vtx[vII].clr = pencolor.dclr;
+			// --------------------------------------
+
+			Vtx[vI].fnc = SKPSW_WIDEPEN_L | SKPSW_FRAGMENT;
+			aV = vI; vI++;
+			Vtx[vI].fnc = SKPSW_WIDEPEN_R | SKPSW_FRAGMENT;
+			bV = vI; vI++;
+			// --------------------------------------
+
+			if (i > 0) {
+				Idx[iI++] = cV;	Idx[iI++] = aV;
+				Idx[iI++] = dV;	Idx[iI++] = dV;
+				Idx[iI++] = aV;	Idx[iI++] = bV;
+			}
+
+			cV = aV;
+			dV = bV;
+
+			pp = _DXV2(pt[i]);
+
+			if (IsDashed()) length += D3DXVec2Length(&(np - pp));
 		}
 
-		WORD vII = vI + 1;
-
-		// --------------------------------------
-		Vtx[vI].x = Vtx[vII].x = float(pt[i].x);
-		Vtx[vI].y = Vtx[vII].y = float(pt[i].y);
-		Vtx[vI].nx = Vtx[vII].nx = np.x;
-		Vtx[vI].ny = Vtx[vII].ny = np.y;
-		Vtx[vI].px = Vtx[vII].px = pp.x;
-		Vtx[vI].py = Vtx[vII].py = pp.y;
-		Vtx[vI].l = Vtx[vII].l = length;
-		Vtx[vI].clr = Vtx[vII].clr = pencolor.dclr;
-		// --------------------------------------
-
-		Vtx[vI].fnc = SKPSW_WIDEPEN_L;
-		aV = vI; vI++;
-		Vtx[vI].fnc = SKPSW_WIDEPEN_R;
-		bV = vI; vI++;
-		// --------------------------------------
-
-		if (i > 0) {
-			Idx[iI++] = cV;	Idx[iI++] = aV;
-			Idx[iI++] = dV;	Idx[iI++] = dV;
-			Idx[iI++] = aV;	Idx[iI++] = bV;
+		// Last segment ---------------------------------------------------------
+		//
+		if (bLoop) {
+			Idx[iI++] = wL;		Idx[iI++] = aV;
+			Idx[iI++] = wL + 1;	Idx[iI++] = wL + 1;
+			Idx[iI++] = aV;		Idx[iI++] = bV;
 		}
-
-		cV = aV;
-		dV = bV;
-
-		pp = _DXV2(pt[i]);
-
-		if (IsDashed()) length += D3DXVec2Length(&(np-pp));
-	}
-
-	// Last segment ---------------------------------------------------------
-	//
-	if (bLoop) {
-		Idx[iI++] = wL;		Idx[iI++] = aV;
-		Idx[iI++] = wL + 1;	Idx[iI++] = wL + 1;
-		Idx[iI++] = aV;		Idx[iI++] = bV;
 	}
 }
 
@@ -1077,11 +1406,11 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 	// Draw a thin hairline
 	// ----------------------------------------------------------------------
 
-	if (!bTriangles) {
+	if (Topology(LINE)) {
 
 		Vtx[vI].x = float(pt[0].x);
 		Vtx[vI].y = float(pt[0].y);
-		Vtx[vI].fnc = SKPSW_THINPEN;
+		Vtx[vI].fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 		Vtx[vI].l = 0.0f;
 		Vtx[vI].clr = pencolor.dclr;
 		Idx[iI++] = vI;
@@ -1091,7 +1420,7 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 		Vtx[vI].y = float(pt[1].y);
 		Vtx[vI].px = float(pt[0].x);
 		Vtx[vI].py = float(pt[0].y);
-		Vtx[vI].fnc = SKPSW_THINPEN | SKPSW_LENGTH;
+		Vtx[vI].fnc = SKPSW_CENTER | SKPSW_LENGTH | SKPSW_FRAGMENT;
 		Vtx[vI].clr = pencolor.dclr;
 		Idx[iI++] = vI;
 		vI++;
@@ -1104,45 +1433,48 @@ void D3D9Pad::AppendLineVertexList(const Type *pt)
 	// Wide line mode
 	// ----------------------------------------------------------------------
 
-	D3DXVECTOR2  pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
-	D3DXVECTOR2  np;
+	if (Topology(TRIANGLE)) {
 
-	WORD vF = vI;
+		D3DXVECTOR2  pp = _DXV2(pt[0]) * 2.0 - _DXV2(pt[1]);
+		D3DXVECTOR2  np;
 
-	for (int i = 0; i < 2; i++) {
+		WORD vF = vI;
 
-		if (i == 0) np = _DXV2(pt[1]);
-		else np = _DXV2(pt[1]) * 2.0 - _DXV2(pt[0]);
+		for (int i = 0; i < 2; i++) {
 
-		WORD vII = vI + 1;
+			if (i == 0) np = _DXV2(pt[1]);
+			else np = _DXV2(pt[1]) * 2.0 - _DXV2(pt[0]);
 
-		// --------------------------------------
-		Vtx[vI].x = Vtx[vII].x = float(pt[i].x);
-		Vtx[vI].y = Vtx[vII].y = float(pt[i].y);
-		Vtx[vI].nx = Vtx[vII].nx = np.x;
-		Vtx[vI].ny = Vtx[vII].ny = np.y;
-		Vtx[vI].px = Vtx[vII].px = pp.x;
-		Vtx[vI].py = Vtx[vII].py = pp.y;
-		Vtx[vI].l = Vtx[vII].l = 0.0f;
-		Vtx[vI].clr = Vtx[vII].clr = pencolor.dclr;
-		// --------------------------------------
-		Vtx[vI].fnc = SKPSW_WIDEPEN_L;
-		if (i) Vtx[vI].fnc |= SKPSW_LENGTH;
-		vI++;
-		Vtx[vI].fnc = SKPSW_WIDEPEN_R;
-		if (i) Vtx[vI].fnc |= SKPSW_LENGTH;
-		vI++;
-		// --------------------------------------
+			WORD vII = vI + 1;
 
-		pp = _DXV2(pt[i]);
+			// --------------------------------------
+			Vtx[vI].x = Vtx[vII].x = float(pt[i].x);
+			Vtx[vI].y = Vtx[vII].y = float(pt[i].y);
+			Vtx[vI].nx = Vtx[vII].nx = np.x;
+			Vtx[vI].ny = Vtx[vII].ny = np.y;
+			Vtx[vI].px = Vtx[vII].px = pp.x;
+			Vtx[vI].py = Vtx[vII].py = pp.y;
+			Vtx[vI].l = Vtx[vII].l = 0.0f;
+			Vtx[vI].clr = Vtx[vII].clr = pencolor.dclr;
+			// --------------------------------------
+			Vtx[vI].fnc = SKPSW_WIDEPEN_L | SKPSW_FRAGMENT;
+			if (i) Vtx[vI].fnc |= SKPSW_LENGTH;
+			vI++;
+			Vtx[vI].fnc = SKPSW_WIDEPEN_R | SKPSW_FRAGMENT;
+			if (i) Vtx[vI].fnc |= SKPSW_LENGTH;
+			vI++;
+			// --------------------------------------
+
+			pp = _DXV2(pt[i]);
+		}
+
+		Idx[iI++] = vF + 0;
+		Idx[iI++] = vF + 1;
+		Idx[iI++] = vF + 2;
+		Idx[iI++] = vF + 1;
+		Idx[iI++] = vF + 3;
+		Idx[iI++] = vF + 2;
 	}
-
-	Idx[iI++] = vF + 0;
-	Idx[iI++] = vF + 1;
-	Idx[iI++] = vF + 2;
-	Idx[iI++] = vF + 1;
-	Idx[iI++] = vF + 3;
-	Idx[iI++] = vF + 2;
 }
 
 
@@ -1159,9 +1491,11 @@ D3DXHANDLE   D3D9Pad::eFov = 0;
 D3DXHANDLE   D3D9Pad::eRandom = 0;
 D3DXHANDLE   D3D9Pad::eTarget = 0;
 D3DXHANDLE   D3D9Pad::eTexEn = 0;
+D3DXHANDLE   D3D9Pad::eFntEn = 0;
 D3DXHANDLE   D3D9Pad::eKeyEn = 0;
 D3DXHANDLE   D3D9Pad::eWidth = 0;
 D3DXHANDLE   D3D9Pad::eTex0 = 0;
+D3DXHANDLE   D3D9Pad::eFnt0 = 0;
 D3DXHANDLE   D3D9Pad::eDashEn = 0;
 D3DXHANDLE   D3D9Pad::eSize = 0;
 D3DXHANDLE   D3D9Pad::eWide = 0;

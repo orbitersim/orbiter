@@ -72,7 +72,6 @@ _D3D9Stats D3D9Stats;
 
 bool bFreeze = false;
 bool bFreezeEnable = false;
-bool bSketchpadOpen = false;
 
 // Module local constellation marker storage
 static GraphicsClient::LABELSPEC *g_cm_list = NULL;
@@ -254,13 +253,13 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	bControlPanel (false),
 	bScatterUpdate(false),
 	bFullscreen   (false),
-	bGDIBB        (false),
 	bAAEnabled    (false),
 	bFailed       (false),
 	bRunning      (false),
 	bHalt         (false),
 	bVertexTex    (false),
 	bVSync        (false),
+	bRendering	  (false),
 	viewW         (0),
 	viewH         (0),
 	viewBPP       (0),
@@ -433,11 +432,10 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	WriteLog("[3DDevice Initialized]");
 
-	pDevice	= pFramework->GetD3DDevice();
+	pDevice		= pFramework->GetD3DDevice();
 	viewW		= pFramework->GetWidth();
 	viewH		= pFramework->GetHeight();
 	bFullscreen = (pFramework->IsFullscreen() == TRUE);
-	bGDIBB		= (pFramework->IsGDIBB() == TRUE);
 	bAAEnabled  = (pFramework->IsAAEnabled() == TRUE);
 	viewBPP		= 32;
 	bVertexTex  = (pFramework->HasVertexTextureSup() == TRUE);
@@ -445,14 +443,15 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	char fld[] = "D3D9Client";
 
-	//if (bGDIBB) Config->SketchpadMode = 1;
-
 	HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pNoiseTex));
 
 	D3D9ClientSurface::D3D9TechInit(this, pDevice, fld);
 
 	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
+	HR(pDevice->GetDepthStencilSurface(&pDepthStencil));
+
 	LogAlw("Render Target = 0x%X", pBackBuffer);
+	LogAlw("DepthStencil = 0x%X", pDepthStencil);
 
 	meshmgr		= new MeshManager(this);
 	texmgr	    = new TextureManager(this);
@@ -591,6 +590,17 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 
 		LogAlw("================ clbkCloseSession ===============");
 
+
+		// Check the status of RenderTarget Stack ------------------------------------------------
+		//
+		if (RenderStack.empty() == false) {
+			LogErr("RenderStack contains %d items:", RenderStack.size());
+			while (!RenderStack.empty()) {
+				LogErr("RenderTarget=0x%X, DepthStencil=0x%X", RenderStack.top().pColor, RenderStack.top().pDepthStencil);
+				RenderStack.pop();
+			}
+		}
+
 		// Disable rendering and some other systems
 		//
 		bRunning = false;
@@ -679,7 +689,8 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 		SAFE_RELEASE(pSplashScreen);	// Splash screen related
 		SAFE_RELEASE(pTextScreen);		// Splash screen related
-		SAFE_RELEASE(pBackBuffer);		// Splash screen related
+		SAFE_RELEASE(pBackBuffer);
+		SAFE_RELEASE(pDepthStencil);
 
 		LPD3D9CLIENTSURFACE pBBuf = GetBackBufferHandle();
 
@@ -733,6 +744,130 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 	}
 }
+
+// ==============================================================
+
+void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp)
+{
+	if (surf) {
+		LPDIRECT3DSURFACE9 pTgt = SURFACE(surf)->GetSurface();
+		LPDIRECT3DSURFACE9 pDep = SURFACE(surf)->GetDepthStencil();
+		PushRenderTarget(pTgt, pDep);
+		RenderStack.top().pSkp = pSkp;
+	}
+}
+
+// ==============================================================
+
+void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil)
+{
+	RenderTgtData data;
+	data.pColor = pColor;
+	data.pDepthStencil = pDepthStencil;
+	data.pSkp = NULL;
+	
+	LPDIRECT3DSURFACE9 pCurrentColor = NULL;
+	LPDIRECT3DSURFACE9 pCurrentDepth = NULL;
+
+	if (RenderStack.empty() == false) {
+		pCurrentColor = RenderStack.top().pColor;
+		pCurrentDepth = RenderStack.top().pDepthStencil;
+	}
+
+	if (pCurrentColor != pColor) {
+		if (pColor) {
+			D3DSURFACE_DESC desc;
+			pColor->GetDesc(&desc);
+			D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
+			pDevice->SetViewport(&vp);
+		}
+		pDevice->SetRenderTarget(0, pColor);
+	}
+
+	if (pCurrentDepth != pDepthStencil) {
+		pDevice->SetDepthStencilSurface(pDepthStencil);
+	}
+
+	RenderStack.push(data);
+}
+
+// ==============================================================
+
+void D3D9Client::AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil)
+{
+	LPDIRECT3DSURFACE9 pCurrentColor = NULL;
+	LPDIRECT3DSURFACE9 pCurrentDepth = NULL;
+
+	if (RenderStack.empty() == false) {
+		pCurrentColor = RenderStack.top().pColor;
+		pCurrentDepth = RenderStack.top().pDepthStencil;
+	}
+
+	if (pCurrentColor != pColor) {
+		D3DSURFACE_DESC desc;
+		pColor->GetDesc(&desc);
+		D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
+
+		pDevice->SetViewport(&vp);
+		pDevice->SetRenderTarget(0, pColor);
+	}
+
+	if (pCurrentDepth != pDepthStencil) {
+		pDevice->SetDepthStencilSurface(pDepthStencil);
+	}
+}
+
+// ==============================================================
+
+void D3D9Client::PopRenderTargets() 
+{
+	assert(RenderStack.empty() == false);
+
+	RenderStack.pop();
+
+	if (RenderStack.empty()) {
+		pDevice->SetRenderTarget(0, NULL);
+		pDevice->SetDepthStencilSurface(NULL);
+		return;
+	}
+
+	LPDIRECT3DSURFACE9 pColor = RenderStack.top().pColor;
+
+	if (pColor) {
+		D3DSURFACE_DESC desc;
+		pColor->GetDesc(&desc);
+		D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
+
+		pDevice->SetViewport(&vp);
+		pDevice->SetRenderTarget(0, pColor);
+		pDevice->SetDepthStencilSurface(RenderStack.top().pDepthStencil);
+	}
+}
+
+// ==============================================================
+
+LPDIRECT3DSURFACE9 D3D9Client::GetTopDepthStencil()
+{
+	if (RenderStack.empty()) return NULL;
+	return RenderStack.top().pDepthStencil;
+}
+
+// ==============================================================
+
+LPDIRECT3DSURFACE9 D3D9Client::GetTopRenderTarget()
+{
+	if (RenderStack.empty()) return NULL;
+	return RenderStack.top().pColor;
+}
+
+// ==============================================================
+
+D3D9Pad *D3D9Client::GetTopInterface()
+{
+	if (RenderStack.empty()) return NULL;
+	return RenderStack.top().pSkp;
+}
+
 
 // ==============================================================
 
@@ -2119,11 +2254,10 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 	for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 		if (it->id == id) {
 			D3D9Pad *pSkp2 = (D3D9Pad *)pSkp;
-			pSkp2->Reset();
-			if (pV) memcpy(pSkp2->ViewMatrix(), pV, sizeof(D3DXMATRIX));
-			if (pP) memcpy(pSkp2->ProjectionMatrix(), pP, sizeof(D3DXMATRIX));
+			pSkp2->LoadDefaults();
+			pSkp2->SetViewMatrix((FMATRIX4 *)pV);
+			pSkp2->SetProjectionMatrix((FMATRIX4 *)pP);
 			it->proc(pSkp, it->pParam);
-			pSkp2->EndDrawing();
 		}
 	}
 }
@@ -2168,7 +2302,7 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 	if (line == 1) strcpy_s(pLoadItem, 127, txt); else
 	if (line == 0) strcpy_s(pLoadLabel, 127, txt), pLoadItem[0] = '\0'; // New top line => clear 2nd line
 
-	if (bSketchpadOpen==false && pTextScreen) {
+	if (pTextScreen) {
 
 		if (pDevice->TestCooperativeLevel()!=S_OK) {
 			LogErr("TestCooperativeLevel() Failed");
@@ -2300,7 +2434,6 @@ void D3D9Client::SplashScreen()
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
-	char dataC[]={"Warning: Running in GDI compatibility mode. Expect a low framerate."};
 	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Please create symbolic link."};
 
 	int xc = viewW*750/1280;
@@ -2309,11 +2442,6 @@ void D3D9Client::SplashScreen()
 	TextOut(hDC, xc, yc + 0*20, "ORBITER Space Flight Simulator",30);
 	TextOut(hDC, xc, yc + 1*20, dataB, strlen(dataB));
 	TextOut(hDC, xc, yc + 2*20, dataA, strlen(dataA));
-
-	if (bGDIBB) {
-		SetTextAlign(hDC, TA_CENTER);
-		TextOut(hDC, viewW/2, viewH-30, dataC, strlen(dataC));
-	}
 
 	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
 
@@ -2334,79 +2462,106 @@ void D3D9Client::SplashScreen()
 	pDevice->Present(0, 0, 0, 0);
 }
 
+// =======================================================================
+
+HRESULT D3D9Client::BeginScene()
+{
+	bRendering = false;
+	HRESULT hr = pDevice->BeginScene();
+	if (hr == S_OK) bRendering = true;
+	return hr;
+}
+
+// =======================================================================
+
+void D3D9Client::EndScene()
+{
+	pDevice->EndScene();
+	bRendering = false;
+}
+
+// =======================================================================
 
 #pragma region Drawing_(Sketchpad)_Interface
 
 
 double sketching_time;
 
-// ==============================================================
+// =======================================================================
 // 2D Drawing Interface
 //
 oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 {
 	_TRACE;
-	
-	sketching_time = D3D9GetTime();
-	if (bSketchpadOpen) LogErr("an other Sketchpad is already open");
+	oapi::Sketchpad *pSkp = NULL;
 
+	sketching_time = D3D9GetTime();
+	
 	if (surf == NULL) surf = GetBackBufferHandle();
 
-	LogOk("Creating SketchPad for surface (0x%X)(%u,%u)...", surf, SURFACE(surf)->GetWidth(), SURFACE(surf)->GetHeight());
-
-	// Sketching to backbuffer -----------------------------------------------------
-	//
-	if (SURFACE(surf)->IsBackBuffer()) {
-		bool bScene = GetScene()->IsRendering();
-		if (bScene==true || bGDIBB==false) {
-			if (bScene==false) pDevice->BeginScene(); // bScene is true between BeginScene() and EndScene() of the main rendering routine
-			bSketchpadOpen = true;
-			return new D3D9Pad(surf);
-		}
-	}
-	
-	// Auto-select a sketchpad -----------------------------------------------------
-	//
 	if (SURFACE(surf)->IsRenderTarget()) {
-		bSketchpadOpen = true;
-		return new D3D9Pad(surf);	
+
+		// Get Pooled Sketchpad
+		D3D9Pad *pPad = SURFACE(surf)->GetD3D9Pad();
+		
+		// Get Current interface if any
+		D3D9Pad *pCur = GetTopInterface();
+
+		// Do we have an existing SketchPad interface in use
+		if (pCur) {
+			if (pCur == pPad) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
+			pCur->EndDrawing();	// Put the current one in hold
+		}
+		
+		// Push a new Sketchpad onto a stack
+		PushSketchpad(surf, pPad);
+		
+		pPad->BeginDrawing();
+		pPad->LoadDefaults();
+
+		pSkp = pPad;
 	}
 	else {
-		HDC hDC = clbkGetSurfaceDC(surf);
-		if (hDC) {
-			bSketchpadOpen = true;
-			return new GDIPad(surf, hDC);
-		}
+		HDC hDC = SURFACE(surf)->GetDC();
+		if (hDC) pSkp = new GDIPad(surf, hDC);
 	}
-	
-	return NULL;
+
+	return pSkp;
 }
 
+// =======================================================================
 
 void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 {
 	_TRACE;
-	bSketchpadOpen = false;
+	if (!sp) return;
 
-	SURFHANDLE surf = sp->GetSurface();
+	SURFHANDLE hSrf = sp->GetSurface();
 
-	if (surf) {
-		if (SURFACE(surf)->GetSketchPadMode()==SKETCHPAD_GDI) {
-			GDIPad *gdip = (GDIPad*)sp;
-			clbkReleaseSurfaceDC(gdip->GetSurface(), gdip->GetDC());
-			delete gdip;
-		}
-		if (SURFACE(surf)->GetSketchPadMode()==SKETCHPAD_DIRECTX) {
-			if (SURFACE(surf)->IsBackBuffer()) {
-				if (!GetScene()->IsRendering()) pDevice->EndScene();
-			}
-			D3D9Pad *gdip = (D3D9Pad*)sp;
-			delete gdip;
-		}
+	if (SURFACE(hSrf)->IsRenderTarget()) {
+		
+		D3D9Pad *pPad = ((D3D9Pad*)sp);
+
+		if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
+
+		pPad->EndDrawing();
+
+		PopRenderTargets();
+
+		// Do we have an old interface ?
+		D3D9Pad *pOld = GetTopInterface();
+		if (pOld) pOld->BeginDrawing();	// Continue with the old one
 	}
+	else {
+		GDIPad *pGDI = (GDIPad *)sp;
+		SURFACE(hSrf)->ReleaseDC(pGDI->GetDC());
+		delete pGDI;
+	}
+
 	sketching_time = D3D9GetTime() - sketching_time;
-	LogOk("...SketchPad Released.  Time spend %.2fms", sketching_time*1e-3);
 }
+
+// =======================================================================
 
 Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
 {
@@ -2414,6 +2569,7 @@ Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::
 	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
 }
 
+// =======================================================================
 
 /*Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
 {
@@ -2425,12 +2581,16 @@ Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::
 	return clbkCreateFontEx(height, 0, prop, face, flags, orientation);
 }*/
 
+// =======================================================================
+
 Font *D3D9Client::clbkCreateFontEx(int height, int width, bool prop, const char *face, DWORD flags, int orientation) const
 {
 	_TRACE;
 	return NULL;
 	//return *g_fonts.insert(new D3D9PadFont(height, width, prop, face, flags, orientation)).first;
 }
+
+// =======================================================================
 
 void D3D9Client::clbkReleaseFont(Font *font) const
 {
@@ -2439,11 +2599,15 @@ void D3D9Client::clbkReleaseFont(Font *font) const
 	delete ((D3D9PadFont*)font);
 }
 
+// =======================================================================
+
 Pen *D3D9Client::clbkCreatePen(int style, int width, DWORD col) const
 {
 	_TRACE;
 	return *g_pens.insert(new D3D9PadPen(style, width, col)).first;
 }
+
+// =======================================================================
 
 void D3D9Client::clbkReleasePen(Pen *pen) const
 {
@@ -2452,11 +2616,15 @@ void D3D9Client::clbkReleasePen(Pen *pen) const
 	delete ((D3D9PadPen*)pen);
 }
 
+// =======================================================================
+
 Brush *D3D9Client::clbkCreateBrush(DWORD col) const
 {
 	_TRACE;
 	return *g_brushes.insert(new D3D9PadBrush(col)).first;
 }
+
+// =======================================================================
 
 void D3D9Client::clbkReleaseBrush(Brush *brush) const
 {
@@ -2475,6 +2643,8 @@ VisObject::VisObject(OBJHANDLE hObj) : hObj(hObj)
 {
 	_TRACE;
 }
+
+// =======================================================================
 
 VisObject::~VisObject ()
 {

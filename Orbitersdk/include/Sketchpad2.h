@@ -24,6 +24,7 @@ using namespace oapi;
 ///@{
 #define	MF_SMOOTH_SHADE		0x1					///< Perform smooth shading (i.e. shallow angles gets darkened) 
 #define	MF_CULL_NONE		0x2					///< Do not perform front/back face culling
+#define	MF_RENDER_ALL		0x4					///< Render all meshgroups
 ///@}
 
 /// \defgroup FntCreation Font creation flags
@@ -35,6 +36,15 @@ using namespace oapi;
 // Additional code pages
 #define FNT_GREEK			0x1000				///< Request additional code page
 ///@}
+
+
+#define SKPBS_ALPHABLEND	0x0001
+#define SKPBS_COPY			0x0002
+
+
+#define SKP3_PRM_GAMMA				1
+#define SKP3_PRM_NOISE				2
+
 
 namespace oapi {
 
@@ -114,21 +124,21 @@ namespace oapi {
 
 
 		/**
-		* \brief Get/Set a View matrix
+		* \brief Get a View matrix. [Read only]
 		*/
-		virtual	FMATRIX4 *ViewMatrix() { assert(false); return NULL; }
+		virtual	const FMATRIX4 *ViewMatrix() const { assert(false); return NULL; }
 
 
 		/**
-		* \brief Get/Set a Projection matrix
+		* \brief Get a Projection matrix. [Read only]
 		*/
-		virtual	FMATRIX4 *ProjectionMatrix() { assert(false); return NULL; }
+		virtual	const FMATRIX4 *ProjectionMatrix() const { assert(false); return NULL; }
 
 
 		/**
 		* \brief Get combined view projection matrix. [Read only]
 		*/
-		virtual	const FMATRIX4 *GetViewProjectionMatrix() { assert(false); return NULL; }
+		virtual	const FMATRIX4 *GetViewProjectionMatrix() const { assert(false); return NULL; }
 
 
 		/**
@@ -284,15 +294,26 @@ namespace oapi {
 		* \param nlines number of lines to draw
 		*/
 		virtual void Lines(FVECTOR2 *pt1, int nlines) { assert(false); }
+
+
+		/**
+		* \brief Set up a view matrix.
+		* \param pV A pointet to FMATRIX4, NULL to reset default settings.
+		*/
+		virtual	void SetViewMatrix(const FMATRIX4 *pV = NULL) { assert(false); }
+
+
+		/**
+		* \brief Set up a projection matrix.
+		* \param pP A pointet to FMATRIX4, NULL to reset default settings.
+		*/
+		virtual	void SetProjectionMatrix(const FMATRIX4 *pP = NULL) { assert(false); }
 	};
 
 
 
 
 
-
-#define SKP3_PRM_GAMMA				1
-#define SKP3_PRM_NOISE				2
 
 
 	/**
@@ -355,6 +376,13 @@ namespace oapi {
 		* \sa SetRenderParam
 		*/
 		virtual void SetRenderParam(int param, FVECTOR4 *data = NULL) { assert(false); }
+
+
+		/**
+		* \brief Setup a blending state 
+		* \param dwState Desired configuration
+		*/
+		virtual void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND) { assert(false); }
 	};
 
 } // namespace oapi

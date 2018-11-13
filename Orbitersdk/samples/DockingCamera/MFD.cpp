@@ -1,4 +1,4 @@
-// =================================================================================================================================
+﻿// =================================================================================================================================
 //
 // Copyright (C) 2018 Jarmo Nikkanen
 //
@@ -32,6 +32,9 @@
 #include "gcAPI.h"
 #include "Sketchpad2.h"
 #include "Shell.h"
+
+
+#define ENABLE_OVERLAY false
 
 // ============================================================================================================
 // Global variables
@@ -126,7 +129,7 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 	, bNightVis(false)
 	, bCross(true)
 	, fov(30.0)	  // fov (i.e. Aparture) which is 1/2 of the vertical fov see oapiCameraAperture()
-	, offset(0.0) // -0.2 "looks" better ?!
+	, offset(-0.2)
 {
 
 	font = oapiCreateFont (w/20, true, "Arial", (FontStyle)(FONT_BOLD | FONT_ITALIC), 450);
@@ -141,6 +144,9 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 
 		// Clear the surface
 		oapiClearSurface(hRenderSrf);	
+
+		// Register camera overlay render proc to draw into the actual rendering surface
+		if (ENABLE_OVERLAY)	gcRegisterRenderProc(CameraMFD::DrawOverlay, RENDERPROC_CUSTOMCAM_OVERLAY, this);
 	}
 
 	SelectVessel(hVessel, Type::Dock);
@@ -216,7 +222,7 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 
 	if (hVes != hVessel) {
 		// New Vessel Selected
-		offset = 0.0; // -0.2 "looks" better ?!
+		offset = -0.2;
 		index = 0;
 		type = Type::Dock;
 	}
@@ -271,7 +277,11 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 	// Update will continue untill the camera is turned off via ogciCustomCameraOnOff() or deleted via ogciDeleteCustomCamera()
 	// Camera orientation can be changed by calling this function again with an existing camera handle instead of NULL.
 
-	hCamera = gcSetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, 0xFF);
+	DWORD dwFlags = 0xFF;
+
+	if (ENABLE_OVERLAY) dwFlags |= CUSTOMCAM_OVERLAY;	// Enable overlays for this camera
+
+	hCamera = gcSetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, dwFlags);
 }
 
 // ============================================================================================================
@@ -373,23 +383,27 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 		oapi::Sketchpad3 *pSkp3 = (oapi::Sketchpad3 *)skp;
 
+		if (nDock != 0 || nAtch != 0) {
 
-		if (bNightVis) {
-			pSkp3->SetBrightness(&_FVECTOR4(0.0, 4.0, 0.0, 1));
-			pSkp3->SetRenderParam(SKP3_PRM_GAMMA, &_FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
-			pSkp3->SetRenderParam(SKP3_PRM_NOISE, &_FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
+			if (bNightVis) {
+				pSkp3->SetBrightness(&_FVECTOR4(0.0, 4.0, 0.0, 1));
+				pSkp3->SetRenderParam(SKP3_PRM_GAMMA, &_FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
+				pSkp3->SetRenderParam(SKP3_PRM_NOISE, &_FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
+			}
+
+
+			// Blit the camera view into the sketchpad.
+			pSkp3->CopyRect(hRenderSrf, &sr, 1, 1);
+
+
+			if (bNightVis) {
+				pSkp3->SetBrightness(NULL);
+				pSkp3->SetRenderParam(SKP3_PRM_GAMMA, NULL);
+				pSkp3->SetRenderParam(SKP3_PRM_NOISE, NULL);
+			}
 		}
 
-
-		// Blit the camera view into the sketchpad.
-		pSkp3->CopyRect(hRenderSrf, &sr, 1, 1);
-
-
-		if (bNightVis) {
-			pSkp3->SetBrightness(NULL);
-			pSkp3->SetRenderParam(SKP3_PRM_GAMMA, NULL);
-			pSkp3->SetRenderParam(SKP3_PRM_NOISE, NULL);
-		}
+		//pSkp3->TextW(50, H / 2, L"©®ΒΓΔαβγθΣΩ™Ӕ€", -1);
 
 
 		// Draw the cross-hairs
@@ -423,6 +437,7 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 		return true;
 	}
 	
+
 	if (!hCamera) {
 		static char *msg = { "Custom Cameras Disabled" };
 		skp->Text(W / 2, H / 2, msg, strlen(msg));
@@ -458,11 +473,27 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 	hShell->Title (skp, text);
 
-	sprintf_s(text, 256, "[%s] FOV=%0.0f� Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
+	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
 
 	skp->Text(10, H - tbgh, text, strlen(text));
 	
 	return true;
+}
+
+
+// ============================================================================================================
+//
+void CameraMFD::DrawOverlay(oapi::Sketchpad *pSkp)
+{
+	Sketchpad3 *pSkp3 = dynamic_cast<Sketchpad3*>(pSkp);
+
+	// Must identify the surface, no pre-filtering exists in a caller application
+	// This callback function may receive "render overlay" calls not intended for this CameraMFD
+	if (pSkp3->GetSurface() == hRenderSrf) {
+		pSkp3->QuickPen(0xFF0000FF, 3.0f);
+		pSkp3->Line(0, 0, W, H);
+		pSkp3->Line(0, H, W, 0);
+	}
 }
 
 
@@ -583,6 +614,12 @@ bool CameraMFD::DataInput(void *id, char *str, void *data)
 	return ((CameraMFD*)data)->DataInput(id, str);
 }
 
+// ============================================================================================================
+//
+void CameraMFD::DrawOverlay(oapi::Sketchpad *pSkp, void *pParam)
+{
+	((CameraMFD*)pParam)->DrawOverlay(pSkp);
+}
 
 // ============================================================================================================
 //

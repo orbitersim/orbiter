@@ -190,6 +190,12 @@
     <ClInclude Include="TileLabel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\gcConst.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gcAPI.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CelSphere.h">

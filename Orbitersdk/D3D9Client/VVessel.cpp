@@ -1199,7 +1199,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	scn->PushCamera();
 	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
 	scn->BeginPass(RENDERPASS_ENVCAM);
-	scn->SetRenderTarget(NULL, pEnvDS, true);
+
+	gc->PushRenderTarget(NULL, pEnvDS);
 
 	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;
@@ -1210,7 +1211,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 		assert(SUCCEEDED(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
 
-		scn->SetRenderTarget(pSrf, CURRENT);
+		gc->AlterRenderTarget(pSrf, pEnvDS);
 
 		EnvMapDirection(iFace, &dir, &up);
 
@@ -1229,7 +1230,8 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		if (iFace >= 6) break;
 	}
 
-	scn->SetRenderTarget(RESTORE, RESTORE);
+	gc->PopRenderTargets();
+
 	scn->PopPass();
 	scn->PopCamera();
 
