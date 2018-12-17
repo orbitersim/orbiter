@@ -177,7 +177,7 @@ bool OapiExtension::GetConfigParameter(void)
 
 	FILEHANDLE f = oapiOpenFile("Orbiter_NG.cfg", FILE_IN_ZEROONFAIL, ROOT);
 	if (f) {
-		char  string[32];
+		char  string[MAX_PATH];
 		DWORD flags;
 		float scale, opacity;
 
