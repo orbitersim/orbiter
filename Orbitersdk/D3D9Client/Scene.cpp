@@ -186,8 +186,9 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_COLOR]));
 
 		// Load some textures
-		HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pTextures[TEX_NOISE]));
-		HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9CLUT.dds", &pTextures[TEX_CLUT]));
+		char buff[MAX_PATH];
+		if (gc->TexturePath("D3D9Noise.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, buff, &pTextures[TEX_NOISE]));
+		if (gc->TexturePath("D3D9CLUT.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, buff, &pTextures[TEX_CLUT]));
 
 		if (pLightBlur) {
 			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
