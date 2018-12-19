@@ -226,6 +226,24 @@ bool OapiExtension::GetConfigParameter(void)
 		}
 
 		oapiCloseFile(f, FILE_IN_ZEROONFAIL);
+
+		// Log directory config
+		auto logPath = [](const char *name, const std::string &path) {
+			TCHAR buff[MAX_PATH];
+			if (GetFullPathName(path.c_str(), MAX_PATH, buff, NULL)) {
+				DWORD ftyp = GetFileAttributes(buff);
+				auto result = (ftyp == INVALID_FILE_ATTRIBUTES || !(ftyp & FILE_ATTRIBUTE_DIRECTORY) ? " [[DIR NOT FOUND!]]" : "");
+				oapiWriteLogV("%-11s: %s%s", name, buff, result);
+			}
+		};
+		oapiWriteLog("---------------------------------------------------------------");
+		logPath("BaseDir"    , ".\\");
+		logPath("ConfigDir"  , configDir);
+		logPath("MeshDir"    , meshDir);
+		logPath("TextureDir" , textureDir);
+		logPath("HightexDir" , hightexDir);
+		logPath("ScenarioDir", scenarioDir);
+		oapiWriteLog("---------------------------------------------------------------");
 	}
 
 	// Check for the OrbiterSound version
