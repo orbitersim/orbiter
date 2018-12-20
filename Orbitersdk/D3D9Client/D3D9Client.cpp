@@ -54,6 +54,12 @@ struct D3D9Client::RenderProcData {
 	DWORD id;
 };
 
+struct D3D9Client::GenericProcData {
+	__gcGenericProc proc;
+	void *pParam;
+	DWORD id;
+};
+
 using namespace oapi;
 
 HINSTANCE g_hInst = 0;
@@ -572,6 +578,9 @@ void D3D9Client::clbkPostCreation()
 
 	if (scene) scene->Initialise();
 
+	MakeGenericProcCall(GENERICPROC_LOAD_ORBITERGUI);
+	MakeGenericProcCall(GENERICPROC_LOAD);
+
 	bRunning = true;
 
 	LogAlw("=============== Loading Completed and Visuals Created ================");
@@ -623,8 +632,14 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 			D3D9Mesh *x = (D3D9Mesh*)MeshCatalog->Get(i);
 			if (x) x->DumpTextures();
 		} */
+		//GraphicsClient::clbkCloseSession(fastclose);
 
-		GraphicsClient::clbkCloseSession(fastclose);
+
+		// Sent a signal for user applications to delete fonts, pens, and brushes. 
+		//
+		MakeGenericProcCall(GENERICPROC_UNLOAD);
+		MakeGenericProcCall(GENERICPROC_UNLOAD_ORBITERGUI);
+
 
 		SAFE_DELETE(parser);
 		LogAlw("================= Deleting Scene ================");
@@ -2264,6 +2279,17 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 
 // =======================================================================
 
+void D3D9Client::MakeGenericProcCall(DWORD id)
+{
+	for (auto it = GenericProcs.cbegin(); it != GenericProcs.cend(); ++it) {
+		if (it->id == id) {
+			it->proc(0, NULL, it->pParam);
+		}
+	}
+}
+
+// =======================================================================
+
 bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 {
 	if (id)	{ // register (add)
@@ -2275,6 +2301,26 @@ bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 		for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 			if (it->proc == proc) {
 				RenderProcs.erase(it);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+// =======================================================================
+
+bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
+{
+	if (id) { // register (add)
+		GenericProcData data = { proc, pParam, id };
+		GenericProcs.push_back(data);
+		return true;
+	}
+	else { // unregister (remove)
+		for (auto it = GenericProcs.cbegin(); it != GenericProcs.cend(); ++it) {
+			if (it->proc == proc) {
+				GenericProcs.erase(it);
 				return true;
 			}
 		}

@@ -132,3 +132,82 @@ void D3D9Pad::SetBlendState(DWORD dwState)
 	Flush();
 	dwBlendState = dwState;
 }
+
+
+// ===============================================================================================
+//
+FMATRIX4 D3D9Pad::GetWorldTransform() const
+{ 
+	FMATRIX4 fm;
+	memcpy_s(&fm, sizeof(FMATRIX4), &mW, sizeof(D3DXMATRIX));
+	return fm;
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::PushWorldTransform()
+{ 
+	mWStack.push(mW);
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::PopWorldTransform()
+{ 
+	if (mWStack.empty() == false) {
+		mW = mWStack.top();
+		mWStack.pop();
+		Change |= SKPCHG_TRANSFORM;
+	}
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::SetWorldTransform2D(FVECTOR2 *scl, IVECTOR2 *trl)
+{
+
+	Change |= SKPCHG_TRANSFORM;
+
+	float sx = 1.0f, sy = 1.0f;
+
+	if (scl) sx = scl->x, sy = scl->y;
+
+	D3DXVECTOR3 t;
+
+	t.x = 0;
+	t.y = 0;
+	t.z = 0;
+
+	if (trl) t.x = float(trl->x), t.y = float(trl->y);
+
+	D3DXMatrixScaling(&mW, sx, sy, 1.0f);
+	D3DMAT_SetTranslation(&mW, &t);
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::GradientFillRect(const RECT *R, DWORD c1, DWORD c2, bool bVertical)
+{
+	DWORD a, b, c, d;
+
+	a = d = c1; b = c = c2;
+
+	if (bVertical) { a = b = c1; c = d = c2; }
+
+	int l = R->left;	int r = R->right;
+	int t = R->top;		int m = R->bottom;
+
+	r--; m--;
+
+	if (Topology(TRIANGLE)) {
+		AddRectIdx(vI);
+		SkpVtxGF(Vtx[vI++], l, t, a);
+		SkpVtxGF(Vtx[vI++], r, t, b);
+		SkpVtxGF(Vtx[vI++], r, m, c);
+		SkpVtxGF(Vtx[vI++], l, m, d);
+	}
+}

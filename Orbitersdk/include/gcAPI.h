@@ -1,7 +1,7 @@
 // =================================================================================================================================
 // The MIT Lisence:
 //
-// Copyright (C) 2014 - 2016 Jarmo Nikkanen
+// Copyright (C) 2014 - 2018 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -88,6 +88,12 @@ bool			gcEnabled();
 				* \return Client id DWORD (e.g. 'D3D9') or zero
 				*/
 DWORD			gcClientID();
+
+				/**
+				* \brief Get render window handle
+				* \return Render window handle
+				*/
+HWND			gcGetRenderWindow();
 				//@}
 
 				// ===========================================================================
@@ -132,6 +138,21 @@ bool			gcGenerateMipMaps(SURFHANDLE hSurface);
 				* \return false if an error occured, true otherwise.
 				*/
 bool			gcRegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
+				//@}
+
+
+				// ===========================================================================
+				/// \name Generic callback function
+				// ===========================================================================
+				//@{
+				/**
+				* \brief This function will register a generic callback function
+				* \param proc function to be called when event occur
+				* \param id event id
+				* \param pParam a pointer to user data (to a class for an example)
+				* \return false if an error occured, true otherwise.
+				*/
+bool			gcRegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam);
 				//@}
 
 
@@ -223,11 +244,29 @@ void			gcDeleteSketchMesh(SKETCHMESH hMesh);
 				* \param pt list of vertex points.
 				* \param npt number of points in the list.
 				* \param flags additional PolyFlags flags
-				* \sa gcDeletePoly, DrawPoly()
+				* \sa gcDeletePoly, Sketchpad2::DrawPoly()
 				* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
 				* \note During update number of points must be equal or smaller than during initial creation of poly object.
 				*/
 HPOLY			gcCreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, DWORD flags = 0);
+
+
+				/**
+				* \brief Create or Update a triangle object.
+				* \param hPoly Handle to a triangle to be updated or NULL to create a new one.
+				* \param pt list of vertex points.
+				* \param npt number of points in the list.
+				* \param flags additional flags (see below)
+				* \sa gcDeletePoly, Sketchpad2::DrawPoly()
+				* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
+				* \note During update number of points must be equal or smaller than during initial creation of poly object.
+				* \note Flags:
+				* \note PF_TRIANGLES Each independent triangle is composed from three vertex points. ("npt" must be multiple of 3)	
+				* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
+				* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)	
+				*/
+HPOLY			gcCreateTriangles(HPOLY hPoly, const oapi::TriangleVtx *pt, int npt, DWORD flags);
+
 
 				/**
 				* \brief Deletes a polyline created with gcCreatePolyPolyline()
@@ -235,6 +274,25 @@ HPOLY			gcCreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, DWORD flags
 				* \sa gcCreatePolyline
 				*/
 void			gcDeletePoly(HPOLY hPoly);
+
+				/**
+				* \brief Compute a length of a text string
+				* \param hFont a Pointer into a font 
+				* \param pText a Pointer into a text string
+				* \param len a Length of the text string to process. -1 will scan to a NULL terminator. 
+				*/
+DWORD			gcGetTextLength(oapi::Font *hFont, const char *pText, int len = -1);
+
+				/**
+				* \brief Find index of nearest "cap" between charters in specified location. (i.e. distance from start of the string in pixels) 
+				* \param hFont a Pointer into a font 
+				* \param pText a Pointer into a text line
+				* \param pos a Position in pixels from start of the string
+				* \param len a Length of the text line to process. -1 will process to a NULL terminator. 
+				* \return index from 0 to number of charters. For just one char it can be either "0" or "1" depending which side is closer to "pos".
+				* \note This is used for finding a spot for a "cursor" when a text string is clicked with mouse.
+				*/
+DWORD			gcGetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len = -1);
 				//@}
 
 				
@@ -279,7 +337,7 @@ MATRIX4			gcMatrix4(const oapi::FMATRIX4 *M);
 				/**
 				* \brief Conver a floating point color to DWORD color value
 				* \param c A pointer to a color
-				* \return DWORD color in 0xAARRGGBB
+				* \return DWORD color in 0xAABBGGRR
 				* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 				*/
 DWORD			gcColor(const COLOUR4 *c);
@@ -287,10 +345,18 @@ DWORD			gcColor(const COLOUR4 *c);
 				/**
 				* \brief Conver a floating point color to DWORD color value
 				* \param c A pointer to a color
-				* \return DWORD color in 0xAARRGGBB
+				* \return DWORD color in 0xAABBGGRR
 				* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
 				*/
 DWORD			gcColor(const oapi::FVECTOR4 *c);
+
+				/**
+				* \brief Conver a DWORD color to floating point COLOUR4 value
+				* \param dwABGR A color in 0xAABBGGRR
+				* \return COLOUR4
+				* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
+				*/
+COLOUR4			gcColour4(DWORD dwABGR);
 
 				//@}
 				//@}

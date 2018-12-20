@@ -1,7 +1,7 @@
 // =================================================================================================================================
 // The MIT Lisence:
 //
-// Copyright (C) 2014 - 2016 Jarmo Nikkanen
+// Copyright (C) 2014 - 2018 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -28,8 +28,9 @@ typedef DWORD (OGCIFN *__gcClientID)();
 typedef DWORD (OGCIFN *__gcGetSurfaceAttribs)(SURFHANDLE hSurf, bool bCreation);
 typedef void (OGCIFN *__gcConvertSurface)(SURFHANDLE hSurf, DWORD attrib);
 typedef bool (OGCIFN *__gcGenerateMipMaps)(SURFHANDLE hSurface);
-typedef bool (OGCIFN *__gcRegisterSkinName)(const VISHANDLE hVisual, const char *name);
 typedef bool (OGCIFN *__gcRegisterRenderProc)(__gcRenderProc proc, DWORD id, void *pParam);
+typedef bool (OGCIFN *__gcRegisterGenericProc)(__gcGenericProc proc, DWORD id, void *pParam);
+typedef HWND (OGCIFN *__gcGetRenderWindow)();
 
 // Custom Camera Interface
 typedef int   (OGCIFN *__gcDeleteCustomCamera)(CAMERAHANDLE hCam);
@@ -42,6 +43,9 @@ typedef SKETCHMESH (OGCIFN *__gcLoadSketchMesh)(const char *name);
 typedef void (OGCIFN *__gcDeleteSketchMesh)(SKETCHMESH hMesh);
 typedef HPOLY (OGCIFN *__gcCreatePoly)(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags);
 typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
+typedef DWORD (OGCIFN *__gcGetTextLength)(oapi::Font *hFont, const char *pText, int len);
+typedef DWORD (OGCIFN *__gcGetCharIndexByPosition)(oapi::Font *hFont, const char *pText, int pos, int len);
+typedef HPOLY (OGCIFN *__gcCreateTriangles)(HPOLY hPoly, const TriangleVtx *pt, int npt, DWORD flags);
 
 // Mesh interface functions
 typedef int	(OGCIFN *__gcMeshMaterial)(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
@@ -68,6 +72,11 @@ __gcWorldToScreenSpace _gcWorldToScreenSpace = NULL;
 __gcCreatePoly _gcCreatePoly = NULL;
 __gcDeletePoly _gcDeletePoly = NULL;
 __gcMeshMaterial _gcMeshMaterial = NULL;
+__gcRegisterGenericProc _gcRegisterGenericProc = NULL;
+__gcGetRenderWindow _gcGetRenderWindow = NULL;
+__gcGetTextLength _gcGetTextLength = NULL;
+__gcGetCharIndexByPosition _gcGetCharIndexByPosition = NULL;
+__gcCreateTriangles _gcCreateTriangles = NULL;
 
 
 // ====================================================================================================
@@ -80,7 +89,9 @@ bool PostInit(HMODULE hClient)
 	_gcGetSurfaceAttribs = (__gcGetSurfaceAttribs)GetProcAddress(hClient, "gcGetSurfaceAttribs");
 	_gcConvertSurface = (__gcConvertSurface)GetProcAddress(hClient, "gcConvertSurface");
 	_gcGenerateMipMaps = (__gcGenerateMipMaps)GetProcAddress(hClient, "gcGenerateMipMaps");
+	_gcGetRenderWindow = (__gcGetRenderWindow)GetProcAddress(hClient, "gcGetRenderWindow");
 	_gcRegisterRenderProc = (__gcRegisterRenderProc)GetProcAddress(hClient, "gcRegisterRenderProc");
+	_gcRegisterGenericProc = (__gcRegisterGenericProc)GetProcAddress(hClient, "gcRegisterGenericProc");
 	// -------------
 	_gcDeleteCustomCamera = (__gcDeleteCustomCamera)GetProcAddress(hClient, "gcDeleteCustomCamera");
 	_gcCustomCameraOnOff = (__gcCustomCameraOnOff)GetProcAddress(hClient, "gcCustomCameraOnOff");
@@ -90,7 +101,10 @@ bool PostInit(HMODULE hClient)
 	_gcLoadSketchMesh = (__gcLoadSketchMesh)GetProcAddress(hClient, "gcLoadSketchMesh");
 	_gcDeleteSketchMesh = (__gcDeleteSketchMesh)GetProcAddress(hClient, "gcDeleteSketchMesh");
 	_gcCreatePoly = (__gcCreatePoly)GetProcAddress(hClient, "gcCreatePoly");
+	_gcCreateTriangles = (__gcCreateTriangles)GetProcAddress(hClient, "gcCreateTriangles");
 	_gcDeletePoly = (__gcDeletePoly)GetProcAddress(hClient, "gcDeletePoly");
+	_gcGetTextLength = (__gcGetTextLength)GetProcAddress(hClient, "gcGetTextLength");
+	_gcGetCharIndexByPosition = (__gcGetCharIndexByPosition)GetProcAddress(hClient, "gcGetCharIndexByPosition");
 	// -------------
 	_gcWorldToScreenSpace = (__gcWorldToScreenSpace)GetProcAddress(hClient, "gcWorldToScreenSpace");
 	// -------------
@@ -149,6 +163,14 @@ int	gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, boo
 bool gcRegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 {
 	if (_gcRegisterRenderProc) return _gcRegisterRenderProc(proc, id, pParam);
+	return false;
+}
+
+// ====================================================================================================
+//
+bool gcRegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
+{
+	if (_gcRegisterGenericProc) return _gcRegisterGenericProc(proc, id, pParam);
 	return false;
 }
 
@@ -223,6 +245,14 @@ HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 
 // ====================================================================================================
 //
+HPOLY gcCreateTriangles(HPOLY hPoly, const TriangleVtx *pt, int npt, DWORD flags)
+{
+	if (_gcCreateTriangles) return _gcCreateTriangles(hPoly, pt, npt, flags);
+	return NULL;
+}
+
+// ====================================================================================================
+//
 void gcDeletePoly(HPOLY hPoly)
 {
 	if (_gcDeletePoly) _gcDeletePoly(hPoly);
@@ -234,6 +264,31 @@ bool gcWorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::F
 {
 	if (_gcWorldToScreenSpace) return _gcWorldToScreenSpace(rdir, pt, pVP, clip);
 	return false;
+}
+
+// ====================================================================================================
+//
+DWORD gcGetTextLength(oapi::Font *hFont, const char *pText, int len)
+{
+	if (_gcGetTextLength) return _gcGetTextLength(hFont, pText, len);
+	return 0;
+}
+
+// ====================================================================================================
+//
+DWORD gcGetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len)
+{
+	if (_gcGetCharIndexByPosition) return _gcGetCharIndexByPosition(hFont, pText, pos, len);
+	return 0;
+}
+
+
+// ====================================================================================================
+//
+HWND gcGetRenderWindow()
+{
+	if (_gcGetRenderWindow) return _gcGetRenderWindow();
+	return NULL;
 }
 
 
@@ -262,7 +317,24 @@ DWORD gcColor(const FVECTOR4 *c)
 	if (a > 0xFF) a = 0xFF;
 	if (a == 0) a = 1;
 	
-	return (a << 24) | (r << 16) | (g << 8) | b;
+	return (a << 24) | (b << 16) | (g << 8) | r;
+}
+
+
+COLOUR4	gcColour4(DWORD dwABGR)
+{
+	DWORD r = (dwABGR & 0xFF); dwABGR >>= 8;
+	DWORD g = (dwABGR & 0xFF); dwABGR >>= 8;
+	DWORD b = (dwABGR & 0xFF); dwABGR >>= 8;
+	DWORD a = (dwABGR & 0xFF);
+	if (a == 0) a = 255;
+	COLOUR4 c;
+	float q = 3.92156862e-3f;
+	c.r = float(r) * q;
+	c.g = float(g) * q;
+	c.b = float(b) * q;
+	c.a = float(a) * q;
+	return c;
 }
 
 

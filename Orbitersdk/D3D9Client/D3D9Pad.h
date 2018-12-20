@@ -120,11 +120,20 @@ struct SkpVtx {
 };
 
 
+inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
+{
+	v.x = float(_x) - 0.5f;
+	v.y = float(_y) - 0.5f;
+	v.clr = c;
+	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
+	v.l = 0.0f;
+}
+
 
 inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
-	v.x = float(_x);
-	v.y = float(_y);
+	v.x = float(_x) - 0.5f;
+	v.y = float(_y) - 0.5f;
 	v.clr = c.dclr;
 	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 	v.l = 0.0f;
@@ -153,6 +162,7 @@ inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
+	// Note: -0.5f has been substarcted already from x,y data 
 	v.x = _x;
 	v.y = _y;
 	v.nx = _tx;
@@ -173,6 +183,7 @@ class D3D9Pad : public Sketchpad3
 
 	mutable struct {
 		DWORD style;
+		DWORD color;
 		float width;
 		bool  bEnabled;
 	} QPen;
@@ -509,6 +520,11 @@ public:
 	FVECTOR4 GetRenderParam(int param);
 	void SetRenderParam(int param, FVECTOR4 *data = NULL);
 	void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND);
+	FMATRIX4 GetWorldTransform() const;
+	void PushWorldTransform();
+	void PopWorldTransform();
+	void SetWorldTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL);
+	void GradientFillRect(const RECT *rect, DWORD c1, DWORD c2, bool bVertical = false);
 
 
 	// ===============================================================================
@@ -551,7 +567,7 @@ private:
 
 	float GetPenWidth() const;
 
-	bool Flush();		// "const" due to SetFont, SetPen, SetBrush
+	bool Flush(HPOLY hPoly = NULL);
 	void AddRectIdx(WORD aV);
 	void FillRect(int l, int t, int r, int b, SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
@@ -613,6 +629,7 @@ private:
 	DWORD Enable;
 	FMATRIX4 ColorMatrix;
 	FVECTOR4 Gamma, Noise;
+	std::stack<D3DXMATRIX> mWStack;
 
 
 
@@ -716,8 +733,10 @@ public:
 	 */
 	~D3D9PadFont ();
 
-	HFONT GetGDIFont () const;
-	DWORD GetQuality() const { return Quality; }
+	HFONT	GetGDIFont () const;
+	DWORD	GetQuality() const { return Quality; }
+	int		GetTextLength(const char *pText, int len) const;
+	int		GetIndexByPosition(const char *pText, int pos, int len) const;
 
 private:
 	D3D9TextPtr pFont;
@@ -839,14 +858,30 @@ private:
 };
 
 
-class D3D9PolyLine {
+
+class D3D9PolyBase {
+public:
+					D3D9PolyBase(int _type) { type = _type; version = 1; }
+	virtual			~D3D9PolyBase() { }
+	virtual	void	Draw(LPDIRECT3DDEVICE9 pDev) = 0;
+	virtual void	Release() = 0;
+
+	int version;
+	int type;
+};
+
+
+
+
+class D3D9PolyLine : public D3D9PolyBase
+{
 
 public:
 	D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, bool bConnect);
 	~D3D9PolyLine();
 
 	void Update(const FVECTOR2 *pt, int npt, bool bConnect);
-	void Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags);
+	void Draw(LPDIRECT3DDEVICE9 pDev);
 	void Release();
 
 private:
@@ -854,6 +889,25 @@ private:
 	WORD nVtx, nPt, nIdx, iI, vI;
 	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
 	LPDIRECT3DINDEXBUFFER9 pIB;
+};
+
+
+
+class D3D9Triangle : public D3D9PolyBase
+{
+
+public:
+	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const TriangleVtx *pt, int npt, int style);
+	~D3D9Triangle();
+
+	void Update(const TriangleVtx *pt, int npt);
+	void Draw(LPDIRECT3DDEVICE9 pDev);
+	void Release();
+
+private:
+	int style;
+	WORD nPt;
+	LPDIRECT3DVERTEXBUFFER9 pVB; 
 };
 
 

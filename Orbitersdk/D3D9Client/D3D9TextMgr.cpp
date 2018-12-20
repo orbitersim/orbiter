@@ -362,6 +362,30 @@ void D3D9Text::SetScaling(float factor)
 
 // ----------------------------------------------------------------------------------------
 //
+int	D3D9Text::GetIndex(const char *pText, float pos, int x)
+{
+	float del = 1e6;
+	float len = 0.0f;
+	int i = 0;
+	int idx = 0;
+
+	const BYTE *str = (const BYTE *)pText; 
+
+	while (i < x || x < 0) {	
+		if (fabs(pos - len) < del) {
+			del = fabs(pos - len);
+			idx = i;
+		} else break;
+		if (str[i] == 0) break;
+		len += (Data(str[i])->sp + float(spacing));
+		i++;
+	}
+
+	return idx;
+}
+
+// ----------------------------------------------------------------------------------------
+//
 float D3D9Text::Length2(const char *_str, int l)
 {
 	float len = 0;

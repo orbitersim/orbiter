@@ -322,13 +322,13 @@ void D3D9Pad::EndDrawing()
 
 // ===============================================================================================
 //
-bool D3D9Pad::Flush()
+bool D3D9Pad::Flush(HPOLY hPoly)
 {
 	UINT numPasses;
 
 	static DWORD bkALPHA, bkZEN, bkZW, bkCULL;
 
-	if (iI > 0) {
+	if (iI > 0 || hPoly) {
 
 		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
 		HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
@@ -364,8 +364,15 @@ bool D3D9Pad::Flush()
 			HR(FX->BeginPass(1));
 		}
 
-		if (tCurrent == TRIANGLE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
-		if (tCurrent == LINE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, vI, iI / 2, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+		if (hPoly) {
+			assert(iI == 0);
+			D3D9PolyBase *pBase = static_cast<D3D9PolyBase *>(hPoly);
+			pBase->Draw(pDev);
+		}
+		else {
+			if (tCurrent == TRIANGLE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+			if (tCurrent == LINE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, vI, iI / 2, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+		}
 
 		HR(FX->EndPass());
 		HR(FX->End());
@@ -1069,12 +1076,22 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 {
-	if (!HasPen()) return;
+	if (hPoly) {
 
-	// Flush pending graphics before a use of different interface 
-	Flush();
+		D3D9PolyBase *pBase = static_cast<D3D9PolyBase *>(hPoly);
+		int PolyType = pBase->type;
 
-	static_cast<D3D9PolyLine *>(hPoly)->Draw(pDev, flags);
+		if ((PolyType == 0) && !HasPen()) return;
+
+		// Flush pending graphics before a use of different interface 
+		Flush();
+
+		if (Topology(TRIANGLE)) {
+
+			// Flush the poly object
+			Flush(hPoly);
+		}
+	}
 }
 
 
@@ -1611,6 +1628,21 @@ HFONT D3D9PadFont::GetGDIFont () const
 	return hFont;
 }
 
+
+// -----------------------------------------------------------------------------------------------
+//
+int D3D9PadFont::GetTextLength(const char *pText, int len) const
+{
+	return int(pFont->Length2(pText, len));
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
+int D3D9PadFont::GetIndexByPosition(const char *pText, int pos, int len) const
+{
+	return int(pFont->GetIndex(pText, float(pos), len));
+}
 
 // -----------------------------------------------------------------------------------------------
 //

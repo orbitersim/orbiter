@@ -50,6 +50,10 @@ void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
 //
 void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 {
+	if (QPen.bEnabled) {
+		if ((QPen.style == style) && (QPen.width == width) && (QPen.color == color)) return;
+	}
+	
 	Change |= SKPCHG_PEN;
 
 	cpen = NULL;
@@ -57,6 +61,7 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 	else QPen.bEnabled = true;
 	QPen.style = style;
 	QPen.width = width;
+	QPen.color = color;
 	pencolor = SkpColor(color);
 
 	IsLineTopologyAllowed();
@@ -889,7 +894,7 @@ D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
 
 
 
-D3D9PolyLine::D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, bool bConnect)
+D3D9PolyLine::D3D9PolyLine(LPDIRECT3DDEVICE9 pDev, const FVECTOR2 *pt, int npt, bool bConnect) : D3D9PolyBase(0)
 {
 	nPt = npt + 2;
 	nVtx = 2 * nPt;
@@ -939,7 +944,7 @@ void D3D9PolyLine::Release()
 
 // ===============================================================================================
 //
-void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev, DWORD flags)
+void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev)
 {
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	pDev->SetIndices(pIB);
@@ -1007,5 +1012,72 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 		Vtx[vI++] = Vtx[1];
 	}
 
+	HR(pVB->Unlock());
+}
+
+
+
+
+
+
+
+
+// ======================================================================================
+// Triangle Interface
+// ======================================================================================
+
+
+
+D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const TriangleVtx *pt, int npt, int _style) : D3D9PolyBase(1)
+{
+	nPt = npt;
+	style = _style;
+	HR(pDev->CreateVertexBuffer(nPt * sizeof(SkpVtx), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &pVB, NULL));
+	if (pt) Update(pt, npt);
+}
+
+
+// ===============================================================================================
+//
+D3D9Triangle::~D3D9Triangle()
+{
+
+}
+
+
+// ===============================================================================================
+//
+void D3D9Triangle::Release()
+{
+	SAFE_RELEASE(pVB);
+}
+
+
+// ===============================================================================================
+//
+void D3D9Triangle::Draw(LPDIRECT3DDEVICE9 pDev)
+{
+	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
+	if (style == PF_TRIANGLES) 	pDev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, nPt / 3);
+	if (style == PF_FAN) pDev->DrawPrimitive(D3DPT_TRIANGLEFAN, 0, nPt - 2);
+	if (style == PF_STRIP) pDev->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, nPt - 2);
+}
+
+
+// ===============================================================================================
+//
+void D3D9Triangle::Update(const TriangleVtx *pt, int npt)
+{
+	SkpVtx *Vtx = NULL;
+	HR(pVB->Lock(0, 0, (LPVOID*)&Vtx, D3DLOCK_DISCARD));
+
+	memset(Vtx, 0, sizeof(SkpVtx)*npt);
+
+	for (int i = 0; i < npt; i++) {
+		Vtx[i].x = pt[i].pos.x;
+		Vtx[i].y = pt[i].pos.y;
+		Vtx[i].clr = pt[i].color;
+		Vtx[i].fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
+	}
 	HR(pVB->Unlock());
 }

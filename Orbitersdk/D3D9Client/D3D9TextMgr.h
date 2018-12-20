@@ -86,6 +86,7 @@ public:
 	
 	float		Length2(const char *str, int len = -1);
 	float		Length(BYTE c);
+	int			GetIndex(const char *pText, float pos, int len = -1);
 
 	void		SetTextHAlign(int x); // 0-left, 1=center, 2=right
 	void		SetTextVAlign(int x); // 0-top, 1=base, 2=bottom

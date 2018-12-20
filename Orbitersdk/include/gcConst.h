@@ -34,17 +34,33 @@
 #define RENDERPROC_CUSTOMCAM_OVERLAY	0x0004  ///< Register a callback to draw overlay into a custom camerea view
 ///@}
 
+/// \defgroup RenderProc Specify a render HUD callback function
+///@{
+#define GENERICPROC_DELETE				0x0000	///< Unregister/Remove existing callback 
+#define GENERICPROC_LOAD				0x0001	///< Sent a delayed (late) signal to load and initialize OrbiterGUI elements.
+#define GENERICPROC_UNLOAD				0x0002	///< Sent a signal to use oapiReleaseTexture() and unload Sketchpad resources (pens, fonts, brushes).
+#define GENERICPROC_LOAD_ORBITERGUI		0x0003	///< Sent a signal to load resources
+#define GENERICPROC_UNLOAD_ORBITERGUI	0x0004	///< Sent a signal to unload resources
+///@}
+
+
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
 #define CUSTOMCAM_DEFAULTS				0x00FF
 #define CUSTOMCAM_OVERLAY				0x0100
 ///@}
 
-/// \defgroup PolyFlags Poly object creation and update flags
+/// \defgroup Polyline Polyline object creation and update flags
 ///@{
 #define	PF_CONNECT		0x01	///< Connect line endpoints forming a loop
 ///@}
 
+/// \defgroup Triangle Triangle object creation and update flags
+///@{
+#define	PF_TRIANGLES	0
+#define	PF_STRIP		1
+#define	PF_FAN			2
+///@}
 
 /// \defgroup MeshMaterialFlags Mesh material flags for gcMeshMaterial function
 ///@{
@@ -72,7 +88,97 @@ namespace oapi {
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR2 type.
 	*/
-	typedef union { 
+	typedef union FVECTOR4 
+	{
+		/*FVECTOR4();
+		FVECTOR4(const COLOUR4 &c);
+		FVECTOR4(DWORD abgr);
+		FVECTOR4(const VECTOR4 &v);
+		FVECTOR4(const VECTOR3 &v);
+		FVECTOR4(float x, float y, float z, float w);
+		FVECTOR4(double x, double y, double z, double w);*/
+		
+		FVECTOR4()
+		{
+			r = g = b = a = 0.0f;
+		}
+
+		FVECTOR4(const COLOUR4 &c)
+		{
+			r = c.r;
+			g = c.g;
+			b = c.b;
+			a = c.a;
+		}
+
+		FVECTOR4(DWORD abgr)
+		{
+			DWORD dr = (abgr & 0xFF); abgr >>= 8;
+			DWORD dg = (abgr & 0xFF); abgr >>= 8;
+			DWORD db = (abgr & 0xFF); abgr >>= 8;
+			DWORD da = (abgr & 0xFF);
+			if (a == 0) a = 255;
+			float q = 3.92156862e-3f;
+			r = float(dr) * q;
+			g = float(dg) * q;
+			b = float(db) * q;
+			a = float(da) * q;
+		}
+
+		FVECTOR4(const VECTOR4 &v)
+		{
+			x = float(v.x);
+			y = float(v.y);
+			z = float(v.z);
+			w = float(v.w);
+		}
+
+		FVECTOR4(const VECTOR3 &v)
+		{
+			x = float(v.x);
+			y = float(v.y);
+			z = float(v.z);
+			w = 1.0f;
+		}
+
+		FVECTOR4(float _x, float _y, float _z, float _w)
+		{
+			x = float(_x);
+			y = float(_y);
+			z = float(_z);
+			w = float(_w);
+		}
+
+		FVECTOR4(double _x, double _y, double _z, double _w)
+		{
+			x = float(_x);
+			y = float(_y);
+			z = float(_z);
+			w = float(_w);
+		}
+
+
+		inline FVECTOR4 operator* (float f)
+		{
+			return FVECTOR4( x * f, y * f, z * f, w);
+		}
+
+		inline FVECTOR4 operator/ (float f)
+		{
+			f = 1.0f / f;
+			return FVECTOR4(x * f, y * f, z * f, w);
+		}
+		
+		inline FVECTOR4 operator+ (float f)
+		{
+			return FVECTOR4(x + f, y + f, z + f, w);
+		}
+
+		inline FVECTOR4 operator- (float f)
+		{
+			return FVECTOR4(x - f, y - f, z - f, w);
+		}
+
 		float data[4];
 		struct {
 			float x, y, z, w;
@@ -83,15 +189,15 @@ namespace oapi {
 	} FVECTOR4;
 
 
-	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f) 
-	{ 
-		FVECTOR4 q = { float(v.x), float(v.y), float(v.z), _w }; 
+	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f)
+	{
+		FVECTOR4 q(float(v.x), float(v.y), float(v.z), _w);
 		return q;
 	}
 
-	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a) 
-	{ 
-		FVECTOR4 q = { r, g, b, a }; 
+	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a)
+	{
+		FVECTOR4 q(r, g, b, a);
 		return q;
 	}
 
@@ -106,11 +212,18 @@ namespace oapi {
 	* \brief Float-valued 4x4 matrix.
 	* \note This structure is compatible with the D3DXMATRIX.
 	*/
-	typedef union {
+	typedef union FMATRIX4 {
+		FMATRIX4() {}
 		float data[16];
 		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
 	} FMATRIX4;
+
+
+	typedef struct {
+		FVECTOR2	pos;
+		DWORD		color;
+	} TriangleVtx;
 }
 
 /// \brief Custom camera handle
@@ -121,6 +234,7 @@ typedef void * SKETCHMESH;
 typedef void * HPOLY;
 /// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);
+typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
 
 
 namespace oapi {
@@ -134,11 +248,6 @@ namespace oapi {
 	inline FVECTOR2 operator* (const FVECTOR2 &v, float f)
 	{
 		return _FVECTOR2( v.x * f, v.y * f );
-	}
-
-	inline FVECTOR4 operator* (const FVECTOR4 &v, float f)
-	{
-		return _FVECTOR4( v.x * f, v.y * f, v.z * f, v.w * f );
 	}
 }
 

@@ -65,11 +65,20 @@ DLLCLBK HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags
 }
 
 
+DLLCLBK HPOLY gcCreateTriangles(HPOLY hPoly, const TriangleVtx *pt, int npt, DWORD flags)
+{
+	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
+	if (!hPoly) return new D3D9Triangle(pDev, pt, npt, flags);
+	((D3D9Triangle *)hPoly)->Update(pt, npt);
+	return hPoly;
+}
+
+
 DLLCLBK void gcDeletePoly(HPOLY hPoly)
 {
 	if (hPoly) {
-		((D3D9PolyLine *)hPoly)->Release();
-		delete ((D3D9PolyLine *)hPoly);
+		((D3D9PolyBase *)hPoly)->Release();
+		delete ((D3D9PolyBase *)hPoly);
 	}
 }
 
@@ -77,6 +86,12 @@ DLLCLBK void gcDeletePoly(HPOLY hPoly)
 DLLCLBK bool gcRegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam)
 {
 	return g_client->RegisterRenderProc(proc, flags, pParam);
+}
+
+
+DLLCLBK bool gcRegisterGenericProc(__gcGenericProc proc, DWORD flags, void *pParam)
+{
+	return g_client->RegisterGenericProc(proc, flags, pParam);
 }
 
 
@@ -92,19 +107,6 @@ DLLCLBK bool gcGenerateMipMaps(SURFHANDLE hSurface, DWORD Filter)
 }
 
 			
-DLLCLBK bool gcRegisterSkinName(const VISHANDLE hVisual, const char *name)
-{
-	VisObject *pVis = (VisObject *)hVisual;
-	OBJHANDLE hObj = pVis->GetObject();
-	if (hObj) if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
-		vVessel *pVes = (vVessel *)hVisual;
-		pVes->SetSkinName(name);
-		return true;
-	}
-	return false;
-}
-
-
 DLLCLBK DWORD gcGetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
 {
 	return SURFACE(hSurf)->GetAttribs(bCreation);
@@ -115,6 +117,24 @@ DLLCLBK void gcConvertSurface(SURFHANDLE hSurf, DWORD attrib)
 {
 	LogBlu("gcConvertSurface(0x%X) Attribs = 0x%X", hSurf, attrib);
 	SURFACE(hSurf)->ConvertSurface(attrib);
+}
+
+
+DLLCLBK HWND gcGetRenderWindow()
+{
+	return g_client->GetRenderWindow();
+}
+
+
+DLLCLBK DWORD gcGetTextLength(oapi::Font *hFont, const char *pText, int len)
+{
+	return DWORD((static_cast<D3D9PadFont *>(hFont))->GetTextLength(pText, len));
+}
+
+
+DLLCLBK DWORD gcGetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len)
+{
+	return DWORD((static_cast<D3D9PadFont *>(hFont))->GetIndexByPosition(pText, pos, len));
 }
 
 

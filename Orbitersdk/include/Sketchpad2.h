@@ -116,7 +116,7 @@ namespace oapi {
 		* \brief Set up a global world transformation matrix. 
 		* \param pWT A pointet to MATRIX4, NULL to reset default settings.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin(). 
-		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
+		* \note Everything is transformed including CopyRect() and Text().
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 		*		due to source-target pixels miss aligments.
 		*/
@@ -155,7 +155,7 @@ namespace oapi {
 		* \param ctr Pointer to a IVECTOR containing a rotation center or NULL for origin.
 		* \param trl Pointer to a IVECTOR containing a translation or NULL.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
-		* \note Everything else except Pixel() is transformed including CopyRect() and Text().
+		* \note Everything is transformed including CopyRect() and Text().
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 		*		due to source-target pixels miss aligments.
 		*/
@@ -383,6 +383,44 @@ namespace oapi {
 		* \param dwState Desired configuration
 		*/
 		virtual void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND) { assert(false); }
+
+
+		/**
+		* \brief Get world transformation matrix
+		*/
+		virtual FMATRIX4 GetWorldTransform() const = 0;
+
+
+		/**
+		* \brief Push current world transformation matrix onto a stack
+		*/
+		virtual void PushWorldTransform() { assert(false); }
+
+
+		/**
+		* \brief Pop a world transformation matrix from a stack and make it active
+		*/
+		virtual void PopWorldTransform() { assert(false); }
+
+		/**
+		* \brief Set up a global world transformation matrix.
+		* \param scl Pointer to a FVECTOR2 containing a scaling information or NULL for 1.0
+		* \param trl Pointer to a IVECTOR2 containing a translation or NULL.
+		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
+		* \note Everything is transformed including CopyRect() and Text().
+		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
+		*		due to source-target pixels miss aligments.
+		*/
+		virtual void SetWorldTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL) { assert(false); }
+
+		/**
+		* \brief Fill a rectangle with color gradient
+		* \param rect a Rect specifying the bounds
+		* \param c1 Left or Top color
+		* \param c2 Right or Bottom color
+		* \param bVertical Direction of the gradient.
+		*/
+		virtual void GradientFillRect(const RECT *rect, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
 	};
 
 } // namespace oapi
