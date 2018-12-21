@@ -18,7 +18,27 @@ set BASE_DIR=..\..
 set OUT_DIR=_release
 set VERSION=Beta28.2
 
+
+:: Check if SDK and other needed resources are present
+if not exist "%BASE_DIR%\Orbitersdk\lib\orbiter.lib" (
+  echo ========================================================================
+  echo   Getting Orbiter SDK libs ^& headers^.^.^.
+  echo ========================================================================
+
+  pushd .
+  call get_orbiter_libs.bat
+  if errorlevel 1 goto exit_nok
+  popd
+)
+
+
+
 :: Enhance Version by Orbiter Version
+echo ========================================================================
+echo   Getting Version information
+echo ========================================================================
+echo   ^.^.^.
+
 for /F "usebackq tokens=*" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
 set VERSION=%VERSION%-for%OVER%
 
@@ -106,6 +126,10 @@ if errorlevel 1 goto exit_nok
 :: if errorlevel 1 goto exit_nok
 
 :: D3D9Client & gcAPI.lib (RELEASE)
+echo ========================================================================
+echo   Building D3D9Client
+echo ========================================================================
+
 call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG%
 if errorlevel 1 goto exit_nok
 
@@ -145,7 +169,7 @@ rmdir /S /Q "Utils"
 :: --- Pass / Fail exit
 :exit_ok
 cd %ABS_PATH%
-@call :cleanup
+call :cleanup
 exit /B 0
 
 :exit_nok
