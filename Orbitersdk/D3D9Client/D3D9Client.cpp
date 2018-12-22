@@ -1413,8 +1413,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	static bool bTrackMouse = false;
 	static short xpos=0, ypos=0;
 
-	if (hRenderWnd!=hWnd) {
-		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow() uMsg=0x%X");
+	if (hRenderWnd!=hWnd && uMsg!= WM_NCDESTROY) {
+		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow() uMsg=0x%X", uMsg);
 		return 0;
 	}
 
