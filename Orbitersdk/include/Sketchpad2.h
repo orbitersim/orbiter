@@ -411,16 +411,31 @@ namespace oapi {
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 		*		due to source-target pixels miss aligments.
 		*/
-		virtual void SetWorldTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL) { assert(false); }
+		virtual void SetWorldScaleTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL) { assert(false); }
 
 		/**
 		* \brief Fill a rectangle with color gradient
-		* \param rect a Rect specifying the bounds
+		* \param tgt a Rect specifying the bounds
 		* \param c1 Left or Top color
 		* \param c2 Right or Bottom color
 		* \param bVertical Direction of the gradient.
 		*/
-		virtual void GradientFillRect(const RECT *rect, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
+		virtual void GradientFillRect(const LPRECT tgt, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
+
+		/**
+		* \brief Fill a rectangle with pattern
+		* \param hPat Handle to a texture containing the pattern
+		* \param tgt a Rect specifying the bounds
+		*/
+		virtual void PatternFill(SURFHANDLE hPat, const LPRECT tgt) { assert(false); }
+
+		/**
+		* \brief Setup a pattern and it's origin. Origin should move with every movable object to keep the pattern fixed.
+		* \param hPat Handle to a texture containing the pattern
+		* \param x origin x-coordinate
+		* \param x origin x-coordinate
+		*/
+		//virtual void SetPattern(SURFHANDLE hPat, int x = 0, int y = 0) { assert(false); }
 	};
 
 } // namespace oapi

@@ -97,26 +97,26 @@ void D3D9Pad::AddRectIdx(WORD aV)
 
 // ===============================================================================================
 //
-void D3D9Pad::CheckRect(SURFHANDLE hSrc, LPRECT *s)
+LPRECT D3D9Pad::CheckRect(SURFHANDLE hSrc, const LPRECT s)
 {
-	*s = &src;
+	if (s) return s;
 	src.left = 0;
 	src.top = 0;
 	src.right = SURFACE(hSrc)->GetWidth();
 	src.bottom = SURFACE(hSrc)->GetHeight();
+	return &src;
 }
 
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRect(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
+void D3D9Pad::CopyRect(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
-
 	TexChange(hSrc);
 
 	if (Topology(TRIANGLE)) {
 
-		if (!s) CheckRect(hSrc, &s);
+		LPRECT s = CheckRect(hSrc, _s);
 
 		int h = abs(s->bottom - s->top);
 		int w = abs(s->right - s->left);
@@ -140,14 +140,14 @@ void D3D9Pad::CopyRect(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t)
+void D3D9Pad::StretchRect(SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
 {
 
 	TexChange(hSrc);
 
 	if (Topology(TRIANGLE)) {
 
-		if (!s) CheckRect(hSrc, &s);
+		LPRECT s = CheckRect(hSrc, _s);
 
 		AddRectIdx(vI);
 
@@ -168,14 +168,14 @@ void D3D9Pad::StretchRect(SURFHANDLE hSrc, LPRECT s, LPRECT t)
 
 // ===============================================================================================
 //
-void D3D9Pad::RotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, float angle, float sw, float sh)
+void D3D9Pad::RotateRect(SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, float angle, float sw, float sh)
 {
 
 	TexChange(hSrc);
 
 	if (Topology(TRIANGLE)) {
 
-		if (!s) CheckRect(hSrc, &s);
+		LPRECT s = CheckRect(hSrc, _s);
 
 		float w = float(s->right - s->left) * sw;
 		float h = float(s->bottom - s->top) * sh;
@@ -214,14 +214,14 @@ void D3D9Pad::RotateRect(SURFHANDLE hSrc, LPRECT s, int tcx, int tcy, float angl
 
 // ===============================================================================================
 //
-void D3D9Pad::ColorKey(SURFHANDLE hSrc, LPRECT s, int tx, int ty)
+void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
 
 	TexChange(hSrc);
 
 	if (Topology(TRIANGLE)) {
 
-		if (!s) CheckRect(hSrc, &s);
+		LPRECT s = CheckRect(hSrc, _s);
 
 		int h = abs(s->bottom - s->top);
 		int w = abs(s->right - s->left);

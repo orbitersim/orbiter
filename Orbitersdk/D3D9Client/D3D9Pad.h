@@ -44,6 +44,7 @@ extern oapi::Pen  *defpen;
 #define SKPCHG_EFFECTS		0x0080
 #define SKPCHG_DEPTH		0x0100
 #define SKPCHG_TOPOLOGY		0x0200
+#define SKPCHG_PATTERN		0x0400
 
 
 #define SKETCHPAD_NONE		0x0000
@@ -147,6 +148,16 @@ inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
 	v.nx = float(_tx);
 	v.ny = float(_ty);
 	v.l = 0.0f;
+};
+
+
+inline void SkpVtxPF(SkpVtx &v, int _x, int _y, DWORD c)
+{
+	v.x = float(_x) - 0.5f;
+	v.y = float(_y) - 0.5f;
+	v.l = 0.0f;
+	v.clr = c;
+	v.fnc = SKPSW_FRAGMENT | SKPSW_CENTER;
 };
 
 
@@ -523,8 +534,9 @@ public:
 	FMATRIX4 GetWorldTransform() const;
 	void PushWorldTransform();
 	void PopWorldTransform();
-	void SetWorldTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL);
-	void GradientFillRect(const RECT *rect, DWORD c1, DWORD c2, bool bVertical = false);
+	void SetWorldScaleTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL);
+	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
+	void PatternFill(SURFHANDLE hPattern, const LPRECT tgt);
 
 
 	// ===============================================================================
@@ -575,7 +587,7 @@ private:
 	void CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, LPRECT *s);
 	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
 	void SetupDevice(Topo tNew);
-	void CheckRect(SURFHANDLE hSrc, LPRECT *s);
+	LPRECT CheckRect(SURFHANDLE hSrc, const LPRECT s);
 	void IsLineTopologyAllowed() const;
 	
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
@@ -665,17 +677,19 @@ private:
 	static D3DXHANDLE   eNoiseColor;
 	static D3DXHANDLE   eColorMatrix;
 	static D3DXHANDLE   eGamma;
-	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eW;
 	static D3DXHANDLE   ePen;
 	static D3DXHANDLE   eVP;
 	static D3DXHANDLE   eFov;
 	static D3DXHANDLE   eRandom;
 	static D3DXHANDLE   eTarget;
+	static D3DXHANDLE	ePatScl;
 	static D3DXHANDLE   eKey;
+	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eTexEn;
 	static D3DXHANDLE   eKeyEn;
 	static D3DXHANDLE   eFntEn;
+	static D3DXHANDLE   ePatEn;
 	static D3DXHANDLE   eWidth;
 	static D3DXHANDLE   eWide;
 	static D3DXHANDLE   eSize;

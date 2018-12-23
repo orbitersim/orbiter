@@ -166,7 +166,7 @@ void D3D9Pad::PopWorldTransform()
 
 // ===============================================================================================
 //
-void D3D9Pad::SetWorldTransform2D(FVECTOR2 *scl, IVECTOR2 *trl)
+void D3D9Pad::SetWorldScaleTransform2D(FVECTOR2 *scl, IVECTOR2 *trl)
 {
 
 	Change |= SKPCHG_TRANSFORM;
@@ -190,7 +190,7 @@ void D3D9Pad::SetWorldTransform2D(FVECTOR2 *scl, IVECTOR2 *trl)
 
 // ===============================================================================================
 //
-void D3D9Pad::GradientFillRect(const RECT *R, DWORD c1, DWORD c2, bool bVertical)
+void D3D9Pad::GradientFillRect(const LPRECT R, DWORD c1, DWORD c2, bool bVertical)
 {
 	DWORD a, b, c, d;
 
@@ -210,4 +210,34 @@ void D3D9Pad::GradientFillRect(const RECT *R, DWORD c1, DWORD c2, bool bVertical
 		SkpVtxGF(Vtx[vI++], r, m, c);
 		SkpVtxGF(Vtx[vI++], l, m, d);
 	}
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::PatternFill(SURFHANDLE hSrc, const LPRECT t)
+{
+	if (!hSrc) return;
+
+	TexChange(hSrc);
+
+	Flush();
+
+	HR(FX->SetVector(ePatScl, &D3DXVECTOR4(float(t->left), float(t->top), 0.0f, 0.0f)));
+	HR(FX->SetBool(ePatEn, true));
+
+	DWORD c = 0xFFFFFFFF;
+	if (HasBrush()) c = brushcolor.dclr;
+
+	if (Topology(TRIANGLE)) {
+		AddRectIdx(vI);
+		SkpVtxPF(Vtx[vI++], t->left, t->top, c);
+		SkpVtxPF(Vtx[vI++], t->left, t->bottom, c);
+		SkpVtxPF(Vtx[vI++], t->right, t->bottom, c);
+		SkpVtxPF(Vtx[vI++], t->right, t->top, c);
+	}
+
+	Flush();
+
+	HR(FX->SetBool(ePatEn, false));
 }

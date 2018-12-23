@@ -80,9 +80,133 @@ namespace oapi {
 	* \brief 32-bit floating point 2D vector type.
 	* \note This structure is compatible with the D3DXVECTOR2 type.
 	*/
-	typedef struct {
+	typedef struct FVECTOR2 {
+
+		FVECTOR2()
+		{
+			x = y = 0.0f;
+		}
+
+		FVECTOR2(float _x, float _y)
+		{
+			x = _x;
+			y = _y;
+		}
+
+		FVECTOR2(const POINT &p)
+		{
+			x = float(p.x);
+			y = float(p.y);
+		}
+
+		FVECTOR2(const POINT *p)
+		{
+			x = float(p->x);
+			y = float(p->y);
+		}
+
+		FVECTOR2(const oapi::IVECTOR2 &p)
+		{
+			x = float(p.x);
+			y = float(p.y);
+		}
+
+		inline FVECTOR2 operator* (float f)
+		{
+			return FVECTOR2(x * f, y * f);
+		}
+
+		inline FVECTOR2 operator/ (float f)
+		{
+			f = 1.0f / f;
+			return FVECTOR2(x * f, y * f);
+		}
+
+		inline FVECTOR2 operator+ (float f)
+		{
+			return FVECTOR2(x + f, y + f);
+		}
+
+		inline FVECTOR2 operator- (float f)
+		{
+			return FVECTOR2(x - f, y - f);
+		}
+
+		inline FVECTOR2 operator+ (const FVECTOR2 &f)
+		{
+			return FVECTOR2(x + f.x, y + f.y);
+		}
+
+		inline FVECTOR2 operator- (const FVECTOR2 &f)
+		{
+			return FVECTOR2(x - f.x, y - f.y);
+		}
+
 		float x, y;
 	} FVECTOR2;
+
+
+
+	/**
+	* \brief 32-bit floating point #D vector type.
+	* \note This structure is compatible with the D3DXVECTOR2 type.
+	*/
+	typedef struct FVECTOR3 {
+
+		FVECTOR3()
+		{
+			x = y = z = 0.0f;
+		}
+
+		FVECTOR3(float _x, float _y, float _z)
+		{
+			x = _x;
+			y = _y;
+			z = _z;
+		}
+
+		FVECTOR3(VECTOR3 &v)
+		{
+			x = float(v.x);
+			y = float(v.y);
+			z = float(v.z);
+		}
+	
+
+		inline FVECTOR3 operator* (float f)
+		{
+			return FVECTOR3(x * f, y * f, z * f);
+		}
+
+		inline FVECTOR3 operator/ (float f)
+		{
+			f = 1.0f / f;
+			return FVECTOR3(x * f, y * f, z * f);
+		}
+
+		inline FVECTOR3 operator+ (float f)
+		{
+			return FVECTOR3(x + f, y + f, z + f);
+		}
+
+		inline FVECTOR3 operator- (float f)
+		{
+			return FVECTOR3(x - f, y - f, z - f);
+		}
+
+		inline FVECTOR3 operator+ (const FVECTOR3 &f)
+		{
+			return FVECTOR3(x + f.x, y + f.y, z + f.z);
+		}
+
+		inline FVECTOR3 operator- (const FVECTOR3 &f)
+		{
+			return FVECTOR3(x - f.x, y - f.y, z - f.z);
+		}
+
+		float x, y, z;
+	} FVECTOR3;
+
 
 	/**
 	* \brief 32-bit floating point 4D vector type.
@@ -90,13 +214,6 @@ namespace oapi {
 	*/
 	typedef union FVECTOR4 
 	{
-		/*FVECTOR4();
-		FVECTOR4(const COLOUR4 &c);
-		FVECTOR4(DWORD abgr);
-		FVECTOR4(const VECTOR4 &v);
-		FVECTOR4(const VECTOR3 &v);
-		FVECTOR4(float x, float y, float z, float w);
-		FVECTOR4(double x, double y, double z, double w);*/
 		
 		FVECTOR4()
 		{
@@ -133,15 +250,29 @@ namespace oapi {
 			w = float(v.w);
 		}
 
-		FVECTOR4(const VECTOR3 &v)
+		FVECTOR4(const VECTOR3 &v, float _w)
 		{
 			x = float(v.x);
 			y = float(v.y);
 			z = float(v.z);
-			w = 1.0f;
+			w = _w;
+		}
+
+		FVECTOR4(const FVECTOR3 &v, float _w)
+		{
+			rgb = v;
+			w = _w;
 		}
 
 		FVECTOR4(float _x, float _y, float _z, float _w)
+		{
+			x = float(_x);
+			y = float(_y);
+			z = float(_z);
+			w = float(_w);
+		}
+
+		FVECTOR4(int _x, int _y, int _z, int _w)
 		{
 			x = float(_x);
 			y = float(_y);
@@ -179,12 +310,26 @@ namespace oapi {
 			return FVECTOR4(x - f, y - f, z - f, w);
 		}
 
+		inline FVECTOR4 operator+ (const FVECTOR4 &f)
+		{
+			return FVECTOR4(x + f.x, y + f.y, z + f.z, w);
+		}
+
+		inline FVECTOR4 operator- (const FVECTOR4 &f)
+		{
+			return FVECTOR4(x - f.x, y - f.y, z - f.z, w);
+		}
+
 		float data[4];
 		struct {
 			float x, y, z, w;
 		};
 		struct {
 			float r, g, b, a;
+		};
+		struct {
+			FVECTOR3 rgb;
+			float a;
 		};
 	} FVECTOR4;
 
@@ -202,9 +347,8 @@ namespace oapi {
 	}
 
 	inline FVECTOR2 _FVECTOR2(float x, float y) 
-	{ 
-		FVECTOR2 q = { x, y }; 
-		return q;
+	{  
+		return FVECTOR2(x,y);
 	}
 		
 
@@ -239,15 +383,30 @@ typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
 
 namespace oapi {
 
-	inline FVECTOR2 unit(FVECTOR2 &v)
+	inline FVECTOR2 unit(const FVECTOR2 &v)
 	{
 		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
 		return _FVECTOR2( v.x*f, v.y*f );
 	}
 
-	inline FVECTOR2 operator* (const FVECTOR2 &v, float f)
+	inline float dot(const FVECTOR2 &v, const FVECTOR2 &w)
 	{
-		return _FVECTOR2( v.x * f, v.y * f );
+		return v.x*w.x + v.y*w.y;
+	}
+
+	inline float length(const FVECTOR2 &v)
+	{
+		return sqrt(v.x*v.x + v.y*v.y);
+	}
+
+	inline float saturate(float x)
+	{
+		return min(1, max(0, x));
+	}
+
+	inline FVECTOR3 saturate(FVECTOR3 &v)
+	{
+		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
 	}
 }
 
