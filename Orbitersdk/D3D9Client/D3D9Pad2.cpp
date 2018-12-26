@@ -516,7 +516,7 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDL
 
 	// Flush Pending graphics ------------------------------------
 	//
-	Flush();
+	SetupDevice(tCurrent);
 
 
 	// Initialize device for drawing a mesh ----------------------
@@ -586,7 +586,7 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 
 	// Flush Pending graphics ------------------------------------
 	//
-	Flush();
+	SetupDevice(tCurrent);
 
 
 	// Initialize device for drawing a mesh ----------------------
