@@ -2442,11 +2442,14 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 	FX->BeginPass(0);
 
 	bool bInit = true;
+	bool bCurrentState = false;
 	
-	for (DWORD g=0; g<nGrp; g++) {
+	for (DWORD g = 0; g < nGrp; g++) {
 
-		if (Grp[g].UsrFlag & 0x3) continue;
-		if (Grp[g].IntFlag & 0x3) continue;
+
+		if ((Grp[g].UsrFlag & 0x3) == 0x3) continue;
+		if ((Grp[g].IntFlag & 0x3) == 0x3) continue;
+
 
 		if (Grp[g].bTransform) {
 			D3DXMatrixMultiply(&GroupMatrix, &pGrpTF[g], pW);		// Apply Animations to instance matrices
@@ -2461,7 +2464,19 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 			}
 			bInit = false;
 		}
-		
+
+
+		if (bShadowMap) {
+			
+			bool bDisable = (Grp[g].UsrFlag & 0x1) != 0;
+
+			if (bDisable != bCurrentState) {
+				if (bDisable) pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
+				else		  pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
+				bCurrentState = bDisable;
+			}
+		}
+
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].FaceOff * 3, Grp[g].nFace);
 
 		D3D9Stats.Mesh.Vertices += Grp[g].nVert;
@@ -2471,7 +2486,10 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 	FX->EndPass();
 	FX->End();
 
-	if (bShadowMap) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	if (bShadowMap) {
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
+		pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	}
 }
 
 

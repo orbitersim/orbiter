@@ -259,6 +259,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogAlw("D3DPTEXTURECAPS_POW2.... : %d",(caps.TextureCaps&D3DPTEXTURECAPS_POW2)>0);
 	LogAlw("NONPOW2CONDITIONAL...... : %d",(caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)>0);
 	LogOapi("VertexDeclCaps.......... : 0x%X",caps.DeclTypes);
+	LogOapi("MiscCaps................ : 0x%X", caps.PrimitiveMiscCaps);
 	LogAlw("DevCaps................. : 0x%X",caps.DevCaps);
 	LogAlw("DevCaps2................ : 0x%X",caps.DevCaps2);
 	
@@ -272,6 +273,12 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	else {
 		LogOapi("XNA Math Support........ : No");
 		bFail=true;
+	}
+
+	// Check non power of two texture support
+	if ((caps.PrimitiveMiscCaps&D3DPMISCCAPS_COLORWRITEENABLE)==0) {
+		LogErr("D3DRS_COLORWRITEENABLE Not Suppoertd");
+		bFail = true;
 	}
 
 	// Check non power of two texture support

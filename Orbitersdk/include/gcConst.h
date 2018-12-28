@@ -234,7 +234,7 @@ namespace oapi {
 			DWORD dg = (abgr & 0xFF); abgr >>= 8;
 			DWORD db = (abgr & 0xFF); abgr >>= 8;
 			DWORD da = (abgr & 0xFF);
-			if (a == 0) a = 255;
+			if (da == 0) da = 255;
 			float q = 3.92156862e-3f;
 			r = float(dr) * q;
 			g = float(dg) * q;
