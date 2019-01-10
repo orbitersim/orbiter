@@ -258,6 +258,7 @@ bool FileParser::ParseScenario (const std::string &name)
 
 	// Spacecraft.dll detection
 	//
+	bool spacecraftDllUsed = false;
 
 	// skip until BEGIN_SHIPS
 	while (std::getline(fs, line) && !startsWith(trim(line), "BEGIN_SHIPS")) {}
@@ -266,10 +267,12 @@ bool FileParser::ParseScenario (const std::string &name)
 	{
 		toLower(line);
 		if (line.find(":spacecraft\\spacecraft") != std::string::npos) {
-			OapiExtension::SetSpacecraftDllUsed();
+			spacecraftDllUsed = true;
 			break;
 		}
 	}
+	OapiExtension::SetSpacecraftDllUsed(spacecraftDllUsed);
+
 
 	if (!result) {
 		LogErr("Failed to parse a scenario '%s'", name.c_str());
