@@ -286,6 +286,7 @@ private:
 	static bool runsUnderWINE;          ///< Whether Orbiter runs under WINE
 	// Spacecraft.dll detection
 	static bool runsSpacecraftDll;      ///< Whether the current Scenario uses Spacecraft.dll
+	static void LogD3D9Modules(void);   ///< Logs loaded D3D9 DLLs and their versions
 
 	// Hooking
 	static DWORD    hookMap;     // Flags indicating 'already delegated' widgets

@@ -9,6 +9,7 @@
 #include "OapiExtension.h"
 #include "D3D9Config.h"
 #include "OrbiterAPI.h"
+#include <psapi.h>
 
 // ===========================================================================
 // Orbiter [v110830] up to [v111105]
@@ -168,6 +169,77 @@ void OapiExtension::HandlePopupWindows (const HWND *hPopupWnd, DWORD count)
 */
 
 // ===========================================================================
+// Logs loaded D3D9 DLLs and their versions to Orbiter.log
+//
+void OapiExtension::LogD3D9Modules(void)
+{
+	HMODULE hMods[1024];
+	HANDLE hProcess;
+	DWORD cbNeeded;
+
+	// Get a handle to the process.
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetCurrentProcessId());
+	if (NULL == hProcess) {
+		return;
+	}
+
+	// Get a list of all the modules in this process.
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (unsigned int i = 0, n = 0; i < (cbNeeded / sizeof(HMODULE)); ++i)
+		{
+			TCHAR szModName[MAX_PATH];
+
+			if (GetModuleBaseName(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
+			{
+				std::string name = std::string(szModName); toLower(name);
+				// Module of interest?
+				if (name == "d3d9.dll" || 0 == name.compare(0, 6, "d3dx9_"))
+				{
+					// Get the full path to the module's file.
+					if (GetModuleFileNameEx(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
+					{
+						TCHAR versionString[128] = "";
+						DWORD dummy = 0;
+						LPDWORD pDummy = 0;
+						DWORD versionInfoSize = GetFileVersionInfoSize(szModName, pDummy);
+						if (versionInfoSize) {
+							char *data = new char[versionInfoSize]();
+							if (GetFileVersionInfo(szModName, dummy, versionInfoSize, data))
+							{
+								UINT size = 0;
+								VS_FIXEDFILEINFO *verInfo;
+
+								if (VerQueryValue(data, "\\", (LPVOID*)&verInfo, &size) && size)
+								{
+									sprintf_s(versionString, ARRAYSIZE(versionString),
+										" [v %d.%d.%d.%d]",
+										HIWORD( verInfo->dwProductVersionMS ),
+										LOWORD( verInfo->dwProductVersionMS ),
+										HIWORD( verInfo->dwProductVersionLS ),
+										LOWORD( verInfo->dwProductVersionLS )
+									);
+								}
+							}
+							delete[] data;
+						}
+
+						// Print the module name.
+						auto prefix = (n++ ? "         " : "D3D9 DLLs");
+						oapiWriteLogV("%s  : %s%s",	prefix, szModName, versionString);
+					}
+				}
+			}
+		}
+	}
+
+	// Release the handle to the process.
+	CloseHandle( hProcess );
+}
+
+
+
+// ===========================================================================
 // Tries to get the initial settings from Orbiter_NG.cfg file
 //
 bool OapiExtension::GetConfigParameter(void)
@@ -244,6 +316,9 @@ bool OapiExtension::GetConfigParameter(void)
 		logPath("HightexDir" , hightexDir);
 		logPath("ScenarioDir", scenarioDir);
 		oapiWriteLog("---------------------------------------------------------------");
+		LogD3D9Modules();
+		oapiWriteLog("---------------------------------------------------------------");
+
 	}
 
 	// Check for the OrbiterSound version

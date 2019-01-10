@@ -72,7 +72,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib dxguid.lib Msimg32.lib psapi.lib nvapi.lib"
+				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib dxguid.lib Msimg32.lib psapi.lib version.lib nvapi.lib"
 				OutputFile="..\..\Modules\Plugin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="&quot;$(DXSDK_DIR)\Lib\x86&quot;;..\..\Orbitersdk\lib"
 				IgnoreDefaultLibraryNames="MSVCRT.lib"
@@ -163,7 +163,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib psapi.lib nvapi.lib"
+				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib psapi.lib version.lib nvapi.lib"
 				OutputFile="..\..\Modules\Plugin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="..\..\Orbitersdk\lib;.\..\..\Modules\Server"
 				IgnoreDefaultLibraryNames="MSVCRT.lib"
