@@ -199,6 +199,29 @@ void OapiExtension::LogD3D9Modules(void)
 					// Get the full path to the module's file.
 					if (GetModuleFileNameEx(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
 					{
+						DWORD crc = 0;	
+						FILE *hFile = 0;
+						DWORD req = 0;
+
+						if (name == "d3d9.dll") req = 0xC0CB;
+						if (name == "d3dx9_43.dll") req = 0x6FE6;
+					
+						if (fopen_s(&hFile, szModName, "rb") == 0) {
+							while (true) {
+								int data = fgetc(hFile);
+								if (data == EOF) break;
+								crc = crc ^ ((data&0xFF) << 8);
+								for (int j = 0; j < 8; j++) {
+									if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+									else crc = (crc << 1);
+									crc &= 0xFFFF;
+								}	
+							}
+							crc &= 0xFFFF;
+							fclose(hFile);
+						}
+
+						static char *sPass[] = { "Fail","Pass" };
 						TCHAR versionString[128] = "";
 						DWORD dummy = 0;
 						LPDWORD pDummy = 0;
@@ -213,11 +236,13 @@ void OapiExtension::LogD3D9Modules(void)
 								if (VerQueryValue(data, "\\", (LPVOID*)&verInfo, &size) && size)
 								{
 									sprintf_s(versionString, ARRAYSIZE(versionString),
-										" [v %d.%d.%d.%d]",
+										" [v %d.%d.%d.%d] CRC=0x%X (%s)",
 										HIWORD( verInfo->dwProductVersionMS ),
 										LOWORD( verInfo->dwProductVersionMS ),
 										HIWORD( verInfo->dwProductVersionLS ),
-										LOWORD( verInfo->dwProductVersionLS )
+										LOWORD( verInfo->dwProductVersionLS ),
+										crc,
+										sPass[crc==req]
 									);
 								}
 							}
