@@ -199,13 +199,9 @@ void OapiExtension::LogD3D9Modules(void)
 					// Get the full path to the module's file.
 					if (GetModuleFileNameEx(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
 					{
-						DWORD crc = 0;	
-						FILE *hFile = 0;
-						DWORD req = 0;
 
-						if (name == "d3d9.dll") req = 0xC0CB;
-						if (name == "d3dx9_43.dll") req = 0x6FE6;
-					
+						/*DWORD crc = 0; 
+						FILE *hFile = 0;
 						if (fopen_s(&hFile, szModName, "rb") == 0) {
 							while (true) {
 								int data = fgetc(hFile);
@@ -219,9 +215,8 @@ void OapiExtension::LogD3D9Modules(void)
 							}
 							crc &= 0xFFFF;
 							fclose(hFile);
-						}
+						}*/
 
-						static char *sPass[] = { "Fail","Pass" };
 						TCHAR versionString[128] = "";
 						DWORD dummy = 0;
 						LPDWORD pDummy = 0;
@@ -236,13 +231,11 @@ void OapiExtension::LogD3D9Modules(void)
 								if (VerQueryValue(data, "\\", (LPVOID*)&verInfo, &size) && size)
 								{
 									sprintf_s(versionString, ARRAYSIZE(versionString),
-										" [v %d.%d.%d.%d] CRC=0x%X (%s)",
+										" [v %d.%d.%d.%d]",
 										HIWORD( verInfo->dwProductVersionMS ),
 										LOWORD( verInfo->dwProductVersionMS ),
 										HIWORD( verInfo->dwProductVersionLS ),
-										LOWORD( verInfo->dwProductVersionLS ),
-										crc,
-										sPass[crc==req]
+										LOWORD( verInfo->dwProductVersionLS )
 									);
 								}
 							}
