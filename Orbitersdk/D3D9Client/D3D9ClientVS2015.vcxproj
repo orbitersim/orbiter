@@ -239,12 +239,12 @@ if not exist "$(SolutionDir)nvapi.h" (
     <ResourceCompile Include="D3D9Client.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\gcAPI.h" />
-    <ClInclude Include="..\include\gcConst.h" />
-    <ClInclude Include="..\include\GraphicsAPI.h" />
-    <ClInclude Include="..\include\OrbiterAPI.h" />
-    <ClInclude Include="..\include\Orbitersdk.h" />
-    <ClInclude Include="..\include\Sketchpad2.h" />
+    <ClInclude Include="$(SDKIncludeDir)\gcAPI.h" />
+    <ClInclude Include="$(SDKIncludeDir)\gcConst.h" />
+    <ClInclude Include="$(SDKIncludeDir)\GraphicsAPI.h" />
+    <ClInclude Include="$(SDKIncludeDir)\OrbiterAPI.h" />
+    <ClInclude Include="$(SDKIncludeDir)\Orbitersdk.h" />
+    <ClInclude Include="$(SDKIncludeDir)\Sketchpad2.h" />
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />

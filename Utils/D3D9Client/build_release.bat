@@ -55,7 +55,7 @@ if not "%VS150COMNTOOLS%"=="" (
 if not "%VS140COMNTOOLS%"=="" (
   set "SETVCVARS=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2015.sln
-  set GCAPI_PROJECTFILE=gcAPI.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs2015.vcxproj
   goto assign
 )
 :: Visual Studio 2012
@@ -76,7 +76,7 @@ if not "%VS100COMNTOOLS%"=="" (
 if not "%VS90COMNTOOLS%"=="" (
   set "SETVCVARS=%VS90COMNTOOLS%vsvars32.bat"
   set SOLUTIONFILE=D3D9ClientVS2008.sln
-  set GCAPI_PROJECTFILE=gcAPI.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs2008.vcxproj
   goto assign
 )
 

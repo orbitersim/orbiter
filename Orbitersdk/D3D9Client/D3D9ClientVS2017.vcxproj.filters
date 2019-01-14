@@ -15,7 +15,7 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{4c6dff27-140c-4376-a044-250cfa91aef1}</UniqueIdentifier>
-      <Extensions>*.fx</Extensions>
+      <Extensions>fx;hlsl</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
     <Filter Include="Externals">
@@ -23,10 +23,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AABBUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AtmoControls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BeaconArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="CelSphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CloudMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cloudmgr2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CSphereMgr.cpp">
@@ -50,6 +62,12 @@
     <ClCompile Include="D3D9Pad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D3D9Pad2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D3D9Pad3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="D3D9Surface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,13 +77,28 @@
     <ClCompile Include="D3D9Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DebugControls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GDIPad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HazeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IProcess.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Junction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
@@ -77,22 +110,46 @@
     <ClCompile Include="MeshTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OapiExtension.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OgciExtensions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlanetRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RingMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RunwayLights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Spherepatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SurfMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Surfmgr2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TileLabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="TileMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tilemgr2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VBase.cpp">
@@ -113,89 +170,47 @@
     <ClCompile Include="VVessel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BeaconArray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RunwayLights.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OapiExtension.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugControls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Junction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AABBUtil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AtmoControls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Spherepatch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlanetRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Tilemgr2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Cloudmgr2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Surfmgr2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="IProcess.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OgciExtensions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D9Pad2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D9Pad3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ZTreeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TileLabel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\GraphicsAPI.h">
+    <ClInclude Include="$(SDKIncludeDir)\gcAPI.h">
       <Filter>Externals</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\OrbiterAPI.h">
+    <ClInclude Include="$(SDKIncludeDir)\gcConst.h">
       <Filter>Externals</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Orbitersdk.h">
+    <ClInclude Include="$(SDKIncludeDir)\GraphicsAPI.h">
       <Filter>Externals</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Sketchpad2.h">
+    <ClInclude Include="$(SDKIncludeDir)\OrbiterAPI.h">
       <Filter>Externals</Filter>
     </ClInclude>
-    <ClInclude Include="TileLabel.h">
+    <ClInclude Include="$(SDKIncludeDir)\Orbitersdk.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(SDKIncludeDir)\Sketchpad2.h">
+      <Filter>Externals</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AABBUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="AtmoControls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BeaconArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="CelSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CloudMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cloudmgr2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CSphereMgr.h">
@@ -219,16 +234,37 @@
     <ClInclude Include="D3D9Pad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="D3D9Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D3D9TextMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="D3D9Util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DebugControls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GDIPad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="HazeMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IProcess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Junction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
@@ -240,76 +276,43 @@
     <ClInclude Include="MeshTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OapiExtension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlanetRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Qtree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RingMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VideoTab.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VStar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BeaconArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RunwayLights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D3D9Surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GDIPad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SurfMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TileMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VPlanet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OapiExtension.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugControls.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Junction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AABBUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AtmoControls.h">
+    <ClInclude Include="Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Spherepatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PlanetRenderer.h">
+    <ClInclude Include="SurfMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Surfmgr2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TileLabel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tilemgr2.h">
@@ -318,19 +321,22 @@
     <ClInclude Include="Tilemgr2_imp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Cloudmgr2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Surfmgr2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Qtree.h">
+    <ClInclude Include="VBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VectorHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IProcess.h">
+    <ClInclude Include="VideoTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VPlanet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VStar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VVessel.h">
