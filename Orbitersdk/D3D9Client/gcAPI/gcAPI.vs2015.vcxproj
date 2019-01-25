@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,7 +19,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>gcAPI</ProjectName>
-    <ProjectGuid>{11510222-2A76-4B4D-81D5-AFAC25191D7B}</ProjectGuid>
+    <ProjectGuid>{E31E97CA-377A-4882-8C5C-C5781700CD43}</ProjectGuid>
     <RootNamespace>gcAPI</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
