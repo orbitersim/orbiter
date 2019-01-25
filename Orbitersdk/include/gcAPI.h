@@ -170,6 +170,29 @@ bool			gcRegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam);
 				* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 				*/
 int				gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
+
+				/**
+				* \brief A Function to get a mesh transformation/animation matrix.
+				* \param matrix_id Id of the matrix to get. One of gcMatrix::xxx datatypes.
+				* \param hVessel Vessel object handle.
+				* \param mesh Mesh index
+				* \param group Group index
+				* \param pMat A pointer to FMATRIX4 struct for receiving the data.
+				* \return 0 = on Success, or error code.
+				*/
+int				gcGetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4 *pMat);
+
+
+				/**
+				* \brief A Function to set a mesh transformation/animation matrix. Do not use this function for animated parts/meshes.
+				* \param matrix_id Id of the matrix to set. One of gcMatrix::xxx datatypes.
+				* \param hVessel Vessel object handle.
+				* \param mesh Mesh index
+				* \param group Group index
+				* \param pMat A pointer to FMATRIX4 containing the data to set.
+				* \return 0 = on Success, or error code.
+				*/
+int				gcSetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4 *pMat);
 				//@}
 
 

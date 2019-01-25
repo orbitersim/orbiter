@@ -49,6 +49,9 @@ typedef HPOLY (OGCIFN *__gcCreateTriangles)(HPOLY hPoly, const TriangleVtx *pt, 
 
 // Mesh interface functions
 typedef int	(OGCIFN *__gcMeshMaterial)(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
+typedef int	(OGCIFN *__gcGetMatrix)(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, FMATRIX4 *pMat);
+typedef int	(OGCIFN *__gcSetMatrix)(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
+
 
 // Helper functiond
 typedef bool (OGCIFN *__gcWorldToScreenSpace)(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, const oapi::FMATRIX4 *pVP, float clip);
@@ -72,6 +75,9 @@ __gcWorldToScreenSpace _gcWorldToScreenSpace = NULL;
 __gcCreatePoly _gcCreatePoly = NULL;
 __gcDeletePoly _gcDeletePoly = NULL;
 __gcMeshMaterial _gcMeshMaterial = NULL;
+__gcGetMatrix _gcGetMatrix = NULL;
+__gcSetMatrix _gcSetMatrix = NULL;
+
 __gcRegisterGenericProc _gcRegisterGenericProc = NULL;
 __gcGetRenderWindow _gcGetRenderWindow = NULL;
 __gcGetTextLength _gcGetTextLength = NULL;
@@ -109,6 +115,8 @@ bool PostInit(HMODULE hClient)
 	_gcWorldToScreenSpace = (__gcWorldToScreenSpace)GetProcAddress(hClient, "gcWorldToScreenSpace");
 	// -------------
 	_gcMeshMaterial = (__gcMeshMaterial)GetProcAddress(hClient, "gcMeshMaterial");
+	_gcGetMatrix = (__gcGetMatrix)GetProcAddress(hClient, "gcGetMatrix");
+	_gcSetMatrix = (__gcSetMatrix)GetProcAddress(hClient, "gcSetMatrix");
 
 	return (_gcClientID!=NULL);
 }
@@ -156,6 +164,22 @@ int	gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, boo
 {
 	if (_gcMeshMaterial) return _gcMeshMaterial(hMesh, idx, prop, value, bSet);	
 	return -5;	
+}
+
+// ====================================================================================================
+//
+int	gcGetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4 *pMat)
+{
+	if (_gcGetMatrix) return _gcGetMatrix(matrix_id, hVessel, mesh, group, pMat);
+	return -13;
+}
+
+// ====================================================================================================
+//
+int	gcSetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4 *pMat)
+{
+	if (_gcSetMatrix) return _gcSetMatrix(matrix_id, hVessel, mesh, group, pMat);
+	return -13;
 }
 		
 // ====================================================================================================

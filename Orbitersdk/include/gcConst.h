@@ -1,7 +1,7 @@
 // =================================================================================================================================
 // The MIT Lisence:
 //
-// Copyright (C) 2014 - 2016 Jarmo Nikkanen
+// Copyright (C) 2014 - 2019 Jarmo Nikkanen
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 // files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -17,6 +17,7 @@
 // =================================================================================================================================
 
 #include "OrbiterAPI.h"
+#include "DrawAPI.h"
 
 /**
 * \file gcConst.h
@@ -73,6 +74,16 @@
 #define	MESHM_ROUGHNESS		0x40	///< D3D9 material
 #define	MESHM_FRESNEL		0x80	///< D3D9 material
 ///@}
+
+
+namespace gcMatrix
+{
+	const int offset = 1;		///< Set/Get Mesh offset matrix, Also used by VESSEL::ShiftMesh()
+	const int mesh = 2;			///< Set/Get Mesh animation matrix, Transforms all the groups in the mesh
+	const int group = 3;		///< Set/Get Group animation matrix, Transforms a single group
+	const int combined = 4;		///< Get combined Mesh*Group*Offset matrix. (Can't 'set' this)
+}
+
 
 namespace oapi {
 

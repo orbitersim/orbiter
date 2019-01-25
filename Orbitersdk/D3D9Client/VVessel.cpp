@@ -1608,6 +1608,66 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 	return result;
 }
 
+// ============================================================================================
+//
+int vVessel::GetMatrixTransform(int func, DWORD mi, DWORD gi, FMATRIX4 *pMat)
+{
+	if (mi >= nmesh) return -1;
+	D3D9Mesh *pMesh = meshlist[mi].mesh;
+	if (pMesh == NULL) return -2;
+	if (gi >= pMesh->GetGroupCount()) return -3;
+
+	if (func == gcMatrix::mesh)	memcpy_s(pMat, sizeof(FMATRIX4), &(pMesh->GetTransform(-1, false)), sizeof(D3DXMATRIX));
+	if (func == gcMatrix::group) memcpy_s(pMat, sizeof(FMATRIX4), &(pMesh->GetTransform(gi, false)), sizeof(D3DXMATRIX));
+
+	if (func == gcMatrix::offset) {
+		if (meshlist[mi].trans) memcpy_s(pMat, sizeof(FMATRIX4), meshlist[mi].trans, sizeof(D3DXMATRIX));
+		else {
+			D3DXMATRIX Ident;
+			D3DXMatrixIdentity(&Ident);
+			memcpy_s(pMat, sizeof(FMATRIX4), &Ident, sizeof(D3DXMATRIX));
+		}
+		return 0;
+	}
+
+	if (func == gcMatrix::combined) {
+		D3DXMATRIX MeshGrp = pMesh->GetTransform(gi, true);
+		if (meshlist[mi].trans) {
+			D3DXMATRIX MeshGrpTrans;
+			D3DXMatrixMultiply(&MeshGrpTrans, &MeshGrp, meshlist[mi].trans);
+			memcpy_s(pMat, sizeof(FMATRIX4), &MeshGrpTrans, sizeof(D3DXMATRIX));
+		}
+		else memcpy_s(pMat, sizeof(FMATRIX4), &MeshGrp, sizeof(D3DXMATRIX));
+	}
+
+	return 0;
+}
+
+// ============================================================================================
+//
+int vVessel::SetMatrixTransform(int func, DWORD mi, DWORD gi, const FMATRIX4 *pMat)
+{
+	if (mi >= nmesh) return -1;
+	D3D9Mesh *pMesh = meshlist[mi].mesh;
+	if (pMesh == NULL) return -2;
+	if (gi >= pMesh->GetGroupCount()) return -3;
+
+	if (func == gcMatrix::offset) {
+		if (meshlist[mi].trans == NULL) meshlist[mi].trans = new D3DXMATRIX;
+		memcpy_s(meshlist[mi].trans, sizeof(D3DXMATRIX), pMat, sizeof(FMATRIX4));
+	}
+
+	if (func == gcMatrix::mesh) if (!pMesh->SetTransform(-1, (LPD3DXMATRIX)pMat)) return -4;
+	if (func == gcMatrix::group) if (!pMesh->SetTransform(gi, (LPD3DXMATRIX)pMat)) return -5;
+
+	return 0;
+}
+
+
+
+
+
+
 // ===========================================================================================
 //
 

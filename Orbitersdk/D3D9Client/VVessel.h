@@ -61,6 +61,8 @@ public:
 	MESHHANDLE GetMesh (UINT idx);
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	bool GetMinMaxLightDist(float *mind, float *maxd);
+	int	 GetMatrixTransform(int matrix_id, DWORD mesh, DWORD group, FMATRIX4 *pMat);
+	int  SetMatrixTransform(int matrix_id, DWORD mesh, DWORD group, const FMATRIX4 *pMat);
 	void UpdateBoundingBox();
 	bool IsInsideShadows();
 	bool IntersectShadowTarget();

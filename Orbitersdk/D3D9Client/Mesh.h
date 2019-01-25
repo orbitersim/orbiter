@@ -183,6 +183,9 @@ public:
 	D3DXVECTOR3		GetGroupSize(DWORD idx);
 	LPD3DXMATRIX	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
 
+	D3DXMATRIX		GetTransform(int grp, bool bCombined);
+	bool			SetTransform(int grp, const LPD3DXMATRIX pMat);
+
 	void			SetPosition(VECTOR3 &pos);
 	void			SetRotation(D3DXMATRIX &rot);
 

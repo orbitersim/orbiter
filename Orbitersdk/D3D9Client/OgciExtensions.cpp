@@ -12,6 +12,27 @@
 
 extern D3D9Client *g_client;
 
+
+DLLCLBK int gcGetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, FMATRIX4 *pMat)
+{
+	if (oapiGetObjectType(hVessel) != OBJTP_VESSEL) return -10;
+	Scene *pScn = g_client->GetScene();
+	vVessel *pVes = (vVessel *)pScn->GetVisObject(hVessel);
+	if (pVes) return pVes->GetMatrixTransform(matrix_id, mesh, group, pMat);
+	return -11;
+}
+
+
+DLLCLBK int gcSetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const FMATRIX4 *pMat)
+{
+	if (oapiGetObjectType(hVessel) != OBJTP_VESSEL) return -10;
+	Scene *pScn = g_client->GetScene();
+	vVessel *pVes = (vVessel *)pScn->GetVisObject(hVessel);
+	if (pVes) return pVes->SetMatrixTransform(matrix_id, mesh, group, pMat);
+	return -11;
+}
+
+
 DLLCLBK SURFHANDLE gcLoadSurface(const char *fname, DWORD flags)
 {
 	return g_client->clbkLoadSurface(fname, flags);

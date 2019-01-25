@@ -2291,6 +2291,53 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 // ===========================================================================================
 //
+D3DXMATRIX D3D9Mesh::GetTransform(int g, bool bCombined)
+{
+	if (g < 0) return mTransform;
+
+	if (Grp[g].bTransform) {
+		if (bCombined) return pGrpTF[g];
+		else return Grp[g].Transform;
+	}
+
+	D3DXMATRIX Ident; D3DXMatrixIdentity(&Ident);
+	return Ident;
+}
+
+
+// ===========================================================================================
+//
+bool D3D9Mesh::SetTransform(int g, const LPD3DXMATRIX pMat)
+{
+	if (g >= int(nGrp)) return false;
+
+	// Set Mesh Transform if g < 0
+	if (g < 0) {
+		mTransform = *pMat;
+		bGlobalTF = true;
+		bBSRecompute = true;
+		bBSRecomputeAll = true;
+		D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
+		for (DWORD i = 0; i<nGrp; i++) {
+			if (Grp[i].bTransform) D3DXMatrixMultiply(&pGrpTF[i], &mTransform, &Grp[i].Transform);
+			else pGrpTF[i] = mTransform;
+		}
+		return true;
+	}
+
+	Grp[g].bUpdate = true;
+	Grp[g].bTransform = true;
+	Grp[g].Transform = *pMat;
+	D3DXMatrixMultiply(&pGrpTF[g], &mTransform, &Grp[g].Transform);
+
+	return true;
+}
+
+
+
+
+// ===========================================================================================
+//
 void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 {
 	if (!pVB) return;
