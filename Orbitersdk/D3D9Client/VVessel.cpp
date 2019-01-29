@@ -869,7 +869,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 				vessel->GetTorqueVector(vector);
 				if (length(vector) > threshold) {
 					RenderAxisVector(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, bLog);
-					sprintf_s(label, 64, "T = %sNm", value_string(length(vector)));
+					sprintf_s(label, 64, "M = %sNm", value_string(length(vector)));
 					RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,1,alpha), vector, lscale, scale, label, bLog);
 				}
 			}
@@ -888,27 +888,27 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 		if (alpha > 1e-9) // skip all this when opacity is to small (ZEROish)
 		{
 			float sclset  = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
-			float scale   = float(oapiGetSize(hObj))/50.0f;
+			scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
 			float ascale  = float(oapiGetSize(hObj))*sclset*0.5f;
 
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(1,0,0), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(1,0,0), ascale, scale, "X");
+			RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale);
+			RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale, "X");
 
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,1,0), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,1,0), ascale, scale, "Y");
+			RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,1,0), ascale, scale);
+			RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,1,0), ascale, scale, "Y");
 
-			RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,1), ascale, scale);
-			RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,1), ascale, scale, "Z");
+			RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,1), ascale, scale);
+			RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,1), ascale, scale, "Z");
 
 			if (scamode&SCA_NEGATIVE) {
-				RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(-1,0,0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(-1,0,0), ascale, scale, "-X");
+				RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha*0.5f), _V(-1,0,0), ascale, scale);
+				RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(-1,0,0), ascale, scale, "-X");
 
-				RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(0,-1,0), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,-1,0), ascale, scale, "-Y");
+				RenderAxisVector(pSkp, &D3DXCOLOR(0,1,0,alpha*0.5f), _V(0,-1,0), ascale, scale);
+				RenderAxisLabel(pSkp, &D3DXCOLOR(0,1,0,alpha), _V(0,-1,0), ascale, scale, "-Y");
 
-				RenderAxisVector(pSkp, &D3DXCOLOR(1,1,1,alpha*0.5f), _V(0,0,-1), ascale, scale);
-				RenderAxisLabel(pSkp, &D3DXCOLOR(1,1,1,alpha), _V(0,0,-1), ascale, scale, "-Z");
+				RenderAxisVector(pSkp, &D3DXCOLOR(0,0,1,alpha*0.5f), _V(0,0,-1), ascale, scale);
+				RenderAxisLabel(pSkp, &D3DXCOLOR(0,0,1,alpha), _V(0,0,-1), ascale, scale, "-Z");
 			}
 		}
 	}
