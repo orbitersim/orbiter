@@ -137,8 +137,9 @@ public:
 	 * \param len string length for output
 	 * \return \e true on success, \e false on failure.
 	 */
-	bool Text (int x, int y, LPCSTR str, int len);
-	bool Text (int x, int y, LPCWSTR str, int len);
+	bool Text (int x, int y, const char *str, int len);
+
+	bool TextW (int x, int y, const LPWSTR str, int len);
 
 	/**
 	 * \brief Draw a text string into a rectangle.

@@ -183,14 +183,14 @@ void GDIPad::GetOrigin (int *x, int *y) const
 
 // ===============================================================================================
 //
-bool GDIPad::Text (int x, int y, LPCSTR str, int len)
+bool GDIPad::Text (int x, int y, const char *str, int len)
 {
-	return (TextOutA(hDC, x, y, str, len) != FALSE);
+	return (TextOut (hDC, x, y, str, len) != FALSE);
 }
 
 // ===============================================================================================
 //
-bool GDIPad::Text (int x, int y, LPCWSTR str, int len)
+bool GDIPad::TextW (int x, int y, const LPWSTR str, int len)
 {
 	return (TextOutW(hDC, x, y, str, len) != FALSE);
 }
