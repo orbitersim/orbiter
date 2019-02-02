@@ -135,10 +135,10 @@ void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW,
 
 float ProjectShadows(float2 sp)
 {
-	if (!gShadowsEnabled) return 1.0f;
+	if (!gShadowsEnabled) return 0.0f;
 
-	if (sp.x < 0 || sp.y < 0) return 1.0f;
-	if (sp.x > 1 || sp.y > 1) return 1.0f;
+	if (sp.x < 0 || sp.y < 0) return 0.0f;
+	if (sp.x > 1 || sp.y > 1) return 0.0f;
 
 	float2 dx = float2(gSHD[1], 0) * 1.5f;
 	float2 dy = float2(0, gSHD[1]) * 1.5f;
@@ -146,17 +146,17 @@ float ProjectShadows(float2 sp)
 	float  pd = 1e-4;
 
 	sp -= dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
 	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
 	sp += dy;
-	if ((tex2D(ShadowS, sp - dx).r) < pd) va++;
-	if ((tex2D(ShadowS, sp).r) < pd) va++;
-	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
 
 	return va / 9.0f;
 }
@@ -166,7 +166,7 @@ float ProjectShadows(float2 sp)
 //
 float SampleShadows(float2 sp, float pd)
 {
-	if (!gShadowsEnabled) return 1.0f;
+	if (!gShadowsEnabled) return 0.0f;
 
 	float2 dx = float2(gSHD[1], 0) * 1.5f;
 	float2 dy = float2(0, gSHD[1]) * 1.5f;
@@ -193,7 +193,7 @@ float SampleShadows(float2 sp, float pd)
 //
 float SampleShadows2(float2 sp, float pd)
 {
-	if (!gShadowsEnabled) return 1.0f;
+	if (!gShadowsEnabled) return 0.0f;
 
 	float val = 0;
 	float m = KERNEL_RADIUS * gSHD[1];
@@ -210,14 +210,14 @@ float SampleShadows2(float2 sp, float pd)
 //
 float SampleShadows3(float2 sp, float pd, float4 frame)
 {
-	if (!gShadowsEnabled) return 1.0f;
+	if (!gShadowsEnabled) return 0.0f;
 
 	float val = 0;
 	frame *= KERNEL_RADIUS * gSHD[1];
 
 	[unroll] for (int i = 0; i < KERNEL_SIZE; i++) {
 		float2 ofs = frame.xy*kernel[i].x + frame.zw*kernel[i].y;
-		if ((tex2D(ShadowS, sp + ofs).r) > pd) val += kernel[i].z;
+		if (tex2D(ShadowS, sp + ofs).r > pd) val += kernel[i].z;
 	}
 
 	return saturate(val * KERNEL_WEIGHT);
@@ -246,6 +246,7 @@ float SampleShadowsEx(float2 sp, float pd, float4 sc)
 float ComputeShadow(float4 shdH, float dLN, float4 sc)
 {
 	shdH.xyz /= shdH.w;
+	shdH.z = 1 - shdH.z;
 	float2 sp = shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
 
 	sp += gSHD[1] * 0.5f;
@@ -255,10 +256,7 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 	float kr = gSHD[0] * KERNEL_RADIUS;
 	float dx = rsqrt(1.0 - dLN*dLN);
 	float ofs = kr / (dLN * dx);
-	float omx = min(5e-3 + ofs, 0.15);
-
-	//float krd = omx * dLN / dx;
-	//float fSh = saturate( (krd / kr) * (1 - SHADOW_THRESHOLD) + SHADOW_THRESHOLD);
+	float omx = min(0.07 + ofs, 0.3);
 
 	if (gBaseBuilding) {
 
@@ -268,10 +266,10 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 	else {
 
 		// It's a vessel
-		float  pd = shdH.z - omx * gSHD[3];
+		float  pd = shdH.z + omx * gSHD[3];
 		fShadow = SampleShadowsEx(sp, pd, sc);
-		fShadow = smoothstep(0.0f, 1.0f, fShadow);
+		//fShadow = smoothstep(0.3f, 1.0f, fShadow);
 	}
 
-	return sqrt(fShadow);
+	return 1 - fShadow;
 }

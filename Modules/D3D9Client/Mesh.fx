@@ -285,7 +285,7 @@ BShadowVS ShadowMapVS(SHADOW_VERTEX vrt)
 
 float4 ShadowMapPS(BShadowVS frg) : COLOR
 {
-	return frg.dstW.x / frg.dstW.y;
+	return 1 - (frg.dstW.x / frg.dstW.y);
 }
 
 // -----------------------------------------------------------------------------------
