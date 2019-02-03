@@ -2642,8 +2642,8 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 	result.dist  = 1e30f;
 	result.pMesh = NULL;
 	result.vObj  = NULL;
-	result.face  = -1;
 	result.group = -1;
+	result.idx = -1;
 
 	for (VOBJREC *pv=vobjFirst; pv; pv=pv->next) {
 
@@ -2659,6 +2659,8 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 			if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 		}
 	}
+
+	//if (result.idx >= 0) sprintf_s(oapiDebugString(), 256, "Pos=[%f, %f, %f] Norm=[%f, %f, %f]", result.pos.x, result.pos.y, result.pos.z, result.normal.x, result.normal.y, result.normal.z);
 
 	return result;
 }

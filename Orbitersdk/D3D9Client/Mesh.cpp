@@ -2898,14 +2898,14 @@ float D3D9Mesh::GetBoundingSphereRadius()
 
 // ===========================================================================================
 //
-D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
+D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir)
 {
 	D3D9Pick result;
 	result.dist  = 1e30f;
 	result.pMesh = NULL;
 	result.vObj  = NULL;
-	result.face  = -1;
 	result.group = -1;
+	result.idx = -1;
 
 	if (!pGBSys || !pIBSys) {
 		LogErr("D3D9Mesh::Pick() Failed: No Geometry Available");
@@ -2914,10 +2914,13 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 	UpdateBoundingBox();
 
-	D3DXMATRIX mW, mWorldMesh;
+	D3DXMATRIX mW, mWT, mWorldMesh;
 
-	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, pW);
-	else mWorldMesh = *pW;
+	if (pT) D3DXMatrixMultiply(&mWT, pT, pW);
+	else mWT = *pW;
+
+	if (bGlobalTF) D3DXMatrixMultiply(&mWorldMesh, &mTransform, &mWT);
+	else mWorldMesh = mWT;
 
 	for (DWORD g=0;g<nGrp;g++) {
 
@@ -2932,9 +2935,8 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 		if (!bIntersect) continue;
 
-		if (Grp[g].bTransform) D3DXMatrixMultiply(&mW, &pGrpTF[g], pW);
+		if (Grp[g].bTransform) D3DXMatrixMultiply(&mW, &pGrpTF[g], &mWT);
 		else mW = mWorldMesh;         
-
 
 		D3DXVECTOR3 _a, _b, _c, cp;
 
@@ -2951,9 +2953,9 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 		for (DWORD i=0;i<Grp[g].nFace;i++) {
 
-			DWORD a = pIdc[i*3+0];
-			DWORD b = pIdc[i*3+1];
-			DWORD c = pIdc[i*3+2];
+			WORD a = pIdc[i*3+0];
+			WORD b = pIdc[i*3+1];
+			WORD c = pIdc[i*3+2];
 			
 			_a = pVrt[a];
 			_b = pVrt[b];
@@ -2961,19 +2963,60 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 
 			float u, v, dst;
 
-			D3DXVec3Cross(&cp, &(_a-_b), &(_c-_b));
+			D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
 	
-			if (D3DXVec3Dot(&cp, &dir)>0) {
+			if (D3DXVec3Dot(&cp, &dir)<0) {
 				if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
 					if (dst<result.dist) {
 						result.dist  = dst;
-						result.face  = int(i);
 						result.group = int(g);
 						result.pMesh = this;
+						result.idx = int(i);
+						result.u = u;
+						result.v = v;
 					}
 				}
 			}
 		}
+	}
+
+	
+	if (result.idx >= 0 && result.group >= 0) {
+
+		int i = result.idx;
+		int g = result.group;
+
+		if (Grp[g].bTransform) mW = pGrpTF[g];
+		else {
+			if (bGlobalTF) mW = mTransform;
+			else D3DXMatrixIdentity(&mW);
+		}
+
+		if (pT) D3DXMatrixMultiply(&mW, &mW, pT);
+
+		D3DXVECTOR3 cp;
+
+		WORD *pIdc = &pIBSys[Grp[g].FaceOff * 3];
+		D3DXVECTOR3 *pVrt = &pGBSys[Grp[g].VertOff];
+
+		WORD a = pIdc[i * 3 + 0];
+		WORD b = pIdc[i * 3 + 1];
+		WORD c = pIdc[i * 3 + 2];
+
+		D3DXVECTOR3 _a = pVrt[a];
+		D3DXVECTOR3 _b = pVrt[b];
+		D3DXVECTOR3 _c = pVrt[c];
+
+		float u = result.u;
+		float v = result.v;
+
+		D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+
+		D3DXVec3TransformNormal(&cp, &cp, &mW);
+		D3DXVec3Normalize(&result.normal, &cp);
+
+		D3DXVECTOR3 p = (_b * u) + (_a * v) + (_c * (1.0f - u - v));
+		D3DXVec3TransformCoord(&result.pos, &p, &mW);		
 	}
 
 	return result;

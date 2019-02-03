@@ -273,7 +273,10 @@ typedef struct {
 	class vObject  *vObj;			///< Visual handle
 	float			dist;			///< Distance to a pick point
 	int				group;			///< Mesh group that was picked
-	int				face;			///< Face that was picked
+	D3DXVECTOR3		normal;			///< Normal vector
+	D3DXVECTOR3		pos;			///< Position from camera
+	int				idx;			///< Index that was picked
+	float			u, v;			///< Barycentric coords
 } D3D9Pick;
 
 typedef struct {

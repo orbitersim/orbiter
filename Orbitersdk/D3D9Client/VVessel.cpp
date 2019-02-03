@@ -1568,8 +1568,8 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 	result.dist  = 1e30f;
 	result.pMesh = NULL;
 	result.vObj  = NULL;
-	result.face  = -1;
 	result.group = -1;
+	result.idx = -1;
 
 	//if (!meshlist || nmesh==0 || this!=DebugControls::GetVisual()) return result;
 	if (!meshlist || nmesh==0) return result;
@@ -1596,10 +1596,7 @@ D3D9Pick vVessel::Pick(const D3DXVECTOR3 *vDir)
 			if (!(vismode & MESHVIS_EXTERNAL)) continue;
 		}
 
-		if (meshlist[i].trans) pWT = D3DXMatrixMultiply(&mWT, (const D3DXMATRIX *)meshlist[i].trans, &mWorld);
-		else pWT = &mWorld;
-
-		D3D9Pick pick = hMesh->Pick(pWT, vDir);
+		D3D9Pick pick = hMesh->Pick(&mWorld, meshlist[i].trans, vDir);
 		if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 	}
 

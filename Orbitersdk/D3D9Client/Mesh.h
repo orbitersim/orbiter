@@ -222,7 +222,7 @@ public:
 
 	void			SetSunLight(const D3D9Sun *pLight);
 	
-	D3D9Pick		Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir);
+	D3D9Pick		Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir);
 	
 	void			UpdateBoundingBox();
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
