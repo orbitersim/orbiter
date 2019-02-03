@@ -263,6 +263,9 @@ private:
 	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
 	LPDIRECT3DVERTEXBUFFER9 pGB;
 	LPDIRECT3DINDEXBUFFER9  pIB;
+
+	D3DXVECTOR3				*pGBSys;
+	WORD					*pIBSys;
 	
 	DWORD	MaxVert;
 	DWORD	MaxFace;

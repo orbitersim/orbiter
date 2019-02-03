@@ -39,6 +39,8 @@ void D3D9Mesh::Null()
 	pVB = NULL;
 	pIB = NULL;
 	pGB = NULL;
+	pGBSys = NULL;
+	pIBSys = NULL;
 	nGrp = 0;
 	Grp = NULL;
 	nTex = 0;
@@ -168,6 +170,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSu
 
 // ===========================================================================================
 //
+/*
 D3D9Mesh::D3D9Mesh(class AdMesh &mesh, bool bHasUV) : D3D9Effect()
 {
 	Null();
@@ -225,7 +228,7 @@ D3D9Mesh::D3D9Mesh(class AdMesh &mesh, bool bHasUV) : D3D9Effect()
 	UpdateBoundingBox();
 	UpdateGeometryBuffer();
 	CheckMeshStatus();
-}
+}*/
 
 
 // ===========================================================================================
@@ -279,6 +282,16 @@ void D3D9Mesh::Copy(const D3D9Mesh &mesh)
 		memcpy2(pVTgt, pVSrc, MaxVert*sizeof(D3DXVECTOR4));
 		HR(mesh.pGB->Unlock());
 		HR(pGB->Unlock());
+
+		if (mesh.pGBSys) {
+			pGBSys = new D3DXVECTOR3[MaxVert];
+			memcpy2(pGBSys, mesh.pGBSys, MaxVert * sizeof(D3DXVECTOR3));
+		}
+
+		if (mesh.pIBSys) {
+			pIBSys = new WORD[MaxFace * 3];
+			memcpy2(pIBSys, mesh.pIBSys, MaxFace * 3 * sizeof(WORD));
+		}
 	}
 
 	// ----------------------------------------------------------------
@@ -332,6 +345,9 @@ void D3D9Mesh::Release()
 	SAFE_RELEASE(pIB);
 	SAFE_RELEASE(pVB);
 	SAFE_RELEASE(pGB);
+
+	SAFE_DELETEA(pGBSys);
+	SAFE_DELETEA(pIBSys);
 }
 
 
@@ -501,6 +517,18 @@ void D3D9Mesh::UpdateGeometryBuffer(int grp)
 		HR(pDev->CreateVertexBuffer(MaxVert * sizeof(D3DXVECTOR4), 0, 0, D3DPOOL_DEFAULT, &pGB, NULL));
 	}
 
+	if (!pGBSys) pGBSys = new D3DXVECTOR3[MaxVert];
+	if (!pIBSys) pIBSys = new WORD[MaxFace * 3];
+
+
+	WORD *pIdx = NULL;
+	HR(pIB->Lock(0, 0, (LPVOID*)&pIdx, 0));
+	if (pIdx) {
+		memcpy2(pIBSys, pIdx, MaxFace * 3 * sizeof(WORD));
+		HR(pIB->Unlock());
+	}
+
+
 	NMVERTEX *pVSrc = NULL;
 	D3DXVECTOR4 *pVTgt = NULL;
 
@@ -513,12 +541,19 @@ void D3D9Mesh::UpdateGeometryBuffer(int grp)
 	}
 
 	if (grp == -1) {
-		for (DWORD v = 0; v < MaxVert; v++) pVTgt[v] = D3DXVECTOR4(pVSrc[v].x, pVSrc[v].y, pVSrc[v].z, 0);
+		for (DWORD v = 0; v < MaxVert; v++) {
+			pVTgt[v] = D3DXVECTOR4(pVSrc[v].x, pVSrc[v].y, pVSrc[v].z, 0);
+			pGBSys[v] = D3DXVECTOR3(pVSrc[v].x, pVSrc[v].y, pVSrc[v].z);
+		}
 	}
 	else {
 		DWORD nV = Grp[grp].nVert;
 		DWORD vo = Grp[grp].VertOff;
-		for (DWORD v = 0; v < nV; v++) pVTgt[vo + v] = D3DXVECTOR4(pVSrc[vo + v].x, pVSrc[vo + v].y, pVSrc[vo + v].z, 0);
+		for (DWORD v = 0; v < nV; v++) {
+			int x = vo + v;
+			pVTgt[x] = D3DXVECTOR4(pVSrc[x].x, pVSrc[x].y, pVSrc[x].z, 0);
+			pGBSys[x] = D3DXVECTOR3(pVSrc[x].x, pVSrc[x].y, pVSrc[x].z);
+		}
 	}
 
 	HR(pVB->Unlock());
@@ -2872,7 +2907,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 	result.face  = -1;
 	result.group = -1;
 
-	if (!pGB || !pIB) {
+	if (!pGBSys || !pIBSys) {
 		LogErr("D3D9Mesh::Pick() Failed: No Geometry Available");
 		return result;
 	}
@@ -2900,30 +2935,36 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 		if (Grp[g].bTransform) D3DXMatrixMultiply(&mW, &pGrpTF[g], pW);
 		else mW = mWorldMesh;         
 
-		WORD *pIdc = NULL;
-		D3DXVECTOR4 *pVrt = NULL;
 
 		D3DXVECTOR3 _a, _b, _c, cp;
 
-		HR(pIB->Lock(Grp[g].FaceOff*6, Grp[g].nFace*6, (LPVOID*)&pIdc, D3DLOCK_READONLY));
-		HR(pGB->Lock(Grp[g].VertOff*sizeof(D3DXVECTOR4), Grp[g].nVert*sizeof(D3DXVECTOR4), (LPVOID*)&pVrt, D3DLOCK_READONLY));
+		WORD *pIdc = &pIBSys[Grp[g].FaceOff*3];
+		D3DXVECTOR3 *pVrt = &pGBSys[Grp[g].VertOff];
 		
+		D3DXMATRIX mWI; float det;
+		D3DXMatrixInverse(&mWI, &det, &mW);
+
+		D3DXVECTOR3 pos, dir;
+
+		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0, 0, 0), &mWI);
+		D3DXVec3TransformNormal(&dir, vDir, &mWI);
+
 		for (DWORD i=0;i<Grp[g].nFace;i++) {
 
 			DWORD a = pIdc[i*3+0];
 			DWORD b = pIdc[i*3+1];
 			DWORD c = pIdc[i*3+2];
 			
-			D3DXVec3TransformCoord(&_a, &D3DXVECTOR3f4(pVrt[a]), &mW);
-			D3DXVec3TransformCoord(&_b, &D3DXVECTOR3f4(pVrt[b]), &mW);
-			D3DXVec3TransformCoord(&_c, &D3DXVECTOR3f4(pVrt[c]), &mW);
+			_a = pVrt[a];
+			_b = pVrt[b];
+			_c = pVrt[c];
 
 			float u, v, dst;
 
 			D3DXVec3Cross(&cp, &(_a-_b), &(_c-_b));
-
-			if (D3DXVec3Dot(&cp, vDir)>0) {
-				if (D3DXIntersectTri(&_c, &_b, &_a, &D3DXVECTOR3(0,0,0), vDir, &u, &v, &dst)) {
+	
+			if (D3DXVec3Dot(&cp, &dir)>0) {
+				if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
 					if (dst<result.dist) {
 						result.dist  = dst;
 						result.face  = int(i);
@@ -2933,9 +2974,6 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir)
 				}
 			}
 		}
-
-		HR(pGB->Unlock());
-		HR(pIB->Unlock());
 	}
 
 	return result;
