@@ -1903,6 +1903,7 @@ void Scene::RenderVesselMarker(vVessel *vV, D3D9Pad *pSketch)
 //
 Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 {
+	/*
 	SUNVISPARAMS result = SUNVISPARAMS();
 
 	VECTOR3 cam = GetCameraGPos();
@@ -1929,6 +1930,57 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	short xpos = short((scrPos.x + 0.5f) * w);
 	short ypos = short((1 - (scrPos.y + 0.5f)) * h);
 
+	result.visible = true;
+	result.color = GetSunDiffColor();
+
+	return result;*/
+
+	SUNVISPARAMS result = SUNVISPARAMS();
+
+	VECTOR3 cam = GetCameraGPos();
+	VECTOR3 sunGPos;
+	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &sunGPos);
+	sunGPos -= cam;
+	
+	DWORD w, h;
+	oapiGetViewportSize(&w, &h);
+
+	const LPD3DXMATRIX pVP = GetProjectionViewMatrix();
+	D3DXVECTOR4 pos;
+	D3DXVECTOR4 sun = D3DXVECTOR4(float(sunGPos.x), float(sunGPos.x), float(sunGPos.x), 1.0f);
+	D3DXVec4Transform(&pos, &sun, pVP);
+	result.brightness = saturate(pos.z);
+
+	D3DXVECTOR2 scrPos = D3DXVECTOR2(pos.x, pos.y);
+	scrPos /= pos.w;
+	scrPos *= 0.5f;
+	scrPos.x *= w / h;
+
+	result.position = scrPos;
+	result.position.x *= 1.8f;
+
+	short xpos = short((scrPos.x + 0.5f) * w);
+	short ypos = short((1.0f - (scrPos.y + 0.5f)) * h);
+
+	D3D9Pick pick = PickScene(xpos, ypos);
+
+	if (pick.pMesh != NULL)
+	{
+		DWORD matIndex = pick.pMesh->GetMeshGroupMaterialIdx(pick.group);
+		D3D9MatExt material;
+		pick.pMesh->GetMaterial(&material, matIndex);
+		D3DXCOLOR surfCol = material.Diffuse;
+
+		result.visible = (surfCol.a != 1.0f);
+		if (result.visible)
+		{
+			D3DXCOLOR color = D3DXCOLOR(surfCol.r*surfCol.a, surfCol.g*surfCol.a, surfCol.b*surfCol.a, 1.0f);
+			color += GetSunDiffColor() * (1 - surfCol.a);
+
+			result.color = color;
+		}
+		return result;
+	}
 	result.visible = true;
 	result.color = GetSunDiffColor();
 
