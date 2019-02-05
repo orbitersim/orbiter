@@ -17,7 +17,6 @@ setlocal
 set BASE_DIR=..\..
 set OUT_DIR=_release
 set VERSION=Beta28.6
-set UTIL_DIR=%cd%
 
 
 :: Check if SDK and other needed resources are present
@@ -31,7 +30,6 @@ if not exist "%BASE_DIR%\Orbitersdk\lib\orbiter.lib" (
   if errorlevel 1 goto exit_nok
   popd
 )
-
 
 
 :: Enhance Version by Orbiter Version
@@ -160,12 +158,13 @@ copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI.lib ^
 
 
 :: --- Packing
-cd %OUT_DIR%
+pushd %OUT_DIR%
 %ZIP_CMD% a -tzip -mx9 "..\%ZIP_NAME%(r%REVISION%)+src.zip" *
 
 rmdir /S /Q "Orbitersdk\D3D9Client"
 rmdir /S /Q "Utils"
 %ZIP_CMD% a -tzip -mx9 "..\%ZIP_NAME%(r%REVISION%).zip" *
+popd
 
 :: --- Publishing
 ::ftp_helper.bat is supposed to contain folowing imformation if used
@@ -176,7 +175,6 @@ echo --------------------------
 set /p GOBUILD=Publish a Build Y/N ? 
 if %GOBUILD%=="N" goto exit_ok
 if %GOBUILD%=="n" goto exit_ok
-cd %UTIL_DIR%
 if not exist ftp_helper.bat goto exit_ok
 call ftp_helper.bat
 echo --------------------------
@@ -186,14 +184,13 @@ echo cd %TGTPATH%>>ftp.tmp
 echo get index.html html.tmp>>ftp.tmp
 echo bye>>ftp.tmp
 ftp -n -i -s:ftp.tmp %SERVER%
-del ftp.tmp
-call ModHTML.exe "html.tmp" "%ZIP_NAME%(r%REVISION%).zip" "BETA"
+call ModHTML.exe html.tmp "%ZIP_NAME%(r%REVISION%).zip" BETA
 echo --------------------------
 echo user %USER% %PASS%>ftp.tmp
 echo cd %TGTPATH%>>ftp.tmp
 echo send html.tmp index.html>>ftp.tmp
 echo binary>>ftp.tmp
-echo send "%ZIP_NAME%(r%REVISION%).zip">>ftp.tmp
+echo send %ZIP_NAME%(r%REVISION%).zip>>ftp.tmp
 echo bye>>ftp.tmp
 ftp -n -i -s:ftp.tmp %SERVER%
 del ftp.tmp
