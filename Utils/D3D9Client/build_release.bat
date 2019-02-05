@@ -16,7 +16,7 @@ setlocal
 :: --- Setup
 set BASE_DIR=..\..
 set OUT_DIR=_release
-set VERSION=Beta28.5
+set VERSION=Beta28.6
 set UTIL_DIR=%cd%
 
 
