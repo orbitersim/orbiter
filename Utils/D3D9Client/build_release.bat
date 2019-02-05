@@ -17,6 +17,7 @@ setlocal
 set BASE_DIR=..\..
 set OUT_DIR=_release
 set VERSION=Beta28.5
+set UTIL_DIR=%cd%
 
 
 :: Check if SDK and other needed resources are present
@@ -40,6 +41,7 @@ echo ========================================================================
 echo   ^.^.^.
 
 for /F "usebackq tokens=*" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
+if "%OVER%"=="BETA r62" set OVER=Orbiter2016
 set VERSION=%VERSION%-for%OVER%
 
 if "%VS150COMNTOOLS%"=="" call helper_vswhere.bat
@@ -165,6 +167,38 @@ rmdir /S /Q "Orbitersdk\D3D9Client"
 rmdir /S /Q "Utils"
 %ZIP_CMD% a -tzip -mx9 "..\%ZIP_NAME%(r%REVISION%).zip" *
 
+:: --- Publishing
+::ftp_helper.bat is supposed to contain folowing imformation if used
+::set SERVER=
+::set USER=
+::set TGTPATH=
+echo --------------------------
+set /p GOBUILD=Publish a Build Y/N ? 
+if %GOBUILD%=="N" goto exit_ok
+if %GOBUILD%=="n" goto exit_ok
+cd %UTIL_DIR%
+if not exist ftp_helper.bat goto exit_ok
+call ftp_helper.bat
+echo --------------------------
+set /p PASS=Password: 
+echo user %USER% %PASS%>ftp.tmp
+echo cd %TGTPATH%>>ftp.tmp
+echo get index.html html.tmp>>ftp.tmp
+echo bye>>ftp.tmp
+ftp -n -i -s:ftp.tmp %SERVER%
+del ftp.tmp
+call ModHTML.exe "html.tmp" "%ZIP_NAME%(r%REVISION%).zip" "MAIN"
+echo --------------------------
+echo user %USER% %PASS%>ftp.tmp
+echo cd %TGTPATH%>>ftp.tmp
+echo send html.tmp index.html>>ftp.tmp
+echo binary>>ftp.tmp
+echo send %ZIP_NAME%(r%REVISION%).zip>>ftp.tmp
+echo bye>>ftp.tmp
+ftp -n -i -s:ftp.tmp %SERVER%
+del ftp.tmp
+del html.tmp
+pause
 
 :: --- Pass / Fail exit
 :exit_ok
