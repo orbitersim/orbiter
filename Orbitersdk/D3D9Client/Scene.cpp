@@ -130,7 +130,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	if (Config->EnvMapMode) {
 		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
 	}
-	
+
 
 	if (Config->ShadowMapMode) {
 		UINT size = ShmMapSize;
@@ -164,15 +164,15 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 		char flags[32] = { 0 };
 		if (Config->ShaderDebug) strcpy_s(flags, 32, "DISASM");
-			
+
 		// Load postprocessing effects
 		if (Config->PostProcess == PP_DEFAULT)
 			pLightBlur = new ImageProcessing(pDevice, "Modules/D3D9Client/LightBlur.hlsl", "PSMain", flags);
 
-		if (Config->PostProcess == PP_LENSFLARE) 
+		if (Config->PostProcess == PP_LENSFLARE)
 			pFlare = new ImageProcessing(pDevice, "Modules/D3D9Client/LensFlare.hlsl", "PSMain", flags);
 
-		
+
 		if (pLightBlur) {
 			BufSize = pLightBlur->FindDefine("BufferDivider");
 			BufFmt = pLightBlur->FindDefine("BufferFormat");
@@ -306,7 +306,7 @@ D3D9Pad *Scene::GetPooledSketchpad (int id) // one of SKETCHPAD_xxx
 	assert(id <= SKETCHPAD_PLANETARIUM);
 
 	if (!_pad) _pad = new D3D9Pad("POOLED_SKETCHPAD");
-	
+
 	// Automatically binds a Sketchpad to a top render target
 	_pad->BeginDrawing();
 	_pad->LoadDefaults();
@@ -691,7 +691,7 @@ float Scene::ComputeNearClipPlane()
 	OBJHANDLE hObj = Camera.hObj_proxy;
 	OBJHANDLE hTgt = Camera.hTarget;
 	VESSEL *hVes = oapiGetVesselInterface(hTgt);
-	
+
 	if (hObj && hVes) {
 		VECTOR3 pos;
 		oapiGetGlobalPos(hObj,&pos);
@@ -1341,7 +1341,7 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 	// render new-style surface markers
 	// -------------------------------------------------------------------------------------------------------
-	
+
 	if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK))
 	{
 		pSketch = GetPooledSketchpad(SKETCHPAD_LABELS);
@@ -1355,7 +1355,7 @@ void Scene::RenderMainScene()
 			if (!surfLabelsActive) {
 				static_cast<vPlanet*>( plist[i].vo )->ActivateLabels(true);
 			}
-	
+
 			int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
 
 			if (label_format == 2)
@@ -1443,10 +1443,10 @@ surfLabelsActive = false;
 				else ++it;
 			}
 		}
-	} 
+	}
 
 
-	
+
 	if ((Config->ShadowMapMode >= 2) && (DebugControls::IsActive()==false)) {
 		// Don't render more shadows if debug controls are open
 
@@ -1486,11 +1486,11 @@ surfLabelsActive = false;
 						(*it)->Render(pDevice);
 						RenderVesselMarker((*it), pSketch);
 						Intersect.remove((*it));
-						it = RenderList.erase(it);	
+						it = RenderList.erase(it);
 					}
 					else ++it;
 				}
-			}	
+			}
 		}
 	}
 
@@ -1506,7 +1506,7 @@ surfLabelsActive = false;
 	}
 
 	pSketch->EndDrawing();	// SKETCHPAD_LABELS
-	
+
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1606,12 +1606,12 @@ surfLabelsActive = false;
 
 	// End Of Main Scene Rendering ---------------------------------------------
 	//
-	
 
 
-	
 
-	
+
+
+
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1740,7 +1740,7 @@ surfLabelsActive = false;
 	// -------------------------------------------------------------------------------------------------------
 
 	gc->PushRenderTarget(gc->GetBackBuffer());	// Overlay
-	
+
 	pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 
 	if (pSketch) {
@@ -1839,7 +1839,7 @@ surfLabelsActive = false;
 		}
 	}
 
-	
+
 	// -------------------------------------------------------------------------------------------------------
 	// Draw Debug String on a bottom of the screen
 	// -------------------------------------------------------------------------------------------------------
@@ -1941,13 +1941,13 @@ Scene::SUNVISPARAMS Scene::GetSunScreenVisualState()
 	VECTOR3 sunGPos;
 	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &sunGPos);
 	sunGPos -= cam;
-	
+
 	DWORD w, h;
 	oapiGetViewportSize(&w, &h);
 
 	const LPD3DXMATRIX pVP = GetProjectionViewMatrix();
 	D3DXVECTOR4 pos;
-	D3DXVECTOR4 sun = D3DXVECTOR4(float(sunGPos.x), float(sunGPos.x), float(sunGPos.x), 1.0f);
+	D3DXVECTOR4 sun = D3DXVECTOR4(float(sunGPos.x), float(sunGPos.y), float(sunGPos.z), 1.0f);
 	D3DXVec4Transform(&pos, &sun, pVP);
 	result.brightness = saturate(pos.z);
 
@@ -2080,7 +2080,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	smap.pos = pos;
 	smap.ld = ld;
 	smap.rad = rad;
-	
+
 	float mnd =  1e16f;
 	float mxd = -1e16f;
 
@@ -2101,10 +2101,10 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	float depth = mxd - mnd;
 
 	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, 50.0f, 60.0f + depth);
-	
+
 	smap.depth = depth;
 	smap.dist = mnd - 55.0f;
-	
+
 	D3DXVECTOR3 lp = pos + ld * smap.dist;
 
 	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, &D3DXVECTOR3(0, 1, 0));
@@ -2128,7 +2128,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	BeginPass(RENDERPASS_SHADOWMAP);
 
 	while(SmapRenderList.size()>0) {
-		SmapRenderList.front()->bStencilShadow = false;	
+		SmapRenderList.front()->bStencilShadow = false;
 		SmapRenderList.front()->Render(pDevice);
 		SmapRenderList.pop_front();
 	}
@@ -2136,7 +2136,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	PopPass();
 
 	gc->PopRenderTargets();
-	
+
 	smap.pShadowMap = ptShmRT[smap.lod];
 
 	return smap.lod;
@@ -2346,7 +2346,7 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 	if (!pBack) return;
 
 	HR(pBack->GetDesc(&bdesc));
-	
+
 	DWORD x, y, h = bdesc.Height / 3;
 
 	for (DWORD i=0;i<6;i++) {
@@ -2645,10 +2645,10 @@ void Scene::PopPass()
 
 // ===========================================================================================
 //
-DWORD Scene::GetRenderPass() const 
-{ 
+DWORD Scene::GetRenderPass() const
+{
 	if (PassStack.empty()) return RENDERPASS_MAINSCENE;
-	return PassStack.top(); 
+	return PassStack.top();
 }
 
 // ===========================================================================================
