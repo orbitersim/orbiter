@@ -379,6 +379,16 @@ namespace oapi {
 		FVECTOR2	pos;
 		DWORD		color;
 	} TriangleVtx;
+
+
+	typedef struct {
+		OBJHANDLE		hVessel;		///< Handle to a vessel that was clicked
+		int				mesh;			///< Mesh index that was clicked
+		int				group;			///< Mesh group index that was clicked
+		float			dist;			///< Distance from a camera to a click point
+		D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
+		D3DXVECTOR3		pos;			///< Position in local vessel coordinates
+	} PickData;
 }
 
 /// \brief Custom camera handle

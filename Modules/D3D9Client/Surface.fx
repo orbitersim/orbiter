@@ -841,6 +841,7 @@ float4 SurfaceTechPS(TileVS frg,
 		if (bLights) {
 			cMsk.b = (cMsk.b > 0.15f ? cMsk.b : 0.0f); // Blue dirt filter
 			cNgt *= cMsk.rgb;
+			cNgt *= 2.0f;
 		}
 
 		// Lambertian shading term
