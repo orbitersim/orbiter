@@ -1200,7 +1200,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
 	scn->BeginPass(RENDERPASS_ENVCAM);
 
-	gc->PushRenderTarget(NULL, pEnvDS);
+	gc->PushRenderTarget(NULL, pEnvDS, RENDERPASS_ENVCAM);
 
 	D3DXMATRIX mEnv;
 	D3DXVECTOR3 dir, up;

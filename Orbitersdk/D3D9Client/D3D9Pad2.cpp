@@ -467,7 +467,6 @@ void D3D9Pad::SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew)
 //
 bool D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 {
-	if (hNew == hTexture) return false;
 	Change |= SKPCHG_TEXTURE;
 	hTexture = hNew;
 	return true;
@@ -488,16 +487,15 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 		return;
 	}
 	
-	if (TexChangeNative(SURFACE(hNew)->GetTexture())) {
-
-		if (SURFACE(hNew)->IsColorKeyEnabled()) {
-			bColorKey = true;
-			cColorKey = SURFACE(hNew)->ClrKey;
-		}
-		else {
-			bColorKey = false;
-			cColorKey = D3DXCOLOR(DWORD(0));
-		}
+	TexChangeNative(SURFACE(hNew)->GetTexture());
+	
+	if (SURFACE(hNew)->IsColorKeyEnabled()) {
+		bColorKey = true;
+		cColorKey = SURFACE(hNew)->ClrKey;
+	}
+	else {
+		bColorKey = false;
+		cColorKey = D3DXCOLOR(DWORD(0));
 	}
 }
 

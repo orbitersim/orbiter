@@ -953,7 +953,7 @@ void Scene::RenderMainScene()
 
 
 	// Push main render target and depth surfaces
-	gc->PushRenderTarget(pBackBuffer, gc->GetDepthStencil());	// Main Scene
+	gc->PushRenderTarget(pBackBuffer, gc->GetDepthStencil(), RENDERPASS_MAINSCENE);	// Main Scene
 
 
 	if (DebugControls::IsActive()) {
@@ -1739,7 +1739,8 @@ surfLabelsActive = false;
 	// Render HUD Overlay to backbuffer directly
 	// -------------------------------------------------------------------------------------------------------
 
-	gc->PushRenderTarget(gc->GetBackBuffer());	// Overlay
+
+	gc->PushRenderTarget(gc->GetBackBuffer(), gc->GetDepthStencil(), RENDERPASS_MAINOVERLAY);	// Overlay
 
 	pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
 
@@ -2117,7 +2118,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	smap.lod = max(smap.lod, 0);
 	smap.size = Config->ShadowMapSize >> smap.lod;
 
-	gc->PushRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod]);
+	gc->PushRenderTarget(psShmRT[smap.lod], psShmDS[smap.lod], RENDERPASS_SHADOWMAP);
 
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L));
@@ -3006,7 +3007,7 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 
 	BeginPass(RENDERPASS_CUSTOMCAM);
 
-	gc->PushRenderTarget(pSrf, pDSs);
+	gc->PushRenderTarget(pSrf, pDSs, RENDERPASS_CUSTOMCAM);
 
 	RenderSecondaryScene(NULL, false, 0xFF);
 

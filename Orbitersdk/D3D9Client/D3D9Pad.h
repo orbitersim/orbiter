@@ -558,7 +558,6 @@ public:
 	// ===============================================================================
 	// D3D9Client Privates
 	// ===============================================================================
-	void LoadDefaults();
 	LPD3DXMATRIX WorldMatrix();
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty);
 	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t);
@@ -566,6 +565,7 @@ public:
 	const char *GetName() { return name; }
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
 	bool IsStillDrawing() const { return bBeginDraw; }
+	void LoadDefaults();
 
 private:
 
@@ -579,6 +579,7 @@ private:
 
 	float GetPenWidth() const;
 
+	void Reset();
 	bool Flush(HPOLY hPoly = NULL);
 	void AddRectIdx(WORD aV);
 	void FillRect(int l, int t, int r, int b, SkpColor &c);
@@ -589,7 +590,7 @@ private:
 	void SetupDevice(Topo tNew);
 	LPRECT CheckRect(SURFHANDLE hSrc, const LPRECT s);
 	void IsLineTopologyAllowed() const;
-	
+
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	template <typename Type> void AppendLineVertexList(const Type *pt);
 
@@ -597,13 +598,15 @@ private:
 	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
 	mutable oapi::Brush *cbrush; ///< currently selected brush (NULL if none)
 
-	mutable SkpColor textcolor;
 	mutable SkpColor pencolor;
 	mutable SkpColor brushcolor;
-	mutable SkpColor bkcolor;
 	mutable DWORD	 Change;
 	mutable bool	 bLine;
 	mutable D3DXMATRIX mVP;
+
+	SkpColor		 textcolor;
+	SkpColor		 bkcolor;
+
 
 	bool			 bColorKey;
 	bool			 bEnableScissor;

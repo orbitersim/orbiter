@@ -150,14 +150,28 @@ void D3D9Pad::GlobalExit()
 }
 
 
+
+void D3D9Pad::Reset()
+{
+	bBeginDraw = false;
+	bMustEndScene = false;
+	vI = 0;
+	iI = 0;
+	D3DXMatrixIdentity(&mO);
+	vTarget = D3DXVECTOR4(1,1,1,1);
+	pTgt = NULL;
+	pDep = NULL;
+	zfar = 1.0f;
+}
+
+
+
 // ===============================================================================================
 // Restore Default Settings: Fonts, Pens, Colors, etc...
 //
 void D3D9Pad::LoadDefaults()
 {
-	
-	// Flush pending graphics before reset
-	Flush();
+	assert(vI == 0);
 
 	cfont = deffont;
 	cpen = NULL;
@@ -219,11 +233,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
 
-	// Don't put these in LoadDefaults() 
-	bBeginDraw = false;
-	vI = 0;
-	iI = 0;
-
+	Reset();
 	LoadDefaults();
 }
 
@@ -241,11 +251,7 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
 
-	// Don't put these in Reset() 
-	bBeginDraw = false;
-	vI = 0;
-	iI = 0;
-
+	Reset();
 	LoadDefaults();
 }
 
@@ -277,7 +283,13 @@ void D3D9Pad::BeginDrawing()
 //
 void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil)
 {
+	assert(pRenderTgt != NULL);
+
+	if (vI != 0) LogErr("Sketchpad 0xX has received drawing commands outside Begin() End() pair", this);
+
 	if (bBeginDraw == true) _wassert(L"D3D9Pad::BeginDrawing() called multiple times", _CRT_WIDE(__FILE__), __LINE__);
+	
+	Reset();
 	
 	bBeginDraw = true;
 
@@ -288,18 +300,15 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 	}
 	else bMustEndScene = false;
 
-
-	if (pTgt != pRenderTgt) {
-		pRenderTgt->GetDesc(&tgt_desc);
-		zfar = float(max(tgt_desc.Width, tgt_desc.Height));
-		D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
-		vTarget = D3DXVECTOR4(2.0f / (float)tgt_desc.Width, 2.0f / (float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height);
-	}
-
+	pRenderTgt->GetDesc(&tgt_desc);
+	zfar = float(max(tgt_desc.Width, tgt_desc.Height));
+	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, 0.0f, zfar);
+	vTarget = D3DXVECTOR4(2.0f / (float)tgt_desc.Width, 2.0f / (float)tgt_desc.Height, (float)tgt_desc.Width, (float)tgt_desc.Height);
+	
 	pTgt = pRenderTgt;
 	pDep = pDepthStensil;
 
-	Change |= SKPCHG_ALL;
+	Change = SKPCHG_ALL;
 }
 
 
@@ -326,6 +335,8 @@ void D3D9Pad::EndDrawing()
 //
 bool D3D9Pad::Flush(HPOLY hPoly)
 {
+	if (bBeginDraw == false) _wassert(L"D3D9Pad::Flush() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
+
 	UINT numPasses;
 
 	static DWORD bkALPHA, bkZEN, bkZW, bkCULL;

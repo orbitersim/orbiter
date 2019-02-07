@@ -252,6 +252,10 @@ void D3D9ClientSurface::Clear()
 //
 D3D9ClientSurface::~D3D9ClientSurface()
 {
+	// Notify client about a surface destruction
+	gc->clbkSurfaceDeleted(this);
+
+
 	if (SurfaceCatalog->Remove(this)==false) {
 		LogErr("Surface 0x%X wasn't in the catalog",this);
 	}
@@ -268,7 +272,7 @@ D3D9ClientSurface::~D3D9ClientSurface()
 		return;
 	}
 
-	LogBlu("Deleting Surface 0x%X (%s) (%u,%u)...",this,name,desc.Width,desc.Height);
+	LogBlu("Deleting Surface oapi:0x%X dx:0x%X (%s) (%u,%u)...",this, pSurf, name,desc.Width,desc.Height);
 
 	SAFE_RELEASE(pSurf);
 	SAFE_RELEASE(pTex);
@@ -639,7 +643,7 @@ bool D3D9ClientSurface::ConvertToRenderTargetTexture()
 		pSurf = pTgt;
 		GetDesc(&desc);
 		SetupViewPort();
-		LogBlu("New RenderTargetTexture 0x%X (%s) (%u,%u)", this, name, desc.Width, desc.Height);
+		LogBlu("New RenderTargetTexture oapi:0x%X dx:0x%X (%s) (%u,%u)", this, pSurf, name, desc.Width, desc.Height);
 		return true;
 	}
 
@@ -703,7 +707,7 @@ bool D3D9ClientSurface::ConvertToRenderTarget(bool bLock)
 		bLockable = bLock;
 		GetDesc(&desc);
 		SetupViewPort();
-		LogBlu("New RenderTargetTexture 0x%X (%s) (%u,%u)", this, name, desc.Width, desc.Height);
+		LogBlu("New RenderTarget oapi:0x%X dx:0x%X (%s) (%u,%u)", this, pSurf, name, desc.Width, desc.Height);
 		return true;
 	}
 

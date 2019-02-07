@@ -31,6 +31,7 @@
 #include "gcConst.h"
 #include <vector>
 #include <stack>
+#include <list>
 
 #define PP_DEFAULT			0x1
 #define PP_LENSFLARE		0x2
@@ -125,6 +126,7 @@ struct RenderTgtData {
 	LPDIRECT3DSURFACE9 pColor;
 	LPDIRECT3DSURFACE9 pDepthStencil;
 	class D3D9Pad *pSkp;
+	int code;
 };
 
 
@@ -1014,7 +1016,7 @@ public:
 	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
 	void				MakeGenericProcCall(DWORD id);
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
-
+	void				clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf);
 
 	// ==================================================================
 	//
@@ -1022,7 +1024,7 @@ public:
 	void				EndScene();
 	bool				IsInScene() const { return bRendering; }
 	void				PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp);
-	void				PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL);
+	void				PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL, int code = 0);
 	void				AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL);
 	void				PopRenderTargets();
 	LPDIRECT3DSURFACE9  GetTopDepthStencil();
@@ -1256,6 +1258,7 @@ private:
 	D3DCAPS9				caps;
 	FileParser *		    parser;
 	std::string				scenarioName;
+	HANDLE					hMainThread;
 
 	HWND hRenderWnd;        // render window handle
 
@@ -1288,7 +1291,7 @@ private:
 
 	std::vector<RenderProcData> RenderProcs;
 	std::vector<GenericProcData> GenericProcs;
-	std::stack<RenderTgtData> RenderStack;
+	std::list<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;
 	HFONT hLblFont2;

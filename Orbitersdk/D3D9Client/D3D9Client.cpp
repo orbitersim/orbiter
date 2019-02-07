@@ -394,6 +394,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
 	pNoiseTex		 = NULL;
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
+	hMainThread		 = GetCurrentThread();
 
 	memset2(&D3D9Stats, 0, sizeof(D3D9Stats));
 
@@ -605,8 +606,8 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		if (RenderStack.empty() == false) {
 			LogErr("RenderStack contains %d items:", RenderStack.size());
 			while (!RenderStack.empty()) {
-				LogErr("RenderTarget=0x%X, DepthStencil=0x%X", RenderStack.top().pColor, RenderStack.top().pDepthStencil);
-				RenderStack.pop();
+				LogErr("RenderTarget=0x%X, DepthStencil=0x%X", RenderStack.front().pColor, RenderStack.front().pDepthStencil);
+				RenderStack.pop_front();
 			}
 		}
 
@@ -762,101 +763,100 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 // ==============================================================
 
-void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp)
+void D3D9Client::clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf)
 {
-	if (surf) {
-		LPDIRECT3DSURFACE9 pTgt = SURFACE(surf)->GetSurface();
-		LPDIRECT3DSURFACE9 pDep = SURFACE(surf)->GetDepthStencil();
-		PushRenderTarget(pTgt, pDep);
-		RenderStack.top().pSkp = pSkp;
+	LPDIRECT3DSURFACE9 pSurf = hSurf->GetSurface();
+	assert(pSurf != NULL);
+
+	for each (RenderTgtData data in RenderStack)
+	{
+		if (data.pColor == pSurf) {
+			LogErr("Deleting a surface located in render stack 0x%X", DWORD(hSurf));
+		}
 	}
 }
 
 // ==============================================================
 
-void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil)
+void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp)
 {
+	if (surf) {
+		LPDIRECT3DSURFACE9 pTgt = SURFACE(surf)->GetSurface();
+		LPDIRECT3DSURFACE9 pDep = SURFACE(surf)->GetDepthStencil();
+		PushRenderTarget(pTgt, pDep, RENDERPASS_SKETCHPAD);
+		RenderStack.front().pSkp = pSkp;
+	}
+}
+
+// ==============================================================
+
+void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil, int code)
+{
+	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
+
 	RenderTgtData data;
 	data.pColor = pColor;
 	data.pDepthStencil = pDepthStencil;
 	data.pSkp = NULL;
+	data.code = code;
 	
-	LPDIRECT3DSURFACE9 pCurrentColor = NULL;
-	LPDIRECT3DSURFACE9 pCurrentDepth = NULL;
-
-	if (RenderStack.empty() == false) {
-		pCurrentColor = RenderStack.top().pColor;
-		pCurrentDepth = RenderStack.top().pDepthStencil;
+	if (pColor) {
+		D3DSURFACE_DESC desc;
+		pColor->GetDesc(&desc);
+		D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
+		pDevice->SetViewport(&vp);
 	}
 
-	if (pCurrentColor != pColor) {
-		if (pColor) {
-			D3DSURFACE_DESC desc;
-			pColor->GetDesc(&desc);
-			D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
-			pDevice->SetViewport(&vp);
-		}
-		pDevice->SetRenderTarget(0, pColor);
-	}
+	pDevice->SetRenderTarget(0, pColor);
+	pDevice->SetDepthStencilSurface(pDepthStencil);
 
-	if (pCurrentDepth != pDepthStencil) {
-		pDevice->SetDepthStencilSurface(pDepthStencil);
-	}
-
-	RenderStack.push(data);
+	RenderStack.push_front(data);
+	LogDbg("Plum", "PUSH:RenderStack[%d]={0x%X, 0x%X} %s", RenderStack.size(), DWORD(data.pColor), DWORD(data.pDepthStencil), labels[data.code]);
 }
 
 // ==============================================================
 
 void D3D9Client::AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil)
 {
-	LPDIRECT3DSURFACE9 pCurrentColor = NULL;
-	LPDIRECT3DSURFACE9 pCurrentDepth = NULL;
+	D3DSURFACE_DESC desc;
+	pColor->GetDesc(&desc);
+	D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
 
-	if (RenderStack.empty() == false) {
-		pCurrentColor = RenderStack.top().pColor;
-		pCurrentDepth = RenderStack.top().pDepthStencil;
-	}
-
-	if (pCurrentColor != pColor) {
-		D3DSURFACE_DESC desc;
-		pColor->GetDesc(&desc);
-		D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
-
-		pDevice->SetViewport(&vp);
-		pDevice->SetRenderTarget(0, pColor);
-	}
-
-	if (pCurrentDepth != pDepthStencil) {
-		pDevice->SetDepthStencilSurface(pDepthStencil);
-	}
+	pDevice->SetViewport(&vp);
+	pDevice->SetRenderTarget(0, pColor);
+	pDevice->SetDepthStencilSurface(pDepthStencil);
 }
 
 // ==============================================================
 
 void D3D9Client::PopRenderTargets() 
 {
+	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
+
 	assert(RenderStack.empty() == false);
 
-	RenderStack.pop();
+	RenderStack.pop_front();
 
 	if (RenderStack.empty()) {
 		pDevice->SetRenderTarget(0, NULL);
 		pDevice->SetDepthStencilSurface(NULL);
+		LogDbg("Orange", "POP: Last one out ------------------------------------");
 		return;
 	}
 
-	LPDIRECT3DSURFACE9 pColor = RenderStack.top().pColor;
+	RenderTgtData data = RenderStack.front();
 
-	if (pColor) {
+	if (data.pColor) {
 		D3DSURFACE_DESC desc;
-		pColor->GetDesc(&desc);
+		data.pColor->GetDesc(&desc);
 		D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
 
 		pDevice->SetViewport(&vp);
-		pDevice->SetRenderTarget(0, pColor);
-		pDevice->SetDepthStencilSurface(RenderStack.top().pDepthStencil);
+		pDevice->SetRenderTarget(0, data.pColor);
+		pDevice->SetDepthStencilSurface(data.pDepthStencil);
 	}
+
+	LogDbg("Plum", "POP:RenderStack[%d]={0x%X, 0x%X, 0x%X} %s", RenderStack.size(), DWORD(data.pColor), DWORD(data.pDepthStencil), DWORD(data.pSkp), labels[data.code]);
 }
 
 // ==============================================================
@@ -864,7 +864,7 @@ void D3D9Client::PopRenderTargets()
 LPDIRECT3DSURFACE9 D3D9Client::GetTopDepthStencil()
 {
 	if (RenderStack.empty()) return NULL;
-	return RenderStack.top().pDepthStencil;
+	return RenderStack.front().pDepthStencil;
 }
 
 // ==============================================================
@@ -872,7 +872,7 @@ LPDIRECT3DSURFACE9 D3D9Client::GetTopDepthStencil()
 LPDIRECT3DSURFACE9 D3D9Client::GetTopRenderTarget()
 {
 	if (RenderStack.empty()) return NULL;
-	return RenderStack.top().pColor;
+	return RenderStack.front().pColor;
 }
 
 // ==============================================================
@@ -880,7 +880,7 @@ LPDIRECT3DSURFACE9 D3D9Client::GetTopRenderTarget()
 D3D9Pad *D3D9Client::GetTopInterface()
 {
 	if (RenderStack.empty()) return NULL;
-	return RenderStack.top().pSkp;
+	return RenderStack.front().pSkp;
 }
 
 
@@ -2541,6 +2541,11 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	_TRACE;
 	oapi::Sketchpad *pSkp = NULL;
 
+	if (GetCurrentThread() != hMainThread) {
+		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
+		return NULL;
+	}
+
 	sketching_time = D3D9GetTime();
 	
 	if (surf == NULL) surf = GetBackBufferHandle();
@@ -2557,6 +2562,7 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 		if (pCur) {
 			if (pCur == pPad) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
 			pCur->EndDrawing();	// Put the current one in hold
+			LogDbg("Red", "Switching to another sketchpad in a middle");
 		}
 		
 		// Push a new Sketchpad onto a stack
@@ -2596,7 +2602,10 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 
 		// Do we have an old interface ?
 		D3D9Pad *pOld = GetTopInterface();
-		if (pOld) pOld->BeginDrawing();	// Continue with the old one
+		if (pOld) {
+			pOld->BeginDrawing();	// Continue with the old one
+			LogDbg("Red", "Continue Previous Sketchpad");
+		}
 	}
 	else {
 		GDIPad *pGDI = (GDIPad *)sp;

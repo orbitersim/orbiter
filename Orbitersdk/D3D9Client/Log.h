@@ -56,6 +56,7 @@ void   LogOk (const char *format, ...);
 void   LogBlu(const char *format, ...);
 void   LogOapi(const char *format, ...);
 void   LogAlw(const char *format, ...);
+void   LogDbg(const char *color, const char *format, ...);
 
 double	D3D9GetTime();
 void	D3D9SetTime(D3D9Time &inout, double ref);
