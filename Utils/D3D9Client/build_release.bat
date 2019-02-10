@@ -172,11 +172,15 @@ popd
 ::set USER=
 ::set TGTPATH=
 echo --------------------------
-set /p GOBUILD=Publish a Build Y/N ? 
-if %GOBUILD%=="N" goto exit_ok
-if %GOBUILD%=="n" goto exit_ok
+set /p GOBUILD=Publish a Build [Y/N] ? 
+if %GOBUILD%==N goto exit_ok
+if %GOBUILD%==n goto exit_ok
 if not exist ftp_helper.bat goto exit_ok
 call ftp_helper.bat
+set /p STA=Stable or Beta [S/B] ? 
+set TYPE=beta
+if %STA%==S set TYPE=stable
+if %STA%==s set TYPE=stable
 echo --------------------------
 set /p PASS=Password: 
 echo user %USER% %PASS%>ftp.tmp
@@ -184,7 +188,7 @@ echo cd %TGTPATH%>>ftp.tmp
 echo get index.html html.tmp>>ftp.tmp
 echo bye>>ftp.tmp
 ftp -n -i -s:ftp.tmp %SERVER%
-call ModHTML.exe html.tmp "%ZIP_NAME%(r%REVISION%).zip" BETA
+call ModHTML.exe html.tmp "%ZIP_NAME%(r%REVISION%).zip" BETA %TYPE%
 echo --------------------------
 echo user %USER% %PASS%>ftp.tmp
 echo cd %TGTPATH%>>ftp.tmp

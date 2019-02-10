@@ -388,7 +388,7 @@ void vVessel::ResetMesh(UINT idx)
 
 	if (idx < nmesh) {
 
-		MESHHANDLE hMesh = vessel->GetMesh(this, idx);
+		MESHHANDLE hMesh = vessel->GetMeshTemplate(idx);
 
 		if (hMesh) {
 
