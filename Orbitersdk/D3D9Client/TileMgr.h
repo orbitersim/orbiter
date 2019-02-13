@@ -99,7 +99,7 @@ public:
 	void SetAmbientColor(D3DCOLOR cAmbient);
 
 protected:
-	
+
 	void ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng, int nlng, TILEDESC *tile,
 	const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag,
 	const TEXCRDRANGE &bkp_range, LPDIRECT3DTEXTURE9 bkp_tex, LPDIRECT3DTEXTURE9 bkp_ltex, DWORD bkp_flag);
@@ -247,10 +247,14 @@ public:
 	static bool ShutDown();
 	static void HoldThread(bool bHold);
 
-	static HANDLE hQueueMutex;
-	static HANDLE hLoadThread;
+	static HANDLE hQueueMutex; // Tile loading queue access mutex
 
 private:
+	static HANDLE hLoadThread; // LoadTile ThreadProc handle
+	static HANDLE hStopThread; // Thread kill signal handle
+
+	static void TerminateLoadThread(); // Terminates the LoadTile thread
+
 	bool DeleteTile (TILEDESC *tile);
 
 	static HRESULT ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, long ofs, LPDIRECT3DTEXTURE9* pTex, bool bManaged);
@@ -259,8 +263,7 @@ private:
 
 	const oapi::D3D9Client *gc;      // the client
 	bool bLoadMip;  // load mipmaps for tiles if available
-	
-	static bool bRunThread;
+
 	static bool bHoldThread;
 	static int nqueue, queue_in, queue_out;
 	DWORD nbuf;     // buffer size;

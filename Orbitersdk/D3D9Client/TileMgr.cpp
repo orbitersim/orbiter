@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006 - 2016 Martin Schweiger
-//				 2011 - 2016 Jarmo Nikkanen (D3D9Client modification)  
+//				 2011 - 2016 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
 // ==============================================================
@@ -93,7 +93,7 @@ TileManager::~TileManager ()
 			ReleaseTex(specbuf[i]);
 		delete []specbuf;
 	}
-	
+
 	if (tiledesc) delete []tiledesc;
 	if (objname) delete []objname;
 }
@@ -173,9 +173,9 @@ bool TileManager::LoadTileData ()
 	char fname[128], path[MAX_PATH];
 	strcpy_s (fname, ARRAYSIZE(fname), objname);
 	strcat_s (fname, ARRAYSIZE(fname), "_tile.bin");
-	
+
 	if (!gc->TexturePath (fname, path) || fopen_s (&file, path, "rb")) {
-		LogWrn("Surface Tile TOC not found for %s", fname);	
+		LogWrn("Surface Tile TOC not found for %s", fname);
 		return false; // TOC file not found
 	}
 
@@ -408,7 +408,7 @@ void TileManager::LoadSpecularMasks ()
 
 		strcpy_s (fname, 256, objname);
 		strcat_s (fname, 256, "_lmask.tex");
-		
+
 		gc->OutputLoadStatus(fname, 1);
 
 		specbuf = new LPDIRECT3DTEXTURE9[nmask];
@@ -475,7 +475,7 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 	RenderParam.cdist = vp->CamDist() / vp->GetSize(); // camera distance in units of planet radius
 	RenderParam.viewap = (viewap ? viewap : acos (1.0/max (1.0, RenderParam.cdist)));
 	RenderParam.sdir = tmul (RenderParam.grot, -gpos);
-	RenderParam.horzdist = sqrt(RenderParam.cdist*RenderParam.cdist-1.0) * RenderParam.objsize;	
+	RenderParam.horzdist = sqrt(RenderParam.cdist*RenderParam.cdist-1.0) * RenderParam.objsize;
 	normalise (RenderParam.sdir); // sun direction in planet frame
 
 	// limit resolution for fast camera movements
@@ -515,7 +515,7 @@ void TileManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale, 
 				RenderParam.grot.m32 = -RenderParam.grot.m32;
 				RenderParam.grot.m33 = -RenderParam.grot.m33;
 			}
-			
+
 			InitRenderTile();
 
 			for (ilat = nlat-1; ilat >= 0; ilat--) {
@@ -541,7 +541,7 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 	const TEXCRDRANGE &range, LPDIRECT3DTEXTURE9 tex, LPDIRECT3DTEXTURE9 ltex, DWORD flag,
 	const TEXCRDRANGE &bkp_range, LPDIRECT3DTEXTURE9 bkp_tex, LPDIRECT3DTEXTURE9 bkp_ltex, DWORD bkp_flag)
 {
-	
+
 	// Check if patch is visible from camera position
 	static const double rad0 = sqrt(2.0)*PI05*0.5;
 	VECTOR3 cnt = TileCentre (hemisp, ilat, nlat, ilng, nlng);
@@ -558,7 +558,7 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 	SetWorldMatrix (ilng, nlng, ilat, nlat);
 
 	float bsScale = D3DMAT_BSScaleFactor(&mWorld);
-	
+
 	// Check if patch bounding box intersects viewport
 	if (!IsTileInView(lvl, ilat, bsScale)) {
 		tilebuf->DeleteSubTiles (tile); // remove tile descriptions below
@@ -630,29 +630,29 @@ void TileManager::ProcessTile (int lvl, int hemisp, int ilat, int nlat, int ilng
 				idx++;
 			}
 		}
-	} 
+	}
 	else {
 
-		// check if the tile is visible in the viewport --------------------------------- 
+		// check if the tile is visible in the viewport ---------------------------------
 		//
 		VBMESH *mesh = &PATCH_TPL[lvl][ilat];
-		
+
 		float bsrad = mesh->bsRad * bsScale;
 		D3DXVECTOR3 vBS;
 		D3DXVec3TransformCoord(&vBS, &mesh->bsCnt, &mWorld);
 		float dist = D3DXVec3Length(&vBS);
 		if ((dist-bsrad)>RenderParam.horzdist) return; //Tile is behind the horizon
 		if (gc->GetScene()->IsVisibleInCamera(&vBS, bsrad)==false) return;
-		
+
 		D3D9Stats.Old.Verts += mesh->nv;
 		D3D9Stats.Old.Tiles[lvl]++;
 
 		// actually render the tile at this level ---------------------------------------
-		// 
+		//
 		double sdist = acos (dotp (RenderParam.sdir, cnt));
-		
+
 		if (bCoarseTex) {
-			//if (sdist > PI05+rad && bkp_flag & 2) bkp_flag &= 0xFD; 
+			//if (sdist > PI05+rad && bkp_flag & 2) bkp_flag &= 0xFD;
 			RenderTile (lvl, hemisp, ilat, nlat, ilng, nlng, sdist, tile, bkp_range, bkp_tex, bkp_ltex, bkp_flag);
 		} else {
 			//if (sdist > PI05+rad && flag & 2) flag &= 0xFD;
@@ -696,10 +696,10 @@ int TileManager::IsTileInView(int lvl, int ilat, float scale)
 	float rad = mesh.bsRad * scale;
 	D3DXVECTOR3 vP;
 	D3DXVec3TransformCoord(&vP, &mesh.bsCnt, &mWorld);
-	
+
 	//float dist = D3DXVec3Length(&vP);
 	//if ((dist-rad)>RenderParam.horzdist) return -1;	 //Tile is behind the horizon
-	
+
 	return gc->GetScene()->IsVisibleInCamera(&vP, rad); //Is the bounding sphere visible in a viewing volume ?
 }
 
@@ -764,30 +764,30 @@ void TileManager::GlobalInit (D3D9Client *gclient)
 
 	// Level 1 patch template
 	CreateSphere (dev, PATCH_TPL_1, 6, false, 0, 64);
- 
+
  	// Level 2 patch template
 	CreateSphere (dev, PATCH_TPL_2, 8, false, 0, 128);
- 
+
  	// Level 3 patch template
 	CreateSphere (dev, PATCH_TPL_3, 12, false, 0, 256);
- 
+
  	// Level 4 patch templates
 	CreateSphere (dev, PATCH_TPL_4[0], 16, true, 0, 256);
 	CreateSphere (dev, PATCH_TPL_4[1], 16, true, 1, 256);
- 
+
  	// Level 5 patch template
 	CreateSpherePatch (dev, PATCH_TPL_5, 4, 1, 0, 18);
- 
+
  	// Level 6 patch templates
 	CreateSpherePatch (dev, PATCH_TPL_6[0], 8, 2, 0, 10, 16);
 	CreateSpherePatch (dev, PATCH_TPL_6[1], 4, 2, 1, 12);
- 
+
  	// Level 7 patch templates
 	CreateSpherePatch (dev, PATCH_TPL_7[0], 16, 4, 0, 12, 12, false);
 	CreateSpherePatch (dev, PATCH_TPL_7[1], 16, 4, 1, 12, 12, false);
 	CreateSpherePatch (dev, PATCH_TPL_7[2], 12, 4, 2, 10, 16, true);
 	CreateSpherePatch (dev, PATCH_TPL_7[3],  6, 4, 3, 12, -1, true);
- 
+
  	// Level 8 patch templates
 	CreateSpherePatch (dev, PATCH_TPL_8[0], 32, 8, 0, 12, 15, false, true, true);
 	CreateSpherePatch (dev, PATCH_TPL_8[1], 32, 8, 1, 12, 15, false, true, true);
@@ -797,7 +797,7 @@ void TileManager::GlobalInit (D3D9Client *gclient)
 	CreateSpherePatch (dev, PATCH_TPL_8[5], 18, 8, 5, 12, 12, false, true, true);
 	CreateSpherePatch (dev, PATCH_TPL_8[6], 12, 8, 6, 10, 16, true,  true, true);
 	CreateSpherePatch (dev, PATCH_TPL_8[7],  6, 8, 7, 12, -1, true,  true, true);
-	
+
 
 	// Patch templates for level 9 and beyond
 	const int n = 8;
@@ -812,7 +812,7 @@ void TileManager::GlobalInit (D3D9Client *gclient)
 					CreateSpherePatch (dev, PATCH_TPL[lvl][idx], nlng8[i]*mult, n*mult, idx, 12, res8[i], false, true, true, true);
 				else
 					CreateSpherePatch (dev, PATCH_TPL[lvl][idx], nlng8[i]*mult, n*mult, idx, 12, -1, true, true, true, true);
-				
+
 				idx++;
 			}
 		}
@@ -918,16 +918,15 @@ DWORD TileManager::vpX0, TileManager::vpX1, TileManager::vpY0, TileManager::vpY1
 // Class TileBuffer: implementation
 
 TileBuffer::TileBuffer (const oapi::D3D9Client *gclient)
+	: gc(gclient)
+	, nbuf(0)
+	, nused(0)
+	, last(0)
+	, bLoadMip(true)
 {
 	DWORD id;
 
-	gc = gclient;
-	nbuf = 0;
-	nused = 0;
-	last = 0;
-
-	bLoadMip = true;
-	bRunThread = true;
+	// Initialize statics
 	nqueue = queue_in = queue_out = 0;
 	hQueueMutex = CreateMutex (0, FALSE, NULL);
 	hLoadThread = CreateThread (NULL, 2048, LoadTile_ThreadProc, this, 0, &id);
@@ -937,15 +936,11 @@ TileBuffer::TileBuffer (const oapi::D3D9Client *gclient)
 
 TileBuffer::~TileBuffer()
 {
-	bRunThread = false;
 	LogAlw("=============== Deleting %u Tile Buffers =================",nbuf);
-	//CloseHandle (hLoadThread);
-	CloseHandle (hQueueMutex);
 
-	if (hLoadThread) {
-		TerminateThread(hLoadThread,0);
-		hLoadThread = NULL;
-	}
+	CloseHandle(hQueueMutex); hQueueMutex = NULL;
+
+	TerminateLoadThread();
 
 	if (nbuf) {
 		for (DWORD i = 0; i < nbuf; i++)
@@ -965,10 +960,8 @@ TileBuffer::~TileBuffer()
 bool TileBuffer::ShutDown()
 {
 	if (hLoadThread) {
-		if (TerminateThread(hLoadThread,0)) {
-			hLoadThread = NULL;
-			return true;
-		}
+		TerminateLoadThread();
+		return true;
 	}
 	return false;
 }
@@ -978,6 +971,21 @@ bool TileBuffer::ShutDown()
 void TileBuffer::HoldThread(bool bHold)
 {
 	bHoldThread = bHold;
+}
+
+// =======================================================================
+
+void TileBuffer::TerminateLoadThread()
+{
+	if (hLoadThread) {
+		// Signal thread to stop and wait for it to happen
+		SetEvent(hStopThread);
+		WaitForSingleObject(hLoadThread, INFINITE);
+		// Clean up for next run
+		ResetEvent(hStopThread);
+		CloseHandle(hLoadThread);
+		hLoadThread = NULL;
+	}
 }
 
 // =======================================================================
@@ -1039,7 +1047,7 @@ bool TileBuffer::DeleteTile (TILEDESC *tile)
 			else
 				del = false;
 		}
-	
+
 	if (tile->tex || !del) {
 		return false; // tile or subtile contains texture -> don't deallocate
 	} else {
@@ -1083,28 +1091,28 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 {
 	static const long TILESIZE = 32896; // default texture size for old-style texture files
 	TileBuffer *tb = static_cast<TileBuffer*>(data);
-	const oapi::D3D9Client *gc = tb->gc;
+	auto device = tb->gc->GetDevice();
 	bool load;
 	static QUEUEDESC qd;
-	// DWORD flag = (tb->bLoadMip ? 0:4);
 	DWORD idle = 1000/Config->PlanetLoadFrequency;
-	char fname[256];
 
-	while (bRunThread) {
-		
-		Sleep (idle);
+	LogAlw("TileBuffer::LoadTile thread started");
 
-		if (!bRunThread) return 0;
+	bool bFirstRun = true;
+	while (bFirstRun || WAIT_OBJECT_0 != WaitForSingleObject(hStopThread, idle))
+	{
+		bFirstRun = false;
+
 		if (bHoldThread) continue;
 
-		WaitForSingleObject (hQueueMutex, INFINITE);
-
+		WaitForSingleObject(hQueueMutex, INFINITE);
 		if (load = (nqueue > 0)) {
 			memcpy2 (&qd, loadqueue+queue_out, sizeof(QUEUEDESC));
 		}
 		ReleaseMutex (hQueueMutex);
 
 		if (load) {
+			char fname[MAX_PATH];
 			TILEDESC *td = qd.td;
 			LPDIRECT3DTEXTURE9 tex, mask = 0;
 			DWORD tidx, midx;
@@ -1121,7 +1129,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 				strcpy_s (fname, 256, qd.name);
 				strcat_s (fname, 256, "_tile.tex");
 
-				HRESULT hr = ReadDDSSurface (gc->GetDevice(),fname, ofs, &tex, false);
+				HRESULT hr = ReadDDSSurface (device, fname, ofs, &tex, false);
 
 				if (hr != S_OK) {
 					tex = NULL;
@@ -1137,7 +1145,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 					ofs = (td->flag & 0x40) ? (long)midx * TILESIZE : (long)midx;
 					strcpy_s (fname, 256, qd.name);
 					strcat_s (fname, 256, "_tile_lmask.tex");
-					if (ReadDDSSurface (gc->GetDevice(), fname, ofs, &mask, false) != S_OK) mask = NULL;
+					if (ReadDDSSurface (device, fname, ofs, &mask, false) != S_OK) mask = NULL;
 				}
 			}
 			// apply loaded components
@@ -1150,6 +1158,8 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 			ReleaseMutex (hQueueMutex);
 		}
 	}
+
+	LogAlw("TileBuffer::LoadTile thread terminated");
 	return 0;
 }
 
@@ -1163,11 +1173,11 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 	DWORD                dwMagic;
 
 	FILE *f = NULL;
-	
+
 	sprintf_s(cpath,256,"%s%s", OapiExtension::GetHightexDir(), fname);
-	
+
 	if (fopen_s(&f, cpath, "rb")) return -3;
-		
+
 	fseek(f, ofs, SEEK_SET);
 
 	// Read the magic number
@@ -1200,7 +1210,7 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 	}
 
 	if (ddsd.dwHeight>4096 || ddsd.dwWidth>4096) LogErr("Attempting to load very large surface tile (%u,%u)", ddsd.dwWidth, ddsd.dwHeight);
-	
+
 	*pTex = NULL;
 
 	D3DLOCKED_RECT rect;
@@ -1211,7 +1221,7 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 			return -10;
 		}
 		if ((*pTex)==NULL) return -8;
-		if (*pTex) TileCatalog->Add(*pTex);	
+		if (*pTex) TileCatalog->Add(*pTex);
 		if ((*pTex)->LockRect(0, &rect, NULL, 0)==S_OK) {
 			if (ddsd.dwFlags & DDSD_LINEARSIZE) {
 				fread(rect.pBits, ddsd.dwLinearSize, 1, f);
@@ -1255,12 +1265,12 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 
 // =======================================================================
 
-bool TileBuffer::bRunThread = true;
 bool TileBuffer::bHoldThread = false;
 int TileBuffer::nqueue = 0;
 int TileBuffer::queue_in = 0;
 int TileBuffer::queue_out = 0;
-HANDLE TileBuffer::hQueueMutex = 0;
-HANDLE TileBuffer::hLoadThread = 0;
+HANDLE TileBuffer::hQueueMutex = NULL;
+HANDLE TileBuffer::hLoadThread = NULL;
+HANDLE TileBuffer::hStopThread(CreateEvent(NULL, FALSE, FALSE, NULL));
 struct TileBuffer::QUEUEDESC TileBuffer::loadqueue[MAXQUEUE] = {0};
 
