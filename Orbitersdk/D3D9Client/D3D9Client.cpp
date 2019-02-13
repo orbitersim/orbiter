@@ -472,10 +472,10 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	deffont = (oapi::Font*) new D3D9PadFont(20, true, "fixed");
 	defpen  = (oapi::Pen*)  new D3D9PadPen(1, 1, 0x00FF00);
-	
+
 	pDefaultTex = SURFACE(clbkLoadTexture("Null.dds"));
 	if (pDefaultTex==NULL) LogErr("Null.dds not found");
-	
+
 	int x=0;
 	if (viewW>1282) x=4;
 
@@ -487,7 +487,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	ShowWindow(hRenderWnd, SW_SHOW);
 
 	OutputLoadStatus("Building Shader Programs...",0);
-	
+
 	D3D9Effect::D3D9TechInit(this, pDevice, fld);
 
 	// Device-specific initialisations
@@ -513,7 +513,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	WriteLog("[D3D9Client Initialized]");
 	LogOk("...3D environment initialised");
-	
+
 #ifdef _NVAPI_H
 	if (bNVAPI) {
 		NvU8 bEnabled = 0;
@@ -615,12 +615,12 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		//
 		bRunning = false;
 
-		// At fisrt, shutdown tile loaders -------------------------------------------------------
+		// At first, shutdown tile loaders -------------------------------------------------------
 		//
 		if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
 		if (TileManager2Base::ShutDown()==false) LogErr("Failed to Shutdown TileManager2Base()");
-		
-		// Close dialog if Open and disconnect a visual form debug controls 
+
+		// Close dialog if Open and disconnect a visual form debug controls
 		DebugControls::Close();
 
 		// Disconnect textures from pipeline (Unlikely nesseccary)
@@ -636,7 +636,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		//GraphicsClient::clbkCloseSession(fastclose);
 
 
-		// Sent a signal for user applications to delete fonts, pens, and brushes. 
+		// Sent a signal for user applications to delete fonts, pens, and brushes.
 		//
 		MakeGenericProcCall(GENERICPROC_UNLOAD);
 		MakeGenericProcCall(GENERICPROC_UNLOAD_ORBITERGUI);
@@ -679,7 +679,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 		LogAlw("=========== Clearing Texture Repository =========");
 		SAFE_DELETE(texmgr);
-		
+
 		LogAlw("===== Calling GlobalExit() for sub-systems ======");
 		HazeManager::GlobalExit();
 		HazeManager2::GlobalExit();
@@ -715,7 +715,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		SAFE_RELEASE(pNoiseTex);
 
 		LogAlw("============ Checking Object Catalogs ===========");
-		
+
 		// Check surface catalog --------------------------------------------------------------------------------------
 		//
 		auto it = SurfaceCatalog->begin();
@@ -734,7 +734,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		//
 		DWORD nt = TileCatalog->CountEntries();
 		if (nt) LogErr("SurfaceTile catalog contains %u unreleased entries",nt);
-		
+
 		SurfaceCatalog->Clear();
 		MeshCatalog->Clear();
 		TileCatalog->Clear();
@@ -799,7 +799,7 @@ void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 
 	data.pDepthStencil = pDepthStencil;
 	data.pSkp = NULL;
 	data.code = code;
-	
+
 	if (pColor) {
 		D3DSURFACE_DESC desc;
 		pColor->GetDesc(&desc);
@@ -829,7 +829,7 @@ void D3D9Client::AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9
 
 // ==============================================================
 
-void D3D9Client::PopRenderTargets() 
+void D3D9Client::PopRenderTargets()
 {
 	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
 
@@ -902,7 +902,7 @@ double scene_time = 0.0;
 void D3D9Client::clbkRenderScene()
 {
 	_TRACE;
-	
+
 	if (pDevice==NULL || scene==NULL) return;
 	if (bFailed) return;
 	if (!bRunning) return;
@@ -933,7 +933,7 @@ void D3D9Client::clbkRenderScene()
 		if (mem<32) TileBuffer::HoldThread(true);
 
 		scene->RenderMainScene();		// Render the main scene
-		
+
 		VESSEL *hVes = oapiGetFocusInterface();
 
 		if (hVes) {
@@ -1007,7 +1007,7 @@ bool D3D9Client::clbkDisplayFrame()
 	_TRACE;
 //	static int iRefrState = 0;
 	double time = D3D9GetTime();
-	
+
 	if (!bRunning) {
 		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
 		pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
@@ -1236,7 +1236,7 @@ int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *m
 	if (matidx >= nmat) return 4; // "index out of range"
 	const D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
 	if (meshmat) GetMatExt(meshmat, (D3DMATERIAL9 *)mat);
-	return 0;	
+	return 0;
 }
 
 // ==============================================================
@@ -1419,8 +1419,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	}
 
 	if (bRunning && DebugControls::IsActive()) {
-		// Must update camera to correspond MAIN_SCENE due to Pick() function, 
-		// because env-maps have altered camera settings 
+		// Must update camera to correspond MAIN_SCENE due to Pick() function,
+		// because env-maps have altered camera settings
 		GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
 	}
 
@@ -1464,7 +1464,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 					break;
 				}
-			
+
 				// With Debug Controls
 				if (DebugControls::IsActive()) {
 
@@ -1475,9 +1475,9 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 						D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
 
 						if (!pick.pMesh) break;
-				
+
 						//sprintf_s(oapiDebugString(),256,"vObj=0x%X, Mesh=0x%X, Grp=%d, Face=%d", pick.vObj, pick.pMesh, pick.group, pick.face);
-			
+
 						if (bShift && bCtrl) {
 							OBJHANDLE hObj = pick.vObj->Object();
 							if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
@@ -1648,10 +1648,10 @@ void D3D9Client::clbkRender2DPanel (SURFHANDLE *hSurf, MESHHANDLE hMesh, MATRIX3
 			surf = hSurf[TexIdx];
 		}
 		else surf = oapiGetTextureHandle (hMesh, gr->TexIdx+1);
-	
+
 		for (unsigned int k=0;k<gr->nVtx;k++) gr->Vtx[k].z = 0.0f;
 
-		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale, additive);	
+		D3D9Effect::Render2DPanel(gr, SURFACE(surf), &ident, alpha, scale, additive);
 	}
 }
 
@@ -2385,10 +2385,10 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		HR(pTextScreen->ReleaseDC(hDC));
 		HR(pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT));
 		HR(pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT));
-		
+
 		IDirect3DSwapChain9 *pSwap;
 
-		if (pDevice->GetSwapChain(0, &pSwap)==S_OK) { 
+		if (pDevice->GetSwapChain(0, &pSwap)==S_OK) {
 			pSwap->Present(0, 0, 0, 0, D3DPRESENT_DONOTWAIT);
 			pSwap->Release();
 			return true;
@@ -2407,12 +2407,12 @@ void D3D9Client::SplashScreen()
 {
 
 	loadd_x = 279*viewW/1280;
-	loadd_y = 545*viewH/800; 
+	loadd_y = 545*viewH/800;
 	loadd_w = viewW/3;
 	loadd_h = 80;
 
 	RECT rS;
-	
+
 	GetWindowRect(hRenderWnd, &rS);
 
 	LogAlw("Splash Window Size = [%u, %u]", rS.right - rS.left, rS.bottom - rS.top);
@@ -2547,14 +2547,14 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 	}
 
 	sketching_time = D3D9GetTime();
-	
+
 	if (surf == NULL) surf = GetBackBufferHandle();
 
 	if (SURFACE(surf)->IsRenderTarget()) {
 
 		// Get Pooled Sketchpad
 		D3D9Pad *pPad = SURFACE(surf)->GetD3D9Pad();
-		
+
 		// Get Current interface if any
 		D3D9Pad *pCur = GetTopInterface();
 
@@ -2564,10 +2564,10 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 			pCur->EndDrawing();	// Put the current one in hold
 			LogDbg("Red", "Switching to another sketchpad in a middle");
 		}
-		
+
 		// Push a new Sketchpad onto a stack
 		PushSketchpad(surf, pPad);
-		
+
 		pPad->BeginDrawing();
 		pPad->LoadDefaults();
 
@@ -2591,7 +2591,7 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 	SURFHANDLE hSrf = sp->GetSurface();
 
 	if (SURFACE(hSrf)->IsRenderTarget()) {
-		
+
 		D3D9Pad *pPad = ((D3D9Pad*)sp);
 
 		if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
