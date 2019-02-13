@@ -229,7 +229,7 @@ int Tile::PlaneIntersection(VECTOR3 &vPln, double hed, double lng, double lat, d
 	}
 
 	double dir = PI05 - hed;
-	if (dir < -PI) dir += PI2;	
+	if (dir < -PI) dir += PI2;
 
 	double tLng = fabs(dir) < PI05 ? minlng : maxlng;
 	double tLat = dir > 0 ? minlat : maxlat;
@@ -342,7 +342,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	VECTOR3 ez = crossp (ey, ex);
 	MATRIX3 R = {ex.x, ex.y, ex.z,  ey.x, ey.y, ey.z,  ez.x, ez.y, ez.z};
 	VECTOR3 pref = {radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)}; // origin
-	VECTOR3 tpmin, tpmax; 
+	VECTOR3 tpmin, tpmax;
 
 	// patch translation vector
 	if (shift_origin) {
@@ -511,7 +511,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	}
 	pref.x -= dx;
 	pref.y -= dy;
-	
+
 	mesh->Box[0] = _V(tmul (R, _V(tpmin.x, tpmin.y, tpmin.z)) + pref);
 	mesh->Box[1] = _V(tmul (R, _V(tpmax.x, tpmin.y, tpmin.z)) + pref);
 	mesh->Box[2] = _V(tmul (R, _V(tpmin.x, tpmax.y, tpmin.z)) + pref);
@@ -587,7 +587,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
             *idx++ = (WORD)( (y+1)*x2 + (x+0) );
             *idx++ = (WORD)( (y+0)*x2 + (x+1) );
             *idx++ = (WORD)( (y+1)*x2 + (x+1) );
-            *idx++ = (WORD)( (y+1)*x2 + (x+0) ); 
+            *idx++ = (WORD)( (y+1)*x2 + (x+0) );
 			nidx += 6;
         }
     }
@@ -610,7 +610,7 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
     nvtx++;
 	WORD wSouthVtx = nvtx;
 
-	
+
 	eradius = radius + globelev;
 	if (elev) {
 		double mn = 0.0;
@@ -692,8 +692,6 @@ VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
 // =======================================================================
 // =======================================================================
 
-const oapi::D3D9Client *TileLoader::gc = 0;
-volatile bool TileLoader::bRunThread = true;
 int TileLoader::nqueue = 0;
 int TileLoader::queue_in = 0;
 int TileLoader::queue_out = 0;
@@ -701,12 +699,14 @@ HANDLE TileLoader::hLoadMutex = 0;
 struct TileLoader::QUEUEDESC TileLoader::queue[MAXQUEUE2] = {0};
 
 TileLoader::TileLoader (const oapi::D3D9Client *gclient)
+	: gc(gclient)
+	, hStopThread(CreateEvent(NULL, FALSE, FALSE, NULL))
+	, load_frequency(Config->PlanetLoadFrequency)
 {
-	gc = gclient;
-	bRunThread = true;
-	nqueue = queue_in = queue_out = 0;
-	load_frequency = Config->PlanetLoadFrequency;
 	DWORD id;
+
+	// Initialize statics
+	nqueue = queue_in = queue_out = 0;
 	hLoadMutex = CreateMutex (0, FALSE, NULL);
 	hLoadThread = CreateThread (NULL, 32768, Load_ThreadProc, this, 0, &id);
 }
@@ -715,21 +715,36 @@ TileLoader::TileLoader (const oapi::D3D9Client *gclient)
 
 TileLoader::~TileLoader ()
 {
-	if (bRunThread) LogErr("TileLoader() Not Yet ShutDown()");
-	CloseHandle (hLoadThread);
+	if (hLoadThread) LogErr("TileLoader() Not Yet ShutDown()");
+	TerminateLoadThread();
 	CloseHandle (hLoadMutex);
+	hLoadMutex = NULL;
 }
 
 // -----------------------------------------------------------------------
 
 bool TileLoader::ShutDown()
 {
-	bRunThread = false;
-	if (WaitForSingleObject (hLoadThread, 4000) != 0) {
-		TerminateThread (hLoadThread, 0);
-		return false;
+	if (hLoadThread) {
+		TerminateLoadThread();
+		return true;
 	}
-	return true;
+	return false;
+}
+
+// -----------------------------------------------------------------------
+
+void TileLoader::TerminateLoadThread()
+{
+	if (hLoadThread) {
+		// Signal thread to stop and wait for it to happen
+		SetEvent(hStopThread);
+		WaitForSingleObject(hLoadThread, INFINITE); //4000);
+		// Clean up for next run
+		ResetEvent(hStopThread);
+		CloseHandle(hLoadThread);
+		hLoadThread = NULL;
+	}
 }
 
 // -----------------------------------------------------------------------
@@ -836,8 +851,8 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 	Tile *tile;
 	bool load;
 
-	while (bRunThread) {
-		
+	while (WAIT_OBJECT_0 != WaitForSingleObject(loader->hStopThread, idle)) {
+
 		WaitForMutex();
 
 		if (load = (nqueue > 0)) {
@@ -854,14 +869,14 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 
 		ReleaseMutex();
 
-		if (load) {	
+		if (load) {
 			tile->PreLoad(); // Preload data from harddrive to system memory without a Mutex
 
 			WaitForMutex();
 			tile->Load(); // Create the actual tile texture from a pre-loaded data
 			tile->state = Tile::Inactive; // unlock tile
 			ReleaseMutex();
-			
+
 		}
 		else {
 			Sleep(1);
@@ -881,7 +896,13 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 	Tile *tile[tile_packet_size];
 	int nload, i;
 
-	while (bRunThread) {
+	LogAlw("TileLoader::Load thread started");
+
+	bool bFirstRun = true;
+	while (bFirstRun || WAIT_OBJECT_0 != WaitForSingleObject(loader->hStopThread, idle))
+	{
+		bFirstRun = false;
+
 		WaitForMutex ();
 		for (nload = 0; nqueue > 0 && nload < tile_packet_size; nload++) {
 			tile[nload] = queue[queue_out].tile;
@@ -905,6 +926,8 @@ DWORD WINAPI TileLoader::Load_ThreadProc (void *data)
 			Sleep (idle);
 		}
 	}
+
+	LogAlw("TileLoader::Load thread terminated");
 	return 0;
 }
 
@@ -1095,35 +1118,35 @@ DWORD TileManager2Base::RecycleVertexBuffer(DWORD nv, LPDIRECT3DVERTEXBUFFER9 *p
 	if (*pVB) {
 		(*pVB)->GetDesc(&desc);
 		desc.Size /= sizeof(VERTEX_2TEX);
-		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==desc.Size) { pool = i; break; } 
+		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==desc.Size) { pool = i; break; }
 		if (pool>=0) {
 			VtxPool[pool].push(*pVB);
 			*pVB = NULL;
 			if (nv==0) return 0; // Store buffer, do not allocate new one.
 		}
-		else LogErr("Pool Doesn't exists");	
+		else LogErr("Pool Doesn't exists");
 	}
 
-	
+
 	pool = -1;
-	
-	// Find a pool 
+
+	// Find a pool
 	for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==nv) { pool = i; break; }
-	
+
 	// Create a new pool size
 	if (pool==-1) {
-		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==0) { VtxPoolSize[i] = nv; pool = i; break; }	
-		if (pool<0) { 
+		for (int i=0;i<NPOOLS;i++) if (VtxPoolSize[i]==0) { VtxPoolSize[i] = nv; pool = i; break; }
+		if (pool<0) {
 			LogErr("Failed to Crerate a Pool (size=%u)", nv);
-			*pVB = NULL; 
-			return 0; 
+			*pVB = NULL;
+			return 0;
 		}
 	}
 
 	if (VtxPool[pool].empty()) {
 		D3D9Stats.TilesCached++;
 		D3D9Stats.TilesCachedMB += nv*sizeof(VERTEX_2TEX);
-		
+
 		HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC|D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), 0, 0, D3DPOOL_DEFAULT, pVB, NULL));
 		//HR(pDev->CreateVertexBuffer(nv*sizeof(VERTEX_2TEX), D3DUSAGE_DYNAMIC, 0, D3DPOOL_DEFAULT, pVB, NULL));
@@ -1146,28 +1169,28 @@ DWORD TileManager2Base::RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB
 	if (*pIB) {
 		(*pIB)->GetDesc(&desc);
 		desc.Size /= (sizeof(WORD)*3);
-		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==desc.Size) { pool = i; break; } 
+		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==desc.Size) { pool = i; break; }
 		if (pool>=0) {
 			IdxPool[pool].push(*pIB);
 			*pIB = NULL;
 			if (nf==0) return 0; // Store buffer, do not allocate new one.
 		}
-		else LogErr("Pool Doesn't exists");	
+		else LogErr("Pool Doesn't exists");
 	}
 
-	
+
 	pool = -1;
-	
-	// Find a pool 
+
+	// Find a pool
 	for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==nf) { pool = i; break; }
-	
+
 	// Create a new pool size
 	if (pool==-1) {
-		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==0) { IdxPoolSize[i] = nf; pool = i; break; }	
-		if (pool<0) { 
+		for (int i=0;i<NPOOLS;i++) if (IdxPoolSize[i]==0) { IdxPoolSize[i] = nf; pool = i; break; }
+		if (pool<0) {
 			LogErr("Failed to Crerate a Pool (size=%u)", nf);
-			*pIB = NULL; 
-			return 0; 
+			*pIB = NULL;
+			return 0;
 		}
 	}
 
@@ -1194,7 +1217,7 @@ void TileManager2Base::TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int 
 	LPDIRECT3DSURFACE9 pSurf = NULL;
 	HDC hDC = NULL;
 	D3DSURFACE_DESC desc;
-	
+
 	HR(tex->GetSurfaceLevel(0, &pSurf));
 	HR(tex->GetLevelDesc(0, &desc));
 	HR(pSurf->GetDC(&hDC));
@@ -1210,7 +1233,7 @@ void TileManager2Base::TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int 
 	SelectObject(hDC, GetStockObject (BLACK_PEN));
 	Rectangle(hDC, 1, 1, desc.Width-2, desc.Height-2);
 	SelectObject(hDC, hOld);
-	
+
 	HR(pSurf->ReleaseDC(hDC));
 	pSurf->Release();
 }

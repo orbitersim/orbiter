@@ -200,14 +200,16 @@ public:
 	inline static BOOL ReleaseMutex() { return ::ReleaseMutex (hLoadMutex); }
 
 private:
+	void TerminateLoadThread(); // Terminates the Load thread
+
 	static struct QUEUEDESC {
 		Tile *tile;
 	} queue[MAXQUEUE2];
 
-	static const oapi::D3D9Client *gc;
-	volatile static bool bRunThread;
+	const oapi::D3D9Client *gc; // the client
 	static int nqueue, queue_in, queue_out;
-	HANDLE hLoadThread;
+	HANDLE hLoadThread; // Load ThreadProc handle
+	HANDLE hStopThread; // Thread kill signal handle
 	static HANDLE hLoadMutex;
 	static DWORD WINAPI Load_ThreadProc (void*);
 	int load_frequency;
