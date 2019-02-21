@@ -33,22 +33,23 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\resources\Orbiter.props" />
+    <Import Project="$(ProjectDir)..\VS2015\PropertyPages\orbiter_plugin.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\resources\Orbiter.props" />
+    <Import Project="$(ProjectDir)..\VS2015\PropertyPages\orbiter_plugin.props" />
+    <Import Project="$(ProjectDir)..\VS2015\PropertyPages\orbiter_debug.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ModuleDir)\Server\orbiter.exe</LocalDebuggerCommand>
-    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OrbiterDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildModuleServerDir)orbiter.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SrcDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">-s "(Current state)"</LocalDebuggerCommandArguments>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ModuleDir)\Plugin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildModulePluginDir)</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ModuleDir)\Plugin\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildModulePluginDir)</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
@@ -67,14 +68,14 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>Win32</TargetEnvironment>
-      <TypeLibraryName>$(ModuleDir)\Plugin\D3D9Client.tlb</TypeLibraryName>
+      <TypeLibraryName>$(BuildModulePluginDir)D3D9Client.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/Zc:threadSafeInit- /D "D3D_DEBUG_INFO" /D PSAPI_VERSION=1 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SDKIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SrcSdkIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0502;_DEBUG;_WINDOWS;_USRDLL;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -93,7 +94,7 @@
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;$(SDKLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;$(SrcSdkLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -107,10 +108,10 @@
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>$(ModuleDir)\Plugin\D3D9Client.bsc</OutputFile>
+      <OutputFile>$(BuildModulePluginDir)D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PreBuildEvent>
-      <Command>if not exist "$(ModuleDir)\Plugin" mkdir "$(ModuleDir)\Plugin"
+      <Command>if not exist "$(BuildModuleDir)\Plugin" mkdir "$(BuildModuleDir)\Plugin"
 if not exist "$(SolutionDir)nvapi.h" (
   echo // ==============================================================
   echo // nvapi.h
@@ -132,7 +133,7 @@ if not exist "$(SolutionDir)nvapi.h" (
     </Midl>
     <ClCompile>
       <Optimization>Full</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SDKIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;$(SrcSdkIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0502;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;D3D9CLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -154,8 +155,9 @@ if not exist "$(SolutionDir)nvapi.h" (
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;$(SDKLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;$(BuildSdkLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -173,7 +175,7 @@ if not exist "$(SolutionDir)nvapi.h" (
       <OutputFile>.\Release\D3D9Client.bsc</OutputFile>
     </Bscmake>
     <PreBuildEvent>
-      <Command>if not exist "$(ModuleDir)\Plugin" mkdir "$(ModuleDir)\Plugin"
+      <Command>if not exist "$(BuildModuleDir)\Plugin" mkdir "$(BuildModuleDir)\Plugin"
 if not exist "$(SolutionDir)nvapi.h" (
   echo // ==============================================================
   echo // nvapi.h
@@ -239,12 +241,12 @@ if not exist "$(SolutionDir)nvapi.h" (
     <ResourceCompile Include="D3D9Client.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(SDKIncludeDir)\gcAPI.h" />
-    <ClInclude Include="$(SDKIncludeDir)\gcConst.h" />
-    <ClInclude Include="$(SDKIncludeDir)\GraphicsAPI.h" />
-    <ClInclude Include="$(SDKIncludeDir)\OrbiterAPI.h" />
-    <ClInclude Include="$(SDKIncludeDir)\Orbitersdk.h" />
-    <ClInclude Include="$(SDKIncludeDir)\Sketchpad2.h" />
+    <ClInclude Include="$(SrcSdkIncludeDir)\gcAPI.h" />
+    <ClInclude Include="$(SrcSdkIncludeDir)\gcConst.h" />
+    <ClInclude Include="$(SrcSdkIncludeDir)\GraphicsAPI.h" />
+    <ClInclude Include="$(SrcSdkIncludeDir)\OrbiterAPI.h" />
+    <ClInclude Include="$(SrcSdkIncludeDir)\Orbitersdk.h" />
+    <ClInclude Include="$(SrcSdkIncludeDir)\Sketchpad2.h" />
     <ClInclude Include="AABBUtil.h" />
     <ClInclude Include="AtmoControls.h" />
     <ClInclude Include="BeaconArray.h" />
@@ -298,25 +300,25 @@ if not exist "$(SolutionDir)nvapi.h" (
     <ClInclude Include="ZTreeMgr.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(ModuleDir)\D3D9Client\BeaconArray.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\CKBlit.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\D3D9Client.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\HorizonHaze.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Mesh.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\PBR.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Particle.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Planet.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\SceneTech.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Sketchpad.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Surface.fx" />
-    <None Include="$(ModuleDir)\D3D9Client\Vessel.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\BeaconArray.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\CKBlit.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\D3D9Client.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\HorizonHaze.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Mesh.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\PBR.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Particle.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Planet.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\SceneTech.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Sketchpad.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Surface.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Vessel.fx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(ModuleDir)\D3D9Client\Common.hlsl" />
-    <None Include="$(ModuleDir)\D3D9Client\EnvMapBlur.hlsl" />
-    <None Include="$(ModuleDir)\D3D9Client\IPI.hlsl" />
-    <None Include="$(ModuleDir)\D3D9Client\LensFlare.hlsl" />
-    <None Include="$(ModuleDir)\D3D9Client\LightBlur.hlsl" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Common.hlsl" />
+    <None Include="$(BuildModuleDir)\D3D9Client\EnvMapBlur.hlsl" />
+    <None Include="$(BuildModuleDir)\D3D9Client\IPI.hlsl" />
+    <None Include="$(BuildModuleDir)\D3D9Client\LensFlare.hlsl" />
+    <None Include="$(BuildModuleDir)\D3D9Client\LightBlur.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
