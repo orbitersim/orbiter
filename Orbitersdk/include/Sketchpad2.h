@@ -367,7 +367,7 @@ namespace oapi {
 		* \note SKP3_PRM_NOISE, Get Noise configuration. Noise color in (.rgb) and (.a) controls blending between input color (.rgb) and target color. 
 		* \sa SetRenderParam
 		*/
-		virtual FVECTOR4 GetRenderParam(int param) { assert(false); return _FVECTOR4(0, 0, 0, 0); }
+		virtual FVECTOR4 GetRenderParam(int param) { assert(false); return FVECTOR4(0, 0, 0, 0); }
 
 
 		/**

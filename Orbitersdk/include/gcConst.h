@@ -159,8 +159,8 @@ namespace oapi {
 
 
 	/**
-	* \brief 32-bit floating point #D vector type.
-	* \note This structure is compatible with the D3DXVECTOR2 type.
+	* \brief 32-bit floating point 3D vector type.
+	* \note This structure is compatible with the D3DXVECTOR3 type.
 	*/
 	typedef struct FVECTOR3 {
 
@@ -221,7 +221,7 @@ namespace oapi {
 
 	/**
 	* \brief 32-bit floating point 4D vector type.
-	* \note This structure is compatible with the D3DXVECTOR2 type.
+	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
 	typedef union FVECTOR4 
 	{
@@ -342,26 +342,13 @@ namespace oapi {
 			FVECTOR3 rgb;
 			float a;
 		};
+		struct {
+			FVECTOR3 xyz;
+			float w;
+		};
 	} FVECTOR4;
 
 
-	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f)
-	{
-		FVECTOR4 q(float(v.x), float(v.y), float(v.z), _w);
-		return q;
-	}
-
-	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a)
-	{
-		FVECTOR4 q(r, g, b, a);
-		return q;
-	}
-
-	inline FVECTOR2 _FVECTOR2(float x, float y) 
-	{  
-		return FVECTOR2(x,y);
-	}
-		
 
 	/**
 	* \brief Float-valued 4x4 matrix.
@@ -373,6 +360,88 @@ namespace oapi {
 		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
 	} FMATRIX4;
+
+
+	/**
+	* \brief Vector Matrix multiplication
+	*/
+	inline FVECTOR4 mul(const FVECTOR4 &V, const FMATRIX4 &M)
+	{
+		float x = V.x*M.m11 + V.y*M.m21 + V.z*M.m31 + V.w*M.m41;
+		float y = V.x*M.m12 + V.y*M.m22 + V.z*M.m32 + V.w*M.m42;
+		float z = V.x*M.m13 + V.y*M.m23 + V.z*M.m33 + V.w*M.m43;
+		float w = V.x*M.m14 + V.y*M.m24 + V.z*M.m34 + V.w*M.m44;
+		FVECTOR4(x, y, z, w);
+	}
+
+
+	/**
+	* \brief Transform a position by matrix
+	*/
+	inline FVECTOR3 TransformCoord(const FVECTOR3 &V, const FMATRIX4 &M)
+	{
+		float x = V.x*M.m11 + V.y*M.m21 + V.z*M.m31 + M.m41;
+		float y = V.x*M.m12 + V.y*M.m22 + V.z*M.m32 + M.m42;
+		float z = V.x*M.m13 + V.y*M.m23 + V.z*M.m33 + M.m43;
+		float w = V.x*M.m14 + V.y*M.m24 + V.z*M.m34 + M.m44;
+		w = 1.0f / w;
+		return FVECTOR3(x*w, y*w, z*w);
+	}
+
+
+	/**
+	* \brief Transform a normal or direction by matrix
+	*/
+	inline FVECTOR3 TransformNormal(const FVECTOR3 &V, const FMATRIX4 &M)
+	{
+		float x = V.x*M.m11 + V.y*M.m21 + V.z*M.m31;
+		float y = V.x*M.m12 + V.y*M.m22 + V.z*M.m32;
+		float z = V.x*M.m13 + V.y*M.m23 + V.z*M.m33;
+		return FVECTOR3(x, y, z);
+	}
+
+
+	inline FVECTOR2 unit(const FVECTOR2 &v)
+	{
+		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
+		return FVECTOR2(v.x*f, v.y*f);
+	}
+
+	inline FVECTOR3 unit(const FVECTOR3 &v)
+	{
+		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+		return FVECTOR3(v.x*f, v.y*f, v.z*f);
+	}
+
+	inline float dot(const FVECTOR2 &v, const FVECTOR2 &w)
+	{
+		return v.x*w.x + v.y*w.y;
+	}
+
+	inline float dot(const FVECTOR3 &v, const FVECTOR3 &w)
+	{
+		return v.x*w.x + v.y*w.y + v.z*w.z;
+	}
+
+	inline float length(const FVECTOR2 &v)
+	{
+		return sqrt(v.x*v.x + v.y*v.y);
+	}
+
+	inline float length(const FVECTOR3 &v)
+	{
+		return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+	}
+
+	inline float saturate(float x)
+	{
+		return min(1, max(0, x));
+	}
+
+	inline FVECTOR3 saturate(FVECTOR3 &v)
+	{
+		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
+	}
 
 
 	typedef struct {
@@ -389,7 +458,34 @@ namespace oapi {
 		D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
 		D3DXVECTOR3		pos;			///< Position in local vessel coordinates
 	} PickData;
+
+
+
+
+	// OBSOLETE BEGIN -------------------------------------------------
+	//
+	
+	inline FVECTOR4 _FVECTOR4(VECTOR3 &v, float _w = 0.0f)
+	{
+		FVECTOR4 q(float(v.x), float(v.y), float(v.z), _w);
+		return q;
+	}
+
+	inline FVECTOR4 _FVECTOR4(float r, float g, float b, float a)
+	{
+		FVECTOR4 q(r, g, b, a);
+		return q;
+	}
+
+	inline FVECTOR2 _FVECTOR2(float x, float y)
+	{
+		return FVECTOR2(x, y);
+	}
+	
+	//
+	// OBSOLETE END ----------------------------------------------------
 }
+
 
 /// \brief Custom camera handle
 typedef void * CAMERAHANDLE;
@@ -400,35 +496,3 @@ typedef void * HPOLY;
 /// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);
 typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
-
-
-namespace oapi {
-
-	inline FVECTOR2 unit(const FVECTOR2 &v)
-	{
-		float f = 1.0f / sqrt(v.x*v.x + v.y*v.y);
-		return _FVECTOR2( v.x*f, v.y*f );
-	}
-
-	inline float dot(const FVECTOR2 &v, const FVECTOR2 &w)
-	{
-		return v.x*w.x + v.y*w.y;
-	}
-
-	inline float length(const FVECTOR2 &v)
-	{
-		return sqrt(v.x*v.x + v.y*v.y);
-	}
-
-	inline float saturate(float x)
-	{
-		return min(1, max(0, x));
-	}
-
-	inline FVECTOR3 saturate(FVECTOR3 &v)
-	{
-		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
-	}
-}
-
-

@@ -214,8 +214,8 @@ void D3D9Pad::LoadDefaults()
 	D3DXMatrixIdentity(&mV);
 	D3DXMatrixIdentity((D3DXMATRIX*)&ColorMatrix);
 
-	Gamma = _FVECTOR4(1, 1, 1, 1);
-	Noise = _FVECTOR4(0, 0, 0, 0);
+	Gamma = FVECTOR4(1, 1, 1, 1);
+	Noise = FVECTOR4(0, 0, 0, 0);
 }
 
 

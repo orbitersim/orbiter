@@ -82,7 +82,7 @@ FVECTOR4 D3D9Pad::GetRenderParam(int param)
 	case SKP3_PRM_GAMMA: return Gamma;
 	case SKP3_PRM_NOISE: return Noise;
 	}
-	return _FVECTOR4(0, 0, 0, 0);
+	return FVECTOR4(0, 0, 0, 0);
 }
 
 
@@ -93,15 +93,15 @@ void D3D9Pad::SetRenderParam(int param, FVECTOR4 *d)
 	if (d == NULL) {
 
 		switch (param) {
-		case SKP3_PRM_GAMMA: Gamma = _FVECTOR4(1, 1, 1, 1); ClearEnable(SKP3E_GAMMA); break;
-		case SKP3_PRM_NOISE: Noise = _FVECTOR4(0, 0, 0, 0); ClearEnable(SKP3E_NOISE); break;
+		case SKP3_PRM_GAMMA: Gamma = FVECTOR4(1, 1, 1, 1); ClearEnable(SKP3E_GAMMA); break;
+		case SKP3_PRM_NOISE: Noise = FVECTOR4(0, 0, 0, 0); ClearEnable(SKP3E_NOISE); break;
 		}
 
 		return;
 	}
 
 	switch (param) {
-	case SKP3_PRM_GAMMA: Gamma = _FVECTOR4(d->r, d->g, d->b, d->a); SetEnable(SKP3E_GAMMA);  break;
+	case SKP3_PRM_GAMMA: Gamma = FVECTOR4(d->r, d->g, d->b, d->a); SetEnable(SKP3E_GAMMA);  break;
 	case SKP3_PRM_NOISE: Noise = *d; SetEnable(SKP3E_NOISE);  break;
 	}
 }
