@@ -20,7 +20,9 @@ set VERSION=Beta28.6
 
 
 :: Check if SDK and other needed resources are present
-if not exist "%BASE_DIR%\Orbitersdk\lib\orbiter.lib" (
+for %%a in ("%BASE_DIR%\Orbitersdk\lib\orbiter.lib" ^
+            "%BASE_DIR%\Orbitersdk\VS2015\PropertyPages\orbiter.props") ^
+do if not exist %%a (
   echo ========================================================================
   echo   Getting Orbiter SDK libs ^& headers^.^.^.
   echo ========================================================================
