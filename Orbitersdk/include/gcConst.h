@@ -455,8 +455,8 @@ namespace oapi {
 		int				mesh;			///< Mesh index that was clicked
 		int				group;			///< Mesh group index that was clicked
 		float			dist;			///< Distance from a camera to a click point
-		D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
-		D3DXVECTOR3		pos;			///< Position in local vessel coordinates
+		FVECTOR3		normal;			///< Normal vector in local vessel coordinates
+		FVECTOR3		pos;			///< Position in local vessel coordinates
 	} PickData;
 
 
