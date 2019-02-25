@@ -196,7 +196,7 @@ echo user %USER% %PASS%>ftp.tmp
 echo cd %TGTPATH%>>ftp.tmp
 echo send html.tmp index.html>>ftp.tmp
 echo binary>>ftp.tmp
-echo send %ZIP_NAME%(r%REVISION%).zip>>ftp.tmp
+echo send "%ZIP_NAME%(r%REVISION%).zip">>ftp.tmp
 echo bye>>ftp.tmp
 ftp -n -i -s:ftp.tmp %SERVER%
 del ftp.tmp
