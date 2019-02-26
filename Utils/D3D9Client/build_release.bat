@@ -50,7 +50,7 @@ if "%VS150COMNTOOLS%"=="" call helper_vswhere.bat
 if not "%VS150COMNTOOLS%"=="" (
   set "SETVCVARS=%VS150COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2017.sln
-  set CAM_SOLUTIONFILE=DockingCamera.sln
+  set CAM_SOLUTIONFILE=GenericCamera.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
   goto assign
 )
@@ -58,7 +58,7 @@ if not "%VS150COMNTOOLS%"=="" (
 if not "%VS140COMNTOOLS%"=="" (
   set "SETVCVARS=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2015.sln
-  set CAM_SOLUTIONFILE=DockingCamera.sln
+  set CAM_SOLUTIONFILE=GenericCamera.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2015.vcxproj
   goto assign
 )
@@ -139,10 +139,10 @@ if errorlevel 1 goto exit_nok
 
 if not "%CAM_SOLUTIONFILE%"=="" (
   echo ========================================================================
-  echo   Building Cam...
+  echo   Building GenericCamera MFD
   echo ========================================================================
   call %VC% %BUILD_FLAG% ^
-            "%BASE_DIR%\Orbitersdk\samples\DockingCamera\%CAM_SOLUTIONFILE%" ^
+            "%BASE_DIR%\Orbitersdk\samples\GenericCamera\%CAM_SOLUTIONFILE%" ^
             %CONFIG%
   if errorlevel 1 goto exit_nok
 )
@@ -169,8 +169,8 @@ copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI.lib ^
          %OUT_DIR%\Orbitersdk\lib\gcAPI.lib > nul
 :: copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI_dbg.lib ^
 ::          %OUT_DIR%\Orbitersdk\lib\gcAPI_dbg.lib > nul
-copy /y %BASE_DIR%\Modules\Plugin\DockingCamera.dll ^
-         %OUT_DIR%\Modules\Plugin\DockingCamera.dll > nul
+copy /y %BASE_DIR%\Modules\Plugin\GenericCamera.dll ^
+         %OUT_DIR%\Modules\Plugin\GenericCamera.dll > nul
 
 
 :: --- Packing
