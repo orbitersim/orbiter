@@ -15,7 +15,6 @@
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
 #include "DebugControls.h"
-#include "MeshTools.h"
 #include "VectorHelpers.h"
 #include <xnamath.h>
 
@@ -166,69 +165,6 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSu
 	UpdateGeometryBuffer();
 	CheckMeshStatus();
 }
-
-
-// ===========================================================================================
-//
-/*
-D3D9Mesh::D3D9Mesh(class AdMesh &mesh, bool bHasUV) : D3D9Effect()
-{
-	Null();
-
-	nGrp    = mesh.GetGroupCount();
-	MaxVert = mesh.GetVertexCount();
-	MaxFace = mesh.GetIndexCount() / 3;
-
-	Grp = new GROUPREC[nGrp]; memset2(Grp, 0, sizeof(GROUPREC) * nGrp);
-	pGrpTF = new D3DXMATRIX[nGrp];
-
-	HR(pDev->CreateVertexBuffer(MaxVert*sizeof(NMVERTEX), 0, 0, D3DPOOL_DEFAULT, &pVB, NULL));
-	HR(pDev->CreateIndexBuffer(MaxFace*sizeof(WORD)*3, 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL));
-
-	NMVERTEX *pVert = NULL;
-	WORD *pIdx = NULL;
-
-	HR(pVB->Lock(0, 0, (LPVOID*)&pVert, 0));
-	HR(pIB->Lock(0, 0, (LPVOID*)&pIdx, 0));
-
-	for (DWORD i=0;i<nGrp;i++) {
-
-		HGROUP hGrp = mesh.GetGroup(i);
-		DWORD  nVtx = hGrp->GetVertexCount();
-		DWORD  nIdx = hGrp->GetIndexCount();
-
-		hGrp->GetVertices(pVert);
-		hGrp->GetIndices(pIdx);
-
-		UpdateTangentSpace(pVert, pIdx, nVtx, nIdx/3, bHasUV);
-
-		pVert += nVtx;
-		pIdx  += nIdx;
-
-		Grp[i].nVert = nVtx;
-		Grp[i].nFace = nIdx/3;
-
-		if (i>0) {
-			Grp[i].VertOff = Grp[i-1].VertOff + nVtx;
-			Grp[i].FaceOff = Grp[i-1].FaceOff + nIdx/3;
-		}
-		else {
-			Grp[0].VertOff = 0;
-			Grp[0].FaceOff = 0;
-		}
-	}
-
-	HR(pVB->Unlock());
-	HR(pIB->Unlock());
-
-	D3DXMatrixIdentity(&mTransform);
-	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(this);
-
-	UpdateBoundingBox();
-	UpdateGeometryBuffer();
-	CheckMeshStatus();
-}*/
 
 
 // ===========================================================================================
@@ -2929,14 +2865,16 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 		D3DXVECTOR3 bs = D3DXVECTOR3f4(Grp[g].BBox.bs);
 		float rad = Grp[g].BBox.bs.w;
 
-		D3DXVec3TransformCoord(&bs, &bs, pW);
+		D3DXVec3TransformCoord(&bs, &bs, &mWT);
 
-		BOOL bIntersect = D3DXSphereBoundProbe(&bs, rad, &D3DXVECTOR3(0,0,0), vDir);
-
-		if (!bIntersect) continue;
+		float dst = D3DXVec3Dot(&bs, vDir);
+		float len2 = D3DXVec3Dot(&bs, &bs);
+		
+		if (dst < -rad) continue;
+		if (sqrt(len2 - dst*dst) > rad) continue;
 
 		if (Grp[g].bTransform) D3DXMatrixMultiply(&mW, &pGrpTF[g], &mWT);
-		else mW = mWorldMesh;         
+		else mW = mWorldMesh;
 
 		D3DXVECTOR3 _a, _b, _c, cp;
 
@@ -2967,13 +2905,15 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 	
 			if (D3DXVec3Dot(&cp, &dir)<0) {
 				if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
-					if (dst<result.dist) {
-						result.dist  = dst;
-						result.group = int(g);
-						result.pMesh = this;
-						result.idx = int(i);
-						result.u = u;
-						result.v = v;
+					if (dst > 0.1f) {
+						if (dst < result.dist) {
+							result.dist = dst;
+							result.group = int(g);
+							result.pMesh = this;
+							result.idx = int(i);
+							result.u = u;
+							result.v = v;
+						}
 					}
 				}
 			}

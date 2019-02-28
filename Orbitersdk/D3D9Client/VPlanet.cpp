@@ -34,7 +34,6 @@
 #include "DebugControls.h"
 #include "AtmoControls.h"
 #include "VectorHelpers.h"
-#include "MeshTools.h"
 #include "OapiExtension.h"
 
 using namespace oapi;
@@ -186,40 +185,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	//
 	pRockPatch = NULL;
 	
-	/*
-	if (strcmp(GetName(),"Moon")==0) {
-		
-		D3DXMATRIX mW;
-		D3DXQUATERNION qW;
-
-		AdMesh PatchMesh;
-		AdMesh Rock("D3D9Rock_M", true);
-
-		if (Rock.GetGroupCount()>0) {
-
-			HGROUP hRock = Rock.GetGroup(0);
-			hRock->NormalizeGroupSize();
-		
-			HGROUP hPatch = PatchMesh.AddGroup(hRock);
-
-			for (int i=0;i<100;i++) {	
-				float scale = float(oapiRand());
-				scale = 0.1f + scale * scale * 2.0f;
-				D3DXVECTOR3 pos = D3DXVECTOR3(float(oapiRand()), float(oapiRand()), 0.0f) * 20.0f;
-
-				D3DXQuaternionRotationYawPitchRoll(&qW, float(oapiRand())*6.283f, float(oapiRand())*6.283f, 0.0f);
-				D3DXMatrixAffineTransformation(&mW, scale, &D3DXVECTOR3(0,0,0), &qW, &pos);
-
-				if (hPatch->Append(hRock, &mW)==0x10000) {
-					LogErr("Rock-patch: Max size reached");
-					break;
-				}
-			}
-
-			pRockPatch = new D3D9Mesh(&PatchMesh, true);
-		}
-	}*/
-
+	
 	// Add a cursor object into the scene ------------------------
 	//
 	hCursor[0] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 80.0f, &D3DXCOLOR(0, 0, 0.75, 0.5f));		// Cursor

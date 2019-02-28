@@ -100,7 +100,6 @@ public:
 
 	explicit		D3D9Mesh(const char *name);
 					D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect() { Copy(mesh); }
-					D3D9Mesh(class AdMesh &mesh, bool bHasUV=true);
 					
 					/**
 					 * \brief Create a mesh consisting of a single mesh group
