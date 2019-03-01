@@ -323,10 +323,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MeshTools.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\OapiExtension.cpp"
 				>
 			</File>
@@ -517,10 +513,6 @@
 			</File>
 			<File
 				RelativePath="MeshMgr.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MeshTools.h"
 				>
 			</File>
 			<File

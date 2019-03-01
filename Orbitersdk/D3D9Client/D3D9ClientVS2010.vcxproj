@@ -187,7 +187,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClCompile Include="MaterialMgr.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshMgr.cpp" />
-    <ClCompile Include="MeshTools.cpp" />
     <ClCompile Include="OapiExtension.cpp" />
     <ClCompile Include="OgciExtensions.cpp" />
     <ClCompile Include="Particle.cpp" />
@@ -244,7 +243,6 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <ClInclude Include="MaterialMgr.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshMgr.h" />
-    <ClInclude Include="MeshTools.h" />
     <ClInclude Include="OapiExtension.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="PlanetRenderer.h" />
