@@ -8,13 +8,15 @@
 // ==============================================================
 
 #define STRICT
+
 #include "D3D9util.h"
 #include "AABBUtil.h"
 #include "D3D9Client.h"
 #include "VectorHelpers.h"
 #include "D3D9Config.h"
 #include "VPlanet.h"
-
+#include <functional>
+#include <cctype>
 
 
 bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
@@ -82,7 +84,7 @@ void LogMatrix(D3DXMATRIX *pM, const char *name)
 	LogAlw("[%2.2g, %2.2g, %2.2g %2.2g]", pM->_41, pM->_42, pM->_43, pM->_44);
 }
 
-inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in) 
+inline D3DXVECTOR4 CV2VEC4(const D3DCOLORVALUE &in)
 {
 	return D3DXVECTOR4(in.r, in.g, in.b, in.a);
 }
@@ -206,12 +208,6 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)
 	light->Dir = D3DXVEC(S) * (-1.0f/s);
 }
 
-
-
-
-
-
-
 void OrbitalLighting(D3D9Sun *light, const vPlanet *vP, const VECTOR3 &GO, float ao)
 {
 	VECTOR3 GS, GP;
@@ -299,8 +295,6 @@ void OrbitalLighting(D3D9Sun *light, const vPlanet *vP, const VECTOR3 &GO, float
 	light->Dir = D3DXVEC(S) * (-1.0f / float(s));
 }
 
-
-
 // ===========================================
 // Remove unecessary spaces and tablations
 // when reading a file.
@@ -380,10 +374,6 @@ char* _fgets(char* cbuf, int num, FILE* stream, bool keepOneSpace)
 }
 */
 
-
-
-
-
 void strremchr(char *str, int idx)
 {
 	while (str[idx]!='\0') {
@@ -406,7 +396,6 @@ void strremchr(char *str, int idx)
 //  0x02 = Don't convert '/' to '\'
 //  0x04 = Convert to upper case
 //  0x08 = Remove '=' if exists
-
 
 int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool bSlash)
 {
@@ -482,13 +471,128 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 	return 1;
 }
 
+// -----------------------------------------------------------------------------------
+// String helper
+// ------------------------------------------------------------------------------------
 
+// trim from start
+std::string &ltrim (std::string &s)
+{
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	//s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](auto c) { return !std::isspace(c); }));
+	return s;
+}
 
+// trim from end
+std::string &rtrim (std::string &s)
+{
+	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	//s.erase(std::find_if(s.rbegin(), s.rend(), [](auto c) { return !std::isspace(c); }).base(), s.end());
+	return s;
+}
+
+// trim from both ends
+std::string &trim (std::string &s) {
+	return ltrim(rtrim(s));
+}
+
+// uppercase complete string
+void toUpper (std::string &s) {
+	std::transform(s.begin(), s.end(), s.begin(), std::toupper);
+}
+
+// lowercase complete string
+//void toLower (std::string &s) {
+//	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+//}
+
+// string to double (returns quiet_NaN if conversion failed)
+double toDoubleOrNaN (const std::string &str)
+{
+	return (str[0] == 'N' || str[0] == 'n') // "NaN" or "nan"?
+		? std::numeric_limits<double>::quiet_NaN()
+		: atof(str.c_str());
+}
+
+// case insensitive compare
+bool startsWith (const std::string &haystack, const std::string &needle)
+{
+	auto it = std::search(
+		haystack.cbegin(), haystack.cend(),
+		needle.cbegin(), needle.cend(),
+		[](char a, char b) { return std::toupper(a) == std::toupper(b); }
+	);
+	return it != haystack.cend();
+}
+
+// case insensitive conatins
+bool contains (const std::string &haystack, const std::string &needle)
+{
+	auto it = std::search(
+		haystack.cbegin(), haystack.cend(), needle.cbegin(), needle.cend(),
+		[](char a, char b) { return std::toupper(a) == std::toupper(b); }
+	);
+	return it != haystack.cend();
+}
+
+// case insensitive find
+size_t find_ci (const std::string &haystack, const std::string &needle)
+{
+	auto it = std::search(
+		haystack.cbegin(), haystack.cend(), needle.cbegin(), needle.cend(),
+		[](char a, char b) { return std::toupper(a) == std::toupper(b); }
+	);
+	return it != haystack.cend()
+		? static_cast<size_t>(it - haystack.cbegin())
+		: std::string::npos;
+}
+
+// case insensitive rfind
+size_t rfind_ci (const std::string &haystack, const std::string &needle)
+{
+	auto it = std::search(
+		haystack.rbegin(), haystack.rend(), needle.rbegin(), needle.rend(),
+		[](char a, char b) { return std::toupper(a) == std::toupper(b); }
+	);
+	return it != haystack.rend()
+		? static_cast<size_t>(haystack.rend() - it)
+		: std::string::npos;
+}
+
+// parse assignments like "foo=bar", "foo = bar" or even "foo= bar ; with comment"
+std::pair<std::string, std::string> &splitAssignment (const std::string &line, const char delim /* = '=' */)
+{
+	static std::pair<std::string, std::string> ret;
+
+	//const char delim = '=';
+	const char comment = ';';
+	size_t delPos = line.find(delim),  // delimiter position
+		cmtPos = line.find(comment);// comment pos...
+
+									// ...convert to 'comment part length' if comment found
+	cmtPos -= cmtPos != std::string::npos ? delPos + 1 : 0;
+
+	ret.first = trim(line.substr(0, delPos));
+	ret.second = trim(line.substr(delPos + 1, cmtPos));
+
+	return ret;
+}
+
+// replace all occurances of 's' in 'subj' by 't'
+std::string::size_type replace_all (std::string &subj, const std::string &s, const std::string &t)
+{
+	std::string::size_type n = 0, c = 0;
+	while ((n = subj.find(s, n)) != std::string::npos) {
+		subj.replace(n, s.size(), t);
+		n += t.size();
+		++c;
+	}
+	return c;
+}
 
 // =======================================================================
 // Some utility methods for D3D vectors and matrices
 // ============================================================================
-
 
 float D3DXVec3Angle(D3DXVECTOR3 a, D3DXVECTOR3 b)
 {
@@ -736,7 +840,6 @@ float D3DMAT_BSScaleFactor(const D3DXMATRIX *mat)
 	return sqrt(max(max(lx,ly),lz));
 }
 
-
 // ============================================================================
 // Apply a translation vector toa D3D transformation matrix
 
@@ -879,7 +982,6 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	return pShader;
 }
 
-
 // ============================================================================
 //
 LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options, LPD3DXCONSTANTTABLE *pConst)
@@ -1006,9 +1108,6 @@ bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE
 	return false;
 }
 
-
-
-
 // Light Emitter ============================================================================
 //
 D3D9Light::D3D9Light(const LightEmitter *le, const class vObject *vo) :
@@ -1018,7 +1117,6 @@ D3D9Light::D3D9Light(const LightEmitter *le, const class vObject *vo) :
 {
 	UpdateLight(le, vo);
 }
-
 
 // ============================================================================
 //
@@ -1031,7 +1129,6 @@ D3D9Light::D3D9Light() :
 
 }
 
-
 // ============================================================================
 //
 D3D9Light::~D3D9Light()
@@ -1039,14 +1136,12 @@ D3D9Light::~D3D9Light()
 
 }
 
-
 // ============================================================================
 //
 void D3D9Light::Reset()
 {
 	intensity = -1.0f;
 }
-
 
 // ============================================================================
 //
@@ -1072,14 +1167,12 @@ float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
 	return intensity / (Attenuation.x + Attenuation.y*d + Attenuation.z*d2);
 }
 
-
 // ============================================================================
 //
 const LightEmitter *D3D9Light::GetEmitter() const
 {
 	return le;
 }
-
 
 // ============================================================================
 //
@@ -1146,5 +1239,3 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 		D3DXVec3TransformNormal(&Direction, &D3DXVEC(le->GetDirection()), vo->MWorld());
 	}
 }
-
-

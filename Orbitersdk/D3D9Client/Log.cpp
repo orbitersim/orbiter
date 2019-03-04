@@ -3,9 +3,9 @@
 //
 // Copyright (C) 2012 - 2016 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 // is furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -17,14 +17,7 @@
 // =================================================================================================================================
 
 #include "Log.h"
-#include <time.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <windows.h>
-#include <OrbiterAPI.h>
-#include <queue>
-#include <string>
+#include "D3D9Util.h"
 
 FILE *d3d9client_log = NULL;
 
@@ -38,31 +31,18 @@ char OprBuf[OPRBUF+1];
 char TimeBuf[TIMEBUF+1];
 
 time_t ltime;
-int uEnableLog = 1;		// This value is controlling log opeation 
+int uEnableLog = 1;		// This value is controlling log opeation
 int iEnableLog = 0;
 int EnableLogStack[16];
 int iLine = 0;
 
 __int64 qpcFrq = 0;
-__int64 qpcRef = 0; 
+__int64 qpcRef = 0;
 __int64 qpcStart = 0;
 
 std::queue<std::string> D3D9DebugQueue;
 
 CRITICAL_SECTION LogCrit;
-
-// ===========================================================================================
-// string helper
-
-static std::string::size_type replace_all (std::string &subj, const std::string &s, const std::string &t) {
-	std::string::size_type n = 0, c = 0;
-	while ( ( n = subj.find( s, n ) ) != std::string::npos ) {
-		subj.replace(n, s.size(), t);
-		n += t.size();
-		++c;
-	}
-	return c;
-}
 
 //-------------------------------------------------------------------------------------------
 //
@@ -76,9 +56,6 @@ void D3D9DebugLog(const char *format, ...)
 	D3D9DebugQueue.push(std::string(ErrBuf));
 }
 
-
-
-
 //-------------------------------------------------------------------------------------------
 //
 void D3D9InitLog(char *file)
@@ -86,10 +63,10 @@ void D3D9InitLog(char *file)
 	if (fopen_s(&d3d9client_log,file,"w+")) { d3d9client_log=NULL; } // Failed
 	else {
 		QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);
-		InitializeCriticalSectionAndSpinCount(&LogCrit, 256); 
-		fprintf_s(d3d9client_log,"<!DOCTYPE html><html><head><title>D3D9Client Log</title></head><body bgcolor=black text=white>"); 
+		InitializeCriticalSectionAndSpinCount(&LogCrit, 256);
+		fprintf_s(d3d9client_log,"<!DOCTYPE html><html><head><title>D3D9Client Log</title></head><body bgcolor=black text=white>");
 		fprintf_s(d3d9client_log,"<center><h2>D3D9Client Log</h2><br>");
-		fprintf_s(d3d9client_log,"</center><hr><br><br>"); 
+		fprintf_s(d3d9client_log,"</center><hr><br><br>");
 	}
 }
 
@@ -162,10 +139,10 @@ void LogTrace(const char *format, ...)
 	if (uEnableLog>3) {
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=DarkGrey> ", my_ctime(), th);
-		
-		va_list args; 
-		va_start(args, format); 
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
 		va_end(args);
 
 		escape_ErrBuf();
@@ -186,12 +163,12 @@ void LogAlw(const char *format, ...)
 	if (uEnableLog>0) {
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
-		
-		va_list args; 
-		va_start(args, format); 
-		
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
-	
+
+		va_list args;
+		va_start(args, format);
+
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
+
 		va_end(args);
 
 		escape_ErrBuf();
@@ -240,12 +217,12 @@ void LogOapi(const char *format, ...)
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
 
-		va_list args; 
-		va_start(args, format); 
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
 		va_end(args);
 
-		oapiWriteLogV("            D3D9: %s", ErrBuf);
+		oapiWriteLogV("D3D9: %s", ErrBuf);
 
 		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
@@ -266,9 +243,9 @@ void LogErr(const char *format, ...)
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Red> [ERROR] ", my_ctime(), th);
 
-		va_list args; 
-		va_start(args, format); 
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
 		va_end(args);
 
 		oapiWriteLogV("D3D9: ERROR: %s", ErrBuf);
@@ -279,7 +256,7 @@ void LogErr(const char *format, ...)
 		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
-}	
+}
 
 // ---------------------------------------------------
 //
@@ -292,9 +269,9 @@ void LogBlu(const char *format, ...)
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#1E90FF> ", my_ctime(), th);
 
-		va_list args; 
-		va_start(args, format); 
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
 		va_end(args);
 
 		escape_ErrBuf();
@@ -303,7 +280,7 @@ void LogBlu(const char *format, ...)
 		fflush(d3d9client_log);
 	}
 	LeaveCriticalSection(&LogCrit);
-}	
+}
 
 // ---------------------------------------------------
 //
@@ -316,9 +293,9 @@ void LogWrn(const char *format, ...)
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
 
-		va_list args; 
-		va_start(args, format); 
-		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
 		va_end(args);
 
 		escape_ErrBuf();
@@ -328,7 +305,7 @@ void LogWrn(const char *format, ...)
 		oapiWriteLogV("D3D9: WARNING: %s", ErrBuf);
 	}
 	LeaveCriticalSection(&LogCrit);
-}	
+}
 
 // ---------------------------------------------------
 //
@@ -341,9 +318,9 @@ void LogOk(const char *format, ...)
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#00FF00> ", my_ctime(), th);
 
-		va_list args; 
-		va_start(args, format); 
-        _vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args); 
+		va_list args;
+		va_start(args, format);
+        _vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
         va_end(args);
 
 		escape_ErrBuf();

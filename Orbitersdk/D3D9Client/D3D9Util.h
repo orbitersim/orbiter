@@ -10,7 +10,7 @@
 
 #include "OrbiterAPI.h"
 #include "Log.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 #ifdef _DEBUG
@@ -243,11 +243,11 @@ typedef struct {
  */
 typedef struct {
 	D3DXVECTOR4	  Diffuse;
-	D3DXVECTOR4   Specular;			///< Specular color, power in alpha 
+	D3DXVECTOR4   Specular;			///< Specular color, power in alpha
 	D3DXVECTOR3	  Ambient;
 	D3DXVECTOR3   Emissive;
 	D3DXVECTOR3   Reflect;			///< Color multiplier and intensity (alpha)
-	D3DXVECTOR3	  Emission2;		///< 
+	D3DXVECTOR3	  Emission2;		///<
 	D3DXVECTOR3	  Fresnel;			///< Fresnel reflection
 	float		  Roughness;		///< Roughness = log2(spec_pow) * 0.1f
 	// -----------------------
@@ -311,7 +311,7 @@ inline void swap(double &a, double &b)
 	double c = a; a = b; b = c;
 }
 
-// Jump between western and eastern hemispheres 
+// Jump between western and eastern hemispheres
 inline double wrap(double a)
 {
 	if (a<-PI) return a+PI2;
@@ -369,9 +369,9 @@ inline void TransformVertex(NMVERTEX *pVrt, LPD3DXMATRIX pW)
 	D3DXVec3TransformCoord(&p, &D3DXVECTOR3(pVrt->x, pVrt->y, pVrt->z), pW);
 	D3DXVec3TransformNormal(&n, &D3DXVECTOR3(pVrt->nx, pVrt->ny, pVrt->nz), pW);
 	D3DXVec3TransformNormal(&t, &D3DXVECTOR3(pVrt->tx, pVrt->ty, pVrt->tz), pW);
-	pVrt->x  = p.x;	pVrt->y  = p.y; pVrt->z  = p.z; 
-	pVrt->nx = n.x; pVrt->ny = n.y; pVrt->nz = n.z; 
-	pVrt->tx = t.x; pVrt->ty = t.y; pVrt->tz = t.z; 
+	pVrt->x  = p.x;	pVrt->y  = p.y; pVrt->z  = p.z;
+	pVrt->nx = n.x; pVrt->ny = n.y; pVrt->nz = n.z;
+	pVrt->tx = t.x; pVrt->ty = t.y; pVrt->tz = t.z;
 }
 
 inline void D3DVEC (const VECTOR3 &v, D3DVECTOR &d3dv)
@@ -494,6 +494,45 @@ struct VERTEX_2TEX  {
 		tu0(u0), tv0(v0) {} //, tu1(u1), tv1(v1) {}
 };
 
+// -----------------------------------------------------------------------------------
+// String helper
+// ------------------------------------------------------------------------------------
+
+// trim from start
+std::string &ltrim (std::string &s);
+
+// trim from end
+std::string &rtrim (std::string &s);
+
+// trim from both ends
+std::string &trim (std::string &s);
+
+// uppercase complete string
+void toUpper (std::string &s);
+
+// lowercase complete string
+//void toLower (std::string &s);
+
+// string to double (returns quiet_NaN if conversion failed)
+double toDoubleOrNaN (const std::string &str);
+
+// case insensitive compare
+bool startsWith (const std::string &haystack, const std::string &needle);
+
+// case insensitive conatins
+bool contains (const std::string &haystack, const std::string &needle);
+
+// case insensitive find
+size_t find_ci (const std::string &haystack, const std::string &needle);
+
+// case insensitive rfind
+size_t rfind_ci (const std::string &haystack, const std::string &needle);
+
+// parse assignments like "foo=bar", "foo = bar" or even "foo= bar ; with comment"
+std::pair<std::string, std::string> &splitAssignment (const std::string &line, const char delim = '=');
+
+// replace all occurances of 's' in 'subj' by 't'
+std::string::size_type replace_all (std::string &subj, const std::string &s, const std::string &t);
 
 // -----------------------------------------------------------------------------------
 // Resource handling

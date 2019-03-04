@@ -18,36 +18,6 @@
 extern oapi::D3D9Client *g_client;
 
 // ===========================================================================================
-// string helper
-
-// case insensitive compare
-static inline bool startsWith (const std::string &haystack, const std::string &needle) {
-	std::string _haystack(haystack); toLower(_haystack);
-	std::string _needle(needle); toLower(_needle);
-	return _haystack.compare(0, _needle.length(), _needle) == 0;
-}
-
-// parse assignments like "foo=bar", "foo = bar" or even "foo= bar ; with comment"
-static std::pair<std::string, std::string> &splitAssignment (const std::string &line, const char delim='=')
-{
-	static std::pair<std::string, std::string> ret;
-
-	//const char delim = '=';
-	const char comment = ';';
-	size_t delPos = line.find(delim),  // delimiter position
-	       cmtPos = line.find(comment);// comment pos...
-
-	// ...convert to 'comment part length' if comment found
-	cmtPos -= cmtPos != std::string::npos ? delPos + 1 : 0;
-
-	ret.first = trim(line.substr(0, delPos));
-	ret.second = trim(line.substr(delPos + 1, cmtPos));
-
-	return ret;
-}
-
-
-// ===========================================================================================
 //
 FileParser::FileParser (const std::string &scenario) :
 	system(),
@@ -74,7 +44,7 @@ FileParser::FileParser (const std::string &scenario) :
 							//char name[256];
 							//oapiGetObjectName(hBs, name, 256);
 							//LogAlw("[Difficult to find base 0x%X (%s)]",hBs,name);
-							//ScanBases(hPl, "", hBs, true);	
+							//ScanBases(hPl, "", hBs, true);
 						}
 					}
 				}
@@ -265,8 +235,7 @@ bool FileParser::ParseScenario (const std::string &name)
 
 	while (std::getline(fs, line))
 	{
-		toLower(line);
-		if (line.find(":spacecraft\\spacecraft") != std::string::npos) {
+		if ( contains(line, ":spacecraft\\spacecraft") ) {
 			spacecraftDllUsed = true;
 			break;
 		}
@@ -390,7 +359,7 @@ bool FileParser::ParsePlanet (const std::string &_name)
 				while (std::getline(fs, line))
 				{
 					line = trim(line);
-	
+
 					if (startsWith(line, "END_SURFBASE")) break;
 
 					// DIR <folder> [PERIOD <mjd0> <mjd1>] [CONTEXT <string>]

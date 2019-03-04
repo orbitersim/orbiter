@@ -6,6 +6,7 @@
 // ==============================================================
 
 #include <algorithm>
+#include "D3D9Util.h"
 #include "OapiExtension.h"
 #include "D3D9Config.h"
 #include "OrbiterAPI.h"
@@ -192,15 +193,15 @@ void OapiExtension::LogD3D9Modules(void)
 
 			if (GetModuleBaseName(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
 			{
-				std::string name = std::string(szModName); toLower(name);
+				std::string name = std::string(szModName); toUpper(name);
 				// Module of interest?
-				if (name == "d3d9.dll" || 0 == name.compare(0, 6, "d3dx9_"))
+				if (name == "D3D9.DLL" || 0 == name.compare(0, 6, "D3DX9_"))
 				{
 					// Get the full path to the module's file.
 					if (GetModuleFileNameEx(hProcess, hMods[i], szModName, ARRAYSIZE(szModName)))
 					{
 
-						/*DWORD crc = 0; 
+						/*DWORD crc = 0;
 						FILE *hFile = 0;
 						if (fopen_s(&hFile, szModName, "rb") == 0) {
 							while (true) {
@@ -211,7 +212,7 @@ void OapiExtension::LogD3D9Modules(void)
 									if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
 									else crc = (crc << 1);
 									crc &= 0xFFFF;
-								}	
+								}
 							}
 							crc &= 0xFFFF;
 							fclose(hFile);
@@ -373,10 +374,9 @@ bool OapiExtension::GetConfigParameter(void)
 std::string OapiExtension::ScanCommandLine (void)
 {
 	std::string commandLine(GetCommandLine());
-	toLower( commandLine );
 
 	// Is there a "-s <scenario_name>" option at all?
-	unsigned pos = commandLine.rfind("-s");
+	unsigned pos = rfind_ci(commandLine, "-s");
 	if (pos != std::string::npos)
 	{
 		std::string scenarioName = trim( commandLine.substr(pos+2, std::string::npos) );

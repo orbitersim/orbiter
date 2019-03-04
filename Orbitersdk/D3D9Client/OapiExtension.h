@@ -10,9 +10,7 @@
 
 #include <Windows.h>
 #include <string>
-#include <functional> 
-#include <algorithm>
-#include <cctype>
+#include "D3D9Util.h"
 
 class D3D9Config;
 
@@ -102,34 +100,6 @@ typedef struct {
 	HWND    hWndScaleGauge;   ///< Scale gauge handle
 	HWND    hWndOpacityGauge; ///< Opacity gauge handle
 } HOOKINFO, *LPHOOKINFO;
-
-
-
-// ===========================================================================================
-// string helper
-
-// trim from start
-static inline std::string &ltrim (std::string &s) {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
-}
-
-// trim from end
-static inline std::string &rtrim (std::string &s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
-}
-
-// trim from both ends
-static inline std::string &trim (std::string &s) {
-	return ltrim(rtrim(s));
-}
-
-// lowercase complete string
-static inline void toLower (std::string &s) {
-	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
-}
-
 
 
 /**

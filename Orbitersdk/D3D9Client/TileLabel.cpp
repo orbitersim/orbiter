@@ -59,15 +59,8 @@ TileLabel::~TileLabel ()
 
 
 // ---------------------------------------------------------------------------
-// String Helper
+// Wide string / label buffer helper
 // ---------------------------------------------------------------------------
-
-static double toDoubleOrNaN (const std::string &str)
-{
-	return (str[0] == 'N' || str[0] == 'n') // "NaN" or "nan"?
-		? std::numeric_limits<double>::quiet_NaN()
-        : atof(str.c_str());
-}
 
 static int _wbufferSize = 0;
 static std::auto_ptr<WCHAR> _wbuffer; // this should get destroyed @ shutdown
@@ -344,7 +337,7 @@ void TileLabel::Render (D3D9Pad *skp, oapi::Font **labelfont, int *fontidx)
 				}
 
 				DWORD H = skp->GetLineHeight();
-				
+
 				partLen = LimitAndRotateLongLabelList(renderlabel[i], H, &y);
 
 				LPWSTR wname = GetWBuffer(renderlabel[i]->label, &len, partLen+1);
