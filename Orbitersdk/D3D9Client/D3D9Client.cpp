@@ -766,7 +766,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 void D3D9Client::clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf)
 {
 	LPDIRECT3DSURFACE9 pSurf = hSurf->GetSurface();
-	assert(pSurf != NULL);
+	if (pSurf == NULL) return;
 
 	for each (RenderTgtData data in RenderStack)
 	{
@@ -1853,6 +1853,7 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
 	_TRACE;
+	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurfaceEx");
 	surf->CreateSurface(w, h, attrib);
 	return surf;
@@ -1864,6 +1865,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
 	_TRACE;
+	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurface");
 	surf->MakeEmptySurfaceEx(w, h);
 	return surf;
@@ -1883,6 +1885,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
 	_TRACE;
+	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pDevice, "clbkCreateTexture");
 	// DO NOT USE ALPHA
 	pSurf->MakeEmptyTextureEx(w, h);
