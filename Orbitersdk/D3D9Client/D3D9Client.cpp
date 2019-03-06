@@ -99,6 +99,22 @@ extern "C" {
 // ==============================================================
 // Initialise module
 
+void LogAttrips(DWORD AF, DWORD x, DWORD y, char *orig)
+{
+	char buf[512];
+	sprintf_s(buf, 512, "%s (%d,%d)[0x%X]: ", orig, x, y, AF);
+	if (AF&OAPISURFACE_TEXTURE)		 strcat_s(buf, 512, "OAPISURFACE_TEXTURE ");
+	if (AF&OAPISURFACE_RENDERTARGET) strcat_s(buf, 512, "OAPISURFACE_RENDERTARGET ");
+	if (AF&OAPISURFACE_GDI)			 strcat_s(buf, 512, "OAPISURFACE_GDI ");
+	if (AF&OAPISURFACE_SKETCHPAD)	 strcat_s(buf, 512, "OAPISURFACE_SKETCHPAD ");
+	if (AF&OAPISURFACE_MIPMAPS)		 strcat_s(buf, 512, "OAPISURFACE_MIPMAPS ");
+	if (AF&OAPISURFACE_NOMIPMAPS)	 strcat_s(buf, 512, "OAPISURFACE_NOMIPMAPS ");
+	if (AF&OAPISURFACE_ALPHA)		 strcat_s(buf, 512, "OAPISURFACE_ALPHA ");
+	if (AF&OAPISURFACE_NOALPHA)		 strcat_s(buf, 512, "OAPISURFACE_NOALPHA ");
+	if (AF&OAPISURFACE_UNCOMPRESS)	 strcat_s(buf, 512, "OAPISURFACE_UNCOMPRESS ");
+	if (AF&OAPISURFACE_SYSMEM)		 strcat_s(buf, 512, "OAPISURFACE_SYSMEM ");
+	LogDbg("BlueViolet", buf);
+}
 
 
 void MissingRuntimeError()
@@ -1853,7 +1869,15 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
 	_TRACE;
+
+#ifdef _DEBUG
+	LogAttrips(attrib, w, h, "CreateSrfEx");
+#endif // _DEBUG
+
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
+
+	if (attrib == 0x8C) attrib = 0x5;
+
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurfaceEx");
 	surf->CreateSurface(w, h, attrib);
 	return surf;
