@@ -157,7 +157,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 
 		double apr = tdist * scene->GetTanAp() * resolutionScale;
 		int tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
-		bstepdown = (lvl < tgtres);	
+		bstepdown = (lvl < tgtres);
 	}
 
 	// Recursion to next level: subdivide into 2x2 patch
@@ -336,7 +336,7 @@ const Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> 
 	if (next) {
 		const Tile *check = SearchTileSub(next, lng, lat, maxlvl, bOwntex);
 		if (check) return check;
-	} 
+	}
 	return t;
 }
 

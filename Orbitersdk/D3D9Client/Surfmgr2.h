@@ -33,12 +33,12 @@ public:
 	// Register the tile to a quad tree node
 
 	int GetElevation(double lng, double lat, double *elev, SurfTile **, bool bFilter=true);
-	
+
 	double GetCameraDistance();
 
 protected:
-	virtual Tile *getParent() { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
-	inline SurfTile *getSurfParent() { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
+	virtual Tile *getParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
+	inline SurfTile *getSurfParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
 	SurfTile *getTextureOwner();
 
 	// Return pointer to parent tile, if exists

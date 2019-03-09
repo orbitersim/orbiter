@@ -4,9 +4,9 @@
 //
 // Copyright (C) 2012-2016 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software
 // is furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 #include "D3D9Client.h"
@@ -37,7 +37,7 @@ struct D3D9FontData {
 	float w, h;		// X,Y position of the charter baseline
 	float sp;
 	float tx0, ty0;
-	float tx1, ty1;	
+	float tx1, ty1;
 };
 
 
@@ -63,14 +63,14 @@ public:
 	 * \brief Release global parameters
 	 */
 	static void GlobalExit();
-	
+
 	void		SetCharSet(int charset=ANSI_CHARSET);	// Must be set before Init
 
 				// Init Will Create Charters from "first" (32:space) to "last" (255 ???)
 	bool        Init(HFONT hFont);
 
-	LPDIRECT3DTEXTURE9	GetTexture() { return pTex; }			
-	
+	LPDIRECT3DTEXTURE9	GetTexture() const { return pTex; }
+
 	void        SetLineSpace(int percent=10);
 	void		SetTextSpace(int space=0);		// Percent of average width (default=0)
 	void		SetTextShare(int percent=0);	// Percent of average width (default=0)
@@ -83,7 +83,7 @@ public:
 	void		Reset();
 	float		Width();
 	int			GetLineSpace();
-	
+
 	float		Length2(const char *str, int len = -1);
 	float		Length(BYTE c);
 	int			GetIndex(const char *pText, float pos, int len = -1);
@@ -99,8 +99,8 @@ public:
 private:
 
 	float	red, green, blue, alpha;
-	
-	int     tex_w;  
+
+	int     tex_w;
 	int     tex_h;
 	int		sharing;
 	int		spacing;
@@ -121,7 +121,7 @@ private:
 	TEXTMETRIC			tm;         ///< Font attributes
 	LOGFONT             lf;         ///< Font attributes
 	ID3DXFont           *wfont;     ///< WCHAR font
-	
+
 	// Rendering pipeline configuration
 	//
 	static char *		Buffer;

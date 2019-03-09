@@ -11,14 +11,14 @@
 
 // must be defined before windows includes to fix warnins on VS 2003+
 #if defined(_MSC_VER) && (_MSC_VER >= 1300 ) // Microsoft Visual Studio Version 2003 and higher
-//#define _CRT_SECURE_NO_DEPRECATE 
+//#define _CRT_SECURE_NO_DEPRECATE
 //#define _CRT_NONSTDC_NO_WARNINGS
 #include <fstream>
 #else  // older MSVC++ versions
 #include <fstream.h>
 #endif
 
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 #include "D3D9Catalog.h"
 #include "GraphicsAPI.h"
@@ -72,7 +72,7 @@ typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
 
-extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog; 
+extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog;
 extern D3D9Catalog<D3D9Mesh*>			*MeshCatalog;
 extern D3D9Catalog<LPD3D9CLIENTSURFACE>	*SurfaceCatalog;
 
@@ -158,7 +158,7 @@ public:
 	 * \param hInstance module instance handle (as passed to InitModule)
 	 */
 	explicit D3D9Client (HINSTANCE hInstance);
-	
+
 	/**
 	 * \brief Destroy the graphics object.
 	 *
@@ -493,7 +493,7 @@ public:
 	 * \default Dynamically allocates a 'ScreenAnnotation' instance and returns
 	 *   a pointer to it.
 	 */
-	ScreenAnnotation* clbkCreateAnnotation(); 
+	ScreenAnnotation* clbkCreateAnnotation();
 
 	/**
 	 * \brief Render window message handler
@@ -596,7 +596,7 @@ public:
 
 	/**
 	 * \brief Create a surface for texturing, as a blitting source, etc.
-	 * 
+	 *
 	 * Surfaces are used for offscreen bitmap and texture manipulation,
 	 * blitting and rendering.
 	 * Derived classes should create a device-specific surface, and
@@ -857,7 +857,7 @@ public:
 	 * \sa clbkFillSurface(SURFHANDLE,DWORD)
 	 */
 	bool clbkFillSurface (SURFHANDLE surf, DWORD tgtx, DWORD tgty, DWORD w, DWORD h, DWORD col) const;
-	
+
 
 	/**
 	 * \brief Copy a bitmap object into a surface
@@ -889,7 +889,7 @@ public:
 	 *   primitives.
 	 * \sa Sketchpad, clbkReleaseSketchpad
 	 */
-	Sketchpad *clbkGetSketchpad (SURFHANDLE surf); 
+	Sketchpad *clbkGetSketchpad (SURFHANDLE surf);
 
 	/**
 	 * \brief Release a drawing object.
@@ -1001,15 +1001,15 @@ public:
 	LPDIRECT3DTEXTURE9  GetNoiseTex() const { return pNoiseTex; }
 	void 				EmergencyShutdown();
 	void 				SplashScreen();
-	inline bool 		IsRunning() { return bRunning; }
-	inline bool			IsLimited() { return ((caps.TextureCaps&D3DPTEXTURECAPS_POW2) && (caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
+	inline bool 		IsRunning() const { return bRunning; }
+	inline bool			IsLimited() const { return ((caps.TextureCaps&D3DPTEXTURECAPS_POW2) && (caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
 	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
 	HWND 				GetWindow();
-	bool 				HasVertexTextureSupport() { return bVertexTex; }
+	bool 				HasVertexTextureSupport() const { return bVertexTex; }
 	D3DCAPS9 *			GetHardwareCaps() { return &caps; }
-	FileParser *		GetFileParser() { return parser; }
-	LPDIRECT3DSURFACE9	GetBackBuffer() { return pBackBuffer; }
-	LPDIRECT3DSURFACE9	GetDepthStencil() { return pDepthStencil; }
+	FileParser *		GetFileParser() const { return parser; }
+	LPDIRECT3DSURFACE9	GetBackBuffer() const { return pBackBuffer; }
+	LPDIRECT3DSURFACE9	GetDepthStencil() const { return pDepthStencil; }
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam = NULL);
 	bool				RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam = NULL);
@@ -1043,7 +1043,7 @@ protected:
 	 *   dialog, false otherwise.
 	 * \default Return true.
 	 */
-	bool clbkUseLaunchpadVideoTab () const; 
+	bool clbkUseLaunchpadVideoTab () const;
 
 	/**
 	 * \brief Simulation session start notification
@@ -1264,8 +1264,8 @@ private:
 
 	bool bControlPanel;
 	bool bScatterUpdate;
-	bool bFullscreen;       // fullscreen render mode flag	
-	bool bAAEnabled;	
+	bool bFullscreen;       // fullscreen render mode flag
+	bool bAAEnabled;
 	bool bFailed;
 	bool bRunning;
 	bool bHalt;
@@ -1276,7 +1276,7 @@ private:
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
 	DWORD frame_timer;
-	
+
 	// device enumeration callback function
 
 	VideoTab *vtab;			// video selection user interface
@@ -1298,7 +1298,7 @@ private:
 
 	char pLoadLabel[128];
 	char pLoadItem[128];
-	
+
 	// Control Panel
 	void RenderControlPanel();
 	bool ControlPanelMsg(WPARAM wParam);

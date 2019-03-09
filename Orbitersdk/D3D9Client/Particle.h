@@ -59,7 +59,7 @@ public:
 	//void Activate (bool _active) { active = _active; }
 	// activate/deactivate the particle source
 
-	bool IsActive() { return (pfirst!=NULL); }
+	bool IsActive() const { return (pfirst!=NULL); }
 
 	void Timejump ();
 	// register a discontinuity
@@ -74,11 +74,11 @@ public:
 
 	void   Render(LPDIRECT3DDEVICE9 dev);
 	//void Render(LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE9 &prevtex);
-	
+
 	virtual void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE9 &prevtex) {}
 
 
-	ParticleSpec * GetPlast() { return plast; }
+	ParticleSpec * GetPlast() const { return plast; }
 
 protected:
 

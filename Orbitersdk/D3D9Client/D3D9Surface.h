@@ -68,16 +68,16 @@ public:
 	DWORD				GetWidth();
 	DWORD				GetHeight();
 	DWORD				GetSizeInBytes();
-	
+
 	void				IncRef();	// Increase surface reference counter
 	bool				Release();	// Decrease the counter
-	int					RefCount() { return Refs; }
+	int					RefCount() const { return Refs; }
 
 	const char *		GetName() const { return name; }
 	void				SetName(const char *);
 
-	inline bool			Exists() { return (pSurf!=NULL); }
-	inline bool			HasSubSurface() { return (pDCSub!=NULL); }
+	inline bool			Exists() const { return (pSurf!=NULL); }
+	inline bool			HasSubSurface() const { return (pDCSub!=NULL); }
 	bool				IsCompressed();
 	bool				IsGDISurface();
 	bool				IsBackBuffer();
@@ -85,12 +85,12 @@ public:
 	bool				IsRenderTarget();
 	bool				Is3DRenderTarget();
 	bool				IsPowerOfTwo() const;
-	inline bool			IsSystemMem() { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
-	inline bool			IsDynamic() { return (desc.Usage&D3DUSAGE_DYNAMIC)!=0; }
-	inline bool			IsPlainSurface() { return (desc.Usage==0 && pTex==NULL); }
-	inline bool			IsDualLayer() { return (pDCSub!=NULL); }
-	inline bool			IsAdvanced() { return bAdvanced; }
-	inline bool			IsColorKeyEnabled() { return (ColorKey != 0); }
+	inline bool			IsSystemMem() const { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
+	inline bool			IsDynamic() const { return (desc.Usage&D3DUSAGE_DYNAMIC)!=0; }
+	inline bool			IsPlainSurface() const { return (desc.Usage==0 && pTex==NULL); }
+	inline bool			IsDualLayer() const { return (pDCSub!=NULL); }
+	inline bool			IsAdvanced() const { return bAdvanced; }
+	inline bool			IsColorKeyEnabled() const { return (ColorKey != 0); }
 
 	DWORD				GetAttribs(int What=1);
 	LPDIRECT3DSURFACE9	GetDepthStencil();
@@ -99,23 +99,23 @@ public:
 	LPDIRECT3DTEXTURE9	GetMap(int type, int type2) const { return (pMap[type] ? pMap[type] : pMap[type2]); }
 
 	LPDIRECT3DTEXTURE9	GetTexture();
-	LPDIRECT3DDEVICE9	GetDevice() { return pDevice; }
-	int					GetSketchPadMode() { return SketchPad; }
+	LPDIRECT3DDEVICE9	GetDevice() const { return pDevice; }
+	int					GetSketchPadMode() const { return SketchPad; }
 	D3D9Pad *			GetD3D9Pad();
 
 	void				SetColorKey(DWORD ck);			// Enable and set color key
 
 	HDC					GetDC();
 	void				ReleaseDC(HDC);
-	
+
 	HRESULT				AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
 	HRESULT				FlushQueue();
 	void				CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
 	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
-	
+
 	bool				Fill(LPRECT r, DWORD color);
 	bool				Clear(DWORD color);
-	
+
 	bool				BindGPU();
 	void				ReleaseGPU();
 	HRESULT				BeginBlitGroup();
@@ -160,7 +160,7 @@ private:
 	int					iBindCount;		// GPU Bind reference counter
 	int					ErrWrn;
 	D3DSURFACE_DESC		desc;
-	LPDIRECT3DSURFACE9	pStencil;		
+	LPDIRECT3DSURFACE9	pStencil;
 	LPDIRECT3DSURFACE9	pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
 	LPDIRECT3DTEXTURE9	pTex;		// This is a NULL if Type==D3D9S_PLAIN or Creation==D3D9C_BACKBUF
 	LPDIRECT3DSURFACE9	pDCSub;		// Containing a temporary system memory copy of a render target texture

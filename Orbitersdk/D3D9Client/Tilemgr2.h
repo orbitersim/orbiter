@@ -116,7 +116,7 @@ public:
 	};
 
 protected:
-	virtual Tile *getParent() = 0;
+	virtual Tile *getParent() const = 0;
 
 	virtual void Render () {}
 
@@ -394,7 +394,7 @@ public:
 
 	const Tile *SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const;
 
-	inline TileType *GlobalTile (int lvl) {	return (lvl >= -3 && lvl < 0 ? globtile[lvl + 3] : NULL); }
+	inline TileType *GlobalTile (int lvl) const {	return (lvl >= -3 && lvl < 0 ? globtile[lvl + 3] : NULL); }
 //	{ return globtile[lvl]; } @todo: Is that ( above) OK for us?
 
 // Returns a low-res global tile
@@ -406,7 +406,7 @@ public:
 	// The tile pointers are only valid for the current render pass. They are not guaranteed to exist any more
 	// after the next call to Render.
 
-	inline ZTreeMgr *ZTreeManager (int i) { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
+	inline ZTreeMgr *ZTreeManager (int i) const { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
 	inline bool DoLoadIndividualFiles (int i) const { return (i < ntreeMgr) ? hasIndividualFiles[i] : true; }
 
 protected:

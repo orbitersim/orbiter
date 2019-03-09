@@ -16,7 +16,7 @@
  * (like D3DX Tech HANDLEs) usefull to all rendering instances.
  */
 class PlanetRenderer {
-	
+
 public:
 	/**
 	 * \brief Constructs a new planet renderer object
@@ -43,13 +43,13 @@ public:
 	static LPDIRECT3DDEVICE9 Dev() { return pDev; }
 	static ID3DXEffect * Shader() { return pShader; }
 	static oapi::D3D9Client * Client() { return gc; }
-	
+
 	static void	SetWorldMatrix (const MATRIX4 &W);
 	static void	SetViewProjectionMatrix (const D3DXMATRIX *VP);
-	
+
 	// ------------------------------------------------------------
 	static oapi::D3D9Client *gc;
-	static LPDIRECT3DDEVICE9 pDev;   
+	static LPDIRECT3DDEVICE9 pDev;
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
 	static VECTOR3 vLPosOld;
@@ -60,13 +60,13 @@ public:
 	static D3DXHANDLE eRingTech;
 	static D3DXHANDLE eHorizonTech;
 	static D3DXHANDLE eSkyDomeTech;
-	// ------------------------------------------------------------ 
+	// ------------------------------------------------------------
 	static D3DXHANDLE ssLight;
-	// ------------------------------------------------------------  
+	// ------------------------------------------------------------
 	static D3DXHANDLE smWorld;
 	static D3DXHANDLE smViewProj;
 	static D3DXHANDLE smLVP;
-	// ------------------------------------------------------------  
+	// ------------------------------------------------------------
 	static D3DXHANDLE svTexOff;
 	static D3DXHANDLE svWater;
 	static D3DXHANDLE svSunDir;
@@ -75,8 +75,8 @@ public:
 	static D3DXHANDLE svBiTangent;
 	static D3DXHANDLE svMapUVOffset;
 	static D3DXHANDLE svMicroScale0;
-	static D3DXHANDLE svMicroScale1;		
-	static D3DXHANDLE svMicroScale2;	
+	static D3DXHANDLE svMicroScale1;
+	static D3DXHANDLE svMicroScale2;
 	static D3DXHANDLE svSHD;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfDistScale;
@@ -111,19 +111,19 @@ public:
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;
 	// Scatter model ----------------------------------------------
-	static D3DXHANDLE svMPhase;		
+	static D3DXHANDLE svMPhase;
 	static D3DXHANDLE svODCoEff;
 	static D3DXHANDLE svODCoEffEx;
-	static D3DXHANDLE svMieInSct;	
+	static D3DXHANDLE svMieInSct;
 	static D3DXHANDLE svRayInSct;
 	static D3DXHANDLE svTotOutSct;
 	static D3DXHANDLE svColorShift;
 	static D3DXHANDLE svHazeMax;
-	static D3DXHANDLE svCameraPos;		
-	static D3DXHANDLE svUnitCameraPos;		
+	static D3DXHANDLE svCameraPos;
+	static D3DXHANDLE svUnitCameraPos;
 	static D3DXHANDLE sfCloudInts;
 	static D3DXHANDLE sfSunAlt;
-	static D3DXHANDLE sfScaleHeight;		
+	static D3DXHANDLE sfScaleHeight;
 	static D3DXHANDLE sfInvScaleHeight;
 	static D3DXHANDLE sfRadius;
 	static D3DXHANDLE sfCameraAlt;
@@ -131,9 +131,9 @@ public:
 	static D3DXHANDLE sfAtmRad2;
 	static D3DXHANDLE sfRPhase;
 	static D3DXHANDLE sfHorizonDst;
-	static D3DXHANDLE sfExposure;			
-	static D3DXHANDLE sfAux1;			
-	static D3DXHANDLE sfAux2;	
+	static D3DXHANDLE sfExposure;
+	static D3DXHANDLE sfAux1;
+	static D3DXHANDLE sfAux2;
 	static D3DXHANDLE sfTrGamma;
 	static D3DXHANDLE sfAtmGamma;
 	static D3DXHANDLE sfInvAux1;

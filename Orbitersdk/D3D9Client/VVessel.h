@@ -12,7 +12,7 @@
 #include "VObject.h"
 #include "Mesh.h"
 
-class oapi::D3D9Client;							
+class oapi::D3D9Client;
 
 
 
@@ -70,7 +70,7 @@ public:
 	inline DWORD GetMeshCount();
 
 	void PreInitObject();
-	
+
 	/**
 	 * \brief Per-frame object parameter updates
 	 * \return \e true if update was performed, \e false if skipped.
@@ -122,7 +122,7 @@ public:
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
 
 	bool HasExtPass();
-	bool const Playback() { return vessel->Playback(); }
+	bool const Playback() const { return vessel->Playback(); }
 	class MatMgr * GetMaterialManager() const { return pMatMgr; }
 	const char *GetSkinName() const;
 	void SetSkinName(const char *name);
@@ -181,7 +181,7 @@ private:
 	class MatMgr *pMatMgr;
 
 	LPDIRECT3DCUBETEXTURE9 pEnv[4];
-	
+
 	int nEnv;				// Number of environmental maps
 	int iFace;				// EnvMap Face index that is to be rendered next
 

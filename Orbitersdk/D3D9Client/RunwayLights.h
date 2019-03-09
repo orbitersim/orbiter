@@ -16,7 +16,7 @@
 #define __RUNWAYLIGHTS_H
 
 #include "OrbiterAPI.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 class BeaconArray;
@@ -39,12 +39,12 @@ public:
 	void AddVASI(VECTOR3 pos, DWORD end=0);
 	void SetSignleEnded(bool bSingleEnded);
 	void SetCategory(int cat);
-	
+
 	void Init();
 	void Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night);
 	void Update(class vPlanet *vP);
 
-	float GetWidth() { return float(width); }
+	float GetWidth() const { return float(width); }
 
 	static int CreateRunwayLights(class vBase *vB, const class Scene *scn, const char *file, RunwayLights**& out);
 
@@ -68,12 +68,12 @@ protected:
 	bool   bDisp2;
 	int    iCategory;
 	OBJHANDLE hObj;
-	
+
 	DWORD nPAPI;
 	VECTOR3 PAPI_pos[12];
 	float PAPI_disp[12];
 	DWORD PAPI_end[12];
-	
+
 	DWORD nVASI;
 	VECTOR3 VASI[2];
 	DWORD VASI_end[2];
@@ -82,10 +82,10 @@ protected:
 	BeaconArray* beacons2;
 	BeaconArray* vasi[2];
 	BeaconArray* papi[12];
-	
+
 	const class Scene * scene;
 	class vBase *vB;
-	float currentTime;	
+	float currentTime;
 };
 
 
@@ -103,7 +103,7 @@ public:
 	void SetSize(double width);
 	void SetCount(int count);
 	void SetColor(VECTOR3 color);
-	
+
 	void Init();
 	void Render(LPDIRECT3DDEVICE9 dev, LPD3DXMATRIX world, bool night);
 
@@ -119,7 +119,7 @@ protected:
 
 	BeaconArray* beacons1;
 	const class Scene * scene;
-	float		 currentTime;	
+	float		 currentTime;
 };
 
 

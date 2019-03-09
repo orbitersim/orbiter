@@ -36,12 +36,12 @@ public:
 	virtual bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void UpdateBoundingBox();
 	virtual DWORD GetMeshCount();
-	
+
 	bool Update (bool bMainScene);
 
 	double	GetElevation() const;
-	vPlanet *GetPlanet() { return vP; }
-	
+	vPlanet *GetPlanet() const { return vP; }
+
 	// Convert from base centric system to local geocentric system
 	VECTOR3 ToLocal(VECTOR3 pos, double *lng=NULL, double *lat=NULL) const;
 
@@ -53,8 +53,8 @@ public:
 	bool RenderSurface (LPDIRECT3DDEVICE9 dev);
 	bool RenderStructures (LPDIRECT3DDEVICE9 dev);
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, float alpha);
-	
-	const SurftileSpec *GetTileDesc() { return tspec; }
+
+	const SurftileSpec *GetTileDesc() const { return tspec; }
 
 private:
 

@@ -59,7 +59,7 @@ extern oapi::Pen  *defpen;
 #define SKPSW_PENCOLOR		0x00000080	// Index 2
 #define SKPSW_TEXTURE		0x000000FF	// Index 2
 
-// Specials: 
+// Specials:
 #define SKPSW_FONT			0x0000FF00	// Index 1
 #define SKPSW_COLORKEY		0x00008000	// Index 1
 #define SKPSW_LENGTH		0x00FF0000	// Index 0
@@ -173,7 +173,7 @@ inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
-	// Note: -0.5f has been substarcted already from x,y data 
+	// Note: -0.5f has been substarcted already from x,y data
 	v.x = _x;
 	v.y = _y;
 	v.nx = _tx;
@@ -562,7 +562,7 @@ public:
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty);
 	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t);
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
-	const char *GetName() { return name; }
+	const char *GetName() const { return name; }
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
 	bool IsStillDrawing() const { return bBeginDraw; }
 	void LoadDefaults();
@@ -632,13 +632,13 @@ private:
 	RECT src;
 
 	D3DSURFACE_DESC	   tgt_desc;
-	LPDIRECT3DSURFACE9 pTgt;		
+	LPDIRECT3DSURFACE9 pTgt;
 	LPDIRECT3DSURFACE9 pDep;
 	LPDIRECT3DTEXTURE9 hTexture;
 	LPDIRECT3DTEXTURE9 hFontTex;
 
 
-	
+
 	// Sketchpad3 --------------------------------------------------------------
 	DWORD RenderConfig;
 	DWORD Enable;
@@ -674,7 +674,7 @@ private:
 	static D3DXHANDLE	eDrawMesh;
 	static D3DXHANDLE	eSketch;
 	static D3DXHANDLE	eWVP;			// Transformation matrix
-	static D3DXHANDLE	eTex0;	
+	static D3DXHANDLE	eTex0;
 	static D3DXHANDLE	eFnt0;
 	static D3DXHANDLE	eNoiseTex;
 	static D3DXHANDLE   eNoiseColor;
@@ -854,7 +854,7 @@ public:
 	void			RenderGroup(DWORD idx);
 	SURFHANDLE		GetTexture(DWORD idx);
 	D3DXCOLOR		GetMaterial(DWORD idx);
-	DWORD			GroupCount() { return nGrp; }
+	DWORD			GroupCount() const { return nGrp; }
 
 private:
 
@@ -924,7 +924,7 @@ public:
 private:
 	int style;
 	WORD nPt;
-	LPDIRECT3DVERTEXBUFFER9 pVB; 
+	LPDIRECT3DVERTEXBUFFER9 pVB;
 };
 
 

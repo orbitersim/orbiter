@@ -16,7 +16,7 @@ template<typename T>
 class QuadTreeNode {
 public:
 	QuadTreeNode (QuadTreeNode<T> *_parent = NULL, T *_entry = NULL);
-	
+
 	~QuadTreeNode ();
 	// Deleting a node
 
@@ -27,7 +27,7 @@ public:
 	inline void SetEntry (T *newentry) { entry = newentry; entry->SetNode (this); }
 	// Transfers ownership of the entry to the tree
 
-	inline QuadTreeNode *Parent() { return parent; }
+	inline QuadTreeNode *Parent() const { return parent; }
 	// Returns the node's parent, or 0 if node is root
 
 	QuadTreeNode *Ancestor(int dlvl);

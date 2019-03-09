@@ -164,7 +164,7 @@ public:
 	const D3D9Light *GetLight(int index) const;
 	const D3D9Light *GetLights() const { return Lights; }
 	DWORD GetLightCount() const { return nLights; }
-	
+
 
 	DWORD GetRenderPass() const;
 	void BeginPass(DWORD dwPass);
@@ -218,7 +218,7 @@ public:
 
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 
-	LPDIRECT3DSURFACE9 GetEnvDepthStencil() { return pEnvDS; }
+	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -266,7 +266,7 @@ public:
 
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
-	
+
 
 	// Custom Camera Interface ======================================================================================================
 	//
@@ -427,7 +427,7 @@ private:
 	std::list<vVessel *> SmapRenderList;
 	std::stack<CAMERA>	CameraStack;
 	std::stack<DWORD>	PassStack;
-	
+
 
 	CAMERA		Camera;
 	D3D9Light*	Lights;
