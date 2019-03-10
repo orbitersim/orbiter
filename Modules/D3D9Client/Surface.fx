@@ -827,13 +827,15 @@ float4 SurfaceTechPS(TileVS frg,
 	else {
 
 		float a = (tex2Dlod(NoiseTexS, float4(frg.texUV.xy, 0, 0)).r - 0.5f) * ATMNOISE;
+		float fShadow = 1.0f;
 
 		// Do we render cloud shadows ?
 		//
 		if (sbShadows) {
 			if (bCloudSh) {
 				float fShd = (vUVCld.x < 1.0 ? fChA : fChB);
-				cTex.rgb *= (1.0 - fShd*fAlpha*0.5f);
+				float fBlue = saturate(cTex.b - (cTex.g + cTex.r)*0.5f)*3.0f + 0.5f;
+				fShadow = saturate(1.0 - fShd*fAlpha*fBlue);
 			}
 		}
 
@@ -851,7 +853,7 @@ float4 SurfaceTechPS(TileVS frg,
 
 		// Terrain, Specular and Night lights
 		float3 sun = max(frg.sunlight.rgb * fShadow, float3(0.9, 0.9, 1.0) * frg.sunlight.w);
-		float3 color = cTex.rgb * saturate(sun + cDiffLocal + cNgt);
+		float3 color = cTex.rgb * saturate(sun*fShadow + cDiffLocal + cNgt);
 		float3 atten = exp2(-vTotOutSct * frg.aux[AUX_RAYDEPTH]);
 
 		// Terrain with gamma correction and attennuation
