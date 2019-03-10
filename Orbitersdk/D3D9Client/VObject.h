@@ -118,11 +118,11 @@ public:
 	 * \return Mesh handle
 	 * \note Currently only vessel visuals return anything here.
 	 */
-	virtual MESHHANDLE GetMesh (UINT idx) const { return NULL; }
+	virtual MESHHANDLE GetMesh (UINT idx) { return NULL; }
 
 	virtual void PreInitObject() { }
 
-	virtual bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin) const { return false; }
+	virtual bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin) { return false; }
 
 	virtual void UpdateBoundingBox();
 	virtual bool IsVisible();
