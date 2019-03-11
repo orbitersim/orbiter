@@ -124,8 +124,6 @@ public:
 	bool HasExtPass();
 	bool const Playback() const { return vessel->Playback(); }
 	class MatMgr * GetMaterialManager() const { return pMatMgr; }
-	const char *GetSkinName() const;
-	void SetSkinName(const char *name);
 
 protected:
 
@@ -134,8 +132,6 @@ protected:
 	void DisposeMeshes();
 	void DelMesh(UINT idx);
 	void ResetMesh(UINT idx);
-	//void InitAnimations();
-	//void InitAnimations(UINT meshidx);
 	void InitNewAnimation(UINT idx);
 	void DisposeAnimations();
 	void DelAnimation(UINT idx);

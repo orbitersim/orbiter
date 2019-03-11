@@ -218,18 +218,12 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
 	const char *cfgdir = OapiExtension::GetConfigDir();
-	const char *skinname = ((vVessel *)vObj)->GetSkinName();
 
 	VESSEL *vessel = oapiGetVesselInterface(hObj);
 	strcpy_s(classname, 256, vessel->GetClassNameA());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
-
-	if (skinname) {
-		sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
-		fopen_s(&file.pFile, path, "r");
-	}
 
 	if (file.IsInvalid()) {
 		sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
@@ -352,16 +346,13 @@ bool MatMgr::SaveConfiguration()
 	if (oapiGetObjectType(hObj)!=OBJTP_VESSEL) return false; 
 
 	VESSEL *vessel = oapiGetVesselInterface(hObj);
-	const char *skinname = ((vVessel *)vObj)->GetSkinName();
 	const char *cfgdir = OapiExtension::GetConfigDir();
 
 	strcpy_s(classname, 256, vessel->GetClassNameA());
 	parse_vessel_classname(classname);
 
 	AutoFile file;
-	
-	if (skinname) sprintf_s(path, 256, "%sGC\\%s_%s.cfg", cfgdir, classname, skinname);
-	else 		  sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
+	sprintf_s(path, 256, "%sGC\\%s.cfg", cfgdir, classname);
 	
 	// If the target file contains configurations those are not loaded into the editor,
 	// Load them before overwriting the file

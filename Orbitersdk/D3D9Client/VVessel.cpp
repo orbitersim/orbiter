@@ -197,21 +197,6 @@ bool vVessel::HasExtPass()
 
 // ============================================================================================
 //
-const char *vVessel::GetSkinName() const
-{
-	if (skinname[0]==0) return NULL;
-	return skinname;
-}
-
-// ============================================================================================
-//
-void vVessel::SetSkinName(const char *name)
-{
-	strncpy_s(skinname, 64, name, 63);
-}
-
-// ============================================================================================
-//
 void vVessel::PreInitObject()
 {
 	if (pMatMgr->LoadConfiguration()) {
@@ -451,7 +436,7 @@ void vVessel::InitNewAnimation (UINT idx)
 {
 	// vessel->GetAnimPtr(&anim) returns invalid data here. New idx is not yet included in anim[]
 	GrowAnimstateBuffer(idx+1);
-	animstate[idx] = -1.0;
+	animstate[idx] = -1e40;
 }
 
 
@@ -529,7 +514,10 @@ void vVessel::UpdateAnimations (int mshidx)
 		//
 		for (UINT i = 0; i < nanim; ++i) {
 			for (UINT k = 0; k < anim[i].ncomp; ++k) {
-				if (anim[i].comp[k]->trans->mesh == mshidx) animstate[i] = anim[i].defstate;
+				if (anim[i].comp[k]->trans->mesh == mshidx) {
+					animstate[i] = anim[i].defstate;
+					if (meshlist[mshidx].mesh) meshlist[mshidx].mesh->ResetTransformations();
+				}
 			}
 		}
 	}
@@ -537,7 +525,7 @@ void vVessel::UpdateAnimations (int mshidx)
 
 		// Initialize new dynamic animations -------------------------------------
 		//
-		for (UINT k=0;k<nanim;k++) if (animstate[k]<-0.5) {
+		for (UINT k=0;k<nanim;k++) if (animstate[k]<-1e30) {
 			animstate[k] = anim[k].defstate;
 			// Call ResetTransformations for all related meshes
 			for (UINT i = 0; i < anim[k].ncomp; ++i) {
