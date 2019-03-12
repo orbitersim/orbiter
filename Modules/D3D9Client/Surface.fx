@@ -758,7 +758,8 @@ float4 SurfaceTechPS(TileVS frg,
 	if (sbMicro) {
 
 		float dist  = frg.aux[AUX_DIST];
-		float step1 = smoothstep(50000, 20000, dist);
+		float step1 = smoothstep(15000, 3000, dist);
+		step1 *= (step1*step1);
 		float3 cFnl = max(0, min(2, 1.333f*(cFar+cMed+cLow)-1));
 
 		// Create normals
@@ -808,34 +809,30 @@ float4 SurfaceTechPS(TileVS frg,
 		float fPlS = saturate(dot(vPlN, vSunDir)*10.0f);			// Shadowing by planet
 
 		float fDNS = dot(nrmW, vSunDir);
-		float fDNR = dot(nrmW, camW);
 		float fDRS = dot(camW, vSunDir);
 
-		float fX = saturate(fDNS);									// Lambertian
-		float fY = 0.05 + saturate(fDNR)*0.4;						// Lommel-Seeliger compensation
-		float fZ = pow(abs(fDRS), 10.0f) * 0.3f;					// Shadow compensation
-		float fLvl = fX * (fZ + rcp(fX + fY)) * fExposure;			// Bake all together
-
+		float fX = pow(saturate(fDNS), 0.33f);						// Lambertian
+		float fZ = pow(abs(fDRS), 5.0f) * 0.3f;					// Shadow compensation
+		float fLvl = fX * (fZ + 1.0f) * fExposure;					// Bake all together
+		
 		fLvl *= (fTrS * fPlS);										// Apply shadows
 
-		float3 color = cTex.rgb * saturate(cSun*max(fLvl, 0) * fShadow + cDiffLocal);
+		float3 color = cTex.rgb * cSun*max(fLvl, 0) * fShadow + cDiffLocal;
 
-		//float3 color = cTex.rgb * max(fLvl, 0);						// Apply sunlight
-
-		return float4(pow(abs(color), fTrGamma), 1.0f);				// Gamma corrention
+		return float4(pow(saturate(color), fTrGamma), 1.0f);			// Gamma corrention
 	}
 	else {
 
 		float a = (tex2Dlod(NoiseTexS, float4(frg.texUV.xy, 0, 0)).r - 0.5f) * ATMNOISE;
-		float fShadow = 1.0f;
+		float fShd = 1.0f;
 
 		// Do we render cloud shadows ?
 		//
 		if (sbShadows) {
 			if (bCloudSh) {
-				float fShd = (vUVCld.x < 1.0 ? fChA : fChB);
+				fShd = (vUVCld.x < 1.0 ? fChA : fChB);
 				float fBlue = saturate(cTex.b - (cTex.g + cTex.r)*0.5f)*3.0f + 0.5f;
-				fShadow = saturate(1.0 - fShd*fAlpha*fBlue);
+				fShd = saturate(1.0 - fShd*fAlpha*fBlue);
 			}
 		}
 
@@ -846,14 +843,9 @@ float4 SurfaceTechPS(TileVS frg,
 			cNgt *= 2.0f;
 		}
 
-		// Lambertian shading term
-		//float fDNS = dot(nrmW, vSunDir);
-
-		//float fSunLight = sqrt(saturate(fDNS) + 0.02f);
-
 		// Terrain, Specular and Night lights
 		float3 sun = max(frg.sunlight.rgb * fShadow, float3(0.9, 0.9, 1.0) * frg.sunlight.w);
-		float3 color = cTex.rgb * saturate(sun*fShadow + cDiffLocal + cNgt);
+		float3 color = cTex.rgb * saturate(sun*fShd + cDiffLocal + cNgt);
 		float3 atten = exp2(-vTotOutSct * frg.aux[AUX_RAYDEPTH]);
 
 		// Terrain with gamma correction and attennuation
