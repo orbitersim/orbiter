@@ -7,7 +7,7 @@
 // ==============================================================
 
 #include "D3D9Config.h"
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 
 static char *cfgfile = "D3D9Client.cfg";
 
@@ -76,6 +76,7 @@ void D3D9Config::Reset ()
 	PresentLocation     = 1;
 	PlanetTileLoadFlags = 0x3;
 	TerrainShadowing	= 1;
+	LabelDisplayFlags   = LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -147,6 +148,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "ShaderDebug", i))				ShaderDebug = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PresentLocation", i))			PresentLocation = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))		PlanetTileLoadFlags = max(1, min(3, i));
+	if (oapiReadItem_int   (hFile, "LabelDisplayFlags", i))         LabelDisplayFlags = max(0, min(3, i));
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
@@ -209,9 +211,10 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "ShaderDebug", ShaderDebug);
 	oapiWriteItem_int	(hFile, "PresentLocation", PresentLocation);
 	oapiWriteItem_int   (hFile, "PlanetTileLoadFlags", PlanetTileLoadFlags);
+	oapiWriteItem_int   (hFile, "LabelDisplayFlags", LabelDisplayFlags);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
-	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);		
-	
+	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);
+
 	oapiCloseFile (hFile, FILE_OUT);
 }

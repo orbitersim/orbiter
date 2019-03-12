@@ -26,6 +26,11 @@ public:
 	void WriteParams();
 	int  MaxLights();
 
+	/// Bit flags for "LabelDisplayFlags" parameter.
+	static const int LABEL_DISPLAY_RECORD = 0x1; ///< Display label "Record" on active recording session
+	static const int LABEL_DISPLAY_REPLAY = 0x2; ///< Display label "Replay" on active playback session
+
+
 	int PlanetPreloadMode;			///< Planet preload mode setting (0=load on demand, 1=preload)
 	int PlanetLoadFrequency;		///< Load frequency for on-demand textures \[Hz\] (1...1000)
 	int Anisotrophy;				///< Anisotropic filtering setting \[factor\] (1...16)
@@ -49,6 +54,7 @@ public:
 	double FrameRate;				///< Framerate limiter
 	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
+	int LabelDisplayFlags;          ///< Label display option flags. For example the "Record" and "Replay" labels (0=all disabled, 1=show record label, 2=show replay label, 3=show both \[default\])
 	int LightConfig;				///< Light emitter configuration
 	int NVPerfHUD;					///< ??? (0,1)
 	int EnvMapSize;					///< Environment map size (64...512)
@@ -73,7 +79,7 @@ public:
 	int BlendMode;
 	int PresentLocation;
 	int MicroBias;					///< Mipmap LOD Bias for surface micro textures
-	int PlanetTileLoadFlags;		///< Planet Tile Load Flags
+	int PlanetTileLoadFlags;		///< Planet Tile Load Flags (0x1=load tiles from directory tree, 0x2=load tiles from compressed archive, 0x3=both \[try directory tree first, then archive\])
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 

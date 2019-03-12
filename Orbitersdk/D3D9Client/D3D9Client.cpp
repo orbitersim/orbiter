@@ -11,7 +11,7 @@
 #define ORBITER_MODULE
 
 #include <set> // ...for Brush-, Pen- and Font-accounting
-#include "orbitersdk.h"
+#include "Orbitersdk.h"
 #include "D3D9Client.h"
 #include "D3D9Config.h"
 #include "D3D9Util.h"
@@ -952,10 +952,11 @@ void D3D9Client::clbkRenderScene()
 
 		VESSEL *hVes = oapiGetFocusInterface();
 
-		if (hVes) {
+		if (hVes && Config->LabelDisplayFlags)
+		{
 			char Label[7] = "";
-			if (hVes->Recording()) strcpy_s(Label, 7, "Record");
-			if (hVes->Playback()) strcpy_s(Label, 7, "Replay");
+			if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_RECORD && hVes->Recording()) strcpy_s(Label, 7, "Record");
+			if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_REPLAY && hVes->Playback()) strcpy_s(Label, 7, "Replay");
 
 			if (Label[0]!=0) {
 				pDevice->BeginScene();
