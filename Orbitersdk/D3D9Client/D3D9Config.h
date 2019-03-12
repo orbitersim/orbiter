@@ -54,7 +54,7 @@ public:
 	double FrameRate;				///< Framerate limiter
 	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
-	int LabelDisplayFlags;          ///< Label display option flags. For example the "Record" and "Replay" labels (0=all disabled, 1=show record label, 2=show replay label, 3=show both \[default\])
+	int LabelDisplayFlags;			///< Label display option flags. For example the "Record" and "Replay" labels (0=all disabled, 1=show record label, 2=show replay label, 3=show both \[default\])
 	int LightConfig;				///< Light emitter configuration
 	int NVPerfHUD;					///< ??? (0,1)
 	int EnvMapSize;					///< Environment map size (64...512)
@@ -74,7 +74,7 @@ public:
 	int TileDebug;					///< Enable tile debugger
 	int TextureMips;				///< Texture mipmap autogen policy
 	int PostProcess;				///< Enable postprocessing effects
-	int MicroMode;			
+	int MicroMode;
 	int MicroFilter;
 	int BlendMode;
 	int PresentLocation;

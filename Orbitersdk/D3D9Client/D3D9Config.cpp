@@ -30,12 +30,12 @@ D3D9Config::~D3D9Config ()
 
 void D3D9Config::Reset ()
 {
-	PlanetPreloadMode   = 0;
-	PlanetLoadFrequency = 20;
+	PlanetPreloadMode	= 0;
+	PlanetLoadFrequency	= 20;
 	Anisotrophy			= 4;
 	SceneAntialias		= 4;
 	DebugLvl			= 1;
-	VCNearPlane		    = 0.1; 
+	VCNearPlane			= 0.1; 
 	LightConfig			= 0;
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
@@ -51,7 +51,7 @@ void D3D9Config::Reset ()
 	SunAngle			= 10.0;
 	BumpAmp				= 1.0;
 	PlanetGlow			= 0.7;
-	EnvMapSize		    = 256;
+	EnvMapSize			= 256;
 	EnvMapMode			= 0;
 	EnvMapFaces			= 1;
 	EnableGlass			= 1;
@@ -73,16 +73,16 @@ void D3D9Config::Reset ()
 	MicroBias			= 3;
 	PostProcess			= 0;
 	ShaderDebug			= 0;
-	PresentLocation     = 1;
-	PlanetTileLoadFlags = 0x3;
+	PresentLocation		= 1;
+	PlanetTileLoadFlags	= 0x3;
 	TerrainShadowing	= 1;
-	LabelDisplayFlags   = LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
+	LabelDisplayFlags	= LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
 
 	SolCfg				= new char[64];   strcpy_s(SolCfg,64,"Sol");
-	DebugFont		    = new char[64];   strcpy_s(DebugFont,64,"Fixed");
+	DebugFont			= new char[64];   strcpy_s(DebugFont,64,"Fixed");
 }
 
 int D3D9Config::MaxLights()
@@ -103,20 +103,20 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "FrameRate", d))				FrameRate = max(0.0, min(300.0, d));
 	if (oapiReadItem_int   (hFile, "EnableLimiter", i))			EnableLimiter = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "CustomCamMode", i))			CustomCamMode = max(0, min(1, i));
-	if (oapiReadItem_int   (hFile, "PlanetPreloadMode", i))		PlanetPreloadMode = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "PlanetTexLoadFreq", i))		PlanetLoadFrequency = max (1, min (1000, i));
-	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max (1, min (16, i));
+	if (oapiReadItem_int   (hFile, "PlanetPreloadMode", i))		PlanetPreloadMode = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "PlanetTexLoadFreq", i))		PlanetLoadFrequency = max(1, min(1000, i));
+	if (oapiReadItem_int   (hFile, "Anisotrophy", i))			Anisotrophy = max(1, min(16, i));
 	if (oapiReadItem_int   (hFile, "SceneAntialias", i))		SceneAntialias = i;
-	if (oapiReadItem_int   (hFile, "SketchpadFont",i))			SketchpadFont =  max (0, min (2, i));
-	if (oapiReadItem_int   (hFile, "PreLoadBaseVisuals", i))	PreLBaseVis =  max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "EnableNormalMapping", i))	UseNormalMap =  max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "NearClipPlaneMode", i))		NearClipPlane =  max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "RwyLightAnimate", i))		RwyLightAnimate =  max (0, min (1, i));
-	if (oapiReadItem_float (hFile, "RwyLightAngle", d))			RwyLightAngle = max(10.0, min(180.0,d));
-	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3,  min(3.0,d));
-	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1,  min(20.0,d));
-	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1,  min(10.0,d));
-	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01,  min(2.0,d));
+	if (oapiReadItem_int   (hFile, "SketchpadFont", i))			SketchpadFont = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "PreLoadBaseVisuals", i))	PreLBaseVis = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "EnableNormalMapping", i))	UseNormalMap = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "NearClipPlaneMode", i))		NearClipPlane = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "RwyLightAnimate", i))		RwyLightAnimate = max(0, min(1, i));
+	if (oapiReadItem_float (hFile, "RwyLightAngle", d))			RwyLightAngle = max(10.0, min(180.0, d));
+	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3, min(3.0, d));
+	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1, min(20.0, d));
+	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1, min(10.0, d));
+	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01, min(2.0, d));
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
@@ -129,29 +129,29 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "TileMipmaps", i))			TileMipmaps = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "TextureMips", i))			TextureMips = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "TileDebug", i))				TileDebug = max(0, min(1, i));
-	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0,  min(100.0,d));
-	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05,  min(1.0,d));
-	if (oapiReadItem_int   (hFile, "DebugLvl", i))					DebugLvl = i;
-	if (oapiReadItem_float (hFile, "VCNearPlane", d))				VCNearPlane = max (-1.0, min (1.0, d));
-	if (oapiReadItem_int   (hFile, "LightCongiguration", i))		LightConfig = max(min(4, i), 0);
-	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))				DisableDriverManagement = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))					NVPerfHUD = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))			DebugFontSize = i;	
-	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout",i))	DisableVisualHelperReadout = max (0, min (1, i));
-	if (oapiReadItem_float (hFile, "LODBias",d))					LODBias = max (-2.0, min (2.0, d));
-	if (oapiReadItem_int   (hFile, "MeshRes",i))					MeshRes = max (0, min (2, i));
-	if (oapiReadItem_int   (hFile, "MicroMode",i))					MicroMode = max (0, min (1, i));
-	if (oapiReadItem_int   (hFile, "MicroFilter",i))				MicroFilter = max (0, min (5, i));
-	if (oapiReadItem_int   (hFile, "BlendMode",i))					BlendMode = max (0, min (2, i));
-	if (oapiReadItem_int   (hFile, "MicroBias", i))					MicroBias = max(0,  min(10, i));
-	if (oapiReadItem_int   (hFile, "PostProcess", i))				PostProcess = max(0, min(2, i));
-	if (oapiReadItem_int   (hFile, "ShaderDebug", i))				ShaderDebug = max(0, min(1, i));
-	if (oapiReadItem_int   (hFile, "PresentLocation", i))			PresentLocation = max(0, min(1, i));
-	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))		PlanetTileLoadFlags = max(1, min(3, i));
-	if (oapiReadItem_int   (hFile, "LabelDisplayFlags", i))         LabelDisplayFlags = max(0, min(3, i));
+	if (oapiReadItem_float (hFile, "StereoSeparation", d))		Separation = max(10.0, min(100.0, d));
+	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05, min(1.0, d));
+	if (oapiReadItem_int   (hFile, "DebugLvl", i))				DebugLvl = i;
+	if (oapiReadItem_float (hFile, "VCNearPlane", d))			VCNearPlane = max(-1.0, min(1.0, d));
+	if (oapiReadItem_int   (hFile, "LightCongiguration", i))	LightConfig = max(min(4, i), 0);
+	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))			DisableDriverManagement = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))				NVPerfHUD = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))		DebugFontSize = i;	
+	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout", i))	DisableVisualHelperReadout = max(0, min(1, i));
+	if (oapiReadItem_float (hFile, "LODBias", d))						LODBias = max(-2.0, min(2.0, d));
+	if (oapiReadItem_int   (hFile, "MeshRes", i))						MeshRes = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "MicroMode", i))						MicroMode = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "MicroFilter", i))					MicroFilter = max(0, min(5, i));
+	if (oapiReadItem_int   (hFile, "BlendMode", i))						BlendMode = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "MicroBias", i))						MicroBias = max(0, min(10, i));
+	if (oapiReadItem_int   (hFile, "PostProcess", i))					PostProcess = max(0, min(2, i));
+	if (oapiReadItem_int   (hFile, "ShaderDebug", i))					ShaderDebug = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "PresentLocation", i))				PresentLocation = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))			PlanetTileLoadFlags = max(1, min(3, i));
+	if (oapiReadItem_int   (hFile, "LabelDisplayFlags", i))				LabelDisplayFlags = max(0, min(3, i));
 
-	oapiReadItem_string (hFile, "SolCfg", SolCfg);	
-	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);		
+	oapiReadItem_string (hFile, "SolCfg", SolCfg);
+	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);
 
 	oapiCloseFile (hFile, FILE_IN_ZEROONFAIL);
 
@@ -184,9 +184,9 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "EnvMapMode", EnvMapMode);
 	oapiWriteItem_int   (hFile, "EnvMapFaces", EnvMapFaces);
 	oapiWriteItem_int   (hFile, "ShadowMapMode", ShadowMapMode);
-	oapiWriteItem_int	(hFile, "ShadowMapFilter", ShadowFilter);
+	oapiWriteItem_int   (hFile, "ShadowMapFilter", ShadowFilter);
 	oapiWriteItem_int   (hFile, "ShadowMapSize", ShadowMapSize);
-	oapiWriteItem_int	(hFile, "TerrainShadowing", TerrainShadowing);
+	oapiWriteItem_int   (hFile, "TerrainShadowing", TerrainShadowing);
 	oapiWriteItem_int   (hFile, "EnableGlass", EnableGlass);
 	oapiWriteItem_int   (hFile, "EnableMeshDbg", EnableMeshDbg);
 	oapiWriteItem_int   (hFile, "TileMipmaps", TileMipmaps);
@@ -207,9 +207,9 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "MicroFilter", MicroFilter);
 	oapiWriteItem_int   (hFile, "BlendMode", BlendMode);
 	oapiWriteItem_int   (hFile, "MicroBias", MicroBias);
-	oapiWriteItem_int	(hFile, "PostProcess", PostProcess);
+	oapiWriteItem_int   (hFile, "PostProcess", PostProcess);
 	oapiWriteItem_int   (hFile, "ShaderDebug", ShaderDebug);
-	oapiWriteItem_int	(hFile, "PresentLocation", PresentLocation);
+	oapiWriteItem_int   (hFile, "PresentLocation", PresentLocation);
 	oapiWriteItem_int   (hFile, "PlanetTileLoadFlags", PlanetTileLoadFlags);
 	oapiWriteItem_int   (hFile, "LabelDisplayFlags", LabelDisplayFlags);
 
