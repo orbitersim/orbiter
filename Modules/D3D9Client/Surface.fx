@@ -394,6 +394,16 @@ void LocalLights(
 
 
 // -------------------------------------------------------------------------------------------------------------
+// "HDR"
+//
+float3 Light_fx2(float3 x)
+{
+	//return saturate(x);
+	return x * rsqrt(1.0f + x*x) * 1.4f;
+}
+
+
+// -------------------------------------------------------------------------------------------------------------
 // Henyey-Greenstein Phase function
 // x = (1-g^2)/(4pi), y = 1+g^2, w = -2*g
 //
@@ -817,7 +827,7 @@ float4 SurfaceTechPS(TileVS frg,
 		
 		fLvl *= (fTrS * fPlS);										// Apply shadows
 
-		float3 color = cTex.rgb * cSun*max(fLvl, 0) * fShadow + cDiffLocal;
+		float3 color = cTex.rgb * Light_fx2(cSun*max(fLvl, 0) * fShadow + cDiffLocal);
 
 		return float4(pow(saturate(color), fTrGamma), 1.0f);			// Gamma corrention
 	}
@@ -845,7 +855,7 @@ float4 SurfaceTechPS(TileVS frg,
 
 		// Terrain, Specular and Night lights
 		float3 sun = max(frg.sunlight.rgb * fShadow, float3(0.9, 0.9, 1.0) * frg.sunlight.w);
-		float3 color = cTex.rgb * saturate(sun*fShd + cDiffLocal + cNgt);
+		float3 color = cTex.rgb * Light_fx2(sun*fShd + cDiffLocal) + cNgt;
 		float3 atten = exp2(-vTotOutSct * frg.aux[AUX_RAYDEPTH]);
 
 		// Terrain with gamma correction and attennuation
