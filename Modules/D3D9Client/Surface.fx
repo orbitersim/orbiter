@@ -399,7 +399,8 @@ void LocalLights(
 float3 Light_fx2(float3 x)
 {
 	//return saturate(x);
-	return x * rsqrt(1.0f + x*x) * 1.4f;
+	//return x * rsqrt(1.0f + x*x) * 1.4f;
+	return 2.0*x / (1.0f + x);
 }
 
 
@@ -822,7 +823,7 @@ float4 SurfaceTechPS(TileVS frg,
 		float fDRS = dot(camW, vSunDir);
 
 		float fX = pow(saturate(fDNS), 0.33f);						// Lambertian
-		float fZ = pow(abs(fDRS), 5.0f) * 0.3f;					// Shadow compensation
+		float fZ = pow(abs(fDRS), 5.0f) * 0.5f;						// Shadow compensation
 		float fLvl = fX * (fZ + 1.0f) * fExposure;					// Bake all together
 		
 		fLvl *= (fTrS * fPlS);										// Apply shadows
