@@ -2150,6 +2150,29 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 {
 	_TRACE;
 
+	// Process Local Light Sources -------------------------------------
+	// And toggle external lights on	
+	//
+	if (bLocalLight) {
+
+		ClearLocalLights();
+
+		VOBJREC *pv = NULL;
+		for (pv = vobjFirst; pv; pv = pv->next) {
+			if (!pv->vobj->IsActive()) continue;
+			OBJHANDLE hObj = pv->vobj->Object();
+			if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+				VESSEL *vessel = oapiGetVesselInterface(hObj);
+				DWORD nemitter = vessel->LightEmitterCount();
+				for (DWORD j = 0; j < nemitter; j++) {
+					const LightEmitter *em = vessel->GetLightEmitter(j);
+					if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, pv->vobj);
+				}
+			}
+		}
+	}
+
+
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
