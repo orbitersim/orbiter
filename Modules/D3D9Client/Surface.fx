@@ -643,7 +643,7 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 
 	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.12f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
 
-	outVS.aux[AUX_RAYDEPTH] = fDRay;
+	outVS.aux[AUX_RAYDEPTH] = clamp(fDRay, 0, 10);
 
 	// Multiply in-coming light with phase and light scattering factors
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
