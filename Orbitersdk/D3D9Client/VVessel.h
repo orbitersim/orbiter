@@ -194,7 +194,6 @@ private:
 	UINT nanim;				// number of animations
 	double tCheckLight;		// time for next lighting check
 	float ExhaustLength;
-	char skinname[64];
 
 	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;
 };

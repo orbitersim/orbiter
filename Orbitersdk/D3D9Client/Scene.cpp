@@ -2099,11 +2099,10 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	if (SmapRenderList.size() == 0) return -1;	// Nothing to render
 
 
-	float depth = mxd - mnd;
+	smap.depth = (mxd - mnd) + 10.0f;
 
-	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, 50.0f, 60.0f + depth);
-
-	smap.depth = depth;
+	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, 50.0f, 50.0f + smap.depth);
+	
 	smap.dist = mnd - 55.0f;
 
 	D3DXVECTOR3 lp = pos + ld * smap.dist;

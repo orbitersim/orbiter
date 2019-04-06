@@ -46,6 +46,8 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 
 #define VCLASS_AMSO			1
 #define VCLASS_XR2			2
+#define VCLASS_ULTRA		3
+#define VCLASS_SSU_CENTAUR	4
 
 struct _LightList {
 	int		idx;

@@ -52,11 +52,12 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	vClass = 0;
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
-	skinname[0] = NULL;
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
 	
-	if (strncmp(vessel->GetClassNameA(), "AMSO", 4) == 0) vClass = VCLASS_AMSO;
-	if (strncmp(vessel->GetClassNameA(), "XR2Ravenstar", 12) == 0) vClass = VCLASS_XR2;
+	if (strcmp(vessel->GetClassNameA(), "AMSO") == 0) vClass = VCLASS_AMSO;
+	if (strcmp(vessel->GetClassNameA(), "XR2Ravenstar") == 0) vClass = VCLASS_XR2;
+	if (strcmp(vessel->GetClassNameA(), "SpaceShuttleUltra") == 0) vClass = VCLASS_ULTRA;
+	if (strcmp(vessel->GetClassNameA(), "SSU_CentaurGPrime") == 0) vClass = VCLASS_SSU_CENTAUR;
 
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
@@ -1209,6 +1210,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DXMatrixIdentity(&mEnv);
 		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
 
+		scn->SetCameraFrustumLimits(0.25, 1e8);
 		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
 		scn->RenderSecondaryScene(this, true, flags);
 			
