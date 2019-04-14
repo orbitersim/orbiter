@@ -2111,7 +2111,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	D3DXMatrixMultiply(&smap.mViewProj, &smap.mView, &smap.mProj);
 
 	float rs = float(ViewH()) * rad / (float(GetTanAp()) * D3DXVec3Length(&pos));
-	float lod = log2f(float(Config->ShadowMapSize) / (rs));
+	float lod = log2f(float(Config->ShadowMapSize) / (rs*1.5f));
 
 	smap.lod = min(int(round(lod)), SHM_LOD_COUNT - 1);
 	smap.lod = max(smap.lod, 0);

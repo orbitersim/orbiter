@@ -195,7 +195,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ----------------------------------------------------------------------
 
 #if SHDMAP > 0
-	cSun *= ComputeShadow(frg.shdH, dLN, sc);
+	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
 
 
@@ -453,7 +453,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		// ----------------------------------------------------------------------
 
 #if SHDMAP > 0
-		float fShadow = ComputeShadow(frg.shdH, dLN, sc);
+		float fShadow = smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 		dLN *= fShadow;
 #endif
 

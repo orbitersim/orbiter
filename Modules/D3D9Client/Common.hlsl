@@ -256,7 +256,7 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 	float kr = gSHD[0] * KERNEL_RADIUS;
 	float dx = rsqrt(1.0 - dLN*dLN);
 	float ofs = kr / (dLN * dx);
-	float omx = min(0.07 + ofs, 0.3);
+	float omx = min(0.05 + ofs, 0.5);
 
 	if (gBaseBuilding) {
 
@@ -268,7 +268,6 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 		// It's a vessel
 		float  pd = shdH.z + omx * gSHD[3];
 		fShadow = SampleShadowsEx(sp, pd, sc);
-		//fShadow = smoothstep(0.3f, 1.0f, fShadow);
 	}
 
 	return 1 - fShadow;
