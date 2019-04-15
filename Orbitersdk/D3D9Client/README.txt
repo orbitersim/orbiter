@@ -41,6 +41,12 @@ To be able to compile D3D9 graphics client from the sources, you need:
   build the client. It can be downloaded at Microsoft Download Center at
     https://www.microsoft.com/en-us/download/details.aspx?id=6812
 
+  If you have an existing Microsoft Visual C++ 2010 Redistributable installed
+  on your computer, you may receive an "S1023" error when you install the June
+  2010 DirectX SDK.
+  To resolve this issue follow the instructions from
+    https://support.microsoft.com/en-us/help/2728613/s1023-error-when-you-install-the-directx-sdk-june-2010
+
   To run the client later on you also need the DirectX End-User Runtimes (June
   2010 or newer). These can be downloaded at Microsoft Download Center at
     https://www.microsoft.com/en-us/download/details.aspx?id=8109
