@@ -187,11 +187,11 @@ popd
 ::set SERVER=
 ::set USER=
 ::set TGTPATH=
+if not exist ftp_helper.bat goto exit_ok
 echo --------------------------
 set /p GOBUILD=Publish a Build [Y/N] ? 
 if %GOBUILD%==N goto exit_ok
 if %GOBUILD%==n goto exit_ok
-if not exist ftp_helper.bat goto exit_ok
 call ftp_helper.bat
 set /p STA=Stable or Beta [S/B] ? 
 set TYPE=beta
