@@ -6,7 +6,7 @@ This document uses Visual Studio 2015 (Community Edition) as the main compiler,
 but it should be very similar with Visual Studio 2017. As new versions will
 appear (Visual Studio 2019) and time goes by there might be some difference in
 the procedures.
-In case your current Visual Studio versions needs some changes procedures,
+In case your current Visual Studio versions needs some changed procedures,
 please notify the developers at the orbiter-forums "D3D9Client Development"
 thread (https://www.orbiter-forum.com/showthread.php?t=18431).
 
@@ -15,6 +15,18 @@ thread (https://www.orbiter-forum.com/showthread.php?t=18431).
 ----------------------
 
 To be able to compile D3D9 graphics client from the sources, you need:
+
+* SVN (Subversion / TortoiseSVN)
+  Many scripts (located in Utils/D3D9Client) will use 'svn' command to get
+  their job done[1]. So the easiest way is to have TortoiseSVN installed.
+  Make sure you enable the "command line client tools" when running the setup.
+  TortoiseSVN can be downloaded from
+    https://tortoisesvn.net/
+
+  [1] Strictly speaking, subversion is not *absolutely* needed to build the
+      client; and getting the needed headers, libraries and resources can be
+      done "by hand" as well. In this case the required files must be obtained
+      from Orbiter 2016 (ZIP package) rsp. the Orbiter BETA install.
 
 * The fitting Orbiter libraries and headers.
   As a minimal build environment you only need the files from
