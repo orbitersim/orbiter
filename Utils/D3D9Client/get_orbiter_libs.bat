@@ -12,7 +12,7 @@ setlocal
 
 :: --- Setup
 set BASE_DIR=..\..
-set URL=svn://orbiter-forum.com/orbiter/Orbitersdk
+set URL=svn://svn.orbiter-forum.com/orbiter/Orbitersdk
 set REV=HEAD
 set OUT_DIR=Orbitersdk
 
