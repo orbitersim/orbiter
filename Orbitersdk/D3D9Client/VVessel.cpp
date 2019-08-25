@@ -636,6 +636,9 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	if (scn->GetRenderPass() == RENDERPASS_ENVCAM) bCockpit = bVC = false;
 	// Always render exterior view for envmaps
 
+	if (scn->GetRenderPass() == RENDERPASS_SHADOWMAP) bCockpit = bVC = false;
+	// Always render exterior view for envmaps
+
 	static VCHUDSPEC hudspec_;
 	const VCHUDSPEC *hudspec = &hudspec_;
 	static bool gotHUDSpec(false);

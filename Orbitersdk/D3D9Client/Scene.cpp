@@ -1176,6 +1176,8 @@ void Scene::RenderMainScene()
 		D3DXVECTOR3 fo_pos = vFocus->GetBoundingSpherePosDX();
 		float fo_rad = vFocus->GetBoundingSphereRadius();
 
+		vFocus->bStencilShadow = false;
+
 		D3DXVECTOR3 pos = fo_pos;
 		float rad = fo_rad;
 
@@ -1189,18 +1191,29 @@ void Scene::RenderMainScene()
 			float bs_rad = v->GetBoundingSphereRadius();
 
 			D3DXVECTOR3 bc = bs_pos - fo_pos;
+			float z = D3DXVec3Dot(&ld, &bc);
+			bc -= ld * z;
 
-			if (D3DXVec3Length(&bc) < (bs_rad + fo_rad)) {
+			if ( (D3DXVec3Length(&bc) < (bs_rad + fo_rad)) && (fabs(z)<1e3) ) {
+
+				v->bStencilShadow = false;
 
 				bc = bs_pos - pos;
 				bc -= ld * D3DXVec3Dot(&ld, &bc);
 
-				float dst = D3DXVec3Length(&bc);
+				float dst = D3DXVec3Length(&bc);		
 				float nrd = (rad + dst + bs_rad) * 0.5f;
 
-				if (dst > 0.01f) pos += bc * ((nrd - rad) / dst);
+				if (nrd < rad) continue;
 
-				rad = nrd;
+				if (nrd < bs_rad) {
+					pos = bs_pos;
+					rad = bs_rad;
+				}
+				else {
+					if (dst > 0.01f) pos += bc * ((nrd - rad) / dst);
+					rad = nrd;
+				}
 			}
 		}
 
@@ -2074,7 +2087,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 // ===========================================================================================
 //
-int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
+int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal)
 {
 	rad *= 1.02f;
 
@@ -2128,8 +2141,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad)
 	BeginPass(RENDERPASS_SHADOWMAP);
 
 	while(SmapRenderList.size()>0) {
-		SmapRenderList.front()->bStencilShadow = false;
-		SmapRenderList.front()->Render(pDevice);
+		SmapRenderList.front()->Render(pDevice, bInternal);
 		SmapRenderList.pop_front();
 	}
 
