@@ -107,7 +107,6 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ----------------------------------------------------------------------
 
 	float3 CamD = normalize(frg.camW);
-	float3 cMrtlBase = (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb;
 	float3 cSun = saturate(gSun.Color);
 
 
@@ -253,12 +252,8 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 	cDiffLocal += gAtmColor.rgb * max(0, angl*gGlowConst);
 
-
-	// Compute received diffuse light
-	float3 diffLight = Light_fx(dLN * cSun + cDiffLocal);
-
 	// Bake material props and lights together
-	float3 diffBaked = (gMtrl.diffuse.rgb*diffLight) + cMrtlBase;
+	float3 diffBaked = Light_fx(gMtrl.diffuse.rgb * (dLN * cSun + cDiffLocal) + gMtrl.emissive.rgb + gMtrl.ambient.rgb*gSun.Ambient);
 
 #if LMODE > 0
 	cSun = Light_fx(cSun + cSpecLocal);	// Add local light sources
@@ -471,8 +466,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
 		cDiffLocal += gAtmColor.rgb * max(0, angl*gGlowConst);
 
-
-		cDiff.rgb *= ( (gMtrl.diffuse.rgb*Light_fx(dLN * cSun + cDiffLocal)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb );
+		cDiff.rgb *= saturate( (gMtrl.diffuse.rgb*(dLN * cSun + cDiffLocal)) + (gMtrl.ambient.rgb*gSun.Ambient) + gMtrl.emissive.rgb );
 
 		float3 CamD = normalize(frg.camW);
 		float3 HlfW = normalize(CamD - gSun.Dir);
@@ -486,7 +480,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		if (dLN == 0) fSun = 0;
 
 #if LMODE > 0
-		float3 specLight = Light_fx((fSun * cSun) + cSpecLocal);
+		float3 specLight = saturate((fSun * cSun) + cSpecLocal);
 #else
 		float3 specLight = (fSun * cSun);
 #endif
