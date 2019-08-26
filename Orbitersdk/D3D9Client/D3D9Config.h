@@ -52,6 +52,7 @@ public:
 	double BumpAmp;					///< Bump map amplification setting (0.1...10.0, default=1)
 	double PlanetGlow;				///< Intensity of planet glow effect (0.01...2.0, default=0.7)
 	double FrameRate;				///< Framerate limiter
+	double OrbitalShadowMult;		///< Multiplier for cloudshadows for Orbital flight
 	int EnableLimiter;				///< Enable framerate limiter
 	int DebugLvl;					///< Level of debug output 'verbosity'. Higher values create more detailed output (0...4, default=1)
 	int LabelDisplayFlags;			///< Label display option flags. For example the "Record" and "Replay" labels (0=all disabled, 1=show record label, 2=show replay label, 3=show both \[default\])

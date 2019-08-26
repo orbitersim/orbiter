@@ -842,8 +842,8 @@ float4 SurfaceTechPS(TileVS frg,
 		if (sbShadows) {
 			if (bCloudSh) {
 				fShd = (vUVCld.x < 1.0 ? fChA : fChB);
-				float fBlue = saturate(cTex.b - (cTex.g + cTex.r)*0.5f)*3.0f + 0.5f;
-				fShd = saturate(1.0 - fShd*fAlpha*fBlue);
+				//float fBlue = saturate(cTex.b - (cTex.g + cTex.r)*0.5f)*3.0f + 0.5f;
+				fShd = saturate(1.0 - fShd*fAlpha); // *fBlue);
 			}
 		}
 

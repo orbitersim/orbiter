@@ -662,6 +662,8 @@ void SurfTile::Render ()
 
 	if (vPlanet->CameraAltitude()>20e3) has_ripples = false;
 
+	double ca = 1.0 + saturate(vPlanet->CameraAltitude() / 150e3) * Config->OrbitalShadowMult;
+
 	HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(0, 0, 1, 1)));
 
 
@@ -707,7 +709,7 @@ void SurfTile::Render ()
 
 				// Feed uv-offset and uv-range to the shaders
 				HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(float(u0), float(v0), float(u1-u0), float(v1-v0))));
-				HR(Shader->SetFloat(TileManager2Base::sfAlpha, 1.0f));
+				HR(Shader->SetFloat(TileManager2Base::sfAlpha, float(ca)));
 				HR(Shader->SetTexture(TileManager2Base::stCloud, ctile->Tex()));
 
 				// Texture uv range extends to another tile

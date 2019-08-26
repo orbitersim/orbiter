@@ -30,6 +30,7 @@ D3D9Config::~D3D9Config ()
 
 void D3D9Config::Reset ()
 {
+	OrbitalShadowMult   = 0.85;
 	PlanetPreloadMode	= 0;
 	PlanetLoadFrequency	= 20;
 	Anisotrophy			= 4;
@@ -149,6 +150,8 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "PresentLocation", i))				PresentLocation = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))			PlanetTileLoadFlags = max(1, min(3, i));
 	if (oapiReadItem_int   (hFile, "LabelDisplayFlags", i))				LabelDisplayFlags = max(0, min(3, i));
+	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
+	
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);
@@ -212,6 +215,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "PresentLocation", PresentLocation);
 	oapiWriteItem_int   (hFile, "PlanetTileLoadFlags", PlanetTileLoadFlags);
 	oapiWriteItem_int   (hFile, "LabelDisplayFlags", LabelDisplayFlags);
+	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);
