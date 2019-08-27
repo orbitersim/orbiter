@@ -723,7 +723,7 @@ float4 SurfaceTechPS(TileVS frg,
 	float3 vVrt = vCameraPos - frg.camW;		// Geo-centric pixel position
 	//float3 vPlN = normalize(vVrt);			// Planet mean normal
 	//float  fRad = dot(vVrt, vPlN);			// Pixel Geo-distance
-	float3 cNgt = 3.0f * (saturate(frg.aux[AUX_NIGHT]) * fNight);
+	float3 cNgt = saturate(frg.aux[AUX_NIGHT]) * fNight;
 
 
 	// Render with specular ripples and fresnel water -------------------------
@@ -851,12 +851,14 @@ float4 SurfaceTechPS(TileVS frg,
 		if (bLights) {
 			cMsk.b = (cMsk.b > 0.15f ? cMsk.b : 0.0f); // Blue dirt filter
 			cNgt *= cMsk.rgb;
-			cNgt *= 2.0f;
 		}
+
+		float q = saturate(fCameraAlt * 1e-5);
+
 
 		// Terrain, Specular and Night lights
 		float3 sun = max(frg.sunlight.rgb * fShadow, float3(0.9, 0.9, 1.0) * frg.sunlight.w);
-		float3 color = cTex.rgb * Light_fx2(sun*fShd + cDiffLocal) + cNgt;
+		float3 color = cTex.rgb * Light_fx2(sun*fShd + cDiffLocal + cNgt*(1-q)) + (cNgt*q*3.0f);
 		float3 atten = exp2(-vTotOutSct * frg.aux[AUX_RAYDEPTH]);
 
 		// Terrain with gamma correction and attennuation
