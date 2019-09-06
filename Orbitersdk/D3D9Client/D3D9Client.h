@@ -1017,6 +1017,7 @@ public:
 	void				MakeGenericProcCall(DWORD id);
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 	void				clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf);
+	void				HackFriendlyHack();
 
 	// ==================================================================
 	//

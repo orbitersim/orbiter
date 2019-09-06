@@ -877,6 +877,20 @@ void D3D9Client::PopRenderTargets()
 
 // ==============================================================
 
+void D3D9Client::HackFriendlyHack()
+{
+	// Try to make the application more hackable by setting the D3D Device in 'more' expected state.
+
+	D3DSURFACE_DESC desc;
+	GetBackBuffer()->GetDesc(&desc);
+	D3DVIEWPORT9 vp = { 0, 0, desc.Width, desc.Height, 0.0f, 1.0f };
+	pDevice->SetViewport(&vp);
+	pDevice->SetRenderTarget(0, GetBackBuffer());
+	pDevice->SetDepthStencilSurface(GetDepthStencil());
+}
+
+// ==============================================================
+
 LPDIRECT3DSURFACE9 D3D9Client::GetTopDepthStencil()
 {
 	if (RenderStack.empty()) return NULL;

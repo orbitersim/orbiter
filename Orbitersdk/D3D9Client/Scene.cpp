@@ -1894,6 +1894,8 @@ surfLabelsActive = false;
 
 	gc->PopRenderTargets();	// Overlay
 	gc->PopRenderTargets();	// Main Scene
+
+	gc->HackFriendlyHack();
 	gc->EndScene();
 
 	dwTurn++;
