@@ -73,7 +73,7 @@ goto :eof
 
 :: --- Extend PATH locally, so doxygen can use it ---
 :extend_path
-set graphviz_path=%graphviz_path:"=%
+set graphviz_path=%graphviz_path:"=%\bin
 ::"
 set "PATH=%path%;%graphviz_path%"
 
