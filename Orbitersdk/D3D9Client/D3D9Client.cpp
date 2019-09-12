@@ -854,8 +854,7 @@ void D3D9Client::PopRenderTargets()
 	RenderStack.pop_front();
 
 	if (RenderStack.empty()) {
-		pDevice->SetRenderTarget(0, NULL);
-		pDevice->SetDepthStencilSurface(NULL);
+		HackFriendlyHack();
 		LogDbg("Orange", "POP: Last one out ------------------------------------");
 		return;
 	}

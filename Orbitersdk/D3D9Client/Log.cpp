@@ -135,8 +135,8 @@ void LogTrace(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>3) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=DarkGrey> ", my_ctime(), th);
 
@@ -149,8 +149,8 @@ void LogTrace(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -159,8 +159,8 @@ void LogAlw(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
 
@@ -175,8 +175,8 @@ void LogAlw(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -185,8 +185,9 @@ void LogDbg(const char *color, const char *format, ...)
 {
 	if (d3d9client_log == NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>2) {
+		EnterCriticalSection(&LogCrit);
+
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=%s> ", my_ctime(), th, color);
 
@@ -201,8 +202,9 @@ void LogDbg(const char *color, const char *format, ...)
 		fputs(ErrBuf, d3d9client_log);
 		fputs("</font><br>\n", d3d9client_log);
 		fflush(d3d9client_log);
+
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 //-------------------------------------------------------------------------------------------
@@ -212,8 +214,8 @@ void LogOapi(const char *format, ...)
 
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Olive> ", my_ctime(), th);
 
@@ -228,8 +230,8 @@ void LogOapi(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 // ---------------------------------------------------
@@ -238,8 +240,8 @@ void LogErr(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>0) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Red> [ERROR] ", my_ctime(), th);
 
@@ -254,8 +256,8 @@ void LogErr(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 // ---------------------------------------------------
@@ -264,8 +266,8 @@ void LogBlu(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>1) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#1E90FF> ", my_ctime(), th);
 
@@ -278,8 +280,8 @@ void LogBlu(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 // ---------------------------------------------------
@@ -288,8 +290,8 @@ void LogWrn(const char *format, ...)
 {
 	if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>1) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
 
@@ -303,8 +305,8 @@ void LogWrn(const char *format, ...)
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
 		oapiWriteLogV("D3D9: WARNING: %s", ErrBuf);
+		LeaveCriticalSection(&LogCrit);
 	}
-	LeaveCriticalSection(&LogCrit);
 }
 
 // ---------------------------------------------------
@@ -313,8 +315,8 @@ void LogOk(const char *format, ...)
 {
 	/*if (d3d9client_log==NULL) return;
 	if (iLine>LOG_MAX_LINES) return;
-	EnterCriticalSection(&LogCrit);
 	if (uEnableLog>2) {
+		EnterCriticalSection(&LogCrit);
 		DWORD th = GetCurrentThreadId();
 		fprintf(d3d9client_log,"<font color=Gray>(%s)(0x%lX)</font><font color=#00FF00> ", my_ctime(), th);
 
@@ -327,6 +329,6 @@ void LogOk(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
-	}
-	LeaveCriticalSection(&LogCrit);*/
+		LeaveCriticalSection(&LogCrit);
+	}*/
 }
