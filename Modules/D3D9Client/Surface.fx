@@ -59,7 +59,7 @@ struct TileVS
 struct CloudVS
 {
 	float4 posH     : POSITION0;
-	float2 texUV    : TEXCOORD0;  // Texture coordinate
+	float4 texUV    : TEXCOORD0;  // Texture coordinate
 	float3 atten    : COLOR0;     // Attennuation
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
 	float  fade     : TEXCOORD1;
@@ -122,6 +122,7 @@ uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tCloud;
 uniform extern texture   tCloud2;
+uniform extern texture   tCloudMicro;
 uniform extern texture   tNoise;			//
 uniform extern texture	 tOcean;			// Ocean Texture
 uniform extern texture	 tEnvMap;
@@ -219,6 +220,17 @@ sampler EnvMapS = sampler_state
 	MipFilter = LINEAR;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
+};
+
+sampler CloudMicroS = sampler_state
+{
+	Texture = <tCloudMicro>;
+	MinFilter = MICRO_FILTER;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = MICRO_ANISOTROPY;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 sampler MicroAS = sampler_state
@@ -947,8 +959,8 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 
 float4 CloudTechPS(CloudVS frg) : COLOR
 {
-	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV,0,0)).r - 0.5f) * ATMNOISE;
-	float4 cTex = tex2D(DiffTexS, frg.texUV);
+	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV.xy,0,0)).r - 0.5f) * ATMNOISE;
+	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
 	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
 	return float4(saturate(color + a), cTex.a*saturate(frg.fade*fCloudInts*fCloudInts));
 }
