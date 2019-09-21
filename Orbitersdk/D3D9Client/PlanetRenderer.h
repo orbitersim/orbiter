@@ -72,9 +72,10 @@ public:
 	static D3DXHANDLE svWater;
 	static D3DXHANDLE svSunDir;
 	static D3DXHANDLE svCloudOff;
+	static D3DXHANDLE svMicroOff;
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
-	static D3DXHANDLE svMapUVOffset;
+	static D3DXHANDLE svPolarAxis;
 	static D3DXHANDLE svMicroScale0;
 	static D3DXHANDLE svMicroScale1;
 	static D3DXHANDLE svMicroScale2;

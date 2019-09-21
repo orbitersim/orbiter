@@ -94,10 +94,11 @@ public:
 
 	float GetBoundingSphereRad() const;
 	D3DXVECTOR3 GetBoundingSpherePos() const;
-	D3DXVECTOR4 GetTexRangeDX () const;
+	D3DXVECTOR4 GetTexRangeDX (const TEXCRDRANGE2 *subrange) const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range
 
+	bool GetParentMicroTexRange(TEXCRDRANGE2 *subrange);
 	bool GetParentSubTexRange (TEXCRDRANGE2 *subrange);
 	// Returns the texture range that allows to access the appropriate subregion of the
 	// parent's texture
@@ -149,12 +150,14 @@ protected:
 	int lvl;                   // tile resolution level
 	int ilat;                  // latitude index
 	int ilng;                  // longitude index
+	int imicrolvl;			   // Micro texture level
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
 	LPDIRECT3DTEXTURE9 pPreSrf;
 	LPDIRECT3DTEXTURE9 pPreMsk;
 	bool bMipmaps;			   // create mipmaps for the tile
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
 	TEXCRDRANGE2 texrange;     // texture coordinate subrange (if using ancestor subtexture)
+	TEXCRDRANGE2 microrange;   // texture coordinate subrange (if using ancestor subtexture)
 	VBMESH *mesh;              // vertex-buffered tile mesh
 	VECTOR3 cnt;               // tile centre in local planet coords
 	VECTOR3 vtxshift;          // tile frame shift of origin from planet centre

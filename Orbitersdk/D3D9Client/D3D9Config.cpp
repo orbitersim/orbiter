@@ -78,6 +78,7 @@ void D3D9Config::Reset ()
 	PlanetTileLoadFlags	= 0x3;
 	TerrainShadowing	= 1;
 	LabelDisplayFlags	= LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
+	CloudMicro			= 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -145,6 +146,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "MicroFilter", i))					MicroFilter = max(0, min(5, i));
 	if (oapiReadItem_int   (hFile, "BlendMode", i))						BlendMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "MicroBias", i))						MicroBias = max(0, min(10, i));
+	if (oapiReadItem_int   (hFile, "CloudMicro", i))					CloudMicro = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PostProcess", i))					PostProcess = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "ShaderDebug", i))					ShaderDebug = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "PresentLocation", i))				PresentLocation = max(0, min(1, i));
@@ -210,6 +212,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "MicroFilter", MicroFilter);
 	oapiWriteItem_int   (hFile, "BlendMode", BlendMode);
 	oapiWriteItem_int   (hFile, "MicroBias", MicroBias);
+	oapiWriteItem_int	(hFile, "CloudMicro", CloudMicro);
 	oapiWriteItem_int   (hFile, "PostProcess", PostProcess);
 	oapiWriteItem_int   (hFile, "ShaderDebug", ShaderDebug);
 	oapiWriteItem_int   (hFile, "PresentLocation", PresentLocation);

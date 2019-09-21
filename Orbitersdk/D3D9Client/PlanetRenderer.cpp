@@ -41,9 +41,10 @@ D3DXHANDLE PlanetRenderer::svTexOff = NULL;
 D3DXHANDLE PlanetRenderer::svWater = NULL;
 D3DXHANDLE PlanetRenderer::svSunDir = NULL;
 D3DXHANDLE PlanetRenderer::svCloudOff = NULL;
+D3DXHANDLE PlanetRenderer::svMicroOff = NULL;
 D3DXHANDLE PlanetRenderer::svTangent = NULL;
 D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
-D3DXHANDLE PlanetRenderer::svMapUVOffset = NULL;
+D3DXHANDLE PlanetRenderer::svPolarAxis = NULL;
 D3DXHANDLE PlanetRenderer::svMicroScale0 = NULL;
 D3DXHANDLE PlanetRenderer::svMicroScale1 = NULL;
 D3DXHANDLE PlanetRenderer::svMicroScale2 = NULL;
@@ -191,6 +192,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	if (bShadows) macro[m++].Name = "_CLOUDSHADOWS";
 	// ------------------------------------------------------------------------------
 	if (Config->ShadowMapMode) macro[m++].Name = "_SHDMAP";
+	// ------------------------------------------------------------------------------
+	if (Config->CloudMicro) macro[m++].Name = "_CLOUDMICRO";
 
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
 	
@@ -247,11 +250,12 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	// ------------------------------------------------------------  
 	svTexOff			= pShader->GetParameterByName(0,"vTexOff");
 	svCloudOff			= pShader->GetParameterByName(0,"vCloudOff");
+	svMicroOff			= pShader->GetParameterByName(0,"vMicroOff");
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
 	svTangent			= pShader->GetParameterByName(0,"vTangent");
 	svBiTangent			= pShader->GetParameterByName(0,"vBiTangent");
-	svMapUVOffset		= pShader->GetParameterByName(0,"vMapUVOffset");
+	svPolarAxis			= pShader->GetParameterByName(0,"vPolarAxis");
 	svMicroScale0		= pShader->GetParameterByName(0,"vMSc0");	
 	svMicroScale1		= pShader->GetParameterByName(0,"vMSc1");	
 	svMicroScale2		= pShader->GetParameterByName(0,"vMSc2");
@@ -412,14 +416,14 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	oapiGetRotationMatrix(hPlanet, &mRot);
 	VECTOR3 vCPos = pPlanet->PosFromCamera();
 	VECTOR3 vNrm = mul(mRot, pPlanet->ReferencePoint());
-	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
+	VECTOR3 vRot = unit(mul(mRot, _V(0, 1, 0)));
 	VECTOR3 vTan = unit(crossp(vRot, vNrm));
 	VECTOR3 vBiT = unit(crossp(vTan ,vNrm));
 
 	// ---------------------------------------------------------------------
 	HR(Shader()->SetValue(svTangent,     &D3DXVEC(vTan), sizeof(D3DXVECTOR3)));
 	HR(Shader()->SetValue(svBiTangent,   &D3DXVEC(vBiT), sizeof(D3DXVECTOR3)));
-	HR(Shader()->SetValue(svMapUVOffset, &D3DXVEC(vNrm-vCPos), sizeof(D3DXVECTOR3)));
+	HR(Shader()->SetValue(svPolarAxis,	 &D3DXVEC(vRot), sizeof(D3DXVECTOR3)));
 
 	// Initialize atmospheric rendering ---------------------------------------------------
 	//
@@ -450,7 +454,7 @@ void PlanetRenderer::InitializeScattering(vPlanet *pPlanet)
 	double ur = pr + ha;								// Atmosphere upper radius (Skydome radius)
 	double ub = pr + ha*8.0;
 	double hd = 0;
-	double tm = fmod(oapiGetSimTime(), 256.0);
+	double tm = fmod(oapiGetSimTime(), 3600.0f);
 
 	if (cr>mr) hd = sqrt(cr*cr - mr*mr);				// Camera to horizon distance
 

@@ -32,7 +32,7 @@ int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
 Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng),
   lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
-  texrange(fullrange), cnt(Centre()),
+  texrange(fullrange), microrange(fullrange), cnt(Centre()),
   mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL),
   FrameId(0),
   mean_elev(0.0),
@@ -160,9 +160,46 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 
 // -----------------------------------------------------------------------
 
-D3DXVECTOR4 Tile::GetTexRangeDX () const
+bool Tile::GetParentMicroTexRange(TEXCRDRANGE2 *subrange)
 {
-	return D3DXVECTOR4(texrange.tumin, texrange.tvmin, texrange.tumax-texrange.tumin, texrange.tvmax-texrange.tvmin);
+
+	int dlev = imicrolvl - Level();
+
+
+	if (dlev >= 0) {	
+		int f = (1 << dlev);
+		subrange->tumax = float(f);
+		subrange->tvmax = float(f);	
+		return true;
+	}
+
+	Tile *parent = getParent();
+	if (!parent) return false; // haven't got a parent
+
+	if (!(ilat & 1)) { // left column
+		subrange->tvmin = parent->microrange.tvmin;
+		subrange->tvmax = (parent->microrange.tvmin + parent->microrange.tvmax)*0.5f;
+	}
+	else {         // right column
+		subrange->tvmin = (parent->microrange.tvmin + parent->microrange.tvmax)*0.5f;
+		subrange->tvmax = parent->microrange.tvmax;
+	}
+	if (!(ilng & 1)) { // bottom row
+		subrange->tumin = parent->microrange.tumin;
+		subrange->tumax = (parent->microrange.tumin + parent->microrange.tumax)*0.5f;
+	}
+	else {         // top row
+		subrange->tumin = (parent->microrange.tumin + parent->microrange.tumax)*0.5f;
+		subrange->tumax = parent->microrange.tumax;
+	}
+	return true;
+}
+
+// -----------------------------------------------------------------------
+
+D3DXVECTOR4 Tile::GetTexRangeDX (const TEXCRDRANGE2 *subrange) const
+{
+	return D3DXVECTOR4(subrange->tumin, subrange->tvmin, subrange->tumax - subrange->tumin, subrange->tvmax - subrange->tvmin);
 }
 
 // -----------------------------------------------------------------------

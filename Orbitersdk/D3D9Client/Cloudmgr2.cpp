@@ -23,6 +23,7 @@ CloudTile::CloudTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 {
 	cmgr = static_cast<TileManager2<CloudTile>* > (_mgr);
 	node = 0;
+	imicrolvl = 7;	// Cloud micro resolution level
 	mean_elev = mgr->GetPlanet()->prm.cloudalt;
 	if (Config->TileMipmaps == 2) bMipmaps = true;
 	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
@@ -38,6 +39,10 @@ CloudTile::~CloudTile ()
 
 void CloudTile::PreLoad()
 {
+
+	// Configure microtexture range for "Water texture" and "Cloud microtexture".
+	GetParentMicroTexRange(&microrange);
+	
 	bool ok = false;
 
 	if (cmgr->DoLoadIndividualFiles(0)) { // try loading from individual tile file
@@ -102,7 +107,8 @@ void CloudTile::Render ()
 	//
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
-	HR(Shader->SetVector(TileManager2Base::svCloudOff, &GetTexRangeDX()));
+	HR(Shader->SetVector(TileManager2Base::svCloudOff, &GetTexRangeDX(&texrange)));
+	HR(Shader->SetVector(TileManager2Base::svMicroOff, &GetTexRangeDX(&microrange)));
 	// ---------------------------------------------------------------------------------------------------
 
 	Shader->CommitChanges();

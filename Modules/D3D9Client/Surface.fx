@@ -45,7 +45,7 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
 struct TileVS
 {
 	float4 posH     : POSITION0;
-	float4 texUV    : TEXCOORD0;  // Texture coordinate
+	float2 texUV    : TEXCOORD0;  // Texture coordinate
 	float4 aux      : TEXCOORD1;  // Night lights
 	float3 camW		: TEXCOORD2;
 	float3 nrmW		: TEXCOORD3;
@@ -59,10 +59,10 @@ struct TileVS
 struct CloudVS
 {
 	float4 posH     : POSITION0;
-	float4 texUV    : TEXCOORD0;  // Texture coordinate
+	float2 texUV    : TEXCOORD0;  // Texture coordinate
 	float3 atten    : COLOR0;     // Attennuation
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
-	float  fade     : TEXCOORD1;
+	float2 fade     : TEXCOORD2;
 };
 
 struct HazeVS
@@ -88,7 +88,7 @@ struct CelSphereVS
 
 uniform extern Light	 sLights[4];		// Local light sources
 
-uniform extern float4x4  mLVP;
+uniform extern float4x4  mLVP;				// Light View Projection
 uniform extern float4x4  mWorld;		    // World matrix
 uniform extern float4x4  mViewProj;			// Combined View and Projection matrix
 // ------------------------------------------------------------
@@ -97,12 +97,13 @@ uniform extern float4    vMSc1;				// Micro Texture B scale factors
 uniform extern float4    vMSc2;				// Micro texture C scale factors
 uniform extern float4    vTexOff;			// Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vCloudOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
+uniform extern float4    vMicroOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power)
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float3    vTangent;			// Unit Vector
 uniform extern float3    vBiTangent;		// Unit Vector
-uniform extern float3    vMapUVOffset;		//
-uniform extern float4    vSHD;
+uniform extern float3    vPolarAxis;		// North Pole
+uniform extern float4    vSHD;				// ShadowMap Params
 // ------------------------------------------------------------
 uniform extern float     fDistScale;		// UNUSED: Scale factor
 uniform extern float 	 fAlpha;			// Cloud shodow alpha
@@ -302,7 +303,7 @@ uniform extern float	fAtmGamma;			// Atmosphere gamma control
 uniform extern float	fInvParameter;		// Inverse of optical parameter 1.0/AngleCoEff(0)
 uniform extern float	fAmbient;			// Planet specific ambient level pre-multiplied with camera altitude factor
 uniform extern float	fGlobalAmb;
-uniform extern float	fTime;				//
+uniform extern float	fTime;				// Loop from 0 to 3600 (sec)
 uniform extern bool		bInSpace;			// Camera in the space (i.e. fCameraAlt>fHorizonAlt)
 uniform extern bool		bOnOff;
 
@@ -594,7 +595,6 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 #endif
 
 	outVS.texUV.xy = vrt.tex0.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
-	outVS.texUV.zw = vrt.tex0.xy;						// Note: vrt.tex1 range [0 to 1] for all tiles
 
 	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
 	float3 vPlN  = normalize(vVrt);
@@ -614,13 +614,6 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 	// If no atmosphere skip the rest
 	if (sbNoAtmo) return outVS;
 
-	// Create UV coords for water
-	if (sbRipples) {
-		outVS.texUV.zw  = float2(dot(vTangent, vPosW+vMapUVOffset), dot(vBiTangent, vPosW+vMapUVOffset));
-		outVS.texUV.zw *= 1e-3f; // Water scale factor
-		outVS.texUV.zw += 64.0f;
-		outVS.texUV.z  += fTime*0.008f;
-	}
 
 	// Camara altitude dependency multiplier for ambient color of atmosphere
 	//float fAmb = max(saturate(fNgt+0.9f)*fAmbient, fGlobalAmb) * 0.08f;
@@ -680,19 +673,21 @@ float4 SurfaceTechPS(TileVS frg,
 {
 
 	float2 vUVSrf = frg.texUV.xy * vTexOff.zw + vTexOff.xy;
-	float2 vUVCld;
+	float2 vUVWtr = frg.texUV.xy * vMicroOff.zw + vMicroOff.xy;
+	float2 vUVCld = frg.texUV.xy * vCloudOff.zw + vCloudOff.xy;
+
+	vUVWtr.x += fTime*60.0f/3600.0f;
 
 	float4 cMsk = tex2D(MaskTexS, vUVSrf);
 	float3 cNrm;
 	float fChA, fChB;
 
-	if (sbRipples) cNrm = tex2D(OceaTexS, frg.texUV.zw).xyz;
+	if (sbRipples) cNrm = tex2D(OceaTexS, vUVWtr).xyz;
 
 	float4 cTex = tex2D(DiffTexS, vUVSrf);
 
 	if (sbShadows) {
 		if (bCloudSh) {
-			vUVCld = frg.texUV.xy * vCloudOff.zw + vCloudOff.xy;
 			fChA = tex2D(CloudTexS, vUVCld).a;
 			fChB = tex2D(Cloud2TexS, vUVCld - float2(1, 0)).a;
 		}
@@ -753,7 +748,8 @@ float4 SurfaceTechPS(TileVS frg,
 
 			float3 vPlN = normalize(vVrt);			// Planet mean normal
 
-			cNrm = (cNrm - 0.5f) * fInts * 5.0f;
+			cNrm.xy = clamp((cNrm.xy - 0.5f) * fInts * 5.0f, -1, 1);
+
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.570796);
 
 			// Compute world space normal
@@ -915,7 +911,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 
 	float fAmb = max(saturate(fTrA*8.0*fAmbient), fGlobalAmb) * 0.25f;
 
-	float  fDPR = dot(vPlN, vRay);					// Dot mean normal, viewing ray
+	float  fDPR = dot(vPlN, vRay);						// Dot mean normal, viewing ray
 	float  fDNR = dot(vNrmW, vRay);
 	float  fDNS = dot(vNrmW, vSunDir);					// Dot vertex normal, sun direction
 	float  fDRS = dot(vRay, vSunDir);					// Dot viewing ray, sun direction
@@ -945,7 +941,8 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 
 	// Compute surface texture color attennuation (i.e. extinction term)
 	outVS.atten = exp2(-vTotOutSct * fDRay * 0.33f);
-	outVS.fade = exp2(-fDRay * 0.5f) * 2.0f;
+	outVS.fade.x = exp2(-fDRay * 0.5f) * 2.0f;
+	outVS.fade.y = 1.0f - abs(dot(vPolarAxis, vPlN));
 
 	// Multiply in-coming light with phase and light scattering factors
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
@@ -959,10 +956,23 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 
 float4 CloudTechPS(CloudVS frg) : COLOR
 {
-	float a = (tex2Dlod(NoiseTexS, float4(frg.texUV.xy,0,0)).r - 0.5f) * ATMNOISE;
-	float4 cTex = tex2D(DiffTexS, frg.texUV.xy);
+	float2 vUVMic = frg.texUV.xy * vMicroOff.zw + vMicroOff.xy;
+	float2 vUVTex = frg.texUV.xy;
+
+	float a = (tex2Dlod(NoiseTexS, float4(vUVTex,0,0)).r - 0.5f) * ATMNOISE;
+
+	float4 cTex = tex2D(DiffTexS, vUVTex);
+	float4 cMic = tex2D(CloudMicroS, vUVMic);
+	
+#if defined(_CLOUDMICRO)
+		float f = cTex.a;
+		float g = lerp(1, cMic.a, frg.fade.y);
+		cTex.a = lerp(g * f, f, sqrt(f));
+#endif
+
 	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
-	return float4(saturate(color + a), cTex.a*saturate(frg.fade*fCloudInts*fCloudInts));
+
+	return float4(saturate(color + a), cTex.a*saturate(frg.fade.x*fCloudInts*fCloudInts));
 }
 
 

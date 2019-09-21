@@ -74,6 +74,7 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	htex = NULL;
 	has_elevfile = false;
 	label = NULL;
+	imicrolvl = 14;	// Water resolution level
 	MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
 	if (Config->TileMipmaps == 2) bMipmaps = true;
 	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
@@ -101,6 +102,9 @@ void SurfTile::PreLoad()
 	char fname[128];
 	char path[MAX_PATH];
 	bool ok = false;
+
+	// Configure microtexture range for "Water texture" and "Cloud microtexture".
+	GetParentMicroTexRange(&microrange);
 
 	// Load surface texture
 
@@ -753,7 +757,8 @@ void SurfTile::Render ()
 	// ---------------------------------------------------------------------------------------------------
 	HR(Shader->SetTexture(TileManager2Base::stDiff, tex));
 	HR(Shader->SetTexture(TileManager2Base::stMask, ltex));
-	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX()));
+	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX(&texrange)));
+	HR(Shader->SetVector(TileManager2Base::svMicroOff, &GetTexRangeDX(&microrange)));
 	// ---------------------------------------------------------------------------------------------------
 	//HR(Shader->SetInt(TileManager2Base::siTileLvl, int(bIntersect)));
 	// ---------------------------------------------------------------------------------------------------

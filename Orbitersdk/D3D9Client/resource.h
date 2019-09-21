@@ -164,3 +164,4 @@
 #define IDC_SELFSHADOWS                         2158
 #define IDC_SHADOWFILTER                        2159
 #define IDC_TERRAIN                             2160
+#define IDC_CLOUDMICRO                          2161
