@@ -850,8 +850,8 @@ float4 SurfaceTechPS(TileVS frg,
 		if (sbShadows) {
 			if (bCloudSh) {
 				fShd = (vUVCld.x < 1.0 ? fChA : fChB);
-				//float fBlue = saturate(cTex.b - (cTex.g + cTex.r)*0.5f)*3.0f + 0.5f;
-				fShd = saturate(1.0 - fShd*fAlpha); // *fBlue);
+				fShd *= fShd;
+				fShd = saturate(1.0 - fShd*fAlpha);
 			}
 		}
 
@@ -967,7 +967,12 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 #if defined(_CLOUDMICRO)
 		float f = cTex.a;
 		float g = lerp(1, cMic.a, frg.fade.y);
-		cTex.a = lerp(g * f, f, sqrt(f));
+		//float h = (g + 2.0f)*0.333f;
+		float h = (g + 4.0f)*0.2f;
+		//float h = (g + 8.0f)*0.111f;
+		//float h = (g + 16.0f)*0.058f;
+		//g *= g;
+		cTex.a = saturate(lerp(g, h, f) * f);
 #endif
 
 	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
