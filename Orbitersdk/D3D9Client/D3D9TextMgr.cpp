@@ -44,19 +44,18 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	tex_h      (),
 	sharing    (),
 	spacing    (),
-	scaling	   (1.0f),
 	linespacing(),
 	max_len    (),
 	rotation   (),
+	scaling    (1.0f),
 	charset    (ANSI_CHARSET),
+	first      (32),
 	halign     (),
 	valign     (),
 	pDev       (pDevice),
 	pTex       (NULL),
-	pTgtSurf   (),
 	FontData   (NULL),
-	wfont      (NULL),
-	first      (32)
+	wfont      (NULL)
 {
 	ZeroMemory(&tm, sizeof(TEXTMETRIC));
 	ZeroMemory(&lf, sizeof(LOGFONT));	
