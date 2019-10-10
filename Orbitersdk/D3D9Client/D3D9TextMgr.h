@@ -116,7 +116,6 @@ private:
 
 	LPDIRECT3DDEVICE9	pDev;
 	LPDIRECT3DTEXTURE9	pTex;
-	D3D9ClientSurface	*pTgtSurf;
 	D3D9FontData		*FontData;  ///< Array of font data information ( [c - first] )
 	TEXTMETRIC			tm;         ///< Font attributes
 	LOGFONT             lf;         ///< Font attributes

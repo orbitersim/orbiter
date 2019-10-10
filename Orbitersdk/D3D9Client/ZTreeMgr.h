@@ -47,8 +47,8 @@ class TreeFileHeader {
 public:
 	TreeFileHeader ();
 
-	inline	size_t TreeFileHeader::fwrite (FILE *f);
-					bool   TreeFileHeader::fread (FILE *f);
+	inline	size_t fwrite (FILE *f);
+			bool   fread (FILE *f);
 
 private:
 	DWORD   magic;       ///< file ID and version

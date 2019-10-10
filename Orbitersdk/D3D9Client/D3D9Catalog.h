@@ -21,7 +21,7 @@ public:
 	size_t	CountEntries () const	{ return _data.size(); }
 	bool	Remove (T entry)		{ return _data.erase(entry) == 1; }
 
-	typedef std::set<typename T> TSet;
+	typedef std::set<T> TSet;
 	typedef typename TSet::iterator iterator;
 	typedef typename TSet::const_iterator const_iterator;
 

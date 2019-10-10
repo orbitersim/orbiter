@@ -22,10 +22,10 @@
 #include <d3dx9.h>
 #include "D3D9Catalog.h"
 #include "GraphicsAPI.h"
-#include "D3D9util.h"
+#include "D3D9Util.h"
 #include <stdio.h>
 #include <assert.h>
-#include <OrbiterAPI.h>
+#include "OrbiterAPI.h"
 #include "D3D9Frame.h"
 #include "nvapi.h"
 #include "gcConst.h"

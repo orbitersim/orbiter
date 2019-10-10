@@ -13,7 +13,7 @@
 #ifndef __TILEMGR2_IMP_HPP
 #define __TILEMGR2_IMP_HPP
 
-#include "tilemgr2.h"
+#include "Tilemgr2.h"
 #include "DebugControls.h"
 #include "Sketchpad2.h"
 
