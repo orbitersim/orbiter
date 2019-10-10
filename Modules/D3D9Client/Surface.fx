@@ -676,7 +676,7 @@ float4 SurfaceTechPS(TileVS frg,
 	float2 vUVWtr = frg.texUV.xy * vMicroOff.zw + vMicroOff.xy;
 	float2 vUVCld = frg.texUV.xy * vCloudOff.zw + vCloudOff.xy;
 
-	vUVWtr.x += fTime*60.0f/3600.0f;
+	vUVWtr.x += fTime/180.0f;
 
 	float4 cMsk = tex2D(MaskTexS, vUVSrf);
 	float3 cNrm;
