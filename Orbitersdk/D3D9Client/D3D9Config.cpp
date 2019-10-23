@@ -36,7 +36,7 @@ void D3D9Config::Reset ()
 	Anisotrophy			= 4;
 	SceneAntialias		= 4;
 	DebugLvl			= 1;
-	VCNearPlane			= 0.1; 
+	VCNearPlane			= 0.1;
 	LightConfig			= 0;
 	NearClipPlane		= 0;
 	NVPerfHUD			= 0;
@@ -135,10 +135,11 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "StereoConvergence", d))		Convergence = max(0.05, min(1.0, d));
 	if (oapiReadItem_int   (hFile, "DebugLvl", i))				DebugLvl = i;
 	if (oapiReadItem_float (hFile, "VCNearPlane", d))			VCNearPlane = max(-1.0, min(1.0, d));
-	if (oapiReadItem_int   (hFile, "LightCongiguration", i))	LightConfig = max(min(4, i), 0);
+	if (oapiReadItem_int   (hFile, "LightCongiguration", i))	LightConfig = max(min(4, i), 0); // Old typo stored?
+	if (oapiReadItem_int   (hFile, "LightConfiguration", i))	LightConfig = max(min(4, i), 0); // ...this will override it anyhow
 	if (oapiReadItem_int   (hFile, "DisableDrvMgm", i))			DisableDriverManagement = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "NVPerfHUD", i))				NVPerfHUD = max(0, min(1, i));
-	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))		DebugFontSize = i;	
+	if (oapiReadItem_int   (hFile, "DebugLineFontSize", i))		DebugFontSize = i;
 	if (oapiReadItem_int   (hFile, "DisableVisualHelperReadout", i))	DisableVisualHelperReadout = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "LODBias", d))						LODBias = max(-2.0, min(2.0, d));
 	if (oapiReadItem_int   (hFile, "MeshRes", i))						MeshRes = max(0, min(2, i));
@@ -153,7 +154,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))			PlanetTileLoadFlags = max(1, min(3, i));
 	if (oapiReadItem_int   (hFile, "LabelDisplayFlags", i))				LabelDisplayFlags = max(0, min(3, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
-	
+
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);
@@ -183,8 +184,8 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "RwyLightAngle", RwyLightAngle);
 	oapiWriteItem_float (hFile, "RwyBrightness", RwyBrightness);
 	oapiWriteItem_float (hFile, "NightLightsAngle", SunAngle);
-	oapiWriteItem_float (hFile, "BumpMapAmplitude", BumpAmp);	
-	oapiWriteItem_float (hFile, "PlanetGlow", PlanetGlow);	
+	oapiWriteItem_float (hFile, "BumpMapAmplitude", BumpAmp);
+	oapiWriteItem_float (hFile, "PlanetGlow", PlanetGlow);
 	oapiWriteItem_int   (hFile, "EnvMapSize", EnvMapSize);
 	oapiWriteItem_int   (hFile, "EnvMapMode", EnvMapMode);
 	oapiWriteItem_int   (hFile, "EnvMapFaces", EnvMapFaces);
@@ -201,10 +202,10 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_float (hFile, "StereoConvergence", Convergence);
 	oapiWriteItem_int   (hFile, "DebugLvl", DebugLvl);
 	oapiWriteItem_float (hFile, "VCNearPlane", VCNearPlane);
-	oapiWriteItem_int   (hFile, "LightCongiguration", LightConfig);
+	oapiWriteItem_int   (hFile, "LightConfiguration", LightConfig);
 	oapiWriteItem_int   (hFile, "DisableDrvMgm", DisableDriverManagement);
 	oapiWriteItem_int   (hFile, "NVPerfHUD", NVPerfHUD);
-	oapiWriteItem_int   (hFile, "DebugLineFontSize", DebugFontSize);	
+	oapiWriteItem_int   (hFile, "DebugLineFontSize", DebugFontSize);
 	oapiWriteItem_int   (hFile, "DisableVisualHelperReadout", DisableVisualHelperReadout);
 	oapiWriteItem_float (hFile, "LODBias", LODBias);
 	oapiWriteItem_int   (hFile, "MeshRes", MeshRes);
