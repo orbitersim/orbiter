@@ -43,13 +43,17 @@ D3D9Mesh *vObject::hStockMesh[16] = {};
 
 // ===========================================================================================
 //
-vObject::vObject(OBJHANDLE _hObj, const Scene *scene): VisObject (_hObj)
+vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
+	: VisObject (_hObj)
+	, active        (true)
+	, bBSRecompute  (true)
+	, bStencilShadow(true)
+	, bOmit         (false)
+	, scn( (Scene *)scene) // should be const!
+	, sunapprad()
+	, sundst()
 {
 	_TRACE;
-	active = true;
-	bBSRecompute = true;
-	bStencilShadow = true;
-	scn  = (Scene *)scene;
 	D3DXMatrixIdentity(&mWorld);
 	size = oapiGetSize(hObj);
 	cdist = 0.0;
@@ -68,15 +72,15 @@ vObject *vObject::Create(OBJHANDLE _hObj, const Scene *scene)
 
 	int objtp = oapiGetObjectType(_hObj);
 	switch (objtp) {
-		case OBJTP_VESSEL:	    return new vVessel (_hObj, scene); 
-		case OBJTP_PLANET:		return new vPlanet (_hObj, scene); 
-		case OBJTP_STAR:		return new vStar   (_hObj, scene); 
-		case OBJTP_SURFBASE:	return new vBase   (_hObj, scene); 
+		case OBJTP_VESSEL:	    return new vVessel (_hObj, scene);
+		case OBJTP_PLANET:		return new vPlanet (_hObj, scene);
+		case OBJTP_STAR:		return new vStar   (_hObj, scene);
+		case OBJTP_SURFBASE:	return new vBase   (_hObj, scene);
 		default:
 		{
 			LogErr("Unidentified Object Type %d in 0x%X",oapiGetObjectType(_hObj),_hObj);
 			return new vObject (_hObj, scene);
-		}		
+		}
 	}
 }
 
@@ -121,7 +125,7 @@ void vObject::Activate(bool isactive)
 // ===========================================================================================
 //
 DWORD vObject::GetMeshCount()
-{ 
+{
 	return 0;
 }
 
@@ -151,14 +155,14 @@ bool vObject::Update(bool bMainScene)
 	assert(bMainScene==true);
 
 	MATRIX3 grot;
-	
+
 	oapiGetRotationMatrix(hObj, &grot);
 	oapiGetGlobalPos(hObj, &gpos);
-	
+
 	axis   = mul(grot, _V(0, 1, 0));
 	cpos   = gpos - scn->GetCameraGPos();
 	cdist  = length(cpos);
-		
+
 	// Create double precision world matrix
 	//
 	dmWorld = _M(grot.m11, grot.m21, grot.m31, 0,
@@ -179,7 +183,7 @@ bool vObject::Update(bool bMainScene)
 	sundir = unit(sundir-gpos);
 	sunapprad = oapiGetSize(hSun) / sundst;
 	CheckResolution();
-	
+
 
 	return true;
 }
@@ -189,7 +193,7 @@ bool vObject::Update(bool bMainScene)
 //
 void vObject::UpdateBoundingBox()
 {
-	
+
 }
 
 // ===========================================================================================
@@ -247,7 +251,7 @@ bool vObject::IsVisible()
 		if (beta<alfa) return true;
 
 		double resl = brad - trad * cos(beta-alfa);
-		
+
 		if (resl>rad) return false;
 	}
 
@@ -291,7 +295,7 @@ void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, 
 void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 {
 	if (hObj==NULL) return;
-	
+
 	VECTOR3 gpos,spos;
 	oapiGetGlobalPos(hObj, &gpos);
 	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &spos);
@@ -302,7 +306,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	double rad = oapiGetSize(hObj);
 	double alt = max(1.0, cdist-rad);
 	double apr = rad * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));
-	
+
 	double ds = 10000.0 / cdist;
 	double s = 2.0;
 	if (apr<0.3) s = 1.0;
@@ -319,7 +323,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	float ints = float(sqrt(1.0+dotp(unit(gpos-spos), unit(cpos)))) * 1.0f;
 
 	if (ints>1.0f) ints=1.0f;
-	
+
 	D3DXCOLOR color(float(albedo.x)*ints, float(albedo.y)*ints, float(albedo.z)*ints, 1.0f);
 
 	D3D9Effect::RenderSpot(1.0f, &color, (const LPD3DXMATRIX)&W, blobtex[0]);
@@ -343,7 +347,7 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector
 
     VECTOR3 pos = gpos - camp;
 	VECTOR3 rot = crossp(pos, vector);
-   
+
     VECTOR3 y = mul (grot, unit(vector)) * size;
     VECTOR3 x = mul (grot, unit(rot)) * size;
     VECTOR3 z = mul (grot, unit(crossp(vector, rot))) * size;
@@ -359,7 +363,7 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector
     W._43 = float(pos.z);
 
 	float len = float(length(vector));
-	
+
 	if (bLog) len = max(0.0f, 13.0f+log(len)) * lscale / size;
 	else      len = len * lscale / size;
 

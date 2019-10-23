@@ -122,7 +122,7 @@ public:
 	 * \param Config A reference to the configuration class, to get the \ref
 	 *   D3D9Config::DisableVisualHelperReadout value.
 	 */
-	static void GlobalInit(D3D9Config &Config);
+	static void GlobalInit(const D3D9Config &Config);
 
 	/**
 	 * \brief Handles the read-out of values from an opened 'visual helpers'

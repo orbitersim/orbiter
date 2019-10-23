@@ -1030,7 +1030,7 @@ public:
 	void				PopRenderTargets();
 	LPDIRECT3DSURFACE9  GetTopDepthStencil();
 	LPDIRECT3DSURFACE9  GetTopRenderTarget();
-	class D3D9Pad *		GetTopInterface();
+	class D3D9Pad *		GetTopInterface() const;
 
 
 protected:

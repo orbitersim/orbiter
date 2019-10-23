@@ -53,7 +53,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
-	
+
 	if (strcmp(vessel->GetClassNameA(), "AMSO") == 0) vClass = VCLASS_AMSO;
 	if (strcmp(vessel->GetClassNameA(), "XR2Ravenstar") == 0) vClass = VCLASS_XR2;
 	if (strcmp(vessel->GetClassNameA(), "SpaceShuttleUltra") == 0) vClass = VCLASS_ULTRA;
@@ -62,7 +62,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
 	LoadMeshes();
-	
+
 	// Initialize static animations
 	//
 	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
@@ -76,7 +76,7 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 vVessel::~vVessel ()
 {
 	SAFE_DELETE(pMatMgr);
-	
+
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) SAFE_RELEASE(pEnv[i]);
 
 	LogAlw("Deleting Vessel Visual 0x%X ...",this);
@@ -482,7 +482,7 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 	// nanim should stay the same, but just in case
 	// GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
-	if (reset == 1) for (UINT i=0;i<nanim;++i) animstate[i] = anim[i].defstate; // reset to default animation state	
+	if (reset == 1) for (UINT i=0;i<nanim;++i) animstate[i] = anim[i].defstate; // reset to default animation state
 }
 
 
@@ -508,7 +508,7 @@ void vVessel::UpdateAnimations (int mshidx)
 		LogErr("vessel->GetAnimPtr(&anim) returns unexpected value in UpdateAnimations %u vs %u", x, nanim);
 		GrowAnimstateBuffer(x);
 	}
-	
+
 	if (mshidx>=0) {
 
 		// Reset animations when a mesh is added to a vessel --------------------
@@ -643,7 +643,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	const VCHUDSPEC *hudspec = &hudspec_;
 	static bool gotHUDSpec(false);
 	const VCMFDSPEC *mfdspec[MAXMFD] = { NULL };
-	
+
 	if (vessel->GetAtmPressure()>1.0) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false);
 	else							  D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);
 
@@ -737,7 +737,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 			if (internalpass) meshlist[i].mesh->Render(pWT, RENDER_VC, NULL, 0);
 			else 			  meshlist[i].mesh->Render(pWT, RENDER_VESSEL, pEnv, nEnv);
 		}
-		
+
 
 		// render VC HUD and MFDs ------------------------------------------------------------------------
 		//
@@ -1181,7 +1181,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		}
 	}
 
-	
+
 	// -----------------------------------------------------------------------------------------------
 	//
 	VECTOR3 gpos;
@@ -1198,7 +1198,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	D3DXVECTOR3 dir, up;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 
-	
+
 	for (DWORD i=0;i<cnt;i++) {
 
 		assert(SUCCEEDED(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
@@ -1216,9 +1216,9 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		scn->SetCameraFrustumLimits(0.25, 1e8);
 		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
 		scn->RenderSecondaryScene(this, true, flags);
-			
+
 		SAFE_RELEASE(pSrf);
-		
+
 		iFace++;
 		if (iFace >= 6) break;
 	}

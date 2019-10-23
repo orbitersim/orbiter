@@ -113,7 +113,7 @@ bool Tile::CreateTexture(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DTEXTURE9 pPre, LPDIRE
 		pPre->GetLevelDesc(0, &desc);
 		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, pPre->GetLevelCount(), 0, desc.Format, D3DPOOL_DEFAULT, pTex));
 		HR(pDev->UpdateTexture(pPre, (*pTex)));
-		SAFE_RELEASE(pPre);
+		pPre->Release();//SAFE_RELEASE(pPre);
 		return true;
 	}
 	return false;
@@ -166,10 +166,10 @@ bool Tile::GetParentMicroTexRange(TEXCRDRANGE2 *subrange)
 	int dlev = imicrolvl - Level();
 
 
-	if (dlev >= 0) {	
+	if (dlev >= 0) {
 		int f = (1 << dlev);
 		subrange->tumax = float(f);
-		subrange->tvmax = float(f);	
+		subrange->tvmax = float(f);
 		return true;
 	}
 

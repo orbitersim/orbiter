@@ -29,12 +29,13 @@
 // ================================================================================================
 //
 ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, const char *_entry, const char *ppf)
+	: pDevice(pDev)
+	, pVSConst(NULL)
+	, pPSConst(NULL)
+	, hVP(NULL)
+	, desc()
+	, iVP()
 {
-	pVSConst = NULL;
-	pPSConst = NULL;
-	pDevice  = pDev;
-	
-	hVP = NULL;
 	for (int i=0;i<16;i++) pTextures[i].hTex = NULL;
 	for (int i=0;i<4;i++) pRtg[i] = pRtgBak[i] = NULL;
 
@@ -42,7 +43,7 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 	pPixel   = CompilePixelShader(pDevice, _file, _entry, ppf, &pPSConst);
 
 	if (pVSConst) hVP = pVSConst->GetConstantByName(NULL, "mVP");
-	
+
 	if (!hVP) LogErr("Failed to get ImageProcessing::hVP handle");
 
 	strcpy_s(file, 256, _file);
@@ -90,7 +91,7 @@ int ImageProcessing::FindDefine(const char *_key)
 bool ImageProcessing::SetupViewPort()
 {
 
-	// Check that the first render target is valid 
+	// Check that the first render target is valid
 	//
 	if (pRtg[0]) pRtg[0]->GetDesc(&desc);
 	else {
@@ -100,7 +101,7 @@ bool ImageProcessing::SetupViewPort()
 
 	D3DSURFACE_DESC ds;
 
-	// Check that all additional render targets have the same size 
+	// Check that all additional render targets have the same size
 	//
 	for (int i=1;i<4;i++) {
 		if (pRtg[i]) {
@@ -176,7 +177,7 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 
 	static WORD cIndex[6] = {0, 2, 1, 0, 3, 2};
 
-	// Set render targets ----------------------------------------------------- 
+	// Set render targets -----------------------------------------------------
 	//
 	for (int i=0;i<4;i++) {
 		pDevice->GetRenderTarget(i, &pRtgBak[i]);
@@ -212,14 +213,14 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 		HR(pDevice->SetSamplerState(idx, D3DSAMP_MAGFILTER, filter));
 		HR(pDevice->SetSamplerState(idx, D3DSAMP_MINFILTER, filter));
 		HR(pDevice->SetSamplerState(idx, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
-		
+
 		HR(pDevice->SetTexture(idx, pTextures[idx].hTex));
 	}
 
 	// Execute ----------------------------------------------------------------
 	//
 	if (!bInScene) HR(pDevice->BeginScene());
-	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));	
+	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
 	if (!bInScene) HR(pDevice->EndScene());
 
 	// Disconnect render targets ----------------------------------------------
@@ -262,7 +263,7 @@ void ImageProcessing::SetFloat(const char *var, const void *val, int bytes)
 void ImageProcessing::SetInt(const char *var, const int *val, int bytes)
 {
 	D3DXHANDLE hVar = pPSConst->GetConstantByName(NULL, var);
-	
+
 	if (!hVar) {
 		//LogErr("IPInterface::SetInt() Invalid variable name [%s]. File[%s], Entrypoint[%s]", var, file, entry);
 		return;

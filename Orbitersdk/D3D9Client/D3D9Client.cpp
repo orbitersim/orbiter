@@ -267,6 +267,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	texmgr      (NULL),
 	hLblFont1   (NULL),
 	hLblFont2   (NULL),
+	hMainThread (NULL),
 	caps      (),
 	parser    (),
 	hRenderWnd(),
@@ -290,7 +291,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	loadd_y       (0),
 	loadd_w       (0),
 	loadd_h       (0),
-	LabelPos (0)
+	LabelPos      (0)
 
 {
 }
@@ -906,7 +907,7 @@ LPDIRECT3DSURFACE9 D3D9Client::GetTopRenderTarget()
 
 // ==============================================================
 
-D3D9Pad *D3D9Client::GetTopInterface()
+D3D9Pad *D3D9Client::GetTopInterface() const
 {
 	if (RenderStack.empty()) return NULL;
 	return RenderStack.front().pSkp;

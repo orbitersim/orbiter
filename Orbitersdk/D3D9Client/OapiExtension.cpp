@@ -120,7 +120,7 @@ OapiExtension::~OapiExtension(void)
 // ===========================================================================
 // Initialization
 //
-void OapiExtension::GlobalInit(D3D9Config &Config)
+void OapiExtension::GlobalInit(const D3D9Config &Config)
 {
 	if (Config.DisableVisualHelperReadout) {
 		hookMap = 0x7FFF; // pretend all hooks are already set
@@ -219,10 +219,10 @@ void OapiExtension::LogD3D9Modules(void)
 						}*/
 
 						TCHAR versionString[128] = "";
-						DWORD dummy = 0;
 						LPDWORD pDummy = 0;
 						DWORD versionInfoSize = GetFileVersionInfoSize(szModName, pDummy);
 						if (versionInfoSize) {
+							DWORD dummy = 0;
 							char *data = new char[versionInfoSize]();
 							if (GetFileVersionInfo(szModName, dummy, versionInfoSize, data))
 							{

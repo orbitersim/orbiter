@@ -16,21 +16,23 @@ using namespace oapi;
 
 // ===========================================================================================
 //
-BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, vBase *_vB) : D3D9Effect()
+BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, vBase *_vB)
+	: D3D9Effect()
+	, nVert(nEntry)
+	, vB(_vB)
+	, pVB(NULL)
+	, hBase(NULL)
+	, bidx(0)
+	, base_elev()
 {
 	_TRACE;
-	pVB = NULL;
-	vB = _vB;
-	nVert = nEntry;
-	hBase = NULL;
-	bidx = 0;
 
 	if (vB) hBase = vB->GetObject();
-		
+
 	pBeaconPos = new BeaconPos[nEntry];
 
 	HR(gc->GetDevice()->CreateVertexBuffer(nEntry*sizeof(BAVERTEX), D3DUSAGE_DYNAMIC|D3DUSAGE_POINTS, 0, D3DPOOL_DEFAULT, &pVB, NULL));
-	
+
 	BAVERTEX *pVrt = LockVertexBuffer();
 
 	if (pVrt) {
@@ -41,7 +43,7 @@ BeaconArray::BeaconArray(BeaconArrayEntry *pEnt, DWORD nEntry, vBase *_vB) : D3D
 
 			pVrt[i].pos = D3DXVEC(pEnt[i].pos);
 			pVrt[i].dir = D3DXVEC(pEnt[i].dir);
-	
+
 			pVrt[i].color = pEnt[i].color;
 			pVrt[i].size  = pEnt[i].size;
 			pVrt[i].angle = cos(pEnt[i].angle * 0.0174532925f * 0.5f);
@@ -126,20 +128,20 @@ void BeaconArray::Render(LPDIRECT3DDEVICE9 dev, const LPD3DXMATRIX pW, float tim
 	HR(FX->SetTexture(eTex0, SURFACE(pBright)->GetTexture()));
 	HR(FX->SetFloat(eTime, time));
 	HR(FX->SetFloat(eMix, float(Config->RwyBrightness)));
-		
+
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
-		
+
 	//dev->SetRenderState(D3DRS_ZENABLE, 0);
 
 	dev->SetVertexDeclaration(pBAVertexDecl);
 	dev->SetStreamSource(0, pVB, 0, sizeof(BAVERTEX));
 	dev->DrawPrimitive(D3DPT_POINTLIST, 0, nVert);
-	
+
 	dev->SetRenderState(D3DRS_ZENABLE, 1);
 
 	HR(FX->EndPass());
-	HR(FX->End());	
+	HR(FX->End());
 
 	dev->SetRenderState(D3DRS_POINTSPRITEENABLE, 0);
 }

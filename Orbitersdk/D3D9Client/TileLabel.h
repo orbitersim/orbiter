@@ -29,7 +29,7 @@ protected:
 
 private:
 	struct TLABEL {
-		TLABEL() : labeltype(0), len(0), stopLen(0), label(NULL), pos(), nLines(1), rotStep(0) {}
+		TLABEL() : labeltype(0), len(0), stopLen(0), label(NULL), pos(), nLines(1), rotStep(0), lat(), lng(), alt() {}
 		~TLABEL() { SAFE_DELETEA(label); }
 		double  lat, lng, alt; ///< spheric coordinates of the label
 		VECTOR3 pos;           ///< position of the label
