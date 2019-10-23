@@ -96,7 +96,7 @@ set ZIP_CMD="C:\Program Files\7-Zip\7z.exe"
 
 
 :: --- Update working copy & get revision number
-svn update --quiet %BASE_DIR%
+svn update --quiet -rHEAD %BASE_DIR%
 for /F "tokens=*" %%i IN ('svnversion %BASE_DIR%') DO set REVISION=%%i
 
 
