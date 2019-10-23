@@ -38,7 +38,6 @@ TileLabel::TileLabel (const SurfTile *stile)
 	, nlabel(0), nrenderlabel(0)
 	, nbuf(0), nrenderbuf(0)
 	, label(NULL), renderlabel(NULL)
-
 {
 }
 
