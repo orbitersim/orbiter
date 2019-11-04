@@ -53,7 +53,7 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 	if (QPen.bEnabled) {
 		if ((QPen.style == style) && (QPen.width == width) && (QPen.color == color)) return;
 	}
-	
+
 	Change |= SKPCHG_PEN;
 
 	cpen = NULL;
@@ -259,7 +259,6 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 
 	std::wstring _str(str, str + len);
 
-	std::vector<std::wstring> strings;
 	std::wistringstream f(_str);
 	std::wstring s;
 	int _y = y;
@@ -486,9 +485,9 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 		}
 		return;
 	}
-	
+
 	TexChangeNative(SURFACE(hNew)->GetTexture());
-	
+
 	if (SURFACE(hNew)->IsColorKeyEnabled()) {
 		bColorKey = true;
 		cColorKey = SURFACE(hNew)->ClrKey;
@@ -521,7 +520,7 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDL
 	//
 	hMesh->Init();
 	pDev->SetVertexDeclaration(pNTVertexDecl);
-	
+
 	if (flags&MF_CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	else				    pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
