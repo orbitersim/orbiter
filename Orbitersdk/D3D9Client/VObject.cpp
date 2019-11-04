@@ -51,11 +51,11 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
 	, bOmit         (false)
 	, scn( (Scene *)scene) // should be const!
 	, sunapprad()
-	, sundst()
+	, sundst   ()
+	, size     (oapiGetSize(_hObj))
 {
 	_TRACE;
 	D3DXMatrixIdentity(&mWorld);
-	size = oapiGetSize(hObj);
 	cdist = 0.0;
 	dmWorld = identity4();
 	albedo = _V(1,1,1);
@@ -303,14 +303,13 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	cpos = gpos - scn->GetCameraGPos();
 	cdist = length(cpos);
 
-	double rad = oapiGetSize(hObj);
-	double alt = max(1.0, cdist-rad);
-	double apr = rad * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));
+	double alt = max(1.0, cdist - size);
+	double apr = size * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));
 
 	double ds = 10000.0 / cdist;
 	double s = 2.0;
 	if (apr<0.3) s = 1.0;
-	float size = float(rad * ds * s/apr);
+	float scale = float(size * ds * s/apr);
 
 	D3DXMATRIX W;
 	D3DXVECTOR3 vCam;
@@ -318,7 +317,7 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 	vPos*=float(ds);
 
 	D3DXVec3Normalize(&vCam, &vPos);
-	D3DMAT_CreateX_Billboard(&vCam, &vPos, size, &W);
+	D3DMAT_CreateX_Billboard(&vCam, &vPos, scale, &W);
 
 	float ints = float(sqrt(1.0+dotp(unit(gpos-spos), unit(cpos)))) * 1.0f;
 

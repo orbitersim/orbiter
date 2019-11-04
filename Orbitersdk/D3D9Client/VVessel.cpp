@@ -781,7 +781,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 
 	DWORD bfvmode = *(DWORD*)gc->GetConfigParam(CFGPRM_SHOWBODYFORCEVECTORSFLAG);
 	float sclset  = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSSCALE);
-	float scale   = float(oapiGetSize(hObj)) / 50.0f;
+	float scale   = float(size) / 50.0f;
 
 	// -------------------------------------
 	// Render Body Force Vectors
@@ -802,10 +802,10 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 			if (bfvmode & BFV_TOTAL) { vessel->GetForceVector(vector); if (length(vector)>len) len = length(vector); }
 			if (bfvmode & BFV_TORQUE) {	vessel->GetTorqueVector(vector); if (length(vector)>len) len = length(vector); }
 
-			lscale = float(oapiGetSize(hObj)*sclset/len);
+			lscale = float(size * sclset / len);
 		}
 		else {
-			lscale = float(oapiGetSize(hObj))*sclset/50.0f;
+			lscale = float(size * sclset / 50.0);
 		}
 
 		alpha = *(float*)gc->GetConfigParam(CFGPRM_BODYFORCEVECTORSOPACITY);
@@ -881,7 +881,7 @@ void vVessel::RenderAxis(LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp)
 		{
 			float sclset  = *(float*)gc->GetConfigParam(CFGPRM_COORDINATEAXESSCALE);
 			scale *= 0.99f; // 1% "slimmer" to avoid z-fighting with force vector(s)
-			float ascale  = float(oapiGetSize(hObj))*sclset*0.5f;
+			float ascale  = float(size)*sclset*0.5f;
 
 			RenderAxisVector(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale);
 			RenderAxisLabel(pSkp, &D3DXCOLOR(1,0,0,alpha), _V(1,0,0), ascale, scale, "X");

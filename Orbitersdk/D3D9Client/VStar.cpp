@@ -20,7 +20,6 @@ LPD3D9CLIENTSURFACE vStar::deftex = 0;
 
 vStar::vStar(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
-//	size = oapiGetSize(_hObj);
 	maxdist = 0.5*scene->GetCameraFarPlane();
 }
 
@@ -71,7 +70,7 @@ bool vStar::Render(LPDIRECT3DDEVICE9 dev)
 	mWorld._21 =  -(mWorld._12*mWorld._33 - mWorld._32*mWorld._13); //0;
 	mWorld._22 =  -(mWorld._13*mWorld._31 - mWorld._33*mWorld._11); //1;
 	mWorld._23 =  -(mWorld._11*mWorld._32 - mWorld._31*mWorld._12); // 0;
-	
+
 	// artificially reduce size reduction with distance
 	// to make star appear larger
 	size_hack = float(1.0+pow(cdist,0.6)*1e-6);

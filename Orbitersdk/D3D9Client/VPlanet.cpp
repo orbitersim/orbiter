@@ -77,7 +77,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	}
 	prm.horizon_minelev = *(double*)oapiGetObjectParam(_hObj, OBJPRM_PLANET_MINELEVATION);
 	prm.horizon_minrad = min (1.0 + prm.horizon_minelev / size, 1.0 - 1e-4);
-	
+
 	prm.bAtm = oapiPlanetHasAtmosphere (_hObj);
 	if (prm.bAtm) {
 		const ATMCONST *atmc = oapiGetPlanetAtmConstants(_hObj);
@@ -143,7 +143,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	} else {
 		ringmgr = 0;
 	}
-	
+
 	memcpy2 (&fog, oapiGetObjectParam (_hObj, OBJPRM_PLANET_FOGPARAM), sizeof (FogParam));
 	prm.bFogEnabled = (fog.dens_0 > 0);
 
@@ -151,7 +151,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	//if (*(bool*)gc->GetConfigParam(CFGPRM_ATMFOG)==false) prm.bFogEnabled = false;
 
-	
+
 	nbase = oapiGetBaseCount (_hObj);
 	if (nbase)	vbase = new vBase*[nbase];
 	else		vbase = NULL;
@@ -168,8 +168,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 				vbase[i] = new vBase (hBase, scn, this);
 			}
 		}
-	} 
-	
+	}
+
 	mesh = NULL;
 	if (surfmgr && surfmgr->GetMaxLevel() == 0) {
 		char cbuf[256];
@@ -184,8 +184,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	// Create a rock patch mesh --------------------------------------------------------------
 	//
 	pRockPatch = NULL;
-	
-	
+
+
 	// Add a cursor object into the scene ------------------------
 	//
 	hCursor[0] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 80.0f, &D3DXCOLOR(0, 0, 0.75, 0.5f));		// Cursor
@@ -319,9 +319,9 @@ bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 
 	float dst = D3DXVec3Length(&pos);
 
-	*dmin = dst - float(oapiGetSize(hObj));
+	*dmin = dst - float(size);
 	*zmin = *dmin;
-	*zmax = dst + float(oapiGetSize(hObj));
+	*zmax = dst + float(size);
 
 	return true;
 }
@@ -348,7 +348,7 @@ int vPlanet::GetElevation(double lng, double lat, double *elv, int *lvl, class S
 void vPlanet::PickSurface(TILEPICK *result)
 {
 	if (surfmgr2) {
-		
+
 		surfmgr2->Pick(result);
 
 		if (result->pTile) {
@@ -399,7 +399,7 @@ void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
 HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, bool bDual, float scale)
 {
 	_SRFMARKER m; memset(&m, 0, sizeof(_SRFMARKER));
-	
+
 	m.lng = lng;
 	m.lat = lat;
 	m.rot = rot;
@@ -409,10 +409,10 @@ HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, b
 	m.pMesh = pMesh;
 	m.type = 0;
 	m.bEnabled = true;
-	
+
 	D3DXMatrixRotationAxis(&m.mWorld, &D3DXVEC(m.uPos), rot);
 	D3DXMatrixScaling(&m.mWorld, scale, scale, scale);
-	
+
 	Markers.push_front(m);
 	return Markers.begin();
 }
@@ -431,10 +431,10 @@ HSRFOBJ	vPlanet::AddMarker(int type, double lng, double lat, float scale, D3DXCO
 	m.vColor = D3DXC2V(*color);
 	m.type = WORD(type);
 	m.bEnabled = true;
-	
+
 	switch (type) {
 	case D3D9SM_SPHERE:
-	{ 
+	{
 		m.bDual = true;
 		m.pMesh = hStockMesh[type];
 	}
@@ -487,7 +487,7 @@ bool vPlanet::Update (bool bMainScene)
 {
 	_TRACE;
 	if (!active) return false;
-	
+
 	vObject::Update(bMainScene);
 
 	// Update Sunlight direction -------------------------------------
@@ -565,7 +565,7 @@ bool vPlanet::Update (bool bMainScene)
 	}
 
 	// check all base visuals
-	if (nbase) {	
+	if (nbase) {
 		VECTOR3 pos, cpos = scn->GetCameraGPos();
 		double scale = (double)scn->ViewH()/scn->GetTanAp();
 		for (DWORD i = 0; i < nbase; i++) {
@@ -591,11 +591,11 @@ bool vPlanet::Update (bool bMainScene)
 			}
 
 			// Toggle surface base on/off based on visual size -----------------
-			// 
+			//
 			if (vbase[i]) {
 				if (apprad < 1.0) vbase[i]->Activate(false);
 				else if (apprad > 2.0) vbase[i]->Activate(true);
-				vbase[i]->Update(bMainScene);	
+				vbase[i]->Update(bMainScene);
 			}
 		}
 	}
@@ -631,8 +631,8 @@ void vPlanet::CheckResolution()
 				if (hazemgr) { delete hazemgr; hazemgr = NULL; }
 				if (hazemgr2) { delete hazemgr2; hazemgr2 = NULL; }
 			} else {
-				if (tilever>1 && bScatter) { 
-					if (!hazemgr2) hazemgr2 = new HazeManager2 (scn->GetClient(), this); 
+				if (tilever>1 && bScatter) {
+					if (!hazemgr2) hazemgr2 = new HazeManager2 (scn->GetClient(), this);
 				}
 				else if (!hazemgr) hazemgr = new HazeManager (scn->GetClient(), this);
 			}
@@ -683,7 +683,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
 		}
 	}
-	
+
 
 	PlanetRenderer::InitializeScattering(this);
 	PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
@@ -721,9 +721,9 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 		if (ringmgr) {
 			ringmgr->Render(dev, mWorld, false);
-			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
+			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		}
-		
+
 		if (hazemgr2) {
 			double apr = 180.0 * scn->GetCameraAperture() / (scn->GetCameraAspect() * PI);
 			hazemgr2->Render(mWorld, float(apr));
@@ -733,8 +733,8 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			RenderCloudLayer (dev, D3DCULL_NONE);      // render clouds from below
 
 		if (hazemgr) hazemgr->Render(dev, mWorld);       // horizon ring
-	
-		
+
+
 		if (prm.bAtm) {
 			if (ModLighting (amb))
 				prm.AmbColor = D3DXCOLOR(amb);
@@ -785,7 +785,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 			mesh->SetSunLight(scn->GetSun());
 			mesh->Render(&mWorld, RENDER_ASTEROID);
 		} else {
-			RenderSphere (dev);                               
+			RenderSphere (dev);
 		}
 
 		if (nbase) RenderBaseStructures (dev);
@@ -796,7 +796,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		if (hazemgr) hazemgr->Render (dev, mWorld, true); // haze across planet disc
 		if (ringmgr) {
 			ringmgr->Render (dev, mWorld, true);
-			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
+			dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		}
 
 	}
@@ -811,14 +811,14 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 {
-	// Beacons rendered elsewhere before the cloud layer	
+	// Beacons rendered elsewhere before the cloud layer
 }
 
 // ==============================================================
 /*
 void vPlanet::RenderSurfaceMicroDetails(LPDIRECT3DDEVICE9 dev)
 {
-	
+
 }
 */
 // ==============================================================
@@ -869,9 +869,9 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		}
 
 		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
-	} 
+	}
 	else {
-		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);	
+		dev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
 		surfmgr->SetAmbientColor(prm.AmbColor);
 		surfmgr->Render (dev, mWorld, dist_scale, patchres, 0.0, prm.bFog); // surface
@@ -900,7 +900,7 @@ void vPlanet::RenderCloudLayer (LPDIRECT3DDEVICE9 dev, DWORD cullmode)
 	double tot_cloud = D3D9GetTime();
 
 	if (cullmode != D3DCULL_CCW) dev->SetRenderState (D3DRS_CULLMODE, cullmode);
-	if (cloudmgr2) {	
+	if (cloudmgr2) {
 		cloudmgr2->Render(dmWorld, false, prm);
 	}
 	else
@@ -917,12 +917,12 @@ void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 	if (cloudmgr2) {
 		//if (prm.bCloudFlatShadows)
 		//	cloudmgr2->RenderFlatCloudShadows (dmWorld, prm);
-	} 
+	}
 	else if (clouddata) { // legacy method
 		float fogfactor;
 		D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor/dist_scale);
-		clouddata->cloudmgr->RenderShadow(dev, clouddata->mWorldC0, dist_scale, min(patchres,8), clouddata->viewap, clouddata->shadowalpha);	
+		clouddata->cloudmgr->RenderShadow(dev, clouddata->mWorldC0, dist_scale, min(patchres,8), clouddata->viewap, clouddata->shadowalpha);
 		if (prm.bFog) D3D9Effect::FX->SetFloat(D3D9Effect::eFogDensity, fogfactor);
 	}
 }
@@ -932,7 +932,7 @@ void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 void vPlanet::RenderBaseSurfaces(LPDIRECT3DDEVICE9 dev)
 {
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) {
-		vbase[i]->RenderSurface(dev);	
+		vbase[i]->RenderSurface(dev);
 		vbase[i]->RenderRunwayLights(dev);
 	}
 }
@@ -995,14 +995,14 @@ D3DXVECTOR3 vPlanet::GetSunLightColor(VECTOR3 vPos, float fAmbient, float fGloba
 
 	D3DXVECTOR3 lambda4 = D3DXVECTOR3(pow(float(SPrm.red),rp), pow(float(SPrm.green),rp), pow(float(SPrm.blue),rp));
 	D3DXVECTOR3 lambda2 = D3DXVECTOR3(pow(float(SPrm.red),mp), pow(float(SPrm.green),mp), pow(float(SPrm.blue),mp));
-	
+
 	D3DXVec3Normalize(&lambda4, &lambda4);
 	D3DXVec3Normalize(&lambda2, &lambda2);
 
 	D3DXVECTOR3 vOutTotSun = lambda4*float(SPrm.rout) + lambda2*float(SPrm.mie);
 	D3DXVECTOR3 vRayInSct  = lambda4*float(SPrm.rin * SPrm.rout);
 
-	double fDPS = max(0.34, dotp(unit(vPos), sundir));	
+	double fDPS = max(0.34, dotp(unit(vPos), sundir));
 	double fDns = exp2(-fAlt * prm.InvSclHeight);
 
 	return exp2(-vOutTotSun * float(fDns * AngleCoEff(fDPS)));
@@ -1050,12 +1050,12 @@ double GaussLobatto(double alt, double dir, double R0, double R1, double h0)
 	double R = R0 + alt;
 
 	double rdt = -R * cos(dir);
-	double Ray = rdt + sqrt(R1*R1 - (R*R - rdt*rdt));	
+	double Ray = rdt + sqrt(R1*R1 - (R*R - rdt*rdt));
 
-	double p0 = Ray * 0.0; 
-	double p1 = Ray * 0.2765; 
-	double p2 = Ray * 0.7235; 
-	double p3 = Ray * 1.0; 
+	double p0 = Ray * 0.0;
+	double p1 = Ray * 0.2765;
+	double p2 = Ray * 0.7235;
+	double p3 = Ray * 1.0;
 
 	double a0 = sqrt(R*R + p0*p0 + 2.0*R*p0*cos(dir)) - R0;
 	double a1 = sqrt(R*R + p1*p1 + 2.0*R*p1*cos(dir)) - R0;
@@ -1090,7 +1090,7 @@ void vPlanet::DumpDebugFile()
 	for (int i=0;i<samples;i++) {
 		double exact	= ExactOpticalDepth(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
 		double gauss	= GaussLobatto(0.0, angle, size, outer, prm.SclHeight) / prm.SclHeight;
-		double accur    = OpticalDepth(0.0, cos(angle)) / double(prm.SclHeight);	
+		double accur    = OpticalDepth(0.0, cos(angle)) / double(prm.SclHeight);
 		angle += delta;
 		fprintf(fp,"%d %6.6g %6.6g %6.6g\n", i, exact, accur, gauss);
 	}
@@ -1108,9 +1108,9 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 	if (mode==0 && alt>0.5) mode = 2;
 	if (mode==0 && alt<0.5) mode = 1;
 
-	if (mode==1) return &SPrm;		// Surface configuration 
+	if (mode==1) return &SPrm;		// Surface configuration
 	if (mode==2) return &OPrm;		// Orbital configuration
-	
+
 	// ----------------------------------------------------
 	CPrm.aux1   = lerp(SPrm.aux1,	OPrm.aux1,		alt);
 	CPrm.aux2   = lerp(SPrm.aux2,	OPrm.aux2,		alt);
@@ -1135,11 +1135,11 @@ ScatterParams * vPlanet::GetAtmoParams(int mode)
 	CPrm.hazei	= lerp(SPrm.hazei,	OPrm.hazei,		alt);
 	// ----------------------------------------------------
 	CPrm.height = SPrm.height;
-	
+
 	return &CPrm;
 }
-	
-	
+
+
 
 // ==============================================================
 
@@ -1191,14 +1191,14 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 	oapiReadItem_float(hFile, "AGamma", prm->agamma);
 	oapiReadItem_float(hFile, "HazeClr", prm->hazec);
 	oapiReadItem_float(hFile, "HazeIts", prm->hazei);
-	
+
 	oapiCloseFile(hFile, FILE_IN_ZEROONFAIL);
 
 	if (!oapiPlanetHasAtmosphere(hObj)) return false;
 
 	UpdateAtmoConfig();
 	return true;
-	
+
 }
 
 // ==============================================================
@@ -1237,7 +1237,7 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, "MiePower", prm->mie);
 	oapiWriteItem_float(hFile, "MiePhase", prm->mphase);
-	// -----------------------------------------------------------------	
+	// -----------------------------------------------------------------
 	oapiWriteItem_float(hFile, "Aux1", prm->aux1);
 	oapiWriteItem_float(hFile, "Aux2", prm->aux2);
 	oapiWriteItem_float(hFile, "Aux3", prm->aux3);
@@ -1245,7 +1245,7 @@ void vPlanet::SaveAtmoConfig(bool bOrbit)
 	oapiWriteItem_float(hFile, "AGamma", prm->agamma);
 	oapiWriteItem_float(hFile, "HazeClr", prm->hazec);
 	oapiWriteItem_float(hFile, "HazeIts", prm->hazei);
-	
+
 	oapiCloseFile(hFile, FILE_OUT);
 
 	DumpDebugFile();
@@ -1312,7 +1312,7 @@ void vPlanet::ParseMicroTexturesFile()
 bool vPlanet::ParseMicroTextures()
 {
 	if (Config->MicroMode==0) return false;	// Micro textures are disabled
-	if (surfmgr2==NULL) return false; // Only supported with tile format 2 
+	if (surfmgr2==NULL) return false; // Only supported with tile format 2
 
 	// Parse file (only once!)
 	if (!bMicroTexFileRead) {

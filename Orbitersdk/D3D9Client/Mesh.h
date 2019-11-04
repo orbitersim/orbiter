@@ -20,7 +20,7 @@
 #include "D3D9Client.h"
 #include "D3D9Effect.h"
 #include "AABBUtil.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 #include <vector>
 
@@ -54,7 +54,7 @@ struct _LightList {
 	float	illuminace;
 };
 
- 
+
 /**
  * \brief Mesh object with D3D9-specific vertex buffer
  *
@@ -62,7 +62,7 @@ struct _LightList {
  * textures.
  */
 
-class D3D9Mesh : private D3D9Effect 
+class D3D9Mesh : private D3D9Effect
 {
 
 public:
@@ -72,7 +72,7 @@ public:
 	bool bMtrlModidied;
 
 	D9BBox BBox;
-	
+
 	struct GROUPREC {			// mesh group definition
 		DWORD VertOff;			// Main mesh Vertex Offset
 		DWORD FaceOff;			// Main mesh Index Offset
@@ -92,7 +92,7 @@ public:
 		bool  bUpdate;			// Bounding box update required
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
-		bool  bRendered;		
+		bool  bRendered;
 		//bool  bAdvanced;		// This group reguires more advanced shader than default one
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
@@ -102,7 +102,7 @@ public:
 
 	explicit		D3D9Mesh(const char *name);
 					D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect() { Copy(mesh); }
-					
+
 					/**
 					 * \brief Create a mesh consisting of a single mesh group
 					 * \param client graphics client
@@ -125,12 +125,12 @@ public:
 	void			UnLockIndexBuffer();
 	NMVERTEX *		LockVertexBuffer(DWORD grp, DWORD flags);
 	WORD *			LockIndexBuffer(DWORD grp, DWORD flags);
-	
+
 	void			SetName(const char *name);
 	const char *	GetName() const { return name; }
 
 	void			SetClass(DWORD cl) { vClass = cl; }
-	
+
 
 	/**
 	 * \brief Check if a mesh is casting shadows
@@ -151,7 +151,7 @@ public:
 	 * \brief Returns number of material specifications.
 	 * \return Number of materials.
 	 */
-	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; } 
+	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; }
 	bool			HasTexture(SURFHANDLE hSurf);
 	bool			IsReflective() const { return bIsReflective; }
 
@@ -210,7 +210,7 @@ public:
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
 	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
-	
+
 	void			CheckMeshStatus();
 	void			ConvertToDynamic();
 	void			ResetTransformations();
@@ -222,9 +222,9 @@ public:
 	void			UpdateGroup(MESHHANDLE hMesh, DWORD idx);
 
 	void			SetSunLight(const D3D9Sun *pLight);
-	
+
 	D3D9Pick		Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DXVECTOR3 *vDir);
-	
+
 	void			UpdateBoundingBox();
 	void			BoundingBox(const NMVERTEX *vtx, DWORD n, D9BBox *box);
 
@@ -244,7 +244,7 @@ public:
 	 *   calculated as the product of material and texture alpha value.
 	 */
 	inline void		EnableMatAlpha (bool enable) { bModulateMatAlpha = enable; }
-	
+
 	DWORD			AddTexture(D3D9ClientSurface *pTex);
 	DWORD			AddMaterial(D3D9MatExt *pMat);
 	void			SetMeshGroupTextureIdx(DWORD grp, DWORD tex_idx);
@@ -267,7 +267,7 @@ private:
 
 	D3DXVECTOR3				*pGBSys;
 	WORD					*pIBSys;
-	
+
 	DWORD	MaxVert;
 	DWORD	MaxFace;
 	DWORD   Constr;
@@ -289,9 +289,9 @@ private:
 
 	_LightList LightList[MAX_SCENE_LIGHTS];
 	LightStruct *Locals;
-	
 
-	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write 
+
+	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write
 	bool bBSRecompute;			// Bounding sphere must be recomputed
 	bool bBSRecomputeAll;
 	bool bModulateMatAlpha;     // mix material and texture alpha channels
@@ -299,7 +299,7 @@ private:
 
 	char name[128];
 
-	
+
 };
 
 #endif // !__MESH_H
