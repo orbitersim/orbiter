@@ -152,7 +152,7 @@ void MeshBuffer::Map(LPDIRECT3DDEVICE9 pDev)
 // Mesh Implementation
 // ======================================================================================
 //
-void D3D9Mesh::Null()
+void D3D9Mesh::Null(const char *meshName /* = NULL */)
 {
 	nGrp = 0;
 	Grp = NULL;
@@ -182,15 +182,15 @@ void D3D9Mesh::Null()
 
 	memset(Locals, 0, sizeof(LightStruct) * Config->MaxLights());
 	memset(LightList, 0, sizeof(LightList));
-	strcpy_s(name, 128, "???");
+	strcpy_s(this->name, ARRAYSIZE(this->name), meshName ? meshName : "???");
 }
 
 // ===========================================================================================
 //
-D3D9Mesh::D3D9Mesh(const char *name) : D3D9Effect()
+D3D9Mesh::D3D9Mesh(const char *fname) : D3D9Effect()
 {
-	Null();
-	MESHHANDLE hMesh = oapiLoadMesh(name);
+	Null(fname);
+	MESHHANDLE hMesh = oapiLoadMesh(fname);
 
 	if (hMesh) {
 		LoadMeshFromHandle(hMesh);
@@ -203,9 +203,9 @@ D3D9Mesh::D3D9Mesh(const char *name) : D3D9Effect()
 
 // ===========================================================================================
 //
-D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig, float *scale) : D3D9Effect()
+D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig, float *scale, const char *meshName) : D3D9Effect()
 {
-	Null();
+	Null(meshName);
 	LoadMeshFromHandle(hMesh, reorig, scale);
 	bIsTemplate = asTemplate;
 	MeshCatalog->Add(this);
@@ -303,7 +303,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 
 	if (nGrp == 0) return;
 
-	strcpy_s(name, 128, hTemp.name);
+	strcpy_s(name, ARRAYSIZE(name), hTemp.name);
 
 	// Use Template's Vertex Data directly, no need for a local copy unless locally modified. 
 	pBuf = hTemp.pBuf;
@@ -476,9 +476,9 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 
 // ===========================================================================================
 //
-void D3D9Mesh::SetName(const char *fname)
+void D3D9Mesh::SetName(const char *name_)
 {
-	if (fname) strcpy_s(name,128,fname);
+	if (name_) strcpy_s(this->name, ARRAYSIZE(this->name), name_);
 }
 
 // ===========================================================================================

@@ -43,7 +43,7 @@ public:
 	static void			GlobalExit();
 
 						// Create empty surface. Must use Create methods to make a valid surface
-						D3D9ClientSurface(LPDIRECT3DDEVICE9 pDevice, const char* name = "???");
+						D3D9ClientSurface(LPDIRECT3DDEVICE9 pDevice, const char* name = NULL);
 
 						// Destroy the class and release the texture (pTex) if exists. Value of Reference counter doesn't matter.
 						~D3D9ClientSurface();

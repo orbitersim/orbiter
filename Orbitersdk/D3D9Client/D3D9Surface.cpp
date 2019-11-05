@@ -203,10 +203,10 @@ void D3D9ClientSurface::SetupViewPort()
 
 // -----------------------------------------------------------------------------------------------
 //
-D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name/*="???"*/)
+D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name_ /* = NULL */)
 {
 	Clear();
-	strcpy_s(this->name, 64, (name ? name : "???"));
+	strcpy_s(this->name, ARRAYSIZE(this->name), (name_ ? name_ : "???"));
 	pDevice = pDev;
 	SurfaceCatalog->Add(this);
 }

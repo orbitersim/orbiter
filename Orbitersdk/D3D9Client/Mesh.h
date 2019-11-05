@@ -73,7 +73,7 @@ public:
 	~MeshBuffer();
 
 	void Map(LPDIRECT3DDEVICE9 pDev);
-	bool IsLocalTo(const class D3D9Mesh *_pRoot) { return (_pRoot == pRoot); }
+	bool IsLocalTo(const class D3D9Mesh *_pRoot) const { return (_pRoot == pRoot); }
 	void MustRemap(DWORD mode);
 
 	LPDIRECT3DVERTEXBUFFER9 pVB;
@@ -144,10 +144,10 @@ public:
 	};
 
 
-					D3D9Mesh(const char *name);
+					D3D9Mesh(const char *fname);
 					D3D9Mesh(DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
 					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
-					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
+					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL, float *scale = NULL, const char *meshName = NULL);
 					D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp);
 					~D3D9Mesh();
 
@@ -279,7 +279,7 @@ private:
 	void			ProcessInherit();
 	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
-	void			Null();
+	void			Null(const char *meshName = NULL);
 
 
 	DWORD	MaxVert;
