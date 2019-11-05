@@ -2609,6 +2609,8 @@ void D3D9Mesh::SetRotation(D3DXMATRIX &rot)
 {
 	bGlobalTF = true;
 
+	// TODO: BUG: Position will be acquired from rot matrix
+	//
 	memcpy(&mTransform, &rot, 48);
 
 	D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
@@ -2625,6 +2627,8 @@ void D3D9Mesh::SetScaling(float scale)
 {
 	bGlobalTF = true;
 
+	// TODO: BUG: Rotation and position will be reset to defaults
+	//
 	D3DXMatrixScaling(&mTransform, scale, scale, scale);
 
 	D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
