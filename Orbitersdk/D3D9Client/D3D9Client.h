@@ -1002,11 +1002,11 @@ public:
 	void 				EmergencyShutdown();
 	void 				SplashScreen();
 	inline bool 		IsRunning() const { return bRunning; }
-	inline bool			IsLimited() const { return ((caps.TextureCaps&D3DPTEXTURECAPS_POW2) && (caps.TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
+	inline bool			IsLimited() const { return ((pCaps->TextureCaps&D3DPTEXTURECAPS_POW2) && (pCaps->TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
 	const LPD3DXMATRIX 	GetIdentity() const { return (const LPD3DXMATRIX)&ident; }
 	HWND 				GetWindow();
 	bool 				HasVertexTextureSupport() const { return bVertexTex; }
-	D3DCAPS9 *			GetHardwareCaps() { return &caps; }
+	const D3DCAPS9 *	GetHardwareCaps() const { return pCaps; }
 	FileParser *		GetFileParser() const { return parser; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() const { return pBackBuffer; }
 	LPDIRECT3DSURFACE9	GetDepthStencil() const { return pDepthStencil; }
@@ -1255,9 +1255,9 @@ private:
 	LPDIRECT3DSURFACE9		pTextScreen;
 	LPDIRECT3DSURFACE9		pBackBuffer;
 	LPDIRECT3DSURFACE9		pDepthStencil;
-	CD3DFramework9*		    pFramework;
-	D3DCAPS9				caps;
-	FileParser *		    parser;
+	CD3DFramework9 *		pFramework;
+	const D3DCAPS9 *		pCaps;
+	FileParser *			parser;
 	std::string				scenarioName;
 	HANDLE					hMainThread;
 

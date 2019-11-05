@@ -72,7 +72,7 @@ DWORD RingManager::LoadTextures ()
 
 	LPDIRECT3DDEVICE9 pDev = gc->GetDevice();
 
-	D3DCAPS9 *caps = gc->GetHardwareCaps();
+	const D3DCAPS9 *caps = gc->GetHardwareCaps();
 
 	int size = max(min(caps->MaxTextureWidth, 8192), 2048);
 

@@ -268,7 +268,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	hLblFont1   (NULL),
 	hLblFont2   (NULL),
 	hMainThread (NULL),
-	caps      (),
+	pCaps       (NULL),
 	parser    (),
 	hRenderWnd(),
 	scene     (),
@@ -452,7 +452,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	ReleaseDC(hRenderWnd, hWnd);
 	ValidateRect(hRenderWnd, NULL);	// avoids white flash after splash screen
 
-	caps = pFramework->caps;
+	pCaps = pFramework->GetCaps();
 
 	WriteLog("[3DDevice Initialized]");
 

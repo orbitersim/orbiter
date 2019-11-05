@@ -43,33 +43,34 @@ class CD3DFramework9
 private:
 
     // Internal variables for the framework class
-    HWND                 hWnd;               // The window object
-    BOOL                 bIsFullscreen;      // Fullscreen vs. windowed
-    BOOL                 bVertexTexture;
-    BOOL                 bAAEnabled;
-    BOOL                 bNoVSync;           // don't use vertical sync in fullscreen
-    BOOL                 Alpha;
-    BOOL                 SWVert;
-    BOOL                 Pure;
-    BOOL                 DDM;
-    BOOL                 bGDIBB;
-    BOOL                 nvPerfHud;
-    DWORD                dwRenderWidth;      // Dimensions of the render target
-    DWORD                dwRenderHeight;
-    DWORD                dwFSMode;
-    LPDIRECT3D9          pD3D;               // The Direct3D object
-    LPDIRECT3DDEVICE9    pDevice;         // The D3D device
-    LPD3DXFONT           pLargeFont;
-    LPD3DXFONT           pSmallFont;
-    DWORD                dwZBufferBitDepth;  // Bit depth of z-buffer
-    DWORD                dwStencilBitDepth;  // Bit depth of stencil buffer (0 if none)
-    DWORD                Adapter;
-    DWORD                Mode;
-    DWORD                MultiSample;
-    LPDIRECT3DSURFACE9   pRenderTarget;
-    D3D9ClientSurface *  pBackBuffer;
-
-    RECT                 rcScreenRect;       // Screen rect for window
+    HWND                   hWnd;               // The window object
+    BOOL                   bIsFullscreen;      // Fullscreen vs. windowed
+    BOOL                   bVertexTexture;
+    BOOL                   bAAEnabled;
+    BOOL                   bNoVSync;           // don't use vertical sync in fullscreen
+    BOOL                   Alpha;
+    BOOL                   SWVert;
+    BOOL                   Pure;
+    BOOL                   DDM;
+    BOOL                   bGDIBB;
+    BOOL                   nvPerfHud;
+    DWORD                  dwRenderWidth;      // Dimensions of the render target
+    DWORD                  dwRenderHeight;     // Dimensions of the render target
+    DWORD                  dwFSMode;
+    LPDIRECT3D9            pD3D;               // The Direct3D object
+    LPDIRECT3DDEVICE9      pDevice;            // The D3D device
+    LPD3DXFONT             pLargeFont;
+    LPD3DXFONT             pSmallFont;
+    DWORD                  dwZBufferBitDepth;  // Bit depth of z-buffer
+    DWORD                  dwStencilBitDepth;  // Bit depth of stencil buffer (0 if none)
+    DWORD                  Adapter;
+    DWORD                  Mode;
+    DWORD                  MultiSample;
+    LPDIRECT3DSURFACE9     pRenderTarget;
+    D3D9ClientSurface *    pBackBuffer;
+	D3DPRESENT_PARAMETERS  d3dPP;
+	D3DCAPS9               caps;
+    RECT                   rcScreenRect;       // Screen rect for window
 
     // Internal functions for the framework class
 
@@ -79,19 +80,14 @@ private:
 
 public:
 
-    D3DPRESENT_PARAMETERS   d3dPP;
-    D3DCAPS9                caps;
-
     // Access functions for DirectX objects
     inline HWND                GetRenderWindow() const          { return hWnd; }
     inline LPDIRECT3D9         GetDirect3D() const              { return pD3D; }
     inline LPDIRECT3DDEVICE9   GetD3DDevice() const             { return pDevice; }
-    inline DWORD               GetRenderWidth() const           { return dwRenderWidth; }      // Dimensions of the render target
-    inline DWORD               GetRenderHeight() const          { return dwRenderHeight; }     // Dimensions of the render target
     inline DWORD               GetZBufferBitDepth() const       { return dwZBufferBitDepth; }
     inline DWORD               GetStencilBitDepth() const       { return dwStencilBitDepth; }
-    inline DWORD               GetWidth() const                 { return dwRenderWidth; }
-    inline DWORD               GetHeight() const                { return dwRenderHeight; }
+    inline DWORD               GetWidth() const                 { return dwRenderWidth; }  // Dimensions of the render target
+    inline DWORD               GetHeight() const                { return dwRenderHeight; } // Dimensions of the render target
     inline const RECT          GetScreenRect() const            { return rcScreenRect; }
     inline LPDIRECT3DSURFACE9  GetBackBuffer() const            { return pRenderTarget; }
     inline SURFHANDLE          GetBackBufferHandle() const      { return pBackBuffer; }
