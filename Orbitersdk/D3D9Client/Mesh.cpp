@@ -2623,25 +2623,6 @@ void D3D9Mesh::SetRotation(D3DXMATRIX &rot)
 
 // ===========================================================================================
 //
-void D3D9Mesh::SetScaling(float scale)
-{
-	bGlobalTF = true;
-
-	// TODO: BUG: Rotation and position will be reset to defaults
-	//
-	D3DXMatrixScaling(&mTransform, scale, scale, scale);
-
-	D3DXMatrixInverse(&mTransformInv, NULL, &mTransform);
-
-	for (DWORD i = 0; i < nGrp; i++)
-	{
-		if (Grp[i].bTransform) D3DXMatrixMultiply(&pGrpTF[i], &mTransform, &Grp[i].Transform);
-		else pGrpTF[i] = mTransform;
-	}
-}
-
-// ===========================================================================================
-//
 void D3D9Mesh::UpdateBoundingBox()
 {
 	if (!IsOK()) return;

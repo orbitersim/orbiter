@@ -177,11 +177,8 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		OBJHANDLE hMesh = oapiLoadMesh (cbuf);
 		if (hMesh) {
 			LogAlw("Loading mesh [%s] for planetary body '%s'", cbuf, name);
-			mesh = new D3D9Mesh (hMesh);
-			// Scale if not ~1.0 (+- 1e-9)
-			if (fabs(size - 1.0) > 1e-9) {
-				mesh->SetScaling(float(size));
-			}
+			float fSize = float(size);
+			mesh = new D3D9Mesh(hMesh, false, NULL, &fSize);
 			oapiDeleteMesh (hMesh);
 		}
 	}

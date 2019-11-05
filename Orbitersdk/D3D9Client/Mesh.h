@@ -221,7 +221,6 @@ public:
 
 	void			SetPosition(VECTOR3 &pos);
 	void			SetRotation(D3DXMATRIX &rot);
-	void			SetScaling(float scale);
 
 	/**
 	 * \brief Replace a mesh texture.
