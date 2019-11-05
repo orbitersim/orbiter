@@ -44,11 +44,19 @@ for /F "usebackq tokens=*" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) d
 if "%OVER%"=="BETA r62" set OVER=Orbiter2016
 set VERSION=%VERSION%-for%OVER%
 
-if "%VS150COMNTOOLS%"=="" call helper_vswhere.bat
+if "%VS141COMNTOOLS%"=="" if "%VS142COMNTOOLS%"=="" call helper_vswhere.bat
 
+:: Visual Studio 2019
+if not "%VS142COMNTOOLS%"=="" (
+  set "SETVCVARS=%VS142COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
+  set SOLUTIONFILE=D3D9ClientVS2019.sln
+  set CAM_SOLUTIONFILE=GenericCamera.sln
+  set GCAPI_PROJECTFILE=gcAPI.vs2019.vcxproj
+  goto assign
+)
 :: Visual Studio 2017
-if not "%VS150COMNTOOLS%"=="" (
-  set "SETVCVARS=%VS150COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
+if not "%VS141COMNTOOLS%"=="" (
+  set "SETVCVARS=%VS141COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2017.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
