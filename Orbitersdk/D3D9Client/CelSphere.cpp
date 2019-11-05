@@ -25,9 +25,10 @@ using namespace oapi;
 // ==============================================================
 
 CelestialSphere::CelestialSphere(D3D9Client *_gc)
+	: gc(_gc)
+	, pDevice(_gc->GetDevice())
+	, maxNumVertices(_gc->GetHardwareCaps()->MaxPrimitiveCount)
 {
-	gc = _gc;
-	pDevice = _gc->GetDevice();
 	sphere_r = 1e6f; // the actual render distance for the celestial sphere
 	                 // is irrelevant, since it is rendered without z-buffer,
 	                 // but it must be within the frustum limits - check this
@@ -76,14 +77,13 @@ void CelestialSphere::LoadStars ()
 	float c;
 	int lvl, plvl = 256;
 	DWORD i, j, k, nv, idx = 0;
-	DWORD buflen = D3DMAXNUMVERTICES;
 	DWORD bufsize = 16;
 	nsbuf = nsvtx = 0;
 	svtx = new LPDIRECT3DVERTEXBUFFER9[bufsize];
 
 	struct StarRec {
 		float lng, lat, mag;
-	} *data = new StarRec[buflen];
+	} *data = new StarRec[maxNumVertices];
 
 	if (prm->mag_lo <= prm->mag_hi) { delete []data; return; }
 
@@ -91,7 +91,7 @@ void CelestialSphere::LoadStars ()
 	FILE *f;
 	fopen_s(&f, "Star.bin", "rb");
 	if (!f) { delete []data; return; }
-	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
+	while (nv = fread (data, sizeof(StarRec), maxNumVertices, f)) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
 		for (i = 0; i < nv; i++)
 			if (data[i].mag > prm->mag_lo) { nv = i; break; }
@@ -129,7 +129,7 @@ void CelestialSphere::LoadStars ()
 			nsvtx += nv;
 			nsbuf++;
 		}
-		if (nv < buflen) break;
+		if (nv < maxNumVertices) break;
 	}
 	fclose (f);
 
@@ -233,10 +233,10 @@ void CelestialSphere::RenderStars(ID3DXEffect *FX, DWORD nmax, const VECTOR3 *bg
 	HR(pDevice->SetVertexDeclaration(pPosColorDecl));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
-	for (i = j = 0; i < nmax; i += D3DMAXNUMVERTICES, j++)
+	for (i = j = 0; i < nmax; i += maxNumVertices, j++)
 	{
 		HR(pDevice->SetStreamSource(0, svtx[j], 0, sizeof(VERTEX_XYZC)));
-		HR(pDevice->DrawPrimitive(D3DPT_POINTLIST, 0, min (nmax-i, D3DMAXNUMVERTICES)));
+		HR(pDevice->DrawPrimitive(D3DPT_POINTLIST, 0, min (nmax-i, maxNumVertices)));
 	}
 	HR(FX->EndPass());
 	HR(FX->End());	

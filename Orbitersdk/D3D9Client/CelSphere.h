@@ -11,8 +11,6 @@
 #include "D3D9Client.h"
 #include "D3D9Util.h"
 
-#define D3DMAXNUMVERTICES 32767		// This should be dynamic
-
 
 // ==============================================================
 // Class CelestialSphere (interface)
@@ -110,6 +108,7 @@ private:
 	float sphere_r;       ///< render radius for celestial sphere
 	DWORD nsbuf;          ///< number of vertex buffers for star positions
 //	DWORD nstar;          ///< total number of stars across all buffers
+	UINT maxNumVertices;  ///< number of vertices to use for one chunk at star-drawing
 	DWORD nsvtx;          ///< total number of vertices over all buffers
 	LPDIRECT3DVERTEXBUFFER9 *svtx; ///< star vertex buffers
 	int lvlid[256];       ///< star brightness hash table
