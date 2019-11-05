@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006-2016 Martin Schweiger
-//				 2012-2016 Jarmo Nikkanen
+//				 2012-2019 Jarmo Nikkanen
 // ==============================================================
 
 // ==============================================================
@@ -49,10 +49,52 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define VCLASS_ULTRA		3
 #define VCLASS_SSU_CENTAUR	4
 
+#define MAPMODE_UNKNOWN		0
+#define MAPMODE_CURRENT		1
+#define MAPMODE_STATIC		2
+#define MAPMODE_DYNAMIC		3
+
+
 struct _LightList {
 	int		idx;
 	float	illuminace;
 };
+
+
+
+
+
+class MeshBuffer
+{
+public:
+
+	MeshBuffer(MeshBuffer *pSrc, const class D3D9Mesh *_pRoot);
+	MeshBuffer(DWORD nVtx, DWORD nIdx, const class D3D9Mesh *_pRoot);
+	~MeshBuffer();
+
+	void Map(LPDIRECT3DDEVICE9 pDev);
+	bool IsLocalTo(const class D3D9Mesh *_pRoot) { return (_pRoot == pRoot); }
+	void MustRemap(DWORD mode);
+
+	LPDIRECT3DVERTEXBUFFER9 pVB;
+	LPDIRECT3DVERTEXBUFFER9 pGB;
+	LPDIRECT3DINDEXBUFFER9  pIB;
+
+	NMVERTEX				*pVBSys;
+	D3DXVECTOR4				*pGBSys;
+	WORD					*pIBSys;
+
+	DWORD nVtx;
+	DWORD nIdx;
+	DWORD mapMode;
+	bool  bMustRemap;
+
+	const class D3D9Mesh	*pRoot;
+};
+
+
+
+
 
 
 /**
@@ -70,14 +112,16 @@ public:
 	bool bCanRenderFast;		// Mesh doesn't contain any advanced features in any group
 	bool bIsReflective;			// Mesh has a reflective material in one or more groups
 	bool bMtrlModidied;
+	bool bIsTemplate;
 
 	D9BBox BBox;
+	MeshBuffer *pBuf;
 
 	struct GROUPREC {			// mesh group definition
 		DWORD VertOff;			// Main mesh Vertex Offset
-		DWORD FaceOff;			// Main mesh Index Offset
+		DWORD IdexOff;			// Main mesh Index Offset
 		//------------------------------------------------
-		DWORD nFace;			// Face count
+		DWORD nFace;			// Face/Primitive count
 		DWORD nVert;			// Vertex count
 		//------------------------------------------------
 		DWORD MtrlIdx;			// material index
@@ -93,38 +137,26 @@ public:
 		bool  bDualSided;
 		bool  bDeleted;			// This entry is deleted by DelGroup()
 		bool  bRendered;
-		//bool  bAdvanced;		// This group reguires more advanced shader than default one
 		D3DXMATRIX  Transform;	// Group specific transformation matrix
 		D9BBox BBox;
 		DWORD TexIdxEx[MAXTEX];
 		float TexMixEx[MAXTEX];
 	};
 
-	explicit		D3D9Mesh(const char *name);
-					D3D9Mesh(const D3D9Mesh &mesh) : D3D9Effect() { Copy(mesh); }
 
-					/**
-					 * \brief Create a mesh consisting of a single mesh group
-					 * \param client graphics client
-					 * \param grp vertex group definition
-					 * \param deepcopy if true, group contents are copied; otherwise, group
-					 *   definition pointer is used directly
-					 */
+					D3D9Mesh(const char *name);
 					D3D9Mesh(DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
 					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex);
-					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL);
+					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
+					D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp);
 					~D3D9Mesh();
 
-	D3D9Mesh		&operator =(const D3D9Mesh &mesh) { Copy(mesh); return *this; }
+	bool			IsOK() const { return pBuf != NULL; }
 
 	void			Release();
 
-	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL);
+	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
-	void			UnLockVertexBuffer();
-	void			UnLockIndexBuffer();
-	NMVERTEX *		LockVertexBuffer(DWORD grp, DWORD flags);
-	WORD *			LockIndexBuffer(DWORD grp, DWORD flags);
 
 	void			SetName(const char *name);
 	const char *	GetName() const { return name; }
@@ -213,14 +245,11 @@ public:
 	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
 
 	void			CheckMeshStatus();
-	void			ConvertToDynamic();
 	void			ResetTransformations();
 	void			TransformGroup(DWORD n, const D3DXMATRIX *m);
 	void			Transform(const D3DXMATRIX *m);
 	int				GetGroup (DWORD grp, GROUPREQUESTSPEC *grs);
 	int				EditGroup (DWORD grp, GROUPEDITSPEC *ges);
-	void			UpdateGroupEx(DWORD idx, const MESHGROUPEX *mg);
-	void			UpdateGroup(MESHHANDLE hMesh, DWORD idx);
 
 	void			SetSunLight(const D3D9Sun *pLight);
 
@@ -233,8 +262,6 @@ public:
 	void			SetupFog(const LPD3DXMATRIX pW);
 	void			ResetRenderStatus();
 
-	void			DumpTextures();
-	void			DumpGroups();
 
 	/**
 	 * \brief Enable/disable material alpha value for transparency calculation.
@@ -246,33 +273,18 @@ public:
 	 */
 	inline void		EnableMatAlpha (bool enable) { bModulateMatAlpha = enable; }
 
-	DWORD			AddTexture(D3D9ClientSurface *pTex);
-	DWORD			AddMaterial(D3D9MatExt *pMat);
-	void			SetMeshGroupTextureIdx(DWORD grp, DWORD tex_idx);
-	void			SetMeshGroupMaterialIdx(DWORD grp, DWORD mtrl_idx);
-	bool			Bake();
-
 private:
 
-	void			Copy(const D3D9Mesh &mesh);
+
 	void			UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD nFace, bool bTextured);
 	void			ProcessInherit();
-	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL);
+	bool			CopyVertices(GROUPREC *grp, const MESHGROUPEX *mg, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			SetGroupRec(DWORD i, const MESHGROUPEX *mg);
-	void			UpdateGeometryBuffer(int grp=-1);
 	void			Null();
 
-	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
-	LPDIRECT3DVERTEXBUFFER9 pGB;
-	LPDIRECT3DINDEXBUFFER9  pIB;
-
-	D3DXVECTOR3				*pGBSys;
-	WORD					*pIBSys;
 
 	DWORD	MaxVert;
 	DWORD	MaxFace;
-	DWORD   Constr;
-
 	GROUPREC *Grp;              // list of mesh groups
 	DWORD nGrp;                 // number of mesh groups
 	DWORD nMtrl;                // number of mesh materials
@@ -290,9 +302,6 @@ private:
 
 	_LightList LightList[MAX_SCENE_LIGHTS];
 	LightStruct *Locals;
-
-
-	bool bDynamic;				// Mesh is using a dynamic vertex buffer for faster read-modify-write
 	bool bBSRecompute;			// Bounding sphere must be recomputed
 	bool bBSRecomputeAll;
 	bool bModulateMatAlpha;     // mix material and texture alpha channels

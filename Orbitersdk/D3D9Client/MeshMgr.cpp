@@ -83,24 +83,3 @@ const D3D9Mesh *MeshManager::GetMesh (MESHHANDLE hMesh)
 	// Should we store the mesh here ??
 	return NULL;
 }
-
-void MeshManager::UpdateMesh (MESHHANDLE hMesh)
-{
-	int i;
-	for (i=0;i<nmlist;i++) if (mlist[i].hMesh==hMesh) {
-		if (mlist[i].mesh) {
-			DWORD ngrp = mlist[i].mesh->GetGroupCount();
-			for (DWORD k=0;k<ngrp;k++) {
-				MESHGROUPEX *mg = oapiMeshGroupEx(hMesh, k);
-				if (mg) mlist[i].mesh->UpdateGroupEx(k, mg);
-			}
-			DWORD nMtrl = oapiMeshMaterialCount(hMesh);
-			for (DWORD k=0;k<nMtrl;k++)	{
-				D3D9MatExt meshmat;
-				CreateMatExt((const D3DMATERIAL9 *)oapiMeshMaterial(hMesh, k), &meshmat);
-				mlist[i].mesh->SetMaterial(&meshmat, k);
-			}
-		}
-		break;
-	}
-}

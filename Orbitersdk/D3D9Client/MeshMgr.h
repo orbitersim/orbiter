@@ -25,7 +25,6 @@ public:
 	void DeleteAll();
 	int StoreMesh (MESHHANDLE hMesh, const char *name);
 	const D3D9Mesh *GetMesh (MESHHANDLE hMesh);
-	void UpdateMesh (MESHHANDLE hMesh);
 
 private:
 	oapi::D3D9Client *gc;

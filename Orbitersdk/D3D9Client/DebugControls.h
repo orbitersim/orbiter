@@ -104,6 +104,7 @@ namespace DebugControls {
 	void		SetVisual(vObject *vo);
 	void		RemoveVisual(vObject *vo);
 	vObject *	GetVisual();
+	void		SetPickPos(D3DXVECTOR3 pos);
 
 	void		SetupMeshGroups();
 	void		UpdateVisual();

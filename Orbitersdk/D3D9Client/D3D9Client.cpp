@@ -1521,6 +1521,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 							DebugControls::SelectMesh(pick.pMesh);
 							DebugControls::SelectGroup(pick.group);
 							DebugControls::SetGroupHighlight(true);
+							DebugControls::SetPickPos(pick.pos);
 						}
 					}
 				}

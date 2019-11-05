@@ -3,7 +3,7 @@
 // Part of the ORBITER VISUALISATION PROJECT (OVP)
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006-2016 Martin Schweiger
-//				 2010-2016 Jarmo Nikkanen (D3D9Client modification)
+//				 2010-2019 Jarmo Nikkanen (D3D9Client modification)
 // ==============================================================
 
 #include <set>
@@ -54,10 +54,9 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
 
-	if (strcmp(vessel->GetClassNameA(), "AMSO") == 0) vClass = VCLASS_AMSO;
-	if (strcmp(vessel->GetClassNameA(), "XR2Ravenstar") == 0) vClass = VCLASS_XR2;
-	if (strcmp(vessel->GetClassNameA(), "SpaceShuttleUltra") == 0) vClass = VCLASS_ULTRA;
-	if (strcmp(vessel->GetClassNameA(), "SSU_CentaurGPrime") == 0) vClass = VCLASS_SSU_CENTAUR;
+	if (strncmp(vessel->GetClassNameA(), "XR2Ravenstar", 12) == 0) vClass = VCLASS_XR2;
+	if (strncmp(vessel->GetClassNameA(), "SpaceShuttleUltra", 17) == 0) vClass = VCLASS_ULTRA;
+	if (strncmp(vessel->GetClassNameA(), "SSU_CentaurGPrime", 17) == 0) vClass = VCLASS_SSU_CENTAUR;
 
 	bBSRecompute = true;
 	ExhaustLength = 0.0f;
@@ -238,8 +237,8 @@ void vVessel::LoadMeshes()
 	bBSRecompute = true;
 	if (nmesh) DisposeMeshes();
 
-	MESHHANDLE hMesh;
-	const D3D9Mesh *mesh;
+	MESHHANDLE hMesh = NULL;
+	const D3D9Mesh *mesh = NULL;
 	VECTOR3 ofs;
 	UINT idx;
 
@@ -255,20 +254,20 @@ void vVessel::LoadMeshes()
 	for (idx=0;idx<nmesh;idx++) {
 
 		hMesh = vessel->GetMeshTemplate(idx);
-		if (vClass==VCLASS_AMSO) mmgr->UpdateMesh(hMesh);
 		mesh = mmgr->GetMesh(hMesh);
 
-		if (hMesh!=NULL && mesh!=NULL) {
+		if (hMesh && mesh) {
 			// copy from preloaded template
-			meshlist[idx].mesh = new D3D9Mesh(*mesh);
+			meshlist[idx].mesh = new D3D9Mesh(hMesh, *mesh);							// Create new Instance from an existing mesh template
 			meshlist[idx].mesh->SetClass(vClass);
 		}
 		else {
-			// It's vital to use copy here for some reason
+			// It's vital to use "CopyMeshFromTemplate" here for some reason
+			// No global template exists for this mesh. Loaded with oapiLoadMesh()
 			hMesh = vessel->CopyMeshFromTemplate(idx);
 			if (hMesh) {
 				// load on the fly and discard after copying
-				meshlist[idx].mesh = new D3D9Mesh(hMesh, false);
+				meshlist[idx].mesh = new D3D9Mesh(hMesh);								// Create new DX9 Mesh
 				meshlist[idx].mesh->SetClass(vClass);
 				oapiDeleteMesh(hMesh);
 			}
@@ -329,15 +328,14 @@ void vVessel::InsertMesh(UINT idx)
 	// now add the new mesh
 	MeshManager *mmgr = gc->GetMeshMgr();
 	MESHHANDLE hMesh = vessel->GetMeshTemplate(idx);
-	if (vClass==VCLASS_AMSO) mmgr->UpdateMesh(hMesh);
 	const D3D9Mesh *mesh = mmgr->GetMesh(hMesh);
 
 
 	if (hMesh && mesh) {
-		meshlist[idx].mesh = new D3D9Mesh (*mesh);
+		meshlist[idx].mesh = new D3D9Mesh(hMesh, *mesh);								// Create new Instance from an existing mesh template
 		meshlist[idx].mesh->SetClass(vClass);
-	} else if (hMesh = vessel->CopyMeshFromTemplate (idx)) {	// It's vital to use a copy here for some reason
-		meshlist[idx].mesh = new D3D9Mesh (hMesh);
+	} else if (hMesh = vessel->CopyMeshFromTemplate (idx)) {	
+		meshlist[idx].mesh = new D3D9Mesh(hMesh);										// Create new DX9 Mesh
 		meshlist[idx].mesh->SetClass(vClass);
 		oapiDeleteMesh (hMesh);
 	} else {
@@ -365,6 +363,7 @@ void vVessel::InsertMesh(UINT idx)
 
 
 // ============================================================================================
+// In response to VESSEL::MeshModified()
 //
 void vVessel::ResetMesh(UINT idx)
 {
@@ -372,27 +371,42 @@ void vVessel::ResetMesh(UINT idx)
 
 	VECTOR3 ofs = _V(0, 0, 0);
 
-	if (idx < nmesh) {
+	if ((idx < nmesh) && meshlist[idx].mesh) {
 
 		MESHHANDLE hMesh = vessel->GetMeshTemplate(idx);
 
 		if (hMesh) {
-
 			meshlist[idx].mesh->ReLoadMeshFromHandle(hMesh);
-
-			pMatMgr->ApplyConfiguration(meshlist[idx].mesh);
-
-			meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
-			vessel->GetMeshOffset(idx, ofs);
-
-			if (length(ofs)) {
-				if (!meshlist[idx].trans) meshlist[idx].trans = new D3DXMATRIX;
-				D3DMAT_Identity(meshlist[idx].trans);
-				D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
+			meshlist[idx].mesh->ResetTransformations();
+		}
+		else {
+			hMesh = vessel->CopyMeshFromTemplate(idx);
+			if (hMesh) {
+				meshlist[idx].mesh->ReLoadMeshFromHandle(hMesh);
+				meshlist[idx].mesh->ResetTransformations();
+				oapiDeleteMesh(hMesh);
 			}
-			else {
-				SAFE_DELETE(meshlist[idx].trans);
+		}
+
+		for (UINT i = 0; i < nanim; ++i) {
+			UINT ncomp = anim[i].ncomp;
+			for (UINT k = 0; k < ncomp; ++k) {
+				if (anim[i].comp[k]->trans->mesh == idx) animstate[i] = anim[i].defstate; // reset to default animation state	
 			}
+		}
+
+		pMatMgr->ApplyConfiguration(meshlist[idx].mesh);
+
+		meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
+		vessel->GetMeshOffset(idx, ofs);
+
+		if (length(ofs)) {
+			if (!meshlist[idx].trans) meshlist[idx].trans = new D3DXMATRIX;
+			D3DMAT_Identity(meshlist[idx].trans);
+			D3DMAT_SetTranslation(meshlist[idx].trans, &ofs);
+		}
+		else {
+			SAFE_DELETE(meshlist[idx].trans);
 		}
 	}
 }

@@ -142,6 +142,19 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->ModFlags = 0;
 }
 
+void CreateDefaultMat(D3D9MatExt *pOut)
+{
+	pOut->Ambient = D3DXVECTOR3(0, 0, 0);
+	pOut->Diffuse = D3DXVECTOR4(1, 1, 1, 1);
+	pOut->Emissive = D3DXVECTOR3(0, 0, 0);
+	pOut->Specular = D3DXVECTOR4(0.2f, 0.2f, 0.2f, 50.0f);
+	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
+	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
+	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
+	pOut->Roughness = 0.0f;
+	pOut->ModFlags = 0;
+}
+
 void D3D9TuneInit(D3D9Tune *pTune)
 {
 	pTune->Albedo = D3DXCOLOR(1, 1, 1, 1);

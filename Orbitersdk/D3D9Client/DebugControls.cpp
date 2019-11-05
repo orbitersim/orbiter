@@ -40,6 +40,7 @@ HWND hDlg = NULL;
 HWND hDataWnd = NULL;
 vObject *vObj = NULL;
 std::string buffer("");
+D3DXVECTOR3 PickLocation;
 
 HWND hTipRed, hTipGrn, hTipBlu, hTipAlp;
 
@@ -145,6 +146,7 @@ void Create()
 	camMode = 0;
 	dspMode = 0;
 	SelColor = 0;
+	PickLocation = D3DXVECTOR3(0,0,0);
 
 	cpr = cpg = cpb = cpa = 0.0f;
 
@@ -1027,6 +1029,11 @@ DWORD GetSelectedMesh()
 	return sMesh;
 }
 
+void SetPickPos(D3DXVECTOR3 pos)
+{
+	PickLocation = pos;
+}
+
 // =============================================================================================
 //
 void SelectGroup(DWORD idx)
@@ -1391,6 +1398,9 @@ void Append(const char *format, ...)
 void Refresh()
 {
 	if (hDataWnd == NULL) return;
+
+	Append("LocalPos = [%f, %f, %f]", PickLocation.x, PickLocation.y, PickLocation.z);
+
 	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW), buffer.c_str());
 	buffer.clear();
 }

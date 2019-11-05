@@ -365,6 +365,8 @@ bool MatMgr::SaveConfiguration()
 		return false;
 	}
 
+	fprintf(file.pFile, "CONFIG_VERSION 2\n");
+
 	for (DWORD k=0;k<nRec;k++) pRecord[k].bSaved = false;
 
 	for (DWORD k=0;k<nRec;k++) {
@@ -397,7 +399,7 @@ bool MatMgr::SaveConfiguration()
 			if (flags&D3D9MATEX_REFLECT)  fprintf(file.pFile,"REFLECT %f %f %f\n", pM->Reflect.x, pM->Reflect.y, pM->Reflect.z);
 			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.x, pM->Fresnel.z, pM->Fresnel.y);
 			if (flags&D3D9MATEX_EMISSION2) fprintf(file.pFile, "EMISSION2 %f %f %f\n", pM->Emission2.x, pM->Emission2.y, pM->Emission2.z);
-			if (flags&D3D9MATEX_ROUGHNESS)  fprintf(file.pFile, "ROUGHNESS %f\n", pM->Roughness);
+			if (flags&D3D9MATEX_ROUGHNESS) fprintf(file.pFile, "ROUGHNESS %f\n", pM->Roughness);
 		}
 	}
 	return true;

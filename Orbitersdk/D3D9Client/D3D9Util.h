@@ -273,8 +273,8 @@ typedef struct {
 	class vObject  *vObj;			///< Visual handle
 	float			dist;			///< Distance to a pick point
 	int				group;			///< Mesh group that was picked
-	D3DXVECTOR3		normal;			///< Normal vector
-	D3DXVECTOR3		pos;			///< Position from camera
+	D3DXVECTOR3		normal;			///< Normal vector in local vessel coordinates
+	D3DXVECTOR3		pos;			///< Position in local vessel coordinates
 	int				idx;			///< Index that was picked
 	float			u, v;			///< Barycentric coords
 } D3D9Pick;
@@ -437,6 +437,7 @@ bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE
 
 void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
 void UpdateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut);
+void CreateDefaultMat(D3D9MatExt *pOut);
 void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
 bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc);
 void D3D9TuneInit(D3D9Tune *);
