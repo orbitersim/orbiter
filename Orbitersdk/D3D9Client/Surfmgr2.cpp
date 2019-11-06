@@ -795,9 +795,9 @@ void SurfTile::Render ()
 
 			if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) < (shd->rad + mesh->bsRad)) {
 				float s = float(shd->size);
-				float qw = 1.0f / float(Config->ShadowMapSize);
+				float sr = 2.0f * shd->rad / s;
 				HR(Shader->SetMatrix(TileManager2Base::smLVP, &shd->mViewProj));
-				HR(Shader->SetVector(TileManager2Base::svSHD, &D3DXVECTOR4(s, 1.0f / s, qw, 0)));
+				HR(Shader->SetVector(TileManager2Base::svSHD, &D3DXVECTOR4(sr, 1.0f / s, 0, 1.0f / shd->depth)));
 				HR(Shader->SetTexture(TileManager2Base::stShadowMap, shd->pShadowMap));
 				HR(Shader->SetBool(TileManager2Base::sbShadows, true));
 			}

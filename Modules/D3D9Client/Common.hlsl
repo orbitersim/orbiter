@@ -132,7 +132,7 @@ void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW,
 // ==========================================================================================================
 // Object Self Shadows
 // ==========================================================================================================
-
+/*
 float ProjectShadows(float2 sp)
 {
 	if (!gShadowsEnabled) return 0.0f;
@@ -159,14 +159,13 @@ float ProjectShadows(float2 sp)
 	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
 
 	return va / 9.0f;
-}
+}*/
 
 
 // ---------------------------------------------------------------------------------------------------
 //
 float SampleShadows(float2 sp, float pd)
 {
-	if (!gShadowsEnabled) return 0.0f;
 
 	float2 dx = float2(gSHD[1], 0) * 1.5f;
 	float2 dy = float2(0, gSHD[1]) * 1.5f;
@@ -193,8 +192,7 @@ float SampleShadows(float2 sp, float pd)
 //
 float SampleShadows2(float2 sp, float pd)
 {
-	if (!gShadowsEnabled) return 0.0f;
-
+	
 	float val = 0;
 	float m = KERNEL_RADIUS * gSHD[1];
 
@@ -210,7 +208,6 @@ float SampleShadows2(float2 sp, float pd)
 //
 float SampleShadows3(float2 sp, float pd, float4 frame)
 {
-	if (!gShadowsEnabled) return 0.0f;
 
 	float val = 0;
 	frame *= KERNEL_RADIUS * gSHD[1];
@@ -228,6 +225,7 @@ float SampleShadows3(float2 sp, float pd, float4 frame)
 //
 float SampleShadowsEx(float2 sp, float pd, float4 sc)
 {
+	
 #if SHDMAP == 1
 	return SampleShadows(sp, pd);
 #elif SHDMAP == 2 || SHDMAP == 4
@@ -245,12 +243,17 @@ float SampleShadowsEx(float2 sp, float pd, float4 sc)
 //
 float ComputeShadow(float4 shdH, float dLN, float4 sc)
 {
+	if (!gShadowsEnabled) return 1.0f;
+
 	shdH.xyz /= shdH.w;
 	shdH.z = 1 - shdH.z;
 	float2 sp = shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
 
 	sp += gSHD[1] * 0.5f;
 
+	if (sp.x < 0 || sp.y < 0) return 1.0f;	// If a sample is outside border -> fully lit
+	if (sp.x > 1 || sp.y > 1) return 1.0f;
+	
 	float fShadow;
 
 	float kr = gSHD[0] * KERNEL_RADIUS;
@@ -258,17 +261,12 @@ float ComputeShadow(float4 shdH, float dLN, float4 sc)
 	float ofs = kr / (dLN * dx);
 	float omx = min(0.05 + ofs, 0.5);
 
-	if (gBaseBuilding) {
+	float  pd = shdH.z + omx * gSHD[3];
 
-		// It's a surface base building
-		fShadow = ProjectShadows(sp);
-	}
-	else {
+	if (pd < 0) pd = 0;
+	if (pd > 1) pd = 1;
 
-		// It's a vessel
-		float  pd = shdH.z + omx * gSHD[3];
-		fShadow = SampleShadowsEx(sp, pd, sc);
-	}
-
+	fShadow = SampleShadowsEx(sp, pd, sc);
+	
 	return 1 - fShadow;
 }

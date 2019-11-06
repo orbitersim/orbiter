@@ -323,6 +323,7 @@ const float ATMNOISE = 0.02;
 // -------------------------------------------------------------------------------------------------------------
 // Project shadows on surface
 //
+/*
 float ProjectShadows(float2 sp)
 {
 	if (sp.x < 0 || sp.y < 0) return 1.0f;
@@ -347,6 +348,38 @@ float ProjectShadows(float2 sp)
 	if ((tex2D(ShadowS, sp + dx).r) < pd) va++;
 
 	return va / 9.0f;
+}*/
+
+
+
+// ---------------------------------------------------------------------------------------------------
+//
+float SampleShadows(float2 sp, float pd)
+{
+	if (sp.x < 0 || sp.y < 0) return 0.0f;	// If a sample is outside border -> fully lit
+	if (sp.x > 1 || sp.y > 1) return 0.0f;
+
+	if (pd < 0) pd = 0;
+	if (pd > 2) pd = 2;
+
+	float2 dx = float2(vSHD[1], 0) * 1.5f;
+	float2 dy = float2(0, vSHD[1]) * 1.5f;
+	float  va = 0;
+
+	sp -= dy;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
+	sp += dy;
+	if ((tex2D(ShadowS, sp - dx).r) > pd) va++;
+	if ((tex2D(ShadowS, sp).r) > pd) va++;
+	if ((tex2D(ShadowS, sp + dx).r) > pd) va++;
+
+	return va * 0.1111111f;
 }
 
 // -------------------------------------------------------------------------------------------------------------
@@ -698,8 +731,10 @@ float4 SurfaceTechPS(TileVS frg,
 #if defined(_SHDMAP)
 	if (bShadows) {
 		frg.shdH.xyz /= frg.shdH.w;
+		frg.shdH.z = 1 - frg.shdH.z;
 		float2 sp = frg.shdH.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
-		fShadow = ProjectShadows(sp);
+		float  pd = frg.shdH.z + 0.05f * vSHD[3];
+		fShadow = 1.0f - SampleShadows(sp, pd);
 	}
 #endif
 
