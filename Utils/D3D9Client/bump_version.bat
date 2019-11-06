@@ -66,7 +66,7 @@ var tasks = [{
   }, {
      file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /PRODUCTVERSION\s+((\d+),(\d+),(\d+),(\d+))/,
-    subst : "{Major},0,0,0"
+    subst : "{Major},{Minor},0,0"
   }, {
      file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /VALUE\s+\"FileVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
@@ -74,7 +74,7 @@ var tasks = [{
   }, {
      file : "Orbitersdk/D3D9Client/D3D9Client.rc",
      rexp : /VALUE\s+\"ProductVersion\"\,\s+\"((\d+)\.(\d+)\.(\d+)\.(\d+))\"/,
-    subst : "{Major}.0.0.0"
+    subst : "{Major}.{Minor}.0.0"
   }, {
      file : "Orbitersdk/D3D9Client/doc/Doxyfile",
      rexp : /PROJECT_NUMBER\s*=\s*\"(?:Beta|R)?\s*([\d\.]+)\"/,

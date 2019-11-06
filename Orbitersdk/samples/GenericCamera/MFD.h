@@ -55,10 +55,9 @@ private:
 
 	void WriteStatus(FILEHANDLE scn) const;
 	void ReadStatus(FILEHANDLE scn);
-	
+
 	static bool DataInput(void *id, char *str, void *data);
 	static void DrawOverlay(oapi::Sketchpad *pSkp, void *pParam);
-
 
 	oapi::Font *		font;
 	SURFHANDLE			hRenderSrf;

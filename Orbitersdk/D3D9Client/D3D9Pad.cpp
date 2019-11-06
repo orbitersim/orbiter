@@ -884,12 +884,6 @@ bool D3D9Pad::Text (int x, int y, const char *str, int len)
 	return true;
 }
 
-// ===============================================================================================
-//
-//bool D3D9Pad::TextW(int x, int y, const LPCWSTR str, int len)
-//{
-//	return Text(x, y, (char *)str, len);
-//}
 
 // ===============================================================================================
 //
