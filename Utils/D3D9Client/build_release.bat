@@ -60,6 +60,7 @@ if not "%VS141COMNTOOLS%"=="" (
   set SOLUTIONFILE=D3D9ClientVS2017.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
+  set BUILD_FLAG=/p:XPDeprecationWarning=false
   goto assign
 )
 :: Visual Studio 2015
@@ -95,11 +96,11 @@ if not "%VS90COMNTOOLS%"=="" (
 :assign
 set ZIP_NAME=D3D9Client%VERSION%
 set VC=msbuild.exe
-set BUILD_FLAG=/t:build
+set BUILD_FLAG=%BUILD_FLAG% /t:build
 set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%SOLUTIONFILE%"
 set GCAPI_PROJECTFILE="%BASE_DIR%\Orbitersdk\D3D9Client\gcAPI\%GCAPI_PROJECTFILE%"
 set CONFIG=/p:Configuration=Release /p:Platform=Win32
-set CONFIG_DBG=/p:Configuration=Debug
+set CONFIG_DBG=/p:Configuration=Debug /p:Platform=Win32
 set ZIP_CMD="C:\Program Files\7-Zip\7z.exe"
 
 
@@ -166,6 +167,10 @@ svn export --force --quiet "%BASE_DIR%\Orbitersdk" "%ABS_PATH%\%OUT_DIR%\Orbiter
 svn export --force --quiet "%BASE_DIR%\Textures" "%ABS_PATH%\%OUT_DIR%\Textures"
 svn export --force --quiet "%BASE_DIR%\Utils" "%ABS_PATH%\%OUT_DIR%\Utils"
 svn export --force --quiet "%BASE_DIR%\D3D9Client.cfg" "%ABS_PATH%\%OUT_DIR%"
+
+
+:: --- Remove some files we don't need to have in the source-package
+del "%OUT_DIR%\Orbitersdk\D3D9Client\doc\images\*.psd"
 
 
 :: --- Copy the DLLs
