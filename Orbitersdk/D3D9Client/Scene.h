@@ -214,7 +214,7 @@ public:
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
 	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
-	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal = false);
+	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal = false, bool bListExists = false);
 
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 
@@ -425,6 +425,7 @@ private:
 
 	std::list<vVessel *> RenderList;
 	std::list<vVessel *> SmapRenderList;
+	std::list<vVessel *> Casters;
 	std::stack<CAMERA>	CameraStack;
 	std::stack<DWORD>	PassStack;
 

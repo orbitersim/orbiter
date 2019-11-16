@@ -48,9 +48,9 @@ D3DXHANDLE Scene::eColor = 0;
 D3DXHANDLE Scene::eTex0 = 0;
 
 
-bool sort_vessels(const vVessel &a, const vVessel &b)
+bool sort_vessels(const vVessel *a, const vVessel *b)
 {
-	return a.BBox.bs.w > b.BBox.bs.w;
+	return a->CameraTgtDist() < b->CameraTgtDist();
 }
 
 
@@ -1162,47 +1162,68 @@ void Scene::RenderMainScene()
 		}
 	}
 
+	// ---------------------------------------------------------------------------------------------
+	// Create a caster list for shadow mapping
+	// ---------------------------------------------------------------------------------------------
+	
+	Casters.clear();
+
+	for (pv = vobjFirst; pv; pv = pv->next) {
+		if (!pv->vobj->IsActive()) continue;
+		if (pv->type == OBJTP_VESSEL) Casters.push_back((vVessel *)pv->vobj);
+	}
+
+	Casters.sort(sort_vessels);
+
+
 
 	// ---------------------------------------------------------------------------------------------
 	// Render shadow map for vFocus early for surface base and planet rendering
 	// ---------------------------------------------------------------------------------------------
 
 	int shadow_lod = -1;
+	float bouble_rad = 14.0f;		// Terrain shadow mapping coverage 
 
 	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2) {
 
-		D3DXVECTOR3 ld = sunLight.Dir;
+		SmapRenderList.clear();
+		SmapRenderList.push_back(vFocus);
 
-		D3DXVECTOR3 fo_pos = vFocus->GetBoundingSpherePosDX();
-		float fo_rad = vFocus->GetBoundingSphereRadius();
+		D3DXVECTOR3 ld = sunLight.Dir;
+		D3DXVECTOR3 pos = vFocus->GetBoundingSpherePosDX();
+		float rad = vFocus->GetBoundingSphereRadius();
+		float frad = rad;
 
 		vFocus->bStencilShadow = false;
 
-		D3DXVECTOR3 pos = fo_pos;
-		float rad = fo_rad;
-
+		
 		// What else should be included besides vFocus ?
 
-		for each (vVessel *v in RenderList)
+		for each (vVessel *v in Casters)
 		{
 			if (v == vFocus) continue;
 
 			D3DXVECTOR3 bs_pos = v->GetBoundingSpherePosDX();
 			float bs_rad = v->GetBoundingSphereRadius();
 
-			D3DXVECTOR3 bc = bs_pos - fo_pos;
+			D3DXVECTOR3 bc = bs_pos - pos;
 			float z = D3DXVec3Dot(&ld, &bc);
-			bc -= ld * z;
+			if (fabs(z) > 1e3) continue;
+			D3DXVECTOR3 fbc = bc - ld * z;
+			float dst = D3DXVec3Length(&fbc);
+			if (dst > 1e3) continue;
 
-			if ( (D3DXVec3Length(&bc) < (bs_rad + fo_rad)) && (fabs(z)<1e3) ) {
+			float nrd = (rad + dst + bs_rad) * 0.5f;
+
+			bool bInclude = false;
+
+			if (dst < (bs_rad + frad)) bInclude = true;
+			if (nrd < bouble_rad) bInclude = true;
+
+			if (bInclude) {
 
 				v->bStencilShadow = false;
-
-				bc = bs_pos - pos;
-				bc -= ld * D3DXVec3Dot(&ld, &bc);
-
-				float dst = D3DXVec3Length(&bc);		
-				float nrd = (rad + dst + bs_rad) * 0.5f;
+				SmapRenderList.push_back(v);
 
 				if (nrd < rad) continue;
 
@@ -1211,13 +1232,13 @@ void Scene::RenderMainScene()
 					rad = bs_rad;
 				}
 				else {
-					if (dst > 0.01f) pos += bc * ((nrd - rad) / dst);
+					if (dst > 0.001f) pos += fbc * ((nrd - rad) / dst);		
 					rad = nrd;
 				}
 			}
 		}
 
-		shadow_lod = RenderShadowMap(pos, ld, rad);
+		shadow_lod = RenderShadowMap(pos, ld, rad, false, true);
 	}
 
 
@@ -2089,7 +2110,7 @@ D3DXCOLOR Scene::GetSunDiffColor()
 
 // ===========================================================================================
 //
-int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal)
+int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal, bool bListExists)
 {
 	rad *= 1.02f;
 
@@ -2099,25 +2120,53 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 
 	float mnd =  1e16f;
 	float mxd = -1e16f;
+	float rsmax = 0.0f;
+	float tanap = float(GetTanAp());
+	float viewh = float(ViewH());
 
-	SmapRenderList.clear();
+	if (!bListExists) {
 
-	// browse through vessels to find shadowers --------------------------
-	//
-	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
-		if (pv->type != OBJTP_VESSEL) continue;
-		vVessel *vV = (vVessel *)pv->vobj;
-		if (!vV->IsActive()) continue;
-		if (vV->GetMinMaxLightDist(&mnd, &mxd)) SmapRenderList.push_back(vV);
+		// If the list doesn't exists then create it...
+		SmapRenderList.clear();
+
+		// browse through vessels to find shadowers --------------------------
+		//
+		for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
+			if (pv->type != OBJTP_VESSEL) continue;
+			vVessel *vV = (vVessel *)pv->vobj;
+			if (!vV->IsActive()) continue;
+			if (vV->IntersectShadowVolume()) {
+				SmapRenderList.push_back(vV);
+				vV->GetMinMaxLightDist(&mnd, &mxd);
+			}
+		}
+
+		// Compute shadow lod
+		rsmax = viewh * rad / (tanap * D3DXVec3Length(&pos));
 	}
 
-	if (SmapRenderList.size() == 0) return -1;	// Nothing to render
 
+	if (SmapRenderList.size() == 0) return -1;	// The list is empty, Nothing to render
+
+
+	if (bListExists) {
+
+		for each (vVessel* vV in SmapRenderList)
+		{
+			// Get shadow min-max distances
+			vV->GetMinMaxLightDist(&mnd, &mxd);
+
+			// Compute shadow lod
+			D3DXVECTOR3 bspos = vV->GetBoundingSpherePosDX();
+			float rs = viewh * rad / (tanap * D3DXVec3Length(&bspos));
+			if (rs > rsmax) rsmax = rs;
+		}
+	}
 
 	smap.depth = (mxd - mnd) + 10.0f;
 
 	D3DXMatrixOrthoOffCenterRH(&smap.mProj, -rad, rad, rad, -rad, 50.0f, 50.0f + smap.depth);
-	
+
 	smap.dist = mnd - 55.0f;
 
 	D3DXVECTOR3 lp = pos + ld * smap.dist;
@@ -2125,8 +2174,7 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 	D3DXMatrixLookAtRH(&smap.mView, &lp, &pos, &D3DXVECTOR3(0, 1, 0));
 	D3DXMatrixMultiply(&smap.mViewProj, &smap.mView, &smap.mProj);
 
-	float rs = float(ViewH()) * rad / (float(GetTanAp()) * D3DXVec3Length(&pos));
-	float lod = log2f(float(Config->ShadowMapSize) / (rs*1.5f));
+	float lod = log2f(float(Config->ShadowMapSize) / (rsmax*1.5f));
 
 	smap.lod = min(int(round(lod)), SHM_LOD_COUNT - 1);
 	smap.lod = max(smap.lod, 0);
@@ -2900,6 +2948,9 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	// find the visual
 	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
+
+	// Something is very wrong... abort...
+	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL) return;
 
 	// Camera altitude over the proxy
 	VECTOR3 pos;

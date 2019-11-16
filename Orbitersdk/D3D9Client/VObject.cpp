@@ -154,10 +154,12 @@ bool vObject::Update(bool bMainScene)
 
 	assert(bMainScene==true);
 
-	MATRIX3 grot;
+	MATRIX3 grot; VECTOR3 tpos;
+	OBJHANDLE hTgt = oapiCameraTarget();
 
 	oapiGetRotationMatrix(hObj, &grot);
 	oapiGetGlobalPos(hObj, &gpos);
+	oapiGetGlobalPos(hTgt, &tpos);
 
 	axis   = mul(grot, _V(0, 1, 0));
 	cpos   = gpos - scn->GetCameraGPos();
@@ -179,8 +181,9 @@ bool vObject::Update(bool bMainScene)
 	OBJHANDLE hSun = oapiGetGbodyByIndex(0);
 	oapiGetGlobalPos(hSun, &sundir);
 
-	sundst = length(sundir-gpos);
-	sundir = unit(sundir-gpos);
+	ctgtdst = length(tpos - gpos);
+	sundst = length(sundir - gpos);
+	sundir = unit(sundir - gpos);
 	sunapprad = oapiGetSize(hSun) / sundst;
 	CheckResolution();
 

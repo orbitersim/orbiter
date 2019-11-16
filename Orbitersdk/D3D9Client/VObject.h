@@ -159,6 +159,7 @@ public:
 	 * \note The returned distance vector is expressed in the ecliptic frame.
 	 * \sa CamDist
 	 */
+	inline double CameraTgtDist() const { return ctgtdst; }
 	inline const VECTOR3 &PosFromCamera() const { return cpos; }
 	inline const VECTOR3 &GlobalPos() const { return gpos; }
 
@@ -256,7 +257,7 @@ protected:
 	double cdist;		// current camera distance
 	double sunapprad;	// Apparent size of the sun
 	double sundst;		// Distance to the sun [m]
-
+	double ctgtdst;		// Distance form a camera target 
 	char name[64];
 };
 

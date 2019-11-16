@@ -580,6 +580,20 @@ bool vVessel::IsInsideShadows()
 
 // ============================================================================================
 //
+bool vVessel::IntersectShadowVolume()
+{
+	D3DXVECTOR3 bc;
+	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
+	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
+	bc = bc - shd->pos;
+	float x = D3DXVec3Dot(&bc, &(shd->ld));
+	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) > (shd->rad + BBox.bs.w)) return false;
+	return true;
+}
+
+
+// ============================================================================================
+//
 bool vVessel::IntersectShadowTarget()
 {
 	D3DXVECTOR3 bc;
@@ -593,22 +607,15 @@ bool vVessel::IntersectShadowTarget()
 
 // ============================================================================================
 //
-bool vVessel::GetMinMaxLightDist(float *mind, float *maxd)
+void vVessel::GetMinMaxLightDist(float *mind, float *maxd)
 {
 	D3DXVECTOR3 bc;
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 	D3DXVec3TransformCoord(&bc, &D3DXVECTOR3f4(BBox.bs), &mWorld);
-	bc = bc - shd->pos;
+	bc -= shd->pos;
 	float x = D3DXVec3Dot(&bc, &(shd->ld));
-
-	//if (x > BBox.bs.w) return false; //Behind
-
-	if (sqrt(D3DXVec3Dot(&bc, &bc) - x*x) > (shd->rad + BBox.bs.w)) return false;
-
 	*mind = min(*mind, x - shd->rad);
 	*maxd = max(*maxd, x + shd->rad);
-
-	return true;
 }
 
 
