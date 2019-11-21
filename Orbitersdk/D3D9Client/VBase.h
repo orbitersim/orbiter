@@ -42,10 +42,14 @@ public:
 	double	GetElevation() const;
 	vPlanet *GetPlanet() const { return vP; }
 
-	// Convert from base centric system to local geocentric system
+	// Convert from a base centric system to time invariant geocentric system 
+	// (i.e. vector does not change in time and points to the same fixed surface location) 
+	//
 	VECTOR3 ToLocal(VECTOR3 pos, double *lng=NULL, double *lat=NULL) const;
 
-	// Convert from local geocentric frame to base centric system
+
+	// Convert from time invariant geocentric frame to base centric system (Inverse of the ToLocal)
+	//
 	VECTOR3 FromLocal(VECTOR3 pos) const;
 	void	FromLocal(VECTOR3 pos, D3DXVECTOR3 *pTgt) const;
 
@@ -84,10 +88,9 @@ private:
 	bool bLocalLight;          // true if lighting is modified
 	//D3D9Light localLight;      // current local lighting parameters
 	class vPlanet *vP;
-	OBJHANDLE hPlanet;
 	VECTOR3 vLocalPos;
 	MATRIX3 mGlobalRot;
-	D3DXMATRIX mGlobalInvRot;
+	D3DXMATRIX mGlobalRotDX;
 
 	int numRunwayLights;
 	RunwayLights** runwayLights;

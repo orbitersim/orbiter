@@ -92,20 +92,20 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 	// ----------------------------------------------------------------------
 	// Compute transformations from local base frame to planet frame and back
 	//
-	MATRIX3 grot; VECTOR3 gpos;
-	oapiGetRotationMatrix(hPlanet, &grot);
+	MATRIX3 plrot; VECTOR3 relpos;
+	oapiGetRotationMatrix(hPlanet, &plrot);
 	oapiGetRotationMatrix(hObj, &mGlobalRot);
-	oapiGetRelativePos(hObj, hPlanet, &gpos);
-	vLocalPos = tmul(grot, gpos);
+	oapiGetRelativePos(hObj, hPlanet, &relpos);
+	vLocalPos = tmul(plrot, relpos);
 
-	swap(grot.m12, grot.m21);
-	swap(grot.m13, grot.m31);
-	swap(grot.m23, grot.m32);
+	swap(plrot.m12, plrot.m21);
+	swap(plrot.m13, plrot.m31);
+	swap(plrot.m23, plrot.m32);
 
-	mGlobalRot = mul(grot, mGlobalRot);
+	mGlobalRot = mul(plrot, mGlobalRot);
 
-	D3DXMatrixIdentity(&mGlobalInvRot);
-	D3DMAT_SetRotation(&mGlobalInvRot, &mGlobalRot);
+	D3DXMatrixIdentity(&mGlobalRotDX);
+	D3DMAT_SetRotation(&mGlobalRotDX, &mGlobalRot);
 	//------------------------------------------------------------------------
 
 	// load surface tiles
@@ -195,7 +195,7 @@ VECTOR3 vBase::FromLocal(VECTOR3 pos) const
 void vBase::FromLocal(VECTOR3 pos, D3DXVECTOR3 *pTgt) const
 {
 	D3DXVECTOR3 pv(float(pos.x-vLocalPos.x), float(pos.y-vLocalPos.y), float(pos.z-vLocalPos.z));
-	D3DXVec3TransformNormal(pTgt, &pv, &mGlobalInvRot);
+	D3DXVec3TransformNormal(pTgt, &pv, &mGlobalRotDX);
 }
 
 // ===========================================================================================
@@ -473,11 +473,9 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	VECTOR3 sd;
 	oapiGetGlobalPos(hObj, &sd); normalise(sd);
 	
-	D3DXVECTOR3 gsun = D3DXVEC(sd);
-	D3DXVECTOR3 lsun;
-	D3DXMATRIX mWorldInv;
-	D3DXMatrixInverse(&mWorldInv, NULL, &mWorld);
-	D3DXVec3TransformNormal(&lsun, &gsun, &mWorldInv);
+	MATRIX3 mRot;
+	oapiGetRotationMatrix(hObj, &mRot);
+	D3DXVECTOR3 lsun = D3DXVEC(tmul(mRot, sd));
 
 	if (lsun.y>0) return;
 
@@ -501,6 +499,15 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 	D3DXVECTOR4 param = D9OffsetRange(oapiGetSize(hPlanet), 30e3);
 
 	for (DWORD i=0; i<nstructure_as; i++) {
-		if (structure_as[i]->HasShadow()) structure_as[i]->RenderShadowsEx(scale, &mProj, &mWorld, &light, &param);
+		if (structure_as[i]->HasShadow()) {
+			double a, b;
+			ToLocal(_V(structure_as[i]->BBox.bs), &a, &b);	
+			float y = float(oapiSurfaceElevation(hPlanet, a, b) - GetElevation());
+
+			mProj._41 = lsun.x*y;
+			mProj._42 = lsun.y*y;
+			mProj._43 = lsun.z*y;
+			structure_as[i]->RenderShadowsEx(scale, &mProj, &mWorld, &light, &param, &y);
+		}
 	}
 }

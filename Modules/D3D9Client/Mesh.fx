@@ -249,6 +249,8 @@ BShadowVS ShadowMeshTechVS(SHADOW_VERTEX vrt)
 	// Zero output.
 	BShadowVS outVS = (BShadowVS)0;
 	float3 posW = mul(float4(vrt.posL.xyz, 1.0f), gW).xyz;
+	outVS.alpha = dot(vrt.posL.xyz, gInScatter.xyz) + gInScatter.w;
+	//outVS.alpha = vrt.posL.y + gInScatter.w;
 	outVS.posH  = mul(float4(posW, 1.0f), gVP);
 	outVS.dstW  = outVS.posH.zw;
 	return outVS;
@@ -258,6 +260,8 @@ BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
 {
 	// Zero output.
 	BShadowVS outVS = (BShadowVS)0;
+	if (vrt.posL.y < gGlowConst) outVS.alpha = 0;
+	else  outVS.alpha = 1;
 	float d = dot(vrt.posL.xyz,vrt.posL.xyz);
 	float3 posX = mul(float4(vrt.posL.xyz, 1.0f), gGrpT).xyz;
 	float3 posW = mul(float4(posX-gColor.xyz*(gTexOff.x*d+gTexOff.y*d*d), 1.0f), gW).xyz;
@@ -268,7 +272,8 @@ BShadowVS ShadowMeshTechExVS(SHADOW_VERTEX vrt)
 
 float4 ShadowTechPS(BShadowVS frg) : COLOR
 {
-	return float4(0.0f, 0.0f, 0.0f, 1-gMix);
+	if (frg.alpha < 0) return float4(0.0f, 0.0f, 0.0f, 0.0f);
+	return float4(0.0f, 0.0f, 0.0f, (1.0f-gMix));
 }
 
 // -----------------------------------------------------------------------------------

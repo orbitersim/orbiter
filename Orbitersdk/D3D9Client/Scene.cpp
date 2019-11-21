@@ -1202,9 +1202,12 @@ void Scene::RenderMainScene()
 		for each (vVessel *v in Casters)
 		{
 			if (v == vFocus) continue;
+			if (v->HasShadow() == false) continue;
 
 			D3DXVECTOR3 bs_pos = v->GetBoundingSpherePosDX();
 			float bs_rad = v->GetBoundingSphereRadius();
+
+			if (bs_rad > 80.0) continue;
 
 			D3DXVECTOR3 bc = bs_pos - pos;
 			float z = D3DXVec3Dot(&ld, &bc);
@@ -1239,6 +1242,8 @@ void Scene::RenderMainScene()
 		}
 
 		shadow_lod = RenderShadowMap(pos, ld, rad, false, true);
+
+		pShdMap = smap.pShadowMap;
 	}
 
 

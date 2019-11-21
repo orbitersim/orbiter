@@ -224,6 +224,7 @@ struct BShadowVS
 {
 	float4 posH    : POSITION0;
 	float2 dstW    : TEXCOORD0;
+	float  alpha   : TEXCOORD1;
 };
 
 // ----------------------------------------------------------------------------

@@ -237,8 +237,8 @@ public:
 	void			RenderBoundingBox(const LPD3DXMATRIX pW);
 	void			Render(const LPD3DXMATRIX pW, int iTech=RENDER_VESSEL, LPDIRECT3DCUBETEXTURE9 *pEnv=NULL, int nEnv=0);
 	void			RenderFast(const LPD3DXMATRIX pW, int iTech);
-	void			RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap = false);
-	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param);
+	void			RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap = false, const D3DXVECTOR4 *elev = NULL);
+	void			RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param, const float *elev = NULL);
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
 	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);

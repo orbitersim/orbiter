@@ -325,6 +325,16 @@ void LogMatrix(D3DXMATRIX *pM, const char *name);
 // Conversion functions
 // ------------------------------------------------------------------------------------
 
+inline VECTOR3 _V(D3DXVECTOR3 &i)
+{
+	return _V(double(i.x), double(i.y), double(i.z));
+}
+
+inline VECTOR3 _V(D3DXVECTOR4 &i)
+{
+	return _V(double(i.x), double(i.y), double(i.z));
+}
+
 inline void D3DXCOLORSWAP(D3DXCOLOR *x)
 {
 	float a = x->r; x->r = x->b; x->b = a;

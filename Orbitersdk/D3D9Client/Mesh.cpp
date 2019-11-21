@@ -487,8 +487,8 @@ bool D3D9Mesh::HasShadow()
 {
 	if (!IsOK()) return false;
 	for (DWORD g=0; g<nGrp; g++) {
-		if (Grp[g].UsrFlag & 3) continue;
-		if (Grp[g].IntFlag & 3) continue;
+		if ((Grp[g].UsrFlag & 0x3) != 0) continue;
+		//if (Grp[g].IntFlag & 3) continue;
 		return true;
 	}
 	return false;
@@ -995,8 +995,9 @@ bool D3D9Mesh::GetMaterial(D3D9MatExt *pMat, DWORD idx) const
 void D3D9Mesh::SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bStat)
 {
 	D3D9MatExt Mat;
-	if (pMat == NULL) { 
-		LogErr("MeshMaterial is NULL, likely from oapiMeshMaterial() name=[%s], index=%d", name, idx); 
+	// Faulty output coming from oapiMeshMaterial, why ????
+	if (pMat <= ((void*)0x100)) { 
+		LogErr("oapiMeshMaterial() returned 0x%X, name=[%s], index=%d", pMat, name, idx); 
 		CreateDefaultMat(&Mat);
 	} else CreateMatExt(pMat, &Mat);
 	SetMaterial(&Mat, idx, bStat);
@@ -2318,7 +2319,7 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap)
+void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, bool bShadowMap, const D3DXVECTOR4 *elev)
 {
 	if (!IsOK()) return;
 
@@ -2338,18 +2339,24 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 	if (bShadowMap) FX->SetTechnique(eGeometry);
 	else			FX->SetTechnique(eShadowTech);
 
+	if (elev && bShadowMap==false) FX->SetVector(eInScatter, elev);
+	else FX->SetVector(eInScatter, &D3DXVECTOR4(0,1,0,0));
+
 	FX->SetFloat(eMix, alpha);
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(0);
+
+	if (pP) FX->SetValue(eGT, pP, sizeof(D3DXMATRIX));	// Shadow Projection
 
 	bool bInit = true;
 	bool bCurrentState = false;
 
 	for (DWORD g = 0; g < nGrp; g++) {
 
+		if (Grp[g].UsrFlag & 0x2) continue;
+		if ((Grp[g].UsrFlag & 0x1) && (bShadowMap == false)) continue;
 
-		if ((Grp[g].UsrFlag & 0x3) == 0x3) continue;
-		if ((Grp[g].IntFlag & 0x3) == 0x3) continue;
+		//if (Grp[g].IntFlag & 0x2) continue;
 
 
 		if (Grp[g].bTransform) {
@@ -2396,7 +2403,7 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pW, bool bShadowMap
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
+void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param, const float *elev)
 {
 	if (!IsOK()) return;
 
@@ -2413,6 +2420,10 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 	FX->SetVector(eColor, light);
 	FX->SetVector(eTexOff, param);
 
+	if (elev) FX->SetFloat(eGlowConst, *elev);
+	else FX->SetFloat(eGlowConst, -1e6);
+
+
 	UINT numPasses = 0;
 	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
 	FX->BeginPass(1);
@@ -2420,7 +2431,7 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 	for (DWORD g = 0; g<nGrp; g++) {
 
 		if (Grp[g].UsrFlag & 0x3) continue;
-		if (Grp[g].IntFlag & 0x3) continue;
+		//if (Grp[g].IntFlag & 0x3) continue;
 
 		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
 

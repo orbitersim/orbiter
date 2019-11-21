@@ -246,18 +246,21 @@ protected:
 
 	bool active;		// visual is active (within camera range)
 	Scene *scn;			// The scene to which the object belongs
-	D3DXMATRIX mWorld;	// D3D world matrix for the object
-	VECTOR3	axis;
+	VECTOR3	axis;		// Rotation Axis, i.e. _V(0,1,0) in global frame
 	VECTOR3 cpos;		// camera-relative object position
 	VECTOR3 sundir;		// Sun direction (unit vector)
 	VECTOR3 albedo;
-	VECTOR3 gpos;
+	VECTOR3 gpos;		// Global position
+	MATRIX3 grot;		// Global rotation
 	MATRIX4 dmWorld;    // world matrix in double precision
+	D3DXMATRIX mWorld;	// world matrix in single precision
 	double size;        // object radius [m]
 	double cdist;		// current camera distance
 	double sunapprad;	// Apparent size of the sun
 	double sundst;		// Distance to the sun [m]
 	double ctgtdst;		// Distance form a camera target 
+	double lng, lat;	// Surface (lng, lat) in some special cases only (e.g. vBuilding)
+	OBJHANDLE hPlanet;	// Planet handle in some special cases (e.g. vBase, vBuilding)
 	char name[64];
 };
 

@@ -52,11 +52,14 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
 	, scn( (Scene *)scene) // should be const!
 	, sunapprad()
 	, sundst   ()
-	, size     (oapiGetSize(_hObj))
+	, hPlanet (NULL)
+	, lng(0), lat(0)
 {
 	_TRACE;
 	D3DXMatrixIdentity(&mWorld);
 	cdist = 0.0;
+	if (_hObj) size = oapiGetSize(_hObj);
+	else size = 0;
 	dmWorld = identity4();
 	albedo = _V(1,1,1);
 	oapiGetObjectName(hObj, name, 64);
@@ -154,11 +157,19 @@ bool vObject::Update(bool bMainScene)
 
 	assert(bMainScene==true);
 
-	MATRIX3 grot; VECTOR3 tpos;
+	VECTOR3 tpos;
 	OBJHANDLE hTgt = oapiCameraTarget();
 
-	oapiGetRotationMatrix(hObj, &grot);
-	oapiGetGlobalPos(hObj, &gpos);
+	if (hObj) {
+		oapiGetRotationMatrix(hObj, &grot);
+		oapiGetGlobalPos(hObj, &gpos);
+	}
+	else {
+		double elev = oapiSurfaceElevation(hPlanet, lng, lat) + oapiGetSize(hPlanet);
+		oapiEquToGlobal(hPlanet, lng, lat, elev, &gpos);
+		grot = identity();
+	}
+
 	oapiGetGlobalPos(hTgt, &tpos);
 
 	axis   = mul(grot, _V(0, 1, 0));
@@ -267,11 +278,7 @@ bool vObject::IsVisible()
 //
 void vObject::RenderSpot(LPDIRECT3DDEVICE9 dev, const VECTOR3 *ofs, float size, const VECTOR3 &col, bool lighting, int shape)
 {
-	MATRIX3 grot;
-	VECTOR3 gpos, pos(cpos);
-
-	oapiGetRotationMatrix(hObj, &grot);
-	oapiGetGlobalPos(hObj, &gpos);
+	VECTOR3 pos(cpos);
 
 	if (ofs) pos += mul (grot, *ofs);
 	VECTOR3 camp = scn->GetCameraGPos();
@@ -299,12 +306,8 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 {
 	if (hObj==NULL) return;
 
-	VECTOR3 gpos,spos;
-	oapiGetGlobalPos(hObj, &gpos);
+	VECTOR3 spos;
 	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &spos);
-
-	cpos = gpos - scn->GetCameraGPos();
-	cdist = length(cpos);
 
 	double alt = max(1.0, cdist - size);
 	double apr = size * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));
@@ -336,16 +339,10 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 //
 void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector, float lscale, float size, bool bLog)
 {
-	MATRIX3 grot;
 	D3DXMATRIX W;
-	VECTOR3 gpos, camp;
 
-    oapiGetRotationMatrix(hObj, &grot);
 	VECTOR3 dir = mul(grot, vector);
-
-	oapiGetGlobalPos(hObj, &gpos);
-
-	camp = gc->GetScene()->GetCameraGPos();
+	VECTOR3 camp = gc->GetScene()->GetCameraGPos();
 
     VECTOR3 pos = gpos - camp;
 	VECTOR3 rot = crossp(pos, vector);
@@ -378,16 +375,10 @@ void vObject::RenderAxisVector(D3D9Pad *pSkp, LPD3DXCOLOR pColor, VECTOR3 vector
 void vObject::RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, float lscale, float size, const char *label, bool bLog)
 {
 	D3DXVECTOR3 homog, ws;
-	MATRIX3 grot;
 	D3DXMATRIX W;
-	VECTOR3 gpos, camp;
 
-	oapiGetRotationMatrix(hObj, &grot);
 	VECTOR3 dir = mul(grot, vector);
-
-	oapiGetGlobalPos(hObj, &gpos);
-
-	camp = gc->GetScene()->GetCameraGPos();
+	VECTOR3 camp = gc->GetScene()->GetCameraGPos();
 
 	VECTOR3 pos = gpos - camp;
 	VECTOR3 rot = crossp(pos, vector);

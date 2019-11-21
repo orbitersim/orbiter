@@ -123,6 +123,7 @@ public:
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
 
 	bool HasExtPass();
+	bool HasShadow();
 	bool const Playback() const { return vessel->Playback(); }
 	class MatMgr * GetMaterialManager() const { return pMatMgr; }
 
