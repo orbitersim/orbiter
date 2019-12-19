@@ -1,14 +1,16 @@
 // =================================================================================================================================
-// The MIT Lisence:
 //
 // Copyright (C) 2014 - 2019 Jarmo Nikkanen
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
-// files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
-// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software 
-// is furnished to do so, subject to the following conditions:
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the "Software"), to use, copy, modify, merge, publish, distribute, interact with the Software and sublicense copies
+// of the Software, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+// a) You do not sell, rent or auction the Software.
+// b) You do not collect distribution fees.
+// c) If the Software is distributed in an object code form, it must inform that the source code is available and how to obtain it.
+// d) You do not remove or alter any copyright notices contained within the Software.
+// e) This copyright notice must be included in all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 // OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
@@ -16,8 +18,13 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+
 #include "OrbiterAPI.h"
 #include "DrawAPI.h"
+#include <string>
+#include <assert.h>
+
+using namespace std;
 
 /**
 * \file gcConst.h
@@ -84,6 +91,16 @@ namespace gcMatrix
 	const int combined = 4;		///< Get combined Mesh*Group*Offset matrix. (Can't 'set' this)
 }
 
+namespace gcWndFlag
+{
+	const int LEFT  = 0x000001;	///< Left dock
+	const int RIGHT = 0x000002;	///< Right dock
+	const int FLOAT = 0x000003;	///< Floating
+	const int WSTD  = 0x000010;	///< hWnd is a Standard window HWND
+	const int OGUI	= 0x000020;	///< hWnd is a OrbiterGUI window render surface
+	const int OPEN  = 0x001000;	///< Window is open
+	const int POPUP = 0x002000;	///< Popup Window
+}
 
 namespace oapi {
 
@@ -443,7 +460,6 @@ namespace oapi {
 		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
 	}
 
-
 	typedef struct {
 		FVECTOR2	pos;
 		DWORD		color;
@@ -486,7 +502,10 @@ namespace oapi {
 	// OBSOLETE END ----------------------------------------------------
 }
 
-
+/// \brief Custom swapchain handle
+typedef void * HNODE;
+/// \brief Custom swapchain handle
+typedef void * HSWAP;
 /// \brief Custom camera handle
 typedef void * CAMERAHANDLE;
 /// \brief Sketchmesh handle
@@ -496,3 +515,75 @@ typedef void * HPOLY;
 /// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);
 typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
+
+
+
+// ===========================================================================
+/**
+* \class gcCore
+* \brief Core class for graphics services 
+*/
+// ===========================================================================
+
+class gcCore
+{
+
+public:
+
+	// ===========================================================================
+	/// \name Custom swap-chain management functions
+	// ===========================================================================
+	//@{
+	/**
+	* \brief Create a new custom swap-chain (i.e. Frontbufer/Backbuffer) for a user defined window.
+	* \param hWnd Handle to a window client rect
+	* \param hSwap Handle to an existing swap object to resize it.
+	* \param AA Level of requested anti-aliasing. Valid values are 0, 2, 4, 8
+	* \return Handle to a Swap object or NULL in a case of an error
+	*/
+	virtual HSWAP		RegisterSwap(HWND hWnd, HSWAP hSwap = NULL, int AA = 0);
+
+	/**
+	* \brief Flip backbuffer to a front
+	* \param hSwap Handle to a swap object.
+	*/
+	virtual void		FlipSwap(HSWAP hSwap);
+
+	/**
+	* \brief Flip Backbuffer to a front
+	* \param hSwap Handle to a swap object.
+	* \return A Handle to a rendering surface (i.e. backbuffer)
+	*/
+	virtual SURFHANDLE	GetRenderTarget(HSWAP hSwap);
+
+	/**
+	* \brief Release a swap object after it's no longer needed.
+	* \param hSwap Handle to a swap object.
+	*/
+	virtual void		ReleaseSwap(HSWAP hSwap);
+	//@}
+
+
+	// ===========================================================================
+	/// \name gcGUI Access and management functions
+	// ===========================================================================
+	//@{
+	virtual void		ConvertSurface(SURFHANDLE hSurf, DWORD attrib);
+	virtual DWORD		GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation);
+	virtual HWND		GetRenderWindow();
+	//@}
+
+
+	// ===========================================================================
+	/// \name gcGUI Access and management functions
+	// ===========================================================================
+	//@{
+	/*
+	virtual HNODE		RegisterApplication(const char *label, HWND hDlg, DWORD color, DWORD docked);
+	virtual HNODE		RegisterSubsection(HNODE hNode, const char *label, HWND hDlg, DWORD color);
+	virtual void		UnRegister(HNODE hNode);
+	virtual void		UpdateStatus(HNODE hNode, const char *label, HWND hDlg, DWORD color);
+	virtual bool		IsOpen(HNODE hNode);
+	*/
+	//@}
+};

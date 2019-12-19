@@ -2403,7 +2403,7 @@ void D3D9Mesh::RenderShadows(float alpha, const LPD3DXMATRIX pP, const LPD3DXMAT
 
 // ================================================================================================
 //
-void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param, const float *elev)
+void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXMATRIX pW, const D3DXVECTOR4 *light, const D3DXVECTOR4 *param)
 {
 	if (!IsOK()) return;
 
@@ -2417,11 +2417,9 @@ void D3D9Mesh::RenderShadowsEx(float alpha, const LPD3DXMATRIX pP, const LPD3DXM
 	FX->SetMatrix(eW, pW);
 	FX->SetMatrix(eGT, pP);
 	FX->SetFloat(eMix, alpha);
-	FX->SetVector(eColor, light);
+	if (light) FX->SetVector(eColor, light);
+	else FX->SetVector(eColor, &D3DXVECTOR4(0,1,0,0));
 	FX->SetVector(eTexOff, param);
-
-	if (elev) FX->SetFloat(eGlowConst, *elev);
-	else FX->SetFloat(eGlowConst, -1e6);
 
 
 	UINT numPasses = 0;

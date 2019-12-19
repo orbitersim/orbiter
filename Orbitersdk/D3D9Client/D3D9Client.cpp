@@ -254,6 +254,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 // ==============================================================
 
 D3D9Client::D3D9Client (HINSTANCE hInstance) :
+	gcCore(),
 	GraphicsClient(hInstance),
 	vtab(NULL),
 	scenarioName("(none selected)"),
@@ -269,6 +270,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	hLblFont2   (NULL),
 	hMainThread (NULL),
 	pCaps       (NULL),
+	pWM			(NULL),
 	parser    (),
 	hRenderWnd(),
 	scene     (),
@@ -300,7 +302,6 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 
 D3D9Client::~D3D9Client()
 {
-
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
 
@@ -596,8 +597,15 @@ void D3D9Client::clbkPostCreation()
 
 	if (scene) scene->Initialise();
 
-	MakeGenericProcCall(GENERICPROC_LOAD_ORBITERGUI);
-	MakeGenericProcCall(GENERICPROC_LOAD);
+	// Create Window Manager -----------------------------------------
+	//
+	if (Config->gcGUIMode != 0) {
+		pWM = new WindowManager(hRenderWnd, ModuleInstance(), !(GetVideoData()->fullscreen));
+		if (pWM->IsOK() == false) SAFE_DELETE(pWM);
+	}
+
+	//MakeGenericProcCall(GENERICPROC_LOAD_ORBITERGUI);
+	//MakeGenericProcCall(GENERICPROC_LOAD);
 
 	bRunning = true;
 
@@ -658,7 +666,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		MakeGenericProcCall(GENERICPROC_UNLOAD);
 		MakeGenericProcCall(GENERICPROC_UNLOAD_ORBITERGUI);
 
-
+		SAFE_DELETE(pWM);
 		SAFE_DELETE(parser);
 		LogAlw("================= Deleting Scene ================");
 		Scene::GlobalExit();
@@ -936,6 +944,8 @@ void D3D9Client::clbkRenderScene()
 	if (pDevice==NULL || scene==NULL) return;
 	if (bFailed) return;
 	if (!bRunning) return;
+
+	if (pWM) pWM->Animate();
 
 	__TRY {
 
@@ -1455,6 +1465,9 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
 	}
 
+	if (pWM) if (pWM->MainWindowProc(hWnd, uMsg, wParam, lParam)) return 0;
+	
+
 	__TRY {
 
 		switch (uMsg) {
@@ -1893,6 +1906,14 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 
 	if (attrib == 0x8C) attrib = 0x5;
+
+
+	// VC MFD mipmaps hack ---
+	bool bSize = false;
+	if (w==h) if (w == 256 || w == 512 || w == 1024) bSize = true;
+	if ((attrib&OAPISURFACE_TEXTURE) && bSize) attrib |= OAPISURFACE_MIPMAPS;
+	// --- end hack ---
+
 
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurfaceEx");
 	surf->CreateSurface(w, h, attrib);

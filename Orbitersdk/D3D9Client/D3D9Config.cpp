@@ -80,6 +80,7 @@ void D3D9Config::Reset ()
 	LabelDisplayFlags	= LABEL_DISPLAY_RECORD | LABEL_DISPLAY_REPLAY;
 	CloudMicro			= 1;
 	ExpTerrInterp		= 0;
+	gcGUIMode			= 0;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -155,6 +156,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "PlanetTileLoadFlags", i))			PlanetTileLoadFlags = max(1, min(3, i));
 	if (oapiReadItem_int   (hFile, "LabelDisplayFlags", i))				LabelDisplayFlags = max(0, min(3, i));
 	if (oapiReadItem_int   (hFile, "ExpTerrainInterp", i))				ExpTerrInterp = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "gcGUIMode", i))						gcGUIMode = max(0, min(3, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 
@@ -222,6 +224,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "PlanetTileLoadFlags", PlanetTileLoadFlags);
 	oapiWriteItem_int   (hFile, "LabelDisplayFlags", LabelDisplayFlags);
 	oapiWriteItem_int   (hFile, "ExpTerrainInterp", ExpTerrInterp);
+	oapiWriteItem_int	(hFile, "gcGUIMode", gcGUIMode);
 
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 

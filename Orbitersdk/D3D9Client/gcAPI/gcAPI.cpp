@@ -31,6 +31,7 @@ typedef bool (OGCIFN *__gcGenerateMipMaps)(SURFHANDLE hSurface);
 typedef bool (OGCIFN *__gcRegisterRenderProc)(__gcRenderProc proc, DWORD id, void *pParam);
 typedef bool (OGCIFN *__gcRegisterGenericProc)(__gcGenericProc proc, DWORD id, void *pParam);
 typedef HWND (OGCIFN *__gcGetRenderWindow)();
+typedef gcCore * (OGCIFN *__gcGetCoreAPI)();
 
 // Custom Camera Interface
 typedef int   (OGCIFN *__gcDeleteCustomCamera)(CAMERAHANDLE hCam);
@@ -77,6 +78,7 @@ __gcDeletePoly _gcDeletePoly = NULL;
 __gcMeshMaterial _gcMeshMaterial = NULL;
 __gcGetMatrix _gcGetMatrix = NULL;
 __gcSetMatrix _gcSetMatrix = NULL;
+__gcGetCoreAPI _gcGetCoreAPI = NULL;
 
 __gcRegisterGenericProc _gcRegisterGenericProc = NULL;
 __gcGetRenderWindow _gcGetRenderWindow = NULL;
@@ -91,6 +93,7 @@ bool PostInit(HMODULE hClient)
 {
 	if (!hClient) return false;
 
+	_gcGetCoreAPI = (__gcGetCoreAPI)GetProcAddress(hClient, "gcGetCoreAPI");
 	_gcClientID = (__gcClientID)GetProcAddress(hClient, "gcClientID");
 	_gcGetSurfaceAttribs = (__gcGetSurfaceAttribs)GetProcAddress(hClient, "gcGetSurfaceAttribs");
 	_gcConvertSurface = (__gcConvertSurface)GetProcAddress(hClient, "gcConvertSurface");
@@ -148,6 +151,14 @@ DWORD gcClientID()
 {
 	if (_gcClientID) return _gcClientID();
 	return 0;
+}
+
+// ====================================================================================================
+//
+gcCore *gcGetCoreAPI()
+{
+	if (_gcGetCoreAPI) return _gcGetCoreAPI();
+	return NULL;
 }
 
 // ====================================================================================================

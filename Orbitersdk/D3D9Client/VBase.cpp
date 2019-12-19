@@ -485,29 +485,65 @@ void vBase::RenderGroundShadow(LPDIRECT3DDEVICE9 dev, float alpha)
 
 	// build shadow projection matrix
 	D3DXMATRIX mProj;
-	D3DXMatrixIdentity(&mProj);
-
-	lsun /= lsun.y;
-
-	mProj._21 -= lsun.x;
-	mProj._22 -= lsun.y;
-	mProj._23 -= lsun.z;
-
-	D3DXVECTOR4 light(lsun.x, lsun.y, lsun.z, 0);
-
+	
 	OBJHANDLE hPlanet = oapiGetBasePlanet(hObj); 
-	D3DXVECTOR4 param = D9OffsetRange(oapiGetSize(hPlanet), 30e3);
+	double prad = oapiGetSize(hPlanet);
+	D3DXVECTOR4 param = D9OffsetRange(prad, 30e3);
 
 	for (DWORD i=0; i<nstructure_as; i++) {
+		
 		if (structure_as[i]->HasShadow()) {
-			double a, b;
-			ToLocal(_V(structure_as[i]->BBox.bs), &a, &b);	
-			float y = float(oapiSurfaceElevation(hPlanet, a, b) - GetElevation());
 
-			mProj._41 = lsun.x*y;
-			mProj._42 = lsun.y*y;
-			mProj._43 = lsun.z*y;
-			structure_as[i]->RenderShadowsEx(scale, &mProj, &mWorld, &light, &param, &y);
+			double a, b, el0, el1, el2;
+			double d = atan(1.0 / prad);
+			VECTOR3 va, vb, vc;
+			VECTOR3 q = _V(structure_as[i]->BBox.bs);
+			float rad = structure_as[i]->BBox.bs.w;
+
+			if (rad<250.0f) ToLocal(q, &a, &b);	
+			else ToLocal(_V(0,0,0), &a, &b);
+
+			if (vP->GetElevation(a, b, &el0) <= 0) el0 = oapiSurfaceElevation(hPlanet, a, b);
+			if (vP->GetElevation(a + d, b, &el1) <= 0) el1 = oapiSurfaceElevation(hPlanet, a + d, b);
+			if (vP->GetElevation(a, b + d, &el2) <= 0) el2 = oapiSurfaceElevation(hPlanet, a, b + d);
+
+			oapiEquToLocal(hPlanet, a, b, el0 + prad, &va);
+			oapiEquToLocal(hPlanet, a + d, b, el1 + prad, &vb);
+			oapiEquToLocal(hPlanet, a, b + d, el2 + prad, &vc);
+
+			va = FromLocal(va);
+			vb = FromLocal(vb);
+			vc = FromLocal(vc);
+				
+			VECTOR3 n = -unit(crossp(vb - va, vc - va));
+
+			D3DXVECTOR3 hn = D3DXVEC(n); 
+				
+			float zo = float(-dotp(va, n));
+			float nd = D3DXVec3Dot(&hn, &lsun);
+			hn /= nd;
+			float ofs = zo / nd;
+
+			mProj._11 = 1.0f - (float)(lsun.x*hn.x);
+			mProj._12 = -(float)(lsun.y*hn.x);
+			mProj._13 = -(float)(lsun.z*hn.x);
+			mProj._14 = 0;
+			mProj._21 = -(float)(lsun.x*hn.y);
+			mProj._22 = 1.0f - (float)(lsun.y*hn.y);
+			mProj._23 = -(float)(lsun.z*hn.y);
+			mProj._24 = 0;
+			mProj._31 = -(float)(lsun.x*hn.z);
+			mProj._32 = -(float)(lsun.y*hn.z);
+			mProj._33 = 1.0f - (float)(lsun.z*hn.z);
+			mProj._34 = 0;
+			mProj._41 = -(float)(lsun.x*ofs);
+			mProj._42 = -(float)(lsun.y*ofs);
+			mProj._43 = -(float)(lsun.z*ofs);
+			mProj._44 = 1;
+				
+			D3DXVECTOR4 nrml = D3DXVECTOR4(float(n.x), float(n.y), float(n.z), zo);
+
+			structure_as[i]->RenderShadowsEx(scale, &mProj, &mWorld, &nrml, &param);
 		}
 	}
 }

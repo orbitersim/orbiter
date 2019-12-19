@@ -163,7 +163,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib psapi.lib version.lib nvapi.lib"
+				AdditionalDependencies="orbiter.lib orbitersdk.lib d3d9.lib d3dx9.lib Msimg32.lib psapi.lib version.lib nvapi.lib"
 				OutputFile="..\..\Modules\Plugin\$(ProjectName).dll"
 				AdditionalLibraryDirectories="..\..\Orbitersdk\lib;.\..\..\Modules\Server"
 				IgnoreDefaultLibraryNames="MSVCRT.lib"
@@ -207,15 +207,15 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\AABBUtil.cpp"
+				RelativePath="AABBUtil.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\AtmoControls.cpp"
+				RelativePath="AtmoControls.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\BeaconArray.cpp"
+				RelativePath="BeaconArray.cpp"
 				>
 			</File>
 			<File
@@ -223,95 +223,99 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CloudMgr.cpp"
+				RelativePath="CloudMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Cloudmgr2.cpp"
+				RelativePath="Cloudmgr2.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CSphereMgr.cpp"
+				RelativePath="CSphereMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Client.cpp"
+				RelativePath="D3D9Client.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Client.rc"
+				RelativePath="D3D9Client.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Config.cpp"
+				RelativePath="D3D9Config.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9ControlPanel.cpp"
+				RelativePath="D3D9ControlPanel.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Effect.cpp"
+				RelativePath="D3D9Effect.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Frame.cpp"
+				RelativePath="D3D9Frame.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Pad.cpp"
+				RelativePath="D3D9Pad.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Pad2.cpp"
+				RelativePath="D3D9Pad2.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Pad3.cpp"
+				RelativePath="D3D9Pad3.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Surface.cpp"
+				RelativePath="D3D9Surface.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9TextMgr.cpp"
+				RelativePath="D3D9TextMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Util.cpp"
+				RelativePath="D3D9Util.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\DebugControls.cpp"
+				RelativePath="DebugControls.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileParser.cpp"
+				RelativePath="FileParser.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\GDIPad.cpp"
+				RelativePath="gcCore.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\HazeMgr.cpp"
+				RelativePath="GDIPad.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\IProcess.cpp"
+				RelativePath="HazeMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Junction.cpp"
+				RelativePath="IProcess.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Log.cpp"
+				RelativePath="Junction.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MaterialMgr.cpp"
+				RelativePath="Log.cpp"
+				>
+			</File>
+			<File
+				RelativePath="MaterialMgr.cpp"
 				>
 			</File>
 			<File
@@ -323,27 +327,27 @@
 				>
 			</File>
 			<File
-				RelativePath=".\OapiExtension.cpp"
+				RelativePath="OapiExtension.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\OgciExtensions.cpp"
+				RelativePath="OgciExtensions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Particle.cpp"
+				RelativePath="Particle.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\PlanetRenderer.cpp"
+				RelativePath="PlanetRenderer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RingMgr.cpp"
+				RelativePath="RingMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\RunwayLights.cpp"
+				RelativePath="RunwayLights.cpp"
 				>
 			</File>
 			<File
@@ -351,15 +355,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Spherepatch.cpp"
+				RelativePath="Spherepatch.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\SurfMgr.cpp"
+				RelativePath="SurfMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Surfmgr2.cpp"
+				RelativePath="Surfmgr2.cpp"
 				>
 			</File>
 			<File
@@ -367,27 +371,23 @@
 				>
 			</File>
 			<File
-				RelativePath=".\TileMgr.cpp"
+				RelativePath="TileMgr.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Tilemgr2.cpp"
+				RelativePath="Tilemgr2.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TileLabel.cpp"
+				RelativePath="Tilemgr2_imp.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Tilemgr2_imp.hpp"
+				RelativePath="VBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\VBase.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\VideoTab.cpp"
+				RelativePath="VideoTab.cpp"
 				>
 			</File>
 			<File
@@ -395,15 +395,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\VPlanet.cpp"
+				RelativePath="VPlanet.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\VStar.cpp"
+				RelativePath="VStar.cpp"
 				>
 			</File>
 			<File
 				RelativePath="VVessel.cpp"
+				>
+			</File>
+			<File
+				RelativePath="WindowMgr.cpp"
 				>
 			</File>
 		</Filter>
@@ -412,15 +416,15 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath=".\AABBUtil.h"
+				RelativePath="AABBUtil.h"
 				>
 			</File>
 			<File
-				RelativePath=".\AtmoControls.h"
+				RelativePath="AtmoControls.h"
 				>
 			</File>
 			<File
-				RelativePath=".\BeaconArray.h"
+				RelativePath="BeaconArray.h"
 				>
 			</File>
 			<File
@@ -428,83 +432,83 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CloudMgr.h"
+				RelativePath="CloudMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Cloudmgr2.h"
+				RelativePath="Cloudmgr2.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CSphereMgr.h"
+				RelativePath="CSphereMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Catalog.h"
+				RelativePath="D3D9Catalog.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Client.h"
+				RelativePath="D3D9Client.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Config.h"
+				RelativePath="D3D9Config.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Effect.h"
+				RelativePath="D3D9Effect.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Frame.h"
+				RelativePath="D3D9Frame.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Pad.h"
+				RelativePath="D3D9Pad.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Surface.h"
+				RelativePath="D3D9Surface.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9TextMgr.h"
+				RelativePath="D3D9TextMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\D3D9Util.h"
+				RelativePath="D3D9Util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\DebugControls.h"
+				RelativePath="DebugControls.h"
 				>
 			</File>
 			<File
-				RelativePath=".\FileParser.h"
+				RelativePath="FileParser.h"
 				>
 			</File>
 			<File
-				RelativePath=".\GDIPad.h"
+				RelativePath="GDIPad.h"
 				>
 			</File>
 			<File
-				RelativePath=".\HazeMgr.h"
+				RelativePath="HazeMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\IProcess.h"
+				RelativePath="IProcess.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Junction.h"
+				RelativePath="Junction.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Log.h"
+				RelativePath="Log.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MaterialMgr.h"
+				RelativePath="MaterialMgr.h"
 				>
 			</File>
 			<File
@@ -516,19 +520,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\OapiExtension.h"
+				RelativePath="OapiExtension.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Particle.h"
+				RelativePath="Particle.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PlanetRenderer.h"
+				RelativePath="PlanetRenderer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Qtree.h"
+				RelativePath="Qtree.h"
 				>
 			</File>
 			<File
@@ -536,11 +540,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\RingMgr.h"
+				RelativePath="RingMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\RunwayLights.h"
+				RelativePath="RunwayLights.h"
 				>
 			</File>
 			<File
@@ -548,15 +552,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Spherepatch.h"
+				RelativePath="Spherepatch.h"
 				>
 			</File>
 			<File
-				RelativePath=".\SurfMgr.h"
+				RelativePath="SurfMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Surfmgr2.h"
+				RelativePath="Surfmgr2.h"
 				>
 			</File>
 			<File
@@ -564,27 +568,23 @@
 				>
 			</File>
 			<File
-				RelativePath="TileLabel.h"
+				RelativePath="TileMgr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\TileMgr.h"
+				RelativePath="Tilemgr2.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Tilemgr2.h"
+				RelativePath="VBase.h"
 				>
 			</File>
 			<File
-				RelativePath=".\VBase.h"
+				RelativePath="VectorHelpers.h"
 				>
 			</File>
 			<File
-				RelativePath=".\VectorHelpers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VideoTab.h"
+				RelativePath="VideoTab.h"
 				>
 			</File>
 			<File
@@ -592,15 +592,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\VPlanet.h"
+				RelativePath="VPlanet.h"
 				>
 			</File>
 			<File
-				RelativePath=".\VStar.h"
+				RelativePath="VStar.h"
 				>
 			</File>
 			<File
 				RelativePath="VVessel.h"
+				>
+			</File>
+			<File
+				RelativePath="WindowMgr.h"
 				>
 			</File>
 		</Filter>
@@ -664,7 +668,7 @@
 			Name="Docs"
 			>
 			<File
-				RelativePath=".\TODO.txt"
+				RelativePath="README.txt"
 				>
 			</File>
 		</Filter>

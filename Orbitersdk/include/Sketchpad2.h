@@ -48,6 +48,13 @@ using namespace oapi;
 
 namespace oapi {
 
+
+	typedef struct {
+		RECT intr;
+		RECT outr;
+	} skpRegion;
+
+
 	// ===========================================================================
 	/**
 	* \class Sketchpad2
@@ -428,6 +435,9 @@ namespace oapi {
 		* \param tgt a Rect specifying the bounds
 		*/
 		virtual void PatternFill(SURFHANDLE hPat, const LPRECT tgt) { assert(false); }
+
+
+		virtual void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, LPRECT out) { assert(false); }
 
 		/**
 		* \brief Setup a pattern and it's origin. Origin should move with every movable object to keep the pattern fixed.

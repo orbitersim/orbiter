@@ -65,7 +65,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	physics_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	physics_patchres = min (physics_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
 	
-	if (elev_mode == 1)	max_patchres = physics_patchres + 2;	// Push the graphics resolution higher than the one used for physics
+	if (elev_mode == 1)	max_patchres = physics_patchres + 4;	// Push the graphics resolution higher than the one used for physics
 	else max_patchres = physics_patchres;						// to enable more accurate bilinear interpolation of the terrain.
 																// Works well on the Moon, not so well on high-res KSC.
 
@@ -942,6 +942,9 @@ void vPlanet::RenderCloudShadows (LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderBaseSurfaces(LPDIRECT3DDEVICE9 dev)
 {
+	// If this planet is not a proxy body skip the rest
+	if (hObj != oapiCameraProxyGbody()) return;
+
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) {
 		vbase[i]->RenderSurface(dev);
 		vbase[i]->RenderRunwayLights(dev);
@@ -952,6 +955,9 @@ void vPlanet::RenderBaseSurfaces(LPDIRECT3DDEVICE9 dev)
 
 void vPlanet::RenderBaseShadows(LPDIRECT3DDEVICE9 dev, float depth)
 {
+	// If this planet is not a proxy body skip the rest
+	if (hObj != oapiCameraProxyGbody()) return;
+
 	if (bObjectShadow) {
 		for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderGroundShadow(dev, depth);
 		// reset device parameters
@@ -963,6 +969,9 @@ void vPlanet::RenderBaseShadows(LPDIRECT3DDEVICE9 dev, float depth)
 
 void vPlanet::RenderBaseStructures (LPDIRECT3DDEVICE9 dev)
 {
+	// If this planet is not a proxy body skip the rest
+	if (hObj != oapiCameraProxyGbody()) return;
+
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderStructures(dev);
 	for (DWORD i=0;i<nbase;i++) if (vbase[i]) vbase[i]->RenderBeacons(dev);
 }

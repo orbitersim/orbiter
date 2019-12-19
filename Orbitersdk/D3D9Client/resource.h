@@ -16,14 +16,17 @@
 #define IDC_STATIC (-1)
 #endif
 
-
+#define IDS_INFO                                1000 // never change these!
+#define IDS_TYPE                                1001 //   "      "     "
 #define IDD_D3D9CREDITS                         101
 #define IDD_D3D9MESHDEBUG                       102
 #define IDD_D3D9SCATTER                         103
 #define IDD_D3D9SETUP                           104
 #define IDD_DEBUGVIEW                           105
-#define IDS_INFO                                1000 // never change these!
-#define IDS_TYPE                                1001 //   "      "     "
+#define IDD_MESHDEBUG                           107
+#define IDD_MATERIAL                            109
+#define IDD_MICROTEXTOOLS                       111
+#define IDD_SCENEDEBUG                          113
 #define IDC_AA                                  2002
 #define IDC_AF                                  2003
 #define IDC_ATD_AUX1                            2004
@@ -166,3 +169,4 @@
 #define IDC_TERRAIN                             2160
 #define IDC_CLOUDMICRO                          2161
 #define IDC_EXPTERRINTERP                       2162
+#define IDC_GUIMODE                             2163

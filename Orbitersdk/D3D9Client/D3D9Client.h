@@ -32,6 +32,7 @@
 #include <vector>
 #include <stack>
 #include <list>
+#include "WindowMgr.h"
 
 #define PP_DEFAULT			0x1
 #define PP_LENSFLARE		0x2
@@ -140,10 +141,11 @@ namespace oapi {
 
 // ==============================================================
 // D3D9Client class interface
-/// The DX9 render client for Orbiter
+// The DX9 render client for Orbiter
 // ==============================================================
 
-class D3D9Client: public GraphicsClient {
+class D3D9Client: public gcCore, public GraphicsClient 
+{
 
 	friend class ::Scene;	// <= likes to call Render2DOverlay()
 
@@ -169,6 +171,10 @@ public:
 	~D3D9Client ();
 
 
+	HBITMAP gcReadImageFromFile(const char *path)
+	{
+		return ReadImageFromFile(path);
+	}
 
 	/**
 	 * \brief Perform any one-time setup tasks.
@@ -1260,6 +1266,7 @@ private:
 	FileParser *			parser;
 	std::string				scenarioName;
 	HANDLE					hMainThread;
+	WindowManager *			pWM;
 
 	HWND hRenderWnd;        // render window handle
 

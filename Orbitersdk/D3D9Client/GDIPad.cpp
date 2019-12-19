@@ -84,7 +84,7 @@ Pen *GDIPad::SetPen (Pen *pen) const
 	if (pen) cpen = pen;
 	else     cpen = NULL;
 	if (cpen) SelectObject (hDC, static_cast<D3D9PadPen*>(cpen)->hPen);
-	else      SelectObject (hDC, GetStockObject (NULL_BRUSH));
+	else      SelectObject (hDC, GetStockObject (NULL_PEN));
 	return ppen;
 }
 

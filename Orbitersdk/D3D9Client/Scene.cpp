@@ -1182,7 +1182,7 @@ void Scene::RenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 
 	int shadow_lod = -1;
-	float bouble_rad = 14.0f;		// Terrain shadow mapping coverage 
+	float bouble_rad = 10.0f;		// Terrain shadow mapping coverage 
 
 	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2) {
 
@@ -2470,6 +2470,9 @@ void Scene::VisualizeCubeMap(LPDIRECT3DCUBETEXTURE9 pCube, int mip)
 //
 void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 {
+	// If this planet is not a proxy body skip the rest
+	if (hPlanet != oapiCameraProxyGbody()) return;
+
 	// render vessel shadows
 	VOBJREC *pv;
 	for (pv = vobjFirst; pv; pv = pv->next) {

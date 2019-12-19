@@ -574,6 +574,8 @@ bool D3D9ClientSurface::ConvertToPlain()
 
 	LPDIRECT3DSURFACE9 pNew=NULL;
 	SAFE_RELEASE(pRTS);
+	SAFE_RELEASE(pDCSub);
+
 	bLockable = false;
 
 	HR(pDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM, &pNew, NULL));	
@@ -1091,7 +1093,7 @@ bool D3D9ClientSurface::Fill(LPRECT rect, DWORD c)
 			Rectangle(hDC,r->left,r->top,r->right,r->bottom);
 			SelectObject(hDC, hOld);
 			DeleteObject(hBrush);
-			ReleaseDC(hDC);
+			ReleaseDCHard(hDC);
 			return true;
 		}
 		else {
@@ -1149,7 +1151,7 @@ bool D3D9ClientSurface::Clear(DWORD c)
 			RECT r; r.left = 0; r.top = 0; r.right = desc.Width; r.bottom = desc.Height;
 			FillRect(hDC, &r, hBrush);
 			DeleteObject(hBrush);
-			ReleaseDC(hDC);
+			ReleaseDCHard(hDC);
 			LogOk("Clear Surface GDI 0x%X (%s)(%u,%u)", this, name, desc.Width, desc.Height);
 			return true;
 		}
@@ -1190,6 +1192,21 @@ HDC	D3D9ClientSurface::GetDCHard()
 	LogSpecs("Surface");
 	assert(false);
 	return NULL;
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
+void D3D9ClientSurface::ReleaseDCHard(HDC hDC)
+{
+	if (bHard) {
+		HR(pSurf->ReleaseDC(hDC));
+		if (GetDCTime != 0.0) D3D9SetTime(D3D9Stats.Timer.GetDC, GetDCTime);
+		return;
+	}
+	LogErr("D3D9ClientSurface: ReleaeDCHard() Failed");
+	LogSpecs("Surface");
+	assert(false);
 }
 
 

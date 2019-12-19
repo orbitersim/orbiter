@@ -196,7 +196,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 				int x = GetSystemMetrics(SM_CXSCREEN);
 				int y = GetSystemMetrics(SM_CYSCREEN);
 				if (vData->pageflip) x = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPSIBLINGS|WS_VISIBLE);
+				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPCHILDREN | WS_VISIBLE);
 				SetWindowPos(hWnd,0, 0,0, x, y, SWP_SHOWWINDOW);
 				bIsFullscreen = false;
 			}
@@ -207,7 +207,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			{
 				RECT rect;
 				SystemParametersInfo(SPI_GETWORKAREA,0,&rect,0);
-				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPSIBLINGS|WS_VISIBLE);
+				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPCHILDREN | WS_VISIBLE);
 				int x = GetSystemMetrics(SM_CXSCREEN);
 				if (vData->pageflip) x = rect.right-rect.left;
 				SetWindowPos(hWnd,0,rect.left, rect.top, x, rect.bottom - rect.top, SWP_SHOWWINDOW);
@@ -215,6 +215,10 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			}
 			break;
 		}
+	}
+	else {
+		LONG x = GetWindowLongA(hWnd, GWL_STYLE);
+		SetWindowLongA(hWnd, GWL_STYLE, x | WS_CLIPCHILDREN | WS_VISIBLE);
 	}
 
 	// Hardware CAPS Checks --------------------------------------------------

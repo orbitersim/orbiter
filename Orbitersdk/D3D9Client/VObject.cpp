@@ -167,7 +167,7 @@ bool vObject::Update(bool bMainScene)
 	else {
 		double elev = oapiSurfaceElevation(hPlanet, lng, lat) + oapiGetSize(hPlanet);
 		oapiEquToGlobal(hPlanet, lng, lat, elev, &gpos);
-		grot = identity();
+		//grot = identity();
 	}
 
 	oapiGetGlobalPos(hTgt, &tpos);

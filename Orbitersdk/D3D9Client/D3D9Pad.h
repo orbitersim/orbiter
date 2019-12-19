@@ -537,6 +537,7 @@ public:
 	void SetWorldScaleTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL);
 	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
 	void PatternFill(SURFHANDLE hPattern, const LPRECT tgt);
+	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, LPRECT out);
 
 
 	// ===============================================================================

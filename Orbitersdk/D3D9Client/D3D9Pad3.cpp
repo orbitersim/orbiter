@@ -241,3 +241,48 @@ void D3D9Pad::PatternFill(SURFHANDLE hSrc, const LPRECT t)
 
 	HR(FX->SetBool(ePatEn, false));
 }
+
+
+// ===============================================================================================
+//
+void D3D9Pad::StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, LPRECT out)
+{
+
+	const RECT *ext = &(rgn->outr);
+	const RECT *itr = &(rgn->intr);
+
+	int x0 = ext->left;
+	int x1 = itr->left;
+	int x2 = itr->right;
+	int x3 = ext->right;
+
+	int y0 = ext->top;
+	int y1 = itr->top;
+	int y2 = itr->bottom;
+	int y3 = ext->bottom;
+
+	int tx0 = out->left;
+	int tx3 = out->right;
+	int ty0 = out->top;
+	int ty3 = out->bottom;
+
+	int tx1 = tx0 + (x1 - x0);
+	int tx2 = tx3 - (x3 - x2);
+	int ty1 = ty0 + (y1 - y0);
+	int ty2 = ty3 - (y3 - y2);
+
+	// Corners
+	if (x0 != x1 && y0 != y1) CopyRect(hSrc, &_R(x0, y0, x1, y1), tx0, ty0);	// TOP-LEFT
+	if (x2 != x3 && y0 != y1) CopyRect(hSrc, &_R(x2, y0, x3, y1), tx2, ty0);	// TOP-RIGHT
+	if (x0 != x1 && y2 != y3) CopyRect(hSrc, &_R(x0, y2, x1, y3), tx0, ty2);	// BTM-LEFT
+	if (x2 != x3 && y2 != y3) CopyRect(hSrc, &_R(x2, y2, x3, y3), tx2, ty2);	// BTM-RIGHT
+
+																					// Sides
+	if (x1 != x2 && y0 != y1) StretchRect(hSrc, &_R(x1, y0, x2, y1), &_R(tx1, ty0, tx2, ty1));	// TOP
+	if (x1 != x2 && y2 != y3) StretchRect(hSrc, &_R(x1, y2, x2, y3), &_R(tx1, ty2, tx2, ty3));	// BOTTOM
+	if (x0 != x1 && y1 != y2) StretchRect(hSrc, &_R(x0, y1, x1, y2), &_R(tx0, ty1, tx1, ty2));	// LEFT
+	if (x2 != x3 && y1 != y2) StretchRect(hSrc, &_R(x2, y1, x3, y2), &_R(tx2, ty1, tx3, ty2));	// RIGHT
+
+	// Center
+	StretchRect(hSrc, &_R(x1, y1, x2, y2), &_R(tx1, ty1, tx2, ty2));
+}

@@ -137,6 +137,7 @@ private:
 	DWORD				GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
 	DWORD				GetSizeInBytes(D3DFORMAT Format, DWORD pixels);
 	HDC					GetDCHard();
+	void				ReleaseDCHard(HDC hDC);
 	void				SetupViewPort();
 	void				LogSpecs(char *name);
 	void				Clear();

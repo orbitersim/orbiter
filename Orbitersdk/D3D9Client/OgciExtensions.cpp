@@ -13,6 +13,12 @@
 extern D3D9Client *g_client;
 
 
+DLLCLBK gcCore * gcGetCoreAPI()
+{
+	return dynamic_cast<gcCore *>(g_client);
+}
+
+
 DLLCLBK int gcGetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, FMATRIX4 *pMat)
 {
 	if (oapiGetObjectType(hVessel) != OBJTP_VESSEL) return -10;

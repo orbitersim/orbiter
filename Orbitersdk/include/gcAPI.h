@@ -37,6 +37,7 @@
 #include "OrbiterAPI.h"
 #include "DrawAPI.h"
 #include "gcConst.h"
+#include <assert.h>
 
 #define OGCIFN __cdecl
 
@@ -54,6 +55,9 @@
 #define OAPISURFACE_RENDER3D     0x0400 ///< Create a surface that can act as a target for rendering a 3D scene
 #define OGCI_FOR_2010P1
 #endif
+
+
+
 
 				// ===========================================================================
 				/**
@@ -94,6 +98,12 @@ DWORD			gcClientID();
 				* \return Render window handle
 				*/
 HWND			gcGetRenderWindow();
+
+				/**
+				* \brief Get a pointer to core interface
+				* \return Handle to a core interface
+				*/
+gcCore *		gcGetCoreAPI();
 				//@}
 
 				// ===========================================================================

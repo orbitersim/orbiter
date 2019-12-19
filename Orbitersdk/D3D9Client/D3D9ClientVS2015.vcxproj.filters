@@ -170,6 +170,12 @@
     <ClCompile Include="ZTreeMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WindowMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gcCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SrcSdkIncludeDir)\gcAPI.h">
@@ -189,6 +195,9 @@
     </ClInclude>
     <ClInclude Include="$(SrcSdkIncludeDir)\Sketchpad2.h">
       <Filter>Externals</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowMgr.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
