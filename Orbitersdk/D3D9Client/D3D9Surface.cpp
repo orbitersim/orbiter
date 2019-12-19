@@ -1204,7 +1204,7 @@ void D3D9ClientSurface::ReleaseDCHard(HDC hDC)
 		if (GetDCTime != 0.0) D3D9SetTime(D3D9Stats.Timer.GetDC, GetDCTime);
 		return;
 	}
-	LogErr("D3D9ClientSurface: ReleaeDCHard() Failed");
+	LogErr("D3D9ClientSurface: ReleaseDCHard() Failed");
 	LogSpecs("Surface");
 	assert(false);
 }
