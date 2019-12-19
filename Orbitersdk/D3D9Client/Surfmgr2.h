@@ -68,18 +68,20 @@ protected:
 	void DeleteLabels();    ///< delete the TileLabel object if it exists
 
 private:
-	INT16 *ElevationData () const;
-	double GetMeanElevation (const INT16 *elev) const;
+	bool InterpolateElevationGrid(float *pelev, float *elev);
+	float *ElevationData () const;
+	double GetMeanElevation (const float *elev) const;
 	float fixinput(double, int);
 	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
 	LPDIRECT3DTEXTURE9 htex;
 	D3DXVECTOR2 MicroRep[3];
 	DWORD MaxRep;
-	LPDIRECT3DTEXTURE9 ltex;   ///< landmask/nightlight texture, if applicable
-	INT16 *elev;               ///< elevation data [m] (8x subsampled)
-	mutable INT16 *ggelev;     ///< pointer to my elevation data in the great-grandparent
-	bool has_elevfile;         ///< true if the elevation data for this tile were read from file
+	LPDIRECT3DTEXTURE9 ltex;	///< landmask/nightlight texture, if applicable
+	INT16 *elev_file;			///< elevation data [m]
+	float *elev;				///< elevation data [m] (8x subsampled)
+	mutable float *ggelev;		///< pointer to my elevation data in the great-grandparent
+	bool has_elevfile;			///< true if the elevation data for this tile were read from file
 
 	TileLabel *label;          ///< surface labels associated with this tile
 };

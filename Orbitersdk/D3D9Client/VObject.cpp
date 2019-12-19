@@ -240,7 +240,7 @@ float vObject::GetBoundingSphereRadius()
 
 // ===========================================================================================
 //
-const char *vObject::GetName()
+const char *vObject::GetName() const
 {
 	return name;
 }

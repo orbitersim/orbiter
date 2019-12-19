@@ -60,8 +60,17 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	dist_scale = 1.0f;
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
 	maxdist = max (max_centre_dist, max_surf_dist + size);
-	max_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
-	max_patchres = min (max_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
+	DWORD elev_mode = *(DWORD*)gc->GetConfigParam(CFGPRM_ELEVATIONMODE);
+	
+	physics_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
+	physics_patchres = min (physics_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
+	
+	if (elev_mode == 1)	max_patchres = physics_patchres + 2;	// Push the graphics resolution higher than the one used for physics
+	else max_patchres = physics_patchres;						// to enable more accurate bilinear interpolation of the terrain.
+																// Works well on the Moon, not so well on high-res KSC.
+
+	max_patchres = min(max_patchres, *(DWORD*)gc->GetConfigParam(CFGPRM_SURFACEMAXLEVEL));
+
 	tilever = *(int*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_TILEENGINE);
 	if (tilever < 2) {
 		surfmgr = new SurfaceManager (gc, this);

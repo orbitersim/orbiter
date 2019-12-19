@@ -42,6 +42,7 @@
 // ===========================================================================
 // Class statics initialization
 
+DWORD OapiExtension::elevationMode = 0;
 DWORD OapiExtension::showBodyForceVectorsFlags = (BFV_WEIGHT | BFV_THRUST | BFV_LIFT | BFV_DRAG);
 float OapiExtension::bodyForceScale = 1.0;
 float OapiExtension::bodyForceOpacity = 1.0;
@@ -134,6 +135,7 @@ void OapiExtension::GlobalInit(const D3D9Config &Config)
 const void *OapiExtension::GetConfigParam (DWORD paramtype)
 {
 	switch (paramtype) {
+		case CFGPRM_ELEVATIONINTERPOLATION	: return (void*)&elevationMode;
 		case CFGPRM_SHOWBODYFORCEVECTORSFLAG: return (void*)&showBodyForceVectorsFlags;
 		case CFGPRM_BODYFORCEVECTORSSCALE   : return (void*)&bodyForceScale;
 		case CFGPRM_BODYFORCEVECTORSOPACITY : return (void*)&bodyForceOpacity;
@@ -277,6 +279,12 @@ bool OapiExtension::GetConfigParameter(void)
 			if (NULL != strstr(pLine, "OrbiterSound")) {
 				orbiterSoundModuleEnabled = true;
 				break;
+			}
+		}
+
+		if (oapiReadItem_string(f, "ElevationMode", string)) {
+			if (1 == sscanf_s(string, "%lu", &flags)) {
+				elevationMode = flags;
 			}
 		}
 

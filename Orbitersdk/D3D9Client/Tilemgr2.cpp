@@ -340,7 +340,7 @@ void Tile::Extents (double *_latmin, double *_latmax, double *_lngmin, double *_
 
 // -----------------------------------------------------------------------
 
-VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double elev_scale, double globelev,
+VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double elev_scale, double globelev,
 	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift, double bb_excess)
 {
 //	const float TEX2_MULTIPLIER = 1.0f; // was: 4.0f was: 16.0f
@@ -439,7 +439,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 	WORD *idx = new WORD[nidx];
 
 	if (elev) { // do adaptive orientation of cell diagonal
-		INT16 *elev1, *elev2, *elev1n, *elev2n, err1, err2;
+		float *elev1, *elev2, *elev1n, *elev2n, err1, err2;
 		for (i = n = nofs0 = 0; i < grdlat; i++) {
 			nofs1 = nofs0+grdlng+1;
 			for (j = 0; j < grdlng; j++) {
@@ -447,12 +447,12 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 				elev2  = elev1 + TILE_ELEVSTRIDE-1;
 				elev1n = elev1 - TILE_ELEVSTRIDE+1;
 				elev2n = elev2 + TILE_ELEVSTRIDE-1;
-				err1 = abs(*elev1 * 2 - *elev2 - *elev1n) + abs(*elev2 * 2 - *elev1 - *elev2n);
+				err1 = fabs(*elev1 * 2 - *elev2 - *elev1n) + fabs(*elev2 * 2 - *elev1 - *elev2n);
 				elev1  = elev + TILE_ELEVSTRIDE+1+j+TILE_ELEVSTRIDE*i;
 				elev2  = elev1 + TILE_ELEVSTRIDE+1;
 				elev1n = elev1 - TILE_ELEVSTRIDE-1;
 				elev2n = elev2 + TILE_ELEVSTRIDE+1;
-				err2 = abs(*elev1 * 2 - *elev2 - *elev1n) + abs(*elev2 * 2 - *elev1 - *elev2n);
+				err2 = fabs(*elev1 * 2 - *elev2 - *elev1n) + fabs(*elev2 * 2 - *elev1 - *elev2n);
 				if (err1 < err2) {
 					idx[n++] = nofs0+j;
 					idx[n++] = nofs1+j;
@@ -566,7 +566,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, INT16 *elev, double 
 
 // -----------------------------------------------------------------------
 
-VBMESH *Tile::CreateMesh_hemisphere (int grd, INT16 *elev, double globelev)
+VBMESH *Tile::CreateMesh_hemisphere (int grd, float *elev, double globelev)
 {
 	const int texres = 512;
 	double radius = mgr->obj_size + globelev;

@@ -84,6 +84,7 @@ public:
 	void			SetMicroTexture(LPDIRECT3DTEXTURE9 pSrc, int slot);
 	int				GetElevation(double lng, double lat, double *elv, int *lvl=NULL, class SurfTile **tile=NULL) const;
 	void 			PickSurface(TILEPICK *pPick);
+	DWORD			GetPhysicsPatchRes() const { return physics_patchres; }
 
 	// Surface base interface -------------------------------------------------
 	DWORD			GetBaseCount();
@@ -172,7 +173,8 @@ private:
 	       max_centre_dist;
 	float shadowalpha;        // alpha value for surface shadows
 	double cloudrad;          // cloud layer radius [m]
-	DWORD max_patchres;       // max surface LOD level
+	DWORD max_patchres;       // max surface LOD level used for graphics
+	DWORD physics_patchres;   // max surface LOD level used by physics
 	int patchres;             // surface LOD level
 	int tilever;			  // Surface tile version
 	bool renderpix;           // render planet as pixel block (at large distance)

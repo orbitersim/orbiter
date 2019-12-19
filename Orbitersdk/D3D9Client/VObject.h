@@ -131,7 +131,7 @@ public:
 	D3DXVECTOR3 GetBoundingSpherePosDX();
 	VECTOR3 GetBoundingSpherePos();
 	float GetBoundingSphereRadius();
-	const char *GetName();
+	const char *GetName() const;
 
 	/**
 	 * \brief Returns distance from camera

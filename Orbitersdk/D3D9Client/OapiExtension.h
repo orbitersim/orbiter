@@ -57,6 +57,11 @@ class D3D9Config;
 ///   bool
 #define CFGPRM_TILELOADTHREAD  0x1006
 
+/// Elevation interpolation mode 0-cubic 1-linear
+/// \par Parameter type:
+///   DWORD
+#define CFGPRM_ELEVATIONINTERPOLATION 0x1007
+
 /// @}
 
 
@@ -234,6 +239,7 @@ private:
 	~OapiExtension(void);
 
 	// Planet rendering parameters
+	static DWORD elevationMode;
 	static bool tileLoadThread; ///< Whether to load planet tiles inseparate thread [true|false]
 	// Body forces
 	static DWORD showBodyForceVectorsFlags;

@@ -70,6 +70,7 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	node = 0;
 	elev = NULL;
 	ggelev = NULL;
+	elev_file = NULL;
 	ltex = NULL;
 	htex = NULL;
 	has_elevfile = false;
@@ -87,6 +88,10 @@ SurfTile::~SurfTile ()
 	if (elev) {
 		delete []elev;
 		elev = NULL;
+	}
+	if (elev_file) {
+		delete []elev_file;
+		elev_file = NULL;
 	}
 	if (ltex && owntex) {
 		if (TileCatalog->Remove(ltex)) ltex->Release();
@@ -174,7 +179,7 @@ void SurfTile::Load ()
 	}
 
 	// Load elevation data
-	INT16 *elev = ElevationData ();
+	float *elev = ElevationData ();
 	
 	bool shift_origin = (lvl >= 4);
 	int res = mgr->GridRes();
@@ -381,6 +386,43 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 
 // -----------------------------------------------------------------------
 
+
+bool SurfTile::InterpolateElevationGrid(float *in, float *out)
+{
+	int q0 = 0, c = 129;
+
+	if (!(ilat & 1)) q0 = TILE_ELEVSTRIDE * 128;
+	if ((ilng & 1)) q0 += 128;
+
+	for (int i = 0; i <= c; i++)
+	{
+		int q1 = q0 + 1;
+		int q2 = q0 + TILE_ELEVSTRIDE;
+		int q3 = q1 + TILE_ELEVSTRIDE;
+		int x = (TILE_ELEVSTRIDE << 1) * i;
+
+		for (int k = 0; k <= c; k++)
+		{
+			float f0 = in[k + q0];	float f1 = in[k + q1];
+			float f2 = in[k + q2];	float f3 = in[k + q3];
+
+			out[x + 0] = (f0 + f1 + f2 + f3) * 0.25f;
+			if (k != c) out[x + 1] = (f1 + f3) * 0.5f;
+
+			if (i != c) {
+				out[x + TILE_ELEVSTRIDE] = (f2 + f3) * 0.5f;
+				if (k != c) out[x + TILE_ELEVSTRIDE + 1] = f3;
+			}
+			x += 2;
+		}
+		q0 += TILE_ELEVSTRIDE;
+	}
+	return true;
+}
+
+
+// -----------------------------------------------------------------------
+
 bool SurfTile::LoadElevationData ()
 {
 	// Note: a tile's elevation data are retrieved from its great-grandparent tile. Each tile stores the elevation
@@ -395,63 +437,71 @@ bool SurfTile::LoadElevationData ()
 	int mode = mgr->Cprm().elevMode;
 	if (!mode) return false;
 
+	DWORD elev_mode = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_ELEVATIONMODE);
+	if (Config->ExpTerrInterp == 0) elev_mode = 0;
+
+	DWORD phy_lvl = mgr->GetPlanet()->GetPhysicsPatchRes();
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
-	elev = ReadElevationFile (mgr->CbodyName(), lvl + 4, ilat, ilng, mgr->ElevRes());
-	if (elev) {
-
+	elev_file = ReadElevationFile (mgr->CbodyName(), lvl + 4, ilat, ilng, mgr->ElevRes());
+	
+	if (elev_file) {
 		has_elevfile = true;
-
-		/*
-		HR(D3DXCreateTexture(mgr->Dev(), TILE_ELEVSTRIDE, TILE_ELEVSTRIDE, 1, D3DUSAGE_DYNAMIC, D3DFMT_L16, D3DPOOL_DEFAULT, &htex));
-
-		if (htex) {
-			D3DLOCKED_RECT Rect;
-			if (htex->LockRect(0, &Rect, NULL, D3DLOCK_DISCARD)==S_OK) {
-				BYTE  *pTgt = (BYTE *)Rect.pBits;
-				INT16 *pSrc = elev;
-				for (int k=0;k<TILE_ELEVSTRIDE;k++) {
-					memcpy(pTgt, pSrc, TILE_ELEVSTRIDE*sizeof(INT16));
-					pTgt += Rect.Pitch;
-					pSrc += TILE_ELEVSTRIDE;
-				}
-				htex->UnlockRect(0);
-				LogBlu("Height map created 0x%X", htex);	
-			}
-			else LogErr("Failed to lock a height map");
-		}*/
-
+		elev = new float[ndat];
+		// Convert to float
+		for (int i = 0; i < ndat; i++) elev[i] = float(elev_file[i]);
 	} 
 	else if (lvl > 0) {
 
 		// construct elevation grid by interpolating ancestor data
 		ELEVHANDLE hElev = mgr->ElevMgr();
 		if (!hElev) return false;
-		int plvl = lvl-1;
-		int pilat = ilat >> 1;
-		int pilng = ilng >> 1;
-		INT16 *pelev = 0;
-		QuadTreeNode<SurfTile> *parent = node->Parent();
-		for (; plvl >= 0; plvl--) { // find ancestor with elevation data
-			if (parent && parent->Entry()->has_elevfile) {
-				pelev = parent->Entry()->elev;
-				break;
-			}
-			parent = parent->Parent();
-			pilat >>= 1;
-			pilng >>= 1;
-		}
-		if (!pelev) return false;
-		elev = new INT16[ndat];
-		// submit ancestor data to elevation manager for interpolation
-		mgr->GetClient()->ElevationGrid (hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev);
 
+		// Cubic Interpolation and Default Linear
+		if (elev_mode == 0) {
+
+			int plvl = lvl-1;
+			int pilat = ilat >> 1;
+			int pilng = ilng >> 1;
+			INT16 *pelev_file = 0;
+			QuadTreeNode<SurfTile> *parent = node->Parent();
+			for (; plvl >= 0; plvl--) { // find ancestor with elevation data
+				if (parent && parent->Entry()->has_elevfile) {
+					pelev_file = parent->Entry()->elev_file;
+					break;
+				}
+				parent = parent->Parent();
+				pilat >>= 1;
+				pilng >>= 1;
+			}	
+
+			if (!pelev_file) return false;
+
+			elev = new float[ndat];
+			INT16 *elev_temp = new INT16[ndat];
+
+			// submit ancestor data to elevation manager for interpolation
+			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev_temp);
+
+			for (int i = 0; i < ndat; i++) elev[i] = float(elev_temp[i]);
+			delete[] elev_temp;
+		}
+
+		// Experimental Linear Interpolation
+		else {
+			QuadTreeNode<SurfTile> *parent = node->Parent();
+			if (parent &&  parent->Entry()->elev) {
+				elev = new float[ndat];
+				InterpolateElevationGrid(parent->Entry()->elev, elev);
+			}
+		}	
 	}
+
 	return (elev != 0);
 }
 
 // -----------------------------------------------------------------------
 
-INT16 *SurfTile::ElevationData () const
+float *SurfTile::ElevationData () const
 {
 	if (!ggelev) {
 		int ancestor_dlvl = 3;
@@ -488,7 +538,7 @@ INT16 *SurfTile::ElevationData () const
 
 // -----------------------------------------------------------------------
 
-double SurfTile::GetMeanElevation(const INT16 *elev) const
+double SurfTile::GetMeanElevation(const float *elev) const
 {
 	int i, j;
 	int res = mgr->GridRes();
@@ -988,15 +1038,15 @@ void SurfTile::FixCorner (const SurfTile *nbr)
 	int vtx_idx = (ilat & 1 ? 0 : (res+1)*res) + (ilng & 1 ? res : 0);
 	VERTEX_2TEX &vtx_store = mesh->vtx[mesh->nv + (ilat & 1 ? 0 : res)];
 
-	INT16 *elev = ElevationData();
+	float *elev = ElevationData();
 	if (!elev) return;
 
 	if (nbr) {
-		INT16 *nbr_elev = nbr->ElevationData();
+		float *nbr_elev = nbr->ElevationData();
 		if (!nbr_elev) return;
 
-		INT16 corner_elev = elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? 0 : TILE_ELEVSTRIDE*res) + (ilng & 1 ? res : 0)];
-		INT16 nbr_corner_elev = nbr_elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? TILE_ELEVSTRIDE*res : 0) + (ilng & 1 ? 0 : res)];
+		float corner_elev = elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? 0 : TILE_ELEVSTRIDE*res) + (ilng & 1 ? res : 0)];
+		float nbr_corner_elev = nbr_elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? TILE_ELEVSTRIDE*res : 0) + (ilng & 1 ? 0 : res)];
 	
 		double rad = mgr->CbodySize();
 		double radfac = (rad+nbr_corner_elev)/(rad+corner_elev);
@@ -1029,8 +1079,8 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 		} else {  // interpolate to neighbour's left edge
 			dlvl = lvl-nbrlvl;
 			if (dlvl <= 5) { // for larger tile level differences the interleaved sampling method doesn't work
-				INT16 *elev = ElevationData();
-				INT16 *nbr_elev = nbr->ElevationData();
+				float *elev = ElevationData();
+				float *nbr_elev = nbr->ElevationData();
 				if (elev && nbr_elev) {
 					elev += TILE_ELEVSTRIDE+1 + vtx_ofs; // add offset
 					int nsub = 1 << dlvl;    // number of tiles fitting alongside the lowres neighbour
@@ -1088,8 +1138,8 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 		} else {
 			dlvl = lvl-nbrlvl;
 			if (dlvl <= 5) { // for larger tile level differences the interleaved sampling method doesn't work
-				INT16 *elev = ElevationData();
-				INT16 *nbr_elev = nbr->ElevationData();
+				float *elev = ElevationData();
+				float *nbr_elev = nbr->ElevationData();
 				if (elev && nbr_elev) {
 					elev += (line+1)*TILE_ELEVSTRIDE + 1; // add offset
 					int nsub = 1 << dlvl;    // number of tiles fitting alongside the lowres neighbour
@@ -1376,15 +1426,15 @@ void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
 	// Compute some parameters to do the rest of the computations -------------------
 	//
 	VECTOR3 vCam = vp->GetUnitSurfacePos(pPick->cLng, pPick->cLat);	// Camera position vector;
-	VECTOR3 vPck = vp->ToLocal(pPick->vRay);							// Picking ray in Planet's local system
+	VECTOR3 vPck = vp->ToLocal(pPick->vRay);						// Picking ray in Planet's local system
 	VECTOR3 vRot = vp->GetRotationAxis();							// Planet's rotation axis
 	VECTOR3 vEast = unit(crossp(vRot, vCam));						// Tangent plane east direction 
 	VECTOR3 vNorth = unit(crossp(vCam, vEast));						// Tangent plane north direction
-	VECTOR3 vDir = unit(vPck - vCam * dotp(vCam, vPck));				// Make the picking ray co-planar with tangent plane
+	VECTOR3 vDir = unit(vPck - vCam * dotp(vCam, vPck));			// Make the picking ray co-planar with tangent plane
 	VECTOR3 vPln = crossp(vCam, vDir);								// Compute picking plane
 	
 	// Angle between vCam, vPick
-	double rPck = PI - acos(dotp(vCam, vPck));						
+	double rPck = PI - acos(dotp(vCam, vPck));
 	// Pick heading [0,360] 0=North 90=East
 	double rHed = PI - atan2(-dotp(vEast, vDir), -dotp(vNorth, vDir));
 	double sPck = sin(rPck);

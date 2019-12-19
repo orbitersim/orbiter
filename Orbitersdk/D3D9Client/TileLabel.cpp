@@ -237,11 +237,11 @@ bool TileLabel::ExtractAncestorData (const SurfTile *atile)
 
 double TileLabel::Elevation (double lat, double lng, double latmin, double latmax, double lngmin, double lngmax, double elev_res) const
 {
-	INT16 *elev = tile->ggelev;
+	float *elev = tile->ggelev;
 	if (!elev) return 0.0;
 
 	int blockRes = tile->mgr->GridRes();
-	INT16 *elev_base = elev+TILE_ELEVSTRIDE+1; // strip padding
+	float *elev_base = elev+TILE_ELEVSTRIDE+1; // strip padding
 	double latidx = (lat-latmin) * blockRes/(latmax-latmin);
 	double lngidx = (lng-lngmin) * blockRes/(lngmax-lngmin);
 	int lat0 = (int)latidx;

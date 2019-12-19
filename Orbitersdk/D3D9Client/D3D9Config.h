@@ -82,6 +82,7 @@ public:
 	int MicroBias;					///< Mipmap LOD Bias for surface micro textures
 	int CloudMicro;					///< Cloud layer micro textures
 	int PlanetTileLoadFlags;		///< Planet Tile Load Flags (0x1=load tiles from directory tree, 0x2=load tiles from compressed archive, 0x3=both \[try directory tree first, then archive\])
+	int ExpTerrInterp;				///< Experimental terrain interpolation
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 
