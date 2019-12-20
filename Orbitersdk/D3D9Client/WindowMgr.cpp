@@ -175,8 +175,8 @@ Node::Node(SideBar *pSB, const char *label, HWND hDlg, DWORD color, Node *pP) :
 
 	pSB->AddWindow(this);
 
-	if (label) strncpy(Label, label, 31);
-	else GetWindowText(hDlg, Label, 31);
+	if (label) strncpy_s(Label, 32, label, 31);
+	else strcpy_s(Label, 32, "");
 
 	HBITMAP hTit;
 
@@ -558,7 +558,12 @@ WindowManager::WindowManager(HWND hAppMainWindow, HINSTANCE _hInst, bool bWindow
 		sbList.push_back(sbRight);
 	}
 
-	Cmd = oapiRegisterCustomCmd("gcGUI Test", "gcGUI Test Program",	OpenTestClbk, this);
+	if (Config->gcGUIMode == 2) {
+		Cmd = oapiRegisterCustomCmd("gcGUI Test", "gcGUI Test Program", OpenTestClbk, this);
+	}
+	else {
+		OpenTestClbk(this);
+	}
 
 	// Must be last one
 	g_pWM = this;
@@ -907,6 +912,7 @@ SideBar *WindowManager::FindDestination()
 //
 bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	static int xpos, ypos;
 	switch (uMsg) {
 
 	case WM_MOUSELEAVE:
@@ -916,14 +922,25 @@ bool WindowManager::MainWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 		return false;
 
 	case WM_KEYDOWN:
-		return false;
+	{
+		if ((GetKeyState(VK_LSHIFT) & 0x8000) && (GetKeyState(VK_LCONTROL) & 0x8000)) {
+			if (wParam == VK_LEFT) { sbLeft->ToggleLock(); MouseMoved(xpos, ypos); }
+			if (wParam == VK_RIGHT) { sbRight->ToggleLock(); MouseMoved(xpos, ypos); }
+			if (wParam == VK_DOWN) {
+				sbLeft->ToggleLock();
+				sbRight->ToggleLock();
+				MouseMoved(xpos, ypos);
+			}
+		}
+		return true;
+	}
 
 	case WM_MOUSEWHEEL:
 		return false;
 
 	case WM_MOUSEMOVE:
-		int xpos = GET_X_LPARAM(lParam);
-		int ypos = GET_Y_LPARAM(lParam);
+		xpos = GET_X_LPARAM(lParam);
+		ypos = GET_Y_LPARAM(lParam);
 		MouseMoved(xpos, ypos);
 		break;
 	}
@@ -960,7 +977,7 @@ SideBar::SideBar(class WindowManager *_pMgr, DWORD _state)
 	bOpening = false;
 	bIsOpen = false;
 	bValidate = true;
-	bStayOpen = false;
+	bLock = false;
 	bFirstTime = true;
 	title_height = 0;
 	bWin = pMgr->IsWindowed();
@@ -1022,6 +1039,14 @@ SideBar::~SideBar()
 
 // ===============================================================================================
 //
+void SideBar::ToggleLock()
+{
+	bLock = !bLock;
+}
+
+
+// ===============================================================================================
+//
 void SideBar::ManageButtons()
 {
 	for each (Node* nd in wList)
@@ -1074,8 +1099,8 @@ void SideBar::Open(bool bO)
 {
 	if (Config->gcGUIMode >= 2) return;
 
-	if (bStayOpen) {
-		bOpening = true;
+	if (bLock) {
+		bOpening = bIsOpen;
 		return;
 	}
 	if (pMgr->GetDragSource() == this) {
@@ -1091,6 +1116,8 @@ void SideBar::Open(bool bO)
 //
 void SideBar::Animate()
 {
+	if (bLock && bValidate) return;
+	if (bLock && bIsOpen) return;
 	if (state == gcGUI::FLOAT) return;
 
 	if (bOpening && anim_state >= 0.9999f) {
@@ -1399,6 +1426,13 @@ LRESULT SideBar::SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	HWND hMain = pMgr->GetMainWindow();
 
 	switch(uMsg) {
+
+	case WM_KEYDOWN:
+	{
+		pMgr->MainWindowProc(hWnd, uMsg, wParam, lParam);
+		break;
+	}
+
 
 	case WM_MOUSEWHEEL:
 	{

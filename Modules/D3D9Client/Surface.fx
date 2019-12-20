@@ -833,6 +833,9 @@ float4 SurfaceTechPS(TileVS frg,
 			cNrm.z = cos(cNrm.x * cNrm.y * 1.57);
 			// Approximate world space normal
 			nrmW = normalize((vTangent * cNrm.x) + (vBiTangent * cNrm.y) + (nvrW * cNrm.z));
+
+			// Bend the normal towards sun a bit
+			nrmW = normalize(nrmW + vSunDir * 0.06f);
 		}
 		// Apply luminance
 		cTex.rgb *= lerp(1.0f, cFnl, step1);

@@ -1018,9 +1018,7 @@ public:
 	LPDIRECT3DSURFACE9	GetDepthStencil() const { return pDepthStencil; }
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam = NULL);
-	bool				RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam = NULL);
 	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
-	void				MakeGenericProcCall(DWORD id);
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 	void				clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf);
 	void				HackFriendlyHack();
@@ -1280,6 +1278,7 @@ private:
 	bool bVertexTex;
 	bool bVSync;
 	bool bRendering;
+	bool bGDIClear;
 
 	DWORD viewW, viewH;     // dimensions of the render viewport
 	DWORD viewBPP;          // bit depth of render viewport
@@ -1295,10 +1294,8 @@ private:
 	D3DXMATRIX ident;
 
 	struct RenderProcData;
-	struct GenericProcData;
 
 	std::vector<RenderProcData> RenderProcs;
-	std::vector<GenericProcData> GenericProcs;
 	std::list<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;

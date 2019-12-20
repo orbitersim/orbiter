@@ -116,12 +116,6 @@ DLLCLBK bool gcRegisterRenderProc(__gcRenderProc proc, DWORD flags, void *pParam
 }
 
 
-DLLCLBK bool gcRegisterGenericProc(__gcGenericProc proc, DWORD flags, void *pParam)
-{
-	return g_client->RegisterGenericProc(proc, flags, pParam);
-}
-
-
 DLLCLBK DWORD gcClientID()
 {
 	return DWORD('D3D9');

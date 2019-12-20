@@ -69,6 +69,7 @@ protected:
 
 private:
 	bool InterpolateElevationGrid(float *pelev, float *elev);
+	float Interpolate(FMATRIX4 &in, float x, float y);
 	float *ElevationData () const;
 	double GetMeanElevation (const float *elev) const;
 	float fixinput(double, int);

@@ -49,14 +49,6 @@ namespace gcGUI {
 	static const int BM_TITLE = 0;
 	static const int BM_SUBTITLE = 1;
 	static const int BM_ICONS = 2;
-	// -----------------------------
-	static const int CF_TXT_MAIN_X = 0;
-	static const int CF_TXT_MAIN_Y = 1;
-	static const int CF_FNT_MAIN = 1;
-
-	static const int CF_TXT_SUB_X = 2;
-	static const int CF_TXT_SUB_Y = 3;
-	static const int CF_FNT_SUB = 1;
 };
 
 class SideBar;
@@ -114,6 +106,7 @@ public:
 	void		SetState(int x) { state = x; }
 	void		Open(bool bOpen);
 	void		Invalidate();
+	void		ToggleLock();
 	void		ManageButtons();
 	void		Animate();
 	HWND		GetHWND() const { return hBar; }
@@ -151,7 +144,7 @@ private:
 	HINSTANCE   hInst;
 	DWORD		state;
 	float		anim_state;
-	bool		bOpening, bIsOpen, bValidate, bStayOpen, bFirstTime, bWin;
+	bool		bOpening, bIsOpen, bValidate, bLock, bFirstTime, bWin;
 	int			xref, ypos, width, height, wndlen, rollpos, title_height;
 	Node *		dnNode;
 	Node *		dnClose;

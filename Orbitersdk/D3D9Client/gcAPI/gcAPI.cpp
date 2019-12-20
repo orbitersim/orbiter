@@ -29,7 +29,6 @@ typedef DWORD (OGCIFN *__gcGetSurfaceAttribs)(SURFHANDLE hSurf, bool bCreation);
 typedef void (OGCIFN *__gcConvertSurface)(SURFHANDLE hSurf, DWORD attrib);
 typedef bool (OGCIFN *__gcGenerateMipMaps)(SURFHANDLE hSurface);
 typedef bool (OGCIFN *__gcRegisterRenderProc)(__gcRenderProc proc, DWORD id, void *pParam);
-typedef bool (OGCIFN *__gcRegisterGenericProc)(__gcGenericProc proc, DWORD id, void *pParam);
 typedef HWND (OGCIFN *__gcGetRenderWindow)();
 typedef gcCore * (OGCIFN *__gcGetCoreAPI)();
 
@@ -80,7 +79,6 @@ __gcGetMatrix _gcGetMatrix = NULL;
 __gcSetMatrix _gcSetMatrix = NULL;
 __gcGetCoreAPI _gcGetCoreAPI = NULL;
 
-__gcRegisterGenericProc _gcRegisterGenericProc = NULL;
 __gcGetRenderWindow _gcGetRenderWindow = NULL;
 __gcGetTextLength _gcGetTextLength = NULL;
 __gcGetCharIndexByPosition _gcGetCharIndexByPosition = NULL;
@@ -100,7 +98,6 @@ bool PostInit(HMODULE hClient)
 	_gcGenerateMipMaps = (__gcGenerateMipMaps)GetProcAddress(hClient, "gcGenerateMipMaps");
 	_gcGetRenderWindow = (__gcGetRenderWindow)GetProcAddress(hClient, "gcGetRenderWindow");
 	_gcRegisterRenderProc = (__gcRegisterRenderProc)GetProcAddress(hClient, "gcRegisterRenderProc");
-	_gcRegisterGenericProc = (__gcRegisterGenericProc)GetProcAddress(hClient, "gcRegisterGenericProc");
 	// -------------
 	_gcDeleteCustomCamera = (__gcDeleteCustomCamera)GetProcAddress(hClient, "gcDeleteCustomCamera");
 	_gcCustomCameraOnOff = (__gcCustomCameraOnOff)GetProcAddress(hClient, "gcCustomCameraOnOff");
@@ -198,14 +195,6 @@ int	gcSetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const
 bool gcRegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 {
 	if (_gcRegisterRenderProc) return _gcRegisterRenderProc(proc, id, pParam);
-	return false;
-}
-
-// ====================================================================================================
-//
-bool gcRegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
-{
-	if (_gcRegisterGenericProc) return _gcRegisterGenericProc(proc, id, pParam);
 	return false;
 }
 

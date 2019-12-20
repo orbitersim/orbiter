@@ -54,12 +54,6 @@ struct D3D9Client::RenderProcData {
 	DWORD id;
 };
 
-struct D3D9Client::GenericProcData {
-	__gcGenericProc proc;
-	void *pParam;
-	DWORD id;
-};
-
 using namespace oapi;
 
 HINSTANCE g_hInst = 0;
@@ -285,6 +279,7 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	bVertexTex    (false),
 	bVSync        (false),
 	bRendering	  (false),
+	bGDIClear	  (true),
 	viewW         (0),
 	viewH         (0),
 	viewBPP       (0),
@@ -660,11 +655,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		} */
 		//GraphicsClient::clbkCloseSession(fastclose);
 
-
-		// Sent a signal for user applications to delete fonts, pens, and brushes.
-		//
-		MakeGenericProcCall(GENERICPROC_UNLOAD);
-		MakeGenericProcCall(GENERICPROC_UNLOAD_ORBITERGUI);
 
 		SAFE_DELETE(pWM);
 		SAFE_DELETE(parser);
@@ -2281,7 +2271,24 @@ DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
 HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 {
 	_TRACE;
-	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
+	if (surf == NULL) {
+		if (Config->GDIOverlay) {
+			LPDIRECT3DSURFACE9 pGDI = GetScene()->GetBuffer(GBUF_GDI);
+			HDC hDC;
+			if (pGDI) if (pGDI->GetDC(&hDC) == S_OK) {
+				if (bGDIClear) {
+					bGDIClear = false;
+					DWORD color = 0xF08040; // BGR "Color Key" value for transparency
+					HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
+					RECT r = { 0, 0, viewW, viewH };
+					FillRect(hDC, &r, hBrush);
+					DeleteObject(hBrush);
+				}
+				return hDC;
+			}
+		}
+		return NULL;
+	}
 	HDC hDC = SURFACE(surf)->GetDC();
 	return hDC;
 }
@@ -2291,8 +2298,14 @@ HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 {
 	_TRACE;
-	if (hDC==NULL) { LogErr("D3D9Client::clbkReleaseSurfaceDC() Input hDC is NULL"); return; }
-	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
+	if (hDC == NULL) { LogErr("D3D9Client::clbkReleaseSurfaceDC() Input hDC is NULL"); return; }
+	if (surf == NULL) {
+		if (Config->GDIOverlay) {
+			LPDIRECT3DSURFACE9 pGDI = GetScene()->GetBuffer(GBUF_GDI);
+			if (pGDI) pGDI->ReleaseDC(hDC);
+		}
+		return;
+	}
 	SURFACE(surf)->ReleaseDC(hDC);
 }
 
@@ -2343,17 +2356,6 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 
 // =======================================================================
 
-void D3D9Client::MakeGenericProcCall(DWORD id)
-{
-	for (auto it = GenericProcs.cbegin(); it != GenericProcs.cend(); ++it) {
-		if (it->id == id) {
-			it->proc(0, NULL, it->pParam);
-		}
-	}
-}
-
-// =======================================================================
-
 bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 {
 	if (id)	{ // register (add)
@@ -2365,26 +2367,6 @@ bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 		for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
 			if (it->proc == proc) {
 				RenderProcs.erase(it);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-// =======================================================================
-
-bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
-{
-	if (id) { // register (add)
-		GenericProcData data = { proc, pParam, id };
-		GenericProcs.push_back(data);
-		return true;
-	}
-	else { // unregister (remove)
-		for (auto it = GenericProcs.cbegin(); it != GenericProcs.cend(); ++it) {
-			if (it->proc == proc) {
-				GenericProcs.erase(it);
 				return true;
 			}
 		}

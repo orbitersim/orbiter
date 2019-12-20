@@ -42,16 +42,6 @@ using namespace std;
 #define RENDERPROC_CUSTOMCAM_OVERLAY	0x0004  ///< Register a callback to draw overlay into a custom camerea view
 ///@}
 
-/// \defgroup RenderProc Specify a render HUD callback function
-///@{
-#define GENERICPROC_DELETE				0x0000	///< Unregister/Remove existing callback 
-#define GENERICPROC_LOAD				0x0001	///< Sent a delayed (late) signal to load and initialize OrbiterGUI elements.
-#define GENERICPROC_UNLOAD				0x0002	///< Sent a signal to use oapiReleaseTexture() and unload Sketchpad resources (pens, fonts, brushes).
-#define GENERICPROC_LOAD_ORBITERGUI		0x0003	///< Sent a signal to load resources
-#define GENERICPROC_UNLOAD_ORBITERGUI	0x0004	///< Sent a signal to unload resources
-///@}
-
-
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
 #define CUSTOMCAM_DEFAULTS				0x00FF
@@ -89,17 +79,6 @@ namespace gcMatrix
 	const int mesh = 2;			///< Set/Get Mesh animation matrix, Transforms all the groups in the mesh
 	const int group = 3;		///< Set/Get Group animation matrix, Transforms a single group
 	const int combined = 4;		///< Get combined Mesh*Group*Offset matrix. (Can't 'set' this)
-}
-
-namespace gcWndFlag
-{
-	const int LEFT  = 0x000001;	///< Left dock
-	const int RIGHT = 0x000002;	///< Right dock
-	const int FLOAT = 0x000003;	///< Floating
-	const int WSTD  = 0x000010;	///< hWnd is a Standard window HWND
-	const int OGUI	= 0x000020;	///< hWnd is a OrbiterGUI window render surface
-	const int OPEN  = 0x001000;	///< Window is open
-	const int POPUP = 0x002000;	///< Popup Window
 }
 
 namespace oapi {
@@ -373,6 +352,9 @@ namespace oapi {
 	*/
 	typedef union FMATRIX4 {
 		FMATRIX4() {}
+		FMATRIX4(const float *pSrc) {
+			for (int i = 0; i < 16; i++) data[i] = pSrc[i];
+		}
 		float data[16];
 		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
@@ -438,6 +420,11 @@ namespace oapi {
 	inline float dot(const FVECTOR3 &v, const FVECTOR3 &w)
 	{
 		return v.x*w.x + v.y*w.y + v.z*w.z;
+	}
+
+	inline float dot(const FVECTOR4 &v, const FVECTOR4 &w)
+	{
+		return v.x*w.x + v.y*w.y + v.z*w.z + v.w*w.w;
 	}
 
 	inline float length(const FVECTOR2 &v)
@@ -514,7 +501,6 @@ typedef void * SKETCHMESH;
 typedef void * HPOLY;
 /// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);
-typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
 
 
 
@@ -564,14 +550,253 @@ public:
 	//@}
 
 
+
+
 	// ===========================================================================
-	/// \name gcGUI Access and management functions
+	/// \name Custom Camera Interface
 	// ===========================================================================
 	//@{
+	/**
+	* \brief Delete/Release a custom camera.
+	* \param hCam camera handle to delete.
+	* \return zero or an error code if the camara didn't work properly.
+	* \note Always delete all cameras bound to a render surface before releasing the rendering surface it-self.
+	*/
+	virtual int			DeleteCustomCamera(CAMERAHANDLE hCam);
+
+	/**
+	* \brief Toggle camera on and off
+	* \param hCam camera handle to toggle
+	* \param bOn true to turn on the camera.
+	* \note If multiple cameras are sharing the same rendering surface. Flickering will occur if more than one camera is turned on.
+	*/
+	virtual void		CustomCameraOnOff(CAMERAHANDLE hCam, bool bOn);
+
+	/**
+	* \brief Create a new custom camera that can be used to render views into a surfaces and textures
+	* \param hCam camera handle to modify an existing camera or, NULL
+	* \param hVessel handle to a vessel where the camera is attached to.
+	* \param vPos camara position in vessel's local coordinate system
+	* \param vDir camara direction in vessel's local coordinate system. [Unit Vector]
+	* \param vUp camara up vector. Must be perpendicular to vDir. [Unit Vector]
+	* \param dFow camera field of view in radians
+	* \param hSurf rendering surface. Must be created atleast with OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET. Multiple cameras can share the same surface.
+	* \param dwFlags Flags to controls what is drawn and what is not.
+	* \return Camera handle, or NULL if an error occured or if the custom camera interface is disabled.
+	* \note Camera count is unlimited.
+	* \note Only a cameras attached to currently active vessel are operational and recodring.
+	* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
+	*/
+	virtual CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &vPos, VECTOR3 &vDir, VECTOR3 &vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
+	//@}
+
+
+
+
+	// ===========================================================================
+	/// \name Sketchpad related functions
+	// ===========================================================================
+	//@{
+	/**
+	* \brief Get the sketchpad version
+	* \param pSkp handle to a sketchpad interface.
+	* \return Currently returns 1 or 2
+	*/
+	virtual int			SketchpadVersion(oapi::Sketchpad *pSkp);
+
+	/**
+	* \brief Load a mesh from a harddrive to be used with Sketchpad2::SketchMesh
+	* \param name Name of the mesh file without ".msh" identifier.
+	* \sa gcDeleteSketchMesh
+	* \note SKETCHMESH handle isn't compatible with MESHHANDLE nor DEVMESHHANDLE.
+	*/
+	virtual SKETCHMESH	LoadSketchMesh(const char *name);
+
+	/**
+	* \brief Delete a mesh previously loaded with gcLoadSketchMesh
+	* \sa gcLoadSketchMesh
+	*/
+	virtual void		DeleteSketchMesh(SKETCHMESH hMesh);
+
+	/**
+	* \brief Create or Update a polyline composed form piecewise straight segments.
+	* \param hPoly Handle to a polyline to be updated or NULL to create a new one.
+	* \param pt list of vertex points.
+	* \param npt number of points in the list.
+	* \param flags additional PolyFlags flags
+	* \sa gcDeletePoly, Sketchpad2::DrawPoly()
+	* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
+	* \note During update number of points must be equal or smaller than during initial creation of poly object.
+	*/
+	virtual HPOLY		CreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, DWORD flags = 0);
+
+
+	/**
+	* \brief Create or Update a triangle object.
+	* \param hPoly Handle to a triangle to be updated or NULL to create a new one.
+	* \param pt list of vertex points.
+	* \param npt number of points in the list.
+	* \param flags additional flags (see below)
+	* \sa gcDeletePoly, Sketchpad2::DrawPoly()
+	* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
+	* \note During update number of points must be equal or smaller than during initial creation of poly object.
+	* \note Flags:
+	* \note PF_TRIANGLES Each independent triangle is composed from three vertex points. ("npt" must be multiple of 3)
+	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
+	* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)
+	*/
+	virtual HPOLY		CreateTriangles(HPOLY hPoly, const oapi::TriangleVtx *pt, int npt, DWORD flags);
+
+
+	/**
+	* \brief Deletes a polyline created with gcCreatePolyPolyline()
+	* \param hPoly Handle to a polyline to be deleted
+	* \sa gcCreatePolyline
+	*/
+	virtual void		DeletePoly(HPOLY hPoly);
+
+	/**
+	* \brief Compute a length of a text string
+	* \param hFont a Pointer into a font
+	* \param pText a Pointer into a text string
+	* \param len a Length of the text string to process. -1 will scan to a NULL terminator.
+	*/
+	virtual DWORD		GetTextLength(oapi::Font *hFont, const char *pText, int len = -1);
+
+	/**
+	* \brief Find index of nearest "cap" between charters in specified location. (i.e. distance from start of the string in pixels)
+	* \param hFont a Pointer into a font
+	* \param pText a Pointer into a text line
+	* \param pos a Position in pixels from start of the string
+	* \param len a Length of the text line to process. -1 will process to a NULL terminator.
+	* \return index from 0 to number of charters. For just one char it can be either "0" or "1" depending which side is closer to "pos".
+	* \note This is used for finding a spot for a "cursor" when a text string is clicked with mouse.
+	*/
+	virtual DWORD		GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len = -1);
+
+	/**
+	* \brief This function will register a custom render callback function
+	* \param proc function to be called when render event occur
+	* \param id render event id
+	* \param pParam a pointer to user data (to a class for an example)
+	* \return false if an error occured, true otherwise.
+	*/
+	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
+	//@}
+
+
+
+
+
+	// ===========================================================================
+	/// \name Mesh interface functions
+	// ===========================================================================
+	//@{
+	/**
+	* \brief This function will register a custom render callback function
+	* \param hMesh Handle to a devmesh containing the material
+	* \param idx Material index
+	* \param prop material property identifier (\ref MeshMaterialFlags)
+	* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
+	* \param bSet \e true to set material value, \e false to get a meterial value
+	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
+	*/
+	virtual int			MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
+
+	/**
+	* \brief A Function to get a mesh transformation/animation matrix.
+	* \param matrix_id Id of the matrix to get. One of gcMatrix::xxx datatypes.
+	* \param hVessel Vessel object handle.
+	* \param mesh Mesh index
+	* \param group Group index
+	* \param pMat A pointer to FMATRIX4 struct for receiving the data.
+	* \return 0 = on Success, or error code.
+	*/
+	virtual int			GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4 *pMat);
+
+
+	/**
+	* \brief A Function to set a mesh transformation/animation matrix. Do not use this function for animated parts/meshes.
+	* \param matrix_id Id of the matrix to set. One of gcMatrix::xxx datatypes.
+	* \param hVessel Vessel object handle.
+	* \param mesh Mesh index
+	* \param group Group index
+	* \param pMat A pointer to FMATRIX4 containing the data to set.
+	* \return 0 = on Success, or error code.
+	*/
+	virtual int			SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4 *pMat);
+	//@}
+
+
+
+
+	// ===========================================================================
+	/// \name Some Helper Functions
+	// ===========================================================================
+	//@{
+	/**
+	* \brief Conver a floating point color to DWORD color value
+	* \param c A pointer to a color
+	* \return DWORD color in 0xAABBGGRR
+	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
+	*/
+	virtual DWORD		Color(const COLOUR4 *c);
+
+	/**
+	* \brief Conver a floating point color to DWORD color value
+	* \param c A pointer to a color
+	* \return DWORD color in 0xAABBGGRR
+	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
+	*/
+	virtual DWORD		Color(const oapi::FVECTOR4 *c);
+
+	/**
+	* \brief Conver a DWORD color to floating point COLOUR4 value
+	* \param dwABGR A color in 0xAABBGGRR
+	* \return COLOUR4
+	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
+	*/
+	virtual COLOUR4		Colour4(DWORD dwABGR);
+
+
+	/**
+	* \brief Get Surface Attributes (e.g. OAPISURFACE_TEXTURE)
+	* \param hSurf handle to a surface
+	* \param bCreation if true return creation time attributes, if false return current attributes
+	* \return Surface attributes
+	*/
+	virtual DWORD		GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation = false);
+
+	/**
+	* \brief Convert an existing surface to an other type.
+	* \param hSurf handle to a surface
+	* \param attrib new attributes
+	*/
 	virtual void		ConvertSurface(SURFHANDLE hSurf, DWORD attrib);
-	virtual DWORD		GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation);
+
+	/**
+	* \brief Load a texture into a specific type of a surface
+	* \param fname name of a texture to be loaded.
+	* \param flags surface attributes (see: OAPISURFACE_x flags)
+	*/
+	virtual SURFHANDLE	LoadSurface(const char *fname, DWORD flags);
+
+	/**
+	* \brief Auto-Generate a full chain of mipmaps from the main level.
+	* \param hSurface handle to a surface
+	* \return false if an error occured, true otherwise.
+	* \note Surface must be created atleast with (OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS)
+	* \note Exact attribute requirements/conflicts are unknown.
+	*/
+	virtual bool		GenerateMipMaps(SURFHANDLE hSurface);
+	
+	/**
+	* \brief Get render window handle
+	* \return Render window handle
+	*/
 	virtual HWND		GetRenderWindow();
 	//@}
+
 
 
 	// ===========================================================================

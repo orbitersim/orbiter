@@ -151,21 +151,7 @@ bool			gcRegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
 				//@}
 
 
-				// ===========================================================================
-				/// \name Generic callback function
-				// ===========================================================================
-				//@{
-				/**
-				* \brief This function will register a generic callback function
-				* \param proc function to be called when event occur
-				* \param id event id
-				* \param pParam a pointer to user data (to a class for an example)
-				* \return false if an error occured, true otherwise.
-				*/
-bool			gcRegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam);
-				//@}
-
-
+			
 				// ===========================================================================
 				/// \name Mesh interface functions
 				// ===========================================================================

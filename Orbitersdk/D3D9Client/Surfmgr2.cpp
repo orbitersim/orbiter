@@ -386,6 +386,12 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 
 // -----------------------------------------------------------------------
 
+float SurfTile::Interpolate(FMATRIX4 &in, float t, float u)
+{
+	return 0.0f;
+}
+
+// -----------------------------------------------------------------------
 
 bool SurfTile::InterpolateElevationGrid(float *in, float *out)
 {
@@ -438,8 +444,7 @@ bool SurfTile::LoadElevationData ()
 	if (!mode) return false;
 
 	DWORD elev_mode = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_ELEVATIONMODE);
-	if (Config->ExpTerrInterp == 0) elev_mode = 0;
-
+	
 	DWORD phy_lvl = mgr->GetPlanet()->GetPhysicsPatchRes();
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	elev_file = ReadElevationFile (mgr->CbodyName(), lvl + 4, ilat, ilng, mgr->ElevRes());

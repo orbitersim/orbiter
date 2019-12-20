@@ -36,7 +36,8 @@ class D3D9Pad;
 #define GBUF_BLUR				1
 #define GBUF_TEMP				2
 #define GBUF_DEPTH				3
-#define GBUF_COUNT				4
+#define GBUF_GDI				4
+#define GBUF_COUNT				5	// Buffer count
 
 #define SHM_LOD_COUNT			5
 
@@ -219,6 +220,7 @@ public:
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
+	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
 
 	/**
 	 * \brief Render any shadows cast by vessels on planet surfaces
@@ -452,7 +454,7 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pFlare;
+	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv;

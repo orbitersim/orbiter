@@ -146,6 +146,13 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 
 
+	// Create auxiliary color buffer for on screen GDI
+	//
+	if (Config->GDIOverlay) {
+		HR(D3DXCreateTexture(pDevice, viewW, viewH, 1, D3DUSAGE_DYNAMIC, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_GDI]));
+		pGDIOverlay = new ImageProcessing(pDevice, "Modules/D3D9Client/GDIOverlay.hlsl", "PSMain");
+	}
+	else pGDIOverlay = NULL;
 
 
 	// Initialize post processing effects --------------------------------------------------------------------------------------------------
@@ -206,6 +213,20 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	for (int i = 0; i < ARRAYSIZE(ptgBuffer);i++)  if (ptgBuffer[i]) ptgBuffer[i]->GetSurfaceLevel(0, &psgBuffer[i]);
 
+
+	if (Config->GDIOverlay) {
+		HDC hDC;
+		// Clear the GDI Overlay with transparency
+		if (psgBuffer[GBUF_GDI]->GetDC(&hDC) == S_OK) {	
+			DWORD color = 0xF08040; // BGR "Color Key" value for transparency
+			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
+			RECT r = { 0, 0, viewW, viewH };
+			FillRect(hDC, &r, hBrush);
+			DeleteObject(hBrush);	
+			psgBuffer[GBUF_GDI]->ReleaseDC(hDC);
+		}
+	}
+
 	LogAlw("================ Scene Created ===============");
 }
 
@@ -224,6 +245,7 @@ Scene::~Scene ()
 	for (int i = 0; i < ARRAYSIZE(ptgBuffer); i++) SAFE_RELEASE(ptgBuffer[i]);
 	for (int i = 0; i < ARRAYSIZE(pTextures); i++) SAFE_RELEASE(pTextures[i]);
 
+	SAFE_DELETE(pGDIOverlay);
 	SAFE_DELETE(pBlur);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(pFlare);
@@ -1770,6 +1792,28 @@ surfLabelsActive = false;
 		else
 		{
 			LogErr("pFlare is not OK.");
+		}
+	}
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render GDI Overlay to backbuffer directly
+	// -------------------------------------------------------------------------------------------------------
+
+
+	if (pGDIOverlay) {
+		if (pGDIOverlay->IsOK())
+		{
+			gc->bGDIClear = true; // Must clear background before continuing drawing into overlay
+			D3DXCOLOR clr(0x4080F0); // RGB ColorKey
+			pGDIOverlay->SetTextureNative("tSrc", ptgBuffer[GBUF_GDI], IPF_POINT | IPF_CLAMP);
+			pGDIOverlay->SetFloat("vColorKey", &clr, sizeof(clr));
+			pGDIOverlay->SetOutputNative(0, gc->GetBackBuffer());
+			if (!pGDIOverlay->Execute(true)) LogErr("pGDIOverlay Execute Failed");
+		}
+		else
+		{
+			LogErr("pGDIOverlay is not OK.");
 		}
 	}
 

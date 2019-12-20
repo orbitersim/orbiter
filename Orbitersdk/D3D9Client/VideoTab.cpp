@@ -717,7 +717,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Disabled");
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Default");
 	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Windowed");
-	SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Backup");
+	//SendDlgItemMessageA(hWnd, IDC_GUIMODE, CB_ADDSTRING, 0, (LPARAM)"Backup");
 	
 
 	// Write values in controls ----------------
@@ -791,7 +791,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_GLASSSHADE, BM_SETCHECK, Config->EnableGlass==1, 0);
 	SendDlgItemMessage(hWnd, IDC_MESH_DEBUGGER, BM_SETCHECK, Config->EnableMeshDbg==1, 0);
 	SendDlgItemMessage(hWnd, IDC_CLOUDMICRO, BM_SETCHECK, Config->CloudMicro == 1, 0);
-	SendDlgItemMessage(hWnd, IDC_EXPTERRINTERP, BM_SETCHECK, Config->ExpTerrInterp == 1, 0);
+	SendDlgItemMessage(hWnd, IDC_GDIOVERLAY, BM_SETCHECK, Config->GDIOverlay == 1, 0);
 
 
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
@@ -859,7 +859,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->EnableGlass   = SendDlgItemMessage (hWnd, IDC_GLASSSHADE,  BM_GETCHECK, 0, 0);
 	Config->EnableMeshDbg = SendDlgItemMessage (hWnd, IDC_MESH_DEBUGGER,  BM_GETCHECK, 0, 0);
 	Config->CloudMicro    = SendDlgItemMessage (hWnd, IDC_CLOUDMICRO, BM_GETCHECK, 0, 0);
-	Config->ExpTerrInterp = SendDlgItemMessage (hWnd, IDC_EXPTERRINTERP, BM_GETCHECK, 0, 0);
+	Config->GDIOverlay	  = SendDlgItemMessage (hWnd, IDC_GDIOVERLAY, BM_GETCHECK, 0, 0);
 
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
