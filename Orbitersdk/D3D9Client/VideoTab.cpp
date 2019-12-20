@@ -166,6 +166,9 @@ void VideoTab::Initialise()
 
 	GraphicsClient::VIDEODATA *data = gclient->GetVideoData();
 
+	data->forceenum = false;
+	data->trystencil = false;
+
 	SendDlgItemMessage(hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hTab, IDC_VID_MODE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hTab, IDC_VID_BPP, CB_RESETCONTENT, 0, 0);
@@ -307,13 +310,14 @@ void VideoTab::SelectFullscreen(bool bFull)
 {
 
 	SetWindowText(GetDlgItem(hTab, IDC_VID_ENUM), "(unused)");
-	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "GDI compatibility");
+	SetWindowText(GetDlgItem(hTab, IDC_VID_STENCIL), "(unused)");
 	SetWindowText(GetDlgItem(hTab, IDC_VID_PAGEFLIP), "Multiple displays");
 
 	SendDlgItemMessage(hTab, IDC_VID_FULL, BM_SETCHECK, bFull ? BST_CHECKED : BST_UNCHECKED, 0);
 	SendDlgItemMessage(hTab, IDC_VID_WINDOW, BM_SETCHECK, bFull ? BST_UNCHECKED : BST_CHECKED, 0);
 
 	EnableWindow(GetDlgItem(hTab, IDC_VID_ENUM), false);
+	EnableWindow(GetDlgItem(hTab, IDC_VID_STENCIL), false);
 
 	if (bFull) {
 		EnableWindow(GetDlgItem(hTab, IDC_VID_ASPECT), false);
