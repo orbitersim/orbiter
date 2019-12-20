@@ -16,7 +16,7 @@ setlocal
 :: --- Setup
 set BASE_DIR=..\..
 set OUT_DIR=_release
-set VERSION=Beta28.11
+set VERSION=Beta29.0
 
 
 :: Check if SDK and other needed resources are present
