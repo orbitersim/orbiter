@@ -625,7 +625,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Modules\D3D9Client\Common.hlsl"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Modules\D3D9Client\D3D9Client.fx"
+				>
+			</File>
+			<File
+        RelativePath="..\..\Modules\D3D9Client\EnvMapBlur.hlsl"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\GDIOverlay.hlsl"
 				>
 			</File>
 			<File
@@ -633,14 +645,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Modules\D3D9Client\Common.hlsl"
-				>
-			<File
 				RelativePath="..\..\Modules\D3D9Client\IPI.hlsl"
 				>
 			</File>
 			<File
+        RelativePath="..\..\Modules\D3D9Client\LensFlare.hlsl"
+				>
+			</File>
+			<File
+        RelativePath="..\..\Modules\D3D9Client\LightBlur.hlsl"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Modules\D3D9Client\Mesh.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\PBR.fx"
 				>
 			</File>
 			<File
@@ -653,6 +674,10 @@
 			</File>
 			<File
 				RelativePath="..\..\Modules\D3D9Client\SceneTech.fx"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Modules\D3D9Client\Sketchpad.fx"
 				>
 			</File>
 			<File

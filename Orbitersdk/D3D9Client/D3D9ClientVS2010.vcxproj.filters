@@ -83,6 +83,9 @@
     <ClCompile Include="FileParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gcCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GDIPad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -168,6 +171,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ZTreeMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -336,6 +342,9 @@
     <ClInclude Include="VVessel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WindowMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ZTreeMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -383,6 +392,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(ModuleDir)\D3D9Client\EnvMapBlur.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(ModuleDir)\D3D9Client\GDIOverlay.hlsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(ModuleDir)\D3D9Client\IPI.hlsl">

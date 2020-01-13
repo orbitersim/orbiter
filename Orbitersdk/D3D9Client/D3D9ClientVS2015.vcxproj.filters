@@ -83,6 +83,9 @@
     <ClCompile Include="FileParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gcCore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GDIPad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -173,9 +176,6 @@
     <ClCompile Include="WindowMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gcCore.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SrcSdkIncludeDir)\gcAPI.h">
@@ -195,9 +195,6 @@
     </ClInclude>
     <ClInclude Include="$(SrcSdkIncludeDir)\Sketchpad2.h">
       <Filter>Externals</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowMgr.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -345,6 +342,9 @@
     <ClInclude Include="VVessel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WindowMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="ZTreeMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -365,10 +365,10 @@
     <None Include="$(BuildModuleDir)\D3D9Client\Mesh.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="$(BuildModuleDir)\D3D9Client\PBR.fx">
+    <None Include="$(BuildModuleDir)\D3D9Client\Particle.fx">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="$(BuildModuleDir)\D3D9Client\Particle.fx">
+    <None Include="$(BuildModuleDir)\D3D9Client\PBR.fx">
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(BuildModuleDir)\D3D9Client\Planet.fx">
@@ -386,10 +386,15 @@
     <None Include="$(BuildModuleDir)\D3D9Client\Vessel.fx">
       <Filter>Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="$(BuildModuleDir)\D3D9Client\Common.hlsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(BuildModuleDir)\D3D9Client\EnvMapBlur.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="$(BuildModuleDir)\D3D9Client\GDIOverlay.hlsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="$(BuildModuleDir)\D3D9Client\IPI.hlsl">
@@ -409,10 +414,5 @@
     <ResourceCompile Include="D3D9Client.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\Modules\D3D9Client\GDIOverlay.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

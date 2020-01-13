@@ -290,6 +290,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
   <ItemGroup>
     <None Include="..\..\Modules\D3D9Client\Common.hlsl" />
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\GDIOverlay.hlsl" />
     <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LensFlare.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />
