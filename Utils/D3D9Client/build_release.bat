@@ -51,6 +51,7 @@ if not "%VS142COMNTOOLS%"=="" (
   set "SETVCVARS=%VS142COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2019.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
+  set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2019.vcxproj
   goto assign
 )
@@ -59,6 +60,7 @@ if not "%VS141COMNTOOLS%"=="" (
   set "SETVCVARS=%VS141COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2017.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
+  set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
   set BUILD_FLAG=/p:XPDeprecationWarning=false
   goto assign
@@ -68,6 +70,7 @@ if not "%VS140COMNTOOLS%"=="" (
   set "SETVCVARS=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
   set SOLUTIONFILE=D3D9ClientVS2015.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
+  set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2015.vcxproj
   goto assign
 )
@@ -116,29 +119,27 @@ if exist "%OUT_DIR%" (
 mkdir "%OUT_DIR%"
 
 
-:: DEBUG (when we like to have no_logo ...)
-:: call "%VS150COMNTOOLS%VsDevCmd.bat" -no_logo -arch=x86 -host_arch=x86
-:: call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG%
-:: if errorlevel 1 goto exit_nok
-:: goto exit_ok
-:: DEBUG-END
-
-
 :: --- Start build environment
 :: Prevent vcvarsall.bat of Visual Studio 2017 from changing the current working directory
 set "VSCMD_START_DIR=%CD%"
 call "%SETVCVARS%" x86
 if errorlevel 1 goto exit_nok
+echo.
 
 :: gcAPI_dbg.lib (DEBUG)
-:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG%
-:: if errorlevel 1 goto exit_nok
-
+if not exist "%BASE_DIR%\Orbitersdk\lib\gcAPI_dbg.lib" (
+  echo ========================================================================
+  echo   Building gcAPI_dbg^.lib ^(DEBUG version of gcAPI.lib^)
+  echo ========================================================================
+  call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG%
+  if errorlevel 1 goto exit_nok
+)
 :: gcAPI.lib (RELEASE)
 :: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG%
 :: if errorlevel 1 goto exit_nok
 
-:: D3D9Client & gcAPI.lib (RELEASE)
+
+:: D3D9Client (RELEASE)
 echo ========================================================================
 echo   Building D3D9Client
 echo ========================================================================
@@ -152,6 +153,16 @@ if not "%CAM_SOLUTIONFILE%"=="" (
   echo ========================================================================
   call %VC% %BUILD_FLAG% ^
             "%BASE_DIR%\Orbitersdk\samples\GenericCamera\%CAM_SOLUTIONFILE%" ^
+            %CONFIG%
+  if errorlevel 1 goto exit_nok
+)
+
+if not "%EXTMFD_SOLUTIONFILE%"=="" (
+  echo ========================================================================
+  echo   Building DX9ExtMFD
+  echo ========================================================================
+  call %VC% %BUILD_FLAG% ^
+            "%BASE_DIR%\Orbitersdk\samples\DX9ExtMFD\%EXTMFD_SOLUTIONFILE%" ^
             %CONFIG%
   if errorlevel 1 goto exit_nok
 )
@@ -184,6 +195,8 @@ copy /y %BASE_DIR%\Orbitersdk\lib\gcAPI.lib ^
 ::          %OUT_DIR%\Orbitersdk\lib\gcAPI_dbg.lib > nul
 copy /y %BASE_DIR%\Modules\Plugin\GenericCamera.dll ^
          %OUT_DIR%\Modules\Plugin\GenericCamera.dll > nul
+copy /y %BASE_DIR%\Modules\Plugin\DX9ExtMFD.dll ^
+         %OUT_DIR%\Modules\Plugin\DX9ExtMFD.dll > nul
 
 
 :: --- Packing

@@ -64,7 +64,9 @@ DLLCLBK void InitModule (HINSTANCE hDLL)
 	wndClass.cbWndExtra    = 0;
 	wndClass.hInstance     = hDLL;
 	wndClass.hIcon         = NULL;
+#pragma warning(disable:4302)
 	wndClass.hCursor       = LoadCursor (NULL, MAKEINTRESOURCE(IDC_ARROW));
+#pragma warning(default:4302)
 	wndClass.hbrBackground = (HBRUSH)GetStockObject (BLACK_BRUSH);
 	wndClass.lpszMenuName  = NULL;
 	wndClass.lpszClassName = "ExtMFD_Display";
