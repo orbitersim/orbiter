@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9ExtMFD", "ExtMFD.vcxproj", "{1E1B3EE7-1010-47C6-B032-58EF3825CCD0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gcAPI", "..\..\D3D9Client\gcAPI\gcAPI.vs2015.vcxproj", "{E31E97CA-377A-4882-8C5C-C5781700CD43}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gcAPI", "..\..\D3D9Client\gcAPI\gcAPI.vs201x.vcxproj", "{11510222-2A76-4B4D-81D5-AFAC25191D7B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,9 +17,9 @@ Global
 		{1E1B3EE7-1010-47C6-B032-58EF3825CCD0}.Debug|Win32.Build.0 = Debug|Win32
 		{1E1B3EE7-1010-47C6-B032-58EF3825CCD0}.Release|Win32.ActiveCfg = Release|Win32
 		{1E1B3EE7-1010-47C6-B032-58EF3825CCD0}.Release|Win32.Build.0 = Release|Win32
-		{E31E97CA-377A-4882-8C5C-C5781700CD43}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E31E97CA-377A-4882-8C5C-C5781700CD43}.Debug|Win32.Build.0 = Debug|Win32
-		{E31E97CA-377A-4882-8C5C-C5781700CD43}.Release|Win32.ActiveCfg = Release|Win32
+		{11510222-2A76-4B4D-81D5-AFAC25191D7B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{11510222-2A76-4B4D-81D5-AFAC25191D7B}.Debug|Win32.Build.0 = Debug|Win32
+		{11510222-2A76-4B4D-81D5-AFAC25191D7B}.Release|Win32.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

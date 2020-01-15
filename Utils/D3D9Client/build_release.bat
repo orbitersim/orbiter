@@ -23,9 +23,9 @@ set VERSION=Beta29.0
 for %%a in ("%BASE_DIR%\Orbitersdk\lib\orbiter.lib" ^
             "%BASE_DIR%\Orbitersdk\VS2015\PropertyPages\orbiter.props") ^
 do if not exist %%a (
-  echo ========================================================================
+  echo ======================================================================
   echo   Getting Orbiter SDK libs ^& headers^.^.^.
-  echo ========================================================================
+  echo ======================================================================
 
   pushd .
   call get_orbiter_libs.bat
@@ -35,9 +35,9 @@ do if not exist %%a (
 
 
 :: Enhance Version by Orbiter Version
-echo ========================================================================
+echo ======================================================================
 echo   Getting Version information
-echo ========================================================================
+echo ======================================================================
 echo   ^.^.^.
 
 for /F "usebackq tokens=*" %%i in (`over /N ..\..\Orbitersdk\lib\orbiter.lib`) do set OVER=%%i
@@ -53,6 +53,7 @@ if not "%VS142COMNTOOLS%"=="" (
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2019.vcxproj
+  set BUILD_FLAG=-m
   goto assign
 )
 :: Visual Studio 2017
@@ -62,7 +63,7 @@ if not "%VS141COMNTOOLS%"=="" (
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
   set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
-  set BUILD_FLAG=/p:XPDeprecationWarning=false
+  set BUILD_FLAG=/p:XPDeprecationWarning=false /m
   goto assign
 )
 :: Visual Studio 2015
@@ -99,9 +100,8 @@ if not "%VS90COMNTOOLS%"=="" (
 :assign
 set ZIP_NAME=D3D9Client%VERSION%
 set VC=msbuild.exe
-set BUILD_FLAG=%BUILD_FLAG% /t:build
+set BUILD_FLAG=%BUILD_FLAG% /t:build /v:minimal /nologo
 set SOLUTIONFILE="%BASE_DIR%\Orbitersdk\D3D9Client\%SOLUTIONFILE%"
-set GCAPI_PROJECTFILE="%BASE_DIR%\Orbitersdk\D3D9Client\gcAPI\%GCAPI_PROJECTFILE%"
 set CONFIG=/p:Configuration=Release /p:Platform=Win32
 set CONFIG_DBG=/p:Configuration=Debug /p:Platform=Win32
 set ZIP_CMD="C:\Program Files\7-Zip\7z.exe"
@@ -126,47 +126,60 @@ call "%SETVCVARS%" x86
 if errorlevel 1 goto exit_nok
 echo.
 
-:: gcAPI_dbg.lib (DEBUG)
-if not exist "%BASE_DIR%\Orbitersdk\lib\gcAPI_dbg.lib" (
-  echo ========================================================================
-  echo   Building gcAPI_dbg^.lib ^(DEBUG version of gcAPI.lib^)
-  echo ========================================================================
-  call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG_DBG%
-  if errorlevel 1 goto exit_nok
-)
-:: gcAPI.lib (RELEASE)
-:: call %VC% %GCAPI_PROJECTFILE% %BUILD_FLAG% %CONFIG%
-:: if errorlevel 1 goto exit_nok
-
 
 :: D3D9Client (RELEASE)
-echo ========================================================================
+echo ======================================================================
 echo   Building D3D9Client
-echo ========================================================================
+echo ======================================================================
 
 call %VC% %BUILD_FLAG% %SOLUTIONFILE% %CONFIG%
 if errorlevel 1 goto exit_nok
 
+:: gcAPI_dbg.lib (DEBUG)
+:: if not exist "%BASE_DIR%\Orbitersdk\lib\gcAPI_dbg.lib" (
+::   echo ======================================================================
+::   echo   Building gcAPI_dbg^.lib ^(DEBUG version of gcAPI.lib^)
+::   echo ======================================================================
+::   call %VC% "%BASE_DIR%\Orbitersdk\D3D9Client\gcAPI\%GCAPI_PROJECTFILE%" ^
+::        %BUILD_FLAG% %CONFIG_DBG%
+::   if errorlevel 1 goto exit_nok
+:: )
+
+:: gcAPI.lib (RELEASE)
+:: call %VC% "%BASE_DIR%\Orbitersdk\D3D9Client\gcAPI\%GCAPI_PROJECTFILE%" ^
+::           %BUILD_FLAG% %CONFIG%
+:: if errorlevel 1 goto exit_nok
+
+:: GenericCamera (RELEASE)
 if not "%CAM_SOLUTIONFILE%"=="" (
-  echo ========================================================================
+  echo.
+  echo.
+  echo ======================================================================
   echo   Building GenericCamera MFD
-  echo ========================================================================
-  call %VC% %BUILD_FLAG% ^
-            "%BASE_DIR%\Orbitersdk\samples\GenericCamera\%CAM_SOLUTIONFILE%" ^
-            %CONFIG%
+  echo ======================================================================
+  call %VC% "%BASE_DIR%\Orbitersdk\samples\GenericCamera\%CAM_SOLUTIONFILE%" ^
+            %BUILD_FLAG% %CONFIG%
   if errorlevel 1 goto exit_nok
 )
 
+:: DX9ExtMFD (RELEASE)
 if not "%EXTMFD_SOLUTIONFILE%"=="" (
-  echo ========================================================================
+  echo.
+  echo.
+  echo.======================================================================
   echo   Building DX9ExtMFD
-  echo ========================================================================
-  call %VC% %BUILD_FLAG% ^
-            "%BASE_DIR%\Orbitersdk\samples\DX9ExtMFD\%EXTMFD_SOLUTIONFILE%" ^
-            %CONFIG%
+  echo ======================================================================
+  call %VC% "%BASE_DIR%\Orbitersdk\samples\DX9ExtMFD\%EXTMFD_SOLUTIONFILE%" ^
+            %BUILD_FLAG% %CONFIG%
   if errorlevel 1 goto exit_nok
 )
 
+
+echo.
+echo.
+echo ======================================================================
+echo   Creating ZIP files
+echo ======================================================================
 
 :: --- Export
 set ABS_PATH=%cd%
