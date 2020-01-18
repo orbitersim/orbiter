@@ -52,7 +52,7 @@ if not "%VS142COMNTOOLS%"=="" (
   set SOLUTIONFILE=D3D9ClientVS2019.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
-  set GCAPI_PROJECTFILE=gcAPI.vs2019.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs201x.vcxproj
   set BUILD_FLAG=-m
   goto assign
 )
@@ -62,7 +62,7 @@ if not "%VS141COMNTOOLS%"=="" (
   set SOLUTIONFILE=D3D9ClientVS2017.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
-  set GCAPI_PROJECTFILE=gcAPI.vs2017.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs201x.vcxproj
   set BUILD_FLAG=/p:XPDeprecationWarning=false /m
   goto assign
 )
@@ -72,7 +72,7 @@ if not "%VS140COMNTOOLS%"=="" (
   set SOLUTIONFILE=D3D9ClientVS2015.sln
   set CAM_SOLUTIONFILE=GenericCamera.sln
   set EXTMFD_SOLUTIONFILE=DX9ExtMFD.sln
-  set GCAPI_PROJECTFILE=gcAPI.vs2015.vcxproj
+  set GCAPI_PROJECTFILE=gcAPI.vs201x.vcxproj
   goto assign
 )
 :: Visual Studio 2012
