@@ -370,7 +370,7 @@ namespace oapi {
 		float y = V.x*M.m12 + V.y*M.m22 + V.z*M.m32 + V.w*M.m42;
 		float z = V.x*M.m13 + V.y*M.m23 + V.z*M.m33 + V.w*M.m43;
 		float w = V.x*M.m14 + V.y*M.m24 + V.z*M.m34 + V.w*M.m44;
-		FVECTOR4(x, y, z, w);
+		return FVECTOR4(x, y, z, w);
 	}
 
 
