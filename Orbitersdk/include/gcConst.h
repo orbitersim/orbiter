@@ -118,23 +118,23 @@ namespace oapi {
 			y = float(p.y);
 		}
 
-		inline FVECTOR2 operator* (float f)
+		inline FVECTOR2 operator* (float f) const
 		{
 			return FVECTOR2(x * f, y * f);
 		}
 
-		inline FVECTOR2 operator/ (float f)
+		inline FVECTOR2 operator/ (float f) const
 		{
 			f = 1.0f / f;
 			return FVECTOR2(x * f, y * f);
 		}
 
-		inline FVECTOR2 operator+ (float f)
+		inline FVECTOR2 operator+ (float f) const
 		{
 			return FVECTOR2(x + f, y + f);
 		}
 
-		inline FVECTOR2 operator- (float f)
+		inline FVECTOR2 operator- (float f) const
 		{
 			return FVECTOR2(x - f, y - f);
 		}
@@ -180,23 +180,23 @@ namespace oapi {
 		}
 	
 
-		inline FVECTOR3 operator* (float f)
+		inline FVECTOR3 operator* (float f) const
 		{
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
-		inline FVECTOR3 operator/ (float f)
+		inline FVECTOR3 operator/ (float f) const
 		{
 			f = 1.0f / f;
 			return FVECTOR3(x * f, y * f, z * f);
 		}
 
-		inline FVECTOR3 operator+ (float f)
+		inline FVECTOR3 operator+ (float f) const
 		{
 			return FVECTOR3(x + f, y + f, z + f);
 		}
 
-		inline FVECTOR3 operator- (float f)
+		inline FVECTOR3 operator- (float f) const
 		{
 			return FVECTOR3(x - f, y - f, z - f);
 		}
@@ -296,23 +296,23 @@ namespace oapi {
 		}
 
 
-		inline FVECTOR4 operator* (float f)
+		inline FVECTOR4 operator* (float f) const
 		{
 			return FVECTOR4( x * f, y * f, z * f, w);
 		}
 
-		inline FVECTOR4 operator/ (float f)
+		inline FVECTOR4 operator/ (float f) const
 		{
 			f = 1.0f / f;
 			return FVECTOR4(x * f, y * f, z * f, w);
 		}
 		
-		inline FVECTOR4 operator+ (float f)
+		inline FVECTOR4 operator+ (float f) const
 		{
 			return FVECTOR4(x + f, y + f, z + f, w);
 		}
 
-		inline FVECTOR4 operator- (float f)
+		inline FVECTOR4 operator- (float f) const
 		{
 			return FVECTOR4(x - f, y - f, z - f, w);
 		}
@@ -328,19 +328,23 @@ namespace oapi {
 		}
 
 		float data[4];
-		struct {
-			float x, y, z, w;
-		};
-		struct {
-			float r, g, b, a;
-		};
-		struct {
-			FVECTOR3 rgb;
-			float a;
-		};
-		struct {
-			FVECTOR3 xyz;
+		struct { // {x,y,z,w} or {xyz,w}
+			struct {
+				float x, y, z;
+			};
+			struct {
+				FVECTOR3 xyz;
+			};
 			float w;
+		};
+		struct { // {r,g,b,a} or {rgb,a}
+			struct {
+				float r, g, b;
+			};
+			struct {
+				FVECTOR3 rgb;
+			};
+			float a;
 		};
 	} FVECTOR4;
 
@@ -352,9 +356,22 @@ namespace oapi {
 	*/
 	typedef union FMATRIX4 {
 		FMATRIX4() {}
+
 		FMATRIX4(const float *pSrc) {
 			for (int i = 0; i < 16; i++) data[i] = pSrc[i];
 		}
+
+		void Zero()
+		{
+			for (int i = 0; i < 16; i++) data[i] = 0.0;
+		}
+
+		void Ident() 
+		{
+			for (int i = 0; i < 16; i++) data[i] = 0.0;
+			m11 = m22 = m33 = m44 = 1.0f;
+		}
+
 		float data[16];
 		struct { FVECTOR4 _x, _y, _z, _p; };
 		struct { float m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44; };
