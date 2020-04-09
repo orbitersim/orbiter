@@ -8,7 +8,7 @@
 #ifndef __MATERIALMGR_H
 #define __MATERIALMGR_H
 
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 #include "Mesh.h"
@@ -40,6 +40,10 @@ struct ENVCAMREC {
 class MatMgr {
 
 public:
+	// Disable copy construct & copy assign
+					MatMgr    (MatMgr const&) = delete;
+	MatMgr &		operator= (MatMgr const&) = delete;
+
 					MatMgr(class vObject *vObj, class D3D9Client *_gc);
 					~MatMgr();
 
@@ -55,7 +59,7 @@ public:
 
 	ENVCAMREC *		GetCamera(DWORD idx);
 	DWORD			CameraCount();
-	
+
 private:
 
 	vObject			*vObj;

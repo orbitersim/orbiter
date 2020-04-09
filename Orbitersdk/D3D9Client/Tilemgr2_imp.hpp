@@ -109,6 +109,9 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			bias -= 1.0;
 	}
 
+	tile->dmWorld = WorldMatrix(ilng, nlng, ilat, nlat);
+	MATRIX4toD3DMATRIX(tile->dmWorld, tile->mWorld);
+
 	// check if patch is visible from camera position
 	VECTOR3 &cnt = tile->cnt;                   // tile centre in unit planet frame
 	static const double rad0 = sqrt(2.0)*PI05;
@@ -126,7 +129,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	}
 
 	// Check if patch bounding box intersects viewport
-	MATRIX4 transform = mul (WorldMatrix (ilng, nlng, ilat, nlat), prm.dviewproj);
+	MATRIX4 transform = mul (tile->dmWorld, prm.dviewproj);
 	if (!tile->InView (transform)) {
 		if (lvl == 0)
 			bstepdown = false;
@@ -200,7 +203,7 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 	if (tile->state == Tile::ForRender) {
 		int lvl = tile->lvl;
 		tile->MatchEdges ();
-		SetWorldMatrix (WorldMatrix (tile));
+		SetWorldMatrix (tile->mWorld);
 		tile->StepIn ();
 		tile->Render ();
 		tile->FrameId = scene->GetFrameId();		// Keep a record about when this tile is actually rendered.
@@ -319,9 +322,9 @@ void TileManager2<TileType>::CheckCoverage (const QuadTreeNode<TileType> *node,
 // -----------------------------------------------------------------------
 
 template<class TileType>
-const Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const
+Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const
 {
-	const Tile *t = node->Entry();
+	Tile *t = node->Entry();
 
 	if (!t) return NULL;
 	if (!t->HasOwnTex() && bOwntex) return NULL;
@@ -329,12 +332,12 @@ const Tile *TileManager2<TileType>::SearchTileSub (const QuadTreeNode<TileType> 
 	if (t->Level()==maxlvl) return t;
 
 	int i = 0;
-	if (lng > (t->minlng+t->maxlng)*0.5) i++;
-	if (lat < (t->minlat+t->maxlat)*0.5) i+=2;
+	if (lng > (t->bnd.minlng + t->bnd.maxlng)*0.5) i++;
+	if (lat < (t->bnd.minlat + t->bnd.maxlat)*0.5) i += 2;
 
 	const QuadTreeNode<TileType> *next = node->Child(i);
 	if (next) {
-		const Tile *check = SearchTileSub(next, lng, lat, maxlvl, bOwntex);
+		Tile *check = SearchTileSub(next, lng, lat, maxlvl, bOwntex);
 		if (check) return check;
 	}
 	return t;

@@ -33,27 +33,20 @@ using namespace oapi;
 #define FNT_ITALIC			0x2
 #define FNT_UNDERLINE		0x4
 #define FNT_CRISP			0x8					///< Create a crisp font without anti-aliasing
-// Additional code pages
-#define FNT_GREEK			0x1000				///< Request additional code page
 ///@}
 
 
-#define SKPBS_ALPHABLEND	0x0001
-#define SKPBS_COPY			0x0002
-
-
-#define SKP3_PRM_GAMMA				1
-#define SKP3_PRM_NOISE				2
-
+/// \defgroup SkpPipeline Sketchpad color pipeline settings
+///@{
+#define SKPBS_ALPHABLEND		0x1			///< AlphaBlend source.color to destination.color, will retain destination alpha unchanged if exists. 
+#define SKPBS_COPY				0x2			///< Copy source color and alpha to destination
+#define SKPBS_COPY_ALPHA		0x3			///< Copy source.alpha to destination.alpha, will retain destination color unchanged
+#define SKPBS_COPY_COLOR		0x4			///< Copy source.color to destination.color, will retain destination alpha unchanged
+#define SKP3_PRM_GAMMA			1			///< Enable/Setup Gamma correction	
+#define SKP3_PRM_NOISE			2			///< Enable/Setup Noise generation	
+///@}
 
 namespace oapi {
-
-
-	typedef struct {
-		RECT intr;
-		RECT outr;
-	} skpRegion;
-
 
 	// ===========================================================================
 	/**
@@ -188,7 +181,7 @@ namespace oapi {
 
 
 		/**
-		* \brief Enable a use of depth buffer. (currently unimplemented)
+		* \brief Enable a use of depth buffer.
 		* \param bEnable Toggle depth buffer.
 		*/
 		virtual void DepthEnable(bool bEnable) { assert(false); }
@@ -331,6 +324,16 @@ namespace oapi {
 
 	public:
 
+		typedef struct {
+			FVECTOR2 tgt;
+			IVECTOR2 src;
+		} skpPin;
+
+		typedef struct {
+			RECT intr;
+			RECT outr;
+		} skpRegion;
+
 		/**
 		* \brief Sketchpad3 constructor.
 		*/
@@ -355,7 +358,7 @@ namespace oapi {
 		* \param pMatrix Pointer to a matrix or NULL.
 		* \sa GetColorMatrix, SetBrightness
 		*/
-		virtual void SetColorMatrix(FMATRIX4 *pMatrix = NULL) { assert(false); }
+		virtual void SetColorMatrix(const FMATRIX4 *pMatrix = NULL) { assert(false); }
 
 
 		/**
@@ -363,7 +366,7 @@ namespace oapi {
 		* \param pBrightness Pointer into a float values color vector, or NULL.
 		* \sa GetColorMatrix, SetColorMatrix
 		*/
-		virtual void SetBrightness(FVECTOR4 *pBrightness = NULL) { assert(false); }
+		virtual void SetBrightness(const FVECTOR4 *pBrightness = NULL) { assert(false); }
 
 
 		/**
@@ -382,12 +385,16 @@ namespace oapi {
 		* \param param A setting ID to set, or NULL to disable effect from use.
 		* \sa SetRenderParam
 		*/
-		virtual void SetRenderParam(int param, FVECTOR4 *data = NULL) { assert(false); }
+		virtual void SetRenderParam(int param, const FVECTOR4 *data = NULL) { assert(false); }
 
 
 		/**
 		* \brief Setup a blending state 
-		* \param dwState Desired configuration
+		* \param dwState Desired configuration.
+		* \note SKPBS_ALPHABLEND, AlphaBlend source.color to destination.color, will retain destination alpha unchanged (if exists).
+		* \note SKPBS_COPY, Copy both source color and alpha to destination
+		* \note SKPBS_COPY_ALPHA, Copy source.alpha to destination.alpha, will retain destination color unchanged
+		* \note SKPBS_COPY_COLOR, Copy source.color to destination.color, will retain destination alpha unchanged (if exists)
 		*/
 		virtual void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND) { assert(false); }
 
@@ -418,7 +425,7 @@ namespace oapi {
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 		*		due to source-target pixels miss aligments.
 		*/
-		virtual void SetWorldScaleTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL) { assert(false); }
+		virtual void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL) { assert(false); }
 
 		/**
 		* \brief Fill a rectangle with color gradient
@@ -436,16 +443,26 @@ namespace oapi {
 		*/
 		virtual void PatternFill(SURFHANDLE hPat, const LPRECT tgt) { assert(false); }
 
+		/**
+		* \brief Fill a rectangle with color
+		* \param color Fill color
+		* \param tgt a Rect specifying the bounds, NULL for entire surface
+		*/
+		virtual void ColorFill(const FVECTOR4 &color, const LPRECT tgt) { assert(false); }
 
-		virtual void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, LPRECT out) { assert(false); }
+
+		virtual void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out) { assert(false); }
+		virtual void CopyRectNative(HSURFNATIVE pSrc, const LPRECT s, int tx, int ty) { assert(false); }
+		virtual void StretchRectNative(HSURFNATIVE pSrc, const LPRECT s, const LPRECT t) { assert(false); }
+		virtual void CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin = NULL, int npin = 0) { assert(false); }
+
 
 		/**
-		* \brief Setup a pattern and it's origin. Origin should move with every movable object to keep the pattern fixed.
-		* \param hPat Handle to a texture containing the pattern
-		* \param x origin x-coordinate
-		* \param x origin x-coordinate
+		* \brief Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF
+		* \note Default: Enabled, Only effects to a colors assigned to pens and brushes after a mode change.
 		*/
-		//virtual void SetPattern(SURFHANDLE hPat, int x = 0, int y = 0) { assert(false); }
+		virtual void ColorCompatibility(bool bEnable) { assert(false); }
+
 	};
 
 } // namespace oapi

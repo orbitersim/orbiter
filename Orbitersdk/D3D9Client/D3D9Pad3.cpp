@@ -30,6 +30,10 @@
 // Sketchpad3 Interface
 // ===============================================================================================
 
+void D3D9Pad::ColorCompatibility(bool bEnable)
+{
+	bColorComp = bEnable;
+}
 
 // ===============================================================================================
 //
@@ -41,7 +45,7 @@ const FMATRIX4 *D3D9Pad::GetColorMatrix()
 
 // ===============================================================================================
 //
-void D3D9Pad::SetColorMatrix(FMATRIX4 *pMatrix)
+void D3D9Pad::SetColorMatrix(const FMATRIX4 *pMatrix)
 {
 	if (pMatrix) {
 		memcpy_s(&ColorMatrix, sizeof(FMATRIX4), pMatrix, sizeof(FMATRIX4));
@@ -60,7 +64,7 @@ void D3D9Pad::SetColorMatrix(FMATRIX4 *pMatrix)
 
 // ===============================================================================================
 //
-void D3D9Pad::SetBrightness(FVECTOR4 *pBrightness)
+void D3D9Pad::SetBrightness(const FVECTOR4 *pBrightness)
 {
 	if (pBrightness == NULL) SetColorMatrix(NULL);
 	else {
@@ -88,7 +92,7 @@ FVECTOR4 D3D9Pad::GetRenderParam(int param)
 
 // ===============================================================================================
 //
-void D3D9Pad::SetRenderParam(int param, FVECTOR4 *d)
+void D3D9Pad::SetRenderParam(int param, const FVECTOR4 *d)
 {
 	if (d == NULL) {
 
@@ -166,7 +170,7 @@ void D3D9Pad::PopWorldTransform()
 
 // ===============================================================================================
 //
-void D3D9Pad::SetWorldScaleTransform2D(FVECTOR2 *scl, IVECTOR2 *trl)
+void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 {
 
 	Change |= SKPCHG_TRANSFORM;
@@ -242,10 +246,17 @@ void D3D9Pad::PatternFill(SURFHANDLE hSrc, const LPRECT t)
 	HR(FX->SetBool(ePatEn, false));
 }
 
+// ===============================================================================================
+//
+void D3D9Pad::ColorFill(const FVECTOR4 &color, const LPRECT tgt)
+{
+	if (tgt) FillRect(tgt->left, tgt->top, tgt->right, tgt->bottom, SkpColor(color));
+	else FillRect(0, 0, tgt_desc.Width, tgt_desc.Height, SkpColor(color));
+}
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, LPRECT out)
+void D3D9Pad::StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out)
 {
 
 	const RECT *ext = &(rgn->outr);

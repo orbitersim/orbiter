@@ -61,10 +61,10 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
 	maxdist = max (max_centre_dist, max_surf_dist + size);
 	DWORD elev_mode = *(DWORD*)gc->GetConfigParam(CFGPRM_ELEVATIONMODE);
-	
+
 	physics_patchres = *(DWORD*)oapiGetObjectParam (_hObj, OBJPRM_PLANET_SURFACEMAXLEVEL);
 	physics_patchres = min (physics_patchres, *(DWORD*)gc->GetConfigParam (CFGPRM_SURFACEMAXLEVEL));
-	
+
 	if (elev_mode == 1)	max_patchres = physics_patchres + 4;	// Push the graphics resolution higher than the one used for physics
 	else max_patchres = physics_patchres;						// to enable more accurate bilinear interpolation of the terrain.
 																// Works well on the Moon, not so well on high-res KSC.
@@ -192,19 +192,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		}
 	}
 
-	// Create a rock patch mesh --------------------------------------------------------------
-	//
-	pRockPatch = NULL;
-
-
-	// Add a cursor object into the scene ------------------------
-	//
-	hCursor[0] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 80.0f, &D3DXCOLOR(0, 0, 0.75, 0.5f));		// Cursor
-	//hCursor[1] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 1, 0, 0.5f));		// Tile entry point
-	//hCursor[2] = AddMarker(D3D9SM_SPHERE, 0.0, 0.0, 40.0f, &D3DXCOLOR(1, 0, 0, 0.5f));		// Camera location
-
-	SetEnabled(hCursor[0], false);
-
 	// Finish creation -------------------------------------------
 	//
 	MicroCfg.bEnabled = ParseMicroTextures();
@@ -216,8 +203,6 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 vPlanet::~vPlanet ()
 {
-	// Delete all merker objects
-	Markers.clear();
 
 	if (nbase) {
 		for (DWORD i = 0; i < nbase; i++)
@@ -233,6 +218,8 @@ vPlanet::~vPlanet ()
 			SAFE_RELEASE(MicroCfg.Level[i].pTex);
 		}
 	}
+
+	for each (sOverlay *x in overlays) SAFE_RELEASE(x->pSurf);
 
 	if (clouddata) {
 		delete clouddata->cloudmgr;
@@ -268,26 +255,21 @@ double vPlanet::GetHorizonAlt() const
 
 double vPlanet::GetMinElevation() const
 {
-	return prm.horizon_minelev;
+	if (surfmgr2) return surfmgr2->GetMinElev();
+	return 0.0; // return prm.horizon_minelev; ?!?
 }
 
 // ==============================================================
 
-DWORD vPlanet::GetBaseCount()
+double vPlanet::GetMaxElevation() const
 {
-	return nbase;
+	if (surfmgr2) return surfmgr2->GetMaxElev();
+	return 0.0;
 }
 
 // ==============================================================
 
-vBase* vPlanet::GetBaseByIndex(DWORD index)
-{
-	return vbase[index];
-}
-
-// ==============================================================
-
-vBase* vPlanet::GetBaseByHandle(OBJHANDLE hBase)
+vBase* vPlanet::GetBaseByHandle(OBJHANDLE hBase) const
 {
 	if (vbase) for (DWORD i=0;i<nbase;i++) if (vbase[i]) if (vbase[i]->Object()==hBase) return vbase[i];
 	return NULL;
@@ -339,150 +321,36 @@ bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 
 // ==============================================================
 
-int vPlanet::GetElevation(double lng, double lat, double *elv, int *lvl, class SurfTile **tile) const
+int vPlanet::GetElevation(double lng, double lat, double *elv, FVECTOR3 *nrm) const
 {
 	int rv = 0;
 	if (!surfmgr2) return -4;
-
-	if (tile_cache) rv = tile_cache->GetElevation(lng, lat, elv, &tile_cache);	// tile_cache is set to NULL when tiles are deleted
-	if (rv!=1) rv = surfmgr2->GetElevation(lng, lat, elv, &tile_cache);
-
-	if (rv>=0) {
-		if (tile) *tile = tile_cache;
-		if (lvl) *lvl = tile_cache->Level();
-	}
+	if (tile_cache) rv = tile_cache->GetElevation(lng, lat, elv, nrm, NULL);	// tile_cache is set to NULL when tiles are deleted
+	if (rv!=1) rv = surfmgr2->GetElevation(lng, lat, elv, nrm, &tile_cache);
 	return rv;
 }
 
 // ==============================================================
 
-void vPlanet::PickSurface(TILEPICK *result)
+SurfTile * vPlanet::FindTile(double lng, double lat, int maxlvl)
+{
+	return static_cast<SurfTile *>(SurfMgr2()->SearchTile(lng, lat, maxlvl, false));
+}
+
+// ==============================================================
+
+void vPlanet::PickSurface(D3DXVECTOR3 &vRay, TILEPICK *result)
 {
 	if (surfmgr2) {
-
-		surfmgr2->Pick(result);
-
+		surfmgr2->Pick(vRay, result);
 		if (result->pTile) {
-			SetEnabled(hCursor[0], true);
-			SetPosition(hCursor[0], result->lng, result->lat);
-			surfmgr2->SetPickedTile(result->pTile);
+			VECTOR3 loc = _V(result->_p) - cpos;
+			loc = ToLocal(loc);
+			double rad;
+			oapiLocalToEqu(hObj, loc, &(result->lng), &(result->lat), &rad);
+			result->elev = rad - size;
 		}
-		else SetEnabled(hCursor[0], false);
 	}
-}
-
-// ==============================================================
-
-void vPlanet::RenderObjects(LPDIRECT3DDEVICE9 dev)
-{
-	D3DXMATRIX ident;
-	MATRIX3 grot;
-	oapiGetRotationMatrix(hObj, &grot);
-	D3DXMatrixIdentity(&ident);
-
-	auto it = Markers.begin();
-
-	while (it!=Markers.end()) {
-		if (it->pMesh && it->bEnabled) {
-			if (GetElevation(it->lng, it->lat, &it->elv) == 1) {
-				VECTOR3 pos = cpos + mul(grot, it->uPos) * (size + it->elv);
-				it->pMesh->SetRotation(it->mWorld);
-				it->pMesh->SetPosition(pos);
-				if (it->type) {
-					D3D9MatExt Mat;
-					it->pMesh->GetMaterial(&Mat, 0);
-					if (it->pMesh->GetMaterial(&Mat, 0)==true) {
-						Mat.Diffuse  = it->vColor;
-						Mat.Emissive = D3DXVECTOR3f4(it->vColor * 0.25f);
-						it->pMesh->SetMaterial(&Mat, 0);
-					}
-				}
-				it->pMesh->SetSunLight(&sunLight);
-				it->pMesh->Render(&ident, RENDER_BASE);
-			}
-		}
-		it++;
-	}
-}
-
-// ==============================================================
-
-HSRFOBJ	vPlanet::AddObject(D3D9Mesh *pMesh, double lng, double lat, float rot, bool bDual, float scale)
-{
-	_SRFMARKER m; memset(&m, 0, sizeof(_SRFMARKER));
-
-	m.lng = lng;
-	m.lat = lat;
-	m.rot = rot;
-	m.scl = scale;
-	m.bDual = bDual;
-	m.uPos = GetUnitSurfacePos(lng, lat);
-	m.pMesh = pMesh;
-	m.type = 0;
-	m.bEnabled = true;
-
-	D3DXMatrixRotationAxis(&m.mWorld, &D3DXVEC(m.uPos), rot);
-	D3DXMatrixScaling(&m.mWorld, scale, scale, scale);
-
-	Markers.push_front(m);
-	return Markers.begin();
-}
-
-// ==============================================================
-
-HSRFOBJ	vPlanet::AddMarker(int type, double lng, double lat, float scale, D3DXCOLOR *color)
-{
-	_SRFMARKER m; memset(&m, 0, sizeof(_SRFMARKER));
-
-	m.lng = lng;
-	m.lat = lat;
-	m.rot = 0.0f;
-	m.scl = scale;
-	m.uPos = GetUnitSurfacePos(lng, lat);
-	m.vColor = D3DXC2V(*color);
-	m.type = WORD(type);
-	m.bEnabled = true;
-
-	switch (type) {
-	case D3D9SM_SPHERE:
-	{
-		m.bDual = true;
-		m.pMesh = hStockMesh[type];
-	}
-	}
-
-	D3DXMatrixRotationAxis(&m.mWorld, &D3DXVEC(m.uPos), 0.0f);
-	D3DXMatrixScaling(&m.mWorld, scale, scale, scale);
-
-	Markers.push_front(m);
-	return Markers.begin();
-}
-
-// ==============================================================
-
-void vPlanet::SetPosition(HSRFOBJ hItem, double lng, double lat)
-{
-	hItem->lng = lng;
-	hItem->lat = lat;
-	hItem->uPos = GetUnitSurfacePos(lng, lat);
-
-	float scale = hItem->scl;
-	D3DXMatrixRotationAxis(&hItem->mWorld, &D3DXVEC(hItem->uPos), hItem->rot);
-	D3DXMatrixScaling(&hItem->mWorld, scale, scale, scale);
-}
-
-// ==============================================================
-
-void vPlanet::SetEnabled(HSRFOBJ hItem, bool bEnabled)
-{
-	hItem->bEnabled = bEnabled;
-}
-
-// ==============================================================
-
-void vPlanet::DeleteObject(HSRFOBJ hItem)
-{
-	Markers.erase(hItem);
 }
 
 // ==============================================================
@@ -869,14 +737,6 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 		if (cdist>=1.3*size && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
 		else {
 			surfmgr2->Render(dmWorld, true, prm);
-
-			if (DebugControls::IsActive()) {
-				RenderObjects(dev);
-			}
-			else {
-				surfmgr2->SetPickedTile(NULL);
-				hCursor[0]->bEnabled = false;
-			}
 		}
 
 		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
@@ -1348,6 +1208,60 @@ bool vPlanet::ParseMicroTextures()
 	}
 	return false;
 }
+
+
+// ===========================================================================================
+//
+vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, D3DXVECTOR4 *texcoord) const
+{
+	for each (sOverlay *olay in overlays)
+	{
+		if (q.x > olay->lnglat.z) continue;
+		if (q.z < olay->lnglat.x) continue;
+		if (q.y < olay->lnglat.w) continue;
+		if (q.w > olay->lnglat.y) continue;
+
+		double ow = fabs(olay->lnglat.x - olay->lnglat.z);
+		double oh = fabs(olay->lnglat.y - olay->lnglat.w);
+		double tw = fabs(q.x - q.z);
+		double th = fabs(q.y - q.w);
+
+		if (ow > PI) ow = PI2 - ow;
+		if (tw > PI) tw = PI2 - tw;
+
+		(*texcoord).x = float((q.x - olay->lnglat.x) / ow);
+		(*texcoord).y = float((olay->lnglat.y - q.y) / oh);
+		(*texcoord).z = float(tw / ow);
+		(*texcoord).w = float(th / oh);
+
+		return olay;
+	}
+	return NULL;
+}
+
+
+// ===========================================================================================
+//
+vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, LPDIRECT3DTEXTURE9 pSrf, vPlanet::sOverlay *pOld)
+{
+	if (pSrf) {
+		if (pOld) {
+			pOld->pSurf = pSrf;
+			pOld->lnglat = lnglat;
+			return pOld;
+		}
+		sOverlay *oLay = new sOverlay();
+		oLay->pSurf = pSrf;
+		oLay->lnglat = lnglat;
+		overlays.push_back(oLay);
+		return oLay;
+	}
+	else if (pOld) {
+		overlays.remove(pOld);
+	}
+	return NULL;
+}
+
 
 // ===========================================================================================
 //

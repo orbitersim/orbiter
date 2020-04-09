@@ -193,6 +193,7 @@ void D3D9Pad::LoadDefaults()
 	bkmode = TRANSPARENT;
 	dwBlendState = SKPBS_ALPHABLEND;
 
+	bColorComp = true;
 	bLine = false;
 	bEnableScissor = false;
 	bDepthEnable = false;
@@ -232,7 +233,26 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 {
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
+	bNative = false;
+	Reset();
+	LoadDefaults();
+}
 
+
+// ===============================================================================================
+// class D3D9Pad
+// ===============================================================================================
+// Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
+// BeginDrawing() must be called
+//
+D3D9Pad::D3D9Pad(const char *_name, HSURFNATIVE hSrf) : Sketchpad3(hSrf),
+_isSaveBuffer(false),
+_saveBuffer(NULL),
+_saveBufferSize(0)
+{
+	if (_name) strcpy_s(name, 32, _name);
+	else strcpy_s(name, 32, "NoName");
+	bNative = true;
 	Reset();
 	LoadDefaults();
 }
@@ -250,7 +270,7 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
 {
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
-
+	bNative = false;
 	Reset();
 	LoadDefaults();
 }
@@ -344,29 +364,16 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	if (iI > 0 || hPoly) {
 
 		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
-		HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
-		HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
-		HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
+
+		//HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
+		//HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
+		//HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
 
 		HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
 		HR(pDev->SetVertexDeclaration(pSketchpadDecl));
-
-		if (dwBlendState == SKPBS_ALPHABLEND) pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
-		else pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
-
-		if (bDepthEnable && pDep) {
-			pDev->SetRenderState(D3DRS_ZENABLE, 1);
-			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
-		}
-		else {
-			pDev->SetRenderState(D3DRS_ZENABLE, 0);
-			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
-		}
 		
-
 		HR(FX->SetFloat(eRandom, float(oapiRand())));
 		HR(FX->SetVector(eTarget, &vTarget));
-
 		HR(FX->SetTechnique(eSketch));
 		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
@@ -376,6 +383,35 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 		else {
 			HR(FX->BeginPass(1));
 		}
+
+		if (dwBlendState == SKPBS_ALPHABLEND) {
+			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
+			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));
+		}
+		else if (dwBlendState == SKPBS_COPY) {
+			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
+			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+		}
+		else if (dwBlendState == SKPBS_COPY_ALPHA) {
+			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x8);
+			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+		}
+		else if (dwBlendState == SKPBS_COPY_COLOR) {
+			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
+			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+		}
+
+
+		if (bDepthEnable && pDep) {
+			pDev->SetRenderState(D3DRS_ZENABLE, 1);
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
+		}
+		else {
+			pDev->SetRenderState(D3DRS_ZENABLE, 0);
+			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+		}
+
+
 
 		if (hPoly) {
 			assert(iI == 0);
@@ -390,10 +426,13 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 		HR(FX->EndPass());
 		HR(FX->End());
 	
+		HR(pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkALPHA));
-		HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
-		HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
-		HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
+
+		//HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
+		//HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
+		//HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
+		
 		HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
 		
 		iI = vI = 0;
@@ -578,7 +617,26 @@ void D3D9Pad::SetupDevice(Topo tNew)
 }
 
 
+// ===============================================================================================
+//
+DWORD D3D9Pad::ColorComp(DWORD c) const
+{
+	if (bColorComp) if ((c & 0xFF000000) == 0) return c | 0xFF000000;
+	return c;
+}
 
+// ===============================================================================================
+//
+SkpColor D3D9Pad::ColorComp(const SkpColor &c) const
+{
+	if (bColorComp) {
+		if ((c.dclr & 0xFF000000) == 0) {
+			DWORD q = c.dclr | 0xFF000000;
+			return SkpColor(q);
+		}
+	}
+	return c;
+}
 
 
 
@@ -617,7 +675,7 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 
 	Brush *pbrush = cbrush;
 	cbrush = brush;
-	if (cbrush) brushcolor = static_cast<D3D9PadBrush *>(cbrush)->clr;
+	if (cbrush) brushcolor = ColorComp((static_cast<D3D9PadBrush *>(cbrush))->clr);
 	else	    brushcolor = SkpColor(0);
 
 	IsLineTopologyAllowed();
@@ -638,7 +696,7 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
 	else     cpen = NULL;
-	if (cpen) pencolor = static_cast<D3D9PadPen *>(cpen)->clr;
+	if (cpen) pencolor = ColorComp(static_cast<D3D9PadPen *>(cpen)->clr);
 
 	IsLineTopologyAllowed();
 
@@ -662,7 +720,7 @@ DWORD D3D9Pad::SetTextColor(DWORD col)
 {
 	// Color stored in vertex data, no Change required
 	DWORD prev = textcolor.dclr;
-	textcolor = SkpColor(col);
+	textcolor = SkpColor(ColorComp(col));
 	return prev;
 }
 
@@ -673,7 +731,7 @@ DWORD D3D9Pad::SetBackgroundColor(DWORD col)
 {
 	// Color stored in vertex data, no Change required
 	DWORD prev = bkcolor.dclr;
-	bkcolor = SkpColor(col);
+	bkcolor = SkpColor(ColorComp(col));
 	return prev;
 }
 
@@ -770,6 +828,17 @@ bool D3D9Pad::IsDashed() const
 	if (QPen.bEnabled) return QPen.style == 2;
 	if (cpen==NULL) return false;
 	if (static_cast<D3D9PadPen*>(cpen)->style==PS_DOT) return true;
+	return false;
+}
+
+
+// ===============================================================================================
+//
+bool D3D9Pad::IsAlphaTarget() const
+{
+	if (tgt_desc.Format == D3DFMT_A8R8G8B8) return true;
+	if (tgt_desc.Format == D3DFMT_A16B16G16R16F) return true;
+	if (tgt_desc.Format == D3DFMT_A32B32G32R32F) return true;
 	return false;
 }
 
@@ -899,7 +968,7 @@ void SwapRB(DWORD *c)
 //
 void D3D9Pad::Pixel (int x, int y, DWORD col)
 {
-	FillRect(x, y, x + 1, y + 2, SkpColor(col));
+	FillRect(x, y, x + 1, y + 2, ColorComp(SkpColor(col)));
 }
 
 

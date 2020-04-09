@@ -42,6 +42,7 @@ D3DXHANDLE PlanetRenderer::svWater = NULL;
 D3DXHANDLE PlanetRenderer::svSunDir = NULL;
 D3DXHANDLE PlanetRenderer::svCloudOff = NULL;
 D3DXHANDLE PlanetRenderer::svMicroOff = NULL;
+D3DXHANDLE PlanetRenderer::svOverlayOff = NULL;
 D3DXHANDLE PlanetRenderer::svTangent = NULL;
 D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
 D3DXHANDLE PlanetRenderer::svPolarAxis = NULL;
@@ -65,6 +66,7 @@ D3DXHANDLE PlanetRenderer::siTileLvl = NULL;
 D3DXHANDLE PlanetRenderer::siDebug = NULL;
 D3DXHANDLE PlanetRenderer::sbDebug = NULL;
 D3DXHANDLE PlanetRenderer::sbShadows = NULL;
+D3DXHANDLE PlanetRenderer::sbOverlay = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -79,6 +81,7 @@ D3DXHANDLE PlanetRenderer::stMicroC = NULL;
 D3DXHANDLE PlanetRenderer::stMicroRot = NULL;
 D3DXHANDLE PlanetRenderer::stShadowMap = NULL;
 D3DXHANDLE PlanetRenderer::stCloudMicro = NULL;
+D3DXHANDLE PlanetRenderer::stOverlay = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -251,6 +254,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svTexOff			= pShader->GetParameterByName(0,"vTexOff");
 	svCloudOff			= pShader->GetParameterByName(0,"vCloudOff");
 	svMicroOff			= pShader->GetParameterByName(0,"vMicroOff");
+	svOverlayOff		= pShader->GetParameterByName(0,"vOverlayOff");
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
 	svTangent			= pShader->GetParameterByName(0,"vTangent");
@@ -276,6 +280,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbDebug				= pShader->GetParameterByName(0,"bDebug");
 	sbLocals			= pShader->GetParameterByName(0,"bLocals");
 	sbShadows			= pShader->GetParameterByName(0,"bShadows");
+	sbOverlay			= pShader->GetParameterByName(0,"bOverlay");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
@@ -290,6 +295,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stMicroC			= pShader->GetParameterByName(0,"tMicroC");
 	stMicroRot			= pShader->GetParameterByName(0,"tMicroRot");
 	stShadowMap			= pShader->GetParameterByName(0,"tShadowMap");
+	stOverlay			= pShader->GetParameterByName(0,"tOverlay");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");
@@ -352,11 +358,9 @@ void PlanetRenderer::GlobalExit ()
 
 // -----------------------------------------------------------------------
 
-void PlanetRenderer::SetWorldMatrix (const MATRIX4 &W)
+void PlanetRenderer::SetWorldMatrix (const D3DXMATRIX &W)
 {
-	D3DXMATRIX wtrans;
-	MATRIX4toD3DMATRIX (W, wtrans);
-	pShader->SetMatrix(smWorld, &wtrans);
+	pShader->SetMatrix(smWorld, &W);
 }
 
 // -----------------------------------------------------------------------

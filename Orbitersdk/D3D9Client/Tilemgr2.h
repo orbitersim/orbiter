@@ -53,6 +53,16 @@ typedef struct {
 	float tvmin, tvmax;
 } TEXCRDRANGE2;
 
+typedef union {
+	VECTOR4 vec;
+	struct {
+		double minlng;				///< Left    -
+		double maxlat;				///< Top     +
+		double maxlng;				///< Right   +
+		double minlat;				///< Bottom  -
+	};
+} TILEBOUNDS;
+
 // =======================================================================
 
 /**
@@ -73,7 +83,12 @@ public:
 
 	inline int State() const { return state; }
 	inline int Level() const { return lvl; }
+	inline void GetIndex(int *lng, int *lat) const { *lng = ilng, *lat = ilat; }
 	inline bool HasOwnTex() const { return owntex; }
+	inline bool HasOwnElev() const { return has_elevfile; }
+	inline void GetWorldMatrix(void *pOut) const { memcpy(pOut, &mWorld, sizeof(D3DXMATRIX)); }
+	inline float GetMinElev() const { return min_elev; }
+	inline float GetMaxElev() const { return max_elev; }
 
 	bool PreDelete();
 	// Prepare tile for deletion. Return false if tile is locked
@@ -84,8 +99,6 @@ public:
 	VECTOR3 Centre() const;
 	// Returns the direction of the tile centre from the planet centre in local planet coordinates
 
-	int PlaneIntersection(VECTOR3 &vPln, double dir, double lng, double lat, double *oLng=NULL, double *oLat=NULL, double *oDst=NULL);
-
 	void Extents (double *latmin, double *latmax, double *lngmin, double *lngmax) const;
 	// Return the latitude/longitude extents of the tile
 
@@ -94,12 +107,15 @@ public:
 
 	float GetBoundingSphereRad() const;
 	D3DXVECTOR3 GetBoundingSpherePos() const;
+	bool Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result);
 	D3DXVECTOR4 GetTexRangeDX (const TEXCRDRANGE2 *subrange) const;
 	inline const TEXCRDRANGE2 *GetTexRange () const { return &texrange; }
 	// Returns the tile's texture coordinate range
 
 	bool GetParentMicroTexRange(TEXCRDRANGE2 *subrange);
-	bool GetParentSubTexRange (TEXCRDRANGE2 *subrange);
+	bool GetParentSubTexRange(TEXCRDRANGE2 *subrange);
+	bool GetParentOverlayRange(TEXCRDRANGE2 *subrange);
+
 	// Returns the texture range that allows to access the appropriate subregion of the
 	// parent's texture
 
@@ -123,8 +139,6 @@ protected:
 
 	virtual void StepIn () {}
 
-	//virtual void Pick(MATRIX4 &dwMatrix, TILEPICK *pPick) {}
-
 	/**
 	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
 	 */
@@ -139,7 +153,7 @@ protected:
 	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 
-	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, float *elev=0, double elev_scale = 1.0, double globelev=0.0,
+	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, float *elev=0, double globelev=0.0,
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
 	// Creates a quadrilateral patch mesh
 
@@ -154,27 +168,31 @@ protected:
 	LPDIRECT3DTEXTURE9 tex;	   // diffuse surface texture
 	LPDIRECT3DTEXTURE9 pPreSrf;
 	LPDIRECT3DTEXTURE9 pPreMsk;
+	LPDIRECT3DTEXTURE9 overlay;
 	bool bMipmaps;			   // create mipmaps for the tile
 	bool owntex;               // true: tile owns the texture, false: tile uses ancestor subtexture
+	bool ownoverlay;
+	bool has_elevfile;		   // true if the elevation data for this tile were read from file
 	TEXCRDRANGE2 texrange;     // texture coordinate subrange (if using ancestor subtexture)
 	TEXCRDRANGE2 microrange;   // texture coordinate subrange (if using ancestor subtexture)
+	TEXCRDRANGE2 overlayrange;
 	VBMESH *mesh;              // vertex-buffered tile mesh
 	VECTOR3 cnt;               // tile centre in local planet coords
 	VECTOR3 vtxshift;          // tile frame shift of origin from planet centre
 	bool edgeok;               // edges have been checked in this frame
-	bool bIntersect;
 	TileState state;           // tile load/active/render state flags
 	int lngnbr_lvl, latnbr_lvl, dianbr_lvl; // neighbour levels to which edges have been adapted
 	DWORD FrameId;
 	float width;			   // tile width [rad] (widest section i.e base)
 	float height;			   // tile height [rad]
+	float max_elev;
+	float min_elev;
 	mutable double mean_elev;  // mean tile elevation [m]
 
 public:
-	double minlat;
-	double maxlat;
-	double minlng;
-	double maxlng;
+	D3DXMATRIX mWorld;
+	MATRIX4 dmWorld;
+	TILEBOUNDS bnd;
 };
 
 // =======================================================================
@@ -323,8 +341,8 @@ public:
 	DWORD RecycleVertexBuffer(DWORD nVerts, LPDIRECT3DVERTEXBUFFER9 *pVB);
 	DWORD RecycleIndexBuffer(DWORD nf, LPDIRECT3DINDEXBUFFER9 *pIB);
 
-	inline const class Scene * GetScene() const { return gc->GetScene(); }
-	inline const oapi::D3D9Client *GetClient() const { return gc; }
+	inline class Scene * GetScene() const { return gc->GetScene(); }
+	inline oapi::D3D9Client *GetClient() const { return gc; }
 	inline const vPlanet *GetPlanet() const { return vp; }
 
 	inline const OBJHANDLE &Cbody() const { return obj; }
@@ -335,8 +353,10 @@ public:
 	inline const int GridRes() const { return gridRes; }
 	inline const double ElevRes() const { return elevRes; }
 
-	Tile *GetPickedTile() const { return pPicked; }
-	void SetPickedTile(Tile *pTile) { pPicked = pTile; }
+	float GetMinElev() const { return min_elev; }
+	float GetMaxElev() const { return max_elev; }
+	void SetMinMaxElev(float min, float max);
+	void ResetMinMaxElev();
 
 
 protected:
@@ -348,9 +368,10 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	double obj_size;                 // planet radius
+	float min_elev;					 // minimum renderred elevation
+	float max_elev;					 // maximum renderred elevation
 	static TileLoader *loader;
 	const vPlanet *vp;				 // the planet visual
-	class Tile *pPicked;			 // Selected tile via picking
 private:
 	bool bSet;						 // This is related to GetMin/MaxElevation
 	OBJHANDLE obj;                   // the planet object
@@ -384,9 +405,9 @@ public:
 
 	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
-	int GetElevation(double lng, double lat, double *elev, SurfTile **cache);
+	int GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, SurfTile **cache);
 
-	void Pick(TILEPICK *pPick);
+	void Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick);
 	void CreateLabels();
 	void DeleteLabels();
 	void SetSubtreeLabels(QuadTreeNode<TileType> *node, bool activate);
@@ -395,7 +416,7 @@ public:
 	{ return TileManager2Base::FindNode<TileType> (tiletree, lvl, ilat, ilng); }
 	// Returns the node at the specified position, or 0 if it doesn't exist
 
-	const Tile *SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const;
+	Tile *SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const;
 
 	inline TileType *GlobalTile (int lvl) const {	return (lvl >= -3 && lvl < 0 ? globtile[lvl + 3] : NULL); }
 //	{ return globtile[lvl]; } @todo: Is that ( above) OK for us?
@@ -412,6 +433,12 @@ public:
 	inline ZTreeMgr *ZTreeManager (int i) const { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
 	inline bool DoLoadIndividualFiles (int i) const { return (i < ntreeMgr) ? hasIndividualFiles[i] : true; }
 
+	// Load tile texture
+	HSURFNATIVE SeekTileTexture(int iLng, int iLat, int level, int flags = 3);
+
+	// Check if tile texture exists
+	bool HasTileData(int iLng, int iLat, int level, int flags = 3);
+
 protected:
 	TileType *globtile[3];              // full-sphere tiles for resolution levels 1-3
 	QuadTreeNode<TileType> tiletree[2]; // quadtree roots for western and eastern hemisphere
@@ -425,7 +452,7 @@ protected:
 
 	void LoadZTrees();
 	void InitHasIndividualFiles();
-	const Tile *SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const;
+	Tile *SearchTileSub (const QuadTreeNode<TileType> *node, double lng, double lat, int maxlvl, bool bOwntex) const;
 };
 
 #endif // !__TILEMGR2_H

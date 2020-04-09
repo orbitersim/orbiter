@@ -101,6 +101,10 @@ public:
 	enum Layer { LAYER_SURF, LAYER_MASK, LAYER_ELEV, LAYER_ELEVMOD, LAYER_LABEL, LAYER_CLOUD };
 	static ZTreeMgr *CreateFromFile (const char *PlanetPath, Layer _layer);
 
+	// Disable copy construct & copy assign
+	ZTreeMgr            (ZTreeMgr const&) = delete;
+	ZTreeMgr& operator= (ZTreeMgr const&) = delete;
+
 	ZTreeMgr (const char *PlanetPath, Layer _layer);
 	~ZTreeMgr ();
 

@@ -21,6 +21,7 @@
 #include "vVessel.h"
 #include "VectorHelpers.h"
 #include "DebugControls.h"
+#include "gcConst.h"
 
 // =======================================================================
 
@@ -72,7 +73,6 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	ggelev = NULL;
 	elev_file = NULL;
 	ltex = NULL;
-	htex = NULL;
 	has_elevfile = false;
 	label = NULL;
 	imicrolvl = 14;	// Water resolution level
@@ -96,7 +96,6 @@ SurfTile::~SurfTile ()
 	if (ltex && owntex) {
 		if (TileCatalog->Remove(ltex)) ltex->Release();
 	}
-	if (htex) htex->Release();
 	DeleteLabels();
 }
 
@@ -110,6 +109,7 @@ void SurfTile::PreLoad()
 
 	// Configure microtexture range for "Water texture" and "Cloud microtexture".
 	GetParentMicroTexRange(&microrange);
+	GetParentOverlayRange(&overlayrange);
 
 	// Load surface texture
 
@@ -162,10 +162,10 @@ void SurfTile::Load ()
 	owntex = true;
 
 	if (CreateTexture(pDev, pPreSrf, &tex) != true) {
-		if (GetParentSubTexRange (&texrange)) {
+		if (GetParentSubTexRange(&texrange)) {
 			tex = getSurfParent()->Tex();
 			owntex = false;
-		} 
+		}
 	} else TileCatalog->Add(tex);
 
 	// Load mask texture
@@ -180,7 +180,7 @@ void SurfTile::Load ()
 
 	// Load elevation data
 	float *elev = ElevationData ();
-	
+
 	bool shift_origin = (lvl >= 4);
 	int res = mgr->GridRes();
 
@@ -193,7 +193,7 @@ void SurfTile::Load ()
 		}
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (res, res, elev, mgr->ElevRes(), 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
+		mesh = CreateMesh_quadpatch (res, res, elev, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
 
 	static const DWORD label_enable = PLN_ENABLE | PLN_LMARK;
@@ -240,7 +240,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				UINT8 *tmp = new UINT8[ndat];
 				fread (tmp, sizeof(UINT8), ndat, f);
 				for (i = 0; i < ndat; i++)
-					e[i] = (INT16)tmp[i]; 
+					e[i] = (INT16)tmp[i];
 				delete []tmp;
 				}
 				break;
@@ -386,6 +386,54 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 
 // -----------------------------------------------------------------------
 
+LPDIRECT3DTEXTURE9 SurfTile::SetOverlay(LPDIRECT3DTEXTURE9 pOverlay, bool bOwn)
+{
+	LPDIRECT3DTEXTURE9 pRet = NULL;
+	if (bOwn && ownoverlay && overlay) pRet = overlay;
+
+	overlay = pOverlay;
+	ownoverlay = bOwn;
+
+	for (int i = 0; i < 4; i++) {
+		auto x = node->Child(i);
+		if (x) if (x->Entry()) {
+			LPDIRECT3DTEXTURE9 pOld = x->Entry()->overlay;
+			if (pOld == NULL || pOld == pRet) {
+				x->Entry()->GetParentOverlayRange(&overlayrange);
+				x->Entry()->SetOverlay(pOverlay, false);
+			}
+		}
+	}
+	return pRet;
+}
+
+// -----------------------------------------------------------------------
+
+bool SurfTile::DeleteOverlay(LPDIRECT3DTEXTURE9 pOverlay)
+{
+	bool bReturn = false;
+	if (pOverlay == NULL) pOverlay = overlay;
+
+	if (overlay) {
+		if (pOverlay == overlay) {
+			if (ownoverlay) {
+				if (TileCatalog->Remove(overlay)) overlay->Release();
+				bReturn = true;
+			}
+			for (int i = 0; i < 4; i++) {
+				auto x = node->Child(i);
+				if (x) if (x->Entry()) x->Entry()->DeleteOverlay(pOverlay);
+			}
+			overlay = NULL;
+			ownoverlay = false;
+		}
+	}
+	return bReturn;
+}
+
+
+// -----------------------------------------------------------------------
+
 float SurfTile::Interpolate(FMATRIX4 &in, float t, float u)
 {
 	return 0.0f;
@@ -444,17 +492,17 @@ bool SurfTile::LoadElevationData ()
 	if (!mode) return false;
 
 	DWORD elev_mode = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_ELEVATIONMODE);
-	
+
 	DWORD phy_lvl = mgr->GetPlanet()->GetPhysicsPatchRes();
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	elev_file = ReadElevationFile (mgr->CbodyName(), lvl + 4, ilat, ilng, mgr->ElevRes());
-	
+
 	if (elev_file) {
 		has_elevfile = true;
 		elev = new float[ndat];
 		// Convert to float
 		for (int i = 0; i < ndat; i++) elev[i] = float(elev_file[i]);
-	} 
+	}
 	else if (lvl > 0) {
 
 		// construct elevation grid by interpolating ancestor data
@@ -477,7 +525,7 @@ bool SurfTile::LoadElevationData ()
 				parent = parent->Parent();
 				pilat >>= 1;
 				pilng >>= 1;
-			}	
+			}
 
 			if (!pelev_file) return false;
 
@@ -498,7 +546,7 @@ bool SurfTile::LoadElevationData ()
 				elev = new float[ndat];
 				InterpolateElevationGrid(parent->Entry()->elev, elev);
 			}
-		}	
+		}
 	}
 
 	return (elev != 0);
@@ -557,40 +605,40 @@ double SurfTile::GetMeanElevation(const float *elev) const
 	return melev / ((res + 1)*(res + 1));
 }
 
-// -----------------------------------------------------------------------
-
-int SurfTile::GetElevation(double lng, double lat, double *elev, SurfTile **cache, bool bFilter)
+// ------------------------------------------------------------------------------
+// bGet(true) = Get the data specifically from this tile recardless of it's state
+//
+int SurfTile::GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, SurfTile **cache, bool bFilter, bool bGet) const
 {
 	static int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
-	if (cache) *cache = this;
+	if (cache) *cache = (SurfTile *)this;
 
-	if (lat<minlat || lat>maxlat) return -1;
-	if (lng<minlng || lng>maxlng) return -1;
-	
-	if (state==Invisible) return 0;
-	
-	if (state==ForRender) {
-		if (!ggelev) { *elev = 0.0; return 1; }
+	if (lat<bnd.minlat || lat>bnd.maxlat) return -1;
+	if (lng<bnd.minlng || lng>bnd.maxlng) return -1;
+
+	if (state == ForRender || bGet)
+	{
+		if (!ggelev) { *elev = 0.0; return 2; }
 		else {
 			double fRes = double(mgr->GridRes());
 			double fElv = mgr->ElevRes();
 
 			if (!bFilter) {
-				int i = int( (lat-minlat) * fRes / (maxlat-minlat) ) + 1;
-				int j = int( (lng-minlng) * fRes / (maxlng-minlng) ) + 1;
+				int i = int((lat - bnd.minlat) * fRes / (bnd.maxlat - bnd.minlat)) + 1;
+				int j = int((lng - bnd.minlng) * fRes / (bnd.maxlng - bnd.minlng)) + 1;
 				*elev = double(ggelev[j+i*TILE_ELEVSTRIDE]) * fElv;
 			}
 			else {
 
-				float x = float( (lat-minlat) * fRes / (maxlat-minlat) ) + 1.0f; // 0.5f
-				float y = float( (lng-minlng) * fRes / (maxlng-minlng) ) + 1.0f; // 0.5f
+				float x = float((lat - bnd.minlat) * fRes / (bnd.maxlat - bnd.minlat)) + 1.0f; // 0.5f
+				float y = float((lng - bnd.minlng) * fRes / (bnd.maxlng - bnd.minlng)) + 1.0f; // 0.5f
 				float fx = (x - floor(x));
 				float fy = (y - floor(y));
 
-				int i0 = int(x) * TILE_ELEVSTRIDE; 
-				int i1 = i0 + TILE_ELEVSTRIDE; 
+				int i0 = int(x) * TILE_ELEVSTRIDE;
+				int i1 = i0 + TILE_ELEVSTRIDE;
 				int j0 = int(y);
-				
+
 				assert(i0 > 0);
 				assert(j0 > 0);
 				assert((j0 + i1) < ndat);
@@ -605,11 +653,13 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, SurfTile **cach
 		}
 	}
 
+	if (state == Invisible) return 0;
+
 	if (state==Active) {
 		int i = 0;
-		if (lng>(minlng+maxlng)*0.5) i++;
-		if (lat<(minlat+maxlat)*0.5) i+=2;
-		return  node->Child(i)->Entry()->GetElevation(lng, lat, elev, cache);		
+		if (lng > (bnd.minlng + bnd.maxlng)*0.5) i++;
+		if (lat < (bnd.minlat + bnd.maxlat)*0.5) i += 2;
+		return  node->Child(i)->Entry()->GetElevation(lng, lat, elev, nrm, cache);
 	}
 
 	return -3;
@@ -643,7 +693,7 @@ float SurfTile::fixinput(double a, int x)
 // -----------------------------------------------------------------------
 
 double SurfTile::GetCameraDistance()
-{	
+{
 	VECTOR3 cnt = Centre() * (mgr->CbodySize() + mean_elev);
 	cnt = mgr->prm.cpos + mul(mgr->prm.grot, cnt);
 	return length(cnt);
@@ -654,11 +704,11 @@ double SurfTile::GetCameraDistance()
 D3DXVECTOR4 SurfTile::MicroTexRange(SurfTile *pT, int ml) const
 {
 	float rs = 1.0f / float( 1 << (lvl-pT->Level()) );	// Range subdivision
-	float xo = pT->MicroRep[ml].x * texrange.tumin;		
+	float xo = pT->MicroRep[ml].x * texrange.tumin;
 	float yo = pT->MicroRep[ml].y * texrange.tvmin;
 	xo -= floor(xo); // Micro texture offset for current tile
 	yo -= floor(yo); // Micro texture offset for current tile
-	return D3DXVECTOR4(xo, yo, pT->MicroRep[ml].x * rs, pT->MicroRep[ml].y * rs); 
+	return D3DXVECTOR4(xo, yo, pT->MicroRep[ml].x * rs, pT->MicroRep[ml].y * rs);
 }
 
 // -----------------------------------------------------------------------
@@ -700,6 +750,7 @@ void SurfTile::Render ()
 	ID3DXEffect *Shader = mgr->Shader();
 	const vPlanet *vPlanet = mgr->GetPlanet();
 	const Scene *scene = mgr->GetScene();
+	const D3D9Client *pClient = mgr->GetClient();
 
 	static const double rad0 = sqrt(2.0)*PI05;
 	double sdist, rad;
@@ -736,9 +787,9 @@ void SurfTile::Render ()
 		HR(Shader->SetVector(TileManager2Base::svMicroScale2, &MicroTexRange(pT, 2)));
 		has_microtex = true;
 	}
-	
 
-	
+
+
 	// Setup cloud shadows -------------------------------------------------------
 	//
 	if (has_shadows) {
@@ -748,8 +799,8 @@ void SurfTile::Render ()
 		const TileManager2<CloudTile> *cmgr = vPlanet->CloudMgr2();
 		int maxlvl = min(lvl,9);
 		double rot = mgr->prm.rprm->cloudrot;
-		double edglat = (minlat+maxlat)*0.5;	// latitude of tile center
-		double edglng = wrap(rot+minlng);		// surface tile minlng-edge position on cloud-layer
+		double edglat = (bnd.minlat + bnd.maxlat)*0.5;	// latitude of tile center
+		double edglng = wrap(rot + bnd.minlng);		// surface tile minlng-edge position on cloud-layer
 
 		for (int attempt=0;attempt<2;attempt++) {
 
@@ -758,13 +809,13 @@ void SurfTile::Render ()
 			if (ctile) {
 
 				double icsize = double( 1 << ctile->Level() ) / PI;	// inverse of cloud tile size in radians
-				
+
 				// Compute surface tile uv origin on a selected claud tile
 				// Note: edglng exists always within tile i.e. no wrap from PI to -PI
-				double u0 = (edglng - ctile->minlng) * icsize;
-				double v0 = (ctile->maxlat - maxlat) * icsize;		// Note: Tile corner is lower-left, texture corner is upper-left
-				double u1 = u0 + (maxlng-minlng) * icsize;
-				double v1 = v0 + (maxlat-minlat) * icsize;
+				double u0 = (edglng - ctile->bnd.minlng) * icsize;
+				double v0 = (ctile->bnd.maxlat - bnd.maxlat) * icsize;		// Note: Tile corner is lower-left, texture corner is upper-left
+				double u1 = u0 + (bnd.maxlng - bnd.minlng) * icsize;
+				double v1 = v0 + (bnd.maxlat - bnd.minlat) * icsize;
 
 				// Feed uv-offset and uv-range to the shaders
 				HR(Shader->SetVector(TileManager2Base::svCloudOff, &D3DXVECTOR4(float(u0), float(v0), float(u1-u0), float(v1-v0))));
@@ -775,7 +826,7 @@ void SurfTile::Render ()
 				if (u1 > 1.0) {
 
 					double csize = PI / double(1<<ctile->Level());			// cloud tile size in radians
-					double ctr = (ctile->minlng + ctile->maxlng) * 0.5;		// cloud tile center
+					double ctr = (ctile->bnd.minlng + ctile->bnd.maxlng) * 0.5;		// cloud tile center
 					double lng  = wrap(ctr + csize*sign(rot));				// center of the next tile
 
 					// Request an other tile from the same level as the first one
@@ -804,9 +855,38 @@ void SurfTile::Render ()
 			}
 		}
 	}
-	
 
-	// ---------------------------------------------------------------------
+
+	// ---------------------------------------------------------------------------------------------------
+	// Render with overlay image
+	//
+	D3DXVECTOR4 texcoord;
+	const vPlanet::sOverlay *oLay = vPlanet->IntersectOverlay(bnd.vec, &texcoord);
+	if (oLay) {
+		if (oLay->pSurf) {
+			// Global large-scale overlay
+			HR(Shader->SetTexture(TileManager2Base::stOverlay, oLay->pSurf));
+			HR(Shader->SetVector(TileManager2Base::svOverlayOff, &texcoord));
+			HR(Shader->SetBool(TileManager2Base::sbOverlay, true));
+		}
+		else {
+			// No Overlay
+			HR(Shader->SetTexture(TileManager2Base::stOverlay, NULL));
+			HR(Shader->SetBool(TileManager2Base::sbOverlay, false));
+		}
+	} else if (overlay) {
+		// Local tile specific overlay
+		HR(Shader->SetTexture(TileManager2Base::stOverlay, overlay));
+		HR(Shader->SetVector(TileManager2Base::svOverlayOff, &GetTexRangeDX(&overlayrange)));
+		HR(Shader->SetBool(TileManager2Base::sbOverlay, true));
+	} else {
+		// No Overlay
+		HR(Shader->SetTexture(TileManager2Base::stOverlay, NULL));
+		HR(Shader->SetBool(TileManager2Base::sbOverlay, false));
+	}
+
+
+	// ---------------------------------------------------------------------------------------------------
 	// Feed tile specific data to shaders
 	//
 	// ---------------------------------------------------------------------------------------------------
@@ -815,9 +895,6 @@ void SurfTile::Render ()
 	HR(Shader->SetVector(TileManager2Base::svTexOff, &GetTexRangeDX(&texrange)));
 	HR(Shader->SetVector(TileManager2Base::svMicroOff, &GetTexRangeDX(&microrange)));
 	// ---------------------------------------------------------------------------------------------------
-	//HR(Shader->SetInt(TileManager2Base::siTileLvl, int(bIntersect)));
-	// ---------------------------------------------------------------------------------------------------
-	//HR(Shader->SetBool(TileManager2Base::sbSpecular, has_specular));
 	HR(Shader->SetBool(TileManager2Base::sbCloudSh, has_shadows));
 	HR(Shader->SetBool(TileManager2Base::sbLights, has_lights));
 	// ---------------------------------------------------------------------------------------------------
@@ -839,11 +916,11 @@ void SurfTile::Render ()
 	D3DXVec3TransformCoord(&bs_pos, &mesh->bsCnt, &wmx);
 
 	const Scene::SHADOWMAPPARAM *shd = scene->GetSMapData();
-	
+
 	D3DXVECTOR3 bc = bs_pos - shd->pos;
 
 	if ((scene->GetCameraAltitude() < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
-	
+
 		if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 
 			float x = D3DXVec3Dot(&bc, &(shd->ld));
@@ -858,7 +935,7 @@ void SurfTile::Render ()
 			}
 		}
 	}
-	
+
 
 
 
@@ -873,11 +950,11 @@ void SurfTile::Render ()
 
 	HR(Shader->SetBool(TileManager2Base::sbLocals, false));
 
-	
+
 	if (pLights && nSceneLights>0) {
 
 		int nMeshLights = 0;
-		
+
 		_LightList LightList[MAX_SCENE_LIGHTS];
 
 		// Find all local lights effecting this mesh ------------------------------------------
@@ -892,7 +969,7 @@ void SurfTile::Render ()
 
 		if (nMeshLights > 0) {
 
-			// If any, Sort the list based on illuminance ------------------------------------------- 
+			// If any, Sort the list based on illuminance -------------------------------------------
 			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
 
 			nMeshLights = min(nMeshLights, 4);
@@ -911,24 +988,16 @@ void SurfTile::Render ()
 		// Create a list of N most effective lights ---------------------------------------------
 		for (int i = 0; i < nSceneLights; i++) memcpy2(&Locals[i], &pLights[i], sizeof(LightStruct));
 		HR(Shader->SetBool(TileManager2Base::sbLocals, true));
-		
-	}*/
 
-
-	D3DXVECTOR4 vBackup;
-
-	/*if (mgr->GetPickedTile()==this) {
-		Shader->GetVector(TileManager2Base::svWhiteBalance, &vBackup);
-		Shader->SetVector(TileManager2Base::svWhiteBalance, &D3DXVECTOR4(1.5f, 0.5f, 0.5f, 1.0f));
 	}*/
 
 	Shader->CommitChanges();
 
 	// -------------------------------------------------------------------
 	// Find suitable technique
-	
+
 	int iTech = 0;
-	
+
 	if (has_atmosphere) {
 		if (has_shadows) {
 			if (has_ripples) iTech = 0;		// Earth
@@ -955,21 +1024,14 @@ void SurfTile::Render ()
 	pDev->SetIndices(mesh->pIB);
 	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mesh->nv, 0, mesh->nf);
 	HR(Shader->EndPass());
-	HR(Shader->End());	
-
-	/*
-	if (mgr->GetPickedTile() == this) {
-		Shader->SetVector(TileManager2Base::svWhiteBalance, &vBackup);
-	}*/
+	HR(Shader->End());
 
 	// Render tile bounding box
 	//
 	if (DebugControls::IsActive()) {
 		DWORD flags  = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_TILEBOXES) {
-			D3DXMATRIX wm;
-			Shader->GetMatrix(TileManager2Base::smWorld, &wm);
-			D3D9Effect::RenderTileBoundingBox(&wm, mesh->Box, &D3DXVECTOR4(1,0,0,1));
+			D3D9Effect::RenderTileBoundingBox(&mWorld, mesh->Box, &D3DXVECTOR4(1,0,0,1));
 		}
 	}
 }
@@ -1052,7 +1114,7 @@ void SurfTile::FixCorner (const SurfTile *nbr)
 
 		float corner_elev = elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? 0 : TILE_ELEVSTRIDE*res) + (ilng & 1 ? res : 0)];
 		float nbr_corner_elev = nbr_elev[TILE_ELEVSTRIDE+1 + (ilat & 1 ? TILE_ELEVSTRIDE*res : 0) + (ilng & 1 ? 0 : res)];
-	
+
 		double rad = mgr->CbodySize();
 		double radfac = (rad+nbr_corner_elev)/(rad+corner_elev);
 		mesh->vtx[vtx_idx].x = (float)(vtx_store.x*radfac + vtxshift.x*(radfac-1.0));
@@ -1273,7 +1335,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	// Setup micro textures ---------------------------------------------
 	//
-	if (vp->MicroCfg.bEnabled) {	
+	if (vp->MicroCfg.bEnabled) {
 		HR(Shader()->SetTexture(stMicroA, vp->MicroCfg.Level[0].pTex));
 		HR(Shader()->SetTexture(stMicroB, vp->MicroCfg.Level[1].pTex));
 		HR(Shader()->SetTexture(stMicroC, vp->MicroCfg.Level[2].pTex));
@@ -1389,12 +1451,20 @@ void TileManager2<SurfTile>::InitHasIndividualFiles()
 // -----------------------------------------------------------------------
 
 template<>
-int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, SurfTile **cache)
+Tile * TileManager2<SurfTile>::SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const
+{
+	if (lng<0) return SearchTileSub(&tiletree[0], lng, lat, maxlvl, bOwntex);
+	else	   return SearchTileSub(&tiletree[1], lng, lat, maxlvl, bOwntex);
+}
+// -----------------------------------------------------------------------
+
+template<>
+int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, SurfTile **cache)
 {
 	int rv = 0;
 	loader->WaitForMutex();
-	if (lng<0) rv = tiletree[0].Entry()->GetElevation(lng, lat, elev, cache);
-	else	   rv = tiletree[1].Entry()->GetElevation(lng, lat, elev, cache);
+	if (lng<0) rv = tiletree[0].Entry()->GetElevation(lng, lat, elev, nrm, cache);
+	else	   rv = tiletree[1].Entry()->GetElevation(lng, lat, elev, nrm, cache);
 	loader->ReleaseMutex();
 	return rv;
 }
@@ -1402,92 +1472,92 @@ int TileManager2<SurfTile>::GetElevation(double lng, double lat, double *elev, S
 // -----------------------------------------------------------------------
 
 template<>
-void TileManager2<SurfTile>::Pick(TILEPICK *pPick)
+void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 {
 	if (bFreeze) return;
 
-	double lng, lat, dst, elv;
-	double delta, angle = PI2;
-	
 	std::list<Tile *> tiles;
+
+	pPick->d = 1e12f;
 
 	// Give me a list of rendered tiles ----------------------------------------------
 	//
 	QueryTiles(&tiletree[0], tiles);
 	QueryTiles(&tiletree[1], tiles);
 
-	auto it = tiles.begin();
+	for each (Tile * tile in tiles)	tile->Pick(&(tile->mWorld), &vRay, *pPick);
+}
 
-	// Remove tiles whose bounding sphere is not intersected by picking ray ---------
-	//
-	while (it!=tiles.end()) {
-		D3DXMATRIX W; D3DXVECTOR3 bs = (*it)->GetBoundingSpherePos();
-		MATRIX4toD3DMATRIX(WorldMatrix(*it), W);
-		D3DXVec3TransformCoord(&bs, &bs, &W);
-		auto er = it; it++;
-		if (D3DXSphereBoundProbe(&bs, (*er)->GetBoundingSphereRad(), &D3DXVECTOR3(0, 0, 0), &D3DXVEC(pPick->vRay)) != 1) tiles.erase(er);
-	}
+// -----------------------------------------------------------------------
 
-	// Compute some parameters to do the rest of the computations -------------------
-	//
-	VECTOR3 vCam = vp->GetUnitSurfacePos(pPick->cLng, pPick->cLat);	// Camera position vector;
-	VECTOR3 vPck = vp->ToLocal(pPick->vRay);						// Picking ray in Planet's local system
-	VECTOR3 vRot = vp->GetRotationAxis();							// Planet's rotation axis
-	VECTOR3 vEast = unit(crossp(vRot, vCam));						// Tangent plane east direction 
-	VECTOR3 vNorth = unit(crossp(vCam, vEast));						// Tangent plane north direction
-	VECTOR3 vDir = unit(vPck - vCam * dotp(vCam, vPck));			// Make the picking ray co-planar with tangent plane
-	VECTOR3 vPln = crossp(vCam, vDir);								// Compute picking plane
-	
-	// Angle between vCam, vPick
-	double rPck = PI - acos(dotp(vCam, vPck));
-	// Pick heading [0,360] 0=North 90=East
-	double rHed = PI - atan2(-dotp(vEast, vDir), -dotp(vNorth, vDir));
-	double sPck = sin(rPck);
-	double cDst = vp->CamDist();
-	
-	// Find the closest tile edge intersected by picking plane ----------------------
-	//
-	SurfTile *pStart = NULL;
+template<>
+HSURFNATIVE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level, int flags)
+{
+	bool bOk = false;
+	LPDIRECT3DTEXTURE9 pTex = NULL;
 
-	for (it = tiles.begin(); it != tiles.end(); it++) {
-		int rv = (*it)->PlaneIntersection(vPln, rHed, pPick->cLng, pPick->cLat, &lng, &lat, &dst);
-		if (rv>=0 && dst < angle) {
-			angle = dst;
-			pStart = (SurfTile *)(*it);
+	if ((flags & 0xF) == gcTileFlags::TEXTURE) {
+		if (flags & gcTileFlags::CACHE) {
+			char name[128];	char path[MAX_PATH];
+			sprintf_s(name, 128, "%s\\Surf\\%02d\\%06d\\%06d.dds", CbodyName(), level + 4, iLat, iLng);
+			bOk = GetClient()->TexturePath(name, path);
+			if (bOk) if (D3DXCreateTextureFromFileEx(Dev(), path, 0, 0, 0, 0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT,
+				D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) != S_OK) bOk = false;
 		}
-	}
 
-	if (!pStart) return;
-
-	delta = pStart->height / 256.0;
-	angle += delta;
-
-	// Finally scan through remaining terrain. Limit to 2k staps just in case --------
-	//
-	for (int cnt = 0; cnt < 2000; cnt++) {
-
-		vp->GetLngLat(vCam * cos(angle) + vDir * sin(angle), &lng, &lat);
-
-		int rv = 0;
-		if (pStart) rv = pStart->GetElevation(lng, lat, &elv, &pStart);		// Try quick search at first
-		if (rv!=1)  rv = GetElevation(lng, lat, &elv, &pStart);				// Browse through tile tree
-
-		if (rv > 0 && pStart) {
-
-			double pr = sPck * cDst / sin(PI - angle - rPck);
-			double pe = pr - vp->GetSize();
-
-			// Does the ray intersect terrain at this point
-			if (elv >= pe) {
-				pPick->pTile = pStart;
-				pPick->lng = lng;
-				pPick->lat = lat;
-				pPick->height = elv;
-				pPick->dist = sqrt(pr*pr + cDst*cDst - 2.0*pr*cDst*cos(angle));
-				return;
+		if (flags & gcTileFlags::TREE) {
+			if (!bOk) {
+				if (ZTreeManager(0)) {
+					BYTE *buf;
+					DWORD ndata = ZTreeManager(0)->ReadData(level + 4, iLat, iLng, &buf);
+					if (ndata) {
+						if (D3DXCreateTextureFromFileInMemoryEx(Dev(), buf, ndata, 0, 0, D3DX_FROM_FILE, 0,
+							D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) == S_OK) bOk = true;
+						ZTreeManager(0)->ReleaseData(buf);
+					}
+				}
 			}
-			delta = pStart->height / 256.0;
 		}
-		angle += delta;
 	}
+
+	if (bOk && pTex) return HSURFNATIVE(pTex);
+	return NULL;
+}
+
+// -----------------------------------------------------------------------
+
+template<>
+bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flags)
+{
+	bool bOk = false;
+
+	if ((flags & 0xF) == gcTileFlags::TEXTURE) {
+		if (flags & gcTileFlags::CACHE) {
+			char name[128];	char path[MAX_PATH];
+			sprintf_s(name, 128, "%s\\Surf\\%02d\\%06d\\%06d.dds", CbodyName(), level + 4, iLat, iLng);
+			bOk = GetClient()->TexturePath(name, path);
+
+		}
+		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(0)) if (ZTreeManager(0)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
+	}
+
+	if ((flags & 0xF) == gcTileFlags::MASK) {
+		if (flags & gcTileFlags::CACHE) {
+			char name[128];	char path[MAX_PATH];
+			sprintf_s(name, 128, "%s\\Mask\\%02d\\%06d\\%06d.dds", CbodyName(), level + 4, iLat, iLng);
+			bOk = GetClient()->TexturePath(name, path);
+		}
+		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(1)) if (ZTreeManager(1)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
+	}
+
+	if ((flags & 0xF) == gcTileFlags::ELEVATION) {
+		if (flags & gcTileFlags::CACHE) {
+			char name[128];	char path[MAX_PATH];
+			sprintf_s(name, 128, "%s\\Elev\\%02d\\%06d\\%06d.elv", CbodyName(), level, iLat, iLng);
+			bOk = GetClient()->TexturePath(name, path);
+		}
+		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(2)) if (ZTreeManager(2)->Idx(level, iLat, iLng) != ((DWORD)-1)) bOk = true;
+	}
+
+	return bOk;
 }

@@ -225,7 +225,7 @@ bool TileLabel::ExtractAncestorData (const SurfTile *atile)
 				renderlabel[nrenderlabel++] = alabel[i];
 				if (!alabel[i]->pos.x && !alabel[i]->pos.y && !alabel[i]->pos.z) {
 					if (_isnan(alabel[i]->alt))
-						alabel[i]->alt = Elevation(lat, lng, latmin, latmax, lngmin, lngmax, tile->mgr->ElevRes());
+						alabel[i]->alt = Elevation(lat, lng, latmin, latmax, lngmin, lngmax, tile->mgr->  ElevRes());
 					double rad = tile->mgr->CbodySize() + alabel[i]->alt;
 					oapiEquToLocal(tile->mgr->Cbody(), lng, lat, rad, &alabel[i]->pos);
 				}

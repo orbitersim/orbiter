@@ -308,6 +308,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 	// Use Template's Vertex Data directly, no need for a local copy unless locally modified. 
 	pBuf = hTemp.pBuf;
 
+	BBox = hTemp.BBox;
 	MaxVert = hTemp.MaxVert;
 	MaxFace = hTemp.MaxFace;
 	// Clone group records from a tremplate
@@ -1811,6 +1812,245 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 }
 
 
+
+// ================================================================================================
+// Render without animations 
+//
+void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv, int nEnv, bool bSP)
+{
+	if (!IsOK()) return;
+
+	pBuf->Map(pDev);
+
+	// Check material status
+	//
+	if (bMtrlModidied) {
+		CheckMeshStatus();
+		bMtrlModidied = false;
+	}
+
+	Scene *scn = gc->GetScene();
+
+	bool bMeshCull = true;
+	bool bTextured = true;
+	bool bGroupCull = true;
+	bool bUpdateFlow = true;
+	
+	EnablePlanetGlow(true);
+	
+	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, bSP));
+
+	D3D9MatExt *mat, *old_mat = NULL;
+	LPD3D9CLIENTSURFACE old_tex = NULL;
+	TexFlow FC;	reset(FC);
+
+	pDev->SetVertexDeclaration(pMeshVertexDecl);
+	pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
+	pDev->SetIndices(pBuf->pIB);
+
+	FX->SetTechnique(eVesselTech);
+	FX->SetBool(eFresnel, false);
+	FX->SetBool(eEnvMapEnable, false);
+	FX->SetBool(eTuneEnabled, false);
+	FX->SetBool(eLightsEnabled, false);
+	FX->SetVector(eColor, &D3DXVECTOR4(0, 0, 0, 0));
+	FX->SetMatrix(eW, pW);
+
+	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+
+	// Process Local Light Sources ------------------------------------------------------------
+	//
+	const D3D9Light *pLights = gc->GetScene()->GetLights();
+	int nSceneLights = gc->GetScene()->GetLightCount();
+
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
+
+	if (pLights && nSceneLights>0) {
+
+		int nMeshLights = 0;
+		D3DXVECTOR3 pos;
+		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
+
+		// Find all local lights effecting this mesh ------------------------------------------
+		//
+		for (int i = 0; i < nSceneLights; i++) {
+			float il = pLights[i].GetIlluminance(pos, BBox.bs.w);
+			if (il > 0.005f) {
+				LightList[nMeshLights].illuminace = il;
+				LightList[nMeshLights++].idx = i;
+			}
+		}
+
+		if (nMeshLights > 0) {
+
+			FX->SetBool(eLightsEnabled, true);
+
+			// If any, Sort the list based on illuminance -------------------------------------------
+			qsort(LightList, nMeshLights, sizeof(_LightList), compare_lights);
+
+			nMeshLights = min(nMeshLights, Config->MaxLights());
+
+			// Create a list of N most effective lights ---------------------------------------------
+			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+		}
+	}
+
+	FX->SetValue(eLights, Locals, sizeof(LightStruct) * Config->MaxLights());
+
+	if (nEnv >= 1 && pEnv[0]) FX->SetTexture(eEnvMapA, pEnv[0]);
+
+	bool bRefl = true;
+	WORD CurrentShader = 0xFFFF;
+	UINT numPasses = 0;
+
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+
+
+	// Render MeshGroups ----------------------------------------------------
+	//
+	for (DWORD g = 0; g<nGrp; g++) {
+
+		// Check skip conditions --------------------------------------------
+		//
+		DWORD ti = Grp[g].TexIdx;
+		if (Grp[g].UsrFlag & 0x2) continue;
+
+
+		// Begin rendering of a specified pass ------------------------------
+		//
+		if (Grp[g].Shader != CurrentShader) {
+			if (CurrentShader != 0xFFFF) { HR(FX->EndPass()); }
+			HR(FX->BeginPass(Grp[g].Shader));
+			CurrentShader = Grp[g].Shader;
+		}
+
+		// -------------------------------------------------------------------
+		//
+		if (Tex[ti] != old_tex) {
+			if (Tex[ti] == NULL) {
+				reset(FC);
+				bUpdateFlow = true;
+			}
+		}
+
+		if (Tex[ti] == NULL) bTextured = false, old_tex = NULL;
+		else bTextured = true;
+
+
+		// Setup Textures and Normal Maps =====================================
+		//
+		if (bTextured) {
+
+			if (Tex[ti] != old_tex) {
+
+				old_tex = Tex[ti];
+				FX->SetTexture(eTex0, Tex[ti]->GetTexture());
+				bUpdateFlow = true;	// Fix this later
+
+				LPDIRECT3DTEXTURE9 pTransl = NULL;
+				LPDIRECT3DTEXTURE9 pTransm = NULL;
+				LPDIRECT3DTEXTURE9 pSpec = Tex[ti]->GetMap(MAP_SPECULAR);
+				LPDIRECT3DTEXTURE9 pNorm = Tex[ti]->GetMap(MAP_NORMAL);
+				LPDIRECT3DTEXTURE9 pRefl = Tex[ti]->GetMap(MAP_REFLECTION);
+				LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
+				LPDIRECT3DTEXTURE9 pFrsl = Tex[ti]->GetMap(MAP_FRESNEL);
+				LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
+
+				if (pNorm) FX->SetTexture(eTex3, pNorm);
+				if (pRghn) FX->SetTexture(eRghnMap, pRghn);
+				if (pRefl) FX->SetTexture(eReflMap, pRefl);
+				if (pFrsl) FX->SetTexture(eFrslMap, pFrsl);
+				if (pSpec) FX->SetTexture(eSpecMap, pSpec);
+				if (pEmis) FX->SetTexture(eEmisMap, pEmis);
+
+				if (CurrentShader == SHADER_ADV) {
+
+					pTransl = Tex[ti]->GetMap(MAP_TRANSLUCENCE);
+					pTransm = Tex[ti]->GetMap(MAP_TRANSMITTANCE);
+
+					if (pTransl) FX->SetTexture(eTranslMap, pTransl);
+					if (pTransm) FX->SetTexture(eTransmMap, pTransm);
+
+					FC.Transl = (pTransl != NULL);
+					FC.Transm = (pTransm != NULL);
+					FC.Transx = FC.Transl || FC.Transm;
+				}
+				else {
+					FC.Transl = false;
+					FC.Transm = false;
+					FC.Transx = false;
+				}
+
+				FC.Emis = (pEmis != NULL);
+				FC.Frsl = (pFrsl != NULL);
+				FC.Norm = (pNorm != NULL);
+				FC.Rghn = (pRghn != NULL);
+				FC.Spec = (pSpec != NULL);
+				FC.Refl = (pRefl != NULL);
+			}	
+		}
+
+
+		// Setup Mesh group material  ==========================================
+		//
+		else {
+			if (Grp[g].MtrlIdx == SPEC_DEFAULT) mat = &defmat;
+			else mat = &Mtrl[Grp[g].MtrlIdx];
+			if (mat != old_mat) {
+				old_mat = mat;
+				FX->SetValue(eMtrl, mat, sizeof(D3D9MatExt) - 4);
+				if (bModulateMatAlpha || bTextured == false) FX->SetFloat(eMtrlAlpha, mat->Diffuse.w);
+				else FX->SetFloat(eMtrlAlpha, 1.0f);
+			}
+		}
+
+		// Must update FlowControl ?
+		//
+		if (bUpdateFlow) {
+			bUpdateFlow = false;
+			HR(FX->SetValue(eFlow, &FC, sizeof(TexFlow)));
+		}
+
+		bool bPBR = (Grp[g].PBRStatus & 0xF) == (0x8 + 0x4);
+		bool bRGH = (Grp[g].PBRStatus & 0xE) == (0x8 + 0x2);
+		bool bNoL = (Grp[g].UsrFlag & 0x04) != 0;
+		bool bNoC = (Grp[g].UsrFlag & 0x10) != 0;
+		bool bENV = false;
+		bool bFRS = false;
+
+
+		// Setup Mesh drawing options =================================================================================
+		//
+		FX->SetBool(eTextured, bTextured);
+		FX->SetBool(eFullyLit, bNoL);
+		FX->SetBool(eNoColor, bNoC);
+		FX->SetBool(eSwitch, bPBR);
+		FX->SetBool(eRghnSw, bRGH);
+
+
+		// Update envmap and fresnel status as required
+		//
+		if (bRefl) {
+			bFRS = (Grp[g].PBRStatus & 0x1E) >= 0x10;
+			FX->SetBool(eFresnel, bFRS);
+			if (bIsReflective) {
+				bENV = (Grp[g].PBRStatus & 0x1E) >= 0xA;
+				FX->SetBool(eEnvMapEnable, bENV);
+			}
+		}
+
+		// Start rendering -------------------------------------------------------------------------------------------
+		//
+		FX->CommitChanges();
+		pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[g].VertOff, 0, Grp[g].nVert, Grp[g].IdexOff, Grp[g].nFace);
+		Grp[g].bRendered = true;
+	}
+
+	if (CurrentShader != 0xFFFF) HR(FX->EndPass());
+	HR(FX->End());
+}
+
+
 // ================================================================================================
 // Render a legacy orbiter mesh without any additional textures
 //
@@ -2736,7 +2976,7 @@ D3D9Pick D3D9Mesh::Pick(const LPD3DXMATRIX pW, const LPD3DXMATRIX pT, const D3DX
 		if ((Grp[g].UsrFlag & 0x2) && (Grp[g].MFDScreenId != 0x100)) continue;
 
 		D3DXVECTOR3 bs = D3DXVECTOR3f4(Grp[g].BBox.bs);
-		float rad = Grp[g].BBox.bs.w;
+		float rad = Grp[g].BBox.bs.w * D3DMAT_BSScaleFactor(&mWT);
 
 		D3DXVec3TransformCoord(&bs, &bs, &mWT);
 

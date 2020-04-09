@@ -44,7 +44,7 @@ public:
 	static ID3DXEffect * Shader() { return pShader; }
 	static oapi::D3D9Client * Client() { return gc; }
 
-	static void	SetWorldMatrix (const MATRIX4 &W);
+	static void	SetWorldMatrix (const D3DXMATRIX &W);
 	static void	SetViewProjectionMatrix (const D3DXMATRIX *VP);
 
 	// ------------------------------------------------------------
@@ -73,6 +73,7 @@ public:
 	static D3DXHANDLE svSunDir;
 	static D3DXHANDLE svCloudOff;
 	static D3DXHANDLE svMicroOff;
+	static D3DXHANDLE svOverlayOff;
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
 	static D3DXHANDLE svPolarAxis;
@@ -96,6 +97,7 @@ public:
 	static D3DXHANDLE siDebug;
 	static D3DXHANDLE sbDebug;
 	static D3DXHANDLE sbShadows;
+	static D3DXHANDLE sbOverlay;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
@@ -110,6 +112,7 @@ public:
 	static D3DXHANDLE stMicroC;
 	static D3DXHANDLE stMicroRot;
 	static D3DXHANDLE stShadowMap;
+	static D3DXHANDLE stOverlay;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;

@@ -203,7 +203,7 @@ void D3D9ClientSurface::SetupViewPort()
 
 // -----------------------------------------------------------------------------------------------
 //
-D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name_ /* = NULL */)
+D3D9ClientSurface::D3D9ClientSurface(LPDIRECT3DDEVICE9 pDev, const char* name_ /* = NULL */) : alloc_id('SURF')
 {
 	Clear();
 	strcpy_s(this->name, ARRAYSIZE(this->name), (name_ ? name_ : "???"));
@@ -569,7 +569,6 @@ bool D3D9ClientSurface::ConvertToPlain()
 {
 	if (GetAttribs()&OAPISURFACE_RENDERTARGET) return false;
 	if (GetAttribs()&OAPISURFACE_TEXTURE) return false;
-	if (GetAttribs()&OAPISURFACE_VIDEOMEMORY) return false;
 	if (bBackBuffer) return false;
 
 	LPDIRECT3DSURFACE9 pNew=NULL;
@@ -959,22 +958,6 @@ void D3D9ClientSurface::CopyRect(D3D9ClientSurface *src, LPRECT s, LPRECT t, UIN
 			}
 		}
 	}
-
-
-	// =====================================================================================================
-	// Blitting into a BackBuffer
-	//
-	/*
-	if (bBackBuffer) {
-		src->Active |= OAPISURFACE_VIDEOMEMORY;
-		if (src->desc.Pool==D3DPOOL_SYSTEMMEM) {
-			if ((src->GetAttribs()&OAPISURFACE_SYSMEM)==0) src->ConvertToRenderTarget();
-			else {
-				LogErr("Cannot Blit in BackBuffer from a System Memory Surface 0x%X", src);
-				goto error_report;
-			}
-		}
-	}*/
 
 
 	// =====================================================================================================

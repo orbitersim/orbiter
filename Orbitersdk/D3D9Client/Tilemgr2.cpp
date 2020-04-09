@@ -32,20 +32,19 @@ int SURF_MAX_PATCHLEVEL2 = 18; // move this somewhere else
 Tile::Tile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 : mgr(_mgr), lvl(_lvl), ilat(_ilat), ilng(_ilng),
   lngnbr_lvl(_lvl), latnbr_lvl(_lvl), dianbr_lvl(_lvl),
-  texrange(fullrange), microrange(fullrange), cnt(Centre()),
-  mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL),
+  texrange(fullrange), microrange(fullrange), overlayrange(fullrange), cnt(Centre()),
+  mesh(NULL), tex(NULL), pPreSrf(NULL), pPreMsk(NULL), overlay(NULL),
   FrameId(0),
-  mean_elev(0.0),
+  mean_elev(0.0), min_elev(0.0), max_elev(0.0),
   state(Invalid),
-  edgeok(false), owntex (true)
+  edgeok(false), owntex (true), ownoverlay(false)
 {
 	double f = 1.0 / double(1<<lvl);
 	double x = PI * (0.5 - double(ilat+1) * f);
 	width = float(PI * cos(x) * f);
 	height = float(PI * f);
-	Extents(&minlat, &maxlat, &minlng, &maxlng);
+	Extents(&bnd.minlat, &bnd.maxlat, &bnd.minlng, &bnd.maxlng);
 	D3D9Stats.TilesAllocated++;
-	bIntersect = false;
 	bMipmaps = false;
 }
 
@@ -160,6 +159,34 @@ bool Tile::GetParentSubTexRange (TEXCRDRANGE2 *subrange)
 
 // -----------------------------------------------------------------------
 
+bool Tile::GetParentOverlayRange(TEXCRDRANGE2 *subrange)
+{
+	Tile *parent = getParent();
+	if (!parent) return false; // haven't got a parent
+
+	overlay = parent->overlay;
+
+	if (!(ilat & 1)) { // left column
+		subrange->tvmin = parent->overlayrange.tvmin;
+		subrange->tvmax = (parent->overlayrange.tvmin + parent->overlayrange.tvmax)*0.5f;
+	}
+	else {         // right column
+		subrange->tvmin = (parent->overlayrange.tvmin + parent->overlayrange.tvmax)*0.5f;
+		subrange->tvmax = parent->overlayrange.tvmax;
+	}
+	if (!(ilng & 1)) { // bottom row
+		subrange->tumin = parent->overlayrange.tumin;
+		subrange->tumax = (parent->overlayrange.tumin + parent->overlayrange.tumax)*0.5f;
+	}
+	else {         // top row
+		subrange->tumin = (parent->overlayrange.tumin + parent->overlayrange.tumax)*0.5f;
+		subrange->tumax = parent->overlayrange.tumax;
+	}
+	return true;
+}
+
+// -----------------------------------------------------------------------
+
 bool Tile::GetParentMicroTexRange(TEXCRDRANGE2 *subrange)
 {
 
@@ -246,68 +273,97 @@ D3DXVECTOR3 Tile::GetBoundingSpherePos() const
 }
 
 // -----------------------------------------------------------------------
-// Check if a plane intersects a tile, plane must be given in planet
-// coordinates
 
-int Tile::PlaneIntersection(VECTOR3 &vPln, double hed, double lng, double lat, double *oLng, double *oLat, double *oDst)
+bool Tile::Pick(const LPD3DXMATRIX pW, const D3DXVECTOR3 *vDir, TILEPICK &result)
 {
-	assert(state == Tile::ForRender);
-
-	bool bLng = false, bLat = false;
-	int rv = 0;
-	if ((lat >= minlat) && (lat <= maxlat)) bLat = true, rv = 0x10;
-	if ((lng >= minlng) && (lng <= maxlng)) bLng = true, rv = 0x20;
-
-	if (bLng && bLat) {
-		if (oLng) *oLng = lng;
-		if (oLat) *oLat = lat;
-		if (oDst) *oDst = 0.0;
-		return 0;
+	if (!mesh) {
+		LogErr("Tile::Pick() Failed: No Mesh Available");
+		return false;
+	}
+	if (!mesh->idx || !mesh->vtx) {
+		LogErr("Tile::Pick() Failed: No Geometry Available");
+		return false;
 	}
 
-	double dir = PI05 - hed;
-	if (dir < -PI) dir += PI2;
+	D3DXVECTOR3 bs;
+	D3DXVec3TransformCoord(&bs, &mesh->bsCnt, pW);
 
-	double tLng = fabs(dir) < PI05 ? minlng : maxlng;
-	double tLat = dir > 0 ? minlat : maxlat;
+	float dst = D3DXVec3Dot(&bs, vDir);
+	float len2 = D3DXVec3Dot(&bs, &bs);
 
-	if (!bLng) {
+	if (dst < -mesh->bsRad) return false;
+	if (sqrt(len2 - dst*dst) > mesh->bsRad) return false;
 
-		VECTOR3 vTgt = _V(-sin(tLng), 0, cos(tLng));
-		VECTOR3 vNod = unit(crossp(vTgt, vPln));
 
-		double qLat = asin(vNod.y);
-		double qLng = atan2(vNod.z, vNod.x);
+	D3DXVECTOR3 pos, dir;
+	D3DXVECTOR3 _a, _b, _c, cp;
+	D3DXMATRIX mWI;
+	float det;
 
-		if (fabs(qLng - tLng)>0.1) qLat = -qLat, qLng = wrap(qLng + PI);
+	WORD *pIdc = mesh->idx;
+	VERTEX_2TEX *vtx = mesh->vtx;
 
-		if ((qLat >= minlat) && (qLat <= maxlat)) {
-			*oLat = qLat;
-			*oLng = tLng;
-			*oDst = oapiOrthodome(tLng, qLat, lng, lat);
-			return 1 + rv;
+	D3DXMatrixInverse(&mWI, &det, pW);
+	D3DXVec3TransformCoord(&pos, &D3DXVECTOR3(0, 0, 0), &mWI);
+	D3DXVec3TransformNormal(&dir, vDir, &mWI);
+
+	int idx = -1;
+
+	for (DWORD i = 0; i<mesh->nf; i++)
+	{
+		WORD a = pIdc[i * 3 + 0];
+		WORD b = pIdc[i * 3 + 1];
+		WORD c = pIdc[i * 3 + 2];
+
+		_a = D3DXVECTOR3(vtx[a].x, vtx[a].y, vtx[a].z);
+		_b = D3DXVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
+		_c = D3DXVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
+
+		float u, v, dst;
+
+		D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+
+		if (D3DXVec3Dot(&cp, &dir)<0) {
+			if (D3DXIntersectTri(&_c, &_b, &_a, &pos, &dir, &u, &v, &dst)) {
+				if (dst > 0.1f) {
+					if (dst < result.d) {
+						idx = i;
+						result.d = dst;
+						result.u = u;
+						result.v = v;
+						result.i = i;
+						result.pTile = this;
+					}
+				}
+			}
 		}
 	}
 
-	if (!bLat) {
-		VECTOR3 vLAN = _V(vPln.z, 0, -vPln.x);
-		VECTOR3 vAux = crossp(vPln, vLAN);
-		double qInc = acos(vPln.y);
-		double dDst = asin(sin(tLat) / sin(qInc));
+	if (idx >= 0) {
 
-		if (dir < 0) dDst = PI-dDst;
+		int   i = result.i;
+		float u = result.u;
+		float v = result.v;
 
-		VECTOR3 vInt = vLAN * cos(dDst) + vAux * sin(dDst);
-		double qLng = atan2(vInt.z, vInt.x);
+		WORD a = pIdc[i * 3 + 0];
+		WORD b = pIdc[i * 3 + 1];
+		WORD c = pIdc[i * 3 + 2];
 
-		if ((qLng >= minlng) && (qLng <= maxlng)) {
-			*oLat = tLat;
-			*oLng = qLng;
-			*oDst = oapiOrthodome(qLng, tLat, lng, lat);
-			return 2 + rv;
-		}
+		_a = D3DXVECTOR3(vtx[a].x, vtx[a].y, vtx[a].z);
+		_b = D3DXVECTOR3(vtx[b].x, vtx[b].y, vtx[b].z);
+		_c = D3DXVECTOR3(vtx[c].x, vtx[c].y, vtx[c].z);
+
+		D3DXVec3Cross(&cp, &(_c - _b), &(_a - _b));
+		D3DXVec3TransformNormal(&cp, &cp, pW);
+		D3DXVec3Normalize(&result._n, &cp);
+
+		D3DXVECTOR3 p = (_b * u) + (_a * v) + (_c * (1.0f - u - v));
+		D3DXVec3TransformCoord(&result._p, &p, pW);
+
+		return true;
 	}
-	return -1;
+
+	return false;
 }
 
 
@@ -340,7 +396,7 @@ void Tile::Extents (double *_latmin, double *_latmax, double *_lngmin, double *_
 
 // -----------------------------------------------------------------------
 
-VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double elev_scale, double globelev,
+VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double globelev,
 	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift, double bb_excess)
 {
 //	const float TEX2_MULTIPLIER = 1.0f; // was: 4.0f was: 16.0f
@@ -381,6 +437,9 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 	VECTOR3 pref = {radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)}; // origin
 	VECTOR3 tpmin, tpmax;
 
+	max_elev = -1e30f;
+	min_elev = +1e30f;
+
 	// patch translation vector
 	if (shift_origin) {
 		dx = (north ? clat0:clat1)*radius;
@@ -403,7 +462,11 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 			slng = sin(lng), clng = cos(lng);
 
 			eradius = radius + globelev; // radius including node elevation
-			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1] * elev_scale;
+			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1];
+
+			float felev = float(eradius - radius);
+			max_elev = max(max_elev, felev);
+			min_elev = min(min_elev, felev);
 
 			nml = _V(clat*clng, slat, clat*slng);
 			pos = nml*eradius;
@@ -506,7 +569,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 
 				// This version avoids the normalisation of the 4 intermediate face normals
 				// It's faster and doesn't seem to make much difference
-				VECTOR3 nml = { 2.0*dydz, dz*elev_scale*(elev[en - TILE_ELEVSTRIDE] - elev[en + TILE_ELEVSTRIDE]), dy*elev_scale*(elev[en - 1] - elev[en + 1]) };
+				VECTOR3 nml = {2.0*dydz, dz*(elev[en-TILE_ELEVSTRIDE]-elev[en+TILE_ELEVSTRIDE]), dy*(elev[en-1]-elev[en+1])};
 				normalise (nml);
 				// rotate into place
 				nx1 = nml.x*clat - nml.y*slat;
@@ -997,6 +1060,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	emgr = oapiElevationManager(obj);
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
+	ResetMinMaxElev();
 }
 
 // -----------------------------------------------------------------------
@@ -1099,6 +1163,29 @@ void TileManager2Base::SetRenderPrm (MATRIX4 &dwmat, double prerot, bool use_zbu
 	// Add 5km threshold to allow slight camera movement with out causing surface tiles to unload
 	prm.viewap = acos (1.0/(max ((cdist+5e3) / obj_size, 1.0+minalt)));
 	prm.scale = 1.0;
+}
+
+// -----------------------------------------------------------------------
+
+void TileManager2Base::ResetMinMaxElev()
+{
+	min_elev = 0.0f;
+	max_elev = 0.0f;
+	bSet = true;
+}
+
+// -----------------------------------------------------------------------
+
+void TileManager2Base::SetMinMaxElev(float mi, float ma)
+{
+	if (bSet) {
+		min_elev = mi;
+		max_elev = ma;
+		bSet = false;
+		return;
+	}
+	min_elev = min(min_elev, mi);
+	max_elev = max(max_elev, ma);
 }
 
 // -----------------------------------------------------------------------

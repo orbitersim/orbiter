@@ -20,8 +20,8 @@ public:
 	~QuadTreeNode ();
 	// Deleting a node
 
-	T *Entry() { return entry; }
-	const T *Entry() const { return entry; }
+	T *Entry() const { return entry; }
+	//const T *Entry() const { return entry; }
 	// Returns the node contents
 
 	inline void SetEntry (T *newentry) { entry = newentry; entry->SetNode (this); }

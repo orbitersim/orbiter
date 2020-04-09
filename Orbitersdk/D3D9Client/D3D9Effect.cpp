@@ -839,9 +839,6 @@ void D3D9Effect::RenderBoundingBox(const LPD3DXMATRIX pW, const LPD3DXMATRIX pGT
 
 void D3D9Effect::RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, const LPD3DXVECTOR4 color)
 {
-	D3DXMATRIX ident;
-	D3DXMatrixIdentity(&ident);
-
 	D3DXVECTOR3 poly[8];
 
 	for (int i=0;i<8;i++) poly[i] = D3DXVEC(pVtx[i]);
@@ -862,6 +859,21 @@ void D3D9Effect::RenderTileBoundingBox(const LPD3DXMATRIX pW, VECTOR4 *pVtx, con
 	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, 8, 3, &idc2, D3DFMT_INDEX16, &poly, sizeof(D3DXVECTOR3));	
 	FX->EndPass();
 	FX->End();	
+}
+
+
+void D3D9Effect::RenderLines(const D3DXVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const D3DXMATRIX *pW, DWORD color)
+{
+	UINT numPasses = 0;
+	pDev->SetVertexDeclaration(pPositionDecl);
+	FX->SetMatrix(eW, pW);
+	FX->SetVector(eColor, (const D3DXVECTOR4 *)&D3DXCOLOR(color));
+	FX->SetTechnique(eTBBTech);
+	FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE);
+	FX->BeginPass(0);
+	pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, nVtx, nIdx/2, pIdx, D3DFMT_INDEX16, pVtx, sizeof(D3DXVECTOR3));
+	FX->EndPass();
+	FX->End();
 }
 
 

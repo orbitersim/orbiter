@@ -39,7 +39,8 @@
 #include "FileParser.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
-#include "Tilemgr2.h"
+#include "Surfmgr2.h"
+
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
 #define round(v) floor(v+0.5)
@@ -50,6 +51,12 @@
 
 struct D3D9Client::RenderProcData {
 	__gcRenderProc proc;
+	void *pParam;
+	DWORD id;
+};
+
+struct D3D9Client::GenericProcData {
+	__gcGenericProc proc;
 	void *pParam;
 	DWORD id;
 };
@@ -81,6 +88,8 @@ static DWORD g_cm_list_count = 0;
 std::set<Font *> g_fonts;
 std::set<Pen *> g_pens;
 std::set<Brush *> g_brushes;
+
+extern list<gcGUIApp *> g_gcGUIAppList;
 
 extern "C" {
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
@@ -599,9 +608,6 @@ void D3D9Client::clbkPostCreation()
 		if (pWM->IsOK() == false) SAFE_DELETE(pWM);
 	}
 
-	//MakeGenericProcCall(GENERICPROC_LOAD_ORBITERGUI);
-	//MakeGenericProcCall(GENERICPROC_LOAD);
-
 	bRunning = true;
 
 	LogAlw("=============== Loading Completed and Visuals Created ================");
@@ -619,6 +625,15 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	__TRY {
 
 		LogAlw("================ clbkCloseSession ===============");
+
+		//	Post shutdown signals for gcGUI applications
+		//
+		for each (gcGUIApp* pApp in g_gcGUIAppList)	pApp->clbkShutdown();
+
+
+		//	Post shutdown signals for user applications
+		//
+		if (IsGenericProcEnabled(GENERICPROC_SHUTDOWN)) MakeGenericProcCall(GENERICPROC_SHUTDOWN, 0, NULL);
 
 
 		// Check the status of RenderTarget Stack ------------------------------------------------
@@ -646,7 +661,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		// Disconnect textures from pipeline (Unlikely nesseccary)
 		D3D9Effect::ShutDown();
 
-
 		// DEBUG: List all textures connected to meshes
 		/* DWORD cnt = MeshCatalog->CountEntries();
 		for (DWORD i=0;i<cnt;i++) {
@@ -654,7 +668,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 			if (x) x->DumpTextures();
 		} */
 		//GraphicsClient::clbkCloseSession(fastclose);
-
 
 		SAFE_DELETE(pWM);
 		SAFE_DELETE(parser);
@@ -799,6 +812,16 @@ void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp)
 		LPDIRECT3DSURFACE9 pTgt = SURFACE(surf)->GetSurface();
 		LPDIRECT3DSURFACE9 pDep = SURFACE(surf)->GetDepthStencil();
 		PushRenderTarget(pTgt, pDep, RENDERPASS_SKETCHPAD);
+		RenderStack.front().pSkp = pSkp;
+	}
+}
+
+// ==============================================================
+
+void D3D9Client::PushSketchpadNative(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepth, D3D9Pad *pSkp)
+{
+	if (pColor) {
+		PushRenderTarget(pColor, pDepth, RENDERPASS_SKETCHPAD);
 		RenderStack.front().pSkp = pSkp;
 	}
 }
@@ -1235,6 +1258,20 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 
 // ==============================================================
 
+DEVMESHHANDLE D3D9Client::GetDevMesh(MESHHANDLE hMesh)
+{
+	const D3D9Mesh *pDevMesh = meshmgr->GetMesh(hMesh);
+	if (!pDevMesh) {
+		meshmgr->StoreMesh(hMesh, "GetDevMesh()");
+		pDevMesh = meshmgr->GetMesh(hMesh);
+	}
+
+	// Create a new Instance from a template
+	return DEVMESHHANDLE(new D3D9Mesh(hMesh, *pDevMesh));
+}
+
+// ==============================================================
+
 bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDLE surf)
 {
 	_TRACE;
@@ -1285,7 +1322,7 @@ bool D3D9Client::clbkSetMeshProperty(DEVMESHHANDLE hMesh, DWORD prop, DWORD valu
 }
 
 // ==============================================================
-// Returns a mesh for a visual
+// Returns a dev-mesh for a visual
 
 MESHHANDLE D3D9Client::clbkGetMesh(VISHANDLE vis, UINT idx)
 {
@@ -1435,14 +1472,31 @@ void D3D9Client::EmergencyShutdown()
 
 
 // ==============================================================
+//
+void D3D9Client::PickTerrain(DWORD uMsg, int xpos, int ypos)
+{
+	bool bUD = (uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONUP || uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN);
+	bool bPrs = IsGenericProcEnabled(GENERICPROC_PICK_TERRAIN) && bUD;
+	bool bHov = IsGenericProcEnabled(GENERICPROC_HOVER_TERRAIN) && (uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL);
+
+	if (bPrs || bHov) {
+		PickGround pg = ScanScreen(xpos, ypos);
+		pg.msg = uMsg;
+		if (bPrs) MakeGenericProcCall(GENERICPROC_PICK_TERRAIN, sizeof(PickGround), &pg);
+		if (bHov) MakeGenericProcCall(GENERICPROC_HOVER_TERRAIN, sizeof(PickGround), &pg);
+	}
+}
+
+
+// ==============================================================
 // Message handler for render window
 
 LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	_TRACE;
-
 	static bool bTrackMouse = false;
 	static short xpos=0, ypos=0;
+
+	D3D9Pick pick;
 
 	if (hRenderWnd!=hWnd && uMsg!= WM_NCDESTROY) {
 		LogErr("Invalid Window !! RenderWndProc() called after calling clbkDestroyRenderWindow() uMsg=0x%X", uMsg);
@@ -1452,186 +1506,203 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	if (bRunning && DebugControls::IsActive()) {
 		// Must update camera to correspond MAIN_SCENE due to Pick() function,
 		// because env-maps have altered camera settings
-		GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
+		// GetScene()->UpdateCameraFromOrbiter(RENDERPASS_PICKSCENE);
+		// Obsolete: since moving env/cam stuff in pre-scene
 	}
 
 	if (pWM) if (pWM->MainWindowProc(hWnd, uMsg, wParam, lParam)) return 0;
-	
 
-	__TRY {
 
-		switch (uMsg) {
+	switch (uMsg)
+	{
+		case WM_MOUSELEAVE:
+		{
+			if (bTrackMouse && bRunning) GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
+			return 0;
+		}
 
-			case WM_MOUSELEAVE:
-			{
-				if (bTrackMouse && bRunning) GraphicsClient::RenderWndProc (hWnd, WM_LBUTTONUP, 0, 0);
-				return 0;
+		case WM_MBUTTONDOWN:
+		{
+			break;
+		}
+
+		case WM_RBUTTONUP:
+		case WM_RBUTTONDOWN:
+		{
+			int xp = GET_X_LPARAM(lParam);
+			int yp = GET_Y_LPARAM(lParam);
+			PickTerrain(uMsg, xp, yp);
+			break;
+		}
+
+
+		case WM_LBUTTONDOWN:
+		{
+			bTrackMouse = true;
+			xpos = GET_X_LPARAM(lParam);
+			ypos = GET_Y_LPARAM(lParam);
+
+			TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
+			TrackMouseEvent(&te);
+
+			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+			bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+			bool bPckVsl = IsGenericProcEnabled(GENERICPROC_PICK_VESSEL);
+
+			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl)) {
+				pick = GetScene()->PickScene(xpos, ypos);
+				if (bPckVsl) {
+					PickData out;
+					out.hVessel = pick.vObj->GetObjectA();
+					out.mesh = MESHHANDLE(pick.pMesh);
+					out.group = pick.group;
+					out.pos = _FV(pick.pos);
+					out.normal = _FV(pick.normal);
+					out.dist = pick.dist;
+					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(PickData), &out);
+				}
 			}
 
-			case WM_MBUTTONDOWN:
-			{
+			PickTerrain(uMsg, xpos, ypos);
+
+			// No Debug Controls
+			if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
+
+				if (!pick.pMesh) break;
+
+				OBJHANDLE hObj = pick.vObj->Object();
+				if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
+					oapiSetFocusObject(hObj);
+				}
+
 				break;
 			}
 
-			case WM_LBUTTONDOWN:
-			{
-				bTrackMouse = true;
-				xpos = GET_X_LPARAM(lParam);
-				ypos = GET_Y_LPARAM(lParam);
-				TRACKMOUSEEVENT te; te.cbSize = sizeof(TRACKMOUSEEVENT); te.dwFlags = TME_LEAVE; te.hwndTrack = hRenderWnd;
-				TrackMouseEvent(&te);
+			// With Debug Controls
+			if (DebugControls::IsActive()) {
 
-				bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-				bool bCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 
-				// No Debug Controls
-				if (bShift && bCtrl && !DebugControls::IsActive() && !oapiCameraInternal()) {
-
-					D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
+				if (flags&DBG_FLAGS_PICK) {
 
 					if (!pick.pMesh) break;
 
-					OBJHANDLE hObj = pick.vObj->Object();
-					if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
-						oapiSetFocusObject(hObj);
-					}
-
-					break;
-				}
-
-				// With Debug Controls
-				if (DebugControls::IsActive()) {
-
-					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-
-					if (flags&DBG_FLAGS_PICK) {
-
-						D3D9Pick pick = GetScene()->PickScene(xpos, ypos);
-
-						if (!pick.pMesh) break;
-
-						//sprintf_s(oapiDebugString(),256,"vObj=0x%X, Mesh=0x%X, Grp=%d, Face=%d", pick.vObj, pick.pMesh, pick.group, pick.face);
-
-						if (bShift && bCtrl) {
-							OBJHANDLE hObj = pick.vObj->Object();
-							if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
-								oapiSetFocusObject(hObj);
-								break;
-							}
-						}
-						else if (pick.group>=0) {
-							DebugControls::SetVisual(pick.vObj);
-							DebugControls::SelectMesh(pick.pMesh);
-							DebugControls::SelectGroup(pick.group);
-							DebugControls::SetGroupHighlight(true);
-							DebugControls::SetPickPos(pick.pos);
+					if (bShift && bCtrl) {
+						OBJHANDLE hObj = pick.vObj->Object();
+						if (oapiGetObjectType(hObj)==OBJTP_VESSEL) {
+							oapiSetFocusObject(hObj);
+							break;
 						}
 					}
-				}
-
-				break;
-			}
-
-			case WM_LBUTTONUP:
-			{
-				if (DebugControls::IsActive()) {
-					DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
-					if (flags&DBG_FLAGS_PICK) {
-						DebugControls::SetGroupHighlight(false);
+					else if (pick.group>=0) {
+						DebugControls::SetVisual(pick.vObj);
+						DebugControls::SelectMesh(pick.pMesh);
+						DebugControls::SelectGroup(pick.group);
+						DebugControls::SetGroupHighlight(true);
+						DebugControls::SetPickPos(pick.pos);
 					}
 				}
-				bTrackMouse = false;
-				break;
 			}
 
-			case WM_KEYDOWN:
-			{
-				if (DebugControls::IsActive()) {
-					if (wParam == 'F') {
-						if (bFreeze) bFreezeEnable = bFreeze = false;
-						else bFreezeEnable = true;
-					}
-				}
-				bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
-				bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
-				if (wParam=='C' && bShift && bCtrl) bControlPanel = !bControlPanel;
-				break;
-			}
-
-			case WM_MOUSEWHEEL:
-			{
-				if (DebugControls::IsActive()) {
-					short d = GET_WHEEL_DELTA_WPARAM(wParam);
-					if (d<-1) d=-1;
-					if (d>1) d=1;
-					double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
-					speed *= (DebugControls::GetVisualSize()/100.0);
-					if (scene->CameraPan(_V(0,0,double(d))*2.0, speed)) return 0;
-				}
-			}
-
-			case WM_MOUSEMOVE:
-				if (DebugControls::IsActive()) {
-
-					double x = double(GET_X_LPARAM(lParam) - xpos);
-					double y = double(GET_Y_LPARAM(lParam) - ypos);
-					xpos = GET_X_LPARAM(lParam);
-					ypos = GET_Y_LPARAM(lParam);
-
-					if (bTrackMouse) {
-						double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
-						speed *= (DebugControls::GetVisualSize()/100.0);
-						if (scene->CameraPan(_V(-x,y,0)*0.05, speed)) return 0;
-					}
-
-					//GetScene()->PickSurface(xpos, ypos);
-				}
-				break;
-
-			case WM_MOVE:
-				// If in windowed mode, move the Framework's window
-				break;
-
-			case WM_SYSCOMMAND:
-				switch (wParam) {
-					case SC_KEYMENU:
-						// trap Alt system keys
-						return 1;
-					case SC_MOVE:
-					case SC_SIZE:
-					case SC_MAXIMIZE:
-					case SC_MONITORPOWER:
-						// Prevent moving/sizing and power loss in fullscreen mode
-						if (bFullscreen) return 1;
-						break;
-				}
-				break;
-
-			case WM_SYSKEYUP:
-				if (bFullscreen) return 0;  // trap Alt-key
-				break;
-
+			break;
 		}
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("D3D9Client::RenderWndProc(hWnd=0x%X, uMsg=%u, wParam=%u, lParam=%u)",hWnd, uMsg, wParam, lParam);
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+
+		case WM_LBUTTONUP:
+		{
+			int xp = GET_X_LPARAM(lParam);
+			int yp = GET_Y_LPARAM(lParam);
+
+			PickTerrain(uMsg, xp, yp);
+
+			if (DebugControls::IsActive()) {
+				DWORD flags = *(DWORD*)GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+				if (flags&DBG_FLAGS_PICK) {
+					DebugControls::SetGroupHighlight(false);
+				}
+			}
+			bTrackMouse = false;
+			break;
+		}
+
+		case WM_KEYDOWN:
+		{
+			if (DebugControls::IsActive()) {
+				if (wParam == 'F') {
+					if (bFreeze) bFreezeEnable = bFreeze = false;
+					else bFreezeEnable = true;
+				}
+			}
+			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
+			bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
+			if (wParam=='C' && bShift && bCtrl) bControlPanel = !bControlPanel;
+			break;
+		}
+
+		case WM_MOUSEWHEEL:
+		{
+			if (DebugControls::IsActive()) {
+				short d = GET_WHEEL_DELTA_WPARAM(wParam);
+				if (d<-1) d=-1;
+				if (d>1) d=1;
+				double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
+				speed *= (DebugControls::GetVisualSize()/100.0);
+				if (scene->CameraPan(_V(0,0,double(d))*2.0, speed)) return 0;
+			}
+
+			PickTerrain(uMsg, xpos, ypos);
+			break;
+		}
+
+		case WM_MOUSEMOVE:
+
+			if (DebugControls::IsActive())
+			{
+
+				double x = double(GET_X_LPARAM(lParam) - xpos);
+				double y = double(GET_Y_LPARAM(lParam) - ypos);
+				xpos = GET_X_LPARAM(lParam);
+				ypos = GET_Y_LPARAM(lParam);
+
+				if (bTrackMouse) {
+					double speed = *(double *)GetConfigParam(CFGPRM_GETCAMERASPEED);
+					speed *= (DebugControls::GetVisualSize() / 100.0);
+					if (scene->CameraPan(_V(-x, y, 0)*0.05, speed)) return 0;
+				}
+			}
+
+			xpos = GET_X_LPARAM(lParam);
+			ypos = GET_Y_LPARAM(lParam);
+
+			PickTerrain(uMsg, xpos, ypos);
+
+			break;
+
+		case WM_MOVE:
+			// If in windowed mode, move the Framework's window
+			break;
+
+		case WM_SYSCOMMAND:
+			switch (wParam) {
+				case SC_KEYMENU:
+					// trap Alt system keys
+					return 1;
+				case SC_MOVE:
+				case SC_SIZE:
+				case SC_MAXIMIZE:
+				case SC_MONITORPOWER:
+					// Prevent moving/sizing and power loss in fullscreen mode
+					if (bFullscreen) return 1;
+					break;
+			}
+			break;
+
+		case WM_SYSKEYUP:
+			if (bFullscreen) return 0;  // trap Alt-key
+			break;
 	}
 
-	__TRY {
-		if (!bRunning && uMsg>=0x0200 && uMsg<=0x020E) return 0;
-		return GraphicsClient::RenderWndProc (hWnd, uMsg, wParam, lParam);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("GraphicsClient::RenderWndProc(hWnd=0x%X, uMsg=%u, wParam=%u, lParam=%u)",hWnd, uMsg, wParam, lParam);
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
-
-	return 0;
+	if (!bRunning && uMsg>=0x0200 && uMsg<=0x020E) return 0;
+	return GraphicsClient::RenderWndProc (hWnd, uMsg, wParam, lParam);
 }
 
 
@@ -1852,6 +1923,15 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, fname);
 	surf->LoadSurface(fname, attrib);
 	return surf;
+}
+
+// ==============================================================
+
+HBITMAP D3D9Client::gcReadImageFromFile(const char *_path)
+{
+	char path[MAX_PATH];
+	sprintf_s(path, sizeof(path), "%s\\%s", OapiExtension::GetTextureDir(), _path);
+	return ReadImageFromFile(path);
 }
 
 // ==============================================================
@@ -2347,10 +2427,22 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 		if (it->id == id) {
 			D3D9Pad *pSkp2 = (D3D9Pad *)pSkp;
 			pSkp2->LoadDefaults();
+			if (id == RENDERPROC_EXTERIOR || id == RENDERPROC_PLANETARIUM) {
+				pSkp2->SetViewMode(Sketchpad2::USER);
+			}
 			pSkp2->SetViewMatrix((FMATRIX4 *)pV);
 			pSkp2->SetProjectionMatrix((FMATRIX4 *)pP);
 			it->proc(pSkp, it->pParam);
 		}
+	}
+}
+
+// =======================================================================
+
+void D3D9Client::MakeGenericProcCall(DWORD id, int iUser, void *pUser) const
+{
+	for (auto it = GenericProcs.cbegin(); it != GenericProcs.cend(); ++it) {
+		if (it->id == id) it->proc(iUser, pUser, it->pParam);
 	}
 }
 
@@ -2363,14 +2455,46 @@ bool D3D9Client::RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam)
 		RenderProcs.push_back(data);
 		return true;
 	}
-	else { // unregister (remove)
-		for (auto it = RenderProcs.cbegin(); it != RenderProcs.cend(); ++it) {
+	else { // unregister, mark as unused (remove later)
+		for (auto it = RenderProcs.begin(); it != RenderProcs.end(); ++it) {
 			if (it->proc == proc) {
-				RenderProcs.erase(it);
+				it->id = 0;
+				it->pParam = NULL;
+				it->proc = NULL;
 				return true;
 			}
 		}
 	}
+	return false;
+}
+
+// =======================================================================
+
+bool D3D9Client::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
+{
+	if (id) { // register (add)
+		GenericProcData data = { proc, pParam, id };
+		GenericProcs.push_back(data);
+		return true;
+	}
+	else { // unregister, mark as unused (remove later)
+		for (auto it = GenericProcs.begin(); it != GenericProcs.end(); ++it) {
+			if (it->proc == proc) {
+				it->id = 0;
+				it->pParam = NULL;
+				it->proc = NULL;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+// =======================================================================
+
+bool D3D9Client::IsGenericProcEnabled(DWORD id) const
+{
+	for each (auto val in GenericProcs) if (val.id == id) return true;
 	return false;
 }
 
@@ -2584,8 +2708,6 @@ double sketching_time;
 //
 oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 {
-	_TRACE;
-	oapi::Sketchpad *pSkp = NULL;
 
 	if (GetCurrentThread() != hMainThread) {
 		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
@@ -2617,14 +2739,14 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 		pPad->BeginDrawing();
 		pPad->LoadDefaults();
 
-		pSkp = pPad;
+		return pPad;
 	}
 	else {
 		HDC hDC = SURFACE(surf)->GetDC();
-		if (hDC) pSkp = new GDIPad(surf, hDC);
+		if (hDC) return new GDIPad(surf, hDC);
 	}
 
-	return pSkp;
+	return NULL;
 }
 
 // =======================================================================
@@ -2639,6 +2761,8 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 	if (SURFACE(hSrf)->IsRenderTarget()) {
 
 		D3D9Pad *pPad = ((D3D9Pad*)sp);
+
+		assert(!pPad->IsNative());
 
 		if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
 
@@ -2660,6 +2784,92 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 	}
 
 	sketching_time = D3D9GetTime() - sketching_time;
+}
+
+// =======================================================================
+
+oapi::Sketchpad *D3D9Client::GetSketchpadNative(HSURFNATIVE hNat, HSURFNATIVE hDep)
+{
+
+	D3DSURFACE_DESC	desc;
+	LPDIRECT3DSURFACE9 pSurf = NULL;
+	LPDIRECT3DTEXTURE9 pTex = NULL;
+
+	if (GetCurrentThread() != hMainThread) {
+		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
+		return NULL;
+	}
+
+	if (hNat == NULL) hNat = pBackBuffer;
+
+	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hNat);
+
+	if (pResource->GetType() == D3DRTYPE_SURFACE) {
+		pSurf = static_cast<LPDIRECT3DSURFACE9>(hNat);
+		pSurf->GetDesc(&desc);
+	}
+
+	if (pResource->GetType() == D3DRTYPE_TEXTURE) {
+		pTex = static_cast<LPDIRECT3DTEXTURE9>(hNat);
+		pTex->GetLevelDesc(0, &desc);
+		pTex->GetSurfaceLevel(0, &pSurf);
+	}
+
+	if (desc.Usage & D3DUSAGE_RENDERTARGET)
+	{
+		// Get Pooled Sketchpad
+		D3D9Pad *pPad = new D3D9Pad("GetSketchpadNative", hNat);
+
+		// Get Current interface if any
+		D3D9Pad *pCur = GetTopInterface();
+
+		// Do we have an existing SketchPad interface in use
+		if (pCur) {
+			if (pCur->GetSurface() == hNat) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
+			pCur->EndDrawing();	// Put the current one in hold
+		}
+
+		// Push a new Sketchpad onto a stack
+		PushSketchpadNative(pSurf, static_cast<LPDIRECT3DSURFACE9>(hDep), pPad);
+
+		pPad->BeginDrawing();
+		pPad->LoadDefaults();
+
+		return pPad;
+	}
+	else {
+		if (pTex) pSurf->Release();
+	}
+
+	return NULL;
+}
+
+// =======================================================================
+
+void D3D9Client::ReleaseSketchpadNative(Sketchpad *sp)
+{
+	if (!sp) return;
+
+	D3D9Pad *pPad = static_cast<D3D9Pad*>(sp);
+
+	assert(pPad->IsNative());
+
+	if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
+
+	pPad->EndDrawing();
+
+	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(pPad->GetSurface());
+
+	// Must release top render target if acquired for a texture due to "pTex->GetSurfaceLevel(0, &pSurf)"
+	if (pResource->GetType() == D3DRTYPE_TEXTURE) GetTopRenderTarget()->Release();
+
+	PopRenderTargets();
+
+	// Do we have an old interface ?
+	D3D9Pad *pOld = GetTopInterface();
+	if (pOld) pOld->BeginDrawing();	// Continue with the old one
+
+	delete pPad;
 }
 
 // =======================================================================

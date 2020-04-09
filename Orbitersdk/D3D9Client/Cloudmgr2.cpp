@@ -89,7 +89,7 @@ void CloudTile::Load ()
 	//	mesh = CreateMesh_tripatch (TILE_PATCHRES, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (res, res, 0, 1.0, mean_elev, &texrange, shift_origin, &vtxshift);
+		mesh = CreateMesh_quadpatch (res, res, 0, mean_elev, &texrange, shift_origin, &vtxshift);
 	}
 }
 
@@ -117,6 +117,13 @@ void CloudTile::Render ()
 
 	// -------------------------------------------------------------------
 	// render surface mesh
+
+
+	// While viewing the Moon/Brighton Beach. Earth's cloudlayer rendering throwed through D3DX9_43.dll: 
+	// Exception thrown at 0x759635D2 (KernelBase.dll) in orbiter.exe: 0x000006BA : The RPC server is unavailable.
+	// Exception thrown at 0x759635D2 (KernelBase.dll) in orbiter.exe: 0xC0000002 : The requested operation is not implemented.
+	// Unhandled exception at 0x759635D2 (KernelBase.dll) in orbiter.exe : 0xC0000002 : The requested operation is not implemented.
+	// What is this, why ?
 
 	HR(Shader->BeginPass(0));
 	pDev->SetVertexDeclaration(pPatchVertexDecl);
@@ -244,7 +251,7 @@ void TileManager2<CloudTile>::InitHasIndividualFiles()
 // -----------------------------------------------------------------------
 
 template<>
-const Tile * TileManager2<CloudTile>::SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const
+Tile * TileManager2<CloudTile>::SearchTile (double lng, double lat, int maxlvl, bool bOwntex) const
 {
 	if (lng<0) return SearchTileSub(&tiletree[0], lng, lat, maxlvl, bOwntex);
 	else	   return SearchTileSub(&tiletree[1], lng, lat, maxlvl, bOwntex);

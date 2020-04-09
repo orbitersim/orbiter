@@ -40,9 +40,6 @@
 #define MAX_SCENE_LIGHTS	24
 #define MAX_MESH_LIGHTS		8	// Must match the setting in D3D9Client.fx
 
-#define OAPISURFACE_VIDEOMEMORY	 0x8000
-
-
 #ifdef _NVAPI_H
 extern StereoHandle	pStereoHandle;
 #endif
@@ -171,10 +168,7 @@ public:
 	~D3D9Client ();
 
 
-	HBITMAP gcReadImageFromFile(const char *path)
-	{
-		return ReadImageFromFile(path);
-	}
+	HBITMAP gcReadImageFromFile(const char *path);
 
 	/**
 	 * \brief Perform any one-time setup tasks.
@@ -375,7 +369,7 @@ public:
 	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context);
 
 	/**
-	 * \brief Return a mesh handle for a visual, defined by its index
+	 * \brief Return a DEVMESHHANDLE handle for a visual, defined by its index. (! Return type incorrect !)
 	 * \param vis visual identifier
 	 * \param idx mesh index (>= 0)
 	 * \return Mesh handle (client-specific)
@@ -896,6 +890,7 @@ public:
 	 * \sa Sketchpad, clbkReleaseSketchpad
 	 */
 	Sketchpad *clbkGetSketchpad (SURFHANDLE surf);
+	Sketchpad *GetSketchpadNative (HSURFNATIVE hNat, HSURFNATIVE hDep = NULL);
 
 	/**
 	 * \brief Release a drawing object.
@@ -904,6 +899,7 @@ public:
 	 * \sa Sketchpad, clbkGetSketchpad
 	 */
 	void clbkReleaseSketchpad (Sketchpad *sp);
+	void ReleaseSketchpadNative (Sketchpad *sp);
 
 	/**
 	 * \brief Create a font resource for 2-D drawing.
@@ -1018,10 +1014,16 @@ public:
 	LPDIRECT3DSURFACE9	GetDepthStencil() const { return pDepthStencil; }
 	const void *		GetConfigParam (DWORD paramtype) const;
 	bool				RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam = NULL);
+	bool				RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam = NULL);
 	void				MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, LPD3DXMATRIX pP);
+	void				MakeGenericProcCall(DWORD id, int iUser, void *pUser) const;
+	bool				IsGenericProcEnabled(DWORD id) const;
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
 	void				clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf);
 	void				HackFriendlyHack();
+	void				PickTerrain(DWORD uMsg, int xpos, int ypos);
+	DEVMESHHANDLE		GetDevMesh(MESHHANDLE hMesh);
+
 
 	// ==================================================================
 	//
@@ -1029,6 +1031,7 @@ public:
 	void				EndScene();
 	bool				IsInScene() const { return bRendering; }
 	void				PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp);
+	void				PushSketchpadNative(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepth, D3D9Pad *pSkp);
 	void				PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL, int code = 0);
 	void				AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL);
 	void				PopRenderTargets();
@@ -1294,8 +1297,10 @@ private:
 	D3DXMATRIX ident;
 
 	struct RenderProcData;
+	struct GenericProcData;
 
 	std::vector<RenderProcData> RenderProcs;
+	std::vector<GenericProcData> GenericProcs;
 	std::list<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;

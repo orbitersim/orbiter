@@ -45,7 +45,6 @@ typedef HPOLY (OGCIFN *__gcCreatePoly)(HPOLY hPoly, const FVECTOR2 *pt, int npt,
 typedef void (OGCIFN *__gcDeletePoly)(HPOLY hPoly);
 typedef DWORD (OGCIFN *__gcGetTextLength)(oapi::Font *hFont, const char *pText, int len);
 typedef DWORD (OGCIFN *__gcGetCharIndexByPosition)(oapi::Font *hFont, const char *pText, int pos, int len);
-typedef HPOLY (OGCIFN *__gcCreateTriangles)(HPOLY hPoly, const TriangleVtx *pt, int npt, DWORD flags);
 
 // Mesh interface functions
 typedef int	(OGCIFN *__gcMeshMaterial)(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
@@ -82,7 +81,6 @@ __gcGetCoreAPI _gcGetCoreAPI = NULL;
 __gcGetRenderWindow _gcGetRenderWindow = NULL;
 __gcGetTextLength _gcGetTextLength = NULL;
 __gcGetCharIndexByPosition _gcGetCharIndexByPosition = NULL;
-__gcCreateTriangles _gcCreateTriangles = NULL;
 
 
 // ====================================================================================================
@@ -107,7 +105,6 @@ bool PostInit(HMODULE hClient)
 	_gcLoadSketchMesh = (__gcLoadSketchMesh)GetProcAddress(hClient, "gcLoadSketchMesh");
 	_gcDeleteSketchMesh = (__gcDeleteSketchMesh)GetProcAddress(hClient, "gcDeleteSketchMesh");
 	_gcCreatePoly = (__gcCreatePoly)GetProcAddress(hClient, "gcCreatePoly");
-	_gcCreateTriangles = (__gcCreateTriangles)GetProcAddress(hClient, "gcCreateTriangles");
 	_gcDeletePoly = (__gcDeletePoly)GetProcAddress(hClient, "gcDeletePoly");
 	_gcGetTextLength = (__gcGetTextLength)GetProcAddress(hClient, "gcGetTextLength");
 	_gcGetCharIndexByPosition = (__gcGetCharIndexByPosition)GetProcAddress(hClient, "gcGetCharIndexByPosition");
@@ -264,14 +261,6 @@ void gcDeleteSketchMesh(SKETCHMESH hMesh)
 HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 {
 	if (_gcCreatePoly) return _gcCreatePoly(hPoly, pt, npt, flags);
-	return NULL;
-}
-
-// ====================================================================================================
-//
-HPOLY gcCreateTriangles(HPOLY hPoly, const TriangleVtx *pt, int npt, DWORD flags)
-{
-	if (_gcCreateTriangles) return _gcCreateTriangles(hPoly, pt, npt, flags);
 	return NULL;
 }
 

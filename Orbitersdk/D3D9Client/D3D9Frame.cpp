@@ -179,6 +179,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			// True Fullscreen
 			case 0:
 			{
+				dwDisplayMode = 0;
 				D3DDISPLAYMODE mode;
 				if (Adapter<pD3D->GetAdapterCount()) {
 					if (Mode<pD3D->GetAdapterModeCount(Adapter, D3DFMT_X8R8G8B8)) {
@@ -193,6 +194,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			// Fullscreen Window
 			case 1:
 			{
+				dwDisplayMode = 1;
 				int x = GetSystemMetrics(SM_CXSCREEN);
 				int y = GetSystemMetrics(SM_CYSCREEN);
 				if (vData->pageflip) x = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -205,6 +207,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 			// Fullscreen Window with Taskbar
 			case 2:
 			{
+				dwDisplayMode = 1;
 				RECT rect;
 				SystemParametersInfo(SPI_GETWORKAREA,0,&rect,0);
 				SetWindowLongA(hWnd, GWL_STYLE, WS_CLIPCHILDREN | WS_VISIBLE);
@@ -217,6 +220,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		}
 	}
 	else {
+		dwDisplayMode = 2;
 		LONG x = GetWindowLongA(hWnd, GWL_STYLE);
 		SetWindowLongA(hWnd, GWL_STYLE, x | WS_CLIPCHILDREN | WS_VISIBLE);
 	}
@@ -316,6 +320,14 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 		LogOapi("Vertex Texture.......... : No");
 	}
 
+	if (caps.PrimitiveMiscCaps & D3DPMISCCAPS_SEPARATEALPHABLEND) {
+		LogOapi("Separate AlphaBlend..... : Yes");
+	}
+	else {
+		LogOapi("Separate AlphaBlend..... : No");
+	}
+
+
 	// Check shadow mapping support
 	//
 	bool bShadowMap = true;
@@ -368,6 +380,7 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	// Check (Log) whether orbiter runs on WINE
 	//
 	LogOapi("Runs under WINE......... : %s", OapiExtension::RunsUnderWINE() ? "Yes" : "No");
+	LogOapi("D3D9Build Date.......... : %u", BuildDate());
 
 	// Log some locale information
 	//

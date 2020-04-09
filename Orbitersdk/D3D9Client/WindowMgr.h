@@ -27,29 +27,11 @@
 #include <Windows.h>
 #include <gcConst.h>
 #include <vector>
-#include <string>
 #include <map>
 
 using namespace std;
 
 extern class WindowManager *g_pWM;
-
-
-namespace gcGUI {
-	// -----------------------------
-	static const int INACTIVE = 0;
-	static const int FLOAT = 1;
-	static const int LEFT = 2;
-	static const int RIGHT = 3;
-	// -----------------------------
-	static const int CHILD = 1;	// Child nodes from the same parent
-	static const int ROOT = 2;	// Root node and possiply it's children
-	static const int MULTI = 3;	// Mixture of many things 
-	// -----------------------------
-	static const int BM_TITLE = 0;
-	static const int BM_SUBTITLE = 1;
-	static const int BM_ICONS = 2;
-};
 
 class SideBar;
 class Node;
@@ -75,8 +57,12 @@ public:
 	void		PaintIcon(HDC hDC, int x, int y, int id);
 	int			CellSize();
 	SideBar *	GetSideBar() const { return pSB; }
-	const char *Title() const { return Label; }
+	string 		Title() const { return Label; }
+	void		ReColorize(DWORD color);
+	void		SetApp(gcGUIApp *pApp);
+	bool		IsRoot() const { return pParent == 0; }
 
+	gcGUIApp *  pApp;
 	SideBar *	pSB;
 	Node *		pParent;	// Parent node for subsections or NULL for Application root node
 	HBITMAP		hBmp;		// Titlebar graphics
@@ -87,7 +73,7 @@ public:
 	RECT		crect;		// Close button rect
 	bool		bOpen;		// Open or collapsed
 	bool		bClose;		// Display close window icon
-	char		Label[32];	// Titlebar label
+	char *		Label;		// Titlebar label
 };
 
 
@@ -101,7 +87,7 @@ public:
 
 	LRESULT		SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	bool		IsEmpty() const { return wList.size() == 0; }
-	bool		IsFloater() const { return state == gcGUI::FLOAT; }
+	bool		IsFloater() const { return state == gcGUI::DS_FLOAT; }
 	bool		IsInactive() const { return state == gcGUI::INACTIVE; }
 	void		SetState(int x) { state = x; }
 	void		Open(bool bOpen);
@@ -119,7 +105,6 @@ public:
 	int			ComputeLength();
 	int			GetWidth() const { return width; }
 	int			GetHeight() const { return height; }
-	int			GetSourceType();
 	int			GetStyle() const { return state; }
 	void		RescaleWindow();
 	void		ResetWindow(int x, int y);
@@ -132,6 +117,8 @@ public:
 	bool		Apply();
 	Node *		GetTopNode();
 	Node *		FindClosest(vector<Node*> &vis, Node *pPar, int yval);
+	Node *		FindNode(HWND hDlg);
+	DWORD		GetAutoColor();
 	
 	WindowManager *GetWM() const { return pMgr; }
 
@@ -148,11 +135,12 @@ private:
 	int			xref, ypos, width, height, wndlen, rollpos, title_height;
 	Node *		dnNode;
 	Node *		dnClose;
+	int			cidx;
 };
 
 
-struct Conf {
-
+struct Conf
+{
 	int txt_main_x;
 	int txt_main_y;
 	int txt_main_size;
@@ -177,13 +165,14 @@ struct Conf {
 };
 
 
-class WindowManager
+class WindowManager : public gcGUIBase
 {
 public:
 
 
 				WindowManager(HWND hAppMainWindow, HINSTANCE hInst, bool bWindowed);
 				~WindowManager();
+
 
 	// ===============================================================================================
 	//
@@ -198,6 +187,9 @@ public:
 	void		CloseWindow(Node *pAp);
 	bool		IsWindowed() const { return bWin; }
 	bool		IsOK() const;
+	bool		DoesExist(Node *pn);
+	void		UpdateStatus(HNODE hNode);
+
 
 	// ===============================================================================================
 	//
@@ -205,6 +197,7 @@ public:
 	HFONT		GetAppTitleFont() const { return hAppFont; }
 	HFONT		GetSubTitleFont() const { return hSubFont; }
 	
+
 	// ===============================================================================================
 	//
 	SideBar *	StartDrag(Node *pAN, int x, int y);
@@ -217,13 +210,27 @@ public:
 	SideBar *	GetDragSource() const { return sbDragSrc; }
 	SideBar *	FindDestination();
 	tInsert	*	InsertList() { return &qInsert; }
+
+
+
 	// ===============================================================================================
-	//
-	HNODE		RegisterApplication(const char *title, HWND hDlg, DWORD color, DWORD flags);
-	HNODE		RegisterSubsection(HNODE hNode, const char *title, HWND hDlg, DWORD color);
-	void		DisplayWindow(HNODE hNode, bool bShow = true);
-	void		OpenNode(HNODE hNode, bool bOpen = true);
+	//			gcGUIBase virtual overrides
+	// ===============================================================================================
+
+	HNODE		RegisterApplication(gcGUIApp *pApp, const char *label, HWND hDlg, DWORD docked, DWORD color);
+	HNODE		RegisterSubsection(HNODE hNode, const char *label, HWND hDlg, DWORD color);
+	void		UpdateStatus(HNODE hNode, const char *label, HWND hDlg, DWORD color);
 	bool		UnRegister(HNODE hNode);
+	bool		IsOpen(HNODE hNode);
+	void		OpenNode(HNODE hNode, bool bOpen = true);
+	void		DisplayWindow(HNODE hNode, bool bShow = true);
+	HFONT		GetFont(int id);
+	HNODE		GetNode(HWND hDlg);
+	HWND		GetDialog(HNODE hNode);
+	void		UpdateSize(HWND hDlg);
+	void		UnregisterApp(gcGUIApp *pApp);
+
+	// ===============================================================================================
 
 	Conf		cfg;
 

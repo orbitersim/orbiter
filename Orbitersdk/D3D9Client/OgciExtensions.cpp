@@ -11,6 +11,13 @@
 #include "VVessel.h"
 
 extern D3D9Client *g_client;
+extern WindowManager *g_pWM;
+
+
+DLLCLBK gcGUIBase * gcGetGUICore()
+{
+	return dynamic_cast<gcGUIBase *>(g_pWM);
+}
 
 
 DLLCLBK gcCore * gcGetCoreAPI()
@@ -92,7 +99,7 @@ DLLCLBK HPOLY gcCreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags
 }
 
 
-DLLCLBK HPOLY gcCreateTriangles(HPOLY hPoly, const TriangleVtx *pt, int npt, DWORD flags)
+DLLCLBK HPOLY gcCreateTriangles(HPOLY hPoly, const gcCore::TriangleVtx *pt, int npt, DWORD flags)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 	if (!hPoly) return new D3D9Triangle(pDev, pt, npt, flags);

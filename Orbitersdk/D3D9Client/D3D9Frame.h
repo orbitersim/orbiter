@@ -66,6 +66,7 @@ private:
     DWORD                  Adapter;
     DWORD                  Mode;
     DWORD                  MultiSample;
+	DWORD				   dwDisplayMode;
     LPDIRECT3DSURFACE9     pRenderTarget;
     D3D9ClientSurface *    pBackBuffer;
 	D3DPRESENT_PARAMETERS  d3dPP;
@@ -99,6 +100,9 @@ public:
     inline const D3DCAPS9 *    GetCaps() const                  { return &caps; }
     inline BOOL                HasVertexTextureSup() const      { return bVertexTexture; }
     inline BOOL                GetVSync() const                 { return (bNoVSync==FALSE); }
+
+	// GetDisplayMode 0=True Fullscreen, 1=Fullscreen Window, 2=Windowed
+	inline DWORD			   GetDisplayMode() const			{ return dwDisplayMode; }
 
     // Creates the Framework
     HRESULT Initialize(HWND hWnd, struct oapi::GraphicsClient::VIDEODATA *vData);

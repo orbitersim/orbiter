@@ -52,12 +52,13 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
 	, scn( (Scene *)scene) // should be const!
 	, sunapprad()
 	, sundst   ()
+	, cdist    ()
+	, ctgtdst  ()
 	, hPlanet (NULL)
 	, lng(0), lat(0)
 {
 	_TRACE;
 	D3DXMatrixIdentity(&mWorld);
-	cdist = 0.0;
 	if (_hObj) size = oapiGetSize(_hObj);
 	else size = 0;
 	dmWorld = identity4();

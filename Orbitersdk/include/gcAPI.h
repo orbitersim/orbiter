@@ -284,7 +284,7 @@ HPOLY			gcCreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, DWORD flags
 				* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
 				* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)	
 				*/
-HPOLY			gcCreateTriangles(HPOLY hPoly, const oapi::TriangleVtx *pt, int npt, DWORD flags);
+HPOLY			gcCreateTriangles(HPOLY hPoly, const gcCore::TriangleVtx *pt, int npt, DWORD flags);
 
 
 				/**

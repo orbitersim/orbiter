@@ -218,6 +218,7 @@ public:
 	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal = false, bool bListExists = false);
 
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
+	void RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld);
 
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
@@ -263,8 +264,12 @@ public:
 	 */
 	double GetObjectAppRad2(OBJHANDLE hObj) const;
 
+	// Picking Functions ============================================================================================================
+	//
+	D3DXVECTOR3		GetPickingRay(short x, short y);
 	D3D9Pick		PickScene(short xpos, short ypos);
 	TILEPICK		PickSurface(short xpos, short ypos);
+	D3D9Pick		PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos);
 
 	void			ClearOmitFlags();
 	bool			IsRendering() const { return bRendering; }
@@ -301,8 +306,6 @@ public:
 
 					// Pan Camera in a mesh debugger
 	bool			CameraPan(VECTOR3 pan, double speed);
-
-	D3DXVECTOR3		GetPickingRay(short x, short y);
 
 					// Check if a sphere located in pCnt (relative to cam) with a specified radius is visible in a camera
 	bool			IsVisibleInCamera(D3DXVECTOR3 *pCnt, float radius);

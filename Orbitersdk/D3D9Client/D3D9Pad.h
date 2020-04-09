@@ -96,9 +96,14 @@ struct SkpColor {
 	}
 
 	explicit SkpColor (DWORD c) {
-		if ((c & 0xFF000000) == 0) c |= 0xFF000000;
 		dclr = c;
 		fclr = D3DXCOLOR(c);
+		D3DXCOLORSWAP(&fclr);
+	}
+
+	explicit SkpColor(const FVECTOR4 &c) {
+		dclr = c.dword_argb();
+		fclr.r = c.r; fclr.b = c.g;	fclr.b = c.b; fclr.a = c.a;
 		D3DXCOLORSWAP(&fclr);
 	}
 
@@ -120,7 +125,7 @@ struct SkpVtx {
 	DWORD clr, fnc;
 };
 
-
+// GradientFillRect [only]
 inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 {
 	v.x = float(_x) - 0.5f;
@@ -130,7 +135,7 @@ inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 	v.l = 0.0f;
 }
 
-
+// Fill Rect, Ellipse, Polygon [only]
 inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
 	v.x = float(_x) - 0.5f;
@@ -140,17 +145,17 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 	v.l = 0.0f;
 }
 
-
-inline void SkpVtxII(SkpVtx &v, int _x, int _y, int _tx, int _ty)
+// Copy, Stretch, Colorkey Rect [only]
+inline void SkpVtxII(SkpVtx &v, int _tx, int _ty, int _sx, int _sy)
 {
-	v.x = float(_x) - 0.5f;
-	v.y = float(_y) - 0.5f;
-	v.nx = float(_tx);
-	v.ny = float(_ty);
+	v.x = float(_tx);
+	v.y = float(_ty);
+	v.nx = float(_sx) + 0.5f;
+	v.ny = float(_sy) + 0.5f;
 	v.l = 0.0f;
 };
 
-
+// Pattern Fill [only]
 inline void SkpVtxPF(SkpVtx &v, int _x, int _y, DWORD c)
 {
 	v.x = float(_x) - 0.5f;
@@ -161,16 +166,17 @@ inline void SkpVtxPF(SkpVtx &v, int _x, int _y, DWORD c)
 };
 
 
+// Rotate Rect [only]
 inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 {
-	v.x = _x - 0.5f;
-	v.y = _y - 0.5f;
-	v.nx = float(_tx);
-	v.ny = float(_ty);
+	v.x = _x;
+	v.y = _y;
+	v.nx = float(_tx) + 0.5f;
+	v.ny = float(_ty) + 0.5f;
 	v.l = 0.0f;
 };
 
-
+// D3DTextManager Print Font [only]
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
 	// Note: -0.5f has been substarcted already from x,y data
@@ -217,6 +223,7 @@ public:
 	 * \param s surface handle
 	 */
 	explicit D3D9Pad(SURFHANDLE s, const char *name = NULL);
+	explicit D3D9Pad(const char *name, HSURFNATIVE hSrf);
 	explicit D3D9Pad(const char *name = NULL);
 
 	/**
@@ -526,19 +533,24 @@ public:
 	// ===============================================================================
 
 	const FMATRIX4 *GetColorMatrix();
-	void SetColorMatrix(FMATRIX4 *pMatrix = NULL);
-	void SetBrightness(FVECTOR4 *pBrightness = NULL);
+	void SetColorMatrix(const FMATRIX4 *pMatrix = NULL);
+	void SetBrightness(const FVECTOR4 *pBrightness = NULL);
 	FVECTOR4 GetRenderParam(int param);
-	void SetRenderParam(int param, FVECTOR4 *data = NULL);
+	void SetRenderParam(int param, const FVECTOR4 *data = NULL);
 	void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND);
 	FMATRIX4 GetWorldTransform() const;
 	void PushWorldTransform();
 	void PopWorldTransform();
-	void SetWorldScaleTransform2D(FVECTOR2 *scl = NULL, IVECTOR2 *trl = NULL);
+	void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL);
 	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
 	void PatternFill(SURFHANDLE hPattern, const LPRECT tgt);
-	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, LPRECT out);
-
+	void ColorFill(const FVECTOR4 &color, const LPRECT tgt);
+	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out);
+	void CopyRectNative(HSURFNATIVE pSrc, const LPRECT s, int tx, int ty);
+	void StretchRectNative(HSURFNATIVE pSrc, const LPRECT s, const LPRECT t);
+	void CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin = NULL, int npin = 0);
+	void ColorCompatibility(bool bEnable);
+	
 
 	// ===============================================================================
 	// D3D9Client Privates
@@ -560,13 +572,12 @@ public:
 	// D3D9Client Privates
 	// ===============================================================================
 	LPD3DXMATRIX WorldMatrix();
-	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty);
-	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t);
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
 	const char *GetName() const { return name; }
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
 	bool IsStillDrawing() const { return bBeginDraw; }
 	void LoadDefaults();
+	bool IsNative() const { return bNative; }
 
 private:
 
@@ -577,6 +588,8 @@ private:
 	bool HasPen() const;
 	bool HasBrush() const;
 	bool IsDashed() const;
+	bool IsAlphaTarget() const;
+	bool IsTexture(HSURFNATIVE pSrc);
 
 	float GetPenWidth() const;
 
@@ -586,11 +599,13 @@ private:
 	void FillRect(int l, int t, int r, int b, SkpColor &c);
 	void TexChange(SURFHANDLE hNew);
 	bool TexChangeNative(LPDIRECT3DTEXTURE9 hNew);
-	void CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, LPRECT *s);
+	const LPRECT CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s);
 	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
 	void SetupDevice(Topo tNew);
 	LPRECT CheckRect(SURFHANDLE hSrc, const LPRECT s);
 	void IsLineTopologyAllowed() const;
+	DWORD ColorComp(DWORD c) const;
+	SkpColor ColorComp(const SkpColor &c) const;
 
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	template <typename Type> void AppendLineVertexList(const Type *pt);
@@ -608,7 +623,8 @@ private:
 	SkpColor		 textcolor;
 	SkpColor		 bkcolor;
 
-
+	bool			 bColorComp;
+	bool			 bNative;
 	bool			 bColorKey;
 	bool			 bEnableScissor;
 	bool			 bDepthEnable;
@@ -878,8 +894,9 @@ private:
 
 
 class D3D9PolyBase {
+	DWORD alloc_id;
 public:
-					D3D9PolyBase(int _type) { type = _type; version = 1; }
+					D3D9PolyBase(int _type) : alloc_id('POLY') { type = _type; version = 1; }
 	virtual			~D3D9PolyBase() { }
 	virtual	void	Draw(LPDIRECT3DDEVICE9 pDev) = 0;
 	virtual void	Release() = 0;
@@ -915,10 +932,10 @@ class D3D9Triangle : public D3D9PolyBase
 {
 
 public:
-	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const TriangleVtx *pt, int npt, int style);
+	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const gcCore::TriangleVtx *pt, int npt, int style);
 	~D3D9Triangle();
 
-	void Update(const TriangleVtx *pt, int npt);
+	void Update(const gcCore::TriangleVtx *pt, int npt);
 	void Draw(LPDIRECT3DDEVICE9 pDev);
 	void Release();
 

@@ -31,7 +31,9 @@
 
 // Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
 
-class D3D9ClientSurface {
+class D3D9ClientSurface 
+{
+	DWORD alloc_id;
 
 	friend class D3D9Client;
 	friend class D3D9Pad;

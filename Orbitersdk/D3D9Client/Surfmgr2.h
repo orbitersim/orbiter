@@ -29,17 +29,21 @@ public:
 	SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng);
 	~SurfTile ();
 
+	inline QuadTreeNode<SurfTile> *GetNode() const { return node; }
 	inline void SetNode (QuadTreeNode<SurfTile> *_node) { node = _node; }
 	// Register the tile to a quad tree node
 
-	int GetElevation(double lng, double lat, double *elev, SurfTile **, bool bFilter=true);
+	int GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm=NULL, SurfTile **cache=NULL, bool bFilter=true, bool bGet=false) const;
 
 	double GetCameraDistance();
+	SurfTile *getTextureOwner();
+
+	LPDIRECT3DTEXTURE9 SetOverlay(LPDIRECT3DTEXTURE9 pOverlay, bool bOwn = true);
+	bool DeleteOverlay(LPDIRECT3DTEXTURE9 pOverlay = NULL);
 
 protected:
 	virtual Tile *getParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
 	inline SurfTile *getSurfParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
-	SurfTile *getTextureOwner();
 
 	// Return pointer to parent tile, if exists
 
@@ -50,7 +54,6 @@ protected:
 	void Render ();
 	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 	void StepIn ();
-	//void Pick(MATRIX4 &dwMatrix, TILEPICK *pPick);
 
 	TileManager2<SurfTile> *smgr;	// surface tile manager interface
 	QuadTreeNode<SurfTile> *node;	// my node in the quad tree, if I'm part of a tree
@@ -75,14 +78,12 @@ private:
 	float fixinput(double, int);
 	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
-	LPDIRECT3DTEXTURE9 htex;
 	D3DXVECTOR2 MicroRep[3];
 	DWORD MaxRep;
 	LPDIRECT3DTEXTURE9 ltex;	///< landmask/nightlight texture, if applicable
 	INT16 *elev_file;			///< elevation data [m]
 	float *elev;				///< elevation data [m] (8x subsampled)
 	mutable float *ggelev;		///< pointer to my elevation data in the great-grandparent
-	bool has_elevfile;			///< true if the elevation data for this tile were read from file
 
 	TileLabel *label;          ///< surface labels associated with this tile
 };

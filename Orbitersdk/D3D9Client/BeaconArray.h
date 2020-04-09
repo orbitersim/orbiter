@@ -10,7 +10,7 @@
 
 #include "D3D9Client.h"
 #include "D3D9Effect.h"
-#include <d3d9.h> 
+#include <d3d9.h>
 #include <d3dx9.h>
 
 
@@ -26,7 +26,7 @@ typedef struct {
 	float	lon;	///< Light on time
 	float   loff;	///< Light off time if (lon=0, loff=1) light always on
 	float   bright;	///< Light brightness factor. 1.0 = default
-	float   fall;	///< Spotlight falloff speed 2.0 to 0.1; 
+	float   fall;	///< Spotlight falloff speed 2.0 to 0.1;
 } BeaconArrayEntry;
 
 typedef struct {
@@ -38,10 +38,13 @@ typedef struct {
 /**
  * \brief BeaconArray object with D3D9-specific vertex buffer
  */
-class BeaconArray : private D3D9Effect 
+class BeaconArray : private D3D9Effect
 {
 
 public:
+	// Disable copy construct & copy assign
+	BeaconArray (BeaconArray const&) = delete;
+	BeaconArray & operator= (BeaconArray const&) = delete;
 
 	/**
 	 * \brief Create a BeaconArray object for rendering multiple beacons at the same time
@@ -50,7 +53,7 @@ public:
 	 */
 	BeaconArray(BeaconArrayEntry *pArray, DWORD nArray, class vBase *vP=NULL);
 	~BeaconArray();
-	
+
 	void UnLockVertexBuffer();		///< Unlocks the vertex buffer after manipulation is finished
 	BAVERTEX * LockVertexBuffer();	///< Locks the vertex buffer for manipulation
 

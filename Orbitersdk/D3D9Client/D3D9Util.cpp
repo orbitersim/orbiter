@@ -18,6 +18,17 @@
 #include <functional>
 #include <cctype>
 
+DWORD BuildDate()
+{
+	const char *months[] = { "???","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+	char month[8];
+	unsigned int day = 0, year = 0;
+	assert(sscanf_s(__DATE__, "%s %u %u", month, 8, &day, &year) == 3);
+	DWORD m = 0;
+	for (DWORD i = 1; i <= 12; i++) if (strncmp(month, months[i], 3) == 0) { m = i; break; }
+	assert(m != 0);
+	return (year % 100) * 10000 + m * 100 + day;
+}
 
 bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 {
@@ -1210,6 +1221,8 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	double a = att[2];
 
 	range = float((-b + sqrt(b*b - 4.0*a*c)) / (2.0*a));
+	range = min(range, float(((PointLight*)le)->GetRange()));
+
 	range2 = range*range;
 	Param[D3D9LRange] = range;
 

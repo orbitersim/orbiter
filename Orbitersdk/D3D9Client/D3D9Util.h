@@ -10,6 +10,7 @@
 
 #include "OrbiterAPI.h"
 #include "Log.h"
+#include "gcConst.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -111,7 +112,6 @@ const D3DVERTEXELEMENT9 PatchVertexDecl[] = {
 	{0, 0,  D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
 	{0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 	{0, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-	//{0, 32, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 	D3DDECL_END()
 };
 
@@ -280,13 +280,13 @@ typedef struct {
 } D3D9Pick;
 
 typedef struct {
-	// -- Output --
-	double dist;
-	double lng, lat, height;
+	D3DXVECTOR3 _p;		// Position from camera
+	D3DXVECTOR3 _n;		// Normal
+	int i;				// Face Index
+	float d;			// Distance from camera
+	float u, v;			
+	double lng, lat, elev;
 	class Tile * pTile;
-	// -- Input --
-	double cLng, cLat;
-	VECTOR3 vRay;
 } TILEPICK;
 
 #define D3D9LRange 0
@@ -328,6 +328,11 @@ void LogMatrix(D3DXMATRIX *pM, const char *name);
 inline VECTOR3 _V(D3DXVECTOR3 &i)
 {
 	return _V(double(i.x), double(i.y), double(i.z));
+}
+
+inline oapi::FVECTOR3 _FV(D3DXVECTOR3 &i)
+{
+	return oapi::FVECTOR3(i.x, i.y, i.z);
 }
 
 inline VECTOR3 _V(D3DXVECTOR4 &i)
@@ -455,6 +460,7 @@ void D3D9TuneInit(D3D9Tune *);
 LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
 LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
 
+DWORD BuildDate();
 
 // ------------------------------------------------------------------------------------
 // D3D vector and matrix operations

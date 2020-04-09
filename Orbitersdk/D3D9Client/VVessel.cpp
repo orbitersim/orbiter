@@ -367,7 +367,7 @@ void vVessel::InsertMesh(UINT idx)
 
 	UpdateAnimations(idx);
 
-	LogAlw("vVessel(0x%X)::InsertMesh(%u) hMesh=0x%X offset=(%g, %g, %g)",this,idx, hMesh, ofs.x, ofs.y, ofs.z);
+	//LogAlw("vVessel(0x%X)::InsertMesh(%u) hMesh=0x%X offset=(%g, %g, %g)",this,idx, hMesh, ofs.x, ofs.y, ofs.z);
 }
 
 
@@ -376,7 +376,7 @@ void vVessel::InsertMesh(UINT idx)
 //
 void vVessel::ResetMesh(UINT idx)
 {
-	LogAlw("MeshModified Event = 0x%X", idx);
+	//LogAlw("MeshModified Event = 0x%X", idx);
 
 	VECTOR3 ofs = _V(0, 0, 0);
 
@@ -674,8 +674,6 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 	static bool gotHUDSpec(false);
 	const VCMFDSPEC *mfdspec[MAXMFD] = { NULL };
 
-	if (vessel->GetAtmPressure()>1.0) D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, false);
-	else							  D3D9Effect::FX->SetBool(D3D9Effect::eInSpace, true);
 
 	const Scene::SHADOWMAPPARAM *shd = scn->GetSMapData();
 

@@ -269,11 +269,11 @@ float4 SketchpadPS(float4 sc : VPOS, OutputVS frg) : COLOR
 
 	if (gEffectsEn) {
 
-		// Apply gamma correction
-		c.rgb = pow(abs(c.rgb), gGamma.rgb);
-
 		// Apply color matrix
 		c = mul(c, gColorMatrix);
+		
+		// Apply gamma correction
+		c.rgb = pow(max(c.rgb, 0), gGamma.rgb);
 
 		// Color overboost correction beyond 0-1 range
 		c.rgb += saturate(cmax(c.rgb) - 1.0f);

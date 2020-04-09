@@ -84,8 +84,6 @@ void MFDWindow::CheckAspect(LPRECT r, DWORD q)
 {
 	RECT c,b;
 
-	oapiWriteLogV("LPRECT = 0x%X, hDlg = 0x%X", r, hDlg);
-
 	GetClientRect(hDlg, &c);
 	GetWindowRect(hDlg, &b);
 

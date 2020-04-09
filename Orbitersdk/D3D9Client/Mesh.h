@@ -242,7 +242,7 @@ public:
 	void			RenderRings(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex);
 	void			RenderRings2(const LPD3DXMATRIX pW, LPDIRECT3DTEXTURE9 pTex, float irad, float orad);
 	void			RenderAxisVector(LPD3DXMATRIX pW, const LPD3DXCOLOR pColor, float len);
-
+	void			RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *pEnv = NULL, int nEnv = 0, bool bSP = false);
 	void			CheckMeshStatus();
 	void			ResetTransformations();
 	void			TransformGroup(DWORD n, const D3DXMATRIX *m);

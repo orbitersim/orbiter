@@ -98,6 +98,7 @@ uniform extern float4    vMSc2;				// Micro texture C scale factors
 uniform extern float4    vTexOff;			// Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vCloudOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vMicroOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
+uniform extern float4    vOverlayOff;       // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power)
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float3    vTangent;			// Unit Vector
@@ -118,6 +119,7 @@ uniform extern int		 iDebug;			// Debug Mode identifier
 uniform extern bool		 bDebug;			// Debug Mode enabled
 uniform extern bool		 bLocals;			// Local light sources enabled for this tile
 uniform extern bool		 bShadows;			// Enable shadow projection
+uniform extern bool		 bOverlay;			// Enable shadow projection
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -131,11 +133,23 @@ uniform extern texture	 tMicroA;
 uniform extern texture	 tMicroB;
 uniform extern texture	 tMicroC;
 uniform extern texture	 tShadowMap;
+uniform extern texture	 tOverlay;
 
 
 // ----------------------------------------------------------------------------
 // Texture Sampler implementations
 // ----------------------------------------------------------------------------
+
+sampler OverlayS = sampler_state
+{
+	Texture = <tOverlay>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = ANISOTROPIC;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
 
 sampler ShadowS = sampler_state
 {
@@ -151,7 +165,7 @@ sampler DiffTexS = sampler_state
 {
 	Texture = <tDiff>;
 	MinFilter = ANISOTROPIC;
-	MagFilter = LINEAR;
+	MagFilter = ANISOTROPIC;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
 	MipMapLODBias = 0.0;
@@ -718,6 +732,12 @@ float4 SurfaceTechPS(TileVS frg,
 	if (sbRipples) cNrm = tex2D(OceaTexS, vUVWtr).xyz;
 
 	float4 cTex = tex2D(DiffTexS, vUVSrf);
+
+	if (bOverlay) {
+		float2 vUVOvl = frg.texUV.xy * vOverlayOff.zw + vOverlayOff.xy;
+		float4 cOvl = tex2D(OverlayS, vUVOvl);
+		cTex.rgb = lerp(cTex.rgb, cOvl.rgb, cOvl.a);
+	}
 
 	if (sbShadows) {
 		if (bCloudSh) {

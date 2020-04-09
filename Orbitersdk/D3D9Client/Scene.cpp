@@ -963,10 +963,11 @@ void Scene::RenderMainScene()
 	_TRACE;
 
 	double scene_time = D3D9GetTime();
-	UpdateCamVis();
 	D3D9SetTime(D3D9Stats.Timer.CamVis, scene_time);
 
-	if (vFocus==NULL) return;
+	UpdateCamVis();
+
+	if (vFocus == NULL) return;
 
 	LPDIRECT3DSURFACE9 pBackBuffer;
 
@@ -974,26 +975,111 @@ void Scene::RenderMainScene()
 	else				  pBackBuffer = gc->GetBackBuffer();
 
 
+	// Begin a Scene ------------------------------------------------------------------------------------
+	//
+	if (FAILED (gc->BeginScene())) return;
+
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render Custom Camera and Environment Views
+	// -------------------------------------------------------------------------------------------------------
+
+	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
+	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
+	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
+
+	int RenderCount = max(1, Config->EnvMapFaces);
+
+
+	// --------------------------------------------------------------------------------------------------------
+	// Render Custom Camera view for a focus vessel
+	// --------------------------------------------------------------------------------------------------------
+
+	if (dwTurn == RENDERTURN_CUSTOMCAM) {
+		if (Config->CustomCamMode) {
+			if (camCurrent == NULL) camCurrent = camFirst;
+			OBJHANDLE hVessel = vFocus->GetObjectA();
+			while (camCurrent) {
+
+				vObject *vO = GetVisObject(camCurrent->hVessel);
+				double maxd = min(500e3, GetCameraAltitude() + 15e3);
+
+				if (vO->CamDist() < maxd && camCurrent->bActive) {
+
+					RenderCustomCameraView(camCurrent);
+
+					if (camCurrent->dwFlags & CUSTOMCAM_OVERLAY) {
+						oapi::Sketchpad *pSkp = gc->clbkGetSketchpad(camCurrent->hSurface);
+						gc->MakeRenderProcCall(pSkp, RENDERPROC_CUSTOMCAM_OVERLAY, NULL, NULL);
+						gc->clbkReleaseSketchpad(pSkp);
+					}
+
+					camCurrent = camCurrent->next;
+					break;
+				}
+				camCurrent = camCurrent->next;
+			}
+		}
+	}
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render Environmental Map For the Focus Vessel
+	// -------------------------------------------------------------------------------------------------------
+
+	if (dwTurn == RENDERTURN_ENVCAM) {
+
+		if (Config->EnvMapMode) {
+			DWORD flags = 0;
+			if (Config->EnvMapMode == 1) flags |= 0x01;
+			if (Config->EnvMapMode == 2) flags |= 0x03;
+
+			if (vobjEnv == NULL) vobjEnv = vobjFirst;
+
+			while (vobjEnv) {
+				if (vobjEnv->type == OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
+					if (vobjEnv->vobj) {
+						vVessel *vVes = (vVessel *)vobjEnv->vobj;
+						if (vVes->RenderENVMap(pDevice, RenderCount, flags) == false) break; // Not yet done with this vessel
+					}
+				}
+				vobjEnv = vobjEnv->next; // Move to the next one
+			}
+		}
+	}
+
+
+
+
+
+
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Start Main Scene Rendering
+	// -------------------------------------------------------------------------------------------------------
+
+	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
+
+	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
+
+
 	// Push main render target and depth surfaces
+	//
 	gc->PushRenderTarget(pBackBuffer, gc->GetDepthStencil(), RENDERPASS_MAINSCENE);	// Main Scene
 
 
 	if (DebugControls::IsActive()) {
-		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
-		DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+		DWORD flags = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
 		if (flags&DBG_FLAGS_WIREFRAME) pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 		else						   pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
 	else {
 		// Clear the viewport
-		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0, 1.0f, 0L));
+		HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 	}
-
-
-	// Begin a Scene ------------------------------------------------------------------------------------
-	//
-	if (FAILED (gc->BeginScene())) return;
-
 
 
 	float znear_for_vessels = ComputeNearClipPlane();
@@ -1391,10 +1477,19 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 
 	if (plnmode & PLN_ENABLE) {
-		D3DXMATRIX mP;
-		GetAdjProjViewMatrix(&mP, 5.0f, 1e9f);
 		D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_PLANETARIUM);
-		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), &mP);
+		gc->MakeRenderProcCall(pSketch, RENDERPROC_PLANETARIUM, GetViewMatrix(), GetProjectionMatrix());
+		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
+	}
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// render a user defined exterior art
+	// -------------------------------------------------------------------------------------------------------
+
+	if (oapiCameraInternal() == false) {
+		D3D9Pad *pSketch = GetPooledSketchpad(SKETCHPAD_PLANETARIUM);
+		gc->MakeRenderProcCall(pSketch, RENDERPROC_EXTERIOR, GetViewMatrix(), GetProjectionMatrix());
 		pSketch->EndDrawing(); // SKETCHPAD_PLANETARIUM
 	}
 
@@ -1568,6 +1663,17 @@ surfLabelsActive = false;
 
 	pSketch->EndDrawing();	// SKETCHPAD_LABELS
 
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// render custom user objects
+	// -------------------------------------------------------------------------------------------------------
+
+	if (oapiCameraInternal() == false) {
+		if (gc->IsGenericProcEnabled(GENERICPROC_RENDER_EXTERIOR)) {
+			gc->MakeGenericProcCall(GENERICPROC_RENDER_EXTERIOR, 0, NULL);
+		}
+	}
 
 
 	// -------------------------------------------------------------------------------------------------------
@@ -1839,6 +1945,7 @@ surfLabelsActive = false;
 	//
 	if (bFreezeEnable) bFreeze = true;
 
+	/*
 	// -------------------------------------------------------------------------------------------------------
 	// Render Custom Camera Views
 	// -------------------------------------------------------------------------------------------------------
@@ -1901,7 +2008,7 @@ surfLabelsActive = false;
 				vobjEnv = vobjEnv->next; // Move to the next one
 			}
 		}
-	}
+	}*/
 
 	// -------------------------------------------------------------------------------------------------------
 	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
@@ -2534,6 +2641,31 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 }
 
 
+// ===========================================================================================
+//
+void Scene::RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld)
+{
+	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
+
+	const Scene::SHADOWMAPPARAM *shd = GetSMapData();
+
+	float s = float(shd->size);
+	float sr = 2.0f * shd->rad / s;
+
+	HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
+
+	if (shd->pShadowMap) {
+		HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
+		HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(sr, 1.0f / s, float(oapiRand()), 1.0f / shd->depth)));
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, true));
+	}
+	else {
+		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
+	}
+
+	pMesh->SetSunLight(&sunLight);
+	pMesh->RenderSimplified(LPD3DXMATRIX(pWorld));
+}
 
 
 // ===========================================================================================
@@ -2803,21 +2935,11 @@ D3DXVECTOR3 Scene::GetPickingRay(short xpos, short ypos)
 //
 TILEPICK Scene::PickSurface(short xpos, short ypos)
 {
-
 	TILEPICK tp; memset(&tp, 0, sizeof(TILEPICK));
-	return tp;
-
 	vPlanet *vp = GetCameraProxyVisual();
 	if (!vp) return tp;
-
-	double cLng, cLat;
-	GetCameraLngLat(&cLng, &cLat);
-
-	tp.cLng = cLng;
-	tp.cLat = cLat;
-	tp.vRay = _VD3DX(GetPickingRay(xpos, ypos));
-
-	vp->PickSurface(&tp);
+	D3DXVECTOR3 vRay = GetPickingRay(xpos, ypos);
+	vp->PickSurface(vRay, &tp);
 	return tp;
 }
 
@@ -2847,11 +2969,16 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 			D3D9Pick pick = vVes->Pick(&vPick);
 			if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 		}
-	}
-
-	//if (result.idx >= 0) sprintf_s(oapiDebugString(), 256, "Pos=[%f, %f, %f] Norm=[%f, %f, %f]", result.pos.x, result.pos.y, result.pos.z, result.normal.x, result.normal.y, result.normal.z);
-
+	}	
 	return result;
+}
+
+// ===========================================================================================
+//
+D3D9Pick Scene::PickMesh(DEVMESHHANDLE hMesh, const LPD3DXMATRIX pW, short xpos, short ypos)
+{
+	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
+	return pMesh->Pick(pW, NULL, &GetPickingRay(xpos, ypos));
 }
 
 // ===========================================================================================

@@ -35,6 +35,12 @@
 // ===============================================================================================
 
 
+bool D3D9Pad::IsTexture(HSURFNATIVE pSrc)
+{
+	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(pSrc);
+	if (pResource->GetType() == D3DRTYPE_TEXTURE) return true;
+	return false;
+}
 
 
 // ===============================================================================================
@@ -57,12 +63,12 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 	Change |= SKPCHG_PEN;
 
 	cpen = NULL;
-	if (color==0) QPen.bEnabled = false;
+	if (color == 0) QPen.bEnabled = false;
 	else QPen.bEnabled = true;
 	QPen.style = style;
 	QPen.width = width;
 	QPen.color = color;
-	pencolor = SkpColor(color);
+	pencolor = SkpColor(ColorComp(color));
 
 	IsLineTopologyAllowed();
 }
@@ -76,7 +82,7 @@ void D3D9Pad::QuickBrush(DWORD color)
 	cbrush = NULL;
 	if (color == 0) QBrush.bEnabled = false;
 	else QBrush.bEnabled = true;
-	brushcolor = SkpColor(color);
+	brushcolor = SkpColor(ColorComp(color));
 
 	IsLineTopologyAllowed();
 }
@@ -245,6 +251,124 @@ void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
+void D3D9Pad::CopyRectNative(HSURFNATIVE pSrc, const LPRECT _s, int tx, int ty)
+{
+	assert(IsTexture(pSrc));
+	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
+
+	if (Topology(TRIANGLE)) {
+
+		LPRECT s = CheckRectNative((LPDIRECT3DTEXTURE9)pSrc, _s);
+
+		int h = abs(s->bottom - s->top);
+		int w = abs(s->right - s->left);
+
+		AddRectIdx(vI);
+
+		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
+		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom - 1);
+		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right - 1, s->bottom - 1);
+		SkpVtxII(Vtx[vI++], tx + w, ty, s->right - 1, s->top);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::StretchRectNative(HSURFNATIVE pSrc, const LPRECT _s, const LPRECT t)
+{
+	assert(IsTexture(pSrc));
+	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
+
+	if (Topology(TRIANGLE)) {
+
+		LPRECT s = CheckRectNative((LPDIRECT3DTEXTURE9)pSrc, _s);
+
+		AddRectIdx(vI);
+
+		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
+		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom - 1);
+		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right - 1, s->bottom - 1);
+		SkpVtxII(Vtx[vI++], t->right, t->top, s->right - 1, s->top);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+	}
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin, int npin)
+{
+	assert(IsTexture(pSrc));
+	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
+	
+	IVECTOR2 spn = { 0, 0 };
+	FVECTOR2 tpn = 0.0f;
+
+	if (Topology(TRIANGLE)) {
+
+		LPRECT s = CheckRectNative((LPDIRECT3DTEXTURE9)pSrc, _s);
+
+		s->bottom--;
+		s->right--;
+
+		if (!pin) {
+			tpn = (pt[0] + pt[1] + pt[2] + pt[3]) * 0.25f;
+			spn = { (s->left + s->right) / 2 , (s->top + s->bottom) / 2 };
+		}
+		else if (npin == 1) {
+			spn = pin->src;
+			tpn = pin->tgt;
+		}
+
+		Idx[iI++] = vI + 0;
+		Idx[iI++] = vI + 1;
+		Idx[iI++] = vI + 4;
+
+		Idx[iI++] = vI + 1;
+		Idx[iI++] = vI + 2;
+		Idx[iI++] = vI + 4;
+
+		Idx[iI++] = vI + 2;
+		Idx[iI++] = vI + 3;
+		Idx[iI++] = vI + 4;
+
+		Idx[iI++] = vI + 3;
+		Idx[iI++] = vI + 0;
+		Idx[iI++] = vI + 4;
+
+		SkpVtxFI(Vtx[vI++], pt[0].x, pt[0].y, s->left, s->top);
+		SkpVtxFI(Vtx[vI++], pt[1].x, pt[1].y, s->left, s->bottom);
+		SkpVtxFI(Vtx[vI++], pt[2].x, pt[2].y, s->right, s->bottom);
+		SkpVtxFI(Vtx[vI++], pt[3].x, pt[3].y, s->right, s->top);
+		SkpVtxFI(Vtx[vI++], tpn.x, tpn.y, spn.x, spn.y);
+
+		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
+
+		Vtx[vI - 1].fnc = x;
+		Vtx[vI - 2].fnc = x;
+		Vtx[vI - 3].fnc = x;
+		Vtx[vI - 4].fnc = x;
+		Vtx[vI - 5].fnc = x;
+	}
+}
+
+
+// ===============================================================================================
+//
 bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 {
 	// No "Setup" here, done in PrintSkp()
@@ -269,7 +393,6 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 
 	return true;
 }
-
 
 // ===============================================================================================
 //
@@ -620,6 +743,11 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 	if (flags&MF_CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	else				    pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
+	if (bDepthEnable && pDep) {
+		pDev->SetRenderState(D3DRS_ZENABLE, 1);
+		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
+	}
+
 	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, gr->nVtx, gr->nIdx/3, gr->Idx, D3DFMT_INDEX16, gr->Vtx, sizeof(NTVERTEX));
 
 	HR(FX->EndPass());
@@ -634,74 +762,16 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE 
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, int tx, int ty)
+const LPRECT D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s)
 {
-	TexChangeNative(pSrc);
-
-	if (Topology(TRIANGLE)) {
-
-		if (!s) CheckRectNative(pSrc, &s);
-
-		int h = abs(s->bottom - s->top);
-		int w = abs(s->right - s->left);
-
-		AddRectIdx(vI);
-
-		SkpVtxII(Vtx[vI++], tx, ty, s->left, s->top);
-		SkpVtxII(Vtx[vI++], tx, ty + h, s->left, s->bottom);
-		SkpVtxII(Vtx[vI++], tx + w, ty + h, s->right, s->bottom);
-		SkpVtxII(Vtx[vI++], tx + w, ty, s->right, s->top);
-
-		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
-
-		Vtx[vI - 1].fnc = x;
-		Vtx[vI - 2].fnc = x;
-		Vtx[vI - 3].fnc = x;
-		Vtx[vI - 4].fnc = x;
-	}
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, LPRECT s, LPRECT t)
-{
-	TexChangeNative(pSrc);
-
-	if (Topology(TRIANGLE)) {
-
-		if (!s) CheckRectNative(pSrc, &s);
-
-		AddRectIdx(vI);
-
-		SkpVtxII(Vtx[vI++], t->left, t->top, s->left, s->top);
-		SkpVtxII(Vtx[vI++], t->left, t->bottom, s->left, s->bottom);
-		SkpVtxII(Vtx[vI++], t->right, t->bottom, s->right, s->bottom);
-		SkpVtxII(Vtx[vI++], t->right, t->top, s->right, s->top);
-
-		DWORD x = SKPSW_TEXTURE | SKPSW_CENTER;
-
-		Vtx[vI - 1].fnc = x;
-		Vtx[vI - 2].fnc = x;
-		Vtx[vI - 3].fnc = x;
-		Vtx[vI - 4].fnc = x;
-	}
-}
-
-
-// ===============================================================================================
-//
-void D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, LPRECT *s)
-{
+	if (s) return s;
 	D3DSURFACE_DESC desc;
-
 	hSrc->GetLevelDesc(0, &desc);
-	*s = &src;
-
 	src.left = 0;
 	src.top = 0;
 	src.right = desc.Width;
 	src.bottom = desc.Height;
+	return &src;
 }
 
 
@@ -1025,7 +1095,7 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 
 
 
-D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const TriangleVtx *pt, int npt, int _style) : D3D9PolyBase(1)
+D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const gcCore::TriangleVtx *pt, int npt, int _style) : D3D9PolyBase(1)
 {
 	nPt = npt;
 	style = _style;
@@ -1063,7 +1133,7 @@ void D3D9Triangle::Draw(LPDIRECT3DDEVICE9 pDev)
 
 // ===============================================================================================
 //
-void D3D9Triangle::Update(const TriangleVtx *pt, int npt)
+void D3D9Triangle::Update(const gcCore::TriangleVtx *pt, int npt)
 {
 	SkpVtx *Vtx = NULL;
 	HR(pVB->Lock(0, 0, (LPVOID*)&Vtx, D3DLOCK_DISCARD));
