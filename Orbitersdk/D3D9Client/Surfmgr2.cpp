@@ -193,7 +193,7 @@ void SurfTile::Load ()
 		}
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (res, res, elev, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
+		mesh = CreateMesh_quadpatch (res, res, elev, mgr->ElevRes(), 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
 
 	static const DWORD label_enable = PLN_ENABLE | PLN_LMARK;

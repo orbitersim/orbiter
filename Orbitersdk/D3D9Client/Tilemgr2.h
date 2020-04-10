@@ -153,7 +153,7 @@ protected:
 	bool	LoadTextureFile(const char *path, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 	bool	LoadTextureFromMemory(void *data, DWORD ndata, LPDIRECT3DTEXTURE9 *pPre, bool bEnableDebug = true);
 
-	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, float *elev=0, double globelev=0.0,
+	VBMESH *CreateMesh_quadpatch (int grdlat, int grdlng, float *elev=0, double elev_scale = 1.0, double globelev=0.0,
 		const TEXCRDRANGE2 *range=0, bool shift_origin=false, VECTOR3 *shift=0, double bb_excess=0.0);
 	// Creates a quadrilateral patch mesh
 

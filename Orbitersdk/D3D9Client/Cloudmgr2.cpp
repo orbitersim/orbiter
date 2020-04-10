@@ -89,7 +89,7 @@ void CloudTile::Load ()
 	//	mesh = CreateMesh_tripatch (TILE_PATCHRES, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (res, res, 0, mean_elev, &texrange, shift_origin, &vtxshift);
+		mesh = CreateMesh_quadpatch (res, res, 0, 1.0, mean_elev, &texrange, shift_origin, &vtxshift);
 	}
 }
 
