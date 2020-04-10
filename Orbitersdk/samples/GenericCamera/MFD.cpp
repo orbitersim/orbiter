@@ -386,9 +386,9 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 		if (nDock != 0 || nAtch != 0) {
 
 			if (bNightVis) {
-				pSkp3->SetBrightness(&_FVECTOR4(0.0, 4.0, 0.0, 1));
-				pSkp3->SetRenderParam(SKP3_PRM_GAMMA, &_FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
-				pSkp3->SetRenderParam(SKP3_PRM_NOISE, &_FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
+				pSkp3->SetBrightness(&FVECTOR4(0.0, 4.0, 0.0, 1.0));
+				pSkp3->SetRenderParam(SKP3_PRM_GAMMA, &FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
+				pSkp3->SetRenderParam(SKP3_PRM_NOISE, &FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
 			}
 
 
