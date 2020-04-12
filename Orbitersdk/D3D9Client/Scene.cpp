@@ -1062,7 +1062,7 @@ void Scene::RenderMainScene()
 
 	UpdateCameraFromOrbiter(RENDERPASS_MAINSCENE);
 
-	if (Camera.hObj_proxy) D3D9Effect::UpdateEffectCamera(Camera.hObj_proxy);
+	UpdateCamVis();
 
 
 	// Push main render target and depth surfaces
