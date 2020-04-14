@@ -348,7 +348,8 @@ namespace oapi {
 	* \brief 32-bit floating point 4D vector type.
 	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
-	typedef union FVECTOR4 
+#pragma pack(push, 1)
+	typedef union FVECTOR4
 	{
 		DWORD dword_abgr() const
 		{
@@ -492,21 +493,22 @@ namespace oapi {
 		}
 
 		float data[4];
-		struct {
-			float x, y, z, w;
+		struct { // {x,y,z,w} or {xyz,w}
+			union {
+				struct { float x, y, z; };
+				struct { FVECTOR3 xyz; };
+			};
+			float w;
 		};
-		struct {
-			float r, g, b, a;
-		};
-		struct {
-			FVECTOR3 rgb;
-			float _a;
-		};
-		struct {
-			FVECTOR3 xyz;
-			float _w;
+		struct { // {r,g,b,a} or {rgb,a}
+			union {
+				struct { float r, g, b; };
+				struct { FVECTOR3 rgb;  };
+			};
+			float a;
 		};
 	} FVECTOR4;
+#pragma pack(pop)
 
 
 	typedef union DRECT
