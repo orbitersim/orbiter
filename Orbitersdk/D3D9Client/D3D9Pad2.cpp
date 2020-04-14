@@ -56,6 +56,10 @@ void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
 //
 void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 {
+#ifdef SKPDBG 
+	Log("QuickPen(0x%X, %d, %u)", color, width, style);
+#endif
+
 	if (QPen.bEnabled) {
 		if ((QPen.style == style) && (QPen.width == width) && (QPen.color == color)) return;
 	}
@@ -78,6 +82,10 @@ void D3D9Pad::QuickPen(DWORD color, float width, DWORD style)
 //
 void D3D9Pad::QuickBrush(DWORD color)
 {
+#ifdef SKPDBG 
+	Log("QuickBrush(0x%X)", color);
+#endif
+
 	// No Change flags here
 	cbrush = NULL;
 	if (color == 0) QBrush.bEnabled = false;
@@ -118,6 +126,10 @@ LPRECT D3D9Pad::CheckRect(SURFHANDLE hSrc, const LPRECT s)
 //
 void D3D9Pad::CopyRect(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
+#ifdef SKPDBG 
+	Log("CopyRect(0x%X)", DWORD(hSrc));
+#endif
+
 	TexChange(hSrc);
 
 	if (Topology(TRIANGLE)) {
@@ -148,6 +160,9 @@ void D3D9Pad::CopyRect(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 //
 void D3D9Pad::StretchRect(SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
 {
+#ifdef SKPDBG 
+	Log("StretchRect(0x%X)", DWORD(hSrc));
+#endif
 
 	TexChange(hSrc);
 
@@ -176,6 +191,9 @@ void D3D9Pad::StretchRect(SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
 //
 void D3D9Pad::RotateRect(SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, float angle, float sw, float sh)
 {
+#ifdef SKPDBG 
+	Log("RotateRect(0x%X)", DWORD(hSrc));
+#endif
 
 	TexChange(hSrc);
 
@@ -222,6 +240,9 @@ void D3D9Pad::RotateRect(SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, flo
 //
 void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
+#ifdef SKPDBG 
+	Log("ColorKey(0x%X)", DWORD(hSrc));
+#endif
 
 	TexChange(hSrc);
 
@@ -253,6 +274,10 @@ void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 //
 void D3D9Pad::CopyRectNative(HSURFNATIVE pSrc, const LPRECT _s, int tx, int ty)
 {
+#ifdef SKPDBG 
+	Log("CopyRectNative(0x%X)", DWORD(pSrc));
+#endif
+
 	assert(IsTexture(pSrc));
 	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
 
@@ -284,6 +309,10 @@ void D3D9Pad::CopyRectNative(HSURFNATIVE pSrc, const LPRECT _s, int tx, int ty)
 //
 void D3D9Pad::StretchRectNative(HSURFNATIVE pSrc, const LPRECT _s, const LPRECT t)
 {
+#ifdef SKPDBG 
+	Log("StretchRectNative(0x%X)", DWORD(pSrc));
+#endif
+
 	assert(IsTexture(pSrc));
 	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
 
@@ -312,6 +341,10 @@ void D3D9Pad::StretchRectNative(HSURFNATIVE pSrc, const LPRECT _s, const LPRECT 
 //
 void D3D9Pad::CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin, int npin)
 {
+#ifdef SKPDBG 
+	Log("CopyQuadNative(0x%X)", DWORD(pSrc));
+#endif
+
 	assert(IsTexture(pSrc));
 	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
 	
@@ -371,6 +404,10 @@ void D3D9Pad::CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *
 //
 bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 {
+#ifdef SKPDBG 
+	Log("TextW()");
+#endif
+
 	// No "Setup" here, done in PrintSkp()
 
 	if (!cfont) return false;
@@ -398,6 +435,10 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 //
 void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle)
 {
+#ifdef SKPDBG 
+	Log("TextEx()");
+#endif
+
 	// No "Setup" here, done in PrintSkp()
 
 	if (cfont == NULL) return;
@@ -428,6 +469,10 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 //
 void D3D9Pad::ClipRect(LPRECT clip)
 {
+#ifdef SKPDBG 
+	Log("ClipRect(0x%X)", DWORD(clip));
+#endif
+
 	Change |= SKPCHG_CLIPRECT;
 
 	bEnableScissor = (clip != NULL);
@@ -440,6 +485,10 @@ void D3D9Pad::ClipRect(LPRECT clip)
 //
 void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dist)
 {
+#ifdef SKPDBG 
+	Log("Clipper()");
+#endif
+
 	Change |= SKPCHG_CLIPCONE;
 
 	if (idx < 0) idx = 0;
@@ -464,6 +513,10 @@ void D3D9Pad::Clipper(int idx, const VECTOR3 *uDir, double cos_angle, double dis
 //
 void D3D9Pad::DepthEnable(bool bEnable)
 {
+#ifdef SKPDBG 
+	Log("DepthEnable(%u)", DWORD(bEnable));
+#endif
+
 	Flush(); // Must Flush() here before a mode change
 
 	if (pDep) {
@@ -503,6 +556,9 @@ const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix() const
 //
 void D3D9Pad::SetViewMatrix(const FMATRIX4 *pV)
 {
+#ifdef SKPDBG 
+	Log("SetViewMatrix(0x%X)", DWORD(pV));
+#endif
 	Change |= SKPCHG_TRANSFORM;
 	if (pV) memcpy(&mV, pV, sizeof(FMATRIX4));
 	else D3DXMatrixIdentity(&mV);
@@ -513,6 +569,9 @@ void D3D9Pad::SetViewMatrix(const FMATRIX4 *pV)
 //
 void D3D9Pad::SetProjectionMatrix(const FMATRIX4 *pP)
 {
+#ifdef SKPDBG 
+	Log("SetProjectionMatrix(0x%X)", DWORD(pP));
+#endif
 	Change |= SKPCHG_TRANSFORM;
 	if (pP) memcpy(&mP, pP, sizeof(FMATRIX4));
 	else D3DXMatrixIdentity(&mP);
@@ -523,6 +582,9 @@ void D3D9Pad::SetProjectionMatrix(const FMATRIX4 *pP)
 //
 void D3D9Pad::SetViewMode(SkpView mode)
 {
+#ifdef SKPDBG 
+	Log("SetViewMode(0x%X)", DWORD(mode));
+#endif
 	Flush();	// Must Flush() here before a mode change
 	vmode = mode;
 }
@@ -533,6 +595,9 @@ void D3D9Pad::SetViewMode(SkpView mode)
 //
 LPD3DXMATRIX D3D9Pad::WorldMatrix()
 {
+#ifdef SKPDBG 
+	Log("WorldMatrix() ! - ! - !");
+#endif
 	Change |= SKPCHG_TRANSFORM;
 	return (LPD3DXMATRIX)&mW;
 }
@@ -542,6 +607,9 @@ LPD3DXMATRIX D3D9Pad::WorldMatrix()
 //
 void D3D9Pad::SetWorldTransform2D(float scale, float rot, IVECTOR2 *c, IVECTOR2 *t)
 {
+#ifdef SKPDBG 
+	Log("SetWorldTransform2D(%f, %f, 0x%X, 0x%X)", scale, rot, DWORD(c), DWORD(t));
+#endif
 	Change |= SKPCHG_TRANSFORM;
 
 	D3DXVECTOR2 ctr = D3DXVECTOR2(0, 0);
@@ -558,6 +626,9 @@ void D3D9Pad::SetWorldTransform2D(float scale, float rot, IVECTOR2 *c, IVECTOR2 
 //
 void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 {
+#ifdef SKPDBG 
+	Log("SetWorldTransform(0x%X)", DWORD(pWT));
+#endif
 	Change |= SKPCHG_TRANSFORM;
 
 	if (pWT) memcpy(&mW, pWT, sizeof(FMATRIX4));
@@ -569,6 +640,9 @@ void D3D9Pad::SetWorldTransform(const FMATRIX4 *pWT)
 //
 void D3D9Pad::SetGlobalLineScale(float width, float pat)
 {
+#ifdef SKPDBG 
+	Log("SetGlobalLineScale(%f, %f)", width, pat);
+#endif
 	Change |= SKPCHG_PEN;
 	linescale = width;
 	pattern = pat;
@@ -589,6 +663,7 @@ void D3D9Pad::SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew)
 //
 bool D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 {
+	if (hNew == hTexture) return false;
 	Change |= SKPCHG_TEXTURE;
 	hTexture = hNew;
 	return true;
@@ -626,6 +701,11 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 //
 int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
+
+#ifdef SKPDBG 
+	Log("DrawSketchMesh(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(_hMesh), grp, flags, DWORD(hTex));
+#endif
+
 	UINT num;
 
 	SketchMesh *hMesh = static_cast<SketchMesh *>(_hMesh);
@@ -698,6 +778,9 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, DWORD flags, SURFHANDL
 //
 int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags, SURFHANDLE hTex)
 {
+#ifdef SKPDBG 
+	Log("DrawMeshGroup(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(hMesh), grp, flags, DWORD(hTex));
+#endif
 	UINT num;
 
 	MESHGROUP *gr = oapiMeshGroup(hMesh, grp);

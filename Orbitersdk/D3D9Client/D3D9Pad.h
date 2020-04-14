@@ -103,7 +103,7 @@ struct SkpColor {
 
 	explicit SkpColor(const FVECTOR4 &c) {
 		dclr = c.dword_argb();
-		fclr.r = c.r; fclr.b = c.g;	fclr.b = c.b; fclr.a = c.a;
+		fclr.r = c.r; fclr.g = c.g;	fclr.b = c.b; fclr.a = c.a;
 		D3DXCOLORSWAP(&fclr);
 	}
 
@@ -675,6 +675,10 @@ private:
 	void        WrapOneLine (char* str, int len, int maxWidth); ///< Wraps one text line at maxLenght pixels
 	// -------------------------------------------------------------------------
 	char name[32];
+
+	void Log(const char *format, ...) const;
+	static FILE *log;
+	static CRITICAL_SECTION LogCrit;
 
 	static WORD *Idx;				// List of indices
 	static SkpVtx *Vtx;		// List of vertices

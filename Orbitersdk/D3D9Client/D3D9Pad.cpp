@@ -57,6 +57,14 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 {
 	pDev = pDevice;
 	gc = _gc;
+	log = NULL;
+
+	InitializeCriticalSectionAndSpinCount(&LogCrit, 256);
+
+#ifdef SKPDBG
+	if (fopen_s(&log, "Sketchpad.log", "w+")) { log = NULL; } // Failed
+#endif // SKPDBG
+
 
 	Idx = new WORD[3 * nQueueMax + 3];
 	Vtx = new SkpVtx[3 * nQueueMax + 3];
@@ -147,10 +155,32 @@ void D3D9Pad::GlobalExit()
 	SAFE_DELETEA(Idx);
 	SAFE_DELETEA(Vtx);
 	SAFE_DELETEA(pSinCos);
+
+	if (log) fclose(log);
+	log = NULL;
+
+	DeleteCriticalSection(&LogCrit);
 }
 
+// ===============================================================================================
+//
+void D3D9Pad::Log(const char *format, ...) const
+{
+	if (log == NULL) return;
+	EnterCriticalSection(&LogCrit);
+	char ErrBuf[1024];
+	DWORD th = GetCurrentThreadId();
+	va_list args;
+	va_start(args, format);
+	_vsnprintf_s(ErrBuf, 1024, 1024, format, args);
+	va_end(args);
+	fprintf_s(log, "<0x%X> [0x%X] %s\n", th, DWORD(this), ErrBuf);
+	fflush(log);
+	LeaveCriticalSection(&LogCrit);
+}
 
-
+// ===============================================================================================
+//
 void D3D9Pad::Reset()
 {
 	bBeginDraw = false;
@@ -231,6 +261,9 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
 {
+#ifdef SKPDBG 
+	Log("#### Sketchpad Interface Created");
+#endif
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
 	bNative = false;
@@ -250,6 +283,9 @@ _isSaveBuffer(false),
 _saveBuffer(NULL),
 _saveBufferSize(0)
 {
+#ifdef SKPDBG 
+	Log("#### Sketchpad Interface Created (Native)");
+#endif
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
 	bNative = true;
@@ -268,6 +304,9 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
 {
+#ifdef SKPDBG 
+	Log("#### Sketchpad Interface Created (NoTgt)");
+#endif
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
 	bNative = false;
@@ -281,6 +320,9 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
 //
 D3D9Pad::~D3D9Pad ()
 {
+#ifdef SKPDBG 
+	Log("#### Sketchpad Interface Deleted");
+#endif
 	assert(bBeginDraw == false);
 	SAFE_DELETEA(_saveBuffer);
 }
@@ -303,6 +345,10 @@ void D3D9Pad::BeginDrawing()
 //
 void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil)
 {
+#ifdef SKPDBG 
+	Log("==== BeginDrawing 0x%X, 0x%X ====\n", pRenderTgt, pDepthStensil);
+#endif
+
 	assert(pRenderTgt != NULL);
 
 	if (vI != 0) LogErr("Sketchpad 0xX has received drawing commands outside Begin() End() pair", this);
@@ -337,6 +383,10 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 //
 void D3D9Pad::EndDrawing()
 {
+#ifdef SKPDBG 
+	Log("==== EndDrawing ====\n");
+#endif
+
 	if (bBeginDraw == false) _wassert(L"D3D9Pad::EndDrawing() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
 
 	Flush();
@@ -356,91 +406,105 @@ void D3D9Pad::EndDrawing()
 bool D3D9Pad::Flush(HPOLY hPoly)
 {
 	if (bBeginDraw == false) _wassert(L"D3D9Pad::Flush() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
-
+	
 	UINT numPasses;
-
 	static DWORD bkALPHA, bkZEN, bkZW, bkCULL;
 
-	if (iI > 0 || hPoly) {
-
-		HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
-
-		//HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
-		//HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
-		//HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
-
-		HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-		HR(pDev->SetVertexDeclaration(pSketchpadDecl));
-		
-		HR(FX->SetFloat(eRandom, float(oapiRand())));
-		HR(FX->SetVector(eTarget, &vTarget));
-		HR(FX->SetTechnique(eSketch));
-		HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
-
-		if (vmode == ORTHO) {
-			HR(FX->BeginPass(0));
-		}
-		else {
-			HR(FX->BeginPass(1));
-		}
-
-		if (dwBlendState == SKPBS_ALPHABLEND) {
-			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
-			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));
-		}
-		else if (dwBlendState == SKPBS_COPY) {
-			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
-			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
-		}
-		else if (dwBlendState == SKPBS_COPY_ALPHA) {
-			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x8);
-			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
-		}
-		else if (dwBlendState == SKPBS_COPY_COLOR) {
-			pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
-			HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
-		}
-
-
-		if (bDepthEnable && pDep) {
-			pDev->SetRenderState(D3DRS_ZENABLE, 1);
-			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
-		}
-		else {
-			pDev->SetRenderState(D3DRS_ZENABLE, 0);
-			pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
-		}
-
-
-
-		if (hPoly) {
-			assert(iI == 0);
-			D3D9PolyBase *pBase = static_cast<D3D9PolyBase *>(hPoly);
-			pBase->Draw(pDev);
-		}
-		else {
-			if (tCurrent == TRIANGLE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
-			if (tCurrent == LINE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, vI, iI / 2, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
-		}
-
-		HR(FX->EndPass());
-		HR(FX->End());
-	
-		HR(pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
-		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkALPHA));
-
-		//HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
-		//HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
-		//HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
-		
-		HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
-		
-		iI = vI = 0;
-
-		return true;
+	if ((iI == 0) && (hPoly == NULL)) {
+#ifdef SKPDBG 
+		Log("Flush (Nothing)", hPoly, iI);
+#endif
+		return false;
 	}
 
-	return false;
+#ifdef SKPDBG 
+	char buf[128]; strcpy_s(buf, 128, "");
+	char buf2[128]; strcpy_s(buf2, 128, "");
+
+	if (dwBlendState == SKPBS_ALPHABLEND) strcpy_s(buf, 128, "SKPBS_ALPHABLEND");
+	if (dwBlendState == SKPBS_COPY) strcpy_s(buf, 128, "SKPBS_COPY");
+	if (dwBlendState == SKPBS_COPY_ALPHA) strcpy_s(buf, 128, "SKPBS_COPY_ALPHA");
+	if (dwBlendState == SKPBS_COPY_COLOR) strcpy_s(buf, 128, "SKPBS_COPY_COLOR");
+	
+	if (bDepthEnable && pDep) strcpy_s(buf2, 128, "DEPTH_ENABLED");
+	else strcpy_s(buf2, 128, "DEPTH_DISABLED");
+
+	Log("Flush [%s] [%s] hPloy=0x%X, iI=%hu", buf, buf2, hPoly, iI);
+#endif
+
+	HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
+
+	//HR(pDev->GetRenderState(D3DRS_ZENABLE, &bkZEN));
+	//HR(pDev->GetRenderState(D3DRS_ZWRITEENABLE, &bkZW));
+	//HR(pDev->GetRenderState(D3DRS_CULLMODE, &bkCULL));
+
+	HR(pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+	HR(pDev->SetVertexDeclaration(pSketchpadDecl));
+		
+	HR(FX->SetFloat(eRandom, float(oapiRand())));
+	HR(FX->SetVector(eTarget, &vTarget));
+	HR(FX->SetTechnique(eSketch));
+	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
+
+	if (vmode == ORTHO) {
+		HR(FX->BeginPass(0));
+	}
+	else {
+		HR(FX->BeginPass(1));
+	}
+
+	if (dwBlendState == SKPBS_ALPHABLEND) {
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
+		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));
+	}
+	else if (dwBlendState == SKPBS_COPY) {
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
+		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+	}
+	else if (dwBlendState == SKPBS_COPY_ALPHA) {
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x8);
+		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+	}
+	else if (dwBlendState == SKPBS_COPY_COLOR) {
+		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
+		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+	}
+
+	if (bDepthEnable && pDep) {
+		pDev->SetRenderState(D3DRS_ZENABLE, 1);
+		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
+	}
+	else {
+		pDev->SetRenderState(D3DRS_ZENABLE, 0);
+		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+	}
+
+	if (hPoly) {
+		assert(iI == 0);
+		D3D9PolyBase *pBase = static_cast<D3D9PolyBase *>(hPoly);
+		pBase->Draw(pDev);
+	}
+	else {
+		if (tCurrent == TRIANGLE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+		if (tCurrent == LINE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_LINELIST, 0, vI, iI / 2, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
+	}
+
+	HR(FX->EndPass());
+	HR(FX->End());
+	
+	HR(pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
+	HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, bkALPHA));
+
+	//HR(pDev->SetRenderState(D3DRS_ZENABLE, bkZEN));
+	//HR(pDev->SetRenderState(D3DRS_ZWRITEENABLE, bkZW));
+	//HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
+		
+	HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
+		
+	iI = vI = 0;
+
+	return true;
+	
 }
 
 
@@ -489,6 +553,22 @@ void D3D9Pad::SetupDevice(Topo tNew)
 
 	tCurrent = tNew;
 
+#ifdef SKPDBG 
+	char buf[512];
+	strcpy_s(buf, 512, "");
+	if (Change&SKPCHG_TOPOLOGY)	 strcat_s(buf, 512, "SKPCHG_TOPOLOGY ");
+	if (Change&SKPCHG_TRANSFORM) strcat_s(buf, 512, "SKPCHG_TRANSFORM ");
+	if (Change&SKPCHG_CLIPCONE)	 strcat_s(buf, 512, "SKPCHG_CLIPCONE ");
+	if (Change&SKPCHG_PEN) strcat_s(buf, 512, "SKPCHG_PEN ");
+	if (Change&SKPCHG_EFFECTS)	 strcat_s(buf, 512, "SKPCHG_EFFECTS ");
+	if (Change&SKPCHG_CLIPRECT)	 strcat_s(buf, 512, "SKPCHG_CLIPRECT ");
+	if (Change&SKPCHG_TEXTURE)	strcat_s(buf, 512, "SKPCHG_TEXTURE ");
+	if (Change&SKPCHG_FONT)	strcat_s(buf, 512, "SKPCHG_FONT ");
+	if (Change&SKPCHG_DEPTH)	strcat_s(buf, 512, "SKPCHG_DEPTH ");
+	if (Change&SKPCHG_PATTERN)	strcat_s(buf, 512, "SKPCHG_PATTERN ");
+	Log("StateChange = [%s]", buf);
+#endif
+	
 
 	// Apply a new setup -----------------------------------------------------------------
 	//
@@ -656,6 +736,11 @@ HDC D3D9Pad::GetDC()
 //
 Font *D3D9Pad::SetFont(Font *font) const
 {
+	if (cfont == font) return font;
+
+#ifdef SKPDBG 
+	Log("SetFont(0x%X)", font);
+#endif
 	// No "Change" falgs required here, covered in SetFontTextureNative()
 
 	Font *pfont = cfont;
@@ -669,6 +754,12 @@ Font *D3D9Pad::SetFont(Font *font) const
 //
 Brush *D3D9Pad::SetBrush (Brush *brush) const
 {
+	if (cbrush == brush) return brush;
+
+#ifdef SKPDBG 
+	Log("SetBrush(0x%X)", brush);
+#endif
+
 	// No "Change" falgs required here, color stored in vertex data
 
 	QBrush.bEnabled = false;
@@ -688,6 +779,12 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 //
 Pen *D3D9Pad::SetPen (Pen *pen) const
 {
+	if (cpen == pen) return pen;
+
+#ifdef SKPDBG 
+	Log("SetPen(0x%X)", pen);
+#endif
+
 	// Change required due to pen width and style change
 	Change |= SKPCHG_PEN;
 
@@ -785,6 +882,9 @@ DWORD D3D9Pad::GetTextWidth (const char *str, int len)
 //
 void D3D9Pad::SetOrigin (int x, int y)
 {
+#ifdef SKPDBG 
+	Log("SetOrigin(%d, %d)", x, y);
+#endif
 	Change |= SKPCHG_TRANSFORM;
 
 	mW._41 = float(x);
@@ -895,6 +995,10 @@ void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 //
 bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 {
+#ifdef SKPDBG 
+	Log("TextBox()");
+#endif
+
 	// No "Setup" required, done on PrintSkp
 
 	if (cfont==NULL) return false;
@@ -926,6 +1030,9 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 //
 bool D3D9Pad::Text (int x, int y, const char *str, int len)
 {
+#ifdef SKPDBG 
+	Log("Text(%s)", str);
+#endif
 	// No "Setup" required, done on PrintSkp
 
 	if (cfont==NULL) return false;
@@ -986,6 +1093,9 @@ void D3D9Pad::MoveTo (int x, int y)
 void D3D9Pad::LineTo (int tx, int ty)
 {
 	if (!HasPen()) return;
+#ifdef SKPDBG 
+	Log("LineTo()");
+#endif
 	Line(cx, cy, tx, ty);
 	cx=tx; cy=ty;
 }
@@ -996,7 +1106,9 @@ void D3D9Pad::LineTo (int tx, int ty)
 void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 {
 	if (!HasPen()) return;
-
+#ifdef SKPDBG 
+	Log("Line()");
+#endif
 	IVECTOR2 pt[2];
 
 	pt[0].x = x0; pt[0].y = y0;
@@ -1012,6 +1124,9 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 //
 void D3D9Pad::FillRect(int l, int t, int r, int b, SkpColor &c)
 {
+#ifdef SKPDBG 
+	Log("FillRect()");
+#endif
 	if (Topology(TRIANGLE)) {
 		AddRectIdx(vI);
 		SkpVtxIC(Vtx[vI++], l, t, c);
@@ -1029,6 +1144,9 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 	if (r <= l) return;
 	if (b <= t) return;
 
+#ifdef SKPDBG 
+	Log("Rectangle()");
+#endif
 	r--;
 	b--;
 
@@ -1057,6 +1175,10 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 {
 	if (r <= l) return;
 	if (b <= t) return;
+
+#ifdef SKPDBG 
+	Log("Ellipse()");
+#endif
 
 	float w = float(r - l); float h = float(b - t);	float fl = float(l); float ft = float(t);
 	DWORD z = max((r-l), (b-t));
@@ -1111,6 +1233,10 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 //
 void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 {
+#ifdef SKPDBG 
+	Log("Polygon(%d)", npt);
+#endif
+
 	if (npt<3) return;
 	if (HasBrush() && npt > 64) return;
 
@@ -1143,6 +1269,9 @@ void D3D9Pad::Polygon (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 {
+#ifdef SKPDBG 
+	Log("Polyline(%d)", npt);
+#endif
 	if (npt < 2) return;
 	if (HasPen()) AppendLineVertexList<IVECTOR2>(pt, npt, false);
 }
@@ -1152,6 +1281,10 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 //
 void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 {
+#ifdef SKPDBG 
+	Log("DrawPoly(0x%X, 0x%X)", DWORD(hPoly), flags);
+#endif
+
 	if (hPoly) {
 
 		D3D9PolyBase *pBase = static_cast<D3D9PolyBase *>(hPoly);
@@ -1175,6 +1308,9 @@ void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 //
 void D3D9Pad::Lines(FVECTOR2 *pt, int nlines)
 {
+#ifdef SKPDBG 
+	Log("Lines(%d)", nlines);
+#endif
 	if (!HasPen()) return;
 	for (int i = 0; i < nlines; i++) {
 		AppendLineVertexList<FVECTOR2>(pt);
@@ -1605,6 +1741,8 @@ LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
 LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;
 
+FILE* D3D9Pad::log = 0;
+CRITICAL_SECTION D3D9Pad::LogCrit;
 
 
 // ======================================================================

@@ -32,6 +32,9 @@
 
 void D3D9Pad::ColorCompatibility(bool bEnable)
 {
+#ifdef SKPDBG 
+	Log("ColorCompatibility(%u)", DWORD(bEnable));
+#endif
 	bColorComp = bEnable;
 }
 
@@ -47,6 +50,9 @@ const FMATRIX4 *D3D9Pad::GetColorMatrix()
 //
 void D3D9Pad::SetColorMatrix(const FMATRIX4 *pMatrix)
 {
+#ifdef SKPDBG 
+	Log("SetColorMatrix(0x%X)", DWORD(pMatrix));
+#endif
 	if (pMatrix) {
 		memcpy_s(&ColorMatrix, sizeof(FMATRIX4), pMatrix, sizeof(FMATRIX4));
 		SetEnable(SKP3E_CMATR);
@@ -66,6 +72,9 @@ void D3D9Pad::SetColorMatrix(const FMATRIX4 *pMatrix)
 //
 void D3D9Pad::SetBrightness(const FVECTOR4 *pBrightness)
 {
+#ifdef SKPDBG 
+	Log("SetBrightness(0x%X)", DWORD(pBrightness));
+#endif
 	if (pBrightness == NULL) SetColorMatrix(NULL);
 	else {
 		memset(&ColorMatrix, 0, sizeof(FMATRIX4));
@@ -94,6 +103,9 @@ FVECTOR4 D3D9Pad::GetRenderParam(int param)
 //
 void D3D9Pad::SetRenderParam(int param, const FVECTOR4 *d)
 {
+#ifdef SKPDBG 
+	Log("SetRenderParam(%u, 0x%X)", param, DWORD(d));
+#endif
 	if (d == NULL) {
 
 		switch (param) {
@@ -132,6 +144,9 @@ void D3D9Pad::ClearEnable(DWORD config)
 //
 void D3D9Pad::SetBlendState(DWORD dwState)
 {
+#ifdef SKPDBG 
+	Log("SetBlendState(%u)", dwState);
+#endif
 	// Must Flush() here before a mode change
 	Flush();
 	dwBlendState = dwState;
@@ -152,6 +167,9 @@ FMATRIX4 D3D9Pad::GetWorldTransform() const
 //
 void D3D9Pad::PushWorldTransform()
 { 
+#ifdef SKPDBG 
+	Log("PushWorldTransform()");
+#endif
 	mWStack.push(mW);
 }
 
@@ -160,6 +178,9 @@ void D3D9Pad::PushWorldTransform()
 //
 void D3D9Pad::PopWorldTransform()
 { 
+#ifdef SKPDBG 
+	Log("PopWorldTransform()");
+#endif
 	if (mWStack.empty() == false) {
 		mW = mWStack.top();
 		mWStack.pop();
@@ -172,7 +193,9 @@ void D3D9Pad::PopWorldTransform()
 //
 void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 {
-
+#ifdef SKPDBG 
+	Log("SetWorldScaleTransform2D(0x%X, 0x%X)", DWORD(scl), DWORD(trl));
+#endif
 	Change |= SKPCHG_TRANSFORM;
 
 	float sx = 1.0f, sy = 1.0f;
@@ -196,6 +219,10 @@ void D3D9Pad::SetWorldScaleTransform2D(const FVECTOR2 *scl, const IVECTOR2 *trl)
 //
 void D3D9Pad::GradientFillRect(const LPRECT R, DWORD c1, DWORD c2, bool bVertical)
 {
+#ifdef SKPDBG 
+	Log("GradientFillRect()");
+#endif
+
 	DWORD a, b, c, d;
 
 	a = d = c1; b = c = c2;
@@ -221,6 +248,9 @@ void D3D9Pad::GradientFillRect(const LPRECT R, DWORD c1, DWORD c2, bool bVertica
 //
 void D3D9Pad::PatternFill(SURFHANDLE hSrc, const LPRECT t)
 {
+#ifdef SKPDBG 
+	Log("PatternFill()");
+#endif
 	if (!hSrc) return;
 
 	TexChange(hSrc);
@@ -250,6 +280,9 @@ void D3D9Pad::PatternFill(SURFHANDLE hSrc, const LPRECT t)
 //
 void D3D9Pad::ColorFill(const FVECTOR4 &color, const LPRECT tgt)
 {
+#ifdef SKPDBG 
+	Log("ColorFill()");
+#endif
 	if (tgt) FillRect(tgt->left, tgt->top, tgt->right, tgt->bottom, SkpColor(color));
 	else FillRect(0, 0, tgt_desc.Width, tgt_desc.Height, SkpColor(color));
 }
@@ -258,7 +291,9 @@ void D3D9Pad::ColorFill(const FVECTOR4 &color, const LPRECT tgt)
 //
 void D3D9Pad::StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out)
 {
-
+#ifdef SKPDBG 
+	Log("StretchRegion()");
+#endif
 	const RECT *ext = &(rgn->outr);
 	const RECT *itr = &(rgn->intr);
 

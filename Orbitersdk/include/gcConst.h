@@ -492,23 +492,19 @@ namespace oapi {
 		}
 
 		float data[4];
-		struct { // {x,y,z,w} or {xyz,w}
-			struct {
-				float x, y, z;
-			};
-			struct {
-				FVECTOR3 xyz;
-			};
-			float w;
+		struct {
+			float x, y, z, w;
 		};
-		struct { // {r,g,b,a} or {rgb,a}
-			struct {
-				float r, g, b;
-			};
-			struct {
-				FVECTOR3 rgb;
-			};
-			float a;
+		struct {
+			float r, g, b, a;
+		};
+		struct {
+			FVECTOR3 rgb;
+			float _a;
+		};
+		struct {
+			FVECTOR3 xyz;
+			float _w;
 		};
 	} FVECTOR4;
 

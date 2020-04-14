@@ -114,7 +114,7 @@ namespace oapi {
 
 		/**
 		* \brief Set up a global world transformation matrix. 
-		* \param pWT A pointet to MATRIX4, NULL to reset default settings.
+		* \param pWT A pointet to FMATRIX4, NULL to reset default settings.
 		* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin(). 
 		* \note Everything is transformed including CopyRect() and Text().
 		* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
