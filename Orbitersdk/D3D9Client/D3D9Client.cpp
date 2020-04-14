@@ -181,6 +181,27 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	// _CrtSetBreakAlloc(8351);
+
+	assert(sizeof(FVECTOR4) == 16);
+	//assert( sizeof(FVECTOR4::data == 16 );
+	//assert( sizeof(FVECTOR4::rgb == 16 );
+	//assert( sizeof(FVECTOR4::xyz == 16 );
+	auto dut = FVECTOR4(1.2, 3.4, 5.6, 7.8);
+	assert(dut.data[0] == dut.r);
+	assert(dut.data[1] == dut.g);
+	assert(dut.data[2] == dut.b);
+	assert(dut.data[3] == dut.a);
+
+	assert(dut.data[0] == dut.x);
+	assert(dut.data[1] == dut.y);
+	assert(dut.data[2] == dut.z);
+	assert(dut.data[3] == dut.w);
+
+	assert(dut.rgb.x == dut.xyz.x);
+	assert(dut.rgb.y == dut.xyz.y);
+	assert(dut.rgb.z == dut.xyz.z);
+
+	assert(dut.a == dut.w);
 #endif
 
 	D3D9InitLog("Modules/D3D9Client/D3D9ClientLog.html");
