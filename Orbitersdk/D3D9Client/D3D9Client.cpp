@@ -2002,7 +2002,7 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 	// VC MFD mipmaps hack ---
 	bool bSize = false;
 	if (w==h) if (w == 256 || w == 512 || w == 1024) bSize = true;
-	if ((attrib&OAPISURFACE_TEXTURE) && bSize) attrib |= OAPISURFACE_MIPMAPS;
+	if ((attrib&OAPISURFACE_TEXTURE) && !(attrib&OAPISURFACE_GDI) && bSize) attrib |= OAPISURFACE_MIPMAPS;
 	// --- end hack ---
 
 
