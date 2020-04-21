@@ -53,6 +53,22 @@ oapi::Pen * defpen = 0;
 
 // ===============================================================================================
 //
+void D3D9Pad::SinCos(int n, int k)
+{
+	pSinCos[k] = new D3DXVECTOR2[n];
+	float s = float(PI2) / float(n);
+	float q = -s / 2.0f;
+	for (int i = 0; i<n; i++) { 
+		pSinCos[k][i].x = sin(q) + 1.0f;	
+		pSinCos[k][i].y = cos(q) + 1.0f; 
+		q += s; 
+	}
+}
+
+
+
+// ===============================================================================================
+//
 void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 {
 	pDev = pDevice;
@@ -69,16 +85,10 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 	Idx = new WORD[3 * nQueueMax + 3];
 	Vtx = new SkpVtx[3 * nQueueMax + 3];
 
-	pSinCos = new D3DXVECTOR2[64];
-
-	float q = 0.0f; // float(PI2) / 256.0f;
-	float s = float(PI2) / 64.0f;
-	// ------------------------------------------------------------------
-	for (int i = 0; i<64; i++) {
-		pSinCos[i].x = sin(q);
-		pSinCos[i].y = cos(q);
-		q += s;
-	}
+	SinCos(8, 0);
+	SinCos(16, 1);
+	SinCos(32, 2);
+	SinCos(64, 3);
 
 	// Initialize Techniques -------------------------------------------------------------------------
 	//
@@ -101,6 +111,19 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 		MissingRuntimeError();
 		return;
 	}
+
+	if (Config->ShaderDebug) {
+		LPD3DXBUFFER pBuffer = NULL;
+		if (D3DXDisassembleEffect(FX, true, &pBuffer) == S_OK) {
+			FILE *fp = NULL;
+			if (!fopen_s(&fp, "Sketchpad_asm.html", "w")) {
+				fwrite(pBuffer->GetBufferPointer(), 1, pBuffer->GetBufferSize(), fp);
+				fclose(fp);
+			}
+			pBuffer->Release();
+		}
+	}
+
 
 	pNoise	  = gc->GetNoiseTex();
 
@@ -154,7 +177,7 @@ void D3D9Pad::GlobalExit()
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
 	SAFE_DELETEA(Vtx);
-	SAFE_DELETEA(pSinCos);
+	for (int i=0;i<4;i++) SAFE_DELETEA(pSinCos[i]);
 
 	if (log) fclose(log);
 	log = NULL;
@@ -417,14 +440,17 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 		return false;
 	}
 
+	DWORD dwBlend = dwBlendState & 0xF;
+	DWORD dwFilter = dwBlendState & 0xF0;
+	
 #ifdef SKPDBG 
 	char buf[128]; strcpy_s(buf, 128, "");
 	char buf2[128]; strcpy_s(buf2, 128, "");
 
-	if (dwBlendState == SKPBS_ALPHABLEND) strcpy_s(buf, 128, "SKPBS_ALPHABLEND");
-	if (dwBlendState == SKPBS_COPY) strcpy_s(buf, 128, "SKPBS_COPY");
-	if (dwBlendState == SKPBS_COPY_ALPHA) strcpy_s(buf, 128, "SKPBS_COPY_ALPHA");
-	if (dwBlendState == SKPBS_COPY_COLOR) strcpy_s(buf, 128, "SKPBS_COPY_COLOR");
+	if (dwBlend == SKPBS_ALPHABLEND) strcpy_s(buf, 128, "SKPBS_ALPHABLEND");
+	if (dwBlend == SKPBS_COPY) strcpy_s(buf, 128, "SKPBS_COPY");
+	if (dwBlend == SKPBS_COPY_ALPHA) strcpy_s(buf, 128, "SKPBS_COPY_ALPHA");
+	if (dwBlend == SKPBS_COPY_COLOR) strcpy_s(buf, 128, "SKPBS_COPY_COLOR");
 	
 	if (bDepthEnable && pDep) strcpy_s(buf2, 128, "DEPTH_ENABLED");
 	else strcpy_s(buf2, 128, "DEPTH_DISABLED");
@@ -453,21 +479,28 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 		HR(FX->BeginPass(1));
 	}
 
-	if (dwBlendState == SKPBS_ALPHABLEND) {
+	if (dwBlend == SKPBS_ALPHABLEND) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));
 	}
-	else if (dwBlendState == SKPBS_COPY) {
+	else if (dwBlend == SKPBS_COPY) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
 	}
-	else if (dwBlendState == SKPBS_COPY_ALPHA) {
+	else if (dwBlend == SKPBS_COPY_ALPHA) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x8);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
 	}
-	else if (dwBlendState == SKPBS_COPY_COLOR) {
+	else if (dwBlend == SKPBS_COPY_COLOR) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
+	}
+
+	if (dwFilter) {
+		if (dwFilter == SKPBS_FILTER_POINT) {
+			pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+			pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		}
 	}
 
 	if (bDepthEnable && pDep) {
@@ -500,6 +533,11 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	//HR(pDev->SetRenderState(D3DRS_CULLMODE, bkCULL));
 		
 	HR(pDev->SetRenderState(D3DRS_SCISSORTESTENABLE, 0));
+
+	if (dwFilter) {
+		pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	}
 		
 	iI = vI = 0;
 
@@ -739,7 +777,9 @@ Font *D3D9Pad::SetFont(Font *font) const
 	if (cfont == font) return font;
 
 #ifdef SKPDBG 
-	Log("SetFont(0x%X)", font);
+	LOGFONTA lf;
+	GetObjectA(font->GetGDIFont(), sizeof(LOGFONT), &lf);
+	Log("SetFont(0x%X) Face=[%s] Height=%d Weight=%d", font, lf.lfFaceName, lf.lfHeight, lf.lfWeight);
 #endif
 	// No "Change" falgs required here, covered in SetFontTextureNative()
 
@@ -754,7 +794,7 @@ Font *D3D9Pad::SetFont(Font *font) const
 //
 Brush *D3D9Pad::SetBrush (Brush *brush) const
 {
-	if (cbrush == brush) return brush;
+	if (cbrush == brush && QBrush.bEnabled == false) return brush;
 
 #ifdef SKPDBG 
 	Log("SetBrush(0x%X)", brush);
@@ -779,7 +819,7 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 //
 Pen *D3D9Pad::SetPen (Pen *pen) const
 {
-	if (cpen == pen) return pen;
+	if (cpen == pen && QPen.bEnabled == false) return pen;
 
 #ifdef SKPDBG 
 	Log("SetPen(0x%X)", pen);
@@ -1185,22 +1225,21 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 
 	w *= 0.5f;
 	h *= 0.5f;
-	fl += w;
-	ft += h;
+	//fl += w;
+	//ft += h;
 
 	IVECTOR2 pts[65];
 
-	WORD k = 4;
-	WORD s = 8;
 	WORD n = 8;
-	if (z > 16) k = 2, s = 4, n = 16;
-	if (z > 32) k = 1, s = 2, n = 32;
-	if (z > 64) k = 0, s = 1, n = 64;
+	WORD q = 0;
+
+	if (z > 16) q = 1, n = 16;
+	if (z > 32) q = 2, n = 32;
+	if (z > 64) q = 3, n = 64;
 
 	for (WORD i = 0; i<n; i++) {
-		pts[i].x = long(fl + pSinCos[k].x * w);
-		pts[i].y = long(ft + pSinCos[k].y * h);
-		k += s;
+		pts[i].x = long(fl + pSinCos[q][i].x * w);
+		pts[i].y = long(ft + pSinCos[q][i].y * h);
 	}
 
 	
@@ -1734,7 +1773,7 @@ ID3DXEffect* D3D9Pad::FX = 0;
 D3D9Client * D3D9Pad::gc = 0;
 WORD * D3D9Pad::Idx = 0;
 SkpVtx * D3D9Pad::Vtx = 0;
-LPD3DXVECTOR2 D3D9Pad::pSinCos = 0;
+LPD3DXVECTOR2 D3D9Pad::pSinCos[];
 LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
@@ -1787,17 +1826,22 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	Quality = NONANTIALIASED_QUALITY;
 
 	if ((flags & 0xF) == 0) {
-		if (Config->SketchpadFont == 1) Quality = DRAFT_QUALITY;
+		if (Config->SketchpadFont == 1) Quality = PROOF_QUALITY;
 		if (Config->SketchpadFont == 2) Quality = CLEARTYPE_QUALITY;
 	}
 	else {
-		if (flags&SKP_FONT_ANTIALIAS) Quality = DRAFT_QUALITY;
+		if (flags&SKP_FONT_ANTIALIAS) Quality = PROOF_QUALITY;
 		if (flags&SKP_FONT_CLEARTYPE) Quality = CLEARTYPE_QUALITY;
 	}
 
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------
 	//
 	if (pFont==NULL) {
+
+		//if (Quality == CLEARTYPE_QUALITY) {
+		//	height *= 3;
+		//	Quality = NONANTIALIASED_QUALITY;
+		//}
 
 		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
 

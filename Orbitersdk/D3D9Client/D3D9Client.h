@@ -1246,7 +1246,7 @@ public:
 	bool OutputLoadStatus (const char *msg, int line);
 
 private:
-
+	void SketchPadTest();
 	void PresentScene();
 	void Label(const char *format, ...);
 	bool CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const;

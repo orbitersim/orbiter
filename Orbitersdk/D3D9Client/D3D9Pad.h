@@ -128,8 +128,8 @@ struct SkpVtx {
 // GradientFillRect [only]
 inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 {
-	v.x = float(_x) - 0.5f;
-	v.y = float(_y) - 0.5f;
+	v.x = float(_x);
+	v.y = float(_y);
 	v.clr = c;
 	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 	v.l = 0.0f;
@@ -138,8 +138,8 @@ inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 // Fill Rect, Ellipse, Polygon [only]
 inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
-	v.x = float(_x) - 0.5f;
-	v.y = float(_y) - 0.5f;
+	v.x = float(_x);
+	v.y = float(_y);
 	v.clr = c.dclr;
 	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 	v.l = 0.0f;
@@ -148,10 +148,10 @@ inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 // Copy, Stretch, Colorkey Rect [only]
 inline void SkpVtxII(SkpVtx &v, int _tx, int _ty, int _sx, int _sy)
 {
-	v.x = float(_tx);
-	v.y = float(_ty);
-	v.nx = float(_sx) + 0.5f;
-	v.ny = float(_sy) + 0.5f;
+	v.x = float(_tx) - 0.5f;
+	v.y = float(_ty) - 0.5f;
+	v.nx = float(_sx);
+	v.ny = float(_sy);
 	v.l = 0.0f;
 };
 
@@ -169,10 +169,10 @@ inline void SkpVtxPF(SkpVtx &v, int _x, int _y, DWORD c)
 // Rotate Rect [only]
 inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 {
-	v.x = _x;
-	v.y = _y;
-	v.nx = float(_tx) + 0.5f;
-	v.ny = float(_ty) + 0.5f;
+	v.x = _x - 0.5f;
+	v.y = _y - 0.5f;
+	v.nx = float(_tx);
+	v.ny = float(_ty);
 	v.l = 0.0f;
 };
 
@@ -239,7 +239,7 @@ public:
 	 *   Usually this should be set to "D3D9Client")
 	 */
 	static void D3D9TechInit(D3D9Client *gc, LPDIRECT3DDEVICE9 pDev);
-
+	static void SinCos(int n, int i);
 	/**
 	 * \brief Release global parameters
 	 */
@@ -684,7 +684,7 @@ private:
 	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;
 	static LPDIRECT3DDEVICE9 pDev;
-	static LPD3DXVECTOR2 pSinCos;
+	static LPD3DXVECTOR2 pSinCos[5];
 	static LPDIRECT3DTEXTURE9 pNoise;
 	// -------------------------------------------
 

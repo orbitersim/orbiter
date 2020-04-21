@@ -42,6 +42,9 @@ using namespace oapi;
 #define SKPBS_COPY				0x2			///< Copy source color and alpha to destination
 #define SKPBS_COPY_ALPHA		0x3			///< Copy source.alpha to destination.alpha, will retain destination color unchanged
 #define SKPBS_COPY_COLOR		0x4			///< Copy source.color to destination.color, will retain destination alpha unchanged
+#define SKPBS_FILTER_LINEAR		0x00		///< Use "linear" filter in CopyRect and similar functions
+#define SKPBS_FILTER_POINT		0x10		///< Use "point" filter in CopyRect and similar functions
+
 #define SKP3_PRM_GAMMA			1			///< Enable/Setup Gamma correction	
 #define SKP3_PRM_NOISE			2			///< Enable/Setup Noise generation	
 ///@}
@@ -396,7 +399,7 @@ namespace oapi {
 		* \note SKPBS_COPY_ALPHA, Copy source.alpha to destination.alpha, will retain destination color unchanged
 		* \note SKPBS_COPY_COLOR, Copy source.color to destination.color, will retain destination alpha unchanged (if exists)
 		*/
-		virtual void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND) { assert(false); }
+		virtual void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND | SKPBS_FILTER_LINEAR) { assert(false); }
 
 
 		/**
@@ -437,7 +440,7 @@ namespace oapi {
 		virtual void GradientFillRect(const LPRECT tgt, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
 
 		/**
-		* \brief Fill a rectangle with pattern
+		* \brief [EXPERIMENTAL] Fill a rectangle with pattern
 		* \param hPat Handle to a texture containing the pattern
 		* \param tgt a Rect specifying the bounds
 		*/

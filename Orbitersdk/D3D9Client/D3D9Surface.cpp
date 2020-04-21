@@ -1493,7 +1493,7 @@ bool D3D9ClientSurface::LoadSurface(const char *fname, DWORD flags, bool bDecomp
 			HR(pDevice->CreateRenderTarget(info.Width, info.Height, Format, D3DMULTISAMPLE_NONE, 0, bLockable, &pSurf, NULL));
 			
 			if (pSurf) {
-				if (D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, 1, Usage, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
+				if (D3DXCreateTextureFromFileExA(pDevice, path, info.Width, info.Height, 1, 0, Format, D3DPOOL_SYSTEMMEM, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex)==S_OK) {
 					SetName(fname);
 					LPDIRECT3DSURFACE9 pTemp;
 					if (pTex) {

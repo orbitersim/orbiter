@@ -63,10 +63,10 @@ uniform extern bool		 gEffectsEn;
 // ColorKey tolarance
 #define tol 0.01f
 
-sampler TexS = sampler_state
+sampler TexS : register(s0) = sampler_state
 {
 	Texture = <gTex0>;
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = 8;
@@ -74,10 +74,10 @@ sampler TexS = sampler_state
 	AddressV = WRAP;
 };
 
-sampler FntS = sampler_state
+sampler FntS : register(s1) = sampler_state
 {
 	Texture = <gFnt0>;
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = 8;
@@ -85,7 +85,7 @@ sampler FntS = sampler_state
 	AddressV = WRAP;
 };
 
-sampler NoiseS = sampler_state
+sampler NoiseS : register(s2) = sampler_state
 {
 	Texture = <gNoiseTex>;
 	MinFilter = LINEAR;
@@ -234,12 +234,14 @@ OutputVS OrthoVS(InputVS v)
 
 float4 SketchpadPS(float4 sc : VPOS, OutputVS frg) : COLOR
 {
-	float f = 1;
 	float4 t = 1;
+	float3 u = 1;
 
-	if (gFntEn)	f = tex2D(FntS, frg.tex.zw).g;
-	if (gTexEn) t = tex2D(TexS, frg.tex.xy);
-	
+	if (gFntEn)	u = tex2D(FntS, frg.tex.zw).rgb;
+	if (gTexEn) t = tex2D(TexS, frg.tex.xy);	
+
+	float f = max(u.r*0.7f, u.g);
+
 	// Select Color source
 	float4 c = frg.color;
 	if (frg.sw[TSW] > 0.2f) c = gPen;

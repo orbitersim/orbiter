@@ -633,8 +633,77 @@ void D3D9Client::clbkPostCreation()
 
 	LogAlw("=============== Loading Completed and Visuals Created ================");
 
+#ifdef _DEBUG
+	SketchPadTest();
+#endif
+
 	WriteLog("[Scene Initialized]");
 }
+
+// ==============================================================
+// Perform some routine tests with sketchpad
+//
+void D3D9Client::SketchPadTest()
+{
+	SURFHANDLE hSrc = clbkLoadSurface("D3D9/SketchpadTest.dds", OAPISURFACE_TEXTURE);
+	SURFHANDLE hTgt = clbkLoadSurface("D3D9/SketchpadTest.dds", OAPISURFACE_RENDERTARGET);
+
+	if (!hSrc || !hTgt) return;
+
+	oapiSetSurfaceColourKey(hSrc, 0xFFFFFFFF);
+
+	Sketchpad3 *pSkp = static_cast<Sketchpad3 *>(oapiGetSketchpad(hTgt));
+
+	RECT r = { 17, 1, 31, 15 };
+	RECT t = { 1, 33, 31, 63 };
+	RECT q = { 0, 16, 16, 32 };
+	RECT w = { 49, 1, 63, 15 };
+
+	pSkp->CopyRect(hSrc, &r, 1, 1);
+	pSkp->ColorKey(hSrc, &r, 33, 1);
+	pSkp->SetBlendState(SKPBS_ALPHABLEND | SKPBS_FILTER_POINT);
+	pSkp->StretchRect(hSrc, &r, &t);
+	pSkp->SetBlendState();
+	pSkp->StretchRect(hSrc, &r, &w);
+	pSkp->RotateRect(hSrc, &q, 24, 24, float(PI05));
+	pSkp->RotateRect(hSrc, &q, 40, 24, float(PI));
+	pSkp->RotateRect(hSrc, &q, 56, 24, float(-PI05));
+
+	RECT tr = { 33, 49, 47, 63 };
+	pSkp->ColorFill(FVECTOR4((DWORD)0xFFFF00FF), &tr);
+
+	pSkp->QuickPen(0xFF000000);
+	pSkp->QuickBrush(0x80FFFF00);
+	pSkp->Rectangle(49, 33, 63, 47); // 1px margin
+	pSkp->Ellipse(49, 49, 63, 63);	// 1px margin
+
+									// No Pen, Brush Only
+	pSkp->SetPen(NULL);
+	pSkp->QuickBrush(0xFF00FF00);
+	pSkp->Rectangle(65, 33, 79, 47); // 1px tlm 1px brm
+	pSkp->Ellipse(65, 49, 79, 63);	// 1px tlm 1px brm
+
+	pSkp->QuickPen(0xFFFFFFFF);
+	pSkp->MoveTo(65, 1);
+	pSkp->LineTo(65, 14);
+	pSkp->LineTo(78, 14);
+	pSkp->LineTo(78, 1);
+	pSkp->LineTo(65, 1);
+
+	RECT cr = { 33, 33, 47, 47 };
+	pSkp->ClipRect(&cr);
+	pSkp->ColorFill(FVECTOR4((DWORD)0xFFFFFF00), NULL);
+	pSkp->ClipRect();
+
+	oapiReleaseSketchpad(pSkp);
+
+	clbkSaveSurfaceToImage(hTgt, "SketchpadOutput.png", ImageFileFormat::IMAGE_PNG);
+
+	oapiReleaseTexture(hSrc);
+	oapiReleaseTexture(hTgt);
+}
+
+
 
 
 // ==============================================================
@@ -1942,8 +2011,9 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 	}
 
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, fname);
-	surf->LoadSurface(fname, attrib);
-	return surf;
+	if (surf->LoadSurface(fname, attrib)) return surf;
+	delete surf;
+	return NULL;
 }
 
 // ==============================================================

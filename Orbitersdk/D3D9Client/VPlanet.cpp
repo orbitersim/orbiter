@@ -1285,14 +1285,15 @@ bool vPlanet::LoadMicroTextures()
 	char file[256];
 	for (int i=0; i<ARRAYSIZE(MicroCfg.Level); ++i) {
 		sprintf_s(file, 256, "Textures/%s", MicroCfg.Level[i].file);
-		HR(D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex));
-		D3DSURFACE_DESC desc;
-		if (MicroCfg.Level[i].pTex) {
-			MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
-			MicroCfg.Level[i].size = double(desc.Width) / MicroCfg.Level[i].reso;
-			MicroCfg.Level[i].px = double(desc.Width);
-			DWORD mips = MicroCfg.Level[i].pTex->GetLevelCount();
-			LogOapi("Level %u, %s, %.1fpx/m, %.1fm, Mipmap count=%u", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size, mips);
+		if (D3DXCreateTextureFromFileA(GetDevice(), file, &MicroCfg.Level[i].pTex) == S_OK) {
+			D3DSURFACE_DESC desc;
+			if (MicroCfg.Level[i].pTex) {
+				MicroCfg.Level[i].pTex->GetLevelDesc(0, &desc);
+				MicroCfg.Level[i].size = double(desc.Width) / MicroCfg.Level[i].reso;
+				MicroCfg.Level[i].px = double(desc.Width);
+				DWORD mips = MicroCfg.Level[i].pTex->GetLevelCount();
+				LogOapi("Level %u, %s, %.1fpx/m, %.1fm, Mipmap count=%u", i, MicroCfg.Level[i].file, MicroCfg.Level[i].reso, MicroCfg.Level[i].size, mips);
+			}
 		}
 	}
 	MicroCfg.bLoaded = true;

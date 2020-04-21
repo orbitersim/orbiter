@@ -273,10 +273,11 @@ restart:
 
 	pTex->GenerateMipSubLevels();
 
-	//char texname[256];
-	//sprintf_s(texname, 256, "_%s_%d_0x%X.dds", fl.lfFaceName, fl.lfHeight, DWORD(this));
-	//D3DXSaveSurfaceToFile(texname, D3DXIFF_DDS, pSurf, NULL, NULL);
-
+#ifdef FNTDBG
+	char texname[256];
+	sprintf_s(texname, 256, "_%s_%d_0x%X.dds", lf.lfFaceName, lf.lfHeight, DWORD(this));
+	D3DXSaveSurfaceToFile(texname, D3DXIFF_DDS, pSurf, NULL, NULL);
+#endif 
 	pSrcTex->Release();
 
 	// Init WCHAR font
