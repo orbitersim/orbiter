@@ -217,12 +217,12 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	if (Config->GDIOverlay) {
 		HDC hDC;
 		// Clear the GDI Overlay with transparency
-		if (psgBuffer[GBUF_GDI]->GetDC(&hDC) == S_OK) {	
+		if (psgBuffer[GBUF_GDI]->GetDC(&hDC) == S_OK) {
 			DWORD color = 0xF08040; // BGR "Color Key" value for transparency
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
 			RECT r = { 0, 0, viewW, viewH };
 			FillRect(hDC, &r, hBrush);
-			DeleteObject(hBrush);	
+			DeleteObject(hBrush);
 			psgBuffer[GBUF_GDI]->ReleaseDC(hDC);
 		}
 	}
@@ -678,6 +678,14 @@ void Scene::Update ()
 	}
 }
 
+// ===========================================================================================
+//
+double Scene::GetTargetElevation() const
+{
+	VESSEL *hVes = oapiGetVesselInterface(Camera.hTarget);
+	if (hVes) return hVes->GetSurfaceElevation();
+	return 0.0;
+}
 
 
 // ===========================================================================================
@@ -1273,7 +1281,7 @@ void Scene::RenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 	// Create a caster list for shadow mapping
 	// ---------------------------------------------------------------------------------------------
-	
+
 	Casters.clear();
 
 	for (pv = vobjFirst; pv; pv = pv->next) {
@@ -1290,7 +1298,7 @@ void Scene::RenderMainScene()
 	// ---------------------------------------------------------------------------------------------
 
 	int shadow_lod = -1;
-	float bouble_rad = 10.0f;		// Terrain shadow mapping coverage 
+	float bouble_rad = 10.0f;		// Terrain shadow mapping coverage
 
 	if (Config->ShadowMapMode >= 1 && Config->TerrainShadowing == 2) {
 
@@ -1304,7 +1312,7 @@ void Scene::RenderMainScene()
 
 		vFocus->bStencilShadow = false;
 
-		
+
 		// What else should be included besides vFocus ?
 
 		for each (vVessel *v in Casters)
@@ -1343,7 +1351,7 @@ void Scene::RenderMainScene()
 					rad = bs_rad;
 				}
 				else {
-					if (dst > 0.001f) pos += fbc * ((nrd - rad) / dst);		
+					if (dst > 0.001f) pos += fbc * ((nrd - rad) / dst);
 					rad = nrd;
 				}
 			}
@@ -2369,7 +2377,7 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	_TRACE;
 
 	// Process Local Light Sources -------------------------------------
-	// And toggle external lights on	
+	// And toggle external lights on
 	//
 	if (bLocalLight) {
 
@@ -2969,7 +2977,7 @@ D3D9Pick Scene::PickScene(short xpos, short ypos)
 			D3D9Pick pick = vVes->Pick(&vPick);
 			if (pick.pMesh) if (pick.dist<result.dist) result = pick;
 		}
-	}	
+	}
 	return result;
 }
 

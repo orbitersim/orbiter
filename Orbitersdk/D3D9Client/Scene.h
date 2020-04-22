@@ -342,6 +342,7 @@ public:
 	void			CheckVisual(OBJHANDLE hObj);
 	double			GetFocusGroundAltitude() const;
 	double			GetTargetGroundAltitude() const;
+	double			GetTargetElevation() const;
 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found

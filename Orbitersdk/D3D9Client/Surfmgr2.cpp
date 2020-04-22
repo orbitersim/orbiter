@@ -919,7 +919,9 @@ void SurfTile::Render ()
 
 	D3DXVECTOR3 bc = bs_pos - shd->pos;
 
-	if ((scene->GetCameraAltitude() < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
+	double alt = scene->GetCameraAltitude() - scene->GetTargetElevation();
+
+	if ((alt < 10e3) && (scene->GetCameraProxyVisual() == mgr->GetPlanet())) {
 
 		if (shd->pShadowMap && (Config->ShadowMapMode != 0) && (Config->TerrainShadowing == 2)) {
 

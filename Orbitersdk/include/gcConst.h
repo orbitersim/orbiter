@@ -349,7 +349,7 @@ namespace oapi {
 	* \note This structure is compatible with the D3DXVECTOR4 type.
 	*/
 #pragma pack(push, 1)
-	typedef union FVECTOR4
+	typedef union FVECTOR4 
 	{
 		DWORD dword_abgr() const
 		{
@@ -493,20 +493,10 @@ namespace oapi {
 		}
 
 		float data[4];
-		struct { // {x,y,z,w} or {xyz,w}
-			union {
-				struct { float x, y, z; };
-				struct { FVECTOR3 xyz; };
-			};
-			float w;
-		};
-		struct { // {r,g,b,a} or {rgb,a}
-			union {
-				struct { float r, g, b; };
-				struct { FVECTOR3 rgb;  };
-			};
-			float a;
-		};
+		struct { float x, y, z, w; };
+		struct { float r, g, b, a; };
+		FVECTOR3 xyz;     //  , w; };
+		FVECTOR3 rgb;    //   , a; };
 	} FVECTOR4;
 #pragma pack(pop)
 

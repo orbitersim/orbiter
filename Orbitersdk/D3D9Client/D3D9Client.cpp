@@ -183,9 +183,11 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	// _CrtSetBreakAlloc(8351);
 
 	assert(sizeof(FVECTOR4) == 16);
-	//assert( sizeof(FVECTOR4::data == 16 );
-	//assert( sizeof(FVECTOR4::rgb == 16 );
-	//assert( sizeof(FVECTOR4::xyz == 16 );
+	assert(sizeof(FVECTOR4::data) == 16);
+
+	assert(sizeof(FVECTOR4::rgb) == 12);
+	assert(sizeof(FVECTOR4::xyz) == 12);
+
 	auto dut = FVECTOR4(1.2, 3.4, 5.6, 7.8);
 	assert(dut.data[0] == dut.r);
 	assert(dut.data[1] == dut.g);
@@ -201,6 +203,10 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	assert(dut.rgb.y == dut.xyz.y);
 	assert(dut.rgb.z == dut.xyz.z);
 
+	assert(dut.a == dut.w);
+
+	// Check that 'a' and 'w' are placed behind 'rgb' rsp. 'xyz' and unaffected
+	dut.rgb = 0;
 	assert(dut.a == dut.w);
 #endif
 
