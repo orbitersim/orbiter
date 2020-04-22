@@ -52,7 +52,6 @@ protected:
 	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev = 0);
 	bool LoadElevationData ();
 	void Render ();
-	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 	void StepIn ();
 
 	TileManager2<SurfTile> *smgr;	// surface tile manager interface
@@ -67,8 +66,10 @@ protected:
 	void FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner=false);
 	// Match latitude edge elevation to neighbour. If keep_corner==true, skip corner node
 
+	// v2 Labels interface -----------------------------------------------
 	void CreateLabels();    ///< create the label object from the label tile file, if available
 	void DeleteLabels();    ///< delete the TileLabel object if it exists
+	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 private:
 	bool InterpolateElevationGrid(float *pelev, float *elev);
@@ -85,7 +86,7 @@ private:
 	float *elev;				///< elevation data [m] (8x subsampled)
 	mutable float *ggelev;		///< pointer to my elevation data in the great-grandparent
 
-	TileLabel *label;          ///< surface labels associated with this tile
+	TileLabel *label;			///< surface labels associated with this tile
 };
 
 #endif // !__SURFMGR2_H

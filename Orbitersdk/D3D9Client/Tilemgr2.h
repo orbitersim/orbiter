@@ -327,6 +327,7 @@ public:
 	template<class TileType>
 	void QueryTiles(QuadTreeNode<TileType> *node, std::list<Tile*> &tiles);
 
+	// v2 Labels interface -----------------------------------------------
 	template<class TileType>
 	void RenderNodeLabels(QuadTreeNode<TileType> *node, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
@@ -403,13 +404,14 @@ public:
 
 	void Render (MATRIX4 &dwmat, bool use_zbuf, const vPlanet::RenderPrm &rprm);
 
-	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
-
 	int GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, SurfTile **cache);
 
 	void Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick);
+
+	// v2 Labels interface -----------------------------------------------
 	void CreateLabels();
 	void DeleteLabels();
+	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 	void SetSubtreeLabels(QuadTreeNode<TileType> *node, bool activate);
 
 	QuadTreeNode<TileType> *FindNode (int lvl, int ilat, int ilng)

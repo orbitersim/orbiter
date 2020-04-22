@@ -1536,32 +1536,6 @@ void Scene::RenderMainScene()
 		surfLabelsActive = false;
 	}
 
-	/*
-if ((plnmode & PLN_ENABLE) && (plnmode & PLN_LMARK)) {
-oapi::Sketchpad *skp = 0;
-int fontidx = -1;
-for (i = 0; i < np; i++) {
-OBJHANDLE hObj = plist[i].vo->Object();
-if (oapiGetObjectType(hObj) != OBJTP_PLANET) continue;
-if (!surfLabelsActive)
-plist[i].vo->ActivateLabels(true);
-int label_format = *(int*)oapiGetObjectParam(hObj, OBJPRM_PLANET_LABELENGINE);
-if (label_format == 2) {
-if (!skp) {
-skp = gc->clbkGetSketchpad(0);
-skp->SetPen(label_pen);
-}
-((vPlanet*)plist[i].vo)->RenderLabels(dev, skp, label_font, &fontidx);
-}
-}
-surfLabelsActive = true;
-if (skp)
-gc->clbkReleaseSketchpad(skp);
-} else {
-if (surfLabelsActive)
-surfLabelsActive = false;
-}
-	*/
 
 	// -------------------------------------------------------------------------------------------------------
 	// render the vessel objects

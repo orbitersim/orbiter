@@ -59,7 +59,6 @@ public:
 	void			RenderZRange (double *nplane, double *fplane);
 	bool			Render(LPDIRECT3DDEVICE9 dev);
 	void			RenderBeacons(LPDIRECT3DDEVICE9 dev);
-	void            RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 	bool			CameraInAtmosphere() const;
 	double			CameraAltitude() const { return cdist - size; }
 	double			GetHorizonAlt() const;
@@ -96,6 +95,7 @@ public:
 
 	// v2 Labels interface ----------------------------------------------------
 	void            ActivateLabels(bool activate);
+	void            RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 	struct RenderPrm { //< misc. parameters for rendering the planet
 		// persistent options
