@@ -60,10 +60,9 @@ struct CloudVS
 {
 	float4 posH     : POSITION0;
 	float2 texUV    : TEXCOORD0;  // Texture coordinate
-	float3 camW		: TEXCOORD1;
 	float3 atten    : COLOR0;     // Attennuation
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
-	float2 fade     : TEXCOORD2;
+	float2 fade     : TEXCOORD1;
 };
 
 struct HazeVS
@@ -966,8 +965,6 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 	float  fRay = abs(dot(vPosW, vRay));				// Vertex camera distance
 	float  fTrA = saturate(fDPS*2.924f + 0.657f);
 
-	outVS.camW = -vPosW;
-
 	// Camara altitude dependency multiplier for ambient color of atmosphere
 
 	float fAmb = max(saturate(fTrA*8.0*fAmbient), fGlobalAmb) * 0.25f;
@@ -1024,10 +1021,6 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 
 	float4 cTex = tex2D(DiffTexS, vUVTex);
 	float4 cMic = tex2D(CloudMicroS, vUVMic);
-
-	float3 camW = normalize(frg.camW);		// Unit viewing ray
-	float3 vVrt = vCameraPos - frg.camW;	// Geo-centric pixel position
-	float3 vPlN = normalize(vVrt);			// Planet mean normal
 	
 #if defined(_CLOUDMICRO)
 		float f = cTex.a;
@@ -1039,10 +1032,6 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 		//g *= g;
 		cTex.a = saturate(lerp(g, h, f) * f);
 #endif
-
-	float spe = pow(saturate(dot(reflect(-vSunDir, vPlN), camW)), 15.0f);
-
-	cTex.a = saturate(cTex.a * (spe*0.5f + 1.0f));
 
 	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
 
