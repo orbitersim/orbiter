@@ -34,6 +34,16 @@ const char *value_string (double val);
 // A vVessel is the visual representation of a vessel object.
 // ==============================================================
 
+void LogComp(ANIMATIONCOMP *AC, int ident)
+{
+	char id[64];
+	strcpy_s(id, 64, "");
+	for (int i = 0; i < ident; i++) strcat_s(id, 64, " ");
+	oapiWriteLogV("%s COMP[0x%X] has %u children, Parent = 0x%X", id, DWORD(AC), AC->nchildren, AC->parent);
+	for (UINT i = 0; i < AC->nchildren; i++) LogComp(AC->children[i], ident + 2);
+}
+
+
 vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
 	_TRACE;
@@ -43,12 +53,10 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	vessel = oapiGetVesselInterface(_hObj);
 	nmesh = 0;
-	nanim = 0;
 	nEnv  = 0;
 	iFace = 0;
 	sunLight = *scene->GetSun();
 	tCheckLight = oapiGetSimTime()-1.0;
-	animstate = NULL;
 	vClass = 0;
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
@@ -64,8 +72,21 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 
 	// Initialize static animations
 	//
-	GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-	for (UINT i=0;i<nanim;i++) animstate[i] = anim[i].defstate;
+	UINT na = vessel->GetAnimPtr(&anim);
+	
+	for (UINT i = 0; i < na; i++) {
+		for (UINT k = 0; k < anim[i].ncomp; ++k) StoreDefaultState(anim[i].comp[k]);
+	}
+	
+	/*
+	oapiWriteLogV("%s", vessel->GetClassNameA());
+	oapiWriteLogV("nanim = %u", na);
+	for (UINT i = 0; i < na; i++) {
+		oapiWriteLogV("ANIM[%u] = %u comp(s)", i, anim[i].ncomp);
+		for (UINT k = 0; k < anim[i].ncomp; ++k) LogComp(anim[i].comp[k], 2);
+	}*/
+
+
 	UpdateAnimations();
 }
 
@@ -397,13 +418,6 @@ void vVessel::ResetMesh(UINT idx)
 			}
 		}
 
-		for (UINT i = 0; i < nanim; ++i) {
-			UINT ncomp = anim[i].ncomp;
-			for (UINT k = 0; k < ncomp; ++k) {
-				if (anim[i].comp[k]->trans->mesh == idx) animstate[i] = anim[i].defstate; // reset to default animation state	
-			}
-		}
-
 		pMatMgr->ApplyConfiguration(meshlist[idx].mesh);
 
 		meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
@@ -458,9 +472,7 @@ void vVessel::DelMesh(UINT idx)
 //
 void vVessel::InitNewAnimation (UINT idx)
 {
-	// vessel->GetAnimPtr(&anim) returns invalid data here. New idx is not yet included in anim[]
-	GrowAnimstateBuffer(idx+1);
-	animstate[idx] = -1e40;
+	//vessel->GetAnimPtr(&anim) returns invalid data here. New idx is not yet included in anim[]
 }
 
 
@@ -468,16 +480,7 @@ void vVessel::InitNewAnimation (UINT idx)
 //
 void vVessel::GrowAnimstateBuffer (UINT newSize)
 {
-	if (newSize > nanim) // append a new entries to the list
-	{
-		double *pTmp = new double[newSize]();
-		if (nanim) {
-			memcpy2(pTmp, animstate, nanim*sizeof(double));
-			delete []animstate;
-		}
-		animstate = pTmp;
-		nanim = newSize;
-	}
+	// Obsolete
 }
 
 
@@ -485,11 +488,7 @@ void vVessel::GrowAnimstateBuffer (UINT newSize)
 //
 void vVessel::DisposeAnimations ()
 {
-	if (nanim) {
-		LogAlw("Vessel(%s) Vis=0x%X: deleting %u animations", name, this, nanim);
-		delete []animstate;
-		nanim = 0;
-	}
+	defstate.clear();
 }
 
 
@@ -498,14 +497,7 @@ void vVessel::DisposeAnimations ()
 void vVessel::ResetAnimations (UINT reset/*=1*/)
 {
 	bBSRecompute = true;
-
-	// Reset transformation matrices
-	for (DWORD i=0;i<nmesh;i++) { if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations(); }
-
-	// nanim should stay the same, but just in case
-	// GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
-
-	if (reset == 1) for (UINT i=0;i<nanim;++i) animstate[i] = anim[i].defstate; // reset to default animation state
+	//Nothing to do here
 }
 
 
@@ -513,8 +505,10 @@ void vVessel::ResetAnimations (UINT reset/*=1*/)
 //
 void vVessel::DelAnimation (UINT idx)
 {
-	// Do nothing here. Orbiter never reduces the animation buffer size. (i.e. anim[])
+	// Orbiter never reduces the animation buffer size. (i.e. anim[])
 	// VESSEL::GetAnimPtr() returns highest existing animation ID + 1, not the actual animation count
+	vessel->GetAnimPtr(&anim);
+	for (UINT k = 0; k < anim[idx].ncomp; ++k) DeleteDefaultState(anim[idx].comp[k]);
 }
 
 
@@ -522,51 +516,36 @@ void vVessel::DelAnimation (UINT idx)
 //
 void vVessel::UpdateAnimations (int mshidx)
 {
-	double newstate;
+	
+	UINT na = vessel->GetAnimPtr(&anim);
 
-	//GrowAnimstateBuffer(vessel->GetAnimPtr(&anim));
 
-	UINT x = vessel->GetAnimPtr(&anim);
-	if (x != nanim) {
-		LogErr("vessel->GetAnimPtr(&anim) returns unexpected value in UpdateAnimations %u vs %u", x, nanim);
-		GrowAnimstateBuffer(x);
-	}
-
-	if (mshidx>=0) {
-
-		// Reset animations when a mesh is added to a vessel --------------------
-		//
-		for (UINT i = 0; i < nanim; ++i) {
-			for (UINT k = 0; k < anim[i].ncomp; ++k) {
-				if (anim[i].comp[k]->trans->mesh == mshidx) {
-					animstate[i] = anim[i].defstate;
-					if (meshlist[mshidx].mesh) meshlist[mshidx].mesh->ResetTransformations();
-				}
-			}
+	// Check that all animations exists in local database, if not then add it.
+	// New animations 'should' be in their default states in this point.
+	//
+	for (UINT i = 0; i < na; ++i) {
+		for (UINT k = 0; k < anim[i].ncomp; ++k) {
+			ANIMATIONCOMP *AC = anim[i].comp[k];
+			if (defstate.count(AC) == 0) StoreDefaultState(AC);
 		}
 	}
-	else {
 
-		// Initialize new dynamic animations -------------------------------------
-		//
-		for (UINT k=0;k<nanim;k++) if (animstate[k]<-1e30) {
-			animstate[k] = anim[k].defstate;
-			// Call ResetTransformations for all related meshes
-			for (UINT i = 0; i < anim[k].ncomp; ++i) {
-				UINT m = anim[k].comp[i]->trans->mesh;
-				if (m<nmesh) if (meshlist[m].mesh) meshlist[m].mesh->ResetTransformations();
-			}
+	// Restore default transformations
+	for (UINT i = 0; i < nmesh; ++i) if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations();
+
+
+	// Restore default animation states 
+	for (UINT i = 0; i < na; ++i) {
+		for (UINT k = 0; k < anim[i].ncomp;++k) {
+			RestoreDefaultState(anim[i].comp[k]);
 		}
 	}
 
 	// Update animations ---------------------------------------------
 	//
-	for (UINT i = 0; i < nanim; i++) {
+	for (UINT i = 0; i < na; i++) {
 		if (!anim[i].ncomp) continue;
-		if (animstate[i] != (newstate = anim[i].state)) {
-			Animate(i, newstate, mshidx);
-			animstate[i] = newstate;
-		}
+		Animate(i, mshidx);
 	}
 }
 
@@ -1304,10 +1283,96 @@ bool vVessel::ModLighting(D3D9Sun *light)
 }
 
 
+// ============================================================================================
+// Delete AC and all of it's children from local database
+//
+void vVessel::DeleteDefaultState(ANIMATIONCOMP *AC)
+{
+	defstate.erase(AC);
+	for (UINT i = 0; i < AC->nchildren; ++i) DeleteDefaultState(AC->children[i]);
+}
+
+
+// ============================================================================================
+// Store AC and all of it's children to local database
+//
+void vVessel::StoreDefaultState(ANIMATIONCOMP *AC)
+{
+	// If Already exists then skip it
+	if (defstate.count(AC)) return;
+
+	auto trans = AC->trans;
+	_defstate def;
+
+	switch (trans->Type()) {
+	case MGROUP_TRANSFORM::NULLTRANSFORM:
+		break;
+	case MGROUP_TRANSFORM::ROTATE: {
+		MGROUP_ROTATE *rot = (MGROUP_ROTATE*)trans;
+		def.ref = rot->ref;
+		def.vdata = unit(rot->axis);
+		def.fdata = rot->angle;
+	} break;
+	case MGROUP_TRANSFORM::TRANSLATE: {
+		MGROUP_TRANSLATE *lin = (MGROUP_TRANSLATE*)trans;
+		def.vdata = lin->shift;
+	} break;
+	case MGROUP_TRANSFORM::SCALE: {
+		MGROUP_SCALE *scl = (MGROUP_SCALE*)trans;
+		def.ref = scl->ref;
+		def.vdata = scl->scale;
+	} break;
+	}
+	
+	if (trans->mesh == LOCALVERTEXLIST) for (UINT j = 0; j < trans->ngrp; ++j) def.vtx.push_back(((VECTOR3 *)trans->grp)[j]);
+
+	defstate[AC] = def;
+
+	for (UINT i = 0; i < AC->nchildren; ++i) StoreDefaultState(AC->children[i]);
+}
+
 
 // ============================================================================================
 //
-void vVessel::Animate(UINT an, double state, UINT mshidx)
+void vVessel::RestoreDefaultState(ANIMATIONCOMP *AC)
+{
+	auto trans = AC->trans;
+	auto it = defstate.find(AC);
+
+	assert(it != defstate.end());
+
+	if (trans->mesh == LOCALVERTEXLIST) { 
+		VECTOR3 *vtx = (VECTOR3*)trans->grp;
+		for (UINT i = 0; i < trans->ngrp; i++) vtx[i] = it->second.vtx[i];
+	}
+
+	switch (trans->Type()) {
+	case MGROUP_TRANSFORM::NULLTRANSFORM:
+		break;
+	case MGROUP_TRANSFORM::ROTATE: {
+		MGROUP_ROTATE *rot = (MGROUP_ROTATE*)trans;
+		rot->ref = it->second.ref;
+		rot->axis = it->second.vdata;
+		rot->angle = it->second.fdata;
+	} break;
+	case MGROUP_TRANSFORM::TRANSLATE: {
+		MGROUP_TRANSLATE *lin = (MGROUP_TRANSLATE*)trans;
+		lin->shift = it->second.vdata;
+	} break;
+	case MGROUP_TRANSFORM::SCALE: {
+		MGROUP_SCALE *scl = (MGROUP_SCALE*)trans;
+		scl->ref = it->second.ref;
+		scl->scale = it->second.vdata;
+	} break;
+	}
+
+	for (UINT i = 0; i < AC->nchildren; ++i) RestoreDefaultState(AC->children[i]);
+}
+
+
+// ============================================================================================
+//
+void vVessel::Animate(UINT an, UINT mshidx)
 {
 	double s0, s1, ds;
 	UINT i, ii;
@@ -1315,16 +1380,16 @@ void vVessel::Animate(UINT an, double state, UINT mshidx)
 	ANIMATION *A = anim+an;
 
 	for (ii = 0; ii < A->ncomp; ii++) {
-		i = (state > animstate[an] ? ii : A->ncomp-ii-1);
+
+		i = (A->state > A->defstate ? ii : A->ncomp-ii-1);
 		ANIMATIONCOMP *AC = A->comp[i];
 
-		// What is this ??? mshidx is always -1
- 		if (mshidx != ((UINT)-1) && mshidx != AC->trans->mesh) continue;
+ 		if ((mshidx != LOCALVERTEXLIST) && (mshidx != AC->trans->mesh)) continue;
 
-		s0 = animstate[an]; // current animation state in the visual
+		s0 = A->defstate; // current animation state in the visual
 		if      (s0 < AC->state0) s0 = AC->state0;
 		else if (s0 > AC->state1) s0 = AC->state1;
-		s1 = state;           // required animation state
+		s1 = A->state;           // required animation state
 		if      (s1 < AC->state0) s1 = AC->state0;
 		else if (s1 > AC->state1) s1 = AC->state1;
 		if ((ds = (s1-s0)) == 0) continue; // nothing to do for this component

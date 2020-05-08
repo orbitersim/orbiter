@@ -14,6 +14,11 @@
 
 class oapi::D3D9Client;
 
+typedef struct {
+	float fdata;
+	VECTOR3 ref, vdata;
+	std::vector<VECTOR3> vtx;
+} _defstate;
 
 
 
@@ -169,11 +174,19 @@ protected:
 	 */
 	bool ModLighting (D3D9Sun *light);
 
-	void Animate (UINT an, double state, UINT mshidx);
+	void Animate (UINT an, UINT mshidx);
 	void AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T);
+	void RestoreDefaultState(ANIMATIONCOMP *AC);
+	void StoreDefaultState(ANIMATIONCOMP *AC);
+	void DeleteDefaultState(ANIMATIONCOMP *AC);
 
 
 private:
+
+	// Animation database containing 'default' states.
+	//
+	std::map<ANIMATIONCOMP *, _defstate> defstate;
+
 
 	VESSEL *vessel;			// access instance for the vessel
 	class MatMgr *pMatMgr;
@@ -192,8 +205,6 @@ private:
 	UINT nmesh;				// number of meshes
 	UINT vClass;
 	ANIMATION *anim;		// list of animations (defined in the vessel object)
-	double *animstate;		// list of visual animation states
-	UINT nanim;				// number of animations
 	double tCheckLight;		// time for next lighting check
 	float ExhaustLength;
 
