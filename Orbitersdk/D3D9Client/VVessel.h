@@ -11,6 +11,7 @@
 
 #include "VObject.h"
 #include "Mesh.h"
+#include <unordered_set>
 
 class oapi::D3D9Client;
 
@@ -132,6 +133,16 @@ public:
 	bool const Playback() const { return vessel->Playback(); }
 	class MatMgr * GetMaterialManager() const { return pMatMgr; }
 
+	/**
+	* \brief Update animations of the visual
+	*
+	* Synchronises the visual animation states with the logical
+	* animation states of the vessel object.
+	* \param mshidx mesh index
+	* \note If mshidx == (UINT)-1 (default), all meshes are updated.
+	*/
+	void UpdateAnimations(int mshidx = -1);
+
 protected:
 
 	void LoadMeshes();
@@ -154,17 +165,6 @@ protected:
 	 */
 	void GrowAnimstateBuffer (UINT newSize);
 
-
-	/**
-	 * \brief Update animations of the visual
-	 *
-	 * Synchronises the visual animation states with the logical
-	 * animation states of the vessel object.
-	 * \param mshidx mesh index
-	 * \note If mshidx == (UINT)-1 (default), all meshes are updated.
-	 */
-	void UpdateAnimations (int mshidx = -1);
-
 	/**
 	 * \brief Modify local lighting due to planet shadow or
 	 *   atmospheric dispersion.
@@ -185,7 +185,8 @@ private:
 
 	// Animation database containing 'default' states.
 	//
-	std::map<ANIMATIONCOMP *, _defstate> defstate;
+	std::map<MGROUP_TRANSFORM *, _defstate> defstate;
+	std::unordered_set<UINT> applyanim;
 
 
 	VESSEL *vessel;			// access instance for the vessel

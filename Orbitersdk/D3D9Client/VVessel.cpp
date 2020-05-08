@@ -246,8 +246,6 @@ bool vVessel::Update(bool bMainScene)
 
 	vObject::Update(bMainScene);
 
-	UpdateAnimations();
-
 	if (fabs(oapiGetSimTime()-tCheckLight)>0.1) {
 		sunLight = *scn->GetSun();
 		ModLighting(&sunLight);
@@ -526,7 +524,7 @@ void vVessel::UpdateAnimations (int mshidx)
 	for (UINT i = 0; i < na; ++i) {
 		for (UINT k = 0; k < anim[i].ncomp; ++k) {
 			ANIMATIONCOMP *AC = anim[i].comp[k];
-			if (defstate.count(AC) == 0) StoreDefaultState(AC);
+			if (defstate.count(AC->trans) == 0) StoreDefaultState(AC);
 		}
 	}
 
@@ -536,17 +534,23 @@ void vVessel::UpdateAnimations (int mshidx)
 
 	// Restore default animation states 
 	for (UINT i = 0; i < na; ++i) {
-		for (UINT k = 0; k < anim[i].ncomp;++k) {
-			RestoreDefaultState(anim[i].comp[k]);
+		for (UINT k = 0; k < anim[i].ncomp; ++k) {
+			if (anim[i].state != anim[i].defstate)
+				RestoreDefaultState(anim[i].comp[k]);
 		}
 	}
 
+
+	for (UINT i = 0; i < na; ++i) {
+		if (!anim[i].ncomp) continue;
+		if (applyanim.count(i)) continue;
+		if (anim[i].state != anim[i].defstate) applyanim.insert(applyanim.end(), i);
+	}
+
+
 	// Update animations ---------------------------------------------
 	//
-	for (UINT i = 0; i < na; i++) {
-		if (!anim[i].ncomp) continue;
-		Animate(i, mshidx);
-	}
+	for (auto i: applyanim)	Animate(i, mshidx);
 }
 
 
@@ -1288,7 +1292,7 @@ bool vVessel::ModLighting(D3D9Sun *light)
 //
 void vVessel::DeleteDefaultState(ANIMATIONCOMP *AC)
 {
-	defstate.erase(AC);
+	defstate.erase(AC->trans);
 	for (UINT i = 0; i < AC->nchildren; ++i) DeleteDefaultState(AC->children[i]);
 }
 
@@ -1299,7 +1303,7 @@ void vVessel::DeleteDefaultState(ANIMATIONCOMP *AC)
 void vVessel::StoreDefaultState(ANIMATIONCOMP *AC)
 {
 	// If Already exists then skip it
-	if (defstate.count(AC)) return;
+	if (defstate.count(AC->trans)) return;
 
 	auto trans = AC->trans;
 	_defstate def;
@@ -1326,7 +1330,7 @@ void vVessel::StoreDefaultState(ANIMATIONCOMP *AC)
 	
 	if (trans->mesh == LOCALVERTEXLIST) for (UINT j = 0; j < trans->ngrp; ++j) def.vtx.push_back(((VECTOR3 *)trans->grp)[j]);
 
-	defstate[AC] = def;
+	defstate[AC->trans] = def;
 
 	for (UINT i = 0; i < AC->nchildren; ++i) StoreDefaultState(AC->children[i]);
 }
@@ -1337,7 +1341,7 @@ void vVessel::StoreDefaultState(ANIMATIONCOMP *AC)
 void vVessel::RestoreDefaultState(ANIMATIONCOMP *AC)
 {
 	auto trans = AC->trans;
-	auto it = defstate.find(AC);
+	auto it = defstate.find(AC->trans);
 
 	assert(it != defstate.end());
 

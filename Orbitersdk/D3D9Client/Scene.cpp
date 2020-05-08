@@ -975,6 +975,16 @@ void Scene::RenderMainScene()
 
 	UpdateCamVis();
 
+	// Update Vessel Animations
+	//
+	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
+		if (pv->type == OBJTP_VESSEL) {
+			vVessel *vv = (vVessel *)pv->vobj;
+			vv->UpdateAnimations();
+		}
+	}
+
+
 	if (vFocus == NULL) return;
 
 	LPDIRECT3DSURFACE9 pBackBuffer;
