@@ -221,6 +221,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     AUTOCHECKBOX    "Pre-load base visuals at startup", IDC_BASEVIS, 20, 220, 114, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Cloud micro-textures", IDC_CLOUDMICRO, 20, 280, 79, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Enable GDI Overlay", IDC_GDIOVERLAY, 20, 295, 79, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Enable absolute animation handling", IDC_ABSANIM, 20, 309, 127, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Enable advanced texture maps", IDC_NORMALMAPS, 20, 235, 114, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Enable improved glass shading", IDC_GLASSSHADE, 20, 250, 113, 8, 0, WS_EX_LEFT
     AUTOCHECKBOX    "Disable near clip plane compatibility mode", IDC_NEARPLANE, 20, 265, 147, 8, 0, WS_EX_LEFT

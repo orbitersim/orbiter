@@ -12,6 +12,7 @@
 #include "VObject.h"
 #include "Mesh.h"
 #include <unordered_set>
+#include <vector>
 
 class oapi::D3D9Client;
 
@@ -187,6 +188,7 @@ private:
 	//
 	std::map<MGROUP_TRANSFORM *, _defstate> defstate;
 	std::unordered_set<UINT> applyanim;
+	std::map<int, double> currentstate;
 
 
 	VESSEL *vessel;			// access instance for the vessel

@@ -75,7 +75,8 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	UINT na = vessel->GetAnimPtr(&anim);
 	
 	for (UINT i = 0; i < na; i++) {
-		for (UINT k = 0; k < anim[i].ncomp; ++k) StoreDefaultState(anim[i].comp[k]);
+		currentstate[i] = anim[i].defstate;
+		if (Config->bAbsAnims) for (UINT k = 0; k < anim[i].ncomp; ++k) StoreDefaultState(anim[i].comp[k]);	
 	}
 	
 	/*
@@ -487,6 +488,8 @@ void vVessel::GrowAnimstateBuffer (UINT newSize)
 void vVessel::DisposeAnimations ()
 {
 	defstate.clear();
+	applyanim.clear();
+	currentstate.clear();
 }
 
 
@@ -506,7 +509,8 @@ void vVessel::DelAnimation (UINT idx)
 	// Orbiter never reduces the animation buffer size. (i.e. anim[])
 	// VESSEL::GetAnimPtr() returns highest existing animation ID + 1, not the actual animation count
 	vessel->GetAnimPtr(&anim);
-	for (UINT k = 0; k < anim[idx].ncomp; ++k) DeleteDefaultState(anim[idx].comp[k]);
+	currentstate.erase(idx);
+	if (Config->bAbsAnims) for (UINT k = 0; k < anim[idx].ncomp; ++k) DeleteDefaultState(anim[idx].comp[k]);
 }
 
 
@@ -517,40 +521,65 @@ void vVessel::UpdateAnimations (int mshidx)
 	
 	UINT na = vessel->GetAnimPtr(&anim);
 
-
-	// Check that all animations exists in local database, if not then add it.
-	// New animations 'should' be in their default states in this point.
+	
+	// Check that all animations exists in local databases, if not then add it.
+	// New animations 'should' be in their default states (at)in this point.
 	//
 	for (UINT i = 0; i < na; ++i) {
-		for (UINT k = 0; k < anim[i].ncomp; ++k) {
-			ANIMATIONCOMP *AC = anim[i].comp[k];
-			if (defstate.count(AC->trans) == 0) StoreDefaultState(AC);
-		}
-	}
 
-	// Restore default transformations
-	for (UINT i = 0; i < nmesh; ++i) if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations();
+		if (currentstate.count(i) == 0) currentstate[i] = anim[i].defstate;
 
-
-	// Restore default animation states 
-	for (UINT i = 0; i < na; ++i) {
-		for (UINT k = 0; k < anim[i].ncomp; ++k) {
-			if (anim[i].state != anim[i].defstate)
-				RestoreDefaultState(anim[i].comp[k]);
+		if (Config->bAbsAnims) {
+			for (UINT k = 0; k < anim[i].ncomp; ++k) {
+				ANIMATIONCOMP *AC = anim[i].comp[k];
+				if (defstate.count(AC->trans) == 0) StoreDefaultState(AC);
+			}
 		}
 	}
 
 
-	for (UINT i = 0; i < na; ++i) {
-		if (!anim[i].ncomp) continue;
-		if (applyanim.count(i)) continue;
-		if (anim[i].state != anim[i].defstate) applyanim.insert(applyanim.end(), i);
+	if (Config->bAbsAnims) 
+	{
+
+		// --------------------------------------------
+		// Apply Absolute Animations
+		// --------------------------------------------
+
+		// Restore default transformations
+		for (UINT i = 0; i < nmesh; ++i) if (meshlist[i].mesh) meshlist[i].mesh->ResetTransformations();
+
+		// Restore default animation states 
+		for (UINT i = 0; i < na; ++i) {
+			currentstate[i] = anim[i].defstate;
+			for (UINT k = 0; k < anim[i].ncomp; ++k) {
+				if (anim[i].state != anim[i].defstate)
+					RestoreDefaultState(anim[i].comp[k]);
+			}
+		}
+
+		for (UINT i = 0; i < na; ++i) {
+			if (!anim[i].ncomp) continue;
+			if (applyanim.count(i)) continue;
+			if (anim[i].state != anim[i].defstate) applyanim.insert(applyanim.end(), i);
+		}
+
+		// Update animations ---------------------------------------------
+		for (auto i : applyanim) Animate(i, mshidx);
 	}
+	else 
+	{
 
+		// --------------------------------------------
+		// Apply Incremental Animations
+		// --------------------------------------------
 
-	// Update animations ---------------------------------------------
-	//
-	for (auto i: applyanim)	Animate(i, mshidx);
+		for (UINT i = 0; i < na; ++i) {
+			if (anim[i].state != currentstate[i]) {
+				Animate(i, mshidx);
+				currentstate[i] = anim[i].state;
+			}
+		}
+	}
 }
 
 
@@ -1385,12 +1414,12 @@ void vVessel::Animate(UINT an, UINT mshidx)
 
 	for (ii = 0; ii < A->ncomp; ii++) {
 
-		i = (A->state > A->defstate ? ii : A->ncomp-ii-1);
+		i = (A->state > currentstate[an] ? ii : A->ncomp-ii-1);
 		ANIMATIONCOMP *AC = A->comp[i];
 
  		if ((mshidx != LOCALVERTEXLIST) && (mshidx != AC->trans->mesh)) continue;
 
-		s0 = A->defstate; // current animation state in the visual
+		s0 = currentstate[an]; // current animation state in the visual
 		if      (s0 < AC->state0) s0 = AC->state0;
 		else if (s0 > AC->state1) s0 = AC->state1;
 		s1 = A->state;           // required animation state

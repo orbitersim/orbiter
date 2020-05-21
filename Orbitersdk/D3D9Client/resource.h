@@ -170,3 +170,4 @@
 #define IDC_CLOUDMICRO                          2161
 #define IDC_GDIOVERLAY                          2162
 #define IDC_GUIMODE                             2163
+#define IDC_ABSANIM                             2164

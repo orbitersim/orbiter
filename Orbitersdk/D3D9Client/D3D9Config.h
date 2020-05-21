@@ -84,6 +84,7 @@ public:
 	int PlanetTileLoadFlags;		///< Planet Tile Load Flags (0x1=load tiles from directory tree, 0x2=load tiles from compressed archive, 0x3=both \[try directory tree first, then archive\])
 	int GDIOverlay;					///< GDI Overlay
 	int gcGUIMode;					///< gcGUI Operation Mode
+	int bAbsAnims;					///< Absolute animations
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 
