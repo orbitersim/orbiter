@@ -99,23 +99,23 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 // ==============================================================
 // Write some parameters to the scenario file
 
-DLLCLBK void opcSaveState (FILEHANDLE scn)
-{
-	//oapiWriteScenario_int (scn, "Param", myprm);
-}
+//DLLCLBK void opcSaveState (FILEHANDLE scn)
+//{
+//	oapiWriteScenario_int (scn, "Param", myprm);
+//}
 
 // ==============================================================
 // Read custom parameters from scenario
 
-DLLCLBK void opcLoadState (FILEHANDLE scn)
-{
-	//char *line;
-	//while (oapiReadScenario_nextline (scn, line)) {
-	//	if (!strnicmp (line, "Param", 5)) {
-	//		sscanf (line+5, "%d", &myprm);
-	//	}
-	//}
-}
+//DLLCLBK void opcLoadState (FILEHANDLE scn)
+//{
+//	char *line;
+//	while (oapiReadScenario_nextline (scn, line)) {
+//		if (!strnicmp (line, "Param", 5)) {
+//			sscanf (line+5, "%d", &myprm);
+//		}
+//	}
+//}
 
 // ==============================================================
 // Open the dialog window
