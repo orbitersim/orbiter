@@ -138,6 +138,7 @@ protected:
 	virtual void Render () {}
 
 	virtual void StepIn () {}
+	virtual bool IsElevated() { return false; }
 
 	/**
 	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
@@ -238,6 +239,15 @@ private:
 
 // =======================================================================
 
+
+namespace eElevMode {
+	const int DontCare = 0x0;
+	const int Elevated = 0x1;
+	const int Spherical = 0x2;
+	const int Auto = 0x10;
+};
+
+
 /**
  * \brief Base class for tile managment classes.
  *
@@ -278,6 +288,13 @@ public:
 		double viewap;					///< aperture of surface cap visible from camera pos
 		double scale;					///< scale factor
 	} prm;
+
+	struct RenderStats {
+		int	Elev;						///< Number of elevated tiles rendered
+		int Sphe;						///< Number of spherical tiles rendered
+	} elvstat, prevstat;
+
+	int ElevMode;
 
 	/**
 	 * \brief Constructs a new tile manager object
@@ -353,7 +370,8 @@ public:
 	inline const ELEVHANDLE ElevMgr() const { return emgr; }
 	inline const int GridRes() const { return gridRes; }
 	inline const double ElevRes() const { return elevRes; }
-
+	inline OBJHANDLE GetHandle() const { return obj; }
+	
 	float GetMinElev() const { return min_elev; }
 	float GetMaxElev() const { return max_elev; }
 	void SetMinMaxElev(float min, float max);

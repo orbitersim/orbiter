@@ -1050,7 +1050,7 @@ HFONT TileManager2Base::hFont = NULL;
 // -----------------------------------------------------------------------
 
 TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gridres)
-: vp(vplanet), gridRes(_gridres)
+: vp(vplanet), gridRes(_gridres), ElevMode(eElevMode::DontCare)
 {
 	// set persistent parameters
 	prm.maxlvl = max (0, _maxres-4);

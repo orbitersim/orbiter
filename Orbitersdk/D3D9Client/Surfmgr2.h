@@ -53,6 +53,7 @@ protected:
 	bool LoadElevationData ();
 	void Render ();
 	void StepIn ();
+	bool IsElevated() { return (ggelev!=NULL); }
 
 	TileManager2<SurfTile> *smgr;	// surface tile manager interface
 	QuadTreeNode<SurfTile> *node;	// my node in the quad tree, if I'm part of a tree

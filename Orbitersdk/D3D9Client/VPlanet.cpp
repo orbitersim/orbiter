@@ -734,9 +734,28 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 
 	if (surfmgr2) {
 		tile_cache = NULL;	// Clear tile cache
-		if (cdist>=1.3*size && cdist>3e6) surfmgr2->Render (dmWorld, false, prm);
+
+		if (size < 500e3) {
+			// Comet, Asteroid, Small Moon
+			if (cdist >= 100.0*size) {
+				surfmgr2->ElevMode = eElevMode::Spherical;
+				surfmgr2->Render(dmWorld, false, prm);
+			}
+			else {
+				surfmgr2->ElevMode = eElevMode::Elevated;
+				surfmgr2->Render(dmWorld, true, prm);
+			}
+		}
 		else {
-			surfmgr2->Render(dmWorld, true, prm);
+			// Planet or Major Moon
+			if (cdist >= 2.0*size) {
+				surfmgr2->ElevMode = eElevMode::Spherical;
+				surfmgr2->Render(dmWorld, false, prm); // Flat/Spherical body
+			}
+			else {
+				surfmgr2->ElevMode = eElevMode::Auto;
+				surfmgr2->Render(dmWorld, true, prm); // Elevated body
+			}
 		}
 
 		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);

@@ -109,6 +109,11 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			bias -= 1.0;
 	}
 
+	bool bNoRelease = false;
+	
+	// Override TileDeletion for forced elevated rendering of asteroids/comets/small moons
+	if (ElevMode == eElevMode::Elevated) bNoRelease = true;
+	
 	tile->dmWorld = WorldMatrix(ilng, nlng, ilat, nlat);
 	MATRIX4toD3DMATRIX(tile->dmWorld, tile->mWorld);
 
@@ -122,7 +127,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		if (lvl == 0)
 			bstepdown = false;                // force render at lowest resolution
 		else {
-			node->DelChildren ();             // remove the sub-tree
+			if (!bNoRelease) node->DelChildren ();             // remove the sub-tree
 			tile->state = Tile::Invisible;
 			return;                           // no need to continue
 		}
@@ -136,11 +141,13 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		else {
 			// Keep a tile allocated as long as the tile can be seen from a current camera position.
 			// We have multible views and only the active (current) view is checked here.
-			if (Config->EnvMapMode == 0 && Config->CustomCamMode == 0) node->DelChildren();  // remove the sub-tree
+			if (Config->EnvMapMode == 0 && Config->CustomCamMode == 0 && !bNoRelease) node->DelChildren();  // remove the sub-tree
 			tile->state = Tile::Invisible;
 			return;
 		}
 	}
+
+	int tgtres = -1;
 
 	// Compute target resolution level based on tile distance
 	if (bstepdown) {
@@ -159,10 +166,26 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		//if (DebugControls::IsEquEnabled()) maxlvl += 2;
 
 		double apr = tdist * scene->GetTanAp() * resolutionScale;
-		int tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
+		tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
 		bstepdown = (lvl < tgtres);
 	}
+	
+	if (!bstepdown) {
+		// Count the tile elevation stats
+		if (tile->IsElevated()) elvstat.Elev++;
+		else elvstat.Sphe++;
+	}
 
+	if (!bstepdown) {
+		if (ElevMode & eElevMode::Auto) {
+			if (tile->IsElevated() == false && (ElevMode & eElevMode::Elevated) && (tgtres != -1)) bstepdown = (lvl < (tgtres+1));
+		}
+		else {
+			// Search elevated tilels from sub-trees
+			if (ElevMode == eElevMode::Elevated && tile->IsElevated() == false) bstepdown = true;
+		}
+	}
+	
 	// Recursion to next level: subdivide into 2x2 patch
 	if (bstepdown) {
 		bool subcomplete = true;

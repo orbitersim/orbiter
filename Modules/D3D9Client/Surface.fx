@@ -120,6 +120,7 @@ uniform extern bool		 bDebug;			// Debug Mode enabled
 uniform extern bool		 bLocals;			// Local light sources enabled for this tile
 uniform extern bool		 bShadows;			// Enable shadow projection
 uniform extern bool		 bOverlay;			// Enable shadow projection
+uniform extern bool		 bSpherical;		// Force Spherical planet (discard elevation) 
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -323,14 +324,14 @@ uniform extern bool		bOnOff;
 
 // Numeric integration points and weights for Gauss-Lobatto integral
 //
-const  float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};
-const  float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
-const  float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};
-const  float3 vPoints3 = {0.0f, 0.5f, 1.0f};
-const  float3 cSky = {0.7f, 0.9f, 1.2f};
-const  float3 cSun = { 1.0f, 1.0f, 1.0f };
-const float srfoffset = -0.2;
-const float ATMNOISE = 0.02;
+static const float4 vWeight4 = {0.167, 0.833, 0.833, 0.167};
+static const float4 vPoints4 = {0.0f, 0.27639f, 0.72360f, 1.0f};
+static const float3 vWeight3 = {0.33333f, 1.33333f, 0.33333f};
+static const float3 vPoints3 = {0.0f, 0.5f, 1.0f};
+static const float3 cSky = {0.7f, 0.9f, 1.2f};
+static const float3 cSun = { 1.0f, 1.0f, 1.0f };
+static const float srfoffset = -0.2;
+static const float ATMNOISE = 0.02;
 
 
 
@@ -634,6 +635,10 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 
 	// Apply a world transformation matrix
 	float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
+
+	// Disrecard elevation and make the surface spherical
+	if (bSpherical) vPosW = (normalize(vCameraPos + vPosW) * fRadius) - vCameraPos;
+	
 	float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
 

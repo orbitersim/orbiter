@@ -1308,6 +1308,26 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	//
 	Shader()->SetTechnique(eTileTech);
 
+
+	if (ElevMode & eElevMode::Auto) {
+		// If we are only having a few spherical tiles to render... Try to upgrade them to elevated
+		if (prevstat.Sphe <= 5) {
+			ElevMode = eElevMode::Elevated | eElevMode::Auto;
+		}
+		else {
+			// Give up, render all as spherical
+			ElevMode = eElevMode::Spherical | eElevMode::Auto;
+		}
+	}
+	
+
+	HR(Shader()->SetBool(sbSpherical, false));
+
+	if (ElevMode & eElevMode::Spherical) {
+		// Force spherical rendering at shader level
+		HR(Shader()->SetBool(sbSpherical, true));
+	}	
+
 	if (use_zbuf) {
 		pDev->SetRenderState(D3DRS_ZENABLE, 1);
 		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
@@ -1315,6 +1335,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	else {
 		pDev->SetRenderState(D3DRS_ZENABLE, 0);
 		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 0);
+		HR(Shader()->SetBool(sbSpherical, true));
 	}
 
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
@@ -1361,6 +1382,20 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		RenderNode (tiletree+i);
 
 	loader->ReleaseMutex();
+
+
+	// Backup the stats and clear counters
+	prevstat = elvstat;
+	elvstat.Elev = elvstat.Sphe = 0;
+
+	/*if (GetHandle() == oapiCameraTarget()) {
+	sprintf_s(oapiDebugString(), 256, "Body=%s, Elv=%d, Sph=%d", CbodyName(), prevstat.Elev, prevstat.Sphe);
+	if (ElevMode & eElevMode::Elevated) strcat_s(oapiDebugString(), 256, " Elevated");
+	if (ElevMode & eElevMode::Spherical) strcat_s(oapiDebugString(), 256, " Spherical");
+	if (ElevMode & eElevMode::Auto) strcat_s(oapiDebugString(), 256, " Auto");
+	else strcat_s(oapiDebugString(), 256, " Forced");
+	}*/
+
 
 	if (np)
 		scene->SetCameraFrustumLimits(np,fp);

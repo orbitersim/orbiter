@@ -98,6 +98,7 @@ public:
 	static D3DXHANDLE sbDebug;
 	static D3DXHANDLE sbShadows;
 	static D3DXHANDLE sbOverlay;
+	static D3DXHANDLE sbSpherical;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
