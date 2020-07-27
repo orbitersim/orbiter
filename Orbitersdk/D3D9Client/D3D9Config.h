@@ -85,6 +85,7 @@ public:
 	int GDIOverlay;					///< GDI Overlay
 	int gcGUIMode;					///< gcGUI Operation Mode
 	int bAbsAnims;					///< Absolute animations
+	int bCloudNormals;				///< Felix24's Cound normals implementation test
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 

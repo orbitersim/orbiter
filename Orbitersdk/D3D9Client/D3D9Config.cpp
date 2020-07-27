@@ -82,6 +82,7 @@ void D3D9Config::Reset ()
 	GDIOverlay			= 0;
 	gcGUIMode			= 0;
 	bAbsAnims			= 0;
+	bCloudNormals		= 0;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -159,6 +160,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "GDIOverlay", i))					GDIOverlay = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "gcGUIMode", i))						gcGUIMode = max(0, min(3, i));
 	if (oapiReadItem_int   (hFile, "AbsoluteAnimations", i))			bAbsAnims = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "NormalmappedClouds", i))			bCloudNormals = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 
@@ -228,6 +230,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "GDIOverlay", GDIOverlay);
 	oapiWriteItem_int	(hFile, "gcGUIMode", gcGUIMode);
 	oapiWriteItem_int   (hFile, "AbsoluteAnimations", bAbsAnims);
+	oapiWriteItem_int   (hFile, "NormalmappedClouds", bCloudNormals);
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);

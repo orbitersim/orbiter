@@ -63,6 +63,7 @@ struct CloudVS
 	float3 atten    : COLOR0;     // Attennuation
 	float3 insca    : COLOR1;     // "Inscatter" Added to incoming fragment color
 	float2 fade     : TEXCOORD1;
+	float3 nrmW		: TEXCOORD2;
 };
 
 struct HazeVS
@@ -121,12 +122,14 @@ uniform extern bool		 bLocals;			// Local light sources enabled for this tile
 uniform extern bool		 bShadows;			// Enable shadow projection
 uniform extern bool		 bOverlay;			// Enable shadow projection
 uniform extern bool		 bSpherical;		// Force Spherical planet (discard elevation) 
+uniform extern bool		 bCloudNorm;
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
 uniform extern texture   tCloud;
 uniform extern texture   tCloud2;
 uniform extern texture   tCloudMicro;
+uniform extern texture   tCloudMicroNorm;
 uniform extern texture   tNoise;			//
 uniform extern texture	 tOcean;			// Ocean Texture
 uniform extern texture	 tEnvMap;
@@ -241,6 +244,17 @@ sampler EnvMapS = sampler_state
 sampler CloudMicroS = sampler_state
 {
 	Texture = <tCloudMicro>;
+	MinFilter = MICRO_FILTER;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	MaxAnisotropy = MICRO_ANISOTROPY;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler CloudMicroNormS = sampler_state
+{
+	Texture = <tCloudMicroNorm>;
 	MinFilter = MICRO_FILTER;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
@@ -960,7 +974,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 	float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
 	float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH = mul(float4(vPosW, 1.0f), mViewProj);
-
+	outVS.nrmW = vNrmW;
 	outVS.texUV.xy = vrt.tex0.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
 
 	float3 vVrt = vCameraPos + vPosW;					// Geo-centric vertex position
@@ -1027,20 +1041,64 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 	float4 cTex = tex2D(DiffTexS, vUVTex);
 	float4 cMic = tex2D(CloudMicroS, vUVMic);
 	
+#if defined(_CLOUDNORMALS)
+
+	if (bCloudNorm) {
+
+/*#if defined(_CLOUDMICRO)
+		float4 cMicNorm = tex2D(CloudMicroNormS, vUVMic);  // Filename "cloud1_norm.dds" (does not exists in distribution)
+#endif*/
+
+		// Filter width
+		float d = 2.0 / 512.0;
+		float3 nrm = 0;
+
+		float x1 = tex2D(DiffTexS, vUVTex + float2(-d, 0)).a;
+		float x2 = tex2D(DiffTexS, vUVTex + float2(+d, 0)).a;
+		nrm.x = (x1*x1 - x2*x2);
+
+		float y1 = tex2D(DiffTexS, vUVTex + float2(0, -d)).a;
+		float y2 = tex2D(DiffTexS, vUVTex + float2(0, +d)).a;
+		nrm.y = (y1*y1 - y2*y2);
+
+		float m = max(abs(nrm.x), abs(nrm.y));
+
+		// Bump magnitude/contrast function
+		float contrast = m * 1.0f;
+
+/*#if defined(_CLOUDMICRO)	
+		nrm.xy = nrm.xy * cMicNorm.rg * 4.0f; // Blend Normals
+#endif*/
+
+		nrm = normalize(nrm) * contrast;
+		nrm.z = sqrt(1.0f - nrm.x*nrm.x - nrm.y*nrm.y);
+
+		// Approximate world space normal from local tangent space
+		nrm = normalize((vTangent * nrm.x) + (vBiTangent * nrm.y) + (frg.nrmW * nrm.z));
+
+		float dCS = dot(nrm, vSunDir);			// Cloud normal sun angle
+		//float dMN = dot(frg.nrmW, vSunDir);	// Planet mean normal sun angle
+		
+		//float y = abs(dCS*dCS);
+		float y = pow(abs(dCS), 0.3f);
+		if (dCS > 0) dCS = y; else dCS = -y;
+
+		// Effect of normal/sun angle to color
+		cTex.rgb *= saturate(0.6f + dCS*0.4f);		
+	}
+#endif
+
 #if defined(_CLOUDMICRO)
 		float f = cTex.a;
 		float g = lerp(1, cMic.a, frg.fade.y);
-		//float h = (g + 2.0f)*0.333f;
 		float h = (g + 4.0f)*0.2f;
-		//float h = (g + 8.0f)*0.111f;
-		//float h = (g + 16.0f)*0.058f;
-		//g *= g;
 		cTex.a = saturate(lerp(g, h, f) * f);
 #endif
 
 	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
 
-	return float4(saturate(color + a), cTex.a*saturate(frg.fade.x*fCloudInts*fCloudInts));
+	return float4(saturate(color + a), cTex.a*saturate(fCloudInts*fCloudInts));
+	//return float4(saturate(color + a), cTex.a*saturate(frg.fade.x*fCloudInts*fCloudInts));
 }
 
 

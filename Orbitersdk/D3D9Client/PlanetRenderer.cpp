@@ -21,6 +21,7 @@ class oapi::D3D9Client *PlanetRenderer::gc = NULL;
 LPDIRECT3DDEVICE9 PlanetRenderer::pDev = NULL;
 LPDIRECT3DTEXTURE9 PlanetRenderer::hOcean = NULL;
 LPDIRECT3DTEXTURE9 PlanetRenderer::hCloudMicro = NULL;
+LPDIRECT3DTEXTURE9 PlanetRenderer::hCloudMicroNorm = NULL;
 VECTOR3 PlanetRenderer::vLPosOld = _V(1,0,0);
 bool PlanetRenderer::bEnvMapEnabled = false;
 // ------------------------------------------------------------
@@ -68,6 +69,7 @@ D3DXHANDLE PlanetRenderer::sbDebug = NULL;
 D3DXHANDLE PlanetRenderer::sbShadows = NULL;
 D3DXHANDLE PlanetRenderer::sbOverlay = NULL;
 D3DXHANDLE PlanetRenderer::sbSpherical = NULL;
+D3DXHANDLE PlanetRenderer::sbCloudNorm = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -82,6 +84,7 @@ D3DXHANDLE PlanetRenderer::stMicroC = NULL;
 D3DXHANDLE PlanetRenderer::stMicroRot = NULL;
 D3DXHANDLE PlanetRenderer::stShadowMap = NULL;
 D3DXHANDLE PlanetRenderer::stCloudMicro = NULL;
+D3DXHANDLE PlanetRenderer::stCloudMicroNorm = NULL;
 D3DXHANDLE PlanetRenderer::stOverlay = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
@@ -198,6 +201,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	if (Config->ShadowMapMode) macro[m++].Name = "_SHDMAP";
 	// ------------------------------------------------------------------------------
 	if (Config->CloudMicro) macro[m++].Name = "_CLOUDMICRO";
+	// ------------------------------------------------------------------------------
+	if (Config->bCloudNormals) macro[m++].Name = "_CLOUDNORMALS";
 
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, 0, 0, &pShader, &errors));
 	
@@ -283,6 +288,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbShadows			= pShader->GetParameterByName(0,"bShadows");
 	sbOverlay			= pShader->GetParameterByName(0,"bOverlay");
 	sbSpherical			= pShader->GetParameterByName(0,"bSpherical");
+	sbCloudNorm			= pShader->GetParameterByName(0,"bCloudNorm");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");
@@ -291,6 +297,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stNoise				= pShader->GetParameterByName(0,"tNoise");
 	stOcean				= pShader->GetParameterByName(0,"tOcean");
 	stCloudMicro	    = pShader->GetParameterByName(0,"tCloudMicro");
+	stCloudMicroNorm	= pShader->GetParameterByName(0,"tCloudMicroNorm");
 	stEnvMap			= pShader->GetParameterByName(0,"tEnvMap");
 	stMicroA			= pShader->GetParameterByName(0,"tMicroA");
 	stMicroB			= pShader->GetParameterByName(0,"tMicroB");
@@ -340,12 +347,19 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 		HR(D3DXCreateTextureFromFileA(pDev, name, &hCloudMicro));
 	}
 
+	if (gc->TexturePath("cloud1_norm.dds", name)) {
+		HR(D3DXCreateTextureFromFileA(pDev, name, &hCloudMicroNorm));
+	}
+
 	if (hOcean) {
 		HR(pShader->SetTexture(stOcean, hOcean));
 	}
 
 	if (hCloudMicro) {
 		HR(pShader->SetTexture(stCloudMicro, hCloudMicro));
+	}
+	if (hCloudMicroNorm) {
+		HR(pShader->SetTexture(stCloudMicroNorm, hCloudMicroNorm));
 	}
 }
 
@@ -356,6 +370,7 @@ void PlanetRenderer::GlobalExit ()
 	SAFE_RELEASE(pShader);
 	SAFE_RELEASE(hOcean);
 	SAFE_RELEASE(hCloudMicro);
+	SAFE_RELEASE(hCloudMicroNorm);
 }
 
 // -----------------------------------------------------------------------

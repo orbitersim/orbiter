@@ -53,6 +53,7 @@ public:
 	static ID3DXEffect *pShader;
 	static LPDIRECT3DTEXTURE9 hOcean;
 	static LPDIRECT3DTEXTURE9 hCloudMicro;
+	static LPDIRECT3DTEXTURE9 hCloudMicroNorm;
 	static VECTOR3 vLPosOld;
 	static bool bEnvMapEnabled;
 	// ------------------------------------------------------------
@@ -99,12 +100,14 @@ public:
 	static D3DXHANDLE sbShadows;
 	static D3DXHANDLE sbOverlay;
 	static D3DXHANDLE sbSpherical;
+	static D3DXHANDLE sbCloudNorm;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
 	static D3DXHANDLE stCloud;
 	static D3DXHANDLE stCloud2;
 	static D3DXHANDLE stCloudMicro;
+	static D3DXHANDLE stCloudMicroNorm;
 	static D3DXHANDLE stNoise;
 	static D3DXHANDLE stOcean;
 	static D3DXHANDLE stEnvMap;

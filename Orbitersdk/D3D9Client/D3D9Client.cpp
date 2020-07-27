@@ -1730,7 +1730,8 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			}
 			bool bShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000)!=0;
 			bool bCtrl  = (GetAsyncKeyState(VK_CONTROL) & 0x8000)!=0;
-			if (wParam=='C' && bShift && bCtrl) bControlPanel = !bControlPanel;
+			if (wParam == 'C' && bShift && bCtrl) bControlPanel = !bControlPanel;
+			if (wParam == 'N' && bShift && bCtrl) Config->bCloudNormals = !Config->bCloudNormals;
 			break;
 		}
 
