@@ -11,6 +11,22 @@
 #include "TileLabel.h"
 #include "D3D9Pad.h"
 
+#pragma pack(push,1)
+
+struct ELEVFILEHEADER { // file header for patch elevation data file
+	char id[4];            // ID string + version ('E','L','E',1)
+	int hdrsize;           // header size (76 expected)
+	int dtype;             // data format (0=flat, no data block; 8=uint8; -8=int8; 16=uint16; -16=int16)
+	int xgrd, ygrd;         // data grid size (259 x 259 expected)
+	int xpad, ypad;         // horizontal, vertical padding width (1, 1 expected)
+	double scale;          // data scaling factor (1.0 expected)
+	double offset;         // data offset (elevation = raw value * scale + offset)
+	double latmin, latmax; // latitude range [rad]
+	double lngmin, lngmax; // longitude range [rad]
+	double emin, emax, emean; // min, max, mean elevation [m]
+};
+
+#pragma pack(pop)
 
 /**
  * \brief Planetary surface rendering engine.
@@ -49,7 +65,7 @@ protected:
 
 	void Load ();
 	void PreLoad ();
-	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev = 0);
+	INT16 *ReadElevationFile (const char *name, int lvl, int ilat, int ilng);
 	bool LoadElevationData ();
 	void Render ();
 	void StepIn ();
@@ -73,13 +89,14 @@ protected:
 	void RenderLabels(D3D9Pad *skp, oapi::Font **labelfont, int *fontidx);
 
 private:
-	bool InterpolateElevationGrid(float *pelev, float *elev);
+	bool InterpolateElevationGrid(const float *pelev, float *elev);
 	float Interpolate(FMATRIX4 &in, float x, float y);
 	float *ElevationData () const;
 	double GetMeanElevation (const float *elev) const;
 	float fixinput(double, int);
 	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
+	ELEVFILEHEADER ehdr;		///< Let's store the complete header for later use
 	D3DXVECTOR2 MicroRep[3];
 	DWORD MaxRep;
 	LPDIRECT3DTEXTURE9 ltex;	///< landmask/nightlight texture, if applicable

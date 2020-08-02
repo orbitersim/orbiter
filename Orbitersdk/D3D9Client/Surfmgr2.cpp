@@ -25,22 +25,7 @@
 
 // =======================================================================
 
-#pragma pack(push,1)
 
-struct ELEVFILEHEADER { // file header for patch elevation data file
-	char id[4];            // ID string + version ('E','L','E',1)
-	int hdrsize;           // header size (76 expected)
-	int dtype;             // data format (0=flat, no data block; 8=uint8; -8=int8; 16=uint16; -16=int16)
-	int xgrd,ygrd;         // data grid size (259 x 259 expected)
-	int xpad,ypad;         // horizontal, vertical padding width (1, 1 expected)
-	double scale;          // data scaling factor (1.0 expected)
-	double offset;         // data offset (elevation = raw value * scale + offset)
-	double latmin, latmax; // latitude range [rad]
-	double lngmin, lngmax; // longitude range [rad]
-	double emin, emax, emean; // min, max, mean elevation [m]
-};
-
-#pragma pack(pop)
 
 // =======================================================================
 // Utility functions
@@ -193,7 +178,7 @@ void SurfTile::Load ()
 		}
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (res, res, elev, mgr->ElevRes(), 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
+		mesh = CreateMesh_quadpatch (res, res, elev, 1.0, 0.0, &texrange, shift_origin, &vtxshift, mgr->GetPlanet()->prm.tilebb_excess);
 	}
 
 	static const DWORD label_enable = PLN_ENABLE | PLN_LMARK;
@@ -205,17 +190,17 @@ void SurfTile::Load ()
 
 // -----------------------------------------------------------------------
 
-INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int ilng, double tgt_res, double *mean_elev)
+INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int ilng)
 {
 	const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
-	ELEVFILEHEADER hdr;
 	INT16 *e = NULL;
-	//INT16 ofs;
-	double scale, offset;
+	double tgt_res = mgr->ElevRes();
 	char path[MAX_PATH];
 	char fname[128];
 	FILE *f;
 	int i;
+
+	memset(&ehdr, 0, sizeof(ELEVFILEHEADER));
 
 	// Elevation data
 	if (smgr->DoLoadIndividualFiles(2)) { // try loading from individual tile file
@@ -223,16 +208,13 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		bool found = mgr->GetClient()->TexturePath(fname, path);
 		if (found && !fopen_s(&f, path, "rb")) {
 			e = new INT16[ndat];
+			elev = new float[ndat];
 			// read the elevation file header
-			fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
-			if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
-				fseek (f, hdr.hdrsize, SEEK_SET);
+			fread (&ehdr, sizeof(ELEVFILEHEADER), 1, f);
+			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) {
+				fseek (f, ehdr.hdrsize, SEEK_SET);
 			}
-			scale = hdr.scale;
-			offset = hdr.offset;
-			if (mean_elev) *mean_elev = hdr.emean;
-
-			switch (hdr.dtype) {
+			switch (ehdr.dtype) {
 			case 0: // flat tile, defined by offset
 				for (i = 0; i < ndat; i++) e[i] = 0;
 				break;
@@ -257,12 +239,10 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		if (ndata) {
 			BYTE *p = buf;
 			e = new INT16[ndat];
-			ELEVFILEHEADER *phdr = (ELEVFILEHEADER*)p;
-			p += phdr->hdrsize;
-			if (mean_elev) *mean_elev = phdr->emean;
-			scale = phdr->scale;
-			offset = phdr->offset;
-			switch (phdr->dtype) {
+			elev = new float[ndat];
+			memcpy(&ehdr, p, sizeof(ELEVFILEHEADER));
+			p += ehdr.hdrsize;
+			switch (ehdr.dtype) {
 			case 0:
 				for (i = 0; i < ndat; i++) e[i] = 0;
 				break;
@@ -280,13 +260,18 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	}
 
 	if (e) {
-		if (scale != tgt_res) { // rescale the data
-			double rescale = scale / tgt_res;
+
+		// Convert to float
+		for (i = 0; i < ndat; i++)
+			elev[i] = float(float(e[i]) * ehdr.scale + ehdr.offset);
+
+		if (ehdr.scale != tgt_res) { // rescale the data
+			double rescale = ehdr.scale / tgt_res;
 			for (i = 0; i < ndat; i++)
 				e[i] = (INT16)(e[i] * rescale);
 		}
-		if (offset) {
-			INT16 sofs = (INT16)(offset / tgt_res);
+		if (ehdr.offset) {
+			INT16 sofs = (INT16)(ehdr.offset / tgt_res);
 			for (i = 0; i < ndat; i++)
 				e[i] += sofs;
 		}
@@ -298,6 +283,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		double rescale;
 		INT16 offset;
 		bool do_rescale, do_shift;
+		ELEVFILEHEADER hdr;
 		if (smgr->DoLoadIndividualFiles(3)) { // try loading from individual tile file
 			sprintf_s (fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
 			bool found = mgr->GetClient()->TexturePath(fname, path);
@@ -310,7 +296,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				offset = (do_shift = (hdr.offset != 0.0)) ? (INT16)(hdr.offset / tgt_res) : 0;
 				switch (hdr.dtype) {
 				case 0: // overwrite the entire tile with a flat offset
-					for (i = 0; i < ndat; i++) e[i] = offset;
+					for (i = 0; i < ndat; i++) e[i] = offset, elev[i] = float(hdr.offset);
 					break;
 				case 8: {
 					const UINT8 mask = UCHAR_MAX;
@@ -320,6 +306,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (tmp[i] != mask) {
 							e[i] = (INT16)(do_rescale ? (INT16)(tmp[i] * rescale) : (INT16)tmp[i]);
 							if (do_shift) e[i] += offset;
+							elev[i] = float(float(tmp[i]) * hdr.scale + hdr.offset); // Apply to floats 			
 						}
 					}
 					delete []tmp;
@@ -334,6 +321,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (tmp[i] != mask) {
 							e[i] = (do_rescale ? (INT16)(tmp[i] * rescale) : tmp[i]);
 							if (do_shift) e[i] += offset;
+							elev[i] = float(float(tmp[i]) * hdr.scale + hdr.offset); // Apply to floats
 						}
 					}
 					delete []tmp;
@@ -355,7 +343,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				offset = (do_shift = (phdr->offset != 0.0)) ? (INT16)(phdr->offset / tgt_res) : 0;
 				switch(phdr->dtype) {
 				case 0:
-					for (i = 0; i < ndat; i++) e[i] = offset;
+					for (i = 0; i < ndat; i++) e[i] = offset, elev[i] = float(phdr->offset);
 					break;
 				case 8: {
 					const UINT8 mask = UCHAR_MAX;
@@ -363,6 +351,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (p[i] != mask) {
 							e[i] = (INT16)(do_rescale ? p[i] * rescale : p[i]);
 							if (do_shift) e[i] += offset;
+							elev[i] = float(float(p[i]) * phdr->scale + phdr->offset); // Apply to floats
 						}
 					}
 					} break;
@@ -373,6 +362,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (buf16[i] != mask) {
 							e[i] = (do_rescale ? (INT16)(buf16[i] * rescale) : buf16[i]);
 							if (do_shift) e[i] += offset;
+							elev[i] = float(float(buf16[i]) * phdr->scale + phdr->offset); // Apply to floats
 						}
 					}
 					} break;
@@ -441,7 +431,7 @@ float SurfTile::Interpolate(FMATRIX4 &in, float t, float u)
 
 // -----------------------------------------------------------------------
 
-bool SurfTile::InterpolateElevationGrid(float *in, float *out)
+bool SurfTile::InterpolateElevationGrid(const float *in, float *out)
 {
 	int q0 = 0, c = 129;
 
@@ -491,26 +481,25 @@ bool SurfTile::LoadElevationData ()
 	int mode = mgr->Cprm().elevMode;
 	if (!mode) return false;
 
-	DWORD elev_mode = *(DWORD*)mgr->GetClient()->GetConfigParam(CFGPRM_ELEVATIONMODE);
-
 	DWORD phy_lvl = mgr->GetPlanet()->GetPhysicsPatchRes();
 	int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
-	elev_file = ReadElevationFile (mgr->CbodyName(), lvl + 4, ilat, ilng, mgr->ElevRes());
 
-	if (elev_file) {
-		has_elevfile = true;
-		elev = new float[ndat];
-		// Convert to float
-		for (int i = 0; i < ndat; i++) elev[i] = float(elev_file[i]);
-	}
+	elev_file = ReadElevationFile (mgr->CbodyName(), lvl + 4, ilat, ilng);
+	double tgt_res = mgr->ElevRes();
+
+	if (elev_file) has_elevfile = true;
 	else if (lvl > 0) {
+
+		// Acquire elev header data from a parent
+		QuadTreeNode<SurfTile> *parent = node->Parent();
+		if (parent &&  parent->Entry()) memcpy(&ehdr, &parent->Entry()->ehdr, sizeof(ELEVFILEHEADER));
 
 		// construct elevation grid by interpolating ancestor data
 		ELEVHANDLE hElev = mgr->ElevMgr();
 		if (!hElev) return false;
 
-		// Cubic Interpolation and Default Linear
-		if (elev_mode == 0) {
+		// Cubic Interpolation
+		if (mode == 2) {
 
 			int plvl = lvl-1;
 			int pilat = ilat >> 1;
@@ -535,7 +524,9 @@ bool SurfTile::LoadElevationData ()
 			// submit ancestor data to elevation manager for interpolation
 			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev_temp);
 
-			for (int i = 0; i < ndat; i++) elev[i] = float(elev_temp[i]);
+			// Convert to float
+			for (int i = 0; i < ndat; i++) elev[i] = float(elev_temp[i]) / float(tgt_res);
+
 			delete[] elev_temp;
 		}
 
@@ -593,6 +584,8 @@ float *SurfTile::ElevationData () const
 
 double SurfTile::GetMeanElevation(const float *elev) const
 {
+	if (has_elevfile) return ehdr.emean;
+
 	int i, j;
 	int res = mgr->GridRes();
 	double melev = 0.0;
@@ -621,12 +614,11 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, 
 		if (!ggelev) { *elev = 0.0; return 2; }
 		else {
 			double fRes = double(mgr->GridRes());
-			double fElv = mgr->ElevRes();
-
+			
 			if (!bFilter) {
 				int i = int((lat - bnd.minlat) * fRes / (bnd.maxlat - bnd.minlat)) + 1;
 				int j = int((lng - bnd.minlng) * fRes / (bnd.maxlng - bnd.minlng)) + 1;
-				*elev = double(ggelev[j+i*TILE_ELEVSTRIDE]) * fElv;
+				*elev = double(ggelev[j+i*TILE_ELEVSTRIDE]);
 			}
 			else {
 
@@ -646,7 +638,7 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, 
 				float q = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx); j0++;
 				float w = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx);
 
-				*elev = double(lerp(q,w,fy)) * fElv;
+				*elev = double(lerp(q,w,fy));
 			}
 
 			return 1;

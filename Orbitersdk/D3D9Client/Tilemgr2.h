@@ -369,7 +369,7 @@ public:
 	inline const double CbodySize() const { return obj_size; }
 	inline const ELEVHANDLE ElevMgr() const { return emgr; }
 	inline const int GridRes() const { return gridRes; }
-	inline const double ElevRes() const { return elevRes; }
+	inline const double ElevRes() const { return elevRes; } //(Mostly Obsolete) not needed since elevation is float based 
 	inline OBJHANDLE GetHandle() const { return obj; }
 	
 	float GetMinElev() const { return min_elev; }
