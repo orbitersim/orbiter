@@ -474,8 +474,8 @@ gcCore::PickGround gcCore::GetTileData(HPLANETMGR vPl, double lng, double lat, i
 	pg.lat = lat;
 	pg.lng = lng;
 
-	pg.emax = pTile->GetMaxElev();
-	pg.emin = pTile->GetMinElev();
+	pg.emax = float(pTile->GetMaxElev());
+	pg.emin = float(pTile->GetMinElev());
 
 	pg.msg = 0;
 	pg.dist = length(pos);
@@ -509,8 +509,8 @@ gcCore::PickGround gcCore::ScanScreen(int scr_x, int scr_y)
 		pg.lat = tp.lat;
 		pg.lng = tp.lng;
 
-		pg.emax = pTile->GetMaxElev();
-		pg.emin = pTile->GetMinElev();
+		pg.emax = float(pTile->GetMaxElev());
+		pg.emin = float(pTile->GetMinElev());
 
 		pg.msg = 0;
 		pg.dist = tp.d;

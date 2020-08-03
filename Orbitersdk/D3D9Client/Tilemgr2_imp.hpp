@@ -152,7 +152,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	// Compute target resolution level based on tile distance
 	if (bstepdown) {
 		double tdist;
-		double erad = 1.0 + tile->mean_elev/obj_size; // radius of unit sphere plus elevation
+		double erad = 1.0 + tile->GetMeanElev()/obj_size; // radius of unit sphere plus elevation
 		if (adist < 0.0) { // if we are above the tile, use altitude for distance measurement
 			tdist = prm.cdist-erad;
 		} else { // use distance to closest tile edge
@@ -224,6 +224,7 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 	const Scene *scene = GetScene();
 
 	if (tile->state == Tile::ForRender) {
+		SetMinMaxElev(tile->GetMinElev(), tile->GetMaxElev());
 		int lvl = tile->lvl;
 		tile->MatchEdges ();
 		SetWorldMatrix (tile->mWorld);

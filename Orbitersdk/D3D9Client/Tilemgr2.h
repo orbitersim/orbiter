@@ -87,8 +87,6 @@ public:
 	inline bool HasOwnTex() const { return owntex; }
 	inline bool HasOwnElev() const { return has_elevfile; }
 	inline void GetWorldMatrix(void *pOut) const { memcpy(pOut, &mWorld, sizeof(D3DXMATRIX)); }
-	inline float GetMinElev() const { return min_elev; }
-	inline float GetMaxElev() const { return max_elev; }
 
 	bool PreDelete();
 	// Prepare tile for deletion. Return false if tile is locked
@@ -136,9 +134,14 @@ protected:
 	virtual Tile *getParent() const = 0;
 
 	virtual void Render () {}
-
 	virtual void StepIn () {}
+
 	virtual bool IsElevated() { return false; }
+
+	virtual double GetMinElev() const = 0;
+	virtual double GetMaxElev() const = 0;
+	virtual double GetMeanElev() const = 0;
+	
 
 	/**
 	 * \brief Preloades a surface tile data into a system memory from a tile loader thread
@@ -186,10 +189,7 @@ protected:
 	DWORD FrameId;
 	float width;			   // tile width [rad] (widest section i.e base)
 	float height;			   // tile height [rad]
-	float max_elev;
-	float min_elev;
-	mutable double mean_elev;  // mean tile elevation [m]
-
+	
 public:
 	D3DXMATRIX mWorld;
 	MATRIX4 dmWorld;
@@ -372,9 +372,9 @@ public:
 	inline const double ElevRes() const { return elevRes; } //(Mostly Obsolete) not needed since elevation is float based 
 	inline OBJHANDLE GetHandle() const { return obj; }
 	
-	float GetMinElev() const { return min_elev; }
-	float GetMaxElev() const { return max_elev; }
-	void SetMinMaxElev(float min, float max);
+	double GetMinElev() const { return min_elev; }
+	double GetMaxElev() const { return max_elev; }
+	void SetMinMaxElev(double min, double max);
 	void ResetMinMaxElev();
 
 
@@ -387,8 +387,8 @@ protected:
 	// loads one of the four subnodes of 'node', given by 'idx'
 
 	double obj_size;                 // planet radius
-	float min_elev;					 // minimum renderred elevation
-	float max_elev;					 // maximum renderred elevation
+	double min_elev;				 // minimum renderred elevation
+	double max_elev;				 // maximum renderred elevation
 	static TileLoader *loader;
 	const vPlanet *vp;				 // the planet visual
 private:

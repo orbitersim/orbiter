@@ -26,6 +26,10 @@ public:
 	inline void SetNode (QuadTreeNode<CloudTile> *_node) { node = _node; }
 	// Register the tile to a quad tree node
 
+	double GetMinElev() const { return cloudalt; }		// virtual from Tile::
+	double GetMaxElev() const { return cloudalt; }		// virtual from Tile::
+	double GetMeanElev() const { return cloudalt; }		// virtual from Tile::
+
 protected:
 	virtual Tile *getParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
 	// Return pointer to parent tile, if exists
@@ -34,6 +38,7 @@ protected:
 	virtual void PreLoad ();
 	virtual void Render ();
 
+	double cloudalt;
 	TileManager2<CloudTile> *cmgr;	// cloud tile manager interface
 	QuadTreeNode<CloudTile> *node;	// my node in the quad tree, if I'm part of a tree
 };

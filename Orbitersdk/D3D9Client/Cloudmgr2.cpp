@@ -24,7 +24,7 @@ CloudTile::CloudTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	cmgr = static_cast<TileManager2<CloudTile>* > (_mgr);
 	node = 0;
 	imicrolvl = 6;	// Cloud micro resolution level
-	mean_elev = mgr->GetPlanet()->prm.cloudalt;
+	cloudalt = mgr->GetPlanet()->prm.cloudalt;
 	if (Config->TileMipmaps == 2) bMipmaps = true;
 	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
 }
@@ -83,13 +83,13 @@ void CloudTile::Load ()
 
 	if (!lvl) {
 		// create hemisphere mesh for western or eastern hemispheres
-		mesh = CreateMesh_hemisphere (res, 0, mean_elev);
+		mesh = CreateMesh_hemisphere (res, 0, cloudalt);
 	//} else if (ilat == 0 || ilat == (1<<lvl)-1) {
 		// create triangular patch for north/south pole region
 	//	mesh = CreateMesh_tripatch (TILE_PATCHRES, elev, shift_origin, &vtxshift);
 	} else {
 		// create rectangular patch
-		mesh = CreateMesh_quadpatch (res, res, 0, 1.0, mean_elev, &texrange, shift_origin, &vtxshift);
+		mesh = CreateMesh_quadpatch (res, res, 0, 1.0, cloudalt, &texrange, shift_origin, &vtxshift);
 	}
 }
 

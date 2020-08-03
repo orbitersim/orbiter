@@ -57,6 +57,10 @@ public:
 	LPDIRECT3DTEXTURE9 SetOverlay(LPDIRECT3DTEXTURE9 pOverlay, bool bOwn = true);
 	bool DeleteOverlay(LPDIRECT3DTEXTURE9 pOverlay = NULL);
 
+	double GetMinElev() const { return ehdr.emin; }		// virtual from Tile::
+	double GetMaxElev() const { return ehdr.emax; }		// virtual from Tile::
+	double GetMeanElev() const { return ehdr.emean; }	// virtual from Tile::
+
 protected:
 	virtual Tile *getParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
 	inline SurfTile *getSurfParent() const { return node && node->Parent() ? node->Parent()->Entry() : NULL; }
@@ -92,11 +96,11 @@ private:
 	bool InterpolateElevationGrid(const float *pelev, float *elev);
 	float Interpolate(FMATRIX4 &in, float x, float y);
 	float *ElevationData () const;
-	double GetMeanElevation (const float *elev) const;
+	void ComputeElevationData(const float *elev) const;
 	float fixinput(double, int);
 	D3DXVECTOR4 MicroTexRange(SurfTile *pT, int lvl) const;
 
-	ELEVFILEHEADER ehdr;		///< Let's store the complete header for later use
+	mutable ELEVFILEHEADER ehdr;///< Let's store the complete header for later use
 	D3DXVECTOR2 MicroRep[3];
 	DWORD MaxRep;
 	LPDIRECT3DTEXTURE9 ltex;	///< landmask/nightlight texture, if applicable

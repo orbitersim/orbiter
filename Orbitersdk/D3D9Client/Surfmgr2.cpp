@@ -64,6 +64,8 @@ SurfTile::SurfTile (TileManager2Base *_mgr, int _lvl, int _ilat, int _ilng)
 	MaxRep = mgr->Client()->GetFramework()->GetCaps()->MaxTextureRepeat;
 	if (Config->TileMipmaps == 2) bMipmaps = true;
 	if (Config->TileMipmaps == 1 && _lvl < 10) bMipmaps = true;
+
+	memset(&ehdr, 0, sizeof(ELEVFILEHEADER));
 }
 
 // -----------------------------------------------------------------------
@@ -199,8 +201,6 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	char fname[128];
 	FILE *f;
 	int i;
-
-	memset(&ehdr, 0, sizeof(ELEVFILEHEADER));
 
 	// Elevation data
 	if (smgr->DoLoadIndividualFiles(2)) { // try loading from individual tile file
@@ -574,28 +574,30 @@ float *SurfTile::ElevationData () const
 				ggelev = ggp->elev + ofs;
 			}
 		}
-		if (ggelev)
-			mean_elev = GetMeanElevation (ggelev);
+		if (ggelev) ComputeElevationData(ggelev);
 	}
 	return ggelev;
 }
 
 // -----------------------------------------------------------------------
 
-double SurfTile::GetMeanElevation(const float *elev) const
+void SurfTile::ComputeElevationData(const float *elev) const
 {
-	if (has_elevfile) return ehdr.emean;
-
+	if (has_elevfile) return;
 	int i, j;
 	int res = mgr->GridRes();
-	double melev = 0.0;
+	ehdr.emax = -1e30;
+	ehdr.emin = 1e30;
+	ehdr.emean = 0.0;
 	for (j = 0; j <= res; j++) {
 		for (i = 0; i <= res; i++) {
-			melev += elev[i];
+			ehdr.emean += elev[i];
+			ehdr.emax = max(ehdr.emax, elev[i]);
+			ehdr.emin = min(ehdr.emin, elev[i]);
 		}
 		elev += TILE_ELEVSTRIDE;
 	}
-	return melev / ((res + 1)*(res + 1));
+	ehdr.emean /= double((res + 1)*(res + 1));
 }
 
 // ------------------------------------------------------------------------------
@@ -686,7 +688,7 @@ float SurfTile::fixinput(double a, int x)
 
 double SurfTile::GetCameraDistance()
 {
-	VECTOR3 cnt = Centre() * (mgr->CbodySize() + mean_elev);
+	VECTOR3 cnt = Centre() * (mgr->CbodySize() + GetMeanElev());
 	cnt = mgr->prm.cpos + mul(mgr->prm.grot, cnt);
 	return length(cnt);
 }
@@ -1368,6 +1370,8 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 		ProcessNode (tiletree+i);
 
 	vp->tile_cache = NULL;
+
+	ResetMinMaxElev();
 
 	// render the tree
 	for (i = 0; i < 2; i++)
