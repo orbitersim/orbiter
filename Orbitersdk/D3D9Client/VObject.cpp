@@ -309,6 +309,9 @@ void vObject::RenderDot(LPDIRECT3DDEVICE9 dev)
 
 	VECTOR3 spos;
 	oapiGetGlobalPos(oapiGetGbodyByIndex(0), &spos);
+	oapiGetGlobalPos(hObj, &gpos);
+	cpos = gpos - scn->GetCameraGPos();
+	cdist = length(cpos);
 
 	double alt = max(1.0, cdist - size);
 	double apr = size * scn->ViewH()*0.5 / (alt * tan(scn->GetCameraAperture()));

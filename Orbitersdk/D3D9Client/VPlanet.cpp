@@ -382,6 +382,8 @@ bool vPlanet::Update (bool bMainScene)
 	bool rescale = false;
 	dist_scale = 1.0f;
 
+	if (IsMesh()) rad_scale = 1.0f; // Mesh vertices are already scaled
+
 	if (cdist > maxdist) {
 		rescale = true;
 		dist_scale = (FLOAT)(max_centre_dist/cdist);
@@ -395,11 +397,9 @@ bool vPlanet::Update (bool bMainScene)
 	}
 
 	// scale up from template sphere radius 1
-	if (!mesh) { // Mesh vertices are scaled already... Skip for a mesh...
-		mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
-		mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
-		mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
-	}
+	mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
+	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
+	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
 
 	// cloud layer world matrix
 	if (prm.bCloud) {
