@@ -54,6 +54,7 @@ public:
 	virtual bool	GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void	UpdateBoundingBox();
 
+	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);
 	void			CheckResolution ();
 	void			RenderZRange (double *nplane, double *fplane);

@@ -1104,7 +1104,7 @@ void Scene::RenderMainScene()
 
 	// Do we use z-clear render mode or not ?
 	bool bClearZBuffer = false;
-	if ( (GetTargetGroundAltitude() > 10e3) && (oapiCameraInternal() == false) ) bClearZBuffer = true;
+	if ( (GetTargetGroundAltitude() > 10e3) && (oapiCameraInternal() == false) && (!IsProxyMesh())) bClearZBuffer = true;
 
 
 	if (DebugControls::IsActive()) {
@@ -3023,6 +3023,13 @@ void Scene::SetCameraFrustumLimits (double nearlimit, double farlimit)
 	Camera.nearplane = (float)nearlimit;
 	Camera.farplane  = (float)farlimit;
 	SetCameraAperture(Camera.aperture, Camera.aspect);
+}
+
+// ===========================================================================================
+//
+bool Scene::IsProxyMesh()
+{
+	return Camera.vProxy ? Camera.vProxy->IsMesh() : false;
 }
 
 // ===========================================================================================

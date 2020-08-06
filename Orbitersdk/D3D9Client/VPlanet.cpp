@@ -305,7 +305,7 @@ void vPlanet::GetLngLat(VECTOR3 &loc, double *lng, double *lat) const
 
 bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 {
-	if (mesh==NULL) return false;
+	//if (mesh==NULL) return false;
 	if (bBSRecompute) UpdateBoundingBox();
 
 	D3DXVECTOR3 pos = D3DXVECTOR3(mWorld._41, mWorld._42, mWorld._43);
@@ -395,9 +395,11 @@ bool vPlanet::Update (bool bMainScene)
 	}
 
 	// scale up from template sphere radius 1
-	mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
-	mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
-	mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
+	if (!mesh) { // Mesh vertices are scaled already... Skip for a mesh...
+		mWorld._11 *= rad_scale; mWorld._12 *= rad_scale; mWorld._13 *= rad_scale;
+		mWorld._21 *= rad_scale; mWorld._22 *= rad_scale; mWorld._23 *= rad_scale;
+		mWorld._31 *= rad_scale; mWorld._32 *= rad_scale; mWorld._33 *= rad_scale;
+	}
 
 	// cloud layer world matrix
 	if (prm.bCloud) {
@@ -555,7 +557,7 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 
 
 	if (shd->pShadowMap && (scn->GetRenderPass() == RENDERPASS_MAINSCENE) && (Config->TerrainShadowing == 2)) {
-		if (scn->GetCameraAltitude() < 10e3) {
+		if (scn->GetCameraAltitude() < 10e3 || IsMesh()) {
 			HR(D3D9Effect::FX->SetMatrix(D3D9Effect::eLVP, &shd->mViewProj));
 			HR(D3D9Effect::FX->SetTexture(D3D9Effect::eShadowMap, shd->pShadowMap));
 			HR(D3D9Effect::FX->SetVector(D3D9Effect::eSHD, &D3DXVECTOR4(s, is, qw, 0)));
@@ -563,9 +565,10 @@ bool vPlanet::Render(LPDIRECT3DDEVICE9 dev)
 		}
 	}
 
-
-	PlanetRenderer::InitializeScattering(this);
-	PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
+	if (!mesh) { // Skip for a mesh
+		PlanetRenderer::InitializeScattering(this);
+		PlanetRenderer::SetViewProjectionMatrix(scn->GetProjectionViewMatrix());
+	}
 
 	if (DebugControls::IsActive()) {
 		// DWORD flags  = *(DWORD*)gc->GetConfigParam(CFGPRM_GETDEBUGFLAGS);
