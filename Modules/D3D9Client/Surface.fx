@@ -606,6 +606,8 @@ void SkyColor(out float3 vIns, in float3 vUnitRay)
 	// Evaluate a Gauss-Lobatto integral (from camera to skydome). Will give optical depth for the ray
 	float  fDep = fMnD * (fRay * fInvScaleHeight) * 0.3465735903f;
 
+	fDep *= 0.5f;
+
 	float  fASn = AngleCoEff(fDNS);
 
 	// Color of inscattered sunlight
@@ -711,6 +713,8 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 
 	// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 	float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
+
+	fDRay *= 0.5;
 
 	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.12f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
 
@@ -1014,10 +1018,12 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 													// Evaluate a Gauss-Lobatto integral to give an optical depth for a viewing ray
 	float fDRay = dot(vDns, vWeight3) * (fRay * fInvScaleHeight) * 0.3465735903f;
 
+	fDRay *= 0.5;
+
 	float3 vSunLight = exp2(-vTotOutSct * (vDns[0] * 0.25f * AngleCoEff(fDPS))) * Shadow(fDPS, srfoffset);
 
 	// Compute surface texture color attennuation (i.e. extinction term)
-	outVS.atten = exp2(-vTotOutSct * fDRay * 0.33f);
+	outVS.atten = exp2(-vTotOutSct * fDRay);
 	outVS.fade.x = exp2(-fDRay * 0.5f) * 2.0f;
 	outVS.fade.y = 1.0f - abs(dot(vPolarAxis, vPlN));
 
@@ -1025,7 +1031,7 @@ CloudVS CloudTechVS(TILEVERTEX vrt)
 	outVS.insca = ((vRayInSct * RPhase(fDRS)) + (vMieInSct * MPhase(fDRS))) * vSunLight * fDRay;
 
 	outVS.insca = (1.0f - exp2(-outVS.insca));
-	outVS.atten *= max(vSunLight, (vRayInSct + 1.0f) * fAmb) * 1.3f;
+	outVS.atten *= max(vSunLight, (vRayInSct + 1.0f) * fAmb*0.75f) * 1.3f;
 
 	return outVS;
 }
@@ -1040,14 +1046,14 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 
 	float4 cTex = tex2D(DiffTexS, vUVTex);
 	float4 cMic = tex2D(CloudMicroS, vUVMic);
-	
+
 #if defined(_CLOUDNORMALS)
 
 	if (bCloudNorm) {
 
-/*#if defined(_CLOUDMICRO)
-		float4 cMicNorm = tex2D(CloudMicroNormS, vUVMic);  // Filename "cloud1_norm.dds" (does not exists in distribution)
-#endif*/
+#if defined(_CLOUDMICRO)
+		float4 cMicNorm = tex2D(CloudMicroNormS, vUVMic);  // Filename "cloud1_norm.dds"
+#endif
 
 		// Filter width
 		float d = 2.0 / 512.0;
@@ -1061,44 +1067,54 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 		float y2 = tex2D(DiffTexS, vUVTex + float2(0, +d)).a;
 		nrm.y = (y1*y1 - y2*y2);
 
-		float m = max(abs(nrm.x), abs(nrm.y));
+		float dMN = dot(frg.nrmW, vSunDir);    // Planet mean normal sun angle
 
-		// Bump magnitude/contrast function
-		float contrast = m * 1.0f;
+#if defined(_CLOUDMICRO)
+		// Blend in cloud normals only on moderately thick clouds, allowing the highest cloud tops to be smooth.
+		nrm.xy = (nrm.xy + saturate((cTex.a * 10.0f) - 3.0f) * saturate(((1.0f - cTex.a) * 10.0f) - 1.0f) * (cMicNorm.rg - 0.5f)); // new
+#endif
+		// Increase normals contrast based on sun-earth angle.
+		nrm.xyz = nrm.xyz * (1.0f + (0.5f * dMN));
 
-/*#if defined(_CLOUDMICRO)	
-		nrm.xy = nrm.xy * cMicNorm.rg * 4.0f; // Blend Normals
-#endif*/
-
-		nrm = normalize(nrm) * contrast;
-		nrm.z = sqrt(1.0f - nrm.x*nrm.x - nrm.y*nrm.y);
+		nrm.z = sqrt(1.0f - saturate(nrm.x*nrm.x + nrm.y*nrm.y));
 
 		// Approximate world space normal from local tangent space
 		nrm = normalize((vTangent * nrm.x) + (vBiTangent * nrm.y) + (frg.nrmW * nrm.z));
 
-		float dCS = dot(nrm, vSunDir);			// Cloud normal sun angle
-		//float dMN = dot(frg.nrmW, vSunDir);	// Planet mean normal sun angle
-		
-		//float y = abs(dCS*dCS);
-		float y = pow(abs(dCS), 0.3f);
-		if (dCS > 0) dCS = y; else dCS = -y;
+		float dCS = dot(nrm, vSunDir); // Cloud normal sun angle
+
+		// Brighten the lighting model for clouds, based on sun-earth angle. Twice is better.
+		// Low sun angles = greater effect. No modulation leads to washed out normals at high sun angles.
+		dCS = saturate((1.0f - dMN) * (dCS * (1.0f - dCS)) + dCS);
+		dCS = saturate((1.0f - dMN) * (dCS * (1.0f - dCS)) + dCS);
+
+		// With a high sun angle, don't let the dCS go below 0.2 to avoid unnaturally dark edges.
+		dCS = lerp(0.2f*dMN, 1.0f, dCS);
 
 		// Effect of normal/sun angle to color
-		cTex.rgb *= saturate(0.6f + dCS*0.4f);		
+		// Add some brightness (borrowing red channel from sunset attenuation)
+		// Adding it to the sun illumination factor, taking care to keep from saturating
+		cTex.rgb *= dCS + ((1.0f - dCS) * 0.2f);
 	}
 #endif
 
 #if defined(_CLOUDMICRO)
-		float f = cTex.a;
-		float g = lerp(1, cMic.a, frg.fade.y);
-		float h = (g + 4.0f)*0.2f;
-		cTex.a = saturate(lerp(g, h, f) * f);
+	float f = cTex.a;
+	float g = lerp(1.0f, cMic.a, frg.fade.y);
+	float h = (g + 4.0f)*0.2f;
+	cTex.a = saturate(lerp(g, h, f) * f);
 #endif
 
-	float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
+	// Reduce attenuation near terminator (multiply by 3)
+	// Change attenuation to be grayscale, not colored (.r not .rgb)
+	// Ensure illumination goes as far as possible by borrowing red channel (.r)
+	//float3 color = cTex.rgb*saturate(frg.atten.r * 3)*fCloudInts;
+	float3 color = cTex.rgb*saturate(frg.atten.r * 3)*fCloudInts;
+
+	// Blend haze without saturating
+	color = lerp(color, 1.0f, frg.insca.rgb*vHazeMax);
 
 	return float4(saturate(color + a), cTex.a*saturate(fCloudInts*fCloudInts));
-	//return float4(saturate(color + a), cTex.a*saturate(frg.fade.x*fCloudInts*fCloudInts));
 }
 
 

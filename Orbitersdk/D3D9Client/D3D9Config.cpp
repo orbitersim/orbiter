@@ -82,7 +82,7 @@ void D3D9Config::Reset ()
 	GDIOverlay			= 0;
 	gcGUIMode			= 0;
 	bAbsAnims			= 0;
-	bCloudNormals		= 0;
+	bCloudNormals		= 1;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
