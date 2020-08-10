@@ -305,7 +305,7 @@ void vPlanet::GetLngLat(VECTOR3 &loc, double *lng, double *lat) const
 
 bool vPlanet::GetMinMaxDistance(float *zmin, float *zmax, float *dmin)
 {
-	//if (mesh==NULL) return false;
+	if (mesh==NULL) return false;
 	if (bBSRecompute) UpdateBoundingBox();
 
 	D3DXVECTOR3 pos = D3DXVECTOR3(mWorld._41, mWorld._42, mWorld._43);

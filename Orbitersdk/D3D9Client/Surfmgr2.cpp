@@ -746,6 +746,8 @@ void SurfTile::Render ()
 	const Scene *scene = mgr->GetScene();
 	const D3D9Client *pClient = mgr->GetClient();
 
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) mgr->SetMinMaxElev(ehdr.emin, ehdr.emax);
+
 	static const double rad0 = sqrt(2.0)*PI05;
 	double sdist, rad;
 	bool has_specular = false;
@@ -1371,7 +1373,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 	vp->tile_cache = NULL;
 
-	ResetMinMaxElev();
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) ResetMinMaxElev();
 
 	// render the tree
 	for (i = 0; i < 2; i++)

@@ -224,7 +224,6 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 	const Scene *scene = GetScene();
 
 	if (tile->state == Tile::ForRender) {
-		SetMinMaxElev(tile->GetMinElev(), tile->GetMaxElev());
 		int lvl = tile->lvl;
 		tile->MatchEdges ();
 		SetWorldMatrix (tile->mWorld);

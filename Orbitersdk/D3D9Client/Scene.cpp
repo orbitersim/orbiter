@@ -1104,7 +1104,8 @@ void Scene::RenderMainScene()
 
 	// Do we use z-clear render mode or not ?
 	bool bClearZBuffer = false;
-	if ( (GetTargetGroundAltitude() > 10e3) && (oapiCameraInternal() == false) && (!IsProxyMesh())) bClearZBuffer = true;
+	if ( (GetTargetGroundAltitude() > 2e3) && (oapiCameraInternal() == false)) bClearZBuffer = true;
+	if (IsProxyMesh()) bClearZBuffer = false;
 
 
 	if (DebugControls::IsActive()) {
