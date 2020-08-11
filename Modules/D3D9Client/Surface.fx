@@ -123,6 +123,7 @@ uniform extern bool		 bShadows;			// Enable shadow projection
 uniform extern bool		 bOverlay;			// Enable shadow projection
 uniform extern bool		 bSpherical;		// Force Spherical planet (discard elevation) 
 uniform extern bool		 bCloudNorm;
+uniform extern bool		 bEarth;
 // Textures ---------------------------------------------------
 uniform extern texture   tDiff;				// Diffuse texture
 uniform extern texture   tMask;				// Nightlights / Specular mask texture
@@ -1045,6 +1046,17 @@ float4 CloudTechPS(CloudVS frg) : COLOR
 	float a = (tex2Dlod(NoiseTexS, float4(vUVTex,0,0)).r - 0.5f) * ATMNOISE;
 
 	float4 cTex = tex2D(DiffTexS, vUVTex);
+
+	if (!bEarth) {
+		// This is not the Earth
+		float3 color = cTex.rgb*frg.atten.rgb*fCloudInts + frg.insca.rgb*vHazeMax;
+		return float4(saturate(color + a), cTex.a*saturate(frg.fade.x*fCloudInts*fCloudInts));
+	}
+
+	// -----------------------------------------------
+	// Cloud layer rendering for Earth
+	// -----------------------------------------------
+	
 	float4 cMic = tex2D(CloudMicroS, vUVMic);
 
 #if defined(_CLOUDNORMALS)

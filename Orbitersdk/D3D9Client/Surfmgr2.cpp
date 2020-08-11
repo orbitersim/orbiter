@@ -1306,8 +1306,9 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 
 	if (ElevMode & eElevMode::Auto) {
-		// If we are only having a few spherical tiles to render... Try to upgrade them to elevated
-		if (prevstat.Sphe <= 5) {
+		if (prevstat.Elev == 0) ElevMode = eElevMode::DontCare | eElevMode::Auto;
+		else if (prevstat.Sphe <= 5 && prevstat.Elev > 0) {
+			// If we are only having a few spherical tiles to render... Try to upgrade them to elevated
 			ElevMode = eElevMode::Elevated | eElevMode::Auto;
 		}
 		else {

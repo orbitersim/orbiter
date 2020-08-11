@@ -70,6 +70,7 @@ D3DXHANDLE PlanetRenderer::sbShadows = NULL;
 D3DXHANDLE PlanetRenderer::sbOverlay = NULL;
 D3DXHANDLE PlanetRenderer::sbSpherical = NULL;
 D3DXHANDLE PlanetRenderer::sbCloudNorm = NULL;
+D3DXHANDLE PlanetRenderer::sbEarth = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::stDiff = NULL;
 D3DXHANDLE PlanetRenderer::stMask = NULL;
@@ -289,6 +290,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbOverlay			= pShader->GetParameterByName(0,"bOverlay");
 	sbSpherical			= pShader->GetParameterByName(0,"bSpherical");
 	sbCloudNorm			= pShader->GetParameterByName(0,"bCloudNorm");
+	sbEarth				= pShader->GetParameterByName(0,"bEarth");
 	// ------------------------------------------------------------
 	stDiff				= pShader->GetParameterByName(0,"tDiff");
 	stMask				= pShader->GetParameterByName(0,"tMask");

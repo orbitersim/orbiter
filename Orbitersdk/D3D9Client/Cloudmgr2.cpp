@@ -181,6 +181,7 @@ void TileManager2<CloudTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlan
 	HR(Shader()->SetTechnique(eCloudTech));
 	HR(Shader()->SetMatrix(smViewProj, scene->GetProjectionViewMatrix()));
 	HR(Shader()->SetBool(sbCloudNorm, Config->bCloudNormals != 0));
+	HR(Shader()->SetBool(sbEarth, strcmp(CbodyName(), "Earth") == 0));
 	
 	if (rprm.bCloudBrighten) { HR(Shader()->SetFloat(sfAlpha, 2.0f)); }
 	else					 { HR(Shader()->SetFloat(sfAlpha, 1.0f)); }

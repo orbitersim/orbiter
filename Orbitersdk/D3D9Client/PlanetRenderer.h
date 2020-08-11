@@ -101,6 +101,7 @@ public:
 	static D3DXHANDLE sbOverlay;
 	static D3DXHANDLE sbSpherical;
 	static D3DXHANDLE sbCloudNorm;
+	static D3DXHANDLE sbEarth;
 	// ------------------------------------------------------------
 	static D3DXHANDLE stDiff;
 	static D3DXHANDLE stMask;
