@@ -16,6 +16,8 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+#include <Windows.h>
+#include <Psapi.h>
 #include "Log.h"
 #include "D3D9Util.h"
 
@@ -31,10 +33,10 @@ char OprBuf[OPRBUF+1];
 char TimeBuf[TIMEBUF+1];
 
 time_t ltime;
-int uEnableLog = 1;		// This value is controlling log opeation
-int iEnableLog = 0;
+int uEnableLog = 1;     // This value is controlling log opeation ( Config->DebugLvl )
+int iEnableLog = 0;     // Index into EnableLogStack
 int EnableLogStack[16];
-int iLine = 0;
+int iLine = 0;          // Line number counter (iLine <= LOG_MAX_LINES)
 
 __int64 qpcFrq = 0;
 __int64 qpcRef = 0;
@@ -43,6 +45,88 @@ __int64 qpcStart = 0;
 std::queue<std::string> D3D9DebugQueue;
 
 CRITICAL_SECTION LogCrit;
+
+bool bException = false;        // Global flag , indicating ExcHandler() was called
+DWORD ECode = 0, EAddress = 0;  // Exception-code and -address
+
+
+//-------------------------------------------------------------------------------------------
+//
+int ExcHandler(EXCEPTION_POINTERS *p)
+{
+	EXCEPTION_RECORD *pER = p->ExceptionRecord;
+	CONTEXT *pEC = p->ContextRecord;
+	ECode = pER->ExceptionCode;
+	EAddress = (DWORD)pER->ExceptionAddress;
+	LogErr("Orbiter Version %d", oapiGetOrbiterVersion());
+	LogErr("D3D9Client Build [%s]", __DATE__);
+	LogErr("Exception Code=0x%8.8X, Address=0x%8.8X", ECode, EAddress);
+	LogErr("EAX=0x%8.8X EBX=0x%8.8X ECX=0x%8.8X EDX=0x%8.8X ESI=0x%8.8X EDI=0x%8.8X EBP=0x%8.8X ESP=0x%8.8X EIP=0x%8.8X",
+		   pEC->Eax, pEC->Ebx, pEC->Ecx, pEC->Edx, pEC->Esi, pEC->Edi, pEC->Ebp, pEC->Esp, pEC->Eip);
+	PrintModules(EAddress);
+	bException = true;
+	return 1;
+}
+
+//-------------------------------------------------------------------------------------------
+//
+void MissingRuntimeError()
+{
+	MessageBoxA(NULL,
+		"DirectX Runtimes may be missing. See /Doc/D3D9Client.pdf for more information",
+		"D3D9Client Initialization Failed", MB_OK);
+}
+
+//-------------------------------------------------------------------------------------------
+//
+int PrintModules(DWORD pAdr)
+{
+	HMODULE hMods[1024];
+	HANDLE hProcess;
+	DWORD cbNeeded;
+	unsigned int i;
+
+	// Get a handle to the process.
+
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetProcessId(GetCurrentProcess()));
+
+	if (NULL == hProcess) return 1;
+
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
+		for (i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
+			char szModName[MAX_PATH];
+			if (GetModuleFileNameExA(hProcess, hMods[i], szModName, sizeof(szModName))) {
+				MODULEINFO mi;
+				GetModuleInformation(hProcess, hMods[i], &mi, sizeof(MODULEINFO));
+				DWORD Base = (DWORD)mi.lpBaseOfDll;
+				if (pAdr > Base && pAdr < (Base + mi.SizeOfImage)) LogErr("%s EntryPoint=0x%8.8X, Base=0x%8.8X, Size=%u", szModName, mi.EntryPoint, mi.lpBaseOfDll, mi.SizeOfImage);
+				else										 LogOk("%s EntryPoint=0x%8.8X, Base=0x%8.8X, Size=%u", szModName, mi.EntryPoint, mi.lpBaseOfDll, mi.SizeOfImage);
+			}
+		}
+	}
+	CloseHandle(hProcess);
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------
+// Log OAPISURFACE_xxx attributes
+void LogAttribs(DWORD attrib, DWORD w, DWORD h, LPCSTR origin)
+{
+	char buf[512];
+	sprintf_s(buf, 512, "%s (%d,%d)[0x%X]: ", origin, w, h, attrib);
+	if (attrib&OAPISURFACE_TEXTURE)		 strcat_s(buf, 512, "OAPISURFACE_TEXTURE ");
+	if (attrib&OAPISURFACE_RENDERTARGET) strcat_s(buf, 512, "OAPISURFACE_RENDERTARGET ");
+	if (attrib&OAPISURFACE_GDI)			 strcat_s(buf, 512, "OAPISURFACE_GDI ");
+	if (attrib&OAPISURFACE_SKETCHPAD)	 strcat_s(buf, 512, "OAPISURFACE_SKETCHPAD ");
+	if (attrib&OAPISURFACE_MIPMAPS)		 strcat_s(buf, 512, "OAPISURFACE_MIPMAPS ");
+	if (attrib&OAPISURFACE_NOMIPMAPS)	 strcat_s(buf, 512, "OAPISURFACE_NOMIPMAPS ");
+	if (attrib&OAPISURFACE_ALPHA)		 strcat_s(buf, 512, "OAPISURFACE_ALPHA ");
+	if (attrib&OAPISURFACE_NOALPHA)		 strcat_s(buf, 512, "OAPISURFACE_NOALPHA ");
+	if (attrib&OAPISURFACE_UNCOMPRESS)	 strcat_s(buf, 512, "OAPISURFACE_UNCOMPRESS ");
+	if (attrib&OAPISURFACE_SYSMEM)		 strcat_s(buf, 512, "OAPISURFACE_SYSMEM ");
+	LogDbg("BlueViolet", buf);
+}
 
 //-------------------------------------------------------------------------------------------
 //

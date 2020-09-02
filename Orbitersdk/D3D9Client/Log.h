@@ -15,14 +15,15 @@
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
+#ifndef __LOGGING_H
+#define __LOGGING_H
 
 #include <stdio.h>
 #include <queue>
 #include <string>
-
-
-#ifndef __LOGGING_H
-#define __LOGGING_H
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h> // DWORD, LPCSTR
+#undef WIN32_LEAN_AND_MEAN
 
 typedef struct {
 	double time;
@@ -30,11 +31,10 @@ typedef struct {
 	double peak;
 } D3D9Time;
 
-extern FILE *d3d9client_log;
+extern bool bException;
 extern int uEnableLog;
 extern int iEnableLog;
 extern int EnableLogStack[16];
-extern __int64 qpcRef;
 extern __int64 qpcFrq;
 extern __int64 qpcStart;
 extern std::queue<std::string> D3D9DebugQueue;
@@ -58,7 +58,12 @@ void   LogOapi(const char *format, ...);
 void   LogAlw(const char *format, ...);
 void   LogDbg(const char *color, const char *format, ...);
 
-double	D3D9GetTime();
-void	D3D9SetTime(D3D9Time &inout, double ref);
+double D3D9GetTime();
+void   D3D9SetTime(D3D9Time &inout, double ref);
+
+void   MissingRuntimeError();
+int    PrintModules(DWORD pAdr);
+void   LogAttribs(DWORD attrib, DWORD w, DWORD h, LPCSTR origin);
+int    ExcHandler(EXCEPTION_POINTERS *p);
 
 #endif

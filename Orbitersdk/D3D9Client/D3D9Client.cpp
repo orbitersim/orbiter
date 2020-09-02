@@ -34,8 +34,6 @@
 #include "Log.h"
 #include "VideoTab.h"
 #include "GDIPad.h"
-#include "windows.h"
-#include "psapi.h"
 #include "FileParser.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
@@ -101,79 +99,6 @@ extern "C" {
 
 // ==============================================================
 // Initialise module
-
-void LogAttrips(DWORD AF, DWORD x, DWORD y, char *orig)
-{
-	char buf[512];
-	sprintf_s(buf, 512, "%s (%d,%d)[0x%X]: ", orig, x, y, AF);
-	if (AF&OAPISURFACE_TEXTURE)		 strcat_s(buf, 512, "OAPISURFACE_TEXTURE ");
-	if (AF&OAPISURFACE_RENDERTARGET) strcat_s(buf, 512, "OAPISURFACE_RENDERTARGET ");
-	if (AF&OAPISURFACE_GDI)			 strcat_s(buf, 512, "OAPISURFACE_GDI ");
-	if (AF&OAPISURFACE_SKETCHPAD)	 strcat_s(buf, 512, "OAPISURFACE_SKETCHPAD ");
-	if (AF&OAPISURFACE_MIPMAPS)		 strcat_s(buf, 512, "OAPISURFACE_MIPMAPS ");
-	if (AF&OAPISURFACE_NOMIPMAPS)	 strcat_s(buf, 512, "OAPISURFACE_NOMIPMAPS ");
-	if (AF&OAPISURFACE_ALPHA)		 strcat_s(buf, 512, "OAPISURFACE_ALPHA ");
-	if (AF&OAPISURFACE_NOALPHA)		 strcat_s(buf, 512, "OAPISURFACE_NOALPHA ");
-	if (AF&OAPISURFACE_UNCOMPRESS)	 strcat_s(buf, 512, "OAPISURFACE_UNCOMPRESS ");
-	if (AF&OAPISURFACE_SYSMEM)		 strcat_s(buf, 512, "OAPISURFACE_SYSMEM ");
-	LogDbg("BlueViolet", buf);
-}
-
-
-void MissingRuntimeError()
-{
-	MessageBoxA(NULL, "DirectX Runtimes may be missing. See /Doc/D3D9Client.pdf for more information", "D3D9Client Initialization Failed",MB_OK);
-}
-
-int PrintModules(DWORD pAdr)
-{
-	HMODULE hMods[1024];
-	HANDLE hProcess;
-	DWORD cbNeeded;
-	unsigned int i;
-
-	// Get a handle to the process.
-
-	hProcess = OpenProcess( PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, GetProcessId(GetCurrentProcess()));
-
-	if (NULL==hProcess) return 1;
-
-	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded)) {
-		for ( i = 0; i < (cbNeeded / sizeof(HMODULE)); i++ ) {
-			char szModName[MAX_PATH];
-			if (GetModuleFileNameExA(hProcess, hMods[i], szModName, sizeof(szModName))) {
-				MODULEINFO mi;
-				GetModuleInformation(hProcess, hMods[i], &mi, sizeof(MODULEINFO));
-				DWORD Base = (DWORD)mi.lpBaseOfDll;
-				if (pAdr>Base && pAdr<(Base+mi.SizeOfImage)) LogErr("%s EntryPoint=0x%8.8X, Base=0x%8.8X, Size=%u", szModName, mi.EntryPoint, mi.lpBaseOfDll, mi.SizeOfImage);
-				else										 LogOk("%s EntryPoint=0x%8.8X, Base=0x%8.8X, Size=%u", szModName, mi.EntryPoint, mi.lpBaseOfDll, mi.SizeOfImage);
-			}
-		}
-	}
-	CloseHandle( hProcess );
-	return 0;
-}
-
-bool bException = false;
-bool bNVAPI = false;
-DWORD ECode=0, EAddress=0;
-
-
-int ExcHandler(EXCEPTION_POINTERS *p)
-{
-	EXCEPTION_RECORD *pER = p->ExceptionRecord;
-	CONTEXT *pEC = p->ContextRecord;
-	ECode = pER->ExceptionCode;
-	EAddress = (DWORD)pER->ExceptionAddress;
-	LogErr("Orbiter Version %d",oapiGetOrbiterVersion());
-	LogErr("D3D9Client Build [%s]",__DATE__);
-	LogErr("Exception Code=0x%8.8X, Address=0x%8.8X", ECode, EAddress);
-	LogErr("EAX=0x%8.8X EBX=0x%8.8X ECX=0x%8.8X EDX=0x%8.8X ESI=0x%8.8X EDI=0x%8.8X EBP=0x%8.8X ESP=0x%8.8X EIP=0x%8.8X", pEC->Eax, pEC->Ebx, pEC->Ecx, pEC->Edx, pEC->Esi, pEC->Edi, pEC->Ebp, pEC->Esp, pEC->Eip);
-	PrintModules(EAddress);
-	bException = true;
-	return 1;
-}
-
 
 DLLCLBK void InitModule(HINSTANCE hDLL)
 {
@@ -249,8 +174,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 // ==============================================================
 // Clean up module
-
-
 
 DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
@@ -2068,12 +1991,15 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 	_TRACE;
 
 #ifdef _DEBUG
-	LogAttrips(attrib, w, h, "CreateSrfEx");
+	LogAttribs(attrib, w, h, "CreateSrfEx");
 #endif // _DEBUG
 
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 
-	if (attrib == 0x8C) attrib = 0x5;
+	const DWORD noalpha_sketchpad_gdi = OAPISURFACE_NOALPHA | OAPISURFACE_SKETCHPAD | OAPISURFACE_GDI;
+	const DWORD gdi_texture = OAPISURFACE_GDI | OAPISURFACE_TEXTURE;
+
+	if (attrib == noalpha_sketchpad_gdi) attrib = gdi_texture;
 
 
 	// VC MFD mipmaps hack ---

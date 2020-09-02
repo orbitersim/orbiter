@@ -62,9 +62,6 @@ class D3D9Pad;
 extern DWORD			uCurrentMesh;
 extern class vObject *	pCurrentVisual;
 
-int		ExcHandler(EXCEPTION_POINTERS *p);
-void	MissingRuntimeError();
-
 typedef class D3D9ClientSurface * LPD3D9CLIENTSURFACE;
 typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;
