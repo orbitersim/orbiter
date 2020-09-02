@@ -31,12 +31,10 @@ typedef struct {
 	double peak;
 } D3D9Time;
 
-extern bool bException;
-extern int uEnableLog;
+extern bool bException; // Global flag , indicating ExcHandler() was called
+extern int uEnableLog;  // This value is controlling log opeation ( Config->DebugLvl )
 extern int iEnableLog;
 extern int EnableLogStack[16];
-extern __int64 qpcFrq;
-extern __int64 qpcStart;
 extern std::queue<std::string> D3D9DebugQueue;
 
 #define _PUSHLOG EnableLogStack[iEnableLog++] = uEnableLog;

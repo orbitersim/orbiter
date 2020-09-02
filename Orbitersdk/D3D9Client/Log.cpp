@@ -38,9 +38,9 @@ int iEnableLog = 0;     // Index into EnableLogStack
 int EnableLogStack[16];
 int iLine = 0;          // Line number counter (iLine <= LOG_MAX_LINES)
 
-__int64 qpcFrq = 0;
-__int64 qpcRef = 0;
-__int64 qpcStart = 0;
+__int64 qpcFrq = 0;     // Performance counter frequency
+__int64 qpcRef = 0;     // Performance counter reference value (for "delta t")
+__int64 qpcStart = 0;   // Performance counter start value ("zero")
 
 std::queue<std::string> D3D9DebugQueue;
 
@@ -144,6 +144,9 @@ void D3D9DebugLog(const char *format, ...)
 //
 void D3D9InitLog(char *file)
 {
+	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);
+	QueryPerformanceCounter((LARGE_INTEGER*)&qpcStart);
+
 	if (fopen_s(&d3d9client_log,file,"w+")) { d3d9client_log=NULL; } // Failed
 	else {
 		QueryPerformanceCounter((LARGE_INTEGER*)&qpcRef);

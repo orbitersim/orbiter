@@ -142,9 +142,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 		return;
 	}
 
-	QueryPerformanceFrequency((LARGE_INTEGER*)&qpcFrq);
-	QueryPerformanceCounter((LARGE_INTEGER*)&qpcStart);
-
 #ifdef _NVAPI_H
 	if (NvAPI_Initialize()==NVAPI_OK) {
 		LogAlw("[nVidia API Initialized]");
@@ -626,9 +623,133 @@ void D3D9Client::SketchPadTest()
 
 	oapiReleaseSketchpad(pSkp);
 
-	clbkSaveSurfaceToImage(hTgt, "SketchpadOutput.png", ImageFileFormat::IMAGE_PNG);
+	clbkSaveSurfaceToImage(hTgt, "SketchpadOutput", ImageFileFormat::IMAGE_PNG);
 
 	oapiReleaseTexture(hSrc);
+	oapiReleaseTexture(hTgt);
+
+	 
+	// Run Different Kind of Tests
+	// 
+
+	hTgt = oapiCreateSurfaceEx(768, 512, OAPISURFACE_RENDERTARGET);
+
+	if (!hTgt) return;
+
+	gcCore *pCore = gcGetCoreInterface();
+
+	if (!pCore) return;
+
+	float a = 0.0f;
+	float s = float(PI2 / 6.0);
+
+	gcCore::TriangleVtx Vtx[8];
+	oapi::FVECTOR2 Pol[6];
+
+	for (int i = 0; i < 6; i++) {
+		Pol[i].x = cos(a);
+		Pol[i].y = sin(a);
+		Vtx[i + 1].pos.x = Pol[i].x;
+		Vtx[i + 1].pos.y = Pol[i].y;
+		a += s;
+	}
+
+	//				 AABBGGRR
+	Vtx[1].color = 0xFFFF0000;
+	Vtx[2].color = 0xFFFFFF00;
+	Vtx[3].color = 0xFF00FF00;
+	Vtx[4].color = 0xFF00FFFF;
+	Vtx[5].color = 0xFF0000FF;
+	Vtx[6].color = 0xFFFF00FF;
+
+	// Center vertex
+	Vtx[0].pos.x = 0.0f;
+	Vtx[0].pos.y = 0.0f;
+	Vtx[0].color = 0xFFFFFFFF;    // White
+	Vtx[7] = Vtx[1];
+
+	HPOLY hColors = pCore->CreateTriangles(NULL, Vtx, 8, PF_FAN);
+	HPOLY hOutline = pCore->CreatePoly(NULL, Pol, 6, PF_CONNECT);
+	HPOLY hOutline2 = pCore->CreatePoly(NULL, Pol, 6);
+
+	Vtx[0].color = 0xFFFF0000;    
+	Vtx[1].color = 0xFFFFFF00;	  
+	Vtx[2].color = 0xFFF0FF00;   
+	Vtx[3].color = 0xFF00FFFF;	
+	Vtx[4].color = 0xFF0000FF;    
+	Vtx[5].color = 0xFFFF00FF;
+
+	Vtx[0].pos = FVECTOR2(-1, 0);
+	Vtx[1].pos = FVECTOR2(-1, 1);
+	Vtx[2].pos = FVECTOR2(0, 0);
+	Vtx[3].pos = FVECTOR2(0, 1);
+	Vtx[4].pos = FVECTOR2(1, 0);
+	Vtx[5].pos = FVECTOR2(1, 1);
+
+	HPOLY hStrip = pCore->CreateTriangles(NULL, Vtx, 6, PF_STRIP);
+
+
+	Vtx[0].color = 0xFF00FF00;    // Green
+	Vtx[1].color = 0xFF00FF00;	  // Green	
+	Vtx[2].color = 0xFFFF00FF;    // Mangenta
+	Vtx[3].color = 0xFFFF00FF;	  // Mangenta
+	Vtx[4].color = 0xFF0000FF;    // Blue
+	Vtx[5].color = 0xFF0000FF;	  // Blue
+
+	Vtx[0].pos = FVECTOR2(-1, 1);
+	Vtx[1].pos = FVECTOR2(-1, 0);
+	Vtx[2].pos = FVECTOR2(0, 1);
+	Vtx[3].pos = FVECTOR2(0, 0);
+	Vtx[4].pos = FVECTOR2(1, 1);
+	Vtx[5].pos = FVECTOR2(1, 0);
+
+	HPOLY hStrip2 = pCore->CreateTriangles(NULL, Vtx, 6, PF_STRIP);
+
+
+	IVECTOR2 pos0 = { 128, 128 };
+	IVECTOR2 pos1 = { 128, 384 };
+	IVECTOR2 pos2 = { 384, 128 };
+	IVECTOR2 pos3 = { 640, 128 };
+	IVECTOR2 pos4 = { 384, 384 };
+
+	pSkp = static_cast<Sketchpad3 *>(oapiGetSketchpad(hTgt));
+
+	pSkp->ColorFill(FVECTOR4((DWORD)0xFFFFFFFF), NULL);
+
+	pSkp->QuickBrush(0xA0000088);
+	pSkp->QuickPen(0xA0000000, 3.0f);
+	pSkp->PushWorldTransform();
+
+	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos0);
+	pSkp->DrawPoly(hColors);
+	pSkp->DrawPoly(hOutline);
+
+	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos1);
+	pSkp->DrawPoly(hOutline2);
+
+	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos2);
+	pSkp->DrawPoly(hStrip);
+
+	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos3);
+	pSkp->DrawPoly(hStrip2);
+
+	pSkp->SetWorldScaleTransform2D(&FVECTOR2(100.0f, 100.0f), &pos4);
+	pSkp->QuickPen(0xFF000000, 25.0f);
+	pSkp->DrawPoly(hOutline);
+
+	pSkp->PopWorldTransform();
+	
+	oapiReleaseSketchpad(pSkp);
+
+
+	pCore->DeletePoly(hColors); // Must release Sketchpad before releasing any sketchpad resources
+	pCore->DeletePoly(hOutline);
+	pCore->DeletePoly(hOutline2);
+	pCore->DeletePoly(hStrip);
+	pCore->DeletePoly(hStrip2);
+
+	clbkSaveSurfaceToImage(hTgt, "SketchpadOutput2", ImageFileFormat::IMAGE_PNG);
+
 	oapiReleaseTexture(hTgt);
 }
 
@@ -2674,7 +2795,8 @@ void D3D9Client::SplashScreen()
 #endif
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
-	char dataD[]={"Warning: Config folder not present in /Modules/Server/. Please create symbolic link."};
+	char dataD[] = { "Warning: Config folder not present in /Modules/Server/. Please create symbolic link." };
+	char dataE[] = { "Note: Cubic Interpolation is use... Consider using linear for better elevation matching" };
 
 	int xc = viewW*750/1280;
 	int yc = viewH*545/800;
@@ -2683,11 +2805,20 @@ void D3D9Client::SplashScreen()
 	TextOut(hDC, xc, yc + 1*20, dataB, strlen(dataB));
 	TextOut(hDC, xc, yc + 2*20, dataA, strlen(dataA));
 
+	DWORD VPOS = viewH - 50;
+	DWORD LSPACE = 20;
+
+	SetTextAlign(hDC, TA_CENTER);
 	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
 
 	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
-		SetTextAlign(hDC, TA_CENTER);
-		TextOut(hDC, viewW/2, viewH-50, dataD, strlen(dataD));
+		TextOut(hDC, viewW/2, VPOS, dataD, strlen(dataD));
+		VPOS -= LSPACE;
+	}
+
+	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
+		TextOut(hDC, viewW / 2, VPOS, dataE, strlen(dataE));
+		VPOS -= LSPACE;
 	}
 
 	SelectObject(hDC, hO);
@@ -2903,18 +3034,6 @@ Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::
 	_TRACE;
 	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
 }
-
-// =======================================================================
-
-/*Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
-{
-	_TRACE;
-	DWORD flags = 0;
-	flags |= (style & Font::BOLD) ? FNT_BOLD : 0;
-	flags |= (style & Font::ITALIC) ? FNT_ITALIC : 0;
-	flags |= (style & Font::UNDERLINE) ? FNT_UNDERLINE : 0;
-	return clbkCreateFontEx(height, 0, prop, face, flags, orientation);
-}*/
 
 // =======================================================================
 

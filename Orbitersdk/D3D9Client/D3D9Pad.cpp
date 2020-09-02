@@ -1211,24 +1211,24 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 
 // ===============================================================================================
 //
-void D3D9Pad::Ellipse (int l, int t, int r, int b)
+void D3D9Pad::Ellipse (int x0, int y0, int x1, int y1)
 {
-	if (r <= l) return;
-	if (b <= t) return;
+	if (x1 <= x0) return;
+	if (y1 <= y0) return;
 
 #ifdef SKPDBG 
 	Log("Ellipse()");
 #endif
 
-	float w = float(r - l); float h = float(b - t);	float fl = float(l); float ft = float(t);
-	DWORD z = max((r-l), (b-t));
+	float w = float(x1 - x0); float h = float(y1 - y0);	float fx0 = float(x0); float fy0 = float(y0);
+	DWORD z = max((x1-x0), (y1-y0));
 
 	w *= 0.5f;
 	h *= 0.5f;
 	//fl += w;
 	//ft += h;
 
-	IVECTOR2 pts[65];
+	IVECTOR2 pts[65] = { 0 };
 
 	WORD n = 8;
 	WORD q = 0;
@@ -1238,8 +1238,8 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 	if (z > 64) q = 3, n = 64;
 
 	for (WORD i = 0; i<n; i++) {
-		pts[i].x = long(fl + pSinCos[q][i].x * w);
-		pts[i].y = long(ft + pSinCos[q][i].y * h);
+		pts[i].x = long(fx0 + pSinCos[q][i].x * w);
+		pts[i].y = long(fy0 + pSinCos[q][i].y * h);
 	}
 
 	
@@ -1250,7 +1250,7 @@ void D3D9Pad::Ellipse (int l, int t, int r, int b)
 
 			WORD aV = vI;
 
-			SkpVtxIC(Vtx[vI++], (r + l) / 2, (b + t) / 2, brushcolor);
+			SkpVtxIC(Vtx[vI++], (x1 + x0) / 2, (y1 + y0) / 2, brushcolor);
 
 			for (WORD i = 0; i < n; i++) SkpVtxIC(Vtx[vI++], pts[i].x, pts[i].y, brushcolor);
 			for (WORD i = 0; i < n; i++) {
