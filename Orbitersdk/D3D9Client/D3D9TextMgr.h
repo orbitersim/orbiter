@@ -72,7 +72,7 @@ public:
 	LPDIRECT3DTEXTURE9	GetTexture() const { return pTex; }
 
 	void        SetLineSpace(int percent=10);
-	void		SetTextSpace(int space=0);		// Percent of average width (default=0)
+	void		SetTextSpace(float space = 0.0f);
 	void		SetTextShare(int percent=0);	// Percent of average width (default=0)
 
 	void		SetColor(DWORD c);				// 0xAARRGGBB
@@ -103,7 +103,7 @@ private:
 	int     tex_w;
 	int     tex_h;
 	int		sharing;
-	int		spacing;
+	float	spacing;
 	int		linespacing;
 	float	max_len;		  // If several strings are printed. This is the wide of the widest one
 	float   rotation;

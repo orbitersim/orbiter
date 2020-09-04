@@ -32,6 +32,7 @@
 
 extern D3D9Client *g_client;
 extern WindowManager *g_pWM;
+extern std::set<Font *> g_fonts;
 
 
 class gcSwap
@@ -361,6 +362,13 @@ DWORD gcCore::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int p
 	return DWORD((static_cast<D3D9PadFont *>(hFont))->GetIndexByPosition(pText, pos, len));
 }
 
+// ===============================================================================================
+//
+oapi::Font *gcCore::CreateSketchpadFont(int height, char *face, int width, int weight, int style, float spacing)
+{
+	_TRACE;
+	return *g_fonts.insert(new D3D9PadFont(height, face, width, weight, style, spacing)).first;
+}
 
 // ===============================================================================================
 //

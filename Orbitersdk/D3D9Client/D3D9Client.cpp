@@ -3037,15 +3037,6 @@ Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::
 
 // =======================================================================
 
-Font *D3D9Client::clbkCreateFontEx(int height, int width, bool prop, const char *face, DWORD flags, int orientation) const
-{
-	_TRACE;
-	return NULL;
-	//return *g_fonts.insert(new D3D9PadFont(height, width, prop, face, flags, orientation)).first;
-}
-
-// =======================================================================
-
 void D3D9Client::clbkReleaseFont(Font *font) const
 {
 	_TRACE;

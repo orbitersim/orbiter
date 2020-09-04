@@ -174,6 +174,19 @@ namespace gcTileFlags
 };
 
 
+/**
+* \brief Flags for 
+*/
+namespace gcFont
+{
+	static const int ITALIC = 0x1;
+	static const int UNDERLINE = 0x2;
+	static const int STRIKEOUT = 0x4;
+	static const int CRISP = 0x8;			///< Override app-default, No Antialiasing
+	static const int ANTIALIAS = 0x10;		///< Override app-default, Use Antialiashing
+};
+
+
 /// \brief Handle to a surface manager's glogal overlay
 typedef void * HOVERLAY;
 /// \brief Handle to a native DirectX9 surface
@@ -463,7 +476,8 @@ namespace oapi {
 
 		inline FVECTOR4& operator*= (float f)
 		{
-			return FVECTOR4(x * f, y * f, z * f, w);
+			x *= f; y *= f; z *= f; w *= f;
+			return *this;
 		}
 
 		inline FVECTOR4 operator/ (float f) const
@@ -1072,6 +1086,18 @@ public:
 	* \return false if an error occured, true otherwise.
 	*/
 	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
+
+	/**
+	* \brief Create a Font
+	* \param height Font height
+	* \param face Name of the font
+	* \param width Width of the font (0 for default aspect ration)
+	* \param weight Font thikness (400 for default weight)
+	* \param style A combination of \see gcFont flags (0 for default)
+	* \param spacing A spacing between charters in a string (0.0f for default)
+	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
+	*/
+	virtual oapi::Font *CreateSketchpadFont(int height, char *face, int width = 0, int weight = 400, int gcFontStyle = 0, float spacing = 0.0f);
 	//@}
 
 

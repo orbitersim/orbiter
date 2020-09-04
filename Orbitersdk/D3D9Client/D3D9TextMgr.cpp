@@ -43,7 +43,7 @@ D3D9Text::D3D9Text(LPDIRECT3DDEVICE9 pDevice) :
 	tex_w      (),
 	tex_h      (),
 	sharing    (),
-	spacing    (),
+	spacing    (0.0f),
 	linespacing(),
 	max_len    (),
 	rotation   (),
@@ -82,9 +82,9 @@ void D3D9Text::SetCharSet(int set)
 
 // ----------------------------------------------------------------------------------------
 //
-void D3D9Text::SetTextSpace(int space)
+void D3D9Text::SetTextSpace(float space)
 {
-	spacing = (tm.tmHeight*space)/100;
+	spacing = space;
 }
 
 // ----------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ restart:
 
 		if ((x+s) >= tex_w) {	// Start a New Line
 			x = 5;
-			y+= (h+3);
+			y+= (h+5);
 		}
 
 		if ((y+h) >= tex_h) {
@@ -377,7 +377,7 @@ int	D3D9Text::GetIndex(const char *pText, float pos, int x)
 			idx = i;
 		} else break;
 		if (str[i] == 0) break;
-		len += (Data(str[i])->sp + float(spacing));
+		len += (Data(str[i])->sp + spacing);
 		i++;
 	}
 
@@ -394,11 +394,11 @@ float D3D9Text::Length2(const char *_str, int l)
 	const BYTE *str = (const BYTE *)_str; // Negative index may occur without this
 
 	while ((i<l || l<=0) && str[i]) {
-		if (str[i] <= 255) len += (Data(str[i])->sp + float(spacing));
+		if (str[i] <= 255) len += (Data(str[i])->sp + spacing);
 		i++;
 	}
 
-	len -= float(spacing);
+	len -= spacing;
 	if (len<0) len=0;
 	return len * scaling;
 }
@@ -408,7 +408,7 @@ float D3D9Text::Length2(const char *_str, int l)
 //
 float D3D9Text::Length(BYTE c)
 {
-	return (Data(c)->sp + float(spacing)) * scaling;
+	return (Data(c)->sp + spacing) * scaling;
 }
 
 // ----------------------------------------------------------------------------------------
@@ -427,9 +427,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 
 	xpos = ceil(xpos);
 	ypos = ceil(ypos);
-	xpos -= 0.5;
-	ypos -= 0.5;
-
+	
 	float x_orig = xpos;
 
 	float h = FontData[0].h;
@@ -443,7 +441,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 	int idx = 1;
 
 	while (c && (idx<=len || len<=0)) {
-		bbox_r += ceil(Data(c)->sp + float(spacing));
+		bbox_r += ceil(Data(c)->sp + spacing);
 		c = str[idx++];
 	}
 
@@ -493,11 +491,11 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 			pIdx[iI++] = vI + 3;
 
 			float w = pData->w;
-
-			SkpVtxFF(pVtx[vI++], xpos, ypos, pData->tx0, pData->ty0);
-			SkpVtxFF(pVtx[vI++], xpos, ypos + h, pData->tx0, pData->ty1);
-			SkpVtxFF(pVtx[vI++], xpos + w, ypos + h, pData->tx1, pData->ty1);
-			SkpVtxFF(pVtx[vI++], xpos + w, ypos, pData->tx1, pData->ty0);
+			float xp = ceil(xpos);
+			SkpVtxFF(pVtx[vI++], xp, ypos, pData->tx0, pData->ty0);
+			SkpVtxFF(pVtx[vI++], xp, ypos + h, pData->tx0, pData->ty1);
+			SkpVtxFF(pVtx[vI++], xp + w, ypos + h, pData->tx1, pData->ty1);
+			SkpVtxFF(pVtx[vI++], xp + w, ypos, pData->tx1, pData->ty0);
 
 			pVtx[vI - 1].fnc = flags;
 			pVtx[vI - 1].clr = color;
@@ -508,7 +506,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 			pVtx[vI - 4].fnc = flags;
 			pVtx[vI - 4].clr = color;
 
-			xpos += ceil(pData->sp + float(spacing));
+			xpos += (pData->sp + spacing);
 
 			c = str[idx++];
 		}

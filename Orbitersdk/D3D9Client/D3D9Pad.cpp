@@ -44,6 +44,18 @@ struct FontCache {
 	Font::Style style;
 	D3D9TextPtr pFont;
 };
+
+struct QFontCache {
+	int         height;
+	int         width;
+	int			weight;
+	char        face[64];
+	int			style;
+	float		spacing;
+	D3D9TextPtr pFont;
+};
+
+std::vector<QFontCache *> qcache;
 std::vector<FontCache *> fcache;
 
 
@@ -168,11 +180,15 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 //
 void D3D9Pad::GlobalExit()
 {
-	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",fcache.size());
+	LogAlw("Clearing Font Cache... %d Fonts are stored in the cache",fcache.size() + qcache.size());
 	for (auto it = fcache.begin(); it != fcache.end(); ++it) {
 		delete *it;
 	}
+	for (auto it = qcache.begin(); it != qcache.end(); ++it) {
+		delete *it;
+	}
 	fcache.clear();
+	qcache.clear();
 
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
@@ -1869,6 +1885,69 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	if (hFont==NULL) {
 		face  = (prop ? def_sansface : def_fixedface);
 		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
+	}
+}
+
+
+
+D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, int style, float spacing) 
+: Font(height, false, face, Style(0), 0)
+{
+
+	hFont = NULL;
+	rotation = 0.0f;
+
+	// Browse cache ---------------------------------------------------
+	//
+	for (size_t i = 0; i < qcache.size(); ++i) {
+		if (qcache[i]->height != height) continue;
+		if (qcache[i]->style != style) continue;
+		if (qcache[i]->width != width) continue;
+		if (qcache[i]->weight != weight) continue;
+		if (qcache[i]->spacing != spacing) continue;
+		if (_stricmp(qcache[i]->face, face) != 0) continue;
+		pFont = qcache[i]->pFont;
+		break;
+	}
+
+	DWORD italic = (style & gcFont::ITALIC) ? TRUE : FALSE;
+	DWORD underline = (style & gcFont::UNDERLINE) ? TRUE : FALSE;
+	DWORD strikeout = (style & gcFont::STRIKEOUT) ? TRUE : FALSE;
+
+	Quality = NONANTIALIASED_QUALITY;
+	if (Config->SketchpadFont == 1) Quality = ANTIALIASED_QUALITY;
+	if (Config->SketchpadFont == 2) Quality = PROOF_QUALITY;
+	
+	if (style & gcFont::CRISP) Quality = NONANTIALIASED_QUALITY;
+	if (style & gcFont::ANTIALIAS) Quality = ANTIALIASED_QUALITY;
+	
+	
+	// Create DirectX accelerated font for a use with D3D9Pad ------------------
+	//
+	if (pFont == NULL) {
+
+		hFont = CreateFont(height, width, 0, 0, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
+
+		pFont = std::make_shared<D3D9Text>(pDev);
+		pFont->Init(hFont);
+		pFont->SetRotation(0.0f);
+		pFont->SetTextSpace(spacing);
+
+		// Fill the cache --------------------------------
+		QFontCache *p = new QFontCache();
+		p->pFont = pFont;
+		p->height = height;
+		p->width = width;
+		p->weight = weight;
+		p->style = style;
+		p->spacing = spacing;
+		strcpy_s(p->face, 64, face);
+		qcache.push_back(p);
+	}
+	else {
+		// Create windows GDI Font for a use with GDIPad ---------------------------
+		//
+		hFont = CreateFont(height, width, 0, 0, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
 	}
 }
 

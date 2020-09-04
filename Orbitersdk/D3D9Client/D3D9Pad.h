@@ -179,9 +179,8 @@ inline void SkpVtxFI(SkpVtx &v, float _x, float _y, int _tx, int _ty)
 // D3DTextManager Print Font [only]
 inline void SkpVtxFF(SkpVtx &v, float _x, float _y, float _tx, float _ty)
 {
-	// Note: -0.5f has been substarcted already from x,y data
-	v.x = _x;
-	v.y = _y;
+	v.x = _x - 0.5f;
+	v.y = _y - 0.5f;
 	v.nx = _tx;
 	v.ny = _ty;
 	v.l = 0.0f;
@@ -765,7 +764,7 @@ public:
 	 *   selected for \e prop==true, and 'fixed' is selected for \e prop==false.
 	 */
 	D3D9PadFont (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0, DWORD flags=0);
-
+	D3D9PadFont (int height, char *face, int width = 0, int weight = 400, int gcFontStyle = 0, float spacing = 0.0f);
 	/**
 	 * \brief Font destructor.
 	 */
