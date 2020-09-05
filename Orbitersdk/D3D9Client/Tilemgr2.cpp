@@ -395,6 +395,16 @@ void Tile::Extents (double *_latmin, double *_latmax, double *_lngmin, double *_
 
 // -----------------------------------------------------------------------
 
+
+bool Tile::IsPointInTile(double lng, double lat)
+{
+	if (lat > bnd.maxlat || lat < bnd.minlat) return false;
+	if (lng > bnd.maxlng || lng < bnd.minlng) return false;
+	return true;
+}
+
+// -----------------------------------------------------------------------
+
 VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double elev_scale, double globelev,
 	const TEXCRDRANGE2 *range, bool shift_origin, VECTOR3 *shift, double bb_excess)
 {

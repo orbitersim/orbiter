@@ -100,6 +100,8 @@ public:
 	void Extents (double *latmin, double *latmax, double *lngmin, double *lngmax) const;
 	// Return the latitude/longitude extents of the tile
 
+	bool IsPointInTile(double lng, double lat);
+
 	virtual void MatchEdges () {}
 	// Match edges with neighbour tiles
 

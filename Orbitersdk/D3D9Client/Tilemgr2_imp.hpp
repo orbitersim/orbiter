@@ -152,13 +152,15 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	// Compute target resolution level based on tile distance
 	if (bstepdown) {
 		double tdist;
-		double erad = 1.0 + tile->GetMeanElev()/obj_size; // radius of unit sphere plus elevation
+		double erad = 1.0 + tile->GetMaxElev()/obj_size; // radius of unit sphere plus elevation
 		if (adist < 0.0) { // if we are above the tile, use altitude for distance measurement
-			tdist = prm.cdist-erad;
+			tdist = prm.cdist - erad;
+			if (tdist < 0.0) tdist = 0.0;
 		} else { // use distance to closest tile edge
 			double h = erad*sin(adist);
 			double a = prm.cdist - erad*cos(adist);
-			tdist = sqrt(a*a + h*h);
+			double x = a*a + h*h;
+			tdist = (x > 0.0) ? sqrt(x) : 0.0;
 		}
 
 		bias -=  2.0 * sqrt(max(0,adist) / prm.viewap);
