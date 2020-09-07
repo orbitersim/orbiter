@@ -264,7 +264,6 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		// Convert to float
 		for (i = 0; i < ndat; i++)
 			elev[i] = float(float(e[i]) * ehdr.scale + ehdr.offset);
-		/*
 		if (ehdr.scale != tgt_res) { // rescale the data
 			double rescale = ehdr.scale / tgt_res;
 			for (i = 0; i < ndat; i++)
@@ -274,7 +273,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			INT16 sofs = (INT16)(ehdr.offset / tgt_res);
 			for (i = 0; i < ndat; i++)
 				e[i] += sofs;
-		}*/
+		}
 	}
 
 	// Elevation mod data
@@ -525,7 +524,7 @@ bool SurfTile::LoadElevationData ()
 			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev_temp);
 
 			// Convert to float
-			for (int i = 0; i < ndat; i++) elev[i] = float(float(elev_temp[i]) * ehdr.scale + ehdr.offset);
+			for (int i = 0; i < ndat; i++) elev[i] = float(float(elev_temp[i])); // *ehdr.scale + ehdr.offset);
 
 			delete[] elev_temp;
 		}

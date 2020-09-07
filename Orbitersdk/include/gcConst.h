@@ -652,6 +652,11 @@ namespace oapi {
 		return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 	}
 
+	inline FVECTOR3 cross(const FVECTOR3 &a, const FVECTOR3 &b)
+	{
+		return FVECTOR3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
+	}
+
 	inline float saturate(float x)
 	{
 		return min(1, max(0, x));
@@ -1397,4 +1402,47 @@ public:
 	*/
 	virtual void			RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pWorld, DWORD color);
 	//@}
+
+
+
+	/**
+	* \brief Alters objects position. Matrix must be initially valid.
+	* \param mat [in/out] Pointer to a matrix to change
+	* \param pos New position
+	*/
+	inline void SetTranslation(FMATRIX4 *mat, const VECTOR3 &pos)
+	{
+		mat->m41 = float(pos.x); mat->m42 = float(pos.y); mat->m43 = float(pos.z);
+	}
+
+	inline void SetTranslation(FMATRIX4 *mat, const FVECTOR3 &pos)
+	{
+		mat->m41 = pos.x; mat->m42 = pos.y; mat->m43 = pos.z;
+	}
+
+	/**
+	* \brief Creates a world transformation matrix
+	* \param mat [out] Pointer to a matrix
+	* \param pos Objects position relative to a camera in ecliptic frame
+	* \param x X-axis, major axis [unit vector]
+	* \param z Z-axis, minor axis [unit vector]
+	* \param scale a sacle factor (default 1.0)
+	*/
+	inline void WorldMatrix(FMATRIX4 *mat, const VECTOR3 &pos, const VECTOR3 &x, const VECTOR3 &z, double scale = 1.0)
+	{
+		VECTOR3 y = crossp(x, z);
+		mat->m11 = float(x.x * scale); mat->m12 = float(x.y * scale); mat->m13 = float(x.z * scale); mat->m14 = 0.0f;
+		mat->m21 = float(y.x * scale); mat->m22 = float(y.y * scale); mat->m23 = float(y.z * scale); mat->m24 = 0.0f;
+		mat->m31 = float(z.x * scale); mat->m32 = float(z.y * scale); mat->m33 = float(z.z * scale); mat->m34 = 0.0f;
+		mat->m41 = float(pos.x);	   mat->m42 = float(pos.y);		  mat->m43 = float(pos.z);		 mat->m44 = 1.0f;
+	}
+
+	inline void WorldMatrix(FMATRIX4 *mat, const FVECTOR3 &pos, const FVECTOR3 &x, const FVECTOR3 &z, float scale = 1.0f)
+	{
+		FVECTOR3 y = cross(x, z);
+		mat->m11 = (x.x * scale); mat->m12 = (x.y * scale); mat->m13 = (x.z * scale); mat->m14 = 0.0f;
+		mat->m21 = (y.x * scale); mat->m22 = (y.y * scale); mat->m23 = (y.z * scale); mat->m24 = 0.0f;
+		mat->m31 = (z.x * scale); mat->m32 = (z.y * scale); mat->m33 = (z.z * scale); mat->m34 = 0.0f;
+		mat->m41 = (pos.x);		  mat->m42 = (pos.y);		mat->m43 = (pos.z);		  mat->m44 = 1.0f;
+	}
 };
