@@ -296,6 +296,36 @@
         </div>
       </p>
     </p>
+    <li>gcGUI Mode</li>
+    <p>
+      The graphic client Graphical User Interface (gcGUI) mode selector lets
+      you enable and chose what kind of user interface should be used in case
+      it is enabled.<br/>
+      The gcGUI is an interface that allows implementation of user specific UI
+      elements to be used during a simulation session. These may be vessel
+      specific controls or general simulation settings.<br/>
+      Note that this feature is still under development and that the API for
+      programming it may change.<br/>
+      <p style="margin-bottom: 5px;">
+        The gcGUI Mode selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Disabled</em></b>:
+            No gcGUI elements will be rendered.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Default</em></b>:
+            The gcGUI elements will be accessible via the left and right
+            borders of the simulation screen.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Windowed</em></b>:
+            The gcGUI elements will be rendered as separate window.
+        </div>
+      </p>
+      <i>Note that this feature might interfere with the keyboard and / or mouse.
+      In case every keystroke triggers the "windows alert" sound,
+      <b>disabling</b> the gcGUI Mode altogether should help.</i>
+    </p>
 </ul>
 <p>
   Following checkboxes can be checked (enabled) or unchecked (disabled) to
@@ -368,7 +398,7 @@
   -->
 </ul>
 
-<h2 class="brk" id="_local_lights">Local lights</h2>
+<h2 id="_local_lights">Local lights</h2>
 <p>
   Here you can change settings that will affect the rendering of local light
   sources.
@@ -422,7 +452,7 @@
         </div>
       </p>
     </p>
-  <li>Filter options</li>
+  <li class="brk">Filter options</li>
     <p>
       This will select filtering for shadow maps. "9 Samples" is the fastest
       setting for older computers and "27s dither" is the best that is
@@ -455,7 +485,7 @@
         -->
       </p>
     </p>
-  <li class="brk">Terrain mapping</li>
+  <li>Terrain mapping</li>
     <p>
       This setting will choose the shadowing mode for planetary surface and
       base-objects.
@@ -507,7 +537,7 @@
   </p>
 </ul>
 
-<h2>SketchPad settings</h2>
+<h2 class="brk">SketchPad settings</h2>
 <p>
   The SketchPad is used in Orbiter to draw 2D graphics onto surfaces. These are
   for example MFD Displays or announcements in the Simulation.
@@ -546,7 +576,7 @@
     </p>
 </ul>
 
-<h2 class="brk">Generic configuration</h2>
+<h2>Generic configuration</h2>
 <p>
   The generic configuration contains options that will change the general
   behavior of D3D9Client. For most of the time the default setup should be fine
@@ -590,7 +620,179 @@
     </p>
 </ul>
 
-<h2 id="_stereoscopic_3d">StereoScopic 3D</h2>
+<h2 class="brk">Terrain Resolution</h2>
+<p>
+  Here you can change settings that will affect the rendering of planetary
+  terrains.
+</p>
+<ul>
+  <li>Texture Bias</li>
+  <p>
+    This slider allows to adjust the terrain tile resolution
+    <a href="https://en.wikipedia.org/wiki/Level_of_detail" target="_blank">
+      level-of-detail (LOD)</a> bias.
+    Sharper uses higher resolution tiles, which give a sharper appearance, but
+    can induce flickering. Smoother uses lower lower resolution tiles which
+    look smoother and produce less flickering.
+  </p>
+  <li>Mesh resolution</li>
+  <p>
+    This slider allows to adjust the terrain tile mesh resolution.
+    Higher values will result in smoother appearance, but can affect frame
+    rates on some systems.
+  </p>
+  <li>Tile mipmap policy</li>
+  <p style="margin-bottom: 5px;">
+    The Tile mipmap policy selection offers two settings:
+    <div style="text-indent:-1em; margin-left:1em">
+    <b><em>None</em></b>:
+      ...to be documented...
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+    <b><em>Low level only</em></b>:
+      ...to be documented...
+    </div>
+  </p>
+</ul>
+
+<h2>Local lights</h2>
+<p>
+  Here you can change settings regarding the rendering of local lights.<br/>
+  In contrast to the global light (the sun) local lights are individual light
+  sources that might be a flood-light or a special beacon light source in a
+  fright bay or anywhere else on a vessel.<br/>
+  The following settings are available:
+</p>
+<ul>
+  <li>Local lights</li>
+  <p style="margin-bottom: 5px;">
+    Each local lights mode also affects the value of the <code>LMODE</code>
+    definition in the shader files.<br/>
+    The Local lights selection offers these settings:
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>None</em></b>:
+      No rendering of local lights.<br/>
+      (<tt>LMODE = 0</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>4x Partial</em></b>:
+      A maximum of four local lights will be rendered.
+      "partial" ...to be documented...
+      <br/>(<tt>LMODE = 1</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>4x Full</em></b>:
+      A maximum of four local lights will be rendered.<br/>
+      "full" ...to be documented...
+      (<tt>LMODE = 2</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>8x Partial</em></b>:
+      A maximum of eight local lights will be rendered.<br/>
+      (<tt>LMODE = 3</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>8x Full</em></b>:
+      A maximum of eight local lights will be rendered.<br/>
+      (<tt>LMODE = 4</tt>)
+    </div>
+  </p>
+</ul>
+
+<h2 class="brk">Self Shadows</h2>
+<p>
+  Here you can change settings that will affect the rendering of shadows that
+  vessels will cast onto themselves or onto other vessel structures.
+</p>
+<ul>
+  <li>Vessel mapping</li>
+    <p>
+      This will control how many vessels will receive shadowing feature,
+      varying from "None" to "All visible" vessels.
+      <p style="margin-bottom: 5px;">
+        The vessel mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No vessels will receive shadowing feature.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Focus + payload</em></b>:
+          The vessel in focus and its payload will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Near by objects</em></b>:
+          All nearby vessels (objects) will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>All visible objects</em></b>:
+          All visible vessels (objects) will cast shadows.
+        </div>
+      </p>
+    </p>
+  <li>Filter options</li>
+    <p>
+      This will select filtering for shadow maps. "9 Samples" is the fastest
+      setting for older computers and "27s dither" is the best that is
+      currently available.<br/>
+      Better filtering produce smoother (better) edges for shadows. The
+      difference becomes more visible when zooming the camera into a shadow.
+      <p style="margin-bottom: 5px;">
+        The filter options selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>9 samples</em></b>:
+          Shadow maps use 9 samples (fastest setting for older computers).
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27 samples</em></b>:
+          Shadow maps using 27 samples.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27s dither</em></b>:
+          Shadow maps using 27 samples with dithering.
+        </div>
+        <!--
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>40 samples</em></b>:
+          ToDo...
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>40s dither</em></b>:
+          ToDo...
+        </div>
+        -->
+      </p>
+    </p>
+  <li>Terrain mapping</li>
+    <p>
+      This setting will choose the shadowing mode for planetary surface and
+      base-objects.
+      "Stencil" is the legacy mode that's been there for ages.
+      "Projective" produces more realistic surface shadows for the focused
+      (i.e. currently active) vessel but doesn't effect any other vessels (all
+      the other vessels are using Stencil shadows).<br/>
+      In this mode the focus vessel can cast shadows on base objects. This
+      shadowing option doesn't work well if the vessel is inside a base object.
+      <p style="margin-bottom: 5px;">
+        The terrain mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No shadowing for planetary surface and base-objects.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Stencil</em></b>:
+          This is the legacy mode that's been there for ages.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Projected</em></b>:
+          Produces more realistic surface shadows for the focused (i.e.
+          currently active) vessel but doesn't effect any other vessels (all
+          the other vessels are using Stencil shadows).
+        </div>
+      </p>
+    </p>
+</ul>
+
+<h2 class="brk" id="_stereoscopic_3d">StereoScopic 3D</h2>
 <p>
   The stereoScopic 3D settings allow you to tweak the 3D experience if you are
   using a NVIDIA graphic card that provides this feature.
@@ -618,7 +820,7 @@
     </p>
 </ul>
 
-<h2 class="brk">Reflections and Custom camera settings</h2>
+<h2>Reflections and Custom camera settings</h2>
 <p>
   The reflections and custom camera settings allow you to tweak the parameters
   that define the behavior of the environment mapping feature. Environment
@@ -663,6 +865,81 @@
     </p>
 </ul>
 
+<h2 class="brk">Surface micro textures</h2>
+<p>
+  The Surface micro textures settings allow you to tweak the parameters that
+  define the rendering of additional extra details on (planetary body) surfaces
+  when viewed from very close. The settings include texture filtering  options,
+  blend modes and <a href="https://en.wikipedia.org/wiki/Mipmap" target="_blank">
+  Mipmap</a> settings.<br/>
+  Note that, for this feature to work, additional files (micro textures) are
+  needed. These can for example be downloaded from the D3D9Client download page
+  at the section "<a href="http://users.kymp.net/~p501474a/D3D9Client/"
+  target="_blank">MicroTexture Pack</a>".
+</p>
+<ul>
+  <li>Render Mode</li>
+    <p style="margin-bottom: 5px;">
+      The Render Mode selection offers two settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Disabled</em></b>:
+        Turns the rendering of surface micro textures off.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Enabled</em></b>:
+        Turns the rendering of surface micro textures on.
+      </div>
+    </p>
+  <li>Texture filter</li>
+    <p style="margin-bottom: 5px;">
+      The Texture filter selection offers six settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Point (Fast)</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Linear (Bad)</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 2x</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 4x (Good)</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 8x</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 16x (Slow)</em></b>:
+        ...to be documented...
+      </div>
+    </p>
+  <li>Blend Mode</li>
+    <p style="margin-bottom: 5px;">
+      The Blend Mode selection offers three settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Soft light</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Normal light</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Hard light</em></b>:
+        ...to be documented...
+      </div>
+    </p>
+  <li>Mipmap bias</li>
+    <p style="margin-bottom: 5px;">
+      The Mipmap bias slider lets you select the bias level from <b><em>Sharp</em></b>
+      to <b><em>Smooth</em></b>.
+    </p>
+</ul>
 
 <hr />
 <!-- ====================================================================== -->
