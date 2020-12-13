@@ -29,21 +29,42 @@
   might be some things that are not implemented at all or in  different fashion.
   Here is a brief overview of features &amp; limitations of the D3D9Client.
   <ul>
-    <li>Self shadowing</li>
-    <p>...</p>
+    <li>Advanced Texture Maps</li>
+      Additional texture information for meshes. These define for example how
+      "rough" or "shiny" a texture appears.
+    <li>Cloud Normal Maps</li>
+      To make clouds look more "voluminous", D3D9Client allows normal maps for
+      planetary cloud layers.
+    <li>Custom Cameras</li>
+      Custom cameras allow add-ons to render images on isolated surfaces
+      (like camera screens for example).
     <li>Local Lights</li>
-    <p>The number of local lights in a scenario is unlimited.
-    Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
-    So, each mesh can have it own set of local lights.<br>
-    (Whether 4 or 8 lights are used for rendering, depends on the
-    <a href="#_local_lights">Local lights</a> settings used).
-    </p>
+      The number of local lights in a scenario is unlimited.
+      Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
+      So, each mesh can have its own set of local lights.<br />
+      (Whether 4 or 8 lights are used for rendering, depends on the
+      <a href="#_local_lights">Local lights</a> settings used).
+    <li>Reflections</li>
+      Environment mapping is used to draw reflections of the surrounding
+      environment onto reflective surfaces.
+    <li>Self Shadowing</li>
+      Vessels cast shadows onto themselves or onto other vessel structures.
+    <li>Surface Micro Textures</li>
+      Surfaces of planets (or moons) will have a much more realistic look when
+      viewed from very close to the surface (when landed on the surface for
+      example).
+    <li>Symbolic Links Creation</li>
+      Spacecraft3.dll and Orbiter Sound (Version 3.5) require some extra
+      symbolic links in <code>/Modules/Server/</code> folder to run properly
+      with Orbiter 2016 (see <a href="#_junctions">Orbiter Sound 3.5,
+      Spacecraft3.dll</a>).<br />
+      D3D9Clients "Advanced Setup" dialog provides a simple button for that.
   </ul>
 </p>
 
 <hr />
 <!-- ====================================================================== -->
-<h1>Requirements</h1>
+<h1 class="brk">Requirements</h1>
 <p>
   D3D9Client uses external libraries that need support for the SSE2
   Instruction set (GPSVC.DLL e.g.) and requires XNA Math support, so that the
@@ -82,7 +103,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 class="brk" id="_junctions">Orbiter Sound 3.5, Spacecraft3.dll</h1>
+<h1 id="_junctions">Orbiter Sound 3.5, Spacecraft3.dll</h1>
 <p>
   In order to use Spacecraft3.dll and Orbiter Sound (Version 3.5) with an
   external graphics client &ndash;like D3D9Client is one&ndash;, symbolic links
@@ -115,7 +136,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1>Fullscreen Mode and Alt-Tabing</h1>
+<h1 class="brk">Fullscreen Mode and Alt-Tabing</h1>
 <p>
   D3D9Client doesn't support alt-tabing in a so-called "True Fullscreen Mode".
   Therefore, it's recommended that you use a windowed fullscreen mode that will
@@ -148,7 +169,7 @@
   Spacecraft3.dll</a>" chapter.
 </p>
 
-<h2>Surface texture load options</h2>
+<h2 class="brk">Surface texture load options</h2>
 <p>
   Here you can change the behavior how the D3D9Client will load surface
   textures. The two options available are either "Load on demand (recommended)"
@@ -177,9 +198,9 @@
       The <code>Archive</code> sub folder contains compressed data, while the
       <code>Elev_mod</code>, <code>Label</code>, <code>Mask</code> and
       <code>Surf</code> folders contain the data structures as file system
-      folders and files.<br/>
+      folders and files.<br />
       Access through the archive files is generally faster and should be
-      preferred over cache access.<br/>
+      preferred over cache access.<br />
       <p style="margin-bottom: 5px;">
        The tile archive selection offers three settings:
         <div style="text-indent:-1em; margin-left:1em">
@@ -193,7 +214,7 @@
         <div style="text-indent:-1em; margin-left:1em">
           <b><em>Cache &amp; Archive</em></b>:
             Planetary body data will be loaded from archive but if tiles were
-            found in cache, those will be taken.<br/>
+            found in cache, those will be taken.<br />
             This is useful to "overwrite" some parts of a planet, which could
             be a correction of a erroneous archive part or just some additional
             details provided by an add-on.
@@ -227,11 +248,11 @@
       The supported value range is from 0.01 to 2.0. Although you might be able
       to enter bigger or smaller values, those will be clipped to that range.
     </p>
-    <li>Texture Mipmaps</li>
+    <li class="brk">Texture Mipmaps</li>
     <p>
       The texture mipmaps selector lets you choose the texture mipmap auto
       generation policy. The select box lets you decide how to deal with
-      missing (not defined) mipmaps at load time.<br/>
+      missing (not defined) mipmaps at load time.<br />
       <p style="margin-bottom: 5px;">
         The texture mipmaps selection offers three settings:
         <div style="text-indent:-1em; margin-left:1em">
@@ -253,8 +274,8 @@
     <li>Post Processing</li>
     <p>
       The post processing selector lets you choose whether to add one of two
-      additional post processing shaders.<br/>
-      Note that enabling any post processing will impact framerates.<br/>
+      additional post processing shaders.<br />
+      Note that enabling any post processing will impact framerates.<br />
       <p style="margin-bottom: 5px;">
         The post processing selection offers three settings:
         <div style="text-indent:-1em; margin-left:1em">
@@ -273,7 +294,7 @@
       </p>
     </p>
 </ul>
-<p class="brk">
+<p>
   Following checkboxes can be checked (enabled) or unchecked (disabled) to
   further fine-tune your D3D9Client experience:
 </p>
@@ -300,7 +321,7 @@
       shading (Fresnel reflection) for meshes that supply them.
     </p>
   <!-- removed
-  <li>Enable geometry instancing</li>
+  <li class="brk">Enable geometry instancing</li>
     <p>
       Currently disabled
     </p>
@@ -337,20 +358,20 @@
       <a href="http://en.wikipedia.org/wiki/Mipmap" target="_blank">Mipmaps</a> are one
       solution to address these problems. By enabling this option these
       artifacts should greatly be reduced and the surface will appear smooth.
-      <br/>
+      <br />
       The impact of enabling mipmaps is an increased load time because the
       mipmaps are generated during texture loading.
     </p>
   -->
 </ul>
 
-<h2 id="_local_lights">Local lights</h2>
+<h2 class="brk" id="_local_lights">Local lights</h2>
 <p>
   Here you can change settings that will affect the rendering of local light
   sources.
   The number of local lights in a scenario is unlimited.
   Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
-  So, each mesh can have it own set of local lights
+  So, each mesh can have its own set of local lights
   (4 or 8 depends on setting described below.
   "Partial" lights only compute diffuse part of the lighting while
   "Full" lights do specular part too).
@@ -368,7 +389,7 @@
     <p>Up to 8 light sources are rendered, computing diffuse and specular parts.</p>
 </ul>
 
-<h2 class="brk">Self Shadows</h2>
+<h2>Self Shadows</h2>
 <p>
   Here you can change settings that will affect the rendering of shadows that
   vessels will cast onto themselves or onto other vessel structures.
@@ -402,7 +423,7 @@
     <p>
       This will select filtering for shadow maps. "9 Samples" is the fastest
       setting for older computers and "27s dither" is the best that is
-      currently available.<br/>
+      currently available.<br />
       Better filtering produce smoother (better) edges for shadows. The
       difference becomes more visible when zooming the camera into a shadow.
       <p style="margin-bottom: 5px;">
@@ -431,14 +452,14 @@
         -->
       </p>
     </p>
-  <li>Terrain mapping</li>
+  <li class="brk">Terrain mapping</li>
     <p>
       This setting will choose the shadowing mode for planetary surface and
       base-objects.
       "Stencil" is the legacy mode that's been there for ages.
       "Projective" produces more realistic surface shadows for the focused
       (i.e. currently active) vessel but doesn't effect any other vessels (all
-      the other vessels are using Stencil shadows).<br/>
+      the other vessels are using Stencil shadows).<br />
       In this mode the focus vessel can cast shadows on base objects. This
       shadowing option doesn't work well if the vessel is inside a base object.
       <p style="margin-bottom: 5px;">
@@ -511,7 +532,7 @@
   <li>Font rendering</li>
     <p>
       The four options you can choose from at "<b><em>Font rendering</em></b>"
-      are:<br/>
+      are:<br />
       "<b><em>Crisp</em></b>", "<b><em>Default</em></b>",
       "<b><em>Cleartype</em></b>" and "<b><em>Proof Quality</em></b>".
     </p>
@@ -522,7 +543,7 @@
     </p>
 </ul>
 
-<h2>Generic configuration</h2>
+<h2 class="brk">Generic configuration</h2>
 <p>
   The generic configuration contains options that will change the general
   behavior of D3D9Client. For most of the time the default setup should be fine
@@ -566,7 +587,7 @@
     </p>
 </ul>
 
-<h2 class="brk" id="_stereoscopic_3d">StereoScopic 3D</h2>
+<h2 id="_stereoscopic_3d">StereoScopic 3D</h2>
 <p>
   The stereoScopic 3D settings allow you to tweak the 3D experience if you are
   using a NVIDIA graphic card that provides this feature.
@@ -594,7 +615,7 @@
     </p>
 </ul>
 
-<h2>Reflections and Custom camera settings</h2>
+<h2 class="brk">Reflections and Custom camera settings</h2>
 <p>
   The reflections and custom camera settings allow you to tweak the parameters
   that define the behavior of the environment mapping feature. Environment
@@ -623,10 +644,10 @@
       The camera image rendered by a custom camera can be displayed in an MFD
       screen or any other screen in a virtual cockpit or in a panel.
       Developer note : See ogci.h for additional details.
-      <br/>
+      <br />
       The custom camera selection offers therefore only two settings:
       <b><em>Enabled</em></b> or <b><em>Disable</em></b>.
-      <br/>
+      <br />
       (Note: This has nothing to do with environment maps; it merely uses the
       same code and update mechanism to do the rendering)
     </p>
@@ -642,7 +663,8 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 class="brk" id="_debug_controls">D3D9 Debug Controls Dialog</h1>
+<h1 id="_debug_controls"
+    class="brk">D3D9 Debug Controls Dialog</h1>
 <p>
   The D3D9 Debug Controls Dialog allows you look at different things while the
   simulation is running.
@@ -660,7 +682,7 @@
   </blockquote>
 </p>
 
-<h2>Mesh debugger</h2>
+<h2 class="brk">Mesh debugger</h2>
 <p>
   The mesh debugger group contains elements to inspect a mesh. It gives a mesh
   developer some tools at hand to better inspect a mesh in its 'natural
@@ -674,7 +696,7 @@
   For all possibilities, please read the descriptions of the individual GUI-
   Elements, below.
 </p>
-<ul class="brk">
+<ul>
   <li id="_display">Display</li>
     <p>
       This combo box lets you select what parts of a scene is rendered. The
@@ -737,7 +759,7 @@
       index. If a mesh consists of multiple groups, you will be able to select
       the individual groups by selecting the according group index here.
     </p>
-  <li>Highlight selected group</li>
+  <li class="brk">Highlight selected group</li>
     <p>
       With this option <b><em>enabled</em></b> the current selected group will
       be permanently highlighted (green).
@@ -756,7 +778,7 @@
       situations when the mesh is usually not lit at all, when on the night
       (dark) side of an orbit.
     </p>
-  <li class="brk">Dual sided</li>
+  <li>Dual sided</li>
     <p>
       Faces are normally only rendered from one side (the "backside" is kind of
       completely transparent). With this option <b><em>enabled</em></b> all
@@ -795,7 +817,7 @@
     </p>
 </ul>
 
-<h2>Bounding geometry</h2>
+<h2 class="brk">Bounding geometry</h2>
 <p>
   The options in this group offers additional rendering of bounding boxes or
   spheres of individual mesh parts.
@@ -907,7 +929,7 @@
       <dd>
         Defines emissive material color [RGB].
       </dd>
-      <dt class="brk"><b>Reflect</b></dt>
+      <dt><b>Reflect</b></dt>
       <dd>
         Defines reflection color [RGB] for a metallic (mirror a-like)
         reflection which intensity is independent from a viewing angle. This is
