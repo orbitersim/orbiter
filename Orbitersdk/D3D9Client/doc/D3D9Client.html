@@ -21,6 +21,28 @@
 
 <hr />
 <!-- ====================================================================== -->
+<h1>Features &amp; Limitations</h1>
+<p>
+  D3D9Client tries to be as backwards compatible with the inline graphics client
+  of Orbiter as possible. Additionally some features of DirectX 9 enable it to do
+  some things that the DirectX 7 runtimes do not allow. On the other hand there
+  might be some things that are not implemented at all or in  different fashion.
+  Here is a brief overview of features &amp; limitations of the D3D9Client.
+  <ul>
+    <li>Self shadowing</li>
+    <p>...</p>
+    <li>Local Lights</li>
+    <p>The number of local lights in a scenario is unlimited.
+    Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
+    So, each mesh can have it own set of local lights.<br>
+    (Whether 4 or 8 lights are used for rendering, depends on the
+    <a href="#_local_lights">Local lights</a> settings used).
+    </p>
+  </ul>
+</p>
+
+<hr />
+<!-- ====================================================================== -->
 <h1>Requirements</h1>
 <p>
   D3D9Client uses external libraries that need support for the SSE2
@@ -60,7 +82,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 id="_junctions">Orbiter Sound 3.5, Spacecraft3.dll</h1>
+<h1 class="brk" id="_junctions">Orbiter Sound 3.5, Spacecraft3.dll</h1>
 <p>
   In order to use Spacecraft3.dll and Orbiter Sound (Version 3.5) with an
   external graphics client &ndash;like D3D9Client is one&ndash;, symbolic links
@@ -93,7 +115,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 class="brk">Fullscreen Mode and Alt-Tabing</h1>
+<h1>Fullscreen Mode and Alt-Tabing</h1>
 <p>
   D3D9Client doesn't support alt-tabing in a so-called "True Fullscreen Mode".
   Therefore, it's recommended that you use a windowed fullscreen mode that will
@@ -126,7 +148,7 @@
   Spacecraft3.dll</a>" chapter.
 </p>
 
-<h2 class="brk">Surface texture load options</h2>
+<h2>Surface texture load options</h2>
 <p>
   Here you can change the behavior how the D3D9Client will load surface
   textures. The two options available are either "Load on demand (recommended)"
@@ -205,7 +227,7 @@
       The supported value range is from 0.01 to 2.0. Although you might be able
       to enter bigger or smaller values, those will be clipped to that range.
     </p>
-    <li class="brk">Texture Mipmaps</li>
+    <li>Texture Mipmaps</li>
     <p>
       The texture mipmaps selector lets you choose the texture mipmap auto
       generation policy. The select box lets you decide how to deal with
@@ -251,7 +273,7 @@
       </p>
     </p>
 </ul>
-<p>
+<p class="brk">
   Following checkboxes can be checked (enabled) or unchecked (disabled) to
   further fine-tune your D3D9Client experience:
 </p>
@@ -278,7 +300,7 @@
       shading (Fresnel reflection) for meshes that supply them.
     </p>
   <!-- removed
-  <li class="brk">Enable geometry instancing</li>
+  <li>Enable geometry instancing</li>
     <p>
       Currently disabled
     </p>
@@ -320,6 +342,30 @@
       mipmaps are generated during texture loading.
     </p>
   -->
+</ul>
+
+<h2 id="_local_lights">Local lights</h2>
+<p>
+  Here you can change settings that will affect the rendering of local light
+  sources.
+  The number of local lights in a scenario is unlimited.
+  Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
+  So, each mesh can have it own set of local lights
+  (4 or 8 depends on setting described below.
+  "Partial" lights only compute diffuse part of the lighting while
+  "Full" lights do specular part too).
+</p>
+<ul>
+  <li>None</li>
+    <p>Local lights rendering is disabled</p>
+  <li>4x Partial</li>
+    <p>Up to 4 light sources are rendered, computing only diffuse part.</p>
+  <li>4x Full</li>
+    <p>Up to 4 light sources are rendered, computing diffuse and specular parts.</p>
+  <li>8x Partial</li>
+    <p>Up to 8 light sources are rendered, computing only diffuse part.</p>
+  <li>8x Full</li>
+    <p>Up to 8 light sources are rendered, computing diffuse and specular parts.</p>
 </ul>
 
 <h2 class="brk">Self Shadows</h2>
@@ -520,7 +566,7 @@
     </p>
 </ul>
 
-<h2 id="_stereoscopic_3d">StereoScopic 3D</h2>
+<h2 class="brk" id="_stereoscopic_3d">StereoScopic 3D</h2>
 <p>
   The stereoScopic 3D settings allow you to tweak the 3D experience if you are
   using a NVIDIA graphic card that provides this feature.
@@ -596,8 +642,7 @@
 
 <hr />
 <!-- ====================================================================== -->
-<h1 id="_debug_controls"
-    class="brk">D3D9 Debug Controls Dialog</h1>
+<h1 class="brk" id="_debug_controls">D3D9 Debug Controls Dialog</h1>
 <p>
   The D3D9 Debug Controls Dialog allows you look at different things while the
   simulation is running.
@@ -615,7 +660,7 @@
   </blockquote>
 </p>
 
-<h2 class="brk">Mesh debugger</h2>
+<h2>Mesh debugger</h2>
 <p>
   The mesh debugger group contains elements to inspect a mesh. It gives a mesh
   developer some tools at hand to better inspect a mesh in its 'natural
@@ -629,7 +674,7 @@
   For all possibilities, please read the descriptions of the individual GUI-
   Elements, below.
 </p>
-<ul>
+<ul class="brk">
   <li id="_display">Display</li>
     <p>
       This combo box lets you select what parts of a scene is rendered. The
@@ -692,7 +737,7 @@
       index. If a mesh consists of multiple groups, you will be able to select
       the individual groups by selecting the according group index here.
     </p>
-  <li class="brk">Highlight selected group</li>
+  <li>Highlight selected group</li>
     <p>
       With this option <b><em>enabled</em></b> the current selected group will
       be permanently highlighted (green).
@@ -711,7 +756,7 @@
       situations when the mesh is usually not lit at all, when on the night
       (dark) side of an orbit.
     </p>
-  <li>Dual sided</li>
+  <li class="brk">Dual sided</li>
     <p>
       Faces are normally only rendered from one side (the "backside" is kind of
       completely transparent). With this option <b><em>enabled</em></b> all
@@ -750,7 +795,7 @@
     </p>
 </ul>
 
-<h2 class="brk">Bounding geometry</h2>
+<h2>Bounding geometry</h2>
 <p>
   The options in this group offers additional rendering of bounding boxes or
   spheres of individual mesh parts.
@@ -862,7 +907,7 @@
       <dd>
         Defines emissive material color [RGB].
       </dd>
-      <dt><b>Reflect</b></dt>
+      <dt class="brk"><b>Reflect</b></dt>
       <dd>
         Defines reflection color [RGB] for a metallic (mirror a-like)
         reflection which intensity is independent from a viewing angle. This is
