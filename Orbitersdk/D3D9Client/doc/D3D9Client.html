@@ -10,6 +10,7 @@
     dt   { margin-top:10px; }
     dd   { margin-left:20px; }
     li   { text-decoration:underline; font-weight:bold; page-break-inside:avoid; }
+    li.nodeco { text-decoration:none; font-weight:normal; page-break-inside:avoid; }
     code { background-color: #E0E0E0; }
   </style>
 </head>
@@ -62,7 +63,15 @@
       with Orbiter 2016 (see <a href="#_junctions">Orbiter Sound 3.5,
       Spacecraft3.dll</a>).<br />
       D3D9Clients "Advanced Setup" dialog provides a simple button for that.
-  </ul>
+<!-- not (yet) in BETA
+    <li>Terrain Flattening</li>
+      With the planetary elevation model, some areas of a planet (or moon) might
+      not be perfectly "flat" and make it hard for some vessels to stand upright
+      for example. With the "terrain flattening" feature one can define specific
+      regions to be modified (See <strong>Enable terrain flattening</strong> under
+      <a href="#_graphics_options">Graphics options</a> and
+      <a href="#_terrain_flattening">Terrain Flattening definitions</a> for details).
+ -->  </ul>
 </p>
 
 <hr />
@@ -226,7 +235,7 @@
     </p>
 </ul>
 
-<h2>Graphics options</h2>
+<h2 id="_graphics_options">Graphics options</h2>
 <p>
   Here you can change settings according to your graphic hardware:
 </p>
@@ -300,12 +309,12 @@
     <p>
       The graphic client Graphical User Interface (gcGUI) mode selector lets
       you enable and chose what kind of user interface should be used in case
-      it is enabled.<br/>
+      it is enabled.<br />
       The gcGUI is an interface that allows implementation of user specific UI
       elements to be used during a simulation session. These may be vessel
-      specific controls or general simulation settings.<br/>
+      specific controls or general simulation settings.<br />
       Note that this feature is still under development and that the API for
-      programming it may change.<br/>
+      programming it may change.<br />
       <p style="margin-bottom: 5px;">
         The gcGUI Mode selection offers three settings:
         <div style="text-indent:-1em; margin-left:1em">
@@ -353,7 +362,57 @@
       With this option enabled D3D9Client will try to add improved glass
       shading (Fresnel reflection) for meshes that supply them.
     </p>
+  <li>Disable near clip plane compatibility mode</li>
+    <p>
+      If the near clip-plane compatibility mode is enabled then the minimum
+      clip-plane distance is 1.0 meters as is in the Orbiters internal engine.
+      If the compatibility mode is disabled then the client can reduce the clip
+      distance down to 0.1 meters, if there is a graphics close to the camera.
+      This setting will only effect in so-called exterior pass. Virtual cockpit
+      near clip-plane distance is defined in D3D9Client.cfg and the default
+      value is 0.1 meters.
+    </p>
+  <li>Cloud micro-textures</li>
+    <p>
+      With this option enabled D3D9Client will create micro textured cloud
+      surfaces that will make clouds appear much more realistic.
+    </p>
+  <li>Cloud normal maps</li>
+    <p>
+      With this option enabled D3D9Client will render cloud textures as if they
+      were normal-maps. This lets couds look more "voluminous".
+    </p>
+  <li>Enable GDI Overlay</li>
+    <p>
+      ...to be documented...
+    </p>
+  <li>Enable absolute animation handling</li>
+    <p>
+      ...to be documented...
+    </p>
+  <!-- not (yet) in BETA
+  <li>Enable terrain flattening</li>
+    <p>
+      With the planetary elevation model, some areas of a planet (or moon) might
+      not be perfectly "flat" and make it hard for some vessels to stand upright
+      for example. With the "terrain flattening" feature enabled, one can define
+      specific regions to be modified.
+      For the details on how to set up <strong>.flt</strong> files, see section
+      <a href="#_terrain_flattening">Terrain Flattening definitions</a>.
+    </p>
+  -->
   <!-- removed
+  <li>Enable surface tile mipmaps</li>
+    <p>
+      In some situations planetary (or minor body) surfaces appear to be noisy
+      and are flickering.
+      <a href="http://en.wikipedia.org/wiki/Mipmap" target="_blank">Mipmaps</a> are one
+      solution to address these problems. By enabling this option these
+      artifacts should greatly be reduced and the surface will appear smooth.
+      <br />
+      The impact of enabling mipmaps is an increased load time because the
+      mipmaps are generated during texture loading.
+    </p>
   <li class="brk">Enable geometry instancing</li>
     <p>
       Currently disabled
@@ -372,54 +431,55 @@
       </p>
     </p>
   -->
-
-  <li>Disable near clip plane compatibility mode</li>
-    <p>
-      If the near clip-plane compatibility mode is enabled then the minimum
-      clip-plane distance is 1.0 meters as is in the Orbiters internal engine.
-      If the compatibility mode is disabled then the client can reduce the clip
-      distance down to 0.1 meters, if there is a graphics close to the camera.
-      This setting will only effect in so-called exterior pass. Virtual cockpit
-      near clip-plane distance is defined in D3D9Client.cfg and the default
-      value is 0.1 meters.
-    </p>
-  <!-- removed
-  <li>Enable surface tile mipmaps</li>
-    <p>
-      In some situations planetary (or minor body) surfaces appear to be noisy
-      and are flickering.
-      <a href="http://en.wikipedia.org/wiki/Mipmap" target="_blank">Mipmaps</a> are one
-      solution to address these problems. By enabling this option these
-      artifacts should greatly be reduced and the surface will appear smooth.
-      <br />
-      The impact of enabling mipmaps is an increased load time because the
-      mipmaps are generated during texture loading.
-    </p>
-  -->
 </ul>
 
 <h2 id="_local_lights">Local lights</h2>
 <p>
-  Here you can change settings that will affect the rendering of local light
-  sources.
+  Here you can change settings regarding the rendering of local lights.<br />
+  In contrast to the global light (the sun) local lights are individual light
+  sources that might be a flood-light or a special beacon light source in a
+  fright bay or anywhere else on a vessel.
+  <br />
   The number of local lights in a scenario is unlimited.
   Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
   So, each mesh can have its own set of local lights
   (4 or 8 depends on setting described below.
   "Partial" lights only compute diffuse part of the lighting while
-  "Full" lights do specular part too).
+  "Full" lights do specular part too).<br />
+  The following settings are available:
 </p>
 <ul>
-  <li>None</li>
-    <p>Local lights rendering is disabled</p>
-  <li>4x Partial</li>
-    <p>Up to 4 light sources are rendered, computing only diffuse part.</p>
-  <li>4x Full</li>
-    <p>Up to 4 light sources are rendered, computing diffuse and specular parts.</p>
-  <li>8x Partial</li>
-    <p>Up to 8 light sources are rendered, computing only diffuse part.</p>
-  <li>8x Full</li>
-    <p>Up to 8 light sources are rendered, computing diffuse and specular parts.</p>
+  <li>Local lights</li>
+  <p style="margin-bottom: 5px;">
+    Each local lights mode also affects the value of the <code>LMODE</code>
+    definition in the shader files.<br />
+    The Local lights selection offers these settings:
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>None</em></b>:
+      No rendering of local lights.<br />
+      (<tt>LMODE = 0</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>4x Partial</em></b>:
+      A maximum of four local lights will be rendered, computing only diffuse
+      part. (<tt>LMODE = 1</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>4x Full</em></b>:
+      A maximum of four local lights will be rendered, computing diffuse and
+      specular parts. (<tt>LMODE = 2</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>8x Partial</em></b>:
+      A maximum of eight local lights will be rendered, computing only diffuse
+      part. (<tt>LMODE = 3</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>8x Full</em></b>:
+      A maximum of eight local lights will be rendered, computing diffuse and
+      specular parts. (<tt>LMODE = 4</tt>)
+    </div>
+  </p>
 </ul>
 
 <h2>Self Shadows</h2>
@@ -452,7 +512,7 @@
         </div>
       </p>
     </p>
-  <li class="brk">Filter options</li>
+  <li>Filter options</li>
     <p>
       This will select filtering for shadow maps. "9 Samples" is the fastest
       setting for older computers and "27s dither" is the best that is
@@ -655,144 +715,7 @@
   </p>
 </ul>
 
-<h2>Local lights</h2>
-<p>
-  Here you can change settings regarding the rendering of local lights.<br/>
-  In contrast to the global light (the sun) local lights are individual light
-  sources that might be a flood-light or a special beacon light source in a
-  fright bay or anywhere else on a vessel.<br/>
-  The following settings are available:
-</p>
-<ul>
-  <li>Local lights</li>
-  <p style="margin-bottom: 5px;">
-    Each local lights mode also affects the value of the <code>LMODE</code>
-    definition in the shader files.<br/>
-    The Local lights selection offers these settings:
-    <div style="text-indent:-1em; margin-left:1em">
-      <b><em>None</em></b>:
-      No rendering of local lights.<br/>
-      (<tt>LMODE = 0</tt>)
-    </div>
-    <div style="text-indent:-1em; margin-left:1em">
-      <b><em>4x Partial</em></b>:
-      A maximum of four local lights will be rendered.
-      "partial" ...to be documented...
-      <br/>(<tt>LMODE = 1</tt>)
-    </div>
-    <div style="text-indent:-1em; margin-left:1em">
-      <b><em>4x Full</em></b>:
-      A maximum of four local lights will be rendered.<br/>
-      "full" ...to be documented...
-      (<tt>LMODE = 2</tt>)
-    </div>
-    <div style="text-indent:-1em; margin-left:1em">
-      <b><em>8x Partial</em></b>:
-      A maximum of eight local lights will be rendered.<br/>
-      (<tt>LMODE = 3</tt>)
-    </div>
-    <div style="text-indent:-1em; margin-left:1em">
-      <b><em>8x Full</em></b>:
-      A maximum of eight local lights will be rendered.<br/>
-      (<tt>LMODE = 4</tt>)
-    </div>
-  </p>
-</ul>
-
-<h2 class="brk">Self Shadows</h2>
-<p>
-  Here you can change settings that will affect the rendering of shadows that
-  vessels will cast onto themselves or onto other vessel structures.
-</p>
-<ul>
-  <li>Vessel mapping</li>
-    <p>
-      This will control how many vessels will receive shadowing feature,
-      varying from "None" to "All visible" vessels.
-      <p style="margin-bottom: 5px;">
-        The vessel mapping selection offers three settings:
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>None</em></b>:
-          No vessels will receive shadowing feature.
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>Focus + payload</em></b>:
-          The vessel in focus and its payload will cast shadows.
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>Near by objects</em></b>:
-          All nearby vessels (objects) will cast shadows.
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>All visible objects</em></b>:
-          All visible vessels (objects) will cast shadows.
-        </div>
-      </p>
-    </p>
-  <li>Filter options</li>
-    <p>
-      This will select filtering for shadow maps. "9 Samples" is the fastest
-      setting for older computers and "27s dither" is the best that is
-      currently available.<br/>
-      Better filtering produce smoother (better) edges for shadows. The
-      difference becomes more visible when zooming the camera into a shadow.
-      <p style="margin-bottom: 5px;">
-        The filter options selection offers three settings:
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>9 samples</em></b>:
-          Shadow maps use 9 samples (fastest setting for older computers).
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>27 samples</em></b>:
-          Shadow maps using 27 samples.
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>27s dither</em></b>:
-          Shadow maps using 27 samples with dithering.
-        </div>
-        <!--
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>40 samples</em></b>:
-          ToDo...
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>40s dither</em></b>:
-          ToDo...
-        </div>
-        -->
-      </p>
-    </p>
-  <li>Terrain mapping</li>
-    <p>
-      This setting will choose the shadowing mode for planetary surface and
-      base-objects.
-      "Stencil" is the legacy mode that's been there for ages.
-      "Projective" produces more realistic surface shadows for the focused
-      (i.e. currently active) vessel but doesn't effect any other vessels (all
-      the other vessels are using Stencil shadows).<br/>
-      In this mode the focus vessel can cast shadows on base objects. This
-      shadowing option doesn't work well if the vessel is inside a base object.
-      <p style="margin-bottom: 5px;">
-        The terrain mapping selection offers three settings:
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>None</em></b>:
-          No shadowing for planetary surface and base-objects.
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>Stencil</em></b>:
-          This is the legacy mode that's been there for ages.
-        </div>
-        <div style="text-indent:-1em; margin-left:1em">
-          <b><em>Projected</em></b>:
-          Produces more realistic surface shadows for the focused (i.e.
-          currently active) vessel but doesn't effect any other vessels (all
-          the other vessels are using Stencil shadows).
-        </div>
-      </p>
-    </p>
-</ul>
-
-<h2 class="brk" id="_stereoscopic_3d">StereoScopic 3D</h2>
+<h2 id="_stereoscopic_3d">StereoScopic 3D</h2>
 <p>
   The stereoScopic 3D settings allow you to tweak the 3D experience if you are
   using a NVIDIA graphic card that provides this feature.
@@ -820,7 +743,7 @@
     </p>
 </ul>
 
-<h2>Reflections and Custom camera settings</h2>
+<h2 class="brk">Reflections and Custom camera settings</h2>
 <p>
   The reflections and custom camera settings allow you to tweak the parameters
   that define the behavior of the environment mapping feature. Environment
@@ -871,7 +794,7 @@
   define the rendering of additional extra details on (planetary body) surfaces
   when viewed from very close. The settings include texture filtering  options,
   blend modes and <a href="https://en.wikipedia.org/wiki/Mipmap" target="_blank">
-  Mipmap</a> settings.<br/>
+  Mipmap</a> settings.<br />
   Note that, for this feature to work, additional files (micro textures) are
   needed. These can for example be downloaded from the D3D9Client download page
   at the section "<a href="http://users.kymp.net/~p501474a/D3D9Client/"
@@ -1569,5 +1492,100 @@ END</pre>
     <tr><td style="background-color:silver;text-align:left">Transmittance-map</td><td><tt>_transm</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
   </table>
 </p>
+
+<!-- not (yet) in BETA
+<hr />
+ ======================================================================
+<h1 class="brk" id="_terrain_flattening">Terrain Flattening definitions</h1>
+<p>
+  With the planetary elevation model, some areas of a planet (or moon) might not
+  be perfectly "flat" and make it hard for some vessels to stand upright for
+  example.<br />
+  With the "terrain flattening" feature enabled, one can define specific regions
+  to be modified.<br />
+  <br />
+  <strong>.flt</strong>-files for a planet (or moon) must be placed in a
+  <tt>Flat</tt> folder in the bodies texture-folder:
+  <tt>/Textures/&lt;planet&gt;/Flat</tt>).<br />
+  There can be multiple <strong>.flt</strong>-files in each folder, so different
+  add-ons should be able to co-exist.
+  <br />
+  In every <strong>.flt</strong>-file, one or more of the following line entries are parsed:
+  <blockquote style="background-color:silver; font-size:normal; padding:10px; width:100%">
+  <pre style="margin-bottom:0; margin-top:0">ELLIPSE &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;major&gt; &lt;minor&gt; &lt;phi&gt; &lt;falloff&gt;
+// or
+RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi&gt; &lt;falloff&gt;</pre>
+  </blockquote>
+
+  <ul>
+    <li class="nodeco">Lines that start with double-slashes (//) are treated as
+      comments</li>
+    <li class="nodeco"><strong>&lt;height&gt;</strong> [Integer]
+      in meter, supposedly w.r.t. mean sphere radius</li>
+    <li class="nodeco"><strong>&lt;lng&gt;</strong> &amp;
+                       <strong>&lt;lat&gt;</strong> [Float]
+      longitude and latitude coordinates, as defined in e.g. base configuration
+      file</li>
+    <li class="nodeco"><strong>&lt;major&gt;</strong> &amp;
+                       <strong>&lt;minor&gt;</strong> [Integer]
+      are ellipse major and minor radius in meter,<br />
+      &lt;minor&gt; defaults to &lt;major&gt; if not defined<br />
+      - the meter definition might not be exact, as it uses a decimal degree
+      guess at the latitude circle</li>
+    <li class="nodeco"><strong>&lt;length&gt;</strong> &amp;
+                       <strong>&lt;width&gt;</strong> [Integer]
+      are rectangle length and width in meter,<br />
+      &lt;width&gt; defaults to &lt;length&gt; if not defined<br />
+      - meter definition same as above</li>
+    <li class="nodeco"><strong>&lt;phi&gt;</strong> [Float]
+      is a rotation angle in degrees from the equator, with &lt;major&gt; and
+      &lt;length&gt; being parallel to the equator</li>
+    <li class="nodeco"><strong>&lt;falloff&gt;</strong> [Integer]
+      is the percentage value (e.g. 50 for 50%) of the shape radius where
+      transparent merging with original height is done</li>
+  </ul>
+  <ul>
+    <li class="nodeco"><strong>ELLIPSE</strong> is difined with the midpoint
+      at &lt;lng&gt;/&lt;lat&gt;, &lt;major&gt; axis radius in meter,
+      &lt;minor&gt; axis radius in meter,<br />
+      &lt;phi&gt; rotation 0-90&deg; tilted major axis,
+      flattened to &lt;height&gt; in meter
+      with &lt;falloff&gt; percent (of full radius seen from edge of shape)
+      gradual transparency merging with actual height.
+      Only the first 4 parameters are necessary,
+      &lt;minor&gt; defaults to &lt;major&gt;, the rest to zero.</li>
+    <li class="nodeco"><strong>RECT</strong>ANGLE is with midpoint at
+      &lt;lng&gt;/&lt;lat&gt;, &lt;width&gt; and &lt;length&gt; in meter,<br />
+      tilted with &lt;phi&gt; 0-90&deg;,
+      flattened to &lt;height&gt; in meter
+      with &lt;falloff&gt; percent (of full radius seen from edge of shape)
+      gradual transparency merging with actual height.
+      Only the first 4 parameters are necessary,
+      &lt;length&gt; defaults to &lt;width&gt;, the rest to zero.</li>
+    <li class="nodeco">Shapes are loaded in order of file and line position,
+      last shapes overriding first.</li>
+    <li class="nodeco">Shapes are preprocessed into a cascaded map, creating a
+      GBody->level->ilat->ilng database. Whenever a shape touches a given path
+      (so it has multiple paths due to higher levels), it is within that tile
+      and will be taken into account.
+      If a shape's tile contribution is below pixel size, it will not land in
+      the path.</li>
+    <li class="nodeco">The filter function will check the database, then do the
+      drawing algorithm for all shapes in the path's list.</li>
+  </ul>
+
+  <p>
+    Example of a <strong>.flt</strong>-file <tt>/Textures/Moon/Flat/test.flt</tt>
+  </p>
+  <blockquote style="background-color:silver; font-size:9pt; padding:10px; width:100%">
+  <pre>// *** Example Terrain Flattening .flt file ***
+ELLIPSE -2700 -32.6  +41.5  2500
+ELLIPSE -2600 -32.6  +41.5  1700
+ELLIPSE -2700 -32.6  +41.5  1500
+RECT    -2700 -32.6  +41.47 3400 2400
+ELLIPSE -2600 -32.55 +41.46 250
+ELLIPSE -2600 -32.65 +41.46 250</pre>
+</p>
+-->
 </body>
 </html>
