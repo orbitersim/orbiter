@@ -1521,7 +1521,13 @@ RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi
     <li class="nodeco">Lines that start with double-slashes (//) are treated as
       comments</li>
     <li class="nodeco"><strong>&lt;height&gt;</strong> [Integer]
-      in meter, supposedly w.r.t. mean sphere radius</li>
+      in meter, supposedly w.r.t. mean sphere radius.<br />
+      Height values are altitude (in meters) relative to mean surface level.
+      For Earth for example, a value of 8 means "8 meters above mean sea level"
+      (MSL).<br />
+      To get a starting value for &lt;height&gt;, one can use the altitude
+      value provided by "Surface MFD".
+    </li>
     <li class="nodeco"><strong>&lt;lng&gt;</strong> &amp;
                        <strong>&lt;lat&gt;</strong> [Float]
       longitude and latitude coordinates, as defined in e.g. base configuration
@@ -1545,7 +1551,7 @@ RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi
       transparent merging with original height is done</li>
   </ul>
   <ul>
-    <li class="nodeco"><strong>ELLIPSE</strong> is difined with the midpoint
+    <li class="nodeco"><strong>ELLIPSE</strong> is defined with the midpoint
       at &lt;lng&gt;/&lt;lat&gt;, &lt;major&gt; axis radius in meter,
       &lt;minor&gt; axis radius in meter,<br />
       &lt;phi&gt; rotation 0-90&deg; tilted major axis,
@@ -1555,13 +1561,13 @@ RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi
       Only the first 4 parameters are necessary,
       &lt;minor&gt; defaults to &lt;major&gt;, the rest to zero.</li>
     <li class="nodeco"><strong>RECT</strong>ANGLE is with midpoint at
-      &lt;lng&gt;/&lt;lat&gt;, &lt;width&gt; and &lt;length&gt; in meter,<br />
+      &lt;lng&gt;/&lt;lat&gt;, &lt;length&gt; and &lt;width&gt; in meter,<br />
       tilted with &lt;phi&gt; 0-90&deg;,
       flattened to &lt;height&gt; in meter
       with &lt;falloff&gt; percent (of full radius seen from edge of shape)
       gradual transparency merging with actual height.
       Only the first 4 parameters are necessary,
-      &lt;length&gt; defaults to &lt;width&gt;, the rest to zero.</li>
+      &lt;width&gt; defaults to &lt;length&gt;, the rest to zero.</li>
     <li class="nodeco">Shapes are loaded in order of file and line position,
       last shapes overriding first.</li>
     <li class="nodeco">Shapes are preprocessed into a cascaded map, creating a
@@ -1574,6 +1580,25 @@ RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi
       drawing algorithm for all shapes in the path's list.</li>
   </ul>
 
+  <p class="brk">
+    <strong style="color:red">Notes:</strong>
+    <ul>
+      <li class="nodeco">The resolution of the flattening shapes is only as
+      	high as the tiles they operate on. I.e.: if you have low resolution
+      	terrain, too small shapes could be invisible or distorted.</li>
+      <li class="nodeco">When in doubt about terrain resolution, start with a
+      	large area (2 or 3 km) and lower it until you get a good results.</li>
+      <li class="nodeco">Terrain interpolation mode (linear, cubic) will impact
+        the results.</li>
+      <li class="nodeco">The shape keywords are case-insensitive. Using UPPERCASE
+        however is recommended.</li>
+      <li class="nodeco">All lines that are not recognized as a valid shape
+      	configuration (<strong>ELLIPSE</strong>- rsp. <strong>RECT</strong>-line)
+      	will be ignored (as if they are comment lines). It is however recommended
+      	to only use the double-slashes (//) to start comment lines.</li>
+    </ul>
+  </p>
+
   <p>
     Example of a <strong>.flt</strong>-file <tt>/Textures/Moon/Flat/test.flt</tt>
   </p>
@@ -1585,7 +1610,25 @@ ELLIPSE -2700 -32.6  +41.5  1500
 RECT    -2700 -32.6  +41.47 3400 2400
 ELLIPSE -2600 -32.55 +41.46 250
 ELLIPSE -2600 -32.65 +41.46 250</pre>
-</p>
+</blockquote>
+
+  <p>
+    Another example of a <strong>.flt</strong>-file <tt>/Textures/Earth/Flat/Cape1.flt</tt>
+  </p>
+  <blockquote style="background-color:silver; font-size:9pt; padding:10px; width:100%">
+  <pre>;; LC11
+Ellipse 7 -80.5405960 28.4752030 1000 1000 0 20
+;; LC12
+Ellipse 7 -80.5430260 28.4805330 1000 1000 0 20
+;; LC13
+Ellipse 7 -80.5454560 28.4857930 1000 1000 0 20
+;; LC14
+Ellipse 7 -80.5478960 28.4910830 1000 1000 0 20</pre>
+  </blockquote>
+  <blockquote style="padding:10px; width:100%">...for the Atlas pads on Cape Canaveral
+  	(We have good resolution there &amp; it also demonstrates that invalid lines
+  	will be treated as comments - although not recommended).
+  </blockquote>
 -->
 </body>
 </html>
