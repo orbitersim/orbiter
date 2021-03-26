@@ -111,6 +111,7 @@ public:
 	 * \return object handle
 	 */
 	inline const OBJHANDLE Object() const { return hObj; }
+	inline const int Type() const { return objtp; }
 
 	/**
 	 * \brief Returns one of the visual's meshes, given by its index.
@@ -245,6 +246,7 @@ protected:
 	bool			bBSRecompute;
 
 	bool active;		// visual is active (within camera range)
+	int objtp;
 	Scene *scn;			// The scene to which the object belongs
 	VECTOR3	axis;		// Rotation Axis, i.e. _V(0,1,0) in global frame
 	VECTOR3 cpos;		// camera-relative object position

@@ -808,6 +808,8 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 				D3DXMATRIX id;
 				D3D9Effect::RenderBoundingBox(&mWorld, D3DXMatrixIdentity(&id), &BBox.min, &BBox.max, &D3DXVECTOR4(1, 0, 0, 0.75f));
 			}
+
+			RenderLightCone(&mWorld);
 		}
 	}
 
@@ -1400,6 +1402,66 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	scn->PopCamera();
 
 	return false;
+}
+
+
+// ============================================================================================
+//
+void vVessel::RenderLightCone(LPD3DXMATRIX pWT)
+{
+	if (DebugControls::sEmitter == 0) return;
+	if (DebugControls::Emitters.count(DebugControls::sEmitter) == 0) return;
+
+	DWORD ec = vessel->LightEmitterCount();
+	const LightEmitter *se = DebugControls::Emitters[DebugControls::sEmitter];
+	const LightEmitter *em = NULL;
+
+	for (DWORD i = 0; i < ec; i++) if (vessel->GetLightEmitter(i) == se) { em = se; break; }
+
+	if (!em) return;
+
+	float P = 0.0f, U = 0.0f, R = 0.0f;
+
+	if (em->GetType() == LightEmitter::LT_SPOT) {
+		P = float(((const SpotLight *)em)->GetPenumbra());
+		U = float(((const SpotLight *)em)->GetUmbra());
+		R = float(((const SpotLight *)em)->GetRange());
+	}
+	if (em->GetType() == LightEmitter::LT_POINT) {
+		R = float(((const SpotLight *)em)->GetRange());
+		return;
+	}
+
+	VECTOR3 _P = em->GetPosition();
+	VECTOR3 _D = em->GetDirection();
+
+	if (em->GetType() == LightEmitter::LT_SPOT) {
+		D3DXVECTOR3 Main[2];
+		Main[0] = D3DXVEC(_P);
+		Main[1] = D3DXVEC(_P + _D * R);
+		WORD Idx[2] = { 0, 1 };
+		D3D9Effect::RenderLines(Main, Idx, 2, 2, pWT, 0xFF00FF00);
+
+		D3DXVECTOR3 Circle[65];
+		WORD CIdx[130];
+
+		VECTOR3 _X = crossp(_D, _V(0.4, 0.2, -0.6));
+		VECTOR3 _Y = crossp(_D, _X);
+
+		D3DXVECTOR3 _x = D3DXVEC(_X);
+		D3DXVECTOR3 _y = D3DXVEC(_Y);
+		D3DXVECTOR3 _d = D3DXVEC(_D);
+
+		float q = tan(P*0.5f) * R;
+		float a = 0.0f;
+		for (int i = 0; i < 64; i++) {
+			Circle[i] = _x * (cos(a)*q) + _y * (sin(a)*q) + _d * R + Main[0];
+			a += float(PI2 / 63.0);
+			CIdx[i * 2] = i;
+			CIdx[i * 2 + 1] = i + 1;
+		}
+		D3D9Effect::RenderLines(Circle, CIdx, 64, 126, pWT, 0xFF00FF00);
+	}	
 }
 
 

@@ -65,6 +65,7 @@ vObject::vObject(OBJHANDLE _hObj, const Scene *scene)
 	albedo = _V(1,1,1);
 	oapiGetObjectName(hObj, name, 64);
 	sunLight = *scene->GetSun();
+	objtp = oapiGetObjectType(hObj);
 }
 
 

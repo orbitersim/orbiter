@@ -202,3 +202,4 @@
 #define IDC_GFX_VAL7                            2193
 #define IDC_GFX_THRESHOLD                       2194
 #define IDC_GFX_THRESHOLD_RESET                 2195
+#define IDC_DBG_CONES                           2196

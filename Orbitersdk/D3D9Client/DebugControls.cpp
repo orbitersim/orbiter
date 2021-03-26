@@ -32,7 +32,7 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
-DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor;
+DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor, sEmitter;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
 double resbias = 4.0;
@@ -45,6 +45,8 @@ vObject *vObj = NULL;
 std::string buffer("");
 std::string buffer2("");
 D3DXVECTOR3 PickLocation;
+
+std::map<int, const LightEmitter*> Emitters;
 
 HWND hTipRed, hTipGrn, hTipBlu, hTipAlp;
 
@@ -1332,6 +1334,54 @@ void UpdateVisual()
 	nMesh = vObj->GetMeshCount();
 	sprintf_s(visual, 64, "Visual: %s", vObj->GetName());
 	SetupMeshGroups();
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_RESETCONTENT, 0, 0);
+	Emitters.clear();
+
+	if (vObj->Type() == OBJTP_VESSEL) {
+
+		SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_ADDSTRING, 0, (LPARAM)"NONE");
+		Emitters[0] = NULL;
+
+		char line[64];
+
+		vVessel *vV = static_cast<vVessel*>(vObj);
+		VESSEL *vessel = vV->GetInterface();
+		DWORD nemitter = vessel->LightEmitterCount();
+
+		for (DWORD j = 0; j < nemitter; j++) {
+
+			const LightEmitter *em = vessel->GetLightEmitter(j);
+			
+			if (em->GetType() == LightEmitter::LT_SPOT) {
+				const SpotLight *sl = static_cast<const SpotLight*>(em);
+				double P = sl->GetPenumbra()*DEG;
+				double U = sl->GetUmbra()*DEG;
+				double R = sl->GetRange();
+				sprintf_s(line, 64, "0x%X P%1.0f U%1.0f R%1.0f",DWORD(em), P, U, R);
+			}	
+
+			if (em->GetType() == LightEmitter::LT_POINT) {
+				const PointLight *pl = static_cast<const PointLight*>(em);
+				double R = pl->GetRange();
+				sprintf_s(line, 64, "0x%X R%1.0f", DWORD(em), R);
+			}
+
+			switch (em->GetVisibility())
+			{
+			case LightEmitter::VIS_EXTERNAL: strcat_s(line, 64, " EXT"); break;
+			case LightEmitter::VIS_COCKPIT: strcat_s(line, 64, " VC"); break;
+			case LightEmitter::VIS_ALWAYS: strcat_s(line, 64, " ALW"); break;
+			}
+
+			if ((em->GetType() == LightEmitter::LT_SPOT) || (em->GetType() == LightEmitter::LT_POINT)) {
+				SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_ADDSTRING, 0, (LPARAM)line);
+				Emitters[j + 1] = em;
+			}
+		}
+	}
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_SETCURSEL, 0, 0);
 }
 
 // =============================================================================================
@@ -1881,6 +1931,12 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
 					UpdateMaterialDisplay(true);
 					SetColorSlider();	
+				}
+				break;
+
+			case IDC_DBG_CONES:
+				if (HIWORD(wParam) == CBN_SELCHANGE) {
+					sEmitter = SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_GETCURSEL, 0, 0);
 				}
 				break;
 

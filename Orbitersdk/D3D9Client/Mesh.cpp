@@ -1480,9 +1480,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
 
+	int nMeshLights = 0;
+
 	if (pLights && nSceneLights>0) {
 
-		int nMeshLights = 0;
 		D3DXVECTOR3 pos;
 		D3DXVec3TransformCoord(&pos, &D3DXVECTOR3f4(BBox.bs), pW);
 
@@ -1842,6 +1843,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					if (FC.Transm) DebugControls::Append("transm ");
 					DebugControls::Append("]\n");
 				}
+
+				DebugControls::Append("Local Lights = %d\n", nMeshLights);
 
 				DebugControls::Refresh();
 			}

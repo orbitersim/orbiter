@@ -119,6 +119,7 @@ public:
 	 * \brief Render the vessel's active light beacons
 	 * \param dev render device
 	 */
+	void RenderLightCone (LPD3DXMATRIX pWT);
 	void RenderBeacons (LPDIRECT3DDEVICE9 dev);
 	void RenderReentry (LPDIRECT3DDEVICE9 dev);
 	void RenderGrapplePoints (LPDIRECT3DDEVICE9 dev);

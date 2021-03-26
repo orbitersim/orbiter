@@ -75,8 +75,10 @@ namespace DebugControls {
 	extern  DWORD debugFlags;
 	extern  DWORD dspMode;
 	extern  DWORD camMode;
+	extern	DWORD sEmitter;
 	extern  double camSpeed;
 	extern  double resbias;
+	extern  std::map<int, const LightEmitter*> Emitters;
 	
 	/**
 	 * \brief Same functionality than 'official' GetConfigParam, but for

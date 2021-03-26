@@ -1184,7 +1184,7 @@ float D3D9Light::GetIlluminance(D3DXVECTOR3 &_pos, float r) const
 	if (d < r) return 1e6;	// Light is inside the sphere
 	if (d > (r + range)) return -1.0f; // Light can't reach the sphere
 
-	if ((d > r) && (Type == 1) && (cosp>0.1)) {
+	if ((Type == 1) && (cosp>0.1)) {
 		float x = D3DXVec3Dot(&pos, &Direction);
 		if (x < -r) return -1.0f;	// The sphere is a way behind the spotlight
 		if ((sqrt(d2 - x*x) - x*tanp) * cosp > r) return -1.0f; // Light cone doesn't intersect the sphere
@@ -1219,19 +1219,16 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 	// -----------------------------------------------------------------------------
 
-	double c = att[0] - 100.0;
-	double b = att[1];
-	double a = att[2];
-
-	range = float((-b + sqrt(b*b - 4.0*a*c)) / (2.0*a));
-	range = min(range, float(((PointLight*)le)->GetRange()));
-
-	range2 = range*range;
-	Param[D3D9LRange] = range;
-
 	tanp = 0.0f;
 	cosu = 1.0f;
 	cosp = 1.0f;
+	float P = 0.0f;
+	float U = 0.0f;
+
+	if (le->GetType() == LightEmitter::LT_SPOT) {
+		P = float(((SpotLight*)le)->GetPenumbra());
+		U = float(((SpotLight*)le)->GetUmbra());
+	}
 
 	// -----------------------------------------------------------------------------
 	switch (le->GetType()) {
@@ -1242,9 +1239,9 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 
 		case LightEmitter::LT_SPOT: {
 			Type = 1;
-			cosp = cos(float(((SpotLight*)le)->GetPenumbra()) * 0.5f);
-			cosu = cos(float(((SpotLight*)le)->GetUmbra()) * 0.5f);
-			tanp = tan(float(((SpotLight*)le)->GetPenumbra()) * 0.5f);
+			cosp = cos(P * 0.5f);
+			cosu = cos(U * 0.5f);
+			tanp = tan(P * 0.5f);
 			Param[D3D9LFalloff] = 1.0f;
 			Param[D3D9LPhi] = cosp;
 			Param[D3D9LTheta] = 1.0f / (cosu - cosp);
@@ -1262,6 +1259,23 @@ void D3D9Light::UpdateLight(const LightEmitter *_le, const class vObject *vo)
 	Diffuse.g = (col_d.g*intensity);
 	Diffuse.b = (col_d.b*intensity);
 	Diffuse.a = (col_d.a*intensity);
+
+
+	float c = float(att[0]);
+	float b = float(att[1]);
+	float a = float(att[2]);
+	float limit = 0.01f; // Intensity limit for max range
+	float Q = intensity - c*limit;
+	float d = b*b*limit + 4.0f*a*Q;
+
+	range = (sqrt(limit * d) - b*limit) / (2.0f*a*limit);
+
+	//oapiWriteLogV("LightEmitter[0x%X] R=%f(m), P=%f(deg), U=%f(deg)", this, range, P*DEG, U*DEG);
+	range = min(range, float(((PointLight*)le)->GetRange()));
+
+	range2 = range*range;
+	Param[D3D9LRange] = range;
+
 
 	// -----------------------------------------------------------------------------
 	if (Type != 0) {
