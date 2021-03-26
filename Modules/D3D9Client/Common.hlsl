@@ -4,6 +4,28 @@
 
 
 
+// ============================================================================
+//
+float4 Paraboloidal_LVLH(sampler s, float3 i)
+{
+	float z = dot(gCameraPos, i);
+	float2 p = float2(dot(gEast, i), dot(gNorth, i)) / (1.0f + abs(z));
+	p *= 0.909f;
+	p += float2((z < 0 ? 1.0f : 3.0f), 1.0f);
+	p *= float2(0.25f, 0.5f);
+	return tex2D(s, p);
+}
+
+float3 Sq(float3 x)
+{
+	return x*x;
+}
+
+float4 Sq(float4 x)
+{
+	return x*x;
+}
+
 
 // ==========================================================================================================
 // Local light sources
@@ -78,10 +100,10 @@ void LocalLights(
 	diff_out = 0;
 	spec_out = 0;
 
-	[unroll] for (i = 0; i < 4; i++) diff_out += gLights[i].diffuse.rgb * dif[i];
+	[unroll] for (i = 0; i < 4; i++) diff_out += gLights[i + x].diffuse.rgb * dif[i];
 
 	if (bSpec) {
-		[unroll] for (i = 0; i < 4; i++) spec_out += gLights[i].diffuse.rgb * spe[i];
+		[unroll] for (i = 0; i < 4; i++) spec_out += gLights[i + x].diffuse.rgb * spe[i];
 	}
 }
 
@@ -170,10 +192,10 @@ void LocalLightsBeckman(
 	diff_out = 0;
 	spec_out = 0;
 
-	[unroll] for (i = 0; i < 4; i++) diff_out += gLights[i].diffuse.rgb * dif[i];
+	[unroll] for (i = 0; i < 4; i++) diff_out += Sq(gLights[i + x].diffuse.rgb * dif[i]);
 
 	if (bSpec) {
-		[unroll] for (i = 0; i < 4; i++) spec_out += gLights[i].diffuse.rgb * spe[i];
+		[unroll] for (i = 0; i < 4; i++) spec_out += gLights[i + x].diffuse.rgb * spe[i];
 	}
 }
 

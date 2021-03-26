@@ -24,6 +24,7 @@
 #include "VObject.h"
 #include <stack>
 #include <list>
+#include <set>
 
 class vObject;
 class vPlanet;
@@ -58,7 +59,8 @@ class D3D9Pad;
 
 #define RENDERTURN_ENVCAM		0
 #define RENDERTURN_CUSTOMCAM	1
-#define RENDERTURN_LAST			1
+#define RENDERTURN_IRRADIANCE   2
+#define RENDERTURN_LAST			2
 
 #define SMAP_MODE_FOCUS			1
 #define SMAP_MODE_SCENE			2
@@ -214,12 +216,14 @@ public:
 	/**
 	 * \brief Render a secondary scene. (Env Maps, Shadow Maps, MFD Camera Views)
 	 */
-	void RenderSecondaryScene(class vObject *omit=NULL, bool bOmitAtc=false, DWORD flags=0xFF);
+	void RenderSecondaryScene(std::set<class vVessel*> &RndList, std::set<class vVessel*> &AdditionalLightsList, DWORD flags = 0xFF);
 	int RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bInternal = false, bool bListExists = false);
 
+	bool IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut);
 	bool RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc);
 	void RenderMesh(DEVMESHHANDLE hMesh, const oapi::FMATRIX4 *pWorld);
 
+	LPDIRECT3DSURFACE9 GetIrradianceDepthStencil() const { return pIrradDS; }
 	LPDIRECT3DSURFACE9 GetEnvDepthStencil() const { return pEnvDS; }
 	LPDIRECT3DSURFACE9 GetBuffer(int id) const { return psgBuffer[id]; }
 
@@ -338,12 +342,14 @@ public:
 
 	// Visual Management =========================================================================================================
 	//
+	void			GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *cp);
 	class vObject *	GetVisObject(OBJHANDLE hObj) const;
 	class vVessel *	GetFocusVisual() const { return vFocus; }
 	void			CheckVisual(OBJHANDLE hObj);
 	double			GetFocusGroundAltitude() const;
 	double			GetTargetGroundAltitude() const;
 	double			GetTargetElevation() const;
+	std::set<vVessel *> GetVessels(double max_dst, bool bActive = true);
 
 	// Locate the visual for hObj in the list if present, or return
 	// NULL if not found
@@ -445,8 +451,7 @@ private:
 
 	float		lmaxdst2;
 	DWORD		nLights;
-	DWORD		maxlight;
-	DWORD		lmaxidx;
+	//DWORD		lmaxidx;
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
 	DWORD		dwFrameId;
@@ -459,14 +464,16 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay;
+	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay, *pIrradPre, *pIrradItg;
 
 	class vVessel *vFocus;
-	VOBJREC *vobjEnv;
+	VOBJREC *vobjEnv, *vobjIrd;
 	double dVisualAppRad;
 
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
+	LPDIRECT3DCUBETEXTURE9 pIrradTemp;
+	LPDIRECT3DTEXTURE9 pIrradTemp2;
 
 	// Deferred Experiment ===============================================================
 	//
@@ -475,7 +482,7 @@ private:
 	LPDIRECT3DSURFACE9 pOffscreenTarget;
 	LPDIRECT3DTEXTURE9 pTextures[TEX_COUNT];
 
-	LPDIRECT3DSURFACE9 pEnvDS;
+	LPDIRECT3DSURFACE9 pEnvDS, pIrradDS;
 	LPDIRECT3DSURFACE9 psShmDS[SHM_LOD_COUNT];
 	LPDIRECT3DSURFACE9 psShmRT[SHM_LOD_COUNT];
 	LPDIRECT3DTEXTURE9 ptShmRT[SHM_LOD_COUNT];

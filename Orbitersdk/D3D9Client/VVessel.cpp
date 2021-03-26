@@ -55,9 +55,12 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	nmesh = 0;
 	nEnv  = 0;
 	iFace = 0;
+	eFace = 0;
 	sunLight = *scene->GetSun();
 	tCheckLight = oapiGetSimTime()-1.0;
 	vClass = 0;
+	pIrrad = NULL;
+	pIrdEnv = NULL;
 
 	pMatMgr = new MatMgr(this, scene->GetClient());
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) pEnv[i] = NULL;
@@ -97,6 +100,8 @@ vVessel::vVessel(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 vVessel::~vVessel ()
 {
 	SAFE_DELETE(pMatMgr);
+	SAFE_RELEASE(pIrrad);
+	SAFE_RELEASE(pIrdEnv);
 
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) SAFE_RELEASE(pEnv[i]);
 
@@ -708,6 +713,7 @@ bool vVessel::Render(LPDIRECT3DDEVICE9 dev, bool internalpass)
 		HR(D3D9Effect::FX->SetBool(D3D9Effect::eShadowToggle, false));
 	}
 
+	HR(D3D9Effect::FX->SetTexture(D3D9Effect::eIrradMap, pIrrad));
 
 	// Check VC MFD screen resolutions ------------------------------------------------
 	//
@@ -1169,14 +1175,13 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 			LogErr("Failed to create env cubemap for visual 0x%X", this);
 			return true;
 		}
-		nEnv = 1;
+		nEnv++;
 	}
-
 
 	// Create blurred maps  -------------------------------------------------------------------------------
 	//
-	if (iFace >= 6) {
-		iFace = 0;
+	if (eFace >= 6) {
+		eFace = 0;
 		scn->RenderBlurredMap(pDev, pEnv[ENVMAP_MAIN]);
 		return true;
 	}
@@ -1188,12 +1193,14 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	// Render EnvMaps ---------------------------------------------------------------------------------------
 	//
 
-	scn->ClearOmitFlags();
+	std::set<vVessel *> RndList = scn->GetVessels(10e3, true);	
+	std::set<vVessel *> AddLightSrc;
+
+	AddLightSrc.insert(this);
 
 	ENVCAMREC *eCam = pMatMgr->GetCamera(0);
 
-	// Omit the focus object
-	if ((eCam->flags&ENVCAM_FOCUS)==0) bOmit = true;
+	if ((eCam->flags&ENVCAM_FOCUS) == 0) RndList.erase(this);
 
 	DWORD nAtc = vessel->AttachmentCount(false);
 	DWORD nDoc = vessel->DockCount();
@@ -1205,7 +1212,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
 				if (hAtcObj) {
 					vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
-					if (vObj) vObj->bOmit = true;
+					if (vObj) RndList.erase((vVessel *)vObj);
 				}
 			}
 		}
@@ -1221,7 +1228,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 				OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
 				if (hAtcObj) {
 					vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
-					if (vObj) vObj->bOmit = true;
+					if (vObj) RndList.erase((vVessel *)vObj);
 				}
 			}
 		}
@@ -1247,9 +1254,127 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	for (DWORD i=0;i<cnt;i++) {
 
-		assert(SUCCEEDED(pEnv[0]->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
-
+		assert(SUCCEEDED(pEnv[ENVMAP_MAIN]->GetCubeMapSurface(D3DCUBEMAP_FACES(eFace), 0, &pSrf)));
+	
 		gc->AlterRenderTarget(pSrf, pEnvDS);
+
+		EnvMapDirection(eFace, &dir, &up);
+
+		D3DXVECTOR3 cp;
+		D3DXVec3Cross(&cp, &up, &dir);
+		D3DXVec3Normalize(&cp, &cp);
+		D3DXMatrixIdentity(&mEnv);
+		D3DMAT_FromAxis(&mEnv, &cp, &up, &dir);
+
+		scn->SetCameraFrustumLimits(0.25, 1e8);
+		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
+		scn->RenderSecondaryScene(RndList, AddLightSrc, flags);
+
+		SAFE_RELEASE(pSrf);
+
+		eFace++;
+		if (eFace >= 6) break;
+	}
+
+	gc->PopRenderTargets();
+
+	scn->PopPass();
+	scn->PopCamera();
+
+	return false;
+}
+
+
+
+// ============================================================================================
+// Return true if it's time to move to a next vessel
+// false, if more rendereing is required here.
+//
+bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
+{
+
+	LPDIRECT3DSURFACE9 pIrDS = GetScene()->GetIrradianceDepthStencil();
+
+	if (!pIrDS) {
+		LogErr("IrradianceDepthStencil doesn't exists");
+		return true;
+	}
+
+
+	// Create a main EnvMap with mipmap chain for blurred maps --------------------------------------------------------------------
+	//
+	if (pIrdEnv == NULL) 
+	{
+		D3DSURFACE_DESC desc;
+		pIrDS->GetDesc(&desc);
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrdEnv) != S_OK) {
+			LogErr("Failed to create env cubemap for visual 0x%X", this);
+			return true;
+		}
+		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrrad) != S_OK) {
+			LogErr("Failed to create irradiance map for visual 0x%X", this);
+			return true;
+		}
+	}
+
+	
+	// Create blurred maps  -------------------------------------------------------------------------------
+	//
+	if (iFace >= 6) {
+		iFace = 0;
+		scn->IntegrateIrradiance(this, pIrdEnv, pIrrad);
+		return true;
+	}
+
+
+	// Render EnvMaps ---------------------------------------------------------------------------------------
+	//
+
+	std::set<vVessel *> RndList = scn->GetVessels(1e3, true);
+	std::set<vVessel *> AddLightSrc;
+
+	RndList.erase(this);
+	AddLightSrc.insert(this);
+
+	ENVCAMREC *eCam = pMatMgr->GetCamera(0);
+
+	DWORD nAtc = vessel->AttachmentCount(false);
+	DWORD nDoc = vessel->DockCount();
+
+	for (DWORD i = 0; i<nAtc; i++) {
+		ATTACHMENTHANDLE hAtc = vessel->GetAttachmentHandle(false, i);
+		if (hAtc) {
+			OBJHANDLE hAtcObj = vessel->GetAttachmentStatus(hAtc);
+			if (hAtcObj) {
+				vObject *vObj = gc->GetScene()->GetVisObject(hAtcObj);
+				if (vObj) RndList.erase((vVessel *)vObj);
+			}
+		}
+	}
+	
+
+
+	// -----------------------------------------------------------------------------------------------
+	//
+	VECTOR3 gpos;
+	vessel->Local2Global(_V(0,0,0), gpos);
+
+	// Prepare camera and scene for env map rendering
+	scn->PushCamera();
+	scn->SetupInternalCamera(NULL, &gpos, 0.7853981634, 1.0);
+	scn->BeginPass(RENDERPASS_ENVCAM);
+
+	gc->PushRenderTarget(NULL, pIrDS, RENDERPASS_ENVCAM);
+
+	D3DXMATRIX mEnv;
+	D3DXVECTOR3 dir, up;
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+	
+	for (DWORD i = 0; i<cnt; i++) {
+
+		assert(SUCCEEDED(pIrdEnv->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
+
+		gc->AlterRenderTarget(pSrf, pIrDS);
 
 		EnvMapDirection(iFace, &dir, &up);
 
@@ -1261,7 +1386,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 		scn->SetCameraFrustumLimits(0.25, 1e8);
 		scn->SetupInternalCamera(&mEnv, NULL, 0.7853981634, 1.0);
-		scn->RenderSecondaryScene(this, true, flags);
+		scn->RenderSecondaryScene(RndList, AddLightSrc, flags);
 
 		SAFE_RELEASE(pSrf);
 
@@ -1315,6 +1440,10 @@ bool vVessel::ModLighting(D3D9Sun *light)
 	vPlanet *vP = (vPlanet *)GetScene()->GetVisObject(hP);
 
 	if (vP) OrbitalLighting(light, vP, GV, fAmbient);
+
+	light->Color.r = max(0, min(1, light->Color.r));
+	light->Color.g = max(0, min(1, light->Color.g));
+	light->Color.b = max(0, min(1, light->Color.b));
 
 	return true;
 }

@@ -90,8 +90,10 @@ public:
 	char *SolCfg;					///< Solar system to use (default="Sol")
 	double GFXIntensity;
 	double GFXDistance;
-	double GFXSpecularity;
+	double GFXThreshold;
+	double GFXSunIntensity;
 	double GFXGamma;
+	double GFXLocalMax;
 
 private:
 

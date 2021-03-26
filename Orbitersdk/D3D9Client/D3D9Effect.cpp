@@ -82,6 +82,7 @@ D3DXHANDLE D3D9Effect::eHeatMap = 0;
 D3DXHANDLE D3D9Effect::eShadowMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
+D3DXHANDLE D3D9Effect::eIrradMap = 0;
 
 D3DXHANDLE D3D9Effect::eSpecularMode = 0;
 D3DXHANDLE D3D9Effect::eHazeMode = 0;
@@ -117,6 +118,8 @@ D3DXHANDLE D3D9Effect::eBaseBuilding = 0;
 // --------------------------------------------------------------
 D3DXHANDLE D3D9Effect::eExposure = 0;
 D3DXHANDLE D3D9Effect::eCameraPos = 0;	
+D3DXHANDLE D3D9Effect::eNorth = 0;
+D3DXHANDLE D3D9Effect::eEast = 0;
 D3DXHANDLE D3D9Effect::eDistScale = 0;
 D3DXHANDLE D3D9Effect::eRadius = 0;
 D3DXHANDLE D3D9Effect::eAttennuate = 0;
@@ -426,6 +429,8 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eTexOff		  = FX->GetParameterByName(0,"gTexOff");
 	eRadius       = FX->GetParameterByName(0,"gRadius");
 	eCameraPos	  = FX->GetParameterByName(0,"gCameraPos");
+	eNorth		  = FX->GetParameterByName(0,"gNorth");
+	eEast		  = FX->GetParameterByName(0,"gEast");
 	ePointScale   = FX->GetParameterByName(0,"gPointScale");
 	eMix		  = FX->GetParameterByName(0,"gMix");
 	eTime		  = FX->GetParameterByName(0,"gTime");
@@ -457,6 +462,9 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eMetlMap	  = FX->GetParameterByName(0,"gMetlMap");
 	eHeatMap	  = FX->GetParameterByName(0,"gHeatMap");
 	eShadowMap	  = FX->GetParameterByName(0,"gShadowMap");
+	eTranslMap	  = FX->GetParameterByName(0, "gTranslMap");
+	eTransmMap	  = FX->GetParameterByName(0, "gTransmMap");
+	eIrradMap     = FX->GetParameterByName(0,"gIrradianceMap");
 
 	// Atmosphere -----------------------------------------------------------
 	eGlobalAmb	  = FX->GetParameterByName(0,"gGlobalAmb");
@@ -470,8 +478,6 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
 	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
-	eTranslMap	  = FX->GetParameterByName(0,"gTranslMap");
-	eTransmMap	  = FX->GetParameterByName(0,"gTransmMap");
 
 	// Initialize default values --------------------------------------
 	//
@@ -544,6 +550,15 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	const ATMCONST *atm = oapiGetPlanetAtmConstants(hPlanet); 
 	VESSEL *hVessel = oapiGetFocusInterface();
 
+	OBJHANDLE hGRef = hVessel->GetGravityRef();
+	MATRIX3 grot;
+
+	oapiGetRotationMatrix(hGRef, &grot);
+	
+	VECTOR3 polaraxis = mul(grot, _V(0, 1, 0));
+	VECTOR3 east = unit(crossp(polaraxis, cam));
+	VECTOR3 north = unit(crossp(cam, east));
+
 	if (hVessel==NULL) {
 		LogErr("hVessel = NULL in UpdateEffectCamera()");
 		return;
@@ -569,7 +584,9 @@ void D3D9Effect::UpdateEffectCamera(OBJHANDLE hPlanet)
 	if (rl>1e-3) atm_color *= pow(rl, 1.5f);
 	else atm_color = D3DXVECTOR4(0,0,0,1);
 
-	FX->SetValue(eCameraPos, &D3DXVECTOR3(float(cam.x),float(cam.y),float(cam.z)), sizeof(D3DXVECTOR3));
+	FX->SetValue(eEast, &D3DXVEC(east), sizeof(D3DXVECTOR3));
+	FX->SetValue(eNorth, &D3DXVEC(north), sizeof(D3DXVECTOR3));
+	FX->SetValue(eCameraPos, &D3DXVEC(cam), sizeof(D3DXVECTOR3));
 	FX->SetVector(eRadius, &D3DXVECTOR4((float)rad, radlimit, (float)len, (float)(len-rad)));
 	FX->SetFloat(ePointScale, 0.5f*float(height)/tan(ap));
 	FX->SetFloat(eProxySize, cos(proxy_size));

@@ -1455,7 +1455,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	if (flags&DBG_FLAGS_DUALSIDED) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (sunLight) FX->SetValue(eSun, sunLight, sizeof(D3D9Sun));
+	if (sunLight) {
+		D3D9Sun sun = *sunLight;
+		sun.Color *= float(Config->GFXSunIntensity);
+		FX->SetValue(eSun, &sun, sizeof(D3D9Sun));
+	}
 
 	FX->SetTechnique(eVesselTech);
 	FX->SetBool(eFresnel, false);
@@ -1500,7 +1504,12 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			nMeshLights = min(nMeshLights, Config->MaxLights());
 
 			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+			for (int i = 0; i < nMeshLights; i++) {
+				memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+
+				// Override application configuration to prevent oversaturation of lights at point plank range. 
+				Locals[i].Attenuation.x = max(Locals[i].Attenuation.x, float(Config->GFXLocalMax));
+			}
 		}
 	}
 
@@ -1625,10 +1634,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					LPDIRECT3DTEXTURE9 pMetl = NULL;
 					LPDIRECT3DTEXTURE9 pSpec = NULL;
 					LPDIRECT3DTEXTURE9 pRefl = NULL;
-					LPDIRECT3DTEXTURE9 pHeat = NULL;
 					LPDIRECT3DTEXTURE9 pNorm = Tex[ti]->GetMap(MAP_NORMAL);
 					LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
 					LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
+					LPDIRECT3DTEXTURE9 pHeat = Tex[ti]->GetMap(MAP_HEAT);
 
 					if (tni && Grp[g].TexMixEx[0] < 0.5f) tni = 0;
 					if (!pEmis && tni && Tex[tni]) pEmis = Tex[tni]->GetTexture();
@@ -1637,6 +1646,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					if (pRghn) FX->SetTexture(eRghnMap, pRghn);
 					if (pMetl) FX->SetTexture(eMetlMap, pMetl);
 					if (pEmis) FX->SetTexture(eEmisMap, pEmis);
+					if (pHeat) FX->SetTexture(eHeatMap, pHeat);
 
 					if (CurrentShader != SHADER_METALNESS) 
 					{
@@ -1659,17 +1669,14 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 						pTransl = Tex[ti]->GetMap(MAP_TRANSLUCENCE);
 						pTransm = Tex[ti]->GetMap(MAP_TRANSMITTANCE);
 						pMetl = Tex[ti]->GetMap(MAP_METALNESS);
-						pHeat = Tex[ti]->GetMap(MAP_HEAT);
 
 						if (pTransl) FX->SetTexture(eTranslMap, pTransl);
 						if (pTransm) FX->SetTexture(eTransmMap, pTransm);
 						if (pMetl) FX->SetTexture(eMetlMap, pMetl);
-						if (pHeat) FX->SetTexture(eHeatMap, pHeat);
 
 						FC.Transl = (pTransl != NULL);
 						FC.Transm = (pTransm != NULL);	
 						FC.Metl = (pMetl != NULL);
-						FC.Heat = (pHeat != NULL);
 					}
 					else {
 						FC.Transl = false;
@@ -1678,9 +1685,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 						FC.Heat = false;
 					}
 
-					FC.Emis = (pEmis != NULL);					
+					FC.Emis = (pEmis != NULL);
 					FC.Norm = (pNorm != NULL);
-					FC.Rghn = (pRghn != NULL);			
+					FC.Rghn = (pRghn != NULL);
+					FC.Heat = (pHeat != NULL);
 				}
 			}
 		}
@@ -1762,7 +1770,9 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		FX->SetBool(eFullyLit, bNoL);
 		FX->SetBool(eNoColor,  bNoC);
 		FX->SetBool(eSwitch, bPBR);
-		FX->SetBool(eRghnSw, bRGH);
+
+		if (Grp[g].Shader == SHADER_SPECULAR) FX->SetBool(eRghnSw, bSafeGuard);
+		else FX->SetBool(eRghnSw, bRGH);
 
 		// Update envmap and fresnel status as required
 		if (bRefl) {
@@ -1771,10 +1781,10 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 			if (IsReflective()) {			
 				bENV = ((Grp[g].PBRStatus & 0x1E) >= 0xA) | (Grp[g].Shader == SHADER_METALNESS) | (Grp[g].Shader == SHADER_SPECULAR);
 				FX->SetBool(eEnvMapEnable, bENV);
-				if (Grp[g].Shader == SHADER_SPECULAR) FX->SetBool(eRghnSw, bSafeGuard);
 			}
 		}
 
+		
 
 		FX->CommitChanges();
 

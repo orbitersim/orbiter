@@ -29,7 +29,7 @@
 
 uniform extern float   fIntensity;
 uniform extern float   fDistance;
-uniform extern float   fSpecularity;
+uniform extern float   fThreshold;
 uniform extern float   fGamma;
 uniform extern float2  vSB;
 uniform extern float2  vBB;
@@ -84,7 +84,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 		//res += tex2D(tBack, vPos + sX + sY).rgb;
 		//res *= 0.25f;
 		float s = Desaturate(res);
-		res *= smoothstep(fMinThreshold, fMaxThreshold, s) * 3.0f * rsqrt(1.0f + s*s);
+		res *= smoothstep(fThreshold, fThreshold*1.5f, s) * 3.0f * rsqrt(1.0f + s*s);
 		return float4(abs(res), 1);
 	}
 
@@ -118,7 +118,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 	if (bBlendIn) {
 
 		float3 L = tex2D(tBlur, vPos).rgb * fIntensity;
-		float3 B = abs(tex2D(tBack, vPos).rgb);
+		float3 B = tex2D(tBack, vPos).rgb;
 
 		//float w = Desaturate(B);
 		float q = Desaturate(L);

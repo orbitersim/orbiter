@@ -41,10 +41,35 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 
 	pVertex  = CompileVertexShader(pDevice, "Modules/D3D9Client/IPI.hlsl", "VSMain", NULL, &pVSConst);
 	pPixel   = CompilePixelShader(pDevice, _file, _entry, ppf, &pPSConst);
+	pOcta	 = new SMVERTEX[10];
 
-	if (pVSConst) hVP = pVSConst->GetConstantByName(NULL, "mVP");
+	if (pVSConst) {
+		hVP = pVSConst->GetConstantByName(NULL, "mVP");
+		hPos = pVSConst->GetConstantByName(NULL, "vPos");
+		hSiz = pVSConst->GetConstantByName(NULL, "vTgtSize");
+		SetTemplate();
+	}
 
-	if (!hVP) LogErr("Failed to get ImageProcessing::hVP handle");
+	if (!hVP || !hPos) LogErr("Failed to get ImageProcessing::hVP handle");
+
+	double w = 22.5 * RAD;
+	double q = w;
+	double r = 1.0 / cos(w);
+	
+	pOcta[0].x = 0.0f;
+	pOcta[0].y = 0.0f;
+	pOcta[0].z = 0.0f;
+	pOcta[0].tu = 0.0f;
+	pOcta[0].tv = 0.0f;
+	
+	for (int i = 1; i < 10; i++) {
+		pOcta[i].x = float(cos(q) * r);
+		pOcta[i].y = float(sin(q) * r);
+		pOcta[i].z = 0.0f;
+		pOcta[i].tu = pOcta[i].x;
+		pOcta[i].tv = pOcta[i].y;
+		q += w*2.0;
+	}
 
 	strcpy_s(file, 256, _file);
 	strcpy_s(entry, 32, _entry);
@@ -68,6 +93,7 @@ ImageProcessing::~ImageProcessing()
 	SAFE_RELEASE(pPSConst);
 	SAFE_RELEASE(pVertex);
 	SAFE_RELEASE(pPixel);
+	SAFE_DELETEA(pOcta);
 }
 
 // ================================================================================================
@@ -127,8 +153,17 @@ bool ImageProcessing::SetupViewPort()
 
 	HR(pDevice->SetViewport(&iVP));
 	HR(pVSConst->SetMatrix(pDevice, hVP, &mVP));
-
+	HR(pVSConst->SetVector(pDevice, hSiz, &D3DXVECTOR4(float(desc.Width), float(desc.Height), 1.0f/float(desc.Width), 1.0f/float(desc.Height))));
+	HR(pVSConst->SetVector(pDevice, hPos, &vTemplate));
 	return true;
+}
+
+
+// ================================================================================================
+//
+void ImageProcessing::SetTemplate(float w, float h, float x, float y)
+{
+	vTemplate = D3DXVECTOR4(w, h, x, y);
 }
 
 
@@ -136,12 +171,21 @@ bool ImageProcessing::SetupViewPort()
 //
 bool ImageProcessing::Execute(bool bInScene)
 {
-	return Execute(0, 0, 0, bInScene);
+	return Execute(0, 0, 0, bInScene, Rect);
 }
+
 
 // ================================================================================================
 //
-bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene)
+bool ImageProcessing::ExecuteTemplate(bool bInScene, ipitemplate mode)
+{
+	return Execute(0, 0, 0, bInScene, mode);
+}
+
+
+// ================================================================================================
+//
+bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene, ipitemplate mode)
 {
 	if (!IsOK()) return false;
 	if (!SetupViewPort()) return false;
@@ -169,10 +213,10 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	// Define vertices --------------------------------------------------------
 	//
 	SMVERTEX Vertex[4] = {
-		{float(0),  float(0), 0, 0, 0},
-		{float(0),  float(desc.Height), 0, 0, 1},
-		{float(desc.Width), float(desc.Height), 0, 1, 1},
-		{float(desc.Width), float(0), 0, 1, 0}
+		{0, 0, 0, 0, 0},
+		{0, 1, 0, 0, 1},
+		{1, 1, 0, 1, 1},
+		{1, 0, 0, 1, 0}
 	};
 
 	static WORD cIndex[6] = {0, 2, 1, 0, 3, 2};
@@ -220,7 +264,15 @@ bool ImageProcessing::Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScen
 	// Execute ----------------------------------------------------------------
 	//
 	if (!bInScene) HR(pDevice->BeginScene());
-	HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+
+	if (mode == ImageProcessing::Rect) {
+		HR(pDevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, &cIndex, D3DFMT_INDEX16, &Vertex, sizeof(SMVERTEX)));
+	}
+
+	if (mode == ImageProcessing::Octagon) {
+		HR(pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 8, pOcta, sizeof(SMVERTEX)));
+	}
+
 	if (!bInScene) HR(pDevice->EndScene());
 
 	// Disconnect render targets ----------------------------------------------

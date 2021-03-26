@@ -148,6 +148,8 @@ public:
 	static D3DXHANDLE   eTime;         ///< FLOAT Simulation elapsed time
 	static D3DXHANDLE	eExposure;
 	static D3DXHANDLE	eCameraPos;	
+	static D3DXHANDLE   eNorth;
+	static D3DXHANDLE	eEast;
 	static D3DXHANDLE   eDistScale;
 	static D3DXHANDLE   eGlowConst;
 	static D3DXHANDLE   eRadius;
@@ -175,6 +177,7 @@ public:
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;
 	static D3DXHANDLE	eShadowMap;
+	static D3DXHANDLE	eIrradMap;
 
 	// Legacy Atmosphere -----------------------------------------------
 	static D3DXHANDLE	eGlobalAmb;	 

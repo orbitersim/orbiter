@@ -25,6 +25,7 @@
 #include <d3dx9.h>
 #include <list>
 #include "OrbiterAPI.h"
+#include "D3D9Util.h"
 
 // Address mode WRAP is assumed by default
 // Filter POINT is assumed by default
@@ -49,6 +50,8 @@
 class ImageProcessing {
 
 public:
+
+	enum ipitemplate { Rect, Octagon };
 
 	// ----------------------------------------------------------------------------------
 	// Create a IPI (Image processing interface) which allows to process and create data via GPU
@@ -93,8 +96,10 @@ public:
 
 	// ----------------------------------------------------------------------------------
 	bool	IsOK();
+	void	SetTemplate(float w = 1.0f, float h = 1.0f, float x = 0.0f, float y = 0.0f);
 	bool	Execute(bool bInScene = false);
-	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false);
+	bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
+	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
 
 	// ----------------------------------------------------------------------------------
 	int		FindDefine(const char *key);
@@ -121,8 +126,12 @@ private:
 	LPDIRECT3DVERTEXSHADER9 pVertex;
 	D3DSURFACE_DESC desc;
 	D3DXMATRIX   mVP;
+	D3DXVECTOR4  vTemplate;
 	D3DVIEWPORT9 iVP;
 	D3DXHANDLE   hVP;
+	D3DXHANDLE   hPos;
+	D3DXHANDLE   hSiz;
+	SMVERTEX	*pOcta;
 
 	char	file[256];
 	char	entry[32];

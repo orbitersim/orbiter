@@ -74,10 +74,12 @@ public:
 	bool IsInsideShadows();
 	bool IntersectShadowVolume();
 	bool IntersectShadowTarget();
-
+	
 	inline DWORD GetMeshCount();
 
 	void PreInitObject();
+
+	VESSEL *GetInterface() { return vessel; }
 
 	/**
 	 * \brief Per-frame object parameter updates
@@ -123,8 +125,12 @@ public:
 	void RenderGroundShadow (LPDIRECT3DDEVICE9 dev, OBJHANDLE hPlanet, float depth);
 	void RenderAxis (LPDIRECT3DDEVICE9 dev, D3D9Pad *pSkp);
 	bool RenderENVMap (LPDIRECT3DDEVICE9 pDev, DWORD cnt=2, DWORD flags=0xFF);
+	bool ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt = 2, DWORD flags = 0xFF);
 
 	LPDIRECT3DCUBETEXTURE9 GetEnvMap(int idx);
+	LPDIRECT3DCUBETEXTURE9 GetIrradEnv() { return pIrdEnv; }
+	LPDIRECT3DTEXTURE9 GetIrradianceMap() { return pIrrad; }
+
 	float GetExhaustLength() const { return ExhaustLength; }
 
 	D3D9Pick Pick(const D3DXVECTOR3 *vDir);
@@ -194,10 +200,12 @@ private:
 	VESSEL *vessel;			// access instance for the vessel
 	class MatMgr *pMatMgr;
 
-	LPDIRECT3DCUBETEXTURE9 pEnv[4];
+	LPDIRECT3DCUBETEXTURE9 pEnv[4], pIrdEnv;
+	LPDIRECT3DTEXTURE9 pIrrad;
 
 	int nEnv;				// Number of environmental maps
 	int iFace;				// EnvMap Face index that is to be rendered next
+	int eFace;
 
 	struct MESHREC {
 		D3D9Mesh *mesh;		// DX9 mesh representation

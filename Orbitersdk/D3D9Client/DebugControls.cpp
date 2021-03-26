@@ -336,13 +336,9 @@ DWORD DropdownList(DWORD x)
 //
 void InitMatList(WORD shader)
 {
-	//static WORD CurrentShader = 0xAAAA;
-	//if (shader == CurrentShader) return;
-	//CurrentShader = shader;
-
+	LRESULT idx = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
-
+	
 	Dropdown.clear();
 
 	if (shader == SHADER_NULL) {
@@ -363,7 +359,22 @@ void InitMatList(WORD shader)
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
 
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, idx, 0);
+
+	switch (shader) {
+	case SHADER_NULL:
+		Params[6].var[1] = DefVar(0, 1, LIN, "Maximum intensity");
+		Params[6].var[2] = DefVar(10.0f, 4096.0f, SQRT, "Specular lobe size");
+		break;
+	case SHADER_METALNESS:
+		Params[6].var[1] = DefVar(0, 1, LIN, "Fresnel effect attennuation 1.0 = disabled, 0.0 = max intensity");
+		Params[6].var[2].bUsed = false;
+		break;
+	case SHADER_SPECULAR:
+		Params[6].var[1] = DefVar(0, 1, LIN, "Fresnel effect attennuation 1.0 = disabled, 0.0 = max intensity");
+		Params[6].var[2].bUsed = false;
+		break;
+	}
 }
 
 
@@ -432,7 +443,11 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 2");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 3");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Blur 4");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Irrad.Probe");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"IrdPreItg");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"ShadowMap");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"Irradiance");
+	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_ADDSTRING, 0, (LPARAM)"GlowMask");
 	SendDlgItemMessageA(hDlg, IDC_DBG_ENVMAP, CB_SETCURSEL, 0, 0);
 
 
@@ -626,9 +641,17 @@ void UpdateShader()
 
 	DWORD Shader = SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0);
 
-	if (Shader == 0) hMesh->SetDefaultShader(SHADER_NULL);
-	if (Shader == 1) hMesh->SetDefaultShader(SHADER_METALNESS);
-	if (Shader == 2) hMesh->SetDefaultShader(SHADER_SPECULAR);
+	switch (Shader) {
+	case 0:
+		hMesh->SetDefaultShader(SHADER_NULL);
+		break;
+	case 1:
+		hMesh->SetDefaultShader(SHADER_METALNESS);
+		break;
+	case 2:
+		hMesh->SetDefaultShader(SHADER_SPECULAR);
+		break;
+	}
 
 	if (Shader == 2) hMesh->SetSafeGuard(SendDlgItemMessageA(hDlg, IDC_DBG_SAFEGUARD, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	else hMesh->SetSafeGuard(true);
@@ -2026,10 +2049,10 @@ void OpenGFXDlgClbk(void *context)
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETPOS, 1, 0);
 
 	// slider
-	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETRANGEMAX, 1, 255);
-	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETRANGEMIN, 1, 0);
-	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETTICFREQ, 1, 0);
-	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETPOS, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_THRESHOLD, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_THRESHOLD, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_THRESHOLD, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_THRESHOLD, TBM_SETPOS, 1, 0);
 
 	// slider
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETRANGEMAX, 1, 255);
@@ -2037,16 +2060,44 @@ void OpenGFXDlgClbk(void *context)
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETTICFREQ, 1, 0);
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETPOS, 1, 0);
 
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SUNLIGHT, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SUNLIGHT, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SUNLIGHT, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SUNLIGHT, TBM_SETPOS, 1, 0);
+
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_IRRADIANCE, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_IRRADIANCE, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_IRRADIANCE, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_IRRADIANCE, TBM_SETPOS, 1, 0);
+
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_LOCALMAX, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_LOCALMAX, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_LOCALMAX, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_LOCALMAX, TBM_SETPOS, 1, 0);
+
+	
+
 	// reset-button(s)
 	HANDLE hImg = LoadImage(g_hInst, MAKEINTRESOURCE(IDB_BITMAP1), IMAGE_BITMAP, 0, 0, LR_LOADTRANSPARENT | LR_DEFAULTSIZE);
 	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_INTENSITY_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
 	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_DISTANCE_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
-	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_SPECULARITY_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_THRESHOLD_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
 	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_GAMMA_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_SUNLIGHT_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_IRRADIANCE_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_LOCALMAX_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+
 	CreateToolTip(IDC_GFX_INTENSITY_RESET,   hGfxDlg, "Reset to default");
 	CreateToolTip(IDC_GFX_DISTANCE_RESET,    hGfxDlg, "Reset to default");
-	CreateToolTip(IDC_GFX_SPECULARITY_RESET, hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_THRESHOLD_RESET,	 hGfxDlg, "Reset to default");
 	CreateToolTip(IDC_GFX_GAMMA_RESET,       hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_SUNLIGHT_RESET,	 hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_IRRADIANCE_RESET,	 hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_LOCALMAX_RESET,	 hGfxDlg, "Reset to default");
 
 	SetGFXSliders();
 }
@@ -2066,15 +2117,30 @@ void SetGFXSliders()
 	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL2), lbl);
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETPOS, 1, WORD(fpos*255.0));
 
-	fpos = Config->GFXSpecularity;
+	fpos = Config->GFXThreshold;
 	sprintf_s(lbl, 32, "%1.2f", fpos);
 	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL3), lbl);
-	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETPOS, 1, WORD(fpos*255.0));
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_THRESHOLD, TBM_SETPOS, 1, WORD(fpos*255.0 / 2.0));
 
 	fpos = Config->GFXGamma;
 	sprintf_s(lbl, 32, "%1.2f", fpos);
 	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL4), lbl);
-	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETPOS, 1, WORD(fpos*255.0/2.5));
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETPOS, 1, WORD(fpos*255.0 / 2.5));
+
+	fpos = Config->GFXSunIntensity;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL5), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SUNLIGHT, TBM_SETPOS, 1, WORD(fpos*255.0 / 2.0));
+
+	fpos = Config->PlanetGlow;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL6), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_IRRADIANCE, TBM_SETPOS, 1, WORD(fpos*255.0 / 2.0));
+
+	fpos = Config->GFXLocalMax;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL7), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_LOCALMAX, TBM_SETPOS, 1, WORD(fpos*255.0));
 }
 
 void ReadGFXSliders()
@@ -2091,16 +2157,31 @@ void ReadGFXSliders()
 	sprintf_s(lbl, 32, "%1.2f", fpos);
 	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL2), lbl);
 	Config->GFXDistance = fpos;
-		
-	fpos = (1.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_GETPOS, 0, 0));
+	
+	fpos = (2.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_THRESHOLD, TBM_GETPOS, 0, 0));
 	sprintf_s(lbl, 32, "%1.2f", fpos);
 	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL3), lbl);
-	Config->GFXSpecularity = fpos;
-	
+	Config->GFXThreshold = fpos;
+
 	fpos = (2.5 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_GETPOS, 0, 0));
 	sprintf_s(lbl, 32, "%1.2f", fpos);
 	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL4), lbl);
 	Config->GFXGamma = fpos;	
+
+	fpos = (2.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_SUNLIGHT, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL5), lbl);
+	Config->GFXSunIntensity = fpos;
+
+	fpos = (2.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_IRRADIANCE, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL6), lbl);
+	Config->PlanetGlow = fpos;
+
+	fpos = (1.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_LOCALMAX, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL7), lbl);
+	Config->GFXLocalMax = fpos;
 }
 
 BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -2117,8 +2198,11 @@ BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (LOWORD(wParam) == TB_THUMBTRACK || LOWORD(wParam) == TB_ENDTRACK) {
 			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_INTENSITY)) ReadGFXSliders();
 			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_DISTANCE)) ReadGFXSliders();
-			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_SPECULARITY)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_THRESHOLD)) ReadGFXSliders();
 			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_GAMMA)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_SUNLIGHT)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_IRRADIANCE)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_LOCALMAX)) ReadGFXSliders();
 		}
 		return false;
 	}
@@ -2132,22 +2216,37 @@ BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_GFX_INTENSITY_RESET:
-			Config->GFXIntensity = double(97) / 255; //0.380392
+			Config->GFXIntensity = 0.5;
 			SetGFXSliders();
 			break;
 
 		case IDC_GFX_DISTANCE_RESET:
-			Config->GFXDistance = 1.0;
+			Config->GFXDistance = 0.8;
 			SetGFXSliders();
 			break;
 
-		case IDC_GFX_SPECULARITY_RESET:
-			Config->GFXSpecularity = double(103) / 255; // 0.403922
+		case IDC_GFX_THRESHOLD_RESET:
+			Config->GFXThreshold = 1.1;
 			SetGFXSliders();
 			break;
 
 		case IDC_GFX_GAMMA_RESET:
 			Config->GFXGamma = 1.0;
+			SetGFXSliders();
+			break;
+
+		case IDC_GFX_SUNLIGHT_RESET:
+			Config->GFXSunIntensity = 1.2;
+			SetGFXSliders();
+			break;
+
+		case IDC_GFX_IRRADIANCE_RESET:
+			Config->PlanetGlow = 1.0;
+			SetGFXSliders();
+			break;
+
+		case IDC_GFX_LOCALMAX_RESET:
+			Config->GFXLocalMax = 0.5;
 			SetGFXSliders();
 			break;
 

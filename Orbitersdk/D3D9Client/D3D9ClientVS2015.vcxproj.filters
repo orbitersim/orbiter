@@ -389,6 +389,9 @@
     <None Include="$(BuildModuleDir)\D3D9Client\Vessel.fx">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\..\Modules\D3D9Client\IrradianceInteg.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(BuildModuleDir)\D3D9Client\Common.hlsl">

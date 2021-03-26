@@ -47,12 +47,17 @@ D3DXHANDLE Scene::eWVP = 0;
 D3DXHANDLE Scene::eColor = 0;
 D3DXHANDLE Scene::eTex0 = 0;
 
+D3DXVECTOR3 IKernel[200];
 
 bool sort_vessels(const vVessel *a, const vVessel *b)
 {
 	return a->CameraTgtDist() < b->CameraTgtDist();
 }
 
+float Rand()
+{
+	return float(rand()) / 32768.0f;
+}
 
 // ===========================================================================================
 //
@@ -62,6 +67,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	gc = _gc;
 	vobjEnv = NULL;
+	vobjIrd = NULL;
 	csphere = NULL;
 	Lights = NULL;
 	hSun = NULL;
@@ -78,6 +84,11 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	surfLabelsActive = false;
 
 	pEnvDS = NULL;
+	pIrradDS = NULL;
+	pIrradPre = NULL;
+	pIrradItg = NULL;
+	pIrradTemp = NULL;
+	pIrradTemp2 = NULL;
 
 	memset(&psShmDS, 0, sizeof(psShmDS));
 	memset(&ptShmRT, 0, sizeof(ptShmRT));
@@ -94,16 +105,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	SetCameraFrustumLimits(2.5f, 5e6f); // initial limits
 
 	csphere = new CelestialSphere(gc);
-
-	// Create and Clear light pointers
-	//
-	gc->clbkGetRenderParam(RP_MAXLIGHTS, &maxlight);
-
-	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
-	if (!bLocalLight) maxlight = 0;
-
 	Lights = new D3D9Light[MAX_SCENE_LIGHTS];
 
+	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
+	
 	memset2(&sunLight, 0, sizeof(D3D9Sun));
 	memset2(&smap, 0, sizeof(smap));
 
@@ -121,6 +126,31 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	cspheremgr = new CSphereManager(_gc, this);
 
+	while (true) {
+		float dv = 0;
+		for (int i = 0; i < 200; i++) {
+			IKernel[i].x = float((Rand()*2.0) - 1.0);
+			dv += IKernel[i].x;
+		}
+		if (abs(dv) < 0.5) break;
+	}
+
+	while (true) {
+		float dv = 0;
+		for (int i = 0; i < 200; i++) {
+			IKernel[i].y = float((Rand()*2.0) - 1.0);
+			dv += IKernel[i].y;
+		}
+		if (abs(dv) < 0.5) break;
+	}
+
+	for (int i = 0; i < 200; i++) {
+		float d = IKernel[i].x*IKernel[i].x + IKernel[i].y*IKernel[i].y;
+		IKernel[i].z = sqrt(1.0f - saturate(d));
+	}
+		
+	
+
 
 	// Initialize envmapping and shadow maps -----------------------------------------------------------------------------------------------
 	//
@@ -129,6 +159,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	if (Config->EnvMapMode) {
 		HR(pDevice->CreateDepthStencilSurface(EnvMapSize, EnvMapSize, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pEnvDS, NULL));
+		HR(pDevice->CreateDepthStencilSurface(128, 128, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pIrradDS, NULL));
 	}
 
 
@@ -252,6 +283,9 @@ Scene::~Scene ()
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
+	SAFE_RELEASE(pIrradDS);
+	SAFE_RELEASE(pIrradTemp);
+	SAFE_RELEASE(pIrradTemp2);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -420,7 +454,7 @@ void Scene::CheckVisual(OBJHANDLE hObj)
 //
 const D3D9Light *Scene::GetLight(int index) const
 {
-	if ((DWORD)index<maxlight || index>=0) return &Lights[index];
+	if ((DWORD)index<MAX_SCENE_LIGHTS || index>=0) return &Lights[index];
 	return NULL;
 }
 
@@ -445,6 +479,20 @@ class vObject *Scene::GetVisObject(OBJHANDLE hObj) const
 
 // ===========================================================================================
 //
+std::set<vVessel *> Scene::GetVessels(double max_dst, bool bAct)
+{
+	std::set<vVessel *> List;
+	VOBJREC *pv;
+	for (pv = vobjFirst; pv; pv = pv->next) {
+		if (pv->type != OBJTP_VESSEL) continue;
+		if (bAct && pv->vobj->IsActive() == false) continue;
+		if (pv->vobj->CamDist() < max_dst) List.insert((vVessel *)pv->vobj);
+	}
+	return List;
+}
+
+// ===========================================================================================
+//
 void Scene::DelVisualRec (VOBJREC *pv)
 {
 	_TRACE;
@@ -458,6 +506,7 @@ void Scene::DelVisualRec (VOBJREC *pv)
 	DebugControls::RemoveVisual(pv->vobj);
 
 	vobjEnv = NULL;
+	vobjIrd = NULL;
 
 	// delete the visual, its children and the entry itself
 	gc->UnregisterVisObject(pv->vobj->GetObject());
@@ -493,6 +542,7 @@ void Scene::DeleteAllVisuals()
 	}
 	vobjFirst = vobjLast = NULL;
 	vobjEnv = NULL;
+	vobjIrd = NULL;
 }
 
 // ===========================================================================================
@@ -707,6 +757,29 @@ double Scene::GetTargetGroundAltitude() const
 	if (hVes) return hVes->GetAltitude() - hVes->GetSurfaceElevation();
 	return 0.0;
 }
+
+
+
+// ============================================================================================
+// Up, North, Forward in Ecliptic frame
+//
+void Scene::GetLVLH(vVessel *vV, D3DXVECTOR3 *up, D3DXVECTOR3 *nr, D3DXVECTOR3 *fw)
+{
+	if (!vV || !up || !nr || !fw) return;
+
+	MATRIX3 grot; VECTOR3 rpos;
+	VESSEL *hV = vV->GetInterface(); assert(hV);
+	OBJHANDLE hRef = hV->GetGravityRef();
+	oapiGetRotationMatrix(hRef, &grot);
+	hV->GetRelativePos(hRef, rpos);
+	VECTOR3 axis = mul(grot, _V(0, 1, 0));
+	normalise(rpos);
+	*up = D3DXVEC(rpos);
+	*fw = D3DXVEC(unit(crossp(axis, rpos)));
+	D3DXVec3Cross(nr, up, fw);
+	D3DXVec3Normalize(nr, nr);
+}
+
 
 
 // ===========================================================================================
@@ -931,7 +1004,6 @@ void Scene::ClearLocalLights()
 {
 	nLights  = 0;
 	lmaxdst2 = 0.0f;
-	lmaxidx  = 0;
 
 	// Clear active local lisghts list -------------------------------
 	for (int i = 0; i < MAX_SCENE_LIGHTS; i++) Lights[i].Reset();
@@ -950,15 +1022,17 @@ void Scene::AddLocalLight(const LightEmitter *le, const vObject *vo)
 
 	// -----------------------------------------------------------------------------
 	// Replace or Add
-	if (nLights==maxlight) {
+	//
+	if (nLights == MAX_SCENE_LIGHTS) {
 		if (lght.Dst2 > lmaxdst2) return;
-		Lights[lmaxidx] = lght;
-		lmaxdst2 = 0.0f;
-		for (DWORD i=0;i<maxlight;i++) if (Lights[i].Dst2>lmaxdst2) lmaxdst2 = Lights[i].Dst2, lmaxidx = i;
+		DWORD imax = 0;
+		for (DWORD i = 0; i < MAX_SCENE_LIGHTS; i++) if (Lights[i].Dst2 > lmaxdst2) imax = i;
+		Lights[imax] = lght;
+		lmaxdst2 = lght.Dst2;
 	}
 	else {
 		Lights[nLights] = lght;
-		if (lght.Dst2>lmaxdst2) lmaxdst2 = lght.Dst2, lmaxidx = nLights;
+		if (lght.Dst2>lmaxdst2) lmaxdst2 = lght.Dst2;
 		nLights++;
 	}
 }
@@ -1005,6 +1079,8 @@ void Scene::RenderMainScene()
 
 	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
 	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
+	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_IRRADIANCE) dwTurn++;
+
 	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
 
 	int RenderCount = max(1, Config->EnvMapFaces);
@@ -1063,6 +1139,33 @@ void Scene::RenderMainScene()
 					}
 				}
 				vobjEnv = vobjEnv->next; // Move to the next one
+			}
+		}
+	}
+
+
+
+	// -------------------------------------------------------------------------------------------------------
+	// Render Environmental Map For the Focus Vessel
+	// -------------------------------------------------------------------------------------------------------
+
+	if (dwTurn == RENDERTURN_IRRADIANCE) {
+
+		if (Config->EnvMapMode) {
+			DWORD flags = 0;
+			if (Config->EnvMapMode == 1) flags |= 0x01;
+			if (Config->EnvMapMode == 2) flags |= 0x03;
+
+			if (vobjIrd == NULL) vobjIrd = vobjFirst;
+
+			while (vobjIrd) {
+				if (vobjIrd->type == OBJTP_VESSEL && vobjIrd->apprad>8.0f) {
+					if (vobjIrd->vobj) {
+						vVessel *vVes = (vVessel *)vobjIrd->vobj;
+						if (vVes->ProbeIrradiance(pDevice, RenderCount, flags) == false) break; // Not yet done with this vessel
+					}
+				}
+				vobjIrd = vobjIrd->next; // Move to the next one
 			}
 		}
 	}
@@ -1797,7 +1900,7 @@ void Scene::RenderMainScene()
 
 			float fInt = float(Config->GFXIntensity);
 			float fDst = float(Config->GFXDistance);
-			float fSpc = float(Config->GFXSpecularity);
+			float fThr = float(Config->GFXThreshold);
 			float fGam = float(Config->GFXGamma);
 
 			// Grap a copy of a backbuffer
@@ -1810,7 +1913,7 @@ void Scene::RenderMainScene()
 
 			pLightBlur->SetFloat("fIntensity", &fInt, sizeof(float));
 			pLightBlur->SetFloat("fDistance", &fDst, sizeof(float));
-			pLightBlur->SetFloat("fSpecularity", &fSpc, sizeof(float));
+			pLightBlur->SetFloat("fThreshold", &fThr, sizeof(float));
 			pLightBlur->SetFloat("fGamma", &fGam, sizeof(float));	
 
 			// -----------------------------------------------------
@@ -1948,88 +2051,49 @@ void Scene::RenderMainScene()
 	//
 	if (bFreezeEnable) bFreeze = true;
 
-	/*
-	// -------------------------------------------------------------------------------------------------------
-	// Render Custom Camera Views
-	// -------------------------------------------------------------------------------------------------------
-
-	if (Config->CustomCamMode == 0 && dwTurn == RENDERTURN_CUSTOMCAM) dwTurn++;
-	if (Config->EnvMapMode == 0 && dwTurn == RENDERTURN_ENVCAM) dwTurn++;
-	if (dwTurn>RENDERTURN_LAST) dwTurn = 0;
-
-	int RenderCount = max(1, Config->EnvMapFaces);
-
-	// --------------------------------------------------------------------------------------------------------
-	// Render Custom Camera view for a focus vessel
-	//
-	if (dwTurn==RENDERTURN_CUSTOMCAM) {
-		if (Config->CustomCamMode) {
-			if (camCurrent==NULL) camCurrent = camFirst;
-			OBJHANDLE hVessel = vFocus->GetObjectA();
-			while (camCurrent) {
-
-				vObject *vO = GetVisObject(camCurrent->hVessel);
-				double maxd = min(500e3, GetCameraAltitude() + 15e3);
-
-				if (vO->CamDist() < maxd && camCurrent->bActive) {
-
-					RenderCustomCameraView(camCurrent);
-
-					if (camCurrent->dwFlags & CUSTOMCAM_OVERLAY) {
-						oapi::Sketchpad *pSkp = gc->clbkGetSketchpad(camCurrent->hSurface);
-						gc->MakeRenderProcCall(pSkp, RENDERPROC_CUSTOMCAM_OVERLAY, NULL, NULL);
-						gc->clbkReleaseSketchpad(pSkp);
-					}
-
-					camCurrent = camCurrent->next;
-					break;
-				}
-				camCurrent = camCurrent->next;
-			}
-		}
-	}
-
-	// -------------------------------------------------------------------------------------------------------
-	// Render Environmental Map For the Focus Vessel
-	//
-	if (dwTurn==RENDERTURN_ENVCAM) {
-
-		if (Config->EnvMapMode) {
-			DWORD flags = 0;
-			if (Config->EnvMapMode==1) flags |= 0x01;
-			if (Config->EnvMapMode==2) flags |= 0x03;
-
-			if (vobjEnv==NULL) vobjEnv = vobjFirst;
-
-			while (vobjEnv) {
-				if (vobjEnv->type==OBJTP_VESSEL && vobjEnv->apprad>8.0f) {
-					if (vobjEnv->vobj) {
-						vVessel *vVes = (vVessel *)vobjEnv->vobj;
-						if (vVes->RenderENVMap(pDevice, RenderCount, flags) == false) break; // Not yet done with this vessel
-					}
-				}
-				vobjEnv = vobjEnv->next; // Move to the next one
-			}
-		}
-	}*/
-
+	
 	// -------------------------------------------------------------------------------------------------------
 	// EnvMap Debugger  TODO: Should be allowed to visualize other maps as well, not just index 0
 	// -------------------------------------------------------------------------------------------------------
 
 	if (DebugControls::IsActive()) {
+		
 		int sel = DebugControls::GetSelectedEnvMap();
-		if (sel > 0) {
-			if (sel < 6) {
-				VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MAIN), sel - 1);
+
+		switch (sel) {
+		case 1:		case 2:		case 3:		case 4:
+		case 5:
+			VisualizeCubeMap(vFocus->GetEnvMap(ENVMAP_MAIN), sel - 1);
+			break;
+		case 6:
+			VisualizeCubeMap(vFocus->GetIrradEnv(), 0);
+			break;
+		case 7:
+			VisualizeCubeMap(pIrradTemp, 0);
+			break;
+		case 8:
+			if (pShdMap) {
+				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+				pSketch->CopyRectNative(pShdMap, NULL, 0, 0);
+				pSketch->EndDrawing();
 			}
-			else {
-				if (pShdMap) {
-					pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
-					pSketch->CopyRectNative(pShdMap, NULL, 0, 0);
-					pSketch->EndDrawing(); // SKETCHPAD_2D_OVERLAY
-				}
+			break;
+		case 9:
+			if (vFocus->GetIrradianceMap()) {
+				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+				pSketch->CopyRectNative(vFocus->GetIrradianceMap(), NULL, 0, 0);
+				pSketch->EndDrawing();
 			}
+			break;
+		case 10:
+			if (ptgBuffer[GBUF_BLUR]) {
+				pSketch = GetPooledSketchpad(SKETCHPAD_2D_OVERLAY);
+				pSketch->CopyRectNative(ptgBuffer[GBUF_BLUR], NULL, 0, 0);
+				pSketch->EndDrawing();
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -2364,10 +2428,9 @@ int Scene::RenderShadowMap(D3DXVECTOR3 &pos, D3DXVECTOR3 &ld, float rad, bool bI
 }
 
 
-
 // ===========================================================================================
 //
-void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
+void Scene::RenderSecondaryScene(std::set<vVessel*> &RndList, std::set<vVessel*> &LightsList, DWORD flags)
 {
 	_TRACE;
 
@@ -2378,29 +2441,34 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 
 		ClearLocalLights();
 
-		VOBJREC *pv = NULL;
-		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive()) continue;
-			OBJHANDLE hObj = pv->vobj->Object();
-			if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
-				VESSEL *vessel = oapiGetVesselInterface(hObj);
-				DWORD nemitter = vessel->LightEmitterCount();
-				for (DWORD j = 0; j < nemitter; j++) {
-					const LightEmitter *em = vessel->GetLightEmitter(j);
-					if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, pv->vobj);
-				}
+		for (auto vVes : RndList) {
+			if (!vVes->IsActive()) continue;
+			VESSEL *vessel = vVes->GetInterface();
+			DWORD nemitter = vessel->LightEmitterCount();
+			for (DWORD j = 0; j < nemitter; j++) {
+				const LightEmitter *em = vessel->GetLightEmitter(j);
+				if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, vVes);
+			}		
+		}
+
+		for (auto vVes : LightsList) {
+			if (!vVes->IsActive()) continue;
+			if (RndList.count(vVes)) continue; // Already included skip it
+			VESSEL *vessel = vVes->GetInterface();
+			DWORD nemitter = vessel->LightEmitterCount();
+			for (DWORD j = 0; j < nemitter; j++) {
+				const LightEmitter *em = vessel->GetLightEmitter(j);
+				if (em->GetVisibility() & LightEmitter::VIS_EXTERNAL) AddLocalLight(em, vVes);
 			}
 		}
 	}
-
 
 	D3D9Effect::UpdateEffectCamera(GetCameraProxyBody());
 
 	// Clear the viewport
 	HR(pDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0L));
 
-	VOBJREC *pv = NULL;
-
+	
 	// render planets -------------------------------------------
 	//
 	if (flags & 0x01) {
@@ -2414,35 +2482,29 @@ void Scene::RenderSecondaryScene(vObject *omit, bool bOmitAtc, DWORD flags)
 	// render the vessel objects --------------------------------
 	//
 	if (flags & 0x02) {
-		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive()) continue;
-			if (!pv->vobj->IsVisible()) continue;
-			if (pv->vobj->bOmit) continue;
-			OBJHANDLE hObj = pv->vobj->Object();
-			if (oapiGetObjectType(hObj) == OBJTP_VESSEL) pv->vobj->Render(pDevice);
+		for (auto vVes : RndList) {
+			if (!vVes->IsActive()) continue;
+			if (!vVes->IsVisible()) continue;
+			vVes->Render(pDevice);
 		}
 	}
-
 
 	// render exhausts -------------------------------------------
 	//
 	if (flags & 0x04) {
-		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive()) continue;
-			if (!pv->vobj->IsVisible()) continue;
-			if (pv->vobj->bOmit) continue;
-			OBJHANDLE hObj = pv->vobj->Object();
-			if (oapiGetObjectType(hObj) == OBJTP_VESSEL) ((vVessel*)pv->vobj)->RenderExhaust();
+		for (auto vVes : RndList) {
+			if (!vVes->IsActive()) continue;
+			if (!vVes->IsVisible()) continue;
+			vVes->RenderExhaust();
 		}
 	}
 
 	// render beacons -------------------------------------------
 	//
 	if (flags & 0x08) {
-		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive()) continue;
-			if (pv->vobj->bOmit) continue;
-			pv->vobj->RenderBeacons(pDevice);
+		for (auto vVes : RndList) {
+			if (!vVes->IsActive()) continue;
+			vVes->RenderBeacons(pDevice);
 		}
 	}
 
@@ -2565,6 +2627,112 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 
 	return true;
 }
+
+// ===========================================================================================
+//
+bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRECT3DTEXTURE9 pOut)
+{
+	if (!pSrc) return false;
+
+	if (!pIrradPre) {
+		pIrradPre = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSPreInteg");
+		pIrradItg = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSInteg");
+	}
+
+	if (!pIrradPre->IsOK()) {
+		LogErr("pIrradPre is not OK");
+		return false;
+	}
+
+	if (!pIrradItg->IsOK()) {
+		LogErr("pIrradItg is not OK");
+		return false;
+	}
+
+	if (!pIrradDS) {
+		LogErr("pIrradDS doesn't exists");
+		return false;
+	}
+
+	D3DSURFACE_DESC desc;
+	pIrradDS->GetDesc(&desc);
+	
+	if (!pIrradTemp) { // D3DFMT_A16B16G16R16F
+		if (D3DXCreateCubeTexture(pDevice, 16, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
+			LogErr("Failed to create irradiance temp cubemap");
+			return false;
+		}
+		if (D3DXCreateTexture(pDevice, 128, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradTemp2) != S_OK) {
+			LogErr("Failed to create irradiance temp cubemap");
+			return false;
+		}
+	}
+
+	D3DXVECTOR3 nr, up, cp;
+	LPDIRECT3DSURFACE9 pSrf = NULL;
+	LPDIRECT3DSURFACE9 pTgt = NULL;
+	LPDIRECT3DSURFACE9 pTmp = NULL;
+	
+	// Pre-Integrade Irradiance Cube
+	//
+	pIrradPre->SetFloat("fD", (1.0f / float(desc.Width)));
+	pIrradTemp2->GetSurfaceLevel(0, &pTmp);
+
+	for (DWORD i = 0; i < 6; i++)
+	{
+		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
+		pIrradTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTgt);
+		
+		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+
+		pIrradPre->SetOutputNative(0, pTgt);
+		pIrradPre->SetTextureNative("tSrc", pIrradTemp2, IPF_POINT | IPF_CLAMP);
+
+		if (!pIrradPre->Execute(true)) {
+			LogErr("pBlur Execute Failed");
+			return false;
+		}
+
+		SAFE_RELEASE(pTgt);
+		SAFE_RELEASE(pSrf);
+	}
+
+	SAFE_RELEASE(pTmp);
+
+	GetLVLH(vV, &up, &nr, &cp);
+
+	LPDIRECT3DSURFACE9 pOuts = NULL;
+	HR(pOut->GetSurfaceLevel(0, &pOuts));
+
+	float Glow = float(Config->PlanetGlow);
+	pIrradItg->SetOutputNative(0, pOuts);
+	pIrradItg->SetTextureNative("tCube", pIrradTemp, IPF_LINEAR);
+	pIrradItg->SetFloat("Kernel", IKernel, sizeof(IKernel));
+	pIrradItg->SetFloat("vNr", &nr, sizeof(D3DXVECTOR3));
+	pIrradItg->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+	pIrradItg->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+	pIrradItg->SetFloat("fIntensity", &Glow, sizeof(float));
+	pIrradItg->SetBool("bUp", false);
+	pIrradItg->SetTemplate(0.5f, 1.0f, 0.0f, 0.0f);
+
+	if (!pIrradItg->ExecuteTemplate(true, ImageProcessing::Rect)) {
+		LogErr("pBlur Execute Failed");
+		return false;
+	}
+
+	pIrradItg->SetBool("bUp", true);
+	pIrradItg->SetTemplate(0.5f, 1.0f, 0.5f, 0.0f);
+
+	if (!pIrradItg->ExecuteTemplate(true, ImageProcessing::Rect)) {
+		LogErr("pBlur Execute Failed");
+		return false;
+	}
+
+	SAFE_RELEASE(pOuts);
+
+	return true;
+}
+
 
 
 // ===========================================================================================
@@ -3279,13 +3447,18 @@ void Scene::RenderCustomCameraView(CAMREC *cCur)
 	SetCameraFrustumLimits(0.1, 2e7);
 	SetupInternalCamera(&mEnv, &gpos, cCur->dAperture, double(h)/double(w));
 
-	ClearOmitFlags();
+	
+	VOBJREC *pv = NULL;
+	std::set<vVessel*> List;
+	std::set<vVessel*> Lights;
 
+	for (pv = vobjFirst; pv; pv = pv->next) if (pv->type == OBJTP_VESSEL) List.insert((vVessel *)pv->vobj);
+	
 	BeginPass(RENDERPASS_CUSTOMCAM);
 
 	gc->PushRenderTarget(pSrf, pDSs, RENDERPASS_CUSTOMCAM);
 
-	RenderSecondaryScene(NULL, false, 0xFF);
+	RenderSecondaryScene(List, Lights, 0xFF);
 
 	gc->PopRenderTargets();
 

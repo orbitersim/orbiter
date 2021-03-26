@@ -324,6 +324,27 @@ namespace oapi {
 			z = float(v.z);
 		}
 
+		inline FVECTOR3& operator*= (float f)
+		{
+			return FVECTOR3(x * f, y * f, z * f);
+		}
+
+		inline FVECTOR3& operator/= (float f)
+		{
+			f = 1.0f / f;
+			return FVECTOR3(x * f, y * f, z * f);
+		}
+
+		inline FVECTOR3& operator+= (float f)
+		{
+			return FVECTOR3(x + f, y + f, z + f);
+		}
+
+		inline FVECTOR3& operator-= (float f)
+		{
+			return FVECTOR3(x - f, y - f, z - f);
+		}
+
 		inline FVECTOR3 operator* (float f) const
 		{
 			return FVECTOR3(x * f, y * f, z * f);
@@ -473,7 +494,7 @@ namespace oapi {
 
 		inline FVECTOR4 operator* (float f) const
 		{
-			return FVECTOR4( x * f, y * f, z * f, w);
+			return FVECTOR4( x * f, y * f, z * f, w * f);
 		}
 
 		inline FVECTOR4& operator*= (float f)
@@ -482,30 +503,46 @@ namespace oapi {
 			return *this;
 		}
 
+		inline FVECTOR4& operator/= (float f)
+		{
+			f = 1.0f / f;
+			return FVECTOR4(x * f, y * f, z * f, w * f);
+		}
+
+		inline FVECTOR4& operator+= (float f)
+		{
+			return FVECTOR4(x + f, y + f, z + f, w + f);
+		}
+
+		inline FVECTOR4& operator-= (float f)
+		{
+			return FVECTOR4(x - f, y - f, z - f, w - f);
+		}
+
 		inline FVECTOR4 operator/ (float f) const
 		{
 			f = 1.0f / f;
-			return FVECTOR4(x * f, y * f, z * f, w);
+			return FVECTOR4(x * f, y * f, z * f, w * f);
 		}
 		
 		inline FVECTOR4 operator+ (float f) const
 		{
-			return FVECTOR4(x + f, y + f, z + f, w);
+			return FVECTOR4(x + f, y + f, z + f, w + f);
 		}
 
 		inline FVECTOR4 operator- (float f) const
 		{
-			return FVECTOR4(x - f, y - f, z - f, w);
+			return FVECTOR4(x - f, y - f, z - f, w - f);
 		}
 
 		inline FVECTOR4 operator+ (const FVECTOR4 &f) const
 		{
-			return FVECTOR4(x + f.x, y + f.y, z + f.z, w);
+			return FVECTOR4(x + f.x, y + f.y, z + f.z, w + f.w);
 		}
 
 		inline FVECTOR4 operator- (const FVECTOR4 &f) const
 		{
-			return FVECTOR4(x - f.x, y - f.y, z - f.z, w);
+			return FVECTOR4(x - f.x, y - f.y, z - f.z, w - f.w);
 		}
 
 		float data[4];

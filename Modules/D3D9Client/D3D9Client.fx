@@ -110,6 +110,8 @@ uniform extern float4    gTexOff;			// Texture offsets used by surface manager
 uniform extern float4    gRadius;           // PlanetRad, AtmOuterLimit, CameraRad, CameraAlt
 uniform extern float4    gSHD;				// ShadowMap data
 uniform extern float3    gCameraPos;        // Planet relative camera position, Unit vector
+uniform extern float3    gNorth;
+uniform extern float3    gEast;
 uniform extern Sun		 gSun;				// Sun light direction
 uniform extern Mat       gMat;			    // Material input structure  TODO:  Remove all reference to this. Use gMtrl
 uniform extern Mat       gWater;			// Water material input structure
@@ -159,6 +161,7 @@ uniform extern texture   gHeatMap;   		// Heat Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
 uniform extern texture   gShadowMap;	    // Shadow Map
+uniform extern texture   gIrradianceMap;    // Irradiance Map
 
 // Legacy Atmosphere --------------------------------------------------------
 
@@ -233,7 +236,17 @@ struct BShadowVS
 // Texture Sampler implementations
 // ----------------------------------------------------------------------------
 
-sampler ShadowS = sampler_state      // Base tile sampler
+sampler IrradS = sampler_state      // Irradiance map sampler
+{
+	Texture = <gIrradianceMap>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+sampler ShadowS = sampler_state      // Shadow map sampler
 {
 	Texture = <gShadowMap>;
 	MinFilter = POINT;

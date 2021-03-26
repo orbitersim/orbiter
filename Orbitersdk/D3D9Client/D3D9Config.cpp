@@ -51,7 +51,7 @@ void D3D9Config::Reset ()
 	Separation			= 65.0;
 	SunAngle			= 10.0;
 	BumpAmp				= 1.0;
-	PlanetGlow			= 0.7;
+	PlanetGlow			= 1.0;
 	EnvMapSize			= 256;
 	EnvMapMode			= 0;
 	EnvMapFaces			= 1;
@@ -85,9 +85,11 @@ void D3D9Config::Reset ()
 	bCloudNormals		= 1;
 
 	GFXIntensity = 0.5;
-	GFXDistance = 0.5;
-	GFXSpecularity = 0.5;
+	GFXDistance = 0.8;
+	GFXThreshold = 1.1;
 	GFXGamma = 1.0;
+	GFXSunIntensity = 1.2;
+	GFXLocalMax = 0.5;
 
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
@@ -127,7 +129,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_float (hFile, "RwyBrightness", d))			RwyBrightness = max(0.3, min(3.0, d));
 	if (oapiReadItem_float (hFile, "NightLightsAngle", d))		SunAngle = max(0.1, min(20.0, d));
 	if (oapiReadItem_float (hFile, "BumpMapAmplitude", d))		BumpAmp = max(0.1, min(10.0, d));
-	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01, min(2.0, d));
+	if (oapiReadItem_float (hFile, "PlanetGlow", d))			PlanetGlow = max(0.01, min(2.5, d));
 	if (oapiReadItem_int   (hFile, "EnvMapSize", i))			EnvMapSize = max(64, min(512, i));
 	if (oapiReadItem_int   (hFile, "EnvMapMode", i))			EnvMapMode = max(0, min(2, i));
 	if (oapiReadItem_int   (hFile, "EnvMapFaces", i))			EnvMapFaces = max(1, min(3, i));
@@ -170,8 +172,10 @@ bool D3D9Config::ReadParams ()
 
 	if (oapiReadItem_float (hFile, "GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
 	if (oapiReadItem_float (hFile, "GFXDistance", d))					GFXDistance = max(0.0, min(1.0, d));
-	if (oapiReadItem_float (hFile, "GFXSpecular", d))					GFXSpecularity = max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, "GFXThreshold", d))					GFXThreshold = max(0.5, min(2.0, d));
 	if (oapiReadItem_float (hFile, "GFXGamma", d))						GFXGamma = max(0.3, min(2.5, d));
+	if (oapiReadItem_float (hFile, "GFXSunIntensity", d))				GFXSunIntensity = max(0.5, min(2.5, d));
+	if (oapiReadItem_float (hFile, "GFXLocalMax", d))					GFXLocalMax = max(0.001, min(1.0, d));
 
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
@@ -245,8 +249,10 @@ void D3D9Config::WriteParams ()
 
 	oapiWriteItem_float (hFile, "GFXIntensity", GFXIntensity);
 	oapiWriteItem_float (hFile, "GFXDistance", GFXDistance);
-	oapiWriteItem_float (hFile, "GFXSpecular", GFXSpecularity);
+	oapiWriteItem_float (hFile, "GFXThreshold", GFXThreshold);
 	oapiWriteItem_float (hFile, "GFXGamma", GFXGamma);
+	oapiWriteItem_float (hFile, "GFXSunIntensity", GFXSunIntensity);
+	oapiWriteItem_float (hFile, "GFXLocalMax", GFXLocalMax);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);

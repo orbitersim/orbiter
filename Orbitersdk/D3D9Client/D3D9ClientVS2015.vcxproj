@@ -320,6 +320,12 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(BuildModuleDir)\D3D9Client\LensFlare.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LightBlur.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\IrradianceInteg.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

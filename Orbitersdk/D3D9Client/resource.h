@@ -180,7 +180,6 @@
 #define IDC_DBG_MESHGRP                         2169
 #define IDC_GFX_INTENSITY                       2170
 #define IDC_GFX_DISTANCE                        2171
-#define IDC_GFX_SPECULARITY                     2172
 #define IDC_GFX_GAMMA                           2173
 #define IDC_GFX_VAL1                            2174
 #define IDC_GFX_VAL2                            2175
@@ -188,8 +187,18 @@
 #define IDC_GFX_VAL4                            2177
 #define IDC_GFX_INTENSITY_RESET                 2178
 #define IDC_GFX_DISTANCE_RESET                  2179
-#define IDC_GFX_SPECULARITY_RESET               2180
 #define IDC_GFX_GAMMA_RESET                     2181
 #define IDC_DBG_SAFEGUARD                       2182
 #define IDC_DBG_EXTEND                          2183
 #define IDC_DBG_RELOADSHD                       2184
+#define IDC_GFX_SUNLIGHT                        2185
+#define IDC_GFX_SUNLIGHT_RESET                  2186
+#define IDC_GFX_IRRADIANCE                      2187
+#define IDC_GFX_LOCALMAX                        2188
+#define IDC_GFX_IRRADIANCE_RESET                2189
+#define IDC_GFX_LOCALMAX_RESET                  2190
+#define IDC_GFX_VAL5                            2191
+#define IDC_GFX_VAL6                            2192
+#define IDC_GFX_VAL7                            2193
+#define IDC_GFX_THRESHOLD                       2194
+#define IDC_GFX_THRESHOLD_RESET                 2195
