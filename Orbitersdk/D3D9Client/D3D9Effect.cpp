@@ -66,6 +66,7 @@ D3DXHANDLE D3D9Effect::eWater = 0;		// Water
 D3DXHANDLE D3D9Effect::eMtrl = 0;
 D3DXHANDLE D3D9Effect::eTune = 0;
 D3DXHANDLE D3D9Effect::eSun = 0;
+D3DXHANDLE D3D9Effect::eNight = 0;
 D3DXHANDLE D3D9Effect::eLights = 0;		// Additional light sources
 
 D3DXHANDLE D3D9Effect::eTex0 = 0;		// Primary texture
@@ -478,6 +479,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eFogColor	  = FX->GetParameterByName(0,"gFogColor");
 	eAtmColor	  = FX->GetParameterByName(0,"gAtmColor");
 	eHazeMode	  = FX->GetParameterByName(0,"gHazeMode");
+	eNight		  = FX->GetParameterByName(0, "gNightTime");
 
 	// Initialize default values --------------------------------------
 	//

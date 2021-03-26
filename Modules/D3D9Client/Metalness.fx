@@ -55,9 +55,10 @@ float GGX_NDF(float dHN, float rgh)
 //
 float SchlickBeckmanGSF(float dLN, float dCN, float rgh) // pre-devided by dLN * dCN
 {
+	float2 dots = clamp(float2(dLN, dCN), eps, 1.0f); // Avoid div-by-zero
 	float  r2 = rgh * rgh;
 	float2 e; e.xy = (1.0f - r2);
-	float2 w = rcp((float2(dLN, dCN) * e) + r2);
+	float2 w = rcp((dots * e) + r2);
 	return w.x*w.y;
 }
 
@@ -69,16 +70,6 @@ float DiffuseRetroReflectance(float dLN, float dCN, float dLH, float rgh, float 
 	float2 q = (1.0f-float2(dLN, dCN));	q *= q*q;
 	float z = 0.5f + 1.6f * dLH*dLH * rgh;
 	return ((1.0f - q.x) + z*q.x) * ((1.0f - q.y) + z*q.y);
-}
-
-
-// ============================================================================
-//
-float3 FresnelColorShift(float dCN, float3 c, float fFrs, float rgh, float met)
-{
-	// Assume that plastics absorve 40-70% of specular light
-	c *= lerp(0.3f + (1.0f - rgh)*0.3f, 1.0f, met);
-	return c + (1.0f - c) * fFrs;
 }
 
 
@@ -110,7 +101,7 @@ void SampleEnvMap(out float3 cE, float dCN, float fRgh, float fMetal, float3 rfl
 
 	fLOD *= 5.0f * rsqrt(1.0f + fLOD*fLOD);
 
-	cE = (dCN > eps ? texCUBElod(EnvMapAS, float4(rflW, fLOD)).rgb : float3(0, 0, 0));
+	cE = texCUBElod(EnvMapAS, float4(rflW, fLOD)).rgb;
 }
 
 
@@ -187,7 +178,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ----------------------------------------------------------------------
 
 	float3 camW = normalize(frg.camW);
-	float3 cSun = gSun.Color;
+	float3 cSun = gSun.Color * lerp(float3(1.1, 1.1, 0.9), float3(1,1,1), saturate(gRadius[3]*2e-5));
 
 
 	// ======================================================================
@@ -233,15 +224,14 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float dCN = saturate(dot(camW, nrmW));
 	float dHN = saturate(dot(hlvW, nrmW));
 	
-	//return float4(float3(1, 1, 1)*(1-dCN), 1);
-
-	if (dCN < eps) clip(-1);
-
 	// Apply a proper curve to a texture data, modulate with material value and clamp
-	fSmth = clamp(pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x, 0.0005f, 0.9999f);
+	fSmth = pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x;
+
+	// Apply fresnel and Fresnell cut-off to fSmth
+	fSmth = fSmth + ((1.0f - fSmth) * pow(abs(1.0f - dCN), 4.0f)) * pow(abs(fSmth), 0.5f);
 
 	float fRgh = saturate(1.0f - fSmth);
-	float fRgh3 = clamp(fRgh*fRgh*fRgh, 0.0005f, 0.9999f);
+	float fRgh3 = fRgh*fRgh*fRgh;
 
 
 	// ======================================================================
@@ -251,33 +241,29 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, fRgh3, true);
 
 
-
-
-	// ======================================================================
-	// Compute Earth glow
-	// ======================================================================
-
-	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
-	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
-
-
 #if defined(_ENVMAP)
+
 	if (gEnvMapEnable) {
 
 		// ======================================================================
 		// Sample Env Map
 		SampleEnvMap(cEnv, dCN, fRgh, fMetal, rflW, nrmW);
-
-		// ======================================================================
-		// Sample Irradiance Map
-		cAmbient = Paraboloidal_LVLH(IrradS, nrmW);
-		cAmbient *= cAmbient;
-		float fNight = saturate(1.0 - cSun.r);
-		cAmbient = saturate(cAmbient * (1.0f + 30.0f * fNight));
 	}
+
+	// ======================================================================
+	// Sample Irradiance Map
+	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
+	cAmbient *= cAmbient;
+	cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));	
+#else
+
+	// ======================================================================
+	// Compute Earth glow
+	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
+	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
 #endif
 
-	//cAmbient = max(cAmbient, gSun.Ambient);
+
 	cAmbient *= (1.0f - fMetal); // No ambient for metals
 
 
@@ -287,11 +273,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 #if SHDMAP > 0
 	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
-	cSun *= (1.0f - gSun.Ambient);
-	//cSun = 0;
 	
-	
-
 
 	// ======================================================================
 	// Main shader core MetalnessPS
@@ -301,14 +283,15 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh);
 	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fMetal); 
 	
-	// Base material color for reflections. Use cDiff for metals and very rough plastics, white for the rest 
+	// Base material color for reflections. Use cDiff for metals and very rough plastics, white for the rest. 
+	// cDiff for rough plastics is to avoid washed-out(white) look of black and rough parts.
 	float3 cSpec = lerp(cDiff.rgb, float3(1, 1, 1), (1.0f - fMetal) * (1.0f - fRgh3));
 
 	// Fresnel power 2.5 for glossy, 5.0 for rough
 	float fFrs = pow(1.0f - dCN, fRgh*2.5 + 2.5f);
 
 	// Fresnel cut-off below X of fSmth
-	fFrs *= saturate(0.5f - fRgh*fRgh) * 1.5f;
+	fFrs *= saturate(0.3f - fRgh*fRgh) * 3.3f;
 
 	// Assume that plastics absorve 50-90% of specular light
 	float  fP = lerp(0.1f + (1.0f - fRgh)*0.4f, 1.0f, fMetal);
@@ -386,7 +369,7 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 cEmis;
 	float3 cSpec;
 	float4 cDiff;
-	float  fSmth, fMetal;
+	float  fSmth, fMetal, fHeat;
 	float3 cDiffLocal;
 	float3 cSpecLocal;
 
@@ -420,13 +403,18 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
 
+	// Fetch Heat map
+	//
+	if (gCfg.Heat) fHeat = tex2D(HeatS, frg.tex0.xy).g;
+	else		   fHeat = gMtrl.specialfx.x;
+
 
 	// ----------------------------------------------------------------------
 	// Now do other calculations while textures are being fetched
 	// ----------------------------------------------------------------------
 
 	float3 camW = normalize(frg.camW);
-	float3 cSun = gSun.Color;
+	float3 cSun = gSun.Color * lerp(float3(1.1, 1.1, 0.9), float3(1, 1, 1), saturate(gRadius[3] * 2e-5));
 
 
 	// ======================================================================
@@ -472,14 +460,14 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float dCN = saturate(dot(camW, nrmW));
 	float dHN = saturate(dot(hlvW, nrmW));
 
-	
-	if (dCN < eps) clip(-1);
-
 	// Apply a proper curve to a texture data, modulate with material value and clamp
-	fSmth = clamp(pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x, 0.0005f, 0.9999f);
+	fSmth = pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x;
+
+	// Apply fresnel and Fresnell cut-off to fSmth
+	fSmth = fSmth + ((1.0f - fSmth) * pow(abs(1.0f - dCN), 4.0f)) * pow(abs(fSmth), 0.5f);
 
 	float fRgh = saturate(1.0f - fSmth);
-	float fRgh3 = clamp(fRgh*fRgh*fRgh, 0.0005f, 0.9999f);
+	float fRgh3 = fRgh*fRgh*fRgh;
 
 	float fSpec = cmax(cSpec);
 
@@ -489,34 +477,28 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 
 	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, fRgh3, true);
 
-
-
-
-	// ======================================================================
-	// Compute Earth glow
-	// ======================================================================
-
-	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
-	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
-
 #if defined(_ENVMAP)
+
 	if (gEnvMapEnable) {
 
 		// ======================================================================
 		// Sample Env Map
 		SampleEnvMap(cEnv, dCN, fRgh, fSpec, rflW, nrmW);
-
-		// ======================================================================
-		// Sample Irradiance Map
-		cAmbient = Paraboloidal_LVLH(IrradS, nrmW);
-
-		cAmbient *= cAmbient;
-		float fNight = saturate(1.0 - cSun.r);
-		cAmbient = saturate(cAmbient * (1.0f + 30.0f * fNight));
 	}
+
+	// ======================================================================
+	// Sample Irradiance Map
+	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
+	cAmbient *= cAmbient;
+	cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));
+#else
+
+	// ======================================================================
+	// Compute Earth glow
+	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
+	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
 #endif
 
-	//cAmbient += gSun.Ambient;
 	cAmbient *= (1.0f - fSpec); // No ambient for metals
 
 	// ======================================================================
@@ -525,8 +507,6 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 #if SHDMAP > 0
 	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
-	cSun *= (1.0f - gSun.Ambient);
-
 
 	// ======================================================================
 	// Main shader core SpecularPS
@@ -540,7 +520,7 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float fFrs = pow(1.0f - dCN, (fRgh*2.5 + 2.5f) * gMtrl.fresnel.x) * (1.0f - gMtrl.fresnel.y);
 
 	// Fresnel cut-off below X of fSmth
-	fFrs *= saturate(0.5f - fRgh*fRgh) * 1.5f;
+	fFrs *= saturate(0.3f - fRgh*fRgh) * 3.3f;
 
 	// Fresnel color shift
 	float3 cF = cSpec + (1.0f - cSpec) * fFrs;

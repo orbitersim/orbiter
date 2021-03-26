@@ -70,7 +70,7 @@
     <Link>
       <AdditionalDependencies>orbiter.lib;orbitersdk.lib;d3d9.lib;d3dx9.lib;psapi.lib;version.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Microsoft DirectX SDK (February 2010)\Lib\x86;..\..\Orbitersdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x86;..\..\Orbitersdk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>MSVCRT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
@@ -293,6 +293,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\EnvMapBlur.hlsl" />
     <None Include="..\..\Modules\D3D9Client\GDIOverlay.hlsl" />
     <None Include="..\..\Modules\D3D9Client\IPI.hlsl" />
+    <None Include="..\..\Modules\D3D9Client\IrradianceInteg.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LensFlare.hlsl" />
     <None Include="..\..\Modules\D3D9Client\LightBlur.hlsl" />
   </ItemGroup>

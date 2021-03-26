@@ -493,7 +493,7 @@ void D3D9Mesh::SetName(UINT idx)
 
 // ===========================================================================================
 //
-bool D3D9Mesh::HasShadow()
+bool D3D9Mesh::HasShadow() const
 {
 	if (!IsOK()) return false;
 	for (DWORD g=0; g<nGrp; g++) {
@@ -560,7 +560,7 @@ void D3D9Mesh::ProcessInherit()
 
 // ===========================================================================================
 //
-D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx)
+D3DXVECTOR3 D3D9Mesh::GetGroupSize(DWORD idx) const
 {
 	if (!IsOK()) return D3DXVECTOR3(0,0,0);
 	if (idx>=nGrp) return D3DXVECTOR3(0,0,0);
@@ -923,7 +923,7 @@ DWORD D3D9Mesh::GetMeshGroupTextureIdx(DWORD idx) const
 
 // ===========================================================================================
 //
-bool D3D9Mesh::HasTexture(SURFHANDLE hSurf)
+bool D3D9Mesh::HasTexture(SURFHANDLE hSurf) const
 {
 	if (!IsOK()) return false;
 	for (DWORD i=0;i<nTex;i++) if (Tex[i]==hSurf) return true;
@@ -1457,6 +1457,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 	if (sunLight) {
 		D3D9Sun sun = *sunLight;
+		float x = 1.0f - saturate(max(sun.Color.r, sun.Color.b)*2.0f);
+		FX->SetFloat(eNight, x);
 		sun.Color *= float(Config->GFXSunIntensity);
 		FX->SetValue(eSun, &sun, sizeof(D3D9Sun));
 	}
@@ -1508,7 +1510,8 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
 
 				// Override application configuration to prevent oversaturation of lights at point plank range. 
-				Locals[i].Attenuation.x = max(Locals[i].Attenuation.x, float(Config->GFXLocalMax));
+				if (scn->GetRenderPass() == RENDERPASS_MAINSCENE)
+					Locals[i].Attenuation.x = max(Locals[i].Attenuation.x, float(Config->GFXLocalMax));
 			}
 		}
 	}

@@ -24,6 +24,7 @@
 #include <d3d9.h> 
 #include <d3dx9.h>
 #include <list>
+#include <map>
 #include "OrbiterAPI.h"
 #include "D3D9Util.h"
 
@@ -62,6 +63,9 @@ public:
 	// ----------------------------------------------------------------------------------
 			ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, const char *_entry, const char *ppf=NULL);
 			~ImageProcessing();
+
+	bool	CompileShader(const char *Entry);
+	bool	Activate(const char *Shader = NULL);
 
 	// ----------------------------------------------------------------------------------
 	// Use the 'Set' functions to assign a value into a shader constants ( e.g. uniform extern float4 myVector; )
@@ -113,17 +117,23 @@ private:
 
 	bool	SetupViewPort();	
 
+	typedef struct {
+		LPDIRECT3DPIXELSHADER9 pPixel;
+		LPD3DXCONSTANTTABLE pPSConst;
+	} SHADER;
+
 	struct {
 		LPDIRECT3DBASETEXTURE9 hTex;
 		DWORD flags;
 	} pTextures[16];
 
+	std::map<string, SHADER> Shaders;
 	LPDIRECT3DDEVICE9 pDevice;
 	LPDIRECT3DSURFACE9 pRtg[4], pRtgBak[4];
 	LPD3DXCONSTANTTABLE pVSConst;
 	LPD3DXCONSTANTTABLE pPSConst;
-	LPDIRECT3DPIXELSHADER9 pPixel;
 	LPDIRECT3DVERTEXSHADER9 pVertex;
+	LPDIRECT3DPIXELSHADER9 pPixel;
 	D3DSURFACE_DESC desc;
 	D3DXMATRIX   mVP;
 	D3DXVECTOR4  vTemplate;
@@ -134,6 +144,7 @@ private:
 	SMVERTEX	*pOcta;
 
 	char	file[256];
+	char	ppf[256];
 	char	entry[32];
 
 	std::list<std::string> def;

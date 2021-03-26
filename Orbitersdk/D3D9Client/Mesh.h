@@ -168,8 +168,8 @@ public:
 
 	void			SetSafeGuard(bool bOn) { bSafeGuard = bOn; bMtrlModidied = true; }
 	void			SetDefaultShader(WORD shader) { DefShader = shader; bMtrlModidied = true; }
-	WORD			GetDefaultShader() { return DefShader; }
-	bool			GetSafeGuard() { return bSafeGuard; }
+	WORD			GetDefaultShader() const { return DefShader; }
+	bool			GetSafeGuard() const { return bSafeGuard; }
 
 	void			SetClass(DWORD cl) { vClass = cl; }
 
@@ -178,7 +178,7 @@ public:
 	 * \brief Check if a mesh is casting shadows
 	 * \return Returns true if the mesh is casting shadows.
 	 */
-	bool			HasShadow();
+	bool			HasShadow() const;
 
 	/**
 	 * \brief Returns a pointer to a mesh group.
@@ -194,7 +194,7 @@ public:
 	 * \return Number of materials.
 	 */
 	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; }
-	bool			HasTexture(SURFHANDLE hSurf);
+	bool			HasTexture(SURFHANDLE hSurf) const;
 	bool			IsReflective() const { return bIsReflective | (DefShader==SHADER_METALNESS) | (DefShader == SHADER_SPECULAR); }
 
 	/**
@@ -223,7 +223,7 @@ public:
 	D3DXVECTOR3		GetBoundingSpherePos();
 	float			GetBoundingSphereRadius();
 	D9BBox *		GetAABB();
-	D3DXVECTOR3		GetGroupSize(DWORD idx);
+	D3DXVECTOR3		GetGroupSize(DWORD idx) const;
 	LPD3DXMATRIX	GetTransform() { if (bGlobalTF) return &mTransform; else return NULL; }
 
 	D3DXMATRIX		GetTransform(int grp, bool bCombined);

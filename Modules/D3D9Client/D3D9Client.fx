@@ -143,6 +143,7 @@ uniform extern float     gTime;
 uniform extern float     gMix;				// General purpose parameter (multible uses)
 uniform extern float 	 gMtrlAlpha;
 uniform extern float	 gGlowConst;
+uniform extern float	 gNightTime;		// 1 for nighttime, 0 for daytime
 uniform extern Flow		 gCfg;
 
 // Textures -----------------------------------------------------------------

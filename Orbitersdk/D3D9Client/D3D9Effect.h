@@ -161,6 +161,7 @@ public:
 	static D3DXHANDLE	eAttennuate;
 	static D3DXHANDLE	eInScatter;
 	static D3DXHANDLE	eSHD;
+	static D3DXHANDLE	eNight;
 
 	// Textures --------------------------------------------------------
 	static D3DXHANDLE	eTex0;    ///< Primary texture

@@ -290,7 +290,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0
     LTEXT           "Reflection Mode", IDC_STATIC, 380, 92, 53, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Custom Cameras", IDC_STATIC, 380, 109, 54, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Update Rate", IDC_STATIC, 380, 125, 42, 8, SS_LEFT, WS_EX_LEFT
-    GROUPBOX        "Terrain Resolution", 0, 190, 105, 170, 110, 0, WS_EX_LEFT
+    GROUPBOX        "Terrain Resolution", IDC_STATIC, 190, 105, 170, 110, 0, WS_EX_LEFT
     GROUPBOX        "Local lights", IDC_STATIC, 190, 220, 170, 40, 0, WS_EX_LEFT
     GROUPBOX        "Self Shadows", IDC_STATIC, 190, 265, 170, 70, 0, WS_EX_LEFT
     LTEXT           "Lower", IDC_STATIC, 255, 118, 20, 8, SS_LEFT, WS_EX_LEFT
@@ -336,8 +336,8 @@ FONT 8, "Ms Shell Dlg"
     LTEXT           "Local Lights Max", IDC_STATIC, 15, 145, 54, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Gamma", IDC_STATIC, 15, 75, 25, 8, SS_LEFT, WS_EX_LEFT
     LTEXT           "Glow threshold", IDC_STATIC, 15, 60, 48, 8, SS_LEFT, WS_EX_LEFT
-    GROUPBOX        "Post Processing Configuration", 0, 5, 10, 266, 80, 0, WS_EX_LEFT
-    GROUPBOX        "Light Configuration", 0, 5, 100, 266, 65, 0, WS_EX_LEFT
+    GROUPBOX        "Post Processing Configuration", IDC_STATIC, 5, 10, 266, 80, 0, WS_EX_LEFT
+    GROUPBOX        "Light Configuration", IDC_STATIC, 5, 100, 266, 65, 0, WS_EX_LEFT
     CONTROL         "", IDC_GFX_INTENSITY, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 85, 30, 144, 12, WS_EX_LEFT
     CONTROL         "", IDC_GFX_DISTANCE, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 85, 45, 144, 12, WS_EX_LEFT
     CONTROL         "", IDC_GFX_SUNLIGHT, TRACKBAR_CLASS, WS_TABSTOP | TBS_BOTH | TBS_NOTICKS, 85, 115, 144, 12, WS_EX_LEFT
@@ -478,8 +478,8 @@ STRINGTABLE
 //
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 1 VERSIONINFO
-    FILEVERSION     30,5,0,0
-    PRODUCTVERSION  30,5,0,0
+    FILEVERSION     30,6,0,0
+    PRODUCTVERSION  30,6,0,0
     FILEOS          VOS_NT_WINDOWS32
     FILETYPE        VFT_DLL
     FILESUBTYPE     VFT2_UNKNOWN
@@ -491,12 +491,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
         BLOCK "080904E4"
         {
             VALUE "FileDescription", "Render engine plugin for Orbiter Space Flight Simulator"
-            VALUE "FileVersion", "30.5.0.0"
+            VALUE "FileVersion", "30.6.0.0"
             VALUE "InternalName", "D3D9Client"
             VALUE "LegalCopyright", "Copyright © 2010 - 2017"
             VALUE "OriginalFilename", "D3D9Client.dll"
             VALUE "ProductName", "D3D9Client"
-            VALUE "ProductVersion", "30.5.0.0"
+            VALUE "ProductVersion", "30.6.0.0"
         }
     }
     BLOCK "VarFileInfo"

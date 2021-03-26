@@ -319,6 +319,7 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(BuildModuleDir)\D3D9Client\EnvMapBlur.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\GDIOverlay.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\IPI.hlsl" />
+    <None Include="$(BuildModuleDir)\D3D9Client\IrradianceInteg.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LensFlare.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LightBlur.hlsl" />
   </ItemGroup>

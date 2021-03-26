@@ -10,10 +10,10 @@ float4 Paraboloidal_LVLH(sampler s, float3 i)
 {
 	float z = dot(gCameraPos, i);
 	float2 p = float2(dot(gEast, i), dot(gNorth, i)) / (1.0f + abs(z));
-	p *= 0.909f;
-	p += float2((z < 0 ? 1.0f : 3.0f), 1.0f);
-	p *= float2(0.25f, 0.5f);
-	return tex2D(s, p);
+	p *= float2(0.2273f, 0.4545f);
+	float4 A = tex2D(s, p + float2(0.25f, 0.5f));
+	float4 B = tex2D(s, p + float2(0.75f, 0.5f));
+	return lerp(A, B, smoothstep(-0.03, 0.03, z));
 }
 
 float3 Sq(float3 x)

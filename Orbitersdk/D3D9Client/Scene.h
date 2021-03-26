@@ -451,7 +451,6 @@ private:
 
 	float		lmaxdst2;
 	DWORD		nLights;
-	//DWORD		lmaxidx;
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
 	DWORD		dwFrameId;
@@ -464,7 +463,7 @@ private:
 	D3D9ClientSurface *pLblSrf;
 	CSphereManager *cspheremgr;
 
-	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay, *pIrradPre, *pIrradItg;
+	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay, *pIrradiance;
 
 	class vVessel *vFocus;
 	VOBJREC *vobjEnv, *vobjIrd;
@@ -473,7 +472,7 @@ private:
 	// Blur Sampling Kernel ==============================================================
 	LPDIRECT3DCUBETEXTURE9 pBlrTemp[5];
 	LPDIRECT3DCUBETEXTURE9 pIrradTemp;
-	LPDIRECT3DTEXTURE9 pIrradTemp2;
+	LPDIRECT3DTEXTURE9 pIrradTemp2, pIrradTemp3;
 
 	// Deferred Experiment ===============================================================
 	//

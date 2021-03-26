@@ -28,7 +28,7 @@
 
 // ================================================================================================
 //
-ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, const char *_entry, const char *ppf)
+ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, const char *_entry, const char *_ppf)
 	: pDevice(pDev)
 	, pVSConst(NULL)
 	, pPSConst(NULL)
@@ -40,8 +40,11 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 	for (int i=0;i<4;i++) pRtg[i] = pRtgBak[i] = NULL;
 
 	pVertex  = CompileVertexShader(pDevice, "Modules/D3D9Client/IPI.hlsl", "VSMain", NULL, &pVSConst);
-	pPixel   = CompilePixelShader(pDevice, _file, _entry, ppf, &pPSConst);
+	pPixel   = CompilePixelShader(pDevice, _file, _entry, _ppf, &pPSConst);
 	pOcta	 = new SMVERTEX[10];
+
+	Shaders[string(_entry)].pPixel = pPixel;
+	Shaders[string(_entry)].pPSConst = pPSConst;
 
 	if (pVSConst) {
 		hVP = pVSConst->GetConstantByName(NULL, "mVP");
@@ -73,6 +76,8 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 
 	strcpy_s(file, 256, _file);
 	strcpy_s(entry, 32, _entry);
+	if (_ppf) strcpy_s(ppf, 256, _ppf);
+	else strcpy_s(ppf, 32, "");
 
 	// Create a database of defines ----------------------------------------------------------------
 	std::string line;
@@ -90,11 +95,45 @@ ImageProcessing::ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, cons
 ImageProcessing::~ImageProcessing()
 {
 	SAFE_RELEASE(pVSConst);
-	SAFE_RELEASE(pPSConst);
 	SAFE_RELEASE(pVertex);
-	SAFE_RELEASE(pPixel);
 	SAFE_DELETEA(pOcta);
+
+	for (auto x : Shaders) {
+		SAFE_RELEASE(x.second.pPixel);
+		SAFE_RELEASE(x.second.pPSConst);
+	}
+	Shaders.clear();
 }
+
+
+// ================================================================================================
+//
+bool ImageProcessing::CompileShader(const char *Entry)
+{
+	string name(Entry);
+	LPD3DXCONSTANTTABLE pPSC = NULL;
+	Shaders[name].pPixel = CompilePixelShader(pDevice, file, Entry, ppf, &pPSC);
+	Shaders[name].pPSConst = pPSC;
+	return ((Shaders[name].pPixel != NULL) && (Shaders[name].pPSConst != NULL));
+}
+
+
+// ================================================================================================
+//
+bool ImageProcessing::Activate(const char *Entry)
+{
+	SetTemplate();
+	if (!Entry) return Activate(entry);
+	string name(Entry);
+	if (Shaders.count(name) == 0) {
+		LogErr("ImageProcessing::Activate() FAILED Entry=%s", Entry);
+		return false;
+	}
+	pPixel = Shaders[name].pPixel;
+	pPSConst = Shaders[name].pPSConst;
+	return true;
+}
+
 
 // ================================================================================================
 //
@@ -466,5 +505,9 @@ void ImageProcessing::SetOutputNative(int id, LPDIRECT3DSURFACE9 hSrf)
 //
 bool ImageProcessing::IsOK()
 {
-	return (pPixel && pVertex && pPSConst && pVSConst && pDevice && hVP);
+	for (auto x : Shaders) {
+		if (x.second.pPixel == NULL) return false;
+		if (x.second.pPSConst == NULL) return false;
+	}
+	return (pVertex && pVSConst && pDevice && hVP && hPos && hSiz);
 }

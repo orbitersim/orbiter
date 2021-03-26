@@ -24,7 +24,7 @@
 #include <sstream>
 
 #define saturate(x)	max(min(x, 1.0f), 0.0f)
-
+#define IKernelSize 150
 
 using namespace oapi;
 
@@ -47,7 +47,8 @@ D3DXHANDLE Scene::eWVP = 0;
 D3DXHANDLE Scene::eColor = 0;
 D3DXHANDLE Scene::eTex0 = 0;
 
-D3DXVECTOR3 IKernel[200];
+
+D3DXVECTOR4 IKernel[IKernelSize];
 
 bool sort_vessels(const vVessel *a, const vVessel *b)
 {
@@ -85,10 +86,10 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	pEnvDS = NULL;
 	pIrradDS = NULL;
-	pIrradPre = NULL;
-	pIrradItg = NULL;
+	pIrradiance = NULL;
 	pIrradTemp = NULL;
 	pIrradTemp2 = NULL;
+	pIrradTemp3 = NULL;
 
 	memset(&psShmDS, 0, sizeof(psShmDS));
 	memset(&ptShmRT, 0, sizeof(ptShmRT));
@@ -127,26 +128,23 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	cspheremgr = new CSphereManager(_gc, this);
 
 	while (true) {
-		float dv = 0;
-		for (int i = 0; i < 200; i++) {
-			IKernel[i].x = float((Rand()*2.0) - 1.0);
-			dv += IKernel[i].x;
+		float dx = 0;
+		float dy = 0;
+		for (int i = 0; i < IKernelSize; i++) {
+			double r = oapiRand();
+			double a = oapiRand() * PI2;
+			IKernel[i].x = float(cos(a) * r);
+			IKernel[i].y = float(sin(a) * r);
+			dx += IKernel[i].x;
+			dy += IKernel[i].y;
 		}
-		if (abs(dv) < 0.5) break;
+		if ((abs(dx) < 1.0) && (abs(dy) < 1.0)) break;
 	}
 
-	while (true) {
-		float dv = 0;
-		for (int i = 0; i < 200; i++) {
-			IKernel[i].y = float((Rand()*2.0) - 1.0);
-			dv += IKernel[i].y;
-		}
-		if (abs(dv) < 0.5) break;
-	}
-
-	for (int i = 0; i < 200; i++) {
+	for (int i = 0; i < IKernelSize; i++) {
 		float d = IKernel[i].x*IKernel[i].x + IKernel[i].y*IKernel[i].y;
 		IKernel[i].z = sqrt(1.0f - saturate(d));
+		IKernel[i].w = sqrt(IKernel[i].z);
 	}
 		
 	
@@ -280,12 +278,14 @@ Scene::~Scene ()
 	SAFE_DELETE(pBlur);
 	SAFE_DELETE(pLightBlur);
 	SAFE_DELETE(pFlare);
+	SAFE_DELETE(pIrradiance);
 	SAFE_DELETE(csphere);
 	SAFE_RELEASE(pOffscreenTarget);
 	SAFE_RELEASE(pEnvDS);
 	SAFE_RELEASE(pIrradDS);
 	SAFE_RELEASE(pIrradTemp);
 	SAFE_RELEASE(pIrradTemp2);
+	SAFE_RELEASE(pIrradTemp3);
 
 	for (int i = 0; i < ARRAYSIZE(psShmDS); i++) SAFE_RELEASE(psShmDS[i]);
 	for (int i = 0; i < ARRAYSIZE(ptShmRT); i++) SAFE_RELEASE(ptShmRT[i]);
@@ -2634,18 +2634,14 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 {
 	if (!pSrc) return false;
 
-	if (!pIrradPre) {
-		pIrradPre = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSPreInteg");
-		pIrradItg = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSInteg");
+	if (!pIrradiance) {
+		pIrradiance = new ImageProcessing(pDevice, "Modules/D3D9Client/IrradianceInteg.hlsl", "PSPreInteg");
+		pIrradiance->CompileShader("PSInteg");
+		pIrradiance->CompileShader("PSPostBlur");
 	}
 
-	if (!pIrradPre->IsOK()) {
-		LogErr("pIrradPre is not OK");
-		return false;
-	}
-
-	if (!pIrradItg->IsOK()) {
-		LogErr("pIrradItg is not OK");
+	if (!pIrradiance->IsOK()) {
+		LogErr("pIrradiance is not OK");
 		return false;
 	}
 
@@ -2654,16 +2650,24 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 		return false;
 	}
 
-	D3DSURFACE_DESC desc;
+	LPDIRECT3DSURFACE9 pOuts = NULL;
+	HR(pOut->GetSurfaceLevel(0, &pOuts));
+
+	D3DSURFACE_DESC desc, desc_out;
 	pIrradDS->GetDesc(&desc);
+	pOuts->GetDesc(&desc_out);
 	
-	if (!pIrradTemp) { // D3DFMT_A16B16G16R16F
-		if (D3DXCreateCubeTexture(pDevice, 16, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
-			LogErr("Failed to create irradiance temp cubemap");
+	if (!pIrradTemp) {
+		if (D3DXCreateCubeTexture(pDevice, 16, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp) != S_OK) {
+			LogErr("Failed to create irradiance temp");
 			return false;
 		}
-		if (D3DXCreateTexture(pDevice, 128, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrradTemp2) != S_OK) {
-			LogErr("Failed to create irradiance temp cubemap");
+		if (D3DXCreateTexture(pDevice, 128, 128, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp2) != S_OK) {
+			LogErr("Failed to create irradiance temp");
+			return false;
+		}
+		if (D3DXCreateTexture(pDevice, desc_out.Width, desc_out.Height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrradTemp3) != S_OK) {
+			LogErr("Failed to create irradiance temp");
 			return false;
 		}
 	}
@@ -2671,25 +2675,31 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	D3DXVECTOR3 nr, up, cp;
 	LPDIRECT3DSURFACE9 pSrf = NULL;
 	LPDIRECT3DSURFACE9 pTgt = NULL;
-	LPDIRECT3DSURFACE9 pTmp = NULL;
+	LPDIRECT3DSURFACE9 pTmp2 = NULL;
+	LPDIRECT3DSURFACE9 pTmp3 = NULL;
 	
-	// Pre-Integrade Irradiance Cube
+	HR(pIrradTemp2->GetSurfaceLevel(0, &pTmp2));
+	HR(pIrradTemp3->GetSurfaceLevel(0, &pTmp3));
+
+
+	// ---------------------------------------------------------------------
+	// Pre-Integrate Irradiance Cube
 	//
-	pIrradPre->SetFloat("fD", (1.0f / float(desc.Width)));
-	pIrradTemp2->GetSurfaceLevel(0, &pTmp);
+	pIrradiance->Activate("PSPreInteg");
+	pIrradiance->SetFloat("fD", &D3DXVECTOR2(1.0f / float(desc.Width), 1.0f / float(desc.Height)), sizeof(D3DXVECTOR2));
 
 	for (DWORD i = 0; i < 6; i++)
 	{
 		pSrc->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pSrf);
 		pIrradTemp->GetCubeMapSurface(D3DCUBEMAP_FACES(i), 0, &pTgt);
 		
-		pDevice->StretchRect(pSrf, NULL, pTmp, NULL, D3DTEXF_POINT);
+		pDevice->StretchRect(pSrf, NULL, pTmp2, NULL, D3DTEXF_POINT);
 
-		pIrradPre->SetOutputNative(0, pTgt);
-		pIrradPre->SetTextureNative("tSrc", pIrradTemp2, IPF_POINT | IPF_CLAMP);
+		pIrradiance->SetOutputNative(0, pTgt);
+		pIrradiance->SetTextureNative("tSrc", pIrradTemp2, IPF_POINT | IPF_CLAMP);
 
-		if (!pIrradPre->Execute(true)) {
-			LogErr("pBlur Execute Failed");
+		if (!pIrradiance->Execute(true)) {
+			LogErr("pIrradiance Execute Failed");
 			return false;
 		}
 
@@ -2697,37 +2707,55 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 		SAFE_RELEASE(pSrf);
 	}
 
-	SAFE_RELEASE(pTmp);
+	
 
+
+	// ---------------------------------------------------------------------
+	// Main Integration
+	//
 	GetLVLH(vV, &up, &nr, &cp);
 
-	LPDIRECT3DSURFACE9 pOuts = NULL;
-	HR(pOut->GetSurfaceLevel(0, &pOuts));
-
 	float Glow = float(Config->PlanetGlow);
-	pIrradItg->SetOutputNative(0, pOuts);
-	pIrradItg->SetTextureNative("tCube", pIrradTemp, IPF_LINEAR);
-	pIrradItg->SetFloat("Kernel", IKernel, sizeof(IKernel));
-	pIrradItg->SetFloat("vNr", &nr, sizeof(D3DXVECTOR3));
-	pIrradItg->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
-	pIrradItg->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
-	pIrradItg->SetFloat("fIntensity", &Glow, sizeof(float));
-	pIrradItg->SetBool("bUp", false);
-	pIrradItg->SetTemplate(0.5f, 1.0f, 0.0f, 0.0f);
 
-	if (!pIrradItg->ExecuteTemplate(true, ImageProcessing::Rect)) {
-		LogErr("pBlur Execute Failed");
+	pIrradiance->Activate("PSInteg");
+	pIrradiance->SetOutputNative(0, pTmp3);
+	pIrradiance->SetTextureNative("tCube", pIrradTemp, IPF_LINEAR);
+	pIrradiance->SetFloat("Kernel", IKernel, sizeof(IKernel));
+	pIrradiance->SetFloat("vNr", &nr, sizeof(D3DXVECTOR3));
+	pIrradiance->SetFloat("vUp", &up, sizeof(D3DXVECTOR3));
+	pIrradiance->SetFloat("vCp", &cp, sizeof(D3DXVECTOR3));
+	pIrradiance->SetFloat("fIntensity", &Glow, sizeof(float));
+	pIrradiance->SetBool("bUp", false);
+	pIrradiance->SetTemplate(0.5f, 1.0f, 0.0f, 0.0f);
+
+	if (!pIrradiance->ExecuteTemplate(true, ImageProcessing::Rect)) {
+		LogErr("pIrradiance Execute Failed");
 		return false;
 	}
 
-	pIrradItg->SetBool("bUp", true);
-	pIrradItg->SetTemplate(0.5f, 1.0f, 0.5f, 0.0f);
+	pIrradiance->SetBool("bUp", true);
+	pIrradiance->SetTemplate(0.5f, 1.0f, 0.5f, 0.0f);
 
-	if (!pIrradItg->ExecuteTemplate(true, ImageProcessing::Rect)) {
-		LogErr("pBlur Execute Failed");
+	if (!pIrradiance->ExecuteTemplate(true, ImageProcessing::Rect)) {
+		LogErr("pIrradiance Execute Failed");
 		return false;
 	}
 
+	// ---------------------------------------------------------------------
+	// Post Blur
+	//
+	pIrradiance->Activate("PSPostBlur");
+	pIrradiance->SetFloat("fD", &D3DXVECTOR2(1.0f / float(desc_out.Width), 1.0f / float(desc_out.Height)), sizeof(D3DXVECTOR2));
+	pIrradiance->SetOutputNative(0, pOuts);
+	pIrradiance->SetTextureNative("tSrc", pIrradTemp3, IPF_POINT | IPF_WRAP);
+
+	if (!pIrradiance->Execute(true)) {
+		LogErr("pIrradiance Execute Failed");
+		return false;
+	}
+
+	SAFE_RELEASE(pTmp2);
+	SAFE_RELEASE(pTmp3);
 	SAFE_RELEASE(pOuts);
 
 	return true;

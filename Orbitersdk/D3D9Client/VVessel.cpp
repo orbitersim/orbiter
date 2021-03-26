@@ -1307,7 +1307,7 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	{
 		D3DSURFACE_DESC desc;
 		pIrDS->GetDesc(&desc);
-		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pIrdEnv) != S_OK) {
+		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrdEnv) != S_OK) {
 			LogErr("Failed to create env cubemap for visual 0x%X", this);
 			return true;
 		}

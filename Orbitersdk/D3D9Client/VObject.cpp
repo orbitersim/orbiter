@@ -36,9 +36,9 @@ using namespace oapi;
 
 // Initialisation of static members
 
-D3D9Client *vObject::gc = NULL;
-D3D9ClientSurface *vObject::blobtex[3] = {0,0,0};
-D3D9Mesh *vObject::hStockMesh[16] = {};
+D3D9Client*        vObject::gc = NULL;
+D3D9ClientSurface* vObject::blobtex[3] = { NULL };
+D3D9Mesh*          vObject::hStockMesh[16] = { NULL };
 
 
 // ===========================================================================================
@@ -100,7 +100,6 @@ void vObject::GlobalInit(D3D9Client *gclient)
 
 	// Create Some Stock Meshes ----------------------------------------
 	//
-	for (int i = 0; i < ARRAYSIZE(hStockMesh); i++) hStockMesh[i] = NULL;
 	hStockMesh[D3D9SM_ARROW] = new D3D9Mesh("D3D9Arrow");
 	hStockMesh[D3D9SM_SPHERE] = new D3D9Mesh("D3D9Sphere");
 
