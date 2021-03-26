@@ -57,7 +57,8 @@ float Desaturate (float3 color)
 
 float3 HDRtoLDR(float3 hdr)
 {
-	return hdr * pow(max(0, 1.0f + hdr*hdr*hdr*hdr), -0.25);
+	float3 h2 = hdr*hdr;
+	return hdr * pow(max(0, 1.0f + h2*h2), -0.25);
 }
 
 
@@ -119,7 +120,7 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 		float3 L = tex2D(tBlur, vPos).rgb * fIntensity;
 		float3 B = abs(tex2D(tBack, vPos).rgb);
 
-		float w = Desaturate(B);
+		//float w = Desaturate(B);
 		float q = Desaturate(L);
 		
 		

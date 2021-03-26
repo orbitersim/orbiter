@@ -192,3 +192,4 @@
 #define IDC_GFX_GAMMA_RESET                     2181
 #define IDC_DBG_SAFEGUARD                       2182
 #define IDC_DBG_EXTEND                          2183
+#define IDC_DBG_RELOADSHD                       2184

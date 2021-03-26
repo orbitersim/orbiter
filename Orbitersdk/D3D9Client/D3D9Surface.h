@@ -22,7 +22,8 @@
 #define	MAP_TRANSMITTANCE	5
 #define	MAP_ROUGHNESS		6
 #define	MAP_METALNESS		7
-#define MAP_MAX_COUNT		8
+#define	MAP_HEAT			8
+#define MAP_MAX_COUNT		9
 
 
 #define ERR_DC_NOT_AVAILABLE		0x1

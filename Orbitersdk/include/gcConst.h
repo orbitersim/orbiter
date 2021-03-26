@@ -124,6 +124,8 @@ inline gcCore *gcGetCoreInterface()
 #define	MESHM_REFLECT		0x20	///< D3D9 material
 #define	MESHM_ROUGHNESS		0x40	///< D3D9 material
 #define	MESHM_FRESNEL		0x80	///< D3D9 material
+#define	MESHM_METALNESS		0x100	///< D3D9 material
+#define	MESHM_SPECIALFX		0x200	///< D3D9 material
 ///@}
 
 namespace gcGUI 

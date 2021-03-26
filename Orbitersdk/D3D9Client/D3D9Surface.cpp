@@ -1655,6 +1655,7 @@ void D3D9ClientSurface::LoadSpecials(const char *fname)
 	LoadSpecialTexture(fname, "transm", MAP_TRANSMITTANCE);
 	LoadSpecialTexture(fname, "refl", MAP_REFLECTION);
 	LoadSpecialTexture(fname, "spec", MAP_SPECULAR);
+	LoadSpecialTexture(fname, "heat", MAP_HEAT);
 }
 
 

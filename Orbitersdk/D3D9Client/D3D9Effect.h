@@ -26,6 +26,7 @@ struct TexFlow {
 	BOOL Rghn;		// Enable roughness map
 	BOOL Norm;		// Enable normal map
 	BOOL Metl;		// Enable metalness map
+	BOOL Heat;		// Enable heat map
 };
 
 
@@ -169,6 +170,7 @@ public:
 	static D3DXHANDLE	eEnvMapB;
 	static D3DXHANDLE	eReflMap;
 	static D3DXHANDLE	eMetlMap;
+	static D3DXHANDLE	eHeatMap;
 	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;

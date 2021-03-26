@@ -55,9 +55,9 @@ float GGX_NDF(float dHN, float rgh)
 //
 float SchlickBeckmanGSF(float dLN, float dCN, float rgh) // pre-devided by dLN * dCN
 {
-	float  q = rgh * rgh;
-	float2 e; e.xy = (1.0f - q);
-	float2 w = rcp((float2(dLN, dCN) * e) + q);
+	float  r2 = rgh * rgh;
+	float2 e; e.xy = (1.0f - r2);
+	float2 w = rcp((float2(dLN, dCN) * e) + r2);
 	return w.x*w.y;
 }
 
@@ -96,10 +96,10 @@ float3 LightFX(float3 c)
 void SampleEnvMap(out float3 cE, out float3 cA, float dCN, float fRgh, float fMetal, float3 rflW, float3 nrmW)
 {
 	// Sharpen reflection at low angles 
+	fRgh = saturate(fRgh - 0.1f);
+	float fLOD = fRgh * lerp(dCN * 2.0f, (0.1f + dCN*0.9f) * 2.5f, fMetal);	// Compute LOD level for blur effect
 
-	float fLOD = fRgh * lerp(dCN * 3.0f, (0.3f + dCN*0.7f) * 2.5f, fMetal);	// Compute LOD level for blur effect
-
-	fLOD *= 4.5f * rsqrt(1.0f + fLOD*fLOD);
+	fLOD *= 5.0f * rsqrt(1.0f + fLOD*fLOD);
 
 	cE = (dCN > eps ? texCUBElod(EnvMapAS, float4(rflW, fLOD)).rgb : float3(0, 0, 0));
 
@@ -144,10 +144,10 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 nrmW;
 	float3 cEmis;
 	float4 cDiff;
+	float  fHeat;
 	float  fSmth, fMetal;
 	float3 cDiffLocal;
 	float3 cSpecLocal;
-
 
 	// ======================================================================
 	// Start fetching texture data
@@ -170,12 +170,15 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gCfg.Metl) fMetal = tex2D(MetlS, frg.tex0.xy).g;
 	else		   fMetal = gMtrl.metalness;
 
-
 	// Sample emission map. (Note: Emissive materials and textures need to go different stages, material is added to light)
 	//
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
 
+	// Fetch Heat map
+	//
+	if (gCfg.Heat) fHeat = tex2D(HeatS, frg.tex0.xy).g;
+	else		   fHeat = gMtrl.specialfx.x;
 
 	// ----------------------------------------------------------------------
 	// Now do other calculations while textures are being fetched
@@ -237,7 +240,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	fSmth = clamp(pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x, 0.01f, 0.999f);
 
 	float fRgh = saturate(1.0f - fSmth);
-	float fRgh3 = fRgh*fRgh*fRgh;
+	float fRgh3 = clamp(fRgh*fRgh*fRgh, 0.01f, 0.999f);
 
 
 	// ======================================================================
@@ -263,7 +266,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 #if defined(_ENVMAP)
 	if (gEnvMapEnable) SampleEnvMap(cEnv, cAmbient, dCN, fRgh, fMetal, rflW, nrmW);
 #endif
-
+	cAmbient = max(cAmbient, gSun.Ambient);
 
 	// ======================================================================
 	// Add vessel self-shadows
@@ -271,16 +274,21 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 #if SHDMAP > 0
 	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
-
+	cSun *= (1.0f - gSun.Ambient);
+	
 	
 
 
 	// ======================================================================
-	// Main shader core
+	// Main shader core MetalnessPS
 	// ======================================================================
 
+	float  fD = GGX_NDF(dHN, fRgh3);
+	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh);
+	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fMetal); 
+	
 	// Base material color for reflections
-	float3 cSpec = lerp(float3(1, 1, 1), cDiff.rgb, fMetal) * fSmth;
+	float3 cSpec = lerp(float3(1, 1, 1), cDiff.rgb, fMetal);
 
 	// Fresnel power 2.5 for glossy, 5.0 for rough
 	float fFrs = pow(1.0f - dCN, fRgh*2.5 + 2.5f);
@@ -288,43 +296,37 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Fresnel cut-off below X of fSmth
 	fFrs *= saturate(0.6f - fRgh*fRgh) * 1.67f;
 
+	// Assume that plastics absorve 50-90% of specular light
+	float  fP = lerp(0.1f + (1.0f - fRgh)*0.4f, 1.0f, fMetal);
 
-	//float  fD = BeckmanNDF(dHN, fRgh3);
-	float  fD = GGX_NDF(dHN, fRgh3);
-	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh3);
-	float3 fS = FresnelColorShift(dCN, cSpec, fFrs, fRgh, fMetal);
-	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fMetal); 
-	
+	// Fresnel color shift
+	float3 cF = cSpec + (1.0f - cSpec) * fFrs;
+
 	// Specular Color
-	float3 cS = (fD * fS * fG) * 0.25f;	//   / (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
+	float3 cS = (fD * cF * fG * fP) * 0.25f; //*fSmth	//   / (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
 
 		
 	// How plastics reflect the environment
 	float  R = 0.1f * fSmth;
 	float  frP = R + (1.0f - R) * fFrs;
 
-	// How metals reflect the environment
-	float  frM = 1.0f; // 0.7f + fSmth * 0.3f;
-
-	float4 cE = lerp(float4(float3(1, 1, 1), frP), float4(cDiff.rgb, frM), fMetal);
-
-	cE.rgb *= (cEnv * cE.a);
+	float3 cE = (cEnv * cSpec * lerp(frP, 1.0f, fMetal));
 
 	// Attennuate diffuse color for Metals & Fresnel
 	float  fA = (1.0f - fFrs) * (1.0f - fMetal);
 
-	// Add a faint diffuse hue for metals. Rough metal doesn't look good if it's totally black
+	// Add a faint diffuse hue for rough metals. Rough metal doesn't look good if it's totally black
 	fA += fRgh * fMetal * 0.05f;
 
-	float3 zD = cDiff.rgb * fA * LightFX(cSun * fR * dLN + cDiffLocal + cAmbient) + (cDiff.rgb * gMtrl.emissive.rgb) + cE.rgb;
+	float3 zD = cDiff.rgb * fA * LightFX(cSun * fR * dLN + cDiffLocal + cAmbient) + (cDiff.rgb * gMtrl.emissive.rgb);
 
 	// Combine specular terms
 	float3 zS = cS * (cSun * dLN) + LightFX(cSpecLocal) * 1.5f;
 	
-	cDiff.rgb = zD + zS;
+	cDiff.rgb = zD + zS + cE;
 
 	// Override material alpha to make reflections visible
-	cDiff.a = saturate(cDiff.a + cmax(cS + cE.rgb));
+	cDiff.a = saturate(cDiff.a + cmax(zS + cE));
 
 	
 	// ======================================================================
@@ -459,7 +461,7 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	fSmth = clamp(pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x, 0.01f, 0.999f);
 
 	float fRgh = saturate(1.0f - fSmth);
-	float fRgh3 = fRgh*fRgh*fRgh;
+	float fRgh3 = clamp(fRgh*fRgh*fRgh, 0.01f, 0.999f);
 
 	float fSpec = cmax(cSpec);
 
@@ -487,7 +489,7 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 #if defined(_ENVMAP)
 	if (gEnvMapEnable) SampleEnvMap(cEnv, cAmbient, dCN, fRgh, fSpec, rflW, nrmW);
 #endif
-
+	cAmbient = max(cAmbient, gSun.Ambient);
 
 	// ======================================================================
 	// Add vessel self-shadows
@@ -495,28 +497,30 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 #if SHDMAP > 0
 	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
 #endif
+	cSun *= (1.0f - gSun.Ambient);
 
 
 	// ======================================================================
 	// Main shader core SpecularPS
 	// ======================================================================
 
+	float  fD = GGX_NDF(dHN, fRgh3);
+	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh);
+	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fSpec);
+
 	// Fresnel power 2.5 for glossy, 5.0 for rough
 	float fFrs = pow(1.0f - dCN, (fRgh*2.5 + 2.5f) * gMtrl.fresnel.x) * gMtrl.fresnel.y;
-	
+
 	// Fresnel cut-off below X of fSmth
 	fFrs *= saturate(0.6f - fRgh*fRgh) * 1.67f;
 
-	//float  fD = BeckmanNDF(dHN, fRgh3);
-	float  fD = GGX_NDF(dHN, fRgh3);
-	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh3);
-	float3 fS = FresnelColorShift(dCN, cSpec, fFrs, fRgh, fSpec);
-	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fSpec);
+	// Fresnel color shift
+	float3 cF = cSpec + (1.0f - cSpec) * fFrs;
 
 	// Specular Color
-	float3 cS = (fD * fS * fG) * 0.25f;	//   / (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
+	float3 cS = (fD * cF * fG) * 0.25f;	//   / (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
 
-	float3 cE = cEnv * fS;
+	float3 cE = cEnv * cF;
 
 	// Attennuate diffuse color for Fresnel
 	float  fA = (1.0f - fFrs);
@@ -525,15 +529,15 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gRghnSw) fA *= (1.0f - fSpec);
 
 	// Combine diffuse terms
-	float3 zD = cDiff.rgb * fA * LightFX(cSun * fR * dLN + cDiffLocal + cAmbient) + (cDiff.rgb * gMtrl.emissive.rgb) + cE;
+	float3 zD = cDiff.rgb * fA * LightFX(cSun * fR * dLN + cDiffLocal + cAmbient) + (cDiff.rgb * gMtrl.emissive.rgb);
 
 	// Combine specular terms
 	float3 zS = cS * (cSun * dLN) + LightFX(cSpecLocal) * 1.5f;
 
-	cDiff.rgb = zD + zS;
+	cDiff.rgb = zD + zS + cE;
 
 	// Override material alpha to make reflections visible
-	cDiff.a = saturate(cDiff.a + cmax(cS + cE));
+	cDiff.a = saturate(cDiff.a + cmax(zS + cE));
 
 
 	// ======================================================================

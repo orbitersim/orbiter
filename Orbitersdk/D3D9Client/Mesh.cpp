@@ -1083,6 +1083,14 @@ int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
 			Mtrl[idx].ModFlags |= D3D9MATEX_FRESNEL;
 			bMtrlModidied = true;
 			return 0;
+		case MESHM_METALNESS:
+			Mtrl[idx].Metalness = value->r;
+			bMtrlModidied = true;
+			return 0;
+		case MESHM_SPECIALFX:
+			 Mtrl[idx].SpecialFX = *((D3DXVECTOR4*)value);
+			 bMtrlModidied = true;
+			return 0;
 		}
 		return -3;
 	}
@@ -1118,6 +1126,14 @@ int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
 		case MESHM_FRESNEL:
 			if ((Mtrl[idx].ModFlags&D3D9MATEX_FRESNEL) == 0) return -2;
 			*((D3DXVECTOR3*)value) = Mtrl[idx].Fresnel;
+			return 0;
+		case MESHM_METALNESS:
+			if ((Mtrl[idx].ModFlags&MESHM_METALNESS) == 0) return -2;
+			value->r = Mtrl[idx].Metalness;
+			return 0;
+		case MESHM_SPECIALFX:
+			if ((Mtrl[idx].ModFlags&MESHM_SPECIALFX) == 0) return -2;
+			*((D3DXVECTOR4*)value) = Mtrl[idx].SpecialFX;
 			return 0;
 		}
 		return -3;
@@ -1164,6 +1180,16 @@ int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
 		case MESHM_FRESNEL:
 			Mtrl[idx].Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_FRESNEL);
+			bMtrlModidied = true;
+			return 0;
+		case MESHM_METALNESS:
+			Mtrl[idx].Metalness = 0.0f;
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_METALNESS);
+			bMtrlModidied = true;
+			return 0;
+		case MESHM_SPECIALFX:
+			Mtrl[idx].SpecialFX = D3DXVECTOR4(0, 0, 0, 0);
+			Mtrl[idx].ModFlags &= (~D3D9MATEX_SPECIALFX);
 			bMtrlModidied = true;
 			return 0;
 		}
@@ -1599,6 +1625,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 					LPDIRECT3DTEXTURE9 pMetl = NULL;
 					LPDIRECT3DTEXTURE9 pSpec = NULL;
 					LPDIRECT3DTEXTURE9 pRefl = NULL;
+					LPDIRECT3DTEXTURE9 pHeat = NULL;
 					LPDIRECT3DTEXTURE9 pNorm = Tex[ti]->GetMap(MAP_NORMAL);
 					LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
 					LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
@@ -1632,19 +1659,23 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 						pTransl = Tex[ti]->GetMap(MAP_TRANSLUCENCE);
 						pTransm = Tex[ti]->GetMap(MAP_TRANSMITTANCE);
 						pMetl = Tex[ti]->GetMap(MAP_METALNESS);
+						pHeat = Tex[ti]->GetMap(MAP_HEAT);
 
 						if (pTransl) FX->SetTexture(eTranslMap, pTransl);
 						if (pTransm) FX->SetTexture(eTransmMap, pTransm);
 						if (pMetl) FX->SetTexture(eMetlMap, pMetl);
+						if (pHeat) FX->SetTexture(eHeatMap, pHeat);
 
 						FC.Transl = (pTransl != NULL);
 						FC.Transm = (pTransm != NULL);	
 						FC.Metl = (pMetl != NULL);
+						FC.Heat = (pHeat != NULL);
 					}
 					else {
 						FC.Transl = false;
 						FC.Transm = false;
 						FC.Metl = false;
+						FC.Heat = false;
 					}
 
 					FC.Emis = (pEmis != NULL);					

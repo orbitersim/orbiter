@@ -214,7 +214,7 @@ void Create()
 	PrmList.push_back(MatParams("Fresnel", 6));
 	PrmList.push_back(MatParams("Emission2", 7));
 	PrmList.push_back(MatParams("Metalness", 8));
-	PrmList.push_back(MatParams("Glow", 9));
+	PrmList.push_back(MatParams("SpecialFX", 9));
 	PrmList.push_back(MatParams("- - - - - -", 10));
 	PrmList.push_back(MatParams("Tune Albedo", 11));
 	PrmList.push_back(MatParams("Tune _Emis", 12));
@@ -352,13 +352,13 @@ void InitMatList(WORD shader)
 	}
 
 	if (shader == SHADER_METALNESS) {
-		std::list<char> list = { 0, 3, 5, 7, 8 };
+		std::list<char> list = { 0, 3, 5, 7, 8, 9 };
 		for (auto x : list) Dropdown.push_back(PrmList[x]);
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
 
 	if (shader == SHADER_SPECULAR) {
-		std::list<char> list = { 0, 3, 4, 5, 6, 7 };
+		std::list<char> list = { 0, 3, 4, 5, 6, 7, 9 };
 		for (auto x : list) Dropdown.push_back(PrmList[x]);
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
@@ -459,6 +459,9 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETTICFREQ,  1, 0);
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, 0);
 	
+	// Set the "pick" checked
+	SendDlgItemMessage(hDlg, IDC_DBG_PICK, BM_SETCHECK, 1, 0);
+
 	camMode = 0;
 	dspMode = 0;
 
@@ -529,8 +532,8 @@ void OpenDlgClbk(void *context)
 	// Metalness
 	Params[8].var[0] = DefVar(0, 1, LIN, "Metalness");
 
-	// Glow (unused)
-	Params[9].var[0] = DefVar(0, 1, LIN, "Glow");
+	// SpecialFX
+	Params[9].var[0] = DefVar(0, 1, LIN, "Part Temperature");
 	
 
 	// Unused index 10
@@ -722,12 +725,14 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 9:	// Glow
+		case 9:	// SpecialFX
 		{
+			Mat.ModFlags |= D3D9MATEX_SPECIALFX;
+			Mat.SpecialFX[clr] = _Clamp(value, MatPrp, clr);
 			break;
 		}
 
-		case 11:		// Tune Albedo
+		case 11:	// Tune Albedo
 		{
 			SetTuningValue(MatPrp, &Tune.Albedo, clr, value);
 			break;
@@ -792,6 +797,7 @@ DWORD GetModFlags(DWORD MatPrp)
 		case 6:	return D3D9MATEX_FRESNEL;
 		case 7:	return D3D9MATEX_EMISSION2;
 		case 8:	return D3D9MATEX_METALNESS;
+		case 9:	return D3D9MATEX_SPECIALFX;
 	}
 	return 0;
 }
@@ -957,8 +963,14 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 9:	// Glow
+		case 9:	// SpecialFX
 		{
+			switch (clr) {
+				case 0: return pMat->SpecialFX.x;
+				case 1: return pMat->SpecialFX.y;
+				case 2: return pMat->SpecialFX.z;
+				case 3: return pMat->SpecialFX.w;
+			}
 			break;
 		}
 
@@ -1932,6 +1944,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				SetWindowPos(hDlg, NULL, rect.left, rect.top, isOpen ?   298 : origwidth, rect.bottom - rect.top, SWP_SHOWWINDOW);
 				SetWindowText(GetDlgItem(hWnd, IDC_DBG_MORE), isOpen ? ">>>" : "<<<");
 				isOpen = !isOpen;
+				break;
+
+			case IDC_DBG_RELOADSHD:
+				D3D9Effect::D3D9TechInit(g_client, g_client->GetDevice(), "D3D9Client");
 				break;
 
 			case IDC_DBG_ENVSAVE:

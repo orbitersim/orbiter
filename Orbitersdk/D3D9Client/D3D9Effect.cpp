@@ -78,6 +78,7 @@ D3DXHANDLE D3D9Effect::eEnvMapB = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
 D3DXHANDLE D3D9Effect::eRghnMap = 0;
 D3DXHANDLE D3D9Effect::eMetlMap = 0;
+D3DXHANDLE D3D9Effect::eHeatMap = 0;
 D3DXHANDLE D3D9Effect::eShadowMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
@@ -454,6 +455,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
 	eRghnMap	  = FX->GetParameterByName(0,"gRghnMap");
 	eMetlMap	  = FX->GetParameterByName(0,"gMetlMap");
+	eHeatMap	  = FX->GetParameterByName(0,"gHeatMap");
 	eShadowMap	  = FX->GetParameterByName(0,"gShadowMap");
 
 	// Atmosphere -----------------------------------------------------------
@@ -489,21 +491,24 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 
 	// Create a Circle Mesh --------------------------------------------
 	//
-	HR(pDev->CreateVertexBuffer(256*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &VB, NULL));
+	if (!VB) {
+		HR(pDev->CreateVertexBuffer(256 * sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &VB, NULL));
 
-	D3DXVECTOR3 *pVert;
+		D3DXVECTOR3 *pVert;
 
-	if (VB->Lock(0,0,(void **)&pVert,0)==S_OK) {
-		float angle=0.0f, step=float(PI2)/255.0f;
-		pVert[0] = D3DXVECTOR3(0,0,0);
-		for (int i=1;i<256;i++) {
-			pVert[i].x = 0;
-			pVert[i].y = cos(angle);
-			pVert[i].z = sin(angle);
-			angle += step;
+		if (VB->Lock(0, 0, (void **)&pVert, 0) == S_OK) {
+			float angle = 0.0f, step = float(PI2) / 255.0f;
+			pVert[0] = D3DXVECTOR3(0, 0, 0);
+			for (int i = 1; i < 256; i++) {
+				pVert[i].x = 0;
+				pVert[i].y = cos(angle);
+				pVert[i].z = sin(angle);
+				angle += step;
+			}
+			VB->Unlock();
 		}
-		VB->Unlock();
-	} else LogErr("Failed to Lock vertex buffer");
+		else LogErr("Failed to Lock vertex buffer");
+	}
 }
 
 
