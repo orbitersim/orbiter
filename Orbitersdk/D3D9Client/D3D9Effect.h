@@ -25,8 +25,7 @@ struct TexFlow {
 	BOOL Transm;	// Enable transmissive effect
 	BOOL Rghn;		// Enable roughness map
 	BOOL Norm;		// Enable normal map
-	BOOL Frsl;		// Enable fresnel map
-	BOOL Transx;	// True if either of Transl or Transm is true
+	BOOL Metl;		// Enable metalness map
 };
 
 
@@ -169,7 +168,7 @@ public:
 	static D3DXHANDLE	eEnvMapA;
 	static D3DXHANDLE	eEnvMapB;
 	static D3DXHANDLE	eReflMap;
-	static D3DXHANDLE	eFrslMap;
+	static D3DXHANDLE	eMetlMap;
 	static D3DXHANDLE	eRghnMap;
 	static D3DXHANDLE	eTranslMap;
 	static D3DXHANDLE	eTransmMap;

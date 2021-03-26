@@ -22,7 +22,11 @@ inline float cmax(float3 color)
 // Must be included here
 #include "PBR.fx"
 
+// Must be included here
+//#include "PBR_Mk2.fx"
 
+// Must be included here
+#include "Metalness.fx"
 
 // ============================================================================
 // Vertex shader for physics based rendering
@@ -132,7 +136,7 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Compute Local Light Sources
 	// ----------------------------------------------------------------------
 
-	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a);
+	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a, false);
 
 
 	// Lit the diffuse texture
@@ -145,7 +149,7 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Compute Transluciency effect --------------------------------------------------------------
 	//
 
-	if (gCfg.Transx) {
+	if (gCfg.Transm || gCfg.Transl) {
 
 		float4 cTransm = float4(cTex.rgb, 1.0f);
 
@@ -195,9 +199,8 @@ float4 AdvancedPS(float4 sc : VPOS, PBRData frg) : COLOR
 		// Do we need fresnel code for this render pass ?
 
 		if (gFresnel) {
-
-			if (gCfg.Frsl) fFrsl = tex2D(FrslS, frg.tex0.xy).g;
-			else 		   fFrsl = gMtrl.fresnel.y;
+		
+			fFrsl = gMtrl.fresnel.y;
 
 			// Get mirror reflection for fresnel
 			float3 cEnvFres = texCUBElod(EnvMapAS, float4(RflW, 0)).rgb;
@@ -278,7 +281,7 @@ technique VesselTech
 	pass P1
 	{
 		vertexShader = compile vs_3_0 AdvancedVS();
-		pixelShader  = compile ps_3_0 AdvancedPS();
+		pixelShader = compile ps_3_0 AdvancedPS();
 
 		AlphaBlendEnable = true;
 		BlendOp = Add;
@@ -313,4 +316,30 @@ technique VesselTech
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = true;
 	}
+	pass P4
+	{
+		vertexShader = compile vs_3_0 MetalnessVS();
+		pixelShader = compile ps_3_0 MetalnessPS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		ZEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = true;
+	}
+	/*
+	pass P5
+	{
+		vertexShader = compile vs_3_0 PBR2_VS();
+		pixelShader = compile ps_3_0 PBR2_PS();
+
+		AlphaBlendEnable = true;
+		BlendOp = Add;
+		ZEnable = true;
+		SrcBlend = SrcAlpha;
+		DestBlend = InvSrcAlpha;
+		ZWriteEnable = true;
+	}
+	*/
 }

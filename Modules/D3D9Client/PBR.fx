@@ -242,7 +242,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Compute Local Light Sources
 	// ----------------------------------------------------------------------
 
-	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a);
+	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a, false);
 
 
 	// ----------------------------------------------------------------------
@@ -439,7 +439,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		float3 cSun  = saturate(gSun.Color);
 		float  dLN   = saturate(-dot(gSun.Dir, nrmW));
 
-		cSpec.rgb *= 0.33333f;
+		//cSpec.rgb *= 0.33333f;
 
 		if (gNoColor) cDiff.rgb = 1;
 
@@ -456,7 +456,7 @@ float4 FAST_PS(float4 sc : VPOS, FASTData frg) : COLOR
 		// Compute Local Light Sources
 		// ----------------------------------------------------------------------
 
-		LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a);
+		LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, cSpec.a, false);
 
 
 		// ----------------------------------------------------------------------

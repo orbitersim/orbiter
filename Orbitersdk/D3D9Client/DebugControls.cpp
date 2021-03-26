@@ -19,6 +19,8 @@
 #include "VectorHelpers.h"
 #include <stdio.h>
 
+enum scale { LIN, SQRT, SQR };
+
 using namespace oapi;
 
 extern HINSTANCE g_hInst;
@@ -30,16 +32,18 @@ extern D3D9Client *g_client;
 
 namespace DebugControls {
 
-DWORD dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor;
+DWORD dwGFX, dwCmd, nMesh, nGroup, sMesh, sGroup, debugFlags, dspMode, camMode, SelColor;
 double camSpeed;
 float cpr, cpg, cpb, cpa;
 double resbias = 4.0;
 char visual[64];
 int  origwidth;
+HWND hGfxDlg = NULL;
 HWND hDlg = NULL;
 HWND hDataWnd = NULL;
 vObject *vObj = NULL;
 std::string buffer("");
+std::string buffer2("");
 D3DXVECTOR3 PickLocation;
 
 HWND hTipRed, hTipGrn, hTipBlu, hTipAlp;
@@ -49,21 +53,34 @@ char OpenFileName[255];
 char SaveFileName[255];
 
 void UpdateMaterialDisplay(bool bSetup=false);
+void SetGFXSliders();
+BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+void OpenGFXDlgClbk(void *context);
+
 
 struct _Variable {
 	float min, max, def;
-	bool bLog;
+	scale Scl;
 	bool bUsed;
 	bool bGamma;
 	char tip[80];
 };
+
+struct MatParams {
+	MatParams(string n, DWORD i) : name(n), id(i) {}
+	string name;
+	DWORD id;
+};
+
+std::vector<MatParams> PrmList;
+std::vector<MatParams> Dropdown;
 
 struct _Params {
 	_Variable var[4];
 };
 
 
-_Params Params[17] = { 0 };
+_Params Params[20] = { 0 };
 
 
 
@@ -137,6 +154,7 @@ void Create()
 {
 	vObj = NULL;
 	hDlg = NULL;
+	hGfxDlg = NULL;
 	nMesh = 0;
 	nGroup = 0;
 	sMesh = 0;
@@ -151,11 +169,13 @@ void Create()
 	cpr = cpg = cpb = cpa = 0.0f;
 
 	if (Config->EnableMeshDbg) {
-		dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug controls", OpenDlgClbk, NULL);
+		dwCmd = oapiRegisterCustomCmd("D3D9 Debug Controls", "This dialog allows to control various debug and development features", OpenDlgClbk, NULL);
 	}
 	else {
 		dwCmd = 0;
 	}
+
+	dwGFX = oapiRegisterCustomCmd("D3D9 Graphics Controls", "This dialog allows to control various graphics options", OpenGFXDlgClbk, NULL);
 
 	resbias = 4.0 + Config->LODBias;
   
@@ -184,6 +204,25 @@ void Create()
 	SaveTex.lpstrFileTitle = NULL;
 	SaveTex.nMaxFileTitle = 0;
 	SaveTex.Flags = OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+	PrmList.push_back(MatParams("Diffuse", 0));
+	PrmList.push_back(MatParams("Ambient", 1));
+	PrmList.push_back(MatParams("Specular", 2));
+	PrmList.push_back(MatParams("Emission", 3));
+	PrmList.push_back(MatParams("Reflect", 4));
+	PrmList.push_back(MatParams("Roughness", 5));
+	PrmList.push_back(MatParams("Fresnel", 6));
+	PrmList.push_back(MatParams("Emission2", 7));
+	PrmList.push_back(MatParams("Metalness", 8));
+	PrmList.push_back(MatParams("Glow", 9));
+	PrmList.push_back(MatParams("- - - - - -", 10));
+	PrmList.push_back(MatParams("Tune Albedo", 11));
+	PrmList.push_back(MatParams("Tune _Emis", 12));
+	PrmList.push_back(MatParams("Tune _Refl", 13));
+	PrmList.push_back(MatParams("Tune _Rghn", 14));
+	PrmList.push_back(MatParams("Tune _Transl", 15));
+	PrmList.push_back(MatParams("Tune _Transm", 16));
+	PrmList.push_back(MatParams("Tune _Spec", 17));
 }
 
 // =============================================================================================
@@ -224,10 +263,13 @@ int GetSelectedEnvMap()
 //
 void Release()
 {
-	vObj=NULL;
-	hDlg=NULL;
+	vObj = NULL;
+	hDlg = NULL;
+	hGfxDlg = NULL;
 	if (dwCmd) oapiUnregisterCustomCmd(dwCmd);
+	if (dwGFX) oapiUnregisterCustomCmd(dwGFX);
 	dwCmd = NULL;
+	dwGFX = NULL;
 }
 
 // =============================================================================================
@@ -259,17 +301,53 @@ void SetGroupHighlight(bool bStat)
 }
 
 
-inline _Variable DefVar(float min, float max, bool bLog, const char *tip, bool bGamma=false)
+inline _Variable DefVar(float min, float max, scale scl, const char *tip, bool bGamma=false)
 {
 	_Variable var;
 	var.bUsed = true;
-	var.bLog = bLog;
+	var.Scl = scl;
 	var.bGamma = bGamma;
 	var.max = max;
 	var.min = min;
 	strncpy_s(var.tip, 80, tip, 80);
 	return var;
 }
+
+DWORD DropdownList(DWORD x)
+{
+	if (x >= Dropdown.size()) return 0;
+	return Dropdown[x].id;
+}
+
+// =============================================================================================
+//
+void InitMatList(WORD shader)
+{
+	static WORD CurrentShader = 0xAAAA;
+
+	if (shader == CurrentShader) return;
+	CurrentShader = shader;
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
+
+	Dropdown.clear();
+
+	if (shader == SHADER_NULL) {
+		std::list<char> list = { 0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17 };
+		for (auto x : list) Dropdown.push_back(PrmList[x]);
+		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());	
+	}
+
+	if (shader == SHADER_METALNESS) {
+		std::list<char> list = { 0, 1, 3, 5, 7, 8, 9, 10, 11, 12, 15, 16 };
+		for (auto x : list) Dropdown.push_back(PrmList[x]);
+		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
+	}
+
+	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
+}
+
 
 
 // =============================================================================================
@@ -301,25 +379,11 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_ADDSTRING, 0, (LPARAM)"Wheel Fly/Pan Cam");
 	SendDlgItemMessageA(hDlg, IDC_DBG_CAMERA, CB_SETCURSEL, 0, 0);
 
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Diffuse");		// 0
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Ambient");		// 1
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Specular");		// 2
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission");		// 3
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Reflect");		// 4
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Roughness");	// 5
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Fresnel");		// 6
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Emission2");	// 7
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"---------");		// 8
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune Albedo");	// 9
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Emis");	// 10
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Refl");	// 11
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Rghn");	// 12
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Transl");	// 13
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Transm");	// 14
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Spec");	// 15
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)"Tune _Frsl");	// 16
-	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"PBR (Old)");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Metalness PBR");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"---");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_ADDSTRING, 0, (LPARAM)"None");
@@ -404,74 +468,79 @@ void OpenDlgClbk(void *context)
 	hTipAlp = CreateToolTip(IDC_DBG_ALPHA, hDlg, "Alpha");
 
 	// Diffuse
-	Params[0].var[0] = DefVar(0, 1, false, "Red");
-	Params[0].var[1] = DefVar(0, 1, false, "Green");
-	Params[0].var[2] = DefVar(0, 1, false, "Blue");
-	Params[0].var[3] = DefVar(0, 1, false, "Alpha");
+	Params[0].var[0] = DefVar(0, 1, LIN, "Red");
+	Params[0].var[1] = DefVar(0, 1, LIN, "Green");
+	Params[0].var[2] = DefVar(0, 1, LIN, "Blue");
+	Params[0].var[3] = DefVar(0, 1, LIN, "Alpha");
 
 	// Ambient
-	Params[1].var[0] = DefVar(0, 1, false, "Red");
-	Params[1].var[1] = DefVar(0, 1, false, "Green");
-	Params[1].var[2] = DefVar(0, 1, false, "Blue");
+	Params[1].var[0] = DefVar(0, 1, LIN, "Red");
+	Params[1].var[1] = DefVar(0, 1, LIN, "Green");
+	Params[1].var[2] = DefVar(0, 1, LIN, "Blue");
 
 	// Specular
-	Params[2].var[0] = DefVar(0, 1, true, "Red");
-	Params[2].var[1] = DefVar(0, 1, true, "Green");
-	Params[2].var[2] = DefVar(0, 1, true, "Blue");
-	Params[2].var[3] = DefVar(1, 4096.0f, true, "Specular power");
+	Params[2].var[0] = DefVar(0, 1, SQRT, "Red");
+	Params[2].var[1] = DefVar(0, 1, SQRT, "Green");
+	Params[2].var[2] = DefVar(0, 1, SQRT, "Blue");
+	Params[2].var[3] = DefVar(1, 4096.0f, SQRT, "Specular power");
 
 	// Emission
-	Params[3].var[0] = DefVar(0, 1, false, "Red");
-	Params[3].var[1] = DefVar(0, 1, false, "Green");
-	Params[3].var[2] = DefVar(0, 1, false, "Blue");
+	Params[3].var[0] = DefVar(0, 1, LIN, "Red");
+	Params[3].var[1] = DefVar(0, 1, LIN, "Green");
+	Params[3].var[2] = DefVar(0, 1, LIN, "Blue");
 
 	// Reflectivity
-	Params[4].var[0] = DefVar(0, 1, false, "Red");
-	Params[4].var[1] = DefVar(0, 1, false, "Green");
-	Params[4].var[2] = DefVar(0, 1, false, "Blue");
+	Params[4].var[0] = DefVar(0, 1, LIN, "Red");
+	Params[4].var[1] = DefVar(0, 1, LIN, "Green");
+	Params[4].var[2] = DefVar(0, 1, LIN, "Blue");
 
 	// Roughness
-	Params[5].var[0] = DefVar(0.1f, 1, false, "Roughness");
+	Params[5].var[0] = DefVar(0, 1, SQR, "Roughness");
 
 	// Fresnel
-	Params[6].var[0] = DefVar(1, 6, false, "Angle dependency");
-	Params[6].var[1] = DefVar(0, 1, false, "Maximum intensity");
-	Params[6].var[2] = DefVar(10.0f, 4096.0f, true, "Specular lobe size");
+	Params[6].var[0] = DefVar(1, 6, LIN, "Angle dependency");
+	Params[6].var[1] = DefVar(0, 1, LIN, "Maximum intensity");
+	Params[6].var[2] = DefVar(10.0f, 4096.0f, SQRT, "Specular lobe size");
 	
 	// Emission2
-	Params[7].var[0] = DefVar(0, 3, false, "Red");
-	Params[7].var[1] = DefVar(0, 3, false, "Green");
-	Params[7].var[2] = DefVar(0, 3, false, "Blue");
+	Params[7].var[0] = DefVar(0, 3, LIN, "Red");
+	Params[7].var[1] = DefVar(0, 3, LIN, "Green");
+	Params[7].var[2] = DefVar(0, 3, LIN, "Blue");
+
+	// Metalness
+	Params[8].var[0] = DefVar(0, 1, LIN, "Metalness");
+
+	// Metalness
+	Params[9].var[0] = DefVar(0, 1, LIN, "Glow");
+	
 
 	// Unused index 8
 	
 	// Tuning -------------------------------------------------------------------------------------
 	// Albedo
-	Params[9].var[0] = DefVar(0.2f, 5.0f, true, "Red");
-	Params[9].var[1] = DefVar(0.2f, 5.0f, true, "Green");
-	Params[9].var[2] = DefVar(0.2f, 5.0f, true, "Blue");
-	Params[9].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+	int i = 11;
+	Params[i].var[0] = DefVar(0.2f, 5.0f, SQRT, "Red");
+	Params[i].var[1] = DefVar(0.2f, 5.0f, SQRT, "Green");
+	Params[i].var[2] = DefVar(0.2f, 5.0f, SQRT, "Blue");
+	Params[i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
 
-	Params[10] = Params[9];	 // Emis
-	Params[10].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+	Params[1 + i] = Params[i];	 // Emis
+	Params[1 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
 
-	Params[11] = Params[9];	 // Refl
-	Params[11].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+	Params[2 + i] = Params[i];	 // Refl
+	Params[2 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
 
-	Params[12] = Params[9];  // Regn
-	Params[12].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+	Params[3 + i] = Params[i];  // Regn
+	Params[3 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "Gamma", true);
 
-	Params[13] = Params[9];  // Transl
-	Params[13].var[3] = DefVar(0.2f, 5.0f, true, "???");
+	Params[4 + i] = Params[i];  // Transl
+	Params[4 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "???");
 
-	Params[14] = Params[9];  // Transm
-	Params[14].var[3] = DefVar(0.2f, 5.0f, true, "???");
+	Params[5 + i] = Params[i];  // Transm
+	Params[5 + i].var[3] = DefVar(0.2f, 5.0f, SQRT, "???");
 
-	Params[15] = Params[9];	 // Spec
-	Params[15].var[3] = DefVar(0.1f, 9.9f, true, "Power", false);
-
-	Params[16] = Params[9];  // Frsl
-	Params[16].var[3] = DefVar(0.2f, 5.0f, true, "Gamma", true);
+	Params[6 + i] = Params[i];	 // Spec
+	Params[6 + i].var[3] = DefVar(0.1f, 9.9f, SQRT, "Power", false);
 }
 
 
@@ -520,7 +589,7 @@ float _Clamp(float value, DWORD p, DWORD v)
 
 // =============================================================================================
 //
-void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
+void UpdateShader()
 {
 	OBJHANDLE hObj = vObj->GetObjectA();
 
@@ -530,6 +599,25 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 	if (!hMesh) return;
 
+	DWORD Shader = SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0);
+	if (Shader == 0) hMesh->SetDefaultShader(SHADER_NULL);
+	if (Shader == 1) hMesh->SetDefaultShader(SHADER_METALNESS);
+
+	InitMatList(hMesh->GetDefaultShader());
+}
+
+// =============================================================================================
+//
+void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
+{
+	OBJHANDLE hObj = vObj->GetObjectA();
+
+	if (!oapiIsVessel(hObj)) return;
+
+	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
+
+	if (!hMesh) return;
+	
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 	DWORD texidx = hMesh->GetMeshGroupTextureIdx(sGroup);
 
@@ -598,51 +686,59 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 9:		// Tune Albedo
+		case 8:	// Metalness
+		{
+			Mat.ModFlags |= D3D9MATEX_METALNESS;
+			Mat.Metalness = _Clamp(value, MatPrp, clr);
+			break;
+		}
+
+		case 9:	// Glow
+		{
+			Mat.ModFlags |= D3D9MATEX_GLOW;
+			Mat.Glow = _Clamp(value, MatPrp, clr);
+			break;
+		}
+
+		case 11:		// Tune Albedo
 		{
 			SetTuningValue(MatPrp, &Tune.Albedo, clr, value);
 			break;
 		}
 
-		case 10:	// Tune Emis
+		case 12:	// Tune Emis
 		{
 			SetTuningValue(MatPrp, &Tune.Emis, clr, value);
 			break;
 		}
 
-		case 11:	// Tune Refl
+		case 13:	// Tune Refl
 		{
 			SetTuningValue(MatPrp, &Tune.Refl, clr, value);
 			break;
 		}
 
-		case 12:	// Tune _Rghn
+		case 14:	// Tune _Rghn
 		{
 			SetTuningValue(MatPrp, &Tune.Rghn, clr, value);
 			break;
 		}
 
-		case 13:	// Tune _Transl
+		case 15:	// Tune _Transl
 		{
 			SetTuningValue(MatPrp, &Tune.Transl, clr, value);
 			break;
 		}
 
-		case 14:	// Tune _Transm
+		case 16:	// Tune _Transm
 		{
 			SetTuningValue(MatPrp, &Tune.Transm, clr, value);
 			break;
 		}
 
-		case 15:	// Tune _Spec
+		case 17:	// Tune _Spec
 		{
 			SetTuningValue(MatPrp, &Tune.Spec, clr, value);
-			break;
-		}
-
-		case 16:	// Tune _Frsl
-		{
-			SetTuningValue(MatPrp, &Tune.Frsl, clr, value);
 			break;
 		}
 	}
@@ -668,6 +764,8 @@ DWORD GetModFlags(DWORD MatPrp)
 		case 5:	return D3D9MATEX_ROUGHNESS;
 		case 6:	return D3D9MATEX_FRESNEL;
 		case 7:	return D3D9MATEX_EMISSION2;
+		case 8:	return D3D9MATEX_METALNESS;
+		case 9:	return D3D9MATEX_GLOW;
 	}
 	return 0;
 }
@@ -824,44 +922,55 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 9:	// Tune Albedo
+		case 8:	// Metalness
+		{
+			switch (clr) {
+			case 0: return pMat->Metalness;
+			}
+			break;
+		}
+
+		case 9:	// Glow
+		{
+			switch (clr) {
+			case 0: return pMat->Glow;
+			}
+			break;
+		}
+
+		case 11:	// Tune Albedo
 		{
 			return GetTuningValue(MatPrp, &Tune.Albedo, clr);
 		}
 
-		case 10:	// Tune Emis
+		case 12:	// Tune Emis
 		{
 			return GetTuningValue(MatPrp, &Tune.Emis, clr);
 		}
 
-		case 11:	// Tune Refl
+		case 13:	// Tune Refl
 		{
 			return GetTuningValue(MatPrp, &Tune.Refl, clr);
 		}
 
-		case 12:	// Tune _Rghn
+		case 14:	// Tune _Rghn
 		{
 			return GetTuningValue(MatPrp, &Tune.Rghn, clr);
 		}
 
-		case 13:	// Tune _Transl
+		case 15:	// Tune _Transl
 		{
 			return GetTuningValue(MatPrp, &Tune.Transl, clr);
 		}
 
-		case 14:	// Tune _Transm
+		case 16:	// Tune _Transm
 		{
 			return GetTuningValue(MatPrp, &Tune.Transm, clr);
 		}
 
-		case 15:	// Tune _Spec
+		case 17:	// Tune _Spec
 		{
 			return GetTuningValue(MatPrp, &Tune.Spec, clr);
-		}
-
-		case 16:	// Tune _Frsl
-		{
-			return GetTuningValue(MatPrp, &Tune.Frsl, clr);
 		}
 	}
 
@@ -872,14 +981,15 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 //
 void SetColorSlider()
 {
-	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
 
 	float val = GetMaterialValue(MatPrp, SelColor);
 
 	val -= Params[MatPrp].var[SelColor].min;
 	val /= (Params[MatPrp].var[SelColor].max - Params[MatPrp].var[SelColor].min);
 
-	if (Params[MatPrp].var[SelColor].bLog) val = sqrt(val);
+	if (Params[MatPrp].var[SelColor].Scl == scale::SQRT) val = sqrt(val);
+	if (Params[MatPrp].var[SelColor].Scl == scale::SQR) val = val*val;
 
 	SendDlgItemMessage(hDlg, IDC_DBG_MATADJ, TBM_SETPOS,  1, WORD(val*255.0f));
 }
@@ -890,8 +1000,8 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 {
 	char lbl[32];
 
-	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
-
+	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	
 	float r = GetMaterialValue(MatPrp, 0);
 	float g = GetMaterialValue(MatPrp, 1);
 	float b = GetMaterialValue(MatPrp, 2);
@@ -940,6 +1050,12 @@ void UpdateMaterialDisplay(bool bSetup)
 	D3D9Mesh *hMesh = (D3D9Mesh *)vObj->GetMesh(sMesh);
 	if (!hMesh) return;
 
+	WORD Shader = hMesh->GetDefaultShader();
+	if (Shader == SHADER_NULL) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
+	if (Shader == SHADER_METALNESS) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 1, 0);
+
+	InitMatList(Shader);
+
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 
 	// Set material info
@@ -952,8 +1068,8 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	if (bSetup) SelColor = 0;
 
-	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
-
+	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	
 	DisplayMat(Params[MatPrp].var[0].bUsed, Params[MatPrp].var[1].bUsed, Params[MatPrp].var[2].bUsed, Params[MatPrp].var[3].bUsed);
 
 	SetToolTip(IDC_DBG_RED, hTipRed, Params[MatPrp].var[0].tip);
@@ -974,6 +1090,9 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	sprintf_s(lbl, 256, "Mesh: %s", RemovePath(hMesh->GetName()));
 	SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHNAME), lbl);
+	
+	GetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHGRP), lbl2, 64);
+	if (strcmp(lbl, lbl2)) SetWindowText(GetDlgItem(hDlg, IDC_DBG_MESHGRP), lbl); // Avoid causing flashing
 }
 
 // =============================================================================================
@@ -992,13 +1111,15 @@ void UpdateColorSlider(WORD pos)
 {
 	float val = float(pos)/255.0f;
 	
-	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));	
+
 	bool bLink = (SendDlgItemMessageA(hDlg, IDC_DBG_LINK, BM_GETCHECK, 0, 0)==BST_CHECKED);
 
 	if (MatPrp==5 || MatPrp==6) bLink = false;	// Roughness, Fresnel
 	if (SelColor==3) bLink = false;				// Alpha, Specular power
 
-	if (Params[MatPrp].var[SelColor].bLog) val = (val*val);
+	if (Params[MatPrp].var[SelColor].Scl == scale::SQRT) val = (val*val);
+	if (Params[MatPrp].var[SelColor].Scl == scale::SQR) val = sqrt(val);
 
 	val *= (Params[MatPrp].var[SelColor].max - Params[MatPrp].var[SelColor].min);
 	val += Params[MatPrp].var[SelColor].min;
@@ -1154,7 +1275,7 @@ void RemoveVisual(vObject *vo)
 //
 void SetColorValue(const char *lbl)
 {
-	DWORD MatPrp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
+	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
 	UpdateMeshMaterial(float(atof(lbl)), MatPrp, SelColor);
 	SetColorSlider();
 }
@@ -1395,16 +1516,38 @@ void Append(const char *format, ...)
 
 //-------------------------------------------------------------------------------------------
 //
-void Refresh()
+void Append2(const char *format, ...)
+{
+	if (hDataWnd == NULL) return;
+	char buf[256];
+	va_list args;
+	va_start(args, format);
+	_vsnprintf_s(buf, 256, 256, format, args);
+	va_end(args);
+	buffer2 += buf;
+}
+
+//-------------------------------------------------------------------------------------------
+//
+void Refresh2()
 {
 	if (hDataWnd == NULL) return;
 
-	Append("LocalPos = [%f, %f, %f]", PickLocation.x, PickLocation.y, PickLocation.z);
+	Append2("LocalPos = [%f, %f, %f]", PickLocation.x, PickLocation.y, PickLocation.z);
 
-	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW), buffer.c_str());
-	buffer.clear();
+	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW2), buffer2.c_str());
+	buffer2.clear();
 }
 
+//-------------------------------------------------------------------------------------------
+//
+void Refresh()
+{
+	if (hDataWnd == NULL) return;
+	SetWindowTextA(GetDlgItem(hDataWnd, IDC_DBG_DATAVIEW), buffer.c_str());
+	buffer.clear();
+	Refresh2();
+}
 
 //-------------------------------------------------------------------------------------------
 //
@@ -1484,8 +1627,8 @@ BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static bool isOpen = false; // IDC_DBG_MORE (full or reduced width)
 
-	DWORD Prp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
-
+	DWORD Prp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	
 	switch (uMsg) {
 
 	case WM_INITDIALOG:
@@ -1524,8 +1667,8 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	OpenTex.hwndOwner = hWnd;
 
-	DWORD Prp = SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0);
-
+	DWORD Prp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	
 	switch (uMsg) {
 
 	case WM_INITDIALOG:
@@ -1671,6 +1814,12 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			case IDC_DBG_DEFSHADER:
+				if (HIWORD(wParam) == CBN_SELCHANGE) {
+					UpdateShader();
+				}
+				break;
+
 			case IDC_DBG_DISPLAY:
 				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0);
 				break;
@@ -1781,6 +1930,149 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
 }
+
+
+
+
+
+
+// =============================================================================================
+//
+void CloseGFX()
+{
+	if (hGfxDlg != NULL) {
+		oapiCloseDialog(hGfxDlg);
+		hGfxDlg = NULL;
+	}
+}
+
+// =============================================================================================
+//
+void OpenGFXDlgClbk(void *context)
+{
+	HWND l_hDlg = oapiOpenDialog(g_hInst, IDD_GRAPHICS, WndProcGFX);
+	if (l_hDlg) hGfxDlg = l_hDlg; // otherwise open already
+	else return;
+
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_INTENSITY, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_INTENSITY, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_INTENSITY, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_INTENSITY, TBM_SETPOS, 1, 0);
+
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETPOS, 1, 0);
+
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETPOS, 1, 0);
+
+	// slider
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETRANGEMAX, 1, 255);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETRANGEMIN, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETTICFREQ, 1, 0);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETPOS, 1, 0);
+
+	SetGFXSliders();
+}
+
+void SetGFXSliders()
+{
+	char lbl[32];
+	double fpos;
+
+	fpos = Config->GFXIntensity;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL1), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_INTENSITY, TBM_SETPOS, 1, WORD(fpos*255.0));
+
+	fpos = Config->GFXDistance;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL2), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_SETPOS, 1, WORD(fpos*255.0));
+
+	fpos = Config->GFXSpecularity;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL3), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_SETPOS, 1, WORD(fpos*255.0));
+
+	fpos = Config->GFXGamma;
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL4), lbl);
+	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETPOS, 1, WORD(fpos*255.0/2.5));
+}
+
+void ReadGFXSliders()
+{
+	char lbl[32];
+	double fpos;
+
+	fpos = (1.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_INTENSITY, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL1), lbl);
+	Config->GFXIntensity = fpos;
+	
+	fpos = (1.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_DISTANCE, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL2), lbl);
+	Config->GFXDistance = fpos;
+		
+	fpos = (1.0 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_SPECULARITY, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL3), lbl);
+	Config->GFXSpecularity = fpos;
+	
+	fpos = (2.5 / 255.0) * double(SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_GETPOS, 0, 0));
+	sprintf_s(lbl, 32, "%1.2f", fpos);
+	SetWindowTextA(GetDlgItem(hGfxDlg, IDC_GFX_VAL4), lbl);
+	Config->GFXGamma = fpos;	
+}
+
+BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+
+	case WM_INITDIALOG:
+	{
+		return TRUE;	// All Init actions are done in OpenDlgClbk();
+	}
+
+	case WM_HSCROLL:
+	{
+		if (LOWORD(wParam) == TB_THUMBTRACK || LOWORD(wParam) == TB_ENDTRACK) {
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_INTENSITY)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_DISTANCE)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_SPECULARITY)) ReadGFXSliders();
+			if (HWND(lParam) == GetDlgItem(hWnd, IDC_GFX_GAMMA)) ReadGFXSliders();
+		}
+		return false;
+	}
+
+	case WM_COMMAND:
+
+		switch (LOWORD(wParam)) {
+
+		case IDCANCEL:
+			CloseGFX();
+			break;
+
+		default:
+			LogErr("WndProcGFX() LOWORD(%hu), HIWORD(0x%hX)", LOWORD(wParam), HIWORD(wParam));
+			break;
+		}
+		break;
+	}
+
+	return oapiDefDialogProc(hWnd, uMsg, wParam, lParam);
+}
+
+
+
 
 } //namespace
 

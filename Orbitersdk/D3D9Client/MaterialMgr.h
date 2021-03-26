@@ -67,6 +67,19 @@ private:
 	DWORD			nRec;	///< Number of records
 	DWORD			mRec;	///< Allocated records
 
+	struct SHADER {
+		SHADER(string x, WORD i) { name = x; id = i; }
+		string name;
+		WORD id;
+	};
+
+	struct MESHREC {
+		WORD shader;
+	};
+
+	std::map<string, MESHREC> MeshConfig;
+	std::list<SHADER> Shaders;
+
 	/**
 	 * \brief Storage structure to keep material information.
 	 */
@@ -75,6 +88,7 @@ private:
 		DWORD			mat_idx;		///< Material index
 		D3D9MatExt		Mat;			///< Material itself
 		bool			bSaved;			///< Flag indicating whether the material has been saved
+		bool			bApplied;		///< Flag indicating if a configuration is applied to a mesh
 	} *pRecord;
 
 	ENVCAMREC *pCamera;

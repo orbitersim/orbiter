@@ -168,6 +168,7 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 	MaxFace  = 0;
 	MaxVert  = 0;
 	vClass = 0;
+	DefShader = SHADER_NULL;
 
 	bIsTemplate = false;
 	bGlobalTF = false;
@@ -480,6 +481,13 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 void D3D9Mesh::SetName(const char *name_)
 {
 	if (name_) strcpy_s(this->name, ARRAYSIZE(this->name), name_);
+}
+
+// ===========================================================================================
+//
+void D3D9Mesh::SetName(UINT idx)
+{
+	if ((strncmp(name, "???", 3) == 0) || (name[0] == 0)) sprintf(name, "MeshIdx-%u", idx);
 }
 
 // ===========================================================================================
@@ -1297,7 +1305,13 @@ void D3D9Mesh::CheckMeshStatus()
 		if (Grp[g].PBRStatus >= (0x8|0x2)) bIsReflective = true;
 		if (Grp[g].PBRStatus >= 0x2) bCanRenderFast = false;
 	}
+
+	if (DefShader == SHADER_METALNESS) {
+		bIsReflective = true;
+		for (DWORD g = 0; g < nGrp; g++) Grp[g].Shader = SHADER_METALNESS;
+	}
 }
+
 
 
 
@@ -1466,11 +1480,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	UINT numPasses = 0;
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 
-	WORD CurrentShader = 0xFFFF;
+	WORD CurrentShader = SHADER_NULL;
 
 	bool bRefl = true;
 
-	if (iTech == RENDER_VC) bRefl = false;	// No reflections in VC
+	//if (iTech == RENDER_VC) bRefl = false;	// No reflections in VC
 	if (iTech == RENDER_BASEBS) pDev->SetRenderState(D3DRS_ZENABLE, 0);	// Must be here because BeginPass() sets it enabled
 
 	for (DWORD g=0; g<nGrp; g++) {
@@ -1575,11 +1589,11 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 					LPDIRECT3DTEXTURE9 pTransl = NULL;
 					LPDIRECT3DTEXTURE9 pTransm = NULL;
-					LPDIRECT3DTEXTURE9 pSpec = Tex[ti]->GetMap(MAP_SPECULAR);
+					LPDIRECT3DTEXTURE9 pMetl = NULL;
+					LPDIRECT3DTEXTURE9 pSpec = NULL;
+					LPDIRECT3DTEXTURE9 pRefl = NULL;
 					LPDIRECT3DTEXTURE9 pNorm = Tex[ti]->GetMap(MAP_NORMAL);
-					LPDIRECT3DTEXTURE9 pRefl = Tex[ti]->GetMap(MAP_REFLECTION);
 					LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
-					LPDIRECT3DTEXTURE9 pFrsl = Tex[ti]->GetMap(MAP_FRESNEL);
 					LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
 
 					if (tni && Grp[g].TexMixEx[0] < 0.5f) tni = 0;
@@ -1587,36 +1601,48 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 					if (pNorm) FX->SetTexture(eTex3, pNorm);
 					if (pRghn) FX->SetTexture(eRghnMap, pRghn);
-					if (pRefl) FX->SetTexture(eReflMap, pRefl);
-					if (pFrsl) FX->SetTexture(eFrslMap, pFrsl);
-					if (pSpec) FX->SetTexture(eSpecMap, pSpec);
+					if (pMetl) FX->SetTexture(eMetlMap, pMetl);
 					if (pEmis) FX->SetTexture(eEmisMap, pEmis);
 
+					if (CurrentShader != SHADER_METALNESS) {
 
-					if (CurrentShader == SHADER_ADV) {
+						pSpec = Tex[ti]->GetMap(MAP_SPECULAR);
+						pRefl = Tex[ti]->GetMap(MAP_REFLECTION);
+
+						if (pSpec) FX->SetTexture(eSpecMap, pSpec);
+						if (pRefl) FX->SetTexture(eReflMap, pRefl);
+
+						FC.Spec = (pSpec != NULL);
+						FC.Refl = (pRefl != NULL);
+					}
+					else {
+						FC.Spec = false;
+						FC.Refl = false;
+					}
+
+					if (CurrentShader == SHADER_ADV || CurrentShader == SHADER_METALNESS) {
 
 						pTransl = Tex[ti]->GetMap(MAP_TRANSLUCENCE);
 						pTransm = Tex[ti]->GetMap(MAP_TRANSMITTANCE);
+						pMetl = Tex[ti]->GetMap(MAP_METALNESS);
 
 						if (pTransl) FX->SetTexture(eTranslMap, pTransl);
 						if (pTransm) FX->SetTexture(eTransmMap, pTransm);
+						if (pMetl) FX->SetTexture(eMetlMap, pMetl);
 
 						FC.Transl = (pTransl != NULL);
-						FC.Transm = (pTransm != NULL);
-						FC.Transx = FC.Transl || FC.Transm;
+						FC.Transm = (pTransm != NULL);	
+						FC.Metl = (pMetl != NULL);
 					}
 					else {
 						FC.Transl = false;
 						FC.Transm = false;
-						FC.Transx = false;
+						FC.Metl = false;
 					}
 
-					FC.Emis = (pEmis != NULL);
-					FC.Frsl = (pFrsl != NULL);
+					FC.Emis = (pEmis != NULL);					
 					FC.Norm = (pNorm != NULL);
-					FC.Rghn = (pRghn != NULL);
-					FC.Spec = (pSpec != NULL);
-					FC.Refl = (pRefl != NULL);
+					FC.Rghn = (pRghn != NULL);			
 				}
 			}
 		}
@@ -1700,13 +1726,12 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 		FX->SetBool(eSwitch, bPBR);
 		FX->SetBool(eRghnSw, bRGH);
 
-
 		// Update envmap and fresnel status as required
 		if (bRefl) {
 			bFRS = (Grp[g].PBRStatus & 0x1E) >= 0x10;
 			FX->SetBool(eFresnel, bFRS);
-			if (bIsReflective) {
-				bENV = (Grp[g].PBRStatus & 0x1E) >= 0xA;
+			if (IsReflective()) {			
+				bENV = ((Grp[g].PBRStatus & 0x1E) >= 0xA) | (Grp[g].Shader == SHADER_METALNESS) | (Grp[g].Shader == SHADER_PBR_HDR);
 				FX->SetBool(eEnvMapEnable, bENV);
 			}
 		}
@@ -1728,7 +1753,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				static const char *YesNo[2] = { "No", "Yes" };
 				static const char *LPW[2] = { "Legacy", "PBR" };
 				static const char *RGH[2] = { "Disabled", "Enabled" };
-				static const char *Shaders[4] = { "PBR", "ADV", "FAST", "XR2" };
+				static const char *Shaders[7] = { "PBR", "PBR-ADV", "FAST", "XR2", "METALNESS", "???", "???"};
 
 				DebugControls::Append("MeshIdx = %d, GrpIdx = %d\n", uCurrentMesh, g);
 				DebugControls::Append("MtrlIdx = %d, TexIdx = %d\n", Grp[g].MtrlIdx, Grp[g].TexIdx);
@@ -1743,17 +1768,18 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 				DebugControls::Append("NoShadow.... = %s\n", YesNo[bNoS]);
 				DebugControls::Append("Additive.... = %s\n", YesNo[bAdd]);
 
-				if (CurrentShader == SHADER_PBR) {
-
-					DebugControls::Append("\nPBR-Shader State:\n");
-					DebugControls::Append("PBR-Switch.. = %s\n", LPW[bPBR]);
-					DebugControls::Append("Rghn-Conver. = %s\n", RGH[bRGH]);
-					DebugControls::Append("Fresnel Mode = %s\n", RGH[bFRS]);
-					DebugControls::Append("Env Mapping. = %s\n", RGH[bENV]);
-
+				if (CurrentShader == SHADER_PBR || CurrentShader == SHADER_ADV || CurrentShader == SHADER_METALNESS) 
+				{
+					if (CurrentShader != SHADER_METALNESS) {
+						DebugControls::Append("\nPBR-Shader State:\n");
+						DebugControls::Append("PBR-Switch.. = %s\n", LPW[bPBR]);
+						DebugControls::Append("Rghn-Conver. = %s\n", RGH[bRGH]);
+						DebugControls::Append("Fresnel Mode = %s\n", RGH[bFRS]);
+						DebugControls::Append("Env Mapping. = %s\n", RGH[bENV]);
+					}
 					DebugControls::Append("TextureMaps = [ ");
 					if (FC.Emis) DebugControls::Append("emis ");
-					if (FC.Frsl) DebugControls::Append("frsl ");
+					if (FC.Metl) DebugControls::Append("metl ");
 					if (FC.Norm) DebugControls::Append("norm ");
 					if (FC.Rghn) DebugControls::Append("rghn ");
 					if (FC.Spec) DebugControls::Append("spec ");
@@ -1953,13 +1979,13 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 				LPDIRECT3DTEXTURE9 pNorm = Tex[ti]->GetMap(MAP_NORMAL);
 				LPDIRECT3DTEXTURE9 pRefl = Tex[ti]->GetMap(MAP_REFLECTION);
 				LPDIRECT3DTEXTURE9 pRghn = Tex[ti]->GetMap(MAP_ROUGHNESS);
-				LPDIRECT3DTEXTURE9 pFrsl = Tex[ti]->GetMap(MAP_FRESNEL);
+				LPDIRECT3DTEXTURE9 pMetl = Tex[ti]->GetMap(MAP_METALNESS);
 				LPDIRECT3DTEXTURE9 pEmis = Tex[ti]->GetMap(MAP_EMISSION);
 
 				if (pNorm) FX->SetTexture(eTex3, pNorm);
 				if (pRghn) FX->SetTexture(eRghnMap, pRghn);
 				if (pRefl) FX->SetTexture(eReflMap, pRefl);
-				if (pFrsl) FX->SetTexture(eFrslMap, pFrsl);
+				if (pMetl) FX->SetTexture(eMetlMap, pMetl);
 				if (pSpec) FX->SetTexture(eSpecMap, pSpec);
 				if (pEmis) FX->SetTexture(eEmisMap, pEmis);
 
@@ -1973,16 +1999,14 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 
 					FC.Transl = (pTransl != NULL);
 					FC.Transm = (pTransm != NULL);
-					FC.Transx = FC.Transl || FC.Transm;
 				}
 				else {
 					FC.Transl = false;
 					FC.Transm = false;
-					FC.Transx = false;
 				}
 
 				FC.Emis = (pEmis != NULL);
-				FC.Frsl = (pFrsl != NULL);
+				FC.Metl = (pMetl != NULL);
 				FC.Norm = (pNorm != NULL);
 				FC.Rghn = (pRghn != NULL);
 				FC.Spec = (pSpec != NULL);
@@ -2033,7 +2057,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 		if (bRefl) {
 			bFRS = (Grp[g].PBRStatus & 0x1E) >= 0x10;
 			FX->SetBool(eFresnel, bFRS);
-			if (bIsReflective) {
+			if (IsReflective()) {
 				bENV = (Grp[g].PBRStatus & 0x1E) >= 0xA;
 				FX->SetBool(eEnvMapEnable, bENV);
 			}

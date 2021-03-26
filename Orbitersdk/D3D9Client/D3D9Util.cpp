@@ -150,6 +150,8 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
 	pOut->Roughness = 0.0f;
+	pOut->Metalness = 0.0f;
+	pOut->Glow = 1.0f;
 	pOut->ModFlags = 0;
 }
 
@@ -163,6 +165,8 @@ void CreateDefaultMat(D3D9MatExt *pOut)
 	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
 	pOut->Roughness = 0.0f;
+	pOut->Metalness = 0.0f;
+	pOut->Glow = 1.0f;
 	pOut->ModFlags = 0;
 }
 
@@ -176,7 +180,6 @@ void D3D9TuneInit(D3D9Tune *pTune)
 	pTune->Transm = D3DXCOLOR(1, 1, 1, 1);
 	pTune->Norm = D3DXCOLOR(1, 1, 1, 1);
 	pTune->Rghn = D3DXCOLOR(1, 1, 1, 1);
-	pTune->Frsl = D3DXCOLOR(1, 1, 1, 1);
 }
 
 void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao)

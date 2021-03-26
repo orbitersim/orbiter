@@ -236,6 +236,8 @@ typedef struct {
 #define D3D9MATEX_FRESNEL		0x040
 #define D3D9MATEX_ROUGHNESS		0x080
 #define D3D9MATEX_EMISSION2		0x100
+#define D3D9MATEX_METALNESS		0x200
+#define D3D9MATEX_GLOW			0x400
 
 
 /**
@@ -250,6 +252,8 @@ typedef struct {
 	D3DXVECTOR3	  Emission2;		///<
 	D3DXVECTOR3	  Fresnel;			///< Fresnel reflection
 	float		  Roughness;		///< Roughness = log2(spec_pow) * 0.1f
+	float		  Metalness;
+	float		  Glow;
 	// -----------------------
 	DWORD		  ModFlags;			///< Modification flags
 } D3D9MatExt;
@@ -263,7 +267,6 @@ typedef struct {
 	D3DCOLORVALUE	Transl;		// Tune translucent effect
 	D3DCOLORVALUE	Transm;		// Tune transmissive effect
 	D3DCOLORVALUE	Norm;		// Tune normal map
-	D3DCOLORVALUE	Frsl;		// Tune fresnel map
 	D3DCOLORVALUE	Rghn;		// Tune roughness map
 } D3D9Tune;
 

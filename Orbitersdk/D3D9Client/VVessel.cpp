@@ -289,6 +289,7 @@ void vVessel::LoadMeshes()
 			// copy from preloaded template
 			meshlist[idx].mesh = new D3D9Mesh(hMesh, *mesh);							// Create new Instance from an existing mesh template
 			meshlist[idx].mesh->SetClass(vClass);
+			meshlist[idx].mesh->SetName(idx);
 		}
 		else {
 			// It's vital to use "CopyMeshFromTemplate" here for some reason
@@ -298,6 +299,7 @@ void vVessel::LoadMeshes()
 				// load on the fly and discard after copying
 				meshlist[idx].mesh = new D3D9Mesh(hMesh);								// Create new DX9 Mesh
 				meshlist[idx].mesh->SetClass(vClass);
+				meshlist[idx].mesh->SetName(idx);
 				oapiDeleteMesh(hMesh);
 			}
 		}
@@ -363,9 +365,11 @@ void vVessel::InsertMesh(UINT idx)
 	if (hMesh && mesh) {
 		meshlist[idx].mesh = new D3D9Mesh(hMesh, *mesh);								// Create new Instance from an existing mesh template
 		meshlist[idx].mesh->SetClass(vClass);
+		meshlist[idx].mesh->SetName(idx);
 	} else if (hMesh = vessel->CopyMeshFromTemplate (idx)) {	
 		meshlist[idx].mesh = new D3D9Mesh(hMesh);										// Create new DX9 Mesh
 		meshlist[idx].mesh->SetClass(vClass);
+		meshlist[idx].mesh->SetName(idx);
 		oapiDeleteMesh (hMesh);
 	} else {
 		meshlist[idx].mesh = 0;

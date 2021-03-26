@@ -86,9 +86,100 @@ void LocalLights(
 }
 
 
+void LocalLightsBeckman(
+	out float3 diff_out,
+	out float3 spec_out,
+	in float3 nrmW,
+	in float3 posW,
+	in float fRgh,
+	uniform int x,
+	uniform bool bSpec)
+{
+
+	float3 camW = normalize(-posW);
+	float3 p[4];
+	float3 H[4];
+	float4 spe;
+	float4 dHN;
+	int i;
+
+	// Relative positions
+	[unroll] for (i = 0; i < 4; i++) p[i] = posW - gLights[i + x].position;
+
+	// Square distances
+	float4 sd;
+	[unroll] for (i = 0; i < 4; i++) sd[i] = dot(p[i], p[i]);
+
+	// Normalize
+	sd = rsqrt(sd);
+	[unroll] for (i = 0; i < 4; i++) p[i] *= sd[i];
+
+	// Distances
+	float4 dst = rcp(sd);
+
+	if (bSpec) {
+
+		// Halfway Vectors
+		float4 hd;
+		[unroll] for (i = 0; i < 4; i++) H[i] = (camW - p[i]);
+		[unroll] for (i = 0; i < 4; i++) hd[i] = dot(H[i], H[i]);
+
+		hd = rsqrt(hd);
+
+		[unroll] for (i = 0; i < 4; i++) H[i] *= hd[i];
+		[unroll] for (i = 0; i < 4; i++) dHN[i] = dot(H[i], nrmW);
+	}
+
+	
+
+	// Attennuation factors
+	float4 att;
+	[unroll] for (i = 0; i < 4; i++) att[i] = dot(gLights[i + x].attenuation.xyz, float3(1.0, dst[i], dst[i] * dst[i]));
+
+	att = rcp(att);
+
+	// Spotlight factors
+	float4 spt;
+	[unroll] for (i = 0; i < 4; i++) {
+		spt[i] = (dot(p[i], gLights[i + x].direction) - gLights[i + x].param[Phi]) * gLights[i + x].param[Theta];
+		if (gLights[i + x].type == 0) spt[i] = 1.0f;
+	}
+
+	spt = saturate(spt);
+
+	// Diffuse light factors
+	float4 dif;
+	[unroll] for (i = 0; i < 4; i++) dif[i] = dot(-p[i], nrmW);
+
+	dif = saturate(dif);
+
+	// Specular lights factors
+	
+	if (bSpec) {
+
+		float r2 = fRgh*fRgh;
+		float4 d2 = dHN*dHN;
+		float4 w = rcp(3.14*r2*d2*d2);
+		float4 q = rcp(r2*d2);
+
+		spe = (att*spt*dif) * w * exp((d2 - 1.0f) * q);
+	}
+
+	dif *= (att*spt);
+
+	diff_out = 0;
+	spec_out = 0;
+
+	[unroll] for (i = 0; i < 4; i++) diff_out += gLights[i].diffuse.rgb * dif[i];
+
+	if (bSpec) {
+		[unroll] for (i = 0; i < 4; i++) spec_out += gLights[i].diffuse.rgb * spe[i];
+	}
+}
 
 
-void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW, in float3 posW, in float sp)
+
+void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW, in float3 posW, in float sp, uniform bool ubBeckman)
 {
 
 #if LMODE !=0
@@ -99,22 +190,36 @@ void LocalLightsEx(out float3 cDiffLocal, out float3 cSpecLocal, in float3 nrmW,
 #endif
 
 #if LMODE == 1
-	LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
+	if (ubBeckman) LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
+	else LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
 
 #elif LMODE == 2
-	LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
+	if (ubBeckman) LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
+	else LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
 
 #elif LMODE == 3
 	float3 dd, ss;
-	LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
-	LocalLights(dd, ss, nrmW, posW, sp, 4, false);
+	if (ubBeckman) {
+		LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
+		LocalLightsBeckman(dd, ss, nrmW, posW, sp, 4, false);
+	}
+	else {
+		LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, false);
+		LocalLights(dd, ss, nrmW, posW, sp, 4, false);
+	}
 	cDiffLocal += dd;
 	cSpecLocal += ss;
 
 #elif LMODE == 4
 	float3 dd, ss;
-	LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
-	LocalLights(dd, ss, nrmW, posW, sp, 4, true);
+	if (ubBeckman) {
+		LocalLightsBeckman(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
+		LocalLightsBeckman(dd, ss, nrmW, posW, sp, 4, true);
+	}
+	else {
+		LocalLights(cDiffLocal, cSpecLocal, nrmW, posW, sp, 0, true);
+		LocalLights(dd, ss, nrmW, posW, sp, 4, true);
+	}
 	cDiffLocal += dd;
 	cSpecLocal += ss;
 #else

@@ -32,6 +32,8 @@ struct Mtrl
 	float3 emission2;
 	float3 fresnel;
 	float  roughness;
+	float  metalness;
+	float  glow;
 };
 
 struct Sun
@@ -63,8 +65,7 @@ struct Flow
 	bool Transm;	// Enable transmissive effect
 	bool Rghn;		// Enable roughness map
 	bool Norm;		// Enable normal map
-	bool Frsl;		// Enable fresnel map
-	bool Transx;	// True of either of Transl or Transm is true
+	bool Metl;		// Enable fresnel map
 };
 
 
@@ -79,7 +80,6 @@ struct Tune
 	float4 Transl;		// Tune translucent effect
 	float4 Transm;		// Tune transmissive effect
 	float4 Norm;		// Tune normal map
-	float4 Frsl;		// Tune fresnel map
 	float4 Rghn;		// Tune roughness map
 };
 
@@ -153,7 +153,7 @@ uniform extern texture   gEmisMap;	    	// Emission Map
 uniform extern texture   gEnvMapA;	    	// Environment Map (Mirror clear)
 uniform extern texture   gEnvMapB;	    	// Environment Map (Mipmapped with different levels of blur)
 uniform extern texture   gReflMap;   		// Reflectivity Map
-uniform extern texture   gFrslMap;   		// Fresnel Map
+uniform extern texture   gMetlMap;   		// Metalness Map
 uniform extern texture   gTranslMap;		// Translucence Map
 uniform extern texture   gTransmMap;		// Transmittance Map
 uniform extern texture   gShadowMap;	    // Shadow Map
@@ -301,9 +301,9 @@ sampler ReflS = sampler_state       // Primary Mesh texture sampler
 	AddressV = WRAP;
 };
 
-sampler FrslS = sampler_state       // Primary Mesh texture sampler
+sampler MetlS = sampler_state       // Primary Mesh texture sampler
 {
-	Texture = <gFrslMap>;
+	Texture = <gMetlMap>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;

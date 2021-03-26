@@ -39,10 +39,13 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define ENVMAP_IRAD			1
 
 
+#define SHADER_NULL			0xFFFF
 #define SHADER_PBR			0
 #define SHADER_ADV			1
 #define SHADER_LEGACY		2			// Shader most compatible with DX7 Inline
 #define SHADER_XR2HUD		3			// XR2 HUD shader
+#define SHADER_METALNESS	4
+#define SHADER_PBR_HDR		5
 
 #define VCLASS_AMSO			1
 #define VCLASS_XR2			2
@@ -159,7 +162,11 @@ public:
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
 
 	void			SetName(const char *name);
+	void			SetName(UINT idx);
 	const char *	GetName() const { return name; }
+
+	void			SetDefaultShader(WORD shader) { DefShader = shader; bMtrlModidied = true; }
+	WORD			GetDefaultShader() { return DefShader; }
 
 	void			SetClass(DWORD cl) { vClass = cl; }
 
@@ -185,7 +192,7 @@ public:
 	 */
 	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; }
 	bool			HasTexture(SURFHANDLE hSurf);
-	bool			IsReflective() const { return bIsReflective; }
+	bool			IsReflective() const { return bIsReflective | (DefShader==SHADER_METALNESS); }
 
 	/**
 	 * \brief returns a pointer to a material definition.
@@ -282,6 +289,7 @@ private:
 	void			Null(const char *meshName = NULL);
 
 
+	WORD	DefShader;
 	DWORD	MaxVert;
 	DWORD	MaxFace;
 	GROUPREC *Grp;              // list of mesh groups

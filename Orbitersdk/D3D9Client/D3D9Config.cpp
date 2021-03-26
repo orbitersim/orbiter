@@ -84,6 +84,11 @@ void D3D9Config::Reset ()
 	bAbsAnims			= 0;
 	bCloudNormals		= 1;
 
+	GFXIntensity = 0.5;
+	GFXDistance = 0.5;
+	GFXSpecularity = 0.5;
+	GFXGamma = 1.0;
+
 	DisableDriverManagement = 0;
 	DisableVisualHelperReadout = 0;
 
@@ -163,6 +168,11 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "NormalmappedClouds", i))			bCloudNormals = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
+	if (oapiReadItem_float (hFile, "GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, "GFXDistance", d))					GFXDistance = max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, "GFXSpecular", d))					GFXSpecularity = max(0.0, min(1.0, d));
+	if (oapiReadItem_float (hFile, "GFXGamma", d))						GFXGamma = max(0.3, min(2.5, d));
+
 
 	oapiReadItem_string (hFile, "SolCfg", SolCfg);
 	oapiReadItem_string (hFile, "DebugLineFont", DebugFont);
@@ -232,6 +242,11 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int   (hFile, "AbsoluteAnimations", bAbsAnims);
 	oapiWriteItem_int   (hFile, "NormalmappedClouds", bCloudNormals);
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
+
+	oapiWriteItem_float (hFile, "GFXIntensity", GFXIntensity);
+	oapiWriteItem_float (hFile, "GFXDistance", GFXDistance);
+	oapiWriteItem_float (hFile, "GFXSpecular", GFXSpecularity);
+	oapiWriteItem_float (hFile, "GFXGamma", GFXGamma);
 
 	oapiWriteItem_string (hFile, "SolCfg", SolCfg);
 	oapiWriteItem_string (hFile, "DebugLineFont", DebugFont);

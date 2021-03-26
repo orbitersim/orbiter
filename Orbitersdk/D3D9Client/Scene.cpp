@@ -198,8 +198,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		if (gc->TexturePath("D3D9CLUT.dds", buff)) HR(D3DXCreateTextureFromFileA(pDevice, buff, &pTextures[TEX_CLUT]));
 
 		if (pLightBlur) {
-			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
-			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_TEMP]));
+			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_BLUR]));
+			HR(D3DXCreateTexture(pDevice, viewW / BufSize, viewH / BufSize, 1, D3DUSAGE_RENDERTARGET, BackBuffer, D3DPOOL_DEFAULT, &ptgBuffer[GBUF_TEMP]));
 		}
 
 		if (pLightBlur) {
@@ -1795,6 +1795,11 @@ void Scene::RenderMainScene()
 
 		if (pLightBlur->IsOK()) {
 
+			float fInt = float(Config->GFXIntensity);
+			float fDst = float(Config->GFXDistance);
+			float fSpc = float(Config->GFXSpecularity);
+			float fGam = float(Config->GFXGamma);
+
 			// Grap a copy of a backbuffer
 			pDevice->StretchRect(pOffscreenTarget, NULL, psgBuffer[GBUF_COLOR], NULL, D3DTEXF_POINT);
 
@@ -1802,6 +1807,11 @@ void Scene::RenderMainScene()
 			pLightBlur->SetFloat("vBB", &scr, sizeof(D3DXVECTOR2));
 			pLightBlur->SetBool("bBlendIn", false);
 			pLightBlur->SetBool("bBlur", false);
+
+			pLightBlur->SetFloat("fIntensity", &fInt, sizeof(float));
+			pLightBlur->SetFloat("fDistance", &fDst, sizeof(float));
+			pLightBlur->SetFloat("fSpecularity", &fSpc, sizeof(float));
+			pLightBlur->SetFloat("fGamma", &fGam, sizeof(float));	
 
 			// -----------------------------------------------------
 			pLightBlur->SetBool("bSample", true);

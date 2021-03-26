@@ -24,6 +24,9 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 	pCamera = new ENVCAMREC[1];
 
 	ResetCamera(0);
+
+	Shaders.push_back(SHADER("PBR-Old",SHADER_NULL));
+	Shaders.push_back(SHADER("Metalness", SHADER_METALNESS));
 }
 
 
@@ -87,6 +90,8 @@ void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, const D3D9MatEx
 	DWORD iRec = nRec;
 	bool bExists = false;
 
+	MeshConfig[pMesh->GetName()].shader = pMesh->GetDefaultShader();
+
 	// Seek an existing mesh and group
 	for (DWORD i=0;i<nRec;i++) {
 		if (strcmp(pRecord[i].mesh_name, pMesh->GetName())==0 && midx==pRecord[i].mat_idx) {
@@ -121,6 +126,10 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 
 	LogAlw("Applying custom configuration to a mesh (%s)",name);
 
+	if (MeshConfig.count(name)) {
+		pMesh->SetDefaultShader(MeshConfig[name].shader);
+	}
+
 	for (DWORD i=0;i<nRec;i++) {
 
 		if (strcmp(pRecord[i].mesh_name, name)==0) {
@@ -143,11 +152,14 @@ void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 			if (flags&D3D9MATEX_FRESNEL) Mat.Fresnel = pRecord[i].Mat.Fresnel;
 			if (flags&D3D9MATEX_EMISSION2) Mat.Emission2 = pRecord[i].Mat.Emission2;
 			if (flags&D3D9MATEX_ROUGHNESS) Mat.Roughness = pRecord[i].Mat.Roughness;
+			if (flags&D3D9MATEX_METALNESS) Mat.Metalness = pRecord[i].Mat.Metalness;
+			if (flags&D3D9MATEX_GLOW) Mat.Glow = pRecord[i].Mat.Glow;
 			
 			Mat.ModFlags = flags;
 
 			pMesh->SetMaterial(&Mat, idx);
 
+			pRecord[i].bApplied = true;
 			LogBlu("Material %u setup applied to mesh (%s) Flags=0x%X", idx, name, flags);
 		}
 	}
@@ -212,6 +224,7 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 	char path[256];
 	char classname[256];
 	char meshname[64];
+	char shadername[64];
 
 	OBJHANDLE hObj = vObj->GetObjectA();
 
@@ -246,12 +259,25 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {
 			if (sscanf_s(cbuf, "MESH %s", meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			if (HasMesh(meshname) && bAppend) meshname[0]=0;
+			if (strncmp(meshname, "???", 3) == 0) meshname[0] = 0;
+			if (HasMesh(meshname) && bAppend) meshname[0] = 0;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (meshname[0]==0) continue;  // Do not continue without a valid mesh
+
+									   // --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "SHADER", 6)) {
+			MeshConfig[meshname].shader = SHADER_NULL;
+			if (sscanf_s(cbuf, "SHADER %s", shadername, 64) != 1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			for (auto x : Shaders)
+				if (string(shadername) == x.name) {
+					MeshConfig[meshname].shader = x.id;
+					LogOapi("NewShader [%s]=%hX", meshname, x.id);
+				}
+			continue;
+		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MATERIAL", 8)) {
@@ -324,6 +350,22 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
 			continue;
 		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "METALNESS", 9)) {
+			if (sscanf_s(cbuf, "METALNESS %f", &a) != 1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Metalness = a;
+			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_METALNESS;
+			continue;
+		}
+
+		// --------------------------------------------------------------------------------------------
+		if (!strncmp(cbuf, "GLOW", 4)) {
+			if (sscanf_s(cbuf, "GLOW %f", &a) != 1) LogErr("Invalid Line in (%s): %s", path, cbuf);
+			pRecord[iRec].Mat.Glow = a;
+			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_GLOW;
+			continue;
+		}
 	}
 
 	return true;
@@ -340,6 +382,8 @@ bool MatMgr::SaveConfiguration()
 	char path[256];
 	char classname[256];
 	char *current = NULL; // ..._mesh_name
+	
+	char *sShader[] = { "PBR-Old", "Metalness", "PBR-New" };
 
 	OBJHANDLE hObj = vObj->GetObjectA();
 
@@ -365,7 +409,7 @@ bool MatMgr::SaveConfiguration()
 		return false;
 	}
 
-	fprintf(file.pFile, "CONFIG_VERSION 2\n");
+	fprintf(file.pFile, "CONFIG_VERSION 3\n");
 
 	for (DWORD k=0;k<nRec;k++) pRecord[k].bSaved = false;
 
@@ -374,7 +418,8 @@ bool MatMgr::SaveConfiguration()
 		if (!pRecord[k].bSaved) {
 			current = pRecord[k].mesh_name;
 			fprintf(file.pFile,"; =============================================\n");
-			fprintf(file.pFile,"MESH %s\n", current);
+			fprintf(file.pFile, "MESH %s\n", current);
+			if (MeshConfig.count(current)) for (auto x:Shaders) if (x.id == MeshConfig[current].shader) fprintf(file.pFile, "SHADER %s\n", x.name.c_str());
 		}
 
 		for (DWORD i=0;i<nRec;i++) {
@@ -400,6 +445,8 @@ bool MatMgr::SaveConfiguration()
 			if (flags&D3D9MATEX_FRESNEL)  fprintf(file.pFile,"FRESNEL %f %f %f\n", pM->Fresnel.x, pM->Fresnel.z, pM->Fresnel.y);
 			if (flags&D3D9MATEX_EMISSION2) fprintf(file.pFile, "EMISSION2 %f %f %f\n", pM->Emission2.x, pM->Emission2.y, pM->Emission2.z);
 			if (flags&D3D9MATEX_ROUGHNESS) fprintf(file.pFile, "ROUGHNESS %f\n", pM->Roughness);
+			if (flags&D3D9MATEX_METALNESS) fprintf(file.pFile, "METALNESS %f\n", pM->Metalness);
+			if (flags&D3D9MATEX_GLOW) fprintf(file.pFile, "GLOW %f\n", pM->Glow);
 		}
 	}
 	return true;

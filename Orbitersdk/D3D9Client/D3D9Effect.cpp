@@ -77,7 +77,7 @@ D3DXHANDLE D3D9Effect::eEnvMapA = 0;
 D3DXHANDLE D3D9Effect::eEnvMapB = 0;
 D3DXHANDLE D3D9Effect::eReflMap = 0;
 D3DXHANDLE D3D9Effect::eRghnMap = 0;
-D3DXHANDLE D3D9Effect::eFrslMap = 0;
+D3DXHANDLE D3D9Effect::eMetlMap = 0;
 D3DXHANDLE D3D9Effect::eShadowMap = 0;
 D3DXHANDLE D3D9Effect::eTranslMap = 0;
 D3DXHANDLE D3D9Effect::eTransmMap = 0;
@@ -298,7 +298,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[16]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+	D3DXMACRO macro[18]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");
 
@@ -336,6 +336,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	if (Config->EnableGlass) macro[m++].Name = "_GLASS";
 	if (Config->EnableMeshDbg) macro[m++].Name = "_DEBUG";
 	if (Config->EnvMapMode) macro[m++].Name = "_ENVMAP"; 
+	if (Config->PostProcess == PP_DEFAULT) macro[m++].Name = "_LIGHTGLOW";
 	
 	
 	HR(D3DXCreateEffectFromFileA(pDev, name, macro, 0, D3DXSHADER_NO_PRESHADER|D3DXSHADER_PREFER_FLOW_CONTROL, 0, &FX, &errors));
@@ -452,7 +453,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	eEnvMapB	  = FX->GetParameterByName(0,"gEnvMapB");
 	eReflMap	  = FX->GetParameterByName(0,"gReflMap");
 	eRghnMap	  = FX->GetParameterByName(0,"gRghnMap");
-	eFrslMap	  = FX->GetParameterByName(0,"gFrslMap");
+	eMetlMap	  = FX->GetParameterByName(0,"gMetlMap");
 	eShadowMap	  = FX->GetParameterByName(0,"gShadowMap");
 
 	// Atmosphere -----------------------------------------------------------

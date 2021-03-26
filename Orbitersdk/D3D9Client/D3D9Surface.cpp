@@ -1647,7 +1647,7 @@ void D3D9ClientSurface::LoadSpecials(const char *fname)
 
 	// Special Map Section =======================================================================================================================
 	//
-	LoadSpecialTexture(fname, "frsl", MAP_FRESNEL);
+	LoadSpecialTexture(fname, "metal", MAP_METALNESS);
 	LoadSpecialTexture(fname, "rghn", MAP_ROUGHNESS);
 	LoadSpecialTexture(fname, "norm", MAP_NORMAL);
 	LoadSpecialTexture(fname, "emis", MAP_EMISSION);

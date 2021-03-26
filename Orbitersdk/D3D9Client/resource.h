@@ -27,6 +27,7 @@
 #define IDD_MATERIAL                            109
 #define IDD_MICROTEXTOOLS                       111
 #define IDD_SCENEDEBUG                          113
+#define IDD_GRAPHICS                            114
 #define IDC_AA                                  2002
 #define IDC_AF                                  2003
 #define IDC_ATD_AUX1                            2004
@@ -172,3 +173,15 @@
 #define IDC_GUIMODE                             2163
 #define IDC_ABSANIM                             2164
 #define IDC_CLOUDNORM                           2165
+#define IDC_FLATS                               2166
+#define IDC_DBG_DEFSHADER                       2167
+#define IDC_DBG_DATAVIEW2                       2168
+#define IDC_DBG_MESHGRP                         2169
+#define IDC_GFX_INTENSITY                       2170
+#define IDC_GFX_DISTANCE                        2171
+#define IDC_GFX_SPECULARITY                     2172
+#define IDC_GFX_GAMMA                           2173
+#define IDC_GFX_VAL1                            2174
+#define IDC_GFX_VAL2                            2175
+#define IDC_GFX_VAL3                            2176
+#define IDC_GFX_VAL4                            2177

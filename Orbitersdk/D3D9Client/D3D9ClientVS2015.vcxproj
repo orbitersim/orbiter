@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -318,6 +318,17 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(BuildModuleDir)\D3D9Client\IPI.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LensFlare.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LightBlur.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\PBR_Mk2.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Modules\D3D9Client\Metalness.fx">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

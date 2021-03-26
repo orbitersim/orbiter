@@ -21,7 +21,7 @@
 #define	MAP_TRANSLUCENCE	4
 #define	MAP_TRANSMITTANCE	5
 #define	MAP_ROUGHNESS		6
-#define	MAP_FRESNEL			7
+#define	MAP_METALNESS		7
 #define MAP_MAX_COUNT		8
 
 
