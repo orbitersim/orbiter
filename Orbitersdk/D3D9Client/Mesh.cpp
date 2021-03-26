@@ -488,7 +488,7 @@ void D3D9Mesh::SetName(const char *name_)
 //
 void D3D9Mesh::SetName(UINT idx)
 {
-	if ((strncmp(name, "???", 3) == 0) || (name[0] == 0)) sprintf(name, "MeshIdx-%u", idx);
+	if ((strncmp(name, "???", 3) == 0) || (name[0] == 0)) sprintf_s(name, ARRAYSIZE(name), "MeshIdx-%u", idx);
 }
 
 // ===========================================================================================
