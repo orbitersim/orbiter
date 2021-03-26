@@ -23,11 +23,12 @@
 #define IDD_D3D9SCATTER                         103
 #define IDD_D3D9SETUP                           104
 #define IDD_DEBUGVIEW                           105
-#define IDD_MESHDEBUG                           107
-#define IDD_MATERIAL                            109
-#define IDD_MICROTEXTOOLS                       111
-#define IDD_SCENEDEBUG                          113
-#define IDD_GRAPHICS                            114
+#define IDD_MESHDEBUG                           106
+#define IDD_MATERIAL                            107
+#define IDD_MICROTEXTOOLS                       108
+#define IDD_SCENEDEBUG                          109
+#define IDD_GRAPHICS                            110
+#define IDB_BITMAP1                             111
 #define IDC_AA                                  2002
 #define IDC_AF                                  2003
 #define IDC_ATD_AUX1                            2004
@@ -185,3 +186,9 @@
 #define IDC_GFX_VAL2                            2175
 #define IDC_GFX_VAL3                            2176
 #define IDC_GFX_VAL4                            2177
+#define IDC_GFX_INTENSITY_RESET                 2178
+#define IDC_GFX_DISTANCE_RESET                  2179
+#define IDC_GFX_SPECULARITY_RESET               2180
+#define IDC_GFX_GAMMA_RESET                     2181
+#define IDC_DBG_SAFEGUARD                       2182
+#define IDC_DBG_EXTEND                          2183

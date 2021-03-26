@@ -93,7 +93,7 @@ float4 PBR_PS(float4 sc : VPOS, PBRData frg) : COLOR
 
 	// Roughness map
 	if (gCfg.Rghn) fRghn = tex2D(RghnS, frg.tex0.xy).g;
-	else		   fRghn = gMtrl.roughness;
+	else		   fRghn = gMtrl.roughness.r;
 
 
 	// Sample emission map. (Note: Emissive materials and textures need to go different stages, material is added to light)

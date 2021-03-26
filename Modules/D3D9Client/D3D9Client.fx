@@ -31,9 +31,8 @@ struct Mtrl
 	float3 reflect;
 	float3 emission2;
 	float3 fresnel;
-	float  roughness;
+	float2 roughness;
 	float  metalness;
-	float  glow;
 };
 
 struct Sun

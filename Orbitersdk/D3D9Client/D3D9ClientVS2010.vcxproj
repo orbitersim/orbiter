@@ -279,6 +279,7 @@ copy $(OutDir)$(TargetName)$(TargetExt) ..\..\Modules\Plugin\$(ProjectName)$(Tar
     <None Include="..\..\Modules\D3D9Client\D3D9Client.fx" />
     <None Include="..\..\Modules\D3D9Client\HorizonHaze.fx" />
     <None Include="..\..\Modules\D3D9Client\Mesh.fx" />
+    <None Include="..\..\Modules\D3D9Client\Metalness.fx" />
     <None Include="..\..\Modules\D3D9Client\PBR.fx" />
     <None Include="..\..\Modules\D3D9Client\Particle.fx" />
     <None Include="..\..\Modules\D3D9Client\Planet.fx" />

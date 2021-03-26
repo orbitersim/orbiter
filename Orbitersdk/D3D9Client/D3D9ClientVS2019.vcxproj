@@ -305,6 +305,7 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(BuildModuleDir)\D3D9Client\D3D9Client.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\HorizonHaze.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\Mesh.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Metalness.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\PBR.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\Particle.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\Planet.fx" />

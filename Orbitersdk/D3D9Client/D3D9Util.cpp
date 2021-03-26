@@ -149,9 +149,8 @@ void CreateMatExt(const D3DMATERIAL9 *pIn, D3D9MatExt *pOut)
 	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
 	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
-	pOut->Roughness = 0.0f;
+	pOut->Roughness = D3DXVECTOR2(0.0f, 1.0f);
 	pOut->Metalness = 0.0f;
-	pOut->Glow = 1.0f;
 	pOut->ModFlags = 0;
 }
 
@@ -164,9 +163,8 @@ void CreateDefaultMat(D3D9MatExt *pOut)
 	pOut->Reflect = D3DXVECTOR3(0, 0, 0);
 	pOut->Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 	pOut->Emission2 = D3DXVECTOR3(1, 1, 1);
-	pOut->Roughness = 0.0f;
+	pOut->Roughness = D3DXVECTOR2(0.0f, 1.0f);
 	pOut->Metalness = 0.0f;
-	pOut->Glow = 1.0f;
 	pOut->ModFlags = 0;
 }
 

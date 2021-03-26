@@ -59,7 +59,7 @@ void OpenGFXDlgClbk(void *context);
 
 
 struct _Variable {
-	float min, max, def;
+	float min, max, extmax, def;
 	scale Scl;
 	bool bUsed;
 	bool bGamma;
@@ -210,7 +210,7 @@ void Create()
 	PrmList.push_back(MatParams("Specular", 2));
 	PrmList.push_back(MatParams("Emission", 3));
 	PrmList.push_back(MatParams("Reflect", 4));
-	PrmList.push_back(MatParams("Roughness", 5));
+	PrmList.push_back(MatParams("Smoothness", 5));
 	PrmList.push_back(MatParams("Fresnel", 6));
 	PrmList.push_back(MatParams("Emission2", 7));
 	PrmList.push_back(MatParams("Metalness", 8));
@@ -300,6 +300,18 @@ void SetGroupHighlight(bool bStat)
 	SETFLAG(debugFlags, DBG_FLAGS_HLGROUP, bStat);
 }
 
+inline _Variable DefVar(float min, float max, float extmax, scale scl, const char *tip, bool bGamma = false)
+{
+	_Variable var;
+	var.bUsed = true;
+	var.Scl = scl;
+	var.bGamma = bGamma;
+	var.max = max;
+	var.extmax = extmax;
+	var.min = min;
+	strncpy_s(var.tip, 80, tip, 80);
+	return var;
+}
 
 inline _Variable DefVar(float min, float max, scale scl, const char *tip, bool bGamma=false)
 {
@@ -308,6 +320,7 @@ inline _Variable DefVar(float min, float max, scale scl, const char *tip, bool b
 	var.Scl = scl;
 	var.bGamma = bGamma;
 	var.max = max;
+	var.extmax = max;
 	var.min = min;
 	strncpy_s(var.tip, 80, tip, 80);
 	return var;
@@ -323,10 +336,9 @@ DWORD DropdownList(DWORD x)
 //
 void InitMatList(WORD shader)
 {
-	static WORD CurrentShader = 0xAAAA;
-
-	if (shader == CurrentShader) return;
-	CurrentShader = shader;
+	//static WORD CurrentShader = 0xAAAA;
+	//if (shader == CurrentShader) return;
+	//CurrentShader = shader;
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, 0, 0);
@@ -340,7 +352,13 @@ void InitMatList(WORD shader)
 	}
 
 	if (shader == SHADER_METALNESS) {
-		std::list<char> list = { 0, 1, 3, 5, 7, 8, 9, 10, 11, 12, 15, 16 };
+		std::list<char> list = { 0, 3, 5, 7, 8 };
+		for (auto x : list) Dropdown.push_back(PrmList[x]);
+		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
+	}
+
+	if (shader == SHADER_SPECULAR) {
+		std::list<char> list = { 0, 3, 4, 5, 6, 7 };
 		for (auto x : list) Dropdown.push_back(PrmList[x]);
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
@@ -382,7 +400,7 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"PBR (Old)");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Metalness PBR");
-	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"---");
+	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Specular PBR");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_RESETCONTENT, 0, 0);
@@ -458,7 +476,7 @@ void OpenDlgClbk(void *context)
 	CreateToolTip(IDC_DBG_VARB, hDlg, "Attennuates everything equally. Typical range [0.00 to 0.03]");
 	CreateToolTip(IDC_DBG_VARC, hDlg, "Apply noise to main level and all mipmaps before attennuation (Fa,Fb)");
 	CreateToolTip(IDC_DBG_MORE, hDlg, "Click to show/hide more options");
-
+	CreateToolTip(IDC_DBG_EXTEND, hDlg, "Extend Diffuse/Roughess material range beyond 1.0f to allow texture fine tuning.");
 	CreateToolTip(IDC_DBG_LINK, hDlg, "Adjust all color channels at the same time");
 	CreateToolTip(IDC_DBG_DEFINED, hDlg, "Use the material property for rendering and save it");
 
@@ -468,10 +486,10 @@ void OpenDlgClbk(void *context)
 	hTipAlp = CreateToolTip(IDC_DBG_ALPHA, hDlg, "Alpha");
 
 	// Diffuse
-	Params[0].var[0] = DefVar(0, 1, LIN, "Red");
-	Params[0].var[1] = DefVar(0, 1, LIN, "Green");
-	Params[0].var[2] = DefVar(0, 1, LIN, "Blue");
-	Params[0].var[3] = DefVar(0, 1, LIN, "Alpha");
+	Params[0].var[0] = DefVar(0, 1, 2, SQRT, "Red");
+	Params[0].var[1] = DefVar(0, 1, 2, SQRT, "Green");
+	Params[0].var[2] = DefVar(0, 1, 2, SQRT, "Blue");
+	Params[0].var[3] = DefVar(0, 1, 2, LIN, "Alpha");
 
 	// Ambient
 	Params[1].var[0] = DefVar(0, 1, LIN, "Red");
@@ -494,27 +512,28 @@ void OpenDlgClbk(void *context)
 	Params[4].var[1] = DefVar(0, 1, LIN, "Green");
 	Params[4].var[2] = DefVar(0, 1, LIN, "Blue");
 
-	// Roughness
-	Params[5].var[0] = DefVar(0, 1, SQR, "Roughness");
+	// Smoothness
+	Params[5].var[0] = DefVar(0, 1, 2, LIN, "Smoothness");
+	Params[5].var[1] = DefVar(0, 3, SQRT, "Texture linearity (default 1.0)");
 
 	// Fresnel
-	Params[6].var[0] = DefVar(1, 6, LIN, "Angle dependency");
+	Params[6].var[0] = DefVar(0.5f, 2, LIN, "Angle dependency");
 	Params[6].var[1] = DefVar(0, 1, LIN, "Maximum intensity");
 	Params[6].var[2] = DefVar(10.0f, 4096.0f, SQRT, "Specular lobe size");
 	
 	// Emission2
-	Params[7].var[0] = DefVar(0, 3, LIN, "Red");
-	Params[7].var[1] = DefVar(0, 3, LIN, "Green");
-	Params[7].var[2] = DefVar(0, 3, LIN, "Blue");
+	Params[7].var[0] = DefVar(0, 2, LIN, "Red");
+	Params[7].var[1] = DefVar(0, 2, LIN, "Green");
+	Params[7].var[2] = DefVar(0, 2, LIN, "Blue");
 
 	// Metalness
 	Params[8].var[0] = DefVar(0, 1, LIN, "Metalness");
 
-	// Metalness
+	// Glow (unused)
 	Params[9].var[0] = DefVar(0, 1, LIN, "Glow");
 	
 
-	// Unused index 8
+	// Unused index 10
 	
 	// Tuning -------------------------------------------------------------------------------------
 	// Albedo
@@ -548,8 +567,10 @@ void OpenDlgClbk(void *context)
 //
 void SetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr, float value)
 {
+	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
 	float mi = Params[idx].var[clr].min;
-	float mx = Params[idx].var[clr].max;
+	float mx = (bExtend ? Params[idx].var[clr].extmax : Params[idx].var[clr].max);
 
 	switch (clr) {
 		case 0: pClr->r = CLAMP(value, mi, mx); break;
@@ -584,7 +605,8 @@ float GetTuningValue(int idx, D3DCOLORVALUE *pClr, DWORD clr)
 //
 float _Clamp(float value, DWORD p, DWORD v)
 {
-	return CLAMP(value, Params[p].var[v].min, Params[p].var[v].max);
+	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	return CLAMP(value, Params[p].var[v].min, (bExtend ? Params[p].var[v].extmax : Params[p].var[v].max));
 }
 
 // =============================================================================================
@@ -600,8 +622,15 @@ void UpdateShader()
 	if (!hMesh) return;
 
 	DWORD Shader = SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0);
+
 	if (Shader == 0) hMesh->SetDefaultShader(SHADER_NULL);
 	if (Shader == 1) hMesh->SetDefaultShader(SHADER_METALNESS);
+	if (Shader == 2) hMesh->SetDefaultShader(SHADER_SPECULAR);
+
+	if (Shader == 2) hMesh->SetSafeGuard(SendDlgItemMessageA(hDlg, IDC_DBG_SAFEGUARD, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	else hMesh->SetSafeGuard(true);
+	
+	EnableWindow(GetDlgItem(hDlg, IDC_DBG_SAFEGUARD), (Shader == 2));
 
 	InitMatList(hMesh->GetDefaultShader());
 }
@@ -665,10 +694,10 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 			break;
 		}
 
-		case 5:	// Roughness
+		case 5:	// Smoothness
 		{
 			Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
-			Mat.Roughness = _Clamp(value, MatPrp, 0);
+			Mat.Roughness[clr] = _Clamp(value, MatPrp, clr);
 			break;
 		}
 
@@ -695,8 +724,6 @@ void UpdateMeshMaterial(float value, DWORD MatPrp, DWORD clr)
 
 		case 9:	// Glow
 		{
-			Mat.ModFlags |= D3D9MATEX_GLOW;
-			Mat.Glow = _Clamp(value, MatPrp, clr);
 			break;
 		}
 
@@ -765,7 +792,6 @@ DWORD GetModFlags(DWORD MatPrp)
 		case 6:	return D3D9MATEX_FRESNEL;
 		case 7:	return D3D9MATEX_EMISSION2;
 		case 8:	return D3D9MATEX_METALNESS;
-		case 9:	return D3D9MATEX_GLOW;
 	}
 	return 0;
 }
@@ -897,7 +923,8 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 		case 5:	// Roughness
 		{
 			switch (clr) {
-				case 0: return pMat->Roughness;
+				case 0: return pMat->Roughness.x;
+				case 1: return pMat->Roughness.y;
 			}
 			break;
 		}
@@ -932,9 +959,6 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 
 		case 9:	// Glow
 		{
-			switch (clr) {
-			case 0: return pMat->Glow;
-			}
 			break;
 		}
 
@@ -982,11 +1006,14 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 void SetColorSlider()
 {
 	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+	float mi = Params[MatPrp].var[SelColor].min;
+	float mx = (bExtend ? Params[MatPrp].var[SelColor].extmax : Params[MatPrp].var[SelColor].max);
 
 	float val = GetMaterialValue(MatPrp, SelColor);
 
-	val -= Params[MatPrp].var[SelColor].min;
-	val /= (Params[MatPrp].var[SelColor].max - Params[MatPrp].var[SelColor].min);
+	val -= mi; val /= (mx - mi);
 
 	if (Params[MatPrp].var[SelColor].Scl == scale::SQRT) val = sqrt(val);
 	if (Params[MatPrp].var[SelColor].Scl == scale::SQR) val = val*val;
@@ -1053,8 +1080,12 @@ void UpdateMaterialDisplay(bool bSetup)
 	WORD Shader = hMesh->GetDefaultShader();
 	if (Shader == SHADER_NULL) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 	if (Shader == SHADER_METALNESS) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 1, 0);
+	if (Shader == SHADER_SPECULAR) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 2, 0);
 
-	InitMatList(Shader);
+	if (Shader == SHADER_SPECULAR) SendDlgItemMessage(hDlg, IDC_DBG_SAFEGUARD, BM_SETCHECK, hMesh->GetSafeGuard(), 0);
+	else SendDlgItemMessage(hDlg, IDC_DBG_SAFEGUARD, BM_SETCHECK, true, 0);
+
+	EnableWindow(GetDlgItem(hDlg, IDC_DBG_SAFEGUARD), (Shader == SHADER_SPECULAR));
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 
@@ -1114,6 +1145,10 @@ void UpdateColorSlider(WORD pos)
 	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));	
 
 	bool bLink = (SendDlgItemMessageA(hDlg, IDC_DBG_LINK, BM_GETCHECK, 0, 0)==BST_CHECKED);
+	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+	float mi = Params[MatPrp].var[SelColor].min;
+	float mx = (bExtend ? Params[MatPrp].var[SelColor].extmax : Params[MatPrp].var[SelColor].max);
 
 	if (MatPrp==5 || MatPrp==6) bLink = false;	// Roughness, Fresnel
 	if (SelColor==3) bLink = false;				// Alpha, Specular power
@@ -1121,8 +1156,7 @@ void UpdateColorSlider(WORD pos)
 	if (Params[MatPrp].var[SelColor].Scl == scale::SQRT) val = (val*val);
 	if (Params[MatPrp].var[SelColor].Scl == scale::SQR) val = sqrt(val);
 
-	val *= (Params[MatPrp].var[SelColor].max - Params[MatPrp].var[SelColor].min);
-	val += Params[MatPrp].var[SelColor].min;
+	val *= (mx - mi); val += mi;
 
 	float old = GetMaterialValue(MatPrp, SelColor);
 	float fct = val/old;
@@ -1222,6 +1256,7 @@ void SetupMeshGroups()
 
 	UpdateMaterialDisplay();
 	SetColorSlider();
+	InitMatList(mesh->GetDefaultShader());
 }
 
 // =============================================================================================
@@ -1820,6 +1855,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
+			case IDC_DBG_SAFEGUARD:
+				UpdateShader();
+				break;
+
 			case IDC_DBG_DISPLAY:
 				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0);
 				break;
@@ -1897,6 +1936,10 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_ENVSAVE:
 				SaveEnvMap();
+				break;
+
+			case IDC_DBG_EXTEND:
+				SetColorSlider();
 				break;
 
 			case IDC_DBG_GRPO:
@@ -1977,6 +2020,17 @@ void OpenGFXDlgClbk(void *context)
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETRANGEMIN, 1, 0);
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETTICFREQ, 1, 0);
 	SendDlgItemMessage(hGfxDlg, IDC_GFX_GAMMA, TBM_SETPOS, 1, 0);
+
+	// reset-button(s)
+	HANDLE hImg = LoadImage(g_hInst, MAKEINTRESOURCE(IDB_BITMAP1), IMAGE_BITMAP, 0, 0, LR_LOADTRANSPARENT | LR_DEFAULTSIZE);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_INTENSITY_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_DISTANCE_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_SPECULARITY_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	SendMessage(GetDlgItem(hGfxDlg, IDC_GFX_GAMMA_RESET), BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hImg);
+	CreateToolTip(IDC_GFX_INTENSITY_RESET,   hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_DISTANCE_RESET,    hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_SPECULARITY_RESET, hGfxDlg, "Reset to default");
+	CreateToolTip(IDC_GFX_GAMMA_RESET,       hGfxDlg, "Reset to default");
 
 	SetGFXSliders();
 }
@@ -2059,6 +2113,26 @@ BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDCANCEL:
 			CloseGFX();
+			break;
+
+		case IDC_GFX_INTENSITY_RESET:
+			Config->GFXIntensity = double(97) / 255; //0.380392
+			SetGFXSliders();
+			break;
+
+		case IDC_GFX_DISTANCE_RESET:
+			Config->GFXDistance = 1.0;
+			SetGFXSliders();
+			break;
+
+		case IDC_GFX_SPECULARITY_RESET:
+			Config->GFXSpecularity = double(103) / 255; // 0.403922
+			SetGFXSliders();
+			break;
+
+		case IDC_GFX_GAMMA_RESET:
+			Config->GFXGamma = 1.0;
+			SetGFXSliders();
 			break;
 
 		default:

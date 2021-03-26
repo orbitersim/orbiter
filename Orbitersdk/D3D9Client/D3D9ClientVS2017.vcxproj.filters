@@ -365,6 +365,9 @@
     <None Include="$(BuildModuleDir)\D3D9Client\Mesh.fx">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="$(BuildModuleDir)\D3D9Client\Metalness.fx">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="$(BuildModuleDir)\D3D9Client\Particle.fx">
       <Filter>Shaders</Filter>
     </None>

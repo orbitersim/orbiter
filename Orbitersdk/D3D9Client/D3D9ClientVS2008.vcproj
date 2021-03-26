@@ -661,6 +661,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Modules\D3D9Client\Metalness.fx"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Modules\D3D9Client\PBR.fx"
 				>
 			</File>

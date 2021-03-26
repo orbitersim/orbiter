@@ -303,6 +303,7 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(BuildModuleDir)\D3D9Client\D3D9Client.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\HorizonHaze.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\Mesh.fx" />
+    <None Include="$(BuildModuleDir)\D3D9Client\Metalness.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\PBR.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\Particle.fx" />
     <None Include="$(BuildModuleDir)\D3D9Client\Planet.fx" />
@@ -318,17 +319,6 @@ if not exist "$(SolutionDir)nvapi.h" (
     <None Include="$(BuildModuleDir)\D3D9Client\IPI.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LensFlare.hlsl" />
     <None Include="$(BuildModuleDir)\D3D9Client\LightBlur.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\PBR_Mk2.fx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Modules\D3D9Client\Metalness.fx">
-      <FileType>Document</FileType>
-    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

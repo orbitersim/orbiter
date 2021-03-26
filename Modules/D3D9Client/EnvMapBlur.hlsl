@@ -24,14 +24,18 @@ float4 PSBlur(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 
 	vD = normalize(vD) * fD;
 
-	float3 color = texCUBE(tCube, dir).rgb * coeff[0];
+	float3 color = texCUBE(tCube, dir).rgb;
 	float3 vX = 0;
+	float f = 0.75f;
+	float a = 0.5f;
 
-	for (int i = 1; i < 8; i++) {
+	for (int i = 1; i < 16; i++) {
 		vX += vD;
-		color += texCUBE(tCube, dir + vX).rgb * coeff[i];
-		color += texCUBE(tCube, dir - vX).rgb * coeff[i];
-	};
-
+		color += f * texCUBE(tCube, dir + vX).rgb;
+		color += f * texCUBE(tCube, dir - vX).rgb;
+		a += f;
+		f *= 0.75f;
+	}
+	color /= (a*2.0f);
 	return float4(color, 1);
 }

@@ -46,9 +46,18 @@ sampler tCLUT;					// 2D D3D9Clut.dds texture
 sampler tTone;					// 4x4 mipmap of backbuffer
 
 
+static const float3 cMult = { 3.0f, 1.0f, 5.0f };
+
 float Desaturate (float3 color)
 {
 	return dot(color, float3(0.2, 0.7, 0.1) );
+}
+
+
+
+float3 HDRtoLDR(float3 hdr)
+{
+	return hdr * pow(max(0, 1.0f + hdr*hdr*hdr*hdr), -0.25);
 }
 
 
@@ -110,27 +119,25 @@ float4 PSMain(float x : TEXCOORD0, float y : TEXCOORD1) : COLOR
 		float3 L = tex2D(tBlur, vPos).rgb * fIntensity;
 		float3 B = abs(tex2D(tBack, vPos).rgb);
 
-		//float w = Desaturate(B);
+		float w = Desaturate(B);
 		float q = Desaturate(L);
 		
 		
 		L *= rsqrt(1 + q*q);
-		//B *= rsqrt(1 + w*w);
+		//B *= rsqrt(4 + w*w) * 2.24f;
 
 		color = B + L;
 		
-		float m = max(1, max(color.r, max(color.g, color.b)));
-
+		//float m = max(1, max(color.r, max(color.g, color.b)));
+		//float k = max(0, m - 1);
 		//color = 1 - ((1 - B)*(1 - L)); // Screen add
-
-		color = lerp(color/m, color, fSpecularity*fSpecularity);
+		//color = color / m; // lerp(color / m, float3(1, 1, 1), k * rsqrt(1 + k*k));
 		
+		color = HDRtoLDR(color);
+
 		color = pow(abs(color), fGamma*0.6f + 0.4f);
 
 		return float4(color, 1.0);
-
-		//return float4(color * 2 * rsqrt(1 + color*color*0.25f), 1.0);
-		//return float4(color / max(1, m)), 1.0); // Normalize color
 	}
 
 	return 0;

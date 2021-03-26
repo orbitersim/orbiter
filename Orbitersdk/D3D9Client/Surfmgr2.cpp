@@ -510,7 +510,7 @@ bool SurfTile::LoadElevationData ()
 					pelev_file = parent->Entry()->elev_file;
 					break;
 				}
-				parent = parent->Parent();
+				if (parent) parent = parent->Parent();
 				pilat >>= 1;
 				pilng >>= 1;
 			}

@@ -23,9 +23,6 @@ inline float cmax(float3 color)
 #include "PBR.fx"
 
 // Must be included here
-//#include "PBR_Mk2.fx"
-
-// Must be included here
 #include "Metalness.fx"
 
 // ============================================================================
@@ -328,11 +325,11 @@ technique VesselTech
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = true;
 	}
-	/*
+	
 	pass P5
 	{
-		vertexShader = compile vs_3_0 PBR2_VS();
-		pixelShader = compile ps_3_0 PBR2_PS();
+		vertexShader = compile vs_3_0 MetalnessVS();
+		pixelShader = compile ps_3_0 SpecularPS();
 
 		AlphaBlendEnable = true;
 		BlendOp = Add;
@@ -341,5 +338,4 @@ technique VesselTech
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = true;
 	}
-	*/
 }

@@ -237,7 +237,6 @@ typedef struct {
 #define D3D9MATEX_ROUGHNESS		0x080
 #define D3D9MATEX_EMISSION2		0x100
 #define D3D9MATEX_METALNESS		0x200
-#define D3D9MATEX_GLOW			0x400
 
 
 /**
@@ -251,9 +250,8 @@ typedef struct {
 	D3DXVECTOR3   Reflect;			///< Color multiplier and intensity (alpha)
 	D3DXVECTOR3	  Emission2;		///<
 	D3DXVECTOR3	  Fresnel;			///< Fresnel reflection
-	float		  Roughness;		///< Roughness = log2(spec_pow) * 0.1f
+	D3DXVECTOR2	  Roughness;		///< 
 	float		  Metalness;
-	float		  Glow;
 	// -----------------------
 	DWORD		  ModFlags;			///< Modification flags
 } D3D9MatExt;

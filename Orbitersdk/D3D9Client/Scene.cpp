@@ -2508,7 +2508,7 @@ bool Scene::RenderBlurredMap(LPDIRECT3DDEVICE9 pDev, LPDIRECT3DCUBETEXTURE9 pSrc
 	//
 	for (int mip = 1; mip < 5; mip++) {
 
-		pBlur->SetFloat("fD", (4.0f / float(width >> (mip-1))));
+		pBlur->SetFloat("fD", (4.0f / float(256 >> (mip - 1))));
 		pBlur->SetBool("bDir", false);
 		pBlur->SetTextureNative("tCube", pBlrTemp[mip-1], IPF_LINEAR);
 
