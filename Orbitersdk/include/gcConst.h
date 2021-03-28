@@ -326,23 +326,28 @@ namespace oapi {
 
 		inline FVECTOR3& operator*= (float f)
 		{
-			return FVECTOR3(x * f, y * f, z * f);
+			x *= f; y *= f; z *= f;
+			return *this;
 		}
 
 		inline FVECTOR3& operator/= (float f)
 		{
+			// return *this *= (1.0f / f); // nicer?
 			f = 1.0f / f;
-			return FVECTOR3(x * f, y * f, z * f);
+			x *= f; y *= f; z *= f;
+			return *this;
 		}
 
 		inline FVECTOR3& operator+= (float f)
 		{
-			return FVECTOR3(x + f, y + f, z + f);
+			x += f; y += f; z += f;
+			return *this;
 		}
 
 		inline FVECTOR3& operator-= (float f)
 		{
-			return FVECTOR3(x - f, y - f, z - f);
+			x -= f; y -= f; z -= f;
+			return *this;
 		}
 
 		inline FVECTOR3 operator* (float f) const
@@ -505,18 +510,22 @@ namespace oapi {
 
 		inline FVECTOR4& operator/= (float f)
 		{
+			// return *this *= (1.0f / f); // nicer?
 			f = 1.0f / f;
-			return FVECTOR4(x * f, y * f, z * f, w * f);
+			x *= f; y *= f; z *= f; w *= f;
+			return *this;
 		}
 
 		inline FVECTOR4& operator+= (float f)
 		{
-			return FVECTOR4(x + f, y + f, z + f, w + f);
+			x += f; y += f; z += f; w += f;
+			return *this;
 		}
 
 		inline FVECTOR4& operator-= (float f)
 		{
-			return FVECTOR4(x - f, y - f, z - f, w - f);
+			x -= f; y -= f; z -= f; w -= f;
+			return *this;
 		}
 
 		inline FVECTOR4 operator/ (float f) const
