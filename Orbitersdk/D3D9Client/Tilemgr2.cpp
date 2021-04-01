@@ -1063,6 +1063,7 @@ TileManager2Base::TileManager2Base (const vPlanet *vplanet, int _maxres, int _gr
 	elevRes = *(double*)oapiGetObjectParam (obj, OBJPRM_PLANET_ELEVRESOLUTION);
 	for (int i=0;i<NPOOLS;i++) VtxPoolSize[i]=IdxPoolSize[i]=0;
 	ResetMinMaxElev();
+	LogClr("Teal", "Planet ElevRes %s = %g", vplanet->GetName(), elevRes);
 }
 
 // -----------------------------------------------------------------------

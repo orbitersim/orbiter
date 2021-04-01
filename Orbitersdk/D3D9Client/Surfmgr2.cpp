@@ -196,7 +196,11 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 {
 	const int ndat = TILE_ELEVSTRIDE*TILE_ELEVSTRIDE;
 	INT16 *e = NULL;
+
+	// Elevation resolution used for "rounding" due to INT16 elevation. 
+	// Technically, should not apply to float based elevation but required due to rounding in physics.
 	double tgt_res = mgr->ElevRes();
+
 	char path[MAX_PATH];
 	char fname[128];
 	FILE *f;
@@ -211,9 +215,12 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			elev = new float[ndat];
 			// read the elevation file header
 			fread (&ehdr, sizeof(ELEVFILEHEADER), 1, f);
-			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) {
-				fseek (f, ehdr.hdrsize, SEEK_SET);
-			}
+			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek (f, ehdr.hdrsize, SEEK_SET);
+			LogClr("Teal", "NewTile[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl - 4, ehdr.scale, ehdr.offset);
+
+#ifdef ORBITER2016
+			ehdr.scale = 1.0;
+#endif
 			switch (ehdr.dtype) {
 			case 0: // flat tile, defined by offset
 				for (i = 0; i < ndat; i++) e[i] = 0;
@@ -241,6 +248,11 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			e = new INT16[ndat];
 			elev = new float[ndat];
 			memcpy(&ehdr, p, sizeof(ELEVFILEHEADER));
+			LogClr("Teal", "NewTileA[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl-4, ehdr.scale, ehdr.offset);
+
+#ifdef ORBITER2016
+			ehdr.scale = 1.0;
+#endif
 			p += ehdr.hdrsize;
 			switch (ehdr.dtype) {
 			case 0:
@@ -260,10 +272,10 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	}
 
 	if (e) {
+	
+		//
+		//for (i = 0; i < ndat; i++) elev[i] = (trunc(float(e[i]) * (ehdr.scale / tgt_res)) + trunc(ehdr.offset / tgt_res)) * tgt_res;
 
-		// Convert to float
-		for (i = 0; i < ndat; i++)
-			elev[i] = float(float(e[i]) * ehdr.scale + ehdr.offset);
 		if (ehdr.scale != tgt_res) { // rescale the data
 			double rescale = ehdr.scale / tgt_res;
 			for (i = 0; i < ndat; i++)
@@ -274,6 +286,9 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			for (i = 0; i < ndat; i++)
 				e[i] += sofs;
 		}
+
+		// Convert to float
+		for (i = 0; i < ndat; i++) elev[i] = float(e[i]) * float(tgt_res);	
 	}
 
 	// Elevation mod data
@@ -288,11 +303,15 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			bool found = mgr->GetClient()->TexturePath(fname, path);
 			if (found && !fopen_s(&f, path, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
-				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
-					fseek (f, hdr.hdrsize, SEEK_SET);
-				}
-				rescale = (do_rescale = (hdr.scale != ehdr.scale)) ? hdr.scale / ehdr.scale : 1.0;
-				offset = (do_shift = (hdr.offset != 0.0)) ? (INT16)(hdr.offset / ehdr.scale) : 0;
+				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek (f, hdr.hdrsize, SEEK_SET);
+				LogClr("Teal", "NewElevMod[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl - 4, hdr.scale, hdr.offset);
+
+#ifdef ORBITER2016
+				hdr.scale = 1.0;
+#endif
+				rescale = (do_rescale = (hdr.scale != 1.0)) ? hdr.scale : 1.0;
+				offset = (do_shift = (hdr.offset != 0.0)) ? INT16(hdr.offset) : 0;
+
 				switch (hdr.dtype) {
 				case 0: // overwrite the entire tile with a flat offset
 					for (i = 0; i < ndat; i++) e[i] = offset, elev[i] = float(hdr.offset);
@@ -305,7 +324,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (tmp[i] != mask) {
 							e[i] = (INT16)(do_rescale ? (INT16)(tmp[i] * rescale) : (INT16)tmp[i]);
 							if (do_shift) e[i] += offset;
-							elev[i] = float(float(tmp[i]) * hdr.scale + hdr.offset); // Apply to floats 			
+							elev[i] = float(e[i]) * float(tgt_res);
 						}
 					}
 					delete []tmp;
@@ -314,13 +333,12 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				case -16: {
 					const INT16 mask = SHRT_MAX;
 					INT16 *tmp = new INT16[ndat];
-					INT16 ofs = (INT16)hdr.offset;
 					fread (tmp, sizeof(INT16), ndat, f);
 					for (i = 0; i < ndat; i++) {
 						if (tmp[i] != mask) {
 							e[i] = (do_rescale ? (INT16)(tmp[i] * rescale) : tmp[i]);
 							if (do_shift) e[i] += offset;
-							elev[i] = float(float(tmp[i]) * hdr.scale + hdr.offset); // Apply to floats
+							elev[i] = float(e[i]) * float(tgt_res);
 						}
 					}
 					delete []tmp;
@@ -337,9 +355,15 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			if (ndata) {
 				BYTE *p = buf;
 				ELEVFILEHEADER *phdr = (ELEVFILEHEADER*)p;
+				LogClr("Teal", "NewElevModA[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl - 4, phdr->scale, phdr->offset);
+
+#ifdef ORBITER2016
+				phdr->scale = 1.0;
+#endif
 				p += phdr->hdrsize;
-				rescale = (do_rescale = (phdr->scale != ehdr.scale)) ? phdr->scale / ehdr.scale : 1.0;
-				offset = (do_shift = (phdr->offset != 0.0)) ? (INT16)(phdr->offset / ehdr.scale) : 0;
+				rescale = (do_rescale = (phdr->scale != 1.0)) ? phdr->scale : 1.0;
+				offset = (do_shift = (phdr->offset != 0.0)) ? INT16(phdr->offset) : 0;
+
 				switch(phdr->dtype) {
 				case 0:
 					for (i = 0; i < ndat; i++) e[i] = offset, elev[i] = float(phdr->offset);
@@ -350,7 +374,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (p[i] != mask) {
 							e[i] = (INT16)(do_rescale ? p[i] * rescale : p[i]);
 							if (do_shift) e[i] += offset;
-							elev[i] = float(float(p[i]) * phdr->scale + phdr->offset); // Apply to floats
+							elev[i] = float(e[i]) * float(tgt_res);
 						}
 					}
 					} break;
@@ -361,7 +385,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 						if (buf16[i] != mask) {
 							e[i] = (do_rescale ? (INT16)(buf16[i] * rescale) : buf16[i]);
 							if (do_shift) e[i] += offset;
-							elev[i] = float(float(buf16[i]) * phdr->scale + phdr->offset); // Apply to floats
+							elev[i] = float(e[i]) * float(tgt_res);
 						}
 					}
 					} break;
@@ -524,7 +548,7 @@ bool SurfTile::LoadElevationData ()
 			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev_temp);
 
 			// Convert to float
-			for (int i = 0; i < ndat; i++) elev[i] = float(float(elev_temp[i])); // *ehdr.scale + ehdr.offset);
+			for (int i = 0; i < ndat; i++) elev[i] = float(elev_temp[i]) * float(tgt_res);
 
 			delete[] elev_temp;
 		}
