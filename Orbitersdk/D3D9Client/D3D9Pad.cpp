@@ -1429,7 +1429,7 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 	float ax = float(pt[C].x - pt[A].x);
 	float ay = float(pt[C].y - pt[A].y);
 
-	if ((bx*ay-by*ax)*hd > 0) return 0;	// Check handiness
+	if ((bx*ay-by*ax)*hd > 0.0f) return 0;	// Check handiness
 
 	float aa = ax*ax + ay*ay;			// dot(a,a)
 	float ab = ax*bx + ay*by;			// dot(a,b)
@@ -1437,7 +1437,6 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 
 	float qw = fabs(ab) / sqrt(aa*bb);	// abs(cos(a,b))
 	if (bSharp && qw>0.9f) return 0;	// Bad Ear
-	if (qw>0.9999f) return 0;			// All three points are lined up
 
 	float id = 1.0f / (aa * bb - ab * ab);
 
@@ -1445,7 +1444,7 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 
 		WORD P = Idx[i];
 
-		if (P==B || P==A || P==C) continue;
+		if ((P==B) || (P==A) || (P==C)) continue;
 
 		float cx = float(pt[P].x - pt[A].x);
 		float cy = float(pt[P].y - pt[A].y);
@@ -1456,7 +1455,7 @@ int CheckTriangle(short x, const Type *pt, const WORD *Idx, float hd, short npt,
 
 		// Check if the point is inside the triangle
 		// NOTE: Having u+v slightly above 1.0 is a bad condition, should find a better ear.
-		if  ((u>-0.001) && (v>-0.001) && ((u+v)<1.001f)) return 0;
+		if  ((u>-0.0001) && (v>-0.0001) && ((u+v)<1.0001f)) return 0;
 	}
 
 	return 1; // It's an ear
@@ -1472,14 +1471,15 @@ int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 	if (npt==3) { Out[0]=0; Out[1]=1; Out[2]=2;	return 3; }
 
 	short idx = 0;		// Number of indices written in the output
-	short x = npt-1;		// First ear to test is the last one in the list
-	bool bSharp = true; // Avoid sharp ears
+	short x = npt-1;	// First ear to test is the last one in the list
+	bool bSharp = false;// Avoid sharp ears
 
 	// Build initial index list
 	WORD In[256];
 	for (int i=0;i<npt;i++) In[i]=i;
 	float sum = 0;
 	int k = npt-1;
+	int nr = 0;
 	for (int i=0;i<k;i++) sum += (float(pt[i].x)*float(pt[(i+1)%k].y) - float(pt[(i+1)%k].x)*float(pt[i].y));
 
 	if (sum>0) sum=1.0; else sum=-1.0;
@@ -1492,12 +1492,10 @@ int CreatePolyIndexList(const Type *pt, short npt, WORD *Out)
 			{
 				x--;
 				if (x<0) { // Restart
-					if (!bSharp) { 
-						LogErr("bSharp Exiting PolyTri");
-						return idx;	
-					}
-					bSharp=false;
-					x=npt-1;
+					if (!bSharp && nr>10) return idx;	
+					bSharp = false;
+					x = npt - 1;
+					nr++;
 				}
 				break;
 			}

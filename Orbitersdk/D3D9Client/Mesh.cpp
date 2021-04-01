@@ -1311,6 +1311,7 @@ void D3D9Mesh::CheckMeshStatus()
 		if (Tex[ti] != NULL) {
 			if (Tex[ti]->IsAdvanced()) {
 				bCanRenderFast = false;
+				if (Tex[ti]->GetMap(MAP_METALNESS) && (DefShader == SHADER_NULL)) DefShader = SHADER_METALNESS;
 				if (Tex[ti]->GetMap(MAP_SPECULAR)) Grp[g].PBRStatus |= 0x2;
 				if (Tex[ti]->GetMap(MAP_ROUGHNESS)) Grp[g].PBRStatus |= 0x4;
 				if (Tex[ti]->GetMap(MAP_REFLECTION)) Grp[g].PBRStatus |= 0x8;

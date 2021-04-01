@@ -255,6 +255,9 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
 	cAmbient *= cAmbient;
 	cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));	
+
+	// Apply base ambient light
+	cAmbient = max(cAmbient, gSun.Ambient);
 #else
 
 	// ======================================================================
@@ -491,6 +494,9 @@ float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
 	cAmbient *= cAmbient;
 	cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));
+
+	// Apply base ambient light
+	cAmbient = max(cAmbient, gSun.Ambient);
 #else
 
 	// ======================================================================

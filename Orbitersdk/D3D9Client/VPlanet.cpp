@@ -728,6 +728,8 @@ void vPlanet::RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **lab
 
 void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
+	static double threshold = 1e16;
+
 	float fogfactor;
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
@@ -745,7 +747,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 				surfmgr2->Render(dmWorld, false, prm);
 			}
 			else {
-				surfmgr2->ElevMode = eElevMode::Elevated;
+				surfmgr2->ElevMode = eElevMode::ForcedElevated;
 				surfmgr2->Render(dmWorld, true, prm);
 			}
 		}
@@ -756,8 +758,16 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 				surfmgr2->Render(dmWorld, false, prm); // Flat/Spherical body
 			}
 			else {
-				surfmgr2->ElevMode = eElevMode::Auto;
-				surfmgr2->Render(dmWorld, true, prm); // Elevated body
+		
+				TileManager2Base::RenderStats rs = surfmgr2->prevstat;
+
+				if (abs(cdist - threshold) > 1e3) {
+					threshold = cdist;
+					// If there are more than 5 spherical tiles render the body as spherical
+					if (rs.Sphe > 5) surfmgr2->ElevMode = eElevMode::Spherical; // Spherical body
+					else surfmgr2->ElevMode = eElevMode::Elevated; // Elevated body
+				}
+				surfmgr2->Render(dmWorld, true, prm);
 			}
 		}
 

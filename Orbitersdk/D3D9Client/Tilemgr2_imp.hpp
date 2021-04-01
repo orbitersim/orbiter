@@ -112,7 +112,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 	bool bNoRelease = false;
 	
 	// Override TileDeletion for forced elevated rendering of asteroids/comets/small moons
-	if (ElevMode == eElevMode::Elevated) bNoRelease = true;
+	if (ElevMode == eElevMode::ForcedElevated) bNoRelease = true;
 	
 	tile->dmWorld = WorldMatrix(ilng, nlng, ilat, nlat);
 	MATRIX4toD3DMATRIX(tile->dmWorld, tile->mWorld);
@@ -178,14 +178,9 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		else elvstat.Sphe++;
 	}
 
-	if (!bstepdown) {
-		if (ElevMode & eElevMode::Auto) {
-			if (tile->IsElevated() == false && (ElevMode & eElevMode::Elevated) && (tgtres != -1)) bstepdown = (lvl < (tgtres+1));
-		}
-		else {
-			// Search elevated tilels from sub-trees
-			if (ElevMode == eElevMode::Elevated && tile->IsElevated() == false) bstepdown = true;
-		}
+	if (!bstepdown) {	
+		// Search elevated tilels from sub-trees
+		if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) bstepdown = true;	
 	}
 	
 	// Recursion to next level: subdivide into 2x2 patch

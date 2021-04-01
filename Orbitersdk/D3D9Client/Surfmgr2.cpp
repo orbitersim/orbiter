@@ -1303,23 +1303,9 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	//
 	Shader()->SetTechnique(eTileTech);
 
-
-	if (ElevMode & eElevMode::Auto) {
-		if (prevstat.Elev == 0) ElevMode = eElevMode::DontCare | eElevMode::Auto;
-		else if (prevstat.Sphe <= 5 && prevstat.Elev > 0) {
-			// If we are only having a few spherical tiles to render... Try to upgrade them to elevated
-			ElevMode = eElevMode::Elevated | eElevMode::Auto;
-		}
-		else {
-			// Give up, render all as spherical
-			ElevMode = eElevMode::Spherical | eElevMode::Auto;
-		}
-	}
-	
-
 	HR(Shader()->SetBool(sbSpherical, false));
 
-	if (ElevMode & eElevMode::Spherical) {
+	if (ElevMode == eElevMode::Spherical) {
 		// Force spherical rendering at shader level
 		HR(Shader()->SetBool(sbSpherical, true));
 	}	
@@ -1383,17 +1369,17 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 
 
 	// Backup the stats and clear counters
-	prevstat = elvstat;
+	if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) prevstat = elvstat;
 	elvstat.Elev = elvstat.Sphe = 0;
 
-	/*if (GetHandle() == oapiCameraTarget()) {
-	sprintf_s(oapiDebugString(), 256, "Body=%s, Elv=%d, Sph=%d", CbodyName(), prevstat.Elev, prevstat.Sphe);
-	if (ElevMode & eElevMode::Elevated) strcat_s(oapiDebugString(), 256, " Elevated");
-	if (ElevMode & eElevMode::Spherical) strcat_s(oapiDebugString(), 256, " Spherical");
-	if (ElevMode & eElevMode::Auto) strcat_s(oapiDebugString(), 256, " Auto");
-	else strcat_s(oapiDebugString(), 256, " Forced");
+	/*if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) {
+		if (GetHandle() == oapiCameraProxyGbody()) {
+			D3D9DebugLog("Body=%s, Elv=%d, Sph=%d", CbodyName(), prevstat.Elev, prevstat.Sphe);
+			if (ElevMode == eElevMode::Elevated) D3D9DebugLog("Elevated");
+			if (ElevMode == eElevMode::Spherical) D3D9DebugLog("Spherical");
+			if (ElevMode == eElevMode::ForcedElevated) D3D9DebugLog("ForcedElevated");
+		}
 	}*/
-
 
 	if (np)
 		scene->SetCameraFrustumLimits(np,fp);

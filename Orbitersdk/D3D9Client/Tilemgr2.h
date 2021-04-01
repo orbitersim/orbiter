@@ -246,7 +246,7 @@ namespace eElevMode {
 	const int DontCare = 0x0;
 	const int Elevated = 0x1;
 	const int Spherical = 0x2;
-	const int Auto = 0x10;
+	const int ForcedElevated = 0x3; // This can be really bad. Use only with small bodies
 };
 
 
