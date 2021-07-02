@@ -1,0 +1,125 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+ShapeIdx 3
+END_HEADER
+
+BEGIN_DATA
++273.10	-44.80	:	Abeona Mons
++318.20	+68.90	:	Akna Montes
++308.50	-9.00	:	Aleksota Mons
++14.10	+11.00	:	Anala Mons
++54.70	+38.90	:	Api Mons
++291.00	-22.00	:	Atai Mons
++308.90	+9.50	:	Atanua Mons
++267.60	+52.20	:	Atira Mons
++227.00	-78.50	:	Atsyrkhus Mons
++248.00	-60.00	:	Awenhai Mons
++279.00	+65.50	:	Bagbartu Mons
++21.90	+34.00	:	Bécuma Mons
++354.90	+45.80	:	Bunzi Mons
++294.60	-45.40	:	Chloris Mons
++246.00	-38.00	:	Chuginadak Mons
++332.50	-31.50	:	Cipactli Mons
++150.90	+53.00	:	Ciuacoatl Mons
++233.10	+44.10	:	[Cotis Mons]
++334.00	+58.50	:	Danu Montes
++34.00	+0.50	:	Dzalarhons Mons
++134.00	-59.00	:	Egle Mons
++329.10	+45.10	:	Eostre Mons
++8.00	-68.00	:	Erzulie Mons
++158.00	+7.00	:	Fand Mons
++309.00	-43.50	:	Faravari Mons
++333.80	+74.10	:	Freyja Montes
++236.40	+35.90	:	[Furki Mons]
++102.20	-20.20	:	Gauri Mons
++359.10	+21.90	:	Gula Mons
++58.50	-47.50	:	Gurshi Mons
++238.70	-21.40	:	Gwen Mons
++198.30	+53.10	:	Hallgerda Mons
++324.70	-38.70	:	Hathor Mons
++214.50	-46.50	:	Idunn Mons
++315.50	-13.50	:	Ilithyia Mons
++328.50	-34.60	:	Innini Mons
++16.00	+14.60	:	Irnini Mons
++171.00	+9.00	:	Iseghey Mons
++242.20	+15.70	:	Ixtab Mons
++120.80	+51.20	:	Jael Mons
++29.20	+9.40	:	Kali Mons
++126.00	-69.00	:	Katl-Imi Mons
++212.00	+35.50	:	Kokyanwuti Mons
++58.00	-54.90	:	Kshumay Mons
++86.00	-33.90	:	Kunapipi Mons
++103.00	+48.70	:	Kurukulla Mons
++162.00	+14.00	:	Lahar Mons
++262.00	+79.90	:	Laka Mons
++172.70	+2.80	:	Lamashtu Mons
++91.00	-68.50	:	Lanig Mons
++56.00	-59.50	:	Loo-Wit Mons
++251.00	-12.00	:	[Ludjatako Mons]
++194.60	+0.50	:	Maat Mons
++3.30	+65.20	:	Maxwell Montes
++215.20	-15.10	:	Mbokomu Mons
++119.30	+62.80	:	Melia Mons
++209.00	+9.50	:	Mem Loimis Mons
++237.30	+43.00	:	[Mentha Mons]
++270.30	-38.10	:	Mertseger Mons
++280.50	-27.80	:	Mielikki Mons
++159.40	+52.50	:	Milda Mons
++255.00	+57.70	:	Mokosha Mons
++174.50	+10.60	:	Muhongo Mons
++358.30	+55.50	:	Muta Mons
++205.00	+14.00	:	Nahas-tsan Mons
++83.00	+2.00	:	Nayunuwi Montes
++240.00	+22.50	:	Nazit Mons
++257.50	-43.00	:	Ne Ngam Mons
++317.50	-33.00	:	Nepthys Mons
++185.00	+45.00	:	Nijole Mons
++197.50	+25.70	:	Ninisinna Mons
++189.00	+20.00	:	Nokomis Montes
++48.50	+30.00	:	Nyx Mons
++194.50	-2.00	:	Ongwuti Mons
++201.00	+4.50	:	Ozza Mons
++114.50	-64.50	:	Pahto Mons
++264.00	+24.50	:	Polik-mana Mons
++45.40	+2.80	:	Ptesanwi Mons
++321.50	-43.70	:	Rakapila Mons
++236.20	+76.00	:	Renpet Mons
++282.20	+32.40	:	Rhea Mons
++301.50	+2.50	:	Rhpisunt Mons
++219.50	+35.00	:	Sakwap-mana Mons
++291.00	+13.60	:	Samodiva Mons
++188.30	+8.50	:	Sapas Mons
++240.50	+44.50	:	Sekmet Mons
++28.00	-43.00	:	Sephira Mons
++33.20	+26.30	:	[Seshat Mons]
++208.00	+39.40	:	Shala Mons
++297.30	-42.30	:	Siduri Mons
++352.40	+22.00	:	Sif Mons
++4.00	+64.00	:	Skadi Mons
++348.50	+9.30	:	Somagalags Montes
++255.00	-16.50	:	Spandarmat Mons
++355.40	-11.00	:	Talakin Mons
++304.00	-38.60	:	Tefnut Mons
++44.30	+29.00	:	Tepev Mons
++233.50	+76.00	:	Thallo Mons
++281.00	+22.70	:	Theia Mons
++232.00	-12.90	:	Toma Mons
++272.90	-27.20	:	Ts'an Nu Mons
++314.60	+13.30	:	Tuli Mons
++274.70	+10.30	:	Tuulikki Mons
++41.50	-42.50	:	Tuzandi Mons
++117.00	+40.50	:	Ua-ogrere Mons
++261.00	-12.00	:	Uretsete Mons
++324.60	-24.30	:	Ushas Mons
++69.00	+16.00	:	Uti Hiata Mons
++316.20	+1.20	:	Var Mons
++238.80	+32.70	:	Venilia Mons
++299.40	-6.30	:	Vostrukha Mons
++207.70	+26.30	:	Waka Mons
++247.20	+14.00	:	Wyrd Mons
++270.00	+3.50	:	Xochiquetzal Mons
++194.20	+39.70	:	Xtoh Mons
++194.00	+17.00	:	Yolkai-Estsan Mons
++285.00	-18.00	:	Yunya-mana Mons
++163.50	+18.00	:	Zaltu Mons

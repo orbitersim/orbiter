@@ -1,0 +1,74 @@
+BEGIN_DESC
+The attitude of an object can be stabilised by spinning it rapidly around
+one of its axes of symmetry.
+In this scenario, two rockets are placed in a low orbit. One is spinning
+around its axis at 1Hz, the other is not. The spinning rocket maintains its
+global orientation, while the other starts to rotate under the influence
+of gravity gradient torque.
+
+Speed up to 100x and watch the behaviour of both rockets.
+
+Try killing the angular velocity of the spinning rocket (using the Scenario
+Editor) and see what happens.
+
+This scenario requires gravity gradient torque enabled in the "Parameters" tab
+of the Orbiter Launchpad.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.5315055046
+  Script Demos/Spin_stabilisation
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET srb1
+  MODE Extern
+  POS 6.31 66.89 47.98
+  TRACKMODE GlobalFrame
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Earth
+END_MFD
+
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 4719588.58 3646102.10 -2812846.20
+  RVEL 5429.561 -4402.208 3404.646
+  AROT -52.83 -65.94 90.50
+  VROT 0.06 0.00 0.00
+  PRPLEVEL 0:0.553 1:0.900
+  NAVFREQ 0 0 0 0
+  XPDR 0
+END
+srb1:Atlantis_SRB
+  STATUS Orbiting Earth
+  RPOS 6974667.84 6.50 712661.15
+  RVEL -736.021 -0.030 7854.882
+  AROT -0.00 -0.00 165.31
+  VROT 0.00 0.00 360.00
+  THLEVEL 1:0.99
+END
+srb2:Atlantis_SRB
+  STATUS Orbiting Earth
+  RPOS 6974667.86 -0.53 712661.11
+  RVEL -736.022 -0.033 7854.883
+  AROT 0.00 0.00 158.11
+  THLEVEL 1:0.99
+END
+END_SHIPS

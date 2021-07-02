@@ -1,0 +1,50 @@
+BEGIN_DESC
+Challenge 4. Land safely at Kennedy Space Center without refueling.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD ;
+  Script challenges/challenge4
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-1
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-1
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Earth
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+GL-1:Deltaglider
+  STATUS Orbiting Earth
+  RPOS 37621148.51 -7600952.94 17445352.46
+  RVEL -1387.842 -1090.249 2517.881
+  AROT 0.00 -0.00 0.00
+  PRPLEVEL 0:0.028 1:0.050
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS
+
+BEGIN_ExtMFD
+END

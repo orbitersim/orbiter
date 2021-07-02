@@ -1,0 +1,41 @@
+BEGIN_DESC
+On September 6, 1996 the Galileo Spacecraft passed even closer to Ganymede's surface during its second flyby of this icy world.
+END_DESC
+
+BEGIN_ENVIRONMENT
+System Sol
+Date MJD 50331.3717764467
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+Ship Galileo
+END_FOCUS
+
+BEGIN_CAMERA
+TARGET Galileo
+MODE Extern
+POS 214.51 168.05 -0.04
+TRACKMODE GlobalFrame
+FOV 10.00
+END_CAMERA
+
+BEGIN_MFD Left
+TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+TYPE Orbit
+PROJ Ecliptic
+REF Jupiter
+END_MFD
+
+
+BEGIN_SHIPS
+Galileo
+STATUS Orbiting Jupiter
+RPOS 1398945372.67 -28022251.82 1461597987.62
+RVEL -9940.304 578.763 -777.179
+AROT -1.37 24.96 159.82
+NAVFREQ 402 94
+END
+END_SHIPS

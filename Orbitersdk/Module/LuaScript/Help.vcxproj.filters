@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <HtmlHelp Include="..\..\..\Htmlsrc\Main\orbiter.hhp">
+      <Filter>Source Files</Filter>
+    </HtmlHelp>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_oapi.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_proc.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_vec.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_vessel.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\clbk_mfd.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\clbk_vessel.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\constant.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\Datatypes.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\devel.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\function.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\Invoking.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mission.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_light.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_mfd.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_note.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_skp.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_vessel.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\OrbiterAPI.css">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\ScriptMfd.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\ScriptRef.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\ScriptVessel.htm">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\Htmlsrc\Main\Script\img1.gif">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

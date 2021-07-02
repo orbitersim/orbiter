@@ -1,0 +1,169 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONFIG DIALOG  0, 0, 208, 209
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Orbiter: TrackIR Configuration"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,99,188,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,151,188,50,14
+    CONTROL         "Tab1",IDC_TAB1,"SysTabControl32",0x0,7,7,194,177
+END
+
+IDD_CFG_DIAGNOSTIC DIALOG  14, 26, 180, 150
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT1,10,12,160,13,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    GROUPBOX        "TrackIR Module",IDC_STATIC,0,0,179,28
+    GROUPBOX        "TrackIR Module Version",IDC_STATIC,0,37,179,28
+    EDITTEXT        IDC_EDIT2,10,49,160,13,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+END
+
+IDD_CFG_MODE DIALOG  14, 26, 180, 150
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Activate TrackIR",IDC_STATIC,0,0,179,112
+    CONTROL         "Virtual cockpit view",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,28,77,10
+    CONTROL         "2-D instrument panel view",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,39,97,10
+    CONTROL         "Generic glass-cockpit view",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,49,101,10
+    CONTROL         "Track view",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,81,51,10
+    CONTROL         "Ground view",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,92,56,10
+    LTEXT           "Cockpit views",IDC_STATIC,12,16,45,8
+    LTEXT           "External views",IDC_STATIC,12,69,46,8
+END
+
+IDD_CFG_VC DIALOG  14, 26, 180, 150
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "VC mouse interaction",IDC_STATIC,0,57,179,45
+    EDITTEXT        IDC_EDIT3,21,82,29,14,ES_AUTOHSCROLL
+    LTEXT           "seconds",IDC_STATIC,53,83,28,8
+    GROUPBOX        "Tracking mode",IDC_STATIC,0,0,179,47
+    CONTROL         "Track rotation",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,12,60,10
+    CONTROL         "Track position",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,28,61,10
+    CONTROL         "Freeze camera after mouse move for",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,70,131,10
+    LTEXT           "Default range: ±",IDC_STATIC,76,13,52,8
+    EDITTEXT        IDC_EDIT1,129,11,26,14,ES_AUTOHSCROLL
+    LTEXT           "deg.",IDC_STATIC,158,13,15,8
+    LTEXT           "Default range: ±",IDC_STATIC,76,29,52,8
+    EDITTEXT        IDC_EDIT2,129,27,26,14,ES_AUTOHSCROLL
+    LTEXT           "m",IDC_STATIC,158,29,8,8
+END
+
+IDD_CFG_TRACK DIALOG  14, 26, 180, 150
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Tracking mode",IDC_STATIC,0,0,179,72
+    CONTROL         "Track rotation",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,12,60,10
+    CONTROL         "Track zoom",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,55,53,10
+    CONTROL         "by head orientation",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON,23,24,76,10
+    CONTROL         "by head position",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,23,35,67,10
+    GROUPBOX        "Parameters",IDC_STATIC,0,80,179,48
+    RTEXT           "Dead zone (0-100) :",IDC_STATIC,9,92,64,8
+    EDITTEXT        IDC_EDIT1,82,91,40,14,ES_AUTOHSCROLL
+    RTEXT           "Speed (1-100) :",IDC_STATIC,23,108,50,8
+    EDITTEXT        IDC_EDIT2,82,107,40,14,ES_AUTOHSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 201
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 202
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_INFO                "TRACK-IR SUPPORT:\r\n\r\nEnables support for Natural Point TrackIR head tracking devices.\r\nAfter activating the module, tracking parameters can be set in the ""Extra"" tab under ""TrackIR configuration""."
+    IDS_TYPE                "Input devices"
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

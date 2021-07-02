@@ -1,0 +1,135 @@
+BEGIN_DESC
+Orbiter now supports higher resolution planetary textures (level 9, up to 32768x16384 effective bitmap size).
+The standard Orbiter distribution contains level 9 coverage for the Gulf of Mexico area. To get full land coverage,
+you must download and install the additional Earth super-hires texture pack.
+The new Earth textures also contain a new land-sea mask with improved inland water surface data.
+
+To see more hi-res Earth views, open the Camera dialog (Ctrl-F1) and select from the Preset list.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.6690680243
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Extern
+  POS 108885.16 -176.01 -32.29
+  TRACKMODE TargetRelative
+  FOV 50.00
+  BEGIN_PRESET
+    Track:GL-01:50.00:RELATIVE 108885.160 -3.072 -0.564
+    Track:Earth:50.00:RELATIVE 1.299 0.556 0.107
+    Track:GL-01:30.00:RELATIVE 825069.382 3.080 0.146
+    Track:GL-01:30.00:RELATIVE 825069.382 -0.263 0.488
+    Track:GL-01:10.00:RELATIVE 1256883.573 -0.408 0.673
+    Track:Earth:20.00:RELATIVE 1.553 -0.395 -0.680
+    Track:Earth:20.00:RELATIVE 1.434 0.192 -0.403
+  END_PRESET
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 1
+  OBS 5.34 5.76
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+  BTARGET Habana
+  OTARGET ISS
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 4160235.80 4824448.27 -2167750.63
+  RVEL 5883.014 -4960.454 260.093
+  AROT 110.00 -10.00 80.00
+  PRPLEVEL 0:1.000
+  NAVFREQ 0 0
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS -5587706.62 -222807.34 -3642837.04
+  RVEL 4227.380 -394.809 -6455.161
+  AROT 0.00 -45.00 90.00
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS -2084321.28 818441.19 -200.50
+  RVEL -540.808 -1377.335 0.224
+  AROT 0.00 0.00 -122.94
+  VROT 0.00 0.00 10.00
+END
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  POS -80.6858943 28.5906644
+  HEADING 330.01
+  PRPLEVEL 0:0.995 1:1.000
+  NAVFREQ 94 524 84 114
+  XPDR 0
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+  RCSMODE 0
+END
+SH-03:ShuttleA
+  STATUS Landed Earth
+  BASE Habana:4
+  POS -82.4982414 22.9994604
+  HEADING 70.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+END
+PB-01:ShuttlePB
+  STATUS Landed Earth
+  BASE Habana:1
+  POS -82.5000000 23.0005396
+  HEADING 22.00
+  PRPLEVEL 0:1.000
+  NAVFREQ 0 0
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  POS -135.4300000 12.7366196
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+  RCSMODE 1
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+END
+END_SHIPS

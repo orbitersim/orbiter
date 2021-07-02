@@ -1,0 +1,51 @@
+BEGIN_DESC
+The Delta Glider cruises through the Jovian system on Voyager I's historic trajectory. Increase the time warp to 1000x and enjoy this hands-off tour of Jupiter and its Galilean Moons.
+
+After leaving the Jovian system, increase the time warp further and wait for
+the Saturn flyby in November 1980.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 43936.1666767072
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Extern
+  POS 44.11 -21.98 -9.37
+  TRACKMODE TargetRelative
+  FOV 10.00
+END_CAMERA
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Sun
+  TARGET Saturn
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ecliptic
+  REF Jupiter
+  TARGET Io
+END_MFD
+
+BEGIN_SHIPS
+  GL-01:DeltaGlider
+  STATUS Orbiting Jupiter
+  RPOS 1047088471.06 -1690682.11 -1758670958.77
+  RVEL -3268.245 -330.516 15127.316
+  AROT -1.37 24.96 159.82
+  PRPLEVEL 0:0.490 1:0.938
+  NAVFREQ 402 94 0 0
+  XPDR 0
+  END
+END_SHIPS
+

@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Replay recorded missions</h1>
+<p>This folder contains playbacks of missions you have recorded earlier.</p>
+END_HYPERDESC

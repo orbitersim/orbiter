@@ -1,0 +1,41 @@
+BEGIN_DESC
+Nearing the end of its mission, on October 11, 1999, Galileo braved the intense Jovian radiation to make a close flyby of the most volcanic body in our solar system, Io.
+END_DESC
+
+BEGIN_ENVIRONMENT
+System Sol
+Date MJD 51462.1670674074
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+Ship Galileo
+END_FOCUS
+
+BEGIN_CAMERA
+TARGET Galileo
+MODE Extern
+POS 214.51 -47.85 1.76
+TRACKMODE GlobalFrame
+FOV 20.00
+END_CAMERA
+
+BEGIN_MFD Left
+TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+TYPE Orbit
+PROJ Ecliptic
+REF Jupiter
+END_MFD
+
+
+BEGIN_SHIPS
+Galileo
+STATUS Orbiting Jupiter
+RPOS -412476901.95 -6900103.65 -20475643.28
+RVEL -3363.891 -839.825 -23535.673
+AROT 0.00 0.00 0.00
+NAVFREQ 402 94
+END
+END_SHIPS

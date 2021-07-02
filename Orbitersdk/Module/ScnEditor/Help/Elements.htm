@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" TYPE="TEXT/CSS" HREF="Orbiter.css">
+<Title>Orbital elements</Title>
+<STYLE>
+li { margin-bottom: 1em }
+</STYLE>
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="ScnEditor.htm">Orbiter Scenario Editor</a></p>
+<h1>Orbital elements</h1>
+<p>
+Use this page to place a vessel into orbit around a celestial body.
+<p>
+First select the object (planet, moon or sun) around which you want your vessel to orbit in the <i>Orbit reference</i> box.
+<p>
+Next, in the <i>Frame</i> box, select the coordinate frame in which the elements will be expressed. The choices are <i>ecliptic</i> and <i>ref. equator</i>. The ecliptic frame is defined by the plane of Earth’s orbit, and the direction of the vernal equinox (at epoch J2000.0). This frame is useful e.g. if you want to place a vessel into an orbit for an interplanetary transfer. The equatorial frame is defined by the equatorial plane of the reference body. It is useful if you want to place the vessel into a specific orbit with respect to the planet surface, e.g. geostationary or polar.
+<p>
+Finally, set the <i>reference epoch</i> for the elements. This is the date to which the <i>mean longitude</i> pa­rameter of the orbital elements will refer. If you select <i>current</i>, then the value will be interpreted as the mean longitude at the current simulation time. Otherwise, the value will represent the mean longitude at the specified <i>MJD</i> (Modified Julian Date). The latter option is more useful when editing a scenario without pausing, be­cause a vessel’s mean longitude is continuously changing along its orbit.
+<p>
+Now you are ready to set the elements in the left column of the dialog box. The six elements completely describe a Keplerian (2-body) orbit of an object in the form of a conic section, either periodic (elliptic) or non-periodic (hyperbolic). Under the influence of gravitational perturbations the orbital elements will change over time. In this case, the specified values describe the current <i>osculating orbit</i>, i.e. the Keplerian orbit producing the same vessel state vectors (position and velocity) at the current time.
+<p>
+Below is a short description of the meaning of these parameters.
+
+<h3>Semi-major axis [SMa]</h3>
+For elliptical orbits, this defines the largest semi-diameter of the orbital trajectory. For hyperbolic orbits, SMa is negative and denotes the distance from the intersection of the hyperbola asymptotes to periapsis.
+
+<h3>Eccentricity [Ecc]</h3>
+Defines the shape of the orbit:
+<table col=2 border=0>
+<tr><td><i>e</i> = 0</td><td>circular orbit</td></tr>
+<tr><td>0 &lt; <i>e</i> &lt; 1</td><td>elliptic orbit</td></tr>
+<tr><td><i>e</i> = 1</td><td>parabolic orbit</td></tr>
+<tr><td><i>e</i> &gt; 1</td><td>hyperbolic orbit</td></tr>
+</table>
+
+<h3>Inclination [Inc]</h3>
+Defines the angle between the orbital plane and the reference plane. For example, if you selected "ref. equator” frame, then setting <i>i</i> = 0 will put the vessel into an orbit above the planet’s equator, while <i>i</i> = 90 defines a polar orbit.
+
+<h3>Longitude of ascending node [LAN]</h3>
+The angular distance between the reference direction (e.g. vernal equinox) and the line of nodes (the intersection between the orbital and reference planes).
+
+<h3>Longitude of periapsis [LPe]</h3>
+The sum of LAN and the argument of periapsis (the angle between periapsis and the line of nodes).
+
+<h3>Mean longitude at epoch [eps]</h3>
+This defines the vessel’s position along the orbital trajectory. The mean longitude is the sum of LAN and the mean anomaly (the angle between periapsis and the vessel position for a hypothetical circular orbit with the same orbital period as the true orbit). The value entered here refers to the specified epoch. For epoch = “current”, the value represents the vessel’s current (continuously varying) mean longitude. Otherwise, it is the longitude at the specified date (fixed for a given Keplerian orbit.)
+
+</BODY>
+</HTML>

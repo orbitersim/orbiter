@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<Title>Playback event editor</Title>
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="intro.htm">Orbiter</a></p>
+<h1>Playback event editor</h1>
+After recording a flight, you have the option of using the <i>Playback editor</i> to enhance the playback. You can
+<ul>
+<li>Add annotations which appear on the simulation window at particular times during the replay.
+<li>Change camera positions.
+<li>Modify the time compression applied during the playback.
+</ul>
+However, you can not modify the recorded simulation itself (such as changing vessel trajectories, engine burn times, animations, etc.)<p>
+To access the Playback editor, start a previously recorded scenario, then open the playback dialog with <kbd class="ctrl">Ctrl</kbd> <kbd class="ctrl">F5</kbd>, and click the <i>Playback editor</i> button. This will open the playback editor dialog box.
+
+<h2>Event list</h2>
+The top part of the dialog box contains the <i>event list</i> for the scenario. Initially, this may be empty, or contain some event tags that were inserted during the original recording.<p>
+Each line of the list represents an event. Each event contains
+<ul>
+<li>a time stamp (simulation time since the start of the playback in seconds
+<li>an event tag defining the type of event
+<li>and event-type specific parameters.
+</ul>
+The current simulation time is indicated by a blinking line (&lt;&nbsp;&lt;&nbsp;&lt;&nbsp;&lt;). As the playback progresses, the current time marker is moving through the event list.<p>
+Sometimes it may be useful to pause a playback (<kbd class="ctrl">Ctrl</kbd> <kbd>P</kbd> in the simulation window) to have more time for editing the event list.
+
+<h2>Adding a new event</h2>
+Events are always added at the current simulation time (that is, at the position of the time marker). You can however later edit the time stamps of events to move them to a different time.<p>
+First, select an event type from the drop-down list below the event list. The most important event types have entries in the list. (For less frequently used items, select the <Other> entry and enter the event tag manually). Then press the <i>Insert</i> button.<p>
+A new event line will appear in the list, and the <i>Edit</i> area in the lower part of the dialog box will allow to define any required parameters.
+
+<h2>Editing an exisiting event</h2>
+If you want to modify the parameters of an event already in the list, simply highlight it by clicking on a line in the list. The event parameters will appear in the Edit area, and you can modify them.
+
+<h2>Deleting events</h2>
+To delete an event, highlight it by clicking on a line in the list. Then press the <i>Delete</i> button.
+
+<h2>Committing changes</h2>
+Any changes you make in the event list will only be saved and applied to the playback when you click the <i>Commit</i> button at the bottom of the dialog box. Orbiter will immediately re-scan the file up to the current simulation time, so that the modificationscan be examined directly in the running playback.
+
+<h1>Event types</h1>
+The following event types are currently recognised by Orbiter:
+<table cols="2" width="100%" cellspacing="2" cellpadding="2" border="0" frame="void">
+<tr>
+<td>TACC</td>
+<td>Time compression. Parameters are: Time compression factor and delay factor (defining the transition time)</td>
+</tr>
+<tr>
+<td>NOTE</td>
+<td>Onscreen annotation. Parameter is the text of the annotation.</td>
+</tr>
+<tr>
+<td>NOTEPOS</td>
+<td>Position of the annotation in the simulation window. Parameters are floating point values &lt;x0&gt; &lt;y0&gt; &lt;x1&gt; &lt;y1&gt; defining the left, top, right and bottom edge of the annotation box in terms of the extents of the simulation window (0=left/top, 1=right/bottom edge of the simulation window).</td>
+</tr>
+<tr>
+<td>NOTECOL</td>
+<td>Annotation text colour. Parameters are floating point values &lt;r&gt; &lt;g&gt; &lt;b&gt; defining the red, green and blue colour components in the range 0 to 1.</td>
+</tr>
+<tr>
+<td>NOTESIZE</td>
+<td>Annotation text size. Parameter is a floating point value &lt;scale&gt;, where 1 denotes the default size, values &lt; 1 reduce the size, and values &gt; 1 increase the size.</td>
+</tr>
+<tr>
+<td>NOTEOFF</td>
+<td>Remove the currently displayed annotation text.</td>
+</tr>
+<tr>
+<td>CAMERA</td>
+<td>Observer camera position. This allows to switch the camera to one of the existing preset views, or to create a new preset based on the current camera mode. Simply select a mode from the list, and click "Commit" until you find an appropriate one. If none of the existing views suits your needs, change the view manually in the simulator, then click "Add current view" to create and apply a new preset view.
+</tr>
+</table>
+
+</BODY>
+</HTML>

@@ -1,0 +1,31 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=.\ScnEditor.chm
+Contents file=ScnEditor.hhc
+Default topic=ScnEditor.htm
+Display compile progress=No
+Full-text search=Yes
+Index file=ScnEditor.hhk
+Language=0x809 English (United Kingdom)
+Title=Scenario Editor
+
+
+[FILES]
+ScnEditor.htm
+NewVessel.htm
+EditVessel.htm
+Elements.htm
+DelVessel.htm
+..\..\..\html\master.js
+..\..\..\html\Orbiter.css
+SaveScenario.htm
+Orientation.htm
+AngularVel.htm
+Propellant.htm
+Location.htm
+Docking.htm
+Statevec.htm
+Date.htm
+
+[INFOTYPES]
+

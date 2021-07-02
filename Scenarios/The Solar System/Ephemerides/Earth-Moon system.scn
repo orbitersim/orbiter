@@ -1,0 +1,58 @@
+BEGIN_DESC
+Earth and Moon. Lunar ephemerides now use the ELP2000-82 perturbation solution, improving the accuracy of the Moon's position in Orbiter.
+This provides more precise eclipse timings, and removes the relative motion artefacts of the previous release.
+
+Turn on labels (F9), switch to highest time acceleration, and watch the Moon rotate around Earth.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET Earth
+  MODE Extern
+  POS 133.46 -62.85 -89.83
+  TRACKMODE GlobalFrame
+  FOV 50.00
+END_CAMERA
+
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:2
+  POS -82.3988276 22.9994604
+  HEADING 174.13
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  GEAR 1 1.0000
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  POS -135.4300000 12.7366196
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  GEAR 1 1.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+END
+END_SHIPS

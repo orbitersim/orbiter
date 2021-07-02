@@ -1,0 +1,249 @@
+BEGIN_DESC
+The second mid course correction on the trip to Jupiter is ready to burn.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 43571.9942774354
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 39.86
+END_CAMERA
+
+BEGIN_MFD Left
+  TYPE User
+  MODE TransX
+  Ship  GL-01
+  FNumber 4
+  Int 0
+  Orbit True
+  Vector  -177428910412 11366230944.7 669402606204
+  Vector  -9637.39537389 -267.65819202 3803.52405051
+  Double  1.32712439955e+020
+  Double  43571.9935487
+  Handle Sun
+  Handle Earth
+  Handle Jupiter
+Select Target
+ 0 Jupiter
+Autoplan
+0 0
+Plan type
+0 2
+Plan
+0 0
+Plan
+0 0
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 1
+Base Orbit
+0 0
+Prograde vel.
+ 0  -17.5
+Man. date
+ 0  43571.9935484
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  1.44
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Finvars
+  Finish BaseFunction
+  Int 4
+  Orbit True
+  Vector  -79608861085.5 12508950867.5 -93834546050
+  Vector  3933.83767742 -611.860073451 4559.09884195
+  Double  1.26686534397e+017
+  Double  43572.907927
+  Handle Jupiter
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 Escape
+Autoplan
+0 0
+Plan type
+0 1
+Plan
+0 0
+Plan
+0 1
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  43571.9942066
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+View Orbit
+0 0
+Finvars
+  Finish BaseFunction
+  Int 3
+  Orbit True
+  Vector  -358581054267 5920312185.87 704033174186
+  Vector  -17532.3587336 773.54575243 -6796.62500629
+  Double  1.32839126489e+020
+  Double  43793.1407922
+  Handle Sun
+  Handle Jupiter
+  Handle Saturn
+Select Target
+ 0 Saturn
+Autoplan
+0 0
+Plan type
+0 2
+Plan
+0 0
+Plan
+0 0
+Plan
+0 2
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  43321.9375862
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Velocity.
+ 0  0
+Outward angle
+ 0  0.0445757090959
+Inc. angle
+ 0  -0.0639488637931
+Inherit Vel.
+0 0
+Eject date
+ 0  43793.1407922
+Finvars
+  Finish BaseFunction
+  Int 5
+  Orbit True
+  Vector  509811650075 -19518540335.8 135477509703
+  Vector  -9000.4096703 343.961651597 -2378.63261478
+  Double  3.79311866084e+016
+  Double  44145.9410116
+  Handle Saturn
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 None
+Autoplan
+0 0
+Plan type
+0 1
+Plan
+0 0
+Plan
+0 2
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  43315.7183626
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Draw Base
+0 0
+Finvars
+  Finish BaseFunction
+END_MFD
+
+BEGIN_MFD Right
+  TYPE User
+  MODE TransX
+END_MFD
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Orbiting Sun
+  RPOS -177429517173.76 11366214093.19 669402845669.74
+  RVEL -9637.391 -267.658 3803.507
+  AROT -171.22 -68.42 172.69
+  PRPLEVEL 0:0.359299 1:0.981138
+  NAVFREQ 402 94 0 0
+  XPDR 0
+  TRIM 1.000000
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS
+
+BEGIN_VistaBoost
+END

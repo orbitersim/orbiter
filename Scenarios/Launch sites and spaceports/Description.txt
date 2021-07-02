@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Launch sites and spaceports</h1>
+<p>A list of scenarios introducing some of the Launch sites and landing facilities supported by the Orbiter default installation. More can be added with 3rd party addons.</p>
+END_HYPERDESC

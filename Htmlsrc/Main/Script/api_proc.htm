@@ -1,0 +1,310 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: proc (Process control)</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; proc</p>
+
+<h1>proc: Script process control</h1>
+<p>The proc library contains functions to control the program flow of a script.
+It is loaded automatically by every interpreter instance.</p>
+
+<table class="summary" cols=2>
+<tr>
+<td><a href="#proc_skip">proc.skip</a></td>
+<td>Skip one simulation time frame</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_simtime">proc.wait_simtime</a></td>
+<td>Wait until the simulation time has reached a specified value.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_systime">proc.wait_systime</a></td>
+<td>Wait until the system time has reached a specified value.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_simdt">proc.wait_simdt</a></td>
+<td>Wait for the specified simulation time interval.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_sysdt">proc.wait_sysdt</a></td>
+<td>Wait for the specified system time interval.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_frames">proc.wait_frames</a></td>
+<td>Wait for the specified number of frames.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_ge">proc.wait_ge</a></td>
+<td>Wait until a function returns a value greater or equal than the specified target value.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_le">proc.wait_le</a></td>
+<td>Wait until a function returns a value less or equal than the specified target value.</td>
+</tr>
+<tr>
+<td><a href="#proc_wait_input">proc.wait_input</a></td>
+<td>Open a dialog box and wait for user input.</td>
+</tr>
+<tr>
+<td><a href="#proc_bg">proc.bg</a></td>
+<td>Launch a background job.</td>
+</tr>
+<tr>
+<td><a href="#proc_kill">proc.kill</a></td>
+<td>Kill a background job.</td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func">
+<h3><a name="proc_skip"></a>proc.skip()</h3>
+<p>Suspends script execution and returns control to the Orbiter core for executing the next time step. As soon as Orbiter has finished processing the next cycle, control is handed back to the script.</p>
+
+<h4>Notes:</h4>
+<p>This function must be called whenever a script is running over an extended period of time. The skip function effectively allows the script to run alongside the simulation session.</p>
+<p>skip is typically used in loops that monitor a simulation state over time, for example</p>
+<div class="code">
+while focus:GetAltitude() < 100e3 do<br>
+&nbsp;&nbsp;proc.skip()<br>
+end
+</div>
+<p>Not invoking skip here would result in an infinite loop (provided that the vessel altitude was less than 100km on entry), because Orbiter would never have any opportunity to update the vessel state.</p>
+<p>If a script is running multiple program branches, all side branches as well as the main trunk must call proc.skip(). Calling proc.skip() in a side branch yields branch execution. Calling proc.skip() in the main trunk first resumes all side branches to allow them to execute their next cycle, then suspends the interpreter and hands control back to Orbiter for the next cycle.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_bg">proc.bg</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_simtime"></a>proc.wait_simtime(t)<br />
+proc.wait_simtime(t, f, ...)</h3>
+<p>Wait until the simulation time reaches a given value.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>t (number):</td><td>target simulation time [s]</td></tr>
+<tr><td>f (function):</td><td>function to be executed at each frame during wait. Any additional parameters are are passed as arguments to f.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function suspends the execution of the script until the simulation session time has reached t.</p>
+<p>Optionally, a function can be specified to be executed at each frame while waiting.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_systime">proc.wait_systime</a>,
+<a href="#proc_wait_simdt">proc.wait_simdt</a>,
+<a href="#proc_wait_sysdt">proc.wait_sysdt</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_systime"></a>proc.wait_systime(t)<br />
+proc.wait_systime(t, f, ...)</h3>
+<p>Wait until the system time reaches a given value.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>t (number):</td><td>target system time [s]</td></tr>
+<tr><td>f (function):</td><td>function to be executed at each frame during wait. Any additional parameters are are passed as arguments to f.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function suspends the execution of the script until the system time for the simulation session has reached t.</p>
+<p>Optionally, a function can be specified to be executed at each frame while waiting.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_simtime">proc.wait_simtime</a>,
+<a href="#proc_wait_simdt">proc.wait_simdt</a>,
+<a href="#proc_wait_sysdt">proc.wait_sysdt</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_simdt"></a>proc.wait_simdt(dt)<br />
+proc.wait_simdt(t, f, ...)</h3>
+<p>Wait for a given simulation time interval.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>dt (number):</td><td>simulation time interval [s]</td></tr>
+<tr><td>f (function):</td><td>function to be executed at each frame during wait. Any additional parameters are are passed as arguments to f.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function suspends the execution of the script for dt seconds (simulation time).</p>
+<p>Optionally, a function can be specified to be executed at each frame while waiting.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_simtime">proc.wait_simtime</a>,
+<a href="#proc_wait_systime">proc.wait_systime</a>,
+<a href="#proc_wait_sysdt">proc.wait_sysdt</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_sysdt"></a>proc.wait_sysdt(dt)<br />
+proc.wait_sysdt(t, f, ...)</h3>
+<p>Wait for a given system time interval.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>dt (number):</td><td>system time interval [s]</td></tr>
+<tr><td>f (function):</td><td>function to be executed at each frame during wait. Any additional parameters are are passed as arguments to f.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function suspends the execution of the script for dt seconds (system time).</p>
+<p>Optionally, a function can be specified to be executed at each frame while waiting.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_simtime">proc.wait_simtime</a>,
+<a href="#proc_wait_systime">proc.wait_systime</a>,
+<a href="#proc_wait_simdt">proc.wait_simdt</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_frames"></a>proc.wait_frames(n)<br />
+proc.wait_frames(n, f, ...)</h3>
+<p>Wait for a given number of simulation frames.</p>
+
+<h4>Parameters:</h4>
+<table cols="2">
+<tr><td>n (number):</td><td>number of frames to wait</td></tr>
+<tr><td>f (function):</td><td>function to be executed at each frame during wait. Any additional parameters are are passed as arguments to f.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function suspends the execution of the script for n simulation frames.</p>
+<p>Optionally, a function can be specified to be executed at each frame while waiting.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_simtime">proc.wait_simtime</a>,
+<a href="#proc_wait_systime">proc.wait_systime</a>,
+<a href="#proc_wait_simdt">proc.wait_simdt</a></p>
+<a href="#proc_wait_sysdt">proc.wait_sysdt</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_ge"></a>proc.wait_ge(f, tgt, ...)</h3>
+<p>Wait until a function returns a value greater or equal than a target value.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>f (function):</td><td>comparison function</td></tr>
+<tr><td>tgt (number):</td><td>target value</td></tr>
+<tr><td>...:</td><td>optional arguments passed to f</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>f should be a function that returns a value which can be used as an argument in the comparison f() &ge; tgt (usually, a number). If f requires parameters, these can be specified at the end of the parameter list of proc.wait_ge.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_le">proc.wait_le</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_le"></a>proc.wait_le(f, tgt, ...)</h3>
+<p>Wait until a function returns a value less or equal than a target value.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>f (function):</td><td>comparison function</td></tr>
+<tr><td>tgt (number):</td><td>target value</td></tr>
+<tr><td>...:</td><td>optional arguments passed to f</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>f should be a function that returns a value which can be used as an argument in the comparison f() &le; tgt (usually, a number). If f requires parameters, these can be specified at the end of the parameter list of proc.wait_le.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_wait_ge">proc.wait_ge</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_wait_input"></a>str = proc.wait_input(title)</h3>
+<p>Open a dialog box and wait for user input.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>title (string):</td><td>dialog box title</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table cols=2>
+<tr><td>str (string):</td><td>user input</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function uses oapi.open_inputbox() to open the dialog box, and then enters a loop checking oapi.receive_input() until the user has entered a response.</p>
+<p>Cancelling the input box with Esc or a mouse button is not allowed.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_bg"></a>id = proc.bg(func, [args...])</h3>
+<p>Executes a function as a background job, allowing the main program to continue simultaneously.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>func (function):</td><td>job function</td></tr>
+<tr><td>args:</td><td>optional function arguments</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table cols=2>
+<tr><td>id (int):</td><td>job identifier</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Background jobs are a way to execute non-instantaneous procedures without blocking the main program execution. At each interpreter cycle, the main program and all background jobs are executed up to their next proc.skip() call.</p>
+<p>The execution of the job function is started immediately. proc.bg() returns when the job function yields or terminates.</p>
+<p>Background jobs are only meaningful if the job function is executed across multiple cycles, i.e. contains proc.skip() calls. If the function completes in a single cycle, then proc.bg() is equivalent to calling it directly.</p>
+<p>Job threads are stored in the global table branch with integer keys. The number of jobs is stored in branch.count.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_kill">proc.kill</a>, <a href="#proc_skip">proc.skip</a></p>
+</div>
+
+
+<div class="func">
+<h3><a name="proc_kill"></a>proc.kill(id)</h3>
+<p>Closes an existing background job.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>id (int):</td><td>job identifier</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Closing a job terminates its execution before the job function completes normally.</p>
+<p>Implemented as a script in oapi_init.lua.</p>
+
+<h4>See also:</h4>
+<p><a href="#proc_bg">proc.bg</a></p>
+</div>
+
+</div>
+</BODY>
+</HTML>

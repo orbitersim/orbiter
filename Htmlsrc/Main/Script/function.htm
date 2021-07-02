@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Script functions</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; Functions</p>
+
+<h1><a name="api"></a>Script functions</h1>
+<p>This section only defines Orbiter-specific extensions to the Lua interpreter. For general Lua functions, please
+consult a Lua manual.</p>
+
+<p>The script functions available for accessing Orbiter state parameters are arranged in libraries according to function groups. In Lua, function libraries are grouped in tables. Functions are accessed by table name and function name, separated by a dot, e.g.
+<div class="code">
+oapi.get_simtime()
+</div></p>
+<p>Currently, three function lists are available: <i>proc</i> for process control functions, <i>oapi</i> for
+general interaction with the Orbiter API, and <i>vessel</i> for obtaining vessel handles and instances.</p>
+
+<p>In addition to the function lists, there are also class methods available for two classes: <i>vessel methods</i>
+for interaction with a specific vessel, and <i>annotation methods</i> for managing onscreen annotations.</p>
+<p>Class methods act upon a given class instance, and use a colon syntax, such as:
+<div class="code">
+v = vessel.get_focusinterface()  -- obtain vessel instance<br />
+alt = v:get_altitude()  -- invoke class method
+</div>
+</p>
+
+<p>The Orbiter script functions and class methods are listed in the following sections:</p>
+
+<ul>
+  <li>Functions</li>
+  <ul>
+    <li><a href="api_vec.htm">vec (Vector and matrix utility library)</a></li>
+    <li><a href="api_proc.htm">proc (Script process control)</a>
+    <li><a href="api_oapi.htm">oapi (General Orbiter API functions)</a>
+    <li><a href="api_vessel.htm">vessel: Vessel access functions</a></li>
+  </ul>
+  <li>Class methods</li>
+  <ul>
+    <li><a href="mtd_vessel.htm">Vessel methods</a></li>
+    <li><a href="mtd_mfd.htm">MFD methods</a></li>
+    <li><a href="mtd_skp.htm">Sketchpad methods</a></li>
+    <li><a href="mtd_note.htm">Annotation methods</a></li>
+  </ul>
+</ul>
+
+</BODY>
+</HTML>

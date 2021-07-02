@@ -1,0 +1,11 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+BEGIN_DATA
++188.30	-59.50	:	Cilicia Flexus			
++185.90	-68.20	:	Delphi Flexus			
++215.40	-42.10	:	Gortyna Flexus			
++161.60	-44.50	:	Phocis Flexus			
++176.60	-66.40	:	Sidon Flexus			

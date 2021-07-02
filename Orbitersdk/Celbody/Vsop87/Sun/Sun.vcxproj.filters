@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{50423db4-0e8e-4648-b47f-146369da6d99}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{f3460007-cfc4-420c-bee2-ba8af3a70fb9}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{006687f8-4eba-434d-b3c1-21b8e6a75d89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Data">
+      <UniqueIdentifier>{c2127a1a-a853-4791-a971-e73b9c7f0b44}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Sun.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Sun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vsop87.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Sun.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Data\Vsop87E_sun.dat">
+      <Filter>Config\Data</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

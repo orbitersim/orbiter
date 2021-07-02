@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Shuttle-A scenarios</h1>
+<p>This folder contains scenarios with Roger "Frying Tiger" Long's new version of the Shuttle-A transport vessel.</p>
+END_HYPERDESC

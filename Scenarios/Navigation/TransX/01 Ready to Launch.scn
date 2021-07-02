@@ -1,0 +1,309 @@
+BEGIN_DESC
+On KSC runway 33 ready to go to Jupiter with sling to Saturn. Launch plan has required right turn to about 89 degrees heading and target orbit  is 200Km by 200 Km agl.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 42988.5430289013
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE User
+  MODE TransX
+  Ship  GL-01
+  FNumber 5
+  Int 1
+  Orbit True
+  Vector  2603222.3662 835266.081978 5754595.12491
+  Vector  -360.776764277 -76.4620501945 174.303887117
+  Double  3.98600439969e+014
+  Double  42988.5430289
+  Handle Earth
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 Escape
+Autoplan
+0 0
+Plan type
+0 0
+Plan
+0 1
+Plan
+0 0
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  42988.5430289
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 3
+Scale to view
+0 0
+Advanced
+0 0
+Pe Distance
+ 0  6571231.87388
+Ej Orientation
+ 0  0.0795870138909
+Equatorial view
+0 0
+Finvars
+  Finish BaseFunction
+  Int 2
+  Orbit False
+  Handle Sun
+  Handle Earth
+  Handle Jupiter
+Select Target
+ 0 Jupiter
+Autoplan
+0 0
+Plan type
+0 2
+Plan
+0 0
+Plan
+0 0
+Plan
+0 1
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 1
+Prograde vel.
+ 0  0
+Man. date
+ 0  42988.5103237
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Prograde vel.
+ 0  8983.46151412
+Eject date
+ 0  42989.2502986
+Outward vel.
+ 0  99.9
+Ch. plane vel.
+ 0  -1735.9925392
+Finvars
+  Finish BaseFunction
+  Int 4
+  Orbit True
+  Vector  -303826660440 46853107680.4 -345005962229
+  Vector  3882.56701112 -597.430709864 4390.9604952
+  Double  1.26686534397e+017
+  Double  42918.9090346
+  Handle Jupiter
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 Escape
+Autoplan
+0 0
+Plan type
+0 1
+Plan
+0 0
+Plan
+0 1
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  42988.5426771
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+View Orbit
+0 0
+Finvars
+  Finish BaseFunction
+  Int 3
+  Orbit True
+  Vector  -366333761281 6344329894.12 699229247832
+  Vector  -17322.8671085 823.74020589 -7231.28980235
+  Double  1.32839126489e+020
+  Double  43800.9050841
+  Handle Sun
+  Handle Jupiter
+  Handle Saturn
+Select Target
+ 0 Saturn
+Autoplan
+0 0
+Plan type
+0 2
+Plan
+0 0
+Plan
+0 0
+Plan
+0 2
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  42988.5102313
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Velocity.
+ 0  0
+Outward angle
+ 0  0.0626573201466
+Inc. angle
+ 0  -0.0644375559836
+Inherit Vel.
+0 0
+Eject date
+ 0  43800.9050841
+Finvars
+  Finish BaseFunction
+  Int 5
+  Orbit True
+  Vector  502425384075 -19337356608.5 134668652399
+  Vector  -8946.9743357 343.721265475 -2387.33164835
+  Double  3.79311866084e+016
+  Double  44159.1904923
+  Handle Saturn
+  Handle NULL
+  Handle NULL
+Select Target
+ 0 None
+Autoplan
+0 0
+Plan type
+0 1
+Plan
+0 0
+Plan
+0 2
+Plan
+0 0
+Select Minor
+ 0 None
+Manoeuvre mode
+0 0
+Base Orbit
+0 0
+Prograde vel.
+ 0  0
+Man. date
+ 0  42988.5101966
+Outward vel.
+ 0  0
+Ch. plane vel.
+ 0  0
+Intercept with
+0 0
+Orbits to Icept
+0 0
+Graph projection
+0 0
+Scale to view
+0 0
+Advanced
+0 0
+Draw Base
+0 0
+Finvars
+  Finish BaseFunction
+END_MFD
+
+BEGIN_MFD Right
+  TYPE User
+  MODE TransX
+END_MFD
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  POS -80.6824823 28.5967749
+  HEADING 330.62
+  PRPLEVEL 0:1.000000 1:1.000000
+  NAVFREQ 402 94 0 0
+  XPDR 0
+  GEAR 1 1.0000
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS
+
+BEGIN_VistaBoost
+END

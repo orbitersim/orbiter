@@ -1,0 +1,94 @@
+BEGIN_DESC
+This flight is an example of a complete and quite extensive mission:
+Take-off from Cape Canaveral with a Delta-glider into low Earth orbit,
+translunar insertion, lunar orbit, and touchdown at the fictional Brighton
+Beach base on the moon.
+
+On-screen annotations explain the actions at various stages of the flight.
+
+The whole playback, including default time acceleration, runs for about one hour.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 55308.6878514741
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE OAlign
+  REF Earth
+  TARGET Moon
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+  TARGET Moon
+  ZOOM 2
+  TRACK ON
+  DISP 62639
+END_MFD
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS -5786552.98 3448324.77 148225.71
+  RVEL 3682.407 6276.030 -2485.254
+  AROT 3.74 77.58 -8.89
+  PRPLEVEL 0:1.000000
+  IDS 0:588 100 1:586 100 2:584 100 3:582 100 4:580 100
+  NAVFREQ 0 0
+  XPDR 466
+  FLIGHTDATA
+END
+GL-01:Deltaglider
+  STATUS Landed Earth
+  POS -80.6825940 28.5969240
+  HEADING 329.97
+  RCSMODE 0
+  PRPLEVEL 0:1.000000 1:1.000000
+  NAVFREQ 166 484 486 488
+  XPDR 0
+  FLIGHTDATA
+  LIGHTS 1 1 1
+  GEAR 1 1.0000
+  AAP 0:0 0:0 0:0
+END
+SH-05:ShuttleA
+  STATUS Landed Moon
+  POS -33.4299200 41.1217030
+  HEADING 66.56
+  PRPLEVEL 0:1.000000 1:1.000000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+  GEAR 0 0.0000
+  PAYLOAD MASS 0.0 0
+END
+GL-17:Deltaglider
+  STATUS Landed Moon
+  POS -33.4450800 41.1282970
+  HEADING 156.56
+  PRPLEVEL 0:1.000000 1:1.000000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  GEAR 1 1.0000
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS

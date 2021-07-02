@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{1bdd0722-5dee-4e28-b975-b8b9aebb2062}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{05aa6e0b-a6a6-425f-8636-6714082f8baf}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{7ff7b5d6-873e-4dba-816c-55d83b7ca9e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Marker">
+      <UniqueIdentifier>{ce399b46-d04e-4b93-bc7f-4c794c91757c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Callisto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Galsat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Callisto\Marker\Catenae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Callisto\Marker\Craters.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Callisto\Marker\Faculae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Callisto\Marker\Large Ringed Features.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Callisto.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

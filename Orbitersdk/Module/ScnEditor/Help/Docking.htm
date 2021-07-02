@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" TYPE="TEXT/CSS" HREF="Orbiter.css">
+<Title>Docking management</Title>
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="ScnEditor.htm">Orbiter Scenario Editor</a></p>
+<h1>Docking management</h1>
+If the vessel is equipped with <i>docking ports</i>, this page can be used to set up docking connections to other vessels, or to disengage existing connections.
+<p>
+First you need to select the docking port you want to edit. You can scan through the available ports with the "Dock no." control in the top left. Many spacecraft have only a single docking port, but some - in particular space stations - may have several.
+<p>
+Next, you can enable or disable an IDS (Instrument Docking System) transmitter for that dock, using the controls in the top right of the page. IDS transmitters allow other vessels to use their Docking MFD and HUD modes for instrument-assisted docking approaches. If you enable the IDS, you can also set the transmitter frequency, from 108.00 to 139.95 kHz in 0.05 kHz steps. Make sure that each docking port of your vessel uses a different IDS frequency!
+<p>
+Finally, you can manage the docking connections at the port. If a vessel is already docked, its name will be displayed. You can click "Undock" to break the docking connection.
+<p>
+If the dock is not engaged, you can pick a vessel from the list provided, and click "Dock" to connect the vessel at the selected dock. If the target vessel has more than one docking port, you also need to chose the connecting port on the target vessel.
+<p>
+You can also select how the two vessels will be moved to make the connection. If you click "Bring target to my current position" then the vessel you are editing will maintain its position, and the target vessel will be dragged to the docking port on your vessel.
+If you click "Move me to current target position" then your vessel will be dragged to the target vessel instead.
+<p>
+Note that docking connections between landed vessels are not currently supported. Therefore, at least the vessel that maintains its position must be in flight. Docking two landed vessels, or dragging a flying vessel to the position of a landed one will result in undefined behaviour.
+</BODY>
+</HTML>

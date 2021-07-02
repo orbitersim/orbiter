@@ -1,0 +1,322 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_RMS DIALOGEX 0, 0, 109, 223
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Atlantis RMS Control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Wrist",IDC_STATIC,4,4,101,45
+    PUSHBUTTON      "Button1",IDC_WRIST_ROLLRIGHT,10,22,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_WRIST_YAWLEFT,28,22,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_WRIST_PITCHUP,47,14,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_WRIST_PITCHDOWN,47,30,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_WRIST_YAWRIGHT,66,22,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_WRIST_ROLLLEFT,84,22,16,14,BS_ICON
+    GROUPBOX        "Elbow",IDC_STATIC,4,51,101,45
+    PUSHBUTTON      "Button1",IDC_ELBOW_PITCHUP,48,61,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_ELBOW_PITCHDOWN,48,77,16,14,BS_ICON
+    GROUPBOX        "Shoulder",IDC_STATIC,4,98,101,45
+    PUSHBUTTON      "Button1",IDC_SHOULDER_YAWLEFT,28,115,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_SHOULDER_PITCHUP,47,107,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_SHOULDER_PITCHDOWN,47,123,16,14,BS_ICON
+    PUSHBUTTON      "Button1",IDC_SHOULDER_YAWRIGHT,66,115,16,14,BS_ICON
+    PUSHBUTTON      "Stow",IDC_STOW,8,155,46,14
+    PUSHBUTTON      "Grapple",IDC_GRAPPLE,56,155,46,14
+    CONTROL         "Show grapple points",IDC_SHOWGRAPPLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,3,211,80,10
+    GROUPBOX        "RMS",IDC_STATIC,4,144,101,31
+    PUSHBUTTON      "Purge",IDC_PAYLOAD,8,188,94,14
+    GROUPBOX        "Payload",IDC_STATIC,4,177,101,31
+END
+
+IDD_PLBAY DIALOGEX 0, 0, 238, 305
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Atlantis: PL BAY OP"
+FONT 6, "Small Fonts", 0, 0, 0x1
+BEGIN
+    LTEXT           "SYS 1",IDC_STATIC,117,16,21,8
+    LTEXT           "SYS 2",IDC_STATIC,162,16,21,8
+    LTEXT           "SYS A",IDC_STATIC,67,143,22,8
+    LTEXT           "SYS B",IDC_STATIC,115,143,22,8
+    CTEXT           "\\\\\\\\\\",IDC_PLBD_TLKBK,17,103,27,14,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER
+    CTEXT           "LAT",IDC_LATCHS_TLKBK,64,103,27,14,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER
+    LTEXT           "STBD",IDC_STATIC,68,86,20,8
+    CTEXT           "LAT",IDC_LATCHP_TLKBK,111,103,27,14,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER
+    LTEXT           "PORT",IDC_STATIC,114,86,21,8
+    CTEXT           "STO",IDC_RADS_TLKBK,157,103,27,14,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER
+    LTEXT           "STBD",IDC_STATIC,160,86,20,8
+    CTEXT           "STO",IDC_RADP_TLKBK,202,103,27,14,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER
+    LTEXT           "PORT",IDC_STATIC,205,86,21,8
+    GROUPBOX        "",IDC_STATIC,14,92,32,32,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,62,92,32,32,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,108,92,32,32,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,154,92,32,32,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,199,92,32,32,BS_FLAT
+    CONTROL         "",IDC_LATCHA,"OrbiterCtrl_Switch",0x0,65,158,23,29
+    CONTROL         "",IDC_LATCHB,"OrbiterCtrl_Switch",0x0,114,158,23,29
+    CTEXT           "RELEASE",IDC_STATIC,85,151,34,8
+    CTEXT           "LATCH",IDC_STATIC,89,186,24,8
+    CTEXT           "O\r\nF\r\nF",IDC_STATIC,87,160,13,25
+    CTEXT           "O\r\nF\r\nF",IDC_STATIC,102,160,13,25
+    LTEXT           "SYS A",IDC_STATIC,155,142,22,8
+    LTEXT           "SYS B",IDC_STATIC,203,142,22,8
+    CONTROL         "",IDC_RADA,"OrbiterCtrl_Switch",0x0,153,158,23,29
+    CONTROL         "",IDC_RADB,"OrbiterCtrl_Switch",0x0,201,158,23,29
+    CTEXT           "DEPLOY",IDC_STATIC,174,151,30,8
+    CTEXT           "STOW",IDC_STATIC,178,186,23,8
+    CTEXT           "O\r\nF\r\nF",IDC_STATIC,174,160,13,25
+    CTEXT           "O\r\nF\r\nF",IDC_STATIC,190,160,13,25
+    CONTROL         "",IDC_MECH1,"OrbiterCtrl_Switch",0x0,114,32,23,29
+    CONTROL         "",IDC_MECH2,"OrbiterCtrl_Switch",0x0,162,32,23,29
+    CTEXT           "ON",IDC_STATIC,144,25,12,8
+    CTEXT           "OFF",IDC_STATIC,142,60,14,8
+    LTEXT           "SYS 1",IDC_STATIC,20,16,21,8
+    LTEXT           "SYS 2",IDC_STATIC,66,16,21,8
+    CONTROL         "",IDC_PLBD1,"OrbiterCtrl_Switch",0x0,18,32,23,29
+    CONTROL         "",IDC_PLBD2,"OrbiterCtrl_Switch",0x0,66,32,23,29
+    CTEXT           "ENABLE",IDC_STATIC,39,25,29,8
+    CTEXT           "DISABLE",IDC_STATIC,38,60,31,8
+    CONTROL         "",IDC_PLBD,"OrbiterCtrl_Switch",0x0,17,158,23,29
+    LTEXT           "OPEN",IDC_STATIC,19,151,21,8
+    LTEXT           "CLOSE",IDC_STATIC,17,186,24,8
+    CTEXT           "S\r\nT\r\nO\r\nP",IDC_STATIC,8,156,9,33
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,167,80,65,1
+    CTEXT           "RADIATOR",IDC_STATIC,128,77,36,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,231,80,1,6
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,61,80,1,6
+    CTEXT           "PL BAY MECH PWR",IDC_STATIC,117,7,66,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,182,10,7,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,108,10,7,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,189,10,1,6
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,108,10,1,6
+    CTEXT           "PL BAY DOOR",IDC_STATIC,30,7,48,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,14,10,14,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,80,10,14,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,94,10,1,6
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,14,10,1,6
+    CTEXT           "PL BAY DOOR",IDC_STATIC,6,77,46,8
+    CTEXT           "LATCH CONTROL",IDC_STATIC,73,134,56,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,63,138,7,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,133,138,7,1
+    CTEXT           "RADIATOR CONTROL",IDC_STATIC,154,134,69,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,148,138,3,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,226,138,3,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,61,80,65,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,68,28,14,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,24,28,14,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,68,63,14,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,24,63,14,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,156,28,22,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,121,28,22,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,158,63,20,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,121,63,19,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,117,154,13,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,72,154,12,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,114,189,16,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,72,189,16,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,205,154,12,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,161,154,11,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,201,189,16,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,161,189,16,1
+    CTEXT           "LAT",IDC_KU_TLKBK,64,227,27,14,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER
+    GROUPBOX        "",IDC_STATIC,62,216,32,32,BS_FLAT
+    CONTROL         "",IDC_KU,"OrbiterCtrl_Switch",0x0,66,262,23,29
+    CONTROL         "",IDC_KU_DIRECT,"OrbiterCtrl_Switch",0x0,17,262,23,29
+    CTEXT           "KU ANTENNA",IDC_STATIC,32,204,44,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,80,208,16,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,14,208,16,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,95,208,1,6
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKRECT,14,208,1,6
+    CTEXT           "DEPLOY",IDC_STATIC,63,255,30,8
+    LTEXT           "STOW",IDC_STATIC,66,290,23,8
+    CTEXT           "G\r\nN\r\nD",IDC_STATIC,57,264,8,24
+    CTEXT           "DIRECT\r\nSTOW\r\nON",IDC_STATIC,13,239,32,26
+    LTEXT           "OFF",IDC_STATIC,22,290,14,8
+    CTEXT           "R13L",IDC_STATIC,206,287,25,11,SS_CENTERIMAGE,WS_EX_STATICEDGE
+END
+
+IDD_CTRL DIALOGEX 0, 0, 101, 46
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Atlantis Control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Payload Door Operation",IDC_PLBAYOP,0,17,101,14
+    PUSHBUTTON      "RMS Operation",IDC_RMSOP,0,32,101,14
+    PUSHBUTTON      "Ascent Autopilot",IDC_ASCENTAP,0,2,101,14
+END
+
+IDD_ASCENTAP DIALOGEX 0, 0, 208, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Atlantis Ascent Autopilot"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Close",IDCANCEL,152,163,50,14
+    CONTROL         "",IDC_TAB1,"SysTabControl32",0x0,6,6,196,152
+END
+
+IDD_ASCENTAP_CTRL DIALOGEX 12, 24, 183, 133
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Launch azimuth",IDC_STATIC,22,11,50,8
+    EDITTEXT        IDC_AZIMUTH,79,9,44,14,ES_AUTOHSCROLL
+    LTEXT           "deg.",IDC_STATIC,139,11,16,8
+    PUSHBUTTON      "Launch",IDC_LAUNCH,49,111,84,14
+    LTEXT           "Orbit altitude",IDC_STATIC,22,32,43,8
+    EDITTEXT        IDC_ALT,79,30,44,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,124,9,10,14
+    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,124,30,11,14
+    LTEXT           "km",IDC_STATIC,139,32,10,8
+END
+
+IDD_ASCENTAP_GIMBAL DIALOGEX 12, 24, 183, 133
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_SSME_U,71,6,38,35
+    LTEXT           "",IDC_SSME_L,47,43,38,35
+    LTEXT           "",IDC_SSME_R,96,43,38,35
+    LTEXT           "",IDC_SRB_L,10,91,38,35
+    LTEXT           "",IDC_SRB_R,132,91,38,35
+    GROUPBOX        "SSME",IDC_STATIC,0,0,183,81
+    GROUPBOX        "SRB",IDC_STATIC,0,81,183,48
+END
+
+IDD_ASCENTAP_THRUST DIALOGEX 12, 24, 183, 133
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_SRBTHRUST,0,68,183,64
+    LTEXT           "",IDC_SSMETHRUST,0,0,183,64
+END
+
+IDD_ASCENTAP_ALT DIALOGEX 12, 24, 183, 133
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "",IDC_ALTITUDE,0,0,183,132
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_UP                  ICON                    "icon1.ico"
+IDI_DOWN                ICON                    "down.ico"
+IDI_LEFT                ICON                    "ico00001.ico"
+IDI_RIGHT               ICON                    "ico00002.ico"
+IDI_RRIGHT              ICON                    "ico00003.ico"
+IDI_RLEFT               ICON                    "ico00004.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_PLBAY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 231
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 298
+    END
+
+    IDD_CTRL, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 30
+    END
+
+    IDD_ASCENTAP, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 202
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 177
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TKBKLABEL           BITMAP                  "..\\Bitmaps\\tkbk_label.bmp"
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

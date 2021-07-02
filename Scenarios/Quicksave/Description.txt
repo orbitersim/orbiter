@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Quicksave scenarios</h1>
+<p>This folder contains simulation states which have been saved with the Quicksave (Ctrl-S) command.</p>
+END_HYPERDESC

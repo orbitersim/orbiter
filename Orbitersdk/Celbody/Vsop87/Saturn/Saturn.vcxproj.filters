@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{67d4bf34-2e2b-41cb-805c-4f8fc97c752d}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{41261e7d-785b-4740-ad34-07bf848e3814}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{605db72f-ecfd-4481-b96b-1d9db70042d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Data">
+      <UniqueIdentifier>{03770e47-a673-4ba6-b327-ff904985eb64}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Saturn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Saturn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vsop87.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Saturn.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Data\Vsop87B_sat.dat">
+      <Filter>Config\Data</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

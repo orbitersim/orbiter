@@ -1,0 +1,185 @@
+BEGIN_DESC
+Assembling the components of a custom space station with the new Dragonfly class tug.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.4598970951
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship TUG-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET TUG-01
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+  NAV 0
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+  NAV 0
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+Module2A:Module2
+  STATUS Orbiting Earth
+  RPOS 880033.69 -1098042.55 -6586966.13
+  RVEL 6036.001 4766.170 10.529
+  AROT 75.53 32.69 11.42
+  AFCMODE 7
+  NAVFREQ 0 0
+END
+Module1A:Module1
+  STATUS Orbiting Earth
+  RPOS 880029.63 -1098036.44 -6586964.56
+  RVEL 6036.001 4766.170 10.529
+  AROT 75.53 32.69 101.42
+  AFCMODE 7
+  NAVFREQ 0 0
+END
+Module1B:Module1
+  STATUS Orbiting Earth
+  RPOS 880037.73 -1098048.67 -6586967.71
+  RVEL 6036.001 4766.170 10.529
+  AROT 77.87 32.24 -77.33
+  VROT -0.01 -0.66 0.00
+  AFCMODE 7
+  NAVFREQ 0 0
+END
+Module1C:Module1
+  STATUS Orbiting Earth
+  RPOS 880030.99 -1098050.72 -6586952.91
+  RVEL 6035.932 4766.277 10.463
+  AROT 157.79 -11.57 -58.62
+  AFCMODE 7
+  NAVFREQ 0 0
+END
+TUG-01:Dragonfly
+  INTERNAL: v1.0.0B
+    HYDRAULICS: 
+      TANK  1 0.0000 130000 170.00
+      TANK  1 0.0000 130000 170.00
+      TANK  0 0.0000 130000 170.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 70000 70.00
+      TANK  1 0.0000 70000 70.00
+      TANK  0 0.0000 70000 70.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 50 290.14
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      TANK  1 0.0000 20000 288.00
+      TANK  1 0.0000 20000 288.00
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      MANIFOLD  0 1 0 1 0 0
+      TANK  1 0.0000 7365 299.93
+      TANK  1 0.0000 1604 289.69
+      MANIFOLD  1 1 0 1 0 0
+      TANK  1 0.0000 7032 282.34
+      TANK  1 0.0000 27000 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      TANK  1 0.0000 9100 295.00
+      TANK  1 0.0000 27000 295.00
+      TANK  1 0.0000 4800 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+    ELECTRICAL: 
+      FCELL  2 0.0000 
+      FCELL  2 0.0000 
+      BATTERY  0 5184000.0000 1
+      DC  70.0000 
+      DC  0.0000 
+      AC  30.0000 
+      DC  0.0000 
+      DC  0.0000 
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      FAN  0 
+      FAN  0 
+    PANEL     : 
+      SW  0 1 1 0 0 
+      SW  -1 0 99 0 0 
+    SW END  
+    ROT END  
+      ADI  6.6032 -1.1000 0.6000 -1 0 0.0000 0.0000 0.0000
+    PAN END  
+      SW  -1 -1 -1 -1 -1 
+      SW  1 1 1 1 1 
+      SW  1 1 1 1 1 
+      SW  1 1 0 0 0 
+      SW  0 0 1 1 1 
+      SW  1 0 0 -1 -1 
+      SW  0 0 0 0 0 
+      SW  0 1 1 1 1 
+      SW  -1 1 1 -1 -1 
+      SW  -1 0 -1 0 1 
+      SW  1 1 1 -1 1 
+      SW  1 99 1 -1 1 
+    SW END  
+      ROT  0 0 0 99 1 
+    ROT END  
+    PAN END  
+    SW END  
+    ROT END  
+    PAN END  
+      SW  0 0 0 1 0 
+      SW  1 0 0 1 1 
+      SW  1 1 1 1 0 
+      SW  0 1 -1 1 0 
+      SW  1 0 99 1 0 
+    SW END  
+    ROT END  
+    PAN END  
+      SW  0 0 0 0 0 
+      SW  0 0 99 0 0 
+    SW END  
+    ROT END  
+    PAN END  
+   END INTERNAL 
+  STATUS Orbiting Earth
+  RPOS 880029.35 -1098053.76 -6586945.48
+  RVEL 6035.932 4766.277 10.463
+  AROT 157.79 -11.57 -58.62
+  AFCMODE 7
+  PRPLEVEL 0:0.998000 1:0.998000 2:0.998000 3:0.998000 4:0.998000 5:0.998000 6:0.998000 7:0.998000 8:0.998000 9:0.998000 10:0.998000 11:0.998000
+  NAVFREQ 0 0
+  UPPERANT 0.000000 0.500000 0 0 0
+  LOWERANT 0.000000 0.500000 0 0 0
+  HATCH 0.000000 0
+END
+END_SHIPS

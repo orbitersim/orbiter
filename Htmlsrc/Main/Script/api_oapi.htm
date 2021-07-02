@@ -1,0 +1,2117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text-html; charset=Windows-1252" />
+<link rel="stylesheet" href="../Orbiter.css" type="TEXT/CSS" />
+<link rel="stylesheet" href="OrbiterAPI.css" type="TEXT/CSS" />
+<title>Script API: oapi (General Orbiter API interface functions)</title>
+</head>
+<body bgcolor="#FFFFFF" text="#000000">
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; oapi</p>
+
+<h1>oapi: General Orbiter API interface functions</h1>
+<p>The <i>oapi</i> library contains a collection of functions to retrieve
+general simulation parameters.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#oapi_create_annotation">oapi.create_annotation</a></td>
+<td>Creates an annotation instance for displaying onscreen text during a simulation.</td>
+</tr>
+<tr>
+<td><a href="#oapi_del_annotation">oapi.del_annotation</a></td>
+<td>Deletes an annotation instance.</td>
+</tr>
+<tr>
+<td><a href="#oapi_open_help">oapi.open_help</a></td>
+<td>Opens a browser window with a help page.</td>
+</tr>
+<tr>
+<td><a href="#oapi_open_inputbox">oapi.open_inputbox</a></td>
+<td>Opens a dialog box for user input.</td>
+</tr>
+<tr>
+<td><a href="#oapi_receive_input">oapi.receive_input</a></td>
+<td>Checks for user input from a dialog box.</td>
+</tr>
+<tr>
+<td><a href="#oapi_dbg_out">oapi.dbg_out</a></td>
+<td>Writes a debug string to the screen.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Object access functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_objhandle">oapi.get_objhandle</a></td>
+<td>Returns the handle for a simulation object.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_objcount">oapi.get_objcount</a></td>
+<td>Returns the number of objects in the current simulation.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_objname">oapi.get_objname</a></td>
+<td>Returns the number of objects in the current simulation.</td>
+</tr>
+<tr>
+<td><a href="#oapi_del_vessel">oapi.del_vessel</a></td>
+<td>Delete a vessel.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Time functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_simtime">oapi.get_simtime</a></td>
+<td>Returns the current simulation time.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_simstep">oapi.get_simstep</a></td>
+<td>Returns the length of the last simulation time step.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_systime">oapi.get_systime</a></td>
+<td>Returns the true time since the start of the session.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_sysstep">oapi.get_sysstep</a></td>
+<td>Returns the true length of the last simulation time step.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_simmjd">oapi.get_simmjd</a></td>
+<td>Returns the Modified Julian Data (MJD) of the current simulation state.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_simmjd">oapi.set_simmjd</a></td>
+<td>Set the current simulation date.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_sysmjd">oapi.get_sysmjd</a></td>
+<td>Returns the current computer system time in Modified Julian Date (MJD) format.</td>
+</tr>
+<tr>
+<td><a href="#oapi_time2mjd">oapi.time2mjd</a></td>
+<td>Convert a simulation up time value into a Modified Julian Date.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_tacc">oapi.get_tacc</a></td>
+<td>Returns the current simulation time acceleration factor.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_tacc">oapi.set_tacc</a></td>
+<td>Sets the simulation time acceleration factor.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_pause">oapi.get_pause</a></td>
+<td>Returns the current simulation pause state.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_pause">oapi.set_pause</a></td>
+<td>Sets the simulation pause state.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Main menu functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_mainmenuvisibilitymode">oapi.get_mainmenuvisibilitymode</a></td>
+<td>Returns the visibility mode for the simulation window main menu.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_mainmenuvisibilitymode">oapi.set_mainmenuvisibilitymode</a></td>
+<td>Sets the visibility mode for the simulation window main menu.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_maininfovisibilitymode">oapi.get_maininfovisibilitymode</a></td>
+<td>Returns the visibility mode for the simulation window info bars.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_maininfovisibilitymode">oapi.set_maininfovisibilitymode</a></td>
+<td>Sets the visibility mode for the simulation window info bars.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Coordinate transformations</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_global_to_equ">oapi.global_to_equ</a></td>
+<td>Converts a global position into equatorial coordiates in a local object frame.</td>
+</tr>
+<tr>
+<td><a href="#oapi_equ_to_global">oapi.equ_to_global</a></td>
+<td>Returns the global cartesian position of a point given in equatorial coordinates of an object</td>
+</tr>
+<tr>
+<td><a href="#oapi_orthodome">oapi.orthodome</a></td>
+<td>Calculates the angular distance between two points on the surface of a sphere.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Body functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_size">oapi.get_size</a></td>
+<td>Returns the size (mean radius) of an object.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_mass">oapi.get_mass</a></td>
+<td>Returns the mass of an object.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_globalpos">oapi.get_globalpos</a></td>
+<td>Returns the position of an object in the global reference frame.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_globalvel">oapi.get_globalvel</a></td>
+<td>Returns the velocity of an object in the global reference frame.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_relativepos">oapi.get_relativepos</a></td>
+<td>Returns the position of an object relative to a reference object in the ecliptic frame.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_relativevel">oapi.get_relativevel</a></td>
+<td>Returns the velocity of an object relative to a reference object in the ecliptic frame.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Vessel functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_propellanthandle">oapi.get_propellanthandle</a></td>
+<td>Returns a handle for a vessel propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_propellantmass">oapi.get_propellantmass</a></td>
+<td>Returns the current mass of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_propellantmaxmass">oapi.get_propellantmaxmass</a></td>
+<td>Returns the maximum capacity of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_fuelmass">oapi.get_fuelmass</a></td>
+<td>Returns the current total propellant mass of a vessel.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_maxfuelmass">oapi.get_maxfuelmass</a></td>
+<td>Returns the maximum capacity of the vessel's default propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_emptymass">oapi.get_emptymass</a></td>
+<td>Returns empty mass of a vessel, excluding fuel.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_emptymass">oapi.set_emptymass</a></td>
+<td>Set the empty mass of a vessel (excluding fuel).</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_altitude">oapi.get_altitude</a></td>
+<td>Returns the altitude of a vessel over a planetary surface.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_pitch">oapi.get_pitch</a></td>
+<td>Returns a vessel's pitch angle w.r.t. the local horizon.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_bank">oapi.get_bank</a></td>
+<td>Returns a vessel's bank angle w.r.t. the local horizon.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_heading">oapi.get_heading</a></td>
+<td>Returns a vessel's heading (against geometric north) calculated for the local horizon plane.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_groundspeed">oapi.get_groundspeed</a></td>
+<td>Returns a vessel's ground speed w.r.t. the closest planet or moon.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_groundspeedvector">oapi.get_groundspeedvector</a></td>
+<td>Returns a vessel's ground speed vector w.r.t. the closest planet or moon in the requested frame of reference.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_airspeed">oapi.get_airspeed</a></td>
+<td>Returns a vessel's airspeed w.r.t. the closest planet or moon.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_airspeedvector">oapi.get_airspeedvector</a></td>
+<td>Returns a vessel's airspeed vector w.r.t. the closest planet or moon in the requested frame of reference.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_shipairspeedvector">oapi.get_shipairspeedvector</a></td>
+<td>Obsolete. Use <a href="#oapi_get_airspeedvector">oapi.get_airspeedvector</a> instead.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_equpos">oapi.get_equpos</a></td>
+<td>Returns a vessel's spherical equatorial coordinates.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_atm">oapi.get_atm</a></td>
+<td>Returns the atmospheric pressure and density caused by a planetary atmosphere at the current vessel position.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_induceddrag">oapi.get_induceddrag</a></td>
+<td>Calculates induced drag for an airfoil.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_wavedrag">oapi.get_wavedrag</a></td>
+<td>Calculates wave drag for an airfoil.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Navigation radio transmitter interface</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_get_navpos">oapi.get_navpos</a></td>
+<td>Returns the current position of a NAV transmitter.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_navchannel">oapi.get_navchannel</a></td>
+<td>Returns the channel number of a NAV transmitter.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_navrange">oapi.get_navrange</a></td>
+<td>Returns the range of a NAV transmitter.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_navdata">oapi.get_navdata</a></td>
+<td>Returns information about a NAV transmitter.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_navsignal">oapi.get_navsignal</a></td>
+<td>Returns the signal strength of a transmitter at a given position.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_navtype">oapi.get_navtype</a></td>
+<td>Returns the type id of a NAV transmitter.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Camera functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_set_cameramode">oapi.set_cameramode</a></td>
+<td>Sets the camera to a new mode.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_cameratarget">oapi.get_cameratarget</a></td>
+<td>Returns a handle to the current camera target.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_cameratarget">oapi.set_cameratarget</a></td>
+<td>Attach the camera to a new target, or switch between internal and external camera mode.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_cameraaperture">oapi.get_cameraaperture</a></td>
+<td>Returns the current camera aperture (the field of view).</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_cameraaperture">oapi.set_cameraaperture</a></td>
+<td>Change the camera aperture (field of view).</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_cameraglobalpos">oapi.get_cameraglobalpos</a></td>
+<td>Returns current camera position in global coordinates.</td>
+</tr>
+<tr>
+<td><a href="#oapi_get_cameraglobaldir">oapi.get_cameraglobaldir</a></td>
+<td>Returns current camera direction in global coordinates.</td>
+</tr>
+<tr>
+<td><a href="#oapi_move_groundcamera">oapi.move_groundcamera</a></td>
+<td>Moves the ground camera.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Animation functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_create_animationcomponent">oapi.create_animationcomponent</a></td>
+<td>Creates an animation component object.</td>
+</tr>
+<tr>
+<td><a href="#oapi_del_animationcomponent">oapi.del_animationcomponent</a></td>
+<td>Delete an animation component object.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>HUD and MFD functions</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_open_mfd">oapi.open_mfd</a></td>
+<td>Reset the mode of an MFD instrument.</td>
+</tr>
+<tr>
+<td><a href="#oapi_set_hudmode">oapi.set_hudmode</a></td>
+<td>Reset the mode of the head-up display.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>User input</b></td>
+</tr>
+<tr>
+<td><a href="#oapi_simulatebufferedkey">oapi.simulatebufferedkey</a></td>
+<td>Send a simulated keyboard event to Orbiter for processing.</td>
+</tr>
+<tr>
+<td><a href="#oapi_simulateimmediatekey">oapi.simulateimmediatekey</a></td>
+<td>Send a simulated key state to Orbiter for processing.</td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func">
+<h3><a name="oapi_create_annotation"></a>hnote = oapi.create_annotation()</h3>
+<p>Creates an annotation instance for displaying onscreen text during a simulation.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hnote (handle):</td><td>screen annotation handle.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Onscreen annotations can be used to display information about the current simulation state, to alert the user of a problem, etc.</p>
+<p>Once you have obtained a handle, you can output or format text by using the annotation class methods (see Section <a href="mtd_note.htm">Annotation methods</a>). A typical example might look like this:</p>
+<div class="code">
+n = oapi.create_annotation()
+n:set_text('Hello, world!')
+</div>
+
+<h4>See also:</h4>
+<a href="#oapi_del_annotation">oapi.del_annotation</a>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_del_annotation"></a>oapi.del_annotation(hnote)</h3>
+<p>Deletes an annotation instance.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hnote (handle):</td><td>annotation handle</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_create_annotation">oapi.create_annotation</a>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_open_help"></a>oapi.open_help(file)<br />
+oapi.open_help(file,topic)<br /></h3>
+<p>Opens a browser window with a help page.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>file (string):</td><td>help file</td></tr>
+<tr><td>topic (string):</td><td>topic page within a chm help file.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>file</i> can point either to a html file, or a compiled help file (.chm).
+If the file name contains a path, it is interpreted relative to the Orbiter
+main directory.
+Example:</p>
+<div class="code">
+oapi.open_help ('Html/Script/Stockvessels/DG/aap.chm')
+</div>
+<p>The second, optional argument specifies a particular page within a chm
+help file. It is meaningless for html files.</p>
+<p>If no topic argument is given for a chm file, the default page of the
+chm file will be opened.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_open_inputbox"></a>oapi.open_inputbox(title)</h3>
+<p>Opens a dialog box for user input.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>title (string):</td><td>dialog box title</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The dialog box can only be closed by pressing Enter. Cancelling the box with Esc or a mouse click is not allowed.</p>
+<p>To retrieve the user input, use <a href="#oapi_receive_input">oapi.receive_input</a>. A higher-level function that opens the dialog box and then waits for input is provided in <a href="api_proc.htm#proc_wait_input">proc.wait_input</a>.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_receive_input"></a>str = oapi.receive_input()</h3>
+<p>Checks for user input from a dialog box.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>str (string):</td><td>the user-supplied string.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function should be called in a loop after the dialog box was opened to poll for an answer.
+It is normally not necessary to call <a href="#oapi_open_inputbox">oapi.open_inputbox</a> and oapi.receive_input directly. Instead use <a href="api_proc.htm#proc_wait_input">proc.wait_input</a>.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_dbg_out"></a>oapi.dbg_out(msg)</h3>
+<p>Writes a string to the bottom of the render window. Should only be used for debugging purposes.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>msg (string):</td><td>output string</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>msg</i> does not need to be a literal string, but can be anything that can be converted to a string by
+Lua, so the following are valid:</p>
+<div class="code">
+oapi.dbg_out ('hello')<br />
+oapi.dbg_out (3.14)<br />
+oapi.dbg_out ('time is ' .. oapi.GetSimTime())
+</div>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_get_objhandle"></a>hobj = oapi.get_objhandle(name)<br />
+hobj = oapi.get_objhandle(idx)</h3>
+<p>Returns a handle for a simulation object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>name (string):</td><td>object name</td></tr>
+<tr><td>idx (int):</td><td>object index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hobj (handle):</td><td>object handle, or <i>nil</i> if object was not found.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function can be invoked with an object name or an object index. Example:</p>
+<div class="code">
+-- list all objects in the simulation session<br />
+n = oapi.get_objcount()<br />
+for idx = 0,n-1 do<br />
+&nbsp;&nbsp;hobj = oapi.get_objhandle(idx)<br />
+&nbsp;&nbsp;term.out (oapi.get_objname(hobj))<br />
+end
+</div>
+
+<h4>See also:</h4>
+<a href="#oapi_get_objcount">oapi.get_objcount</a>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_get_objcount"></a>n = oapi.get_objcount()</h3>
+<p>Returns the number of objects in the current simulation.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n (int):</td><td>object count (&ge; 0).</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>"Objects" in an Orbiter simulation are:</p>
+<ul>
+<li>vessels (spacecraft, space stations, etc.)</li>
+<li>planets and moons</li>
+<li>the central star(s) (but not distant "background" stars)</li>
+</ul>
+<p>Surface space ports are regarded as objects, but are not enumerated
+by this function. For these, you should use the <a href="#oapi_get_surfbase">oapi.get_surfbase</a> function.</p>
+
+<h4>See also:</h4>
+<a href="#oapi_get_objhandle">oapi.get_objhandle</a>,
+<a href="#oapi_get_surfbase">oapi.get_surfbase</a>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_get_objname"></a>name = oapi.get_objname(hobj)</h3>
+<p>Returns the name of an object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hobj (handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>name (string):</td><td>object name</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_objhandle">oapi.get_objhandle</a>
+</div>
+
+
+<div class="func"><a name="oapi_del_vessel"></a>
+<h3>oapi.del_vessel(name)<br />
+oapi.del_vessel(hVessel)</h3>
+<p>Delete a vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>name&nbsp;(string):</td><td>vessel name</td></tr>
+<tr><td>hVessel&nbsp;(handle)</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function removes a vessel from the simulation session.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_simtime"></a>
+<h3>simt = oapi.get_simtime()</h3>
+<p>Returns the current simulation time (the simulated time in seconds since the start of
+the session).</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>simulation time [s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This value can be negative if the user jumps back in time during a simulation session.</p>
+
+<h4>See also:</h4>
+<a href="#oapi_get_systime">oapi.get_systime</a>,
+<a href="#oapi_get_simstep">oapi.get_simstep</a>,
+<a href="#oapi_get_simmjd">oapi.get_simmjd</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_simstep"></a>
+<h3>dt = oapi.get_simstep()</h3>
+<p>Returns the length of the last simulation step (from previous to current frame) in seconds.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>dt&nbsp;(number):</td><td>simulation time step [s]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_simtime">oapi.get_simtime</a>,
+<a href="#oapi_get_sysstep">oapi.get_sysstep</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_systime"></a>
+<h3>syst = oapi.get_systime()</h3>
+<p>Returns the system time (real time) since the start of the simulation session.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>syst&nbsp;(number):</td><td>session up-time [s]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_simtime">oapi.get_simtime</a>,
+<a href="#oapi_get_sysstep">oapi.get_sysstep</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_sysstep"></a>
+<h3>sysdt = oapi.get_sysstep()</h3>
+<p>Returns the true length of the last simulation time step (from previous to current frame) in seconds.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>sysdt (number):</td><td>system time step [s]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_systime">oapi.get_systime</a>,
+<a href="#oapi_get_simstep">oapi.get_simstep</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_simmjd"></a>
+<h3>mjd = oapi.get_simmjd()</h3>
+<p>Returns the Modified Julian Date (MJD) of the current simulation state.
+ The MJD is the number of days that have elapsed since midnight of November 17,
+ 1858. The MJD is used as an absolute time reference in Orbiter.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mjd&nbsp;(number):</td><td>current Modified Julian Date [days]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_simtime">oapi.get_simtime</a>
+</div>
+
+
+<div class="func"><a name="oapi_set_simmjd"></a>
+<h3>oapi.set_simmjd(mjd)<br />
+oapi.set_simmjd(mjd,pmode)</h3>
+<p>Set the current simulation time. The simulation session performs a jump to the new time.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mjd&nbsp;(number):</td><td>new simulation time</td></tr>
+<tr><td>pmode&nbsp;(int):</td><td>vessel propagation modes (see notes)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The new time can be set to before or after the current simulation time.</p>
+<p>Deterministic objects (planets controlled by Keplerian elements or perturbation code)
+ are propagated directly. Vessels are propagated according to pmode, which can be a
+ combination of values in <a href="constant.htm#prop">Propagation modes</a>.</p>
+ <p>If pmode is not specified, the propagation modes resort to propagation along
+ Keplerian orbits for both orbital and suborbital vessels.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_simmjd">oapi.get_simmjd</a>,
+<a href="#oapi_get_simtime">oapi.get_simtime</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_sysmjd"></a>
+<h3>mjd = oapi.get_sysmjd()</h3>
+<p>Returns the current computer system time in Modified Julian Date (MJD) format.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mjd&nbsp;(number):</td><td>computer system time in MJD format [days]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The returned value is the UTC time obtained from the computer system
+ clock, plus dt=66.184 seconds to map from UTC to TDB (Barycentric Dynamical
+ Time) used internally by Orbiter.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_simmjd">oapi.get_simmjd</a>,
+<a href="#oapi_get_systime">oapi.get_systime</a>,
+<a href="#oapi_get_sysmjd">oapi.get_sysmjd</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_time2mjd"></a>
+<h3>mjd = oapi.time2mjd(simt)</h3>
+<p>Convert a simulation up time value into a Modified Julian Date.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>simulation time [s]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mjd&nbsp;(number):</td><td>Modified Julian Date (MJD) corresponding
+to simt.</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_get_tacc"></a>
+<h3>tacc = oapi.get_tacc()</h3>
+<p>Returns the current time acceleration factor (1 = real time).</p>
+
+<h4>Return values</h4>
+<table>
+<tr><td>tacc (number):</td><td>current time acceleration factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function will not return 0 when the simulation is paused. Instead it will
+ return the acceleration factor at which the simulation will resume when unpaused.
+ Use <a href="#oapi_get_pause">oapi.get_pause</a> to obtain the pause/resume state.</p>
+
+<h4>See also:</h4>
+<a href="#oapi_set_tacc">oapi.set_tacc</a>,
+<a href="#oapi_get_pause">oapi.get_pause</a>,
+<a href="#oapi_set_pause">oapi.set_pause</a>
+</div>
+
+
+<div class="func"><a name="oapi_set_tacc"></a>
+<h3>oapi.set_tacc (tacc)</h3>
+<p>Sets the simulation time acceleration factor. The currently supported range
+ is tacc = [0.1 ... 100 000], where tacc = 1 corresponds to real time.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>tacc (number):</td><td>time acceleration factor</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_tacc">oapi.get_tacc</a>,
+<a href="#oapi_get_pause">oapi.get_pause</a>,
+<a href="#oapi_set_pause">oapi.set_pause</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_pause"></a>
+<h3>pause = oapi.get_pause()</h3>
+<p>Returns the current simulation pause state.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pause (boolean):</td><td><i>true</i> if simulation is paused,
+ <i>false</i> otherwise.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_set_pause">oapi.set_pause</a>
+</div>
+
+
+<div class="func"><a name="oapi_set_pause"></a>
+<h3>oapi.set_pause (pause)</h3>
+<p>Sets the simulation pause state.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pause (boolean):</td><td><i>true</i> to pause, <i>false</i>
+ to resume.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="#oapi_get_pause">oapi.get_pause</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_mainmenuvisibilitymode"></a>
+<h3>mode = oapi.get_mainmenuvisibilitymode ()</h3>
+<p>Returns the visibility mode (show, hide, auto-hide) of the main menu in the Orbiter simulation window.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mode (number):</td><td>0=show, 1=hide, 2=auto-hide</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="oapi_set_mainmenuvisibilitymode">oapi.set_mainmenuvisibilitymode</a>,
+<a href="oapi_get_maininfovisibilitymode">oapi.get_maininfovisibilitymode</a>,
+<a href="oapi_set_maininfovisibilitymode">oapi.set_maininfovisibilitymode</a>
+</div>
+
+
+<div class="func"><a name="oapi_set_mainmenuvisibilitymode"></a>
+<h3>oapi.set_mainmenuvisibilitymode (mode)</h3>
+<p>Sets the visibility mode (show, hide, auto-hide) of the main menu in the Orbiter simulation window.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode (number):</td><td>0=show, 1=hide, 2=auto-hide</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="oapi_get_mainmenuvisibilitymode">oapi.get_mainmenuvisibilitymode</a>,
+<a href="oapi_get_maininfovisibilitymode">oapi.get_maininfovisibilitymode</a>,
+<a href="oapi_set_maininfovisibilitymode">oapi.set_maininfovisibilitymode</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_maininfovisibilitymode"></a>
+<h3>mode = oapi.get_maininfovisibilitymode ()</h3>
+<p>Returns the visibility mode (show, hide, auto-hide) of the left and right info bars in the Orbiter simulation window.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mode (number):</td><td>0=show, 1=hide, 2=auto-hide</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="oapi_set_maininfovisibilitymode">oapi.set_maininfovisibilitymode</a>,
+<a href="oapi_get_mainmenuvisibilitymode">oapi.get_mainmenuvisibilitymode</a>,
+<a href="oapi_set_mainmenuvisibilitymode">oapi.set_mainmenuvisibilitymode</a>
+</div>
+
+
+<div class="func"><a name="oapi_set_maininfovisibilitymode"></a>
+<h3>oapi.set_maininfovisibilitymode (mode)</h3>
+<p>Sets the visibility mode (show, hide, auto-hide) of the left and right info bars in the Orbiter simulation window.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode (number):</td><td>0=show, 1=hide, 2=auto-hide</td></tr>
+</table>
+
+<h4>See also:</h4>
+<a href="oapi_get_maininfovisibilitymode">oapi.get_maininfovisibilitymode</a>,
+<a href="oapi_get_mainmenuvisibilitymode">oapi.get_mainmenuvisibilitymode</a>,
+<a href="oapi_set_mainmenuvisibilitymode">oapi.set_mainmenuvisibilitymode</a>
+</div>
+
+
+<div class="func"><a name="oapi_global_to_equ"></a>
+<h3>equ = oapi.global_to_equ(hobj,glob)</h3>
+<p>Converts a global position into equatorial coordiates in a local object frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hobj&nbsp;(handle):</td><td>object handle</td></tr>
+<tr><td>glob&nbsp;(vector):</td><td>position in global coordinates</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>equ&nbsp;(table):</td><td>equatorial coordinates in the local frame of hobj<br />
+<table>
+<tr><td>equ.lng</td><td>longitude [rad]</td></tr>
+<tr><td>equ.lat</td><td>latitude [rad]</td></tr>
+<tr><td>equ.rad</td><td>distance from object frame origin [m]</td></tr>
+</table>
+</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#oapi_equ_to_global">oapi.equ_to_global</a></p>
+</div>
+
+
+<div class="func"><a name="oapi_equ_to_global"></a>
+<h3>glob = oapi.equ_to_global(hobj,equ)</h3>
+<p>Returns the global cartesian position of a point given in equatorial coordinates of an object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hobj&nbsp;(handle):</td><td>object handle</td></tr>
+<tr><td>equ&nbsp;(table):</td><td>equatorial coordinates<br />
+<table>
+<tr><td>equ.lng</td><td>longitude [rad]</td></tr>
+<tr><td>equ.lat</td><td>latitude [rad]</td></tr>
+<tr><td>equ.rad</td><td>distance from object frame origin [m]</td></tr>
+</table>
+</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>glob&nbsp;(vector):</td><td>point in cartesian coordinates of the global reference frame</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#oapi_global_to_equ">oapi.global_to_equ</a></p>
+</div>
+
+
+
+<div class="func"><a name="oapi_orthodome"></a>
+<h3>alpha = oapi.orthodome (p1, p2)</h3>
+<p>Calculates the angular distance between two points on the surface of a sphere.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>p1&nbsp;(table):</td><td>Equatorial coordinates of the first point<br />
+    <table>
+    <tr><td>p1.lng</td><td>longitude of first point [rad]</td></tr>
+    <tr><td>p1.lat</td><td>latitude of first point [rad]</td></tr>
+    </table></td></tr>
+<tr><td>p2&nbsp;(table):</td><td>Equatorial coordinates of the second point<br />
+    <table>
+    <tr><td>p2.lng</td><td>longitude of second point [rad]</td></tr>
+    <tr><td>p2.lat</td><td>latitude of second point [rad]</td></tr>
+    </table></td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>alpha&nbsp;(number):</td><td>Orthodome angular distance between p1 and p2 [rad].</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>To get the shortest distance between the points along the surface, multiply
+alpha with the sphere radius.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_get_size"></a>r = oapi.get_size(hobj)</h3>
+<p>Returns the size (mean radius) of an object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hobj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>r&nbps;(number):</td><td>object radius [m]</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_get_mass"></a>
+<h3>m = oapi.get_mass(hObj)</h3>
+<p>Returns the mass of an object. For vessels, this is the total mass, including current fuel mass.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>Current object mass [kg].</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_get_globalpos"></a>
+<h3>gpos = oapi.get_globalpos()<br />
+gpos = oapi.get_globalpos(hObj)</h3>
+<p>Returns the position of an object in the global reference frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>gpos&nbsp;(vector):</td><td>global object position [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the hObj parameter is not specified, the position of the current focus object is returned.</p>
+<p>The global reference frame is the heliocentric ecliptic system at ecliptic and equinox of J2000.</p>
+
+<h4>Example:</h4>
+<div class="code">
+hv = vessel.get_focushandle()<br />
+pos = oapi.get_globalpos(hv)<br />
+-- identical to:<br />
+pos = oapi.get_globalpos()
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_globalvel">oapi.get_globalvel</a>,
+<a href="#oapi_get_relativepos">oapi.get_relativepos</a>,
+<a href="#oapi_get_relativevel">oapi.get_relativevel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_globalvel"></a>
+<h3>gvel = oapi.get_globalvel()<br />
+gvel = oapi.get_globalvel(hObj)</h3>
+<p>Returns the velocity of an object in the global reference frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>gvel&nbsp;(vector):</td><td>global object velocity [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the hObj parameter is not specified, the velocity of the current focus object is returned.</p>
+<p>The global reference frame is the heliocentric ecliptic system at ecliptic and equinox of J2000.</p>
+
+<h4>Example:</h4>
+<div class="code">
+hv = vessel.get_focushandle()<br />
+vel = oapi.get_globalvel(hv)<br />
+-- identical to:<br />
+vel = oapi.get_globalvel()
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_globalpos">oapi.get_globalpos</a>,
+<a href="#oapi_get_relativepos">oapi.get_relativepos</a>,
+<a href="#oapi_get_relativevel">oapi.get_relativevel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_relativepos"></a>
+<h3>rpos = oapi.get_relativepos(hRef)<br />
+rpos = oapi.get_relativepos(hObj,hRef)</h3>
+<p>Returns the position of an object relative to a reference object in the ecliptic frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hRef&nbsp;(handle):</td><td>reference object handle</td></tr>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>rpos&nbsp;(vector):</td><td>position of hObj relative to hRef in ecliptic frame [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the hObj parameter is not specified, the position of the current focus object relative to hRef is returned.</p>
+<p>The relative position is calculated in the ecliptic J2000 frame.</p>
+
+<h4>Example:</h4>
+<div class="code">
+hv = vessel.get_focushandle()<br />
+hp = oapi.get_objhandle('Earth')<br />
+pos = oapi.get_relativepos(hv,hp)<br />
+-- identical to:<br />
+pos = oapi.get_relativepos(hp)<br />
+-- identical to:<br />
+pos = vec.sub(oapi.get_globalpos(), oapi.get_globalpos(hp))
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_globalpos">oapi.get_globalpos</a>,
+<a href="#oapi_get_globalvel">oapi.get_globalvel</a>,
+<a href="#oapi_get_relativevel">oapi.get_relativevel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_relativevel"></a>
+<h3>rvel = oapi.get_relativevel(hRef)<br />
+rvel = oapi.get_relativevel(hObj,hRef)</h3>
+<p>Returns the velocity of an object relative to a reference object in the ecliptic frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hRef&nbsp;(handle):</td><td>reference object handle</td></tr>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>rvel&nbsp;(vector):</td><td>velocity of hObj relative to hRef in ecliptic frame [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the hObj parameter is not specified, the velocity of the current focus object relative to hRef is returned.</p>
+<p>The relative position is calculated in the ecliptic J2000 frame.</p>
+
+<h4>Example:</h4>
+<div class="code">
+hv = vessel.get_focushandle()<br />
+hp = oapi.get_objhandle('Earth')<br />
+vel = oapi.get_relativevel(hv,hp)<br />
+-- identical to:<br />
+vel = oapi.get_relativevel(hp)<br />
+-- identical to:<br />
+vel = vec.sub(oapi.get_globalvel(), oapi.get_globalvel(hp))
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_globalpos">oapi.get_globalpos</a>,
+<a href="#oapi_get_globalvel">oapi.get_globalvel</a>,
+<a href="#oapi_get_relativepos">oapi.get_relativepos</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_propellanthandle"></a>
+<h3>hp = oapi.get_propellanthandle(hVessel,idx)</h3>
+<p>Returns a handle for one of the vessel's propellant resources.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+<tr><td>idx&nbsp;(number)</td><td>propellant resource index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hp&nbsp;(handle)</td><td>propellant resource handle, or nil if index out of range</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_get_propellantmass"></a>
+<h3>m = oapi.get_propellantmass(hp)</h3>
+<p>Returns the current mass of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hp&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>current propellant mass [kg]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_propellanthandle">oapi.get_propellanthandle</a>,
+<a href="#oapi_get_propellantmaxmass">oapi.get_propellantmaxmass</a>,
+<a href="#oapi_get_mass">oapi.get_mass</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_propellantmaxmass"></a>
+<h3>m = oapi.get_propellantmaxmass(hp)</h3>
+<p>Returns the maximum capacity of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hp&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>maximum propellant mass [kg]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_propellanthandle">oapi.get_propellanthandle</a>,
+<a href="#oapi_get_propellantmass">oapi.get_propellantmass</a>,
+<a href="#oapi_get_mass">oapi.get_mass</a>
+</p>
+</div>
+
+
+<div class="func"><a href="oapi_get_fuelmass"></a>
+<h3>fmass = oapi.get_fuelmass(hVessel)</h3>
+<p>Returns the current total propellant mass of a vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>fmass&nbsp;(number):</td><td>Current propellant mass [kg].</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_get_maxfuelmass"></a>
+<h3>fmass = oapi.get_maxfuelmass(hVessel)</h3>
+<p>Returns the maximum capacity of the vessel's default propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>fmass&nbsp;(number):</td><td>Max. fuel capacity of main vessel tank [kg].</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_get_emptymass"></a>
+<h3>emass = oapi.get_emptymass(hVessel)</h3>
+<p>Returns the empty mass of a vessel, excluding fuel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>emass&nbsp;(number):</td><td>empty vessel mass [kg].</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>hVessel must be a vessel handle. Other object types are invalid.</p>
+<p>Do not rely on a constant empty mass. Structural changes (e.g. discarding a
+ rocket stage) will affect the empty mass.</p>
+<p>For multistage configurations, the fuel mass of all currently inactive stages
+ contributes to the empty mass. Only the fuel mass of active stages is excluded.</p>
+</div>
+
+
+<div class="func"><a name="oapi_set_emptymass"></a>
+<h3>oapi.set_emptymass(hVessel,emass)</h3>
+<p>Set the empty mass of a vessel (excluding fuel).</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+<tr><td>emass&nbsp;(number):</td><td>empty mass [kg]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Use this function to register structural mass changes, for example as a result
+ of jettisoning a fuel tank, etc.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_altitude"></a>
+<h3>alt = oapi.get_altitude()<br />
+alt = oapi.get_altitude(hVessel)<br />
+alt = oapi.get_altitude(mode)</br />
+alt = oapi.get_altitude(hVessel,mode)</h3>
+<p>Returns the altitude of a vessel over a planetary surface.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+<tr><td>mode&nbsp;(number):</td><td>altitude mode</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>alt&nbsp;(number):</td><td>vessel altitude [m]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Returns the altitude above closest planet surface.</p>
+<p>The <i>mode</i> parameter can be set to ALTMODE.MEANRAD (altitude above/below planet mean radius) or
+ALTMODE.GROUND (altitude above local ground elevation). If omitted, ALTMODE.MEANRAD is assumed.</p>
+<p>If the hVessel argument is not supplied, the altitude of the current focus object is returned.
+If hVessel is supplied, it must be a valid vessel handle.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_pitch"></a>
+<h3>pitch = oapi.get_pitch()<br />
+pitch = oapi.get_pitch(hVessel)</h3>
+<p>Returns a vessel's pitch angle w.r.t. the local horizon.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pitch&nbsp;(number):</td><td>vessel pitch angle [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Returns pitch angle w.r.t. closest planet.</p>
+<p>The local horizon is the plane whose normal is defined by the distance vector from the planet centre to the vessel.</p>
+<p>If the hVessel argument is not supplied, the pitch of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_bank"></a>
+<h3>bank = oapi.get_bank()<br />
+bank = oapi.get_bank(hVessel)</h3>
+<p>Returns a vessel's bank angle w.r.t. the local horizon.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>bank&nbsp;(number):</td><td>vessel bank angle [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Returns bank angle w.r.t. closest planet.</p>
+<p>The local horizon is the plane whose normal is defined by the distance vector from the planet centre to the vessel.</p>
+<p>If the hVessel argument is not supplied, the bank angle of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_heading"></a>
+<h3>heading = oapi.get_heading()<br />
+heading = oapi.get_heading(hVessel)</h3>
+<p>Returns a vessel's heading (against geometric north) calculated for the local horizon plane.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>heading&nbsp;(number):</td><td>vessel heading [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Returns heading angle w.r.t. closest planet.</p>
+<p>0 = north, &pi;/2 = east, etc.</p>
+<p>The local horizon is the plane whose normal is defined by the distance vector from the planet centre to the vessel.</p>
+<p>If the hVessel argument is not supplied, the bank angle of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_groundspeed"></a>
+<h3>speed = oapi.get_groundspeed()<br />
+speed = oapi.get_groundspeed(hVessel)</h3>
+<p>Returns the magnitude of a vessel's ground speed vector w.r.t. the closest planet or moon.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>speed&nbsp;(number):</td><td>vessel ground speed [m/s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The ground speed vector is defined as the vessel's velocity vector with respect to a point
+at the vessel location fixed in the reference planet's rotating frame of reference.</p>
+<p>If the hVessel argument is not supplied, the ground speed of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_groundspeedvector"></a>
+<h3>speedv = oapi.get_groundspeedvector(frame)<br />
+speedv = oapi.get_groundspeedvector(hVessel, frame)</h3>
+<p>Returns a vessel's ground speed vector w.r.t. the closest planet or moon in the specified frame of reference.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+<tr><td>frame&nbsp;(integer):</td><td>frame of reference flag (see <a href="constant.htm#refframe">REFFRAME</a> identifiers)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>speedv&nbsp;(vector):</td><td>ground speed vector [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Valid entries for <i>frame</i> are:</p>
+<table>
+<tr><td>REFFRAME.GLOBAL</td><td>ground speed in global frame</td></tr>
+<tr><td>REFFRAME.LOCAL</td><td>ground speed in local vessel frame</td></tr>
+<tr><td>REFFRAME.REFLOCAL</td><td>ground speed in local planet frame</td></tr>
+<tr><td>REFFRAME.HORIZON</td><td>ground speed in local horizon frame</td></tr>
+</table>
+<p>If the hVessel argument is not supplied, the ground speed vector of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_groundspeed">oapi.get_groundspeed</a>,
+<a href="#oapi_get_airspeedvector">oapi.get_airspeedvector</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_airspeed"></a>
+<h3>speed = oapi.get_airspeed()<br />
+speed = oapi.get_airspeed(hVessel)</h3>
+<p>Returns a vessel's airspeed w.r.t. the closest planet or moon.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>speed&nbsp;(number):</td><td>vessel airspeed [m/s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the vessel is not in a planetary atmosphere, this function returns the ground speed.</p>
+<p>If the hVessel argument is not supplied, the airspeed of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_airspeedvector"></a>
+<h3>speedv = oapi.get_airspeedvector(frame)<br />
+speedv = oapi.get_airspeedvector(hVessel, frame)</h3>
+<p>Returns a vessel's airspeed vector w.r.t. the closest planet or moon in the specified frame of reference.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+<tr><td>frame&nbsp;(integer):</td><td>frame of reference flag (see <a href="constant.htm#refframe">REFFRAME</a> identifiers)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>speedv&nbsp;(vector):</td><td>airspeed vector [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Valid entries for <i>frame</i> are:</p>
+<table>
+<tr><td>REFFRAME.GLOBAL</td><td>ground speed in global frame</td></tr>
+<tr><td>REFFRAME.LOCAL</td><td>ground speed in local vessel frame</td></tr>
+<tr><td>REFFRAME.REFLOCAL</td><td>ground speed in local planet frame</td></tr>
+<tr><td>REFFRAME.HORIZON</td><td>ground speed in local horizon frame</td></tr>
+</table>
+<p>If the vessel is not in a planetary atmosphere, this function returns the ground speed vector.</p>
+<p>If the hVessel argument is not supplied, the airspeed vector of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_airspeed">oapi.get_airspeed</a>,
+<a href="#oapi_get_groundspeedvector">oapi.get_groundspeedvector</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_shipairspeedvector"></a>
+<h3>speedv = oapi.get_shipairspeedvector()<br />
+speedv = oapi.get_shipairspeedvector(hVessel)</h3>
+<p>Obsolete. Use <a href="#oapi_get_airspeedvector">oapi.get_airspeedvector</a> instead.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_equpos"></a>
+<h3>equ = oapi.get_equpos()<br />
+equ = oapi.get_equpos(hVessel)</h3>
+<p>Returns a vessel's spherical equatorial coordinates (longitude, latitude
+ and radius) with respect to the closest planet or moon.</p>
+ 
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>equ&nbsp;(table):</td><td>equatorial coordinates<br />
+<table>
+<tr><td>equ.lng</td><td>longitude [rad]</td></tr>
+<tr><td>equ.lat</td><td>latitude [rad]</td></tr>
+<tr><td>equ.rad</td><td>distance from object frame origin [m]</td></tr>
+</table>
+</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the hVessel argument is not supplied, the position of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_atm"></a>
+<h3>atm = oapi.get_atm()<br />
+atm = oapi.get_atm(hVessel)</h3>
+<p>Returns the atmospheric pressure and density caused by a planetary atmosphere at the current vessel position.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>atm&nbsp;(table):</td><td>atmospheric parameters<br />
+<table>
+<tr><td>atm.p&nbsp;(number):</td><td>pressure [Pa]</td></tr>
+<tr><td>atm.rho&nbsp;(number):</td><td>density [kg/m<sup>3</sup>]</td></tr>
+<tr><td>atm.T&nbsp;(number):</td><td>temperature [K]</td></tr>
+</table>
+</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Atmospheric parameters currently only depend on altitude, without accounting for local weather variations.</p>
+<p>If the hVessel argument is not supplied, the position of the current focus object is returned.
+If hVessel is supplied, it must refer to a vessel.</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_induceddrag"></a>
+<h3>cdi = oapi.get_induceddrag(cl,A,e)</h3>
+<p>Calculates the induced drag for an airfoil.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>cl&nbsp;(number):</td><td>lift coefficient</td></tr>
+<tr><td>A&nbsp;(number):</td><td>wing aspect ratio</td></tr>
+<tr><td>e&nbsp;(number):</td><td>wing efficiency factor</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>cdi&nbsp;(number):</td><td>induced drag coefficient <i>c<sub>D,i</sub></i></td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The full drag coefficient required by the airfoil callback function
+ consists of several components: profile drag <i>c<sub>D,e</sub></i>,
+ induced drag <i>c<sub>D,i</sub></i> and wave drag <i>c<sub>D,w</sub></i></p>
+<p><i>c<sub>D</sub></i> = <i>c<sub>D,e</sub></i> + <i>c<sub>D,i</sub></i> + <i>c<sub>D,w</sub></i></p>
+<p>where <i>c<sub>D,e</sub></i> is caused by skin friction and pressure
+ components, and <i>c<sub>D,w</sub></i> is a result of the shock wave and
+ flow separation in transonic and supersonic flight.</p>
+<p>The wing aspect ratio is defined as <i>b</i><sup>2</sup>/<i>S</i>,
+ where <i>b</i> is the wing span, and <i>S</i> is the wing area.</p>
+<p>The efficiency factor depends on the wing shape. The most efficient
+ wings are elliptical, with <i>e</i> = 1. For all other shapes, <i>e</i> &lt; 1.</p>
+<p>This function can be interpreted slightly differently by moving the
+ angle of attack-dependency of the profile drag into the induced drag
+ component:</p>
+<p><i>c<sub>D</sub></i> = <i>c<sub>D,0</sub></i> + <i>c'<sub>D,i</sub></i> + <i>c<sub>D,w</sub></i></p>
+<p>where <i>c<sub>D,0</sub></i> is the zero-lift component of the profile
+ drag, and <i>c'<sub>D,i</sub></i> is a modified induced drag obtained by
+ replacing the shape factor e with the Oswald efficiency factor.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_wavedrag">oapi.get_wavedrag</a>,
+<a href="mtd_vessel.htm#create_airfoil">v:create_airfoil</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_wavedrag"></a>
+<h3>cdw = oapi.get_wavedrag(M,M1,M2,M3,cmax)</h3>
+<p>Calculates the wave drag for an airfoil.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>M&nbsp;(number):</td><td>Mach number</td></tr>
+<tr><td>M1&nbsp;(number):</td><td>characteristic Mach number (see notes)</td></tr>
+<tr><td>M2&nbsp;(number):</td><td>characteristic Mach number (see notes)</td></tr>
+<tr><td>M3&nbsp;(number):</td><td>characteristic Mach number (see notes)</td></tr>
+<tr><td>cmax&nbsp;(number):</td><td>maximum wave drag coefficient (see notes)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>cdw&nbsp;(number):</td><td>wave drag coefficient</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This is a helper function which is useful when implementing the callback
+ function calculating the aerodynamics coefficients for an airfoil (see
+ <a href="mtd_vessel.htm#create_airfoil">v:create_airfoil</a>. It uses a
+ simple model to compute the wave drag component of the drag coefficient,
+ <i>c</i><sub><i>D</i>,<i>w</i></sub>. Wave drag significantly affects the
+ vessel drag around Mach 1, and falls off towards lower and higher airspeeds.
+ This function uses the following model:</p>
+ <table>
+ <tr><td><i>c</i><sub><i>D</i>,<i>w</i></sub></td><td>at speed range</td></tr>
+ <tr><td>0</td><td><i>M</i> &lt; <i>M</i><sub>1</sub></td></tr>
+ <tr><td><i>c<sub>m</sub></i> (<i>M</i>-<i>M</i><sub>1</sub>)/(<i>M</i><sub>2</sub>-<i>M</i><sub>1</sub>)</td><td><i>M</i><sub>1</sub> &lt; <i>M</i> &lt; <i>M</i><sub>2</sub></td></tr>
+ <tr><td><i>c<sub>m</sub></i></td><td><i>M</i><sub>2</sub> &lt; <i>M</i> &lt; <i>M</i><sub>3</sub></td></tr>
+ <tr><td><i>c<sub>m</sub></i> (<i>M</i><sub>3</sub><sup>2</sup> - 1)<sup>1/2</sup> / (<i>M</i><sup>2</sup> - 1)<sup>1/2</sup></td><td><i>M</i> &gt; <i>M</i><sub>3</sub></td></tr>
+ </table>
+ <p>where 0 &lt; <i>M</i><sub>1</sub> &lt; <i>M</i><sub>2</sub> &lt; 1 &lt; <i>M</i><sub>3</sub>
+ are characteristic Mach numbers, and <i>c<sub>m</sub></i> is the maximum wave
+ drag coefficient at transonic speeds.</p>
+<p>The model underlying this function assumes a piecewise linear wave drag
+ profile for <i>M</i> &lt; <i>M</i><sub>3</sub>, and a decay with
+ (<i>M</i><sub>2</sub>-1)<sup>-1/2</sup> for <i>M</i> &gt; <i>M</i><sub>3</sub>.
+ If this profile is not suitable for a given airfoil, the programmer must
+ implement wave drag manually.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_induceddrag">oapi.get_induceddrag</a>,
+<a href="mtd_vessel.htm#create_airfoil">v:create_airfoil</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_navpos"></a>
+<h3>pos = oapi.get_navpos(hNav)</h3>
+<p>Returns the current position of a NAV transmitter (in global coordinates, i.e. heliocentric ecliptic).</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle)</td><td>NAV transmitter handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>global NAV transmitter position [<b>m</b>]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_navchannel">oapi.get_navchannel</a>,
+<a href="mtd_vessel.htm#get_transponder">v:get_transponder</a>,
+<a href="mtd_vessel.htm#get_ids">v:get_ids</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_navchannel"></a>
+<h3>ch = oapi.get_navchannel(hNav)</h3>
+<p>Returns the channel number of a NAV transmitter.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAV transmitter handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ch&nbsp;(number):</td><td>channel number</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Channel numbers range from 0 to 639.</p>
+<p>To convert a channel number ch into a frequency, use f = (108.0 + 0.05 ch) MHz.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_navpos">oapi.get_navpos</a>,
+<a href="#oapi_get_navrange">oapi.get_navrange</a>,
+<a href="mtd_vessel.htm#get_transponder">v:get_transponder</a>,
+<a href="mtd_vessel.htm#get_ids">v:get_ids</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_navrange"></a>
+<h3>range = oapi.get_navrange(hNav)</h3>
+<p>Returns the range of a NAV transmitter.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAV transmitter handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>range&nbsp;(number):</td><td>transmitter range [m]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A NAV receiver will only receive a signal when within the range of a transmitter.</p>
+<p>Variable receiver sensitivity (gain adjustment) is not currently implemented.</p>
+<p>Shadowing of a transmitter by obstacles between transmitter and receiver is not currently implemented.</p>
+
+<h4>See also:</h4>
+<a href="#oapi_get_navpos">oapi.get_navpos</a>,
+<a href="#oapi_get_navchannel">oapi.get_navchannel</a>
+</div>
+
+
+<div class="func"><a name="oapi_get_navdata"></a>
+<h3>ndata = oapi.get_navdata(hNav)</h3>
+<p>Returns information about a NAV transmitter.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAV transmitter handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ndata&nbsp;(table):</td><td>transmitter data</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns general and type-specific data about a navigation
+radio transmitter.</p>
+<p>The returned table contains the following general entries:</p>
+<table>
+<tr><td>type&nbsp;(number):</td><td>transmitter type identifier (see
+ <a href="constant.htm#transmitter">TRANSMITTER</a> table)</td></tr>
+<tr><td>ch&nbsp;(number):</td><td>transmission channel (0...639)</td></tr>
+<tr><td>power&nbsp;(number):</td><td>transmitter output power [arbitrary units]</td></tr>
+<tr><td>descr&nbsp;(string):</td><td>description string</td></tr>
+</table>
+<p>Depending on the transmitter type, the table also contains the following
+type-specific entries:</p>
+<table>
+<tr><td>VOR:</td><td>hplanet&nbsp;(handle):</td><td>handle for associated planet</td></tr>
+<tr><td></td><td>lng&nbsp;(number):</td><td>longitude of transmitter position [rad]</td></tr>
+<tr><td></td><td>lat&nbsp;(number):</td><td>latitude of transmitter position</td></tr>
+<tr><td>VTOL:</td><td>hbase&nbsp;(handle):</td><td>handle for associated base</td></tr>
+<tr><td></td><td>npad&nbsp;(number):</td><td>pad number (&ge; 0)</td></tr>
+<tr><td>ILS:</td><td>hbase&nbsp;(handle):</td><td>handle for associated base</td></tr>
+<tr><td></td><td>appdir&nbsp;(number):</td><td>approach direction [rad]</td></tr>
+<tr><td>IDS:</td><td>hvessel&nbsp;(handle):</td><td>handle for associated vessel</td></tr>
+<tr><td></td><td>hdock&nbsp;(handle):</td><td>handle for associated docking port</td></tr>
+<tr><td>XPDR:</td><td>hvessel&nbsp;(handle):</td><td>handle for associated vessel</td></tr>
+</table>
+<p>The 'power' value S<sub>0</sub> can be used to calculate the reception range
+ of the transmitter. The signal drops off with the square of distance. S<sub>0</sub>
+ is considered to be the measured signal strength at distance 1m. Therefore,
+ S(r) = S<sub>0</sub>/r<sup>2</sup></p>
+<p>By default, receivers are assumed to pick up signals with S > 1. Therefore
+ the range of the signal is r<sub>max</sub> = sqrt(S<sub>0</sub>)</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_navrange">oapi.get_navrange</a>,
+<a href="#oapi_get_navsignal">oapi.get_navsignal</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_navsignal"></a>
+<h3>sig = oapi.get_navsignal(hNav,gpos)</h3>
+<p>Returns the signal strength of a transmitter at a given position.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAV transmitter handle</td></tr>
+<tr><td>gpos&nbsp;(vector):</td><td>global position [<b>m</b>]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>sig&nbsp;(number):</td><td>signal strength in arbitrary units</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The transmitter signal strength drops off with the square of distance to
+ the transmitter. The units a chosen so that a 'default' receiver will be
+ able to detect signals above a strength of 1.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_navrange">oapi.get_navrange</a>,
+<a href="#oapi_get_navdata">oapi.get_navdata</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_navtype"></a>
+<h3>ntype = oapi.get_navtype(hNav)</h3>
+<p>Returns the type id of a NAV transmitter.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAV transmitter handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ntype&nbsp;(number):</td><td>transmitter type id<sub>0</sub></td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The return value is an integer identifying the transmitter type. For
+convenience, the type ids are enumerated in the global
+ <a href="constant.htm#transmitter">TRANSMITTER</a> table.</p>
+</div>
+
+
+<div class="func"><a name="oapi_set_cameramode"></a>
+<h3>oapi.set_cameramode(prm)</h3>
+<p>Sets the camera to cockpit, track or ground observer mode.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>prm&nbsp;(struct):</td><td>structure containing camera parameters (see notes)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>prm</i> struct must contain the field <i>mode</i> to specify the camera mode. The other
+fields are mode-dependent.</p>
+<table>
+<tr><th>field</th><th>value</th><th>meaning</th></tr>
+<tr><td>prm.mode</td><td>(string)</td><td>camera mode, one of 'track' (object tracking mode), 'ground' (ground observer mode), 'cockpit' (cockpit mode)</td></tr>
+<tr><th colspan="3">Object tracking mode:</th></tr>
+<tr><td>prm.trackmode</td><td>(string)</td><td>tracking mode. One of 'RELATIVE', 'ABSDIR', 'GLOBAL', 'TARGETTOREF', 'TARGETFROMREF'</td></tr>
+<tr><td>prm.reldist</td><td>(number)</td><td>distance to target in units of target size</td></tr>
+<tr><td>prm.phi</td><td>(number)</td><td><i>optional:</i> camera azimuth position relative to target (rad)</td></tr>
+<tr><td>prm.tht</td><td>(number)</td><td><i>optional:</i> camera polar position relative to target (rad)</td></tr>
+<tr><td>prm.ref</td><td>(string)</td><td><i>optional:</i> camera reference object</td></tr>
+<tr><th colspan="3">Ground observer mode:</th></tr>
+<tr><td>prm.ref</td><td>(string)</td><td>name of reference planet</td></tr>
+<tr><td>prm.lng</td><td>(number)</td><td>longitude (deg, &lt; 0 for western longitudes)</td></tr>
+<tr><td>prm.lat</td><td>(number)</td><td>latitude (deg, &lt; 0 for southern latitudes)</td></tr>
+<tr><td>prm.alt</td><td>(number)</td><td>altitude (m)</td></tr>
+<tr><td>prm.alt_above_ground</td><td>(number)</td><td><i>optional:</i> 1 (default): altitude is measured above local surface elevation; 0: altitude is measured above mean planet radius</td></tr>
+<tr><td>prm.phi</td><td>(number)</td><td><i>optional:</i> camera azimuth direction (deg.)</td></tr>
+<tr><td>prm.tht</td><td>(number)</td><td><i>optional:</i> camera polar direction (deg.)</td></tr>
+<tr><th colspan="3">Cockpit mode:</th></tr>
+<tr><td>prm.cockpitmode</td><td>(string)</td><td><i>optional:</i> cockpit mode. One of 'CURRENT', 'GENERIC', 'PANEL2D', 'VC'.</td></tr>
+<tr><td>prm.pos</td><td>(number)</td><td><i>optional:</i> index for panel or virtual cockpit position (&ge; 0)</td></tr>
+<tr><td>prm.lean</td><td>(number)</td><td><i>optional:</i> leaning direction (0..3) for virtual cockpit</td></tr>
+<tr><td>prm.lean_smooth</td><td>(number)</td><td><i>optional:</i> same as prm.lean, but with smooth transition</td></tr>
+</table>
+<p>For track mode, the <i>ref</i> field is only required for TARGETTOREF and TARGETFROMREF tracking modes.</p>
+<p>For ground observer mode, if both the <i>phi</i> and <i>tht</i> fields are present, the camera is put into free ground observer
+mode. Otherwise the camera is locked to point towards the current camera target.</p>
+<p>In ground observer mode, the <i>alt</i> field is normally interpreted as altitude above the local (elevated) ground. If the <i>alt_above_ground</i> field is provided with a value of 0,
+the <i>alt</i> value is interpreted as altitude above (or below) the mean planet radius.</p>
+<p>When trying to switch to a cockpit mode not supported by the target vessel, the current cockpit mode is retained.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_cameratarget">oapi.get_cameratarget</a>,
+<a href="#oapi_set_cameratarget">oapi.get_cameratarget</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_cameratarget"></a>
+<h3>hObj = oapi.get_cameratarget()</h3>
+<p>Returns a handle to the current camera target.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hObj&nbsp;(handle):</td><td>Handle to the current camera target
+ (i.e. the object the camera is pointing at in external mode, or the
+ handle of the vessel in cockpit mode)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The camera target is not necessarily a vessel, and if it is a vessel,
+ it is not necessarily the focus object (the vessel receiving user input).</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_set_cameratarget">oapi.get_cameratarget</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_set_cameratarget"></a>
+<h3>oapi.set_cameratarget(hObj)<br />
+oapi.set_cameratarget(hObj,mode)</h3>
+<p>Attach the camera to a new target, or switch between internal and external camera mode.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hObj&nbsp;(handle):</td><td>object handle</td></tr>
+<tr><td>mode&nbsp;(integer):</td><td>camera mode (0=internal, 1=external, 2=don't change)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the <i>mode</i> parameter is not specified, it is assumed to be 2
+(don't change mode)</p>
+<p>If the new target is not a vessel, the camera mode is always set to
+ external, regardless of the value of mode.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_cameratarget">oapi.get_cameratarget</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_cameraaperture"></a>
+<h3>ap = oapi.get_cameraaperture()</h3>
+<p>Returns the current camera aperture (the field of view).</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ap&nbsp;(number):</td><td>camera aperture [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Orbiter defines the the aperture as 1/2 of the vertical field of view,
+ between the viewport centre and the top edge of the viewport.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_set_cameraaperture">oapi.set_cameraaperture</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_set_cameraaperture"></a>
+<h3>oapi.set_cameraaperture(ap)</h3>
+<p>Change the camera aperture (field of view).</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ap&nbsp;(number):</td><td>new camera aperture [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Orbiter restricts the aperture to the range from RAD*5 to RAD*80 (i. e.
+ field of view between 10 and 160 deg. Very wide angles (&gt; 90 deg) should
+ only be used to implement specific optical devices, e.g. wide-angle
+ cameras, not for standard observer views.</p>
+<p>The Orbiter user interface does not accept fields of view &gt; 90 deg.
+ As soon as the user manipulates the aperture manually, it will be clamped
+ back to the range from 10 to 90 deg.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_cameraaperture">oapi.get_cameraaperture</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_cameraglobalpos"></a>
+<h3>pos = oapi.get_cameraglobalpos()</h3>
+<p>Returns current camera position in global coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>global camera coordinates [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The global coordinate system is the heliocentric ecliptic frame at epoch J2000.0.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_cameraglobaldir">oapi.get_cameraglobaldir</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_get_cameraglobaldir"></a>
+<h3>dir = oapi.get_cameraglobaldir()</h3>
+<p>Returns current camera direction in global coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>dir&nbsp;(vector):</td><td>global camera direction</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_get_cameraglobalpos">oapi.get_cameraglobalpos</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_move_groundcamera"></a>
+<h3>oapi.move_groundcamera(prm)</h3>
+<p>Move the ground camera in longitudinal, transversal and vertical direction.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><th>field</th><th>value</th><th>meaning</th></tr>
+<tr><td>prm.f</td><td>(number)</td><td><i>optional:</i> forward movement (&lt; 0 for backward) [m]</td></tr>
+<tr><td>prm.r</td><td>(number)</td><td><i>optional:</i> right movement (&lt; 0 for left) [m]</td></tr>
+<tr><td>prm.u</td><td>(number)</td><td><i>optional:</i> up movement (&lt; 0 for down) [m]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the camera is not in ground observer mode, this function does nothing.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_set_cameramode">oapi.set_cameramode</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_create_animationcomponent"></a>
+<h3>acomp = oapi.create_animationcomponent(prm)</h3>
+<p>Creates an animation component object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>prm&nbsp;(table):</td><td>animation parameters (see <a href="Datatypes.htm#animationcomponent">Animation components</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>acomp&nbsp;(handle):</td><td>animation component object</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function creates an animation component object that can be
+assembled into a mesh animation with the <a href="mtd_vessel.htm#add_animationcomponent">v:add_animationcomponent</a>
+vessel method.</p>
+
+<h4>Example:</h4>
+<div class="code">
+prm1 = {type='rotation',mesh=0,grp=10,ref={x=10,y=0,z=10},axis={x=1,y=0,z=0},angle=0.5*PI}<br />
+acomp1 = oapi.create_animationcomponent(prm1)<br />
+prm2 = {type='translation',mesh=1,grp={2,3,5},shift={x=10,y=5,z=0}}<br />
+acomp2 = oapi.create_animationcomponent(prm2)<br />
+prm3 = {type='scaling',mesh=2,grp={7,0},ref={x=0,y=0,z=20},scale={x=2,y=2,z=2}}<br />
+acomp3 = oapi.create_animationcomponent(prm3)
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_del_animationcomponent">oapi.del_animationcomponent</a>,
+<a href="mtd_vessel.htm#add_animationcomponent">v:add_animationcomponent</a>
+</p>
+</div>
+
+
+<div class="func"><a name="oapi_del_animationcomponent"></a>
+<h3>oapi.del_animationcomponent(acomp)</h3>
+<p>Delete an animation component object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>acomp&nbsp;(handle):</td><td>animation component object</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>An animation component object should only be deleted when it is no
+longer referenced by any animations.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#oapi_create_animationcomponent">oapi.create_animationcomponent</a>,
+<a href="mtd_vessel.htm#add_animationcomponent">v:add_animationcomponent</a>
+</p>
+</div>
+
+</div>
+
+
+<div class="func_block">
+
+<div class="func">
+<h3><a name="oapi_open_mfd"></a>oapi.open_mfd(mfdid,mfdmode)</h3>
+<p>Reset the mode of an MFD instrument.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mfdid (int):</td><td>MFD identifier (>= 0)</td></tr>
+<tr><td>mfdmode (int):</td><td>MFD mode identifier (> 0, or 0 to turn MFD off)</td></tr>
+</table>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_set_hudmode"></a>oapi.set_hudmode(mode)</h3>
+<p>Reset the mode of the head-up display.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode (int):</td><td>HUD mode identifier (>0, or 0 to turn the HUD off)</td></tr>
+</table>
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_simulatebufferedkey"></a>oapi.simulatebufferedkey(key)<br />
+oapi.simulatebufferedkey(key,[modifier1, modifier2, ...])</h3>
+<p>Sends a simulated buffered keyboard event to Orbiter, to be processed like
+a user keypress.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>key (number):</td><td>keycode (see <a href="constant.htm#oapi_key">OAPI_KEY</a> constants)</td></tr>
+<tr><td>modifier (number):</td><td>zero or more keycodes for modifier keys, such as OAPI_KEY.LSHIFT or OAPI_KEY.RCONTROL</td></tr>
+</table>
+
+</div>
+
+
+<div class="func">
+<h3><a name="oapi_simulateimmediatekey"></a>oapi.simulateimmediatekey(key1 [, key2, ...])</h3>
+<p>Sends a simulated key state to Orbiter for processing in the next frame. To simulate a 
+continued key press, the function must be called for multiple frames</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>key1, key2, ... (numbers):</td><td>list of keycodes for pressed keys</td></tr>
+</table>
+</div>
+
+<h4>Example:</h4>
+<div class="code">
+proc.wait_simdt(10, function() oapi.simulateimmediatekey(OAPI_KEY.Z) end)
+</div>
+
+</div>
+
+</body>
+</html>

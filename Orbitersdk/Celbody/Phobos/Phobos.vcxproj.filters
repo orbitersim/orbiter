@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Config">
+      <UniqueIdentifier>{887ba543-d5bd-4942-b20a-f10a559660d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Binaries">
+      <UniqueIdentifier>{de1bd03a-e52b-45a2-9f2e-44f56575b13d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Phobos.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Phobos.dll">
+      <Filter>Binaries</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

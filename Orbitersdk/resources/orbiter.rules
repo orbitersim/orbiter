@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioToolFile
+	Name="Orbiter rules"
+	Version="8.00"
+	>
+	<Rules>
+		<CustomBuildRule
+			Name="HtmlHelp"
+			CommandLine="hhc.bat $(InputDir)$(InputFileName)"
+			Outputs="*.chm"
+			FileExtensions="*.hhp"
+			>
+			<Properties>
+			</Properties>
+		</CustomBuildRule>
+	</Rules>
+</VisualStudioToolFile>

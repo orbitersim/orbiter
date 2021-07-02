@@ -1,0 +1,24 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Fixed time steps</title>
+</head>
+<body>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; <a href="tab_extra.htm">Extra</a> &gt; Fixed time steps</p>
+
+<h1>Fixed time steps</h1>
+<p>This dialog allows to put Orbiter into <i>fixed time interval</i> mode. In this mode, the simulation advances by a predefined interval at each time step, independently of how long the calculation of the frame took in real time.</p>
+<p>Fixed time intervals are good for debugging problems, because the simulation state after a given number of steps does not depend on the speed of the computer Orbiter is running on, so it is easier to compare the results on different machines.</p>
+<p>Fixed steps can also be used to generate trajectories with consistent accuracy (for example when recording a mission, or for testing/optimising a flight path).</p>
+<p>The disadvantage of fixed time steps is the fact that the simulation time is no longer equal to real time (not even to a fixed multiple of real time). The simulation will progress fast when the frame rate is high, but slowly when the frame rate is low - so Orbiter no longer works in "real time" mode.</p>
+
+<p>You can still use the time acceleration keys (T and R) in fixed interval mode. Orbiter simply multiplies the step length by the warp factor when calculating the frame time interval.</p>
+
+<p>To switch to fixed interval mode, select <i>Enable fixed time step length</i> in the dialog box, then enter the time interval per frame (in seconds).</p>
+
+<p>Note: If you run Orbiter in fullscreen mode, and do not disable vertical sync., then by selecting a fixed time step that is the inverse of the monitor's refresh rate, Orbiter will run in real time as long as the time required for calculating and rendering a frame does not exceed the refresh interval.</p>
+</body>
+</html>

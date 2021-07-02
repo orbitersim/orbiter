@@ -1,0 +1,98 @@
+body { font-family: Arial, Helvetica, Sans-Serif; font-size: 80% }
+a:link	{background: transparent; color: #0000FF;} 
+a:visited {color: #800080;}
+p.syn { font-family: Courier; margin-left: 2em; text-indent: -2em; }
+p.prm { font-family: Courier; }
+p.prmc { margin-left: 2em; }
+p.eq { text-align: center; margin-top: 1em; margin-bottom: 1em; }
+p.quote { margin-top: 1ex; margin-bottom: 1ex; margin-left: 2em; }
+
+div.func { background-color: #F0F0FF; padding: 0.5em; padding-bottom: 0em; margin-top: 1em; border: 1pt solid #D0D0E8; }
+.func_block p { margin-top: 0.5em; margin-bottom: 1em }
+.func_block h3 { font-weight: bold; font-size: 100%; border: 1pt solid #808080; background-color: #E0E0E0; margin-top: 0em; margin-bottom: 0em; padding-top: 0.2em; padding-bottom: 0.2em; padding-left: 0.5em; }
+.func_block h4 { font-weight: bold; font-size: 100%; text-decoration: underline; margin-top:0.5em; margin-bottom: 0; }
+.func_block table { margin-top: 0.5em; margin-bottom: 1em; border: 0pt; border-bottom: 1em; padding: 0pt; }
+.func_block td { background: transparent; padding: 0pt; margin: 0pt; padding-right: 1em; border: 0pt }
+.func_block tr { padding: 0pt; margin: 0pt; border: 0pt; }
+.func_block a:link { color: #0000FF; text-decoration: none; }
+.func_block a:visited { color: #0000FF; text-decoration: none; }
+
+.summary td.group { padding-top: 1em; background-color: #F0F0FF; }
+
+ul {margin-left: 2em; margin-top: 0em; margin-bottom: 0em }
+
+/*li{margin-top: 4pt;}*/
+/*li { text-indent: 0 }*/
+
+table{width: auto; text-align: left; font-family: Arial, Helvetica, Sans-Serif; font-size: 100%  }
+th { font-weight: bold }
+td { background-color: #FFFFFF; vertical-align: top }
+
+table.summary tr td {
+border-top: 1pt solid #C0C0C0;
+margin-left: 0;
+margin-right: 0;
+background-color: #F8F8F8;
+}
+table.summary { margin-bottom: 5em; }
+
+/*ul li{padding-top: 4pt;}
+ol li{padding-bottom: 4pt;}
+ul{margin-left: -15pt; margin-top: -7em;}
+ol{margin-left: -15pt; margin-top: -7em;}
+ol ul{margin-top: 0em; list-style: disc;}
+code{font-family: Courier;}
+pre{font-family: Courier;}
+th{text-align: left;}
+img{margin-top: -4pt;}	*/
+
+/* Overview heading   */
+h5.overh{font-size: 120%;}        
+h5{font-size: 100%;}           
+
+/* Procedure heading  */
+h5.proch{font-size: 100%;}          
+
+/* Decision heading   */
+h5.what{font-size: 100%; color: #993399;}           
+
+/* Note & Tip heading */
+h5.note{font-size: 95%;}
+
+
+
+DIV.sidebartext {
+position: relative;
+left: -22px;
+height: 72px;
+width: 300px;
+margin-top: .6em;
+margin-right: 3em;
+margin-left: 0;
+margin-bottom: .6em;
+padding-top: .75em;
+padding-right: 6px;
+padding-left: .75em;
+padding-bottom: .75em;
+cursor: hand;
+border-left: 4pt solid #339900;
+background-color: #F0F0F0; }
+
+DIV.code {
+font-family: Courier;
+margin-left: 1em;
+margin-top: .6em;
+margin-bottom: .6em;
+padding-left: .75em;
+padding-top: .25em;
+padding-bottom: .25em;
+border: 1pt solid #808080
+}
+
+font.prm { font-family: Times; font-style: italic; }
+font.label { font-family: Arial; font-size: 8pt; }
+td.foot { vertical-align: bottom }
+
+/*kbd { font-weight: normal; background-color: #D0D0D0; border-left: solid medium #D0D0D0; border-right: solid medium #D0D0D0; } */
+kbd { font-weight: normal; font-size: 90%; border: 1px solid #000000; padding-left: 0.3em; padding-right: 0.3em; }
+kbd.ctrl { font-family: Arial; font-size: 90% }

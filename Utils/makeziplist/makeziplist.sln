@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makeziplist", "makeziplist.vcproj", "{FC02B5F6-E8F0-457F-81C5-6B5D8B45A1DE}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC02B5F6-E8F0-457F-81C5-6B5D8B45A1DE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FC02B5F6-E8F0-457F-81C5-6B5D8B45A1DE}.Debug|Win32.Build.0 = Debug|Win32
+		{FC02B5F6-E8F0-457F-81C5-6B5D8B45A1DE}.Release|Win32.ActiveCfg = Release|Win32
+		{FC02B5F6-E8F0-457F-81C5-6B5D8B45A1DE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,382 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Light source methods</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; Light source methods</p>
+
+<h1>Light source methods</h1>
+<p>This list contains methods for manipulating localised light source objects.
+In the following, 'le' is assumed to represent a valid light emitter object.
+
+<h4>See also:</h4>
+<p>
+<a href="mtd_vessel.htm#get_lightemitter">v:get_lightemitter</a>
+</p>
+
+<table class="summary">
+<tr>
+<td><a href="#get_position">le:get_position</a></td>
+<td>Returns the current position of a point source object.</td>
+</tr>
+<tr>
+<td><a href="#set_position">le:set_position</a></td>
+<td>Set the position of a point source object.</td>
+</tr>
+<tr>
+<td><a href="#get_direction">le:get_direction</a></td>
+<td>Returns the current direction of a spot light object.</td>
+</tr>
+<tr>
+<td><a href="#set_direction">le:set_direction</a></td>
+<td>Set the direction of a spotlight object.</td>
+</tr>
+<tr>
+<td><a href="#get_intensity">le:get_intensity</a></td>
+<td>Returns the current intensity level.</td>
+</tr>
+<tr>
+<td><a href="#set_intensity">le:set_intensity</a></td>
+<td>Set the intensity level of a light source object.</td>
+</tr>
+<tr>
+<td><a href="#get_range">le:get_range</a></td>
+<td>Returns the range of the point light source.</td>
+</tr>
+<tr>
+<td><a href="#set_range">le:set_range</a></td>
+<td>Set a new point light source range.</td>
+</tr>
+<tr>
+<td><a href="#get_attenuation">le:get_attenuation</a></td>
+<td>Returns the light source attenuation coefficients.</td>
+</tr>
+<tr>
+<td><a href="#set_attenuation">le:set_attenuation</a></td>
+<td>Set the light source attenuation coefficients.</td>
+</tr>
+<tr>
+<td><a href="#get_spotaperture">le:get_spotaperture</a></td>
+<td>Returns the cone geometry of a spotlight source.</td>
+</tr>
+<tr>
+<td><a href="#set_spotaperture">le:set_spotaperture</a></td>
+<td>Set the cone geometry of a spotlight source.</td>
+</tr>
+<tr>
+<td><a href="#activate">le:activate</a></td>
+<td>Activate or deactivate a light source.</td>
+</tr>
+<tr>
+<td><a href="#is_active">le:is_active</a></td>
+<td>Returns the activation status of the light source.</td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func"><a name="get_position"></a>
+<h3>pos = le:get_position()</h3>
+<p>Returns the current position of a point source object.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>current point source position [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The returned position is in the local frame of the associated vessel.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_position">le:set_position</a>,
+<a href="#set_direction">le:set_direction</a>,
+<a href="#get_direction">le:get_direction</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_position"></a>
+<h3>le:set_position(pos)</h3>
+<p>Set the position of a point source object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>new point source position [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The position is interpreted in the local frame of the associated vessel.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_position">le:get_position</a>,
+<a href="#set_direction">le:set_direction</a>,
+<a href="#get_direction">le:get_direction</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_direction"></a>
+<h3>dir = le:get_direction()</h3>
+<p>Returns the current direction of a spot light object.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>dir&nbsp;(vector):</td><td>current spotlight direction</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method is only defined for directed light sources (spotlights). For
+isotropic point light sources the return value is undefined.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_direction">le:set_direction</a>,
+<a href="#get_position">le:get_position</a>,
+<a href="#set_position">le:set_position</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_direction"></a>
+<h3>le:set_direction(dir)</h3>
+<p>Set the direction of a spotlight object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>dir&nbsp;(vector):</td><td>new spotlight direction</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method only works with directed light sources (spotlights). It is
+ignored for isotropic point light sources.</p>
+<p>The direction is interpreted in the local frame of the associated vessel.</p>
+<p>The vector argument should be normalised to length 1.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_direction">le:get_direction</a>,
+<a href="#get_position">le:get_position</a>,
+<a href="#set_position">le:set_position</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_intensity"></a>
+<h3>intens = le:get_intensity()</h3>
+<p>Returns the current intensity level.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>intens&nbsp;(number):</td><td>current intensity level</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The intensity (brightness) of a light source is the product of its
+colour and intensity level. Intensity levels are generally in the range
+0 to 1, but can be &gt; 1 or even negative for special effects.</p>
+<p>The effect of a light source on a lit surface also depends on the
+distance and the attenuation coefficients defined for the source.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_intensity">le:set_intensity</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_intensity"></a>
+<h3>le:set_intensity(intens)</h3>
+<p>Set the intensity level of a light source object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>intens&nbsp;(number):</td><td>intensity level</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The intensity (brightness) of a light source is the product of its
+colour and intensity level. Intensity levels are generally in the range
+0 to 1, but can be &gt; 1 or even negative for special effects.</p>
+<p>The effect of a light source on a lit surface also depends on the
+distance and the attenuation coefficients defined for the source.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_intensity">le:get_intensity</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_range"></a>
+<h3>range = le:get_range()</h3>
+<p>Returns the range of the point light source.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>range&nbsp;(number):</td><td>light source range [m]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_range">le:set_range</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_range"></a>
+<h3>le:set_range(range)</h3>
+<p>Set a new point light source range.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>range&nbsp;(number):</td><td>light source range [m]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>When changing the range, the attenuation factors usually should be adjusted
+accordingly, to avoid sharp cutoff edges or large areas of negligible intensity.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_range">le:get_range</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attenuation"></a>
+<h3>att0,att1,att2 = le:get_attenuation()</h3>
+<p>Returns the light source attenuation coefficients.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>att0&nbsp;(number):</td><td>attenuation coefficient</td></tr>
+<tr><td>att1&nbsp;(number):</td><td>attenuation coefficient</td></tr>
+<tr><td>att2&nbsp;(number):</td><td>attenuation coefficient</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>att</i>i parameters define the
+light attenuation as a function of distance from the source. Intensity <i>I</i>
+as a function of distance <i>d</i> is calculated as</p>
+<p>I = I<sub>0</sub> / (att0 + d att1 + d<sup>2</sup> att2)</p>
+<p>where I<sub>0</sub> is the source intensity multiplied with the RGB value of the given colour
+component.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_attenuation">le:set_attenuation</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_attenuation"></a>
+<h3>le:set_attenuation(att0,att1,att2)</h3>
+<p>Set the light source attenuation coefficients.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>att0&nbsp;(number):</td><td>attenuation coefficient</td></tr>
+<tr><td>att1&nbsp;(number):</td><td>attenuation coefficient</td></tr>
+<tr><td>att2&nbsp;(number):</td><td>attenuation coefficient</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>att</i>i parameters define the
+light attenuation as a function of distance from the source. Intensity <i>I</i>
+as a function of distance <i>d</i> is calculated as</p>
+<p>I = I<sub>0</sub> / (att0 + d att1 + d<sup>2</sup> att2)</p>
+<p>where I<sub>0</sub> is the source intensity multiplied with the RGB value of the given colour
+component.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_attenuation">le:get_attenuation</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_spotaperture"></a>
+<h3>umbra,penumbra = le:get_spotaperture()</h3>
+<p>Returns the cone geometry of a spotlight source.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>umbra&nbsp;(number):</td><td>angular aperture of inner (maximum intensity) cone [rad]</td></tr>
+<tr><td>penumbra&nbsp;(number):</td><td>angular aperture of outer (zero intensity) cone [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The cone aperture is only defined for spotlight objects. Other types of light source objects return
+<i>nil</i>.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_spotaperture">le:set_spotaperture</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_spotaperture"></a>
+<h3>le:set_spotaperture(umbra,penumbra)</h3>
+<p>Set the cone geometry of a spotlight.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>umbra&nbsp;(number):</td><td>angular aperture of inner (maximum intensity) cone [rad]</td></tr>
+<tr><td>penumbra&nbsp;(number):</td><td>angular aperture of outer (zero intensity) cone [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The cone aperture is only defined for spotlight objects. Other types of light source objects ignore
+this method.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_spotaperture">le:get_spotaperture</a>
+</p>
+</div>
+
+
+<div class="func"><a name="activate"></a>
+<h3>le:activate(on)</h3>
+<p>Activate or deactivate a light source.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>on&nbsp;(boolean):</td><td><i>true</i> to activate, <i>false</i> to deactivate.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#is_active">le:is_active</a>
+</p>
+</div>
+
+
+<div class="func"><a name="is_active"></a>
+<h3>active = le:is_active()</h3>
+<p>Returns the activation status of the light source.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>active&nbsp;(boolean):</td><td><i>true</i> if light source is active, <i>false</i> if inactive.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#activate">le:activate</a>
+</p>
+</div>
+
+
+</div>
+</body>
+</html>

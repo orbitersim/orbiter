@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" TYPE="TEXT/CSS" HREF="Orbiter.css">
+<script language="JavaScript" src="master.js"></script>
+<Title>DG Panels</Title>
+
+<style>
+DIV.popup {
+position: absolute;
+float: none;
+padding: 5px;
+font-size: 80%;
+background-color: #ffffff;
+border: thin solid black; }
+</style>
+
+</HEAD>
+<BODY>
+<h1>Delta-glider Panel Layout</h1>
+<p>Click on panel elements for details.</p>
+
+<img src="DGpanel2_small.jpg" usemap="#panel2map" border=0>
+<DIV STYLE="width=576px; padding=5px">
+<center><kbd class="ctrl">Ctrl</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd></center>
+</DIV>
+
+<map name="panel2map">
+<area shape=rect coords="112,0,221,38" HREF="JavaScript:doSec(p2a)" TITLE="Airlock operation">
+<area shape=rect coords="239,2,336,113" HREF="JavaScript:doSec(p2b)" TITLE="Rotation indicators">
+</map>
+
+<DIV class="popup" ID="p2a" onclick="noSec(p2a)" STYLE="display: none; left=50px; top=100px; width=231px">
+<img src="DGp2a.gif" border=0><hr>
+Airlock operation.<br>
+Outer door: operate with <kbd>O</kbd><br>
+Inner door: <i>no keyboard shortcut</i><br>
+Chamber: <i>not yet implemented</i>
+</DIV>
+<DIV class="popup" ID="p2b" onclick="noSec(p2b)" STYLE="display: none; left=180px; top=80px; width=202px">
+<img src="DGp2b.gif" border=0><hr>
+Yaw/bank/pitch indicators for angular velocity, angular acceleration and torque.
+</DIV>
+
+<img src="DGpanel1_small.jpg" usemap="#panel1map" border=0>
+<DIV STYLE="width=576px; padding=5px">
+<center><kbd class="ctrl">Ctrl</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd></center>
+</DIV>
+
+<map name="panel1map">
+<area shape=rect coords="4,0,66,19" A HREF="JavaScript:doSec(p1a)" TITLE="HUD mode selector">
+<area shape=rect coords="496,184,541,248" A HREF="JavaScript:doSec(p1b)" TITLE="Propellant status indicator">
+<area shape=rect coords="494,23,532,55" A HREF="JavaScript:doSec(p1c)" TITLE="Aerodynamic surface control">
+<area shape=rect coords="533,23,574,55" A HREF="JavaScript:doSec(p1d)" TITLE="RCS thruster control">
+<area shape=rect coords="503,57,564,99" A HREF="JavaScript:doSec(p1e)" TITLE="RCS autonavigation selector">
+<area shape=rect coords="224,192,283,249" A HREF="JavaScript:doSec(p1g)" TITLE="Artificial horizon">
+<area shape=rect coords="91,192,165,249" A HREF="JavaScript:doSec(p1h)" TITLE="Main/retro/hover engine status">
+<area shape=rect coords="496,103,528,143" A HREF="JavaScript:doSec(p1j)" TITLE="Pitch trim control">
+<area shape=rect coords="85,24,286,191" A HREF="JavaScript:doSec(p1k)" TITLE="Left MFD">
+<area shape=rect coords="289,24,491,191" A HREF="JavaScript:doSec(p1l)" TITLE="Right MFD">
+<area shape=rect coords="385,197,434,244" A HREF="JavaScript:doSec(p1m)" TITLE="AOA indicator">
+<area shape=rect coords="436,197,483,244" A HREF="JavaScript:doSec(p1n)" TITLE="Slip angle indicator">
+<area shape=rect coords="297,197,379,245" A HREF="JavaScript:doSec(p1o)" TITLE="Slope/range indicator">
+<area shape=rect coords="55,27,81,113" A HREF="JavaScript:doSec(p1p)" TITLE="Main/retro throttle controls">
+<area shape=rect coords="2,27,55,77" A HREF="JavaScript:doSec(p1q)"
+TITLE="Main pitch gimbal control">
+<area shape=rect coords="2,77,55,135" A HREF="JavaScript:doSec(p1r)"
+TITLE="Main yaw gimbal control">
+<area shape=rect coords="2,140,59,187" HREF="JavaScript:doSec(p1s)" TITLE="Hover front/back balance control">
+</map>
+
+<DIV class="popup" ID="p1a" onclick="noSec(p1a)" STYLE="display: none; left=50px; top=200px; width=200px">
+<img src="DGp1a.gif" border=0><hr>
+HUD mode selector: Off / Orbit / Surface / Docking.<br>Keyboard: <kbd>H</kbd> to switch HUD mode, <kbd class="ctrl">Ctrl</kbd> <kbd>H</kbd> to turn on/off.
+</DIV>
+
+<DIV class="popup" ID="p1b" onclick="noSec(p1b)" STYLE="display: none; left=400px; top=270px; width=130px">
+<img src="DGp1b.gif" border=0><hr>
+Propellant status indicators for main tanks and RCS (reaction control system) tanks.</DIV>
+
+<DIV class="popup" ID="p1c" onclick="noSec(p1c)" STYLE="display: none; left=270px; top=220px; width=250px">
+<img src="DGp1c.gif" border=0><hr>
+Aerodynamic surface control: off / pitch only / full. Left-click to turn selector left, right-click to turn right.<br>Keyboard: <kbd class="ctrl">Alt</kbd> <kbd>/</kbd><sub><i>Numpad</i></sub> switches between off and full.
+</DIV>
+
+<DIV class="popup" ID="p1d" onclick="noSec(p1d)" STYLE="display: none; left=300px; top=220px; width=250px">
+<img src="DGp1d.gif" border=0><hr>
+RCS thruster control: off / rotation mode / linear mode. Left-click to turn selector left, right-click to turn right.<br>Keyboard: <kbd>/</kbd><sub><i>Numpad</i></sub> switches between ROT and LIN, <kbd class="ctrl">Ctrl</kbd> <kbd>/</kbd><sub><i>Numpad</i></sub> switches between OFF and ROT.
+</DIV>
+
+<DIV class="popup" ID="p1e" onclick="noSec(p1e)" STYLE="display: none; left=240px; top=240px; width=300px">
+<img src="DGp1e.gif" border=0><hr>
+RCS autonavigation mode selector.<br>
+Kill rotation (<kbd>5</kbd><sub><i>Numpad</i></sub>): eliminate vessel rotation.<br>
+Level horizon (<kbd>L</kbd>): rotate to pitch=0, bank=0.<br>
+Prograde (<kbd>[</kbd>): align with orbital velocity vector.<br>
+Retrograde (<kbd>]</kbd>): align with negative velocity vector.<br>
+Orbit-normal (+) (<kbd>;</kbd>): align with normal of orbital plane.<br>
+Orbit-normal (-) (<kbd>'</kbd>): align with negative normal.
+</DIV>
+<img src="DGpanel3_small.jpg">
+
+<DIV class="popup" ID="p1g" onclick="noSec(p1g)" STYLE="display: none; left=100px; top=340px; width=140px">
+<img src="DGp1g.gif" border=0><hr>
+Artificial horizon: visual pitch and bank indicator.
+</DIV>
+
+<DIV class="popup" ID="p1h" onclick="noSec(p1h)" STYLE="display: none; left=140px; top=340px; width=270px">
+<img src="DGp1h.gif" border=0><hr>
+Main, retro and hover engine status indicator displays. TSFC: thrust-specific fuel consumption (kg/kN/s) - depends on atmospheric pressure. Flow: fuel flow rate (kg/s) for main engines (left and right), retro engines (left and right), and hover engines (front and back).
+</DIV>
+
+<DIV class="popup" ID="p1j" onclick="noSec(p1j)" STYLE="display: none; left=280px; top=290px; width=220px">
+<img src="DGp1j.gif" border=0><hr>
+Pitch trim control and indicator (airfoil). Left click in the top half to pitch down (shortcut: <kbd class="ctrl">Insert</kbd><sub><i>Cursorpad</i></sub>), or in the bottom half to pitch up (shortcut: <kbd class="ctrl">Delete</kbd><sub><i>Cursorpad</i></sub>).
+</DIV>
+
+<DIV class="popup" ID="p1k" onclick="noSec(p1k)" STYLE="display: none; left=150px; top=250px; width=200px">
+Left MFD (multi-functional display). The MFDs are the primary instruments for monitoring vessel status parameters.
+Control buttons: PWR - MFD on/off; SEL (<kbd class="ctrl">Shift</kbd> <kbd class="ctrl">F1</kbd>): select mode; MNU (<kbd class="ctrl">Shift</kbd> <kbd>`</kbd>): display button functions.
+See also <a href="ms-its:../Orbiter.chm::/html/mfd.htm">MFD documentation</a>.
+</DIV>
+
+<DIV class="popup" ID="p1l" onclick="noSec(p1l)" STYLE="display: none; left=200px; top=250px; width=200px">
+Right MFD (multi-functional display). The MFDs are the primary instruments for monitoring vessel status parameters.
+Control buttons: PWR - MFD on/off; SEL (<kbd class="ctrl">Shift</kbd> <kbd class="ctrl">F1</kbd>): select mode; MNU (<kbd class="ctrl">Shift</kbd> <kbd>`</kbd>): display button functions.
+See also <a href="ms-its:../Orbiter.chm::/html/mfd.htm">MFD documentation</a>.
+</DIV>
+
+<DIV class="popup" ID="p1m" onclick="noSec(p1m)" STYLE="display: none; left=220px; top=360px; width=180px">
+<img src="DGp1m.gif" border=0><hr>
+AOA (angle of attack) indicator. Displays vertical inclination of vessel axis against airspeed vector.
+</DIV>
+
+<DIV class="popup" ID="p1n" onclick="noSec(p1n)" STYLE="display: none; left=270px; top=360px; width=180px">
+<img src="DGp1n.gif" border=0><hr>
+Slip angle indicator. Displays horizontal inclination of vessel axis against airspeed vector.
+</DIV>
+
+<DIV class="popup" ID="p1o" onclick="noSec(p1o)" STYLE="display: none; left=160px; top=360px; width=180px">
+<img src="DGp1o.gif" border=0><hr>
+Slope and range indicator. Shows the current ascent/descent slope angle and the corresponding range in km.
+</DIV>
+
+<DIV class="popup" ID="p1p" onclick="noSec(p1p)" STYLE="display: none; left=100px;top=200px; width=350px">
+<img src="DGp1p.gif" border=0><hr>
+Main and retro engine throttles. Left/right sliders can be moved individually, or simultaneously by grabbing in the middle. Shortcuts:<br>
+<kbd>+</kbd><sub><i>Numpad</i></sub>: full main throttle (temporary)<br>
+<kbd>-</kbd><sub><i>Numpad</i></sub>: full retro throttle (temporary)<br>
+<kbd class="ctrl">Ctrl</kbd><kbd>+</kbd><sub><i>Numpad</i></sub>: increase main throttle/decrease retro (permanent)<br>
+<kbd class="ctrl">Ctrl</kbd><kbd>-</kbd><sub><i>Numpad</i></sub>: decrease main throttle/increase retro (permanent)<br>
+<kbd>*</kbd><sub><i>Numpad</i></sub>: kill main and retro engines.<br>
+</DIV>
+
+<DIV class="popup" ID="p1q" onclick="noSec(p1q)" STYLE="display: none; left=70px;top=200px; width=300px">
+<img src="DGp1q.gif" border=0><hr>
+Main engine pitch gimbal controls and indicators. Main engines can be pitched individually or simultaneously by clicking the Up/Down switches (up to +/- 1 degree). Click "Center" to re-center.
+</DIV>
+
+<DIV class="popup" ID="p1r" onclick="noSec(p1r)" STYLE="display: none; left=70px;top=230px; width=350px">
+<img src="DGp1r.gif" border=0><hr>
+Main engine yaw gimbal controls and indicators. Main engines can be pitched individually or simultaneously by clicking the Left/Right switches (up to +/- 7 degrees). The yaw gimbal range is designed so that at max. gimbal, the angular moment induced by a single engine at max. throttle can be compensated. Click "Center" to re-center. Click "Div" for divergent setting, and "Auto" for automatic compensation of angular moment induced by different throttle levels.
+</DIV>
+
+<DIV class="popup" ID="p1s" onclick="noSec(p1s)" STYLE="display: none; left=80px; top=280px; width=202px">
+<img src="DGp1v.gif" border=0><hr>
+Hover balance control and indicator. Manually move thrust balance to front engines (pitch up) or aft engines (pitch down). Use Center button for equal balance.
+</DIV>
+
+<DIV class="popup" ID="p1v" onclick="noSec(p1v)" STYLE="display: none; left=50px; top=100px; width=231px">
+<img src="DGp2a.gif" border=0><hr>
+Airlock operation.<br>
+Outer door: operate with <kbd>O</kbd><br>
+Inner door: <i>no keyboard shortcut</i><br>
+Chamber: <i>not yet implemented</i>
+</DIV>
+</BODY>
+</HTML>

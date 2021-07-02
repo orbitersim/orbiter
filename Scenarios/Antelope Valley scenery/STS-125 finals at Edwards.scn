@@ -1,0 +1,59 @@
+BEGIN_HYPERDESC
+<h1>STS-125 finals at Edwards</h1>
+<p>Space Shuttle Atlantis returning from the last Hubble servicing mission to runway 22 at Edwards Air Force Base.</p>
+<p>The approach is from the east over the dry Rogers lakebed. Runway 22 is the marked paved runway.</p>
+<p>Approach heading is 240 deg (true north).</p>
+<p>Align with the runway and maintain an initial descent angle of 20 deg.</p>
+<p>Extend airbrakes [Ctrl-b]. Lower landing gear [g] about 10 seconds before touchdown. Flare before touchdown (pull up the nose) to reduce rate of descent.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 54962.7496731480
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-125
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-125
+  MODE Cockpit
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 1
+  OBS 5.76 5.76
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+BEGIN_SHIPS
+STS-125:Atlantis
+  STATUS Orbiting Earth
+  RPOS 4868177.877 2594238.164 3200535.778
+  RVEL -70.2649 -198.7920 68.9654
+  AROT -168.989 -15.261 105.303
+  VROT -2.5054 -0.1062 -0.0000
+  RCSMODE 0
+  AFCMODE 7
+  NAVFREQ 524 94
+  CONFIGURATION 3
+  GEAR 0 0.0000
+  ARM_STATUS 0.5000 0.0000 0.0000 0.5000 0.5000 0.5000
+  SAT_OFS_X 0.0000
+  SAT_OFS_Y 0.0000
+  SAT_OFS_Z 0.0000
+  MET 0.000 0.000 0.000 0.000
+  ASCENTAP 0 0 1 350000 1.5708 0.00000 0.00000
+END
+END_SHIPS

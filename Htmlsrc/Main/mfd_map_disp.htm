@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<script language="JavaScript" src="master.js"></script>
+<TITLE>Map MFD display</TITLE>
+</HEAD>
+<BODY>
+<h1>Map MFD display</h1>
+<p>
+Move the mouse over the images to see a description of the different elements.</p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td rowspan=2>
+<img src="mfd_map.gif" usemap="#surfmap" border=0>
+<map name="surfmap">
+<area shape=rect coords="0,0,89,14" A onmouseover="doSec(lbl1)" onmouseout="noSec(lbl1)" HREF="#">
+<area shape=rect coords="0,20,226,33" A onmouseover="doSec(lbl2)" onmouseout="noSec(lbl2)" HREF="#">
+<area shape=rect coords="16,33,202,46" A onmouseover="doSec(lbl3)" onmouseout="noSec(lbl3)" HREF="#">
+<area shape=rect coords="16,46,202,59" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="16,59,122,72" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="258,0,292,14" A onmouseover="doSec(lbl6)" onmouseout="noSec(lbl6)" HREF="#">
+<area shape=rect coords="0,85,146,98" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="16,98,202,111" A onmouseover="doSec(lbl8)" onmouseout="noSec(lbl8)" HREF="#">
+<area shape=rect coords="16,111,124,124" A onmouseover="doSec(lbl9)" onmouseout="noSec(lbl9)" HREF="#">
+<area shape=rect coords="144,184,154,196" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+<area shape=rect coords="75,169,86,181" A onmouseover="doSec(lbl12)" onmouseout="noSec(lbl12)" HREF="#">
+<area shape=rect coords="109,188,119,199" A onmouseover="doSec(lbl13)" onmouseout="noSec(lbl13)" HREF="#">
+<area shape=rect coords="92,190,100,199" A onmouseover="doSec(lbl14)" onmouseout="noSec(lbl14)" HREF="#">
+<area shape=rect coords="246,234,254,244" A onmouseover="doSec(lbl15)" onmouseout="noSec(lbl15)" HREF="#">
+<area shape=rect coords="0,144,292,288" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+</map>
+</td>
+<td width=100%>
+<font class="label">
+<DIV ID="lbl1" STYLE="display: none">
+Reference planet or moon, for which the map is displayed.
+</DIV>
+<DIV ID="lbl2" STYLE="display: none">
+Target surface base ("spaceport").
+</DIV>
+<DIV ID="lbl3" STYLE="display: none">
+Equatorial base location: Western/eastern longitude, northern/southern latitude [deg.].
+</DIV>
+<DIV ID="lbl4" STYLE="display: none">
+Linear distance to base [m] and angular surface distance [deg.].
+</DIV>
+<DIV ID="lbl5" STYLE="display: none">
+Direction to base [deg.].
+</DIV>
+<DIV ID="lbl6" STYLE="display: none">
+Track mode indicator (vessel remains centered in map display).
+</DIV>
+<DIV ID="lbl7" STYLE="display: none">
+Orbital target (vessel or moon).
+</DIV>
+<DIV ID="lbl8" STYLE="display: none">
+Equatorial orbit target location: Western/eastern longitude, northern/southern latitude [deg.].
+</DIV>
+<DIV ID="lbl9" STYLE="display: none">
+Target altitude (above mean planet radius).
+</DIV>
+<DIV ID="lbl10" STYLE="display: none">
+Planetary surface map (if available) with latitude/longitude grid.
+</DIV>
+<DIV ID="lbl11" STYLE="display: none">
+White cross: current vessel position.
+</DIV>
+<DIV ID="lbl12" STYLE="display: none">
+Yellow cross: current orbital target position.
+</DIV>
+<DIV ID="lbl13" STYLE="display: none">
+Yellow circle: Target base location.
+</DIV>
+<DIV ID="lbl14" STYLE="display: none">
+Green box: Orbit intersection with planet surface (emergence point).
+</DIV>
+<DIV ID="lbl15" STYLE="display: none">
+Red box: Orbit intersection with planet surface (impact point).
+</DIV>
+</td>
+</tr>
+</table>
+
+Legend:<br>
+<font class="label">
+<b>Green/red curve</b>: Projection of current orbital plane on planet surface. (green: trajectory above surface, red: trajectory below surface)<br>
+<b>Yellow curve</b>: Projection of current target orbital plane on planet surface.<br>
+<b>Red squares</b>: surface base locations.
+</font>
+</BODY>
+</HTML>

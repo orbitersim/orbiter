@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<script language="JavaScript" src="master.js"></script>
+<TITLE>Sync Orbit MFD display</TITLE>
+</HEAD>
+<BODY>
+<h1>Sync Orbit MFD display</h1>
+<p>
+Move the mouse over the images to see a description of the different elements.</p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td rowspan=2>
+<img src="mfd_sync.gif" usemap="#surfmap" border=0>
+<map name="surfmap">
+<area shape=rect coords="94,0,126,12" A onmouseover="doSec(lbl1)" onmouseout="noSec(lbl1)" HREF="#">
+<area shape=rect coords="0,18,137,32" A onmouseover="doSec(lbl2)" onmouseout="noSec(lbl2)" HREF="#">
+<area shape=rect coords="0,32,106,46" A onmouseover="doSec(lbl3)" onmouseout="noSec(lbl3)" HREF="#">
+<area shape=rect coords="0,50,106,64" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="0,64,106,78" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="0,78,106,92" A onmouseover="doSec(lbl6)" onmouseout="noSec(lbl6)" HREF="#">
+<area shape=rect coords="0,92,106,106" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="156,18,177,99" A onmouseover="doSec(lbl8)" onmouseout="noSec(lbl8)" HREF="#">
+<area shape=rect coords="177,18,234,99" A onmouseover="doSec(lbl9)" onmouseout="noSec(lbl9)" HREF="#">
+<area shape=rect coords="234,18,292,99" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+<area shape=rect coords="0,269,103,285" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+<area shape=poly coords="147,140,238,173,235,180,144,146" A onmouseover="doSec(lbl12)" onmouseout="noSec(lbl12)" HREF="#">
+<area shape=poly coords="142,140,148,141,146,241,140,240" A onmouseover="doSec(lbl13)" onmouseout="noSec(lbl13)" HREF="#">
+<area shape=poly coords="142,144,149,141,208,255,202,258" A onmouseover="doSec(lbl14)" onmouseout="noSec(lbl14)" HREF="#">
+</map>
+</td>
+<td width=100%>
+<font class="label">
+<DIV ID="lbl1" STYLE="display: none">
+Target object.
+</DIV>
+<DIV ID="lbl2" STYLE="display: none">
+<b>Ref</b>: Reference axis mode: A selectable axis for which timings are computed. Can be orbit intersection point 1 or 2 (if applicable), ship and target apoapsis and periapsis, and manual. The manual axis can be rotated.
+</DIV>
+<DIV ID="lbl3" STYLE="display: none">
+<b>RAnm</b>: True anomaly of reference axis. The direction of the reference axis w.r.t. the ship's periapsis.
+</DIV>
+<DIV ID="lbl4" STYLE="display: none">
+<b>DLng</b>: Longitude difference. The angle between ship and target as seen from the central body.
+</DIV>
+<DIV ID="lbl5" STYLE="display: none">
+<b>Dist</b>: Distance between ship and target [m].
+</DIV>
+<DIV ID="lbl6" STYLE="display: none">
+<b>RVel</b>: Relative velocity between ship and target [m/s].
+</DIV>
+<DIV ID="lbl7" STYLE="display: none">
+<b>DTmin</b>: Time-of-arrival difference. The minimum time difference[s] between the ship's and target's arrival at the reference point for any of the listed orbits.
+</DIV>
+<DIV ID="lbl8" STYLE="display: none">
+Time of arrival list: Orbit counter.
+</DIV>
+<DIV ID="lbl9" STYLE="display: none">
+Time of arrival list: ship time to reference for each orbit. The closest match with the target timings is indicated in yellow.
+</DIV>
+<DIV ID="lbl10" STYLE="display: none">
+Time of arrival list: target time to reference for each orbit. The closest match with the ship timings is indicated in yellow.
+</DIV>
+<DIV ID="lbl11" STYLE="display: none">
+<b>RInc</b>: Relative inclination between current and target orbits.
+</DIV>
+<DIV ID="lbl12" STYLE="display: none">
+Ship radius vector.
+</DIV>
+<DIV ID="lbl13" STYLE="display: none">
+Target radius vector.
+</DIV>
+<DIV ID="lbl14" STYLE="display: none">
+Reference axis.
+</DIV>
+</td>
+</tr>
+</table>
+
+Legend:<br>
+<font class="label">
+<b>Green curve</b>: Ship orbit trajectory<br>
+<b>Green line</b>: Ship radius vector<br>
+<b>Yellow curve</b>: Target orbit trajectory<br>
+<b>Yellow line</b>: Target radius vector<br>
+<b>Bright green line</b>: Reference axis.
+</font>
+</BODY>
+</HTML>

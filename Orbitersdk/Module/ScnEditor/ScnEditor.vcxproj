@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9EDA069D-2FDE-43AF-AB37-706D1D43F77D}</ProjectGuid>
+    <RootNamespace>ScnEditor</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\VS2015\PropertyPages\orbiter_plugin.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\VS2015\PropertyPages\orbiter_plugin.props" />
+    <Import Project="..\..\..\VS2015\PropertyPages\orbiter_debug.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\..\Modules\Plugin/ScnEditor.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SCNEDITOR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <PrecompiledHeaderOutputFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;DlgCtrl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\..\..\Modules\Plugin/ScnEditor.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/ScnEditor.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SCNEDITOR_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderOutputFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;DlgCtrl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Convert.cpp" />
+    <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="ScnEditor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ScnEditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Editor.h" />
+    <ClInclude Include="resource.h" />
+    <CustomBuild Include="ScnEditorAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Bitmaps\File1.bmp" />
+    <Image Include="Bitmaps\File2.bmp" />
+    <Image Include="Bitmaps\Folder1.bmp" />
+    <Image Include="Bitmaps\Folder2.bmp" />
+    <Image Include="Bitmaps\pause.bmp" />
+    <Image Include="Help\rmat.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Help\AngularVel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Date.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\DelVessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Docking.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\EditVessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Elements.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Location.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\NewVessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Orientation.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Propellant.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\SaveScenario.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\ScnEditor.hhc" />
+    <None Include="Help\ScnEditor.hhk" />
+    <CustomBuild Include="Help\ScnEditor.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Plugin\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)ScnEditor.htm;%(RootDir)%(Directory)NewVessel.htm;%(RootDir)%(Directory)EditVessel.htm;%(RootDir)%(Directory)Elements.htm;%(RootDir)%(Directory)DelVessel.htm;%(RootDir)%(Directory)..\..\..\html\master.js;%(RootDir)%(Directory)..\..\..\html\Orbiter.css;%(RootDir)%(Directory)SaveScenario.htm;%(RootDir)%(Directory)Orientation.htm;%(RootDir)%(Directory)AngularVel.htm;%(RootDir)%(Directory)Propellant.htm;%(RootDir)%(Directory)Location.htm;%(RootDir)%(Directory)Docking.htm;%(RootDir)%(Directory)Statevec.htm;%(RootDir)%(Directory)Date.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Plugin\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Plugin\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)ScnEditor.htm;%(RootDir)%(Directory)NewVessel.htm;%(RootDir)%(Directory)EditVessel.htm;%(RootDir)%(Directory)Elements.htm;%(RootDir)%(Directory)DelVessel.htm;%(RootDir)%(Directory)..\..\..\html\master.js;%(RootDir)%(Directory)..\..\..\html\Orbiter.css;%(RootDir)%(Directory)SaveScenario.htm;%(RootDir)%(Directory)Orientation.htm;%(RootDir)%(Directory)AngularVel.htm;%(RootDir)%(Directory)Propellant.htm;%(RootDir)%(Directory)Location.htm;%(RootDir)%(Directory)Docking.htm;%(RootDir)%(Directory)Statevec.htm;%(RootDir)%(Directory)Date.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Plugin\%(Filename).chm;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling Scenario editor help ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling Scenario editor help ...</Message>
+    </CustomBuild>
+    <None Include="Help\ScnEditor.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Help\Statevec.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\VS2015\Orbiter.vcxproj">
+      <Project>{1aae1f0f-e7f6-446c-a531-280613722d53}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

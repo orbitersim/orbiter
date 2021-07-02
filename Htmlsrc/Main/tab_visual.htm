@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Visual effects</title>
+</HEAD>
+<BODY>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; Visual effects</p>
+
+<h1>Visual effects</h1>
+<p>This section provides options for tuning the rendering parameters. These options will improve the visual appearance and realism of the simulator, but most of them have an adverse effect on simulation performance (frame rates) when enabled, and may increase video and main memory demands, so they should be used with care. As a first step in troubleshooting Orbiter problems, it is often a good idea to turn off all visual effects.</p>
+
+<p>Additional advanced rendering options of planetary bodies available in the built-in graphics engine can be found under Extra | Visualisation parameters | <a href="extra_planetrender.htm">Planet rendering options</a>. Similar options may also be available for external graphics clients.</p>
+
+<h2>Planetary effects</h2>
+
+<p><b>Cloud layers</b>: Render clouds as a separate mesh layer for appropriate planets.</p>
+
+<p><b>Cloud shadows</b>: Render cloud shadows cast on the planet surface. Only planets whose configuration files contain a <i>CloudShadowDepth</i> entry &lt; 1 will actually render cloud shadows.</p>
+
+<p><b>Horizon haze</b>: Render intensity-graded ("glowing") horizon layer for planets with atmospheres.</p>
+
+<p><b>Distance fog</b>: Applies distance-dependent fog to planetary surfaces for planets with atmospheres.</p>
+
+<p><b>Specular water reflections</b>: Render water surfaces on planets with specular reflection effects.</p>
+
+<p><b>Specular ripples</b>: Apply wave effects to specular reflections from water surfaces.</p>
+
+<p><b>Planet night lights</b>: Render city lights on the dark side of the planet surfaces where available.</p>
+
+<p><b>Night light level</b>: Defines the brightness of night city lights. Valid range is 0 to 1. (ignored if planet night lights are disabled)</p>
+
+<p><b>Surface elevation</b>: Process surface elevation data for planetary bodies when available. Disabling this option renders celestial bodies as smooth spheres.</p>
+
+<p><b>Linear/cubic interpolation</b>: Select the elevation interpolation method from low-resolution source data. Cubic interpolation produces a smoother result and more realistic taxiing across gradient changes, but can lead to deviations between logical and visual surfaces.</p>
+
+<p><b>Max. resolution level</b>: Global resolution limit for planetary bodies. Valid range is 1-19. Lower values reduce the computational cost at the expense of visual quality of planet surfaces. Note that individual planets may define lower resolution limits in their configurations.</p>
+
+<h2>General effects</h2>
+
+<p><b>Vessel shadows</b>: Enable shadows cast by spacecraft on planet surfaces.</p>
+
+<p><b>Object shadows</b>: Enable dynamic shadows of ground-based objects such as buildings</p>
+
+<p><b>Specular reflections from objects</b>: Render reflective surfaces like solar panels, window panes or metallic surfaces. May degrade performance.</p>
+
+<p><b>Reentry flames</b>: Render glowing plasma hull during reentry.</p>
+
+<p><b>Particle streams</b>: Render ionised exhaust gases and vapour trails with particle effects.</p>
+
+<p><b>Local light sources</b>: Enable localised light sources, e.g. from engines, landing lights, floodlights, etc. This option can have a significant influence on frame rates.</p>
+
+<p><b>Ambient light level</b>: Defines the brightness of the unlit side of planets and moons. Ambient level 0 is the most realistic, but makes it difficult to spot objects in the dark. Level 255 is uniform lighting (no darkness).</p>
+
+<h2>Celestial sphere</h2>
+
+<p><b>Background</b>: Select a map to render on the celestial background. The DDS2/Wikisky map contains a dataset in the visual range, while the IRAS map shows an infrared image.</p>
+
+<p><b>Intensity</b>: Adjust the intensity of the background map with values between 0-1. Lower values for the visual map are more realistic, while higher values produce more dramatic effects.</p>
+</BODY>
+</HTML>

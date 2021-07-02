@@ -1,0 +1,52 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=.\DG-S.chm
+Contents file=DG-S.hhc
+Default topic=DG-S.htm
+Display compile progress=No
+Language=0x809 English (United Kingdom)
+
+
+[FILES]
+DGpanel3_small.jpg
+DGp2a.gif
+DGp2b.gif
+DGp1a.gif
+DGp1b.gif
+DGp1c.gif
+DGp1d.gif
+DGp1e.gif
+DGp1f.gif
+DGp1g.gif
+DGp1h.gif
+DGp1i.gif
+DGp1j.gif
+DGp1m.gif
+DGp1n.gif
+DGscram1.gif
+DGscram.htm
+DGscram2.gif
+DGscram3.gif
+DG-S.htm
+DG-Sdata.htm
+DGp1s.gif
+DGp1t.gif
+DGp1u.gif
+DGSpanel2_small.jpg
+DGp2c.gif
+DGkeys.htm
+DGSpanels.htm
+DGSpanel1_small.jpg
+DGSVC.htm
+DGSVC.jpg
+DGVCpos.htm
+DGVCpos.jpg
+master.js
+Orbiter.css
+lua\*.html
+lua\*.css
+lua\classes\*.html
+lua\manual\*.html
+
+[INFOTYPES]
+

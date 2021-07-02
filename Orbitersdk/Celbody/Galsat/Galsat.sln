@@ -1,0 +1,76 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Galsat", "Galsat.vcproj", "{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Callisto", "Callisto\Callisto.vcproj", "{E3EFCE78-AB97-469E-AC63-CC80B0094BE7}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9} = {F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Europa", "Europa\Europa.vcproj", "{BA587902-7C40-4A34-A632-0D7123615E01}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9} = {F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ganymede", "Ganymede\Ganymede.vcproj", "{23AE791F-59C6-42A0-B608-B23AC1E9750E}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9} = {F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Io", "Io\Io.vcproj", "{A0DFA10B-819B-424D-978B-BDE6254B4D9D}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9} = {F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}.Debug|Win32.Build.0 = Debug|Win32
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}.Release|Win32.ActiveCfg = Release|Win32
+		{F6BB1B4B-8C61-4D36-9EFE-A224A71828D9}.Release|Win32.Build.0 = Release|Win32
+		{E3EFCE78-AB97-469E-AC63-CC80B0094BE7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E3EFCE78-AB97-469E-AC63-CC80B0094BE7}.Debug|Win32.Build.0 = Debug|Win32
+		{E3EFCE78-AB97-469E-AC63-CC80B0094BE7}.Release|Win32.ActiveCfg = Release|Win32
+		{E3EFCE78-AB97-469E-AC63-CC80B0094BE7}.Release|Win32.Build.0 = Release|Win32
+		{BA587902-7C40-4A34-A632-0D7123615E01}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BA587902-7C40-4A34-A632-0D7123615E01}.Debug|Win32.Build.0 = Debug|Win32
+		{BA587902-7C40-4A34-A632-0D7123615E01}.Release|Win32.ActiveCfg = Release|Win32
+		{BA587902-7C40-4A34-A632-0D7123615E01}.Release|Win32.Build.0 = Release|Win32
+		{23AE791F-59C6-42A0-B608-B23AC1E9750E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{23AE791F-59C6-42A0-B608-B23AC1E9750E}.Debug|Win32.Build.0 = Debug|Win32
+		{23AE791F-59C6-42A0-B608-B23AC1E9750E}.Release|Win32.ActiveCfg = Release|Win32
+		{23AE791F-59C6-42A0-B608-B23AC1E9750E}.Release|Win32.Build.0 = Release|Win32
+		{A0DFA10B-819B-424D-978B-BDE6254B4D9D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A0DFA10B-819B-424D-978B-BDE6254B4D9D}.Debug|Win32.Build.0 = Debug|Win32
+		{A0DFA10B-819B-424D-978B-BDE6254B4D9D}.Release|Win32.ActiveCfg = Release|Win32
+		{A0DFA10B-819B-424D-978B-BDE6254B4D9D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

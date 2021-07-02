@@ -1,0 +1,47 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++25.00	-73.00	:	Aibarchin Planitia
++94.50	-40.50	:	Aino Planitia
++65.00	+27.00	:	Akhtamar Planitia
++100.00	-76.00	:	Alma-Merghen Planitia
++165.80	+45.60	:	Atalanta Planitia
++92.30	+59.80	:	Audra Planitia
++23.60	+28.60	:	Bereghinya Planitia
++295.00	-15.00	:	Dzerassa Planitia
++48.00	-44.00	:	Fonueha Planitia
++202.00	+40.00	:	Ganiki Planitia
++325.00	+21.90	:	Guinevere Planitia
++267.00	-16.00	:	Gunda Planitia
++263.90	-51.70	:	Helen Planitia
++265.00	+5.00	:	Hinemoa Planitia
++142.00	-60.00	:	Imapinua Planitia
++350.00	-10.00	:	Kanykey Planitia
++246.50	+32.80	:	Kawelu Planitia
++117.00	-58.00	:	Laimdota Planitia
++347.50	-47.30	:	Lavinia Planitia
++65.10	+44.00	:	Leda Planitia
++290.00	+60.00	:	Libu?e Planitia
++145.00	+18.00	:	Llorona Planitia
++120.50	+80.50	:	Louhi Planitia
++98.00	+43.00	:	Lowana Planitia
++60.00	-69.00	:	Mugazo Planitia
++317.60	-8.10	:	Navka Planitia
++112.30	+21.00	:	Niobe Planitia
++195.00	-53.00	:	Nsomeka Planitia
++250.00	-73.00	:	Nuptadi Planitia
++170.10	+9.80	:	Rusalka Planitia
++340.70	+42.70	:	Sedna Planitia
++328.00	+86.60	:	Snegurochka Planitia
++107.00	+8.00	:	Sogolon Planitia
++80.00	-23.00	:	Tahmina Planitia
++120.00	+54.00	:	Tilli-Hanum Planitia
++15.00	-15.00	:	Tinatin Planitia
++303.00	+13.00	:	Undine Planitia
++149.10	+45.40	:	Vellamo Planitia
++207.60	+53.80	:	Vinmara Planitia
++217.00	-30.00	:	Wawalag Planitia
++157.00	-40.00	:	Zhibek Planitia

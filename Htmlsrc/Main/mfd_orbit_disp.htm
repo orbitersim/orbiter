@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<script language="JavaScript" src="master.js"></script>
+<Title>Orbit MFD display</Title>
+</HEAD>
+
+<BODY>
+<h1>Orbit MFD display</h1>
+<p>
+Move the mouse over the images to see a description of the different elements.</p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td rowspan=2>
+<img src="mfd_orbit1.gif" usemap="#ob1map" border=0>
+<map name="ob1map">
+<area shape=rect coords="50,0,110,18" A onmouseover="doSec(lbl1)" onmouseout="noSec(lbl1)" HREF="#">
+<area shape=rect coords="167,0,225,18" A onmouseover="doSec(lbl2)" onmouseout="noSec(lbl2)" HREF="#">
+<area shape=rect coords="226,0,291,18" A onmouseover="doSec(lbl3)" onmouseout="noSec(lbl3)" HREF="#">
+<area shape=rect coords="235,97,249,111" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="239,160,253,174" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="24,184,38,198" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="37,114,52,128" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="232,174,244,193" A onmouseover="doSec(lbl6)" onmouseout="noSec(lbl6)" HREF="#">
+<area shape=rect coords="20,91,33,104" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="43,94,56,107" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="116,268,173,287" A onmouseover="doSec(lbl8)" onmouseout="noSec(lbl8)" HREF="#">
+<area shape=rect coords="138,137,151,151" A onmouseover="doSec(lbl9)" onmouseout="noSec(lbl9)" HREF="#">
+<area shape=poly coords="177,71,183,76,152,139,145,136" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+<area shape=poly coords="79,35,87,33,145,136,137,140" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+<area shape=poly coords="37,182,41,192,238,111,234,100" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+<area shape=poly coords="53,117,51,127,239,170,241,161" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+</map>
+</td>
+<td>
+<font class="label">
+<DIV ID="lbl1" STYLE="display: none"> 
+<b>Orbit reference.</b> The celestial body relative to which the orbital elements are calculated.</DIV> 
+<DIV ID="lbl2" STYLE="display: none"> 
+<b>Frame of reference.</b> This can be either the plane of the ecliptic, or the equator of the reference object.</DIV> 
+<DIV ID="lbl3" STYLE="display: none"> 
+<b>Projection plane.</b> This is the plane into which graphical orbit display is projected.</DIV> 
+<DIV ID="lbl4" STYLE="display: none"> 
+<b>Descending node.</b> This is the point at which the orbit passes through the reference plane from above.</DIV> 
+<DIV ID="lbl5" STYLE="display: none"> 
+<b>Ascending node.</b> This is the point at which the orbit passes through the reference plane from below.</DIV> 
+<DIV ID="lbl6" STYLE="display: none"> 
+<b>Periapsis.</b> (also: <i>perigee</i> for Earth orbits and <i>perihel</i> for solar orbits). The lowest point of the orbit.</DIV> 
+<DIV ID="lbl7" STYLE="display: none"> 
+<b>Apoapsis.</b> (also: <i>apogee</i> for Earth orbits and <i>aphel</i> for solar orbits). The highest point of the orbit.</DIV> 
+<DIV ID="lbl8" STYLE="display: none"> 
+<b>G-field contribution.</b>The fraction of the total gravitational force acting on your ship which is contributed by the selected orbit reference object.</DIV> 
+<DIV ID="lbl9" STYLE="display: none"> 
+<b>Orbit focus.</b>The focal point of the orbit, given by the centre of mass of the reference object.</DIV> 
+<DIV ID="lbl10" STYLE="display: none"> 
+<b>Radius vector.</b>The straight line pointing from the orbit focus to the current vessel position.</DIV>
+<DIV ID="lbl11" STYLE="display: none"> 
+<b>Line of nodes.</b>The intersection of the orbital plane with the reference plane (ecliptic or equator).</DIV>
+</td>
+</tr>
+<tr>
+<td class="foot">
+<font class="label">
+Green elements refer to your own orbit, yellow elements to the orbit of the target object, and the grey circle represents the planet surface.
+</font>
+</td>
+</tr>
+</table>
+
+<p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td>
+<img src="mfd_orbit2.gif" usemap="#ob2map" border=0>
+<map name="ob2map">
+<area shape=rect coords="  0, 33, 93, 45" A onmouseover="doSec(lbl1b)" onmouseout="noSec(lbl1b)" HREF="#">
+<area shape=rect coords="195, 33,287, 45" A onmouseover="doSec(lbl1b)" onmouseout="noSec(lbl1b)" HREF="#">
+<area shape=rect coords="  0, 46, 93, 58" A onmouseover="doSec(lbl2b)" onmouseout="noSec(lbl2b)" HREF="#">
+<area shape=rect coords="195, 46,287, 58" A onmouseover="doSec(lbl2b)" onmouseout="noSec(lbl2b)" HREF="#">
+<area shape=rect coords="  0, 59, 93, 71" A onmouseover="doSec(lbl3b)" onmouseout="noSec(lbl3b)" HREF="#">
+<area shape=rect coords="195, 59,287, 71" A onmouseover="doSec(lbl3b)" onmouseout="noSec(lbl3b)" HREF="#">
+<area shape=rect coords="  0, 72, 93, 84" A onmouseover="doSec(lbl4b)" onmouseout="noSec(lbl4b)" HREF="#">
+<area shape=rect coords="195, 72,287, 84" A onmouseover="doSec(lbl4b)" onmouseout="noSec(lbl4b)" HREF="#">
+<area shape=rect coords="  0, 85, 93, 97" A onmouseover="doSec(lbl5b)" onmouseout="noSec(lbl5b)" HREF="#">
+<area shape=rect coords="195, 85,287, 97" A onmouseover="doSec(lbl5b)" onmouseout="noSec(lbl5b)" HREF="#">
+<area shape=rect coords="  0, 98, 93,110" A onmouseover="doSec(lbl6b)" onmouseout="noSec(lbl6b)" HREF="#">
+<area shape=rect coords="195, 98,287,110" A onmouseover="doSec(lbl6b)" onmouseout="noSec(lbl6b)" HREF="#">
+<area shape=rect coords="  0,111, 93,123" A onmouseover="doSec(lbl7b)" onmouseout="noSec(lbl7b)" HREF="#">
+<area shape=rect coords="195,111,287,123" A onmouseover="doSec(lbl7b)" onmouseout="noSec(lbl7b)" HREF="#">
+<area shape=rect coords="  0,124, 93,136" A onmouseover="doSec(lbl8b)" onmouseout="noSec(lbl8b)" HREF="#">
+<area shape=rect coords="195,124,287,136" A onmouseover="doSec(lbl8b)" onmouseout="noSec(lbl8b)" HREF="#">
+<area shape=rect coords="  0,137, 93,149" A onmouseover="doSec(lbl9b)" onmouseout="noSec(lbl9b)" HREF="#">
+<area shape=rect coords="195,137,287,149" A onmouseover="doSec(lbl9b)" onmouseout="noSec(lbl9b)" HREF="#">
+<area shape=rect coords="  0,150, 93,162" A onmouseover="doSec(lbl10b)" onmouseout="noSec(lbl10b)" HREF="#">
+<area shape=rect coords="195,150,287,162" A onmouseover="doSec(lbl10b)" onmouseout="noSec(lbl10b)" HREF="#">
+<area shape=rect coords="  0,163, 93,175" A onmouseover="doSec(lbl11b)" onmouseout="noSec(lbl11b)" HREF="#">
+<area shape=rect coords="195,163,287,175" A onmouseover="doSec(lbl11b)" onmouseout="noSec(lbl11b)" HREF="#">
+<area shape=rect coords="  0,176, 93,188" A onmouseover="doSec(lbl12b)" onmouseout="noSec(lbl12b)" HREF="#">
+<area shape=rect coords="195,176,287,188" A onmouseover="doSec(lbl12b)" onmouseout="noSec(lbl12b)" HREF="#">
+<area shape=rect coords="  0,189, 93,201" A onmouseover="doSec(lbl13b)" onmouseout="noSec(lbl13b)" HREF="#">
+<area shape=rect coords="195,189,287,201" A onmouseover="doSec(lbl13b)" onmouseout="noSec(lbl13b)" HREF="#">
+<area shape=rect coords="  0,202, 93,214" A onmouseover="doSec(lbl14b)" onmouseout="noSec(lbl14b)" HREF="#">
+<area shape=rect coords="195,202,287,214" A onmouseover="doSec(lbl14b)" onmouseout="noSec(lbl14b)" HREF="#">
+<area shape=rect coords="  0,215, 93,227" A onmouseover="doSec(lbl15b)" onmouseout="noSec(lbl15b)" HREF="#">
+<area shape=rect coords="195,215,287,227" A onmouseover="doSec(lbl15b)" onmouseout="noSec(lbl15b)" HREF="#">
+<area shape=rect coords="  0,228, 93,240" A onmouseover="doSec(lbl16b)" onmouseout="noSec(lbl16b)" HREF="#">
+<area shape=rect coords="195,228,287,240" A onmouseover="doSec(lbl16b)" onmouseout="noSec(lbl16b)" HREF="#">
+<area shape=rect coords="  0,241, 93,253" A onmouseover="doSec(lbl17b)" onmouseout="noSec(lbl17b)" HREF="#">
+<area shape=rect coords="195,241,287,253" A onmouseover="doSec(lbl17b)" onmouseout="noSec(lbl17b)" HREF="#">
+<area shape=rect coords="  0,254, 93,266" A onmouseover="doSec(lbl18b)" onmouseout="noSec(lbl18b)" HREF="#">
+<area shape=rect coords="195,254,287,266" A onmouseover="doSec(lbl18b)" onmouseout="noSec(lbl18b)" HREF="#">
+</map>
+</td>
+<td width=100%>
+<font class="label">
+<DIV ID="lbl1b" STYLE="display: none">
+<b>SMa: Semi-major axis.</b> The longest semi-diameter of the orbital ellipse. For nonperiodic orbits (e &ge; 1) this is the <i>real</i> semi-axis from the intersection of the hyperbolic asymptotes to the periapsis (displayed negative).</DIV>
+<DIV ID="lbl2b" STYLE="display: none">
+<b>SMi: Semi-minor axis.</b> The shortest semi-diameter of the orbital ellipse. For nonperiodic orbits (e &ge; 1) this is the <i>imaginary</i> semi-axis b = a sqrt(e<sup>2</sup>-1).</DIV>
+<DIV ID="lbl3b" STYLE="display: none">
+<b>PeR: Periapsis radius.</b> The distance between the orbit focus and the periapsis.
+<p>or<p>
+<b>PeA: Periapsis altitude.</b> The altitude of periapsis above the mean planet radius.
+</DIV>
+<DIV ID="lbl4b" STYLE="display: none">
+<b>ApR: Apoapsis distance.</b> Only applicable to closed orbits (e&lt;1). The distance between the orbit focus and the apoapsis.
+<p>or<p>
+<b>ApA: Apoapsis altitude.</b> The altitude of apoapsis above the mean planet radius.
+</DIV>
+<DIV ID="lbl5b" STYLE="display: none">
+<b>Rad: Radius distance.</b> The distance between the orbit focus and the current vessel position.
+<p>or<p>
+<b>Alt: Altitude.</b> The altitude of the current vessel position above the mean planet radius.
+</DIV>
+<DIV ID="lbl6b" STYLE="display: none">
+<b>Ecc: Eccentricity.</b> Defines the shape of the orbit.<p>e=0: circular orbit<br>0&lt;e&lt;1: elliptic orbit<br>e=1: parabolic orbit<br>e&gt;1: hyperbolic orbit</DIV>
+<DIV ID="lbl7b" STYLE="display: none">
+<b>T: orbit period.</b>Time for completing a full orbit. Only applicable to closed orbits (e&lt;1).</DIV>
+<DIV ID="lbl8b" STYLE="display: none">
+<b>PeT: time to periapsis.</b>Time to the next periapsis passage. For nonperiodic orbits (e&gt;1) this is negative when the object has passed periapsis.</DIV>
+<DIV ID="lbl9b" STYLE="display: none">
+<b>ApT: time to apoapsis.</b>Time to the next apoapsis passage. Only applicable to closed orbits (e&lt;1).</DIV>
+<DIV ID="lbl10b" STYLE="display: none">
+<b>Vel: orbital velocity.</b>Current vessel velocity relative to orbit focus.</DIV>
+<DIV ID="lbl11b" STYLE="display: none">
+<b>Inc: inclination.</b>The inclination of the orbital plane against the reference plane (ecliptic or equator).</DIV>
+<DIV ID="lbl12b" STYLE="display: none">
+<b>LAN: longitude of ascending node.</b>The angle between the reference direction (e.g. vernal equinox) and the ascending node.</DIV>
+<DIV ID="lbl13b" STYLE="display: none">
+<b>LPe: longitude of periapsis.</b>The sum of the longitude of the ascending node and the argument of periapsis.</DIV>
+<DIV ID="lbl14b" STYLE="display: none">
+<b>AgP: argument of periapsis.</b>The angle between periapsis and the ascending node.</DIV>
+<DIV ID="lbl15b" STYLE="display: none">
+<b>TrA: true anomaly.</b>The angle between periapsis and the current vessel position.</DIV>
+<DIV ID="lbl16b" STYLE="display: none">
+<b>TrL: true longitude.</b>The sum of the longitude of periapsis and the true anomaly.</DIV>
+<DIV ID="lbl17b" STYLE="display: none">
+<b>MnA: mean anomaly.</b>The angle between periapsis and a hypothetical vessel position under the assumption of a circular orbit with the same period as the true orbit.</DIV>
+<DIV ID="lbl18b" STYLE="display: none">
+<b>MnL: mean longitude.</b>The sum of the longitude of periapsis and the mean anomaly.</DIV>
+</td>
+</tr>
+</table>
+
+<p>
+<font class="label">
+<b>Units:</b> meter, second, degree<br> <b>Suffixes:</b> k: kilo, M: mega, G: giga, AU: astronomical units (mean radius of Earth orbit)
+</font></p>
+
+</BODY>
+</HTML>

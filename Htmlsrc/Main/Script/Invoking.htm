@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Invoking the interpreter</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; Invoking</p>
+
+<h1><a name="invoke"></a>Invoking the interpreter</h1>
+<p>There are currently two ways to access an interpreter instance: using a system console
+window, and opening a Lua input MFD. In addition, a script can be processed automatically
+when running a scenario.</p>
+<p>Addon developers can create interpreter instances in their modules using API functions,
+and then send commands or scripts to the interpreter for processing.</p>
+
+<h2><a name="invoke_console"></a>Console window</h2>
+<p>Activate the <i>LuaConsole</i> plugin in the Launchpad modules tab.
+In the running simulation, open the <i>Custom functions</i> list (Ctrl-F4) and activate the <i>Lua
+console window</i> function.</p>
+
+<p>You can now start typing commands into the console window. User input is displayed in
+black, script output is displayed in green. The console window can be resized.</p>
+
+<p><img src="img1.gif"></p>
+
+<p>Some parameters defining the console appearance and behaviour can be adjusted from the
+<i>Console Configuration</i> entry in the Extra tab of the Launchpad window.</p>
+
+<h2><a name="invoke_mfd"></a>Lua script MFD</h2>
+<p>To enable the Lua MFD mode, activate the <i>LuaMFD</i> plugin in the Launchpad modules tab.
+This will add the <i>Script MFD</i> mode on all MFD mode selection lists. Opening this mode will
+bring up the interpreter console in the MFD display. To enter a script command, click the <i>INP</i>
+button and type the command.</p>
+
+<p>The MFD interpreter works identically to the console window, except that it displays fewer
+characters per line.</p>
+
+<p>The script MFD is generic, i.e. is not specific to the vessel it is running in. One exception is
+the fact that each MFD interpreter predefines a global variable "V" as vessel instance.
+Therefore,
+<div class="code">
+name=V:get_name()
+</div>
+is equivalent to
+<div class="code">
+v=vessel.get_focusinterface()<br>
+name=v:get_name()
+</div></p>
+<p>The script MFD can run more than one interpreter. Clicking the "New" button will open a new
+console page and associate a new interpreter with it. You can run separate scripts in different
+pages simultaneously (but obviously they should not conflict with each other). Use the "&lt;PG"
+and "PG&gt;" buttons to switch between pages. "Del" will delete the current page and kill the
+corresponding interpreter.</p>
+
+<p>The interpreters are shared between all the MFDs of a given vessel. That is, opening Script
+mode on multiple MFDs will display the same data in all of them on corresponding pages.
+Opening a new page in one MFD will insert a new page in all other MFDs, and deleting a
+page will delete the same page in all other MFDs.</p>
+
+<p>The interpreters remain active when the MFD is closed. This means that a script launched in
+the MFD will continue to run even if the MFD is switched to a different mode.</p>
+
+<h2><a name="invoke_auto"></a>Automatic script processing</h2>
+<p>It is possible to associate a Lua script with a scenario so that it is invoked automatically (using
+Orbiter's built-in script interpreter) when the scenario is launched. No additional modules need
+to be activated for this.</p>
+
+<p>To associate a script with a scenario, add the line
+<div class="code">
+Script &lt;name&gt;
+</div>
+to the <i>Environment</i> block of the scenario file. Here, &lt;<i>name</i>&gt; is the name of the Lua script file
+(including any applicable path relative to the <i>Script</i> subdirectory, and excluding (but
+assuming) the file extension .lua).</p>
+
+<p>For automatically executed scripts, no console support is provided. Any <i>term</i> function calls in
+the script are ignored. User I/O, if required, must be implemented by alternative means (for
+example by using the screen annotation methods for output, and proc.WaitInput() for input.</p>
+
+<p>The <i>Script/Challenges/Challenge1.lua</i> script is an example for an automatically invoked script.
+It is used by the <i>2010 Edition/Challenges/Challenge 1</i> scenario.</p>
+
+<h2><a name="invoke_example"></a>Interactive usage examples</h2>
+<p>This section covers both the console window and script MFD.</p>
+
+<p>For a general introduction to the syntax of the Lua scripting language, please see the
+documentation on the Lua website.</p>
+
+<p>To load and execute a script, use the <i>run</i> command:
+<div class="code">
+run(script)
+</div>
+where <i>script</i> is the script file name (with optional path). The script file extension '.lua' is
+assumed and should not be included in the call parameter. The default script path is the
+<i>Script</i> subdirectory below the Orbiter main directory. All paths specified in the call to run are
+relative to this directory. Therefore,
+<div class="code">
+run('myscripts/demo')
+</div>
+will load the script Script/myscripts/demo.lua.</p>
+
+<p>You can also enter Lua commands directly, but please note that direct input commands
+cannot span multiple lines. Flow constructs such as loops must be submitted in a single line.</p>
+
+<p>Examples:
+<div class="code">
+term.out(oapi.get_simtime())
+</div>
+displays the current simulation time.
+<div class="code">
+n=oapi.create_annotation()<br>
+n:set_text('Hello, world!')
+</div>
+displays the text as an onscreen annotation.
+<div class="code">
+v = vessel.get_focusinterface()<br>
+term.out(v:get_name())
+</div>
+displays the name of the current focus vessel.
+<div class="code">
+n=vessel.get_count()<br>
+for i=0,n-1 do v=vessel.get_interface(i); term.out(v:get_name()) end
+</div>
+lists the vessels in the current simulation.</p>
+
+<p>As a script example, a simple ascent autopilot script for the space shuttle has been included.
+To try it, launch the <i>"2010 Edition/Scripts/Space shuttle launch"</i> scenario. Open either the
+console window, or go to an interior view and open the Script MFD in one of the MFD
+displays. Enter the following commands:
+<div class="code">
+run('atlantis/launch')<br>
+launch()
+</div>
+This will initiate an automated launch and orbit insertion. You can modify the launch
+parameters by resetting some of the script parameters after loading the script. For example,
+<div class="code">
+run('atlantis/launch')<br>
+orbit_alt = 400e3<br>
+azimuth = 135*RAD<br>
+launch()
+</div>
+will set the target orbit altitude to 400km and the launch azimuth angle to 135 degrees.
+<p>Have a look at this script (located in <i>Script/Atlantis/launch.lua</i>) to see how it works. Note that
+this is a rather quick and dirty example, intended to show the current capabilities and
+concepts of the interpreter. Have a go and try to improve or extend it!</p>
+
+</BODY>
+</HTML>

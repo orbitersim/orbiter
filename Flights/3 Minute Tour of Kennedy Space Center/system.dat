@@ -1,0 +1,38 @@
+0 NOTECOL 1 0.8 0.6
+0 NOTE Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!
+5 NOTE Welcome to a quick aerial tour of Kennedy Space Center in Orbiter 2016!    This is a recorded flight, so just sit back and enjoy the view.
+11.8207 CAMERA SET Track:GL-01S:50.00:GLOBAL 21.598 0.903 0.510
+11.8207 NOTE Accelerating down runway 33 of the Shuttle Landing Facility (SLF) in a DG type spaceplane.
+20.1704 CAMERA SET Ground:GL-01S:50.00:Earth -80.69321 28.60817 125.90
+32.4303 CAMERA SET Ground:GL-01S:50.00:Earth -80.69794 28.61863 94.10
+32.4303 NOTE Rotation and takeoff.
+38.4412 CAMERA SET Track:GL-01S:50.00:GLOBAL 8.333 1.757 0.292
+38.4412 NOTE Gear up.
+47.9354 CAMERA SET Track:GL-01S:50.00:GLOBAL 5.088 -1.156 -0.901
+47.9354 NOTE Orbiter now supports higher texture resolutions for improved realism.
+58.9354 NOTE Orbiter now supports higher texture resolutions for improved realism.    The area around KSC has been textured from aerial photographs with a resolution of about 1 meter per pixel.
+70.5657 CAMERA SET Cockpit:GL-01S:50.00
+70.5657 NOTE While the KSC terrain is flat, Orbiter's new surface elevation support has been put to use for modelling vegetation.
+83 NOTE Buzzing the Vehicle Assembly Building (VAB).
+92.5739 CAMERA SET Track:GL-01S:60.00:GLOBAL 23.018 -2.296 -1.994
+92.5739 NOTE Orbiter 2016 also models water surfaces more realistically than previous editions.
+100.299 CAMERA SET Track:GL-01S:50.00:GLOBAL 23.018 -0.194 0.212
+104.247 NOTE Pad A of Launch Complex 39 (LC-39A) is ahead, used for launches of the Apollo program, and later the Space Shuttle.
+107.247 CAMERA SET Cockpit:GL-01S:50.00
+115 NOTE And there is LC-39B.
+117.085 NOTE And there is LC-39B.    Looks like a Shuttle is preparing for launch at this very moment.
+120.085 CAMERA SET Ground:GL-01S:40.00:Earth -80.62132 28.62404 175.70
+130.762 CAMERA SET Track:GL-01S:40.00:GLOBAL 23.018 -2.939 -0.822
+130.762 NOTE It's time to return to base. Preparing for landing.
+140 NOTE Throttle to idle ...
+147 NOTE Throttle to idle ...    Gear down ...
+147 CAMERA SET Track:GL-01S:40.00:GLOBAL 23.018 1.222 0.348
+153.458 NOTE Coming in pretty high and fast.
+160.247 NOTE No need to panic ...
+163.247 NOTE No need to panic just yet ...
+167.247 CAMERA SET Cockpit:GL-01S:50.00
+173.752 CAMERA SET Track:GL-01S:40.00:GLOBAL 23.018 0.957 0.635
+173.752 NOTE Smooth and easy
+178 NOTE Touchdown!
+185 NOTE There you go - not exactly a regulation landing, but it is pretty hard to miss the SLF runway (it's one of the longest in the world).
+195 NOTE Thanks for watching - now it's over to you, commander.

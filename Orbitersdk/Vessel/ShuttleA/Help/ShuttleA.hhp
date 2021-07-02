@@ -1,0 +1,23 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=.\ShuttleA.chm
+Contents file=ShuttleA.hhc
+Default topic=ShuttleA.htm
+Display compile progress=No
+Flat=No
+Language=0x809 English (United Kingdom)
+
+
+[FILES]
+ShuttleA.htm
+ShuttleA.jpg
+ShuttleAkeys.htm
+master.js
+Orbiter.css
+lua\*.html
+lua\*.css
+lua\classes\*.html
+lua\manual\*.html
+
+[INFOTYPES]
+

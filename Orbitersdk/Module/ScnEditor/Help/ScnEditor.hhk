@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="configure">
+		<param name="Name" value="Configuring a vessel">
+		<param name="Local" value="EditVessel.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="date">
+		<param name="Name" value="Changing the simulation date">
+		<param name="Local" value="Date.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="delete">
+		<param name="Name" value="Deleting a vessel">
+		<param name="Local" value="DelVessel.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="docking">
+		<param name="Name" value="Docking management">
+		<param name="Local" value="Docking.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="elements">
+		<param name="Name" value="Orbital elements">
+		<param name="Local" value="Elements.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="fuel">
+		<param name="Name" value="Propellant levels">
+		<param name="Local" value="Propellant.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="location">
+		<param name="Name" value="Surface location">
+		<param name="Local" value="Location.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="new">
+		<param name="Name" value="Creating a new vessel">
+		<param name="Local" value="NewVessel.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="orientation">
+		<param name="Name" value="Vessel orientation">
+		<param name="Local" value="Orientation.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="position">
+		<param name="Name" value="State vectors">
+		<param name="Local" value="Statevec.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="propellant">
+		<param name="Name" value="Propellant levels">
+		<param name="Local" value="Propellant.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="rotation">
+		<param name="Name" value="Angular velocity">
+		<param name="Local" value="AngularVel.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="save">
+		<param name="Name" value="Save a scenario">
+		<param name="Local" value="SaveScenario.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="spin">
+		<param name="Name" value="Angular velocity">
+		<param name="Local" value="AngularVel.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="state">
+		<param name="Name" value="State vectors">
+		<param name="Local" value="Statevec.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="surface">
+		<param name="Name" value="Surface location">
+		<param name="Local" value="Location.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="velocity">
+		<param name="Name" value="State vectors">
+		<param name="Local" value="Statevec.htm">
+		</OBJECT>
+</UL>
+</BODY></HTML>

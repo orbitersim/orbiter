@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Space stations</h1>
+<p>A collection of space stations featured in the default Orbiter distribution.</p>
+END_HYPERDESC

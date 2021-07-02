@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Antelope Valley scenery</h1>
+<p>A few scenarios showcasing the launch and landing sites supported by the Antelope Valley addon scenery pack.</p>
+END_HYPERDESC

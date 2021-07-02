@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<Title>Map MFD configuration</Title>
+</HEAD>
+<BODY>
+<h1>Map MFD configuration</h1>
+Scenario file options. Use inside a BEGIN_MFD/END_MFD block to define the MFD startup configuration.
+
+<table cols="3" width="100%" cellspacing="2" cellpadding="2" border="0" frame="void">
+<thead>
+<tr><th>Item</th><th>Parameters</th><th>Notes</th></tr>
+<tbody>
+<tr>
+<td>TYPE</td>
+<td>Map</td>
+<td>MFD mode description</td>
+</tr>
+<tr>
+<td>REF</td>
+<td><i>&lt;Name&gt;</i></td>
+<td>Reference body. The celestial body for which the map is displayed.</td>
+</tr>
+<tr>
+<td>BTARGET</td>
+<td><i>&lt;Base name&gt;</i></td>
+<td>Target surface base. The target base is indicated in the map, and its position is shown above. The base must exist on the reference body. Default: no target.</td>
+</tr>
+<tr>
+<td>OTARGET</td>
+<td><i>&lt;Vessel/planet name&gt;</i></td>
+<td>Name of the vessel or planet moon whose trajectory is to be displayed in the map. If defined, the object must exist and must be orbiting the reference body. Default: no target.</td>
+</tr>
+<tr>
+<td>ZOOM</td>
+<td></td>
+<td>If specified, the map is displayed in 2x zoom mode. Default: global view.</td>
+</tr>
+<tr>
+<td>TRACK</td>
+<td>ON | <i>&lt;xpos&gt;</i> <i>&lt;ypos&gt;</i></td>
+<td>Track mode. This is either <i>ON</i> (track mode enabled), or disabled, in which case the x and y coordinates of the map point in the top left corner of the display can be specified (x and y can range from 0 to 1). Default: no track mode.
+</td>
+</tr>
+</table>
+
+</BODY>
+</HTML>

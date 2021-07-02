@@ -1,0 +1,59 @@
+BEGIN_DESC
+Challenge 2. Transfer to the moon and dock with orbiting wheel, Luna-Ob1. Minimize fuel use.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD ;
+  Help Default\Challenges\Challenge2,Index
+  Script challenges/challenge2
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-1
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-1
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
+  TARGET Moon
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+END_MFD
+
+BEGIN_SHIPS
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS 1775769.83 110785.94 -559418.41
+  RVEL -479.906 -108.360 -1544.868
+  AROT 0.00 0.00 -80.91
+  VROT 0.00 0.00 10.00
+  IDS 0:560 100 1:564 100
+  XPDR 494
+END
+GL-1:Deltaglider
+  STATUS Orbiting Earth
+  RPOS -2760921.52 70854.02 6127328.74
+  RVEL -6996.455 -683.796 -3144.634
+  AROT 0.00 -0.00 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS
+
+BEGIN_ExtMFD
+END

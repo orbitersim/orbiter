@@ -1,0 +1,458 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F5BC66B4-6ED7-4347-8357-2FE5F8E00CCD}</ProjectGuid>
+    <RootNamespace>Earth</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Vsop87 object.props" />
+    <Import Project="..\..\..\..\VS2015\PropertyPages\orbiter_debug.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Vsop87 object.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildStep />
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Modules/Earth.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;EARTH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderOutputFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep />
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Modules/Earth.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;EARTH_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderOutputFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\..\Modules/Earth.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Earth.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Vsop87.h" />
+    <ClInclude Include="Earth.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vsop87.vcxproj">
+      <Project>{c6cd923c-363a-49fe-81e7-a80dab9e01d8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Earth\Atmosphere.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Label.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Alcantara.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Al_Anbar.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Baikonur.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Barent_Sea.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Canaveral.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\China_Lake.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Doberai.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Edwards.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Gran_canaria.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Habana.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Hammaguira.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Inyokern.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Jingyu.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Jiuquan.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Kagoshima.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Kapustin_Yar.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Kourou.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Matagorda.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Mojave.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Musudan.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Overberg.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Palmachim.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Palmdale.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Peenemunde.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Plesetsk.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Salto_di_Quirra.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\San_Marco.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Sriharikota.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Svobodniy.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Taiyuan.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Tanegashima.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Vandenberg.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Wallops_Island.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\White_Sands.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Woomera.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Wuzhai.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Xichang.cfg">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Base\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Base\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Data\coast.vec">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Data\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Data\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Data\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Data\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Data\Vsop87B_ear.dat">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Data\Vsop87B.*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Data\Vsop87B.*"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Data\Vsop87B%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Data\Vsop87B%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth.cfg">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)*"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Earth\Marker\City.mkr">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Marker\*"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildConfigDir)$(TargetName)\Marker\*"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildConfigDir)$(TargetName)\Data\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildConfigDir)$(TargetName)\Data\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

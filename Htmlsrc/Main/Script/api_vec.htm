@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: vec (Vector and matrix functions)</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; vec</p>
+
+<h1>vec: Vector and matrix operations</h1>
+<p>The <i>vec</i> library contains some general vector and matrix functions.
+Vectors and matrices are defined as Lua tables (see <a href="Datatypes.htm#data_vector">Vectors</a>).
+Vectors contain the fields "x", "y" and "z". Individual elements of a vector <b>v</b> can be
+accessed as v.x, v.y and v.z.</p>
+
+<table class="summary" cols=2>
+<tr>
+<td><a href="#vec_set">vec.set</a></td>
+<td>Define a vector from its components.</td>
+</tr>
+<tr>
+<td><a href="#vec_add">vec.add</a></td>
+<td>Add two vectors.</td>
+</tr>
+<tr>
+<td><a href="#vec_sub">vec.sub</a></td>
+<td>Subtract two vectors.</td>
+</tr>
+<tr>
+<td><a href="#vec_mul">vec.mul</a></td>
+<td>Elementwise vector multiplication.</td>
+</tr>
+<tr>
+<td><a href="#vec_div">vec.div</a></td>
+<td>Elementwise vector division.</td>
+</tr>
+<tr>
+<td><a href="#vec_dotp">vec.dotp</a></td>
+<td>Scalar product of two vectors.</td>
+</tr>
+<tr>
+<td><a href="#vec_crossp">vec.crossp</a></td>
+<td>Vector (cross) product of two vectors.</td>
+</tr>
+<tr>
+<td><a href="#vec_length">vec.length</a></td>
+<td>Length of a vector.</td>
+</tr>
+<tr>
+<td><a href="#vec_dist">vec.dist</a></td>
+<td>Distance of two points.</td>
+</tr>
+<tr>
+<td><a href="#vec_unit">vec.unit</a></td>
+<td>Returns the normalised vector.</td>
+</tr>
+<tr>
+<td><a href="#mat_identity">mat.identity</a></td>
+<td>Returns identity matrix.</td>
+</tr>
+<tr>
+<td><a href="#mat_mul">mat.mul</a></td>
+<td>Returns result of matrix-vector product.</td>
+</tr>
+<tr>
+<td><a href="#mat_tmul">mat.tmul</a></td>
+<td>Returns result of transpose matrix-vector product.</td>
+</tr>
+</table>
+
+<div class="func_block">
+
+<div class="func"><a name="vec_set"></a>
+<h3>v = vec.set(x,y,z)</h3>
+<p>Define a vector from its components.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x&nbsp;(number):</td><td>x-component</td></tr>
+<tr><td>y&nbsp;(number):</td><td>y-component</td></tr>
+<tr><td>z&nbsp;(number):</td><td>z-component</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(vector):</td><td>vector v={x,y,z}</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>You can also use standard Lua syntax to define the components of the vector
+(vectors are defined as tables with fields 'x', 'y' and 'z'). See
+<a href="Datatypes.htm#data_vector">Vectors</a>.</p>
+<p>To initialise a vector from another vector, use the = operator.</p>
+</div>
+
+
+<div class="func"><a name="vec_add"></a>
+<h3>v = vec.add(a,b)<br></h3>
+<p>Returns the sum of two vectors.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(vector or number):</td><td>first operand</td></tr>
+<tr><td>b&nbsp;(vector or number):</td><td>second operand</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(vector or number):</td><td>result of a+b</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Arguments a and b can be either vectors or scalars. The return
+value is a vector, unless both a and b are scalars.</p>
+</div>
+
+
+<div class="func"><a name="vec_sub"></a>
+<h3>v = vec.sub(a,b)<br></h3>
+<p>Returns the difference of two vectors.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(vector or number):</td><td>first operand</td></tr>
+<tr><td>b&nbsp;(vector or number):</td><td>second operand</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(vector or number):</td><td>result of a-b</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Arguments a and b can be either vectors or scalars. The return
+value is a vector, unless both a and b are scalars.</p>
+</div>
+
+
+<div class="func"><a name="vec_mul"></a>
+<h3>v = vec.mul(v1,v2)<br />
+v = vec.mul(v1,s2)<br />
+v = vec.mul(s1,v2)<br />
+s = vec.mul(s1,s2)</h3>
+<p>Elementwise vector multiplication.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>v1,v2&nbsp;(vector):</td><td>vector arguments</td></tr>
+<tr><td>s1,s2&nbsp;(number):</td><td>scalar arguments</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(vector):</td><td>vector-valued operation result</td></tr>
+<tr><td>s&nbsp;(number):</td><td>scalar-valued operation result</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If both input arguments are vectors, the result is the elementwise multiplication
+<div class="code">v<sub>i</sub> = v1<sub>i</sub> * v2<sub>i</sub></div></p>
+<p>If one input argument is a scalar, the result is given by
+<div class="code">v<sub>i</sub> = v1<sub>i</sub> * s2</div> or
+<div class="code">v<sub>i</sub> = s1 * v2<sub>i</sub></div></p>
+<p>For completeness, the scalar multiplication is also supported:
+<div class="code">s = s1 * s2</div></p>
+</div>
+
+
+<div class="func"><a name="vec_div"></a>
+<h3>v = vec.div(v1,v2)<br />
+v = vec.div(v1,s2)<br />
+v = vec.div(s1,v2)<br />
+s = vec.div(s1,s2)</h3>
+<p>Elementwise vector division.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>v1,v2&nbsp;(vector):</td><td>vector arguments</td></tr>
+<tr><td>s1,s2&nbsp;(number):</td><td>scalar arguments</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(vector):</td><td>vector-valued operation result</td></tr>
+<tr><td>s&nbsp;(number):</td><td>scalar-valued operation result</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If both input arguments are vectors, the result is the elementwise division
+<div class="code">v<sub>i</sub> = v1<sub>i</sub> / v2<sub>i</sub></div></p>
+<p>If one input argument is a scalar, the result is given by
+<div class="code">v<sub>i</sub> = v1<sub>i</sub> / s2</div> or
+<div class="code">v<sub>i</sub> = s1 / v2<sub>i</sub></div></p>
+<p>For completeness, the scalar division is also supported:
+<div class="code">s = s1 / s2</div></p>
+</div>
+
+
+<div class="func"><a name="vec_dotp"></a>
+<h3>p = vec.dotp(a,b)</h3>
+<p>Scalar (inner, dot) product of two vectors.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a,b&nbsp;(vector):</td><td>vector arguments</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>p&nbsp;(number):</td><td>scalar product <b>ab</b></td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="vec_crossp"></a>
+<h3>v = vec.crossp(a,b)</h3>
+<p>Vector (cross) product of two vectors.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a,b&nbsp;(vector):</td><td>vector arguments</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v&nbsp;(vector):</td><td>cross product <b>a</b> x <b>b</b></td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="vec_length"></a>
+<h3>s = vec.length(a)</h3>
+<p>Returns the length (L2-norm) of a vector.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(vector):</td><td>vector argument</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>s&nbsp;(number):</td><td>length of <b>a</b>: s = |<b>a</b>|<sub>2</sub> = sqrt(dotp(<b>a</b>,<b>a</b>))</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="vec_dist"></a>
+<h3>d = vec.dist(a,b)</h3>
+<p>Returns the distance between two points.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a,b&nbsp;(vector):</td><td>vector arguments (point positions)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>d&nbsp;(number):</td><td>distance between <b>a</b> and <b>b</b>: d = |<b>a</b>-<b>b</b>|<sub>2</sub></td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="vec_unit"></a>
+<h3>n = vec.unit(a)</h3>
+<p>Returns the normalised input argument.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>a&nbsp;(vector):</td><td>vector argument</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n&nbsp;(vector):</td><td>normalised vector <b>a</b>: <b>n</b> = <b>a</b>/|<b>a</b>|<sub>2</sub></td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>|<b>a</b>|<sub>2</sub> &gt 0 is required.</p>
+</div>
+
+
+<div class="func"><a name="mat_identity"></a>
+<h3>I = mat.identity()</h3>
+<p>Returns identity matrix.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>I&nbsp;(matrix):</td><td>identity matrix</td></tr>
+</table>
+
+<h4>Notes</h4>
+<p>All diagonal elements of I are 1, all off-diagonal elements
+are 0.</p>
+</div>
+
+
+<div class="func"><a name="mat_mul"></a>
+<h3>b = mul(M,a)</h3>
+<p>Returns result of matrix-vector product.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>M&nbsp;(matrix):</td><td>matrix operand</td></tr>
+<tr><td>a&nbsp;(vector):</td><td>vector operand</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>b&nbsp;(vector):</td><td>result of Ma</td></tr>
+</table>
+
+<h4>Example:</h4>
+<p>Given an object with global position p<sub>0</sub> and global orientation R,
+a point q in the object's local reference system has a global position p given by</p>
+<div class="code">
+p = p<sub>0</sub> + mat.mul(R,q)
+</div>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#mat_tmul">mat.tmul</a>
+</p>
+</div>
+
+
+<div class="func"><a name="mat_tmul"></a>
+<h3>b = tmul(M,a)</h3>
+<p>Returns result of transpose matrix-vector product.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>M&nbsp;(matrix):</td><td>matrix operand</td></tr>
+<tr><td>a&nbsp;(vector):</td><td>vector operand</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>b&nbsp;(vector):</td><td>result of M<sup>T</sup>a</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>For orthonormal matrices (e.g. rotation matrices), the transpose is
+identical to the inverse. Therefore, for any rotation R, R<sup>T</sup>
+performs the inverse rotation:
+<div class="code">
+RR<sup>T</sup> = R<sup>T</sup>R = I
+</div>
+</p>
+
+<h4>Example:</h4>
+<p>Given an object with global position p<sub>0</sub> and global orientation R,
+a point with global position p has a position q in the object's local reference system given by</p>
+<div class="code">
+q = mat.tmul(R,p-p<sub>0</sub>)
+</div>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#mat_mul">mat.mul</a>
+</p>
+</div>
+
+
+</div>
+</BODY>
+</HTML>

@@ -1,0 +1,132 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_FLIGHTDATA DIALOGEX 0, 0, 193, 47
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Flight Data Monitor"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_VESSELLIST,0,0,95,94,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom1",IDC_GRAPH,"GraphWindow",WS_TABSTOP,0,47,193,6
+    LISTBOX         IDC_DATALIST,97,0,96,44,LBS_MULTIPLESEL | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Start",IDC_STARTSTOP,0,30,33,14
+    LTEXT           "Sample rate [Hz]",IDC_STATIC,2,16,53,8
+    PUSHBUTTON      "Reset",IDC_RESET,34,30,33,14
+    COMBOBOX        IDC_RATE,56,14,39,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Log",IDC_LOG,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,72,30,23,14
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_DATA                "Altitude"
+    IDS_DATA2               "Airspeed"
+    IDS_DATA3               "Mach number"
+    IDS_DATA4               "Freestream temperature"
+    IDS_DATA5               "Pressure"
+    IDS_DATA6               "Angle of Attack"
+    IDS_DATA7               "Lift and Drag"
+    IDS_DATA8               "L/D"
+    IDS_DATA9               "Mass"
+    IDS_YLABEL              "Alititude: km"
+    IDS_YLABEL2             "Airspeed: m/s"
+    IDS_YLABEL3             "Mach number"
+    IDS_YLABEL4             "Temp: K"
+    IDS_YLABEL5             "Pressure: kPa"
+    IDS_YLABEL6             "AOA: deg"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_YLABEL7             "Lift, Drag: kN"
+    IDS_YLABEL8             "L/D"
+    IDS_YLABEL9             "Mass: kg"
+    IDS_LEGEND              "Alt"
+    IDS_LEGEND2             "Speed"
+    IDS_LEGEND3             "Mach"
+    IDS_LEGEND4             "Temp"
+    IDS_LEGEND5             "Static&Dynamic"
+    IDS_LEGEND6             "Vertical&Horizontal"
+    IDS_LEGEND7             "Lift&Drag"
+    IDS_LEGEND8             "L/D"
+    IDS_LEGEND9             "Mass"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_INFO                "FLIGHT DATA:\r\n\r\nDisplay or record various spacecraft parameters during a simulation.\r\n\r\nThe flight data window can be opened by selecting the ""Flight data monitor"" entry in the Custom Functions dialog (Ctrl-F4)."
+    IDS_TYPE                "Tools and dialogs"
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

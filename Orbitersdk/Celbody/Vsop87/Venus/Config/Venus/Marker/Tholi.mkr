@@ -1,0 +1,58 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++256.40	-2.10	:	Alcyone Tholus
++247.00	+68.20	:	Ale Tholus
++98.00	+53.00	:	Amra Tholus
++287.20	-29.80	:	Angerona Tholus
++116.00	-73.80	:	Angrboda Tholus
++208.80	+40.30	:	Apakura Tholus
++247.00	+48.70	:	Ashtart Tholus
++130.30	+57.80	:	Bast Tholus
++246.00	+49.00	:	[Brigit Tholus]
++233.00	+44.30	:	Cotis Tholus
++6.30	+24.20	:	Dröl-ma Tholus
++342.20	+37.60	:	Evaki Tholus
++236.40	+35.90	:	Furki Tholus
++291.50	-54.50	:	Gerd Tholi
++255.80	-8.60	:	Grechukha Tholi
++255.30	+5.20	:	Iaso Tholus
++296.50	-28.70	:	Justitia Tholus
++177.80	-9.10	:	Khotal-Ekva Tholi
++296.80	-26.30	:	Kwannon Tholus
++266.00	+7.80	:	Lama Tholus
++164.70	-37.50	:	Mahuea Tholus
++281.30	-44.70	:	Meiboia Tholus
++237.30	+43.00	:	Mentha Tholus
++252.00	-37.70	:	Monoshi Tholus
++305.50	-9.00	:	Muru Tholus
++80.00	-25.80	:	Narina Tholi
++16.00	-57.50	:	Ndara Tholus
++200.00	-68.60	:	Neegyauks Tholus
++247.90	+61.20	:	Nertus Tholus
++255.70	+8.40	:	Nipa Tholus
++188.00	-77.00	:	Norterma Tholus
++46.30	+28.70	:	Otafuku Tholi
++68.30	-34.70	:	Padma Tholi
++252.20	+8.30	:	Pajan Yan Tholus
++268.00	+10.50	:	Paoro Tholi
++353.20	-0.70	:	Perynya Tholus
++2.00	-56.30	:	Podaga Tholus
++295.40	-40.60	:	Rohina Tholus
++73.30	-25.50	:	Rosna Tholi
++202.90	+64.30	:	Semele Tholi
++335.20	-6.90	:	Shamiram Tholus
++252.20	-13.80	:	Sumerla Tholi
++355.10	+29.50	:	Toci Tholus
++222.30	-66.90	:	Turi Tholus
++205.20	-35.40	:	Tursa Tholus
++252.40	+66.20	:	Upunusa Tholus
++176.50	-6.50	:	Vilakh Tholus
++306.00	-13.50	:	Vupar Tholus
++288.10	+41.40	:	Wohpe Tholus
++209.90	+40.60	:	Wurunsemu Tholus
++341.50	-13.80	:	Yurt-Ava Tholus
++335.30	-9.40	:	Zorya Tholus

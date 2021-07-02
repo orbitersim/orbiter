@@ -1,0 +1,21 @@
+BEGIN_DESC
+The Hubble Space Telescope is the visible/ultraviolet/near-infrared
+element of the Great Observatories astronomical program. The spacecraft
+provides an order of magnitude better resolution than is capable from
+ground-based telescopes.
+
+
+During initial on-orbit checkout of the Hubble's systems, a
+flaw in the telescope's main reflective mirror was found that prevented
+perfect focus of the incoming light. This flaw was caused by the
+incorrect adjustment of a testing device used in building the mirror.
+Fortunately, however, Hubble was designed for regular on-orbit
+maintenance by Shuttle missions. The first servicing mission, STS-61 in
+December 1993, fully corrected the problem by installing a corrective
+optics package and upgraded instruments (as well as replacing other
+satellite components). 
+
+
+David Sundstrom's HST model shows off the new grappling capabilities of Atlantis' manipulator arm.
+The arm can be controlled via the control pad (Ctrl-Space).
+END_DESC

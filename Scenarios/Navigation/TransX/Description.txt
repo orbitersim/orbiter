@@ -1,0 +1,12 @@
+BEGIN_DESC
+These scenarios demonstrate the use of the TransX interplanetary navigation
+MFD by Duncan Sharpe.
+
+
+Before launching one of these, make sure that the TransX plugin is activated under
+the Modules tab.
+
+
+Documentation for TransX can be found in the Doc folder:
+TransXmanualv3, TransX quickstart and deepspacemanual.
+END_DESC

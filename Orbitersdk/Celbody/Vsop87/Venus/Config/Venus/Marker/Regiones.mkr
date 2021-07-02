@@ -1,0 +1,28 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++0.30	-25.50	:	Alpha Regio
++267.50	+21.60	:	Asteria Regio
++200.10	+9.20	:	Atla Regio
++51.40	+32.80	:	Bell Regio
++282.80	+25.30	:	Beta Regio
++328.00	-31.50	:	Dione Regio
++167.00	-53.00	:	Dsonkwa Regio
++21.50	+10.50	:	Eistla Regio
++294.50	+22.50	:	Hyndla Regio
++212.00	-43.00	:	Imdr Regio
++245.00	-61.00	:	Ishkus Regio
++315.00	+7.00	:	Laufey Regio
++251.80	+70.90	:	Metis Regio
++277.90	+65.80	:	Mnemosyne Regio
++288.00	-65.00	:	Neringa Regio
++85.60	-2.80	:	Ovda Regio
++282.80	-6.00	:	Phoebe Regio
++120.00	+66.00	:	Tethus Regio
++284.20	-37.40	:	Themis Regio
++129.90	-11.40	:	Thetis Regio
++225.00	+27.00	:	Ulfrun Regio
++332.00	-11.00	:	Vasilisa Regio

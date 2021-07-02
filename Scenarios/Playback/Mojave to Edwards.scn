@@ -1,0 +1,62 @@
+BEGIN_HYPERDESC
+<h1>Mojave to Edwards</h1>
+<p>A short recorded flight from Mojave Spaceport to Edwards Airforce base next door.</p>
+<p>To work correctly, this scenario requires the Antelope Valley addon texture pack to be installed. You can get it from the Download page at the <a href="http://orbit.medphys.ucl.ac.uk">Orbiter</a> site.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.7357482732
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01S
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01S
+  MODE Cockpit
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 1
+  OBS 5.34 5.76
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+BEGIN_VC
+END_VC
+
+BEGIN_SHIPS
+GL-01S:DG-S
+  STATUS Landed Earth
+  POS -118.1427663 35.0591778
+  HEADING 270.04
+  ALT 2.480
+  AROT 0.565 62.168 -54.918
+  RCSMODE 0
+  AFCMODE 7
+  PRPLEVEL 0:1.000000 1:0.575514 2:1.000000
+  NAVFREQ 94 524 84 114
+  XPDR 0
+  FLIGHTDATA
+  HOVERHOLD 0 1 0.0000e+000 0.0000e+000
+  GEAR 1.0000 0.0000
+  COMPARTMENT_TEMP 289.39 288.57 290.55 288.52 290.55 288.52 317.76 1019.97 362.08 241.42 241.42 240.28 291.67
+  COOLANT_STATE 0 0.500 287.000
+  AAP 0:0 0:0 0:0
+  PSNGR 2 3 4
+  PANELCOL 2
+  TANKCONFIG 1
+END
+END_SHIPS

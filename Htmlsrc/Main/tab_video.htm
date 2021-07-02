@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Video settings</title>
+</HEAD>
+<BODY>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; Video</p>
+
+<h1><a name="hid_tab_video"></a>Video settings</h1>
+<p>
+On this page you can select a video device, switch between running the simulation in fullscreen or window mode, and choose screen resolution and colour depth.</p>
+<p>
+If you are running the Orbiter <i>Graphics Server</i> (orbiter_ng) with a 3rd party graphics client, the options on this page may be different. Refer to the graphics client documentation for details.</p>
+
+<h2>3-D device</h2>
+<p>
+Lists the available hardware and software devices for 3D rendering. Select a hardware device that supports transformation and lighting (T&amp;L) when possible, such as <i>Direct3D T&amp;L HAL</i>. If a T&amp;L device is not available, at least pick a hardware device, such as Direct3D HAL. Software devices such as <i>RGB Emulation</i> will produce poor performance or may fail to run altogether. Note that some hardware devices may not support window mode.</p>
+<p>
+<b>Always enumerate devices</b>: Tick this box if Orbiter does not display 3-D devices or screen modes correctly. This option enforces a hardware scan whenever Orbiter is launched and skips the device data stored in device.dat. Make sure to tick this box after upgrading your graphics hardware or DirectX/video drivers to make Orbiter aware of the changes. In general it is a good idea to leave this box ticked all the time.</p>
+<p>
+<b>Try stencil buffer</b>: Tick this box to enable stencil buffer effects when available. Stencil buffers can improve various visual effects (for example, provide support for alpha-blended shadows) but can have an impact on performance. If the selected video mode doesn't support stencil buffers, this option is ignored. Generally, 32-bit modes do support stencil buffering, while 16-bit modes don't.</p>
+
+<h2>Full Screen</h2>
+<p>
+Select this option to run Orbiter in fullscreen mode. You can choose the screen resolution and colour depth from the lists provided. Only modes supported by the selected device are listed here. Higher resolution and colour depth will improve the visual appearance at the cost of reduced performance.</p>
+<p>
+<b>Disable vertical sync</b>: This allows Orbiter to update a frame without waiting for a synchronisation signal from the monitor. This can improve frame rates, but may lead to visual artefacts (tearing). Note that some video drivers allow to override application vsync settings, in which case this option has no effect.</p>
+<p>
+<b>Disable hardware pageflip</b>: This option can fix a problem with periodic white screen flashes on some systems. It replaces the hardware page flip command with a memory copy operation. This option also automatically disables vsync.
+</p>
+
+<h2>Window</h2>
+<p>
+Select this option to run Orbiter in a window. You can specify the size of the render window here. Selecting one of the <i>fixed aspect ratio</i> options (4:3 normal, 16:10 widescreen or 16:9 widescreen) automatically adjusts the window width or height to maintain the aspect ratio. Large window sizes may reduce simulation performance. Note that some older graphics drivers may not allow 3-D applications to run in window mode.</p>
+</BODY>
+</HTML>

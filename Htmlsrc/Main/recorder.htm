@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<Title>Flight recorder</Title>
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="intro.htm">Orbiter</a> &gt; <a class="header" href="mainmenu.htm">Main menu</a> &gt; Flight recorder</p>
+
+<h1>Flight recorder</h1>
+
+<p>The flight recorder allows to record simulation sessions for later replay.
+To open the flight recorder dialog, press <kbd class="ctrl">Ctrl</kbd> <kbd class="ctrl">F5</kbd>, or select <i>Record</i> from the main dialog (<kbd class="ctrl">F4</kbd>).</p>
+
+<p>You can select a name under which the playback scenario will be saved. The default selection is the name of the scenario currently running. All playback scenarios are saved
+in the <i>Playback</i> folder. If you select a name that exists already, a confirmation message will pop up before overwriting the existing playback.</p>
+
+<p>You can then press the <i>REC</i> button to start the recording. Recording will stop when you press the <i>STOP</i> button or end the simulation session.</p>
+
+<p>To start the playback, simply launch the generated scenario under the <i>Playback</i> folder.</p>
+
+<h2>Keyboard shortcuts</h2>
+<p>You can start and stop recording without opening the recorder dialog by pressing <kbd class="ctrl">Ctrl</kbd> <kbd>C</kbd>.</p>
+
+<h2>Advanced recording options</h2>
+<p>Pressing the &darr; button on the recorder dialog opens additional recording options.
+These include:</p>
+<h3>Advanced recorder options</h3>
+<p><ul>
+<li><b>Record time acceleration</b>: Record changes in time accelerations in the playback stream. This allows the playback to run at the same acceleration settings.
+If disabled, or if the user disables automatic time acceleration during playback, the acceleration setting can be changed manually during playback.</li>
+<li><b>Record focus events</b>: Record the change of input focus from one vessel to another in the playback stream. These switches will then also occur during playback.
+Otherwise, the input focus stays with the initial vessel throughout the playback, even if focus was switched during recording.</li>
+<li><b>Sampling in system time steps</b>: If selected, the system clock will be used to calculate the sampling intervals for saving position and attitude data. Otherwise,
+the simulation time will be used. If using system time, sampling intervals will be larger during time acceleration. This is usually preferred, because otherwise large
+amounts of redundant data may be recorded during coasting phases that are recorded at high time acceleration settings.</li>
+</ul></p>
+
+<h3>Attitude data</h3>
+<p>Allows to select the frame of reference to which the attitude data refer.</p>
+<p><ul>
+<li><b>Ecliptic frame</b>: Use the inertial ecliptic (J2000) frame of reference</li>
+<li><b>Local horizon frame</b>: Use the current horizon frame. In this case, the recorded Euler angles correspond directly to pitch, yaw and roll.</li>
+</ul></p>
+
+<h3>Position/velocity data</h3>
+<p>Allows to select the frame of reference for the linear state vectors (position and velocity).</p>
+<p><ul>
+<li><b>Ecliptic fame</b>: Use the ecliptic (J2000) frame of reference</li>
+<li><b>Equatorial frame</b>: Use the equatorial frame of the current orbit reference object.</li>
+</ul></p>
+
+<p>For more details about playback file stream formats and data, see <i>Doc\Technotes\RecorderRef.pdf</i>.</p>
+
+<h2>Playback options</h2>
+<p>If the Recorder/playback dialog is opened during a replay, it allows to tune the replay options.</p>
+<p><ul>
+<li><b>Show inflight notes</b>: Show the screen annotations recorded with the playback stream.</li>
+<li><b>Play at recording speed</b>: Automatically switch time acceleration settings to the values recorded in the playback stream.</li>
+<li><b>Use recorded camera settings</b>: Automatically set the camera mode and position to the values recorded in the playback stream.</li>
+<li><b>Use recorded focus events</b>: Switch the input focus between vessels as recorded in the playback stream.</li>
+</ul></p>
+<p>In addition, you can open the <i>Playback editor</i> by pressing the <i>Editor</i> button. The playback editor allows to enhance
+the playback stream by inserting annotations, camera positions, and time acceleration changes.</p>
+</BODY>
+</HTML>

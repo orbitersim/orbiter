@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<script language="JavaScript" src="master.js"></script>
+<TITLE>Docking MFD display</TITLE>
+</HEAD>
+<BODY>
+<h1>Docking MFD display</h1>
+<p>
+Move the mouse over the images to see a description of the different elements.</p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td rowspan=2>
+<img src="mfd_dock.gif" usemap="#surfmap" border=0>
+<map name="surfmap">
+<area shape=rect coords="0,13,66,26" A onmouseover="doSec(lbl1)" onmouseout="noSec(lbl1)" HREF="#">
+<area shape=rect coords="0,26,82,39" A onmouseover="doSec(lbl2)" onmouseout="noSec(lbl2)" HREF="#">
+<area shape=rect coords="0,39,82,52" A onmouseover="doSec(lbl3)" onmouseout="noSec(lbl3)" HREF="#">
+<area shape=rect coords="97,0,137,15" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="167,0,206,14" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="206,0,292,14" A onmouseover="doSec(lbl6)" onmouseout="noSec(lbl6)" HREF="#">
+<area shape=rect coords="185,25,229,52" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="235,25,282,52" A onmouseover="doSec(lbl8)" onmouseout="noSec(lbl8)" HREF="#">
+<area shape=rect coords="194,53,234,279" A onmouseover="doSec(lbl9)" onmouseout="noSec(lbl9)" HREF="#">
+<area shape=rect coords="240,53,282,279" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+<area shape=rect coords="81,89,96,108" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+<area shape=poly coords="128,115,134,115,134,158,178,158,178,166,134,166,134,209,128,209,128,166,84,166,84,158,128,158" A onmouseover="doSec(lbl12)" onmouseout="noSec(lbl12)" HREF="#">
+<area shape=poly coords="60,168,66,162,95,191,125,162,130,168,101,198,130,227,125,231,95,202,66,231,60,227,90,198" A onmouseover="doSec(lbl13)" onmouseout="noSec(lbl13)" HREF="#">
+<area shape=poly coords="95,174,102,184,74,201,59,203,72,188" A onmouseover="doSec(lbl14)" onmouseout="noSec(lbl14)" HREF="#">
+<area shape=rect coords="8,79,186,279" A onmouseover="doSec(lbl15)" onmouseout="noSec(lbl15)" HREF="#">
+</map>
+</td>
+<td width=100%>
+<font class="label">
+<DIV ID="lbl1" STYLE="display: none">
+Telemetry source identifier for IDS or XPDR signal.
+</DIV>
+<DIV ID="lbl2" STYLE="display: none">
+<b>TOFS</b>: Tangential offset from approach path, in units of the approach cone radius at the current target distance. TOFS &lt; 1 indicates a position inside the approach cone.
+</DIV>
+<DIV ID="lbl3" STYLE="display: none">
+<b>TVEL</b>: Tangential velocity (velocity relative to target, projected into plane normal to approach path) [m/s].
+</DIV>
+<DIV ID="lbl4" STYLE="display: none">
+Signal acquisition mode: IDS (Instrument Docking System), XPDR (transponder), or VIS (visual).
+</DIV>
+<DIV ID="lbl5" STYLE="display: none">
+Slaved NAV receiver.
+</DIV>
+<DIV ID="lbl6" STYLE="display: none">
+NAV receiver frequency [kHz].
+</DIV>
+<DIV ID="lbl7" STYLE="display: none">
+Distance to target (XPDR) or distance to dock (IDS, VIS) [m].
+</DIV>
+<DIV ID="lbl8" STYLE="display: none">
+Closing speed (&gt;0: approaching, &lt;0: retreating).
+</DIV>
+<DIV ID="lbl9" STYLE="display: none">
+Distance bar (logarithmic scale). Range: 0.1m - 1000m.
+</DIV>
+<DIV ID="lbl10" STYLE="display: none">
+Closing speed bar (logarithmic scale). Range: 0.1m/s - 1000m/s. Yellow: closing, green: retreating.
+</DIV>
+<DIV ID="lbl11" STYLE="display: none">
+Alignment of rotation around longitudinal axis (12 o'clock position indicates correct alignment). Only displayed if directional alignment is within 5&deg;.
+</DIV>
+<DIV ID="lbl12" STYLE="display: none">
+Approach path indicator. Indicates position of approach path relative to ship. When centered, the ship is aligned on approach path. Radial scale is logarithmic (0.1 - 1000m).
+</DIV>
+<DIV ID="lbl13" STYLE="display: none">
+Alignment indicator: alignment of ship's forward direction with approach path direction. When centered, the ship's forward direction is parallel to the approach path. Radial scale is linear (0 - 20&deg;). Indicator turns white if misalignment &lt 0.5&deg;.
+</DIV>
+<DIV ID="lbl14" STYLE="display: none">
+Tangential velocity indicator. Relative tangential velocity with respect to target. Radial scale is logarithmic (0.01 - 100 m/s).
+</DIV>
+<DIV ID="lbl15" STYLE="display: none">
+Visual alignment indicator.
+</DIV>
+</td>
+</tr>
+</table>
+
+Legend:<br>
+<font class="label">
+<b>Green/red circle</b>: Approach cone. The concentric red or green circle indicates the size of the approach cone at the current dock distance. The ship should approach the dock so that the ap­proach path indicator is always inside the approach cone (indicated by a green circle). The approach cone becomes smaller as the ship approaches the dock.
+</font>
+</BODY>
+</HTML>

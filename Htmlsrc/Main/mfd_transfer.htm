@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<Title>Transfer MFD</Title>
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="intro.htm">Orbiter</a> &gt; <a class="header" href="mfd.htm">MFD</a> &gt; Transfer</p>
+
+<h1>Transfer MFD</h1>
+
+<p class="small">
+<table cols=2 width=100% cellspacing=1 cellpadding=2 border=1>
+<tr>
+<td width=50% align=center><a href="mfd_transfer_ctrl.htm">Controls</a></td>
+<td width=50% align=center><a href="mfd_transfer_disp.htm">Display components</a></td>
+</tr>
+</table><p>
+
+<p>The Transfer MFD mode is used for calculating transfer orbits between planets or moons (or more generally, between any objects with significantly different orbits, for which the Sync orbit MFD is not sufficient).<p>
+
+<p>Note that Orbiter now contains Duncan Sharpe’s <i>TransX</i> MFD mode as a plugin module, which supersedes and extends most of the Transfer MFD mode. TransX is described in a separate document (TransXmanualv3).</p>
+
+<p>The Transfer MFD looks similar to the Orbit MFD: it displays a <i>source</i> and a <i>target</i> orbit, relative to a selectable orbit <i>reference</i>. The source orbit is usually your ship’s current orbit, although sometimes a different source is more appropriate (see below). The MFD again as-sumes matching orbital planes of source and target, although this condition usually can not be precisely satisfied for interplanetary orbits.<p>
+
+<h2>Source orbit selection</h2>
+
+<p>The source orbit is the orbit from with to eject into the transfer orbit. Usually the source orbit will be the ship’s current orbit. In certain situations however it is better to use a different source. Consider for example an interplanetary transfer from Earth to Mars, using the Sun as reference. Since the ship’s primary gravitational source will be Earth rather than the Sun, its orbit w.r.t. the Sun will be strongly distorted by the Earth’s field. In this case it is better to di-rectly use Earth as the source orbit.</p>
+
+<p>Whenever the source is not identical to the ship, a small direction indicator will be displayed at the current source position which shows the ship’s direction w.r.t. the source. This helps with timing the ejection burn (e.g. direction indicator pointing away from the Sun.</p>
+
+<h2>Hypothetical transfer orbit</h2>
+
+<p>Unlike in Orbit mode, this MFD allows you to plot a hypothetical transfer orbit (HTO), which allows to set up “what if” scenarios, without having to change the actual orbit. The HTO display is toggled on/off via <kbd class="ctrl">Shift</kbd> <kbd>X</kbd>. It is calculated assuming that somewhere along the current source orbit a prograde or retrograde orbit ejection burn occurs. The HTO has two parameters: the <i>longitude</i> at which the ejection burn occurs (adjusted with <kbd class="ctrl">Shift</kbd> <kbd>,</kbd>/<kbd>.</kbd>) and the <i>velocity change</i> during the burn (adjusted with <kbd class="ctrl">Shift</kbd> <kbd>-</kbd>/<kbd>=</kbd>). The HTO is displayed as a dashed green curve in the MFD. The position of the ejection burn is indicated by a dashed green radius vector.</p>
+
+<p>A number of parameters is shown when the HTO is turned on:</p>
+
+<p><table cols=2 width=100% border=0>
+<tr>
+<td>TLe:</td><td>True longitude of orbit ejection point</td>
+</tr>
+<tr>
+<td>DTe:</td><td>Time to ejection point [s]</td>
+</tr>
+<td>Dv:</td><td>Velocity difference resulting from ejection burn [m/s]</td>
+</tr>
+<tr>
+<td>TLi:</td><td>True longitude of interception with target orbit (if applicable)</td>
+</tr>
+<tr>
+<td>DTi:</td><td>Time to interception with target orbit [s] (if applicable)
+</tr>
+</table></p>
+
+<h2>Intercept indicator</h2>
+
+<p>If the source orbit (or, if shown, the HTO) intersects the target orbit, the intersection point is marked by a gray line, and the intersection longitude is displayed (TLi). The position of the target at the time when the ship reaches the intersection point is marked by a dashed yellow line. <i>The objective is to adjust the HTO so that the gray and dashed yellow lines coincide, so that ship and target arrive at the intersection point simultaneously.</i><p>
+
+<h2>Hohmann transfer orbit</h2>
+
+<p>A transfer orbit which just touches the target orbit (i.e. where ejection and intersection longitude are 180° apart) is called a Hohmann minimum energy transfer orbit, because it mini-mises the amount of fuel used during the orbit ejection and injection points. Transfer orbits with larger major axis require more fuel, but are faster than Hohmann orbits.</p>
+
+<h2>Ejection burn</h2>
+
+<p>Once the HTO has been set up, the ejection burn takes place when the ejection point is reached (when the solid and dashed green lines coincide). The ejection burn is prograde (or retrograde) given the orbit w.r.t. the current orbit reference. As the burn takes place, the current orbit (solid green line) will approach the HTO. The burn is terminated when the orbit coin-cides with the HTO, and Dv has reached zero. After ejection the HTO should be turned off so that intercept parameters are displayed for the actual transfer orbit.</p>
+
+<h2>Numerical multi-body trajectory calculation</h2>
+
+<p>The source, target and transfer orbits discussed above are analytic 2-body solutions. The Transfer MFD however also supports a numerical trajectory calculation, to account for the effect of multiple gravitational sources. The display of the numerical trajectory is toggled with <kbd class="ctrl">Shift</kbd> <kbd>M</kbd>. The trajectory is displayed as a solid bright yellow line. The calculation is performed in discrete time steps, starting from the current source position, or (if displayed) from the HTO ejection point. Since the calculation of the trajectory can be time-consuming, it is not automatically updated, but can be refreshed with <kbd class="ctrl">Shift</kbd> <kbd>U</kbd>. The interval between time steps is automatically adjusted to provide consistent accuracy. The number of time steps, and thus the length of the trajectory, can be selected via <kbd class="ctrl">Shift</kbd> <kbd>Z</kbd>. The number of time steps, and the total time interval covered by the trajectory, are displayed under “Num orbit” in the MFD.</p>
+
+<h2>Interplanetary transfers</h2>
+
+<p>Using the Transfer MFD for Earth to Moon orbits should be straightforward. For interplanetary transfers (e.g. Earth to Mars) a few caveats apply:</p>
+
+<p><ul>
+<li>For interplanetary transfers, the reference should be the Sun, and the source orbit should be the <i>planet currently being orbited</i>. This is because the ship’s orbit w.r.t. the Sun will be severely distorted by the planet.</li>
+<li>The ship should be in an orbit with zero inclination against the ecliptic before ejection. The relative inclination between source and target orbits cannot be adjusted, it is simply given by the relative inclination between the planets’ orbits.</li>
+<li>The ejection burn should take place with the Sun in opposition (on the planet’s “dark” side) so that the ship’s orbital velocity is added to the planetary velocity. This is the case when the source-ship direction indicator is pointing away from the Sun.</li>
+<li>Immediately before the ejection burn, switch the source orbit to your ship, so that Dv can be estimated.</li>
+</ul></p>
+
+</BODY>
+</HTML>

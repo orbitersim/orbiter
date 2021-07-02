@@ -1,0 +1,3 @@
+BEGIN_DESC
+Orbiter uses improved solutions for its planetary position and velocity calculations. This folder shows a few examples.
+END_DESC

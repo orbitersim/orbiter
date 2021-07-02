@@ -1,0 +1,62 @@
+BEGIN_DESC
+Orbiter's rigid body model in action. Check how the angular
+momentum oscillates between the principal axes of the glider. Try the
+"Killrot" navmode sequence (Numpad-5) for a nice firework of attitude
+thrusters. Killrot is a very useful tool in many situations.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0302505903
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship SH-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SH-02
+  MODE Extern
+  POS 4.00 50.48 25.92
+  TRACKMODE GlobalFrame
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:2
+  HEADING 174.13
+  FUEL 1.000
+END
+SH-02:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 2965117.73 5640139.83 -2166361.75
+  RVEL 6763.486 -3666.751 -275.629
+  AROT 106.68 4.96 -67.25
+  VROT -125.73 -37.25 48.07
+  FUEL 1.000
+END
+GL-02:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:3
+  HEADING 0.00
+  FUEL 1.000
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  HEADING 0.00
+  FUEL 1.000
+END
+END_SHIPS

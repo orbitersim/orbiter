@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="zlib"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(ZlibIncludeDir)"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="zlibstatic.lib"
+		AdditionalLibraryDirectories="&quot;$(ZlibLibDir)&quot;"
+	/>
+	<UserMacro
+		Name="ZlibDir"
+		Value="$(SolutionDir)..\Extern\Zlib"
+	/>
+	<UserMacro
+		Name="ZlibIncludeDir"
+		Value="$(ZlibDir)\include"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="ZlibLibDir"
+		Value="$(ZlibDir)\lib"
+		PerformEnvironmentSet="true"
+	/>
+</VisualStudioPropertySheet>

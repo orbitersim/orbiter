@@ -1,0 +1,8 @@
+BEGIN_HYPERDESC
+<h1>Dragonfly scenarios</h1>
+<p>The Dragonfly class is a small utility vessel designed for moving payload in orbit.
+It is controlled via the RCS engines located in the two side pods and aft pod.</p>
+
+<p>The Dragonfly has been jointly developed by Roger Long, Radu Poenaru and Martin Schweiger.
+The Operations Handbook is essential reading for all Dragonfly pilots!</p>
+END_HYPERDESC

@@ -1,0 +1,7 @@
+BEGIN_DESC
+A set of scenarios recreating historic flybys of Jupiter and its moons by the Voyager and Galileo space probes.
+They demonstrate the improved long-term accuracy of Orbiter's ephemeris calculation for the Jovian system using
+GALSAT perturbation code.
+
+You will need to apply time compression for these scenarios.
+END_DESC

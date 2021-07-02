@@ -1,0 +1,897 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{9df907ad-c857-4dbf-815b-0c3092c2a076}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DirectX">
+      <UniqueIdentifier>{51403284-b7d1-4f69-b0cf-c9ed2ed297b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\MFD">
+      <UniqueIdentifier>{3719a372-f078-45ee-b441-83077235cbe3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Cockpit">
+      <UniqueIdentifier>{4cc88bd9-8885-4a59-8e4b-4feb0cd2e994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Body">
+      <UniqueIdentifier>{46782d41-61a0-4af4-a795-7c266402ca6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Body\Vessel">
+      <UniqueIdentifier>{21da8d8d-a467-4db8-ab31-4cb54b765bc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Body\Base">
+      <UniqueIdentifier>{bf91cbdf-30f2-466f-ba6a-a2f59613b6af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\API">
+      <UniqueIdentifier>{a88394e2-939c-4c63-a4c8-56e4cbd8df60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Dialogs">
+      <UniqueIdentifier>{ac1d12d4-4b22-43bf-a771-fb688ba7c678}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Launchpad">
+      <UniqueIdentifier>{5a07ce99-8302-47e5-8f70-6bc6cfe99d81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Graphics">
+      <UniqueIdentifier>{9c9feac5-ea5c-459e-8a7b-409a3fe7e362}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Utils">
+      <UniqueIdentifier>{b77ba9d2-da01-4b62-8bd0-6b7ae4f65488}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{d655b516-443f-4bb5-97ec-778924ca113e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{26f52800-6f06-4e89-a48f-08ac62787d5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{01aa524a-ca41-4983-b48a-089201eabcf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\API\Lua">
+      <UniqueIdentifier>{a9bb4378-c742-4972-b719-fa33614b60b6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Astro.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Camera.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Config.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ddeserver.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Element.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\elevmgr.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Help.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Input.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Keymap.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LightEmitter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mesh.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Nav.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Orbiter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PlaybackEd.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Psys.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Script.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Shadow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\State.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vecmat.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VectorMap.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\D3d7util.cpp">
+      <Filter>Source\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\D3dmath.cpp">
+      <Filter>Source\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Di7frame.cpp">
+      <Filter>Source\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Mfd.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdAlign.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdComms.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdDocking.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdHsi.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdLanding.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdMap.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdMap_old.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdOrbit.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdSurface.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdSync.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdTransfer.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MfdUser.cpp">
+      <Filter>Source\MFD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Defpanel.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hud.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MenuInfoBar.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Pane.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Panel.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Panel2D.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VCockpit.cpp">
+      <Filter>Source\Cockpit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Body.cpp">
+      <Filter>Source\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BodyIntegrator.cpp">
+      <Filter>Source\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Celbody.cpp">
+      <Filter>Source\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Planet.cpp">
+      <Filter>Source\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Rigidbody.cpp">
+      <Filter>Source\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Star.cpp">
+      <Filter>Source\Body</Filter>
+    </ClCompile>
+    <ClCompile Include="..\FlightRecorder.cpp">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SuperVessel.cpp">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vessel.cpp">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vesselbase.cpp">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vesselstatus.cpp">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Base.cpp">
+      <Filter>Source\Body\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Baseobj.cpp">
+      <Filter>Source\Body\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CamAPI.cpp">
+      <Filter>Source\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DrawAPI.cpp">
+      <Filter>Source\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GraphicsAPI.cpp">
+      <Filter>Source\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MFDAPI.cpp">
+      <Filter>Source\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ModuleAPI.cpp">
+      <Filter>Source\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OrbiterAPI.cpp">
+      <Filter>Source\API</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CustomControls.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dialogs.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DialogWin.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgCamera.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgCapture.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgFocus.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgFunction.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgHelp.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgInfo.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgMap.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgMenuCfg.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgMgr.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgRecorder.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgTacc.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DlgVishelper.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\htmlctrl.c">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Select.cpp">
+      <Filter>Source\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Launchpad.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LpadTab.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabAbout.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabExtra.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabJoystick.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabModule.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabParam.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabScenario.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabVideo.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TabVisual.cpp">
+      <Filter>Source\Launchpad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cloudmgr2.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CSphereMgr.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\D3d7enum.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\D3d7frame.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ExtraRender.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\OVP\GDIClient\GDIClient.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\OGraphics.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Particle.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Scene.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ScreenNote.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Spherepatch.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\surfmgr2.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Texture.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tilelabel.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TileMgr.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\tilemgr2.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VBase.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vobject.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\VPlanet.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vstar.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Vvessel.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Log.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Memstat.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Util.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ZTreeMgr.cpp">
+      <Filter>Source\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Client.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Network.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Server.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cspheremgr2.cpp">
+      <Filter>Source\Graphics</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Astro.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Camera.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Config.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ddeserver.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Element.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\elevmgr.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Help.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Input.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Keymap.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mesh.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Nav.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Orbiter.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PlaybackEd.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Psys.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Script.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shadow.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\State.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vecmat.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VectorMap.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\D3d7util.h">
+      <Filter>Source\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\D3dmath.h">
+      <Filter>Source\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Di7frame.h">
+      <Filter>Source\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Mfd.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdAlign.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdComms.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdDocking.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdHsi.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdLanding.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdMap.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdMap_old.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdOrbit.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdSurface.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdSync.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdTransfer.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MfdUser.h">
+      <Filter>Source\MFD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Defpanel.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hud.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MenuInfoBar.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Pane.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Panel.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Panel2D.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\VCockpit.h">
+      <Filter>Source\Cockpit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Body.h">
+      <Filter>Source\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Celbody.h">
+      <Filter>Source\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Planet.h">
+      <Filter>Source\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Rigidbody.h">
+      <Filter>Source\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Star.h">
+      <Filter>Source\Body</Filter>
+    </ClInclude>
+    <ClInclude Include="..\SuperVessel.h">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vessel.h">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vesselbase.h">
+      <Filter>Source\Body\Vessel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Base.h">
+      <Filter>Source\Body\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Baseobj.h">
+      <Filter>Source\Body\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CustomControls.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Dialogs.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DialogWin.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgCamera.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgCapture.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgFocus.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgFunction.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgHelp.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgInfo.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgMap.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgMenuCfg.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgMgr.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgRecorder.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgTacc.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DlgVishelper.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\htmlctrl.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Select.h">
+      <Filter>Source\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Launchpad.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LpadTab.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabAbout.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabExtra.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabJoystick.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabModule.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabParam.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabScenario.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabVideo.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TabVisual.h">
+      <Filter>Source\Launchpad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\OVP\GDIClient\GDIClient.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Log.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Memstat.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Util.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ZTreeMgr.h">
+      <Filter>Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\resource2.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cspheremgr2.h">
+      <Filter>Source\Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Bitmaps\bt_default.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Closedown.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Closedown2.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\dnarrow.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\Folder1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\Folder2.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Icon.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\icon2.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Localdoc\Icon64.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\left.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Orbiter.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\rec_icon.ico">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\Scn1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\Scn2.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\shadow.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\uparrow.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="..\Bitmaps\arrows.bmp" />
+    <Image Include="..\Bitmaps\banner_ng.bmp" />
+    <Image Include="..\Bitmaps\checkboxes.bmp" />
+    <Image Include="..\Bitmaps\Closedown.bmp" />
+    <Image Include="..\Bitmaps\cross.ico" />
+    <Image Include="..\bitmaps\darrow.ico" />
+    <Image Include="..\Bitmaps\darrow_tilt.ico" />
+    <Image Include="..\Bitmaps\ddown.ico" />
+    <Image Include="..\Bitmaps\dup.ico" />
+    <Image Include="..\Bitmaps\finger.ico" />
+    <Image Include="..\Bitmaps\finger1.ico" />
+    <Image Include="..\Bitmaps\finger2.ico" />
+    <Image Include="..\Bitmaps\Icon.bmp" />
+    <Image Include="..\Bitmaps\icon3.ico" />
+    <Image Include="..\Bitmaps\Icon64.bmp" />
+    <Image Include="..\Bitmaps\Icon64.png" />
+    <Image Include="..\Bitmaps\larrow.ico" />
+    <Image Include="..\bitmaps\larrow_in.ico" />
+    <Image Include="..\bitmaps\larrow_t.ico" />
+    <Image Include="..\bitmaps\larrow_tilt.ico" />
+    <Image Include="..\Bitmaps\Logo2.bmp" />
+    <Image Include="..\Bitmaps\Logo2_ng.bmp" />
+    <Image Include="..\Bitmaps\rarrow.ico" />
+    <Image Include="..\Bitmaps\rarrow_tilt.ico" />
+    <Image Include="..\Bitmaps\right.ico" />
+    <Image Include="..\Bitmaps\rightarr.ico" />
+    <Image Include="..\Bitmaps\shadow.bmp" />
+    <Image Include="..\Bitmaps\uarrow.ico" />
+    <Image Include="..\bitmaps\uarrow_tilt.ico" />
+    <Image Include="..\Bitmaps\Splash2016.jpg">
+      <Filter>Resources</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Contrib.txt">
+      <Filter>Resources</Filter>
+    </Text>
+    <Text Include="..\Credit.txt">
+      <Filter>Resources</Filter>
+    </Text>
+    <Text Include="..\Disclaimer.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Orbiter.rc2">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="..\classes.cd" />
+    <None Include="..\bitmaps\image1.bin" />
+    <None Include="..\bitmaps\image2.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Orbiter.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\Htmlsrc\lib\htmlhelp.lib">
+      <Filter>Libraries</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\cloudmgr2.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\CSphereMgr.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\D3d7enum.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\D3d7frame.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\ExtraRender.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\OGraphics.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Particle.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\qtree.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scene.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\ScreenNote.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Spherepatch.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\surfmgr2.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Texture.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\tilelabel.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\TileMgr.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\tilemgr2.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\tilemgr2_imp.hpp">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\VBase.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Vobject.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\VPlanet.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Vstar.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Vvessel.h">
+      <Filter>Source\Graphics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\cryptstring.h.in">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Disclaimer.txt.in">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Client.h">
+      <Filter>Network</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Network.h">
+      <Filter>Network</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Server.h">
+      <Filter>Network</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\VesselAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Orbitersdk.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\OrbiterAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\ModuleAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\MFDAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\GraphicsAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\DrawAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\CamAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\CelBodyAPI.h">
+      <Filter>Source\API</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\resource_video.h" />
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lauxlib.h" />
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lua.h" />
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lua.hpp" />
+    <CustomBuild Include="..\Orbitersdk\include\Lua\luaconf.h" />
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lualib.h" />
+  </ItemGroup>
+</Project>

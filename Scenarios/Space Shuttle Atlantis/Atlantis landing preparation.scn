@@ -1,0 +1,67 @@
+BEGIN_DESC
+Line up with SLF runway 33 and touch down with Atlantis.
+Remember to deploy the airbrake surfaces (Ctrl-B) and lower the
+landing gear (G) before the final flare.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 52260.8898278820
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-101
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-101
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Right
+  TYPE Surface
+END_MFD
+
+BEGIN_SHIPS
+ISS
+  STATUS Orbiting Earth
+  ELEMENTS 6734919 0.0009 74.513 169.034 328.305 143.239 51544.5
+  AROT 30.00 0.00 50.00
+END
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 4668569.60 4001925.18 -1734783.11
+  FUEL 1.000
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+STS-101:Atlantis
+  STATUS Orbiting Earth
+  RPOS 4730765.06 3980331.79 -1700104.08
+  RVEL -201.817 314.779 684.717
+  AROT 53.59 39.02 34.32
+  FUEL 0.858
+  CONFIGURATION 3
+  CARGODOOR 0 0.0000
+  GEAR 0 0.0000
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  HEADING 0.00
+  FUEL 1.000
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  HEADING 0.00
+  FUEL 1.000
+END
+END_SHIPS

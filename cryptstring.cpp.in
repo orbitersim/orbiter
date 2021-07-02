@@ -1,0 +1,24 @@
+// Some strings to be encrypted to make them harder to
+// locate in the executable
+// (use program "scramble" to encrypt, and function uscram (util.cpp) to decrypt)
+// Encrypted string versions written to cryptstring.cpp
+
+// © 2000-2016 Martin Schweiger
+const char *sig1 = @@© 2000-2016 Martin Schweiger@@;
+
+// Copyright (c) 2000-2016 Martin Schweiger
+const char *sig1a = @@Copyright (c) 2000-2016 Martin Schweiger@@;
+
+// orbit.medphys.ucl.ac.uk/
+const char *sig2 = @@orbit.medphys.ucl.ac.uk/@@;
+
+// martins@medphys.ucl.ac.uk
+const char *sig2a = @@martins@medphys.ucl.ac.uk@@;
+
+#ifdef ISBETA
+// Build __DATE__ BETA
+const char *sig3 = @@Build __DATE__ BETA@@;
+#else
+// Build __DATE__
+const char *sig3 = @@Build __DATE__@@;
+#endif

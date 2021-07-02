@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<script language="JavaScript" src="master.js"></script>
+<TITLE>VOR/VTOL MFD display</TITLE>
+</HEAD>
+<BODY>
+<h1>VOR/VTOL MFD display</h1>
+<p>
+Move the mouse over the image to see a description of the different elements.</p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td rowspan=2>
+<img src="mfd_vtol.gif" usemap="#surfmap" border=0>
+<map name="surfmap">
+<area shape=rect coords="0,13,214,26" A onmouseover="doSec(lbl1)" onmouseout="noSec(lbl1)" HREF="#">
+<area shape=rect coords="0,26,98,39" A onmouseover="doSec(lbl2)" onmouseout="noSec(lbl2)" HREF="#">
+<area shape=rect coords="98,26,176,39" A onmouseover="doSec(lbl3)" onmouseout="noSec(lbl3)" HREF="#">
+<area shape=rect coords="0,39,87,52" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="167,0,206,14" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="206,0,292,14" A onmouseover="doSec(lbl6)" onmouseout="noSec(lbl6)" HREF="#">
+<area shape=rect coords="180,26,232,52" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="232,26,284,52" A onmouseover="doSec(lbl8)" onmouseout="noSec(lbl8)" HREF="#">
+<area shape=rect coords="189,52,225,279" A onmouseover="doSec(lbl9)" onmouseout="noSec(lbl9)" HREF="#">
+<area shape=rect coords="240,52,278,279" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+<area shape=rect coords="87,170,104,186" A onmouseover="doSec(lbl14)" onmouseout="noSec(lbl14)" HREF="#">
+<area shape=rect coords="89,99,102,174" A onmouseover="doSec(lbl12)" onmouseout="noSec(lbl12)" HREF="#">
+<area shape=rect coords="20,212,46,238" A onmouseover="doSec(lbl13)" onmouseout="noSec(lbl13)" HREF="#">
+<area shape=rect coords="0,76,189,287" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+</map>
+</td>
+<td width=100%>
+<font class="label">
+<DIV ID="lbl1" STYLE="display: none">
+Telemetry source identifier for VOR or VTOL signal.
+</DIV>
+<DIV ID="lbl2" STYLE="display: none">
+<b>DIST</b>: Distance from VOR/VTOL transmitter [m]
+</DIV>
+<DIV ID="lbl3" STYLE="display: none">
+<b>DIR</b>: Relative direction of VOR/VTOL transmitter [deg] (0=ahead)
+</DIV>
+<DIV ID="lbl4" STYLE="display: none">
+<b>HSPD</b>: Horizontal component of vessel ground speed [m/s]
+</DIV>
+<DIV ID="lbl5" STYLE="display: none">
+Slaved NAV receiver.
+</DIV>
+<DIV ID="lbl6" STYLE="display: none">
+NAV receiver frequency [kHz].
+</DIV>
+<DIV ID="lbl7" STYLE="display: none">
+<b>ALT</b>: Altitude readout [m]
+</DIV>
+<DIV ID="lbl8" STYLE="display: none">
+<b>VSPD</b>: Vertical component of vessel ground speed [m/s]
+</DIV>
+<DIV ID="lbl9" STYLE="display: none">
+Altitude bar (logarithmic scale). Range: 1m - 10km.
+</DIV>
+<DIV ID="lbl10" STYLE="display: none">
+Vertical speed bar (logarithmic scale). Range 0.1m/s - 1km/s. A green bar indicates positive vspeed, a yellow bar negative ground speed. A red bar is a surface impact warning.
+</DIV>
+<DIV ID="lbl11" STYLE="display: none">
+Graphical display for vessel-relative position of NAV transmitter target and relative ground speed.
+</DIV>
+<DIV ID="lbl12" STYLE="display: none">
+Relative ground speed indicator. Radial scale is logarithmic. Range 0.1m/s - 1km/s.
+</DIV>
+<DIV ID="lbl13" STYLE="display: none">
+Relative location of signal transmitter. Radial scale is logarithmic. Range 1m - 10km.
+</DIV>
+<DIV ID="lbl14" STYLE="display: none">
+Origin: current vessel position.
+</DIV>
+</td>
+</tr>
+</table>
+
+Legend:<br>
+<font class="label">
+<b>Green/red circle</b>: VTOL cone. This circle indicates the admissable deviation from the vertical touchdown vector as a function of altitude. During VTOL landing, the target indicator must remain inside the VTOL cone. a <i>red</i> circle indicates that the ship is outside the cone. The VTOL cone is displayed only when the MFD is slaved to a VTOL transmitter.
+</font>
+</BODY>
+</HTML>

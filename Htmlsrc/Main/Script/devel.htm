@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Interpreters for developers</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script User's Guide</a> &gt; Interpreters for developers</p>
+
+<h1>Interpreters for developers</h1>
+<p>The Orbiter API provides methods for creating interpreter instances and extending
+the default script vocabulary, e.g. to add vessel-type specific methods to vessel
+class instances.</p>
+
+<h2>Adding type-specific vessel methods</h2>
+<p>A vessel DLL can intercept the creation of vessel objects by the Lua interpreter
+in order to attach additional vessel-type specific methods to the object.
+The interpreter can then call these methods for all vessel objects of this type.</p>
+
+<p>For example, a vessel DLL may provide script methods for landing gear operation.
+This allows the user to raise or lower the gear from a Lua terminal (LuaMFD or
+LuaConsole). Typically, we may want to provide commands</p>
+<div class="code">
+v=vessel.get_interface('MyVessel')<br />
+v:gear_up()<br />
+v:gear_dn()
+</div>
+<p>To provide these functions, the vessel class in the DLL must be derived from
+VESSEL3 and implement the clbkGeneric method. The clbkGeneric method must
+respond to VMSG_LUAINSTANCE messages:</p>
+<div class="code">
+int MyVessel::clbkGeneric (int msgid, int prm, void *context)<br />
+{<br />
+&nbsp;&nbsp;switch (msgid) {<br />
+&nbsp;&nbsp;case VMSG_LUAINSTANCE:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return Lua_InitInstance (context);<br />
+&nbsp;&nbsp;}<br />
+&nbsp;&nbsp;return 0;<br />
+}
+</div>
+<p>A VMSG_LUAINSTANCE message is sent to the vessel whenever an interpreter
+creates reference to a vessel of this type (e.g. by the vessel.get_interface
+function).</p>
+<p>The <i>context</i> parameter provided with the VMSG_LUAINSTANCE message
+contains the Lua interpreter object (lua_State). The implementation of
+<i>Lua_InitInstance</i> could look like this:</p>
+<div class="code">
+int MyVessel::Lua_InitInstance (void *context)<br />
+{<br />
+&nbsp;&nbsp;lua_State *L = (lua_State*)context;<br />
+&nbsp;&nbsp;luaL_getmetatable (L, "VESSEL.<font color="blue">MYVESSEL</font>");<br />
+&nbsp;&nbsp;if (lua_isnil(L,-1)) { // class not yet registered</br>
+&nbsp;&nbsp;&nbsp;&nbsp;lua_pop(L,1);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;static const struct luaL_reg myvesselLib[] = {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="blue">{"gear_up", myvessel_gear_up},<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"gear_dn", myvessel_gear_dn},</font><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{NULL, NULL}<br />
+&nbsp;&nbsp;&nbsp;&nbsp;};<br />
+&nbsp;&nbsp;&nbsp;&nbsp;luaL_newmetatable (L, "<font color="blue">MYVESSEL</font>.vtable");<br />
+&nbsp;&nbsp;&nbsp;&nbsp;luaL_openlib (L, "<font color="blue">MYVESSEL</font>.method", myvesselLib, 0);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;luaL_newmetatable (L, "<font color="blue">MYVESSEL</font>.base");<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_pushstring (L, "__index");<br />
+&nbsp;&nbsp;&nbsp;&nbsp;luaL_getmetatable (L, "VESSEL.vtable");<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_settable (L, -3);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_setmetatable (L, -2);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_pushstring (L, "__index");<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_pushvalue (L, -2);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_settable (L, -4);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lua_pop (L, 1);<br />
+&nbsp;&nbsp;}<br />
+&nbsp;&nbsp;lua_setmetatable (L, -2);<br />
+&nbsp;&nbsp;return 0;<br />
+}
+</div>
+<p>This function probably looks rather cryptic (it registers your set of vessel
+methods with the interpreter if not already present, and attaches them to the
+vessel object). If you don't want to go into the details of this code, you can
+simply use it as a template, and just modify the parts in
+<font color="blue">blue</font> for your purposes. Here is a short description
+of the relevant entries:</p>
+<p><font color="blue">MYVESSEL</font>: replace all instances of MYVESSEL with
+an identifier that represents your vessel class. Different vessel classes subit
+their own function tables to the interpreter, so make sure that the identifier
+is unique and doesn't collide with other vessel types (do NOT use the generic
+MYVESSEL identifier!)</p>
+<p><font color="blue">myvesselLib</font>: This is the table of methods you are
+adding to your vessel. The table contains one entry for each function. Each entry
+is a structure with two fields: a string that defines the name of the method,
+and a pointer to the function implementing the method. The last entry in the
+table must be {NULL, NULL}. Replace the gear_up and gear_dn methods in the
+example with the methods you want to define. You can add as many methods as
+you like.</p>
+
+<p>Now you need to implement the functions that actually perform the required
+tasks. In our example, they are myvessel_gear_up and myvessel_gear_dn.
+The functions must be defined as static int funcname(lua_State*), for example</p>
+<div class="code">
+static int myvessel_gear_up (lua_State *L)<br />
+{<br />
+&nbsp;&nbsp;VESSEL **pv = (VESSEL**)lua_touserdata(L,1);<br />
+&nbsp;&nbsp;MyVessel *v = (MyVessel*)*pv;</br />
+&nbsp;&nbsp;v->gear_up();<br />
+&nbsp;&nbsp;return 0;<br />
+}
+</div>
+<p>The lua_touserdata function returns a pointer to a data block at position 1
+of the Lua stack. For all vessel methods, this data block contains a pointer
+to the VESSEL instance. You can then cast the generic VESSEL pointer to a
+pointer of your vessel class (here assumed to be MyVessel). Then you can call
+the required methods in your vessel class (here, gear_up() is assumed to
+be a method that raises the landing gear).</p>
+<p>The function return value indicates the number of parameters returned by
+the function (none in this case). If you want to return values to the
+interpreter, you must push them onto the stack before returning, and signal
+the number of returned values with the function return value (unlike C++,
+you can return more than one value). For example, consider a function that
+returns the cabin temperature (assuming that your vessel class implements
+a function cabin_temp()):</p>
+<div class="code">
+static int myvessel_cabin_temp (lua_State *L)<br />
+{<br />
+&nbsp;&nbsp;VESSEL **pv = (VESSEL**)lua_touserdata(L,1);<br />
+&nbsp;&nbsp;MyVessel *v = (MyVessel*)*pv;<br />
+&nbsp;&nbsp;double temp = v->cabin_temp();<br />
+&nbsp;&nbsp;lua_pushnumber(L, temp);<br />
+&nbsp;&nbsp;return 1;<br />
+}
+</div>
+<p>Apart from numbers, you can push strings, tables or user data.</p>
+
+</body>
+</html>

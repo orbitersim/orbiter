@@ -1,0 +1,97 @@
+BEGIN_DESC
+Two delta-gliders docked in orbit. The camera focus is on the PB shuttle in
+the background to provide an inertial frame of reference. Try the attitude
+controls on the glider to see how the body dynamics are affected by the
+"super-structure" assembly. For example, note how different roll and pitch
+moments behave. Or switch the camera focus to one of the gliders, then get the
+assembly to spin with a short hover thrust burst, and undock with Ctrl-D!
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.8041045834
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET PB-01
+  MODE Extern
+  POS 49.36 78.31 29.29
+  TRACKMODE GlobalFrame
+  FOV 20.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+END_HUD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  REF Earth
+  TARGET GL-01
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+ISS
+  STATUS Orbiting Earth
+  ELEMENTS 6752092.3 0.00095 74.51282 169.03388 332.54688 340.10925 51982.80384594
+  AROT 30.00 0.00 50.00
+END
+Mir
+  STATUS Orbiting Earth
+  ELEMENTS 6688505.8 0.00073 3.49997 359.99930 353.99683 623.13554 51982.80384594
+  AROT 0 -45 90
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  ELEMENTS 2240249.1 0.00063 89.99371 0.01735 229.82452 240.17890 51982.80384594
+  AROT 0.00 0.00 -178.38
+END
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 3793614.73 -4617382.90 3569939.78
+  RVEL -5866.742 -3675.110 2834.434
+  AROT 63.07 -0.99 87.55
+  PRPLEVEL 0:0.553 1:1.000
+  DOCKINFO 0:0,GL-02
+  NAVFREQ 0 0 0 0
+  NOSECONE 1 1.0000
+  GEAR 0 0.0000
+  AIRLOCK 0 0.0000
+END
+GL-02:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 3793615.07 -4617365.36 3569948.69
+  RVEL -5866.742 -3675.110 2834.434
+  AROT -116.93 0.99 92.45
+  PRPLEVEL 0:0.409 1:1.000
+  DOCKINFO 0:0,GL-01
+  NAVFREQ 0 0 0 0
+  NOSECONE 1 1.0000
+  GEAR 0 0.0000
+  AIRLOCK 0 0.0000
+END
+PB-01:ShuttlePB
+  STATUS Orbiting Earth
+  RPOS 3793561.00 -4617345.20 3569948.57
+  RVEL -5866.825 -3675.097 2834.429
+  AROT -117.21 -5.51 92.46
+  FUEL 1.000
+  NAVFREQ 0 0
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  FUEL 1.000
+  NAVFREQ 0 0
+END
+END_SHIPS

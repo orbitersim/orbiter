@@ -1,0 +1,50 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: ExtMFD - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x809 /fo"Release/ExtMFD.res" /d "NDEBUG" "C:\Source\Orbiter\Orbitersdk\samples\ExtMFD\ExtMFD.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP89.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /I "..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Source\Orbiter\Orbitersdk\samples\ExtMFD\ExtMFD.cpp"
+"C:\Source\Orbiter\Orbitersdk\samples\ExtMFD\MFDWindow.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP89.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8A.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /dll /pdb:none /machine:I386 /out:"Release/ExtMFD.dll" /implib:"Release/ExtMFD.lib" 
+.\Release\ExtMFD.obj
+.\Release\MFDWindow.obj
+.\Release\ExtMFD.res
+..\..\lib\orbiter.lib
+..\..\lib\Orbitersdk.lib
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8A.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+ExtMFD.cpp
+MFDWindow.cpp
+Generating Code...
+Linking...
+   Creating library Release/ExtMFD.lib and object Release/ExtMFD.exp
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8E.bat" with contents
+[
+@echo off
+move Release\*.dll ..\..\..\Modules\Plugin
+]
+Creating command line "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP8E.bat"
+Installing binaries
+C:\Source\Orbiter\Orbitersdk\samples\ExtMFD\Release\ExtMFD.dll
+
+
+
+<h3>Results</h3>
+ExtMFD.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

@@ -1,0 +1,23 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=.\Atlantis.chm
+Contents file=Atlantis.hhc
+Default topic=Atlantis.htm
+Display compile progress=No
+Full-text search=Yes
+Index file=Atlantis.hhk
+Language=0x809 English (United Kingdom)
+Title=Scenario Editor
+
+
+[FILES]
+Atlantis.htm
+..\..\..\html\master.js
+..\..\..\html\Orbiter.css
+BayOp.htm
+BaydoorOp.htm
+RadiatorOp.htm
+KubandOp.htm
+
+[INFOTYPES]
+

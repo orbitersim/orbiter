@@ -1,0 +1,6 @@
+BEGIN_HYPERDESC
+<h1>Earth views</h1>
+
+<p>A collection of scenarios with views, pre-recorded flyovers and orbits around the home planet.<p>
+<p>For best results even at low altitude, you should install the high-resolution Earth texture packs from the Orbiter texture repository.</p>
+END_HYPERDESC

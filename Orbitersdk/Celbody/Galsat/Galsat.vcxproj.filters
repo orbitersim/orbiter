@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2d2fa926-b0aa-433c-b6d2-3a34a7cdd921}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{58628301-a284-4af2-88bd-ce4f01b09da4}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{6b58ab50-5752-4f28-9e9b-2f39ad78e803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Data">
+      <UniqueIdentifier>{6093e57c-b933-4eea-a5aa-c9778b1e7023}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Galsat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lieske.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Galsat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="ephem_e15.dat">
+      <Filter>Config\Data</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

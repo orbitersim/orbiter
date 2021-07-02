@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1" />
+<title>Capturing screenshots</title>
+<link rel="stylesheet" href="Orbiter.css" type="TEXT/CSS" />
+</head>
+<body>
+<p class="header"><a class="header" href="intro.htm">Orbiter</a> &gt; <a class="header" href="mainmenu.htm">Main menu</a> &gt; Capturing screenshots</p>
+
+<h1>Capturing screenshots</h1>
+
+<p>You can copy Orbiter screenshots to files or to the clipboard with the <i>Capture frames</i> dialog. The dialog can be opened with <kbd class="ctrl">Ctrl</kbd> <kbd class="ctrl">PrtScn</kbd>.</p>
+<p>To save a screenshot, select the clipboard or a file name. File paths are relative to the Orbiter root directory and should not contain the file extension. If the path does not exist, it is created automatically. For file output you can also select the image format and quality setting (if applicable).</p>
+<p>Then click <i>Take snapshot</i> to save the Orbiter snapshot. If the file name is a number, it will be incremented automatically with each screenshot taken.</p>
+<p>You can also take sequences of screenshots by clicking <i>Start recording</i>. Orbiter then writes out an image for each time step, or each n-th time step if a <i>Skip frames</i> setting &gt; 0 is selected.</p>
+<p><b>Warning:</b> Writing out image sequences will severely degrade frame rates and is not suitable for interactive simulation sessions. It is best to create image sequences for simulation sessions that don't require user interaction or pre-recorded sessions.</p>
+<p>Also be aware that recording an image sequence will create a large number of files and fill up large amounts of disk space.</p>
+<p>Image sequences can be useful for creating high-quality movies. Various video editing programs can create video files from such image sequences. For video creation, it is also useful to set fixed time step intervals in the Orbiter launchpad under <a href="extra_fixedstep.htm">Extra | Debugging options | Fixed time steps</a>. For example, if you want to create a movie with 25 frames per second, use time steps of 0.04 seconds and set a frame skip of 0.</p>
+
+</body>
+</html>

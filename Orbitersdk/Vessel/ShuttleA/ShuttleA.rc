@@ -1,0 +1,131 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BUTTON3             BITMAP                  "Bitmaps\\button3.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_EDITOR_PG1 DIALOG  2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "Landing gear",IDC_STATIC,8,16,57,40
+    PUSHBUTTON      "Up",IDC_GEAR_UP,15,27,43,11
+    PUSHBUTTON      "Down",IDC_GEAR_DOWN,15,40,43,11
+    GROUPBOX        "Docking port",IDC_STATIC,71,16,57,40
+    GROUPBOX        "Shuttle-A animation settings",IDC_STATIC,0,0,263,124
+    PUSHBUTTON      "Closed",IDC_DPORT_CLOSE,78,27,43,11
+    PUSHBUTTON      "Open",IDC_DPORT_OPEN,78,40,43,11
+    GROUPBOX        "Airlock",IDC_STATIC,134,16,57,40
+    PUSHBUTTON      "Closed",IDC_OLOCK_CLOSE,141,27,43,11
+    PUSHBUTTON      "Open",IDC_OLOCK_OPEN,141,40,43,11
+    GROUPBOX        "Auxiliary pods",IDC_STATIC,8,60,184,52
+    CONTROL         "",IDC_LAUX_POS,"OrbiterCtrl_Gauge",0x0,36,73,124,8
+    LTEXT           "Left",IDC_STATIC,15,73,13,8
+    CONTROL         "",IDC_RAUX_POS,"OrbiterCtrl_Gauge",0x0,36,82,124,8
+    LTEXT           "Right",IDC_STATIC,15,82,18,8
+    PUSHBUTTON      "Retro",IDC_AUX_RETRO,36,96,33,11
+    PUSHBUTTON      "Fwd",IDC_AUX_FWD,126,96,33,11
+    PUSHBUTTON      "Hover",IDC_AUX_HOVER,81,96,33,11
+    CONTROL         "",IDC_AUX_POS,"OrbiterCtrl_Gauge",0x0,36,77,124,9
+    CONTROL         "Sync",IDC_AUX_SYNC,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,163,76,21,11
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SLIDER1             BITMAP                  "Bitmaps\\slider1.bmp"
+IDB_SWITCH1             BITMAP                  "Bitmaps\\switch1.bmp"
+IDB_BUTTON1             BITMAP                  "Bitmaps\\button1.bmp"
+IDB_PANEL2              BITMAP                  "Bitmaps\\panel2.bmp"
+IDB_SWITCH2             BITMAP                  "Bitmaps\\switch2.bmp"
+IDB_SWITCH3             BITMAP                  "Bitmaps\\switch3.bmp"
+IDB_SWITCH4             BITMAP                  "Bitmaps\\switch4.bmp"
+IDB_INDICATOR1          BITMAP                  "Bitmaps\\indicator1.bmp"
+IDB_INDICATOR2          BITMAP                  "Bitmaps\\indicator2.bmp"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

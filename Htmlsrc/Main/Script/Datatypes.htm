@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Datatypes</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; Data types</p>
+
+<h1><a name="data"></a>Data types and structures</h1>
+<p>Various API functions require parameters packed into tables with specific field names.
+This page contains a list of these tables.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#data_vector">Vectors</a></td>
+</tr>
+<tr>
+<td><a href="#data_matrix">Matrices</a></td>
+</tr>
+<tr>
+<td><a href="#elements">Orbital elements</a></td>
+</tr>
+<tr>
+<td><a href="#orbitprm">Orbital parameters</a></td>
+</tr>
+<tr>
+<td><a href="#particlestreamspec">Particle stream specifications</a></td>
+</tr>
+<tr>
+<td><a href="#animationcomponent">Mesh animation components</a></td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func"><a name="data_vector"></a>
+<h3>Vectors</h3>
+<p>Any 3-D vectors passed into or returned from Orbiter API script functions conform to the following convention:</p>
+<p>A vector is defined as a table containing three numerical fields with keys "x", "y" and "z". (Vectors passed as arguments to API functions can have additional fields, which are ignored by the interpreter).</p>
+<p>Vectors can be defined and initialised by normal Lua syntax, e.g.
+<div class="code">
+V1 = {x=1,y=0,z=-1}<br>
+V2 = {}; V2.x=0; V2.y=1.1; V2.z=-16<br>
+V3 = {}; V3["x"]=15; V3["y"]=-3.145; V3["z"]=1e3
+</div></p>
+
+<h4>See also:</h4>
+<p>
+<a href="api_vec.htm">Vector and matrix operations</a>,
+<a href="#data_matrix">Matrices</a>
+</p>
+</div>
+
+<div class="func"><a name="data_matrix"></a>
+<h3>Matrices</h3>
+<p>Any 3x3 matrices passed into or returned from Orbiter API script functions conform to the following convention:</p>
+<p>A matrix is defined as a table containing nine numerical fields with keys "m11", "m12", "m13",
+"m21", "m22", "m23", "m31", "m32", "m33".
+ (Matrices passed as arguments to API functions can have additional fields, which are ignored by the interpreter).</p>
+<p>Matrices can be defined and initialised by normal Lua syntax, e.g.
+<div class="code">
+M1 = {m11=1,m12=0,m13=0,m21=0,m22=1,m23=0,m31=0,m32=0,m33=1}<br>
+M2 = {}; M2.m11=1; M2.m12=0; M2.m13=0; M2.m21=0; M2.m22=1; M2.m23=0; M2.m31=0; M2.m32=0; M2.m33=1<br>
+M3 = {}; M3["m11"]=1; M3["m12"]=0; M3["m13"]=0; M3["m21"]=0; M3["m22"]=1; M3["m23"]=0; M3["m31"]=0; M3["m32"]=0; M3["m33"]=1;
+</div></p>
+
+<h4>See also:</h4>
+<p>
+<a href="api_vec.htm">Vector and matrix operations</a>,
+<a href="#data_vector">Vectors</a>
+</p>
+</div>
+
+
+<div class="func"><a name="elements"></a>
+<h3>Orbital elements</h3>
+<p>This structure contains a set of 6 scalar orbital elements that describe an unperturbed Keplerian
+(2-body) orbit. The elements of the table are:</p>
+<table class="summary">
+<tr><td>a&nbsp;(number):</td><td>semi-major axis [m]</td></tr>
+<tr><td>e&nbsp;(number):</td><td>eccentricity</td></tr>
+<tr><td>i&nbsp;(number):</td><td>inclination [rad]</td></tr>
+<tr><td>theta&nbsp;(number):</td><td>longitude of ascending node [rad]</td></tr>
+<tr><td>omegab&nbsp;(number):</td><td>longitude of periapsis [rad]</td></tr>
+<tr><td>L&nbsp;(number):</td><td>mean longitude at epoch [rad]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#get_elements">v:get_elements</a>,
+<a href="mtd_vessel.htm#set_elements">v:set_elements</a></p>
+</div>
+
+
+<div class="func"><a name="orbitprm"></a>
+<h3>Orbital parameters</h3>
+<p>This structure contains secondary orbital parameters in addition to the
+primary <a href="#elements">orbital elements</a>. The elements of the table are:</p>
+<table class="summary">
+<tr><td>SMI&nbsp;(number):</td><td>semi-minor axis [m]</td></tr>
+<tr><td>PeD&nbsp;(number):</td><td>periapsis distance [m]</td></tr>
+<tr><td>ApD&nbsp;(number):</td><td>apoapsis distance [m]</td></tr>
+<tr><td>MnA&nbsp;(number):</td><td>mean anomaly [rad]</td></tr>
+<tr><td>TrA&nbsp;(number):</td><td>true anomaly [rad]</td></tr>
+<tr><td>MnL&nbsp;(number):</td><td>mean longitude [rad]</td></tr>
+<tr><td>TrL&nbsp;(number):</td><td>true longitude [rad]</td></tr>
+<tr><td>EcA&nbsp;(number):</td><td>eccentric anomaly [rad]</td></tr>
+<tr><td>Lec&nbsp;(number):</td><td>linear eccentricity [m]</td></tr>
+<tr><td>T&nbsp;(number):</td><td>orbit period [s]</td></tr>
+<tr><td>PeT&nbsp;(number):</td><td>time to next periapsis passage [s]</td></tr>
+<tr><td>ApT&nbsp;(number):</td><td>time to next apoapsis passage [s]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#get_elementsex">v:get_elementsex</a></p>
+</div>
+
+
+<div class="func"><a name="particlestreamspec"></a>
+<h3>Particle stream specifications</h3>
+<p>This structures contains the parameters for defining a particle stream for
+exhaust or reentry rendering. The fields of the table are:</p>
+<table class="summary">
+<tr><td>flags&nbsp;(integer):</td><td>streamspec bitflags</td></tr>
+<tr><td>srcsize&nbsp;(number):</td><td>particle size at creation [m]</td></tr>
+<tr><td>srcrate&nbsp;(number):</td><td>average particle creation rate [Hz]</td></tr>
+<tr><td>v0&nbsp;(number):</td><td>emission velocity [m/s]</td></tr>
+<tr><td>srcspread&nbsp;(number):</td><td>velocity spread during creation</td></tr>
+<tr><td>lifetime&nbsp;(number):</td><td>average particle lifetime [s]</td></tr>
+<tr><td>growthrate&nbsp;(number):</td><td>particle growth rate [m/s]</td></tr>
+<tr><td>atmslowdown&nbsp;(number):</td><td>slowdown rate in atmosphere</td></tr>
+<tr><td>ltype&nbsp;(number):</td><td>particle type (see <a href="constant.htm#particle">PARTICLE</a> identifiers)</td></tr>
+<tr><td>levelmap&nbsp;(number):</td><td>level to alpha mapping type (see <a href="constant.htm#particle">PARTICLE</a> identifiers)</td></tr>
+<tr><td>lmin&nbsp;(number):</td><td>min level for level PLIN and PSQRT mapping types</td></tr>
+<tr><td>lmax&nbsp;(number):</td><td>max level for level PLIN and PQRST mapping types</td></tr>
+<tr><td>atmsmap&nbsp;(number):</td><td>atm. parameters to alpha mapping type (see <a href="constant.htm#particle">PARTICLE</a> identifiers)</td></tr>
+<tr><td>amin&nbsp;(number):</td><td>min density for atms PLIN mapping</td></tr>
+<tr><td>amax&nbsp;(number):</td><td>max density for atms PLIN mapping</td></tr>
+<tr><td>tex&nbsp;(handle):</td><td>particle texture handle (nil for default)</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="animationcomponent"></a>
+<h3>Mesh animation components</h3>
+<p>This structure contains the parameters for creating a mesh animation component
+for a vessel, using the <a href="api_oapi.htm#oapi_create_animationcomponent">oapi.create_animationcomponent</a>
+method</p>.
+<p>Different types of animation components are available for rotation, translation
+and scaling. The required fields for each of the animation types are:</p>
+<table class="summary">
+<tr><td colspan="2" class="group">Common fields:</td></tr>
+<tr><td>type&nbsp;(string):</td><td>transformation type: 'rotation', 'translation', or 'scaling'</td></tr>
+<tr><td>mesh&nbsp;(integer):</td><td>mesh index (&ge; 0)</td></tr>
+<tr><td>grp&nbsp;(integer):</td><td>array of group indices (&ge; 0)</td></tr>
+<tr><td colspan="2" class="group">Fields for rotation components only:</td></tr>
+<tr><td>ref&nbsp;(vector):</td><td>rotation pivot point [<b>m</b>]</td></tr>
+<tr><td>axis&nbsp;(vector):</td><td>rotation axis</td></tr>
+<tr><td>angle&nbsp;(number):</td><td>rotation range [rad]</td></tr>
+<tr></tr>
+<tr><td colspan="2" class="group">Fields for translation components only:</td></tr>
+<tr><td>shift&nbsp;(vector):</td><td>translation vector[<b>m</b>]</td></tr>
+<tr><td colspan="2" class="group">Fields for scaling components only:</td></tr>
+<tr><td>ref&nbsp;(vector):</td><td>scaling reference point [<b>m</b>]</td></tr>
+<tr><td>scale&nbsp;(vector):</td><td>scaling factors in x, y and z</td></tr>
+</table>
+</div>
+
+
+</div>
+
+</BODY>
+</HTML>

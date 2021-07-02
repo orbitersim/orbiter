@@ -1,0 +1,92 @@
+BEGIN_DESC
+Launch the glider from Habana spaceport at dusk.
+You can either take off directly from the pad with your hover engines, or taxi to the runway and use main engines.
+
+This DG-S is equipped with scramjet engines which can be operated at airspeeds between Mach 3-8.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51981.965
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01S
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01S
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+  TYPE HSI
+  NAV 2 1
+  OBS 1.05 0.00
+END_MFD
+
+BEGIN_VC
+END_VC
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  ELEMENTS 6734919 0.0009 74.513 169.034 328.305 143.239 51544.5
+  AROT 30.00 0.00 50.00
+END
+Mir
+  STATUS Orbiting Earth
+  ELEMENTS 6671000 0.0006 3.5 0 0 0 51544.5
+  AROT 0 -45 90
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  ELEMENTS 2238000.0 0.00000 90.000 0.000 0.000 0.000 51544.5
+  AROT 0.00 0.00 -72.91
+  VROT 0 0 10
+END
+GL-01S:DG-S
+  STATUS Landed Earth
+  BASE Habana:2
+  HEADING 5
+  PRPLEVEL 0:0.3 1:1 2:0.3
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+  NAVFREQ 562 162 50 0
+  TANKCONFIG 1
+  PSNGR 1 2
+END
+SH-03:ShuttleA
+  STATUS Landed Earth
+  BASE Habana:4
+  HEADING 70
+  FUEL 1.0
+END
+PB-01:ShuttlePB
+  STATUS Landed Earth
+  BASE Habana:1
+  HEADING 22
+  FUEL 1.0
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  FUEL 1.0
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  FUEL 1.0
+END
+END_SHIPS

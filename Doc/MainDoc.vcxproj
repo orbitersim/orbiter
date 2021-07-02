@@ -1,0 +1,514 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3BA9DB61-1B2D-415C-ACB0-BB14E95D5BCB}</ProjectGuid>
+    <RootNamespace>MainDoc</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\VS2015\BuildRules\orbiter.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\VS2015\PropertyPages\orbiter.props" />
+    <Import Project="..\VS2015\PropertyPages\libreoffice.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\VS2015\PropertyPages\orbiter.props" />
+    <Import Project="..\VS2015\PropertyPages\orbiter_debug.props" />
+    <Import Project="..\VS2015\PropertyPages\libreoffice.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Atlantis_MMU_Sat_30.pdf">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Dragonfly.pdf">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\composite\composite.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\distmass\distmass.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\dynamics\dynamics.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\earth_atm\earth_atm.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\gravity\gravity.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</TreatOutputAsContent>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</TreatOutputAsContent>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\lighting\lighting.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\precession\precession.tex">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">if not exist "$(BuildDocDir)Technotes" mkdir "$(BuildDocDir)Technotes"
+cd "%(RootDir)%(Directory)"
+
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+bibtex "$(BuildDocDir)Technotes\%(Filename)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+latex -aux-directory="$(BuildDocDir)Technotes" -output-directory="$(BuildDocDir)Technotes" "%(FullPath)"
+dvips "$(BuildDocDir)Technotes\%(Filename).dvi" -o "$(BuildDocDir)Technotes\%(Filename).ps"
+
+rem The following line doesn't work for some reason
+rem ps2pdf "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem The following does work, but requires full path since the script directory is not on the path
+rem "C:\Program Files\MiKTeX 2.9\scripts\ghostscript\bat\ps2pdf.bat" "$(ObjectDir)\latex\%(Filename).ps" "$(OrbiterDocDir)\Technotes\%(Filename).pdf"
+
+rem So we are invoking gs directly to generate the PDF output
+gswin32c -sDEVICE=pdfwrite -sOutputFile="$(BuildDocDir)Technotes\%(Filename).pdf" -dNOPROMPT -dNOPAUSE -dBATCH "$(BuildDocDir)Technotes\%(Filename).ps"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="TransX\deepspacemanual.pdf">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="TransX\TransX quickstart.pdf">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="TransX\TransXmanualv3.pdf">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Change.doc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Credit.doc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="OrbiterConfig.doc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="ScenarioEditor.doc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="ShuttleA.doc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Technotes\RecorderRef.doc">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDocDir)Technotes" "%(FullPath)"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDocDir)Technotes" "%(FullPath)"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Technotes\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Atlantis.odt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="DeltaGlider.odt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Orbiter.odt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="PlanetTextures.odt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDir)Doc" "%(FullPath)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Doc\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Scenery\AntelopeValley\AntelopeValleyScn.odt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDocDir)Scenery" "%(FullPath)"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)Scenery\%(Filename).pdf;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling "%(Filename)%(Extension)" ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(LibreOffice)" --headless --convert-to pdf  --outdir "$(BuildDocDir)Scenery" "%(FullPath)"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)Scenery\%(Filename).pdf;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="TransX\TransX Licence.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="TransX\TransX readme.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDocDir)TransX\*"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDocDir)TransX\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\VS2015\BuildRules\orbiter.targets" />
+  </ImportGroup>
+</Project>

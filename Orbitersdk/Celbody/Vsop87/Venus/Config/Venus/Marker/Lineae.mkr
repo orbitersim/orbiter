@@ -1,0 +1,27 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++280.00	+40.00	:	Agrona Linea
++350.00	-40.00	:	Antiope Linea
++15.00	+14.00	:	Badb Linea
++304.00	+35.90	:	Breksta Linea
++246.50	-58.00	:	Discordia Linea
++0.00	+20.00	:	Guor Linea
++15.00	+19.00	:	[Hariasa Linea]
++345.00	-42.00	:	Hippolyta Linea
++210.00	-17.00	:	Jokwa Linea
++336.50	-60.50	:	Kalaipahoa Linea
++306.00	-44.00	:	Kara Linea
++293.00	+62.20	:	Lampedo Linea
++355.00	-48.00	:	Molpadia Linea
++311.00	-54.50	:	Morrigan Linea
++344.00	-54.00	:	Penardun Linea
++200.00	-77.30	:	Sarykyz Linea
++260.00	-61.00	:	Sui-ur Linea
++232.00	-24.00	:	Thaukhud Linea
++213.00	-10.00	:	Veleda Linea
++20.00	+54.00	:	[Vihansa Linea]
++21.00	+12.00	:	Virtus Linea

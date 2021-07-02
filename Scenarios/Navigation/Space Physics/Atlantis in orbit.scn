@@ -1,0 +1,68 @@
+BEGIN_DESC
+Watch Space Shuttle Atlantis stabilise its attitude in orbit under the influence of gravity gradient torque.
+
+
+Make sure that "gravity-gradient torque" is enabled in the Launchpad dialog.
+
+
+Time-accelerate up to 100x. It takes about a day to reach equilibrium (tail-down or head-down attitude).
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.9522836459
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-101
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-101
+  MODE Extern
+  POS 4.00 0.00 -179.94
+  TRACKMODE TargetRelative
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  ELEMENTS 6735016.1 0.00090 74.51299 169.03399 328.32046 462.39128 51982.95227738
+  AROT 110.00 -10.00 80.00
+  PRPLEVEL 0:1.000
+  NAVFREQ 0 0
+  XPDR 466
+END
+Mir
+  STATUS Orbiting Earth
+  ELEMENTS 6671108.5 0.00060 3.50000 359.99997 359.34494 397.64580 51982.95227738
+  AROT 5.00 10.00 15.00
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  ELEMENTS 2237750.5 0.00015 89.98406 359.99417 10.60386 365.99862 51982.95227738
+  AROT 0.00 0.00 -98.16
+  VROT 0 0 10
+END
+STS-101:Atlantis
+  CONFIGURATION 3
+  STATUS Orbiting Earth
+  RPOS 3259578.50 697743.53 -5765488.27
+  RVEL 6438.832 1743.162 3914.279
+  AROT 96.69 -74.93 -5.17
+  FUEL 1.000
+  CARGODOOR 1 1.0000
+  GEAR 0 0.0000
+  CARGO_STATIC_MESH Carina_cradle
+  CARGO_STATIC_OFS 0 -1.65 0.05
+END
+END_SHIPS

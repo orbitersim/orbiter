@@ -1,0 +1,127 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=.\orbiter.chm
+Contents file=Orbiter.hhc
+Default Window=LaunchpadHelp
+Default topic=intro.htm
+Display compile progress=Yes
+Full-text search=Yes
+Index file=Orbiter.hhk
+Language=0x809 English (United Kingdom)
+Title=Orbiter Help
+
+[WINDOWS]
+LaunchpadHelp=,"Orbiter.hhc","Orbiter.hhk","intro.htm","intro.htm",,,,,0x2520,,0x3046,,,,,,,,0
+
+
+[FILES]
+launchpad.htm
+tab_scenario.htm
+tab_param.htm
+tab_video.htm
+tab_visual.htm
+tab_joystick.htm
+tab_modules.htm
+intro.htm
+mfd_orbit.htm
+mfd.htm
+mfd_orbit_ctrl.htm
+mfd_orbit_disp.htm
+mfd_orbit1.gif
+mfd_orbit2.gif
+mfd_hsi.htm
+mfd_hsi.gif
+mfd_hsi_ctrl.htm
+mfd_hsi_disp.htm
+mfd_surf.htm
+mfd_surf_disp.htm
+help.htm
+mfd_map.gif
+mfd_map.htm
+mfd_map_ctrl.htm
+mfd_map_disp.htm
+banner.jpg
+..\Orbiter.css
+..\master.js
+mfd_com.htm
+mfd_com_ctrl.htm
+mfd_com_disp.htm
+mfd_com.gif
+mfd_align.htm
+mfd_align_ctrl.htm
+mfd_align.gif
+mfd_align_disp.htm
+mfd_sync.htm
+mfd_sync_ctrl.htm
+mfd_sync_disp.htm
+mfd_sync.gif
+mfd_dock.htm
+mfd_dock_ctrl.htm
+mfd_dock_disp.htm
+mfd_surf_ctrl.htm
+mfd_orbit_cfg.htm
+mfd_map_cfg.htm
+mfd_vtol.htm
+mfd_vtol_ctrl.htm
+mfd_vtol_disp.htm
+mfd_vtol.gif
+mfd_transfer.htm
+mfd_transfer_ctrl.htm
+mfd_transfer_disp.htm
+mfd_transfer.gif
+camera.htm
+cam_control.htm
+cam_target.htm
+cam_track.htm
+cam_ground.htm
+cam_fov.htm
+cam_preset.htm
+timeacc.htm
+recorder.htm
+selvessel.htm
+customcmd.htm
+objinfo.htm
+map.htm
+mainmenu.htm
+menucfg.htm
+vishelper.htm
+vh_planetarium.htm
+vh_force.htm
+vh_coord.htm
+playbackedit.htm
+tab_extra.htm
+Script\ScriptRef.htm
+Script\api_oapi.htm
+Script\api_proc.htm
+Script\api_vessel.htm
+Script\mtd_note.htm
+Script\mtd_vessel.htm
+Script\OrbiterAPI.css
+Script\Invoking.htm
+Script\Datatypes.htm
+Script\function.htm
+tab_about.htm
+Script\api_vec.htm
+Script\constant.htm
+Script\ScriptVessel.htm
+Script\mtd_mfd.htm
+Script\mtd_skp.htm
+Script\ScriptMfd.htm
+Script\mission.htm
+Script\clbk_mfd.htm
+Script\devel.htm
+Script\mtd_light.htm
+extra_timer.htm
+extra_fixedstep.htm
+extra_shutdown.htm
+extra_performance.htm
+extra_atmconfig.htm
+extra_linprop.htm
+extra_angprop.htm
+extra_orbitstab.htm
+extra_planetrender.htm
+capture.htm
+
+[INFOTYPES]
+

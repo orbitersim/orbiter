@@ -1,0 +1,143 @@
+1 NOTECOL 1.0 0.7 0.2
+1 NOTESIZE 1.3
+1 NOTEPOS 0.02 0.18 0.4 0.93
+1 NOTE DG-ISS Sync-Dock, rendezvous-docking recording for "Go Play In Space" 2nd Edition, chapter 5 "Dancing in the Dark."  Note that the docking HUD is displayed, that the Sync Orbit MFD is on the left...
+15 NOTEPOS 0.63 0.12 0.98 0.96
+15 NOTE ...and the Orbit MFD is on the right.  First thing to do is time accelerate to get the ISS to our ship's periapsis so we can note the altitude there...              time accelerating........
+27.368 TACC 10.000000 5.000000
+50 NOTEPOS 0.63 0.12 0.98 0.96
+50 NOTE Note that our orbital planes are already aligned (Inc), but our position (green line) is ahead of the ISS position (ISS), so we need to get into a slightly bigger, longer period orbit so the ISS can catch up with us.
+82.168 TACC 100.000000 3.000000
+741.668 TACC 1000.000000 2.000000
+750 NOTEPOS 0.63 0.12 0.98 0.96
+750 NOTE 1000x warp factor, the Earth is really zipping by...
+4066 NOTEPOS 0.63 0.12 0.98 0.96
+4066 NOTE Slowing time to 100x
+4072.67 TACC 100.000000 4.000000
+5100 NOTEPOS 0.63 0.12 0.98 0.96
+5100 NOTE The docking HUD shows a box around the target (ISS) when in field of view, or an arrow pointing to it if off-screen.  A circle with a plus sign shows ISS relative velocity, with V[ISS] pointing to it when off-screen.
+5154.57 TACC 10.000000 3.000000
+5245 NOTEPOS 0.02 0.18 0.4 0.93
+5245 NOTE Note that when the ISS target box goes off-screen, the ISS arrow appears.
+5320 NOTEPOS 0.63 0.12 0.98 0.96
+5320 NOTE Back to 1x (real time).
+5344.37 TACC 1.000000 1.000000
+5346 NOTEPOS 0.63 0.12 0.98 0.96
+5346 NOTE Note that as the ISS (yellow line) reaches our periapsis (green dot), its (yellow) Alt value in Orbit MFD is 360.3 km.  
+5389.55 TACC 10.000000 4.000000
+5395 NOTEPOS 0.63 0.12 0.98 0.96
+5395 NOTE The next thing to do is accelerate to apoapsis where a small prograde burn can raise our PeA to match the ISS...     time accelerating... 
+5422.34 TACC 100.000000 3.000000
+7881.04 TACC 10.000000 2.000000
+7940 NOTEPOS 0.63 0.12 0.98 0.96
+7940 NOTE ...now back to 1x.
+7977.2 TACC 1.000000 2.000000
+7978 NOTEPOS 0.02 0.18 0.4 0.93
+7978 NOTE Turning prograde for the burn, noting the DTMin on Sync MFD is about 44 s and raising the PeA to 360.3k will decrease this, but not to zero.
+8018 NOTEPOS 0.63 0.12 0.98 0.96
+8018 NOTE Firing short bursts of main engine (numpad + key) to raise PeA to 360.3k to match ISS height at this point.
+8033 NOTEPOS 0.63 0.12 0.98 0.96
+8033 NOTE Still in Prograde mode, switching to translation [LIN] mode to tweak PeA with forward (num-6) and backward (num-9) thrusts.
+8064 NOTEPOS 0.63 0.12 0.98 0.96
+8064 NOTE OK, our PeA is now 360.3k, matching ISS altitude at our periapsis.  Get ready to warp time 10-100x again...
+8073.49 TACC 10.000000 1.000000
+8148.22 TACC 100.000000
+8149 NOTEPOS 0.63 0.12 0.98 0.96
+8149 NOTE Time warping at 100x to quickly coast to periapsis where we can fire prograde and raise our apoapsis to increase our orbital period (T) slightly, allowing the ISS to catch up with us.
+10300 NOTEPOS 0.02 0.18 0.4 0.93
+10300 NOTE Sunrise over eastern Europe.  The Sync Orbit MFD shows a yellow line on the orbit where closest approach occurs.  The two columns are times to the reference point for ship and target.
+10344.4 TACC 10.000000
+10440 NOTEOFF
+10600 NOTE Other key Sync MFD numbers are Dist (to target) and RVel (relative velocity). Note also that RInc is shown as 0.00 degrees (planes aligned).  Coming up on periapsis...
+10770.1 TACC 1.000000
+10792 NOTEPOS 0.02 0.18 0.4 0.93
+10792 NOTE Back at 1x time, thrusters still LIN, linear thruster num-6/9 bursts (fwd-back) will adjust DTMin to nearly zero.
+10855 NOTEPOS 0.02 0.18 0.4 0.93
+10855 NOTE Kill Rotation to turn off Prograde, and now we time accelerate for a couple of orbits to reach the orbit where DTMin=0 and the ISS will hopefully be close by (but not too close, a few km).
+10868 TACC 10.000000
+10870 NOTEPOS 0.63 0.12 0.98 0.96
+10870 NOTE Note that DG period (T) is now 5.540k s, vs. 5.501k for ISS, 39 s longer for us, so ISS can catch up.  
+10914.7 TACC 100.000000
+11211 NOTE We've got a couple of orbits to fast forward through, so we'll just show a few progress reports.
+11590 NOTEPOS 0.02 0.18 0.4 0.93
+11590 NOTE Yellow line is orbit 1 (Ob 1), so really two orbits to go (we intercept on orbit zero).
+13850 NOTE Another sunset, ISS target box passes 403 km away.
+14850 NOTEOFF
+16560 NOTE Just passed our reference point, now on orbit zero, 5.314k seconds Sh-ToR, Dist 304.3k, an orbit away from intercept.
+19560 NOTEOFF
+20000 NOTEPOS 0.63 0.12 0.98 0.96
+20000 NOTE ISS should be just visible in target box, 46 km away.
+20795 NOTEOFF
+20796.4 TACC 10.000000
+21100 NOTEPOS 0.02 0.18 0.4 0.93
+21100 NOTE Note that the yellow numbers are now on orbit zero (Ob 0) and the Sh-ToR time value is getting smaller as we approach the rendezvous point.
+21240 NOTEPOS 0.63 0.12 0.98 0.96
+21240 NOTE The ISS has been barely visible in darkness framed by the target box in the HUD, but now sunrise is approaching, and the ISS will momentarily be backlit against the Earth's limb (distance about 10 km). 
+21450 NOTEOFF
+21600 NOTEPOS 0.02 0.18 0.4 0.93
+21600 NOTE Coming out of warp shortly since the ISS is getting close - at around 3.5 km, we will enter ROT mode and rotate the ship to point at the V[ISS] ball. 
+21699.1 TACC 1.000000
+21707 NOTEPOS 0.02 0.18 0.4 0.93
+21707 NOTE Rotating (yaw right) to point at V[ISS] which is now behind us.  We want to put the direction symbol on the velocity indicator, preparing to zero out our relative velocity to ISS.
+21749 NOTEPOS 0.02 0.18 0.4 0.93
+21749 NOTE Nearly pointing at V[ISS] symbol, so kill rotation (num-5).  ISS range still closing at 18.69 m/s, waiting until Dist is under 2 km to zero out V[ISS].
+21760 NOTE Any time now, I should start braking...
+21790 NOTECOL 1.0 0.3 0.1
+21790 NOTE Any time now, right here over Stuttgart...
+21805 NOTESIZE 1.7
+21805 NOTE WHAT AM I WAITING FOR!?!!?!
+21820 NOTE FINALLY!
+21829 NOTESIZE 1.3
+21829 NOTE This is a very long burst of forward LIN thruster that is not slowing us down all that much.  A bit disappointing, and the ISS is getting quite close.
+21841 NOTECOL 1.0 0.7 0.2
+21841 NOTEPOS 0.02 0.18 0.4 0.93
+21841 NOTE Yikes! Blimey! Oy! Waited too long to start braking.  The LIN thrusters are clearly not enough, so we will need a few bursts of main engines to avoid colliding with ISS!
+21863 NOTEOFF
+21870 NOTE We've slowed down but still chasing the V[ISS] symbol and using thrusters to take out residual velocity. 
+21887 NOTEOFF
+21900 NOTEPOS 0.02 0.18 0.4 0.93
+21900 NOTE That was a bit close!  Range only ~800 m but relative V is near zero, so time to pitch down to put the nose on the ISS and see how it looks for docking.
+21935 NOTEPOS 0.02 0.18 0.4 0.93
+21935 NOTE The ISS is on the nose, 800 m away and (thankfully) not closing (yet)! Click [PWR] button on now unneeded Sync MFD on left side to improve visibility.  Or if you want to stop that beeping, click [SEL], then [Radio/MP3 Panel], then [RAD], then [PWR]. 
+21960 NOTECOL 1.0 0.3 0.1
+21960 NOTEPOS 0.63 0.12 0.98 0.96
+21960 NOTE On right MFD, QUICKLY click [SEL] then [Docking] then click [NAV] three times to reach NAV4 for docking port D-01.  Then click the [HUD] button.  I'm rotating right away to aim for those boxes...
+22009 NOTECOL 1.0 0.7 0.2
+22009 NOTE [LIN] mode, thrusting forward to start closing on the outer docking boxes, NOT on the ISS itself (yet).
+22040 NOTE Compare the Dock MFD to the outside view - ISS to left and down, + (target) symbol on MFD to left and down.
+22073 NOTEPOS 0.02 0.18 0.4 0.93
+22073 NOTE The range is closing slowly but I don't want to get fast near the ISS, so I use a little 10x time warpage.
+22088.4 TACC 10.000000
+22257.8 TACC 1.000000
+22058 NOTE Back to 1x time.
+22288 NOTEOFF
+22330 NOTEPOS 0.02 0.18 0.4 0.93
+22330 NOTE Still impatient, still closing slowly, use a little more 10x time warpology.
+22334.2 TACC 10.000000
+22448 NOTEPOS 0.02 0.18 0.4 0.93
+22448 NOTE As we pass the ISS off to the left, CVEL goes negative and distance increases. We head for the outer boxes to allow time to get lined up with the port.
+22514.3 TACC 1.000000
+22527 NOTE Back to 1x time.
+22530 NOTE The goal here?  To try to center ourselves inside one of the outer HUD docking boxes, and both aligned with and level with the docking port.  
+22580 NOTEPOS 0.63 0.12 0.98 0.96
+22580 NOTE Rotate left to get ISS and boxes back in view.  Also want to put the "cross" (-V[ISS] symbol) back in the boxes since this is our direction relative to ISS.
+22646 NOTE Now closing on boxes, rotating for rough line-up with them, want double line at top for correct orientation to docking port.
+22665 NOTE Dock MFD shows no visible X (angular alignment indicator), so angle alignment is poor, rotate to line up better. ISS is "below" on the MFD.
+22700 NOTE Pitching up, red X comes into view on MFD; we need to center it (with ROT thrusters only) in MFD for correct angular alignment with port's axis.
+22738 NOTE Rotations get the X roughly centered and changed to white, temporarily stable, then start to adjust linear position.
+22751 NOTE LIN mode, thrusting TOWARD the MFD cross (left, right, up, down) to try to get it lined up.
+22800 NOTE CVEL close to zero to allow time for alignment.  We are centered better in the docking boxes, but MFD cross is still off center.
+22860 NOTE ROT mode, roll to put the solid white arrow at top of MFD target for rotational alignment.
+22900 NOTE Left-right lineup of cross looks good, ISS target still a bit high and rotation X still a bit off center.
+22921 NOTE Tweak the rotation cross centering just a small amount (Cntrl-Thrusters).
+23000 NOTE Distance under 160 m, CVEL 0.21, still chasing lineup with linear thrusters.
+23055 NOTE Working LIN thrusters to control transverse drift and to put HUD plus-symbol (-V[ISS]) just above docking port.
+23090 NOTE Lineup looks good, DST 135 m, CVEL 0.26
+23200 NOTE Lineup good, 105 m, CVEL 0.29
+23249 NOTE Fixing up a little drift, range 90 m, closing at 0.29 m/s
+23356 NOTE Good lineup, 60 m, HUD -V cross just above dock port (acounts for offset between DG eye and docking port).
+23391 NOTE Lineup OK, 50 m, CVEL 0.29
+23496 NOTE Good lineup, 20 m, CVEL .28
+23531 NOTE Slight drift, 10 m, .28 CVEL
+23562 NOTE At 2.5 m, reverse thruster (num-9) to reduce CVEL, CVEL 0.14, dropping...
+23575 NOTE Range 1 m, CVEL 0.11, about to dock.

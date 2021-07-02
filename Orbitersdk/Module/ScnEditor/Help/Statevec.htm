@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" TYPE="TEXT/CSS" HREF="Orbiter.css">
+<Title>State vectors</Title>
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="ScnEditor.htm">Orbiter Scenario Editor</a></p>
+<h1>State vectors</h1>
+Use this page to set the <i>position</i> and <i>velocity</i> of the vessel relative to a celestial body.
+<p>
+First, select the desired celestial body (sun, planet or moon) in the <i>Orbit reference</i> box. All position and velocity parameters will be interpreted relatively to the centre of this body.
+<p>
+Next, you should select the reference coordinate frame in which the state vectors are expressed. The <i>Frame</i> box provides three choices:
+<ul>
+<li><b>ecliptic</b>: The ecliptic frame is defined by the plane of Earth's orbit around the sun. The x-axis is defined by the vernal equinox, the y-axis is the ecliptic north pole, and the z-axis is in the plane of the ecliptic, perpendicular to x and y, and oriented so as to result in a left-handed coordinate system.
+<li><b>ref. equator (fixed)</b>: The coordinate system is defined by the equatorial plane of the reference body, with x and z in the equatorial plane, and y pointing to the north pole. The frame is non-rotating, i.e. fixed with respect to the celestial sphere.
+<li><b>ref. equator (rotating)</b>: As in the fixed case, this system is defined by the equator of the reference body, but it rotates with the planet, and the x-axis points to longitude 0&deg;.
+</ul>
+Finally, select the coordinates to use. You can select between cartesian coordinates (x,y,z and dx/dt,dy/dt,dz/dt), and spherical polar coordinates (r,&phi;,&theta; and dr/dt,d&phi;/dt,d&theta;/dt). Generally, polar coordinates will be more intuitive to use.
+<p>
+You are now ready to edit your position and velocity. Since a vessel's state vectors are constantly changing during the simulation, it is probably best to pause now by pressing the <i>P</i> button. Then press <i>Refresh</i> to update the dialog data. Now you can enter new data for position and velocity, and press <i>Apply</i> to pass them to the simulation. Or use the spin controls next to the input boxes for direct manipulation.
+<p>
+<h2>Copy state</h2>
+If you want to place your vessel next to another orbiting spacecraft, you can simply copy that vessel’s state vectors over into the scenario editor, by clicking one of the entries in the <i>Copy state from</i> list. (Note that only vessels in flight are shown in the list.)
+If you then click <i>Apply</i>, the copied state is applied to your vessel. Unless you had the simulation paused, the other vessel will probably have moved away in the meantime already. To copy and apply the state in a running simulation directly, you can double-click on the desired vessel in the list.
+After copying your vessel onto the other spacecraft’s position, you can edit the state vector entries to fine-tune the relative position and velocity of the two vessels.
+<p>
+<h2>Usage tips</h2>
+Editing the state vectors is probably most useful when your vessel is close to a planetary surface, for example during atmospheric flight. At orbital altitudes, it is easier to control the vessel state via its <a href="Elements.htm">orbital elements</a>. Defining a stable orbit via position and velocity data is much more difficult.
+<p>
+When editing a vessel close to the surface, the rotating equatorial frame is a good choice. In conjunction with polar coordinates, the position values translate directly to planetary longitude, latitude and radius data, and the velocity data are equivalent to ground speed in longitudinal, latitudinal and radial direction.
+<p>
+By editing its state vectors, a vessel is set to flight mode. Make sure the parameters you enter define a position above the surface. If you want to place a vessel on the ground, use the <a href="Location.htm">Surface location</a> page instead.
+</BODY>
+</HTML>

@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: MFD methods</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; MFD methods</p>
+
+<h1>MFD methods</h1>
+<p>MFD methods can be used to control multifunctional displays. In the following,
+ 'mfd' is assumed to represent a valid mfd object. Currently the only way to
+ obtain an mfd object is by implementing an MFD mode using the ScriptMFD
+ interface. In the ScriptMFD environment, global variable <i>mfd</i> points to
+ the current MFD object.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#get_size">mfd:get_size</a></td>
+<td>Returns the width and height of the MFD display.</td>
+</tr>
+<tr>
+<td><a href="#set_title">mfd:set_title</a></td>
+<td>Sets the MFD title string.</td>
+</tr>
+<tr>
+<td><a href="#get_defaultpen">mfd:get_defaultpen</a></td>
+<td>Returns a predefined MFD pen resource.</td>
+</tr>
+<tr>
+<td><a href="#get_defaultfont">mfd:get_defaultfont</a></td>
+<td>Returns a predefined MFD font resource.</td>
+</tr>
+<tr>
+<td><a href="#invalidate_display">mfd:invalidate_display</a></td>
+<td>Force a display update in the next frame.</td>
+</tr>
+<tr>
+<td><a href="#invalidate_buttons">mfd:invalidate_buttons</a></td>
+<td>Force the MFD buttons to be redrawn.</td>
+</tr>
+</table>
+
+<div class="func_block">
+
+<div class="func"><a name="get_size"></a>
+<h3>w,h = mfd:get_size()</h3>
+<p>Returns the width and height of the MFD display.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>w&nbsp;(integer):</td><td>MFD display width [pixel]</td></tr>
+<tr><td>h&nbsp;(integer):</td><td>MFD display height [pixel]</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="set_title"></a>
+<h3>mfd:set_title(skp,title)</h3>
+<p>Sets the MFD title string.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>skp&nbsp;(handle):</td><td>Sketchpad object for MFD display</td></tr>
+<tr><td>title&nbsp;(string):</td><td>MFD title string</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is generally used during redrawing of the MFD screen to display
+the MFD title (for example during the <i>update</i> function in the ScriptMFD
+environment).</p>
+<p>The Sketchpad object must refer to the MFD display screen. The ScriptMFD
+environment passes this object as an argument to the <i>update</i> function.</p>
+</div>
+
+
+<div class="func"><a name="get_defaultpen"></a>
+<h3>pen = mfd:get_defaultpen(colidx)<br />
+pen = mfd:get_defaultpen(colidx,intens)<br />
+pen = mfd:get_defaultpen(colidx,intens,style)</h3>
+<p>Returns a predefined MFD pen resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>colidx&nbsp;(integer):</td><td>colour index (see notes)</td></tr>
+<tr><td>intens&nbsp;(integer):</td><td>brightness index (0=bright, 1=dim, default: bright)</td></tr>
+<tr><td>style&nbsp;(integer):</td><td>style index (1=solid, 2=dashed, default: solid)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pen&nbsp;(handle):</td><td>pen handle, or <i>nil</i> on error.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Valid colour indices are 0 to 4, where
+<table>
+<tr><td>Index</td><td>function</td><td>default colour</td></tr>
+<tr><td>0</td><td>Main MFD colour</td><td>green</td></tr>
+<tr><td>1</td><td>Auxiliary colour 1</td><td>yellow</td></tr>
+<tr><td>2</td><td>Auxiliary colour 2</td><td>white</td></tr>
+<tr><td>3</td><td>Auxiliary colour 3</td><td>red</td></tr>
+<tr><td>4</td><td>Auxiliary colour 4</td><td>blue</td></tr>
+</table>
+</p>
+<p>The default colours can be overridden by editing Config/MFD/default.cfg.</p>
+<p>In principle, an MFD mode may create its own pen resources, but
+ using predefined pens is preferred to provide a consistent MFD look,
+ and to avoid excessive allocation of drawing resources.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="mtd_skp.htm#set_pen">skp:set_pen</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_defaultfont"></a>
+<h3>font = mfd:get_defaultfont(fontidx)</h3>
+<p>Returns a predefined MFD font resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>fontidx&nbsp;(integer):</td><td>font index (see notes)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>font&nbsp;(handle):</td><td>font handle, or <i>nil</i> on error.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Currently supported are font indices 0-2, where
+<table>
+<tr><td>0</td><td>standard MFD font (Courier, fixed pitch)</td></tr>
+<tr><td>1</td><td>small font (Arial, variable pitch)</td></tr>
+<tr><td>2</td><td>small font, rotated 90 degrees (Arial, variable pitch)</td></tr>
+</table>
+</p>
+<p>In principle, an MFD mode may create its own fonts, but using the
+ predefined fonts is preferred to provide a consistent MFD look.</p>
+<p>Default fonts are scaled automatically according to the MFD display
+ size.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="mtd_skp.htm#set_font">skp:set_font</a>
+</p>
+</div>
+
+
+<div class="func"><a name="invalidate_display"></a>
+<h3>mfd:invalidate_display()</h3>
+<p>Force a display update in the next frame.</p>
+
+<h4>Notes:</h4>
+<p>Force a display update in the next frame. This function causes Orbiter to call
+ the MFD's Update method in the next frame.</p>
+</div>
+
+
+<div class="func"><a name="invalidate_buttons"></a>
+<h3>mfd:invalidate_buttons()</h3>
+<p>Force the MFD buttons to be redrawn.</p>
+
+<h4>Notes:</h4>
+<p>Force the MFD buttons to be redrawn. This is useful to alert
+ Orbiter that the MFD mode has dynamically modified its button labels.
+</p>
+</div>
+
+
+</div>
+
+</body>
+</html>

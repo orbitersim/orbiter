@@ -1,0 +1,99 @@
+BEGIN_DESC
+Take control of the latest version of the Delta-glider in orbit.
+A good opportunity to get familiar with the new panel layout, in particular the revised engine gimbal controls.
+
+Also try out the new virtual cockpit mode by pressing F8.
+
+Note that this is the standard DG edition of the new Delta-glider, so the scramjet-specific controls of the DG-S version are missing here.
+
+Don't forget to have a look out of the cockpit to see the new and improved rendering of Earth's atmospheric haze.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.5292925579
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  REF Earth
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Surface
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  ELEMENTS 6734916.8 0.00091 74.51287 169.03392 326.63622 528.41930 51982.51829991
+  AROT 30.00 0.00 50.00
+END
+Mir
+  STATUS Orbiting Earth
+  ELEMENTS 6671002.2 0.00060 3.49998 359.99953 357.33521 428.31516 51982.51829991
+  AROT 0 -45 90
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  ELEMENTS 2237278.1 0.00028 89.99002 359.99206 242.92684 385.43569 51982.51829991
+  AROT 0.00 0.00 -152.60
+END
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 3626158.96 4307928.18 -3325004.36
+  RVEL 6623.108 -3432.497 2656.884
+  AROT -52.67 -56.93 90.32
+  PRPLEVEL 0:0.553 1:0.9
+  NOSECONE 0 0.0000
+  GEAR 0 0.0000
+  AIRLOCK 0 0.0000
+END
+SH-03:ShuttleA
+  STATUS Landed Earth
+  BASE Habana:4
+  HEADING 70.00
+  FUEL 1.000
+END
+PB-01:ShuttlePB
+  STATUS Landed Earth
+  BASE Habana:1
+  HEADING 22.00
+  FUEL 1.000
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  POS -135.4300000 12.7366196
+  HEADING 0.00
+  FUEL 1.000
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  FUEL 1.000
+END
+END_SHIPS

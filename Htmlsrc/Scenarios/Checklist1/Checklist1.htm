@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" TYPE="TEXT/CSS" HREF="Orbiter.css">
+<Title>Checklist 1 scenario</Title>
+<STYLE>
+li { margin-bottom: 1em }
+</STYLE>
+</HEAD>
+<BODY>
+<h1>Mission 1: Delta-glider to ISS</h1>
+<p>
+In this mission we launch the Delta-glider into orbit from runway 33 of the Shuttle Landing Fa­cility (SLF) at the Kennedy Space Center, and perform a rendezvous and docking manoeuvre with the International Space Station.
+<p>
+<ul>
+<li>Start Orbiter with the Checklists|DG to ISS scenario. Your glider is ready for takeoff from SLF runway 33 at the KSC.
+<li>You may need to scroll the instrument panel down a bit (&nbsp;<kbd>&uarr;</kbd><sub><i>Cursorpad</i></sub>&nbsp;) to see the runway in front of you. Make sure you can still see the top half of the panel with the MFD screens.
+<li>Your launch is scheduled at MJD=51983.6308 (the <i>Modified Julian Date</i>, or MJD, is Or­biter's universal time reference, and is shown in the top right corner of the screen). This leaves plenty of time to get used to the instrumentation.
+<li>The left MFD screen is in <i>Surface</i> mode and shows velocity and altitude data.
+<li>The right MFD screen is in <i>Map</i> mode and shows your current location (KSC) as a white cross. The orbital plane of the ISS is shown as a yellow curve. As time progresses, the curve will shift across the map, as the Earth rotates under the station's orbital plane.
+<li>To fast-forward to your launch window, press <kbd>T</kbd>. (Each time you press <kbd>T</kbd>, time acceler­ates by a factor of 10). As you approach launch time, switch back to real-time by pressing <kbd>R</kbd> until the "Wrp" indicator in the top right corner of the screen disappears.</li>
+<p><img src="checklist1c.gif" width=100%><br>
+<i>On SLF runway 33, ready for takeoff.</i>
+<li>Engage main engines (&nbsp;<kbd class="ctrl">Ctrl</kbd> <kbd>+</kbd><sub><i>Numpad</i></sub>&nbsp;) to 100% thrust. You may also use the sliders on the instrument panels or the throttle control on your joystick to operate the main engines.
+<li>At ground speed 100 m/s (surface MFD or HUD readout), pull the stick (or press <kbd>2</kbd><sub><i>Numpad</i></sub>) to rotate.
+<li>Climb at 10&deg; and retract the landing gear (&nbsp;<kbd>G</kbd>&nbsp;).
+<li>Turn right towards heading 140&deg;.
+<li>Pitch up steeply to 70&deg;.
+<li>At about 30km altitude your glider will start to drop its nose due to decreasing atmos­pheric pressure, even while you are pulling back on the stick. Now activate the RCS (Re­action Control System) by right-clicking the "RCS Mode" selector (on the left side of the instrument panel) or by pressing <kbd class="ctrl">Ctrl</kbd> <kbd>/</kbd><sub><i>Numpad</i></sub>. You are now controlling your craft with at­titude thrusters.
+<li>Pitch down to about 20&deg;. After leaving the dense part of the atmosphere, you need to gain tangential velocity to achieve orbit. Your HUD flight path indicator (cross inside a circle) should stay above 0&deg;.
+<li>Switch the right MFD to Orbit mode (<i>SEL</i>, <i>Orbit</i>). Select the ship's orbit as reference plane (&nbsp;<kbd class="ctrl">Shift</kbd> <kbd>P</kbd>&nbsp;) and select ISS as target (&nbsp;<kbd class="ctrl">Shift</kbd> <kbd>T</kbd>, 'ISS'&nbsp;).
+<li>Continue at 100% thrust. Maintain your heading, and adjust pitch angle so that the flight path vector remains slightly above 0&deg;. You will see how your orbit trajectory (green curve in the Orbit MFD) grows.
+<li>Cut thrusters when your apoapsis radius (highest point of the orbit) reaches 6.731M (the "ApR" entry in the left column of the Orbit MFD). This corresponds to an altitude of 360 km.
+<li>Switch to Orbit HUD mode (&nbsp;<kbd>H</kbd>, <kbd>H</kbd>&nbsp;)
+<li>So far we are on a ballistic flight path that would eventually bring us back to the surface. To enter orbit, we need to perform a further burn ("orbit insertion burn") at the apex of the trajectory. Wait until you reach apogee (the remaining time is shown in the "ApT" entry of the Orbit MFD). This could take a while, so you may want to time-accelerate.
+<li>At apogee, press the "Prograde" button to turn prograde. Once the velocity marker (cross inside a circle) is centered on the screen, engage main thrusters until orbit eccentricity ("Ecc") reaches a minimum, and perigee radius ("PeR") equals ApR. (this will require only a short burn!)
+<li>Switch the left MFD to Align Orbital Plane (<i>SEL</i>, <i>Align planes</i>). Select ISS (&nbsp;<kbd class="ctrl">Shift</kbd> <kbd>T</kbd>, 'ISS'&nbsp;).
+<li>Ideally the orbital planes should already be roughly aligned (RInc within 5&deg;). You now need to fine-adjust the plane.
+<li>As your ship (P) approaches an intersection point with the target plane (AN or DN): Ro­tate the ship perpendicular to your current orbital plane (90&deg; on the Orbit HUD inclination ladder). If you are approaching the ascending node (AN), turn <i>orbit-antinormal</i>. If you are approaching the descending node (DN), turn <i>orbit-normal</i>.You can use the Auto-naviga­tion modes (&nbsp;<kbd>;</kbd> for orbit-normal and <kbd>'</kbd> for orbit-antinormal) to obtain the correct orienta­tion.
+<li>As soon as the "Engage engines" indicator starts flashing, engage full main engines. The relative inclination between the orbital planes should now decrease.
+<li>Kill thrusters as soon as the "Kill thrust" indicator appears. If you could not reduce the or­bit inclination sufficiently (within 0.5&deg;) repeat the process at the next nodal point.
+<li>Once the planes are aligned, the next step is intercepting the ISS. Switch to Sync Orbit MFD (<i>SEL</i>, <i>Sync orbit</i>) and select the ISS (&nbsp;<kbd class="ctrl">Shift</kbd> <kbd>T</kbd> 'ISS'&nbsp;). Switch the reference point to "Intersect 1" or "Intersect 2" " (&nbsp;<kbd class="ctrl">Shift</kbd> <kbd>M</kbd>&nbsp;). If the orbits don't intersect, select "Sh periapsis" instead.
+<li>The two columns on the right of the MFD screen show the times it will take you (Sh-ToR) and your target (Tg-ToR) to pass the reference position at your current orbit (Ob 0) and the 4 subsequent orbits (Ob 1-4).
+<li>Turn the ship prograde (align with velocity marker of the orbit HUD). This can be done by engaging the Prograde auto-navigation mode (&nbsp;<kbd>[</kbd>&nbsp;).
+<li>Fire main engines until Sh-ToR(0) matches Tg-ToR(1). You will now intercept the ISS at your next passage of the reference point. You may want to engage time acceleration until the time-on-target counters are close to zero, indicating that you are approaching the encounter point.
+<li>On approach, tune your NAV receivers to the station's navaid radio transmitters: Select Comm MFD mode (<i>SEL</i>, <i>COM/NAV</i>), and tune NAV1 to 131.30 kHz (ISS XPDR frequency) and NAV2 to 137.40 kHz (Dock 1 IDS frequency).
+<li>Switch to Docking HUD mode (&nbsp;<kbd>H</kbd>, <kbd>H</kbd>&nbsp;) and to Docking MFD (<i>SEL</i>, <i>Docking</i>).
+<li>Make sure both HUD and Docking MFD are slaved to NAV1 (use <kbd class="ctrl">Ctrl</kbd> <kbd>R</kbd> to cycle through the NAV receivers for the HUD, and <kbd class="ctrl">Shift</kbd> <kbd>N</kbd> for the MFD).
+<li>Rotate the ship to align with the HUD relative velocity marker and fire main engines until relative velocity is close to zero.
+<li>Rotate the ship towards the ISS (rectangular target designator box) and move to within 5km of the station. You may want to use attitude thrusters in linear (translatorial) mode for this. Switch between linear and rotational mode with the <kbd>/</kbd><sub><i>Numpad</i></sub> key.
+<li>Slave HUD and Docking MFD to NAV2 (&nbsp;<kbd class="ctrl">Ctrl</kbd> <kbd>R</kbd> and <kbd class="ctrl">Shift</kbd> <kbd>N</kbd>&nbsp;). If you are within 10 km of the ISS you will receive the signal of the IDS system for dock 1, providing alignment information in the MFD and a visual representation (series of rectangles) of the approach path on the HUD.
+<li>Move towards the rectangle furthest away from the station and hold.
+<li>Align your ship's longitudinal axis with the approach path direction (align "X" indicator in the MFD) using attitude thrusters in rotational mode.
+<li>Align your ship's rotation around its longitudinal axis (align "^" indicator at 12 o'clock posi­tion in the MFD).</li>
+<p><img src="checklist1a.jpg" width=100%><br>
+<i>On final approach path to the ISS</i>
+<li>Center your ship on the approach path (align "+" indicator in the MFD) using linear atti­tude thrusters.
+<li>Expose the docking mechanism under the nose cone by pressing <kbd>K</kbd>.
+<li>Start moving towards the dock with a short burst of the main engines. Closing speed (CVel) should be gradually reduced as you approach the dock. Final speed should be < 0.1 m/s. Re-align ship on the approach path with linear attitude thrusters as required.
+<li>The docking mechanism should engage once you are within 0.3 m of the designated dock. A "Dock" indicator will appear in the MFD once your ship has successfully docked.
+<li>Finished!</li>
+<p><img src="checklist1b.jpg" width=100%><br>
+<i>Mission accomplished: Welcome to the International Space Station!</i>
+</ul>
+</BODY>
+</HTML>

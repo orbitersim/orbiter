@@ -1,0 +1,53 @@
+BEGIN_DESC
+The Lunar eclipse of October 27/28, 2004.
+Watch from the lunar surface as the Earth covers the face of the Sun.
+
+You can speed up the simulation by using time acceleration (T). Use
+planetarium mode (F9) to locate the dark disc of Earth.
+
+Note Mercury (the dim red dot) in the lower left corner of the screen.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 53305.8873034259
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET Earth
+  MODE Extern
+  POS 59.25 124.21 -12.10
+  TRACKMODE Ground Moon
+  GROUNDLOCATION -33.43843 41.12782 1.78
+  GROUNDDIRECTION 315.56 34.72
+  FOV 30.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Launch
+END_MFD
+
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  POS -79.3500000 9.4000000
+  HEADING 271.32
+  PRPLEVEL 0:0.980 1:1.000
+  NAVFREQ 402 94 0 0
+  XPDR 0
+  GEAR 1 1.0000
+END
+END_SHIPS

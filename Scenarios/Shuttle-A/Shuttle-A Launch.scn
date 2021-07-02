@@ -1,0 +1,133 @@
+BEGIN_DESC
+A Shuttle-A class transport vessel is ready for take-off from Habana International Spaceport.
+
+This vessel class is primarily used for orbital operations and low-gravity low-atmosphere planet descents.
+Launching it from Earth can be a challenge.
+
+To take off, you need the auxiliary pods in hover configuration
+in addition to the standard hover thrusters.
+
+Once free of the pad, set a climb angle of 60 deg. and adjust hovers to maintain zero angle of attack.
+
+As you leave the lower atmosphere and gather speed, reduce your climb angle and slowly reduce hover
+thrust.
+
+You should just about be able to make LEO before running out of fuel.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.5568315856
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship SH-03
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SH-03
+  MODE Extern
+  POS 6.29 135.29 -28.79
+  TRACKMODE TargetRelative
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+  BTARGET Habana
+  OTARGET ISS
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 4959052.16 -4523098.05 315685.09
+  RVEL -4997.901 -5316.273 2468.872
+  AROT 30.00 0.00 50.00
+  IDS 0:1 10 1:2 10 2:3 10 3:4 10 4:5 10
+  NAVFREQ 0 0
+  XPDR 466
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS 3006026.67 -362456.13 -5926167.14
+  RVEL 6903.299 213.710 3494.082
+  AROT 0.00 -45.00 90.00
+  IDS 0:540 10 1:542 10 2:544 10
+  XPDR 482
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS -1948697.08 1102283.22 43.99
+  RVEL -728.425 -1288.194 -0.031
+  AROT 0.00 0.00 -160.75
+  VROT 0.00 0.00 10.00
+  IDS 0:560 10 1:564 10
+  XPDR 494
+END
+SH-03:ShuttleA
+  STATUS Landed Earth
+  BASE Habana:4
+  POS -82.3982460 23.0005409
+  HEADING 69.54
+  ALT 3.183
+  AROT 55.427 -66.071 11.764
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+  GEAR 0 0.0000
+  PAYLOAD MASS 120000.0 0
+END
+SH-PL01:ShuttleA_pl
+  STATUS Landed Earth
+  ATTACHED 0:0,SH-03
+  IDS 0:540 10
+  XPDR 480
+END
+SH-PL02:ShuttleA_pl
+  STATUS Landed Earth
+  ATTACHED 0:1,SH-03
+  IDS 0:541 10
+  XPDR 481
+END
+SH-PL03:ShuttleA_pl
+  STATUS Landed Earth
+  ATTACHED 0:2,SH-03
+  IDS 0:542 10
+  XPDR 482
+END
+SH-PL04:ShuttleA_pl
+  STATUS Landed Earth
+  ATTACHED 1:3,SH-03
+  IDS 0:543 10
+  XPDR 483
+END
+SH-PL05:ShuttleA_pl
+  STATUS Landed Earth
+  ATTACHED 1:4,SH-03
+  IDS 0:544 10
+  XPDR 484
+END
+SH-PL06:ShuttleA_pl
+  STATUS Landed Earth
+  ATTACHED 1:5,SH-03
+  IDS 0:545 10
+  XPDR 485
+END
+END_SHIPS

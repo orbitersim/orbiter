@@ -1,0 +1,16 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++20.90	+35.50	:	Aegina Farrum
++311.50	+33.60	:	Anqet Farra
++311.50	+33.60	:	[Anqet Farrum]
++8.00	+12.40	:	Carmenta Farra
++7.50	+43.60	:	Egeria Farrum
++279.40	+10.50	:	Flosshilde Farra
++353.50	-23.90	:	Liban Farra
++169.40	+2.30	:	Nammu Farra
++19.30	+4.20	:	Oshun Farra
++11.00	-30.00	:	Seoritsu Farra

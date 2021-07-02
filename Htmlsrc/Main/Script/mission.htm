@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Mission scripts</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script User's Guide</a> &gt; Mission scripts</p>
+
+<h1>Mission scripts</h1>
+<p>Mission or tutorial scripts can be used to monitor the progress of a player
+during a simulation session. They are perfect for implementing challenges or interactive
+tutorials. A challenge mission requires the player to complete a set of objectives,
+and then may present a summary or highscore. An interactive tutorial reacts to
+the player's input (e.g. spacecraft handling) and offers advice or feedback.</p>
+
+<h2>Step 1: Linking the a scenario to a script</h2>
+<p>Mission scripts are scenario-specific. The scenario must contain a reference to
+the script to be executed in the ENVIRONMENT block, using the <i>Script</i> tag e.g.</p>
+<div class="code">
+BEGIN_ENVIRONMENT<br />
+&nbsp;&nbsp;...<br />
+&nbsp;&nbsp;Script challenges/challenge1<br />
+END_ENVIRONMENT
+</div>
+<p>The entry points to the script file, with path relative to the "Script" sub-directory.</p>
+<p>The script file extension must be omitted, but extension .lua is assumed.</p>
+<p>Orbiter loads and executes the script when launching the scenario. No additional
+plugins need to be activated to enable the script interpreter.</p>
+
+<h2>Step 2: A simple mission script</h2>
+<p>As a simple example, let's assume that the scenario starts with DeltaGlider GL-01
+ready for takeoff at Kennedy Space Center. The objective is to reach an altitude
+of 100km as quickly as possible.</p>
+<p>First we should display a brief introduction to tell the player the objective
+of the mission.</p>
+<div class="code">
+intro = 'Flight challenge:\n\<br />
+Launch the Delta-glider and reach an altitude\<br />
+of 100km as quickly as possible.\n'<br />
+<br />
+note = oapi.create_annotation()<br />
+note:set_pos (0.3,0.05,0.9,0.95)<br />
+note:set_colour ({r=1,g=0.6,b=0.2})<br />
+note:set_text (intro)
+</div>
+<p>Next we wait for the player to ignite his engines. At this moment the clock
+begins to tick.</p>
+<div class="code">
+v = <a href="api_vessel.htm#vessel_get_interface">vessel.get_interface</a>('GL-01')
+hp0 = v:<a href="mtd_vessel.htm#get_propellanthandle">get_propellanthandle</a>(0)  -- main tank<br />
+hp1 = v:get_propellanthandle(1)  -- RCS tank<br />
+m1 = v:<a href="mtd_vessel.htm#get_propellantmass">get_propellantmass</a>(hp0) + v:get_propellantmass(hp1)<br />
+<br />
+while v:get_propellantmass(hp0) + v:get_propellantmass(hp1) == m1 do<br />
+&nbsp;&nbsp;<a href="api_proc.htm#proc_skip">proc.skip</a>()<br />
+end<br />
+t0 = <a href="api_oapi.htm#oapi_get_simtime">oapi.get_simtime</a>()
+</div>
+<p>This code fragment waits until the propellant mass begins change, and then
+sets the reference time t0. Calling the skip function during the wait loop is
+important, because hands back control to Orbiter to progress the simulation.
+Without it, the script (and Orbiter with it) would get stuck in an infinite loop.</p>
+<p>Now we have to wait until the mission objective is satisfied.</p>
+<div class="code">
+while v:<a href="mtd_vessel.htm#get_altitude">get_altitude</a>() < 100e3 do<br />
+&nbsp;&nbsp;proc.skip()<br />
+end<br />
+t1 = oapi.get_simtime()
+</div>
+<p>Let's tell the player about his success:</p>
+<div class="code">
+dt = t1-t0<br />
+res = 'Mission accomplished in '..dt..' seconds!\n'<br />
+note:set_text(res)
+</div>
+</body>
+</html>

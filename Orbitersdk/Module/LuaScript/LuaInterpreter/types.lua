@@ -1,0 +1,173 @@
+--- Types and constants
+-- @topic types
+
+--- A 3D cartesian vector.
+-- @field x x-component [m]
+-- @field y y-component [m]
+-- @field z z-component [m]
+-- @table vector
+
+--- A 3x3 matrix.
+-- The matrix has the form
+--
+--	m11 m12 m13
+--	m21 m22 m23
+--	m31 m32 m33
+--
+-- @field m11 matrix element m11
+-- @field m12 matrix element m12
+-- @field m13 matrix element m13
+-- @field m21 matrix element m21
+-- @field m22 matrix element m22
+-- @field m33 matrix element m23
+-- @field m31 matrix element m31
+-- @field m32 matrix element m32
+-- @field m33 matrix element m33
+-- @table matrix
+
+---	Frame of reference identifiers.
+--The entries of the REFFRAME table contain the identifiers for different frames of reference used by various API functions.
+-- @field GLOBAL (= 0) global (ecliptic) frame of reference
+-- @field LOCAL (= 1) an object's local frame of reference
+-- @field REFLOCAL (= 2) a reference object's local frame of reference
+-- @field HORIZON (= 3) local horizon frame of reference
+-- @table REFFRAME
+
+--- Orbital elements.
+-- This table contains a set of 6 scalar orbital elements that describe an unperturbed Keplerian (2-body) orbit. The elements of the table are:
+-- @field a semi-major axis [m]
+-- @field e eccentricity
+-- @field i inclination [rad]
+-- @field theta longitude of ascending node [rad]
+-- @field omegab longitude of ascending node [rad]
+-- @field L mean longitude at epoch [rad]
+-- @table ELEMENTS
+-- @see vessel:get_elements, vessel:get_elementsex
+
+---Orbital parameters.
+-- This structure contains secondary orbital parameters in addition to the primary @{ELEMENTS|orbital elements}. The elements of the table are:
+-- @field SMi semi-minor axis [m]
+-- @field PeD periapsis distance [m]
+-- @field ApD apoapsis distance [m]
+-- @field MnA mean anomaly [rad]
+-- @field TrA true anomaly [rad]
+-- @field MnL mean longitude [rad]
+-- @field TrL true longitude [rad]
+-- @field EcA eccentric anomaly [rad]
+-- @field Lec linear eccentricity [m]
+-- @field T orbit period [s]
+-- @field PeT time to next periapsis passage [s]
+-- @field ApT time to next apoapsis passage [s]
+-- @table ORBITPARAMS
+-- @see vessel:get_elementsex
+
+--- Altitude mode identifiers.
+-- Specifies if an altitude value refers to altitude above ground or altitude above mean planet radius.
+-- @field MEANRAD altitude above (or below) mean planet radius
+-- @field GROUND altitude above ground
+-- @table ALTMODE
+-- @see vessel:get_altitude
+
+--- Airfoil orientation flags.
+-- The entries in the LIFT table enumerate airfoil orientations.
+-- @field VERTICAL Airfoil lift direction is vertical (e.g. elevator)
+-- @field HORIZONTAL Airfoil lift direction is horizontal (e.g. rudder)
+-- @table LIFT
+-- @see vessel:create_airfoil
+
+--- Aerodynamic control surface type constants.
+-- The entries of the AIRCTRL table enumerate aerodynamic control surface types.
+-- @field ELEVATOR elevator
+-- @field RUDDER rudder
+-- @field AILERON aileron
+-- @field FLAP flap 
+-- @field ELEVATORTRIM elevator trim 
+-- @field RUDDERTRIM rudder trim
+-- @table AIRCTRL
+-- @see vessel:create_controlsurface
+
+--- Aerodynamic control surface axis orientation constants.
+-- The entries of the AIRCTRL_AXIS table enumerate the axis orientation types for control surfaces.
+-- @field AUTO Automatic axis selection 
+-- @field YPOS y-axis (vertical), positive rotation 
+-- @field YNEG y-axis (vertical), negative rotation 
+-- @field XPOS x-axis (transversal), positive rotation 
+-- @field XNEG x-axis (transversal), negative rotation 
+-- @table AIRCTRL_AXIS
+-- @see vessel:create_controlsurface
+
+--- Thruster group identifiers.
+-- The entries of the THGROUP table identify the default thruster groups.
+-- @field MAIN main thrusters 
+-- @field RETRO retro thrusters 
+-- @field HOVER hover thrusters 
+-- @field ATT_PITCHUP rotation: pitch up 
+-- @field ATT_PITCHDOWN rotation: pitch down 
+-- @field ATT_YAWLEFT rotation: yaw left 
+-- @field ATT_YAWRIGHT rotation: yaw right 
+-- @field ATT_BANKLEFT rotation: bank left 
+-- @field ATT_BANKRIGHT rotation: bank right 
+-- @field ATT_RIGHT translation: move right 
+-- @field ATT_LEFT translation: move left 
+-- @field ATT_UP translation: move up 
+-- @field ATT_DOWN translation: move down 
+-- @field ATT_FORWARD translation: move forward 
+-- @field ATT_BACK translation: move back 
+-- @table THGROUP
+-- @see vessel:create_thrustergroup
+
+--- RCS mode identifiers.
+-- The entries of the RCSMODE table are used to define the operation mode of the reaction control system (RCS) of a vessel.
+-- @field OFF RCS off 
+-- @field ROT Rotational mode 
+-- @field LIN Linear (translation) mode 
+-- @table RCSMODE
+-- @see vessel:get_rcsmode, vessel:set_rcsmode
+
+--- Navmode identifiers.
+-- The entries of the NAVMODE table are used to refer to the built-in "auto-navigation" modes, mostly for mainaining specific vessel attitudes via use of RCS thrusters.
+-- @field KILLROT "Kill rotation" mode 
+-- @field HLEVEL "Hold level with horizon" mode 
+-- @field PROGRADE "Prograde" mode 
+-- @field RETROGRADE "Retrograde" mode 
+-- @field NORMAL "Normal to orbital plane" mode 
+-- @field ANTINORMAL "Anti-normal to orbital plane" mode 
+-- @field HOLDALT "Hold altitude" mode 
+-- @table NAVMODE
+-- @see vessel:get_navmode, vessel:set_navmode
+
+--- Particle stream specifications.
+-- This structures contains the parameters for defining a particle stream for exhaust or reentry rendering. The fields of the table are:
+-- @field flags (integer): streamspec bitflags 
+-- @field srcsize (number): particle size at creation [m] 
+-- @field srcrate (number): average particle creation rate [Hz] 
+-- @field v0 (number): emission velocity [m/s] 
+-- @field srcspread (number): velocity spread during creation 
+-- @field lifetime (number): average particle lifetime [s] 
+-- @field growthrate (number): particle growth rate [m/s] 
+-- @field atmslowdown (number): slowdown rate in atmosphere 
+-- @field ltype (number): particle type (see @{PARTICLE} identifiers) 
+-- @field levelmap (number): level to alpha mapping type (see @{PARTICLE} identifiers) 
+-- @field lmin (number): min level for level PLIN and PSQRT mapping types 
+-- @field lmax (number): max level for level PLIN and PQRST mapping types 
+-- @field atmsmap (number): atm. parameters to alpha mapping type (see @{PARTICLE} identifiers) 
+-- @field amin (number): min density for atms PLIN mapping 
+-- @field amax (number): max density for atms PLIN mapping 
+-- @field tex (handle): particle texture handle (nil for default) 
+-- @table PARTICLESTREAMSPEC
+-- @see PARTICLE, vessel:add_exhauststream
+
+--- Identifiers for particle stream specifications.
+-- The entries of the PARTICLE table enumerate parameters used for the definition of particle streams (see @{PARTICLESTREAMSPEC}).
+-- @field EMISSIVE emissive stream (field: ltype)
+-- @field DIFFUSE diffuse stream  (field: ltype)
+-- @field LVL_FLAT Particle opacity independent of thrust level (field: levelmap)
+-- @field LVL_LIN Linear relationship between particle opacity and thrust level (field: levelmap)
+-- @field LVL_SQRT Sqare root mapping between thrust level and opacity (field: levelmap)
+-- @field LVL_PLIN Linear mapping between subrange of thrust level and opacity (field: levelmap)
+-- @field LVL_PSQRT Square root mapping between subrange of thrust level and opacity (field: levelmap)
+-- @field ATM_FLAT Particle opacity independent of atmospheric density (field: atmsmap)
+-- @field ATM_PLIN Linear mapping between atm. density range and opacity (field: atmsmap)
+-- @field ATM_PLOG Logarithmic mapping between atm. density range and opacity (field: atmsmap)
+-- @table PARTICLE
+-- @see PARTICLESTREAMSPEC

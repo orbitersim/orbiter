@@ -1,0 +1,52 @@
+BEGIN_DESC
+You are descending into the thick atmosphere of Venus.
+
+If you have selected the complex flight model, then the high atmospheric pressure at lower altitudes will render your engines ineffective,
+and below an altitude of about 40km they will stop producing thrust altogether.
+So if you want to keep airborne, you need to stabilise your orbit soon.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.9971247570
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  REF Venus
+END_MFD
+
+BEGIN_VC
+END_VC
+
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Orbiting Venus
+  RPOS -1939370.68 176.20 -5993558.24
+  RVEL 6666.863 2.877 -2135.915
+  AROT -176.52 -83.95 -89.26
+  PRPLEVEL 0:0.903 1:0.886
+  NAVFREQ 0 0 0 0
+  XPDR 0
+END
+END_SHIPS

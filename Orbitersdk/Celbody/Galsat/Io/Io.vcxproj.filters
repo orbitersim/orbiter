@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4e02333f-d847-4556-81f0-97ee65e8ed52}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{ba03781d-fae0-4e7b-a73d-e1828d1e5186}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{489cfae8-ba37-4440-ba1e-a689f21a173f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Marker">
+      <UniqueIdentifier>{019dc9a2-2a60-4ac6-bb46-1a962eb88f24}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Io.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Galsat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Io\Marker\Catenae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Eruptive Center.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Fluctus.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Mensae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Montes.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Paterae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Plana.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Regiones.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Tholi.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io\Marker\Valles.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Io.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

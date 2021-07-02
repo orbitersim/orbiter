@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>DG Atmospheric Autopilot</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+
+<h1>DeltaGlider: Atmospheric Autopilot</h1>
+<p>The Delta-glider is equipped with an atmospheric autopilot to control flight parameters during atmospheric flight, including
+<ul>
+<li>altitude</li>
+<li>airspeed.</li>
+<li>bank angle</li>
+</ul>
+The autopilot can be accessed via the <i>ScriptMFD</i> mode.
+This help file can be accessed from the script command line with</p>
+<div class="code">help(dg_aap)</div>
+
+<h2>Loading the autopilot</h2>
+The atmospheric autopilot is automatically loaded when activating the Script-MFD mode from one of the glider's multifunctional displays.
+If you want to run the autopilot from an external script console, it has to be loaded manually with
+<div class="code">run('dg/aap')</div>
+
+<h2>Function reference</h2>
+<table cols="2" width="100%">
+<tr>
+<td><a href="#aap_alt">aap.alt&nbsp;(<font class="prm">tgtalt</font>)</a></td>
+<td>Engage altitude autopilot, or reset target altitude.</td>
+</tr>
+<tr>
+<td><a href="#aap_alt_nil">aap.alt&nbsp;()</a></td>
+<td>Disengage altitude autopilot.</td>
+</tr>
+<tr>
+<td><a href="#aap_spd">aap.spd&nbsp;(<font class="prm">tgtspd</font>)</a></td>
+<td>Engage airspeed autopilot, or reset target speed.</td>
+</tr>
+<tr>
+<td><a href="#aap_spd_nil">aap.spd&nbsp;()</a></td>
+<td>Disengage airspeed autopilot.</td>
+</tr>
+<tr>
+<td><a href="#aap_bank">aap.bank&nbsp;(<font class="prm">tgtbnk</font>)</a></td>
+<td>Engage bank angle autopilot, or reset target bank angle.</td>
+</tr>
+<tr>
+<td><a href="#aap_bank_nil">aap.bank&nbsp;()</a></td>
+<td>Disengage bank angle autopilot.</td>
+</tr>
+<tr>
+<td><a href="#aap_hdg">aap.hdg&nbsp;(<font class="prm">tgthdg</font>)</a></td>
+<td>Engage heading autopilot, or reset target heading.</td>
+</tr>
+<tr>
+<td><a href="#aap_hdg_nil">aap.hdg&nbsp;()</a></td>
+<td>Disengage heading autopilot.</td>
+</tr>
+</table>
+
+<h2>Autopilot functions</h2>
+<h3>Altitude autopilot mode</h3>
+<a name="aap_alt"></a>The altitude autopilot can be invoked with
+<div class="code">
+aap.alt(<font class="prm">tgtalt</font>)
+</div>
+where <font class="prm">tgtalt</font> defines the target altitude [m].
+If the altitude autopilot was active already, this command simply resets the target altitude.
+<p><a name="aap_alt_nil"></a>The altitude autopilot can be disabled by</p>
+<div class="code">aap.alt()</div>
+
+<h3>Airspeed autopilot mode</h3>
+<a name="aap_spd"></a>The airspeed autopilot can be invoked with
+<div class="code">
+aap.spd(<font class="prm">tgtspd</font>)
+</div>
+where <font class="prm">tgtspd</font> defines the target airspeed [m/s].
+If the airspeed autopilot was active already, this command simply resets the target airspeed.
+<p><a name="aap_spd_nil"></a>The airspeed autopilot can be disabled by</p>
+<div class="code">aap.spd()</div>
+
+<h3>Bank autopilot mode</h3>
+<a name="aap_bank"></a>The bank autopilot can be invoked with
+<div class="code">
+aap.bank(<font class="prm">tgtbank</font>)
+</div>
+where <font class="prm">tgtbank</font> defines the target bank angle [deg].
+<font class="prm">tgtbank</font> &gt; 0 indicates left bank, <font class="prm">tgtbank</font> &lt; 0 indicates right bank.
+If the bank autopilot was active already, this command simply resets the target bank angle.
+<p><a name="aap_bank_nil"></a>The bank autopilot can be disabled with</p>
+<div class="code">aap.bank()</div>
+
+<h3>Heading autopilot mode</h3>
+<a name="aap_hdg"></a>The heading autopilot can be invoked with
+<div class="code">
+aap.hdg(<font class="prm">tgthdg</font>)
+</div>
+where 0 &le; <font class="prm">tgthdg</font> &le; 360 defines the target heading angle [deg].
+In the current implementation, the heading autopilot invokes both a bank and
+an altitude subfunction. Any existing bank and altitude modes will therefore be
+overridden.
+The function can be invoked again to modify the heading.
+<p><a name="aap_hdg_nil"></a>The heading autopilot can be disabled with</p>
+<div class="code">aap.hdg()</div>
+
+<h2>Low-level access</h2>
+The following parameters in the aap table may be re-defined to modify the behaviour of the autopilot.
+<table cols="2" width="100%">
+<tr>
+<td>aap.tgtalt</td>
+<td>Target altitude [m]. The value of this parameter is set by aap.alt(tgtalt). Overriding it while the altitude autopilot is active will reset the target altitude.</td>
+</tr>
+<tr>
+<td>aap.tgtspd</td>
+<td>Target airspeed [m/s]. The value of this parameter is set by aap.spd(tgtspd). Overriding it while the airspeed autopilot is active will reset the target airspeed.</td>
+</tr>
+<tr>
+<td>aap.tgtbnk</td>
+<td>Target bank angle [deg]. The value of this parameter is set by aap.bank(tgtbnk). Overriding it while the bank autopilot is active will reset the target bank angle.</td>
+</tr>
+<tr>
+<td>aap.maxasc</td>
+<td>Max. ascent slope [deg] (&gt; 0) used by the altitude autopilot during altitude transistions. Default value = +30</td>
+</tr>
+<tr>
+<td>aap.maxdsc</td>
+<td>Max. descent slope [deg] (&lt; 0) used by the altitude autopilot during altitude transitions. Default value = -20</td>
+</tr>
+</table>
+</BODY>
+</HTML>

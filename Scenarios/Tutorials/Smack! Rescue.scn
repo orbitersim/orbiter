@@ -1,0 +1,139 @@
+BEGIN_DESC
+Smack! Rescue is the starting scenario for a 9-minute flight recording playback based on the original supplied scenario "Smack!" which is still found in the Delta-glider folder.  
+
+
+This annotated playback shows and describes the events in the first part of chapter 2 of "Go Play In Space (Second Edition)" by Bruce Irving with Andy McSorley, available at Andy's web site, www.virtualspaceflight.com.  That chapter and this playback explain a few very basic orbital operations in Orbiter. 
+
+
+Note that the axial rotation of the two approaching Delta Gliders in this scenario has no special utility other than it looks pretty cool.  If you were in a real spacecraft spinning like this, you probably would not enjoy it for very long!
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.8053869908
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Extern
+  POS 6.49 77.74 50.72
+  TRACKMODE GlobalFrame
+  FOV 30.00
+  BEGIN_PRESET
+    Track:GL-01:30.00:GLOBAL 6.490 1.357 0.885
+    Cockpit:GL-01:50.00
+    Track:GL-02:50.00:GLOBAL 7.477 2.769 -0.110
+    Cockpit:GL-02:50.00
+    Track:GL-01:30.00:RELATIVE 25.710 0.648 -0.166
+    Track:GL-01:40.00:GLOBAL 14.347 1.357 0.885
+  END_PRESET
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+  NAV 0
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+  NAV 0
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Earth
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+
+BEGIN_SHIPS
+ISS
+  STATUS Orbiting Earth
+  RPOS 6621432.52 24195.65 -1289842.18
+  RVEL 420.742 -7411.049 2010.149
+  AROT 30.00 0.00 50.00
+  IDS 0:588 10 1:578 10 2:568 10
+  XPDR 466
+  FLIGHTDATA
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS 216790.39 -408064.31 -6671852.45
+  RVEL 7716.304 15.625 255.368
+  AROT 0.00 -45.00 90.00
+  IDS 0:540 10 1:542 10 2:544 10
+  XPDR 482
+  FLIGHTDATA
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS -938485.21 -2032729.65 -539.03
+  RVEL 1343.843 -620.688 0.338
+  AROT 0.00 0.00 -7.94
+  IDS 0:560 10 1:564 10
+  XPDR 494
+  FLIGHTDATA
+END
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 3117933.84 -4990709.65 3857571.02
+  RVEL -6312.695 -3055.670 2355.537
+  AROT 62.90 -0.99 -86.95
+  VROT -0.00 0.00 13.10
+  PRPLEVEL 0:0.553 1:0.999
+  IDS 0:528 100
+  NAVFREQ 588 0 0 0
+  XPDR 0
+  FLIGHTDATA
+  NOSECONE 1 1.0000
+END
+GL-02:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 3117934.52 -4990674.37 3857588.97
+  RVEL -6312.708 -3056.280 2355.223
+  AROT -117.10 0.99 -93.05
+  VROT 0.00 0.00 -13.10
+  PRPLEVEL 0:0.409 1:1.000
+  IDS 0:588 100
+  NAVFREQ 528 0 0 0
+  XPDR 0
+  FLIGHTDATA
+  NOSECONE 1 1.0000
+  SKIN BLUE
+END
+PB-01:ShuttlePB
+  STATUS Orbiting Earth
+  RPOS 3117874.27 -4990486.19 3857671.51
+  RVEL -6312.780 -3055.613 2355.519
+  AROT -117.21 -5.51 92.46
+  PRPLEVEL 0:1.000
+  NAVFREQ 0 0
+  FLIGHTDATA
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  FLIGHTDATA
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+  GEAR 0 0.0000
+  PAYLOAD MASS 309.3 0
+END
+END_SHIPS
+
+BEGIN_ExtMFD
+END

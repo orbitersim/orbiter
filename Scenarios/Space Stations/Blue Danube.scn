@@ -1,0 +1,96 @@
+BEGIN_DESC
+It is not quite the Station-V from 2001: Odyssee in Space (which is available as a 3rd party addon), but the principle is the same: Dock the Shuttle-A freighter at the docking port in the hub of the rotating station.
+The rotation has already be synchronised to make your life easier.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0548400406
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship SH-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SH-01
+  MODE Extern
+  POS 19.87 44.20 15.29
+  TRACKMODE GlobalFrame
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  REF Moon
+  TARGET Luna-OB1
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 1620342.67 -6367753.05 1483242.67
+  RVEL -7330.026 -1446.487 1828.546
+  AROT 110.00 -10.00 80.00
+  PRPLEVEL 0:1.000
+  IDS 0:1 100 1:2 100 2:3 100 3:4 100 4:5 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS 4340918.63 -309027.86 -5052562.80
+  RVEL 5867.792 307.475 5027.167
+  AROT 0.00 -45.00 90.00
+  IDS 0:540 100 1:542 100 2:544 100
+  XPDR 482
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS 1359260.59 -1777710.59 -212.09
+  RVEL 1175.813 899.088 0.045
+  AROT 0.00 0.00 92.56
+  VROT 0.00 0.00 10.00
+  IDS 0:560 100 1:564 100
+  XPDR 494
+END
+GL-01:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  POS -135.4300000 12.7366196
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Orbiting Moon
+  RPOS 1359260.59 -1777710.59 -575.00
+  RVEL 1175.813 899.088 0.069
+  AROT 0.00 0.00 92.56
+  VROT 0.00 0.00 10.00
+  RCSMODE 2
+  PRPLEVEL 0:1.000 1:0.993
+  NAVFREQ 494 560
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+END
+END_SHIPS

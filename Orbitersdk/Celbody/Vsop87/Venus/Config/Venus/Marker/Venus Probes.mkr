@@ -1,0 +1,26 @@
+; Landing or atmospheric entry coordinate points of unmanned probes on Venus
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
+
++38 +19                 : Venera 4 entry
++18 -3                  : Venera 5 entry
++23 -5                  : Venera 6 entry
+-9 -5                   : Venera 7 lander
+-25 -10                 : Venera 8 lander
+-69.2 +31.01            : Venera 9 lander  ; position by Chode
+-69.2 +16               : Venera 10 lander ; position by Chode
+-61 -14                 : Venera 11 lander ; position by Chode
+-66 -7                  : Venera 12 lander ; position by Chode
+-57 -7.5                : Venera 13 lander
+-50 -13.25              : Venera 14 lander
+-56 +4.4                : Pioneer Venus 2 large probe
++4.8 +59.3              : Pioneer Venus 2 north probe
+-43 -31.3               : Pioneer Venus 2 day probe
++56.7 -28.7             : Pioneer Venus 2 night probe ; position by Chode
++176.7 +8.1             : Vega 1 lander
++179.4 -7.2             : Vega 2 lander

@@ -1,0 +1,48 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=.\DeltaGlider.chm
+Contents file=DeltaGlider.hhc
+Default topic=DeltaGlider.htm
+Display compile progress=No
+Flat=No
+Language=0x809 English (United Kingdom)
+
+
+[FILES]
+DeltaGlider.htm
+DeltaGlider1.jpg
+DGkeys.htm
+DGpanels.htm
+DGpanel1_small.jpg
+DGpanel2_small.jpg
+DGpanel3_small.jpg
+DGp2a.gif
+DGp2b.gif
+DGp1a.gif
+DGp1b.gif
+DGp1c.gif
+DGp1d.gif
+DGp1e.gif
+DGp1f.gif
+DGp1g.gif
+DGp1h.gif
+DGp1i.gif
+DGp1j.gif
+DGp1m.gif
+DGp1n.gif
+DGdata.htm
+DGVC.htm
+DGVC.jpg
+SE_Anim.htm
+DG_SE.htm
+DGVCpos.htm
+DGVCpos.jpg
+master.js
+Orbiter.css
+lua\*.html
+lua\*.css
+lua\classes\*.html
+lua\manual\*.html
+
+[INFOTYPES]
+

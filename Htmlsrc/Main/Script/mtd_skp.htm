@@ -1,0 +1,485 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: Sketchpad methods</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; Sketchpad methods</p>
+
+<h1>Sketchpad methods</h1>
+<p>Sketchpad objects are used to draw on surfaces such as textures and MFD displays. For
+example, the <i>update</i> function of the ScriptMFD environment provides a Sketchpad
+object to allow the script to update the MFD display.</p>
+<p>In the following, <i>skp</i> is assumed to refer to a valid Sketchpad object.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#text">skp:text</a></td>
+<td>Draw a text string.</td>
+</tr>
+<tr>
+<td><a href="#moveto">skp:moveto</a></td>
+<td>Move the drawing reference to a new point.</td>
+</tr>
+<tr>
+<td><a href="#lineto">skp:lineto</a></td>
+<td>Draw a line to a specified point.</td>
+</tr>
+<tr>
+<td><a href="#line">skp:line</a></td>
+<td>Draw a line between two points.</td>
+</tr>
+<tr>
+<td><a href="#rectangle">skp:rectangle</a></td>
+<td>Draw a rectangle (filled or outline).</td>
+</tr>
+<tr>
+<td><a href="#ellipse">skp:ellipse</a></td>
+<td>Draw an ellipse from its bounding box.</td>
+</tr>
+<tr>
+<td><a href="#polygon">skp:polygon</a></td>
+<td>Draw a closed polygon given by vertex points.</td>
+</tr>
+<tr>
+<td><a href="#polyline">skp:polyline</a></td>
+<td>Draw a line of piecewise straight segments.</td>
+</tr>
+<tr>
+<td><a href="#set_origin">skp:set_origin</a></td>
+<td>Set the origin of the coordinate system for all drawing functions.</td>
+</tr>
+<tr>
+<td><a href="#set_textalign">skp:set_textalign</a></td>
+<td>Set horizontal and vertical text alignment.</td>
+</tr>
+<tr>
+<td><a href="#set_textcolor">skp:set_textcolor</a></td>
+<td>Set the foreground colour for text output.</td>
+</tr>
+<tr>
+<td><a href="#set_backgroundcolor">skp:set_backgroundcolor</a></td>
+<td>Set the background colour for text output.</td>
+</tr>
+<tr>
+<td><a href="#set_backgroundmode">skp:set_backgroundmode</a></td>
+<td>Set the background mode for text output.</td>
+</tr>
+<tr>
+<td><a href="#set_pen">skp:set_pen</a></td>
+<td>Selects a new pen into the drawing context.</td>
+</tr>
+<tr>
+<td><a href="#set_font">skp:set_font</a></td>
+<td>Selects a new font into the drawing context.</td>
+</tr>
+<tr>
+<td><a href="#get_charsize">skp:get_charsize</a></td>
+<td>Return height and (average) width of a character in the currently selected font.</td>
+</tr>
+<tr>
+<td><a href="#get_textwidth">skp:get_textwidth</a></td>
+<td>Returns the width of a text string in the currently selected font.</td>
+</tr>
+</table>
+
+<div class="func_block">
+
+<div class="func"><a name="text"></a>
+<h3>ok = skp:text(x,y,str,len)</h3>
+<p>Draw a text string.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x&nbsp;(integer):</td><td>reference x position [pixel]</td></tr>
+<tr><td>y&nbsp;(integer):</td><td>reference y position [pixel]</td></tr>
+<tr><td>str&nbsp;(string):</td><td>text string</td></tr>
+<tr><td>len&nbsp;(integer):</td><td>string length for output</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> on success, <i>false</i> on failure.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_textcolor">skp:set_textcolor</a>,
+<a href="#set_backgroundcolor">skp:set_backgroundcolor</a>
+</p>
+</div>
+
+
+<div class="func"><a name="moveto"></a>
+<h3>skp:moveto(x,y)</h3>
+<p>Move the drawing reference to a new point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x&nbsp;(integer):</td><td>x-coordinate of new reference point [pixel]</td></tr>
+<tr><td>y&nbsp;(integer):</td><td>y-coordinate of new reference point [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Some methods use the drawing reference point for drawing operations, e.g. skp:lineto.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#lineto">skp:lineto</a>
+</p>
+</div>
+
+
+<div class="func"><a name="lineto"></a>
+<h3>skp:lineto(x,y)</h3>
+<p>Draw a line to a specified point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x&nbsp;(integer):</td><td>x-coordinate of line end point [pixel]</td></tr>
+<tr><td>y&nbsp;(integer):</td><td>y-coordinate of line end point [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The line starts at the current drawing reference point.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#moveto">skp:moveto</a>,
+<a href="#line">skp:line</a>
+</p>
+</div>
+
+
+<div class="func"><a name="line"></a>
+<h3>skp:line(x0,y0,x1,y1)</h3>
+<p>Draw a line between two points.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x0&nbsp;(integer):</td><td>x-coordinate of first point [pixel]</td></tr>
+<tr><td>y0&nbsp;(integer):</td><td>y-coordinate of first point [pixel]</td></tr>
+<tr><td>x1&nbsp;(integer):</td><td>x-coordinate of second point [pixel]</td></tr>
+<tr><td>y1&nbsp;(integer):</td><td>y-coordinate of second point [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The line is drawn with the currently selected pen.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#lineto">skp:lineto</a>
+</p>
+</div>
+
+
+<div class="func"><a name="rectangle"></a>
+<h3>skp:rectangle(x0,y0,x1,y1)</h3>
+<p>Draw a rectangle (filled or outline).</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x0&nbsp;(integer):</td><td>left edge of rectangle [pixel]</td></tr>
+<tr><td>y0&nbsp;(integer):</td><td>top edge of rectangle [pixel]</td></tr>
+<tr><td>x1&nbsp;(integer):</td><td>right edge of rectangle [pixel]</td></tr>
+<tr><td>y1&nbsp;(integer):</td><td>bottom edge of rectangle [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The outline of the rectangle is drawn with the currently selected pen. If
+applicable, the rectangle is filled with the currently selected brush.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#ellipse">skp:ellipse</a>
+</p>
+</div>
+
+
+<div class="func"><a name="ellipse"></a>
+<h3>skp:ellipse(x0,y0,x1,y1)</h3>
+<p>Draw an ellipse from its bounding box.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>x0&nbsp;(integer):</td><td>left edge of bounding box [pixel]</td></tr>
+<tr><td>y0&nbsp;(integer):</td><td>top edge of bounding box [pixel]</td></tr>
+<tr><td>x1&nbsp;(integer):</td><td>right edge of bounding box [pixel]</td></tr>
+<tr><td>y1&nbsp;(integer):</td><td>bottom edge of bounding box [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The outline of the ellipse is drawn with the currently selected pen. If
+applicable, the ellipse is filled with the currently selected brush.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#rectangle">skp:rectangle</a>
+</p>
+</div>
+
+
+<div class="func"><a name="polygon"></a>
+<h3>skp:polygon(pt)</h3>
+<p>Draw a closed polygon given by vertex points.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pt&nbsp;(table):</td><td>list of 2-D integer vertices [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The polygon is closed by connecting the last and first vertices.</p>
+<p>The polygon outline is drawn with the current pen and filled with
+ the current brush.</p>
+<p>Each vertex in the <i>pt</i> table is represented by a sub-table
+ containing the x and y integer coordinates as unnamed fields.</p>
+ 
+<h4>Example:</h4>
+<div class="code">
+skp:polygon({{1,2},{4,7},{-3,2}})
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#polyline">skp:polyline</a>
+</p>
+</div>
+
+
+<div class="func"><a name="polyline"></a>
+<h3>skp:polyline(pt)</h3>
+<p>Draw a line of piecewise straight segments.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pt&nbsp;(table):</td><td>list of 2-D integer vertices [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The polyline is drawn with the current pen.</p>
+<p>Each vertex in the <i>pt</i> table is represented by a sub-table
+ containing the x and y integer coordinates as unnamed fields.</p>
+ 
+<h4>Example:</h4>
+<div class="code">
+skp:polyline({{1,2},{4,7},{-3,2}})
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#polygon">skp:polygon</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_origin"></a>
+<h3>skp:set_origin(x,y)</h3>
+<p>Set the position in the surface bitmap which is mapped to the origin
+ of the coordinate system for all drawing functions.</p>
+ 
+<h4>Parameters:</h4>
+<table>
+<tr><td>x&nbsp;(integer):</td><td>horizontal position of origin [pixel]</td></tr>
+<tr><td>y&nbsp;(integer):</td><td>vertical position of origin [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>By default, the reference point for drawing function coordinates is
+ the top left corner of the bitmap, with positive x-axis to the right,
+ and positive y-axis down.</p>
+<p>set_origin can be used to shift the logical reference point to a
+ different position in the surface bitmap (but not to change the
+ orientation of the axes).</p>
+</div>
+
+
+<div class="func"><a name="set_textalign"></a>
+<h3>skp:set_textalign(tah)<br />
+skp:set_textalign(tah,tav)</h3>
+<p>Set horizontal and vertical text alignment.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>tah&nbsp;(integer):</td><td>horizontal alignment (SKP.LEFT, SKP.CENTER, SKP.RIGHT)</td></tr>
+<tr><td>tav&nbsp;(integer):</td><td>vertical alignment (SKP.TOP, SKP.BASELINE, SKP.BOTTOM)</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="constant.htm#sketchpad">Sketchpad constants</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_textcolor"></a>
+<h3>pcol = skp:set_textcolor(col)</h3>
+<p>Set the foreground colour for text output.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>col&nbsp;(integer):</td><td>colour value (in 0xBBGGRR format)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pcol&nbsp;(integer):</td><td>previous colour value</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>To set a colour with given R (red), G (green) and B (blue) components (each
+in the range from 0 to 255), use
+<div class="code">
+col = B*65536 + G*256 + R
+</div>
+</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#text">skp:text</a>,
+<a href="#set_backgroundcolor">skp:set_backgroundcolor</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_backgroundcolor"></a>
+<h3>pcol = skp:set_backgroundcolor(col)</h3>
+<p>Set the background colour for text output.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>col&nbsp;(integer):</td><td>colour value (in 0xBBGGRR format)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pcol&nbsp;(integer):</td><td>previous colour value</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The background colour is only used if the background mode is set to BK_OPAQUE.</p>
+<p>To set a colour with given R (red), G (green) and B (blue) components (each
+in the range from 0 to 255), use
+<div class="code">
+col = B*65536 + G*256 + R
+</div>
+</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#text">skp:text</a>,
+<a href="#set_textcolor">skp:set_textcolor</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_backgroundmode"></a>
+<h3>skp:set_backgroundmode(mode)</h3>
+<p>Set the background mode for text output.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(integer):</td><td>background mode (SKP.OPAQUE or SKP.TRANSPARENT)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>In opaque background mode, the text background is drawn in the
+ current background colour (see <a href="#set_backgroundcolor">set_backgroundcolor</a>).</p>
+<p>The default background mode (before the first call of set_backgroundmode)
+ is transparent.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="constant.htm#sketchpad">Sketchpad constants</a>,
+<a href="#set_backgroundcolor">set_backgroundcolor</a>,
+<a href="#text">text</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_pen"></a>
+<h3>ppen = skp:set_pen(pen)</h3>
+<p>Selects a new pen into the drawing context.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pen&nbsp;(handle):</td><td>new pen object</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ppen&nbsp;(handle):</td><td>previous pen object</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="set_font"></a>
+<h3>pfont = skp:set_font(font)</h3>
+<p>Selects a new font into the drawing context.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>font&nbsp;(handle):</td><td>new font object</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pfont&nbsp;(handle):</td><td>previous font object</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_charsize"></a>
+<h3>h,w = skp:get_charsize()</h3>
+<p>Return height and (average) width of a character in the currently selected font.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(integer):</td><td>height of character cell [pixel]</td></tr>
+<tr><td>w&nbsp;(integer):</td><td>(average) width of character cell [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The height value should describe the height of the character cell
+ (i.e. the smallest box circumscribing all characters in the font), but
+ without any "internal leading", i.e. the gap between characters in two
+ consecutive lines.</p>
+<p>For proportional fonts, the width value is an approximate
+ average character width.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_textwidth">skp:get_textwidth</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_textwidth"></a>
+<h3>w = skp:get_textwidth(str)</h3>
+<p>Returns the width of a text string in the currently selected font.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>str&nbsp;(string):</td><td>text string</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>w&nbsp;(integer):</td><td>string width when drawn in current font [pixel]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_font">skp:set_font</a>
+</p>
+</div>
+
+
+</div>
+
+</body>
+</html>

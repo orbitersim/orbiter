@@ -1,0 +1,1049 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug Server|Win32">
+      <Configuration>Debug Server</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Server|Win32">
+      <Configuration>Release Server</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1AAE1F0F-E7F6-446C-A531-280613722D53}</ProjectGuid>
+    <RootNamespace>Orbiter</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertyPages\orbiter.props" />
+    <Import Project="PropertyPages\dx7sdk.props" />
+    <Import Project="..\..\extern\zlib\zlib-1.2.11\zlib.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertyPages\orbiter.props" />
+    <Import Project="PropertyPages\ovp.props" />
+    <Import Project="PropertyPages\dx7sdk.props" />
+    <Import Project="..\..\extern\zlib\zlib-1.2.11\zlib.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertyPages\orbiter.props" />
+    <Import Project="PropertyPages\orbiter_debug.props" />
+    <Import Project="PropertyPages\ovp.props" />
+    <Import Project="PropertyPages\dx7sdk.props" />
+    <Import Project="..\..\extern\zlib\zlib-1.2.11\zlib.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertyPages\orbiter.props" />
+    <Import Project="PropertyPages\orbiter_debug.props" />
+    <Import Project="PropertyPages\dx7sdk.props" />
+    <Import Project="..\..\extern\zlib\zlib-1.2.11\zlib.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug/Orbiter.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SrcSdkIncludeDir);..\Htmlsrc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;INLINEGRAPHICS;_CRT_SECURE_NO_DEPRECATE;XPCTRL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;INLINEGRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;d3dim.lib;ddraw.lib;dinput.lib;winmm.lib;comctl32.lib;DlgCtrl.lib;UxTheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BuildSdkLibDir);Html\lib;extern\jpeglib\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
+      <ImportLibrary>$(BuildSdkLibDir)$(ProjectName).lib</ImportLibrary>
+    </Link>
+    <Bscmake>
+      <OutputFile>.\Debug/Orbiter.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Message>Deploying SDK ...</Message>
+      <Command>if not exist "$(BuildSdkDir)" mkdir "$(BuildSdkDir)"
+rem xcopy /E /I /D /Y "$(SrcSdkIncludeDir)*" "$(BuildSdkIncludeDir)"
+if not exist "$(BuildSdkResourceDir)" mkdir "$(BuildSdkResourceDir)"
+xcopy /E /I /D /Y "$(SrcSdkDir)html" "$(BuildSdkDir)html"
+
+rem Deploying samples
+echo .user &gt; exclude.txt
+echo .db &gt;&gt; exclude.txt
+echo \Deltaglider\devscripts\ &gt;&gt; exclude.txt
+xcopy /E /I /D /Y /EXCLUDE:exclude.txt "$(SrcSdkSampleDir)*" "$(BuildSdkSampleDir)*"
+del exclude.txt
+
+rem Deploying VS property sheets
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)orbiterroot.props.deploy_template" "$(BuildSdkResourceDir)orbiterroot.props"
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)Orbiter.props.deploy_template" "$(BuildSdkResourceDir)Orbiter.props"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter vessel.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter plugin.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter debug.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)orbiter.rules" "$(BuildSdkResourceDir)*"
+
+rem Deploying Lua libraries
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.lib" "$(BuildSdkLibDir)Lua\*"
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.dll" "$(BuildDir)*"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug_Server/Orbiter.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(OrbiterSrcSdkIncludeDir);..\Htmlsrc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;NOGRAPHICS;WIN32;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;XPCTRL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;NOGRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;d3dim.lib;ddraw.lib;dinput.lib;winmm.lib;comctl32.lib;DlgCtrl.lib;UxTheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BuildSdkLibDir);Html\lib;extern\jpeglib\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>4194304</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
+      <ImportLibrary>$(BuildSdkLibDir)$(ProjectName).lib</ImportLibrary>
+    </Link>
+    <Bscmake>
+      <OutputFile>.\Debug_Server/Orbiter.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Message>Deploying SDK ...</Message>
+      <Command>if not exist "$(BuildSdkDir)" mkdir "$(BuildSdkDir)"
+rem xcopy /E /I /D /Y "$(SrcSdkIncludeDir)*" "$(BuildSdkIncludeDir)"
+if not exist "$(BuildSdkResourceDir)" mkdir "$(BuildSdkResourceDir)"
+xcopy /E /I /D /Y "$(SrcSdkDir)html" "$(BuildSdkDir)html"
+
+rem Deploying samples
+echo .user &gt; exclude.txt
+echo .db &gt;&gt; exclude.txt
+echo \Deltaglider\devscripts\ &gt;&gt; exclude.txt
+xcopy /E /I /D /Y /EXCLUDE:exclude.txt "$(SrcSdkSampleDir)*" "$(BuildSdkSampleDir)*"
+del exclude.txt
+
+rem Deploying VS property sheets
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)orbiterroot.props.deploy_template" "$(BuildSdkResourceDir)orbiterroot.props"
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)Orbiter.props.deploy_template" "$(BuildSdkResourceDir)Orbiter.props"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter vessel.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter plugin.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter debug.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)orbiter.rules" "$(BuildSdkResourceDir)*"
+
+rem Deploying Lua libraries
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.lib" "$(BuildSdkLibDir)Lua\*"
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.dll" "$(BuildDir)*"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release_Server/Orbiter.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(OrbiterSrcSdkIncludeDir);..\Htmlsrc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;NOGRAPHICS;WIN32;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;XPCTRL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;NOGRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;d3dim.lib;ddraw.lib;dinput.lib;winmm.lib;comctl32.lib;DlgCtrl.lib;UxTheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BuildSdkLibDir);Html\lib;extern\jpeglib\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
+      <ImportLibrary>$(BuildSdkLibDir)$(ProjectName).lib</ImportLibrary>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release_Server/Orbiter.bsc</OutputFile>
+    </Bscmake>
+    <PostBuildEvent>
+      <Message>Deploying SDK ...</Message>
+      <Command>if not exist "$(BuildSdkDir)" mkdir "$(BuildSdkDir)"
+rem xcopy /E /I /D /Y "$(SrcSdkIncludeDir)*" "$(BuildSdkIncludeDir)"
+if not exist "$(BuildSdkResourceDir)" mkdir "$(BuildSdkResourceDir)"
+xcopy /E /I /D /Y "$(SrcSdkDir)html" "$(BuildSdkDir)html"
+
+rem Deploying samples
+echo .user &gt; exclude.txt
+echo .db &gt;&gt; exclude.txt
+echo \Deltaglider\devscripts\ &gt;&gt; exclude.txt
+xcopy /E /I /D /Y /EXCLUDE:exclude.txt "$(SrcSdkSampleDir)*" "$(BuildSdkSampleDir)*"
+del exclude.txt
+
+rem Deploying VS property sheets
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)orbiterroot.props.deploy_template" "$(BuildSdkResourceDir)orbiterroot.props"
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)Orbiter.props.deploy_template" "$(BuildSdkResourceDir)Orbiter.props"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter vessel.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter plugin.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter debug.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)orbiter.rules" "$(BuildSdkResourceDir)*"
+
+rem Deploying Lua libraries
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.lib" "$(BuildSdkLibDir)Lua\*"
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.dll" "$(BuildDir)*"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/Orbiter.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(SrcSdkIncludeDir);..\Htmlsrc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;INLINEGRAPHICS;_CRT_SECURE_NO_DEPRECATE;XPCTRL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;INLINEGRAPHICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>dxguid.lib;d3dim.lib;ddraw.lib;dinput.lib;winmm.lib;comctl32.lib;DlgCtrl.lib;UxTheme.lib;Windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BuildSdkLibDir);Html\lib;extern\jpeglib\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <LargeAddressAware>true</LargeAddressAware>
+      <OptimizeReferences />
+      <EnableCOMDATFolding />
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <ImportLibrary>$(BuildSdkLibDir)$(ProjectName).lib</ImportLibrary>
+    </Link>
+    <PostBuildEvent>
+      <Message>Deploying SDK ...</Message>
+      <Command>if not exist "$(BuildSdkDir)" mkdir "$(BuildSdkDir)"
+rem xcopy /E /I /D /Y "$(SrcSdkIncludeDir)*" "$(BuildSdkIncludeDir)"
+if not exist "$(BuildSdkResourceDir)" mkdir "$(BuildSdkResourceDir)"
+xcopy /E /I /D /Y "$(SrcSdkDir)html" "$(BuildSdkDir)html"
+
+rem Deploying samples
+echo .user &gt; exclude.txt
+echo .db &gt;&gt; exclude.txt
+echo \Deltaglider\devscripts\ &gt;&gt; exclude.txt
+xcopy /E /I /D /Y /EXCLUDE:exclude.txt "$(SrcSdkSampleDir)*" "$(BuildSdkSampleDir)*"
+del exclude.txt
+
+rem Deploying VS property sheets
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)orbiterroot.props.deploy_template" "$(BuildSdkResourceDir)orbiterroot.props"
+echo F | xcopy /D /Y "$(SrcSdkResourceDir)Orbiter.props.deploy_template" "$(BuildSdkResourceDir)Orbiter.props"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter vessel.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter plugin.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)Orbiter debug.props" "$(BuildSdkResourceDir)*"
+xcopy /D /Y "$(SrcSdkResourceDir)orbiter.rules" "$(BuildSdkResourceDir)*"
+
+rem Deploying Lua libraries
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.lib" "$(BuildSdkLibDir)Lua\*"
+xcopy /I /D /Y "$(SrcSdkLibDir)Lua\lua5.1.dll" "$(BuildDir)*"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\OVP\GDIClient\GDIClient.cpp" />
+    <ClCompile Include="..\Astro.cpp" />
+    <ClCompile Include="..\Base.cpp" />
+    <ClCompile Include="..\Baseobj.cpp" />
+    <ClCompile Include="..\Body.cpp" />
+    <ClCompile Include="..\BodyIntegrator.cpp" />
+    <ClCompile Include="..\CamAPI.cpp" />
+    <ClCompile Include="..\Camera.cpp" />
+    <ClCompile Include="..\Celbody.cpp" />
+    <ClCompile Include="..\Client.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\cloudmgr2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Config.cpp" />
+    <ClCompile Include="..\CSphereMgr.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\cspheremgr2.cpp" />
+    <ClCompile Include="..\CustomControls.cpp" />
+    <ClCompile Include="..\D3d7enum.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\D3d7frame.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\D3d7util.cpp" />
+    <ClCompile Include="..\D3dmath.cpp" />
+    <ClCompile Include="..\ddeserver.cpp" />
+    <ClCompile Include="..\Defpanel.cpp" />
+    <ClCompile Include="..\Di7frame.cpp" />
+    <ClCompile Include="..\Dialogs.cpp" />
+    <ClCompile Include="..\DialogWin.cpp" />
+    <ClCompile Include="..\DlgCamera.cpp" />
+    <ClCompile Include="..\DlgCapture.cpp" />
+    <ClCompile Include="..\DlgFocus.cpp" />
+    <ClCompile Include="..\DlgFunction.cpp" />
+    <ClCompile Include="..\DlgHelp.cpp" />
+    <ClCompile Include="..\DlgInfo.cpp" />
+    <ClCompile Include="..\DlgMap.cpp" />
+    <ClCompile Include="..\DlgMenuCfg.cpp" />
+    <ClCompile Include="..\DlgMgr.cpp" />
+    <ClCompile Include="..\DlgRecorder.cpp" />
+    <ClCompile Include="..\DlgTacc.cpp" />
+    <ClCompile Include="..\DlgVishelper.cpp" />
+    <ClCompile Include="..\DrawAPI.cpp" />
+    <ClCompile Include="..\Element.cpp" />
+    <ClCompile Include="..\elevmgr.cpp" />
+    <ClCompile Include="..\ExtraRender.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\FlightRecorder.cpp" />
+    <ClCompile Include="..\GraphicsAPI.cpp" />
+    <ClCompile Include="..\Help.cpp" />
+    <ClCompile Include="..\htmlctrl.c" />
+    <ClCompile Include="..\hud.cpp" />
+    <ClCompile Include="..\Input.cpp" />
+    <ClCompile Include="..\Keymap.cpp" />
+    <ClCompile Include="..\Launchpad.cpp" />
+    <ClCompile Include="..\LightEmitter.cpp" />
+    <ClCompile Include="..\Log.cpp" />
+    <ClCompile Include="..\LpadTab.cpp" />
+    <ClCompile Include="..\Memstat.cpp" />
+    <ClCompile Include="..\MenuInfoBar.cpp" />
+    <ClCompile Include="..\Mesh.cpp" />
+    <ClCompile Include="..\Mfd.cpp" />
+    <ClCompile Include="..\MfdAlign.cpp" />
+    <ClCompile Include="..\MFDAPI.cpp" />
+    <ClCompile Include="..\MfdComms.cpp" />
+    <ClCompile Include="..\MfdDocking.cpp" />
+    <ClCompile Include="..\MfdHsi.cpp" />
+    <ClCompile Include="..\MfdLanding.cpp" />
+    <ClCompile Include="..\MfdMap.cpp" />
+    <ClCompile Include="..\MfdMap_old.cpp" />
+    <ClCompile Include="..\MfdOrbit.cpp" />
+    <ClCompile Include="..\MfdSurface.cpp" />
+    <ClCompile Include="..\MfdSync.cpp" />
+    <ClCompile Include="..\MfdTransfer.cpp" />
+    <ClCompile Include="..\MfdUser.cpp" />
+    <ClCompile Include="..\ModuleAPI.cpp" />
+    <ClCompile Include="..\Nav.cpp" />
+    <ClCompile Include="..\Network.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\OGraphics.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Orbiter.cpp" />
+    <ClCompile Include="..\OrbiterAPI.cpp" />
+    <ClCompile Include="..\Pane.cpp" />
+    <ClCompile Include="..\Panel.cpp" />
+    <ClCompile Include="..\Panel2D.cpp" />
+    <ClCompile Include="..\Particle.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Planet.cpp" />
+    <ClCompile Include="..\PlaybackEd.cpp" />
+    <ClCompile Include="..\Psys.cpp" />
+    <ClCompile Include="..\Rigidbody.cpp" />
+    <ClCompile Include="..\Scene.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\ScreenNote.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Script.cpp" />
+    <ClCompile Include="..\Select.cpp" />
+    <ClCompile Include="..\Server.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Shadow.cpp" />
+    <ClCompile Include="..\Spherepatch.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Star.cpp" />
+    <ClCompile Include="..\State.cpp" />
+    <ClCompile Include="..\SuperVessel.cpp" />
+    <ClCompile Include="..\surfmgr2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\TabAbout.cpp" />
+    <ClCompile Include="..\TabExtra.cpp" />
+    <ClCompile Include="..\TabJoystick.cpp" />
+    <ClCompile Include="..\TabModule.cpp" />
+    <ClCompile Include="..\TabParam.cpp" />
+    <ClCompile Include="..\TabScenario.cpp" />
+    <ClCompile Include="..\TabVideo.cpp" />
+    <ClCompile Include="..\TabVisual.cpp" />
+    <ClCompile Include="..\Texture.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\tilelabel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\TileMgr.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\tilemgr2.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Util.cpp" />
+    <ClCompile Include="..\VBase.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\VCockpit.cpp" />
+    <ClCompile Include="..\Vecmat.cpp" />
+    <ClCompile Include="..\VectorMap.cpp" />
+    <ClCompile Include="..\Vessel.cpp" />
+    <ClCompile Include="..\Vesselbase.cpp" />
+    <ClCompile Include="..\Vesselstatus.cpp" />
+    <ClCompile Include="..\Vobject.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\VPlanet.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Vstar.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\Vvessel.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\ZTreeMgr.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\OVP\GDIClient\GDIClient.h" />
+    <ClInclude Include="..\Astro.h" />
+    <ClInclude Include="..\Base.h" />
+    <ClInclude Include="..\Baseobj.h" />
+    <ClInclude Include="..\Body.h" />
+    <ClInclude Include="..\Camera.h" />
+    <ClInclude Include="..\Celbody.h" />
+    <CustomBuild Include="..\Client.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\cloudmgr2.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Config.h" />
+    <CustomBuild Include="..\CSphereMgr.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\cspheremgr2.h" />
+    <ClInclude Include="..\CustomControls.h" />
+    <CustomBuild Include="..\D3d7enum.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\D3d7frame.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\D3d7util.h" />
+    <ClInclude Include="..\D3dmath.h" />
+    <ClInclude Include="..\ddeserver.h" />
+    <ClInclude Include="..\Defpanel.h" />
+    <ClInclude Include="..\Di7frame.h" />
+    <ClInclude Include="..\Dialogs.h" />
+    <ClInclude Include="..\DialogWin.h" />
+    <ClInclude Include="..\DlgCamera.h" />
+    <ClInclude Include="..\DlgCapture.h" />
+    <ClInclude Include="..\DlgFocus.h" />
+    <ClInclude Include="..\DlgFunction.h" />
+    <ClInclude Include="..\DlgHelp.h" />
+    <ClInclude Include="..\DlgInfo.h" />
+    <ClInclude Include="..\DlgMap.h" />
+    <ClInclude Include="..\DlgMenuCfg.h" />
+    <ClInclude Include="..\DlgMgr.h" />
+    <ClInclude Include="..\DlgRecorder.h" />
+    <ClInclude Include="..\DlgTacc.h" />
+    <ClInclude Include="..\DlgVishelper.h" />
+    <ClInclude Include="..\Element.h" />
+    <ClInclude Include="..\elevmgr.h" />
+    <CustomBuild Include="..\ExtraRender.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Help.h" />
+    <ClInclude Include="..\htmlctrl.h" />
+    <ClInclude Include="..\hud.h" />
+    <ClInclude Include="..\Input.h" />
+    <ClInclude Include="..\Keymap.h" />
+    <ClInclude Include="..\Launchpad.h" />
+    <ClInclude Include="..\Log.h" />
+    <ClInclude Include="..\LpadTab.h" />
+    <ClInclude Include="..\Memstat.h" />
+    <ClInclude Include="..\MenuInfoBar.h" />
+    <ClInclude Include="..\Mesh.h" />
+    <ClInclude Include="..\Mfd.h" />
+    <ClInclude Include="..\MfdAlign.h" />
+    <ClInclude Include="..\MfdComms.h" />
+    <ClInclude Include="..\MfdDocking.h" />
+    <ClInclude Include="..\MfdHsi.h" />
+    <ClInclude Include="..\MfdLanding.h" />
+    <ClInclude Include="..\MfdMap.h" />
+    <ClInclude Include="..\MfdMap_old.h" />
+    <ClInclude Include="..\MfdOrbit.h" />
+    <ClInclude Include="..\MfdSurface.h" />
+    <ClInclude Include="..\MfdSync.h" />
+    <ClInclude Include="..\MfdTransfer.h" />
+    <ClInclude Include="..\MfdUser.h" />
+    <ClInclude Include="..\Nav.h" />
+    <CustomBuild Include="..\Network.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\OGraphics.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Orbiter.h" />
+    <CustomBuild Include="..\Orbitersdk\include\CamAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\CelBodyAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\DrawAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\GraphicsAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\MFDAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\ModuleAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\OrbiterAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Orbitersdk.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\resource_video.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lauxlib.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lua.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lua.hpp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Lua\luaconf.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\Lua\lualib.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)Lua\"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)Lua\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Orbitersdk\include\VesselAPI.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">xcopy /D /Y /I /R "%(FullPath)" "$(BuildSdkIncludeDir)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildSdkIncludeDir)%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="..\Pane.h" />
+    <ClInclude Include="..\Panel.h" />
+    <ClInclude Include="..\Panel2D.h" />
+    <CustomBuild Include="..\Particle.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Planet.h" />
+    <ClInclude Include="..\PlaybackEd.h" />
+    <ClInclude Include="..\Psys.h" />
+    <CustomBuild Include="..\qtree.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Resource.h" />
+    <ClInclude Include="..\resource2.h" />
+    <ClInclude Include="..\Rigidbody.h" />
+    <CustomBuild Include="..\Scene.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\ScreenNote.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Script.h" />
+    <ClInclude Include="..\Select.h" />
+    <CustomBuild Include="..\Server.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Shadow.h" />
+    <CustomBuild Include="..\Spherepatch.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Star.h" />
+    <ClInclude Include="..\State.h" />
+    <ClInclude Include="..\SuperVessel.h" />
+    <CustomBuild Include="..\surfmgr2.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\TabAbout.h" />
+    <ClInclude Include="..\TabExtra.h" />
+    <ClInclude Include="..\TabJoystick.h" />
+    <ClInclude Include="..\TabModule.h" />
+    <ClInclude Include="..\TabParam.h" />
+    <ClInclude Include="..\TabScenario.h" />
+    <ClInclude Include="..\TabVideo.h" />
+    <ClInclude Include="..\TabVisual.h" />
+    <CustomBuild Include="..\Texture.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\tilelabel.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\TileMgr.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\tilemgr2.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\tilemgr2_imp.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\Util.h" />
+    <CustomBuild Include="..\VBase.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\VCockpit.h" />
+    <ClInclude Include="..\Vecmat.h" />
+    <ClInclude Include="..\VectorMap.h" />
+    <ClInclude Include="..\Vessel.h" />
+    <ClInclude Include="..\Vesselbase.h" />
+    <CustomBuild Include="..\Vobject.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\VPlanet.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\Vstar.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <CustomBuild Include="..\Vvessel.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <ClInclude Include="..\ZTreeMgr.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Bitmaps\arrows.bmp" />
+    <Image Include="..\Bitmaps\banner_ng.bmp" />
+    <Image Include="..\Bitmaps\bt_default.bmp" />
+    <Image Include="..\Bitmaps\checkboxes.bmp" />
+    <Image Include="..\Bitmaps\Closedown.bmp" />
+    <Image Include="..\Bitmaps\cross.ico" />
+    <Image Include="..\bitmaps\darrow.ico" />
+    <Image Include="..\Bitmaps\darrow_tilt.ico" />
+    <Image Include="..\Bitmaps\ddown.ico" />
+    <Image Include="..\Bitmaps\dnarrow.bmp" />
+    <Image Include="..\Bitmaps\dup.ico" />
+    <Image Include="..\Bitmaps\finger.ico" />
+    <Image Include="..\Bitmaps\finger1.ico" />
+    <Image Include="..\Bitmaps\finger2.ico" />
+    <Image Include="..\Bitmaps\Folder1.bmp" />
+    <Image Include="..\Bitmaps\Folder2.bmp" />
+    <Image Include="..\Bitmaps\Icon.bmp" />
+    <Image Include="..\Bitmaps\icon2.ico" />
+    <Image Include="..\Bitmaps\icon3.ico" />
+    <Image Include="..\Bitmaps\Icon64.bmp" />
+    <Image Include="..\Bitmaps\Icon64.png" />
+    <Image Include="..\Bitmaps\larrow.ico" />
+    <Image Include="..\bitmaps\larrow_in.ico" />
+    <Image Include="..\bitmaps\larrow_t.ico" />
+    <Image Include="..\bitmaps\larrow_tilt.ico" />
+    <Image Include="..\Bitmaps\left.ico" />
+    <Image Include="..\Bitmaps\Logo2.bmp" />
+    <Image Include="..\Bitmaps\Logo2_ng.bmp" />
+    <Image Include="..\Bitmaps\rarrow.ico" />
+    <Image Include="..\Bitmaps\rarrow_tilt.ico" />
+    <Image Include="..\Bitmaps\rec_icon.ico" />
+    <Image Include="..\Bitmaps\right.ico" />
+    <Image Include="..\Bitmaps\rightarr.ico" />
+    <Image Include="..\Bitmaps\Scn1.bmp" />
+    <Image Include="..\Bitmaps\Scn2.bmp" />
+    <Image Include="..\Bitmaps\shadow.bmp" />
+    <CustomBuild Include="..\Bitmaps\Splash2016.jpg">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">false</ExcludedFromBuild>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Intermediate\Utils\fchecksum %(FullPath) $(SrcDir)splash_cs.dat</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating splash screen checksum ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SrcDir)splash_cs.dat</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildDir)Intermediate\Utils\fchecksum %(FullPath) $(SrcDir)splash_cs.dat</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Creating splash screen checksum ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(SrcDir)splash_cs.dat</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Intermediate\Utils\fchecksum %(FullPath) $(SrcDir)splash_cs.dat</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating splash screen checksum ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SrcDir)splash_cs.dat</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildDir)Intermediate\Utils\fchecksum %(FullPath) $(SrcDir)splash_cs.dat</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Creating splash screen checksum ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(SrcDir)splash_cs.dat</Outputs>
+    </CustomBuild>
+    <Image Include="..\Bitmaps\uarrow.ico" />
+    <Image Include="..\bitmaps\uarrow_tilt.ico" />
+    <Image Include="..\Bitmaps\uparrow.bmp" />
+    <Image Include="..\Closedown.bmp" />
+    <Image Include="..\Closedown2.bmp" />
+    <Image Include="..\Icon.bmp" />
+    <Image Include="..\Localdoc\Icon64.bmp" />
+    <Image Include="..\Orbiter.ico" />
+    <Image Include="..\shadow.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Contrib.txt" />
+    <Text Include="..\Credit.txt" />
+    <Text Include="..\Disclaimer.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\bitmaps\image1.bin" />
+    <None Include="..\bitmaps\image2.bin" />
+    <None Include="..\classes.cd" />
+    <CustomBuild Include="..\cryptstring.h.in">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\Disclaimer.txt.in">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug Server|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release Server|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Scrambling %(Filename) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Intermediate\Utils\scramble %(FullPath) $(SrcDir)%(Filename)
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SrcDir)%(Filename);%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="..\Orbiter.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Orbiter.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\Htmlsrc\lib\htmlhelp.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\DlgCtrl\DlgCtrl.vcxproj">
+      <Project>{a33fe005-957e-4b5d-8022-2ad8f7a9d71d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Utils\scramble\scramble.vcxproj">
+      <Project>{ea655e19-cda5-4017-911d-c8d4657602e3}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

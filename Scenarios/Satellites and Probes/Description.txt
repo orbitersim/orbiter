@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Satellites and probes</h1>
+<p>A collection of Space Shuttle missions with the Hubble Space Telescope (HST) and Long Duration Exposure Facility (LDEF).</p>
+END_HYPERDESC

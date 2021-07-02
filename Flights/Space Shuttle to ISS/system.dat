@@ -1,0 +1,147 @@
+0 NOTECOL 0.8 0.7 1
+0 NOTESIZE 1.1
+0 NOTEPOS 0.2 0.2 0.8 0.9
+0 NOTE Please unpause the simulation (Ctrl-P) to play the tutorial.
+0.01 NOTEOFF
+1 NOTE Welcome! You are in command of Space Shuttle Atlantis to fly a resupply mission to the International Space Station.
+10 NOTE Atlantis is ready on pad LC39B of Kennedy Space Center. T-80 seconds and counting.
+10 CAMERA SET Ground:Atlantis:50.00:Earth -80.61123 28.62045 535.80
+19 NOTE This flight is pre-recorded, but I will explain the procedures and the use of the autopilot, so you can fly your own mission later.
+28 NOTE The left MFD has been set to the Shuttle ascent autopilot interface mode (AscentAP), where you can set the launch parameters.
+28 NOTEPOS 0.02 0.25 0.4 0.9
+28 NOTESIZE 0.9
+28 CAMERA SET Cockpit:Atlantis:50.00
+37 NOTE You can adjust the launch azimuth angle by pressing the AZ- and AZ+ buttons.
+46 NOTE You can adjust the launch azimuth angle by pressing the AZ- and AZ+ buttons.    The launch azimuth is the initial heading the Shuttle will follow after launch. It governs the inclination of the orbit you enter.
+55 NOTE You want to intercept the International Space Station orbiting at an inclination of 51.6° on the descending section of its orbit, and the launch azimuth has already been set up accordingly for a SE launch.
+64 NOTE You can adjust the altitude of the target orbit with the AL- and AL+ buttons.
+73 NOTE You can adjust the altitude of the target orbit with the AL- and AL+ buttons.    This has also been adjusted to approximately match the ISS altitude at 350km.
+82 NOTE Pressing the L button will initiate the launch sequence. (In this tutorial, this will be done automatically.)
+90 CAMERA SET Ground:Atlantis:40.00:Earth -80.62017 28.62630 58.81
+90 NOTEOFF
+92 NOTESIZE 1.1
+92 NOTEPOS 0.6 0.25 0.98 0.9
+92 NOTE Space Shuttle main engine ignition!
+94 NOTE Space Shuttle main engine ignition!    Solid rocket booster ignition!    Liftoff of Space Shuttle Atlantis on its mission to the International Space Station.
+101.196 CAMERA SET Track:Atlantis:40.00:GLOBAL 4.000 -0.662 0.246
+101.196 NOTE The autopilot controls the engine gimbals to roll towards the commanded launch azimuth.
+101.196 NOTEPOS 0.1 0.25 0.5 0.9
+108 NOTE The Shuttle launch stack then starts to pitch over backwards to enter the pre-defined ascent profile.
+118.9 CAMERA SET Cockpit:Atlantis:50.00
+118.9 NOTEPOS 0.65 0.25 0.98 0.9
+118.9 NOTESIZE 0.9
+118.9 NOTE On the MAP MFD display, it can be seen that the Shuttle's launch location at Cape Canaveral, Florida, is just about to pass underneath the ISS's orbital plane (symbolised by the yellow line).
+128 NOTE This event marks the launch window - it allows the shuttle to launch into the same orbital plane without the need for fuel-expensive plane changes later on.
+137 NOTE In fact, if you look closely, the ISS's orbital plane is still slightly east of the launch position. This is because during ascent, the shuttle's eastward compoent of its tangential velocity is still below its eventual orbital velocity, meaning that the ISS will continue to gain on the shuttle position.
+149 NOTE Note how, as it pitches over and starts to accumulate a horizontal velocity component, the shuttle's orbital plane (indicated by the green line) is slowly rotating to match the ISS's plane.
+164.7 CAMERA SET Track:Atlantis:30.00:GLOBAL 7.541 1.673 -0.686
+164.7 NOTESIZE 1.1
+164.7 NOTEPOS 0.1 0.7 0.6 1
+164.7 NOTE The launch autopilot manages the first part of the flight, from launch to orbit circularisation.
+174 NOTE So for now you can lean back and enjoy the ride.
+180 CAMERA SET Cockpit:Atlantis:50.00
+180 NOTEPOS 0.02 0.25 0.4 0.9
+180 NOTESIZE 0.9
+180 NOTE While the autopilot is active, it shows the current (Cur) and target (Tgt) control parameters.
+190 NOTE Time to mention another function of the AscentAP MFD mode: Clicking the PG+ and PG- buttons pages through the available display pages (only the first two are currently active).
+200 NOTE On page 2, the MFD shows the gimbal positions of the space shuttle main engines (SSME) and the solid rocket boosters (SRB).
+209.215 CAMERA SET Track:Atlantis:30.00:GLOBAL 7.541 1.378 0.156
+209.215 NOTEOFF
+220 NOTESIZE 1.1
+220 NOTEPOS 0.2 0.2 0.8 0.9
+220 NOTE SRB separation at MET=126s!
+230 NOTE SRB separation at MET=126s!    The spent solid rocket boosters fall back into the Atlantic off the Florida coast.
+240 TACC 10.000000 7.000000
+240 NOTE The ascent is now powered with the Shuttle's main engines, fed from the external tank.
+340 NOTEOFF
+415 TACC 1.000000 7.000000
+440 NOTE The Orbiter/ET assembly rotates upright by gimballing the Shuttle's main engines
+470 NOTEOFF
+470 TACC 10.000000 7.000000
+580 TACC 1.000000 7.000000
+604 NOTE Main engine cutoff.
+614 NOTE The empty external tank is jettisoned. It will follow its suborbital trajectory and go down in the southern Indian Ocean.
+628.679 CAMERA SET Track:Atlantis:30.00:GLOBAL 7.541 2.308 -0.389
+632 NOTE The two engines of the Orbital Maneuvering System fire for the OMS-1 burn. The purpose of this burn is to achieve the commanded apogee altitude of 350km.
+645 NOTEOFF
+649 TACC 10.000000 7.000000
+865 NOTE OMS cutoff. The apogee altitude is now 350km as programmed.    The orbiter will now coast to apogee, where the second OMS burn will take place.
+948.056 CAMERA SET Track:Atlantis:30.00:GLOBAL 7.541 0.418 -0.746
+948.056 NOTE The payload bay doors are opened to expose the radiators.
+1102.79 CAMERA SET Track:Atlantis:30.00:GLOBAL 9.449 1.779 0.469
+1102.79 NOTE Fast-forwarding to apogee ...
+1102.79 TACC 100.000000 7.000000
+1800 TACC 20.000000 7.000000
+2146 NOTE Approaching apogee, the OMS engines fire for the OMS-2 burn to raise perigee and circularise the orbit.
+2146 CAMERA SET Track:Atlantis:20.00:GLOBAL 9.449 0.794 -0.116
+2435 NOTE This is the end of the OMS-2 burn. The orbiter is now in an approximately circular orbit at altitude 350km, coplanar with that of the ISS.
+2635 NOTE This also concludes the control of the ascent autopilot, which has now deactivated itself. The following maneuvers are planned and executed by hand.
+2843 NOTEOFF
+3110 TACC 1.000000 7.000000
+3160 CAMERA SET Cockpit:Atlantis:50.00
+3160 NOTE In preparation for the next maneuvers we need to set up the instruments.
+3170 NOTE First, switch the head-up display (HUD) to Orbit mode, by pressing "H" twice.
+3180 NOTE In Orbit mode, the HUD displays a pitch ladder with respect to the orbital plane, and a yaw tape that shows the angle to the orbital velocity vector (the prograde direction).
+3190 NOTE The next task is to fine-tune the orbital plane to match that of the ISS.
+3200 NOTE This will require a velocity change (Delta-V) normal (perpendicular) to the orbital plane, executed at the intersection (node) of current and target planes.
+3210 NOTEPOS 0.02 0.25 0.4 0.9
+3210 NOTESIZE 0.9
+3210 NOTE This type of plane change is assisted by the "Align planes" MFD mode.    On the left MFD, Click <SEL>, <Align planes>.
+3220 NOTE Next, pick the target object. Click <TGT>, press Enter, type "iss", press Enter.
+3230 NOTE The display shows the current orbital position (P) in relation to the descending (DN) and ascending node (AN) defining the line of nodes (the yellow line) with the target plane.
+3240 NOTE Other useful readout values are the relative inclination between the planes (RInc), the rate of change (Rate), the time to node (Tn) and the estimated burn times (TthA, TthD) for matching the planes, at ascending and descending node, respectively.
+3250 NOTEPOS 0.65 0.25 0.98 0.9
+3250 NOTE The plane change will require a burn normal to the orbital plane, so we need to orient the orbiter correspondingly.
+3260 NOTE An additional problem is the fact that on the Shuttle, the OMS engines are tilted by about 15 degrees against the longitudinal axis.    This must be taken into account when rotating the orbiter.
+3270 NOTE The "Attitude RCS" MFD mode can assist here.    On the right MFD, click <SEL>, <Attitude RCS>.
+3280 NOTE Click <SET>, followed by <BAS>, to switch the base attitude mode to "Normal".
+3290 NOTE Click <+R> to add a pitch rotation to the base mode. Now click <+V> repeatedly until the rotation angle is set at +15 degrees.
+3300 NOTE Clicking <GO> will activate the commanded attitude mode. (In this tutorial, this is done automatically).
+3315 NOTESIZE 1.1
+3315 NOTEPOS 0.2 0.2 0.8 0.9
+3315 NOTE Rotating the shuttle normal to the orbital plane (+15 deg).
+3353 NOTE A short OMS burn for precisely matching the orbital plane with the ISS.
+3363 NOTEPOS 0.02 0.25 0.4 0.9
+3363 NOTESIZE 0.9
+3363 NOTE Watch the relative inclination (RInc) slowly dropping down to zero.
+3373 NOTESIZE 1.1
+3373 NOTEPOS 0.2 0.2 0.8 0.9
+3373 NOTE OMS cutoff.
+3383 NOTE Switching back to prograde orientation.
+3393 NOTE The next manoever will be a prograde burn to increase the orbital period, in order to let the ISS catch up for rendezvous.
+3403 NOTE The position of the prograde burn will become the perigee location of the orbit.
+3413 NOTE The perigee location will also be the designated rendezvous point with the ISS.
+3423 NOTE Since the current orbit is approximately circular, the perigee is not yet well defined. The next burn can be initiated anywhere along the orbital trajectory.
+3433 NOTE However, we will delay the burn until we emerge from the Earth's shadow. This will ensure that the eventual rendezvous and docking manoever can take place in daylight.
+3443 TACC 50 7
+3443 NOTE Fast forwarding ...
+5290 TACC 1 7
+5440 NOTEPOS 0.02 0.25 0.4 0.9
+5440 NOTESIZE 0.9
+5440 NOTE To time the prograde burn, switch the left MFD to Sync Orbit mode.
+5450 NOTE To time the prograde burn, switch the left MFD to Sync Orbit mode.    Press <SEL>, <Sync Orbit>.
+5460 NOTE Next, press <TGT> for target selection, followed by <Enter>. Type "iss", and press <Enter>.
+5470 NOTE Press <MOD> twice, until the "Ref" readout shows "Sh periapsis". This sets the target rendezvous point to our current periapsis position.
+5480 NOTE Finally, press <LEN>, type "15", press <Enter>. This sets the length of the arrival time list to 15 orbits.
+5490 NOTESIZE 1.1
+5490 NOTEPOS 0.2 0.2 0.8 0.9
+5490 NOTE Turning prograde + 15deg for the next burn, again with the help of the AttitudeRCS MFD mode.
+5505 NOTE OMS ignition for prograde burn.
+5515 NOTEPOS 0.02 0.25 0.4 0.9
+5515 NOTESIZE 0.9
+5515 NOTE The arrival time list on the right side of the Sync Orbit MFD shows the time to rendezvous point of your spacecraft (Sh-ToR) and the target craft (Tg-ToR) for a sequence of orbits, where "0" refers to the current orbit.
+5525 NOTE The pair of entries indicated in yellow represents the closest match of arrival times between you and the target.
+5535 NOTE As your orbit period increases during the prograde burn, this will eventually jump to the end of the list, and then start moving up the list.
+5545 NOTE The earliear you want the rendezvous to take place, the longer you will need to burn (and the longer you will need to decelerate at rendezvous to match orbits).
+5555 NOTE Thus, there is a tradeoff between rendezvous time and fuel expenditure.    If you are short on fuel, you can target a later orbit for rendezvous.
+5565 NOTE In this instance, we are planning for rendezvous in orbit 5.
+5580 NOTESIZE 1.1
+5580 NOTEPOS 0.2 0.2 0.8 0.9
+5580 NOTE OMS cutoff.
+5590 NOTE Returning to prograde attitude.
+5600 NOTE The arrival times are now synchronized for perigee in orbit 5, approximately 8 hours (27.8k seconds) from now.
+5610 NOTE The next task in preparation for the rendezvous is to make sure that the orbit radius at perigee matches that of the ISS.
+5620 NOTE For that purpose, we need to record the ISS's radius distance when it passes our perigee longitude.
+5630 NOTEPOS 0.02 0.25 0.4 0.9
+5630 NOTESIZE 0.9
+5630 NOTE Switch the left MFD to Orbit mode:    Press <SEL>, <Orbit>.

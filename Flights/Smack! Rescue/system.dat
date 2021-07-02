@@ -1,0 +1,76 @@
+0 NOTECOL 1.0 0.7 0.2
+0 NOTESIZE 1.1
+0 NOTEPOS 0.02 0.18 0.4 0.9
+1 NOTE "Smack! Rescue" playback for chapter 2 of "Go Play In Space" - Press F1 to enter cockpit, then wait for docking to complete. Playback control (Cntrl-F5) should be set to "Play at Recording Speed" (9 minute playback).
+13 CAMERA PRESET 1
+18 NOTE Note: This patch-1 version now has camera preset controls built into the playback, so it will switch to different external and internal views automatically.
+26 NOTEPOS 0.63 0.12 0.98 0.96
+26 NOTE The two Delta Gliders are docked but their orbit is bad - press DST on the right (Orbit) MFD and note that the PeA value (periapsis altitude, lowest orbit point) is negative.
+43 NOTE The first step is to stop the rotation with the Kill Rotation button (right side of panel) or the keypad 5 key
+44 CAMERA PRESET 2
+51 CAMERA PRESET 1
+59 NOTEPOS 0.02 0.18 0.4 0.9
+59 NOTE With rotation stopped, we can undock with the Control-D key (at Sim time 77s, upper right corner) which gives a small negative CVEL for separation
+79 CAMERA PRESET 5
+82 NOTEPOS 0.63 0.12 0.98 0.96
+82 NOTE We switch RCS mode from rotation (ROT) to translation (LIN) with the rotary dial or the keypad / (slash) key (at Sim 87s)
+86 CAMERA PRESET 1
+91.8 CAMERA PRESET 0
+92 NOTEPOS 0.02 0.18 0.4 0.9
+92 NOTE We are using the keypad 9 (back) thrust to speed up separation - note the CVEL and DST values on the Docking (left) MFD.  We want DST about 30 m or so
+100 CAMERA PRESET 5
+115 CAMERA PRESET 4
+123 NOTE We use keypad 6 (forward thrust) to cancel out the rearward velocity (negative CVEL)
+126 CAMERA PRESET 0
+136.8 CAMERA PRESET 1
+137 NOTE Oops, stopped too soon, so use keypad 6 (forward) and 9 (reverse thrust) to get to DST 30 or so and to zero out CVEL
+178.5 CAMERA PRESET 4
+179 NOTE Using fine forward thrust (Control-num-6) to get CVEL to zero
+185 NOTE At Sim 219s, we will briefly slow down time to allow us to control both spacecraft almost simultaneously.  The R key slows time, the T key accelerates time.
+199 NOTE With time at 1/10th normal, you can use the F3 key to switch between GL-01 and GL-02 to set PROGRADE for each spacecraft.  
+202 CAMERA PRESET 1
+216 NOTEPOS 0.63 0.12 0.98 0.96
+216 NOTE Setting time to 0.1x (look for Wrp above right), pressing Prograde button (or [ key), then switching to GL-02 and pressing Prograde there. Note that the playback will not switch spacecraft automatically.
+219.06 TACC 0.100000
+220.683 TACC 1.000000
+223.8 CAMERA PRESET 5
+224 NOTE Now back to normal time (you can use F1 to switch to external view to see the ships rotate in sync)
+234 NOTE    
+241 NOTEPOS 0.02 0.18 0.4 0.9
+241 NOTE Forgot to close nose cone (K key), not very critical above atmosphere, but it looks cooler in external views if closed.  I'll do this in both ships (watch external view).
+242 CAMERA PRESET 0
+259.8 CAMERA PRESET 1
+260 NOTE If you have Orbiter Sound installed (which you should), you can stop the proximity beeping. On left MFD buttons, click SEL, Radio/MP3 panel, RAD, SEL, Docking.
+282 CAMERA PRESET 0
+296 NOTEPOS 0.63 0.12 0.98 0.96
+296 NOTE We need to be near apoapsis to fire main engines to raise periapsis (apoapsis is open circle on orbit diagram, ApT ~845 s, about 14 minutes to go), so accelerate time 10x...
+297 CAMERA PRESET 1
+302.424 TACC 10.000000
+388 CAMERA PRESET 5
+389 NOTE Now briefly accelerate time to 100x (T key), looking for ApT about 60 seconds to slow back down to 10x...
+396.534 TACC 100.000000
+984 CAMERA PRESET 1
+985 NOTE Now back to 10x time (R key)...
+989.334 TACC 10.000000
+1058 NOTE Now back to 1x (real) time (R key again)...
+1063.964 TACC 1.000000
+1067 NOTEOFF
+1070 NOTEPOS 0.02 0.18 0.4 0.9
+1070 NOTE What are the green boxes?  The Docking HUD has been left on and the green boxes are a projected path to the GL-02's docking port, which is facing away from us.
+1091 NOTE Again slowing time to 0.1x to push GL-01 throttles to max, F3-switch to GL-02, fire its main engines, then switch back to GL-01 to watch eccentricity.
+1095.815 TACC 0.100000
+1096.8 CAMERA PRESET 5
+1097 NOTE Full thrust for both spacecraft, back to 1x time (Again note that F3 spacecraft switches are under user control in playback, they are not part of the recording)
+1098.1406 TACC 1.000000
+1105 NOTE Here comes GL-02 on the left if you're in the cockpit of GL-01...
+1113 CAMERA PRESET 1
+1116 NOTE Time has again been slowed to 0.1x for engine cutoff according to safe orbit parameters (Ecc < 0.02, PeA > 200 km)
+1117.2556 TACC 0.100000
+1118.7027 TACC 1.000000
+1120 NOTE Engines shut down, 1x time - but it looks like GL-02 engines burned a little long (I was slow on the throttles).  No problem, we just won't be orbiting quite so close.
+1135 CAMERA PRESET 4
+1140 NOTE Orbits for both ships are now safely above the atmosphere (200 km in Orbiter).  Replay will end shortly, or press control-F5 and click the Stop button any time.
+1152 CAMERA PRESET 1
+1165 NOTE Use F3 and click on some of the other ships in this scenario to see where they are, or even to fly them once replay ends.
+1175 NOTE Or press Control-F1 and click on some of the planets or moons listed there to go visit them.  See chapter 2 of "Go Play In Space" for more ideas.
+1190 NOTE Playback ends in 10 seconds and you will have control of the spacecraft.  Good orbiting.

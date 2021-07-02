@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>MFD scripts</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script User's Guide</a> &gt; MFD scripts</p>
+
+<h1>MFD scripts</h1>
+<p>MFD scripts provide a quick and easy way to create new multifunctional display
+ modes for enhancing all Orbiter vessels. Unlike vessel DLL modules, they don't require the compilation of a C++ file, but just a text
+file containing the script.</p>
+<p>This section illustrates how to create a new MFD mode using the <i>ScriptMFD</i>
+interface. ScriptMFD is a generic MFD plugin that loads scripts and uses them to
+register MFD modes with Orbiter.</p>
+<p>The C++ sources for the ScriptMFD module are contained in the Orbiter SDK, at
+Orbitersdk\samples\ScriptMFD.</p>
+
+<h2>Step 1: The MFD configuration file</h2>
+<p>Script MFD modes require a configuration file (unlike MFD modes defined via a
+plugin DLL, which generally don't, unless the plugin uses a configuration file to
+store MFD configuration data). The script MFD configuration file stores the MFD
+mode name, the keyboard shortcut, and the name of the MFD script.</p>
+<p>The MFD configuration file is a text file and must be placed in the Config\MFD
+subdirectory. It must contain the following:</p>
+<div class="code">
+Name = <i>&lt;modename&gt;</i><br />
+Script = <i>&lt;scriptname&gt;</i><br />
+Key = <i>&lt;keycode&gt;</i>
+</div>
+<p>where <i>&lt;modename&gt;</i> is the name of the MFD mode (as should be displayed
+in the MFD list of modes), <i>&lt;scriptname&gt;</i> is the name of the file
+containing the MFD script (with path relative to Config\MFD), and <i>&lt;keycode&gt;</i>
+is the keycode for the MFD selection shortcut.</p>
+<p>The keycode is an integer value (specified either in decimal or in 0x... hexadecimal
+notation) corresponding to the values of the OAPI_KEY_xxx identifiers found in
+Orbitersdk\include\OrbiterAPI.h</p>
+<p>While the MFD script can be put in a separate text file, it is also possible
+(and usually more convenient) to put it directly in the configuration file,
+allowing to define the entire MFD mode with a single file. This method is explained
+in Step 3 below.</p>
+
+<h2>Step 2: Making the MFD mode persistent</h2>
+<p>Optionally, the configuration file can have an additional entry:</p>
+<div class="code">
+Persist = [mfd|vessel]
+</div>
+<p>If Persist = mfd (the default), the interpreter running the MFD script is deleted
+as soon as the MFD instance is deleted (e.g. if the user switches to a different
+MFD mode, a different cockpit or external view, or a different vessel). This mode
+is suitable if the MFD doesn't need to perform any background tasks. Multipe MFDs
+can operate independently in this mode.</p>
+<p>By contrast, if Persist = vessel, the interpreter is attached to the vessel the
+MFD is running in. It doesn't get deleted when the MFD is deleted. All MFDs running
+this mode share the same interpreter. This mode is useful if the MFD is used to
+launch actions that should persist even when the MFD is not active (e.g. autopilot
+functions). MFD modes running in persistent mode can define the
+<a href="clbk_mfd.htm#prestep">prestep</a> and <a href="clbk_mfd.htm#poststep">poststep</a>
+callback functions which are called at each frame, even if the MFD mode is not active.</p>
+
+<h2>Step 3: Preparing the configuration file for the script</h2>
+<p>To prepare the configuration file for direct insertion of the MFD script, the
+configuration part of the file should be modified to look like this:
+<div class="code">
+--[[<br />
+Name = <i>&lt;modename&gt;</i><br />
+Script = <i>&lt;configname&gt;</i><br />
+Key = <i>&lt;keycode&gt;</i><br />
+END_PARSE<br />
+--]]
+</div>
+where <i>&lt;configname&gt;</i> is the name of the configuration file itself.
+The "END_PARSE" entry prevents Orbiter's configuration parser from scanning the
+following script, while the "--[[" and "--]]" lines define the entire
+configuration block as a Lua comment, so it doesn't interfere with the script
+interpreter.</p>
+<p>You are now ready to add the MFD script.</p>
+
+<h2>Step 4: Activating the MFD mode</h2>
+<p>To activate the new MFD mode, it must be entered in the Config\MFD\ScriptMFD.cfg
+file. Append the line
+<div class="code">
+MFD\<i>&lt;configname&gt;</i>
+</div>
+to the end of the file, where <i>&lt;configname&gt;</i> is the name of the
+configuration file you just created.</p>
+<p>Script MFD modes are only accessible in Orbiter if the <i>ScriptMFD</i> module
+is activated in the Modules tab of the Orbiter launchpad.</p>
+
+<h2>Step 5: Drawing the MFD display</h2>
+<p>The script must implement a number of callback functions to define the
+behaviour of the MFD mode. Orbiter calls these functions (via the ScriptMFD plugin)
+whenever the MFD display needs to be updated, an MFD button is pressed, etc.</p>
+<p>An essential callback function is <i>update</i> which is called by Orbiter
+to redraw the MFD display. Its interface looks like this:</p>
+<div class="code">
+function update(skp)<br />
+&nbsp;&nbsp;-- Draw the MFD display here<br />
+end
+</div>
+<p>where <i>skp</i> is a <i>Sketchpad</i> object associated with the MFD surface.
+It contains methods for drawing text and geometric primitives, selecting pens,
+brushes and colours. For details see the <a href="mtd_skp.htm">Sketchpad class
+reference</a>.</p>
+<p>First we should define the MFD title that identifies the new MFD mode. This is
+done by the <a href="mtd_mfd.htm#set_title">mfd:set_title</a> method:</p>
+<div class="code">
+function update(skp)<br />
+&nbsp;&nbsp;mfd:set_title(skp,'My MFD mode')<br />
+end
+</div>
+<p>where <i>mfd</i> is a global variable that has been defined by ScriptMFD to
+represent the MFD instrument your new mode is displayed on. For a list of
+methods available to the mfd object, see the <a href="mtd_mfd.htm">MFD class reference</a>.</p>
+<p>The size of the MFD display may vary, depending on screen resolution or instrument
+panel size. The update function must scale the display redraw accordingly. The
+size of the display (in pixels) can be obtained with the <a href="mtd_mfd.htm#get_size">mfd:get_size</a>
+method:</p>
+<div class="code">
+function update(skp)<br />
+&nbsp;&nbsp;...<br />
+&nbsp;&nbsp;width,height = mfd:get_size()<br />
+end
+</div>
+<p>We can now use some of the the Sketchpad drawing functions to paint the display:</p>
+<div class="code">
+function update(skp)<br />
+&nbsp;&nbsp;...<br />
+&nbsp;&nbsp;skp:<a href="mtd_skp.htm#rectangle">rectangle</a>(width/4,height/4,width*3/4,height*3/4)<br />
+&nbsp;&nbsp;skp:<a href="mtd_skp.htm#line">line</a>(width/4,height/4,width*3/4,height*3/4)<br />
+&nbsp;&nbsp;skp:line(width/4,height*3/4,width*3/4,height/4)<br />
+&nbsp;&nbsp;t = 'Sim time = '..<a href="api_oapi.htm#oapi_get_simtime">oapi.get_simtime</a>()<br />
+&nbsp;&nbsp;skp:<a href="mtd_skp.htm#text">text</a>(10,30,t,#t)<br />
+end
+</div>
+
+<h2>Step 6: Defining the MFD buttons</h2>
+<p>The <i>buttonlabel</i> callback function defines the number of buttons to be used
+by the MFD mode and their labels. For a mode with 3 buttons, we can write</p>
+<div class="code">
+btn_label = {'L1','L2','L3'}<br />
+<br />
+function buttonlabel(bt)<br />
+&nbsp;&nbsp;if bt < 3 then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return btn_label[bt+1]<br />
+&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;return nil<br />
+end
+</div>
+<p>The argument (bt) to <i>buttonlabel</i> is the index (&ge; 0) of the button
+for which the label is requested. The function should return a string (up to 
+3 characters) for any buttons it defines, or <i>nil</i> if the index is beyond
+the range of defined buttons.</p>
+<p>Each button also requires a <i>menu entry</i> that the user can call up by
+pressing the MFD's <i>MNU</i> button. The menu should list the button's
+function (in one or two short lines) and the keyboard shortcut key. The button
+menu is defined by the <i>buttonmenu</i> callback function:</p>
+<div class="code">
+btn_menu = {<br />
+&nbsp;&nbsp;{l1='Button 1',l2='Line 2',sel='x'},<br />
+&nbsp;&nbsp;{l1='Button 2',sel='y'},<br />
+&nbsp;&nbsp;{l1='Button 3',sel='z'}<br />
+}<br />
+<br />
+function buttonmenu ()<br />
+&nbsp;&nbsp;return btn_menu,3<br />
+end
+</div>
+<p>The <i>buttonmenu</i> function returns to values: a table containing the button
+descriptions and shortcut keys, and the number of buttons.</p>
+<p>The returned table must contain a sub-table for each button.</p>
+<p>Each of the sub-tables contains entries l1 (a string containing the first
+description line), l2 (optional, a string containing the second description line),
+and sel (the shortcut character). Each of the description lines should contain
+no more than 16 characters to fit in the display.</p>
+<p>Note that the table is defined outside the callback function, so that the
+script interpreter scans it only once, rather than each time the function is called.</p>
+
+<h2>Step 7: Reacting to button presses</h2>
+<p>The MFD is notified every time the user presses one of the buttons (or the
+equivalent shortcut key). The script intercepts these events by defining the
+<i>consumebutton</i>, <i>consumekeybuffered</i> and <i>consumekeyimmediate</i>
+callback functions.</p>
+<div class="code">
+function consumebutton(bt,event)<br />
+&nbsp;&nbsp;if bt==0 then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if event%PANEL_MOUSE.LBPRESSED == PANEL_MOUSE.LBDOWN then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;button1_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;elseif bt==1 then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if event%PANEL_MOUSE.LBPRESSED == PANEL_MOUSE.LBDOWN then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;button2_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;elseif bt==2 then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if event == PANEL_MOUSE.LBPRESSED then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;button3_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;return false<br />
+end
+</div>
+<p>The <i>consumebutton</i> function has two arguments: <i>bt</i> (&ge; 0) is the index of
+the button pressed, and <i>event</i> specifying the button event.</p>
+<p><i>event</i> is a combination of the identifiers in the PANEL_MOUSE table.
+To intercept a continuous press of the left mouse button, query the LBPRESSED flag.
+To intercept a click of the left mouse button (buffered event), you must use the
+<div class="code">
+event%PANEL_MOUSE.LBPRESSED == PANEL_MOUSE.LBDOWN
+</div>
+construct, because LBDOWN is always sent in combination with LBPRESSED, and Lua
+doesn't have bit operators to extract individual bits from a flag.</p>
+<p>In the example above, the first and second buttons operate in buffered mode,
+while the third button operates in continuous mode.</p>
+<p>The <i>button1_action</i>, <i>button2_action</i> and <i>button3_action</i>
+functions should be defined in the script and contain the appropriate actions
+for the corresponding key presses. A dummy implementation could look like this:</p>
+<div class="code">
+function button1_action()<br />
+&nbsp;&nbsp;oapi.dbg_out('MFD button 1 (buffered mode) clicked at '..oapi.get_simtime())<br />
+end<br />
+<br />
+function button2_action()<br />
+&nbsp;&nbsp;oapi.dbg_out('MFD button 2 (buffered mode) clicked at '..oapi.get_simtime())<br />
+end<br />
+<br />
+function button3_action()<br />
+&nbsp;&nbsp;oapi.dbg_out('MFD button 3 (continuous mode) pressed at '..oapi.get_simtime())<br />
+end
+</div>
+<p>To intercept keyboard shortcuts in buffered mode, implement the <i>consumekeybuffered</i>
+callback function. In our example, this should deal with the shortcuts for buttons 0 and 1:,
+defined as X and Y:</p>
+<div class="code">
+function consumekeybuffered(key)<br />
+&nbsp;&nbsp;if key==OAPI_KEY.X then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;button1_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;elseif key==OAPI_KEY.Y then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;button2_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;else<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return false<br />
+&nbsp;&nbsp;end<br />
+end
+</div>
+<p>The argument for <i>consumekeybuffered</i> is the scancode for the shortcut key,
+so the OAPI_KEY constants should be used to query it. The function should return
+<i>true</i> if it processes the key, and <i>false</i> if not.</p>
+<p>Finally, the <i>consumekeyimmediate</i> callback function should be implemented to
+intercept shortcut keys in continuous mode (button 2 in our example):</p>
+<div class="code">
+function consumekeyimmediate(kstate)<br />
+&nbsp;&nbsp;if oapi.keydown(kstate,OAPI_KEY.Z) then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;button3_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;oapi.resetkey(kstate,OAPI_KEY.Z)<br />
+&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;return false<br />
+end
+</div>
+<p>The <i>kstate</i> argument for <i>consumekeyimmediate</i> is an array of the states
+of all keys. Use the <a href="api_oapi.htm#oapi_keydown">oapi.keydown</a> function
+to query individual keys or key combinations. Use the <a href="api_oapi.htm#oapi_resetkey">oapi.resetkey</a>
+function to reset the key state (and prevent Orbiter from further trying to process the key.</p>
+<p>This function should normally return <i>false</i>. Returning <i>true</i> resets
+the entire key state (preventing Orbiter from further processing any keys).</p>
+
+<h2>Step 8: Further reading</h2>
+<p>The following Script Reference sections are useful when designing an MFD mode:
+<table>
+<tr><td><a href="clbk_mfd.htm">Script MFD callback functions</a></td><td>A list of script callback functions called by the ScriptMFD module</td></tr>
+<tr><td><a href="mtd_mfd.htm">MFD member functions</a></td><td>A list of member functions for MFD objects.</td></tr>
+<tr><td><a href="mtd_skp.htm">Sketchpad member functions</a></td><td>A list of member functions for Sketchpad objects (to draw the MFD display)</td></tr>
+<tr><td><a href="api_oapi.htm">API interface functions</a></td><td>General functions to set or retrieve simulation parameters.</td></tr>
+</table>
+
+</p>
+</body>
+</html>

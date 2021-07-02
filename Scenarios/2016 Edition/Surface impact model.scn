@@ -1,0 +1,65 @@
+BEGIN_HYPERDESC
+<h1>Surface impact model</h1>
+<p>Orbiter 2016 adds a new dynamic impact model for vessel-surface interactions. Vessels define their impact volume as a convex hull, and, unlike previous versions, can now model
+surface collisions at any attitude.</p>
+<p>Docked assemblies can merge their impact volumes and compute their combined surface interaction, a feature missing in the previous Orbiter release.</p>
+<p>Watch a DG spaceplane crash onto the runway and perform a graceful ballet before coming to rest. Note that inelastic deformations and structural damage are currently not modelled in the default Orbiter vessels.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.6700685096
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01S
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01S
+  MODE Extern
+  POS 89.847981 -96.406500 -45.423370
+  TRACKMODE Ground Earth
+  GROUNDLOCATION -80.68514 28.60079 16.00
+  FOV 30.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 1
+  OBS 5.34 5.76
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+END_MFD
+
+BEGIN_VC
+END_VC
+
+BEGIN_SHIPS
+GL-01S:DG-S
+  STATUS Orbiting Earth
+  RPOS 4964741.854 3822756.307 -1153053.295
+  RVEL 94.6593 -52.8596 344.1107
+  AROT 87.246 41.281 29.743
+  VROT 4.9902 4.5037 -0.1948
+  RCSMODE 0
+  AFCMODE 7
+  NAVFREQ 94 524 84 114
+  XPDR 0
+  HOVERHOLD 0 1 0.0000e+000 0.0000e+000
+  PSNGR 2 3 4
+  PANELCOL 2
+  TANKCONFIG 1
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS
+
+BEGIN_ExtMFD
+END

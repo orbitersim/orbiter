@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="ovp"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(OvpDir)&quot;"
+	/>
+	<UserMacro
+		Name="OvpDir"
+		Value="$(SolutionDir)..\..\OVP"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="GdiClientDir"
+		Value="$(OvpDir)\GDIClient"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="D3d7ClientDir"
+		Value="$(OvpDir)\D3D7Client"
+		PerformEnvironmentSet="true"
+	/>
+</VisualStudioPropertySheet>

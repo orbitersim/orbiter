@@ -1,0 +1,533 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_EDITOR DIALOGEX 0, 0, 267, 239
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Scenario Editor"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+
+IDD_TAB_NEW DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Create >>",IDC_CREATE,54,221,50,14
+    LTEXT           "Vessel name:",IDC_STATIC,0,0,43,8
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    PUSHBUTTON      "<< Cancel",IDCANCEL,0,221,50,14
+    EDITTEXT        IDC_NAME,0,11,151,14,ES_AUTOHSCROLL
+    LTEXT           "Vessel type:",IDC_STATIC,0,35,126,8
+    CONTROL         "Set input focus",IDC_FOCUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,26,63,10
+    CONTROL         "Set camera",IDC_CAMERA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,13,52,10
+    CONTROL         "",IDC_VESSELBMP,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_REALSIZEIMAGE | NOT WS_VISIBLE,154,46,109,167
+    CONTROL         "Tree1",IDC_VESSELTP,"SysTreeView32",TVS_HASLINES | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,0,46,151,167
+END
+
+IDD_TAB_EDIT1 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    EDITTEXT        IDC_EDIT1,0,11,128,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Vessel",IDC_STATIC,0,0,22,8
+    EDITTEXT        IDC_EDIT2,135,11,128,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Class",IDC_STATIC,135,0,18,8
+    PUSHBUTTON      "Orbital elements",IDC_ELEMENTS,6,77,115,14
+    GROUPBOX        "Free flight",IDC_STATIC,0,64,128,89
+    PUSHBUTTON      "State vectors",IDC_STATEVEC,6,95,115,14
+    PUSHBUTTON      "Location",IDC_GROUND,141,77,115,14
+    LTEXT           "Status",IDC_STATIC,0,31,21,8
+    EDITTEXT        IDC_EDIT3,0,41,128,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "Orientation",IDC_ORIENT,6,113,115,14
+    GROUPBOX        "On the ground",IDC_STATIC,135,64,128,34
+    PUSHBUTTON      "Angular velocity",IDC_ANGVEL,6,131,115,14
+    GROUPBOX        "Misc",IDC_STATIC,135,100,128,53
+    PUSHBUTTON      "Propellant",IDC_PROPELLANT,141,113,115,14
+    GROUPBOX        "More",IDC_STATIC1,0,157,263,53,NOT WS_VISIBLE
+    PUSHBUTTON      "Extra 1",IDC_EXTRA1,6,169,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Extra 2",IDC_EXTRA2,91,169,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Extra 3",IDC_EXTRA3,176,169,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Extra 4",IDC_EXTRA4,6,187,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Extra 5",IDC_EXTRA5,91,187,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Extra 6",IDC_EXTRA6,176,187,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Docking",IDC_DOCKING,141,131,115,14
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT4 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "Surface position",IDC_STATIC,0,0,136,108
+    LTEXT           "Longitude",IDC_STATIC,5,14,32,8
+    EDITTEXT        IDC_EDIT1,5,25,74,14,ES_AUTOHSCROLL
+    LTEXT           "Latitude",IDC_STATIC,5,45,26,8
+    EDITTEXT        IDC_EDIT2,5,56,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,79,25,11,14
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,79,56,11,14
+    COMBOBOX        IDC_REF,147,25,110,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Celestial body",IDC_STATIC,148,14,44,8
+    COMBOBOX        IDC_BASE,147,56,110,163,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Surface base",IDC_STATIC,148,45,43,8
+    GROUPBOX        "Reference",IDC_STATIC,141,0,122,108
+    LTEXT           "deg",IDC_STATIC,107,28,13,8
+    LTEXT           "deg",IDC_STATIC,107,58,13,8
+    LTEXT           "Heading",IDC_STATIC,5,76,76,8
+    EDITTEXT        IDC_EDIT3,5,87,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin3",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,79,87,11,14
+    LTEXT           "deg",IDC_STATIC,107,88,13,8
+    COMBOBOX        IDC_PAD,147,87,53,163,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Landing pad",IDC_STATIC,148,76,40,8
+    CONTROL         "Spin4",IDC_SPIN1A,"msctls_updown32",UDS_ARROWKEYS,91,20,11,24
+    CONTROL         "Spin4",IDC_SPIN2A,"msctls_updown32",UDS_ARROWKEYS,91,51,11,24
+    CONTROL         "Spin4",IDC_SPIN3A,"msctls_updown32",UDS_ARROWKEYS,91,82,11,24
+    PUSHBUTTON      "Apply",IDC_APPLY,110,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,162,221,50,14
+    GROUPBOX        "Copy state from",IDC_STATIC,141,111,122,91
+    LISTBOX         IDC_STATECPY,147,122,110,73,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT3 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "State vectors",IDC_STATIC,0,0,136,202
+    LTEXT           "x",IDC_STATIC1A,5,14,76,8
+    EDITTEXT        IDC_EDIT1,5,25,74,14,ES_AUTOHSCROLL
+    LTEXT           "y",IDC_STATIC2A,5,45,76,8
+    EDITTEXT        IDC_EDIT2,5,56,74,14,ES_AUTOHSCROLL
+    LTEXT           "z",IDC_STATIC3A,5,76,76,8
+    EDITTEXT        IDC_EDIT3,5,87,74,14,ES_AUTOHSCROLL
+    LTEXT           "dx / dt",IDC_STATIC4A,5,107,76,8
+    EDITTEXT        IDC_EDIT4,5,118,74,14,ES_AUTOHSCROLL
+    LTEXT           "dy / dt",IDC_STATIC5A,5,138,76,8
+    EDITTEXT        IDC_EDIT5,5,149,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,79,25,11,14
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,79,56,11,14
+    CONTROL         "Spin3",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,79,87,11,14
+    CONTROL         "Spin4",IDC_SPIN4,"msctls_updown32",UDS_ARROWKEYS,79,118,11,14
+    CONTROL         "Spin5",IDC_SPIN5,"msctls_updown32",UDS_ARROWKEYS,79,149,11,14
+    LTEXT           "dz / dt",IDC_STATIC6A,5,169,76,8
+    EDITTEXT        IDC_EDIT6,5,180,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin6",IDC_SPIN6,"msctls_updown32",UDS_ARROWKEYS,79,180,11,14
+    COMBOBOX        IDC_REF,147,25,110,201,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Orbit reference",IDC_STATIC,148,14,48,8
+    COMBOBOX        IDC_FRM,147,56,110,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Frame",IDC_STATIC,148,45,20,8
+    GROUPBOX        "Reference",IDC_STATIC,141,0,122,106
+    LTEXT           "Coordinates",IDC_STATIC,148,76,38,8
+    COMBOBOX        IDC_CRD,147,87,110,61,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "m",IDC_STATIC1,106,27,27,8
+    LTEXT           "m",IDC_STATIC2,106,57,27,8
+    LTEXT           "m",IDC_STATIC3,106,88,27,8
+    LTEXT           "m/s",IDC_STATIC4,106,119,27,8
+    LTEXT           "m/s",IDC_STATIC5,106,151,27,8
+    LTEXT           "m/s",IDC_STATIC6,106,182,27,8
+    PUSHBUTTON      "Apply",IDC_APPLY,109,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,161,221,50,14
+    GROUPBOX        "Copy state from",IDC_STATIC,141,111,122,91
+    LISTBOX         IDC_STATECPY,147,122,110,73,LBS_SORT | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Spin4",IDC_SPIN1A,"msctls_updown32",UDS_ARROWKEYS,91,20,11,24
+    CONTROL         "Spin4",IDC_SPIN2A,"msctls_updown32",UDS_ARROWKEYS,91,51,11,24
+    CONTROL         "Spin4",IDC_SPIN3A,"msctls_updown32",UDS_ARROWKEYS,91,82,11,24
+    CONTROL         "Spin4",IDC_SPIN4A,"msctls_updown32",UDS_ARROWKEYS,91,113,11,24
+    CONTROL         "Spin4",IDC_SPIN5A,"msctls_updown32",UDS_ARROWKEYS,91,144,11,24
+    CONTROL         "Spin4",IDC_SPIN6A,"msctls_updown32",UDS_ARROWKEYS,91,175,11,24
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_VESSEL DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    LISTBOX         IDC_LIST1,0,11,209,202,LBS_SORT | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "New ...",IDC_VESSELNEW,213,163,50,14
+    PUSHBUTTON      "Edit ...",IDC_VESSELEDIT,213,181,50,14
+    PUSHBUTTON      "Delete",IDC_VESSELDEL,213,199,50,14
+    LTEXT           "Vessels in current scenario:",IDC_STATIC,0,0,87,8
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    PUSHBUTTON      "Close",IDCANCEL,0,221,50,14
+    PUSHBUTTON      "Save ...",IDC_SAVE,52,221,50,14
+    CONTROL         "Track",IDC_TRACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,213,11,35,10
+    PUSHBUTTON      "Date ...",IDC_DATE,104,221,50,14
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT2 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "Osculating elements",IDC_STATIC,0,0,136,210
+    LTEXT           "Semi-major axis [SMa]",IDC_STATIC,5,14,70,8
+    EDITTEXT        IDC_EDIT1,5,25,74,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO1,94,25,37,89,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Eccentricity [Ecc]",IDC_STATIC,5,45,56,8
+    EDITTEXT        IDC_EDIT2,5,56,74,14,ES_AUTOHSCROLL
+    LTEXT           "Inclination [Inc]",IDC_STATIC,5,76,49,8
+    EDITTEXT        IDC_EDIT3,5,87,74,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO2,94,87,37,54,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Longitude of ascending node [LAN]",IDC_STATIC,5,107,113,8
+    EDITTEXT        IDC_EDIT4,5,118,74,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO3,94,118,37,49,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Longitude of periapsis [LPe]",IDC_STATIC,5,138,88,8
+    EDITTEXT        IDC_EDIT5,5,149,74,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO4,94,149,37,49,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Apply",IDC_APPLY,110,221,50,14
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,79,25,11,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,162,221,50,14
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,79,56,11,14
+    CONTROL         "Spin3",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,79,87,11,14
+    CONTROL         "Spin4",IDC_SPIN4,"msctls_updown32",UDS_ARROWKEYS,79,118,11,14
+    CONTROL         "Spin5",IDC_SPIN5,"msctls_updown32",UDS_ARROWKEYS,79,149,11,14
+    LTEXT           "Mean longitude at epoch [eps]",IDC_STATIC,5,169,97,8
+    EDITTEXT        IDC_EDIT6,5,180,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin6",IDC_SPIN6,"msctls_updown32",UDS_ARROWKEYS,79,180,11,14
+    COMBOBOX        IDC_COMBO5,94,180,37,54,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT7,195,87,62,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_REF,147,25,110,201,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Orbit reference",IDC_STATIC,148,14,48,8
+    COMBOBOX        IDC_FRM,147,56,110,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Frame",IDC_STATIC,148,45,20,8
+    GROUPBOX        "Reference",IDC_STATIC,141,0,122,108
+    LTEXT           "Epoch",IDC_STATIC,148,76,22,8
+    COMBOBOX        IDC_COMBO6,147,87,46,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Secondary parameters",IDC_STATIC,141,112,122,98
+    LTEXT           "Orbit period:",IDC_STATIC,151,125,39,8
+    LTEXT           "XXX",IDC_PERIOD,192,125,66,8
+    LTEXT           "Periapsis:",IDC_STATIC,159,152,31,8
+    LTEXT           "XXX",IDC_PERIAPSIS,192,152,66,8
+    LTEXT           "Apoapsis:",IDC_STATIC,158,161,32,8
+    LTEXT           "XXX",IDC_APOAPSIS,192,161,66,8
+    LTEXT           "T. periapsis:",IDC_STATIC,151,134,39,8
+    LTEXT           "XXX",IDC_PET,192,134,66,8
+    LTEXT           "T. apoapsis:",IDC_STATIC,150,143,40,8
+    LTEXT           "XXX",IDC_APT,192,143,66,8
+    LTEXT           "Mn anomaly:",IDC_STATIC,149,170,41,8
+    LTEXT           "XXX",IDC_MNANM,192,170,66,8
+    LTEXT           "Tr anomaly:",IDC_STATIC,152,179,38,8
+    LTEXT           "XXX",IDC_TRANM,192,179,66,8
+    LTEXT           "Mn longitude:",IDC_STATIC,146,188,44,8
+    LTEXT           "XXX",IDC_MNLNG,192,188,66,8
+    LTEXT           "Tr longitude:",IDC_STATIC,150,197,40,8
+    LTEXT           "XXX",IDC_TRLNG,192,197,66,8
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_SAVE DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Cancel",IDC_BACK,52,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    LTEXT           "Scenario file name:",IDC_STATIC,0,0,61,8
+    EDITTEXT        IDC_EDIT1,0,11,263,14,ES_AUTOHSCROLL
+    LTEXT           "Description:",IDC_STATIC,0,35,38,8
+    EDITTEXT        IDC_EDIT2,0,46,263,167,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    PUSHBUTTON      "Save",IDOK,0,221,50,14
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT5 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "Orientation: Euler angles",IDC_STATIC,0,0,128,113
+    LTEXT           "alpha",IDC_STATIC,6,14,18,8
+    EDITTEXT        IDC_EDIT1,6,25,74,14,ES_AUTOHSCROLL
+    LTEXT           "beta",IDC_STATIC,6,45,15,8
+    EDITTEXT        IDC_EDIT2,6,56,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,80,25,11,14
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,80,56,11,14
+    LTEXT           "deg",IDC_STATIC,108,28,13,8
+    LTEXT           "deg",IDC_STATIC,108,58,13,8
+    LTEXT           "gamma",IDC_STATIC,6,76,29,8
+    EDITTEXT        IDC_EDIT3,6,87,74,14,ES_AUTOHSCROLL
+    CONTROL         "Spin3",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,80,87,11,14
+    LTEXT           "deg",IDC_STATIC,108,88,13,8
+    CONTROL         "Spin4",IDC_SPIN1A,"msctls_updown32",UDS_ARROWKEYS,92,20,11,24
+    CONTROL         "Spin4",IDC_SPIN2A,"msctls_updown32",UDS_ARROWKEYS,92,51,11,24
+    CONTROL         "Spin4",IDC_SPIN3A,"msctls_updown32",UDS_ARROWKEYS,92,82,11,24
+    PUSHBUTTON      "Apply",IDC_APPLY,109,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,161,221,50,14
+    GROUPBOX        "Rotate",IDC_STATIC,135,0,128,113
+    CONTROL         "Spin4",IDC_SPIN4,"msctls_updown32",UDS_ARROWKEYS,211,13,11,26
+    CONTROL         "Spin5",IDC_SPIN5,"msctls_updown32",UDS_ARROWKEYS | UDS_HORZ,197,53,29,12
+    CONTROL         "Spin5",IDC_SPIN6,"msctls_updown32",UDS_ARROWKEYS | UDS_HORZ,197,86,29,12
+    LTEXT           "Pitch",IDC_STATIC,149,22,17,8
+    LTEXT           "Up",IDC_STATIC,197,15,10,8
+    LTEXT           "Down",IDC_STATIC,187,28,20,8
+    LTEXT           "Left",IDC_STATIC,181,55,13,8
+    LTEXT           "Right",IDC_STATIC,229,55,18,8
+    GROUPBOX        "",IDC_STATIC,173,7,78,35,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,173,40,78,35,BS_FLAT
+    GROUPBOX        "",IDC_STATIC,173,73,78,35,BS_FLAT
+    LTEXT           "Left",IDC_STATIC,181,88,13,8
+    LTEXT           "Right",IDC_STATIC,229,88,18,8
+    LTEXT           "Yaw",IDC_STATIC,151,55,15,8
+    LTEXT           "Bank",IDC_STATIC,147,88,18,8
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT6 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    PUSHBUTTON      "Apply",IDC_APPLY,109,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,161,221,50,14
+    GROUPBOX        "Angular velocity",IDC_STATIC,0,0,263,112
+    EDITTEXT        IDC_EDIT1,6,25,74,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,6,56,74,14,ES_AUTOHSCROLL
+    LTEXT           "deg/s",IDC_STATIC,109,28,20,8
+    LTEXT           "deg/s",IDC_STATIC,109,57,20,8
+    EDITTEXT        IDC_EDIT3,6,86,74,14,ES_AUTOHSCROLL
+    LTEXT           "deg/s",IDC_STATIC,109,88,20,8
+    LTEXT           "pitch (omega x)",IDC_STATIC,6,14,49,8
+    LTEXT           "yaw (omega y)",IDC_STATIC,6,45,46,8
+    LTEXT           "bank (omega z)",IDC_STATIC,6,76,66,8
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,81,25,11,14
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,81,56,11,14
+    CONTROL         "Spin3",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,81,86,11,14
+    CONTROL         "Spin4",IDC_SPIN1A,"msctls_updown32",UDS_ARROWKEYS,93,20,11,24
+    CONTROL         "Spin4",IDC_SPIN2A,"msctls_updown32",UDS_ARROWKEYS,93,51,11,24
+    CONTROL         "Spin4",IDC_SPIN3A,"msctls_updown32",UDS_ARROWKEYS,93,81,11,24
+    PUSHBUTTON      "Kill",IDC_KILLROT,207,92,50,14
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT7 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    PUSHBUTTON      "Apply",IDC_APPLY,109,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,161,221,50,14
+    GROUPBOX        "Propellant levels",IDC_STATIC,0,0,263,109
+    EDITTEXT        IDC_EDIT1,6,25,40,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Tank no.",IDC_STATIC,6,14,30,8
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,46,25,11,14
+    PUSHBUTTON      "Full",IDC_FULL,167,58,31,11
+    LTEXT           "of 1",IDC_STATIC1,64,27,33,8
+    EDITTEXT        IDC_EDIT2,6,86,85,14,ES_AUTOHSCROLL
+    CONTROL         "",IDC_PROPLEVEL,"OrbiterCtrl_Gauge",0x0,39,58,126,11
+    LTEXT           "Fill level (0-1)",IDC_STATIC,6,76,42,8
+    LTEXT           "Mass",IDC_STATIC2,113,76,112,8
+    EDITTEXT        IDC_EDIT3,113,86,85,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Empty",IDC_EMPTY,6,58,31,11
+    PUSHBUTTON      "Empty all",IDC_EMPTYALL,213,112,50,14
+    PUSHBUTTON      "Fill all",IDC_FULLALL,213,129,50,14
+    LTEXT           "Total propellant mass:",IDC_STATIC,6,116,70,8
+    LTEXT           "Total vessel mass:",IDC_STATIC,6,131,59,8
+    RTEXT           "Static",IDC_STATIC3,77,116,81,8
+    RTEXT           "Static",IDC_STATIC4,77,131,81,8
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_EDIT8 DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",-1,-2,213,267,29
+    PUSHBUTTON      "Undock",IDC_UNDOCK,208,63,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,161,221,50,14
+    GROUPBOX        "Docking status",-1,0,0,263,115
+    EDITTEXT        IDC_EDIT1,6,25,40,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Dock no.",-1,6,15,30,8
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,46,25,11,14
+    LTEXT           "of 1",IDC_STATIC1,64,27,13,8
+    EDITTEXT        IDC_EDIT3,6,63,191,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Currently docked to",IDC_STATIC2,6,52,137,8
+    EDITTEXT        IDC_EDIT2,126,25,59,14,ES_AUTOHSCROLL
+    CONTROL         "Spin2",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,186,25,11,14
+    CONTROL         "IDS frequency",IDC_IDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,14,61,10
+    PUSHBUTTON      "Dock",IDC_DOCK,208,63,50,14
+    EDITTEXT        IDC_EDIT4,146,63,40,14,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "using dock",IDC_STATIC3,146,52,48,8
+    CONTROL         "Spin1",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS,186,63,11,14
+    COMBOBOX        IDC_COMBO1,6,63,137,155,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_ERRMSG,6,121,250,58
+    CONTROL         "Bring target to my current position",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON,6,85,121,10
+    CONTROL         "Move me to current target position",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,6,97,123,10
+    CONTROL         "Spin4",IDC_SPIN2A,"msctls_updown32",UDS_ARROWKEYS,198,20,11,24
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+IDD_TAB_DATE DIALOGEX 2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "Date and time",IDC_STATIC,0,0,263,47
+    EDITTEXT        IDC_UT_DAY,6,15,22,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_UT_MONTH,42,15,22,14,ES_AUTOHSCROLL
+    LTEXT           "[DD]",IDC_STATIC,9,31,20,8
+    EDITTEXT        IDC_UT_YEAR,77,15,34,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Apply",IDC_APPLY,109,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,161,221,50,14
+    LTEXT           "[MM]",IDC_STATIC,46,31,17,8
+    LTEXT           "[YYYY]",IDC_STATIC,83,31,24,8
+    EDITTEXT        IDC_UT_HOUR,141,15,22,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_UT_MIN,177,15,22,14,ES_AUTOHSCROLL
+    LTEXT           "[h]",IDC_STATIC,147,31,11,8
+    EDITTEXT        IDC_UT_SEC,212,15,34,14,ES_AUTOHSCROLL
+    LTEXT           "[m]",IDC_STATIC,182,31,10,8
+    LTEXT           "[s]",IDC_STATIC,225,31,8,8
+    GROUPBOX        "Modified Julian Date (MJD)",IDC_STATIC,0,54,128,35
+    EDITTEXT        IDC_MJD,6,68,115,14,ES_AUTOHSCROLL
+    GROUPBOX        "Julian Date (JD)",IDC_STATIC,135,54,128,35
+    EDITTEXT        IDC_JD,141,68,115,14,ES_AUTOHSCROLL
+    GROUPBOX        "Julian Century (JC2000)",IDC_STATIC,0,97,128,35
+    EDITTEXT        IDC_JC2000,6,111,115,14,ES_AUTOHSCROLL
+    GROUPBOX        "Epoch",IDC_STATIC,135,97,128,35
+    EDITTEXT        IDC_EPOCH,141,111,115,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN_DAY,"msctls_updown32",UDS_ARROWKEYS,28,15,10,14
+    CONTROL         "Spin2",IDC_SPIN_MONTH,"msctls_updown32",UDS_ARROWKEYS,64,15,10,14
+    CONTROL         "Spin1",IDC_SPIN_YEAR,"msctls_updown32",UDS_ARROWKEYS,111,15,10,14
+    CONTROL         "Spin2",IDC_SPIN_HOUR,"msctls_updown32",UDS_ARROWKEYS,163,15,10,14
+    CONTROL         "Spin3",IDC_SPIN_MINUTE,"msctls_updown32",UDS_ARROWKEYS,199,15,10,14
+    CONTROL         "Spin1",IDC_SPIN_SECOND,"msctls_updown32",UDS_ARROWKEYS,246,15,10,14
+    COMBOBOX        IDC_PROP_ORBITAL,6,162,159,71,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Vessel state propagation",IDC_STATIC,0,139,263,70
+    LTEXT           "Orbital",IDC_STATIC,6,151,21,8
+    COMBOBOX        IDC_PROP_SORBITAL,6,189,159,71,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Suborbital",IDC_STATIC,6,178,32,8
+    PUSHBUTTON      "Now",IDC_NOW,57,221,50,14
+    PUSHBUTTON      "Help",IDHELP,213,221,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_EDITOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 265
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 237
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_PAUSE               BITMAP                  "Bitmaps\\pause.bmp"
+IDB_TREEICON_FOLDER1    BITMAP                  "Bitmaps\\Folder1.bmp"
+IDB_TREEICON_FOLDER2    BITMAP                  "Bitmaps\\Folder2.bmp"
+IDB_TREEICON_FILE1      BITMAP                  "Bitmaps\\File1.bmp"
+IDB_TREEICON_FILE2      BITMAP                  "Bitmaps\\File2.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ERR1                "Selected dock is already in use."
+    IDS_ERR2                "Selected dock on target vessel is already in use."
+    IDS_ERR3                "Target vessel is already part of the vessel superstructure."
+    IDS_ERR4                "Target dock number invalid or out of range."
+    IDS_PROP1               "Maintain fixed state vectors"
+    IDS_PROP2               "Maintain fixed surface position"
+    IDS_PROP3               "Propagate along osculating elements"
+    IDS_PROP4               "Destroy vessel"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_INFO                "SCENARIO EDITOR:\r\n\r\nCreate and delete spacecraft during the simulation - Edit position, orientation, orbital elements, surface location, fuel status and docking connections - Reset the simulation time.\r\n\r\nThe scenario editor can be opened by selecting the ""Scenario editor"" entry in the Custom Functions dialog (Ctrl-F4)."
+    IDS_TYPE                "Tools and dialogs"
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

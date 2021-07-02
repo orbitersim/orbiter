@@ -1,0 +1,2488 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{87ac0b99-59e3-4095-bb4a-12506db65aa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\2016 Edition">
+      <UniqueIdentifier>{c7fd6c69-f3d2-4f11-8f4b-73147020fa0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Challenges">
+      <UniqueIdentifier>{66541048-1dcd-44bc-a927-1e7832901296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Checklists">
+      <UniqueIdentifier>{c5bfbf88-acb3-4de4-9c6a-d023f7183436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Delta-glider">
+      <UniqueIdentifier>{fa2f1bf3-6848-441e-856f-8aee32cf075a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Demo">
+      <UniqueIdentifier>{818288b0-5093-46ae-be4b-40a0e909b55d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Dragonfly">
+      <UniqueIdentifier>{4ecb8018-205c-4126-9e08-a78b85fd1001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Launch sites and spaceports">
+      <UniqueIdentifier>{e4fb1330-6a9e-42b2-baec-7d5a4d278eaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Navigation">
+      <UniqueIdentifier>{7f180925-a744-478f-8359-1504ebb39fc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Navigation\Lunar transfer">
+      <UniqueIdentifier>{0937f922-1044-4dd6-b3c5-1c8603a44a5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Navigation\Space Physics">
+      <UniqueIdentifier>{af4c0cc2-a3a1-41a5-a1e4-ed60e96d27b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Navigation\Special orbits">
+      <UniqueIdentifier>{28a62398-93af-40c4-b6dd-023088d6815f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Navigation\TransX">
+      <UniqueIdentifier>{49b616a7-b525-4be4-ac38-e1e084316e27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Playback">
+      <UniqueIdentifier>{68b6e749-b97f-459c-8f55-ea577f6fde15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Quicksave">
+      <UniqueIdentifier>{08cbb0bc-1186-4f76-9cbf-474a991ba2a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Satellites and Probes">
+      <UniqueIdentifier>{e80c1747-4b1b-43fe-88d8-8432bd229499}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Satellites and Probes\Hubble Space Telescope">
+      <UniqueIdentifier>{a327f93f-516e-4478-b836-09a512965b5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Satellites and Probes\ldef">
+      <UniqueIdentifier>{8528c323-917e-4fc6-9f81-4a18d56b7221}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Shuttle-A">
+      <UniqueIdentifier>{37abe5ea-ac13-4c2f-bb16-9aa7a8f3fc5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Space Shuttle Atlantis">
+      <UniqueIdentifier>{b727071c-2c91-4ab5-8ad6-b08d6e04870c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Space Stations">
+      <UniqueIdentifier>{bce40530-1f7e-478e-919b-69e2b785e4fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\The Solar System">
+      <UniqueIdentifier>{61131fc4-1900-41c9-a4de-f15319fac613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\The Solar System\Earth">
+      <UniqueIdentifier>{6897fae9-abe2-4e8f-9d79-7a5142a2effa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\The Solar System\Eclipses">
+      <UniqueIdentifier>{5c68e7b0-1b95-4080-80b5-07eadcf0b039}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\The Solar System\Ephemerides">
+      <UniqueIdentifier>{3bc3140a-effe-4638-98af-0f7d3fe98298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\The Solar System\Jupiter flybys">
+      <UniqueIdentifier>{0870b96c-e3cd-4d25-8bb2-711fb5c380fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Tutorials">
+      <UniqueIdentifier>{a57ce6ad-5a51-422b-b47e-2c3c55276ac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Views">
+      <UniqueIdentifier>{0ae4fae3-3006-4147-973b-0a82d616795d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Tests">
+      <UniqueIdentifier>{ba8cb8f5-9a0c-4eff-82ac-2e40d0c00fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures">
+      <UniqueIdentifier>{04df5cd7-94ee-4b71-a775-ce40e318db99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\generic">
+      <UniqueIdentifier>{33ecc5e5-b2ed-4fbd-a36e-1dcd369941c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\ksc">
+      <UniqueIdentifier>{928c0cbc-8534-4179-8970-f216207542a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Common">
+      <UniqueIdentifier>{21c098fa-8f58-4862-9d0f-930894a831ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\DG">
+      <UniqueIdentifier>{9a282651-ad00-4040-9aae-fe7b1962e77d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\DG\Skins">
+      <UniqueIdentifier>{e4c62443-a737-4c5c-b403-c9d690e0d17b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\DG\Skins\Blue">
+      <UniqueIdentifier>{5f224c5c-4f5f-4783-8f35-f6a7b8310f7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Cockpit">
+      <UniqueIdentifier>{d72637bb-708e-46ae-8956-086c1166c4e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Atlantis">
+      <UniqueIdentifier>{0f253fb0-f3d7-43a9-ad11-9e1dd8915f2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\Dragonfly">
+      <UniqueIdentifier>{1445baa9-c607-4e55-9252-243ed43fd651}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\ShuttleA">
+      <UniqueIdentifier>{3c74b217-96a9-4c51-a5a0-dd778b18e786}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures\csphere">
+      <UniqueIdentifier>{e72f650a-27f2-4dca-9216-c2dad5c6e92e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Meshes">
+      <UniqueIdentifier>{77e0e65b-40c0-4002-b287-ccda459e78ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures2">
+      <UniqueIdentifier>{b6f7663b-590a-41d5-92f0-5af9f2ec7115}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures2\Atlantis">
+      <UniqueIdentifier>{94cb31a6-22be-49c2-9abf-3b7ad64a3980}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures2\DG">
+      <UniqueIdentifier>{cbd1395a-ab9a-481e-bb1e-005387437f9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures2\DG\Skins">
+      <UniqueIdentifier>{829468c5-80b5-4a75-ac56-cb46b2bc0fcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures2\DG\Skins\Blue">
+      <UniqueIdentifier>{2cc4d59d-2555-442d-8338-241d60b1baf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Textures2\Dragonfly">
+      <UniqueIdentifier>{bc8df787-12c8-4eda-80d1-28e81edc9a50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script">
+      <UniqueIdentifier>{f08e154e-aac0-4a19-bb9c-213dc0752c01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Atlantis">
+      <UniqueIdentifier>{5a9021a0-ac37-458f-a528-8da8ad21dc12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Challenges">
+      <UniqueIdentifier>{c3d6ee70-8272-40eb-b634-4553a6d973de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Demo">
+      <UniqueIdentifier>{357112b6-7698-4eb7-bf84-813a2b950b03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Demos">
+      <UniqueIdentifier>{71f47b47-0c55-492f-af83-937f0c259e99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\ShuttleA">
+      <UniqueIdentifier>{febaad79-bba3-4630-bbd9-88858f3fe7c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Tests">
+      <UniqueIdentifier>{e0e48b1d-1201-424f-8f5d-c45ef08e2b2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights">
+      <UniqueIdentifier>{d4819bf5-0b1b-4f1c-a8b0-af19db736601}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\3 Minute Tour of Kennedy Space Center">
+      <UniqueIdentifier>{845da1ea-6a1d-4755-a1c8-3b93aff4a240}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Welcome">
+      <UniqueIdentifier>{a8824364-f42f-4286-93ce-9c26d3af08cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Welcome to Orbiter 2016">
+      <UniqueIdentifier>{c1c0f41e-4488-4154-80cf-226541be4da2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Atlantis undocking">
+      <UniqueIdentifier>{5d6e13e5-b35d-4cf3-aae4-510addf6974f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\DG stunts">
+      <UniqueIdentifier>{1dd66443-64be-41c3-b770-91cd80dd6a14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\DG to the moon">
+      <UniqueIdentifier>{f9ba076b-9758-4cd3-ad67-aa8c8d7b205f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\DG-ISS Sync Dock">
+      <UniqueIdentifier>{89278e54-4906-4c3b-81f4-0800608805b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Glider in orbit 1">
+      <UniqueIdentifier>{0d752b74-d111-416d-89fb-bd6c57b95e1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Glider in orbit 2">
+      <UniqueIdentifier>{2ce59003-722e-4909-8415-d1dd9016758a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Smack! Rescue">
+      <UniqueIdentifier>{023d3790-f99c-4b53-83db-707912dbcd73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Space Shuttle final approach">
+      <UniqueIdentifier>{cada1e8f-d528-41d6-ba16-2938c9ad1527}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Flights\Space Shuttle to ISS">
+      <UniqueIdentifier>{3e1c2998-4d0d-4829-a773-87f8a633b4d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Images">
+      <UniqueIdentifier>{391cb2c6-35f5-4b41-9475-e72d7f52fdeb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Images\Vessels">
+      <UniqueIdentifier>{5e701e68-ffc2-4efe-9624-da432668e803}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Images\Vessels\Default">
+      <UniqueIdentifier>{83a72c5f-85b4-4992-87a8-0fc7d7525cbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="root">
+      <UniqueIdentifier>{4a377cc0-65e7-41f7-8acf-5b58da652d68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Install">
+      <UniqueIdentifier>{34f8f42b-7311-4b66-9e5c-88a4ea152050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{57a29a86-2779-4eea-937f-b132ca759e07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\MFD">
+      <UniqueIdentifier>{2bb54cdb-e1fc-49af-a7c6-8587c4f8958a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Modules">
+      <UniqueIdentifier>{dbb5ac30-723e-4f74-a5a5-0d19f1e3ff8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Vessels">
+      <UniqueIdentifier>{235c6dd1-b22b-47d0-9d5b-a504cff78faf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\CSphere">
+      <UniqueIdentifier>{631e1c53-09b5-42ef-94d9-eed6ced2ba33}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\Scenarios\(Current state).scn">
+      <Filter>Scenarios</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\# Welcome to Orbiter 2016.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\3 Minute Tour of Kennedy Space Center.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\City lights at night.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Cruising above Florida.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Earth views.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\KSC Update.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Solar system.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Space Shuttle ascent autopilot.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Space Shuttle to ISS.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Spotlights.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Surface impact model.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\The Alps in 3D.scn">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\2016 Edition\Description.txt">
+      <Filter>Scenarios\2016 Edition</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Challenges\Challenge 1 - Launch and docking.scn">
+      <Filter>Scenarios\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Challenges\Challenge 2 - Lunar transfer.scn">
+      <Filter>Scenarios\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Challenges\Challenge 3 - Advanced lunar transfer.scn">
+      <Filter>Scenarios\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Challenges\Challenge 4 - Entry and landing.scn">
+      <Filter>Scenarios\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Challenges\Description.txt">
+      <Filter>Scenarios\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Checklists\Mission 1 - DG to ISS.scn">
+      <Filter>Scenarios\Checklists</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Checklists\Mission 2 - ISS to Mir.scn">
+      <Filter>Scenarios\Checklists</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Checklists\Mission 3 - Deorbit.scn">
+      <Filter>Scenarios\Checklists</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Checklists\Quickstart.scn">
+      <Filter>Scenarios\Checklists</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Checklists\Description.txt">
+      <Filter>Scenarios\Checklists</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Animated control surfaces.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Atmospheric autopilot.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Brighton Beach.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Cape Canaveral.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\DG and DG-S.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\DG Mk4 in orbit.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\DG-S ready for takeoff.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Docked at ISS.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Glass cockpit.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Habana Spaceport.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Smack!.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\The rotation model.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Venus descent.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Venus takeoff.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Vessel-vessel.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Virtual cockpit.scn">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Delta-glider\Description.txt">
+      <Filter>Scenarios\Delta-glider</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Atlantis Ascent AP.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\DG ISS Approach.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Dione.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Docked at ISS.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Earth.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Galilean system view.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\ISS Approach.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Level 9 textures.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Mir.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Project Alpha.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Saturn.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\The 1999 solar eclipse.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Today.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Virtual cockpit.scn">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Demo\Description.txt">
+      <Filter>Scenarios\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Dragonfly\Dragonfly.scn">
+      <Filter>Scenarios\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Dragonfly\Dragonfly021118.scn">
+      <Filter>Scenarios\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Dragonfly\Station building.scn">
+      <Filter>Scenarios\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Dragonfly\v1.0.0b PoweredUp.scn">
+      <Filter>Scenarios\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Dragonfly\Description.txt">
+      <Filter>Scenarios\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Launch sites and spaceports\DG at Edwards AFB.scn">
+      <Filter>Scenarios\Launch sites and spaceports</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Launch sites and spaceports\Mojave spaceport.scn">
+      <Filter>Scenarios\Launch sites and spaceports</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Launch sites and spaceports\Palmdale launchpad.scn">
+      <Filter>Scenarios\Launch sites and spaceports</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Launch sites and spaceports\STS-125 finals at Edwards.scn">
+      <Filter>Scenarios\Launch sites and spaceports</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Launch sites and spaceports\Description.txt">
+      <Filter>Scenarios\Launch sites and spaceports</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Description.txt">
+      <Filter>Scenarios\Navigation</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Lunar transfer\Lunar transfer 1.scn">
+      <Filter>Scenarios\Navigation\Lunar transfer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Lunar transfer\Lunar transfer 2.scn">
+      <Filter>Scenarios\Navigation\Lunar transfer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Space Physics\Atlantis in orbit.scn">
+      <Filter>Scenarios\Navigation\Space Physics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Space Physics\DG dumbbell.scn">
+      <Filter>Scenarios\Navigation\Space Physics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Space Physics\Solar sail.scn">
+      <Filter>Scenarios\Navigation\Space Physics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Space Physics\Spin stabilisation.scn">
+      <Filter>Scenarios\Navigation\Space Physics</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Geostationary orbit.scn">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Lagrange point.scn">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Molniya orbit.scn">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Orbiting Phobos.scn">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Sun-synchronous orbit.scn">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Tundra orbit.scn">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\Special orbits\Description.txt">
+      <Filter>Scenarios\Navigation\Special orbits</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\01 Ready to Launch.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\02 in parking orbit.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\03 maneuver set up .scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\04 plan removed.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\05 eject burn complete.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\06 first MCC ready.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\07 second MCC ready.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\08 third MCC ready.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\09 Jupiter sling.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\10 first MCC to Saturn.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\11 Arriving at Saturn.scn">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Navigation\TransX\Description.txt">
+      <Filter>Scenarios\Navigation\TransX</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Playback\Atlantis undocking.scn">
+      <Filter>Scenarios\Playback</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Playback\Glider in orbit 1.scn">
+      <Filter>Scenarios\Playback</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Playback\Glider in orbit 2.scn">
+      <Filter>Scenarios\Playback</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Playback\Description.txt">
+      <Filter>Scenarios\Playback</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Quicksave\Description.txt">
+      <Filter>Scenarios\Quicksave</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\Description.txt">
+      <Filter>Scenarios\Satellites and Probes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\Hubble Space Telescope\HST Animation.scn">
+      <Filter>Scenarios\Satellites and Probes\Hubble Space Telescope</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\Hubble Space Telescope\HST Launch.scn">
+      <Filter>Scenarios\Satellites and Probes\Hubble Space Telescope</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\Hubble Space Telescope\HST Orbit Deployment.scn">
+      <Filter>Scenarios\Satellites and Probes\Hubble Space Telescope</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\Hubble Space Telescope\HST Recapture.scn">
+      <Filter>Scenarios\Satellites and Probes\Hubble Space Telescope</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\Hubble Space Telescope\Description.txt">
+      <Filter>Scenarios\Satellites and Probes\Hubble Space Telescope</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\ldef\LDEF deployment.scn">
+      <Filter>Scenarios\Satellites and Probes\ldef</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\ldef\LDEF retrieval.scn">
+      <Filter>Scenarios\Satellites and Probes\ldef</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Satellites and Probes\ldef\Description.txt">
+      <Filter>Scenarios\Satellites and Probes\ldef</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\ISS Approach.scn">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\Olympus spaceport on Mars.scn">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\Shuttle-A Docked at ISS.scn">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\Shuttle-A Drop.scn">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\Shuttle-A Launch.scn">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\Shuttle-A Moon.scn">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Shuttle-A\Description.txt">
+      <Filter>Scenarios\Shuttle-A</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis cockpit.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis docked at ISS.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis final approach.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis ISS Resupply.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis landing preparation.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis MMU Satellite Repair.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis reentry 1.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis reentry 2.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis satellite Launch.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Atlantis satellite.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Launch into Sunrise.scn">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Shuttle Atlantis\Description.txt">
+      <Filter>Scenarios\Space Shuttle Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Stations\Blue Danube.scn">
+      <Filter>Scenarios\Space Stations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Stations\ISS.scn">
+      <Filter>Scenarios\Space Stations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Stations\Light and darkness.scn">
+      <Filter>Scenarios\Space Stations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Stations\Mir.scn">
+      <Filter>Scenarios\Space Stations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Space Stations\Description.txt">
+      <Filter>Scenarios\Space Stations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Dione.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Enceladus.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Galilean system view.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Grand tour.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Iapetus.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Mimas.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Moon.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Rhea.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Saturn.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Tethys.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Titan.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Today.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Triton.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Venus.scn">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Description.txt">
+      <Filter>Scenarios\The Solar System</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\Earth views 1.scn">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\Earth views 2.scn">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\In low orbit over Africa.scn">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\The Alps in 3D.scn">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\The Great Lakes.scn">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\The Himalayas.scn">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Earth\Description.txt">
+      <Filter>Scenarios\The Solar System\Earth</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Eclipses\April 8 2005 Panama.scn">
+      <Filter>Scenarios\The Solar System\Eclipses</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Eclipses\April 8 2005.scn">
+      <Filter>Scenarios\The Solar System\Eclipses</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Eclipses\Lunar eclipse 2004.scn">
+      <Filter>Scenarios\The Solar System\Eclipses</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Eclipses\The 1999 solar eclipse.scn">
+      <Filter>Scenarios\The Solar System\Eclipses</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Eclipses\Description.txt">
+      <Filter>Scenarios\The Solar System\Eclipses</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Ephemerides\Earth-Moon system.scn">
+      <Filter>Scenarios\The Solar System\Ephemerides</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Ephemerides\Jovian satellites.scn">
+      <Filter>Scenarios\The Solar System\Ephemerides</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Ephemerides\Description.txt">
+      <Filter>Scenarios\The Solar System\Ephemerides</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Jupiter flybys\Galileo%27s first Ganymede flyby.scn">
+      <Filter>Scenarios\The Solar System\Jupiter flybys</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Jupiter flybys\Galileo%27s first Io flyby.scn">
+      <Filter>Scenarios\The Solar System\Jupiter flybys</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Jupiter flybys\Galileo%27s second Ganymede flyby.scn">
+      <Filter>Scenarios\The Solar System\Jupiter flybys</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Jupiter flybys\Galileo%27s second Io flyby.scn">
+      <Filter>Scenarios\The Solar System\Jupiter flybys</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Jupiter flybys\Tour of Jupiter.scn">
+      <Filter>Scenarios\The Solar System\Jupiter flybys</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\The Solar System\Jupiter flybys\Description.txt">
+      <Filter>Scenarios\The Solar System\Jupiter flybys</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\ADI training.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\DG stunts.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\DG to the moon.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\DG-ISS Sync Dock.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\Smack! Rescue.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\Space Shuttle final approach.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\Space Shuttle to ISS.scn">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tutorials\Description.txt">
+      <Filter>Scenarios\Tutorials</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Views\Atmospheric haze.scn">
+      <Filter>Scenarios\Views</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Views\Cloud microtexture.scn">
+      <Filter>Scenarios\Views</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Views\KSC coverage.scn">
+      <Filter>Scenarios\Views</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Views\Martian atmosphere colours.scn">
+      <Filter>Scenarios\Views</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Views\Moon through atmosphere.scn">
+      <Filter>Scenarios\Views</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Views\Description.txt">
+      <Filter>Scenarios\Views</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Scenarios\Tests\unit_test.scn">
+      <Filter>Scenarios\Tests</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Ariel.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Hyperion.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Mercury.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Miranda.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mklinks.bat">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mklinks_2016_lores.bat">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Neptune.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Nereid.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Oberon.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Proteus.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Saturn.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Saturn_ring.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Titan.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Titania.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Titan_cloud.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Triton.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Triton_cloud.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Umbriel.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Uranus.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Uranus_ring.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Venus.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Venus_cloud.tex">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036MB.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036MC1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036MC3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036Metal.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036mirm.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036mod1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036panel.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\036point.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\adi.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Ball.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Ball2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Ball3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\BlndcircA.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\BlndcircB.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\BlndcircC.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\bulk2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\CallistoM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape17.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape18.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape19.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape20.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape22.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape23.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cape23_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Capsule2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\car-hull.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\cloud1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Concrete.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\concrete1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Contrail1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Contrail1a.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Contrail2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Contrail3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Contrail4.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DeimosM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\door01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\d_ring.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\EarthM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\EuropaM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\eva-nasa.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\eva-usa.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Exhaust.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Exhaust2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\exhaust_atrcs.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Exhaust_atsme.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Exhaust_atsrb.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd01_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd02.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd02_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd03.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd03_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd04.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\FCD04_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd05.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd05_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd06.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd06_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd07.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd08.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd09.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\fcd10.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd11.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd11_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd12.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd12_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd13.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd13_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd14.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Fcd15.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\font1tex.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\GanymedeM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\goldfoil.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\graple.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Hangrail.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Hangrail_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Hatch.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Horizon.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\HST_NASA.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\HST_New_Solar_array.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\IapetusM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\IoM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issb.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issb2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issb3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issb4.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issbs.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issbso.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issbso2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isscov2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isscover.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isscup.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issdish.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issdot.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issesa.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isshand.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issins.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issItalian.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issku.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issku1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issku2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issleo.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issmb.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issmod.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issp2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isspanel.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issrad.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issred.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isssolar.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issusa.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\issusaf.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\isszmod.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\iss_dc.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\iss_dcs.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\iss_un.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\JupiterM.BMP">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\lcc_drs.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\lcc_wnds.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\LDEF.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\LDEFend.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\lights1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Lpad01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Lpad01_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Lpad02.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Lpad02a.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Lpad02a_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Lpad02_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\main_menu.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\main_menu_tgt.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\MarsM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Mc.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Mc2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\metalcon.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Mirblanket.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Mirm1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu4.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu6.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu_nasa.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\mmu_red.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Monorail.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Monorail_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\MoonM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\nasda.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\NeptuneM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ODS_512.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\panels.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\PhobosM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\questcov.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Radiator2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Reentry.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Roof01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Roof02.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\rough1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Runway1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Runway2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\rwlight.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\SaturnM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1cp1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1ft1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1tx1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1tx2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1tx3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1tx4.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\sha1tx5.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Shutex2_512.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttlePB.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttlePBwing.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Solar3.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Solar3s.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\solpanel.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\srb.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\srbl.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\srbu.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ssmec.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Star.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Station2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Tank.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Taxiway1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Taxiway1_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Taxiway2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Taxiway2_n.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\tile1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\TitanM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\transp.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\tred.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\TritonM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\UranusM.bmp">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\vab_bk01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\vab_fr01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\vab_fr02.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\vab_tl1.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\vab_tl2.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\visor.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Wall01.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\waves.dds">
+      <Filter>Textures</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\concrete1.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\concrete2.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\concrete2a.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\concrete3.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\metal_plates1.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\noise1.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\noisep.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\railings1.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\stripes.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\generic\tiles1.dds">
+      <Filter>Textures\generic</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\KSC\KLC39B.dds">
+      <Filter>Textures\ksc</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\KSC\MLP.dds">
+      <Filter>Textures\ksc</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\KSC\RSS39B.dds">
+      <Filter>Textures\ksc</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Common\adiball_blue.dds">
+      <Filter>Textures\Common</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Common\adiball_grey.dds">
+      <Filter>Textures\Common</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\blitsrc1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\blittgt1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgip_01.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgip_02.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgip_03.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgip_04.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgip_05.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgip_06.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgmk4_1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgmk4_2.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgmk4_2_ns.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgmk4_3.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgmk4_4.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dgpilot1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dg_instr.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dg_panel.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\DG_VC1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\DG_VC2.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\DG_VC3.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dg_vc4.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\dg_vc5.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\idpanel1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\psngr1.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\psngr2.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\psngr3.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\psngr4.dds">
+      <Filter>Textures\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\Skins\Blue\dgmk4_1.dds">
+      <Filter>Textures\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\Skins\Blue\dgmk4_2.dds">
+      <Filter>Textures\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\Skins\Blue\dgmk4_2_ns.dds">
+      <Filter>Textures\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\DG\Skins\Blue\idpanel1.dds">
+      <Filter>Textures\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\Glasspit.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\Glasspit_blue.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\Glasspit_red.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\Glasspit_yellow.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\hud.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\hud_blue.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\hud_red.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Cockpit\hud_yellow.dds">
+      <Filter>Textures\Cockpit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\A8bottom.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\A8top.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\c2.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\c3.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\cargobay.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\clocknums.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\GPC.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\label.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\MGAtlantis.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\r13l.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\R1L1.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\R2.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\STSinstruments.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\STSVC01.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\STSVC02.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\STSVC03.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Atlantis\talkback.dds">
+      <Filter>Textures\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Dragonfly\dfly1x.dds">
+      <Filter>Textures\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Dragonfly\dfly3x.dds">
+      <Filter>Textures\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Dragonfly\dfly4x.dds">
+      <Filter>Textures\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Dragonfly\dfly5x.dds">
+      <Filter>Textures\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Dragonfly\dfly6x.dds">
+      <Filter>Textures\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\Dragonfly\dfly7x.dds">
+      <Filter>Textures\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\CargoCnt.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\FuelMgmt.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\Indicator.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\MFD_buttons.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\NavMode.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\panel1.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\panel2.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\panel2d.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\panel_el.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\PodAngle.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\Sh_para.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\ShuttleA\Thrust.dds">
+      <Filter>Textures\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\dds2.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\fermi.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\h_alpha.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\iras.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\planck.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\radio.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures\csphere\rass.tex">
+      <Filter>Textures\csphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Carina.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Carina_cradle.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Cyl.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\docking.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Habana_taxiway.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Hyperion.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\ISS.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KLC39B.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KLC39Bground.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_1.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_10.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_2.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_3.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_4.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_5.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_7.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_8.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\KSC_9.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\LDEF.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Leonardo_mplm.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Luna-OB1.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Mir.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Module1.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Module2.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\mplm.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\ProjectAlpha_ISS.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\shuttle_eva_plat.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Surf1.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Tarmac2.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Taxiway1.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Vab.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Meshes\Wheel.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\c2.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\c3.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\MGAtlantis.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\R1L1.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\R2.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\STSVC01.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\STSVC02.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Atlantis\STSVC03.dds">
+      <Filter>Textures2\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\DG\dgmk4_1.dds">
+      <Filter>Textures2\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\DG\dgmk4_2.dds">
+      <Filter>Textures2\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\DG\dgmk4_2_ns.dds">
+      <Filter>Textures2\DG</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\DG\Skins\Blue\dgmk4_1.dds">
+      <Filter>Textures2\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\DG\Skins\Blue\dgmk4_2.dds">
+      <Filter>Textures2\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\DG\Skins\Blue\dgmk4_2_ns.dds">
+      <Filter>Textures2\DG\Skins\Blue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Dragonfly\dfly1x.dds">
+      <Filter>Textures2\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Dragonfly\dfly4x.dds">
+      <Filter>Textures2\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Textures2\Dragonfly\dfly7x.dds">
+      <Filter>Textures2\Dragonfly</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\attctrl.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\earthview2016.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\ksc_sweep.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\oapi_init.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\solsys2016.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\welcome2016.lua">
+      <Filter>Script</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Atlantis\launch.lua">
+      <Filter>Script\Atlantis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Challenges\Challenge1.dat">
+      <Filter>Script\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Challenges\Challenge1.lua">
+      <Filter>Script\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Challenges\Challenge2.lua">
+      <Filter>Script\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Challenges\Challenge3.lua">
+      <Filter>Script\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Challenges\Challenge4.dat">
+      <Filter>Script\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Challenges\Challenge4.lua">
+      <Filter>Script\Challenges</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Demo\demos.lua">
+      <Filter>Script\Demo</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Demos\atlantis_ascent.lua">
+      <Filter>Script\Demos</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Demos\AtmAutopilot.lua">
+      <Filter>Script\Demos</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Demos\Spin_stabilisation.lua">
+      <Filter>Script\Demos</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\ShuttleA\adi.lua">
+      <Filter>Script\ShuttleA</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Script\Tests\unit_test.lua">
+      <Filter>Script\Tests</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\3 Minute Tour of Kennedy Space Center\GL-01S.atc">
+      <Filter>Flights\3 Minute Tour of Kennedy Space Center</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\3 Minute Tour of Kennedy Space Center\GL-01S.att">
+      <Filter>Flights\3 Minute Tour of Kennedy Space Center</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\3 Minute Tour of Kennedy Space Center\GL-01S.pos">
+      <Filter>Flights\3 Minute Tour of Kennedy Space Center</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\3 Minute Tour of Kennedy Space Center\system.dat">
+      <Filter>Flights\3 Minute Tour of Kennedy Space Center</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\Carina.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\Carina.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\Carina.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\GL-01.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\GL-01.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\GL-01.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\GL-M02.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\GL-M02.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\GL-M02.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\Hubble.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\Hubble.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\ISS.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\ISS.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\ISS.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\PB-04.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\PB-04.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\PB-04.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\SH-02.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\SH-02.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\SH-02.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\SolarSail.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\SolarSail.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-101.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-101.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-101.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-102.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-102.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-102.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-103.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-103.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-103.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-104.atc">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-104.att">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\STS-104.pos">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome\system.dat">
+      <Filter>Flights\Welcome</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\ISS.atc">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\ISS.att">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\ISS.pos">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101-SRB1.atc">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101-SRB1.att">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101-SRB1.pos">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101-SRB2.atc">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101-SRB2.att">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101-SRB2.pos">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101.atc">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101.att">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101.pos">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101_ET.atc">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101_ET.att">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\STS-101_ET.pos">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Welcome to Orbiter 2016\system.dat">
+      <Filter>Flights\Welcome to Orbiter 2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Atlantis undocking\ISS.atc">
+      <Filter>Flights\Atlantis undocking</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Atlantis undocking\ISS.att">
+      <Filter>Flights\Atlantis undocking</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Atlantis undocking\ISS.pos">
+      <Filter>Flights\Atlantis undocking</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Atlantis undocking\STS-101.atc">
+      <Filter>Flights\Atlantis undocking</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Atlantis undocking\STS-101.att">
+      <Filter>Flights\Atlantis undocking</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Atlantis undocking\STS-101.pos">
+      <Filter>Flights\Atlantis undocking</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG stunts\GL-01.atc">
+      <Filter>Flights\DG stunts</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG stunts\GL-01.att">
+      <Filter>Flights\DG stunts</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG stunts\GL-01.pos">
+      <Filter>Flights\DG stunts</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG stunts\system.dat">
+      <Filter>Flights\DG stunts</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\GL-01.atc">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\GL-01.att">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\GL-01.pos">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\ISS.atc">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\ISS.att">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\ISS.pos">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG to the moon\system.dat">
+      <Filter>Flights\DG to the moon</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\GL-01.atc">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\GL-01.att">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\GL-01.pos">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\GL-02.atc">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\GL-02.att">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\GL-02.pos">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\ISS.atc">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\ISS.att">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\ISS.pos">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\Mir.atc">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\Mir.att">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\Mir.pos">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\SH-01.atc">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\SH-01.att">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\SH-01.pos">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\DG-ISS Sync Dock\system.dat">
+      <Filter>Flights\DG-ISS Sync Dock</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 1\GL-01.atc">
+      <Filter>Flights\Glider in orbit 1</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 1\GL-01.att">
+      <Filter>Flights\Glider in orbit 1</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 1\GL-01.pos">
+      <Filter>Flights\Glider in orbit 1</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 1\system.dat">
+      <Filter>Flights\Glider in orbit 1</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 2\GL-01.atc">
+      <Filter>Flights\Glider in orbit 2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 2\GL-01.att">
+      <Filter>Flights\Glider in orbit 2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Glider in orbit 2\GL-01.pos">
+      <Filter>Flights\Glider in orbit 2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\GL-01.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\GL-01.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\GL-01.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\GL-02.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\GL-02.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\GL-02.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\ISS.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\ISS.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\ISS.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\Luna-OB1.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\Luna-OB1.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\Luna-OB1.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\Mir.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\Mir.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\Mir.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\PB-01.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\PB-01.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\PB-01.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\SH-01.atc">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\SH-01.att">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\SH-01.pos">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Smack! Rescue\system.dat">
+      <Filter>Flights\Smack! Rescue</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\Atlantis.atc">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\Atlantis.att">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\Atlantis.pos">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\ISS.atc">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\ISS.att">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\ISS.pos">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle final approach\system.dat">
+      <Filter>Flights\Space Shuttle final approach</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis-SRB1.atc">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis-SRB1.att">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis-SRB1.pos">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis-SRB2.atc">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis-SRB2.att">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis-SRB2.pos">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis.atc">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis.att">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis.pos">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis_ET.atc">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis_ET.att">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Atlantis_ET.pos">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\ISS.atc">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\ISS.att">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\ISS.pos">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Leonardo.atc">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Leonardo.att">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\Leonardo.pos">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Flights\Space Shuttle to ISS\system.dat">
+      <Filter>Flights\Space Shuttle to ISS</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Atlantis.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Atlantis_SRB.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Atlantis_tank.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Carina.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\DeltaGlider.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\DG-S.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Dragonfly.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\HST.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\LDEF.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Leonardo.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\nasa_mmu.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\ProjectAlpha_ISS.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Images\Vessels\Default\Shuttle-A.bmp">
+      <Filter>Images\Vessels\Default</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Constell.bin">
+      <Filter>root</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Constell2.bin">
+      <Filter>root</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\msvcp71.dll">
+      <Filter>root</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\msvcr71.dll">
+      <Filter>root</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Star.bin">
+      <Filter>root</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\readme.txt">
+      <Filter>root</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Base.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\transx.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\MFD\Attitude.cfg">
+      <Filter>Config\MFD</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\MFD\Default.cfg">
+      <Filter>Config\MFD</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\MFD\ScriptMFD.cfg">
+      <Filter>Config\MFD</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\MFD\TestMFD1.cfg">
+      <Filter>Config\MFD</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\MFD\TestMFD2.cfg">
+      <Filter>Config\MFD</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Modules\Console.cfg">
+      <Filter>Config\Modules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Carina.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Galileo.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\ISS.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\LDEF.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Leonardo_mplm.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\MG_Atlantis.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Mir.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Module1.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Module2.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\mplm.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\ProjectAlpha_ISS.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\ScriptPB.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\Vessels\Wheel.cfg">
+      <Filter>Config\Vessels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Config\CSphere\bkgimage.cfg">
+      <Filter>Config\CSphere</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Install\vc_redist.x86.exe">
+      <Filter>Install</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

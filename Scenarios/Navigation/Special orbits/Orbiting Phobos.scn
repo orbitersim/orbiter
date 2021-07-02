@@ -1,0 +1,113 @@
+BEGIN_DESC
+Entering a true orbit around the Mars moon Phobos is not possible even at low altitude, because its
+weak gravity is entirely dominated by the gravitational field of the much more
+massive Mars.
+
+This scenario demonstrates a Phobos 'pseudo-orbit' which is actually an orbit
+around Mars, with the same orbital period as Phobos, and slightly perturbed
+eccentricity.
+
+
+Try also time acceleration and the external preset view (Ctrl-F1, Preset).
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 53750.7997510719
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+  BEGIN_PRESET
+    Cockpit:GL-01:30.00
+    Track:GL-01:20.00:TARGETTOREF 17.128 -0.063 0.122 Phobos
+  END_PRESET
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Orbit
+  REF AUTO
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Frame
+  FRAME Ecliptic
+  REF Mars
+  TARGET Phobos
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS -5405179.55 4005142.57 42025.81
+  RVEL 4303.098 5824.578 -2617.307
+  AROT -136.20 49.73 142.74
+  VROT 0.05 -0.08 -0.10
+  IDS 0:588 100 1:586 100 2:584 100 3:582 100 4:580 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS -6254353.09 6538.86 2314840.09
+  RVEL -2690.025 -499.216 -7233.193
+  AROT -84.00 -31.62 -123.05
+  VROT -0.09 -0.13 -0.06
+  IDS 0:540 100 1:542 100 2:544 100
+  XPDR 482
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS -769352.43 2101582.18 -672.24
+  RVEL -1389.906 -508.812 0.203
+  AROT -168.55 -0.09 -99.70
+  VROT 0.00 0.00 10.00
+  IDS 0:560 100 1:564 100
+  XPDR 494
+END
+GL-01:DeltaGlider
+  STATUS Orbiting Mars
+  RPOS 8134620.87 -3995668.89 -2113610.80
+  RVEL 478.532 -107.855 2096.380
+  AROT 51.22 61.14 35.45
+  PRPLEVEL 0:1.000 1:0.992
+  NAVFREQ 0 0 0 0
+  XPDR 0
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  POS -135.4300000 12.7366196
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  GEAR 1 1.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Earth
+  POS -0.0000000 48.0000000
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+  GEAR 0 0.0000
+  PAYLOAD MASS 0.0 0
+END
+END_SHIPS

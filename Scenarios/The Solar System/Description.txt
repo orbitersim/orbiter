@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>The Solar System</h1>
+<p>A tour of the solar system. Visit our home system's planets and moons.</p>
+END_HYPERDESC

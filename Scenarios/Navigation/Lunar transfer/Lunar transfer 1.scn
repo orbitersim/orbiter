@@ -1,0 +1,71 @@
+BEGIN_DESC
+Lunar tranfer - Stage 1:
+
+Before ejection from low Earth orbit using the Tranfer MFD.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.1270671528
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship SH-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SH-02
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Orbit
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Transfer
+  REF Earth
+  SOURCE SH-02
+  TARGET Moon
+  SIMORBIT 2.01 207329976.72 SHOW
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  REF Earth
+  TARGET Moon
+END_MFD
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:2
+  HEADING 174.13
+  FUEL 1.000
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+SH-02:ShuttleA
+  STATUS Orbiting Earth
+  RPOS -2308051.52 78502.88 6312839.14
+  RVEL -7209.706 677.050 -2646.744
+  AROT 167.12 66.39 -102.90
+  FUEL 0.721
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  HEADING 0.00
+  FUEL 1.000
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  HEADING 0.00
+  FUEL 1.000
+END
+END_SHIPS

@@ -1,0 +1,40 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+BEGIN_DATA
++131.00	+67.00	:	Aife Fossae
++258.00	-45.00	:	Ajina Fossae
++336.50	-9.00	:	Albasty Fossae
++239.90	+37.00	:	Arianrod Fossae
++222.10	+38.00	:	Bellona Fossae
++18.00	-26.00	:	Brynhild Fossae
++351.00	-62.00	:	Enyo Fossae
++224.00	+27.50	:	Fea Fossae
++46.50	+34.50	:	Felesta Fossae
++109.50	+50.20	:	Friagabi Fossae
++329.00	-5.00	:	Gulaim Fossae
++148.50	+29.00	:	Hanekasa Fossae
++159.40	+45.40	:	[Hildr Fossa]
++254.60	+71.90	:	Ilbis Fossae
++342.00	+28.00	:	Karra-m?hte Fossae
++303.00	-13.00	:	Khosedem Fossae
++332.50	-12.00	:	Magura Fossae
++64.90	+63.60	:	Manto Fossae
++252.50	+64.50	:	Minerva Fossae
++247.30	+39.50	:	[Mist Fossae]
++159.30	-35.60	:	Naguchitsa Fossae
++337.00	-70.20	:	Naijok Fossae
++2.70	+2.50	:	Namjyalma Fossae
++329.00	-66.50	:	Narundi Fossae
++340.00	-59.50	:	Nike Fossae
++214.00	-12.00	:	Penthesilea Fossa
++307.00	-10.00	:	Perunitsa Fossae
++356.40	+62.70	:	Rangrid Fossae
++139.00	+73.00	:	Saykal Fossae
++18.00	+50.50	:	Sigrun Fossae
++7.00	+58.20	:	Valkyrie Fossae
++7.00	-48.00	:	Yenkhoboy Fossae
++224.00	+48.00	:	Yuzut-Arkh Fossae
++182.00	-67.50	:	Zheztyrnak Fossae

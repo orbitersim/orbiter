@@ -1,0 +1,142 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_INTERFACE DIALOGEX 0, 0, 217, 231
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Orbiter Remote Vessel Control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_VESSELLIST,14,18,133,110,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Vessel",IDC_STATIC,7,7,203,31
+    PUSHBUTTON      "Set focus",IDC_FOCUS,157,17,44,14
+    GROUPBOX        "Engines",IDC_STATIC,7,42,203,131
+    LTEXT           "Main --->",IDC_STATIC,132,53,28,8
+    LTEXT           "<--- Retro",IDC_STATIC,36,53,30,8
+    LTEXT           "Hover",IDC_STATIC,19,84,20,8
+    PUSHBUTTON      "L",IDC_RCS_YAWLEFT,65,130,16,14
+    PUSHBUTTON      "R",IDC_RCS_YAWRIGHT,101,130,16,14
+    PUSHBUTTON      "U",IDC_RCS_PITCHUP,83,130,16,14
+    PUSHBUTTON      "D",IDC_RCS_PITCHDOWN,83,98,16,14
+    PUSHBUTTON      "^",IDC_RCS_BANKRIGHT,101,114,16,14
+    PUSHBUTTON      "^",IDC_RCS_BANKLEFT,65,114,16,14
+    PUSHBUTTON      "U",IDC_RCS_UP,158,130,16,14
+    PUSHBUTTON      "L",IDC_RCS_LEFT,139,130,16,14
+    PUSHBUTTON      "R",IDC_RCS_RIGHT,176,130,16,14
+    PUSHBUTTON      "D",IDC_RCS_DOWN,158,98,16,14
+    PUSHBUTTON      "F",IDC_RCS_FORWARD,176,98,16,14
+    PUSHBUTTON      "B",IDC_RCS_BACK,176,114,16,14
+    GROUPBOX        "RCS Rot",IDC_STATIC,54,85,72,68
+    GROUPBOX        "RCS Lin",IDC_STATIC,130,85,72,68
+    LTEXT           "RCS Level",IDC_STATIC,72,158,35,8
+    GROUPBOX        "Navmode",IDC_STATIC,7,179,203,45
+    PUSHBUTTON      "Killrot",IDC_KILLROT,32,190,50,14
+    PUSHBUTTON      "X",IDC_KILLROT2,83,114,16,14
+    PUSHBUTTON      "HLevel",IDC_HLEVEL,32,205,50,14
+    PUSHBUTTON      "Prograde",IDC_PROGRADE,84,190,50,14
+    PUSHBUTTON      "Retrograde",IDC_RETROGRADE,84,205,50,14
+    PUSHBUTTON      "Normal (+)",IDC_NORMAL,136,190,50,14
+    PUSHBUTTON      "Normal (-)",IDC_ANTINORMAL,136,205,50,14
+    CONTROL         "",IDC_MAIN_GAUGE,"OrbiterCtrl_Gauge",WS_TABSTOP,92,64,110,11
+    CONTROL         "",IDC_RETRO_GAUGE,"OrbiterCtrl_Gauge",WS_TABSTOP,18,64,68,11
+    CONTROL         "",IDC_RCSLEVEL,"OrbiterCtrl_Gauge",WS_TABSTOP,113,158,69,8
+    CONTROL         "",IDC_HOVER_GAUGE,"OrbiterCtrl_Gauge",WS_TABSTOP,22,96,13,69
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_INTERFACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 224
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_INFO                "REMOTE VESSEL CONTROL:\r\n\r\nOperate the engines of any spacecraft from a dialog box.\r\n\r\nThe remote control window can be opened by selecting the ""Remote Vessel Control"" entry in the Custom Functions dialog (Ctrl-F4)."
+    IDS_TYPE                "Tools and dialogs"
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

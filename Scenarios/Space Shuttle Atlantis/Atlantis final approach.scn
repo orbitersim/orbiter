@@ -1,0 +1,113 @@
+BEGIN_DESC
+<h1>Space Shuttle final approach</h1>
+Final approach to SLF runway 33 at the Kennedy Space Center.
+Initially pitch down to -15°. Use the PAPI indicators ahead of the runway for glideslope adjustment.
+Use the split rudder speed brake (Ctrl-B) to bleed off airspeed.
+On approach, slowly raise the nose to touch down with an AOA of approx. +10°.
+Lower your gear during the final flare-up, about 10 seconds before touchdown.
+Touchdown speed is approximately 100 m/s.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 52261.7235491204
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship STS-101
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET STS-101
+  MODE Cockpit
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE HSI
+  NAV 0 1
+  OBS 5.76 5.76
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Surface
+END_MFD
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 4287765.79 -5151605.78 623106.23
+  RVEL -5758.356 -4512.530 2389.358
+  AROT 110.00 -10.00 80.00
+  PRPLEVEL 0:1.000
+  IDS 0:1 100 1:2 100 2:3 100 3:4 100 4:5 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+Mir
+  STATUS Orbiting Earth
+  ELEMENTS 6669194.4 0.00060 3.49999 359.99985 359.09441 366.23488 52261.72333808
+  AROT 0.00 -45.00 90.00
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  ELEMENTS 2238530.3 0.00018 90.02485 359.99463 252.73772 571.88634 52261.72333808
+  AROT 0.00 0.00 117.62
+  VROT 0 0 10
+END
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:2
+  POS -82.3988276 22.9994604
+  HEADING 174.13
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+  RCSMODE 1
+END
+STS-101:Atlantis
+  STATUS Orbiting Earth
+  RPOS -299079.72 5012945.27 -3937700.52
+  RVEL 348.956 64.429 285.613
+  AROT 2.32 8.63 -9.90
+  VROT -3.32 0.94 -0.00
+  RCSMODE 0
+  PRPLEVEL 0:0.006
+  NAVFREQ 524 94
+  CONFIGURATION 4
+  CARGODOOR 0 0.0000
+  GEAR 0 0.0000
+END
+GL-02:DeltaGlider
+  STATUS Landed Mars
+  BASE Olympus:3
+  POS -135.4300000 12.7366196
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  NOSECONE 0 0.0000
+  GEAR 1 1.0000
+  AIRLOCK 0 0.0000
+  RCSMODE 1
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+END
+END_SHIPS

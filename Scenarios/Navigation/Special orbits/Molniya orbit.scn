@@ -1,0 +1,182 @@
+BEGIN_DESC
+Molniya orbits are highly eccentric Earth orbits with periods of approximately 12 hours (2 revolutions per day).
+The orbital inclination is chosen so the rate of change of perigee is zero, thus both apogee and perigee can be maintained over fixed latitudes.
+This condition occurs at inclinations of 63.4 degrees and 116.6 degrees.
+For these orbits the argument of perigee is typically placed in the southern hemisphere, so the satellite remains above the northern hemisphere near apogee for approximately 11 hours per orbit.
+This orientation can provide good ground coverage at high northern latitudes.
+(from: Orbital, Mechanics, http://www.braeunig.us/space/orbmech.htm)
+
+
+The orbit in this example places a Dragonfly once a day alternatingly above North America and above central Asia.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 53900.7548671979
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship TUG-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET TUG-01
+  MODE Cockpit
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+  NAV 0
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Map
+  REF Earth
+  TRACK ON
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Equator
+  ALT
+  REF Earth
+END_MFD
+
+
+BEGIN_SHIPS
+Module1A:Module1
+  STATUS Orbiting Earth
+  RPOS -4059037.41 -5243487.06 -1149354.66
+  RVEL -2091.391 3093.110 -6725.004
+  AROT 78.08 28.11 169.26
+  VROT 0.05 0.29 -0.01
+  NAVFREQ 0 0
+END
+Module1B:Module1
+  STATUS Orbiting Earth
+  RPOS -4059118.44 -5243353.19 -1149621.18
+  RVEL -2091.159 3093.380 -6724.963
+  AROT 78.08 28.11 169.26
+  VROT 0.05 0.29 -0.01
+  NAVFREQ 0 0
+END
+TUG-01:Dragonfly
+  INTERNAL: v1.0.0B
+    HYDRAULICS: 
+      TANK  1 0.0000 130000 170.00
+      TANK  1 0.0000 130000 170.00
+      TANK  0 0.0000 130000 170.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 70000 70.00
+      TANK  1 0.0000 70000 70.00
+      TANK  0 0.0000 70000 70.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 50 290.62
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      TANK  1 0.0000 20000 288.00
+      TANK  1 0.0000 20000 288.00
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      MANIFOLD  0 1 0 1 0 0
+      TANK  1 0.0000 183126 -26.36
+      TANK  1 0.0000 -11882 87.76
+      MANIFOLD  1 1 0 1 0 0
+      TANK  1 0.0000 -155274 136.64
+      TANK  1 0.0000 27000 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      TANK  1 0.0000 9100 295.00
+      TANK  1 0.0000 27000 295.00
+      TANK  1 0.0000 4800 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+    ELECTRICAL: 
+      FCELL  2 0.0000 
+      FCELL  2 0.0000 
+      BATTERY  0 5184000.0000 1
+      DC  0.0000 
+      DC  -42.5000 
+      AC  30.0000 
+      DC  0.0000 
+      DC  0.0000 
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      FAN  0 
+      FAN  0 
+    PANEL     : 
+      SW  0 1 1 0 0 
+      SW  -1 0 99 0 0 
+    SW END  
+    ROT END  
+      ADI  0.4200 -1.1500 6.7330 -1 0 0.0000 0.0000 0.0000
+    PAN END  
+      SW  -1 -1 -1 -1 -1 
+      SW  1 1 1 1 1 
+      SW  1 1 1 1 1 
+      SW  1 1 0 0 0 
+      SW  0 0 1 1 1 
+      SW  1 0 0 -1 -1 
+      SW  0 0 0 0 0 
+      SW  0 1 1 1 1 
+      SW  -1 1 1 -1 -1 
+      SW  -1 0 -1 0 1 
+      SW  1 1 1 -1 1 
+      SW  1 99 1 -1 1 
+    SW END  
+      ROT  0 0 0 99 1 
+    ROT END  
+    PAN END  
+    SW END  
+    ROT END  
+    PAN END  
+      SW  0 0 0 1 0 
+      SW  1 0 0 1 1 
+      SW  1 1 1 1 0 
+      SW  0 1 -1 1 0 
+      SW  1 0 99 1 0 
+    SW END  
+    ROT END  
+    PAN END  
+      SW  0 0 0 0 0 
+      SW  0 0 99 0 0 
+    SW END  
+    ROT END  
+    PAN END  
+   END INTERNAL 
+  STATUS Orbiting Earth
+  RPOS 2494137.61 28019405.06 34913822.56
+  RVEL -1429.752 -848.786 -97.048
+  AROT -137.96 12.42 125.05
+  PRPLEVEL 0:1.000 1:1.000 2:1.000 3:1.000 4:1.000 5:1.000 6:1.000 7:1.000 8:1.000 9:1.000 10:1.000 11:1.000
+  NAVFREQ 0 0
+  UPPERANT 0.000000 0.500000 0 0 2
+  LOWERANT 0.000000 0.500000 0 0 2
+  HATCH 0.000000 0
+END
+END_SHIPS

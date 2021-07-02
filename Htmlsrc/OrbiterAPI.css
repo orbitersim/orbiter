@@ -1,0 +1,79 @@
+body { font-family: Arial, Helvetica, Sans-Serif; font-size: 80% }
+a:link	{background: transparent; color: #0000FF;} 
+a:visited {color: #800080;}
+p { margin-top: 0em; margin-bottom: 0em }
+p.syn { font-family: Courier; margin-left: 2em; text-indent: -2em; }
+p.prm { font-family: Courier; }
+p.prmc { margin-left: 2em; }
+p.eq { text-align: center; margin-top: 1em; margin-bottom: 1em; }
+p.quote { margin-top: 1ex; margin-bottom: 1ex; margin-left: 2em; }
+
+h1 { font-weight: bold; font-size: 140%; color: #000000; background-color: #ffffff; margin-bottom: 0.1em }
+h2 { font-weight: bold; font-size: 120%; margin-top: 1em; margin-bottom: 0.1em }
+h3 { font-weight: bold; font-size: 100%; text-decoration: underline; margin-top: 1em; margin-bottom: 0.1em }
+
+ul {margin-left: 2em; margin-top: 0em; margin-bottom: 0em }
+
+/*li{margin-top: 4pt;}*/
+/*li { text-indent: 0 }*/
+
+table{width: auto; text-align: left; font-family: Arial, Helvetica, Sans-Serif; font-size: 100%  }
+th { font-weight: bold }
+td { background-color: #F0F0F0; vertical-align: top }
+
+/*ul li{padding-top: 4pt;}
+ol li{padding-bottom: 4pt;}
+ul{margin-left: -15pt; margin-top: -7em;}
+ol{margin-left: -15pt; margin-top: -7em;}
+ol ul{margin-top: 0em; list-style: disc;}
+code{font-family: Courier;}
+pre{font-family: Courier;}
+th{text-align: left;}
+img{margin-top: -4pt;}	*/
+
+/* Overview heading   */
+h5.overh{font-size: 120%;}        
+h5{font-size: 100%;}           
+
+/* Procedure heading  */
+h5.proch{font-size: 100%;}          
+
+/* Decision heading   */
+h5.what{font-size: 100%; color: #993399;}           
+
+/* Note & Tip heading */
+h5.note{font-size: 95%;}
+
+
+
+DIV.sidebartext {
+position: relative;
+left: -22px;
+height: 72px;
+width: 300px;
+margin-top: .6em;
+margin-right: 3em;
+margin-left: 0;
+margin-bottom: .6em;
+padding-top: .75em;
+padding-right: 6px;
+padding-left: .75em;
+padding-bottom: .75em;
+cursor: hand;
+border-left: 4pt solid #339900;
+background-color: #F0F0F0; }
+
+DIV.code {
+font-family: Courier;
+margin-left: 2em;
+margin-top: .6em;
+margin-bottom: .6em;
+}
+
+font.prm { font-family: Times; font-style: italic; }
+font.label { font-family: Arial; font-size: 8pt; }
+td.foot { vertical-align: bottom }
+
+/*kbd { font-weight: normal; background-color: #D0D0D0; border-left: solid medium #D0D0D0; border-right: solid medium #D0D0D0; } */
+kbd { font-weight: normal; font-size: 90%; border: 1px solid #000000; padding-left: 0.3em; padding-right: 0.3em; }
+kbd.ctrl { font-family: Arial; font-size: 90% }

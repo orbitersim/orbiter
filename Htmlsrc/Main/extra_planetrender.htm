@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Planet rendering options</title>
+</head>
+<body>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; <a href="tab_extra.htm">Extra</a> &gt; Planet rendering options</p>
+
+<h1>Planet rendering options</h1>
+<p>This dialog provides extended options for fine-tuning the way Orbiter loads and displays textures for planetary surfaces. For basic render options, see also <a href="tab_visual.htm">Visual effects</a>.</p>
+<p>Note that some options in this dialog may be overridden by graphics driver settings. This can be avoided by setting the appropriate driver parameters to "application-controlled" or equivalent.</p>
+
+<h2>Surface texture load options</h2>
+<p><b>Load on demand</b>: Load textures during the simulation only when they are needed. This is the recommended setting, in particular if high-resolution textures are installed. It reduces the load time and memory requirements compared to the pre-load option.</p>
+<p><b>Max. load frequency</b>: The maximum number of texture patches loaded per second. Increasing this value speeds up the load process and avoids momentary low-resolution rendering when the camera pans to a new area, but it may lead to occasional drops in frame rate (stuttering) during the simulation.</p>
+<p><b>Pre-load at session start</b>: All textures for all planets are loaded when a simulation session is launched. This option can greatly increase load times and texture memory requirements, and should generally be avoided.</p>
+
+<h2>Mipmap interpolation</h2>
+<p>Mipmap interpolation can improve the visual appearance of planet textures by avoiding pixel flickering during movement. It may affect frame rates on some systems.</p>
+<p><b>Do not load mipmaps</b>: Disables mipmap interpolation (lowest visual quality, highest performance).</p>
+<p><b>Point sampling</b>: Uses mipmaps, but does not interpolate them (medium visual quality and performance).</p>
+<p><b>Linear interpolation</b>: Uses interpolated mipmaps (highest visual quality, lowest performance).</p>
+<p><b>Mipmap bias</b>: If mipmaps are enabled, this slider allows to adjust the mipmap level-of-detail (LOD) bias. <i>Sharper</i> uses higher resolution mipmaps, which give a sharper appearance, but can induce flickering. <i>Smoother</i> uses lower lower resolution mipmaps which look smoother and produce less flickering.</p>
+
+<h2>Anisotropic filtering</h2>
+<p>Anisotropic filtering can improve the visual appearance of surfaces viewed at oblique angles. In general, it makes planetary surface features appear sharper towards the horizon.</p>
+<p><b>Filter level</b>: Amount of filtering. <i>None</i> disables anisotropic filtering. Higher filter levels may affect simulation frame rates.</p>
+
+</body>
+</html>

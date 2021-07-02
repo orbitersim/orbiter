@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Timer settings</title>
+</head>
+<body>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; <a href="tab_extra.htm">Extra</a> &gt; Timer settings</p>
+
+<h1>Timer settings</h1>
+<p>This dialog allows the selection of the timer used by Orbiter to calculate the frame time intervals.</p>
+<p>Two timer options are available:
+<ul>
+<li>The high-performance hardware timer. A high-resolution counter. On most platforms this is connected to the CPU sync signal and provides resolutions on the order of 1e-7 seconds (hardware-dependent).</li>
+<li>The software timer. Uses a standard timer function and has a resolution of 1e-3 seconds.</li>
+</ul></p>
+<p>In general, the use of the high-performance timer is preferred, because it provides more precise time intervals, in particular at high frame rates. However, on some computers, the high-performance timer is buggy and produces inconsistent results (negative time steps). This can happen when the operating system moves the Orbiter process from one processor core to another. If you experience anomalies in the simulation behaviour (e.g. abrupt changes of linear and angular velocities), try the software timer to see if this solves the problem.</p>
+<p>The <i>Automatic selection</i> option selects the high-performance timer by default, but switches to the software timer if inconsistencies are detected. In that case, a warning is sent to orbiter.log.</p>
+</body>
+</html>

@@ -1,0 +1,57 @@
+BEGIN_HYPERDESC
+<h1>Solar sail</h1>
+<p>Initial test for a solar sail. Demonstrator for radiation pressure effects. Make sure to enable 'Radiation pressure' in the Launchpad Parameters tab.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.5307082649
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship FlyingDutchman
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET FlyingDutchman
+  MODE Extern
+  POS 1.022007 8.736480 8.152254
+  TRACKMODE GlobalFrame
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Earth
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 4764509.28 0.03 -5630274.44
+  RVEL 5608.291 0.003 4749.391
+  AROT -52.67 -56.99 90.32
+  PRPLEVEL 0:0.553 1:0.900
+  NAVFREQ 0 0 0 0
+  XPDR 0
+END
+FlyingDutchman:SolarSail
+  STATUS Orbiting Earth
+  RPOS 4764366.54 0.00 -5630105.73
+  RVEL 5608.120 0.001 4749.250
+  AROT -4.46 38.82 -0.01
+  PRPLEVEL 0:-1.#IO
+  NAVFREQ 0 0
+END
+END_SHIPS

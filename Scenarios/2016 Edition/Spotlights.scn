@@ -1,0 +1,72 @@
+BEGIN_HYPERDESC
+<h1>Spotlights</h1>
+<p>A demonstration of spotlight support in Orbiter. A DeltaGlider with its docking lights is rotating in front of the ISS, as both enter Earth's shadow.</p>
+<p>Make sure that <i>Local light sources</i> is enabled under the <i>Visual effects</i> tab before running this scenario.</p>
+END_HYPERDESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0604772222
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET ISS
+  MODE Extern
+  POS 1.88 -124.66 63.75
+  TRACKMODE TargetRelative
+  FOV 40.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+  NAV 0
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+  NAV 0
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  REF Earth
+  TARGET ISS
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS -1930938.86 -6106092.65 2097492.53
+  RVEL -7231.634 2518.255 690.496
+  AROT -110.00 -15.01 -84.00
+  AFCMODE 7
+  IDS 0:588 100 1:586 100 2:584 100 3:582 100 4:580 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+GL-02:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS -1930907.39 -6106084.45 2097493.14
+  RVEL -7231.730 2518.224 690.582
+  AROT -21.95 45.40 175.52
+  VROT 9.7 -18.3 -7.8
+  AFCMODE 7
+  PRPLEVEL 0:1.000000 1:0.996022
+  NAVFREQ 2 466 0 0
+  XPDR 0
+  NOSECONE 1 1.0000
+  LANDDOCKLIGHT 1
+  SKIN BLUE
+  LIGHTS 0 0 0 1
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS

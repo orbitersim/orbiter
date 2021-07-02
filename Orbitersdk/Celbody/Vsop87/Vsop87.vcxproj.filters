@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{94f657e9-efe2-4a25-a9f3-f0a8d868e541}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{d0ed9dd0-745b-4553-b4ea-979c2e7409c0}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{e4f1a165-ec83-4256-86bb-c9f570903fd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Marker">
+      <UniqueIdentifier>{43005c7e-7106-404c-9421-d8916433e13f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Vsop87.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Vsop87.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include=".\Sol\Config\Marker\Apollo AGC navigation stars.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include=".\Sol\Config\Marker\Common star names.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include=".\Sol\Config\Marker\Galactic.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include=".\Sol\Config\Marker\Messier objects.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include=".\Sol\Config\Sol.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

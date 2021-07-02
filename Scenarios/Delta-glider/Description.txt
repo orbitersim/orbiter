@@ -1,0 +1,8 @@
+BEGIN_HYPERDESC
+<h1>Delta-glider scenarios</h1>
+<p>The Delta-glider is a futuristic spaceplane design with aerodynamic control surfaces and powerful engines. The DG is a capable allround
+vessel ideally suited for novice pilots to practise orbital manoeuvres.</p>
+
+<p>This version has been re-designed and improved, and now includes a variant with air-breathing scramjet engines. The glider is also the first craft to
+support a full virtual cockpit implementation.</p>
+END_HYPERDESC

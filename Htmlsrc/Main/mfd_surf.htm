@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<Title>Surface MFD</Title>
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="intro.htm">Orbiter</a> &gt; <a class="header" href="mfd.htm">MFD</a> &gt; Surface</p>
+
+<h1>Surface MFD</h1>
+
+<p class="small">
+<table cols=2 width=100% cellspacing=1 cellpadding=2 border=1>
+<tr>
+<td width=50% align=center><a href="mfd_surf_ctrl.htm">Controls</a></td>
+<td width=50% align=center><a href="mfd_surf_disp.htm">Display components</a></td>
+</tr>
+</table></p>
+
+<p>The Surface MFD provides data of the vessel state relative to a planet surface, and atmospheric data where applicable. It includes</p>
+
+<p><ul>
+<li>an artificial horizon including pitch and bank readouts</li>
+<li>heading tape and readout</li>
+<li>altitude tape and readout (including bugs for aphel and perihel altitude)</li>
+<li>vertical speed indicator (VSI) tape and readout</li>
+<li>vertical acceleration indicator tape and readout</li>
+<li>speed indicator (IAS/TAS/GS/OS) tape and readout</li>
+<li>acceleration indicator tape and readout</li>
+<li>AOA (angle of attack) indicator tape and readout</li>
+<li>static and dynamic pressure readouts</li>
+<li>atmospheric density readout</li>
+<li>Outside Air Temperature (OAT) readout</li>
+<li>Mach number (M) readout</li>
+<li>equatorial position and rate readouts</li>
+</ul></p>
+
+<p>The instrument automatically calculates its data with respect to the celestial body whose surface is closest to the current vessel position. The reference body is shown in the top left corner of the display.</p>
+
+<p><b>Speed display modes:</b></p>
+
+<p>The user can choose between four different speed indicator modes:</p>
+
+<p><ul>
+<li><b>TAS (true airspeed)</b>: The speed of the spacecraft relative to the surrounding atmos­phere. Airspeed is usually measured with a pitot tube in the airstream recording the dif­ference between freestream and stagnation point pressure. The TAS mode is only avail­able if the freestream pressure <i>p</i><sub>1</sub> &gt; 10<sup>-4</sup> Pa (on Earth, this corresponds to approx. 140 km altitude). If TAS cannot be measured, the speed tape is reset to 0 and the readout shows "----".</li>
+<li><b>IAS (indicated airspeed)</b>: Commonly used in conventional aircraft. IAS is calibrated to atmospheric density and speed of sound at sea level. IAS and TAS are similar at low altitude, but start to diverge at higher altitudes, with IAS < TAS. The limit <i>p</i><sub>1</sub> &gt; 10<sup>-4</sup> Pa also applies for IAS availability.</li>
+<li><b>GS (ground-relative speed)</b>: The magnitude of the vessel's velocity vector transformed into the rotating planet reference frame. This is similar to TAS at lower altitudes, but diverges at higher altitudes. Usually, TAS is no longer available at altitudes where the differences would become significant. <i>Note:</i> For an object in geostationary orbit, GS is zero since it is stationary in the rotating planet frame.</li>
+<li><b>OS (orbital speed)</b>: The vessel's velocity relative to the planet's centre in a non-rotating frame. This is identical to the "Vel" readout in the Orbit MFD. <i>Note:</i> OS is usually nonzero for a vessel at rest on the planet surface, since the planet itself rotates.</li>
+</ul></p>
+
+<p>The speed tape left of the artificial horizon displays the vesel speed in the selected mode. The acceleration tape below shows the speed rate of change in the same mode. The vertical speed and vertical acceleration tapes are not affected by the speed display mode.</p>
+
+</BODY>
+</HTML>

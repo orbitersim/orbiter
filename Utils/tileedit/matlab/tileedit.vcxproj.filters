@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Matlab Files">
+      <UniqueIdentifier>{4091e002-5c2f-41c8-aade-8d2b3f08c642}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Binaries">
+      <UniqueIdentifier>{215e86e9-3b99-43da-b24c-87c3d933218b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="elev_downsample.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="elev_upsample.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="elvmodread.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="elvmodwrite.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="elvread.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="elvwrite.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="tileedit.fig">
+      <Filter>Matlab Files</Filter>
+    </None>
+    <None Include="tileedit.m">
+      <Filter>Matlab Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="tileedit.exe">
+      <Filter>Binaries</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tileedit_README.txt">
+      <Filter>Binaries</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,104 @@
+BEGIN_DESC
+DG-ISS sync/rendezvous and dock recording.  If you play back with time acceleration as recorded, the replay will take 36 minutes of real time for 6.5 hours of simulated time.  
+
+In addition to the on-screen notes in this recording, this scenario is explained in more detail in chapter 5 ("Dancing in the Dark") of the second edition of "Go Play In Space," available at http://www.aovi93.dsl.pipex.com/play_in_space.htm (free download).
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0293650127
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-02
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+  NAV 0
+END_HUD
+
+BEGIN_MFD Left
+  TYPE OSync
+  TARGET ISS
+  MODE Sh periapsis
+  LISTLEN 5
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
+  TARGET ISS
+END_MFD
+
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 2356694.58 5933427.42 -2131257.49
+  RVEL 7069.496 -3001.303 -522.751
+  AROT -110.00 -15.00 -84.00
+  IDS 0:588 100 1:586 100 2:584 100 3:582 100 4:580 100
+  NAVFREQ 0 0
+  XPDR 466
+  FLIGHTDATA
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS -6433873.52 108505.08 1774042.14
+  RVEL -2058.289 -454.578 -7432.292
+  AROT 0.00 -45.00 90.00
+  IDS 0:540 100 1:542 100 2:544 100
+  XPDR 482
+  FLIGHTDATA
+END
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:2
+  POS -82.3988276 22.9994604
+  HEADING 174.13
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  FLIGHTDATA
+  GEAR 1 1.0000
+END
+GL-02:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 3182006.93 5462946.81 -2158179.00
+  RVEL 6684.585 -3940.132 -183.348
+  AROT -87.90 73.87 111.31
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 466 586 580 588
+  XPDR 0
+  FLIGHTDATA
+  NOSECONE 1 1.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  POS -33.4375000 41.1184067
+  HEADING 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  FLIGHTDATA
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+  GEAR 0 0.0000
+  PAYLOAD MASS 0.0 0
+END
+END_SHIPS
+
+BEGIN_ExtMFD
+END

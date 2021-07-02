@@ -1,0 +1,4 @@
+BEGIN_HYPERDESC
+<h1>Views</h1>
+<p>A collection of the new visual features in the 2005 Edition.</p>
+END_HYPERDESC

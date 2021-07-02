@@ -1,0 +1,80 @@
+BEGIN_DESC
+Start in a glider docked to the International Space Station.
+
+Current location: above central China.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.029
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-02
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SH-02
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Orbit
+  PROJ Ship
+  REF Earth
+  TARGET ISS
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  ELEMENTS 6734919 0.0009 74.513 169.034 328.305 122.0 51544.5
+  AROT -110.00 -15.00 -84.00
+  DOCKINFO 1:0,GL-02
+END
+Mir
+  STATUS Orbiting Earth
+  ELEMENTS 6671000 0.0006 3.5 0 0 0 51544.5
+  AROT 0 -45 90
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  ELEMENTS 2238000.0 0.00000 90.000 0.000 0.000 0.000 51544.5
+  AROT 0.00 0.00 -72.91
+  VROT 0.00 0.00 10.00
+END
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  BASE Habana:2
+  HEADING 174.13
+  FUEL 1.000
+  GEAR 1 1.0
+  NOSECONE 0 0.0000
+END
+GL-02:DeltaGlider
+  STATUS Orbiting Earth
+  DOCKINFO 0:1,ISS
+  NAVFREQ 2 466 0 0
+  FUEL 1.000
+  GEAR 0 0.0
+  NOSECONE 1 1.0
+  AIRLOCK 0 0.0000
+END
+SH-01:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:1
+  FUEL 1.0
+END
+END_SHIPS

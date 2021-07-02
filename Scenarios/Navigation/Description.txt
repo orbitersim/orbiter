@@ -1,0 +1,5 @@
+BEGIN_HYPERDESC
+<h1>Navigation in space</h1>
+<p>Explore different types of orbits, some space physics demos and solve
+interplanetary navigation problems using the Transfer and TransX MFD instruments.</p>
+END_HYPERDESC

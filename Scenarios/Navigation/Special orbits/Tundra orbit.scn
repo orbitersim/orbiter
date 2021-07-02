@@ -1,0 +1,52 @@
+BEGIN_DESC
+This is a highly elliptic geosynchronous orbit with an orbital period of one siderial day (23 hours, 56 minutes 4 seconds). This type of orbit allows to "park" a satellite at high latitudes for extended periods of time, when it moves through its apoapsis.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51984.5427324199
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS 5395221.05 49071457.51 58557091.47
+  RVEL -892.588 255.217 305.499
+  AROT -17.75 10.35 -78.55
+  AFCMODE 7
+  PRPLEVEL 0:0.553000 1:0.894029
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS

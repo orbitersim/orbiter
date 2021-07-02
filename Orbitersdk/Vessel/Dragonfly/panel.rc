@@ -1,0 +1,97 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP  DISCARDABLE     "Fonts.bmp"
+IDB_BITMAP2             BITMAP  DISCARDABLE     "switch.bmp"
+IDB_BITMAP3             BITMAP  DISCARDABLE     "gauge.bmp"
+IDB_BITMAP4             BITMAP  DISCARDABLE     "egauge.bmp"
+IDB_BITMAP5             BITMAP  DISCARDABLE     "rotary.bmp"
+IDB_BITMAP6             BITMAP  DISCARDABLE     "tb.bmp"
+IDB_BITMAP7             BITMAP  DISCARDABLE     "cb.bmp"
+IDB_BITMAP8             BITMAP  DISCARDABLE     "SL.bmp"
+IDB_BITMAP9             BITMAP  DISCARDABLE     "cw.bmp"
+IDB_BITMAP10            BITMAP  DISCARDABLE     "MFD.bmp"
+IDB_BITMAP11            BITMAP  DISCARDABLE     "front.bmp"
+IDB_BITMAP12            BITMAP  DISCARDABLE     "Up.bmp"
+IDB_BITMAP13            BITMAP  DISCARDABLE     "left.bmp"
+IDB_BITMAP14            BITMAP  DISCARDABLE     "dock.bmp"
+IDB_BITMAP15            BITMAP  DISCARDABLE     "grill.bmp"
+IDB_BITMAP16            BITMAP  DISCARDABLE     "Switch2.bmp"
+IDB_BITMAP17            BITMAP  DISCARDABLE     "Dial1.bmp"
+IDB_BITMAP18            BITMAP  DISCARDABLE     "Switch1.bmp"
+IDB_BITMAP19            BITMAP  DISCARDABLE     "nav.bmp"
+IDB_BITMAP20            BITMAP  DISCARDABLE     "dragon.bmp"
+IDB_BITMAP22            BITMAP  DISCARDABLE     "rad2.bmp"
+IDB_BITMAP21            BITMAP  DISCARDABLE     "radar2.bmp"
+IDB_BITMAP23            BITMAP  DISCARDABLE     "fuel.bmp"
+IDB_BITMAP24            BITMAP  DISCARDABLE     "right.bmp"
+IDB_BITMAP25            BITMAP  DISCARDABLE     "warn.bmp"
+IDB_BITMAP26            BITMAP  DISCARDABLE     "vrot.bmp"
+IDB_BITMAP27            BITMAP  DISCARDABLE     "vrotbk.bmp"
+IDB_BITMAP28            BITMAP  DISCARDABLE     "ADIborder.bmp"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

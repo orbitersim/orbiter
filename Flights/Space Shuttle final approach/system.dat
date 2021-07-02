@@ -1,0 +1,39 @@
+0 NOTECOL 0.8 0.6 0
+0 NOTESIZE 1.1
+0 NOTEPOS 0.02 0.2 0.4 0.9
+0 NOTE This is Space Shuttle Atlantis on final approach to Shuttle Landing Facility Runway 33 at the Kennedy Space Center.
+0.009 CAMERA SET Track:Atlantis:40.00:GLOBAL 5.620 1.635 0.776
+15 CAMERA SET Track:Atlantis:30.00:RELATIVE 5.620 0.132 -0.259
+15 NOTEPOS 0.65 0.2 0.96 0.9
+15 NOTE This flight has been pre-recorded, so just sit back and enjoy the ride.
+29.5418 CAMERA SET Cockpit:Atlantis:50.00
+30 NOTE When you feel ready to take control, simply press Ctrl-C and take the stick.
+45 NOTEPOS 0.02 0.2 0.4 0.9
+45 NOTE We approaching the HAC (horizontal alignment cylinder) from the south-west.
+48.6875 CAMERA SET Track:Atlantis:30.00:GLOBAL 6.294 1.251 -0.666
+60 NOTE The left HSI display has been slaved to the SLF-33 Instrument Landing System transmitter. Keep an eye on the deviation indicator, which shows your offset from the approach path.
+60.0216 CAMERA SET Cockpit:Atlantis:50.00
+75 NOTE A left turn wraps the flight path around the HAC and aligns the Shuttle with the runway.
+90 NOTEPOS 0.65 0.2 0.96 0.9
+90 NOTE The Vehicle Assembly Building (VAB) at the KSC is coming into view straight ahead.
+105 NOTEPOS 0.02 0.2 0.4 0.9
+105 NOTE The Shuttle as a very steep glideslope of 20°.
+120 NOTE The PAPI approach path indicators (the row of red and white lights ahead of the runway) have been adjusted to the Shuttle's approach slope. Two white and two red lights show that you are on glideslope.
+120 CAMERA SET Track:Atlantis:10.00:GLOBAL 24.521 1.318 0.559
+133 CAMERA SET Track:Atlantis:10.00:GLOBAL 106.997 2.463 0.359
+133 NOTEOFF
+140 CAMERA SET Track:Atlantis:30.00:RELATIVE 6.294 -0.943 -0.287
+142 NOTE The split rudder brake is being deployed.
+148.993 CAMERA SET Track:Atlantis:30.00:GLOBAL 6.294 -1.505 -0.720
+156 NOTE Ten seconds before touchdown the landing gear is lowered.
+163 NOTE The final flare lifts the Shuttle nose and reduces the glide angle.
+163 CAMERA SET Ground:Atlantis:10.00:Earth -80.68496 28.59670 8.65
+168 NOTE Main gear touchdown!
+175.3 CAMERA SET Ground:Atlantis:10.00:Earth -80.69144 28.60699 8.00
+183 NOTE And the nose wheel drops to the runway.
+192 NOTEOFF
+192 CAMERA SET Track:Atlantis:10.00:RELATIVE 168.364 0.002 -1.311
+201.027 CAMERA SET Ground:Atlantis:10.00:Earth -80.69659 28.62364 8.00
+208.275 CAMERA SET Ground:Atlantis:30.00:Earth -80.69860 28.62055 9.03 -0.46 -0.02
+218 NOTEPOS 0.3 0.7 0.7 1
+218 NOTE Space Shuttle Atlantis rolls to a full stop on the runway to complete a successful mission.

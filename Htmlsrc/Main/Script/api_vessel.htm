@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: vessel (Vessel access)</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; vessel</p>
+
+<h1>vessel: Vessel access</h1>
+<p>The vessel library contains functions for obtaining vessel handles.
+Vessel handles can be used to query and control vessels via 
+<a href="mtd_vessel.htm">vessel methods</a>.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#vessel_get_handle">vessel.get_handle</a></td>
+<td>Obtain a vessel handle</td>
+</tr>
+<tr>
+<td><a href="#vessel_get_focushandle">vessel.get_focushandle</a></td>
+<td>Obtain a handle for the current focus vessel</td>
+</tr>
+<tr>
+<td><a href="#vessel_get_interface">vessel.get_interface</a></td>
+<td>Obtain a vessel class instance</td>
+</tr>
+<tr>
+<td><a href="#vessel_get_focusinterface">vessel.get_focusinterface</a></td>
+<td>Obtain a class instance for the current focus vessel</td>
+</tr>
+<tr>
+<td><a href="#vessel_get_count">vessel.get_count</a></td>
+<td>Obtain the number of vessels in the current simulation session</td>
+</tr>
+</table>
+
+<div class="func_block">
+
+<div class="func">
+<h3><a name="vessel_get_handle"></a>hvessel = vessel.get_handle(name)<br />
+hvessel = vessel.get_handle(idx)</h3>
+<p>Returns a handle for a vessel in the current simulation session.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>name (string):</td><td>vessel name</td></tr>
+<tr><td>idx (int):</td><td>vessel index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hvessel (handle):</td><td>vessel handle, or <i>nil</i> if
+vessel was not found.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function can be invoked with a vessel name or a vessel index. Example:</p>
+
+<div class="code">
+-- list all vessels in the simulation session<br>
+n = vessel.get_count()<br>
+for idx = 0,n-1 do<br>
+&nbsp;&nbsp;hvessel = vessel.get_handle(idx)<br>
+&nbsp;&nbsp;term.out (oapi.get_objname(hvessel))<br>
+end
+</div>
+
+<h4>See also:</h4>
+<a href="api_oapi.htm#oapi_get_objhandle">oapi.get_objhandle</a>
+</div>
+
+
+<div class="func">
+<h3><a name="vessel_get_focushandle"></a>hvessel = vessel.get_focushandle()</h3>
+<p>Returns a handle for the current focus vessel (the vessel receiving user input).</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hvessel (handle)</td><td>focus vessel handle</td></tr>
+</table>
+</div>
+
+
+<div class="func">
+<h3><a name="vessel_get_interface"></a>v = vessel.get_interface(hvessel)<br />
+v = vessel.get_interface(name)<br />
+v = vessel.get_interface(idx)</h3>
+<p>Returns a class instance for a vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hvessel (handle):</td><td>vessel handle</td></tr>
+<tr><td>name (string):</td><td>vessel name</td></tr>
+<tr><td>idx (int):</td><td>vessel index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v:</td><td>vessel object</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function can be invoked with a vessel handle, a vessel name, or a vessel index.
+It returns a vessel instance that can be used to get or set vessel state parameters via
+<a href="mtd_vessel.htm">vessel methods</a>.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="vessel_get_focusinterface"></a>v = vessel.get_focusinterface()</h3>
+<p>Returns a class instance for the current focus vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>v:</td><td>focus vessel object</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns a vessel instance that can be uses to get or set vessel state
+parameters via <a href="mtd_vessel.htm">vessel methods</a>.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="vessel_get_count"></a>n = vessel.get_count()</h3>
+<p>Returns the number of vessels in the current simulation session.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n (int):</td><td>vessel count</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function can be used to set up a loop over all vessels in the simulation, for
+example in connection with <a href="#vessel_get_handle">vessel.get_handle</a> or
+<a href="#vessel_get_interface">vessel.get_interface</a>.
+</div>
+
+</div>
+</BODY>
+</HTML>

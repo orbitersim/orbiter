@@ -1,0 +1,9 @@
+BEGIN_HYPERDESC
+<h1>Demos</h1>
+<p>The scenarios in this folders are called up randomly in Demo mode.</p>
+
+<p>To start Orbiter in Demo mode, edit the Orbiter.cfg file and set the
+DemoMode entry to TRUE.</p>
+
+<p>You can also launch these scenarios manually in standard mode.</p>
+END_HYPERDESC

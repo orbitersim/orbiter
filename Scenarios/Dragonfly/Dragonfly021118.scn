@@ -1,0 +1,159 @@
+BEGIN_DESC
+This compiled and created with 021118 + patch.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0460371527
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship TUG-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET TUG-01
+  MODE Cockpit
+  FOV 60.00
+END_CAMERA
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+Module1A:Module1
+  STATUS Orbiting Earth
+  RPOS 5945253.62 -3144579.72 -264450.89
+  RVEL -3316.555 -6491.054 2474.519
+  AROT 67.44 -36.60 34.54
+  NAVFREQ 0 0
+END
+Module1B:Module1
+  STATUS Orbiting Earth
+  RPOS 5945169.21 -3144588.91 -264467.97
+  RVEL -3317.525 -6490.387 2474.349
+  AROT 106.55 -46.70 6.80
+  NAVFREQ 0 0
+END
+Module1C:Module2
+  STATUS Orbiting Earth
+  RPOS 5945241.47 -3144589.61 -264460.14
+  RVEL -3317.310 -6490.399 2474.346
+  AROT 106.55 -46.70 6.80
+  NAVFREQ 0 0
+END
+TUG-01:Dragonfly
+  INTERNAL: v0.9.35
+    HYDRAULICS: 
+      TANK  1 0.0000 129991 170.00
+      TANK  1 0.0000 129991 170.00
+      TANK  0 0.0000 130000 170.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 69997 70.00
+      TANK  1 0.0000 69997 70.00
+      TANK  0 0.0000 70000 70.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 103 294.52
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      TANK  1 0.0000 20000 288.00
+      TANK  1 0.0000 20000 288.00
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      MANIFOLD  0 1 0 1 0 0
+      TANK  1 0.0000 4693 294.82
+      TANK  1 0.0000 2208 295.44
+      MANIFOLD  1 1 1 1 1 1
+      TANK  1 0.0000 9102 295.00
+      TANK  1 0.0000 27000 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      TANK  1 0.0000 9100 295.00
+      TANK  1 0.0000 27000 295.00
+      TANK  1 0.0000 4800 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+    ELECTRICAL: 
+      FCELL  0 0.0019 
+      FCELL  2 0.0000 
+      BATTERY  0 5184000.0000 1
+      DC  121.5000 
+      DC  0.0000 
+      AC  30.0000 
+      DC  0.0000 
+      DC  14.0000 
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      FAN  1 
+      FAN  1 
+    PANEL     : 
+      SW  -1 1 1 99 4674625 
+    SW END  
+    ROT END  
+      SW  -1 -1 -1 -1 -1 
+      SW  1 1 1 1 1 
+      SW  1 0 1 1 1 
+      SW  1 1 0 0 0 
+      SW  0 0 -1 -1 1 
+      SW  1 0 0 -1 -1 
+      SW  0 0 0 0 0 
+      SW  0 1 1 1 1 
+      SW  -1 1 1 -1 -1 
+      SW  -1 0 -1 0 1 
+      SW  1 1 1 -1 1 
+      SW  1 99 1 -1 1 
+    SW END  
+      ROT  0 0 0 99 1 
+    ROT END  
+    SW END  
+    ROT END  
+      SW  0 0 0 1 0 
+      SW  1 0 0 1 1 
+      SW  1 1 1 1 0 
+      SW  0 1 -1 1 0 
+      SW  1 0 99 1 0 
+    SW END  
+    ROT END  
+      SW  -1 0 0 -1 0 
+      SW  0 0 99 -1 0 
+    SW END  
+    ROT END  
+   END INTERNAL 
+  STATUS Orbiting Earth
+  RPOS 5945215.54 -3144593.82 -264458.30
+  RVEL -3316.557 -6491.057 2474.516
+  AROT 66.45 -36.05 35.13
+  PRPLEVEL 0:1.000 1:1.000 2:1.000 3:1.000 4:1.000 5:1.000 6:1.000 7:1.000 8:1.000 9:1.000 10:1.000 11:0.999
+  NAVFREQ 0 0
+  UPPERANT 0.013278 0.409164 -1 1 -1
+  LOWERANT 0.000000 0.409164 -1 1 -1
+  HATCH 0.000000 0
+  ANTTRG Module1A
+END
+END_SHIPS

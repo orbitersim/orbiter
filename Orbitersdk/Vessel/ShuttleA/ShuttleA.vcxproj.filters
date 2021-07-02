@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{57ed5f3b-dd28-4e4e-bf33-74952c38a237}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{2622c3f7-7512-4bfc-af4b-5eb3a501d8d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Instruments">
+      <UniqueIdentifier>{1ec062ad-6a3a-4a28-b558-88203d73e851}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Meshes">
+      <UniqueIdentifier>{c24d1b17-727d-4a04-a2b3-b45d5cb0c39e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{db1621c2-f5da-4f62-a898-3d31aa9c743f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Help">
+      <UniqueIdentifier>{f6a2a5cf-7224-4423-ad58-d8006a717478}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Help\Source Files">
+      <UniqueIdentifier>{4c8872cb-2039-4d7b-b958-61ea1ff81d4f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Bitmaps\button1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\button3.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\indicator1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\indicator2.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="panel1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\panel1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\panel2.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\slider1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\switch1.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\switch2.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\switch3.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Bitmaps\switch4.bmp">
+      <Filter>Resources</Filter>
+    </Image>
+    <Image Include="Help\ShuttleA.jpg">
+      <Filter>Help\Source Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ShuttleA.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="attref.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ShuttleA.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ShuttleALua.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="adiball.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="adictrl.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="airlockswitch.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="auxpodctrl.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="dockcvrswitch.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="gearswitch.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="hudbutton.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="InstrVs.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="mfdbutton.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="navbutton.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="needlepair.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="paneltext.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="payloadctrl.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="rcsswitch.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="sliderpair.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="switches.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Instrument.cpp">
+      <Filter>Instruments</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="attref.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ShuttleA.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="adiball.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="adictrl.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="airlockswitch.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="auxpodctrl.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="dockcvrswitch.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="gearswitch.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="hudbutton.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="InstrVs.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="mfdbutton.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="navbutton.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="needlepair.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="paneltext.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="payloadctrl.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="rcsswitch.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="sliderpair.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="switches.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Instrument.h">
+      <Filter>Instruments</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Meshes\ShuttleA.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Meshes\ShuttleA_2dpanel1.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Meshes\ShuttleA_vc.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\ShuttleA.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Help\ShuttleA.hhp">
+      <Filter>Help</Filter>
+    </None>
+    <None Include="Help\ShuttleA.htm">
+      <Filter>Help\Source Files</Filter>
+    </None>
+    <None Include="Help\ShuttleAkeys.htm">
+      <Filter>Help\Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

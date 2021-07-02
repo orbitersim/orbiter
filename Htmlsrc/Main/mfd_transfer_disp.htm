@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<script language="JavaScript" src="master.js"></script>
+<TITLE>Transfer MFD display</TITLE>
+</HEAD>
+<BODY>
+<h1>Transfer MFD display</h1>
+<p>
+Move the mouse over the image to see a description of the different elements.</p>
+<table cols=2 cellpadding=2 cellspacing=0>
+<tr>
+<td rowspan=2>
+<img src="mfd_transfer.gif" usemap="#surfmap" border=0>
+<map name="surfmap">
+<area shape=rect coords="70,0,158,16" A onmouseover="doSec(lbl1)" onmouseout="noSec(lbl1)" HREF="#">
+<area shape=rect coords="0,18,85,34" A onmouseover="doSec(lbl2)" onmouseout="noSec(lbl2)" HREF="#">
+<area shape=rect coords="0,34,94,46" A onmouseover="doSec(lbl3)" onmouseout="noSec(lbl3)" HREF="#">
+<area shape=rect coords="191,18,291,34" A onmouseover="doSec(lbl4)" onmouseout="noSec(lbl4)" HREF="#">
+<area shape=rect coords="191,34,291,46" A onmouseover="doSec(lbl5)" onmouseout="noSec(lbl5)" HREF="#">
+<area shape=rect coords="191,46,291,58" A onmouseover="doSec(lbl6)" onmouseout="noSec(lbl6)" HREF="#">
+<area shape=rect coords="0,59,34,72" A onmouseover="doSec(lbl7)" onmouseout="noSec(lbl7)" HREF="#">
+<area shape=rect coords="0,72,95,85" A onmouseover="doSec(lbl8)" onmouseout="noSec(lbl8)" HREF="#">
+<area shape=rect coords="0,85,95,98" A onmouseover="doSec(lbl9)" onmouseout="noSec(lbl9)" HREF="#">
+<area shape=rect coords="0,98,95,111" A onmouseover="doSec(lbl10)" onmouseout="noSec(lbl10)" HREF="#">
+<area shape=rect coords="0,111,95,124" A onmouseover="doSec(lbl11)" onmouseout="noSec(lbl11)" HREF="#">
+<area shape=rect coords="0,124,95,137" A onmouseover="doSec(lbl12)" onmouseout="noSec(lbl12)" HREF="#">
+<area shape=rect coords="191,72,291,85" A onmouseover="doSec(lbl13)" onmouseout="noSec(lbl13)" HREF="#">
+<area shape=rect coords="191,85,291,98" A onmouseover="doSec(lbl14)" onmouseout="noSec(lbl14)" HREF="#">
+<area shape=rect coords="191,98,291,111" A onmouseover="doSec(lbl15)" onmouseout="noSec(lbl15)" HREF="#">
+<area shape=rect coords="0,269,104,286" A onmouseover="doSec(lbl16)" onmouseout="noSec(lbl16)" HREF="#">
+<area shape=rect coords="139,139,150,150" A onmouseover="doSec(lbl17)" onmouseout="noSec(lbl17)" HREF="#">
+<area shape=poly coords="141,138,141,148,19,137,19,127" A onmouseover="doSec(lbl18)" onmouseout="noSec(lbl18)" HREF="#">
+<area shape=poly coords="140,143,145,150,45,221,40,212" A onmouseover="doSec(lbl19)" onmouseout="noSec(lbl19)" HREF="#">
+<area shape=poly coords="140,145,148,147,108,261" A onmouseover="doSec(lbl20)" onmouseout="noSec(lbl20)" HREF="#">
+<area shape=poly coords="145,149,150,141,257,201,250,213" A onmouseover="doSec(lbl21)" onmouseout="noSec(lbl21)" HREF="#">
+<area shape=poly coords="140,141,150,142,136,17,125,19" A onmouseover="doSec(lbl22)" onmouseout="noSec(lbl22)" HREF="#">
+</map>
+</td>
+<td width=100%>
+<font class="label">
+<DIV ID="lbl1" STYLE="display: none">
+Orbit reference celestial body.
+</DIV>
+<DIV ID="lbl2" STYLE="display: none">
+<b>Src</b>: Source object for which to calculate a transfer trajectory.
+</DIV>
+<DIV ID="lbl3" STYLE="display: none">
+<b>TrL</b>: True longitude of source object [deg.] (ecliptic frame).
+</DIV>
+<DIV ID="lbl4" STYLE="display: none">
+<b>Tgt</b>: Transfer target body.
+</DIV>
+<DIV ID="lbl5" STYLE="display: none">
+<b>TrL</b>: Current true longitude of target object [deg.] (ecliptic frame).
+</DIV>
+<DIV ID="lbl6" STYLE="display: none">
+<b>TLi</b>: True longitude of target object at intercept event [deg.] (ecliptic frame).
+</DIV>
+<DIV ID="lbl7" STYLE="display: none">
+<b>HTO</b>: Hypothetical transfer orbit parameters.
+</DIV>
+<DIV ID="lbl8" STYLE="display: none">
+<b>TLe</b>: True longitude of ejection burn [deg.] (ecliptic frame).
+</DIV>
+<DIV ID="lbl9" STYLE="display: none">
+<b>DTe</b>: Time to ejection burn [s].
+</DIV>
+<DIV ID="lbl10" STYLE="display: none">
+<b>Dv</b>: Velocity difference ("delta-V") required during ejection burn [m/s].
+</DIV>
+<DIV ID="lbl11" STYLE="display: none">
+<b>TLi</b>: True longitude of target intercept event [deg.] (ecliptic frame).
+</DIV>
+<DIV ID="lbl12" STYLE="display: none">
+<b>DTi</b>: Time to target intercept event [s].
+</DIV>
+<DIV ID="lbl13" STYLE="display: none">
+<b>Num orbit</b>: Numerical orbit calculation parameters.
+</DIV>
+<DIV ID="lbl14" STYLE="display: none">
+<b>Stp</b>: Number of time steps calculated for numerical trajectory.
+</DIV>
+<DIV ID="lbl15" STYLE="display: none">
+<b>T</b>: Time interval covered by numerical trajectory [s].
+</DIV>
+<DIV ID="lbl16" STYLE="display: none">
+<b>RInc</b>: Relative inclination between source and target orbital planes.
+</DIV>
+<DIV ID="lbl17" STYLE="display: none">
+<b>Origin</b>: Location of reference object.
+</DIV>
+<DIV ID="lbl18" STYLE="display: none">
+<b>Solid green line</b>: Current source radius vector.
+</DIV>
+<DIV ID="lbl19" STYLE="display: none">
+<b>Solid yellow line</b>: Current target object radius vector.
+</DIV>
+<DIV ID="lbl20" STYLE="display: none">
+<b>Dashed green line</b>: Source radius vector at ejection burn.
+</DIV>
+<DIV ID="lbl21" STYLE="display: none">
+<b>Dashed yellow line</b>: Target object radius vector at intercept event.
+</DIV>
+<DIV ID="lbl22" STYLE="display: none">
+<b>Solid grey line</b>: Intercept position.
+</DIV>
+</td>
+</tr>
+</table>
+
+Legend:<br>
+<font class="label">
+<b>Solid green trajectory</b>: Current orbit of source object.<br>
+<b>Solid yellow trajectory</b>: Orbit of target object.<br>
+<b>Dashed green trajectory</b>: Hypothetical transfer orbit for requested burn location and delta-V.<br>
+<b>Solid bright yellow trajectory</b>: Numerically calculated transfer orbit.
+</font>
+</BODY>
+</HTML>

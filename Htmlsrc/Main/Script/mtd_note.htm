@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: Annotation methods</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; Annotation methods</p>
+
+<h1>Annotation methods</h1>
+<p>The <i>Annotation</i> class  contains methods for displaying and formatting onscreen annotations. Use
+<a href="api_oapi.htm#oapi_create_annotation">oapi.create_annotation</a> to retrieve an Annotation object.</p>
+<p>In the list below, <i>n</i> indicates a valid annotation object.</p>
+
+<h2>See also:</h2>
+<p><a href="api_oapi.htm#oapi_create_annotation">oapi.create_annotation</a>,
+<a href="api_oapi.htm#oapi_del_annotation">oapi.del_annotation</a>.</p>
+
+<h2>Methods:</h2>
+<table class="summary">
+<tr>
+<td><a href="#set_text">n:set_text</a></td>
+<td>Sets the text to display.</td>
+</tr>
+<tr>
+<td><a href="#set_pos">n:set_pos</a></td>
+<td>Sets the screen position for the annotation.</td>
+</tr>
+<tr>
+<td><a href="#set_size">n:set_size</a></td>
+<td>Sets the font size for the annotation.</td>
+</tr>
+<tr>
+<td><a href="#set_colour">n:set_colour</a></td>
+<td>Sets the font colour for the annotation.</td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func">
+<h3><a name="set_text"></a>n:set_text(str)</h3>
+<p>Sets the text to display by the annotation.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>str (string):</td><td>annotation string</td></tr>
+</table>
+</div>
+
+
+<div class="func">
+<h3><a name="set_pos"></a>n:set_pos(xmin,ymin,xmax,ymax)</h3>
+<p>Sets the screen position of the bounding box for the annotation.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>xmin (number):</td><td>coordinates of left edge</td></tr>
+<tr><td>ymin (number):</td><td>coordinates of top edge</td></tr>
+<tr><td>xmax (number):</td><td>coordinates of right edge</td></tr>
+<tr><td>ymax (number):</td><td>coordinates of bottom edge</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The coordinates of the annotation bounding box must be specified as fractions
+of the viewport size, in the range 0 to 1, where 0 represents the left and top
+viewport borders, and 1 represents the right and bottom viewport borders.</p>
+<p>0 &le; xmin &lt; xmax &le; 1 and 0 &le; ymin &lt; ymax &le; 1 is required.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="set_size"></a>n:set_size(s)</h3>
+<p>Sets the font size for the annotation object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>s (number):</td><td>relative font size (&gt; 0)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A size value of 1 represents the default font size. Values &lt; 1 produce smaller
+fonts, values &gt; 1 produce larger fonts.</p>
+<p>The font size is automatically scaled with the viewport size.</p>
+</div>
+
+
+<div class="func">
+<h3><a name="set_colour"></a>n:set_colour(col)</h3>
+<p>Sets the font colour for the annotation object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>col (table):</td><td>RGB colour values</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>col</i> table must contain the fields 'r', 'g' and 'b' for the
+red, green and blue components, respectively.</p>
+<p>Values for each component must be in the range from 0 to 1.</p>
+
+<h4>Example:</h4>
+<div class="code">
+n:set_colour({r=1,g=0.7,b=0.3})
+</div>
+</div>
+
+</div>
+</body>
+</html>

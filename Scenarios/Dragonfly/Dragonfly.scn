@@ -1,0 +1,160 @@
+BEGIN_DESC
+The Dragonfly, a versatile orbital payload pusher. To familiarise yourself with Radu Poenaru's panels and systems simulation, see the Dragonfly Operations Handbook.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.0416206481
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship TUG-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET TUG-01
+  MODE Extern
+  POS 6.66 -126.60 -18.42
+  TRACKMODE TargetRelative
+  FOV 60.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Docking
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Docking
+END_MFD
+
+BEGIN_MFD Right
+  TYPE COM/NAV
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+Module1A:Module1
+  STATUS Orbiting Earth
+  RPOS 6614294.70 -451194.34 -1154208.30
+  RVEL -133.418 -7401.920 2114.666
+  AROT 34.73 -8.91 49.39
+  VROT 0.29 -0.00 -0.01
+  NAVFREQ 0 0
+END
+Module1B:Module1
+  STATUS Orbiting Earth
+  RPOS 6614298.41 -451180.83 -1154188.81
+  RVEL -133.418 -7401.920 2114.666
+  AROT 34.73 -8.91 49.39
+  VROT 0.29 -0.00 -0.01
+  NAVFREQ 0 0
+END
+TUG-01:Dragonfly
+  INTERNAL: v0.9.35
+    HYDRAULICS: 
+      TANK  1 0.0000 129991 170.00
+      TANK  1 0.0000 129991 170.00
+      TANK  0 0.0000 130000 170.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 69997 70.00
+      TANK  1 0.0000 69997 70.00
+      TANK  0 0.0000 70000 70.00
+      MANIFOLD  1 1 1 1 1 0
+      TANK  1 0.0000 103 294.52
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      TANK  1 0.0000 20000 288.00
+      TANK  1 0.0000 20000 288.00
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  1 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      MANIFOLD  0 1 0 1 0 0
+      TANK  1 0.0000 4693 294.82
+      TANK  1 0.0000 2208 295.44
+      MANIFOLD  1 1 1 1 1 1
+      TANK  1 0.0000 9102 295.00
+      TANK  1 0.0000 27000 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      TANK  1 0.0000 9100 295.00
+      TANK  1 0.0000 27000 295.00
+      TANK  1 0.0000 4800 295.00
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+      VALVE  0 0.0000
+    ELECTRICAL: 
+      FCELL  0 0.0019 
+      FCELL  2 0.0000 
+      BATTERY  0 5184000.0000 1
+      DC  121.5000 
+      DC  0.0000 
+      AC  30.0000 
+      DC  0.0000 
+      DC  14.0000 
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      SOCKET  -1
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      HT  0 
+      FAN  1 
+      FAN  1 
+    PANEL     : 
+      SW  -1 1 1 99 4674625 
+    SW END  
+    ROT END  
+      SW  -1 -1 -1 -1 -1 
+      SW  1 1 1 1 1 
+      SW  1 0 1 1 1 
+      SW  1 1 0 0 0 
+      SW  0 0 -1 -1 1 
+      SW  1 0 0 -1 -1 
+      SW  0 0 0 0 0 
+      SW  0 1 1 1 1 
+      SW  -1 1 1 -1 -1 
+      SW  -1 0 -1 0 1 
+      SW  1 1 1 -1 1 
+      SW  1 99 1 -1 1 
+    SW END  
+      ROT  0 0 0 99 1 
+    ROT END  
+    SW END  
+    ROT END  
+      SW  0 0 0 1 0 
+      SW  1 0 0 1 1 
+      SW  1 1 1 1 0 
+      SW  0 1 -1 1 0 
+      SW  1 0 99 1 0 
+    SW END  
+    ROT END  
+      SW  -1 0 0 -1 0 
+      SW  0 0 99 -1 0 
+    SW END  
+    ROT END  
+   END INTERNAL 
+  STATUS Orbiting Earth
+  RPOS 6614291.68 -451206.40 -1154226.26
+  RVEL -133.418 -7401.920 2114.666
+  AROT 34.73 -8.91 49.39
+  VROT 0.29 -0.00 -0.01
+  FUEL 1.000
+END
+END_SHIPS

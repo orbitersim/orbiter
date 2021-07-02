@@ -1,0 +1,3371 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Camera" Collapsed="true">
+    <Position X="55.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>di0DVAsb5offAhXYfbdVNSEocrmOUcxalCvolV1QcAc=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Config" Collapsed="true">
+    <Position X="62.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YMDgQQAAYoAJBCAQA0IEtQCDBAhgwEQBABgQkIPAhAg=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDIResources" Collapsed="true">
+    <Position X="64" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAgAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DDEServer" Collapsed="true">
+    <Position X="51.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAgAAAAgAAAAAAABAAABCAQAKAAKAwAAoGCBYAAEAA=</HashCode>
+      <FileName>ddeserver.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Elements" Collapsed="true">
+    <Position X="58.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QLUJBgACDAQDLAJqRGp2TCBQSCmSYBEiIgAAOBVgBAQ=</HashCode>
+      <FileName>Element.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DInput" Collapsed="true">
+    <Position X="57" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IABAAAAAAAAAQIAAkEAAAEAAAAFBAEACAAAAAgAAAAA=</HashCode>
+      <FileName>Input.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Keymap" Collapsed="true">
+    <Position X="53.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAgAAAAAAAAAgEAAAAAkBAAAAEAEAAAA=</HashCode>
+      <FileName>Keymap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Triangle" Collapsed="true">
+    <Position X="62.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAEIAABAAAAAAAAAAAAAAAAAAAAAAAAgQA=</HashCode>
+      <FileName>Mesh.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mesh" Collapsed="true">
+    <Position X="64" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>0AQAAEACKoMAhAWAKCIUFCQAECEyICAUARQUQExCAFI=</HashCode>
+      <FileName>Mesh.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MeshManager" Collapsed="true">
+    <Position X="51.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIBgABAAAAAAAAAAAAAAAgAAAAAAAAAIgAA=</HashCode>
+      <FileName>Mesh.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Nav" Collapsed="true">
+    <Position X="32.75" Y="28.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ggAACGAIEIAAAAAAAAAAAAAAAAAgAIAIAYgAAAIABgQ=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Nav_VOR" Collapsed="true">
+    <Position X="35" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAIEkAEAAAAIAAAAAAAAAAAAAIAgAAAQAAAAEAAAQ=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Nav_VTOL" Collapsed="true">
+    <Position X="34" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAJAAEAAEAAAAAABAABAAAAAAAAAAAIAAQAAAAAAAAA=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Nav_ILS" Collapsed="true">
+    <Position X="36.25" Y="31.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAEAAECAAAAAAAABAAAAAAAAAAAAAAQAAAAABAAI=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Nav_IDS" Collapsed="true">
+    <Position X="29.5" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAMAAEAAEAAACAAAAAAAAAAAAAAAgAQAAAAABAAQ=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Nav_XPDR" Collapsed="true">
+    <Position X="31.75" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAMAAEAAAAAACAAAAAAAAAAAAAAAAAQAAAAAEAAQ=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NavManager" Collapsed="true">
+    <Position X="53.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAQgAKAABAAAEAAAAAAAAAwAAAAAAAAAAABAABAAAA=</HashCode>
+      <FileName>Nav.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TimeData" Collapsed="true">
+    <Position X="60.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>oAQIBAQxCACChEAAIEECAAQQSAgAAAAAAGAAMAgAAAI=</HashCode>
+      <FileName>Orbiter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Orbiter" Collapsed="true">
+    <Position X="55.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hfD1VxZK6jhixZ+ceueOxCh7rVdLT2AV5ZD2mRon5w4=</HashCode>
+      <FileName>Orbiter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlaybackEvent" Collapsed="true">
+    <Position X="26.5" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAEAABgBAAAAgAIAAAAAAAAQAAEAECoAAAAEAAAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GenericEvent" Collapsed="true">
+    <Position X="19.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACACQABgIACAAgAAAAAAAAACIAAAAACIAAAAEAAAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TaccEvent" Collapsed="true">
+    <Position X="22" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAABgQACAAgAAAAAAgAAAAAAAAASIAAAEEAAEA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CameraEvent" Collapsed="true">
+    <Position X="24.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAEAhgABCAAgAAEQAAAAAAAAAAAACIIAAAEAABA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NoteEvent" Collapsed="true">
+    <Position X="26.5" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAEAAABwAACAAgAAAAAAAAAAAAAQAACAAAAAEAAAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NoteposEvent" Collapsed="true">
+    <Position X="28.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAgBgAACAAgAAAAAAAAAABgAACACQAAAAEAAAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NotecolEvent" Collapsed="true">
+    <Position X="31" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAABgAACAAgAAAAAAAAAAAAAAAICYABAAGAAAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NotesizeEvent" Collapsed="true">
+    <Position X="33.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABgAACAAgAIAIAAAAAAAAAAgACIAAAAEAAAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlaybackEditor" Collapsed="true">
+    <Position X="51.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQIAAAACgIMAMEAAAAAEAAAAAGBAAAAKEEKwAAAJAA=</HashCode>
+      <FileName>PlaybackEd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlanetarySystem" Collapsed="true">
+    <Position X="64" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IhQBIoCAiMSgDIAKAAJAQASwPUClBjBG1AgUALFABQA=</HashCode>
+      <FileName>Psys.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ScriptInterface" Collapsed="true">
+    <Position X="60.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ECAAAAAAIAAAAACCAAAAAAAAAAABAAAAAICAAgAAgAA=</HashCode>
+      <FileName>Script.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="State" Collapsed="true">
+    <Position X="62.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACQCAAAAAgAAAAAgAAAIAAAgCAAIAABQAAAAFAEgAAA=</HashCode>
+      <FileName>State.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vector" Collapsed="true">
+    <Position X="51.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GgACAAAAAAAgBAAAYEUCAQEAAAAAACAAAEBwAQAAAYA=</HashCode>
+      <FileName>Vecmat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Matrix" Collapsed="true">
+    <Position X="57" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GAABAAAAAAAABABAIAAAAQIAAAAgAAAAAAAQAAABQQA=</HashCode>
+      <FileName>Vecmat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vector4" Collapsed="true">
+    <Position X="53.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAABAAAAAAAAAAAAAAAAEAAAAhwAQAAAAA=</HashCode>
+      <FileName>Vecmat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Matrix4" Collapsed="true">
+    <Position X="58.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAABAIAAAAAAAAAAAAgAEAAAAAQAAAAQAA=</HashCode>
+      <FileName>Vecmat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Quaternion" Collapsed="true">
+    <Position X="53.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAABABABAAAAAAAAAEAAAAgBAAAAQAAAwAQE=</HashCode>
+      <FileName>Vecmat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StateVectors" Collapsed="true">
+    <Position X="64" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACBAAIAAAABAAAACAAAIAAAAAAAAAAAAAAAAAgAQA=</HashCode>
+      <FileName>Vecmat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VectorMap" Collapsed="true">
+    <Position X="22.25" Y="31.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>tJ9BcIoiZEgUFqDQHAccKzJKAHaBc8ApQRBRZJQ9wOI=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CDIFramework7" Collapsed="true">
+    <Position X="60.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>KAAgAQAACAAAAAiAEEAAAAAAggFAAMAAABBoBAAAACE=</HashCode>
+      <FileName>Di7frame.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument" Collapsed="true">
+    <Position X="13.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>qw1AgcFHYqxiQBhiEb8NoOimGKSvElQmpxcAOKEgAwY=</HashCode>
+      <FileName>Mfd.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_OPlaneAlign" Collapsed="true">
+    <Position X="1.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QEAAASBAQEAAAAgJChACAgAACiAOkgAABQAAIAAAASY=</HashCode>
+      <FileName>MfdAlign.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Comms" Collapsed="true">
+    <Position X="3.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAABAAgAACAggAAQAAgAADAACAgAQBQAAIAAAAIY=</HashCode>
+      <FileName>MfdComms.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Docking" Collapsed="true">
+    <Position X="6" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAIABhAQkAMAQgICAANAABAiAAGAgAEJWACIAAMQEc=</HashCode>
+      <FileName>MfdDocking.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_HSI" Collapsed="true">
+    <Position X="8.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAQABAIkAAAAgAABgIJAAACAAyMmAAdQgAKAAgAEY=</HashCode>
+      <FileName>MfdHsi.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Landing" Collapsed="true">
+    <Position X="10.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABhAQkEAAAgIAAAIAAAAiAACAgAABUAAIAAKQAY=</HashCode>
+      <FileName>MfdLanding.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Map" Collapsed="true">
+    <Position X="12.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIQAEAJBQEAEAAhQAhQIABAESAAOUgKABQACIFAAAk4=</HashCode>
+      <FileName>MfdMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_MapOld" Collapsed="true">
+    <Position X="15" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>MDAMEABBwmAAAAjIBBQIABEkSAAPEwABFYADIBAgEGY=</HashCode>
+      <FileName>MfdMap_old.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Orbit" Collapsed="true">
+    <Position X="17.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAABoEkAAhAiNAgAOAwACDKBOAgggBQEAIAABgS4=</HashCode>
+      <FileName>MfdOrbit.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Surface" Collapsed="true">
+    <Position X="19.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YQBAYKHA2miAAIyBEBFMABEICIAyEmBWDQAQqMSBb4Y=</HashCode>
+      <FileName>MfdSurface.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_OSync" Collapsed="true">
+    <Position X="21.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAABgAECAAAiIQBAIAAAADCAGAwQABQEAIAAABAY=</HashCode>
+      <FileName>MfdSync.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_Transfer" Collapsed="true">
+    <Position X="24" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RBwgBIBgCEhIAAkJAhAKAwCQDCQOUwAgBQEAokBAASY=</HashCode>
+      <FileName>MfdTransfer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Instrument_User" Collapsed="true">
+    <Position X="26.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AADEAABAAAAAAggAABAAAAAACQAHAgAAAYAAIAAAAAY=</HashCode>
+      <FileName>MfdUser.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DefaultPanel" Collapsed="true">
+    <Position X="53.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GwQ8AAUgRJABIAeAE4AmJhAiECQXOEgcOhYICTAoEQA=</HashCode>
+      <FileName>Defpanel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HUD" Collapsed="true">
+    <Position X="30.75" Y="25.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QTakARMAAKAYkwBAUARBAQAIEuBECkCACDCBKRFAAco=</HashCode>
+      <FileName>hud.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HUD_Orbit" Collapsed="true">
+    <Position X="28.5" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAIAQAAAOIAACAAAgIAAQQAAIAAAgAAAAAAiAACAAI=</HashCode>
+      <FileName>hud.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HUD_Surface" Collapsed="true">
+    <Position X="30.75" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAQAAAIIAAAAAAAAAAQAAAAAAAgAAAAAAiAgAAAA=</HashCode>
+      <FileName>hud.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HUD_Docking" Collapsed="true">
+    <Position X="33" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QJAIAxAABOIAAyAAAgAAAQgAAAAEAiAAAAAAiACEUAI=</HashCode>
+      <FileName>hud.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraInfoBar" Collapsed="true">
+    <Position X="2.75" Y="30.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQEgAGAAIAAAAAAMAAAAAAAAAAAAEAAAAGCABAAAAA=</HashCode>
+      <FileName>MenuInfoBar.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GraphInfoBar" Collapsed="true">
+    <Position X="1.5" Y="31.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAEIEQAAAQAAAAAAAAAAAQAAEQAAAAAACAAQAAAA=</HashCode>
+      <FileName>MenuInfoBar.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ViewportInfoBar" Collapsed="true">
+    <Position X="5" Y="31.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAAAAAAAAAAAAAAgAAAAAAACAAAAAAA=</HashCode>
+      <FileName>MenuInfoBar.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RenderstatInfoBar" Collapsed="true">
+    <Position X="0.5" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAIAAAAAAAAEAAAAAAAAAEAAAAAACAAAQAAA=</HashCode>
+      <FileName>MenuInfoBar.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="FramerateInfoBar" Collapsed="true">
+    <Position X="2.75" Y="33.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAACIAAAAAAAAEAAAAAAAAAAAAEAAACAAAAAAA=</HashCode>
+      <FileName>MenuInfoBar.cpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MenuInfoBar" Collapsed="true">
+    <Position X="62.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IKSwAAMCAEF5CAEIEQSkEAIyBIwNBGCCCBCIQCQCdZA=</HashCode>
+      <FileName>MenuInfoBar.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Pane" Collapsed="true">
+    <Position X="57" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAY7iJsUDFCVQgCIAIOVLcA+AYyUPAoJij5MI1eoUNs=</HashCode>
+      <FileName>Pane.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Panel" Collapsed="true">
+    <Position X="58.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IQEBBAEiSYhYAjMAsAgCAdAiEAABAAIRYJQAGYMAU4E=</HashCode>
+      <FileName>Panel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Panel2D" Collapsed="true">
+    <Position X="60.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACQgAAuiTYB4IBMA0QIGMNAgAQBhAIASARoAGYMAGwE=</HashCode>
+      <FileName>Panel2D.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VirtualCockpit" Collapsed="true">
+    <Position X="57" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAkicABSICkAkACCAJIggABRAQEQABAAMYMAEwE=</HashCode>
+      <FileName>VCockpit.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Body" Collapsed="true">
+    <Position X="15" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BIUhSgIoyNhAwChBAIhJQQRAAIBOgIAQURQARACJASY=</HashCode>
+      <FileName>Body.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CelestialBody" Collapsed="true">
+    <Position X="16.25" Y="24.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQAxBBUrJ+IkapQDECSABAAgoEXETAAwSAoIqbAQEg=</HashCode>
+      <FileName>Celbody.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Planet" Collapsed="true">
+    <Position X="17.25" Y="25.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IgQYCCWhSKMAAAgXIQB0LEAUeEAAhRHigQopjAVYZ2A=</HashCode>
+      <FileName>Planet.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RigidBody" Collapsed="true">
+    <Position X="14" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>DAQAEIEgQSAIAJKQACYAoIgxKEwgUSIAqgCZGRIWjFQ=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Star" Collapsed="true">
+    <Position X="15" Y="25.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQAAAAACIAAAAEAAYAQAAAQAAAQQAAAgQAAAAAAAQA=</HashCode>
+      <FileName>Star.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SuperVessel" Collapsed="true">
+    <Position X="12.75" Y="24.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIYAAIASAAAQIAuAAAAAokAABIAYAQAAEJAQAYCwQQA=</HashCode>
+      <FileName>SuperVessel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vessel" Collapsed="true">
+    <Position X="10.5" Y="24.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>//7/9d//7//f66//3/vv//f/7/7//73//3vn/ed//+8=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Base" Collapsed="true">
+    <Position X="19.5" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EE6RpKPMSImwOCAhEAECSKIUQIUCAAZBE+ggECCQSQU=</HashCode>
+      <FileName>Base.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BaseObject" Collapsed="true">
+    <Position X="17.5" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AURAAAAAAABEAABAAAIAUAAgBAAQAEABABAIACoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MeshObject" Collapsed="true">
+    <Position X="15.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAQgAAAAABEAAhEAAAAEIAiIAAVAhGAABAAAAoAIAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Block" Collapsed="true">
+    <Position X="17.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAGAAAAAABEAABAAAAAAIAyAAAACBAAAAAAAAoAAAE=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Hangar" Collapsed="true">
+    <Position X="19.75" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAIAAAABEAABAAAAAAIgyAAAACBAAAAAAAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Hangar2" Collapsed="true">
+    <Position X="22" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAABEAABAAAAAAKAyAAAACBIAAAAAAAoAAIA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Hangar3" Collapsed="true">
+    <Position X="24.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAABEAABAEAAAAIAyAAAACBQAAAAAAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Tank" Collapsed="true">
+    <Position X="26.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABACAAAAAABEAABAAAAAAIAyAAAACBAAAEAAAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lpad" Collapsed="true">
+    <Position X="31" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAAAAAABAQIgABAAAAAAABAAAAAAABAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lpad01" Collapsed="true">
+    <Position X="31" Y="11.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAEAAAAAAAAAAAiAAFAABAAAAAAAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lpad02" Collapsed="true">
+    <Position X="33.25" Y="11.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAEAAAAAAAAAAAiAAFAABAAAAAAAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Lpad02a" Collapsed="true">
+    <Position X="28.75" Y="11.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAEAAAAAAAAAAAiAAEgABAAAAAAAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BeaconArray" Collapsed="true">
+    <Position X="1.75" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCgEAABABAAABBBIAAAAAgAgGAAAAQAJAAAAIAgAE=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Runway" Collapsed="true">
+    <Position X="4" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAABEABBAQAAgAAAgAAAACBAABEAAAAoAhAE=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RunwayLights" Collapsed="true">
+    <Position X="6.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAABAEABARAABAAEgAAAASAAAADAAAAIAgAE=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Train" Collapsed="true">
+    <Position X="9.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAgAAAAACAAgAAACEAEAgAQAAAAgAAAAAACAAAAgAE=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Train1" Collapsed="true">
+    <Position X="8.5" Y="11.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CQQgAAAAAABEAABAAAAAAgAgAAAQCBABAACgAAoAAEA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Train2" Collapsed="true">
+    <Position X="10.75" Y="11.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AUQgAAAAAABEAARAAAAAAgAgAAAQCBABABAgAAoAAAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SolarPlant" Collapsed="true">
+    <Position X="13" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gMQCAACABBBAIBRAAIAAAIAyIgkQABAAABgRACIAIAA=</HashCode>
+      <FileName>Baseobj.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExternalCameraControl" Collapsed="true">
+    <Position X="60.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAEAAAAABAAAAAAAAEIQAQgAUAABAAA=</HashCode>
+      <FileName>Orbitersdk\include\CamAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CELBODY" Collapsed="true">
+    <Position X="25.25" Y="31.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAACICAAAAQBAQAAAAAAAAABAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\CelBodyAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CELBODY2" Collapsed="true">
+    <Position X="25.25" Y="32.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAkBAAAAAAAAAIIAQABAAAACACAgAAIEAQAAIA=</HashCode>
+      <FileName>Orbitersdk\include\CelBodyAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ATMOSPHERE" Collapsed="true">
+    <Position X="53.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAEAAAAAAQAAAAAAAAAQAAAAAAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>Orbitersdk\include\CelBodyAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MFD" Collapsed="true">
+    <Position X="18.5" Y="31.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>sCQAAAAKAAgAAGAAAACEAGiAAACBABAAABAAAMAIAAA=</HashCode>
+      <FileName>Orbitersdk\include\MFDAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MFD2" Collapsed="true">
+    <Position X="17.25" Y="32.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAEAAAAIAAAJAAAAAAAAgAAAAAMAAAAI=</HashCode>
+      <FileName>Orbitersdk\include\MFDAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GraphMFD" Collapsed="true">
+    <Position X="19.5" Y="32.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAABCAAAAAQAEAAAAAACAAACIQAAIEAAAAEAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\MFDAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExternMFD" Collapsed="true">
+    <Position X="62.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAiIIAgCAAAAiQQJAAAAAAACDAgYABggAABAAEAkAQ=</HashCode>
+      <FileName>Orbitersdk\include\MFDAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LightEmitter" Collapsed="true">
+    <Position X="14.25" Y="31.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>mAAAACAAACAIAIJAFAEQCKQAAIAIChEQBQzAIAAEAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PointLight" Collapsed="true">
+    <Position X="14.25" Y="32.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAAAAAAAAAAAAAAAAAAQAIABgAgAIAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SpotLight" Collapsed="true">
+    <Position X="14.25" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAgABAAAAAAAIAAAAAAAAAEEAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MGROUP_TRANSFORM" Collapsed="true">
+    <Position X="23.75" Y="28.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAIAABAAAAAQAAECAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MGROUP_ROTATE" Collapsed="true">
+    <Position X="21.5" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAMAAAAAAAAAAAAAAQAAAABAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MGROUP_TRANSLATE" Collapsed="true">
+    <Position X="23.75" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MGROUP_SCALE" Collapsed="true">
+    <Position X="26" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAICAAAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LaunchpadItem" Collapsed="true">
+    <Position X="16.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACABgAAAAAAAAAAQACAAAAAAACAAAAAAAAQA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CameraMode" Collapsed="true">
+    <Position X="15.75" Y="28.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAEAAAAAIAAAAAAIIAAgAAAAAAAAAUAAAIACAQAAAAI=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CameraMode_Cockpit" Collapsed="true">
+    <Position X="13.5" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEBAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAACAQAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CameraMode_Track" Collapsed="true">
+    <Position X="15.75" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABEAAAAEIKACAAAAAAIAAAACAAAAAkAAAAgCAQAIAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CameraMode_Ground" Collapsed="true">
+    <Position X="18" Y="29.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAIAEAICACAIAAAAIAAAACAACQAkEAAAECAQCAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VESSEL" Collapsed="true">
+    <Position X="11.25" Y="31.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>9eGr0fvfvYj19VT7c39/71nf/rbf+1u+xXlW+b9//zc=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VESSEL2" Collapsed="true">
+    <Position X="11.25" Y="32.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAACAAQAAAADEMIKAEwEAAAABBCAAGAAABBBIAAAQYQ=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VESSEL3" Collapsed="true">
+    <Position X="11.25" Y="34.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAQAAAAAIAIAAAAAAABAAAAAQFAAAAAkAQQAAAA=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VESSEL4" Collapsed="true">
+    <Position X="11.25" Y="35.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAQAAAA=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AnimState" Collapsed="true">
+    <Position X="51.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAIIAJAAAAAAAAIAABAAAgAAEAAAAAACAIAA=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CBodySelectComboBox" Collapsed="true">
+    <Position X="57" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAACAAACACA=</HashCode>
+      <FileName>Dialogs.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DialogWin" Collapsed="true">
+    <Position X="16.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IEQGAAUEABMGURCAgIQAIIAYYAEAAAAABCEQpAAABII=</HashCode>
+      <FileName>DialogWin.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgCamera" Collapsed="true">
+    <Position X="1.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAEgAABCAAEEAACAAAARAAAEAQACAAAQggBAICQ=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CameraTab" Collapsed="true">
+    <Position X="25.25" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAgAAAAEAAAAAAAAAAAEAAAAAAAAMYAAQAA=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabControl" Collapsed="true">
+    <Position X="19.75" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAUAAAAAAAIEAAIEAABAgAAAAAGEAQAAAIACAAAAAAI=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabTarget" Collapsed="true">
+    <Position X="22" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAABEAAAAAAAAgAAGAAAAAAACAAAAAAA=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabView" Collapsed="true">
+    <Position X="24.25" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAAEAAAAAAAAAAAAAAAAAAACAACAAAA=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabGround" Collapsed="true">
+    <Position X="26.5" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAgAAAACAAIAAAAMAAAAAAAAACAEAgAAAgACAgAAAAA=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabFov" Collapsed="true">
+    <Position X="28.75" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAIAQAAEAAAAAgAAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabPreset" Collapsed="true">
+    <Position X="31" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAIAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DlgCamera.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgCapture" Collapsed="true">
+    <Position X="10.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAEAAAAAAAAAAAAAAAAQACAQAAAAAAEAAAAAAAA=</HashCode>
+      <FileName>DlgCapture.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgFocus" Collapsed="true">
+    <Position X="12.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAgAAAAAAAAAAAAQAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>DlgFocus.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgFunction" Collapsed="true">
+    <Position X="15" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAEAAAAAAAAIAAAAAAAQAAAAAQAAAAAAAQAAAAA=</HashCode>
+      <FileName>DlgFunction.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgHelp" Collapsed="true">
+    <Position X="17.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gQAAIAAEAAMAAAAQABAIAAgAAAAACgAAAAIEIAAgAAA=</HashCode>
+      <FileName>DlgHelp.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgInfo" Collapsed="true">
+    <Position X="19.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gBQACYEAEAkWgAAgACAIAAJQUQAAAiAAAIACUJGAAAA=</HashCode>
+      <FileName>DlgInfo.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MapWin" Collapsed="true">
+    <Position X="22.25" Y="32.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAYBABAAAgAAggCBQAggMEFAIBBAAEABAAAhAAEYDAA=</HashCode>
+      <FileName>DlgMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgMap" Collapsed="true">
+    <Position X="21.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YBQAkAMACAEAAkKBAEwAAAAQAAABIQCBAEAQgCAAMAA=</HashCode>
+      <FileName>DlgMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgMapOpt" Collapsed="true">
+    <Position X="24" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAEAEABAEgAIAAAAAAASAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DlgMap.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgMenuCfg" Collapsed="true">
+    <Position X="26.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEEAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>DlgMenuCfg.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DialogManager" Collapsed="true">
+    <Position X="55.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAMAhwEACBAggaAAgABAIABAEQ0CEBAEIAICAEBqABI=</HashCode>
+      <FileName>DlgMgr.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgRecorder" Collapsed="true">
+    <Position X="28.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BEAgAAEAIAIAAAAAAAIAAAAQAAIAAABAAAAAAAAgAAA=</HashCode>
+      <FileName>DlgRecorder.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgTacc" Collapsed="true">
+    <Position X="30.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEEAEAAAAAAAAAAAAAQAAAAAAAAAAAAIAAAAAI=</HashCode>
+      <FileName>DlgTacc.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgVishelper" Collapsed="true">
+    <Position X="3.75" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAEAAAAAAAMQAAAAAAAQAAAEAAACAAAQgABAAAQ=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VhelperTab" Collapsed="true">
+    <Position X="2.75" Y="27.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAgAAAAEAAAAAAAAAAAUAAAAAAAAMIAAAAA=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabPlanetarium" Collapsed="true">
+    <Position X="0.5" Y="28.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAJAACAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabForces" Collapsed="true">
+    <Position X="2.75" Y="28.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAZAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TabAxes" Collapsed="true">
+    <Position X="5" Y="28.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAJAAAAEAAAAAAAAAAAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgCustomLabels" Collapsed="true">
+    <Position X="6" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAABACAAAAAAAAAAQAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DlgCustomCLabels" Collapsed="true">
+    <Position X="8.25" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAEAAABAAAAAAAAAAAAQAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>DlgVishelper.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InlineDialog" Collapsed="true">
+    <Position X="22.75" Y="25.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAIAAAAAAAAAIAoBAAAAAAAAAAAAAAACAAAAA=</HashCode>
+      <FileName>Select.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Select" Collapsed="true">
+    <Position X="20.5" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQEAAC2QQDBIsBAEACAQxACIAmADUABYBAAQBBtCgg=</HashCode>
+      <FileName>Select.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SelectionList" Collapsed="true">
+    <Position X="22.75" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAkAkQAEBIAAIAAAAAQgAACgACIAAQAAAAABIAAg=</HashCode>
+      <FileName>Select.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InputBox" Collapsed="true">
+    <Position X="25" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAmQQABIABCEIAQwQQAgAABCAAIYBCAAACgAAg=</HashCode>
+      <FileName>Select.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MainDialog" Collapsed="true">
+    <Position X="55.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>kIIhAJgoAxMkzRVAYBwAAoBIRIFEImASAFIAGEGwBIE=</HashCode>
+      <FileName>Launchpad.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LaunchpadTab" Collapsed="true">
+    <Position X="8.75" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAJAUAAgAEIEAQAAAAOAAAEIEIEACAAEAACgCA=</HashCode>
+      <FileName>LpadTab.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AboutTab" Collapsed="true">
+    <Position X="14.5" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAACAAAAAAAAAEAIAAAAAAACAAA=</HashCode>
+      <FileName>TabAbout.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraTab" Collapsed="true">
+    <Position X="16.75" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AICAAAAAAFAAgAEIAAAAAAAMAAgAAEAABAAAAEMCABA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BuiltinLaunchpadItem" Collapsed="true">
+    <Position X="16.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAIAAQAAAAAAAAAACAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraPropagation" Collapsed="true">
+    <Position X="17.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAQAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraDynamics" Collapsed="true">
+    <Position X="21.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAABIgAABAAAAAAAQAAAAAAAAAAKAAECACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraStabilisation" Collapsed="true">
+    <Position X="24" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACABAAAIgAAAAAAAAAAQAAAAAAAEAAKAAEAACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraInstruments" Collapsed="true">
+    <Position X="26.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAQAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraMfdConfig" Collapsed="true">
+    <Position X="28.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACIBAAAIgAAAAAAAAAAQAAAAAAAAAAKAAEAACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraVesselConfig" Collapsed="true">
+    <Position X="30.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAQAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraPlanetConfig" Collapsed="true">
+    <Position X="1.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAACAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraDebug" Collapsed="true">
+    <Position X="3.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAgAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraShutdown" Collapsed="true">
+    <Position X="6" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAIgAAAAAAAAAAQABAAAAAAAAKAAEAACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraFixedStep" Collapsed="true">
+    <Position X="8.25" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAhAAAIgAAAAAAAAAAQAAAAAAAAAAKAAEAACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraTimerSettings" Collapsed="true">
+    <Position X="10.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAIgAAAAAAAAAAQAAAEAAAAAAKAAEAACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExtraPerformanceSettings" Collapsed="true">
+    <Position X="12.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAIgAAAAAAAAAAUAAAAAAAAAAKAAEAACAQA=</HashCode>
+      <FileName>TabExtra.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="JoystickTab" Collapsed="true">
+    <Position X="1" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAgAEIAAAAAAAAAAAAAEAAAAAAAAACAgA=</HashCode>
+      <FileName>TabJoystick.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ModuleTab" Collapsed="true">
+    <Position X="3.25" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAACiAEIIIAAAAAUElAGAEAAACAkAEICAAA=</HashCode>
+      <FileName>TabModule.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ParameterTab" Collapsed="true">
+    <Position X="5.5" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAgAAIAAAAAAAAAAAAAEAAAAAAAAACAAA=</HashCode>
+      <FileName>TabParam.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ScenarioTab" Collapsed="true">
+    <Position X="7.75" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAABJEgAAgAFoBAIAACAAAgAAIEAAAgAAAoAOBAQ=</HashCode>
+      <FileName>TabScenario.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DefVideoTab" Collapsed="true">
+    <Position X="10" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAEAAAAAAIAAAAAAAEAAAAAAAAACAAA=</HashCode>
+      <FileName>TabVideo.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VisualTab" Collapsed="true">
+    <Position X="12.25" Y="19.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAUAAAAAAAgAEIAAAEACAAABAAAEAAAAAAAAACAQA=</HashCode>
+      <FileName>TabVisual.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CSphereManager" Collapsed="true">
+    <Position X="64" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ALgGhQABAIEAgIAAAgEQBgAAAEAEGAEAABAAIAAIANI=</HashCode>
+      <FileName>CSphereMgr.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CD3DFramework7" Collapsed="true">
+    <Position X="58.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IldgEhBHQeAQEQAFAgwAAlAEGCgAUQFABAYABABBAgw=</HashCode>
+      <FileName>D3d7frame.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Extra_RenderOptions" Collapsed="true">
+    <Position X="15" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAQAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ExtraRender.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Extra_PlanetRenderOptions" Collapsed="true">
+    <Position X="19.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAABAAAIgAAAAAAAAAAYAAAAAAAAAAKAAEAACAQA=</HashCode>
+      <FileName>ExtraRender.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDIClient" Collapsed="true">
+    <Position X="8.25" Y="33.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAEAAABBAAAAACAAAAAAIAAAAAAAAAAAAABASAA=</HashCode>
+      <FileName>orbitervis\GDIClient\GDIClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDIPad" Collapsed="true">
+    <Position X="30.25" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAEIAGgQoABAAIAGIDAACAAIAoQAAAAAIACBAJAqA=</HashCode>
+      <FileName>orbitervis\GDIClient\GDIClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDIFont" Collapsed="true">
+    <Position X="22.5" Y="24.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAAEAAAAAAAAAAARAA=</HashCode>
+      <FileName>orbitervis\GDIClient\GDIClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDIPen" Collapsed="true">
+    <Position X="24.75" Y="24.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAAAAAAAAAAAAAAEAAAAAAAAEAAAAA=</HashCode>
+      <FileName>orbitervis\GDIClient\GDIClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GDIBrush" Collapsed="true">
+    <Position X="27" Y="24.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABBAAAAA=</HashCode>
+      <FileName>orbitervis\GDIClient\GDIClient.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VideoTab" Collapsed="true">
+    <Position X="55.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAASgAAAAAgAEIAAQAQAQAwAAACQABBAAQ=</HashCode>
+      <FileName>OGraphics.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OrbiterGraphics" Collapsed="true">
+    <Position X="8.25" Y="35.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>NFUwJwIARhXKkIyDIFCAkIiQI6FVDIvIa0iEr4YBA0Q=</HashCode>
+      <FileName>OGraphics.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="D3D7ParticleStream" Collapsed="true">
+    <Position X="9.5" Y="26.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAAAUgAgQBABIJAhIqAMlQCAQEFgBF0oBBmgEQ=</HashCode>
+      <FileName>Particle.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExhaustStream" Collapsed="true">
+    <Position X="8.25" Y="28.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAEAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Particle.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ReentryStream" Collapsed="true">
+    <Position X="10.5" Y="28.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AASAACAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAIA=</HashCode>
+      <FileName>Particle.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Scene" Collapsed="true">
+    <Position X="55.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YS4iAQNCoggCpUAM3uhAgRLQwFACQYCJqJKNOUFyXEg=</HashCode>
+      <FileName>Scene.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ScreenNote" Collapsed="true">
+    <Position X="58.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BIAgAAAAAAAQBAAAAAIoAAAAABAhEYEAADAQAAAAABQ=</HashCode>
+      <FileName>ScreenNote.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager" Collapsed="true">
+    <Position X="8.75" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>YjgBABIAAIOAgBAAgooEACAgAIAEABAQEBAEAAAAAQo=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager1" Collapsed="true">
+    <Position X="1" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager2" Collapsed="true">
+    <Position X="3.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager3" Collapsed="true">
+    <Position X="5.5" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager4" Collapsed="true">
+    <Position X="7.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager5" Collapsed="true">
+    <Position X="10" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAgAAAAAAhAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager6" Collapsed="true">
+    <Position X="12.25" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAgAAAAAAiAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager7" Collapsed="true">
+    <Position X="14.5" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAgAAAAAAkAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PatchManager8" Collapsed="true">
+    <Position X="16.75" Y="16.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAgAAAAAAoAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HorizonManager" Collapsed="true">
+    <Position X="51.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAACAAAAAEAAABAAAAIAgAgEAwwBAABAAAAAAAQA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RingManager" Collapsed="true">
+    <Position X="2.75" Y="24.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAEAAAAAAACAAABAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RingManager8" Collapsed="true">
+    <Position X="0.5" Y="25.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABACAAABAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RingManager12" Collapsed="true">
+    <Position X="2.75" Y="25.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAIAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RingManager16" Collapsed="true">
+    <Position X="5" Y="25.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAAgAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TextureManager2" Collapsed="true">
+    <Position X="53.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAABAAAABEMQgAQVAAAAAAAAAAAAAAAAAEAAAAAIAA=</HashCode>
+      <FileName>Texture.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TextureManager" Collapsed="true">
+    <Position X="51.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAWABCAAhGQBAGAFAAQgCAIBACAIAACQoAAACBAACA=</HashCode>
+      <FileName>Texture.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TileBuffer" Collapsed="true">
+    <Position X="55.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAEIAACDAIBAAwAAAAAJAAAAgAQABAAIAABAAABAgI=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TileManager" Collapsed="true">
+    <Position X="57" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AJkGlQABEIEAiQACAQFQAwAAAMAEUEMAIBAAAAAIAVY=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VBMesh" Collapsed="true">
+    <Position X="64" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAEAAAAAAAAAAEAAAQIAAAAAAAgA=</HashCode>
+      <FileName>tilemgr2.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Patch" Collapsed="true">
+    <Position X="62.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAEBgAAAICBgAACEAAAAIAEAQAQIABAUAAAIAAg=</HashCode>
+      <FileName>tilemgr2.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TileManager2" Collapsed="true">
+    <Position X="58.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AASAAAAEQAAAAAAAAAAAgwBAAAAEAACAABACAACAAEg=</HashCode>
+      <FileName>tilemgr2.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VBase" Collapsed="true">
+    <Position X="7.25" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QCRFAJCggAAQAAJAEQBEAEBFGAIARAkEghABAACAQgQ=</HashCode>
+      <FileName>VBase.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VObject" Collapsed="true">
+    <Position X="3.75" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RAQBJHEAQYAAEAEBAAAQQIACYQAAAAFAiBAACAAghEI=</HashCode>
+      <FileName>Vobject.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VPlanet" Collapsed="true">
+    <Position X="0.5" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>RCYgFAAAAkBAEAUSJgAsAgIAQAARRsEAiLIggIAAoAA=</HashCode>
+      <FileName>VPlanet.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VStar" Collapsed="true">
+    <Position X="2.75" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAEAAAGAAEACAAEEEABAAAIAggAA=</HashCode>
+      <FileName>Vstar.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="VVessel" Collapsed="true">
+    <Position X="5" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAUwgIQACIABEBACA4GAAKQLMAACwgEggBAAALASpgI=</HashCode>
+      <FileName>Vvessel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MemStat" Collapsed="true">
+    <Position X="60.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAABAAAAAAAEQAAAAAAAAAAgAAAABAAAABAAIAAAAAA=</HashCode>
+      <FileName>Memstat.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OrbiterClient" Collapsed="true">
+    <Position X="29.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAAAAEAAAAIAAAAAAAAAEAAAAAAAAAAI=</HashCode>
+      <FileName>Client.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OrbiterConnect" Collapsed="true">
+    <Position X="30.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEBAAAAAAAAgEEAAAASAAIAEoAAAIAgCAEAAAAA=</HashCode>
+      <FileName>Network.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OrbiterServer" Collapsed="true">
+    <Position X="31.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIACAAJAAAAAhAAAEAAAAAAAAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Server.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::DrawingTool" Collapsed="true">
+    <Position X="24.75" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\DrawAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::Font" Collapsed="true">
+    <Position X="22.5" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBAE=</HashCode>
+      <FileName>Orbitersdk\include\DrawAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::Pen" Collapsed="true">
+    <Position X="24.75" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAEA=</HashCode>
+      <FileName>Orbitersdk\include\DrawAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::Brush" Collapsed="true">
+    <Position X="27" Y="22.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAIAAAAAAAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\DrawAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::Sketchpad" Collapsed="true">
+    <Position X="30.25" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AUAAEIAGgQIAAAAIACAHAACAAIAoABAAAAYACBAJAKA=</HashCode>
+      <FileName>Orbitersdk\include\DrawAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::GraphicsClient" Collapsed="true">
+    <Position X="8.25" Y="32.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>MACEJIERgpFD0cyAADAAIJgAI6BU7Y+ACQyExQJdYQE=</HashCode>
+      <FileName>Orbitersdk\include\GraphicsAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::ParticleStream" Collapsed="true">
+    <Position X="9.5" Y="25.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAggAEAgSAAAQIAAEAAAIQAAIEIAAABARAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\GraphicsAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::ScreenAnnotation" Collapsed="true">
+    <Position X="57" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAIgAAEAAAAQBgAAAIIqAAAAABAgFgAAABAAAQAAABQ=</HashCode>
+      <FileName>Orbitersdk\include\GraphicsAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::ModuleNV" Collapsed="true">
+    <Position X="8.25" Y="29.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>KAAAACEAgCAAAAAgAAAAAAAIAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\ModuleAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="oapi::Module" Collapsed="true">
+    <Position X="8.25" Y="30.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEACAAAAAAAAiCgAAAAAEAAABACAAAAAAAABCAQAQAA=</HashCode>
+      <FileName>Orbitersdk\include\ModuleAPI.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="__unnamed_0098_1" Collapsed="true">
+    <Position X="25.25" Y="52.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAAAgAAAAAAQAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_DIRPRM" Collapsed="true">
+    <Position X="53.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAIAAAAAAAAAAAAAQAAAAAAACAAACAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_PHYSICSPRM" Collapsed="true">
+    <Position X="51.75" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAiAAAAAAgZAFgBABAAAAAAAgACgAAAABAQYEA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_LOGICPRM" Collapsed="true">
+    <Position X="60.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgABAAAAQAAACAAAAAAQAAAAACEAIAAAAgAAAAACAAg=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_VISUALPRM" Collapsed="true">
+    <Position X="60.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>dAgAAAAAACAAkAyECBAAAAAACAgAQIEAAAQAAAACAEA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_CAPTUREPRM" Collapsed="true">
+    <Position X="60.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAEAAAAAAAAAAAAAIAAAIAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_INSTRUMENTPRM" Collapsed="true">
+    <Position X="57" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_VISHELPPRM" Collapsed="true">
+    <Position X="58.75" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAACAAAAAEAAAAAAIAAAAAFAgAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_DEBUGPRM" Collapsed="true">
+    <Position X="62.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAAAAAAAAAIAAAAAAAAAAACCAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_PLANETRENDERPRM" Collapsed="true">
+    <Position X="53.5" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAABiAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_MAPPRM" Collapsed="true">
+    <Position X="62.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_RECPLAYPRM" Collapsed="true">
+    <Position X="55.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABIAIAAAAEAAgAIAAAAAgAIAAgAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_DEVPRM" Collapsed="true">
+    <Position X="51.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAABAAAAAAAQAAAAAAQAAAAAACAAgAAIAIAQAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_JOYSTICKPRM" Collapsed="true">
+    <Position X="58.75" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAIAAEAAAAAAAAgAAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_UIPRM" Collapsed="true">
+    <Position X="57" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAMBAEBAAAAAMAAAAAAAAAAAAAAAEEA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_DEMOPRM" Collapsed="true">
+    <Position X="64" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAQAAAAAIAAAAAAAAAAAAABAAABAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_FONTPRM" Collapsed="true">
+    <Position X="55.25" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_CAMERAPRM" Collapsed="true">
+    <Position X="58.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_MPLAYERPRM" Collapsed="true">
+    <Position X="64" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAABAAAgAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CFG_WINDOWPOS" Collapsed="true">
+    <Position X="62.25" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEgAAAIAAACAAAAAQAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00c0_1" Collapsed="true">
+    <Position X="51.75" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Keymap.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00c0_2" Collapsed="true">
+    <Position X="53.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Keymap.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00b5_1" Collapsed="true">
+    <Position X="21.25" Y="52.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACRAAABAAAAAAAAEIAAAAAAgEAAAgAAAAACAAQEAA=</HashCode>
+      <FileName>Mesh.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VPoint" Collapsed="true">
+    <Position X="58.75" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VPointGT" Collapsed="true">
+    <Position X="60.5" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAEIAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PolyLineSpec" Collapsed="true">
+    <Position X="51.75" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAIAAAAAABAA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PolyLineSet" Collapsed="true">
+    <Position X="64" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAEAAAAAAAABBAAFBAAAAAABAACA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CustomMkrSpec" Collapsed="true">
+    <Position X="51.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAgAMAAAIAAAAAAAAABAAAAIAAAAAA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="CustomMkrSet" Collapsed="true">
+    <Position X="64" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIACAAAAAAAAAQAgIAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Groundtrack" Collapsed="true">
+    <Position X="64" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAACAAAAABAQAAsAAASABAAAAAAABAYAAABAAqBA=</HashCode>
+      <FileName>VectorMap.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VECTOR2D" Collapsed="true">
+    <Position X="58.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_XYZ" Collapsed="true">
+    <Position X="51.75" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_XYZH" Collapsed="true">
+    <Position X="55.25" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQABgAQAAAAA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_XYZC" Collapsed="true">
+    <Position X="53.5" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_XYZHC" Collapsed="true">
+    <Position X="57" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAQABgAQAAAAA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_2TEX" Collapsed="true">
+    <Position X="60.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgQAAAAAAAAAAAAIAAAAAAAAAAAAAQABgAQAAARA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_TL1TEX" Collapsed="true">
+    <Position X="62.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAAAAQAAAAAAAAABAABgAQAAAQA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VERTEX_TL2TEX" Collapsed="true">
+    <Position X="64" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAgAAAAAAAAAAAAAAAAAAAAAAAAAABAABgAQAAAUA=</HashCode>
+      <FileName>D3d7util.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_008b_1" Collapsed="true">
+    <Position X="49.25" Y="22.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAQA=</HashCode>
+      <FileName>D3dmath.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="MFDMODE" Collapsed="true">
+    <Position X="55.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAkA=</HashCode>
+      <FileName>Mfd.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="MFDspec" Collapsed="true">
+    <Position X="57" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACCAAAAAAAAAAAAAAAQAAAQAAIAAAAAA=</HashCode>
+      <FileName>Pane.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_009c_1" Collapsed="true">
+    <Position X="17.25" Y="52.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAABAABAAAICAAIAAAAAAAAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>Planet.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_009c_2" Collapsed="true">
+    <Position X="49.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAEAAAAAAAAIAIAAAAAAAAAAAAAAAAAAAACAAAA=</HashCode>
+      <FileName>Planet.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_009e_1" Collapsed="true">
+    <Position X="37.25" Y="51.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAARAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_009e_2" Collapsed="true">
+    <Position X="33.25" Y="51.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAgAEAAAAAAgAwAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_009e_3" Collapsed="true">
+    <Position X="41.25" Y="50.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAAAAAAAAAAAAAAAAIEAAAAAAAAwAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00e9_1" Collapsed="true">
+    <Position X="47.25" Y="27.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAACAAAAACAAQAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>SuperVessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="UndockSpec" Collapsed="true">
+    <Position X="53.5" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAgAACAAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SurfParam_tag" Collapsed="true">
+    <Position X="47.25" Y="17.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAMIACAAAKQAAiIACBQARCAIAEAAhoAGQAGgAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="ScenarioData" Collapsed="true">
+    <Position X="55.25" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAJAECAAAAAAAAAIAAAAAAEAAAAAAAACAAAEAABAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_1" Collapsed="true">
+    <Position X="13.25" Y="50.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAACAAAAAAAAAAAACAAAAAAAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_2" Collapsed="true">
+    <Position X="9.25" Y="50.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAACAAAEAAAAIAAAAAAAEAAAAAAAAAAABBAAg=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_3" Collapsed="true">
+    <Position X="47.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_4" Collapsed="true">
+    <Position X="47.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAEACAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_5" Collapsed="true">
+    <Position X="46.25" Y="48.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACACAAAAAACAAAAAIAAAAAAAQAAACAAAAAIACAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_6" Collapsed="true">
+    <Position X="46.25" Y="43.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAMAAAIAAAACAAAAAQAAAAAAAAE=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_7" Collapsed="true">
+    <Position X="46.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAQAACAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_8" Collapsed="true">
+    <Position X="29.25" Y="49.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgQAAAAAACgAAAAAAAIAAAACAAAAAAAAAAAAAAAAAiA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="tagAttachmentSpec" Collapsed="true">
+    <Position X="45.25" Y="33.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAACBAAAAAIAIAIAACAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_9" Collapsed="true">
+    <Position X="45.25" Y="22.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAACAAAAAAAAAAAAAAAAEAAAAgAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_10" Collapsed="true">
+    <Position X="45.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAGAAAAAAAAAIAAAAAAAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a0_11" Collapsed="true">
+    <Position X="5.25" Y="48.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAIAAAAAAAAAAAAQAEAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRecord" Collapsed="true">
+    <Position X="60.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAIAAAAAQAIAAAAAACAAAGAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FRecord_att" Collapsed="true">
+    <Position X="62.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAIAAAAAQAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a4_1" Collapsed="true">
+    <Position X="21.25" Y="47.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAgABAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00a4_2" Collapsed="true">
+    <Position X="17.25" Y="47.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEACAACQYAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Base.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="Sample" Collapsed="true">
+    <Position X="53.5" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAACAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\CelBodyAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="StarRenderPrm" Collapsed="true">
+    <Position X="57" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAACAAAEAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\GraphicsAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="SurftileSpec" Collapsed="true">
+    <Position X="58.75" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAAAAIIACAABAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\GraphicsAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FogParam" Collapsed="true">
+    <Position X="58.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQIAAAAAAAAQAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\GraphicsAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_6" Collapsed="true">
+    <Position X="43.25" Y="28.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoAQABAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_7" Collapsed="true">
+    <Position X="43.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAAAAAAAAIAAAAAAAAAAAAAQABgAQAAARA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_8" Collapsed="true">
+    <Position X="43.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACRAAABAAAAAAAAAAAAAAAAgEAAAgAAAAAAAAQEAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_9" Collapsed="true">
+    <Position X="42.25" Y="45.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACRAAABAAAAAAAAEIAAAAAAgEAAAgAAAAAAAAQEAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_10" Collapsed="true">
+    <Position X="42.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAAAAAAAAAAAMAAAgAAAAAAAAAAAQ=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_11" Collapsed="true">
+    <Position X="13.25" Y="45.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAACAAAAAAAAAAAAAAAAAIAAAEAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_12" Collapsed="true">
+    <Position X="9.25" Y="45.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAACAAAAAAAAAAAAAAAAAAAiIAAAAAQAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_13" Collapsed="true">
+    <Position X="41.25" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BgAAAAAAAAAACIAAAAAAQAAAAAAAAAAAEAAAAAAkAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_14" Collapsed="true">
+    <Position X="29.25" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEIAAAAAAAAAAAAAAEAACAAAEAAAAKAAAAAgAAgAQA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_15" Collapsed="true">
+    <Position X="41.25" Y="21.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAEAAAAAEAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_16" Collapsed="true">
+    <Position X="43.25" Y="17.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAQAAAAAABAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_17" Collapsed="true">
+    <Position X="41.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAEAAAAIAAAABAAAEIAAQCAQAAAAAAAgQ=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_18" Collapsed="true">
+    <Position X="5.25" Y="43.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CCAAAAAAAACAAAAAAIBAAIAAAhAAAAAAAABQEABAAEQ=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_19" Collapsed="true">
+    <Position X="1.25" Y="43.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAQAAAAAAAAAAAAACAAAAGBAAAQAAAAAIAAAgA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_20" Collapsed="true">
+    <Position X="39.25" Y="30.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAEAABAAAAAIAAAYAAAAAAAAAAAAAAIgAABAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_21" Collapsed="true">
+    <Position X="25.25" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CARARAACAAIAAAAAAIIAQAAAAAACAAgAACAAAEAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_22" Collapsed="true">
+    <Position X="21.25" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CARABSAAAAEAAAQAAIIAAgABAAACAAgQSCAAAEAAAEA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_23" Collapsed="true">
+    <Position X="17.25" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_24" Collapsed="true">
+    <Position X="39.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IQAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_25" Collapsed="true">
+    <Position X="39.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAAEAABAAAAAAAAAAIA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_26" Collapsed="true">
+    <Position X="38.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAACBAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_27" Collapsed="true">
+    <Position X="34.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAAAAAAAAIAAAAAAEAAAAACAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="ANIMATIONCOMP" Collapsed="true">
+    <Position X="57" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAARAAAAAAAAAAAAAAAAEAAAAACAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="ANIMATION" Collapsed="true">
+    <Position X="55.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAABAAIAAAAAAAAAAAAQAEAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_28" Collapsed="true">
+    <Position X="30.25" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAAAAAIAABAAAAAAgAAAAAAAAABA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_29" Collapsed="true">
+    <Position X="40.25" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_30" Collapsed="true">
+    <Position X="37.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIAAAIABBDAAAAAgAAIAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_31" Collapsed="true">
+    <Position X="37.25" Y="23.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAIAAAAABAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_32" Collapsed="true">
+    <Position X="37.25" Y="17.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAIAAAAAAAAAQAAgAAAAAEAIAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_33" Collapsed="true">
+    <Position X="13.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEAAAAAAAEAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_34" Collapsed="true">
+    <Position X="9.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAEAAAAAAAEAAAAAIAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_35" Collapsed="true">
+    <Position X="37.25" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAgAAAAAAEA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0037_36" Collapsed="true">
+    <Position X="5.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAAAAAAAAAAABAAAAAIAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_0096_1" Collapsed="true">
+    <Position X="18.25" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAADAAAAAAAAAAIAAIAAAAQAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="THREADDATA" Collapsed="true">
+    <Position X="62.25" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAgAAAAAAIQBAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>DlgMgr.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="DIALOGENTRY" Collapsed="true">
+    <Position X="57" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAIABAA=</HashCode>
+      <FileName>DlgMgr.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="D3D7Enum_DeviceInfo" Collapsed="true">
+    <Position X="53.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAIAAACAECAAAAABAAAgAgAAABAAgAARACAICI=</HashCode>
+      <FileName>D3d7enum.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="DeviceData" Collapsed="true">
+    <Position X="55.25" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAAAAAAAAAQAAAAABAAAgAAAAAAAAA=</HashCode>
+      <FileName>OGraphics.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="ParticleSpec" Collapsed="true">
+    <Position X="58.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAKAAAIAAAAQAABAAAABQAAIAAAA=</HashCode>
+      <FileName>Particle.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="VB_XYZ" Collapsed="true">
+    <Position X="55.25" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgAQAAAAA=</HashCode>
+      <FileName>Scene.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00e2_1" Collapsed="true">
+    <Position X="33.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACABEAAAAAAAAAAAAAAAAABAAAAAAAAQgA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PixelFormatNode" Collapsed="true">
+    <Position X="60.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACQAAAAAAAAAACAAAAAgEAAAAAAAAAABAAI=</HashCode>
+      <FileName>Texture.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="TextureRec" Collapsed="true">
+    <Position X="60.5" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAAAAIAAAAAAAAAABAAAAABAIAIAAAA=</HashCode>
+      <FileName>Texture.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="PixelFormatPair" Collapsed="true">
+    <Position X="62.25" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAACAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Texture.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="IDXLIST" Collapsed="true">
+    <Position X="51.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>TileMgr.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="TILEFILESPEC" Collapsed="true">
+    <Position X="51.75" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAQEAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="LMASKFILEHEADER" Collapsed="true">
+    <Position X="53.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACQAAgAAAAACAAAAAIAAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="TILEDESC" Collapsed="true">
+    <Position X="64" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACQAAAAAIAAAAAAAAAAAAABAAAAAAAAAAQ=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="__unnamed_00e1_1" Collapsed="true">
+    <Position X="29.25" Y="34.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAABAAAAAAAAAAAAAAwAAAAA=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="vecentry" Collapsed="true">
+    <Position X="57" Y="13.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAIAAAAABAgAAAAAQBAAAAAAAAAABAQAAIAAAA=</HashCode>
+      <FileName>Vobject.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="ExtCamMode" Collapsed="true">
+    <Position X="5.25" Y="51.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="IntCamMode" Collapsed="true">
+    <Position X="1.25" Y="51.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="CamAction" Collapsed="true">
+    <Position X="49.25" Y="30.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="NetParam" Collapsed="true">
+    <Position X="25.25" Y="50.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Config.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="Str256" Collapsed="true">
+    <Position X="57" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Mesh.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="GroupSpec" Collapsed="true">
+    <Position X="21.25" Y="50.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Mesh.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OPC_Proc" Collapsed="true">
+    <Position X="53.5" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbiter.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="POSTEXVERTEX" Collapsed="true">
+    <Position X="49.25" Y="20.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D3dmath.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OPLANET_SetPrecision" Collapsed="true">
+    <Position X="60.5" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Celbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OPLANET_Ephemeris" Collapsed="true">
+    <Position X="57" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Celbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OPLANET_FastEphemeris" Collapsed="true">
+    <Position X="58.75" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Celbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OPLANET_AtmPrm" Collapsed="true">
+    <Position X="55.25" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Celbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="TILESPEC" Collapsed="true">
+    <Position X="17.25" Y="50.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Planet.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="GROUNDOBSERVERSPEC" Collapsed="true">
+    <Position X="49.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Planet.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="GFieldData" Collapsed="true">
+    <Position X="37.25" Y="49.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AngIntData" Collapsed="true">
+    <Position X="33.25" Y="49.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PertIntData" Collapsed="true">
+    <Position X="41.25" Y="48.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="Propagator" Collapsed="true">
+    <Position X="51.75" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AngPropagator" Collapsed="true">
+    <Position X="57" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LinAngPropagator" Collapsed="true">
+    <Position X="51.75" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Rigidbody.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="SubVesselData" Collapsed="true">
+    <Position X="47.25" Y="25.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>SuperVessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="Str64" Collapsed="true">
+    <Position X="58.75" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="SurfParam" Collapsed="true">
+    <Position X="47.25" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="TankSpec" Collapsed="true">
+    <Position X="13.25" Y="48.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ThrustSpec" Collapsed="true">
+    <Position X="9.25" Y="48.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ThrustGroupSpec" Collapsed="true">
+    <Position X="47.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OldExhaustSpec" Collapsed="true">
+    <Position X="47.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AirfoilSpec" Collapsed="true">
+    <Position X="46.25" Y="46.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="CtrlsurfSpec" Collapsed="true">
+    <Position X="46.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="DragElementSpec" Collapsed="true">
+    <Position X="46.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PortSpec" Collapsed="true">
+    <Position X="29.25" Y="47.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AttachmentSpec" Collapsed="true">
+    <Position X="45.25" Y="31.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="NavRadioSpec" Collapsed="true">
+    <Position X="45.25" Y="20.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ReentryRenderSpec" Collapsed="true">
+    <Position X="45.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ANIMSEQ" Collapsed="true">
+    <Position X="5.25" Y="46.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="FlightStatus" Collapsed="true">
+    <Position X="1.25" Y="46.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VesselSpec" Collapsed="true">
+    <Position X="25.25" Y="45.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VESSEL_Init" Collapsed="true">
+    <Position X="55.25" Y="20.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VESSEL_Exit" Collapsed="true">
+    <Position X="53.5" Y="20.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LpadSpec" Collapsed="true">
+    <Position X="21.25" Y="45.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="RwySpec" Collapsed="true">
+    <Position X="17.25" Y="45.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Base.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="OBJHANDLE" Collapsed="true">
+    <Position X="51.75" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VISHANDLE" Collapsed="true">
+    <Position X="57" Y="20.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MESHHANDLE" Collapsed="true">
+    <Position X="60.5" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="DEVMESHHANDLE" Collapsed="true">
+    <Position X="51.75" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="SURFHANDLE" Collapsed="true">
+    <Position X="60.5" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PANELHANDLE" Collapsed="true">
+    <Position X="62.25" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="FILEHANDLE" Collapsed="true">
+    <Position X="55.25" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="INTERPRETERHANDLE" Collapsed="true">
+    <Position X="58.75" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="THRUSTER_HANDLE" Collapsed="true">
+    <Position X="64" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="THGROUP_HANDLE" Collapsed="true">
+    <Position X="62.25" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PROPELLANT_HANDLE" Collapsed="true">
+    <Position X="53.5" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PSTREAM_HANDLE" Collapsed="true">
+    <Position X="55.25" Y="20" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="DOCKHANDLE" Collapsed="true">
+    <Position X="53.5" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ATTACHMENTHANDLE" Collapsed="true">
+    <Position X="60.5" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AIRFOILHANDLE" Collapsed="true">
+    <Position X="55.25" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="CTRLSURFHANDLE" Collapsed="true">
+    <Position X="62.25" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="NAVHANDLE" Collapsed="true">
+    <Position X="62.25" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ANIMATIONCOMPONENT_HANDLE" Collapsed="true">
+    <Position X="58.75" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LAUNCHPADITEM_HANDLE" Collapsed="true">
+    <Position X="62.25" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="NOTEHANDLE" Collapsed="true">
+    <Position X="64" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="FileAccessMode" Collapsed="true">
+    <Position X="37.25" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PathRoot" Collapsed="true">
+    <Position X="33.25" Y="46.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VECTOR3" Collapsed="true">
+    <Position X="51.75" Y="20.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MATRIX3" Collapsed="true">
+    <Position X="57" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MATRIX4" Collapsed="true">
+    <Position X="58.75" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="COLOUR4" Collapsed="true">
+    <Position X="43.25" Y="26.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="NTVERTEX" Collapsed="true">
+    <Position X="43.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MESHGROUP" Collapsed="true">
+    <Position X="43.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MESHGROUPEX" Collapsed="true">
+    <Position X="42.25" Y="43.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="GROUPEDITSPEC" Collapsed="true">
+    <Position X="42.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MATERIAL" Collapsed="true">
+    <Position X="13.25" Y="43.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ELEMENTS" Collapsed="true">
+    <Position X="9.25" Y="43.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ORBITPARAM" Collapsed="true">
+    <Position X="41.25" Y="33.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ATMCONST" Collapsed="true">
+    <Position X="29.25" Y="42.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ATMPARAM" Collapsed="true">
+    <Position X="41.25" Y="23.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ENGINESTATUS" Collapsed="true">
+    <Position X="41.25" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="EXHAUSTSPEC" Collapsed="true">
+    <Position X="41.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="PARTICLESTREAMSPEC" Collapsed="true">
+    <Position X="5.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="NAVDATA" Collapsed="true">
+    <Position X="1.25" Y="41.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="BEACONLIGHTSPEC" Collapsed="true">
+    <Position X="39.25" Y="28.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VESSELSTATUS" Collapsed="true">
+    <Position X="25.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VESSELSTATUS2" Collapsed="true">
+    <Position X="21.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LISTENTRY" Collapsed="true">
+    <Position X="17.25" Y="40.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="Listentry_clbk" Collapsed="true">
+    <Position X="53.5" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="HELPCONTEXT" Collapsed="true">
+    <Position X="39.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LP_EXTRAPRM" Collapsed="true">
+    <Position X="39.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MESHGROUP_TRANSFORM" Collapsed="true">
+    <Position X="38.25" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ANIMCOMP" Collapsed="true">
+    <Position X="34.25" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MFDSPEC" Collapsed="true">
+    <Position X="30.25" Y="39.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VCMFDSPEC" Collapsed="true">
+    <Position X="38.25" Y="20.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="EXTMFDSPEC" Collapsed="true">
+    <Position X="37.25" Y="34.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VCHUDSPEC" Collapsed="true">
+    <Position X="37.25" Y="25.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="HUDPAINTSPEC" Collapsed="true">
+    <Position X="37.25" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MFDMODESPEC" Collapsed="true">
+    <Position X="13.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MFDMODESPECEX" Collapsed="true">
+    <Position X="9.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MFDMODEOPENSPEC" Collapsed="true">
+    <Position X="37.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="MFDBUTTONMENU" Collapsed="true">
+    <Position X="5.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="REFFRAME" Collapsed="true">
+    <Position X="26.25" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ENGINETYPE" Collapsed="true">
+    <Position X="35.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="EXHAUSTTYPE" Collapsed="true">
+    <Position X="1.25" Y="36.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="ATTITUDEMODE" Collapsed="true">
+    <Position X="35.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LiftCoeffFunc" Collapsed="true">
+    <Position X="64" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AirfoilCoeffFunc" Collapsed="true">
+    <Position X="51.75" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AirfoilCoeffFuncEx" Collapsed="true">
+    <Position X="53.5" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AIRFOIL_ORIENTATION" Collapsed="true">
+    <Position X="22.25" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="AIRCTRL_TYPE" Collapsed="true">
+    <Position X="34.25" Y="22.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="HUDPARAM" Collapsed="true">
+    <Position X="57" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="KeyFunc" Collapsed="true">
+    <Position X="60.5" Y="17.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="LoadMeshClbkFunc" Collapsed="true">
+    <Position X="55.25" Y="18.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="CustomFunc" Collapsed="true">
+    <Position X="64" Y="17" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="TOUCHDOWNVTX" Collapsed="true">
+    <Position X="18.25" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\VesselAPI.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="VBMESH" Collapsed="true">
+    <Position X="33.25" Y="34.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Spherepatch.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="TEXCRDRANGE" Collapsed="true">
+    <Position X="29.25" Y="32.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>TileMgr.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="Proc_GetProcessMemoryInfo" Collapsed="true">
+    <Position X="64" Y="19.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Memstat.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Enum Name="__unnamed_0090_1" Collapsed="true">
+    <Position X="5.25" Y="53.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EgAAAAAAAEAAAAAAAAAAAAECQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0090_2" Collapsed="true">
+    <Position X="1.25" Y="53.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAADAAAIAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0090_3" Collapsed="true">
+    <Position X="49.25" Y="32.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAIAAAAAAAAAAAIAAIAAAAAAAAAAAEAAAAAA=</HashCode>
+      <FileName>Camera.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="APPMSGTYPE" Collapsed="true">
+    <Position X="51.75" Y="16" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAQAACAAAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbiter.cpp</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_00a0_12" Collapsed="true">
+    <Position X="1.25" Y="48.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAQAAgAAAAAAAQAAAAAGAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_00a0_13" Collapsed="true">
+    <Position X="25.25" Y="47.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAkAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Vessel.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_1" Collapsed="true">
+    <Position X="37.25" Y="46.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAACAAAAACAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_2" Collapsed="true">
+    <Position X="33.25" Y="44.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAEAACAAAAAAAAAAAAAAAAAAAgAACAAEA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_37" Collapsed="true">
+    <Position X="26.25" Y="35.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAUAIAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_38" Collapsed="true">
+    <Position X="35.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAACAAAACAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_39" Collapsed="true">
+    <Position X="1.25" Y="38.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEBIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="THGROUP_TYPE" Collapsed="true">
+    <Position X="55.25" Y="16" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAAAMAIBAAAAAIAAAAAAAAAEAAEgIAAAgAQgUAgA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_40" Collapsed="true">
+    <Position X="35.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAABEAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_41" Collapsed="true">
+    <Position X="22.25" Y="37.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="__unnamed_0037_42" Collapsed="true">
+    <Position X="34.25" Y="20.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAEAAAAAAAIAAAAQAAABBAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="FontStyle" Collapsed="true">
+    <Position X="53.5" Y="16" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgIAQAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Orbitersdk\include\OrbiterAPI.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

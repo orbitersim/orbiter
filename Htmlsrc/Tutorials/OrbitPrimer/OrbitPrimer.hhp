@@ -1,0 +1,20 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=.\OrbitPrimer.chm
+Contents file=OrbitPrimer.hhc
+Default topic=OrbitPrimer.htm
+Display compile progress=No
+Language=0x809 English (United Kingdom)
+Title=Orbital Mechanics Primer
+
+
+[FILES]
+..\..\master.js
+..\..\Orbiter.css
+OrbitPrimer.htm
+Gravity.htm
+Gravity2.htm
+Kepler.htm
+
+[INFOTYPES]
+

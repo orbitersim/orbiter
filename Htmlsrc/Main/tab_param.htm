@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Parameter settings</title>
+</HEAD>
+<BODY>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; Parameters</p>
+
+<h1><a name="hid_tab_param"></a>Parameter settings</h1>
+<p>
+This page contains various options to customize the simulation.</p>
+
+<h2>Realism</h2>
+<p>
+<b>Complex flight model</b>: Spacecraft can define two different types of flight model in Orbiter: "easy" or "realistic". By ticking this box you select the realistic model. Note that some spacecraft types may ignore this option.</p>
+<p>
+<b>Damage and failure simulation</b>: Spacecraft can sustain damage and system failure, for example if operational limits are exceeded. Not all vessel types may support this option.</p>
+<p>
+<b>Limited fuel</b>: Un-tick this box to ignore fuel consumption of your spacecraft and keep the fuel tanks of all your ships full at all times, so you never run out in a critical moment. But beware that full fuel tanks will affect the flight characteristics of your vessel. Most notably, with unlimited fuel the Space Shuttle is too heavy to even achieve orbit!</p>
+<p>
+<b>Auto-refuel on pad</b>: With this option enabled, spacecraft will automatically fill their fuel tanks when parked on a landing pad with with all engines off.</p>
+
+<h2>Perturbations</h2>
+<p>
+<b>Nonspherical gravity sources</b>: This option activates a more complex gravity calculation which can take into account perturbations in the gravitational potential due to nonspherical planet shapes, thus allowing more accurate orbit predictions. Note that this option can make orbital calculations more difficult, and may reduce the reliability of instruments that don't take this effect into account.</p>
+<p>
+<b>Radiation pressure</b>: This options instructs vessels to take the effects of radiation pressure into account. Radiation pressure forces can perturb the orbital parameters. For solar sails, it is a vital source of thrust.</p>
+<p>
+<b>Gravity-gradient torque</b>: If this option is enabled, vessels can experience an angular moment in the presence of a gravitational field gradient. This will be noticable in particular in low orbits anc can lead to attitude oscillations around the equilibrium or attitude-locked orbits.</p>
+<p>
+<b>Atmospheric wind effects</b>: Not implemented yet.</p>
+
+<h2>Instruments and panels</h2>
+<p>
+<b>Transparent glass cockpit MFD:</b> Make the onscreen multi-functional displays transparent. This provides a better view of the 3-D environment, but can make it more difficult to read the instruments. This option is only effective in generic cockpit view, not in 2-D panel or 3-D virtual cockpit view.</p>
+<p>
+<b>MFD refresh:</b> Time (in seconds) between MFD updates. Shorter intervals provide smoother updates, but may degrade performance.</p>
+<p>
+<b>Generic MFD size:</b> Size factor for MFD displays in (generic) glass cockpit mode (1..10).</p>
+<p>
+<b>Panel scale:</b> Sizing factor for 2-D instrument panels. Scale 1 displays the panels in their original size and provides optimal visual quality, but other values may be used to adapt the panel size at low or high screen resolutions. This parameter is only effective for older-style vessel panels. Newer panels are resized automatically.</p>
+<p>
+<b>Panel scroll speed:</b> Determines how fast the panel can be scrolled across the screen (pixels/second). Negative values invert the panel scroll direction.
+</p>
+
+<h2>Window focus mode</h2>
+<p>
+<b>Focus follows mouse:</b> If this option is ticked, the input focus is switched between the Orbiter simulation window and any open dialog boxes by moving the mouse over the window. If unticked, the focus is switched in normal Windows style by clicking the window.
+</p>
+
+<h2>Stars</h2>
+<p>
+<b>Apparent magnitude X mapped to brightness 1:</b> The apparent magnitude value of stars to be displayed with maximum pixel brightness. The apparent magnitude is a logarithmic measure for the apparent brightness of a star at the observer location. Lower numbers indicate brighter stars. Increasing this value means that less bright stars are mapped to maximum display brightness, i.e. overall displayed bightness of stars is increased.</p>
+<p>
+<b>Apparent magnitude Y mapped to min brightness Z:</b> Allows to define the lowest pixel brightness for dim stars. Any stars with apparent magnitude &ge; Y are mapped to pixel brightness Z (0-1).</p>
+<p>
+<b>Magnitude-brightness mapping:</b> Defines how intermediate star magnitudes are mapped to pixel brightness. <i>Exponential</i> provides more realistic brightness distributions, but leads to overall dimmer rendering of stars. <i>Linear</i> maps the magnitudes linearly to pixel brightness.</p>
+
+</BODY>
+</HTML>

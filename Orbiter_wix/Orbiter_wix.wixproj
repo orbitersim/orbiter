@@ -1,0 +1,88 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>3.0</ProductVersion>
+    <ProjectGuid>{c8fdf74a-dc22-4492-8dc4-17d27870cfcb}</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>Orbiter2016</OutputName>
+    <OutputType>Package</OutputType>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' AND '$(MSBuildExtensionsPath32)' != '' ">$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+    <WixTargetsPath Condition=" '$(WixTargetsPath)' == '' ">$(MSBuildExtensionsPath)\Microsoft\WiX\v3.x\Wix.targets</WixTargetsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DefineConstants>BuildDir=C:\Source\Orbiter_devel\Orbiter_debug\</DefineConstants>
+    <OutputPath>bin\</OutputPath>
+    <IntermediateOutputPath>bin\</IntermediateOutputPath>
+    <DefineConstants>Debug</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DefineConstants>BuildDir=C:\Source\Orbiter_devel\Orbiter_release\</DefineConstants>
+    <OutputPath>bin\</OutputPath>
+    <IntermediateOutputPath>bin\</IntermediateOutputPath>
+    <SuppressValidation>False</SuppressValidation>
+    <SuppressIces>ICE09;ICE32;ICE61</SuppressIces>
+    <WixVariables>BuildDir=C:\Source\Orbiter_devel\Orbiter_release\</WixVariables>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Orbiter.vcproj">
+      <Name>Orbiter</Name>
+      <Project>{1aae1f0f-e7f6-446c-a531-280613722d53}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUtilExtension">
+      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <Name>WixUtilExtension</Name>
+    </WixExtension>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" />
+  <!--
+	To modify your build process, add your task inside one of the targets below and uncomment it.
+	Other similar extension points exist, see Wix.targets.
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="AfterBuild">
+	</Target>
+	-->
+  <PropertyGroup>
+    <PostBuildEvent>cd $(SolutionDir)
+utilsrc\makeziplist\release\makeziplist Orbiter_wix\Product.wxs
+del orbiter.zip
+del orbiter.7z
+"C:\Program Files\7-Zip\7z" a -tzip -mx9 orbiter.zip %40filelist.dat
+"C:\Program Files\7-Zip\7z" a -t7z -mx9 orbiter.7z %40filelist.dat
+"C:\Program Files\7-Zip\7z" a -tzip -mx9 d3d7client.zip %40filelist_d3d7client.dat
+xcopy /D /Y orbiter.zip "c:\source\orbiter_devel\orbiter_release\bin\Deploy\%2a"
+xcopy /D /Y d3d7client.zip "c:\source\orbiter_devel\orbiter_release\bin\Deploy\%2a"
+xcopy /D /Y orbiter_wix\bin\Orbiter2016.msi "c:\source\orbiter_devel\orbiter_release\bin\Deploy\%2a"
+del orbiter.zip
+del d3d7client.zip
+del /Q /S orbiter_wix\bin
+rmdir /Q /S orbiter_wix\bin
+rem move orbiter.exe Install\testinstall.exe
+rem move Install\orbiter.bin orbiter.exe
+rem cd $(BuildDir)
+cd c:\source\orbiter_devel\orbiter_release
+cd Textures
+mklinks.bat c:\Source\Orbiter_textures
+cd ..</PostBuildEvent>
+    <PreBuildEvent>rem cd $(BuildDir)
+cd c:\source\orbiter_devel\orbiter_release
+rem move orbiter.exe Install\orbiter.bin
+rem move Install\testinstall.exe orbiter.exe
+del "Scenarios\(Current state).scn"
+copy "Scenarios\2016 Edition\# Welcome to Orbiter 2016.scn" "Scenarios\(Current state).scn"
+cd Textures
+mklinks.bat c:\Source\Orbiter_textures\Orbiter2016_lores
+cd ..</PreBuildEvent>
+  </PropertyGroup>
+</Project>

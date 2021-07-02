@@ -1,0 +1,62 @@
+BEGIN_DESC
+Challenge scenario: Launch the Delta-glider to orbit and dock with the ISS,
+using as little fuel as possible.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 52199.6667303507
+  Help Default\Challenges\Challenge1,Index
+  Script challenges/challenge1
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+  SPDMODE 1
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+  BTARGET Habana
+  OTARGET ISS
+  ZOOM 2
+END_MFD
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS -6145074.65 -2114583.93 1790272.82
+  RVEL -2825.928 7003.850 -1428.170
+  AROT 110.00 -10.00 80.00
+  PRPLEVEL 0:1.000
+  IDS 0:588 100 1:586 100 2:584 100 3:582 100 4:580 100
+  NAVFREQ 0 0
+  XPDR 466
+END
+GL-01:DeltaGlider
+  STATUS Landed Earth
+  POS -80.6826440 28.5970140
+  HEADING 330.01
+  RCSMODE 0
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 466 588 84 114
+  XPDR 0
+  GEAR 1 1.0000
+  PSNGR 2 3 4
+END
+END_SHIPS

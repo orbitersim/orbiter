@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Vessel scripts</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script User's Guide</a> &gt; Vessel scripts</p>
+
+<h1>Vessel scripts</h1>
+<p>Vessel scripts are a quick and easy way to define new vessel types in Orbiter.
+Unlike vessel DLL modules, they don't require the compilation of a C++ file, but just a text
+file containing the script.</p>
+<p>Compared to DLL modules using the Orbiter API, scripted vessels haven't quite the
+same range of functions, and the script interpretation carries a performance penalty.
+Therefore, vessel scripts are mainly useful for simple vessel implementations, or rapid
+prototyping as a pre-step to a full DLL implementation.</p>
+<p>This section illustrates how to create new vessel types using the <i>ScriptVessel</i>
+interface. ScriptVessel is a generic vessel module that loads a script to obtain vessel
+parameters (physical specifications, aerodynamic properties, engine layout, meshes,
+animations, etc.). The script can contain callback functions that are called by the
+ScriptVessel module to signal events such as vessel initialisation, time steps or docking.</p>
+<p>The C++ sources for the ScriptVessel module are contained in the Orbiter SDK, at
+Orbitersdk\samples\ScriptVessel.</p>
+<p>The <i>ScriptPB</i> vessel class is an example for a scripted vessel definition. It can
+be found in Config\Vessels\ScriptPB.cfg.</p>
+
+<h2>Step 1: The vessel configuration file</h2>
+<p>All vessel type definitions require a definition file. This is a text file in the
+Config\Vessels subdirectory, called
+<div class="code">
+<i>&lt;classname&gt;</i>.cfg
+</div>
+where <i>&lt;classname&gt;</i> is the vessel class name.</p>
+<p>A ScriptVessel definition file should contain the following:
+<div class="code">
+ClassName = <i>&lt;classname&gt;</i><br />
+Module = ScriptVessel<br />
+Script = <i>&lt;scriptname&gt;</i>
+</div>
+where <i>&lt;classname&gt;</i> is again the vessel class name, and <i>&lt;scriptname&gt;</i>
+is the name of the script file. The script file should be located in the Config\Vessels
+subdirectory. It is even possible to place the script directly into the configuration
+file. This will be described in the next section.</p>
+
+<h2>Step 2: Preparing the configuration file for the script</h2>
+<p>Although the script can be placed in a separate text file, it is generally more convenient
+to put it directly into the configuration file. This allows a complete vessel definition
+with a single text file, and reduces the risk of missing files or inconsistencies.</p>
+<p>To prepare the configuration file for direct insertion of the vessel script, the
+configuration part of the file should be modified to look like this:
+<div class="code">
+--[[<br />
+ClassName = <i>&lt;classname&gt;</i><br />
+Module = ScriptVessel<br />
+Script = <i>&lt;classname&gt;</i>.cfg<br />
+END_PARSE<br />
+--]]
+</div>
+so that the "Script" entry now points to the configuration file itself. The "END_PARSE"
+entry prevents Orbiter's configuration parser from scanning the following script, while the
+"--[[" and "--]]" lines define the entire configuration block as a Lua comment, so it
+doesn't interfere with the script interpreter.</p>
+<p>You are now ready to add the vessel script.</p>
+
+<h2>Step 3: A simple vessel</h2>
+<p>For a minimal vessel definition, the script should contain a clbk_setclasscaps function.
+The ScriptVessel module calls this function whenever a vessel of this class is created.
+The function should contain the vessel's general physical properties (mass, size, airfoil
+definitions), load any required meshes, define animations and engine layout, etc.</p>
+<p>The clbk_setclasscaps function is the equivalent of the VESSEL2::clbkSetClassCaps method
+of Orbiter's C++ API interface.</p>
+<p>clbk_setclasscaps has a single parameter: a handle to the vessel's configuration file.</p>
+<div class="code">
+function clbk_setclasscaps(cfg)<br />
+  -- vessel parameters go here<br />
+end
+</div>
+<p>For a minimal vessel definition, we should define a few essential parameters, and load 
+a mesh,</p>
+<div class="code">
+function clbk_setclasscaps(cfg)<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#set_size">set_size</a>(3.5)<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#set_emptymass">set_emptymass</a>(500)<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#set_pmi">set_pmi</a>({x=2.28,y=2.31,z=0.79})<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#set_crosssections">set_crosssections</a>({x=10.5,y=15.0,z=5.8})<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#add_mesh">add_mesh</a>('ShuttlePB')<br />
+end
+</div>
+<p>where "vi" is a predefined interface to the vessel object.</p>
+<p>You can try this vessel class in Orbiter. Launch Orbiter, open the scenario editor, and
+click "New" to create a new vessel. You should see your new vessel class in the list. It
+isn't very useful yet as it stands (for starters, it doesn't have any engines), but you can
+complete it by adding more parameters and functions, and see the effect directly in
+Orbiter. You can even edit the script file while Orbiter is running. Any subsequently
+created instance of the vessel class will immediately incorporate the latest changes.</p>
+
+<h2>Step 4: Adding engines</h2>
+<p>Unless you are defining an unpowered orbital station, you probably want to add engine
+definitions to your vessel class. We need to extend the clbk_setclasscaps function:</p>
+<div class="code">
+function clbk_setclasscaps(cfg)<br />
+&nbsp;&nbsp;...<br />
+&nbsp;&nbsp;hProp = vi:<a href="mtd_vessel.htm#create_propellantresource">create_propellantresource</a>(1000)<br />
+&nbsp;&nbsp;thmain_prm = {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;pos = {x=0,y=0,z=-4.35},<br />
+&nbsp;&nbsp;&nbsp;&nbsp;dir = {x=0,y=0,z=1},<br />
+&nbsp;&nbsp;&nbsp;&nbsp;maxth0 = 2e4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;isp0 = 5e4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;hprop = hProp<br />
+&nbsp;&nbsp;}<br />
+&nbsp;&nbsp;thmain = vi:<a href="mtd_vessel.htm#create_thruster">create_thruster</a>(thmain_prm)<br />
+&nbsp;&nbsp;thgmain = vi:<a href="mtd_vessel.htm#create_thrustergroup">create_thrustergroup</a>({thmain},THGROUP.MAIN)<br />
+end
+</div>
+<p>This adds a main engine definition which can be engaged with Ctrl+. To pep the engine up
+visually, we can add exhaust flames and a vapour trail:</p>
+<div class="code">
+function clbk_setclasscaps(cfg)<br />
+&nbsp;&nbsp;...<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#add_exhaust">add_exhaust</a>(thmain,8,1,{x=0,y=0.3,z=-4.35},{x=0,y=0,z=-1})<br />
+&nbsp;&nbsp;contrail_main = {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;srcsize = 5.0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;srcrate = 16,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;v0 = 200,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;srcspread = 0.15,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lifetime = 1.0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;growthrate = 5,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;atmslowdown = 3.0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;ltype = PARTICLE.DIFFUSE,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;levelmap = PARTICLE.LVL_PSQRT,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lmin = 0,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;lmax = 2,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;atmsmap = PARTICLE.ATM_PLOG,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;amin = 1e-4,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;amax = 1<br />
+&nbsp;&nbsp;}<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#add_exhauststream">add_exhauststream</a>(thmain,{x=0,y=0.3,z=-10},contrail_main)<br />
+end
+</div>
+<p>Other engines, including hover, retro and attitude control (RCS) engines, can be added in
+the same way. See Config\Vessels\ScriptPB.cfg for an example of a complete engine layout.</p>
+
+<h2>Step 5: Adding airfoils</h2>
+<p>Airfoils are required to define the vessel's lift and drag properties in an atmosphere.</p>
+<p>You can add an arbitrary number of airfoils to represent any lift and drag components of
+your vessel, but as a minimum, one horizontal and one vertical lift component should be
+defined. All vessels (not just winged types) should define airfoils, to characterise the
+aerodynamic properties of the fuselage.</p>
+<div class="code">
+function clbk_setclasscaps(cfg)<br />
+&nbsp;&nbsp;...<br />
+&nbsp;&nbsp;vi:<a href="mtd_vessel.htm#create_airfoil">create_airfoil</a>(LIFT.VERTICAL,{x=0,y=0,z=-0.1},'vlift',2,2,2.5)<br />
+&nbsp;&nbsp;vi:create_airfoil(LIFT.HORIZONTAL,{x=0,y=0,z=-0.1},'hlift',2,1.5,2)<br />
+end
+</div>
+<p>where 'vlift' and 'hlift' are the names of callback functions defined in the script.
+These functions must return the lift, drag and moment coefficients of the airfoil as a
+function of angle of attack, Mach number and Reynolds number, and are called by Orbiter 
+whenever the aerodynamic forces must be calculated. Here is an example for a coefficient
+callback function:</p>
+<div class="code">
+afv = {<br />
+&nbsp;&nbsp;cl = {-0.1,-0.5,-0.4,-0.1,0,0,0,0,0,0,0,0,0,0,-0.2,-0.6,-0.6,-0.4,0.2,0.5,0.9,0.8,0.2,0,0,0,0,0,0,0,0,0,0.1,0.4,0.5,0.3,-0.1,-0.5},<br />
+&nbsp;&nbsp;aoa_step = 10*RAD,<br />
+&nbsp;&nbsp;dp = 0.03,<br />
+&nbsp;&nbsp;di = {A=2.5,e=0.5},<br />
+&nbsp;&nbsp;dw = {M1=0.75,M2=1.0,M3=1.1,cmax=0.04}<br />
+}<br />
+<br />
+function vlift(hVessel,aoa,M,Re)<br />
+&nbsp;&nbsp;idx = math.floor((aoa+PI)/afv.aoa_step)<br />
+&nbsp;&nbsp;a = (aoa+PI-idx*afv.aoa_step)/afv.aoa_step<br />
+&nbsp;&nbsp;cl = afv.cl[idx+1]*(1-a) + afv.cl[idx+2]*a<br />
+&nbsp;&nbsp;cm = -0.03*math.sin(aoa-0.1)<br />
+&nbsp;&nbsp;saoa = math.sin(aoa)<br />
+&nbsp;&nbsp;cdp = afv.dp + 0.4*saoa*saoa<br />
+&nbsp;&nbsp;cdi = oapi.get_induceddrag(cl,afv.di.A,afv.di.e)<br />
+&nbsp;&nbsp;cdw = oapi.get_wavedrag(M,afv.dw.M1,afv.dw.M2,afv.dw.M3,afv.dw.cmax)<br />
+&nbsp;&nbsp;cd = cdp + cdi + cdw<br />
+&nbsp;&nbsp;return cl,cm,cd<br />
+end
+</div>
+<p>where the "afv" table defines the lift coefficient (cl) as a function of angle of attack
+in steps of 10 degrees, as well as some drag parameters. Note that afv is defined outside
+the callback function. This is a performance measure, to avoid re-interpretation of the
+table at each call of the coefficient function.</p>
+<p>Similar callback functions are required for any additional airfoils.</p>
+
+<h2>Step 6: Adding animations</h2>
+<p>Animations are typically defined during vessel creation (in the <a href="clbk_vessel.htm#clbk_setclasscaps">clbk_setclasscaps</a>
+function).</p>
+<p>An animation is created by the <a href="mtd_vessel.htm#create_animation">v:create_animation</a>
+vessel method:
+<div class="code">
+anim1 = vi:create_animation(0)
+</div></p>
+<p>The parameter for create_animation defines the animation state corresponding to
+the initial orientation of the mesh as defined in the mesh file. For example, if you
+want to define an animation for landing gear between retracted (state 0) and extended (state 1)
+positions, then if the gear is defined in retracted state in the mesh, call create_animation(0).
+If it is defined in extended state, call create_animation(1).</p>
+<p>An animation contains one or several <i>animation components</i>. Each
+animation component consists of a transformation (rotation, translation or scaling)
+of one or several mesh groups over a specified range.</p>
+<p>The transformation is defined by a table containing the parameters, for
+example
+<div class="code">
+trans1 = {<br />
+&nbsp;&nbsp;type='rotation',<br />
+&nbsp;&nbsp;mesh = 0,<br />
+&nbsp;&nbsp;grp = {2,5},<br />
+&nbsp;&nbsp;ref = {x=5,y=2,z=-4},<br />
+&nbsp;&nbsp;axis = {x=1,y=0,z=0},<br />
+&nbsp;&nbsp;angle = 50*RAD
+</div>
+to define a rotation around the x-axis over 50 degrees for mesh groups 2 and 5 of mesh 0.</p>
+<p>For a full list of fields for different animation types, see <a href="Datatypes.htm#animationcomponent">Mesh animation components</a>.</p>
+<p>To register the animation component with Orbiter, call the <a href="api_oapi.htm#oapi_create_animationcomponent">oapi.create_animationcomponent</a>
+function:
+<div class="code">
+animcomp1 = oapi.create_animationcomponent(trans1)
+</div></p>
+<p>Finally, you need to add the animation component to the animation with <a href="mtd_vessel.htm#add_animationcomponent">v:add_animationcomponent</a>:
+<div class="code">
+vi:add_animationcomponent(anim1,0,1,animcomp1)
+</div>
+where the second and third parameters are the temporal states (between 0 and 1) within the animation
+over which the component performs its transformation.</p>
+<p>You can add additional components to the animation, and you can create more animations.</p>
+<p>Once the animations are defined, they can be executed. Executing an animation
+is to set it to a specific state, using the <a href="mtd_vessel.htm#set_animation">v:set_animation</a>
+method:
+<div class="code">
+vi:set_animation(anim1,0.5)
+</div>
+which sets the animation state to halfway between the transformation endpoints.</p>
+<p>Usually, you want smooth transitions between the endpoints of the transformation.
+Therefore, set_animation must be called continuously while the animation is performed
+(typically in clbk_poststep). In this case, the simulation state is set as a function
+of time elapsed since the start of the animation.</p>
+
+<h2>Step 7: Further reading</h2>
+<p>The following Script Reference sections are useful when designing an MFD mode:
+<table>
+<tr><td><a href="clbk_vessel.htm">ScriptVessel callback functions</a></td><td>A list of script callback functions called by the ScriptVessel module</td></tr>
+<tr><td><a href="mtd_vessel.htm">Vessel member functions</a></td><td>A list of member functions for vessel objects.</td></tr>
+<tr><td><a href="api_oapi.htm">API interface functions</a></td><td>General functions to set or retrieve simulation parameters.</td></tr>
+</table>
+
+</p>
+
+</body>
+</html>

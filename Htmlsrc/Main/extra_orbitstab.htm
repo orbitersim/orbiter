@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Orbit stabilisation</title>
+</head>
+<body>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; <a href="tab_extra.htm">Extra</a> &gt; Orbit stabilisation</p>
+
+<h1>Orbit stabilisation</h1>
+<p>Orbiter generally uses a numerical integration method to propagate spacecraft state vectors (position and velocity) from one frame to the next. However, for very large time steps the accuracy of this method can deteriorate, leading to instabilities in the updates.</p>
+<p>To avoid this problem, Orbiter supports an <i>orbit stabilisation</i> method. Instead of integrating the state vectors themselves, during orbit stabilisation only the perturbations from a 2-body Keplerian orbit are integrated numerically. This method provides more stable results for large time intervals. Perturbations include the gravitational influence from other celestial bodies, asymmetry of the gravitational field due to nonspherical shape of the main gravitational source, atmospheric effects and thrust forces.</p>
+<p>This dialog allows to turn orbit stabilisation on or off. When enabled, there are additional parameters that determine the conditions under which Orbiter switches to orbit stabilisation mode.</p>
+<p><b>Orbit step limit</b>. This option determines the (angular) fraction of a complete orbit for a single frame above which Orbiter switches to stabilisation mode.</p>
+<p><b>Gravitational field perturbation limit</b>. This option determines the <i>upper</i> limit of the fractional contribution of perturbation forces to the total gravitational force above which orbit stabilisation will always be disabled. Orbit stabilisation becomes unreliable if perturbation effects are large compared to the main body's point gravitational field.</p>
+<p><b>Subsampling of perturbation integration</b>. For extremely large time steps, even the orbit stabilisation method becomes inaccurate. In this case, Orbiter allows to subdivide the update interval into smaller time steps to improve update precision. The options in this group define the number of subsampling steps to use. The target orbit step defines the fraction of a full orbit that should be covered in a subsampling step. If the full frame update covers a larger fraction, subsampling occurs.
+The Max. steps value defines an upper limit to the number of subsampling steps per frame.</p>
+<p><b>Perturbation model</b>. For large frame updates that propagate the orbit by more than the specified fraction, the perturbation effects from nonspherical gravity sources can be suppressed. In that case, the central body is regarded as a point source. This model is less realistic, but can improve the numerical stability of the update.</p>
+
+</body>
+</html>

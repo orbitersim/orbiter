@@ -1,0 +1,5312 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: Vessel methods</title>
+</HEAD>
+<BODY>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; Vessel methods</p>
+
+<h1>Vessel methods</h1>
+<p>The <i>Vessel</i> class contains methods that can query or set vessel properties and state variables. Use <a href="api_vessel.htm#vessel_get_interface">vessel.get_interface</a>
+or <a href="api_vessel.htm#vessel_get_focusinterface">vessel.get_focusinterface</a> to retrieve a Vessel object.
+Note that in the Lua Terminal MFD environment, a global variable <i>V</i> has been pre-defined to contain the current
+focus object.</p>
+<p>In the list below, <i>v</i> indicates a Vessel object.</p>
+
+<h2>See also:</h2>
+<p><a href="api_vessel.htm#vessel_get_interface">vessel.get_interface</a>,
+<a href="api_vessel.htm#vessel_get_focusinterface">vessel.get_focusinterface</a>.</p>
+
+<h2>Methods:</h2>
+<table class="summary">
+<tr>
+<td><a href="#get_handle">v:get_handle</a></td>
+<td>Returns a handle to the vessel object.</td>
+</tr>
+<tr>
+<td><a href="#send_bufferedkey">v:send_bufferedkey</a></td>
+<td>Sends a keystroke message to the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_gravityref">v:get_gravityref</a></td>
+<td>Returns a handle to the main contributor of the gravity field at the vessel’s current position.</td>
+</tr>
+<tr>
+<td><a href="#get_surfaceref">v:get_surfaceref</a></td>
+<td>Returns a handle to the surface reference object (planet or moon).</td>
+</tr>
+<tr>
+<td><a href="#get_altitude">v:get_altitude</a></td>
+<td>Returns the current vessel altitude.</td>
+</tr>
+<tr>
+<td><a href="#get_pitch">v:get_pitch</a></td>
+<td>Returns the current pitch angle.</td>
+</tr>
+<tr>
+<td><a href="#get_bank">v:get_bank</a></td>
+<td>Returns the current bank angle.</td>
+</tr>
+<tr>
+<td><a href="#get_yaw">v:get_yaw</a></td>
+<td>Returns the current yaw (heading) angle.</td>
+</tr>
+<tr>
+<td><a href="#get_angvel">v:get_angvel</a></td>
+<td>Returns the current angular velocity components.</td>
+</tr>
+<tr>
+<td><a href="#set_angvel">v:set_angvel</a></td>
+<td>Resets the current angular velocity components.</td>
+</tr>
+<tr>
+<td><a href="#get_elements">v:get_elements</a></td>
+<td>Returns osculating orbital elements.</td>
+</tr>
+<tr>
+<td><a href="#get_elementsex">v:get_elementsex</a></td>
+<td>Returns osculating orbital elements and additional orbital parameters.</td>
+</tr>
+<tr>
+<td><a href="#set_elements">v:set_elements</a></td>
+<td>Set vessel state (position and velocity by means of a set of osculating
+orbital elements.</td>
+</tr>
+<tr>
+<td><a href="#get_progradedir">v:get_progradedir</a></td>
+<td>Returns the direction of the orbital velocity vector in vessel coordinates.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>General vessel properties</b></td>
+</tr>
+<tr>
+<td><a href="#get_name">v:get_name</a></td>
+<td>Returns the vessel name.</td>
+</tr>
+<tr>
+<td><a href="#get_classname">v:get_classname</a></td>
+<td>Returns the vessel class name</td>
+</tr>
+<tr>
+<td><a href="#get_flightmodel">v:get_flightmodel</a></td>
+<td>Returns the requested realism level for the flight model.</td>
+</tr>
+<tr>
+<td><a href="#get_damagemodel">v:get_damagemodel</a></td>
+<td>Returns the current user setting for damage and systems failure simulation.</td>
+</tr>
+<tr>
+<td><a href="#get_enablefocus">v:get_enablefocus</a></td>
+<td>Returns true if the vessel can receive the input focus, false otherwise.</td>
+</tr>
+<tr>
+<td><a href="#set_enablefocus">v:set_enablefocus</a></td>
+<td>Enable or disable the vessel's ability to receive the input focus.</td>
+</tr>
+<tr>
+<td><a href="#get_size">v:get_size</a></td>
+<td>Returns the mean vessel radius.</td>
+</tr>
+<tr>
+<td><a href="#set_size">v:set_size</a></td>
+<td>Set the vessel's mean radius.</td>
+</tr>
+<tr>
+<td><a href="#get_emptymass">v:get_emptymass</a></td>
+<td>Returns the vessel's empty mass (excluding propellant mass).</td>
+</tr>
+<tr>
+<td><a href="#set_emptymass">v:set_emptymass</a></td>
+<td>Set the vessel's empty mass (excluding propellants).</td>
+</tr>
+<tr>
+<td><a href="#get_pmi">v:get_pmi</a></td>
+<td>Returns the vessel's principal moments of inertia.</td>
+</tr>
+<tr>
+<td><a href="#set_pmi">v:set_pmi</a></td>
+<td>Set the vessel's mass-normalised principal moments of inertia (PMI).</td>
+</tr>
+<tr>
+<td><a href="#get_crosssections">v:get_crosssections</a></td>
+<td>Returns the vessel's cross sections projected in the direction of the vessel's principal axes.</td>
+</tr>
+<tr>
+<td><a href="#set_crosssections">v:set_crosssections</a></td>
+<td>Defines the vessel's cross-sectional areas, projected in the directions of the vessel's principal axes.</td>
+</tr>
+<tr>
+<td><a href="#get_gravitygradientdamping">v:get_gravitygradientdamping</a></td>
+<td>Returns the vessel's damping coefficient for gravity field gradient-induced torque.</td>
+</tr>
+<tr>
+<td><a href="#set_gravitygradientdamping">v:set_gravitygradientdamping</a></td>
+<td>Sets the vessel's damping coefficient for gravity field gradient-induced torque.</td>
+</tr>
+<tr>
+<td><a href="#get_touchdownpoints">v:get_touchdownpoints</a></td>
+<td>Returns the three points defining the vessel's ground contact plane.</td>
+</tr>
+<tr>
+<td><a href="#set_touchdownpoints">v:set_touchdownpoints</a></td>
+<td>Defines the three points defining the vessel's ground contact plane.</td>
+</tr>
+<tr>
+<td><a href="#set_visibilitylimit">v:set_visibilitylimit</a></td>
+<td>Defines the vessel's range of visibility.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Vessel state</b></td>
+</tr>
+<tr>
+<td><a href="#get_mass">v:get_mass</a></td>
+<td>Returns the vessel's current mass.</td>
+</tr>
+<tr>
+<td><a href="#get_globalpos">v:get_globalpos</a></td>
+<td>Returns the vessel's position vector in global coordinates.</td>
+</tr>
+<tr>
+<td><a href="#get_globalvel">v:get_globalvel</a></td>
+<td>Returns the vessel's velocity vector in global coordinates.</td>
+</tr>
+<tr>
+<td><a href="#get_relativepos">v:get_relativepos</a></td>
+<td>Returns the vessel's current position with respect to another object.</td>
+</tr>
+<tr>
+<td><a href="#get_relativevel">v:get_relativevel</a></td>
+<td>Returns the vessel's current velocity relative to another object.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Atmospheric parameters</b></td>
+</tr>
+<tr>
+<td><a href="#get_atmref">v:get_atmref</a></td>
+<td>Returns a handle to the reference body for atmospheric calculations.</td>
+</tr>
+<tr>
+<td><a href="#get_atmtemperature">v:get_atmtemperature</a></td>
+<td>Returns ambient atmospheric temperature at current vessel position.</td>
+</tr>
+<tr>
+<td><a href="#get_atmdensity">v:get_atmdensity</a></td>
+<td>Returns atmospheric density at current vessel position.</td>
+</tr>
+<tr>
+<td><a href="#get_atmpressure">v:get_atmpressure</a></td>
+<td>Returns static atmospheric pressure at current vessel position.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Aerodynamic state parameters</b></td>
+</tr>
+<tr>
+<td><a href="#get_dynpressure">v:get_dynpressure</a></td>
+<td>Returns the current dynamic pressure for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_machnumber">v:get_machnumber</a></td>
+<td>Returns the vessel's current Mach number.</td>
+</tr>
+<tr>
+<td><a href="#get_groundspeed">v:get_groundspeed</a></td>
+<td>Returns the magnitude of the ground speed vector.</td>
+</tr>
+<tr>
+<td><a href="#get_groundspeedvector">v:get_groundspeedvector</a></td>
+<td>Returns the ground speed vector in the requested frame of reference.</td>
+</tr>
+<tr>
+<td><a href="#get_airspeed">v:get_airspeed</a></td>
+<td>Returns the magnitude of the true airspeed vector.</td>
+</tr>
+<tr>
+<td><a href="#get_airspeedvector">v:get_airspeedvector</a></td>
+<td>Returns the true airspeed vector in the requested frame of reference.</td>
+</tr>
+<tr>
+<td><a href="#get_shipairspeedvector">v:get_shipairspeedvector</a></td>
+<td>Obsolete - use <a href="#get_airspeedvector">get_airspeedvector</a> instead.</td>
+</tr>
+<tr>
+<td><a href="#get_horizonairspeedvector">v:get_horizonairspeedvector</a></td>
+<td>Obsolete - use <a href="#get_airspeedvector">get_airspeedvector</a> instead.</td>
+</tr>
+<tr>
+<td><a href="#get_aoa">v:get_aoa</a></td>
+<td>Returns the current angle of attack.</td>
+</tr>
+<tr>
+<td><a href="#get_slipangle">v:get_slipangle</a></td>
+<td>Returns the lateral (yaw) angle between the velocity vector and the vessel's longitudinal axis.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Airfoil definitions</b></td>
+</tr>
+<tr>
+<td><a href="#create_airfoil">v:create_airfoil</a></td>
+<td>Creates a new airfoil and defines its aerodynamic properties.</td>
+</tr>
+<tr>
+<td><a href="#del_airfoil">v:del_airfoil</a></td>
+<td>Deletes a previously defined airfoil.</td>
+</tr>
+<tr>
+<td><a href="#create_controlsurface">v:create_controlsurface</a></td>
+<td>Creates an aerodynamic control surface and returns a handle.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Aerodynamic properties (legacy model)</b></td>
+</tr>
+<tr>
+<td><a href="#get_cw">v:get_cw</a></td>
+<td>Returns the vessel's wind resistance coefficients (legacy flight model only).</td>
+</tr>
+<tr>
+<td><a href="#set_cw">v:set_cw</a></td>
+<td>Set the vessel's wind resistance coefficients along its axis directions (legacy flight model only).</td>
+</tr>
+<tr>
+<td><a href="#get_wingaspect">v:get_wingaspect</a></td>
+<td>Returns the vessel's wing aspect ratio (wingspan<sup>2</sup> / wing area).</td>
+</tr>
+<tr>
+<td><a href="#set_wingaspect">v:set_wingaspect</a></td>
+<td>Set the wing aspect ratio (wingspan<sup>2</sup> / wing area). </td>
+</tr>
+<tr>
+<td><a href="#get_wingeffectiveness">v:get_wingeffectiveness</a></td>
+<td>Returns the wing form factor used in aerodynamic calculations.</td>
+</tr>
+<tr>
+<td><a href="#set_wingeffectiveness">v:set_wingeffectiveness</a></td>
+<td>Set the wing form factor for aerodynamic lift and drag calculations.</td>
+</tr>
+<tr>
+<td><a href="#get_rotdrag">v:get_rotdrag</a></td>
+<td>Returns the vessel's atmospheric rotation resistance coefficients.</td>
+</tr>
+<tr>
+<td><a href="#set_rotdrag">v:set_rotdrag</a></td>
+<td>Set the vessel's atmospheric rotation resistance coefficients.</td>
+</tr>
+<tr>
+<td><a href="#get_pitchmomentscale">v:get_pitchmomentscale</a></td>
+<td>Returns the scaling factor for the pitch moment.</td>
+</tr>
+<tr>
+<td><a href="#set_pitchmomentscale">v:set_pitchmomentscale</a></td>
+<td>Sets the scaling factor for the pitch moment.</td>
+</tr>
+<tr>
+<td><a href="#get_yawmomentscale">v:get_yawmomentscale</a></td>
+<td>Returns the scaling factor for the yaw moment.</td>
+</tr>
+<tr>
+<td><a href="#set_yawmomentscale">v:set_yawmomentscale</a></td>
+<td>Sets the scaling factor for the yaw moment.</td>
+</tr>
+<tr>
+<td><a href="#get_trimscale">v:get_trimscale</a></td>
+<td>Returns the scaling factor for the pitch trim control.</td>
+</tr>
+<tr>
+<td><a href="#set_trimscale">v:set_trimscale</a></td>
+<td>Sets the scaling factor for the pitch trim control.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Vessel state</b></td>
+</tr>
+<tr>
+<td><a href="#is_landed">v:is_landed</a></td>
+<td>Returns the vessel's landind status.</td>
+</tr>
+<tr>
+<td><a href="#get_groundcontact">v:get_groundcontact</a></td>
+<td>Returns a flag indicating contact with a planetary surface.</td>
+</tr>
+<tr>
+<td><a href="#get_navmode">v:get_navmode</a></td>
+<td>Returns the activation state of an automated orbital navigation mode.</td>
+</tr>
+<tr>
+<td><a href="#set_navmode">v:set_navmode</a></td>
+<td>Activates or deactivates one of the automated orbital navigation modes.</td>
+</tr>
+<tr>
+<td><a href="#get_adcmode">v:get_adcmode</a></td>
+<td>Returns aerodynamic control surfaces currently under manual control.</td>
+</tr>
+<tr>
+<td><a href="#set_adcmode">v:set_adcmode</a></td>
+<td>Configure manual input mode for aerodynamic control surfaces.</td>
+</tr>
+<tr>
+<td><a href="#get_adclevel">v:get_adclevel</a></td>
+<td>Returns the current position of an aerodynamic control surface.</td>
+</tr>
+<tr>
+<td><a href="#set_adclevel">v:set_adclevel</a></td>
+<td>Updates the position of an aerodynamic control surface.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Forces</b></td>
+</tr>
+<tr>
+<td><a href="#get_weightvector">v:get_weightvector</a></td>
+<td>Returns the gravitational force vector in local vessel coordinates.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustvector">v:get_thrustvector</a></td>
+<td>Returns the thrust force vector in local vessel coordinates.</td>
+</tr>
+<tr>
+<td><a href="#get_liftvector">v:get_liftvector</a></td>
+<td>Returns the aerodynamic lift force vector in local vessel coordinates.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Fuel management</b></td>
+</tr>
+<tr>
+<td><a href="#create_propellantresource">v:create_propellantresource</a></td>
+<td>Create a new propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#del_propellantresource">v:del_propellantresource</a></td>
+<td>Remove a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#clear_propellantresources">v:clear_propellantresources</a></td>
+<td>Remove all propellant resources for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_propellantcount">v:get_propellantcount</a></td>
+<td>Returns the current number of vessel propellant resources.</td>
+</tr>
+<tr>
+<td><a href="#get_propellanthandle">v:get_propellanthandle</a></td>
+<td>Returns the handle of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#get_propellantmaxmass">v:get_propellantmaxmass</a></td>
+<td>Returns the maximum capacity of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#set_propellantmaxmass">v:set_propellantmaxmass</a></td>
+<td>Resets the maximum capacity of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#get_propellantmass">v:get_propellantmass</a></td>
+<td>Returns the current mass of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#set_propellantmass">v:set_propellantmass</a></td>
+<td>Reset the current mass of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#get_totalpropellantmass">v:get_totalpropellantmass</a></td>
+<td>Returns the vessel's current total propellant mass.</td>
+</tr>
+<tr>
+<td><a href="#get_propellantefficiency">v:get_propellantefficiency</a></td>
+<td>Returns the efficiency factor of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#set_propellantefficiency">v:set_propellantefficiency</a></td>
+<td>Reset the efficiency factor of a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#get_propellantflowrate">v:get_propellantflowrate</a></td>
+<td>Returns the current mass flow rate from a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#get_totalpropellantflowrate">v:get_totalpropellantflowrate</a></td>
+<td>Returns the current total mass flow rate, summed over all propellant resources.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Thruster management</b></td>
+</tr>
+<tr>
+<td><a href="#create_thruster">v:create_thruster</a></td>
+<td>Add a logical thruster definition for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#del_thruster">v:del_thruster</a></td>
+<td>Delete a logical thruster definition.</td>
+</tr>
+<tr>
+<td><a href="#clear_thrusters">v:clear_thrusters</a></td>
+<td>Delete all thruster and thruster group definitions.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustercount">v:get_thrustercount</a></td>
+<td>Returns the number of thrusters currently defined.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterhandle">v:get_thrusterhandle</a></td>
+<td>Returns the handle of a thruster specified by its index.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterresource">v:get_thrusterresource</a></td>
+<td>Returns a handle for the propellant resource feeding the thruster.</td>
+</tr>
+<tr>
+<td><a href="#set_thrusterresource">v:set_thrusterresource</a></td>
+<td>Connect a thruster to a propellant resource.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterpos">v:get_thrusterpos</a></td>
+<td>Returns the thrust force attack point of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#set_thrusterpos">v:set_thrusterpos</a></td>
+<td>Reset the thrust force attack point of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterdir">v:get_thrusterdir</a></td>
+<td>Returns the force direction of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#set_thrusterdir">v:set_thrusterdir</a></td>
+<td>Reset the force direction of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustermax0">v:get_thrustermax0</a></td>
+<td>Returns the maximum vacuum thust rating of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#set_thrustermax0">v:set_thrustermax0</a></td>
+<td>Reset the maximum vacuum thrust rating of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustermax">v:get_thrustermax</a></td>
+<td>Returns the pressure-dependent maximum thrust rating of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterisp0">v:get_thrusterisp0</a></td>
+<td>Returns the vacuum fuel-specific impulse (Isp) rating for a thruster.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterisp">v:get_thrusterisp</a></td>
+<td>Returns the pressure-dependent fuel-specific impulse (Isp) rating for a thruster.</td>
+</tr>
+<tr>
+<td><a href="#set_thrusterisp">v:set_thrusterisp</a></td>
+<td>Reset the fuel-specific impulse (Isp) rating of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#get_thrusterlevel">v:get_thrusterlevel</a></td>
+<td>Returns the current thrust level setting of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#set_thrusterlevel">v:set_thrusterlevel</a></td>
+<td>Set thrust level for a thruster.</td>
+</tr>
+<tr>
+<td><a href="#inc_thrusterlevel">v:inc_thrusterlevel</a></td>
+<td>Apply a change to the thrust level of a thruster.</td>
+</tr>
+<tr>
+<td><a href="#inc_thrusterlevel_singlestep">v:inc_thrusterlevel_singlestep</a></td>
+<td>Apply a change to a thruster level for the current frame only.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Thruster group management</b></td>
+</tr>
+<tr>
+<td><a href="#create_thrustergroup">v:create_thrustergroup</a></td>
+<td>Combine thrusters into a logical group.</td>
+</tr>
+<tr>
+<td><a href="#del_thrustergroup">v:del_thrustergroup</a></td>
+<td>Delete a thruster group.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustergrouphandle">v:get_thrustergrouphandle</a></td>
+<td>Returns the handle of a default thruster group.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustergrouphandlebyindex">v:get_thrustergrouphandlebyindex</a></td>
+<td>Returns the handle of a user-defined (nonstandard) thruster group.</td>
+</tr>
+<tr>
+<td><a href="#get_groupthrustercount">v:get_groupthrustercount</a></td>
+<td>Returns the number of thrusters assigned to a logical thruster group.</td>
+</tr>
+<tr>
+<td><a href="#get_groupthruster">v:get_groupthruster</a></td>
+<td>Returns a handle for a thruster that belongs to a thruster group.</td>
+</tr>
+<tr>
+<td><a href="#get_thrustergrouplevel">v:get_thrustergrouplevel</a></td>
+<td>Returns the mean thrust level for a thruster group.</td>
+</tr>
+<tr>
+<td><a href="#set_thrustergrouplevel">v:set_thrustergrouplevel</a></td>
+<td>Sets the thrust level for all thrusters in a group.</td>
+</tr>
+<tr>
+<td><a href="#inc_thrustergrouplevel">v:inc_thrustergrouplevel</a></td>
+<td>Increments the thrust level for all thrusters in a group.</td>
+</tr>
+<tr>
+<td><a href="#inc_thrustergrouplevel_singlestep">v:inc_thrustergrouplevel_singlestep</a></td>
+<td>Increment the thrust level for the group thrusters for the current frame only.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Exhaust and reentry render options</b></td>
+</tr>
+<tr>
+<td><a href="#add_exhaust">v:add_exhaust</a></td>
+<td>Add an exhaust render definition for a thruster.</td>
+</tr>
+<tr>
+<td><a href="#del_exhaust">v:del_exhaust</a></td>
+<td>Removes an exhaust render definition.</td>
+</tr>
+<tr>
+<td><a href="#get_exhaustcount">v:get_exhaustcount</a></td>
+<td>Returns the number of exhaust render definitions for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#add_exhauststream">v:add_exhauststream</a></td>
+<td>Adds an exhaust particle stream to a vessel.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Reaction control system</b></td>
+</tr>
+<tr>
+<td><a href="#get_rcsmode">v:get_rcsmode</a></td>
+<td>Returns the current RCS (reaction control system) thruster mode.</td>
+</tr>
+<tr>
+<td><a href="#set_rcsmode">v:set_rcsmode</a></td>
+<td>Sets the vessel's RCS (reaction control system) thruster mode.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Docking port management</b></td>
+</tr>
+<tr>
+<td><a href="#create_dock">v:create_dock</a></td>
+<td>Create a new docking port.</td>
+</tr>
+<tr>
+<td><a href="#del_dock">v:del_dock</a></td>
+<td>Delete a previously defined docking port.</td>
+</tr>
+<tr>
+<td><a href="#set_dockparams">v:set_dockparams</a></td>
+<td>Reset the parameters for a vessel docking port.</td>
+</tr>
+<tr>
+<td><a href="#get_dockparams">v:get_dockparams</a></td>
+<td>Returns the paramters of a docking port.</td>
+</tr>
+<tr>
+<td><a href="#get_dockcount">v:get_dockcount</a></td>
+<td>Returns the number of docking port available on the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_dockhandle">v:get_dockhandle</a></td>
+<td>Returns a handle for a vessel docking port.</td>
+</tr>
+<tr>
+<td><a href="#get_dockstatus">v:get_dockstatus</a></td>
+<td>Returns the current status of a docking port.</td>
+</tr>
+<tr>
+<td><a href="#undock">v:undock</a></td>
+<td>Undocks any vessel attached to docking port i.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Attachment management</b></td>
+</tr>
+<tr>
+<td><a href="#create_attachment">v:create_attachment</a></td>
+<td>Create a new attachment point.</td>
+</tr>
+<tr>
+<td><a href="#del_attachment">v:del_attachment</a></td>
+<td>Delete an attachment point.</td>
+</tr>
+<tr>
+<td><a href="#clear_attachments">v:clear_attachments</a></td>
+<td>Delete all attachment points defined for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#set_attachmentparams">v:set_attachmentparams</a></td>
+<td>Reset attachment position and orientation for an existing attachment point.</td>
+</tr>
+<tr>
+<td><a href="#get_attachmentparams">v:get_attachmentparams</a></td>
+<td>Retrieve the parameters of an attachment point.</td>
+</tr>
+<tr>
+<td><a href="#get_attachmentid">v:get_attachmentid</a></td>
+<td>Retrieve attachment identifier string.</td>
+</tr>
+<tr>
+<td><a href="#get_attachmentstatus">v:get_attachmentstatus</a></td>
+<td>Return the current status of an attachment point.</td>
+</tr>
+<tr>
+<td><a href="#get_attachmentcount">v:get_attachmentcount</a></td>
+<td>Return the number of child or parent attachment points defined for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_attachmentindex">v:get_attachmentindex</a></td>
+<td>Return the list index of the vessel's attachment point defined by its handle.</td>
+</tr>
+<tr>
+<td><a href="#get_attachmenthandle">v:get_attachmenthandle</a></td>
+<td>Return the handle of an attachment point identified by its list index.</td>
+</tr>
+<tr>
+<td><a href="#attach_child">v:attach_child</a></td>
+<td>Attach a child vessel to an attachment point.</td>
+</tr>
+<tr>
+<td><a href="#detach_child">v:detach_child</a></td>
+<td>Break an existing attachment to a child.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Navigation radio interface</b></td>
+</tr>
+<tr>
+<td><a href="#enable_transponder">v:enable_transponder</a></td>
+<td>Enable/disable transmission of transponder signal.</td>
+</tr>
+<tr>
+<td><a href="#get_transponder">v:get_transponder</a></td>
+<td>Returns handle of vessel transponder if available.</td>
+</tr>
+<tr>
+<td><a href="#set_transponderchannel">v:set_transponderchannel</a></td>
+<td>Switch the channel number of the vessel's transponder.</td>
+</tr>
+<tr>
+<td><a href="#enable_ids">v:enable_ids</a></td>
+<td>Enable/disable one of the vessel's IDS transmitters.</td>
+</tr>
+<tr>
+<td><a href="#get_ids">v:get_ids</a></td>
+<td>Returns handle of one of the vessel's IDS transmitters.</td>
+</tr>
+<tr>
+<td><a href="#set_idschannel">v:set_idschannel</a></td>
+<td>Switch the channel number of one of the vessel's IDS transmitters.</td>
+</tr>
+<tr>
+<td><a href="#init_navradios">v:init_navradios</a></td>
+<td>Defines the number of navigation radio receivers supported by the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_navcount">v:get_navcount</a></td>
+<td>Returns the number of NAV radio receivers.</td>
+</tr>
+<tr>
+<td><a href="#set_navchannel">v:set_navchannel</a></td>
+<td>Sets the channel of a NAV radio receiver.</td>
+</tr>
+<tr>
+<td><a href="#get_navchannel">v:get_navchannel</a></td>
+<td>Returns the current channel setting of a NAV radio receiver.</td>
+</tr>
+<tr>
+<td><a href="#get_navsource">v:get_navsource</a></td>
+<td>Returns handle of transmitter source currently received by one of the vessel's NAV receivers.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Light source management</b></td>
+</tr>
+<tr>
+<td><a href="#add_pointlight">v:add_pointlight</a></td>
+<td>Adds a new isotropic point light source to the vessel.</td>
+</tr>
+<tr>
+<td><a href="#add_spotlight">v:add_spotlight</a></td>
+<td>Adds a new directed spot light source to the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_lightemitter">v:get_lightemitter</a></td>
+<td>Returns a light source object identified by index.</td>
+</tr>
+<tr>
+<td><a href="#get_lightemittercount">v:get_lightemittercount</a></td>
+<td>Returns the number of light sources defined for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#del_lightemitter">v:del_lightemitter</a></td>
+<td>Delete one of the vessel's light sources.</td>
+</tr>
+<tr>
+<td><a href="#clear_lightemitters">v:clear_lightemitters</a></td>
+<td>Remove all light sources defined for the vessel.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Camera management</b></td>
+</tr>
+<tr>
+<td><a href="#get_cameraoffset">v:get_cameraoffset</a></td>
+<td>Returns the current camera position for internal (cockpit) view.</td>
+</tr>
+<tr>
+<td><a href="#set_cameraoffset">v:set_cameraoffset</a></td>
+<td>Set the camera position for internal (cockpit) view.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Mesh methods</b></td>
+</tr>
+<tr>
+<td><a href="#add_mesh">v:add_mesh</a></td>
+<td>Add a mesh definition for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#insert_mesh">v:insert_mesh</a></td>
+<td>Insert or replace a mesh at a specific index location of the vessel's mesh list.</td>
+</tr>
+<tr>
+<td><a href="#del_mesh">v:del_mesh</a></td>
+<td>Remove a mesh from the vessel's mesh list.</td>
+</tr>
+<tr>
+<td><a href="#clear_meshes">v:clear_meshes</a></td>
+<td>Remove all mesh definitions for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#get_meshcount">v:get_meshcount</a></td>
+<td>Returns the number of meshes defined for the vessel.</td>
+</tr>
+<tr>
+<td><a href="#shift_mesh">v:shift_mesh</a></td>
+<td>Shift the position of a mesh relative to the vessel's local coordinate system.</td>
+</tr>
+<tr>
+<td><a href="#shift_meshes">v:shift_meshes</a></td>
+<td>Shift the position of all meshes relative to the vessel's local coordinate system.</td>
+</tr>
+<tr>
+<td><a href="#get_meshoffset">v:get_meshoffset</a></td>
+<td>Returns the mesh offset in the vessel frame.</td>
+</tr>
+
+<tr>
+<td colspan="2" class="group"><b>Animation methods</b></td>
+</tr>
+<tr>
+<td><a href="#create_animation">v:create_animation</a></td>
+<td>Create a mesh animation object.</td>
+</tr>
+<tr>
+<td><a href="#del_animation">v:del_animation</a></td>
+<td>Delete an existing mesh animation object.</td>
+</tr>
+<tr>
+<td><a href="#set_animation">v:set_animation</a></td>
+<td>Set the state of an animation.</td>
+</tr>
+<tr>
+<td><a href="#add_animationcomponent">v:add_animationcomponent</a></td>
+<td>Add a component (rotation, translation or scaling) to an animation.</td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func"><a name="get_handle"></a>
+<h3>h = v:get_handle()</h3>
+<p>Returns a handle to the vessel object.</p>
+
+<h4>Return values:</h4>
+<p><table>
+<tr><td>h&nbsp;(handle):</td><td>vessel handle</td></tr>
+</table></p>
+</div>
+
+
+<div class="func"><a name="get_name"></a>
+<h3>name = v:get_name()</h3>
+<p>Returns the vessel name.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>name&nbsp;(string):</td><td>vessel name</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Another way to obtain a vessel name is by using the
+<a href="api_oapi.htm#get_objname">oapi.get_objname</a> function with
+the vessel handle. So you can use either</p>
+
+<div class="code">
+v = vessel.get_interface(hvessel)<br />
+name = v:get_name()
+</div>
+
+<p>or</p>
+
+<div class="code">
+name = oapi.get_objname(hvessel)
+</div>
+</div>
+
+
+<div class="func"><a name="get_classname"></a>
+<h3>cname = v:get_classname()</h3>
+<p>Returns the vessel's class name. The class name identifes the vessel type.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>cname&nbsp;(string):</td><td>vessel class name</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_flightmodel"></a>
+<h3>m = v:get_flightmodel()</h3>
+<p>Returns the requested realism level for the flight model.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>Flight model realism level.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The following realism levels are currently supported:</p>
+<table>
+<tr><td>0</td><td>simple</td></tr>
+<tr><td>1</td><td>realistic</td></tr>
+</table>
+<p>The returned value corresponds to that passed to the VESSEL constructor.</p>
+<p>The module can use this method to implement different flavours of
+the flight model (e.g. simplified and realistic), by defining
+separate sets of parameters (possibly higher fuel-specific impulse
+and higher thrust ratings in the simplified model, less severe
+damage limits, etc.)</p>
+
+<h4>See also:</h4>
+<p><a href="#get_damagemodel">v:get_damagemodel</a></p>
+</div>
+
+
+<div class="func"><a name="get_damagemodel"></a>
+<h3>m = v:get_damagemodel()</h3>
+<p>Returns the current user setting for damage and systems failure simulation.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>Damage modelling flags. The following settings are currently supported:
+<table>
+<tr><td>0</td><td>no damage or failures</td></tr>
+<tr><td>1</td><td>simulate vessel damage and system failures</td></tr>
+</table>
+</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The return value depends on the user parameter selection in the
+Launchpad dialog. It does not change during a simulation session
+and will be the same for all vessels.</p>
+<p>Future versions may support more differentiated bit flags to
+indicate different types of damage and failure simulation.</p>
+<p>A vessel implementation should query the damage flag to decide
+whether to simulate failures.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_flightmodel">v:get_flightmodel</a></p>
+</div>
+
+
+<div class="func"><a name="get_enablefocus"></a>
+<h3>f = v:get_enablefocus()</h3>
+<p>Returns true if the vessel can receive the input focus, false otherwise.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>f&nbsp;(boolean):</td><td>Focus enabled status.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The vessel can be allowed or prohibited to receive the input focus
+by using the <a href="#set_enablefocus">v:set_enablefocus</a> method.</p>
+<p>The initial state is defined by the EnableFocus setting in the
+vessel's configuration file. If the entry is missing, the default
+is true.</p>
+<p>Focus-enabled vessels can be selected by the user via the jump
+vessel dialog (F3).</p>
+<p>Once a vessel has received the input focus, all user input via
+keyboard, mouse and joystick is directed to this vessel.</p>
+<p>For some object types, such as jettisoned rocket stages, enabling
+input focus may not be useful.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_enablefocus">v:set_enablefocus</a></p>
+</div>
+
+
+<div class="func"><a name="set_enablefocus"></a>
+<h3>v:set_enablefocus(enable)</h3>
+<p>Enable or disable the vessel's ability to receive the input focus.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>enable&nbsp;(bool):</td><td>true to to allow the vessel to
+receive input focus, false otherwise.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The initial state is defined by the EnableFocus setting in the
+vessel's configuration file. If the entry is missing, the default
+is <i>true</i>.</p>
+<p>If the input focus of the current focus vessel is disabled, it
+will continue to receive user input, until the focus is switched
+to another vessel.</p>
+<p>Focus-enabled vessels can be selected by the user via the jump
+vessel dialog (F3).</p>
+<p>Once a vessel has received the input focus, all user input via
+keyboard, mouse and joystick is directed to this vessel.</p>
+<p>For some object types, such as jettisoned rocket stages, enabling
+input focus may not be useful.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_enablefocus">v:get_enablefocus</a></p>
+</div>
+
+
+<div class="func"><a name="get_size"></a>
+<h3>rad = v:get_size()</h3>
+<p>Returns the mean radius of the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>rad&nbsp;(number):</td><td>mean vessel radius [m]</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="set_size"></a>
+<h3>v:set_size(size)</h3>
+<p>Set the vessel's mean radius.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>size&nbsp;(number):</td><td>vessel mean radius [m]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The size should correspond to the vessel's visual representation, for
+example the mesh used to show the vessel in the simulation window.</p>
+<p>The size parameter is used by Orbiter to determine the camera distance
+at which the vessel is within visual range of the observer camera. It is
+also used for calculating various physical parameters.</p>
+<p>If SetSize is not called during the vessel setup, the value from the
+Size entry in the vessel configuration file is used.</p>
+</div>
+
+
+<div class="func"><a name="get_emptymass"></a>
+<h3>m = v:get_emptymass()</h3>
+<p>Returns the empty mass of the vessel (excluding propellant mass).</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>empty vessel mass [kg]</td></tr>
+</table>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_emptymass">v:set_emptymass</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_emptymass"></a>
+<h3>v:set_emptymass(emass)</h3>
+<p>Set the vessel's empty mass (excluding propellants).</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>emass&nbsp;(number):</td><td>vessel empty mass [kg]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The empty mass combines all parts of the vessel except propellant
+ resources defined via CreatePropellantResource.</p>
+<p>Use set_emptymass to account for structural changes such as stage or
+ booster separation, but not for fuel consumption, which is done directly
+ by Orbiter.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#get_emptymass">v:get_emptymass</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_pmi"></a>
+<h3>pmi = v:get_pmi()</h3>
+<p>Returns the vessel's principal moments of inertia.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pmi&nbsp;(vector):</td><td>diagonal elements of the mass-normalised inertia tensor [<b>m</b><sup>2</sup>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The inertia tensor describes the behaviour of a rigid body under angular acceleration. It is the analog of the body's mass in the linear case.</p>
+<p>The values returned by this function are the diagonal elements of the inertia tensor, in the local vessel frame of reference.</p>
+<p>Orbiter's definition of PMI is mass-normalised, that is, the values are divided by the total vessel mass.</p>
+<p>Orbiter assumes that off-diagonal elements can be neglected, that is, that the diagonal elements are the principal moments of inertia. This is usually a good approximation when the vessel is sufficiently symmetric with respect to its coordinate frame. Otherwise, a diagonalisation by rotating the local frame may be required.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_pmi">v:set_pmi</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_pmi"></a>
+<h3>v:set_pmi(pmi)</h3>
+<p>Set the vessel's mass-normalised principal moments of inertia (PMI).</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pmi&nbsp;(vector):</td><td>Diagonal elements of the vessel's inertia tensor [<b>m</b><sup>2</sup>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The inertia tensor describes the behaviour of a rigid body under angular acceleration.</p>
+<p>For more information and a definition of the PMI values, see <a href="#get_pmi">v:get_pmi</a>.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_pmi">v:get_pmi</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_crosssections"></a>
+<h3>cs = v:get_crosssections()</h3>
+<p>Returns the vessel's cross sections projected in the direction of the vessel's principal axes.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>cs&nbsp;(vector):</td><td>vector of cross sections of the vessel's
+ projection into the yz, xz and xy planes, respectively [<b>m</b><sup>2</sup>]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_crosssections">v:set_crosssections</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_crosssections"></a>
+<h3>v:set_crosssections(cs)</h3>
+<p>Defines the vessel's cross-sectional areas, projected in the directions of the vessel's principal axes.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>cs&nbsp;(vector):</td><td>vector of cross-sectional areas of the
+ vessel's projection along the x-axis into yz-plane, along the y-axis into
+ the xz-plane, and along the z-axis into the xy plane, respectively
+ [<b>m</b><sup>2</sup>]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_crosssections">v:get_crosssections</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_gravitygradientdamping"></a>
+<h3>ggd = v:get_gravitygradientdamping()</h3>
+<p>Returns the vessel's damping coefficient for gravity field gradient-induced torque.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ggd&nbsp;(number):</td><td>Torque damping coefficient (&ge; 0)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A nonspherical object in an inhomogeneous gravitational field experiences a
+ torque. This generates an undamped attitude oscillation in the vessel orbiting the
+ reference body.</p>
+<p>Damping may occur due to tidal deformation of the vessel, movement of liquids
+ (fuel) etc.</p>
+<p>If gravity gradient torque has been disabled in the launchpad dialog, this
+ function always returns 0.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_gravitygradientdamping">v:set_gravitygradientdamping</a>,
+<a href="#get_emptymass">v:get_emptymass</a>,
+<a href="#get_pmi">v:get_pmi</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_gravitygradientdamping"></a>
+<h3>ok = v:set_gravitygradientdamping(ggd)</h3>
+<p>Sets the vessel's damping coefficient for gravity field gradient-induced torque.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ggd&nbsp;(number):</td><td>Torque damping coefficient.</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> if damping coefficient was applied,
+ <i>false</i> if gravity gradient torque is disabled.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If gravity gradient torque has been disabled in the launchpad dialog, this
+ function returns false and has no other effect.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#get_gravitygradientdamping">v:get_gravitygradientdamping</a>,
+<a href="#set_emptymass">v:set_emptymass</a>,
+<a href="#set_pmi">v:set_pmi</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_touchdownpoints"></a>
+<h3>pt1,pt2,pt3 = v:get_touchdownpoints()</h3>
+<p>Returns the three points defining the vessel's ground contact plane.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pt1&nbsp;(vector):</td><td>touchdown point of nose wheel (or equivalent)</td></tr>
+<tr><td>pt2&nbsp;(vector):</td><td>touchdown point of left main wheel (or equivalent)</td></tr>
+<tr><td>pt2&nbsp;(vector):</td><td>touchdown point of right main wheel (or equivalent)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The function returns 3 reference points defining the vessel's 
+ surface contact points when touched down on a planetary surface (e.g.
+ landing gear).</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_touchdownpoints">v:set_touchdownpoints</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_touchdownpoints"></a>
+<h3>v:set_touchdownpoints(pt1,pt2,pt3)</h3>
+<p>Defines the three points defining the vessel's ground contact plane.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pt1&nbsp;(vector):</td><td>touchdown point of nose wheel (or equivalent)</td></tr>
+<tr><td>pt2&nbsp;(vector):</td><td>touchdown point of left main wheel (or equivalent)</td></tr>
+<tr><td>pt2&nbsp;(vector):</td><td>touchdown point of right main wheel (or equivalent)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The points are the positions at which the vessel's undercarriage
+ (or equivalent) touches the surface, specified in local vessel
+ coordinates.</p>
+<p>The order of points is significant since it defines the direction
+ of the normal. The points should be specified such that the cross
+ product pt3-pt1 x pt2-pt1 defines the horizon "up" direction for the
+ landed vessel (given a left-handed coordinate system).</p>
+<p>Modifying the touchdown points during the simulation while the
+ vessel is on the ground can result in jumps due to instantaneous
+ position changes (infinite acceleration). To avoid this, the
+ touchdown points should be modified gradually by small amounts over
+ time (proportional to simulation time steps).</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#get_touchdownpoints">v:get_touchdownpoints</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_visibilitylimit"></a>
+<h3>v:set_visibilitylimit(vislimit)<br />
+v:set_visibilitylimit(vislimit,spotlimit)</h3>
+<p>Defines the vessel's range of visibility.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>vislimit&nbsp;(number):</td><td>apparent size limit for vessel visibility</td></tr>
+<tr><td>spotlimit&nbsp;(number):</td><td>apparent size limit for vessel "spot" representation.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function can be used to define the distance up to which a
+vessel is visible, independent of screen resolution.</p>
+<p>The vislimit value is the limiting apparent size (as a fraction of
+the render window vertical) up to which the vessel is regarded
+visible. Thus, the vessel is visible if the following condition is
+satisfied: <div class="code">S (d tan a)<sup>-1</sup> &gt; vislimit</div>
+where S is the vessel size, d is its camera distance, and a is the
+camera aperture.</p>
+<p>If the defined visibility limit exceeds the distance at which the
+vessel can be rendered as a mesh at the given screen resolution,
+it will simply be represented by a circular spot whose size is
+reduced linearly (to reach zero at the limiting distance).</p>
+<p>If the vessel is to be visible beyond its geometric size (e.g. due
+to light beacons etc.) then the spotlimit value can be used to
+define the limiting distance due to the vessel's geometry, while
+vislimit defines the total visibility range including all
+enhancing factors such as beacons.</p>
+<p>spotlimit &le; vislimit is required. If spotlimit &lt; 0 (default),
+then spotlimit = vislimit is assumed.</p>
+<p>If set_visibilitylimit is not called, then the default value is
+vislimit = spotlimit = 1e-3.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_size">v:set_size</a>,
+<a href="#set_clipradius">v:set_clipradius</a></p>
+</div>
+
+
+<div class="func"><a name="get_mass"></a>
+<h3>m = v:get_mass()</h3>
+<p>Returns the current total mass of the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>current total vessel mass [kg]</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_globalpos"></a>
+<h3>pos = v:get_globalpos()</h3>
+<p>Returns the vessel's current position in global (barycentric ecliptic) coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>cartesian position vector (<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The global frame is given by the barycentric ecliptic coordinates at epoch J2000.0.</p>
+</div>
+
+
+<div class="func"><a name="get_globalvel"></a>
+<h3>vel = v:get_globalvel()</h3>
+<p>Returns the vessel's velocity vector in global (barycentric ecliptic) coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>vel&nbsp;(vector):</td><td>cartesian velocity vector [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The global frame is given by the barycentric ecliptic coordinates at epoch J2000.0.</p>
+</div>
+
+
+<div class="func"><a name="get_relativepos"></a>
+<h3>pos = v:get_relativepos(href)</h3>
+<p>Returns the vessel's current position with respect to another object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>href&nbsp;(handle):</td><td>reference object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>position vector [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns the vessel's position relative tot he position of the
+object defined by handle href.</p>
+<p>Results are returned in the ecliptic frame (ecliptic and equinox of J2000.0).</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_globalpos">get_globalpos</a>,
+<a href="#get_relativevel">get_relativevel</a>,
+<a href="#get_globalvel">get_globalvel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_relativevel"></a>
+<h3>vel = v:get_relativevel(href)</h3>
+<p>Returns the vessel's current velocity relative to another object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>href&nbsp;(handle):</td><td>reference object handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>vel&nbsp;(vector):</td><td>vector receiving velocity [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns the vessel's velocity relative to the velocity of the
+ object defined by handle <i>href</i>.</p>
+<p>Results are returned in the ecliptic frame (ecliptic and equinox of J2000.0).</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_globalvel">v:get_globalvel</a>,
+<a href="#get_globalpos">v:get_globalpos</a>,
+<a href="#get_relativepos">v:get_relativepos</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_atmref"></a>
+<h3>h = v:get_atmref()</h3>
+<p>Returns a handle to the reference body for atmospheric calculations.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>Handle for the celestial body whose atmosphere the
+vessel is currently moving through, or <i>nil</i> if the vessel is not inside an
+atmosphere.</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_atmtemperature"></a>
+<h3>temp = v:get_atmtemperature()</h3>
+<p>Returns ambient atmospheric temperature at current vessel position.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>temp&nbsp;(number):</td><td>Ambient temperature [K] at current vessel position.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns 0 if the vessel is outside all planetary atmospheric hulls,
+ as defined by the planets' AtmAltLimit parameters.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_atmdensity">v:get_atmdensity</a>,
+<a href="#get_atmpressure">v:get_atmpressure</a>,
+<a href="#get_atmref">v:get_atmref</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_atmdensity"></a>
+<h3>rho = v:get_atmdensity()</h3>
+<p>Returns atmospheric density at current vessel position.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>rho&nbsp;(number):</td><td>Atmospheric density [kg/m<sup>3</sup>] at current vessel position. 
+</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns 0 if the vessel is outside all planetary atmospheric hulls,
+ as defined by the planets' AtmAltLimit parameters.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_atmtemperature">v:get_atmtemperature</a>,
+<a href="#get_atmpressure">v:get_atmpressure</a>,
+<a href="#get_atmref">v:get_atmref</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_atmpressure"></a>
+<h3>p = v:get_atmpressure()</h3>
+<p>Returns static atmospheric pressure at current vessel position.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>p&nbsp;(number):</td><td>Static atmospheric pressure [Pa] at current vessel position.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns 0 if the vessel is outside all planetary atmospheric hulls, as defined by the planets' AtmAltLimit parameters.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_atmtemperature">v:get_atmtemperature</a>,
+<a href="#get_atmdensity">v:get_atmdensity</a>,
+<a href="#get_atmref">v:get_atmref</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_dynpressure"></a>
+<h3>p = v:get_dynpressure()</h3>
+<p>Returns the current dynamic pressure for the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>p&nbsp;(number):</td><td>current vessel dynamic pressure [Pa]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The dynamic pressure is defined as q = 1/2 &rho; V<sup>2</sup> with density
+&rho; and airflow vector V. Dynamic pressure is an important aerodynamic parameter.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_atmpressure">get_atmpressure</a>, <a href="#get_atmref">get_atmref</a></p>
+</div>
+
+
+<div class="func"><a name="get_machnumber"></a>
+<h3>m = v:get_machnumber()</h3>
+<p>Returns the vessel's current Mach number.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>Mach number - the ratio of current freestream airflow
+velocity over speed of sound.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The speed of sound depends on several parameters, e.g. atmospheric
+composition and temperature. The Mach number can therefore vary even if
+the airspeed is constant.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_airspeed">get_airspeed</a>, <a href="#get_atmref">get_atmref</a></p>
+</div>
+
+
+<div class="func"><a name="get_groundspeed"></a>
+<h3>spd = v:get_groundspeed()</h3>
+<p>Returns magnitude of the vessel's current ground speed vector.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>spd&nbsp;(number):</td><td>magnitude of ground speed vector [m/s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The ground speed is defined as the vessel's velocity relative to a point
+at the vessel location fixed in the reference planet's frame of reference.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_groundspeedvector">get_groundspeedvector</a>, <a href="#get_airspeed">get_airspeed</a></p>
+</div>
+
+
+<div class="func"><a name="get_groundspeedvector"></a>
+<h3>vel = v:get_groundspeedvector(frame)</h3>
+<p>Returns the ground speed vector in the requested frame of reference.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>frame&nbsp;(integer):</td><td>frame of reference flag (see <a href="constant.htm#refframe">REFFRAME</a> identifiers)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>vel&nbsp;(vector):</td><td>ground speed vector [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Valid entries for <i>frame</i> are:</p>
+<table cols=2>
+<tr><td>REFFRAME.GLOBAL</td><td>ground speed in global frame</td></tr>
+<tr><td>REFFRAME.LOCAL</td><td>ground speed in local vessel frame</td></tr>
+<tr><td>REFFRAME.REFLOCAL</td><td>ground speed in local planet frame</td></tr>
+<tr><td>REFFRAME.HORIZON</td><td>ground speed in local horizon frame</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_airspeed">get_airspeed</a>, <a href="#get_groundspeedvector">get_groundspeedvector</a></p>
+</div>
+
+
+<div class="func"><a name="get_airspeed"></a>
+<h3>spd = v:get_airspeed()</h3>
+<p>Returns magnitude of the vessel's current true airspeed vector.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>spd&nbsp;(number):</td><td>magnitude of true airspeed vector [m/s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function also works in the absence of an atmosphere. At low
+altitudes, the returned value is a ground-speed equivalent. At high
+altitudes the value diverges from ground speed, since an atmospheric drag
+effect is assumed.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_airspeedvector">get_airspeedvector</a>, <a href="#get_groundspeed">get_groundspeed</a></p>
+</div>
+
+
+<div class="func"><a name="get_airspeedvector"></a>
+<h3>vel = v:get_airspeedvector(frame)</h3>
+<p>Returns the true airspeed vector in the requested frame of reference.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>frame&nbsp;(integer):</td><td>frame of reference flag (see <a href="constant.htm#refframe">REFFRAME</a> identifiers)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>vel&nbsp;(vector):</td><td>true airspeed vector [<b>m/s</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Valid entries for <i>frame</i> are:</p>
+<table cols=2>
+<tr><td>REFFRAME.GLOBAL</td><td>airspeed in global frame</td></tr>
+<tr><td>REFFRAME.LOCAL</td><td>airspeed in local vessel frame</td></tr>
+<tr><td>REFFRAME.REFLOCAL</td><td>airspeed in local planet frame</td></tr>
+<tr><td>REFFRAME.HORIZON</td><td>airspeed in local horizon frame</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_airspeed">get_airspeed</a>, <a href="#get_groundspeedvector">get_groundspeedvector</a></p>
+</div>
+
+
+<div class="func"><a name="get_shipairspeedvector"></a>
+<h3>vel = v:get_shipairspeedvector()</h3>
+<p>This function is obsolete. Use <a href="#get_airspeedvector">v:get_airspeedvector</a> instead.</p>
+</div>
+
+
+<div class="func"><a name="get_horizonairspeedvector"></a>
+<h3>vel = v:get_horizonairspeedvector()</h3>
+<p>This function is obsolete. Use <a href="#get_airspeedvector">v:get_airspeedvector</a> instead.</p>
+</div>
+
+
+<div class="func"><a name="get_aoa"></a>
+<h3>aoa = v:get_aoa()</h3>
+<p>Returns the current angle of attack (AOA).</p>
+
+<h4>Return values:</h4>
+<table cols=2>
+<tr><td>aoa&nbsp;(number):</td><td>angle of attack [rad] (range: -&pi; ... +&pi;)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The AOA value is defined as the angle between the vessel's positive z axis
+and the flight path direction, projected into the yz-plane of the vessel's
+local coordinate system.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_slipangle">v:get_slipangle</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_slipangle"></a>
+<h3>beta = v:get_slipangle()</h3>
+<p>Returns the lateral (yaw) angle between the velocity vector and the vessel's longitudinal axis.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>beta&nbsp;(number):</td><td>slip angle [rad] in the range -&pi; ... +&pi;.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_aoa">v:get_aoa</a>
+</p>
+</div>
+
+
+<div class="func"><a name="create_airfoil"></a>
+<h3>hAirfoil = v:create_airfoil(orientation,ref,coeff_func,c,S,A)</h3>
+<p>Creates a new airfoil and defines its aerodynamic properties.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>orientation&nbsp;(number):</td><td>orientation of the lift vector (see <a href="constant.htm#lift">Airfoil orientation</a>)</td></tr>
+<tr><td>ref&nbsp;(vector):</td><td>centre of pressure in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>coeff_func&nbsp;(string):</td><td>callback function name (see notes)</td></tr>
+<tr><td>c&nbsp;(number):</td><td>airfoil chord length [m]</td></tr>
+<tr><td>S&nbsp;(number):</td><td>wing area [m<sup>2</sup>]</td></tr>
+<tr><td>A&nbsp;(number):</td><td>wing aspect ratio</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hAirfoil&nbsp;(handle):</td><td>airfoil handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A vessel can define multiple airfoils (for wings, main body, tail
+ stabilisators, etc.). In general, it should define at least one vertical
+ and one horizontal component.</p>
+<p>Airfoil definitions for wings and horizontal stabilisers set align to
+ LIFT.VERTICAL. Vertical stabilisers (vertical tail fin, etc.) set align
+ to LIFT.HORIZONTAL.</p>
+<p>The centre of pressure is the point at which the lift and drag forces
+ generated by the airfoil are applied to the vessel. Together with the
+ moment coefficient it defines the aerodynamic stability of the vessel.
+ Usually the CoP will be aft of the CG, and the moment coefficient will
+ have a negative slope around the trim angle of attack.</p>
+<p>The <i>coeff_func</i> is a callback function which must be supplied by
+ the script. It calculates the lift, moment and drag coefficients for the
+ airfoil. It has the following interface: 
+ <div class="code">
+ function &lt;func_name&gt;(hVessel,aoa,M,Re)<br />
+ ...<br />
+ return cl,cm,cd<br />
+ end
+ </div>
+ The function must return three values in the following order:
+ the lift coefficient (cl), moment coefficient (cm) and drag
+ coefficient (cd), as a function of angle of attack aoa [rad], Mach number
+ M and Reynolds number Re. Note that aoa can range over the full circle
+ (-pi to pi). For vertical lift components, aoa is the pitch angle of
+ attack (a), while for horizontal components it is the yaw angle of attack
+ (b).</p>
+<p>If the wing area <i>S</i> is set to 0, then Orbiter uses the projected
+ vessel cross sections to define a reference area. Let (<i>v<sub>x</sub></i>,
+ <i>v<sub>y</sub></i>, <i>v<sub>z</sub></i>) be the unit vector of
+ freestream air flow in vessel coordinates. Then the reference area is calculated as
+ <i>S</i> = <i>v<sub>z</sub>C<sub>z</sub></i> + <i>v<sub>y</sub>C<sub>y</sub></i>
+ for a LIFT.VERTICAL airfoil, and as
+ <i>S</i> = <i>v<sub>z</sub>C<sub>z</sub></i> + <i>v<sub>x</sub>C<sub>x</sub></i>
+ for a LIFT.HORIZONTAL airfoil, where <i>C<sub>x</sub></i>, <i>C<sub>y</sub></i>,
+ <i>C<sub>z</sub></i> are the vessel cross-sections in x, y and z direction,
+ respectively.</p>
+<p>The wing aspect ratio is defined as defined as <i>A</i> = <i>b</i><sup>2</sup>/<i>S</i>
+ with wing span <i>b</i>.</p>
+<p>If no airfoils are defined, Orbiter will fall back to its legacy drag
+ calculation, using the cw coefficients defined in <a href="#set_cw">v:set_cw</a>.
+ The legacy model does not support lift forces.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#del_airfoil">v:del_airfoil</a>
+</p>
+</div>
+
+
+<div class="func"><a name="del_airfoil"></a>
+<h3>ok = v:del_airfoil(hAirfoil)</h3>
+<p>Deletes a previously defined airfoil.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAirfoil&nbsp;(handle):</td><td>airfoil handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>false</i> indicates failure (invalid handle)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If all the vessel's airfoils are deleted without creating new ones,
+ Orbiter reverts to the obsolete legacy atmospheric flight model.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_airfoil">v:create_airfoil</a>
+</p>
+</div>
+
+
+<div class="func"><a name="create_controlsurface"></a>
+<h3>hctrl = v:create_controlsurface(type,area,dcl,ref[,axis[,delay[,anim]]])</h3>
+<p>Creates an aerodynamic control surface and returns a handle.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>type&nbsp;(integer):</td><td>control surface type (see
+ <a href="constant.htm#airctrl">Aerodynamic control surface types</a>)</td></tr>
+<tr><td>area&nbsp;(number):</td><td>control surface area [m<sup>2</sup>]</td></tr>
+<tr><td>dcl&nbsp;(number):</td><td>shift in lift coefficient achieved by fully extended control</td></tr>
+<tr><td>ref&nbsp;(vector):</td><td>centre of pressure in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>axis&nbsp;(integer):</td><td>optional: rotation axis (see
+ <a href="constant.htm#airctrl_axis">Control surface axis orientation</a>; default:
+ AIRCTRL_AXIS.AUTO)</td></tr>
+<tr><td>delay&nbsp;(number):</td><td>optional: response delay setting [s] (default: 1)</td></tr>
+<tr><td>anim&nbsp;(integer):</td><td>optional: animation reference (default: not
+ linked to animation)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hctrl&nbsp;(handle):</td><td>control surface handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Control surfaces include elevators, rudders, ailerons, flaps, etc. They can be
+ used to control the vessel during atmospheric flight.</p>
+<p>When selecting automatic axis control (axis=AIRCTRL_AXIS.AUTO), the following
+ axes will be used for given control surfaces:
+ <table>
+ <tr><td>Elevator</td><td>XPOS</td></tr>
+ <tr><td>Rudder</td><td>YPOS</td></tr>
+ <tr><td>Aileron</td><td>XPOS if ref.x &gt; 0, XNEG otherwise</td></tr>
+ <tr><td>Flap</td><td>XPOS</td></tr>
+ </table> 
+</p>
+<p>For ailerons, at least 2 control surfaces should be defined (e.g. on left and
+ right wing) with opposite rotation axes, to obtain the angular momentum for banking
+ the vessel.</p>
+<p>Elevators typically use the XPOS axis, assuming the that the centre of pressure
+ is aft of the centre of gravity. If pitch control is provided by a canard
+ configuration ahead of the CoG, XNEG should be used instead.</p>
+<p>The centre of pressure defined by the ref parameter is the point at which the
+ lift and drag forces for the control surface are applied.</p>
+<p>To improve performance, multiple control surfaces may sometimes be defined by a
+ single call to v:create_controlsurface. For example, the elevator controls on the
+ left and right wing may be combined by setting a centered attack point.</p>
+<p>Control surfaces can be animated, by passing an animation reference to
+ v:create_controlsurface. The animation reference is obtained when creating the
+ animation with <a href="#create_animation">v:create_animation</a>. The animation
+ should support a state in the range from 0 to 1, with neutral surface position at
+ state 0.5.</p>
+</div>
+
+
+<div class="func"><a name="get_cw"></a>
+<h3>cw = v:get_cw()</h3>
+<p>Returns the vessel's wind resistance coefficients (legacy flight model only).</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>cw&nbsp;(table):</td><td>resistance coefficients in principal directions (see notes).</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The cw coefficients are only used by the legacy flight model (if no
+ airfoils are defined). In the presence of airfoils, drag calculations are
+ performed on the basis of the airfoil parameters.</p>
+<p>The parameter passed to this function must be a table with 4 fields:
+ 'x', 'y', 'z', 'zn'., where 'z' is the coefficient in +z (forward) direction,
+ 'zn' is the coefficient in -z (backward) direction, 'x' is the coefficient
+ in lateral (left/right) direction, and 'y' is the coefficient in vertical
+ (up/down) direction. Drag coefficients in lateral and vertical direction are
+ assumed symmetric.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_cw">v:set_cw</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_cw"></a>
+<h3>v:set_cw(cw)</h3>
+<p>Set the vessel's wind resistance coefficients along its axis directions.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>cw&nbsp;(table):</td><td>resistance coefficients in principal directions (see notes).</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The cw coefficients are only used by the legacy flight model (if no
+ airfoils are defined). In the presence of airfoils, drag calculations are
+ performed on the basis of the airfoil parameters.</p>
+<p>The parameter passed to this function must be a table with 4 fields:
+ 'x', 'y', 'z', 'zn'., where 'z' is the coefficient in +z (forward) direction,
+ 'zn' is the coefficient in -z (backward) direction, 'x' is the coefficient
+ in lateral (left/right) direction, and 'y' is the coefficient in vertical
+ (up/down) direction. Drag coefficients in lateral and vertical direction are
+ assumed symmetric.</p>
+<p>The 'x', 'y' and 'z' fields are identical to a standard vector variable,
+ and can thus be assigned via vector operations, but the 'zn' field must be
+ added manually.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#get_cw">v:get_cw</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_wingaspect"></a>
+<h3>aspect = v:get_wingaspect()</h3>
+<p>Returns the vessel's wing aspect ratio.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>aspect&nbsp;(number):</td><td>Wing aspect ratio (wingspan<sup>2</sup> / wing area)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The aspect ratio returned by this function is only used by the legacy
+ aerodynamic flight model. If the vessel uses the new flight model (i.e.
+ defines at least one airfoil), then this value is ignored, and the
+ airfoil parameters are used instead.</p>
+<p>The aspect ratio is used in the calculation of induced drag.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_wingaspect">v:set_wingaspect</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_wingaspect"></a>
+<h3>v:set_wingaspect(aspect)</h3>
+<p>Set the wing aspect ratio.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>aspect&nbsp;(number):</td><td>Wing aspect ratio (wingspan<sup>2</sup> / wing area)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function defines the wing aspect ratio for the legacy flight model.
+ If the vessel uses the new flight model (i.e. defines at least one
+ airfoil), then this value is ignored, and the airfoil parameters are used
+ instead.</p>
+<p>The aspect ratio is used in the calculation of induced drag.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_wingaspect">v:get_wingaspect</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_wingeffectiveness"></a>
+<h3>eff = v:get_wingeffectiveness()</h3>
+<p>Returns the wing form factor used in aerodynamic calculations.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>eff&nbsp;(number):</td><td>wing form factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The form factor returned by this function is only used by the legacy
+ aerodynamic flight model. If the vessel uses the new flight model (i.e.
+ defines at least one airfoil), then this value is ignored, and the
+ airfoil parameters are used instead.</p>
+<p>The form factor, together with the aspect ratio, determines the amount
+ of induced drag for given lift. Higher values of the form factor result
+ in lower drag.</p>
+<p>Typical values are ~3.1 for elliptic wings, ~2.8 for tapered wings, and
+ ~2.5 for rectangular wings. Default is 2.8.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_wingeffectiveness">v:set_wingeffectiveness</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_wingeffectiveness"></a>
+<h3>v:set_wingeffectiveness(eff)</h3>
+<p>Set the wing form factor for aerodynamic lift and drag calculations.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>eff&nbsp;(number):</td><td>wing form factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function defines the wing form factor for the legacy flight model.
+ If the vessel uses the new flight model (i.e. defines at least one
+ airfoil), then this value is ignored, and the airfoil parameters are used
+ instead.</p>
+<p>The form factor, together with the aspect ratio, determines the amount
+ of induced drag for given lift. Higher values of the form factor result
+ in lower drag.</p>
+<p>Typical values for eff are: ~3.1 for elliptic wings, ~2.8 for tapered
+ wings, ~2.5 for rectangular wings.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#get_wingeffectiveness">v:get_wingeffectiveness</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_rotdrag"></a>
+<h3>rd = v:get_rotdrag()</h3>
+<p>Returns the vessel's atmospheric rotation resistance coefficients.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>rd&nbsp;(vector):</td><td>drag coefficients for rotation around the 3 vessel axes</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>rd contains the components <i>r<sub>x,y,z</sub></i> against rotation around
+ the local vessel axes in atmosphere, where angular deceleration due to
+ atmospheric friction is defined as <i>a<sub>x,y,z</sub></i> = -<i>&omega;<sub>x,y,z</sub></i>
+ <i>q</i> <i>S<sub>y</sub></i> <i>r<sub>x,y,z</sub></i> with angular velocity <i>&omega;</i>, dynamic
+ pressure <i>q</i> and reference surface <i>S<sub>y</sub></i>, defined by the vessel's
+ cross section projected along the vertical (y) axis.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_rotdrag">v:set_rotdrag</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_rotdrag"></a>
+<h3>v:set_rotdrag(rd)</h3>
+<p>Set the vessel's atmospheric rotation resistance coefficients.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>rd&nbsp;(vector):</td><td>drag coefficients for rotation around the 3 vessel axes</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>rd contains the components <i>r<sub>x,y,z</sub></i> against rotation around
+ the local vessel axes in atmosphere, where angular deceleration due to
+ atmospheric friction is defined as <i>a<sub>x,y,z</sub></i> = -<i>&omega;<sub>x,y,z</sub></i>
+ <i>q</i> <i>S<sub>y</sub></i> <i>r<sub>x,y,z</sub></i> with angular velocity <i>&omega;</i>, dynamic
+ pressure <i>q</i> and reference surface <i>S<sub>y</sub></i>, defined by the vessel's
+ cross section projected along the vertical (y) axis.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_rotdrag">v:get_rotdrag</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_pitchmomentscale"></a>
+<h3>pms = v:get_pitchmomentscale()</h3>
+<p>Returns the scaling factor for the pitch moment.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pms&nbsp;(number):</td><td>pitch moment scale factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The pitch moment is the angular moment around the vessel's lateral (x)
+ axis occurring in atmospheric flight. It works toward reducing the pitch
+ angle (angle of attack).</p>
+<p>The larger the scaling factor, the stronger the effect becomes ("stiff
+ handling")</p>
+<p>This value is only used with the old aerodynamic flight model, i.e. if
+ no airfoils have been defined.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_pitchmomentscale">v:set_pitchmomentscale</a>,
+<a href="#get_yawmomentscale">v:get_yawmomentscale</a>,
+<a href="#set_yawmomentscale">v:set_yawmomentscale</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_pitchmomentscale"></a>
+<h3>v:set_pitchmomentscale(pms)</h3>
+<p>Sets the scaling factor for the pitch moment.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pms&nbsp;(number):</td><td>pitch moment scale factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The pitch moment is the angular moment around the vessel's lateral (x)
+ axis occurring in atmospheric flight. It works toward reducing the pitch
+ angle (angle of attack).</p>
+<p>The larger the scaling factor, the stronger the effect becomes ("stiff
+ handling")</p>
+<p>This value is only used with the old aerodynamic flight model, i.e. if
+ no airfoils have been defined.</p>
+<p>The default value is 0.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_pitchmomentscale">v:get_pitchmomentscale</a>,
+<a href="#get_yawmomentscale">v:get_yawmomentscale</a>,
+<a href="#set_yawmomentscale">v:set_yawmomentscale</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_yawmomentscale"></a>
+<h3>yms = v:get_yawmomentscale()</h3>
+<p>Returns the scaling factor for the yaw moment.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>yms&nbsp;(number):</td><td>yaw moment scale factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The yaw moment is the angular moment around the vessel's vertical (y)
+ axis occurring in atmospheric flight. It works toward reducing the slip
+ angle between the vessel's longidudinal axis and the airstream vector.</p>
+<p>This value is only used with the old aerodynamic flight model, i.e. if
+ no airfoils have been defined.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_yawmomentscale">v:set_yawmomentscale</a>,
+<a href="#get_pitchmomentscale">v:get_pitchmomentscale</a>,
+<a href="#set_pitchmomentscale">v:set_pitchmomentscale</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_yawmomentscale"></a>
+<h3>v:set_yawmomentscale(yms)</h3>
+<p>Sets the scaling factor for the yaw moment.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>yms&nbsp;(number):</td><td>scale factor for slip angle moment.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The yaw moment is the angular moment around the vessel's vertical (y)
+ axis occurring in atmospheric flight. It works toward reducing the slip
+ angle between the vessel's longidudinal axis and the airstream vector.</p>
+<p>This value is only used with the old aerodynamic flight model, i.e. if
+ not airfoils have been defined.</p>
+<p>The default value is 0.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_yawmomentscale">v:get_yawmomentscale</a>,
+<a href="#get_pitchmomentscale">v:get_pitchmomentscale</a>,
+<a href="#set_pitchmomentscale">v:set_pitchmomentscale</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_trimscale"></a>
+<h3>ts = v:get_trimscale()</h3>
+<p>Returns the scaling factor for the pitch trim control.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ts&nbsp;(number):</td><td>pitch trim scale factor.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns the value previously set with
+ <a href="#set_trimscale">v:set_trimscale</a>.</p>
+<p>It is only used with the old atmospheric flight model (if no airfoils
+ have been defined).</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_trimscale">v:set_trimscale</a>,
+<a href="#get_pitchmomentscale">v:get_pitchmomentscale</a>,
+<a href="#get_yawmomentscale">v:get_yawmomentscale</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_trimscale"></a>
+<h3>v:set_trimscale(ts)</h3>
+<p>Sets the scaling factor for the pitch trim control.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ts&nbsp;(number):</td><td>pitch trim scale factor.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method is used only in combination with the old flight model, that
+ is, if the vessel doesn't define any airfoils. In the new flight model,
+ this has been replaced by
+ <a href="#create_controlsurface">v:create_controlsurface</a>(AIRCTRL.ELEVATORTRIM, ...).
+</p>
+<p>If <i>ts</i> is set to zero (default) the vessel does not have a pitch
+ trim control.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_trimscale">v:get_trimscale</a>,
+<a href="#get_pitchmomentscale">v:get_pitchmomentscale</a>,
+<a href="#get_yawmomentscale">v:get_yawmomentscale</a>
+</p>
+</div>
+
+
+<div class="func"><a name="send_bufferedkey"></a>
+<h3>res = v:send_bufferedkey(keycode)</h3>
+<p>Sends a keycode message to the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>keycode&nbsp;(number):</td>key identifier</tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>res&nbsp;(number):</td>message result</tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The key codes correspond to the values for the OAPI_KEY_xxx constants
+defined in OrbiterAPI.h. A convenient way to pick a keycode is via the
+ktable table. For example, ktable.A has value 0x1E, which represents the
+keycode for A. Only a subset of keycodes is currently defined in the
+ktable table.</p>
+<p>The return value is 1 if the vessel could process the key message, or
+0 otherwise</p>
+</div>
+
+
+<div class="func"><a name="get_gravityref"></a>
+<h3>h = v:get_gravityref()</h3>
+<p>Returns a handle to the main contributor of the gravity field at the vessel’s current position.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>Handle to gravity reference object.</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_surfaceref"></a>
+<h3>h = v:get_surfaceref()</h3>
+<p>Returns a handle to the surface reference object (planet or moon).</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>Handle to surface reference object.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A vessel's <i>surface reference object</i> is the planet or moon whose
+surface is closest to the current vessel position.</p>
+</div>
+
+
+<div class="func"><a name="get_altitude"></a>
+<h3>alt = v:get_altitude()<br />
+alt = v:get_altitude(mode)</h3>
+<p>Returns the current vessel altitude above the surface reference object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>altitude mode (see notes)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>alt&nbsp;(number):</td><td>altitude [m]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>mode</i> parameter can be set to ALTMODE.MEANRAD (altitude relative to mean planet radius) or ALTMODE.GROUND
+(altitude relative to local ground elevation).</p>
+<p>If the parameter is omitted, ALTMODE.MEANRAD is assumed.</p>
+<p>For ALTMODE.MEANRAD, the return value may be negative to indicate a position below the planet mean radius.</p>
+<p>The surface reference object is the celestial body whose surface is closest to the current vessel position.</p>
+</div>
+
+
+<div class="func"><a name="get_pitch"></a>
+<h3>pitch = v:get_pitch()</h3>
+<p>Returns the vessel's current pitch angle with respect to the local horizon.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pitch&nbsp;(number):</td><td>pitch angle [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The pitch angle is defined as 90 degrees minus the angle between the vessel's positive
+z-axis and the normal to the local horizon.</p>
+</div>
+
+
+<div class="func"><a name="get_bank"></a>
+<h3>bank = v:get_bank()</h3>
+<p>Returns the vessel's current bank angle with respect to the local horizon.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>bank&nbsp;(number):</td><td>bank angle [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The bank angle is defined as the angle between the vessel's positive y axis (up direction)
+and the projection of the normal of the local horizon into the x-y plane.</p>
+</div>
+
+
+<div class="func"><a name="get_yaw"></a>
+<h3>yaw = v:get_yaw()</h3>
+<p>Returns the vessel's current yaw angle with respect to the local horizon.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>yaw (number):</td><td>yaw angle [rad]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The yaw angle is defined as the angle between the the projection of the
+vessel's positive z axis (forward direction) into the horizon plane, and the
+local horizon "north" direction.</p>
+</div>
+
+
+<div class="func"><a name="get_angvel"></a>
+<h3>av = v:get_angvel()</h3>
+<p>Returns the vessel's angular velocity components around its principal axes
+as a vector.</p>
+
+<h4>Return values:</h4>
+<table cols=2>
+<tr><td>av&nbsp;(vector):</td><td>angular velocity components [<b>rad/s</b>]</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="set_angvel"></a>
+<h3>v:set_angvel(av)</h3>
+<p>Sets the vessel's angular velocity components around its principal axes.</p>
+
+<h4>Parameters:</h4>
+<table cols=2>
+<tr><td>av&nbsp;(vector):</td><td>angular velocity components [<b>rad/s</b>]</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_elements"></a>
+<h3>el = v:get_elements()</h3>
+<p>Calculates and returns the set of osculating elements at the current time with
+respect to the dominant gravity sources.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>el&nbsp;(table):</td><td>list of orbital elements (see <a href="Datatypes.htm#elements">Elements</a>)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The returned mean longitude parameter (L) refers to the the current epoch.</p>
+</div>
+
+
+<div class="func"><a name="get_elementsex"></a>
+<h3>el,op = v:get_elementsex()</h3>
+<p>Returns osculating orbital elements and additional orbital parameters.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>el&nbsp;(table):</td><td>list of orbital elements (see <a href="Datatypes.htm#elements">Elements</a>)</td></tr>
+<tr><td>op&nbsp;(table):</td><td>list of additional orbital parameters (see <a href="Datatypes.htm#orbitprm">Orbital parameters</a>)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The returned mean longitude parameter (L) refers to the the current epoch.</p>
+</div>
+
+
+<div class="func"><a name="set_elements"></a>
+<h3>v:set_elements(el, [prm])</h3>
+<p>Set vessel state (position and velocity) by means of a set of osculating
+orbital elements.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>el&nbsp;(table):</td><td>set of osculating elements (see <a href="Datatypes.htm#elements">Elements</a>)</td></tr>
+<tr><td>prm&nbsp;(table):</td><td>[optional] - additional parameters (see Notes)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>el</i> table containing the orbital elements must contain the six named fields as
+defined in <a href="Datatypes.htm#elements">Elements</a>.</p>
+<p>The optional <i>prm</i> table can be provided to specify additional parameters defining the elements.
+If it is omitted, default values are assumed.</p>
+<p><i>prm</i> can contain the following fields:
+<table>
+<tr><td>href&nbsp;(handle):</td><td>orbit reference object. Default: current dominant gravity source
+(see <a href="#get_gravityref">get_gravityref</a>).</td></tr>
+<tr><td>mjd_ref&nbsp;(number):</td><td>reference date (MJD format) to which the el.L (mean longitude) value
+refers. mjd_ref=0 is interpreted as the current time. Default: 0.</td></tr>
+<tr><td>frame&nbsp;(string):</td><td>reference frame. Choices are 'ecl' (ecliptic frame) or 'equ' (equatorial frame of the
+reference object). Default: 'ecl'.</td></tr>
+</table>
+</p>
+
+<h4>Example:</h4>
+<div class="code">
+v:set_elements ({a=4000e3, e=0, i=0, theta=0, omegab=0, L=0}, {href=oapi.get_objhandle('moon'), mjd_ref=0, frame='equ'})
+</div>
+</div>
+
+
+<div class="func"><a name="get_progradedir"></a>
+<h3>dir = v:get_progradedir()</h3>
+<p>Returns the direction of the orbital velocity vector in vessel coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>dir&nbsp;(vector):</td><td>prograde direction</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The returned direction is a normalised vector in the direction of the
+orbital velocity (relative to the orbit reference object) rotated into the
+vessel's frame of reference.</p>
+</div>
+
+
+<div class="func"><a name="is_landed"></a>
+<h3>hBody = v:is_landed()</h3>
+<p>Returns the vessel's landing status.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hBody&nbsp;(handle):</td><td>If the vessel is inactive (landed on
+a planetary surfaces), this function returns the handle of the body the
+vessel is landed on. Otherwise it returns <i>nil</i>.</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_groundcontact"></a>
+<h3>contact = v:get_groundcontact()</h3>
+<p>Returns a flag indicating contact with a planetary surface.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>contact&nbsp;(boolean):</td><td><i>true</i> indicates ground contact
+(at least one of the vessel's touchdown reference points is in contact with
+a planet surface).</td>
+</tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_navmode"></a>
+<h3>active = v:get_navmode(mode)</h3>
+<p>Returns the activation state of an automated orbital navigation mode.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>navigation mode identifier (see <a href="constant.htm#navmode">Navmode identifiers</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>active&nbsp;(boolean):</td><td><i>true</i> if specified navmode is active, <i>false</i> otherwise.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_navmode">v:set_navmode</a>,
+<a href="constant.htm#navmode">Navmode identifiers</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_navmode"></a>
+<h3>v:set_navmode(mode)<br />
+v:set_navmode(mode,activate)</h3>
+<p>Activates or deactivates one of the automated orbital navigation modes.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>navigation mode identifier (see <a href="constant.htm#navmode">Navmode identifiers</a>)</td></tr>
+<tr><td>activate&nbsp;(boolean):</td><i>true</i> to activate navmode (default), <i>false</i> to deactivate</tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Navmodes are high-level navigation modes which involve e.g.
+the simultaneous and timed engagement of multiple attitude thrusters
+to get the vessel into a defined state. Some navmodes terminate
+automatically once the target state is reached (e.g. killrot),
+others remain active until explicitly terminated (hlevel). Navmodes
+may also terminate if a second conflicting navmode is activated.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_navmode">v:get_navmode</a>,
+<a href="constant.htm#navmode">Navmode identifiers</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_adcmode"></a>
+<h3>mode = v:get_adcmode()</h3>
+<p>Returns aerodynamic control surfaces currently under manual control.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>mode bit flags</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The input mode defines which types of control surfaces can be
+manually controlled by the user.</p>
+<p>The returned control mode contains bit flags as follows:
+<ul>
+<li>bit 0: elevator enabled/disabled</li>
+<li>bit 1 rudder enabled/disabled </li>
+<li>bit 2 ailerons enabled/disabled</li>
+</ul>
+Therefore, mode=0 indicates control surfaces disabled, mode=7
+indicates fully enabled.</p>
+<p>Some vessel types may support not all, or not any, types of
+control surfaces.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_adcmode">v:set_adcmode</a></p>
+</div>
+
+
+<div class="func"><a name="get_adclevel"></a>
+<h3>lvl = v:get_adclevel(adctype)</h3>
+<p>Returns the current position of an aerodynamic control surface.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>adctype&nbsp;(number):</td><td>control surface type
+ (see <a href="constant.htm#airctrl">Aerodynamic control surface types</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>lvl&nbsp;(number):</td><td>current position of the surface [-1...+1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method returns the <i>actual</i>, not the <i>target</i> position. Due to
+finite response time, it may therefore not return the value set by a
+preceeding call to <a href="set_adclevel">v:set_adclevel</a>.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_adclevel">v:set_adclevel</a></p>
+</div>
+
+
+<div class="func"><a name="set_adclevel"></a>
+<h3>v:set_adclevel(adctype,lvl)</h3>
+<p>Updates the position of an aerodynamic control surface.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>adctype&nbsp;(number):</td><td>control surface type
+ (see <a href="constant.htm#airctrl">Aerodynamic control surface types</a>)</td></tr>
+<tr><td>lvl&nbsp;(number):</td><td>new level [-1..+1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Parameter <i>lvl</i> defines a <i>target</i> state for the surface. Control
+surfaces generally require a finite amount of time to move from the
+current to the target state.</p>
+<p>This method affects the <i>permanent</i> setting of the control surface,
+while manual input via keyboard or joystick affects the <i>transient</i>
+setting. The total target state of the control surface is the sum of both
+settings, clamped to the range [-1...+1]</p>
+
+<h4>See also:</h4>
+<p><a href="#get_adclevel">v:get_adclevel</a></p>
+</div>
+
+
+<div class="func"><a name="set_adcmode"></a>
+<h3>v:set_adcmode(mode)</h3>
+<p>Configure manual input mode for aerodynamic control surfaces.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>bit flags defining the address mode for aerodynamic control surfaces</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The returned control mode contains bit flags as follows:
+<ul>
+<li>bit 0: elevator enabled/disabled</li>
+<li>bit 1 rudder enabled/disabled </li>
+<li>bit 2 ailerons enabled/disabled</li>
+</ul>
+Therefore, mode=0 indicates control surfaces disabled, mode=7
+indicates fully enabled.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_adcmode">v:get_adcmode</a></p>
+</div>
+
+
+<div class="func"><a name="get_weightvector"></a>
+<h3>G = v:get_weightvector()</h3>
+<p>Returns the gravitational force vector in local vessel coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>G&nbsp;(vector):</td><td>gravitational force [<b>N</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>When the vessel status is updated dynamically, G is composed of
+all gravity sources currently used for the vessel propagation
+(excluding sources with contributions below threshold).</p>
+<p>During orbit stabilisation, only the contribution from the
+primary source is returned.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustvector">v:get_thrustvector</a>,
+<a href="#get_liftvector">v:get_liftvector</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrustvector"></a>
+<h3>T = v:get_thrustvector()</h3>
+<p>Returns the thrust force vector in local vessel coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>T&nbsp;(vector):</td><td>thrust vector [<b>N</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>On return, T contains the vector sum of thrust components from
+all engines.</p>
+<p>This function provides information about the linear thrust
+force, but not about the angular moment (torque) induced.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_weightvector">v:get_weightvector</a>,
+<a href="#get_liftvector">v:get_liftvector</a></p>
+</div>
+
+
+<div class="func"><a name="get_liftvector"></a>
+<h3>L = v:get_liftvector()</h3>
+<p>Returns the aerodynamic lift force vector in local vessel coordinates.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>L&nbsp;(vector):</td><td>lift vector [<b>N</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Return value is the sum of lift components from all airfoils.</p>
+<p>The lift vector is perpendicular to the relative wind (and thus
+to the drag vector) and has zero x-component.</p>
+
+<h4>See also:</h4>
+<p><a href="get_weightvector">v:get_weightvector</a>,
+<a href="get_thrustvector">v:get_thrustvector</a></p>
+</div>
+
+
+<div class="func"><a name="create_propellantresource"></a>
+<h3>hProp = v:create_propellantresource(maxmass[,mass[,efficiency]])</h3>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>maxmass&nbsp;(number):</td><td>maximum propellant capacity [kg]</td></tr>
+<tr><td>mass&nbsp;(number):</td><td>[optional] initial propellant mass [kg]</td></tr>
+<tr><td>efficiency&nbsp;(number):</td><td>[optional] fuel efficiency factor (> 0)</td></tr>
+</table>
+
+<h4>Return value:</h4>
+<table>
+<tr><td>hProp&nbsp;(handle):</td><td>propellant resource handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Orbiter doesn’t distinguish between propellant and oxidant. A
+"propellant resource" is assumed to be a combination of fuel and
+oxidant resources.</p>
+<p>The interpretation of a propellant resource (liquid or solid
+propulsion system, ion drive, etc.) is up to the vessel developer.</p>
+<p>The rate of fuel consumption depends on the thrust level and
+Isp (fuel-specific impulse) of the thrusters attached to the
+resource.</p>
+<p>The fuel efficiency rating, together with a thruster's Isp
+rating, determines how much fuel is consumed per second to obtain a
+given thrust: R = F (e Isp)<sup>-1</sup> with fuel rate R
+[kg/s], thrust F [N], efficiency e and fuel-specific impulse Isp
+[m/s].</p>
+<p>If mass < 0 or not specified, then mass = maxmass is substituted.</p>
+
+<h4>See also:</h4>
+<p><a href="#del_propellantresource">v:del_propellantresource</a>,
+<a href="#clear_propellantresources">v:clear_propellantresources</a></p>
+</div>
+
+
+<div class="func"><a name="del_propellantresource"></a>
+<h3>v:del_propellantresource(hProp)</h3>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hProp&nbsp;(handle):</td><td>propellant resource handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If any thrusters were attached to this fuel resource, they are
+disabled until connected to a new fuel resource.</p>
+
+<h4>See also:</h4>
+<p><a href="#create_propellantresource>v:create_propellantresource</a>,
+<a href="#clear_propellantresources">v:clear_propellantresources</a></p>
+</div>
+
+
+<div class="func"><a name="clear_propellantresources"></a>
+<h3>v:clear_propellantresources()</h3>
+<p>Remove all propellant resources for the vessel.</p>
+
+<h4>Notes:</h4>
+<p>After a call to this function, all the vessel’s thrusters will
+be disabled until they are linked to new resources.</p>
+
+<h4>See also:</h4>
+<p><a href="#create_propellantresource">v:create_propellantresource</a>,
+<a href="#del_propellantresource">v:del_propellantresource</a></p>
+</div>
+
+
+<div class="func"><a name="get_propellantcount"></a>
+<h3>n = v:get_propellantcount()</h3>
+<p>Returns the current number of vessel propellant resources.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n&nbsp;(number):</td><td>Number of propellant resources currently
+defined for the vessel.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#create_propellantresource">v:create_propellantresource</a>,
+<a href="#get_propellanthandle">v:get_propellanthandle</a></p>
+</div>
+
+
+<div class="func"><a name="get_propellanthandle"></a>
+<h3>h = v:get_propellanthandle(idx)</h3>
+<p>Returns a handle of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(number):</td><td>propellant resource index (>= 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant resource handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The index must be in the range between 0 and
+<a href="#get_propellantcount">v:get_propellantcount()</a>-1. If the index
+is out of range, the returned handle is nil.</p>
+<p>The index of a given propellant resource may change if any
+resources are deleted. The handle remains valid until the
+corresponding resource is deleted.</p>
+
+<h4>See also:</h4>
+<p><a href="#create_propellantresource">v:create_propellantresource</a>,
+<a href="#get_propellantcount">v:get_propellantcount</a></p>
+</div>
+
+
+<div class="func"><a name="get_propellantmaxmass"></a>
+<h3>m = v:get_propellantmaxmass(h)</h3>
+<p>Returns the maximum capacity of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>Max. propellant capacity [kg]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#set_propellantmaxmass">v:set_propellantmaxmass</a>,
+<a href="#get_propellanthandle">v:get_propellanthandle</a>,
+<a href="#get_propellantmass">v:get_propellantmass</a></p>
+</div>
+
+
+<div class="func"><a name="set_propellantmaxmass"></a>
+<h3>v:set_propellantmaxmass(h,maxm)</h3>
+<p>Reset the maximum capacity of a fuel resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant handle</td></tr>
+<tr><td>maxm&nbsp;(number):</td><td>max. fuel capacity [kg]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The actual fuel mass contained in the tank is not affected by
+this function, unless the new maximum propellant mass is less than
+the current fuel mass, in which case the fuel mass is reduced to
+the maximum capacity.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_propellantmaxmass">v:get_propellantmaxmass</a>,
+<a href="#get_propellantmass">v:get_propellantmass</a>,
+<a href="#set_propellantmass">v:set_propellantmass</a></p>
+</div>
+
+
+<div class="func"><a name="get_propellantmass"></a>
+<h3>m = v:get_propellantmass(h)</h3>
+<p>Returns the current mass of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>propellant mass [kg]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_propellanthandle">v:get_propellanthandle</a>,
+<a href="#set_propellantmass">v:set_propellantmass</a>,
+<a href="#get_propellantmaxmass">v:get_propellantmaxmass</a>,
+<a href="#set_propellantmaxmass">v:set_propellantmaxmass</a></p>
+</div>
+
+
+<div class="func"><a name="set_propellantmass"></a>
+<h3>v:set_propellantmass(mass)</h3>
+<p>Reset the current mass of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mass&nbsp;(number):</td><td>propellant mass (&ge; 0) [kg]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>0 &le; mass &le; maxmass is required, where maxmass is the maximum
+capacity of the propellant resource.</p>
+<p>This method should be used to simulate refuelling, fuel leaks,
+cross-feeding between tanks, etc. but not for normal fuel
+consumption by thrusters (which is handled internally by the
+Orbiter core).</p>
+
+<h4>See also:</h4>
+<p><a href="#get_propellanthandle">v:get_propellanthandle</a>,
+<a href="#get_propellantmass">v:get_propellantmass</a>,
+<a href="#get_propellantmaxmass">v:get_propellantmaxmass</a>,
+<a href="#set_propellantmaxmass">v:set_propellantmaxmass</a></p>
+</div>
+
+
+<div class="func"><a name="get_totalpropellantmass"></a>
+<h3>m = v:get_totalpropellantmass()</h3>
+<p>Returns the vessel's current total propellant mass.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>m&nbsp;(number):</td><td>Sum of current masses of propellant
+resources defined for the vessel [kg]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_propellantmass">v:get_propellantmass</a>,
+<a href="#get_propellantmaxmass">v:get_propellantmaxmass</a></p>
+</div>
+
+
+<div class="func"><a name="get_propellantefficiency"></a>
+<h3>eff = v:get_propellantefficiency(h)</h3>
+<p>Returns the efficiency factor of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>eff&nbsp;(number):</td>fuel efficiency factor</tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The fuel efficiency rating, together witha thruster's Isp rating, determines how much fuel
+is consumed per second to obtain a given thrust value: R = F/(e Isp) with fuel rate R [kg/s], thrust
+F [N], efficiency e and fuel-specific impulse Isp [m/s].</p>
+
+<h4>See also:</h4>
+<p><a href="#set_propellantefficiency">v:set_propellantefficiency</a></p>
+</div>
+
+
+<div class="func"><a name="set_propellantefficiency"></a>
+<h3>v:set_propellantefficiency(h,eff)</h3>
+<p>Reset the efficiency factor of a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant handle</td></tr>
+<tr><td>eff&nbsp;(number):</td><td>fuel efficiency factor</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The fuel efficiency rating, together witha thruster's Isp
+rating, determines how much fuel is consumed per second to obtain
+a given thrust value: R = F/(e Isp) with fuel rate R [kg/s], thrust F [N],
+efficiency e and fuel-specific impulse Isp [m/s].</p>
+
+<h4>See also:</h4>
+<p><a href="#get_propellantefficiency">v:get_propellantefficiency</a></p>
+</div>
+
+
+<div class="func"><a name="get_propellantflowrate"></a>
+<h3>fr = v:get_propellantflowrate(h)</h3>
+<p>Returns the current mass flow rate from a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>fr&nbsp;(number:)</td><td>current propellant mass flow rate [kg/s]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_propellantmass">v:get_propellantmass</a>,
+<a href="#get_totalpropellantflowrate">v:get_totalpropellantflowrate</a></p>
+</div>
+
+
+<div class="func"><a name="get_totalpropellantflowrate"></a>
+<h3>fr = v:get_totalpropellantflowrate()</h3>
+<p>Returns the current total mass flow rate, summed over all propellant resources.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>fr&nbsp;(number):</td><td>total propellant mass flow rate [kg/s]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_propellantflowrate">v:get_propellantflowrate</a></p>
+</div>
+
+
+<div class="func"><a name="create_thruster"></a>
+<h3>th = v:create_thruster(spec)</h3>
+<p>Add a logical thruster definition for the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>spec&nbsp;(table):</td><td>thruster specification (see Notes)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>th&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>spec</i> is a table whose fields describe the thruster specifications.
+The following fields are recognised:
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>thrust force attack point in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>thrust force direction in vessel coordinates (normalised)</td></tr>
+<tr><td>maxth0&nbsp;(number):</td><td>max. vacuum thrust rating [N]</td></tr>
+<tr><td>hprop&nbsp;(handle):</td><td>[optional] handle of attached propellant resource</td></tr>
+<tr><td>isp0&nbsp;(number):</td><td>[optional] vacuum fuel-specific impulse (Isp) [m/s]</td></tr>
+<tr><td>ispr&nbsp;(number):</td><td>[optional] Isp value at reference pressure pr [m/s]</td></tr>
+<tr><td>pr&nbsp;(number):</td><td>[optional] reference pressure for ispr [Pa]</td></tr>
+</table></p>
+<p>If no propellant resource handle is provided, the thruster is not connected to a propellant
+resource and cannot be activated until connected.</p>
+<p>The fuel-specific impulse defines how much thrust is produced
+by burning 1kg of fuel per second. If <i>isp0</i> is not
+specified or is 0, a default value is used (see set_isp).</p>
+<p>To define the thrust and Isp ratings to be pressure-dependent,
+specify an <i>ispr</i> value &gt; 0, and set <i>pr</i> to the corresponding
+atmospheric pressure.</p>
+<p>If <i>ispr</i> = 0 then no pressure-dependency is assumed.</p>
+<p>If <i>ispr</i> is specified, but not <i>pr</i>, then a default reference pressure of <i>pr</i>=101.4e3 Pa
+is assumed (Earth surface pressure).</p>
+
+<h4>Example:</h4>
+<div class="code">
+ph = v:get_propellanthandle(0)<br />
+th = v:create_thruster({pos={x=0,y=0,z=-5}, dir={x=0,y=0,z=1}, maxth0=1e5, hprop=ph, isp0=3000, ispr=2500, pr=101.4e3})
+</div>
+
+<h4>See also:</h4>
+<p><a href="#del_thruster">v:del_thruster</a></p>
+</div>
+
+
+<div class="func"><a name="del_thruster"></a>
+<h3>ok = v:del_thruster(ht)</h3>
+<p>Delete a logical thruster definition.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> on success, <i>false</i> if the
+supplied thruster handle was invalid.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Deleted thrusters will be automatically removed from all
+thruster groups they had been assigned to.</p>
+<p>All exhaust render definitions which refer to the deleted
+thruster are removed.</p>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#del_thruster">v:del_thruster</a></p>
+</div>
+
+
+<div class="func"><a name="clear_thrusters"></a>
+<h3>v:clear_thrusters()</h3>
+<p>Delete all thruster and thruster group definitions.</p>
+
+<h4>Notes:</h4>
+<p>This function removes all thruster definitions, as well as all
+the thruster group definitions.</p>
+<p>It also removes all previously defined exhaust render
+definitions.</p>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#del_thruster">v:del_thruster</a></p>
+</div>
+
+
+
+<div class="func"><a name="get_thrustercount"></a>
+<h3>count = v:get_thrustercount()</h3>
+<p>Returns the number of thrusters currently defined.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>count&nbsp;(number):</td><td>Number of logical thruster definitions.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#del_thruster">v:del_thruster</a>,
+<a href="#clear_thrusters">v:clear_thrusters</a>,
+<a href="#get_thrusterhandle">v:get_thrusterhandle</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterhandle"></a>
+<h3>h = v:get_thrusterhandle(idx)</h3>
+<p>Returns the handle of a thruster specified by its index.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(number):</td><td>thruster index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The index must be in the range between 0 and nthruster-1,
+where nthruster is the thruster count returned by
+<a href="#get_thrustercount">get_thrustercount</a>. If the index
+is out of range, the returned handle is <i>nil</i>.</p>
+<p>The index of a given thruster may change if vessel thrusters
+are deleted. The handle remains valid until the corresponding
+thruster is deleted.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustercount">v:get_thrustercount</a>,
+<a href="#create_thruster">v:create_thruster</a>,
+<a href="#del_thruster">v:del_thruster</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterresource"></a>
+<h3>hp = v:get_thrusterresource(ht)</h3>
+<p>Returns a handle for the propellant resource feeding the
+thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hp&nbsp;(handle):</td><td>propellant resource, or
+<i>nil</i> if thruster is not connected</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#set_thrusterresource">v:set_thrusterresource</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrusterresource"></a>
+<h3>v:set_thrusterresource(ht,hp)</h3>
+<p>Connect a thruster to a propellant resource.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>hp&nbsp;(handle):</td><td>propellant handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A thruster can only be connected to one propellant resource at
+a time. Setting a new resource disconnects from the previous
+resource.</p>
+<p>To disconnect the thruster from its current tank, use <i>hp</i> = <i>nil</i>.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrusterresource">v:get_thrusterresource</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterpos"></a>
+<h3>pos = v:get_thrusterpos(ht)</h3>
+<p>Returns the thrust force attack point of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>thrust attack point [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>pos</i> is returned in the vessel frame of reference.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_thrusterpos">v:set_thrusterpos</a>,
+<a href="#get_thrusterdir">v:get_thrusterdir</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrusterpos"></a>
+<h3>v:set_thrusterpos(ht,pos)</h3>
+<p>Reset the thrust force attack point of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>pos&nbsp;(vector):</td><td>new force attack point [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>pos</i> is specified in the vessel reference system.</p>
+<p>This method should be used whenever a thruster has been
+physically moved in the vessel's local frame of reference.</p>
+<p>If the vessel's centre of gravity, i.e. the origin of its
+reference system, is moved with shift_cg, the thruster positions
+are updated automatically.</p>
+<p>The attack point has no influence on the linear force exerted
+on the vessel by the thruster, but it affects the induced torque.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrusterpos">v:get_thrusterpos</a>,
+<a href="#create_thruster">v:create_thruster</a>,
+<a href="#set_thrusterdir">v:set_thrusterdir</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterdir"></a>
+<h3>dir = v:get_thrusterdir(ht)</h3>
+<p>Returns the force direction of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>dir&nbsp;(vector):</td><td>thrust direction (vessel frame of reference)</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#set_thrusterdir">v:set_thrusterdir</a>,
+<a href="#get_thrusterpos">v:get_thrusterpos</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrusterdir"></a>
+<h3>v:set_thrusterdir(ht,dir)</h3>
+<p>Reset the force direction of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>new thrust direction (vessel frame of reference)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method can be used to realise a tilt of the rocket
+motor (e.g. for implementing a thruster gimbal mechanism)</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrusterdir">v:get_thrusterdir</a>,
+<a href="#set_thrusterpos">v:set_thrusterpos</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrustermax0"></a>
+<h3>max0 = v:get_thrustermax0(ht)</h3>
+<p>Returns the maximum vacuum thust rating of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>max0&nbsp;(number):</td><td>Maximum vacuum thust rating [N]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>To retrieve the actual current maximum thrust rating (which may
+be lower in the presence of ambient atmospheric pressure), use
+<a href="#get_thrustermax">get_thrustermax</a>.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustermax">v:get_thrustermax</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrustermax0"></a>
+<h3>v:set_thrustermax0(ht,max0)</h3>
+<p>Reset the maximum vacuum thrust rating of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>max0&nbsp;(number):</td><td>new maximum vacuum thrust rating [N]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The max. thrust rating in the presence of atmospheric ambient
+pressure may be lower than the vacuum thrust if a pressure-dependent
+Isp value has been defined.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustermax0">v:get_thrustermax0</a>,
+<a href="#set_thrustermax">v:set_thrustermax</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrustermax"></a>
+<h3>thmax = v:get_thrustermax(ht)<br />
+thmax = v:get_thrustermax(ht,pr)</h3>
+<p>Returns the pressure-dependent maximum thrust rating of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>pr&nbsp;(number):</td><td>[optional] ambient pressure [Pa]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>thmax&nbsp;(number):</td><td>Max. thrust rating [N]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method returns the pressure-corrected maximum thrust rating
+of a thruster.</p>
+<p>If the pressure parameter is provided, the returned value is the
+maximum thrust rating at that pressure.</p>
+<p>Otherwise, the returned value refers to the ambient pressure at
+the current vessel position.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustermax0">v:get_thrustermax0</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterisp0"></a>
+<h3>isp0 = v:get_thrusterisp0(ht)</h3>
+<p>Returns the vacuum fuel-specific impulse (Isp) rating for a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>isp0&nbsp;(number):</td><td>Isp value in vacuum [m/s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Equivalent to v:get_thrusterisp(ht,0).</p>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#get_thrusterisp">v:get_thrusterisp</a>,
+<a href="#set_thrusterisp">v:set_thrusterisp</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterisp"></a>
+<h3>isp = v:get_thrusterisp(ht)<br />
+isp = v:get_thrusterisp(ht,pr)</h3>
+<p>Returns the pressure-dependent fuel-specific impulse (Isp) rating for a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>pr&nbsp;(number):</td><td>ambient pressure [Pa]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>isp&nbsp;(number):</td><td>Pressure-corrected Isp rating [m/s]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the thruster has been defined with a pressure-dependent Isp rating,
+the value returned by this method will vary with pressure.</p>
+<p>If the pressure parameter is provided, the returned value is the
+Isp rating at that pressure.</p>
+<p>Otherwise, the returned value refers to the ambient pressure at
+the current vessel position.</p>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#get_thrusterisp0">v:get_thrusterisp0</a>,
+<a href="#set_thrusterisp">v:set_thrusterisp</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrusterisp"></a>
+<h3>v:set_thrusterisp(ht,isp0)<br />
+v:set_thrusterisp(ht,isp0,ispr[,pr])</h3>
+<p>Reset the fuel-specific impulse (Isp) rating of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>isp0&nbsp;(number):</td><td>vacuum Isp rating [m/s]</td></tr>
+<tr><td>ispr&nbsp;(number):</td><td>[optional] Isp rating at reference pressure [m/s]</td></tr>
+<tr><td>pr&nbsp;(number):</td><td>[optional] reference pressure [Pa]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method can be used to define pressure-independent or
+pressure-dependent Isp ratings.</p>
+<p>For the pressure-independent version, only the vacuum Isp value (isp0) should
+be specified.</p>
+<p>For the pressure-dependent version, both the vacuum value and the value at a
+reference pressure (ispr) should be provided. In addition, the reference pressure
+(pr) can be specified. If pr is not provided, a default value of 101.4kPa is assumed,
+corresponding to Earth surface pressure.</p>
+<p>The Isp rating at arbitrary pressure p is then computed as
+<div class="code">
+isp = isp<sub>0</sub> (1-p &eta;)<br />
+&eta; = (isp<sub>0</sub> - isp<sub>r</sub>) / (p<sub>r</sub> isp<sub>0</sub>)
+</div>
+</p>
+
+<h4>See also:</h4>
+<p><a href="#create_thruster">v:create_thruster</a>,
+<a href="#get_thrusterisp">v:get_thrusterisp</a>,
+<a href="#get_thrusterisp0">v:get_thrusterisp0</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrusterlevel"></a>
+<h3>lvl = v:get_thrusterlevel(ht)</h3>
+<p>Returns the current thrust level setting of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>lvl&nbsp;(number):</td><td>thrust level [0..1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>To obtain the actual force [N] currently generated by the
+thruster, multiply the thrust level with the max. thrust rating
+returned by get_thrustermax().</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustermax">v:get_thrustermax</a>,
+<a href="#set_thrusterlevel">v:set_thrusterlevel</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrusterlevel"></a>
+<h3>v:set_thrusterlevel(ht,lvl)</h3>
+<p>Set thrust level for a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>lvl&nbsp;(number):</td><td>thrust level [0..1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>At level 1, the thruster generates maximum force, as defined by
+its <i>maxth</i> parameter.</p>
+<p>Certain thrusters are controlled directly by Orbiter via
+primary input controls (e.g. joystick throttle control for main
+thrusters), which may override this function.</p>
+
+<h4>See also:</h4>
+<p><a href="#inc_thrusterlevel">v:inc_thrusterlevel</a>,
+<a href="#get_thrusterlevel">v:get_thrusterlevel</a></p>
+</div>
+
+
+<div class="func"><a name="inc_thrusterlevel"></a>
+<h3>v:inc_thrusterlevel(ht,dlvl)</h3>
+<p>Apply a change to the thrust level of a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>dlvl&nbsp;(number):</td><td>thrust level increment [-1..+1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The applied thrust level change is limited to give a resulting
+thrust level in the range [0..1].</p>
+
+<h4>See also:</h4>
+<p><a href="#set_thrusterlevel">v:set_thrusterlevel</a>,
+<a href="#get_thrusterlevel">v:get_thrusterlevel</a>,
+<a href="#inc_thrusterlevel_singlestep">v:inc_thrusterlevel_singlestep</a>
+<p></p>
+</div>
+
+
+<div class="func"><a name="inc_thrusterlevel_singlestep"></a>
+<h3>v:inc_thrusterlevel_singlestep(ht,dlvl)</h3>
+<p>Apply a change of the thruster level for the current frame only.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>dlvl&nbsp;(number):</td><td>thrust level increment [-1..+1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Unlike <a href="#inc_thrusterlevel">v:inc_thrusterlevel</a>, which applies
+a permanent change in a thruster level, this method applies a level change
+only for the current frame. It is useful for continously controlling a
+thruster output on a per-frame basis, e.g. for attitude control.</p>
+<p>When the function is no longer called, the thruster level returns to
+its permanent setting.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#inc_thrusterlevel">v:inc_thrusterlevel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="create_thrustergroup"></a>
+<h3>htg = v:create_thrustergroup(tarray[,type])</h3>
+<p>Combine thrusters into a logical group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>tarray&nbsp;(table):</td><td>array of thruster handles</td></tr>
+<tr><td>type&nbsp;(number):</td><td>[optional] thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the 'type' parameter is omitted, THGROUP.USER is assumed.</p>
+
+<h4>Example:</h4>
+<div class="code">
+h1=create_thruster({pos={x=-1,y=0,z=0}, dir={x=0,y=0,z=1}, maxth0=1e5})<br />
+h2=create_thruster({pos={x=1,y=0,z=0}, dir={x=0,y=0,z=1}, maxth0=1e5})<br />
+hmain=create_thrustergroup({h1,h2},THGROUP.MAIN)
+</div>
+
+<h4>See also:</h4>
+<p><a href="#del_thrustergroup">v:del_thrustergroup</a></p>
+</div>
+
+
+<div class="func"><a name="del_thrustergroup"></a>
+<h3>v:del_thrustergroup(type)<br />
+v:del_thrustergroup(htg)</h3>
+<p>Delete a thruster group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#create_thrustergroup">v:create_thrustergroup</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrustergrouphandle"></a>
+<h3>htg = v:get_thrustergrouphandle(type)</h3>
+<p>Returns the handle of a default thruster group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the requested thruster group is not defined by the vessel,
+this method returns <i>nil</i>.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustergrouphandlebyindex">v:get_thrustergrouphandlebyindex</a></p>
+</div>
+
+
+<div class="func"><a name="get_thrustergrouphandlebyindex"></a>
+<h3>htg = v:get_thrustergrouphandlebyindex(idx)</h3>
+<p>Returns the handle of a user-defined (nonstandard) thruster group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(number):</td><td>index of user-defined thruster group (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Use this method only to retrieve handles for nonstandard thruster
+groups. For standard groups, use
+<a href="#get_thrustergrouphandle">v:get_thrustergrouphandle</a> instead.</p>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustergrouphandle">v:get_thrustergrouphandle</a></p>
+</div>
+
+
+<div class="func"><a name="get_groupthrustercount"></a>
+<h3>n = v:get_groupthrustercount(htg)<br />
+n = v:get_groupthrustercount(type)</h3>
+<p>Returns the number of thrusters assigned to a logical thruster group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n&nbsp;(number):</td><td>Number of thrusters assigned to the specified thruster group.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This method can be called by providing either a thruster group handle,
+or an identifier for a default thruster group.</p>
+<p>Thrusters can be assigned to more than one group (and some thrusters
+may not be assigned to any group) so the sum of GetGroupThrusterCount
+values over all groups can be different to the total number of thrusters.</p>
+</div>
+
+
+<div class="func"><a name="get_groupthruster"></a>
+<h3>ht = v:get_groupthruster(htg,idx)<br />
+ht = v:get_groupthruster(type,idx)</h3>
+<p>Returns a handle for a thruster that belongs to a thruster group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+<tr><td>idx&nbsp;(number):</td><td>thruster index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the specified group is not defined, or if the index is out of range,
+this function returns <i>nil</i>.</p>
+</div>
+
+
+<div class="func"><a name="get_thrustergrouplevel"></a>
+<h3>lvl = v:get_thrustergrouplevel(htg)<br />
+lvl = v:get_thrustergrouplevel(type)</h3>
+<p>Returns the mean thrust level for a thruster group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>lvl&nbsp;(number):</td><td> group level [0..1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>For ease of use, the default thruster group idenfiers have been enumerated
+in the <a href="constant.htm#thgroup">THGROUP</a> table. For example,
+THGROUP.MAIN identifies the main thruster group.</p>
+<p>In general, this method is only useful for groups where all thrusters
+have the same maximum thrust rating and the same thrust direction.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_thrustergrouplevel">v:set_thrustergrouplevel</a></p>
+</div>
+
+
+<div class="func"><a name="set_thrustergrouplevel"></a>
+<h3>v:set_thrustergrouplevel(grp,lvl)</h3>
+<p>Sets the thrust level for all thrusters in a group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>grp&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+<tr><td>lvl&nbsp;(number):</td><td>new group thrust level [0..1]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="#get_thrustergrouplevel">v:get_thrustergrouplevel</a>,
+<a href="#inc_thrustergrouplevel">v:inc_thrustergrouplevel</a></p>
+</div>
+
+
+<div class="func"><a name="inc_thrustergrouplevel"></a>
+<h3>v:inc_thrustergrouplevel(htg,dlvl)<br />
+v:inc_thrustergrouplevel(type,dlvl)</h3>
+<p>Increments the thrust level for all thrusters in a group.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+<tr><td>dlvl&nbsp;(number):</td><td>thrust increment [-1..+1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Resulting thrust levels are automatically truncated to the range [0..1]</p>
+<p>Use negative <i>dlvl</i> to decrement the thrust level.</p>
+
+<h4>See also:</h4>
+<p><a href="#set_thrustergrouplevel">v:set_thrustergrouplevel</a>,
+<a href="#inc_thrustergrouplevel_singlestep">v:inc_thrustergrouplevel_singlestep</a>
+</p>
+</div>
+
+
+<div class="func"><a name="inc_thrustergrouplevel_singlestep"></a>
+<h3>v:inc_thrustergrouplevel_singlestep(htg,dlvl)<br />
+v:inc_thrustergrouplevel_singlestep(type,dlvl)</h3>
+<p>Increment the thrust level for the group thrusters for the current frame only.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>htg&nbsp;(handle):</td><td>thruster group handle</td></tr>
+<tr><td>type&nbsp;(number):</td><td>thruster group identifier
+(see <a href="constant.htm#thgroup">Thruster group identifiers</a>)</td></tr>
+<tr><td>dlvl&nbsp;(number):</td><td>thrust increment [-1..+1]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Unlike <a href="#inc_thrustergrouplevel">v:inc_thrustergrouplevel</a>, this
+method modifies the thrust level of the group for the current frame only. For
+continuous thrust control, it must be called at each frame. It is useful in
+situations where the thrust level needs to be modulated continuously (e.g.
+attitude control, etc.).
+
+<h4>See also:</h4>
+<p>
+<a href="#inc_thrustergrouplevel">v:inc_thrustergrouplevel</a>
+</p>
+</p>
+</div>
+
+
+<div class="func"><a name="add_exhaust"></a>
+<h3>exh = v:add_exhaust(ht,lscale,wscale[,tex])<br />
+exh = v:add_exhaust(ht,lscale,wscale,pos,dir[,tex])<br />
+exh = v:add_exhaust(ht,lscale,wscale,lofs[,tex])</h3>
+<p>Add an exhaust render definition for a thruster.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>lscale&nbsp;(number):</td><td>exhaust flame length [m]</td></tr>
+<tr><td>wscale&nbsp;(number):</td><td>exhaust flame width [m]</td></tr>
+<tr><td>tex&nbsp;(handle):</td><td>texture handle for custom exhaust flames</td></tr>
+<tr><td>pos&nbsp;(vector):</td><td>reference position in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>exhaust direction in vessel coordinates</td></tr>
+<tr><td>lofs&nbsp;(number):</td><td>longitudinal offset [m]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>exh&nbsp;(number):</td><td>integer exhaust identifier</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Thrusters defined with <a href="#create_thruster">v:create_thruster</a> do
+ not by default render exhaust effects, until an exhaust definition has been
+ specified with v:add_exhaust.</p>
+<p>The size of the exhaust flame is automatically scaled by the thrust level.</p>
+<p>If the exhaust position (<i>pos</i>) and direction (<i>dir</i>) are not
+ specified explicitly, they are obtained directly from the thruster setting,
+ and automatically reflect any changes caused by
+ <a href="#set_thrusterref">v:set_thrusterref</a> and
+ <a href="#set_thrusterdir">v:set_thrusterdir</a>.</p>
+<p>It is also possible to add a longitudinal offset to the exhaust position,
+ relative to the associated thruster position.</p>
+<p>If no explicit exhaust texture is specified, the default texture is used.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_thruster">v:create_thruster</a>,
+<a href="#set_thrusterref">v:set_thrusterref</a>,
+<a href="#set_thrusterdir">v:set_thrusterdir</a>,
+<a href="#set_thrusterlevel">v:set_thrusterlevel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="del_exhaust"></a>
+<h3>ok = v:del_exhaust(idx)</h3>
+<p>Removes an exhaust render definition.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(integer):</td><td>exhaust identifier (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>false</i> if exhaust definition does not
+ exist, <i>true</i> otherwise.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#add_exhaust">v:add_exhaust</a>,
+<a href="#get_exhaustcount">v:get_exhaustcount</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_exhaustcount"></a>
+<h3>count = v:get_exhaustcount()</h3>
+<p>Returns the number of exhaust render definitions for the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>count&nbsp;(number):</td><td>number of exhaust render definitions</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#add_exhaust">v:add_exhaust</a>,
+<a href="#del_exhaust">v:del_exhaust</a>
+</p>
+</div>
+
+
+<div class="func"><a name="add_exhauststream"></a>
+<h3>hp = v:add_exhauststream(ht,pss)<br />
+hp = v:add_exhauststream(ht,pos,pss)</h3>
+<p>Adds an exhaust particle stream to a vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ht&nbsp;(handle):</td><td>thruster handle</td></tr>
+<tr><td>pos&nbsp;(vector):</td><td>exhaust source position [<b>m</b>]</td></tr>
+<tr><td>pss&nbsp;(table):</td><td>particle stream spec structure (see
+ <a href="Datatypes.htm#particlestreamspec">PARTICLESTREAMSPEC</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hp&nbsp;(handle):</td><td>particle stream handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Exhaust streams can be emissive (to simulate "glowing" ionised gases) or
+ diffuse (e.g. for simulating vapour trails).</p>
+<p>Multiple streams can be defined for a single engine. For example, an
+ emissive stream with short lifetime may represent the ionised exhaust
+ gases, while a diffuse stream with longer lifetime represents the vapour
+ trail.</p>
+<p>If the source position (<i>pos</i>) is not specified, the particles are
+ created at the thruster reference position.</p>
+<p>To improve performance, closely packed engines may share a single exhaust
+ stream.</p>
+<p>If the user has disabled particle streams in the launchpad dialog, this
+ function will return nil. The module must be able to cope with this case.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="Datatypes.htm#particlestreamspec">PARTICLESTREAMSPEC</a>,
+<a href="constant.htm#particle">PARTICLE identifiers</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_rcsmode"></a>
+<h3>mode = v:get_rcsmode()</h3>
+<p>Returns the current RCS (reaction control system) thruster mode.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>Current RCS mode (see <a href="constant.htm#rcsmode">RCS mode identifiers</a>)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The reaction control system consists of a set of small
+thrusters arranged around the vessel. They can be fired in
+pre-defined configurations to provide either a change in angular
+velocity (in RCSMODE.ROT mode) or in linear velocity (in RCSMODE.LIN mode).</p>
+<p>RCSMODE.OFF indicates that the RCS is disabled or not available.</p>
+<p>Currently Orbiter doesn’t allow simultaneous linear and
+rotational RCS control via keyboard or joystick. The user has to
+switch between the two. However, simultaneous operation is possible
+via the "RControl" plugin module.</p>
+<p>Not all vessel classes may define a complete RCS.</p>
+
+<h4>See also:</h4>
+<p><a href="constant.htm#rcsmode">RCS mode identifiers</a>,
+<a href="#set_rcsmode">v:set_rcsmode</a></p>
+</div>
+
+
+<div class="func"><a name="set_rcsmode"></a>
+<h3>v:set_rcsmode(mode)</h3>
+<p>Sets the vessel's RCS (reaction control system) thruster mode.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>mode&nbsp;(number):</td><td>new RCS mode (see <a href="constant.htm#rcsmode">RCS mode identifiers</a>)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The reaction control system consists of a set of small
+thrusters arranged around the vessel. They can be fired in
+pre-defined configurations to provide either a change in angular
+velocity (in RCS_ROT mode) or in linear velocity (in RCS_LIN mode).</p>
+<p>Set mode=RCSMODE.OFF to disable the RCS.</p>
+
+<h4>See also:</h4>
+<p><a href="constant.htm#rcsmode">RCS mode identifiers</a>,
+<a href="#get_rcsmode">v:get_rcsmode</a></p>
+</div>
+
+
+<div class="func"><a name="create_dock"></a>
+<h3>hDock = v:create_dock(pos,dir,rot)</h3>
+<p>Create a new docking port.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>dock reference position in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>approach direction in vessel coordinates</td></tr>
+<tr><td>rot&nbsp;(vector):</td><td>longitudinal rotation alignment vector</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>docking port handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>dir</i> and <i>rot</i> vectors should be normalised to length 1.</p>
+<p>The <i>rot</i> vector should be perpendicular to the <i>dir</i> vector.</p>
+<p>When two vessels connect at their docking ports, the relative
+ orientation of the vessels is defined such that their respective approach
+ direction vectors (<i>dir</i>) are anti-parallel, and their longitudinal
+ alignment vectors (<i>rot</i>) are parallel.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#del_dock">v:del_dock</a>,
+<a href="#get_dockcount">v:get_dockcount</a>,
+<a href="#get_dockhandle">v:get_dockhandle</a>,
+<a href="#get_dockstatus">v:get_dockstatus</a>,
+<a href="#undock">v:undock</a>
+</p>
+</div>
+
+
+<div class="func"><a name="del_dock"></a>
+<h3>ok = v:del_dock(hDock)</h3>
+<p>Delete a previously defined docking port.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>docking port handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>false</i> indicates failure (invalid handle)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Any object docked at the port will be undocked before the docking port is deleted.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_dock">v:create_dock</a>,
+<a href="#get_dockcount">v:get_dockcount</a>,
+<a href="#get_dockhandle">v:get_dockhandle</a>,
+<a href="#get_dockstatus">v:get_dockstatus</a>,
+<a href="#undock">v:undock</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_dockparams"></a>
+<h3>v:set_dockparams(pos,dir,rot)<br />
+v:set_dockparams(hDock,pos,dir,rot)</h3>
+<p>Reset the parameters for a vessel docking port.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>dock handle</td></tr>
+<tr><td>pos&nbsp;(vector):</td><td>dock reference position [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>dock approach direction</td></tr>
+<tr><td>rot&nbsp;(vector):</td><td>longitudinal alignment vector</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the <i>hDock</i> handle is omitted, the parameters of the
+ vessel's primary docking port are modified. In this case, if no docking
+ port was previously defined, a new one is created on the fly.</p>
+<p>This function should not be called while the docking port is engaged.</p>
+<p>The <i>dir</i> and <i>rot</i> direction vectors should be normalised to length 1.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_dockparams">v:get_dockparams</a>
+<a href="#create_dock">v:create_dock</a>,
+<a href="#del_dock">v:del_dock</a>,
+<a href="#get_dockcount">v:get_dockcount</a>,
+<a href="#get_dockhandle">v:get_dockhandle</a>,
+<a href="#get_dockstatus">v:get_dockstatus</a>,
+<a href="#undock">v:undock</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_dockparams"></a>
+<h3>pos,dir,rot = v:get_dockparams(hDock)</h3>
+<p>Returns the paramters of a docking port.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>dock handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>dock reference position [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>approach direction</td></tr>
+<tr><td>rot&nbsp;(vector):</td><td>longitudinal rotation alignment vector</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_dockparams">v:set_dockparams</a>,
+<a href="#create_dock">v:create_dock</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_dockcount"></a>
+<h3>n = v:get_dockcount()</h3>
+<p>Returns the number of docking ports available on the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n&nbsp;(number):</td><td>number of docking ports (>= 0)</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_dockhandle"></a>
+<h3>h = v:get_dockhandle(i)</h3>
+<p>Returns a handle for a vessel docking port.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>i&nbsp;(number):</td><td>dock index (>= 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>h&nbsp;(handle):</td><td>dock handle (or nil if index out of range)</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="get_dockstatus"></a>
+<h3>hv = v:get_dockstatus(hd)</h3>
+<p>Returns the current status of a docking port. If the dock is engaged, the
+return value contains a handle for the docked object. Otherwise the function
+returns nil.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hd&nbsp;(handle):</td><td>docking port handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hv&nbsp;(handle):</td><td>handle for docked object, or nil if dock is not engaged</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="undock"></a>
+<h3>v:undock(i)</h3>
+<p>Undocks any vessel attached to docking port i.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>i&nbsp;(number):</td><td>docking port index (>= 0), or ALLDOCKS</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the index parameter is set to ALLDOCKS, all docked vessels are undocked
+simultaneously.</p>
+</div>
+
+
+<div class="func"><a name="create_attachment"></a>
+<h3>hAttachment = v:create_attachment(toparent,pos,dir,rot,id)<br />
+hAttachment = v:create_attachment(toparent,pos,dir,rot,id,loose)</h3>
+<p>Create a new attachment point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>toparent&nbsp;(boolean):</td><td>If true, the attachment can be used to connect to a parent (i.e. the vessel acts as a child). Otherwise, attachment is used to connect to a child (i.e. vessel acts as parent)</td></tr>
+<tr><td>pos&nbsp;(vector):</td><td>attachment point position in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>attachment direction in vessel coordinates</td></tr>
+<tr><td>rot&nbsp;(vector):</td><td>longitudinal alignment vector in vessel coordinates</td></tr>
+<tr><td>id&nbsp;(string):</td><td>compatibility identifier</td></tr>
+<tr><td>loose&nbsp;(boolean):</td><td>If true, allow loose connections</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A vessel can define multiple parent and child attachment points, and can subsequently have multiple children attached, but it can only be attached to a single parent at any one time.</p>
+<p>The dir and rot vectors should both be normalised to length 1, and they should be orthogonal.</p>
+<p>The identifier string can contain up to 8 characters. It can be used to define compatibility between attachment points.</p>
+<p>If the attachment point is defined as loose, then the relative orientation between the two attached objects is frozen to the orientation between them at the time the connection was established. Otherwise, the two objects snap to the orientation defined by their dir vectors.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="del_attachment"></a>
+<h3>ok = v:del_attachment(hAttachment)</h3>
+<p>Delete an attachment point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>false</i> indicates failure (invalid attachment handle)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The attachment handle can refer to either a child or parent attachment point.</p>
+<p>Any object attached to this point will be released.</p>
+<p>After this function returns successfully, the attachment handle is no longer valid.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="clear_attachments"></a>
+<h3>v:clear_attachments()</h3>
+<p>Delete all attachment points defined for the vessel.</p>
+
+<h4>Notes:</h4>
+<p>Any attached parent or child vessels will be released.</p>
+<p>After this function returns, all previously defined attachment handles will no longer be valid.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_attachmentparams"></a>
+<h3>v:set_attachmentparams(hAttachment,pos,dir,rot)</h3>
+<p>Reset attachment position and orientation for an existing attachment point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+<tr><td>pos&nbsp;(vector):</td><td>new attachment point position in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>new attachment direction in vessel coordinates</td></tr>
+<tr><td>rot&nbsp;(vector):</td><td>new longitudinal alignment vector in vessel coordinates</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the parameters of an attachment point are changed while a vessel is attached to that point, the attached vessel will be shifted to the new position automatically.</p>
+<p>The dir and rot vectors should both be normalised to length 1, and they should be orthogonal.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attachmentparams"></a>
+<h3>pos,dir,rot = v:get_attachmentparams(hAttachment)</h3>
+<p>Retrieve the parameters of an attachment point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>Attachment point handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>attachment point position in vessel coordinates [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>attachment direction in vessel coordinates</td></tr>
+<tr><td>rot&nbsp;(vector):</td><td>longitudinal alignment vector in vessel coordinates</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attachmentid"></a>
+<h3>id = v:get_attachmentid(hAttachment)</h3>
+<p>Retrieve attachment identifier string.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>id&nbsp;(string):</td><td>attachment identifier string [up to 8 characters]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attachmentstatus"></a>
+<h3>hVessel = v:get_attachmentstatus(hAttachment)</h3>
+<p>Return the current status of an attachment point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hVessel&nbsp;(handle):</td><td>Handle of tha attached vessel, or nil if no vessel is attached to this point.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attachmentcount"></a>
+<h3>n = v:get_attachmentcount(toparent)</h3>
+<p>Return the number of child or parent attachment points defined for the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>toparent&nbsp;(boolean):</td><td>If <i>true</i>, return the number of attachment points to parents. Otherwise, return the number of attachment points to children.</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n&nbsp;(integer):</td><td>Number of defined attachment points to connect to parents or to children.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attachmentindex"></a>
+<h3>idx = v:get_attachmentindex(hAttachment)</h3>
+<p>Return the list index of the vessel's attachment point defined by its handle.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>idx&nbsp;(integer):</td><td>List index (&ge; 0)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A vessel defines separate lists for child and parent attachment points. Therefore two different attachment points may return the same index.</p>
+<p>The index for a given attachment point can change when the vessel deletes any of its attachments. The returned index should therefore be used only within the current frame.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_attachmenthandle"></a>
+<h3>hAttachment = v:get_attachmenthandle(toparent,idx)</h3>
+<p>Return the handle of an attachment point identified by its list index.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>toparent&nbsp;(boolean):</td><td>If <i>true</i>, return a handle for an attachment point to a parent. Otherwise, return a handle for an attachment point to a child.</td></tr>
+<tr><td>idx&nbsp;(integer):</td><td>attachment index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle, or nil if index out of range</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#attach_child">v:attach_child</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="attach_child"></a>
+<h3>ok = v:attach_child(hChild,hAttachment,hChildAttachment)</h3>
+<p>Attach a child vessel to an attachment point.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hChild&nbsp;(handle):</td><td>handle of child vessel to be attached.</td></tr>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point to which the child will be attached.</td></tr>
+<tr><td>hChildAttachment&nbsp;(handle):</td><td>attachment point on the child to which we want to attach.</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> indicates success, <i>false</i> indicates failure (child refuses attachment)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The hAttachment handle must refer to an attachment "to child" (i.e. created with toparent=false); the hChildAttachment handle must refer to an attachment "to parent" on the child object (i.e. created with toparent=true). It is not possible to connect two parent or two child attachment points.</p>
+<p>A child can only be connected to a single parent at any one time. If the child is already connected to a parent, the previous parent connection is severed.</p>
+<p>The child may check the parent attachment's id string and, depending on the value, refuse to connect. In that case, the function returns <i>false</i>.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#detach_child">v:detach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="detach_child"></a>
+<h3>ok = v:detach_child(hAttachment)<br />
+ok = v:detach_child(hAttachment,vel)</h3>
+<p>Break an existing attachment to a child.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hAttachment&nbsp;(handle):</td><td>attachment point handle</td></tr>
+<tr><td>vel&nbsp;(number):</td><td>separation velocity [m/s]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> when detachment is successful, <i>false</i> if no child was attached, or if child refuses to detach.</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_attachment">v:create_attachment</a>,
+<a href="#del_attachment">v:del_attachment</a>,
+<a href="#clear_attachments">v:clear_attachments</a>,
+<a href="#set_attachmentparams">v:set_attachmentparams</a>,
+<a href="#get_attachmentparams">v:get_attachmentparams</a>,
+<a href="#get_attachmentid">v:get_attachmentid</a>,
+<a href="#get_attachmentstatus">v:get_attachmentstatus</a>,
+<a href="#get_attachmentcount">v:get_attachmentcount</a>,
+<a href="#get_attachmentindex">v:get_attachmentindex</a>,
+<a href="#get_attachmenthandle">v:get_attachmenthandle</a>,
+<a href="#attach_child">v:attach_child</a>
+</p>
+</div>
+
+
+<div class="func"><a name="enable_transponder"></a>
+<h3>v:enable_transponder(enable)</h3>
+<p>Enable/disable transmission of transponder signal.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>enable&nbsp;(boolean):</td><td><i>true</i> to enable the transponder, <i>false</i> to disable it.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The transponder is a radio transmitter which can be used by other vessels to
+ obtain navigation information, e.g. for docking rendezvous approaches.</p>
+<p>If the transponder is turned on (enable = true), its initial frequency is set
+ to 108.00 MHz (channel 0). Use <a href=#set_transponderchannel">v:set_transponderchannel</a>
+ to tune to a different frequency.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_transponderchannel">v:set_transponderchannel</a>,
+<a href="#get_transponder">v:get_transponder</a>
+<a href="#enable_ids">v:enable_ids</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_transponder"></a>
+<h3>hNav = v:get_transponder()</h3>
+<p>Returns handle of vessel transponder if available.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAVHANDLE for transponder, or nil if not available</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns nil unless the transponder has been enabled by a call to
+ <a href="#enable_transponder">v:enable_transponder</a> or by setting the EnableXPDR
+ entry in the vessel's config file to TRUE.</p>
+<p>It is not safe to store the handle, because it can become invalid as a result
+ of disabling/enabling the transponder. Instead, the handle should be queried
+ when needed.</p>
+<p>The handle can be used to retrieve information about the transmitter, such as
+ current frequency.</p>
+</div>
+
+
+<div class="func"><a name="set_transponderchannel"></a>
+<h3>v:set_transponderchannel(ch)</h3>
+<p>Switch the channel number of the vessel's transponder.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ch&nbsp;(number):</td><td>transponder channel (0..639)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The transponder channel can only be set if the transponder is enabled (see <a href="#enable_transponder">v:enable_transponder</a>).</p>
+<p>Transponders can be tuned from 108.00 to 140.00 MHz in steps of 0.05 MHz. The frequency corresponding to a channel number ch is given by f = (108.0 + 0.05 ch) MHz.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#enable_transponder">v:enable_transponder</a>,
+<a href="#set_idschannel">v:set_idschannel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="enable_ids"></a>
+<h3>v:enable_ids(hDock,enable)</h3>
+<p>Enable/disable one of the vessel's IDS (Instrument Docking System) transmitters.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>docking port handle</td></tr>
+<tr><td>enable&nbsp;(boolean):</td><td><i>true</i> to enable the transmitter, <i>false</i> to disable it.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the IDS transmitter is turned on (enable = true), its channel is initially
+ set to 0 (transmitter frequency 108.00 MHz). Use <a href="#set_idschannel">v:set_idschannel</a>
+ to tune to a different channel.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#set_idschannel">v:set_idschannel</a>,
+<a href="#get_ids">v:get_ids</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_ids"></a>
+<h3>hNav = v:get_ids(hDock)</h3>
+<p>Returns handle of one of the vessel's instrument docking system (IDS) radio transmitters.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>docking port handle</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>Navigation radio handle of the vessel's IDS transmitter for docking port hDock.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns nil if hDock does not define an IDS transmitter.</p>
+<p>Docking port handles are returned by the <a href="#create_dock">v:create_dock</a>
+ and <a href="#get_dockhandle">v:get_dockhandle</a> methods.</p>
+<p>The IDS handle becomes invalid when the dock is deleted (e.g. as a result of
+ <a href="#del_dock">v:del_dock</a> or <a href="#clear_dockdefinitions">v:clear_dockdefinitions</a>.</p>
+<p>The handle returned by this function can be used to retrieve information
+ about the transmitter, such as sender frequency.</p>
+</div>
+
+
+<div class="func"><a name="set_idschannel"></a>
+<h3>v:set_idschannel(hDock,ch)</h3>
+<p>Switch the channel number of one of the vessel's IDS (Instrument Docking System) transmitters.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>hDock&nbsp;(handle):</td><td>docking port handle</td></tr>
+<tr><td>ch&nbsp;(number):</td><td>IDS channel (0..639)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The channel can only be set if the IDS transmitter is enabled (see <a href="#enable_ids">v:enable_ids</a>).</p>
+<p>IDS transmitters can be tuned from 108.00 to 140.00 MHz in steps of 0.05 MHz. The frequency corresponding to a channel number ch is given by f = (108.0 + 0.05 ch) MHz.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#enable_ids">v:enable_ids</a>,
+<a href="#get_ids">v:get_ids</a>,
+<a href="#set_transponderchannel">v:set_transponderchannel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="init_navradios"></a>
+<h3>v:init_navradios(nnav)</h3>
+<p>Defines the number of navigation (NAV) radio receivers supported by the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>nnav&nbsp;(number):</td><td>number of NAV radio receivers </td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A vessel requires NAV radio receivers to obtain instrument navigation aids
+ such as ILS or docking approach information.</p>
+<p>If no NAV receivers are available, then certain MFD modes such as Landing or
+ Docking will not be supported.</p>
+<p>Default is 2 NAV receivers.</p>
+</div>
+
+
+<div class="func"><a name="get_navcount"></a>
+<h3>nnav = v:get_navcount()</h3>
+<p>Returns the number of NAV receivers.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>nnav&nbsp;(integer):</td><td>number of NAV receivers (&ge; 0)</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#init_navradios">v:init_navradios</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_navchannel"></a>
+<h3>v:set_navchannel(n,ch)</h3>
+<p>Sets the channel of a NAV radio receiver.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>n&nbsp;(number):</td><td>receiver index (>= 0)</td></tr>
+<tr><td>ch&nbsp;(number):</td><td>channel number [0..639]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>NAV radios can be tuned from 108.00 to 139.95 MHz in steps of 0.05 MHz, corresponding to channels 0 to 639.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#init_navradios">v:init_navradios</a>,
+<a href="#set_navchannel">v:get_navchannel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_navchannel"></a>
+<h3>ch = v:get_navchannel(n)</h3>
+<p>Returns the current channel setting of a NAV radio receiver.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>n&nbsp;(number):</td><td>receiver index (>= 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ch&nbsp;(number):</td><td>channel number [0..639]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the receiver index <i>n</i> is out of range, this function returns 0.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#init_navradios">v:init_navradios</a>,
+<a href="#set_navchannel">v:set_navchannel</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_navsource"></a>
+<h3>hNav = v:get_navsource(n)</h3>
+<p>Returns handle of transmitter source currently received by one of the vessel's NAV receivers.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>n&nbsp;(number):</td><td>receiver index (>= 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hNav&nbsp;(handle):</td><td>NAV transmitter handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function returns the handle of the NAV transmitter currently received by
+radio <i>n</i>, or nil if the radio is not tuned to any transmitter, or if
+index <i>n</i> is out of range.</p>
+<p>The handle returned by this function may change in consecutive calls,
+ depending on the radio frequency of the corresponding receiver, the vessel
+ position and the position of radio transmitters in the range of the receiver.</p>
+</div>
+
+
+<div class="func"><a name="add_pointlight"></a>
+<h3>le = v:add_pointlight(pos)<br />
+le = v:add_pointlight(pos,param)<br />
+le = v:add_pointlight(pos,param,diffuse)<br />
+le = v:add_pointlight(pos,param,diffuse,specular)<br />
+le = v:add_pointlight(pos,param,diffuse,specular,ambient)</h3>
+<p>Adds a new isotropic point light source to the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>source position in vessel frame [<b>m</b>]</td></tr>
+<tr><td>param&nbsp;(table):</td><td>geometric parameters (see notes)</td></tr>
+<tr><td>diffuse&nbsp;(rgb table):</td><td>source contribution to diffuse object colours</td></tr>
+<tr><td>specular&nbsp;(rgb table):</td><td>source contribution to specular object colours</td></tr>
+<tr><td>ambient&nbsp;(rgb table):</td><td>source contribution to ambient object colours</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>le&nbsp;(object):</td><td>the newly created <a href="mtd_light.htm">light emitter</a>
+object</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>param</i> table contains the geometric parameters of the light source. It should
+contain the following fields:</p>
+<table>
+<tr><td>range&nbsp;(number):</td><td>light source range [m] (default: 100)</td></tr>
+<tr><td>att0&nbsp;(number):</td><td>attenuation coefficient (see below) (default: 1e-3)</td></tr>
+<tr><td>att1&nbsp;(number):</td><td>attenuation coefficient (see below) (default: 0)</td></tr>
+<tr><td>att2&nbsp;(number):</td><td>attenuation coefficient (see below) (default: 1e-3)</td></tr>
+</table>
+<p>Default values are substituted for any missing fields. The <i>att</i>i parameters define the
+light attenuation as a function of distance from the source. Intensity <i>I</i>
+as a function of distance <i>d</i> is calculated as</p>
+<p>I = I<sub>0</sub> / (att0 + d att1 + d<sup>2</sup> att2)</p>
+<p>where I<sub>0</sub> is the source intensity multiplied with the RGB value of the given colour
+component. </p>
+<p>Each of the colour arguments (<i>diffuse</i>, <i>specular</i> and <i>ambient</i>) are expected
+to be tables containing the fields <i>r</i>, <i>g</i> and <i>b</i>. Each value is normally in the
+range 0 to 1, but can be &gt; 1 or even negative for special effects. All three colour tables are
+optional. If <i>ambient</i> is missing, it is substituted with {r=0,g=0,b=0}. If <i>specular</i>
+is missing, it is assumed to be the same as <i>diffuse</i>. If <i>diffuse</i> is also missing, it
+is substituted with {r=1,g=1,b=1}.</p>
+
+<h4>Example:</h4>
+<div class="code">
+le = v:add_pointlight({x=10,y=1,z=0},{range=200,att0=1e-3,att2=2e-3},{r=1,g=0.8,b=0.7})
+</div>
+</div>
+
+
+<div class="func"><a name="add_spotlight"></a>
+<h3>le = v:add_pointlight(pos,dir)<br />
+le = v:add_spotlight(pos,dir,param)<br />
+le = v:add_spotlight(pos,dir,param,diffuse)<br />
+le = v:add_spotlight(pos,dir,param,diffuse,specular)<br />
+le = v:add_spotlight(pos,dir,param,diffuse,specular,ambient)</h3>
+<p>Adds a new directed spot light source to the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>pos&nbsp;(vector):</td><td>source position in vessel frame [<b>m</b>]</td></tr>
+<tr><td>dir&nbsp;(vector):</td><td>source direction in vessel frame</td></tr>
+<tr><td>param&nbsp;(table):</td><td>cone shape parameters (see notes)</td></tr>
+<tr><td>diffuse&nbsp;(rgb table):</td><td>source contribution to diffuse object colours</td></tr>
+<tr><td>specular&nbsp;(rgb table):</td><td>source contribution to specular object colours</td></tr>
+<tr><td>ambient&nbsp;(rgb table):</td><td>source contribution to ambient object colours</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>le&nbsp;(object):</td><td>the newly created <a href="mtd_light.htm">light emitter</a>
+object</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The <i>param</i> table contains the geometric parameters of the light source. It should
+contain the following fields:</p>
+<table>
+<tr><td>range&nbsp;(number):</td><td>light source range [m] (default: 100)</td></tr>
+<tr><td>att0&nbsp;(number):</td><td>attenuation coefficient (see below) (default: 1e-3)</td></tr>
+<tr><td>att1&nbsp;(number):</td><td>attenuation coefficient (see below) (default: 0)</td></tr>
+<tr><td>att2&nbsp;(number):</td><td>attenuation coefficient (see below) (default: 1e-3)</td></tr>
+<tr><td>umbra&nbsp;(number):</td><td>angular aperture of inner (maximum intensity) cone [rad] (default: 20&pi;/180)</td></tr>
+<tr><td>penumbra&nbsp;(number):</td><td>angular aperture of outer (zero intensity) cone [rad] (default: 40&pi;/180)</td></tr>
+</table>
+<p>Default values are substituted for any missing fields. The <i>att</i>i parameters define the
+light attenuation as a function of distance from the source. Intensity <i>I</i>
+as a function of distance <i>d</i> is calculated as</p>
+<p>I = I<sub>0</sub> / (att0 + d att1 + d<sup>2</sup> att2)</p>
+<p>where I<sub>0</sub> is the source intensity multiplied with the RGB value of the given colour
+component. </p>
+<p>Each of the colour arguments (<i>diffuse</i>, <i>specular</i> and <i>ambient</i>) are expected
+to be tables containing the fields <i>r</i>, <i>g</i> and <i>b</i>. Each value is normally in the
+range 0 to 1, but can be &gt; 1 or even negative for special effects. All three colour tables are
+optional. If <i>ambient</i> is missing, it is substituted with {r=0,g=0,b=0}. If <i>specular</i>
+is missing, it is assumed to be the same as <i>diffuse</i>. If <i>diffuse</i> is also missing, it
+is substituted with {r=1,g=1,b=1}.</p>
+
+<h4>Example:</h4>
+<div class="code">
+le = v:add_spotlight({x=10,y=1,z=0},{x=0,y=0,z=1},{range=200,att0=1e-3,att1=0,att2=2e-3,umbra=0.3,penumbra=0.5},{r=1,g=0.8,b=0.7})
+</div>
+</div>
+
+
+<div class="func"><a name="get_lightemitter"></a>
+<h3>le = v:get_lightemitter(idx)</h3>
+<p>Returns a pointer to a <a href="mtd_light.htm">light source object</a> identified by index.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(integer):</td><td>light source index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>le&nbsp;(object):</td><td>light source object, or <i>nil</i> if index out of range</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_lightemittercount">v:get_lightemittercount</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_lightemittercount"></a>
+<h3>n = v:get_lightemittercount()</h3>
+<p>Returns the number of <a href="mtd_light.htm">light sources</a> defined for the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>n&nbsp;(integer):</td><td>number of light sources</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="del_lightemitter"></a>
+<h3>ok = v:del_lightemitter(le)</h3>
+<p>Delete one of the vessel's light sources.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>le&nbsp;(object):</td><td>light emitter object</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> if light source was successfully deleted,
+<i>false</i> if the vessel didn't recognise the object.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If the function returns <i>true</i>, the light source object was deallocated and
+should no longer be referenced.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#clear_lightemitters">v:clear_lightemitters</a>
+</p>
+</div>
+
+
+<div class="func"><a name="clear_lightemitters"></a>
+<h3>v:clear_lightemitters()</h3>
+<p>Remove all light sources defined for the vessel.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#del_lightemitter">v:del_lightemitter</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_cameraoffset"></a>
+<h3>co = v:get_cameraoffset()</h3>
+<p>Returns the current camera position for internal (cockpit) view.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>co&nbsp;(vector):</td><td>camera offset in vessel coordinates [<b>m</b>]</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#set_cameraoffset">v:set_cameraoffset</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_cameraoffset"></a>
+<h3>v:set_cameraoffset(co)</h3>
+<p>Set the camera position for internal (cockpit) view.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>co&nbsp;(vector):</td><td>camera offset in vessel coordinates [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The camera offset can be used to define the pilot's eye position in the spacecraft.</p>
+<p>The default offset is (0,0,0).</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#get_cameraoffset">v:get_cameraoffset</a>
+</p>
+</div>
+
+
+<div class="func"><a name="add_mesh"></a>
+<h3>midx = v:add_mesh(meshame[,ofs])<br />
+midx = v:add_mesh(hmesh[,ofs])</h3>
+<p>Load a mesh definition for the vessel from a file or from a pre-loaded
+mesh template.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>meshname&nbsp;(string):</td><td>mesh file name</td></tr>
+<tr><td>hmesh&nbsp;(handle):</td><td>mesh handle</td></tr>
+<tr><td>ofs&nbsp;(vector):</td><td>optional vector defining the offset of mesh origin from vessel origin [<b>m</b>]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>midx&nbsp;(number):</td><td>mesh index</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>meshname</i> defines a path to an existing mesh file. The mesh must
+ be in Orbiter's MSH format (see 3DModel.pdf).</p>
+<p>The file name (including optional directory path) is relative to
+ Orbiter's mesh directory (usually ".\Meshes"). The file extension must
+ not be specified (.msh is assumed.)</p>
+<p><i>hmesh</i> is a handle to a mesh previously loaded with
+ <a href="api_oapi.htm#oapi_load_meshglobal">oapi.load_meshglobal</a>.</p>
+<p>The global handle <i>hmesh</i> represents a "mesh template". Whenever
+ the vessel needs to create its visual representation (when moving within
+ visual range of the observer camera), it creates its individual mesh as a
+ copy of the template.</p>
+<p>The mesh is either appended to the end of the vessel's mesh list, or
+ inserted at the location of a previously deleted mesh (see
+ <a href="#del_mesh">v:del_mesh</a>).</p>
+<p>The returned value is the mesh list index at which the mesh reference
+ was stored. It can be used to identify the mesh later (e.g. for
+ animations).</p>
+<p>This function only creates a <i>reference</i> to a mesh, but does not
+ directly load the mesh from frile. The mesh is physically loaded only when
+ it is required (whenever the vessel moves within visual range of the
+ observer camera).</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#del_mesh">v:del_mesh</a>,
+<a href="#insert_mesh">v:insert_mesh</a>,
+<a href="api_oapi.htm#oapi_load_meshglobal">oapi.load_meshglobal</a>
+</p>
+</div>
+
+
+<div class="func"><a name="insert_mesh"></a>
+<h3>midx = v:insert_mesh(meshname,idx[,ofs])<br />
+midx = v:insert_mesh(hmesh,idx[,ofs])</h3>
+<p>Insert or replace a mesh at a specific index location of the vessel's mesh list.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>meshname&nbsp;(string):</td><td>mesh file name</td></tr>
+<tr><td>hmesh&nbsp;(handle):</td><td>mesh handle</td></tr>
+<tr><td>idx&nbsp;(number):</td><td>mesh index (&ge; 0)</td></tr>
+<tr><td>ofs&nbsp;(vector):</td><td>optional vector defining the offset of mesh origin from vessel origin [<b>m</b>]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>midx&nbsp;(number):</td><td>mesh index</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>meshname</i> defines a path to an existing mesh file. The mesh must
+ be in Orbiter's MSH format (see 3DModel.pdf).</p>
+<p>The file name (including optional directory path) is relative to
+ Orbiter's mesh directory (usually ".\Meshes"). The file extension must
+ not be specified (.msh is assumed.)</p>
+<p><i>hmesh</i> is a handle to a mesh previously loaded with
+ <a href="api_oapi.htm#oapi_load_meshglobal">oapi.load_meshglobal</a>.</p>
+<p>The global handle <i>hmesh</i> represents a "mesh template". Whenever
+ the vessel needs to create its visual representation (when moving within
+ visual range of the observer camera), it creates its individual mesh as a
+ copy of the template.</p>
+<p><i>idx</i> is a zero-based index which specifies at which point the mesh
+ reference is added into the vessel's mesh list. If a mesh already exists
+ at this position, it is overwritten. If <i>idx</i> &gt; number of meshes,
+ then the required number of (empty) entries is generated.</p>
+<p>The return value is always equal to <i>idx</i>.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#del_mesh">v:del_mesh</a>,
+<a href="#add_mesh">v:add_mesh</a>,
+<a href="api_oapi.htm#oapi_load_meshglobal">oapi.load_meshglobal</a>
+</p>
+</div>
+
+
+<div class="func"><a name="del_mesh"></a>
+<h3>ok = v:del_mesh(idx[,retain_anim])</h3>
+<p>Remove a mesh from the vessel's mesh list.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(number):</td><td>mesh index (&ge; 0)</td></tr>
+<tr><td>retain_anim&nbsp;(boolean):</td><td>optional flag for keeping mesh animations (default: <i>false</i>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> on success, <i>false</i> to
+ indicate failure (index out of range, or mesh already deleted.)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>After a mesh has been deleted, the mesh index is no longer valid, and
+ should not be used any more in function calls (e.g. for animations).</p>
+<p>If meshes are added subsequently, they are placed in the vacant list
+ slots, and therefore can be assigned the indices of previously deleted
+ meshes.</p>
+<p>If you want to replace a mesh, it is easier to use the
+ <a href="#insert_mesh">v:insert_mesh</a> function instead of a combination
+ of v:del_mesh and <a href="#add_mesh">v:add_mesh</a>.</p>
+<p>By default, all animation components associated with the mesh are
+ deleted. This can be prevented by setting <i>retain_anim</i> to
+ <i>true</i>. In general this is only useful if the same mesh is
+ subsequently loaded again into the same mesh index slot. In all other
+ cases, retaining the animations of deleted meshes can lead to undefined
+ behaviour.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#insert_mesh">v:insert_mesh</a>,
+<a href="#add_mesh">v:add_mesh</a>
+</p>
+</div>
+
+
+<div class="func"><a name="clear_meshes"></a>
+<h3>v:clear_meshes()<br />
+v:clear_meshes(retain_anim)</h3>
+<p>Remove all mesh definitions for the vessel.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>retain_anim&nbsp;(boolean):</td><td>optional flag for keeping mesh animations (default: <i>false</i>)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>If <i>retain_anim</i> is <i>false</i>, all animations defined for the vessel are
+ deleted together with the meshes. If <i>true</i>, the animations stay behind. This
+ is only useful if the same meshes are subsequently added again in the same order,
+ so that the animations point to the appropriate meshes and mesh groups and can be
+ re-used. If different meshes are loaded later, the behaviour of the animations
+ becomes undefined.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#insert_mesh">v:insert_mesh</a>,
+<a href="#add_mesh">v:add_mesh</a>,
+<a href="#del_mesh">v:del_mesh</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_meshcount"></a>
+<h3>count = v:get_meshcount()</h3>
+<p>Returns the number of meshes defined for the vessel.</p>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>count&nbsp;(number):</td><td>mesh count (&ge; 0)</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#add_mesh">v:add_mesh</a>,
+<a href="#insert_mesh">v:insert_mesh</a>,
+<a href="#del_mesh">v:del_mesh</a>,
+<a href="#clear_meshes">v:clear_meshes</a>
+</p>
+</div>
+
+
+<div class="func"><a name="shift_mesh"></a>
+<h3>ok = v:shift_mesh(idx,ofs)</h3>
+<p>Shift the position of a mesh relative to the vessel's local coordinate system.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(integer):</td><td>mesh index (&ge; 0)</td></tr>
+<tr><td>ofs&nbsp;(vector):</td><td>translation vector [<b>m</b>]</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> on success, <i>false</i> indicates
+ error (index out of range).</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function does not define an animation (i.e. gradual transition), but resets the mesh position instantly.</p>
+
+<h4>Example:</h4>
+<div class="code">
+v=vessel.get_focusinterface()<br />
+v:shift_mesh(0,{x=10,y=20,z=30})<br />
+term.out(v:get_meshoffset(0))
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="#shift_meshes">v:shift_meshes</a>,
+<a href="#get_meshoffset">v:get_meshoffset</a>
+</p>
+</div>
+
+
+<div class="func"><a name="shift_meshes"></a>
+<h3>v:shift_meshes(ofs)</h3>
+<p>Shift the position of all meshes relative to the vessel's local coordinate system.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>ofs&nbsp;(vector):</td><td>translation vector [<b>m</b>]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is useful when resetting a vessel's centre of gravity, in
+ combination with <a href="#shift_centreofmass">v:shift_centreofmass</a>.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#shift_mesh">v:shift_mesh</a>,
+<a href="#get_meshoffset">v:get_meshoffset</a>,
+<a href="#shift_centreofmass">v:shift_centreofmass</a>,
+<a href="#shift_cg">v:shift_cg</a>
+</p>
+</div>
+
+
+<div class="func"><a name="get_meshoffset"></a>
+<h3>ofs = v:get_meshoffset(idx)</h3>
+<p>Returns the mesh offset in the vessel frame.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>idx&nbsp;(integer):</td><td>mesh index (&ge; 0)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ofs&nbsp;(vector):</td><td>mesh offset [<b>m</b>], or <i>nil</i> if index out of range</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="#add_mesh">v:add_mesh</a>,
+<a href="#insert_mesh">v:insert_mesh</a>,
+<a href="#shift_mesh">v:shift_mesh</a>,
+<a href="#shift_meshes">v:shift_meshes</a>
+</p>
+</div>
+
+
+<div class="func"><a name="create_animation"></a>
+<h3>anim = v:create_animation(initial_state)</h3>
+<p>Create a mesh animation object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>initial_state&nbsp;(number):</td><td>the animation state corresponding to the unmodified mesh</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>anim&nbsp;(integer):</td><td>Animation identifier</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>After creating an animation, components can be added with <a href="#add_animationcomponent">v:add_animationcomponent</a>.</p>
+<p>Use <a href="#set_animation">v:set_animation</a> to manipulate the animation state.</p>
+<p>0 &le; <i>initial_state</i> &le; 1 defines at which state the animation is stored in the mesh
+ file. Example: Landing gear animation between retracted state (0) and deployed
+ state (1). If the landing gear is retracted in the mesh file, set initial_state to
+ 0. If it is deployed in the mesh file, set initial_state to 1.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#add_animationcomponent">v:add_animationcomponent</a>,
+<a href="#set_animation">v:set_animation</a>
+</p>
+</div>
+
+
+<div class="func"><a name="del_animation"></a>
+<h3>ok = v:del_animation(anim)</h3>
+<p>Delete an existing mesh animation object.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>anim&nbsp;(integer):</td><td>animation identifier</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>true</i> if animation was deleted successfully</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The animation is deleted by removing all the components associated with it.
+ Subsequently, any calls to SetAnimation using this animation index will not have
+ any effect.</p>
+<p>Before the animation is deleted, the mesh groups associated with the animation
+ are reset to their default (initial) positions. To avoid jumps in the visual
+ appearance of the vessel, animations should therefore only be deleted when the
+ animation state has returned to the default state.</p>
+
+<h4>See also:</h4>
+<p>
+<a href="#create_animation">v:create_animation</a>
+</p>
+</div>
+
+
+<div class="func"><a name="set_animation"></a>
+<h3>ok = v:set_animation(anim,state)</h3>
+<p>Set the state of an animation.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>anim&nbsp;(integer):</td><td>animation identifier</td></tr>
+<tr><td>state&nbsp;(number):</td><td>animation state (0...1)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td><i>false</i> indicates failure (animation identifier out of range) 
+</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>Each animation is defined by its state, with extreme points state=0 and state=1.
+ When setting a state between 0 and 1, Orbiter carries out the appropriate
+ transformations to advance the animation to that state. It is the responsibility
+ of the code developer to call SetAnimation in such a way as to provide a smooth
+ movement of the animated parts.</p>
+ 
+<h4>See also:</h4>
+<p>
+<a href="#create_animation">v:create_animation</a>,
+<a href="#del_animation">v:del_animation</a>,
+<a href="#add_animationcomponent">v:add_animationcomponent</a>
+</p>
+</div>
+
+
+<div class="func"><a name="add_animationcomponent"></a>
+<h3>hAnimComp = v:add_animationcomponent(anim,state0,state1,trans)<br />
+hAnimComp = v:add_animationcomponent(anim,state0,state1,trans,hParent)</h3>
+<p>Add a component (rotation, translation or scaling) to an animation.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>anim&nbsp;(integer):</td><td>animation identifier, as returned by
+ <a href="#create_animation">v:create_animation</a></td></tr>
+<tr><td>state0&nbsp;(number):</td><td>animation cutoff state 0 for the component</td></tr>
+<tr><td>state1&nbsp;(number):</td><td>animation cutoff state 1 for the component</td></tr>
+<tr><td>trans&nbsp;(handle):</td><td>transformation object (see
+ <a href="api_oapi.htm#oapi_create_animationcomponent">oapi.create_animationcomponent</a></td></tr>
+<tr><td>hParent&nbsp;(handle):</td><td>parent transformation</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>hAnimComp&nbsp;(handle):</td><td>Animation component handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p><i>state0</i> and <i>state1</i> (0..1) allow to define the temporal
+ endpoints of the component's animation within the sequence. For example,
+ <i>state0</i>=0 and <i>state1</i>=1 perform the animation over the whole
+ duration of the animation sequence, while <i>state0</i>=0 and
+ <i>state1</i>=0.5 perform the animation over the first half of the total
+ animation. This allows to build complex animations where different
+ components are animated in a defined temporal sequence.</p>
+<p>The transformation (rotation, translation or scaling) is defined by
+ the <i>trans</i> object which is created by a call to
+ <a href="api_oapi.htm#oapi_create_animationcomponent">oapi.create_animationcomponent</a>.
+ The transformation object must not be deleted before the animation
+ component is deleted.</p>
+<p>To define a transformation as a child of another transformation, set
+ hParent to the handle returned by the v:add_animationcomponent call for
+ the parent.</p>
+</div>
+
+
+</div>
+</BODY>
+</html>

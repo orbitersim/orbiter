@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: MFD callback functions</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; MFD callback functions</p>
+
+<h1>MFD callback functions</h1>
+<p>The following callback functions in an MFD script are called by the
+<a href="ScriptMfd.htm">ScriptMFD</a> module to allow the MFD script to respond
+to various MFD events. An MFD script only needs to implement the callback
+functions it wants to respond to. Callback functions that are not implemented
+by the script revert to a default behaviour (usually nothing). The callback
+functions are case-sensitive. The arguments and return values must match the
+format in the following list.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#setup">setup</a></td>
+<td>Called when the MFD is created or re-displayed.</td>
+</tr>
+<tr>
+<td><a href="#buttonlabel">buttonlabel</a></td>
+<td>Return the label for the specified MFD button.</td>
+</tr>
+<tr>
+<td><a href="#buttonmenu">buttonmenu</a></td>
+<td>Defines a list of short descriptions for the various MFD mode button/key functions.</td>
+</tr>
+<tr>
+<td><a href="#consumebutton">consumebutton</a></td>
+<td>Button event notification.</td>
+</tr>
+<tr>
+<td><a href="#consumekeybuffered">consumekeybuffered</a></td>
+<td>Buffered keyboard event notification.</td>
+</tr>
+<tr>
+<td><a href="#consumekeyimmediate">consumekeyimmediate</a></td>
+<td>Continuous keyboard event notification.</td>
+</tr>
+<tr>
+<td><a href="#update">update</a></td>
+<td>Update the MFD display.</td>
+</tr>
+<tr>
+<td><a href="#storestatus">storestatus</a></td>
+<td>Store current MFD status in memory.</td>
+</tr>
+<tr>
+<td><a href="#recallstatus">recallstatus</a></td>
+<td>Recall MFD status info.</td>
+</tr>
+<tr>
+<td><a href="#writestatus">writestatus</a></td>
+<td>Write MFD status info to a scenario file.</td>
+</tr>
+<tr>
+<td><a href="#readstatus">readstatus</a></td>
+<td>Read MFD status info from a scenario file.</td>
+</tr>
+<tr>
+<td><a href="#prestep">prestep</a></td>
+<td>Per-frame processing at the beginning of a time step.</td>
+</tr>
+<tr>
+<td><a href="#poststep">poststep</a></td>
+<td>Per-frame processing at the end of a time step.</td>
+</tr>
+</table>
+
+<div class="func_block">
+
+<div class="func"><a name="setup"></a>
+<h3>setup(dispw,disph)</h3>
+<p>Called when the MFD is created or re-displayed.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>dispw&nbsp;(integer):</td><td>width of MFD display [pixel]</td></tr>
+<tr><td>disph&nbsp;(integer):</td><td>height of MFD display [pixel]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function, if defined, is called every time an instance
+of the MFD mode is created (either when switching from another
+MFD mode, switching cockpit views, switching from an external to
+internal view, or switching spacecraft).</p>
+<p>For vessel-persistent MFDs (see <a href="ScriptMfd.htm">ScriptMFD</a>),
+this function may be called multiple times during the lifetime
+of the MFD mode. For non-persistent MFDs, this function is called only
+once. It is the first MFD callback function to be called.</p>
+<p>This function provides an opportunity for the MFD to set
+up parameters that depend on the size of the MFD display.</p>
+
+</div>
+
+
+<div class="func"><a name="buttonlabel"></a>
+<h3>label = buttonlabel(bt)</h3>
+<p>Return the label for the specified MFD button.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>bt&nbsp;(integer):</td><td>button index (&ge; 0)</td></tr>
+</table>
+
+<h4>Expected return values:</h4>
+<table>
+<tr><td>label&nbsp;(string):</td><td>button label (up to 3 characters),
+ or <i>nil</i> if button is not used.</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="buttonmenu"></a>
+<h3>menu,nbt = buttonmenu()</h3>
+<p>Defines a list of short descriptions for the various MFD mode button/key functions.</p>
+
+<h4>Expected return values:</h4>
+<table>
+<tr><td>menu&nbsp;(table):</td><td>table of button function descriptions (see notes)</td></tr>
+<tr><td>nbt&nbsp;(integer):</td><td>number of buttons</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>The table of button descriptions returned by the function must contain
+<i>nbt</i> fields. Each field must be a sub-table with the following
+named entries:
+<table>
+<tr><td>l1&nbsp;(string):</td><td>first description line</td></tr>
+<tr><td>l2&nbsp;(string):</td><td>optional: second description line</td></tr>
+<tr><td>sel&nbsp;(character):</td><td>button shortcut character</td></tr>
+</table>
+</p>
+<p>Each description line should be no longer than 16 characters to fit
+in the MFD display.</p>
+</div>
+
+
+<div class="func"><a name="consumebutton"></a>
+<h3>consumed = consumebutton(bt,event)</h3>
+<p>Button event notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>bt&nbsp;(integer):</td><td>button index (&ge; 0)</td></tr>
+<tr><td>event&nbsp;(integer):</td><td>event index (see <a href="constant.htm#panel_mouse">Mouse event constants</a>)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>consumed&nbsp;(boolean)</td><td><i>true</i> if event was consumed, <i>false</i> if not.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called whenever the user presses, holds down,
+or releases an MFD button.</p>
+<p>The event flag can be a bitwise combination of the event types
+listed in <a href="constant.htm#panel_mouse">Mouse event constants</a>.</p>
+<p>Note that a button press event (e.g. PANEL_MOUSE.LBDOWN) is
+always sent with a button down event (e.g. PANEL_MOUSE.LBPRESSED).
+Since Lua doesn't have bitwise integer operations, a button
+down event should be detected by a modulus operation, e.g.
+<div class="code">
+if event%PANEL_MOUSE.LBPRESSED == PANEL_MOUSE.LBDOWN then<br />
+...
+</div>
+</p>
+
+<h4>Example:</h4>
+<div class="code">
+function consumebutton(bt,event)<br />
+&nbsp;&nbsp;if bt==0 then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if event%PANEL_MOUSE.LBPRESSED == PANEL_MOUSE.LBDOWN then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;button1_action() -- operate button 0 in buffered mode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;elseif bt==1 then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;if event == PANEL_MOUSE.LBPRESSED then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;button2_action() -- operate button 1 in continuous mode<br />
+&nbsp;&nbsp;&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;return false
+end
+</div>
+
+
+<div class="func"><a name="consumekeybuffered"></a>
+<h3>consumed = consumekeybuffered(key)</h3>
+<p>Buffered keyboard event notification</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>key&nbsp;(integer):</td><td>keyboard key code (see <a href="constant.htm#oapi_key">OAPI_KEY</a> constants)</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>consumed&nbsp;(boolean):</td><td><i>true</i> if event was consumed, <i>false</i> if not.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called whenever the user presses an MFD
+key on the keyboard (i.e. a Shift-key combination).</p>
+<p>The key code is one of the values listed in the <a href="constant.htm#oapi_key">OAPI_KEY</a>
+list.</p>
+
+<h4>Example:</h4>
+<div class="code">
+function consumekeybuffered(key)<br />
+&nbsp;&nbsp;if key==OAPI_KEY.X then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;button1_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;elseif key==OAPI_KEY.Y then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;button2_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return true<br />
+&nbsp;&nbsp;else<br />
+&nbsp;&nbsp;&nbsp;&nbsp;return false<br />
+&nbsp;&nbsp;end<br />
+end
+</div>
+</div>
+
+<div class="func"><a name="consumekeyimmediate"></a>
+<h3>consumeall = consumekeyimmediate(kstate)</h3>
+<p>Continuous keyboard event notification.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>kstate&nbsp;(table):</td><td>list of key states</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>consumeall&nbsp;(boolean):</td><td>generally <i>false</i>. Should return
+<i>true</i> only to suspend default keyboard processing.</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called continuously as long as the user
+keeps an MFD key (i.e. Shift-key combination) pressed. It can
+be used to implement a continuous action (e.g. scanning through
+a range of values).</p>
+<p>The <i>kstate</i> parameter is an array of integer flags indicating
+the state of each key. The easiest way to query the list is with
+the oapi.keydown function in combination with an
+<a href="constant.htm#oapi_key">OAPI_KEY</a> value. For example,
+<div class="code">
+oapi.keydown(kstate,OAPI_KEY.X)
+</div>
+returns <i>true</i> if the X key is pressed, false otherwise.</p>
+<p>To consume an individual key (i.e. prevent Orbiter from further
+processing it), use the oapi.resetkey function, e.g.
+<div class="code">
+oapi.resetkey(kstate,OAPI_KEY.X)
+</div>
+</p>
+<p>The function should usually only reset the keys it processes,
+and return <i>false</i>. Returning <i>true</i> will reset <i>all</i>
+keys, i.e. disable all further continuous key processing in this
+frame.</p>
+
+<h4>Example:</h4>
+<div class="code">
+function consumekeyimmediate(kstate)<br />
+&nbsp;&nbsp;if oapi.keydown(kstate,OAPI_KEY.Z) then<br />
+&nbsp;&nbsp;&nbsp;&nbsp;button3_continuous_action()<br />
+&nbsp;&nbsp;&nbsp;&nbsp;oapi.resetkey(kstate,OAPI_KEY.Z)<br />
+&nbsp;&nbsp;end<br />
+&nbsp;&nbsp;return false<br />
+end
+</div>
+</div>
+
+
+<div class="func"><a name="update"></a>
+<h3>ok = update(skp)</h3>
+<p>Update the MFD display.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>skp&nbsp;(object):</td><td><a href="mtd_skp.htm">sketchpad</a> object</td></tr>
+</table>
+
+<h4>Return values:</h4>
+<table>
+<tr><td>ok&nbsp;(boolean):</td><td>Should return <i>true</i>
+(return value currently ignored)</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called periodically by Orbiter (usually once per
+second) to allow the MFD to update its display.</p>
+<p>The sketchpad object passed to the function is associated with
+the MFD display surface, and can be used to draw text, lines, etc.</p>
+
+<h4>Example:</h4>
+<div class="code">
+function update(skp)<br />
+&nbsp;&nbsp;mfd:set_title(skp,'My MFD mode')<br />
+&nbsp;&nbsp;skp:set_font(mfd:get_defaultfont(0))<br />
+&nbsp;&nbsp;skp:set_textcolor(256*255)<br />
+&nbsp;&nbsp;skp:text(10,20,'Some info',9)<br />
+&nbsp;&nbsp;skp:rectangle(10,30,50,50)<br />
+&nbsp;&nbsp;return true<br />
+end
+</div>
+</div>
+
+
+<div class="func"><a name="storestatus"></a>
+<h3>storestatus()</h3>
+<p>Store current MFD status in memory.</p>
+
+<h4>Notes:</h4>
+<p>This function is called before the MFD mode instance is destroyed
+(e.g. when the user switches to a different mode). It allows the
+MFD to store current status information, which can then be recalled
+with <a href="#recallstatus">recallstatus</a> the next time the MFD
+mode is opened.</p>
+</div>
+
+
+<div class="func"><a name="recallstatus"></a>
+<h3>recallstatus()</h3>
+<p>Recall MFD status info.</p>
+
+<h4>Notes:</h4>
+<p>Called after the MFD has been created, to allow it to set its
+state from a previously stored state (see <a href="#storestatus">storestatus</a>).</p>
+<p>Another way to keep MFD state information between activation/deactivation
+cycles is to make the MFD <a href="ScriptMFD.htm">persistent</a>.</p>
+</div>
+
+
+<div class="func"><a name="writestatus"></a>
+<h3>writestatus(scn)</h3>
+<p>Write MFD status info to a scenario file.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>scn&nbsp;(handle):</td><td>scenario file handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called before the simulation session is closed,
+to allow the MFD to write its state to the scenario, so it can
+restore itself the next time the scenario is opened (see
+<a href="#readstatus">readstatus</a>).</p>
+</div>
+
+
+<div class="func"><a name="readstatus"></a>
+<h3>readstatus(scn)</h3>
+<p>Read MFD status info from a scenario file.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>scn&nbsp;(handle):</td><td>scenario file handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called at the beginning of a simulation
+session for MFD modes that are opened at startup. It allows these
+MFD modes to restore their state to the previously stored state (see
+<a href="#writestatus">writestatus</a>).</p>
+</div>
+
+
+<div class="func"><a name="prestep"></a>
+<h3>prestep(simt,simdt,mjd)</h3>
+<p>Per-frame processing at the beginning of a time step.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>current simulation time [s]</td></tr>
+<tr><td>simdt&nbsp;(number):</td><td>current step length [s]</td></tr>
+<tr><td>mjd&nbsp;(number):</td><td>current absolute simulation time in MJD format [days]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called only for persistent MFD modes.</p>
+<p>It is called at the beginning of each time step to allow
+the MFD to perform continuous processing tasks (e.g. autopilot
+functions).</p>
+<p>It is called even if the MFD is not active.</p>
+</div>
+
+
+<div class="func"><a name="poststep"></a>
+<h3>poststep(simt,simdt,mjd)</h3>
+<p>Per-frame processing at the end of a time step.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>current simulation time [s]</td></tr>
+<tr><td>simdt&nbsp;(number):</td><td>current step length [s]</td></tr>
+<tr><td>mjd&nbsp;(number):</td><td>current absolute simulation time in MJD format [days]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called only for persistent MFD modes.</p>
+<p>It is called at the end of each time step to allow
+the MFD to perform continuous processing tasks (e.g. autopilot
+functions).</p>
+<p>It is called even if the MFD is not active.</p>
+</div>
+
+
+</div>
+</body>
+</html>

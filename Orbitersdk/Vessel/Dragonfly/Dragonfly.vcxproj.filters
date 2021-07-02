@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{536e61e8-de45-4079-b26a-cab9a7fcd9f0}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Panel">
+      <UniqueIdentifier>{2cde0964-0108-4d2d-b706-d2b2815e6339}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Electrical">
+      <UniqueIdentifier>{c76ea7d7-ff4b-4857-9d79-6d6c29c0622b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Hydraulic">
+      <UniqueIdentifier>{b6298f19-3416-44b6-a16b-39d8fbe20043}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Math">
+      <UniqueIdentifier>{ae29330a-261c-4f94-a18b-6d49f08e9bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{035d74bc-4ebf-4fb2-9a3e-9ff5d8dab7d9}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{d36d633e-82ff-4e70-a774-62711193c814}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Meshes">
+      <UniqueIdentifier>{50df3300-e35f-4bfb-a94f-b9dd02578c14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{22978eef-425d-4fad-bc5c-b9f63118d789}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Dragonfly.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="internal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="instruments.cpp">
+      <Filter>Source Files\Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="panel.cpp">
+      <Filter>Source Files\Panel</Filter>
+    </ClCompile>
+    <ClCompile Include="esystems.cpp">
+      <Filter>Source Files\Electrical</Filter>
+    </ClCompile>
+    <ClCompile Include="hsystems.cpp">
+      <Filter>Source Files\Hydraulic</Filter>
+    </ClCompile>
+    <ClCompile Include="thermal.cpp">
+      <Filter>Source Files\Hydraulic</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="quaternion.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="vectors.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Source Files\Panel</Filter>
+    </ClInclude>
+    <ClInclude Include="Dragonfly.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="esystems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hsystems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="instruments.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="panel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quaternion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="thermal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vectors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="ADIborder.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cw.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Dial1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="dock.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="dragon.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="egauge.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Fonts.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="front.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="fuel.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="gauge.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="grill.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="left.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="MFD.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="nav.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="rad2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="radar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="radar2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="right.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="rotary.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="SL.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="switch.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Switch1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Switch2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="tb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Up.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="vrot.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="vrotbk.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="warn.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="panel.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Meshes\Dragonfly.msh">
+      <Filter>Meshes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Dragonfly.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

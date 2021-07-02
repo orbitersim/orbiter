@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="orbiter_module"
+	InheritedPropertySheets=".\orbiter.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(OrbiterSdkIncludeDir)&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="orbiter.lib orbitersdk.lib"
+		OutputFile="$(OrbiterModuleDir)\$(ProjectName).dll"
+		AdditionalLibraryDirectories="&quot;$(OrbiterSdkLibDir)&quot;"
+		ImportLibrary="$(OutDir)\$(ProjectName).lib"
+	/>
+</VisualStudioPropertySheet>

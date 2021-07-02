@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <SrcDir>$(SolutionDir)..\</SrcDir>
+    <SrcConfigDir>$(SrcDir)Config\</SrcConfigDir>
+    <SrcDocDir>$(SrcDir)Doc\</SrcDocDir>
+    <SrcSdkDir>$(SrcDir)Orbitersdk\</SrcSdkDir>
+    <SrcSdkIncludeDir>$(SrcSdkDir)include\</SrcSdkIncludeDir>
+    <SrcSdkLibDir>$(SrcSdkDir)lib\</SrcSdkLibDir>
+    <SrcSdkSampleDir>$(SrcSdkDir)samples\</SrcSdkSampleDir>
+    <SrcSdkResourceDir>$(SrcSdkDir)resources\</SrcSdkResourceDir>
+    <SrcTextureDir>$(SrcDir)Textures\</SrcTextureDir>
+    <SrcUtilDir>$(SrcDir)Utils\</SrcUtilDir>
+    <RootDir>$(SrcDir)..\</RootDir>
+    <ExternDir>$(RootDir)extern\</ExternDir>
+    <BuildDir>$(RootDir)Orbiter_$(Configuration)\</BuildDir>
+    <BuildConfigDir>$(BuildDir)Config\</BuildConfigDir>
+    <BuildDocDir>$(BuildDir)Doc\</BuildDocDir>
+    <BuildFlightDir>$(BuildDir)Flights\</BuildFlightDir>
+    <BuildImageDir>$(BuildDir)Images\</BuildImageDir>
+    <BuildMeshDir>$(BuildDir)Meshes\</BuildMeshDir>
+    <BuildModuleDir>$(BuildDir)Modules\</BuildModuleDir>
+    <BuildModulePluginDir>$(BuildModuleDir)Plugin\</BuildModulePluginDir>
+    <BuildModuleServerDir>$(BuildModuleDir)Server\</BuildModuleServerDir>
+    <BuildScenarioDir>$(BuildDir)Scenarios\</BuildScenarioDir>
+    <BuildScriptDir>$(BuildDir)Script\</BuildScriptDir>
+    <BuildTextureDir>$(BuildDir)Textures\</BuildTextureDir>
+    <BuildTexture2Dir>$(BuildDir)Textures2\</BuildTexture2Dir>
+    <BuildUtilDir>$(BuildDir)Utils\</BuildUtilDir>
+    <BuildSdkDir>$(BuildDir)Orbitersdk\</BuildSdkDir>
+    <BuildSdkIncludeDir>$(BuildSdkDir)include\</BuildSdkIncludeDir>
+    <BuildSdkLibDir>$(BuildSdkDir)lib\</BuildSdkLibDir>
+    <BuildSdkResourceDir>$(BuildSdkDir)resources\</BuildSdkResourceDir>
+    <BuildSdkUtilDir>$(BuildSdkDir)Utils\</BuildSdkUtilDir>
+    <BuildSdkSampleDir>$(BuildSdkDir)samples\</BuildSdkSampleDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+    <OutDir>$(BuildDir)</OutDir>
+    <IntDir>$(BuildDir)intermediate\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>None</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <UseUnicodeResponseFiles>false</UseUnicodeResponseFiles>
+    </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Command />
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="SrcDir">
+      <Value>$(SrcDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcConfigDir">
+      <Value>$(SrcConfigDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcDocDir">
+      <Value>$(SrcDocDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcSdkDir">
+      <Value>$(SrcSdkDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcSdkIncludeDir">
+      <Value>$(SrcSdkIncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcSdkLibDir">
+      <Value>$(SrcSdkLibDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcSdkSampleDir">
+      <Value>$(SrcSdkSampleDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcSdkResourceDir">
+      <Value>$(SrcSdkResourceDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcTextureDir">
+      <Value>$(SrcTextureDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SrcUtilDir">
+      <Value>$(SrcUtilDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="RootDir">
+      <Value>$(RootDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="ExternDir">
+      <Value>$(ExternDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildDir">
+      <Value>$(BuildDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildConfigDir">
+      <Value>$(BuildConfigDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildDocDir">
+      <Value>$(BuildDocDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildFlightDir">
+      <Value>$(BuildFlightDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildImageDir">
+      <Value>$(BuildImageDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildMeshDir">
+      <Value>$(BuildMeshDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildModuleDir">
+      <Value>$(BuildModuleDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildModulePluginDir">
+      <Value>$(BuildModulePluginDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildModuleServerDir">
+      <Value>$(BuildModuleServerDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildScenarioDir">
+      <Value>$(BuildScenarioDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildScriptDir">
+      <Value>$(BuildScriptDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildTextureDir">
+      <Value>$(BuildTextureDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildTexture2Dir">
+      <Value>$(BuildTexture2Dir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildUtilDir">
+      <Value>$(BuildUtilDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildSdkDir">
+      <Value>$(BuildSdkDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildSdkIncludeDir">
+      <Value>$(BuildSdkIncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildSdkLibDir">
+      <Value>$(BuildSdkLibDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildSdkResourceDir">
+      <Value>$(BuildSdkResourceDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildSdkUtilDir">
+      <Value>$(BuildSdkUtilDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildSdkSampleDir">
+      <Value>$(BuildSdkSampleDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

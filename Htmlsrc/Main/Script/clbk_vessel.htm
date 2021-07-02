@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS">
+<title>Script API: Vessel callback functions</title>
+</head>
+<body BGCOLOR=#FFFFFF TEXT=#000000>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; <a href="function.htm">Functions</a> &gt; Vessel callback functions</p>
+
+<h1>Vessel callback functions</h1>
+<p>The following callback functions in a Vessel script are called by the
+<a href="ScriptVessel.htm">ScriptVessel</a> module to allow the vessel script to respond
+to various vessel events. A vessel script only needs to implement the callback
+functions it wants to respond to. Callback functions that are not implemented
+by the script revert to a default behaviour (usually nothing). However, some
+callback functions (e.g. clbk_setclasscaps) should always be defined, because
+they do not have a meaningful default behaviour.</p>
+<p>The callback functions are case-sensitive. The arguments and return values must match the
+format in the following list.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#clbk_setclasscaps">clbk_setclasscaps</a></td>
+<td>Called during vessel creation to set physical parameters, load meshes, etc.</td>
+</tr>
+<tr>
+<td><a href="#clbk_postcreation">clbk_postcreation</a></td>
+<td>Called after scenario has been defined.</td>
+</tr>
+<tr>
+<td><a href="#clbk_prestep">clbk_prestep</a></td>
+<td>Per-frame processing at the beginning of a time step.</td>
+</tr>
+<tr>
+<td><a href="#clbk_poststep">clbk_poststep</a></td>
+<td>Per-frame processing at the end of a time step.</td>
+</tr>
+</table>
+
+<div class="func_block">
+
+<div class="func"><a name="clbk_setclasscaps"></a>
+<h3>clbk_setclasscaps(cfg)</h3>
+<p>Called during vessel creation to set physical parameters, load meshes, etc.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>cfg&nbsp;(file handle):</td><td>vessel configuration file handle</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called after Orbiter has created an instance of the vessel
+class, but before its state is defined. It should be implemented to set general
+physical vessel parameters (empty mass, fuel capacity, engine layout and specs,
+atmospheric parameters, etc.)
+It is also a good place to load meshes, define animations, and performing similar
+setup functions. It should not be used to set a specific vessel state (state
+vectors, fuel level, etc.).</p>
+</div>
+
+
+<div class="func"><a name="clbk_postcreation"></a>
+<h3>clbk_postcreation()</h3>
+<p>Called after scenario has been defined.</p>
+
+<h4>Notes:</h4>
+<p>This function is called after the vessel state has been defined and just before
+the vessel enters the simulation update cycle.</p>
+<p>For vessels created at the start of the simulation session, it is called
+after all other vessels have been created and defined. It is therefore a good place to
+perform any functions that define the interaction between vessels.</p>
+</div>
+
+
+<div class="func"><a name="clbk_prestep"></a>
+<h3>clbk_prestep(simt,simdt,mjd)</h3>
+<p>Per-frame processing at the beginning of a time step.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>current simulation time [s]</td></tr>
+<tr><td>simdt&nbsp;(number):</td><td>current step length [s]</td></tr>
+<tr><td>mjd&nbsp;(number):</td><td>current absolute simulation time in MJD format [days]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called at the beginning of each time step to allow
+the vessel to perform continuous processing tasks, including processing of
+physical parameters and animation updates.</p>
+</div>
+
+
+<div class="func"><a name="clbk_poststep"></a>
+<h3>clbk_poststep(simt,simdt,mjd)</h3>
+<p>Per-frame processing at the end of a time step.</p>
+
+<h4>Parameters:</h4>
+<table>
+<tr><td>simt&nbsp;(number):</td><td>current simulation time [s]</td></tr>
+<tr><td>simdt&nbsp;(number):</td><td>current step length [s]</td></tr>
+<tr><td>mjd&nbsp;(number):</td><td>current absolute simulation time in MJD format [days]</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>This function is called at the end of each time step to allow
+the vessel to perform continuous processing tasks, including processing of
+physical parameters and animation updates.</p>
+</div>
+
+
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="orbiterroot.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <DeployDir>$(OrbiterDir)\..\Orbiter_$(Configuration)</DeployDir>
+    <BuildDir>$(DeployDir)\bin\Orbitersdk\$(ProjectName)</BuildDir>
+    <ModuleDir>$(DeployDir)\Modules</ModuleDir>
+    <MeshDir>$(DeployDir)\Meshes</MeshDir>
+    <ConfigDir>$(DeployDir)\Config</ConfigDir>
+    <ScenarioDir>$(DeployDir)\Scenarios</ScenarioDir>
+    <SDKDir>$(DeployDir)\Orbitersdk</SDKDir>
+    <SDKIncludeDir>$(SDKDir)\include</SDKIncludeDir>
+    <SDKLibDir>$(SDKDir)\lib</SDKLibDir>
+    <SDKSampleDir>$(SDKDir)\samples</SDKSampleDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(HtmlHelpBeforeTargets)' == '' and '$(HtmlHelpAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <HtmlHelpBeforeTargets>Midl</HtmlHelpBeforeTargets>
+    <HtmlHelpAfterTargets>CustomBuild</HtmlHelpAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <HtmlHelpDependsOn Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(HtmlHelpDependsOn)</HtmlHelpDependsOn>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="DeployDir">
+      <Value>$(DeployDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="BuildDir">
+      <Value>$(BuildDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="ModuleDir">
+      <Value>$(ModuleDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="MeshDir">
+      <Value>$(MeshDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="ConfigDir">
+      <Value>$(ConfigDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="ScenarioDir">
+      <Value>$(ScenarioDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SDKDir">
+      <Value>$(SDKDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SDKIncludeDir">
+      <Value>$(SDKIncludeDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SDKLibDir">
+      <Value>$(SDKLibDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="SDKSampleDir">
+      <Value>$(SDKSampleDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <HtmlHelp>
+      <CommandLineTemplate>hhc.bat %(RootDir)%(Directory)%(Filename)%(Extension)</CommandLineTemplate>
+      <Outputs>*.chm</Outputs>
+    </HtmlHelp>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SDKIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <OutputFile />
+    </Link>
+    <Link>
+      <AdditionalLibraryDirectories>$(SDKLibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>$(OutDir)\$(ProjectName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

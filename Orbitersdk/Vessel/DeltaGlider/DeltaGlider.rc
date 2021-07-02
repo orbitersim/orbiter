@@ -1,0 +1,211 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SWITCH1             BITMAP                  "Bitmaps\\Switch1.bmp"
+IDB_SLIDER1             BITMAP                  "Bitmaps\\Slider1.bmp"
+IDB_SWITCH2             BITMAP                  "Bitmaps\\Switch2.bmp"
+IDB_LEVER1              BITMAP                  "Bitmaps\\Lever1.bmp"
+IDB_SWITCH4             BITMAP                  "Bitmaps\\Switch4.bmp"
+IDB_INDICATOR2          BITMAP                  "Bitmaps\\Slider2.bmp"
+IDB_SWITCH4R            BITMAP                  "Bitmaps\\Switch4r.bmp"
+IDB_SWITCH3             BITMAP                  "Bitmaps\\Switch3.bmp"
+IDB_MFDBUTTON           BITMAP                  "Bitmaps\\MFDButton.bmp"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CTRL DIALOGEX 0, 0, 196, 182
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "DG Controls"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    GROUPBOX        "Landing gear",IDC_STATIC,7,4,57,40
+    CONTROL         "Up",IDC_GEAR_UP,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,14,15,43,12
+    CONTROL         "Down",IDC_GEAR_DOWN,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,14,29,43,12
+    GROUPBOX        "Nose cone",IDC_STATIC,7,90,57,40
+    CONTROL         "Close",IDC_NCONE_CLOSE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,14,100,43,12
+    CONTROL         "Open",IDC_NCONE_OPEN,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,14,114,43,12
+    GROUPBOX        "Outer airlock",IDC_STATIC,132,47,57,40
+    CONTROL         "Close",IDC_OLOCK_CLOSE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,140,57,43,12
+    CONTROL         "Open",IDC_OLOCK_OPEN,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,140,71,43,12
+    GROUPBOX        "Inner airlock",IDC_STATIC,70,47,57,40
+    CONTROL         "Close",IDC_ILOCK_CLOSE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,77,57,43,12
+    CONTROL         "Open",IDC_ILOCK_OPEN,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,77,71,43,12
+    GROUPBOX        "Escape ladder",IDC_STATIC,70,90,57,40
+    CONTROL         "Stow",IDC_LADDER_RETRACT,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,77,100,43,12
+    CONTROL         "Extend",IDC_LADDER_EXTEND,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,77,114,43,12
+    GROUPBOX        "Radiator",IDC_STATIC,132,90,57,40
+    CONTROL         "Stow",IDC_RADIATOR_RETRACT,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,140,100,43,12
+    CONTROL         "Extend",IDC_RADIATOR_EXTEND,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,140,114,43,12
+    GROUPBOX        "Top hatch",IDC_STATIC,7,47,57,40
+    CONTROL         "Close",IDC_HATCH_CLOSE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,13,57,43,12
+    CONTROL         "Open",IDC_HATCH_OPEN,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,13,71,43,12
+    GROUPBOX        "Retro doors",IDC_STATIC,70,4,57,40
+    CONTROL         "Close",IDC_RETRO_CLOSE,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,77,15,43,12
+    CONTROL         "Open",IDC_RETRO_OPEN,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,77,29,43,12
+    GROUPBOX        "Lights",IDC_STATIC,7,133,181,42
+    CONTROL         "Nav",IDC_NAVLIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,143,158,40,12
+    CONTROL         "Strobe",IDC_STROBELIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,143,144,40,12
+    CONTROL         "Docking",IDC_DOCKINGLIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,100,144,40,12
+    CONTROL         "Landing",IDC_LANDINGLIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,100,158,40,12
+    CONTROL         "Instrument",IDC_INSTRUMENTLIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,13,144,40,12
+    CONTROL         "Flood w.",IDC_FLOODWLIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,56,144,40,12
+    CONTROL         "Flood r.",IDC_FLOODRLIGHT,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,56,158,40,12
+    GROUPBOX        "Airbrake",IDC_STATIC,132,4,57,40
+    CONTROL         "Retract",IDC_AIRBRAKE_RETRACT,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE | WS_GROUP,140,15,43,12
+    CONTROL         "Extend",IDC_AIRBRAKE_EXTEND,"Button",BS_AUTORADIOBUTTON | BS_PUSHLIKE,140,29,43,12
+END
+
+IDD_DAMAGE DIALOGEX 0, 0, 137, 71
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "DG Damage status"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    RTEXT           "Left wing:",IDC_STATIC,23,19,39,8
+    RTEXT           "Right wing:",IDC_STATIC,23,32,39,8
+    GROUPBOX        "Airframe status",IDC_STATIC,6,6,125,42
+    RTEXT           "100 %",IDC_LEFTWING_STATUS,69,19,28,8
+    RTEXT           "100 %",IDC_RIGHTWING_STATUS,69,32,28,8
+    PUSHBUTTON      "Repair",IDC_REPAIR,6,52,125,14
+END
+
+IDD_EDITOR_PG1 DIALOG  2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    GROUPBOX        "Landing gear",IDC_STATIC,8,16,57,40
+    PUSHBUTTON      "Up",IDC_GEAR_UP,15,27,43,11
+    PUSHBUTTON      "Down",IDC_GEAR_DOWN,15,40,43,11
+    GROUPBOX        "Retro doors",IDC_STATIC,71,16,57,40
+    PUSHBUTTON      "Closed",IDC_RETRO_CLOSE,78,27,43,11
+    PUSHBUTTON      "Open",IDC_RETRO_OPEN,78,40,43,11
+    GROUPBOX        "Outer airlock",IDC_STATIC,134,16,57,40
+    GROUPBOX        "Inner airlock",IDC_STATIC,197,16,57,40
+    PUSHBUTTON      "Closed",IDC_OLOCK_CLOSE,141,27,43,11
+    PUSHBUTTON      "Open",IDC_OLOCK_OPEN,141,40,43,11
+    PUSHBUTTON      "Closed",IDC_ILOCK_CLOSE,204,27,43,11
+    PUSHBUTTON      "Open",IDC_ILOCK_OPEN,204,40,43,11
+    GROUPBOX        "Nose cone",IDC_STATIC,8,62,57,40
+    GROUPBOX        "Escape ladder",IDC_STATIC,71,62,57,40
+    PUSHBUTTON      "Closed",IDC_NCONE_CLOSE,15,73,43,11
+    PUSHBUTTON      "Open",IDC_NCONE_OPEN,15,86,43,11
+    PUSHBUTTON      "Stowed",IDC_LADDER_RETRACT,78,73,43,11
+    PUSHBUTTON      "Extended",IDC_LADDER_EXTEND,78,86,43,11
+    GROUPBOX        "Radiator",IDC_STATIC,197,62,57,40
+    GROUPBOX        "Top hatch",IDC_STATIC,134,62,57,40
+    PUSHBUTTON      "Closed",IDC_HATCH_CLOSE,141,73,43,11
+    PUSHBUTTON      "Open",IDC_HATCH_OPEN,141,86,43,11
+    PUSHBUTTON      "Stowed",IDC_RADIATOR_RETRACT,204,73,43,11
+    PUSHBUTTON      "Extended",IDC_RADIATOR_EXTEND,204,86,43,11
+    GROUPBOX        "Delta-glider animation settings",IDC_STATIC,0,0,263,113
+END
+
+IDD_EDITOR_PG2 DIALOG  2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    PUSHBUTTON      "Apply",IDC_APPLY,161,221,50,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Refresh",IDC_REFRESH,213,221,50,14,NOT WS_VISIBLE
+    GROUPBOX        "Delta-glider passengers",IDC_STATIC,0,0,263,81
+    CONTROL         "Front left",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,79,18,43,22
+    CONTROL         "Rear left",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,79,47,43,22
+    CONTROL         "Front right",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,129,18,43,22
+    CONTROL         "Rear right",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,129,47,43,22
+    LTEXT           "Total vessel mass:",IDC_STATIC,7,89,59,8
+    RTEXT           "0 kg",IDC_MASS,67,89,50,8
+END
+
+IDD_EDITOR_PG3 DIALOG  2, 2, 263, 235
+STYLE DS_SETFONT | WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "<< Done",IDC_BACK,0,221,50,14
+    GROUPBOX        "",IDC_STATIC,-2,213,267,29
+    PUSHBUTTON      "Repair all",IDC_REPAIR,161,221,50,14
+    PUSHBUTTON      "Refresh",IDC_REFRESH,213,221,50,14
+    GROUPBOX        "Damage",IDC_STATIC,0,0,263,81
+    CONTROL         "",IDC_LEFTWING_SLIDER,"OrbiterCtrl_Gauge",0x0,93,18,120,10
+    LTEXT           "Airframe",IDC_STATIC,20,24,26,8
+    LTEXT           "100 %",IDC_LEFTWING_STATUS,219,18,20,8
+    RTEXT           "left wing",IDC_STATIC,55,18,31,8
+    CONTROL         "",IDC_RIGHTWING_SLIDER,"OrbiterCtrl_Gauge",0x0,93,31,120,10
+    LTEXT           "100 %",IDC_RIGHTWING_STATUS,219,31,20,8
+    RTEXT           "right wing",IDC_STATIC,55,31,31,8
+    LTEXT           "fail",IDC_STATIC,93,8,10,8
+    LTEXT           "operate",IDC_STATIC,188,8,25,8
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

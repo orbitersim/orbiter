@@ -1,0 +1,8 @@
+BEGIN_HYPERDESC
+<h1>Space Shuttle Atlantis</h1>
+<p>The new Space Shuttle Atlantis model. Mesh and textures contributed by Don Gallagher (donamy).</p>
+
+<p>The RMS arm can now be manipulated via a control dialog (Ctrl-Space).</p>
+
+<p>Atmospheric control surfaces are working in this version, so the final approach phase is a lot more realistic now!</p>
+END_HYPERDESC

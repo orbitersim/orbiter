@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{910F6035-F370-441B-8312-ED81217AF776}</ProjectGuid>
+    <RootNamespace>Help</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\..\..\VS2015\PropertyPages\orbiter.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IntDir>$(BuildDir)</IntDir>
+    <OutDir>$(BuildDir)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(BuildDir)</OutDir>
+    <IntDir>$(BuildDir)</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <HtmlHelp Include="..\..\..\Htmlsrc\Main\orbiter.hhp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_oapi.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_proc.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_vec.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\api_vessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\clbk_mfd.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\clbk_vessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\constant.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\Datatypes.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\devel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\function.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\Invoking.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mission.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_light.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_mfd.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_note.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_skp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\mtd_vessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\OrbiterAPI.css" />
+    <None Include="..\..\..\Htmlsrc\Main\Script\ScriptMfd.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\ScriptRef.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\..\..\Htmlsrc\Main\Script\ScriptVessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\Htmlsrc\Main\Script\img1.gif" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

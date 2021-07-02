@@ -1,0 +1,431 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="../Orbiter.css" TYPE="TEXT/CSS" />
+<LINK REL="stylesheet" HREF="OrbiterAPI.css" TYPE="TEXT/CSS" />
+<title>Constants and identifiers</title>
+</HEAD>
+<BODY BGCOLOR=#FFFFFF TEXT=#000000>
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="ScriptRef.htm">Script</a> &gt; Constants and identifiers</p>
+
+<h1><a name="data"></a>Constants and identifiers</h1>
+<p>Various API functions require integer constants to identify radio transmitter types,
+engine types, navigation modes, etc. For convenience and to make scripts easier to read,
+these identifiers have been grouped into tables and associated with field names.</p>
+
+<table class="summary">
+<tr>
+<td><a href="#refframe">REFFRAME</a></td>
+<td>Frame of reference identifiers</td>
+</tr>
+<tr>
+<td><a href="#transmitter">TRANSMITTER</a></td>
+<td>Radio transmitter types</td>
+</tr>
+<tr>
+<td><a href="#navmode">NAVMODE</a></td>
+<td>Navigation modes</td>
+</tr>
+<tr>
+<td><a href="#rcsmode">RCSMODE</a></td>
+<td>Reaction control system modes</td>
+</tr>
+<tr>
+<td><a href="#thgroup">THGROUP</a></td>
+<td>Thruster group identifiers</td>
+</tr>
+<tr>
+<td><a href="#lift">LIFT</a></td>
+<td>Airfoil orientation flags</td>
+</tr>
+<tr>
+<td><a href="#airctrl">AIRCTRL</a></td>
+<td>Aerodynamic control surface types</td>
+</tr>
+<tr>
+<td><a href="#airctrl_axis">AIRCTRL_AXIS</a></td>
+<td>Aerodynamic control surface axis orientation</td>
+</tr>
+<tr>
+<td><a href="#prop">PROP</a></td>
+<td>Vessel propagation modes for simulation time jumps</td>
+</tr>
+<tr>
+<td><a href="#particle">PARTICLE</a></td>
+<td>Identifiers for particle stream specifications</td>
+</tr>
+<tr>
+<td><a href="#sketchpad">SKP</a></td>
+<td>Sketchpad constants</td>
+</tr>
+<tr>
+<td><a href="#panel_mouse">PANEL_MOUSE</a></td>
+<td>Mouse event types</td>
+</tr>
+<tr>
+<td><a href="#oapi_key">OAPI_KEY</a></td>
+<td>Keyboard key codes</td>
+</tr>
+</table>
+
+
+<div class="func_block">
+
+<div class="func"><a name="refframe"></a>
+<h3>Frame of reference identifiers</h3>
+<p>The entries of the REFFRAME table contain the identifiers for
+different frames of reference used by various API functions.</p>
+
+<table>
+<tr><td>REFFRAME.GLOBAL</td><td>global (ecliptic) frame of reference</td></tr>
+<tr><td>REFFRAME.LOCAL</td><td>an object's local frame of reference</td></tr>
+<tr><td>REFFRAME.REFLOCAL</td><td>a reference object's local frame of reference</td></tr>
+<tr><td>REFFRAME.HORIZON</td><td>local horizon frame of reference</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="transmitter"></a>
+<h3>Navigation radio transmitter types</h3>
+<p>The entries of the TRANSMITTER table contain the identifiers for the
+supported types of navigation radio transmitters.</p>
+
+<table>
+<tr><td>TRANSMITTER.NONE</td><td>undefined transmitter type</td></tr>
+<tr><td>TRANSMITTER.VOR</td><td>omnidirectional beacon</td></tr>
+<tr><td>TRANSMITTER.VTOL</td><td>launchpad homing beacon</td></tr>
+<tr><td>TRANSMITTER.ILS</td><td>instrument landing system</td></tr>
+<tr><td>TRANSMITTER.IDS</td><td>instrument docking system</td></tr>
+<tr><td>TRANSMITTER.XPDR</td><td>vessel transponder</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="api_oapi.htm#oapi_get_navtype">oapi.get_navtype</a></p>
+</div>
+
+
+<div class="func"><a name="navmode"></a>
+<h3>Navmode identifiers</h3>
+<p>The entries of the NAVMODE table are used to refer to the built-in
+"auto-navigation" modes, mostly for mainaining specific vessel attitudes
+via use of RCS thrusters.</p>
+
+<table>
+<tr><td>NAVMODE.KILLROT</td><td>"Kill rotation" mode</td></tr>
+<tr><td>NAVMODE.HLEVEL</td><td>"Hold level with horizon" mode</td></tr>
+<tr><td>NAVMODE.PROGRADE</td><td>"Prograde" mode</td></tr>
+<tr><td>NAVMODE.RETROGRADE</td><td>"Retrograde" mode</td></tr>
+<tr><td>NAVMODE.NORMAL</td><td>"Normal to orbital plane" mode</td></tr>
+<tr><td>NAVMODE.ANTINORMAL</td><td>"Anti-normal to orbital plane" mode</td></tr>
+<tr><td>NAVMODE.HOLDALT</td><td>"Hold altitude" mode</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#set_navmode">v:set_navmode</a></p>
+</div>
+
+
+<div class="func"><a name="rcsmode"></a>
+<h3>RCS mode identifiers</h3>
+<p>The entries of the RCSMODE table are used to define the operation mode of
+the reaction control system (RCS) of a vessel.</p>
+
+<table>
+<tr><td>RCSMODE.OFF</td><td>RCS off</td></tr>
+<tr><td>RCSMODE.ROT</td><td>Rotational mode</td></tr>
+<tr><td>RCSMODE.LIN</td><td>Linear (translation) mode</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#get_rcsmode">v:get_rcsmode</a></p>
+</div>
+
+
+<div class="func"><a name="thgroup"></a>
+<h3>Thruster group identifiers</h3>
+<p>The entries of the THGROUP table identify the default thruster groups.</p>
+
+<table>
+<tr><td>THGROUP.MAIN</td><td>main thrusters</td></tr>
+<tr><td>THGROUP.RETRO</td><td>retro thrusters</td></tr>
+<tr><td>THGROUP.HOVER</td><td>hover thrusters</td></tr>
+<tr><td>THGROUP.ATT_PITCHUP</td><td>rotation: pitch up</td></tr>
+<tr><td>THGROUP.ATT_PITCHDOWN</td><td>rotation: pitch down</td></tr>
+<tr><td>THGROUP.ATT_YAWLEFT</td><td>rotation: yaw left</td></tr>
+<tr><td>THGROUP.ATT_YAWRIGHT</td><td>rotation: yaw right</td></tr>
+<tr><td>THGROUP.ATT_BANKLEFT</td><td>rotation: bank left</td></tr>
+<tr><td>THGROUP.ATT_BANKRIGHT</td><td>rotation: bank right</td></tr>
+<tr><td>THGROUP.ATT_RIGHT</td><td>translation: move right</td></tr>
+<tr><td>THGROUP.ATT_LEFT</td><td>translation: move left</td></tr>
+<tr><td>THGROUP.ATT_UP</td><td>translation: move up</td></tr>
+<tr><td>THGROUP.ATT_DOWN</td><td>translation: move down</td></tr>
+<tr><td>THGROUP.ATT_FORWARD</td><td>translation: move forward</td></tr>
+<tr><td>THGROUP.ATT_BACK</td><td>translation: move back</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#get_thrustergrouplevel">v:get_thrustergrouplevel</a>,
+<a href="mtd_vessel.htm#set_thrustergrouplevel">v:set_thrustergrouplevel</a></p>
+</div>
+
+
+<div class="func"><a name="lift"></a>
+<h3>Airfoil orientation flags</h3>
+<p>The entries in the LIFT table enumerate airfoil orientations.</p>
+
+<table>
+<tr><td>LIFT.VERTICAL</td><td>Airfoil lift direction is vertical (e.g. elevator)</td></tr>
+<tr><td>LIFT.HORIZONTAL</td><td>Airfoil lift direction is horizontal (e.g. rudder)</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#create_airfoil">v:create_airfoil</a></p>
+</div>
+
+
+<div class="func"><a name="airctrl"></a>
+<h3>Aerodynamic control surface types</h3>
+<p>The entries of the AIRCTRL table enumerate aerodynamic control surface types.</p>
+
+<table>
+<tr><td>AIRCTRL.ELEVATOR</td><td>elevator</td></tr>
+<tr><td>AIRCTRL.RUDDER</td><td>rudder</td></tr>
+<tr><td>AIRCTRL.AILERON</td><td>aileron</td></tr>
+<tr><td>AIRCTRL.FLAP</td><td>flap</td></tr>
+<tr><td>AIRCTRL.ELEVATORTRIM</td><td>elevator trim</td></tr>
+<tr><td>AIRCTRL.RUDDERTRIM</td><td>rudder trim</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p><a href="mtd_vessel.htm#get_adclevel">v:get_adclevel</a></p>
+</div>
+
+
+<div class="func"><a name="airctrl_axis"></a>
+<h3>Aerodynamic control surface axis orientation</h3>
+<p>The entries of the AIRCTRL_AXIS table enumerate the axis orientation types for control surfaces.</p>
+
+<table>
+<tr><td>AIRCTRL_AXIS.AUTO</td><td>Automatic axis selection</td></tr>
+<tr><td>AIRCTRL_AXIS.YPOS</td><td>y-axis (vertical), positive rotation</td></tr>
+<tr><td>AIRCTRL_AXIS.YNEG</td><td>y-axis (vertical), negative rotation</td></tr>
+<tr><td>AIRCTRL_AXIS.XPOS</td><td>x-axis (transversal), positive rotation</td></tr>
+<tr><td>AIRCTRL_AXIS.XNEG</td><td>x-axis (transversal), negative rotation</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="prop"></a>
+<h3>Vessel propagation modes for simulation time jumps.</h3>
+<p>The entries of the PROP table enumerate propagation modes for orbital
+and suborbital vessels during time jumps.</p>
+
+<table>
+<tr><td>PROP.ORBITAL_ELEMENTS</td><td>Propagate orbital vessels along the Keplerian elements.</td></tr>
+<tr><td>PROP.ORBITAL_FIXEDSTATE</td><td>Keep the orbital vessels' relative position and velocity with respect to the central body fixed in a non-rotating frame.</td></tr>
+<tr><td>PROP.ORBITAL_FIXEDSURF</td><td>Keep the orbital vessels' position velocity and attitude fixed relative to the planet surface.</td></tr>
+<tr><td>PROP.SORBITAL_ELEMENTS</td><td>Propagate suborbital vessels along the Keplerian elements.</td></tr>
+<tr><td>PROP.SORBITAL_FIXEDSTATE</td><td>Keep the suborbital vessels' relative position and velocity with respect to the central body fixed in a non-rotating frame.</td></tr>
+<tr><td>PROP.SORBITAL_FIXEDSURF</td><td>Keep the suborbital vessels' position velocity and attitude fixed relative to the planet surface.</td></tr>
+<tr><td>PROP.SORBITAL_DESTROY</td><td>Destroy any suborbital vessels (i.e. assume that the vessels impacted on the ground during time propagation).</td></tr>
+</table>
+
+<h4>Notes:</h4>
+<p>A propagation mode should be the (bitwise-or) combination of one orbital and one suborbital mode, e.g.</p>
+<div class="code">
+pmode = PROP.ORBITAL_ELEMENTS + PROP.SORBITAL_DESTROY<br />
+oapi.set_simmjd(45000,pmode)
+</div>
+
+<h4>See also:</h4>
+<p>
+<a href="api_oapi.htm#oapi_set_simmjd">oapi.set_simmjd</a>
+</p>
+</div>
+
+
+<div class="func"><a name="particle"></a>
+<h3>Identifiers for particle stream specifications.</h3>
+<p>The entries of the PARTICLE table enumerate parameters used for the
+definition of particle streams (see <a href="Datatypes.htm#particlestreamspec">PARTICLESTREAMSPEC</a>).</p>
+
+<table>
+<tr><td colspan="2">Identifiers for field ltype:</td></tr>
+<tr><td>PARTICLE.EMISSIVE</td><td>emissive stream</td></tr>
+<tr><td>PARTICLE.DIFFUSE</td><td>diffuse stream</td></tr>
+<tr><td colspan="2">Identifiers for field levelmap:</td></tr>
+<tr><td>PARTICLE.LVL_FLAT</td><td>Particle opacity independent of thrust level</td></tr>
+<tr><td>PARTICLE.LVL_LIN</td><td>Linear relationship between particle opacity and thrust level</td></tr>
+<tr><td>PARTICLE.LVL_SQRT</td><td>Sqare root mapping between thrust level and opacity</td></tr>
+<tr><td>PARTICLE.LVL_PLIN</td><td>Linear mapping between subrange of thrust level and opacity</td></tr>
+<tr><td>PARTICLE.LVL_PSQRT</td><td>Square root mapping between subrange of thrust level and opacity</td></tr>
+<tr><td colspan="2">Identifiers for field atmsmap:</td></tr>
+<tr><td>PARTICLE.ATM_FLAT</td><td>Particle opacity independent of atmospheric density</td></tr>
+<tr><td>PARTICLE.ATM_PLIN</td><td>Linear mapping between atm. density range and opacity</td></tr>
+<tr><td>PARTICLE.ATM_PLOG</td><td>Logarithmic mapping between atm. density range and opacity</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="mtd_vessel.htm#add_exhauststream">v:add_exhauststream</a>
+</p>
+</div>
+
+
+<div class="func"><a name="sketchpad"></a>
+<h3>Constants for <a href="mtd_skp.htm">Sketchpad</a> functions.</h3>
+
+<table>
+<tr><td colspan="2">Constants for <a href="mtd_skp.htm#set_backgroundmode">skp:set_backgroundmode</a> function:</td></tr>
+<tr><td>SKP.OPAQUE</td><td>opaque text background mode</td></tr>
+<tr><td>SKP.TRANSPARENT</td><td>transparent text background mode</td></tr>
+<tr><td colspan="2">Constants for <a href="mtd_skp.htm#set_textalign">skp:set_textalign</a> function:</td></tr>
+<tr><td>SKP.LEFT</td><td>horizontal alignment: left</td></tr>
+<tr><td>SKP.CENTER</td><td>horizontal alignment: center</td></tr>
+<tr><td>SKP.RIGHT</td><td>horizontal alignment: right</td></tr>
+<tr><td>SKP.TOP</td><td>vertical alignment: top</td></tr>
+<tr><td>SKP.BASELINE</td><td>vertical alignment: base line</td></tr>
+<tr><td>SKP.BOTTOM</td><td>vertical alignment: bottom</td></tr>
+</table>
+
+<h4>See also:</h4>
+<p>
+<a href="mtd_skp.htm#set_backgroundmode">skp:set_backgroundmode</a>
+</p>
+</div>
+
+
+<div class="func"><a name="panel_mouse"></a>
+<h3>Constants for enumeration of mouse events</h3>
+<p>Used e.g. for interaction with instrument panels and MFD buttons.</p>
+
+<table>
+<tr><td>PANEL_MOUSE.IGNORE</td><td>Don't react to mouse events</td></tr>
+<tr><td>PANEL_MOUSE.LBDOWN</td><td>Left mouse button pressed down</td></tr>
+<tr><td>PANEL_MOUSE.RBDOWN</td><td>Right mouse button pressed down</td></tr>
+<tr><td>PANEL_MOUSE.LBUP</td><td>Left mouse button released</td></tr>
+<tr><td>PANEL_MOUSE.RBUP</td><td>Right mouse button released</td></tr>
+<tr><td>PANEL_MOUSE.LBPRESSED</td><td>Left mouse button is down</td></tr>
+<tr><td>PANEL_MOUSE.RBPRESSED</td><td>Right mouse button is down</td></tr>
+<tr><td>PANEL_MOUSE.DOWN</td>One of the mouse buttons is pressed down</tr>
+<tr><td>PANEL_MOUSE.UP</td><td>One of the mouse buttons is released</td></tr>
+<tr><td>PANEL_MOUSE.PRESSED</td><td>One of the mouse buttons is down</td></tr>
+<tr><td>PANEL_MOUSE.ONREPLAY</td><td>Flag for panel areas: Create mouse events during playback</td></tr>
+</table>
+</div>
+
+
+<div class="func"><a name="oapi_key"></a>
+<h3>Keyboard key codes</h3>
+<p>Used to identify keyboard events for panels and MFDs.</p>
+
+<table>
+<tr><td>OAPI_KEY.ESCAPE</td><td>"Esc"</td></tr>
+<tr><td>OAPI_KEY.1</td><td>"1"</td></tr>
+<tr><td>OAPI_KEY.2</td><td>"2"</td></tr>
+<tr><td>OAPI_KEY.3</td><td>"3"</td></tr>
+<tr><td>OAPI_KEY.4</td><td>"4"</td></tr>
+<tr><td>OAPI_KEY.5</td><td>"5"</td></tr>
+<tr><td>OAPI_KEY.6</td><td>"6"</td></tr>
+<tr><td>OAPI_KEY.7</td><td>"7"</td></tr>
+<tr><td>OAPI_KEY.8</td><td>"8"</td></tr>
+<tr><td>OAPI_KEY.9</td><td>"9"</td></tr>
+<tr><td>OAPI_KEY.0</td><td>"0"</td></tr>
+<tr><td>OAPI_KEY.MINUS</td><td>"-" on main keypad</td></tr>
+<tr><td>OAPI_KEY.EQUALS</td><td>"=" on main keypad</td></tr>
+<tr><td>OAPI_KEY.BACK</td><td>Backspace</td></tr>
+<tr><td>OAPI_KEY.TAB</td><td>Tab key</td></tr>
+<tr><td>OAPI_KEY.Q</td><td>"Q"</td></tr>
+<tr><td>OAPI_KEY.W</td><td>"W"</td></tr>
+<tr><td>OAPI_KEY.E</td><td>"E"</td></tr>
+<tr><td>OAPI_KEY.R</td><td>"R"</td></tr>
+<tr><td>OAPI_KEY.T</td><td>"T"</td></tr>
+<tr><td>OAPI_KEY.Y</td><td>"Y"</td></tr>
+<tr><td>OAPI_KEY.U</td><td>"U"</td></tr>
+<tr><td>OAPI_KEY.I</td><td>"I"</td></tr>
+<tr><td>OAPI_KEY.O</td><td>"O"</td></tr>
+<tr><td>OAPI_KEY.P</td><td>"P"</td></tr>
+<tr><td>OAPI_KEY.LBRACKET</td><td>"["</td></tr>
+<tr><td>OAPI_KEY.RBRACKET</td><td>"]"</td></tr>
+<tr><td>OAPI_KEY.RETURN</td><td>Enter key on main keypad</td></tr>
+<tr><td>OAPI_KEY.LCONTROL</td><td>Left control key</td></tr>
+<tr><td>OAPI_KEY.A</td><td>"A"</td></tr>
+<tr><td>OAPI_KEY.S</td><td>"S"</td></tr>
+<tr><td>OAPI_KEY.D</td><td>"D"</td></tr>
+<tr><td>OAPI_KEY.F</td><td>"F"</td></tr>
+<tr><td>OAPI_KEY.G</td><td>"G"</td></tr>
+<tr><td>OAPI_KEY.H</td><td>"H"</td></tr>
+<tr><td>OAPI_KEY.J</td><td>"J"</td></tr>
+<tr><td>OAPI_KEY.K</td><td>"K"</td></tr>
+<tr><td>OAPI_KEY.L</td><td>"L"</td></tr>
+<tr><td>OAPI_KEY.SEMICOLON</td><td>";"</td></tr>
+<tr><td>OAPI_KEY.APOSTROPHE</td><td>"'"</td></tr>
+<tr><td>OAPI_KEY.GRAVE</td><td>"`"</td></tr>
+<tr><td>OAPI_KEY.LSHIFT</td><td>Left Shift key</td></tr>
+<tr><td>OAPI_KEY.BACKSLASH</td><td>"\"</td></tr>
+<tr><td>OAPI_KEY.Z</td><td>"Z"</td></tr>
+<tr><td>OAPI_KEY.X</td><td>"X"</td></tr>
+<tr><td>OAPI_KEY.C</td><td>"C"</td></tr>
+<tr><td>OAPI_KEY.V</td><td>"V"</td></tr>
+<tr><td>OAPI_KEY.B</td><td>"B"</td></tr>
+<tr><td>OAPI_KEY.N</td><td>"N"</td></tr>
+<tr><td>OAPI_KEY.M</td><td>"M"</td></tr>
+<tr><td>OAPI_KEY.COMMA</td><td>","</td></tr>
+<tr><td>OAPI_KEY.PERIOD</td><td>"."</td></tr>
+<tr><td>OAPI_KEY.SLASH</td><td>"/"</td></tr>
+<tr><td>OAPI_KEY.RSHIFT</td><td>Right shift key</td></tr>
+<tr><td>OAPI_KEY.MULTIPLY</td><td>"*" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.LALT</td><td>Left Alt key</td></tr>
+<tr><td>OAPI_KEY.SPACE</td><td>Space bar</td></tr>
+<tr><td>OAPI_KEY.CAPITAL</td><td>Caps lock key</td></tr>
+<tr><td>OAPI_KEY.F1</td><td>F1 function key</td></tr>
+<tr><td>OAPI_KEY.F2</td><td>F2 function key</td></tr>
+<tr><td>OAPI_KEY.F3</td><td>F3 function key</td></tr>
+<tr><td>OAPI_KEY.F4</td><td>F4 function key</td></tr>
+<tr><td>OAPI_KEY.F5</td><td>F5 function key</td></tr>
+<tr><td>OAPI_KEY.F6</td><td>F6 function key</td></tr>
+<tr><td>OAPI_KEY.F7</td><td>F7 function key</td></tr>
+<tr><td>OAPI_KEY.F8</td><td>F8 function key</td></tr>
+<tr><td>OAPI_KEY.F9</td><td>F9 function key</td></tr>
+<tr><td>OAPI_KEY.F10</td><td>F10 function key</td></tr>
+<tr><td>OAPI_KEY.NUMLOCK</td><td>Num lock key</td></tr>
+<tr><td>OAPI_KEY.SCROLL</td><td>Scroll lock key</td></tr>
+<tr><td>OAPI_KEY.NUMPAD7</td><td>"7" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD8</td><td>"8" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD9</td><td>"9" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.SUBTRACT</td><td>"-" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD4</td><td>"4" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD5</td><td>"5" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD6</td><td>"6" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.ADD</td><td>"+" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD1</td><td>"1" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD2</td><td>"2" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD3</td><td>"3" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.NUMPAD0</td><td>"0" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.DECIMAL</td><td>"." on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.OEM_102</td><td>"|", "&lt;", "&gt;" on UK/German keyboards</td></tr>
+<tr><td>OAPI_KEY.F11</td><td>F11 function key</td></tr>
+<tr><td>OAPI_KEY.F12</td><td>F12 function key</td></tr>
+<tr><td>OAPI_KEY.NUMPADENTER</td><td>Enter key on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.RCONTROL</td><td>Right Control key</td></tr>
+<tr><td>OAPI_KEY.DIVIDE</td><td>"/" on numeric keypad</td></tr>
+<tr><td>OAPI_KEY.RALT</td><td>Right Alt key</td></tr>
+<tr><td>OAPI_KEY.HOME</td><td>Home key on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.UP</td><td>Up-arrow on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.PRIOR</td><td>PgUp on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.LEFT</td><td>Left-arrow on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.RIGHT</td><td>Right-arrow on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.END</td><td>End key on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.DOWN</td><td>Down-arrow on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.NEXT</td><td>PgDn on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.INSERT</td><td>Insert key on cursor keypad</td></tr>
+<tr><td>OAPI_KEY.DELETE</td><td>Delete key on cursor keypad</td></tr>
+</table>
+</div>
+
+
+</div>
+
+</BODY>
+</HTML>

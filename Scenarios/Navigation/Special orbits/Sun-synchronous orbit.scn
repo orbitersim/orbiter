@@ -1,0 +1,61 @@
+BEGIN_DESC
+A sun-synchronous orbit is a near-polar orbit with an inclination of slightly
+more than 90 degrees. At this inclination, the line of nodes moves at a rate
+of 360 degrees per year (nearly 1 degree per day), due to the nonspherical
+distortion of Earth's gravitational field. Thus, the orbital plane
+retains its relative orientation with respect to the sun.
+
+
+In this example, the orbit is set up to continuously move along the Earth's terminator.
+
+
+Note: You must activate "nonspherical gravity sources" in the Launchpad for this scenario to work!
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 53651.5381879918
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-01
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-01
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Orbit
+  REF AUTO
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Equator
+  ALT
+  REF Earth
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Earth
+  ZOOM 2
+END_MFD
+
+BEGIN_SHIPS
+GL-01:DeltaGlider
+  STATUS Orbiting Earth
+  RPOS -1726327.20 -2722690.49 6293324.56
+  RVEL 1029.779 -6924.503 -2713.279
+  AROT -80.19 -5.77 -1.53
+  AFCMODE 7
+  PRPLEVEL 0:0.553000 1:0.898000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS

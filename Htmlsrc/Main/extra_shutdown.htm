@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Shutdown options</title>
+</head>
+<body>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; <a href="tab_extra.htm">Extra</a> &gt; Shutdown options</p>
+
+<h1>Shutdown options</h1>
+<p>The settings in this dialog determine how Orbiter behaves after a simulation session is closed.</p>
+<p><ul>
+<li><b>De-allocate memory and display launchpad dialog.</b> This is the standard behaviour: Orbiter closes the simulation session in an orderly fashion, and returns to the Launchpad dialog.</li>
+<li><b>Respawn Orbiter process.</b> With this option enabled, Orbiter skips most of the cleanup code at the end of the simulation session, and simply kills the running Orbiter process. A new process is launched to replace the old one. This can be substantially faster than the standard method, in particular if a large number of textures had been loaded. However, it is "unclean" and may prevent some modules from saving their exit state</li>
+<li><b>Terminate Orbiter process.</b> This option simply kills the Orbiter process altogether. The user has to restart Orbiter for a new simulation session.</li>
+</ul></p>
+
+<h2>Notes</h2>
+<p><ul>
+<li>Use of the "standard" method of deallocating memory is encouraged, because the other options may prevent addon modules from terminating cleanly.</li>
+<li>The "respawn" and "terminate" options may sometimes bypass bugs in the cleanup or initialisation code of badly written addons that cause errors in the standard method.</li>
+<li>For this reason, using the "respawn" and "terminate" options is strongly discouraged for addon developers during testing and debugging of their code, since it may mask existing problems with the code.</li>
+<li>Addon developers should choose the standard option and make sure that their modules behave correctly in multiple simulation sessions without quitting Orbiter.</li>
+</ul></p>
+
+</body>
+</html>

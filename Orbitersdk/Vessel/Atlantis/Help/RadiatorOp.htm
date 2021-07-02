@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" TYPE="TEXT/CSS" HREF="Orbiter.css">
+<Title>Atlantis: Radiator Operation</Title>
+<STYLE>
+li { margin-bottom: 1em }
+</STYLE>
+</HEAD>
+<BODY>
+<p class="header"><a class="header" href="Atlantis.htm">Space Shuttle Atlantis</a> | <a class="header" href="BayOp.htm">Payload Bay Operations</a></p>
+<h1>Radiator Operation</h1>
+<p>
+
+The Space Shuttle has four radiators to dissipate heat from the coolant loops - two on the inside of each of the payload bay doors. The forward radiator panels on each side can be deployed when the doors are open; the aft panels are fixed.
+
+The bay doors and radiators are operated by using the switches on  panel R13L. Note that the software interface for operating the doors is not currently simulated.
+
+<h2>Radiator deployment sequence:</h2>
+<ul>
+<li>The payload bay doors must be fully open.
+<li>Set the <i>PL BAY MECH PWR SYS 1</i> and <i>SYS 2</i> switches to ON.
+<li>Set the <i>LATCH CONTROL SYS A</i> and <i>SYS B</i> switches to REL (release).
+<li>After 30 seconds, set both latch control switches back to OFF.
+<li>Set the <i>RADIATOR CONTROL SYS A</i> and <i>SYS B</i> switches to DEPLOY.
+<li>After 50 seconds, set both radiator control switches back to OFF.
+<li>Set both <i>PL BAY MECH PWR</i> switches back to OFF.
+</ul>
+
+<h2>Radiator stowing sequence:</h2>
+<ul>
+<li>Set the <i>PL BAY MECH PWR SYS 1</i> and <i>SYS 2</i>switches to ON.
+<li>Set the <i>RADIATOR CONTROL SYS A</i> and <i>SYS B</i> switches to STOW.
+<li>After 50 seconds, set both radiator control switches back to OFF.
+<li>Set the <i>LATCH CONTROL SYS A</i> and <i>SYS B</i> switches to LATCH.
+<li>After 30 seconds, set both latch control switches back to OFF.
+<li>Set both <i>PL BAY MECH PWR</i> switches back to OFF.
+</ul>
+
+Ref: Operations Manual Sec. 2.9 (radiators).
+
+</BODY>
+</HTML>

@@ -1,0 +1,92 @@
+0 NOTECOL 1 0.7 0
+0 NOTESIZE 2
+0 NOTEPOS 0.25 0.1 0.9 0.9
+0 NOTE Welcome to Orbiter 2010!
+5 NOTEPOS 0.25 0.05 0.7 0.9
+5 NOTESIZE 1.4
+5 NOTE Orbiter is a free and realistic space flight simulator ...
+5 CAMERA SET Track:ISS:40.00:RELATIVE 1.837 -1.767 -0.073
+11 CAMERA SET Cockpit:GL-01:40.00
+11 NOTEPOS 0.25 0.3 0.7 0.9
+11 NOTE ... that puts you in the pilot's seat of your very own spacecraft!
+16 CAMERA SET Track:GL-01:40.00:RELATIVE 55.045 0.008 -1.525
+16 NOTE Take off with your spaceplane ...
+21 CAMERA SET Ground:GL-01:20.00:Earth -80.69199 28.61008 9.86
+21 NOTE ... for a tour around Cape Canaveral, into orbit, or to the moon and beyond.
+32 CAMERA SET Track:GL-01:40.00:GLOBAL 12.615 2.870 1.092
+32 NOTEPOS 0.25 0.2 0.7 0.9
+32 NOTE Orbiter's physics model includes atmospheric flight as well as low Earth orbit, or interplanetary missions.
+42 CAMERA SET Ground:GL-01:40.00:Earth -80.62138 28.58011 1662.02 2.94 -0.50
+42 NOTE Orbiter includes existing launch sites such as the Kennedy Space Center ...
+45 CAMERA SET Ground:GL-01:40.00:Earth -80.65128 28.58846 14171.73 1.68 -1.47
+48 CAMERA SET Ground:GL-01:40.00:Earth -80.42505 28.56332 23301.07 2.99 -0.74
+51 CAMERA SET Ground:SH-02:40.00:Moon -33.43144 41.10661 136.21 1.84 -0.17
+51 NOTE ... and futuristic locations like Brighton Beach base on the Moon ...
+54 CAMERA SET Ground:SH-02:40.00:Moon -32.57102 40.69912 16500.29 2.50 -0.47
+56 CAMERA SET Ground:SH-02:40.00:Moon -31.07903 39.92648 163776.18 2.54 -0.99
+58 CAMERA SET Track:PB-04:40.00:RELATIVE 113.874 -3.033 -0.268
+58 NOTE ... or Olympus base on Mars.
+60 CAMERA SET Track:PB-04:40.00:RELATIVE 18673.924 1.730 -0.396
+62 CAMERA SET Track:PB-04:40.00:RELATIVE 253075.503 1.583 -0.711
+65 NOTE Launch Space Shuttle Atlantis ...
+65 CAMERA SET Ground:STS-101:30.00:Earth -80.62214 28.62334 192.56
+69.5237 CAMERA SET Ground:STS-101:30.00:Earth -80.62118 28.62701 72.32 0.55 0.01
+69.5237 NOTE ... using the new automated launch pilot.
+75 CAMERA SET Ground:STS-101:30.00:Earth -80.62141 28.62690 101.30
+80 CAMERA SET Track:STS-101:50.00:RELATIVE 86.584 0.043 -2.430
+80 NOTE ... or test your skills with a manual orbit ascent.
+91 CAMERA SET Ground:STS-101:10.00:Earth -80.70477 28.50441 1.00
+97 CAMERA SET Track:STS-101:30.00:RELATIVE 1.640 -0.089 3.131
+104 CAMERA SET Ground:STS-101:30.00:Earth -80.60746 28.62575 4500
+104 NOTE Watch Florida in glorious high resolution drop away below you.
+112 CAMERA SET Track:STS-101:50.00:GLOBAL 86.584 -2.506 -0.475
+112 NOTE (Check the Orbiter web site for links to additional high resolution planet textures.)
+117 CAMERA SET Track:STS-101:40.00:ABSDIR 6.389 -0.179 3.125
+121 CAMERA SET Ground:STS-101:10.00:Earth -80.63109 28.65232 6733.79 -0.75 0.40
+121 NOTE The Shuttle is pitching over into its ascent trajectory.
+126.5 CAMERA SET Track:STS-101:40.00:RELATIVE 2.890 -2.904 0.182
+134 CAMERA SET Track:STS-101:40.00:RELATIVE 5.704 2.409 1.764
+136 NOTE Solid rocket booster separation!
+140.421 CAMERA SET Track:STS-101:40.00:RELATIVE 7.155 0.011 3.114
+145.838 CAMERA SET Track:STS-102:40.00:GLOBAL 3.625 1.666 -0.984
+145.838 NOTE The spent external tank is dropped into a suborbital reentry trajectory.
+160 CAMERA SET Track:STS-103:50.00:GLOBAL 3.625 2.504 -0.044
+160 NOTE Orbital operations may include deployment or re-capture of satellites.
+169.884 CAMERA SET Ground:STS-103:20.00:Earth -87.558784 14.452488 382560.31
+169.884 NOTE Rendezvous manoeuvers require some planning and can be a challenge, until you get the hang of it.
+169.884 TACC 0.100000
+170.343 CAMERA SET Track:Hubble:30.00:RELATIVE 6.388 2.432 0.184
+170.343 TACC 1.000000
+170.343 NOTE Orbiter's supply of stock objects contains old favourites like the Hubble Space Telescope ...
+178 CAMERA SET Track:SolarSail:30.00:GLOBAL 2.890 1.139 0.519
+178 NOTE ... and futuristic new designs such as this solar sail.
+188 CAMERA SET Track:Mars:50.00:GLOBAL 1.640 1.656 0.629
+188 NOTE Set out to explore the outer solar system: Mars ...
+192 CAMERA SET Track:Io:30.00:GLOBAL 8.015 -0.485 0.121
+192 NOTE ... Io and Jupiter ...
+196 CAMERA SET Track:Ganymede:30.00:GLOBAL 6.390 -2.665 -0.101
+196 NOTE ... Ganymede, another of the Jovian moons ...
+200 CAMERA SET Track:Mimas:10.00:GLOBAL 14.126 2.306 0.259
+200 NOTE ... Mimas, one of Saturn's moons ...
+204 CAMERA SET Track:Titan:10.00:GLOBAL 31.228 -2.575 0.341
+204 NOTE ... and Titan.
+208 CAMERA SET Track:Miranda:30.00:GLOBAL 7.157 1.401 -0.772
+208 NOTE Miranda and Uranus ...
+212 CAMERA SET Track:Triton:40.00:GLOBAL 17.720 1.051 0.930
+212 NOTE ... Triton and Neptune.
+216 CAMERA SET Track:ISS:40.00:GLOBAL 1.694 2.521 -0.458
+216 NOTE But nothing compares to your first successful docking with an orbital station!
+224.54 CAMERA SET Track:STS-104:40.00:GLOBAL 1.350 2.191 -0.353
+233.053 CAMERA SET Track:STS-104:40.00:GLOBAL 1.350 2.548 0.547
+238 NOTE Hard dock with the ISS!
+242 CAMERA SET Track:STS-104:40.00:GLOBAL 8.276 2.298 -0.003
+242 NOTE Now it's over to you. Have fun with Orbiter 2010!
+248 CAMERA SET Track:STS-104:40.00:GLOBAL 32.243 2.050 -0.016
+248 NOTE If you just installed Orbiter, take a moment to configure the video options and simulation parameters.
+254 CAMERA SET Track:STS-104:40.00:GLOBAL 25840.373 2.050 -0.016
+254 NOTE Have a look at the manual in Doc\Orbiter.pdf.
+260 CAMERA SET Track:STS-104:40.00:GLOBAL 249263.812 1.755 -0.164
+260 NOTE Orbiter can be expanded with hundreds of addons - from new spacecraft, to instrumentation, bases, planets and moons, and high resolution textures.
+270 NOTE Visit the online forum at www.orbiter-forum.com, and the addon repository at www.orbithangar.com.
+280 NOTE Orbiter - orbit.medphys.ucl.ac.uk
+290 ENDSESSION

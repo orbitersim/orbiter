@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<META HTTP-EQUIV="Content-Type" Content="text-html; charset=Windows-1252">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<title>Linear state propagators</title>
+</head>
+<body>
+
+<p class="header"><a href="intro.htm">Orbiter</a> &gt; <a href="launchpad.htm">Launchpad</a> &gt; <a href="tab_extra.htm">Extra</a> &gt; Linear state propagators</p>
+
+<h1>Linear state propagators</h1>
+<p>This dialog provides advanced options for fine-tuning Orbiter's <i>dynamic state propagation</i> method. It determines the algorithm Orbiter uses to update vessel positions and velocities from one frame to the next. The options in this dialog are mainly for debugging and testing. Most users can keep the default settings.</p>
+<p>It is possible to use up to 5 different propagation methods depending on the time interval per frame. For short intervals, simple (and fast) calculations such as RK-2 can be used, while for longer intervals more complex (and computationally expensive) methods such as RK-8 should be used.</p>
+<p>For maximum fidelity (but potentially lower frame rates in the presence of a large number of spacecraft), high-order Runge-Kutta or symplectic integrators can be used also for shorter time intervals.</p>
+<p>For details about the state integrators available in Orbiter, see <i>Orbiter Technical Notes: Dynamic state vector propagation</i> (in Doc\Technotes\dynamics.pdf).</p>
+
+</body>
+</html>

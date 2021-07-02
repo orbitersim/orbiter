@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{fd398ad4-735d-4578-ab61-bd0b626b63db}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{e9ac500d-2710-4da4-83cc-f79528e03555}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{f96fd283-c1d9-4134-a6d6-543226fcf06f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Base">
+      <UniqueIdentifier>{34aa3e9b-8fd1-48c2-be00-b804e353ba7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Data">
+      <UniqueIdentifier>{35109cee-6d4d-4d64-be46-8ba007ac97df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Marker">
+      <UniqueIdentifier>{d75ed813-0d02-4116-9d2c-2ca488e803ae}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Earth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Earth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Vsop87.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Earth.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\Data\Vsop87B_ear.dat">
+      <Filter>Config\Data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Al_Anbar.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Alcantara.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Atmosphere.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Baikonur.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Barent_Sea.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Canaveral.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\China_Lake.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Data\coast.vec">
+      <Filter>Config\Data</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Doberai.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Edwards.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Gran_canaria.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Habana.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Hammaguira.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Inyokern.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Jingyu.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Jiuquan.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Kagoshima.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Kapustin_Yar.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Kourou.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Label.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Matagorda.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Mojave.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Musudan.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Overberg.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Palmachim.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Palmdale.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Peenemunde.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Plesetsk.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Salto_di_Quirra.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\San_Marco.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Sriharikota.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Svobodniy.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Taiyuan.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Tanegashima.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Vandenberg.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Wallops_Island.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\White_Sands.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Woomera.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Wuzhai.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Base\Xichang.cfg">
+      <Filter>Config\Base</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Earth\Marker\City.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,62 @@
+BEGIN_DESC
+Challenge 3. Same as Challenge 2 but this time you need to consider plane alignments. Minimize fuel use.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD ;
+  Script challenges/challenge3
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship GL-1
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET GL-1
+  MODE Cockpit
+  FOV 50.00
+END_CAMERA
+
+BEGIN_MFD Left
+  TYPE Orbit
+  PROJ Ship
+  FRAME Ecliptic
+  ALT
+  REF Earth
+  TARGET Moon
+END_MFD
+
+BEGIN_MFD Right
+  TYPE OAlign
+  REF Earth
+  TARGET Moon
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+BEGIN_SHIPS
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS -1246552.38 1246552.42 -608885.10
+  RVEL 374.277 -374.277 -1532.506
+  AROT -0.00 -0.00 80.37
+  VROT 0.00 0.00 10.00
+  IDS 0:560 100 1:564 100
+  XPDR 494
+END
+GL-1:Deltaglider
+  STATUS Orbiting Earth
+  RPOS 3157924.81 4531833.96 3829079.42
+  RVEL -2508.377 -3599.689 6329.059
+  AROT 0.00 -0.00 0.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0 0 0
+  XPDR 0
+  AAP 0:0 0:0 0:0
+END
+END_SHIPS
+
+BEGIN_ExtMFD
+END

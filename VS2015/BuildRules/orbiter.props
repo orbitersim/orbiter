@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(HtmlHelpBeforeTargets)' == '' and '$(HtmlHelpAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <HtmlHelpBeforeTargets>Midl</HtmlHelpBeforeTargets>
+    <HtmlHelpAfterTargets>CustomBuild</HtmlHelpAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <HtmlHelpDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(HtmlHelpDependsOn)</HtmlHelpDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <HtmlHelp>
+      <CommandLineTemplate>hhc.bat %(RootDir)%(Directory)%(Filename)%(Extension)</CommandLineTemplate>
+      <Outputs>*.chm</Outputs>
+    </HtmlHelp>
+  </ItemDefinitionGroup>
+  <PropertyGroup
+    Condition="'$(OdtToPdfBeforeTargets)' == '' and '$(OdtToPdfAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <OdtToPdfBeforeTargets>Midl</OdtToPdfBeforeTargets>
+    <OdtToPdfAfterTargets>CustomBuild</OdtToPdfAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OdtToPdfDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(OdtToPdfDependsOn)</OdtToPdfDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <OdtToPdf>
+      <CommandLineTemplate>"c:\program files\libreoffice 5\program\soffice.exe" --headless --convert-to pdf [inputs] --outdir $(OutDir)</CommandLineTemplate>
+      <Outputs>$(OutDir)%(Filename).pdf</Outputs>
+      <ExecutionDescription>Convert ODT to PDF file</ExecutionDescription>
+    </OdtToPdf>
+  </ItemDefinitionGroup>
+  <PropertyGroup
+    Condition="'$(DocToPdfBeforeTargets)' == '' and '$(DocToPdfAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <DocToPdfBeforeTargets>Midl</DocToPdfBeforeTargets>
+    <DocToPdfAfterTargets>CustomBuild</DocToPdfAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DocToPdfDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(DocToPdfDependsOn)</DocToPdfDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <DocToPdf>
+      <CommandLineTemplate>"c:\program files\libreoffice 5\program\soffice.exe" --headless --convert-to pdf [inputs] --outdir $(OutDir)</CommandLineTemplate>
+      <Outputs>$(OutDir)%(Filename).pdf</Outputs>
+      <ExecutionDescription>Convert DOC to PDF file</ExecutionDescription>
+    </DocToPdf>
+  </ItemDefinitionGroup>
+</Project>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="orbiterroot"
+	>
+	<!-- The following macro defines the Orbiter installation directory.
+	     You must set the Value entry to your orbiter directory location
+		 before compiling the SDK samples or using the provided property
+		 sheets to compile your own Orbiter addons.
+		 
+		 Example: Value="C:\Orbiter2016"
+	-->
+	<UserMacro
+		Name="OrbiterDir"
+		Value="ORBITERDIR_UNDEFINED"
+		PerformEnvironmentSet="true"
+	/>
+</VisualStudioPropertySheet>

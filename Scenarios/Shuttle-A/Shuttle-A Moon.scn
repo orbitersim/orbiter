@@ -1,0 +1,116 @@
+BEGIN_DESC
+Start a delivery trip from Brighton Beach. Drop the 120 tons into the Indian Ocean, then return to LEO and back to Brighton Beach for a 8 days trip. Needs accurate orbit planning as fuel is limited.
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 57504.39792
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship SH-03
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET SH-03
+  MODE Extern
+  POS 6.29 135.29 -28.79
+  TRACKMODE TargetRelative
+  FOV 50.00
+END_CAMERA
+
+BEGIN_HUD
+  TYPE Surface
+END_HUD
+
+BEGIN_MFD Left
+  TYPE Surface
+END_MFD
+
+BEGIN_MFD Right
+  TYPE Map
+  REF Moon 
+  BTARGET Brighton Beach
+END_MFD
+
+BEGIN_PANEL
+END_PANEL
+
+
+BEGIN_SHIPS
+ISS:ProjectAlpha_ISS
+  STATUS Orbiting Earth
+  RPOS 4959052.16 -4523098.05 315685.09
+  RVEL -4997.901 -5316.273 2468.872
+  AROT 30.00 0.00 50.00
+  IDS 0:1 10 1:2 10 2:3 10 3:4 10 4:5 10
+  NAVFREQ 0 0
+  XPDR 466
+END
+Mir
+  STATUS Orbiting Earth
+  RPOS 3006026.67 -362456.13 -5926167.14
+  RVEL 6903.299 213.710 3494.082
+  AROT 0.00 -45.00 90.00
+  IDS 0:540 10 1:542 10 2:544 10
+  XPDR 482
+END
+Luna-OB1:Wheel
+  STATUS Orbiting Moon
+  RPOS -1948697.08 1102283.22 43.99
+  RVEL -728.425 -1288.194 -0.031
+  AROT 0.00 0.00 -160.75
+  VROT 0.00 0.00 10.00
+  IDS 0:560 10 1:564 10
+  XPDR 494
+END
+SH-03:ShuttleA
+  STATUS Landed Moon
+  BASE Brighton Beach:2
+  HEADING 70.00
+  PRPLEVEL 0:1.000 1:1.000
+  NAVFREQ 0 0
+  XPDR 0
+  PODANGLE 0.0000 0.0000
+  DOCKSTATE 0 0.0000
+  AIRLOCK 0 0.0000
+  GEAR 0 0.0000
+  PAYLOAD MASS 120000.0 0
+END
+SH-PL01:ShuttleA_pl
+  STATUS Landed Moon
+  ATTACHED 0:0,SH-03
+  IDS 0:540 10
+  XPDR 480
+END
+SH-PL02:ShuttleA_pl
+  STATUS Landed Moon
+  ATTACHED 0:1,SH-03
+  IDS 0:541 10
+  XPDR 481
+END
+SH-PL03:ShuttleA_pl
+  STATUS Landed Moon
+  ATTACHED 0:2,SH-03
+  IDS 0:542 10
+  XPDR 482
+END
+SH-PL04:ShuttleA_pl
+  STATUS Landed Moon
+  ATTACHED 1:3,SH-03
+  IDS 0:543 10
+  XPDR 483
+END
+SH-PL05:ShuttleA_pl
+  STATUS Landed Moon
+  ATTACHED 1:4,SH-03
+  IDS 0:544 10
+  XPDR 484
+END
+SH-PL06:ShuttleA_pl
+  STATUS Landed Moon
+  ATTACHED 1:5,SH-03
+  IDS 0:545 10
+  XPDR 485
+END
+END_SHIPS

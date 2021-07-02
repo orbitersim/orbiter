@@ -1,0 +1,232 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="HtmlHelp">
+      <Targets>_HtmlHelp</Targets>
+    </AvailableItemName>
+    <AvailableItemName
+      Include="OdtToPdf">
+      <Targets>_OdtToPdf</Targets>
+    </AvailableItemName>
+    <AvailableItemName
+      Include="DocToPdf">
+      <Targets>_DocToPdf</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="HtmlHelp"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <UsingTask
+    TaskName="OdtToPdf"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <UsingTask
+    TaskName="DocToPdf"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_HtmlHelp"
+    BeforeTargets="$(HtmlHelpBeforeTargets)"
+    AfterTargets="$(HtmlHelpAfterTargets)"
+    Condition="'@(HtmlHelp)' != ''"
+    DependsOnTargets="$(HtmlHelpDependsOn);ComputeHtmlHelpOutput"
+    Outputs="@(HtmlHelp-&gt;Metadata('Outputs')-&gt;Distinct())"
+    Inputs="@(HtmlHelp);%(HtmlHelp.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <HtmlHelp
+        Remove="@(HtmlHelp)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <HtmlHelp_tlog
+        Include="%(HtmlHelp.Outputs)"
+        Condition="'%(HtmlHelp.Outputs)' != '' and '%(HtmlHelp.ExcludedFromBuild)' != 'true'">
+        <Source>@(HtmlHelp, '|')</Source>
+      </HtmlHelp_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(HtmlHelp.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(HtmlHelp_tlog)' != '' and '%(HtmlHelp_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)$(ProjectName).write.1u.tlog"
+      Lines="^%(HtmlHelp_tlog.Source);@(HtmlHelp_tlog-&gt;'%(Fullpath)')"
+      Encoding="Unicode" />
+    <HtmlHelp
+      Condition="'@(HtmlHelp)' != '' and '%(HtmlHelp.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(HtmlHelp.CommandLineTemplate)"
+      AdditionalOptions="%(HtmlHelp.AdditionalOptions)"
+      Inputs="@(HtmlHelp)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeHtmlHelpOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeHtmlHelpOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeHtmlHelpOutput"
+    Condition="'@(HtmlHelp)' != ''">
+    <ItemGroup>
+      <HtmlHelpDirsToMake
+        Condition="'@(HtmlHelp)' != '' and '%(HtmlHelp.ExcludedFromBuild)' != 'true'"
+        Include="%(HtmlHelp.Outputs)" />
+      <Link
+        Include="%(HtmlHelpDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(HtmlHelpDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(HtmlHelpDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(HtmlHelpDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+  <Target
+    Name="_OdtToPdf"
+    BeforeTargets="$(OdtToPdfBeforeTargets)"
+    AfterTargets="$(OdtToPdfAfterTargets)"
+    Condition="'@(OdtToPdf)' != ''"
+    DependsOnTargets="$(OdtToPdfDependsOn);ComputeOdtToPdfOutput"
+    Outputs="%(OdtToPdf.Outputs)"
+    Inputs="%(OdtToPdf.Identity);%(OdtToPdf.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <OdtToPdf
+        Remove="@(OdtToPdf)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <OdtToPdf_tlog
+        Include="%(OdtToPdf.Outputs)"
+        Condition="'%(OdtToPdf.Outputs)' != '' and '%(OdtToPdf.ExcludedFromBuild)' != 'true'">
+        <Source>@(OdtToPdf, '|')</Source>
+      </OdtToPdf_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(OdtToPdf.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(OdtToPdf_tlog)' != '' and '%(OdtToPdf_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)$(ProjectName).write.1u.tlog"
+      Lines="^%(OdtToPdf_tlog.Source);@(OdtToPdf_tlog-&gt;'%(Fullpath)')"
+      Encoding="Unicode" />
+    <OdtToPdf
+      Condition="'@(OdtToPdf)' != '' and '%(OdtToPdf.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(OdtToPdf.CommandLineTemplate)"
+      AdditionalOptions="%(OdtToPdf.AdditionalOptions)"
+      Inputs="%(OdtToPdf.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeOdtToPdfOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeOdtToPdfOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeOdtToPdfOutput"
+    Condition="'@(OdtToPdf)' != ''">
+    <ItemGroup>
+      <OdtToPdfDirsToMake
+        Condition="'@(OdtToPdf)' != '' and '%(OdtToPdf.ExcludedFromBuild)' != 'true'"
+        Include="%(OdtToPdf.Outputs)" />
+      <Link
+        Include="%(OdtToPdfDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(OdtToPdfDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(OdtToPdfDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(OdtToPdfDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+  <Target
+    Name="_DocToPdf"
+    BeforeTargets="$(DocToPdfBeforeTargets)"
+    AfterTargets="$(DocToPdfAfterTargets)"
+    Condition="'@(DocToPdf)' != ''"
+    DependsOnTargets="$(DocToPdfDependsOn);ComputeDocToPdfOutput"
+    Outputs="%(DocToPdf.Outputs)"
+    Inputs="%(DocToPdf.Identity);%(DocToPdf.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <DocToPdf
+        Remove="@(DocToPdf)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <DocToPdf_tlog
+        Include="%(DocToPdf.Outputs)"
+        Condition="'%(DocToPdf.Outputs)' != '' and '%(DocToPdf.ExcludedFromBuild)' != 'true'">
+        <Source>@(DocToPdf, '|')</Source>
+      </DocToPdf_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(DocToPdf.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(DocToPdf_tlog)' != '' and '%(DocToPdf_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(TLogLocation)$(ProjectName).write.1u.tlog"
+      Lines="^%(DocToPdf_tlog.Source);@(DocToPdf_tlog-&gt;'%(Fullpath)')"
+      Encoding="Unicode" />
+    <DocToPdf
+      Condition="'@(DocToPdf)' != '' and '%(DocToPdf.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(DocToPdf.CommandLineTemplate)"
+      AdditionalOptions="%(DocToPdf.AdditionalOptions)"
+      Inputs="%(DocToPdf.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeDocToPdfOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeDocToPdfOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeDocToPdfOutput"
+    Condition="'@(DocToPdf)' != ''">
+    <ItemGroup>
+      <DocToPdfDirsToMake
+        Condition="'@(DocToPdf)' != '' and '%(DocToPdf.ExcludedFromBuild)' != 'true'"
+        Include="%(DocToPdf.Outputs)" />
+      <Link
+        Include="%(DocToPdfDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(DocToPdfDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(DocToPdfDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(DocToPdfDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

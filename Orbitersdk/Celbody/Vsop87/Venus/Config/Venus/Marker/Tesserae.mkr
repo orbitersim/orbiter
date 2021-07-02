@@ -1,0 +1,70 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++55.00	+30.00	:	Adrasthea Tesserae
++137.00	+53.30	:	Ananke Tessera
++175.00	+35.00	:	Athena Tessera
++304.00	+71.50	:	Atropos Tessera
++200.00	+61.00	:	Bathkol Tessera
++270.00	-3.00	:	Chimon-mana Tessera
++29.00	-42.00	:	Clidna Tessera
++334.90	+56.40	:	Clotho Tessera
++23.00	-62.00	:	Cocomama Tessera
++71.80	+57.40	:	Dekla Tessera
++296.00	-8.00	:	Dolya Tessera
++244.00	-60.00	:	Dou-Mu Tesserae
++45.10	+69.90	:	Fortuna Tessera
++38.00	-1.00	:	Gbadu Tessera
++121.00	+17.00	:	Gegute Tessera
++250.00	-39.00	:	Giltine Tesserae
++127.00	+6.00	:	Haasttse-baad Tessera
++54.00	-42.00	:	[Hikuleo Tesserae]
++250.00	-53.00	:	Humai Tessera
++101.00	-28.00	:	Husbishag Tesserae
++317.60	+75.70	:	Itzpapalotl Tessera
++27.00	+36.00	:	Kruchina Tesserae
++108.80	+39.50	:	Kutue Tessera
++300.10	+44.40	:	Lachesis Tessera
++189.00	+29.00	:	Lahevhev Tesserae
++48.50	+55.00	:	Laima Tessera
++15.00	-51.00	:	Lhamo Tessera
++134.00	+40.00	:	Likho Tesserae
++38.50	+9.20	:	Mafdet Tessera
++157.00	+70.00	:	Mago-Halmi Tesserae
++305.00	-52.00	:	Magu Tessera
++44.00	+22.00	:	Mamitu Tesserae
++64.00	-4.00	:	Manatum Tessera
++359.50	+39.00	:	Manzan-Gurme Tesserae
++77.90	+48.10	:	Meni Tessera
++103.10	+65.80	:	Meskhent Tessera
++30.00	-20.00	:	Minu-Anni Tessera
++310.50	+58.70	:	Moira Tessera
++294.00	+5.00	:	Nedolya Tesserae
++181.00	+40.00	:	Nemesis Tesserae
++263.00	-50.00	:	Norna Tesserae
++160.00	-49.00	:	Nortia Tesserae
++157.00	-9.00	:	Nuahine Tessera
++85.00	+82.00	:	Oddibjord Tessera
++49.00	-33.00	:	Pasom-mana Tesserae
++48.50	-1.50	:	Salus Tessera
++292.00	+50.00	:	Senectus Tesserae
++173.50	-54.00	:	Shait Tessera
++97.70	+31.90	:	Shimti Tessera
++134.00	+24.00	:	Snotra Tesserae
++243.00	-45.00	:	Sopdet Tesserae
++270.00	+33.00	:	Sudenitsa Tesserae
++112.00	-37.00	:	Sudice Tessera
++76.80	+42.60	:	Tellus Tessera
++54.00	-42.00	:	Tushita Tesserae
++14.50	-44.00	:	Tyche Tessera
++174.50	-40.00	:	Urd Tessera
++265.00	-43.00	:	Ustrecha Tesserae
++40.00	+27.00	:	Vako-nana Tesserae
++160.00	-58.00	:	Verpeja Tesserae
++239.70	+56.10	:	Virilis Tesserae
++62.00	-30.00	:	Xi Wang-mu Tessera
++261.00	+39.00	:	Yuki-Onne Tessera
++300.00	+33.00	:	Zirka Tessera

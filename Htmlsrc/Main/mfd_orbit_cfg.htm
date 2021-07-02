@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<LINK REL="stylesheet" HREF="Orbiter.css" TYPE="TEXT/CSS">
+<Title>Orbit MFD configuration</Title>
+</HEAD>
+<BODY>
+<h1>Orbit MFD configuration</h1>
+Scenario file options. Use inside a BEGIN_MFD/END_MFD block to define the MFD startup configuration.
+
+<table cols="3" width="100%" cellspacing="2" cellpadding="2" border="0" frame="void">
+<thead>
+<tr><th>Item</th><th>Parameters</th><th>Notes</th></tr>
+<tbody>
+<tr>
+<td>TYPE</td>
+<td>Orbit</td>
+<td>MFD mode description</td>
+</tr>
+<tr>
+<td>REF</td>
+<td><i>&lt;Name&gt;</i></td>
+<td>Reference body. The celestial body relative to which the orbital elements are calculated.</td>
+</tr>
+<tr>
+<td>FRAME</td>
+<td>Ecliptic | Equator</td>
+<td>Reference frame. Orbital elements are calculated with respect either to the ecliptic and equinox of epoch J2000, or to the equatorial plane of the orbited body.</td>
+</tr>
+<tr>
+<td>PROJ</td>
+<td>Frame | Ship | Target</td>
+<td>Projection mode. Defines the plane into which the graphical orbit display is projected. Frame: project into selected reference frame (equator or ecliptic), Ship: project into current orbital plane, Target: project into target object's orbital plane (if available).</td>
+</tr>
+<tr>
+<td>TARGET</td>
+<td><i>&lt;Name&gt;</i></td>
+<td>The name of the vessel or celestial body whose orbital elements are to be displayed in the MFD. The target is required to actually orbit the body specified by REF. If this option is missing, no target data is displayed.</td>
+</tr>
+<tr>
+<td>ALT</td>
+<td></td>
+<td>Show distance parameters (radius vector, aphelion and perihelion distance) in terms of altitude above mean planet radius. Default: show distances from planet centre.
+</td>
+</tr>
+</table>
+
+</BODY>
+</HTML>

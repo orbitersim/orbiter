@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{0324e0ea-fbfa-4069-9915-8f6761178c7e}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{37f73673-1a6f-4c0d-8517-c25bbf9f4ba2}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{e8a934b2-c4b2-4d37-9a39-41e4fac7e748}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config\Marker">
+      <UniqueIdentifier>{16b82787-c2b4-48f8-9891-6234299008b7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Ganymede.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Galsat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Ganymede\Marker\Catenae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Ganymede\Marker\Craters.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Ganymede\Marker\Faculae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Ganymede\Marker\Fossae.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Ganymede\Marker\Regiones.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Ganymede\Marker\Sulci.mkr">
+      <Filter>Config\Marker</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Config\Ganymede.cfg">
+      <Filter>Config</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

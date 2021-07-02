@@ -1,0 +1,209 @@
+[?] BUG(scneditor): placing dragonfly on surface causes problem
+--> Could not reproduce (tested 060131)
+
+[x] REQ(scneditor): "copy position" function
+--> Implemented 060129
+
+[x] BUG(frecorder): when undocking occurs in recording, vessels snap back to
+    docked after end of playback.
+    Needed: write and read docking/undocking events in data streams
+--> Implemented 060131
+
+[x] BUG(pltex): Complete level-9 Mars texture (provided by Seth) causes CTD on
+    loading.
+--> fixed (tested 060131)
+
+[x] REQ: Ability to mark vessel meshes as visible from VC, but rendered in
+    external pass.
+--> Implemented 060131
+
+[x] BUG: On re-saving "Launch into sunrise" scenario, Atlantis changes heading
+    value.
+--> Fixed 060131
+
+[x] REQ: Allow playback annotations to be turned off by user
+--> Implemented 060203
+
+[x] REQ: Provide CELBODY interface pointer from OBJHANDLE with function
+    oapiGetCelBodyInterface() (equivalent to oapiGetVesselInterface() )
+--> Implemented 060131
+
+[x] BUG(frecorder): rot/lin RCS selection, autopilot cues and fuel levels
+    should be updated during playback (generic cockpit + panels)
+--> Implemented 060201
+
+[x] BUG(frecorder): manual change of rot/lin mode or thrust levels should
+    be disabled during playback
+--> Implemented 060201
+
+[x] BUG: HUD switches to sun ref automatically
+
+[x] BUG: no holdalt indicator in DG cockpit
+
+[x] BUG(frecorder): check that transition to other planets is done correctly
+
+[x] REQ(frecorder): check that time acceleration during recording works ok;
+    check that atc stream always intialises all thrusters, and pos stream
+    always intialises reference, even if recording is started after time accel
+
+[x] BUG: docking MFD, VOR-VTOL reset after switching panels
+
+[x] BUG: DG overhead panel creates white space.
+--> Fixed 060213
+
+[x] BUG: VESSEL::PostCreation at simulation start should only be called after
+    all vessels are created.
+--> Fixed 060214
+
+[x] BUG: Scene::Render: rendercockpit is always true, and the internal pass
+    therefore executed. Leads to render artefacts with MESHVIS_ALWAYS meshes.
+--> Fixed 060214
+
+[x] REQ: consistent input of target object for all MFDs (shouldn't require
+    typing full target name)
+--> Implemented 060218
+
+[x] REQ: ISS docking ports should be more emissive to assist docking in the
+    dark.
+--> Implemented 060218
+
+[x] REQ: Provide a local Mars level-10 area around Olympus Mons and add
+    credits.
+--> Implemented 060221
+
+[x] BUG: Atlantis: Add Barrick's RMS code fixes.
+--> Implemented 060221
+
+[x] BUG: Alt-Tab causes render artefacts with generic cockpit (MFD buttons
+    and parts of Surface MFD display)
+--> Fixed 060221
+
+[x] REQ: Add animation recorder tags for Shuttle-A (in particular aux pods).
+--> Implemented 060222
+
+[x] DOC: Document the behaviour of HUD and MFD PWR,navmode button visibility
+--> Implemented 060224
+
+[x] DOC: document the "date.exe" utility.
+--> Implemented 060224
+
+[x] BUG: check if config files with missing final CR still create beeps.
+    Does Sol.cfg crash with a CR at the end?
+--> Checked 060224
+
+[x] BUG: Combination of date setting in ScnEditor with external MFDs causes
+    problems (MFD not updated, buttons stop responding, wrong buttons,
+    "TV noise" on display, etc).
+--> Addressed (fixed?) 060227
+
+[x] BUG: ScnEditor: check that object in geosync orbit stays in place when
+    time-propagating with "prop along osc. elements" (use 2006/Geosync scn.)
+--> Fixed 060227
+
+[x] BUG: Atlantis RMS dialog stops working after being moved around the screen.
+--> Fixed 060227
+
+[x] REQ: API: Provide inverse for HorizonRot() function.
+--> Implemented 060227
+
+[x] BUG: blank lines in planetary NAVBEACON list cause CTD when opening Ctrl-I.
+--> Fixed 060227
+
+[x] BUG: scenario editor CTD when setting Ecc=1 in elements page.
+--> Fixed 060227 (ecc=1 now substituted with ecc=1+eps to avoid instability)
+
+[x] BUG: pltex: cloud maps not supported
+--> Fixed 060301
+
+[x] REQ: API: Provide new function oapiGetCmdLine()
+--> Implemented 060303
+
+[x] REQ: open port selector dialog when Ctrl-D on a vessel with multiple ports
+--> Implemented 060305
+
+[x] BUG: rotation model: improve integration of Euler's equations. Make sure
+    that change of kinetic energy is calculated correctly.
+--> Updated 060307. Now uses RK4 to update angular velocity. In the absence of
+    external torque, constant kinetic rotational energy is enforced.
+
+[x] BUG: rotation model: check that update of rotation matrix from angular
+    velocity is correct. Improve re-orthogonalisation method.
+--> Updated 060310. Implemented quaternion representation of vessel orientation.
+    Should provide better stability of converting angular velocity to rotation
+    matrix update.
+
+[x] REQ: "Undock" button in DG panels.
+--> Implemented 060319
+
+[x] BUG: Jump of composite vessels at end of playback
+--> Fixed 060403
+
+[x] BUG: Check Atlantis tilt problem at takeoff when "Base" tag is not present
+    in scenario file
+--> Fixed 060403
+
+[x] DOC: Document oapiSetMeshProperty API function
+--> Implemented 060403
+
+[x] BUG: RCS indicator is visible in panel mode if generic mode is disabled.
+--> Fixed 060403
+
+[x] BUG: Jump during phase wrap in playback scenarios
+--> Fixed 060405
+
+[o] BUG: HUD display and top-left information block are illumination-dependent
+    on some cards (only visible when sun is in view) MFD displays are ok.
+--> Caused by video driver AA setting. Currently no further action planned.
+
+[x] DOC: Bring flight recorder documentation up to date.
+--> Implemented 060406
+
+[ ] BUG: planetary parameters: incorporate Chode's corrected data.
+--> Config and marker file corrections implemented. Still need to do texture
+    corrections for Venus and some moons.
+
+[ ] BUG: vessels with CG below 0 cause problems.
+
+[ ] REQ: allow thrusters to change position/orientation as part of an animation
+
+[ ] REQ: API: Add VESSEL::DeleteMesh() function
+
+[ ] REQ: Test if ClearMeshes, AddMesh sequence causes loss of visual in some
+    frames.
+
+[ ] REQ: ability to reset mesh offsets without deleting/reloading meshes.
+
+[ ] BUG: revisit bounce bug
+
+[ ] REQ: Test Mars landmark addon by "Ivanhoe" and if ok ask to include in
+    standard orbiter (admin@sls.pl)
+
+[ ] BUG: Change Leonardo_MPLM.cfg attachment spec to XS to make MPLM stowable
+    in Atlantis bay. Don't allow to stow RMS when something is attached.
+
+[ ] REQ: Support sun textures other than star.dds
+    E.g. have Star1 = NGC7293 in psys config file, then use NGC7293.dds
+
+[ ] BUG: Too rapid transition of night city light textures.
+
+[ ] BUG: IMFD: (1) erratic behaviour of button labels in glass cockpit view.
+    (2) crashes in external MFD windows.
+    Requires cooperation from author to update to 2006 version.
+    Possible solution to (1): IMFD should call the new MFD::InvalidateButtons
+    method whenever the PG button is pressed.
+    Possible solution to (2): IMFD should support more than 2 MFD slots, or
+    at least trap situations where it is called from an external window.
+
+[ ] BUG: calling order between opcOpenRenderViewport() and MFD constructors
+    changes for a scenario restart.
+
+[ ] REQ: a plugin callback function that is called after all cleanup for
+    a terminating session has been executed.
+
+[ ] REQ: try using E = ma+e*sin(ma) as initial guess for eccentric anomaly
+    calculation.
+
+[ ] BUG: Scenario editor: check that planet positions and rotations are
+    correctly updated when editing simulation time.
+
+[ ] REQ: Allow vessel visual parameters to be controlled by config file tags.
