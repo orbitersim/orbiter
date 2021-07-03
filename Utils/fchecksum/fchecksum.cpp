@@ -1,6 +1,8 @@
 // Create a simple checksum from a file and store it in a text file
 // in a format that can be #include'd by a source file.
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
