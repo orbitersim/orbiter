@@ -4,7 +4,7 @@
 // Enable visual styles. Source: https://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx
 #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
-#include "Network.h"
+//#include "Network.h"
 #include "Server.h"
 #include "Client.h"
 #include <windows.h>
@@ -44,8 +44,8 @@
 #include "Help.h"
 #include "DlgHelp.h" // temporary
 #include "htmlctrl.h"
-#include "Orbitersdk\include\DlgCtrl.h"
-#include "Orbitersdk\include\GraphicsAPI.h"
+#include "DlgCtrl.h"
+#include "GraphicsAPI.h"
 
 #ifdef INLINEGRAPHICS
 #include "OGraphics.h"

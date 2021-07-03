@@ -10,7 +10,7 @@
 #include "DlgMenuCfg.h"
 #include "Resource.h"
 #include "Resource2.h"
-#include "Orbitersdk\include\DlgCtrl.h"
+#include "DlgCtrl.h"
 
 extern Orbiter *g_pOrbiter;
 extern Pane *g_pane;

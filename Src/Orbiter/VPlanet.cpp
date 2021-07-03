@@ -18,7 +18,6 @@
 #include "TileMgr.h"
 #include "surfmgr2.h"
 #include "cloudmgr2.h"
-#include "Surface.h"
 #include "Log.h"
 #include "OGraphics.h"
 #include <stdio.h>

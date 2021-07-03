@@ -12,7 +12,7 @@
 #include "Psys.h"
 #include "Camera.h"
 #include "Uxtheme.h"
-#include "Orbitersdk\include\DlgCtrl.h"
+#include "DlgCtrl.h"
 
 extern Orbiter *g_pOrbiter;
 extern PlanetarySystem *g_psys;

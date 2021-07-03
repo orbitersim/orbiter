@@ -12,7 +12,7 @@
 #include "DlgMgr.h"
 #include "DlgVishelper.h"
 #include "Resource.h"
-#include "Orbitersdk\include\DlgCtrl.h"
+#include "DlgCtrl.h"
 #include "Uxtheme.h"
 #include <Commctrl.h>
 
