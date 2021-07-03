@@ -1,0 +1,621 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Credit">
+      <UniqueIdentifier>{c05d727e-2c65-470b-b7c4-35d39fd84a3d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Credit\Source Files">
+      <UniqueIdentifier>{042e9b5a-923c-499c-b023-00f04d14475f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{4892aaa8-b14e-448e-a59f-f434584c6abf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main\Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="OrbitPrimer">
+      <UniqueIdentifier>{0ff48211-5fd9-44b4-836e-f939dcda591d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OrbitPrimer\SourceFiles">
+      <UniqueIdentifier>{e0c965cd-9456-418a-9a31-67a6060908af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios">
+      <UniqueIdentifier>{02ff866d-7243-4635-b697-b97fb8c9d0f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default">
+      <UniqueIdentifier>{960f2e8e-9d64-41fe-ba79-9e4a1f0f476c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Alps2016">
+      <UniqueIdentifier>{8df9b1e9-f702-42f4-8687-2f7521eae2bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Alps2016\Source Files">
+      <UniqueIdentifier>{cb954fdb-6468-4c36-8b67-1fcefb79082b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Earthview2016">
+      <UniqueIdentifier>{661d690d-3d38-4351-9294-5eac83004148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Earthview2016\Source Files">
+      <UniqueIdentifier>{2f2134ac-f05e-4d94-9edd-9a6dd1dea6f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\KSCtour2016">
+      <UniqueIdentifier>{9e394984-5b9c-4ed1-8621-ee30a974507f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\KSCtour2016\Source Files">
+      <UniqueIdentifier>{ca21efa0-aa5e-4025-b6fa-307967b53cbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Welcome2016">
+      <UniqueIdentifier>{cc26e8ee-ddd1-44f9-92a9-d99a8f593e2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Welcome2016\Source Files">
+      <UniqueIdentifier>{0dc28356-bd4a-4a76-acab-a09529f4a4ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\ShuttleAscentAp">
+      <UniqueIdentifier>{529edfc3-050b-45f0-9135-4edbe4538954}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\ShuttleAscentAp\Source Files">
+      <UniqueIdentifier>{2765430c-09b6-4127-ad62-5b5cfa346746}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Challenges">
+      <UniqueIdentifier>{b6ab2164-d39e-495b-8ab4-94163c8d543b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Challenges\Challenge1">
+      <UniqueIdentifier>{b1abef98-c876-485e-b9cf-9b927376e0b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Challenges\Challenge1\Source Files">
+      <UniqueIdentifier>{23b53456-4968-4165-9263-621de61df7a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Challenges\Challenge2">
+      <UniqueIdentifier>{8630abab-e463-4858-9a96-453ad730f9a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Challenges\Challenge2\Source Files">
+      <UniqueIdentifier>{8830e935-38cb-41b3-a6f9-47e6f243c815}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists">
+      <UniqueIdentifier>{3dbe40d2-8817-44da-a51e-528797a6f35a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Checklist1">
+      <UniqueIdentifier>{1c5fbc0a-0072-43b0-be2b-d81e573f5c7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Checklist1\Source Files">
+      <UniqueIdentifier>{ef7835c5-0dad-4715-8b6a-cc960eb7baaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Checklist2">
+      <UniqueIdentifier>{6d1407ce-cb69-4868-816a-337faa2409a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Checklist2\Source Files">
+      <UniqueIdentifier>{dadc32e6-111d-451d-a25a-568aa4b569e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Checklist3">
+      <UniqueIdentifier>{bb071f24-6488-4109-a2ad-fe1200252758}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Checklist3\Source Files">
+      <UniqueIdentifier>{3917b9b0-9313-4c40-8d19-bfcd7fd96c29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Quickstart">
+      <UniqueIdentifier>{b75c0e16-60cd-4011-a976-07c80c97715d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenarios\Default\Checklists\Quickstart\Source Files">
+      <UniqueIdentifier>{3d445288-49ca-474b-892a-8741295bb852}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Main\Credit\credit.htm">
+      <Filter>Credit\Source Files</Filter>
+    </None>
+    <None Include="Main\cam_control.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\cam_fov.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\cam_ground.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\cam_preset.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\cam_target.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\cam_track.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\camera.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\capture.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\customcmd.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_angprop.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_atmconfig.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_fixedstep.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_linprop.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_orbitstab.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_performance.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_planetrender.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_shutdown.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\extra_timer.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\help.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\intro.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\launchpad.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mainmenu.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\map.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\menucfg.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_align.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_align_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_align_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_com.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_com_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_com_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_dock.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_dock_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_dock_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_hsi.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_hsi_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_hsi_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_map.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_map_cfg.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_map_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_map_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_orbit.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_orbit_cfg.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_orbit_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_orbit_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_surf.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_surf_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_surf_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_sync.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_sync_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_sync_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_transfer.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_transfer_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_transfer_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_vtol.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_vtol_ctrl.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\mfd_vtol_disp.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\objinfo.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\Orbiter.hhc">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\Orbiter.hhk">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\playbackedit.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\recorder.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\selvessel.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_about.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_extra.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_joystick.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_modules.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_param.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_scenario.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_video.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\tab_visual.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\timeacc.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\vh_coord.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\vh_force.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\vh_planetarium.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Main\vishelper.htm">
+      <Filter>Main\Source Files</Filter>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\Gravity.htm">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\Gravity2.htm">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\Kepler.htm">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\OrbitPrimer.hhc">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\OrbitPrimer.htm">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </None>
+    <None Include="Scenarios\Alps2016\Index.htm">
+      <Filter>Scenarios\Default\Alps2016\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Earthview2016\Index.htm">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\KSCtour2016\Index.htm">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Welcome2016\Index.htm">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\ShuttleAscAp\Index.htm">
+      <Filter>Scenarios\Default\ShuttleAscentAp\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Challenge1\Index.htm">
+      <Filter>Scenarios\Default\Challenges\Challenge1\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Challenge2\Index.htm">
+      <Filter>Scenarios\Default\Challenges\Challenge2\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Checklist1\Checklist1.htm">
+      <Filter>Scenarios\Default\Checklists\Checklist1\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Checklist2\Checklist2.htm">
+      <Filter>Scenarios\Default\Checklists\Checklist2\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Checklist3\Checklist3.htm">
+      <Filter>Scenarios\Default\Checklists\Checklist3\Source Files</Filter>
+    </None>
+    <None Include="Scenarios\Quickstart\Quickstart.htm">
+      <Filter>Scenarios\Default\Checklists\Quickstart\Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Main\banner.jpg">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_align.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_com.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_dock.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_hsi.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_map.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_orbit1.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_orbit2.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_surf.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_sync.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_transfer.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Main\mfd_vtol.gif">
+      <Filter>Main\Source Files</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gforce.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravityacc.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravityconst.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravitylaw.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravitypot.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravitypot2.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravitypot3.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravityvec.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\gravityvec2.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\kepler1.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\kepler2.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\kepler3.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Tutorials\OrbitPrimer\pot.gif">
+      <Filter>OrbitPrimer\SourceFiles</Filter>
+    </Image>
+    <Image Include="Scenarios\Alps2016\img1.jpg">
+      <Filter>Scenarios\Default\Alps2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Alps2016\img2.jpg">
+      <Filter>Scenarios\Default\Alps2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Alps2016\img3.jpg">
+      <Filter>Scenarios\Default\Alps2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Earthview2016\img1.jpg">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Earthview2016\img2.jpg">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Earthview2016\img3.jpg">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Earthview2016\img4.jpg">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Earthview2016\img5.jpg">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Earthview2016\img6.jpg">
+      <Filter>Scenarios\Default\Earthview2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img1.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img2.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img3.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img4.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img5.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img6.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\KSCtour2016\img7.jpg">
+      <Filter>Scenarios\Default\KSCtour2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img1.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img10.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img2.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img3.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img4.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img5.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img6.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img7.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img8.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Welcome2016\img9.jpg">
+      <Filter>Scenarios\Default\Welcome2016\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Challenge1\launch.jpg">
+      <Filter>Scenarios\Default\Challenges\Challenge1\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Challenge2\approach.jpg">
+      <Filter>Scenarios\Default\Challenges\Challenge2\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Challenge2\orbit.jpg">
+      <Filter>Scenarios\Default\Challenges\Challenge2\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist1\checklist1a.jpg">
+      <Filter>Scenarios\Default\Checklists\Checklist1\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist1\checklist1b.jpg">
+      <Filter>Scenarios\Default\Checklists\Checklist1\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist1\checklist1c.gif">
+      <Filter>Scenarios\Default\Checklists\Checklist1\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist2\checklist2a.jpg">
+      <Filter>Scenarios\Default\Checklists\Checklist2\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist2\checklist2b.jpg">
+      <Filter>Scenarios\Default\Checklists\Checklist2\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist2\checklist2c.gif">
+      <Filter>Scenarios\Default\Checklists\Checklist2\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Checklist3\Checklist3a.jpg">
+      <Filter>Scenarios\Default\Checklists\Checklist3\Source Files</Filter>
+    </Image>
+    <Image Include="Scenarios\Quickstart\Quickstart1.jpg">
+      <Filter>Scenarios\Default\Checklists\Quickstart\Source Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Main\Credit\credit.hhp">
+      <Filter>Credit</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Main\orbiter.hhp">
+      <Filter>Main</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Tutorials\OrbitPrimer\OrbitPrimer.hhp">
+      <Filter>OrbitPrimer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\CurrentState.htm">
+      <Filter>Scenarios</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\CurrentState_img.htm">
+      <Filter>Scenarios</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Alps2016\Alps2016.hhp">
+      <Filter>Scenarios\Default\Alps2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Earthview2016\Earthview2016.hhp">
+      <Filter>Scenarios\Default\Earthview2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\KSCtour2016\KSCtour2016.hhp">
+      <Filter>Scenarios\Default\KSCtour2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Welcome2016\Welcome2016.hhp">
+      <Filter>Scenarios\Default\Welcome2016</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\ShuttleAscAp\ShuttleAscentAp.hhp">
+      <Filter>Scenarios\Default\ShuttleAscentAp</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Challenge1\Challenge1.hhp">
+      <Filter>Scenarios\Default\Challenges\Challenge1</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Challenge2\Challenge2.hhp">
+      <Filter>Scenarios\Default\Challenges\Challenge2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Checklist1\Checklist1.hhp">
+      <Filter>Scenarios\Default\Checklists\Checklist1</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Checklist2\Checklist2.hhp">
+      <Filter>Scenarios\Default\Checklists\Checklist2</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Checklist3\Checklist3.hhp">
+      <Filter>Scenarios\Default\Checklists\Checklist3</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Quickstart\Quickstart.hhp">
+      <Filter>Scenarios\Default\Checklists\Quickstart</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

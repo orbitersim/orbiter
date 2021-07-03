@@ -12,19 +12,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config\Sphere.cfg">
-      <Filter>Config</Filter>
-    </None>
-    <None Include="Config\Sphere_collision.dat">
-      <Filter>Config</Filter>
-    </None>
-    <None Include="Meshes\Sphere3.msh">
-      <Filter>Meshes</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Config\Sphere.cfg" />
+    <CustomBuild Include="Config\Sphere_collision.dat" />
+    <CustomBuild Include="Meshes\Sphere3.msh" />
   </ItemGroup>
 </Project>

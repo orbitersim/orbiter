@@ -43,9 +43,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScnEditorAPI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Bitmaps\File1.bmp">
@@ -117,6 +114,9 @@
   <ItemGroup>
     <CustomBuild Include="Help\ScnEditor.hhp">
       <Filter>HtmlHelp</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ScnEditorAPI.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

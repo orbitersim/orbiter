@@ -206,11 +206,9 @@
     <CustomBuild Include="Config\ShuttleA.cfg">
       <Filter>Config</Filter>
     </CustomBuild>
+    <CustomBuild Include="Help\ShuttleA.hhp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Help\ShuttleA.hhp">
-      <Filter>Help</Filter>
-    </None>
     <None Include="Help\ShuttleA.htm">
       <Filter>Help\Source Files</Filter>
     </None>

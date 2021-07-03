@@ -1,0 +1,6 @@
+*.user
+*.VC.db
+.vs
+meshres*.h
+splash_cs.dat
+cryptstring.h

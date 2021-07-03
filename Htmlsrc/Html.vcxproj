@@ -1,0 +1,608 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{302B7727-EEBC-4CB0-AC80-C3CEA6A7AD7D}</ProjectGuid>
+    <RootNamespace>Html</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\VS2015\PropertyPages\orbiter.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\VS2015\PropertyPages\orbiter.props" />
+    <Import Project="..\VS2015\PropertyPages\orbiter_debug.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="Main\camera.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\cam_control.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\cam_fov.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\cam_ground.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\cam_preset.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\cam_target.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\cam_track.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\capture.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Main\Credit\credit.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)Html\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)credit.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Html\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)Html\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)credit.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Html\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Main\Credit\credit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\customcmd.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_angprop.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_atmconfig.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_fixedstep.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_linprop.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_orbitstab.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_performance.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_planetrender.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_shutdown.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\extra_timer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\help.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\intro.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\launchpad.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mainmenu.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\map.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\menucfg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_align.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_align_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_align_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_com.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_com_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_com_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_dock.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_dock_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_dock_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_hsi.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_hsi_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_hsi_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_map.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_map_cfg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_map_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_map_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_orbit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_orbit_cfg.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_orbit_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_orbit_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_surf.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_surf_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_surf_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_sync.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_sync_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_sync_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_transfer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_transfer_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_transfer_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_vtol.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_vtol_ctrl.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\mfd_vtol_disp.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\objinfo.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\Orbiter.hhc" />
+    <None Include="Main\Orbiter.hhk" />
+    <CustomBuild Include="Main\orbiter.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)Html\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)launchpad.htm;%(RootDir)%(Directory)tab_scenario.htm;%(RootDir)%(Directory)tab_param.htm;%(RootDir)%(Directory)tab_video.htm;%(RootDir)%(Directory)tab_visual.htm;%(RootDir)%(Directory)tab_joystick.htm;%(RootDir)%(Directory)tab_modules.htm;%(RootDir)%(Directory)intro.htm;%(RootDir)%(Directory)mfd_orbit.htm;%(RootDir)%(Directory)mfd.htm;%(RootDir)%(Directory)mfd_orbit_ctrl.htm;%(RootDir)%(Directory)mfd_orbit_disp.htm;%(RootDir)%(Directory)mfd_orbit1.gif;%(RootDir)%(Directory)mfd_orbit2.gif;%(RootDir)%(Directory)mfd_hsi.htm;%(RootDir)%(Directory)mfd_hsi.gif;%(RootDir)%(Directory)mfd_hsi_ctrl.htm;%(RootDir)%(Directory)mfd_hsi_disp.htm;%(RootDir)%(Directory)mfd_surf.htm;%(RootDir)%(Directory)mfd_surf_disp.htm;%(RootDir)%(Directory)help.htm;%(RootDir)%(Directory)mfd_map.gif;%(RootDir)%(Directory)mfd_map.htm;%(RootDir)%(Directory)mfd_map_ctrl.htm;%(RootDir)%(Directory)mfd_map_disp.htm;%(RootDir)%(Directory)banner.jpg;%(RootDir)%(Directory)..\Orbiter.css;%(RootDir)%(Directory)..\master.js;%(RootDir)%(Directory)mfd_com.htm;%(RootDir)%(Directory)mfd_com_ctrl.htm;%(RootDir)%(Directory)mfd_com_disp.htm;%(RootDir)%(Directory)mfd_com.gif;%(RootDir)%(Directory)mfd_align.htm;%(RootDir)%(Directory)mfd_align_ctrl.htm;%(RootDir)%(Directory)mfd_align.gif;%(RootDir)%(Directory)mfd_align_disp.htm;%(RootDir)%(Directory)mfd_sync.htm;%(RootDir)%(Directory)mfd_sync_ctrl.htm;%(RootDir)%(Directory)mfd_sync_disp.htm;%(RootDir)%(Directory)mfd_sync.gif;%(RootDir)%(Directory)mfd_dock.htm;%(RootDir)%(Directory)mfd_dock_ctrl.htm;%(RootDir)%(Directory)mfd_dock_disp.htm;%(RootDir)%(Directory)mfd_surf_ctrl.htm;%(RootDir)%(Directory)mfd_orbit_cfg.htm;%(RootDir)%(Directory)mfd_map_cfg.htm;%(RootDir)%(Directory)mfd_vtol.htm;%(RootDir)%(Directory)mfd_vtol_ctrl.htm;%(RootDir)%(Directory)mfd_vtol_disp.htm;%(RootDir)%(Directory)mfd_vtol.gif;%(RootDir)%(Directory)mfd_transfer.htm;%(RootDir)%(Directory)mfd_transfer_ctrl.htm;%(RootDir)%(Directory)mfd_transfer_disp.htm;%(RootDir)%(Directory)mfd_transfer.gif;%(RootDir)%(Directory)camera.htm;%(RootDir)%(Directory)cam_control.htm;%(RootDir)%(Directory)cam_target.htm;%(RootDir)%(Directory)cam_track.htm;%(RootDir)%(Directory)cam_ground.htm;%(RootDir)%(Directory)cam_fov.htm;%(RootDir)%(Directory)cam_preset.htm;%(RootDir)%(Directory)timeacc.htm;%(RootDir)%(Directory)recorder.htm;%(RootDir)%(Directory)selvessel.htm;%(RootDir)%(Directory)customcmd.htm;%(RootDir)%(Directory)objinfo.htm;%(RootDir)%(Directory)map.htm;%(RootDir)%(Directory)mainmenu.htm;%(RootDir)%(Directory)menucfg.htm;%(RootDir)%(Directory)vishelper.htm;%(RootDir)%(Directory)vh_planetarium.htm;%(RootDir)%(Directory)vh_force.htm;%(RootDir)%(Directory)vh_coord.htm;%(RootDir)%(Directory)playbackedit.htm;%(RootDir)%(Directory)tab_extra.htm;%(RootDir)%(Directory)Script\ScriptRef.htm;%(RootDir)%(Directory)Script\api_oapi.htm;%(RootDir)%(Directory)Script\api_proc.htm;%(RootDir)%(Directory)Script\api_vessel.htm;%(RootDir)%(Directory)Script\mtd_note.htm;%(RootDir)%(Directory)Script\mtd_vessel.htm;%(RootDir)%(Directory)Script\OrbiterAPI.css;%(RootDir)%(Directory)Script\Invoking.htm;%(RootDir)%(Directory)Script\Datatypes.htm;%(RootDir)%(Directory)Script\function.htm;%(RootDir)%(Directory)tab_about.htm;%(RootDir)%(Directory)Script\api_vec.htm;%(RootDir)%(Directory)Script\constant.htm;%(RootDir)%(Directory)Script\ScriptVessel.htm;%(RootDir)%(Directory)Script\mtd_mfd.htm;%(RootDir)%(Directory)Script\mtd_skp.htm;%(RootDir)%(Directory)Script\ScriptMfd.htm;%(RootDir)%(Directory)Script\mission.htm;%(RootDir)%(Directory)Script\clbk_mfd.htm;%(RootDir)%(Directory)Script\devel.htm;%(RootDir)%(Directory)Script\mtd_light.htm;%(RootDir)%(Directory)extra_timer.htm;%(RootDir)%(Directory)extra_fixedstep.htm;%(RootDir)%(Directory)extra_shutdown.htm;%(RootDir)%(Directory)extra_performance.htm;%(RootDir)%(Directory)extra_atmconfig.htm;%(RootDir)%(Directory)extra_linprop.htm;%(RootDir)%(Directory)extra_angprop.htm;%(RootDir)%(Directory)extra_orbitstab.htm;%(RootDir)%(Directory)extra_planetrender.htm;%(RootDir)%(Directory)capture.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Html\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)Html\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)launchpad.htm;%(RootDir)%(Directory)tab_scenario.htm;%(RootDir)%(Directory)tab_param.htm;%(RootDir)%(Directory)tab_video.htm;%(RootDir)%(Directory)tab_visual.htm;%(RootDir)%(Directory)tab_joystick.htm;%(RootDir)%(Directory)tab_modules.htm;%(RootDir)%(Directory)intro.htm;%(RootDir)%(Directory)mfd_orbit.htm;%(RootDir)%(Directory)mfd.htm;%(RootDir)%(Directory)mfd_orbit_ctrl.htm;%(RootDir)%(Directory)mfd_orbit_disp.htm;%(RootDir)%(Directory)mfd_orbit1.gif;%(RootDir)%(Directory)mfd_orbit2.gif;%(RootDir)%(Directory)mfd_hsi.htm;%(RootDir)%(Directory)mfd_hsi.gif;%(RootDir)%(Directory)mfd_hsi_ctrl.htm;%(RootDir)%(Directory)mfd_hsi_disp.htm;%(RootDir)%(Directory)mfd_surf.htm;%(RootDir)%(Directory)mfd_surf_disp.htm;%(RootDir)%(Directory)help.htm;%(RootDir)%(Directory)mfd_map.gif;%(RootDir)%(Directory)mfd_map.htm;%(RootDir)%(Directory)mfd_map_ctrl.htm;%(RootDir)%(Directory)mfd_map_disp.htm;%(RootDir)%(Directory)banner.jpg;%(RootDir)%(Directory)..\Orbiter.css;%(RootDir)%(Directory)..\master.js;%(RootDir)%(Directory)mfd_com.htm;%(RootDir)%(Directory)mfd_com_ctrl.htm;%(RootDir)%(Directory)mfd_com_disp.htm;%(RootDir)%(Directory)mfd_com.gif;%(RootDir)%(Directory)mfd_align.htm;%(RootDir)%(Directory)mfd_align_ctrl.htm;%(RootDir)%(Directory)mfd_align.gif;%(RootDir)%(Directory)mfd_align_disp.htm;%(RootDir)%(Directory)mfd_sync.htm;%(RootDir)%(Directory)mfd_sync_ctrl.htm;%(RootDir)%(Directory)mfd_sync_disp.htm;%(RootDir)%(Directory)mfd_sync.gif;%(RootDir)%(Directory)mfd_dock.htm;%(RootDir)%(Directory)mfd_dock_ctrl.htm;%(RootDir)%(Directory)mfd_dock_disp.htm;%(RootDir)%(Directory)mfd_surf_ctrl.htm;%(RootDir)%(Directory)mfd_orbit_cfg.htm;%(RootDir)%(Directory)mfd_map_cfg.htm;%(RootDir)%(Directory)mfd_vtol.htm;%(RootDir)%(Directory)mfd_vtol_ctrl.htm;%(RootDir)%(Directory)mfd_vtol_disp.htm;%(RootDir)%(Directory)mfd_vtol.gif;%(RootDir)%(Directory)mfd_transfer.htm;%(RootDir)%(Directory)mfd_transfer_ctrl.htm;%(RootDir)%(Directory)mfd_transfer_disp.htm;%(RootDir)%(Directory)mfd_transfer.gif;%(RootDir)%(Directory)camera.htm;%(RootDir)%(Directory)cam_control.htm;%(RootDir)%(Directory)cam_target.htm;%(RootDir)%(Directory)cam_track.htm;%(RootDir)%(Directory)cam_ground.htm;%(RootDir)%(Directory)cam_fov.htm;%(RootDir)%(Directory)cam_preset.htm;%(RootDir)%(Directory)timeacc.htm;%(RootDir)%(Directory)recorder.htm;%(RootDir)%(Directory)selvessel.htm;%(RootDir)%(Directory)customcmd.htm;%(RootDir)%(Directory)objinfo.htm;%(RootDir)%(Directory)map.htm;%(RootDir)%(Directory)mainmenu.htm;%(RootDir)%(Directory)menucfg.htm;%(RootDir)%(Directory)vishelper.htm;%(RootDir)%(Directory)vh_planetarium.htm;%(RootDir)%(Directory)vh_force.htm;%(RootDir)%(Directory)vh_coord.htm;%(RootDir)%(Directory)playbackedit.htm;%(RootDir)%(Directory)tab_extra.htm;%(RootDir)%(Directory)Script\ScriptRef.htm;%(RootDir)%(Directory)Script\api_oapi.htm;%(RootDir)%(Directory)Script\api_proc.htm;%(RootDir)%(Directory)Script\api_vessel.htm;%(RootDir)%(Directory)Script\mtd_note.htm;%(RootDir)%(Directory)Script\mtd_vessel.htm;%(RootDir)%(Directory)Script\OrbiterAPI.css;%(RootDir)%(Directory)Script\Invoking.htm;%(RootDir)%(Directory)Script\Datatypes.htm;%(RootDir)%(Directory)Script\function.htm;%(RootDir)%(Directory)tab_about.htm;%(RootDir)%(Directory)Script\api_vec.htm;%(RootDir)%(Directory)Script\constant.htm;%(RootDir)%(Directory)Script\ScriptVessel.htm;%(RootDir)%(Directory)Script\mtd_mfd.htm;%(RootDir)%(Directory)Script\mtd_skp.htm;%(RootDir)%(Directory)Script\ScriptMfd.htm;%(RootDir)%(Directory)Script\mission.htm;%(RootDir)%(Directory)Script\clbk_mfd.htm;%(RootDir)%(Directory)Script\devel.htm;%(RootDir)%(Directory)Script\mtd_light.htm;%(RootDir)%(Directory)extra_timer.htm;%(RootDir)%(Directory)extra_fixedstep.htm;%(RootDir)%(Directory)extra_shutdown.htm;%(RootDir)%(Directory)extra_performance.htm;%(RootDir)%(Directory)extra_atmconfig.htm;%(RootDir)%(Directory)extra_linprop.htm;%(RootDir)%(Directory)extra_angprop.htm;%(RootDir)%(Directory)extra_orbitstab.htm;%(RootDir)%(Directory)extra_planetrender.htm;%(RootDir)%(Directory)capture.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Html\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Main\playbackedit.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\recorder.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\selvessel.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_about.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_extra.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_joystick.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_modules.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_param.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_scenario.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_video.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\tab_visual.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\timeacc.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\vh_coord.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\vh_force.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\vh_planetarium.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Main\vishelper.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Alps2016\Alps2016.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Alps2016\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Challenge1\Challenge1.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Challenges\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)launch.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\Challenges\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Challenges\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)launch.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\Challenges\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Challenge1\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Challenge2\Challenge2.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Challenges\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)approach.jpg;%(RootDir)%(Directory)orbit.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\Challenges\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Challenges\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)approach.jpg;%(RootDir)%(Directory)orbit.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\Challenges\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Challenge2\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Checklist1\Checklist1.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Checklist1.htm;%(RootDir)%(Directory)checklist1a.jpg;%(RootDir)%(Directory)checklist1b.jpg;%(RootDir)%(Directory)checklist1c.gif;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Checklist1.htm;%(RootDir)%(Directory)checklist1a.jpg;%(RootDir)%(Directory)checklist1b.jpg;%(RootDir)%(Directory)checklist1c.gif;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Checklist1\Checklist1.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Checklist2\Checklist2.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Checklist2.htm;%(RootDir)%(Directory)checklist2a.jpg;%(RootDir)%(Directory)checklist2b.jpg;%(RootDir)%(Directory)checklist2c.gif;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Checklist2.htm;%(RootDir)%(Directory)checklist2a.jpg;%(RootDir)%(Directory)checklist2b.jpg;%(RootDir)%(Directory)checklist2c.gif;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Checklist2\Checklist2.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Checklist3\Checklist3.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Checklist3.htm;%(RootDir)%(Directory)checklist3a.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Checklist3.htm;%(RootDir)%(Directory)checklist3a.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Checklist3\Checklist3.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\CurrentState.htm">
+      <DeploymentContent>true</DeploymentContent>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDir)\Html\Scenarios\*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDir)\Html\Scenarios\*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\CurrentState_img.htm">
+      <DeploymentContent>true</DeploymentContent>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDir)\Html\Scenarios\*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\%(Filename)%(Extension);%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Deploying %(Filename)%(Extension) ...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /D /Y "%(FullPath)" "$(BuildDir)\Html\Scenarios\*"
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\%(Filename)%(Extension);%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Earthview2016\Earthview2016.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(RootDir)%(Directory)img4.jpg;%(RootDir)%(Directory)img5.jpg;%(RootDir)%(Directory)img6.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(RootDir)%(Directory)img4.jpg;%(RootDir)%(Directory)img5.jpg;%(RootDir)%(Directory)img6.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Earthview2016\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Scenarios\KSCtour2016\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\KSCtour2016\KSCtour2016.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(RootDir)%(Directory)img4.jpg;%(RootDir)%(Directory)img5.jpg;%(RootDir)%(Directory)img6.jpg;%(RootDir)%(Directory)img7.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(RootDir)%(Directory)img4.jpg;%(RootDir)%(Directory)img5.jpg;%(RootDir)%(Directory)img6.jpg;%(RootDir)%(Directory)img7.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Scenarios\Quickstart\Quickstart.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Quickstart.htm;%(RootDir)%(Directory)Quickstart1.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\Checklists\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Quickstart.htm;%(RootDir)%(Directory)Quickstart1.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\Checklists\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Quickstart\Quickstart.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Scenarios\ShuttleAscAp\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\ShuttleAscAp\ShuttleAscentAp.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Scenarios\Welcome2016\Index.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <CustomBuild Include="Scenarios\Welcome2016\Welcome2016.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(RootDir)%(Directory)img4.jpg;%(RootDir)%(Directory)img5.jpg;%(RootDir)%(Directory)img6.jpg;%(RootDir)%(Directory)img7.jpg;%(RootDir)%(Directory)img8.jpg;%(RootDir)%(Directory)img9.jpg;%(RootDir)%(Directory)img10.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)\Html\Scenarios\Default\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)Index.htm;%(RootDir)%(Directory)img1.jpg;%(RootDir)%(Directory)img2.jpg;%(RootDir)%(Directory)img3.jpg;%(RootDir)%(Directory)img4.jpg;%(RootDir)%(Directory)img5.jpg;%(RootDir)%(Directory)img6.jpg;%(RootDir)%(Directory)img7.jpg;%(RootDir)%(Directory)img8.jpg;%(RootDir)%(Directory)img9.jpg;%(RootDir)%(Directory)img10.jpg;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)\Html\Scenarios\Default\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Tutorials\OrbitPrimer\Gravity.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\Gravity2.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\Kepler.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="Tutorials\OrbitPrimer\OrbitPrimer.hhc" />
+    <CustomBuild Include="Tutorials\OrbitPrimer\OrbitPrimer.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)Html\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\..\master.js;%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)OrbitPrimer.htm;%(RootDir)%(Directory)Gravity.htm;%(RootDir)%(Directory)Gravity2.htm;%(RootDir)%(Directory)Kepler.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(BuildDir)Html\%(Filename).chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hhc.exe "%(FullPath)"
+xcopy /Y /D "%(RootDir)%(Directory)%(Filename).chm" "$(BuildDir)Html\*"
+del "%(RootDir)%(Directory)%(Filename).chm"
+</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)..\..\master.js;%(RootDir)%(Directory)..\..\Orbiter.css;%(RootDir)%(Directory)OrbitPrimer.htm;%(RootDir)%(Directory)Gravity.htm;%(RootDir)%(Directory)Gravity2.htm;%(RootDir)%(Directory)Kepler.htm;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(BuildDir)Html\%(Filename).chm;%(Outputs)</Outputs>
+    </CustomBuild>
+    <None Include="Tutorials\OrbitPrimer\OrbitPrimer.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Main\banner.jpg" />
+    <Image Include="Main\mfd_align.gif" />
+    <Image Include="Main\mfd_com.gif" />
+    <Image Include="Main\mfd_dock.gif" />
+    <Image Include="Main\mfd_hsi.gif" />
+    <Image Include="Main\mfd_map.gif" />
+    <Image Include="Main\mfd_orbit1.gif" />
+    <Image Include="Main\mfd_orbit2.gif" />
+    <Image Include="Main\mfd_surf.gif" />
+    <Image Include="Main\mfd_sync.gif" />
+    <Image Include="Main\mfd_transfer.gif" />
+    <Image Include="Main\mfd_vtol.gif" />
+    <Image Include="Scenarios\Alps2016\img1.jpg" />
+    <Image Include="Scenarios\Alps2016\img2.jpg" />
+    <Image Include="Scenarios\Alps2016\img3.jpg" />
+    <Image Include="Scenarios\Challenge1\launch.jpg" />
+    <Image Include="Scenarios\Challenge2\approach.jpg" />
+    <Image Include="Scenarios\Challenge2\orbit.jpg" />
+    <Image Include="Scenarios\Checklist1\checklist1a.jpg" />
+    <Image Include="Scenarios\Checklist1\checklist1b.jpg" />
+    <Image Include="Scenarios\Checklist1\checklist1c.gif" />
+    <Image Include="Scenarios\Checklist2\checklist2a.jpg" />
+    <Image Include="Scenarios\Checklist2\checklist2b.jpg" />
+    <Image Include="Scenarios\Checklist2\checklist2c.gif" />
+    <Image Include="Scenarios\Checklist3\Checklist3a.jpg" />
+    <Image Include="Scenarios\Earthview2016\img1.jpg" />
+    <Image Include="Scenarios\Earthview2016\img2.jpg" />
+    <Image Include="Scenarios\Earthview2016\img3.jpg" />
+    <Image Include="Scenarios\Earthview2016\img4.jpg" />
+    <Image Include="Scenarios\Earthview2016\img5.jpg" />
+    <Image Include="Scenarios\Earthview2016\img6.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img1.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img2.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img3.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img4.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img5.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img6.jpg" />
+    <Image Include="Scenarios\KSCtour2016\img7.jpg" />
+    <Image Include="Scenarios\Quickstart\Quickstart1.jpg" />
+    <Image Include="Scenarios\Welcome2016\img1.jpg" />
+    <Image Include="Scenarios\Welcome2016\img10.jpg" />
+    <Image Include="Scenarios\Welcome2016\img2.jpg" />
+    <Image Include="Scenarios\Welcome2016\img3.jpg" />
+    <Image Include="Scenarios\Welcome2016\img4.jpg" />
+    <Image Include="Scenarios\Welcome2016\img5.jpg" />
+    <Image Include="Scenarios\Welcome2016\img6.jpg" />
+    <Image Include="Scenarios\Welcome2016\img7.jpg" />
+    <Image Include="Scenarios\Welcome2016\img8.jpg" />
+    <Image Include="Scenarios\Welcome2016\img9.jpg" />
+    <Image Include="Tutorials\OrbitPrimer\gforce.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravityacc.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravityconst.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravitylaw.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravitypot.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravitypot2.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravitypot3.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravityvec.gif" />
+    <Image Include="Tutorials\OrbitPrimer\gravityvec2.gif" />
+    <Image Include="Tutorials\OrbitPrimer\kepler1.gif" />
+    <Image Include="Tutorials\OrbitPrimer\kepler2.gif" />
+    <Image Include="Tutorials\OrbitPrimer\kepler3.gif" />
+    <Image Include="Tutorials\OrbitPrimer\pot.gif" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

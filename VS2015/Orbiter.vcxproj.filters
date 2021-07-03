@@ -747,9 +747,6 @@
     <Image Include="..\Bitmaps\shadow.bmp" />
     <Image Include="..\Bitmaps\uarrow.ico" />
     <Image Include="..\bitmaps\uarrow_tilt.ico" />
-    <Image Include="..\Bitmaps\Splash2016.jpg">
-      <Filter>Resources</Filter>
-    </Image>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Contrib.txt">
@@ -893,5 +890,6 @@
     <CustomBuild Include="..\Orbitersdk\include\Lua\lua.hpp" />
     <CustomBuild Include="..\Orbitersdk\include\Lua\luaconf.h" />
     <CustomBuild Include="..\Orbitersdk\include\Lua\lualib.h" />
+    <CustomBuild Include="..\Bitmaps\Splash2016.jpg" />
   </ItemGroup>
 </Project>
