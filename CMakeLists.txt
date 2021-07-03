@@ -7,13 +7,19 @@ set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
 
 set(EXTERN_PATH "${CMAKE_SOURCE_DIR}/Extern")
+
 set(DX7SDK_PATH "${EXTERN_PATH}/mssdk_dx7")
 set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
 set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
 
+set(ZLIB_PATH "${EXTERN_PATH}/Zlib")
+set(ZLIB_INCLUDE_DIR "${ZLIB_PATH}/include")
+set(ZLIB_LIB_DIR "${ZLIB_PATH}/lib")
+set(ZLIB_BIN_DIR "${ZLIB_PATH}/bin")
+set(ZLIB_LIBRARIES "${ZLIB_LIB_DIR}/zlibstatic.lib")
+
 #set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/../extern")
 
-find_package(ZLIB)
 find_package(HTMLHelp)
 
 if(MSVC)
@@ -183,4 +189,4 @@ add_dependencies(Orbiter
 	DlgCtrl
 	)
 
-set_target_properties(Orbiter PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:WINDOWS")
+set_target_properties(Orbiter PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
