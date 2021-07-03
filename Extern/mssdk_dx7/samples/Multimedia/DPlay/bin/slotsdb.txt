@@ -1,0 +1,2 @@
+GAMES\Bob,    1000
+GAMES\Jane,     500

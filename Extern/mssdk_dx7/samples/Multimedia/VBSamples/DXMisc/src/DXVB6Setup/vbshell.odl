@@ -1,0 +1,43 @@
+[
+	uuid(78BF8D80-7B03-11d1-AAB1-00AA00BDD685),
+	version(1.0),
+	helpstring("VB-friendly Shell interfaces")
+]
+library VBShell
+{
+	importlib("stdole2.tlb");
+	[
+		odl,
+		uuid(00000002-0000-0000-C000-000000000046),
+		version(1.0)
+	]
+
+	interface IVBMalloc : IUnknown
+	{
+		long Alloc([in] long cb);
+		long Realloc([in] long pv, [in] long cb);
+		void Free([in] long pv);
+		long GetSize([in] long pv);
+		long DidAlloc([in] long pv);
+		void HeapMinimize();
+	};
+
+	[
+		odl,
+		uuid(000214E6-0000-0000-C000-000000000046),
+		version(1.0)
+	]
+	interface IVBShellFolder : IUnknown
+	{
+		HRESULT ParseDisplayName([in] long hWndOwner, [in] long pbcReserved, [in] BSTR lpszDisplayName, [out] long* pchEaten, [out] long* ppidl, [in] long* pdwAttributes);
+		HRESULT EnumObjects(); //Placeholder: EnumObjects(HWND hwndOwner, DWORD grfFlags, LPENUMIDLIST * ppenumIDList);
+		HRESULT BindToObject(); //Placeholder: BindToObject(LPCITEMIDLIST pidl, LPBC pbcReserved, REFIID riid, LPVOID * ppvOut);
+		HRESULT BindToStorage(); //Placeholder: BindToStorage(LPCITEMIDLIST pidl, LPBC pbcReserved, REFIID riid, LPVOID * ppvObj);
+		HRESULT CompareIDs(); //Placeholder: CompareIDs(THIS_ LPARAM lParam, LPCITEMIDLIST pidl1, LPCITEMIDLIST pidl2);
+		HRESULT CreateViewObject(); //Placeholder: CreateViewObject(HWND hwndOwner, REFIID riid, LPVOID * ppvOut);
+		HRESULT GetAttributesOf(); //Placeholder: GetAttributesOf(UINT cidl, LPCITEMIDLIST * apidl, ULONG * rgfInOut);
+		HRESULT GetUIObjectOf(); //Placeholder: GetUIObjectOf(HWND hwndOwner, UINT cidl, LPCITEMIDLIST * apidl, REFIID riid, UINT * prgfInOut, LPVOID * ppvOut);
+		HRESULT GetDisplayNameOf(); //Placeholder: GetDisplayNameOf(LPCITEMIDLIST pidl, DWORD uFlags, LPSTRRET lpName);
+		HRESULT SetNameOf(); //Placeholder: SetNameOf(HWND hwndOwner, LPCITEMIDLIST pidl, LPCOLESTR lpszName, DWORD uFlags, LPITEMIDLIST * ppidlOut);
+	};
+};

@@ -1,0 +1,11 @@
+REGEDIT4
+[HKEY_LOCAL_MACHINE\Software\Microsoft\DirectPlay]
+[HKEY_LOCAL_MACHINE\Software\Microsoft\DirectPlay\Lobby Providers]
+[HKEY_LOCAL_MACHINE\Software\Microsoft\DirectPlay\Lobby Providers\Lobby Connection For DirectPlay]
+"Guid"="{4AF206E0-9712-11cf-A021-00AA006157AC}"
+"Path"="C:\\mssdk\\samples\\multimedia\\dplay\\bin\\dpldplay.dll"
+"dwReserved1"=dword:0
+"dwReserved2"=dword:0
+
+
+

@@ -1,0 +1,134 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#include <afxres.h>
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DRIVERINFO DIALOG DISCARDABLE  0, 0, 199, 188
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Device Information"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "<<  &Prev",IDC_PREV,7,167,50,14
+    DEFPUSHBUTTON   "Close",IDOK,71,167,55,14
+    PUSHBUTTON      "&Next  >>",IDC_NEXT,142,167,50,14
+    RTEXT           "Version:",IDC_STATIC,18,80,58,8
+    RTEXT           "Description:",IDC_STATIC,7,33,42,20
+    RTEXT           "File Name:",IDC_STATIC,10,90,66,8
+    LTEXT           "4.00.00.0000",IDC_VERSION,81,80,109,8
+    LTEXT           "This is a temp test driver id sttring that is very long and might go over two lines",
+                    IDC_DESCRIPTION,52,33,140,24
+    LTEXT           "Static",IDC_FILENAME,82,90,102,8
+    RTEXT           "GUID:",IDC_STATIC,7,59,24,8
+    RTEXT           "Vendor ID:",IDC_STATIC,10,115,49,8
+    LTEXT           "00000000",IDC_DWVENDORID,65,115,34,8
+    GROUPBOX        "Driver Properties",IDC_STATIC,7,70,185,33
+    GROUPBOX        "Device Identifiers",IDC_STATIC,7,104,185,34
+    RTEXT           "Device ID:",IDC_STATIC,10,125,49,8
+    LTEXT           "00000000",IDC_DWDEVICEID,65,125,34,8
+    RTEXT           "SubSys ID:",IDC_STATIC,105,115,40,8
+    RTEXT           "Revision:",IDC_STATIC,105,125,40,8
+    LTEXT           "00000000",IDC_DWSUBSYS,150,115,40,8
+    LTEXT           "00000000",IDC_DWREVISION,150,125,40,8
+    LTEXT           "00000000-0000-0000-00000000",IDC_GUID,36,59,156,8
+    CONTROL         "Device information for device %d of %d",
+                    IDC_RADIO_DEVICE,"Button",BS_AUTORADIOBUTTON,44,7,148,10
+    CONTROL         "Host",IDC_RADIO_HOST,"Button",BS_AUTORADIOBUTTON,44,16,
+                    78,10
+    RTEXT           "Show",IDC_STATIC,7,7,34,8
+    GROUPBOX        "WHQL Certification Level",IDC_STATIC,7,139,185,22
+    LTEXT           "Level:",IDC_STATIC,56,148,20,8
+    LTEXT           "00000000",IDC_STATIC_WHQLLEVEL,83,148,33,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#include <afxres.h>\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DRIVERINFO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 192
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

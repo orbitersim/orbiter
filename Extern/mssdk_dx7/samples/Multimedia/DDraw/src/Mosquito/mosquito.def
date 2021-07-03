@@ -1,0 +1,10 @@
+NAME mosquito.exe
+
+DESCRIPTION 'Direct Draw Overlay Sample (C) Microsoft 1996-1999'
+
+SECTIONS
+	.bss READ WRITE 
+	.data READ WRITE 
+        .idata READ WRITE 
+        .rdata READ WRITE
+        .rsrc  READ WRITE

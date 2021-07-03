@@ -1,0 +1,46 @@
+resLOG_FILEUPTODATE		"File currently on disk was already up to date"
+resLOG_FILECOPIED		"File was not found or was an older version -- new file copied"
+resLOG_ERROR			"ERROR:"
+resLOG_WARNING			"WARNING:"
+resLOG_DURINGACTION		"DURING THIS ACTION:"
+resLOG_CANNOTWRITE		"Error writing to logfile '|1'"
+resLOG_CANNOTCREATE		"Setup fatal error: Unable to generate installation log file." // Used by setup.c!
+resLOG_DONOTMODIFY		"PLEASE DO NOT MODIFY OR DELETE THIS FILE!"
+resLOG_FILECONTENTS		"This file contains information about the installation of an application."
+resLOG_FILEUSEDFOR		"It will be used to automatically remove all application components from your computer if you choose to do so."
+resLOG_UNEXPECTED		"There was an unexpected problem trying to create or write to the logfile '|1'. Error number is |2."
+resLOG_OUTOFMEMORY		"Out of memory trying to create or write to the logfile '|1'"
+resLOG_USERRESPONDEDWITH	"User Responded with '|1'"
+resLOG_CANTRUNAPPREMOVER	"Error attempting to run the application removal program to remove temporary installation files."
+resLOG_ABOUTTOREMOVEAPP		"Setup will now start the application removal utility to remove temporary installation files."
+
+// The following are the captions on system dialog buttons, but should NOT contain '&' for shortcuts
+resLOG_IDOK			"OK"
+resLOG_IDCANCEL			"Cancel"
+resLOG_IDABORT			"Abort"
+resLOG_IDRETRY			"Retry"
+resLOG_IDIGNORE			"Ignore"
+resLOG_IDYES			"Yes"
+resLOG_IDNO			"No"
+resLOG_IDUNKNOWN		"(Unknown)" // (Unexpected error case)
+
+
+resCOMMON_CANTREG		"An error occurred while registering the file '|1'"
+resCOMMON_CANTREGUNEXPECTED	"Unexpected error while registering file '|1'"
+resCOMMON_CANTREGOLE		"Could not initialize OLE in order to register file '|1'"
+resCOMMON_CANTREGLOAD		"LoadLibrary() failed while registering file '|1'"
+resCOMMON_CANTREGENTRY		"No entrypoint for DllRegisterServer() was found in '|1'"
+resCOMMON_CANTREGREG		"DllRegisterServer() in the file '|1' returned failure"
+resCOMMON_CANTREGTLB		"Could not register the TLB file '|1'."
+resCOMMON_CANTREGAUTPRXRPC1	"One possible cause for this error is that RPC may not be installed on your computer."
+resCOMMON_CANTREGAUTPRXRPC2	"If this is the problem, then you will need to exit Setup, install RPC, and restart Setup."
+resCOMMON_CTL3D32NOTCOPIED	"The file '|1' was not copied because it is intended for use under Windows NT 3.51 only. It is not needed under Windows 95 or NT 4.0."
+resCOMMON_RICHED32NOTCOPIED	"The file '|1' was not copied because it is intended for use under Windows 95 only. It is not needed under Windows NT 3.51 or 4.0."
+resCOMMON_AXDISTNOTCOPIED	"The file '|1' was not copied because it is intended for use under Windows 95 and NT 4.x only. It is not needed under Windows NT 3.51."
+resCOMMON_WINT351NOTCOPIED	"The file '|1' was not copied because it is intended for use under Windows NT 3.51 only. It is not needed under Windows 95 or NT 4.x."
+// Localizers, a list of invalid file name characters can be easily obtained in Win95 by simply trying to create a file name in Explorer with any
+// invalid characters in it. An error message will appear displaying all invalid characters.
+resCOMMON_INVALIDFILECHARS	"\/:*?""<>|"
+resCOMMON_MULTDIRBASENAME	"DISK"
+resCOMMON_CANTFINDSRCFILE	"Cannot find the source file '|1' to install."
+resCOMMON_CANTDOREBOOTCOPY	"Cannot update system file '|1'. You may not have permission to update system files on this machine."

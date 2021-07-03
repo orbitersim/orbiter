@@ -1,0 +1,36 @@
+[version]
+signature="$CHICAGO$"
+
+[DefaultInstall]
+AddReg=add.reg
+DelReg=remove.reg
+
+[add.reg]
+HKLM,"Software\Microsoft\Windows\CurrentVersion\Setup\Migration\450","Dx6Migration",0,"%11%\dxmigr.dll,DxMigration,dx6"
+
+[remove.reg]
+HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Run","MGA Diagnostic"
+HKLM,"SOFTWARE\Microsoft\Windows\CurrentVersion\Run","cwcdschk.exe"
+;remove dx < 6 files
+HKLM,"%KEY_CHKVER%" ,d3dhalf.dll
+HKLM,"%KEY_CHKVER%" ,d3drampf.dll
+HKLM,"%KEY_CHKVER%" ,d3drg16f.dll
+HKLM,"%KEY_CHKVER%" ,d3drg24f.dll
+HKLM,"%KEY_CHKVER%" ,d3drg24x.dll
+HKLM,"%KEY_CHKVER%" ,d3drg32f.dll
+HKLM,"%KEY_CHKVER%" ,d3drg32x.dll
+HKLM,"%KEY_CHKVER%" ,d3drg55x.dll
+HKLM,"%KEY_CHKVER%" ,d3drg56x.dll
+HKLM,"%KEY_CHKVER%" ,d3drg8f.dll
+HKLM,"%KEY_CHKVER%" ,d3drg8x.dll
+HKLM,"%KEY_CHKVER%" ,d3drgbf.dll
+HKLM,"%KEY_CHKVER%" ,d3drgbxf.dll
+HKLM,"%KEY_CHKVER%" ,d3drm16f.dll
+HKLM,"%KEY_CHKVER%" ,d3drm24f.dll
+HKLM,"%KEY_CHKVER%" ,d3drm32f.dll
+HKLM,"%KEY_CHKVER%" ,d3drm8f.dll
+
+
+[Strings]
+; following strings are not localizable
+KEY_CHKVER = "System\CurrentControlSet\control\SessionManager\CheckVerDLLs"

@@ -1,0 +1,127 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#define IDC_STATIC -1
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ECHOTOOL DIALOG DISCARDABLE  0, 0, 244, 124
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectMusic Echo Tool"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Close",IDC_CLOSE,187,103,50,14
+    CONTROL         "No Echo",IDC_NO_ECHO,"Button",BS_AUTORADIOBUTTON,30,46,
+                    143,10
+    CONTROL         "Echo 1/4 Notes",IDC_4TH_ECHO,"Button",
+                    BS_AUTORADIOBUTTON,30,57,143,10
+    CONTROL         "Echo 1/8 Notes",IDC_8TH_ECHO,"Button",
+                    BS_AUTORADIOBUTTON,30,68,143,10
+    CONTROL         "Echo 1/16 Notes",IDC_16TH_ECHO,"Button",
+                    BS_AUTORADIOBUTTON,30,79,143,10
+    CONTROL         "Really fast echo",IDC_FAST_ECHO,"Button",
+                    BS_AUTORADIOBUTTON,30,90,143,10
+    LTEXT           "Currently playing:",IDC_STATIC,30,106,54,8
+    LTEXT           "Static",IDC_NOW_PLAYING,89,106,91,8
+    ICON            IDI_ICON1,IDC_STATIC,7,7,21,20
+    LTEXT           "DirectMusic Echo Tool",IDC_STATIC,30,7,73,8
+    LTEXT           "Copyright © 1999, Microsoft Corp. All Rights Reserved.",
+                    IDC_STATIC,30,16,207,8
+    LTEXT           "GM/GS® Sound Set Copyright ©1996, Roland Corporation U.S.",
+                    IDC_STATIC,30,25,207,16
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ECHOTOOL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 237
+        VERTGUIDE, 30
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 117
+        HORZGUIDE, 15
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#define IDC_STATIC -1\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "directx.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

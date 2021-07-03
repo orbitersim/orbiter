@@ -1,0 +1,180 @@
+#include "setupres.h"
+
+STRINGTABLE DISCARDABLE
+BEGIN
+
+//
+//Common with bootstrapper
+//
+#include "commonrc.rc"
+
+//
+//Global
+//
+resSETMSG "Setup Message"
+
+//
+//frmBegin
+//
+resSPECDEST "Click this button to install |1 software to the specified destination directory."
+resSPECNODEST "Click this button to install |1 software to your computer."
+
+//
+//frmWelcome
+//
+resWELCOME "Welcome to the |1 installation program."
+
+//
+//frmPath
+//
+resDESTPROMPT "Enter or select a destination directory."
+resDESTDIR "The destination directory:"
+resCREATE "does not exist. Do you want the directory to be created?"
+resCHANGEDIR "Change Directory"
+
+//
+//Setup1.Bas
+//
+resCALCSPACE "An error occurred while calculating required disk space."
+resDRVREAD "Cannot read drive "
+resDRVCHK "Please verify the drive door is closed and that the disk is formatted and free of errors."
+resCANTOPEN "Could not open the file named:"
+resMAKEDIR "Could not create directory: |1"
+resASKEXIT "Are you sure you want to Exit?"
+resINTERRUPTED "|1 Setup was interrupted before your new software was fully installed."
+resCANRUN "You can run |1 Setup in its entirety at a later time to complete the installation."
+resINCOMPLETE "Setup is not yet complete."
+resQUITNOW "If you quit now, this product will not be correctly installed."
+resQUITSETUP "Quit the setup of this product?"
+resSUCCESS "|1 Setup was completed successfully."
+resERROR "|1 Setup was not completed successfully."
+resALLOCUNIT "Error determining allocation unit for drive "
+resSAMEASSRC "is in the Setup source files directory. Please type a different directory."
+resINSERT "Please insert the disk labeled:"
+resDISK "'Disk "
+resINTO "' into drive "
+resSECTNAME "Section: "
+resINVLINE "Invalid line in setup information file!"
+resDIRSPECIFIED "The specified directory:"
+resDIRINVALID "is invalid, incomplete, or write protected. Please type a full path with drive letter; for example 'C:\\APPS'."
+resNOTEXIST "The directory doesn't exist!"
+resDIRINVNAME "Invalid Directory Name"
+resWRITEPROT "The destination file is write protected."
+resINUSE "The destination file in in-use. Please ensure that all other applications are closed."
+resOUTOFSPACE "Out of space on destination drive |1"
+resACCESSVIOLATION "An access violation occurred while copying the file."
+resSHARINGVIOLATION "A sharing violation occurred while copying the file."
+resOUTOFMEMORY "Out of memory trying to copy the file."
+resCANNOTCREATE "Cannot create temporary file."
+resCANNOTDELETE "Cannot delete existing destination file."
+resCANNOTRENAME "Cannot rename temporary file."
+resCANNOTREADSRC "Cannot read source file."
+resCANNOTREADDST "Cannot read destination file attributes."
+resBUFFTOOSMALL "Internal copy error."
+resNOINSTALL " The file could not be installed."
+resCHKCONNECT "Please check the connection to drive "
+resWARNIGNORE "If you ignore a copy error, the file will not be copied. The application may not function properly as a result. Do you want to ignore the error?"
+resCANTREADUNC "Cannot read network path '|1'."
+resCHECKUNC "Please verify that this path is correct and that you have permission to access it."
+resCANTFINDAPPREMOVALLOG "Application removal logfile '|1' not found. Unable to continue."
+resBADCOMMANDLINE "Invalid command-line parameters. Unable to continue."
+resCANTFINDAPPREMOVALEXE "Application removal executable '|1' not found. Unable to continue."
+resCANTREGISTERAPPREMOVER "Error registering the application removal executable with Windows"
+resCHOOSENEWDEST "Please run setup again and select a new location for application files."
+resERR_REG "An error occurred trying to update the Windows registration database."
+resMICROSOFTSHARED "Microsoft Shared\\"
+resCANTCREATEPROGRAMGROUP "An error occurred trying to create the program group '|1'"
+resCANTCREATEPROGRAMICON "An error occurred trying to create a program icon for '|1'"
+resCANTCOPYLOG "An error occurred trying to copy '|1' to the application directory"
+resCANTFINDREGFILE "The file '|1' could not be registered because it was not found."
+resCANTRUNPROGRAM "Windows was unable to run the program '|1'. Your system may be low on memory, or the program may not have been found."
+resREMOTELINENOTFOUND "Error: 'SETUP.LST' contains no information on how to register the remote component '|1'. This information should have been found in a '|2' key in SETUP.LST"
+resCANTCOPYPATHTOOLONG "Cannot copy file, Destination Path is too long."
+resCANTCREATEICONPATHTOOLONG "Cannot create Uninstall Icon, Destination Path is too long."
+resICONMISSING "No icon was specified in SETUP.LST for |1. Do you want to continue without creating this icon? Click Yes to continue. Click No to Exit Setup."
+
+//
+//Setup1.Frm
+//
+resBADDEFDIR "Setup was unable to determine a valid default destination directory. You will need to specify a destination directory."
+resDISKSPACE "Setup is checking for necessary disk space..."
+resPROGMAN "Setup is creating program icons..."
+resUPDATING "Setup is updating your system..."
+resSETUP "|1 Setup"
+resNOSETUPLST "The SETUP.LST file is corrupt or could not be found."
+resUNEXPECTED "An unexpected setup error has occurred!"
+resSTILLWITHINACTION "Setup error: Missing 'CommitAction()' or 'AbortAction()'."
+resREMAUTGROUPNAME "Remote Automation Management"
+resAUTMGR32ICON "Automation Manager"
+resRACMGR32ICON "RemAuto Connection Manager"
+resINSTALLADO "Installing Data Access components..."
+resREBOOT "Your system needs to be rebooted to update system settings.\n\nWould you like to reboot your system now?"
+resREBOOTNO "Your application may not work correctly until you have rebooted your system."
+//
+//Common.Bas
+//
+resDISKSPCERR "Error determining disk space free for drive "
+
+//
+//Forms/Controls Strings
+//
+//resBTNINSTALL "&Install"
+resFRMDIRECTORY "Directory:"
+resBTNCHGDIR "&Change Directory"
+resBTNEXIT "E&xit Setup"
+resLBLBEGIN "Begin the installation by clicking the button below."
+resBTNCANCEL "Cancel"
+resLBLDESTFILE "Destination File:"
+resBTNINSTALLNOW "&Install Now"
+resBTNCHGDRV "&Change Drive"
+resLBLDRIVE "Drive"
+resLBLAVAIL "Space Available"
+resLBLNEEDED "Space Needed"
+resLBLREQUIRED "Space Required"
+resLBLNOSPACE "There is not enough free disk space on one or more drives."
+resBTNOK "OK"
+resLBLDRIVES "Dri&ves:"
+resLBLDIRS "&Directories:"
+resLBLPATH "&Path:"
+resLBLRUNNING "Setup cannot install system files or update shared files if they are in use. Before proceeding, we recommend that you close any applications you may be running."
+resBTNTOOLTIPBEGIN "Click here to begin setup"
+//
+// Group.Frm
+//
+resGROUPFRM "|1 - Choose Program Group"
+resGROUPLBLMAIN "Setup will add items to the group shown in the Program Group box. You can enter a new group name or select one from the Existing Groups list."
+resGROUPLBLGROUP "&Program Group:"
+resGROUPLBLGROUPS "E&xisting Groups:"
+resGROUPBTNCONTINUE "&Continue"
+resGROUPINVALIDGROUPNAME "A program group name must be less than |1 characters long and cannot contain any of the following characters: |2"
+//
+//ServerDt.Frm
+//
+resNETWORKADDRESS "Network &Address"
+resNETWORKPROTOCOL "Network &Protocol"
+resOK "&Continue"
+resCANCEL "E&xit Setup"
+resREMOTESERVERDETAILSTITLE "Remote ActiveX Component Configuration"
+resREMOTESERVERDETAILSLBL "Please fill in the requested configuration information about the following remote component:"
+resNOTEPROTOSEQNOTSUPPORTED "The protocol sequence |1 (|2) is not supported or available on this machine"
+resNOTEPROTOSEQINVALID "The protocol sequence '|1' ('|2') is invalid"
+resPROTOSEQUNEXPECTEDERR "An unexpected error occurred while determining the protocol sequences available on this machine"
+resNOPROTOCOLSINSETUPLST "Setup error: An error occurred trying to read protocols from the SETUP.LST file."
+resNOPROTOCOLSSUPPORTED1 "None of the protocols needed by this application appear to be available or installed on this machine."
+resNOPROTOCOLSSUPPORTED2 "In order to run Setup successfully, you will need to first install one of the following network protocol sequences: "
+resSELECTEDPROTONOTSUPPORTED "This application will not be able to access the remote component '|1' until the protocol '|2' is installed."
+
+resOVERWRITEFORM "Version Conflict"
+//VERIFY698:	I've changed this text. My new text, unfortunately, is ugly, but alas, correct! It used to say
+//		"A file being copied is older than..." but this was not true. In reality, the file was sometimes
+//		older, sometimes older or the same. Now the file is reliably older or the same, which is what it
+//		should be.
+resOVERWRITEINFO "A file being copied is not newer than the file currently on your system. It is recommended that you keep your existing file."
+resOVERWRITEFILE "File name:	'|1'"
+resOVERWRITEDESC "Description:	'|1'"
+resOVERWRITEVER "Your version:	'|1'"
+resOVERWRITEKEEP "Do you want to keep this file?"
+resOVERNOTOALL "No to &All"
+resOVERYES "&Yes"
+resOVERNO "&No"
+END

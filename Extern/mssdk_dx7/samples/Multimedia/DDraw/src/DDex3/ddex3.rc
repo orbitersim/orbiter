@@ -1,0 +1,13 @@
+#include "resource.h"
+
+DDEX3 BITMAP FRNTBACK.BMP
+
+IDR_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+END
+
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"

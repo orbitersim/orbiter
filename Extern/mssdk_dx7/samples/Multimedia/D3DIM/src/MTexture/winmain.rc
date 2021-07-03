@@ -1,0 +1,208 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#define IDC_STATIC -1
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#define IDC_STATIC -1\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAIN_ACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_ESCAPE,      IDM_EXIT,               VIRTKEY, NOINVERT
+    VK_F1,          IDM_ABOUT,              VIRTKEY, NOINVERT
+    VK_F2,          IDM_CHANGEDEVICE,       VIRTKEY, NOINVERT
+    VK_F3,          IDM_MULTITEXTURE,       VIRTKEY, NOINVERT
+    VK_F4,          IDM_MULTIPASSCOLOR,     VIRTKEY, NOINVERT
+    VK_F5,          IDM_MULTIPASSALPHA,     VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_TOGGLESTART,        VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_TOGGLEFULLSCREEN,   VIRTKEY, ALT, NOINVERT
+    VK_SPACE,       IDM_SINGLESTEP,         VIRTKEY, NOINVERT
+    "X",            IDM_EXIT,               VIRTKEY, ALT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 165
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+    END
+
+    IDD_CHANGEDEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 174
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 172, 111
+STYLE DS_SYSMODAL | DS_MODALFRAME | DS_NOIDLEMSG | DS_SETFOREGROUND | 
+    DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "About"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,115,90,40,14
+    ICON            IDI_MAIN_ICON,IDC_STATIC,5,5,21,20
+    LTEXT           "Direct3D Sample",IDC_STATIC,35,5,54,8
+    LTEXT           "Copyright (c) 1998-1999 Microsoft Corporation",
+                    IDC_STATIC,35,15,127,8
+    LTEXT           "About",IDC_STATIC,60,40,20,8
+    LTEXT           "Select Driver / Device / Mode",IDC_STATIC,60,50,97,8
+    CTEXT           "<Alt+Enter>",IDC_STATIC,10,60,45,8
+    LTEXT           "Toggle Fullscreen / Windowed",IDC_STATIC,60,60,98,8
+    LTEXT           "Exit",IDC_STATIC,60,70,12,8
+    CTEXT           "<F1>",IDC_STATIC,10,40,45,8
+    CTEXT           "<F2>",IDC_STATIC,10,50,45,8
+    CTEXT           "<ESC>",IDC_STATIC,10,70,45,8
+    GROUPBOX        "Usage",IDC_STATIC,5,30,160,55
+END
+
+IDD_CHANGEDEVICE DIALOG DISCARDABLE  0, 0, 182, 90
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Change device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "&Device selection",-1,5,5,115,40
+    COMBOBOX        IDC_DEVICE_COMBO,10,15,105,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use desktop &window",IDC_WINDOWED_CHECKBOX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,30,85,10
+    GROUPBOX        "Fullscreen &modes",IDC_FULLSCREEN_TEXT,5,45,115,40
+    COMBOBOX        IDC_MODE_COMBO,10,55,105,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "&Stereoscopic viewing",IDC_STEREO_CHECKBOX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,70,85,9
+    DEFPUSHBUTTON   "OK",IDOK,125,5,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,125,25,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Go/stop\tEnter",             IDM_TOGGLESTART
+        MENUITEM "&Single step\tSpace",         IDM_SINGLESTEP
+        MENUITEM SEPARATOR
+        MENUITEM "&About...\tF1",               IDM_ABOUT
+        MENUITEM "&Change device...\tF2",       IDM_CHANGEDEVICE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tESC",                  IDM_EXIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Single pass multi-texture\tF3", IDM_MULTITEXTURE
+        MENUITEM "Multi-pass using &color blend\tF4", IDM_MULTIPASSCOLOR
+        MENUITEM "Multi-pass using &alpha blend\tF5", IDM_MULTIPASSALPHA
+    END
+END
+
+IDR_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "&Go/stop",                    IDM_TOGGLESTART
+        MENUITEM "&Single step",                IDM_SINGLESTEP
+        MENUITEM SEPARATOR
+        MENUITEM "&About...",                   IDM_ABOUT
+        MENUITEM "&Change device...",           IDM_CHANGEDEVICE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

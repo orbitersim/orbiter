@@ -1,0 +1,201 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "winmain.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN DIALOGEX 0, 0, 298, 166
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Play3DSound"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Sound &file...",IDC_SOUNDFILE,7,7,46,13
+    PUSHBUTTON      "&Play",IDC_PLAY,7,145,50,14,WS_DISABLED
+    PUSHBUTTON      "&Stop",IDC_STOP,62,145,50,14,WS_DISABLED
+    DEFPUSHBUTTON   "Exit",IDCANCEL,241,145,50,14
+    LTEXT           "Static",IDC_FILENAME,68,7,223,13,SS_CENTERIMAGE,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Status",IDC_STATIC,7,26,42,13,SS_CENTERIMAGE
+    LTEXT           "Static",IDC_STATUS,68,26,223,13,SS_CENTERIMAGE,
+                    WS_EX_CLIENTEDGE
+    CONTROL         "Slider1",IDC_DOPPLER_SLIDER,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,112,60,90,10
+    CONTROL         "Slider2",IDC_ROLLOFF_SLIDER,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,112,75,90,10
+    CONTROL         "Slider3",IDC_MINDISTANCE_SLIDER,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,112,90,90,10
+    CONTROL         "Slider3",IDC_MAXDISTANCE_SLIDER,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,112,105,90,10
+    CONTROL         "Slider1",IDC_VERTICAL_SLIDER,"msctls_trackbar32",
+                    TBS_VERT | TBS_TOP | TBS_NOTICKS | WS_TABSTOP,272,60,10,
+                    50
+    CONTROL         "Slider1",IDC_HORIZONTAL_SLIDER,"msctls_trackbar32",
+                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,217,110,55,10
+    GROUPBOX        "Sound properties",IDC_STATIC,7,45,200,94
+    GROUPBOX        "Sound movement",IDC_STATIC,212,45,75,94,BS_LEFT
+    LTEXT           "Doppler factor",IDC_STATIC,17,60,50,13,SS_CENTERIMAGE
+    CTEXT           "0",IDC_DOPPLERFACTOR,72,60,35,13,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Rolloff factor",IDC_STATIC,17,75,42,13,SS_CENTERIMAGE
+    LTEXT           "Min distance",IDC_STATIC,17,90,42,13,SS_CENTERIMAGE
+    CTEXT           "0",IDC_ROLLOFFFACTOR,72,75,35,13,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    CTEXT           "0",IDC_MINDISTANCE,72,90,35,13,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    CONTROL         130,IDC_RENDER_WINDOW,"Static",SS_BITMAP,222,65,46,42,
+                    WS_EX_CLIENTEDGE
+    LTEXT           "Max distance",IDC_STATIC,17,105,42,13,SS_CENTERIMAGE
+    CTEXT           "0",IDC_MAXDISTANCE,72,105,35,13,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    CONTROL         "Defer Update",IDC_DEFER,"Button",BS_AUTOCHECKBOX | 
+                    BS_PUSHLIKE | WS_TABSTOP,12,121,53,11
+    CONTROL         "Slider3",IDC_DEFER_SLIDER,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,112,122,90,10
+    CTEXT           "0",IDC_DEFER_TEXT,72,120,35,13,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+END
+
+IDD_3D_ALGORITHM DIALOG DISCARDABLE  0, 0, 307, 66
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select 3D Algorithm "
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,196,45,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,250,45,50,14
+    CONTROL         "No Virtualization (WDM or VxD. CPU efficient, but basic 3-D effect)",
+                    IDC_NO_VIRT_RADIO,"Button",BS_AUTORADIOBUTTON,7,7,226,10
+    CONTROL         "High Quality (WDM only.  Highest quality 3D audio effect, but uses more CPU)",
+                    IDC_HIGH_VIRT_RADIO,"Button",BS_AUTORADIOBUTTON,7,18,261,
+                    10
+    CONTROL         "Light Quality (WDM only.  Good 3-D audio effect, but uses less CPU than High Quality)",
+                    IDC_LIGHT_VIRT_RADIO,"Button",BS_AUTORADIOBUTTON,7,29,
+                    287,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MAIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 291
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 159
+        HORZGUIDE, 139
+    END
+
+    IDD_3D_ALGORITHM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 300
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 59
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_GRID_BITMAP         BITMAP  DISCARDABLE     "bitmap1.bmp"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "afxres.rc"         // Standard components
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

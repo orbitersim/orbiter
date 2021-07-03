@@ -1,0 +1,130 @@
+;   Copyright (c) 1997-1999 Microsoft Corporation. All rights reserved.
+;
+;   THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+;   KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+;   IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
+;   PURPOSE.
+
+[Version]
+;
+;   Gaming devices must use the MEDIA class as this is the class of device 
+;   listed by the Game Controllers when "Add Other" is selected.
+;
+Signature="$CHICAGO$"
+Class=MEDIA   
+ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider=%VENDOR%
+LayoutFile=layout.inf
+
+;
+;   Layout.inf (etc.) list all files shipped with the operating system so the 
+;   source description sections are only needed if other files are needed.
+;   
+;   Disk number 94 is used to avoid a conflict with the disk numbers defined 
+;   in layout.inf
+;
+;   HidGame.Sys is the name of the standard analog game device driver so 
+;   another name must be used for an IHV driver.  NT will not load a driver 
+;   compiled as HidGame.Sys and renamed as another so it must be compiled 
+;   under it's final name.
+;
+[SourceDisksNames]
+94="VendorDisk",,
+
+[SourceDisksFiles]
+hidgame.sys = 94
+
+[DestinationDirs]
+CopyFilesSYS = 10,system32\drivers  ;%SystemRoot%\system32\drivers
+CopyFilesDLL = 11                   ;%SystemRoot%\system or system32 - 98 or Win2000
+
+[ControlFlags]
+ExcludeFromSelect = GamePort\Joystick
+ExcludeFromSelect = GamePort\Gamepad
+
+[Manufacturer]
+%VENDOR%=Vendor
+
+[Vendor]
+;
+;   For each device the following must be defined:
+;   Device name     - name seen in the Add New Hardware selection dialog
+;   Install section - section in this INF to be run to install the device
+;   PnP ID          - ID which is matched by PnP when the device is detected
+;                     This should not contain spaces and for Win98 compatibility 
+;                     should use the form GamePort\VID_9999&PID_9999.
+;                     A PnP ID must be used or this device will be detected as 
+;                     always present and so loaded during boot even if the 
+;                     StartType of the service is SERVICE_DEMAND_START.
+;
+;Device Name   Install Section     PnP ID
+;
+%Joystick%=    Joystick.Inst,      GamePort\VID_045E&PID_01FE
+%Gamepad%=     Gamepad.Inst,       GamePort\VID_045E&PID_01FF
+
+[Joystick.Inst]
+CopyFiles = CopyFilesSYS, CopyFilesDLL
+AddReg    = Joystick.AddReg, AddReg.Vendor_Driver
+
+[Joystick.Inst.NT]
+CopyFiles = CopyFilesSYS, CopyFilesDLL
+AddReg    = Joystick.AddReg
+
+[Joystick.AddReg]
+HKLM,%KEY_OEM%\VID_045e&PID_01fe,OEMName,,%Joystick%
+HKLM,%KEY_OEM%\VID_045e&PID_01fe,OEMData,1, 0, 0, 0, 0, 2, 0, 0, 0
+HKLM,%KEY_OEM%\VID_045e&PID_01fe,OEMHardwareID,,"GamePort\VID_045E&PID_01FE"
+
+[Joystick.Inst.NT.Services]
+AddService = VendorJoystickEnabler,%SPSVCINST_ASSOCSERVICE%,Vendor_Service_Inst
+
+[Gamepad.Inst]
+CopyFiles = CopyFilesSYS, CopyFilesDLL
+AddReg    = Gamepad.AddReg, AddReg.Vendor_Driver
+
+[Gamepad.Inst.NT]
+CopyFiles = CopyFilesSYS, CopyFilesDLL
+AddReg    = Gamepad.AddReg
+
+[Gamepad.AddReg]
+HKLM,%KEY_OEM%\VID_045e&PID_01ff,OEMName,,%Gamepad%
+HKLM,%KEY_OEM%\VID_045e&PID_01ff,OEMData, 1, 0, 0, 0, 0, 2, 0, 0, 0
+HKLM,%KEY_OEM%\VID_045e&PID_01ff,OEMHardwareID,,"GamePort\VID_045E&PID_01FF"
+
+[Gamepad.Inst.NT.Services]
+AddService = VendorJoystickEnabler,%SPSVCINST_ASSOCSERVICE%,Vendor_Service_Inst
+
+
+[CopyFilesSYS]
+HidGame.sys
+HidClass.sys
+HidParse.sys
+
+[CopyFilesDLL]
+Hid.dll
+
+[AddReg.Vendor_Driver]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,"hidgame.sys"
+
+[Vendor_Service_Inst]
+DisplayName     = %SvcDesc%
+ServiceType     = 1                  ; SERVICE_KERNEL_DRIVER
+StartType       = 3                  ; SERVICE_DEMAND_START
+ErrorControl    = 0                  ; SERVICE_ERROR_IGNORE
+ServiceBinary   = %10%\system32\drivers\hidgame.sys
+LoadOrderGroup  = Extended Base
+
+[Strings]
+; non localized strings
+SPSVCINST_ASSOCSERVICE= 0x00000002
+KEY_OEM="SYSTEM\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM"
+
+;localized strings
+MediaClassName  = "Sound, video and game controllers"
+VENDOR          = "Vendor Inc."
+DiskId          = "Vendor Joystick Installation and Drivers Disk"
+
+SvcDesc         = "Vendor: Game device driver"
+Joystick        = "Vendor: Joystick"
+Gamepad         = "Vendor: Gamepad"

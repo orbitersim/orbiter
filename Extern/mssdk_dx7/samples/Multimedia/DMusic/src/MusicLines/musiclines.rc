@@ -1,0 +1,116 @@
+//Microsoft Developer Studio generated resource script.
+//
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+ICI_ICON                ICON    DISCARDABLE     "ml.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_PLAYER0             BITMAP  MOVEABLE PURE   "PLAYER0.BMP"
+IDB_PLAYER1             BITMAP  MOVEABLE PURE   "PLAYER1.BMP"
+IDB_SCORE0              BITMAP  MOVEABLE PURE   "SCORE0.BMP"
+IDB_SCORE1              BITMAP  MOVEABLE PURE   "SCORE1.BMP"
+IDB_BACKDROP            BITMAP  MOVEABLE PURE   "BACKDROP2.BMP"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONFIGURE DIALOG DISCARDABLE  0, 0, 200, 119
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "MusicLines"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    CONTROL         "&Full Screen",IDC_FULLSCREEN,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,7,7,54,13
+    CONTROL         "&Windowed",IDC_WINDOWED,"Button",BS_AUTORADIOBUTTON,7,
+                    20,53,13
+    LTEXT           "&Difficulty",IDC_STATIC,8,42,30,13
+    COMBOBOX        IDC_DIFFICULTY,47,42,141,40,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Player 1",IDC_STATIC,8,58,30,13
+    COMBOBOX        IDC_PLAYER1,47,58,141,40,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "Player 2",IDC_STATIC,8,74,30,13
+    COMBOBOX        IDC_PLAYER2,47,73,141,40,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,42,98,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,108,98,50,14
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resrc1.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""resource.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

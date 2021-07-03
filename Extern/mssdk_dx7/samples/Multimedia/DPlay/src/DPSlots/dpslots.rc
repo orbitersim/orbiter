@@ -1,0 +1,212 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+ 
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONNECTDIALOG DIALOG DISCARDABLE  0, 0, 181, 119
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choose A Connection"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    COMBOBOX        IDC_SPCOMBO,7,7,167,85,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SESSIONLIST,7,27,167,63,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Host",IDC_HOSTBUTTON,37,98,50,14
+    PUSHBUTTON      "Join",IDC_JOINBUTTON,96,98,50,14
+END
+
+IDD_CLIENTDIALOG DIALOG DISCARDABLE  0, 0, 242, 162
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectPlay Slots"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "",IDC_SLOTS,"Button",BS_OWNERDRAW | BS_FLAT | 
+                    WS_DISABLED | WS_TABSTOP,7,7,228,76
+    CONTROL         "$ 1",IDC_BET1CHECK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,18,95,24,12
+    CONTROL         "$ 5",IDC_BET2CHECK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,50,95,24,12
+    CONTROL         "$ 10",IDC_BET3CHECK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,82,95,28,12
+    PUSHBUTTON      "Spin",IDC_SPINBUTTON,29,126,50,14
+    LTEXT           "",IDC_RESULTEDIT,113,128,111,8
+    LTEXT           "Balance",IDC_STATIC_BALANCE,145,96,27,8
+    EDITTEXT        IDC_EDIT_BALANCE,178,94,49,13,ES_AUTOHSCROLL | 
+                    ES_READONLY
+END
+
+IDD_SERVERDIALOG DIALOG DISCARDABLE  0, 0, 325, 157
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectPlay Slots Server"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Quit",IDCANCEL,268,7,50,14
+    EDITTEXT        IDC_LOGEDIT,7,7,247,143,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    ES_READONLY | WS_VSCROLL
+END
+
+IDD_SERVERCONFIGDIALOG DIALOG DISCARDABLE  0, 0, 288, 92
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configure Server"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_SERVERNAMEEDIT,76,7,136,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DATABASEFILEEDIT,76,28,136,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SECURITYPROVIDEREDIT,76,71,136,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,231,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,231,24,50,14
+    LTEXT           "Server name",IDC_STATIC,7,9,61,8
+    LTEXT           "Database file",IDC_STATIC,7,30,61,8
+    LTEXT           "Security provider",IDC_STATIC,7,73,61,8
+    CONTROL         "Require secure login",IDC_SECURECHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,52,120,10
+END
+
+IDD_CLIENTLOGINDIALOG DIALOG DISCARDABLE  0, 0, 277, 72
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Server login"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_USERNAMEEDIT,66,7,135,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PASSWORDEDIT,66,29,135,14,ES_PASSWORD | 
+                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_DOMAINEDIT,66,51,135,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,220,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,220,24,50,14
+    LTEXT           "User name",IDC_STATIC,7,9,51,8
+    LTEXT           "Password",IDC_STATIC,7,31,51,8
+    LTEXT           "Domain",IDC_STATIC,7,53,51,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_CONNECTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 174
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 112
+    END
+
+    IDD_CLIENTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 235
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 155
+    END
+
+    IDD_SERVERDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 318
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 150
+    END
+
+    IDD_SERVERCONFIGDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 281
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
+    END
+
+    IDD_CLIENTLOGINDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 270
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 65
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    " \0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SLOTSBITMAP         BITMAP  DISCARDABLE     "media\\wheel.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// WAVE
+//
+
+IDR_STOPWAVE            WAVE    DISCARDABLE     "media\\ding.wav"
+IDR_WINWAVE             WAVE    DISCARDABLE     "media\\win.wav"
+IDR_LOSEWAVE            WAVE    DISCARDABLE     "media\\lose.wav"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

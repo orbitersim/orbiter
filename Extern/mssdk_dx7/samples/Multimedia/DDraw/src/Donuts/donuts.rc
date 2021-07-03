@@ -1,0 +1,68 @@
+#include <windows.h>
+#include "resource.h"
+
+DONUTS_ICON             ICON    donuts.ico
+
+DONUTS8                 BITMAP  donuts.bmp
+SPLASH                  BITMAP  SPLASH.BMP
+
+BeginLevel              WAV     level.wav
+
+EngineIdle              WAV     hum.wav
+EngineRev               WAV     rev.wav
+SkidToStop              WAV     skid.wav
+ShieldBuzz              WAV     shield.wav
+
+Gunfire                 WAV     gunfire.wav
+ShipBounce              WAV     bounce.wav
+ShipExplode             WAV     bangbang.wav
+
+DonutExplode            WAV     d_bang.wav
+PyramidExplode          WAV     p_bang.wav
+CubeExplode             WAV     c_bang.wav
+SphereExplode           WAV     s_bang.wav
+
+/*****************************************************************************
+ *
+ *  DONUTS_MENU
+ *
+ *****************************************************************************/
+
+DONUTS_MENU MENUEX
+BEGIN
+    POPUP "&Game"
+    BEGIN
+        /*
+         *  Input devices are inserted here
+         */
+        MENUITEM "", -1, MFT_SEPARATOR
+        MENUITEM "E&xit\tESC", IDC_QUIT
+    END
+
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "Show &Trails\tF1", IDC_TRAILS
+#ifdef USE_DSOUND
+        MENUITEM "&Audio\tF3", IDC_AUDIO
+#endif
+        MENUITEM "Show &Frame Rate\tF5", IDC_FRAMERATE
+    END
+END
+
+/*****************************************************************************
+ *
+ *  DONUTS_ACCEL
+ *
+ *****************************************************************************/
+
+DONUTS_ACCEL ACCELERATORS
+BEGIN
+    VK_RETURN,  IDC_STARTGAME,  VIRTKEY, NOINVERT
+
+    VK_ESCAPE,  IDC_QUIT,       VIRTKEY, NOINVERT
+    VK_F12,     IDC_QUIT,       VIRTKEY, NOINVERT
+
+    VK_F1,      IDC_TRAILS,     VIRTKEY, NOINVERT
+    VK_F3,      IDC_AUDIO,      VIRTKEY, NOINVERT
+    VK_F5,      IDC_FRAMERATE,  VIRTKEY, NOINVERT
+END

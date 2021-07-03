@@ -1,0 +1,23 @@
+The Redistributable Code is the property of 
+Microsoft Corporation and its suppliers and is protected
+by copyright law and international treaty provisions. 
+You are authorized to make and use copies of the 
+Redistributable Code either as part of the application in
+which you received the Redistributable Code, or in conjunction
+with the application for which its use is intended.  Except as
+expressly provided in the foregoing sentence, you are 
+not authorized to reproduce and distribute the 
+Redistributable Code.  Microsoft reserves all rights not
+expressly granted.  You may not reverse engineer, decompile, 
+or disassemble the Redistributable Code, except and only to the 
+extent that such activity is expressly permitted by applicable 
+law notwithstanding this limitation.  THE REDISTRIBUTABLE CODE
+IS PROVIDED TO YOU "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR 
+PURPOSE.  YOU ASSUME THE ENTIRE RISK AS TO THE ACCURACY 
+AND THE USE OF THE REDISTRIBUTABLE CODE.  MICROSOFT 
+SHALL NOT BE LIABLE FOR ANY DAMAGES WHATSOEVER ARISING 
+OUT OF THE USE OF OR INABILITY TO USE THE REDISTRIBUTABLE
+CODE, EVEN IF MICROSOFT HAS BEEN ADVISED OF THE 
+POSSIBILITY OF SUCH DAMAGE.
