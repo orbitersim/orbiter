@@ -174,12 +174,12 @@ set_target_properties(Orbiter PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 
 add_custom_command(
 	OUTPUT cryptstring.h
-	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_SOURCE_DIR}/cryptstring.h.in cryptstring.h
+	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
 )
 
 add_custom_command(
 	OUTPUT Disclaimer.txt
-	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
+	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
 )
 
 add_custom_command(

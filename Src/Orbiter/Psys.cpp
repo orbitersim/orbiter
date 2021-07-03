@@ -4,9 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <io.h>
-#ifdef NETCONNECT
-#include "Network.h"
-#endif
 #include "Orbiter.h"
 #include "Config.h"
 #include "Psys.h"

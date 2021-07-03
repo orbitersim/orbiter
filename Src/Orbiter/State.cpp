@@ -10,9 +10,6 @@
 #include <iomanip>
 #include <string.h>
 #include <stdio.h>
-#ifdef NETCONNECT
-#include "Network.h"
-#endif
 #include "Orbiter.h"
 #include "Config.h"
 #include "State.h"

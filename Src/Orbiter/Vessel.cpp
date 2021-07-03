@@ -15,10 +15,6 @@
 //     Body --> RigidBody --> Vessel
 // ==============================================================
 
-#ifdef NETCONNECT
-#include "Network.h"
-#endif
-
 #define OAPI_IMPLEMENTATION
 
 #include "Orbiter.h"

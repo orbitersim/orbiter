@@ -32,18 +32,14 @@ add_subdirectory(Src)
 add_subdirectory(Core)
 add_subdirectory(Utils)
 
-add_custom_target(
-	OrbiterProject
+add_custom_target(BinAssets ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/BinAssets/ ${CMAKE_BINARY_DIR}
 )
 
-add_custom_command(
-	TARGET OrbiterProject PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	${CMAKE_SOURCE_DIR}/Scenarios/ $<TARGET_FILE_DIR:Orbiter>/Scenarios
+add_custom_target(Scenarios ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Scenarios/ ${CMAKE_BINARY_DIR}/Scenarios
 )
 
-add_custom_command(
-	TARGET OrbiterProject PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	${CMAKE_SOURCE_DIR}/Textures/ $<TARGET_FILE_DIR:Orbiter>/Textures
+add_custom_target(Textures ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${CMAKE_BINARY_DIR}/Textures
 )
