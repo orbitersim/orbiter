@@ -445,7 +445,7 @@ bool Instrument_OPlaneAlign::GetTimingsFromSurface(double &Tan, double &Aan, dou
 	double b = 2.0*nx*ny*y0 / (nz*nz);
 	double c = ny*ny*y0*y0 / (nz*nz) - r0*r0;
 
-	double phi, arg = b*b - 4.0*a*c;
+	double arg = b*b - 4.0*a*c;
 	if (arg >= 0.0) {
 		double x, z, phi1, phi2, s = sqrt(b*b - 4.0*a*c);
 		x = (-b + s) / (2.0*a);
