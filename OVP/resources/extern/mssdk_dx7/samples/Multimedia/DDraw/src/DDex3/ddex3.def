@@ -1,0 +1,10 @@
+NAME ddex3.exe
+
+DESCRIPTION 'Direct Draw Example Program 3 (C) Microsoft 1995-1999'
+
+SECTIONS
+	.bss READ WRITE 
+	.data READ WRITE 
+        .idata READ WRITE 
+        .rdata READ WRITE
+        .rsrc  READ WRITE

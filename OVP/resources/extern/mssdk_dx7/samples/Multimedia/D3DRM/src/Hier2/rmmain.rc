@@ -1,0 +1,54 @@
+#include "windows.h"
+#include "resource.h"
+
+APPICON                 ICON    DISCARDABLE     "d3d.ico"
+
+APPMENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Single Step\tSpc",           MENU_STEP
+        MENUITEM "&Go\tEnter",                  MENU_GO
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tESC",                  MENU_EXIT
+    END
+    POPUP "&Render"
+    BEGIN
+        MENUITEM "&Flat\tF2",                   MENU_FLAT
+        MENUITEM "&Gouraud\tF3",                MENU_GOURAUD
+        MENUITEM "P&hong\tF4",                  MENU_PHONG
+        MENUITEM SEPARATOR
+        MENUITEM "L&ighting\tF5",               MENU_LIGHTING
+        MENUITEM SEPARATOR
+        MENUITEM "&Point\tCtrl+P",              MENU_POINT
+        MENUITEM "&Wireframe\tCtrl+W",          MENU_WIREFRAME
+        MENUITEM "&Solid\tCtrl+S",              MENU_SOLID
+        MENUITEM SEPARATOR
+        MENUITEM "&Dithering\tCtrl+D",          MENU_DITHERING
+        MENUITEM "&Anti-aliasing\tCtrl+A",      MENU_ANTIALIAS
+        MENUITEM SEPARATOR
+        MENUITEM "P&oint Filtering\tCtrl+O",    MENU_POINT_FILTER
+        MENUITEM "Bi-&Linear Filtering\tCtrl+L", MENU_LINEAR_FILTER
+    END
+END
+
+
+APPACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    "A",            MENU_ANTIALIAS,         VIRTKEY, CONTROL, NOINVERT
+    "D",            MENU_DITHERING,         VIRTKEY, CONTROL, NOINVERT
+    "L",            MENU_LINEAR_FILTER,     VIRTKEY, CONTROL, NOINVERT
+    "O",            MENU_POINT_FILTER,      VIRTKEY, CONTROL, NOINVERT
+    "P",            MENU_POINT,             VIRTKEY, CONTROL, NOINVERT
+    "S",            MENU_SOLID,             VIRTKEY, CONTROL, NOINVERT
+    VK_ESCAPE,      MENU_EXIT,              VIRTKEY, NOINVERT
+    VK_F2,          MENU_FLAT,              VIRTKEY, NOINVERT
+    VK_F3,          MENU_GOURAUD,           VIRTKEY, NOINVERT
+    VK_F4,          MENU_PHONG,             VIRTKEY, NOINVERT
+    VK_F5,          MENU_LIGHTING,          VIRTKEY, NOINVERT
+    VK_RETURN,      MENU_GO,                VIRTKEY, NOINVERT
+    VK_SPACE,       MENU_STEP,              VIRTKEY, NOINVERT
+    "W",            MENU_WIREFRAME,         VIRTKEY, CONTROL, NOINVERT
+END
+
+

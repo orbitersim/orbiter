@@ -1,0 +1,15 @@
+frmSetup1 = 104, 141, 745, 546, , 110, 110, 640, 558, C
+basSetup1 = 0, 22, 749, 636, Z
+basCommon = 66, 66, 707, 471, 
+basSetupRes = 0, 0, 0, 0, C
+basLogging = 0, 0, 0, 0, C
+frmBegin = 0, 0, 0, 0, C, 154, 154, 684, 602, C
+frmWelcome = 0, 0, 0, 0, C, 176, 176, 706, 624, C
+frmPath = 0, 0, 0, 0, C, 198, 198, 728, 646, C
+frmMessage = 0, 0, 0, 0, C, 220, 220, 750, 668, C
+frmDskSpace = 0, 0, 0, 0, C, 0, 0, 530, 448, C
+frmCopy = 0, 0, 0, 0, C, 22, 22, 552, 470, C
+frmRemoteServerDetails = 0, 0, 0, 0, C, 44, 44, 574, 492, C
+frmGroup = 0, 0, 0, 0, C, 66, 66, 596, 514, C
+modShell = 0, 0, 0, 0, C
+frmOverwrite = 0, 0, 0, 0, C, 88, 88, 618, 536, C

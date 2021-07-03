@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="orbiter"
+	OutputDirectory="$(ObjectDir)\$(ProjectName)"
+	IntermediateDirectory="$(ObjectDir)\$(ProjectName)"
+	InheritedPropertySheets=".\orbiterroot.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		Optimization="2"
+		InlineFunctionExpansion="2"
+		EnableIntrinsicFunctions="true"
+		FavorSizeOrSpeed="1"
+		AdditionalIncludeDirectories="&quot;$(OrbiterSdkIncludeDir)&quot;"
+		RuntimeLibrary="2"
+		BufferSecurityCheck="false"
+		EnableEnhancedInstructionSet="2"
+		WarningLevel="3"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="orbiter.lib orbitersdk.lib"
+		AdditionalLibraryDirectories="&quot;$(OrbiterSdkLibDir)&quot;"
+		SubSystem="2"
+		OptimizeReferences="2"
+		EnableCOMDATFolding="2"
+		ImportLibrary="$(IntDir)\$(TargetName).lib"
+		TargetMachine="1"
+	/>
+	<UserMacro
+		Name="OrbiterModulesDir"
+		Value="$(OrbiterDir)\Modules"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="OrbiterSdkDir"
+		Value="$(OrbiterDir)\Orbitersdk"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="OrbiterSdkIncludeDir"
+		Value="$(OrbiterSdkDir)\include"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="OrbiterSdkLibDir"
+		Value="$(OrbiterSdkDir)\lib"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="BuildDir"
+		Value="$(OrbiterDir)"
+	/>
+	<UserMacro
+		Name="ObjectDir"
+		Value="$(BuildDir)\bin"
+		PerformEnvironmentSet="true"
+	/>
+</VisualStudioPropertySheet>

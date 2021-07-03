@@ -1,0 +1,4 @@
+#include "resource.h"
+
+IDB_BITMAP1             BITMAP		"dx5.bmp"
+IDI_DDOVERICO           ICON            "DDOverlay.ico"

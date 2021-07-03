@@ -1,0 +1,342 @@
+[version]
+signature="$CHICAGO$"
+
+[DefaultInstall]
+AddReg=add.reg
+
+[add.reg]
+HKCR,DirectPlay,,,"DirectPlay Object"
+HKCR,DirectPlay\CLSID,,,{D1EB6D20-8923-11d0-9D97-00A0C90A43CB}
+HKCR,CLSID\{D1EB6D20-8923-11d0-9D97-00A0C90A43CB},,,"DirectPlay Object"
+HKCR,CLSID\{D1EB6D20-8923-11d0-9D97-00A0C90A43CB}\InprocServer32,,,%11%\dplayx.dll
+HKCR,CLSID\{D1EB6D20-8923-11d0-9D97-00A0C90A43CB}\InprocServer32,"ThreadingModel",,"Both"
+
+HKCR,DirectPlayLobby,,,"DirectPlayLobby Object"
+HKCR,DirectPlayLobby\CLSID,,,{2FE8F810-B2A5-11d0-A787-0000F803ABFC}
+HKCR,CLSID\{2FE8F810-B2A5-11d0-A787-0000F803ABFC},,,"DirectPlayLobby Object"
+HKCR,CLSID\{2FE8F810-B2A5-11d0-A787-0000F803ABFC}\InprocServer32,,,%11%\dplayx.dll
+HKCR,CLSID\{2FE8F810-B2A5-11d0-A787-0000F803ABFC}\InprocServer32,"ThreadingModel",,"Both"
+
+HKLM,"Software\Microsoft\DirectPlay"
+HKLM,"%DP2%"
+
+HKLM,"%DP2%\%SP_SERIAL%"
+HKLM,"%DP2%\%SP_SERIAL%","Guid",,"{0F1D6860-88D9-11cf-9C4E-00A0C905425E}"
+HKLM,"%DP2%\%SP_SERIAL%","Path",,"%11%\dpmodemx.dll"
+HKLM,"%DP2%\%SP_SERIAL%","dwReserved1",1,00,00,00,00
+HKLM,"%DP2%\%SP_SERIAL%","dwReserved2",1,00,00,00,00
+HKLM,"%DP2%\%SP_SERIAL%","DescriptionA",,"%DESCA_SERIAL%"
+HKLM,"%DP2%\%SP_SERIAL%","DescriptionW",,"%DESCW_SERIAL%"
+HKLM,"%DP2%\%SP_SERIAL%\Address Types\{F2F0CE00-E0AF-11cf-9C4E-00A0C905425E}"
+
+HKLM,"%DP2%\%SP_MODEM%"
+HKLM,"%DP2%\%SP_MODEM%","Guid",,"{44EAA760-CB68-11cf-9C4E-00A0C905425E}"
+HKLM,"%DP2%\%SP_MODEM%","Path",,"%11%\dpmodemx.dll"
+HKLM,"%DP2%\%SP_MODEM%","dwReserved1",1,00,00,00,00
+HKLM,"%DP2%\%SP_MODEM%","dwReserved2",1,00,00,00,00
+HKLM,"%DP2%\%SP_MODEM%","DescriptionA",,"%DESCA_MODEM%"
+HKLM,"%DP2%\%SP_MODEM%","DescriptionW",,"%DESCW_MODEM%"
+HKLM,"%DP2%\%SP_MODEM%\Address Types\{78EC89A0-E0AF-11cf-9C4E-00A0C905425E}"
+HKLM,"%DP2%\%SP_MODEM%\Address Types\{F6DCC200-A2FE-11d0-9C4F-00A0C905425E}"
+
+HKLM,"%DP2%\%SP_TCP%"
+HKLM,"%DP2%\%SP_TCP%","Guid",,"{36E95EE0-8577-11cf-960C-0080C7534E82}"
+HKLM,"%DP2%\%SP_TCP%","Path",,%11%\"dpwsockx.dll"
+HKLM,"%DP2%\%SP_TCP%","dwReserved1",1,F4,01,00,00
+HKLM,"%DP2%\%SP_TCP%","dwReserved2",1,00,00,00,00
+HKLM,"%DP2%\%SP_TCP%","DescriptionA",,"%DESCA_TCP%"
+HKLM,"%DP2%\%SP_TCP%","DescriptionW",,"%DESCW_TCP%"
+HKLM,"%DP2%\%SP_TCP%\Address Types\{C4A54DA0-E0AF-11cf-9C4E-00A0C905425E}"
+
+HKLM,"%DP2%\%SP_IPX%"
+HKLM,"%DP2%\%SP_IPX%","Guid",,"{685BC400-9D2C-11cf-A9CD-00AA006886E3}"
+HKLM,"%DP2%\%SP_IPX%","Path",,%11%\"dpwsockx.dll"
+HKLM,"%DP2%\%SP_IPX%","dwReserved1",1,32,00,00,00
+HKLM,"%DP2%\%SP_IPX%","dwReserved2",1,00,00,00,00
+HKLM,"%DP2%\%SP_IPX%","DescriptionA",,"%DESCA_IPX%"
+HKLM,"%DP2%\%SP_IPX%","DescriptionW",,"%DESCW_IPX%"
+
+HKLM,"Software\Microsoft\DirectPlay\Compatibility\Formula1-97J D3D","Name",,"F197D3D.EXE"
+HKLM,"Software\Microsoft\DirectPlay\Compatibility\Formula1-97J D3D","ID",1,ca,f5,e5,35
+HKLM,"Software\Microsoft\DirectPlay\Compatibility\Formula1-97J D3D","Flags",1,01,00,00,00
+
+HKLM,"Software\Microsoft\DirectPlay\Compatibility\Formula1-97J Glide","Name",,"F197W.EXE"
+HKLM,"Software\Microsoft\DirectPlay\Compatibility\Formula1-97J Glide","ID",1,62,f5,e5,35
+HKLM,"Software\Microsoft\DirectPlay\Compatibility\Formula1-97J Glide","Flags",1,01,00,00,00
+
+[Strings.brz]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Conex„o serial para o DirectPlay"
+DESCA_MODEM = "Conex„o de modem para o DirectPlay"
+DESCA_TCP = "Conex„o TCP/IP Internet para o DirectPlay"
+DESCA_IPX = "Conex„o IPX para o DirectPlay"
+
+DESCW_SERIAL = "Conex„o serial para o DirectPlay"
+DESCW_MODEM = "Conex„o de modem para o DirectPlay"
+DESCW_TCP = "Conex„o TCP/IP Internet para o DirectPlay"
+DESCW_IPX = "Conex„o IPX para o DirectPlay"
+
+[Strings.chs]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+DESCW_SERIAL = "DirectPlay µƒ¥Æ––¡¨Ω”"
+DESCW_MODEM  = "DirectPlay µƒµ˜÷∆Ω‚µ˜∆˜¡¨Ω”"
+DESCW_TCP    = "DirectPlay µƒ Internet TCP/IP ¡¨Ω”"
+DESCW_IPX    = "DirectPlay µƒ IPX ¡¨Ω”"
+
+[Strings.cze]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "SÈriovÈ spojenÌ pro DirectPlay"
+DESCA_MODEM = "ModemovÈ spojenÌ pro DirectPlay"
+DESCA_TCP = "Internet TCP/IP spojenÌ pro DirectPlay"
+DESCA_IPX = "IPX spojenÌ pro DirectPlay"
+
+DESCW_SERIAL = "SÈriovÈ spojenÌ pro DirectPlay"
+DESCW_MODEM = "ModemovÈ spojenÌ pro DirectPlay"
+DESCW_TCP = "Internet TCP/IP spojenÌ pro DirectPlay"
+DESCW_IPX = "IPX spojenÌ pro DirectPlay"
+
+[Strings.dut]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "SeriÎle verbinding voor DirectPlay"
+DESCA_MODEM = "Modemverbinding voor DirectPlay"
+DESCA_TCP = "Internet TCP/IP-verbinding voor DirectPlay"
+DESCA_IPX = "IPX-verbinding voor DirectPlay"
+
+DESCW_SERIAL = "SeriÎle verbinding voor DirectPlay"
+DESCW_MODEM = "Modemverbinding voor DirectPlay"
+DESCW_TCP = "Internet TCP/IP-verbinding voor DirectPlay"
+DESCW_IPX = "IPX-verbinding voor DirectPlay"
+
+[Strings.frn]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Connexion sÈrie pour DirectPlay"
+DESCA_MODEM = "Connexion modem pour DirectPlay"
+DESCA_TCP = "Connexion Internet TCP/IP pour DirectPlay"
+DESCA_IPX = "Connexion IPX pour DirectPlay"
+
+DESCW_SERIAL = "Connexion sÈrie pour DirectPlay"
+DESCW_MODEM = "Connexion modem pour DirectPlay"
+DESCW_TCP = "Connexion Internet TCP/IP pour DirectPlay"
+DESCW_IPX = "Connexion IPX pour DirectPlay"
+
+[Strings.ger]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serielle Verbindung f¸r DirectPlay"
+DESCA_MODEM  = "Modemverbindung f¸r DirectPlay"
+DESCA_TCP    = "Internet TCP/IP-Verbindung f¸r DirectPlay"
+DESCA_IPX    = "IPX-Verbindung f¸r DirectPlay"
+
+DESCW_SERIAL = "Serielle Verbindung f¸r DirectPlay"
+DESCW_MODEM  = "Modemverbindung f¸r DirectPlay"
+DESCW_TCP    = "Internet TCP/IP-Verbindung f¸r DirectPlay"
+DESCW_IPX    = "IPX-Verbindung f¸r DirectPlay"
+
+[Strings.itn]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Connessione seriale per DirectPlay"
+DESCA_MODEM = "Connessione modem per DirectPlay"
+DESCA_TCP = "Connessione TCP/IP Internet per DirectPlay"
+DESCA_IPX = "Connessione IPX per DirectPlay"
+
+DESCW_SERIAL = "Connessione seriale per DirectPlay"
+DESCW_MODEM = "Connessione modem per DirectPlay"
+DESCW_TCP = "Connessione TCP/IP Internet per DirectPlay"
+DESCW_IPX = "Connessione IPX per DirectPlay"
+
+[Strings.jpn]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+DESCW_SERIAL = "DirectPlay Ç…ëŒÇ∑ÇÈºÿ±Ÿê⁄ë±"
+DESCW_MODEM  = "DirectPlay Ç…ëŒÇ∑ÇÈ”√ﬁ—ê⁄ë±"
+DESCW_TCP    = "DirectPlay Ç…ëŒÇ∑ÇÈ ≤›¿∞»Øƒ TCP/IP ê⁄ë±"
+DESCW_IPX    = "DirectPlay Ç…ëŒÇ∑ÇÈ IPX ê⁄ë±"
+
+[Strings.nec]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+DESCW_SERIAL = "DirectPlay Ç…ëŒÇ∑ÇÈºÿ±Ÿê⁄ë±"
+DESCW_MODEM  = "DirectPlay Ç…ëŒÇ∑ÇÈ”√ﬁ—ê⁄ë±"
+DESCW_TCP    = "DirectPlay Ç…ëŒÇ∑ÇÈ ≤›¿∞»Øƒ TCP/IP ê⁄ë±"
+DESCW_IPX    = "DirectPlay Ç…ëŒÇ∑ÇÈ IPX ê⁄ë±"
+
+[Strings.pol]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Po≥πczenie szeregowe dla DirectPlay"
+DESCA_MODEM = "Po≥πczenie modemowe DirectPlay"
+DESCA_TCP = "Po≥πczenie Internet TCP/IP dla DirectPlay"
+DESCA_IPX = "Po≥πczenie IPX dla DirectPlay"
+
+DESCW_SERIAL = "Po≥πczenie szeregowe dla DirectPlay"
+DESCW_MODEM = "Po≥πczenie modemowe DirectPlay"
+DESCW_TCP = "Po≥πczenie Internet TCP/IP dla DirectPlay"
+DESCW_IPX = "Po≥πczenie IPX dla DirectPlay"
+
+[Strings.rus]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+DESCW_SERIAL = "œÓÒÎÂ‰Ó‚‡ÚÂÎ¸ÌÓÂ ÒÓÂ‰ËÌÂÌËÂ ‰Îˇ DirectPlay"
+DESCW_MODEM = "—ÓÂ‰ËÌÂÌËÂ ˜ÂÂÁ ÏÓ‰ÂÏ ‰Îˇ DirectPlay"
+DESCW_TCP = "—ÓÂ‰ËÌÂÌËÂ ÔÓ ÔÓÚÓÍÓÎÛ TCP/IP ‰Îˇ DirectPlay"
+DESCW_IPX = "—ÓÂ‰ËÌÂÌËÂ ÔÓ ÔÓÚÓÍÓÎÛ IPX ‰Îˇ DirectPlay"
+
+[Strings.cht]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+DESCW_SERIAL = "DirectPlay ß«¶C¶°≥sΩu"
+DESCW_MODEM  = "DirectPlay º∆æ⁄æ˜≥sΩu"
+DESCW_TCP    = "DirectPlay Internet TCP/IP ≥sΩu"
+DESCW_IPX    = "DirectPlay IPX ≥sΩu"
+
+[Strings.swe]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Seriell anslutning fˆr DirectPlay"
+DESCA_MODEM = "Modemanslutning fˆr DirectPlay"
+DESCA_TCP = "Internet TCP/IP-anslutning fˆr DirectPlay"
+DESCA_IPX = "IPX-anslutning fˆr DirectPlay"
+
+DESCW_SERIAL = "Seriell anslutning fˆr DirectPlay"
+DESCW_MODEM = "Modemanslutning fˆr DirectPlay"
+DESCW_TCP = "Internet TCP/IP-anslutning fˆr DirectPlay"
+DESCW_IPX = "IPX-anslutning fˆr DirectPlay"
+
+[Strings.kor]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+DESCW_SERIAL = "DirectPlayøÎ ¡˜∑ƒ ø¨∞·"
+DESCW_MODEM  = "DirectPlayøÎ ∏µ© ø¨∞·"
+DESCW_TCP    = "DirectPlayøÎ ¿Œ≈Õ≥› TCP/IP ø¨∞·"
+DESCW_IPX    = "DirectPlayøÎ IPX ø¨∞·"
+
+[Strings.spa]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+DESCA_SERIAL = "ConexiÛn serie para DirectPlay"
+DESCA_MODEM = "ConexiÛn de mÛdem para DirectPlay"
+DESCA_TCP = "ConexiÛn TCP/IP a Internet para DirectPlay"
+DESCA_IPX = "ConexiÛn IPX para DirectPlay"
+
+DESCW_SERIAL = "ConexiÛn serie para DirectPlay"
+DESCW_MODEM = "ConexiÛn de mÛdem para DirectPlay"
+DESCW_TCP = "ConexiÛn TCP/IP a Internet para DirectPlay"
+DESCW_IPX = "ConexiÛn IPX para DirectPlay"
+
+[Strings.eng]
+DP2       = "Software\Microsoft\DirectPlay\Service Providers"
+SP_SERIAL = "Serial Connection For DirectPlay"
+SP_MODEM  = "Modem Connection For DirectPlay"
+SP_TCP    = "Internet TCP/IP Connection For DirectPlay"
+SP_IPX    = "IPX Connection For DirectPlay"
+
+; single-byte character localized service provider descriptions
+DESCA_SERIAL = "Serial Connection For DirectPlay"
+DESCA_MODEM = "Modem Connection For DirectPlay"
+DESCA_TCP = "Internet TCP/IP Connection For DirectPlay"
+DESCA_IPX = "IPX Connection For DirectPlay"
+
+; Multi-byte character localized service provider descriptions
+; These don't need to be registered if they are the same as the single-byte
+; descriptions.
+DESCW_SERIAL = "Serial Connection For DirectPlay"
+DESCW_MODEM  = "Modem Connection For DirectPlay"
+DESCW_TCP    = "Internet TCP/IP Connection For DirectPlay"
+DESCW_IPX    = "IPX Connection For DirectPlay"
+

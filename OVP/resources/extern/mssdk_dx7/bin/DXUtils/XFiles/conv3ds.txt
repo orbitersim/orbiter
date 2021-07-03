@@ -1,0 +1,170 @@
+conv3ds
+-------
+
+conv3ds converts 3ds models produced by Autodesk 3D Studio and other
+modelling packages into X Files. By default it produces binary X files
+with no templates.
+
+
+How to use it
+-------------
+
+At its simplest you can run it with no options and it will (endeavour) to
+produce an X file containing a hiearchy of frames. For example:
+
+conv3ds file.3ds 
+
+will produce an X File file.x. Use Frame::Load to load the frame.
+
+If the 3ds file contains key frame data then you can produce an X file
+which contains an animation set using the -A option. For example:
+
+conv3ds -A file.3ds
+
+Use AnimationSet::Load to load the animation.
+
+If you want to make an X file containing a single mesh made from all the 
+objects in the 3ds file then use the -m option.
+
+conv3ds -m file.3ds
+
+Use MeshBuilder::Load to load the mesh.
+
+
+Other useful options
+--------------------
+
+* The -T option will wrap all the objects and frame hierarchies in a single
+"toplevel" frame. This enables you to load all the frames and objects in
+the 3ds file with a single call to Frame::Load, using the default options
+(ie. Load the first toplevel frame hiearchy in the X file). The frame 
+containing all the other frames and meshes is called "x3ds_filename" 
+(without the .3ds extension). When used with the -m option this option has
+no affect.
+
+
+* The -s option allows you to specify a scale factor for all the objects
+converted in the 3ds file. For example 
+
+conv3ds -s10 file.3ds
+
+will make all the objects 10 times bigger, and
+
+conv3ds -s0.1 file.3ds 
+
+will make all the objects 10 times smaller
+
+
+* The -r option reverses the winding order of the faces when the 3ds file is
+converted. If after converting the 3ds file and viewing it in D3D, the object
+appears "inside-out" try converting it with the -r option. All Lightwave
+models (see notes below) exported as 3ds files will need this option.
+
+
+* The -v option turns on verbose output mode. Specifiy an integer with it.
+The only useful (currently) integers are: 
+  -v1, print out warnings about bad objects and general information 
+       about what the converter is doing 
+  -v2, print out basic keyframe information, objects being included in the
+       conversion process, and information about the objects while being saved.
+  -v3, very verbose (mostly useful for debugging) information.
+
+The default is -v0.
+
+
+* The -e option allows you to change the extension for texture map files. For
+example:
+
+conv3ds -e"ppm" file.3ds
+
+and file.3ds contains objects which reference the texture map file brick.gif,
+the X file will reference the texture map file brick.ppm. The converter does
+not convert the texture map file. The texture map files must also be in the
+D3DPATH when the resulting X File is loaded.
+
+* The -x option forces conv3ds to produce a text X file, not a binary
+X file. Text files are larger but can be hand edited easily.
+
+* The -X option forces conv3ds to include the D3DRM X File templates in
+the file. By default the templates are not included.
+
+
+Other options
+-------------
+
+* The -t option specifies that the X File produced will not contain texture
+information.
+
+* The -N option specifies that the X file produced will not contain Normal
+information. All the D3DRM Load calls will generate normals for objects
+with no normals in the X file.
+
+* The -c option specifies that the X file produced should not contain
+texture coordinates. By default if you use the -m option the outputted mesh
+will contain 0,0 uv texture coordinates if the 3ds object had no texture
+coordinates.
+
+* The -f option specifies that the X file produced should not contain any
+FrameTransformMatrix.
+
+* The -z and -Z options allow you to adjust the alpha face color value of 
+all the  materials referenced by objects in the X File. 
+This is best illustrated with an example:
+
+conv3ds -z0.1 -Z0.2 file.3ds 
+
+says add 0.1 to all alpha values under 0.2. And
+
+conv3ds-z"-0.2" -z1 file.3ds
+
+says subtract 0.2 from the alpha values for all alphas.
+
+* The -o option allows you to specify the filename for the .X File produced.
+
+* The -h option tells the converter not to try to resolve any hiearchy
+information in the 3ds file (usually produced by the keyframer). Instead all
+the objects (when the converter is not used with the -m option) are outputted
+in toplevel frames.
+
+
+3ds file produced from lightwave objects
+----------------------------------------
+
+There are a number of issues with 3ds files exported by the trans3d
+plugin for lightwave. These are best handled using the following
+options to conv3ds.
+
+conv3ds -r -N -f -h -T|m trans3dfile.3ds
+
+All the 3ds objects which we've come across produced by trans3d and the
+lightwave object editor need their winding order reversing (otherwise they
+appear "inside-out" when displayed) and contain no normal information.
+
+
+Hints and Tips
+--------------
+
+Some of these are pretty obvious but are probably worth saying anyway.
+
+If, after loading an object produced by conv3ds into the D3DRM viewer,
+you can't see the object then try using the -s object
+with an integer of say, 100, to increase the X file objects scale.
+
+
+If, after loading the object into the viewer and switching from flat
+shading into Gourard shading the object turns dark grey try converting 
+with the -N option. 
+
+Textures can be the biggest problem. If after converting the object the
+textures don't get loaded then make sure that the object is referencing
+either .ppm or .bmp files (using the -e option), make sure the textures
+width and height is a power of 2, and make sure the textures are stored 
+in one of the directories in your D3DPATH.
+
+
+Known bugs and problems
+-----------------------
+
+Currently conv3ds can't handle dummy frames used in 3ds animations. 
+It just ignores them (but will convert any child objects).
+

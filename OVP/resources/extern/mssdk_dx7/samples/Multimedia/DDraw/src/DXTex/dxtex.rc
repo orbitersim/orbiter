@@ -1,0 +1,479 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+#include <winver.h>
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "dxtex.ico"
+IDR_DXTXTYPE            ICON    DISCARDABLE     "dxtexDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "Toolbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About DxTex...",             ID_APP_ABOUT
+    END
+END
+
+IDR_DXTXTYPE MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "O&pen As Alpha Channel...",   ID_FILE_OPENALPHA
+        MENUITEM SEPARATOR
+        MENUITEM "Open As &This Mipmap Level...", ID_FILE_OPENSUBSURFACE
+        MENUITEM "Open As Alpha For T&his Mipmap Level...", 
+                                                ID_FILE_OPENALPHASUBSURFACE
+        MENUITEM SEPARATOR
+        MENUITEM "Open As Th&is Cubemap Face...", ID_FILE_OPENFACE
+        MENUITEM "Open As Alpha For This C&ubemap Face...", 
+                                                ID_FILE_OPENALPHAFACE
+        MENUITEM SEPARATOR
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Original Format\t1",         ID_VIEW_ORIGINAL
+        MENUITEM "&New Format\t2",              ID_VIEW_COMPRESSED
+        MENUITEM SEPARATOR
+        POPUP "&Cube Map Face"
+        BEGIN
+            MENUITEM "Positive X\tX",               ID_VIEW_POSX
+            MENUITEM "Negative X\tx",               ID_VIEW_NEGX
+            MENUITEM "Positive Y\tY",               ID_VIEW_POSY
+            MENUITEM "Negative Y\ty",               ID_VIEW_NEGY
+            MENUITEM "Positive Z\tZ",               ID_VIEW_POSZ
+            MENUITEM "Negative Z\tz",               ID_VIEW_NEGZ
+        END
+        MENUITEM "&Alpha Channel Only",         ID_VIEW_ALPHACHANNEL
+        MENUITEM "Change &Background Color...", ID_VIEW_CHANGEBACKGROUNDCOLOR
+
+        MENUITEM SEPARATOR
+        MENUITEM "S&maller Mip Level\tPgDn",    ID_VIEW_SMALLERMIPLEVEL
+        MENUITEM "&Larger Mip Level\tPgUp",     ID_VIEW_LARGERMIPLEVEL
+        MENUITEM SEPARATOR
+        MENUITEM "Zoom I&n\t+",                 ID_VIEW_ZOOMIN
+        MENUITEM "Zoom O&ut\t-",                ID_VIEW_ZOOMOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "F&ormat"
+    BEGIN
+        MENUITEM "&Generate Mip Maps",          ID_FORMAT_GENERATEMIPMAPS
+        POPUP "&Change Image Format"
+        BEGIN
+            MENUITEM "DXT&1 (1-bit alpha)",         ID_FORMAT_DXT1
+            MENUITEM "DXT&2 (4-bit alpha premult)", ID_FORMAT_DXT2
+            MENUITEM "DXT&3 (4-bit alpha non-premult)", ID_FORMAT_DXT3
+            MENUITEM "DXT4 (interpolated alpha premult)", ID_FORMAT_DXT4
+            MENUITEM "DXT&5 (interpolated alpha non-premult)", 
+                                                    ID_FORMAT_DXT5
+        END
+        MENUITEM "&Add/Remove Cube Map Faces...", 
+                                                ID_FORMAT_CHANGECUBEMAPFACES
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&New Window",                 ID_WINDOW_NEW
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About DxTex...",             ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "+",            ID_VIEW_ZOOMIN,         ASCII,  NOINVERT
+    "-",            ID_VIEW_ZOOMOUT,        ASCII,  NOINVERT
+    "1",            ID_VIEW_ORIGINAL,       VIRTKEY, NOINVERT
+    "2",            ID_VIEW_COMPRESSED,     VIRTKEY, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_VIEW_ZOOMIN,         VIRTKEY, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_NEXT,        ID_VIEW_SMALLERMIPLEVEL, VIRTKEY, NOINVERT
+    VK_PRIOR,       ID_VIEW_LARGERMIPLEVEL, VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_VIEW_ZOOMOUT,        VIRTKEY, NOINVERT
+    "X",            ID_VIEW_NEGX,           VIRTKEY, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "X",            ID_VIEW_POSX,           VIRTKEY, SHIFT, NOINVERT
+    "Y",            ID_VIEW_NEGY,           VIRTKEY, NOINVERT
+    "Y",            ID_VIEW_POSY,           VIRTKEY, SHIFT, NOINVERT
+    "Z",            ID_VIEW_NEGZ,           VIRTKEY, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_VIEW_POSZ,           VIRTKEY, SHIFT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 286, 82
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About DirectX Texture Tool"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "DirectX Texture Tool",IDC_STATIC,40,10,239,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright © 1999 Microsoft Corporation.  All rights reserved.",
+                    IDC_STATIC,40,35,239,8
+    DEFPUSHBUTTON   "OK",IDOK,121,61,43,14,WS_GROUP
+    LTEXT           "",IDC_VERSION,40,22,239,8
+    LTEXT           "See dxtex.txt for help with using this program.",
+                    IDC_STATIC,40,48,142,8
+END
+
+IDD_CUBEMAP DIALOG DISCARDABLE  0, 0, 186, 133
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Cube Map Faces"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,35,112,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,101,112,50,14
+    CONTROL         "Positive X",IDC_POSX,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,30,172,10
+    CONTROL         "Negative X",IDC_NEGX,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,40,172,10
+    CONTROL         "Positive Y",IDC_POSY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,54,172,10
+    CONTROL         "Negative Y",IDC_NEGY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,64,172,10
+    CONTROL         "Positive Z",IDC_POSZ,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,78,172,10
+    CONTROL         "Negative Z",IDC_NEGZ,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,88,172,10
+    LTEXT           "Select which faces you would like to be present in the cube map:",
+                    IDC_STATIC,7,7,172,20
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 279
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 75
+    END
+
+    IDD_CUBEMAP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 126
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "DirectX Texture Tool"
+    IDR_DXTXTYPE            "\nDirectDrawSurface\nDDS\nDDS Files (*.dds)\n.dds\nDDS.Document\nDDS Document"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "DirectX Texture Tool"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
+    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
+    ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
+    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_IMAGEINFO  " "
+    ID_ERROR_ODDDIMENSIONS  "Texture maps must have even (multiple of 2) width and height."
+    ID_ERROR_NOTPOW2        "Source image width and height must be powers of 2."
+    ID_ERROR_WRONGDIMENSIONS 
+                            "This image does not have the same dimensions as the source image.  Is it okay to resize it?"
+    ID_ERROR_GENERATEALPHAFAILED 
+                            "Generation of the alpha image unexpectedly failed."
+    ID_ERROR_PREMULTALPHA   "This operation cannot be performed because the source image uses premultiplied alpha."
+    ID_ERROR_PREMULTTODXT1  "Warning: The source image contains premultiplied alpha, and the RGB values will be copied to the destination without ""unpremultiplying"" them, so the resulting colors may be affected."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FORMAT_GENERATEMIPMAPS "Generate Mip Maps"
+    ID_FORMAT_CHANGEIMAGEFORMAT "Convert to a different image format"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_OPENALPHA       "Loads an alpha channel onto the current document"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

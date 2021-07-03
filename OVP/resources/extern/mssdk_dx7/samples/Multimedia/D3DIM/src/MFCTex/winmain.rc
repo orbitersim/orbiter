@@ -1,0 +1,254 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "DirectX.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAIN_ACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_ESCAPE,      IDM_EXIT,               VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_PAUSE,              VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_ALTENTER,           VIRTKEY, ALT, NOINVERT
+    VK_SPACE,       IDM_SINGLESTEP,         VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_FORMVIEW DIALOGEX 0, 0, 416, 181
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "&Device...",IDM_CHANGEDEVICE,10,160,55,15
+    CONTROL         "&Fullscreen",IDC_VIEWFULLSCREEN,"Button",
+                    BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,80,160,55,15
+    CONTROL         "",IDC_RENDERVIEW,"Static",SS_BLACKFRAME,5,35,135,115,
+                    WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    PUSHBUTTON      "View &code...",IDC_VIEWCODE,350,160,60,15
+    EDITTEXT        IDC_TEX0_NAME,201,30,49,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SELECTTEX0,250,30,15,14
+    EDITTEXT        IDC_TEX1_NAME,270,30,50,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SELECTTEX1,320,30,15,14
+    EDITTEXT        IDC_TEX2_NAME,340,30,50,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SELECTTEX2,390,30,15,14
+    LTEXT           "Color Arg 1",IDC_STATIC,150,50,44,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Color Op",IDC_STATIC,150,65,44,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Color Arg 2",IDC_STATIC,150,80,44,16,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Alpha Arg 1",IDC_STATIC,150,100,44,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Alpha Op",IDC_STATIC,150,115,44,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    CTEXT           "Stage 0",IDC_STATIC,201,10,64,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    CTEXT           "Stage 1",IDC_STATIC,270,10,65,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    CTEXT           "Stage 2",IDC_STATIC,340,10,65,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    EDITTEXT        IDC_BLEND_FACTOR,200,160,40,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_PRESET_EFFECTS,10,10,125,70,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Options",IDC_STATIC,145,150,270,30
+    GROUPBOX        "Texture Stages",IDC_STATIC,145,0,270,150
+    LTEXT           "Alpha Arg 2",IDC_STATIC,150,130,44,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Texture File",IDC_STATIC,150,30,44,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "BlendFactor",IDC_STATIC,150,160,45,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    GROUPBOX        "Preset Texture Stage Effects",IDC_STATIC,5,0,135,30
+    GROUPBOX        "Device Options",IDC_STATIC,5,150,135,30
+    COMBOBOX        IDC_TEX0_COLORARG2,200,79,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX0_COLOROP,200,65,65,46,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TEX0_COLORARG1,200,50,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX0_ALPHAARG2,200,129,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX0_ALPHAOP,200,116,65,46,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TEX0_ALPHAARG1,200,100,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX1_COLORARG2,270,79,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX1_COLOROP,270,65,65,46,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TEX1_COLORARG1,270,50,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX1_ALPHAARG2,270,129,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX1_ALPHAOP,270,116,65,46,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TEX1_ALPHAARG1,270,100,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX2_COLORARG2,340,79,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX2_COLOROP,340,65,65,46,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TEX2_COLORARG1,340,50,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX2_ALPHAARG2,340,129,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEX2_ALPHAOP,340,116,65,46,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_TEX2_ALPHAARG1,340,100,65,46,CBS_DROPDOWN | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_DIFFUSE_COLOR,300,160,40,14,ES_AUTOHSCROLL
+    LTEXT           "Diffuse Color",IDC_STATIC,250,160,45,15,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+END
+
+IDD_CHANGEDEVICE DIALOG DISCARDABLE  0, 0, 182, 81
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Change device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "&Device selection",-1,5,5,115,40
+    COMBOBOX        IDC_DEVICE_COMBO,10,15,105,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use desktop &window",IDC_WINDOWED_CHECKBOX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,30,85,10
+    GROUPBOX        "Fullscreen &modes",IDC_FULLSCREEN_TEXT,5,45,115,30
+    COMBOBOX        IDC_MODE_COMBO,10,55,105,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,125,5,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,125,25,50,14
+END
+
+IDD_VIEWCODE DIALOG DISCARDABLE  0, 0, 366, 140
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Direct3D Texture Stage Code"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,309,119,50,14
+    EDITTEXT        IDC_VIEWCODEEDITBOX,5,5,354,107,ES_MULTILINE | 
+                    WS_VSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_FORMVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 408
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+
+    IDD_CHANGEDEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 174
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 74
+    END
+
+    IDD_VIEWCODE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 359
+        TOPMARGIN, 7
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Change &device...",           IDM_CHANGEDEVICE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

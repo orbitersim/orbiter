@@ -1,0 +1,37 @@
+#include "resource.h"
+#include "windows.h"
+
+DONUTS_ICON             ICON    donuts.ico
+
+DONUTS8                 BITMAP  donuts.bmp
+SPLASH                  BITMAP  SPLASH.BMP
+
+BeginLevel              WAV     level.wav
+
+EngineIdle              WAV     hum.wav
+EngineRev               WAV     rev.wav
+SkidToStop              WAV     skid.wav
+ShieldBuzz              WAV     shield.wav
+
+Gunfire                 WAV     gunfire.wav
+ShipBounce              WAV     bounce.wav
+ShipExplode             WAV     bangbang.wav
+
+DonutExplode            WAV     d_bang.wav
+PyramidExplode          WAV     p_bang.wav
+CubeExplode             WAV     c_bang.wav
+SphereExplode           WAV     s_bang.wav
+
+IDD_FORCE DIALOG 155, 86, 184, 100
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Space Donuts Force Level"
+FONT 9, "MS Shell Dlg"
+BEGIN
+    AUTORADIOBUTTON "&Child (50%)", IDC_CHILD, 7, 43, 172, 10
+    PUSHBUTTON      "OK", IDOK, 139, 81, 40, 14
+    AUTORADIOBUTTON "&Adult (75%)", IDC_ADULT, 7, 53, 172, 10
+    AUTORADIOBUTTON """&Body builder"" (100%)", IDC_BODYBUILDER, 7, 63, 172,
+                    10
+    LTEXT           "The settings below control the amount of force used by Space Donuts.  Please select the appropriate setting for the current player.",
+                    IDC_STRENGTHTEXT, 10, 11, 163, 31
+END

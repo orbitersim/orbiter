@@ -1,0 +1,279 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_LOBBYDIALOG DIALOGEX 0, 0, 363, 235
+STYLE DS_CENTER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "DirectPlay Lobby"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    EDITTEXT        IDC_SENDEDIT,7,214,293,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Send",IDC_SENDBUTTON,306,214,50,14
+    EDITTEXT        IDC_LOGEDIT,140,7,216,197,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    ES_READONLY | WS_VSCROLL | WS_HSCROLL | NOT WS_TABSTOP
+    CONTROL         "Tree1",IDT_MESSAGEVIEW,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_EDITLABELS | 
+                    WS_BORDER | WS_TABSTOP,7,7,132,197,WS_EX_NOPARENTNOTIFY | 
+                    WS_EX_CLIENTEDGE
+END
+
+IDD_CONNECTDIALOG DIALOG DISCARDABLE  0, 0, 181, 119
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choose A Connection"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    COMBOBOX        IDC_SPCOMBO,7,7,167,85,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_SESSIONLIST,7,27,167,63,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Join as player",IDC_JOINBUTTON,16,98,61,14
+    PUSHBUTTON      "Join as spectator",IDC_SPECTATORBUTTON,102,98,61,14
+END
+
+IDD_LOBBYGROUPDIALOG DIALOG DISCARDABLE  0, 0, 268, 177
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Group"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_SHORTNAMEEDIT,53,7,138,14,ES_AUTOHSCROLL
+    COMBOBOX        IDC_APPCOMBO,89,91,117,57,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_PASSWORDEDIT,89,129,117,14,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    EDITTEXT        IDC_MAXPLAYERSEDIT,88,149,40,14,ES_AUTOHSCROLL | 
+                    ES_NUMBER | WS_DISABLED
+    DEFPUSHBUTTON   "OK",IDOK,211,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,211,24,50,14
+    LTEXT           "Short Name",IDC_STATIC,7,9,42,8
+    LTEXT           "Game to play",IDC_STATIC,15,93,54,8
+    LTEXT           "Game password",IDC_STATIC,16,133,54,8
+    LTEXT           "Max. players in game",IDC_STATIC,15,152,54,8
+    GROUPBOX        "",IDC_STATIC,9,62,201,108
+    CONTROL         "Staging Area",IDC_STAGINGAREA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,71,97,10
+    EDITTEXT        IDC_LONGNAMEEDIT,53,28,137,14,ES_AUTOHSCROLL
+    LTEXT           "Long Name",IDC_STATIC,7,30,39,8
+    COMBOBOX        IDC_GROUPCONNECTIONSPCOMBO,89,110,118,51,CBS_DROPDOWN | 
+                    CBS_SORT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Connect using",IDC_STATIC,16,111,55,8
+    CONTROL         "Hidden",IDC_HIDDEN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,52,39,10
+END
+
+IDD_CONNECTIONSETTINGSDIALOG DIALOG DISCARDABLE  0, 0, 266, 109
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Staging Area Connection Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_APPCOMBO,81,7,117,57,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_PASSWORDEDIT,81,45,117,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXPLAYERSEDIT,81,65,40,14,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,209,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,209,24,50,14
+    LTEXT           "Game to play",-1,7,9,54,8
+    LTEXT           "Game password",-1,8,49,54,8
+    LTEXT           "Max. players in game",-1,7,68,54,8
+    COMBOBOX        IDC_GROUPCONNECTIONSPCOMBO,81,26,118,51,CBS_DROPDOWN | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Connect using",-1,8,27,55,8
+END
+
+IDD_SECURITYCREDENTIALSDIALOG DIALOG DISCARDABLE  0, 0, 231, 106
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Security Information (Required)"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,174,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,174,24,50,14
+    EDITTEXT        IDC_SECURENAME,7,18,154,14,ES_AUTOHSCROLL
+    LTEXT           "Name",IDC_STATIC,7,7,20,8
+    EDITTEXT        IDC_SECUREPASSWORD,7,48,154,14,ES_PASSWORD | 
+                    ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STATIC,7,39,32,8
+    EDITTEXT        IDC_SECUREDOMAIN,7,78,154,14,ES_AUTOHSCROLL
+    LTEXT           "Domain",IDC_STATIC,7,68,25,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_LOBBYDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 356
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 228
+    END
+
+    IDD_CONNECTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 174
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 112
+    END
+
+    IDD_LOBBYGROUPDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 261
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 170
+    END
+
+    IDD_CONNECTIONSETTINGSDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 259
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 102
+    END
+
+    IDD_SECURITYCREDENTIALSDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 99
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_BELLHOP             ICON    DISCARDABLE     "Bellhop.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "Root"
+    BEGIN
+        MENUITEM "CreateGroup",                 ID_ROOT_CREATEGROUP
+        MENUITEM "EnumRootGroups",              ID_ROOT_ENUMROOTGROUPS
+        MENUITEM "Refresh",                     ID_ROOT_ENUMRECURSIVE
+    END
+    POPUP "Group"
+    BEGIN
+        MENUITEM "CreateGroupInGroup",          ID_CREATEGROUPINGROUP
+        MENUITEM "DestroyGroup",                ID_DESTROYGROUP
+        MENUITEM "SetGroupName",                ID_GROUP_SETGROUPNAME
+        MENUITEM SEPARATOR
+        MENUITEM "StartSession",                ID_GROUP_STARTSESSION
+        , GRAYED
+        MENUITEM "ConnectionSettings",          ID_GROUP_CONNECTIONSETTINGS
+        , GRAYED
+    END
+    POPUP "Player"
+    BEGIN
+        MENUITEM "DestroyPlayer",               ID_PLAYER_DESTROYPLAYER
+        MENUITEM "GetPlayerName",               ID_PLAYER_GETPLAYERNAME
+        MENUITEM "SetPlayerName",               ID_PLAYER_SETPLAYERNAME
+    END
+    POPUP "Shortcut"
+    BEGIN
+        MENUITEM "DeleteGroupFromGroup",        ID_SHORTCUT_DELETEGROUPFROMGROUP
+
+        MENUITEM "SetGroupName",                ID_SHORTCUT_SETGROUPNAME
+    END
+    POPUP "PlayerInGroup"
+    BEGIN
+        MENUITEM "DeletePlayerFromGroup",       ID_PLAYERINGROUP_DELETEPLAYERFROMGROUP
+
+        MENUITEM "SetPlayerName",               ID_PLAYERINGROUP_SETPLAYERNAME
+
+        MENUITEM "SetGroupOwner",               ID_PLAYERINGROUP_SETGROUPOWNER
+
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP  DISCARDABLE     "bitmap1.bmp"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

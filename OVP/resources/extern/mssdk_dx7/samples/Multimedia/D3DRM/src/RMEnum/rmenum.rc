@@ -1,0 +1,39 @@
+/*
+ *  Copyright (C) 1995, 1996 Microsoft Corporation. All Rights Reserved.
+ *
+ *  File: rmmain.rc
+ *
+ */
+
+#include "RMEnum.h"
+#include "windows.h"
+
+AppIcon ICON    DISCARDABLE     "d3d.ico"
+
+AppMenu MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&About..\tF1",                MENU_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tESC",                  MENU_EXIT
+    END
+END
+
+
+AppAccel ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_F1,          MENU_ABOUT,         VIRTKEY, NOINVERT
+    VK_ESCAPE,      MENU_EXIT,          VIRTKEY, NOINVERT
+END
+
+APPABOUT DIALOG DISCARDABLE  0, 0, 188, 96
+STYLE DS_MODALFRAME | WS_POPUP
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,76,75,35,14
+    CTEXT           "Direct3D RMEnum Example",IDC_STATIC,61,5,65,15
+    CTEXT           "Copyright (c) 1995, 1996 Microsoft Corp.",IDC_STATIC,21,55,
+                    145,12
+    ICON            "AppIcon",IDC_STATIC,86,25,18,20
+END

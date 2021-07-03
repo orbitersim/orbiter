@@ -1,0 +1,8 @@
+LIBRARY dmhook
+
+DESCRIPTION 'Shell Event Hook DLL'
+
+EXPORTS
+    HookGetMsgProc       @2
+    HookCallWndProc      @3
+

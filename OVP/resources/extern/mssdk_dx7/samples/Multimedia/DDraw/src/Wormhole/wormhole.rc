@@ -1,0 +1,4 @@
+#include "resource.h"
+
+wormhole_bmp            BITMAP  MOVEABLE PURE   "wormhole.bmp"
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"

@@ -1,0 +1,154 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "winmain.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN DIALOGEX 0, 0, 299, 188
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Voice Management Sample"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Sound &file...",IDC_SOUNDFILE,7,7,46,13
+    LTEXT           "Static",IDC_FILENAME,57,7,235,13,SS_CENTERIMAGE,
+                    WS_EX_CLIENTEDGE
+    GROUPBOX        "Voice Allocation Flags",IDC_STATIC,7,24,93,50
+    CONTROL         "Hardware",IDC_ALLOC_HARDWARE,"Button",
+                    BS_AUTORADIOBUTTON,19,35,48,10
+    CONTROL         "Software",IDC_ALLOC_SOFTWARE,"Button",
+                    BS_AUTORADIOBUTTON,19,46,48,10
+    CONTROL         "Either",IDC_ALLOC_EITHER,"Button",BS_AUTORADIOBUTTON,19,
+                    58,48,10
+    GROUPBOX        "Buffer Priority",IDC_STATIC,108,24,64,50
+    EDITTEXT        IDC_EDIT_PRIORITY,119,44,39,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN_PRIORITY,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,153,41,11,14
+    GROUPBOX        "Voice Management Flags",IDC_STATIC,179,24,113,50
+    CONTROL         "Terminate By Time",IDC_BYTIME,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,190,35,75,10
+    CONTROL         "Terminate By Distance",IDC_BYDISTANCE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,190,46,87,10
+    CONTROL         "Terminate By Priority",IDC_BYPRIORTY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,190,57,80,10
+    CONTROL         "&Loop sound",IDC_LOOP_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,154,53,10
+    PUSHBUTTON      "&Play",IDC_PLAY,7,167,50,14,WS_DISABLED
+    PUSHBUTTON      "&Stop",IDC_STOP,58,167,50,14,WS_DISABLED
+    DEFPUSHBUTTON   "Close",IDCANCEL,242,167,50,14
+    PUSHBUTTON      "Sound &file...",IDC_SOUNDFILE2,7,7,46,13
+    GROUPBOX        "Expected Behavior",IDC_STATIC,7,76,285,74
+    LTEXT           "Static",IDC_BEHAVIOR,15,86,269,58
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MAIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 292
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "afxres.rc"         // Standard components
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,8 @@
+SpaceShooter = 110, 110, 635, 550, Z
+DirectSoundBas = 154, 154, 679, 594, 
+ErrorHandler = 132, 132, 657, 572, 
+Palettes = 88, 88, 613, 528, 
+frmSpaceShooter = 22, 22, 547, 462, C, 0, 0, 0, 0, C
+Introduction = 66, 66, 591, 506, 
+DirectInputBas = 176, 176, 701, 616, 
+DirectDrawBas = 44, 44, 569, 484, 

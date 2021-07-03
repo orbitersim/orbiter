@@ -1,0 +1,24 @@
+DPSIM.DLL and DPSIMCFG.EXE
+--------------------------
+
+DPSim.dll is a Simulator Service Provider which provides a test and
+simulation environment for DirectPlay applications.  It has two areas
+of functionality.  It can simulate low bandwidth or high latency
+connections while testing on a high-speed local area network, and it can
+generate random or programmed message transmission failures.  The
+parameters that control DPSim are set and edited by the Configuration
+Manager, DPSimCfg.exe.
+
+The DPSim.dll and DPSimCfg.exe can be found on the DirectX 6.0 SDK
+installation in the <mssdk>\samples\multimedia\dplay\bin directory.
+The DPSim.dll needs to be copied to the system directory (system32 on NT).
+
+DPSimCfg.exe is used to configure the parameters used by DPSim and to
+activate or deactivate it by adding or removing the Simulator Service
+Provider registry entry.  When active, it can be selected from the list
+of Service Providers.  DPSim is implemented over the TCP/IP Service
+Provider.
+
+For more information and a description of the parameters, please refer
+to the DirectPlay Tools and Samples section of the DirectX 6.0
+Programmer's Reference.

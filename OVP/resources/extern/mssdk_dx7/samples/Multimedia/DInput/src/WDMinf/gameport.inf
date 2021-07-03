@@ -1,0 +1,296 @@
+;   Copyright (c) 1999 Microsoft Corporation. All rights reserved.
+;
+;   THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+;   KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+;   IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
+;   PURPOSE.
+
+[Version]
+Signature="$CHICAGO$"
+Class=MEDIA
+ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider=%MSFT%
+LayoutFile=layout.inf
+
+[ClassInstall]
+Addreg=Class.AddReg
+
+[Class.AddReg]
+HKR,,,,%MediaClassName%
+HKR,,Icon,,"-1"
+HKR,,Installer,,mmci.dll
+
+[Manufacturer]
+%StdMfg%=Standard
+%AztechLabs%=AztechLabs
+%CHProducts%=CHProducts
+%CreativeLabs%=CreativeLabs
+%Crystal%=Crystal
+%ESS%=ESS
+%MediaVision%=MediaVision
+%ThrustMaster%=ThrustMaster
+%Yamaha%=Yamaha
+
+
+[Standard]
+%PNPB02F.DeviceDesc%=Standard_Port, *PNPB02F ; an IBM standard joystick port
+
+
+[AztechLabs]
+%AztechLabsPort.DeviceDesc%=AztechLabs_Port, *AZT0003
+%AztechLabsPort.DeviceDesc%=AztechLabs_Port, *AZT3001
+
+[CHProducts]
+%CHProductsPort.DeviceDesc%=CHProducts_Port,,*PNPB02F
+
+[CreativeLabs]
+%CreativeLabsPort.DeviceDesc%=CreativeLabs_Port, *CTL7001
+%CreativeLabsPort.DeviceDesc%=CreativeLabs_Port, *CTL7002
+%CreativeLabsPort.DeviceDesc%=CreativeLabs_Port, *CTL7005
+
+[Crystal]
+%CrystalPort.DeviceDesc%=Crystal_Port, *CSC0001
+%CrystalPort.DeviceDesc%=Crystal_Port, *CSC0101
+
+[ESS]
+%ESSPort.DeviceDesc%=ESS_Port, *ESS0005
+%ESSPort.DeviceDesc%=ESS_Port,,*PNPB02F
+
+[MediaVision]
+%MediaVisionPort.DeviceDesc%=MediaVision_Port, MF\PNPB00D_Dev2
+%MediaVisionPort.DeviceDesc%=MediaVision_Port, MF\PNPB00E_Dev3
+%MediaVisionPort.DeviceDesc%=MediaVision_Port, MF\PNPB019_Dev2
+
+[ThrustMaster]
+%TMLowPort.DeviceDesc%=TMLow_Port,,*PNPB02F
+%TMHighPort.DeviceDesc%=TMHigh_Port,,*PNPB02F
+
+[Yamaha]
+%YamahaPort.DeviceDesc%=Yamaha_Port, *YMH0006
+%YamahaPort.DeviceDesc%=Yamaha_Port, *YMH0022
+
+
+[Standard_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+LogConfig=StandardJoyStick.LC0,BasicJoyStick.LC1,BasicJoyStick.LC2
+AddReg=GamePort_Device.98Driver
+
+[Standard_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+LogConfig=StandardJoyStick.LC0,BasicJoyStick.LC1,BasicJoyStick.LC2
+
+[Standard_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[AztechLabs_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+AddReg=GamePort_Device.98Driver
+
+[AztechLabs_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+
+[AztechLabs_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[CreativeLabs_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+AddReg=GamePort_Device.98Driver
+
+[CreativeLabs_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+
+[CreativeLabs_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[CHProducts_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+LogConfig=BasicJoyStick.LC0
+AddReg=GamePort_Device.98Driver
+
+[CHProducts_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+LogConfig=BasicJoyStick.LC0
+
+[CHProducts_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[Crystal_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+AddReg=GamePort_Device.98Driver
+
+[Crystal_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+
+[Crystal_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[ESS_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+LogConfig=BasicJoyStick.LC0
+AddReg=GamePort_Device.98Driver
+
+[ESS_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+LogConfig=BasicJoyStick.LC0
+
+[ESS_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[MediaVision_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+LogConfig=BasicJoyStick.LC0
+AddReg=GamePort_Device.98Driver
+
+[MediaVision_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+LogConfig=BasicJoyStick.LC0
+
+[MediaVision_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[TMLow_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+LogConfig=BasicJoyStick.LC3
+AddReg=GamePort_Device.98Driver
+
+[TMLow_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+LogConfig=BasicJoyStick.LC3
+
+[TMLow_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[TMHigh_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+LogConfig=BasicJoyStick.LC4
+AddReg=GamePort_Device.98Driver
+
+[TMHigh_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+LogConfig=BasicJoyStick.LC4
+
+[TMHigh_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[Yamaha_Port]
+CopyFiles=GamePort_Device.CopyFiles,GamePort_Device.CopyFiles.98
+AddReg=GamePort_Device.98Driver
+
+[Yamaha_Port.NT]
+DriverVer = 9/23/1998, 5.0
+CopyFiles=GamePort_Device.CopyFiles
+
+[Yamaha_Port.NT.Services]
+AddService = gameenum,%SPSVCINST_ASSOCSERVICE%,GamePort_Service_Inst
+
+[GamePort_Device.CopyFiles]
+gameenum.sys
+
+[GamePort_Device.CopyFiles.98]
+vjoyd.vxd
+msanalog.vxd
+msjstick.drv
+
+[StandardJoyStick.NT.FactDef]
+ConfigPriority=HARDWIRED
+IOConfig=201-201(3ff::)
+
+[StandardJoyStick.LC0]
+ConfigPriority=HARDWIRED
+IOConfig=201-201(3ff::)
+
+[BasicJoyStick.LC0]
+ConfigPriority=HARDWIRED
+IOConfig=201-201(3ff::)
+
+[BasicJoyStick.LC1]
+ConfigPriority=HARDWIRED
+IOConfig=200-207(3ff::)
+
+[BasicJoyStick.LC2]
+ConfigPriority=HARDRECONFIG
+IOConfig=1@200-20f(3ff::)
+
+[BasicJoyStick.LC3]
+ConfigPriority=HARDRECONFIG
+IOConfig=201-201(3ff::), 203-203(3ff::), 205-205(3ff::), 207-207(3ff::)
+
+[BasicJoyStick.LC4]
+ConfigPriority=HARDRECONFIG
+IOConfig=209-209(3ff::), 20b-20b(3ff::), 20d-20d(3ff::), 20f-20f(3ff::)
+
+
+[SourceDisksNames]
+94=%DiskId%,,
+
+[SourceDisksFiles]
+gameenum.sys=94
+
+[DestinationDirs]
+DefaultDestDir = 10,system32\drivers    ;%SystemRoot%\system32\drivers
+GamePort_Device.CopyFiles.98 = 11       ;%SystemRoot%\system
+
+
+[GamePort_Device.98Driver]
+HKR,,DevLoader,,"*ntkern,mmdevldr.vxd"
+HKR,,NTMPDriver,,"gameenum.sys"
+HKR,,Driver,,vjoyd.vxd
+HKR,Drivers\joystick\msjstick.drv,Driver,,msjstick.drv
+HKR,Drivers,SubClasses,,"joystick"
+HKR,Drivers,MIGRATED,,0
+HKR,Drivers\joystick,,,
+HKR,Drivers\joystick\msjstick.drv,Description,,%gameport.DrvDesc%
+
+[GamePort_Service_Inst]
+DisplayName    = %gameport.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 0                  ; SERVICE_ERROR_IGNORE
+ServiceBinary  = %10%\system32\drivers\gameenum.sys
+LoadOrderGroup = Extended Base
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+MSFT = "Microsoft"
+MediaClassName = "Sound, video and game controllers"
+StdMfg = "(Standard system devices)"
+
+gameport.SvcDesc = "Game Port Enumerator"
+gameport.DrvDesc = "WDM Gameport driver"
+
+;
+;  Game card manufacturers
+;
+AztechLabs                   = "Aztech Systems"
+CreativeLabs                 = "Creative Technology Ltd."
+Crystal                      = "Crystal Semiconductor"
+CHProducts                   = "CH Products Game Ports"
+ESS                          = "ESS Technology, Inc."
+MediaVision                  = "MediaVision Inc."
+ThrustMaster                 = "ThrustMaster"
+Yamaha                       = "Yamaha"
+
+;
+;  Device descriptions for known game ports
+;
+PNPB02F.DeviceDesc          = "Standard Game Port"
+AztechLabsPort.DeviceDesc   = "Game Port for Aztech"
+CreativeLabsPort.DeviceDesc = "Game Port for Creative "
+CHProductsPort.DeviceDesc   = "Game port for CH Products Gamecard 3"
+CrystalPort.DeviceDesc      = "Crystal WDM Game Port"
+ESSPort.DeviceDesc          = "Game port for ESS"
+MediaVisionPort.DeviceDesc  = "Game port for MediaVision"
+TMLowPort.DeviceDesc        = "Game port for Thrustmaster ACM (first port)"
+TMHighPort.DeviceDesc       = "Game port for Thrustmaster ACM (second port)"
+YamahaPort.DeviceDesc       = "Game port for Yamaha"
+
+DiskId                      = "DirectX 7 - WDM Gamport support disk"

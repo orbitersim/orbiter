@@ -1,0 +1,95 @@
+;   Copyright (c) 1999 Microsoft Corporation. All rights reserved.
+;
+;   THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
+;   KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+;   IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
+;   PURPOSE.
+
+[version]
+signature="$CHICAGO$"
+SetupClass=BASE
+
+[DefaultInstall]
+AddReg=Analog.AddReg
+
+[Analog.AddReg]
+HKLM,%KEY_OEM%\VID_045E&PID_01F0,OEMName,,%HidGame.Dev0%
+HKLM,%KEY_OEM%\VID_045E&PID_01F0,OEMData,1,40,08,00,00,04,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F0,OEMHardwareID,,"Gameport\VID_045E&PID_01F0"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F1,OEMName,,%HidGame.Dev1%
+HKLM,%KEY_OEM%\VID_045E&PID_01F1,OEMData,1,06,00,00,00,04,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F1,OEMHardwareID,,"Gameport\VID_045E&PID_01F1"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F2,OEMName,,%HidGame.Dev2%
+HKLM,%KEY_OEM%\VID_045E&PID_01F2,OEMData,1,07,00,00,00,04,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F2,OEMHardwareID,,"Gameport\VID_045E&PID_01F2"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F3,OEMName,,%HidGame.Dev3%
+HKLM,%KEY_OEM%\VID_045E&PID_01F3,OEMData,1,06,00,00,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F3,OEMHardwareID,,"Gameport\VID_045E&PID_01F3"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F4,OEMName,,%HidGame.Dev4%
+HKLM,%KEY_OEM%\VID_045E&PID_01F4,OEMData,1,07,00,00,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F4,OEMHardwareID,,"Gameport\VID_045E&PID_01F4"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F5,OEMName,,%HidGame.Dev5%
+HKLM,%KEY_OEM%\VID_045E&PID_01F5,OEMData,1,06,00,04,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F5,OEMHardwareID,,"Gameport\VID_045E&PID_01F5"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F6,OEMName,,%HidGame.Dev6%
+HKLM,%KEY_OEM%\VID_045E&PID_01F6,OEMData,1,07,00,04,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F6,OEMHardwareID,,"Gameport\VID_045E&PID_01F6"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F7,OEMName,,%HidGame.Dev7%
+HKLM,%KEY_OEM%\VID_045E&PID_01F7,OEMData,1,16,00,04,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F7,OEMHardwareID,,"Gameport\VID_045E&PID_01F7"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F8,OEMName,,%HidGame.Dev8%
+HKLM,%KEY_OEM%\VID_045E&PID_01F8,OEMData,1,17,00,04,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F8,OEMHardwareID,,"Gameport\VID_045E&PID_01F8"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01F9,OEMName,,%HidGame.Dev9%
+HKLM,%KEY_OEM%\VID_045E&PID_01F9,OEMData,1,20,00,00,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01F9,OEMHardwareID,,"Gameport\VID_045E&PID_01F9"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01FA,OEMName,,%HidGame.DevA%
+HKLM,%KEY_OEM%\VID_045E&PID_01FA,OEMData,1,21,00,00,00,05,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01FA,OEMHardwareID,,"Gameport\VID_045E&PID_01FA"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01FB,OEMName,,%HidGame.DevB%
+HKLM,%KEY_OEM%\VID_045E&PID_01FB,OEMData,1,00,00,00,00,06,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01FB,OEMHardwareID,,"Gameport\VID_045E&PID_01FB"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01FC,OEMName,,%HidGame.DevC%
+HKLM,%KEY_OEM%\VID_045E&PID_01FC,OEMData,1,01,00,00,00,05,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01FC,OEMHardwareID,,"Gameport\VID_045E&PID_01FC"
+
+HKLM,%KEY_OEM%\VID_045E&PID_01FD,OEMName,,%HidGame.DevD%
+HKLM,%KEY_OEM%\VID_045E&PID_01FD,OEMData,1,0A,00,00,00,05,00,00,00
+HKLM,%KEY_OEM%\VID_045E&PID_01FD,OEMHardwareID,,"Gameport\VID_045E&PID_01FD"
+
+
+[strings]
+;localized strings
+MSFT                            = "Microsoft"
+StdMfg                          = "(Standard system devices)"
+
+HidGame.Dev0                    = "Steering wheel w/rudder axis pedals"
+HidGame.Dev1                    = "4-button joystick w/POV"
+HidGame.Dev2                    = "4-button joystick w/POV and throttle"
+HidGame.Dev3                    = "6-button joystick w/POV"
+HidGame.Dev4                    = "6-button joystick w/POV and throttle"
+HidGame.Dev5                    = "6-button joystick w/two POVs"
+HidGame.Dev6                    = "6-button joystick w/two POVs and throttle"
+HidGame.Dev7                    = "6-button flight yoke w/two POVs"
+HidGame.Dev8                    = "6-button flight yoke w/two POVs and throttle"
+HidGame.Dev9                    = "6-button gamepad"
+HidGame.DevA                    = "5-button gamepad w/throttle"
+HidGame.DevB                    = "6-button joystick"
+HidGame.DevC                    = "5-button joystick w/throttle"
+HidGame.DevD                    = "5-button joystick w/POV"
+
+;
+; non localized strings
+KEY_OEM="SYSTEM\CurrentControlSet\Control\MediaProperties\PrivateProperties\Joystick\OEM"

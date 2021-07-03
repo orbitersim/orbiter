@@ -1,0 +1,137 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include<windows.h>
+#define IDC_STATIC -1
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_PLAY_MOTIF DIALOG DISCARDABLE  0, 0, 245, 143
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectMusic Motif"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Close",IDC_CLOSE,188,122,50,14
+    PUSHBUTTON      "Motif &1",IDC_MOTIF_1,30,46,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &2",IDC_MOTIF_2,30,62,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &3",IDC_MOTIF_3,30,78,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &4",IDC_MOTIF_4,30,94,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &5",IDC_MOTIF_5,30,110,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &6",IDC_MOTIF_6,121,46,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &7",IDC_MOTIF_7,121,62,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &8",IDC_MOTIF_8,121,78,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Motif &9",IDC_MOTIF_9,121,94,83,14,BS_LEFT | NOT 
+                    WS_VISIBLE
+    ICON            IDI_ICON1,IDC_STATIC,7,7,20,20
+    LTEXT           "Select Motif to Play:",IDC_STATIC,7,34,64,8
+    LTEXT           "DirectMusic Motif Sample",IDC_STATIC,30,7,81,8
+    LTEXT           "Copyright © 1998, Microsoft Corp. All Rights Reserved.",
+                    IDC_STATIC,30,15,208,8
+    LTEXT           "GM/GS® Sound Set Copyright ©1996, Roland Corporation U.S.",
+                    IDC_STATIC,30,23,208,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_PLAY_MOTIF, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 238
+        VERTGUIDE, 30
+        VERTGUIDE, 121
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 136
+        HORZGUIDE, 15
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include<windows.h>\r\n"
+    "#define IDC_STATIC -1\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "directx.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

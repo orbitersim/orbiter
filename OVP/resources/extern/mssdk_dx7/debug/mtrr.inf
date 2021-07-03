@@ -1,0 +1,10 @@
+[version]
+signature="$CHICAGO$"
+
+[DefaultInstall]
+AddReg=add.reg
+
+[add.reg]
+HKLM,System\CurrentControlSet\Services\VxD\MTRR,StaticVxD,0,"mtrr.vxd"
+HKLM,System\CurrentControlSet\Services\VxD\MTRR,Start,1,0
+

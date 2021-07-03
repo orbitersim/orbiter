@@ -1,0 +1,145 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OVERRIDEDIALOG DIALOG DISCARDABLE  0, 0, 229, 136
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Override Test"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_SPCOMBO,70,7,152,90,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_TCPEDIT,70,29,152,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PHONEEDIT,70,29,152,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PORTEDIT,70,55,30,14,ES_AUTOHSCROLL | ES_NUMBER
+    COMBOBOX        IDC_MODEMCOMBO,70,55,152,79,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_STATUSEDIT,70,84,152,14,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "Host",IDC_HOSTBUTTON,22,115,50,14
+    PUSHBUTTON      "Join",IDC_JOINBUTTON,89,115,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,156,115,50,14
+    RTEXT           "Service provider",IDC_STATIC,8,9,56,8
+    RTEXT           "IP address",IDC_TCPEDITLABEL,16,31,48,8
+    RTEXT           "Phone number",IDC_PHONEEDITLABEL,16,31,48,8
+    RTEXT           "Port number",IDC_PORTEDITLABEL,16,57,48,8
+    RTEXT           "Modem",IDC_MODEMCOMBOLABEL,16,57,48,8
+    RTEXT           "Status",IDC_STATIC,24,86,40,8
+    LTEXT           "No address information needed",IDC_IPXLABEL,70,31,110,8
+    LTEXT           "Service provider will prompt for address info",
+                    IDC_SERVICEPROVIDERLABEL,70,31,142,8
+END
+
+IDD_SESSIONSDIALOG DIALOG DISCARDABLE  0, 0, 187, 130
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Sessions"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,105,109,50,14
+    LISTBOX         IDC_SESSIONLIST,7,31,173,71,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_SESSIONSTATUSEDIT,7,7,173,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "Join",IDC_JOINSESSIONBUTTON,32,109,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_OVERRIDEDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 129
+    END
+
+    IDD_SESSIONSDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 123
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "directx.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

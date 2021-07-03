@@ -1,0 +1,39 @@
+[version]
+signature="$CHICAGO$"
+
+[DefaultInstall]
+AddReg=add.reg
+DelReg=del.reg
+
+[add.reg]
+HKLM,"%DP%\{5146ab8cb6b1ce11920c00aa006c4972}"
+HKLM,"%DP%\{5146ab8cb6b1ce11920c00aa006c4972}","Path",,"%11%\dpwsock.dll"
+HKLM,"%DP%\{5146ab8cb6b1ce11920c00aa006c4972}","Description",,"%IPX_DESC%"
+HKLM,"%DP%\{5146ab8cb6b1ce11920c00aa006c4972}\Players"
+HKLM,"%DP%\{5146ab8cb6b1ce11920c00aa006c4972}\Sessions"
+
+HKLM,"%DP%\{5246ab8cb6b1ce11920c00aa006c4972}"
+HKLM,"%DP%\{5246ab8cb6b1ce11920c00aa006c4972}","Path",,"%11%\dpserial.dll"
+HKLM,"%DP%\{5246ab8cb6b1ce11920c00aa006c4972}","Description",,"%MOD_DESC%"
+HKLM,"%DP%\{5246ab8cb6b1ce11920c00aa006c4972}\Players"
+HKLM,"%DP%\{5246ab8cb6b1ce11920c00aa006c4972}\Sessions"
+
+HKLM,"%DP%\{5046ab8cb6b1ce11920c00aa006c4972}"
+HKLM,"%DP%\{5046ab8cb6b1ce11920c00aa006c4972}","Path",,"%11%\dpwsock.dll"
+HKLM,"%DP%\{5046ab8cb6b1ce11920c00aa006c4972}","Description",,"%TCP_DESC%"
+HKLM,"%DP%\{5046ab8cb6b1ce11920c00aa006c4972}\Players"
+HKLM,"%DP%\{5046ab8cb6b1ce11920c00aa006c4972}\Sessions"
+
+[del.reg]
+HKLM,"%DP%\{2056f7675e57cf11aaf900aa006c4972}"
+HKLM,"%DP%\{2056f7675e57cf11aaf900aa006c4972}","Path"
+HKLM,"%DP%\{2056f7675e57cf11aaf900aa006c4972}","Description"
+HKLM,"%DP%\{2056f7675e57cf11aaf900aa006c4972}\Players"
+HKLM,"%DP%\{2056f7675e57cf11aaf900aa006c4972}\Sessions"
+
+[Strings]
+DP       = "Software\Microsoft\DirectPlay\Services"
+IPX_DESC = "WinSock IPX Connection For DirectPlay"
+MOD_DESC = "Modem Connection For DirectPlay"
+TCP_DESC = "WinSock TCP Connection For DirectPlay"
+

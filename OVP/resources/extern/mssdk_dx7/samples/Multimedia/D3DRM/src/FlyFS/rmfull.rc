@@ -1,0 +1,86 @@
+/*
+ *  Copyright (C) 1998 Microsoft Corporation. All Rights Reserved.
+ *
+ *  File: rmfull.rc
+ *
+ */
+
+#include "windows.h"
+#include "resource.h"
+
+AppIcon ICON    DISCARDABLE     "d3d.ico"
+
+AppMenu MENU DISCARDABLE
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&About..\tF1",                MENU_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Single Step\tSpc",           MENU_STEP
+        MENUITEM "&Go\tEnter",                  MENU_GO
+        MENUITEM "&Toggle Stats\tTab",          MENU_STATS
+        MENUITEM SEPARATOR
+    MENUITEM SEPARATOR
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tESC",                  MENU_EXIT
+    END
+    POPUP "&Render"
+    BEGIN
+        MENUITEM "&Flat\tF2",                   MENU_FLAT
+        MENUITEM "&Gouraud\tF3",                MENU_GOURAUD
+        MENUITEM "P&hong\tF4",                  MENU_PHONG
+        MENUITEM SEPARATOR
+        MENUITEM "L&ighting\tF5",               MENU_LIGHTING
+        MENUITEM SEPARATOR
+        MENUITEM "&Point\tCtrl+P",              MENU_POINT
+        MENUITEM "&Wireframe\tCtrl+W",          MENU_WIREFRAME
+        MENUITEM "&Solid\tCtrl+S",              MENU_SOLID
+        MENUITEM SEPARATOR
+        MENUITEM "&Dithering\tCtrl+D",          MENU_DITHERING
+        MENUITEM "&Anti-aliasing\tCtrl+A",      MENU_ANTIALIAS
+        MENUITEM SEPARATOR
+        MENUITEM "P&oint Filtering\tCtrl+O",    MENU_POINT_FILTER
+        MENUITEM "Bi-&Linear Filtering\tCtrl+L",MENU_LINEAR_FILTER
+    END
+    POPUP "&Modes"
+    BEGIN
+        MENUITEM "&Fullscreen\tAlt+Enter",      MENU_FULLSCREEN
+        MENUITEM "&Previous Mode\tAlt+PgUp",    MENU_PREVIOUS_MODE
+        MENUITEM "&Next Mode\tAlt+PgDown",      MENU_NEXT_MODE
+        MENUITEM SEPARATOR
+    END
+END
+
+
+AppAccel ACCELERATORS DISCARDABLE
+BEGIN
+    VK_F1,          MENU_ABOUT,         VIRTKEY, NOINVERT
+    VK_F2,          MENU_FLAT,          VIRTKEY, NOINVERT
+    VK_F3,          MENU_GOURAUD,       VIRTKEY, NOINVERT
+    VK_F4,          MENU_PHONG,         VIRTKEY, NOINVERT
+    VK_F5,          MENU_LIGHTING,      VIRTKEY, NOINVERT
+    "P",            MENU_POINT,         VIRTKEY, CONTROL, NOINVERT
+    "W",            MENU_WIREFRAME,     VIRTKEY, CONTROL, NOINVERT
+    "S",            MENU_SOLID,         VIRTKEY, CONTROL, NOINVERT
+    "D",            MENU_DITHERING,     VIRTKEY, CONTROL, NOINVERT
+    "A",            MENU_ANTIALIAS,     VIRTKEY, CONTROL, NOINVERT
+    "O",            MENU_POINT_FILTER,  VIRTKEY, CONTROL, NOINVERT
+    "L",            MENU_LINEAR_FILTER, VIRTKEY, CONTROL, NOINVERT
+    VK_ESCAPE,      MENU_EXIT,          VIRTKEY, NOINVERT
+    VK_SPACE,       MENU_STEP,          VIRTKEY, NOINVERT
+    VK_RETURN,      MENU_GO,            VIRTKEY, NOINVERT
+    VK_RETURN,      MENU_FULLSCREEN,    VIRTKEY, ALT, NOINVERT
+    VK_TAB,         MENU_STATS,         VIRTKEY, NOINVERT
+    VK_NEXT,        MENU_NEXT_MODE,     VIRTKEY, ALT, NOINVERT
+    VK_PRIOR,       MENU_PREVIOUS_MODE, VIRTKEY, ALT, NOINVERT
+END
+
+AppAbout DIALOG DISCARDABLE  0, 0, 188, 96
+STYLE DS_MODALFRAME | WS_POPUP
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,76,75,35,14
+    CTEXT           "Direct3DRM Example",IDC_STATIC,61,5,65,15
+    CTEXT           "Copyright (c)1998 Microsoft Corp.",IDC_STATIC,21,55,
+                    145,12
+    ICON            "AppIcon",IDC_STATIC,86,25,16,16
+END

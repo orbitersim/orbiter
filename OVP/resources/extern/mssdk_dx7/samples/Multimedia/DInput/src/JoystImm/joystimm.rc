@@ -1,0 +1,131 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_JOYST_IMM DIALOG DISCARDABLE  0, 0, 162, 175
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Immediate Joystick DirectInput Sample "
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Close",IDC_CLOSE,100,155,50,14
+    LTEXT           "updates is lost.",IDC_STATIC,7,23,153,8
+    LTEXT           "This sample polls the joystick 30 times a second.",
+                    IDC_STATIC,7,7,153,8
+    LTEXT           "In non-buffered mode, movement between ",IDC_STATIC,7,
+                    15,153,8
+    LTEXT           "X Axis:",IDC_X_AXIS_TEXT,15,45,22,8,WS_DISABLED
+    LTEXT           "Y Axis:",IDC_Y_AXIS_TEXT,15,55,22,8,WS_DISABLED
+    LTEXT           "Z Axis:",IDC_Z_AXIS_TEXT,15,65,22,8,WS_DISABLED
+    LTEXT           "Buttons:",IDC_STATIC,15,135,27,8
+    LTEXT           "X Rotation:",IDC_X_ROT_TEXT,15,75,36,8,WS_DISABLED
+    LTEXT           "POV:",IDC_STATIC,15,125,18,8
+    GROUPBOX        "Joystick State",IDC_STATIC,7,33,148,117
+    LTEXT           "0",IDC_X_AXIS,65,45,77,8,WS_DISABLED
+    LTEXT           "0",IDC_Y_AXIS,65,55,77,8,WS_DISABLED
+    LTEXT           "0",IDC_Z_AXIS,65,65,77,8,WS_DISABLED
+    LTEXT           "",IDC_BUTTONS,65,135,77,8
+    LTEXT           "0",IDC_X_ROT,65,75,77,8,WS_DISABLED
+    LTEXT           "",IDC_POV,65,125,77,8
+    LTEXT           "Y Rotation:",IDC_Y_ROT_TEXT,15,85,36,8,WS_DISABLED
+    LTEXT           "0",IDC_Y_ROT,65,85,77,8,WS_DISABLED
+    LTEXT           "Z Rotation:",IDC_Z_ROT_TEXT,15,95,36,8,WS_DISABLED
+    LTEXT           "0",IDC_Z_ROT,65,95,77,8,WS_DISABLED
+    LTEXT           "Slider 0",IDC_SLIDER0_TEXT,15,105,24,8,WS_DISABLED
+    LTEXT           "0",IDC_SLIDER0,65,105,77,8,WS_DISABLED
+    LTEXT           "Slider 1",IDC_SLIDER1_TEXT,15,115,24,8,WS_DISABLED
+    LTEXT           "0",IDC_SLIDER1,65,115,77,8,WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_JOYST_IMM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 155
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 168
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON    DISCARDABLE     "directx.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

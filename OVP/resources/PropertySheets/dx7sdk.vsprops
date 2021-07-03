@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="dx7sdk"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="&quot;$(Dx7SdkIncludeDir)&quot;"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="&quot;$(Dx7SdkLibDir)&quot;"
+	/>
+	<UserMacro
+		Name="Dx7SdkDir"
+		Value="$(OvpDir)\resources\extern\mssdk_dx7"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="Dx7SdkIncludeDir"
+		Value="$(Dx7SdkDir)\include"
+		PerformEnvironmentSet="true"
+	/>
+	<UserMacro
+		Name="Dx7SdkLibDir"
+		Value="$(Dx7SdkDir)\lib"
+		PerformEnvironmentSet="true"
+	/>
+</VisualStudioPropertySheet>

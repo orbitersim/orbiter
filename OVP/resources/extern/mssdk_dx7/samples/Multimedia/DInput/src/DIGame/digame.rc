@@ -1,0 +1,149 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SELECTINPUTDEVICE DIALOG DISCARDABLE  0, 0, 122, 76
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Input Device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Keyboard",IDC_KEYBOARD,"Button",BS_AUTORADIOBUTTON,15,
+                    15,46,10
+    CONTROL         "Mouse",IDC_MOUSE,"Button",BS_AUTORADIOBUTTON,15,25,37,
+                    10
+    CONTROL         "Joystick",IDC_JOYSTICK,"Button",BS_AUTORADIOBUTTON,15,
+                    35,41,10
+    DEFPUSHBUTTON   "OK",IDOK,5,55,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,65,55,50,14
+    GROUPBOX        "Input device",IDC_STATIC,5,5,110,45
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SELECTINPUTDEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 115
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New game",                   IDM_NEWGAME
+        MENUITEM "&Select input device",        IDM_SELECTINPUTDEVICE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tAlt+F4",               IDM_EXIT
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_DIRECTX_ICON        ICON    DISCARDABLE     "directx.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_PLAYER_EXPLODING    BITMAP  DISCARDABLE     "bmp00001.bmp"
+IDB_BARRIER_RIGHT       BITMAP  DISCARDABLE     "bmp00002.bmp"
+IDB_BARRIER_LEFT        BITMAP  DISCARDABLE     "rbarrier.bmp"
+IDB_PLAYER_RIGHT        BITMAP  DISCARDABLE     "spaceshi.bmp"
+IDB_WEAPON_L1           BITMAP  DISCARDABLE     "bmp00003.bmp"
+IDB_WEAPON_L2           BITMAP  DISCARDABLE     "bitmap2.bmp"
+IDB_WEAPON_R2           BITMAP  DISCARDABLE     "bitmap5.bmp"
+IDB_WEAPON_R1           BITMAP  DISCARDABLE     "bitmap3.bmp"
+IDB_EXPLOSION2          BITMAP  DISCARDABLE     "bmp00004.bmp"
+IDB_EXPLOSION1          BITMAP  DISCARDABLE     "explosio.bmp"
+IDB_PLAYER_LEFT         BITMAP  DISCARDABLE     "bmp00005.bmp"
+IDB_SHIELD_POWERUP      BITMAP  DISCARDABLE     "bmp00006.bmp"
+IDB_TIMESTOP_POWERUP    BITMAP  DISCARDABLE     "bmp00007.bmp"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

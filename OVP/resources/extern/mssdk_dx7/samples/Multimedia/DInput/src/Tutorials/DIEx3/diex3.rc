@@ -1,0 +1,11 @@
+//-----------------------------------------------------------------------------
+// Name: DIEx3.rc
+//
+// Desc: Resource file
+//
+// Copyright (c) 1997-1999 Microsoft Corp.  All rights reserved.
+//-----------------------------------------------------------------------------
+
+#define IDI_MAIN_ICON 101
+
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"

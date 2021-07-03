@@ -1,0 +1,278 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include <windows.h>
+#define IDC_STATIC -1
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "d3d.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include <windows.h>\r\n"
+    "#define IDC_STATIC -1\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAIN_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&Drivers"
+    BEGIN
+        MENUITEM "&Drivers..\tF2",              IDM_CHANGE_DRIVERS
+        MENUITEM "De&vices..\tF3",              IDM_CHANGE_DEVICES
+        MENUITEM "&Modes..\tF4",                IDM_CHANGE_MODES
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAIN_ACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_ESCAPE,      IDM_EXIT,               VIRTKEY, NOINVERT
+    VK_F1,          IDM_ABOUT,              VIRTKEY, NOINVERT
+    VK_F2,          IDM_CHANGE_DRIVERS,     VIRTKEY, NOINVERT
+    VK_F3,          IDM_CHANGE_DEVICES,     VIRTKEY, NOINVERT
+    VK_F4,          IDM_CHANGE_MODES,       VIRTKEY, NOINVERT
+    "X",            IDM_EXIT,               VIRTKEY, ALT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 188, 110
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION | WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,76,83,35,14
+    CTEXT           "DirectMusic Example",IDC_STATIC,52,5,83,10
+    CTEXT           "Copyright © 1995-1999, Microsoft Corp. All Rights Reserved",
+                    IDC_STATIC,21,41,145,17
+    ICON            IDI_MAIN_ICON,IDC_STATIC,86,17,20,20
+    CTEXT           "GM/GS® Sound Set Copyright ©1996, Roland Corporation U.S.",
+                    IDC_STATIC,25,62,145,17
+END
+
+IDD_CHANGE_MODE DIALOGEX 0, 0, 250, 95
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Change Mode"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Modes:  (compatible with current D3D device)",
+                    IDC_STATIC,7,7,145,8
+    COMBOBOX        IDC_MODES,7,20,236,50,CBS_SIMPLE | CBS_AUTOHSCROLL | 
+                    WS_VSCROLL | WS_TABSTOP,WS_EX_RIGHT
+    DEFPUSHBUTTON   "OK",IDOK,139,74,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,193,74,50,14
+END
+
+IDD_CHANGE_DRIVER DIALOGEX 0, 0, 250, 95
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Change Driver, D3D Device, Mode"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Drivers:",IDC_STATIC,7,7,25,8
+    COMBOBOX        IDC_DRIVERS,40,7,203,45,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Devices:",IDC_STATIC,7,32,29,8
+    COMBOBOX        IDC_DEVICES,40,30,203,45,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Modes:",IDC_STATIC,7,57,24,8
+    COMBOBOX        IDC_MODES,40,54,203,45,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_RIGHT
+    DEFPUSHBUTTON   "OK",IDOK,139,74,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,193,74,50,14
+END
+
+IDD_CHANGE_DEVICE DIALOGEX 0, 0, 250, 95
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Change Direct3D Device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Direct3D Devices:",IDC_STATIC,7,6,59,8
+    COMBOBOX        IDC_DEVICES,7,18,236,45,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Modes: (compatible with current D3D device)",IDC_STATIC,
+                    7,40,143,8
+    COMBOBOX        IDC_MODES,7,50,236,45,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_RIGHT
+    DEFPUSHBUTTON   "OK",IDOK,139,74,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,193,74,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 181
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 103
+    END
+
+    IDD_CHANGE_MODE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_CHANGE_DRIVER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_CHANGE_DEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 243
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+DX5_LOGO                BITMAP  DISCARDABLE     "dx5.bmp"
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "Microsoft\0"
+            VALUE "FileDescription", "DMBoids\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "DMBoids\0"
+            VALUE "LegalCopyright", "Copyright © 1999\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "DMBoids.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "Microsoft DMBoids\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

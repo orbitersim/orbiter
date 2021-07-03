@@ -1,0 +1,172 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN_ICON           ICON    DISCARDABLE     "DirectX.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+INSTDX DIALOG DISCARDABLE  0, 0, 242, 170
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DirectXSetup Sample"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "",ID_MYMESSAGE,13,15,215,105
+    PUSHBUTTON      "",IDBUT1,31,135,48,14
+    PUSHBUTTON      "",IDBUT2,158,135,52,14
+    PUSHBUTTON      "",IDBUT3,93,135,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    "INSTDX", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 235
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 163
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+MAINMENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Start Install...",           IDINSTALL
+        MENUITEM "Get &Version...",             IDGETVERSION
+        MENUITEM "&Exit",                       IDEXIT
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Show All Messages",          IDSHOWALL
+        MENUITEM "Show &Problems Only",         IDSHOWPROBLEMS
+        MENUITEM "Show &Updates Only",          IDSHOWUPGRADES
+        MENUITEM "Show &No Feedback",           IDSHOWNOTHING
+        MENUITEM "&Check Older Install",        IDCHECKOLDERINSTALL
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    STR_TITLE               "DirectXSetup sample installer"
+    STR_NODIALOG            "Unable to create the message dialog."
+    STR_YES                 "&Yes"
+    STR_NO                  "&No"
+    STR_CANCEL              "&Cancel"
+    STR_OK                  "&Ok"
+    STR_RETRY               "&Retry"
+    STR_ABORT               "&Abort"
+    STR_IGNORE              "&Ignore"
+    STR_STARTSETUP          "Starting DirectXSetup..."
+    STR_SETUPDONE           "DirectXSetup returned %d."
+    STR_ERRORRETURN         "DirectX does not support the Windows version on the system."
+    STR_ERRORRETURN1        "One of the required source files could not be found."
+    STR_ERRORRETURN2        "A file's size could not be verified or was incorrect."
+    STR_ERRORRETURN3        "A file's date and time could not be verified or were incorrect."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    STR_ERRORRETURN4        "A file's version could not be verified or was incorrect."
+    STR_ERRORRETURN5        "The setup program ran out of disk space during installation."
+    STR_ERRORRETURN6        "A required .inf file could not be found."
+    STR_ERRORRETURN7        "The setup program could not find the working directory."
+    STR_ERRORRETURN8        "An internal error occurred."
+    STR_ERRORRETURN9        "This version of DirectX on Windows NT has no 3D support."
+    STR_ERRORRETURN10       "The operating system on your system is not currently supported."
+    STR_ERRORRETURN11       "The Cancel button was pressed before the application was fully installed."
+    STR_ERRORRETURN12       "The version of Windows NT on the system does not contain the current version of DirectX. An older version of DirectX may be present, or DirectX may be absent altogether."
+    STR_RESTART             "DirectX was successfully installed on your system, you must now restart Windows for the changes to take effect.\nDo you wish to restart Windows?"
+    STR_SUCCESS             "DirectX was successfully installed on your system."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

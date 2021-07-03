@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5B2C5D1A-7B8E-4343-BC33-836ABD122D3A}</ProjectGuid>
+    <RootNamespace>D3D7Client</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\resources\PropertySheets\orbiter.props" />
+    <Import Project="..\resources\PropertySheets\ovproot.props" />
+    <Import Project="..\resources\PropertySheets\dx7sdk.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\resources\PropertySheets\orbiter.props" />
+    <Import Project="..\resources\PropertySheets\ovproot.props" />
+    <Import Project="..\resources\PropertySheets\dx7sdk.props" />
+    <Import Project="..\resources\PropertySheets\orbiter_debug.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Modules\Plugin/D3D7Client.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\Orbitersdk\include;c:\mssdk\include;C:\dx7asdk\DXF\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;D3D7CLIENT_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>orbiter.lib;orbitersdk.lib;GDIClient.lib;d3dim.lib;ddraw.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OrbiterModulesDir)\Plugin\$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>$(ObjectDir)\GDIClient;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmtd;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(Configuration)\$(TargetName).pdb</ProgramDatabaseFile>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <ImportLibrary>$(Configuration)\$(TargetName).lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\..\..\Modules\Plugin/D3D7Client.bsc</OutputFile>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/D3D7Client.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;D3D7CLIENT_EXPORTS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderOutputFile />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0809</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>GDIClient.lib;d3dim.lib;ddraw.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OrbiterModulesDir)\Plugin\$(ProjectName).dll</OutputFile>
+      <AdditionalLibraryDirectories>$(ObjectDir)\GDIClient;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <PostBuildEvent>
+      <Command />
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CelSphere.cpp" />
+    <ClCompile Include="CloudMgr.cpp" />
+    <ClCompile Include="cloudmgr2.cpp" />
+    <ClCompile Include="CSphereMgr.cpp" />
+    <ClCompile Include="D3D7Client.cpp" />
+    <ClCompile Include="D3D7Config.cpp" />
+    <ClCompile Include="D3D7Enum.cpp" />
+    <ClCompile Include="D3D7Extra.cpp" />
+    <ClCompile Include="D3D7Frame.cpp" />
+    <ClCompile Include="D3D7Util.cpp" />
+    <ClCompile Include="HazeMgr.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshMgr.cpp" />
+    <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="RingMgr.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="spherepatch.cpp" />
+    <ClCompile Include="SurfMgr.cpp" />
+    <ClCompile Include="surfmgr2.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="tilelabel.cpp" />
+    <ClCompile Include="TileMgr.cpp" />
+    <ClCompile Include="tilemgr2.cpp" />
+    <ClCompile Include="VBase.cpp" />
+    <ClCompile Include="VideoTab.cpp" />
+    <ClCompile Include="VObject.cpp" />
+    <ClCompile Include="VPlanet.cpp" />
+    <ClCompile Include="VStar.cpp" />
+    <ClCompile Include="VVessel.cpp" />
+    <ClCompile Include="ztreemgr.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="D3D7Client.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CelSphere.h" />
+    <ClInclude Include="CloudMgr.h" />
+    <ClInclude Include="cloudmgr2.h" />
+    <ClInclude Include="CSphereMgr.h" />
+    <ClInclude Include="D3D7Client.h" />
+    <ClInclude Include="D3D7Config.h" />
+    <ClInclude Include="D3D7Enum.h" />
+    <ClInclude Include="D3D7Extra.h" />
+    <ClInclude Include="D3D7Frame.h" />
+    <ClInclude Include="D3D7Util.h" />
+    <ClInclude Include="HazeMgr.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshMgr.h" />
+    <ClInclude Include="Particle.h" />
+    <ClInclude Include="qtree.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="RingMgr.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="spherepatch.h" />
+    <ClInclude Include="SurfMgr.h" />
+    <ClInclude Include="surfmgr2.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="tilelabel.h" />
+    <ClInclude Include="TileMgr.h" />
+    <ClInclude Include="tilemgr2.h" />
+    <ClInclude Include="tilemgr2_imp.hpp" />
+    <ClInclude Include="VBase.h" />
+    <ClInclude Include="VideoTab.h" />
+    <ClInclude Include="VObject.h" />
+    <ClInclude Include="VPlanet.h" />
+    <ClInclude Include="VStar.h" />
+    <ClInclude Include="VVessel.h" />
+    <ClInclude Include="ztreemgr.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GDIClient\GDIClient.vcxproj">
+      <Project>{2e3a2f17-942c-44f6-bb11-6b32ba5e18c3}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

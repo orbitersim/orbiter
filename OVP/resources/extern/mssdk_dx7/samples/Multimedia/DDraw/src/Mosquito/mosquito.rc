@@ -1,0 +1,33 @@
+#include "windows.h"
+#include "resource.h"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_QUITDIALOG DIALOG DISCARDABLE  100, 100, 127, 39
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mosquito - Overlay Demo"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Quit",IDQUIT,7,9,113,23
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BUGIMAGE1           BITMAP  DISCARDABLE     "mosquit1.bmp"
+IDB_BUGIMAGE2           BITMAP  DISCARDABLE     "mosquit2.bmp"
+IDB_BUGIMAGE3           BITMAP  DISCARDABLE     "mosquit3.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+IDI_BUGICON             ICON    DISCARDABLE     "mosquito.ico"

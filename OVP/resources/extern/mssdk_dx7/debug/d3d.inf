@@ -1,0 +1,39 @@
+[version]
+signature="$CHICAGO$"
+
+[DefaultInstall]
+AddReg=add.reg
+DelReg=del.reg
+
+[add.reg]
+HKLM,"%D3D%"
+
+HKLM,"%D3D%\Drivers\Ramp Emulation"
+HKLM,"%D3D%\Drivers\Ramp Emulation","Base",,"ramp"
+HKLM,"%D3D%\Drivers\Ramp Emulation","Description",,"Microsoft Direct3D Mono(Ramp) Software Emulation"
+HKLM,"%D3D%\Drivers\Ramp Emulation",GUID,1,20,6b,08,f2,9f,25,cf,11,a3,1a,00,aa,00,b9,33,56
+
+HKLM,"%D3D%\Drivers\RGB Emulation"
+HKLM,"%D3D%\Drivers\RGB Emulation","Base",,"rgb"
+HKLM,"%D3D%\Drivers\RGB Emulation","Description",,"Microsoft Direct3D RGB Software Emulation"
+HKLM,"%D3D%\Drivers\RGB Emulation",GUID,1,60,5c,66,a4,73,26,cf,11,a3,1a,00,aa,00,b9,33,56
+
+HKLM,"%D3D%\Drivers\Direct3D HAL"
+HKLM,"%D3D%\Drivers\Direct3D HAL","Base",,"hal"
+HKLM,"%D3D%\Drivers\Direct3D HAL","Description",,"Microsoft Direct3D Hardware acceleration through Direct3D HAL"
+HKLM,"%D3D%\Drivers\Direct3D HAL",GUID,1,e0,3d,e6,84,aa,46,cf,11,81,6f,00,00,c0,20,15,6e
+
+HKLM,"%DX6EIL%\8 bit Luminance","ddpf",,"00020000 0  8 ff 0 0 0"
+HKLM,"%DX6EIL%\16 bit Luminance Alpha","ddpf",,"00020001 0 16 ff 0 0 ff00"
+HKLM,"%DX6EIL%\16 bit Bump DuDv","ddpf",,"00080000 0 16 ff ff00 0 0"
+HKLM,"%DX6EIL%\16 bit BumpLum DuDv","ddpf",,"000C0000 0 16 1f 3e0 fc00 0"
+HKLM,"%DX6EIL%\24 bit BumpLum DuDv","ddpf",,"000C0000 0 24 ff ff00 ff0000 0"
+
+[del.reg]
+HKLM,"%D3D%\Drivers\MMX Emulation"
+HKLM,"Software\Microsoft\Reality Lab\4.0"
+HKLM,"Software\Microsoft\Direct3D\4.0"
+
+[Strings]
+D3D = "Software\Microsoft\Direct3D"
+DX6EIL = "Software\Microsoft\Direct3D\DX6TextureEnumInclusionList"

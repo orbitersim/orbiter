@@ -1,0 +1,128 @@
+/*==========================================================================
+ *
+ *  Copyright (C) 1995, 1996 Microsoft Corporation. All Rights Reserved.
+ *
+ *  File:	viewer.rc
+ *
+ ***************************************************************************/
+ 
+#include "windows.h"
+#include "viewer.h"
+
+ViewerIcon ICON viewer.ico
+ViewerMenu MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+	MENUITEM "&About...",		MENU_FILE_ABOUT
+	MENUITEM "&Load XFile",         MENU_FILE_LOAD_XFILE
+	MENUITEM "&Open Progressive Mesh...", MENU_FILE_OPEN_PMESH
+	MENUITEM SEPARATOR
+	MENUITEM "E&xit",		MENU_FILE_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+    	MENUITEM "Cu&t",		MENU_EDIT_CUT
+	MENUITEM "&Copy",		MENU_EDIT_COPY
+	MENUITEM "&Paste",		MENU_EDIT_PASTE
+	MENUITEM "&Delete",		MENU_EDIT_DELETE
+	MENUITEM SEPARATOR
+	MENUITEM "C&hange Color...",	MENU_EDIT_COLOR
+	MENUITEM SEPARATOR
+	MENUITEM "&Bounding Boxes",	MENU_EDIT_BOXES
+    END
+    POPUP "&Renderer"
+    BEGIN
+	MENUITEM "&Lighting\tCtrl+L",	MENU_QUALITY_LIGHTING, CHECKED
+	MENUITEM SEPARATOR
+	MENUITEM "&Points\tCtrl+P",	MENU_QUALITY_POINTS
+	MENUITEM "&Wireframe\tCtrl+W",	MENU_QUALITY_WIREFRAME
+	MENUITEM "&Solid\tCtrl+S",	MENU_QUALITY_SOLID, CHECKED
+	MENUITEM SEPARATOR
+	MENUITEM "&Flat\tCtrl+F",	MENU_QUALITY_FLAT, CHECKED
+	MENUITEM "&Gouraud\tCtrl+G",	MENU_QUALITY_GOURAUD
+	MENUITEM "Ph&ong\tCtrl+O",	MENU_QUALITY_PHONG
+	MENUITEM SEPARATOR
+	MENUITEM "&Mono Model",		MENU_MODEL_MONO, CHECKED
+	MENUITEM "&RGB Model",		MENU_MODEL_RGB
+	MENUITEM SEPARATOR
+	MENUITEM "&Dithered\tCtrl+D",	MENU_DITHER
+	MENUITEM "&Texture Filtering",	MENU_TEXTURE_FILTERING
+    END
+    POPUP "&Lights"
+    BEGIN
+    	MENUITEM "&Directional",	MENU_LIGHT_DIRECTIONAL
+    	MENUITEM "&Parallel Point",	MENU_LIGHT_PARALLEL_POINT
+    	MENUITEM "P&oint",		MENU_LIGHT_POINT
+    	MENUITEM "&Spot",		MENU_LIGHT_SPOT
+    END
+END
+
+ViewerAccel ACCELERATORS
+BEGIN
+	VK_DELETE,	MENU_EDIT_CUT, VIRTKEY, SHIFT
+	VK_INSERT,	MENU_EDIT_COPY, VIRTKEY, CONTROL
+	VK_INSERT,	MENU_EDIT_PASTE, VIRTKEY, SHIFT
+	VK_DELETE,	MENU_EDIT_DELETE, VIRTKEY
+	"L",		MENU_QUALITY_LIGHTING, VIRTKEY, CONTROL
+	"P",		MENU_QUALITY_POINTS, VIRTKEY, CONTROL
+	"W",		MENU_QUALITY_WIREFRAME, VIRTKEY, CONTROL
+	"S",		MENU_QUALITY_SOLID, VIRTKEY, CONTROL
+	"F",		MENU_QUALITY_FLAT, VIRTKEY, CONTROL
+	"G",		MENU_QUALITY_GOURAUD, VIRTKEY, CONTROL
+	"O",		MENU_QUALITY_PHONG, VIRTKEY, CONTROL
+	"D",		MENU_DITHER, VIRTKEY, CONTROL
+END
+
+AboutBox DIALOG 22, 17, 144, 75
+        STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+        CAPTION "About Direct3D Object Viewer"
+        BEGIN
+            CTEXT "Copyright \251  1995,1996 Microsoft Corporation", -1, 0, 40, 144, 8
+            DEFPUSHBUTTON "OK", IDOK, 53, 59, 32, 14, WS_GROUP
+            ICON "ViewerIcon", -1, 59,15,40,40
+        END
+
+#include "colordlg.h"
+
+VIEWERCHOOSECOLOR DIALOG DISCARDABLE  2, 0, 300, 183
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choose Object Color"
+BEGIN
+    LTEXT           "&Basic colors:",-1,4,4,140,9
+    CONTROL         "",COLOR_BOX1,"Static",SS_SIMPLE | WS_GROUP | WS_TABSTOP,
+                    4,14,140,86
+    LTEXT           "&Custom colors:",-1,4,106,140,9
+    CONTROL         "",COLOR_CUSTOM1,"Static",SS_SIMPLE | WS_GROUP | 
+                    WS_TABSTOP,4,116,140,28
+    PUSHBUTTON      "&Define Custom Colors...",COLOR_MIX,4,150,140,14,
+                    WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,4,166,44,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,52,166,44,14,WS_GROUP
+    PUSHBUTTON      "&Help",1038,100,166,44,14,WS_GROUP
+    CONTROL         "",COLOR_RAINBOW,"Static",SS_SIMPLE | SS_SUNKEN,152,4,
+                    118,116
+    CONTROL         "",COLOR_LUMSCROLL,"Static",SS_SIMPLE | SS_SUNKEN,280,4,
+                    8,116
+    CONTROL         "",COLOR_CURRENT,"Static",SS_SIMPLE | SS_SUNKEN,152,124,
+                    40,14
+    PUSHBUTTON      "&o",COLOR_SOLID,294,200,6,14,WS_GROUP
+    RTEXT           "Color",COLOR_SOLID_LEFT,152,141,20,9
+    LTEXT           "|S&olid",COLOR_SOLID_RIGHT,172,141,20,9
+    RTEXT           "Hu&e:",COLOR_HUEACCEL,194,126,20,9
+    EDITTEXT        COLOR_HUE,216,124,18,12,WS_GROUP
+    RTEXT           "&Sat:",COLOR_SATACCEL,194,140,20,9
+    EDITTEXT        COLOR_SAT,216,138,18,12,WS_GROUP
+    RTEXT           "&Lum:",COLOR_LUMACCEL,194,154,20,9
+    EDITTEXT        COLOR_LUM,216,152,18,12,WS_GROUP
+    RTEXT           "&Red:",COLOR_REDACCEL,243,126,24,9
+    EDITTEXT        COLOR_RED,269,124,18,12,WS_GROUP
+    RTEXT           "&Green:",COLOR_GREENACCEL,243,140,24,9
+    EDITTEXT        COLOR_GREEN,269,138,18,12,WS_GROUP
+    RTEXT           "Bl&ue:",COLOR_BLUEACCEL,243,154,24,9
+    EDITTEXT        COLOR_BLUE,269,152,18,12,WS_GROUP
+    PUSHBUTTON      "&Add to Custom Colors",COLOR_ADD,152,166,142,14,
+                    WS_GROUP
+    RTEXT           "Al&pha:",COLOR_ALPHAACCEL,150,152,20,9
+    EDITTEXT        COLOR_ALPHA,172,151,18,12,WS_GROUP
+END

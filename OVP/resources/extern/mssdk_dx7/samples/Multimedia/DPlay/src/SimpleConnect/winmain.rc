@@ -1,0 +1,205 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MUTLIPLAYER_CONNECT DIALOG DISCARDABLE  0, 0, 282, 151
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Multiplayer Connect"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Player Name:",IDC_STATIC,7,10,43,8
+    EDITTEXT        IDC_PLAYER_NAME_EDIT,7,22,268,14,ES_AUTOHSCROLL
+    LTEXT           "Connection Type:",IDC_STATIC,7,41,57,8
+    LISTBOX         IDC_CONNECTION_LIST,7,53,268,72,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,171,130,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,225,130,50,14
+END
+
+IDD_MUTLIPLAYER_GAMES DIALOG DISCARDABLE  0, 0, 282, 140
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Multiplayer Games"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Select Game To Join:",-1,7,15,69,8
+    LISTBOX         IDC_GAMES_LIST,7,24,268,91,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Join",IDC_JOIN,7,119,50,14
+    DEFPUSHBUTTON   "Create",IDC_CREATE,61,119,50,14
+    PUSHBUTTON      "Cancel",IDC_BACK,225,119,50,14
+    CONTROL         "Start Search",IDC_SEARCH_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    BS_PUSHLIKE | WS_TABSTOP,220,7,55,14
+END
+
+IDD_MAIN_GAME DIALOG DISCARDABLE  0, 0, 240, 100
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "The Greeting Game"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Wave to other players!",IDC_WAVE,20,79,80,14
+    LTEXT           "In this extremely simple non-violent game the only action you can",
+                    IDC_STATIC,11,16,214,8
+    LTEXT           "do is to wave to the other players, or they in turn can wave to you!",
+                    IDC_STATIC,11,26,214,8
+    LTEXT           "Number of players in game:",IDC_STATIC,11,59,86,8
+    LTEXT           "0",IDC_NUM_PLAYERS,99,59,127,8
+    GROUPBOX        "Rules",IDC_STATIC,7,7,226,30
+    GROUPBOX        "Game Status",IDC_STATIC,7,39,226,33
+    LTEXT           "Local Player Name:",IDC_STATIC,11,49,62,8
+    LTEXT           "Static",IDC_PLAYER_NAME,76,49,150,8
+    PUSHBUTTON      "Exit",IDCANCEL,155,79,50,14
+END
+
+IDD_MULTIPLAYER_CREATE DIALOG DISCARDABLE  0, 0, 186, 77
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Create Game"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT_SESSION_NAME,7,19,172,14,ES_AUTOHSCROLL
+    CONTROL         "Use DirectPlay Protocol",IDC_CHECK_DPLAY_PROTOCOL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,49,40,91,10
+    DEFPUSHBUTTON   "OK",IDOK,7,56,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,56,50,14
+    LTEXT           "Game Name:",IDC_STATIC,7,7,42,8
+END
+
+IDD_LOBBY_WAIT_STATUS DIALOG DISCARDABLE  120, 110, 162, 52
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Lobby Connection Status"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Cancel",IDC_LOBBYCONNECTCANCEL,55,31,51,14
+    CTEXT           "Finding Game...",IDC_WAIT_TEXT,7,14,141,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_MUTLIPLAYER_CONNECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 275
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 144
+    END
+
+    IDD_MUTLIPLAYER_GAMES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 275
+        VERTGUIDE, 141
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 133
+    END
+
+    IDD_MAIN_GAME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 233
+        VERTGUIDE, 60
+        VERTGUIDE, 120
+        VERTGUIDE, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 93
+    END
+
+    IDD_MULTIPLAYER_CREATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        VERTGUIDE, 94
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 70
+    END
+
+    IDD_LOBBY_WAIT_STATUS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 148
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 45
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MAIN                ICON    DISCARDABLE     "directx.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

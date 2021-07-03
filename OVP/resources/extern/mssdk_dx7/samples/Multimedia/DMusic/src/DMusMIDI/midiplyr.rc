@@ -1,0 +1,149 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+ID_ICON                 ICON    DISCARDABLE     "MIDIPlyr.ICO"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+ID_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open",                       IDM_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "&Play",                       IDM_PLAY
+        MENUITEM "P&ause",                      IDM_PAUSE
+        MENUITEM "&Stop",                       IDM_STOP
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDM_EXIT
+
+    END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "&Reverb On",                  IDM_REVERB
+        MENUITEM SEPARATOR
+        MENUITEM "&Toolbar",                    IDM_TOOLBAR
+        MENUITEM "&Status bar",                 IDM_STATUS
+        MENUITEM SEPARATOR
+        MENUITEM "&Autoplay dropped files",     IDM_AUTOPLAY
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TOOLBAR             BITMAP  MOVEABLE PURE   "TOOLBAR.BMP"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_APPTITLEMASK        "MIDI Player - [%s]"
+    IDS_APPNAME             "MIDI Player"
+    IDS_UNTITLED            "Untitled"
+    IDS_PLAYTHRU            "&Device"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_OPENFAILED          "Open of MIDI file failed"
+    IDS_PREROLLFAILED       "Preroll of MIDI file failed"
+    IDS_TESTERR             "Something stupid happened"
+    IDS_STOPFAILED          "Attempt to stop playback failed"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_HMS                 "HH:MM:SS"
+    IDS_TICKS               "Ticks"
+    IDS_OPENED              "Stopped"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PLAYING             "Playing"
+    IDS_PAUSED              "Paused"
+//    IDS_STOPPING            "Stopping"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,13 @@
+frmSetup1 = 0, 0, 0, 0, C, 22, 22, 599, 383, C
+basSetup1 = 44, 44, 621, 405, 
+basCommon = 66, 66, 643, 427, Z
+basSetupRes = 0, 0, 0, 0, C
+basLogging = 0, 0, 0, 0, C
+frmBegin = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmWelcome = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmPath = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmMessage = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmDskSpace = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmCopy = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmRemoteServerDetails = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+frmGroup = 0, 0, 0, 0, C, 0, 0, 0, 0, C

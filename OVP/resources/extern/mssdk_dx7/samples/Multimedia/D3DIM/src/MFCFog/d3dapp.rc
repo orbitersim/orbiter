@@ -1,0 +1,215 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "DirectX.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAIN_ACCEL ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_ESCAPE,      IDM_EXIT,               VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_PAUSE,              VIRTKEY, NOINVERT
+    VK_RETURN,      IDM_ALTENTER,           VIRTKEY, ALT, NOINVERT
+    VK_SPACE,       IDM_SINGLESTEP,         VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_FORMVIEW DIALOGEX 0, 0, 385, 196
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "&Vertex fog",IDC_VERTEXFOG,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,205,70,48,10
+    CONTROL         "&Pixel (table) fog",IDC_TABLEFOG,"Button",
+                    BS_AUTORADIOBUTTON,205,80,64,10
+    CONTROL         "&Linear",IDC_LINEARFOGMODE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,301,70,35,10
+    CONTROL         "E&xp",IDC_EXPFOGMODE,"Button",BS_AUTORADIOBUTTON,301,80,
+                    28,10
+    CONTROL         "Exp&2",IDC_EXP2FOGMODE,"Button",BS_AUTORADIOBUTTON,301,
+                    90,32,10
+    CONTROL         "&Range-based",IDC_RANGEBASEDFOG,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,210,123,59,10
+    PUSHBUTTON      "Fog &color...",IDC_FOGCOLOR,325,120,55,15
+    CONTROL         "Slider1",IDC_FOGSTART_SLIDER,"msctls_trackbar32",
+                    TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,275,
+                    153,65,10
+    CONTROL         "Slider1",IDC_FOGEND_SLIDER,"msctls_trackbar32",
+                    TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,275,
+                    168,65,10
+    CONTROL         "Slider1",IDC_FOGDENSITY_SLIDER,"msctls_trackbar32",
+                    TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,275,
+                    183,65,10
+    PUSHBUTTON      "Change &device...",IDM_CHANGEDEVICE,15,175,60,15
+    CONTROL         "View &fullscreen",IDC_VIEWFULLSCREEN,"Button",
+                    BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,125,175,60,15
+    CONTROL         "",IDC_RENDERVIEW,"Static",SS_BLACKFRAME,5,5,190,165,
+                    WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE
+    LTEXT           "End:",IDC_FOGEND_TEXT,205,166,16,15,SS_CENTERIMAGE
+    LTEXT           "Start:",IDC_FOGSTART_TEXT,205,150,18,15,SS_CENTERIMAGE
+    CTEXT           "Static",IDC_FPS_TEXT,245,10,35,10,SS_CENTERIMAGE,
+                    WS_EX_STATICEDGE
+    LTEXT           "Frame rate",IDC_STATIC,205,10,34,8
+    GROUPBOX        "Fog type",IDC_STATIC,200,60,90,50,BS_CENTER
+    LTEXT           "Density:",IDC_FOGDENSITY_TEXT,205,180,26,15,
+                    SS_CENTERIMAGE
+    CTEXT           "near (1.0)",IDC_FOGSTARTMIN_TEXT,235,150,35,15,
+                    SS_CENTERIMAGE
+    CTEXT           "near (1.0)",IDC_FOGENDMIN_TEXT,235,165,35,15,
+                    SS_CENTERIMAGE
+    CTEXT           "low (0.0)",IDC_FOGDENSITYMIN_TEXT,235,180,35,15,
+                    SS_CENTERIMAGE
+    GROUPBOX        "Fog mode",IDC_STATIC,295,60,90,50,BS_CENTER
+    GROUPBOX        "Fog parameters",IDC_STATIC,200,140,185,56,BS_CENTER
+    GROUPBOX        "Statistics",IDC_STATIC,200,0,185,25,BS_CENTER
+    CTEXT           "far (150.0)",IDC_FOGSTARTMAX_TEXT,340,150,40,15,
+                    SS_CENTERIMAGE
+    CTEXT           "far (150.0)",IDC_FOGENDMAX_TEXT,340,166,40,15,
+                    SS_CENTERIMAGE
+    CTEXT           "high (1.0)",IDC_FOGDENSITYMAX_TEXT,340,180,40,15,
+                    SS_CENTERIMAGE
+    GROUPBOX        "Fog options",IDC_STATIC,200,110,185,30,BS_CENTER
+    GROUPBOX        "Application options",IDC_STATIC,200,25,185,35,BS_CENTER
+    CONTROL         "Low-resolution terrain",IDC_LORESTERRAIN,"Button",
+                    BS_AUTORADIOBUTTON,205,35,83,10
+    CONTROL         "High-resolution terrain",IDC_HIRESTERRAIN,"Button",
+                    BS_AUTORADIOBUTTON,205,45,84,10
+    LTEXT           "Device using w-fog",IDC_USINGWFOG,205,95,80,8
+END
+
+IDD_CHANGEDEVICE DIALOG DISCARDABLE  0, 0, 182, 81
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Change device"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "&Device selection",-1,5,5,115,40
+    COMBOBOX        IDC_DEVICE_COMBO,10,15,105,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use desktop &window",IDC_WINDOWED_CHECKBOX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,30,85,10
+    GROUPBOX        "Fullscreen &modes",IDC_FULLSCREEN_TEXT,5,45,115,30
+    COMBOBOX        IDC_MODE_COMBO,10,55,105,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,125,5,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,125,25,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_FORMVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 377
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 191
+    END
+
+    IDD_CHANGEDEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 174
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 74
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Change &device...",           IDM_CHANGEDEVICE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
