@@ -155,6 +155,10 @@ add_executable(Orbiter
 	Memstat.cpp
 	Util.cpp
 	ZTreeMgr.cpp
+	# Resources
+	Orbiter.rc
+	Orbiter.rc2
+	Orbiter.ico
 	)
 
 add_definitions(-DINLINEGRAPHICS)
@@ -190,3 +194,15 @@ add_dependencies(Orbiter
 	)
 
 set_target_properties(Orbiter PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+
+add_custom_command(
+	TARGET Orbiter PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CMAKE_SOURCE_DIR}/Scenarios/ $<TARGET_FILE_DIR:Orbiter>/Scenarios
+)
+
+add_custom_command(
+	TARGET Orbiter PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CMAKE_SOURCE_DIR}/Textures/ $<TARGET_FILE_DIR:Orbiter>/Textures
+)
