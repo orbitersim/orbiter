@@ -3,8 +3,22 @@ cmake_minimum_required(VERSION 3.10)
 # Set the project name
 project (Orbiter VERSION 2021.1)
 
+# Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
+
+set(ORBITER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Src/Orbiter)
+set(ORBITER_SOURCE_SDK_DIR ${CMAKE_SOURCE_DIR}/Orbitersdk)
+set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${ORBITER_SOURCE_SDK_DIR}/include)
+set(ORBITER_SOURCE_MODULE_DIR ${ORBITER_SOURCE_SDK_DIR}/Module) # this will probably be rebased to Src
+set(ORBITER_BINARY_DIR ${CMAKE_BINARY_DIR})
+set(ORBITER_BINARY_MODULE_DIR ${ORBITER_BINARY_DIR}/Modules)
+set(ORBITER_BINARY_CELBODY_DIR ${ORBITER_BINARY_MODULE_DIR}/Celbody)
+set(ORBITER_BINARY_VESSEL_DIR ${ORBITER_BINARY_MODULE_DIR})
+
+set(ORBITER_LIB ${ORBITER_BINARY_DIR}/Src/Orbiter/Orbiter.lib)
+set(ORBITER_SDK_LIB ${ORBITER_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib)
+set(ORBITER_DLGCTRL_LIB ${ORBITER_BINARY_DIR}/Core/DlgCtrl/DlgCtrl.lib)
 
 set(EXTERN_PATH "${CMAKE_SOURCE_DIR}/Extern")
 
@@ -18,7 +32,7 @@ set(ZLIB_LIB_DIR "${ZLIB_PATH}/lib")
 set(ZLIB_BIN_DIR "${ZLIB_PATH}/bin")
 set(ZLIB_LIBRARIES "${ZLIB_LIB_DIR}/zlibstatic.lib")
 
-#set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/../extern")
+set(ORBITER_TOOL_MESHC ${ORBITER_BINARY_DIR}/Utils/meshc/meshc.exe)
 
 find_package(HTMLHelp)
 
