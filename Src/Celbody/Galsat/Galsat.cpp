@@ -169,7 +169,9 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	// Load the data for the Lieske perturbation solutions
 	// into global data structures
 
-	cd2com ("Config\\Jupiter\\Data\\ephem_e15.dat");
+	if (cd2com("Config\\Jupiter\\Data\\ephem_e15.dat")) {
+		oapiWriteLogError("Galsat: file not found: Config\\Jupiter\\Data\\ephem_e15.dat");
+	}
 	chkgal();
 }
 

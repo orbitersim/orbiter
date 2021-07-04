@@ -1,11 +1,15 @@
+set(CELBODY "Venus")
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
 
-add_library(Venus SHARED
-	Venus.cpp
+add_library(${CELBODY} SHARED
+	${CELBODY}.cpp
 )
 
-add_dependencies(Venus
+add_dependencies(${CELBODY}
 	Vsop87
+	Orbiterlib
+	Orbitersdk
 )
 
 target_include_directories(Venus
@@ -13,18 +17,22 @@ target_include_directories(Venus
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(Venus
+target_link_libraries(${CELBODY}
 	${CMAKE_BINARY_DIR}/Src/Celbody/Vsop87/Vsop87.lib
 	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
 	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
 )
 
 add_custom_command(
-	TARGET Venus PRE_BUILD
+	TARGET ${CELBODY} PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config	
 )
 
 add_custom_command(
-	TARGET Venus PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_ven.dat ${CMAKE_BINARY_DIR}/Config/Venus/Data/Vsop87B.dat
+	TARGET ${CELBODY} PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_ven.dat ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/Vsop87B.dat
+)
+
+add_subdirectory(
+	Atmosphere
 )

@@ -1,4 +1,4 @@
-set(CELBODY "Mercury")
+set(CELBODY "Mars")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
 
@@ -30,5 +30,9 @@ add_custom_command(
 
 add_custom_command(
 	TARGET ${CELBODY} PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_mer.dat ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/Vsop87B.dat
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_mar.dat ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/Vsop87B.dat
+)
+
+add_subdirectory(
+	Atmosphere
 )

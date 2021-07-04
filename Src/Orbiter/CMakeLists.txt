@@ -1,5 +1,3 @@
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
 # Add the executable
 add_executable(Orbiter
 	Astro.cpp
@@ -169,7 +167,23 @@ add_dependencies(Orbiter
 	DlgCtrl
 	)
 
-set_target_properties(Orbiter PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+set_target_properties(Orbiter
+	PROPERTIES
+	LINK_FLAGS "/SUBSYSTEM:WINDOWS"
+	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+# Orbiter.lib is actually created as a byproduct when making the Orbiter executable target
+# However dependencies on the executable target seem to be ignored, so we need to create
+# this dummy target to make sure Orbiter is built to provide Orbiter.lib
+add_custom_target(Orbiterlib ALL
+	COMMAND echo Hello # ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
+	BYPRODUCTS ${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
+)
+
+add_dependencies(Orbiterlib
+	Orbiter
+)
 
 add_custom_command(
 	OUTPUT cryptstring.h

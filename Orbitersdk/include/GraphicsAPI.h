@@ -12,8 +12,9 @@
 
 #include "Orbitersdk.h"
 #include <stdio.h>
+#include <windows.h>
 
-#ifndef _WINDOWS
+#ifndef _WIN32
 typedef void *HDC;
 #endif
 

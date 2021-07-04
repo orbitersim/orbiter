@@ -42,7 +42,7 @@ CelestialBody::CelestialBody (char *fname)
 
 	ifstream ifs (g_pOrbiter->ConfigPath (fname));
 	if (!ifs) {
-		LOGOUT_ERR_FILENOTFOUND(g_pOrbiter->ConfigPath (fname), "While initialising celestial body:");
+		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (fname), "while initialising celestial body");
 		g_pOrbiter->TerminateOnError();
 	}
 

@@ -5,7 +5,7 @@ add_library(Vsop87 SHARED
 )
 
 add_dependencies(Vsop87
-	Orbiter
+	Orbiterlib
 )
 
 target_include_directories(Vsop87
@@ -20,3 +20,9 @@ add_subdirectory(Sol)
 add_subdirectory(Sun)
 add_subdirectory(Mercury)
 add_subdirectory(Venus)
+add_subdirectory(Earth)
+add_subdirectory(Mars)
+add_subdirectory(Jupiter)
+add_subdirectory(Saturn)
+add_subdirectory(Uranus)
+add_subdirectory(Neptune)

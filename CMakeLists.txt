@@ -43,3 +43,7 @@ add_custom_target(Scenarios ALL
 add_custom_target(Textures ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${CMAKE_BINARY_DIR}/Textures
 )
+
+add_custom_target(Meshes ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
+)

@@ -6,6 +6,24 @@
 // comment the following line to suppress log file output
 #define GENERATE_LOG
 
+// The following routines are for message output into a log file
+void InitLog (char *logfile, bool append);   // Set log file name and clear if exists
+void SetLogVerbosity (bool verbose);
+void SetConsole (bool active);        // Activate/deactivate console output
+void ConsoleOut (const char *msg);    // Write a message to the console
+void LogOut (const char *msg, ...);   // Write a message to the log file
+void LogOut(const char *format, va_list ap);
+void LogOutFine (const char *msg, ...);   // Write a message to the log file if fine-grain output enabled
+void LogOut ();                       // Write current message to log file
+void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...);  // Write error message to log file
+void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap);
+void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
+void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
+void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
+void LogOut_DPErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectPlay error to log file
+void LogOut_Obsolete (char *func, char *msg = 0);      // Write obsolete-function warning to log file
+void LogOut_Warning (const char *func, const char *file, int line, const char *msg, ...);            // Write general warning to log file
+
 #ifdef GENERATE_LOG
 #define INITLOG(x,app) InitLog(x,app)
 #define LOGOUT(msg,...) LogOut(msg,__VA_ARGS__)
@@ -13,7 +31,11 @@
 #define LOGOUT_ERR(msg, ...) LogOut_Error(__FUNCTION__,__FILE__,__LINE__, msg, __VA_ARGS__)
 #define LOGOUT_LASTERR() LogOut_LastError(__FUNCTION__,__FILE__,__LINE__);
 #define LOGOUT_WARN(msg,...) LogOut_Warning(__FUNCTION__,__FILE__,__LINE__,msg,__VA_ARGS__)
-#define LOGOUT_ERR_FILENOTFOUND(file,msg) { if (msg) sprintf (logs, "%s\n>>> File not found: %s", msg, file); else sprintf(logs,"File not found: %s", file); LOGOUT_ERR(logs); }
+#define LOGOUT_ERR_FILENOTFOUND(file) LogOut_Error(__FUNCTION__,__FILE__,__LINE__, "File not found: %s", file)
+#define LOGOUT_ERR_FILENOTFOUND_MSG(file,msg,...) { \
+	sprintf(logs, "File not found: %s ", file); \
+	sprintf(logs+strlen(logs), msg, __VA_ARGS__); \
+	LogOut_Error(__FUNCTION__,__FILE__,__LINE__, logs); }
 #define LOGOUT_DDERR(hr) LogOut_DDErr(hr,__FUNCTION__,__FILE__,__LINE__)
 #define LOGOUT_DIERR(hr) LogOut_DIErr(hr,__FUNCTION__,__FILE__,__LINE__)
 #define LOGOUT_DPERR(hr) LogOut_DPErr(hr,__FUNCTION__,__FILE__,__LINE__)
@@ -32,24 +54,6 @@
 #define LOGOUT_DPERR(hr)
 #define LOGOUT_OBSOLETE
 #endif
-
-// The following routines are for message output into a log file
-void InitLog (char *logfile, bool append);   // Set log file name and clear if exists
-void SetLogVerbosity (bool verbose);
-void SetConsole (bool active);        // Activate/deactivate console output
-void ConsoleOut (const char *msg);    // Write a message to the console
-void LogOut (const char *msg, ...);   // Write a message to the log file
-void LogOut(const char *format, va_list ap);
-void LogOutFine (const char *msg, ...);   // Write a message to the log file if fine-grain output enabled
-void LogOut ();                       // Write current message to log file
-void LogOut_Error (const char *func, const char *file, int line, const char *msg, ...);  // Write error message to log file
-void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap);
-void LogOut_LastError (const char *func, const char *file, int line);             // Write formatted string from GetLastError
-void LogOut_DDErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectDraw error to log file
-void LogOut_DIErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectInput error to log file
-void LogOut_DPErr (HRESULT hr, const char *func, const char *file, int line);     // Write DirectPlay error to log file
-void LogOut_Obsolete (char *func, char *msg = 0);      // Write obsolete-function warning to log file
-void LogOut_Warning (const char *func, const char *file, int line, const char *msg, ...);            // Write general warning to log file
 
 #ifdef _DEBUG
 #define dVERIFY(test) { if (FAILED(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); exit(1); }}

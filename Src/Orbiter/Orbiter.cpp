@@ -755,9 +755,7 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	RigidBody::GlobalSetup();
 	td.Reset (this, pState->Mjd());
 	if (!InitializeWorld (pState->Solsys())) {
-		char msg[256];
-		sprintf (msg, "While initialising solar system %s:", pState->Solsys());
-		LOGOUT_ERR_FILENOTFOUND(g_pOrbiter->ConfigPath (pState->Solsys()), msg);
+		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (pState->Solsys()), "while initialising solar system %s", pState->Solsys());
 		TerminateOnError();
 		return 0;
 	}
@@ -1259,10 +1257,10 @@ bool Orbiter::ParseConsoleCmd ()
 		if (!_strnicmp (pc, "on", 2)) Pause (true);
 		else if (!_strnicmp (pc, "off", 3)) Pause (false);
 		else if (!_strnicmp (pc, "toggle", 6)) Pause (bRunning);
-		sprintf (cbuf, "Simulation %s", bRunning ? "running":"paused");
+		sprintf_s (cbuf, 256, "Simulation %s", bRunning ? "running":"paused");
 		ConsoleOut (cbuf);
 	} else if (!_strnicmp (cmd, "step", 4)) {
-		sprintf (cbuf, "dt=%f, FPS=%f", td.SimDT, td.FPS());
+		sprintf_s (cbuf, 256, "dt=%f, FPS=%f", td.SimDT, td.FPS());
 		ConsoleOut (cbuf);
 	} else if (!_strnicmp (cmd, "gui", 3)) {
 		if (!DestroyServerGuiDlg())

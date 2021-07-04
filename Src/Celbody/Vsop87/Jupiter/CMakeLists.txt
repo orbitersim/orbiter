@@ -1,4 +1,4 @@
-set(CELBODY "Mercury")
+set(CELBODY "Jupiter")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody)
 
@@ -10,6 +10,7 @@ add_dependencies(${CELBODY}
 	Orbiterlib
 	Orbitersdk
 	Vsop87
+	Galsat
 )
 
 target_include_directories(${CELBODY}
@@ -19,6 +20,7 @@ target_include_directories(${CELBODY}
 
 target_link_libraries(${CELBODY}
 	${CMAKE_BINARY_DIR}/Src/Celbody/Vsop87/Vsop87.lib
+	${CMAKE_BINARY_DIR}/Src/Celbody/Galsat/Galsat.lib
 	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
 	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
 )
@@ -30,5 +32,5 @@ add_custom_command(
 
 add_custom_command(
 	TARGET ${CELBODY} PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_mer.dat ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/Vsop87B.dat
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_jup.dat ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/Vsop87B.dat
 )

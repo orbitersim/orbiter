@@ -716,87 +716,90 @@ int cd2com (char *fname)
     int i;
     FILE *fdat = fopen(fname, "rt");
 
-    /* read ebblok */
-    for (i = 0; i < 28; i++) fscanf (fdat, "%lf", ebblok_1.earay+i);
-    for (i = 0; i < 22; i++) fscanf (fdat, "%lf", ebblok_1.baray+i);
-    for (i = 0; i < 28; i++) fscanf (fdat, "%lf", ebblok_1.paray+i);
+    if (fdat) {
+        /* read ebblok */
+        for (i = 0; i < 28; i++) fscanf(fdat, "%lf", ebblok_1.earay + i);
+        for (i = 0; i < 22; i++) fscanf(fdat, "%lf", ebblok_1.baray + i);
+        for (i = 0; i < 28; i++) fscanf(fdat, "%lf", ebblok_1.paray + i);
 
-    /* read trmblk */
-    for (i = 0; i < 53; i++) fscanf (fdat, "%lf", trmblk_1.trmcod+i);
+        /* read trmblk */
+        for (i = 0; i < 53; i++) fscanf(fdat, "%lf", trmblk_1.trmcod + i);
 
-    /* read angblk */
-    for (i = 0; i < 99; i++) fscanf (fdat, "%lf", angblk_1.angcod+i);
-    for (i = 0; i < 99; i++) fscanf (fdat, "%lf", angblk_1.ratcod+i);
-    for (i = 0; i < 22; i++) fscanf (fdat, "%lf", angblk_1.ang+i);
-    for (i = 0; i < 23; i++) fscanf (fdat, "%lf", angblk_1.rat+i);
+        /* read angblk */
+        for (i = 0; i < 99; i++) fscanf(fdat, "%lf", angblk_1.angcod + i);
+        for (i = 0; i < 99; i++) fscanf(fdat, "%lf", angblk_1.ratcod + i);
+        for (i = 0; i < 22; i++) fscanf(fdat, "%lf", angblk_1.ang + i);
+        for (i = 0; i < 23; i++) fscanf(fdat, "%lf", angblk_1.rat + i);
 
-    /* read theory */
-    for (i = 0; i <  4; i++) fscanf (fdat, "%lf", theory_1.axis+i);
-    for (i = 0; i < 10; i++) fscanf (fdat, "%lf", theory_1.cxi1+i);
-    for (i = 0; i < 10; i++) fscanf (fdat, "%lf", theory_1.argx1+i);
-    for (i = 0; i < 10; i++) fscanf (fdat, "%lf", theory_1.ratx1+i);
-    for (i = 0; i <  7; i++) fscanf (fdat, "%lf", theory_1.cz1+i);
-    for (i = 0; i <  7; i++) fscanf (fdat, "%lf", theory_1.argz1+i);
-    for (i = 0; i <  7; i++) fscanf (fdat, "%lf", theory_1.ratz1+i);
-    for (i = 0; i < 41; i++) fscanf (fdat, "%lf", theory_1.cv1+i);
-    for (i = 0; i < 41; i++) fscanf (fdat, "%lf", theory_1.argv1+i);
-    for (i = 0; i < 41; i++) fscanf (fdat, "%lf", theory_1.ratv1+i);
-    for (i = 0; i < 24; i++) fscanf (fdat, "%lf", theory_1.cxi2+i);
-    for (i = 0; i < 24; i++) fscanf (fdat, "%lf", theory_1.argx2+i);
-    for (i = 0; i < 24; i++) fscanf (fdat, "%lf", theory_1.ratx2+i);
-    for (i = 0; i < 11; i++) fscanf (fdat, "%lf", theory_1.cz2+i);
-    for (i = 0; i < 11; i++) fscanf (fdat, "%lf", theory_1.argz2+i);
-    for (i = 0; i < 11; i++) fscanf (fdat, "%lf", theory_1.ratz2+i);
-    for (i = 0; i < 66; i++) fscanf (fdat, "%lf", theory_1.cv2+i);
-    for (i = 0; i < 66; i++) fscanf (fdat, "%lf", theory_1.argv2+i);
-    for (i = 0; i < 66; i++) fscanf (fdat, "%lf", theory_1.ratv2+i);
-    for (i = 0; i < 31; i++) fscanf (fdat, "%lf", theory_1.cxi3+i);
-    for (i = 0; i < 31; i++) fscanf (fdat, "%lf", theory_1.argx3+i);
-    for (i = 0; i < 31; i++) fscanf (fdat, "%lf", theory_1.ratx3+i);
-    for (i = 0; i < 13; i++) fscanf (fdat, "%lf", theory_1.cz3+i);
-    for (i = 0; i < 13; i++) fscanf (fdat, "%lf", theory_1.argz3+i);
-    for (i = 0; i < 13; i++) fscanf (fdat, "%lf", theory_1.ratz3+i);
-    for (i = 0; i < 75; i++) fscanf (fdat, "%lf", theory_1.cv3+i);
-    for (i = 0; i < 75; i++) fscanf (fdat, "%lf", theory_1.argv3+i);
-    for (i = 0; i < 75; i++) fscanf (fdat, "%lf", theory_1.ratv3+i);
-    for (i = 0; i < 49; i++) fscanf (fdat, "%lf", theory_1.cxi4+i);
-    for (i = 0; i < 49; i++) fscanf (fdat, "%lf", theory_1.argx4+i);
-    for (i = 0; i < 49; i++) fscanf (fdat, "%lf", theory_1.ratx4+i);
-    for (i = 0; i < 18; i++) fscanf (fdat, "%lf", theory_1.cz4+i);
-    for (i = 0; i < 18; i++) fscanf (fdat, "%lf", theory_1.argz4+i);
-    for (i = 0; i < 18; i++) fscanf (fdat, "%lf", theory_1.ratz4+i);
-    for (i = 0; i < 89; i++) fscanf (fdat, "%lf", theory_1.cv4+i);
-    for (i = 0; i < 89; i++) fscanf (fdat, "%lf", theory_1.argv4+i);
-    for (i = 0; i < 89; i++) fscanf (fdat, "%lf", theory_1.ratv4+i);
-    fscanf (fdat, "%lf", &theory_1.epsln);
+        /* read theory */
+        for (i = 0; i < 4; i++) fscanf(fdat, "%lf", theory_1.axis + i);
+        for (i = 0; i < 10; i++) fscanf(fdat, "%lf", theory_1.cxi1 + i);
+        for (i = 0; i < 10; i++) fscanf(fdat, "%lf", theory_1.argx1 + i);
+        for (i = 0; i < 10; i++) fscanf(fdat, "%lf", theory_1.ratx1 + i);
+        for (i = 0; i < 7; i++) fscanf(fdat, "%lf", theory_1.cz1 + i);
+        for (i = 0; i < 7; i++) fscanf(fdat, "%lf", theory_1.argz1 + i);
+        for (i = 0; i < 7; i++) fscanf(fdat, "%lf", theory_1.ratz1 + i);
+        for (i = 0; i < 41; i++) fscanf(fdat, "%lf", theory_1.cv1 + i);
+        for (i = 0; i < 41; i++) fscanf(fdat, "%lf", theory_1.argv1 + i);
+        for (i = 0; i < 41; i++) fscanf(fdat, "%lf", theory_1.ratv1 + i);
+        for (i = 0; i < 24; i++) fscanf(fdat, "%lf", theory_1.cxi2 + i);
+        for (i = 0; i < 24; i++) fscanf(fdat, "%lf", theory_1.argx2 + i);
+        for (i = 0; i < 24; i++) fscanf(fdat, "%lf", theory_1.ratx2 + i);
+        for (i = 0; i < 11; i++) fscanf(fdat, "%lf", theory_1.cz2 + i);
+        for (i = 0; i < 11; i++) fscanf(fdat, "%lf", theory_1.argz2 + i);
+        for (i = 0; i < 11; i++) fscanf(fdat, "%lf", theory_1.ratz2 + i);
+        for (i = 0; i < 66; i++) fscanf(fdat, "%lf", theory_1.cv2 + i);
+        for (i = 0; i < 66; i++) fscanf(fdat, "%lf", theory_1.argv2 + i);
+        for (i = 0; i < 66; i++) fscanf(fdat, "%lf", theory_1.ratv2 + i);
+        for (i = 0; i < 31; i++) fscanf(fdat, "%lf", theory_1.cxi3 + i);
+        for (i = 0; i < 31; i++) fscanf(fdat, "%lf", theory_1.argx3 + i);
+        for (i = 0; i < 31; i++) fscanf(fdat, "%lf", theory_1.ratx3 + i);
+        for (i = 0; i < 13; i++) fscanf(fdat, "%lf", theory_1.cz3 + i);
+        for (i = 0; i < 13; i++) fscanf(fdat, "%lf", theory_1.argz3 + i);
+        for (i = 0; i < 13; i++) fscanf(fdat, "%lf", theory_1.ratz3 + i);
+        for (i = 0; i < 75; i++) fscanf(fdat, "%lf", theory_1.cv3 + i);
+        for (i = 0; i < 75; i++) fscanf(fdat, "%lf", theory_1.argv3 + i);
+        for (i = 0; i < 75; i++) fscanf(fdat, "%lf", theory_1.ratv3 + i);
+        for (i = 0; i < 49; i++) fscanf(fdat, "%lf", theory_1.cxi4 + i);
+        for (i = 0; i < 49; i++) fscanf(fdat, "%lf", theory_1.argx4 + i);
+        for (i = 0; i < 49; i++) fscanf(fdat, "%lf", theory_1.ratx4 + i);
+        for (i = 0; i < 18; i++) fscanf(fdat, "%lf", theory_1.cz4 + i);
+        for (i = 0; i < 18; i++) fscanf(fdat, "%lf", theory_1.argz4 + i);
+        for (i = 0; i < 18; i++) fscanf(fdat, "%lf", theory_1.ratz4 + i);
+        for (i = 0; i < 89; i++) fscanf(fdat, "%lf", theory_1.cv4 + i);
+        for (i = 0; i < 89; i++) fscanf(fdat, "%lf", theory_1.argv4 + i);
+        for (i = 0; i < 89; i++) fscanf(fdat, "%lf", theory_1.ratv4 + i);
+        fscanf(fdat, "%lf", &theory_1.epsln);
 
-    fscanf (fdat, "%d", &theory_1.nxi1t);
-    fscanf (fdat, "%d", &theory_1.nz1t);
-    fscanf (fdat, "%d", &theory_1.nv1t);
-    fscanf (fdat, "%d", &theory_1.nxi2t);
-    fscanf (fdat, "%d", &theory_1.nz2t);
-    fscanf (fdat, "%d", &theory_1.nv2t);
-    fscanf (fdat, "%d", &theory_1.nxi3t);
-    fscanf (fdat, "%d", &theory_1.nz3t);
-    fscanf (fdat, "%d", &theory_1.nv3t);
-    fscanf (fdat, "%d", &theory_1.nxi4t);
-    fscanf (fdat, "%d", &theory_1.nz4t);
-    fscanf (fdat, "%d", &theory_1.nv4t);
-    for (i = 0; i < 20; i++) fscanf (fdat, "%d", theory_1.kodx1+i);
-    for (i = 0; i < 14; i++) fscanf (fdat, "%d", theory_1.kodz1+i);
-    for (i = 0; i < 82; i++) fscanf (fdat, "%d", theory_1.kodv1+i);
-    for (i = 0; i < 48; i++) fscanf (fdat, "%d", theory_1.kodx2+i);
-    for (i = 0; i < 22; i++) fscanf (fdat, "%d", theory_1.kodz2+i);
-    for (i = 0; i < 132; i++) fscanf (fdat, "%d", theory_1.kodv2+i);
-    for (i = 0; i < 62; i++) fscanf (fdat, "%d", theory_1.kodx3+i);
-    for (i = 0; i < 26; i++) fscanf (fdat, "%d", theory_1.kodz3+i);
-    for (i = 0; i < 150; i++) fscanf (fdat, "%d", theory_1.kodv3+i);
-    for (i = 0; i < 98; i++) fscanf (fdat, "%d", theory_1.kodx4+i);
-    for (i = 0; i < 36; i++) fscanf (fdat, "%d", theory_1.kodz4+i);
-    for (i = 0; i < 178; i++) fscanf (fdat, "%d", theory_1.kodv4+i);
+        fscanf(fdat, "%d", &theory_1.nxi1t);
+        fscanf(fdat, "%d", &theory_1.nz1t);
+        fscanf(fdat, "%d", &theory_1.nv1t);
+        fscanf(fdat, "%d", &theory_1.nxi2t);
+        fscanf(fdat, "%d", &theory_1.nz2t);
+        fscanf(fdat, "%d", &theory_1.nv2t);
+        fscanf(fdat, "%d", &theory_1.nxi3t);
+        fscanf(fdat, "%d", &theory_1.nz3t);
+        fscanf(fdat, "%d", &theory_1.nv3t);
+        fscanf(fdat, "%d", &theory_1.nxi4t);
+        fscanf(fdat, "%d", &theory_1.nz4t);
+        fscanf(fdat, "%d", &theory_1.nv4t);
+        for (i = 0; i < 20; i++) fscanf(fdat, "%d", theory_1.kodx1 + i);
+        for (i = 0; i < 14; i++) fscanf(fdat, "%d", theory_1.kodz1 + i);
+        for (i = 0; i < 82; i++) fscanf(fdat, "%d", theory_1.kodv1 + i);
+        for (i = 0; i < 48; i++) fscanf(fdat, "%d", theory_1.kodx2 + i);
+        for (i = 0; i < 22; i++) fscanf(fdat, "%d", theory_1.kodz2 + i);
+        for (i = 0; i < 132; i++) fscanf(fdat, "%d", theory_1.kodv2 + i);
+        for (i = 0; i < 62; i++) fscanf(fdat, "%d", theory_1.kodx3 + i);
+        for (i = 0; i < 26; i++) fscanf(fdat, "%d", theory_1.kodz3 + i);
+        for (i = 0; i < 150; i++) fscanf(fdat, "%d", theory_1.kodv3 + i);
+        for (i = 0; i < 98; i++) fscanf(fdat, "%d", theory_1.kodx4 + i);
+        for (i = 0; i < 36; i++) fscanf(fdat, "%d", theory_1.kodz4 + i);
+        for (i = 0; i < 178; i++) fscanf(fdat, "%d", theory_1.kodv4 + i);
 
-    fclose (fdat);
-    return 0;
+        fclose(fdat);
+        return 0;
+    }
+    return -1;
 }
 
 // =================================================================
