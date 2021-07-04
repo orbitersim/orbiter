@@ -142,7 +142,6 @@ add_definitions(-DINLINEGRAPHICS)
 
 target_include_directories(Orbiter
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-#	PUBLIC ${CMAKE_SOURCE_DIR}
 	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
 	PUBLIC ${CMAKE_SOURCE_DIR}/OVP
 	PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
@@ -184,5 +183,5 @@ add_custom_command(
 
 add_custom_command(
 	OUTPUT splash_cs.dat
-	COMMAND ${CMAKE_BINARY_DIR}/Utils/fchecksum/fchecksum.exe ${CMAKE_SOURCE_DIR}/Bitmaps/Splash2016.jpg splash_cs.dat
+	COMMAND ${CMAKE_BINARY_DIR}/Utils/fchecksum/fchecksum.exe ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash2016.jpg splash_cs.dat
 )

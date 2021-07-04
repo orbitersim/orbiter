@@ -2208,7 +2208,7 @@ DLLEXPORT void __writeLogError(const char *func, const char *file, int line, con
 #ifdef GENERATE_LOG
 	va_list ap;
 	va_start(ap, format);
-	LogOut_Error(func, file, line, format, ap);
+	LogOut_ErrorVA(func, file, line, format, ap);
 	va_end(ap);
 #endif
 }
