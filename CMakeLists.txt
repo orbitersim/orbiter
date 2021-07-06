@@ -65,17 +65,28 @@ option(ORBITER_MAKE_DOC
 
 if (ORBITER_MAKE_DOC)
 
-find_program(ORBITER_ODT_TO_PDF_COMPILER
-	soffice
-	HINTS "/Program Files/LibreOffice/program"
-)
+	find_program(ODT_TO_PDF_COMPILER
+		soffice
+		HINTS "/Program Files/LibreOffice/program"
+	)
 
-set(ORBITER_ODT_TO_PDF_FLAGS
-	"--headless --convert-to pdf --outdir <outdir> <infile>"
-	CACHE
-	STRING
-	"Compiler options for the OdtToPdfCompiler"
-)
+	set(ODT_TO_PDF_FLAGS
+		"--headless --convert-to pdf --outdir <outdir> <infile>"
+		CACHE
+		STRING
+		"Compiler options for the OdtToPdfCompiler"
+	)
+
+	option(ORBITER_MAKE_TECHNOTES
+		"Create Orbiter Technical Notes"
+		ON
+	)
+
+	if(ORBITER_MAKE_TECHNOTES)
+	
+		find_package(LATEX)
+		
+	endif()
 
 endif()
 
@@ -83,7 +94,7 @@ function(odt_to_pdf_arglist infile arglist source_path target_path)
 	string(REPLACE
 		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
 		tmp1_string
-		${ORBITER_ODT_TO_PDF_FLAGS}
+		${ODT_TO_PDF_FLAGS}
 	)
 	string(REPLACE
 		"<infile>" "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.odt"
@@ -99,9 +110,11 @@ function(odt_to_pdf_arglist infile arglist source_path target_path)
 	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
 endfunction()
 
-
 # Sub-projects
 add_subdirectory(Src)
 add_subdirectory(Core)
 add_subdirectory(Utils)
-add_subdirectory(Doc)
+
+if(ORBITER_MAKE_DOC)
+	add_subdirectory(Doc)
+endif()
