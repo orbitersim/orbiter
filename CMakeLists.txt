@@ -42,11 +42,6 @@ if(MSVC)
       "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:\"LIBCMTD\"")
 endif()
 
-# Sub-projects
-add_subdirectory(Src)
-add_subdirectory(Core)
-add_subdirectory(Utils)
-
 add_custom_target(BinAssets ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/BinAssets/ ${CMAKE_BINARY_DIR}
 )
@@ -62,3 +57,51 @@ add_custom_target(Textures ALL
 add_custom_target(Meshes ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
 )
+
+option(ORBITER_MAKE_DOC
+	"Create documentation"
+	ON
+)
+
+if (ORBITER_MAKE_DOC)
+
+find_program(ORBITER_ODT_TO_PDF_COMPILER
+	soffice
+	HINTS "/Program Files/LibreOffice/program"
+)
+
+set(ORBITER_ODT_TO_PDF_FLAGS
+	"--headless --convert-to pdf --outdir <outdir> <infile>"
+	CACHE
+	STRING
+	"Compiler options for the OdtToPdfCompiler"
+)
+
+endif()
+
+function(odt_to_pdf_arglist infile arglist source_path target_path)
+	string(REPLACE
+		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
+		tmp1_string
+		${ORBITER_ODT_TO_PDF_FLAGS}
+	)
+	string(REPLACE
+		"<infile>" "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.odt"
+		tmp2_string
+		${tmp1_string}
+	)
+	separate_arguments(odt_arg
+		WINDOWS_COMMAND
+		${tmp2_string}
+	)
+	set(${arglist} ${odt_arg} PARENT_SCOPE)
+	set(${source_path} "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.odt" PARENT_SCOPE)
+	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
+endfunction()
+
+
+# Sub-projects
+add_subdirectory(Src)
+add_subdirectory(Core)
+add_subdirectory(Utils)
+add_subdirectory(Doc)
