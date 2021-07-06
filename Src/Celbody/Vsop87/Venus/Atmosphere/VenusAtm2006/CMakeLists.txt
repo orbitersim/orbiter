@@ -5,7 +5,7 @@ add_library(VenusAtm2006 SHARED
 )
 
 add_dependencies(VenusAtm2006
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -14,6 +14,6 @@ target_include_directories(VenusAtm2006
 )
 
 target_link_libraries(VenusAtm2006
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )

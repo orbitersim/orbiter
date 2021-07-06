@@ -5,7 +5,7 @@ add_library(Vsop87 SHARED
 )
 
 add_dependencies(Vsop87
-	Orbiterlib
+	Orbiter
 )
 
 target_include_directories(Vsop87
@@ -13,8 +13,10 @@ target_include_directories(Vsop87
 )
 
 target_link_libraries(Vsop87
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
+	${ORBITER_LIB}
 )
+
+set(VSOP87_LIB $<TARGET_LINKER_FILE:Vsop87>)
 
 add_subdirectory(Sol)
 add_subdirectory(Sun)

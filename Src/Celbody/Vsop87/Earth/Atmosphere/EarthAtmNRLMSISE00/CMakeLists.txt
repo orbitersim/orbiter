@@ -7,7 +7,7 @@ add_library(EarthAtmNRLMSISE00 SHARED
 )
 
 add_dependencies(EarthAtmNRLMSISE00
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -16,6 +16,6 @@ target_include_directories(EarthAtmNRLMSISE00
 )
 
 target_link_libraries(EarthAtmNRLMSISE00
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )

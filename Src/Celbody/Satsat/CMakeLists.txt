@@ -6,7 +6,7 @@ add_library(Satsat SHARED
 )
 
 add_dependencies(Satsat
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -15,8 +15,8 @@ target_include_directories(Satsat
 )
 
 target_link_libraries(Satsat
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )
 
 add_custom_command(
@@ -24,6 +24,8 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/Config/Saturn/Data
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/tass17.dat ${CMAKE_BINARY_DIR}/Config/Saturn/Data/
 )
+
+set(SATSAT_LIB $<TARGET_LINKER_FILE:Satsat>)
 
 add_subdirectory(Mimas)
 add_subdirectory(Enceladus)

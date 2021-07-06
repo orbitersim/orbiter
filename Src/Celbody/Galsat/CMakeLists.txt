@@ -6,7 +6,7 @@ add_library(Galsat SHARED
 )
 
 add_dependencies(Galsat
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -15,8 +15,8 @@ target_include_directories(Galsat
 )
 
 target_link_libraries(Galsat
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )
 
 add_custom_command(
@@ -24,6 +24,8 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/Config/Jupiter/Data
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/ephem_e15.dat ${CMAKE_BINARY_DIR}/Config/Jupiter/Data/
 )
+
+set(GALSAT_LIB $<TARGET_LINKER_FILE:Galsat>)
 
 add_subdirectory(Io)
 add_subdirectory(Europa)

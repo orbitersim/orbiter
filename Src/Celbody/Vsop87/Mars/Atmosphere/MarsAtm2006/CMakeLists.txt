@@ -5,7 +5,7 @@ add_library(MarsAtm2006 SHARED
 )
 
 add_dependencies(MarsAtm2006
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -14,6 +14,6 @@ target_include_directories(MarsAtm2006
 )
 
 target_link_libraries(MarsAtm2006
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )

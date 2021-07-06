@@ -5,7 +5,7 @@ add_library(EarthAtmJ71G SHARED
 )
 
 add_dependencies(EarthAtmJ71G
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -14,6 +14,6 @@ target_include_directories(EarthAtmJ71G
 )
 
 target_link_libraries(EarthAtmJ71G
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )

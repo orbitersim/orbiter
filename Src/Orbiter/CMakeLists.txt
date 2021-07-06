@@ -1,3 +1,6 @@
+# SAFESEH linker flag must be turned off because the DX7 libraries don't support it'
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
+
 # Add the executable
 add_executable(Orbiter
 	Astro.cpp
@@ -156,8 +159,8 @@ target_link_libraries(Orbiter
 	${DX7SDK_LIB_DIR}/dinput.lib
 	${HTML_HELP_LIBRARY}
 	${ZLIB_LIBRARIES}
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
-	${CMAKE_BINARY_DIR}/Core/DlgCtrl/DlgCtrl.lib
+	$<TARGET_FILE:Orbitersdk>
+	$<TARGET_FILE:DlgCtrl>
 	)
 
 add_dependencies(Orbiter
@@ -171,31 +174,21 @@ set_target_properties(Orbiter
 	PROPERTIES
 	LINK_FLAGS "/SUBSYSTEM:WINDOWS"
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
-)
-
-# Orbiter.lib is actually created as a byproduct when making the Orbiter executable target
-# However dependencies on the executable target seem to be ignored, so we need to create
-# this dummy target to make sure Orbiter is built to provide Orbiter.lib
-add_custom_target(Orbiterlib ALL
-	COMMAND echo Hello # ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	BYPRODUCTS ${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-)
-
-add_dependencies(Orbiterlib
-	Orbiter
+	ENABLE_EXPORTS 1
 )
 
 add_custom_command(
 	OUTPUT cryptstring.h
-	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
+#	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
+	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
 )
 
 add_custom_command(
 	OUTPUT Disclaimer.txt
-	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
+	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
 )
 
 add_custom_command(
 	OUTPUT splash_cs.dat
-	COMMAND ${CMAKE_BINARY_DIR}/Utils/fchecksum/fchecksum.exe ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash2016.jpg splash_cs.dat
+	COMMAND $<TARGET_FILE:fchecksum> ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash2016.jpg splash_cs.dat
 )

@@ -8,7 +8,7 @@ add_library(${CELBODY} SHARED
 
 add_dependencies(${CELBODY}
 	Satsat
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 )
 
@@ -18,9 +18,9 @@ target_include_directories(${CELBODY}
 )
 
 target_link_libraries(${CELBODY}
-	${CMAKE_BINARY_DIR}/Src/Celbody/Satsat/Satsat.lib
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${SATSAT_LIB}
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )
 
 add_custom_command(

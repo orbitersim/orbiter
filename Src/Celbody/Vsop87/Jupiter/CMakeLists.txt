@@ -7,7 +7,7 @@ add_library(${CELBODY} SHARED
 )
 
 add_dependencies(${CELBODY}
-	Orbiterlib
+	Orbiter
 	Orbitersdk
 	Vsop87
 	Galsat
@@ -19,10 +19,10 @@ target_include_directories(${CELBODY}
 )
 
 target_link_libraries(${CELBODY}
-	${CMAKE_BINARY_DIR}/Src/Celbody/Vsop87/Vsop87.lib
-	${CMAKE_BINARY_DIR}/Src/Celbody/Galsat/Galsat.lib
-	${CMAKE_BINARY_DIR}/Src/Orbiter/Orbiter.lib
-	${CMAKE_BINARY_DIR}/Core/Orbitersdk/Orbitersdk.lib
+	${VSOP87_LIB}
+	$<TARGET_LINKER_FILE:Galsat>
+	${ORBITER_LIB}
+	${ORBITER_SDK_LIB}
 )
 
 add_custom_command(
@@ -32,5 +32,6 @@ add_custom_command(
 
 add_custom_command(
 	TARGET ${CELBODY} PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../Data/Vsop87B_jup.dat ${CMAKE_BINARY_DIR}/Config/${CELBODY}/Data/Vsop87B.dat
 )
