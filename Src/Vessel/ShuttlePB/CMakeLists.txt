@@ -1,6 +1,7 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_VESSEL_DIR})
 
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
+set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 
 add_library(ShuttlePB SHARED
@@ -29,4 +30,9 @@ add_custom_command(
 add_custom_command(
 	TARGET ShuttlePB PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${MESH_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Meshes
+)
+
+add_custom_command(
+	TARGET ShuttlePB PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Textures   # this should really go to its own subdirectory
 )

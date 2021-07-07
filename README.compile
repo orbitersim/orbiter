@@ -50,3 +50,10 @@ Or, run CMake externally:
 - This should have generated a solution file (Orbiter.sln) in the build directory.
   Load this into Visual Studio, and Build All.
   
+  
+TROUBLESHOOTING
+===============
+If you get errors during build, in particular when building documentation (pdf from
+odt or latex sources), try disabling multithreaded build support (limit to a single
+thread). Some of the document converters/compilers you are using may not be
+thread-safe.

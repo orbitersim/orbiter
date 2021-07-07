@@ -7,13 +7,15 @@ project (Orbiter VERSION 2021.1)
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
 
-set(ORBITER_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Src/Orbiter)
-set(ORBITER_SOURCE_SDK_DIR ${CMAKE_SOURCE_DIR}/Orbitersdk)
+set(ORBITER_SOURCE_ROOT_DIR ${CMAKE_SOURCE_DIR})
+set(ORBITER_SOURCE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter)
+set(ORBITER_SOURCE_MODULE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Module)
+set(ORBITER_SOURCE_SDK_DIR ${ORBITER_SOURCE_ROOT_DIR}/Orbitersdk)
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${ORBITER_SOURCE_SDK_DIR}/include)
-set(ORBITER_SOURCE_MODULE_DIR ${ORBITER_SOURCE_SDK_DIR}/Module) # this will probably be rebased to Src
-set(ORBITER_BINARY_DIR ${CMAKE_BINARY_DIR})
-set(ORBITER_BINARY_MODULE_DIR ${ORBITER_BINARY_DIR}/Modules)
+set(ORBITER_BINARY_ROOT_DIR ${CMAKE_BINARY_DIR})
+set(ORBITER_BINARY_MODULE_DIR ${ORBITER_BINARY_ROOT_DIR}/Modules)
 set(ORBITER_BINARY_CELBODY_DIR ${ORBITER_BINARY_MODULE_DIR}/Celbody)
+set(ORBITER_BINARY_PLUGIN_DIR ${ORBITER_BINARY_MODULE_DIR}/Plugin)
 set(ORBITER_BINARY_VESSEL_DIR ${ORBITER_BINARY_MODULE_DIR})
 
 
@@ -21,19 +23,25 @@ set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
 set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 
-set(EXTERN_PATH "${CMAKE_SOURCE_DIR}/Extern")
+set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
-set(DX7SDK_PATH "${EXTERN_PATH}/mssdk_dx7")
+set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
 set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
 set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
 
-set(ZLIB_PATH "${EXTERN_PATH}/Zlib")
+set(ZLIB_PATH "${EXTERN_DIR}/Zlib")
 set(ZLIB_INCLUDE_DIR "${ZLIB_PATH}/include")
 set(ZLIB_LIB_DIR "${ZLIB_PATH}/lib")
 set(ZLIB_BIN_DIR "${ZLIB_PATH}/bin")
 set(ZLIB_LIBRARIES "${ZLIB_LIB_DIR}/zlibstatic.lib")
 
-set(ORBITER_TOOL_MESHC ${ORBITER_BINARY_DIR}/Utils/meshc/meshc.exe)
+set(LUA_DIR "${EXTERN_DIR}/Lua")
+set(LUA_INCLUDE_DIR "${LUA_DIR}/include")
+set(LUA_LIB_DIR "${LUA_DIR}/lib")
+set(LUA_DLL_DIR "${LUA_DIR}/dll")
+set(LUA_LIB "${LUA_DLL_DIR}/lua5.1.lib")
+
+set(ORBITER_TOOL_MESHC ${ORBITER_BINARY_ROOT_DIR}/Utils/meshc/meshc.exe)
 
 find_package(HTMLHelp)
 
@@ -57,6 +65,13 @@ add_custom_target(Textures ALL
 add_custom_target(Meshes ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
 )
+
+
+# ====================================================================================================
+# Find required and optional build tools
+
+# Lua is installed locally
+set(LUA_DIR )
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"
