@@ -29,7 +29,7 @@ Instrument_Surface::Instrument_Surface (Pane *_pane, int _id, const Spec &spec, 
 {
 	sp = 0;
 	atmc = 0;
-	alt = spd = vspd = lng = lat = aoa = 0.0;
+	alt = spd = vspd = lng = lat = aoa = acc = vacc = 0.0;
 	as_plimit = 1e-3; // pressure limit for pitot airspeed measurement
 	spdmode = saveprm.spdmode;
 	psimt = 0.0;
