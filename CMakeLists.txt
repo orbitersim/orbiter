@@ -66,6 +66,10 @@ add_custom_target(Meshes ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
 )
 
+add_custom_target(Script ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
+)
+
 
 # =====================================================================================
 # Find required and optional build tools

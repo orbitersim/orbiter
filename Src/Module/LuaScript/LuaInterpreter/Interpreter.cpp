@@ -581,9 +581,12 @@ int Interpreter::RunChunk (const char *chunk, int n)
 		// run command
 		luaL_loadbuffer (L, chunk, n, "line");
 		res = lua_pcall (L, 0, 0, 0);
-		if (res && is_term) {
-			// term_strout ("Execution error.");
-			term_strout (lua_tostring(L, -1), true);
+		if (res) {
+			if (is_term) {
+				// term_strout ("Execution error.");
+				term_strout(lua_tostring(L, -1), true);
+			}
+			return res;
 		}
 		// check for leftover background jobs
 		lua_getfield (L, LUA_GLOBALSINDEX, "_nbranch");
