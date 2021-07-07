@@ -435,9 +435,14 @@ void Vessel::ReadGenericCaps (ifstream &ifs)
 	// read base class parameters
 	RigidBody::ReadGenericCaps (ifs);
 
-	if (GetItemString (ifs, "MeshName", cbuf))
+	if (GetItemString(ifs, "MeshName", cbuf)) {
 		// preload mesh template
-		AddMesh ((MESHHANDLE)g_pOrbiter->meshmanager.LoadMesh (cbuf));
+		MESHHANDLE mesh = (MESHHANDLE)g_pOrbiter->meshmanager.LoadMesh(cbuf);
+		if (mesh)
+			AddMesh(mesh);
+		else
+			g_pOrbiter->TerminateOnError(); // we assume that vessel meshes are required
+	}
 
 	if (GetItemString (ifs, "CollisionHull", cbuf))
 		TouchdownPointsFromFile (cbuf);

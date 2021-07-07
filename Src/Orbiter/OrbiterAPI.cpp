@@ -1352,7 +1352,7 @@ DLLEXPORT DWORD oapiMeshTextureCount (MESHHANDLE hMesh)
 DLLEXPORT SURFHANDLE oapiGetTextureHandle (MESHHANDLE hMesh, DWORD texidx)
 {
 	Mesh *mesh = (Mesh*)hMesh;
-	return mesh->GetTexture (texidx-1);
+	return (mesh ? mesh->GetTexture (texidx-1) : 0);
 }
 
 DLLEXPORT SURFHANDLE oapiLoadTexture (const char *fname, bool dynamic)
@@ -1839,7 +1839,7 @@ DLLEXPORT HDC oapiGetDC (SURFHANDLE surf)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	HDC hDC = NULL;
-	if (gc)
+	if (gc && surf)
 		hDC = gc->clbkGetSurfaceDC (surf);
 	return hDC;
 }

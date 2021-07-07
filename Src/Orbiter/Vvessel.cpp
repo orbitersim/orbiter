@@ -394,7 +394,7 @@ void VVessel::Render (LPDIRECT3DDEVICE7 dev, bool internalpass)
 		dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
 
 		for (UINT i = 0; i < nmesh; i++) {
-			if (!vessel->meshlist[i]) continue;
+			if (!vessel->meshlist[i] || !meshlist[i].mesh) continue;
 			WORD vismode = vessel->meshlist[i]->vismode;
 			if (rendercockpit) {
 				if (internalpass && (vismode & MESHVIS_EXTPASS)) continue;
@@ -756,6 +756,7 @@ void VVessel::RenderGroundShadow (LPDIRECT3DDEVICE7 dev, const Planet *planet)
 		if (!vessel->meshlist[i]) continue;
 		if (!(vessel->meshlist[i]->vismode & MESHVIS_EXTERNAL)) continue; // only render shadows for externally visible meshes
 		Mesh *mesh = meshlist[i].mesh;
+		if (!mesh) continue;
 		for (DWORD j = 0; j < mesh->nGroup(); j++) {
 			if (mesh->GetGroupUsrFlag (j) & 1) continue; // "no shadow" flag
 			DWORD v;

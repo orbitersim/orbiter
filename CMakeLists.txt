@@ -67,11 +67,25 @@ add_custom_target(Meshes ALL
 )
 
 
-# ====================================================================================================
+# =====================================================================================
 # Find required and optional build tools
 
-# Lua is installed locally
-set(LUA_DIR )
+set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
+	${ORBITER_BINARY_ROOT_DIR}/Textures
+	CACHE
+	PATH
+	"Installation directory for planetary textures"
+)
+string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_ROOT_DIR}/Textures" CUSTOM_PLANET_TEXTURE_DIR)
+
+if (${CUSTOM_PLANET_TEXTURE_DIR})
+	option(ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK
+		"Create symlinks for planetary texture directories"
+		ON
+	)
+else()
+	set(ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK OFF)
+endif()
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"
