@@ -158,7 +158,7 @@ int HST::Lua_InitInterpreter(void *context)
 	return 0;
 }
 
-int HST::LuaInitInstance (void *context)
+int HST::Lua_InitInstance (void *context)
 {
 	return 0;
 }
