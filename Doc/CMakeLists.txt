@@ -3,6 +3,7 @@ add_custom_command(
 	OUTPUT ${out}
 	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
 	DEPENDS ${src}
+	JOB_POOL soffice
 )
 add_custom_target(OrbiterDoc
 	DEPENDS ${out}
@@ -16,6 +17,7 @@ add_custom_command(
 	OUTPUT ${out}
 	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
 	DEPENDS ${src}
+	JOB_POOL soffice
 )
 add_custom_target(OrbiterConfigDoc
 	DEPENDS ${out}
@@ -29,6 +31,7 @@ add_custom_command(
 	OUTPUT ${out}
 	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
 	DEPENDS ${src}
+	JOB_POOL soffice
 )
 add_custom_target(PlanetTexturesDoc
 	DEPENDS ${out}
@@ -71,6 +74,7 @@ add_custom_command(
 	OUTPUT ${out}
 	COMMAND ${ODT_TO_PDF_COMPILER} ${arglist}
 	DEPENDS ${src}
+	JOB_POOL soffice
 )
 add_custom_target(DeltaGliderDoc
 	DEPENDS ${out}

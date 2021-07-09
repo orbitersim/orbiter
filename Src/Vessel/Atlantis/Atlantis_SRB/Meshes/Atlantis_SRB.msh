@@ -3061,7 +3061,7 @@ MATERIAL Material3
 0.898 0.898 0.898 1
 0 0 0 1
 TEXTURES 3
-SRB.dds
-SRBU.dds
-SRBL.dds
+Atlantis\SRB.dds
+Atlantis\SRBU.dds
+Atlantis\SRBL.dds
 

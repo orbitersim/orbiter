@@ -53,7 +53,12 @@ Or, run CMake externally:
   
 TROUBLESHOOTING
 ===============
-If you get errors during build, in particular when building documentation (pdf from
+* If you get errors during build, in particular when building documentation (pdf from
 odt or latex sources), try disabling multithreaded build support (limit to a single
 thread). Some of the document converters/compilers you are using may not be
 thread-safe.
+
+* LaTeX build components not found: If using MiKTeX, make sure you install it for all
+users instead of locally for a single user. CMake won't automatically find the 
+single-user installation, so you would have to specify the paths to all components
+manually.

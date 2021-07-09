@@ -1,5 +1,3 @@
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_VESSEL_DIR})
-
 set(MESH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Meshes)
 set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
@@ -51,38 +49,38 @@ target_link_libraries(DeltaGlider
 )
 
 # scan mesh file for labels and output to header file
-add_custom_target(MESHRES_H
+add_custom_target(DELTAGLIDER_MESHRES_H
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/deltaglider.msh /P - /O meshres.h
 	BYPRODUCTS meshres.h
 )
-add_dependencies(MESHRES_H
+add_dependencies(DELTAGLIDER_MESHRES_H
 	meshc
 )
 
 # scan mesh file for labels and output to header file
-add_custom_target(MESHRES_VC_H
+add_custom_target(DELTAGLIDER_MESHRES_VC_H
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/deltaglider_vc.msh /P _VC /O meshres_vc.h
 	BYPRODUCTS meshres_vc.h
 )
-add_dependencies(MESHRES_VC_H
+add_dependencies(DELTAGLIDER_MESHRES_VC_H
 	meshc
 )
 
 # scan mesh file for labels and output to header file
-add_custom_target(MESHRES_P0_H
+add_custom_target(DELTAGLIDER_MESHRES_P0_H
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/dg_2dpanel0.msh /P _P0 /O meshres_p0.h
 	BYPRODUCTS meshres_p0.h
 )
-add_dependencies(MESHRES_P0_H
+add_dependencies(DELTAGLIDER_MESHRES_P0_H
 	meshc
 )
 
 # scan mesh file for labels and output to header file
-add_custom_target(MESHRES_P1_H
+add_custom_target(DELTAGLIDER_MESHRES_P1_H
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/dg_2dpanel1.msh /P _P1 /O meshres_p1.h
 	BYPRODUCTS meshres_p1.h
 )
-add_dependencies(MESHRES_P1_H
+add_dependencies(DELTAGLIDER_MESHRES_P1_H
 	meshc
 )
 
@@ -98,7 +96,7 @@ add_custom_command(
 
 add_custom_command(
 	TARGET DeltaGlider PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${CMAKE_BINARY_DIR}/Textures/DG
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${TEXTURE_SOURCE_DIR}/ ${ORBITER_BINARY_TEXTURES_DIR}/DG
 )
 
 add_custom_command(
@@ -110,9 +108,9 @@ add_dependencies(DeltaGlider
 	Orbiter
 	Orbitersdk
 	DlgCtrl
-	MESHRES_H
-	MESHRES_VC_H
-	MESHRES_P0_H
-	MESHRES_P1_H
+	DELTAGLIDER_MESHRES_H
+	DELTAGLIDER_MESHRES_VC_H
+	DELTAGLIDER_MESHRES_P0_H
+	DELTAGLIDER_MESHRES_P1_H
 )
 

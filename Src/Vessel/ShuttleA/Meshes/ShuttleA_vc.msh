@@ -4994,13 +4994,13 @@ MATERIAL 7 - Default
 0.9 0.9 0.9 1.0 0.0
 0.0 0.0 0.0 1.0
 TEXTURES 16
-SHA1TX1.dds
-SHA1TX2.dds
-SHA1TX4.dds
-SHA1TX3.dds
-SHA1FT1.dds
-SHA1CP1.dds
-SHA1TX5.dds
+ShuttleA\SHA1TX1.dds
+ShuttleA\SHA1TX2.dds
+ShuttleA\SHA1TX4.dds
+ShuttleA\SHA1TX3.dds
+ShuttleA\SHA1FT1.dds
+ShuttleA\SHA1CP1.dds
+ShuttleA\SHA1TX5.dds
 ShuttleA\panel1.dds
 ShuttleA\panel2.dds
 ShuttleA\Thrust.dds D

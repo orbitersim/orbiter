@@ -18565,10 +18565,10 @@ MATERIAL cmodule1 with Tex: SHA1TX2
 0.0 0.0 0.0 1.0 0.0
 0.0 0.0 0.0 1.0
 TEXTURES 7
-SHA1TX1.dds
-SHA1TX2.dds D
-SHA1TX4.dds
-SHA1TX3.dds
-SHA1FT1.dds
-SHA1CP1.dds
-SHA1TX5.dds
+ShuttleA\SHA1TX1.dds
+ShuttleA\SHA1TX2.dds D
+ShuttleA\SHA1TX4.dds
+ShuttleA\SHA1TX3.dds
+ShuttleA\SHA1FT1.dds
+ShuttleA\SHA1CP1.dds
+ShuttleA\SHA1TX5.dds

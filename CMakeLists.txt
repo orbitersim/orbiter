@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
 # Set the project name
 project (Orbiter VERSION 2021.1)
+
+# Set the pools for compilers that can't run concurrently
+set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1)
 
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
@@ -17,7 +20,7 @@ set(ORBITER_BINARY_MODULE_DIR ${ORBITER_BINARY_ROOT_DIR}/Modules)
 set(ORBITER_BINARY_CELBODY_DIR ${ORBITER_BINARY_MODULE_DIR}/Celbody)
 set(ORBITER_BINARY_PLUGIN_DIR ${ORBITER_BINARY_MODULE_DIR}/Plugin)
 set(ORBITER_BINARY_VESSEL_DIR ${ORBITER_BINARY_MODULE_DIR})
-
+set(ORBITER_BINARY_TEXTURES_DIR ${ORBITER_BINARY_ROOT_DIR}/Textures)
 
 set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
@@ -41,7 +44,9 @@ set(LUA_LIB_DIR "${LUA_DIR}/lib")
 set(LUA_DLL_DIR "${LUA_DIR}/dll")
 set(LUA_LIB "${LUA_DLL_DIR}/lua5.1.lib")
 
-set(ORBITER_TOOL_MESHC ${ORBITER_BINARY_ROOT_DIR}/Utils/meshc/meshc.exe)
+#set(ORBITER_TOOL_MESHC ${ORBITER_BINARY_ROOT_DIR}/Utils/meshc/meshc.exe)
+set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
+
 
 find_package(HTMLHelp)
 
@@ -59,7 +64,7 @@ add_custom_target(Scenarios ALL
 )
 
 add_custom_target(Textures ALL
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${CMAKE_BINARY_DIR}/Textures
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${ORBITER_BINARY_TEXTURES_DIR}
 )
 
 add_custom_target(Meshes ALL

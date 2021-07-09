@@ -19,6 +19,7 @@ add_custom_command(
 	COMMAND ${pspdf_cmd}
 	DEPENDS ${src_path}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	JOB_POOL latex
 )
 add_custom_target(DynamicsTechnote
 	DEPENDS ${out_path}
