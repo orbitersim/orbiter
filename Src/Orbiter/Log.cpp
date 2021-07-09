@@ -54,11 +54,11 @@ void LogOut (const char *msg, ...)
 {
 	va_list ap;
 	va_start (ap, msg);
-	LogOut(msg, ap);
+	LogOutVA(msg, ap);
 	va_end (ap);
 }
 
-void LogOut(const char *format, va_list ap)
+void LogOutVA(const char *format, va_list ap)
 {
 	extern TimeData td;
 	FILE *f = fopen(logname, "a+t");
@@ -104,12 +104,28 @@ void LogOut_Error (const char *func, const char *file, int line, const char *msg
 	va_end(ap);
 }
 
-void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap)
+void LogOut_Error_Start()
 {
 	LogOut("============================ ERROR: ===========================");
-	LogOut(msg, ap);
+}
+
+void LogOut_Error_End()
+{
+	LogOut("============================ ERROR: ===========================");
+}
+
+void LogOut_Location(const char* func, const char* file, int line)
+{
 	LogOut("[%s | %s | %d]", func, file, line);
-	LogOut("===============================================================");
+
+}
+
+void LogOut_ErrorVA(const char *func, const char *file, int line, const char *msg, va_list ap)
+{
+	LogOut_Error_Start();
+	LogOutVA(msg, ap);
+	LogOut_Location(func, file, line);
+	LogOut_Error_End();
 }
 
 void LogOut_LastError (const char *func, const char *file, int line)

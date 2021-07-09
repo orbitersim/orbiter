@@ -2198,7 +2198,7 @@ DLLEXPORT void oapiWriteLogV (const char *format, ...)
 #ifdef GENERATE_LOG
 	va_list ap;
 	va_start(ap, format);
-	LogOut(format, ap);
+	LogOutVA(format, ap);
 	va_end(ap);
 #endif
 }

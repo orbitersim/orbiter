@@ -235,8 +235,9 @@ bool Vessel::OpenConfigFile (ifstream &cfgfile) const
 	if (cfgfile.good()) return true;
 	else {
 		cfgfile.clear();
-		LogOut (">>> ERROR: No vessel class configuration file found for:");
-		LOGOUT_ERR(classname ? classname : name);
+		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath(cbuf + 8), "No vessel class configuration file found for: %s", classname ? classname : name);
+		//LogOut (">>> ERROR: No vessel class configuration file found for:");
+		//LOGOUT_ERR(classname ? classname : name);
 		return false;
 	}
 }
