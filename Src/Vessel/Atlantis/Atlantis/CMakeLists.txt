@@ -24,7 +24,7 @@ target_link_libraries(Atlantis
 	${ORBITER_SDK_LIB}
 	${ORBITER_DLGCTRL_LIB}
 	UxTheme.lib
-#	$<TARGET_LINKER_FILE:Atlantis_Tank>
+	$<TARGET_LINKER_FILE:Atlantis_Tank>
 )
 
 # scan mesh file for labels and output to header file

@@ -19,6 +19,8 @@
 
 int GrowStack()
 {
+#ifdef UNDEF // This function causes a crash (LoadLibrary fails with code 1001 (stack overflow) on compiling with VS2019, so I am disabling it for now
+
     // NOTE: this requires that orbiter.exe has its 'Size of Stack Reserve' PE header parameter set to 4 MB
     int pageCount = 256;    // 256 4K pages = reserve 1 MB of stack
     DWORD dwStackDelta = 0; // total # of stack bytes used
@@ -38,7 +40,7 @@ int GrowStack()
         mov     eax, [dwStackDelta] // size in bytes
         add     esp, eax
     }
-
+#endif
     return 0;
 }
 

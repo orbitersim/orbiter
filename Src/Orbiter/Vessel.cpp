@@ -5750,8 +5750,9 @@ bool Vessel::LoadModule (ifstream &classf)
 	if (found = GetItemString (classf, "Module", cbuf)) {
 		found = RegisterModule (cbuf);
 		if (!found) {
-			char errbuf[256] = "Could not load vessel module: ";
-			strcat (errbuf, cbuf);
+			DWORD code = GetLastError();
+			char errbuf[256];
+			sprintf(errbuf, "Could not load vessel module: %s (code %d)", cbuf, code);
 			LOGOUT_ERR (errbuf);
 		}
 		if (modIntf.ovcInit)
@@ -5768,7 +5769,8 @@ bool Vessel::RegisterModule (const char *dllname)
 	char cbuf[256];
 	sprintf (cbuf, "Modules\\%s.dll", dllname);
 	hMod = LoadLibrary (cbuf);
-	if (!hMod) return false;
+	if (!hMod)
+		return false;
 
 	// retrieve module version
 	int (*fversion)() = (int(*)())GetProcAddress (hMod, "GetModuleVersion");
