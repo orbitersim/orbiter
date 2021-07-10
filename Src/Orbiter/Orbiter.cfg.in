@@ -1,0 +1,5 @@
+; === ORBITER Master Configuration File ===
+EchoAllParams = FALSE
+
+; === Subdirectory locations
+TextureDir = ${ORBITER_TEXTURE_INSTALL_DIR_W}

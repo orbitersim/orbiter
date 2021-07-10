@@ -90,35 +90,22 @@ set_target_properties(BinAssets Scenarios Textures Meshes Script Config
 # =====================================================================================
 # Create symbolic links for externally installed planet textures
 
-set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
+set(ORBITER_TEXTURE_INSTALL_DIR
 	${ORBITER_BINARY_ROOT_DIR}/Textures
 	CACHE
 	PATH
-	"Installation directory for planetary textures"
+	"Texture installation directory (e.g. C:/Orbiter2016/Textures)"
 )
-string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_ROOT_DIR}/Textures" CUSTOM_PLANET_TEXTURE_DIR)
+string(COMPARE NOTEQUAL ${ORBITER_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_ROOT_DIR}/Textures" CUSTOM_TEXTURE_DIR)
 
-if (${CUSTOM_PLANET_TEXTURE_DIR})
-	option(ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK
-		"Create symlinks for planetary texture directories"
-		ON
-	)
-else()
-	set(ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK OFF)
-endif()
-
-if (${ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK})
-	add_custom_target(PlanetTextureSymlinks ALL
-		COMMAND ${ORBITER_SOURCE_ROOT_DIR}/Textures/mklinks.bat \"${ORBITER_PLANET_TEXTURE_INSTALL_DIR}\"
-		WORKING_DIRECTORY ${ORBITER_BINARY_TEXTURES_DIR}
-		DEPENDS Textures
-	)
+if (${CUSTOM_TEXTURE_DIR})
+	string(REPLACE  "/" "\\" ORBITER_TEXTURE_INSTALL_DIR_W "${ORBITER_TEXTURE_INSTALL_DIR}")
+	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
 endif()
 
 
 # =====================================================================================
 # Find required and optional build tools
-
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"
