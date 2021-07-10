@@ -27,3 +27,7 @@ add_custom_target(DynsurfTechnote
 add_dependencies(Orbiter
 	DynsurfTechnote
 )
+set_target_properties(DynsurfTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

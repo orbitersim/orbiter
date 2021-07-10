@@ -19,3 +19,8 @@ target_link_libraries(EarthAtmNRLMSISE00
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
+
+set_target_properties(EarthAtmNRLMSISE00
+	PROPERTIES
+	FOLDER Celbody/Atmospheres
+)

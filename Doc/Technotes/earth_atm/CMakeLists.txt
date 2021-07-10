@@ -27,3 +27,7 @@ add_custom_target(EarthAtmTechnote
 add_dependencies(Orbiter
 	EarthAtmTechnote
 )
+set_target_properties(EarthAtmTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

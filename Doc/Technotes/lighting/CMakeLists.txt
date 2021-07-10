@@ -25,3 +25,7 @@ add_custom_target(LightingTechnote
 add_dependencies(Orbiter
 	LightingTechnote
 )
+set_target_properties(LightingTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

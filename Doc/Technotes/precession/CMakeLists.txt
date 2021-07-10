@@ -25,3 +25,7 @@ add_custom_target(PrecessionTechnote
 add_dependencies(Orbiter
 	PrecessionTechnote
 )
+set_target_properties(PrecessionTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

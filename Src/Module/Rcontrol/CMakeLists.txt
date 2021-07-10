@@ -20,3 +20,8 @@ add_dependencies(Rcontrol
 	Orbitersdk
 	DlgCtrl
 )
+
+set_target_properties(Rcontrol
+	PROPERTIES
+	FOLDER Modules
+)

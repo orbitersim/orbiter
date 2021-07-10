@@ -17,3 +17,8 @@ target_link_libraries(MarsAtm2006
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
+
+set_target_properties(MarsAtm2006
+	PROPERTIES
+	FOLDER Celbody/Atmospheres
+)

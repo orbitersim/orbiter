@@ -5,6 +5,11 @@ add_library(Satsat SHARED
 	Tass17.cpp
 )
 
+set_target_properties(Satsat
+	PROPERTIES
+	FOLDER Celbody/Satsat
+)
+
 add_dependencies(Satsat
 	Orbiter
 	Orbitersdk

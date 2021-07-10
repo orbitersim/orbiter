@@ -12,6 +12,11 @@ add_library(Atlantis SHARED
 	${ORBITER_SOURCE_MODULE_DIR}/Common/Dialog/TabDlg.cpp
 )
 
+set_target_properties(Atlantis
+	PROPERTIES
+	FOLDER Vessels/Atlantis
+)
+
 target_include_directories(Atlantis
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -70,3 +75,7 @@ add_dependencies(Atlantis
 	ATLANTIS_MESHRES_VC_H
 )
 
+set_target_properties(ATLANTIS_MESHRES_H ATLANTIS_MESHRES_VC_H
+	PROPERTIES
+	FOLDER Vessels/Atlantis/Prerequisites
+)

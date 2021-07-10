@@ -34,6 +34,11 @@ add_library(DeltaGlider SHARED
 	MomentInd.cpp
 )
 
+set_target_properties(DeltaGlider
+	PROPERTIES
+	FOLDER Vessels/DeltaGlider
+)
+
 target_include_directories(DeltaGlider
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	PUBLIC ${VESSEL_COMMON_DIR}
@@ -112,5 +117,10 @@ add_dependencies(DeltaGlider
 	DELTAGLIDER_MESHRES_VC_H
 	DELTAGLIDER_MESHRES_P0_H
 	DELTAGLIDER_MESHRES_P1_H
+)
+
+set_target_properties(DELTAGLIDER_MESHRES_H DELTAGLIDER_MESHRES_VC_H DELTAGLIDER_MESHRES_P0_H DELTAGLIDER_MESHRES_P1_H
+	PROPERTIES
+	FOLDER Vessels/DeltaGlider/Prerequisites
 )
 

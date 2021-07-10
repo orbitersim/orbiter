@@ -11,6 +11,10 @@ add_custom_target(OrbiterDoc
 add_dependencies(Orbiter
 	OrbiterDoc
 )
+set_target_properties(OrbiterDoc
+	PROPERTIES
+	FOLDER Doc
+)
 
 odt_to_pdf_arglist("OrbiterConfig" arglist src out)
 add_custom_command(
@@ -25,6 +29,10 @@ add_custom_target(OrbiterConfigDoc
 add_dependencies(Orbiter
 	OrbiterConfigDoc
 )
+set_target_properties(OrbiterConfigDoc
+	PROPERTIES
+	FOLDER Doc
+)
 
 odt_to_pdf_arglist("PlanetTextures" arglist src out)
 add_custom_command(
@@ -38,6 +46,10 @@ add_custom_target(PlanetTexturesDoc
 )
 add_dependencies(Orbiter
 	PlanetTexturesDoc
+)
+set_target_properties(PlanetTexturesDoc
+	PROPERTIES
+	FOLDER Doc
 )
 
 # TODO: Change not yet available as ODT
@@ -81,6 +93,10 @@ add_custom_target(DeltaGliderDoc
 )
 add_dependencies(Orbiter
 	DeltaGliderDoc
+)
+set_target_properties(DeltaGliderDoc
+	PROPERTIES
+	FOLDER Doc
 )
 
 if(ORBITER_MAKE_TECHNOTES)

@@ -23,3 +23,8 @@ add_dependencies(ScnEditor
 	Orbitersdk
 	DlgCtrl
 )
+
+set_target_properties(ScnEditor
+	PROPERTIES
+	FOLDER Modules
+)

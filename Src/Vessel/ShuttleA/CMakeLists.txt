@@ -27,6 +27,11 @@ add_library(ShuttleA SHARED
 	${VESSEL_COMMON_DIR}/Instrument.cpp
 )
 
+set_target_properties(ShuttleA
+	PROPERTIES
+	FOLDER Vessels/ShuttleA
+)
+
 target_include_directories(ShuttleA
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	PUBLIC ${VESSEL_COMMON_DIR}
@@ -67,4 +72,4 @@ add_custom_command(
 )
 
 # ShuttleA payload class
-add_subdirectory(Shuttlea_PL)
+add_subdirectory(ShuttleA_PL)

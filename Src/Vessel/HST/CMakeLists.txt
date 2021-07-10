@@ -10,6 +10,11 @@ add_library(HST SHARED
 	HST_Lua.cpp
 )
 
+set_target_properties(HST
+	PROPERTIES
+	FOLDER Vessels
+)
+
 target_include_directories(HST
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 )

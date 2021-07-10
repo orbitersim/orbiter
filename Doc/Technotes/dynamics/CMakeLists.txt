@@ -27,3 +27,7 @@ add_custom_target(DynamicsTechnote
 add_dependencies(Orbiter
 	DynamicsTechnote
 )
+set_target_properties(DynamicsTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

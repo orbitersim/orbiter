@@ -17,3 +17,8 @@ target_link_libraries(VenusAtm2006
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
+
+set_target_properties(VenusAtm2006
+	PROPERTIES
+	FOLDER Celbody/Atmospheres
+)

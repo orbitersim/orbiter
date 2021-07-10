@@ -21,3 +21,8 @@ add_dependencies(FlightData
 	Orbiter
 	Orbitersdk
 )
+
+set_target_properties(FlightData
+	PROPERTIES
+	FOLDER Modules
+)

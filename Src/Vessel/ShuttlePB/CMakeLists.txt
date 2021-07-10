@@ -6,6 +6,11 @@ add_library(ShuttlePB SHARED
 	ShuttlePB.cpp
 )
 
+set_target_properties(ShuttlePB
+	PROPERTIES
+	FOLDER Vessels
+)
+
 target_include_directories(ShuttlePB
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 )

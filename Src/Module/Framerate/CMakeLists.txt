@@ -22,3 +22,8 @@ add_dependencies(Framerate
 	Orbiter
 	Orbitersdk
 )
+
+set_target_properties(Framerate
+	PROPERTIES
+	FOLDER Modules
+)

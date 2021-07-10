@@ -1,3 +1,4 @@
+add_subdirectory(Sol)
 add_subdirectory(Vsop87)
 add_subdirectory(Moon)
 add_subdirectory(Phobos)

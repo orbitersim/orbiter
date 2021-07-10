@@ -20,3 +20,8 @@ add_dependencies(LuaInline
 	Orbitersdk
 	LuaInterpreter
 )
+
+set_target_properties(LuaInline
+	PROPERTIES
+	FOLDER Modules/Lua
+)

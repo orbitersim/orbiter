@@ -25,3 +25,7 @@ add_custom_target(GravityTechnote
 add_dependencies(Orbiter
 	GravityTechnote
 )
+set_target_properties(GravityTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

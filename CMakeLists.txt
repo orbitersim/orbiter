@@ -6,6 +6,9 @@ project (Orbiter VERSION 2021.1)
 # Set the pools for compilers that can't run concurrently
 set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1)
 
+# Group projects in VS
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
@@ -79,8 +82,13 @@ add_custom_target(Config ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 )
 
+set_target_properties(BinAssets Scenarios Textures Meshes Script Config
+	PROPERTIES
+	FOLDER Data
+)
+
 # =====================================================================================
-# Find required and optional build tools
+# Create symbolic links for externally installed planet textures
 
 set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
 	${ORBITER_BINARY_ROOT_DIR}/Textures
@@ -98,6 +106,19 @@ if (${CUSTOM_PLANET_TEXTURE_DIR})
 else()
 	set(ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK OFF)
 endif()
+
+if (${ORBITER_INSTALL_PLANET_TEXTURE_SYMLINK})
+	add_custom_target(PlanetTextureSymlinks ALL
+		COMMAND ${ORBITER_SOURCE_ROOT_DIR}/Textures/mklinks.bat \"${ORBITER_PLANET_TEXTURE_INSTALL_DIR}\"
+		WORKING_DIRECTORY ${ORBITER_BINARY_TEXTURES_DIR}
+		DEPENDS Textures
+	)
+endif()
+
+
+# =====================================================================================
+# Find required and optional build tools
+
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"

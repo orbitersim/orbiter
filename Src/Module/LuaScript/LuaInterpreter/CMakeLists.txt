@@ -19,3 +19,8 @@ add_dependencies(LuaInterpreter
 	Orbiter
 	Orbitersdk
 )
+
+set_target_properties(LuaInterpreter
+	PROPERTIES
+	FOLDER Modules/Lua
+)

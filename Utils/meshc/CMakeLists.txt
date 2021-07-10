@@ -6,3 +6,8 @@ add_executable(meshc
 target_include_directories(meshc
 	PUBLIC ${ORBITER_SOURCE_DIR}
 )
+
+set_target_properties(meshc
+	PROPERTIES
+	FOLDER Tools
+)

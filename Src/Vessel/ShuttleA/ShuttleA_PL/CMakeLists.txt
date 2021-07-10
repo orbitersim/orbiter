@@ -8,6 +8,11 @@ add_library(ShuttleA_PL SHARED
 	ShuttleA_PL.cpp
 )
 
+set_target_properties(ShuttleA_PL
+	PROPERTIES
+	FOLDER Vessels/ShuttleA
+)
+
 target_include_directories(ShuttleA_PL
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 )

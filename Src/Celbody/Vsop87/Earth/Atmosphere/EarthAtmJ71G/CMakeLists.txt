@@ -17,3 +17,8 @@ target_link_libraries(EarthAtmJ71G
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
+
+set_target_properties(EarthAtmJ71G
+	PROPERTIES
+	FOLDER Celbody/Atmospheres
+)

@@ -27,3 +27,7 @@ add_custom_target(DistmassTechnote
 add_dependencies(Orbiter
 	DistmassTechnote
 )
+set_target_properties(DistmassTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

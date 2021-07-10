@@ -4,6 +4,11 @@ add_library(Vsop87 SHARED
 	Vsop87.cpp
 )
 
+set_target_properties(Vsop87
+	PROPERTIES
+	FOLDER Celbody/Vsop87
+)
+
 add_dependencies(Vsop87
 	Orbiter
 )
@@ -18,7 +23,6 @@ target_link_libraries(Vsop87
 
 set(VSOP87_LIB $<TARGET_LINKER_FILE:Vsop87>)
 
-add_subdirectory(Sol)
 add_subdirectory(Sun)
 add_subdirectory(Mercury)
 add_subdirectory(Venus)

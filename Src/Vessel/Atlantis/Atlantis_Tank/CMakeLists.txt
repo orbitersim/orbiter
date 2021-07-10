@@ -6,6 +6,11 @@ add_library(Atlantis_Tank SHARED
 	Atlantis_Tank.cpp
 )
 
+set_target_properties(Atlantis_Tank
+	PROPERTIES
+	FOLDER Vessels
+)
+
 target_include_directories(Atlantis_Tank
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Atlantis
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}

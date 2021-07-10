@@ -25,3 +25,7 @@ add_custom_target(CompositeTechnote
 add_dependencies(Orbiter
 	CompositeTechnote
 )
+set_target_properties(CompositeTechnote
+	PROPERTIES
+	FOLDER Doc/Technotes
+)

@@ -18,6 +18,11 @@ add_library(Dragonfly SHARED
 	esystems.cpp
 )
 
+set_target_properties(Dragonfly
+	PROPERTIES
+	FOLDER Vessels
+)
+
 target_include_directories(Dragonfly
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 )

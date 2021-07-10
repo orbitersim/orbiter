@@ -5,6 +5,11 @@ add_library(Galsat SHARED
 	Lieske.cpp
 )
 
+set_target_properties(Galsat
+	PROPERTIES
+	FOLDER Celbody/Galsat
+)
+
 add_dependencies(Galsat
 	Orbiter
 	Orbitersdk

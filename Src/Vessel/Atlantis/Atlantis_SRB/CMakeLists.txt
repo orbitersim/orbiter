@@ -7,6 +7,11 @@ add_library(Atlantis_SRB SHARED
 	../Common.cpp
 )
 
+set_target_properties(Atlantis_SRB
+	PROPERTIES
+	FOLDER Vessels/Atlantis_SRB
+)
+
 target_include_directories(Atlantis_SRB
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Atlantis
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
@@ -48,3 +53,7 @@ add_dependencies(Atlantis_SRB
 	ATLANTIS_SRB_MESHRES_H
 )
 
+set_target_properties(ATLANTIS_SRB_MESHRES_H
+	PROPERTIES
+	FOLDER Vessels/Atlantis_SRB/Prerequisites
+)
