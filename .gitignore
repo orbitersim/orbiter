@@ -2,3 +2,4 @@
 *.VC.db
 .vs
 meshres*.h
+CMakeSettings.json
