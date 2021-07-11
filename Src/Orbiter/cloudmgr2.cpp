@@ -259,7 +259,7 @@ void TileManager2<CloudTile>::LoadZTrees()
 	treeMgr = new ZTreeMgr*[ntreeMgr = 1];
 	if (cprm.tileLoadFlags & 0x0002) {
 		char cbuf[256];
-		g_pOrbiter->Cfg()->TexPath (cbuf, cbody->Name());
+		g_pOrbiter->Cfg()->PTexPath (cbuf, cbody->Name());
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_CLOUD);
 	} else
 		treeMgr[0] = 0;

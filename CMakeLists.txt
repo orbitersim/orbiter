@@ -90,16 +90,16 @@ set_target_properties(BinAssets Scenarios Textures Meshes Script Config
 # =====================================================================================
 # Create symbolic links for externally installed planet textures
 
-set(ORBITER_TEXTURE_INSTALL_DIR
+set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
 	${ORBITER_BINARY_ROOT_DIR}/Textures
 	CACHE
 	PATH
-	"Texture installation directory (e.g. C:/Orbiter2016/Textures)"
+	"Planet texture installation directory (e.g. C:/Orbiter2016/Textures)"
 )
-string(COMPARE NOTEQUAL ${ORBITER_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_ROOT_DIR}/Textures" CUSTOM_TEXTURE_DIR)
+string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_ROOT_DIR}/Textures" CUSTOM_PLANET_TEXTURE_DIR)
 
-if (${CUSTOM_TEXTURE_DIR})
-	string(REPLACE  "/" "\\" ORBITER_TEXTURE_INSTALL_DIR_W "${ORBITER_TEXTURE_INSTALL_DIR}")
+if (${CUSTOM_PLANET_TEXTURE_DIR})
+	string(REPLACE  "/" "\\" ORBITER_PLANET_TEXTURE_INSTALL_DIR_W "${ORBITER_PLANET_TEXTURE_INSTALL_DIR}")
 	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
 endif()
 

@@ -53,39 +53,27 @@ target_link_libraries(DeltaGlider
 	${LUA_LIB}
 )
 
-# scan mesh file for labels and output to header file
-add_custom_target(DELTAGLIDER_MESHRES_H
+# scan mesh files for labels and output to header file
+add_custom_command(OUTPUT meshres.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/deltaglider.msh /P - /O meshres.h
-	BYPRODUCTS meshres.h
+	DEPENDS ${MESH_SOURCE_DIR}/deltaglider.msh
 )
-add_dependencies(DELTAGLIDER_MESHRES_H
-	meshc
-)
-
-# scan mesh file for labels and output to header file
-add_custom_target(DELTAGLIDER_MESHRES_VC_H
+add_custom_command(OUTPUT meshres_vc.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/deltaglider_vc.msh /P _VC /O meshres_vc.h
-	BYPRODUCTS meshres_vc.h
+	DEPENDS ${MESH_SOURCE_DIR}/deltaglider_vc.msh
 )
-add_dependencies(DELTAGLIDER_MESHRES_VC_H
-	meshc
-)
-
-# scan mesh file for labels and output to header file
-add_custom_target(DELTAGLIDER_MESHRES_P0_H
+add_custom_command(OUTPUT meshres_p0.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/dg_2dpanel0.msh /P _P0 /O meshres_p0.h
-	BYPRODUCTS meshres_p0.h
+	DEPENDS ${MESH_SOURCE_DIR}/dg_2dpanel0.msh
 )
-add_dependencies(DELTAGLIDER_MESHRES_P0_H
-	meshc
-)
-
-# scan mesh file for labels and output to header file
-add_custom_target(DELTAGLIDER_MESHRES_P1_H
+add_custom_command(OUTPUT meshres_p1.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/dg_2dpanel1.msh /P _P1 /O meshres_p1.h
-	BYPRODUCTS meshres_p1.h
+	DEPENDS ${MESH_SOURCE_DIR}/dg_2dpanel1.msh
 )
-add_dependencies(DELTAGLIDER_MESHRES_P1_H
+add_custom_target(DeltaGlider_Prerequisites
+	DEPENDS meshres.h meshres_vc.h meshres_p0.h meshres_p1.h
+)
+add_dependencies(DeltaGlider_Prerequisites
 	meshc
 )
 
@@ -113,14 +101,11 @@ add_dependencies(DeltaGlider
 	Orbiter
 	Orbitersdk
 	DlgCtrl
-	DELTAGLIDER_MESHRES_H
-	DELTAGLIDER_MESHRES_VC_H
-	DELTAGLIDER_MESHRES_P0_H
-	DELTAGLIDER_MESHRES_P1_H
+	DeltaGlider_Prerequisites
 )
 
-set_target_properties(DELTAGLIDER_MESHRES_H DELTAGLIDER_MESHRES_VC_H DELTAGLIDER_MESHRES_P0_H DELTAGLIDER_MESHRES_P1_H
+set_target_properties(DeltaGlider_Prerequisites
 	PROPERTIES
-	FOLDER Vessels/DeltaGlider/Prerequisites
+	FOLDER Vessels/DeltaGlider
 )
 

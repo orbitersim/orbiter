@@ -13930,12 +13930,12 @@ MATERIAL mmu2.bmp1
 1.0 1.0 1.0 1
 0.2 0.2 0.2 1
 TEXTURES 9
-MMU.dds
-MMU2.dds
-MMU3.dds
-MMU4.dds
-VISOR.dds
-MMU6.dds
-MMU_RED.dds
-MMU_NASA.dds
-TRED.dds
+MMU\mmu.dds
+MMU\mmu2.dds
+MMU\mmu3.dds
+MMU\mmu4.dds
+MMU\visor.dds
+MMU\mmu6.dds
+MMU\mmu_red.dds
+MMU\mmu_nasa.dds
+MMU\tred.dds

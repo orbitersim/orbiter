@@ -32,21 +32,19 @@ target_link_libraries(Atlantis
 	$<TARGET_LINKER_FILE:Atlantis_Tank>
 )
 
-# scan mesh file for labels and output to header file
-add_custom_target(ATLANTIS_MESHRES_H
+# scan mesh files for labels and output to header file
+add_custom_command(OUTPUT meshres.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/Atlantis.msh /P - /O meshres.h
-	BYPRODUCTS meshres.h
+	DEPENDS ${MESH_SOURCE_DIR}/Atlantis.msh
 )
-add_dependencies(ATLANTIS_MESHRES_H
-	meshc
-)
-
-# scan mesh file for labels and output to header file
-add_custom_target(ATLANTIS_MESHRES_VC_H
+add_custom_command(OUTPUT meshres_vc.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/AtlantisVC.msh /P _VC /O meshres_vc.h
-	BYPRODUCTS meshres_vc.h
+	DEPENDS ${MESH_SOURCE_DIR}/AtlantisVC.msh
 )
-add_dependencies(ATLANTIS_MESHRES_VC_H
+add_custom_target(Atlantis_Prerequisites
+	DEPENDS meshres.h meshres_vc.h
+)
+add_dependencies(Atlantis_Prerequisites
 	meshc
 )
 
@@ -71,11 +69,10 @@ add_dependencies(Atlantis
 	DlgCtrl
 	Atlantis_SRB
 	Atlantis_Tank
-	ATLANTIS_MESHRES_H
-	ATLANTIS_MESHRES_VC_H
+	Atlantis_Prerequisites
 )
 
-set_target_properties(ATLANTIS_MESHRES_H ATLANTIS_MESHRES_VC_H
+set_target_properties(Atlantis_Prerequisites
 	PROPERTIES
-	FOLDER Vessels/Atlantis/Prerequisites
+	FOLDER Vessels/Atlantis
 )

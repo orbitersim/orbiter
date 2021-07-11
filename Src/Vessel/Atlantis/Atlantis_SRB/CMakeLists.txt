@@ -23,12 +23,15 @@ target_link_libraries(Atlantis_SRB
 	${ORBITER_SDK_LIB}
 )
 
-# scan mesh file for labels and output to header file
-add_custom_target(ATLANTIS_SRB_MESHRES_H
+# scan mesh files for labels and output to header file
+add_custom_command(OUTPUT meshres.h
 	COMMAND ${ORBITER_TOOL_MESHC} /I ${MESH_SOURCE_DIR}/Atlantis_SRB.msh /P - /O meshres.h
-	BYPRODUCTS meshres.h
+	DEPENDS ${MESH_SOURCE_DIR}/Atlantis_SRB.msh
 )
-add_dependencies(ATLANTIS_SRB_MESHRES_H
+add_custom_target(Atlantis_SRB_Prerequisites
+	DEPENDS meshres.h
+)
+add_dependencies(Atlantis_SRB_Prerequisites
 	meshc
 )
 
@@ -50,10 +53,10 @@ add_custom_command(
 add_dependencies(Atlantis_SRB
 	Orbiter
 	Orbitersdk
-	ATLANTIS_SRB_MESHRES_H
+	Atlantis_SRB_Prerequisites
 )
 
-set_target_properties(ATLANTIS_SRB_MESHRES_H
+set_target_properties(Atlantis_SRB_Prerequisites
 	PROPERTIES
-	FOLDER Vessels/Atlantis_SRB/Prerequisites
+	FOLDER Vessels/Atlantis_SRB
 )

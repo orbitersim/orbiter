@@ -42,7 +42,7 @@ ElevationManager::ElevationManager (const CelestialBody *_cbody)
 	}
 	if (tilesource & 0x0002) {
 		char cbuf[256];
-		g_pOrbiter->Cfg()->TexPath (cbuf, cbody->Name());
+		g_pOrbiter->Cfg()->PTexPath (cbuf, cbody->Name());
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEV);
 		treeMgr[1] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEVMOD);
 	} else {
@@ -81,7 +81,7 @@ INT16 *ElevationManager::LoadElevationTile (int lvl, int ilat, int ilng, double 
 			FILE *f;
 			char fname[256], path[256];
 			sprintf (fname, "%s\\Elev\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
-			g_pOrbiter->Cfg()->TexPath(path, fname);
+			g_pOrbiter->Cfg()->PTexPath(path, fname);
 			if (f = fopen(path, "rb")) {
 				elev = new INT16[ndat];
 				ELEVFILEHEADER hdr;
@@ -164,7 +164,7 @@ bool ElevationManager::LoadElevationTile_mod (int lvl, int ilat, int ilng, doubl
 			FILE *f;
 			char fname[256], path[256];
 			sprintf (fname, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", cbody->Name(), lvl, ilat, ilng);
-			g_pOrbiter->Cfg()->TexPath(path, fname);
+			g_pOrbiter->Cfg()->PTexPath(path, fname);
 			if (f = fopen(path, "rb")) {
 				ELEVFILEHEADER hdr;
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);

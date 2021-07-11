@@ -181,7 +181,6 @@ set_target_properties(Orbiter
 
 add_custom_command(
 	OUTPUT cryptstring.h
-#	COMMAND ${CMAKE_BINARY_DIR}/Utils/scramble/scramble.exe ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
 	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
 )
 

@@ -33,6 +33,7 @@ CFG_DIRPRM CfgDirPrm_default = {
 	".\\Meshes\\",		// MeshDir
 	".\\Textures\\",	// TextureDir
 	".\\Textures2\\",	// HightexDir
+	".\\Textures\\",	// PlanetTexDir
 	".\\Scenarios\\"	// ScnDir
 };
 
@@ -472,6 +473,13 @@ Config::Config (char *fname)
 		strcpy (htxpath, CfgDirPrm.HightexDir);  htxlen = strlen (htxpath);
 	}
 
+	// planetary texture directory
+	if (GetString(ifs, "PlanetTexDir", CfgDirPrm.PlanetTexDir)) {
+		if (CfgDirPrm.PlanetTexDir[strlen(CfgDirPrm.PlanetTexDir) - 1] != '\\')
+			strcat(CfgDirPrm.PlanetTexDir, "\\");
+		strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
+	}
+
 	// scenario directory
 	if (GetString (ifs, "ScenarioDir", CfgDirPrm.ScnDir))
 		if (CfgDirPrm.ScnDir[strlen(CfgDirPrm.ScnDir)-1] != '\\')
@@ -777,17 +785,19 @@ Config::~Config()
 
 void Config::SetDefaults ()
 {
-	strcpy (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir);
-	strcpy (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir);
-	strcpy (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir);
-	strcpy (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir);
-	strcpy (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir);
+	strcpy(CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir);
+	strcpy(CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir);
+	strcpy(CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir);
+	strcpy(CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir);
+	strcpy(CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir);
+	strcpy(CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir);
 
-	strcpy (cfgpath, CfgDirPrm.ConfigDir);  cfglen = strlen (cfgpath);
-	strcpy (mshpath, CfgDirPrm.MeshDir);    mshlen = strlen (mshpath);
-	strcpy (texpath, CfgDirPrm.TextureDir); texlen = strlen (texpath);
-	strcpy (htxpath, CfgDirPrm.HightexDir); htxlen = strlen (htxpath);
-	strcpy (scnpath, CfgDirPrm.ScnDir);     scnlen = strlen (scnpath);
+	strcpy(cfgpath, CfgDirPrm.ConfigDir);    cfglen = strlen(cfgpath);
+	strcpy(mshpath, CfgDirPrm.MeshDir);      mshlen = strlen(mshpath);
+	strcpy(texpath, CfgDirPrm.TextureDir);   texlen = strlen(texpath);
+	strcpy(htxpath, CfgDirPrm.HightexDir);   htxlen = strlen(htxpath);
+	strcpy(ptxpath, CfgDirPrm.PlanetTexDir); ptxlen = strlen(ptxpath);
+	strcpy(scnpath, CfgDirPrm.ScnDir);       scnlen = strlen(scnpath);
 
 	if (Root) delete []Root;
 	Root = 0;
@@ -960,6 +970,7 @@ BOOL Config::Write (const char *fname) const
 		strcmp (CfgDirPrm.MeshDir, CfgDirPrm_default.MeshDir) ||
 		strcmp (CfgDirPrm.TextureDir, CfgDirPrm_default.TextureDir) ||
 		strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) ||
+		strcmp (CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) ||
 		strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll) {
 		ofs << "\n; === Subdirectory locations\n";
 		if (strcmp (CfgDirPrm.ConfigDir, CfgDirPrm_default.ConfigDir) || bEchoAll)
@@ -970,6 +981,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "TextureDir = " << CfgDirPrm.TextureDir << endl;
 		if (strcmp (CfgDirPrm.HightexDir, CfgDirPrm_default.HightexDir) || bEchoAll)
 			ofs << "HightexDir = " << CfgDirPrm.HightexDir << endl;
+		if (strcmp(CfgDirPrm.PlanetTexDir, CfgDirPrm_default.PlanetTexDir) || bEchoAll)
+			ofs << "PlanetTexDir = " << CfgDirPrm.PlanetTexDir << endl;
 		if (strcmp (CfgDirPrm.ScnDir, CfgDirPrm_default.ScnDir) || bEchoAll)
 			ofs << "ScenarioDir = " << CfgDirPrm.ScnDir << endl;
 	}
@@ -1392,6 +1405,14 @@ char *Config::HTexPath (const char *name, const char *ext)
 	return strcat (htxpath, ext ? ext : ".dds");
 }
 
+char* Config::PTexPath(const char* name, const char* ext)
+{
+	if (!ptxlen) return 0;
+	strcpy(ptxpath + ptxlen, name);
+	if (ext) strcat(ptxpath, ext);
+	return ptxpath;
+}
+
 const char *Config::ScnPath (const char *name)
 {
 	if (name[1] == ':') { // assume full absolute path
@@ -1407,6 +1428,13 @@ void Config::TexPath (char *cbuf, const char *name, const char *ext)
 	strncpy (cbuf, texpath, texlen);
 	if (ext) sprintf (cbuf+texlen, "%s.%s", name, ext);
 	else     strcpy (cbuf+texlen, name);
+}
+
+void Config::PTexPath(char* cbuf, const char* name, const char* ext)
+{
+	strncpy(cbuf, ptxpath, ptxlen);
+	if (ext) sprintf(cbuf + ptxlen, "%s.%s", name, ext);
+	else     strcpy(cbuf + ptxlen, name);
 }
 
 void Config::AddModule (char *cbuf)

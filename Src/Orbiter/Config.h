@@ -66,6 +66,7 @@ struct CFG_DIRPRM {
 	char   MeshDir[256];		// location of mesh files
 	char   TextureDir[256];		// location of texture files
 	char   HightexDir[256];		// location of highres planet textures
+	char   PlanetTexDir[256];   // location for planetary textures (version-2 textures)
 	char   ScnDir[256];			// location of scenario files
 };
 
@@ -359,11 +360,15 @@ public:
 	// Return full path for texture file name in hightex dir.
 	// Default extension is ".dds"
 	// If hightex dir is not defined, function returns NULL
+	char* PTexPath(const char* name, const char* ext = 0);
+	// Return full path for planetary texture file name
 	const char *ScnPath    (const char *name);
 	// Return full path for scenario file name
 
 	void TexPath (char *cbuf, const char *name, const char *ext=0);
-	// fill cbuf with the complete path for file name.ext
+	// fill cbuf with the complete path for file name.ext in the texture directory
+	void PTexPath(char* cbuf, const char* name, const char* ext = 0);
+	// fill cbuf with the complete path for file name.ext in the planetary texture directory
 
 	bool bEchoAll;          // echo all configuration parameters (or only non-default ones)?
 	RECT rLaunchpad;        // launchpad dialog position
@@ -437,8 +442,9 @@ private:
 	char mshpath[256];
 	char texpath[256];
 	char htxpath[256];
+	char ptxpath[256];
 	char scnpath[256];
-	int cfglen, mshlen, texlen, htxlen, scnlen; // string length
+	int cfglen, mshlen, texlen, htxlen, ptxlen, scnlen; // string length
 	bool found_config_file;
 };
 

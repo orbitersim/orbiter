@@ -213,7 +213,7 @@ void CsphereManager::LoadZTrees()
 		char cbuf[256];
 		//char path[256] = "csphere\\";
 		//strcat(path, m_name);
-		g_pOrbiter->Cfg()->TexPath(cbuf, m_name);
+		g_pOrbiter->Cfg()->PTexPath(cbuf, m_name);
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_SURF);
 	}
 	else {

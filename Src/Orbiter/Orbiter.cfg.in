@@ -2,4 +2,4 @@
 EchoAllParams = FALSE
 
 ; === Subdirectory locations
-TextureDir = ${ORBITER_TEXTURE_INSTALL_DIR_W}
+PlanetTexDir = ${ORBITER_PLANET_TEXTURE_INSTALL_DIR_W}

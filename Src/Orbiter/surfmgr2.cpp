@@ -173,7 +173,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 	// Elevation data
 	if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		sprintf (path, "%s\\Elev\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-		g_pOrbiter->Cfg()->TexPath (texpath, path);
+		g_pOrbiter->Cfg()->PTexPath (texpath, path);
 		if (f = fopen (texpath, "rb")) {
 			e = new INT16[ndat];
 			// read the elevation file header
@@ -251,7 +251,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 		INT16 offset;
 		if (mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 			sprintf (path, "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", name, lvl, ilat, ilng);
-			g_pOrbiter->Cfg()->TexPath(texpath, path);
+			g_pOrbiter->Cfg()->PTexPath(texpath, path);
 			if (f = fopen (texpath, "rb")) {
 				fread (&hdr, sizeof(ELEVFILEHEADER), 1, f);
 				if (hdr.hdrsize != sizeof(ELEVFILEHEADER)) {
@@ -1046,7 +1046,7 @@ void TileManager2<SurfTile>::LoadZTrees()
 	treeMgr = new ZTreeMgr*[ntreeMgr = 5];
 	if (cprm.tileLoadFlags & 0x0002) {
 		char cbuf[256];
-		g_pOrbiter->Cfg()->TexPath (cbuf, m_name);
+		g_pOrbiter->Cfg()->PTexPath (cbuf, m_name);
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_SURF);
 		treeMgr[1] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_MASK);
 		treeMgr[2] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_ELEV);
