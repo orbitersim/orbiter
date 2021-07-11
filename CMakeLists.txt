@@ -82,6 +82,10 @@ add_custom_target(Config ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 )
 
+add_custom_target(Flights ALL
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
+)
+
 set_target_properties(BinAssets Scenarios Textures Meshes Script Config
 	PROPERTIES
 	FOLDER Data
