@@ -1,3 +1,4 @@
+# Core library to go to the Orbiter main directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
 
 add_library(LuaInline SHARED
