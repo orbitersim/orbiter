@@ -1,26 +1,26 @@
 # The target directory for plugin DLLs
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_PLUGIN_DIR})
 
-add_library(DialogTemplate SHARED
-	DialogTemplate.cpp
-	DialogTemplate.rc
+add_library(LaunchpadParamTemplate SHARED
+	LParam.cpp
+	LParam.rc
 )
 
-target_include_directories(DialogTemplate
+target_include_directories(LaunchpadParamTemplate
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 )
 
-target_link_libraries(DialogTemplate
+target_link_libraries(LaunchpadParamTemplate
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
 
-add_dependencies(DialogTemplate
+add_dependencies(LaunchpadParamTemplate
 	Orbiter
 	Orbitersdk
 )
 
-set_target_properties(DialogTemplate
+set_target_properties(LaunchpadParamTemplate
 	PROPERTIES
 	FOLDER SDKSamples
 )

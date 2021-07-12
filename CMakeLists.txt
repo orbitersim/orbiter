@@ -99,6 +99,11 @@ option(ORBITER_MAKE_DOC
 	ON
 )
 
+option(ORBITER_MAKE_SDK_SAMPLES
+	"Build the SDK sample projects"
+	OFF
+)
+
 if (ORBITER_MAKE_DOC)
 
 	find_program(ODT_TO_PDF_COMPILER
