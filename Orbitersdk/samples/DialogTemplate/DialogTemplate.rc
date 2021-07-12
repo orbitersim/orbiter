@@ -93,7 +93,7 @@ END
 STRINGTABLE 
 BEGIN
     IDS_INFO                "DIALOG TEMPLATE:\r\n\r\nA simple SDK example which provides a dialog box that can be opened during a simulation session via the ""My dialog"" entry in the Custom Functions list (Ctrl-F4).\r\n\r\nThis addon is not very useful - it is intended as a starting point for developers."
-    IDS_TYPE                "Developer resources and samples"
+    IDS_TYPE                "SDK sample plugins"
 END
 
 #endif    // English (U.K.) resources
