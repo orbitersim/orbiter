@@ -148,7 +148,6 @@ endfunction()
 
 # Sub-projects
 add_subdirectory(Src)
-add_subdirectory(Core)
 add_subdirectory(Utils)
 
 if(ORBITER_MAKE_DOC)
