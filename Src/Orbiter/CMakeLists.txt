@@ -1,8 +1,10 @@
 # SAFESEH linker flag must be turned off because the DX7 libraries don't support it'
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
 
-# Add the executable
-add_executable(Orbiter
+set(Orbiter_sources)
+
+# General source files
+list(APPEND Orbiter_sources
 	Astro.cpp
 	Camera.cpp
 	Config.cpp
@@ -23,38 +25,24 @@ add_executable(Orbiter
 	State.cpp
 	Vecmat.cpp
 	VectorMap.cpp
-	# API
-	CamAPI.cpp
-	DrawAPI.cpp
-	GraphicsAPI.cpp
-	MFDAPI.cpp
-	ModuleAPI.cpp
-	OrbiterAPI.cpp
-	# Body
-	Body.cpp
-	BodyIntegrator.cpp
-	Celbody.cpp
-	Planet.cpp
-	Rigidbody.cpp
-	Star.cpp
-		# Vessel
-		FlightRecorder.cpp
-		SuperVessel.cpp
-		Vessel.cpp
-		Vesselbase.cpp
-		Vesselstatus.cpp
-		# Base
-		Base.cpp
-		Baseobj.cpp
-	# Cockpit
-	Defpanel.cpp
-	hud.cpp
-	MenuInfoBar.cpp
-	Pane.cpp
-	Panel.cpp
-	Panel2D.cpp
-	VCockpit.cpp
-	# Dialogs
+)
+
+# Launchpad
+list(APPEND Orbiter_sources
+	Launchpad.cpp
+	LpadTab.cpp
+	TabAbout.cpp
+	TabExtra.cpp
+	TabJoystick.cpp
+	TabModule.cpp
+	TabParam.cpp
+	TabScenario.cpp
+	TabVideo.cpp
+	TabVisual.cpp
+)
+
+# Dialogs
+list(APPEND Orbiter_sources
 	CustomControls.cpp
 	Dialogs.cpp
 	DialogWin.cpp
@@ -72,18 +60,92 @@ add_executable(Orbiter
 	DlgVishelper.cpp
 	htmlctrl.c
 	Select.cpp
-	# DirectX7 interface
+)
+
+# Body classes
+list(APPEND Orbiter_sources
+	Body.cpp
+	BodyIntegrator.cpp
+	Celbody.cpp
+	Planet.cpp
+	Rigidbody.cpp
+	Star.cpp
+)
+
+# Vessel classes
+list(APPEND Orbiter_sources
+	FlightRecorder.cpp
+	SuperVessel.cpp
+	Vessel.cpp
+	Vesselbase.cpp
+	Vesselstatus.cpp
+)
+
+# Surface base classes
+list(APPEND Orbiter_sources
+	Base.cpp
+	Baseobj.cpp
+)
+
+# Cockpit classes
+list(APPEND Orbiter_sources
+	Defpanel.cpp
+	hud.cpp
+	MenuInfoBar.cpp
+	Pane.cpp
+	Panel.cpp
+	Panel2D.cpp
+	VCockpit.cpp
+)
+
+# MFD modes
+list(APPEND Orbiter_sources
+	Mfd.cpp
+	MfdAlign.cpp
+	MfdComms.cpp
+	MfdDocking.cpp
+	MfdHsi.cpp
+	MfdLanding.cpp
+	MfdMap.cpp
+	MfdMap_old.cpp
+	MfdOrbit.cpp
+	MfdSurface.cpp
+	MfdSync.cpp
+	MfdTransfer.cpp
+	MfdUser.cpp
+)
+
+# API implementations
+list(APPEND Orbiter_sources
+	CamAPI.cpp
+	DrawAPI.cpp
+	GraphicsAPI.cpp
+	MFDAPI.cpp
+	ModuleAPI.cpp
+	OrbiterAPI.cpp
+)
+
+# Graphics utils
+list(APPEND Orbiter_sources
 	D3d7util.cpp
 	D3dmath.cpp
 	Di7frame.cpp
-	# Graphics
+)
+
+# Graphics interface base class for GDI clients
+list(APPEND Orbiter_sources
+	${GDICLIENT_DIR}/GDIClient.cpp
+)
+
+# DX7 inline graphics
+if(ORBITER_BUILD_WITH_DX7)
+list(APPEND Orbiter_sources
 	cloudmgr2.cpp
 	CSphereMgr.cpp
 	cspheremgr2.cpp
 	D3d7enum.cpp
 	D3d7frame.cpp
 	ExtraRender.cpp
-	${GDICLIENT_DIR}/GDIClient.cpp
 	OGraphics.cpp
 	Particle.cpp
 	Scene.cpp
@@ -99,47 +161,49 @@ add_executable(Orbiter
 	VPlanet.cpp
 	Vstar.cpp
 	Vvessel.cpp
-	# Launchpad
-	Launchpad.cpp
-	LpadTab.cpp
-	TabAbout.cpp
-	TabExtra.cpp
-	TabJoystick.cpp
-	TabModule.cpp
-	TabParam.cpp
-	TabScenario.cpp
-	TabVideo.cpp
-	TabVisual.cpp
-	# MFD
-	Mfd.cpp
-	MfdAlign.cpp
-	MfdComms.cpp
-	MfdDocking.cpp
-	MfdHsi.cpp
-	MfdLanding.cpp
-	MfdMap.cpp
-	MfdMap_old.cpp
-	MfdOrbit.cpp
-	MfdSurface.cpp
-	MfdSync.cpp
-	MfdTransfer.cpp
-	MfdUser.cpp
-	# Utils
+)
+endif()
+
+# Utils
+list(APPEND Orbiter_sources
 	Log.cpp
 	Memstat.cpp
 	Util.cpp
 	ZTreeMgr.cpp
-	# Resources
+)
+
+# Resources
+list(APPEND Orbiter_sources
 	Orbiter.rc
 	Orbiter.rc2
 	Orbiter.ico
-	# Files built on the fly
+)
+
+# Files built on the fly
+list(APPEND Orbiter_sources
 	cryptstring.h
 	Disclaimer.txt
 	splash_cs.dat
-	)
+)
 
-add_definitions(-DINLINEGRAPHICS)
+# Add the executable
+add_executable(Orbiter
+	${Orbiter_sources}
+)
+
+if(ORBITER_BUILD_WITH_DX7)
+	add_definitions(-DINLINEGRAPHICS)
+	set_target_properties(Orbiter
+		PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+	)
+else()
+	add_definitions(-DNOGRAPHICS)
+	set_target_properties(Orbiter
+		PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR}/Server
+	)
+endif()
 
 target_include_directories(Orbiter
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
@@ -173,8 +237,6 @@ add_dependencies(Orbiter
 set_target_properties(Orbiter
 	PROPERTIES
 	LINK_FLAGS "/SUBSYSTEM:WINDOWS"
-	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
-	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}
 	ENABLE_EXPORTS 1
 	FOLDER Core
 )

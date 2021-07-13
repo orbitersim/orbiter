@@ -95,6 +95,11 @@ endif()
 # =====================================================================================
 # Find required and optional build tools
 
+option(ORBITER_BUILD_WITH_DX7
+	"Compile Orbiter with built-in DX7 graphics. If off, the server version for external graphics clients will be built."
+	ON
+)
+
 option(ORBITER_MAKE_DOC
 	"Create documentation"
 	ON

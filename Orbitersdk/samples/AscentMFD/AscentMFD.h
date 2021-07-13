@@ -1,5 +1,5 @@
-#ifndef __CUSTOMMFD_H
-#define __CUSTOMMFD_H
+#ifndef __ASCENTMFD_H
+#define __ASCENTMFD_H
 
 class AscentMFD: public GraphMFD {
 public:
@@ -40,4 +40,4 @@ private:
 	} saveprm;
 };
 
-#endif //!__CUSTOMMFD_H
+#endif //!__AscentMFD_H

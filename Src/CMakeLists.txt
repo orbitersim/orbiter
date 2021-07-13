@@ -5,3 +5,7 @@ add_subdirectory(Celbody)
 add_subdirectory(Vessel)
 add_subdirectory(Module)
 add_subdirectory(Plugin)
+
+if(NOT ORBITER_BUILD_WITH_DX7)
+	add_subdirectory(Orbiter_ng)
+endif()

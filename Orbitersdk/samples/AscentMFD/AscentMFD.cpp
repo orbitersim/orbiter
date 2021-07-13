@@ -1,10 +1,10 @@
 // ==============================================================
-//                 ORBITER MODULE: CustomMFD
+//                 ORBITER MODULE: AscentMFD
 //                  Part of the ORBITER SDK
 //           Copyright (C) 2002-2003 Martin Schweiger
 //                   All rights reserved
 //
-// CustomMFD.cpp
+// AscentMFD.cpp
 // Reference implementation of generic user-defined MFD mode
 // ==============================================================
 
@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "orbitersdk.h"
-#include "CustomMFD.h"
+#include "AscentMFD.h"
 
 // ==============================================================
 // Global variables

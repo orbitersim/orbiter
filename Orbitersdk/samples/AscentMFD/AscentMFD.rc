@@ -54,8 +54,8 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_INFO                "CUSTOM MFD:\r\n\r\nAdds a new ""Ascent Profile"" MFD mode. Plots altitude, pitch angle, radial and tangential velocity components as a function of time.\r\nThis is an example for a graph-based MFD mode."
-    IDS_TYPE                "MFD modes"
+    IDS_INFO                "Ascent MFD:\r\n\r\nAdds a new ""Ascent Profile"" MFD mode. Plots altitude, pitch angle, radial and tangential velocity components as a function of time.\r\nThis is an example for a graph-based MFD mode."
+    IDS_TYPE                "SDK sample plugins"
 END
 
 #endif    // English (U.K.) resources

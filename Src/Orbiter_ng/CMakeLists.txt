@@ -1,0 +1,12 @@
+add_executable(Orbiter_ng
+	Orbiter_ng.cpp
+	Orbiter_ng.rc
+)
+
+set_target_properties(Orbiter_ng
+	PROPERTIES
+	LINK_FLAGS "/SUBSYSTEM:WINDOWS"
+	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}
+	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}
+	FOLDER Core
+)
