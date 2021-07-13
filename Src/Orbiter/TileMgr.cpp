@@ -530,7 +530,7 @@ void TileManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double scale, 
 		dev->SetRenderState (D3DRENDERSTATE_TEXTUREFACTOR, D3DRGBA(bgc.x, bgc.y, bgc.z, 1));
 	}
 
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	if (level <= 4) { // simple full-sphere render
 
@@ -562,7 +562,7 @@ void TileManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double scale, 
 		ReleaseMutex (tilebuf->hQueueMutex);
 	}
 
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	if (specmod)
 		watermat.specular.r = watermat.specular.g = watermat.specular.b = 1.0f;

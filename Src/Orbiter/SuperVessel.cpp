@@ -71,7 +71,7 @@ SuperVessel::SuperVessel (Vessel *vessel)
 SuperVessel::SuperVessel (Vessel *vessel1, Vessel *vessel2, int port1, int port2, bool mixmoments)
 : VesselBase ()
 {
-	dASSERT (!g_bStateUpdate); // only create supervessels outside update phase
+	dASSERT (!g_bStateUpdate, "SuperVessel constructor must not be called during state update"); // only create supervessels outside update phase
 
 	int i;
 
@@ -766,8 +766,8 @@ bool SuperVessel::CheckSurfaceContact () const
 
 void SuperVessel::InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
 {
-	dASSERT(!g_bStateUpdate); // not valid during update phase
-	dASSERT(hrot);            // only support dynamic impact model for now
+	dASSERT(!g_bStateUpdate, "SuperVessel::InitLanded must not be called during state update"); // not valid during update phase
+	dASSERT(hrot, "hrot parameter for SuperVessel::InitLanded must be supplied");               // only support dynamic impact model for now
 
 	DWORD comp;
 	proxybody = proxyplanet = planet;

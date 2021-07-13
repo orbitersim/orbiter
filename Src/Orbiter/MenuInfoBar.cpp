@@ -416,7 +416,7 @@ MenuInfoBar::MenuInfoBar (const Pane *_pane)
 	scrolldir = scrolldir_info = 0;
 	menuSrc = gc->clbkLoadTexture ("main_menu.dds", 0x4);
 	menuTgt = gc->clbkLoadTexture ("main_menu_tgt.dds", 0x4);
-	dASSERT(menuSrc && menuTgt);
+	dASSERT(menuSrc && menuTgt, "MenuInfoBar: main_menu.dds or main_menu_tgt.dds could not be loaded from Textures directory.");
 	gc->clbkBlt (menuTgt, 0, tgtTexH-menuH, menuSrc, 0, 23+menuH, menuW, menuH);
 	int yofs = (menumode == 0 ? -menuH+scrollrange:-menuH);
 	int yofs_info = (infomode == 0 ? 0:-menuH);

@@ -32,3 +32,10 @@ add_subdirectory(Jupiter)
 add_subdirectory(Saturn)
 add_subdirectory(Uranus)
 add_subdirectory(Neptune)
+
+# Installation
+install(TARGETS
+	Vsop87
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)

@@ -152,10 +152,10 @@ void TileManager2<CloudTile>::Render (LPDIRECT3DDEVICE7 dev, MATRIX4 &dwmat, VPl
 		ProcessNode (tiletree+i);
 
 	// render the tree
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	loader->ReleaseMutex ();
 
@@ -216,10 +216,10 @@ void TileManager2<CloudTile>::RenderFlatCloudShadows (LPDIRECT3DDEVICE7 dev, MAT
 	loader->WaitForMutex();
 
 	// render the tree
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	loader->ReleaseMutex ();
 

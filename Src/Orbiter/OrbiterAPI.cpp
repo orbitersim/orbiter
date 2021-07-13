@@ -1936,7 +1936,7 @@ DLLEXPORT void oapiBlt (SURFHANDLE tgt, SURFHANDLE src, int tgtx, int tgty, int 
 #endif
 		}
 
-		dASSERT (gc->clbkBlt (tgt, tgtx, tgty, src, srcx, srcy, w, h));
+		dASSERT (gc->clbkBlt (tgt, tgtx, tgty, src, srcx, srcy, w, h), "GraphicsClient::clbkBlt failed");
 	}
 }
 

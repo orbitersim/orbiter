@@ -255,3 +255,19 @@ add_custom_command(
 	OUTPUT splash_cs.dat
 	COMMAND $<TARGET_FILE:fchecksum> ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash2016.jpg splash_cs.dat
 )
+
+
+# Installation
+if(ORBITER_BUILD_WITH_DX7)
+	install(TARGETS
+		Orbiter
+		RUNTIME
+		DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+	)
+else()
+	install(TARGETS
+		Orbiter
+		RUNTIME
+		DESTINATION ${ORBITER_INSTALL_MODULE_DIR}/Server
+	)
+endif()

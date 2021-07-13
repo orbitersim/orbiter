@@ -1,24 +1,32 @@
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules/Celbody/Mars/Atmosphere)
+set(ATM_TARGET MarsAtm2006)
 
-add_library(MarsAtm2006 SHARED
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_CELBODY_DIR}/${CELBODY}/Atmosphere)
+
+add_library(${ATM_TARGET} SHARED
 	MarsAtm2006.cpp
 )
 
-add_dependencies(MarsAtm2006
+add_dependencies(${ATM_TARGET}
 	Orbiter
 	Orbitersdk
 )
 
-target_include_directories(MarsAtm2006
+target_include_directories(${ATM_TARGET}
 	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
 )
 
-target_link_libraries(MarsAtm2006
+target_link_libraries(${ATM_TARGET}
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 )
 
-set_target_properties(MarsAtm2006
+set_target_properties(${ATM_TARGET}
 	PROPERTIES
 	FOLDER Celbody/Atmospheres
+)
+
+# Installation
+install(TARGETS ${ATM_TARGET}
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}/${CELBODY}/Atmosphere
 )

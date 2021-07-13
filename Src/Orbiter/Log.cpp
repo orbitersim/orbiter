@@ -111,7 +111,7 @@ void LogOut_Error_Start()
 
 void LogOut_Error_End()
 {
-	LogOut("============================ ERROR: ===========================");
+	LogOut("===============================================================");
 }
 
 void LogOut_Location(const char* func, const char* file, int line)

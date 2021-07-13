@@ -13,3 +13,8 @@ set_target_properties(${CELBODY}
 	PROPERTIES
 	FOLDER Celbody
 )
+
+#Installation
+install(DIRECTORY Config
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)

@@ -36,3 +36,13 @@ add_subdirectory(Io)
 add_subdirectory(Europa)
 add_subdirectory(Ganymede)
 add_subdirectory(Callisto)
+
+# Installation
+install(TARGETS
+	Galsat
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+install(FILES ephem_e15.dat
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Jupiter/Data
+)

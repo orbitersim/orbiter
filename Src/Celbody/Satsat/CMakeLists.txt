@@ -40,3 +40,13 @@ add_subdirectory(Rhea)
 add_subdirectory(Titan)
 add_subdirectory(Hyperion)
 add_subdirectory(Iapetus)
+
+# Installation
+install(TARGETS
+	Satsat
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+install(FILES tass17.dat
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Saturn/Data
+)

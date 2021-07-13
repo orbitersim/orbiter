@@ -73,3 +73,21 @@ add_custom_command(
 
 # ShuttleA payload class
 add_subdirectory(ShuttleA_PL)
+
+# Installation
+install(TARGETS ShuttleA
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+install(DIRECTORY ${CONFIG_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
+)
+install(DIRECTORY ${MESH_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes/ShuttleA
+)
+install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/ShuttleA
+)
+install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/ShuttleA
+)

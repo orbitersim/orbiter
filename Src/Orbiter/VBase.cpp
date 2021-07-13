@@ -348,11 +348,11 @@ void VBase::RenderSurfaceTiles (LPDIRECT3DDEVICE7 dev)
 	// D3DTSS_ADDRESS(0) == D3DTADDRESS_WRAP
 	DWORD val;
 	dev->GetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, &val);
-	dASSERT(val == TRUE);
+	dASSERT(val == TRUE, "LPDIRECT3DDEVICE7::GetRenderState: expected return TRUE");
 	dev->GetRenderState(D3DRENDERSTATE_ZENABLE, &val);
-	dASSERT(val == FALSE);
+	dASSERT(val == FALSE, "LPDIRECT3DDEVICE7::GetRenderState: expected return FALSE");
 	dev->GetTextureStageState (0, D3DTSS_ADDRESS, &val);
-	dASSERT(val == D3DTADDRESS_WRAP);
+	dASSERT(val == D3DTADDRESS_WRAP, "LPDIRECT3DDEVICE7::GetTextureStageState: expected return D3DTADDRESS_WRAP");
 #endif
 
 	if (nsurftile) {
@@ -437,9 +437,9 @@ void VBase::RenderShadows (LPDIRECT3DDEVICE7 dev)
 	// ALPHABLENDENABLE=TRUE
 	DWORD val;
 	dev->GetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, &val);
-	dASSERT(val == TRUE);
+	dASSERT(val == TRUE, "LPDIRECT3DDEVICE7::GetRenderState: expected return TRUE");
 	dev->GetRenderState(D3DRENDERSTATE_ZENABLE, &val);
-	dASSERT(val == FALSE);
+	dASSERT(val == FALSE, "LPDIRECT3DDEVICE7::GetRenderState: expected return FALSE");
 #endif
 
 	// we render base objects only if the apparent size of the object scale

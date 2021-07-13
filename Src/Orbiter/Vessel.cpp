@@ -1114,7 +1114,7 @@ bool Vessel::isOrbitStabilised () const
 
 bool Vessel::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntp)
 {
-	dASSERT(ntp >= 3);
+	dASSERT(ntp >= 3, "Vessel::SetTouchdownPoints: at least 3 points must be provided");
 
 	static const double eps = 1e-12;
 	DWORD i;
@@ -3281,7 +3281,7 @@ int Vessel::MeshModified (MESHHANDLE hMesh, UINT grp, DWORD modflag)
 
 void Vessel::InitLanded (Planet *planet, double lng, double lat, double dir, const Matrix *hrot, double cgelev, bool asComponent)
 {
-	dASSERT(!g_bStateUpdate); // not valid during update phase
+	dASSERT(!g_bStateUpdate, "Vessel::InitLanded must not be called during state update"); // not valid during update phase
 
 	Vector nml;
 	int i;
@@ -7374,7 +7374,7 @@ void VESSEL::SetTouchdownPoints (const VECTOR3 &pt1, const VECTOR3 &pt2, const V
 
 void VESSEL::SetTouchdownPoints (const TOUCHDOWNVTX *tdvtx, DWORD ntdvtx) const
 {
-	dASSERT (ntdvtx >= 3);
+	dASSERT (ntdvtx >= 3, "VESSEL::SetTouchdownPoints: at least 3 points must be provided");
 	vessel->SetTouchdownPoints (tdvtx, ntdvtx);
 }
 

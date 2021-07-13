@@ -25,3 +25,9 @@ set_target_properties(LuaInterpreter
 	PROPERTIES
 	FOLDER Modules/Lua
 )
+
+# Installation
+install(TARGETS LuaInterpreter
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)

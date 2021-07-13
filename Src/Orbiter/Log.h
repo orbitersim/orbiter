@@ -62,15 +62,33 @@ void LogOut_Location(const char* func, const char* file, int line);
 #define LOGOUT_OBSOLETE
 #endif
 
+// General assertion test. If fatal==true, terminates application
+#define ASSERT(test,fatal,msg,...) { \
+	if (!(test)) { \
+		LogOut_Error_Start(); \
+		LogOut("Assertion failure:"); \
+		LogOut(msg, __VA_ARGS__); \
+		LogOut_Location(__FUNCTION__,__FILE__,__LINE__); \
+		LogOut_Error_End(); \
+		if(fatal) { \
+			LogOut(">>> TERMINATING <<<"); \
+			exit(1); \
+		} \
+	} \
+}
+
+// Debug build-only assertions. Assume debug assertion failures are always fatal
 #ifdef _DEBUG
-#define dVERIFY(test) { if (FAILED(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); exit(1); }}
-#define dASSERT(test) { if (!(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); exit(1); }}
+#define dASSERT(test,msg,...) { \
+	ASSERT(test, true, msg, __VA_ARGS__); \
+}
+#define dVERIFY(test,msg,...) { \
+	ASSERT(!FAILED(test), true, msg, __VA_ARGS__); \
+}
 #else
 #define dVERIFY(test) (test)
 #define dASSERT(test) (test)
 #endif
-
-#define ASSERT(test) { if (!(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); exit(1); }}
 
 #define CHECKCWD(cwd,name) { char c[512]; _getcwd(c,512); if(strcmp(c,cwd)) { _chdir(cwd); sprintf (c,"CWD modified by module %s - Fixing.",name); LOGOUT_WARN(c); } }
 

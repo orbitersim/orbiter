@@ -952,13 +952,13 @@ void TileManager2<SurfTile>::Render (LPDIRECT3DDEVICE7 dev, MATRIX4 &dwmat, VPla
 
 	// render the tree
 	for (i = 0; i < 2; i++)
-		dVERIFY (dev->SetTextureStageState (i, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP));
+		dVERIFY (dev->SetTextureStageState (i, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	for (i = 0; i < 2; i++)
 		RenderNode (tiletree+i);
 
 	for (i = 0; i < 2; i++)
-		dVERIFY (dev->SetTextureStageState (i, D3DTSS_ADDRESS, D3DTADDRESS_WRAP));
+		dVERIFY (dev->SetTextureStageState (i, D3DTSS_ADDRESS, D3DTADDRESS_WRAP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	loader->ReleaseMutex ();
 

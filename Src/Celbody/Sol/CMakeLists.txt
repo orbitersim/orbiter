@@ -6,3 +6,8 @@ set_target_properties(Sol
 	PROPERTIES
 	FOLDER Celbody
 )
+
+# Installation
+install(DIRECTORY Config
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)

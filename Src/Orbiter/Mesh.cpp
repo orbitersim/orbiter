@@ -876,7 +876,7 @@ DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
 			if (!Grp[i].VtxBuf) {
 				dVERIFY(dev->DrawIndexedPrimitive (
 					D3DPT_TRIANGLELIST, D3DFVF_VERTEX,
-					Grp[i].Vtx, Grp[i].nVtx, Grp[i].Idx, Grp[i].nIdx, 0));
+					Grp[i].Vtx, Grp[i].nVtx, Grp[i].Idx, Grp[i].nIdx, 0), "LPDIRECT3DDEVICE7::DrawIndexedPrimitive failed");
 			} else {
 				dev->DrawIndexedPrimitiveVB (
 					D3DPT_TRIANGLELIST,

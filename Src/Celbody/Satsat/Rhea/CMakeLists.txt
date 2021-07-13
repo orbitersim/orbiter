@@ -32,3 +32,13 @@ set_target_properties(${CELBODY}
 	PROPERTIES
 	FOLDER Celbody/Satsat
 )
+
+#Installation
+install(TARGETS
+	${CELBODY}
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}
+)
+install(DIRECTORY Config
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)

@@ -26,3 +26,9 @@ set_target_properties(LuaInline
 	PROPERTIES
 	FOLDER Modules/Lua
 )
+
+# Installation
+install(TARGETS LuaInline
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)

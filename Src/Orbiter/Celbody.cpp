@@ -647,7 +647,7 @@ StateVectors CelestialBody::InterpolateState (double n) const
 	// BeginStateUpdate and EndStateUpdate)
 
 	if (!n) return *s0;
-	dVERIFY (s1);
+	dVERIFY (s1, "Update state not available");
 	if (n == 1.0) return *s1;
 
 	StateVectors sv;

@@ -38,3 +38,17 @@ set_target_properties(${CELBODY}
 	PROPERTIES
 	FOLDER Celbody/Vsop87
 )
+
+#Installation
+install(TARGETS
+	${CELBODY}
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_CELBODY_DIR}
+)
+install(DIRECTORY Config
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+install(FILES ../Data/Vsop87B_mer.dat
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/${CELBODY}/Data
+	RENAME Vsop87B.dat
+)

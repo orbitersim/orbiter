@@ -255,7 +255,7 @@ void PatchManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double visrad
 	bool hasmicro = false;
 	int tstage = 0;
 
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_CLAMP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	// surface texturing
 	D3DVIEWPORT7 vp;
@@ -327,11 +327,11 @@ void PatchManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double visrad
 
 				nquery++;
 				D3DMath_MatrixMultiply (wtrans, wmat, trans[idx]);
-				dVERIFY (dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &wtrans));
+				dVERIFY (dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &wtrans), "LPDIRECT3DDEVICE7::SetTransform failed");
 
 				// 2. check whether patch bounding box intersects viewing fustrum
 				VERTEX_XYZH *vtx;
-				dVERIFY (bbtarget->ProcessVertices (D3DVOP_TRANSFORM, 0, 8, vbpatch[i].bb, 0, dev, 0));
+				dVERIFY (bbtarget->ProcessVertices (D3DVOP_TRANSFORM, 0, 8, vbpatch[i].bb, 0, dev, 0), "LPDIRECT3DVERTEXBUFFER7::ProcessVertices failed");
 				bbtarget->Lock (DDLOCK_WAIT | DDLOCK_READONLY | DDLOCK_DISCARDCONTENTS, (LPVOID*)&vtx, NULL);
 				bx1 = bx2 = by1 = by2 = bz1 = bz2 = bbvis = false;
 				for (v = 0; v < 8; v++) {
@@ -372,12 +372,12 @@ void PatchManager::Render (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double visrad
 				nrender++;
 				//if (tm) dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &wtrans); // CalcTileVisibility resets the transform
 
-				dVERIFY (dev->SetTexture (tstage, tex ? tex[idx] : 0));
+				dVERIFY (dev->SetTexture (tstage, tex ? tex[idx] : 0), "LPDIRECT3DDEVICE7::SetTexture failed");
 				dev->DrawIndexedPrimitiveVB (D3DPT_TRIANGLELIST, vbpatch[i].vb, 0, vbpatch[i].nv, vbpatch[i].idx, vbpatch[i].ni, 0);
 			}
 		}
 	}
-	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP));
+	dVERIFY (dev->SetTextureStageState (0, D3DTSS_ADDRESS, D3DTADDRESS_WRAP), "LPDIRECT3DDEVICE7::SetTextureStageState failed");
 
 	// remove microstructure texture
 	if (hasmicro) {
@@ -408,8 +408,8 @@ void PatchManager::RenderNightlights (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, do
 	static D3DMATERIAL7 lightmat_dim = {{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,1},0};
 	D3DMATRIX wtrans;
 	lightmat.emissive.b = (lightmat.emissive.r = lightmat.emissive.g = (float)g_pOrbiter->Cfg()->CfgVisualPrm.LightBrightness);
-	dVERIFY (dev->GetMaterial (&pmat));
-	dVERIFY (dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE));
+	dVERIFY (dev->GetMaterial (&pmat), "LPDIRECT3DDEVICE7::GetMaterial failed");
+	dVERIFY (dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, TRUE), "LPDIRECT3DDEVICE7::SetRenderState failed");
 	int i, j, hemisphere, idx;
 	Vector sundir;
 	double dcos;
@@ -457,16 +457,16 @@ void PatchManager::RenderNightlights (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, do
 							modmat = false;
 						}
 						D3DMath_MatrixMultiply (wtrans, wmat, trans[idx]);
-						dVERIFY (dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &wtrans));
-						dVERIFY (dev->SetTexture (0, ntex[idx]));
+						dVERIFY (dev->SetTransform (D3DTRANSFORMSTATE_WORLD, &wtrans), "LPDIRECT3DDEVICE7::SetTransform failed");
+						dVERIFY (dev->SetTexture (0, ntex[idx]), "LPDIRECT3DDEVICE7::SetTexture failed");
 						dev->DrawIndexedPrimitiveVB (D3DPT_TRIANGLELIST, vbpatch[i].vb, 0, vbpatch[i].nv, vbpatch[i].idx, vbpatch[i].ni, 0);
 					}
 				}
 			}
 		}
 	}
-	dVERIFY (dev->SetMaterial (&pmat));
-	dVERIFY (dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE));
+	dVERIFY (dev->SetMaterial (&pmat), "LPDIRECT3DDEVICE7::SetMaterial failed");
+	dVERIFY (dev->SetRenderState (D3DRENDERSTATE_ALPHABLENDENABLE, FALSE), "LPDIRECT3DDEVICE7::SetRenderState failed");
 #ifdef MICROLIGHTTEX
 	dev->SetTextureStageState (1, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 	dev->SetTextureStageState (1, D3DTSS_COLOROP, D3DTOP_DISABLE);
@@ -487,7 +487,7 @@ void PatchManager::RenderSimple (LPDIRECT3DDEVICE7 dev, D3DMATRIX &wmat, double 
 	}
 
 	for (int idx = 0; idx < npatch; idx++) {
-		dVERIFY (dev->SetTexture (0, tex ? tex[idx] : 0));
+		dVERIFY (dev->SetTexture (0, tex ? tex[idx] : 0), "LPDIRECT3DDEVICE7::SetTexture failed");
 		dev->DrawIndexedPrimitiveVB (D3DPT_TRIANGLELIST, vbpatch[idx].vb, 0, vbpatch[idx].nv, vbpatch[idx].idx, vbpatch[idx].ni, 0);
 	}
 

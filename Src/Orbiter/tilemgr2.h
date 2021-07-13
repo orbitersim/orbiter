@@ -182,22 +182,22 @@ public:
 	static LPDIRECT3D7 D3d() { return d3d; }
 
 	inline void SetRenderState (D3DRENDERSTATETYPE type, DWORD state)
-	{ dVERIFY(dev->SetRenderState (type, state)); } // should check for return type
+	{ dVERIFY(dev->SetRenderState (type, state), "LPDIRECT3DDEVICE7::SetRenderState failed"); } // should check for return type
 
 	inline void SetTextureStageState (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD state)
-	{ dVERIFY(dev->SetTextureStageState (stage, type, state)); } // should check for return type
+	{ dVERIFY(dev->SetTextureStageState (stage, type, state), "LPDIRECT3DDEVICE7::SetTextureStageState failed"); } // should check for return type
 
 	inline void SetTexture (DWORD stage, LPDIRECTDRAWSURFACE7 tex)
-	{ dVERIFY(dev->SetTexture (stage, tex)); } // should check for return type
+	{ dVERIFY(dev->SetTexture (stage, tex), "LPDIRECT3DDEVICE7::SetTexture failed"); } // should check for return type
 
 	inline void GetMaterial (LPD3DMATERIAL7 mat)
-	{ dVERIFY(dev->GetMaterial (mat)); } // should check for return type
+	{ dVERIFY(dev->GetMaterial (mat), "LPDIRECT3DDEVICE7::GetMaterial failed"); } // should check for return type
 
 	inline void SetMaterial (LPD3DMATERIAL7 mat)
-	{ dVERIFY(dev->SetMaterial (mat)); } // should check for return type
+	{ dVERIFY(dev->SetMaterial (mat), "LPDIRECT3DDEVICE7::SetMaterial failed"); } // should check for return type
 
 	inline void DrawIndexedPrimitiveVB (D3DPRIMITIVETYPE type, LPDIRECT3DVERTEXBUFFER7 vbuf, DWORD vtx0, DWORD nvtx, LPWORD idx, DWORD nidx, DWORD flags)
-	{ dVERIFY(dev->DrawIndexedPrimitiveVB (type, vbuf, vtx0, nvtx, idx, nidx, flags)); } // should check for return type
+	{ dVERIFY(dev->DrawIndexedPrimitiveVB (type, vbuf, vtx0, nvtx, idx, nidx, flags), "LPDIRECT3DDEVICE7::DrawIndexedPrimitiveVB failed"); } // should check for return type
 
 	static configPrm &Cprm() { return cprm; }
 
