@@ -31,3 +31,6 @@ set_target_properties(DynsurfTechnote
 	PROPERTIES
 	FOLDER Doc/Technotes
 )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${name}.pdf
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Doc/Technotes
+)

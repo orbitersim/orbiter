@@ -31,6 +31,7 @@ set(ORBITER_INSTALL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 set(ORBITER_INSTALL_MODULE_DIR ${ORBITER_INSTALL_ROOT_DIR}/Modules)
 set(ORBITER_INSTALL_CELBODY_DIR ${ORBITER_INSTALL_MODULE_DIR}/Celbody)
 set(ORBITER_INSTALL_TEXTURES_DIR ${ORBITER_INSTALL_ROOT_DIR}/Textures)
+set(ORBITER_INSTALL_DOC_DIR ${ORBITER_INSTALL_ROOT_DIR}/Doc)
 
 set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
@@ -134,6 +135,18 @@ if (ORBITER_MAKE_DOC)
 		"Compiler options for the OdtToPdfCompiler"
 	)
 
+	find_program(DOC_TO_PDF_COMPILER
+		soffice
+		HINTS "/Program Files/LibreOffice/program"
+	)
+
+	set(DOC_TO_PDF_FLAGS
+		"--headless --convert-to pdf --outdir <outdir> <infile>"
+		CACHE
+		STRING
+		"Compiler options for the DocToPdfCompiler"
+	)
+
 	option(ORBITER_MAKE_TECHNOTES
 		"Create Orbiter Technical Notes"
 		ON
@@ -164,6 +177,26 @@ function(odt_to_pdf_arglist infile arglist source_path target_path)
 	)
 	set(${arglist} ${odt_arg} PARENT_SCOPE)
 	set(${source_path} "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.odt" PARENT_SCOPE)
+	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
+endfunction()
+
+function(doc_to_pdf_arglist infile arglist source_path target_path)
+	string(REPLACE
+		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
+		tmp1_string
+		${DOC_TO_PDF_FLAGS}
+	)
+	string(REPLACE
+		"<infile>" "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.doc"
+		tmp2_string
+		${tmp1_string}
+	)
+	separate_arguments(doc_arg
+		WINDOWS_COMMAND
+		${tmp2_string}
+	)
+	set(${arglist} ${doc_arg} PARENT_SCOPE)
+	set(${source_path} "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.doc" PARENT_SCOPE)
 	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
 endfunction()
 

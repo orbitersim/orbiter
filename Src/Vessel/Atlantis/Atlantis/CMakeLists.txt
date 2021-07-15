@@ -76,3 +76,18 @@ set_target_properties(Atlantis_Prerequisites
 	PROPERTIES
 	FOLDER Vessels/Atlantis
 )
+
+# Installation
+install(TARGETS Atlantis
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}
+)
+install(DIRECTORY ${CONFIG_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config/Vessels
+)
+install(DIRECTORY ${MESH_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes/Atlantis
+)
+install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
+	DESTINATION ${ORBITER_INSTALL_TEXTURES_DIR}/Atlantis
+)
