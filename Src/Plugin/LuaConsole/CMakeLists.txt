@@ -27,3 +27,9 @@ set_target_properties(LuaConsole
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS LuaConsole
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

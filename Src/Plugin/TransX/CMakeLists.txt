@@ -39,3 +39,9 @@ set_target_properties(TransX
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS TransX
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

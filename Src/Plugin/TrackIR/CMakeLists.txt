@@ -25,3 +25,9 @@ set_target_properties(TrackIR
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS TrackIR
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

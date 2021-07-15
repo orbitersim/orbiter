@@ -22,3 +22,9 @@ set_target_properties(Meshdebug
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS Meshdebug
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

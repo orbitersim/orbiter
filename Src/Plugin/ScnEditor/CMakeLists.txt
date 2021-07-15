@@ -26,3 +26,9 @@ set_target_properties(ScnEditor
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS ScnEditor
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

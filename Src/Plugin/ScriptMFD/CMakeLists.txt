@@ -24,3 +24,9 @@ set_target_properties(ScriptMFD
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS ScriptMFD
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

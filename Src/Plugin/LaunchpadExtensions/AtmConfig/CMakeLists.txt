@@ -24,3 +24,9 @@ set_target_properties(AtmConfig
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS AtmConfig
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_MODULE_DIR}/Startup
+)

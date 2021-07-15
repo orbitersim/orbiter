@@ -23,3 +23,9 @@ set_target_properties(Rcontrol
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS Rcontrol
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

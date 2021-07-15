@@ -24,3 +24,9 @@ set_target_properties(FlightData
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS FlightData
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

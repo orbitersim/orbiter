@@ -26,3 +26,9 @@ set_target_properties(LuaMFD
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS LuaMFD
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

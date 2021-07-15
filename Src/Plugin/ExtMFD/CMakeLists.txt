@@ -24,3 +24,9 @@ set_target_properties(ExtMFD
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS ExtMFD
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)

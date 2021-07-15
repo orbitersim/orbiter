@@ -25,3 +25,9 @@ set_target_properties(Framerate
 	PROPERTIES
 	FOLDER Modules
 )
+
+# Installation
+install(TARGETS Framerate
+	RUNTIME
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
