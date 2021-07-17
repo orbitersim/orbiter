@@ -211,7 +211,8 @@ target_include_directories(Orbiter
 	PUBLIC ${CMAKE_SOURCE_DIR}/OVP
 	PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 	PUBLIC ${ZLIB_INCLUDE_DIR}
-	PUBLIC ${DX7SDK_INCLUDE_DIR})
+	PUBLIC ${DX7SDK_INCLUDE_DIR}
+)
 
 target_link_libraries(Orbiter
 	Winmm.dll
@@ -225,7 +226,7 @@ target_link_libraries(Orbiter
 	${ZLIB_LIBRARIES}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
-	)
+)
 
 add_dependencies(Orbiter
 	scramble

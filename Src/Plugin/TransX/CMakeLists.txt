@@ -40,8 +40,16 @@ set_target_properties(TransX
 	FOLDER Modules
 )
 
+add_custom_command(
+    TARGET TransX PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Doc ${ORBITER_BINARY_DOC_DIR}/TransX
+)
+
 # Installation
 install(TARGETS TransX
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+install(DIRECTORY ${ORBITER_BINARY_DOC_DIR}/TransX
+    DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )
