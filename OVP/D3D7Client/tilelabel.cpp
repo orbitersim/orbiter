@@ -61,7 +61,7 @@ bool TileLabel::Read()
 
 	if (tile->mgr->Cprm().tileLoadFlags & 0x0001) { // try loading from individual tile file
 		sprintf (path, "%s\\Label\\%02d\\%06d\\%06d.lab", tile->mgr->CbodyName(), lvl+4, ilat, ilng);
-		tile->mgr->GClient()->TexturePath(path, texpath);
+		tile->mgr->GClient()->PlanetTexturePath(path, texpath);
 
 		std::ifstream ifs(texpath);
 		if (ifs.good()) {

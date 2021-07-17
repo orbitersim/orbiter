@@ -185,6 +185,14 @@ bool GraphicsClient::TexturePath (const char *fname, char *path) const
 
 // ======================================================================
 
+bool GraphicsClient::PlanetTexturePath(const char* planetname, char* path) const
+{
+	g_pOrbiter->Cfg()->PTexPath(path, planetname);
+	return true;
+}
+
+// ======================================================================
+
 DWORD GraphicsClient::GetPopupList (const HWND **hPopupWnd) const
 {
 	DialogManager *dlgmgr = g_pOrbiter->DlgMgr();

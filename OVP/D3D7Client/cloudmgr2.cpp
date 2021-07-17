@@ -261,7 +261,7 @@ void TileManager2<CloudTile>::LoadZTrees()
 	treeMgr = new ZTreeMgr*[ntreeMgr = 1];
 	if (cprm.tileLoadFlags & 0x0002) {
 		char cbuf[256];
-		GClient()->TexturePath (CbodyName(), cbuf);
+		GClient()->PlanetTexturePath (CbodyName(), cbuf);
 		treeMgr[0] = ZTreeMgr::CreateFromFile(cbuf, ZTreeMgr::LAYER_CLOUD);
 	} else
 		treeMgr[0] = 0;

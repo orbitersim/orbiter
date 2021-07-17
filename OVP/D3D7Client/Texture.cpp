@@ -155,13 +155,20 @@ HRESULT TextureManager::ReadTextureFromMemory (const BYTE *buf, DWORD nbuf, LPDI
 HRESULT TextureManager::LoadTexture (const char *fname, LPDIRECTDRAWSURFACE7 *ppdds, DWORD flags)
 {
 	HRESULT hr = S_FALSE;
+	FILE* ftex = 0;
 	char cpath[256];
-	if (gc->TexturePath (fname, cpath)) {
-		FILE *f = fopen (cpath, "rb");
-		if (f) {
-			hr = ReadTexture (f, ppdds, flags);
-			fclose (f);
-		} else *ppdds = 0;
+	*ppdds = 0;
+	gc->PlanetTexturePath(fname, cpath);
+	if (ftex = fopen(cpath, "rb")) {
+		hr = ReadTexture(ftex, ppdds, flags);
+		fclose(ftex);
+	}
+	else if (gc->TexturePath(fname, cpath)) {
+		ftex = fopen(cpath, "rb");
+		if (ftex) {
+			hr = ReadTexture(ftex, ppdds, flags);
+			fclose(ftex);
+		}
 	}
 	return hr;
 }
@@ -171,14 +178,21 @@ HRESULT TextureManager::LoadTexture (const char *fname, LPDIRECTDRAWSURFACE7 *pp
 HRESULT TextureManager::LoadTexture (const char *fname, long ofs, LPDIRECTDRAWSURFACE7 *ppdds, DWORD flags)
 {
 	HRESULT hr = S_OK;
+	FILE* ftex = 0;
 	char cpath[256];
-	if (gc->TexturePath (fname, cpath)) {
-		FILE *f = fopen (cpath, "rb");
-		if (f) {
-			fseek (f, ofs, SEEK_SET);
-			hr = ReadTexture (f, ppdds, flags);
-			fclose (f);
-		} else *ppdds = 0;
+	*ppdds = 0;
+	gc->PlanetTexturePath(fname, cpath);
+	if (ftex = fopen(cpath, "rb")) {
+		fseek(ftex, ofs, SEEK_SET);
+		hr = ReadTexture(ftex, ppdds, flags);
+		fclose(ftex);
+	} else if (gc->TexturePath(fname, cpath)) {
+		ftex = fopen(cpath, "rb");
+		if (ftex) {
+			fseek(ftex, ofs, SEEK_SET);
+			hr = ReadTexture(ftex, ppdds, flags);
+			fclose(ftex);
+		}
 	}
 	return hr;
 }
@@ -189,14 +203,22 @@ int TextureManager::LoadTextures (const char *fname, LPDIRECTDRAWSURFACE7 *ppdds
 {
 	char cpath[256];
 	int ntex = 0;
-	if (gc->TexturePath (fname, cpath)) {
-		FILE *f = fopen (cpath, "rb");
-		if (f) {
+	FILE* ftex = 0;
+	gc->PlanetTexturePath(fname, cpath);
+	if (ftex = fopen(cpath, "rb")) {
+		for (ntex = 0; ntex < n; ntex++) {
+			if (FAILED(ReadTexture(ftex, ppdds + ntex, flags)))
+				break;
+		}
+		fclose(ftex);
+	} else if (gc->TexturePath(fname, cpath)) {
+		ftex = fopen(cpath, "rb");
+		if (ftex) {
 			for (ntex = 0; ntex < n; ntex++) {
-				if (FAILED (ReadTexture (f, ppdds+ntex, flags)))
+				if (FAILED(ReadTexture(ftex, ppdds + ntex, flags)))
 					break;
 			}
-			fclose (f);
+			fclose(ftex);
 		}
 	}
 	return ntex;

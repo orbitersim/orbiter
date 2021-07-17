@@ -42,6 +42,7 @@ set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
 set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
+set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
@@ -100,11 +101,18 @@ string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_
 
 if (${CUSTOM_PLANET_TEXTURE_DIR})
 	string(REPLACE  "/" "\\" ORBITER_PLANET_TEXTURE_INSTALL_DIR_W "${ORBITER_PLANET_TEXTURE_INSTALL_DIR}")
-	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
 
-	install(FILES ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg
-		DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-	)
+	if(ORBITER_BUILD_WITH_DX7)
+		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
+		install(FILES ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg
+			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+		)
+	else()
+		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg)
+		install(FILES ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg
+			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+		)
+	endif()
 endif()
 
 
@@ -205,16 +213,17 @@ function(doc_to_pdf_arglist infile arglist source_path target_path)
 	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
 endfunction()
 
-# Sub-projects
-add_subdirectory(Src)
-add_subdirectory(Utils)
-add_subdirectory(Orbitersdk)
-
-if(ORBITER_MAKE_DOC)
-	add_subdirectory(Doc)
-endif()
-
 # Installation
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights Html BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+
+# Sub-projects
+add_subdirectory(Src)
+add_subdirectory(Utils)
+add_subdirectory(Orbitersdk)
+add_subdirectory(OVP)
+
+if(ORBITER_MAKE_DOC)
+	add_subdirectory(Doc)
+endif()

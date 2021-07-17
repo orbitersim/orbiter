@@ -823,6 +823,14 @@ public:
 	bool TexturePath (const char *fname, char *path) const;
 
 	/**
+	* \brief Return full path for a v2016-style planetary texture directory
+	* \param planetname Planet name
+	* \param path path string into which the full path is copied
+	* \return true if path was found, false otherwise
+	*/
+	bool PlanetTexturePath(const char* planetname, char* path) const;
+
+	/**
 	 * \brief Returns the surface containing the virtual cockpit HUD
 	 * \param[out] hudspec pointer to structure containing mesh and group index,
 	 *   and size parameters of VC HUD object
