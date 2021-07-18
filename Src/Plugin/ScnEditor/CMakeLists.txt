@@ -32,3 +32,5 @@ install(TARGETS ScnEditor
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
+
+add_subdirectory(Help)

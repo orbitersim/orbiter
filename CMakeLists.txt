@@ -20,6 +20,7 @@ set(ORBITER_SOURCE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Orbiter)
 set(ORBITER_SOURCE_MODULE_DIR ${ORBITER_SOURCE_ROOT_DIR}/Src/Plugin)
 set(ORBITER_SOURCE_SDK_DIR ${ORBITER_SOURCE_ROOT_DIR}/Orbitersdk)
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${ORBITER_SOURCE_SDK_DIR}/include)
+set(ORBITER_SOURCE_HTML_DIR ${ORBITER_SOURCE_ROOT_DIR}/Html)
 
 set(ORBITER_BINARY_ROOT_DIR ${CMAKE_BINARY_DIR})
 set(ORBITER_BINARY_MODULE_DIR ${ORBITER_BINARY_ROOT_DIR}/Modules)
@@ -174,6 +175,18 @@ if (ORBITER_MAKE_DOC)
 
 endif()
 
+# Convert a CMake path to a Windows path by turning all / into \
+
+function(windows_path inpath outpath)
+	string(REPLACE  "/" "\\" outp "${inpath}")
+	set(${outpath} ${outp} PARENT_SCOPE)
+endfunction()
+
+
+# For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
+# return the explicit argument string (arglist), full source path (source_path) and full target path (target_path)
+# to invoke the ODT to PDF conversion tool
+
 function(odt_to_pdf_arglist infile arglist source_path target_path)
 	string(REPLACE
 		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
@@ -194,6 +207,11 @@ function(odt_to_pdf_arglist infile arglist source_path target_path)
 	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
 endfunction()
 
+
+# For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
+# return the explicit argument string (arglist), full source path (source_path) and full target path (target_path)
+# to invoke the DOC to PDF conversion tool
+
 function(doc_to_pdf_arglist infile arglist source_path target_path)
 	string(REPLACE
 		"<outdir>" "${CMAKE_CURRENT_BINARY_DIR}"
@@ -212,6 +230,11 @@ function(doc_to_pdf_arglist infile arglist source_path target_path)
 	set(${arglist} ${doc_arg} PARENT_SCOPE)
 	set(${source_path} "${CMAKE_CURRENT_SOURCE_DIR}/${infile}.doc" PARENT_SCOPE)
 	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
+endfunction()
+
+function(windows_path inpath outpath)
+	string(REPLACE  "/" "\\" outp "${inpath}")
+	set(${outpath} ${outp} PARENT_SCOPE)
 endfunction()
 
 # Installation

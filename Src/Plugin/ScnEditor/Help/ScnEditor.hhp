@@ -16,8 +16,8 @@ NewVessel.htm
 EditVessel.htm
 Elements.htm
 DelVessel.htm
-..\..\..\html\master.js
-..\..\..\html\Orbiter.css
+master.js
+Orbiter.css
 SaveScenario.htm
 Orientation.htm
 AngularVel.htm
