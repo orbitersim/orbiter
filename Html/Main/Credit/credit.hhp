@@ -1,14 +1,14 @@
 [OPTIONS]
 Compatibility=1.1 or later
-Compiled file=.\credit.chm
-Default topic=Credit.htm
+Compiled file=credit.chm
+Default topic=credit.htm
 Display compile progress=No
 Language=0x809 English (United Kingdom)
 Title=Orbiter Credits and Contributions
 
 
 [FILES]
-Credit.htm
+credit.htm
 
 [INFOTYPES]
 

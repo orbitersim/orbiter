@@ -6,7 +6,7 @@ Language=0x809 English (United Kingdom)
 
 
 [FILES]
-..\..\Orbiter.css
+..\..\..\..\Orbiter.css
 Quickstart.htm
 
 [INFOTYPES]

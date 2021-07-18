@@ -1,12 +1,10 @@
-set(name orbiter)
+set(name credit)
 
 file(GLOB ChmSources
 	*.htm
 	*.css
 	*.jpg
 	*.gif
-	*.hhc
-	*.hhk
 	${name}.hhp
 )
 
@@ -16,6 +14,7 @@ add_custom_command(OUTPUT ${ORBITER_BINARY_HTML_DIR}/${name}.chm
 	DEPENDS ${ChmSources}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
 add_custom_target(${name}_chm
 	DEPENDS ${ORBITER_BINARY_HTML_DIR}/${name}.chm
 )
@@ -26,5 +25,3 @@ add_dependencies(Orbiter
 install(FILES ${ORBITER_BINARY_HTML_DIR}/${name}.chm
 	DESTINATION ${ORBITER_INSTALL_HTML_DIR}
 )
-
-add_subdirectory(Credit)
