@@ -81,7 +81,7 @@ add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Script/ ${CMAKE_BINARY_DIR}/Script
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Flights/ ${CMAKE_BINARY_DIR}/Flights
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Html/ ${CMAKE_BINARY_DIR}/Html
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Html/Scenarios/ ${CMAKE_BINARY_DIR}/Html/Scenarios
 )
 set_target_properties(CopyData
 	PROPERTIES
@@ -226,4 +226,5 @@ add_subdirectory(OVP)
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)
+	add_subdirectory(Html)
 endif()

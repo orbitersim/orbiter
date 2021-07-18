@@ -1,7 +1,7 @@
 [OPTIONS]
 Auto Index=Yes
 Compatibility=1.1 or later
-Compiled file=.\orbiter.chm
+Compiled file=orbiter.chm
 Contents file=Orbiter.hhc
 Default Window=LaunchpadHelp
 Default topic=intro.htm
