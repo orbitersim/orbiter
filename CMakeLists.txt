@@ -70,6 +70,7 @@ set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 
 
 find_package(HTMLHelp)
+set(ldoc ${CMAKE_SOURCE_DIR}/Extern/Lua/bin/lua ${CMAKE_SOURCE_DIR}/Extern/Lua/packages/LDoc/ldoc.lua)
 
 if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS
