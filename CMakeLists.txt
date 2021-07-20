@@ -23,6 +23,8 @@ set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${ORBITER_SOURCE_SDK_DIR}/include)
 set(ORBITER_SOURCE_HTML_DIR ${ORBITER_SOURCE_ROOT_DIR}/Html)
 
 set(ORBITER_BINARY_ROOT_DIR ${CMAKE_BINARY_DIR})
+set(ORBITER_BINARY_CONFIG_DIR ${ORBITER_BINARY_ROOT_DIR}/Config)
+set(ORBITER_BINARY_MESH_DIR ${ORBITER_BINARY_ROOT_DIR}/Meshes)
 set(ORBITER_BINARY_MODULE_DIR ${ORBITER_BINARY_ROOT_DIR}/Modules)
 set(ORBITER_BINARY_STARTUP_DIR ${ORBITER_BINARY_MODULE_DIR}/Startup)
 set(ORBITER_BINARY_CELBODY_DIR ${ORBITER_BINARY_MODULE_DIR}/Celbody)
@@ -233,10 +235,24 @@ function(doc_to_pdf_arglist infile arglist source_path target_path)
 	set(${target_path} "${CMAKE_CURRENT_BINARY_DIR}/${infile}.pdf" PARENT_SCOPE)
 endfunction()
 
-function(windows_path inpath outpath)
-	string(REPLACE  "/" "\\" outp "${inpath}")
-	set(${outpath} ${outp} PARENT_SCOPE)
+# Given a source directory (srcdir) and a target root directory (tgtroot),
+# generate a list of all files found in srcdir (srclist) and a list of output files
+# when the source directory is copied to the target root (tgtlist)
+# For a copy_directory command, srclist can be used as dependencies, and tgtlist as output
+
+function(srcdir_to_tgtlist srcdir tgtroot srclist tgtlist)
+	file(GLOB_RECURSE infiles
+		RELATIVE ${srcdir}
+		${srcdir}/*
+	)
+	set(local_srclist ${infiles})
+	list(TRANSFORM local_srclist PREPEND "${srcdir}/")
+	set(local_tgtlist ${infiles})
+	list(TRANSFORM local_tgtlist PREPEND "${tgtroot}/")
+	set(srclist ${local_srclist} PARENT_SCOPE)
+	set(tgtlist ${local_tgtlist} PARENT_SCOPE)
 endfunction()
+
 
 # Installation
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/

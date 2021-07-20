@@ -1,5 +1,14 @@
-add_custom_target(Sol ALL
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Config/ ${CMAKE_BINARY_DIR}/Config	
+srcdir_to_tgtlist("${CMAKE_CURRENT_SOURCE_DIR}/Config" "${ORBITER_BINARY_CONFIG_DIR}" srclist tgtlist)
+add_custom_command(
+	OUTPUT ${tgtlist}
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Config/ ${ORBITER_BINARY_CONFIG_DIR}
+	DEPENDS ${srclist}
+)
+add_custom_target(Sol
+	DEPENDS ${tgtlist}
+)
+add_dependencies(Orbiter
+	Sol
 )
 
 set_target_properties(Sol

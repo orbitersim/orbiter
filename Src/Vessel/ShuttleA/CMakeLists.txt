@@ -91,3 +91,5 @@ install(DIRECTORY ${TEXTURE_SOURCE_DIR}/
 install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/ShuttleA
 )
+
+add_subdirectory(Help)

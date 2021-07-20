@@ -12,8 +12,8 @@ Title=Scenario Editor
 
 [FILES]
 Atlantis.htm
-..\..\..\html\master.js
-..\..\..\html\Orbiter.css
+master.js
+Orbiter.css
 BayOp.htm
 BaydoorOp.htm
 RadiatorOp.htm
