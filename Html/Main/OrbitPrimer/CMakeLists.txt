@@ -1,4 +1,4 @@
-set(name orbiter)
+set(name OrbitPrimer)
 
 file(GLOB ChmSources
 	*.htm
@@ -6,7 +6,6 @@ file(GLOB ChmSources
 	*.jpg
 	*.gif
 	*.hhc
-	*.hhk
 	${name}.hhp
 )
 
@@ -26,6 +25,3 @@ add_dependencies(Orbiter
 install(FILES ${ORBITER_BINARY_HTML_DIR}/${name}.chm
 	DESTINATION ${ORBITER_INSTALL_HTML_DIR}
 )
-
-add_subdirectory(Credit)
-add_subdirectory(OrbitPrimer)
