@@ -11,3 +11,7 @@ set_target_properties(meshc
 	PROPERTIES
 	FOLDER Tools
 )
+
+install(TARGETS meshc
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/Utils
+)
