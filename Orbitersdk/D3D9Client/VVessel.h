@@ -74,6 +74,7 @@ public:
 	bool IsInsideShadows();
 	bool IntersectShadowVolume();
 	bool IntersectShadowTarget();
+	void ReloadTextures();
 	
 	inline DWORD GetMeshCount();
 

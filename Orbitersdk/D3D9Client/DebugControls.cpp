@@ -355,12 +355,6 @@ void InitMatList(WORD shader)
 		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
 	}
 
-	if (shader == SHADER_SPECULAR) {
-		std::list<char> list = { 0, 3, 4, 5, 6, 7, 9 };
-		for (auto x : list) Dropdown.push_back(PrmList[x]);
-		for (auto x : Dropdown) SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_ADDSTRING, 0, (LPARAM)x.name.c_str());
-	}
-
 	SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_SETCURSEL, idx, 0);
 
 	switch (shader) {
@@ -369,10 +363,6 @@ void InitMatList(WORD shader)
 		Params[6].var[2] = DefVar(10.0f, 4096.0f, SQRT, "Specular lobe size");
 		break;
 	case SHADER_METALNESS:
-		Params[6].var[1] = DefVar(0, 1, LIN, "Fresnel effect attennuation 1.0 = disabled, 0.0 = max intensity");
-		Params[6].var[2].bUsed = false;
-		break;
-	case SHADER_SPECULAR:
 		Params[6].var[1] = DefVar(0, 1, LIN, "Fresnel effect attennuation 1.0 = disabled, 0.0 = max intensity");
 		Params[6].var[2].bUsed = false;
 		break;
@@ -413,7 +403,6 @@ void OpenDlgClbk(void *context)
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"PBR (Old)");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Metalness PBR");
-	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_ADDSTRING, 0, (LPARAM)"Specular PBR");
 	SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessageA(hDlg, IDC_DBG_SCENEDBG, CB_RESETCONTENT, 0, 0);
@@ -650,15 +639,7 @@ void UpdateShader()
 	case 1:
 		hMesh->SetDefaultShader(SHADER_METALNESS);
 		break;
-	case 2:
-		hMesh->SetDefaultShader(SHADER_SPECULAR);
-		break;
 	}
-
-	if (Shader == 2) hMesh->SetSafeGuard(SendDlgItemMessageA(hDlg, IDC_DBG_SAFEGUARD, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	else hMesh->SetSafeGuard(true);
-	
-	EnableWindow(GetDlgItem(hDlg, IDC_DBG_SAFEGUARD), (Shader == 2));
 
 	InitMatList(hMesh->GetDefaultShader());
 }
@@ -1117,12 +1098,6 @@ void UpdateMaterialDisplay(bool bSetup)
 	WORD Shader = hMesh->GetDefaultShader();
 	if (Shader == SHADER_NULL) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 0, 0);
 	if (Shader == SHADER_METALNESS) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 1, 0);
-	if (Shader == SHADER_SPECULAR) SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_SETCURSEL, 2, 0);
-
-	if (Shader == SHADER_SPECULAR) SendDlgItemMessage(hDlg, IDC_DBG_SAFEGUARD, BM_SETCHECK, hMesh->GetSafeGuard(), 0);
-	else SendDlgItemMessage(hDlg, IDC_DBG_SAFEGUARD, BM_SETCHECK, true, 0);
-
-	EnableWindow(GetDlgItem(hDlg, IDC_DBG_SAFEGUARD), (Shader == SHADER_SPECULAR));
 
 	DWORD matidx = hMesh->GetMeshGroupMaterialIdx(sGroup);
 
@@ -1946,10 +1921,6 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 
-			case IDC_DBG_SAFEGUARD:
-				UpdateShader();
-				break;
-
 			case IDC_DBG_DISPLAY:
 				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0);
 				break;
@@ -2027,6 +1998,14 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_RELOADSHD:
 				D3D9Effect::D3D9TechInit(g_client, g_client->GetDevice(), "D3D9Client");
+				break;
+
+			case IDC_DBG_RELOADTEX:
+				if (vObj) {
+					if (vObj->Type() == OBJTP_VESSEL) {
+						((vVessel *)vObj)->ReloadTextures();
+					}
+				}
 				break;
 
 			case IDC_DBG_ENVSAVE:

@@ -45,7 +45,6 @@ const DWORD SPEC_INHERIT = (DWORD)(-2); // "inherit" material/texture flag
 #define SHADER_LEGACY		2			// Shader most compatible with DX7 Inline
 #define SHADER_XR2HUD		3			// XR2 HUD shader
 #define SHADER_METALNESS	4
-#define SHADER_SPECULAR		5
 
 #define VCLASS_AMSO			1
 #define VCLASS_XR2			2
@@ -116,8 +115,7 @@ public:
 	bool bIsReflective;			// Mesh has a reflective material in one or more groups
 	bool bMtrlModidied;
 	bool bIsTemplate;
-	bool bSafeGuard;
-
+	
 	D9BBox BBox;
 	MeshBuffer *pBuf;
 
@@ -161,16 +159,15 @@ public:
 
 	void			LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 	void			ReLoadMeshFromHandle(MESHHANDLE hMesh);
+	void			ReloadTextures();
 
 	void			SetName(const char *name);
 	void			SetName(UINT idx);
 	const char *	GetName() const { return name; }
 
-	void			SetSafeGuard(bool bOn) { bSafeGuard = bOn; bMtrlModidied = true; }
 	void			SetDefaultShader(WORD shader) { DefShader = shader; bMtrlModidied = true; }
 	WORD			GetDefaultShader() const { return DefShader; }
-	bool			GetSafeGuard() const { return bSafeGuard; }
-
+	
 	void			SetClass(DWORD cl) { vClass = cl; }
 
 
@@ -195,7 +192,7 @@ public:
 	 */
 	SURFHANDLE		GetTexture(DWORD idx) const { return Tex[idx]; }
 	bool			HasTexture(SURFHANDLE hSurf) const;
-	bool			IsReflective() const { return bIsReflective | (DefShader==SHADER_METALNESS) | (DefShader == SHADER_SPECULAR); }
+	bool			IsReflective() const { return bIsReflective | (DefShader==SHADER_METALNESS); }
 
 	/**
 	 * \brief returns a pointer to a material definition.

@@ -1340,6 +1340,27 @@ bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const
 	return (p != NULL);
 }
 
+// -----------------------------------------------------------------------------------------------
+//
+void D3D9ClientSurface::Reload()
+{
+	bool bGoTex = true;
+	if (Initial&OAPISURFACE_SYSMEM) bGoTex = false;
+	if (Initial&OAPISURFACE_UNCOMPRESS) bGoTex = false;
+	if (Initial&OAPISURFACE_RENDERTARGET) bGoTex = false;
+	if (Initial&OAPISURFACE_NOMIPMAPS) bGoTex = false;
+	if (Initial&OAPISURFACE_MIPMAPS) bGoTex = false;
+	if (Initial&OAPISURFACE_GDI) bGoTex = false;
+	if (Initial&OAPISURFACE_ALPHA) bGoTex = false;
+	if (Initial&OAPISURFACE_NOALPHA) bGoTex = false;
+
+	if (bGoTex) {
+		SAFE_RELEASE(pSurf);
+		SAFE_RELEASE(pTex);
+		for (int i = 0; i < ARRAYSIZE(pMap); i++) SAFE_RELEASE(pMap[i]);
+		LoadTexture(name);
+	}
+}
 
 // LoadSurface -------------------------------------------------------------------------------------------------
 //

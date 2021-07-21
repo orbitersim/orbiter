@@ -27,7 +27,6 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 
 	Shaders.push_back(SHADER("PBR-Old",SHADER_NULL));
 	Shaders.push_back(SHADER("Metalness", SHADER_METALNESS));
-	Shaders.push_back(SHADER("Specular", SHADER_SPECULAR));
 }
 
 
@@ -274,17 +273,8 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 			for (auto x : Shaders)
 				if (string(shadername) == x.name) {
 					MeshConfig[meshname].shader = x.id;
-					MeshConfig[meshname].bSafeGuard = true;
 					LogOapi("NewShader [%s]=%hX", meshname, x.id);
 				}
-			continue;
-		}
-
-		// --------------------------------------------------------------------------------------------
-		if (!strncmp(cbuf, "SAFEGUARD", 9)) {
-			DWORD safe;
-			if (sscanf_s(cbuf, "SAFEGUARD %u", &safe) != 1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			MeshConfig[meshname].bSafeGuard = (safe == 1);
 			continue;
 		}
 
@@ -431,7 +421,6 @@ bool MatMgr::SaveConfiguration()
 			fprintf(file.pFile,"; =============================================\n");
 			fprintf(file.pFile, "MESH %s\n", current);
 			if (MeshConfig.count(current)) for (auto x:Shaders) if (x.id == MeshConfig[current].shader) fprintf(file.pFile, "SHADER %s\n", x.name.c_str());
-			if (MeshConfig.count(current)) fprintf(file.pFile, "SAFEGUARD %u\n", DWORD(MeshConfig[current].bSafeGuard));
 		}
 
 		for (DWORD i=0;i<nRec;i++) {

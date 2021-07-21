@@ -136,6 +136,7 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 nrmT;
 	float3 nrmW;
 	float3 cEmis;
+	float4 cSpecularMap;																							// Added
 	float4 cDiff;
 	float  fHeat;
 	float  fSmth, fMetal;
@@ -168,10 +169,14 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
 	else		   cEmis = 0;
 
+	// Sample specular map																										// Added
+	//																															// Added
+	if (gCfg.Spec) cSpecularMap = tex2D(SpecS, frg.tex0.xy).rgba;																// Added
+
 	// Fetch Heat map
 	//
-	if (gCfg.Heat) fHeat = tex2D(HeatS, frg.tex0.xy).g;
-	else		   fHeat = gMtrl.specialfx.x;
+	if (gCfg.Heat) fHeat = saturate((tex2D(HeatS, frg.tex0.xy).g) - 1.0f + (gMtrl.specialfx.x * gMtrl.specialfx.x * gMtrl.specialfx.x));
+	else fHeat = (gMtrl.specialfx.x * gMtrl.specialfx.x * gMtrl.specialfx.x);
 
 	// ----------------------------------------------------------------------
 	// Now do other calculations while textures are being fetched
@@ -254,8 +259,8 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Sample Irradiance Map
 	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
 	cAmbient *= cAmbient;
-	cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));	
 
+	//cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));	
 	// Apply base ambient light
 	cAmbient = max(cAmbient, gSun.Ambient);
 #else
@@ -281,10 +286,12 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// ======================================================================
 	// Main shader core MetalnessPS
 	// ======================================================================
-
-	float  fD = GGX_NDF(dHN, fRgh3);
+	float  fD = GGX_NDF(dHN, lerp(0.01f, 1.0f, fRgh3));
 	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh);
 	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fMetal); 
+	
+	float3 cS2 = 0;																											// Added
+	float3 cSpec2 = 0;																										// Added
 	
 	// Base material color for reflections. Use cDiff for metals and very rough plastics, white for the rest. 
 	// cDiff for rough plastics is to avoid washed-out(white) look of black and rough parts.
@@ -298,6 +305,21 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 
 	// Assume that plastics absorve 50-90% of specular light
 	float  fP = lerp(0.1f + (1.0f - fRgh)*0.4f, 1.0f, fMetal);
+
+
+	// ======================================================================												// Start of Added section
+	// Add multilayer texture effect 
+	// ======================================================================
+	if (gCfg.Spec) {
+		cSpec2 = cSpecularMap.rgb;
+		cSpecularMap.a = 1.0f - cSpecularMap.a; // use this
+		// cSpecularMap.a = 0.0f;
+		float fD2 = GGX_NDF(dHN, lerp(0.01f, 1.0f, cSpecularMap.a)); // makes the sun glint larger at full smoothness so that it doesn't disappear
+
+		// Specular Color
+		cS2 = (fD2 * cSpec2 * fP) * cSpecularMap.a ; // (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
+		// cS2 = (fD2 * cSpec2 * fG * fP) * 0.25f; // (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
+	}																														// end of Added section
 
 	// Fresnel color shift
 	float3 cF = cSpec + (1.0f - cSpec) * fFrs;
@@ -321,7 +343,8 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	float3 zD = cDiff.rgb * fA * LightFXSq(Sq(cSun * fR * dLN) + cDiffLocal + Sq(cAmbient) + Sq(gMtrl.emissive.rgb));
 
 	// Combine specular terms
-	float3 zS = cS * (cSun * dLN) + cSpec * LightFX(cSpecLocal) * 0.5f;
+	// float3 zS = cS * (cSun * dLN) + cSpec * LightFX(cSpecLocal) * 0.5f;
+	float3 zS = cS * (cSun * dLN) + cSpec * LightFX(cSpecLocal) * 0.5f  + cS2 * (cSun * dLN) + cSpec2 * LightFX(cSpecLocal) * 0.5f;		// Modified
 	
 	cDiff.rgb = zD + zS + cE;
 
@@ -340,229 +363,10 @@ float4 MetalnessPS(float4 sc : VPOS, PBRData frg) : COLOR
 	// Add emission texture to output, modulate with material
 	cDiff.rgb = max(cDiff.rgb, cEmis * gMtrl.emission2.rgb);
 
-#if defined(_DEBUG)
-	cDiff = cDiff * (1.0f - gColor*0.5f) + gColor;
-#endif
-
-#if defined(_LIGHTGLOW)
-	return cDiff;
-#else
-	float3 h2 = cDiff.rgb*cDiff.rgb;
-	return float4(cDiff.rgb * pow(max(0, 1.0f + h2*h2), -0.25), cDiff.a);
-#endif
-}
-
-
-
-
-
-
-
-
-
-
-// ============================================================================
-// A Shader for a typical "Specular" PBR workflow.
-// ============================================================================
-
-float4 SpecularPS(float4 sc : VPOS, PBRData frg) : COLOR
-{
-	float3 nrmT;
-	float3 nrmW;
-	float3 cEmis;
-	float3 cSpec;
-	float4 cDiff;
-	float  fSmth, fMetal, fHeat;
-	float3 cDiffLocal;
-	float3 cSpecLocal;
-
-	// ======================================================================
-	// Start fetching texture data
-	// ======================================================================
-
-	if (gTextured) cDiff = tex2D(WrapS, frg.tex0.xy);
-	else		   cDiff = 1;
-
-
-	// Fetch a normal map
-	//
-	if (gCfg.Norm) nrmT = tex2D(Nrm0S, frg.tex0.xy).rgb;
-
-
-	// Fetch Smoothness map (i.e. *_rghn.dds)
-	//
-	if (gCfg.Rghn) fSmth = tex2D(RghnS, frg.tex0.xy).g;
-	else		   fSmth = 1.0f;
-
-
-	// Fetch Reflection map
-	//
-	if (gCfg.Refl) cSpec = tex2D(ReflS, frg.tex0.xy).rgb;
-	else		   cSpec = gMtrl.reflect.rgb;
-
-
-	// Sample emission map. (Note: Emissive materials and textures need to go different stages, material is added to light)
-	//
-	if (gCfg.Emis) cEmis = tex2D(EmisS, frg.tex0.xy).rgb;
-	else		   cEmis = 0;
-
-	// Fetch Heat map
-	//
-	if (gCfg.Heat) fHeat = tex2D(HeatS, frg.tex0.xy).g;
-	else		   fHeat = gMtrl.specialfx.x;
-
-
-	// ----------------------------------------------------------------------
-	// Now do other calculations while textures are being fetched
-	// ----------------------------------------------------------------------
-
-	float3 camW = normalize(frg.camW);
-	float3 cSun = gSun.Color * lerp(float3(1.1, 1.1, 0.9), float3(1, 1, 1), saturate(gRadius[3] * 2e-5));
-
-
-	// ======================================================================
-	// Construct a proper world space normal
-	// ======================================================================
-
-	float3 tanW = frg.tanW.xyz;
-	float3 bitW = cross(tanW, frg.nrmW) * frg.tanW.w;
-
-	if (gCfg.Norm) {
-		nrmT.rg = nrmT.rg * 2.0f - 1.0f;
-		nrmW = frg.nrmW*nrmT.z + tanW*nrmT.x + bitW*nrmT.y;
-	}
-	else nrmW = frg.nrmW;
-
-	nrmW = normalize(nrmW);
-
-
-
-	// ======================================================================
-	// Typical compatibility requirements
-	// ======================================================================
-
-	if (gNoColor) cDiff.rgb = 1;
-	cDiff = saturate(cDiff * float4(gMtrl.diffuse.rgb, gMtrlAlpha));
-
-
-	// ======================================================================
-	// Some Precomputations
-	// ======================================================================
-
-	float3 sunW = -gSun.Dir;
-	float3 cEnv = 0;
-
-	float3 rflW = reflect(-camW, nrmW);
-	float3 hlvW = normalize(camW + sunW);
-
-	// Dot Products
-	float uLN = dot(sunW, nrmW);
-	float uLC = dot(sunW, camW);
-	float dLN = saturate(uLN);
-	float dLH = saturate(dot(sunW, hlvW));
-	float dCN = saturate(dot(camW, nrmW));
-	float dHN = saturate(dot(hlvW, nrmW));
-
-	// Apply a proper curve to a texture data, modulate with material value and clamp
-	fSmth = pow(abs(fSmth), gMtrl.roughness.y) * gMtrl.roughness.x;
-
-	// Apply fresnel and Fresnell cut-off to fSmth
-	fSmth = fSmth + ((1.0f - fSmth) * pow(abs(1.0f - dCN), 4.0f)) * pow(abs(fSmth), 0.5f);
-
-	float fRgh = saturate(1.0f - fSmth);
-	float fRgh3 = fRgh*fRgh*fRgh;
-
-	float fSpec = cmax(cSpec);
-
-	// ======================================================================
-	// Compute Local Light Sources
-	// ======================================================================
-
-	LocalLightsEx(cDiffLocal, cSpecLocal, nrmW, -frg.camW, fRgh3, true);
-
-#if defined(_ENVMAP)
-
-	if (gEnvMapEnable) {
-
-		// ======================================================================
-		// Sample Env Map
-		SampleEnvMap(cEnv, dCN, fRgh, fSpec, rflW, nrmW);
-	}
-
-	// ======================================================================
-	// Sample Irradiance Map
-	float3 cAmbient = Paraboloidal_LVLH(IrradS, nrmW).rgb;
-	cAmbient *= cAmbient;
-	cAmbient = saturate(cAmbient * (1.0f + 15.0f * gNightTime));
-
-	// Apply base ambient light
-	cAmbient = max(cAmbient, gSun.Ambient);
-#else
-
-	// ======================================================================
-	// Compute Earth glow
-	float angl = saturate((-dot(gCameraPos, nrmW) - gProxySize) * gInvProxySize);
-	float3 cAmbient = gAtmColor.rgb * max(0, angl * gGlowConst) + gSun.Ambient;
-#endif
-
-	cAmbient *= (1.0f - fSpec); // No ambient for metals
-
-	// ======================================================================
-	// Add vessel self-shadows
-	// ======================================================================
-#if SHDMAP > 0
-	cSun *= smoothstep(0, 0.72, ComputeShadow(frg.shdH, dLN, sc));
-#endif
-
-	// ======================================================================
-	// Main shader core SpecularPS
-	// ======================================================================
-
-	float  fD = GGX_NDF(dHN, fRgh3);
-	float  fG = SchlickBeckmanGSF(dLN, dCN, fRgh);
-	float  fR = DiffuseRetroReflectance(dLN, dCN, dLH, fRgh, fSpec);
-
-	// Fresnel power 2.5 for glossy, 5.0 for rough
-	float fFrs = pow(1.0f - dCN, (fRgh*2.5 + 2.5f) * gMtrl.fresnel.x) * (1.0f - gMtrl.fresnel.y);
-
-	// Fresnel cut-off below X of fSmth
-	fFrs *= saturate(0.3f - fRgh*fRgh) * 3.3f;
-
-	// Fresnel color shift
-	float3 cF = cSpec + (1.0f - cSpec) * fFrs;
-
-	// Specular Color
-	float3 cS = (fD * cF * fG) * 0.25f;	//   / (4.0f*dLN*dCN) removed to avoid division by zero, compensation in GSF
-
-	float3 cE = cEnv * cF;
-
-	// Attennuate diffuse color for Fresnel
-	float  fA = (1.0f - fFrs);
-	
-	// Safeguard diffuse from over-saturation
-	if (gRghnSw) fA *= (1.0f - fSpec);
-
-	// Combine diffuse terms
-	float3 zD = cDiff.rgb * fA * LightFXSq(Sq(cSun * fR * dLN) + cDiffLocal + Sq(cAmbient) + Sq(gMtrl.emissive.rgb));
-
-	// Combine specular terms
-	float3 zS = cS * (cSun * dLN) + cSpec * LightFX(cSpecLocal) * 0.5f;
-
-	cDiff.rgb = zD + zS + cE;
-
-	// Override material alpha to make reflections visible
-	cDiff.a = saturate(cDiff.a + cmax(zS + cE));
-
-
-	// ======================================================================
-	// Add texture transmittance 
-	// ======================================================================
-
-	if (gCfg.Transm || gCfg.Transl) Transmittance(cDiff, uLN, uLC, frg.tex0.xy, cSun);
-
-
-	// Add emission texture to output, modulate with material
-	cDiff.rgb = max(cDiff.rgb, cEmis * gMtrl.emission2.rgb);
+	// Add heat glow
+	//float3 cHeat = float3(pow(abs(fHeat), 0.5f), pow(abs(fHeat), 1.5f), pow(abs(fHeat), 8.0f));
+	float3 cHeat = pow(abs(fHeat), float3(0.5f, 1.5f, 8.0f));
+	cDiff.rgb = cDiff.rgb + cHeat;
 
 #if defined(_DEBUG)
 	cDiff = cDiff * (1.0f - gColor*0.5f) + gColor;

@@ -66,6 +66,7 @@ public:
 	void				SaveSurface(const char *fname);
 	void				LoadSpecials(const char *fname);
 	bool				LoadSpecialTexture(const char *fname, const char *ext, int id);
+	void				Reload();
 
 	DWORD				GetMipMaps();
 	DWORD				GetWidth();

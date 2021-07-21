@@ -2,13 +2,13 @@
 // Fix Microsoft Visual Studio Version 2012 resource compiler RC4011 warnings.
 // Instead of #include <Richedit.h>
 #if defined(RC_INVOKED)
-  #ifndef RICHEDIT_CLASS
-    #ifdef UNICODE
-      #define RICHEDIT_CLASS  L"RichEdit20W"
-    #else
-      #define RICHEDIT_CLASS  "RichEdit20A"
-    #endif // UNICODE
-  #endif // !RICHEDIT_CLASS
+#ifndef RICHEDIT_CLASS
+#ifdef UNICODE
+#define RICHEDIT_CLASS  L"RichEdit20W"
+#else
+#define RICHEDIT_CLASS  "RichEdit20A"
+#endif // UNICODE
+#endif // !RICHEDIT_CLASS
 #endif // RC_INVOKED
 
 
@@ -188,7 +188,6 @@
 #define IDC_GFX_INTENSITY_RESET                 2178
 #define IDC_GFX_DISTANCE_RESET                  2179
 #define IDC_GFX_GAMMA_RESET                     2181
-#define IDC_DBG_SAFEGUARD                       2182
 #define IDC_DBG_EXTEND                          2183
 #define IDC_DBG_RELOADSHD                       2184
 #define IDC_GFX_SUNLIGHT                        2185
@@ -203,3 +202,4 @@
 #define IDC_GFX_THRESHOLD                       2194
 #define IDC_GFX_THRESHOLD_RESET                 2195
 #define IDC_DBG_CONES                           2196
+#define IDC_DBG_RELOADTEX                       2197

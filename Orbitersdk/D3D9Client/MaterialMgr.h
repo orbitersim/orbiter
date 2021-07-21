@@ -75,7 +75,6 @@ private:
 
 	struct MESHREC {
 		WORD shader;
-		bool bSafeGuard;
 	};
 
 	std::map<string, MESHREC> MeshConfig;

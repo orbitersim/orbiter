@@ -1973,6 +1973,12 @@ int vVessel::SetMatrixTransform(int func, DWORD mi, DWORD gi, const FMATRIX4 *pM
 	return 0;
 }
 
+// ============================================================================================
+//
+void vVessel::ReloadTextures()
+{
+	for (UINT i = 0; i < nmesh; i++) if (meshlist[i].mesh) meshlist[i].mesh->ReloadTextures();
+}
 
 
 

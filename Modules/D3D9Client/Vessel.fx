@@ -325,17 +325,4 @@ technique VesselTech
 		DestBlend = InvSrcAlpha;
 		ZWriteEnable = true;
 	}
-	
-	pass P5
-	{
-		vertexShader = compile vs_3_0 MetalnessVS();
-		pixelShader = compile ps_3_0 SpecularPS();
-
-		AlphaBlendEnable = true;
-		BlendOp = Add;
-		ZEnable = true;
-		SrcBlend = SrcAlpha;
-		DestBlend = InvSrcAlpha;
-		ZWriteEnable = true;
-	}
 }
