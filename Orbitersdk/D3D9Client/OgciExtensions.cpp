@@ -56,7 +56,11 @@ DLLCLBK int gcMeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, COLOUR4 *v
 {
 	if (!hMesh) return -4;
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
-	return pMesh->Material(idx, param, value, bSet);
+	FVECTOR4 clr;
+	clr.r = value->r;	clr.g = value->g;	clr.b = value->b;	clr.a = value->a;
+	int ret = pMesh->Material(idx, param, &clr, bSet);
+	value->r = clr.r;	value->g = clr.g;	value->b = clr.b;	value->a = clr.a;
+	return ret;
 }
 
 

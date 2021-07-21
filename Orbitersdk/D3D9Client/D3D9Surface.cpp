@@ -242,6 +242,7 @@ void D3D9ClientSurface::Clear()
 	bDCSys		= false;
 	bBltSys		= false;
 	bAdvanced   = false;
+	bHard		= false;
 	pDevice		= NULL;
 	memset2(&desc, 0, sizeof(D3DSURFACE_DESC));
 	memset2(pMap, 0, sizeof(pMap));
@@ -261,20 +262,31 @@ D3D9ClientSurface::~D3D9ClientSurface()
 	}
 
 	if (pSkp) {
-		if (pSkp->IsStillDrawing()) LogErr("SketchPad 0x%X not released properly", pSkp);
+		if (pSkp->IsStillDrawing()) LogErr("D3D9ClientSurface::~D3D9ClientSurface(0x%X) SketchPad 0x%X not released properly", this, pSkp);
 		SAFE_DELETE(pSkp);
+	}
+
+	if (bDCOpen) {
+		LogErr("D3D9ClientSurface::~D3D9ClientSurface(0x%X) HDC not released properly", this);
+	}
+
+	if (bHard) {
+		LogErr("D3D9ClientSurface::~D3D9ClientSurface(0x%X) bHard is True", this);
 	}
 
 	if (bBackBuffer) {
 		SAFE_RELEASE(pSurf);
 		SAFE_DELETE(pVP);
 		SAFE_DELETE(pViewPort);
+		if (pTex) LogErr("BackBuffer has a Texture Interface");
 		return;
 	}
 
 	LogBlu("Deleting Surface oapi:0x%X dx:0x%X (%s) (%u,%u)...",this, pSurf, name,desc.Width,desc.Height);
 
-	SAFE_RELEASE(pSurf);
+	if (!pTex) { SAFE_RELEASE(pSurf); }
+	else { SAFE_RELEASE(pSurf); }
+
 	SAFE_RELEASE(pTex);
 	SAFE_RELEASE(pStencil);
 	SAFE_RELEASE(pDCSub);
@@ -1159,7 +1171,6 @@ bool D3D9ClientSurface::Clear(DWORD c)
 HDC	D3D9ClientSurface::GetDCHard()
 {
 	GetDCTime = 0.0;
-	bHard = true;
 	HDC hDC;
 	if (iBindCount!=0) {
 		LogErr("Surface bind count is %d in D3D9ClientSurface::GetDCHard()",iBindCount);
@@ -1169,6 +1180,7 @@ HDC	D3D9ClientSurface::GetDCHard()
 	if (pSurf->GetDC(&hDC) == S_OK) {
 		D3D9SetTime(D3D9Stats.Timer.LockWait, time);
 		GetDCTime = D3D9GetTime();
+		bHard = true;
 		return hDC;
 	}
 	LogErr("D3D9ClientSurface: GetDCHard() Failed");
@@ -1183,6 +1195,7 @@ HDC	D3D9ClientSurface::GetDCHard()
 void D3D9ClientSurface::ReleaseDCHard(HDC hDC)
 {
 	if (bHard) {
+		bHard = false;
 		HR(pSurf->ReleaseDC(hDC));
 		if (GetDCTime != 0.0) D3D9SetTime(D3D9Stats.Timer.GetDC, GetDCTime);
 		return;
@@ -1345,14 +1358,15 @@ bool D3D9ClientSurface::CreateName(char *out, int mlen, const char *fname, const
 void D3D9ClientSurface::Reload()
 {
 	bool bGoTex = true;
-	if (Initial&OAPISURFACE_SYSMEM) bGoTex = false;
-	if (Initial&OAPISURFACE_UNCOMPRESS) bGoTex = false;
-	if (Initial&OAPISURFACE_RENDERTARGET) bGoTex = false;
-	if (Initial&OAPISURFACE_NOMIPMAPS) bGoTex = false;
-	if (Initial&OAPISURFACE_MIPMAPS) bGoTex = false;
-	if (Initial&OAPISURFACE_GDI) bGoTex = false;
-	if (Initial&OAPISURFACE_ALPHA) bGoTex = false;
-	if (Initial&OAPISURFACE_NOALPHA) bGoTex = false;
+
+	//if (Initial&OAPISURFACE_SYSMEM) bGoTex = false;
+	//if (Initial&OAPISURFACE_UNCOMPRESS) bGoTex = false;
+	//if (Initial&OAPISURFACE_RENDERTARGET) bGoTex = false;
+	//if (Initial&OAPISURFACE_NOMIPMAPS) bGoTex = false;
+	//if (Initial&OAPISURFACE_MIPMAPS) bGoTex = false;
+	//if (Initial&OAPISURFACE_GDI) bGoTex = false;
+	//if (Initial&OAPISURFACE_ALPHA) bGoTex = false;
+	//if (Initial&OAPISURFACE_NOALPHA) bGoTex = false;
 
 	if (bGoTex) {
 		SAFE_RELEASE(pSurf);
@@ -1593,8 +1607,6 @@ bool D3D9ClientSurface::LoadTexture(const char *fname)
 		//
 		D3DXIMAGE_INFO info;
 		HR(D3DXGetImageInfoFromFile(path, &info));
-
-		if (info.Height>8192 || info.Width>8192) LogErr("Loading a large surface Handle=0x%X (%u,%u)", this, info.Width, info.Height);
 
 		D3DFORMAT Format = info.Format;
 		

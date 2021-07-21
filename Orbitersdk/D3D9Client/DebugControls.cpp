@@ -632,12 +632,17 @@ void UpdateShader()
 
 	DWORD Shader = SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0);
 
+	vVessel *vVes = (vVessel *)vObj;
+	MatMgr *pMgr = vVes->GetMaterialManager();
+	
 	switch (Shader) {
 	case 0:
 		hMesh->SetDefaultShader(SHADER_NULL);
+		pMgr->RegisterShaderChange(hMesh, SHADER_NULL);
 		break;
 	case 1:
 		hMesh->SetDefaultShader(SHADER_METALNESS);
+		pMgr->RegisterShaderChange(hMesh, SHADER_METALNESS);
 		break;
 	}
 

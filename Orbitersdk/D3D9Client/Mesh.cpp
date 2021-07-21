@@ -1040,7 +1040,7 @@ void D3D9Mesh::SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bStat)
 // -3 = invalid marerial id (mid)
 // -4 = invalid input parameters
 //
-int D3D9Mesh::Material(DWORD idx, int mid, COLOUR4 *value, bool bSet)
+int D3D9Mesh::Material(DWORD idx, int mid, FVECTOR4 *value, bool bSet)
 {
 
 	if (idx >= nMtrl) return -1;

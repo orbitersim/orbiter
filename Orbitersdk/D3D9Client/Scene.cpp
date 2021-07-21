@@ -3328,11 +3328,25 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 
 	Camera.upos = D3DXVEC(unit(Camera.pos));
 
-	// find the planet closest to the current camera position
+	// find a logical reference gody
 	Camera.hObj_proxy = oapiCameraProxyGbody();
+	
+	// find the planet closest to the current camera position
+	double closest = 1e32;
+	int n = oapiGetGbodyCount();
+	for (int i = 0; i < n; i++) {
+		VECTOR3 gp; OBJHANDLE hB = oapiGetGbodyByIndex(i);
+		oapiGetGlobalPos(hB, &gp);
+		double l = length(gp - Camera.pos);
+		if (l < closest) {
+			closest = l;
+			Camera.hNear = hB;
+		}	
+	}
 
 	// find the visual
 	Camera.vProxy = (vPlanet *)GetVisObject(Camera.hObj_proxy);
+	Camera.vNear = (vPlanet *)GetVisObject(Camera.hNear);
 
 	// Something is very wrong... abort...
 	if (Camera.hObj_proxy == NULL || Camera.vProxy == NULL) return;
@@ -3341,6 +3355,10 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 	VECTOR3 pos;
 	oapiGetGlobalPos(Camera.hObj_proxy, &pos);
 	Camera.alt_proxy = dist(Camera.pos, pos) - oapiGetSize(Camera.hObj_proxy);
+
+	// Camera altitude over the proxy
+	oapiGetGlobalPos(Camera.hNear, &pos);
+	Camera.alt_near = dist(Camera.pos, pos) - oapiGetSize(Camera.hNear);
 
 	// Call SetCameraAparture to update ViewProj Matrix
 	SetCameraAperture(float(apr), float(asp));

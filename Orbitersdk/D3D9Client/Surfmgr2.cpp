@@ -1397,7 +1397,7 @@ void TileManager2<SurfTile>::Render (MATRIX4 &dwmat, bool use_zbuf, const vPlane
 	elvstat.Elev = elvstat.Sphe = 0;
 
 	/*if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) {
-		if (GetHandle() == oapiCameraProxyGbody()) {
+		if (GetHandle() == scene->GetCameraNearBody()) {
 			D3D9DebugLog("Body=%s, Elv=%d, Sph=%d", CbodyName(), prevstat.Elev, prevstat.Sphe);
 			if (ElevMode == eElevMode::Elevated) D3D9DebugLog("Elevated");
 			if (ElevMode == eElevMode::Spherical) D3D9DebugLog("Spherical");

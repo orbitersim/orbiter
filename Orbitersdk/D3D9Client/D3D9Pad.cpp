@@ -1789,8 +1789,8 @@ WORD * D3D9Pad::Idx = 0;
 SkpVtx * D3D9Pad::Vtx = 0;
 LPD3DXVECTOR2 D3D9Pad::pSinCos[];
 LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
-LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
-LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
+//LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
+//LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
 LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;
 
@@ -2018,7 +2018,7 @@ D3D9PadPen::~D3D9PadPen ()
 //
 void D3D9PadPen::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 {
-	pDev = pDevice;
+	//pDev = pDevice;
 }
 
 
@@ -2044,5 +2044,5 @@ D3D9PadBrush::~D3D9PadBrush ()
 //
 void D3D9PadBrush::D3D9TechInit(LPDIRECT3DDEVICE9 pDevice)
 {
-	pDev = pDevice;
+	//pDev = pDevice;
 }

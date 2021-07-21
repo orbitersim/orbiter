@@ -1248,6 +1248,7 @@ private:
 	void Label(const char *format, ...);
 	bool CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const;
 	void DrawTimeBar(double t, double scale, double frames, DWORD color, const char *label=NULL);
+	bool ChkDev(const char *fnc) const;
 
 	mutable SURFHANDLE		pBltGrpTgt;
 

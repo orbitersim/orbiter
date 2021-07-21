@@ -160,6 +160,8 @@ private:
 	float dist_scale;         // planet rescaling factor
 	double maxdist,           // ???
 	       max_centre_dist;
+
+	double threshold;
 	float shadowalpha;        // alpha value for surface shadows
 	double cloudrad;          // cloud layer radius [m]
 	DWORD max_patchres;       // max surface LOD level used for graphics

@@ -271,7 +271,7 @@ D3D9Client::~D3D9Client()
 
 	// --- Fonts
 	if (g_fonts.size()) {
-		LogErr("%u un-released fonts!", g_fonts.size());
+		LogWrn("%u un-released fonts!", g_fonts.size());
 		for (auto it = g_fonts.begin(); it != g_fonts.end(); ) {
 			clbkReleaseFont(*it++);
 		}
@@ -279,7 +279,7 @@ D3D9Client::~D3D9Client()
 	}
 	// --- Brushes
 	if (g_brushes.size()) {
-		LogErr("%u un-released brushes!", g_brushes.size());
+		LogWrn("%u un-released brushes!", g_brushes.size());
 		for (auto it = g_brushes.begin(); it != g_brushes.end(); ) {
 			clbkReleaseBrush(*it++);
 		}
@@ -287,12 +287,22 @@ D3D9Client::~D3D9Client()
 	}
 	// --- Pens
 	if (g_pens.size()) {
-		LogErr("%u un-released pens!", g_pens.size());
+		LogWrn("%u un-released pens!", g_pens.size());
 		for (auto it = g_pens.begin(); it != g_pens.end(); ) {
 			clbkReleasePen(*it++);
 		}
 		g_pens.clear();
 	}
+}
+
+
+// ==============================================================
+// 
+bool D3D9Client::ChkDev(const char *fnc) const
+{
+	if (pDevice) return false;
+	LogErr("Call [%s] Failed. D3D9 Graphics services off-line", fnc);
+	return true;
 }
 
 
@@ -892,7 +902,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 			LogErr("UnDeleted Surface(s) Detected");
 			while (it != SurfaceCatalog->end())
 			{
-				LogErr("Surface 0x%X (%s) (%u,%u)", *it, (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
+				LogWrn("Surface 0x%X (%s) (%u,%u)", *it, (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
 				delete *it;
 				it = SurfaceCatalog->begin();
 			}
@@ -1377,6 +1387,8 @@ ScreenAnnotation* D3D9Client::clbkCreateAnnotation()
 void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return;
+
 	if (fname) {
 		LogAlw("Storing a mesh 0x%X (%s)",hMesh,fname);
 		if (hMesh==NULL) LogErr("D3D9Client::clbkStoreMeshPersistent(%s) hMesh is NULL",fname);
@@ -1931,6 +1943,8 @@ DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return false;
+
 	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
 
 	LPDIRECT3DSURFACE9 pRTG = NULL;
@@ -2021,6 +2035,8 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, Im
 SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+
 	LPD3D9CLIENTSURFACE pTex = NULL;
 
 	char path[MAX_PATH];
@@ -2045,6 +2061,8 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+
 	DWORD flags = 0;
 
 	// Process flag conflicts and issues ---------------------------------------------------------------------------------
@@ -2081,6 +2099,8 @@ HBITMAP D3D9Client::gcReadImageFromFile(const char *_path)
 void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return;
+
 	__TRY {
 
 		if (texmgr->IsInRepository(hTex)) return;	// Do not release surfaces stored in repository
@@ -2110,6 +2130,7 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
 
 #ifdef _DEBUG
 	LogAttribs(attrib, w, h, "CreateSrfEx");
@@ -2141,6 +2162,8 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurface");
 	surf->MakeEmptySurfaceEx(w, h);
@@ -2152,6 +2175,8 @@ SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+
 	SURFHANDLE hSurf = GraphicsClient::clbkCreateSurface(hBmp);
 	return hSurf;
 }
@@ -2161,6 +2186,8 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pDevice, "clbkCreateTexture");
 	// DO NOT USE ALPHA
@@ -2182,6 +2209,7 @@ void D3D9Client::clbkIncrSurfaceRef(SURFHANDLE surf)
 bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
 
 	__TRY {
 
@@ -2496,6 +2524,8 @@ DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
 HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+
 	if (surf == NULL) {
 		if (Config->GDIOverlay) {
 			LPDIRECT3DSURFACE9 pGDI = GetScene()->GetBuffer(GBUF_GDI);
@@ -2523,6 +2553,8 @@ HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return;
+
 	if (hDC == NULL) { LogErr("D3D9Client::clbkReleaseSurfaceDC() Input hDC is NULL"); return; }
 	if (surf == NULL) {
 		if (Config->GDIOverlay) {
@@ -2863,6 +2895,7 @@ double sketching_time;
 //
 oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 {
+	if (ChkDev(__FUNCTION__)) return NULL;
 
 	if (GetCurrentThread() != hMainThread) {
 		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
@@ -2909,6 +2942,8 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return;
+
 	if (!sp) return;
 
 	SURFHANDLE hSrf = sp->GetSurface();
@@ -2945,6 +2980,7 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 
 oapi::Sketchpad *D3D9Client::GetSketchpadNative(HSURFNATIVE hNat, HSURFNATIVE hDep)
 {
+	if (ChkDev(__FUNCTION__)) return NULL;
 
 	D3DSURFACE_DESC	desc;
 	LPDIRECT3DSURFACE9 pSurf = NULL;
@@ -3003,6 +3039,7 @@ oapi::Sketchpad *D3D9Client::GetSketchpadNative(HSURFNATIVE hNat, HSURFNATIVE hD
 
 void D3D9Client::ReleaseSketchpadNative(Sketchpad *sp)
 {
+	if (ChkDev(__FUNCTION__)) return;
 	if (!sp) return;
 
 	D3D9Pad *pPad = static_cast<D3D9Pad*>(sp);
@@ -3032,6 +3069,7 @@ void D3D9Client::ReleaseSketchpadNative(Sketchpad *sp)
 Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
 {
 	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
 	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
 }
 
@@ -3040,6 +3078,7 @@ Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::
 void D3D9Client::clbkReleaseFont(Font *font) const
 {
 	_TRACE;
+	if (!g_fonts.count(font)) return;
 	g_fonts.erase(font);
 	delete ((D3D9PadFont*)font);
 }
@@ -3057,6 +3096,7 @@ Pen *D3D9Client::clbkCreatePen(int style, int width, DWORD col) const
 void D3D9Client::clbkReleasePen(Pen *pen) const
 {
 	_TRACE;
+	if (!g_pens.count(pen)) return;
 	g_pens.erase(pen);
 	delete ((D3D9PadPen*)pen);
 }
@@ -3074,6 +3114,7 @@ Brush *D3D9Client::clbkCreateBrush(DWORD col) const
 void D3D9Client::clbkReleaseBrush(Brush *brush) const
 {
 	_TRACE;
+	if (!g_brushes.count(brush)) return;
 	g_brushes.erase(brush);
 	delete ((D3D9PadBrush*)brush);
 }

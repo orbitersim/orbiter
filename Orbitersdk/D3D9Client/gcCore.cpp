@@ -417,7 +417,7 @@ int gcCore::SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group,
 
 // ===============================================================================================
 //
-int gcCore::MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, COLOUR4 *value, bool bSet)
+int gcCore::MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, FVECTOR4 *value, bool bSet)
 {
 	if (!hMesh) return -4;
 	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;

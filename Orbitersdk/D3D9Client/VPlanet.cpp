@@ -58,6 +58,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	vRefPoint = _V(1,0,0);
 	bScatter = false;
 	dist_scale = 1.0f;
+	threshold = 1e16;
 	max_centre_dist = 0.9*scene->GetCameraFarPlane();
 	maxdist = max (max_centre_dist, max_surf_dist + size);
 	DWORD elev_mode = *(DWORD*)gc->GetConfigParam(CFGPRM_ELEVATIONMODE);
@@ -728,48 +729,43 @@ void vPlanet::RenderLabels(LPDIRECT3DDEVICE9 dev, D3D9Pad *skp, oapi::Font **lab
 
 void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 {
-	static double threshold = 1e16;
-
 	float fogfactor;
 	D3D9Effect::FX->GetFloat(D3D9Effect::eFogDensity, &fogfactor);
 
 	bool bLog = false;
 	if (scn->GetRenderPass() == RENDERPASS_MAINSCENE && scn->GetCameraProxyVisual() == this) bLog = true;
 	double tot_surf = D3D9GetTime();
+	double calt = abs(cdist - size);
 
 	if (surfmgr2) {
-		tile_cache = NULL;	// Clear tile cache
 
-		if (size < 500e3) {
-			// Comet, Asteroid, Small Moon
-			if (cdist >= 100.0*size) {
-				surfmgr2->ElevMode = eElevMode::Spherical;
-				surfmgr2->Render(dmWorld, false, prm);
+		tile_cache = NULL;	// Clear tile cache	
+
+		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) {
+			if (size < 500e3) {
+				// Comet, Asteroid, Small Moon
+				if (cdist >= 100.0*size) surfmgr2->ElevMode = eElevMode::Spherical;
+				else surfmgr2->ElevMode = eElevMode::ForcedElevated;
 			}
 			else {
-				surfmgr2->ElevMode = eElevMode::ForcedElevated;
-				surfmgr2->Render(dmWorld, true, prm);
-			}
-		}
-		else {
-			// Planet or Major Moon
-			if (cdist >= 2.0*size) {
-				surfmgr2->ElevMode = eElevMode::Spherical;
-				surfmgr2->Render(dmWorld, false, prm); // Flat/Spherical body
-			}
-			else {
-		
-				TileManager2Base::RenderStats rs = surfmgr2->prevstat;
-
-				if (abs(cdist - threshold) > 1e3) {
-					threshold = cdist;
-					// If there are more than 5 spherical tiles render the body as spherical
-					if (rs.Sphe > 5) surfmgr2->ElevMode = eElevMode::Spherical; // Spherical body
+				// Planet or Major Moon
+				if (cdist >= 2.0*size) surfmgr2->ElevMode = eElevMode::Spherical;
+				else {
+					TileManager2Base::RenderStats rs = surfmgr2->prevstat;
+					if (calt > 35e3) {
+						if (abs(cdist - threshold) > 1e3) {
+							threshold = cdist;
+							// If there are more than 3 spherical tiles render the body as spherical
+							if (rs.Sphe > 3) surfmgr2->ElevMode = eElevMode::Spherical; // Spherical body
+							else surfmgr2->ElevMode = eElevMode::Elevated; // Elevated body
+						}
+					}
 					else surfmgr2->ElevMode = eElevMode::Elevated; // Elevated body
 				}
-				surfmgr2->Render(dmWorld, true, prm);
 			}
 		}
+
+		surfmgr2->Render(dmWorld, (surfmgr2->ElevMode != eElevMode::Spherical), prm);
 
 		if (bLog) D3D9SetTime(D3D9Stats.Timer.Surface, tot_surf);
 	}

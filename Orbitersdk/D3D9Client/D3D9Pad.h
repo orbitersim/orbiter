@@ -814,7 +814,7 @@ private:
 	int width;
 	SkpColor clr;
 	HPEN hPen;
-	static LPDIRECT3DDEVICE9 pDev;
+	//static LPDIRECT3DDEVICE9 pDev;
 };
 
 
@@ -843,7 +843,7 @@ public:
 private:
 	SkpColor clr;
 	HBRUSH hBrush;
-	static LPDIRECT3DDEVICE9 pDev;
+	//static LPDIRECT3DDEVICE9 pDev;
 };
 
 

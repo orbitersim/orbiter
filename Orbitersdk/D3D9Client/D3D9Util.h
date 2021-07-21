@@ -640,6 +640,7 @@ struct AutoFile
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETEA(p)  { if(p) { delete []p;     (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
+#define SAFE_RELEASE_CHECK(p) { if(p) { if ((p)->Release() != 0) LogErr("Release(0x%X) Ref. count not zero", p); (p)=NULL; } }
 #define CLEARARRAY(p) { memset(p, 0, sizeof(p)); }
 
 #endif // !__D3DUTIL_H

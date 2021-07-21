@@ -1170,7 +1170,7 @@ public:
 	* \param bSet \e true to set material value, \e false to get a meterial value
 	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
 	*/
-	virtual int			MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, COLOUR4 *value, bool bSet);
+	virtual int			MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4 *value, bool bSet);
 
 	/**
 	* \brief A Function to get a mesh transformation/animation matrix.

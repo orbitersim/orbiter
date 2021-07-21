@@ -119,11 +119,15 @@ public:
 		D3DXMATRIX	mProj;		// D3DX projection matrix for current camera state
 		D3DXMATRIX	mProjView;	// D3DX combined projection view matrix
 		D3DXMATRIX  mProjViewInf; // D3DX combined projection view matrix, far plane at infinity
+		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
 
 		OBJHANDLE	hObj_proxy;	// closest celestial body
 		vPlanet *	vProxy;		// closest celestial body (visual)
-		OBJHANDLE	hTarget;	// Current camera target, Mesh Debugger Related
 		double		alt_proxy;	// camera distance to surface of hObj_proxy
+
+		OBJHANDLE	hNear;		// closest celestial body
+		vPlanet *	vNear;		// closest celestial body (visual)
+		double		alt_near;
 	};
 
 	// Screen space sun visual parameters ==================================================
@@ -325,6 +329,10 @@ public:
 	OBJHANDLE		GetCameraProxyBody() const { return Camera.hObj_proxy; }
 	vPlanet *		GetCameraProxyVisual() const { return Camera.vProxy; }
 	double			GetCameraAltitude() const { return Camera.alt_proxy; }
+	OBJHANDLE		GetCameraNearBody() const { return Camera.hNear; }
+	vPlanet *		GetCameraNearVisual() const { return Camera.vNear; }
+	double			GetCameraNearAltitude() const { return Camera.alt_near; }
+
 	void			GetCameraLngLat(double *lng, double *lat) const;
 	bool			WorldToScreenSpace(const VECTOR3 &rdir, oapi::IVECTOR2 *pt, D3DXMATRIX *pVP, float clip = 1.0f);
 

@@ -18,9 +18,7 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 {
 	gc = _gc;
 	vObj = v;
-	nRec = 0;
-	mRec = 32;
-	pRecord = (MatMgr::MATREC *)malloc(mRec*sizeof(MatMgr::MATREC));
+
 	pCamera = new ENVCAMREC[1];
 
 	ResetCamera(0);
@@ -34,12 +32,8 @@ MatMgr::MatMgr(class vObject *v, class D3D9Client *_gc)
 //
 MatMgr::~MatMgr()
 {
-	if (pRecord) {
-		for (DWORD i=0;i<nRec;i++) { if (pRecord[i].mesh_name) {
-			delete [] pRecord[i].mesh_name;
-		}}
-		free(pRecord);
-	}
+	MeshConfig.clear();
+
 	if (pCamera) {
 		if (pCamera[0].pOmitAttc) delete[] pCamera[0].pOmitAttc;
 		if (pCamera[0].pOmitDock) delete[] pCamera[0].pOmitDock;
@@ -82,36 +76,19 @@ void MatMgr::ResetCamera(DWORD idx)
 //
 void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, const D3D9MatExt *pM)
 {
-	if (nRec==mRec) {
-		mRec *= 2;
-		pRecord = (MatMgr::MATREC *)realloc(pRecord, mRec*sizeof(MatMgr::MATREC));
+	if (!pMesh || !pM) return;
+	MeshConfig[pMesh->GetName()].material[midx] = *pM;
+}
+
+// ===========================================================================================
+//
+void MatMgr::RegisterShaderChange(D3D9Mesh *pMesh, WORD id)
+{
+	if (!pMesh) return;
+	for (auto y : Shaders) if (y.id == id) {
+		MeshConfig[pMesh->GetName()].shader = id;
+		break;
 	}
-
-	DWORD iRec = nRec;
-	bool bExists = false;
-
-	MeshConfig[pMesh->GetName()].shader = pMesh->GetDefaultShader();
-
-	// Seek an existing mesh and group
-	for (DWORD i=0;i<nRec;i++) {
-		if (strcmp(pRecord[i].mesh_name, pMesh->GetName())==0 && midx==pRecord[i].mat_idx) {
-			iRec = i;
-			bExists = true;
-			break;
-		}
-	}
-
-	if (!bExists) {
-		// Create a new record
-		const char* name = pMesh->GetName();
-		pRecord[iRec].mesh_name = new char[strlen(name)+1]();
-		strcpy_s(pRecord[iRec].mesh_name, strlen(name)+1, name);
-		pRecord[iRec].mat_idx = midx;
-		nRec++;
-	}
-
-	// Fill the data
-	if (pM) pRecord[iRec].Mat = *pM;
 }
 
 
@@ -119,90 +96,56 @@ void MatMgr::RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, const D3D9MatEx
 //
 void MatMgr::ApplyConfiguration(D3D9Mesh *pMesh)
 {
-
-	if (pMesh==NULL || nRec==0) return;
+	if (pMesh==NULL) return;
 
 	const char *name = pMesh->GetName();
 
 	LogAlw("Applying custom configuration to a mesh (%s)",name);
 
-	if (MeshConfig.count(name)) {
+	if (MeshConfig.count(name)) 
+	{
 		pMesh->SetDefaultShader(MeshConfig[name].shader);
-	}
 
-	for (DWORD i=0;i<nRec;i++) {
-
-		if (strcmp(pRecord[i].mesh_name, name)==0) {
-
-			DWORD idx = pRecord[i].mat_idx;
+		for (auto x : MeshConfig[name].material) 
+		{
+			auto rec = x.second;
 			
-			if (idx>=pMesh->GetMaterialCount()) continue;
+			if (x.first >= int(pMesh->GetMaterialCount())) {
+				LogErr("MatMgr::ApplyConfiguration: Matrial Idx out of range [%s.msh]", name);
+				continue;
+			}
 
 			D3D9MatExt Mat;
-		
-			if (!pMesh->GetMaterial(&Mat, idx)) continue;
+			auto RecMat = x.second;
+			DWORD flags = RecMat.ModFlags;
 
-			DWORD flags = pRecord[i].Mat.ModFlags;
+			if (!pMesh->GetMaterial(&Mat, x.first)) continue;
 
-			if (flags&D3D9MATEX_AMBIENT) Mat.Ambient = pRecord[i].Mat.Ambient;
-			if (flags&D3D9MATEX_DIFFUSE) Mat.Diffuse = pRecord[i].Mat.Diffuse;
-			if (flags&D3D9MATEX_EMISSIVE) Mat.Emissive = pRecord[i].Mat.Emissive;
-			if (flags&D3D9MATEX_REFLECT) Mat.Reflect = pRecord[i].Mat.Reflect;
-			if (flags&D3D9MATEX_SPECULAR) Mat.Specular = pRecord[i].Mat.Specular;
-			if (flags&D3D9MATEX_FRESNEL) Mat.Fresnel = pRecord[i].Mat.Fresnel;
-			if (flags&D3D9MATEX_EMISSION2) Mat.Emission2 = pRecord[i].Mat.Emission2;
-			if (flags&D3D9MATEX_ROUGHNESS) Mat.Roughness = pRecord[i].Mat.Roughness;
-			if (flags&D3D9MATEX_METALNESS) Mat.Metalness = pRecord[i].Mat.Metalness;
-					
+			if (flags&D3D9MATEX_AMBIENT) Mat.Ambient = RecMat.Ambient;
+			if (flags&D3D9MATEX_DIFFUSE) Mat.Diffuse = RecMat.Diffuse;
+			if (flags&D3D9MATEX_EMISSIVE) Mat.Emissive = RecMat.Emissive;
+			if (flags&D3D9MATEX_REFLECT) Mat.Reflect = RecMat.Reflect;
+			if (flags&D3D9MATEX_SPECULAR) Mat.Specular = RecMat.Specular;
+			if (flags&D3D9MATEX_FRESNEL) Mat.Fresnel = RecMat.Fresnel;
+			if (flags&D3D9MATEX_EMISSION2) Mat.Emission2 = RecMat.Emission2;
+			if (flags&D3D9MATEX_ROUGHNESS) Mat.Roughness = RecMat.Roughness;
+			if (flags&D3D9MATEX_METALNESS) Mat.Metalness = RecMat.Metalness;
+
 			Mat.ModFlags = flags;
 
-			pMesh->SetMaterial(&Mat, idx);
+			pMesh->SetMaterial(&Mat, x.first);
 
-			pRecord[i].bApplied = true;
-			LogBlu("Material %u setup applied to mesh (%s) Flags=0x%X", idx, name, flags);
+			LogBlu("Material %u setup applied to mesh (%s) Flags=0x%X", x.first, name, flags);
 		}
 	}
-}
-
-
-// ===========================================================================================
-//
-DWORD MatMgr::NewRecord(const char *name, DWORD midx)
-{
-	DWORD rv = nRec;
-
-	if (nRec==mRec) {
-		mRec *= 2;
-		pRecord = (MatMgr::MATREC *)realloc(pRecord, mRec*sizeof(MatMgr::MATREC));
-	}
-
-	ClearRecord(nRec);
-
-	pRecord[nRec].mesh_name = new char[strlen(name)+1]();
-	strcpy_s(pRecord[nRec].mesh_name, strlen(name)+1, name);
-	pRecord[nRec].mat_idx = midx;
-	nRec++;
-	return rv;
 }
 
 // ===========================================================================================
 //
 bool MatMgr::HasMesh(const char *name)
 {
-	for (DWORD i=0;i<nRec;i++) {
-		if (pRecord[i].mesh_name) {
-			if (strcmp(pRecord[i].mesh_name,name)==0) return true;
-		}
-	}
+	if (MeshConfig.count(name)) return true;
 	return false;
-}
-
-// ===========================================================================================
-//
-void MatMgr::ClearRecord(DWORD iRec)
-{
-	if (iRec>=mRec) return;
-	memset2(&pRecord[iRec],0,sizeof(MatMgr::MATREC));
 }
 
 // ===========================================================================================
@@ -246,10 +189,8 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 
 	LogAlw("Reading a custom configuration file for a vessel %s (%s)", vessel->GetName(), vessel->GetClassNameA());
 	
-	DWORD iRec = 0;
-	DWORD mesh = 0;
-	DWORD material = 0;
 	DWORD n = 0;
+	int mat_idx = -1;
 
 	while (fgets2(cbuf, 256, file.pFile, 0x0A)>=0) 
 	{	
@@ -257,14 +198,15 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MESH", 4)) {
+			mat_idx = -1;
 			if (sscanf_s(cbuf, "MESH %s", meshname, 64)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			if (strncmp(meshname, "???", 3) == 0) meshname[0] = 0;
-			if (HasMesh(meshname) && bAppend) meshname[0] = 0;
+			if (HasMesh(meshname) && bAppend) meshname[0] = 0; // Mesh is loaded already skip all entries related to it.
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
-		if (meshname[0]==0) continue;  // Do not continue without a valid mesh
+		if (meshname[0] == 0) continue;  // Do not continue without a valid mesh
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SHADER", 6)) {
@@ -280,56 +222,60 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "MATERIAL", 8)) {
-			if (sscanf_s(cbuf, "MATERIAL %u", &material)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			iRec = NewRecord(meshname, material);
+			if (sscanf_s(cbuf, "MATERIAL %d", &mat_idx)!=1) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
+		if (mat_idx == -1) continue;  // Do not continue without a valid material idx
+
+		auto &Mat = MeshConfig[meshname].material[mat_idx];
+
+		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SPECULAR", 8)) {
 			if (sscanf_s(cbuf, "SPECULAR %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Specular = D3DXVECTOR4(a, b, c, d);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_SPECULAR;
+			Mat.Specular = D3DXVECTOR4(a, b, c, d);
+			Mat.ModFlags |= D3D9MATEX_SPECULAR;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "DIFFUSE", 7)) {
 			if (sscanf_s(cbuf, "DIFFUSE %f %f %f %f", &a, &b, &c, &d)!=4) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Diffuse = D3DXVECTOR4(a, b, c, d);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_DIFFUSE;
+			Mat.Diffuse = D3DXVECTOR4(a, b, c, d);
+			Mat.ModFlags |= D3D9MATEX_DIFFUSE;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "EMISSIVE", 8)) {
 			if (sscanf_s(cbuf, "EMISSIVE %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Emissive = D3DXVECTOR3(a, b, c);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_EMISSIVE;
+			Mat.Emissive = D3DXVECTOR3(a, b, c);
+			Mat.ModFlags |= D3D9MATEX_EMISSIVE;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "EMISSION2", 9)) {
 			if (sscanf_s(cbuf, "EMISSION2 %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Emission2 = D3DXVECTOR3(a, b, c);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_EMISSION2;
+			Mat.Emission2 = D3DXVECTOR3(a, b, c);
+			Mat.ModFlags |= D3D9MATEX_EMISSION2;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "AMBIENT", 7)) {
 			if (sscanf_s(cbuf, "AMBIENT %f %f %f", &a, &b, &c)!=3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Ambient = D3DXVECTOR3(a, b, c);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_AMBIENT;
+			Mat.Ambient = D3DXVECTOR3(a, b, c);
+			Mat.ModFlags |= D3D9MATEX_AMBIENT;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "REFLECT", 7)) {
 			if (sscanf_s(cbuf, "REFLECT %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Reflect = D3DXVECTOR3(a, b, c);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_REFLECT;
+			Mat.Reflect = D3DXVECTOR3(a, b, c);
+			Mat.ModFlags |= D3D9MATEX_REFLECT;
 			continue;
 		}
 
@@ -337,36 +283,36 @@ bool MatMgr::LoadConfiguration(bool bAppend)
 		if (!strncmp(cbuf, "FRESNEL", 7)) {
 			if (sscanf_s(cbuf, "FRESNEL %f %f %f", &a, &b, &c) != 3) LogErr("Invalid Line in (%s): %s", path, cbuf);
 			if (b < 10.0f) b = 1024.0f;
-			pRecord[iRec].Mat.Fresnel = D3DXVECTOR3(a, c, b);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_FRESNEL;
+			Mat.Fresnel = D3DXVECTOR3(a, c, b);
+			Mat.ModFlags |= D3D9MATEX_FRESNEL;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "ROUGHNESS", 9)) {
 			int cnt = sscanf_s(cbuf, "ROUGHNESS %f %f", &a, &b);
-			if (cnt == 1) pRecord[iRec].Mat.Roughness = D3DXVECTOR2(a, 1.0f);
-			else if (cnt == 2)  pRecord[iRec].Mat.Roughness = D3DXVECTOR2(a, b);
+			if (cnt == 1) Mat.Roughness = D3DXVECTOR2(a, 1.0f);
+			else if (cnt == 2)  Mat.Roughness = D3DXVECTOR2(a, b);
 			else LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
+			Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "SMOOTHNESS", 10)) {
 			int cnt = sscanf_s(cbuf, "SMOOTHNESS %f %f", &a, &b);
-			if (cnt == 1) pRecord[iRec].Mat.Roughness = D3DXVECTOR2(a, 1.0f);
-			else if (cnt == 2)  pRecord[iRec].Mat.Roughness = D3DXVECTOR2(a, b);
+			if (cnt == 1) Mat.Roughness = D3DXVECTOR2(a, 1.0f);
+			else if (cnt == 2)  Mat.Roughness = D3DXVECTOR2(a, b);
 			else LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
+			Mat.ModFlags |= D3D9MATEX_ROUGHNESS;
 			continue;
 		}
 
 		// --------------------------------------------------------------------------------------------
 		if (!strncmp(cbuf, "METALNESS", 9)) {
 			if (sscanf_s(cbuf, "METALNESS %f", &a) != 1) LogErr("Invalid Line in (%s): %s", path, cbuf);
-			pRecord[iRec].Mat.Metalness = a;
-			pRecord[iRec].Mat.ModFlags |= D3D9MATEX_METALNESS;
+			Mat.Metalness = a;
+			Mat.ModFlags |= D3D9MATEX_METALNESS;
 			continue;
 		}
 	}
@@ -384,7 +330,7 @@ bool MatMgr::SaveConfiguration()
 
 	char path[256];
 	char classname[256];
-	char *current = NULL; // ..._mesh_name
+	
 	
 	OBJHANDLE hObj = vObj->GetObjectA();
 
@@ -412,32 +358,25 @@ bool MatMgr::SaveConfiguration()
 
 	fprintf(file.pFile, "CONFIG_VERSION 3\n");
 
-	for (DWORD k=0;k<nRec;k++) pRecord[k].bSaved = false;
+	for (auto x : MeshConfig) 
+	{		
+		string current = x.first;
 
-	for (DWORD k=0;k<nRec;k++) {
-		
-		if (!pRecord[k].bSaved) {
-			current = pRecord[k].mesh_name;
-			fprintf(file.pFile,"; =============================================\n");
-			fprintf(file.pFile, "MESH %s\n", current);
-			if (MeshConfig.count(current)) for (auto x:Shaders) if (x.id == MeshConfig[current].shader) fprintf(file.pFile, "SHADER %s\n", x.name.c_str());
-		}
+		fprintf(file.pFile,"; =============================================\n");
+		fprintf(file.pFile, "MESH %s\n", current.c_str());
 
-		for (DWORD i=0;i<nRec;i++) {
+		for (auto y : Shaders) if (y.id == x.second.shader) fprintf(file.pFile, "SHADER %s\n", y.name.c_str());
 		
-			if (strcmp(pRecord[i].mesh_name, current)!=0) continue;
-			else if (pRecord[i].bSaved) break;
-		
-			DWORD flags = pRecord[i].Mat.ModFlags;
-			D3D9MatExt *pM = &pRecord[i].Mat; 
+		for (auto rec : x.second.material) 
+		{		
+			DWORD flags = rec.second.ModFlags;
+			D3D9MatExt *pM = &rec.second;
 
 			if (flags==0) continue;
 
 			fprintf(file.pFile,"; ---------------------------------------------\n");
-			fprintf(file.pFile,"MATERIAL %u\n", pRecord[i].mat_idx);
-			
-			pRecord[i].bSaved = true;
-			
+			fprintf(file.pFile,"MATERIAL %u\n", rec.first);
+					
 			if (flags&D3D9MATEX_AMBIENT)  fprintf(file.pFile,"AMBIENT %f %f %f\n", pM->Ambient.x, pM->Ambient.y, pM->Ambient.z);
 			if (flags&D3D9MATEX_DIFFUSE)  fprintf(file.pFile,"DIFFUSE %f %f %f %f\n", pM->Diffuse.x, pM->Diffuse.y, pM->Diffuse.z, pM->Diffuse.w);
 			if (flags&D3D9MATEX_SPECULAR) fprintf(file.pFile,"SPECULAR %f %f %f %f\n", pM->Specular.x, pM->Specular.y, pM->Specular.z, pM->Specular.w);

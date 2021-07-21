@@ -47,9 +47,10 @@ public:
 					MatMgr(class vObject *vObj, class D3D9Client *_gc);
 					~MatMgr();
 
-	DWORD			NewRecord(const char *name, DWORD midx);
-	void			ClearRecord(DWORD iRec);
+	//DWORD			NewRecord(const char *name, DWORD midx);
+	//void			ClearRecord(DWORD iRec);
 	void			RegisterMaterialChange(D3D9Mesh *pMesh, DWORD midx, const D3D9MatExt *pM);
+	void			RegisterShaderChange(D3D9Mesh *pMesh, WORD id);
 	void			ApplyConfiguration(D3D9Mesh *pMesh);
 	bool			SaveConfiguration();
 	bool			LoadConfiguration(bool bAppend=false);
@@ -64,8 +65,9 @@ private:
 
 	vObject			*vObj;
 	D3D9Client		*gc;
-	DWORD			nRec;	///< Number of records
-	DWORD			mRec;	///< Allocated records
+	//DWORD			nRec;	///< Number of records
+	//DWORD			mRec;	///< Allocated records
+
 
 	struct SHADER {
 		SHADER(string x, WORD i) { name = x; id = i; }
@@ -75,21 +77,11 @@ private:
 
 	struct MESHREC {
 		WORD shader;
+		map<int, D3D9MatExt> material;
 	};
 
 	std::map<string, MESHREC> MeshConfig;
 	std::list<SHADER> Shaders;
-
-	/**
-	 * \brief Storage structure to keep material information.
-	 */
-	struct MATREC {
-		char*			mesh_name;		///< Name of the mesh
-		DWORD			mat_idx;		///< Material index
-		D3D9MatExt		Mat;			///< Material itself
-		bool			bSaved;			///< Flag indicating whether the material has been saved
-		bool			bApplied;		///< Flag indicating if a configuration is applied to a mesh
-	} *pRecord;
 
 	ENVCAMREC *pCamera;
 };
