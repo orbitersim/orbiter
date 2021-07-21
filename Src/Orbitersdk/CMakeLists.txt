@@ -9,3 +9,9 @@ set_target_properties(Orbitersdk
 	PROPERTIES
 	FOLDER Core
 )
+
+# Installation: Orbiter addon entry interface library to SDK folder to be included by addons
+install(TARGETS Orbitersdk
+	ARCHIVE
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
+)

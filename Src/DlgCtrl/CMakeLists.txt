@@ -12,3 +12,9 @@ set_target_properties(DlgCtrl
 	PROPERTIES
 	FOLDER Core
 )
+
+# Installation to SDK lib dir for inclusion by addons
+install(TARGETS DlgCtrl
+	ARCHIVE
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
+)

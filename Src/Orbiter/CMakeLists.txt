@@ -258,7 +258,7 @@ add_custom_command(
 )
 
 
-# Installation
+# Installation: Orbiter executable (standalone or graphics-server version)
 if(ORBITER_BUILD_WITH_DX7)
 	install(TARGETS
 		Orbiter
@@ -272,3 +272,8 @@ else()
 		DESTINATION ${ORBITER_INSTALL_MODULE_DIR}/Server
 	)
 endif()
+
+# Installation: Orbiter SDK interface library to SDK folder to be included by addons
+install(FILES $<TARGET_LINKER_FILE:Orbiter>
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
+)
