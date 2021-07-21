@@ -7,6 +7,7 @@ add_custom_command(
 	OUTPUT ${out}
 	COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile # 2> doxy.log
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different html/API_Reference.chm ${out}
+	JOB_POOL latex
 )
 add_custom_command(
 	OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/API_Reference.pdf

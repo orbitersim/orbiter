@@ -6,7 +6,7 @@ include(ExternalProject)
 project (Orbiter VERSION 2021.1)
 
 # Set the pools for compilers that can't run concurrently
-set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1)
+set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
 
 # Group projects in VS
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

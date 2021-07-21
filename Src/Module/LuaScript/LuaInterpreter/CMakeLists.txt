@@ -1,5 +1,6 @@
 # Core library to go to the Orbiter main directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
+set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)
 
 add_library(LuaInterpreter SHARED
 	Interpreter.cpp
@@ -29,18 +30,20 @@ set_target_properties(LuaInterpreter
 if(ORBITER_MAKE_DOC)
 	file(GLOB lua_in *.h *.cpp *.ld *.md *.lua)
 	add_custom_command(
-		OUTPUT ./out/index.html
+		OUTPUT ${BUILD_OUT_DIR}/index.html
 		COMMAND ${CMAKE_COMMAND} -E copy ${lua_in} ${CMAKE_CURRENT_BINARY_DIR}
 		COMMAND ${ldoc} .
-		COMMAND ${CMAKE_COMMAND} -E copy interpreter.hhp ${CMAKE_CURRENT_BINARY_DIR}/out
-	)
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/interpreter.hhp ${BUILD_OUT_DIR}
+		JOB_POOL htmlhelp
+)
 	add_custom_command(
 		OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
-		DEPENDS ./out/index.html
-		WORKING_DIRECTORY ./out
+		DEPENDS ${BUILD_OUT_DIR}/index.html
+		WORKING_DIRECTORY ${BUILD_OUT_DIR}
 		COMMAND ${HTML_HELP_COMPILER} interpreter.hhp && (echo .) || (echo .)
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
-	)
+		JOB_POOL htmlhelp
+)
 	add_custom_target(orbiter_lua
 		DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	)
