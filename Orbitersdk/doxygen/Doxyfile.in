@@ -162,7 +162,7 @@ FULL_PATH_NAMES        = YES
 # will be relative from the directory where doxygen is started.
 # This tag requires that the tag FULL_PATH_NAMES is set to YES.
 
-STRIP_FROM_PATH        = "C:/Source/Orbiter "
+STRIP_FROM_PATH        = "${ORBITER_SOURCE_ROOT_DIR}"
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of the
 # path mentioned in the documentation of a class, which tells the reader which
@@ -791,9 +791,9 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../../Orbitersdk/include \
-                         ./API_reference \
-                         ./API_reference/progflow
+INPUT                  = ${ORBITER_SOURCE_SDK_DIR}/include \
+                         ${ORBITER_SOURCE_SDK_DIR}/doxygen/API_reference \
+                         ${ORBITER_SOURCE_SDK_DIR}/doxygen/API_reference/progflow
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -892,7 +892,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = ./examples
+EXAMPLE_PATH           = ${ORBITER_SOURCE_SDK_DIR}/doxygen/examples
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -912,8 +912,8 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = API_reference \
-                         API_reference/progflow
+IMAGE_PATH             = ${ORBITER_SOURCE_SDK_DIR}/doxygen/API_reference \
+                         ${ORBITER_SOURCE_SDK_DIR}/doxygen/API_reference/progflow
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
@@ -1154,7 +1154,7 @@ HTML_HEADER            =
 # that doxygen normally uses.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_FOOTER            = footer.html
+HTML_FOOTER            = ${ORBITER_SOURCE_SDK_DIR}/doxygen/footer.html
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading style
 # sheet that is used by each HTML page. It can be used to fine-tune the look of
@@ -1326,7 +1326,7 @@ CHM_FILE               = API_Reference.chm
 # The file has to be specified with full path.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-HHC_LOCATION           = "c:/program files (x86)/html help workshop/hhc.exe "
+HHC_LOCATION           = "${HTML_HELP_COMPILER} "
 
 # The GENERATE_CHI flag controls if a separate .chi index file is generated
 # (YES) or that it should be included in the master .chm file (NO).
@@ -1672,14 +1672,14 @@ LATEX_OUTPUT           = latex
 # The default file is: latex.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-LATEX_CMD_NAME         = "latex "
+LATEX_CMD_NAME         = "${LATEX_COMPILER} "
 
 # The MAKEINDEX_CMD_NAME tag can be used to specify the command name to generate
 # index for LaTeX.
 # The default file is: makeindex.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-MAKEINDEX_CMD_NAME     = "makeindex "
+MAKEINDEX_CMD_NAME     = "${MAKEINDEX_COMPILER} "
 
 # If the COMPACT_LATEX tag is set to YES, doxygen generates more compact LaTeX
 # documents. This may be useful for small projects and may help to save some
