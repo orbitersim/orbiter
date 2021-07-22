@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Framerate
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2003-2016 Martin Schweiger
-//                   All rights reserved
 //
 // Framerate.cpp
 // Dialog box for displaying simulation frame rate.

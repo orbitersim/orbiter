@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "DlgCtrl.h"
 
 long FAR PASCAL MsgProc_PropertyList (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

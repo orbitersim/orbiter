@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __LUAMFD_H
 #define __LUAMFD_H
 

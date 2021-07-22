@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 add_library(Framerate SHARED
 	Framerate.cpp
 	Framerate.rc

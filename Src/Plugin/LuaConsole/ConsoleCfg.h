@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __CONSOLECFG_H
 #define __CONSOLECFG_H
 

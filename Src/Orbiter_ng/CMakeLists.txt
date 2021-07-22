@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 add_executable(Orbiter_ng
 	Orbiter_ng.cpp
 	Orbiter_ng.rc

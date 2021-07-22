@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Meshdebug
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2005-2016 Martin Schweiger
-//                   All rights reserved
 //
 // Meshdebug.cpp
 //

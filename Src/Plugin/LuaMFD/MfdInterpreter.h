@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __MFDINTERPRETER_H
 #define __MFDINTERPRETER_H
 

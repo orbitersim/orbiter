@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __CONSOLEINTERPRETER_H
 #define __CONSOLEINTERPRETER_H
 

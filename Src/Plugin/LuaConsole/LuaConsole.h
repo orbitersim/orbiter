@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __LUACONSOLE_H
 #define __LUACONSOLE_H
 

@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 # Core library to go to the Orbiter main directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR})
 set(BUILD_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/out)

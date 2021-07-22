@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                  ORBITER MODULE: Rcontrol
 //                  Part of the ORBITER SDK
-//           Copyright (C) 2003-2016 Martin Schweiger
-//                   All rights reserved
 //
 // Rcontrol.cpp
 //

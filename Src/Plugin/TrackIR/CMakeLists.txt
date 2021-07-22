@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 add_library(TrackIR SHARED
 	TrackIR.cpp
 	TrackIR.rc

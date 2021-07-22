@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #define INTERPRETER_IMPLEMENTATION
 
 #include "Interpreter.h"

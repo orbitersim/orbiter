@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "DlgCtrl.h"
 #include "DlgCtrlLocal.h"
 #include <stdio.h>

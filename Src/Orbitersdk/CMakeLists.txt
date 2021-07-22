@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 # Static library containing the DLL entry point for Orbiter plugins.
 # To be included by all Orbiter plugin DLLs.
 

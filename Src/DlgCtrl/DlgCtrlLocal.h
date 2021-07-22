@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __DLGCTRLLOCAL_H
 #define __DLGCTRLLOCAL_H
 

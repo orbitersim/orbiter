@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //              ORBITER MODULE: Scenario Editor
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
-//                   All rights reserved
 //
 // Editor.h
 //

@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 add_library(ScriptMFD SHARED
 	ScriptMFD.cpp
 	ScriptMFD.rc

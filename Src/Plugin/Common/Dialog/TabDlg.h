@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER SDK Utility: TabDlg
 //                  Part of the ORBITER SDK
-//             Copyright (C) 2012 Martin Schweiger
-//                   All rights reserved
 //
 // TabDlg.h
 // A helper class for supporting tabs in dialog boxes

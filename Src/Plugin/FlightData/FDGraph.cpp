@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: FlightData
 //                  Part of the ORBITER SDK

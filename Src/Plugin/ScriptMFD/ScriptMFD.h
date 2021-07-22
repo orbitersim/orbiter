@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: ScriptMFD
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2010-2016 Martin Schweiger
-//                   All rights reserved
 //
 // ScriptMFD.h
 //

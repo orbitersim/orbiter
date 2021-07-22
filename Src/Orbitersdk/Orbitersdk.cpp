@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ========================================================================
 // To be linked into all Orbiter addon modules.
 // Contains standard module entry point and version information.

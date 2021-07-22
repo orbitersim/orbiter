@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: FlightData
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2003 Martin Schweiger
-//                   All rights reserved
 //
 // Graph.h
 // Generic data graph class interface.

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __INTERPRETER_H
 #define __INTERPRETER_H
 
