@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Some strings to be encrypted to make them harder to locate in the executable
 // (use program "scramble" to encrypt, and function uscram (util.cpp) to decrypt)
 // Encrypted string versions written to cryptstring.cpp

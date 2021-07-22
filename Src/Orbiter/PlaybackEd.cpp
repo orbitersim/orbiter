@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "PlaybackEd.h"
 #include "DlgMgr.h" // remove
 #include "Camera.h"

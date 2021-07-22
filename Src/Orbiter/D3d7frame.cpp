@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ====================================================================================
 // File: D3d7frame.cpp
 // Desc: Class functions to implement a Direct3D app framework.

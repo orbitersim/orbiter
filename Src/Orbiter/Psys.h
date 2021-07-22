@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Planetary system - Logical interface
 
 #ifndef __PSYS_H

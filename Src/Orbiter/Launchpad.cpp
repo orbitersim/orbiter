@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #define STRICT 1
 #include <windows.h>
 #include <stdio.h>

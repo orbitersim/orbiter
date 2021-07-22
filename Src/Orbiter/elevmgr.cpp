@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "elevmgr.h"
 #include "Celbody.h"
 #include "Planet.h"

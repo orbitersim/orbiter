@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ====================================================================================
 // File: Di7frame.cpp
 // Desc: Class to manage the DirectInput environment objects

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =============================================================
 // class State
 // Defines a simulation state at a given time (e.g. for load/save)

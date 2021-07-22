@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // CelestialBody:
 // Base class for stars, planets, moons etc.

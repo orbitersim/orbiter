@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // Class VObject
 // Base class for all visuals

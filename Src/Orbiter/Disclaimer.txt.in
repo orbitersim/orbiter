@@ -1,27 +1,13 @@
 @@@ ; to encrypt, run "scramble Disclaimer.txt.in Disclaimer.txt"
 Orbiter Space Flight Simulator
-Copyright 2000-2016 Martin Schweiger
 
-Orbiter Freeware License.
+MIT License
 
-The licensor of Orbiter grants you a limited non-exclusive license to use, copy and distribute Orbiter, downloadable from orbit.medphys.ucl.ac.uk, without fee, for personal, educational, charity and other non-commercial use.
+Copyright 2000-2021 Martin Schweiger
 
-You agree to comply with the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-* You will not sell or auction Orbiter or any parts of it, or charge others for use of it, either for profit or merely to recover your media and distribution costs, whether as a stand-alone product, as part of a compilation or anthology, or included in a separate software package, without explicit prior written permission by the licensor.
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-* You will not remove or alter any copyright or license notices contained in the software and documentation, or remove or alter any identifying elements, including splash screens and logos, or try to hide or reassign in any way the name or origin of the software or any of its components.
-
-* You will not use Orbiter or any parts of it to advertise, promote, present or sell any software or other product without explicit prior written permission by the licensor.
-
-* You are allowed to redistribute Orbiter, as long as you do not charge any fees for the software, distribution or download, without explicit prior permission by the licensor. If you offer Orbiter as an online download, the download site must refer to the software as "Orbiter Space Flight Simulator" and contain a link to the Orbiter home page.
-
-* You will not modify any of the binary codes of the Orbiter software in any way. If you publish a library module for Orbiter that uses undocumented features of the orbiter programming interface, or links to the orbiter core in an undocumented way, you must state this in the documentation for the module, and advise users of potential incompatibility of the module with future Orbiter versions.
-
-* You will not use Orbiter to engage in or allow others to engage in any illegal activity.
-
-Disclaimer of warranty.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @@@

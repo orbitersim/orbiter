@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
@@ -478,7 +481,7 @@ END
 
 IDD_MSG DIALOGEX 0, 0, 243, 212
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Orbiter Terms of Use"
+CAPTION "Orbiter License"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,186,191,50,14
@@ -496,12 +499,12 @@ BEGIN
     LTEXT           "",IDC_ABT_STATIC4,94,16,132,8
     LTEXT           "Orbiter home:\n\nOrbiter web forum:\n\nYoutube channel:",IDC_ABT_STATIC5,27,77,63,54,0,WS_EX_TRANSPARENT
     LTEXT           "",IDC_ABT_STATIC6,94,77,158,53
-    PUSHBUTTON      "Terms of Use",IDC_ABT_DISCLAIM,94,181,88,14
+    PUSHBUTTON      "License",IDC_ABT_DISCLAIM,94,181,88,14
     PUSHBUTTON      "Credits and Contributions",IDC_ABT_CREDIT,184,181,88,14
     LTEXT           "",IDC_ABT_STATIC7,94,41,140,13
     LTEXT           "",IDC_BUILDDATE,94,28,166,8
     PUSHBUTTON      "Orbiter Homepage",IDC_ABT_WEB,4,181,88,14
-    LTEXT           "Orbiter is free for personal and noncommercial use.\r\nLicensing details can be found under 'Terms of Use' below, or at the official Orbiter site.",IDC_ABT_STATIC8,11,145,254,28
+    LTEXT           "Orbiter is published under the MIT License.\r\nDetails can be found under 'License' below.",IDC_ABT_STATIC8,11,145,254,28
 END
 
 IDD_PAGE_JOY DIALOGEX 68, 43, 277, 254

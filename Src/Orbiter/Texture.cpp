@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Orbiter.h"
 #include "Texture.h"
 #include "Log.h"

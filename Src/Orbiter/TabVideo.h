@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 //-----------------------------------------------------------------------------
 // Launchpad tab declaration: class DefVideoTab
 // Tab for default video device parameters

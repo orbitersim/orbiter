@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "MfdMap.h"
 #include "Pane.h"
 #include "Psys.h"

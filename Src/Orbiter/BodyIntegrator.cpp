@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // BodyIntegrator.cpp
 // Part of RigidBody class implementation

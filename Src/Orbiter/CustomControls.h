@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Custom dialog control classes
 
 #ifndef __CUSTOMCONTROLS_H

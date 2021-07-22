@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ====================================================================================
 // File: D3d7frame.h
 // Desc: Class to manage the Direct3D environment objects

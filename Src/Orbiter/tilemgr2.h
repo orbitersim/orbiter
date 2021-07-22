@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __TILEMGR2_H
 #define __TILEMGR2_H
 

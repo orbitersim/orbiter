@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "OGraphics.h"
 #include "Orbiter.h"
 #include "Vvessel.h"

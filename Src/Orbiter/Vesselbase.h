@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __VESSELBASE_H
 #define __VESSELBASE_H
 

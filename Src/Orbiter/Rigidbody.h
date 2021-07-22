@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // Class RigidBody
 // Objects that use a dynamic rigid body model for propagating their linear

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Help.h"
 #include <htmlhelp.h>
 #include <stdio.h>

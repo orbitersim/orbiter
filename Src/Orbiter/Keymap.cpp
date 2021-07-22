@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Keymap.h"
 #include "Config.h"
 #include <fstream>

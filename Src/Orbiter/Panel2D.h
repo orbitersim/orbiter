@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // class Panel2D
 // Vessel cockpit represented by 2D instrument panels

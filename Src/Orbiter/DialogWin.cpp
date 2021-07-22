@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "DialogWin.h"
 #include "DlgMgr.h"
 #include "OrbiterAPI.h"

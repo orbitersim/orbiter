@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __MEMSTAT_H
 #define __MEMSTAT_H
 

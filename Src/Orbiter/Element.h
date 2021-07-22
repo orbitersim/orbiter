@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Orbital elements for elliptic orbits
 
 #ifndef __ELEMENT_H

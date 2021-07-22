@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include <dinput.h>
 #include "MfdOrbit.h"
 #include "Pane.h"

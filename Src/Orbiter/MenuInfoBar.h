@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // class MenuInfoBar
 // Rendering and user interface for main menu and info bars

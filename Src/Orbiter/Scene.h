@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // Class Scene
 // This contains the list of all current visuals (vobjects, lights, etc.)

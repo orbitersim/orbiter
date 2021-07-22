@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // ZTreeMgr.h
 // Manage compressed and packed tile trees for planetary surface and cloud layers.

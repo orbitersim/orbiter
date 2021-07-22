@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ====================================================================================
 // File: D3d7util.h
 // Desc: Helper functions and typing shortcuts for Direct3D programming.

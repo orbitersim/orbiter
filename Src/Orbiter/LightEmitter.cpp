@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 //-----------------------------------------------------------------------------
 // class LightEmitter: Logical (device-independent) definition of light-emitting objects
 // Interface in OrbiterAPI.h

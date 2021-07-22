@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // class Instrument_OPlaneAlign
 // instrument for alignment of orbital planes

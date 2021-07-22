@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __LAUNCHPAD_H
 #define __LAUNCHPAD_H
 

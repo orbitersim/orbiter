@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __PLAYBACKED_H
 #define __PLAYBACKED_H
 

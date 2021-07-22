@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Defpanel.h"
 #include "Pane.h"
 #include "Util.h"

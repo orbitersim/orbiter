@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //              This file is part of ORBITER
 //          Copyright 2000-2007 Martin Schweiger

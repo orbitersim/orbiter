@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "cloudmgr2.h"
 #include "Orbiter.h"
 #include "VPlanet.h"

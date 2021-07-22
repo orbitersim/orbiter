@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // DDE server class
 // Dynamic data exchange (DDE) orbiter server implementation

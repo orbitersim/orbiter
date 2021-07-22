@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include <windows.h>
 #include "CustomControls.h"
 #include "Util.h"

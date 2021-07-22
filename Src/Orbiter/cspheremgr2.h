@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __CSPHEREMGR2_H
 #define __CSPHEREMGR2_H
 

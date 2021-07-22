@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "ZTreeMgr.h"
 #include "zlib.h"
 #include "util.h"

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __ELEVMGR_H
 #define __ELEVMGR_H
 

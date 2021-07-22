@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ====================================================================================
 // File: D3d7enum.h
 // Desc: DD and D3D device enumeration (DX7)

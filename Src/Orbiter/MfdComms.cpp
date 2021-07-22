@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "MfdComms.h"
 #include "Nav.h"
 #include <stdio.h>

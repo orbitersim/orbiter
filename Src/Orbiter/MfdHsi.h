@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // class Instrument_HSI
 // Horizontal situation indicator: instrument for VOR and ILS navigation

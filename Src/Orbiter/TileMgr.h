@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // TileManager: Rendering of planetary surfaces using texture tiles at
 // variable resolutions.

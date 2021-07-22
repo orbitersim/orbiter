@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include <stdio.h>
 #include "GraphicsAPI.h"
 #include "DlgMgr.h"

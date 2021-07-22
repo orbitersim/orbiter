@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // class Instrument_OSync
 // Synchronise orbit with target object (assuming same orbital plane)

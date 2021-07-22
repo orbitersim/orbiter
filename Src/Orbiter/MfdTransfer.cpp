@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "MfdTransfer.h"
 #include "Pane.h"
 #include "Celbody.h"

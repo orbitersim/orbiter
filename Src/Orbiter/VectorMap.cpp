@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifdef OAPIFUNC
 #undef OAPIFUNC
 #endif

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Implementation of class PlanetarySystem
 
 #include <fstream>

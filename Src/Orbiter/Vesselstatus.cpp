@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 // Contains the portion of the Vessel class definition
 // concerned with VESSELCLASS interfaces

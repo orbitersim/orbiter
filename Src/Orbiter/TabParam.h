@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 //-----------------------------------------------------------------------------
 // Launchpad tab declaration: class ParameterTab
 // General simulation parameters

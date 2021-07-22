@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 //-----------------------------------------------------------------------------
 // Launchpad tab declaration: class ModuleTab
 // Tab for module activation/deactivation

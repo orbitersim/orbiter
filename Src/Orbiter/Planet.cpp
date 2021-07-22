@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Implementation of class Planet
 
 #define OAPI_IMPLEMENTATION

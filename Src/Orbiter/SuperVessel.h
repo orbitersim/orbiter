@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 // class SuperVessel
 // A "vessel container" class which handles vessels which are grouped

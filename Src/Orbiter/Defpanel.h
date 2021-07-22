@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // class DefaultPanel
 // Generic cockpit view with 2 MFD displays and a HUD

@@ -1,4 +1,5 @@
-// Transform MJD to UT in a tm struct
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #include <math.h>
 #include <stdio.h>

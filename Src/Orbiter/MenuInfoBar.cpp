@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "MenuInfoBar.h"
 #include "Pane.h"
 #include "Camera.h"

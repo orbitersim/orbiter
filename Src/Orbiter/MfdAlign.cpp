@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "MfdAlign.h"
 #include "Pane.h"
 #include "Planet.h"
