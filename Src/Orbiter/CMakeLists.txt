@@ -244,16 +244,19 @@ set_target_properties(Orbiter
 
 add_custom_command(
 	OUTPUT cryptstring.h
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in
 	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in cryptstring.h
 )
 
 add_custom_command(
 	OUTPUT Disclaimer.txt
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in
 	COMMAND $<TARGET_FILE:scramble> ${CMAKE_CURRENT_SOURCE_DIR}/Disclaimer.txt.in Disclaimer.txt
 )
 
 add_custom_command(
 	OUTPUT splash_cs.dat
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash.jpg
 	COMMAND $<TARGET_FILE:fchecksum> ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash.jpg splash_cs.dat
 )
 

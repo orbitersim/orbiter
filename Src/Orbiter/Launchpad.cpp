@@ -119,8 +119,10 @@ HWND MainDialog::Create (bool startvideotab)
 			y = min (max (y, dr.top), dr.bottom-h);
 			SetWindowPos (hDlg, 0, x, y, w, h, 0);
 		}
-		char cbuf[256] = "\r\n";
-		strcpy (cbuf+2, uscram(SIG2));
+		char cbuf[256];
+		strcpy(cbuf, uscram(SIG4));
+		strcat(cbuf, "  \r\n");
+		strcat (cbuf, uscram(SIG2));
 		strcat (cbuf, "  \r\n");
 		strcat (cbuf, uscram(SIG1AA));
 		strcat (cbuf, "  \r\n");
@@ -379,7 +381,7 @@ BOOL MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CTLCOLORSTATIC:
 		if (lParam == (LPARAM)GetDlgItem (hWnd, IDC_BLACKBOX)) {
 			HDC hDC = (HDC)wParam;
-			SetTextColor (hDC, 0xE0A0A0);
+			SetTextColor (hDC, 0xF0B0B0);
 			SetBkColor (hDC,0);
 			//break;
 			return (LRESULT)(HBRUSH)GetStockObject(BLACK_BRUSH);
