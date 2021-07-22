@@ -1690,7 +1690,7 @@ IDT_DISCLAIMER          TEXT                    "Disclaimer.txt"
 // IMAGE
 //
 
-IDR_IMAGE1              IMAGE                   "bitmaps\\Splash2016.jpg"
+IDR_IMAGE1              IMAGE                   "bitmaps\\Splash.jpg"
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -254,7 +254,7 @@ add_custom_command(
 
 add_custom_command(
 	OUTPUT splash_cs.dat
-	COMMAND $<TARGET_FILE:fchecksum> ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash2016.jpg splash_cs.dat
+	COMMAND $<TARGET_FILE:fchecksum> ${CMAKE_CURRENT_SOURCE_DIR}/Bitmaps/Splash.jpg splash_cs.dat
 )
 
 
