@@ -1,5 +1,5 @@
-
-
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #ifndef __HSYSTEMS_H
 #define __HSYSTEMS_H

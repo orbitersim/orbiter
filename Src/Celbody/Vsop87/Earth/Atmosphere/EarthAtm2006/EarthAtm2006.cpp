@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 // class EarthAtmosphere_2006
 // Legacy atmospheric model

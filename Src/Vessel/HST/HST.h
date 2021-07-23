@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2004 Martin Schweiger
-//                   All rights reserved
 //
 // HST.h
 // HST basic specs and animations

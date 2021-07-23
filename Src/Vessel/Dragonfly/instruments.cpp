@@ -1,3 +1,5 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #include "instruments.h"
 #include < GL\gl.h >                                

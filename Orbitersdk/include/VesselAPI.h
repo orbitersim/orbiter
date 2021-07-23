@@ -1,7 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 //                     ORBITER SOFTWARE DEVELOPMENT KIT
-//                  Copyright (C) 2001-2016 Martin Schweiger
-//                           All rights reserved
 // VesselAPI.h
 // - VESSEL class interface
 // - VESSEL2 class extensions

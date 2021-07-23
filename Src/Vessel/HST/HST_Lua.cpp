@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                    ORBITER MODULE: HST
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2007 Martin Schweiger
-//                   All rights reserved
 //
 // HST_Lua.cpp
 // Script extensions to HST module

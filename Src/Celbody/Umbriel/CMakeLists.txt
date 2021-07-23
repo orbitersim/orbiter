@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 set(CELBODY "Umbriel")
 
 add_custom_command(

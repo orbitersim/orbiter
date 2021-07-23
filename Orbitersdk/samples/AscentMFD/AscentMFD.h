@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __ASCENTMFD_H
 #define __ASCENTMFD_H
 

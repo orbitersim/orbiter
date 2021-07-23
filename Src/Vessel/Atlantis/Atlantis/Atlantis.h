@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2012 Martin Schweiger
-//                   All rights reserved
 //
 // Atlantis.h
 // Class interface of Atlantis (Space Shuttle) vessel class

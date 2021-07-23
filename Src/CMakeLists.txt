@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 add_subdirectory(Orbiter)
 add_subdirectory(Orbitersdk)
 add_subdirectory(DlgCtrl)

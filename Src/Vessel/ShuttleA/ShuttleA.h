@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE:  ShuttleA
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2002-2004 Martin Schweiger
-//                   All rights reserved
 //
 // ShuttleA.h
 // Class interface for Shuttle-A vessel class module

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __VSOP87_NEPTUNE
 #define __VSOP87_NEPTUNE
 

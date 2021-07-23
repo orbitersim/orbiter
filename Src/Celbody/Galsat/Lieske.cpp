@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 // Implementation of Lieske GALSAT perturbation solutions for Galilean
 // Jupiter moons. Converted from FORTRAN sources.

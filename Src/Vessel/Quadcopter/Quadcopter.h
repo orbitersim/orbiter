@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                ORBITER MODULE: Quadcopter
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2019 Martin Schweiger
-//                   All rights reserved
 //
 // Quadcopter.h
 // Class interface for quadcopter vessel class module

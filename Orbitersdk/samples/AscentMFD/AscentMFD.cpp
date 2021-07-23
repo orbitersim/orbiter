@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: AscentMFD
 //                  Part of the ORBITER SDK
-//           Copyright (C) 2002-2003 Martin Schweiger
-//                   All rights reserved
 //
 // AscentMFD.cpp
 // Reference implementation of generic user-defined MFD mode

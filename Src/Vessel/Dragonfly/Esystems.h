@@ -1,3 +1,5 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #ifndef __ESYSTEMS_H_
 #define __ESYSTEMS_H_

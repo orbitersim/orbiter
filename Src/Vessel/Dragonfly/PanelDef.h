@@ -1,4 +1,6 @@
-		
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "panel.h"
 #include "hsystems.h"
 #include <string.h>

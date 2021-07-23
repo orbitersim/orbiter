@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "internal.h"
 #include <stdio.h>
 #include "orbitersdk.h"

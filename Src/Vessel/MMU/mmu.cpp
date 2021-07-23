@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 // ORBITER vessel module: NASA Manned Manuveuring Unit (MMU)
 // ==============================================================

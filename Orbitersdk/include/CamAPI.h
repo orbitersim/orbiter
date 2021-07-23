@@ -1,7 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 //                     ORBITER SOFTWARE DEVELOPMENT KIT
-//                  Copyright (C) 2006-2008 Martin Schweiger
-//                           All rights reserved
 // CamAPI.h
 // ORBITER Application Programming Interface (OAPI)
 // External camera control interface

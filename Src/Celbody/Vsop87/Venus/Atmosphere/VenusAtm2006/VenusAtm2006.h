@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __VENUSATM2006_H
 #define __VENUSATM2006_H
 

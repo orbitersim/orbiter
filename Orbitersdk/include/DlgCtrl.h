@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __DLGCTRL_H
 #define __DLGCTRL_H
 

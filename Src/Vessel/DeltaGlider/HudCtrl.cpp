@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                ORBITER MODULE: DeltaGlider
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2016 Martin Schweiger
-//                   All rights reserved
 //
 // HudCtrl.cpp
 // Class for HUD control subsystem

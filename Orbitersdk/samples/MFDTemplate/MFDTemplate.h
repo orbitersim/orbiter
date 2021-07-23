@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: DialogTemplate
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2003 Martin Schweiger
-//                   All rights reserved
 //
 // MFDTemplate.h
 //

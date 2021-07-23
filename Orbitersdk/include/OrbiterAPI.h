@@ -1,7 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 //                     ORBITER SOFTWARE DEVELOPMENT KIT
-//                  Copyright (C) 2001-2008 Martin Schweiger
-//                           All rights reserved
 // OrbiterAPI.h
 // ORBITER Application Programming Interface (OAPI)
 // ======================================================================

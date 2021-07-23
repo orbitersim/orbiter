@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2003 Martin Schweiger
-//                   All rights reserved
 //
 // Atlantis_SRB.cpp
 // Reference implementation of Atlantis SRB(Space Shuttle - Solid

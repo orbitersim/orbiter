@@ -1,3 +1,5 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #ifndef __INSTRUMENTS_H_
 #define __INSTRUMENTS_H_

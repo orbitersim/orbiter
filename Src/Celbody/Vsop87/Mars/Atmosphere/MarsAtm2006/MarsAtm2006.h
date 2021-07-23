@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __MARSATM2006_H
 #define __MARSATM2006_H
 

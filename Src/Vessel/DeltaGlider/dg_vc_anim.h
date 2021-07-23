@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Created by deltaglider_vc.m 15-Oct-2016
 
 #ifndef __DG_VC_ANIM_H

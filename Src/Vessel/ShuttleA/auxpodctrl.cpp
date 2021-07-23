@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: ShuttleA
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2011 Martin Schweiger
-//                   All rights reserved
 //
 // auxpodctrl.h
 // User interface for auxiliary thruster pod control

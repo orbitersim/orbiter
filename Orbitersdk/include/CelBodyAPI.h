@@ -1,7 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 //                     ORBITER SOFTWARE DEVELOPMENT KIT
-//                  Copyright (C) 2001-2004 Martin Schweiger
-//                           All rights reserved
 // CelBodyAPI.h
 // - CELBODY class interface
 // - This is the base class for celestial body module implementations

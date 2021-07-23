@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Dragonfly
 //                  Part of the ORBITER SDK
-//            Copyright (C) 2002 Martin Schweiger
-//                   All rights reserved
 //
 // Dragonfly.h
 // Class interface of "Dragonfly" class space tug

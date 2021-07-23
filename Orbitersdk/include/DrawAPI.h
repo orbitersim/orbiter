@@ -1,7 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 //                     ORBITER SOFTWARE DEVELOPMENT KIT
-//                    Copyright (C) 2008 Martin Schweiger
-//                           All rights reserved
 // DrawAPI.h
 // 2-D surface drawing support interface.
 // This API defines an abstraction layer for providing drawing support

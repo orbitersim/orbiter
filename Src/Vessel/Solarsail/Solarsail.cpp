@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: SolarSail
 //                  Part of the ORBITER SDK
-//             Copyright (C) 2007 Martin Schweiger
-//                   All rights reserved
 //
 // SolarSail.cpp
 // Control module for SolarSail vessel class

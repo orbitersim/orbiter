@@ -1,4 +1,5 @@
-
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #ifndef __THERMAL_H_
 #define __THERMAL_H_

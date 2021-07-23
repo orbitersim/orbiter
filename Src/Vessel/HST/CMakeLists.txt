@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 # Compile in Lua interface for executing HST functions?
 set(ADD_SCRIPT_SUPPORT 1)
 

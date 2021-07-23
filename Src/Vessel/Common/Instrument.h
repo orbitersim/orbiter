@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //             ORBITER MODULE: Common vessel tools
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2016 Martin Schweiger
-//                   All rights reserved
 //
 // Instrument.h
 // Interface for class PanelElement:

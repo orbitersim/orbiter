@@ -1,7 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 //                     ORBITER SOFTWARE DEVELOPMENT KIT
-//                  Copyright (C) 2001-2007 Martin Schweiger
-//                           All rights reserved
 // ModuleAPI.h
 // Defines generic base class Orbiter::Module which can be used by
 // plugins to define a set of interface functions to the Orbiter core.

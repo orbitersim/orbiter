@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "PlBayOp.h"
 #include "resource.h"
 #include "meshres_vc.h"

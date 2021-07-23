@@ -1,3 +1,5 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #include "vectors.h"
 #include <math.h>

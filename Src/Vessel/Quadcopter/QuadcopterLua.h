@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __QUADCOPTERLUA_H
 #define __QUADCOPTERLUA_H
 

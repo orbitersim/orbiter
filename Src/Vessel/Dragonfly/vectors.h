@@ -1,4 +1,5 @@
-
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #ifndef _VECTORS_
 #define _VECTORS_

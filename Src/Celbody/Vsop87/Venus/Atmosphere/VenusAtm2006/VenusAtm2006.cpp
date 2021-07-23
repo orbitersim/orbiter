@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 // class VenusAtmosphere_2006
 // Venus atmosphere model, as used in Orbiter 2006

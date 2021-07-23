@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: ShuttleA
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2011 Martin Schweiger
-//                   All rights reserved
 //
 // needlepair.cpp
 // Panel element: Pair of indicator needles

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __EARTHATMJ71G_H
 #define __EARTHATMJ71G_H
 

@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //           ORBITER MODULE: LaunchpadParamTemplate
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2006-2016 Martin Schweiger
-//                   All rights reserved
 //
 // LParam.cpp
 //

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 // class MarsAtmosphere_2006
 // Mars atmosphere model, as used in Orbiter 2006

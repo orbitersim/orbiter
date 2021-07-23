@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2012 Martin Schweiger
-//                   All rights reserved
 //
 // AscentAP.h
 // Class interface for Atlantis ascent autopilot

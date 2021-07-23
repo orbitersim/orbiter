@@ -1,3 +1,5 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
 
 #ifndef __PANELS_H_
 #define __PANELS_H_

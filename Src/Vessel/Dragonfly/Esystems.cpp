@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "esystems.h"
 #include <math.h>
 #include <stdio.h>

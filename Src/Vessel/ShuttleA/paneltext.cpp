@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: ShuttleA
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2016 Martin Schweiger
-//                   All rights reserved
 //
 // paneltext.cpp
 // Text output into panel elements

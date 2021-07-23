@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __VSOP87_VENUS
 #define __VSOP87_VENUS
 

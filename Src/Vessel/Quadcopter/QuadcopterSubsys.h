@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __QUADCOPTERSUBSYS_H
 #define __QUADCOPTERSUBSYS_H
 

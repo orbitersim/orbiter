@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 // class EarthAtmosphere_NRLMSISE00
 // MSIS atmosphere model implementation

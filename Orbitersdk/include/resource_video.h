@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Video tab resource identifiers
 
 #define IDC_VID_DEVICE   1019 // video device list

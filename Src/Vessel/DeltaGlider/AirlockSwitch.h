@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                ORBITER MODULE: DeltaGlider
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2009 Martin Schweiger
-//                   All rights reserved
 //
 // AirlockSwitch.h
 // User interface for row of switches on overhead panel

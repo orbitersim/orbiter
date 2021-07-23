@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __PROPULSIONSUBSYS_H
 #define __PROPULSIONSUBSYS_H
 

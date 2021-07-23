@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ======================================================================
 // class EarthAtmosphere_J71G
 // Implementation of Jacchia71-Gill atmosphere model

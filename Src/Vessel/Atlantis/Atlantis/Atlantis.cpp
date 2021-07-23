@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-20012 Martin Schweiger
-//                   All rights reserved
 //
 // Atlantis.cpp
 // Reference implementation of Atlantis (Space Shuttle) vessel

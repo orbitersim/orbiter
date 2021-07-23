@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                 ORBITER MODULE: Atlantis
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2003 Martin Schweiger
-//                   All rights reserved
 //
 // Atlantis_Tank.cpp
 // Reference implementation of Atlantis Tank vessel class module

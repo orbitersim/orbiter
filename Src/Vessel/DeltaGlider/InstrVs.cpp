@@ -1,8 +1,9 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //                ORBITER MODULE: DeltaGlider
 //                  Part of the ORBITER SDK
-//          Copyright (C) 2001-2008 Martin Schweiger
-//                   All rights reserved
 //
 // InstrVs.cpp
 // Vertical speed tape instrument for the Delta-Glider

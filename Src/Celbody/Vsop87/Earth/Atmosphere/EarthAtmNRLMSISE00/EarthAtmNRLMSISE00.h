@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #ifndef __EARTHATMNRLMSISE00
 #define __EARTHATMNRLMSISE00
 
