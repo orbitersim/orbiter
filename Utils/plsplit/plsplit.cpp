@@ -1,5 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =========================================================================
-// plsplit for Orbiter:  Martin Schweiger (c) 2000-2008
+// plsplit for Orbiter:
 // Split a bitmap file into 512x512 patches and put them into the proper
 // directory structure
 // =========================================================================

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include <iostream>
 #include <fstream>
 #include <string.h>

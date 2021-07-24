@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Shipedit.cpp : Defines the class behaviors for the application.
 //
 

@@ -4,7 +4,7 @@
 // ==============================================================
 //                 ORBITER MODULE:  ShuttleA
 //                  Part of the ORBITER SDK
-x//
+//
 // ShuttleA.cpp
 // Reference implementation of Shuttle-A vessel class module
 // ==============================================================

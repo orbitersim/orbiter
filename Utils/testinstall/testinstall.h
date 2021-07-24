@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // verinst.h : main header file for the PROJECT_NAME application
 //
 

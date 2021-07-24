@@ -130,4 +130,5 @@ install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/DG
 )
 
+add_subdirectory(DGConfigurator)
 add_subdirectory(Help)

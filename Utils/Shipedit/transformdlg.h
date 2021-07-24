@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #if !defined(AFX_TRANSFORMDLG_H__1900EF76_C581_47A3_8AF8_BCB3180148B4__INCLUDED_)
 #define AFX_TRANSFORMDLG_H__1900EF76_C581_47A3_8AF8_BCB3180148B4__INCLUDED_
 

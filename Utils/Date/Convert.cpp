@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Convert.h"
 
 // transforms a date and time (UT) into MJD format

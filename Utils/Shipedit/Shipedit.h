@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Shipedit.h : main header file for the SHIPEDIT application
 //
 

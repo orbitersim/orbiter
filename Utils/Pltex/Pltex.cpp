@@ -1,5 +1,8 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =========================================================================
-// pltex for Orbiter:  Martin Schweiger (c) 2000-2008
+// pltex for Orbiter:
 // Create texture files for planetary surfaces and cloud layers
 // =========================================================================
 

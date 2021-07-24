@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Simple scrambling of text strings
 
 #define _CRT_SECURE_NO_WARNINGS

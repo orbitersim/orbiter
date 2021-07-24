@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Mesh.h"
 #include "Vecmat.h"
 #include <stdio.h>

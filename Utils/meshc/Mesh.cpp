@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "Mesh.h"
 #include <stdio.h>
 #include "D3dmath.h"

@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // verinst.cpp : Defines the class behaviors for the application.
 //
 

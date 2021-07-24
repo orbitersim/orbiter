@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // this dummy executable simply checks for the presence of the required
 // dynamic C++ runtime libraries.
 // Return value 0: ok

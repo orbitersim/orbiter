@@ -1,3 +1,6 @@
+# Copyright (c) Martin Schweiger
+# Licensed under the MIT License
+
 cmake_minimum_required(VERSION 3.15)
 
 include(ExternalProject)

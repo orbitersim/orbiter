@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Date.cpp : Defines the class behaviors for the application.
 //
 

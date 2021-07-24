@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include <iostream>
 #include <string>
 #include <windows.h>

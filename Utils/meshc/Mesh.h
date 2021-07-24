@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // =======================================================================
 // Classes to support meshes under D3D:
 // Triangle, Mesh

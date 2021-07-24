@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // Create a simple checksum from a file and store it in a text file
 // in a format that can be #include'd by a source file.
 
