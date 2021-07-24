@@ -15,7 +15,7 @@ file(GLOB ChmSources
 
 add_custom_command(OUTPUT ${ORBITER_BINARY_HTML_DIR}/${subdir}/${name}.chm
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/ ${CMAKE_CURRENT_BINARY_DIR}
-	COMMAND ${HTML_HELP_COMPILER} ${name}.hhp && (echo .) || (echo .)
+	COMMAND ${HHC_CMD} ${name}.hhp
 	COMMAND ${CMAKE_COMMAND} -E copy ${name}.chm ${ORBITER_BINARY_HTML_DIR}/${subdir}/
 	DEPENDS ${ChmSources}
 	JOB_POOL htmlhelp

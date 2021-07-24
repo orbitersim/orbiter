@@ -43,7 +43,7 @@ if(ORBITER_MAKE_DOC)
 		OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 		DEPENDS ${BUILD_OUT_DIR}/index.html
 		WORKING_DIRECTORY ${BUILD_OUT_DIR}
-		COMMAND ${HTML_HELP_COMPILER} interpreter.hhp && (echo .) || (echo .)
+		COMMAND ${HHC_CMD} interpreter.hhp
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different ./interpreter.chm ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 		JOB_POOL htmlhelp
 )

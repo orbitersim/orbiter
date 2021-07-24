@@ -21,7 +21,7 @@ add_custom_command(OUTPUT ${ORBITER_BINARY_HTML_DIR}/Vessels/${name}.chm
 	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_SOURCE_HTML_DIR}/master.js ${CMAKE_CURRENT_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_SOURCE_HTML_DIR}/Orbiter.css ${CMAKE_CURRENT_BINARY_DIR}
 	COMMAND ${ldoc} .
-	COMMAND ${HTML_HELP_COMPILER} ${name}.hhp && (echo .) || (echo .)
+	COMMAND ${HHC_CMD} ${name}.hhp
 	COMMAND ${CMAKE_COMMAND} -E copy ${name}.chm ${ORBITER_BINARY_HTML_DIR}/Vessels/
 	DEPENDS ${ChmSources}
 	JOB_POOL htmlhelp

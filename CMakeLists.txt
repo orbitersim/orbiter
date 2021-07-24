@@ -101,6 +101,22 @@ set_target_properties(CopyData
 )
 
 # =====================================================================================
+# Convert a CMake path to a Windows path by turning all / into \
+
+function(windows_path inpath outpath)
+	string(REPLACE  "/" "\\" outp "${inpath}")
+	set(${outpath} ${outp} PARENT_SCOPE)
+endfunction()
+
+
+# =====================================================================================
+# work around Html Help compiler bug returning error code
+
+set(HHC_CMD ${CMAKE_CURRENT_BINARY_DIR}/cmake/hhc_fix.bat)
+windows_path(${HTML_HELP_COMPILER} HHC_PATH_W)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hhc_fix.bat.in ${HHC_CMD})
+
+# =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
 
 set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
@@ -185,13 +201,6 @@ if (ORBITER_MAKE_DOC)
 
 endif()
 
-# Convert a CMake path to a Windows path by turning all / into \
-
-function(windows_path inpath outpath)
-	string(REPLACE  "/" "\\" outp "${inpath}")
-	set(${outpath} ${outp} PARENT_SCOPE)
-endfunction()
-
 
 # For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
 # return the explicit argument string (arglist), full source path (source_path) and full target path (target_path)
@@ -265,6 +274,12 @@ endfunction()
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
+
+
+# Distribution package
+set(CPACK_GENERATOR "WIX;ZIP")
+include(CPack)
+
 
 # Sub-projects
 add_subdirectory(Src)

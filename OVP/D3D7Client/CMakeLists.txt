@@ -3,6 +3,9 @@
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_PLUGIN_DIR})
 
+# SAFESEH linker flag must be turned off because the DX7 libraries don't support it'
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -SAFESEH:NO")
+
 add_library(D3D7Client SHARED
 	Camera.cpp
 	CelSphere.cpp

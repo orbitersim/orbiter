@@ -1,0 +1,2 @@
+"${HHC_PATH_W}" %*
+exit /b 0

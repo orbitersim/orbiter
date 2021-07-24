@@ -17,7 +17,7 @@ add_custom_command(OUTPUT ${name}.chm
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/ ${CMAKE_CURRENT_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_SOURCE_HTML_DIR}/master.js ${CMAKE_CURRENT_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_SOURCE_HTML_DIR}/Orbiter.css ${CMAKE_CURRENT_BINARY_DIR}
-	COMMAND ${HTML_HELP_COMPILER} ${name}.hhp && (echo .) || (echo .)
+	COMMAND ${HHC_CMD} ${name}.hhp
 	DEPENDS ${ChmSources}
 	JOB_POOL htmlhelp
 )
