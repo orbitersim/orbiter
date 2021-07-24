@@ -12,10 +12,10 @@ add_custom_command(
 add_custom_command(
 	OUTPUT ${ORBITER_BINARY_SDK_DIR}/doc/API_Reference.pdf
 	DEPENDS ${out}
-	COMMAND ${PDFLATEX_COMPILER} refman.tex && (echo .) || (echo .)
+	COMMAND ${PDFTEX_CMD} refman.tex
 	COMMAND ${MAKEINDEX_COMPILER} refman.idx
-	COMMAND ${PDFLATEX_COMPILER} refman.tex && (echo .) || (echo .)
-	COMMAND ${PDFLATEX_COMPILER} refman.tex && (echo .) || (echo .)
+	COMMAND ${PDFTEX_CMD} refman.tex
+	COMMAND ${PDFTEX_CMD} refman.tex
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different refman.pdf ${ORBITER_BINARY_SDK_DIR}/doc/API_Reference.pdf
 	WORKING_DIRECTORY ./latex
 	JOB_POOL latex

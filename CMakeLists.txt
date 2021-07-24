@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.15)
 include(ExternalProject)
 
 # Set the project name
-project (Orbiter VERSION 2021.1)
+project (Orbiter VERSION 21.7.24)
 
 # Set the pools for compilers that can't run concurrently
 set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
@@ -39,7 +39,7 @@ set(ORBITER_BINARY_HTML_DIR ${ORBITER_BINARY_ROOT_DIR}/Html)
 set(ORBITER_BINARY_DOC_DIR ${ORBITER_BINARY_ROOT_DIR}/Doc)
 set(ORBITER_BINARY_SDK_DIR ${ORBITER_BINARY_ROOT_DIR}/Orbitersdk)
 
-set(ORBITER_INSTALL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
+set(ORBITER_INSTALL_ROOT_DIR "Orbiter") # This path is relative to CMAKE_INSTALL_PREFIX
 set(ORBITER_INSTALL_MODULE_DIR ${ORBITER_INSTALL_ROOT_DIR}/Modules)
 set(ORBITER_INSTALL_CELBODY_DIR ${ORBITER_INSTALL_MODULE_DIR}/Celbody)
 set(ORBITER_INSTALL_PLUGIN_DIR ${ORBITER_INSTALL_MODULE_DIR}/Plugin)
@@ -101,20 +101,20 @@ set_target_properties(CopyData
 )
 
 # =====================================================================================
-# Convert a CMake path to a Windows path by turning all / into \
-
-function(windows_path inpath outpath)
-	string(REPLACE  "/" "\\" outp "${inpath}")
-	set(${outpath} ${outp} PARENT_SCOPE)
-endfunction()
-
-
-# =====================================================================================
 # work around Html Help compiler bug returning error code
 
 set(HHC_CMD ${CMAKE_CURRENT_BINARY_DIR}/cmake/hhc_fix.bat)
-windows_path(${HTML_HELP_COMPILER} HHC_PATH_W)
+file(TO_NATIVE_PATH "${HTML_HELP_COMPILER}" HHC_PATH_W)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/hhc_fix.bat.in ${HHC_CMD})
+
+
+# =====================================================================================
+# work around pdftex returning an error because of doxygen bug
+
+set(PDFTEX_CMD ${CMAKE_CURRENT_BINARY_DIR}/cmake/pdftex_fix.bat)
+file(TO_NATIVE_PATH "${PDFLATEX_COMPILER}" PDFTEX_PATH_W)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.bat.in ${PDFTEX_CMD})
+
 
 # =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
