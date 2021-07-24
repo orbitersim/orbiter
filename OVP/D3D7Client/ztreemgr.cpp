@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 // ==============================================================
 //   ORBITER VISUALISATION PROJECT (OVP)
 //   D3D7 Client module

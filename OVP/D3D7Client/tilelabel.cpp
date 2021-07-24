@@ -1,3 +1,6 @@
+// Copyright (c) Martin Schweiger
+// Licensed under the MIT License
+
 #include "tilelabel.h"
 #include "camera.h"
 #include <limits>
