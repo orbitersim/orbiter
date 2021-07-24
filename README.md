@@ -32,13 +32,15 @@ To configure and generate the makefiles, you need a recent
 
 To compile Orbiter from its sources, you need
 [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/).
-Orbiter has been successfully built with VS2019, but other versions should
+Orbiter has been successfully built with VS Community 2019, but other versions should
 also work. Note that VS2019 comes with built-in CMake support, so you don't
 need a separate CMake installation.
 
 If you are using the [Ninja](https://cmake.org/cmake/help/latest/generator/Ninja.html)
 generator (default for the VS built-in CMake), you may also need
 [vspkg](https://github.com/microsoft/vcpkg) to configure the VS toolset.
+
+Orbiter is a 32-bit application. Be sure to configure vspkg and CMake accordingly.
 
 If you want to build the documentation, you need a few additional tools:
 - a filter to convert ODT and DOC sources to PDF, such as
@@ -52,7 +54,7 @@ If you want to build the server version for external graphics client support,
 set the ORBITER_BUILD_WITH_DX7 CMake option to OFF. Both versions can be
 built into the same build directory. The version with built-in DX7 graphics
 is launched with the `./orbiter.exe` executable. The server version is
-located in `./Modules/Server/orbiter.exe and is launched with `./orbiter_ng.exe`.
+located in `./Modules/Server/orbiter.exe` and is launched with `./orbiter_ng.exe`.
 The Orbiter source distribution ships with a DX7 reference graphics client
 (D3D7Client) with essentially the same functionality as the built-in graphics
 client. Use 3rd party client implementations to make use of more modern
@@ -67,7 +69,7 @@ required for running Orbiter.
 You need to install those separately. The easiest way to do so is by installing
 [Orbiter 2016](http://orbit.medphys.ucl.ac.uk/download.html). Optionally you can
 also install high-resolution versions of the textures from the Orbiter website.
-You should keep the Orbiter 2016 installation separately from your Orbiter git
+You should keep the Orbiter 2016 installation separate from your Orbiter git
 repository.
 
 To configure Orbiter to use the 2016 texture installation, set the

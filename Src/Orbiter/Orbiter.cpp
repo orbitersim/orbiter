@@ -74,7 +74,7 @@ const int MAX_TEXTURE_BUFSIZE = 8000000;
 // Texture manager buffer size. Should be determined from
 // memory size (System or Video?)
 
-TCHAR* g_strAppTitle = "Orbiter 2016";
+TCHAR* g_strAppTitle = "OpenOrbiter";
 
 #ifdef INLINEGRAPHICS
 TCHAR* MasterConfigFile = "Orbiter.cfg";
@@ -465,7 +465,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	gclient->clbkInitialise();
 	pMainDlg->UnhidePage (4, "Video");
 #else
-	SetWindowText (hDlg, "Orbiter Server Launchpad");
+	SetWindowText (hDlg, "OpenOrbiter Server Launchpad");
 #endif // INLINEGRAPHICS
 
 	Instrument::RegisterBuiltinModes();
@@ -2388,6 +2388,7 @@ bool Orbiter::SendKbdImmediate(char kstate[256], bool onRunningOnly)
 	for (int i = 0; i < 256; i++)
 		simkstate[i] |= kstate[i];
 	bAllowInput = true; // make sure the render window processes inputs
+	return true;
 }
 
 //-----------------------------------------------------------------------------
