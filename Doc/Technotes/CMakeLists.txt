@@ -17,8 +17,6 @@ install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}/Technotes
 )
 
-
-
 if(LATEX_FOUND)
 	add_subdirectory(composite)
 	add_subdirectory(distmass)

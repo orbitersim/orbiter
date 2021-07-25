@@ -230,6 +230,4 @@ install(FILES ${out}
 
 # Technotes --------------------------------------------------------------
 
-if(ORBITER_MAKE_TECHNOTES)
-	add_subdirectory(Technotes)
-endif()
+add_subdirectory(Technotes)

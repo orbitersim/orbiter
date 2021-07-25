@@ -79,6 +79,7 @@ set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 
 find_package(HTMLHelp)
 find_package(Doxygen)
+find_package(LATEX)		
 set(ldoc ${CMAKE_SOURCE_DIR}/Extern/Lua/bin/lua ${CMAKE_SOURCE_DIR}/Extern/Lua/packages/LDoc/ldoc.lua)
 
 if(MSVC)
@@ -187,17 +188,6 @@ if (ORBITER_MAKE_DOC)
 		STRING
 		"Compiler options for the DocToPdfCompiler"
 	)
-
-	option(ORBITER_MAKE_TECHNOTES
-		"Create Orbiter Technical Notes"
-		ON
-	)
-
-	if(ORBITER_MAKE_TECHNOTES)
-	
-		find_package(LATEX)
-		
-	endif()
 
 endif()
 
