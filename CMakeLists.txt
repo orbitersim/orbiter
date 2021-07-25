@@ -1,7 +1,7 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.19)
 
 include(ExternalProject)
 
@@ -73,7 +73,6 @@ set(LUA_LIB_DIR "${LUA_DIR}/lib")
 set(LUA_DLL_DIR "${LUA_DIR}/dll")
 set(LUA_LIB "${LUA_DLL_DIR}/lua5.1.lib")
 
-#set(ORBITER_TOOL_MESHC ${ORBITER_BINARY_ROOT_DIR}/Utils/meshc/meshc.exe)
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 
 
@@ -132,16 +131,15 @@ if (${CUSTOM_PLANET_TEXTURE_DIR})
 	string(REPLACE  "/" "\\" ORBITER_PLANET_TEXTURE_INSTALL_DIR_W "${ORBITER_PLANET_TEXTURE_INSTALL_DIR}")
 
 	if(ORBITER_BUILD_WITH_DX7)
-		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
-		install(FILES ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg
-			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-		)
+		set(root_cfg Orbiter.cfg)
 	else()
-		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg)
-		install(FILES ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg
-			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-		)
+		set(root_cfg Orbiter_NG.cfg)
 	endif()
+	
+	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/${root_cfg})
+	install(FILES ${ORBITER_BINARY_ROOT_DIR}/${root_cfg}
+		DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+	)
 endif()
 
 
@@ -272,11 +270,21 @@ set(CPACK_PACKAGE_NAME OpenOrbiter)
 set(CPACK_PACKAGE_VENDOR Orbitersim)
 set(CPACK_PACKAGE_DESCRIPTION "Orbiter is an Open-source spaceflight simulator for Windows PCs.")
 set(CPACK_PACKAGE_HOMEPAGE_URL http://orbit.medphys.ucl.ac.uk)
+set(CPACK_PACKAGE_EXECUTABLES Orbiter;OpenOrbiter)
 set(CPACK_RESOURCE_FILE_LICENSE ${ORBITER_SOURCE_ROOT_DIR}/cmake/LICENSE.rtf)
 set(CPACK_RESOURCE_FILE_README ${ORBITER_SOURCE_ROOT_DIR}/README.md)
 set(CPACK_WIX_UI_BANNER ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_banner.bmp)
 set(CPACK_WIX_UI_DIALOG ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_bkg.bmp)
 set(CPACK_WIX_PRODUCT_ICON ${ORBITER_SOURCE_ROOT_DIR}/cmake/orbiter_install.ico)
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
+
+# There appears to be a CMake (3.20.5) bug that prevents CMAKE_INSTALL_PREFIX to be set
+# correctly in the CPACK_PRE_BUILD_SCRIPTS, so the script has been disabled for now
+# This means that the planet texture installation directory is not reset to default
+# for the packages. This needs to be fixed
+
+#set(CPACK_PRE_BUILD_SCRIPTS ${ORBITER_SOURCE_ROOT_DIR}/cmake/cpack_install.cmake)
+
 include(CPack)
 
 
