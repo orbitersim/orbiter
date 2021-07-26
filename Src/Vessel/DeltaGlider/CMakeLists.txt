@@ -101,7 +101,7 @@ add_custom_command(
 )
 
 add_dependencies(DeltaGlider
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	DlgCtrl
 	DeltaGlider_Prerequisites

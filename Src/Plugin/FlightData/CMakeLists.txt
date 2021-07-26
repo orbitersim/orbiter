@@ -19,7 +19,7 @@ target_link_libraries(FlightData
 )
 
 add_dependencies(FlightData
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

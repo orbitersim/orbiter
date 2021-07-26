@@ -29,7 +29,7 @@ endif()
 add_custom_target(APIReference
 	DEPENDS ${api_ref_out}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	APIReference
 )
 

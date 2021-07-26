@@ -20,7 +20,7 @@ target_link_libraries(LuaMFD
 )
 
 add_dependencies(LuaMFD
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	LuaInterpreter
 )

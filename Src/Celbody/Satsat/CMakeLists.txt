@@ -14,7 +14,7 @@ set_target_properties(Satsat
 )
 
 add_dependencies(Satsat
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

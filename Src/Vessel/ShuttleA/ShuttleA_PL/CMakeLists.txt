@@ -26,7 +26,7 @@ target_link_libraries(ShuttleA_PL
 )
 
 add_dependencies(ShuttleA_PL
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

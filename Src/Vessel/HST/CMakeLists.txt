@@ -28,7 +28,7 @@ target_link_libraries(HST
 )
 
 add_dependencies(HST
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

@@ -10,7 +10,7 @@ set_target_properties(Vsop87
 )
 
 add_dependencies(Vsop87
-	Orbiter
+	${OrbiterTgt}
 )
 
 target_include_directories(Vsop87

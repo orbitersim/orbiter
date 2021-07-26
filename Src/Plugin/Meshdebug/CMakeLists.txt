@@ -17,7 +17,7 @@ target_link_libraries(Meshdebug
 )
 
 add_dependencies(Meshdebug
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

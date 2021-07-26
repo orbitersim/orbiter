@@ -12,7 +12,7 @@ add_library(${ATM_TARGET} SHARED
 )
 
 add_dependencies(${ATM_TARGET}
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

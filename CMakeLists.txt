@@ -49,7 +49,6 @@ set(ORBITER_INSTALL_DOC_DIR ${ORBITER_INSTALL_ROOT_DIR}/Doc)
 set(ORBITER_INSTALL_UTILS_DIR ${ORBITER_INSTALL_ROOT_DIR}/Utils)
 set(ORBITER_INSTALL_SDK_DIR ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk)
 
-set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
 set(ORBITER_SDK_LIB $<TARGET_FILE:Orbitersdk>)
 set(ORBITER_DLGCTRL_LIB $<TARGET_FILE:DlgCtrl>)
 set(LUAINTERPRETER_LIB $<TARGET_LINKER_FILE:LuaInterpreter>)
@@ -117,6 +116,40 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.bat.in ${PDFTEX_CMD}
 
 
 # =====================================================================================
+
+set(OrbiterExe_graphics "Orbiter (built-in DX7 graphics engine)")
+set(OrbiterExe_ng "Orbiter (graphics server version)")
+set(OrbiterExe_both "Both (inline DX7 graphics + graphics server)")
+set(ORBITER_GRAPHICS
+	${OrbiterExe_both}
+	CACHE
+	STRING
+	"Orbiter executables to be built."
+)
+set_property(CACHE ORBITER_GRAPHICS
+	PROPERTY
+	STRINGS ${OrbiterExe_both} ${OrbiterExe_graphics} ${OrbiterExe_ng}
+)
+if(NOT ${ORBITER_GRAPHICS} STREQUAL ${OrbiterExe_ng})
+	set(BUILD_ORBITER_DX7 1)
+else()
+	set(BUILD_ORBITER_DX7 0)
+endif()
+if(NOT ${ORBITER_GRAPHICS} STREQUAL ${OrbiterExe_graphics})
+	set(BUILD_ORBITER_SERVER 1)
+else()
+	set(BUILD_ORBITER_SERVER 0)
+endif()
+
+if(BUILD_ORBITER_DX7)
+	set(OrbiterTgt Orbiter)
+	set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter>)
+else()
+	set(OrbiterTgt Orbiter_server)
+	set(ORBITER_LIB $<TARGET_LINKER_FILE:Orbiter_server>)
+endif()
+
+# =====================================================================================
 # Configure Orbiter.cfg for externally installed planet textures
 
 set(ORBITER_PLANET_TEXTURE_INSTALL_DIR
@@ -130,19 +163,22 @@ string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_
 if (${CUSTOM_PLANET_TEXTURE_DIR})
 	string(REPLACE  "/" "\\" ORBITER_PLANET_TEXTURE_INSTALL_DIR_W "${ORBITER_PLANET_TEXTURE_INSTALL_DIR}")
 
-#	if(ORBITER_BUILD_WITH_DX7)
-#		set(root_cfg Orbiter.cfg)
-#	else()
-#		set(root_cfg Orbiter_NG.cfg)
-#	endif()
+	if(BUILD_ORBITER_DX7)
+		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
+		install(FILES
+			${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg
+			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+		)
+	endif()
 	
-	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
-	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg)
-	install(FILES
-		${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg 
-		${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg 
-		DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
-	)
+	if(BUILD_ORBITER_SERVER)
+		configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg)
+		install(FILES
+			${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg
+			DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+		)
+	endif()
+	
 endif()
 
 

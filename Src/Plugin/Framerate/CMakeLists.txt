@@ -20,7 +20,7 @@ target_link_libraries(Framerate
 )
 
 add_dependencies(Framerate
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

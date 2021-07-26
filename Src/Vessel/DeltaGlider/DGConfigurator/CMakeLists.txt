@@ -18,7 +18,7 @@ target_link_libraries(DGConfigurator
 )
 
 add_dependencies(DGConfigurator
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

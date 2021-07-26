@@ -10,7 +10,7 @@ add_custom_command(
 add_custom_target(APIGuideDoc
 	DEPENDS ${out}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	APIGuideDoc
 )
 install(FILES ${out}
@@ -29,7 +29,7 @@ add_custom_command(
 add_custom_target(3DModelDoc
 	DEPENDS ${out}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	3DModelDoc
 )
 install(FILES ${out}

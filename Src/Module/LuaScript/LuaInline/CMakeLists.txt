@@ -20,7 +20,7 @@ target_link_libraries(LuaInline
 )
 
 add_dependencies(LuaInline
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	LuaInterpreter
 )

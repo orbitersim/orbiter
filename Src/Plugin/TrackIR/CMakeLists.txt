@@ -20,7 +20,7 @@ target_link_libraries(TrackIR
 )
 
 add_dependencies(TrackIR
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

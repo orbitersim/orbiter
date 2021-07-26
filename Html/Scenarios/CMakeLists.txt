@@ -6,7 +6,7 @@ add_custom_command(
 add_custom_target(CurrentState_htm
 	DEPENDS CurrentState.htm CurrentState_img.htm
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	CurrentState_htm
 )
 

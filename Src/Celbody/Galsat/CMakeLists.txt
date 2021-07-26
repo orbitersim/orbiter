@@ -14,7 +14,7 @@ set_target_properties(Galsat
 )
 
 add_dependencies(Galsat
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

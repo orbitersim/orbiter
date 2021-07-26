@@ -17,7 +17,7 @@ target_link_libraries(Rcontrol
 )
 
 add_dependencies(Rcontrol
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	DlgCtrl
 )

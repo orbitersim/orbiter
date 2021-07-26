@@ -67,7 +67,7 @@ add_custom_command(
 )
 
 add_dependencies(Atlantis
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	DlgCtrl
 	Atlantis_SRB

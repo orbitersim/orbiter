@@ -19,7 +19,7 @@ target_link_libraries(ScriptMFD
 )
 
 add_dependencies(ScriptMFD
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

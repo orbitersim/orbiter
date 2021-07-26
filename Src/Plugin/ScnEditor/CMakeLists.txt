@@ -20,7 +20,7 @@ target_link_libraries(ScnEditor
 )
 
 add_dependencies(ScnEditor
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	DlgCtrl
 )

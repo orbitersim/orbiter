@@ -35,7 +35,7 @@ target_link_libraries(Dragonfly
 )
 
 add_dependencies(Dragonfly
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

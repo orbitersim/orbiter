@@ -31,7 +31,7 @@ target_link_libraries(TransX
 )
 
 add_dependencies(TransX
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

@@ -24,7 +24,7 @@ add_custom_command(
 add_custom_target(EarthAtmTechnote
 	DEPENDS ${out_path}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	EarthAtmTechnote
 )
 set_target_properties(EarthAtmTechnote

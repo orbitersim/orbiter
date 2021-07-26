@@ -21,7 +21,7 @@ target_link_libraries(LuaInterpreter
 )
 
 add_dependencies(LuaInterpreter
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 
@@ -50,7 +50,7 @@ if(ORBITER_MAKE_DOC)
 	add_custom_target(orbiter_lua
 		DEPENDS ${ORBITER_BINARY_SDK_DIR}/doc/orbiter_lua.chm
 	)
-	add_dependencies(Orbiter
+	add_dependencies(${OrbiterTgt}
 		orbiter_lua
 	)
 

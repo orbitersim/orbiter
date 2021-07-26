@@ -21,7 +21,7 @@ target_link_libraries(ScriptVessel
 )
 
 add_dependencies(ScriptVessel
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

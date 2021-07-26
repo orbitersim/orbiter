@@ -30,7 +30,7 @@ target_link_libraries(Quadcopter
 )
 
 add_dependencies(Quadcopter
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

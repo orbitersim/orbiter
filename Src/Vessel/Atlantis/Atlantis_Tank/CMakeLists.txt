@@ -41,7 +41,7 @@ add_custom_command(
 )
 
 add_dependencies(Atlantis_Tank
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	Atlantis_SRB
 )

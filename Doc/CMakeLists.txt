@@ -10,7 +10,7 @@ add_custom_command(
 add_custom_target(OrbiterDoc
 	DEPENDS ${out}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	OrbiterDoc
 )
 set_target_properties(OrbiterDoc
@@ -33,7 +33,7 @@ add_custom_command(
 add_custom_target(OrbiterConfigDoc
 	DEPENDS ${out}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	OrbiterConfigDoc
 )
 set_target_properties(OrbiterConfigDoc
@@ -56,7 +56,7 @@ add_custom_command(
 add_custom_target(PlanetTexturesDoc
 	DEPENDS ${out}
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	PlanetTexturesDoc
 )
 set_target_properties(PlanetTexturesDoc

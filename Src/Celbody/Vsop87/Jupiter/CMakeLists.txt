@@ -10,7 +10,7 @@ add_library(${CELBODY} SHARED
 )
 
 add_dependencies(${CELBODY}
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	Vsop87
 	Galsat

@@ -19,7 +19,7 @@ target_link_libraries(AtmConfig
 )
 
 add_dependencies(AtmConfig
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

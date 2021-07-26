@@ -15,7 +15,7 @@ target_include_directories(GDIClient
 )
 
 add_dependencies(GDIClient
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

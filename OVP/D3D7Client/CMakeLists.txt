@@ -49,7 +49,7 @@ target_include_directories(D3D7Client
 )
 
 add_dependencies(D3D7Client
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	GDIClient
 )

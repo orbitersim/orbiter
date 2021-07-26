@@ -19,7 +19,7 @@ add_custom_command(OUTPUT ${ORBITER_BINARY_HTML_DIR}/${subdir}/${name}.chm
 add_custom_target(${name}_chm
 	DEPENDS ${ORBITER_BINARY_HTML_DIR}/${subdir}/${name}.chm
 )
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	${name}_chm
 )
 

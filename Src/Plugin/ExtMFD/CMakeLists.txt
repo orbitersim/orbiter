@@ -15,11 +15,10 @@ target_include_directories(ExtMFD
 target_link_libraries(ExtMFD
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-#	UxTheme.lib
 )
 
 add_dependencies(ExtMFD
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

@@ -18,7 +18,7 @@ target_link_libraries(AtlantisConfig
 )
 
 add_dependencies(AtlantisConfig
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

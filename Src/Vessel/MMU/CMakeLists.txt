@@ -24,7 +24,7 @@ target_link_libraries(MMU
 )
 
 add_dependencies(MMU
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

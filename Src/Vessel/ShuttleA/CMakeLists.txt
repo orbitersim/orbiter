@@ -49,7 +49,7 @@ target_link_libraries(ShuttleA
 )
 
 add_dependencies(ShuttleA
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 	DlgCtrl
 )

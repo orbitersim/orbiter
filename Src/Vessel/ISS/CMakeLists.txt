@@ -38,7 +38,7 @@ set_target_properties(ISS
 	FOLDER Vessels
 )
 
-add_dependencies(Orbiter
+add_dependencies(${OrbiterTgt}
 	ISS
 )
 
