@@ -130,14 +130,17 @@ string(COMPARE NOTEQUAL ${ORBITER_PLANET_TEXTURE_INSTALL_DIR} "${ORBITER_BINARY_
 if (${CUSTOM_PLANET_TEXTURE_DIR})
 	string(REPLACE  "/" "\\" ORBITER_PLANET_TEXTURE_INSTALL_DIR_W "${ORBITER_PLANET_TEXTURE_INSTALL_DIR}")
 
-	if(ORBITER_BUILD_WITH_DX7)
-		set(root_cfg Orbiter.cfg)
-	else()
-		set(root_cfg Orbiter_NG.cfg)
-	endif()
+#	if(ORBITER_BUILD_WITH_DX7)
+#		set(root_cfg Orbiter.cfg)
+#	else()
+#		set(root_cfg Orbiter_NG.cfg)
+#	endif()
 	
-	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/${root_cfg})
-	install(FILES ${ORBITER_BINARY_ROOT_DIR}/${root_cfg}
+	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg)
+	configure_file(${ORBITER_SOURCE_DIR}/Orbiter.cfg.in ${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg)
+	install(FILES
+		${ORBITER_BINARY_ROOT_DIR}/Orbiter.cfg 
+		${ORBITER_BINARY_ROOT_DIR}/Orbiter_NG.cfg 
 		DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 	)
 endif()
@@ -146,10 +149,10 @@ endif()
 # =====================================================================================
 # Find required and optional build tools
 
-option(ORBITER_BUILD_WITH_DX7
-	"Compile Orbiter with built-in DX7 graphics. If off, the server version for external graphics clients will be built."
-	ON
-)
+#option(ORBITER_BUILD_WITH_DX7
+#	"Compile Orbiter with built-in DX7 graphics. If off, the server version for external graphics clients will be built."
+#	ON
+#)
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"
@@ -263,8 +266,17 @@ install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
 )
 
+set(CMAKE_MODULE_PATH
+	${ORBITER_BINARY_ROOT_DIR}
+    ${CMAKE_MODULE_PATH}
+)
 
-# Distribution package
+# =============================================================================
+# Set up Distribution package options
+
+configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
+	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
+			   
 set(CPACK_GENERATOR "WIX;ZIP")
 set(CPACK_PACKAGE_NAME OpenOrbiter)
 set(CPACK_PACKAGE_VENDOR Orbitersim)
@@ -276,7 +288,7 @@ set(CPACK_RESOURCE_FILE_README ${ORBITER_SOURCE_ROOT_DIR}/README.md)
 set(CPACK_WIX_UI_BANNER ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_banner.bmp)
 set(CPACK_WIX_UI_DIALOG ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_bkg.bmp)
 set(CPACK_WIX_PRODUCT_ICON ${ORBITER_SOURCE_ROOT_DIR}/cmake/orbiter_install.ico)
-set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake")
 
 # There appears to be a CMake (3.20.5) bug that prevents CMAKE_INSTALL_PREFIX to be set
 # correctly in the CPACK_PRE_BUILD_SCRIPTS, so the script has been disabled for now
@@ -285,6 +297,7 @@ set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
 
 #set(CPACK_PRE_BUILD_SCRIPTS ${ORBITER_SOURCE_ROOT_DIR}/cmake/cpack_install.cmake)
 
+include(OrbiterCPackOptions)
 include(CPack)
 
 
