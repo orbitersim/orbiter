@@ -75,10 +75,19 @@ set(LUA_LIB "${LUA_DLL_DIR}/lua5.1.lib")
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 
 
+find_package(Qt5 QUIET COMPONENTS Widgets)
+find_package(OpenGL QUIET)
 find_package(HTMLHelp)
 find_package(Doxygen)
 find_package(LATEX)		
 set(ldoc ${CMAKE_SOURCE_DIR}/Extern/Lua/bin/lua ${CMAKE_SOURCE_DIR}/Extern/Lua/packages/LDoc/ldoc.lua)
+
+if(NOT Qt5_FOUND)
+	message(WARNING "Qt installation not found. Tileedit tool will not be built.")
+endif()
+if (NOT OPENGL_FOUND)
+	message(WARNING "OpenGL installation not found. Dragonfly vessel class will not be built.")
+endif()
 
 if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS
