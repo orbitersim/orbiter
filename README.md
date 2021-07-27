@@ -40,9 +40,14 @@ Orbiter has been successfully built with VS Community 2019, but other versions s
 also work. Note that VS2019 comes with built-in CMake support, so you don't
 need a separate CMake installation.
 
-If you are using the [Ninja](https://cmake.org/cmake/help/latest/generator/Ninja.html)
+Some configuration caveats:
+- If you are using the [Ninja](https://cmake.org/cmake/help/latest/generator/Ninja.html)
 generator (default for the VS built-in CMake), you may also need
 [vspkg](https://github.com/microsoft/vcpkg) to configure the VS toolset.
+- If you are using the VS2019 generator, you may need to set up Visual Studio to use
+only a single thread for the build. This is because some of the build tools (especially
+those for generating the Orbiter documentation) are not threadsafe, and the VS2019
+generator doesn't understand the CMake JOB_POOL directive.
 
 Orbiter is a 32-bit application. Be sure to configure vspkg and CMake accordingly.
 
@@ -53,16 +58,15 @@ If you want to build the documentation, you need a few additional tools:
 - [Doxygen](https://www.doxygen.nl/index.html) for building the source-level
   documentation for developers.
 
-By default, the Orbiter version with built-in DX7 graphics engine is built.
-If you want to build the server version for external graphics client support,
-set the ORBITER_BUILD_WITH_DX7 CMake option to OFF. Both versions can be
-built into the same build directory. The version with built-in DX7 graphics
-is launched with the `./orbiter.exe` executable. The server version is
-located in `./Modules/Server/orbiter.exe` and is launched with `./orbiter_ng.exe`.
-The Orbiter source distribution ships with a DX7 reference graphics client
-(D3D7Client) with essentially the same functionality as the built-in graphics
-client. Use 3rd party client implementations to make use of more modern
-graphics engines.
+By default, the build is configured to create both graphics flavours of the
+Orbiter executable (although this can be configured with the ORBITER_GRAPHICS CMake flag):
+- ``orbiter.exe`` is the standalone Orbiter application with built-in DX7 graphics.
+- ``orbiter_ng.exe`` is a launcher for ``./Modules/Server/orbiter.exe`` which is the
+graphics server version of Orbiter. It requires an external graphics client
+plugin to be loaded via the Modules tab of the Orbiter Launchpad dialog.
+The reference D3D7Client is included with the build with essentially the same
+functionality as the built-in graphics version. Use 3rd party client
+implementations to make use of more modern graphics engines.
 
 See [README.compile](./README.compile) for details on building Orbiter.
 
