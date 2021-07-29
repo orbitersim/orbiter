@@ -8,7 +8,7 @@ set(TEXTURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Textures)
 set(CONFIG_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Config)
 
 add_library(ShuttleA_PL SHARED
-	ShuttleA_PL.cpp
+	ShuttleA_pl.cpp
 )
 
 set_target_properties(ShuttleA_PL

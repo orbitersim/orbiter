@@ -8,14 +8,14 @@ if(OPENGL_FOUND) # OpenGL is required for this target
 
 add_library(Dragonfly SHARED
 	Dragonfly.cpp
-	internal.cpp
+	Internal.cpp
 	instruments.cpp
-	matrix.cpp
+	Matrix.cpp
 	quaternion.cpp
 	vectors.cpp
-	hsystems.cpp
-	thermal.cpp
-	esystems.cpp
+	Hsystems.cpp
+	Thermal.cpp
+	Esystems.cpp
 )
 
 set_target_properties(Dragonfly
