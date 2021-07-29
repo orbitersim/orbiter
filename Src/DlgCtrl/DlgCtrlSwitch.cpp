@@ -8,7 +8,7 @@ extern GDIRES g_GDI;
 static void OnPaint (HWND hWnd);
 static void OnLButtonDown (HWND hWnd, int x, int y);
 
-long FAR PASCAL MsgProc_Switch (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MsgProc_Switch (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_CREATE:

@@ -5,6 +5,11 @@
 #include "DlgCtrlLocal.h"
 #include <stdio.h>
 
+#include <algorithm>
+
+using std::min;
+using std::max;
+
 GDIRES g_GDI;
 //static struct {
 //	HPEN hPen1, hPen2;
@@ -61,7 +66,7 @@ void oapiUnregisterCustomControls (HINSTANCE hInst)
 	DeleteObject (g_GDI.hBrush2);
 }
 
-long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hPrevCapt = NULL;
 	switch (uMsg) {

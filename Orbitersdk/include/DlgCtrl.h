@@ -7,11 +7,18 @@
 #define STRICT 1
 #include "windows.h"
 
+#ifndef GWL_USERDATA
+#define GWL_USERDATA GWLP_USERDATA
+#endif
+
+class PropertyGroup; // Forward declaration
+class PropertyList;  // Forward declaration
+
 void oapiRegisterCustomControls (HINSTANCE hInst);
 void oapiUnregisterCustomControls (HINSTANCE hInst);
 
-long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-long FAR PASCAL MsgProc_Switch (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT FAR PASCAL MsgProc_Switch (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 struct GAUGEPARAM {
 	int rangemin, rangemax;
