@@ -33,8 +33,6 @@ jobs:
       fail-fast: false
       matrix:
         architecture: [x64, Win32]
-    env:
-      buildDir: '${{ github.workspace }}/build'
       
     runs-on: windows-latest
 
@@ -45,8 +43,9 @@ jobs:
     - name: Build
       uses: lukka/run-cmake@v3
       with:
+        cmakeGenerator: 'Visual Studio 16 2019'  
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-G "Visual Studio 16 2019" -A ${{ matrix.architecture }} -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
-        buildDirectory: ${{ env.buildDir }}
+        cmakeAppendedArgs: '-A ${{ matrix.architecture }} -C Release -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
+        buildDirectory: '${{ github.workspace }}/build'
