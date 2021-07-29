@@ -6,6 +6,7 @@ jobs:
   build:
     name: Build with CMake
     strategy:
+      fail-fast: false
       matrix:
         architecture: [x64, Win32]
     env:
