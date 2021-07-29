@@ -131,4 +131,6 @@ install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 )
 
 add_subdirectory(DGConfigurator)
-add_subdirectory(Help)
+if(ORBITER_MAKE_DOC)
+	add_subdirectory(Help)
+endif()
