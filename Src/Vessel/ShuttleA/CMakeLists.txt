@@ -95,4 +95,6 @@ install(DIRECTORY ${SCRIPT_SOURCE_DIR}/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Script/ShuttleA
 )
 
-add_subdirectory(Help)
+if(ORBITER_MAKE_DOC)
+	add_subdirectory(Help)
+endif()
