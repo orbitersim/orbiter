@@ -18,7 +18,15 @@ ExternalProject_Add(plsplit
 	INSTALL_DIR ${ORBITER_INSTALL_UTILS_DIR}
 	CMAKE_GENERATOR "Visual Studio 16 2019" 
 	CMAKE_GENERATOR_PLATFORM "x64"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}/${ORBITER_INSTALL_ROOT_DIR}/Utils
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DINSTALLDIR=${ORBITER_INSTALL_UTILS_DIR}
+	INSTALL_COMMAND ""
+)
+# Install project output from here instead from inside the external project
+# to make cpack aware of it
+install(PROGRAMS
+	${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
+	plsplit/DxTex.exe
+	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
 )
 
 # tileedit is another 64-bit project. This also requires
@@ -30,5 +38,24 @@ ExternalProject_Add(tileedit_proj
 	INSTALL_DIR ${ORBITER_INSTALL_UTILS_DIR}
 	CMAKE_GENERATOR "Visual Studio 16 2019"
 	CMAKE_GENERATOR_PLATFORM "x64"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}/${ORBITER_INSTALL_ROOT_DIR}/Utils -DQTDIR:PATH=${Qt5_x64_DIR} -DINSTALLDIR=${ORBITER_INSTALL_UTILS_DIR}
+	CMAKE_ARGS -DQTDIR:PATH=${Qt5_x64_DIR} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DINSTALLDIR=${ORBITER_INSTALL_UTILS_DIR}
+	INSTALL_COMMAND ""
+)
+# Install project output from here instead from inside the external project
+# to make cpack aware of it
+file(GLOB QT_DEPLOY_DLL
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/*.dll
+)
+install(PROGRAMS
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tileedit.exe
+	${QT_DEPLOY_DLL}
+	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
+)
+install(DIRECTORY
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/iconengines
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/imageformats
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/platforms
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/styles
+	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/translations
+	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
 )

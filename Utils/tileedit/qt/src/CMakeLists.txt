@@ -72,17 +72,17 @@ add_custom_command(TARGET tileedit
 	COMMAND ${Qt5_DIR}/../../../bin/windeployqt $<TARGET_FILE:tileedit>
 )
 
-# Installation
+# Installation - this is currently skipped
+
 install(TARGETS
 	tileedit
 	RUNTIME
-	DESTINATION ${CMAKE_INSTALL_PREFIX}
+	DESTINATION ${INSTALLDIR}
 )
-
 # install all dlls that windeployqt has dropped in the build dir
 file(GLOB QT_DEPLOY_DLL
 	${CMAKE_CURRENT_BINARY_DIR}/*.dll
 )
 install(FILES ${QT_DEPLOY_DLL}
-	DESTINATION ${CMAKE_INSTALL_PREFIX}
+	DESTINATION ${INSTALLDIR}
 )
