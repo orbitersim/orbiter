@@ -134,11 +134,11 @@ private:
 	void RefreshScenarioList ();
 	// Refresh the scenario list
 
-	BOOL DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	BOOL WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// Dialog message callbacks
 
-	friend BOOL CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend LRESULT CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	friend BOOL CALLBACK WaitPageProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	friend long FAR PASCAL MsgProc_CopyrightFrame (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

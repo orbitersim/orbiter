@@ -516,7 +516,7 @@ LRESULT WINAPI LuaConsole::TermProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LP
 
 // ==============================================================
 
-BOOL CALLBACK LuaConsole::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK LuaConsole::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LuaConsole *pConsole = (LuaConsole*)oapiGetDialogContext (hWnd);
 

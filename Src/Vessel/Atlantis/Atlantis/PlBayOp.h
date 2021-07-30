@@ -45,8 +45,8 @@ public:
 private:
 	Atlantis *sts; // vessel instance pointer
 	HWND hDlg;     // control dialog handle
-	BOOL DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	friend BOOL CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend LRESULT CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void UpdateDialog (HWND hWnd);
 	bool VCDrawTalkback (SURFHANDLE surf, int idx, int label);
 

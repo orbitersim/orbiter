@@ -122,7 +122,7 @@ void TrackIRconfig::Apply (HWND hDlg)
 	if (sscanf (cbuf, "%lf", &t)) trackir->trkmode.speed = max(1, min (100, t))*0.05;
 }
 
-BOOL CALLBACK TrackIRconfig::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrackIRconfig::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LPNMHDR nmh;
 

@@ -306,7 +306,7 @@ void MainDialog::UpdateConfig ()
 // Name: DlgProc()
 // Desc: Message callback function for main dialog
 //-----------------------------------------------------------------------------
-BOOL MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 
@@ -1050,7 +1050,7 @@ bool MainDialog::SelRootScenario (char *scn)
 // Desc: Static msg handler which passes messages from the main dialog
 //       to the application class.
 //-----------------------------------------------------------------------------
-BOOL CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return g_pDlg->DlgProc (hWnd, uMsg, wParam, lParam);
 }

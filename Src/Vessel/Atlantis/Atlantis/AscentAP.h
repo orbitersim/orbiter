@@ -202,7 +202,7 @@ protected:
 	void PaintGimbalCross (HDC hDC, const RECT &rect, int x, int y);
 	void UpdateGimbalCross (HWND hCtrl, int idx, double pitch, double yaw);
 	void PaintGimbalBox (HWND hWnd);
-	BOOL DlgProc (HWND, UINT, WPARAM, LPARAM);
+	LRESULT DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	int gimbalx[5], gimbaly[5];
@@ -223,7 +223,7 @@ public:
 protected:
 	int OnPaint ();
 	void RefreshGraph (Graph *graph, int GraphId);
-	BOOL DlgProc (HWND, UINT, WPARAM, LPARAM);
+	LRESULT DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	Graph *ssmegraph, *srbgraph;
@@ -244,7 +244,7 @@ public:
 protected:
 	int OnPaint ();
 	void RefreshGraph (Graph *graph, int GraphId);
-	BOOL DlgProc (HWND, UINT, WPARAM, LPARAM);
+	LRESULT DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	Graph *altgraph;

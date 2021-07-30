@@ -159,7 +159,7 @@ bool Extra_PlanetRenderOptions::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK Extra_PlanetRenderOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Extra_PlanetRenderOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

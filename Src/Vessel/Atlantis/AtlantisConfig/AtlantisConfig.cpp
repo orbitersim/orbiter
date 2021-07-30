@@ -35,7 +35,7 @@ public:
 	bool MshEnableHires (bool enable);
 	void InitDialog (HWND hWnd);
 	void Apply (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 char *AtlantisConfig::Description()
@@ -111,7 +111,7 @@ void AtlantisConfig::Apply (HWND hWnd)
 	MshEnableHires (mshhires);
 }
 
-BOOL CALLBACK AtlantisConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK AtlantisConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

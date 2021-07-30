@@ -20,7 +20,7 @@
 // ==============================================================
 // prototype definitions
 
-BOOL CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ==============================================================
 // class MFDWindow
@@ -207,7 +207,7 @@ void MFDWindow::StickToVessel (bool stick)
 // ==============================================================
 // Windows message handler for the dialog box
 
-BOOL CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

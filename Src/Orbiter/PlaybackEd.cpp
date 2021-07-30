@@ -14,7 +14,7 @@ extern Camera *g_camera;
 extern TimeData td;
 extern char DBG_MSG[256];
 
-BOOL CALLBACK RecPlayAnn_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK RecPlayAnn_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // =========================================================
 
@@ -815,7 +815,7 @@ void PlaybackEditor::RegisterEdit (HWND hEdit)
 	InsertTMarker();
 }
 
-BOOL PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -1120,7 +1120,7 @@ void PlaybackEditor::SortEvent (PlaybackEvent *e)
 
 // ======================================================================
 
-BOOL CALLBACK RecPlayAnn_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK RecPlayAnn_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	PlaybackEditor *pe = g_pOrbiter->FReditor;
 	if (uMsg == WM_INITDIALOG) {

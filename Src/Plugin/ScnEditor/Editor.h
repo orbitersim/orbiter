@@ -113,7 +113,7 @@ public:
 	void SelectVessel (OBJHANDLE hV);
 	void VesselSelected ();
 	void VesselDeleted (OBJHANDLE hV);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 	
 protected:
 	void ScanVesselList ();
@@ -132,7 +132,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void ScanConfigDir (const char *ppath, HTREEITEM hti);
@@ -161,7 +161,7 @@ public:
 	BOOL AddFuncButton (EditorFuncSpec *efs);
 	BOOL AddPageButton (EditorPageSpec *eps);
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	OBJHANDLE hVessel;
@@ -180,7 +180,7 @@ public:
 	EditorTab_Save (ScnEditor *editor);
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 
@@ -194,7 +194,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void Apply ();
@@ -232,7 +232,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void Apply ();
@@ -256,7 +256,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void ScanVesselList ();
@@ -276,7 +276,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void ScanVesselList ();
@@ -298,7 +298,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void Refresh ();
@@ -317,7 +317,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void Refresh ();
@@ -335,7 +335,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	void Refresh ();
@@ -358,7 +358,7 @@ public:
 	void InitTab ();
 	char *HelpTopic ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	UINT DockNo ();
@@ -381,7 +381,7 @@ public:
 	EditorTab_Custom (ScnEditor *editor, HINSTANCE hInst, WORD ResId, DLGPROC UserProc);
 	void OpenHelp ();
 	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	DLGPROC usrProc;

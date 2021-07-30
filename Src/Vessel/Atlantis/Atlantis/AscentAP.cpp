@@ -1173,7 +1173,7 @@ AscentAPDlgTabGimbal::~AscentAPDlgTabGimbal ()
 
 // --------------------------------------------------------------
 
-BOOL AscentAPDlgTabGimbal::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT AscentAPDlgTabGimbal::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -1360,7 +1360,7 @@ int AscentAPDlgTabThrust::OnPaint ()
 
 // --------------------------------------------------------------
 
-BOOL AscentAPDlgTabThrust::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT AscentAPDlgTabThrust::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT:
@@ -1431,7 +1431,7 @@ int AscentAPDlgTabAltitude::OnPaint ()
 
 // --------------------------------------------------------------
 
-BOOL AscentAPDlgTabAltitude::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT AscentAPDlgTabAltitude::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT:

@@ -174,7 +174,7 @@ class PlaybackEditor {
 public:
 	PlaybackEditor (Orbiter *ob, const char *ScnName);
 	~PlaybackEditor ();
-	BOOL DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	HWND OpenEditTab (PlaybackEvent *event, int resid, DLGPROC tabproc);
 	HWND EditTab () const { return hEdit; }
 	void SortEvent (PlaybackEvent *e);

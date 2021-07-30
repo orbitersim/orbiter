@@ -40,7 +40,7 @@ protected:
 	LRESULT WINAPI TermProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 	static LRESULT WINAPI TermProcHook (HWND, UINT, WPARAM, LPARAM);
 	static unsigned int WINAPI InterpreterThreadProc (LPVOID context);
 	static void OpenDlgClbk (void *context); // called when user requests console window

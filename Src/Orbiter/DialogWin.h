@@ -63,7 +63,7 @@ public:
 	static bool Create_SetTitleButtonState (DWORD msg, DWORD state);
 
 	// Default message handler
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	static DialogWin *dlg_create;

@@ -61,11 +61,11 @@ protected:
 	void ClearTabs ();
 	// Delete all tabs
 
-	virtual BOOL DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// dialog message callback
 
 private:
-	friend BOOL CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend LRESULT CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// entry point for dialog message callback
 
 	HWND hDlg;       // Dialog handle
@@ -88,7 +88,7 @@ public:
 	HWND TabHandle () const { return hTab; }
 	inline TabbedDialog *Dlg() { return dlg; }
 
-	virtual BOOL DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// tab message callback
 
 	virtual void Update (double simt) {}

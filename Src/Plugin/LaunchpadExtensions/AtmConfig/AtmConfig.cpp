@@ -33,7 +33,7 @@ public:
 	void UpdateData (HWND hWnd);
 	void Apply (HWND hWnd);
 	void OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	// scan the 'Modules\Celbody' folder for directories, and
@@ -276,7 +276,7 @@ void AtmConfig::ScanModules (const char *celbody)
 	_findclose (id);
 }
 
-BOOL CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

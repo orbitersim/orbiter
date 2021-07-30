@@ -63,7 +63,7 @@ public:
 	char *Description() { return "This item is an example from the Orbiter SDK. It doesn't do anything useful, but provides a source example for developers on how to write Launchpad plugins."; }
 	bool clbkOpen (HWND hLaunchpad);
 	int clbkWriteConfig ();
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 MyItem::MyItem (): LaunchpadItem ()
@@ -92,7 +92,7 @@ int MyItem::clbkWriteConfig ()
 	return 0;
 }
 
-BOOL CALLBACK MyItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK MyItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// the dialog message handler
 	char cbuf[32];

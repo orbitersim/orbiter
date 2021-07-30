@@ -144,7 +144,7 @@ void D3D7PlanetRenderCfg::CloseDialog (HWND hDlg)
 	EndDialog (hDlg, 0);
 }
 
-BOOL CALLBACK D3D7PlanetRenderCfg::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK D3D7PlanetRenderCfg::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	D3D7PlanetRenderCfg *pCfg = (D3D7PlanetRenderCfg*)GetWindowLongPtr (hDlg, DWLP_USER);
 

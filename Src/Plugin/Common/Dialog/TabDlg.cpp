@@ -125,7 +125,7 @@ int TabbedDialog::Closed ()
 
 // --------------------------------------------------------------
 
-BOOL TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -149,7 +149,7 @@ BOOL TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 // --------------------------------------------------------------
 
-static BOOL CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK DlgProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_INITDIALOG) {
 		SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG)lParam);
@@ -199,7 +199,7 @@ int TabPage::OnInitTab (WPARAM wParam)
 
 // --------------------------------------------------------------
 
-BOOL TabPage::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT TabPage::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

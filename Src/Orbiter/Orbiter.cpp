@@ -167,7 +167,7 @@ HRESULT ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*);
 //LRESULT CALLBACK WndProc3D (HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK ServerDlgProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ServerDlgProc (HWND, UINT, WPARAM, LPARAM);
 DWORD WINAPI ConsoleInputProc (LPVOID);
 
 VOID    DestroyWorld ();
@@ -3299,7 +3299,7 @@ BOOL CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-BOOL CALLBACK ServerDlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ServerDlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

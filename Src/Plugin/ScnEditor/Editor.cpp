@@ -600,7 +600,7 @@ bool EditorTab_Vessel::DeleteVessel ()
 	return true;
 }
 
-BOOL EditorTab_Vessel::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Vessel::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Vessel *pTab = (EditorTab_Vessel*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -858,7 +858,7 @@ void EditorTab_New::DrawVesselBmp ()
 	}
 }
 
-BOOL EditorTab_New::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_New::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_New *pTab = (EditorTab_New*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -897,7 +897,7 @@ BOOL EditorTab_Save::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return ScnEditorTab::TabProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL EditorTab_Save::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Save::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Save *pTab = (EditorTab_Save*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -1239,7 +1239,7 @@ BOOL EditorTab_Date::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return ScnEditorTab::TabProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL EditorTab_Date::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Date::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Date *pTab = (EditorTab_Date*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -1377,7 +1377,7 @@ BOOL EditorTab_Edit::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return ScnEditorTab::TabProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL EditorTab_Edit::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Edit::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Edit *pTab = (EditorTab_Edit*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -1701,7 +1701,7 @@ BOOL EditorTab_Elements::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 	return ScnEditorTab::TabProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL EditorTab_Elements::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Elements::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Elements *pTab = (EditorTab_Elements*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -2017,7 +2017,7 @@ void EditorTab_Statevec::Apply ()
 	}
 }
 
-BOOL EditorTab_Statevec::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Statevec::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Statevec *pTab = (EditorTab_Statevec*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -2279,7 +2279,7 @@ void EditorTab_Landed::SelectCBody (OBJHANDLE hBody)
 	}
 }
 
-BOOL EditorTab_Landed::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Landed::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Landed *pTab = (EditorTab_Landed*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -2435,7 +2435,7 @@ void EditorTab_Orientation::Rotate (int axis, double da)
 	Refresh ();
 }
 
-BOOL EditorTab_Orientation::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Orientation::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Orientation *pTab = (EditorTab_Orientation*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -2558,7 +2558,7 @@ void EditorTab_AngularVel::Killrot ()
 
 }
 
-BOOL EditorTab_AngularVel::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_AngularVel::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_AngularVel *pTab = (EditorTab_AngularVel*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -2755,7 +2755,7 @@ void EditorTab_Propellant::SetLevel (double level, bool setall)
 	RefreshTotals();
 }
 
-BOOL EditorTab_Propellant::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Propellant::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Propellant *pTab = (EditorTab_Propellant*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -3007,7 +3007,7 @@ void EditorTab_Docking::DisplayErrorMsg (UINT err)
 	SetWindowText (GetDlgItem (hTab, IDC_ERRMSG), cbuf);
 }
 
-BOOL EditorTab_Docking::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Docking::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Docking *pTab = (EditorTab_Docking*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;
@@ -3055,7 +3055,7 @@ BOOL EditorTab_Custom::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return usrProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL EditorTab_Custom::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Custom::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	EditorTab_Custom *pTab = (EditorTab_Custom*)TabPointer (hDlg, uMsg, wParam, lParam);
 	if (!pTab) return FALSE;

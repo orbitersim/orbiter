@@ -406,7 +406,7 @@ void VideoTab::UpdateConfigData ()
 
 // ==============================================================
 
-BOOL CALLBACK VideoTab::AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK VideoTab::AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {

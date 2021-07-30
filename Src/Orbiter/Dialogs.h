@@ -14,9 +14,9 @@
 #include "DlgVishelper.h"
 #include "DlgCapture.h"
 
-//BOOL CALLBACK Navaid_DlgProc (HWND, UINT, WPARAM, LPARAM);
+//LRESULT CALLBACK Navaid_DlgProc (HWND, UINT, WPARAM, LPARAM);
 
-BOOL CALLBACK FRecorderMsg_DlgProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK FRecorderMsg_DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 // =========================================================================
 // Set up a combo box dialog control for selecting a celestial body

@@ -302,7 +302,7 @@ void BuiltinLaunchpadItem::Error (const char *msg)
 	MessageBox (pTab->Launchpad()->GetWindow(), msg, "Orbiter configuration error", MB_OK|MB_ICONERROR);
 }
 
-BOOL CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -520,7 +520,7 @@ bool ExtraDynamics::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -734,7 +734,7 @@ bool ExtraAngDynamics::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -870,7 +870,7 @@ bool ExtraStabilisation::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraStabilisation::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraStabilisation::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1005,7 +1005,7 @@ bool ExtraMfdConfig::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraMfdConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraMfdConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1227,7 +1227,7 @@ bool ExtraFixedStep::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraFixedStep::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraFixedStep::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1303,7 +1303,7 @@ bool ExtraRenderingOptions::StoreParams (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraRenderingOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraRenderingOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1463,7 +1463,7 @@ bool ExtraPerformanceSettings::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraPerformanceSettings::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraPerformanceSettings::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1545,7 +1545,7 @@ bool ExtraLaunchpadOptions::StoreParams (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraLaunchpadOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraLaunchpadOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1614,7 +1614,7 @@ bool ExtraLogfileOptions::StoreParams (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraLogfileOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ExtraLogfileOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

@@ -26,7 +26,7 @@ protected:
 	DWORD fontsize;
 
 private:
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 	static ConsoleConfig *cc;
 	static const char *cfgfile;

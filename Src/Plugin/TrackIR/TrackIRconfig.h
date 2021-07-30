@@ -20,7 +20,7 @@ public:
 	void Apply (HWND hDlg);
 
 private:
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 	static BOOL CALLBACK TabProc_mode (HWND, UINT, WPARAM, LPARAM);
 	static BOOL CALLBACK TabProc_cfg  (HWND, UINT, WPARAM, LPARAM);
 	static BOOL CALLBACK TabProc_trk  (HWND, UINT, WPARAM, LPARAM);

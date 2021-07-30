@@ -86,10 +86,10 @@ static TOUCHDOWNVTX tdvtx_gearup[ntdvtx_gearup] = {
 // ==============================================================
 // Local prototypes
 
-BOOL CALLBACK Ctrl_DlgProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK Ctrl_DlgProc (HWND, UINT, WPARAM, LPARAM);
 void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
 
-//BOOL CALLBACK Damage_DlgProc (HWND, UINT, WPARAM, LPARAM);
+//LRESULT CALLBACK Damage_DlgProc (HWND, UINT, WPARAM, LPARAM);
 //void UpdateDamageDialog (DeltaGlider *dg, HWND hWnd = 0);
 
 // ==============================================================
@@ -1826,7 +1826,7 @@ DLLCLBK void secInit (HWND hEditor, OBJHANDLE hVessel)
 // Message callback function for control dialog box
 // ==============================================================
 
-BOOL CALLBACK Ctrl_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Ctrl_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	DeltaGlider *dg = (uMsg == WM_INITDIALOG ? (DeltaGlider*)lParam : (DeltaGlider*)oapiGetDialogContext (hWnd));
 	// pointer to vessel instance was passed as dialog context
@@ -2009,7 +2009,7 @@ void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd)
 // ==============================================================
 
 #ifdef UNDEF
-BOOL CALLBACK Damage_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Damage_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	DeltaGlider *dg = (uMsg == WM_INITDIALOG ? (DeltaGlider*)lParam : (DeltaGlider*)oapiGetDialogContext (hWnd));
 	// pointer to vessel instance was passed as dialog context

@@ -45,7 +45,7 @@ public:
 	void Show (bool show);
 
 protected:
-	static BOOL CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
 	HWND hParent;
 	HWND hTab;
 	bool active;
@@ -62,7 +62,7 @@ public:
 
 protected:
 	void Refresh (HWND hTab);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -76,7 +76,7 @@ public:
 
 protected:
 	void Refresh (HWND hDlg, bool tick);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -90,7 +90,7 @@ public:
 
 protected:
 	void Refresh (HWND hDlg, bool tick);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================

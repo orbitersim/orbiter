@@ -61,7 +61,7 @@ public:
 	virtual char *HelpContext() const = 0;
 
 protected:
-	static BOOL CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
 	HWND hParent;
 	HWND hTab;
 	bool active;
@@ -82,7 +82,7 @@ public:
 protected:
 	void GetCamMode ();
 	void SetLayout ();
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 	ExtCamMode extmode;
 	IntCamMode intmode;
 	bool extcam;
@@ -104,7 +104,7 @@ protected:
 	void AddCbodyNode (HWND hWnd, const CelestialBody *cbody, HTREEITEM parent);
 	void AddVessels (HWND hWnd);
 	void AddSurfbases (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -117,7 +117,7 @@ public:
 	BOOL Init (HWND hWnd);
 
 protected:
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -140,7 +140,7 @@ protected:
 	void SetCurrentGroundpos (HWND hWnd);
 	bool EchoGroundpos (HWND hWnd, double lng, double lat, double alt);
 	void EchoCurrentGroundpos (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -155,7 +155,7 @@ public:
 protected:
 	void RegisterFov (HWND hWnd, double fov);
 	void SetFov (double fov_deg);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -167,7 +167,7 @@ public:
 	char *HelpContext () const;
 
 protected:
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 #endif // !__DLGCAMERA_H

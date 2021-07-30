@@ -83,7 +83,7 @@ HWND DialogWin::OpenWindow ()
 			(LPARAM)context);
 		newwin = true;
 	}
-	SetWindowLongPtr (hWnd, DWLP_USER, (LONG)this);
+	SetWindowLongPtr (hWnd, DWLP_USER, (LONG_PTR)this);
 	if (newwin && pos && pos->right-pos->left) {
 		if (GetWindowLongPtr (hWnd, GWL_STYLE) & WS_SIZEBOX)
 			SetWindowPos (hWnd, NULL, pos->left, pos->top, pos->right-pos->left, pos->bottom-pos->top, SWP_NOZORDER);
@@ -109,7 +109,7 @@ void DialogWin::Update ()
 
 // ======================================================================
 
-BOOL CALLBACK DialogWin::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK DialogWin::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL res = MSG_DEFAULT;
 	switch (uMsg) {
