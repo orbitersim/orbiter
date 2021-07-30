@@ -62,14 +62,15 @@ target_link_libraries(tileedit
 
 set_target_properties(tileedit
 	PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_BINARY_DIR}
-	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}
 	WIN32_EXECUTABLE true
 )
 
+# deploy the Qt libraries
 add_custom_command(TARGET tileedit
 	POST_BUILD
-	COMMAND ${Qt5_DIR}/../../../bin/windeployqt $<TARGET_FILE:tileedit>
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/tmp
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:tileedit> ${CMAKE_CURRENT_BINARY_DIR}/tmp
+	COMMAND ${Qt5_DIR}/../../../bin/windeployqt ${CMAKE_CURRENT_BINARY_DIR}/tmp/$<TARGET_FILE_NAME:tileedit>
 )
 
 # Installation - this is currently skipped
@@ -81,7 +82,7 @@ install(TARGETS
 )
 # install all dlls that windeployqt has dropped in the build dir
 file(GLOB QT_DEPLOY_DLL
-	${CMAKE_CURRENT_BINARY_DIR}/*.dll
+	${CMAKE_CURRENT_BINARY_DIR}/tmp/*.dll
 )
 install(FILES ${QT_DEPLOY_DLL}
 	DESTINATION ${INSTALLDIR}

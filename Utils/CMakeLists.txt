@@ -19,15 +19,18 @@ ExternalProject_Add(plsplit
 	CMAKE_GENERATOR "Visual Studio 16 2019" 
 	CMAKE_GENERATOR_PLATFORM "x64"
 	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DINSTALLDIR=${ORBITER_INSTALL_UTILS_DIR}
+	BUILD_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/plsplit --config Release
 	INSTALL_COMMAND ""
 )
 # Install project output from here instead from inside the external project
 # to make cpack aware of it
-install(PROGRAMS
-	${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
-	plsplit/DxTex.exe
-	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
-)
+if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe)
+	install(PROGRAMS
+		${CMAKE_CURRENT_BINARY_DIR}/plsplit/plsplit.exe
+		plsplit/DxTex.exe
+		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
+	)
+endif()
 
 # tileedit is another 64-bit project. This also requires
 # Qt5 so will only be built if that is available
@@ -38,24 +41,15 @@ ExternalProject_Add(tileedit_proj
 	INSTALL_DIR ${ORBITER_INSTALL_UTILS_DIR}
 	CMAKE_GENERATOR "Visual Studio 16 2019"
 	CMAKE_GENERATOR_PLATFORM "x64"
-	CMAKE_ARGS -DQTDIR:PATH=${Qt5_x64_DIR} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DINSTALLDIR=${ORBITER_INSTALL_UTILS_DIR}
+	CMAKE_ARGS -DCMAKE_CFG_INTDIR=Release -DQTDIR:PATH=${Qt5_x64_DIR} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DINSTALLDIR=${ORBITER_INSTALL_UTILS_DIR}
+	BUILD_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt --config Release
 	INSTALL_COMMAND ""
 )
 # Install project output from here instead from inside the external project
 # to make cpack aware of it
-file(GLOB QT_DEPLOY_DLL
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/*.dll
-)
-install(PROGRAMS
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tileedit.exe
-	${QT_DEPLOY_DLL}
-	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
-)
-install(DIRECTORY
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/iconengines
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/imageformats
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/platforms
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/styles
-	${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/translations
-	DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
-)
+if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tmp)
+	install(DIRECTORY
+		${CMAKE_CURRENT_BINARY_DIR}/tileedit/qt/src/tmp/
+		DESTINATION ${ORBITER_INSTALL_UTILS_DIR}
+	)
+endif()
