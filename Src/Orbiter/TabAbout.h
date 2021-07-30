@@ -18,7 +18,7 @@ public:
 	void Create ();
 	bool OpenHelp ();
 
-	BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
 	static INT CALLBACK AboutProc (HWND, UINT, WPARAM, LPARAM);

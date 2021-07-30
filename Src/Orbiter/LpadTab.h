@@ -57,7 +57,7 @@ public:
 	inline bool IsActive () const { return bActive; }
 	inline HWND TabWnd () const { return hTab; }
 
-	virtual BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// generic message handler
 
 protected:
@@ -67,7 +67,7 @@ protected:
 	// Keep a record of the positions of dialog items
 	// (for auto-recentering)
 
-	static BOOL CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	const MainDialog *pLp;
 	Config *pCfg;

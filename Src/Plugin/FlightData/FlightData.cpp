@@ -45,7 +45,7 @@ static char *logfile = "FlightData.log";
 // Local prototypes
 
 void OpenDlgClbk (void *context);
-BOOL CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 long FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ==============================================================
@@ -252,7 +252,7 @@ void WriteLogHeader (bool start)
 // FlightData dialog message handler
 // =================================================================================
 
-BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {

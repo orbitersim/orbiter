@@ -280,7 +280,7 @@ void VideoTab::ForceDeviceEnum ()
 
 // =======================================================================
 
-BOOL VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -1368,7 +1368,7 @@ LRESULT OrbiterGraphics::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 // =======================================================================
 
-BOOL OrbiterGraphics::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT OrbiterGraphics::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (vtab) return vtab->WndProc (hWnd, uMsg, wParam, lParam);
 	else return GraphicsClient::LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);

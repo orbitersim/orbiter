@@ -88,7 +88,7 @@ public:
 	virtual void OpenHelp ();
 	void Show ();
 	void Hide ();
-	virtual BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static ScnEditorTab *TabPointer (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -109,7 +109,7 @@ public:
 	EditorTab_Vessel (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void SelectVessel (OBJHANDLE hV);
 	void VesselSelected ();
 	void VesselDeleted (OBJHANDLE hV);
@@ -131,7 +131,7 @@ public:
 	~EditorTab_New ();
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -160,7 +160,7 @@ public:
 	char *HelpTopic ();
 	BOOL AddFuncButton (EditorFuncSpec *efs);
 	BOOL AddPageButton (EditorPageSpec *eps);
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
@@ -179,7 +179,7 @@ class EditorTab_Save: public ScnEditorTab {
 public:
 	EditorTab_Save (ScnEditor *editor);
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
@@ -193,7 +193,7 @@ public:
 	EditorTab_Date (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -231,7 +231,7 @@ public:
 	EditorTab_Elements (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -255,7 +255,7 @@ public:
 	EditorTab_Statevec (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -275,7 +275,7 @@ public:
 	EditorTab_Landed (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -297,7 +297,7 @@ public:
 	EditorTab_Orientation (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -316,7 +316,7 @@ public:
 	EditorTab_AngularVel (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -334,7 +334,7 @@ public:
 	EditorTab_Propellant (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -357,7 +357,7 @@ public:
 	EditorTab_Docking (ScnEditor *editor);
 	void InitTab ();
 	char *HelpTopic ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
@@ -380,7 +380,7 @@ class EditorTab_Custom: public ScnEditorTab {
 public:
 	EditorTab_Custom (ScnEditor *editor, HINSTANCE hInst, WORD ResId, DLGPROC UserProc);
 	void OpenHelp ();
-	BOOL TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:

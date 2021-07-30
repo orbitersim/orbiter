@@ -29,7 +29,7 @@ extern HBITMAP g_hPause;
 void OpenDialog (void *context);
 void Crt2Pol (VECTOR3 &pos, VECTOR3 &vel);
 void Pol2Crt (VECTOR3 &pos, VECTOR3 &vel);
-BOOL CALLBACK EditorProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK EditorProc (HWND, UINT, WPARAM, LPARAM);
 
 static double lengthscale[4] = {1.0, 1e-3, 1.0/AU, 1.0};
 static double anglescale[2] = {DEG, 1.0};
@@ -345,7 +345,7 @@ void Pol2Crt (VECTOR3 &pos, VECTOR3 &vel)
 	vel.data[2] = dzdt;
 }
 
-BOOL CALLBACK EditorProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK EditorProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return g_editor->MsgProc (hDlg, uMsg, wParam, lParam);
 }
@@ -421,7 +421,7 @@ void ScnEditorTab::OpenHelp ()
 	oapiOpenHelp (&hc);
 }
 
-BOOL ScnEditorTab::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT ScnEditorTab::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -504,7 +504,7 @@ char *EditorTab_Vessel::HelpTopic ()
 	return "/ScnEditor.htm";
 }
 
-BOOL EditorTab_Vessel::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Vessel::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	int i;
 	char cbuf[256];
@@ -640,7 +640,7 @@ char *EditorTab_New::HelpTopic ()
 	return "/NewVessel.htm";
 }
 
-BOOL EditorTab_New::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_New::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 
@@ -879,7 +879,7 @@ char *EditorTab_Save::HelpTopic ()
 	return "/SaveScenario.htm";
 }
 
-BOOL EditorTab_Save::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Save::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -1139,7 +1139,7 @@ void EditorTab_Date::OnChangeEpoch()
 		SetEpoch (new_epoch);
 }
 
-BOOL EditorTab_Date::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Date::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -1322,7 +1322,7 @@ BOOL EditorTab_Edit::AddPageButton (EditorPageSpec *eps)
 	return TRUE;
 }
 
-BOOL EditorTab_Edit::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Edit::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -1562,7 +1562,7 @@ void EditorTab_Elements::RefreshSecondaryParams (const ELEMENTS &el, const ORBIT
 		SetWindowText (GetDlgItem (hTab, IDC_APT), "N/A");
 	}
 }
-BOOL EditorTab_Elements::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Elements::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 	int i;
@@ -1775,7 +1775,7 @@ void EditorTab_Statevec::DlgLabels ()
 	SetWindowText (GetDlgItem (hTab, IDC_STATIC6), crd ? "deg/s" : "m/s");
 }
 
-BOOL EditorTab_Statevec::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Statevec::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -2065,7 +2065,7 @@ char *EditorTab_Landed::HelpTopic ()
 	return "/Location.htm";
 }
 
-BOOL EditorTab_Landed::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Landed::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -2306,7 +2306,7 @@ char *EditorTab_Orientation::HelpTopic ()
 	return "/Orientation.htm";
 }
 
-BOOL EditorTab_Orientation::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Orientation::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -2461,7 +2461,7 @@ char *EditorTab_AngularVel::HelpTopic ()
 	return "/AngularVel.htm";
 }
 
-BOOL EditorTab_AngularVel::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_AngularVel::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -2588,7 +2588,7 @@ char *EditorTab_Propellant::HelpTopic ()
 	return "/Propellant.htm";
 }
 
-BOOL EditorTab_Propellant::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Propellant::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -2786,7 +2786,7 @@ char *EditorTab_Docking::HelpTopic ()
 	return "/Docking.htm";
 }
 
-BOOL EditorTab_Docking::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Docking::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -3031,7 +3031,7 @@ void EditorTab_Custom::OpenHelp ()
 		ScnEditorTab::OpenHelp();
 }
 
-BOOL EditorTab_Custom::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT EditorTab_Custom::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

@@ -38,7 +38,7 @@ public:
 	bool SelRootScenario (char *scn);
 	// select the given scenario in the list
 
-	BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	void ScanDirectory (const char *path, HTREEITEM hti);

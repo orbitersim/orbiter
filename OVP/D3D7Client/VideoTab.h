@@ -26,7 +26,7 @@ class VideoTab {
 public:
 	VideoTab (oapi::D3D7Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab);
 
-	BOOL WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// Video tab message handler
 
 	void UpdateConfigData ();

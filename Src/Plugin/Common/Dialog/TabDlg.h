@@ -102,7 +102,7 @@ public:
 	// Default behaviour: nothing, returns FALSE
 
 private:
-	friend BOOL CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend LRESULT CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// entry point for tab message callback
 
 	TabbedDialog *dlg;

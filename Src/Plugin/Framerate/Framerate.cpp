@@ -37,7 +37,7 @@ bool bShowGraph[2] = {true, false}; // show graphs?
 // Local prototypes
 
 void OpenDlgClbk (void *context);
-BOOL CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 long FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ==============================================================
@@ -134,7 +134,7 @@ void ArrangeGraphs (HWND hDlg)
 // FlightData dialog message handler
 // =================================================================================
 
-BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	int i;
 

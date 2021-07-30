@@ -150,6 +150,6 @@ private:
 
 };
 
-BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 #endif // !__DLGMGR_H

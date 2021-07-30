@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <psapi.h>
 
-typedef BOOL (CALLBACK *Proc_GetProcessMemoryInfo)(HANDLE,PPROCESS_MEMORY_COUNTERS,DWORD);
+typedef LRESULT (CALLBACK *Proc_GetProcessMemoryInfo)(HANDLE,PPROCESS_MEMORY_COUNTERS,DWORD);
 
 class MemStat {
 public:

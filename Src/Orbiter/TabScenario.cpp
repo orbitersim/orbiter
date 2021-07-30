@@ -159,7 +159,7 @@ BOOL ScenarioTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-BOOL ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 

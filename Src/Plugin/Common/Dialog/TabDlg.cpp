@@ -212,7 +212,7 @@ LRESULT TabPage::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 // --------------------------------------------------------------
 
-static BOOL CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_INITDIALOG) {
 		EnableThemeDialogTexture (hWnd, ETDT_ENABLETAB);

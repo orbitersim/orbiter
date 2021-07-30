@@ -135,11 +135,11 @@ private:
 	// Refresh the scenario list
 
 	LRESULT DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	BOOL WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// Dialog message callbacks
 
 	friend LRESULT CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	friend BOOL CALLBACK WaitPageProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend LRESULT CALLBACK WaitPageProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	friend long FAR PASCAL MsgProc_CopyrightFrame (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	int ntab;              // number of tab pages

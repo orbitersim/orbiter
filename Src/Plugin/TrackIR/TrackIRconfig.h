@@ -21,10 +21,10 @@ public:
 
 private:
 	static LRESULT CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_mode (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_cfg  (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_trk  (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_diag (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK TabProc_mode (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK TabProc_cfg  (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK TabProc_trk  (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK TabProc_diag (HWND, UINT, WPARAM, LPARAM);
 
 	static TrackIRconfig *tirc;
 	TrackIR *trackir;

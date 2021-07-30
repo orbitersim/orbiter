@@ -152,7 +152,7 @@ LRESULT CALLBACK TrackIRconfig::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LP
 	return 0;
 }
 
-BOOL CALLBACK TrackIRconfig::TabProc_mode (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrackIRconfig::TabProc_mode (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	TrackIR *trackir = tirc->trackir;
 	switch (uMsg) {
@@ -168,7 +168,7 @@ BOOL CALLBACK TrackIRconfig::TabProc_mode (HWND hTab, UINT uMsg, WPARAM wParam, 
 	return 0;
 }
 
-BOOL CALLBACK TrackIRconfig::TabProc_cfg (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrackIRconfig::TabProc_cfg (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	TrackIR *trackir = tirc->trackir;
 	TrackIR::VCMode &vcmode = trackir->vcmode;
@@ -190,7 +190,7 @@ BOOL CALLBACK TrackIRconfig::TabProc_cfg (HWND hTab, UINT uMsg, WPARAM wParam, L
 	return 0;
 }
 
-BOOL CALLBACK TrackIRconfig::TabProc_trk (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrackIRconfig::TabProc_trk (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	TrackIR *trackir = tirc->trackir;
 	TrackIR::TrackMode &trkmode = trackir->trkmode;
@@ -211,7 +211,7 @@ BOOL CALLBACK TrackIRconfig::TabProc_trk (HWND hTab, UINT uMsg, WPARAM wParam, L
 	return 0;
 }
 
-BOOL CALLBACK TrackIRconfig::TabProc_diag (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TrackIRconfig::TabProc_diag (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	TrackIR *trackir = tirc->trackir;
 	switch (uMsg) {

@@ -79,7 +79,7 @@ public:
 	 * \param lParam LPARAM message value
 	 * \return The return value of the VideoTab::WndProc() method.
 	 */
-	BOOL LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Render window message handler.

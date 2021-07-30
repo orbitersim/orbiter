@@ -91,7 +91,7 @@ bool JoystickTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

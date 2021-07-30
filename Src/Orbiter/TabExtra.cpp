@@ -233,7 +233,7 @@ void ExtraTab::WriteExtraParams ()
 
 //-----------------------------------------------------------------------------
 
-BOOL ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 

@@ -111,7 +111,7 @@ void PlaybackEvent::CommitEdit ()
 	}
 }
 
-BOOL PlaybackEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT PlaybackEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_NOTIFY:
@@ -205,12 +205,12 @@ void GenericEvent::CommitEdit ()
 	SetContent (cbuf);
 }
 
-BOOL GenericEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT GenericEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL CALLBACK GenericEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK GenericEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GenericEvent *event = (uMsg == WM_INITDIALOG ?
 		(GenericEvent*)lParam : (GenericEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
@@ -285,7 +285,7 @@ void TaccEvent::CommitEdit ()
 	SetDelay (dl);
 }
 
-BOOL TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -314,7 +314,7 @@ BOOL TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL CALLBACK TaccEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TaccEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	TaccEvent *event = (uMsg == WM_INITDIALOG ?
 		(TaccEvent*)lParam : (TaccEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
@@ -412,7 +412,7 @@ void CameraEvent::AddCurrentView (HWND hTab)
 	SetWindowText (GetDlgItem (hTab, IDC_EDIT1), cbuf);
 }
 
-BOOL CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -438,7 +438,7 @@ BOOL CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 
-BOOL CALLBACK CameraEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CameraEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraEvent *event = (uMsg == WM_INITDIALOG ?
 		(CameraEvent*)lParam : (CameraEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
@@ -501,7 +501,7 @@ void NoteEvent::CommitEdit ()
 	SetNote (cbuf);
 }
 
-BOOL CALLBACK NoteEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK NoteEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NoteEvent *event = (uMsg == WM_INITDIALOG ?
 		(NoteEvent*)lParam : (NoteEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
@@ -565,7 +565,7 @@ void NoteposEvent::CommitEdit ()
 	SetPos (_x0, _y0, _x1, _y1);
 }
 
-BOOL CALLBACK NoteposEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK NoteposEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NoteposEvent *event = (uMsg == WM_INITDIALOG ?
 		(NoteposEvent*)lParam : (NoteposEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
@@ -626,7 +626,7 @@ void NotecolEvent::CommitEdit ()
 	SetCol (_r, _g, _b);
 }
 
-BOOL NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_NOTIFY: {
@@ -655,7 +655,7 @@ BOOL NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL CALLBACK NotecolEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK NotecolEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NotecolEvent *event = (uMsg == WM_INITDIALOG ?
 		(NotecolEvent*)lParam : (NotecolEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
@@ -710,7 +710,7 @@ void NotesizeEvent::CommitEdit ()
 	SetSize (_size);
 }
 
-BOOL NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_NOTIFY:
@@ -731,7 +731,7 @@ BOOL NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
 }
 
-BOOL CALLBACK NotesizeEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK NotesizeEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NotesizeEvent *event = (uMsg == WM_INITDIALOG ?
 		(NotesizeEvent*)lParam : (NotesizeEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));

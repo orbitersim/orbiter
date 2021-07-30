@@ -5851,7 +5851,7 @@ OAPIFUNC bool       oapiUnregisterCustomCmd (int cmdId);
 	* \note Only one instance of a dialog box can be open at a time. A second call to
 	*  oapiOpenDialog() with the same dialog id will fail and return NULL.
 	* \note The interface of the message handler is as follows:
-	* \code BOOL CALLBACK MsgProc ( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) \endcode
+	* \code LRESULT CALLBACK MsgProc ( HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) \endcode
 	* \note See standard Windows documentation for usage of the dialog message handler.
 	* \note The context pointer can be set to user-defined data which can be retrieved
 	*  via the oapiGetDialogContext() function. This allows to pass data into the message handler.
@@ -5949,7 +5949,7 @@ OAPIFUNC bool       oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state
 	* \return The value returned by oapiDefDialogProc should be returned by the message handler.
 	* \n <b> Typical usage:</b>\n
 	* \code
-	* BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	* LRESULT CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	* {
 	*   switch (uMsg) {
 	*   case WM_COMMAND:
@@ -5968,7 +5968,7 @@ OAPIFUNC bool       oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state
 	*  and always returns \e false.
 	* \sa oapiCloseDialog, oapiFindDialog, oapiOpenDialog
 	*/
-OAPIFUNC BOOL oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+OAPIFUNC LRESULT oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Opens the ingame help window on the specified help page.

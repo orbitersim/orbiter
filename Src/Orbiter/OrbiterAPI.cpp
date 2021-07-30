@@ -2084,7 +2084,7 @@ DLLEXPORT bool oapiSetTitleButtonState (HWND hDlg, DWORD msgid, DWORD state)
 	return (dlgmgr ? dlgmgr->SetTitleButtonState (hDlg, msgid, state) : false);
 }
 
-DLLEXPORT BOOL oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+DLLEXPORT LRESULT oapiDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return OrbiterDefDialogProc (hDlg, uMsg, wParam, lParam);
 }

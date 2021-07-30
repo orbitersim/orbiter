@@ -32,7 +32,7 @@ int myprm = 0;
 // ==============================================================
 
 void OpenDlgClbk (void *context);
-BOOL CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 
 // ==============================================================
 // API interface
@@ -107,7 +107,7 @@ void CloseDlg (HWND hDlg)
 // ==============================================================
 // Windows message handler for the dialog box
 
-BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char name[256];
 
