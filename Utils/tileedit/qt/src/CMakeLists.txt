@@ -12,10 +12,6 @@ if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
-find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED
-	HINTS ${QTDIR}
-)
-
 add_executable(tileedit
 	tileedit.cpp
 	tileedit.qrc
@@ -80,5 +76,13 @@ add_custom_command(TARGET tileedit
 install(TARGETS
 	tileedit
 	RUNTIME
+	DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+
+# install all dlls that windeployqt has dropped in the build dir
+file(GLOB QT_DEPLOY_DLL
+	${CMAKE_CURRENT_BINARY_DIR}/*.dll
+)
+install(FILES ${QT_DEPLOY_DLL}
 	DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
