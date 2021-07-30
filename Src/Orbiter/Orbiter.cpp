@@ -46,6 +46,7 @@
 #include "htmlctrl.h"
 #include "DlgCtrl.h"
 #include "GraphicsAPI.h"
+#include "Timer.h"
 
 #ifdef INLINEGRAPHICS
 #include "OGraphics.h"
@@ -1048,67 +1049,219 @@ INT Orbiter::Run (const char *scenario)
 	// otherwise wait for the user to make a selection from the scenario
 	// list in the launchpad dialog
 
-	while (WM_QUIT != msg.message) {
+#ifdef DO_OLD_MAIN_LOOP
+	// OLD LOOP!
+	while (WM_QUIT != msg.message)
+	{
 
-#ifdef DO_NETWORK_OLD
+	#ifdef DO_NETWORK_OLD
 		bGotMsg = PeekMessage (&msg, NULL, 0U, 0U, PM_REMOVE);
-#else
-        // Use PeekMessage() if the app is active, so we can use idle time to
-        // render the scene. Else, use GetMessage() to avoid eating CPU time.
-		if (bSession) {
-            bGotMsg = PeekMessage (&msg, NULL, 0U, 0U, PM_REMOVE);
-		} else {
-            bGotMsg = GetMessage (&msg, NULL, 0U, 0U);
-		}
-#endif
-        if (bGotMsg) {
-			if (!hDlg || !IsDialogMessage (hDlg, &msg)) {
+	#else
+		// Use PeekMessage() if the app is active, so we can use idle time to
+		// render the scene. Else, use GetMessage() to avoid eating CPU time.
+		if (bSession) bGotMsg = PeekMessage (&msg, NULL, 0U, 0U, PM_REMOVE);
+		else bGotMsg = GetMessage (&msg, NULL, 0U, 0U);
+	#endif
+		if (bGotMsg)
+		{
+			if (!hDlg || !IsDialogMessage (hDlg, &msg))
+			{
 				TranslateMessage (&msg);
 				DispatchMessage (&msg);
 			}
-		} else {
+		}
+		else
+		{
 
-#ifdef DO_NETWORK_OLD
+		#ifdef DO_NETWORK_OLD
 			// pick multiplayer messages
-			if (bMultiplayer) GetDPlay()->Receive ();
-#endif
-
-			if (bSession) {
-				if (bAllowInput) bActive = true, bAllowInput = false;
-				if (BeginTimeStep (bRunning)) {
+			if (bMultiplayer) GetDPlay()->Receive();
+		#endif
+			if (bSession)
+			{
+				if (bAllowInput)
+				{
+					bActive = true;
+					bAllowInput = false;
+				}
+				if (BeginTimeStep (bRunning))
+				{
 					UpdateWorld();
 					EndTimeStep (bRunning);
-					if (bVisible) {
+					if (bVisible)
+					{
 						if (bActive) UserInput ();
 						bRenderOnce = TRUE;
 					}
-					if (bRunning && bCapture) {
+					if (bRunning && bCapture)
+					{
 						CaptureVideoFrame ();
 					}
 				}
 				if (hConsoleTh) ParseConsoleCmd();
 			}
-        }
-		if (bRenderOnce && bVisible) {
-			if (FAILED (Render3DEnvironment ()))
-				if (hRenderWnd) DestroyWindow (hRenderWnd);
+		}
+		if (bRenderOnce && bVisible)
+		{
+			if (FAILED(Render3DEnvironment ()) && hRenderWnd)
+				DestroyWindow (hRenderWnd);
 			bRenderOnce = FALSE;
 		}
 
-		if (bSession) {
-#ifdef INLINEGRAPHICS
+		if (bSession)
+		{
+		#ifdef INLINEGRAPHICS
 			bCanRender = (oclient->m_pDD->TestCooperativeLevel() == DD_OK);
-#else
+		#else
 			bCanRender = TRUE;
-#endif
+		#endif
+
 			if (bCanRender && !bpCanRender)
 				RestoreDeviceObjects ();
 			bpCanRender = bCanRender;
-		} else
-			bpCanRender = TRUE;
-    }
+		}
+		else bpCanRender = TRUE;
+	}
+#else
+	// Start the timer!
+	TChapman500::Timer mainTimer = TChapman500::Timer();
+	double accumulator = 0.0;
+
+	// Enter the NEW LOOP!
+	while (msg.message != WM_QUIT)
+	{
+		// Do all of the physics stuff.
+		if (bSession)
+		{
+			// Process all messages (may break stuff)
+			while (PeekMessage(&msg, nullptr, NULL, NULL, PM_REMOVE))
+			{
+				// Saves 1 compare
+				if (!(hDlg && IsDialogMessage(hDlg, &msg)))
+				{
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+			}
+
+			// We're going to process user input here.
+			if (bAllowInput)
+			{
+				bActive = true;
+				bAllowInput = false;
+			}
+
+			// New behavior for fixed time step!
+			if (td.bFixedStep)
+			{
+				// Process inputs here instead of later.
+				if (bVisible && bActive) UserInput();
+
+				// Tick simulation
+				while (accumulator >= td.fixed_step)
+				{
+					if (BeginTimeStep(bRunning))
+					{
+						UpdateWorld();
+						EndTimeStep(bRunning);
+						if (bVisible) bRenderOnce = true;
+						if (bRunning && bCapture) CaptureVideoFrame();
+					}
+					accumulator -= td.fixed_step;
+				}
+
+				// Process everything else.
+				if (hConsoleTh) ParseConsoleCmd();
+
+				// Render the frame?
+				if (bRenderOnce && bVisible)
+				{
+					if (FAILED(Render3DEnvironment()) && hRenderWnd)
+						DestroyWindow(hRenderWnd);
+					bRenderOnce = FALSE;
+				}
+
+				
+			#ifdef INLINEGRAPHICS
+				bCanRender = (oclient->m_pDD->TestCooperativeLevel() == DD_OK);
+			#else
+				bCanRender = TRUE;
+			#endif
+
+				// ?
+				if (bCanRender && !bpCanRender)
+					RestoreDeviceObjects();
+				bpCanRender = bCanRender;
+
+				accumulator += mainTimer.Lap();
+			}
+			// Old behavior!
+			else
+			{
+				if (BeginTimeStep(bRunning))
+				{
+					UpdateWorld();
+					EndTimeStep(bRunning);
+					if (bVisible)
+					{
+						if (bActive) UserInput();
+						bRenderOnce = true;
+					}
+					if (bRunning && bCapture) CaptureVideoFrame();
+				}
+				
+				// Process everything else.
+				if (hConsoleTh) ParseConsoleCmd();
+
+				// Render the frame?
+				if (bRenderOnce && bVisible)
+				{
+					if (FAILED(Render3DEnvironment()) && hRenderWnd)
+						DestroyWindow(hRenderWnd);
+					bRenderOnce = FALSE;
+				}
+
+				
+			#ifdef INLINEGRAPHICS
+				bCanRender = (oclient->m_pDD->TestCooperativeLevel() == DD_OK);
+			#else
+				bCanRender = TRUE;
+			#endif
+
+				// ?
+				if (bCanRender && !bpCanRender)
+					RestoreDeviceObjects();
+				bpCanRender = bCanRender;
+			}
+		}
+		// Save the CPU
+		else
+		{
+			if (GetMessage(&msg, nullptr, NULL, NULL))
+			{
+				// Saves 1 compare
+				if (!(hDlg && IsDialogMessage(hDlg, &msg)))
+				{
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+
+				// Can't do anything unless GetMessage() returns anyways.
+				if (bRenderOnce && bVisible)
+				{
+					if (FAILED(Render3DEnvironment()) && hRenderWnd)
+						DestroyWindow(hRenderWnd);
+					bRenderOnce = FALSE;
+				}
+
+				// We can't render, but I don't think we did.
+				bpCanRender = TRUE;
+			}
+		}
+	}
+#endif
 	hRenderWnd = NULL;
-    return msg.wParam;
+	return msg.wParam;
 }
 
 void Orbiter::SingleFrame ()
