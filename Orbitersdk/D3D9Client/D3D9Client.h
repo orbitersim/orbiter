@@ -363,7 +363,7 @@ public:
 	 *   object for which the message was created.
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
-	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context);
+	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, LONG_PTR context);
 
 	/**
 	 * \brief Return a DEVMESHHANDLE handle for a visual, defined by its index. (! Return type incorrect !)
@@ -1371,7 +1371,7 @@ public:
 	 *   of certain events (e.g. adding and deleting meshes)
 	 * \note For currently supported event types, see \ref visevent.
 	 */
-	virtual void clbkEvent (DWORD event, UINT context) {}
+	virtual void clbkEvent (DWORD event, LONG_PTR context) {}
 
 protected:
 	OBJHANDLE hObj;	///< Object handle associated with the visual

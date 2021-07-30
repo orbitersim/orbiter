@@ -1597,7 +1597,7 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 // ==============================================================
 // Responds to visual events
 
-int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context)
+int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, LONG_PTR context)
 {
 	_TRACE;
 	VisObject *vo = (VisObject*)vis;

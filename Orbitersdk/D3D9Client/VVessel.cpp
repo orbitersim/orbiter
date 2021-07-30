@@ -134,8 +134,10 @@ void vVessel::GlobalExit ()
 
 // ============================================================================================
 //
-void vVessel::clbkEvent(DWORD evnt, UINT context)
+void vVessel::clbkEvent(DWORD evnt, LONG_PTR _context)
 {
+	UINT context = (UINT)_context;
+
 	switch (evnt) {
 
 		case EVENT_VESSEL_INSMESH:
