@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'Doc/**'
+      - 'Flights/**'
+      - 'Html/**'
+      - 'Images/**'
+      - 'Localdoc/**'
+      - 'Scenarios/**'
+      - 'Textures/**'
+      - 'Textures2/**'
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - 'Doc/**'
+      - 'Flights/**'
+      - 'Html/**'
+      - 'Images/**'
+      - 'Localdoc/**'
+      - 'Scenarios/**'
+      - 'Textures/**'
+      - 'Textures2/**'
+
+jobs:
+  build:
+    name: Build with CMake
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, Win32]
+      
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Build
+      uses: lukka/run-cmake@v3
+      with:
+        cmakeGenerator: 'Visual Studio 16 2019'  
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+        useVcpkgToolchainFile: true
+        cmakeAppendedArgs: '-A ${{ matrix.architecture }} -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
+        buildDirectory: '${{ github.workspace }}/build'
