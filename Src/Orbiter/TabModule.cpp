@@ -60,7 +60,7 @@ void ModuleTab::Create ()
 
 BOOL ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-	SetWindowLong (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
+	SetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
 	SetWindowPos (GetDlgItem (hTab, IDC_TREE1), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 
 	return FALSE;
@@ -453,8 +453,8 @@ BOOL ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		InitActivation();
 
 		// hack: hide horizontal scroll bar
-		LONG style = GetWindowLong (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE);
-		SetWindowLong (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, style & ~WS_HSCROLL);
+		LONG style = GetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE);
+		SetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, style & ~WS_HSCROLL);
 		SetWindowPos (GetDlgItem (hTab, IDC_TREE1), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 
 		return 0;

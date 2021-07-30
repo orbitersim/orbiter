@@ -7,10 +7,6 @@
 #define STRICT 1
 #include "windows.h"
 
-#ifndef GWL_USERDATA
-#define GWL_USERDATA GWLP_USERDATA
-#endif
-
 class PropertyGroup; // Forward declaration
 class PropertyList;  // Forward declaration
 

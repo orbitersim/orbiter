@@ -213,7 +213,7 @@ BOOL GenericEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK GenericEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GenericEvent *event = (uMsg == WM_INITDIALOG ?
-		(GenericEvent*)lParam : (GenericEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(GenericEvent*)lParam : (GenericEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -317,7 +317,7 @@ BOOL TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK TaccEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	TaccEvent *event = (uMsg == WM_INITDIALOG ?
-		(TaccEvent*)lParam : (TaccEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(TaccEvent*)lParam : (TaccEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -441,7 +441,7 @@ BOOL CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK CameraEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraEvent *event = (uMsg == WM_INITDIALOG ?
-		(CameraEvent*)lParam : (CameraEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(CameraEvent*)lParam : (CameraEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -504,7 +504,7 @@ void NoteEvent::CommitEdit ()
 BOOL CALLBACK NoteEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NoteEvent *event = (uMsg == WM_INITDIALOG ?
-		(NoteEvent*)lParam : (NoteEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(NoteEvent*)lParam : (NoteEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -568,7 +568,7 @@ void NoteposEvent::CommitEdit ()
 BOOL CALLBACK NoteposEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NoteposEvent *event = (uMsg == WM_INITDIALOG ?
-		(NoteposEvent*)lParam : (NoteposEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(NoteposEvent*)lParam : (NoteposEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -658,7 +658,7 @@ BOOL NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK NotecolEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NotecolEvent *event = (uMsg == WM_INITDIALOG ?
-		(NotecolEvent*)lParam : (NotecolEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(NotecolEvent*)lParam : (NotecolEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -734,7 +734,7 @@ BOOL NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK NotesizeEvent::EditProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NotesizeEvent *event = (uMsg == WM_INITDIALOG ?
-		(NotesizeEvent*)lParam : (NotesizeEvent*)GetWindowLong (hDlg, GWL_USERDATA));
+		(NotesizeEvent*)lParam : (NotesizeEvent*)GetWindowLongPtr (hDlg, GWLP_USERDATA));
 	return (event ? event->MsgProc (hDlg, uMsg, wParam, lParam) : FALSE);
 }
 
@@ -796,7 +796,7 @@ HWND PlaybackEditor::OpenEditTab (PlaybackEvent *event, int resid, DLGPROC tabpr
 	}
 	if (resid) {
 		hEdit = CreateDialogParam (orbiter->GetInstance(), MAKEINTRESOURCE(resid), hDlg, tabproc, (LPARAM)event);
-		SetWindowLong (hEdit, GWL_USERDATA, (LONG)event);
+		SetWindowLongPtr (hEdit, GWLP_USERDATA, (LONG)event);
 	} else {
 		hEdit = NULL;
 	}
@@ -805,7 +805,7 @@ HWND PlaybackEditor::OpenEditTab (PlaybackEvent *event, int resid, DLGPROC tabpr
 
 void PlaybackEditor::RegisterEdit (HWND hEdit)
 {
-	PlaybackEvent *e = (PlaybackEvent*)GetWindowLong (hEdit, GWL_USERDATA);
+	PlaybackEvent *e = (PlaybackEvent*)GetWindowLongPtr (hEdit, GWLP_USERDATA);
 	if (e) e->CommitEdit();
 	int idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETCURSEL, 0, 0);
 	if (idx != LB_ERR)
@@ -916,7 +916,7 @@ void PlaybackEditor::CommitEdit ()
 {
 	PlaybackEvent *e = NULL;
 	if (hEdit)
-		e = (PlaybackEvent*)GetWindowLong (hEdit, GWL_USERDATA);
+		e = (PlaybackEvent*)GetWindowLongPtr (hEdit, GWLP_USERDATA);
 	if (e) {
 		e->CommitEdit();
 		RefreshEventList (e);

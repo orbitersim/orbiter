@@ -61,7 +61,7 @@ protected:
 	// open the help file associated with the current scenario
 
 private:
-	static BOOL CALLBACK SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// callback function for "scenario save" dialog
 
 	static DWORD WINAPI threadWatchScnList (LPVOID pPrm);

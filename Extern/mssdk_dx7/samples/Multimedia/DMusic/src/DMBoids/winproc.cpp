@@ -179,7 +179,7 @@ LRESULT CALLBACK D3DWindowProc (
         LPD3DWindow lpd3dWindow;
     
         //  Get D3DWindow pointer
-        lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+        lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
         if (! lpd3dWindow)
             return FALSE;
         return lpd3dWindow->isValid();
@@ -187,14 +187,14 @@ LRESULT CALLBACK D3DWindowProc (
 
     case D3DWIN_GET_POINTER:
         //  Get D3DWindow pointer
-        return (LRESULT)GetWindowLong (hWindow, GWL_USERDATA);
+        return (LRESULT)GetWindowLong (hWindow, GWLP_USERDATA);
 
     case D3DWIN_GET_SURFACE:
         {
         LPD3DWindow lpd3dWindow;
     
         //  Get D3DWindow pointer
-        lpd3dWindow =  (LPD3DWindow)(void *)GetWindowLong (hWindow, GWL_USERDATA);
+        lpd3dWindow =  (LPD3DWindow)(void *)GetWindowLong (hWindow, GWLP_USERDATA);
         if (! lpd3dWindow)
             return NULL;
         return (LPARAM)(lpd3dWindow->GetRender ());
@@ -312,7 +312,7 @@ LRESULT OnActivateApp (HWND hWindow, WPARAM wParam, LPARAM lParam)
     DWORD   dwThreadID  = (DWORD) lParam;   // thread identifier 
 
     // Get D3D Window pointer
-    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
 
     if (fActive)
     {
@@ -453,7 +453,7 @@ LRESULT OnDestroy (HWND hWindow)
     lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, 0L);
     if (lpd3dWindow)
         lpd3dWindow->Fini ();
-    SetWindowLong (hWindow, GWL_USERDATA, 0L);
+    SetWindowLong (hWindow, GWLP_USERDATA, 0L);
 
     // Tell windows to QUIT!
     PostQuitMessage (0);
@@ -476,7 +476,7 @@ LRESULT OnDisplayChange (HWND hWindow)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if (! lpd3dWindow)
         return 0L;
     
@@ -503,7 +503,7 @@ LRESULT OnEraseBackground (HWND hWindow, WPARAM wParam, LPARAM lParam)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if ((lpd3dWindow) &&
         (lpd3dWindow->isValid ()) &&
         (lpd3dWindow->isActive ()) &&
@@ -532,7 +532,7 @@ LRESULT OnEnterMenuLoop (HWND hWindow, WPARAM wParam, LPARAM lParam)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if ((lpd3dWindow) && (lpd3dWindow->isValid ()))
     {
         // pause app (go into GDI drawing mode)
@@ -560,7 +560,7 @@ LRESULT OnExitMenuLoop (HWND hWindow, WPARAM wParam, LPARAM lParam)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if ((lpd3dWindow) && (lpd3dWindow->isValid ()))
     {
         // Get Rid of cursor again
@@ -594,7 +594,7 @@ LRESULT OnGetMinMaxInfo (HWND hWindow, WPARAM wParam, LPARAM lParam)
     lpmmi = (LPMINMAXINFO)lParam;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if ((lpd3dWindow) && 
         (lpd3dWindow->isFullscreen ()) &&
         (! g_fMinimized))
@@ -632,7 +632,7 @@ void OnIdle (HWND hWindow)
     LPD3DWindow  lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if (! lpd3dWindow)
         return;
 
@@ -682,7 +682,7 @@ LRESULT OnNCPaint (HWND hWindow, WPARAM wParam, LPARAM lParam)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if ((lpd3dWindow) &&
         (lpd3dWindow->isValid ()) &&
         (lpd3dWindow->isActive ()) &&
@@ -712,7 +712,7 @@ LRESULT OnPaint (HWND hWindow, HDC hdc, LPPAINTSTRUCT lpps)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D Window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
 
     if (lpd3dWindow && 
         lpd3dWindow->isActive () && 
@@ -758,7 +758,7 @@ void OnPause (HWND hWindow, BOOL fPause)
     LPD3DWindow lpd3dWindow;
 
     // Get D3D Window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if (! lpd3dWindow)
         return;
 
@@ -779,7 +779,7 @@ LRESULT OnSetCursor (HWND hWindow, WPARAM wParam, LPARAM lParam)
     LPD3DWindow  lpd3dWindow;
 
     // Get D3D window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     
     // Don't show cursor while in fullscreen
     if ((lpd3dWindow) && (lpd3dWindow->isFullscreen ()))
@@ -814,7 +814,7 @@ LRESULT OnSetCursor (HWND hWindow, WPARAM wParam, LPARAM lParam)
 LRESULT OnSize (HWND hWindow, WPARAM wParam, LPARAM lParam)
 {
     DWORD       fwSizeType  = (DWORD)wParam;
-    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
 
     switch (fwSizeType)
     {
@@ -869,7 +869,7 @@ LRESULT OnSize (HWND hWindow, WPARAM wParam, LPARAM lParam)
 LRESULT OnSysCommand (HWND hWindow, WPARAM wParam, LPARAM lParam)
 {
     // Get D3D window pointer
-    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     DWORD   uCmdType = wParam;        // Type of system command requested 
     int     xPos = LOWORD(lParam);    // horizontal postion, in screen coordinates 
     int     yPos = HIWORD(lParam);    // vertical postion, in screen coordinates 
@@ -952,7 +952,7 @@ LRESULT OnWindowPosChanging (HWND hWindow, WPARAM wParam, LPARAM lParam)
 {
     // We don't support moving Full-screen windows
     // Get D3D Window pointer
-    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    LPD3DWindow lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if (lpd3dWindow && 
         (lpd3dWindow->isFullscreen ()) &&
         (! g_fMinimized))
@@ -1036,7 +1036,7 @@ LRESULT OnD3DInit (HWND hWindow, LPD3DWindow lpd3dWindow)
     }
 
     // Save the pointer to the D3D Window object
-    SetWindowLong (hWindow, GWL_USERDATA, (long)(void *)lpd3dWindow);
+    SetWindowLong (hWindow, GWLP_USERDATA, (long)(void *)lpd3dWindow);
 
     // Make sure we are properly marked as active/inactive
     HWND hActive = GetActiveWindow ();
@@ -1063,7 +1063,7 @@ LRESULT OnD3DFini (HWND hWindow, LPD3DWindow lpd3dWindow)
 {
     // Set our window pointer to NULL
     // so we don't attempt to misuse it later.
-    SetWindowLong (hWindow, GWL_USERDATA, 0L);
+    SetWindowLong (hWindow, GWLP_USERDATA, 0L);
     
     // Success
     return 0L;
@@ -1210,7 +1210,7 @@ BOOL DlgDriversInit (HWND hDlg)
     LPGUID          lpGuidDD;
 
     // Check Parameters
-    lpChange = (LPChangeDDInfo)(void *)GetWindowLong (hDlg, DWL_USER);
+    lpChange = (LPChangeDDInfo)(void *)GetWindowLong (hDlg, DWLP_USER);
     if (! lpChange)
         return FALSE;
 
@@ -1280,7 +1280,7 @@ BOOL DlgDevicesInit (HWND hDlg)
     LPGUID          lpGuidD3D;
 
     // Check Parameters
-    lpChange = (LPChangeDDInfo)(void *)GetWindowLong (hDlg, DWL_USER);
+    lpChange = (LPChangeDDInfo)(void *)GetWindowLong (hDlg, DWLP_USER);
     if (! lpChange)
         return FALSE;
 
@@ -1406,7 +1406,7 @@ BOOL DlgModesInit (HWND hDlg)
     LPDDModeInfo *  lpModes;
 
     // Check Parameters
-    lpChange = (LPChangeDDInfo)(void *)GetWindowLong (hDlg, DWL_USER);
+    lpChange = (LPChangeDDInfo)(void *)GetWindowLong (hDlg, DWLP_USER);
     if (! lpChange)
         return FALSE;
 
@@ -1611,7 +1611,7 @@ void OnChangeDriver (HWND hWindow, int idDialog)
         return;
 
     // Get D3D Window pointer
-    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWL_USERDATA);
+    lpd3dWindow =  (LPD3DWindow)GetWindowLong (hWindow, GWLP_USERDATA);
     if (! lpd3dWindow)
         return;
 
@@ -1700,7 +1700,7 @@ BOOL CALLBACK ChangeDriverProc(
         {
         case IDOK:
             // Get Change Info
-            lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWL_USER);
+            lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWLP_USER);
             if (! lpChange)
                 EndDialog (hDlg, FALSE);
 
@@ -1749,7 +1749,7 @@ BOOL CALLBACK ChangeDriverProc(
             {
             case CBN_SELENDOK:
                 // User has changed the current driver
-                lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWL_USER);
+                lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWLP_USER);
             
                 // Check if user has changed the Driver
                 lpDriver = DlgGetDriver (hDlg);
@@ -1776,7 +1776,7 @@ BOOL CALLBACK ChangeDriverProc(
             {
             case CBN_SELENDOK:
                 // User has changed the current device
-                lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWL_USER);
+                lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWLP_USER);
                 
                 // Check if user has changed the device
                 lpDevice = DlgGetDevice (hDlg);
@@ -1797,7 +1797,7 @@ BOOL CALLBACK ChangeDriverProc(
             {
             case CBN_SELENDOK:
                 // User has changed the current mode
-                lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWL_USER);
+                lpChange = (LPChangeDDInfo) GetWindowLong (hDlg, DWLP_USER);
                 
                 // Check if user has changed the Mode
                 lpMode = DlgGetMode (hDlg);
@@ -1813,7 +1813,7 @@ BOOL CALLBACK ChangeDriverProc(
 
     case WM_INITDIALOG:
         // Save pointer to ChangeInfo
-        SetWindowLong (hDlg, DWL_USER, (long)lParam);
+        SetWindowLong (hDlg, DWLP_USER, (long)lParam);
 
         // Set up the current driver, device, and mode lists
         if (GetDlgItem (hDlg, IDC_DRIVERS))

@@ -110,7 +110,7 @@ bool DialogManager::CloseDialog (HWND hDlg)
 
 void *DialogManager::GetDialogContext (HWND hDlg)
 {
-	DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+	DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 	return (dlg ? dlg->GetContext() : 0);
 }
 
@@ -322,7 +322,7 @@ BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_NCLBUTTONDBLCLK: {
 		// implements window minimisation on title bar double-click
-		DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+		DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 		if (dlg) dlg->ToggleShrink();
 		} break;
 
@@ -344,12 +344,12 @@ BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //		PostMessage (hDlg, WM_USER+2, 0, 0);
 //		break;
 //	case WM_USER+2: {
-//		DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+//		DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 //		if (dlg) dlg->PaintTitleButtons();
 //		} return 0;
 //	case WM_NCLBUTTONDOWN:
 //		if (wParam == HTCAPTION) {
-//			DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+//			DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 //			if (dlg) dlg->CheckTitleButtons (MAKEPOINTS (lParam));
 //		}
 //		return 0;

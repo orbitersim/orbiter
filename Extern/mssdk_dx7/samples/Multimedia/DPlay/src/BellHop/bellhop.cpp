@@ -1085,7 +1085,7 @@ HRESULT CreateLobbyGroup( HWND hWnd, LOBBYGROUPCONTEXT* pContext )
 BOOL CALLBACK LobbyGroupWndProc( HWND hWnd, UINT uMsg, WPARAM wParam,
                                  LPARAM lParam )
 {
-    LOBBYGROUPCONTEXT* pContext = (LOBBYGROUPCONTEXT*)GetWindowLong( hWnd, DWL_USER );
+    LOBBYGROUPCONTEXT* pContext = (LOBBYGROUPCONTEXT*)GetWindowLong( hWnd, DWLP_USER );
 
     switch( uMsg )
     {
@@ -1094,7 +1094,7 @@ BOOL CALLBACK LobbyGroupWndProc( HWND hWnd, UINT uMsg, WPARAM wParam,
             pContext = (LOBBYGROUPCONTEXT*)lParam;
 
             // Save the globals with the window
-            SetWindowLong( hWnd, DWL_USER, (LONG)pContext );
+            SetWindowLong( hWnd, DWLP_USER, (LONG)pContext );
             
             // Initialize dialog with appropriate information
             InitializeLobbyGroupWindow( hWnd, pContext );

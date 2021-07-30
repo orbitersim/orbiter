@@ -85,7 +85,7 @@ BOOL CALLBACK DGConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDOK:
-			((DGConfig*)GetWindowLong (hWnd, DWL_USER))->Apply (hWnd);
+			((DGConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->Apply (hWnd);
 			EndDialog (hWnd, 0);
 			return 0;
 		case IDCANCEL:

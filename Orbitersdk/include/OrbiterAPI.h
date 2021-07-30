@@ -2191,7 +2191,7 @@ public:
 	*  advantage that a pointer to the LaunchpadItem instance is passed as lParam
 	*  to the message handler with the \c WM_INITDIALOG message. In all
 	*  subsequent calls to the handler, the LaunchpadItem instance pointer can be
-	*  obtained with a call to <i>GetWindowLong (hWnd, DWL_USER)</i>, where hWnd
+	*  obtained with a call to <i>GetWindowLongPtr (hWnd, DWLP_USER)</i>, where hWnd
 	*  is the dialog box handle passed to the message handler.
 	*/
 	virtual bool OpenDialog (HINSTANCE hInst, HWND hLaunchpad, int resId, DLGPROC pDlg);

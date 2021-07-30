@@ -145,10 +145,10 @@ BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		g_fcount = 0;
 		g_Graph[0] = new Graph(1);
 		g_Graph[0]->SetYLabel ("FPS");
-		SetWindowLong (GetDlgItem (hDlg, IDC_FRAMERATE), 0, 0);
+		SetWindowLongPtr (GetDlgItem (hDlg, IDC_FRAMERATE), 0, 0);
 		g_Graph[1] = new Graph(1);
 		g_Graph[1]->SetYLabel ("dt");
-		SetWindowLong (GetDlgItem (hDlg, IDC_TIMESTEP), 0, 1);
+		SetWindowLongPtr (GetDlgItem (hDlg, IDC_TIMESTEP), 0, 1);
 		bDisplay = true;
 		SendDlgItemMessage (hDlg, IDC_SHOW_FRAMERATE, BM_SETCHECK, bShowGraph[0] ? BST_CHECKED : BST_UNCHECKED, 0);
 		SendDlgItemMessage (hDlg, IDC_SHOW_TIMESTEP,  BM_SETCHECK, bShowGraph[1] ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -205,7 +205,7 @@ long FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		gh = r.bottom-r.top;
 		hDC = BeginPaint (hWnd, &ps);
 		SetViewportOrgEx (hDC, 0, 0, NULL);
-		int idx = GetWindowLong (hWnd, 0);
+		int idx = GetWindowLongPtr (hWnd, 0);
 		if (bShowGraph[idx]) g_Graph[idx]->Refresh (hDC, gw, gh);
 		EndPaint (hWnd, &ps);
 		} break;

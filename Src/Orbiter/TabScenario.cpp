@@ -202,9 +202,9 @@ void ScenarioTab::RefreshList ()
 {
 	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
 	// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
-	DWORD styles = GetWindowLong(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
+	DWORD styles = GetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
 	TreeView_DeleteAllItems(GetDlgItem(hTab, IDC_SCN_LIST));
-	SetWindowLong(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
+	SetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
 	ScanDirectory (pCfg->CfgDirPrm.ScnDir, NULL);
 }
 
@@ -664,7 +664,7 @@ int ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 // Name: SaveProc()
 // Desc: Scenario save dialog message proc
 //-----------------------------------------------------------------------------
-BOOL CALLBACK ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static ScenarioTab *pTab;
 	int res, name_len, desc_len;
