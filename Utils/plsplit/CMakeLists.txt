@@ -21,12 +21,13 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/DxTex.exe ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Installation
+# Installation - this is currently skipped
+
 install(TARGETS
 	plsplit
 	RUNTIME
-	DESTINATION ${CMAKE_INSTALL_PREFIX}
+	DESTINATION ${INSTALLDIR}
 )
 install(FILES DxTex.exe
-	DESTINATION ${CMAKE_INSTALL_PREFIX}
+	DESTINATION ${INSTALLDIR}
 )

@@ -1,0 +1,15 @@
+<RCC>
+  <qresource prefix="/tileedit">
+    <file>resources/icon_elevedit_erase_inactive.png</file>
+    <file>resources/icon_elevedit_paint_inactive.png</file>
+    <file>resources/icon_elevedit_random_inactive.png</file>
+    <file>resources/icon_elevedit_inactive.png</file>
+    <file>resources/icon_navigate_inactive.png</file>
+    <file>resources/appicon32.png</file>
+    <file>resources/icon_elevedit_random.png</file>
+    <file>resources/icon_elevedit_erase.png</file>
+    <file>resources/icon_navigate.png</file>
+    <file>resources/icon_elevedit.png</file>
+    <file>resources/icon_elevedit_paint.png</file>
+  </qresource>
+</RCC>
