@@ -384,7 +384,7 @@ std::string OapiExtension::ScanCommandLine (void)
 	std::string commandLine(GetCommandLine());
 
 	// Is there a "-s <scenario_name>" option at all?
-	unsigned pos = rfind_ci(commandLine, "-s");
+	size_t pos = rfind_ci(commandLine, "-s");
 	if (pos != std::string::npos)
 	{
 		std::string scenarioName = trim( commandLine.substr(pos+2, std::string::npos) );
@@ -434,7 +434,7 @@ const void OapiExtension::RemoveHook(LPHOOKINFO lpHookInfo)
 {
 	if (lpHookInfo && lpHookInfo->lpOrigWndFunc && lpHookInfo->hWnd)
 	{
-		SetWindowLongA(lpHookInfo->hWnd, GWLP_WNDPROC, (LONG)lpHookInfo->lpOrigWndFunc);
+		SetWindowLongPtr(lpHookInfo->hWnd, GWLP_WNDPROC, (LONG_PTR)lpHookInfo->lpOrigWndFunc);
 		lpHookInfo->hWnd = NULL;
 		lpHookInfo->hWndScaleGauge = NULL;
 		lpHookInfo->hWndOpacityGauge = NULL;
@@ -477,8 +477,8 @@ BOOL CALLBACK OapiExtension::EnumChildProc(HWND hwnd, LPARAM lParam)
 		lpHookInfo = GetHookInfo(CtrlId);
 		SETFLAG(showBodyForceVectorsFlags, lpHookInfo->hookFlag, SendMessage(hwnd, BM_GETCHECK, 0L ,0L));
 		lpHookInfo->hWnd = hwnd;
-		lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongA(hwnd, GWLP_WNDPROC);
-		SetWindowLongA(hwnd, GWLP_WNDPROC, (LONG)lpHookInfo->lpWrapWndFunc);
+		lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)lpHookInfo->lpWrapWndFunc);
 		hookMap |= lpHookInfo->hookFlag;
 		break;
 
@@ -491,8 +491,8 @@ BOOL CALLBACK OapiExtension::EnumChildProc(HWND hwnd, LPARAM lParam)
 		lpHookInfo = GetHookInfo(CtrlId);
 		SETFLAG(showCoordinateAxesFlags, lpHookInfo->hookFlag, SendMessage(hwnd, BM_GETCHECK, 0L ,0L));
 		lpHookInfo->hWnd = hwnd;
-		lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongA(hwnd, GWLP_WNDPROC);
-		SetWindowLongA(hwnd, GWLP_WNDPROC, (LONG)lpHookInfo->lpWrapWndFunc);
+		lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_WNDPROC);
+		SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)lpHookInfo->lpWrapWndFunc);
 		hookMap |= lpHookInfo->hookFlag<<8;
 		break;
 
@@ -502,8 +502,8 @@ BOOL CALLBACK OapiExtension::EnumChildProc(HWND hwnd, LPARAM lParam)
 		lpHookInfo = GetHookInfo(IDC_BODYFORCE_PAGE);
 		if (!lpHookInfo->hWnd) {
 			lpHookInfo->hWnd = GetParent(hwnd);
-			lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongA(GetParent(hwnd), GWLP_WNDPROC);
-			SetWindowLongA(GetParent(hwnd), GWLP_WNDPROC, (LONG)lpHookInfo->lpWrapWndFunc);
+			lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongPtr(GetParent(hwnd), GWLP_WNDPROC);
+			SetWindowLongPtr(GetParent(hwnd), GWLP_WNDPROC, (LONG_PTR)lpHookInfo->lpWrapWndFunc);
 		}
 
 		(CtrlId == IDC_BODYFORCE_SCALE_GAUGE) ? lpHookInfo->hWndScaleGauge = hwnd
@@ -520,8 +520,8 @@ BOOL CALLBACK OapiExtension::EnumChildProc(HWND hwnd, LPARAM lParam)
 		lpHookInfo = GetHookInfo(IDC_SHOW_AXES_PAGE);
 		if (!lpHookInfo->hWnd) {
 			lpHookInfo->hWnd = GetParent(hwnd);
-			lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongA(GetParent(hwnd), GWLP_WNDPROC);
-			SetWindowLongA(GetParent(hwnd), GWLP_WNDPROC, (LONG)lpHookInfo->lpWrapWndFunc);
+			lpHookInfo->lpOrigWndFunc = (WNDPROC)GetWindowLongPtr(GetParent(hwnd), GWLP_WNDPROC);
+			SetWindowLongPtr(GetParent(hwnd), GWLP_WNDPROC, (LONG_PTR)lpHookInfo->lpWrapWndFunc);
 		}
 
 		(CtrlId == IDC_SHOW_AXES_SCALE_GAUGE) ? lpHookInfo->hWndScaleGauge = hwnd

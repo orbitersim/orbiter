@@ -62,7 +62,7 @@ namespace AtmoControls {
 	void		SetSlider(int id, WORD pos);
 	void		UpdateSliders();
 
-	BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 

@@ -107,7 +107,7 @@ static void appendName (LPSTR *buffer, int *len, const std::string &name)
 	strcpy_s(dst+ offs, size-offs, name.c_str());
 
 	*buffer = dst;
-	*len = size - 1; // length is WITHOUT terminating zero
+	*len = int(size - 1); // length is WITHOUT terminating zero
 }
 
 // ---------------------------------------------------------------------------
@@ -441,7 +441,7 @@ int TileLabel::LimitAndRotateLongLabelList(TLABEL *l, DWORD H, int *y)
 				int n = 0;
 				for (CHAR *c = l->label; *c; ++c) {
 					if (*c == '\n' && ++n == 4) { // render 4 lines
-						l->stopLen = c - l->label;
+						l->stopLen = int(c - l->label);
 						break;
 					}
 				}

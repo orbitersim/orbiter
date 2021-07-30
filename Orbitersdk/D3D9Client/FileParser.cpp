@@ -134,7 +134,7 @@ void FileParser::LogContent ()
 		if (hPl && oapiGetObjectType(hPl) == OBJTP_PLANET) {
 			if (!DoesExist(hPl)) {
 				oapiGetObjectName(hPl, buf, 256);
-				LogErr("Planet 0x%X = '%s' not cataloged", hPl, buf);
+				LogErr("Planet %s = '%s' not cataloged", _PTR(hPl), buf);
 			}
 			else {
 				DWORD nbs = oapiGetBaseCount(hPl);
@@ -142,7 +142,7 @@ void FileParser::LogContent ()
 					OBJHANDLE hBs = oapiGetBaseByIndex(hPl, b);
 					if (!DoesExist(hBs)) {
 						oapiGetObjectName(hBs, buf, 256);
-						LogErr("Base Object 0x%X = '%s' not cataloged", hBs, buf);
+						LogErr("Base Object %s = '%s' not cataloged", _PTR(hBs), buf);
 					}
 				}
 			}
@@ -449,7 +449,7 @@ OBJHANDLE FileParser::ParseBase (OBJHANDLE hPlanet, const char *name, OBJHANDLE 
 					e->file = new char[strlen(name) + 1];
 					strcpy_s(e->file, strlen(name) + 1, name);
 
-					LogAlw("Base Added: 0x%X, %s", hBase, name);
+					LogAlw("Base Added: %s, %s", _PTR(hBase), name);
 					return hBase;
 				}
 			}
@@ -462,7 +462,7 @@ OBJHANDLE FileParser::ParseBase (OBJHANDLE hPlanet, const char *name, OBJHANDLE 
 					e->file = new char[strlen(name) + 1];
 					strcpy_s(e->file, strlen(name) + 1, name);
 
-					LogAlw("Base Added: 0x%X, %s", hBs, name);
+					LogAlw("Base Added: %s, %s", _PTR(hBs), name);
 					return hBs;
 				}
 			}

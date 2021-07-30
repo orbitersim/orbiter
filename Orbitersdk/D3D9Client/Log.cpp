@@ -52,24 +52,6 @@ DWORD ECode = 0, EAddress = 0;  // Exception-code and -address
 
 //-------------------------------------------------------------------------------------------
 //
-int ExcHandler(EXCEPTION_POINTERS *p)
-{
-	EXCEPTION_RECORD *pER = p->ExceptionRecord;
-	CONTEXT *pEC = p->ContextRecord;
-	ECode = pER->ExceptionCode;
-	EAddress = (DWORD)pER->ExceptionAddress;
-	LogErr("Orbiter Version %d", oapiGetOrbiterVersion());
-	LogErr("D3D9Client Build [%s]", __DATE__);
-	LogErr("Exception Code=0x%8.8X, Address=0x%8.8X", ECode, EAddress);
-	LogErr("EAX=0x%8.8X EBX=0x%8.8X ECX=0x%8.8X EDX=0x%8.8X ESI=0x%8.8X EDI=0x%8.8X EBP=0x%8.8X ESP=0x%8.8X EIP=0x%8.8X",
-		   pEC->Eax, pEC->Ebx, pEC->Ecx, pEC->Edx, pEC->Esi, pEC->Edi, pEC->Ebp, pEC->Esp, pEC->Eip);
-	PrintModules(EAddress);
-	bException = true;
-	return 1;
-}
-
-//-------------------------------------------------------------------------------------------
-//
 void MissingRuntimeError()
 {
 	MessageBoxA(NULL,
@@ -79,6 +61,7 @@ void MissingRuntimeError()
 
 //-------------------------------------------------------------------------------------------
 //
+/*
 int PrintModules(DWORD pAdr)
 {
 	HMODULE hMods[1024];
@@ -107,6 +90,7 @@ int PrintModules(DWORD pAdr)
 	CloseHandle(hProcess);
 	return 0;
 }
+*/
 
 
 //-------------------------------------------------------------------------------------------
@@ -207,7 +191,7 @@ char *my_ctime()
 //
 void escape_ErrBuf () {
 	std::string buf(ErrBuf);
-	int n = 0;
+	size_t n = 0;
 	n += replace_all(buf, "&", "&amp;");
 	n += replace_all(buf, "<", "&lt;");
 	n += replace_all(buf, ">", "&gt;");

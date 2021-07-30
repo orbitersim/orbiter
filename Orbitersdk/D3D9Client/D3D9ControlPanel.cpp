@@ -47,7 +47,7 @@ void D3D9Client::Label(const char *format, ...)
 
 	va_end(args);
 
-	int len = strlen(buffer);
+	int len = int(strlen(buffer));
 	pItemsSkp->Text(20, LabelPos, buffer, len);
 	LabelPos += 22;
 }
@@ -131,7 +131,7 @@ void D3D9Client::RenderControlPanel()
 	DWORD sysme_count = 0, sysme_size = 0;
 	DWORD duall_count = 0, duall_size = 0;
 
-	DWORD nSurf = SurfaceCatalog->CountEntries();
+	size_t nSurf = SurfaceCatalog->CountEntries();
 
 	for (auto it = SurfaceCatalog->cbegin(); it != SurfaceCatalog->cend(); ++it) {
 		LPD3D9CLIENTSURFACE pSurf = *it;
@@ -169,9 +169,9 @@ void D3D9Client::RenderControlPanel()
 		}
 	}
 
-	Label("Application Size.....: %u MB", memstats.PrivateUsage >> 20);
+	Label("Application Size.....: %lu MB", memstats.PrivateUsage >> 20);
 	Label("Available video mem..: %u MB", dev->GetAvailableTextureMem()>>20);
-	Label("Surface Handles......: %u", nSurf);
+	Label("Surface Handles......: %lu", nSurf);
 	Label("SystemMem Surfaces...: %u (%u MB)", sysme_count, sysme_size>>20);
 	Label("Dynamic Textures.....: %u (%u MB)", dyntx_count, dyntx_size>>20);
 	Label("Render Targets.......: %u (%u MB)", rendt_count, rendt_size>>20);
@@ -180,8 +180,8 @@ void D3D9Client::RenderControlPanel()
 	Label("Plain Surfaces.......: %u (%u MB)", plain_count, plain_size>>20);
 	Label("Plain Textures.......: %u (%u MB)", textr_count, textr_size>>20);
 
-	DWORD mesh_count = MeshCatalog->CountEntries();
-	DWORD tile_count = TileCatalog->CountEntries();
+	size_t mesh_count = MeshCatalog->CountEntries();
+	size_t tile_count = TileCatalog->CountEntries();
 	DWORD tile_size = 0;
 	DWORD tile_render_countA = 0;
 	DWORD tile_render_countB = 0;

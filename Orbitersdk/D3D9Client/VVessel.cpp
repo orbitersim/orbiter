@@ -39,7 +39,7 @@ void LogComp(ANIMATIONCOMP *AC, int ident)
 	char id[64];
 	strcpy_s(id, 64, "");
 	for (int i = 0; i < ident; i++) strcat_s(id, 64, " ");
-	oapiWriteLogV("%s COMP[0x%X] has %u children, Parent = 0x%X", id, DWORD(AC), AC->nchildren, AC->parent);
+	oapiWriteLogV("%s COMP[%s] has %u children, Parent = %s", id, _PTR(AC), AC->nchildren, _PTR(AC->parent));
 	for (UINT i = 0; i < AC->nchildren; i++) LogComp(AC->children[i], ident + 2);
 }
 
@@ -105,7 +105,7 @@ vVessel::~vVessel ()
 
 	for (int i = 0; i < ARRAYSIZE(pEnv); i++) SAFE_RELEASE(pEnv[i]);
 
-	LogAlw("Deleting Vessel Visual 0x%X ...",this);
+	LogAlw("Deleting Vessel Visual %s ...", _PTR(this));
 	DisposeAnimations();
 	DisposeMeshes();
 	LogAlw("Vessel visual deleted succesfully");
@@ -283,7 +283,7 @@ void vVessel::LoadMeshes()
 
 	memset2(meshlist, 0, nmesh*sizeof(MESHREC));
 
-	LogAlw("Vessel(0x%X) %s has %u meshes",vessel,vessel->GetClassNameA(),nmesh);
+	LogAlw("Vessel(%s) %s has %u meshes", _PTR(vessel), vessel->GetClassNameA(), nmesh);
 
 	for (idx=0;idx<nmesh;idx++) {
 
@@ -312,7 +312,7 @@ void vVessel::LoadMeshes()
 		if (meshlist[idx].mesh) {
 			meshlist[idx].vismode = vessel->GetMeshVisibilityMode(idx);
 			vessel->GetMeshOffset(idx, ofs);
-			LogAlw("Mesh(0x%X) Offset = (%g, %g, %g)", hMesh, ofs.x, ofs.y, ofs.z);
+			LogAlw("Mesh(%s) Offset = (%g, %g, %g)", _PTR(hMesh), ofs.x, ofs.y, ofs.z);
 			if (length(ofs)) {
 				meshlist[idx].trans = new D3DXMATRIX;
 				D3DMAT_Identity(meshlist[idx].trans);
@@ -395,8 +395,6 @@ void vVessel::InsertMesh(UINT idx)
 	}
 
 	UpdateAnimations(idx);
-
-	//LogAlw("vVessel(0x%X)::InsertMesh(%u) hMesh=0x%X offset=(%g, %g, %g)",this,idx, hMesh, ofs.x, ofs.y, ofs.z);
 }
 
 
@@ -405,8 +403,6 @@ void vVessel::InsertMesh(UINT idx)
 //
 void vVessel::ResetMesh(UINT idx)
 {
-	//LogAlw("MeshModified Event = 0x%X", idx);
-
 	VECTOR3 ofs = _V(0, 0, 0);
 
 	if ((idx < nmesh) && meshlist[idx].mesh) {
@@ -1174,7 +1170,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DSURFACE_DESC desc;
 		pEnvDS->GetDesc(&desc);
 		if (D3DXCreateCubeTexture(pDev, desc.Width, 5, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pEnv[ENVMAP_MAIN]) != S_OK) {
-			LogErr("Failed to create env cubemap for visual 0x%X", this);
+			LogErr("Failed to create env cubemap for visual %s", _PTR(this));
 			return true;
 		}
 		nEnv++;
@@ -1310,11 +1306,11 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 		D3DSURFACE_DESC desc;
 		pIrDS->GetDesc(&desc);
 		if (D3DXCreateCubeTexture(pDev, desc.Width, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrdEnv) != S_OK) {
-			LogErr("Failed to create env cubemap for visual 0x%X", this);
+			LogErr("Failed to create env cubemap for visual %s", _PTR(this));
 			return true;
 		}
 		if (D3DXCreateTexture(pDev, 128, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &pIrrad) != S_OK) {
-			LogErr("Failed to create irradiance map for visual 0x%X", this);
+			LogErr("Failed to create irradiance map for visual %s", _PTR(this));
 			return true;
 		}
 	}

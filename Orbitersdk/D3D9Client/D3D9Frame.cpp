@@ -488,7 +488,7 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 
 	HR(pD3D->CheckDeviceType(Adapter, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DFMT_X8R8G8B8, false));
 
-	LogAlw("[FULLSCREEN MODE] %u x %u,  hWindow=0x%X", dwRenderWidth, dwRenderHeight, hWnd);
+	LogAlw("[FULLSCREEN MODE] %u x %u,  hWindow=%s", dwRenderWidth, dwRenderHeight, _PTR(hWnd));
 
 	dwZBufferBitDepth = 24;
 	dwStencilBitDepth = 8;

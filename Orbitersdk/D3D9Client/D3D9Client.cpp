@@ -387,7 +387,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	hRenderWnd = GraphicsClient::clbkCreateRenderWindow();
 
-	LogAlw("Window Handle = 0x%X",hRenderWnd);
+	LogAlw("Window Handle = %s",_PTR(hRenderWnd));
 	SetWindowText(hRenderWnd, "[D3D9Client]");
 
 	LogOk("Starting to initialize device and 3D environment...");
@@ -436,8 +436,8 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
 	HR(pDevice->GetDepthStencilSurface(&pDepthStencil));
 
-	LogAlw("Render Target = 0x%X", pBackBuffer);
-	LogAlw("DepthStencil = 0x%X", pDepthStencil);
+	LogAlw("Render Target = %s", _PTR(pBackBuffer));
+	LogAlw("DepthStencil = %s", _PTR(pDepthStencil));
 
 	meshmgr		= new MeshManager(this);
 	texmgr	    = new TextureManager(this);
@@ -791,7 +791,7 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 		if (RenderStack.empty() == false) {
 			LogErr("RenderStack contains %d items:", RenderStack.size());
 			while (!RenderStack.empty()) {
-				LogErr("RenderTarget=0x%X, DepthStencil=0x%X", RenderStack.front().pColor, RenderStack.front().pDepthStencil);
+				LogErr("RenderTarget=%s, DepthStencil=%s", _PTR(RenderStack.front().pColor), _PTR(RenderStack.front().pDepthStencil));
 				RenderStack.pop_front();
 			}
 		}
@@ -902,7 +902,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 			LogErr("UnDeleted Surface(s) Detected");
 			while (it != SurfaceCatalog->end())
 			{
-				LogWrn("Surface 0x%X (%s) (%u,%u)", *it, (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
+				LogWrn("Surface %s (%s) (%u,%u)", _PTR(*it), (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
 				delete *it;
 				it = SurfaceCatalog->begin();
 			}
@@ -910,8 +910,8 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 		// Check tile catalog --------------------------------------------------------------------------------------
 		//
-		DWORD nt = TileCatalog->CountEntries();
-		if (nt) LogErr("SurfaceTile catalog contains %u unreleased entries",nt);
+		size_t nt = TileCatalog->CountEntries();
+		if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
 
 		SurfaceCatalog->Clear();
 		MeshCatalog->Clear();
@@ -949,7 +949,7 @@ void D3D9Client::clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf)
 	for each (RenderTgtData data in RenderStack)
 	{
 		if (data.pColor == pSurf) {
-			LogErr("Deleting a surface located in render stack 0x%X", DWORD(hSurf));
+			LogErr("Deleting a surface located in render stack %s", _PTR(hSurf));
 		}
 	}
 }
@@ -999,7 +999,7 @@ void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 
 	pDevice->SetDepthStencilSurface(pDepthStencil);
 
 	RenderStack.push_front(data);
-	LogDbg("Plum", "PUSH:RenderStack[%d]={0x%X, 0x%X} %s", RenderStack.size(), DWORD(data.pColor), DWORD(data.pDepthStencil), labels[data.code]);
+	LogDbg("Plum", "PUSH:RenderStack[%lu]={%s, %s} %s", RenderStack.size(), _PTR(data.pColor), _PTR(data.pDepthStencil), labels[data.code]);
 }
 
 // ==============================================================
@@ -1043,7 +1043,7 @@ void D3D9Client::PopRenderTargets()
 		pDevice->SetDepthStencilSurface(data.pDepthStencil);
 	}
 
-	LogDbg("Plum", "POP:RenderStack[%d]={0x%X, 0x%X, 0x%X} %s", RenderStack.size(), DWORD(data.pColor), DWORD(data.pDepthStencil), DWORD(data.pSkp), labels[data.code]);
+	LogDbg("Plum", "POP:RenderStack[%lu]={%s, %s, %s} %s", RenderStack.size(), _PTR(data.pColor), _PTR(data.pDepthStencil), _PTR(data.pSkp), labels[data.code]);
 }
 
 // ==============================================================
@@ -1390,11 +1390,11 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 	if (ChkDev(__FUNCTION__)) return;
 
 	if (fname) {
-		LogAlw("Storing a mesh 0x%X (%s)",hMesh,fname);
+		LogAlw("Storing a mesh %s (%s)", _PTR(hMesh), fname);
 		if (hMesh==NULL) LogErr("D3D9Client::clbkStoreMeshPersistent(%s) hMesh is NULL",fname);
 	}
 	else {
-		LogAlw("Storing a mesh 0x%X",hMesh);
+		LogAlw("Storing a mesh %s", _PTR(hMesh));
 		if (hMesh==NULL) LogErr("D3D9Client::clbkStoreMeshPersistent() hMesh is NULL");
 	}
 
@@ -1404,7 +1404,7 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 
 	if (idx>=0) {
 		if (fname) LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,fname);
-		else	   LogWrn("MeshGroup(%d) in a mesh 0x%X is larger than 1km",idx,hMesh);
+		else	   LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,_PTR(hMesh));
 	}
 }
 
@@ -2322,33 +2322,25 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 {
 	_TRACE;
 
-	__TRY {
+	double time = D3D9GetTime();
 
-		double time = D3D9GetTime();
+	if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
+	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
-		if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
-		if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
+	int w = SURFACE(src)->GetWidth();
+	int h = SURFACE(src)->GetHeight();
 
-		int w = SURFACE(src)->GetWidth();
-		int h = SURFACE(src)->GetHeight();
+	RECT rs = { 0, 0, w, h };
+	RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
 
-		RECT rs = { 0, 0, w, h };
-		RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
-
-		if (pBltGrpTgt) {
-			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-		}
-		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-
-		D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
+	if (pBltGrpTgt) {
+		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
+		else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 	}
+	else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkBlt(0x%X, %u,%u, 0x%X, 0x%X)",tgt, tgtx, tgty, src, flag);
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
+
 	return true;
 }
 
@@ -2358,29 +2350,22 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 {
 	_TRACE;
 
-	__TRY {
-		double time = D3D9GetTime();
+	double time = D3D9GetTime();
 
-		if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
-		if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
+	if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
+	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
-		RECT rs = { srcx, srcy, srcx+w, srcy+h };
-		RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
+	RECT rs = { srcx, srcy, srcx+w, srcy+h };
+	RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
 
-		if (pBltGrpTgt) {
-			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-		}
-		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-
-		D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
+	if (pBltGrpTgt) {
+		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
+		else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 	}
+	else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkBlt(0x%X, %u,%u, 0x%X, %u,%u,%u,%u, 0x%X)",tgt,tgtx,tgty, src, srcx, srcy, w, h, flag);
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
+
 	return true;
 }
 
@@ -2390,30 +2375,22 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
                                SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag) const
 {
 	_TRACE;
+	
+	double time = D3D9GetTime();
 
-	__TRY {
-		double time = D3D9GetTime();
+	if (src==NULL) { LogErr("D3D9Client::clbkScaleBlt() Source surface is NULL"); return false; }
+	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
-		if (src==NULL) { LogErr("D3D9Client::clbkScaleBlt() Source surface is NULL"); return false; }
-		if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
+	RECT rs = { srcx, srcy, srcx+srcw, srcy+srch };
+	RECT rt = { tgtx, tgty, tgtx+tgtw, tgty+tgth };
 
-		RECT rs = { srcx, srcy, srcx+srcw, srcy+srch };
-		RECT rt = { tgtx, tgty, tgtx+tgtw, tgty+tgth };
-
-		if (pBltGrpTgt) {
-			if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-			else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-		}
-		else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-
-		D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
+	if (pBltGrpTgt) {
+		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
+		else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 	}
+	else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkScaleBlt(0x%X, %u,%u,%u,%u, 0x%X, %u,%u,%u,%u, 0x%X)",tgt, tgtx,tgty,tgtw,tgth, src, srcx, srcy, srcw, srch, flag);
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
 
 	return true;
 }
@@ -2462,7 +2439,7 @@ DWORD D3D9Client::GetConstellationMarkers(const LABELSPEC **cm_list) const
 			double lng;    ///< longitude
 			double lat;    ///< latitude
 			char   abr[3]; ///< abbreviation (short name)
-			size_t len;    ///< length of 'fullname'
+			long   len;    ///< length of 'fullname'
 		} ConstellEntry;
 		#pragma pack()
 
@@ -2714,10 +2691,10 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		SetBkMode(hDC,TRANSPARENT);
 		SetTextAlign(hDC, TA_LEFT|TA_TOP);
 
-		TextOut(hDC, 2, 2, pLoadLabel, strlen(pLoadLabel));
+		TextOut(hDC, 2, 2, pLoadLabel, int(strlen(pLoadLabel)));
 
 		SelectObject(hDC, hLblFont2);
-		TextOut(hDC, 2, 36, pLoadItem, strlen(pLoadItem));
+		TextOut(hDC, 2, 36, pLoadItem, int(strlen(pLoadItem)));
 
 		HPEN pen = CreatePen(PS_SOLID,1,0xE0A0A0);
 		HPEN po = (HPEN)SelectObject(hDC, pen);
@@ -2834,8 +2811,8 @@ void D3D9Client::SplashScreen()
 	int yc = viewH*545/800;
 
 	TextOut(hDC, xc, yc + 0*20, "ORBITER Space Flight Simulator",30);
-	TextOut(hDC, xc, yc + 1*20, dataB, strlen(dataB));
-	TextOut(hDC, xc, yc + 2*20, dataA, strlen(dataA));
+	TextOut(hDC, xc, yc + 1*20, dataB, int(strlen(dataB)));
+	TextOut(hDC, xc, yc + 2*20, dataA, int(strlen(dataA)));
 
 	DWORD VPOS = viewH - 50;
 	DWORD LSPACE = 20;
@@ -2844,12 +2821,12 @@ void D3D9Client::SplashScreen()
 	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
 
 	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
-		TextOut(hDC, viewW/2, VPOS, dataD, strlen(dataD));
+		TextOut(hDC, viewW/2, VPOS, dataD, int(strlen(dataD)));
 		VPOS -= LSPACE;
 	}
 
 	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
-		TextOut(hDC, viewW / 2, VPOS, dataE, strlen(dataE));
+		TextOut(hDC, viewW / 2, VPOS, dataE, int(strlen(dataE)));
 		VPOS -= LSPACE;
 	}
 

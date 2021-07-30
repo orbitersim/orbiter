@@ -102,7 +102,7 @@ ZTreeMgr *ZTreeMgr::CreateFromFile (const char *PlanetPath, Layer _layer)
 ZTreeMgr::ZTreeMgr (const char *PlanetPath, Layer _layer) :
 	layer(_layer), treef(NULL)
 {
-  int len = strlen(PlanetPath) + 1;
+	int len = (int)strlen(PlanetPath) + 1;
 	path = new char[len];
 	strcpy_s(path, len, PlanetPath);
 	OpenArchive();

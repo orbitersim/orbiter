@@ -411,14 +411,14 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 	// No "Setup" here, done in PrintSkp()
 
 	if (!cfont) return false;
-	if (len == -1) len = wcslen(str);
+	if (len == -1) len = int(wcslen(str));
 	if (!len) return true;
 
 	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
 
 	int lineSpace = pText->GetLineSpace();
 
-	std::wstring _str(str, str + len);
+	std::wstring _str(str, str + size_t(len));
 
 	std::wistringstream f(_str);
 	std::wstring s;

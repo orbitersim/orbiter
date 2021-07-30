@@ -165,7 +165,7 @@ vBase::vBase (OBJHANDLE _hObj, const Scene *scene, vPlanet *_vP): vObject (_hObj
 	
 	char name[64];
 	oapiGetObjectName(_hObj, name, 64);
-	LogAlw("New Base Visual(0x%X) %s hBase=0x%X, nsbs=%u, nsas=%u", this, name, _hObj, nsbs, nsas);
+	LogAlw("New Base Visual(%s) %s hBase=%s, nsbs=%u, nsas=%u", _PTR(this), name, _PTR(_hObj), nsbs, nsas);
 
 	CreateRunwayLights();
 	CreateTaxiLights();
@@ -214,7 +214,7 @@ void vBase::CreateRunwayLights()
 {
 	const char *file = gc->GetFileParser()->GetConfigFile(hObj);
 	if (file) numRunwayLights = RunwayLights::CreateRunwayLights(this, scn, file, runwayLights);
-	else LogErr("Configuration file not found for object 0x%X", hObj);
+	else LogErr("Configuration file not found for object %s", _PTR(hObj));
 }
 
 // ===========================================================================================
@@ -223,7 +223,7 @@ void vBase::CreateTaxiLights()
 {
 	const char *file = gc->GetFileParser()->GetConfigFile(hObj);
 	if (file) numTaxiLights = TaxiLights::CreateTaxiLights(hObj, scn, file, taxiLights);
-	else LogErr("Configuration file not found for object 0x%X", hObj);
+	else LogErr("Configuration file not found for object %s", _PTR(hObj));
 }
 
 // ===========================================================================================

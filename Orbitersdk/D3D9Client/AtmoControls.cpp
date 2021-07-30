@@ -405,7 +405,7 @@ void SetVisual(vObject *vo)
 // ==============================================================
 // Dialog message handler
 
-BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 
 	switch (uMsg) {
@@ -489,7 +489,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_ATM_MODE:
 				if (HIWORD(wParam)==CBN_SELCHANGE) {
-					atmmode = SendDlgItemMessage(hWnd, IDC_ATM_MODE, CB_GETCURSEL, 0, 0);
+					atmmode = DWORD(SendDlgItemMessage(hWnd, IDC_ATM_MODE, CB_GETCURSEL, 0, 0));
 				}
 				break;
 

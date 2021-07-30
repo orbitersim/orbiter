@@ -83,7 +83,7 @@ vObject *vObject::Create(OBJHANDLE _hObj, const Scene *scene)
 		case OBJTP_SURFBASE:	return new vBase   (_hObj, scene);
 		default:
 		{
-			LogErr("Unidentified Object Type %d in 0x%X",oapiGetObjectType(_hObj),_hObj);
+			LogErr("Unidentified Object Type %d in %s",oapiGetObjectType(_hObj), _PTR(_hObj));
 			return new vObject (_hObj, scene);
 		}
 	}
@@ -253,24 +253,25 @@ bool vObject::IsVisible()
 {
 	VECTOR3 pos  = GetBoundingSpherePos();
 	float rad = GetBoundingSphereRadius();
+	float apr = scn->GetCameraAperture();
+	double apprad = rad / cdist;
 
-	bool bVis = gc->GetScene()->IsVisibleInCamera(&D3DXVEC(pos), rad);
+	if ((objtp == OBJTP_VESSEL) && apprad < 0.005*apr) return false;
+	if ((objtp == OBJTP_SURFBASE) && apprad < 0.02*apr) return false;
 
+	return gc->GetScene()->IsVisibleInCamera(&D3DXVEC(pos), rad);
+
+	/* 
 	if (bVis) {
 		double brad = oapiGetSize(gc->GetScene()->GetCameraProxyBody());
 		double crad = cdist;
 		double alfa = acos(brad/crad);
 		double trad = length(pos+cpos);
 		double beta = acos(dotp(pos+cpos, cpos)/(crad*trad));
-
 		if (beta<alfa) return true;
-
 		double resl = brad - trad * cos(beta-alfa);
-
 		if (resl>rad) return false;
-	}
-
-	return bVis;
+	}*/
 }
 
 
@@ -415,7 +416,7 @@ void vObject::RenderAxisLabel(D3D9Pad *pSkp, LPD3DXCOLOR clr, VECTOR3 vector, fl
 		int xc = (int)(scn->ViewW()*0.5*(1.0f + homog.x));
 		int yc = (int)(scn->ViewH()*0.5*(1.0f - homog.y));
 		pSkp->SetTextColor(D3DXCOLOR(clr->b, clr->g, clr->r, clr->a));
-		pSkp->Text(xc + 10, yc, label, strlen(label));
+		pSkp->Text(xc + 10, yc, label, (int)strlen(label));
 	}
 }
 

@@ -535,7 +535,7 @@ void Scene::DeleteAllVisuals()
 			FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		}
 
-		LogAlw("Deleting Visual 0x%X",pv->vobj);
+		LogAlw("Deleting Visual %s", _PTR(pv->vobj));
 		delete pv->vobj;
 		delete pv;
 		pv = pvn;
@@ -573,7 +573,7 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 	else          vobjFirst = pv;
 	vobjLast = pv;
 
-	LogAlw("RegisteringVisual (%s) hVessel=0x%X, hObj=0x%X, Vis=0x%X, Rec=0x%X, Type=%d", buf, hVes, hObj, pv->vobj, pv, pv->type);
+	LogAlw("RegisteringVisual (%s) hVessel=%s, hObj=%s, Vis=%s, Rec=%s, Type=%d", buf, _PTR(hVes), _PTR(hObj), _PTR(pv->vobj), _PTR(pv), pv->type);
 
 	__TRY {
 		gc->RegisterVisObject(hObj, (VISHANDLE)pv->vobj);
@@ -583,7 +583,7 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 		char buf[64]; oapiGetObjectName(hObj, buf, 64);
 		char *classname = NULL;
 		if (oapiGetObjectType(hObj)==OBJTP_VESSEL) classname = oapiGetVesselInterface(hObj)->GetClassNameA();
-		LogErr("Critical exception in gc->RegisterVisObject(0x%X, 0x%X) (%s).", hObj, pv->vobj, buf);
+		LogErr("Critical exception in gc->RegisterVisObject(%s, %s) (%s).", _PTR(hObj), _PTR(pv->vobj), buf);
 		if (classname) LogErr("VesselClass Name = %s",classname);
 		gc->EmergencyShutdown();
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
@@ -2103,7 +2103,7 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 
 	const char* dbgString = oapiDebugString();
-	int len = strlen(dbgString);
+	int len = int(strlen(dbgString));
 
 	if (len>0 || !D3D9DebugQueue.empty()) {
 
@@ -2125,7 +2125,7 @@ void Scene::RenderMainScene()
 		while (!D3D9DebugQueue.empty()) {
 			pos -= (height * 3) / 2;
 			std::string str = D3D9DebugQueue.front();
-			len = strlen(str.c_str());
+			len = int(strlen(str.c_str()));
 			DWORD width = pSketch->GetTextWidth(str.c_str(), len);
 			pSketch->Rectangle(-1, pos - height - 1, width + 4, pos);
 			pSketch->Text(2, pos - 2, str.c_str(), len);
@@ -2966,8 +2966,8 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 			} break;
 		}
 
-		if (label1) pSkp->Text(x, y-scale, label1, strlen(label1));
-		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, strlen(label2));
+		if (label1) pSkp->Text(x, y-scale, label1, int(strlen(label1)));
+		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, int(strlen(label2)));
 	}
 }
 

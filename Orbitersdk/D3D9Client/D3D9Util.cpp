@@ -30,6 +30,15 @@ DWORD BuildDate()
 	return (year % 100) * 10000 + m * 100 + day;
 }
 
+
+
+const char *_PTR(const void *p)
+{
+	static long i = 0; static char buf[8][32];	i++;
+	sprintf_s(buf[i & 0x7], 32, "0x%llX", LONG_PTR(p));
+	return buf[i & 0x7];
+}
+
 bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc)
 {
 
@@ -434,7 +443,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 
 	if (fgets(buf, cmax, file)==NULL) return -1;
 
-	int num = strlen(buf);
+	int num = int(strlen(buf));
 
 	if (num==(cmax-1)) LogErr("Insufficient buffer size in fgets2() size=%d, string=(%s)",cmax,buf);
 
@@ -452,7 +461,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 		}
 	}
 
-	num = strlen(buf);
+	num = int(strlen(buf));
 	if (num==0) return 0;
 
 	// Remove spaces from the end of the line
@@ -465,7 +474,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 	// Remove spaces from the front of the line
 	while (buf[0]==' ') strremchr(buf,0);
 
-	num = strlen(buf);
+	num = int(strlen(buf));
 	if (num==0) return 0;
 
 	// Remove repeatitive spaces if exists. (double trible spaces and so on)
@@ -478,7 +487,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 		else i++;
 	}
 
-	num = strlen(buf);
+	num = int(strlen(buf));
 	if (num==0) return 0;
 
 	// Remove spaces from both sides of '=' if exists
@@ -958,7 +967,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 
 	if (options) {
 		int m = 0;
-		int l = strlen(options) + 1;
+		int l = int(strlen(options)) + 1;
 		str = new char[l];
 		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");
@@ -1026,7 +1035,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 
 	if (options) {
 		int m = 0;
-		int l = strlen(options);
+		int l = (int)strlen(options);
 		str = new char[l];
 		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");
@@ -1065,7 +1074,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 //
 const char *RemovePath(const char *in)
 {
-	int len = strlen(in);
+	int len = (int)strlen(in);
 	const char *ptr = in;
 	for (int i=0;i<len;i++) if (in[i]=='\\' || in[i]=='/') ptr = &in[i+1];
 	return ptr;

@@ -349,12 +349,12 @@ D3D9Mesh::~D3D9Mesh()
 {
 	_TRACE;
 
-	if (MeshCatalog->Remove(this)) LogAlw("Mesh 0x%X Removed from catalog",this);
-	else 						   LogErr("Mesh 0x%X wasn't in meshcatalog",this);
+	if (MeshCatalog->Remove(this)) LogAlw("Mesh %s Removed from catalog", _PTR(this));
+	else 						   LogErr("Mesh %s wasn't in meshcatalog", _PTR(this));
 
 	Release();
 
-	LogOk("Mesh 0x%X Deleted successfully -------------------------------",this);
+	LogOk("Mesh %s Deleted successfully -------------------------------", _PTR(this));
 }
 
 
@@ -541,19 +541,19 @@ void D3D9Mesh::ProcessInherit()
 
 		// Do some safety checks
 		if (Grp[i].TexIdx>=nTex) {
-			LogErr("Mesh(0x%X) has a texture index %u in group %u out of range.", this, Grp[i].TexIdx, i);
+			LogErr("Mesh(%s) has a texture index %u in group %u out of range.", _PTR(this), Grp[i].TexIdx, i);
 			Grp[i].TexIdx = 0;
 			bPopUp = true;
 		}
 		if (Grp[i].TexIdxEx[0]>=nTex) {
-			LogErr("Mesh(0x%X) has a night texture index %u in group %u out of range.", this, Grp[i].TexIdxEx[0], i);
+			LogErr("Mesh(%s) has a night texture index %u in group %u out of range.", _PTR(this), Grp[i].TexIdxEx[0], i);
 			Grp[i].TexIdxEx[0] = 0;
 			bPopUp = true;
 		}
 
 		if (Grp[i].MtrlIdx!=SPEC_DEFAULT) {
 			if (Grp[i].MtrlIdx>=nMtrl) {
-				LogErr("Mesh(0x%X) has a material index %u in group %u out of range.", this, Grp[i].MtrlIdx, i);
+				LogErr("Mesh(%s) has a material index %u in group %u out of range.", _PTR(this), Grp[i].MtrlIdx, i);
 				Grp[i].MtrlIdx = SPEC_DEFAULT;
 				bPopUp = true;
 			}
@@ -899,11 +899,11 @@ bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
 	_TRACE;
 	if (!IsOK()) return false;
 	if (texidx >= nTex) {
-		LogErr("D3D9Mesh::SetTexture(%u, 0x%X) index out of range",texidx,tex);
+		LogErr("D3D9Mesh::SetTexture(%u, %s) index out of range",texidx, _PTR(tex));
 		return false;
 	}
 	Tex[texidx] = tex;
-	LogBlu("D3D9Mesh(0x%X)::SetTexture(%u, 0x%X) (%s)",this,texidx,tex,SURFACE(tex)->GetName());
+	LogBlu("D3D9Mesh(%s)::SetTexture(%u, %s) (%s)", _PTR(this), texidx, _PTR(tex), SURFACE(tex)->GetName());
 	CheckMeshStatus();
 	return true;
 }
@@ -1012,7 +1012,6 @@ void D3D9Mesh::SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bStat)
 	D3D9MatExt Mat;
 	// Faulty output coming from oapiMeshMaterial, why ????
 	if (pMat <= ((void*)0x100)) { 
-		LogErr("oapiMeshMaterial() returned 0x%X, name=[%s], index=%d", pMat, name, idx); 
 		CreateDefaultMat(&Mat);
 	} else CreateMatExt(pMat, &Mat);
 	SetMaterial(&Mat, idx, bStat);

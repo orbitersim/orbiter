@@ -530,7 +530,7 @@ float D3D9Text::PrintSkp(D3D9Pad *pSkp, float xpos, float ypos, const char *_str
 float D3D9Text::PrintSkp (D3D9Pad *pSkp, float xpos, float ypos, LPCWSTR str, int len, bool bBox)
 {
 
-	if (len == -1) len = wcslen(str);
+	if (len == -1) len = int(wcslen(str));
 
 	LONG x = LONG(round(xpos)),
 	     y = LONG(round(ypos));

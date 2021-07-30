@@ -213,7 +213,7 @@ void D3D9Pad::Log(const char *format, ...) const
 	va_start(args, format);
 	_vsnprintf_s(ErrBuf, 1024, 1024, format, args);
 	va_end(args);
-	fprintf_s(log, "<0x%X> [0x%X] %s\n", th, DWORD(this), ErrBuf);
+	fprintf_s(log, "<0x%X> [%s] %s\n", th, _PTR(this), ErrBuf);
 	fflush(log);
 	LeaveCriticalSection(&LogCrit);
 }
@@ -385,12 +385,12 @@ void D3D9Pad::BeginDrawing()
 void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil)
 {
 #ifdef SKPDBG 
-	Log("==== BeginDrawing 0x%X, 0x%X ====\n", pRenderTgt, pDepthStensil);
+	Log("==== BeginDrawing %s, %s ====\n", _PTR(pRenderTgt), _PTR(pDepthStensil));
 #endif
 
 	assert(pRenderTgt != NULL);
 
-	if (vI != 0) LogErr("Sketchpad 0xX has received drawing commands outside Begin() End() pair", this);
+	if (vI != 0) LogErr("Sketchpad %s has received drawing commands outside Begin() End() pair", _PTR(this));
 
 	if (bBeginDraw == true) _wassert(L"D3D9Pad::BeginDrawing() called multiple times", _CRT_WIDE(__FILE__), __LINE__);
 	
@@ -471,7 +471,7 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	if (bDepthEnable && pDep) strcpy_s(buf2, 128, "DEPTH_ENABLED");
 	else strcpy_s(buf2, 128, "DEPTH_DISABLED");
 
-	Log("Flush [%s] [%s] hPloy=0x%X, iI=%hu", buf, buf2, hPoly, iI);
+	Log("Flush [%s] [%s] hPloy=%s, iI=%hu", buf, buf2, _PTR(hPoly), iI);
 #endif
 
 	HR(pDev->GetRenderState(D3DRS_ALPHABLENDENABLE, &bkALPHA));
@@ -795,7 +795,7 @@ Font *D3D9Pad::SetFont(Font *font) const
 #ifdef SKPDBG 
 	LOGFONTA lf;
 	GetObjectA(font->GetGDIFont(), sizeof(LOGFONT), &lf);
-	Log("SetFont(0x%X) Face=[%s] Height=%d Weight=%d", font, lf.lfFaceName, lf.lfHeight, lf.lfWeight);
+	Log("SetFont(%s) Face=[%s] Height=%d Weight=%d", _PTR(font), lf.lfFaceName, lf.lfHeight, lf.lfWeight);
 #endif
 	// No "Change" falgs required here, covered in SetFontTextureNative()
 
@@ -813,7 +813,7 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 	if (cbrush == brush && QBrush.bEnabled == false) return brush;
 
 #ifdef SKPDBG 
-	Log("SetBrush(0x%X)", brush);
+	Log("SetBrush(%s)", _PTR(brush));
 #endif
 
 	// No "Change" falgs required here, color stored in vertex data
@@ -838,7 +838,7 @@ Pen *D3D9Pad::SetPen (Pen *pen) const
 	if (cpen == pen && QPen.bEnabled == false) return pen;
 
 #ifdef SKPDBG 
-	Log("SetPen(0x%X)", pen);
+	Log("SetPen(%s)", _PTR(pen));
 #endif
 
 	// Change required due to pen width and style change
@@ -1033,7 +1033,7 @@ void D3D9Pad::WrapOneLine (char* str, int len, int maxWidth)
 		{
 			while (it < pEnd && currentWidth < maxWidth) {
 				if (*it == ' ') { pLastSpace = it; }
-				currentWidth = pText->Length2( pStr, (it - pStr + 1) );
+				currentWidth = pText->Length2( pStr, int(it - pStr + 1) );
 				++it;
 			}
 			// only split if we have space for it AND we have to (avoids cutting the last word)
@@ -1067,7 +1067,7 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	char *pch, *pEnd =_saveBuffer+len; // <= point to terminating zero
 	for (pch = strtok(_saveBuffer, "\n"); pch != NULL; pch = strtok(NULL, "\n"))
 	{
-		int _len = strlen(pch);
+		int _len = int(strlen(pch));
 		if (_len>1) { WrapOneLine(pch, _len, x2-x1); }
 		if (pch+_len < pEnd) { *(pch+_len) = '\n'; } // strtok splits by inserting '\0's => revert'em
 	}
@@ -1337,7 +1337,7 @@ void D3D9Pad::Polyline (const IVECTOR2 *pt, int npt)
 void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 {
 #ifdef SKPDBG 
-	Log("DrawPoly(0x%X, 0x%X)", DWORD(hPoly), flags);
+	Log("DrawPoly(%s, 0x%X)", _PTR(hPoly), flags);
 #endif
 
 	if (hPoly) {

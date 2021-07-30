@@ -24,7 +24,7 @@ using namespace oapi;
 CloudManager::CloudManager(D3D9Client *gclient, const vPlanet *vplanet)
 : TileManager (gclient, vplanet)
 {
-	int len = strlen(objname)+7;
+	size_t len = strlen(objname)+7;
 	char *texname = new char[len];
 	strcpy_s(texname, len, objname);
 	strcat_s(texname, len, "_cloud");

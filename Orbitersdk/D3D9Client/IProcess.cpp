@@ -160,7 +160,7 @@ bool ImageProcessing::SetupViewPort()
 	//
 	if (pRtg[0]) pRtg[0]->GetDesc(&desc);
 	else {
-		LogErr("ImageProcessing(0x%X): No render target is set", this);
+		LogErr("ImageProcessing(%s): No render target is set", _PTR(this));
 		return false;
 	}
 
@@ -172,7 +172,7 @@ bool ImageProcessing::SetupViewPort()
 		if (pRtg[i]) {
 			pRtg[i]->GetDesc(&ds);
 			if ((ds.Height!=desc.Height) || (ds.Width!=desc.Width)) {
-				LogErr("ImageProcessing(0x%X): All render targets must be same the size", this);
+				LogErr("ImageProcessing(%s): All render targets must be same the size", _PTR(this));
 				return false;
 			}
 		}

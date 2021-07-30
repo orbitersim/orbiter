@@ -22,7 +22,7 @@ using namespace oapi;
 
 GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 {
-	LogOk("Creating GDI SketchPad... for Surface 0x%X",s);
+	LogOk("Creating GDI SketchPad... for Surface %s", _PTR(s));
 
 	hDC    = hdc;
 	cfont  = NULL;
@@ -50,7 +50,7 @@ GDIPad::~GDIPad ()
 	SelectObject (hDC, GetStockObject (NULL_PEN));
 	SelectObject (hDC, GetStockObject (NULL_BRUSH));
 	if (hFontA) DeleteObject(hFontA);
-	LogOk("...GDI SketchPad Released for surface 0x%X", GetSurface());
+	LogOk("...GDI SketchPad Released for surface %s", _PTR(GetSurface()));
 }
 
 // ===============================================================================================

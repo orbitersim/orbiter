@@ -142,12 +142,12 @@ bool TextureManager::GetTexture(const char *fname, LPD3D9CLIENTSURFACE *pd3dt, i
 		// found in repository
 		*pd3dt = texrec->tex;
 		texrec->tex->IncRef();
-		LogOk("Texture 0x%X (%s) found from repository. ReferenceCount=%d", *pd3dt, fname, (*pd3dt)->RefCount());
+		LogOk("Texture %s (%s) found from repository. ReferenceCount=%d", _PTR(*pd3dt), fname, (*pd3dt)->RefCount());
 		return true;
 	}
 	else if (SUCCEEDED(LoadTexture(fname, pd3dt, flags))) {
 		// loaded from file
-		LogAlw("Texture 0x%X (%s) added in repository",*pd3dt,fname);
+		LogAlw("Texture %s (%s) added in repository", _PTR(*pd3dt), fname);
 		AddToRepository (fname, *pd3dt);
 		return true;
 	}

@@ -56,7 +56,7 @@ char SaveFileName[255];
 
 void UpdateMaterialDisplay(bool bSetup=false);
 void SetGFXSliders();
-BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void OpenGFXDlgClbk(void *context);
 
 
@@ -630,7 +630,7 @@ void UpdateShader()
 
 	if (!hMesh) return;
 
-	DWORD Shader = SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0);
+	DWORD Shader = DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_DEFSHADER, CB_GETCURSEL, 0, 0));
 
 	vVessel *vVes = (vVessel *)vObj;
 	MatMgr *pMgr = vVes->GetMaterialManager();
@@ -1028,7 +1028,7 @@ float GetMaterialValue(DWORD MatPrp, DWORD clr)
 //
 void SetColorSlider()
 {
-	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
 
 	float mi = Params[MatPrp].var[SelColor].min;
@@ -1050,7 +1050,7 @@ void DisplayMat(bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 {
 	char lbl[32];
 
-	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 	
 	float r = GetMaterialValue(MatPrp, 0);
 	float g = GetMaterialValue(MatPrp, 1);
@@ -1116,7 +1116,7 @@ void UpdateMaterialDisplay(bool bSetup)
 
 	if (bSetup) SelColor = 0;
 
-	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 	
 	DisplayMat(Params[MatPrp].var[0].bUsed, Params[MatPrp].var[1].bUsed, Params[MatPrp].var[2].bUsed, Params[MatPrp].var[3].bUsed);
 
@@ -1159,7 +1159,7 @@ void UpdateColorSlider(WORD pos)
 {
 	float val = float(pos)/255.0f;
 	
-	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));	
+	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));	
 
 	bool bLink = (SendDlgItemMessageA(hDlg, IDC_DBG_LINK, BM_GETCHECK, 0, 0)==BST_CHECKED);
 	bool bExtend = (SendDlgItemMessageA(hDlg, IDC_DBG_EXTEND, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -1338,13 +1338,13 @@ void UpdateVisual()
 				double P = sl->GetPenumbra()*DEG;
 				double U = sl->GetUmbra()*DEG;
 				double R = sl->GetRange();
-				sprintf_s(line, 64, "0x%X P%1.0f U%1.0f R%1.0f",DWORD(em), P, U, R);
+				sprintf_s(line, 64, "%s P%1.0f U%1.0f R%1.0f", _PTR(em), P, U, R);
 			}	
 
 			if (em->GetType() == LightEmitter::LT_POINT) {
 				const PointLight *pl = static_cast<const PointLight*>(em);
 				double R = pl->GetRange();
-				sprintf_s(line, 64, "0x%X R%1.0f", DWORD(em), R);
+				sprintf_s(line, 64, "%s R%1.0f", _PTR(em), R);
 			}
 
 			switch (em->GetVisibility())
@@ -1375,7 +1375,7 @@ void RemoveVisual(vObject *vo)
 //
 void SetColorValue(const char *lbl)
 {
-	DWORD MatPrp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	DWORD MatPrp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 	UpdateMeshMaterial(float(atof(lbl)), MatPrp, SelColor);
 	SetColorSlider();
 }
@@ -1441,8 +1441,8 @@ bool Execute(HWND hWnd, LPOPENFILENAME pOF)
 	PCParam prm;
 
 	DWORD Func = 0;
-	DWORD Action = SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0);
-	DWORD Target = SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_GETCURSEL, 0, 0);
+	DWORD Action = DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_ACTION, CB_GETCURSEL, 0, 0));
+	DWORD Target = DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_TARGET, CB_GETCURSEL, 0, 0));
 
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_NORM, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x1;
 	if (SendDlgItemMessageA(hDlg, IDC_DBG_FADE, BM_GETCHECK, 0, 0)==BST_CHECKED) Func |= 0x2;
@@ -1723,11 +1723,11 @@ oapiWriteLogV("TotalWeight = %f", w);
 // ==============================================================
 // Dialog message handler
 
-BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static bool isOpen = false; // IDC_DBG_MORE (full or reduced width)
 
-	DWORD Prp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	DWORD Prp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 	
 	switch (uMsg) {
 
@@ -1758,7 +1758,7 @@ BOOL CALLBACK ViewProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // ==============================================================
 // Dialog message handler
 
-BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char lbl[32];
 	RECT rect;
@@ -1767,7 +1767,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	OpenTex.hwndOwner = hWnd;
 
-	DWORD Prp = DropdownList(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0));
+	DWORD Prp = DropdownList(DWORD(SendDlgItemMessageA(hDlg, IDC_DBG_MATPRP, CB_GETCURSEL, 0, 0)));
 	
 	switch (uMsg) {
 
@@ -1916,7 +1916,7 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 			case IDC_DBG_CONES:
 				if (HIWORD(wParam) == CBN_SELCHANGE) {
-					sEmitter = SendDlgItemMessageA(hDlg, IDC_DBG_CONES, CB_GETCURSEL, 0, 0);
+					sEmitter = DWORD(SendDlgItemMessage(hDlg, IDC_DBG_CONES, CB_GETCURSEL, 0, 0));
 				}
 				break;
 
@@ -1927,11 +1927,11 @@ BOOL CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				break;
 
 			case IDC_DBG_DISPLAY:
-				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0);
+				if (HIWORD(wParam)==CBN_SELCHANGE) dspMode = DWORD(SendDlgItemMessage(hWnd, IDC_DBG_DISPLAY, CB_GETCURSEL, 0, 0));
 				break;
 
 			case IDC_DBG_CAMERA:
-				if (HIWORD(wParam)==CBN_SELCHANGE) camMode = SendDlgItemMessage(hWnd, IDC_DBG_CAMERA, CB_GETCURSEL, 0, 0);
+				if (HIWORD(wParam)==CBN_SELCHANGE) camMode = DWORD(SendDlgItemMessage(hWnd, IDC_DBG_CAMERA, CB_GETCURSEL, 0, 0));
 				break;
 
 			case IDC_DBG_MSHUP: 
@@ -2224,7 +2224,7 @@ void ReadGFXSliders()
 	Config->GFXLocalMax = fpos;
 }
 
-BOOL CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WndProcGFX(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 

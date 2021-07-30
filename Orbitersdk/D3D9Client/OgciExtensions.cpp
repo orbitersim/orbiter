@@ -147,7 +147,7 @@ DLLCLBK DWORD gcGetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
 
 DLLCLBK void gcConvertSurface(SURFHANDLE hSurf, DWORD attrib)
 {
-	LogBlu("gcConvertSurface(0x%X) Attribs = 0x%X", hSurf, attrib);
+	LogBlu("gcConvertSurface(%s) Attribs = 0x%X", _PTR(hSurf), attrib);
 	SURFACE(hSurf)->ConvertSurface(attrib);
 }
 

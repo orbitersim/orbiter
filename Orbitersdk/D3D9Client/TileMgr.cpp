@@ -58,7 +58,7 @@ TileManager::TileManager (D3D9Client *gclient, const vPlanet *vplanet) : D3D9Eff
 	vp = vplanet;
 	obj = vp->Object();
 	char name[256];
-	oapiGetObjectName (obj, name, 256); int len = strlen(name)+2;
+	oapiGetObjectName (obj, name, 256); int len = int(strlen(name) + 2);
 	objname = new char[len];
 	strcpy_s(objname, len, name);
 	ntex = 0;
@@ -367,6 +367,11 @@ void TileManager::PreloadTileTextures (TILEDESC *tile8, DWORD ntex, DWORD nmask)
 void TileManager::AddSubtileTextures (TILEDESC *td, LPDIRECT3DTEXTURE9 *tbuf, DWORD nt, LPDIRECT3DTEXTURE9 *mbuf, DWORD nm)
 {
 	DWORD i;
+
+	// --------------------------------------------------------------------------------------------------------------
+	// jarmonik: 30-jul-2021
+	// This is tricky. At first td->tex is an index to a texture array and later it becomes a pointer to a texture ?!! 
+	// --------------------------------------------------------------------------------------------------------------
 
 	DWORD tidx = (DWORD)td->tex;  // copy surface texture
 	if (tidx != NOTILE) {

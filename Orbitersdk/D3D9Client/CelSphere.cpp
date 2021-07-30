@@ -74,11 +74,13 @@ void CelestialSphere::LoadStars ()
 		oapiWriteLog("D3D9: WARNING: Inconsistent magnitude limits for background star brightness. Disabling background stars.");
 	}
 
+	DWORD nv;
 	float c;
 	int lvl, plvl = 256;
-	DWORD i, j, k, nv, idx = 0;
+	DWORD i, j, k, idx = 0;
 	DWORD bufsize = 16;
-	nsbuf = nsvtx = 0;
+	nsbuf = 0;
+	nsvtx = 0;
 	svtx = new LPDIRECT3DVERTEXBUFFER9[bufsize];
 
 	struct StarRec {
@@ -91,7 +93,7 @@ void CelestialSphere::LoadStars ()
 	FILE *f;
 	fopen_s(&f, "Star.bin", "rb");
 	if (!f) { delete []data; return; }
-	while (nv = fread (data, sizeof(StarRec), maxNumVertices, f)) {
+	while (nv = DWORD(fread (data, sizeof(StarRec), maxNumVertices, f))) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
 		for (i = 0; i < nv; i++)
 			if (data[i].mag > prm->mag_lo) { nv = i; break; }
@@ -104,7 +106,7 @@ void CelestialSphere::LoadStars ()
 				bufsize += 16;
 			}
 			
-			pDevice->CreateVertexBuffer(nv*sizeof(VERTEX_XYZC), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, svtx+nsbuf, NULL);
+			pDevice->CreateVertexBuffer(UINT(nv*sizeof(VERTEX_XYZC)), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &svtx[nsbuf], NULL);
 			VERTEX_XYZC *vbuf;
 			svtx[nsbuf]->Lock(0, 0, (LPVOID*)&vbuf, 0);
 			for (j = 0; j < nv; j++) {

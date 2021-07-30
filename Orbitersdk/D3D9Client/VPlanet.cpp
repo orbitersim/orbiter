@@ -1065,7 +1065,7 @@ bool vPlanet::LoadAtmoConfig(bool bOrbit)
 
 	if (!hFile) return false;
 
-	LogAlw("Loading Atmospheric Configuration file [%s] Handle=0x%X",path,hFile);
+	LogAlw("Loading Atmospheric Configuration file [%s] Handle=%s", path, _PTR(hFile));
 
 	ScatterParams *prm;
 

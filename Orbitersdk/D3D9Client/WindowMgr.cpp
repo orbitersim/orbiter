@@ -90,7 +90,7 @@ LRESULT CALLBACK SideBarWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 // ===============================================================================================
 //
-BOOL CALLBACK DummyDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DummyDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -338,7 +338,7 @@ int Node::Paint(HDC hDC, int y)
 		SelectObject(hSr, hBmp);
 		BitBlt(hDC, x, y, width - 10,  bm.bmHeight, hSr, 0, 0, SRCCOPY);
 		BitBlt(hDC, width - 10 - x, y, 10, bm.bmHeight, hSr, bm.bmWidth - 10, 0, SRCCOPY);	
-		TextOut(hDC, wof, y + hof, Label, strlen(Label));
+		TextOut(hDC, wof, y + hof, Label, (int)strlen(Label));
 		
 		DeleteDC(hSr);
 

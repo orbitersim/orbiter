@@ -51,14 +51,12 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 void D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line)
 {
 	if (tgt==NULL || src==NULL) {
-		LogErr("memcpy2(0x%X, 0x%X, %u) File=%s, Line=%d",tgt,src,bytes,file,line);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		return;
 	}
 	__try {	memcpy(tgt,src,bytes);	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
-		LogErr("memcpy2(0x%X, 0x%X, %u) File=%s, Line=%d", tgt, src, bytes, file, line);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		return;	
 	}
@@ -67,14 +65,12 @@ void D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int li
 void D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line)
 {
 	if (tgt==NULL) {
-		LogErr("memset2(0x%X, %d, %u) File=%s, Line=%d",tgt,val,bytes,file,line);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		return;
 	}
 	__try {	memset(tgt,val,bytes); }
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
-		LogErr("memset2(0x%X, %d, %u) File=%s, Line=%d", tgt, val, bytes, file, line);
 		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
 		return;	
 	}
