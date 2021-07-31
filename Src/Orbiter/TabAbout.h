@@ -21,7 +21,7 @@ public:
 	BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-	static INT CALLBACK AboutProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK AboutProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 #endif // !__TABABOUT_H

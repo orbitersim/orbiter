@@ -217,7 +217,7 @@ BOOL CALLBACK CameraTab::DlgProcInit (HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		EnableThemeDialogTexture (hWnd, ETDT_ENABLETAB);
-		SetWindowLong (hWnd, DWL_USER, lParam);
+		SetWindowLongPtr (hWnd, DWLP_USER, lParam);
 		return TRUE;
 	}
 	return FALSE;
@@ -423,10 +423,10 @@ void TabControl::GetCamMode ()
 
 // ======================================================================
 
-BOOL CALLBACK TabControl::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabControl::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabControl *pTab = (TabControl*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabControl *pTab = (TabControl*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -568,10 +568,10 @@ BOOL TabTarget::Init (HWND hWnd)
 
 // ======================================================================
 
-BOOL CALLBACK TabTarget::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabTarget::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabTarget *pTab = (TabTarget*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabTarget *pTab = (TabTarget*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -675,10 +675,10 @@ BOOL TabView::Init (HWND hWnd)
 
 // ======================================================================
 
-BOOL CALLBACK TabView::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabView::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabView *pTab = (TabView*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabView *pTab = (TabView*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -983,10 +983,10 @@ BOOL TabGround::Init (HWND hWnd)
 
 // ======================================================================
 
-BOOL CALLBACK TabGround::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabGround::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabGround *pTab = (TabGround*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong (hWnd, DWL_USER));
+	TabGround *pTab = (TabGround*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr (hWnd, DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1079,10 +1079,10 @@ void TabFov::SetFov (double fov_deg)
 
 // ======================================================================
 
-BOOL CALLBACK TabFov::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabFov::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabFov *pTab = (TabFov*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabFov *pTab = (TabFov*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -1140,7 +1140,7 @@ char *TabPreset::HelpContext () const
 
 // ======================================================================
 
-BOOL CALLBACK TabPreset::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabPreset::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
 

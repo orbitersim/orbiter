@@ -990,7 +990,7 @@ void UnEmbedBrowserObject(HWND hwnd)
 
 	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
 	// we initially attached the browser object to this window.
-	if ((browserHandle = (IOleObject **)GetWindowLong(hwnd, GWL_USERDATA)))
+	if ((browserHandle = (IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA)))
 	{
 		// Unembed the browser object, and release its resources.
 		browserObject = *browserHandle;
@@ -1045,7 +1045,7 @@ void DoPageAction(HWND hwnd, DWORD action)
 
 	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
 	// we initially attached the browser object to this window.
-	browserObject = *((IOleObject **)GetWindowLong(hwnd, GWL_USERDATA));
+	browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 	// We want to get the base address (ie, a pointer) to the IWebBrowser2 object embedded within the browser
 	// object, so we can call some of the functions in the former's table.
@@ -1143,7 +1143,7 @@ HRESULT WINAPI GetWebPtrs(HWND hwnd, IWebBrowser2 **webBrowser2Result, IHTMLDocu
 		if (!IsWindow(hwnd) ||
 
 		// Get the browser object stored in the window's USERDATA member
-		!(browserObject = *((IOleObject **)GetWindowLong(hwnd, GWL_USERDATA))) ||
+		!(browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA))) ||
 
 		// Get the IWebBrowser2 object embedded within the browser object
 		browserObject->lpVtbl->QueryInterface(browserObject, &IID_IWebBrowser2, (void **)&webBrowser2))
@@ -1532,7 +1532,7 @@ long DisplayHTMLPage(HWND hwnd, LPTSTR webPageName)
 
 	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
 	// we initially attached the browser object to this window.
-	browserObject = *((IOleObject **)GetWindowLong(hwnd, GWL_USERDATA));
+	browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 	// We want to get the base address (ie, a pointer) to the IWebBrowser2 object embedded within the browser
 	// object, so we can call some of the functions in the former's table.
@@ -1622,7 +1622,7 @@ void ResizeBrowser(HWND hwnd, DWORD width, DWORD height)
 
 	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
 	// we initially attached the browser object to this window.
-	browserObject = *((IOleObject **)GetWindowLong(hwnd, GWL_USERDATA));
+	browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 	// We want to get the base address (ie, a pointer) to the IWebBrowser2 object embedded within the browser
 	// object, so we can call some of the functions in the former's table.
@@ -1761,7 +1761,7 @@ long EmbedBrowserObject(HWND hwnd)
 			// call EmbedBrowserObject() for each one, and easily associate the appropriate browser object with
 			// its matching window and its own objects containing per-window data.
 			*((IOleObject **)ptr) = browserObject;
-			SetWindowLong(hwnd, GWL_USERDATA, (LONG)ptr);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)ptr);
 
 			// Give the browser a pointer to my IOleClientSite object
 			if (!browserObject->lpVtbl->SetClientSite(browserObject, (IOleClientSite *)_iOleClientSiteEx))

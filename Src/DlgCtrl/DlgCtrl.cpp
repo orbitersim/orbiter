@@ -61,7 +61,7 @@ void oapiUnregisterCustomControls (HINSTANCE hInst)
 	DeleteObject (g_GDI.hBrush2);
 }
 
-long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static HWND hPrevCapt = NULL;
 	switch (uMsg) {
@@ -70,10 +70,10 @@ long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		RECT r;
 		DWORD bw, gw, x0, y0, dd;
 		HDC hDC    = BeginPaint (hWnd, &ps);
-		int pos    = GetWindowLong (hWnd, 0);
-		int rmin   = GetWindowLong (hWnd, 4);
-		int rmax   = GetWindowLong (hWnd, 8);
-		DWORD flag = GetWindowLong (hWnd, 12);
+		int pos    = GetWindowLongPtr (hWnd, 0);
+		int rmin   = GetWindowLongPtr (hWnd, 4);
+		int rmax   = GetWindowLongPtr (hWnd, 8);
+		DWORD flag = GetWindowLongPtr (hWnd, 12);
 		bool horz  = ((flag & 2) == 0);
 
 		GetClientRect (hWnd, &r);
@@ -139,7 +139,7 @@ long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		int y = HIWORD (lParam);
 		RECT r;
 		DWORD bw, gw;
-		DWORD flag = GetWindowLong (hWnd, 12);
+		DWORD flag = GetWindowLongPtr (hWnd, 12);
 		bool horz = ((flag & 2) == 0);
 		GetClientRect (hWnd, &r);
 		if (horz) {
@@ -171,8 +171,8 @@ long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			DragSlider (hWnd, x, y);
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLong (hWnd, 0)), LPARAM (hWnd));
 		} else {
-			int rmin = GetWindowLong (hWnd, 4);
-			int rmax = GetWindowLong (hWnd, 8);
+			int rmin = GetWindowLongPtr (hWnd, 4);
+			int rmax = GetWindowLongPtr (hWnd, 8);
 			g_timer = SetTimer (hWnd, 1, min(1000,max(1,3000/(rmax-rmin))), NULL);
 			PostMessage (hWnd, WM_TIMER, 1, 0);
 		}
@@ -185,9 +185,9 @@ long FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			KillTimer (hWnd, 1);
 			g_timer = 0;
 		}
-		DWORD flag = GetWindowLong (hWnd, 12);
+		DWORD flag = GetWindowLongPtr (hWnd, 12);
 		flag &= 0xFFFFFFC3; // clear mouse selection state
-		SetWindowLong (hWnd, 12, flag);
+		SetWindowLongPtr (hWnd, 12, flag);
 		} return 0;
 
 	case WM_MOUSEMOVE: {
@@ -475,7 +475,7 @@ void PropertyList::OnInitDialog (HWND hWnd, int nIDDlgItem)
 	hDlg = hWnd;
 	dlgid = nIDDlgItem;
 	hItem = GetDlgItem (hDlg, dlgid);
-	SetWindowLong (hItem, GWL_USERDATA, (LONG)this);
+	SetWindowLongPtr (hItem, GWLP_USERDATA, (LONG_PTR)this);
 	RECT cr;
 	GetClientRect (hItem, &cr);
 	winw = cr.right;

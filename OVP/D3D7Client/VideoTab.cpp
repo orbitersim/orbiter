@@ -406,12 +406,12 @@ void VideoTab::UpdateConfigData ()
 
 // ==============================================================
 
-BOOL CALLBACK VideoTab::AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK VideoTab::AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
 		char cbuf[1024];
-		LoadString ((HINSTANCE)GetWindowLong (hWnd, GWL_HINSTANCE), IDS_STRING1, cbuf, 1024);
+		LoadString ((HINSTANCE)GetWindowLongPtr (hWnd, GWLP_HINSTANCE), IDS_STRING1, cbuf, 1024);
 		SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
 		} return TRUE;
 	case WM_COMMAND:

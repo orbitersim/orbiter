@@ -67,7 +67,7 @@ protected:
 	// Keep a record of the positions of dialog items
 	// (for auto-recentering)
 
-	static BOOL CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	const MainDialog *pLp;
 	Config *pCfg;

@@ -62,7 +62,7 @@ public:
 
 protected:
 	void Refresh (HWND hTab);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -76,7 +76,7 @@ public:
 
 protected:
 	void Refresh (HWND hDlg, bool tick);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================
@@ -90,7 +90,7 @@ public:
 
 protected:
 	void Refresh (HWND hDlg, bool tick);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 // ======================================================================

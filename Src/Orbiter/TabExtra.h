@@ -106,7 +106,7 @@ private:
 	void Activate (HWND hWnd, int which);
 	bool StoreParams (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	static int PropId[NPROP_METHOD];
 };
 
@@ -152,7 +152,7 @@ private:
 	bool StoreParams (HWND hWnd);
 	void ToggleEnable (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 
@@ -185,7 +185,7 @@ private:
 	bool StoreParams (HWND hWnd);
 	void ToggleEnable (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 
@@ -239,7 +239,7 @@ private:
 	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
 	bool StoreParams (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 //-----------------------------------------------------------------------------
@@ -260,7 +260,7 @@ private:
 	bool StoreParams (HWND hWnd);
 	void ToggleEnable (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 //-----------------------------------------------------------------------------
@@ -279,7 +279,7 @@ private:
 	void ResetDialog (HWND hWnd);
 	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
 	bool StoreParams (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 //-----------------------------------------------------------------------------
@@ -299,7 +299,7 @@ private:
 	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
 	bool StoreParams (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 //-----------------------------------------------------------------------------
@@ -319,7 +319,7 @@ private:
 	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
 	bool StoreParams (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 //-----------------------------------------------------------------------------
@@ -338,7 +338,7 @@ private:
 	void ResetDialog (HWND hWnd);
 	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
 	bool StoreParams (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 //-----------------------------------------------------------------------------
@@ -357,7 +357,7 @@ private:
 	void ResetDialog (HWND hWnd);
 	void SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm);
 	bool StoreParams (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__TABEXTRA_H

@@ -27,7 +27,7 @@ void CustomCtrl::SetHwnd (HWND hCtrl)
 	hWnd = hCtrl;
 	SetWindowLong (hWnd, 0, (LONG)this);
 
-	hParent = (HWND)GetWindowLong (hCtrl, GWL_HWNDPARENT);
+	hParent = (HWND)GetWindowLongPtr (hCtrl, GWLP_HWNDPARENT);
 }
 
 // ---------------------------------------------------------------------------

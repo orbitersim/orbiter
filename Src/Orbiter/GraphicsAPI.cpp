@@ -66,7 +66,7 @@ GraphicsClient::GraphicsClient (HINSTANCE hInstance): Module (hInstance)
 
 GraphicsClient::~GraphicsClient ()
 {
-	if (hVid) SetWindowLong (hVid, GWL_USERDATA, 0);
+	if (hVid) SetWindowLongPtr (hVid, GWLP_USERDATA, 0);
 	if (splashFont) clbkReleaseFont (splashFont);
 }
 
@@ -84,7 +84,7 @@ bool GraphicsClient::clbkInitialise ()
 
 	if (clbkUseLaunchpadVideoTab() && g_pOrbiter->Launchpad()) {
 		hVid = g_pOrbiter->Launchpad()->GetTabWindow(4);
-		SetWindowLong (hVid, GWL_USERDATA, (LONG)this);
+		SetWindowLongPtr (hVid, GWLP_USERDATA, (LONG_PTR)this);
 	} else hVid = NULL;
 
 	// set default parameters from config data
@@ -670,7 +670,7 @@ HWND GraphicsClient::InitRenderWnd (HWND hWnd)
 			WS_POPUP | WS_VISIBLE,
 			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, 0);
 	}
-	SetWindowLong (hWnd, GWL_USERDATA, (LONG)this);
+	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	// store class instance with window for access in the message handler
 
 	char title[256], cbuf[128];
@@ -933,7 +933,7 @@ void ScreenAnnotation::Render ()
 //-----------------------------------------------------------------------
 DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLong (hWnd, GWL_USERDATA);
+	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	if (gc) return gc->RenderWndProc (hWnd, uMsg, wParam, lParam);
 	else return DefWindowProc (hWnd, uMsg, wParam, lParam);
 }
@@ -942,7 +942,7 @@ DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 DLLEXPORT BOOL CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	GraphicsClient *gc = (GraphicsClient*)GetWindowLong (hWnd, GWL_USERDATA);
+	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	if (gc) return gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);
 	else return FALSE;
 }

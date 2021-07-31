@@ -110,7 +110,7 @@ bool DialogManager::CloseDialog (HWND hDlg)
 
 void *DialogManager::GetDialogContext (HWND hDlg)
 {
-	DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+	DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 	return (dlg ? dlg->GetContext() : 0);
 }
 
@@ -322,7 +322,7 @@ BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_NCLBUTTONDBLCLK: {
 		// implements window minimisation on title bar double-click
-		DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+		DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 		if (dlg) dlg->ToggleShrink();
 		} break;
 
