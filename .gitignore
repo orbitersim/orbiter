@@ -3,3 +3,4 @@
 .vs
 meshres*.h
 CMakeSettings.json
+Extern/ZLib64
