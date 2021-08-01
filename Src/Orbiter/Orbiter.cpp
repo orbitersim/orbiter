@@ -3157,7 +3157,7 @@ void Orbiter::DDERequest (HWND hClient, int format, ATOM item)
 		lstrcpy ((LPSTR)pData->Value, (LPSTR)cbuf);
 		GlobalUnlock (hData);
 		ATOM a = GlobalAddAtom (citem);
-		LPARAM lParam = PackDDElParam (WM_DDE_ACK, (UINT)hData, a);
+		LPARAM lParam = PackDDElParam (WM_DDE_ACK, (UINT_PTR)hData, a);
 		PostMessage (hClient, WM_DDE_DATA, (WPARAM)hRenderWnd, lParam);
 	} else {       // request can't be served
 		// to do
