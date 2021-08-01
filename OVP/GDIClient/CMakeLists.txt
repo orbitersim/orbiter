@@ -22,10 +22,6 @@ add_dependencies(GDIClient
 target_link_libraries(GDIClient
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${DX7SDK_LIB_DIR}/dxguid.lib
-	${DX7SDK_LIB_DIR}/d3dim.lib
-	${DX7SDK_LIB_DIR}/ddraw.lib
-	${DX7SDK_LIB_DIR}/dinput.lib
 )
 
 # Installation
