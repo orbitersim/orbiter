@@ -343,9 +343,9 @@ typedef struct {
 
 // Panel area identifiers:
 // Panel 0
-#define AID_MAINDISP1           32
-#define AID_MAINDISP2           33
-#define AID_MAINDISP3           34
+#define AID_MAINDISP1           32 // obsolete
+#define AID_MAINDISP2           33 // obsolete
+#define AID_MAINDISP3           34 // obsolete
 #define AID_SCRAMDISP2          36
 
 // Panel 1

@@ -47,6 +47,7 @@ bool AAPSubsystem::clbkLoadPanel2D (int panelid, PANELHANDLE hPanel, DWORD viewW
 
 	int xofs = 90, yofs = 149;
 	DG()->RegisterPanelArea (hPanel, ELID_AAP, _R(xofs,yofs,xofs+65,yofs+124), PANEL_REDRAW_MOUSE, PANEL_MOUSE_LBDOWN | PANEL_MOUSE_LBPRESSED | PANEL_MOUSE_LBUP, 0, aap);
+	return true;
 }
 
 // --------------------------------------------------------------

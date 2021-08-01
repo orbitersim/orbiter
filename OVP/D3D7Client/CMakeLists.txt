@@ -63,6 +63,12 @@ target_link_libraries(D3D7Client
 	${DX7SDK_LIB_DIR}/ddraw.lib
 )
 
+set_target_properties(D3D7Client
+	PROPERTIES
+	COMPILE_DEFINITIONS "DIRECTINPUT_VERSION=0x0800"
+	FOLDER OVP
+)
+
 # Installation
 install(TARGETS
 	D3D7Client
