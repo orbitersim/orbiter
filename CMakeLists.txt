@@ -14,6 +14,12 @@ set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
 # Group projects in VS
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+if(CMAKE_CL_64)
+	set(BUILD64 1)
+else()
+	set(BUILD64 0)
+endif()
+
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
@@ -56,20 +62,19 @@ set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
-set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
-set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
-set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
-
 set(ZLIB_VER "1.2.11")
-if(CMAKE_CL_64)
+if(BUILD64)
 	set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-x64")
 else()
 	set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-x86")
 endif()
-
 set(ZLIB_INCLUDE_DIR "${ZLIB_DIR}/include")
 set(ZLIB_LIB_DIR "${ZLIB_DIR}/lib")
 set(ZLIB_LIB "${ZLIB_LIB_DIR}/zlibstatic.lib")
+
+set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
+set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
+set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
 
 set(LUA_DIR "${EXTERN_DIR}/Lua")
 set(LUA_INCLUDE_DIR "${LUA_DIR}/include")
@@ -134,16 +139,26 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pdftex_fix.bat.in ${PDFTEX_CMD}
 set(OrbiterExe_graphics "Orbiter (built-in DX7 graphics engine)")
 set(OrbiterExe_ng "Orbiter (graphics server version)")
 set(OrbiterExe_both "Both (inline DX7 graphics + graphics server)")
-set(ORBITER_GRAPHICS
-	${OrbiterExe_both}
-	CACHE
-	STRING
-	"Orbiter executables to be built."
-)
-set_property(CACHE ORBITER_GRAPHICS
-	PROPERTY
-	STRINGS ${OrbiterExe_both} ${OrbiterExe_graphics} ${OrbiterExe_ng}
-)
+
+if(BUILD64) # only allow graphics server version on x64 builds
+
+	set(ORBITER_GRAPHICS ${OrbiterExe_ng})
+
+else()
+
+	set(ORBITER_GRAPHICS
+		${OrbiterExe_both}
+		CACHE
+		STRING
+		"Orbiter executables to be built."
+	)
+	set_property(CACHE ORBITER_GRAPHICS
+		PROPERTY
+		STRINGS ${OrbiterExe_both} ${OrbiterExe_graphics} ${OrbiterExe_ng}
+	)
+
+endif()
+
 if(NOT ${ORBITER_GRAPHICS} STREQUAL ${OrbiterExe_ng})
 	set(BUILD_ORBITER_DX7 1)
 else()
