@@ -19,7 +19,7 @@ target_link_libraries(MFDTemplate
 )
 
 add_dependencies(MFDTemplate
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

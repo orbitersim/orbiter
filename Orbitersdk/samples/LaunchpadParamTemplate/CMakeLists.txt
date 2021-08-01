@@ -19,7 +19,7 @@ target_link_libraries(LaunchpadParamTemplate
 )
 
 add_dependencies(LaunchpadParamTemplate
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 

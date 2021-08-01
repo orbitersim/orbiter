@@ -166,7 +166,7 @@ set(orbiter_libs
 	${DX7SDK_LIB_DIR}/ddraw.lib
 	${DX7SDK_LIB_DIR}/dinput.lib
 	${HTML_HELP_LIBRARY}
-	${ZLIB_LIBRARIES}
+	${ZLIB_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
 )

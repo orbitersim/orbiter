@@ -19,7 +19,7 @@ target_link_libraries(DialogTemplate
 )
 
 add_dependencies(DialogTemplate
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 
