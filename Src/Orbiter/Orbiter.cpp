@@ -918,6 +918,7 @@ void Orbiter::CloseSession ()
 
 	if (pConfig->CfgDebugPrm.ShutdownMode == 0 && !bFastExit) { // normal cleanup
 		pMainDlg->SelRootScenario (CurrentScenario);
+		pMainDlg->RefreshScenarioList();
 		ShowWindow (hDlg, SW_SHOW); // show launchpad dialog
 		pMainDlg->ShowWaitPage (hDlg, true, simheapsize);
 		RedrawWindow (hDlg, NULL, NULL, RDW_UPDATENOW|RDW_ALLCHILDREN);
@@ -1651,7 +1652,6 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc)
 			}
 		}
 
-		pMainDlg->RefreshScenarioList();
 		return true;
 
 	} else return false;
