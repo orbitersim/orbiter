@@ -19,10 +19,10 @@
 //-----------------------------------------------------------------------------
 class CDIFramework7
 {
-	LPDIRECTINPUT7       m_pDI;             // DInput object
-	LPDIRECTINPUTDEVICE7 m_pdidKbdDevice;   // keyboard device
-	LPDIRECTINPUTDEVICE7 m_pdidMouseDevice; // mouse device
-	LPDIRECTINPUTDEVICE7 m_pdidJoyDevice;   // joystick device
+	LPDIRECTINPUT8       m_pDI;             // DInput object
+	LPDIRECTINPUTDEVICE8 m_pdidKbdDevice;   // keyboard device
+	LPDIRECTINPUTDEVICE8 m_pdidMouseDevice; // mouse device
+	LPDIRECTINPUTDEVICE8 m_pdidJoyDevice;   // joystick device
 	GUID                 m_guidJoystick;    // GUID for the joystick
 	BOOL                 m_bUseKbd;
 	BOOL                 m_bUseJoy;
@@ -51,8 +51,8 @@ public:
 	DWORD NumJoysticks () const { return jList.nJoy; }
 	// number of enumerated joysticks
 
-	HRESULT CreateDevice (HWND hWnd, LPDIRECTINPUT7 pDI,
-		LPDIRECTINPUTDEVICE7 pDIDevice, GUID guidDevice, const DIDATAFORMAT *pdidDataFormat,
+	HRESULT CreateDevice (HWND hWnd, LPDIRECTINPUT8 pDI,
+		LPDIRECTINPUTDEVICE8 pDIDevice, GUID guidDevice, const DIDATAFORMAT *pdidDataFormat,
 		DWORD dwFlags);
 
 	HRESULT CreateKbdDevice (HWND hWnd);
@@ -62,9 +62,9 @@ public:
 	VOID DestroyDevices();
 
 	// accessor functions
-	inline LPDIRECTINPUTDEVICE7 GetKbdDevice() { return m_pdidKbdDevice; }
-	inline LPDIRECTINPUTDEVICE7 GetMouseDevice() { return m_pdidMouseDevice; }
-	inline LPDIRECTINPUTDEVICE7 GetJoyDevice() { return m_pdidJoyDevice; }
+	inline LPDIRECTINPUTDEVICE8 GetKbdDevice() { return m_pdidKbdDevice; }
+	inline LPDIRECTINPUTDEVICE8 GetMouseDevice() { return m_pdidMouseDevice; }
+	inline LPDIRECTINPUTDEVICE8 GetJoyDevice() { return m_pdidJoyDevice; }
 };
 
 #endif // !DI7FRAME_H

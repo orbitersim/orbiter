@@ -41,8 +41,8 @@ HRESULT CDIFramework7::Create (HINSTANCE hInst)
 	HRESULT hr;
 
 	// Create the main DirectInput object
-	if (FAILED (hr = DirectInputCreateEx (hInst, DIRECTINPUT_VERSION,
-		IID_IDirectInput7, (LPVOID*)&m_pDI, NULL))) {
+	if (FAILED (hr = DirectInput8Create (hInst, DIRECTINPUT_VERSION,
+		IID_IDirectInput8, (LPVOID*)&m_pDI, NULL))) {
 		LOGOUT("ERROR: DI: DirectInputCreate failed");
 		LOGOUT_DIERR(hr);
 		return hr;
@@ -51,7 +51,7 @@ HRESULT CDIFramework7::Create (HINSTANCE hInst)
 	// Check to see whether a joystick is present. If one is, the enumeration
 	// callback will save the joystick's GUID, so we can create it later
 	ZeroMemory (&m_guidJoystick, sizeof (GUID));
-	m_pDI->EnumDevices (DIDEVTYPE_JOYSTICK, EnumJoysticksCallback,
+	m_pDI->EnumDevices (DI8DEVTYPE_JOYSTICK, EnumJoysticksCallback,
 		(LPVOID)&jList, DIEDFL_ATTACHEDONLY);
 
 	// pick first joystick by default
@@ -105,13 +105,12 @@ VOID CDIFramework7::GetJoysticks (DIDEVICEINSTANCE **dev, DWORD *pdwCount)
 // Name: CreateDevice()
 // Desc: Creates a DirectInput device
 //-----------------------------------------------------------------------------
-HRESULT CDIFramework7::CreateDevice (HWND hWnd, LPDIRECTINPUT7 pDI,
-	LPDIRECTINPUTDEVICE7 pDIDevice, GUID guidDevice, const DIDATAFORMAT *pdidDataFormat,
+HRESULT CDIFramework7::CreateDevice (HWND hWnd, LPDIRECTINPUT8 pDI,
+	LPDIRECTINPUTDEVICE8 pDIDevice, GUID guidDevice, const DIDATAFORMAT *pdidDataFormat,
 	DWORD dwFlags)
 {
 	// Obtain an interface to the input device
-	if (FAILED (pDI->CreateDeviceEx (guidDevice, IID_IDirectInputDevice2,
-		(VOID**)&pDIDevice, NULL))) {
+	if (FAILED (pDI->CreateDevice (guidDevice, &pDIDevice, NULL))) {
 		LOGOUT("ERROR: DI: CreateDeviceEx failed");
 		return E_FAIL;
 	}

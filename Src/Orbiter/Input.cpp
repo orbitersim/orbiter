@@ -74,7 +74,7 @@ bool DInput::PollJoystick (DIJOYSTATE2 *js)
 	// todo: return joystick data in device-independent format
 	//       allow collecting data from more than one joystick
 
-	LPDIRECTINPUTDEVICE7 dev = GetJoyDevice();
+	LPDIRECTINPUTDEVICE8 dev = GetJoyDevice();
 	if (!dev) return false;
 	HRESULT hr = dev->Poll();
 	//if (hr == DI_OK || hr == DI_NOEFFECT)     // ignore error flag from poll. appears to occasionally return DIERR_UNPLUGGED
@@ -86,7 +86,7 @@ bool DInput::PollJoystick (DIJOYSTATE2 *js)
 
 HRESULT DInput::SetJoystickProperties ()
 {
-	LPDIRECTINPUTDEVICE7 dev = GetJoyDevice();
+	LPDIRECTINPUTDEVICE8 dev = GetJoyDevice();
 	HRESULT hr;
 	DIPROPRANGE diprg;
 	DIPROPDWORD diprw;

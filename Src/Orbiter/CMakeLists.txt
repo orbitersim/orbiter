@@ -168,13 +168,15 @@ set(Orbiter_common_libs
 )
 set(Orbiter_dx7_libs
 	dxguid.lib
+	dinput8.lib
 	${DX7SDK_LIB_DIR}/d3dim.lib
 	${DX7SDK_LIB_DIR}/ddraw.lib
-	${DX7SDK_LIB_DIR}/dinput.lib
+#	${DX7SDK_LIB_DIR}/dinput.lib
 )
 set(Orbiter_server_libs
 	dxguid.lib
-	${DX7SDK_LIB_DIR}/dinput.lib
+	dinput8.lib
+#	${DX7SDK_LIB_DIR}/dinput.lib
 )
 
 set(Orbiter_depends
@@ -196,7 +198,7 @@ if(BUILD_ORBITER_DX7)
 		PROPERTIES
 		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
 		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
-		COMPILE_DEFINITIONS INLINEGRAPHICS
+		COMPILE_DEFINITIONS "INLINEGRAPHICS;DIRECTINPUT_VERSION=0x0800"
 		ENABLE_EXPORTS 1
 		FOLDER Core
 	)
@@ -208,6 +210,7 @@ if(BUILD_ORBITER_DX7)
 	target_link_libraries(Orbiter
 		${Orbiter_common_libs}
 		${Orbiter_dx7_libs}
+		${DX7SDK_INCLUDE_DIR}/dx7
 	)
 
 	add_dependencies(Orbiter
@@ -240,7 +243,7 @@ if(BUILD_ORBITER_SERVER)
 		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
 		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR}/Server
 		RUNTIME_OUTPUT_NAME Orbiter
-		COMPILE_DEFINITIONS NOGRAPHICS
+		COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
 		ENABLE_EXPORTS 1
 		FOLDER Core
 	)
@@ -252,6 +255,7 @@ if(BUILD_ORBITER_SERVER)
 	target_link_libraries(Orbiter_server
 		${Orbiter_common_libs}
 		${Orbiter_server_libs}
+		${DX7SDK_INCLUDE_DIR}/dx7
 	)
 
 	add_dependencies(Orbiter_server
