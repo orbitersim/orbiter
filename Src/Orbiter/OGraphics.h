@@ -35,7 +35,7 @@ class VideoTab {
 public:
 	VideoTab (OrbiterGraphics *og);
 	void Init();
-	BOOL WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	void DeviceChanged (D3D7Enum_DeviceInfo *dev);
@@ -79,7 +79,7 @@ public:
 	void clbkGetViewportSize (DWORD *width, DWORD *height) const;
 	bool clbkGetRenderParam (DWORD prm, DWORD *value) const;
 	LRESULT RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	BOOL LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context);
 	MESHHANDLE clbkGetMesh (VISHANDLE vis, UINT idx);

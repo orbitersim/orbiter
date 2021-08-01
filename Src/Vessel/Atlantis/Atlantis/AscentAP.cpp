@@ -1012,11 +1012,11 @@ void AscentApMfd::ToggleOMS2Schedule ()
 
 // --------------------------------------------------------------
 
-int AscentApMfd::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+OAPI_MSGTYPE AscentApMfd::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENED:
-		return (int)(new AscentApMfd (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
+		return (OAPI_MSGTYPE)(new AscentApMfd (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
 	}
 	return 0;
 }
@@ -1173,7 +1173,7 @@ AscentAPDlgTabGimbal::~AscentAPDlgTabGimbal ()
 
 // --------------------------------------------------------------
 
-BOOL AscentAPDlgTabGimbal::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR AscentAPDlgTabGimbal::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -1360,7 +1360,7 @@ int AscentAPDlgTabThrust::OnPaint ()
 
 // --------------------------------------------------------------
 
-BOOL AscentAPDlgTabThrust::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR AscentAPDlgTabThrust::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT:
@@ -1431,7 +1431,7 @@ int AscentAPDlgTabAltitude::OnPaint ()
 
 // --------------------------------------------------------------
 
-BOOL AscentAPDlgTabAltitude::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR AscentAPDlgTabAltitude::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT:

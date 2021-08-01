@@ -857,7 +857,7 @@ void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
 	glob.unify();
 }
 
-bool Pane::OpenMFD (int id, int type, ifstream *ifs)
+bool Pane::OpenMFD (size_t id, int type, ifstream *ifs)
 {
 	if (id >= MAXMFD) return ((ExternMFD*)id)->SetMode (type);
 	if (panelmode == 1 && id >= 2) return false;
@@ -944,7 +944,7 @@ double Pane::SetMFDRefreshIntervalMultiplier (int id, double multiplier)
 	return prev;
 }
 
-bool Pane::CloseMFD (int id)
+bool Pane::CloseMFD (size_t id)
 {
 	if (panelmode == 1 && id >= 2) return false;
 	if (panelmode == 2 && !mfd[id].exist) return false;

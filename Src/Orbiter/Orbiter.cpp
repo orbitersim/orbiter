@@ -165,9 +165,9 @@ HELPCONTEXT DefHelpContext = {
 HRESULT ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*);
 
 //LRESULT CALLBACK WndProc3D (HWND, UINT, WPARAM, LPARAM);
-BOOL CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-BOOL CALLBACK ServerDlgProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ServerDlgProc (HWND, UINT, WPARAM, LPARAM);
 DWORD WINAPI ConsoleInputProc (LPVOID);
 
 VOID    DestroyWorld ();
@@ -180,7 +180,7 @@ HANDLE hConsoleMutex = 0;
 // _matherr()
 // trap global math exceptions
 
-int _matherr( struct _exception *except )
+int _matherr(struct _exception *except )
 {
 	if (!strcmp (except->name, "acos")) {
 		except->retval = (except->arg1 < 0.0 ? Pi : 0.0);
@@ -568,7 +568,7 @@ void Orbiter::LoadFixedModules ()
 	char cbuf[256];
 	char *path = "Modules\\Startup";
 	struct _finddata_t fdata;
-	long fh = _findfirst ("Modules\\Startup\\*.dll", &fdata);
+	intptr_t fh = _findfirst ("Modules\\Startup\\*.dll", &fdata);
 	if (fh == -1) return; // no files found
 	do {
 		strcpy (cbuf, fdata.name);
@@ -3282,7 +3282,7 @@ bool Callback_Main (Select *sel, int item, char*, void *data)
 	return true;
 }
 
-BOOL CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_SIZE: {
@@ -3294,12 +3294,12 @@ BOOL CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-BOOL CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return 0;
 }
 
-BOOL CALLBACK ServerDlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ServerDlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

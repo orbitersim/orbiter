@@ -233,7 +233,7 @@ class AscentAPDlg;
 class Atlantis: public VESSEL4 {
 	friend class AscentAP;
 	friend class PayloadBayOp;
-	friend BOOL CALLBACK RMS_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	friend INT_PTR CALLBACK RMS_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 public:
 	AnimState::Action gear_status, spdb_status;
 	Atlantis (OBJHANDLE hObj, int fmodel);

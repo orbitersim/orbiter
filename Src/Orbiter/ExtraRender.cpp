@@ -159,7 +159,7 @@ bool Extra_PlanetRenderOptions::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK Extra_PlanetRenderOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Extra_PlanetRenderOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -168,13 +168,13 @@ BOOL CALLBACK Extra_PlanetRenderOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM w
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDC_BUTTON1:
-			((Extra_PlanetRenderOptions*)GetWindowLong (hWnd, DWL_USER))->ResetDialog (hWnd);
+			((Extra_PlanetRenderOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
 			return 0;
 		case IDC_BUTTON2:
-			((Extra_PlanetRenderOptions*)GetWindowLong (hWnd, DWL_USER))->OpenHelp (hWnd);
+			((Extra_PlanetRenderOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
 			return 0;
 		case IDOK:
-			if (((Extra_PlanetRenderOptions*)GetWindowLong (hWnd, DWL_USER))->StoreParams (hWnd))
+			if (((Extra_PlanetRenderOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
 				EndDialog (hWnd, 0);
 			break;
 		case IDC_RADIO1:
@@ -182,7 +182,7 @@ BOOL CALLBACK Extra_PlanetRenderOptions::DlgProc (HWND hWnd, UINT uMsg, WPARAM w
 		case IDC_RADIO3:
 		case IDC_RADIO4:
 		case IDC_RADIO5:
-			((Extra_PlanetRenderOptions*)GetWindowLong (hWnd, DWL_USER))->Update (hWnd);
+			((Extra_PlanetRenderOptions*)GetWindowLongPtr (hWnd, DWLP_USER))->Update (hWnd);
 			return 0;
 		}
 		break;

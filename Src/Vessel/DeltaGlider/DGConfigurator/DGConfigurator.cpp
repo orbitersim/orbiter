@@ -29,7 +29,7 @@ public:
 	void EnableHires (bool enable);
 	void InitDialog (HWND hWnd);
 	void Apply (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 char *DGConfig::Description()
@@ -76,7 +76,7 @@ void DGConfig::Apply (HWND hWnd)
 	EnableHires (enable);
 }
 
-BOOL CALLBACK DGConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DGConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -85,7 +85,7 @@ BOOL CALLBACK DGConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDOK:
-			((DGConfig*)GetWindowLong (hWnd, DWL_USER))->Apply (hWnd);
+			((DGConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->Apply (hWnd);
 			EndDialog (hWnd, 0);
 			return 0;
 		case IDCANCEL:

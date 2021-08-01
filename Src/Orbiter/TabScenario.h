@@ -38,7 +38,7 @@ public:
 	bool SelRootScenario (char *scn);
 	// select the given scenario in the list
 
-	BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	void ScanDirectory (const char *path, HTREEITEM hti);
@@ -61,7 +61,7 @@ protected:
 	// open the help file associated with the current scenario
 
 private:
-	static BOOL CALLBACK SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// callback function for "scenario save" dialog
 
 	static DWORD WINAPI threadWatchScnList (LPVOID pPrm);

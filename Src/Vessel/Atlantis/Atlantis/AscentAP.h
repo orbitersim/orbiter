@@ -114,7 +114,7 @@ public:
 	int ButtonMenu (const MFDBUTTONMENU **menu) const;
 	bool ConsumeKeyBuffered (DWORD key);
 	bool ConsumeButton (int bt, int event);
-	static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static OAPI_MSGTYPE MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 private:
 	void UpdatePg_Prm (oapi::Sketchpad *skp);
@@ -202,7 +202,7 @@ protected:
 	void PaintGimbalCross (HDC hDC, const RECT &rect, int x, int y);
 	void UpdateGimbalCross (HWND hCtrl, int idx, double pitch, double yaw);
 	void PaintGimbalBox (HWND hWnd);
-	BOOL DlgProc (HWND, UINT, WPARAM, LPARAM);
+	INT_PTR DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	int gimbalx[5], gimbaly[5];
@@ -223,7 +223,7 @@ public:
 protected:
 	int OnPaint ();
 	void RefreshGraph (Graph *graph, int GraphId);
-	BOOL DlgProc (HWND, UINT, WPARAM, LPARAM);
+	INT_PTR DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	Graph *ssmegraph, *srbgraph;
@@ -244,7 +244,7 @@ public:
 protected:
 	int OnPaint ();
 	void RefreshGraph (Graph *graph, int GraphId);
-	BOOL DlgProc (HWND, UINT, WPARAM, LPARAM);
+	INT_PTR DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	Graph *altgraph;

@@ -170,7 +170,7 @@ bool VisualTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL VisualTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR VisualTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

@@ -25,9 +25,9 @@ CustomCtrl::CustomCtrl (HWND hCtrl)
 void CustomCtrl::SetHwnd (HWND hCtrl)
 {
 	hWnd = hCtrl;
-	SetWindowLong (hWnd, 0, (LONG)this);
+	SetWindowLongPtr (hWnd, 0, (LONG_PTR)this);
 
-	hParent = (HWND)GetWindowLong (hCtrl, GWL_HWNDPARENT);
+	hParent = (HWND)GetWindowLongPtr (hCtrl, GWLP_HWNDPARENT);
 }
 
 // ---------------------------------------------------------------------------
@@ -215,7 +215,7 @@ LRESULT SplitterCtrl::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 LRESULT CALLBACK SplitterCtrl::WndProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	SplitterCtrl *pCtrl = (SplitterCtrl*)GetWindowLong (hWnd, 0);
+	SplitterCtrl *pCtrl = (SplitterCtrl*)GetWindowLongPtr (hWnd, 0);
 	if (pCtrl) return pCtrl->WndProc (hWnd, uMsg, wParam, lParam);
 	else       return DefWindowProc (hWnd, uMsg, wParam, lParam);
 }

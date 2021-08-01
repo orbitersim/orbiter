@@ -306,7 +306,7 @@ void MainDialog::UpdateConfig ()
 // Name: DlgProc()
 // Desc: Message callback function for main dialog
 //-----------------------------------------------------------------------------
-BOOL MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 
@@ -424,7 +424,7 @@ BOOL MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Name: WaitProc()
 // Desc: Message callback function for wait page
 //-----------------------------------------------------------------------------
-BOOL MainDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -751,7 +751,7 @@ HRESULT MainDialog::Network_CreateGame (HWND hWnd)
 	DPNAME dpname;
 	HRESULT hr;
 
-	int res = DialogBox ((HINSTANCE)GetWindowLong (hWnd, GWL_HINSTANCE),
+	int res = DialogBox ((HINSTANCE)GetWindowLongPtr (hWnd, GWLP_HINSTANCE),
 		MAKEINTRESOURCE(IDD_NET_CREATE), hWnd, DlgCreateSessionProc);
 	if (res == IDCANCEL) return S_OK;
 
@@ -791,7 +791,7 @@ HRESULT MainDialog::Network_CreateGame (HWND hWnd)
 	return S_OK;
 }
 
-BOOL MainDialog::CreateSessionProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog::CreateSessionProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 	int clen;
@@ -1050,7 +1050,7 @@ bool MainDialog::SelRootScenario (char *scn)
 // Desc: Static msg handler which passes messages from the main dialog
 //       to the application class.
 //-----------------------------------------------------------------------------
-BOOL CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return g_pDlg->DlgProc (hWnd, uMsg, wParam, lParam);
 }
@@ -1059,12 +1059,12 @@ BOOL CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Name: WaitPageProc()
 // Desc: Dummy function for wait page
 //-----------------------------------------------------------------------------
-BOOL CALLBACK WaitPageProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WaitPageProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return g_pDlg->WaitProc (hWnd, uMsg, wParam, lParam);
 }
 
-long FAR PASCAL MsgProc_CopyrightFrame (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LONG_PTR FAR PASCAL MsgProc_CopyrightFrame (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	//switch (uMsg) {
 	//case WM_PAINT:

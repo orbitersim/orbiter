@@ -198,7 +198,7 @@ BOOL DlgHelp::OnSize (HWND hWnd, WPARAM wParam, int w, int h)
 
 // ======================================================================
 
-BOOL CALLBACK DlgHelp::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgHelp::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -224,7 +224,7 @@ BOOL CALLBACK DlgHelp::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 // ======================================================================
 
-LONG FAR PASCAL DlgHelp::ClientProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL DlgHelp::ClientProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	RECT r;
 

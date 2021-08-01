@@ -22,12 +22,12 @@ public:
 	static void InitHelp (HWND hWnd, HELPCONTEXT *hcontext = 0);
 	static void SetScenarioHelp (const char *_helpf);
 	static void SetVesselHelp (const char *_helpf);
-	static LONG FAR PASCAL ClientProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT FAR PASCAL ClientProc (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	void RegisterClientClass (HINSTANCE hInstance);
 	void UnregisterClientClass (HINSTANCE hInstance);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	int hfooter;

@@ -26,7 +26,7 @@ class VideoTab {
 public:
 	VideoTab (oapi::D3D7Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, HWND hVideoTab);
 
-	BOOL WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// Video tab message handler
 
 	void UpdateConfigData ();
@@ -61,7 +61,7 @@ protected:
 	// Flip fixed window aspect ratio on/off
 
 private:
-	static BOOL CALLBACK AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	oapi::D3D7Client *gclient;
 	HINSTANCE hOrbiterInst; // orbiter instance handle

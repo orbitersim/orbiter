@@ -8,12 +8,12 @@ extern GDIRES g_GDI;
 static void OnPaint (HWND hWnd);
 static void OnLButtonDown (HWND hWnd, int x, int y);
 
-long FAR PASCAL MsgProc_Switch (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MsgProc_Switch (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_CREATE:
-		SetWindowLong (hWnd, 0, 0);
-		SetWindowLong (hWnd, 4, 0);
+		SetWindowLongPtr (hWnd, 0, 0);
+		SetWindowLongPtr (hWnd, 4, 0);
 		return 0;
 	case WM_PAINT:
 		OnPaint (hWnd);
@@ -35,8 +35,8 @@ void OnPaint (HWND hWnd)
 	GetClientRect (hWnd, &r);
 	w = r.right; h = r.bottom;
 	xc = w/2; yc = h/2;
-	int pos = (int)GetWindowLong (hWnd, 0);
-	DWORD flag = (DWORD)GetWindowLong (hWnd, 4);
+	int pos = (int)GetWindowLongPtr (hWnd, 0);
+	DWORD flag = (DWORD)GetWindowLongPtr (hWnd, 4);
 	bool vert = (!(flag & 0x4));
 	if (vert) {
 		int rad = (xc*8)/10;
@@ -111,9 +111,9 @@ void OnLButtonDown (HWND hWnd, int x, int y)
 {
 	RECT r;
 	GetClientRect (hWnd, &r);
-	int pos = (int)GetWindowLong (hWnd, 0);
+	int pos = (int)GetWindowLongPtr (hWnd, 0);
 	int npos = pos;
-	DWORD flag = (DWORD)GetWindowLong (hWnd, 4);
+	DWORD flag = (DWORD)GetWindowLongPtr (hWnd, 4);
 	bool is3 = ((flag & 0x1) != 0);
 	if (y >= r.bottom/2) {
 		if (pos == 0) npos = (is3 ? 2 : 1);
@@ -123,7 +123,7 @@ void OnLButtonDown (HWND hWnd, int x, int y)
 		else if (pos == 2) npos = 0;
 	}
 	if (pos != npos) {
-		SetWindowLong (hWnd, 0, npos);
+		SetWindowLongPtr (hWnd, 0, npos);
 		InvalidateRect (hWnd, NULL, TRUE);
 		PostMessage (GetParent (hWnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID (hWnd), BN_CLICKED), npos);
 	}
@@ -134,23 +134,23 @@ void oapiSetSwitchParams (HWND hCtrl, SWITCHPARAM *sp, bool redraw)
 	DWORD flag = 0;
 	if (sp->mode  == SWITCHPARAM::THREESTATE) flag |= 0x1;
 	if (sp->align == SWITCHPARAM::HORIZONTAL) flag |= 0x4;
-	SetWindowLong (hCtrl, 0, 0);
-	SetWindowLong (hCtrl, 4, flag);
+	SetWindowLongPtr (hCtrl, 0, 0);
+	SetWindowLongPtr (hCtrl, 4, flag);
 }
 
 int oapiSetSwitchState (HWND hCtrl, int state, bool redraw)
 {
 	if (state < 0 || state > 2) return -1;
 	if (state == 2) {
-		DWORD flag = (DWORD)GetWindowLong (hCtrl, 4);
+		DWORD flag = (DWORD)GetWindowLongPtr (hCtrl, 4);
 		if (!(flag & 0x1)) return -1;
 	}
-	SetWindowLong (hCtrl, 0, state);
+	SetWindowLongPtr (hCtrl, 0, state);
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 	return state;
 }
 
 int oapiGetSwitchState (HWND hCtrl)
 {
-	return GetWindowLong (hCtrl, 0);
+	return GetWindowLongPtr (hCtrl, 0);
 }

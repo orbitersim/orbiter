@@ -154,12 +154,12 @@ void VhelperTab::Show (bool show)
 
 // ======================================================================
 
-BOOL CALLBACK VhelperTab::DlgProcInit (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK VhelperTab::DlgProcInit (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		EnableThemeDialogTexture (hWnd, ETDT_ENABLETAB);
-		SetWindowLong (hWnd, DWL_USER, lParam);
+		SetWindowLongPtr (hWnd, DWLP_USER, lParam);
 		return TRUE;
 	}
 	return FALSE;
@@ -205,10 +205,10 @@ char *TabPlanetarium::HelpContext () const
 
 // ======================================================================
 
-BOOL CALLBACK TabPlanetarium::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabPlanetarium::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	VhelperTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabPlanetarium *pTab = (TabPlanetarium*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabPlanetarium *pTab = (TabPlanetarium*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -309,10 +309,10 @@ char *TabForces::HelpContext () const
 
 // ======================================================================
 
-BOOL CALLBACK TabForces::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabForces::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	VhelperTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabForces *pTab = (TabForces*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabForces *pTab = (TabForces*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -414,10 +414,10 @@ char *TabAxes::HelpContext () const
 
 // ======================================================================
 
-BOOL CALLBACK TabAxes::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TabAxes::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	VhelperTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabAxes *pTab = (TabAxes*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWL_USER));
+	TabAxes *pTab = (TabAxes*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG: {

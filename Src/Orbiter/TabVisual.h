@@ -23,7 +23,7 @@ public:
 
 	bool OpenHelp ();
 
-	BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	void VisualsChanged ();

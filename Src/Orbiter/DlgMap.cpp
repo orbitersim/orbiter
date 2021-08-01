@@ -106,7 +106,7 @@ int MapWin::Destroy ()
 void MapWin::PostCreation (HWND hw)
 {
 	hWnd = hw;
-	SetWindowLong (hWnd, GWL_USERDATA, (LONG)this);
+	SetWindowLongPtr (hWnd, GWLP_USERDATA, (LONG_PTR)this);
 }
 
 // ======================================================================
@@ -284,14 +284,14 @@ bool MapWin::FindTarget (int mx, int my)
 
 MapWin *MapWin::GetMapInstance (HWND hw)
 {
-	MapWin *map = (MapWin*)GetWindowLong (hw, GWL_USERDATA);
+	MapWin *map = (MapWin*)GetWindowLongPtr (hw, GWLP_USERDATA);
 	if (!map) map = map_in_creation;
 	return map;
 }
 
 // ======================================================================
 
-long FAR PASCAL MapWin::Map_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MapWin::Map_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_CREATE:

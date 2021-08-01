@@ -159,7 +159,7 @@ BOOL ScenarioTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-BOOL ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 
@@ -202,9 +202,9 @@ void ScenarioTab::RefreshList ()
 {
 	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
 	// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
-	DWORD styles = GetWindowLong(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
+	DWORD styles = GetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
 	TreeView_DeleteAllItems(GetDlgItem(hTab, IDC_SCN_LIST));
-	SetWindowLong(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
+	SetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
 	ScanDirectory (pCfg->CfgDirPrm.ScnDir, NULL);
 }
 
@@ -261,7 +261,7 @@ void ScenarioTab::ScanDirectory (const char *ppath, HTREEITEM hti)
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
 	struct _finddata_t fdata;
-	long fh;
+	intptr_t fh;
 	char cbuf[256], path[256], *fname;
 
 	strcpy (path, ppath);
@@ -664,7 +664,7 @@ int ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 // Name: SaveProc()
 // Desc: Scenario save dialog message proc
 //-----------------------------------------------------------------------------
-BOOL CALLBACK ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static ScenarioTab *pTab;
 	int res, name_len, desc_len;
@@ -715,7 +715,7 @@ void ScenarioTab::ClearQSFolder()
 	char filespec[256], fname[256] = "Quicksave\\";
 	strcpy (filespec, pLp->App()->ScnPath ("Quicksave\\*"));
 	struct _finddata_t fd;
-	long hf;
+	intptr_t hf;
 	while ((hf = _findfirst (filespec, &fd)) != -1) {
 		strcpy (fname+10, fd.name);
 		fname[strlen(fname)-4] = '\0';

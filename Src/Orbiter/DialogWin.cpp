@@ -83,9 +83,9 @@ HWND DialogWin::OpenWindow ()
 			(LPARAM)context);
 		newwin = true;
 	}
-	SetWindowLong (hWnd, DWL_USER, (LONG)this);
+	SetWindowLongPtr (hWnd, DWLP_USER, (LONG_PTR)this);
 	if (newwin && pos && pos->right-pos->left) {
-		if (GetWindowLong (hWnd, GWL_STYLE) & WS_SIZEBOX)
+		if (GetWindowLongPtr (hWnd, GWL_STYLE) & WS_SIZEBOX)
 			SetWindowPos (hWnd, NULL, pos->left, pos->top, pos->right-pos->left, pos->bottom-pos->top, SWP_NOZORDER);
 		else
 			SetWindowPos (hWnd, NULL, pos->left, pos->top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
@@ -109,7 +109,7 @@ void DialogWin::Update ()
 
 // ======================================================================
 
-BOOL CALLBACK DialogWin::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DialogWin::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	BOOL res = MSG_DEFAULT;
 	switch (uMsg) {
@@ -206,7 +206,7 @@ void DialogWin::ToggleShrink ()
 
 DialogWin *DialogWin::GetDialogWin (HWND hDlg)
 {
-	DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+	DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 	if (!dlg)
 		dlg = dlg_create;
 	return dlg;
@@ -265,7 +265,7 @@ void DialogWin::PaintTitleButtons ()
 	RECT r;
 	int x0, y0;
 	GetWindowRect (hWnd, &r);
-	if (GetWindowLong (hWnd, GWL_STYLE) & WS_THICKFRAME) {
+	if (GetWindowLongPtr (hWnd, GWL_STYLE) & WS_THICKFRAME) {
 		x0 = -y_sizeframe,  y0 = x_sizeframe;
 	} else {
 		x0 = -y_fixedframe, y0 = x_fixedframe;
@@ -309,7 +309,7 @@ bool DialogWin::CheckTitleButtons (const POINTS &pt)
 	int xm = pt.x-r.left;
 	int ym = pt.y-r.top;
 	int x0, y0;
-	if (GetWindowLong (hWnd, GWL_STYLE) & WS_THICKFRAME) {
+	if (GetWindowLongPtr (hWnd, GWL_STYLE) & WS_THICKFRAME) {
 		x0 = y_sizeframe,  y0 = x_sizeframe;
 	} else {
 		x0 = y_fixedframe, y0 = x_fixedframe;

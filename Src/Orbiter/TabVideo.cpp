@@ -86,7 +86,7 @@ bool DefVideoTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// divert video parameters to graphics clients
 	oapi::GraphicsClient *gc = pLp->App()->GetGraphicsClient();

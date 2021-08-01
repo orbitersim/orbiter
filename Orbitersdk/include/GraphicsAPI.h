@@ -716,7 +716,7 @@ public:
 	 * \return The return value depends on the message type and the action taken.
 	 * \default Do nothing, return FALSE.
 	 */
-	virtual BOOL LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	/**
 	 * \brief Structure containing default video options, as stored in
@@ -1704,7 +1704,7 @@ private:
 	 * \brief Render window initialisation
 	 *
 	 * - Sets the viewW and viewH values
-	 * - Sets the GWL_USERDATA data of the render window to *this
+	 * - Sets the GWLP_USERDATA data of the render window to *this
 	 * \param hWnd Render window handle. If this is NULL, InitRenderWnd
 	 *   will create a dummy window and return its handle.
 	 * \return Render window handle

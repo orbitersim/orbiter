@@ -36,7 +36,7 @@ private:
 	bool StoreParams (HWND hWnd);
 	void Update (HWND hWnd);
 	bool OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif // !__EXTRARENDER_H

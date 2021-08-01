@@ -510,13 +510,13 @@ LRESULT WINAPI LuaConsole::TermProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 LRESULT WINAPI LuaConsole::TermProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LuaConsole *pConsole = (LuaConsole*)GetWindowLong (hWnd, GWL_USERDATA);
+	LuaConsole *pConsole = (LuaConsole*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	return pConsole->TermProc (hWnd, uMsg, wParam, lParam);
 }
 
 // ==============================================================
 
-BOOL CALLBACK LuaConsole::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK LuaConsole::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LuaConsole *pConsole = (LuaConsole*)oapiGetDialogContext (hWnd);
 
@@ -524,7 +524,7 @@ BOOL CALLBACK LuaConsole::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 	case WM_INITDIALOG:
 		SetFocus (GetDlgItem (hWnd, IDC_TERM));
 		pConsole = (LuaConsole*)lParam;
-		SetWindowLong (GetDlgItem (hWnd, IDC_TERM), GWL_USERDATA, (LONG)pConsole);
+		SetWindowLongPtr (GetDlgItem (hWnd, IDC_TERM), GWLP_USERDATA, (LONG)pConsole);
 		return FALSE;
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {

@@ -282,10 +282,10 @@ void DlgFocus::SwitchTab (HWND hDlg)
 	HWND hTree = GetDlgItem (hDlg, IDC_TREE1);
 	ctab = TabCtrl_GetCurSel (hTab);
 
-	LONG ws = GetWindowLong (hTree, GWL_STYLE);
+	LONG ws = GetWindowLongPtr (hTree, GWL_STYLE);
 	if (ctab < 2) ws &= ~TVS_LINESATROOT;
 	else          ws |=  TVS_LINESATROOT;
-	SetWindowLong (hTree, GWL_STYLE, ws);
+	SetWindowLongPtr (hTree, GWL_STYLE, ws);
 
 	switch (ctab) {
 	case 0:

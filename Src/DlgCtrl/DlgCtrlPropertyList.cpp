@@ -3,7 +3,7 @@
 
 #include "DlgCtrl.h"
 
-long FAR PASCAL MsgProc_PropertyList (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT FAR PASCAL MsgProc_PropertyList (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void RegisterPropertyList (HINSTANCE hInst)
 {
@@ -32,25 +32,25 @@ void UnregisterPropertyList (HINSTANCE hInst)
 	DeleteObject (PropertyList::hBmpArrows);
 }
 
-long FAR PASCAL MsgProc_PropertyList (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MsgProc_PropertyList (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	PropertyList *pl;
 
 	switch (uMsg) {
 	case WM_PAINT:
-		pl = (PropertyList*)GetWindowLong (hWnd, GWL_USERDATA);
+		pl = (PropertyList*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 		pl->OnPaint (hWnd);
 		return 0;
 	case WM_SIZE:
-		pl = (PropertyList*)GetWindowLong (hWnd, GWL_USERDATA);
+		pl = (PropertyList*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 		if (pl) pl->OnSize (LOWORD (lParam), HIWORD (lParam));
 		return 0;
 	case WM_VSCROLL:
-		pl = (PropertyList*)GetWindowLong (hWnd, GWL_USERDATA);
+		pl = (PropertyList*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 		pl->OnVScroll (LOWORD(wParam), HIWORD(wParam));
 		return 0;
 	case WM_LBUTTONDOWN:
-		pl = (PropertyList*)GetWindowLong (hWnd, GWL_USERDATA);
+		pl = (PropertyList*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 		pl->OnLButtonDown (LOWORD(lParam), HIWORD(lParam));
 		return 0;
 	}

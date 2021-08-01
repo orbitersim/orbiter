@@ -76,7 +76,7 @@ BOOL LaunchpadTab::Size (int w, int h)
 HWND LaunchpadTab::CreateTab (int resid)
 {
 	HWND hT = CreateDialogParam (pLp->GetInstance(), MAKEINTRESOURCE(resid), pLp->GetWindow(), TabProcHook, (LPARAM)this);
-	SetWindowLong (hT, DWL_USER, (LONG)this);
+	SetWindowLongPtr (hT, DWLP_USER, (LONG_PTR)this);
 
 	POINT p0, p1;
 	GetClientRect (hT, &pos0);
@@ -112,16 +112,16 @@ void LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 
 //-----------------------------------------------------------------------------
 
-BOOL LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
 
-BOOL CALLBACK LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	LaunchpadTab *lt = (LaunchpadTab*)GetWindowLong (hWnd, DWL_USER);
+	LaunchpadTab *lt = (LaunchpadTab*)GetWindowLongPtr (hWnd, DWLP_USER);
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		lt = (LaunchpadTab*)lParam;

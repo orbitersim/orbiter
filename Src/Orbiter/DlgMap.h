@@ -46,7 +46,7 @@ protected:
 	bool FindTarget (int mx, int my);
 	static MapWin *GetMapInstance (HWND hw);
 	static MapWin *map_in_creation;
-	static long FAR PASCAL Map_WndProc (HWND, UINT, WPARAM, LPARAM);
+	static LRESULT FAR PASCAL Map_WndProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	DlgMap *dlg;
