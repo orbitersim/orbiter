@@ -6,7 +6,7 @@
 
 #define STRICT 1
 #include <windows.h>
-#include <ddraw.h>
+#include <dx7\ddraw.h>
 #include "DialogWin.h"
 
 class Orbiter;

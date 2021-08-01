@@ -25,8 +25,8 @@ public:
 	void DestroyDevices ();
 
 	inline CDIFramework7 *GetDIFrame() const { return diframe; }
-	inline const LPDIRECTINPUTDEVICE7 GetKbdDevice() const { return diframe->GetKbdDevice(); }
-	inline const LPDIRECTINPUTDEVICE7 GetJoyDevice() const { return diframe->GetJoyDevice(); }
+	inline const LPDIRECTINPUTDEVICE8 GetKbdDevice() const { return diframe->GetKbdDevice(); }
+	inline const LPDIRECTINPUTDEVICE8 GetJoyDevice() const { return diframe->GetJoyDevice(); }
 
 	bool PollJoystick (DIJOYSTATE2 *js);
 

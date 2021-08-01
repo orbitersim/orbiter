@@ -2297,7 +2297,7 @@ HRESULT Orbiter::UserInput ()
 {
 	static char buffer[256];
 	DIDEVICEOBJECTDATA dod[10];
-	LPDIRECTINPUTDEVICE7 didev;
+	LPDIRECTINPUTDEVICE8 didev;
 	DWORD i, dwItems = 10;
 	HRESULT hr;
 	bool skipkbd = false;

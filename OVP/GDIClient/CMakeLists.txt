@@ -11,7 +11,6 @@ add_library(GDIClient SHARED
 
 target_include_directories(GDIClient
 	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
-	PUBLIC ${DX7SDK_INCLUDE_DIR}
 )
 
 add_dependencies(GDIClient
@@ -22,10 +21,6 @@ add_dependencies(GDIClient
 target_link_libraries(GDIClient
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
-	${DX7SDK_LIB_DIR}/dxguid.lib
-	${DX7SDK_LIB_DIR}/d3dim.lib
-	${DX7SDK_LIB_DIR}/ddraw.lib
-	${DX7SDK_LIB_DIR}/dinput.lib
 )
 
 # Installation

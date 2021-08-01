@@ -58,7 +58,7 @@ target_link_libraries(D3D7Client
 	${ORBITER_LIB}
 	${ORBITER_SDK_LIB}
 	${GDICLIENT_LIB}
-	${DX7SDK_LIB_DIR}/dxguid.lib
+	dxguid.lib
 	${DX7SDK_LIB_DIR}/d3dim.lib
 	${DX7SDK_LIB_DIR}/ddraw.lib
 )
