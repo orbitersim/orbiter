@@ -47,5 +47,5 @@ jobs:
         cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
         cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
         useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-A ${{ matrix.architecture }} -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
+        cmakeAppendedArgs: '-A ${{ matrix.architecture }} --parallel 2 -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
         buildDirectory: '${{ github.workspace }}/build'
