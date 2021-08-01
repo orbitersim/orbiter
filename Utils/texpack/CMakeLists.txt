@@ -11,7 +11,7 @@ target_include_directories(texpack
 
 target_link_libraries(texpack
 	Shlwapi.lib
-	${ZLIB_LIBRARIES}
+	${ZLIB_LIB}
 )
 
 set_target_properties(texpack

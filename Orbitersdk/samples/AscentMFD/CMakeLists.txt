@@ -19,7 +19,7 @@ target_link_libraries(AscentMFD
 )
 
 add_dependencies(AscentMFD
-	Orbiter
+	${OrbiterTgt}
 	Orbitersdk
 )
 
