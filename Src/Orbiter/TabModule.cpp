@@ -371,7 +371,7 @@ void ModuleTab::ModuleActivate (int idx, bool act)
 
 //-----------------------------------------------------------------------------
 
-BOOL ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const int MAXSEL = 100;
 	int i;

@@ -280,7 +280,7 @@ void VideoTab::ForceDeviceEnum ()
 
 // =======================================================================
 
-BOOL VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -1098,15 +1098,15 @@ HRESULT OrbiterGraphics::Change3DEnvironment ()
     if (bOldWindowedState != m_pDeviceInfo->bWindowed) {
         if (m_pDeviceInfo->bWindowed) {
             // Coming from fullscreen mode, so restore window properties
-            SetWindowLong (orbiter->hRenderWnd, GWL_STYLE, dwSavedStyle);
+            SetWindowLongPtr (orbiter->hRenderWnd, GWL_STYLE, dwSavedStyle);
             SetWindowPos (orbiter->hRenderWnd, HWND_NOTOPMOST, rcSaved.left, rcSaved.top,
                          (rcSaved.right - rcSaved.left), 
                          (rcSaved.bottom - rcSaved.top), SWP_SHOWWINDOW);
         } else {
             // Going to fullscreen mode, save/set window properties as needed
-            dwSavedStyle = GetWindowLong (orbiter->hRenderWnd, GWL_STYLE);
+            dwSavedStyle = GetWindowLongPtr (orbiter->hRenderWnd, GWL_STYLE);
             GetWindowRect (orbiter->hRenderWnd, &rcSaved);
-            SetWindowLong (orbiter->hRenderWnd, GWL_STYLE, WS_POPUP|WS_SYSMENU|WS_VISIBLE);
+            SetWindowLongPtr (orbiter->hRenderWnd, GWL_STYLE, WS_POPUP|WS_SYSMENU|WS_VISIBLE);
         }
         bOldWindowedState = m_pDeviceInfo->bWindowed;
     }
@@ -1368,7 +1368,7 @@ LRESULT OrbiterGraphics::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 // =======================================================================
 
-BOOL OrbiterGraphics::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR OrbiterGraphics::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (vtab) return vtab->WndProc (hWnd, uMsg, wParam, lParam);
 	else return GraphicsClient::LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);

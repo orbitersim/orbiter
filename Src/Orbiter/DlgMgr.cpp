@@ -309,7 +309,7 @@ void DialogManager::BroadcastMessage (DWORD msg, void *data)
 // Name: OrbiterDefDialogProc()
 // Desc: Default message handler for orbiter dialog boxes
 //-----------------------------------------------------------------------------
-BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_SETCURSOR:

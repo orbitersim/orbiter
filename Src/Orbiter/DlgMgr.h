@@ -121,7 +121,7 @@ private:
 	oapi::GraphicsClient *gc;
 	HWND hWnd;
 
-	static long FAR PASCAL OrbiterCtrl_Level_MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT FAR PASCAL OrbiterCtrl_Level_MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// MessageHandler for slider custom control
 
 	// ====================================================================
@@ -150,6 +150,6 @@ private:
 
 };
 
-BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 #endif // !__DLGMGR_H

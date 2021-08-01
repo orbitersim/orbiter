@@ -112,7 +112,7 @@ void LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 
 //-----------------------------------------------------------------------------
 
-BOOL LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return FALSE;
 }

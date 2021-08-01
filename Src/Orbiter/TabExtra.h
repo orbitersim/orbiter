@@ -29,7 +29,7 @@ public:
 
 	BOOL Size (int w, int h);
 
-	BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	HTREEITEM RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent = 0);

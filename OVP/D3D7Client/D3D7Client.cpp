@@ -830,7 +830,7 @@ LRESULT D3D7Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 // ==============================================================
 // Message handler for Launchpad "video" tab
 
-BOOL D3D7Client::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR D3D7Client::LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (vtab)
 		return vtab->WndProc (hWnd, uMsg, wParam, lParam);

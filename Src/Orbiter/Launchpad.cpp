@@ -306,7 +306,7 @@ void MainDialog::UpdateConfig ()
 // Name: DlgProc()
 // Desc: Message callback function for main dialog
 //-----------------------------------------------------------------------------
-BOOL MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 
@@ -424,7 +424,7 @@ BOOL MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Name: WaitProc()
 // Desc: Message callback function for wait page
 //-----------------------------------------------------------------------------
-BOOL MainDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -791,7 +791,7 @@ HRESULT MainDialog::Network_CreateGame (HWND hWnd)
 	return S_OK;
 }
 
-BOOL MainDialog::CreateSessionProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR MainDialog::CreateSessionProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 	int clen;

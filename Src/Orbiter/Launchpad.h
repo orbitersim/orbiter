@@ -134,8 +134,8 @@ private:
 	void RefreshScenarioList ();
 	// Refresh the scenario list
 
-	BOOL DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	BOOL WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// Dialog message callbacks
 
 	friend INT_PTR CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

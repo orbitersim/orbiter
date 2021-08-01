@@ -125,7 +125,7 @@ int TabbedDialog::Closed ()
 
 // --------------------------------------------------------------
 
-BOOL TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR TabbedDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -199,7 +199,7 @@ int TabPage::OnInitTab (WPARAM wParam)
 
 // --------------------------------------------------------------
 
-BOOL TabPage::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR TabPage::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

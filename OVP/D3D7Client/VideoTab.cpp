@@ -37,7 +37,7 @@ VideoTab::VideoTab (D3D7Client *gc, HINSTANCE _hInst, HINSTANCE _hOrbiterInst, H
 // ==============================================================
 // Dialog message handler
 
-BOOL VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR VideoTab::WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

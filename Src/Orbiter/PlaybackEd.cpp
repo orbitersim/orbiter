@@ -111,7 +111,7 @@ void PlaybackEvent::CommitEdit ()
 	}
 }
 
-BOOL PlaybackEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR PlaybackEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_NOTIFY:
@@ -205,7 +205,7 @@ void GenericEvent::CommitEdit ()
 	SetContent (cbuf);
 }
 
-BOOL GenericEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR GenericEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return PlaybackEvent::MsgProc (hDlg, uMsg, wParam, lParam);
 }
@@ -285,7 +285,7 @@ void TaccEvent::CommitEdit ()
 	SetDelay (dl);
 }
 
-BOOL TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR TaccEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -412,7 +412,7 @@ void CameraEvent::AddCurrentView (HWND hTab)
 	SetWindowText (GetDlgItem (hTab, IDC_EDIT1), cbuf);
 }
 
-BOOL CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CameraEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -626,7 +626,7 @@ void NotecolEvent::CommitEdit ()
 	SetCol (_r, _g, _b);
 }
 
-BOOL NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR NotecolEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_NOTIFY: {
@@ -710,7 +710,7 @@ void NotesizeEvent::CommitEdit ()
 	SetSize (_size);
 }
 
-BOOL NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR NotesizeEvent::MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_NOTIFY:
@@ -815,7 +815,7 @@ void PlaybackEditor::RegisterEdit (HWND hEdit)
 	InsertTMarker();
 }
 
-BOOL PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR PlaybackEditor::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {

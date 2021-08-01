@@ -57,7 +57,7 @@ public:
 	inline bool IsActive () const { return bActive; }
 	inline HWND TabWnd () const { return hTab; }
 
-	virtual BOOL TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// generic message handler
 
 protected:

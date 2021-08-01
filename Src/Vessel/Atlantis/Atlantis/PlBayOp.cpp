@@ -562,7 +562,7 @@ void PayloadBayOp::UpdateDialog (HWND hWnd)
 
 // ==============================================================
 
-BOOL PayloadBayOp::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR PayloadBayOp::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	bool action = false;
 
