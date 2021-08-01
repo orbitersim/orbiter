@@ -16,8 +16,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(CMAKE_CL_64)
 	set(BUILD64 1)
+	set(ARCH "x64")
 else()
 	set(BUILD64 0)
+	set(ARCH "x86")
 endif()
 
 # Define directories and file paths for some common binaries
@@ -63,24 +65,21 @@ set(GDICLIENT_LIB $<TARGET_LINKER_FILE:GDIClient>)
 set(EXTERN_DIR "${CMAKE_SOURCE_DIR}/Extern")
 
 set(ZLIB_VER "1.2.11")
-if(BUILD64)
-	set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-x64")
-else()
-	set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-x86")
-endif()
+set(ZLIB_DIR "${EXTERN_DIR}/zlib/zlib-${ZLIB_VER}-${ARCH}")
 set(ZLIB_INCLUDE_DIR "${ZLIB_DIR}/include")
 set(ZLIB_LIB_DIR "${ZLIB_DIR}/lib")
 set(ZLIB_LIB "${ZLIB_LIB_DIR}/zlibstatic.lib")
 
-set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
-set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
-set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
-
-set(LUA_DIR "${EXTERN_DIR}/Lua")
+set(Lua_VER "5.1")
+set(LUA_DIR "${EXTERN_DIR}/Lua/Lua-${Lua_VER}-${ARCH}")
 set(LUA_INCLUDE_DIR "${LUA_DIR}/include")
 set(LUA_LIB_DIR "${LUA_DIR}/lib")
 set(LUA_DLL_DIR "${LUA_DIR}/dll")
-set(LUA_LIB "${LUA_DLL_DIR}/lua5.1.lib")
+set(LUA_LIB "${LUA_DLL_DIR}/lua${Lua_VER}.lib")
+
+set(DX7SDK_PATH "${EXTERN_DIR}/mssdk_dx7")
+set(DX7SDK_INCLUDE_DIR "${DX7SDK_PATH}/include")
+set(DX7SDK_LIB_DIR "${DX7SDK_PATH}/lib")
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
 
