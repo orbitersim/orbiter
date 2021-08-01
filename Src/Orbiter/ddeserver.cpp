@@ -221,7 +221,7 @@ bool DDEServer::get_objid (HWND hClient, ATOM item, char *fmtstr)
 	}
 }
 
-bool DDEServer::get_name (HWND hClient, ATOM item, int id)
+bool DDEServer::get_name (HWND hClient, ATOM item, LONG_PTR id)
 {
 	Body *body = (Body*)id;
 	// For security, make sure that the pointer is valid
@@ -235,7 +235,7 @@ bool DDEServer::get_name (HWND hClient, ATOM item, int id)
 	return true;
 }
 
-bool DDEServer::get_size (HWND hClient, ATOM item, int id)
+bool DDEServer::get_size (HWND hClient, ATOM item, LONG_PTR id)
 {
 	Body *body = (Body*)id;
 	// For security, make sure that the pointer is valid
@@ -251,7 +251,7 @@ bool DDEServer::get_size (HWND hClient, ATOM item, int id)
 
 bool DDEServer::get_state (HWND hClient, ATOM item, char *fmtstr)
 {
-	int n,id;
+	LONG_PTR n,id;
 	bool mapequ = false;
 	char *c;
 	c = strtok (fmtstr,",");

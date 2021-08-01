@@ -180,7 +180,7 @@ HANDLE hConsoleMutex = 0;
 // _matherr()
 // trap global math exceptions
 
-int _matherr( struct _exception *except )
+int _matherr(struct _exception *except )
 {
 	if (!strcmp (except->name, "acos")) {
 		except->retval = (except->arg1 < 0.0 ? Pi : 0.0);
@@ -568,7 +568,7 @@ void Orbiter::LoadFixedModules ()
 	char cbuf[256];
 	char *path = "Modules\\Startup";
 	struct _finddata_t fdata;
-	long fh = _findfirst ("Modules\\Startup\\*.dll", &fdata);
+	intptr_t fh = _findfirst ("Modules\\Startup\\*.dll", &fdata);
 	if (fh == -1) return; // no files found
 	do {
 		strcpy (cbuf, fdata.name);

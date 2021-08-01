@@ -3278,7 +3278,7 @@ int Vessel::MeshModified (MESHHANDLE hMesh, UINT grp, DWORD modflag)
 		DWORD modflag;
 	} moddata = { hMesh, grp, modflag };
 
-	BroadcastVisMsg (EVENT_VESSEL_MODMESHGROUP, (UINT)&grp); // notify visual
+	BroadcastVisMsg (EVENT_VESSEL_MODMESHGROUP, (UINT_PTR)&grp); // notify visual
 	return 0;
 }
 

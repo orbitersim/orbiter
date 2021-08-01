@@ -261,7 +261,7 @@ void ScenarioTab::ScanDirectory (const char *ppath, HTREEITEM hti)
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
 	struct _finddata_t fdata;
-	long fh;
+	intptr_t fh;
 	char cbuf[256], path[256], *fname;
 
 	strcpy (path, ppath);
@@ -715,7 +715,7 @@ void ScenarioTab::ClearQSFolder()
 	char filespec[256], fname[256] = "Quicksave\\";
 	strcpy (filespec, pLp->App()->ScnPath ("Quicksave\\*"));
 	struct _finddata_t fd;
-	long hf;
+	intptr_t hf;
 	while ((hf = _findfirst (filespec, &fd)) != -1) {
 		strcpy (fname+10, fd.name);
 		fname[strlen(fname)-4] = '\0';

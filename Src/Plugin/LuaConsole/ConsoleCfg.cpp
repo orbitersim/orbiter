@@ -79,7 +79,7 @@ void ConsoleConfig::Apply (HWND hDlg)
 	if (sscanf (cbuf, "%d", &d) == 1) fontsize = d;
 }
 
-BOOL CALLBACK ConsoleConfig::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ConsoleConfig::DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

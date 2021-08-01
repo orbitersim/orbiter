@@ -48,7 +48,7 @@ static struct {
 } g_Param;
 
 void OpenDlgClbk (void *context);
-BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 void CreateVesselList (HWND);
 
 // ==============================================================
@@ -173,7 +173,7 @@ void CreateVesselList (HWND hDlg)
 }
 
 // Dialog message callback function
-BOOL CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[128];
 	int idx;

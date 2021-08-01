@@ -33,7 +33,7 @@ DWORD g_dwCmd;        // custom function identifier
 // ==============================================================
 
 void OpenDlgClbk (void *context);
-BOOL CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 extern long FAR PASCAL MFD_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern long FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

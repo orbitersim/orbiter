@@ -61,7 +61,7 @@ protected:
 	// Flip fixed window aspect ratio on/off
 
 private:
-	static BOOL CALLBACK AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	oapi::D3D7Client *gclient;
 	HINSTANCE hOrbiterInst; // orbiter instance handle

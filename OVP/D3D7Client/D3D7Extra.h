@@ -41,7 +41,7 @@ public:
 private:
 	oapi::D3D7Client *gc;
 	D3D7Config *cfg;
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 };
 
 #endif // !__D3D7EXTRA_H

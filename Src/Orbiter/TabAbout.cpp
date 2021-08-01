@@ -60,7 +60,7 @@ void AboutTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-BOOL AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

@@ -988,7 +988,7 @@ void UnEmbedBrowserObject(HWND hwnd)
 	IOleObject	**browserHandle;
 	IOleObject	*browserObject;
 
-	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
+	// Retrieve the browser object's pointer we stored in our window's GWLP_USERDATA when
 	// we initially attached the browser object to this window.
 	if ((browserHandle = (IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA)))
 	{
@@ -1043,7 +1043,7 @@ void DoPageAction(HWND hwnd, DWORD action)
 	IWebBrowser2	*webBrowser2;
 	IOleObject		*browserObject;
 
-	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
+	// Retrieve the browser object's pointer we stored in our window's GWLP_USERDATA when
 	// we initially attached the browser object to this window.
 	browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
@@ -1530,7 +1530,7 @@ long DisplayHTMLPage(HWND hwnd, LPTSTR webPageName)
 	VARIANT			myURL;
 	IOleObject		*browserObject;
 
-	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
+	// Retrieve the browser object's pointer we stored in our window's GWLP_USERDATA when
 	// we initially attached the browser object to this window.
 	browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
@@ -1620,7 +1620,7 @@ void ResizeBrowser(HWND hwnd, DWORD width, DWORD height)
 	IWebBrowser2	*webBrowser2;
 	IOleObject		*browserObject;
 
-	// Retrieve the browser object's pointer we stored in our window's GWL_USERDATA when
+	// Retrieve the browser object's pointer we stored in our window's GWLP_USERDATA when
 	// we initially attached the browser object to this window.
 	browserObject = *((IOleObject **)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
@@ -1648,7 +1648,7 @@ void ResizeBrowser(HWND hwnd, DWORD width, DWORD height)
 
 /***************************** EmbedBrowserObject() **************************
  * Puts the browser object inside our host window, and save a pointer to this
- * window's browser object in the window's GWL_USERDATA field.
+ * window's browser object in the window's GWLP_USERDATA field.
  *
  * hwnd =		Handle of our window into which we embed the browser object.
  *
@@ -1660,7 +1660,7 @@ void ResizeBrowser(HWND hwnd, DWORD width, DWORD height)
  * NOTE: No HTML page will be displayed here. We can do that with a subsequent
  * call to either DisplayHTMLPage() or DisplayHTMLStr(). This is merely once-only
  * initialization for using the browser object. In a nutshell, what we do
- * here is get a pointer to the browser object in our window's GWL_USERDATA
+ * here is get a pointer to the browser object in our window's GWLP_USERDATA
  * so we can access that object's functions whenever we want, and we also pass
  * the browser a pointer to our IOleClientSite struct so that the browser can
  * call our functions in our struct's VTable.

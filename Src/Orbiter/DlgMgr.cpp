@@ -344,12 +344,12 @@ BOOL OrbiterDefDialogProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //		PostMessage (hDlg, WM_USER+2, 0, 0);
 //		break;
 //	case WM_USER+2: {
-//		DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+//		DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 //		if (dlg) dlg->PaintTitleButtons();
 //		} return 0;
 //	case WM_NCLBUTTONDOWN:
 //		if (wParam == HTCAPTION) {
-//			DialogWin *dlg = (DialogWin*)GetWindowLong (hDlg, DWL_USER);
+//			DialogWin *dlg = (DialogWin*)GetWindowLongPtr (hDlg, DWLP_USER);
 //			if (dlg) dlg->CheckTitleButtons (MAKEPOINTS (lParam));
 //		}
 //		return 0;

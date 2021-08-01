@@ -114,7 +114,7 @@ public:
 	int ButtonMenu (const MFDBUTTONMENU **menu) const;
 	bool ConsumeKeyBuffered (DWORD key);
 	bool ConsumeButton (int bt, int event);
-	static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static OAPI_MSGTYPE MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 private:
 	void UpdatePg_Prm (oapi::Sketchpad *skp);

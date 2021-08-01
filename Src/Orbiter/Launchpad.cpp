@@ -751,7 +751,7 @@ HRESULT MainDialog::Network_CreateGame (HWND hWnd)
 	DPNAME dpname;
 	HRESULT hr;
 
-	int res = DialogBox ((HINSTANCE)GetWindowLong (hWnd, GWL_HINSTANCE),
+	int res = DialogBox ((HINSTANCE)GetWindowLongPtr (hWnd, GWLP_HINSTANCE),
 		MAKEINTRESOURCE(IDD_NET_CREATE), hWnd, DlgCreateSessionProc);
 	if (res == IDCANCEL) return S_OK;
 

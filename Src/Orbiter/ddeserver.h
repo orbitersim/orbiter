@@ -38,8 +38,8 @@ protected:
 	void get_vesselcount (HWND hClient, ATOM item);
 	void get_vesselid (HWND hClient, ATOM item, DWORD idx);
 	bool get_objid (HWND hClient, ATOM item, char *fmtstr);
-	bool get_name (HWND hClient, ATOM item, int id);
-	bool get_size (HWND hClient, ATOM item, int id);
+	bool get_name (HWND hClient, ATOM item, LONG_PTR id);
+	bool get_size (HWND hClient, ATOM item, LONG_PTR id);
 	bool get_state (HWND hClient, ATOM item, char *fmtstr);
 
 	// Send a vessel list to hClient

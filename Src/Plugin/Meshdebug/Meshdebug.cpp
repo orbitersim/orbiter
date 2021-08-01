@@ -47,7 +47,7 @@ void ChangeMesh (int idx);
 void ChangeGroup (int idx);
 void OpenDlgClbk (void *context);
 void SetMaterialOpacity (MESHHANDLE hMesh, float opac);
-BOOL CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
 
 // ==============================================================
 // API interface
@@ -215,7 +215,7 @@ void RefreshDialog (HWND hDlg)
 // ==============================================================
 // Windows message handler for the dialog box
 
-BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:          // initialise dialog

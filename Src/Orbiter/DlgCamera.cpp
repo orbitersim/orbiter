@@ -212,7 +212,7 @@ void CameraTab::Show (bool show)
 
 // ======================================================================
 
-BOOL CALLBACK CameraTab::DlgProcInit (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CameraTab::DlgProcInit (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -426,7 +426,7 @@ void TabControl::GetCamMode ()
 INT_PTR CALLBACK TabControl::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabControl *pTab = (TabControl*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWLP_USER));
+	TabControl *pTab = (TabControl*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -678,7 +678,7 @@ BOOL TabView::Init (HWND hWnd)
 INT_PTR CALLBACK TabView::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	CameraTab::DlgProcInit (hWnd, uMsg, wParam, lParam);
-	TabView *pTab = (TabView*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLong(hWnd,DWLP_USER));
+	TabView *pTab = (TabView*)(uMsg == WM_INITDIALOG ? lParam : GetWindowLongPtr(hWnd,DWLP_USER));
 
 	switch (uMsg) {
 	case WM_INITDIALOG:

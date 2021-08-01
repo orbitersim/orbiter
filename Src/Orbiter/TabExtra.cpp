@@ -302,7 +302,7 @@ void BuiltinLaunchpadItem::Error (const char *msg)
 	MessageBox (pTab->Launchpad()->GetWindow(), msg, "Orbiter configuration error", MB_OK|MB_ICONERROR);
 }
 
-BOOL CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -734,7 +734,7 @@ bool ExtraAngDynamics::OpenHelp (HWND hWnd)
 	return true;
 }
 
-BOOL CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -747,16 +747,16 @@ BOOL CALLBACK ExtraAngDynamics::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		case IDC_CHECK3:
 		case IDC_CHECK4:
 		case IDC_CHECK5:
-			((ExtraAngDynamics*)GetWindowLong (hWnd, DWL_USER))->Activate (hWnd, LOWORD(wParam));
+			((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->Activate (hWnd, LOWORD(wParam));
 			break;
 		case IDC_BUTTON1:
-			((ExtraAngDynamics*)GetWindowLong (hWnd, DWL_USER))->ResetDialog (hWnd);
+			((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->ResetDialog (hWnd);
 			return 0;
 		case IDC_BUTTON2:
-			((ExtraAngDynamics*)GetWindowLong (hWnd, DWL_USER))->OpenHelp (hWnd);
+			((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
 			return 0;
 		case IDOK:
-			if (((ExtraAngDynamics*)GetWindowLong (hWnd, DWL_USER))->StoreParams (hWnd))
+			if (((ExtraAngDynamics*)GetWindowLongPtr (hWnd, DWLP_USER))->StoreParams (hWnd))
 				EndDialog (hWnd, 0);
 			break;
 		}

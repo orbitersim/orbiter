@@ -33,7 +33,7 @@ public:
 	void UpdateData (HWND hWnd);
 	void Apply (HWND hWnd);
 	void OpenHelp (HWND hWnd);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 protected:
 	// scan the 'Modules\Celbody' folder for directories, and
@@ -220,7 +220,7 @@ void AtmConfig::ScanCelbodies (HWND hWnd)
 	_finddata_t info, subinfo;
 	intptr_t id = _findfirst (filespec, &info);
 	if (id >= 0) {
-		int res;
+		intptr_t res;
 		do {
 			if (info.attrib & _A_SUBDIR) {
 				sprintf (filespec, "%s\\%s\\atmosphere", CelbodyDir, info.name);
@@ -276,32 +276,32 @@ void AtmConfig::ScanModules (const char *celbody)
 	_findclose (id);
 }
 
-BOOL CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AtmConfig::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
-		SetWindowLong (hWnd, DWL_USER, (LONG)lParam); // store class instance for later reference
+		SetWindowLongPtr (hWnd, DWLP_USER, (LONG)lParam); // store class instance for later reference
 		((AtmConfig*)lParam)->InitDialog (hWnd);
 		break;
 	case WM_COMMAND:
 		switch (LOWORD (wParam)) {
 		case IDOK:
-			((AtmConfig*)GetWindowLong (hWnd, DWL_USER))->Apply (hWnd);
+			((AtmConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->Apply (hWnd);
 			//EndDialog (hWnd, 0);
 			return 0;
 		case IDCANCEL:
 			EndDialog (hWnd, 0);
 			return 0;
 		case IDC_BUTTON1:
-			((AtmConfig*)GetWindowLong (hWnd, DWL_USER))->OpenHelp (hWnd);
+			((AtmConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->OpenHelp (hWnd);
 			return 0;
 		case IDC_COMBO1:
 			if (HIWORD (wParam) == CBN_SELCHANGE)
-				((AtmConfig*)GetWindowLong (hWnd, DWL_USER))->ModelChanged (hWnd);
+				((AtmConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->ModelChanged (hWnd);
 			return 0;
 		case IDC_COMBO2:
 			if (HIWORD (wParam) == CBN_SELCHANGE)
-				((AtmConfig*)GetWindowLong (hWnd, DWL_USER))->CelbodyChanged (hWnd);
+				((AtmConfig*)GetWindowLongPtr (hWnd, DWLP_USER))->CelbodyChanged (hWnd);
 			return 0;
 		}
 		break;

@@ -84,7 +84,7 @@ void Navaid_BuildPlanetList (HWND hDlg)
 		Navaid_BuildNavList (hDlg);
 }
 
-BOOL CALLBACK Navaid_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Navaid_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static DWORD ts[4] = {32, 68, 110, 143};
 
@@ -113,7 +113,7 @@ BOOL CALLBACK Navaid_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 // "Recorder/player" dialog
 // ======================================================================
 
-BOOL CALLBACK FRecorderMsg_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK FRecorderMsg_DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:

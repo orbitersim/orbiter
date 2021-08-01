@@ -45,8 +45,8 @@ static char *logfile = "FlightData.log";
 // Local prototypes
 
 void OpenDlgClbk (void *context);
-BOOL CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
-long FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK MsgProc (HWND, UINT, WPARAM, LPARAM);
+LONG_PTR FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ==============================================================
 // API interface
@@ -252,7 +252,7 @@ void WriteLogHeader (bool start)
 // FlightData dialog message handler
 // =================================================================================
 
-BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG: {
@@ -345,7 +345,7 @@ BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Graph canvas message handler
 // =================================================================================
 
-long FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LONG_PTR FAR PASCAL Graph_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT:

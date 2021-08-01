@@ -20,11 +20,11 @@ public:
 	void Apply (HWND hDlg);
 
 private:
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_mode (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_cfg  (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_trk  (HWND, UINT, WPARAM, LPARAM);
-	static BOOL CALLBACK TabProc_diag (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK TabProc_mode (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK TabProc_cfg  (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK TabProc_trk  (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK TabProc_diag (HWND, UINT, WPARAM, LPARAM);
 
 	static TrackIRconfig *tirc;
 	TrackIR *trackir;

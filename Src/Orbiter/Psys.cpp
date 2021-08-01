@@ -270,9 +270,9 @@ void PlanetarySystem::OutputLoadStatus (const char *bname)
 	g_pOrbiter->OutputLoadStatus (cbuf, 0);
 }
 
-long PlanetarySystem::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
+intptr_t PlanetarySystem::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
 {
-	long fh;
+	intptr_t fh;
 	char cbuf[256];
 
 	switch (type) {
@@ -289,9 +289,9 @@ long PlanetarySystem::FindFirst (int type, _finddata_t *fdata, char *path, char 
 	return fh;
 }
 
-int PlanetarySystem::FindNext (long fh, _finddata_t *fdata, char *fname)
+int PlanetarySystem::FindNext (intptr_t fh, _finddata_t *fdata, char *fname)
 {
-	int fn = _findnext (fh, fdata);
+	intptr_t fn = _findnext (fh, fdata);
 	if (!fn) {
 		strncpy (fname, fdata->name, strlen(fdata->name)-4);
 		fname[strlen(fdata->name)-4] = '\0';
@@ -307,7 +307,7 @@ void PlanetarySystem::ScanLabelLists (ifstream &cfg)
 	nlabellist = 0;
 
 	_finddata_t fdata;
-	long fh = FindFirst (FILETYPE_MARKER, &fdata, lbpath, fname);
+	intptr_t fh = FindFirst (FILETYPE_MARKER, &fdata, lbpath, fname);
 	if (fh >= 0) {
 
 		oapi::GraphicsClient::LABELLIST *ll;

@@ -29,7 +29,7 @@ extern HBITMAP g_hPause;
 void OpenDialog (void *context);
 void Crt2Pol (VECTOR3 &pos, VECTOR3 &vel);
 void Pol2Crt (VECTOR3 &pos, VECTOR3 &vel);
-BOOL CALLBACK EditorProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK EditorProc (HWND, UINT, WPARAM, LPARAM);
 
 static double lengthscale[4] = {1.0, 1e-3, 1.0/AU, 1.0};
 static double anglescale[2] = {DEG, 1.0};
@@ -345,7 +345,7 @@ void Pol2Crt (VECTOR3 &pos, VECTOR3 &vel)
 	vel.data[2] = dzdt;
 }
 
-BOOL CALLBACK EditorProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EditorProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return g_editor->MsgProc (hDlg, uMsg, wParam, lParam);
 }
@@ -369,7 +369,7 @@ ScnEditorTab::~ScnEditorTab ()
 HWND ScnEditorTab::CreateTab (HINSTANCE hInst, WORD ResId,  DLGPROC TabProc)
 {
 	hTab = CreateDialogParam (hInst, MAKEINTRESOURCE(ResId), ed->DlgHandle(), TabProc, (LPARAM)this);
-	SetWindowLong (hTab, DWL_USER, (LONG)this);
+	SetWindowLongPtr (hTab, DWLP_USER, (LONG_PTR)this);
 	return hTab;
 }
 
@@ -438,7 +438,7 @@ BOOL ScnEditorTab::TabProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 ScnEditorTab *ScnEditorTab::TabPointer (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (uMsg == WM_INITDIALOG) return (ScnEditorTab*)lParam;
-	else return (ScnEditorTab*)GetWindowLong (hDlg, DWL_USER);
+	else return (ScnEditorTab*)GetWindowLongPtr (hDlg, DWLP_USER);
 }
 
 void ScnEditorTab::ScanVesselList (int ResId, bool detail, OBJHANDLE hExclude)
@@ -701,7 +701,7 @@ void EditorTab_New::ScanConfigDir (const char *ppath, HTREEITEM hti)
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
 	struct _finddata_t fdata;
-	long fh;
+	intptr_t fh;
 	char cbuf[256], path[256], *fname;
 
 	strcpy (path, ppath);

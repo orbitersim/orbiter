@@ -20,7 +20,7 @@
 // ==============================================================
 // prototype definitions
 
-BOOL CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ==============================================================
 // class MFDWindow
@@ -47,7 +47,7 @@ void MFDWindow::Initialise (HWND _hDlg)
 	hDlg = _hDlg;
 	hDsp = GetDlgItem (hDlg, IDC_DISPLAY);
 	for (int i = 0; i < 15; i++)
-		SetWindowLong (GetDlgItem (hDlg, IDC_BUTTON1+i), GWL_USERDATA, i);
+		SetWindowLongPtr (GetDlgItem (hDlg, IDC_BUTTON1+i), GWLP_USERDATA, i);
 	oapiAddTitleButton (IDSTICK, g_hPin, DLG_CB_TWOSTATE);
 	SetTitle ();
 	gap = 3;
@@ -132,7 +132,7 @@ void MFDWindow::RepaintDisplay (HWND hWnd)
 
 void MFDWindow::RepaintButton (HWND hWnd)
 {
-	int id = GetWindowLong (hWnd, GWL_USERDATA);
+	int id = GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	PAINTSTRUCT ps;
 	HDC hDC = BeginPaint (hWnd, &ps);
 	SelectObject (hDC, GetStockObject (BLACK_PEN));
@@ -207,7 +207,7 @@ void MFDWindow::StickToVessel (bool stick)
 // ==============================================================
 // Windows message handler for the dialog box
 
-BOOL CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -254,12 +254,12 @@ long FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		} return 0;
 	case WM_LBUTTONDOWN: {
 		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton (GetWindowLong (hWnd, GWL_USERDATA), PANEL_MOUSE_LBDOWN);
+		mfdw->ProcessButton (GetWindowLongPtr (hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
 		SetCapture (hWnd);
 		} return 0;
 	case WM_LBUTTONUP: {
 		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton (GetWindowLong (hWnd, GWL_USERDATA), PANEL_MOUSE_LBUP);
+		mfdw->ProcessButton (GetWindowLongPtr (hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
 		ReleaseCapture();
 		} return 0;
 	}

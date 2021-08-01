@@ -166,10 +166,10 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			}
 		}
 		hPrevCapt = SetCapture (hWnd);
-		SetWindowLong (hWnd, 12, flag);
+		SetWindowLongPtr (hWnd, 12, flag);
 		if ((flag & 12) == 12) {
 			DragSlider (hWnd, x, y);
-			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLong (hWnd, 0)), LPARAM (hWnd));
+			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, 0)), LPARAM (hWnd));
 		} else {
 			int rmin = GetWindowLongPtr (hWnd, 4);
 			int rmax = GetWindowLongPtr (hWnd, 8);
@@ -191,30 +191,30 @@ LRESULT FAR PASCAL MsgProc_Gauge (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 		} return 0;
 
 	case WM_MOUSEMOVE: {
-		DWORD flag = GetWindowLong (hWnd, 12);
+		DWORD flag = GetWindowLongPtr (hWnd, 12);
 		if ((flag & 12) == 12) {
 			DragSlider (hWnd, (short)LOWORD(lParam), (short)HIWORD(lParam));
-			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLong (hWnd, 0)), (LPARAM)hWnd);
+			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_THUMBTRACK, GetWindowLongPtr (hWnd, 0)), (LPARAM)hWnd);
 		}
 		} return 0;
 
 	case BM_GETSTATE:
-		return (GetWindowLong (hWnd, 12) >> 4) & 3;
+		return (GetWindowLongPtr (hWnd, 12) >> 4) & 3;
 
 	case WM_TIMER:
-		int pos    = GetWindowLong (hWnd, 0);
-		int rmin   = GetWindowLong (hWnd, 4);
-		int rmax   = GetWindowLong (hWnd, 8);
-		DWORD flag = GetWindowLong (hWnd, 12);
+		int pos    = GetWindowLongPtr (hWnd, 0);
+		int rmin   = GetWindowLongPtr (hWnd, 4);
+		int rmax   = GetWindowLongPtr (hWnd, 8);
+		DWORD flag = GetWindowLongPtr (hWnd, 12);
 
 		switch ((flag >> 4) & 3) {
 		case 1: // decrease
-			if (pos > rmin) SetWindowLong (hWnd, 0, --pos);
+			if (pos > rmin) SetWindowLongPtr (hWnd, 0, --pos);
 			InvalidateRect (hWnd, NULL, TRUE);
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_LINELEFT, pos), (LPARAM)hWnd);
 			break;
 		case 2: // increase
-			if (pos < rmax) SetWindowLong (hWnd, 0, ++pos);
+			if (pos < rmax) SetWindowLongPtr (hWnd, 0, ++pos);
 			InvalidateRect (hWnd, NULL, TRUE);
 			SendMessage (GetParent (hWnd), WM_HSCROLL, MAKEWPARAM (SB_LINERIGHT, pos), (LPARAM)hWnd);
 			break;
@@ -229,7 +229,7 @@ void DragSlider (HWND hWnd, int x, int y)
 	RECT r;
 	DWORD bw, gw;
 	int pos;
-	DWORD flag = GetWindowLong (hWnd, 12);
+	DWORD flag = GetWindowLongPtr (hWnd, 12);
 	GetClientRect (hWnd, &r);
 
 	bool horz = ((flag & 2) == 0);
@@ -243,24 +243,24 @@ void DragSlider (HWND hWnd, int x, int y)
 	if (pos < 0) pos = 0; else if (pos >= (int)gw) pos = (int)gw;
 	if (flag & 1) pos = gw-pos;
 
-	int rmin = GetWindowLong (hWnd, 4);
-	int rmax = GetWindowLong (hWnd, 8);
+	int rmin = GetWindowLongPtr (hWnd, 4);
+	int rmax = GetWindowLongPtr (hWnd, 8);
 	if (rmax > rmin) {
-		SetWindowLong (hWnd, 0, (pos*(rmax-rmin))/gw+rmin);
+		SetWindowLongPtr (hWnd, 0, (pos*(rmax-rmin))/gw+rmin);
 		InvalidateRect (hWnd, NULL, TRUE);
 	}
 }
 
 void oapiSetGaugeParams (HWND hCtrl, GAUGEPARAM *gp, bool redraw)
 {
-	SetWindowLong (hCtrl, 4, gp->rangemin);
-	SetWindowLong (hCtrl, 8, gp->rangemax);
+	SetWindowLongPtr (hCtrl, 4, gp->rangemin);
+	SetWindowLongPtr (hCtrl, 8, gp->rangemax);
 
-	int pos = (int)GetWindowLong (hCtrl, 0);
-	if      (pos < gp->rangemin) SetWindowLong (hCtrl, 0, gp->rangemin);
-	else if (pos > gp->rangemax) SetWindowLong (hCtrl, 0, gp->rangemax);
+	int pos = (int)GetWindowLongPtr (hCtrl, 0);
+	if      (pos < gp->rangemin) SetWindowLongPtr (hCtrl, 0, gp->rangemin);
+	else if (pos > gp->rangemax) SetWindowLongPtr (hCtrl, 0, gp->rangemax);
 
-	DWORD flag;
+	DWORD flag = 0;
 	switch (gp->base) {
 	case GAUGEPARAM::LEFT:   flag = 0; break;
 	case GAUGEPARAM::RIGHT:  flag = 1; break;
@@ -271,32 +271,32 @@ void oapiSetGaugeParams (HWND hCtrl, GAUGEPARAM *gp, bool redraw)
 	case GAUGEPARAM::BLACK:                break;
 	case GAUGEPARAM::RED:    flag |= 0x40; break;
 	}
-	SetWindowLong (hCtrl, 12, flag);
+	SetWindowLongPtr (hCtrl, 12, flag);
 
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 }
 
 void oapiSetGaugeRange (HWND hCtrl, int rmin, int rmax, bool redraw)
 {
-	SetWindowLong (hCtrl, 4, rmin);
-	SetWindowLong (hCtrl, 8, rmax);
+	SetWindowLongPtr (hCtrl, 4, rmin);
+	SetWindowLongPtr (hCtrl, 8, rmax);
 
-	int pos = (int)GetWindowLong (hCtrl, 0);
-	if      (pos < rmin) SetWindowLong (hCtrl, 0, rmin);
-	else if (pos > rmax) SetWindowLong (hCtrl, 0, rmax);
+	int pos = (int)GetWindowLongPtr (hCtrl, 0);
+	if      (pos < rmin) SetWindowLongPtr (hCtrl, 0, rmin);
+	else if (pos > rmax) SetWindowLongPtr (hCtrl, 0, rmax);
 
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 }
 
 int oapiSetGaugePos (HWND hCtrl, int pos, bool redraw)
 {
-	int rmin = GetWindowLong (hCtrl, 4);
-	int rmax = GetWindowLong (hCtrl, 8);
+	int rmin = GetWindowLongPtr (hCtrl, 4);
+	int rmax = GetWindowLongPtr (hCtrl, 8);
 
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
 
-	SetWindowLong (hCtrl, 0, pos);
+	SetWindowLongPtr (hCtrl, 0, pos);
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 
 	return pos;
@@ -304,14 +304,14 @@ int oapiSetGaugePos (HWND hCtrl, int pos, bool redraw)
 
 int oapiIncGaugePos (HWND hCtrl, int dpos, bool redraw)
 {
-	int rmin = GetWindowLong (hCtrl, 4);
-	int rmax = GetWindowLong (hCtrl, 8);
-	int pos  = GetWindowLong (hCtrl, 0) + dpos;
+	int rmin = GetWindowLongPtr (hCtrl, 4);
+	int rmax = GetWindowLongPtr (hCtrl, 8);
+	int pos  = GetWindowLongPtr (hCtrl, 0) + dpos;
 
 	if      (pos < rmin) pos = rmin;
 	else if (pos > rmax) pos = rmax;
 
-	SetWindowLong (hCtrl, 0, pos);
+	SetWindowLongPtr (hCtrl, 0, pos);
 	if (redraw) InvalidateRect (hCtrl, NULL, TRUE);
 
 	return pos;
@@ -319,7 +319,7 @@ int oapiIncGaugePos (HWND hCtrl, int dpos, bool redraw)
 
 int oapiGetGaugePos (HWND hCtrl)
 {
-	return GetWindowLong (hCtrl, 0);
+	return GetWindowLongPtr (hCtrl, 0);
 }
 
 // ==================================================================================

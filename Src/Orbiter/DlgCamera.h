@@ -61,7 +61,7 @@ public:
 	virtual char *HelpContext() const = 0;
 
 protected:
-	static BOOL CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
 	HWND hParent;
 	HWND hTab;
 	bool active;

@@ -182,8 +182,8 @@ public:
 	ElevationManager *ElevMgr() const { return emgr; }
 	TileManager2<CloudTile> *CloudMgr2() const { return cmgr2; }
 
-	long FindFirst (int type, _finddata_t *fdata, char *path, char *fname);
-	int FindNext (long fh, _finddata_t *fdata, char *fname);
+	intptr_t FindFirst (int type, _finddata_t *fdata, char *path, char *fname);
+	int FindNext (intptr_t fh, _finddata_t *fdata, char *fname);
 
 	//USERLABELSPEC const *GetUserLabel (int idx) const { return userlabel+idx; }
 	//int nUserLabel () const { return nuserlabel; }

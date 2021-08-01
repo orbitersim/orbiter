@@ -49,8 +49,8 @@ HELPCONTEXT g_hc = {
 // ==============================================================
 // Local prototypes
 
-BOOL CALLBACK Atlantis_DlgProc (HWND, UINT, WPARAM, LPARAM);
-BOOL CALLBACK RMS_DlgProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK Atlantis_DlgProc (HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK RMS_DlgProc (HWND, UINT, WPARAM, LPARAM);
 extern void GetSRB_State (double met, double &thrust_level, double &prop_level);
 
 // ==============================================================
@@ -2268,7 +2268,7 @@ DLLCLBK void ovcExit (VESSEL *vessel)
 // Message callback function for Atlantis control dialog box
 // ==============================================================
 
-BOOL CALLBACK Atlantis_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Atlantis_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	Atlantis *sts = (uMsg == WM_INITDIALOG ? (Atlantis*)lParam : (Atlantis*)oapiGetDialogContext (hWnd));
 	// pointer to vessel instance was passed as dialog context
@@ -2298,7 +2298,7 @@ BOOL CALLBACK Atlantis_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 // Message callback function for RMS control dialog box
 // ==============================================================
 
-BOOL CALLBACK RMS_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RMS_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	Atlantis *sts = (uMsg == WM_INITDIALOG ? (Atlantis*)lParam : (Atlantis*)oapiGetDialogContext (hWnd));
 	// pointer to vessel instance was passed as dialog context

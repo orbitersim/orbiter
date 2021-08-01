@@ -13,6 +13,7 @@
 #ifndef __SCRIPTMFD_H
 #define __SCRIPTMFD_H
 
+#include "OrbiterAPI.h"
 
 const int NCLBK = 13;
 const int SETUP               =  0;
@@ -57,7 +58,7 @@ public:
 	void RecallStatus();
 	void WriteStatus (FILEHANDLE scn) const;
 	void ReadStatus (FILEHANDLE scn);
-	static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static OAPI_MSGTYPE MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 protected:
 	INTERPRETERHANDLE hInterp;

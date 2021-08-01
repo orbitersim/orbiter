@@ -45,7 +45,7 @@ public:
 	void Show (bool show);
 
 protected:
-	static BOOL CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProcInit (HWND, UINT, WPARAM, LPARAM);
 	HWND hParent;
 	HWND hTab;
 	bool active;

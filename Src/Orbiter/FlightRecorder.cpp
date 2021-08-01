@@ -772,7 +772,7 @@ bool Orbiter::FRecorder_PrepareDir (const char *fname, bool force)
 		struct _finddata_t fd;
 		char cb2[256], cb3[256];
 		strcpy (cb2, cbuf); strcat (cb2, "\\*");
-		long handle = _findfirst (cb2, &fd), res = handle;
+		intptr_t handle = _findfirst (cb2, &fd), res = handle;
 		while (res != -1) {
 			if (!(fd.attrib & _A_SUBDIR)) {
 				sprintf (cb3, "%s\\%s", cbuf, fd.name);

@@ -29,7 +29,7 @@ char *strWndClass = "Orbiter Render Window";
 OAPIFUNC LRESULT CALLBACK WndProc (HWND, UINT, WPARAM, LPARAM);
 // Render window callback (calls RenderWndProc)
 
-OAPIFUNC BOOL CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+OAPIFUNC INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 // 'Video' tab window callback
 
 // ======================================================================
@@ -166,7 +166,7 @@ ScreenAnnotation *GraphicsClient::clbkCreateAnnotation ()
 bool GraphicsClient::TexturePath (const char *fname, char *path) const
 {
 	struct _finddata_t fd;
-	long fh;
+	intptr_t fh;
 
 	// first try htex directory
 	strcpy (path, g_pOrbiter->Cfg()->CfgDirPrm.HightexDir);
@@ -940,7 +940,7 @@ DLLEXPORT LRESULT CALLBACK WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 // ======================================================================
 
-DLLEXPORT BOOL CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+DLLEXPORT INT_PTR CALLBACK LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	GraphicsClient *gc = (GraphicsClient*)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	if (gc) return gc->LaunchpadVideoWndProc (hWnd, uMsg, wParam, lParam);

@@ -27,7 +27,7 @@ public:
 protected:
 	void RegisterClientClass (HINSTANCE hInstance);
 	void UnregisterClientClass (HINSTANCE hInstance);
-	static BOOL CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
+	static INT_PTR CALLBACK DlgProc (HWND, UINT, WPARAM, LPARAM);
 
 private:
 	int hfooter;

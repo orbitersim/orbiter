@@ -463,9 +463,9 @@ Planet::~Planet ()
 	g_pOrbiter->UpdateDeallocationProgress();
 }
 
-long Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
+intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
 {
-	long fh;
+	intptr_t fh;
 	char cbuf[256];
 
 	switch (type) {
@@ -482,9 +482,9 @@ long Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fname)
 	return fh;
 }
 
-int Planet::FindNext (long fh, _finddata_t *fdata, char *fname)
+int Planet::FindNext (intptr_t fh, _finddata_t *fdata, char *fname)
 {
-	int fn = _findnext (fh, fdata);
+	intptr_t fn = _findnext (fh, fdata);
 	if (!fn) {
 		strncpy (fname, fdata->name, strlen(fdata->name)-4);
 		fname[strlen(fdata->name)-4] = '\0';
@@ -519,7 +519,7 @@ void Planet::ScanBases (char *path)
 		trim_string (path);
 	}
 
-	long fh;
+	intptr_t fh;
 	_finddata_t fdata;
 	sprintf (spath, "%s\\*", path);
 	strcpy (cbuf, g_pOrbiter->ConfigPath(spath));
@@ -567,7 +567,7 @@ void Planet::ScanLabelLists (ifstream &cfg)
 	nlabellist = 0;
 
 	_finddata_t fdata;
-	long fh = FindFirst (FILETYPE_MARKER, &fdata, lbpath, fname);
+	intptr_t fh = FindFirst (FILETYPE_MARKER, &fdata, lbpath, fname);
 	if (fh >= 0) {
 
 		oapi::GraphicsClient::LABELLIST *ll;

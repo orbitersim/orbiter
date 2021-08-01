@@ -11,7 +11,7 @@ extern GDIParams g_Param;
 extern HELPCONTEXT g_hc;
 extern char *ActionString[5];
 
-BOOL CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 static Atlantis *sts_dlg;
 
 // ==============================================================
@@ -738,7 +738,7 @@ BOOL PayloadBayOp::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // ==============================================================
 // Dialog callback hook
 
-BOOL CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PlOp_DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return sts_dlg->plop->DlgProc (hWnd, uMsg, wParam, lParam);
 }

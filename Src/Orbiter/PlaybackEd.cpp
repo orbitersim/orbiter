@@ -1059,10 +1059,10 @@ void PlaybackEditor::InsertEvent ()
 
 void PlaybackEditor::DeleteEvent ()
 {
-	int idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETCURSEL, 0, 0);
+	LRESULT idx = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETCURSEL, 0, 0);
 	if (idx == LB_ERR || idx == tmarkidx) return;
 
-	int res = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETITEMDATA, idx, 0);
+	LRESULT res = SendDlgItemMessage (hDlg, IDC_LIST1, LB_GETITEMDATA, idx, 0);
 	if (res == LB_ERR || res == 0) return;
 
 	PlaybackEvent *e = (PlaybackEvent*)res;

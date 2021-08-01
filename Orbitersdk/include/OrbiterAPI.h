@@ -46,6 +46,13 @@ extern "C" {
 
 #pragma warning(disable: 4201)
 
+// Message loop return type - maintain backward compatibility for 32-bit
+#ifdef _WIN64
+#define OAPI_MSGTYPE LRESULT
+#else
+#define OAPI_MSGTYPE int
+#endif
+
 // ======================================================================
 /// \defgroup constants Some useful general constants
 // ======================================================================
@@ -1487,14 +1494,14 @@ typedef struct {
 typedef struct {
 	char *name;
 	DWORD key;
-	int (*msgproc)(UINT,UINT,WPARAM,LPARAM);
+	OAPI_MSGTYPE (*msgproc)(UINT,UINT,WPARAM,LPARAM);
 } MFDMODESPEC;
 
 typedef struct {
 	char *name;
 	DWORD key;
 	void *context;
-	int (*msgproc)(UINT,UINT,WPARAM,LPARAM);
+	OAPI_MSGTYPE (*msgproc)(UINT,UINT,WPARAM,LPARAM);
 } MFDMODESPECEX;
 
 typedef struct {
