@@ -110,6 +110,7 @@ endif()
 
 add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/BinAssets/ ${CMAKE_BINARY_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.dll ${CMAKE_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Scenarios/ ${CMAKE_BINARY_DIR}/Scenarios
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${ORBITER_BINARY_TEXTURES_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
@@ -333,6 +334,12 @@ endfunction()
 # Installation
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+install(FILES ${LUA_DLL_DIR}/lua5.1.dll
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+install(FILES ${LUA_DLL_DIR}/lua5.1.lib
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
 )
 
 set(CMAKE_MODULE_PATH
