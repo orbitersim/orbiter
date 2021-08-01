@@ -148,7 +148,7 @@ set(graphics_src
 	Vvessel.cpp
 )
 
-set(orbiter_includes
+set(Orbiter_includes
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_SOURCE_DIR}/Orbitersdk/include
 	${CMAKE_SOURCE_DIR}/OVP
@@ -157,21 +157,27 @@ set(orbiter_includes
 	${DX7SDK_INCLUDE_DIR}
 )
 
-set(orbiter_libs
+set(Orbiter_common_libs
 	Winmm.dll
 	comctl32.lib
 	UxTheme.lib
-	${DX7SDK_LIB_DIR}/dxguid.lib
-	${DX7SDK_LIB_DIR}/d3dim.lib
-	${DX7SDK_LIB_DIR}/ddraw.lib
-	${DX7SDK_LIB_DIR}/dinput.lib
 	${HTML_HELP_LIBRARY}
 	${ZLIB_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
 )
+set(Orbiter_dx7_libs
+	${DX7SDK_LIB_DIR}/dxguid.lib
+	${DX7SDK_LIB_DIR}/d3dim.lib
+	${DX7SDK_LIB_DIR}/ddraw.lib
+	${DX7SDK_LIB_DIR}/dinput.lib
+)
+set(Orbiter_server_libs
+	${DX7SDK_LIB_DIR}/dxguid.lib
+	${DX7SDK_LIB_DIR}/dinput.lib
+)
 
-set(orbiter_depends
+set(Orbiter_depends
 	scramble
 	fchecksum
 	Orbitersdk
@@ -196,15 +202,16 @@ if(BUILD_ORBITER_DX7)
 	)
 
 	target_include_directories(Orbiter PUBLIC
-		${orbiter_includes}
+		${Orbiter_includes}
 	)
 	
 	target_link_libraries(Orbiter
-		${orbiter_libs}
+		${Orbiter_common_libs}
+		${Orbiter_dx7_libs}
 	)
 
 	add_dependencies(Orbiter
-		${orbiter_depends}
+		${Orbiter_depends}
 	)
 
 	# Installation: Orbiter executable (standalone graphics version)
@@ -239,15 +246,16 @@ if(BUILD_ORBITER_SERVER)
 	)
 
 	target_include_directories(Orbiter_server PUBLIC
-		${orbiter_includes}
+		${Orbiter_includes}
 	)
 
 	target_link_libraries(Orbiter_server
-		${orbiter_libs}
+		${Orbiter_common_libs}
+		${Orbiter_server_libs}
 	)
 
 	add_dependencies(Orbiter_server
-		${orbiter_depends}
+		${Orbiter_depends}
 	)
 
 	# Installation: Orbiter executable (graphics-server versions)

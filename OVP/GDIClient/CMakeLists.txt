@@ -11,7 +11,6 @@ add_library(GDIClient SHARED
 
 target_include_directories(GDIClient
 	PUBLIC ${CMAKE_SOURCE_DIR}/Orbitersdk/include
-	PUBLIC ${DX7SDK_INCLUDE_DIR}
 )
 
 add_dependencies(GDIClient
