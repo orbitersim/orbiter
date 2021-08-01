@@ -5,8 +5,8 @@
 
 #include <string.h>
 #include <fstream>
-#include <ddraw.h>
-#include <dplay.h>
+#include <dx7\ddraw.h>
+#include <dx7\dplay.h>
 #include <dinput.h>
 #include "Log.h"
 #include "Orbiter.h"

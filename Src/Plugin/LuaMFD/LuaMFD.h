@@ -24,7 +24,7 @@ public:
 	void DeleteInterpreter ();
 	void SetPage (DWORD newpg);
 	static bool ScriptInput (void *id, char *str, void *data);
-	static int MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static OAPI_MSGTYPE MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 protected:
 	void SetFontSize (double size);

@@ -25,8 +25,8 @@
 
 #ifndef D3D7FRAME_H
 #define D3D7FRAME_H
-#include <ddraw.h>
-#include <d3d.h>
+#include <dx7\ddraw.h>
+#include <dx7\d3d.h>
 
 //-----------------------------------------------------------------------------
 // Name: CD3DFramework7
