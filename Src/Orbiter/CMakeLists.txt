@@ -154,6 +154,7 @@ set(Orbiter_includes
 	${CMAKE_SOURCE_DIR}/OVP
 	${CMAKE_CURRENT_BINARY_DIR}
 	${ZLIB_INCLUDE_DIR}
+	${HTMLHELP_INCLUDE_DIR}
 	${DX7SDK_INCLUDE_DIR}
 )
 
@@ -163,6 +164,7 @@ set(Orbiter_common_libs
 	UxTheme.lib
 	${HTML_HELP_LIBRARY}
 	${ZLIB_LIB}
+	${HTMLHELP_LIB}
 	$<TARGET_FILE:Orbitersdk>
 	$<TARGET_FILE:DlgCtrl>
 )
@@ -171,12 +173,10 @@ set(Orbiter_dx7_libs
 	dinput8.lib
 	${DX7SDK_LIB_DIR}/d3dim.lib
 	${DX7SDK_LIB_DIR}/ddraw.lib
-#	${DX7SDK_LIB_DIR}/dinput.lib
 )
 set(Orbiter_server_libs
 	dxguid.lib
 	dinput8.lib
-#	${DX7SDK_LIB_DIR}/dinput.lib
 )
 
 set(Orbiter_depends
@@ -210,7 +210,6 @@ if(BUILD_ORBITER_DX7)
 	target_link_libraries(Orbiter
 		${Orbiter_common_libs}
 		${Orbiter_dx7_libs}
-		${DX7SDK_INCLUDE_DIR}/dx7
 	)
 
 	add_dependencies(Orbiter
@@ -255,7 +254,6 @@ if(BUILD_ORBITER_SERVER)
 	target_link_libraries(Orbiter_server
 		${Orbiter_common_libs}
 		${Orbiter_server_libs}
-		${DX7SDK_INCLUDE_DIR}/dx7
 	)
 
 	add_dependencies(Orbiter_server
