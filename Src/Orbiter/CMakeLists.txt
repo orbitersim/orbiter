@@ -167,13 +167,13 @@ set(Orbiter_common_libs
 	$<TARGET_FILE:DlgCtrl>
 )
 set(Orbiter_dx7_libs
-	${DX7SDK_LIB_DIR}/dxguid.lib
+	dxguid.lib
 	${DX7SDK_LIB_DIR}/d3dim.lib
 	${DX7SDK_LIB_DIR}/ddraw.lib
 	${DX7SDK_LIB_DIR}/dinput.lib
 )
 set(Orbiter_server_libs
-	${DX7SDK_LIB_DIR}/dxguid.lib
+	dxguid.lib
 	${DX7SDK_LIB_DIR}/dinput.lib
 )
 
