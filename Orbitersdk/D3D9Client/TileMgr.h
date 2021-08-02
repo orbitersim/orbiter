@@ -24,8 +24,8 @@
 
 #pragma pack(push,1)
 	struct TILEFILESPEC {
-		DWORD sidx;       // index for surface texture (-1: not present)
-		DWORD midx;       // index for land-water mask texture (-1: not present)
+		LONG_PTR sidx;    // index for surface texture (-1: not present)
+		LONG_PTR midx;    // index for land-water mask texture (-1: not present)
 		DWORD eidx;       // index for elevation data blocks (not used yet; always -1)
 		DWORD flags;      // tile flags: bit 0: has diffuse component; bit 1: has specular component; bit 2: has city lights
 		DWORD subidx[4];  // subtile indices
@@ -257,7 +257,7 @@ private:
 
 	bool DeleteTile (TILEDESC *tile);
 
-	static HRESULT ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, long ofs, LPDIRECT3DTEXTURE9* pTex, bool bManaged);
+	static HRESULT ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, LONG_PTR ofs, LPDIRECT3DTEXTURE9* pTex, bool bManaged);
 	static DWORD WINAPI LoadTile_ThreadProc (void*);
 	// the thread function loading tile textures on demand
 

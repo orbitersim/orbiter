@@ -27,12 +27,13 @@ using namespace oapi;
 
 // Max supported patch resolution level
 int SURF_MAX_PATCHLEVEL = 14;
-const DWORD NOTILE = (DWORD)-1; // "no tile" flag
+const LONG_PTR NOTILE = (LONG_PTR)-1; // "no tile" flag
 
 //static float TEX2_MULTIPLIER = 4.0f; // microtexture multiplier
 
 struct IDXLIST {
-	DWORD idx, ofs;
+	DWORD idx;
+	LONG_PTR ofs;
 };
 
 // Some debugging parameters
@@ -373,7 +374,7 @@ void TileManager::AddSubtileTextures (TILEDESC *td, LPDIRECT3DTEXTURE9 *tbuf, DW
 	// This is tricky. At first td->tex is an index to a texture array and later it becomes a pointer to a texture ?!! 
 	// --------------------------------------------------------------------------------------------------------------
 
-	DWORD tidx = (DWORD)td->tex;  // copy surface texture
+	LONG_PTR tidx = (LONG_PTR)td->tex;  // copy surface texture
 	if (tidx != NOTILE) {
 		if (tidx < nt) {
 			td->tex = tbuf[tidx];
@@ -384,7 +385,7 @@ void TileManager::AddSubtileTextures (TILEDESC *td, LPDIRECT3DTEXTURE9 *tbuf, DW
 		}
 	} else td->tex = NULL;
 
-	DWORD midx = (DWORD)td->ltex;  // copy mask/light texture
+	LONG_PTR midx = (LONG_PTR)td->ltex;  // copy mask/light texture
 	if (midx != NOTILE) {
 		if (midx < nm) {
 			td->ltex = mbuf[midx];
@@ -1094,7 +1095,7 @@ bool TileBuffer::LoadTileAsync (const char *name, TILEDESC *tile)
 
 DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 {
-	static const long TILESIZE = 32896; // default texture size for old-style texture files
+	static const LONG_PTR TILESIZE = 32896; // default texture size for old-style texture files
 	TileBuffer *tb = static_cast<TileBuffer*>(data);
 	auto device = tb->gc->GetDevice();
 	bool load;
@@ -1120,17 +1121,17 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 			char fname[MAX_PATH];
 			TILEDESC *td = qd.td;
 			LPDIRECT3DTEXTURE9 tex, mask = 0;
-			DWORD tidx, midx;
-			long ofs;
+			LONG_PTR tidx, midx;
+			LONG_PTR ofs;
 
 			if ((td->flag & 0x80) == 0)
 				MessageBeep (-1);
 
-			tidx = (DWORD)td->tex;
+			tidx = (LONG_PTR)td->tex;
 			if (tidx == NOTILE)
 				tex = NULL; // "no texture" flag
 			else {
-				ofs = (td->flag & 0x40) ? (long)tidx * TILESIZE : (long)tidx;
+				ofs = (td->flag & 0x40) ? tidx * TILESIZE : tidx;
 				strcpy_s (fname, 256, qd.name);
 				strcat_s (fname, 256, "_tile.tex");
 
@@ -1143,11 +1144,11 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 			}
 			// Load the specular mask and/or light texture
 			if (((td->flag & 3) == 3) || (td->flag & 4)) {
-				midx = (DWORD)td->ltex;
-				if (midx == (DWORD)-1)
+				midx = (LONG_PTR)td->ltex;
+				if (midx == NOTILE)
 					mask = NULL; // "no mask" flag
 				else {
-					ofs = (td->flag & 0x40) ? (long)midx * TILESIZE : (long)midx;
+					ofs = (td->flag & 0x40) ? midx * TILESIZE : midx;
 					strcpy_s (fname, 256, qd.name);
 					strcat_s (fname, 256, "_tile_lmask.tex");
 					if (ReadDDSSurface (device, fname, ofs, &mask, false) != S_OK) mask = NULL;
@@ -1169,7 +1170,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 }
 
 
-HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, long ofs, LPDIRECT3DTEXTURE9* pTex, bool bManaged)
+HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, LONG_PTR ofs, LPDIRECT3DTEXTURE9* pTex, bool bManaged)
 {
 	_TRACE;
 	char cpath[256];
@@ -1183,7 +1184,7 @@ HRESULT TileBuffer::ReadDDSSurface (LPDIRECT3DDEVICE9 pDev, const char *fname, l
 
 	if (fopen_s(&f, cpath, "rb")) return -3;
 
-	fseek(f, ofs, SEEK_SET);
+	fseek(f, (long)ofs, SEEK_SET);
 
 	// Read the magic number
 	if (!fread(&dwMagic, sizeof(DWORD), 1, f))	return -2;
