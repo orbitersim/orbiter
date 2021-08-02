@@ -87,13 +87,13 @@ set(HTMLHELP_LIB_DIR ${HTMLHELP_DIR}/lib-${ARCH})
 set(HTMLHELP_LIB ${HTMLHELP_LIB_DIR}/Htmlhelp.lib)
 
 set(ORBITER_TOOL_MESHC "$<TARGET_FILE:meshc>")
-
+set(LUA_EXE ${LUA_DIR}/bin/lua.exe)
+set(ldoc ${LUA_EXE} ${LUA_DIR}/packages/LDoc/ldoc.lua)
 
 find_package(OpenGL QUIET)
 find_package(HTMLHelp)
 find_package(Doxygen)
 find_package(LATEX)		
-set(ldoc ${CMAKE_SOURCE_DIR}/Extern/Lua/bin/lua ${CMAKE_SOURCE_DIR}/Extern/Lua/packages/LDoc/ldoc.lua)
 
 # We don't query Qt with find_package because we need the 64-bit version here
 set(Qt5_x64_DIR
@@ -110,6 +110,7 @@ endif()
 
 add_custom_target(CopyData ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/BinAssets/ ${CMAKE_BINARY_DIR}
+	COMMAND ${CMAKE_COMMAND} -E copy ${LUA_DLL_DIR}/lua5.1.dll ${CMAKE_BINARY_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Scenarios/ ${CMAKE_BINARY_DIR}/Scenarios
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Textures/ ${ORBITER_BINARY_TEXTURES_DIR}
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Meshes/ ${CMAKE_BINARY_DIR}/Meshes
@@ -333,6 +334,12 @@ endfunction()
 # Installation
 install(DIRECTORY Scenarios Textures Meshes Config Script Flights BinAssets/
 	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+install(FILES ${LUA_DLL_DIR}/lua5.1.dll
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+)
+install(FILES ${LUA_DLL_DIR}/lua5.1.lib
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib/Lua
 )
 
 set(CMAKE_MODULE_PATH

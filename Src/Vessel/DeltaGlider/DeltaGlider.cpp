@@ -632,6 +632,7 @@ bool DeltaGlider::RedrawPanel_ScramFlow (SURFHANDLE surf)
 	}
 	if (redraw) {
 		oapiBltPanelAreaBackground (AID_SCRAMDISP2, surf);
+		return true;
 		//return RedrawPanel_IndicatorPair (surf, scflowidx, 66);
 	} else return false;
 }
@@ -673,6 +674,7 @@ bool DeltaGlider::RedrawPanel_MainFlow (SURFHANDLE surf)
 	}
 	if (redraw) {
 		oapiBltPanelAreaBackground (AID_MAINDISP1, surf);
+		return true;
 		//return RedrawPanel_IndicatorPair (surf, mainflowidx, 66);
 	} else return false;
 }
@@ -689,6 +691,7 @@ bool DeltaGlider::RedrawPanel_RetroFlow (SURFHANDLE surf)
 	}
 	if (redraw) {
 		oapiBltPanelAreaBackground (AID_MAINDISP2, surf);
+		return true;
 		//return RedrawPanel_IndicatorPair (surf, retroflowidx, 66);
 	} else return false;
 }

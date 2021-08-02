@@ -29,6 +29,8 @@ on:
 jobs:
   build:
     name: Build with CMake
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
     strategy:
       fail-fast: false
       matrix:
