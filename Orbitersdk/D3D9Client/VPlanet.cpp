@@ -753,9 +753,9 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 			}
 			else {
 				// Planet or Major Moon
-				if (cdist >= 2.0*size) {
+				if (cdist >= 1.6*size) {
 					surfmgr2->ElevMode = eElevMode::Spherical;
-					bUseZBuf = cdist < (3.0*size);
+					bUseZBuf = false;
 				}
 				else {
 					TileManager2Base::RenderStats rs = surfmgr2->prevstat;
@@ -765,7 +765,7 @@ void vPlanet::RenderSphere (LPDIRECT3DDEVICE9 dev)
 							// If there are more than 3 spherical tiles render the body as spherical
 							if (rs.Sphe > 3) {
 								surfmgr2->ElevMode = eElevMode::Spherical; // Spherical body
-								bUseZBuf = cdist < (3.0*size);
+								bUseZBuf = cdist < (1.6*size);
 							}
 							else surfmgr2->ElevMode = eElevMode::Elevated; // Elevated body
 						}
