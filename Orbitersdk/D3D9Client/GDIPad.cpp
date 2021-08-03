@@ -159,7 +159,7 @@ DWORD GDIPad::GetTextWidth (const char *str, int len)
 {
 	if (str) if (str[0] == '_') if (strcmp(str, "_SkpVerInfo") == 0) return 1;
 	SIZE size;
-	if (!len) len = (int)strlen(str);
+	if (!len) len = lstrlen(str);
 	GetTextExtentPoint32 (hDC, str, len, &size);
 	return (DWORD)size.cx;
 }

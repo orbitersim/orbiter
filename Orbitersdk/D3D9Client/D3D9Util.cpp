@@ -4,7 +4,7 @@
 // Dual licensed under GPL v3 and LGPL v3
 // Copyright (C) 2006-2016 Martin Schweiger
 //				 2012-2016 Jarmo Nikkanen
-//				 2012-2016 Émile "Bibi Uncle" Grégoire
+//				 2012-2016 ï¿½mile "Bibi Uncle" Grï¿½goire
 // ==============================================================
 
 #define STRICT
@@ -31,11 +31,16 @@ DWORD BuildDate()
 }
 
 
+#if _WIN64
+#define PTR_FMT_STRING "0x%llX"
+#else // 32 bit
+#define PTR_FMT_STRING "0x%lX"
+#endif
 
 const char *_PTR(const void *p)
 {
 	static long i = 0; static char buf[8][32];	i++;
-	sprintf_s(buf[i & 0x7], 32, "0x%llX", LONG_PTR(p));
+	sprintf_s(buf[i & 0x7], 32, PTR_FMT_STRING, LONG_PTR(p));
 	return buf[i & 0x7];
 }
 
@@ -1035,7 +1040,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 
 	if (options) {
 		int m = 0;
-		int l = (int)strlen(options);
+		int l = lstrlen(options);
 		str = new char[l];
 		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");
@@ -1074,7 +1079,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 //
 const char *RemovePath(const char *in)
 {
-	int len = (int)strlen(in);
+	int len = lstrlen(in);
 	const char *ptr = in;
 	for (int i=0;i<len;i++) if (in[i]=='\\' || in[i]=='/') ptr = &in[i+1];
 	return ptr;
