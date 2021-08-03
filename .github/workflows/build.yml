@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - master
+      - main
     paths-ignore:
       - 'Doc/**'
       - 'Flights/**'
@@ -15,7 +15,7 @@ on:
       - 'Textures2/**'
   pull_request:
     branches:
-      - master
+      - main
     paths-ignore:
       - 'Doc/**'
       - 'Flights/**'
