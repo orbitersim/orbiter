@@ -75,27 +75,6 @@ if not "%VS140COMNTOOLS%"=="" (
   set GCAPI_PROJECTFILE=gcAPI.vs201x.vcxproj
   goto assign
 )
-:: Visual Studio 2012
-if not "%VS110COMNTOOLS%"=="" (
-  set "SETVCVARS=%VS110COMNTOOLS%vsvars32.bat"
-  set SOLUTIONFILE=D3D9ClientVS2012.sln
-  set GCAPI_PROJECTFILE=gcAPI.vs2012.vcxproj
-  goto assign
-)
-:: Visual Studio 2010
-if not "%VS100COMNTOOLS%"=="" (
-  set "SETVCVARS=%VS100COMNTOOLS%vsvars32.bat"
-  set SOLUTIONFILE=D3D9ClientVS2010.sln
-  set GCAPI_PROJECTFILE=gcAPI.vcxproj
-  goto assign
-)
-:: Visual Studio 2008
-if not "%VS90COMNTOOLS%"=="" (
-  set "SETVCVARS=%VS90COMNTOOLS%vsvars32.bat"
-  set SOLUTIONFILE=D3D9ClientVS2008.sln
-  set GCAPI_PROJECTFILE=gcAPI.vs2008.vcxproj
-  goto assign
-)
 
 :assign
 set ZIP_NAME=D3D9Client%VERSION%
