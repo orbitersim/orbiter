@@ -1,6 +1,12 @@
 *.user
 *.VC.db
-.vs
+**/.vs/
 meshres*.h
 CMakeSettings.json
-out/
+out/**
+**/*vcxproj.user
+**/*.bak
+Sound/XRSound/**/Debug/
+Sound/XRSound/**/Release/
+Sound/XRSound/**/x64/
+Sound/XRSound/**/dist/
