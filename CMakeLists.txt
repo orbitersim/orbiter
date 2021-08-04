@@ -14,7 +14,7 @@ set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
 # Group projects in VS
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(CMAKE_CL_64)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
 	set(ARCH "x64")
 else()

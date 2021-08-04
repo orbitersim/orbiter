@@ -1353,6 +1353,23 @@ public:
 	bool ElevationGrid (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
 		int pilat, int pilng, int plvl, INT16 *pelev, INT16 *elev, double *emean=0) const;
 
+	/**
+	 * \brief Filter elevation grid data
+	 * \param hPlanet object handle of the planet the data belongs to
+	 * \param ilat patch latitude index
+	 * \param ilng patch longitude index
+	 * \param lvl patch resolution level
+	 * \param elev_res elevation level resolution
+	 * \param elev pointer to array with elevation grid data
+	 * \default None.
+	 * \note Clients that manipulate elevation file data in memory (e.g. for flattening
+	 *   features) for visuals should overload this method in order to manipulate the
+	 *   terrain collision data in the same way. As soon as the internal collision tile
+	 *   is loaded in the core, the callback is invoked.
+	 */
+	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev) { return false; }
+	// @}
+
 protected:
 	/** \brief Launchpad video tab indicator
 	 *
