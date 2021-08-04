@@ -277,6 +277,13 @@ if(BUILD_ORBITER_SERVER)
 	
 endif()
 
+# Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
+add_custom_command(TARGET ${OrbiterTgt}
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib
+	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/ 
+)
+
 add_custom_command(
 	OUTPUT cryptstring.h
 	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cryptstring.h.in
