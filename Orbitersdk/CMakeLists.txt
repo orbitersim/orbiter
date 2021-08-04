@@ -9,6 +9,6 @@ if(Doxygen_FOUND)
 	add_subdirectory(doxygen)
 endif()
 
-install(DIRECTORY html include lib
+install(DIRECTORY html include
 	DESTINATION ${ORBITER_INSTALL_SDK_DIR}
 )
