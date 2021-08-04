@@ -19,11 +19,11 @@ You do not need to build XRSound in order to use it with Orbiter. However, if yo
 3. Download and install (or build) Orbiter 2016 or later from either https://github.com/mschweiger/orbiter or http://orbit.medphys.ucl.ac.uk/download.html.
 4. Clone the XRSound repository from GitHub to your local machine with:
 ```bash
-git clone git@github.com:dbeachy1/XRSound.git
+git clone git@github.com:mschweiger/orbiter.git
 ```
 or
 ```bash
-git clone https://github.com/dbeachy1/XRSound.git
+git clone https://github.com/mschweiger/orbiter.git
 ```
 
 If you're looking for an excellent GUI that makes working with Git easier, I recommend [Tower](https://www.git-tower.com/).
@@ -46,7 +46,7 @@ If you're looking for an excellent GUI that makes working with Git easier, I rec
 
 Now you are ready to compile and link XRSound.
 
-14. Bring up Visual Studio 2019 and open the solution `XRSound\src\XRSound.sln`.
+14. Bring up Visual Studio 2019 and open the solution `orbiter\Sound\XRSound\XRSound\src\XRSound.sln`.
 15. Set the build target to `Debug` and `x86` (i.e., 32-bit) to start. Click `Build -> Rebuild Solution`. This will build `XRSoundD.lib` and `XRSound.dll` and copy those files to their proper locations under `%ORBITER_ROOT%` via a Post-Build step. If you get build errors, double-check that the above environment variables are set correctly and that you restarted Visual Studio 2019 _after_ you defined those environment variables.
 16. After the build succeeds, bring up Orbiter and activate the XRSound module as detailed in the [XRSound User Manual](./XRSound/assets/Doc/XRSound%20User%20Manual.pdf).
 17. Launch a DeltaGlider scenario -- you should hear an audio greeting from your ship's new A.I. If you don't hear any sound, check your `%ORBITER_ROOT%\XRSound.log` file for error messages.
