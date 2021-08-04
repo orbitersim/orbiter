@@ -1,0 +1,152 @@
+﻿{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "description": "Sets generator, build and install directory, vcpkg",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "ORBITER_MAKE_DOC": "OFF"
+      },
+      "environment": {
+        "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+      }
+    },
+    {
+      "name": "x86-debug",
+      "description": "Sets x86 arch, compilers, build type",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x64-debug",
+      "description": "Sets x64 arch, compilers, build type",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x86-release",
+      "description": "Sets x86 arch, compilers, build type",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x64-release",
+      "description": "Sets x64 arch, compilers, build type",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "core-build",
+      "description": "Inherits environment from base configurePreset",
+      "configurePreset": "base",
+      "hidden": true,
+      "inheritConfigureEnvironment": true
+    },
+    {
+      "name": "build-x86-debug",
+      "description": "Build selected configuration",
+      "configurePreset": "x86-debug",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x64-debug",
+      "description": "Build selected configuration",
+      "configurePreset": "x64-debug",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x86-release",
+      "description": "Build selected configuration",
+      "configurePreset": "x86-release",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x64-release",
+      "description": "Build selected configuration",
+      "configurePreset": "x64-release",
+      "inherits": "core-build",
+      "cleanFirst": false
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "core-test",
+      "description": "Enable output on failure",
+      "configurePreset": "base",
+      "hidden": false,
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "test-x64",
+      "configurePreset": "x64-debug",
+      "inherits": "core-test"
+    },
+    {
+      "name": "test-x86",
+      "configurePreset": "x86-debug",
+      "inherits": "core-test"
+    }
+  ]
+}
