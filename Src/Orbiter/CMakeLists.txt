@@ -244,7 +244,6 @@ if(BUILD_ORBITER_SERVER)
 		OUTPUT_NAME Orbiter
 		VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 		COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
-		ENABLE_EXPORTS 1
 		FOLDER Core
 	)
 
@@ -270,6 +269,10 @@ if(BUILD_ORBITER_SERVER)
 
 	# If the standard Orbiter executable is not built, we have to use the NG version to export the API links
 	if(NOT BUILD_ORBITER_DX7)
+		set_target_properties(Orbiter_server
+			PROPERTIES
+			ENABLE_EXPORTS 1
+		)
 		install(FILES $<TARGET_LINKER_FILE:Orbiter_server>
 			DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
 		)
