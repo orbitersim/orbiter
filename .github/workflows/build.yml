@@ -56,7 +56,6 @@ jobs:
       working-directory: ${{ github.workspace }}/out/build
 
     - name: Install
-      if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
       run: 'cmake --install . --prefix "${{ github.workspace }}\out\install"'
       working-directory: ${{ github.workspace }}/out/build
 
