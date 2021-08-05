@@ -375,7 +375,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
 	hMainThread		 = GetCurrentThread();
 
-	memset2(&D3D9Stats, 0, sizeof(D3D9Stats));
+	memset(&D3D9Stats, 0, sizeof(D3D9Stats));
 
 	D3DXMatrixIdentity(&ident);
 
@@ -1164,8 +1164,8 @@ void D3D9Client::clbkRenderScene()
 		D3D9SetTime(D3D9Stats.Timer.FrameTotal, frame_time);
 		frame_time = D3D9GetTime();
 
-		memset2(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
-		memset2(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
+		memset(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
+		memset(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
 
 	}
 
@@ -2773,7 +2773,7 @@ void D3D9Client::SplashScreen()
 	HDC hDC;
 	HR(pSplashScreen->GetDC(&hDC));
 
-	LOGFONTA fnt; memset2((void *)&fnt, 0, sizeof(LOGFONT));
+	LOGFONTA fnt; memset((void *)&fnt, 0, sizeof(LOGFONT));
 
 	fnt.lfHeight		 = 18;
 	fnt.lfWeight		 = 700;

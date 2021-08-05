@@ -27,7 +27,11 @@
 #include "DebugControls.h"
 #include "D3D9Config.h"
 #include "VPlanet.h"
+
+#pragma warning(push)
+#pragma warning(disable : 4838)
 #include <xnamath.h>
+#pragma warning(pop)
 
 typedef struct {
 	float rad;

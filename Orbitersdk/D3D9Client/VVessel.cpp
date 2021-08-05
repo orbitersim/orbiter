@@ -283,7 +283,7 @@ void vVessel::LoadMeshes()
 	nmesh = vessel->GetMeshCount();
 	meshlist = new MESHREC[nmesh+1];
 
-	memset2(meshlist, 0, nmesh*sizeof(MESHREC));
+	memset(meshlist, 0, nmesh*sizeof(MESHREC));
 
 	LogAlw("Vessel(%s) %s has %u meshes", _PTR(vessel), vessel->GetClassNameA(), nmesh);
 
@@ -347,7 +347,7 @@ void vVessel::InsertMesh(UINT idx)
 	if (idx >= nmesh) { // append a new entry to the list
 		MESHREC *tmp = new MESHREC[idx+1];
 		if (nmesh) {
-			memcpy2 (tmp, meshlist, nmesh*sizeof(MESHREC));
+			memcpy (tmp, meshlist, nmesh*sizeof(MESHREC));
 			delete []meshlist;
 		}
 		meshlist = tmp;

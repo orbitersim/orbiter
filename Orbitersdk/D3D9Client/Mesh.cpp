@@ -16,8 +16,11 @@
 #include "D3D9Config.h"
 #include "DebugControls.h"
 #include "VectorHelpers.h"
-#include <xnamath.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4838)
+#include <xnamath.h>
+#pragma warning(pop)
 
 using namespace oapi;
 
@@ -129,15 +132,15 @@ void MeshBuffer::Map(LPDIRECT3DDEVICE9 pDev)
 	LPVOID pTgt;
 
 	HR(pVB->Lock(0, 0, (LPVOID*)&pTgt, Lock));
-	memcpy2(pTgt, pVBSys, nVtx * sizeof(NMVERTEX));
+	memcpy(pTgt, pVBSys, nVtx * sizeof(NMVERTEX));
 	HR(pVB->Unlock());
 
 	HR(pGB->Lock(0, 0, (LPVOID*)&pTgt, Lock));
-	memcpy2(pTgt, pGBSys, nVtx * sizeof(D3DXVECTOR4));
+	memcpy(pTgt, pGBSys, nVtx * sizeof(D3DXVECTOR4));
 	HR(pGB->Unlock());
 
 	HR(pIB->Lock(0, 0, (LPVOID*)&pTgt, Lock));
-	memcpy2(pTgt, pIBSys, nIdx * sizeof(WORD));
+	memcpy(pTgt, pIBSys, nIdx * sizeof(WORD));
 	HR(pIB->Unlock());
 }
 
@@ -220,7 +223,7 @@ D3D9Mesh::D3D9Mesh(DWORD groups, const MESHGROUPEX **hGroup, const SURFHANDLE *h
 {
 	Null();
 	nGrp = groups;
-	Grp = new GROUPREC[nGrp]; memset2(Grp, 0, sizeof(GROUPREC) * nGrp);
+	Grp = new GROUPREC[nGrp]; memset(Grp, 0, sizeof(GROUPREC) * nGrp);
 
 	for (DWORD i=0;i<nGrp;i++) {
 		SetGroupRec(i, hGroup[i]);
@@ -263,7 +266,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSu
 
 	// template meshes are stored in system memory
 	nGrp   = 1;
-	Grp    = new GROUPREC[nGrp]; memset2(Grp, 0, sizeof(GROUPREC) * nGrp);
+	Grp    = new GROUPREC[nGrp]; memset(Grp, 0, sizeof(GROUPREC) * nGrp);
 	nTex   = 2;
 	Tex	   = new LPD3D9CLIENTSURFACE[nTex];
 	Tex[0] = 0; // 'no texture'
@@ -391,7 +394,7 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 	if (nGrp == 0) return;
 
 	Grp = new GROUPREC[nGrp];
-	memset2(Grp, 0, sizeof(GROUPREC) * nGrp);
+	memset(Grp, 0, sizeof(GROUPREC) * nGrp);
 
 	MaxFace = 0; // Incremented in SetGroupRec()
 	MaxVert = 0;
@@ -443,7 +446,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 
 	if (nGrp == 0) return;
 
-	Grp = new GROUPREC[nGrp]; memset2(Grp, 0, sizeof(GROUPREC) * nGrp);
+	Grp = new GROUPREC[nGrp]; memset(Grp, 0, sizeof(GROUPREC) * nGrp);
 	
 	for (DWORD i = 0; i<nGrp; i++) SetGroupRec(i, oapiMeshGroupEx(hMesh, i));
 
@@ -662,8 +665,8 @@ void D3D9Mesh::UpdateTangentSpace(NMVERTEX *pVrt, WORD *pIdx, DWORD nVtx, DWORD 
 void D3D9Mesh::SetGroupRec(DWORD i, const MESHGROUPEX *mg)
 {
 	if (i>=nGrp) return;
-	memcpy2(Grp[i].TexIdxEx, mg->TexIdxEx, MAXTEX*sizeof(DWORD));
-	memcpy2(Grp[i].TexMixEx, mg->TexMixEx, MAXTEX*sizeof(float));
+	memcpy(Grp[i].TexIdxEx, mg->TexIdxEx, MAXTEX*sizeof(DWORD));
+	memcpy(Grp[i].TexMixEx, mg->TexMixEx, MAXTEX*sizeof(float));
 	Grp[i].TexIdx  = mg->TexIdx;
 	Grp[i].MtrlIdx = mg->MtrlIdx;
 	Grp[i].IdexOff = MaxFace*3;
@@ -1022,7 +1025,7 @@ void D3D9Mesh::SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bStat)
 void D3D9Mesh::SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bStat)
 {
 	if (idx < nMtrl) {
-		memcpy2(&Mtrl[idx], pMat, sizeof(D3D9MatExt));
+		memcpy(&Mtrl[idx], pMat, sizeof(D3D9MatExt));
 
 		if (Mtrl[idx].Specular.w < 0.1f) {
 			Mtrl[idx].Specular.x = 0.0f;
@@ -1478,7 +1481,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
-	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
 
 	int nMeshLights = 0;
 
@@ -1508,7 +1511,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 
 			// Create a list of N most effective lights ---------------------------------------------
 			for (int i = 0; i < nMeshLights; i++) {
-				memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+				memcpy(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
 
 				// Override application configuration to prevent oversaturation of lights at point plank range. 
 				if (scn->GetRenderPass() == RENDERPASS_MAINSCENE)
@@ -1931,7 +1934,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
-	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
 
 	if (pLights && nSceneLights>0) {
 
@@ -1959,7 +1962,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 			nMeshLights = min(nMeshLights, Config->MaxLights());
 
 			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+			for (int i = 0; i < nMeshLights; i++) memcpy(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
 		}
 	}
 
@@ -2222,7 +2225,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	const D3D9Light *pLights = gc->GetScene()->GetLights();
 	int nSceneLights = gc->GetScene()->GetLightCount();
 
-	for (int i = 0; i < Config->MaxLights(); i++) memcpy2(&Locals[i], &null_light, sizeof(LightStruct));
+	for (int i = 0; i < Config->MaxLights(); i++) memcpy(&Locals[i], &null_light, sizeof(LightStruct));
 
 	if (pLights && nSceneLights>0) {
 
@@ -2251,7 +2254,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 
 			// Create a list of N most effective lights ---------------------------------------------
 			int i;
-			for (i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+			for (i = 0; i < nMeshLights; i++) memcpy(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
 		}
 	}
 

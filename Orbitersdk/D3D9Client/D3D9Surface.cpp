@@ -244,8 +244,8 @@ void D3D9ClientSurface::Clear()
 	bAdvanced   = false;
 	bHard		= false;
 	pDevice		= NULL;
-	memset2(&desc, 0, sizeof(D3DSURFACE_DESC));
-	memset2(pMap, 0, sizeof(pMap));
+	memset(&desc, 0, sizeof(D3DSURFACE_DESC));
+	memset(pMap, 0, sizeof(pMap));
 }
 
 

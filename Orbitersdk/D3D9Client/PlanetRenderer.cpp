@@ -150,7 +150,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[16]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+	D3DXMACRO macro[16]; memset(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	bool bRiples = *(bool*)gc->GetConfigParam(CFGPRM_SURFACERIPPLE);
 	bool bShadows = *(bool*)gc->GetConfigParam(CFGPRM_CLOUDSHADOWS);

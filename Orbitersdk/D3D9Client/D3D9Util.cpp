@@ -731,7 +731,7 @@ void D3DMAT_Identity (D3DXMATRIX *mat)
 
 void D3DMAT_Copy (D3DXMATRIX *tgt, const D3DXMATRIX *src)
 {
-	 memcpy2(tgt, src, sizeof (D3DXMATRIX));
+	 memcpy(tgt, src, sizeof (D3DXMATRIX));
 }
 
 // ============================================================================
@@ -967,7 +967,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 	char *tok = NULL;
 
 	D3DXMACRO macro[16];
-	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+	memset(&macro, 0, 16*sizeof(D3DXMACRO));
 	bool bDisassemble = false;
 
 	if (options) {
@@ -1036,7 +1036,7 @@ LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *
 	char *tok = NULL;
 
 	D3DXMACRO macro[16];
-	memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+	memset(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	if (options) {
 		int m = 0;

@@ -110,8 +110,8 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 
 	bLocalLight = *(bool*)gc->GetConfigParam(CFGPRM_LOCALLIGHT);
 	
-	memset2(&sunLight, 0, sizeof(D3D9Sun));
-	memset2(&smap, 0, sizeof(smap));
+	memset(&sunLight, 0, sizeof(D3D9Sun));
+	memset(&smap, 0, sizeof(smap));
 
 	CLEARARRAY(pBlrTemp);
 	CLEARARRAY(pTextures);
@@ -556,7 +556,7 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 	// create the visual and entry
 	VOBJREC *pv = new VOBJREC;
 
-	memset2(pv, 0, sizeof(VOBJREC));
+	memset(pv, 0, sizeof(VOBJREC));
 
 	pv->vobj = vObject::Create(hObj, this);
 	pv->type = oapiGetObjectType(hObj);
@@ -3002,7 +3002,7 @@ void Scene::AddParticleStream (class D3D9ParticleStream *_pstream)
 
 	D3D9ParticleStream **tmp = new D3D9ParticleStream*[nstream+1];
 	if (nstream) {
-		memcpy2 (tmp, pstream, nstream*sizeof(D3D9ParticleStream*));
+		memcpy (tmp, pstream, nstream*sizeof(D3D9ParticleStream*));
 		delete []pstream;
 	}
 	pstream = tmp;
@@ -3422,7 +3422,7 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 
 		pv = new CAMREC;
 
-		memset2(pv, 0, sizeof(CAMREC));
+		memset(pv, 0, sizeof(CAMREC));
 
 		pv->prev = camLast;
 		pv->next = NULL;

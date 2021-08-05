@@ -444,7 +444,7 @@ void HazeManager2::CreateRingBuffers()
 	HR(Dev()->CreateVertexBuffer(v*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pRingVB, NULL));
 
 	if (pRingVB->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
-		memcpy2(pBuf, pVrt, v*sizeof(D3DXVECTOR3));
+		memcpy(pBuf, pVrt, v*sizeof(D3DXVECTOR3));
 		pRingVB->Unlock();
 	}
 
@@ -480,7 +480,7 @@ void HazeManager2::CreateSkydomeBuffers(int index)
 	HR(Dev()->CreateVertexBuffer(k*sizeof(D3DXVECTOR3), 0, 0, D3DPOOL_DEFAULT, &pSkyVB[index], NULL));
 
 	if (pSkyVB[index]->Lock(0, 0, (void **)&pBuf,0)==S_OK) {
-		memcpy2(pBuf, pVrt, k*sizeof(D3DXVECTOR3));
+		memcpy(pBuf, pVrt, k*sizeof(D3DXVECTOR3));
 		pSkyVB[index]->Unlock();
 	}
 

@@ -996,7 +996,7 @@ void SurfTile::Render ()
 			nMeshLights = min(nMeshLights, 4);
 
 			// Create a list of N most effective lights ---------------------------------------------
-			for (int i = 0; i < nMeshLights; i++) memcpy2(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
+			for (int i = 0; i < nMeshLights; i++) memcpy(&Locals[i], &pLights[LightList[i].idx], sizeof(LightStruct));
 
 			HR(Shader->SetBool(TileManager2Base::sbLocals, true));
 			HR(Shader->SetValue(TileManager2Base::ssLight, &Locals, sizeof(Locals)));
@@ -1007,7 +1007,7 @@ void SurfTile::Render ()
 	if (pLights && nSceneLights > 0) {
 
 		// Create a list of N most effective lights ---------------------------------------------
-		for (int i = 0; i < nSceneLights; i++) memcpy2(&Locals[i], &pLights[i], sizeof(LightStruct));
+		for (int i = 0; i < nSceneLights; i++) memcpy(&Locals[i], &pLights[i], sizeof(LightStruct));
 		HR(Shader->SetBool(TileManager2Base::sbLocals, true));
 
 	}*/

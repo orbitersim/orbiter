@@ -85,7 +85,7 @@ CSphereManager::CSphereManager(D3D9Client *gclient, const Scene *scene) : Planet
 
 	tiledesc = new TILEDESC[maxidx];
 
-	memset2 (tiledesc, 0, maxidx*sizeof(TILEDESC));
+	memset (tiledesc, 0, maxidx*sizeof(TILEDESC));
 
 	LoadPatchData ();
 	LoadTileData ();

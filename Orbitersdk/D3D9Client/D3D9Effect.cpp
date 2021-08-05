@@ -303,7 +303,7 @@ void D3D9Effect::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 _pDev, const ch
 	
 	// Create the Effect from a .fx file.
 	ID3DXBuffer* errors = 0;
-	D3DXMACRO macro[18]; memset2(&macro, 0, 16*sizeof(D3DXMACRO));
+	D3DXMACRO macro[18]; memset(&macro, 0, 16*sizeof(D3DXMACRO));
 
 	sprintf_s(name,256,"Modules/D3D9Client/D3D9Client.fx");
 

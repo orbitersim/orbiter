@@ -180,7 +180,7 @@ restart:
 
 		// Get Text Metrics information
 		// 
-		memset2((void *)&tm, 0, sizeof(TEXTMETRIC));
+		memset((void *)&tm, 0, sizeof(TEXTMETRIC));
 		
 		if (GetTextMetrics(hDC, &tm)==false) {
 			LogErr("GetTextMetrics() FAIL");

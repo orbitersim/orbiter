@@ -20,8 +20,11 @@
 #include "OrbiterAPI.h"
 #include "VectorHelpers.h"
 #include "Log.h"
-#include <xnamath.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4838)
+#include <xnamath.h>
+#pragma warning(pop)
 
 // =================================================================================================================================
 //
@@ -47,36 +50,6 @@ bool SolveLUSystem(int n, double *A, double *b, double *x, double *det)
 }
 
 
-
-void D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line)
-{
-	if (tgt==NULL || src==NULL) {
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-		return;
-	}
-	__try {	memcpy(tgt,src,bytes);	}
-	__except(EXCEPTION_EXECUTE_HANDLER)
-	{
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-		return;	
-	}
-}
-
-void D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line)
-{
-	if (tgt==NULL) {
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-		return;
-	}
-	__try {	memset(tgt,val,bytes); }
-	__except(EXCEPTION_EXECUTE_HANDLER)
-	{
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-		return;	
-	}
-}
-
-
 D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3DXMATRIX mView)
 {
 	x = float((x*2.0-1.0)/mProj->_11);
@@ -92,7 +65,7 @@ D3DXVECTOR3 WorldPickRay(float x, float y, const LPD3DXMATRIX mProj, const LPD3D
 
 void D9ZeroAABB(D9BBox *box)
 {
-	memset2(box, 0, sizeof(D9BBox));
+	memset(box, 0, sizeof(D9BBox));
 }
 
 void D9InitAABB(D9BBox *box)

@@ -154,7 +154,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 		ringmgr = 0;
 	}
 
-	memcpy2 (&fog, oapiGetObjectParam (_hObj, OBJPRM_PLANET_FOGPARAM), sizeof (FogParam));
+	memcpy (&fog, oapiGetObjectParam (_hObj, OBJPRM_PLANET_FOGPARAM), sizeof (FogParam));
 	prm.bFogEnabled = (fog.dens_0 > 0);
 
 	patchres = 0;

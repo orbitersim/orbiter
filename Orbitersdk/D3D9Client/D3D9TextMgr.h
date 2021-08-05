@@ -94,7 +94,7 @@ public:
 	float		PrintSkp (class D3D9Pad *pSkp, float x, float y, const char *str, int len = -1, bool bBox = false);
 	float		PrintSkp (class D3D9Pad *pSkp, float x, float y, LPCWSTR str, int len = -1, bool bBox = false);
 
-    void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy2(t, &tm, sizeof(TEXTMETRIC)); }
+    void		GetD3D9TextMetrics(TEXTMETRIC *t) { memcpy(t, &tm, sizeof(TEXTMETRIC)); }
 
 private:
 

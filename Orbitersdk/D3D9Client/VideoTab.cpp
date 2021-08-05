@@ -1028,7 +1028,7 @@ void VideoTab::InitCreditsDialog(HWND hWnd)
 
 	DWORD size = GetFileSize(hFile, NULL);
 	char *credits = new char[size+1];
-	memset2(credits,0,size+1);
+	memset(credits,0,size+1);
 	DWORD bytes;
 
 	if (ReadFile(hFile, credits, size, &bytes, NULL)) {
@@ -1042,7 +1042,7 @@ void VideoTab::InitCreditsDialog(HWND hWnd)
 	delete []credits;
 
 	CloseHandle(hFile);
-	
+
 }
 
 

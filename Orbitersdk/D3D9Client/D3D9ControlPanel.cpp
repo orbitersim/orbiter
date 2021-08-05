@@ -337,7 +337,7 @@ void D3D9Client::RenderControlPanel()
 		// -------------------------------------
 		Reset(D3D9Stats.Timer.HUDOverlay);
 		// -------------------------------------
-		memset2(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
+		memset(&D3D9Stats.Mesh, 0, sizeof(D3D9Stats.Mesh));
 	}
 	
 

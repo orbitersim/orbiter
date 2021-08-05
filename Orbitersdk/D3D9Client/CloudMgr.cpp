@@ -43,7 +43,7 @@ CloudManager::CloudManager(D3D9Client *gclient, const vPlanet *vplanet)
 
 	int maxidx = patchidx[maxbaselvl];
 	tiledesc = new TILEDESC[maxidx];
-	memset2 (tiledesc, 0, maxidx*sizeof(TILEDESC));
+	memset (tiledesc, 0, maxidx*sizeof(TILEDESC));
 
 	for (int i = 0; i < patchidx[maxbaselvl]; i++)	tiledesc[i].flag = 1;
 }

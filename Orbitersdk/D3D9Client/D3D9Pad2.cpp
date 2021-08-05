@@ -920,7 +920,7 @@ bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 	if (nGrp == 0) return false;
 
 	Grp = new SKETCHGRP[nGrp];
-	memset2(Grp, 0, sizeof(SKETCHGRP) * nGrp);
+	memset(Grp, 0, sizeof(SKETCHGRP) * nGrp);
 
 	// -----------------------------------------------------------------------
 

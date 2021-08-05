@@ -12,7 +12,6 @@
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <windows.h>
-#include <xnamath.h>
 #include "GraphicsAPI.h"
 #include "D3D9Frame.h"
 #include "D3D9Util.h"
@@ -98,9 +97,9 @@ void CD3DFramework9::Clear()
 	pRenderTarget	  = NULL;
 	pBackBuffer		  = NULL;
 	
-	memset2((void *)&rcScreenRect, 0, sizeof(RECT));
-	memset2((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
-	memset2((void *)&caps, 0, sizeof(D3DCAPS9));
+	memset((void *)&rcScreenRect, 0, sizeof(RECT));
+	memset((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
+	memset((void *)&caps, 0, sizeof(D3DCAPS9));
 }
 
 //-----------------------------------------------------------------------------
@@ -271,17 +270,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	LogAlw("DevCaps................. : 0x%X",caps.DevCaps);
 	LogAlw("DevCaps2................ : 0x%X",caps.DevCaps2);
 	
-	BOOL bXna = XMVerifyCPUSupport();
-
-	if ((caps.DevCaps&D3DDEVCAPS_PUREDEVICE)==0) Pure = false;
-
-	if (bXna) {
-		LogOapi("XNA Math Support........ : Yes");
-	}
-	else {
-		LogOapi("XNA Math Support........ : No");
-		bFail=true;
-	}
 
 	// Check non power of two texture support
 	if ((caps.PrimitiveMiscCaps&D3DPMISCCAPS_COLORWRITEENABLE)==0) {

@@ -477,11 +477,11 @@ INT_PTR CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			case IDC_ATM_COPYTO:
 				if (vObj) {
 					if (param->orbit) {
-						memcpy2(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));
+						memcpy(vObj->GetAtmoParams(1), param, sizeof(ScatterParams));
 						vObj->GetAtmoParams(1)->orbit = false;
 					}
 					else {
-						memcpy2(vObj->GetAtmoParams(2), param, sizeof(ScatterParams)); 
+						memcpy(vObj->GetAtmoParams(2), param, sizeof(ScatterParams)); 
 						vObj->GetAtmoParams(2)->orbit = true;
 					}
 				}

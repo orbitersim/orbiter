@@ -999,16 +999,16 @@ void TileBuffer::TerminateLoadThread()
 TILEDESC *TileBuffer::AddTile ()
 {
 	TILEDESC *td = new TILEDESC;
-	memset2 (td, 0, sizeof(TILEDESC));
+	memset (td, 0, sizeof(TILEDESC));
 	DWORD i, j;
 
 	if (nused == nbuf) {
 		TILEDESC **tmp = new TILEDESC*[nbuf+16];
 		if (nbuf) {
-			memcpy2 (tmp, buf, nbuf*sizeof(TILEDESC*));
+			memcpy (tmp, buf, nbuf*sizeof(TILEDESC*));
 			delete []buf;
 		}
-		memset2 (tmp+nbuf, 0, 16*sizeof(TILEDESC*));
+		memset (tmp+nbuf, 0, 16*sizeof(TILEDESC*));
 		buf = tmp;
 		nbuf += 16;
 		last = nused;
@@ -1113,7 +1113,7 @@ DWORD WINAPI TileBuffer::LoadTile_ThreadProc (void *data)
 
 		WaitForSingleObject(hQueueMutex, INFINITE);
 		if (load = (nqueue > 0)) {
-			memcpy2 (&qd, loadqueue+queue_out, sizeof(QUEUEDESC));
+			memcpy (&qd, loadqueue+queue_out, sizeof(QUEUEDESC));
 		}
 		ReleaseMutex (hQueueMutex);
 

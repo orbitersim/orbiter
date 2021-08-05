@@ -55,16 +55,4 @@ float		FastOpticalDepth(float alt, float cd, double h0, D3DXVECTOR4 *prm);
 float		FastOpticalDepthEx(float alt, float cd, float h0, D3DXVECTOR4 *prm);
 
 bool		SolveLUSystem(int n, double *A, double *b, double *x, double *det=NULL);
-
-void		D9CopyMem(void *tgt, const void *src, DWORD bytes, const char *file, int line);
-void		D9SetMem(void *tgt, int val, DWORD bytes, const char *file, int line);
-
-
-#ifdef _DEBUG 
-#define		memcpy2(x,y,z) D9CopyMem(x,y,z,__FILE__,__LINE__)
-#define		memset2(x,y,z) D9SetMem(x,y,z,__FILE__,__LINE__)
-#else
-#define		memcpy2(x,y,z) memcpy(x,y,z)
-#define		memset2(x,y,z) memset(x,y,z)
-#endif
 #endif
