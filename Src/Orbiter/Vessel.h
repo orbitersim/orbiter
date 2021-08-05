@@ -1572,11 +1572,11 @@ private:
 		Str64 meshname;    // mesh file names for the visual
 		MESHHANDLE hMesh;  // pointer to preloaded mesh, if present
 		VECTOR3 meshofs;   // mesh offset in vessel coords
-		DWORD crc;         // mesh id
+		DWORD_PTR crc;         // mesh id
 		WORD vismode;      // visibility mode: 1=external only, 2=internal only, 3=both
 	} **meshlist;
 	UINT nmesh;        // number of meshes
-	DWORD mesh_crc;    // visual state checksum
+	DWORD_PTR mesh_crc;    // visual state checksum
 
 	UINT exhaust_id;   // next exhaust id to attach
 

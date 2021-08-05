@@ -22,7 +22,7 @@ static char deftopic[256] = "html/orbiter.chm::/intro.htm";
 static char vstopic[256] = "";
 static char jmp2url[256] = "";
 static char topic[256] = "/intro.htm";
-static DWORD pTopic = (DWORD)topic;
+static DWORD_PTR pTopic = (DWORD_PTR)topic;
 static bool  bScnHelp = false;
 static bool  bVsHelp = false;
 static HWND hHelpClient = NULL;
@@ -86,7 +86,7 @@ void DlgHelp::SetScenarioHelp (const char *_helpf)
 	}
 	strcpy (helpf, "html/orbiter.chm");
 	strcpy (deftopic, "html/orbiter.chm::/intro.htm");
-	pTopic = (DWORD)topic;
+	pTopic = (DWORD_PTR)topic;
 	bScnHelp = false;
 }
 
@@ -157,7 +157,7 @@ void DlgHelp::InitHelp (HWND hWnd, HELPCONTEXT *hcontext)
 	hhwt.rcMinSize.top = 0;
 	hhwt.rcMinSize.bottom = 0;
 
-	HtmlHelp (hWnd, NULL, HH_SET_WIN_TYPE, (DWORD)&hhwt);
+	HtmlHelp (hWnd, NULL, HH_SET_WIN_TYPE, (DWORD_PTR)&hhwt);
 }
 
 // ======================================================================
@@ -243,7 +243,7 @@ LRESULT FAR PASCAL DlgHelp::ClientProc (HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			InitHelp (hwnd, hcontext);
 			strcpy (cbuf, hcontext->helpfile);
 			strcat (cbuf, ">Default");
-			hHelpClient = HtmlHelp (hwnd, cbuf, HH_DISPLAY_TOPIC, (DWORD)hcontext->topic);
+			hHelpClient = HtmlHelp (hwnd, cbuf, HH_DISPLAY_TOPIC, (DWORD_PTR)hcontext->topic);
 		}
 		GetClientRect (hwnd, &r);
 		SetWindowPos (hHelpClient, HWND_TOP, 0, 0, r.right, r.bottom, 0);

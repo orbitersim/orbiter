@@ -308,11 +308,11 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 		return cbuf;
 	} else if (lua_islightuserdata (L,idx)) {
 		void *p = lua_touserdata(L,idx);
-		sprintf (cbuf, "0x%08x [data]", (DWORD)p);
+		sprintf (cbuf, "0x%08x [data]", (DWORD_PTR)p);
 		return cbuf;
 	} else if (lua_isuserdata (L,idx)) {
 		void *p = lua_touserdata(L,idx);
-		sprintf (cbuf, "0x%08x [object]", (DWORD)p);
+		sprintf (cbuf, "0x%08x [object]", (DWORD_PTR)p);
 		return cbuf;
 	} else if (lua_istable (L, idx)) {
 		if (idx < 0) idx--;
