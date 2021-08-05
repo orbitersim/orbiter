@@ -47,7 +47,7 @@ void D3D9Client::Label(const char *format, ...)
 
 	va_end(args);
 
-	int len = int(strlen(buffer));
+	int len = lstrlen(buffer);
 	pItemsSkp->Text(20, LabelPos, buffer, len);
 	LabelPos += 22;
 }

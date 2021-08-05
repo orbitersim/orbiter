@@ -2103,7 +2103,7 @@ void Scene::RenderMainScene()
 	// -------------------------------------------------------------------------------------------------------
 
 	const char* dbgString = oapiDebugString();
-	int len = int(strlen(dbgString));
+	int len = lstrlen(dbgString);
 
 	if (len>0 || !D3D9DebugQueue.empty()) {
 
@@ -2125,7 +2125,7 @@ void Scene::RenderMainScene()
 		while (!D3D9DebugQueue.empty()) {
 			pos -= (height * 3) / 2;
 			std::string str = D3D9DebugQueue.front();
-			len = int(strlen(str.c_str()));
+			len = lstrlen(str.c_str());
 			DWORD width = pSketch->GetTextWidth(str.c_str(), len);
 			pSketch->Rectangle(-1, pos - height - 1, width + 4, pos);
 			pSketch->Text(2, pos - 2, str.c_str(), len);
@@ -2966,8 +2966,8 @@ void Scene::RenderDirectionMarker(oapi::Sketchpad *pSkp, const VECTOR3 &rdir, co
 			} break;
 		}
 
-		if (label1) pSkp->Text(x, y-scale, label1, int(strlen(label1)));
-		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, int(strlen(label2)));
+		if (label1) pSkp->Text(x, y-scale, label1, lstrlen(label1));
+		if (label2) pSkp->Text(x, y+scale+labelSize[0], label2, lstrlen(label2));
 	}
 }
 

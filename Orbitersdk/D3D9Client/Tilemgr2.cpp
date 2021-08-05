@@ -1352,7 +1352,7 @@ void TileManager2Base::TileLabel(LPDIRECT3DTEXTURE9 tex, int lvl, int ilat, int 
 	char label[256];
 	sprintf_s(label, 256, "%02d-%06d-%06d.dds", lvl+4, ilat, ilng);
 	HFONT hOld = (HFONT)SelectObject(hDC, GetDebugFont());
-	TextOut(hDC, 16, 16, label, int(strlen(label)));
+	TextOut(hDC, 16, 16, label, lstrlen(label));
 	SetBkMode(hDC, TRANSPARENT);
 	SelectObject(hDC, GetStockObject (NULL_BRUSH));
 	SelectObject(hDC, GetStockObject (WHITE_PEN));

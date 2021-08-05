@@ -448,7 +448,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 
 	if (fgets(buf, cmax, file)==NULL) return -1;
 
-	int num = int(strlen(buf));
+	int num = lstrlen(buf);
 
 	if (num==(cmax-1)) LogErr("Insufficient buffer size in fgets2() size=%d, string=(%s)",cmax,buf);
 
@@ -466,7 +466,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 		}
 	}
 
-	num = int(strlen(buf));
+	num = lstrlen(buf);
 	if (num==0) return 0;
 
 	// Remove spaces from the end of the line
@@ -479,7 +479,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 	// Remove spaces from the front of the line
 	while (buf[0]==' ') strremchr(buf,0);
 
-	num = int(strlen(buf));
+	num = lstrlen(buf);
 	if (num==0) return 0;
 
 	// Remove repeatitive spaces if exists. (double trible spaces and so on)
@@ -492,7 +492,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 		else i++;
 	}
 
-	num = int(strlen(buf));
+	num = lstrlen(buf);
 	if (num==0) return 0;
 
 	// Remove spaces from both sides of '=' if exists
@@ -505,7 +505,7 @@ int fgets2(char *buf, int cmax, FILE *file, DWORD param)  //bool bEquality, bool
 		}
 	}
 
-	if (bUpper) _strupr_s(buf,strlen(buf));
+	if (bUpper) _strupr_s(buf, strlen(buf));
 
 	// Done
 	if (bEql) return 2;
@@ -972,7 +972,7 @@ LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *fi
 
 	if (options) {
 		int m = 0;
-		int l = int(strlen(options)) + 1;
+		int l = lstrlen(options) + 1;
 		str = new char[l];
 		strcpy_s(str, l, options);
 		tok = strtok(str,";, ");

@@ -59,7 +59,7 @@ TileManager::TileManager (D3D9Client *gclient, const vPlanet *vplanet) : D3D9Eff
 	vp = vplanet;
 	obj = vp->Object();
 	char name[256];
-	oapiGetObjectName (obj, name, 256); int len = int(strlen(name) + 2);
+	oapiGetObjectName (obj, name, 256); int len = lstrlen(name) + 2;
 	objname = new char[len];
 	strcpy_s(objname, len, name);
 	ntex = 0;
