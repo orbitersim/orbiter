@@ -38,7 +38,6 @@ set(SourceFiles
 	Mesh.cpp
 	MeshMgr.cpp
 	OapiExtension.cpp
-	OgciExtensions.cpp
 	Particle.cpp
 	PlanetRenderer.cpp
 	RingMgr.cpp
