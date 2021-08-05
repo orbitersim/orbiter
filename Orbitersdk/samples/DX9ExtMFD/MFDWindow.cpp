@@ -74,7 +74,7 @@ void MFDWindow::SetTitle ()
 {
 	char cbuf[256] = "DX9 MFD [";
 	oapiGetObjectName (hVessel, cbuf+9, 250);
-	strcat (cbuf, "]");
+	strcat_s (cbuf, 256, "]");
 	SetWindowText (hDlg, cbuf);
 }
 
@@ -203,7 +203,7 @@ void MFDWindow::RepaintButton (HWND hWnd)
 	if (label) {
 		SetBkMode (hDC, TRANSPARENT);
 		HFONT pFont = (HFONT)SelectObject (hDC, hBtnFnt);
-		TextOut (hDC, BW/2, (BH-fnth)/2, label, strlen(label));
+		TextOut (hDC, BW/2, (BH-fnth)/2, label, lstrlen(label));
 		SelectObject (hDC, pFont);
 	}
 	EndPaint (hWnd, &ps);
@@ -312,7 +312,7 @@ INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		((MFDWindow*)lParam)->Initialise (hDlg);
 		return TRUE;
 	case WM_SIZING:
-		((MFDWindow*)oapiGetDialogContext(hDlg))->CheckAspect(LPRECT(lParam), wParam);
+		((MFDWindow*)oapiGetDialogContext(hDlg))->CheckAspect(LPRECT(lParam), (DWORD)wParam);
 		return TRUE;
 	case WM_SIZE:
 		((MFDWindow*)oapiGetDialogContext(hDlg))->Resize();

@@ -130,28 +130,25 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 	, bCross(true)
 	, fov(30.0)	  // fov (i.e. Aparture) which is 1/2 of the vertical fov see oapiCameraAperture()
 	, offset(-0.2)
+	, pCore(gcGetCoreInterface())
 {
 
 	font = oapiCreateFont (w/20, true, "Arial", (FontStyle)(FONT_BOLD | FONT_ITALIC), 450);
 	
-	if (gcInitialize()) {
+	hTexture = oapiLoadTexture("samples/Crosshairs.dds");
 
-		hTexture = oapiLoadTexture("samples/Crosshairs.dds");
+	// Create 3D render target
+	hRenderSrf = oapiCreateSurfaceEx(w, h, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE |
+		                                    OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
 
-		// Create 3D render target
-		hRenderSrf = oapiCreateSurfaceEx(w, h, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE |
-		                                       OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
+	// Clear the surface
+	oapiClearSurface(hRenderSrf);	
 
-		// Clear the surface
-		oapiClearSurface(hRenderSrf);	
-
-		// Register camera overlay render proc to draw into the actual rendering surface
-		if (ENABLE_OVERLAY)	gcRegisterRenderProc(CameraMFD::DrawOverlay, RENDERPROC_CUSTOMCAM_OVERLAY, this);
-	}
+	// Register camera overlay render proc to draw into the actual rendering surface
+	if (ENABLE_OVERLAY)	pCore->RegisterRenderProc(CameraMFD::DrawOverlay, RENDERPROC_CUSTOMCAM_OVERLAY, this);
+	
 
 	SelectVessel(hVessel, Type::Dock);
-
-	//oapiWriteLogV("CTR-Starting custom camera for vessel 0x%X", pV);
 }
 
 
@@ -162,7 +159,7 @@ CameraMFD::~CameraMFD()
 	oapiReleaseFont(font);
 
 	// Attention, Always delete the camera before the surface !!!
-	if (hCamera) gcDeleteCustomCamera(hCamera);
+	if (hCamera) pCore->DeleteCustomCamera(hCamera);
 	if (hRenderSrf) oapiDestroySurface(hRenderSrf);
 	if (hTexture) oapiReleaseTexture(hTexture);
 }
@@ -175,26 +172,23 @@ void CameraMFD::FocusChanged(bool bGained)
 	//if (bGained) oapiWriteLogV("Starting custom camera for vessel 0x%X", pV);
 	//else oapiWriteLogV("Shutting down custom camera for vessel 0x%X", pV);
 
-	if (gcEnabled()) {
+	// Always delete the camera first
+	if (hCamera) pCore->DeleteCustomCamera(hCamera);
+	if (hRenderSrf) oapiDestroySurface(hRenderSrf);
 
-		// Always delete the camera first
-		if (hCamera) gcDeleteCustomCamera(hCamera);
-		if (hRenderSrf) oapiDestroySurface(hRenderSrf);
+	hCamera = NULL;
+	hRenderSrf = NULL;
 
-		hCamera = NULL;
-		hRenderSrf = NULL;
+	if (bGained) {
 
-		if (bGained) {
+		// Create 3D render target
+		hRenderSrf = oapiCreateSurfaceEx(W, H, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE |
+			                                    OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
 
-			// Create 3D render target
-			hRenderSrf = oapiCreateSurfaceEx(W, H, OAPISURFACE_RENDER3D | OAPISURFACE_TEXTURE |
-			                                       OAPISURFACE_RENDERTARGET | OAPISURFACE_NOMIPMAPS);
+		// Clear the surface
+		oapiClearSurface(hRenderSrf);
 
-			// Clear the surface
-			oapiClearSurface(hRenderSrf);
-
-			SelectVessel(hVessel, Type::Dock);
-		}
+		SelectVessel(hVessel, Type::Dock);
 	}
 }
 
@@ -213,6 +207,7 @@ void CameraMFD::UpdateDimensions(DWORD w, DWORD h)
 void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 {
 	VECTOR3 pos, dir, rot;
+
 
 	pos = _V(0, 0, 0);
 	dir = _V(1, 0, 0);
@@ -281,7 +276,7 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 
 	if (ENABLE_OVERLAY) dwFlags |= CUSTOMCAM_OVERLAY;	// Enable overlays for this camera
 
-	hCamera = gcSetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, dwFlags);
+	hCamera = pCore->SetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, dwFlags);
 }
 
 // ============================================================================================================
@@ -379,7 +374,7 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	
 	skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 
-	if (hRenderSrf && gcSketchpadVersion(skp) == 2) {
+	if (hRenderSrf) {
 
 		oapi::Sketchpad3 *pSkp3 = (oapi::Sketchpad3 *)skp;
 
@@ -463,13 +458,13 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 	sprintf_s(text, 256, "Viewing %s %s%d)%s", hVessel->GetName(), mode[type], index, atchId.c_str());
 
-	if (gcSketchpadVersion(skp) == 2) {
-		oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)skp;
-		pSkp2->QuickBrush(0xA0000000);
-		pSkp2->QuickPen(0);
-		pSkp2->Rectangle(1, 1, W - 1, tbgh);
-		pSkp2->Rectangle(1, H - tbgh, W - 1, H - 1);
-	}
+	
+	oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)skp;
+	pSkp2->QuickBrush(0xA0000000);
+	pSkp2->QuickPen(0);
+	pSkp2->Rectangle(1, 1, W - 1, tbgh);
+	pSkp2->Rectangle(1, H - tbgh, W - 1, H - 1);
+	
 
 	hShell->Title (skp, text);
 
@@ -640,7 +635,7 @@ void CameraMFD::ReadStatus(FILEHANDLE scn)
 	char mask[256] = "";
 
 	while (oapiReadScenario_nextline(scn, line)) {
-		if (1 == sscanf_s(line, "ATCH_MASK %s", mask, _countof(mask))) {
+		if (1 == sscanf_s(line, "ATCH_MASK %s", mask, (int)_countof(mask))) {
 
 			if (pMask) delete[] pMask; // <= can this really happen?
 

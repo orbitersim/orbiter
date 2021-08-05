@@ -76,6 +76,7 @@ private:
 	double				offset, fov;
 
 	char *              pMask;
+	gcCore *			pCore;
 
 	class ShellMFD	*hShell;
 
