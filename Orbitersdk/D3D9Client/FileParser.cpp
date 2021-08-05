@@ -446,7 +446,7 @@ OBJHANDLE FileParser::ParseBase (OBJHANDLE hPlanet, const char *name, OBJHANDLE 
 				if (baseName == cbuf && !DoesExist(hBase))
 				{
 					ObjEntry *e = GetEntry(hBase, true);
-					e->file = new char[strlen(name) + 1];
+					e->file = new char[lstrlen(name) + 1];
 					strcpy_s(e->file, strlen(name) + 1, name);
 
 					LogAlw("Base Added: %s, %s", _PTR(hBase), name);
@@ -459,7 +459,7 @@ OBJHANDLE FileParser::ParseBase (OBJHANDLE hPlanet, const char *name, OBJHANDLE 
 				if (hBs && !DoesExist(hBs))
 				{
 					ObjEntry *e = GetEntry(hBs, true);
-					e->file = new char[strlen(name) + 1];
+					e->file = new char[lstrlen(name) + 1];
 					strcpy_s(e->file, strlen(name) + 1, name);
 
 					LogAlw("Base Added: %s, %s", _PTR(hBs), name);

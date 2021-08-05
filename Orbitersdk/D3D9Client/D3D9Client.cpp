@@ -2691,10 +2691,10 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 		SetBkMode(hDC,TRANSPARENT);
 		SetTextAlign(hDC, TA_LEFT|TA_TOP);
 
-		TextOut(hDC, 2, 2, pLoadLabel, int(strlen(pLoadLabel)));
+		TextOut(hDC, 2, 2, pLoadLabel, lstrlen(pLoadLabel));
 
 		SelectObject(hDC, hLblFont2);
-		TextOut(hDC, 2, 36, pLoadItem, int(strlen(pLoadItem)));
+		TextOut(hDC, 2, 36, pLoadItem, lstrlen(pLoadItem));
 
 		HPEN pen = CreatePen(PS_SOLID,1,0xE0A0A0);
 		HPEN po = (HPEN)SelectObject(hDC, pen);
@@ -2811,8 +2811,8 @@ void D3D9Client::SplashScreen()
 	int yc = viewH*545/800;
 
 	TextOut(hDC, xc, yc + 0*20, "ORBITER Space Flight Simulator",30);
-	TextOut(hDC, xc, yc + 1*20, dataB, int(strlen(dataB)));
-	TextOut(hDC, xc, yc + 2*20, dataA, int(strlen(dataA)));
+	TextOut(hDC, xc, yc + 1*20, dataB, lstrlen(dataB));
+	TextOut(hDC, xc, yc + 2*20, dataA, lstrlen(dataA));
 
 	DWORD VPOS = viewH - 50;
 	DWORD LSPACE = 20;
@@ -2821,12 +2821,12 @@ void D3D9Client::SplashScreen()
 	DWORD cattrib = GetFileAttributes("Modules/Server/Config");
 
 	if ((cattrib&0x10)==0 || cattrib==INVALID_FILE_ATTRIBUTES) {
-		TextOut(hDC, viewW/2, VPOS, dataD, int(strlen(dataD)));
+		TextOut(hDC, viewW/2, VPOS, dataD, lstrlen(dataD));
 		VPOS -= LSPACE;
 	}
 
 	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
-		TextOut(hDC, viewW / 2, VPOS, dataE, int(strlen(dataE)));
+		TextOut(hDC, viewW / 2, VPOS, dataE, lstrlen(dataE));
 		VPOS -= LSPACE;
 	}
 

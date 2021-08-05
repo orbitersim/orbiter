@@ -1067,7 +1067,7 @@ bool D3D9Pad::TextBox (int x1, int y1, int x2, int y2, const char *str, int len)
 	char *pch, *pEnd =_saveBuffer+len; // <= point to terminating zero
 	for (pch = strtok(_saveBuffer, "\n"); pch != NULL; pch = strtok(NULL, "\n"))
 	{
-		int _len = int(strlen(pch));
+		int _len = lstrlen(pch);
 		if (_len>1) { WrapOneLine(pch, _len, x2-x1); }
 		if (pch+_len < pEnd) { *(pch+_len) = '\n'; } // strtok splits by inserting '\0's => revert'em
 	}
