@@ -2,11 +2,12 @@
 # Licensed under the MIT License
 
 add_subdirectory(samples)
+
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(doc)
-endif()
-if(Doxygen_FOUND)
-	add_subdirectory(doxygen)
+	if(Doxygen_FOUND)
+		add_subdirectory(doxygen)
+	endif()
 endif()
 
 install(DIRECTORY html include
