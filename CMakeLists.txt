@@ -230,7 +230,7 @@ endif()
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"
-	ON
+	OFF
 )
 
 option(ORBITER_MAKE_SDK_SAMPLES
