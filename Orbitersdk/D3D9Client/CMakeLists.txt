@@ -5,6 +5,8 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 # set(CMAKE_CXX_STANDARD 11)
 # set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(ShaderDir ${CMAKE_SOURCE_DIR}/Modules/D3D9Client)
+
 set(SourceFiles
 	AABBUtil.cpp
 	AtmoControls.cpp
@@ -112,9 +114,33 @@ set(IncludeFiles
 	ZTreeMgr.h
 )
 
+set(ShaderFiles
+	${ShaderDir}/BeaconArray.fx
+	${ShaderDir}/CKBlit.fx
+	${ShaderDir}/Common.hlsl
+	${ShaderDir}/D3D9Client.fx
+	${ShaderDir}/EnvMapBlur.hlsl
+	${ShaderDir}/GDIOverlay.hlsl
+	${ShaderDir}/HorizonHaze.fx
+	${ShaderDir}/IPI.hlsl
+	${ShaderDir}/IrradianceInteg.hlsl
+	${ShaderDir}/LensFlare.hlsl
+	${ShaderDir}/LightBlur.hlsl
+	${ShaderDir}/Mesh.fx
+	${ShaderDir}/Metalness.fx
+	${ShaderDir}/Particle.fx
+	${ShaderDir}/PBR.fx
+	${ShaderDir}/Planet.fx
+	${ShaderDir}/SceneTech.fx
+	${ShaderDir}/Sketchpad.fx
+	${ShaderDir}/Surface.fx
+	${ShaderDir}/Vessel.fx
+)
+
 add_library(D3D9Client MODULE
 	${SourceFiles}
 	${IncludeFiles}
+	${ShaderFiles}
 	D3D9Client.rc
 )
 
@@ -155,6 +181,11 @@ set_target_properties(D3D9Client
 	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Modules/Plugin
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
 	COMPILE_DEFINITIONS D3D9CLIENT_EXPORTS
+)
+
+add_custom_command(
+	TARGET D3D9Client POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ShaderDir}/ ${CMAKE_BINARY_DIR}/Modules/D3D9Client
 )
 
 install(TARGETS D3D9Client
