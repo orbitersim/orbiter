@@ -246,38 +246,6 @@ void D3D9Pad::GradientFillRect(const LPRECT R, DWORD c1, DWORD c2, bool bVertica
 
 // ===============================================================================================
 //
-void D3D9Pad::PatternFill(SURFHANDLE hSrc, const LPRECT t)
-{
-#ifdef SKPDBG 
-	Log("PatternFill()");
-#endif
-	if (!hSrc) return;
-
-	TexChange(hSrc);
-
-	Flush();
-
-	HR(FX->SetVector(ePatScl, &D3DXVECTOR4(float(t->left), float(t->top), 0.0f, 0.0f)));
-	HR(FX->SetBool(ePatEn, true));
-
-	DWORD c = 0xFFFFFFFF;
-	if (HasBrush()) c = brushcolor.dclr;
-
-	if (Topology(TRIANGLE)) {
-		AddRectIdx(vI);
-		SkpVtxPF(Vtx[vI++], t->left, t->top, c);
-		SkpVtxPF(Vtx[vI++], t->left, t->bottom, c);
-		SkpVtxPF(Vtx[vI++], t->right, t->bottom, c);
-		SkpVtxPF(Vtx[vI++], t->right, t->top, c);
-	}
-
-	Flush();
-
-	HR(FX->SetBool(ePatEn, false));
-}
-
-// ===============================================================================================
-//
 void D3D9Pad::ColorFill(const FVECTOR4 &color, const LPRECT tgt)
 {
 #ifdef SKPDBG 

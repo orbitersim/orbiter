@@ -199,6 +199,17 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 	D3D9CloseLog();
 }
 
+DLLCLBK gcGUIBase * gcGetGUICore()
+{
+	return dynamic_cast<gcGUIBase *>(g_pWM);
+}
+
+
+DLLCLBK gcCore * gcGetCoreAPI()
+{
+	return dynamic_cast<gcCore *>(g_client);
+}
+
 // ==============================================================
 // D3D9Client class implementation
 // ==============================================================

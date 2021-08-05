@@ -43,7 +43,6 @@ uniform extern float3    gPos;				// Clipper sphere direction [unit vector]
 uniform extern float3    gPos2;				// Clipper cone direction [unit vector]
 uniform extern float4    gCov;				// Clipper sphere coverage parameters
 uniform extern float4    gSize;				// Inverse Texture size in .xy [pixels]
-uniform extern float4    gPatScl;			// Pattern Scale
 uniform extern float4    gTarget;			// Inverse Screen size in .xy [pixels], Screen Size in .zw [pixels]
 uniform extern float3	 gWidth;			// Pen width in .x, and pattern scale in .y, pixel offset in .z
 uniform extern float	 gFov;				// atan( 2 * tan(fov/2) / H )
@@ -52,7 +51,6 @@ uniform extern bool      gDashEn;
 uniform extern bool      gTexEn;
 uniform extern bool		 gFntEn;
 uniform extern bool      gKeyEn;
-uniform extern bool      gPatEn;
 uniform extern bool      gWide;				// Unused
 uniform extern bool      gShade;
 uniform extern bool      gClipEn;
@@ -212,13 +210,10 @@ OutputVS OrthoVS(InputVS v)
 
 		posH += float4(latW.y, -latW.x, 0, 0) * gTarget * fSide;
 	}
-
 	
 	outVS.color.rgba = v.clr.bgra;
 	outVS.sw = v.fnc;
 	outVS.posH = float4(posH.xyz, 1.0f);
-
-	if (gPatEn) v.dir.xy = (v.pos.xy - (gPatScl.xy - 0.5f));
 
 	outVS.tex = float4(v.dir.xy * gSize.xy, v.dir.xy * gSize.zw);
 
@@ -247,8 +242,6 @@ float4 SketchpadPS(float4 sc : VPOS, OutputVS frg) : COLOR
 	if (frg.sw[TSW] > 0.2f) c = gPen;
 	if (frg.sw[TSW] > 0.8f) c = t;
 	if (frg.sw[CSW] > 0.8f) c.a *= f;
-
-	if (gPatEn) c *= t;
 
 	// Color keying
 	if (gTexEn && gKeyEn) {

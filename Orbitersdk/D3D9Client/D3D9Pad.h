@@ -542,7 +542,6 @@ public:
 	void PopWorldTransform();
 	void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL);
 	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
-	void PatternFill(SURFHANDLE hPattern, const LPRECT tgt);
 	void ColorFill(const FVECTOR4 &color, const LPRECT tgt);
 	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out);
 	void CopyRectNative(HSURFNATIVE pSrc, const LPRECT s, int tx, int ty);
@@ -706,13 +705,11 @@ private:
 	static D3DXHANDLE   eFov;
 	static D3DXHANDLE   eRandom;
 	static D3DXHANDLE   eTarget;
-	static D3DXHANDLE	ePatScl;
 	static D3DXHANDLE   eKey;
 	static D3DXHANDLE   eDashEn;
 	static D3DXHANDLE   eTexEn;
 	static D3DXHANDLE   eKeyEn;
 	static D3DXHANDLE   eFntEn;
-	static D3DXHANDLE   ePatEn;
 	static D3DXHANDLE   eWidth;
 	static D3DXHANDLE   eWide;
 	static D3DXHANDLE   eSize;
