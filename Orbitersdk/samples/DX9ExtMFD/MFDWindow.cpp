@@ -13,14 +13,14 @@
 #include "MFDWindow.h"
 #include "resource.h"
 #include <stdio.h> // temporary
-#include "gcAPI.h"
+#include "gcConst.h"
 
 #define IDSTICK 999
 
 // ==============================================================
 // prototype definitions
 
-BOOL CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // ==============================================================
 // class MFDWindow
@@ -35,13 +35,11 @@ MFDWindow::MFDWindow (HINSTANCE _hInst, const MFDSPEC &spec): ExternMFD (spec), 
 	bDrvMode = false; // D3D
 
 	oapiOpenDialogEx (hInst, IDD_MFD, DlgProc, DLG_ALLOWMULTI|DLG_CAPTIONCLOSE|DLG_CAPTIONHELP, this);
-
-	gcInitialize();
 }
 
 MFDWindow::~MFDWindow ()
 {
-	gcCore *pCore = gcGetCoreAPI();
+	gcCore *pCore = gcGetCoreInterface();
 	if (pCore && hSwap) pCore->ReleaseSwap(hSwap);
 	oapiCloseDialog (hDlg);
 	if (hBtnFnt) DeleteObject (hBtnFnt);
@@ -55,7 +53,7 @@ void MFDWindow::Initialise (HWND _hDlg)
 	hDsp = GetDlgItem (hDlg, IDC_DISPLAY);
 	
 	for (int i = 0; i < 16; i++)
-		SetWindowLong (GetDlgItem (hDlg, IDC_BUTTON1+i), GWL_USERDATA, i);
+		SetWindowLong (GetDlgItem (hDlg, IDC_BUTTON1+i), GWLP_USERDATA, i);
 
 	oapiAddTitleButton (IDSTICK, g_hPin, DLG_CB_TWOSTATE);
 	SetTitle ();
@@ -154,7 +152,7 @@ void MFDWindow::Resize()
 	SetWindowPos (GetDlgItem (hDlg, IDC_BUTTON_MNU), NULL, r.left + DW/2 + (BW*3)/4, y1, BW, BH, SWP_SHOWWINDOW);
 
 	if (!bFailed) {
-		gcCore *pCore = gcGetCoreAPI();
+		gcCore *pCore = gcGetCoreInterface();
 		if (pCore) hSwap = pCore->RegisterSwap(hDsp, hSwap, 0);
 	}
 
@@ -184,7 +182,7 @@ void MFDWindow::RepaintDisplay(HWND hWnd)
 
 void MFDWindow::RepaintButton (HWND hWnd)
 {
-	int id = GetWindowLong (hWnd, GWL_USERDATA);
+	int id = GetWindowLong (hWnd, GWLP_USERDATA);
 	PAINTSTRUCT ps;
 	HDC hDC = BeginPaint (hWnd, &ps);
 	SelectObject (hDC, GetStockObject (BLACK_PEN));
@@ -242,7 +240,7 @@ void MFDWindow::ProcessButton (int bt, int event)
 
 void MFDWindow::ToggleDrvMode()
 {
-	gcCore *pCore = gcGetCoreAPI();
+	gcCore *pCore = gcGetCoreInterface();
 	if (!pCore) return;
 
 	SURFHANDLE surf = GetDisplaySurface();
@@ -262,7 +260,7 @@ void MFDWindow::clbkRefreshDisplay (SURFHANDLE)
 		return;
 	}
 
-	gcCore *pCore = gcGetCoreAPI();
+	gcCore *pCore = gcGetCoreInterface();
 	if (!pCore) return;
 
 	if (!hSwap) hSwap = pCore->RegisterSwap(hDsp, hSwap, 0);
@@ -307,7 +305,7 @@ void MFDWindow::StickToVessel (bool stick)
 // ==============================================================
 // Windows message handler for the dialog box
 
-BOOL CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -353,7 +351,7 @@ LRESULT CALLBACK MFD_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 }
 
 
-long FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT: {
@@ -362,12 +360,12 @@ long FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		} return 0;
 	case WM_LBUTTONDOWN: {
 		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton (GetWindowLong (hWnd, GWL_USERDATA), PANEL_MOUSE_LBDOWN);
+		mfdw->ProcessButton (GetWindowLong (hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
 		SetCapture (hWnd);
 		} return 0;
 	case WM_LBUTTONUP: {
 		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton (GetWindowLong (hWnd, GWL_USERDATA), PANEL_MOUSE_LBUP);
+		mfdw->ProcessButton (GetWindowLong (hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
 		ReleaseCapture();
 		} return 0;
 	}

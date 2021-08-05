@@ -29,7 +29,7 @@
 #include "windows.h"
 #include "orbitersdk.h"
 #include "MFD.h"
-#include "gcAPI.h"
+#include "gcConst.h"
 #include "Sketchpad2.h"
 #include "Shell.h"
 
@@ -433,20 +433,20 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	}
 	else {
 		static char *msg = { "No Graphics API" };
-		skp->Text(W / 2, H / 2, msg, strlen(msg));
+		skp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 	
 
 	if (!hCamera) {
 		static char *msg = { "Custom Cameras Disabled" };
-		skp->Text(W / 2, H / 2, msg, strlen(msg));
+		skp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 
 	if (nDock == 0 && nAtch == 0) {
 		static char *msg = { "No Dock/Attachment points" };
-		skp->Text(W / 2, H / 2, msg, strlen(msg));
+		skp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 
@@ -475,7 +475,7 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
 
-	skp->Text(10, H - tbgh, text, strlen(text));
+	skp->Text(10, H - tbgh, text, lstrlen(text));
 	
 	return true;
 }

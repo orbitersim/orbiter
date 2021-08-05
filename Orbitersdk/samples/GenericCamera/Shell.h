@@ -89,7 +89,7 @@ public:
 	//
 	static void	InitModule(HINSTANCE hDLL);
 	static void ExitModule(HINSTANCE hDLL);
-	static int  MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
+	static LONG_PTR MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam);
 
 private:
 	UINT id;			// Logical MFD identifier MFD_LEFT, MFD_RIGHT...

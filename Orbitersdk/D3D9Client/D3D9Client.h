@@ -27,7 +27,6 @@
 #include <assert.h>
 #include "OrbiterAPI.h"
 #include "D3D9Frame.h"
-#include "nvapi.h"
 #include "gcConst.h"
 #include <vector>
 #include <stack>
