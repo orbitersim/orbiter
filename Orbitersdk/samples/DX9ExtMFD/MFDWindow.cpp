@@ -75,7 +75,7 @@ void MFDWindow::SetTitle ()
 	char cbuf[256] = "DX9 MFD [";
 	oapiGetObjectName (hVessel, cbuf+9, 250);
 	strcat_s (cbuf, 256, "]");
-	SetWindowText (hDlg, cbuf);
+	SetWindowText (hDlg, cbuf);		//<<--- Very odd runtime check failure here why now ???  :jarmonik 5-Aug-2021
 }
 
 void MFDWindow::CheckAspect(LPRECT r, DWORD q)

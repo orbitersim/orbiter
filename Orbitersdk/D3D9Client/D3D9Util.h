@@ -331,6 +331,12 @@ void LogMatrix(D3DXMATRIX *pM, const char *name);
 // Conversion functions
 // ------------------------------------------------------------------------------------
 
+inline RECT _RECT(DWORD l, DWORD t, DWORD r, DWORD b)
+{
+	RECT rect = { long(l), long(t), long(r), long(b) };
+	return rect;
+}
+
 inline VECTOR3 _V(D3DXVECTOR3 &i)
 {
 	return _V(double(i.x), double(i.y), double(i.z));

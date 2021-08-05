@@ -1124,7 +1124,7 @@ void D3D9Client::clbkRenderScene()
 
 		if (bHalt) {
 			pDevice->BeginScene();
-			RECT rect2 = {0,viewH-60,viewW,viewH-20};
+			RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
 			pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
 			rect2.left-=4; rect2.top-=4;
 			pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
@@ -1147,7 +1147,7 @@ void D3D9Client::clbkRenderScene()
 
 			if (Label[0]!=0) {
 				pDevice->BeginScene();
-				RECT rect2 = {0,viewH-60,viewW,viewH-20};
+				RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
 				pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
 				rect2.left-=4; rect2.top-=4;
 				pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
@@ -1213,7 +1213,7 @@ bool D3D9Client::clbkDisplayFrame()
 	double time = D3D9GetTime();
 
 	if (!bRunning) {
-		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
+		RECT txt = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
 		pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
 		pDevice->StretchRect(pTextScreen, NULL, pBackBuffer, &txt, D3DTEXF_POINT);
 	}
@@ -2331,7 +2331,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 	int h = SURFACE(src)->GetHeight();
 
 	RECT rs = { 0, 0, w, h };
-	RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
+	RECT rt = _RECT( tgtx, tgty, tgtx+w, tgty+h );
 
 	if (pBltGrpTgt) {
 		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
@@ -2355,8 +2355,8 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 	if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
-	RECT rs = { srcx, srcy, srcx+w, srcy+h };
-	RECT rt = { tgtx, tgty, tgtx+w, tgty+h };
+	RECT rs = _RECT( srcx, srcy, srcx+w, srcy+h );
+	RECT rt = _RECT( tgtx, tgty, tgtx+w, tgty+h );
 
 	if (pBltGrpTgt) {
 		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
@@ -2381,8 +2381,8 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	if (src==NULL) { LogErr("D3D9Client::clbkScaleBlt() Source surface is NULL"); return false; }
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
-	RECT rs = { srcx, srcy, srcx+srcw, srcy+srch };
-	RECT rt = { tgtx, tgty, tgtx+tgtw, tgty+tgth };
+	RECT rs = _RECT( srcx, srcy, srcx+srcw, srcy+srch );
+	RECT rt = _RECT( tgtx, tgty, tgtx+tgtw, tgty+tgth );
 
 	if (pBltGrpTgt) {
 		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
@@ -2419,7 +2419,7 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w
 {
 	_TRACE;
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
-	RECT r = {tgtx, tgty, tgtx+w, tgty+h};
+	RECT r = _RECT(tgtx, tgty, tgtx+w, tgty+h);
 	bool ret = SURFACE(tgt)->Fill(&r, col);
 	return ret;
 }
@@ -2512,7 +2512,7 @@ HDC D3D9Client::clbkGetSurfaceDC(SURFHANDLE surf)
 					bGDIClear = false;
 					DWORD color = 0xF08040; // BGR "Color Key" value for transparency
 					HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
-					RECT r = { 0, 0, viewW, viewH };
+					RECT r = _RECT( 0, 0, viewW, viewH );
 					FillRect(hDC, &r, hBrush);
 					DeleteObject(hBrush);
 				}
@@ -2679,7 +2679,7 @@ bool D3D9Client::OutputLoadStatus(const char *txt, int line)
 			return false;
 		}
 
-		RECT txt = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
+		RECT txt = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
 
 		pDevice->StretchRect(pSplashScreen, &txt, pTextScreen, NULL, D3DTEXF_POINT);
 
@@ -2836,7 +2836,7 @@ void D3D9Client::SplashScreen()
 	HR(pSplashScreen->ReleaseDC(hDC));
 
 
-	RECT src = { loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h };
+	RECT src = _RECT( loadd_x, loadd_y, loadd_x+loadd_w, loadd_y+loadd_h );
 	pDevice->StretchRect(pSplashScreen, &src, pTextScreen, NULL, D3DTEXF_POINT);
 	pDevice->StretchRect(pSplashScreen, NULL, pBackBuffer, NULL, D3DTEXF_POINT);
 	pDevice->Present(0, 0, 0, 0);

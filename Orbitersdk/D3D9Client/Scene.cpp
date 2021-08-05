@@ -249,7 +249,7 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 		if (psgBuffer[GBUF_GDI]->GetDC(&hDC) == S_OK) {
 			DWORD color = 0xF08040; // BGR "Color Key" value for transparency
 			HBRUSH hBrush = CreateSolidBrush((COLORREF)color);
-			RECT r = { 0, 0, viewW, viewH };
+			RECT r = _RECT( 0, 0, viewW, viewH );
 			FillRect(hDC, &r, hBrush);
 			DeleteObject(hBrush);
 			psgBuffer[GBUF_GDI]->ReleaseDC(hDC);
