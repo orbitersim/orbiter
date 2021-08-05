@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches:
-      - master
+      - main
     paths-ignore:
       - 'Doc/**'
       - 'Flights/**'
@@ -15,7 +15,7 @@ on:
       - 'Textures2/**'
   pull_request:
     branches:
-      - master
+      - main
     paths-ignore:
       - 'Doc/**'
       - 'Flights/**'
@@ -41,13 +41,35 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    
+      
+    - name: Prepare
+      run: |
+        mkdir out\build
+        mkdir out\install
+      
+    - name: Configure
+      run: 'cmake -A ${{ matrix.architecture }} -G "Visual Studio 16 2019" -S ../.. -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
+      working-directory: ${{ github.workspace }}/out/build
+
     - name: Build
-      uses: lukka/run-cmake@v3
+      run: 'cmake --build . --config Release -- "-maxCpuCount:2" /p:CL_MPcount=2'
+      working-directory: ${{ github.workspace }}/out/build
+
+    - name: Install
+      run: 'cmake --install . --prefix "${{ github.workspace }}\out\install"'
+      working-directory: ${{ github.workspace }}/out/build
+
+    - name: Pack
+      if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
+      working-directory: ${{ github.workspace }}/out/install/Orbiter
+      shell: cmd
+      run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
+
+    - name: Upload Build Artifact
+      if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
+      uses: actions/upload-artifact@v2.2.4
       with:
-        cmakeGenerator: 'Visual Studio 16 2019'  
-        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        useVcpkgToolchainFile: true
-        cmakeAppendedArgs: '-A ${{ matrix.architecture }} -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
-        buildDirectory: '${{ github.workspace }}/build'
+        name: Orbiter-${{ matrix.architecture }}
+        # A file, directory or wildcard pattern that describes what to upload
+        path: ${{ github.workspace }}/out/Orbiter.zip
+        retention-days: 7

@@ -13,6 +13,13 @@ set_target_properties(Orbitersdk
 	FOLDER Core
 )
 
+# Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
+add_custom_command(TARGET Orbitersdk
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib
+	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_SDK_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/ 
+)
+
 # Installation: Orbiter addon entry interface library to SDK folder to be included by addons
 install(TARGETS Orbitersdk
 	ARCHIVE

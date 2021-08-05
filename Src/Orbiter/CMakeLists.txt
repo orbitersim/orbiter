@@ -241,7 +241,7 @@ if(BUILD_ORBITER_SERVER)
 		PROPERTIES
 		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
 		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR}/Server
-		RUNTIME_OUTPUT_NAME Orbiter
+		OUTPUT_NAME Orbiter
 		VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 		COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
 		ENABLE_EXPORTS 1
@@ -276,6 +276,13 @@ if(BUILD_ORBITER_SERVER)
 	endif()
 	
 endif()
+
+# Copy library to its Orbitersdk/lib location so that external project integrated into the build can find it
+add_custom_command(TARGET ${OrbiterTgt}
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/lib
+	COMMAND ${CMAKE_COMMAND} -E copy ${ORBITER_LIB} ${ORBITER_BINARY_SDK_DIR}/lib/ 
+)
 
 add_custom_command(
 	OUTPUT cryptstring.h

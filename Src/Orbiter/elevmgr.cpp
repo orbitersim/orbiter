@@ -311,6 +311,8 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 					t->lngmin = (double)ilng/(double)nlng*Pi2 - Pi;
 					t->lngmax = (double)(ilng+1)/(double)nlng*Pi2 - Pi;
 					// still need to store emin and emax
+					auto gc = g_pOrbiter->GetGraphicsClient();
+					if (gc) gc->clbkFilterElevation((OBJHANDLE)cbody, ilat, ilng, lvl, elev_res, t->data);
 					break;
 				}
 			}
