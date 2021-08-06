@@ -15,6 +15,7 @@ set(IRRKLANG_DLL_DIR ${IRRKLANG_DIR})
 file(GLOB config_files ${ASSET_DIR}/XRSound/*.cfg)
 
 add_custom_target(XRSound_assets ALL
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_ROOT_DIR}/Doc
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_ROOT_DIR}/XRSound
 	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/XRSound/
 	COMMAND ${CMAKE_COMMAND} -E copy ${config_files} ${ORBITER_BINARY_ROOT_DIR}/XRSound/
