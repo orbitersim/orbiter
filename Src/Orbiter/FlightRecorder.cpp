@@ -470,7 +470,7 @@ bool Vessel::FRecorder_Read (const char *scname)
 
 void Vessel::FRecorder_Play ()
 {
-	dASSERT (s1);
+	_ASSERTE(s1);
 	StateVectors *sv = s1;
 
 	if (fstatus == FLIGHTSTATUS_FREEFLIGHT) {

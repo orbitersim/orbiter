@@ -191,7 +191,7 @@ OAPI_MSGTYPE ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 	case OAPI_MSG_MFD_OPENED:
 		// Our new MFD mode has been selected, so we create the MFD and
 		// return a pointer to it.
-		return (int)(new ScriptMFD (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
+		return reinterpret_cast<OAPI_MSGTYPE>(new ScriptMFD (LOWORD(wparam), HIWORD(wparam), (VESSEL*)lparam));
 	}
 	return 0;
 }
