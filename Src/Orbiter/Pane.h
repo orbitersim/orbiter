@@ -203,7 +203,7 @@ public:
 
 	Instrument *MFD (int which);
 
-	void RepaintMFDButtons (int id, Instrument *instr);
+	void RepaintMFDButtons (INT_PTR id, Instrument *instr);
 	Instrument::Spec GetVCMFDSpec ();
 	const VCMFDSPEC *GetVCMFDParams (int id);
 	const VirtualCockpit *GetVC() const { return vcockpit; }

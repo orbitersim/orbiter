@@ -1155,7 +1155,7 @@ Instrument::Spec Pane::GetVCMFDSpec ()
 	return spec;
 }
 
-void Pane::RepaintMFDButtons (int id, Instrument *instr)
+void Pane::RepaintMFDButtons (INT_PTR id, Instrument *instr)
 {
 	if (id < MAXMFD && instr == mfd[id].instr) {
 		if (panelmode >= 1) g_focusobj->MFDchanged (id, mfd[id].instr->Type());
