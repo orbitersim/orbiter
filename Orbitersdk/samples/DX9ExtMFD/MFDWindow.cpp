@@ -53,7 +53,7 @@ void MFDWindow::Initialise (HWND _hDlg)
 	hDsp = GetDlgItem (hDlg, IDC_DISPLAY);
 	
 	for (int i = 0; i < 16; i++)
-		SetWindowLong (GetDlgItem (hDlg, IDC_BUTTON1+i), GWLP_USERDATA, i);
+		SetWindowLongPtr (GetDlgItem (hDlg, IDC_BUTTON1+i), GWLP_USERDATA, i);
 
 	oapiAddTitleButton (IDSTICK, g_hPin, DLG_CB_TWOSTATE);
 	SetTitle ();
@@ -73,8 +73,8 @@ void MFDWindow::SetVessel (OBJHANDLE hV)
 void MFDWindow::SetTitle ()
 {
 	char cbuf[256] = "DX9 MFD [";
-	oapiGetObjectName (hVessel, cbuf+9, 250);
-	strcat_s (cbuf, 256, "]");
+	oapiGetObjectName (hVessel, cbuf+9, 200);
+	strcat_s (cbuf, 250, "]");
 	SetWindowText (hDlg, cbuf);		//<<--- Very odd runtime check failure here why now ???  :jarmonik 5-Aug-2021
 }
 
@@ -182,7 +182,7 @@ void MFDWindow::RepaintDisplay(HWND hWnd)
 
 void MFDWindow::RepaintButton (HWND hWnd)
 {
-	int id = GetWindowLong (hWnd, GWLP_USERDATA);
+	int id = (int)GetWindowLongPtr (hWnd, GWLP_USERDATA);
 	PAINTSTRUCT ps;
 	HDC hDC = BeginPaint (hWnd, &ps);
 	SelectObject (hDC, GetStockObject (BLACK_PEN));
@@ -360,12 +360,12 @@ INT_PTR FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		} return 0;
 	case WM_LBUTTONDOWN: {
 		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton (GetWindowLong (hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
+		mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBDOWN);
 		SetCapture (hWnd);
 		} return 0;
 	case WM_LBUTTONUP: {
 		MFDWindow *mfdw = (MFDWindow*)oapiGetDialogContext (GetParent (hWnd));
-		mfdw->ProcessButton (GetWindowLong (hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
+		mfdw->ProcessButton ((int)GetWindowLongPtr(hWnd, GWLP_USERDATA), PANEL_MOUSE_LBUP);
 		ReleaseCapture();
 		} return 0;
 	}
