@@ -31,7 +31,6 @@ typedef struct {
 	double peak;
 } D3D9Time;
 
-extern bool bException; // Global flag , indicating ExcHandler() was called
 extern int uEnableLog;  // This value is controlling log opeation ( Config->DebugLvl )
 extern int iEnableLog;
 extern int EnableLogStack[16];
@@ -61,8 +60,6 @@ double D3D9GetTime();
 void   D3D9SetTime(D3D9Time &inout, double ref);
 
 void   MissingRuntimeError();
-int    PrintModules(DWORD pAdr);
 void   LogAttribs(DWORD attrib, DWORD w, DWORD h, LPCSTR origin);
-int    ExcHandler(EXCEPTION_POINTERS *p);
 
 #endif

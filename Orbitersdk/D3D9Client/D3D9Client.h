@@ -362,7 +362,7 @@ public:
 	 *   object for which the message was created.
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
-	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, LONG_PTR context);
+	int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
 
 	/**
 	 * \brief Return a DEVMESHHANDLE handle for a visual, defined by its index. (! Return type incorrect !)
@@ -522,7 +522,7 @@ public:
 	 * \return The return value depends on the message type and the action taken.
 	 * \default Do nothing, return FALSE.
 	 */
-	BOOL LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	INT_PTR LaunchpadVideoWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	/**
 	 * \brief Fullscreen mode flag
 	 * \return true if the client is set up for running in fullscreen
@@ -1387,7 +1387,7 @@ public:
 	 *   of certain events (e.g. adding and deleting meshes)
 	 * \note For currently supported event types, see \ref visevent.
 	 */
-	virtual void clbkEvent (DWORD event, LONG_PTR context) {}
+	virtual void clbkEvent (DWORD event, DWORD_PTR context) {}
 
 protected:
 	OBJHANDLE hObj;	///< Object handle associated with the visual

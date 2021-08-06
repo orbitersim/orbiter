@@ -177,8 +177,6 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 {
 	LogAlw("--------------ExitModule------------");
 
-	if (bException) LogErr("!!! Abnormal Program Termination !!!");
-
 	delete TileCatalog;
 	delete MeshCatalog;
 	delete SurfaceCatalog;
@@ -1858,7 +1856,7 @@ bool D3D9Client::clbkGetRenderParam(DWORD prm, DWORD *value) const
 // ==============================================================
 // Responds to visual events
 
-int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, LONG_PTR context)
+int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context)
 {
 	_TRACE;
 	VisObject *vo = (VisObject*)vis;
@@ -2123,7 +2121,7 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 // ==============================================================
 // Message handler for Launchpad "video" tab
 
-BOOL D3D9Client::LaunchpadVideoWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR D3D9Client::LaunchpadVideoWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	_TRACE;
 	if (vtab) return vtab->WndProc(hWnd, uMsg, wParam, lParam);
@@ -3079,12 +3077,12 @@ void D3D9Client::SplashScreen()
 	}
 
 	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
-		TextOut(hDC, viewW / 2, VPOS, dataE, strlen(dataE));
+		TextOut(hDC, viewW / 2, VPOS, dataE, lstrlen(dataE));
 		VPOS -= LSPACE;
 	}
 
 	if (Config->bFlats && !Config->bFlatsEnabled) {
-		TextOut(hDC, viewW / 2, VPOS, dataF, strlen(dataF));
+		TextOut(hDC, viewW / 2, VPOS, dataF, lstrlen(dataF));
 		VPOS -= LSPACE;
 	}
 

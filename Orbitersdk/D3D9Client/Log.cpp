@@ -46,9 +46,6 @@ std::queue<std::string> D3D9DebugQueue;
 
 CRITICAL_SECTION LogCrit;
 
-bool bException = false;        // Global flag , indicating ExcHandler() was called
-DWORD ECode = 0, EAddress = 0;  // Exception-code and -address
-
 
 //-------------------------------------------------------------------------------------------
 //
