@@ -38,6 +38,7 @@
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "Surfmgr2.h"
+#include <unordered_map>
 
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700 ) // Microsoft Visual Studio Version 2012 and lower
@@ -210,6 +211,269 @@ DLLCLBK gcCore * gcGetCoreAPI()
 	return dynamic_cast<gcCore *>(g_client);
 }
 
+
+// ==============================================================
+// Face's Terrain Flattening section
+// ==============================================================
+
+struct FlatShape
+{
+	double Lat;
+	double Lng;
+	double Dim1;
+	double Dim2;
+	double Cos;
+	double Sin;
+	double Falloff;
+	int Height;
+	int Type;
+};
+
+struct TilePixelPosition
+{
+	int iLat;
+	int iLng;
+	int X;
+	int Y;
+	bool operator==(const TilePixelPosition& other) const
+	{
+		return iLat == other.iLat && iLng == other.iLng && X == other.X && Y == other.Y;
+	}
+};
+
+std::unordered_map<OBJHANDLE, std::unordered_map<int, std::unordered_map<int, std::unordered_map<int, std::vector<FlatShape*>>>>> g_ElevationFlatteningShapes;
+std::unordered_map<OBJHANDLE, std::vector<FlatShape*>> g_ShapeStore;
+std::unordered_map<OBJHANDLE, bool> g_ShapesLoaded;
+
+std::vector<std::string> EnumerateDirectory(std::string directory, std::string filter)
+{
+	std::vector<std::string> result;
+	std::string search_path = directory + "\\" + filter;
+	WIN32_FIND_DATA fd;
+	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) result.push_back(fd.cFileName);
+		} while (::FindNextFile(hFind, &fd));
+		::FindClose(hFind);
+	}
+	return result;
+}
+
+void GetTilePixelPosition(int lvl, double lat, double lng, TilePixelPosition &pos)
+{
+	//Normalize input
+	if (lat < -90) lat = -90;
+	if (lat > 90) lat = 90;
+	while (lng < -180)
+	{
+		lng += 360;
+	}
+	while (lng > 180)
+	{
+		lng -= 360;
+	}
+
+	//Calculate tile position and pixel position
+	double bands = pow((double)2, lvl);
+	double width = 180 / bands;
+	pos.iLat = (int)((-lat + 90) / width);
+	pos.iLng = (int)((lng + 180) / width);
+	double step = width / 256;
+	double latmin = 90 - width*(pos.iLat + 1);
+	double lngmin = -180 + width*pos.iLng;
+	pos.X = (int)((lng - lngmin) / width * 256);
+	pos.Y = (int)(-(lat - latmin) / width * 256 + 256);
+}
+
+void ProcessPlanetFlats(OBJHANDLE hPlanet)
+{
+	char name[MAX_PATH];
+	char fname[MAX_PATH];
+	oapiGetObjectName(hPlanet, name, ARRAYSIZE(name) - 6);
+	sprintf_s(fname, ARRAYSIZE(fname), "%s\\Flat", name);
+	g_client->TexturePath(fname, name);
+	auto files = EnumerateDirectory(name, "*.flt");
+	// Load all planet shapes
+	for (auto file : files)
+	{
+		auto radius = oapiGetSize(hPlanet);
+		sprintf_s(fname, ARRAYSIZE(fname), "%s\\%s", name, file.c_str());
+		auto f = fopen(fname, "r");
+		if (f != 0)
+		{
+			while (!feof(f))
+			{
+				int height, dim1, dim2, falloff, read;
+				double lat, lng, phi;
+				if ((read = fscanf(f, "%s %d %lf %lf %d %d %lf %d", fname, &height, &lng, &lat, &dim1, &dim2, &phi, &falloff)) < 5) continue; // Skip incomplete lines
+				if (fname[0] == '/' && fname[1] == '/') continue; // Skip commented lines
+				_strlwr(fname);
+				if (read < 6)	dim2 = dim1; // Fallback for one dimension only
+				if (read < 7)	phi = 0;     // Fallback for no angle given
+				if (read < 8)	falloff = 0; // Fallback for no falloff given
+				auto decdeg = radius*cos(lat*RAD) * 2 * PI;
+				decdeg = 360 / decdeg;
+				if (strcmp(fname, "ellipse") == 0)
+				{
+					g_ShapeStore[hPlanet].push_back(new FlatShape{ lat ,lng , (double)dim1*decdeg, (double)dim2*decdeg, cos(-phi*RAD),sin(-phi*RAD), (double)falloff / 100, height, 1 });
+				}
+				else if (strcmp(fname, "rect") == 0)
+				{
+					g_ShapeStore[hPlanet].push_back(new FlatShape{ lat ,lng , (double)dim1*decdeg / 2, (double)dim2*decdeg / 2, cos(-phi*RAD),sin(-phi*RAD), (double)falloff / 100, height, 4 });
+				}
+			}
+			fclose(f);
+		}
+	}
+	// Build up planet map only if at least one shape was added
+	if (g_ShapeStore.find(hPlanet) != g_ShapeStore.end()) for (auto shape : g_ShapeStore[hPlanet])
+	{
+		double offset = sqrt(shape->Dim1*shape->Dim1 + shape->Dim2*shape->Dim2);
+		double latmin = shape->Lat - offset;
+		double latmax = shape->Lat + offset;
+		double lngmin = shape->Lng - offset;
+		double lngmax = shape->Lng + offset;
+		TilePixelPosition leftUpper, rightUpper, leftLower, rightLower;
+		for (auto lvl = 13; lvl >= 0; lvl--)
+		{
+			int latBands = 1 << lvl;
+			int lngBands = latBands * 2;
+
+			// Get tile pixel position of all corner points
+			GetTilePixelPosition(lvl, latmax, lngmin, leftUpper);
+			GetTilePixelPosition(lvl, latmax, lngmax, rightUpper);
+			GetTilePixelPosition(lvl, latmin, lngmin, leftLower);
+			// Since we are symmetrically, we can deduce the last corner directly
+			rightLower.iLat = leftLower.iLat;
+			rightLower.iLng = rightUpper.iLng;
+			rightLower.X = rightUpper.X;
+			rightLower.Y = leftLower.Y;
+			// Check for subpixel visibility
+			if (leftUpper == rightUpper || leftLower == rightLower || leftUpper == leftLower || rightUpper == rightLower) break;
+			// Shift if longitude edge is crossed
+			if (leftUpper.iLng > rightUpper.iLng)
+			{
+				leftUpper.iLng -= lngBands;
+				leftLower.iLng -= lngBands;
+			}
+			// Check for edge pixel to compensate overlapping in elevation tiles
+			if (leftUpper.X == 0)
+			{
+				leftUpper.iLng--;
+				leftLower.iLng--;
+			}
+			if (rightUpper.X == 255)
+			{
+				rightUpper.iLng++;
+				rightLower.iLng++;
+			}
+			if (leftUpper.Y == 0 && leftUpper.iLat>0)
+			{
+				leftUpper.iLat--;
+				rightUpper.iLat--;
+			}
+			if (leftLower.Y == 255 && leftLower.iLat<latBands)
+			{
+				leftLower.iLat++;
+				rightLower.iLat++;
+			}
+			// Sweep over the tile set to put in shape paths
+			for (auto ilat = leftUpper.iLat; ilat <= leftLower.iLat; ilat++)
+				for (auto ilng = leftUpper.iLng; ilng <= rightUpper.iLng; ilng++)
+				{
+					// Compensate for longitude edge switch
+					g_ElevationFlatteningShapes[hPlanet][lvl][ilat][ilng < 0 ? lngBands + ilng : ilng].push_back(shape);
+				}
+		}
+	}
+	g_ShapesLoaded[hPlanet] = true;
+}
+
+template <typename Type>
+bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, Type *elev)
+{
+	if (!elev) return false;
+	if (g_ShapesLoaded.find(hPlanet) == g_ShapesLoaded.end()) ProcessPlanetFlats(hPlanet);
+	if (g_ElevationFlatteningShapes.find(hPlanet) == g_ElevationFlatteningShapes.end()) return false; // Nothing for planet
+	auto planetShapes = g_ElevationFlatteningShapes[hPlanet];
+	if (planetShapes.find(lvl) == planetShapes.end()) return false; // Nothing at this level
+	auto levelShapes = planetShapes[lvl];
+	if (levelShapes.find(ilat) == levelShapes.end()) return false; // Nothing at this latitude
+	auto latShapes = levelShapes[ilat];
+	if (latShapes.find(ilng) == latShapes.end()) return false; // Nothing at this longitude
+	auto shapes = latShapes[ilng];
+	double bands = pow((double)2, lvl);
+	double width = 180 / bands;
+	double step = width / 256;
+	double latmin = 90 - width*(ilat + 1) - step * 1.5;
+	double lngmin = -180 + width*ilng - step * 1.5;;
+	for (auto i = 0; i < TILE_ELEVSTRIDE*TILE_ELEVSTRIDE; i++)
+	{
+		for (auto shape : shapes)
+		{
+			double y = latmin + (i / 259)*step - shape->Lat;
+			double x = lngmin + (i % 259)*step - shape->Lng;
+			double x1 = (x * shape->Cos - y * shape->Sin) / shape->Dim1;
+			double y1 = (x * shape->Sin + y * shape->Cos) / shape->Dim2;
+			for (auto pot = 0; pot < shape->Type; pot++)
+			{
+				x1 *= x1;
+				y1 *= y1;
+			}
+			double dist = x1 + y1;
+			if (dist <= 1.0)
+			{
+				// Do the math in INT16 basis even for "float" output
+				INT16 elevation = INT16((double)shape->Height / elev_res);
+				if (shape->Falloff > 0)
+				{
+					for (auto pot = 0; pot < shape->Type; pot++)
+					{
+						dist = sqrt(dist);
+					}
+					if (dist >= 1 - shape->Falloff)
+					{
+						double alpha = (dist - 1 + shape->Falloff) / shape->Falloff;
+						elevation = INT16(elev[i] * alpha + (double)shape->Height / elev_res * (1 - alpha));
+					}
+				}
+				// Convert to float or keep as an INT16 depending on case
+				elev[i] = Type(elevation);
+			}
+		}
+	}
+	return true;
+}
+
+
+bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16 *elev)
+{
+	if (!Config->bFlatsEnabled) return false;
+	char name[64];
+	oapiGetObjectName(hPlanet, name, 64);
+	auto result = FilterElevation<INT16>(hPlanet, lvl, ilat, ilng, elev_res, elev);
+	if (result)
+		LogClr("Coral", "FilterElevation[Physics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
+	return result;
+}
+
+
+void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev)
+{
+	if (!Config->bFlatsEnabled) return;
+	char name[64];
+	oapiGetObjectName(hPlanet, name, 64);
+	if (FilterElevation<float>(hPlanet, lvl, ilat, ilng, 1.0, elev))
+		LogClr("Coral", "FilterElevation[Graphics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
+}
+
+
+
+
+
 // ==============================================================
 // D3D9Client class implementation
 // ==============================================================
@@ -357,6 +621,13 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	_TRACE;
 
 	LogAlw("================ clbkCreateRenderWindow ===============");
+
+	Config->bFlatsEnabled = (Config->bFlats != 0);
+
+	// Disable flattening with "cubic interpolation" it's not going to work.
+	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
+		Config->bFlatsEnabled = false;
+	}
 
 	uEnableLog		 = Config->DebugLvl;
 	pSplashScreen    = NULL;
@@ -808,6 +1079,20 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	// Disable rendering and some other systems
 	//
 	bRunning = false;
+
+
+	// Face's Cleanup ShapeStore -----------------------
+	//
+	for (auto store : g_ShapeStore)
+	{
+		for (auto shape : store.second)
+		{
+			delete shape;
+		}
+	}
+	g_ShapeStore.clear();
+	g_ElevationFlatteningShapes.clear();
+	g_ShapesLoaded.clear();
 
 	// At first, shutdown tile loaders -------------------------------------------------------
 	//
@@ -2499,6 +2784,14 @@ void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 
 // =======================================================================
 
+bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev)
+{
+	_TRACE;
+	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
+}
+
+// =======================================================================
+
 bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)
 {
 	_TRACE;
@@ -2760,6 +3053,7 @@ void D3D9Client::SplashScreen()
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataD[] = { "Warning: Config folder not present in /Modules/Server/. Please create symbolic link." };
 	char dataE[] = { "Note: Cubic Interpolation is use... Consider using linear for better elevation matching" };
+	char dataF[] = { "Note: Terrain flattening offline due to cubic interpolation" };
 
 	int xc = viewW*750/1280;
 	int yc = viewH*545/800;
@@ -2783,6 +3077,17 @@ void D3D9Client::SplashScreen()
 		TextOut(hDC, viewW / 2, VPOS, dataE, lstrlen(dataE));
 		VPOS -= LSPACE;
 	}
+
+	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
+		TextOut(hDC, viewW / 2, VPOS, dataE, strlen(dataE));
+		VPOS -= LSPACE;
+	}
+
+	if (Config->bFlats && !Config->bFlatsEnabled) {
+		TextOut(hDC, viewW / 2, VPOS, dataF, strlen(dataF));
+		VPOS -= LSPACE;
+	}
+
 
 	SelectObject(hDC, hO);
 	DeleteObject(hF);
