@@ -83,6 +83,7 @@ void D3D9Config::Reset ()
 	gcGUIMode			= 0;
 	bAbsAnims			= 0;
 	bCloudNormals		= 1;
+	bFlats				= 0;
 
 	GFXIntensity = 0.5;
 	GFXDistance = 0.8;
@@ -168,6 +169,7 @@ bool D3D9Config::ReadParams ()
 	if (oapiReadItem_int   (hFile, "gcGUIMode", i))						gcGUIMode = max(0, min(3, i));
 	if (oapiReadItem_int   (hFile, "AbsoluteAnimations", i))			bAbsAnims = max(0, min(1, i));
 	if (oapiReadItem_int   (hFile, "NormalmappedClouds", i))			bCloudNormals = max(0, min(1, i));
+	if (oapiReadItem_int   (hFile, "TerrainFlats", i))					bFlats = max(0, min(1, i));
 	if (oapiReadItem_float (hFile, "OrbitalShadowMult", d))			    OrbitalShadowMult = max(0.5, min(10.0, d));
 
 	if (oapiReadItem_float (hFile, "GFXIntensity", d))					GFXIntensity = max(0.0, min(1.0, d));
@@ -245,6 +247,7 @@ void D3D9Config::WriteParams ()
 	oapiWriteItem_int	(hFile, "gcGUIMode", gcGUIMode);
 	oapiWriteItem_int   (hFile, "AbsoluteAnimations", bAbsAnims);
 	oapiWriteItem_int   (hFile, "NormalmappedClouds", bCloudNormals);
+	oapiWriteItem_int   (hFile, "TerrainFlats", bFlats);
 	oapiWriteItem_float (hFile, "OrbitalShadowMult", OrbitalShadowMult);
 
 	oapiWriteItem_float (hFile, "GFXIntensity", GFXIntensity);

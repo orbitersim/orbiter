@@ -18,6 +18,8 @@ extern class D3D9Config *Config;
  */
 class D3D9Config {
 public:
+	bool bFlatsEnabled;
+
 	D3D9Config ();
 	~D3D9Config ();
 
@@ -86,6 +88,7 @@ public:
 	int gcGUIMode;					///< gcGUI Operation Mode
 	int bAbsAnims;					///< Absolute animations
 	int bCloudNormals;				///< Felix24's Cound normals implementation test
+	int bFlats;						///< Face's terrain flattening
 	char *DebugFont;				///< Font face for debug lines (default="Fixed")
 	char *SolCfg;					///< Solar system to use (default="Sol")
 	double GFXIntensity;

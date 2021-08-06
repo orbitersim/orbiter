@@ -24,6 +24,7 @@
 #include "gcConst.h"
 
 // =======================================================================
+extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
 
 
 
@@ -216,7 +217,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 			// read the elevation file header
 			fread (&ehdr, sizeof(ELEVFILEHEADER), 1, f);
 			if (ehdr.hdrsize != sizeof(ELEVFILEHEADER)) fseek (f, ehdr.hdrsize, SEEK_SET);
-			LogClr("Teal", "NewTile[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl - 4, ehdr.scale, ehdr.offset);
+			LogClr("Teal", "NewTile[%s]: Lvl=%d, Scale=%g, Offset=%g", name, lvl-4, ehdr.scale, ehdr.offset);
 
 #ifdef ORBITER2016
 			ehdr.scale = 1.0;
@@ -393,6 +394,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				smgr->ZTreeManager(3)->ReleaseData(buf);
 			}
 		}
+		if (Config->bFlatsEnabled) FilterElevationGraphics(mgr->GetPlanet()->Object(), lvl - 4, ilat, ilng, elev);
 	}
 	return e;
 }
@@ -562,6 +564,9 @@ bool SurfTile::LoadElevationData ()
 			}
 		}
 	}
+
+	if (has_elevfile) LogClr("Teal", "TileCreatedFromFile: Level=%d, ilat=%d, ilng=%d", lvl, ilat, ilng);
+	else LogClr("Teal", "TileInterpolatedFromParent: Level=%d, ilat=%d, ilng=%d", lvl, ilat, ilng);
 
 	return (elev != 0);
 }
