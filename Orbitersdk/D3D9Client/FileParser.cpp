@@ -287,119 +287,113 @@ bool FileParser::ParseSystem (const std::string &_name)
 //
 bool FileParser::ParsePlanet (const std::string &_name)
 {
-	__TRY {
-		bool bHasPath = false;
+	
+	bool bHasPath = false;
 
-		std::string path, name, def, dummy;
+	std::string path, name, def, dummy;
 
-		name = _name + ".cfg";                       // e.g. "Earth.cfg"
-		path = OapiExtension::GetConfigDir() + name; // e.g. ".\Config\Earth.cfg"
-		def  = _name + "\\Base";                     // e.g. "Earth\Base"
+	name = _name + ".cfg";                       // e.g. "Earth.cfg"
+	path = OapiExtension::GetConfigDir() + name; // e.g. ".\Config\Earth.cfg"
+	def  = _name + "\\Base";                     // e.g. "Earth\Base"
 
-		std::ifstream fs(path);
-		if (fs.fail()) {
-			LogErr("Could not open a planet configuration file '%s'", name.c_str());
-			return false;
+	std::ifstream fs(path);
+	if (fs.fail()) {
+		LogErr("Could not open a planet configuration file '%s'", name.c_str());
+		return false;
+	}
+
+	OBJHANDLE hPlanet = NULL;
+	std::string line; // One file line
+
+	while (std::getline(fs, line))
+	{
+		line = trim(line);
+		// skip empty lines and comments
+		if (!line.length() || line[0] == ';') {
+			continue;
 		}
 
-		OBJHANDLE hPlanet = NULL;
-		std::string line; // One file line
-
-		while (std::getline(fs, line))
+		// Name = <string>
+		if (startsWith(line, "Name"))
 		{
-			line = trim(line);
-			// skip empty lines and comments
-			if (!line.length() || line[0] == ';') {
-				continue;
-			}
-
-			// Name = <string>
-			if (startsWith(line, "Name"))
+			auto ass = splitAssignment(line);
+			hPlanet = oapiGetObjectByName(const_cast<char*>(ass.second.c_str()));
+			if (hPlanet)
 			{
-				auto ass = splitAssignment(line);
-				hPlanet = oapiGetObjectByName(const_cast<char*>(ass.second.c_str()));
-				if (hPlanet)
-				{
-					if (DoesExist(hPlanet)) {
-						continue; // Already exists, ignore this file
-					}
-					ObjEntry *e = GetEntry(hPlanet, true);
-					e->file = new char[name.length() + 1];
-					strcpy_s(e->file, name.length() + 1, &name[0]);
+				if (DoesExist(hPlanet)) {
+					continue; // Already exists, ignore this file
 				}
-				else {
-					LogErr("Planet Not Found '%s'", &line[5]);
-				}
-			}
-
-			if (hPlanet == NULL) continue;
-
-			// AlbedoRGB = <float> <float> <float>
-			if (startsWith(line, "AlbedoRGB"))
-			{
-				std::istringstream iss(line);
 				ObjEntry *e = GetEntry(hPlanet, true);
-				iss >> dummy >> dummy
-					>> e->Albedo.x
-					>> e->Albedo.y
-					>> e->Albedo.z;
+				e->file = new char[name.length() + 1];
+				strcpy_s(e->file, name.length() + 1, &name[0]);
 			}
-
-			if (startsWith(line, "BEGIN_SURFBASE"))
-			{
-				std::string dir, buf0, buf1;
-
-				bool bCtx = true;  // CONTEXT fits
-				bool bPer = true;  // PERIOD fits
-				bool bPth = false; // PATH set
-
-				double mjd0 = DBL_MIN;// was: 0.0;
-				double mjd1 = DBL_MAX;// was: 1e6;
-
-				while (std::getline(fs, line))
-				{
-					line = trim(line);
-
-					if (startsWith(line, "END_SURFBASE")) break;
-
-					// DIR <folder> [PERIOD <mjd0> <mjd1>] [CONTEXT <string>]
-					if (startsWith(line, "DIR")) {
-						std::istringstream iss(line);
-						iss >> dummy >> dir;
-						bPth = true;
-						// handle optional PERIOD or CONTEXT
-						do {
-							iss >> dummy;
-							if (dummy == "PERIOD") {
-								iss >> buf0 >> buf1;
-								if (buf0 != "-") { mjd0 = atof(buf0.c_str()); }
-								if (buf1 != "-") { mjd1 = atof(buf1.c_str()); }
-								if (mjd0 > mjd || mjd1 < mjd) { bPer = false; }
-							}
-							else if (dummy == "CONTEXT") {
-								iss >> buf0;
-								bCtx = (buf0 == context);//if (buf0 != context) { bCtx = false; }
-							}
-						} while (!iss.fail());
-					}
-
-					if (bPth && bCtx && bPer) {
-						bHasPath = true;
-						ScanBases(hPlanet, dir);
-					}
-				}
+			else {
+				LogErr("Planet Not Found '%s'", &line[5]);
 			}
 		}
 
-		// Is the default path already searched ?
-		if (!bHasPath && hPlanet) {
-			ScanBases(hPlanet, def);
+		if (hPlanet == NULL) continue;
+
+		// AlbedoRGB = <float> <float> <float>
+		if (startsWith(line, "AlbedoRGB"))
+		{
+			std::istringstream iss(line);
+			ObjEntry *e = GetEntry(hPlanet, true);
+			iss >> dummy >> dummy
+				>> e->Albedo.x
+				>> e->Albedo.y
+				>> e->Albedo.z;
+		}
+
+		if (startsWith(line, "BEGIN_SURFBASE"))
+		{
+			std::string dir, buf0, buf1;
+
+			bool bCtx = true;  // CONTEXT fits
+			bool bPer = true;  // PERIOD fits
+			bool bPth = false; // PATH set
+
+			double mjd0 = DBL_MIN;// was: 0.0;
+			double mjd1 = DBL_MAX;// was: 1e6;
+
+			while (std::getline(fs, line))
+			{
+				line = trim(line);
+
+				if (startsWith(line, "END_SURFBASE")) break;
+
+				// DIR <folder> [PERIOD <mjd0> <mjd1>] [CONTEXT <string>]
+				if (startsWith(line, "DIR")) {
+					std::istringstream iss(line);
+					iss >> dummy >> dir;
+					bPth = true;
+					// handle optional PERIOD or CONTEXT
+					do {
+						iss >> dummy;
+						if (dummy == "PERIOD") {
+							iss >> buf0 >> buf1;
+							if (buf0 != "-") { mjd0 = atof(buf0.c_str()); }
+							if (buf1 != "-") { mjd1 = atof(buf1.c_str()); }
+							if (mjd0 > mjd || mjd1 < mjd) { bPer = false; }
+						}
+						else if (dummy == "CONTEXT") {
+							iss >> buf0;
+							bCtx = (buf0 == context);//if (buf0 != context) { bCtx = false; }
+						}
+					} while (!iss.fail());
+				}
+
+				if (bPth && bCtx && bPer) {
+					bHasPath = true;
+					ScanBases(hPlanet, dir);
+				}
+			}
 		}
 	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("FileParser::ParsePlanet(%s)", _name.c_str());
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+
+	// Is the default path already searched ?
+	if (!bHasPath && hPlanet) {
+		ScanBases(hPlanet, def);
 	}
 
 	return true;

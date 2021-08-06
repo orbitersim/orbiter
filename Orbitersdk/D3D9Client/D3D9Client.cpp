@@ -782,68 +782,61 @@ void D3D9Client::SketchPadTest()
 //
 void D3D9Client::clbkCloseSession(bool fastclose)
 {
-	_TRACE;
-	__TRY {
 
-		LogAlw("================ clbkCloseSession ===============");
+	LogAlw("================ clbkCloseSession ===============");
 
-		//	Post shutdown signals for gcGUI applications
-		//
-		for each (gcGUIApp* pApp in g_gcGUIAppList)	pApp->clbkShutdown();
+	//	Post shutdown signals for gcGUI applications
+	//
+	for each (gcGUIApp* pApp in g_gcGUIAppList)	pApp->clbkShutdown();
 
 
-		//	Post shutdown signals for user applications
-		//
-		if (IsGenericProcEnabled(GENERICPROC_SHUTDOWN)) MakeGenericProcCall(GENERICPROC_SHUTDOWN, 0, NULL);
+	//	Post shutdown signals for user applications
+	//
+	if (IsGenericProcEnabled(GENERICPROC_SHUTDOWN)) MakeGenericProcCall(GENERICPROC_SHUTDOWN, 0, NULL);
 
 
-		// Check the status of RenderTarget Stack ------------------------------------------------
-		//
-		if (RenderStack.empty() == false) {
-			LogErr("RenderStack contains %d items:", RenderStack.size());
-			while (!RenderStack.empty()) {
-				LogErr("RenderTarget=%s, DepthStencil=%s", _PTR(RenderStack.front().pColor), _PTR(RenderStack.front().pDepthStencil));
-				RenderStack.pop_front();
-			}
+	// Check the status of RenderTarget Stack ------------------------------------------------
+	//
+	if (RenderStack.empty() == false) {
+		LogErr("RenderStack contains %d items:", RenderStack.size());
+		while (!RenderStack.empty()) {
+			LogErr("RenderTarget=%s, DepthStencil=%s", _PTR(RenderStack.front().pColor), _PTR(RenderStack.front().pDepthStencil));
+			RenderStack.pop_front();
 		}
-
-		// Disable rendering and some other systems
-		//
-		bRunning = false;
-
-		// At first, shutdown tile loaders -------------------------------------------------------
-		//
-		if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
-		if (TileManager2Base::ShutDown()==false) LogErr("Failed to Shutdown TileManager2Base()");
-
-		// Close dialog if Open and disconnect a visual form debug controls
-		DebugControls::Close();
-
-		// Disconnect textures from pipeline (Unlikely nesseccary)
-		D3D9Effect::ShutDown();
-
-		// DEBUG: List all textures connected to meshes
-		/* DWORD cnt = MeshCatalog->CountEntries();
-		for (DWORD i=0;i<cnt;i++) {
-			D3D9Mesh *x = (D3D9Mesh*)MeshCatalog->Get(i);
-			if (x) x->DumpTextures();
-		} */
-		//GraphicsClient::clbkCloseSession(fastclose);
-
-		SAFE_DELETE(pWM);
-		SAFE_DELETE(parser);
-		LogAlw("================= Deleting Scene ================");
-		Scene::GlobalExit();
-		SAFE_DELETE(scene);
-		LogAlw("============== Deleting Mesh Manager ============");
-		SAFE_DELETE(meshmgr);
-		WriteLog("[Session Closed. Scene deleted.]");
 	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkCloseSession()");
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+
+	// Disable rendering and some other systems
+	//
+	bRunning = false;
+
+	// At first, shutdown tile loaders -------------------------------------------------------
+	//
+	if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
+	if (TileManager2Base::ShutDown()==false) LogErr("Failed to Shutdown TileManager2Base()");
+
+	// Close dialog if Open and disconnect a visual form debug controls
+	DebugControls::Close();
+
+	// Disconnect textures from pipeline (Unlikely nesseccary)
+	D3D9Effect::ShutDown();
+
+	// DEBUG: List all textures connected to meshes
+	/* DWORD cnt = MeshCatalog->CountEntries();
+	for (DWORD i=0;i<cnt;i++) {
+		D3D9Mesh *x = (D3D9Mesh*)MeshCatalog->Get(i);
+		if (x) x->DumpTextures();
+	} */
+	//GraphicsClient::clbkCloseSession(fastclose);
+
+	SAFE_DELETE(pWM);
+	SAFE_DELETE(parser);
+	LogAlw("================= Deleting Scene ================");
+	Scene::GlobalExit();
+	SAFE_DELETE(scene);
+	LogAlw("============== Deleting Mesh Manager ============");
+	SAFE_DELETE(meshmgr);
+	WriteLog("[Session Closed. Scene deleted.]");
+	
 }
 
 // ==============================================================
@@ -864,90 +857,82 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	}
 #endif
 
-	__TRY {
+	
+	LogAlw("=========== Clearing Texture Repository =========");
+	SAFE_DELETE(texmgr);
 
-		LogAlw("=========== Clearing Texture Repository =========");
-		SAFE_DELETE(texmgr);
+	LogAlw("===== Calling GlobalExit() for sub-systems ======");
+	HazeManager::GlobalExit();
+	HazeManager2::GlobalExit();
+	TileManager::GlobalExit();
+	TileManager2Base::GlobalExit();
+	PlanetRenderer::GlobalExit();
+	D3D9ParticleStream::GlobalExit();
+	CSphereManager::GlobalExit();
+	vStar::GlobalExit();
+	vVessel::GlobalExit();
+	vObject::GlobalExit();
 
-		LogAlw("===== Calling GlobalExit() for sub-systems ======");
-		HazeManager::GlobalExit();
-		HazeManager2::GlobalExit();
-		TileManager::GlobalExit();
-		TileManager2Base::GlobalExit();
-		PlanetRenderer::GlobalExit();
-		D3D9ParticleStream::GlobalExit();
-		CSphereManager::GlobalExit();
-		vStar::GlobalExit();
-		vVessel::GlobalExit();
-		vObject::GlobalExit();
+	SAFE_DELETE(defpen);
+	SAFE_DELETE(deffont);
 
-		SAFE_DELETE(defpen);
-		SAFE_DELETE(deffont);
+	DeleteObject(hLblFont1);
+	DeleteObject(hLblFont2);
 
-		DeleteObject(hLblFont1);
-		DeleteObject(hLblFont2);
+	D3D9Pad::GlobalExit();
+	D3D9Text::GlobalExit();
+	D3D9Effect::GlobalExit();
+	D3D9ClientSurface::GlobalExit();
 
-		D3D9Pad::GlobalExit();
-		D3D9Text::GlobalExit();
-		D3D9Effect::GlobalExit();
-		D3D9ClientSurface::GlobalExit();
+	SAFE_RELEASE(pSplashScreen);	// Splash screen related
+	SAFE_RELEASE(pTextScreen);		// Splash screen related
+	SAFE_RELEASE(pBackBuffer);
+	SAFE_RELEASE(pDepthStencil);
 
-		SAFE_RELEASE(pSplashScreen);	// Splash screen related
-		SAFE_RELEASE(pTextScreen);		// Splash screen related
-		SAFE_RELEASE(pBackBuffer);
-		SAFE_RELEASE(pDepthStencil);
+	LPD3D9CLIENTSURFACE pBBuf = GetBackBufferHandle();
 
-		LPD3D9CLIENTSURFACE pBBuf = GetBackBufferHandle();
+	SAFE_DELETE(pBBuf);
+	SAFE_DELETE(pDefaultTex);
+	SAFE_RELEASE(pNoiseTex);
 
-		SAFE_DELETE(pBBuf);
-		SAFE_DELETE(pDefaultTex);
-		SAFE_RELEASE(pNoiseTex);
+	LogAlw("============ Checking Object Catalogs ===========");
 
-		LogAlw("============ Checking Object Catalogs ===========");
-
-		// Check surface catalog --------------------------------------------------------------------------------------
-		//
-		auto it = SurfaceCatalog->begin();
-		if (it != SurfaceCatalog->end())
-		{
-			LogErr("UnDeleted Surface(s) Detected");
-			while (it != SurfaceCatalog->end())
-			{
-				LogWrn("Surface %s (%s) (%u,%u)", _PTR(*it), (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
-				delete *it;
-				it = SurfaceCatalog->begin();
-			}
-		}
-
-		// Check tile catalog --------------------------------------------------------------------------------------
-		//
-		size_t nt = TileCatalog->CountEntries();
-		if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
-
-		SurfaceCatalog->Clear();
-		MeshCatalog->Clear();
-		TileCatalog->Clear();
-
-		pFramework->DestroyObjects();
-
-		SAFE_DELETE(pFramework);
-
-		// Close Render Window -----------------------------------------
-		GraphicsClient::clbkDestroyRenderWindow(fastclose);
-
-		hRenderWnd		 = NULL;
-		pDevice			 = NULL;
-		bFailed			 = false;
-		viewW = viewH    = 0;
-		viewBPP          = 0;
-	}
-
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
+	// Check surface catalog --------------------------------------------------------------------------------------
+	//
+	auto it = SurfaceCatalog->begin();
+	if (it != SurfaceCatalog->end())
 	{
-		LogErr("Exception in clbkDestroyRenderWindow()");
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		LogErr("UnDeleted Surface(s) Detected");
+		while (it != SurfaceCatalog->end())
+		{
+			LogWrn("Surface %s (%s) (%u,%u)", _PTR(*it), (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
+			delete *it;
+			it = SurfaceCatalog->begin();
+		}
 	}
+
+	// Check tile catalog --------------------------------------------------------------------------------------
+	//
+	size_t nt = TileCatalog->CountEntries();
+	if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
+
+	SurfaceCatalog->Clear();
+	MeshCatalog->Clear();
+	TileCatalog->Clear();
+
+	pFramework->DestroyObjects();
+
+	SAFE_DELETE(pFramework);
+
+	// Close Render Window -----------------------------------------
+	GraphicsClient::clbkDestroyRenderWindow(fastclose);
+
+	hRenderWnd		 = NULL;
+	pDevice			 = NULL;
+	bFailed			 = false;
+	viewW = viewH    = 0;
+	viewBPP          = 0;
+
 }
 
 // ==============================================================
@@ -1121,71 +1106,60 @@ void D3D9Client::clbkRenderScene()
 
 	if (pWM) pWM->Animate();
 
-	__TRY {
+	if (Config->PresentLocation == 1) PresentScene();
 
-		if (Config->PresentLocation == 1) PresentScene();
+	scene_time = D3D9GetTime();
 
-		scene_time = D3D9GetTime();
+	if (pDevice->TestCooperativeLevel()!=S_OK) {
+		bFailed=true;
+		MessageBoxA(pFramework->GetRenderWindow(),"Connection to Direct3DDevice is lost\nExit the simulation with Ctrl+Q and restart.\n\nAlt-Tabing not supported in a true fullscreen mode.\nDialog windows won't work with multi-sampling in a true fullscreen mode.","D3D9Client: Lost Device",0);
+		return;
+	}
 
-		if (pDevice->TestCooperativeLevel()!=S_OK) {
-			bFailed=true;
-			MessageBoxA(pFramework->GetRenderWindow(),"Connection to Direct3DDevice is lost\nExit the simulation with Ctrl+Q and restart.\n\nAlt-Tabing not supported in a true fullscreen mode.\nDialog windows won't work with multi-sampling in a true fullscreen mode.","D3D9Client: Lost Device",0);
-			return;
-		}
+	if (bHalt) {
+		pDevice->BeginScene();
+		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
+		pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
+		rect2.left-=4; rect2.top-=4;
+		pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
+		pDevice->EndScene();
+		return;
+	}
 
-		if (bHalt) {
+	UINT mem = pDevice->GetAvailableTextureMem()>>20;
+	if (mem<32) TileBuffer::HoldThread(true);
+
+	scene->RenderMainScene();		// Render the main scene
+
+	VESSEL *hVes = oapiGetFocusInterface();
+
+	if (hVes && Config->LabelDisplayFlags)
+	{
+		char Label[7] = "";
+		if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_RECORD && hVes->Recording()) strcpy_s(Label, 7, "Record");
+		if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_REPLAY && hVes->Playback()) strcpy_s(Label, 7, "Replay");
+
+		if (Label[0]!=0) {
 			pDevice->BeginScene();
 			RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-			pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
+			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
 			rect2.left-=4; rect2.top-=4;
-			pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
+			pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
 			pDevice->EndScene();
-			return;
 		}
-
-		UINT mem = pDevice->GetAvailableTextureMem()>>20;
-		if (mem<32) TileBuffer::HoldThread(true);
-
-		scene->RenderMainScene();		// Render the main scene
-
-		VESSEL *hVes = oapiGetFocusInterface();
-
-		if (hVes && Config->LabelDisplayFlags)
-		{
-			char Label[7] = "";
-			if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_RECORD && hVes->Recording()) strcpy_s(Label, 7, "Record");
-			if (Config->LabelDisplayFlags & D3D9Config::LABEL_DISPLAY_REPLAY && hVes->Playback()) strcpy_s(Label, 7, "Replay");
-
-			if (Label[0]!=0) {
-				pDevice->BeginScene();
-				RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-				pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(0, 0, 0));
-				rect2.left-=4; rect2.top-=4;
-				pFramework->GetLargeFont()->DrawTextA(0, Label, 6, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
-				pDevice->EndScene();
-			}
-		}
-
-		D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
-
-
-		if (bControlPanel) RenderControlPanel();
-
-		// Compute total frame time
-		D3D9SetTime(D3D9Stats.Timer.FrameTotal, frame_time);
-		frame_time = D3D9GetTime();
-
-		memset(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
-		memset(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
-
 	}
 
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkRenderScene()");
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	D3D9SetTime(D3D9Stats.Timer.Scene, scene_time);
+
+
+	if (bControlPanel) RenderControlPanel();
+
+	// Compute total frame time
+	D3D9SetTime(D3D9Stats.Timer.FrameTotal, frame_time);
+	frame_time = D3D9GetTime();
+
+	memset(&D3D9Stats.Old, 0, sizeof(D3D9Stats.Old));
+	memset(&D3D9Stats.Surf, 0, sizeof(D3D9Stats.Surf));
 }
 
 // ==============================================================
@@ -1527,16 +1501,7 @@ void D3D9Client::clbkNewVessel(OBJHANDLE hVessel)
 
 void D3D9Client::clbkDeleteVessel(OBJHANDLE hVessel)
 {
-	_TRACE;
-	__TRY {
-		if (scene) scene->DeleteVessel(hVessel);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkDeleteVessel()");
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
+	if (scene) scene->DeleteVessel(hVessel);
 }
 
 
@@ -2112,27 +2077,17 @@ void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return;
 
-	__TRY {
+	if (texmgr->IsInRepository(hTex)) return;	// Do not release surfaces stored in repository
 
-		if (texmgr->IsInRepository(hTex)) return;	// Do not release surfaces stored in repository
-
-		if (SURFACE(hTex)->Release()) {
-			for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
-				if (*it && (*it)->HasTexture(hTex)) {
-					LogErr( "Something is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
-						    (*it)->GetName() );
-					return;
-				}
+	if (SURFACE(hTex)->Release()) {
+		for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
+			if (*it && (*it)->HasTexture(hTex)) {
+				LogErr( "Something is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
+						(*it)->GetName() );
+				return;
 			}
-			delete SURFACE(hTex);
 		}
-	}
-
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkReleaseTexture()");
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+		delete SURFACE(hTex);
 	}
 }
 
@@ -2222,36 +2177,24 @@ bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 
-	__TRY {
+	if (surf==NULL) { LogErr("D3D9Client::clbkReleaseSurface() Input Surface is NULL");	return false; }
 
-		if (surf==NULL) { LogErr("D3D9Client::clbkReleaseSurface() Input Surface is NULL");	return false; }
+	if (texmgr->IsInRepository(surf)) return false;	// Do not release surfaces stored in repository
 
-		if (texmgr->IsInRepository(surf)) return false;	// Do not release surfaces stored in repository
+	bool bRel = SURFACE(surf)->Release();
 
-		bool bRel = SURFACE(surf)->Release();
+	if (bRel) {
 
-		if (bRel) {
-
-			for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
-				if (*it && (*it)->HasTexture(surf)) {
-					LogErr( "Orbiter is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
-						    (*it)->GetName() );
-					return true;
-				}
+		for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
+			if (*it && (*it)->HasTexture(surf)) {
+				LogErr( "Orbiter is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
+						(*it)->GetName() );
+				return true;
 			}
-			delete SURFACE(surf);
 		}
-		return bRel;
+		delete SURFACE(surf);
 	}
-
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in clbkReleaseSurface()");
-		EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
-
-	return false;
+	return bRel;
 }
 
 // =======================================================================

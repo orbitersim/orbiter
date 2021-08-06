@@ -58,27 +58,6 @@ const char *_PTR(const void *p);
 #define HROK(x)	_HROK(x, __FILE__, __LINE__)
 #endif
 
-/*
-#ifndef __TRY
-#define __TRY __try
-#endif
-
-#ifndef __EXCEPT
-#define __EXCEPT(x) __except(x)
-#endif
-*/
-
-#ifndef __TRY
-#define __TRY
-#endif
-
-#ifndef __EXCEPT
-#define __EXCEPT(x) if (false)
-#endif
-
-
-
-
 #define PI 3.141592653589793238462643383279
 
 #define SURFACE(x) ((class D3D9ClientSurface *)x)

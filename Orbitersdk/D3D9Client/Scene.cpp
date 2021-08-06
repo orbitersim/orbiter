@@ -526,15 +526,8 @@ void Scene::DeleteAllVisuals()
 
 		DebugControls::RemoveVisual(pv->vobj);
 
-		__TRY {
-			gc->UnregisterVisObject(pv->vobj->GetObject());
-		}
-		__EXCEPT(ExcHandler(GetExceptionInformation()))
-		{
-			LogErr("Exception in gc->UnregisterVisObject(pv->vobj->GetObject())");
-			FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-		}
-
+		gc->UnregisterVisObject(pv->vobj->GetObject());
+		
 		LogAlw("Deleting Visual %s", _PTR(pv->vobj));
 		delete pv->vobj;
 		delete pv;
@@ -575,20 +568,8 @@ Scene::VOBJREC *Scene::AddVisualRec(OBJHANDLE hObj)
 
 	LogAlw("RegisteringVisual (%s) hVessel=%s, hObj=%s, Vis=%s, Rec=%s, Type=%d", buf, _PTR(hVes), _PTR(hObj), _PTR(pv->vobj), _PTR(pv), pv->type);
 
-	__TRY {
-		gc->RegisterVisObject(hObj, (VISHANDLE)pv->vobj);
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		char buf[64]; oapiGetObjectName(hObj, buf, 64);
-		char *classname = NULL;
-		if (oapiGetObjectType(hObj)==OBJTP_VESSEL) classname = oapiGetVesselInterface(hObj)->GetClassNameA();
-		LogErr("Critical exception in gc->RegisterVisObject(%s, %s) (%s).", _PTR(hObj), _PTR(pv->vobj), buf);
-		if (classname) LogErr("VesselClass Name = %s",classname);
-		gc->EmergencyShutdown();
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
-	}
-
+	gc->RegisterVisObject(hObj, (VISHANDLE)pv->vobj);
+	
 	// Initialize Meshes
 	pv->vobj->PreInitObject();
 

@@ -27,19 +27,12 @@ MeshManager::~MeshManager()
 }
 
 void MeshManager::DeleteAll()
-{
-	__TRY {
-		int i;
-		for (i=0;i<nmlist;i++) delete mlist[i].mesh;
-		if (nmlistbuf) {
-			delete []mlist;
-			nmlist = nmlistbuf = 0;
-		}
-	}
-	__EXCEPT(ExcHandler(GetExceptionInformation()))
-	{
-		LogErr("Exception in MeshManager::DeleteAll()");
-		FatalAppExitA(0,"Critical error has occured. See Orbiter.log for details");
+{	
+	int i;
+	for (i=0;i<nmlist;i++) delete mlist[i].mesh;
+	if (nmlistbuf) {
+		delete []mlist;
+		nmlist = nmlistbuf = 0;
 	}
 }
 
