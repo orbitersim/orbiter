@@ -12,7 +12,7 @@
 
 class Instrument_OPlaneAlign: public Instrument {
 public:
-	Instrument_OPlaneAlign (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore);
+	Instrument_OPlaneAlign (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore);
 	virtual ~Instrument_OPlaneAlign();
 	int Type () const { return MFD_OPLANEALIGN; }
 	char ModeSelKey () const { return 'A'; }

@@ -29,7 +29,7 @@ struct Instrument_Orbit::SavePrm Instrument_Orbit::saveprm = {
 	Instrument_Orbit::DISP_BOTH
 };
 
-Instrument_Orbit::Instrument_Orbit (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_Orbit::Instrument_Orbit (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	projmode = saveprm.projmode;

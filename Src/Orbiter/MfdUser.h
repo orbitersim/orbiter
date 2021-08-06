@@ -14,9 +14,9 @@
 
 class Instrument_User: public Instrument {
 public:
-	Instrument_User (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel,
+	Instrument_User (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel,
 		int _type, const MFDMODE &mode);
-	Instrument_User (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel);
+	Instrument_User (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	virtual ~Instrument_User();
 	int Type() const { return type; }
 	char ModeSelKey () const { return selkey; }

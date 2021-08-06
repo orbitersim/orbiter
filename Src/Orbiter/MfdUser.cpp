@@ -34,7 +34,7 @@ extern char DBG_MSG[256];
 // class Instrument_User
 // user-defined MFD mode (implemented in module)
 
-Instrument_User::Instrument_User (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel,
+Instrument_User::Instrument_User (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel,
 	int _type, const MFDMODE &mode)
 : Instrument (_pane, _id, spec, _vessel, true)
 {
@@ -60,7 +60,7 @@ Instrument_User::Instrument_User (Pane *_pane, int _id, const Spec &spec, Vessel
 	mfd->RecallStatus();
 }
 
-Instrument_User::Instrument_User (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_User::Instrument_User (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel, true)
 {
 	type    = MFD_USERTYPE; // generic

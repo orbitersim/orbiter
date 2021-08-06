@@ -12,7 +12,7 @@
 
 class Instrument_HSI: public Instrument {
 public:
-	Instrument_HSI (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel);
+	Instrument_HSI (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	~Instrument_HSI();
 	int Type () const { return MFD_HSI; }
 	char ModeSelKey () const { return 'H'; }

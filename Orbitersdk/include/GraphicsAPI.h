@@ -548,7 +548,7 @@ public:
 	 *   object for which the message was created.
 	 * \sa RegisterVisObject, UnregisterVisObject, visevent
 	 */
-	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context);
+	virtual int clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context);
 
 	/**
 	 * \brief Return a mesh handle for a visual, defined by its index

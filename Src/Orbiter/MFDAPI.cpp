@@ -32,20 +32,9 @@ ExternMFD::~ExternMFD ()
 	if (instr) delete instr;
 }
 
-#ifdef _WIN64
-size_t
-#else
-UINT
-#endif
-ExternMFD::Id () const
+INT_PTR ExternMFD::Id () const
 {
-	return (
-#ifdef _WIN64
-		size_t
-#else
-		UINT
-#endif
-		)this;
+	return (INT_PTR)this;
 }
 
 bool ExternMFD::Active () const

@@ -12,7 +12,7 @@
 
 class Instrument_Surface: public Instrument {
 public:
-	Instrument_Surface (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel);
+	Instrument_Surface (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	~Instrument_Surface();
 	int Type () const { return MFD_SURFACE; }
 	char ModeSelKey () const { return 'S'; }

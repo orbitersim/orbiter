@@ -34,7 +34,7 @@ public:
 
 	virtual const void *GetParam (DWORD paramtype) const { return 0; }
 
-	void BroadcastVisMsg (DWORD msg, UINT content);
+	void BroadcastVisMsg (DWORD msg, DWORD_PTR content);
 	// send a message to all existing visuals
 
 	inline double Size() const { return size; }

@@ -582,12 +582,7 @@ public:
 	 *   identifiers are in the range 0 ... MAXMFD-1, the ExternMFD class simply
 	 *   uses its own instance pointer (UINT)this to create an identifier.
 	 */
-#ifdef _WIN64
-	size_t
-#else
-	UINT
-#endif
-	Id() const;
+	INT_PTR Id() const;
 
 	/**
 	 * \brief Returns a flag indicating active/passive MFD state.

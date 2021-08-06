@@ -29,7 +29,7 @@ static char *modestr[7] = {
 
 struct Instrument_OSync::SavePrm Instrument_OSync::saveprm = {0, 0, Instrument_OSync::MODE_INTERSECT1, 0.0, 5};
 
-Instrument_OSync::Instrument_OSync (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore)
+Instrument_OSync::Instrument_OSync (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	mode = MODE_INTERSECT1;

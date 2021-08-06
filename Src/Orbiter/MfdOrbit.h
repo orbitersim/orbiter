@@ -16,7 +16,7 @@ public:
 	enum FrameMode { FRM_ECL, FRM_EQU };
 	enum DistMode { DIST_RAD, DIST_ALT };
 	enum DisplayMode { DISP_LIST, DISP_GRAPH, DISP_BOTH };
-	Instrument_Orbit (Pane *_pane, int id, const Spec &spec, Vessel *_vessel);
+	Instrument_Orbit (Pane *_pane, INT_PTR id, const Spec &spec, Vessel *_vessel);
 	virtual ~Instrument_Orbit ();
 	int Type () const { return MFD_ORBIT; }
 	char ModeSelKey () const { return 'O'; }

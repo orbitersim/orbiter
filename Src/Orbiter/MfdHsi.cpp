@@ -17,7 +17,7 @@ using namespace std;
 
 struct Instrument_HSI::SavePrm Instrument_HSI::saveprm = {0, {{0,0}, {0,0}}};
 
-Instrument_HSI::Instrument_HSI (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_HSI::Instrument_HSI (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	int i;
