@@ -143,10 +143,10 @@ ShuttleA::~ShuttleA ()
 // --------------------------------------------------------------
 void ShuttleA::DefineAnimations ()
 {
-	static UINT LeftPodGrp[4] = {57,58,59,60};
+	static UINT LeftPodGrp[4] = {4,5,7,9};
 	static MGROUP_ROTATE leftpod(0,LeftPodGrp,4,_V(0,0,0),_V(1,0,0),(float)PI);
 	
-	static UINT RightPodGrp[4] = {61,62,63,64};
+	static UINT RightPodGrp[4] = {6,8,10,11};
 	static MGROUP_ROTATE rightpod(0,RightPodGrp,4,_V(0,0,0),_V(1,0,0),(float)PI);
 
 	
@@ -159,16 +159,16 @@ void ShuttleA::DefineAnimations ()
 	AddAnimationComponent (anim_pod[1], 0.0f,1.0f,&rightpod);
 
 
-	static UINT UpperDockHatch = 47;
-	static MGROUP_ROTATE upperhatch(0,&UpperDockHatch,1,_V(0,0.554f,18.317f),_V(-1,0,0),(float)PI);
-	static UINT LowerDockHatch = 48;
-	static MGROUP_ROTATE lowerhatch(0,&LowerDockHatch,1,_V(0,-0.544f,18.317f),_V(1,0,0),(float)PI);
+	static UINT UpperDockHatch = 19;
+	static MGROUP_ROTATE upperhatch(0,&UpperDockHatch,1,_V(0,0.554f,18.677401f),_V(-1,0,0),(float)PI);
+	static UINT LowerDockHatch = 18;
+	static MGROUP_ROTATE lowerhatch(0,&LowerDockHatch,1,_V(0,-0.554f,18.677401f),_V(1,0,0),(float)PI);
 	anim_dock = CreateAnimation (0);
 	AddAnimationComponent (anim_dock,0.0f,1.0f, &upperhatch);
 	AddAnimationComponent (anim_dock,0.2f,1.0f,  &lowerhatch);
 
-	static UINT OuterAirlock = 21;
-	static MGROUP_ROTATE outerairlock(0,&OuterAirlock,1,_V(0,0.495f,18.252f),_V(1,0,0),(float)(0.4f*PI));
+	static UINT OuterAirlock = 20;
+	static MGROUP_ROTATE outerairlock(0,&OuterAirlock,1,_V(0,-0.498895f,18.6131f),_V(1,0,0),(float)(0.4f*PI));
 
 	// outer airlock
 	anim_lock[0] = CreateAnimation (0);
@@ -178,41 +178,41 @@ void ShuttleA::DefineAnimations ()
 	anim_lock[1] = CreateAnimation (0);
 
 	//Gear animation
-	static UINT GEAR_left_leg[3]={67,70,79};
-	static UINT GEAR_right_leg[3]={73,74,82};
+	static UINT GEAR_left_leg[3]={30,32,34};
+	static UINT GEAR_right_leg[3]={31,33,35};
 
-	static UINT GEAR_left_leg_front_p1=65;
-	static UINT GEAR_left_leg_front_p2=66;
-	static UINT GEAR_left_leg_mid_p1=68;
-	static UINT GEAR_left_leg_mid_p2=69;
-	static UINT GEAR_left_leg_back_p1=77;
-	static UINT GEAR_left_leg_back_p2=78;
+	static UINT GEAR_left_leg_front_p1=38;
+	static UINT GEAR_left_leg_front_p2=25;
+	static UINT GEAR_left_leg_mid_p1=40;
+	static UINT GEAR_left_leg_mid_p2=27;
+	static UINT GEAR_left_leg_back_p1=36;
+	static UINT GEAR_left_leg_back_p2=23;
 
-	static MGROUP_TRANSLATE MGEAR_left_leg_first (0, GEAR_left_leg, 3, _V(0.194,0.224,0.0));
-	static MGROUP_TRANSLATE MGEAR_left_leg_second (0, GEAR_left_leg, 3, _V(0.091,0.331,0.0));
-	static MGROUP_TRANSLATE MGEAR_right_leg_first (0, GEAR_right_leg, 3, _V(-0.194,0.224,0.0));
-	static MGROUP_TRANSLATE MGEAR_right_leg_second (0, GEAR_right_leg, 3, _V(-0.091,0.331,0.0));
+	static MGROUP_TRANSLATE MGEAR_left_leg_first (0, GEAR_left_leg, 3, _V(-0.194,0.224,0.0));
+	static MGROUP_TRANSLATE MGEAR_left_leg_second (0, GEAR_left_leg, 3, _V(-0.091,0.331,0.0));
+	static MGROUP_TRANSLATE MGEAR_right_leg_first (0, GEAR_right_leg, 3, _V(0.194,0.224,0.0));
+	static MGROUP_TRANSLATE MGEAR_right_leg_second (0, GEAR_right_leg, 3, _V(0.091,0.331,0.0));
 
-	static MGROUP_ROTATE MGEAR_left_leg_front_p1(0,&GEAR_left_leg_front_p1,1,_V(1.655f,-1.942f,0.0f),_V(0,0,1),0.9948f);
-	static MGROUP_ROTATE MGEAR_left_leg_front_p2(0,&GEAR_left_leg_front_p2,1,_V(1.112f,-1.718f,0.0f),_V(0,0,1),0.5235f);
-	static MGROUP_ROTATE MGEAR_left_leg_mid_p1(0,&GEAR_left_leg_mid_p1,1,_V(3.007f,-1.942f,0.0f),_V(0,0,1),0.9948f);
-	static MGROUP_ROTATE MGEAR_left_leg_mid_p2(0,&GEAR_left_leg_mid_p2,1,_V(2.464f,-1.718f,0.0f),_V(0,0,1),0.5235f);
-	static MGROUP_ROTATE MGEAR_left_leg_back_p1(0,&GEAR_left_leg_back_p1,1,_V(2.49f,-1.942f,0.0f),_V(0,0,1),0.9948f);
-	static MGROUP_ROTATE MGEAR_left_leg_back_p2(0,&GEAR_left_leg_back_p2,1,_V(1.947f,-1.718f,0.0f),_V(0,0,1),0.5235f);
+	static MGROUP_ROTATE MGEAR_left_leg_front_p1(0,&GEAR_left_leg_front_p1,1,_V(-1.655f,-1.942f,0.0f),_V(0,0,-1),0.9948f);
+	static MGROUP_ROTATE MGEAR_left_leg_front_p2(0,&GEAR_left_leg_front_p2,1,_V(-1.112f,-1.718f,0.0f),_V(0,0,-1),0.5235f);
+	static MGROUP_ROTATE MGEAR_left_leg_mid_p1(0,&GEAR_left_leg_mid_p1,1,_V(-3.007f,-1.942f,0.0f),_V(0,0,-1),0.9948f);
+	static MGROUP_ROTATE MGEAR_left_leg_mid_p2(0,&GEAR_left_leg_mid_p2,1,_V(-2.464f,-1.718f,0.0f),_V(0,0,-1),0.5235f);
+	static MGROUP_ROTATE MGEAR_left_leg_back_p1(0,&GEAR_left_leg_back_p1,1,_V(-2.49f,-1.942f,0.0f),_V(0,0,-1),0.9948f);
+	static MGROUP_ROTATE MGEAR_left_leg_back_p2(0,&GEAR_left_leg_back_p2,1,_V(-1.947f,-1.718f,0.0f),_V(0,0,-1),0.5235f);
 
-	static UINT GEAR_right_leg_front_p1=71;
-	static UINT GEAR_right_leg_front_p2=72;
-	static UINT GEAR_right_leg_mid_p1=75;
-	static UINT GEAR_right_leg_mid_p2=76;
-	static UINT GEAR_right_leg_back_p1=80;
-	static UINT GEAR_right_leg_back_p2=81;
+	static UINT GEAR_right_leg_front_p1=39;
+	static UINT GEAR_right_leg_front_p2=26;
+	static UINT GEAR_right_leg_mid_p1=41;
+	static UINT GEAR_right_leg_mid_p2=28;
+	static UINT GEAR_right_leg_back_p1=37;
+	static UINT GEAR_right_leg_back_p2=24;
 
-	static MGROUP_ROTATE MGEAR_right_leg_front_p1(0,&GEAR_right_leg_front_p1,1,_V(-1.655f,-1.942f,0.0f),_V(0,0,-1),0.9948f);
-	static MGROUP_ROTATE MGEAR_right_leg_front_p2(0,&GEAR_right_leg_front_p2,1,_V(-1.112f,-1.718f,0.0f),_V(0,0,-1),0.5235f);
-	static MGROUP_ROTATE MGEAR_right_leg_mid_p1(0,&GEAR_right_leg_mid_p1,1,_V(-3.007f,-1.942f,0.0f),_V(0,0,-1),0.9948f);
-	static MGROUP_ROTATE MGEAR_right_leg_mid_p2(0,&GEAR_right_leg_mid_p2,1,_V(-2.464f,-1.718f,0.0f),_V(0,0,-1),0.5235f);
-	static MGROUP_ROTATE MGEAR_right_leg_back_p1(0,&GEAR_right_leg_back_p1,1,_V(-2.49f,-1.942f,0.0f),_V(0,0,-1),0.9948f);
-	static MGROUP_ROTATE MGEAR_right_leg_back_p2(0,&GEAR_right_leg_back_p2,1,_V(-1.947f,-1.718f,0.0f),_V(0,0,-1),0.5235f);
+	static MGROUP_ROTATE MGEAR_right_leg_front_p1(0,&GEAR_right_leg_front_p1,1,_V(1.655f,-1.942f,0.0f),_V(0,0,1),0.9948f);
+	static MGROUP_ROTATE MGEAR_right_leg_front_p2(0,&GEAR_right_leg_front_p2,1,_V(1.112f,-1.718f,0.0f),_V(0,0,1),0.5235f);
+	static MGROUP_ROTATE MGEAR_right_leg_mid_p1(0,&GEAR_right_leg_mid_p1,1,_V(3.007f,-1.942f,0.0f),_V(0,0,1),0.9948f);
+	static MGROUP_ROTATE MGEAR_right_leg_mid_p2(0,&GEAR_right_leg_mid_p2,1,_V(2.464f,-1.718f,0.0f),_V(0,0,1),0.5235f);
+	static MGROUP_ROTATE MGEAR_right_leg_back_p1(0,&GEAR_right_leg_back_p1,1,_V(2.49f,-1.942f,0.0f),_V(0,0,1),0.9948f);
+	static MGROUP_ROTATE MGEAR_right_leg_back_p2(0,&GEAR_right_leg_back_p2,1,_V(1.947f,-1.718f,0.0f),_V(0,0,1),0.5235f);
 
 
 
@@ -901,7 +901,6 @@ bool ShuttleA::RedrawPanel_PodangleIndicator (SURFHANDLE surf)
 void ShuttleA::RedrawPanel_Fuelstatus (SURFHANDLE surf, int part)
 {
 	char cbuf[20];
-	int len;
 	double m, m0, rate, lvl;
 
 	HDC hDC = oapiGetDC (surf);
@@ -1104,7 +1103,7 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 	SetRotDrag (_V(0.7, 0.7, 0.3));
 	SetSurfaceFrictionCoeff (0.5, 0.5);
 	SetCameraOffset (_V(-0.575f,2.4f,15.9f));
-	SetDockParams (_V(0,0,18.32), _V(0,0,1), _V(0,1,0));
+	SetDockParams (_V(0,0,18.677), _V(0,0,1), _V(0,1,0));
 
 	SetTouchdownPoints (tdvtx, ntdvtx);
 
@@ -1147,44 +1146,52 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 	};
 
 	// main thrusters
-	th_main[0] = CreateThruster (_V(-1.8,0,-16.55), _V(0,0,1), MAX_MAIN_THRUST, ph_main,ISP_P0, ISP);
-	th_main[1] = CreateThruster (_V( 1.8,0,-16.55), _V(0,0,1), MAX_MAIN_THRUST, ph_main, ISP_P0, ISP);
+	th_main[0] = CreateThruster (_V(-1.7598,0,-13.8705), _V(0,0,1), MAX_MAIN_THRUST, ph_main,ISP_P0, ISP);
+	th_main[1] = CreateThruster (_V( 1.7598,0,-13.8705), _V(0,0,1), MAX_MAIN_THRUST, ph_main, ISP_P0, ISP);
 	thg_main = CreateThrusterGroup (th_main, 2, THGROUP_MAIN);
-	AddExhaust (th_main[0], 12, 1);
-	AddExhaust (th_main[1], 12, 1);
-	AddExhaustStream (th_main[0], _V(0,0,-24), &contrail_main);
-	AddExhaustStream (th_main[0], _V(-1.8,0,-19), &exhaust_main);
-	AddExhaustStream (th_main[1], _V( 1.8,0,-19), &exhaust_main);
+	AddExhaust (th_main[0], 12, 2, 2.2);
+	AddExhaust (th_main[1], 12, 2, 2.2);
+	AddExhaustStream (th_main[0], _V(0,0,-21), &contrail_main);
+	AddExhaustStream (th_main[0], _V(-1.7598,0,-16.0), &exhaust_main);
+	AddExhaustStream (th_main[1], _V( 1.7598,0,-16.0), &exhaust_main);
 
-	// hover and retro thrusters
-	th_hover[0] = CreateThruster (_V(0,-2.4, 13.25), _V(0,1,0), MAX_HOVER_THRUST, ph_main, ISP_P0, ISP);
-	th_hover[1] = CreateThruster (_V(0,-2.4,-13.25), _V(0,1,0), MAX_HOVER_THRUST, ph_main, ISP_P0, ISP);
+	// hover thrusters
+	th_hover[0] = CreateThruster (_V(0,-1.49016, 13.0), _V(0,1,0), MAX_HOVER_THRUST, ph_main, ISP_P0, ISP);
+	th_hover[1] = CreateThruster (_V(0,-1.49016,-13.0), _V(0,1,0), MAX_HOVER_THRUST, ph_main, ISP_P0, ISP);
 	thg_hover = CreateThrusterGroup (th_hover, 2, THGROUP_HOVER);
-	AddExhaust (th_hover[0], 10, 1);
-	AddExhaust (th_hover[1], 10, 1);
-	AddExhaustStream (th_hover[0], _V(0,-6, 13.25), &contrail_hover);
-	AddExhaustStream (th_hover[1], _V(0,-6,-13.25), &contrail_hover);
-	AddExhaustStream (th_hover[0], _V(0,-4, 13.25), &exhaust_main);
-	AddExhaustStream (th_hover[1], _V(0,-4,-13.25), &exhaust_main);
+	AddExhaust (th_hover[0], 10, 1, _V(0,-2.265335, 13.608049), _V(0,-1,0));
+	AddExhaust (th_hover[1], 10, 1, _V(0,-2.265335,-12.88175), _V(0,-1,0));
+	AddExhaustStream (th_hover[0], _V(0,-6, 13.608049), &contrail_hover);
+	AddExhaustStream (th_hover[1], _V(0,-6,-12.88175), &contrail_hover);
+	AddExhaustStream (th_hover[0], _V(0,-4, 13.608049), &exhaust_main);
+	AddExhaustStream (th_hover[1], _V(0,-4,-12.88175), &exhaust_main);
 
 	// retro/hover thrusters
-	th_pod[0] = CreateThruster (_V(-7,0,0/*1.5*/), _V(0,0,-1), MAX_RETRO_THRUST, ph_main,ISP_P0, ISP);
-	th_pod[1] = CreateThruster (_V( 7,0,0/*1.5*/), _V(0,0,-1), MAX_RETRO_THRUST, ph_main, ISP_P0, ISP);
+	th_pod[0] = CreateThruster (_V(-6.97215,0,0), _V(0,0,-1), MAX_RETRO_THRUST, ph_main,ISP_P0, ISP);
+	th_pod[1] = CreateThruster (_V( 6.97215,0,0), _V(0,0,-1), MAX_RETRO_THRUST, ph_main, ISP_P0, ISP);
 	thg_pod = CreateThrusterGroup (th_pod, 2, THGROUP_USER);
-	AddExhaust (th_pod[0], 6, 0.7, 1.5);
-	AddExhaust (th_pod[1], 6, 0.7, 1.5);
+	AddExhaust (th_pod[0], 6, 1.0, 1.33422);
+	AddExhaust (th_pod[1], 6, 1.0, 1.33422);
 	AddExhaustStream (th_pod[0], &contrail_pod);
 	AddExhaustStream (th_pod[1], &contrail_pod);
 
 	// attitude thrusters
 	THRUSTER_HANDLE th_att_rot[4], th_att_lin[4];
-	th_att_rot[0] = CreateThruster (_V(-6, 0.7,-0.4), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[1] = CreateThruster (_V( 6,-0.7,-0.4), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[2] = CreateThruster (_V(-6,-0.7,-0.4), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
-	th_att_rot[3] = CreateThruster (_V( 6, 0.7,-0.4), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[0] = CreateThruster (_V(-6.01139, 0.61554,0), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[1] = CreateThruster (_V( 6.01139,-0.61554,0), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[2] = CreateThruster (_V(-6.01139,-0.61554,0), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
+	th_att_rot[3] = CreateThruster (_V( 6.01139, 0.61554,0), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_rot,   2, THGROUP_ATT_BANKLEFT);
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_BANKRIGHT);
-	for (i = 0; i < 4; i++) AddExhaust (th_att_rot[i], 0.7, 0.08);
+	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-6.01139, 0.61554,-0.1), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-6.01139, 0.61554,0.1), _V(0,-1,0));
+	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 6.01139,-0.61554,-0.1), _V(0, 1,0));
+	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 6.01139,-0.61554,0.1), _V(0, 1,0));
+	AddExhaust (th_att_rot[2], 0.7, 0.08, _V(-6.01139,-0.61554,-0.1), _V(0, 1,0));
+	AddExhaust (th_att_rot[2], 0.7, 0.08, _V(-6.01139,-0.61554,0.1), _V(0, 1,0));
+	AddExhaust (th_att_rot[3], 0.7, 0.08, _V( 6.01139, 0.61554,-0.1), _V(0,-1,0));
+	AddExhaust (th_att_rot[3], 0.7, 0.08, _V( 6.01139, 0.61554,0.1), _V(0,-1,0));
+
 	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 15), _V(0, 1,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_rot[1] = th_att_lin[2] = CreateThruster (_V(0,0,-15), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_rot[2] = th_att_lin[3] = CreateThruster (_V(0,0, 15), _V(0,-1,0), MAX_RCS_THRUST, ph_rcs, ISP);
@@ -1193,14 +1200,15 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_PITCHDOWN);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_UP);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_DOWN);
-	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-0.2, -1.1,   17.5), _V(0,-1,0));
-	AddExhaust (th_att_rot[0], 0.7, 0.08, _V( 0.2, -1.1,   17.5), _V(0,-1,0));
-	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 0,    2.3,-14.6), _V(0, 1,0));
-	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 0,    2.3,-14.3), _V(0, 1,0));
-	AddExhaust (th_att_rot[2], 0.7, 0.08, _V(-0.15, 2.1, 17.6), _V(0, 1,0));
-	AddExhaust (th_att_rot[2], 0.7, 0.08, _V( 0.15, 2.1, 17.6), _V(0, 1,0));
-	AddExhaust (th_att_rot[3], 0.7, 0.08, _V(-0.15,-1.9,-14.5), _V(0,-1,0));
-	AddExhaust (th_att_rot[3], 0.7, 0.08, _V( 0.15,-1.9,-14.5), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-0.13,-0.9,17.95), _V(0,-1,0));
+	AddExhaust (th_att_rot[0], 0.7, 0.08, _V( 0.13,-0.9,17.95), _V(0,-1,0));
+	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 0,    2.25,-14.0), _V(0, 1,0));
+	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 0,    2.25,-14.23), _V(0, 1,0));
+	AddExhaust (th_att_rot[2], 0.7, 0.08, _V(-0.13, 2.03, 17.9), _V(0, 1,0));
+	AddExhaust (th_att_rot[2], 0.7, 0.08, _V( 0.13, 2.03, 17.9), _V(0, 1,0));
+	AddExhaust (th_att_rot[3], 0.7, 0.08, _V(-0.13,-1.76,-14.1), _V(0,-1,0));
+	AddExhaust (th_att_rot[3], 0.7, 0.08, _V( 0.13,-1.76,-14.1), _V(0,-1,0));
+
 	th_att_rot[0] = th_att_lin[0] = CreateThruster (_V(0,0, 15), _V( 1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_rot[1] = th_att_lin[2] = CreateThruster (_V(0,0,-15), _V(-1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_rot[2] = th_att_lin[3] = CreateThruster (_V(0,0, 15), _V(-1,0,0), MAX_RCS_THRUST, ph_rcs, ISP);
@@ -1209,33 +1217,34 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 	CreateThrusterGroup (th_att_rot+2, 2, THGROUP_ATT_YAWLEFT);
 	CreateThrusterGroup (th_att_lin,   2, THGROUP_ATT_RIGHT);
 	CreateThrusterGroup (th_att_lin+2, 2, THGROUP_ATT_LEFT);
-	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-2.4, 0.15, 17.5), _V(-1,0,0));
-	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-2.4,-0.15, 17.5), _V(-1,0,0));
-	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 3.5, 0,   -14.6), _V( 1,0,0));
-	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 3.5, 0,   -14.3), _V( 1,0,0));
-	AddExhaust (th_att_rot[2], 0.7, 0.08, _V( 2.4, 0.15, 17.5), _V( 1,0,0));
-	AddExhaust (th_att_rot[2], 0.7, 0.08, _V( 2.4,-0.15, 17.5), _V( 1,0,0));
-	AddExhaust (th_att_rot[3], 0.7, 0.08, _V(-3.5, 0,   -14.6), _V(-1,0,0));
-	AddExhaust (th_att_rot[3], 0.7, 0.08, _V(-3.5, 0,   -14.3), _V(-1,0,0));
+	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-2.18, 0.13, 17.87), _V(-1,0,0));
+	AddExhaust (th_att_rot[0], 0.7, 0.08, _V(-2.18,-0.13, 17.87), _V(-1,0,0));
+	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 3.347, 0,   -14.24), _V( 1,0,0));
+	AddExhaust (th_att_rot[1], 0.7, 0.08, _V( 3.347, 0,   -14.03), _V( 1,0,0));
+	AddExhaust (th_att_rot[2], 0.7, 0.08, _V( 2.18, 0.13, 17.87), _V( 1,0,0));
+	AddExhaust (th_att_rot[2], 0.7, 0.08, _V( 2.18,-0.13, 17.87), _V( 1,0,0));
+	AddExhaust (th_att_rot[3], 0.7, 0.08, _V(-3.347, 0,   -14.24), _V(-1,0,0));
+	AddExhaust (th_att_rot[3], 0.7, 0.08, _V(-3.347, 0,   -14.03), _V(-1,0,0));
+
 	th_att_lin[0] = CreateThruster (_V( 0,0,0), _V(0,0, 1), 2*MAX_RCS_THRUST, ph_rcs, ISP);
 	th_att_lin[1] = CreateThruster (_V( 0,0,0), _V(0,0,-1), 2*MAX_RCS_THRUST, ph_rcs, ISP);
 	CreateThrusterGroup (th_att_lin,   1, THGROUP_ATT_FORWARD);
 	CreateThrusterGroup (th_att_lin+1, 1, THGROUP_ATT_BACK);
-	AddExhaust (th_att_lin[0], 0.7, 0.08, _V( 6,0,-1.6), _V(0,0,-1));
-	AddExhaust (th_att_lin[0], 0.7, 0.08, _V(-6,0,-1.6), _V(0,0,-1));
-	AddExhaust (th_att_lin[1], 0.7, 0.08, _V( 6,0, 1), _V(0,0, 1));
-	AddExhaust (th_att_lin[1], 0.7, 0.08, _V(-6,0, 1), _V(0,0, 1));
+	AddExhaust (th_att_lin[0], 0.7, 0.15, _V( 6.01139,0,-1.16102), _V(0,0,-1));
+	AddExhaust (th_att_lin[0], 0.7, 0.15, _V(-6.01139,0,-1.16102), _V(0,0,-1));
+	AddExhaust (th_att_lin[1], 0.7, 0.15, _V( 6.01139,0, 1.16102), _V(0,0, 1));
+	AddExhaust (th_att_lin[1], 0.7, 0.15, _V(-6.01139,0, 1.16102), _V(0,0, 1));
 
 	// ************************ Attachment points ****************************
 	char attach_id[8]={"SH"};
 	
-	payload_attachment[0]  = CreateAttachment (false,_V(1.76f,0.0f, 5.821f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[1]  = CreateAttachment (false,_V(1.76f,0.0f,-1.725f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[2]  = CreateAttachment (false,_V(1.76f,0.0f,-7.000f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[0]  = CreateAttachment (false,_V(1.76f,0.0f, 6.28f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[1]  = CreateAttachment (false,_V(1.76f,0.0f,-1.28f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[2]  = CreateAttachment (false,_V(1.76f,0.0f,-6.600f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
 
-	payload_attachment[3]  = CreateAttachment (false,_V(-1.76f,0.0f, 5.821f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[4]  = CreateAttachment (false,_V(-1.76f,0.0f,-1.725f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[5]  = CreateAttachment (false,_V(-1.76f,0.0f,-7.000f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[3]  = CreateAttachment (false,_V(-1.76f,0.0f, 6.28f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[4]  = CreateAttachment (false,_V(-1.76f,0.0f,-1.28f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[5]  = CreateAttachment (false,_V(-1.76f,0.0f,-6.600f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
 
 	// ************************ Airfoil  ****************************
 	ClearAirfoilDefinitions();
@@ -1251,7 +1260,7 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 
 
 	// ************************ Blit Ship Name ****************************
-	SURFHANDLE insignia_tex = oapiGetTextureHandle (exmesh_tpl, 2);
+	SURFHANDLE insignia_tex = oapiGetTextureHandle (exmesh_tpl, 3);
 
 	HDC hDC = oapiGetDC (insignia_tex);
 	HFONT hFont = CreateFont(22, 0, 0, 0, 700, 0, 0, 0, 0, 0, 0, 0, 0, "Impact");
