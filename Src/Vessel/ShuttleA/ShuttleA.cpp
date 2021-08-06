@@ -123,6 +123,7 @@ ShuttleA::ShuttleA (OBJHANDLE hObj, int fmodel)
 	}
 	hPanelMesh = NULL;
 	npel = 0;
+	main_tex      = NULL;
 }
 
 // --------------------------------------------------------------
@@ -136,6 +137,8 @@ ShuttleA::~ShuttleA ()
 	if (hPanelMesh0) oapiDeleteMesh (hPanelMesh0);
 	for (i = 0; i < npel; i++)
 		delete pel[i];
+
+	if (main_tex) oapiDestroySurface(main_tex);
 }
 
 // --------------------------------------------------------------
@@ -1260,27 +1263,14 @@ void ShuttleA::clbkSetClassCaps (FILEHANDLE cfg)
 
 
 	// ************************ Blit Ship Name ****************************
-	SURFHANDLE insignia_tex = oapiGetTextureHandle (exmesh_tpl, 3);
+	SURFHANDLE hTex = oapiGetTextureHandle (exmesh_tpl, 3);
+	if (hTex)
+	{
+		main_tex = oapiCreateTextureSurface (256, 256);
+		oapiBlt (main_tex, hTex, 0, 0, 0, 0, 256, 256);
 
-	HDC hDC = oapiGetDC (insignia_tex);
-	HFONT hFont = CreateFont(22, 0, 0, 0, 700, 0, 0, 0, 0, 0, 0, 0, 0, "Impact");
-	HFONT hFontVertical = CreateFont(22, 0, 900, 900, 700, 0, 0, 0, 0, 0, 0, 0, 0, "Impact");
-	HFONT pFont = (HFONT)SelectObject (hDC, hFont);
-	SetTextColor (hDC, 0xD0D0D0);
-	SetBkMode (hDC, TRANSPARENT);
-	SetTextAlign (hDC, TA_CENTER);
-	char cbuf[32];
-
-	strncpy (cbuf, GetName(), 10);
-	int len = min(strlen(GetName()), 10);
-	TextOut (hDC, 66, 37, cbuf, len);
-	TextOut (hDC, 209, 25, cbuf, len);
-	SelectObject (hDC, hFontVertical);
-	TextOut (hDC, 64, 187, cbuf, len);
-	SelectObject (hDC, pFont);
-	DeleteObject (hFont);
-	DeleteObject (hFontVertical);
-	oapiReleaseDC (insignia_tex, hDC);
+		PaintMarkings( main_tex );
+	}
 
 	// ******************** Assign panel elements *************************
 	npel = 0;
@@ -2420,6 +2410,48 @@ bool ShuttleA::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 	}
 return false;
 };
+
+void ShuttleA::clbkVisualCreated (VISHANDLE vis, int refcount)
+{
+	DEVMESHHANDLE exmesh = GetDevMesh (vis, 0);
+	ApplySkin( exmesh );
+	return;
+}
+
+void ShuttleA::ApplySkin ( DEVMESHHANDLE exmesh )
+{
+	if (!exmesh) return;
+	if (main_tex) oapiSetTexture (exmesh, 3, main_tex);
+	return;
+}
+
+// --------------------------------------------------------------
+// Paint individual vessel markings
+// --------------------------------------------------------------
+void ShuttleA::PaintMarkings (SURFHANDLE tex)
+{
+	oapi::Sketchpad *skp = oapiGetSketchpad (main_tex);
+	if (skp)
+	{
+		oapi::Font *font1 = oapiCreateFont(22, true, "Impact", FONT_BOLD);
+		skp->SetFont (font1);
+		skp->SetTextColor (0xD0D0D0);
+		skp->SetTextAlign (oapi::Sketchpad::CENTER);
+		char cbuf[32];
+		strncpy (cbuf, GetName(), 10);
+		int len = min(strlen(GetName()), 10);
+		skp->Text (66, 37, cbuf, len);
+		skp->Text (209, 25, cbuf, len);
+		oapiReleaseFont(font1);
+
+		oapi::Font *font2 = oapiCreateFont(22, true, "Impact", FONT_BOLD, 900);
+		skp->SetFont(font2);
+		skp->Text (64, 187, cbuf, len);
+		oapiReleaseSketchpad (skp);
+		oapiReleaseFont(font2);
+	}
+	return;
+}
 
 // ==============================================================
 // API callback interface
