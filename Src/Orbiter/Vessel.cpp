@@ -3170,7 +3170,7 @@ UINT Vessel::InsertMesh (MESHHANDLE hMesh, UINT idx, const VECTOR3 *ofs)
 
 	meshlist[idx]->hMesh = hMesh; // pointer to preloaded mesh
 	meshlist[idx]->vismode = MESHVIS_EXTERNAL; // external view only by default
-	meshlist[idx]->crc = reinterpret_cast<unsigned long long>(hMesh) & 0xFFFFFFFF; // OK to truncate the hMesh pointer here since it's just part of this mesh's CRC
+	meshlist[idx]->crc = (DWORD_PTR)hMesh;
 	mesh_crc += meshlist[idx]->crc; // encode mesh pointer
 	for (i = 0; i < sizeof(ofs); i++)
 		*((BYTE*)&mesh_crc + (i%4)) += *((BYTE*)&ofs+i); // encode offset

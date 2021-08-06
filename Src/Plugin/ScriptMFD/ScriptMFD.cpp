@@ -423,8 +423,8 @@ OAPI_MSGTYPE ScriptMFD::MsgProc (UINT msg, UINT mfd, WPARAM wparam, LPARAM lpara
 {
 	switch (msg) {
 	case OAPI_MSG_MFD_OPENEDEX: {
-		MFDMODEOPENSPEC *ospec = (MFDMODEOPENSPEC*)wparam;
-		return reinterpret_cast<OAPI_MSGTYPE>(new ScriptMFD (ospec->w, ospec->h, (VESSEL*)lparam, (const SCRIPTMFDMODESPEC*)ospec->spec->context));
+		MFDMODEOPENSPEC* ospec = (MFDMODEOPENSPEC*)wparam;
+		return (OAPI_MSGTYPE)new ScriptMFD(ospec->w, ospec->h, (VESSEL*)lparam, (const SCRIPTMFDMODESPEC*)ospec->spec->context);
 		}
 	}
 	return 0;
