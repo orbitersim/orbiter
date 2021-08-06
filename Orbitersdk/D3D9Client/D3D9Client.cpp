@@ -241,9 +241,6 @@ struct TilePixelPosition
 	}
 };
 
-DWORD g_Hook;
-void *g_HookPoint = (void *)0x4185fc;
-void *g_TrampolineReturn = (void *)0x418604;
 std::unordered_map<OBJHANDLE, std::unordered_map<int, std::unordered_map<int, std::unordered_map<int, std::vector<FlatShape*>>>>> g_ElevationFlatteningShapes;
 std::unordered_map<OBJHANDLE, std::vector<FlatShape*>> g_ShapeStore;
 std::unordered_map<OBJHANDLE, bool> g_ShapesLoaded;
@@ -395,24 +392,8 @@ void ProcessPlanetFlats(OBJHANDLE hPlanet)
 	g_ShapesLoaded[hPlanet] = true;
 }
 
-//The following array is:
-//_asm
-//{
-//	fld  qword [ebp+0x8]  // load floating point (lat or lng)
-//	fld  qword [ebp+0x10] // load floating point (lng or lat)
-//	fxch st1              // swap FPU storage
-//}
-byte g_Original[8] = { 0xdd, 0x45, 0x08, 0xdd, 0x45, 0x10, 0xd9, 0xc9 };
-
-//The following array is:
-//_asm
-//{
-//	jmp dword ptr [HOOKFUNCTION]; //jump to dynamically detected address
-//}
-byte g_Code[8] = { 0xff, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
 template <typename Type>
-bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, Type *elev)
+bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, Type *elev)
 {
 	if (!elev) return false;
 	if (g_ShapesLoaded.find(hPlanet) == g_ShapesLoaded.end()) ProcessPlanetFlats(hPlanet);
@@ -446,7 +427,7 @@ bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, Type *elev)
 			if (dist <= 1.0)
 			{
 				// Do the math in INT16 basis even for "float" output
-				INT16 elevation = INT16(shape->Height);
+				INT16 elevation = INT16((double)shape->Height / elev_res);
 				if (shape->Falloff > 0)
 				{
 					for (auto pot = 0; pot < shape->Type; pot++)
@@ -456,7 +437,7 @@ bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, Type *elev)
 					if (dist >= 1 - shape->Falloff)
 					{
 						double alpha = (dist - 1 + shape->Falloff) / shape->Falloff;
-						elevation = INT16(elev[i] * alpha + shape->Height * (1 - alpha));
+						elevation = INT16(elev[i] * alpha + (double)shape->Height / elev_res * (1 - alpha));
 					}
 				}
 				// Convert to float or keep as an INT16 depending on case
@@ -468,13 +449,15 @@ bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, Type *elev)
 }
 
 
-void FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, INT16 *elev)
+bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16 *elev)
 {
-	if (!Config->bFlatsEnabled) return;
+	if (!Config->bFlatsEnabled) return false;
 	char name[64];
 	oapiGetObjectName(hPlanet, name, 64);
-	if (FilterElevation<INT16>(hPlanet, lvl, ilat, ilng, elev))
+	auto result = FilterElevation<INT16>(hPlanet, lvl, ilat, ilng, elev_res, elev);
+	if (result)
 		LogClr("Coral", "FilterElevation[Physics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
+	return result;
 }
 
 
@@ -483,68 +466,9 @@ void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, flo
 	if (!Config->bFlatsEnabled) return;
 	char name[64];
 	oapiGetObjectName(hPlanet, name, 64);
-	if (FilterElevation<float>(hPlanet, lvl, ilat, ilng, elev))
+	if (FilterElevation<float>(hPlanet, lvl, ilat, ilng, 1.0, elev))
 		LogClr("Coral", "FilterElevation[Graphics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
 }
-
-void Trampoline()
-{
-	//__asm
-	//{
-	//	pop ebp                        // that's necessary because the compiler saved the pointer to the stack		
-	//	mov eax, dword ptr[edi]        // elev
-	//	mov ecx, dword ptr[esp + 0x54] // ilng
-	//	mov edx, dword ptr[esp + 0x2c] // ilat
-	//	push eax                       // arg4 = elev
-	//	mov eax, dword ptr[esp + 0x40] // internal GBody pointer
-	//	mov eax, dword ptr[eax]        // OBJHANDLE
-	//	push ecx                       // arg3 = ilng
-	//	push edx                       // arg2 = ilat
-	//	push esi                       // arg1 = lvl		
-	//	push eax                       // arg0 = OBJHANDLE
-	//	call FilterElevationPhysics	   // filter function call
-	//	add esp, 14h                   // 5 arguments = 5*2 bytes = 20dec = 14h
-	//	fld qword ptr[ebp + 0x8]       // start of overwritten bytes in original position
-	//	fld qword ptr[ebp + 0x10]
-	//	fxch
-	//	jmp g_TrampolineReturn         // return from trampoline to original function
-	//}
-}
-
-int WriteCode(void *address, void *code, DWORD len)
-{
-	//Get process information
-	HANDLE hSelf = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION, FALSE, ::GetCurrentProcessId());
-	if (hSelf == NULL) return -1;
-	MEMORY_BASIC_INFORMATION mbi;
-
-	//Open up page of linked address	
-	if (VirtualQueryEx(hSelf, (LPVOID)address, &mbi, sizeof(mbi)) != sizeof(mbi)) return -2;
-	PVOID pvRgnBaseAddress = mbi.BaseAddress;
-	DWORD dwOldProtect1, dwOldProtect2, dwFake;
-	if (!::VirtualProtectEx(hSelf, pvRgnBaseAddress, 4, PAGE_EXECUTE_READWRITE, &dwOldProtect1)) return -3;
-	BOOL bStridePage = FALSE;
-	LPBYTE lpByte = (LPBYTE)pvRgnBaseAddress;
-	lpByte += 4096;
-	if ((DWORD)lpByte < (DWORD)address + 4) bStridePage = TRUE;
-	PVOID pvRgnBaseAddress2 = (LPVOID)lpByte;
-	if (bStridePage)
-		if (!::VirtualProtectEx(hSelf, pvRgnBaseAddress2, 4, PAGE_EXECUTE_READWRITE, &dwOldProtect2))
-		{
-			::VirtualProtectEx(hSelf, pvRgnBaseAddress, 4, dwOldProtect1, &dwFake);
-			return -4;
-		}
-
-	//Write code
-	memcpy(address, code, len);
-
-	//Lock again
-	::VirtualProtectEx(hSelf, pvRgnBaseAddress, 4, dwOldProtect1, &dwFake);
-	if (bStridePage) ::VirtualProtectEx(hSelf, pvRgnBaseAddress2, 4, dwOldProtect2, &dwFake);
-
-	return 0;
-}
-
 
 
 
@@ -598,25 +522,6 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	LabelPos      (0)
 
 {
-	// =====================================================================
-	// Face's terrain flattening
-	// Hook up collision loader in core Orbiter
-	// Hooks are placed recardless of "Enable Terrain Flattening", simplier that way
-	// =====================================================================
-	union
-	{
-		void *pointer;
-		byte bytes[4];
-		DWORD value;
-	} p;
-
-	g_Hook = (DWORD)(void *)Trampoline;
-	p.pointer = (void *)&g_Hook;
-	if (memcmp((void *)g_Original, g_HookPoint, 8) == 0)
-	{
-		for (int i = 0; i < 4; i++) g_Code[2 + i] = p.bytes[i];
-		WriteCode(g_HookPoint, (void *)g_Code, 8);
-	}
 }
 
 // ==============================================================
@@ -625,9 +530,6 @@ D3D9Client::~D3D9Client()
 {
 	LogAlw("D3D9Client destructor called");
 	SAFE_DELETE(vtab);
-
-	//Unhook
-	WriteCode(g_HookPoint, (void *)g_Original, 8);
 
 	// Free constellation names memory (if allocted)
 	if (g_cm_list) {
@@ -2878,6 +2780,14 @@ void D3D9Client::clbkReleaseSurfaceDC(SURFHANDLE surf, HDC hDC)
 		return;
 	}
 	SURFACE(surf)->ReleaseDC(hDC);
+}
+
+// =======================================================================
+
+bool D3D9Client::clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev)
+{
+	_TRACE;
+	return FilterElevationPhysics(hPlanet, lvl, ilat, ilng, elev_res, elev);
 }
 
 // =======================================================================
