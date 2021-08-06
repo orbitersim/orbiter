@@ -46,6 +46,7 @@ private:
 	static void OpenDlgClbk (void *context); // called when user requests console window
 	Interpreter *CreateInterpreter ();
 	void AddLine (const char *str, int mode=1); // add line to buffer
+	void Clear ();
 	void InputLine (const char *str); // user input
 	bool ScanHistory (int step); // recall previous command to input buffer
 	HANDLE hThread;    // interpreter thread handle

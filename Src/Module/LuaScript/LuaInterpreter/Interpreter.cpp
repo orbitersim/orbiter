@@ -299,6 +299,13 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 			lmax[0], m.m21, lmax[1], m.m22, lmax[2], m.m23,
 			lmax[0], m.m31, lmax[1], m.m32, lmax[2], m.m33);
 		return cbuf;
+	}
+	else if (lua_istouchdownvtx (L,idx)) {
+		TOUCHDOWNVTX tdvx = lua_totouchdownvtx (L,idx);
+		sprintf (cbuf, "{pos=[%g %g %g] stiffness=%g damping=%g mu=%g mu_lng=%g}",
+			tdvx.pos.x, tdvx.pos.y, tdvx.pos.z,
+			tdvx.stiffness, tdvx.damping, tdvx.mu, tdvx.mu_lng);
+		return cbuf;
 	} else if (lua_isnil (L,idx)) {
 		strcpy (cbuf, "nil");
 		return cbuf;
@@ -1676,7 +1683,7 @@ int Interpreter::oapi_get_tacc (lua_State *L)
 }
 
 /***
-Set the simulation time acceleration factor
+Set the simulation time acceleration factor.
 
 Warp factors will be clamped to the valid range [1,100000]. If the new warp
   factor is different from the previous one, all DLLs (including the one that
@@ -1884,7 +1891,7 @@ int Interpreter::oapiCreateAnnotation (lua_State *L)
 
 int Interpreter::oapiGetAnnotations (lua_State *L)
 {
-	for (std::list<NOTEHANDLE*>::iterator it = g_notehandles.begin(); it != g_notehandles.end(); ++it) {
+	for (auto it = g_notehandles.begin(); it != g_notehandles.end(); ++it) {
 		lua_pushlightuserdata(L, *it);
 		luaL_getmetatable (L, "NOTE.table");   // push metatable
 		lua_setmetatable (L, -2);              // set metatable for annotation objects

@@ -18,6 +18,7 @@ void ConsoleInterpreter::LoadAPI ()
 
 	static const struct luaL_reg termLib [] = {
 		{"out", termOut},
+		{"clear", termClear},
 		{"lineup", termLineUp},
 		{"SetVerbosity", termSetVerbosity},
 		{NULL, NULL}
@@ -37,6 +38,10 @@ void ConsoleInterpreter::term_strout (const char *str, bool iserr)
 		}
 		delete []cbuf;
 	} else console->AddLine (str, iserr ? 2:1);
+}
+
+void ConsoleInterpreter::term_clear() {
+	console->Clear();
 }
 
 int ConsoleInterpreter::termOut (lua_State *L)
@@ -59,6 +64,13 @@ int ConsoleInterpreter::termLineUp (lua_State *L)
 		}
 	}
 #endif
+	return 0;
+}
+
+int ConsoleInterpreter::termClear(lua_State *L)
+{
+	Interpreter *interp = GetInterpreter(L);
+	interp->term_clear();
 	return 0;
 }
 

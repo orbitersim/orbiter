@@ -7,6 +7,7 @@
 #include "ConsoleCfg.h"
 #include "resource.h"
 #include <process.h>
+#include <set>
 
 using namespace oapi;
 
@@ -42,6 +43,7 @@ LuaConsole::LuaConsole (HINSTANCE hDLL): Module (hDLL)
 		line[i].mode = 0;
 	}
 	line0 = 0;
+	hline = 0;
 	nline = 0;
 	tline = 0;
 	topline = 0;
@@ -310,6 +312,43 @@ void LuaConsole::PaintTerminal ()
 
 // ==============================================================
 
+void LuaConsole::Clear ()
+{
+	// Clean terminal history buffer, keeping only *unique* *inputs*
+	std::set<std::string> s;
+	for (int i = 0, j = 0; i < nline/*NLINE*/; ++i)
+	{
+		if (!line[i].mode &&                 // mode == input ...AND...
+		     line[i].buf && *line[i].buf &&  // buffer neither NULL nor empty ...AND...
+		     s.insert(line[i].buf).second )  // unique
+		{                                    // => keep!
+			if (i != j) // move?
+			{
+				line[j] = line[i];
+				line[i].buf = NULL;
+			}
+			++j;
+		}
+		else // remove!
+		{
+			delete[] line[i].buf;
+			line[i].buf = NULL;
+			line[i].mode = 0;
+		}
+	}
+
+	// Set parameter for a 'clean' terminal
+	line0 = 0;         // buffer index of first line
+
+	nline =            // number of lines in input buffer
+	topline =          // topmost displayed line
+	hline = s.size();  // current history scan line
+
+	PaintTerminal();
+}
+
+// ==============================================================
+
 void LuaConsole::AddLine (const char *str, int mode)
 {
 	int idx = (line0+nline)%NLINE;
@@ -474,6 +513,19 @@ LRESULT WINAPI LuaConsole::TermProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			break;
 		case 40: // down arrow (command history)
 			if (!ScanHistory(1)) return 0;
+			break;
+		case 46: // Del
+			if (ninp > caret) {
+				ninp--;
+				for (int i = caret; i < ninp; ++i)
+					inp[i] = inp[i + 1];
+			} else return 0;
+			break;
+		case 35: // End
+			caret = ninp;
+			break;
+		case 36: // Pos1
+			caret = 0;
 			break;
 		//default: // debugging only
 		//	sprintf (oapiDebugString(), "virt=%d", wParam);
