@@ -11,15 +11,18 @@ extern "C" {
 }
 
 #include "OrbiterAPI.h"
+#include "VesselAPI.h" // for TOUCHDOWNVTX
 
-#define PRMTP_NUMBER        0
-#define PRMTP_VECTOR        1
-#define PRMTP_STRING        2
-#define PRMTP_LIGHTUSERDATA 3
-#define PRMTP_TABLE         4
-#define PRMTP_BOOLEAN       5
+#define PRMTP_NIL           0x01
+#define PRMTP_NUMBER        0x02
+#define PRMTP_BOOLEAN       0x04
+#define PRMTP_STRING        0x08
+#define PRMTP_LIGHTUSERDATA 0x10
+#define PRMTP_TABLE         0x20
+#define PRMTP_VECTOR        0x40
+#define PRMTP_MATRIX        0x80
 
-#define ASSERT_SYNTAX(cond,msg) { if(!(cond)) { char cbuf[1024]; sprintf (cbuf, "%s: %s", __FUNCTION__+13, msg); term_strout(L,cbuf); return 0; } }
+#define ASSERT_SYNTAX(cond,msg) { if(!(cond)) { char cbuf[1024]; sprintf (cbuf, "%s: %s", __FUNCTION__+13, msg); term_strout(L,cbuf,true); return 0; } }
 #define ASSERT_FUNCPRM(L,idx,tp) { if (!AssertPrmtp(L,__FUNCTION__,idx,idx,tp)) return 0; }
 
 #define ASSERT_PRM(L,idx,tp)     { if (!AssertPrmtp(L,__FUNCTION__,idx,idx,tp)) return 0; }
@@ -29,6 +32,7 @@ extern "C" {
 #define ASSERT_LIGHTUSERDATA(L,idx)    ASSERT_PRM(L,idx,PRMTP_LIGHTUSERDATA)
 #define ASSERT_TABLE(L,idx)            ASSERT_PRM(L,idx,PRMTP_TABLE)
 #define ASSERT_BOOLEAN(L,idx)          ASSERT_PRM(L,idx,PRMTP_BOOLEAN)
+#define ASSERT_MATRIX(L,idx)           ASSERT_PRM(L,idx,PRMTP_MATRIX)
 
 #define ASSERT_MTDPRM(L,idx,tp)  { if (!AssertPrmtp(L,__FUNCTION__,idx,idx-1,tp)) return 0; }
 #define ASSERT_MTDNUMBER(L,idx)        ASSERT_MTDPRM(L,idx,PRMTP_NUMBER)
@@ -37,6 +41,9 @@ extern "C" {
 #define ASSERT_MTDLIGHTUSERDATA(L,idx) ASSERT_MTDPRM(L,idx,PRMTP_LIGHTUSERDATA)
 #define ASSERT_MTDTABLE(L,idx)         ASSERT_MTDPRM(L,idx,PRMTP_TABLE)
 #define ASSERT_MTDBOOLEAN(L,idx)       ASSERT_MTDPRM(L,idx,PRMTP_BOOLEAN)
+#define ASSERT_MTDMATRIX(L,idx)        ASSERT_MTDPRM(L,idx,PRMTP_MATRIX)
+
+#define ASSERT_MINPRMCOUNT(L,n) ASSERT_SYNTAX(lua_gettop(L) >= n, "Too few arguments")
 
 #ifdef INTERPRETER_IMPLEMENTATION
 #define INTERPRETERLIB DLLEXPORT
@@ -52,6 +59,8 @@ struct AirfoilContext {
 	char funcname[128];
 };
 
+
+// ======================================================================
 // ======================================================================
 // Nonmember functions
 
@@ -170,6 +179,11 @@ public:
 	virtual void term_out (lua_State *L, bool iserr=false);
 
 	/**
+	* \brief Clears the terminal.
+	*/
+	virtual void term_clear () {}
+
+	/**
 	 * \brief Push an MFD object onto the stack
 	 * \param L Lua interpreter instance
 	 * \param mfd pointer to MFD object
@@ -208,8 +222,18 @@ protected:
 	int term_verbose;                       // terminal verbosity level
 	bool is_term;                           // interpreter attached to a terminal
 	static void term_strout (lua_State *L, const char *str, bool iserr=false);
+	static void warn_obsolete(lua_State *L, const char *funcname);
 
 	static int AssertPrmtp(lua_State *L, const char *fname, int idx, int prm, int tp);
+
+	// assertion functions (general)
+	static int AssertPrmType(lua_State *L, int idx, int tp, const char *funcname);
+
+	// assertion functions (methods)
+	static int AssertMtdPrmType(lua_State *L, int idx, int tp, const char *funcname);
+	static int AssertMtdMinPrmCount(lua_State *L, int n, const char *funcname);
+	static int AssertMtdNumber(lua_State *L, int idx, const char *funcname);
+	static int AssertMtdHandle(lua_State *L, int idx, const char *funcname);
 
 	// suspend script execution for one cycle
 	void frameskip (lua_State *L);
@@ -244,8 +268,36 @@ protected:
 	// pushes a vessel object on the stack
 	static void lua_pushvessel (lua_State *L, VESSEL *v);
 
-	// pops a VESSEL interface from the stack
+	// Pops a VESSEL interface from the stack and returns it.
+	// A NULL return indicates an invalid data type at the specified stack position,
+	// but a nonzero return does not guarantee a valid vessel pointer
 	static VESSEL *lua_tovessel (lua_State *L, int idx=-1);
+
+	// type extraction with checks
+	static VESSEL *lua_tovessel_safe (lua_State *L, int idx, const char *funcname);
+
+	static int lua_tointeger_safe (lua_State *L, int idx, const char *funcname);
+	static double lua_tonumber_safe (lua_State *L, int idx, const char *funcname);
+	static bool lua_toboolean_safe (lua_State *L, int idx, const char *funcname);
+	static const char *lua_tostring_safe (lua_State *L, int idx, const char *funcname);
+	static void *lua_tolightuserdata_safe (lua_State *L, int idx, const char *funcname);
+	static VECTOR3 lua_tovector_safe (lua_State *L, int idx, const char *funcname);
+	static MATRIX3 lua_tomatrix_safe (lua_State *L, int idx, const char *funcname);
+	static double lua_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static void *lua_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static VECTOR3 lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+
+	static int luamtd_tointeger_safe (lua_State *L, int idx, const char *funcname);
+	static double luamtd_tonumber_safe (lua_State *L, int idx, const char *funcname);
+	static bool luamtd_toboolean_safe (lua_State *L, int idx, const char *funcname);
+	static const char *luamtd_tostring_safe (lua_State *L, int idx, const char *funcname);
+	static void *luamtd_tolightuserdata_safe (lua_State *L, int idx, const char *funcname);
+	static VECTOR3 luamtd_tovector_safe (lua_State *L, int idx, const char *funcname);
+	static MATRIX3 luamtd_tomatrix_safe (lua_State *L, int idx, const char *funcname);
+	static double luamtd_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static void *luamtd_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static VECTOR3 luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+
 
 	// pops an MFD2 interface from the stack
 	static MFD2 *lua_tomfd (lua_State *L, int idx=-1);
@@ -282,11 +334,15 @@ protected:
 	// -------------------------------------------
 	// oapi library functions
 	// -------------------------------------------
+	static int oapi_get_orbiter_version (lua_State *L);
+	static int oapi_get_viewport_size (lua_State *L);
+
 	static int oapiGetObjectHandle (lua_State *L);
 	static int oapiGetObjectCount (lua_State *L);
 	static int oapiGetObjectName (lua_State *L);
 	static int oapiCreateAnnotation (lua_State *L);
 	static int oapiDelAnnotation (lua_State *L);
+	static int oapiGetAnnotations (lua_State *L);
 	static int oapiDbgOut (lua_State *L);
 	static int oapiOpenHelp (lua_State *L);
 	static int oapiOpenInputBox (lua_State *L);
@@ -379,8 +435,15 @@ protected:
 	static int oapi_simulatebufferedkey (lua_State *L);
 	static int oapi_simulateimmediatekey (lua_State *L);
 
+	// utility functions
+	static int oapi_rand (lua_State *L);
+	static int oapi_deflate (lua_State *L);
+	static int oapi_inflate (lua_State *L);
+	static int oapi_get_color (lua_State *L);
+
 	// term library functions
 	static int termOut (lua_State *L);
+	static int termClear (lua_State *L);
 
 	// screen annotation library functions
 	static int noteSetText (lua_State *L);
@@ -400,43 +463,96 @@ protected:
 	// -------------------------------------------
 	// vessel methods
 	// -------------------------------------------
-	static int vGetHandle (lua_State *L);
-	static int vesselSendBufferedKey (lua_State *L);
-	static int vesselGetGravityRef (lua_State *L);
-	static int vesselGetSurfaceRef (lua_State *L);
-	static int vesselGetAltitude (lua_State *L);
-	static int vesselGetPitch (lua_State *L);
-	static int vesselGetBank (lua_State *L);
-	static int vesselGetYaw (lua_State *L);
-	static int vesselGetAngularVel (lua_State *L);
-	static int vesselSetAngularVel (lua_State *L);
-	static int vesselGetElements (lua_State *L);
-	static int vesselGetElementsEx (lua_State *L);
-	static int vesselSetElements (lua_State *L);
-	static int vesselGetProgradeDir (lua_State *L);
-	static int vesselGetWeightVector (lua_State *L);
-	static int vesselGetThrustVector (lua_State *L);
-	static int vesselGetLiftVector (lua_State *L);
+	static int v_version (lua_State *L);
+	static int v_get_handle (lua_State *L);
+	static int v_send_bufferedkey (lua_State *L);
 	static int v_is_landed (lua_State *L);
 	static int v_get_groundcontact (lua_State *L);
-	static int v_get_navmode (lua_State *L);
-	static int v_set_navmode (lua_State *L);
-	static int vesselGetRCSmode (lua_State *L);
-	static int vesselSetRCSmode (lua_State *L);
-	static int vesselGetADCmode (lua_State *L);
-	static int vesselSetADCmode (lua_State *L);
-	static int vesselGetADCLevel (lua_State *L);
-	static int vesselSetADCLevel (lua_State *L);
+
+	// general vessel properties
+	static int v_get_name (lua_State *L);
+	static int v_get_classname (lua_State *L);
+	static int v_get_flightmodel (lua_State *L);
+	static int v_get_damagemodel (lua_State *L);
+	static int v_get_enablefocus (lua_State *L);
+	static int v_set_enablefocus (lua_State *L);
+	static int v_get_size (lua_State *L);
+	static int v_set_size (lua_State *L);
+	static int v_get_emptymass (lua_State *L);
+	static int v_set_emptymass (lua_State *L);
+	static int v_get_pmi (lua_State *L);
+	static int v_set_pmi (lua_State *L);
+	static int v_get_crosssections (lua_State *L);
+	static int v_set_crosssections (lua_State *L);
+	static int v_get_gravitygradientdamping (lua_State *L);
+	static int v_set_gravitygradientdamping (lua_State *L);
+	static int v_get_touchdownpointcount (lua_State *L);
+	static int v_get_touchdownpoints (lua_State *L);
+	static int v_set_touchdownpoints (lua_State *L);
+	static int v_set_visibilitylimit (lua_State *L);
+	static int v_get_clipradius (lua_State *L);
+	static int v_set_albedoRGB (lua_State *L);
+	static int v_set_clipradius (lua_State *L);
+	static int v_set_surfacefrictioncoeff (lua_State *L);
+	static int v_get_COG_elev (lua_State *L);
+
+	// vessel state
+	static int v_get_mass (lua_State *L);
+	static int v_get_globalpos (lua_State *L);
+	static int v_get_globalvel (lua_State *L);
+	static int v_get_relativepos (lua_State *L);
+	static int v_get_relativevel (lua_State *L);
+	static int v_get_rotationmatrix (lua_State *L);
+	static int v_get_status (lua_State *L);
+	static int v_defset_status (lua_State *L);
+	static int v_get_angvel (lua_State *L);
+	static int v_set_angvel (lua_State *L);
+	static int v_get_angularacc (lua_State *L);
+	static int v_get_linearmoment (lua_State *L);
+	static int v_get_angularmoment (lua_State *L);
+	static int v_get_globalorientation (lua_State *L);
+	static int v_set_globalorientation (lua_State *L);
+	static int v_is_orbitstabilised (lua_State *L);
+	static int v_is_nonsphericalgravityenabled (lua_State *L);
+	static int v_toggle_navmode (lua_State *L);
+	static int v_get_hoverholdaltitude (lua_State *L);
+	static int v_set_hoverholdaltitude (lua_State *L);
+
+	// orbital parameters
+	static int v_get_gravityref (lua_State *L);
+	static int v_get_elements (lua_State *L);
+	static int v_get_elementsex (lua_State *L);
+	static int v_set_elements (lua_State *L);
+	static int v_get_progradedir (lua_State *L);
+	static int v_get_smi (lua_State *L);
+	static int v_get_argper (lua_State *L);
+	static int v_get_pedist (lua_State *L);
+	static int v_get_apdist (lua_State *L);
+
+	// surface-relative parameters
+	static int v_get_surfaceref (lua_State *L);
+	static int v_get_altitude (lua_State *L);
+	static int v_get_pitch (lua_State *L);
+	static int v_get_bank (lua_State *L);
+	static int v_get_yaw (lua_State *L);
+	static int v_get_surfaceelevation (lua_State *L);
+	static int v_get_surfacenormal (lua_State *L);
+
+	// atmospheric parameters
+	static int v_get_atmref (lua_State *L);
+	static int v_get_atmtemperature (lua_State *L);
+	static int v_get_atmdensity (lua_State *L);
+	static int v_get_atmpressure (lua_State *L);
 
 	// propellant methods
-	static int vesselCreatePropellantResource (lua_State *L);
-	static int vesselDelPropellantResource (lua_State *L);
-	static int vesselClearPropellantResources (lua_State *L);
-	static int vesselGetPropellantCount (lua_State *L);
-	static int vesselGetPropellantHandle (lua_State *L);
-	static int vesselGetPropellantMaxMass (lua_State *L);
-	static int vesselSetPropellantMaxMass (lua_State *L);
-	static int vesselGetPropellantMass (lua_State *L);
+	static int v_create_propellantresource (lua_State *L);
+	static int v_del_propellantresource (lua_State *L);
+	static int v_clear_propellantresources (lua_State *L);
+	static int v_get_propellantcount (lua_State *L);
+	static int v_get_propellanthandle (lua_State *L);
+	static int v_get_propellantmaxmass (lua_State *L);
+	static int v_set_propellantmaxmass (lua_State *L);
+	static int v_get_propellantmass (lua_State *L);
 	static int v_set_propellantmass (lua_State *L);
 	static int v_get_totalpropellantmass (lua_State *L);
 	static int v_get_propellantefficiency (lua_State *L);
@@ -465,6 +581,7 @@ protected:
 	static int v_get_thrusterlevel (lua_State *L);
 	static int v_set_thrusterlevel (lua_State *L);
 	static int v_inc_thrusterlevel (lua_State *L);
+	static int v_set_thrusterlevel_singlestep (lua_State *L);
 	static int v_inc_thrusterlevel_singlestep (lua_State *L);
 
 	// thruster group methods
@@ -479,40 +596,12 @@ protected:
 	static int v_inc_thrustergrouplevel (lua_State *L);
 	static int v_inc_thrustergrouplevel_singlestep (lua_State *L);
 
-	// general vessel properties
-	static int v_get_name (lua_State *L);
-	static int v_get_classname (lua_State *L);
-	static int v_get_flightmodel (lua_State *L);
-	static int v_get_damagemodel (lua_State *L);
-	static int v_get_enablefocus (lua_State *L);
-	static int v_set_enablefocus (lua_State *L);
-	static int v_get_size (lua_State *L);
-	static int v_set_size (lua_State *L);
-	static int v_get_emptymass (lua_State *L);
-	static int v_set_emptymass (lua_State *L);
-	static int v_get_pmi (lua_State *L);
-	static int v_set_pmi (lua_State *L);
-	static int v_get_crosssections (lua_State *L);
-	static int v_set_crosssections (lua_State *L);
-	static int v_get_gravitygradientdamping (lua_State *L);
-	static int v_set_gravitygradientdamping (lua_State *L);
-	static int v_get_touchdownpoints (lua_State *L);
-	static int v_set_touchdownpoints (lua_State *L);
-	static int v_set_visibilitylimit (lua_State *L);
-
-	// vessel state
-	static int v_get_mass (lua_State *L);
-	static int v_get_globalpos (lua_State *L);
-	static int v_get_globalvel (lua_State *L);
-	static int v_get_relativepos (lua_State *L);
-	static int v_get_relativevel (lua_State *L);
-	static int v_get_rotationmatrix (lua_State *L);
-
-	// atmospheric parameters
-	static int v_get_atmref (lua_State *L);
-	static int v_get_atmtemperature (lua_State *L);
-	static int v_get_atmdensity (lua_State *L);
-	static int v_get_atmpressure (lua_State *L);
+	// reaction control system
+	static int v_get_navmode (lua_State *L);
+	static int v_set_navmode (lua_State *L);
+	static int v_get_rcsmode (lua_State *L);
+	static int v_set_rcsmode (lua_State *L);
+	static int v_toggle_RCSmode (lua_State *L);
 
 	// aerodynamic state parameters
 	static int v_get_dynpressure (lua_State *L);
@@ -525,11 +614,18 @@ protected:
 	static int v_get_horizonairspeedvector (lua_State *L);
 	static int v_get_aoa (lua_State *L);
 	static int v_get_slipangle (lua_State *L);
+	static int v_get_lift(lua_State *L);
+	static int v_get_drag(lua_State *L);
 
-	// airfoil methods
+	// airfoils and aerodynamic controls
 	static int v_create_airfoil (lua_State *L);
+	static int v_edit_airfoil (lua_State *L);
 	static int v_del_airfoil (lua_State *L);
 	static int v_create_controlsurface (lua_State *L);
+	static int v_get_adcmode (lua_State *L);
+	static int v_set_adcmode (lua_State *L);
+	static int v_get_adclevel (lua_State *L);
+	static int v_set_adclevel (lua_State *L);
 
 	// aerodynamic properties (legacy model)
 	static int v_get_cw (lua_State *L);
@@ -547,14 +643,25 @@ protected:
 	static int v_get_trimscale (lua_State *L);
 	static int v_set_trimscale (lua_State *L);
 
+	// forces
+	static int v_get_weightvector (lua_State *L);
+	static int v_get_thrustvector (lua_State *L);
+	static int v_get_liftvector (lua_State *L);
+	static int v_get_dragvector (lua_State *L);
+	static int v_get_forcevector (lua_State *L);
+	static int v_get_torquevector (lua_State *L);
+	static int v_add_force (lua_State *L);
+
 	// docking port management
 	static int v_create_dock (lua_State *L);
 	static int v_del_dock (lua_State *L);
+	static int v_clear_dockdefinitions(lua_State *L);
 	static int v_set_dockparams (lua_State *L);
 	static int v_get_dockparams (lua_State *L);
 	static int v_get_dockcount (lua_State *L);
 	static int v_get_dockhandle (lua_State *L);
 	static int v_get_dockstatus (lua_State *L);
+	static int v_dockingstatus (lua_State *L);
 	static int v_undock (lua_State *L);
 
 	// attachment management
@@ -590,6 +697,13 @@ protected:
 	static int v_get_exhaustcount (lua_State *L);
 	static int v_add_exhauststream (lua_State *L);
 
+	// Nosewheel-steering and wheel brakes
+	static int v_set_nosewheelsteering (lua_State *L);
+	static int v_get_nosewheelsteering (lua_State *L);
+	static int v_set_maxwheelbrakeforce (lua_State *L);
+	static int v_set_wheelbrakelevel (lua_State *L);
+	static int v_get_wheelbrakelevel (lua_State *L);
+
 	// light source methods
 	static int v_add_pointlight (lua_State *L);
 	static int v_add_spotlight (lua_State *L);
@@ -601,6 +715,16 @@ protected:
 	// camera management
 	static int v_get_cameraoffset (lua_State *L);
 	static int v_set_cameraoffset (lua_State *L);
+	static int v_set_cameradefaultdirection (lua_State *L);
+	static int v_get_cameradefaultdirection (lua_State *L);
+	static int v_set_cameracatchangle (lua_State *L);
+	static int v_set_camerarotationrange (lua_State *L);
+	static int v_set_camerashiftrange (lua_State *L);
+	static int v_set_cameramovement (lua_State *L);
+
+	// Instrument panel and virtual cockpit methods
+	static int v_trigger_panelredrawarea (lua_State *L);
+	static int v_trigger_redrawarea (lua_State *L);
 
 	// mesh methods
 	static int v_add_mesh (lua_State *L);
@@ -616,7 +740,23 @@ protected:
 	static int v_create_animation (lua_State *L);
 	static int v_del_animation (lua_State *L);
 	static int v_set_animation (lua_State *L);
+	static int v_get_animation (lua_State *L);
 	static int v_add_animationcomponent (lua_State *L);
+	static int v_del_animationcomponent (lua_State *L);
+	static int v_register_animation (lua_State *L);
+	static int v_unregister_animation (lua_State *L);
+
+	// coordinate transformations
+	static int v_shift_centreofmass (lua_State *L);
+	static int v_shiftCG (lua_State *L);
+	static int v_get_superstructureCG (lua_State *L);
+	static int v_set_rotationmatrix (lua_State *L);
+	static int v_globalrot (lua_State *L);
+	static int v_horizonrot (lua_State *L);
+	static int v_horizoninvrot (lua_State *L);
+	static int v_local2global (lua_State *L);
+	static int v_global2local (lua_State *L);
+	static int v_local2rel (lua_State *L);
 
 	// -------------------------------------------
 	// MFD methods
@@ -676,12 +816,46 @@ private:
 	bool bExecLocal;   // flag for locally created mutexes
 	bool bWaitLocal;
 
-	static NOTEHANDLE hnote; // screen note (shared between all instances)
 	int status;              // interpreter status
 	bool is_busy;            // interpreter busy (running a script)
 	int jobs;                // number of background jobs left over after command terminates
 	int (*postfunc)(void*);
 	void *postcontext;
+
+	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static bool lua_toboolean_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static const char *lua_tostring_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static void *lua_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static VECTOR3 lua_tovector_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static MATRIX3 lua_tomatrix_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static double lua_field_tonumber_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static void *lua_field_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static VECTOR3 lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static int AssertPrmType(lua_State *L, int idx, int prmno, int tp, const char *funcname, const char *fieldname=0);
+
+	// Touchdown Vertex ------------------------------------------------------
+
+	// pushes touchdown vertex 'tdvtx' into a table on top of the stack
+	static void lua_pushtouchdownvtx (lua_State *L, const TOUCHDOWNVTX &tdvtx);
+
+	// converts the touchdown vertex at stack position 'idx' into a TOUCHDOWNVTX
+	static TOUCHDOWNVTX lua_totouchdownvtx (lua_State *L, int idx);
+
+	// returns 1 if stack entry idx is a touchdown vertex, 0 otherwise
+	static int lua_istouchdownvtx (lua_State *L, int idx);
+
+
+	// Vessel Status ---------------------------------------------------------
+
+	// pushes VESSELSTATUS 'vs' into a table on top of the stack
+	static void lua_push_vessel_status (lua_State *L, const VESSELSTATUS &vs);
+
+	// pushes VESSELSTATUS2 'vs' into a table on top of the stack
+	static void lua_push_vessel_status (lua_State *L, const VESSELSTATUS2 &vs);
+
+	// checks whether stack entry idx is a VESSELSTATUS or a VESSELSTATUS2
+	static int lua_get_vesselstatus_version (lua_State *L, int idx);
 };
 
 #endif // !__INTERPRETER_H

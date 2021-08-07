@@ -47,6 +47,8 @@ Interpreter::Interpreter ()
 	L = luaL_newstate();  // create new Lua context
 	is_busy = false;      // waiting for input
 	is_term = false;      // no attached terminal by default
+	bExecLocal = false;   // flag for locally created mutexes
+	bWaitLocal = false;
 	jobs = 0;             // background jobs
 	status = 0;           // normal
 	term_verbose = 0;     // verbosity level
@@ -104,118 +106,118 @@ void Interpreter::PostStep (double simt, double simdt, double mjd)
 	}
 }
 
-int Interpreter::lua_tointeger_safe(lua_State *L, int idx, int prmno, const char *funcname)
+int Interpreter::lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_NUMBER, funcname);
 	return lua_tointeger(L, idx);
 }
 
-int Interpreter::lua_tointeger_safe(lua_State *L, int idx, const char *funcname)
+int Interpreter::lua_tointeger_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tointeger_safe(L, idx, idx, funcname);
+	return lua_tointeger_safe (L, idx, idx, funcname);
 }
 
-int Interpreter::luamtd_tointeger_safe(lua_State *L, int idx, const char *funcname)
+int Interpreter::luamtd_tointeger_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tointeger_safe(L, idx, idx-1, funcname);
+	return lua_tointeger_safe (L, idx, idx-1, funcname);
 }
 
-double Interpreter::lua_tonumber_safe(lua_State *L, int idx, int prmno, const char *funcname)
+double Interpreter::lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_NUMBER, funcname);
 	return lua_tonumber(L, idx);
 }
 
-double Interpreter::lua_tonumber_safe(lua_State *L, int idx, const char *funcname)
+double Interpreter::lua_tonumber_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tonumber_safe(L, idx, idx, funcname);
+	return lua_tonumber_safe (L, idx, idx, funcname);
 }
 
-double Interpreter::luamtd_tonumber_safe(lua_State *L, int idx, const char *funcname)
+double Interpreter::luamtd_tonumber_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tonumber_safe(L, idx, idx-1, funcname);
+	return lua_tonumber_safe (L, idx, idx-1, funcname);
 }
 
-bool Interpreter::lua_toboolean_safe(lua_State *L, int idx, int prmno, const char *funcname)
+bool Interpreter::lua_toboolean_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_BOOLEAN, funcname);
 	return lua_toboolean(L, idx) != 0;
 }
 
-bool Interpreter::lua_toboolean_safe(lua_State *L, int idx, const char *funcname)
+bool Interpreter::lua_toboolean_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_toboolean_safe(L, idx, idx, funcname);
+	return lua_toboolean_safe (L, idx, idx, funcname);
 }
 
-bool Interpreter::luamtd_toboolean_safe(lua_State *L, int idx, const char *funcname)
+bool Interpreter::luamtd_toboolean_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_toboolean_safe(L, idx, idx-1, funcname);
+	return lua_toboolean_safe (L, idx, idx-1, funcname);
 }
 
-const char *Interpreter::lua_tostring_safe(lua_State *L, int idx, int prmno, const char *funcname)
+const char *Interpreter::lua_tostring_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_STRING, funcname);
 	return lua_tostring(L, idx);
 }
 
-const char *Interpreter::lua_tostring_safe(lua_State *L, int idx, const char *funcname)
+const char *Interpreter::lua_tostring_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tostring_safe(L, idx, idx, funcname);
+	return lua_tostring_safe (L, idx, idx, funcname);
 }
 
-const char *Interpreter::luamtd_tostring_safe(lua_State *L, int idx, const char *funcname)
+const char *Interpreter::luamtd_tostring_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tostring_safe(L, idx, idx-1, funcname);
+	return lua_tostring_safe (L, idx, idx-1, funcname);
 }
 
-void *Interpreter::lua_tolightuserdata_safe(lua_State *L, int idx, int prmno, const char *funcname)
+void *Interpreter::lua_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_LIGHTUSERDATA, funcname);
 	return lua_touserdata(L, idx);
 }
 
-void *Interpreter::lua_tolightuserdata_safe(lua_State *L, int idx, const char *funcname)
+void *Interpreter::lua_tolightuserdata_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tolightuserdata_safe(L, idx, idx, funcname);
+	return lua_tolightuserdata_safe (L, idx, idx, funcname);
 }
 
-void *Interpreter::luamtd_tolightuserdata_safe(lua_State *L, int idx, const char *funcname)
+void *Interpreter::luamtd_tolightuserdata_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tolightuserdata_safe(L, idx, idx-1, funcname);
+	return lua_tolightuserdata_safe (L, idx, idx-1, funcname);
 }
 
-VECTOR3 Interpreter::lua_tovector_safe(lua_State *L, int idx, int prmno, const char *funcname)
+VECTOR3 Interpreter::lua_tovector_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_VECTOR, funcname);
 	return lua_tovector(L, idx);
 }
 
-VECTOR3 Interpreter::lua_tovector_safe(lua_State *L, int idx, const char *funcname)
+VECTOR3 Interpreter::lua_tovector_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tovector_safe(L, idx, idx, funcname);
+	return lua_tovector_safe (L, idx, idx, funcname);
 }
 
-VECTOR3 Interpreter::luamtd_tovector_safe(lua_State *L, int idx, const char *funcname)
+VECTOR3 Interpreter::luamtd_tovector_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tovector_safe(L, idx, idx-1, funcname);
+	return lua_tovector_safe (L, idx, idx-1, funcname);
 }
 
-MATRIX3 Interpreter::lua_tomatrix_safe(lua_State *L, int idx, int prmno, const char *funcname)
+MATRIX3 Interpreter::lua_tomatrix_safe (lua_State *L, int idx, int prmno, const char *funcname)
 {
 	AssertPrmType(L, idx, prmno, PRMTP_MATRIX, funcname);
 	return lua_tomatrix(L, idx);
 }
-MATRIX3 Interpreter::lua_tomatrix_safe(lua_State *L, int idx, const char *funcname)
+MATRIX3 Interpreter::lua_tomatrix_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tomatrix_safe(L, idx, idx - 1, funcname);
+	return lua_tomatrix_safe (L, idx, idx - 1, funcname);
 }
 
-MATRIX3 Interpreter::luamtd_tomatrix_safe(lua_State *L, int idx, const char *funcname)
+MATRIX3 Interpreter::luamtd_tomatrix_safe (lua_State *L, int idx, const char *funcname)
 {
-	return lua_tomatrix_safe(L, idx, idx - 1, funcname);
+	return lua_tomatrix_safe (L, idx, idx - 1, funcname);
 }
 
-double Interpreter::lua_field_tonumber_safe(lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
+double Interpreter::lua_field_tonumber_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
 {
 	lua_getfield(L, idx, fieldname);
 	AssertPrmType(L, -1, prmno, PRMTP_NUMBER, funcname, fieldname);
@@ -224,17 +226,17 @@ double Interpreter::lua_field_tonumber_safe(lua_State *L, int idx, int prmno, co
 	return v;
 }
 
-double Interpreter::lua_field_tonumber_safe(lua_State *L, int idx, const char *fieldname, const char *funcname)
+double Interpreter::lua_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
 {
-	return lua_field_tonumber_safe(L, idx, idx, fieldname, funcname);
+	return lua_field_tonumber_safe (L, idx, idx, fieldname, funcname);
 }
 
-double Interpreter::luamtd_field_tonumber_safe(lua_State *L, int idx, const char *fieldname, const char *funcname)
+double Interpreter::luamtd_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
 {
-	return lua_field_tonumber_safe(L, idx, idx-1, fieldname, funcname);
+	return lua_field_tonumber_safe (L, idx, idx-1, fieldname, funcname);
 }
 
-void *Interpreter::lua_field_tolightuserdata_safe(lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
+void *Interpreter::lua_field_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
 {
 	lua_getfield(L, idx, fieldname);
 	AssertPrmType(L, -1, prmno, PRMTP_LIGHTUSERDATA, funcname, fieldname);
@@ -243,17 +245,17 @@ void *Interpreter::lua_field_tolightuserdata_safe(lua_State *L, int idx, int prm
 	return v;
 }
 
-void *Interpreter::lua_field_tolightuserdata_safe(lua_State *L, int idx, const char *fieldname, const char *funcname)
+void *Interpreter::lua_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
 {
-	return lua_field_tolightuserdata_safe(L, idx, idx, fieldname, funcname);
+	return lua_field_tolightuserdata_safe (L, idx, idx, fieldname, funcname);
 }
 
-void *Interpreter::luamtd_field_tolightuserdata_safe(lua_State *L, int idx, const char *fieldname, const char *funcname)
+void *Interpreter::luamtd_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
 {
-	return lua_field_tolightuserdata_safe(L, idx, idx-1, fieldname, funcname);
+	return lua_field_tolightuserdata_safe (L, idx, idx-1, fieldname, funcname);
 }
 
-VECTOR3 Interpreter::lua_field_tovector_safe(lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
+VECTOR3 Interpreter::lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname)
 {
 	lua_getfield(L, idx, fieldname);
 	AssertPrmType(L, -1, prmno, PRMTP_VECTOR, funcname, fieldname);
@@ -262,14 +264,14 @@ VECTOR3 Interpreter::lua_field_tovector_safe(lua_State *L, int idx, int prmno, c
 	return v;
 }
 
-VECTOR3 Interpreter::lua_field_tovector_safe(lua_State *L, int idx, const char *fieldname, const char *funcname)
+VECTOR3 Interpreter::lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
 {
-	return lua_field_tovector_safe(L, idx, idx, fieldname, funcname);
+	return lua_field_tovector_safe (L, idx, idx, fieldname, funcname);
 }
 
-VECTOR3 Interpreter::luamtd_field_tovector_safe(lua_State *L, int idx, const char *fieldname, const char *funcname)
+VECTOR3 Interpreter::luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname)
 {
-	return lua_field_tovector_safe(L, idx, idx-1, fieldname, funcname);
+	return lua_field_tovector_safe (L, idx, idx-1, fieldname, funcname);
 }
 
 const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
@@ -315,11 +317,11 @@ const char *Interpreter::lua_tostringex (lua_State *L, int idx, char *cbuf)
 		return cbuf;
 	} else if (lua_islightuserdata (L,idx)) {
 		void *p = lua_touserdata(L,idx);
-		sprintf (cbuf, "0x%08x [data]", (DWORD_PTR)p);
+		sprintf (cbuf, "0x%08p [data]", p);
 		return cbuf;
 	} else if (lua_isuserdata (L,idx)) {
 		void *p = lua_touserdata(L,idx);
-		sprintf (cbuf, "0x%08x [object]", (DWORD_PTR)p);
+		sprintf (cbuf, "0x%08p [object]", p);
 		return cbuf;
 	} else if (lua_istable (L, idx)) {
 		if (idx < 0) idx--;
@@ -629,7 +631,7 @@ void Interpreter::LoadAPI ()
 		//{"api", help_api},
 		{NULL, NULL}
 	};
-	for (int i = 0; glob[i].name; i++) {
+	for (int i = 0; i < ARRAYSIZE(glob) && glob[i].name; i++) {
 		lua_pushcfunction (L, glob[i].func);
 		lua_setglobal (L, glob[i].name);
 	}
@@ -2726,7 +2728,8 @@ int Interpreter::oapi_move_groundcamera (lua_State *L)
 int Interpreter::oapi_create_animationcomponent (lua_State *L)
 {
 	MGROUP_TRANSFORM *trans;
-	UINT mesh, *grp, ngrp, nbuf;
+	UINT mesh, *grp = nullptr;
+	size_t ngrp, nbuf;
 	ASSERT_TABLE(L,1);
 	lua_getfield(L,1,"type");
 	ASSERT_STRING(L,-1);
@@ -3488,7 +3491,7 @@ int Interpreter::skp_ellipse (lua_State *L)
 int Interpreter::skp_polygon (lua_State *L)
 {
 	oapi::IVECTOR2 *pt = 0;
-	int i, npt = 0, nbuf = 0;
+	size_t npt = 0, nbuf = 0;
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	ASSERT_MTDTABLE(L,2);
@@ -3504,7 +3507,7 @@ int Interpreter::skp_polygon (lua_State *L)
 			pt = tmp;
 		}
 		lua_pushnil(L);
-		for (i = 0; i < 2; i++) {
+		for (auto i = 0; i < 2; i++) {
 			ASSERT_SYNTAX(lua_next(L,-2),"Inconsistent vertex array");
 			pt[npt].data[i] = (long)lua_tointeger(L,-1);
 			lua_pop(L,1);
@@ -3522,7 +3525,7 @@ int Interpreter::skp_polygon (lua_State *L)
 int Interpreter::skp_polyline (lua_State *L)
 {
 	oapi::IVECTOR2 *pt = 0;
-	int i, npt = 0, nbuf = 0;
+	size_t npt = 0, nbuf = 0;
 	oapi::Sketchpad *skp = lua_tosketchpad (L,1);
 	ASSERT_SYNTAX(skp, "Invalid sketchpad object");
 	ASSERT_MTDTABLE(L,2);
@@ -3538,7 +3541,7 @@ int Interpreter::skp_polyline (lua_State *L)
 			pt = tmp;
 		}
 		lua_pushnil(L);
-		for (i = 0; i < 2; i++) {
+		for (auto i = 0; i < 2; i++) {
 			ASSERT_SYNTAX(lua_next(L,-2),"Inconsistent vertex array");
 			pt[npt].data[i] = (long)lua_tointeger(L,-1);
 			lua_pop(L,1);
