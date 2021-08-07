@@ -274,29 +274,29 @@ protected:
 	static VESSEL *lua_tovessel (lua_State *L, int idx=-1);
 
 	// type extraction with checks
-	static VESSEL *lua_tovessel_safe(lua_State *L, int idx, const char *funcname);
+	static VESSEL *lua_tovessel_safe (lua_State *L, int idx, const char *funcname);
 
-	static int lua_tointeger_safe(lua_State *L, int idx, const char *funcname);
-	static double lua_tonumber_safe(lua_State *L, int idx, const char *funcname);
-	static bool lua_toboolean_safe(lua_State *L, int idx, const char *funcname);
-	static const char *lua_tostring_safe(lua_State *L, int idx, const char *funcname);
-	static void *lua_tolightuserdata_safe(lua_State *L, int idx, const char *funcname);
-	static VECTOR3 lua_tovector_safe(lua_State *L, int idx, const char *funcname);
-	static MATRIX3 lua_tomatrix_safe(lua_State *L, int idx, const char *funcname);
-	static double lua_field_tonumber_safe(lua_State *L, int idx, const char *fieldname, const char *funcname);
-	static void *lua_field_tolightuserdata_safe(lua_State *L, int idx, const char *fieldname, const char *funcname);
-	static VECTOR3 lua_field_tovector_safe(lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static int lua_tointeger_safe (lua_State *L, int idx, const char *funcname);
+	static double lua_tonumber_safe (lua_State *L, int idx, const char *funcname);
+	static bool lua_toboolean_safe (lua_State *L, int idx, const char *funcname);
+	static const char *lua_tostring_safe (lua_State *L, int idx, const char *funcname);
+	static void *lua_tolightuserdata_safe (lua_State *L, int idx, const char *funcname);
+	static VECTOR3 lua_tovector_safe (lua_State *L, int idx, const char *funcname);
+	static MATRIX3 lua_tomatrix_safe (lua_State *L, int idx, const char *funcname);
+	static double lua_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static void *lua_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static VECTOR3 lua_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
 
-	static int luamtd_tointeger_safe(lua_State *L, int idx, const char *funcname);
-	static double luamtd_tonumber_safe(lua_State *L, int idx, const char *funcname);
-	static bool luamtd_toboolean_safe(lua_State *L, int idx, const char *funcname);
-	static const char *luamtd_tostring_safe(lua_State *L, int idx, const char *funcname);
-	static void *luamtd_tolightuserdata_safe(lua_State *L, int idx, const char *funcname);
-	static VECTOR3 luamtd_tovector_safe(lua_State *L, int idx, const char *funcname);
-	static MATRIX3 luamtd_tomatrix_safe(lua_State *L, int idx, const char *funcname);
-	static double luamtd_field_tonumber_safe(lua_State *L, int idx, const char *fieldname, const char *funcname);
-	static void *luamtd_field_tolightuserdata_safe(lua_State *L, int idx, const char *fieldname, const char *funcname);
-	static VECTOR3 luamtd_field_tovector_safe(lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static int luamtd_tointeger_safe (lua_State *L, int idx, const char *funcname);
+	static double luamtd_tonumber_safe (lua_State *L, int idx, const char *funcname);
+	static bool luamtd_toboolean_safe (lua_State *L, int idx, const char *funcname);
+	static const char *luamtd_tostring_safe (lua_State *L, int idx, const char *funcname);
+	static void *luamtd_tolightuserdata_safe (lua_State *L, int idx, const char *funcname);
+	static VECTOR3 luamtd_tovector_safe (lua_State *L, int idx, const char *funcname);
+	static MATRIX3 luamtd_tomatrix_safe (lua_State *L, int idx, const char *funcname);
+	static double luamtd_field_tonumber_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static void *luamtd_field_tolightuserdata_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
+	static VECTOR3 luamtd_field_tovector_safe (lua_State *L, int idx, const char *fieldname, const char *funcname);
 
 
 	// pops an MFD2 interface from the stack
@@ -822,16 +822,16 @@ private:
 	int (*postfunc)(void*);
 	void *postcontext;
 
-	static int lua_tointeger_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static double lua_tonumber_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static bool lua_toboolean_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static const char *lua_tostring_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static void *lua_tolightuserdata_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static VECTOR3 lua_tovector_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static MATRIX3 lua_tomatrix_safe(lua_State *L, int idx, int prmno, const char *funcname);
-	static double lua_field_tonumber_safe(lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
-	static void *lua_field_tolightuserdata_safe(lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
-	static VECTOR3 lua_field_tovector_safe(lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static int lua_tointeger_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static double lua_tonumber_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static bool lua_toboolean_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static const char *lua_tostring_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static void *lua_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static VECTOR3 lua_tovector_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static MATRIX3 lua_tomatrix_safe (lua_State *L, int idx, int prmno, const char *funcname);
+	static double lua_field_tonumber_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static void *lua_field_tolightuserdata_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
+	static VECTOR3 lua_field_tovector_safe (lua_State *L, int idx, int prmno, const char *fieldname, const char *funcname);
 	static int AssertPrmType(lua_State *L, int idx, int prmno, int tp, const char *funcname, const char *fieldname=0);
 
 	// Touchdown Vertex ------------------------------------------------------
