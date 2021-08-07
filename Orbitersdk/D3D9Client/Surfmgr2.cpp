@@ -1171,7 +1171,8 @@ void SurfTile::FixLongitudeBoundary (const SurfTile *nbr, bool keep_corner)
 				mesh->vtx[vtx_ofs+i*(res+1)] = vtx_store[i];
 		} else {  // interpolate to neighbour's left edge
 			dlvl = lvl-nbrlvl;
-			if (dlvl <= 5) { // for larger tile level differences the interleaved sampling method doesn't work
+			int nsub = 1 << dlvl; // number of tiles fitting alongside the lowres neighbour
+			if (nsub <= res) { // for larger tile level differences the interleaved sampling method doesn't work
 				float *elev = ElevationData();
 				float *nbr_elev = nbr->ElevationData();
 				if (elev && nbr_elev) {
@@ -1230,7 +1231,8 @@ void SurfTile::FixLatitudeBoundary (const SurfTile *nbr, bool keep_corner)
 				mesh->vtx[vtx_ofs+i] = vtx_store[i];
 		} else {
 			dlvl = lvl-nbrlvl;
-			if (dlvl <= 5) { // for larger tile level differences the interleaved sampling method doesn't work
+			int nsub = 1 << dlvl; // number of tiles fitting alongside the lowres neighbour
+			if (nsub <= res) { // for larger tile level differences the interleaved sampling method doesn't work
 				float *elev = ElevationData();
 				float *nbr_elev = nbr->ElevationData();
 				if (elev && nbr_elev) {

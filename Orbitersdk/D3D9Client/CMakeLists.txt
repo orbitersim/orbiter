@@ -58,6 +58,7 @@ set(SourceFiles
 	VVessel.cpp
 	WindowMgr.cpp
 	ZTreeMgr.cpp
+	Tilemgr2_imp.hpp
 )
 
 set(IncludeFiles

@@ -411,8 +411,8 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 //	const float TEX2_MULTIPLIER = 1.0f; // was: 4.0f was: 16.0f
 	const float c1 = 1.0f, c2 = 0.0f;   // -1.0f/512.0f; // assumes 256x256 texture patches
 	int i, j, n, nofs0, nofs1;
-	int nlng = 2 << lvl;
-	int nlat = 1 << lvl;
+	int nlng = (lvl >= 0 ? 2 << lvl : 1);
+	int nlat = (lvl >= 0 ? 1 << lvl : 1);
 	bool north = (ilat < nlat/2);
 
 	double lat, slat, clat, lng, slng, clng, eradius, dx, dy;
