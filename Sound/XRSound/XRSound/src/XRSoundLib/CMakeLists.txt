@@ -32,7 +32,7 @@ target_include_directories(XRSound_lib_DBG PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/../XRSoundDLL
 )
 
-set(DBG_COMPILE_FLAGS "/Zi /Ob0 /Od /RTC1")
+set(DBG_COMPILE_FLAGS "/Zi /Ob0 /Od /MDd /RTC1")
 set(DBG_LINKER_FLAGS "/debug")
 set_target_properties(XRSound_lib_DBG
 	PROPERTIES
