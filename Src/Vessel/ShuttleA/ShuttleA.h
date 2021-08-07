@@ -150,6 +150,7 @@ public:
 	static SURFHANDLE panel2dtex;          // panel texture handle
 	static SURFHANDLE paneleltex;          // panel element texture handle
 	static SURFHANDLE aditex;              // texture for ADI ball
+	SURFHANDLE main_tex;
 
 	void ActivateDockingPort (DoorStatus action);
 	void RevertDockingPort ();
@@ -190,6 +191,7 @@ public:
 	bool clbkLoadVC (int id);
 	bool clbkVCRedrawEvent (int id, int event, SURFHANDLE surf);
 	bool clbkVCMouseEvent (int id, int event, VECTOR3 &p);
+	void clbkVisualCreated (VISHANDLE vis, int refcount);
 
 private:
 	void DefineMainPanel (PANELHANDLE hPanel);
@@ -198,6 +200,8 @@ private:
 	void DefineAnimations ();
 	double payload_mass;
 	void ComputePayloadMass();
+	void ApplySkin ( DEVMESHHANDLE exmesh );
+	void PaintMarkings (SURFHANDLE tex);
 	
 	// Lua interface methods
 	int Lua_InitInstance (void *context);
