@@ -4,27 +4,11 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'Doc/**'
-      - 'Flights/**'
-      - 'Html/**'
-      - 'Images/**'
-      - 'Localdoc/**'
-      - 'Scenarios/**'
-      - 'Textures/**'
-      - 'Textures2/**'
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - 'Doc/**'
-      - 'Flights/**'
-      - 'Html/**'
-      - 'Images/**'
-      - 'Localdoc/**'
-      - 'Scenarios/**'
-      - 'Textures/**'
-      - 'Textures2/**'
+    paths-ignore: [ 'Doc/**', 'Flights/**', 'Html/**', 'Images/**', 'Localdoc/**', 'Scenarios/**', 'Textures/**', 'Textures2/**']
 
 jobs:
   build:
@@ -76,4 +60,4 @@ jobs:
         name: Orbiter-${{ matrix.architecture }}
         # A file, directory or wildcard pattern that describes what to upload
         path: ${{ github.workspace }}/out/Orbiter.zip
-        retention-days: 7
+        retention-days: 60
