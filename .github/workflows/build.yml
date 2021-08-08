@@ -48,13 +48,13 @@ jobs:
       working-directory: ${{ github.workspace }}/out/build
 
     - name: Pack
-      if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       working-directory: ${{ github.workspace }}/out/install/Orbiter
       shell: cmd
       run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
 
     - name: Upload Build Artifact
-      if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       uses: actions/upload-artifact@v2.2.4
       with:
         name: Orbiter-${{ matrix.architecture }}
