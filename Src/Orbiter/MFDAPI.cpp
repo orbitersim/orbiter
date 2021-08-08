@@ -32,9 +32,9 @@ ExternMFD::~ExternMFD ()
 	if (instr) delete instr;
 }
 
-INT_PTR ExternMFD::Id () const
+UINT_PTR ExternMFD::Id () const
 {
-	return (INT_PTR)this;
+	return (UINT_PTR)this;
 }
 
 bool ExternMFD::Active () const
@@ -119,7 +119,7 @@ bool ExternMFD::SetMode (int mode)
 	spec.bt_dy = btdy;
 	Instrument *newinstr = 0;
 	if (mode != MFD_NONE) {
-		newinstr = Instrument::Create (mode, g_pane, Id(), spec, (Vessel*)hVessel);
+		newinstr = Instrument::Create (mode, g_pane, (INT_PTR)Id(), spec, (Vessel*)hVessel);
 		if (!newinstr) return false;
 	}
 	if (instr) {
