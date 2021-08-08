@@ -25,7 +25,7 @@ static const Body *last_target = 0;
 
 struct Instrument_OPlaneAlign::SavePrm Instrument_OPlaneAlign::saveprm = {0,0,0,0.0,0.0,false};
 
-Instrument_OPlaneAlign::Instrument_OPlaneAlign (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore)
+Instrument_OPlaneAlign::Instrument_OPlaneAlign (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	shpel = new Elements(); TRACENEW

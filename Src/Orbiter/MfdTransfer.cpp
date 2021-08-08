@@ -22,7 +22,7 @@ extern Select *g_select;
 
 struct Instrument_Transfer::SavePrm Instrument_Transfer::saveprm = {0,0,0,0,0.0,0.0,false,false};
 
-Instrument_Transfer::Instrument_Transfer (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_Transfer::Instrument_Transfer (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	if (_vessel == saveprm.usr) {

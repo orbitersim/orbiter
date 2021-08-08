@@ -18,7 +18,7 @@ struct Instrument_Landing::SavePrm Instrument_Landing::saveprm = {
 	0, 0
 };
 
-Instrument_Landing::Instrument_Landing (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore)
+Instrument_Landing::Instrument_Landing (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	nv = 0;

@@ -21,7 +21,7 @@ extern Select *g_select;
 
 struct Instrument_MapOld::SavePrm Instrument_MapOld::saveprm = {0,0,0,0,false,true};
 
-Instrument_MapOld::Instrument_MapOld (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_MapOld::Instrument_MapOld (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	map = bgmap = 0;

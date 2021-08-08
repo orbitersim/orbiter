@@ -179,11 +179,11 @@ public:
 	double SetMFDRefreshIntervalMultiplier (int id, double multiplier);
 	// modify the refresh interval of an MFD
 
-	bool OpenMFD (size_t id, int type, std::ifstream *ifs = 0);
+	bool OpenMFD (INT_PTR id, int type, std::ifstream *ifs = 0);
 	// open specified instrument as left/right MFD. Returns true if MFD mode has changed
 	// If scenario stream is provided, parameters are read from this stream
 
-	bool CloseMFD (size_t id);
+	bool CloseMFD (int id);
 	//  Deactivates the specified MFD. Returns false if id invalid or MFD not active
 
 	void MFDModeDisabled (int mode);
@@ -203,7 +203,7 @@ public:
 
 	Instrument *MFD (int which);
 
-	void RepaintMFDButtons (int id, Instrument *instr);
+	void RepaintMFDButtons (INT_PTR id, Instrument *instr);
 	Instrument::Spec GetVCMFDSpec ();
 	const VCMFDSPEC *GetVCMFDParams (int id);
 	const VirtualCockpit *GetVC() const { return vcockpit; }

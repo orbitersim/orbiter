@@ -21,7 +21,7 @@ struct Instrument_Docking::SavePrm Instrument_Docking::saveprm = {
 	0,Instrument_Docking::NAV,0,0,-1
 };
 
-Instrument_Docking::Instrument_Docking (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore)
+Instrument_Docking::Instrument_Docking (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	int i;
