@@ -56,7 +56,7 @@ jobs:
       working-directory: ${{ github.workspace }}/out/build
 
     - name: Test
-      run: ctest
+      run: 'ctest --build-config Release'
       working-directory: ${{ github.workspace }}/out/build
 
     - name: Install
