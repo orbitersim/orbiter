@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 include(ExternalProject)
+include(CMakePrintHelpers)
 
 # Set the project name
 project (Orbiter VERSION 21.7.24)
