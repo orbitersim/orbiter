@@ -18,9 +18,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
 	set(ARCH "x64")
+	set(PLATFORM_STRING "x64")
 else()
 	set(BUILD64 0)
 	set(ARCH "x86")
+	set(PLATFORM_STRING "Win32")
 endif()
 
 # Define directories and file paths for some common binaries
