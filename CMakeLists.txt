@@ -3,11 +3,18 @@
 
 cmake_minimum_required(VERSION 3.19)
 
-include(ExternalProject)
-include(CMakePrintHelpers)
-
 # Set the project name
 project (Orbiter VERSION 21.7.24)
+
+# Allow building targets as external projects
+include(ExternalProject)
+
+# Some functions to simplify debugging CMake scripts
+include(CMakePrintHelpers)
+
+# Support for including runtime libraries in packages
+set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+include(InstallRequiredSystemLibraries)
 
 # Set the pools for compilers that can't run concurrently
 set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
@@ -107,8 +114,8 @@ set(Qt5_x64_DIR
 )
 
 if(MSVC)
-  set(CMAKE_EXE_LINKER_FLAGS
-      "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:\"LIBCMTD\"")
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /we4311")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:\"LIBCMTD\"")
 endif()
 
 # Copy data and binary assets from source to binary tree to provide a working Orbiter environment
@@ -239,7 +246,7 @@ option(
 
 option(ORBITER_MAKE_DOC
 	"Create documentation"
-	ON
+	OFF
 )
 
 option(ORBITER_MAKE_SDK_SAMPLES
@@ -369,35 +376,12 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
 )
 
-# =============================================================================
-# Set up Distribution package options
-
-configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
-	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
-			   
-set(CPACK_GENERATOR "WIX;ZIP")
-set(CPACK_PACKAGE_NAME OpenOrbiter)
-set(CPACK_PACKAGE_VENDOR Orbitersim)
-set(CPACK_PACKAGE_DESCRIPTION "Orbiter is an Open-source spaceflight simulator for Windows PCs.")
-set(CPACK_PACKAGE_HOMEPAGE_URL http://orbit.medphys.ucl.ac.uk)
-set(CPACK_PACKAGE_EXECUTABLES Orbiter;OpenOrbiter)
-set(CPACK_RESOURCE_FILE_LICENSE ${ORBITER_SOURCE_ROOT_DIR}/cmake/LICENSE.rtf)
-set(CPACK_RESOURCE_FILE_README ${ORBITER_SOURCE_ROOT_DIR}/README.md)
-set(CPACK_WIX_UI_BANNER ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_banner.bmp)
-set(CPACK_WIX_UI_DIALOG ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_bkg.bmp)
-set(CPACK_WIX_PRODUCT_ICON ${ORBITER_SOURCE_ROOT_DIR}/cmake/orbiter_install.ico)
-set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake")
-
-# There appears to be a CMake (3.20.5) bug that prevents CMAKE_INSTALL_PREFIX to be set
-# correctly in the CPACK_PRE_BUILD_SCRIPTS, so the script has been disabled for now
-# This means that the planet texture installation directory is not reset to default
-# for the packages. This needs to be fixed
-
-#set(CPACK_PRE_BUILD_SCRIPTS ${ORBITER_SOURCE_ROOT_DIR}/cmake/cpack_install.cmake)
-
-include(OrbiterCPackOptions)
-include(CPack)
-
+# Package required runtime libraries as an optional component
+INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+	COMPONENT RuntimeLibraries
+	EXCLUDE_FROM_ALL
+)
 
 # Sub-projects
 add_subdirectory(Src)
@@ -410,3 +394,48 @@ if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)
 	add_subdirectory(Html)
 endif()
+
+# =============================================================================
+# Set up Distribution package options
+
+configure_file(${CMAKE_SOURCE_DIR}/cmake/CPackOptions.cmake.in
+	${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake)
+			   
+set(CPACK_GENERATOR "WIX;ZIP")
+set(CPACK_PACKAGE_NAME OpenOrbiter)
+set(CPACK_PACKAGE_VENDOR Orbitersim)
+set(CPACK_PACKAGE_DESCRIPTION "Orbiter is an Open-source spaceflight simulator for Windows PCs.")
+set(CPACK_PACKAGE_HOMEPAGE_URL http://orbit.medphys.ucl.ac.uk)
+set(CPACK_PACKAGE_EXECUTABLES Orbiter;OpenOrbiter)
+set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+set(CPACK_COMPONENT_Unspecified_DISPLAY_NAME "Orbiter Core Components")
+set(CPACK_COMPONENT_Unspecified_REQUIRED TRUE)
+set(CPACK_COMPONENT_RuntimeLibraries_DESCRIPTION "System libraries used by Orbiter. Install if Orbiter fails to launch.")
+set(CPACK_RESOURCE_FILE_LICENSE ${ORBITER_SOURCE_ROOT_DIR}/cmake/LICENSE.rtf)
+set(CPACK_RESOURCE_FILE_README ${ORBITER_SOURCE_ROOT_DIR}/README.md)
+set(CPACK_WIX_UI_BANNER ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_banner.bmp)
+set(CPACK_WIX_UI_DIALOG ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_bkg.bmp)
+set(CPACK_WIX_PRODUCT_ICON ${ORBITER_SOURCE_ROOT_DIR}/cmake/orbiter_install.ico)
+set(CPACK_WIX_UPGRADE_GUID AB3F6483-A1A4-4ECD-ADAE-D33DF3A5AADA)
+set(CPACK_WIX_COMPONENT_INSTALL)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake")
+
+include(OrbiterCPackOptions)
+include(CPack)
+
+cpack_add_component(Unspecified
+	DISPLAY_NAME "OrbiterCore"
+	DESCRIPTION "Orbiter Core Components"
+	REQUIRED
+)
+cpack_add_component(RuntimeLibraries
+	DISPLAY_NAME "RuntimeLibraries"
+	DESCRIPTION "System libraries used by Orbiter. Install if Orbiter fails to launch."
+)
+
+# There appears to be a CMake (3.20.5) bug that prevents CMAKE_INSTALL_PREFIX to be set
+# correctly in the CPACK_PRE_BUILD_SCRIPTS, so the script has been disabled for now
+# This means that the planet texture installation directory is not reset to default
+# for the packages. This needs to be fixed
+
+#set(CPACK_PRE_BUILD_SCRIPTS ${ORBITER_SOURCE_ROOT_DIR}/cmake/cpack_install.cmake)
