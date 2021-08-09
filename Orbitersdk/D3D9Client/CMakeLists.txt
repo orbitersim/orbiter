@@ -137,6 +137,8 @@ set(ShaderFiles
 	${ShaderDir}/Vessel.fx
 )
 
+source_group(Shaders FILES ${ShaderFiles})
+
 add_library(D3D9Client MODULE
 	${SourceFiles}
 	${IncludeFiles}

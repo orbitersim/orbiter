@@ -16,7 +16,7 @@
 #define STRICT 1
 #include <windows.h>
 #include "orbitersdk.h"
-#include "gcAPI.h"
+#include "gcConst.h"
 
 class MFDWindow: public ExternMFD {
 public:

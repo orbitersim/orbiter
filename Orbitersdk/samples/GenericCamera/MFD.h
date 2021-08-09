@@ -27,7 +27,7 @@
 #ifndef __CAMERA_H
 #define __CAMERA_H
 
-#include "gcAPI.h"
+#include "gcConst.h"
 
 class CameraMFD : public MFD2 {
 
