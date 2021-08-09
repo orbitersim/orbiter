@@ -25,4 +25,11 @@ In each of the `orbiter\out\build\*\Orbitersdk\XRSound\` folders created by Orbi
 |Debug-with-OrbiterRelease|x64|orbiter\out\build\x64-Release\Orbitersdk\XRSound\XRSoundD.lib| 
 |Release-with-OrbiterRelease|x64|orbiter\out\build\x64-Release\Orbitersdk\XRSound\XRSound.lib|  
 
-Note: it is not strictly necessary for all eight combinations to link successfully, since only the `Release-with-OrbiterRelease x86` and `Release-with-OrbiterRelease x64` build artifacts will ever be packaged up and released for end users. Therefore, only those two build targets are what really matter. Having the the other six build configurations work as well is just a matter of convenience for developers linking with XRSound as they work in the Orbiter project tree.
+Note: it is not strictly necessary for all eight combinations to link successfully, since only the `OrbiterRelease x86` and `OrbiterRelease x64` build artifacts will ever be packaged up and released for end users. Therefore, only those these four build targets need to pass:
+
+* Debug-with-OrbiterRelease x86
+* Release-with-OrbiterRelease x86
+* Debug-with-OrbiterRelease x64
+* Release-with-OrbiterRelease x64
+
+Having the the other four build configurations work as well would just a matter of convenience for developers linking with XRSound as they work in the Orbiter project tree, but it is not required.
