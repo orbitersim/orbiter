@@ -101,27 +101,35 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
+    <Import Project="paths.props" />
+ </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-with-OrbiterRelease|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="paths.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="paths.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-with-OrbiterRelease|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="paths.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="paths.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug-with-OrbiterRelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="paths.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="paths.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-with-OrbiterRelease|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="paths.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -156,13 +164,13 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
       <AdditionalDependencies>XRSoundD.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -174,13 +182,13 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x86-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x86-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
       <AdditionalDependencies>XRSoundD.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -194,7 +202,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x86-release\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x86-release\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -203,7 +211,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>XRSound.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x86-release\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x86-release\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-with-OrbiterRelease|Win32'">
@@ -216,7 +224,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x86-release\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x86-release\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x86-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -225,7 +233,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>XRSound.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x86-release\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x86-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x86-release\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x86-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -236,14 +244,14 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>XRSoundD.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-with-OrbiterRelease|x64'">
@@ -254,14 +262,14 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>XRSoundD.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x64-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x64-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -274,7 +282,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x64-release\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x64-release\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -283,7 +291,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>XRSound.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x64-release\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x64-release\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\XRSound</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-with-OrbiterRelease|x64'">
@@ -296,7 +304,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\..\..\..\..\orbiter\out\build\x64-release\Orbitersdk\include;..\..\..\..\..\orbiter\out\build\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CMAKE_BINARY_DIR)\x64-release\Orbitersdk\include;$(CMAKE_BINARY_DIR)\x64-debug\Orbitersdk\XRSound</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -305,7 +313,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>XRSound.lib;Orbiter.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\..\..\orbiter\out\build\x64-release\Orbitersdk\lib;..\..\..\..\..\orbiter\out\build\x64-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CMAKE_BINARY_DIR)\x64-release\Orbitersdk\lib;$(CMAKE_BINARY_DIR)\x64-release\Orbitersdk\XRSound</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
