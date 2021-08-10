@@ -9,6 +9,9 @@ project (Orbiter VERSION 21.7.24)
 # Allow building targets as external projects
 include(ExternalProject)
 
+# Some functions to simplify debugging CMake scripts
+include(CMakePrintHelpers)
+
 # Support for including runtime libraries in packages
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
 include(InstallRequiredSystemLibraries)
@@ -22,9 +25,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
 	set(ARCH "x64")
+	set(PLATFORM_STRING "x64")
 else()
 	set(BUILD64 0)
 	set(ARCH "x86")
+	set(PLATFORM_STRING "Win32")
 endif()
 
 # Define directories and file paths for some common binaries
@@ -233,6 +238,12 @@ endif()
 #	ON
 #)
 
+option(
+	ORBITER_BUILD_XRSOUND
+	"Build XRSound module to enable sound in Orbiter"
+	ON
+)
+
 option(ORBITER_MAKE_DOC
 	"Create documentation"
 	OFF
@@ -242,6 +253,15 @@ option(ORBITER_MAKE_SDK_SAMPLES
 	"Build the SDK sample projects"
 	OFF
 )
+
+if(ORBITER_BUILD_XRSOUND)
+	set(IRRKLANG_DIR
+		irrKlang_NOTFOUND
+		CACHE
+		PATH
+		"Root folder of irrKlang installation."
+	)
+endif()
 
 if (ORBITER_MAKE_DOC)
 
@@ -368,6 +388,7 @@ add_subdirectory(Src)
 add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
 add_subdirectory(OVP)
+add_subdirectory(Sound)
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)

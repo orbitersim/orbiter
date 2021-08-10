@@ -199,18 +199,25 @@
 #define IDC_VIS_REENTRY                 1077
 #define IDC_VIS_CSHADOW                 1078
 #define IDC_VIS_PARTICLE                1079
-#define IDC_ABT_DISCLAIM                1080
-#define IDC_ABT_STATIC1                 1081
-#define IDC_ABT_STATIC2                 1082
-#define IDC_ABT_STATIC3                 1083
-#define IDC_ABT_STATIC4                 1084
-#define IDC_ABT_STATIC5                 1085
-#define IDC_ABT_STATIC6                 1086
+
+#define IDC_ABT_CREDIT                  1500
+#define IDC_ABT_WEB                     1501
+#define IDC_ABT_CONTRIB                 1502
+#define IDC_ABT_DISCLAIM                1503
+#define IDC_ABT_TXT_BUILDDATE           1504
+#define IDC_ABT_GRP_ORBITER             1505
+#define IDC_ABT_GRP_WEB                 1506
+#define IDC_ABT_ICON_DG                 1507
+#define IDC_ABT_TXT_NAME                1508
+#define IDC_ABT_TXT_WEB                 1509
+#define IDC_ABT_TXT_WEBADDR             1510
+#define IDC_ABT_TXT_CPR                 1511
+#define IDC_ABT_TXT_LICENSE             1512
+#define IDC_ABT_GRP_COMPONENT           1513
+#define IDC_ABT_LBOX_COMPONENT          1514
+
 #define IDC_SCN_STATIC1                 1087
-#define IDC_ABT_CREDIT                  1088
-#define IDC_ABT_STATIC7                 1089
 #define IDC_SCN_LIST                    1090
-#define IDC_ABT_WEB                     1091
 #define IDC_SCN_DESC                    1092
 #define IDC_SCN_PAUSED                  1093
 #define IDC_SCN_SAVE                    1094
@@ -218,7 +225,6 @@
 #define IDC_SCN_DELQS                   1096
 #define IDC_SAVE_DESC                   1097
 #define IDC_SCN_INFO                    1098
-#define IDC_ABT_CONTRIB                 1099
 #define IDC_MOD_ACTLIST                 1100
 #define IDC_MOD_INACTLIST               1101
 #define IDC_MOD_DEACTSEL                1102
@@ -265,7 +271,6 @@
 #define IDC_COMBO4                      1158
 #define IDC_COMBO5                      1159
 #define IDC_MAP_REFERENCE               1159
-#define IDC_BUILDDATE                   1159
 #define IDC_COMBO6                      1160
 #define IDC_STATIC1                     1161
 #define IDC_INFO_NAME                   1161
@@ -367,7 +372,6 @@
 #define IDC_MOD_ACTGRP                  1267
 #define IDC_BLACKBOX                    1268
 #define IDC_MOD_INACTGRP                1268
-#define IDC_ABT_STATIC8                 1269
 #define IDC_OPT_STATIC1                 1270
 #define IDC_OPT_STATIC2                 1271
 #define IDC_OPT_STATIC3                 1272
