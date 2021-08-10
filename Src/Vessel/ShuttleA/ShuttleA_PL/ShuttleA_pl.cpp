@@ -200,8 +200,8 @@ void ShuttleA_PL::clbkSetClassCaps (FILEHANDLE cfg)
 	SetDockParams (_V(2.00f,0.00f,0.00f), _V(1,0,0), _V(0,1,0));
 
 	char attach_id[8]={"SH"};
-	payload_attachment[0]=CreateAttachment (true,_V(-0.319f, 0.0f,   2.464f),_V(0.0f,0.0f,1.0f),_V(0.0f,1.0f,0.0f),attach_id);
-	payload_attachment[1]=CreateAttachment (true,_V(-0.319f, 0.0f,  -2.464f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[0]=CreateAttachment (true,_V(-0.319f, 0.0f,   2.5f),_V(0.0f,0.0f,1.0f),_V(0.0f,1.0f,0.0f),attach_id);
+	payload_attachment[1]=CreateAttachment (true,_V(-0.319f, 0.0f,  -2.5f),_V(0.0f,0.0f,-1.0f),_V(0.0f,1.0f,0.0f),attach_id);
 	payload_attachment[2]=CreateAttachment (true,_V(-0.319f, 2.0f,   0.0f  ),_V(0.0f,1.0f, 0.0f),_V(1.0f,0.0f,0.0f),"GS"); // MS 060906: added by request
 
 	TOUCHDOWNVTX tdvtx[8] = {

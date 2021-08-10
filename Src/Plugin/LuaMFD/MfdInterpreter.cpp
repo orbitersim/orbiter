@@ -89,7 +89,7 @@ void MFDInterpreter::term_clear ()
 int MFDInterpreter::termClear (lua_State *L)
 {
 	Interpreter *interp = GetInterpreter(L);
-	//interp->term_clear(); // TODO!
+	interp->term_clear();
 	return 0;
 }
 

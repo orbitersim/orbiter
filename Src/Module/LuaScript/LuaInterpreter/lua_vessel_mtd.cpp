@@ -1141,24 +1141,26 @@ int Interpreter::v_set_touchdownpoints (lua_State *L)
 	AssertMtdMinPrmCount(L, 2, funcname);
 	VESSEL *v = lua_tovessel_safe(L, 1, funcname);
 
-	if (lua_istouchdownvtx(L, -1)) // new API
+	if (lua_gettop(L) == 2 && lua_istable(L, -1)) // new API
 	{
-		//AssertMtdMinPrmCount(L, 2, funcname);
 		AssertPrmType(L, -1, PRMTP_TABLE, funcname);
 		TOUCHDOWNVTX *tdvtx;
 		DWORD ntdvtx, nbuf;
 
 		ntdvtx = nbuf = 0;
+		lua_pushnil(L);
 		while (lua_next(L, -2)) {
-			if (ntdvtx == nbuf) { // grow buffer
-				TOUCHDOWNVTX *tmp = new TOUCHDOWNVTX[nbuf += 3];
-				if (ntdvtx) {
-					memcpy(tmp, tdvtx, ntdvtx * sizeof(TOUCHDOWNVTX));
-					delete[]tdvtx;
+			if (lua_istouchdownvtx(L, -1)) {
+				if (ntdvtx == nbuf) { // grow buffer
+					TOUCHDOWNVTX *tmp = new TOUCHDOWNVTX[nbuf += 3];
+					if (ntdvtx) {
+						memcpy(tmp, tdvtx, ntdvtx * sizeof(TOUCHDOWNVTX));
+						delete[]tdvtx;
+					}
+					tdvtx = tmp;
 				}
-				tdvtx = tmp;
+				tdvtx[ntdvtx++] = lua_totouchdownvtx(L, -1);
 			}
-			tdvtx[ntdvtx++] = lua_totouchdownvtx(L, -1);
 			lua_pop(L, 1);
 		}
 		ASSERT_SYNTAX(ntdvtx >= 3, "Too few arguments");
@@ -5285,7 +5287,7 @@ int Interpreter::v_del_dock (lua_State *L)
 	return 1;
 }
 
-/**
+/***
 Delete all docking ports defined for the vessel.
 
 Any docked objects will be undocked before deleting the docking ports.

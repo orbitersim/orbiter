@@ -10,6 +10,7 @@ add_library(LuaInline SHARED
 
 target_include_directories(LuaInline
 	PUBLIC ${ORBITER_SOURCE_SDK_INCLUDE_DIR}
+	PUBLIC ${ORBITER_SOURCE_ROOT_DIR}/Src/Module/LuaScript/LuaInterpreter
 )
 
 target_link_libraries(LuaInline

@@ -38,24 +38,27 @@ void AboutTab::Create ()
 	hTab = CreateTab (IDD_PAGE_ABT);
 
 	char cbuf[256];
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_STATIC4), uscram(NAME1));
-	SetWindowText (GetDlgItem (hTab, IDC_BUILDDATE), uscram(SIG4));
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_NAME), uscram(NAME1));
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_BUILDDATE), uscram(SIG4));
 	strcpy (cbuf, uscram(SIG1B));
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_STATIC7), cbuf);
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_CPR), cbuf);
 	strcpy (cbuf, uscram(SIG2));
-	strcat (cbuf, "\r\n\r\n");
+	strcat (cbuf, "\r\n");
 	strcat (cbuf, uscram(SIG5));
-	strcat (cbuf, "\r\n\r\n");
+	strcat (cbuf, "\r\n");
 	strcat (cbuf, uscram(SIG6));
-	SetWindowText (GetDlgItem (hTab, IDC_ABT_STATIC6), cbuf);
+	SetWindowText (GetDlgItem (hTab, IDC_ABT_TXT_WEBADDR), cbuf);
+	strcpy(cbuf, "XRSound module Copyright (c) Doug Beachy");
+	SendDlgItemMessage(hTab, IDC_ABT_LBOX_COMPONENT, LB_ADDSTRING, 0, (LPARAM)cbuf);
 
 	static int item[] = {
-		IDC_ABT_STATIC1, IDC_ABT_STATIC2, IDC_ABT_STATIC3, IDC_ABT_STATIC4,
-		IDC_ABT_STATIC5, IDC_ABT_STATIC6, IDC_ABT_STATIC7, IDC_ABT_STATIC8,
-		IDC_ABT_WEB, IDC_ABT_DISCLAIM, IDC_ABT_CREDIT, IDC_BUILDDATE
+		IDC_ABT_GRP_ORBITER, IDC_ABT_GRP_WEB, IDC_ABT_ICON_DG, IDC_ABT_TXT_NAME,
+		IDC_ABT_TXT_WEB, IDC_ABT_TXT_WEBADDR, IDC_ABT_TXT_CPR, IDC_ABT_TXT_LICENSE,
+		IDC_ABT_GRP_COMPONENT, IDC_ABT_WEB, IDC_ABT_DISCLAIM, IDC_ABT_CREDIT,
+		IDC_ABT_TXT_BUILDDATE, IDC_ABT_LBOX_COMPONENT
 	};
 
-	RegisterItemPositions (item, 12);
+	RegisterItemPositions (item, 14);
 }
 
 //-----------------------------------------------------------------------------

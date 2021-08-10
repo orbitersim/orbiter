@@ -493,18 +493,20 @@ STYLE DS_SETFONT | DS_CONTROL | WS_CHILD
 EXSTYLE WS_EX_OVERLAPPEDWINDOW
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "",IDC_ABT_STATIC1,4,4,269,54
-    GROUPBOX        "On the web",IDC_ABT_STATIC2,4,63,269,70
-    CONTROL         IDB_ICON64,IDC_ABT_STATIC3,"Static",SS_BITMAP,27,14,43,39
-    LTEXT           "",IDC_ABT_STATIC4,94,16,132,8
-    LTEXT           "Orbiter home:\n\nOrbiter web forum:\n\nYoutube channel:",IDC_ABT_STATIC5,27,77,63,54,0,WS_EX_TRANSPARENT
-    LTEXT           "",IDC_ABT_STATIC6,94,77,158,53
-    PUSHBUTTON      "License",IDC_ABT_DISCLAIM,94,181,88,14
-    PUSHBUTTON      "Credits and Contributions",IDC_ABT_CREDIT,184,181,88,14
-    LTEXT           "",IDC_ABT_STATIC7,94,41,140,13
-    LTEXT           "",IDC_BUILDDATE,94,28,166,8
-    PUSHBUTTON      "Orbiter Homepage",IDC_ABT_WEB,4,181,88,14
-    LTEXT           "Orbiter is published under the MIT License.\r\nDetails can be found under 'License' below.",IDC_ABT_STATIC8,11,145,254,28
+    GROUPBOX        "",IDC_ABT_GRP_ORBITER,4,4,269,54
+    CONTROL         IDB_ICON64, IDC_ABT_ICON_DG, "Static", SS_BITMAP, 27, 14, 43, 39
+    LTEXT           "", IDC_ABT_TXT_NAME, 94, 16, 132, 8
+    LTEXT           "", IDC_ABT_TXT_BUILDDATE, 94, 28, 166, 8
+    LTEXT           "", IDC_ABT_TXT_CPR, 94, 41, 140, 13
+    GROUPBOX        "Installed components", IDC_ABT_GRP_COMPONENT,4,63,269,50
+    LISTBOX         IDC_ABT_LBOX_COMPONENT,17,75,243,40, LBS_NOTIFY | WS_BORDER | WS_VSCROLL
+    GROUPBOX        "On the web", IDC_ABT_GRP_WEB, 4, 118, 269, 43
+    LTEXT           "Orbiter home:\nOrbiter web forum:\nYoutube channel:",IDC_ABT_TXT_WEB,17,130,63,30,0,WS_EX_TRANSPARENT
+    LTEXT           "",IDC_ABT_TXT_WEBADDR,94,130,158,30
+    LTEXT           "Orbiter is published under the MIT License.\r\nDetails can be found under 'License' below.", IDC_ABT_TXT_LICENSE, 11, 177, 254, 28
+    PUSHBUTTON      "License",IDC_ABT_DISCLAIM,94,210,88,14
+    PUSHBUTTON      "Credits and Contributions",IDC_ABT_CREDIT,184,210,88,14
+    PUSHBUTTON      "Orbiter Homepage", IDC_ABT_WEB, 4, 210, 88, 14
 END
 
 IDD_PAGE_JOY DIALOGEX 68, 43, 277, 254
