@@ -3,7 +3,13 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Location of DirectX SDK
-set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
+# set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
+
+if (NOT "$ENV{DXSDK_DIR}" STREQUAL "")
+    set(DXSDK_DIR "$ENV{DXSDK_DIR}")
+else()
+    set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/")
+endif()
 
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/include)
 set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
