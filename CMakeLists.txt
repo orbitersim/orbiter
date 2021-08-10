@@ -2,6 +2,9 @@
 
 cmake_minimum_required(VERSION 3.10)
 
+# Additional compiler flags
+set(Flags "/MP")
+
 # Location of DirectX SDK
 # set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
 

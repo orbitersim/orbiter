@@ -28,6 +28,7 @@ target_link_directories(GenericCamera PUBLIC
 
 set_target_properties(GenericCamera
 	PROPERTIES
+	COMPILE_FLAGS ${Flags}
 	LINK_FLAGS "/SUBSYSTEM:WINDOWS"
 	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Modules/Plugin
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
