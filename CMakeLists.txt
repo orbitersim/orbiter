@@ -3,10 +3,18 @@
 
 cmake_minimum_required(VERSION 3.19)
 
-include(ExternalProject)
-
 # Set the project name
 project (Orbiter VERSION 21.7.24)
+
+# Allow building targets as external projects
+include(ExternalProject)
+
+# Some functions to simplify debugging CMake scripts
+include(CMakePrintHelpers)
+
+# Support for including runtime libraries in packages
+set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+include(InstallRequiredSystemLibraries)
 
 # Set the pools for compilers that can't run concurrently
 set_property(GLOBAL PROPERTY JOB_POOLS latex=1 soffice=1 htmlhelp=1)
@@ -17,9 +25,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
 	set(ARCH "x64")
+	set(PLATFORM_STRING "x64")
 else()
 	set(BUILD64 0)
 	set(ARCH "x86")
+	set(PLATFORM_STRING "Win32")
 endif()
 
 # Define directories and file paths for some common binaries
@@ -228,6 +238,12 @@ endif()
 #	ON
 #)
 
+option(
+	ORBITER_BUILD_XRSOUND
+	"Build XRSound module to enable sound in Orbiter"
+	ON
+)
+
 option(ORBITER_MAKE_DOC
 	"Create documentation"
 	OFF
@@ -237,6 +253,15 @@ option(ORBITER_MAKE_SDK_SAMPLES
 	"Build the SDK sample projects"
 	OFF
 )
+
+if(ORBITER_BUILD_XRSOUND)
+	set(IRRKLANG_DIR
+		irrKlang_NOTFOUND
+		CACHE
+		PATH
+		"Root folder of irrKlang installation."
+	)
+endif()
 
 if (ORBITER_MAKE_DOC)
 
@@ -351,6 +376,25 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
 )
 
+# Package required runtime libraries as an optional component
+INSTALL(FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+	DESTINATION ${ORBITER_INSTALL_ROOT_DIR}
+	COMPONENT RuntimeLibraries
+	EXCLUDE_FROM_ALL
+)
+
+# Sub-projects
+add_subdirectory(Src)
+add_subdirectory(Utils)
+add_subdirectory(Orbitersdk)
+add_subdirectory(OVP)
+add_subdirectory(Sound)
+
+if(ORBITER_MAKE_DOC)
+	add_subdirectory(Doc)
+	add_subdirectory(Html)
+endif()
+
 # =============================================================================
 # Set up Distribution package options
 
@@ -363,12 +407,31 @@ set(CPACK_PACKAGE_VENDOR Orbitersim)
 set(CPACK_PACKAGE_DESCRIPTION "Orbiter is an Open-source spaceflight simulator for Windows PCs.")
 set(CPACK_PACKAGE_HOMEPAGE_URL http://orbit.medphys.ucl.ac.uk)
 set(CPACK_PACKAGE_EXECUTABLES Orbiter;OpenOrbiter)
+set(CPACK_COMPONENTS_GROUPING ALL_COMPONENTS_IN_ONE)
+set(CPACK_COMPONENT_Unspecified_DISPLAY_NAME "Orbiter Core Components")
+set(CPACK_COMPONENT_Unspecified_REQUIRED TRUE)
+set(CPACK_COMPONENT_RuntimeLibraries_DESCRIPTION "System libraries used by Orbiter. Install if Orbiter fails to launch.")
 set(CPACK_RESOURCE_FILE_LICENSE ${ORBITER_SOURCE_ROOT_DIR}/cmake/LICENSE.rtf)
 set(CPACK_RESOURCE_FILE_README ${ORBITER_SOURCE_ROOT_DIR}/README.md)
 set(CPACK_WIX_UI_BANNER ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_banner.bmp)
 set(CPACK_WIX_UI_DIALOG ${ORBITER_SOURCE_ROOT_DIR}/cmake/install_bkg.bmp)
 set(CPACK_WIX_PRODUCT_ICON ${ORBITER_SOURCE_ROOT_DIR}/cmake/orbiter_install.ico)
+set(CPACK_WIX_UPGRADE_GUID AB3F6483-A1A4-4ECD-ADAE-D33DF3A5AADA)
+set(CPACK_WIX_COMPONENT_INSTALL)
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake")
+
+include(OrbiterCPackOptions)
+include(CPack)
+
+cpack_add_component(Unspecified
+	DISPLAY_NAME "OrbiterCore"
+	DESCRIPTION "Orbiter Core Components"
+	REQUIRED
+)
+cpack_add_component(RuntimeLibraries
+	DISPLAY_NAME "RuntimeLibraries"
+	DESCRIPTION "System libraries used by Orbiter. Install if Orbiter fails to launch."
+)
 
 # There appears to be a CMake (3.20.5) bug that prevents CMAKE_INSTALL_PREFIX to be set
 # correctly in the CPACK_PRE_BUILD_SCRIPTS, so the script has been disabled for now
@@ -376,18 +439,3 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/OrbiterCPackOptions.cmake")
 # for the packages. This needs to be fixed
 
 #set(CPACK_PRE_BUILD_SCRIPTS ${ORBITER_SOURCE_ROOT_DIR}/cmake/cpack_install.cmake)
-
-include(OrbiterCPackOptions)
-include(CPack)
-
-
-# Sub-projects
-add_subdirectory(Src)
-add_subdirectory(Utils)
-add_subdirectory(Orbitersdk)
-add_subdirectory(OVP)
-
-if(ORBITER_MAKE_DOC)
-	add_subdirectory(Doc)
-	add_subdirectory(Html)
-endif()

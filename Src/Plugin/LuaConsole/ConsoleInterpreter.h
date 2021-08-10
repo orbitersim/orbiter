@@ -16,11 +16,13 @@ public:
 	ConsoleInterpreter (LuaConsole *_console);
 	void LoadAPI();
 	void term_strout (const char *str, bool iserr=false);
+	void term_clear ();
 
 protected:
 	static int termOut (lua_State *L);
 	static int termLineUp (lua_State *L);
 	static int termSetVerbosity (lua_State *L);
+	static int termClear (lua_State *L);
 
 private:
 	LuaConsole *console;
