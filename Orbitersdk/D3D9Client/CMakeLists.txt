@@ -139,6 +139,10 @@ set(ShaderFiles
 
 source_group(Shaders FILES ${ShaderFiles})
 
+set_property(SOURCE ${ShaderFiles}
+    PROPERTY VS_SETTINGS "ExcludedFromBuild=true"
+)
+
 add_library(D3D9Client MODULE
 	${SourceFiles}
 	${IncludeFiles}
