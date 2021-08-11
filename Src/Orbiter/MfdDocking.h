@@ -12,7 +12,7 @@
 
 class Instrument_Docking: public Instrument {
 public:
-	Instrument_Docking (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore);
+	Instrument_Docking (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore);
 	virtual ~Instrument_Docking ();
 	int Type () const { return MFD_DOCKING; }
 	char ModeSelKey () const { return 'D'; }

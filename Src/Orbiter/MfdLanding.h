@@ -12,7 +12,7 @@
 
 class Instrument_Landing: public Instrument {
 public:
-	Instrument_Landing (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore);
+	Instrument_Landing (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore);
 	virtual ~Instrument_Landing();
 	int Type () const { return MFD_LANDING; }
 	char ModeSelKey () const { return 'L'; }

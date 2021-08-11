@@ -13,7 +13,7 @@
 class Instrument_OSync: public Instrument {
 	friend class Pane;
 public:
-	Instrument_OSync (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool restore);
+	Instrument_OSync (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore);
 	virtual ~Instrument_OSync ();
 	int Type () const { return MFD_OSYNC; }
 	char ModeSelKey () const { return 'Y'; }

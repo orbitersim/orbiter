@@ -70,7 +70,7 @@ public:
 		DWORD flag;     // bit flags
 	};
 
-	Instrument (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool defer_alloc=false);
+	Instrument (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool defer_alloc=false);
 	virtual ~Instrument ();
 	virtual void RestoreDeviceObjects (LPDIRECT3D7 d3d, LPDIRECT3DDEVICE7 dev) {}
 	virtual int Type () const = 0;                 // mode id
@@ -139,12 +139,12 @@ public:
 	// ******************************************************************
 
 	static Instrument *Create (int type, Pane *_pane,
-		int _id, const Spec &spec, Vessel *_vessel, bool restore = true);
+		INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore = true);
 	// create instrument of the required type
 	// if restore==true then parameters are restored from static saved
 
 	static Instrument *Create (std::ifstream &ifs, Pane *_pane,
-		int _id, const Spec &spec, Vessel *_vessel);
+		INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	// create instrument from stream
 
 	static void RegisterBuiltinModes ();
@@ -213,7 +213,7 @@ public:
 protected:
 	Pane *pane;                 // pointer to pane
 	oapi::GraphicsClient *gc;   // graphics client, if available
-	int id;                     // instrument id
+	INT_PTR id;                	// instrument id
 	bool BufKey (char key, double repdelay = 0.5);
 	void SetBuf (char key);
 	int IW, IH;                 // instrument dimensions

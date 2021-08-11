@@ -14,7 +14,7 @@
 
 class Instrument_MapOld: public Instrument {
 public:
-	Instrument_MapOld (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel);
+	Instrument_MapOld (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	~Instrument_MapOld();
 	int Type () const { return MFD_MAP; }
 	char ModeSelKey () const { return 'M'; }

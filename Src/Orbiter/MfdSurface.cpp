@@ -27,7 +27,7 @@ extern Pane *g_pane;
 COLORREF Instrument_Surface::tapelabelcol[2] = {0xFFFFFF,0x60A0FF}; // make configurable
 struct Instrument_Surface::SavePrm Instrument_Surface::saveprm = { 1 };
 
-Instrument_Surface::Instrument_Surface (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_Surface::Instrument_Surface (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	sp = 0;

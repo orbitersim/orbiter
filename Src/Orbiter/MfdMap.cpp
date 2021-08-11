@@ -25,7 +25,7 @@ DWORD dispflag_default = DISP_GRIDLINE | DISP_COASTLINE | DISP_CONTOURS | DISP_H
 // =======================================================================
 // class Instrument_Map
 
-Instrument_Map::Instrument_Map (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_Map::Instrument_Map (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	strcpy (title, "Map: ");
