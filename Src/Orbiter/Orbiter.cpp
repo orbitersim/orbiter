@@ -815,7 +815,7 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	FRecorder_Reset();
 	if (bPlayback = g_focusobj->bFRplayback) {
 		FRecorder_OpenPlayback (pState->PlaybackDir());
-		if (g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
+		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
 	}
 
 	// let plugins read their states from the scenario file
@@ -1615,7 +1615,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 VOID Orbiter::IncFOV (double dfov)
 {
 	double fov = g_camera->IncrAperture (dfov);
-	g_pane->SetFOV (fov);
+	if (g_pane) g_pane->SetFOV (fov);
 	g_bForceUpdate = true;
 
 	// update Camera dialog
@@ -1798,7 +1798,7 @@ void Orbiter::EndPlayback ()
 		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
 		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
 	}
-	if (g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
+	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
 }
 
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
@@ -2066,7 +2066,7 @@ bool Orbiter::BeginTimeStep (bool running)
 	if (bRequestRunning != running) {
 		running = bRunning = bRequestRunning;
 		bool isPaused = !running;
-		if (g_pane->MIBar()) g_pane->MIBar()->SetPaused (isPaused);
+		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPaused (isPaused);
 		pDlgMgr->BroadcastMessage (MSG_PAUSE, (void*)isPaused);
 
 		// broadcast pause state to plugins
@@ -2161,7 +2161,7 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 	tjump.dt = td.JumpTo (_mjd);
 	g_psys->Timejump ();
 	g_camera->Update ();
-	g_pane->Timejump ();
+	if (g_pane) g_pane->Timejump ();
 
 #ifdef INLINEGRAPHICS
 	if (oclient) oclient->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
