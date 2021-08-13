@@ -102,7 +102,7 @@ void ShellMFD::ExitModule(HINSTANCE hDLL)
 
 // ============================================================================================================
 //
-LONG_PTR ShellMFD::MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
+OAPI_MSGTYPE ShellMFD::MsgProc(UINT msg, UINT mfd, WPARAM wparam, LPARAM lparam)
 {
 
     if (msg==OAPI_MSG_MFD_OPENED && MFDList) {	

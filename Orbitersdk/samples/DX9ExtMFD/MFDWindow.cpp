@@ -351,7 +351,7 @@ LRESULT CALLBACK MFD_WndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 }
 
 
-INT_PTR FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT FAR PASCAL MFD_BtnProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_PAINT: {
