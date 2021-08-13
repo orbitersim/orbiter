@@ -52,22 +52,23 @@ inline gcCore *gcGetCoreInterface()
 /// \defgroup PixelFormats Common pixelformats for surfaces, for Native Only (i.e. HSURFNATIVE)
 ///@{
 #define OAPISURFACE_PF_MASK				0xFF0000	///< PixelFormat Mask
-#define OAPISURFACE_PF_XRGB				0x000000	///< 32bit RGB no-alpha
-#define OAPISURFACE_PF_ARGB				0x010000	///< 32bit ARGB with-alpha	0xAARRGGBB
-#define OAPISURFACE_PF_RGB565			0x020000	///< 16bit RGB no-alpha
-#define OAPISURFACE_PF_S16R				0x030000	///< Signed integer 16-bit (1-channel)
-#define OAPISURFACE_PF_F32R				0x040000	///< Float 32-bit (1-channel)
-#define OAPISURFACE_PF_F32RG			0x050000	///< Float 64-bit (2-channel)
-#define OAPISURFACE_PF_F32RGBA			0x060000	///< Float 128-bit (4-channel) float4(r,g,b,a)
-#define OAPISURFACE_PF_F16R				0x070000	///< Float 16-bit (1-channel) 
-#define OAPISURFACE_PF_F16RG			0x080000	///< Float 32-bit (2-channel) 
-#define OAPISURFACE_PF_F16RGBA			0x090000	///< Float 64-bit (4-channel) float4(r,g,b,a)
-#define OAPISURFACE_PF_DXT1				0x0A0000	///< Compressed DXT1 format
-#define OAPISURFACE_PF_DXT3				0x0B0000	///< Compressed DXT3 format
-#define OAPISURFACE_PF_DXT5				0x0C0000	///< Compressed DXT5 format
-#define OAPISURFACE_PF_DEPTH			0x0D0000	///< Depth-Stencil Surface (This will cause all other OAPISURFACE_* flags being ignored)
+#define OAPISURFACE_PF_XRGB				0x010000	///< 32bit RGB no-alpha
+#define OAPISURFACE_PF_ARGB				0x020000	///< 32bit ARGB with-alpha	0xAARRGGBB
+#define OAPISURFACE_PF_RGB565			0x030000	///< 16bit RGB no-alpha
+#define OAPISURFACE_PF_S16R				0x040000	///< Signed integer 16-bit (1-channel)
+#define OAPISURFACE_PF_F32R				0x050000	///< Float 32-bit (1-channel)
+#define OAPISURFACE_PF_F32RG			0x060000	///< Float 64-bit (2-channel)
+#define OAPISURFACE_PF_F32RGBA			0x070000	///< Float 128-bit (4-channel) float4(r,g,b,a)
+#define OAPISURFACE_PF_F16R				0x080000	///< Float 16-bit (1-channel) 
+#define OAPISURFACE_PF_F16RG			0x090000	///< Float 32-bit (2-channel) 
+#define OAPISURFACE_PF_F16RGBA			0x0A0000	///< Float 64-bit (4-channel) float4(r,g,b,a)
+#define OAPISURFACE_PF_DXT1				0x0B0000	///< Compressed DXT1 format
+#define OAPISURFACE_PF_DXT3				0x0C0000	///< Compressed DXT3 format
+#define OAPISURFACE_PF_DXT5				0x0D0000	///< Compressed DXT5 format
 #define OAPISURFACE_PF_ALPHA			0x0E0000	///< Alpha only surface 8-bit
 #define OAPISURFACE_PF_GRAY				0x0F0000	///< Grayscale Image 8-bit
+#define OAPISURFACE_ANTIALIAS			0x000800
+#define OAPISURFACE_SHARED				0x001000
 ///@}
 
 
@@ -983,7 +984,6 @@ public:
 	* \return A Handle to a rendering surface (i.e. backbuffer)
 	*/
 	virtual SURFHANDLE	GetRenderTarget(HSWAP hSwap);
-	virtual HSURFNATIVE GetRenderTargetNative(HSWAP hSwap);
 
 	/**
 	* \brief Release a swap object after it's no longer needed.
@@ -1046,20 +1046,6 @@ public:
 	* \return Currently returns 2 or (1 in some very special cases). 
 	*/
 	virtual int			SketchpadVersion(Sketchpad *pSkp);
-
-	/**
-	* \brief Get a Sketchpad for a native DirectX 9 surface
-	* \param hSrf handle to a surface
-	* \param hDep handle to optional depth stencil surface
-	* \return a pointer to a new sketchpad interface or NULL if an error occurs.
-	*/
-	virtual Sketchpad*	GetSketchpadNative(HSURFNATIVE hSrf, HSURFNATIVE hDep = NULL);
-
-	/**
-	* \brief Release a native sketchpad interface acquired by GetSketchpadNative()
-	* \param pSkp handle to a sketchpad interface to release.
-	*/
-	virtual void		ReleaseSketchpadNative(Sketchpad *pSkp);
 
 	/**
 	* \brief Load a mesh from a harddrive to be used with Sketchpad2::SketchMesh
@@ -1293,8 +1279,8 @@ public:
 	// ===========================================================================
 	//@{
 	virtual HPLANETMGR		GetPlanetManager(OBJHANDLE hPlanet);
-	virtual HSURFNATIVE		SetTileOverlay(HTILE hTile, const HSURFNATIVE hOverlay);
-	virtual HOVERLAY		AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const HSURFNATIVE hOverlay = NULL, HOVERLAY hOld = NULL);
+	virtual SURFHANDLE		SetTileOverlay(HTILE hTile, const SURFHANDLE hOverlay);
+	virtual HOVERLAY		AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const SURFHANDLE hOverlay = NULL, HOVERLAY hOld = NULL);
 
 	/**
 	* \brief Find a tile from a specified coordinates. Limited to a highest allocated level found from memory. 
@@ -1319,7 +1305,7 @@ public:
 	* \note WARNING: Tile returned by this function can become invalid without notice.
 	*/
 	virtual bool			HasTileData(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags);
-	virtual HSURFNATIVE		SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags = 3, void *reserved = NULL);
+	virtual SURFHANDLE		SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags = 3, void *reserved = NULL);
 	virtual void *			SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pEI);
 	
 
@@ -1344,68 +1330,10 @@ public:
 
 
 
-
-
-
 	// ===========================================================================
 	/// \name Native Object Interface
 	// ===========================================================================
 	//@{
-
-	/**
-	* \brief Load a file into native DirectX. Valid formats are (*.dds, *.jpg, *.bmp, *.png)
-	* \param file filename.
-	* \param flags a combination of OAPISURFACE_ flags.
-	* \return NULL in a case of failure.
-	*/
-	virtual HSURFNATIVE		LoadSurfaceNative(const char *file, DWORD flags);
-
-	/**
-	* \brief Create a native DirectX 9 Surface
-	* \param width surface width in pixels 
-	* \param height surface height in pixels
-	* \param flags a combination of OAPISURFACE_ flags.
-	* \return Surface handle or NULL in a case of a failure.
-	*/
-	virtual HSURFNATIVE		CreateSurfaceNative(int width, int height, DWORD flags);
-
-	/**
-	* \brief Get a handle to a specific mipmap sub-level
-	* \param hSrf Handle to a texture containing mipmaps
-	* \param level Level of the mipmap to acquire. (level >= 1) (0 = "hSrf" it self with surface interface)
-	* \return Surface handle or NULL in a case of a failure. Must be released with ReleaseSurface() after nolonger accessed.
-	*/
-	virtual HSURFNATIVE		GetMipSublevel(HSURFNATIVE hSrf, int level);
-
-	virtual void			ReleaseSurface(HSURFNATIVE hSrf);
-	virtual bool			GetSurfaceSpecs(HSURFNATIVE hSrf, SurfaceSpecs *pOut);
-
-	/**
-	* \brief Save a native DirectX surface to a file (*.dds, *.jpg, *.bmp, *.png)  
-	* \param file filename.
-	* \param hSrf handle to a surface to same.
-	* \return false in a case of failure.
-	*/
-	virtual bool			SaveSurfaceNative(const char *file, HSURFNATIVE hSrf);
-
-	/**
-	* \brief Realtime Mipmap auto-generation from the top/main level.
-	* \param hSurface handle to a surface
-	* \return false if an error occured, true otherwise.
-	* \note Surface must be created with (OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_MIPMAPS)
-	* \note Exact attribute requirements/conflicts are unknown.
-	*/
-	virtual bool			GenerateMipMaps(HSURFNATIVE hSurface);
-
-	/**
-	* \brief On the fly texture compression into a DXT format. Input remains uncanged.
-	* \param hSurface handle to a surface to compress
-	* \param flags combination of OAPISURFACE_PF_DXT1, OAPISURFACE_PF_DXT3, OAPISURFACE_PF_DXT5, OAPISURFACE_MIPMAPS, OAPISURFACE_SYSMEM
-	* \return Handle to a compressed texture, user must release this.
-	* \note Compression is slow, separate thread recommended for realtime compression.
-	*/
-	virtual HSURFNATIVE		CompressSurface(HSURFNATIVE hSurface, DWORD flags);
-
 	/**
 	* \brief Get device specific mesh from Orbiter mesh template
 	* \param hMesh handle to a mesh acquired from oapiLoadMeshGlobal()
