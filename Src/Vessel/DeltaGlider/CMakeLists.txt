@@ -35,6 +35,8 @@ add_library(DeltaGlider SHARED
 	${VESSEL_COMMON_DIR}/Instrument.cpp
 	InstrVs.cpp
 	MomentInd.cpp
+	# Resources
+	DeltaGlider.rc
 )
 
 set_target_properties(DeltaGlider
