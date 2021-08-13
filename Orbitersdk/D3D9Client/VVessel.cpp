@@ -117,8 +117,8 @@ vVessel::~vVessel ()
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
-	gc->GetTexMgr()->LoadTexture("Reentry.dds", &defreentrytex, 0);
-	gc->GetTexMgr()->LoadTexture("Exhaust.dds", &defexhausttex, 0);
+	gc->GetTexMgr()->LoadTexture("Reentry.dds", (SURFHANDLE*)&defreentrytex, 0);
+	gc->GetTexMgr()->LoadTexture("Exhaust.dds", (SURFHANDLE*)&defexhausttex, 0);
 }
 
 
@@ -126,8 +126,8 @@ void vVessel::GlobalInit(D3D9Client *gc)
 //
 void vVessel::GlobalExit ()
 {
-	SAFE_DELETE(defexhausttex);
-	SAFE_DELETE(defreentrytex);
+	DELETE_SURFACE(defexhausttex);
+	DELETE_SURFACE(defreentrytex);
 	SAFE_DELETE(tHUD);
 }
 
@@ -1985,9 +1985,9 @@ void vVessel::ReloadTextures()
 // ===========================================================================================
 //
 
-D3D9ClientSurface * vVessel::tHUD = 0;
-D3D9ClientSurface * vVessel::defreentrytex = 0;
-D3D9ClientSurface * vVessel::defexhausttex = 0;
+SurfNative * vVessel::tHUD = 0;
+SurfNative * vVessel::defreentrytex = 0;
+SurfNative * vVessel::defexhausttex = 0;
 
 
 // ==============================================================
@@ -2034,7 +2034,7 @@ static inline const int clip(int v, int vMin, int vMax)
 
 inline const char *value_string (char *buf, size_t buf_size, double val)
 {
-	static const char unit_prefixes[] = { 'µ', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
+	static const char unit_prefixes[] = { 'Âµ', 'm', '\0', 'k' , 'M' , 'G' , 'T' , 'P' };
 
 	int index = (int) (log10(val)) / 3;
 	val /= pow(10.0, index*3);

@@ -468,7 +468,7 @@ private:
 	oapi::Font *pLabelFont;
 	oapi::Font *pDebugFont;
 
-	D3D9ClientSurface *pLblSrf;
+	SurfNative *pLblSrf;
 	CSphereManager *cspheremgr;
 
 	class ImageProcessing *pLightBlur, *pBlur, *pFlare, *pGDIOverlay, *pIrradiance;

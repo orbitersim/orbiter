@@ -167,16 +167,6 @@ void MFDWindow::RepaintDisplay(HWND hWnd)
 {
 	PAINTSTRUCT ps;
 	HDC hDCtgt = BeginPaint(hWnd, &ps);
-	SURFHANDLE surf = GetDisplaySurface();
-	if (surf) {
-		HDC hDCsrc = oapiGetDC(surf);
-		BitBlt(hDCtgt, 0, 0, DW, DH, hDCsrc, 0, 0, SRCCOPY);
-		oapiReleaseDC(surf, hDCsrc);
-	}
-	else {
-		SelectObject(hDCtgt, GetStockObject(BLACK_BRUSH));
-		Rectangle(hDCtgt, 0, 0, DW, DH);
-	}
 	EndPaint(hWnd, &ps);
 }
 

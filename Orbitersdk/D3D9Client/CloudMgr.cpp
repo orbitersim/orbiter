@@ -71,7 +71,7 @@ void CloudManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scale,
 	HR(FX->SetInt(eSpecularMode, 0));
 
 	if (microtex) {
-		HR(FX->SetTexture(eTex3, microtex->GetTexture()));
+		HR(FX->SetTexture(eTex3, SURFACE(microtex)->GetTexture()));
 	}
 
 	bool do_micro = (microtex && microlvl > 0.01);
@@ -101,7 +101,7 @@ void CloudManager::RenderShadow(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double 
 	HR(FX->SetInt(eSpecularMode, 0));
 
 	if (microtex) {
-		HR(FX->SetTexture(eTex3, microtex->GetTexture()));
+		HR(FX->SetTexture(eTex3, SURFACE(microtex)->GetTexture()));
 	}
 
 	bool do_micro = (microtex && microlvl > 0.01);

@@ -27,13 +27,13 @@ public:
 	explicit TextureManager(oapi::D3D9Client *gclient);
 	~TextureManager();
 	
-	HRESULT LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *ppdds, int flags);
+	HRESULT LoadTexture(const char *fname, SURFHANDLE *ppdds, int flags);
 
 	int LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, DWORD flags, int count);
 	// Read a texture from file 'fname' into the DX7 surface
 	// pointed to by 'ppdds'.
 
-	bool GetTexture(const char *fname, LPD3D9CLIENTSURFACE *ppdds,int flags);
+	bool GetTexture(const char *fname, SURFHANDLE *ppdds,int flags);
 	// Retrieve a texture. First scans the repository of loaded textures.
 	// If not found, loads the texture from file and adds it to the repository
 
@@ -50,7 +50,7 @@ private:
 
 	// simple repository of loaded textures: linked list
 	struct TexRec {
-		LPD3D9CLIENTSURFACE tex;
+		SURFHANDLE tex;
 		char fname[64];
 		DWORD id;
 		struct TexRec *next;
@@ -68,7 +68,7 @@ private:
 	// Return a matching texture entry from the repository, if found.
 	// Otherwise, return NULL.
 
-	void AddToRepository (const char *fname, LPD3D9CLIENTSURFACE pdds);
+	void AddToRepository (const char *fname, SURFHANDLE pdds);
 	// Add a new entry to the repository
 
 	void ClearRepository ();

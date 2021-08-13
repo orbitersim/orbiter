@@ -48,7 +48,7 @@ class MeshManager;
 class TextureManager;
 class Scene;
 class VideoTab;
-class D3D9ClientSurface;
+class SurfNative;
 class CD3DFramework9;
 class D3D9Mesh;
 class D3D9Annotation;
@@ -61,14 +61,14 @@ class D3D9Pad;
 extern DWORD			uCurrentMesh;
 extern class vObject *	pCurrentVisual;
 
-typedef class D3D9ClientSurface * LPD3D9CLIENTSURFACE;
 typedef char * LPCHAR;
 typedef void * CAMERAHANDLE;
 typedef class D3D9Mesh * HMESH;
+typedef class SurfNative* lpSurfNative;
 
 extern D3D9Catalog<LPDIRECT3DTEXTURE9>	*TileCatalog;
-extern D3D9Catalog<D3D9Mesh*>			*MeshCatalog;
-extern D3D9Catalog<LPD3D9CLIENTSURFACE>	*SurfaceCatalog;
+extern set<D3D9Mesh*> MeshCatalog;
+extern set<SurfNative*>	SurfaceCatalog;
 
 
 /**
@@ -116,12 +116,16 @@ struct _D3D9Stats {
 };
 
 
+
 struct RenderTgtData {
 	LPDIRECT3DSURFACE9 pColor;
 	LPDIRECT3DSURFACE9 pDepthStencil;
 	class D3D9Pad *pSkp;
 	int code;
 };
+
+
+
 
 
 extern _D3D9Stats D3D9Stats;
@@ -885,8 +889,8 @@ public:
 	 *   primitives.
 	 * \sa Sketchpad, clbkReleaseSketchpad
 	 */
-	Sketchpad *clbkGetSketchpad (SURFHANDLE surf);
-	Sketchpad *GetSketchpadNative (HSURFNATIVE hNat, HSURFNATIVE hDep = NULL);
+	Sketchpad* clbkGetSketchpad_const(SURFHANDLE surf) const;
+	Sketchpad * clbkGetSketchpad (SURFHANDLE surf);
 
 	/**
 	 * \brief Release a drawing object.
@@ -894,8 +898,8 @@ public:
 	 * \default None.
 	 * \sa Sketchpad, clbkGetSketchpad
 	 */
+	void clbkReleaseSketchpad_const(Sketchpad* sp) const;
 	void clbkReleaseSketchpad (Sketchpad *sp);
-	void ReleaseSketchpadNative (Sketchpad *sp);
 
 	/**
 	 * \brief Create a font resource for 2-D drawing.
@@ -1011,10 +1015,9 @@ public:
 	MeshManager *       GetMeshMgr() const { return meshmgr; }
 	void 				WriteLog (const char *msg) const;
     LPDIRECT3DDEVICE9   GetDevice() const { return pDevice; }
-	LPD3D9CLIENTSURFACE GetDefaultTexture() const;
-	LPD3D9CLIENTSURFACE GetBackBufferHandle() const;
+	lpSurfNative		GetDefaultTexture() const;
+	SURFHANDLE			GetBackBufferHandle() const;
 	LPDIRECT3DTEXTURE9  GetNoiseTex() const { return pNoiseTex; }
-	void 				EmergencyShutdown();
 	void 				SplashScreen();
 	inline bool 		IsRunning() const { return bRunning; }
 	inline bool			IsLimited() const { return ((pCaps->TextureCaps&D3DPTEXTURECAPS_POW2) && (pCaps->TextureCaps&D3DPTEXTURECAPS_NONPOW2CONDITIONAL)); }
@@ -1032,7 +1035,6 @@ public:
 	void				MakeGenericProcCall(DWORD id, int iUser, void *pUser) const;
 	bool				IsGenericProcEnabled(DWORD id) const;
 	void				SetScenarioName(const std::string &path) { scenarioName = path; };
-	void				clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf);
 	void				HackFriendlyHack();
 	void				PickTerrain(DWORD uMsg, int xpos, int ypos);
 	DEVMESHHANDLE		GetDevMesh(MESHHANDLE hMesh);
@@ -1043,11 +1045,10 @@ public:
 	HRESULT				BeginScene();
 	void				EndScene();
 	bool				IsInScene() const { return bRendering; }
-	void				PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp);
-	void				PushSketchpadNative(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepth, D3D9Pad *pSkp);
-	void				PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL, int code = 0);
+	void				PushSketchpad(SURFHANDLE surf, D3D9Pad* pSkp) const;
+	void				PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL, int code = 0) const;
 	void				AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil = NULL);
-	void				PopRenderTargets();
+	void				PopRenderTargets() const;
 	LPDIRECT3DSURFACE9  GetTopDepthStencil();
 	LPDIRECT3DSURFACE9  GetTopRenderTarget();
 	class D3D9Pad *		GetTopInterface() const;
@@ -1259,19 +1260,21 @@ public:
 	bool OutputLoadStatus (const char *msg, int line);
 
 private:
+	void BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t) const;
 	void SketchPadTest();
 	void PresentScene();
 	void Label(const char *format, ...);
-	bool CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const;
 	void DrawTimeBar(double t, double scale, double frames, DWORD color, const char *label=NULL);
 	bool ChkDev(const char *fnc) const;
 
-	mutable SURFHANDLE		pBltGrpTgt;
+	SURFHANDLE				pBltGrpTgt;
+	D3D9Pad*				pBltSkp;
+
 
     LPDIRECT3DDEVICE9		pDevice;
-	LPD3D9CLIENTSURFACE	    pDefaultTex;
+	lpSurfNative			pDefaultTex;
+	lpSurfNative			pScatterTest;
 	LPDIRECT3DTEXTURE9		pNoiseTex;
-	LPD3D9CLIENTSURFACE	    pScatterTest;
 	LPDIRECT3DSURFACE9		pSplashScreen;
 	LPDIRECT3DSURFACE9		pTextScreen;
 	LPDIRECT3DSURFACE9		pBackBuffer;
@@ -1315,7 +1318,7 @@ private:
 
 	std::vector<RenderProcData> RenderProcs;
 	std::vector<GenericProcData> GenericProcs;
-	std::list<RenderTgtData> RenderStack;
+	mutable std::list<RenderTgtData> RenderStack;
 
 	HFONT hLblFont1;
 	HFONT hLblFont2;

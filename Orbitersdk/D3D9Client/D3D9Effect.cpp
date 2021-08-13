@@ -637,16 +637,16 @@ void D3D9Effect::InitLegacyAtmosphere(OBJHANDLE hPlanet, float GlobalAmbient)
 
 // ===========================================================================================
 //
-void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive)
+void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const SURFHANDLE pTex, const LPD3DXMATRIX pW, float alpha, float scale, bool additive)
 {
 	UINT numPasses = 0;
 
-	if (pTex->IsPowerOfTwo() || (!gc->IsLimited())) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
+	if (SURFACE(pTex)->IsPowerOfTwo() || (!gc->IsLimited())) FX->SetTechnique(ePanelTech);		// ANISOTROPIC filter 
 	else FX->SetTechnique(ePanelTechB);	// POINT filter (for non-pow2 conditional)
 	
 	HR(FX->SetMatrix(eW, pW));
 
-	if (pTex) FX->SetTexture(eTex0, pTex->GetTexture());
+	if (pTex) FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture());
 	else      FX->SetTexture(eTex0, NULL);
 
 	HR(FX->SetFloat(eMix, alpha));
@@ -668,7 +668,7 @@ void D3D9Effect::Render2DPanel(const MESHGROUP *mg, const LPD3D9CLIENTSURFACE pT
 
 // ===========================================================================================
 //
-void D3D9Effect::RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size)
+void D3D9Effect::RenderReEntry(const SURFHANDLE pTex, const LPD3DXVECTOR3 vPosA, const LPD3DXVECTOR3 vPosB, const LPD3DXVECTOR3 vDir, float alpha_a, float alpha_b, float size)
 {
 	static WORD ReentryIdx[6] = {0,1,2, 3,2,1};
 	
@@ -717,7 +717,7 @@ void D3D9Effect::RenderReEntry(const LPD3D9CLIENTSURFACE pTex, const LPD3DXVECTO
 // ===========================================================================================
 // This is a special rendering routine used to render beacons
 //
-void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex)
+void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXMATRIX pW, SURFHANDLE pTex)
 {
 	UINT numPasses = 0;
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
@@ -725,7 +725,7 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 	HR(FX->SetFloat(eMix, alpha));
 	HR(FX->SetValue(eColor, pColor, sizeof(D3DXCOLOR)));
 	HR(FX->SetMatrix(eW, pW));
-	HR(FX->SetTexture(eTex0, pTex->GetTexture()));
+	HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, billboard_idx, D3DFMT_INDEX16, billboard_vtx, sizeof(NTVERTEX)));
@@ -737,14 +737,14 @@ void D3D9Effect::RenderSpot(float alpha, const LPD3DXCOLOR pColor, const LPD3DXM
 // ===========================================================================================
 // Used by Render Star only
 //
-void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex)
+void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, SURFHANDLE pTex)
 {
 	UINT numPasses = 0;
 
 	HR(pDev->SetVertexDeclaration(pNTVertexDecl));
 	HR(FX->SetTechnique(eSimple));
 	HR(FX->SetMatrix(eW, pW));
-	HR(FX->SetTexture(eTex0, pTex->GetTexture()));
+	HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 4, 2, billboard_idx, D3DFMT_INDEX16, billboard_vtx, sizeof(NTVERTEX)));
@@ -756,10 +756,10 @@ void D3D9Effect::RenderBillboard(const LPD3DXMATRIX pW, LPD3D9CLIENTSURFACE pTex
 // ===========================================================================================
 // This is a special rendering routine used to render engine exhaust
 //
-void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, LPD3D9CLIENTSURFACE def)
+void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC *es, SURFHANDLE def)
 {
 
-	LPD3D9CLIENTSURFACE pTex = SURFACE(es->tex);
+	SURFHANDLE pTex = SURFACE(es->tex);
 	if (!pTex) pTex = def;
 
 	double alpha = *es->level;
@@ -806,7 +806,7 @@ void D3D9Effect::RenderExhaust(const LPD3DXMATRIX pW, VECTOR3 &cdir, EXHAUSTSPEC
 	HR(FX->SetTechnique(eExhaust));
 	HR(FX->SetFloat(eMix, float(alpha)));
 	HR(FX->SetMatrix(eW, pW));
-	HR(FX->SetTexture(eTex0, pTex->GetTexture()));
+	HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 	HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 8, 4, exhaust_idx, D3DFMT_INDEX16, exhaust_vtx, sizeof(NTVERTEX)));

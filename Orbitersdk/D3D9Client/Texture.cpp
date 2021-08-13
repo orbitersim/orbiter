@@ -89,22 +89,18 @@ TextureManager::~TextureManager ()
 }
 
 
-HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSurf, int flags)
+HRESULT TextureManager::LoadTexture(const char *fname, SURFHANDLE *pSurf, int flags)
 {
-	(*pSurf) = new D3D9ClientSurface(pDev, fname);
 
 	DWORD attrib = OAPISURFACE_TEXTURE;
 	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
 	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS;	
 	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
-	//else			 attrib |= OAPISURFACE_MIPMAPS;
-
+	
 	if ((flags&0x2) && ((flags&0x1)==0)) attrib |= OAPISURFACE_RENDERTARGET; // Uncompress means that it's going to do something bad, so, let's prepare for the worst.
 
-	if ((*pSurf)->LoadSurface(fname, attrib)==true) return S_OK;
+	if ((*pSurf = NatLoadSurface(fname, attrib)) != NULL) return S_OK;
 	
-	delete (*pSurf);
-	*pSurf = NULL;
 	return -1;
 }
 
@@ -182,15 +178,13 @@ int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, D
 // Retrieve a texture. First scans the repository of loaded textures.
 // If not found, loads the texture from file and adds it to the repository
 //
-bool TextureManager::GetTexture(const char *fname, LPD3D9CLIENTSURFACE *pd3dt, int flags)
+bool TextureManager::GetTexture(const char *fname, SURFHANDLE *pd3dt, int flags)
 {
 	TexRec *texrec = ScanRepository(fname);
 
 	if (texrec) {
 		// found in repository
 		*pd3dt = texrec->tex;
-		texrec->tex->IncRef();
-		LogOk("Texture %s (%s) found from repository. ReferenceCount=%d", _PTR(*pd3dt), fname, (*pd3dt)->RefCount());
 		return true;
 	}
 	else if (SUCCEEDED(LoadTexture(fname, pd3dt, flags))) {
@@ -234,7 +228,7 @@ bool TextureManager::IsInRepository (SURFHANDLE p)
 // =======================================================================
 // Add a new entry to the repository
 
-void TextureManager::AddToRepository (const char *fname, LPD3D9CLIENTSURFACE pdds)
+void TextureManager::AddToRepository (const char *fname, SURFHANDLE pdds)
 {
 	TexRec *texrec = new TexRec;
 	texrec->tex = pdds;
@@ -252,7 +246,7 @@ void TextureManager::ClearRepository()
 	while (firstTex) {
 		TexRec *tmp = firstTex;
 		firstTex = firstTex->next;
-		SAFE_DELETE(tmp->tex);
+		if (tmp->tex) delete SURFACE(tmp->tex);
 		delete tmp;
 	}
 }

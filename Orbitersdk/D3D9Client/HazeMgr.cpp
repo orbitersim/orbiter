@@ -69,7 +69,7 @@ void HazeManager::GlobalInit(D3D9Client *gclient)
 
 void HazeManager::GlobalExit()
 {
-	SAFE_DELETE(horizon);
+	DELETE_SURFACE(horizon);
 }
 
 // -----------------------------------------------------------------------
@@ -180,7 +180,7 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 	
 	HR(FX->SetTechnique(eHazeTech));
 	HR(FX->SetMatrix(eW, &transm));
-	HR(FX->SetTexture(eTex0, horizon->GetTexture()));	
+	HR(FX->SetTexture(eTex0, SURFACE(horizon)->GetTexture()));	
 
 	HR(pDev->SetVertexDeclaration(pHazeVertexDecl));
 
@@ -220,7 +220,7 @@ DWORD    HazeManager::nIdx = HORIZON_NSEG*2+2;
 float HazeManager::CosP[HORIZON_NSEG];
 float HazeManager::SinP[HORIZON_NSEG];
 
-LPD3D9CLIENTSURFACE HazeManager::horizon = 0;
+SURFHANDLE HazeManager::horizon = 0;
 
 
 

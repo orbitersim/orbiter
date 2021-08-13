@@ -239,7 +239,7 @@ protected:
 
 
 	static oapi::D3D9Client *gc;			// graphics client instance pointer
-	static D3D9ClientSurface *blobtex[3];  // beacon textures
+	static SurfNative * blobtex[3];	// beacon textures
 	static D3D9Mesh * hStockMesh[16];
 
 	D3D9Sun			sunLight;	// Local copy of sun light. (Can be freely edited)

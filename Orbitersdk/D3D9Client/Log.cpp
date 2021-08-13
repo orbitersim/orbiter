@@ -17,9 +17,10 @@
 // =================================================================================================================================
 
 #include <Windows.h>
-#include <Psapi.h>
 #include "Log.h"
 #include "D3D9Util.h"
+#include "D3D9Config.h"
+#include "D3D9Client.h"
 
 FILE *d3d9client_log = NULL;
 
@@ -27,6 +28,8 @@ FILE *d3d9client_log = NULL;
 #define ERRBUF 8000
 #define OPRBUF 512
 #define TIMEBUF 63
+
+extern class D3D9Client* g_client;
 
 char ErrBuf[ERRBUF+1];
 char OprBuf[OPRBUF+1];
@@ -55,6 +58,18 @@ void MissingRuntimeError()
 		"DirectX Runtimes may be missing. See /Doc/D3D9Client.pdf for more information",
 		"D3D9Client Initialization Failed", MB_OK);
 }
+
+//-------------------------------------------------------------------------------------------
+//
+void RuntimeError(const char* File, const char* Fnc, UINT Line)
+{
+	if (Config->DebugLvl == 0) return;
+	char buf[256];
+	sprintf_s(buf, 256, "[%s] [%s] Line: %u\\nSee Orbiter.log for further details.", File, Fnc, Line);
+	MessageBoxA(g_client->GetRenderWindow(), buf, "Runtime Error:", MB_OK);
+	abort();
+}
+
 
 //-------------------------------------------------------------------------------------------
 //

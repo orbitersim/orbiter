@@ -456,7 +456,7 @@ public:
 	inline bool DoLoadIndividualFiles (int i) const { return (i < ntreeMgr) ? hasIndividualFiles[i] : true; }
 
 	// Load tile texture
-	HSURFNATIVE SeekTileTexture(int iLng, int iLat, int level, int flags = 3);
+	SURFHANDLE SeekTileTexture(int iLng, int iLat, int level, int flags = 3);
 
 	// Check if tile texture exists
 	bool HasTileData(int iLng, int iLat, int level, int flags = 3);

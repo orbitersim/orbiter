@@ -212,7 +212,7 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	HR(FX->SetTexture(eTex1, ltex));  // Specular Mask and Night Lights
 	
 	if (microtex) {
-		HR(FX->SetTexture(eTex3, microtex->GetTexture())); 
+		HR(FX->SetTexture(eTex3, SURFACE(microtex)->GetTexture())); 
 		HR(FX->SetFloat(eMix, 1.0f));
 	}
 	else HR(FX->SetFloat(eMix, 0.0f));

@@ -16,7 +16,7 @@
 #include "D3D9Surface.h"
 #include "D3D9Config.h"
 
-LPD3D9CLIENTSURFACE vStar::deftex = 0;
+SURFHANDLE vStar::deftex = 0;
 
 vStar::vStar(OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 {
@@ -34,7 +34,7 @@ void vStar::GlobalInit (oapi::D3D9Client *gc)
 
 void vStar::GlobalExit()
 {
-	if (deftex)    delete deftex;
+	DELETE_SURFACE(deftex);
 }
 
 bool vStar::Update (bool bMainScene)

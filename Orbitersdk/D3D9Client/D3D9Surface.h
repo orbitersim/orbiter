@@ -11,6 +11,7 @@
 #include "D3D9Client.h"
 #include "D3D9Pad.h"
 #include "GDIPad.h"
+#include "gcConst.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -25,181 +26,115 @@
 #define	MAP_HEAT			8
 #define MAP_MAX_COUNT		9
 
+#define OAPISURFACE_MAPS		0x80000000
+#define OAPISURFACE_BACKBUFFER	0x40000000
+
+
+LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext);
+SURFHANDLE			NatLoadSurface(const char* file, DWORD flags);
+bool				NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource);
+SURFHANDLE			NatCreateSurface(int width, int height, DWORD flags);
+SURFHANDLE			NatGetMipSublevel(SURFHANDLE hSrf, int level);
+SURFHANDLE			NatCompressSurface(SURFHANDLE hSurface, DWORD flags);
+bool				NatCreateName(char* out, int mlen, const char* fname, const char* id);
+DWORD				NatConvertFormat_DX_to_OAPI(DWORD Format);
+DWORD				NatConvertFormat_OAPI_to_DX(DWORD Format);
+const char*			NatUsage(DWORD Usage);
+const char*			NatPool(D3DPOOL Pool);
+const char*			NatOAPIFlags(DWORD AF);
+const char*			NatOAPIFormat(DWORD PF);
+void				NatDumpResource(LPDIRECT3DRESOURCE9 pResource);
+
 
 #define ERR_DC_NOT_AVAILABLE		0x1
 #define ERR_USED_NOT_DEFINED		0x2
 
 
-// Every SURFHANDLE in the client is a pointer into the D3D9ClientSurface class
+// Every SURFHANDLE in the client is a pointer into the SurfNative class
 
-class D3D9ClientSurface 
+class SurfNative
 {
-	DWORD alloc_id;
-
 	friend class D3D9Client;
 	friend class D3D9Pad;
 	friend class GDIPad;
 
 public:
-						// Initialize global (shared) resources
-	static void			D3D9TechInit(class D3D9Client *gc, LPDIRECT3DDEVICE9 pDev, const char *folder);
-	static void			GlobalExit();
 
-						// Create empty surface. Must use Create methods to make a valid surface
-						D3D9ClientSurface(LPDIRECT3DDEVICE9 pDevice, const char* name = NULL);
+							SurfNative(LPDIRECT3DRESOURCE9 pSrf, DWORD Flags);
+							~SurfNative();
 
-						// Destroy the class and release the texture (pTex) if exists. Value of Reference counter doesn't matter.
-						~D3D9ClientSurface();
+	void					AddMap(DWORD id, LPDIRECT3DTEXTURE9 pMap);
+	void					AddSubSurface(LPDIRECT3DSURFACE9 pSub);
 
-	void				ConvertSurface(DWORD attrib);
-	void				CreateSurface(int w, int h, DWORD attrib);
-	void				MakeBackBuffer(LPDIRECT3DSURFACE9);
-	void				MakeEmptySurfaceEx(UINT Width, UINT Height, DWORD Usage=0, D3DFORMAT Format=D3DFMT_X8R8G8B8, D3DPOOL pool=D3DPOOL_SYSTEMMEM, DWORD Flags=0);
-	void				MakeEmptyTextureEx(UINT Width, UINT Height, DWORD Usage=0, D3DFORMAT Format=D3DFMT_X8R8G8B8);
-	void				MakeDepthStencil();
+	const D3DSURFACE_DESC*	GetDesc() const { return &desc; }
+	bool					GenerateMipMaps();
+	bool					Decompress();
+	LPDIRECT3DTEXTURE9		GetGDICache(DWORD Flags);
+	void					IncRef() { RefCount++; }
+	bool					DecRef() { RefCount--; return RefCount <= 0; }
 
-	bool				GetDesc(D3DSURFACE_DESC *);
-	bool				GenerateMipMaps();
+	void					Reload();
 
-	bool				LoadSurface(const char *fname, DWORD flags, bool bDecompress=false);
-	bool				LoadTexture(const char *fname);
-	void				SaveSurface(const char *fname);
-	void				LoadSpecials(const char *fname);
-	bool				LoadSpecialTexture(const char *fname, const char *ext, int id);
-	void				Reload();
+	DWORD					GetMipMaps() const { return Mipmaps; }
+	DWORD					GetWidth() const { return desc.Width; }
+	DWORD					GetHeight() const { return desc.Height; }
+	DWORD					GetOAPIFlags() const { return Flags; }
+	DWORD					GetType() const { return (DWORD)type; }
+	DWORD					GetSizeInBytes();
 
-	DWORD				GetMipMaps();
-	DWORD				GetWidth();
-	DWORD				GetHeight();
-	DWORD				GetSizeInBytes();
+	const char*				GetName() const { return name; }
+	void					SetName(const char*);
+	HDC						GetDC();
+	void					ReleaseDC(HDC);
 
-	void				IncRef();	// Increase surface reference counter
-	bool				Release();	// Decrease the counter
-	int					RefCount() const { return Refs; }
+	bool					HasSubSurface() const { return (pSub != NULL); }
+	bool					IsGDISurface() const;
+	bool					IsCompressed() const;
+	bool					IsBackBuffer() const;
+	bool					IsTexture() const { return (type == D3DRTYPE_TEXTURE); }
+	bool					IsRenderTarget() const;
+	bool					Is3DRenderTarget() const;
+	bool					IsPowerOfTwo() const;
+	bool					IsSystemMem() const { return (desc.Pool == D3DPOOL_SYSTEMMEM); }
+	bool					IsDynamic() const { return (desc.Usage & D3DUSAGE_DYNAMIC) != 0; }
+	bool					IsAdvanced() const { return (Flags & OAPISURFACE_MAPS); }
+	bool					IsColorKeyEnabled() const { return (ColorKey != SURF_NO_CK); }
 
-	const char *		GetName() const { return name; }
-	void				SetName(const char *);
+	LPDIRECT3DSURFACE9		GetSubSurface();
+	LPDIRECT3DRESOURCE9		GetResource() const { return pResource; }
+	LPDIRECT3DSURFACE9		GetDepthStencil() const { return pSub; }
+	LPDIRECT3DSURFACE9		GetSurface();
+	LPDIRECT3DTEXTURE9		GetTexture() const;
+	LPDIRECT3DTEXTURE9		GetMap(int type) const { return pMap[type]; }
+	LPDIRECT3DTEXTURE9		GetMap(int type, int type2) const { return (pMap[type] ? pMap[type] : pMap[type2]); }
+	D3D9Pad*				GetPooledSketchPad();
+	void					SetColorKey(DWORD ck);			// Enable and set color key
 
-	inline bool			Exists() const { return (pSurf!=NULL); }
-	inline bool			HasSubSurface() const { return (pDCSub!=NULL); }
-	bool				IsCompressed();
-	bool				IsGDISurface();
-	bool				IsBackBuffer();
-	bool				IsTexture() const { return (pTex!=NULL); }
-	bool				IsRenderTarget();
-	bool				Is3DRenderTarget();
-	bool				IsPowerOfTwo() const;
-	inline bool			IsSystemMem() const { return (desc.Pool==D3DPOOL_SYSTEMMEM); }
-	inline bool			IsDynamic() const { return (desc.Usage&D3DUSAGE_DYNAMIC)!=0; }
-	inline bool			IsPlainSurface() const { return (desc.Usage==0 && pTex==NULL); }
-	inline bool			IsDualLayer() const { return (pDCSub!=NULL); }
-	inline bool			IsAdvanced() const { return bAdvanced; }
-	inline bool			IsColorKeyEnabled() const { return (ColorKey != 0); }
+	bool					Fill(LPRECT r, DWORD color);
 
-	DWORD				GetAttribs(int What=1);
-	LPDIRECT3DSURFACE9	GetDepthStencil();
-	LPDIRECT3DSURFACE9	GetSurface();
-	LPDIRECT3DTEXTURE9	GetMap(int type) const { return pMap[type]; }
-	LPDIRECT3DTEXTURE9	GetMap(int type, int type2) const { return (pMap[type] ? pMap[type] : pMap[type2]); }
+	DWORD					GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
+	DWORD					GetFormatSizeInBytes(D3DFORMAT Format, DWORD pixels);
 
-	LPDIRECT3DTEXTURE9	GetTexture();
-	LPDIRECT3DDEVICE9	GetDevice() const { return pDevice; }
-	int					GetSketchPadMode() const { return SketchPad; }
-	D3D9Pad *			GetD3D9Pad();
+	void					LogSpecs() const;
 
-	void				SetColorKey(DWORD ck);			// Enable and set color key
-
-	HDC					GetDC();
-	void				ReleaseDC(HDC);
-
-	HRESULT				AddQueue(D3D9ClientSurface *src, LPRECT s, LPRECT t);
-	HRESULT				FlushQueue();
-	void				CopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect, UINT ck=0);
-	HRESULT				GPUCopyRect(D3D9ClientSurface *src, LPRECT srcrect, LPRECT tgtrect);
-
-	bool				Fill(LPRECT r, DWORD color);
-	bool				Clear(DWORD color);
-
-	bool				BindGPU();
-	void				ReleaseGPU();
-	HRESULT				BeginBlitGroup();
-	void				EndBlitGroup();
-	int					GetQueueSize();
-
-	void				PrintError(int err);
-
-private:
-
-	bool				ConvertToRenderTargetTexture();
-	bool				ConvertToRenderTarget(bool bLock=false);
-	bool				ConvertToPlain();
-	bool				ConvertToTexture(bool bDynamic=false);
-	void				SyncSubSurface();
-	void				CreateSubSurface();
-	bool				CreateName(char *out, int len, const char *fname, const char *id);
-	void				Decompress(DWORD Attribs=0);
-	DWORD				GetTextureSizeInBytes(LPDIRECT3DTEXTURE9 pT);
-	DWORD				GetSizeInBytes(D3DFORMAT Format, DWORD pixels);
-	HDC					GetDCHard();
-	void				ReleaseDCHard(HDC hDC);
-	void				SetupViewPort();
-	void				LogSpecs(char *name);
-	void				Clear();
 
 	// -------------------------------------------------------------------------------
-	char				name[128];
-	bool				bCompressed;	// True if the surface is compressed
-	bool				bDCOpen;		// DC is Open. This is TRUE between GetDC() and ReleaseDC() calls.
-	bool				bHard;			// hDC is acquired using GetDCHard()
-	bool				bBltGroup;		// BlitGroup operation is active
-	bool				bBackBuffer;
-	bool				bLockable;
-	bool				bMainDC;
-	bool				bDCSys;
-	bool				bBltSys;
-	bool				bAdvanced;		// Additional textures maps has been loaded
-	int					Refs;
-	int					Initial;		// Initial creation Attributes flags
-	int					Active;			// Active Attribute flags
-	int					SketchPad;		// Currently Active Sketchpad 0=None, 1=GDI, 2=GPU
-	int					iBindCount;		// GPU Bind reference counter
-	int					ErrWrn;
-	D3DSURFACE_DESC		desc;
-	LPDIRECT3DSURFACE9	pStencil;
-	LPDIRECT3DSURFACE9	pSurf;		// This is a pointer to a plain surface or a pointer to the first level in a texture
-	LPDIRECT3DTEXTURE9	pTex;		// This is a NULL if Type==D3D9S_PLAIN or Creation==D3D9C_BACKBUF
-	LPDIRECT3DSURFACE9	pDCSub;		// Containing a temporary system memory copy of a render target texture
-	LPDIRECT3DTEXTURE9	pMap[MAP_MAX_COUNT];
-	LPDIRECT3DDEVICE9	pDevice;
-	D3DXCOLOR			ClrKey;
-	DWORD				ColorKey;
-	//DWORD				Flags;
-	DWORD				GDIBltCtr;
-	LPD3DXMATRIX		pVP;
-	D3DVIEWPORT9 *		pViewPort;
-	HFONT				hDefFont;
-	double				GetDCTime;
-	D3D9Pad *			pSkp;
 
-	ID3DXRenderToSurface *pRTS;
-
-	// Rendering pipeline configuration. Applies to every instance of this class
-	//
-	static D3D9Client * gc;
-	static ID3DXEffect*	FX;
-	static D3DXHANDLE	eTech;
-	static D3DXHANDLE	eFlush;
-	static D3DXHANDLE	eSketch;
-	static D3DXHANDLE	eRotate;
-	static D3DXHANDLE	eVP;		// Transformation matrix
-	static D3DXHANDLE	eColor;		// Color key
-	static D3DXHANDLE	eTex0;		// Source Texture
-	static D3DXHANDLE	eSize;
-	static D3DXHANDLE	eKey;
-	static WORD *		Index;
-	static GPUBLITVTX * pGPUVtx;
-	static WORD			GPUBltIdx;
-	static D3D9ClientSurface *pPrevSrc;
+	char					name[128];				// Surface name
+	D3DSURFACE_DESC			desc;					// Surface size and format description
+	D3DRESOURCETYPE			type;					// Resource type
+	LPDIRECT3DTEXTURE9		pGDICache;				// Low level GDI cache for surface syncing
+	LPDIRECT3DSURFACE9		pSub;					// Sublayer or DepthStencil surface
+	LPDIRECT3DSURFACE9		pTexSurf;				// Texture "surface" level cache
+	LPDIRECT3DRESOURCE9		pResource;				// Main resource
+	LPDIRECT3DTEXTURE9		pMap[MAP_MAX_COUNT];	// Additional texture maps _norm, _rghn, _spec, etc...
+	LPDIRECT3DDEVICE9		pDevice;
+	DWORD					ColorKey;
+	DWORD					Flags;					// Surface Flags/Attribs
+	DWORD					Mipmaps;				// Mipmap count. 1 = no mipmaps
+	int						RefCount;
+	D3D9Pad*				pSkp;					// Pooled sketchpad interface cache
+	HDC						hDC;
 };
 
 

@@ -60,7 +60,7 @@ const char *_PTR(const void *p);
 
 #define PI 3.141592653589793238462643383279
 
-#define SURFACE(x) ((class D3D9ClientSurface *)x)
+#define SURFACE(x) ((class SurfNative *)x)
 
 // ------------------------------------------------------------------------------------
 // Vertex Declaration equal to NTVERTEX
@@ -625,6 +625,7 @@ struct AutoFile
 // Miscellaneous helper functions
 // ------------------------------------------------------------------------------------
 
+#define DELETE_SURFACE(p) { if (p) { delete ((SurfNative*)p); p = NULL; } }
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETEA(p)  { if(p) { delete []p;     (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }

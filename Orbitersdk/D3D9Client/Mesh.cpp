@@ -201,7 +201,7 @@ D3D9Mesh::D3D9Mesh(const char *fname) : D3D9Effect()
 		oapiDeleteMesh(hMesh);
 	}
 
-	MeshCatalog->Add(this);
+	MeshCatalog.insert(this);
 	pBuf->Map(pDev);
 }
 
@@ -212,7 +212,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig, float
 	Null(meshName);
 	LoadMeshFromHandle(hMesh, reorig, scale);
 	bIsTemplate = asTemplate;
-	MeshCatalog->Add(this);
+	MeshCatalog.insert(this);
 	pBuf->Map(pDev);
 }
 
@@ -235,7 +235,7 @@ D3D9Mesh::D3D9Mesh(DWORD groups, const MESHGROUPEX **hGroup, const SURFHANDLE *h
 
 	nMtrl = 0;
 	nTex = nGrp+1;
-	Tex = new LPD3D9CLIENTSURFACE[nTex];
+	Tex = new lpSurfNative[nTex];
 	Tex[0] = 0; // 'no texture'
 	for (DWORD i=1;i<nTex;i++) Tex[i] = SURFACE(hSurf[i-1]);
 
@@ -249,7 +249,7 @@ D3D9Mesh::D3D9Mesh(DWORD groups, const MESHGROUPEX **hGroup, const SURFHANDLE *h
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(this);
+	MeshCatalog.insert(this);
 
 	UpdateBoundingBox();
 	CheckMeshStatus();
@@ -260,7 +260,7 @@ D3D9Mesh::D3D9Mesh(DWORD groups, const MESHGROUPEX **hGroup, const SURFHANDLE *h
 
 // ===========================================================================================
 //
-D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSurface *pTex) : D3D9Effect()
+D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, SurfNative *pTex) : D3D9Effect()
 {
 	Null();
 
@@ -268,7 +268,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSu
 	nGrp   = 1;
 	Grp    = new GROUPREC[nGrp]; memset(Grp, 0, sizeof(GROUPREC) * nGrp);
 	nTex   = 2;
-	Tex	   = new LPD3D9CLIENTSURFACE[nTex];
+	Tex	   = new lpSurfNative[nTex];
 	Tex[0] = 0; // 'no texture'
 	Tex[1] = pTex;
 	nMtrl  = 1;
@@ -284,7 +284,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, D3D9ClientSu
 
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
-	MeshCatalog->Add(this);
+	MeshCatalog.insert(this);
 
 	UpdateBoundingBox();
 	CheckMeshStatus();
@@ -323,7 +323,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 
 	// -----------------------------------------------------------------------
 	nTex = oapiMeshTextureCount(hMesh) + 1;	assert(nTex == hTemp.nTex);
-	Tex = new LPD3D9CLIENTSURFACE[nTex];
+	Tex = new lpSurfNative[nTex];
 	Tex[0] = 0; // 'no texture'
 	for (DWORD i = 1; i<nTex; i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
 
@@ -337,7 +337,7 @@ D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 	D3DXMatrixIdentity(&mTransform);
 	D3DXMatrixIdentity(&mTransformInv);
 
-	MeshCatalog->Add(this);
+	MeshCatalog.insert(this);
 
 	UpdateBoundingBox();
 	CheckMeshStatus();
@@ -352,8 +352,8 @@ D3D9Mesh::~D3D9Mesh()
 {
 	_TRACE;
 
-	if (MeshCatalog->Remove(this)) LogAlw("Mesh %s Removed from catalog", _PTR(this));
-	else 						   LogErr("Mesh %s wasn't in meshcatalog", _PTR(this));
+	if (MeshCatalog.erase(this)) LogAlw("Mesh %s Removed from catalog", _PTR(this));
+	else 						 LogErr("Mesh %s wasn't in meshcatalog", _PTR(this));
 
 	Release();
 
@@ -413,7 +413,7 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 
 	// -----------------------------------------------------------------------
 	nTex = oapiMeshTextureCount(hMesh) + 1;
-	Tex = new LPD3D9CLIENTSURFACE[nTex];
+	Tex = new lpSurfNative[nTex];
 	Tex[0] = 0; // 'no texture'
 	for (DWORD i = 1; i<nTex; i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
 	// -----------------------------------------------------------------------
@@ -456,7 +456,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 
 	// -----------------------------------------------------------------------
 	nTex = oapiMeshTextureCount(hMesh) + 1;
-	Tex = new LPD3D9CLIENTSURFACE[nTex];
+	Tex = new lpSurfNative[nTex];
 	Tex[0] = 0; // 'no texture'
 	for (DWORD i = 1; i<nTex; i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
 
@@ -482,7 +482,7 @@ void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *
 //
 void D3D9Mesh::ReloadTextures()
 {
-	for (UINT i = 0; i < nTex; i++) if (Tex[i]) Tex[i]->Reload();
+	for (UINT i = 0; i < nTex; i++) if (Tex[i]) SURFACE(Tex[i])->Reload();
 }
 
 // ===========================================================================================
@@ -897,7 +897,7 @@ void D3D9Mesh::SetMFDScreenId(DWORD idx, WORD id)
 
 // ===========================================================================================
 //
-bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
+bool D3D9Mesh::SetTexture(DWORD texidx, SURFHANDLE tex)
 {
 	_TRACE;
 	if (!IsOK()) return false;
@@ -905,7 +905,7 @@ bool D3D9Mesh::SetTexture(DWORD texidx, LPD3D9CLIENTSURFACE tex)
 		LogErr("D3D9Mesh::SetTexture(%u, %s) index out of range",texidx, _PTR(tex));
 		return false;
 	}
-	Tex[texidx] = tex;
+	Tex[texidx] = (lpSurfNative)tex;
 	LogBlu("D3D9Mesh(%s)::SetTexture(%u, %s) (%s)", _PTR(this), texidx, _PTR(tex), SURFACE(tex)->GetName());
 	CheckMeshStatus();
 	return true;
@@ -1450,7 +1450,7 @@ void D3D9Mesh::Render(const LPD3DXMATRIX pW, int iTech, LPDIRECT3DCUBETEXTURE9 *
 	D3D9Stats.Mesh.Meshes++;
 
 	D3D9MatExt *mat, *old_mat = NULL;
-	LPD3D9CLIENTSURFACE old_tex = NULL;
+	SURFHANDLE old_tex = NULL;
 
 	pDev->SetVertexDeclaration(pMeshVertexDecl);
 	pDev->SetStreamSource(0, pBuf->pVB, 0, sizeof(NMVERTEX));
@@ -1912,7 +1912,7 @@ void D3D9Mesh::RenderSimplified(const LPD3DXMATRIX pW, LPDIRECT3DCUBETEXTURE9 *p
 	HR(D3D9Effect::FX->SetBool(D3D9Effect::eBaseBuilding, bSP));
 
 	D3D9MatExt *mat, *old_mat = NULL;
-	LPD3D9CLIENTSURFACE old_tex = NULL;
+	SURFHANDLE old_tex = NULL;
 	TexFlow FC;	reset(FC);
 
 	pDev->SetVertexDeclaration(pMeshVertexDecl);
@@ -2202,7 +2202,7 @@ void D3D9Mesh::RenderFast(const LPD3DXMATRIX pW, int iTech)
 	D3D9Stats.Mesh.Meshes++;
 
 	D3D9MatExt *mat, *old_mat = NULL;
-	LPD3D9CLIENTSURFACE old_tex = NULL;
+	SURFHANDLE old_tex = NULL;
 	LPDIRECT3DTEXTURE9 pEmis_old = NULL;
 
 	pDev->SetVertexDeclaration(pMeshVertexDecl);
@@ -2518,7 +2518,7 @@ void D3D9Mesh::RenderBaseTile(const LPD3DXMATRIX pW)
 	D3DXVECTOR4 Field = D9LinearFieldOfView(scn->GetProjectionMatrix());
 
 	D3D9MatExt *mat, *old_mat = NULL;
-	LPD3D9CLIENTSURFACE old_tex = NULL;
+	SURFHANDLE old_tex = NULL;
 	LPDIRECT3DTEXTURE9  pNorm = NULL;
 
 	pDev->SetVertexDeclaration(pMeshVertexDecl);

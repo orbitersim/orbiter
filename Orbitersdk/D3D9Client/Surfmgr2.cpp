@@ -1543,7 +1543,7 @@ void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 // -----------------------------------------------------------------------
 
 template<>
-HSURFNATIVE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level, int flags)
+SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level, int flags)
 {
 	bool bOk = false;
 	LPDIRECT3DTEXTURE9 pTex = NULL;
@@ -1572,7 +1572,7 @@ HSURFNATIVE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int leve
 		}
 	}
 
-	if (bOk && pTex) return HSURFNATIVE(pTex);
+	if (bOk && pTex) return SURFHANDLE(pTex);
 	return NULL;
 }
 

@@ -117,13 +117,13 @@ protected:
 	int np; // number of current particles
 	int stride; // number of particles rendered simultaneously
 	D3DXMATRIX mWorld; // ground shadow related matrix
-	LPD3D9CLIENTSURFACE tex; // particle texture
+	SURFHANDLE tex; // particle texture
 	double ipht2;
 
 protected:
 	oapi::D3D9Client *pGC;					// pointer to graphics client
-	static LPD3D9CLIENTSURFACE deftex;		// default particle texture
-	static LPD3D9CLIENTSURFACE deftexems;	// default particle texture
+	static SURFHANDLE deftex;		// default particle texture
+	static SURFHANDLE deftexems;	// default particle texture
 	static bool bShadows;					// render particle shadows
 };
 

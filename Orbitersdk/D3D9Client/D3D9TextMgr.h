@@ -29,7 +29,7 @@
 #include "AABBUtil.h"
 
 
-class D3D9ClientSurface;
+class SurfNative;
 
 // ----------------------------------------------------------------------------------------
 //

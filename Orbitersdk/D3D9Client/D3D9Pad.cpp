@@ -315,27 +315,6 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 // Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
 // BeginDrawing() must be called
 //
-D3D9Pad::D3D9Pad(const char *_name, HSURFNATIVE hSrf) : Sketchpad3(hSrf),
-_isSaveBuffer(false),
-_saveBuffer(NULL),
-_saveBufferSize(0)
-{
-#ifdef SKPDBG 
-	Log("#### Sketchpad Interface Created (Native)");
-#endif
-	if (_name) strcpy_s(name, 32, _name);
-	else strcpy_s(name, 32, "NoName");
-	bNative = true;
-	Reset();
-	LoadDefaults();
-}
-
-
-
-// ===============================================================================================
-// Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
-// BeginDrawing() must be called
-//
 D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
 	_isSaveBuffer(false),
 	_saveBuffer(NULL),
@@ -587,7 +566,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 {
 
 	// Check that this is the top one. Only do the check for ones created with oapiGetSketchpad()
-	if (GetSurface()) assert(gc->GetTopInterface() == this);
+	//if (GetSurface()) assert(gc->GetTopInterface() == this);
 
 	// If the queue is filling up, Flush it
 	//
@@ -779,7 +758,7 @@ SkpColor D3D9Pad::ColorComp(const SkpColor &c) const
 //
 HDC D3D9Pad::GetDC()
 {
-	if (GetSurface()) SURFACE(GetSurface())->PrintError(ERR_DC_NOT_AVAILABLE);
+	//assert(false);
 	return NULL;
 }
 
