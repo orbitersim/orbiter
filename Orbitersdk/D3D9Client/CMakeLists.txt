@@ -152,12 +152,12 @@ add_library(D3D9Client MODULE
 
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
-	${DXSDK_DIR}Include
+	${DXSDK_DIR}/Include
 )
 
 target_link_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_LIB_DIR}
-	${DXSDK_DIR}Lib/x64
+	${DXSDK_LIB_DIR}
 )
 
 target_link_libraries(D3D9Client

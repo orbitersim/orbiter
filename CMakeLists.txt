@@ -2,23 +2,33 @@
 
 cmake_minimum_required(VERSION 3.10)
 
+# set the project name and version
+project(D3D9Client VERSION 31.0)
+
 # Additional compiler flags
 set(Flags "/MP")
+
+# Check build platform
+if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
+	set(BUILD64 1)
+	set(ARCH "x64")
+else()
+	set(BUILD64 0)
+	set(ARCH "x86")
+endif()
 
 # Location of DirectX SDK
 # set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
 
 if (NOT "$ENV{DXSDK_DIR}" STREQUAL "")
-    set(DXSDK_DIR "$ENV{DXSDK_DIR}")
+	file(TO_CMAKE_PATH "$ENV{DXSDK_DIR}" DXSDK_DIR)
 else()
-    set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/")
+    set(DXSDK_DIR "C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)")
 endif()
+set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
 
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/include)
 set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
-
-# set the project name and version
-project(D3D9Client VERSION 31.0)
 
 add_subdirectory(Orbitersdk/D3D9Client)
 add_subdirectory(Orbitersdk/samples/DX9ExtMFD)
