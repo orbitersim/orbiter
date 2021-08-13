@@ -389,10 +389,10 @@ add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
 add_subdirectory(OVP)
 add_subdirectory(Sound)
+add_subdirectory(Html)
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)
-	add_subdirectory(Html)
 endif()
 
 # =============================================================================
