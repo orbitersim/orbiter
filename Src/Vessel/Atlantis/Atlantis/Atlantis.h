@@ -220,7 +220,8 @@ const VECTOR3 ORBITER_DOCKPOS      = { 0.0, 2.40, 10.15};
 typedef struct {
 	HINSTANCE hDLL;
 	SURFHANDLE tkbk_label;
-	HFONT font[1];
+	oapi::Font *font[1];
+	oapi::Brush* brush[1];
 } GDIParams;
 
 class Atlantis_Tank;

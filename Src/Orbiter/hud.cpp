@@ -74,7 +74,7 @@ SURFHANDLE HUD::LoadTexture (int idx)
 		case 3: strcat (cbuf, "_blue"); break;
 	}
 	strcat (cbuf, ".dds");
-	return gc->clbkLoadTexture (cbuf, 0x4);
+	return gc->clbkLoadSurface(cbuf, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
 }
 
 void HUD::Draw (oapi::Sketchpad *skp)

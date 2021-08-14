@@ -5390,6 +5390,7 @@ OAPIFUNC SURFHANDLE oapiCreateSurface (int width, int height);
 	* \sa oapiDestroySurface
 	*/
 OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib);
+OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib);
 
 	/**
 	* \brief Create a surface from a bitmap. Bitmap surfaces are typically used for blitting
