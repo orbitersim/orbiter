@@ -419,7 +419,7 @@ double ElevationManager::Elevation (double lat, double lng, int reqlvl, std::vec
 	return e*elev_res;
 }
 
-void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16* pelev, INT16 *elev, double *emean) const
+void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean) const
 {
 	int i, j, nmean;
 	int nlng = 2 << lvl;
@@ -441,7 +441,7 @@ void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, in
 	int plat0 = -1000, plng0 = -1000;
 	bool pcelldiag = false;
 
-	INT16 *elev_base = elev + elev_stride+1;
+	float *elev_base = elev + elev_stride+1;
 	INT16 *pelev_base = pelev + elev_stride+1;
 	if (emean) {
 		*emean = 0.0;
@@ -511,7 +511,7 @@ void ElevationManager::ElevationGrid (int ilat, int ilng, int lvl, int pilat, in
 			}
 			plat0 = lat0;
 			plng0 = lng0;
-			elev_base[i*elev_stride+j] = (INT16)e;
+			elev_base[i*elev_stride+j] = (float)e;
 			if (emean && i >= 0 && j >= 0 && i <= elev_grid && j <= elev_grid) {
 				*emean += e;
 				nmean++;
