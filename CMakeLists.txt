@@ -249,6 +249,11 @@ option(ORBITER_MAKE_DOC
 	OFF
 )
 
+option(ORBITER_MAKE_TESTS
+	"Build unit tests"
+	ON
+)
+
 option(ORBITER_MAKE_SDK_SAMPLES
 	"Build the SDK sample projects"
 	OFF
@@ -389,10 +394,10 @@ add_subdirectory(Utils)
 add_subdirectory(Orbitersdk)
 add_subdirectory(OVP)
 add_subdirectory(Sound)
+add_subdirectory(Html)
 
 if(ORBITER_MAKE_DOC)
 	add_subdirectory(Doc)
-	add_subdirectory(Html)
 endif()
 
 # =============================================================================
@@ -439,3 +444,8 @@ cpack_add_component(RuntimeLibraries
 # for the packages. This needs to be fixed
 
 #set(CPACK_PRE_BUILD_SCRIPTS ${ORBITER_SOURCE_ROOT_DIR}/cmake/cpack_install.cmake)
+
+if (ORBITER_MAKE_TESTS)
+      enable_testing()
+      add_subdirectory(Tests)
+endif()

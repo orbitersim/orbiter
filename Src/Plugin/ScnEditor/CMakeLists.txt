@@ -19,21 +19,36 @@ target_link_libraries(ScnEditor
 	comctl32.lib
 )
 
+set_target_properties(ScnEditor
+	PROPERTIES
+	FOLDER Modules
+)
+
+# Deploy the API header file
+add_custom_command(
+	OUTPUT ${ORBITER_BINARY_SDK_DIR}/include/ScnEditorAPI.h
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${ORBITER_BINARY_SDK_DIR}/include
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/ScnEditorAPI.h ${ORBITER_BINARY_SDK_DIR}/include
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ScnEditorAPI.h
+)
+add_custom_target(deploy_api
+	DEPENDS ${ORBITER_BINARY_SDK_DIR}/include/ScnEditorAPI.h
+)
+
 add_dependencies(ScnEditor
 	${OrbiterTgt}
 	Orbitersdk
 	DlgCtrl
-)
-
-set_target_properties(ScnEditor
-	PROPERTIES
-	FOLDER Modules
+	deploy_api
 )
 
 # Installation
 install(TARGETS ScnEditor
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+)
+install(FILES ScnEditorAPI.h
+	DESTINATION ${ORBITER_INSTALL_SDK_DIR}/include
 )
 
 add_subdirectory(Help)

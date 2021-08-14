@@ -135,7 +135,7 @@ CFG_DEBUGPRM CfgDebugPrm_default = {
 	0,			// ShutdownMode (0=deallocate memory)
 	0.0,		// fixed time step (0=variable)
 	0,			// timer mode (0=auto)
-	true,       // bDisableSmoothFont (disable font smoothing)
+	false,      // bDisableSmoothFont (don't disable font smoothing)
 	false,      // bForceReenableSmoothFont (don't force reenabling font smoothing on exit)
 	2,          // bHtmlScnDesc (use html browser window for scenario desciption in launchpad)
 	true,       // bSaveExitScreen (capture screen on scenario exit)
