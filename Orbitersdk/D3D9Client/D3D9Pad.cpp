@@ -587,7 +587,7 @@ void D3D9Pad::SetupDevice(Topo tNew)
 {
 
 	// Check that this is the top one. Only do the check for ones created with oapiGetSketchpad()
-	if (GetSurface()) assert(gc->GetTopInterface() == this);
+	//if (GetSurface()) assert(gc->GetTopInterface() == this);
 
 	// If the queue is filling up, Flush it
 	//
@@ -779,7 +779,7 @@ SkpColor D3D9Pad::ColorComp(const SkpColor &c) const
 //
 HDC D3D9Pad::GetDC()
 {
-	if (GetSurface()) SURFACE(GetSurface())->PrintError(ERR_DC_NOT_AVAILABLE);
+	//assert(false);
 	return NULL;
 }
 
@@ -1178,6 +1178,11 @@ void D3D9Pad::Line (int x0, int y0, int x1, int y1)
 //
 void D3D9Pad::FillRect(int l, int t, int r, int b, SkpColor &c)
 {
+	if (r == l) return;
+	if (b == t) return;
+	if (r < l) swap(r, l);
+	if (b < t) swap(t, b);
+
 #ifdef SKPDBG 
 	Log("FillRect()");
 #endif
@@ -1195,8 +1200,10 @@ void D3D9Pad::FillRect(int l, int t, int r, int b, SkpColor &c)
 //
 void D3D9Pad::Rectangle (int l, int t, int r, int b)
 {
-	if (r <= l) return;
-	if (b <= t) return;
+	if (r == l) return;
+	if (b == t) return;
+	if (r < l) swap(r, l);
+	if (b < t) swap(t, b);
 
 #ifdef SKPDBG 
 	Log("Rectangle()");
@@ -1227,8 +1234,10 @@ void D3D9Pad::Rectangle (int l, int t, int r, int b)
 //
 void D3D9Pad::Ellipse (int x0, int y0, int x1, int y1)
 {
-	if (x1 <= x0) return;
-	if (y1 <= y0) return;
+	if (x1 == x0) return;
+	if (y1 == y0) return;
+	if (x1 < x0) swap(x0, x1);
+	if (y1 < y0) swap(y0, y1);
 
 #ifdef SKPDBG 
 	Log("Ellipse()");
