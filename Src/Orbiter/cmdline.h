@@ -5,22 +5,65 @@
 #define __cmdline_h
 
 #include <windows.h>
+#include <vector>
+#include <string>
 
 class Orbiter;
 
+// ----------------------------------------------------------------------
+// Generic command line parser
+
+class CommandLine
+{
+public:
+	CommandLine(CommandLine const&) = delete;
+	void operator=(CommandLine const&) = delete;
+
+	const char* CmdLine() const;
+
+protected:
+	struct Key {
+		UINT id;
+		PSTR longName;
+		char shortName;
+		bool hasArgument;
+	};
+	struct Option {
+		Key* key;
+		std::string strKey;
+		std::string strVal;
+	};
+	std::vector<Option> optionList;
+
+	CommandLine(const PSTR cmdLine);
+	void ParseCmdLine(const PSTR cmdLine);
+	bool ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option);
+	void MapKeys();
+	void ApplyOptions();
+	virtual void ApplyOption(const Key* key, const std::string& value) {}
+	virtual std::vector<Key>& KeyList() const = 0;
+
+private:
+	std::string m_cmdLine;
+};
+
+
+// ----------------------------------------------------------------------
+// Orbiter-specific command line parser
+
 namespace orbiter {
 
-	class CommandLine
+	class CommandLine : public ::CommandLine
 	{
 	public:
-		CommandLine(Orbiter* pOrbiter, const PSTR cmdLine);
-		const char* LaunchScenario() const;
+		static CommandLine& Instance() { return InstanceImpl(); }
+		static void Parse(Orbiter* pOrbiter, const PSTR cmdLine) { InstanceImpl(pOrbiter, cmdLine); }
 		bool KeepLog() const;
+		const std::string& LaunchScenario() const { return m_launchScenario; }
+		CommandLine(CommandLine const&) = delete;
+		void operator=(CommandLine const&) = delete;
 
 	protected:
-		void ParseCmdLine(const PSTR cmdLine);
-
-	private:
 		enum KeyId {
 			KEY_HELP,
 			KEY_SCENARIO,
@@ -29,22 +72,17 @@ namespace orbiter {
 			KEY_OPENVIDEO,
 			KEY_KEEPLOG
 		};
-		struct Key {
-			KeyId id;
-			PSTR longName;
-			char shortName;
-			bool hasArgument;
-		};
-		static Key m_keyList[];
+
+		virtual std::vector<Key>& KeyList() const;
+		virtual void ApplyOption(const Key* key, const std::string& value);
+		void PrintHelpAndExit() const;
+
+	private:
+		CommandLine(Orbiter* pOrbiter, const PSTR cmdLine);
+		static CommandLine& InstanceImpl(Orbiter* pOrbiter = 0, const PSTR cmdLine = 0);
 		Orbiter* m_pOrbiter;
 		std::string m_launchScenario;
 		bool m_keepLog;
-
-		Key* ParseKey(PSTR &cmdLine);
-		std::string ParseValue(PSTR &cmdLine);
-		void ApplyOption(const Key* key);
-		void ApplyOption(const Key* key, const std::string &value);
-		void PrintHelpAndExit();
 	};
 
 }

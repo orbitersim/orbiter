@@ -209,23 +209,25 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
 
-	// interpret command line
-	orbiter::CommandLine cmdLine(g_pOrbiter, strCmdLine);
+	// Parse command line
+	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
 
-	INITLOG ("Orbiter.log", cmdLine.KeepLog()); // init log file
+	// Initialise the log
+	INITLOG("Orbiter.log", orbiter::CommandLine::Instance().KeepLog()); // init log file
 #ifdef ISBETA
-	LOGOUT ("Build %s BETA [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
+	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());
 #else
-	LOGOUT ("Build %s [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
+	LOGOUT("Build %s [v.%06d]", __DATE__, GetVersion());
 #endif
+
 	// Initialise random number generator
 	//srand ((unsigned)time (NULL));
 	srand(12345);
-	LOGOUT ("Timer precision: %g sec", fine_counter_step);
+	LOGOUT("Timer precision: %g sec", fine_counter_step);
 
 	HRESULT hr;
 	// Create application
-	if (FAILED (hr = g_pOrbiter->Create (hInstance, strCmdLine))) {
+	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
 		LOGOUT("Application creation failed");
 		MessageBox (NULL, "Application creation failed!\nTerminating.",
 			"Orbiter Error", MB_OK | MB_ICONERROR);
@@ -235,7 +237,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
-	g_pOrbiter->Run (cmdLine.LaunchScenario());
+	g_pOrbiter->Run ();
 	delete g_pOrbiter;
 	return 0;
 }
@@ -300,13 +302,14 @@ Orbiter::Orbiter ()
     //m_bAppUseZBuffer  = TRUE;
     //m_fnConfirmDevice = ConfirmDevice;
 
-	timeBeginPeriod (1);
-	if (use_fine_counter = QueryPerformanceFrequency (&fine_counter_freq)) {
+	// Initialise timer
+	timeBeginPeriod(1);
+	if (use_fine_counter = QueryPerformanceFrequency(&fine_counter_freq)) {
 		double freq = fine_counter_freq.LowPart;
-		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart*4294967296.0;
-		fine_counter_step = 1.0/freq;
+		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart * 4294967296.0;
+		fine_counter_step = 1.0 / freq;
 	}
-	
+
 	nmodule         = 0;
 	pDI             = new DInput (this); TRACENEW
 	pConfig         = NULL;
@@ -364,6 +367,7 @@ Orbiter::Orbiter ()
 #ifdef NETCONNECT
 	OrbiterConnect::Startup();
 #endif // NETCONNECT
+
 }
 
 //-----------------------------------------------------------------------------
@@ -379,14 +383,12 @@ Orbiter::~Orbiter ()
 // Name: Create()
 // Desc: This method selects a D3D device
 //-----------------------------------------------------------------------------
-HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
+HRESULT Orbiter::Create (HINSTANCE hInstance)
 {
 	if (pMainDlg) return S_OK; // already created
 
 	HRESULT hr;
 	WNDCLASS wndClass;
-
-	cmdline = strCmdLine;
 
 	// Enable tab controls
 	InitCommonControls();
@@ -1007,13 +1009,14 @@ void Orbiter::ScreenToClient (POINT *pt) const
 // Name: Run()
 // Desc: Message-processing loop. Idle time is used to render the scene.
 //-----------------------------------------------------------------------------
-INT Orbiter::Run (const char *scenario)
+INT Orbiter::Run ()
 {
     // Recieve and process Windows messages
     BOOL  bGotMsg, bCanRender, bpCanRender = TRUE;
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
+	const char* scenario = orbiter::CommandLine::Instance().LaunchScenario().c_str();
 	if (scenario != NULL) {
 		Launch (scenario);
 	}

@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Astro.h"
 
+
 class DInput;
 class Config;
 class State;
@@ -103,7 +104,7 @@ public:
 	Orbiter ();
 	~Orbiter ();
 
-    HRESULT Create (HINSTANCE, TCHAR*);
+    HRESULT Create (HINSTANCE);
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
@@ -126,7 +127,7 @@ public:
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
 	void OpenVideoTab() { bStartVideoTab = true; }
-	INT Run (const char *scenario = 0);
+	INT Run ();
 	void SingleFrame ();
     void Pause (bool bPause);
 	void Freeze (bool bFreeze);
@@ -239,7 +240,6 @@ public:
 	inline char *HTexPath   (const char *name, const char *ext = 0)
 		{ return pConfig->HTexPath (name, ext); }
 	inline const char *ScnPath    (const char *name) { return pConfig->ScnPath (name); }
-	inline const char *CmdLine () const { return cmdline; }
 
 	FILE *OpenTextureFile (const char *name, const char *ext);
 	// return texture file handle. Searches in hightex and standard directories
@@ -422,7 +422,7 @@ private:
 	DWORD           viewW, viewH;  // render viewport dimensions
 	DWORD			viewBPP;       // render colour depth (bits per pixel)
 
-	char           *cmdline;       // orbiter command line
+	//char           *cmdline;       // orbiter command line
 	char            cfgpath[256];
 	int             cfglen;
 	char            simkstate[256];// accumulated simulated key state
