@@ -14,4 +14,6 @@ install(FILES CurrentState.htm CurrentState_img.htm
 	DESTINATION ${ORBITER_INSTALL_HTML_DIR}/Scenarios
 )
 
-add_subdirectory(Default)
+if(ORBITER_MAKE_DOC)
+	add_subdirectory(Default)
+endif()
