@@ -95,7 +95,7 @@ HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSur
 
 	DWORD attrib = OAPISURFACE_TEXTURE;
 	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
-	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS;	
+	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS | OAPISURFACE_NOALPHA;
 	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
 	//else			 attrib |= OAPISURFACE_MIPMAPS;
 
