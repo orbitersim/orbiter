@@ -125,7 +125,7 @@ public:
 	void InitRotationMode ();
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
-
+	void OpenVideoTab() { bStartVideoTab = true; }
 	INT Run (const char *scenario = 0);
 	void SingleFrame ();
     void Pause (bool bPause);
@@ -406,6 +406,7 @@ private:
 	BOOL            bEnableLighting;
 	bool			bUseStencil;   // render device provides stencil buffer (and user requests it)
 	bool            bKeepFocus;    // disable focus switch on mouse move (during rotations)
+	bool            bStartVideoTab; // Open Launchpad dialog on video tab
 	bool            bWINEenv;      // we are running under Linux/WINE
 	bool            ignorefirst;   // flag for first joystick action
 	long            plZ4;          // previous joystick throttle setting

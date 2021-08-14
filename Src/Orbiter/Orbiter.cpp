@@ -19,6 +19,7 @@
 #include <strstream>
 #include <iomanip>
 #include <io.h>
+#include "cmdline.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
 #include "Log.h"
@@ -110,7 +111,6 @@ BOOL		    g_bOutputFPS     = TRUE;
 BOOL            g_bOutputDim     = TRUE;
 bool		    g_bForceUpdate   = true;
 bool            g_bShowGrapple   = false;
-bool            startvideotab    = false;
 bool            g_bStateUpdate   = false;
 
 // Timing parameters
@@ -194,7 +194,7 @@ int _matherr(struct _exception *except )
 // WinMain()
 // Application entry containing message loop
 
-INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
+INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
 {
 #ifdef INLINEGRAPHICS
 	// determine whether another instance already exists
@@ -210,37 +210,9 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	g_pOrbiter = new Orbiter; // application instance
 
 	// interpret command line
-	char *scenario = 0;
-	bool keeplog = false;
-	startvideotab = false;
-	char *cbuf = new char[strlen(strCmdLine)+1]; TRACENEW
-	strcpy (cbuf, strCmdLine);
-	char *pc = strtok (cbuf, " ");
-	while (pc) {
-		if (pc[0] == '-') {
-			switch (pc[1]) {
-			case 's':
-				scenario = strtok (NULL, "\"");
-				g_pOrbiter->SetFastExit (true);
-				break;
-			case 'S':
-				scenario = strtok (NULL, "\"");
-				break;
-			case 'x':
-				g_pOrbiter->SetFastExit (true);
-				break;
-			case 'l':
-				keeplog = true;
-				break;
-			case 'v':
-				startvideotab = true;
-				break;
-			}
-		}
-		pc = strtok (NULL, " ");
-	}
+	orbiter::CommandLine cmdLine(g_pOrbiter, strCmdLine);
 
-	INITLOG ("Orbiter.log", keeplog); // init log file
+	INITLOG ("Orbiter.log", cmdLine.KeepLog()); // init log file
 #ifdef ISBETA
 	LOGOUT ("Build %s BETA [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
 #else
@@ -263,9 +235,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
-	g_pOrbiter->Run (scenario);
+	g_pOrbiter->Run (cmdLine.LaunchScenario());
 	delete g_pOrbiter;
-	delete []cbuf;
 	return 0;
 }
 
@@ -376,6 +347,7 @@ Orbiter::Orbiter ()
 	bCapture        = false;
 	bFastExit       = false;
 	bRoughType      = false;
+	bStartVideoTab  = false;
 	//lstatus.bkgDC   = 0;
 	cfglen          = 0;
 	ncustomcmd      = 0;
@@ -457,7 +429,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	
 	// Create the "launchpad" main dialog window
 	pMainDlg = new MainDialog (this); TRACENEW
-	hDlg     = pMainDlg->Create (startvideotab);
+	hDlg     = pMainDlg->Create (bStartVideoTab);
 
 #ifdef INLINEGRAPHICS
 	oclient = new OrbiterGraphics (this); TRACENEW
@@ -1038,7 +1010,7 @@ void Orbiter::ScreenToClient (POINT *pt) const
 INT Orbiter::Run (const char *scenario)
 {
     // Recieve and process Windows messages
-    BOOL  bGotMsg, bCanRender, bpCanRender;
+    BOOL  bGotMsg, bCanRender, bpCanRender = TRUE;
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
