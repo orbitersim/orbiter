@@ -544,15 +544,12 @@ bool SurfTile::LoadElevationData ()
 			if (!pelev_file) return false;
 
 			elev = new float[ndat];
-			INT16 *elev_temp = new INT16[ndat];
 
 			// submit ancestor data to elevation manager for interpolation
-			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev_temp);
+			mgr->GetClient()->ElevationGrid(hElev, ilat, ilng, lvl, pilat, pilng, plvl, pelev_file, elev);
 
 			// Convert to float
-			for (int i = 0; i < ndat; i++) elev[i] = float(elev_temp[i]) * float(tgt_res);
-
-			delete[] elev_temp;
+			for (int i = 0; i < ndat; i++) elev[i] *= float(tgt_res);
 		}
 
 		// Experimental Linear Interpolation
