@@ -299,7 +299,7 @@ void GraphicsClient::Render2DOverlay ()
 // ======================================================================
 
 bool GraphicsClient::ElevationGrid (ELEVHANDLE hElev, int ilat, int ilng, int lvl,
-	int pilat, int pilng, int plvl, INT16 *pelev, INT16 *elev, double *emean) const
+	int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean) const
 {
 	if (!hElev) return false;
 	ElevationManager *emgr = (ElevationManager*)hElev;

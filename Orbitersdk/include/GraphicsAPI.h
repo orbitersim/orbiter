@@ -1351,7 +1351,7 @@ public:
 	 *   i.e. the area of the destination tile must be contained in the ancestor area.
 	 */
 	bool ElevationGrid (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
-		int pilat, int pilng, int plvl, INT16 *pelev, INT16 *elev, double *emean=0) const;
+		int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean=0) const;
 
 	/**
 	 * \brief Filter elevation grid data
