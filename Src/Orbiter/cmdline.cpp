@@ -17,6 +17,16 @@ const char* CommandLine::CmdLine() const
 	return m_cmdLine.c_str();
 }
 
+bool CommandLine::GetOption(UINT id, const std::string** value) const
+{
+	for (auto it = optionList.cbegin(); it < optionList.cend(); it++)
+		if (it->key->id == id) {
+			*value = &it->strVal;
+			return true;
+		}
+	return false;
+}
+
 void CommandLine::ParseCmdLine(const PSTR cmdLine)
 {
 	PSTR pc = cmdLine;
@@ -143,14 +153,12 @@ orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, const PSTR cmdLine)
 {
 	m_keepLog = false;
 	m_launchScenario.clear();
+	m_fixedStep = 0.0;
+	m_runTime = 0.0;
+	m_frameCount = 0;
 
 	MapKeys();
 	ApplyOptions();
-}
-
-bool orbiter::CommandLine::KeepLog() const
-{
-	return m_keepLog;
 }
 
 std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
@@ -161,13 +169,20 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 		{ KEY_SCENARIOX, "scenariox", 's', true},
 		{ KEY_FASTEXIT, "fastexit", 'x', false},
 		{ KEY_OPENVIDEO, "openvideotab", 'v', false},
-		{ KEY_KEEPLOG, "keeplog", 'l', false}
+		{ KEY_KEEPLOG, "keeplog", 'l', false},
+		{ KEY_FIXEDSTEP, "fixedstep", 'f', true},
+		{ KEY_RUNTIME, "runtime", 'r', true},
+		{ KEY_FRAMECOUNT, "maxframes", '_', true}
 	};
 	return keyList;
 }
 
 void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 {
+	int res;
+	size_t s;
+	double f;
+
 	switch (key->id) {
 	case KEY_HELP:
 		PrintHelpAndExit();
@@ -188,6 +203,21 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 		m_launchScenario = value;
 		m_pOrbiter->SetFastExit(true);
 		break;
+	case KEY_FIXEDSTEP:
+		res = sscanf(value.c_str(), "%lf", &f);
+		if (res == 1)
+			m_fixedStep = f;
+		break;
+	case KEY_RUNTIME:
+		res = sscanf(value.c_str(), "%lf", &f);
+		if (res == 1)
+			m_runTime = f;
+		break;
+	case KEY_FRAMECOUNT:
+		res = sscanf(value.c_str(), "%zu", &s);
+		if (res == 1)
+			m_frameCount = s;
+		break;
 	}
 }
 
@@ -207,6 +237,9 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "\t--fastexit, -f: Exit Orbiter after simulation session\n";
 	std::cout << "\t--openvideotab, -v: Open Launchpad on video tab\n";
 	std::cout << "\t--keeplog, -l: Append log to previous session\n";
+	std::cout << "\t--fixedstep=<s>, -f <s>: Enforce fixed time step length (seconds)\n";
+	std::cout << "\t--runtime=<t>, -r <t>: Terminate session after <t> seconds\n";
+	std::cout << "\t--maxframes=<f>: Terminate session after <f> time frames\n";
 	std::cout << std::endl;
 
 	exit(0);

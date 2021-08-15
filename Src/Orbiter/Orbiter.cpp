@@ -237,6 +237,16 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
+	// Apply post-creation command line options
+	if (orbiter::CommandLine::Instance().FixedStep())
+		g_pOrbiter->Cfg()->CfgDebugPrm.FixedStep = orbiter::CommandLine::Instance().FixedStep();
+	if (orbiter::CommandLine::Instance().Runtime()) {
+		g_pOrbiter->Cfg()->CfgDemoPrm.bDemo = true;
+		g_pOrbiter->Cfg()->CfgDemoPrm.MaxDemoTime = orbiter::CommandLine::Instance().Runtime();
+	}
+	if (orbiter::CommandLine::Instance().FrameCount())
+		g_pOrbiter->Cfg()->CfgDemoPrm.MaxFrameCount = orbiter::CommandLine::Instance().FrameCount();
+
 	g_pOrbiter->Run ();
 	delete g_pOrbiter;
 	return 0;
@@ -1016,7 +1026,7 @@ INT Orbiter::Run ()
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
-	const char* scenario = orbiter::CommandLine::Instance().LaunchScenario().c_str();
+	const char* scenario = orbiter::CommandLine::Instance().LaunchScenario();
 	if (scenario != NULL) {
 		Launch (scenario);
 	}
@@ -2126,7 +2136,8 @@ void Orbiter::EndTimeStep (bool running)
 	g_bForceUpdate = false;                        // clear flag
 
 	// check for termination of demo mode
-	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime)
+	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime ||
+		pConfig->CfgDemoPrm.MaxFrameCount && td.FrameCount() >= pConfig->CfgDemoPrm.MaxFrameCount)
 		if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
 }
 
@@ -3157,7 +3168,7 @@ void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
 	SimT1_ofs = SimT1_inc = 0.0;
 	MJD_ref = MJD0 = MJD1 = mjd_ref;
 	fps = syst_acc = 0.0;
-	framecount = sys_tick = 0;
+	framecount = frame_tick = sys_tick = 0;
 	bWarpChanged = false;
 
 	fixed_step = (orbiter ? orbiter->Cfg()->CfgDebugPrm.FixedStep : 0.0);
@@ -3171,12 +3182,13 @@ void TimeData::BeginStep (double deltat, bool running)
 	iSysDT = 1.0/SysDT; // note that delta_ms==0 is trapped earlier
 
 	framecount++;
+	frame_tick++;
 	syst_acc += SysDT;
-	if ((int)SysT1 != sys_tick) {
-		fps = framecount/syst_acc;
-		framecount = 0;
+	if ((size_t)SysT1 != sys_tick) {
+		fps = frame_tick/syst_acc;
+		frame_tick = 0;
 		syst_acc = 0.0;
-		sys_tick = (int)SysT1;
+		sys_tick = (size_t)SysT1;
 	}
 
 	if (running) { // only advance simulation time if simulation is not paused

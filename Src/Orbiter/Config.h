@@ -255,6 +255,7 @@ struct CFG_DEMOPRM {
 	bool   bBkImage;			// show background image?
 	bool   bBlockExit;			// prevent from terminating orbiter?
 	double MaxDemoTime;			// maximum demo run time [s]
+	size_t MaxFrameCount;       // maximum number of time frames (0=unlimited)
 	double LPIdleTime;			// maximum launchpad idle time [s]
 };
 
@@ -303,6 +304,7 @@ char *readline (std::istream &is);
 bool GetItemString (std::istream &is, const char *label, char *val);
 bool GetItemReal   (std::istream &is, const char *label, double &val);
 bool GetItemInt    (std::istream &is, const char *label, int &val);
+bool GetItemSize   (std::istream& is, const char* label, size_t& val);
 bool GetItemHex    (std::istream &is, const char *label, int &val);
 bool GetItemBool   (std::istream &is, const char *label, bool &val);
 bool GetItemVector (std::istream &is, const char *label, Vector &val);
@@ -431,6 +433,7 @@ public:
 	bool GetString (char *category, char *val);
 	bool GetReal (char *category, double &val);
 	bool GetInt (char *category, int &val);
+	bool GetSize (char* category, size_t& val);
 	bool GetBool (char *category, bool &val);
 	bool GetVector (char *category, Vector &val);
 
@@ -438,6 +441,7 @@ private:
 	bool GetString (std::istream &is, char *category, char *val);
 	bool GetReal (std::istream &is, char *category, double &val);
 	bool GetInt (std::istream &is, char *category, int &val);
+	bool GetSize (std::istream& is, char* category, size_t& val);
 	bool GetBool (std::istream &is, char *category, bool &val);
 	bool GetVector (std::istream &is, char *category, Vector &val);
 

@@ -56,6 +56,7 @@ public:
 	void SetWarp (double warp, double delay = 0.0);
 	inline double Warp () const { return TWarp; }
 	inline bool WarpChanged () const { return bWarpChanged; }
+	inline size_t FrameCount() const { return framecount; }
 
 	double MJD (double simt) const { return MJD_ref + Day(simt); }
 	// Convert simulation time to MJD
@@ -84,8 +85,9 @@ private:
 	double  TWarpDelay;   // warp acceleration delay
 	bool    bWarpChanged; // time acceleration changed in last step?
 	bool    bFixedStep;   // use fixed time steps?
-	int     framecount;   // number of frames (for fps calculation)
-	int     sys_tick;     // flush index for fps calculation
+	size_t  framecount;   // number of frames since simulation start (including pause)
+	size_t  frame_tick;   // number of frames since last fps calculation
+	size_t  sys_tick;     // flush index for fps calculation
 	double  syst_acc;     // accumulated system time for fps calculation
 	double  fps;          // current frame rate [Hz]
 };

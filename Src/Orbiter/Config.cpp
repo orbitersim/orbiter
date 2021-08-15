@@ -216,6 +216,7 @@ CFG_DEMOPRM CfgDemoPrm_default = {
 	false,		// bBkImage (don't cover desktop with background image in demo mode)
 	false,		// bBlockExit (don't disable exit button in demo mode)
 	300.0,		// MaxDemoTime (max. runtime for a demo simulation [s])
+	0,          // MaxFrameCount (0 = unlimited)
 	15.0		// LPIdleTime (max demo idle time in launchpad window [s])
 };
 
@@ -359,6 +360,12 @@ bool GetItemInt (istream &is, const char *label, int &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
 	return (sscanf (g_cbuf, "%d", &val) == 1);
+}
+
+bool GetItemSize(istream& is, const char* label, size_t& val)
+{
+	if (!GetItemString(is, label, g_cbuf)) return false;
+	return (sscanf(g_cbuf, "%zu", &val) == 1);
 }
 
 bool GetItemHex (istream &is, const char *label, int &val)
@@ -710,6 +717,7 @@ Config::Config (char *fname)
 	GetBool (ifs, "BackgroundImage", CfgDemoPrm.bBkImage);
 	GetBool (ifs, "BlockExit", CfgDemoPrm.bBlockExit);
 	GetReal (ifs, "MaxDemoTime", CfgDemoPrm.MaxDemoTime);
+	GetSize (ifs, "MaxFrameCount", CfgDemoPrm.MaxFrameCount);
 	GetReal (ifs, "MaxLaunchpadIdleTime", CfgDemoPrm.LPIdleTime);
 
 	// record/playback parameters
@@ -1300,6 +1308,8 @@ BOOL Config::Write (const char *fname) const
 			ofs << "BlockExit = " << BoolStr (CfgDemoPrm.bBlockExit) << '\n';
 		if (CfgDemoPrm.MaxDemoTime != CfgDemoPrm_default.MaxDemoTime || bEchoAll)
 			ofs << "MaxDemoTime = " << CfgDemoPrm.MaxDemoTime << '\n';
+		if (CfgDemoPrm.MaxFrameCount != CfgDemoPrm_default.MaxFrameCount || bEchoAll)
+			ofs << "MaxFrameCount = " << CfgDemoPrm.MaxFrameCount << "\n";
 		if (CfgDemoPrm.LPIdleTime != CfgDemoPrm_default.LPIdleTime || bEchoAll)
 			ofs << "MaxLaunchpadIdleTime = " << CfgDemoPrm.LPIdleTime << '\n';
 	}
@@ -1544,6 +1554,12 @@ bool Config::GetInt (istream &is, char *category, int &val)
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
+bool Config::GetSize(istream& is, char* category, size_t& val)
+{
+	if (!GetString(is, category, g_cbuf)) return false;
+	return (sscanf(g_cbuf, "%zu", &val) == 1);
+}
+
 bool Config::GetBool (istream &is, char *category, bool &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
@@ -1583,6 +1599,14 @@ bool Config::GetInt (char *category, int &val)
 	ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetInt (ifs, category, val);
+}
+
+bool Config::GetSize(char* category, size_t& val)
+{
+	if (!Root) return false;
+	ifstream ifs(Root);
+	if (!ifs) return false;
+	return GetSize(ifs, category, val);
 }
 
 bool Config::GetBool (char *category, bool &val)

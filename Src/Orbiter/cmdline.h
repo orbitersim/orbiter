@@ -20,6 +20,7 @@ public:
 	void operator=(CommandLine const&) = delete;
 
 	const char* CmdLine() const;
+	bool GetOption(UINT id, const std::string** value) const;
 
 protected:
 	struct Key {
@@ -58,21 +59,29 @@ namespace orbiter {
 	public:
 		static CommandLine& Instance() { return InstanceImpl(); }
 		static void Parse(Orbiter* pOrbiter, const PSTR cmdLine) { InstanceImpl(pOrbiter, cmdLine); }
-		bool KeepLog() const;
-		const std::string& LaunchScenario() const { return m_launchScenario; }
+		bool KeepLog() const { return m_keepLog; }
+		double FixedStep() const { return m_fixedStep; }
+		double Runtime() const { return m_runTime; }
+		size_t FrameCount() const { return m_frameCount; }
+		const char* LaunchScenario() const {
+			return (m_launchScenario.size() ? m_launchScenario.c_str() : 0);
+		}
 		CommandLine(CommandLine const&) = delete;
 		void operator=(CommandLine const&) = delete;
 
-	protected:
 		enum KeyId {
 			KEY_HELP,
 			KEY_SCENARIO,
 			KEY_SCENARIOX,
 			KEY_FASTEXIT,
 			KEY_OPENVIDEO,
-			KEY_KEEPLOG
+			KEY_KEEPLOG,
+			KEY_FIXEDSTEP,
+			KEY_RUNTIME,
+			KEY_FRAMECOUNT
 		};
 
+	protected:
 		virtual std::vector<Key>& KeyList() const;
 		virtual void ApplyOption(const Key* key, const std::string& value);
 		void PrintHelpAndExit() const;
@@ -83,6 +92,9 @@ namespace orbiter {
 		Orbiter* m_pOrbiter;
 		std::string m_launchScenario;
 		bool m_keepLog;
+		double m_fixedStep;
+		double m_runTime;
+		size_t m_frameCount;
 	};
 
 }
