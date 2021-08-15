@@ -2138,7 +2138,7 @@ void Orbiter::EndTimeStep (bool running)
 	// check for termination of demo mode
 	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime ||
 		pConfig->CfgDemoPrm.MaxFrameCount && td.FrameCount() >= pConfig->CfgDemoPrm.MaxFrameCount)
-		if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
+		CloseSession();
 }
 
 bool Orbiter::Timejump (double _mjd, int pmode)
