@@ -46,6 +46,7 @@ public:
 	* \note Requires lvl > plvl. The parent tile parameters must be an actual parent of the target (i.e. target covers a sub-area of the parent)
 	*/
 	void ElevationGrid (int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean=0) const;
+	void ElevationGrid(int ilat, int ilng, int lvl, int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
 
 protected:
 	bool TileIdx (double lat, double lng, int lvl, int *ilat, int *ilng) const;

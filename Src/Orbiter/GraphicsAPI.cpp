@@ -309,6 +309,17 @@ bool GraphicsClient::ElevationGrid (ELEVHANDLE hElev, int ilat, int ilng, int lv
 
 // ======================================================================
 
+bool GraphicsClient::ElevationGrid(ELEVHANDLE hElev, int ilat, int ilng, int lvl,
+	int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean) const
+{
+	if (!hElev) return false;
+	ElevationManager* emgr = (ElevationManager*)hElev;
+	emgr->ElevationGrid(ilat, ilng, lvl, pilat, pilng, plvl, pelev, elev, emean);
+	return true;
+}
+
+// ======================================================================
+
 void GraphicsClient::ShowDefaultSplash ()
 {
 	const DWORD texcol = 0xA06060;
