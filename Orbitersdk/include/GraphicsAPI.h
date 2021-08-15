@@ -1353,6 +1353,9 @@ public:
 	bool ElevationGrid (ELEVHANDLE emgr, int ilat, int ilng, int lvl,
 		int pilat, int pilng, int plvl, INT16 *pelev, float *elev, double *emean=0) const;
 
+	bool ElevationGrid(ELEVHANDLE emgr, int ilat, int ilng, int lvl,
+		int pilat, int pilng, int plvl, INT16* pelev, INT16* elev, double* emean = 0) const;
+
 	/**
 	 * \brief Filter elevation grid data
 	 * \param hPlanet object handle of the planet the data belongs to
