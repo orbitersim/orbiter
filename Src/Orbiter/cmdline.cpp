@@ -5,6 +5,7 @@
 #include <set>
 #include "cmdline.h"
 #include "Orbiter.h"
+#include "Launchpad.h"
 
 CommandLine::CommandLine(const PSTR cmdLine)
 {
@@ -144,9 +145,6 @@ void CommandLine::ApplyOptions()
 
 
 
-
-
-
 orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, const PSTR cmdLine)
 	: ::CommandLine(cmdLine)
 	, m_pOrbiter(pOrbiter)
@@ -161,6 +159,17 @@ orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, const PSTR cmdLine)
 	ApplyOptions();
 }
 
+void orbiter::CommandLine::SetPlugins()
+{
+	const char* path = "Modules\\Plugin";
+
+	for (auto it = optionList.begin(); it < optionList.end(); it++) {
+		if (it->key->id == KEY_PLUGIN) {
+			m_pOrbiter->Launchpad()->App()->LoadModule(path, it->strVal.c_str());
+		}
+	}
+}
+
 std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 {
 	static std::vector<CommandLine::Key> keyList = {
@@ -172,7 +181,8 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 		{ KEY_KEEPLOG, "keeplog", 'l', false},
 		{ KEY_FIXEDSTEP, "fixedstep", 'f', true},
 		{ KEY_RUNTIME, "runtime", 'r', true},
-		{ KEY_FRAMECOUNT, "maxframes", '_', true}
+		{ KEY_FRAMECOUNT, "maxframes", '_', true},
+		{ KEY_PLUGIN, "plugin", 'p', true}
 	};
 	return keyList;
 }

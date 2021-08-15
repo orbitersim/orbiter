@@ -66,6 +66,8 @@ namespace orbiter {
 		const char* LaunchScenario() const {
 			return (m_launchScenario.size() ? m_launchScenario.c_str() : 0);
 		}
+		void SetPlugins();
+
 		CommandLine(CommandLine const&) = delete;
 		void operator=(CommandLine const&) = delete;
 
@@ -78,7 +80,8 @@ namespace orbiter {
 			KEY_KEEPLOG,
 			KEY_FIXEDSTEP,
 			KEY_RUNTIME,
-			KEY_FRAMECOUNT
+			KEY_FRAMECOUNT,
+			KEY_PLUGIN
 		};
 
 	protected:

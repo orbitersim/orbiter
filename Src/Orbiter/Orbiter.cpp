@@ -246,6 +246,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	}
 	if (orbiter::CommandLine::Instance().FrameCount())
 		g_pOrbiter->Cfg()->CfgDemoPrm.MaxFrameCount = orbiter::CommandLine::Instance().FrameCount();
+	orbiter::CommandLine::Instance().SetPlugins();
 
 	g_pOrbiter->Run ();
 	delete g_pOrbiter;
@@ -2138,7 +2139,8 @@ void Orbiter::EndTimeStep (bool running)
 	// check for termination of demo mode
 	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime ||
 		pConfig->CfgDemoPrm.MaxFrameCount && td.FrameCount() >= pConfig->CfgDemoPrm.MaxFrameCount)
-		CloseSession();
+		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
+		else CloseSession();
 }
 
 bool Orbiter::Timejump (double _mjd, int pmode)
