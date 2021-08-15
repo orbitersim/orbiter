@@ -127,6 +127,7 @@ public:
 	int					GetQueueSize();
 
 	void				PrintError(int err);
+	RECT				GetRect();
 
 private:
 

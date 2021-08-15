@@ -31,7 +31,6 @@ public:
 	void RepaintDisplay(HWND hWnd);
 	void ProcessButton (int bt, int event);
 	void StickToVessel (bool stick);
-	void ToggleDrvMode();
 
 	void clbkRefreshDisplay (SURFHANDLE);
 	void clbkRefreshButtons ();
@@ -48,7 +47,6 @@ private:
 	int fnth;         // button font height
 	bool vstick;      // stick to vessel
 	bool bFailed;
-	bool bDrvMode;
 };
 
 #endif // !__MFDWINDOW_H

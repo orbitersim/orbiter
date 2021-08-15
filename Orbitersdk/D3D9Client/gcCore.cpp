@@ -681,6 +681,36 @@ HSURFNATIVE gcCore::LoadSurfaceNative(const char *file, DWORD flags)
 
 // ===============================================================================================
 //
+bool gcCore::StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr, LPRECT sr)
+{
+	if (S_OK == g_client->BeginScene())
+	{
+		LPDIRECT3DSURFACE9 pss = SURFACE(src)->GetSurface();
+		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+		HRESULT hr = g_client->GetDevice()->StretchRect(pss, sr, pts, tr, D3DTEXF_LINEAR);
+		g_client->EndScene();
+		return hr == S_OK;
+	}
+	return false;
+}
+
+// ===============================================================================================
+//
+bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr)
+{
+	if (S_OK == g_client->BeginScene())
+	{
+		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+		HRESULT hr = g_client->GetDevice()->ColorFill(pts, tr, (D3DCOLOR)color);
+		g_client->EndScene();
+		return hr == S_OK;
+	}
+	return false;
+}
+
+
+// ===============================================================================================
+//
 bool gcCore::SaveSurfaceNative(const char *file, HSURFNATIVE hSrf)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();

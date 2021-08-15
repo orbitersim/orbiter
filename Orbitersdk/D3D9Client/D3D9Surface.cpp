@@ -34,6 +34,13 @@ D3D9Client * D3D9ClientSurface::gc = 0;
 D3D9ClientSurface * D3D9ClientSurface::pPrevSrc = 0;
 
 
+RECT D3D9ClientSurface::GetRect()
+{
+	RECT r = { 0, 0, desc.Width, desc.Height };
+	return r;
+}
+
+
 void D3D9ClientSurface::PrintError(int err)
 {
 	if ((err == ERR_DC_NOT_AVAILABLE) && (ErrWrn&err) == 0) LogErr("SurfHandle=%s, Never use Sketchpad::GetDC() hDC not available", _PTR(this));
