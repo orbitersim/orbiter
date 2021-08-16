@@ -42,7 +42,16 @@ typedef void (*OPC_Proc)(void);
 class TimeData {
 public:
 	TimeData ();
-	void Reset (Orbiter *orbiter = NULL, double mjd_ref = 0.0);
+
+	void Reset (double mjd_ref = 0.0);
+	// Reset all sim and sys times to 0. Set time warp to 1
+	// Disable fixed step mode
+
+	void TimeData::SetFixedStep(double step);
+	// set a fixed time interval for each time step [s]
+	// step=0 disables the fixed step modus
+
+	double TimeData::FixedStep() const { return (bFixedStep ? fixed_step : 0.0); }
 
 	void BeginStep (double deltat, bool running);
 	// advance time by deltat (seconds)
@@ -373,6 +382,9 @@ protected:
 
 	void EndTimeStep (bool running);
 	// Finish step update by copying next frame time data to current frame time data
+
+	bool SessionLimitReached() const;
+	// Return true if a session duration limit has been reached (frame limit/time limit, if any)
 
 	void ModulePreStep ();
 	void ModulePostStep ();

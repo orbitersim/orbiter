@@ -149,26 +149,23 @@ orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, const PSTR cmdLine)
 	: ::CommandLine(cmdLine)
 	, m_pOrbiter(pOrbiter)
 {
-	m_keepLog = false;
-	m_launchScenario.clear();
-	m_fixedStep = 0.0;
-	m_runTime = 0.0;
-	m_frameCount = 0;
+	CFG_CMDLINEPRM& cfg = m_pOrbiter->Cfg()->CfgCmdlinePrm;
+	cfg.LoadPlugins.clear();
 
 	MapKeys();
 	ApplyOptions();
 }
 
-void orbiter::CommandLine::SetPlugins()
-{
-	const char* path = "Modules\\Plugin";
-
-	for (auto it = optionList.begin(); it < optionList.end(); it++) {
-		if (it->key->id == KEY_PLUGIN) {
-			m_pOrbiter->Launchpad()->App()->LoadModule(path, it->strVal.c_str());
-		}
-	}
-}
+//void orbiter::CommandLine::SetPlugins()
+//{
+//	const char* path = "Modules\\Plugin";
+//
+//	for (auto it = optionList.begin(); it < optionList.end(); it++) {
+//		if (it->key->id == KEY_PLUGIN) {
+//			m_pOrbiter->Launchpad()->App()->LoadModule(path, it->strVal.c_str());
+//		}
+//	}
+//}
 
 std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 {
@@ -180,7 +177,8 @@ std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 		{ KEY_OPENVIDEO, "openvideotab", 'v', false},
 		{ KEY_KEEPLOG, "keeplog", 'l', false},
 		{ KEY_FIXEDSTEP, "fixedstep", 'f', true},
-		{ KEY_RUNTIME, "runtime", 'r', true},
+		{ KEY_MAXSYSTIME, "maxsystime", 'T', true},
+		{ KEY_MAXSIMTIME, "maxsimtime", 't', true},
 		{ KEY_FRAMECOUNT, "maxframes", '_', true},
 		{ KEY_PLUGIN, "plugin", 'p', true}
 	};
@@ -192,41 +190,50 @@ void orbiter::CommandLine::ApplyOption(const Key* key, const std::string& value)
 	int res;
 	size_t s;
 	double f;
+	CFG_CMDLINEPRM& cfg = m_pOrbiter->Cfg()->CfgCmdlinePrm;
 
 	switch (key->id) {
 	case KEY_HELP:
 		PrintHelpAndExit();
 		break;
 	case KEY_FASTEXIT:
-		m_pOrbiter->SetFastExit(true);
+		cfg.bFastExit = true;
 		break;
 	case KEY_OPENVIDEO:
-		m_pOrbiter->OpenVideoTab();
+		cfg.bOpenVideoTab = true;
 		break;
 	case KEY_KEEPLOG:
-		m_keepLog = true;
+		cfg.bAppendLog = true;
 		break;
 	case KEY_SCENARIO:
-		m_launchScenario = value;
+		cfg.LaunchScenario = value;
 		break;
 	case KEY_SCENARIOX:
-		m_launchScenario = value;
-		m_pOrbiter->SetFastExit(true);
+		cfg.LaunchScenario = value;
+		cfg.bFastExit = true;
 		break;
 	case KEY_FIXEDSTEP:
 		res = sscanf(value.c_str(), "%lf", &f);
 		if (res == 1)
-			m_fixedStep = f;
+			cfg.FixedStep = f;
 		break;
-	case KEY_RUNTIME:
+	case KEY_MAXSYSTIME:
 		res = sscanf(value.c_str(), "%lf", &f);
 		if (res == 1)
-			m_runTime = f;
+			cfg.MaxSysTime = f;
+		break;
+	case KEY_MAXSIMTIME:
+		res = sscanf(value.c_str(), "%lf", &f);
+		if (res == 1)
+			cfg.MaxSimTime = f;
 		break;
 	case KEY_FRAMECOUNT:
 		res = sscanf(value.c_str(), "%zu", &s);
 		if (res == 1)
-			m_frameCount = s;
+			cfg.FrameLimit = s;
+		break;
+	case KEY_PLUGIN:
+		cfg.LoadPlugins.push_back(value);
 		break;
 	}
 }
@@ -241,15 +248,17 @@ void orbiter::CommandLine::PrintHelpAndExit() const
 	std::cout << "\nOrbiter Space Flight Simulator" << std::endl;
 	std::cout << "orbiter.exe [options]\n\n";
 	std::cout << "Options:\n";
-	std::cout << "\t--help, -h: Print this help page and exit.\n";
-	std::cout << "\t--scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
-	std::cout << "\t--scenariox=<scn>, -s <scn>: Launch scenario <scn>, exit on close\n";
-	std::cout << "\t--fastexit, -f: Exit Orbiter after simulation session\n";
-	std::cout << "\t--openvideotab, -v: Open Launchpad on video tab\n";
-	std::cout << "\t--keeplog, -l: Append log to previous session\n";
-	std::cout << "\t--fixedstep=<s>, -f <s>: Enforce fixed time step length (seconds)\n";
-	std::cout << "\t--runtime=<t>, -r <t>: Terminate session after <t> seconds\n";
-	std::cout << "\t--maxframes=<f>: Terminate session after <f> time frames\n";
+	std::cout << "  --help, -h: Print this help page and exit.\n";
+	std::cout << "  --scenario=<scn>, -S <scn>: Launch scenario <scn>\n";
+	std::cout << "  --scenariox=<scn>, -s <scn>: Launch scenario <scn>, exit on close\n";
+	std::cout << "  --fastexit, -x: Exit Orbiter after simulation session\n";
+	std::cout << "  --openvideotab, -v: Open Launchpad on video tab\n";
+	std::cout << "  --keeplog, -l: Append log to previous session\n";
+	std::cout << "  --fixedstep=<s>, -f <s>: Enforce fixed time step length (seconds)\n";
+	std::cout << "  --maxsystime=<t>, -T <t>: Terminate session after <t> seconds\n";
+	std::cout << "  --maxsimtime=<t>, -t <t>: Terminate session at simulation time <t>\n";
+	std::cout << "  --maxframes=<f>: Terminate session after <f> time frames\n";
+	std::cout << "  --plugin=<pg>, -p <pg>: Load plugin <pg> (from Modules\\Plugin\\<pg>.dll)\n";
 	std::cout << std::endl;
 
 	exit(0);

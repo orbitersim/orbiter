@@ -15,6 +15,7 @@
 #include "Vecmat.h"
 #include <iostream>
 #include <fstream>
+#include <list>
 #include "GraphicsAPI.h"
 
 // body force modes
@@ -255,7 +256,6 @@ struct CFG_DEMOPRM {
 	bool   bBkImage;			// show background image?
 	bool   bBlockExit;			// prevent from terminating orbiter?
 	double MaxDemoTime;			// maximum demo run time [s]
-	size_t MaxFrameCount;       // maximum number of time frames (0=unlimited)
 	double LPIdleTime;			// maximum launchpad idle time [s]
 };
 
@@ -286,6 +286,18 @@ struct CFG_WINDOWPOS {
 	int LaunchpadScnListWidth;  // width of Launchpad scenario list
 	int LaunchpadModListWidth;  // width of Launchpad modules list
 	int LaunchpadExtListWidth;  // width of Launchpad extras list
+};
+
+struct CFG_CMDLINEPRM {
+	bool   bFastExit;           // Terminate Orbiter at session end?
+	bool   bOpenVideoTab;       // Open Launchpad on video tab?
+	bool   bAppendLog;          // Orbiter log: append instead of overwrite?
+	size_t FrameLimit;          // max number of timeframes before session termination (0 = unlimited)
+	double FixedStep;           // fixed time step length (0 = disabled). If != 0, overrides CFG_DEBUGPRM::FixedStep
+	double MaxSysTime;          // Max session runtime (sys time). 0 = unlimited
+	double MaxSimTime;          // Max session runtime (sim time). 0 = unlimited
+	std::string LaunchScenario; // if not empty, start scenario instantly without opening Launchpad
+	std::list<std::string> LoadPlugins; // list of plugins to load
 };
 
 // =============================================================
@@ -349,6 +361,8 @@ public:
 
 	bool FoundFile() const { return found_config_file; }
 
+	bool Load(const char* fname);
+
 	BOOL Write (const char *fname = 0) const;
 	// write config parameters to file "fname"
 	// returns FALSE if write fails
@@ -403,6 +417,7 @@ public:
 	CFG_CAMERAPRM CfgCameraPrm;			// camera parameters
 	CFG_MPLAYERPRM CfgMplayerPrm;		// multiplayer parameters (not currently used)
 	CFG_WINDOWPOS CfgWindowPos;         // subwindow positions
+	CFG_CMDLINEPRM CfgCmdlinePrm;       // Populated by command line parameters. Overrides interactive settings
 
 	// set/get planetarium mode and individual items
 	bool PlanetariumItem (int item) const;

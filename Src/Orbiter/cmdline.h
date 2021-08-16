@@ -59,14 +59,7 @@ namespace orbiter {
 	public:
 		static CommandLine& Instance() { return InstanceImpl(); }
 		static void Parse(Orbiter* pOrbiter, const PSTR cmdLine) { InstanceImpl(pOrbiter, cmdLine); }
-		bool KeepLog() const { return m_keepLog; }
-		double FixedStep() const { return m_fixedStep; }
-		double Runtime() const { return m_runTime; }
-		size_t FrameCount() const { return m_frameCount; }
-		const char* LaunchScenario() const {
-			return (m_launchScenario.size() ? m_launchScenario.c_str() : 0);
-		}
-		void SetPlugins();
+//		void SetPlugins();
 
 		CommandLine(CommandLine const&) = delete;
 		void operator=(CommandLine const&) = delete;
@@ -79,7 +72,8 @@ namespace orbiter {
 			KEY_OPENVIDEO,
 			KEY_KEEPLOG,
 			KEY_FIXEDSTEP,
-			KEY_RUNTIME,
+			KEY_MAXSYSTIME,
+			KEY_MAXSIMTIME,
 			KEY_FRAMECOUNT,
 			KEY_PLUGIN
 		};
@@ -93,11 +87,6 @@ namespace orbiter {
 		CommandLine(Orbiter* pOrbiter, const PSTR cmdLine);
 		static CommandLine& InstanceImpl(Orbiter* pOrbiter = 0, const PSTR cmdLine = 0);
 		Orbiter* m_pOrbiter;
-		std::string m_launchScenario;
-		bool m_keepLog;
-		double m_fixedStep;
-		double m_runTime;
-		size_t m_frameCount;
 	};
 
 }

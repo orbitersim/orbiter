@@ -194,6 +194,7 @@ int _matherr(struct _exception *except )
 // WinMain()
 // Application entry containing message loop
 
+
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
 {
 #ifdef INLINEGRAPHICS
@@ -213,7 +214,7 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
 
 	// Initialise the log
-	INITLOG("Orbiter.log", orbiter::CommandLine::Instance().KeepLog()); // init log file
+	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
 #ifdef ISBETA
 	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());
 #else
@@ -236,17 +237,6 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 
 	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
-
-	// Apply post-creation command line options
-	if (orbiter::CommandLine::Instance().FixedStep())
-		g_pOrbiter->Cfg()->CfgDebugPrm.FixedStep = orbiter::CommandLine::Instance().FixedStep();
-	if (orbiter::CommandLine::Instance().Runtime()) {
-		g_pOrbiter->Cfg()->CfgDemoPrm.bDemo = true;
-		g_pOrbiter->Cfg()->CfgDemoPrm.MaxDemoTime = orbiter::CommandLine::Instance().Runtime();
-	}
-	if (orbiter::CommandLine::Instance().FrameCount())
-		g_pOrbiter->Cfg()->CfgDemoPrm.MaxFrameCount = orbiter::CommandLine::Instance().FrameCount();
-	orbiter::CommandLine::Instance().SetPlugins();
 
 	g_pOrbiter->Run ();
 	delete g_pOrbiter;
@@ -322,8 +312,8 @@ Orbiter::Orbiter ()
 	}
 
 	nmodule         = 0;
-	pDI             = new DInput (this); TRACENEW
-	pConfig         = NULL;
+	pDI             = new DInput(this); TRACENEW
+	pConfig         = new Config; TRACENEW
 	pState          = NULL;
 	pMainDlg        = NULL;
 	pDlgMgr         = NULL;
@@ -407,7 +397,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 
 	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig = new Config (MasterConfigFile); TRACENEW
+	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
@@ -434,6 +424,11 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	// Register HTML viewer class
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
 	SplitterCtrl::RegisterClass (hInstance);
+
+	if (pConfig->CfgCmdlinePrm.bFastExit)
+		SetFastExit(true);
+	if (pConfig->CfgCmdlinePrm.bOpenVideoTab)
+		OpenVideoTab();
 
 	if (pConfig->CfgDemoPrm.bBkImage) {
 		hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
@@ -469,6 +464,10 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	// preload fixed plugin modules
 	LoadFixedModules ();
 	memstat = new MemStat;
+
+	// preload modules from command line requests
+	for (auto it = pConfig->CfgCmdlinePrm.LoadPlugins.begin(); it != pConfig->CfgCmdlinePrm.LoadPlugins.end(); it++)
+		LoadModule("Modules\\Plugin", it->c_str());
 
 	// preload active plugin modules
 	for (int i = 0; i < pConfig->nactmod; i++)
@@ -741,7 +740,13 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	}
 	BroadcastGlobalInit ();
 	RigidBody::GlobalSetup();
-	td.Reset (this, pState->Mjd());
+
+	td.Reset (pState->Mjd());
+	if (Cfg()->CfgCmdlinePrm.FixedStep > 0.0)
+		td.SetFixedStep(Cfg()->CfgCmdlinePrm.FixedStep);
+	else if (Cfg()->CfgDebugPrm.FixedStep > 0.0)
+		td.SetFixedStep(Cfg()->CfgDebugPrm.FixedStep);
+
 	if (!InitializeWorld (pState->Solsys())) {
 		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (pState->Solsys()), "while initialising solar system %s", pState->Solsys());
 		TerminateOnError();
@@ -1027,10 +1032,8 @@ INT Orbiter::Run ()
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
-	const char* scenario = orbiter::CommandLine::Instance().LaunchScenario();
-	if (scenario != NULL) {
-		Launch (scenario);
-	}
+	if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
+		Launch (pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 	// otherwise wait for the user to make a selection from the scenario
 	// list in the launchpad dialog
 
@@ -2137,10 +2140,23 @@ void Orbiter::EndTimeStep (bool running)
 	g_bForceUpdate = false;                        // clear flag
 
 	// check for termination of demo mode
-	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime ||
-		pConfig->CfgDemoPrm.MaxFrameCount && td.FrameCount() >= pConfig->CfgDemoPrm.MaxFrameCount)
+	if (SessionLimitReached())
 		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
 		else CloseSession();
+}
+
+bool Orbiter::SessionLimitReached() const
+{
+	if (pConfig->CfgCmdlinePrm.FrameLimit && td.FrameCount() >= pConfig->CfgCmdlinePrm.FrameLimit)
+		return true;
+	if (pConfig->CfgCmdlinePrm.MaxSysTime && td.SysT0 >= pConfig->CfgCmdlinePrm.MaxSysTime)
+		return true;
+	if (pConfig->CfgCmdlinePrm.MaxSimTime && td.SimT0 >= pConfig->CfgCmdlinePrm.MaxSimTime)
+		return true;
+	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime)
+		return true;
+
+	return false;
 }
 
 bool Orbiter::Timejump (double _mjd, int pmode)
@@ -3161,7 +3177,7 @@ TimeData::TimeData ()
 	Reset();
 }
 
-void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
+void TimeData::Reset (double mjd_ref)
 {
 	TWarp = TWarpTarget = 1.0;
 	TWarpDelay = 0.0;
@@ -3173,7 +3189,13 @@ void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
 	framecount = frame_tick = sys_tick = 0;
 	bWarpChanged = false;
 
-	fixed_step = (orbiter ? orbiter->Cfg()->CfgDebugPrm.FixedStep : 0.0);
+	fixed_step = 0.0;
+	bFixedStep = false;
+}
+
+void TimeData::SetFixedStep(double step)
+{
+	fixed_step = step;
 	bFixedStep = (fixed_step > 0.0);
 }
 

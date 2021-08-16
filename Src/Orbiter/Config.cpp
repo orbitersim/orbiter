@@ -216,7 +216,6 @@ CFG_DEMOPRM CfgDemoPrm_default = {
 	false,		// bBkImage (don't cover desktop with background image in demo mode)
 	false,		// bBlockExit (don't disable exit button in demo mode)
 	300.0,		// MaxDemoTime (max. runtime for a demo simulation [s])
-	0,          // MaxFrameCount (0 = unlimited)
 	15.0		// LPIdleTime (max demo idle time in launchpad window [s])
 };
 
@@ -235,6 +234,18 @@ CFG_MPLAYERPRM CfgMplayerPrm_default = {
 	"",			// mpName (player name)
 	"",			// mpCallsign (player callsign)
 	""			// mpConnection (preferred connection type)
+};
+
+CFG_CMDLINEPRM CfgCmdlinePrm_default = {
+	false,              // fast exit (false = return to Launchpad dialog)
+	false,              // open video tab (false = open Scenarios tab)
+	false,              // append to log file (false = overwrite)
+	0,                  // FrameLimit (0 = unlimited)
+	0.0,                // fixed time step length (0 = disabled)
+	0.0,                // Max sys time (0 = unlimited)
+	0.0,                // Max sim time (0 = unlimited)
+	std::string(),      // launch scenario (empty: open Launchpad dialog)
+	std::list<std::string>() // list of plugins to load
 };
 
 CFG_WINDOWPOS CfgWindowPos_default = {
@@ -439,21 +450,27 @@ Config::Config()
 	SetDefaults ();
 }
 
-Config::Config (char *fname)
+Config::Config(char* fname)
+{
+	Root = 0;
+	SetDefaults();
+
+	Load(fname);
+}
+
+bool Config::Load(const char *fname)
 {
 	int i;
 	double d;
 	bool b;
 	char cbuf[256], tag[256];
 
-	Root = 0;
-	SetDefaults ();
-
 	Root = new char[strlen(fname)+1]; TRACENEW
 	strcpy (Root, fname);
 
 	ifstream ifs (fname);
-	if (!ifs) return;
+	if (!ifs) return false;
+
 	found_config_file = true;
 
 	GetBool ("EchoAllParams", bEchoAll);
@@ -717,7 +734,6 @@ Config::Config (char *fname)
 	GetBool (ifs, "BackgroundImage", CfgDemoPrm.bBkImage);
 	GetBool (ifs, "BlockExit", CfgDemoPrm.bBlockExit);
 	GetReal (ifs, "MaxDemoTime", CfgDemoPrm.MaxDemoTime);
-	GetSize (ifs, "MaxFrameCount", CfgDemoPrm.MaxFrameCount);
 	GetReal (ifs, "MaxLaunchpadIdleTime", CfgDemoPrm.LPIdleTime);
 
 	// record/playback parameters
@@ -783,6 +799,7 @@ Config::Config (char *fname)
 			strcpy (actmod[nactmod++], pc);
 		}
 	}
+	return true;
 }
 
 Config::~Config()
@@ -843,6 +860,7 @@ void Config::SetDefaults ()
 	CfgCameraPrm = CfgCameraPrm_default;         // camera parameters
 	CfgMplayerPrm = CfgMplayerPrm_default;       // multiplayer options
 	CfgWindowPos = CfgWindowPos_default;         // subwindow positions
+	CfgCmdlinePrm = CfgCmdlinePrm_default;       // command line parameters
 
 	found_config_file = false;
 }
@@ -1308,8 +1326,6 @@ BOOL Config::Write (const char *fname) const
 			ofs << "BlockExit = " << BoolStr (CfgDemoPrm.bBlockExit) << '\n';
 		if (CfgDemoPrm.MaxDemoTime != CfgDemoPrm_default.MaxDemoTime || bEchoAll)
 			ofs << "MaxDemoTime = " << CfgDemoPrm.MaxDemoTime << '\n';
-		if (CfgDemoPrm.MaxFrameCount != CfgDemoPrm_default.MaxFrameCount || bEchoAll)
-			ofs << "MaxFrameCount = " << CfgDemoPrm.MaxFrameCount << "\n";
 		if (CfgDemoPrm.LPIdleTime != CfgDemoPrm_default.LPIdleTime || bEchoAll)
 			ofs << "MaxLaunchpadIdleTime = " << CfgDemoPrm.LPIdleTime << '\n';
 	}
