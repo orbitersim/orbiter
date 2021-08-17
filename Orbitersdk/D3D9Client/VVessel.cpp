@@ -134,7 +134,7 @@ void vVessel::GlobalExit ()
 
 // ============================================================================================
 //
-void vVessel::clbkEvent(DWORD evnt, LONG_PTR _context)
+void vVessel::clbkEvent(DWORD evnt, DWORD_PTR _context)
 {
 	UINT context = (UINT)_context;
 

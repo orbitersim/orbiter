@@ -63,7 +63,7 @@ public:
 	 */
 	static void GlobalExit ();
 
-	void clbkEvent(DWORD evnt, LONG_PTR context);
+	void clbkEvent(DWORD evnt, DWORD_PTR context);
 
 	MESHHANDLE GetMesh (UINT idx);
 	bool GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
