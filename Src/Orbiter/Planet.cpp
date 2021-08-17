@@ -482,7 +482,7 @@ intptr_t Planet::FindFirst (int type, _finddata_t *fdata, char *path, char *fnam
 	return fh;
 }
 
-int Planet::FindNext (intptr_t fh, _finddata_t *fdata, char *fname)
+intptr_t Planet::FindNext (intptr_t fh, _finddata_t *fdata, char *fname)
 {
 	intptr_t fn = _findnext (fh, fdata);
 	if (!fn) {

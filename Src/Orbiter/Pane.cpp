@@ -13,6 +13,7 @@
 #include "Camera.h"
 #include "D3dmath.h"
 #include "Log.h"
+#include <assert.h>
 
 #ifdef INLINEGRAPHICS
 #include "OGraphics.h"
@@ -857,9 +858,9 @@ void Pane::ScreenToGlobal (int x, int y, Vector &glob) const
 	glob.unify();
 }
 
-bool Pane::OpenMFD (size_t id, int type, ifstream *ifs)
+bool Pane::OpenMFD (INT_PTR id, int type, ifstream *ifs)
 {
-	if (id >= MAXMFD) return ((ExternMFD*)id)->SetMode (type);
+	if (id >= MAXMFD || id < 0) return ((ExternMFD*)id)->SetMode (type);
 	if (panelmode == 1 && id >= 2) return false;
 	if (panelmode == 2 && !mfd[id].exist) return false;
 
@@ -944,7 +945,7 @@ double Pane::SetMFDRefreshIntervalMultiplier (int id, double multiplier)
 	return prev;
 }
 
-bool Pane::CloseMFD (size_t id)
+bool Pane::CloseMFD (int id)
 {
 	if (panelmode == 1 && id >= 2) return false;
 	if (panelmode == 2 && !mfd[id].exist) return false;
@@ -1067,7 +1068,8 @@ Instrument *Pane::MFD (int which)
 	if (which >= 0 && which < MAXMFD)
 		return mfd[which].instr;
 	for (DWORD i = 0; i < nemfd; i++) {
-		if (which == emfd[i]->Id())
+		assert(false); // This code section doesn't seem to run. If it does that's trouble
+		if (which == (INT_PTR)emfd[i]->Id())
 			return emfd[i]->instr;
 	}
 	return NULL;
@@ -1155,9 +1157,9 @@ Instrument::Spec Pane::GetVCMFDSpec ()
 	return spec;
 }
 
-void Pane::RepaintMFDButtons (int id, Instrument *instr)
+void Pane::RepaintMFDButtons (INT_PTR id, Instrument *instr)
 {
-	if (id < MAXMFD && instr == mfd[id].instr) {
+	if (id < MAXMFD && id >= 0 && instr == mfd[id].instr) {
 		if (panelmode >= 1) g_focusobj->MFDchanged (id, mfd[id].instr->Type());
 		if (defpanel) defpanel->RepaintMFDButtons (id);
 	} else {

@@ -53,7 +53,7 @@ struct Instrument::DrawResource Instrument::draw[MAXDEFCOL][2] = {0};
 	// ******************************************************************
 
 Instrument *Instrument::Create (int type, Pane *_pane,
-	int _id, const Spec &spec, Vessel *_vessel, bool restore)
+	INT_PTR _id, const Spec &spec, Vessel *_vessel, bool restore)
 {
 	DWORD i;
 	
@@ -98,7 +98,7 @@ Instrument *Instrument::Create (int type, Pane *_pane,
 }
 
 Instrument *Instrument::Create (ifstream &ifs, Pane *_pane,
-	int _id, const Spec &spec, Vessel *_vessel)
+	INT_PTR _id, const Spec &spec, Vessel *_vessel)
 {
 	static char *mfdstr[MAXMFD] = {"Left","Right","3","4","5","6","7","8","9","10","11","12"};
 	Instrument *instr = 0;
@@ -467,7 +467,7 @@ bool Instrument::IsDisabledMode (int id)
 	return false;
 }
 
-Instrument::Instrument (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel, bool defer_alloc)
+Instrument::Instrument (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel, bool defer_alloc)
 {
 	pane = _pane;
 	gc   =  g_pOrbiter->GetGraphicsClient();

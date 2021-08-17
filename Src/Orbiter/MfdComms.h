@@ -12,7 +12,7 @@
 
 class Instrument_Comms: public Instrument {
 public:
-	Instrument_Comms (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel);
+	Instrument_Comms (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	virtual ~Instrument_Comms ();
 	int Type () const { return MFD_COMMS; }
 	char ModeSelKey () const { return 'C'; }

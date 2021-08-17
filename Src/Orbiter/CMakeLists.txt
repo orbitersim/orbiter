@@ -9,6 +9,7 @@ set(common_src
 # General source files
 	Astro.cpp
 	Camera.cpp
+	cmdline.cpp
 	Config.cpp
 	ddeserver.cpp
 	Element.cpp
@@ -244,7 +245,6 @@ if(BUILD_ORBITER_SERVER)
 		OUTPUT_NAME Orbiter
 		VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 		COMPILE_DEFINITIONS "NOGRAPHICS;DIRECTINPUT_VERSION=0x0800"
-		ENABLE_EXPORTS 1
 		FOLDER Core
 	)
 
@@ -267,11 +267,20 @@ if(BUILD_ORBITER_SERVER)
 		RUNTIME
 		DESTINATION ${ORBITER_INSTALL_MODULE_DIR}/Server
 	)
-
-	# If the standard Orbiter executable is not built, we have to use the NG version to export the API links
+	# If the standard Orbiter executable is not built...
 	if(NOT BUILD_ORBITER_DX7)
+		set_target_properties(Orbiter_server
+			PROPERTIES
+			ENABLE_EXPORTS 1
+		)
+		# ...we have to use the NG version to export the API links
 		install(FILES $<TARGET_LINKER_FILE:Orbiter_server>
 			DESTINATION ${ORBITER_INSTALL_SDK_DIR}/lib
+		)
+		# ...and copy Orbiter.exe into build dir (not install dir) so that tests work
+		add_custom_command(TARGET Orbiter_server
+			POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:Orbiter_server> ${ORBITER_BINARY_ROOT_DIR}
 		)
 	endif()
 	

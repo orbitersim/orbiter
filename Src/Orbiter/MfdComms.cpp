@@ -15,7 +15,7 @@ extern TimeData td;
 // class Instrument_Comms
 // navigation radio manipulation
 
-Instrument_Comms::Instrument_Comms (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel)
+Instrument_Comms::Instrument_Comms (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel)
 : Instrument (_pane, _id, spec, _vessel)
 {
 	sel = 0;

@@ -118,7 +118,7 @@ void GraphicsClient::UnregisterVisObject (OBJHANDLE hObj)
 
 // ======================================================================
 
-int GraphicsClient::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context)
+int GraphicsClient::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context)
 {
 	return 0;
 }

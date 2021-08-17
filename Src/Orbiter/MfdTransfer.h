@@ -12,7 +12,7 @@
 
 class Instrument_Transfer: public Instrument {
 public:
-	Instrument_Transfer (Pane *_pane, int _id, const Spec &spec, Vessel *_vessel);
+	Instrument_Transfer (Pane *_pane, INT_PTR _id, const Spec &spec, Vessel *_vessel);
 	virtual ~Instrument_Transfer ();
 	int Type() const { return MFD_TRANSFER; }
 	char ModeSelKey () const { return 'X'; }

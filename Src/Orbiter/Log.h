@@ -75,6 +75,7 @@ void LogOut_Location(const char* func, const char* file, int line);
 		LogOut_Error_End(); \
 		if(fatal) { \
 			LogOut(">>> TERMINATING <<<"); \
+			DebugBreak(); \
 			exit(1); \
 		} \
 	} \

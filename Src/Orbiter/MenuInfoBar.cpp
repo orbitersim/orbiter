@@ -409,7 +409,7 @@ MenuInfoBar::MenuInfoBar (const Pane *_pane)
 	menumode = g_pOrbiter->Cfg()->CfgUIPrm.MenuMode;
 	infomode = g_pOrbiter->Cfg()->CfgUIPrm.InfoMode;
 	pausemode = g_pOrbiter->Cfg()->CfgUIPrm.PauseIndMode;
-    fixedstep = (g_pOrbiter->Cfg()->CfgDebugPrm.FixedStep != 0);
+	fixedstep = (td.FixedStep() > 0.0);
 	warp_always = g_pOrbiter->Cfg()->CfgUIPrm.bWarpAlways;
 	warp_scientific = g_pOrbiter->Cfg()->CfgUIPrm.bWarpScientific;
 	menustate = (menumode == 0 ? 1:0);
@@ -733,7 +733,7 @@ void MenuInfoBar::SetWarp (double _warp)
 	char cbuf[32];
 	warp = _warp;
 	if (fixedstep)
-		sprintf (cbuf, "(%gs/f)", g_pOrbiter->Cfg()->CfgDebugPrm.FixedStep*warp);
+		sprintf (cbuf, "(%gs/f)", td.FixedStep()*warp);
 	else if (fabs(warp-1.0) > 1e-6) {
 		if (!warp_scientific || warp < 100.0) {
 			sprintf (cbuf, "\002 %0.*fx", warp < 9.99 ? 1:0, warp);

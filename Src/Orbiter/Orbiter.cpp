@@ -19,6 +19,7 @@
 #include <strstream>
 #include <iomanip>
 #include <io.h>
+#include "cmdline.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
 #include "Log.h"
@@ -110,7 +111,6 @@ BOOL		    g_bOutputFPS     = TRUE;
 BOOL            g_bOutputDim     = TRUE;
 bool		    g_bForceUpdate   = true;
 bool            g_bShowGrapple   = false;
-bool            startvideotab    = false;
 bool            g_bStateUpdate   = false;
 
 // Timing parameters
@@ -194,7 +194,8 @@ int _matherr(struct _exception *except )
 // WinMain()
 // Application entry containing message loop
 
-INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
+
+INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
 {
 #ifdef INLINEGRAPHICS
 	// determine whether another instance already exists
@@ -209,51 +210,25 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
 
-	// interpret command line
-	char *scenario = 0;
-	bool keeplog = false;
-	startvideotab = false;
-	char *cbuf = new char[strlen(strCmdLine)+1]; TRACENEW
-	strcpy (cbuf, strCmdLine);
-	char *pc = strtok (cbuf, " ");
-	while (pc) {
-		if (pc[0] == '-') {
-			switch (pc[1]) {
-			case 's':
-				scenario = strtok (NULL, "\"");
-				g_pOrbiter->SetFastExit (true);
-				break;
-			case 'S':
-				scenario = strtok (NULL, "\"");
-				break;
-			case 'x':
-				g_pOrbiter->SetFastExit (true);
-				break;
-			case 'l':
-				keeplog = true;
-				break;
-			case 'v':
-				startvideotab = true;
-				break;
-			}
-		}
-		pc = strtok (NULL, " ");
-	}
+	// Parse command line
+	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
 
-	INITLOG ("Orbiter.log", keeplog); // init log file
+	// Initialise the log
+	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
 #ifdef ISBETA
-	LOGOUT ("Build %s BETA [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
+	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());
 #else
-	LOGOUT ("Build %s [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
+	LOGOUT("Build %s [v.%06d]", __DATE__, GetVersion());
 #endif
+
 	// Initialise random number generator
 	//srand ((unsigned)time (NULL));
 	srand(12345);
-	LOGOUT ("Timer precision: %g sec", fine_counter_step);
+	LOGOUT("Timer precision: %g sec", fine_counter_step);
 
 	HRESULT hr;
 	// Create application
-	if (FAILED (hr = g_pOrbiter->Create (hInstance, strCmdLine))) {
+	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
 		LOGOUT("Application creation failed");
 		MessageBox (NULL, "Application creation failed!\nTerminating.",
 			"Orbiter Error", MB_OK | MB_ICONERROR);
@@ -263,9 +238,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
-	g_pOrbiter->Run (scenario);
+	g_pOrbiter->Run ();
 	delete g_pOrbiter;
-	delete []cbuf;
 	return 0;
 }
 
@@ -329,16 +303,17 @@ Orbiter::Orbiter ()
     //m_bAppUseZBuffer  = TRUE;
     //m_fnConfirmDevice = ConfirmDevice;
 
-	timeBeginPeriod (1);
-	if (use_fine_counter = QueryPerformanceFrequency (&fine_counter_freq)) {
+	// Initialise timer
+	timeBeginPeriod(1);
+	if (use_fine_counter = QueryPerformanceFrequency(&fine_counter_freq)) {
 		double freq = fine_counter_freq.LowPart;
-		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart*4294967296.0;
-		fine_counter_step = 1.0/freq;
+		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart * 4294967296.0;
+		fine_counter_step = 1.0 / freq;
 	}
-	
+
 	nmodule         = 0;
-	pDI             = new DInput (this); TRACENEW
-	pConfig         = NULL;
+	pDI             = new DInput(this); TRACENEW
+	pConfig         = new Config; TRACENEW
 	pState          = NULL;
 	pMainDlg        = NULL;
 	pDlgMgr         = NULL;
@@ -376,6 +351,7 @@ Orbiter::Orbiter ()
 	bCapture        = false;
 	bFastExit       = false;
 	bRoughType      = false;
+	bStartVideoTab  = false;
 	//lstatus.bkgDC   = 0;
 	cfglen          = 0;
 	ncustomcmd      = 0;
@@ -392,6 +368,7 @@ Orbiter::Orbiter ()
 #ifdef NETCONNECT
 	OrbiterConnect::Startup();
 #endif // NETCONNECT
+
 }
 
 //-----------------------------------------------------------------------------
@@ -407,14 +384,12 @@ Orbiter::~Orbiter ()
 // Name: Create()
 // Desc: This method selects a D3D device
 //-----------------------------------------------------------------------------
-HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
+HRESULT Orbiter::Create (HINSTANCE hInstance)
 {
 	if (pMainDlg) return S_OK; // already created
 
 	HRESULT hr;
 	WNDCLASS wndClass;
-
-	cmdline = strCmdLine;
 
 	// Enable tab controls
 	InitCommonControls();
@@ -422,7 +397,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 
 	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig = new Config (MasterConfigFile); TRACENEW
+	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
@@ -450,6 +425,11 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
 	SplitterCtrl::RegisterClass (hInstance);
 
+	if (pConfig->CfgCmdlinePrm.bFastExit)
+		SetFastExit(true);
+	if (pConfig->CfgCmdlinePrm.bOpenVideoTab)
+		OpenVideoTab();
+
 	if (pConfig->CfgDemoPrm.bBkImage) {
 		hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
 		ShowWindow (hBk, SW_MAXIMIZE);
@@ -457,7 +437,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	
 	// Create the "launchpad" main dialog window
 	pMainDlg = new MainDialog (this); TRACENEW
-	hDlg     = pMainDlg->Create (startvideotab);
+	hDlg     = pMainDlg->Create (bStartVideoTab);
 
 #ifdef INLINEGRAPHICS
 	oclient = new OrbiterGraphics (this); TRACENEW
@@ -484,6 +464,10 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	// preload fixed plugin modules
 	LoadFixedModules ();
 	memstat = new MemStat;
+
+	// preload modules from command line requests
+	for (auto it = pConfig->CfgCmdlinePrm.LoadPlugins.begin(); it != pConfig->CfgCmdlinePrm.LoadPlugins.end(); it++)
+		LoadModule("Modules\\Plugin", it->c_str());
 
 	// preload active plugin modules
 	for (int i = 0; i < pConfig->nactmod; i++)
@@ -756,7 +740,13 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	}
 	BroadcastGlobalInit ();
 	RigidBody::GlobalSetup();
-	td.Reset (this, pState->Mjd());
+
+	td.Reset (pState->Mjd());
+	if (Cfg()->CfgCmdlinePrm.FixedStep > 0.0)
+		td.SetFixedStep(Cfg()->CfgCmdlinePrm.FixedStep);
+	else if (Cfg()->CfgDebugPrm.FixedStep > 0.0)
+		td.SetFixedStep(Cfg()->CfgDebugPrm.FixedStep);
+
 	if (!InitializeWorld (pState->Solsys())) {
 		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (pState->Solsys()), "while initialising solar system %s", pState->Solsys());
 		TerminateOnError();
@@ -815,7 +805,7 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	FRecorder_Reset();
 	if (bPlayback = g_focusobj->bFRplayback) {
 		FRecorder_OpenPlayback (pState->PlaybackDir());
-		if (g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
+		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(true);
 	}
 
 	// let plugins read their states from the scenario file
@@ -1036,16 +1026,15 @@ void Orbiter::ScreenToClient (POINT *pt) const
 // Name: Run()
 // Desc: Message-processing loop. Idle time is used to render the scene.
 //-----------------------------------------------------------------------------
-INT Orbiter::Run (const char *scenario)
+INT Orbiter::Run ()
 {
     // Recieve and process Windows messages
-    BOOL  bGotMsg, bCanRender, bpCanRender;
+    BOOL  bGotMsg, bCanRender, bpCanRender = TRUE;
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
-	if (scenario != NULL) {
-		Launch (scenario);
-	}
+	if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
+		Launch (pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 	// otherwise wait for the user to make a selection from the scenario
 	// list in the launchpad dialog
 
@@ -1616,7 +1605,7 @@ VOID Orbiter::SetFOV (double fov, bool limit_range)
 VOID Orbiter::IncFOV (double dfov)
 {
 	double fov = g_camera->IncrAperture (dfov);
-	g_pane->SetFOV (fov);
+	if (g_pane) g_pane->SetFOV (fov);
 	g_bForceUpdate = true;
 
 	// update Camera dialog
@@ -1798,7 +1787,7 @@ void Orbiter::EndPlayback ()
 		HWND hDlg = pDlgMgr->IsEntry (hInst, IDD_RECPLAY);
 		if (hDlg) PostMessage (hDlg, WM_USER+1, 0, 0);
 	}
-	if (g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
+	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPlayback(false);
 }
 
 oapi::ScreenAnnotation *Orbiter::CreateAnnotation (bool exclusive, double size, COLORREF col)
@@ -2066,7 +2055,7 @@ bool Orbiter::BeginTimeStep (bool running)
 	if (bRequestRunning != running) {
 		running = bRunning = bRequestRunning;
 		bool isPaused = !running;
-		if (g_pane->MIBar()) g_pane->MIBar()->SetPaused (isPaused);
+		if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetPaused (isPaused);
 		pDlgMgr->BroadcastMessage (MSG_PAUSE, (void*)isPaused);
 
 		// broadcast pause state to plugins
@@ -2151,8 +2140,23 @@ void Orbiter::EndTimeStep (bool running)
 	g_bForceUpdate = false;                        // clear flag
 
 	// check for termination of demo mode
+	if (SessionLimitReached())
+		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
+		else CloseSession();
+}
+
+bool Orbiter::SessionLimitReached() const
+{
+	if (pConfig->CfgCmdlinePrm.FrameLimit && td.FrameCount() >= pConfig->CfgCmdlinePrm.FrameLimit)
+		return true;
+	if (pConfig->CfgCmdlinePrm.MaxSysTime && td.SysT0 >= pConfig->CfgCmdlinePrm.MaxSysTime)
+		return true;
+	if (pConfig->CfgCmdlinePrm.MaxSimTime && td.SimT0 >= pConfig->CfgCmdlinePrm.MaxSimTime)
+		return true;
 	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime)
-		if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
+		return true;
+
+	return false;
 }
 
 bool Orbiter::Timejump (double _mjd, int pmode)
@@ -2161,7 +2165,7 @@ bool Orbiter::Timejump (double _mjd, int pmode)
 	tjump.dt = td.JumpTo (_mjd);
 	g_psys->Timejump ();
 	g_camera->Update ();
-	g_pane->Timejump ();
+	if (g_pane) g_pane->Timejump ();
 
 #ifdef INLINEGRAPHICS
 	if (oclient) oclient->clbkTimeJump (td.SimT0, tjump.dt, _mjd);
@@ -3157,7 +3161,7 @@ void Orbiter::DDERequest (HWND hClient, int format, ATOM item)
 		lstrcpy ((LPSTR)pData->Value, (LPSTR)cbuf);
 		GlobalUnlock (hData);
 		ATOM a = GlobalAddAtom (citem);
-		LPARAM lParam = PackDDElParam (WM_DDE_ACK, (UINT)hData, a);
+		LPARAM lParam = PackDDElParam (WM_DDE_ACK, (UINT_PTR)hData, a);
 		PostMessage (hClient, WM_DDE_DATA, (WPARAM)hRenderWnd, lParam);
 	} else {       // request can't be served
 		// to do
@@ -3173,7 +3177,7 @@ TimeData::TimeData ()
 	Reset();
 }
 
-void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
+void TimeData::Reset (double mjd_ref)
 {
 	TWarp = TWarpTarget = 1.0;
 	TWarpDelay = 0.0;
@@ -3182,10 +3186,16 @@ void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
 	SimT1_ofs = SimT1_inc = 0.0;
 	MJD_ref = MJD0 = MJD1 = mjd_ref;
 	fps = syst_acc = 0.0;
-	framecount = sys_tick = 0;
+	framecount = frame_tick = sys_tick = 0;
 	bWarpChanged = false;
 
-	fixed_step = (orbiter ? orbiter->Cfg()->CfgDebugPrm.FixedStep : 0.0);
+	fixed_step = 0.0;
+	bFixedStep = false;
+}
+
+void TimeData::SetFixedStep(double step)
+{
+	fixed_step = step;
 	bFixedStep = (fixed_step > 0.0);
 }
 
@@ -3196,12 +3206,13 @@ void TimeData::BeginStep (double deltat, bool running)
 	iSysDT = 1.0/SysDT; // note that delta_ms==0 is trapped earlier
 
 	framecount++;
+	frame_tick++;
 	syst_acc += SysDT;
-	if ((int)SysT1 != sys_tick) {
-		fps = framecount/syst_acc;
-		framecount = 0;
+	if ((size_t)SysT1 != sys_tick) {
+		fps = frame_tick/syst_acc;
+		frame_tick = 0;
 		syst_acc = 0.0;
-		sys_tick = (int)SysT1;
+		sys_tick = (size_t)SysT1;
 	}
 
 	if (running) { // only advance simulation time if simulation is not paused
