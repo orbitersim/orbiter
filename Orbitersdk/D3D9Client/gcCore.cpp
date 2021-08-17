@@ -83,7 +83,6 @@ void DumpResource(LPDIRECT3DRESOURCE9 pResource)
 DWORD ConvertFormat_DX_to_OAPI(DWORD Format)
 {
 	DWORD Out = OAPISURFACE_NOALPHA;
-	if (Format == D3DFMT_D24S8) return Out | OAPISURFACE_PF_DEPTH;
 	if (Format == D3DFMT_X8R8G8B8) return Out | OAPISURFACE_PF_XRGB;
 	if (Format == D3DFMT_R5G6B5) return Out | OAPISURFACE_PF_RGB565;
 	if (Format == D3DFMT_L16) return Out | OAPISURFACE_PF_S16R;
@@ -114,7 +113,6 @@ DWORD ConvertFormat_OAPI_to_DX(DWORD Format)
 
 	Format &= OAPISURFACE_PF_MASK;
 
-	if (Format == OAPISURFACE_PF_DEPTH) return D3DFMT_D24S8;
 	if (Format == OAPISURFACE_PF_XRGB) return D3DFMT_X8R8G8B8;
 	if (Format == OAPISURFACE_PF_RGB565) return D3DFMT_R5G6B5;
 	if (Format == OAPISURFACE_PF_S16R) return D3DFMT_L16;
