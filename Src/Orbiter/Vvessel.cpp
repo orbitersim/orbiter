@@ -107,13 +107,13 @@ void VVessel::DestroyDeviceObjects ()
 	}
 }
 
-void VVessel::clbkEvent (DWORD msg, UINT content)
+void VVessel::clbkEvent (DWORD msg, DWORD_PTR content)
 {
 	switch (msg) {
 	case EVENT_VESSEL_INSMESH: // insert mesh
-		InsertMesh (content);
-		ResetAnimations (content);
-		UpdateAnimations (content);
+		InsertMesh ((UINT)content);
+		ResetAnimations ((UINT)content);
+		UpdateAnimations ((UINT)content);
 		break;
 	case EVENT_VESSEL_DELMESH: // mesh deleted
 		if (content == (UINT)-1) { // clear all meshes

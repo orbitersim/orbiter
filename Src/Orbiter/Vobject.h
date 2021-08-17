@@ -74,7 +74,7 @@ public:
 
 	inline const D3DMATRIX &MWorld() const { return mWorld; }
 
-	virtual void clbkEvent (DWORD msg, UINT content) {}
+	virtual void clbkEvent (DWORD msg, DWORD_PTR content) {}
 	// Notification of visual event (e.g. mesh addition/deletion)
 
 protected:

@@ -3221,7 +3221,7 @@ void Vessel::ClearMeshes (bool retain_anim)
 	nmesh = 0;
 	mesh_crc = 0;
 	ScanMeshCaps();
-	BroadcastVisMsg (EVENT_VESSEL_DELMESH, (UINT)-1); // notify visual
+	BroadcastVisMsg (EVENT_VESSEL_DELMESH, (DWORD_PTR)((UINT)-1)); // notify visual
 }
 
 bool Vessel::ShiftMesh (UINT idx, const VECTOR3 &ofs)
