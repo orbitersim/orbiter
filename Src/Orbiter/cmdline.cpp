@@ -156,17 +156,6 @@ orbiter::CommandLine::CommandLine(Orbiter* pOrbiter, const PSTR cmdLine)
 	ApplyOptions();
 }
 
-//void orbiter::CommandLine::SetPlugins()
-//{
-//	const char* path = "Modules\\Plugin";
-//
-//	for (auto it = optionList.begin(); it < optionList.end(); it++) {
-//		if (it->key->id == KEY_PLUGIN) {
-//			m_pOrbiter->Launchpad()->App()->LoadModule(path, it->strVal.c_str());
-//		}
-//	}
-//}
-
 std::vector<::CommandLine::Key>& orbiter::CommandLine::KeyList() const
 {
 	static std::vector<CommandLine::Key> keyList = {

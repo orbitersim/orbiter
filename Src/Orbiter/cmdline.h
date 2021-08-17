@@ -59,7 +59,6 @@ namespace orbiter {
 	public:
 		static CommandLine& Instance() { return InstanceImpl(); }
 		static void Parse(Orbiter* pOrbiter, const PSTR cmdLine) { InstanceImpl(pOrbiter, cmdLine); }
-//		void SetPlugins();
 
 		CommandLine(CommandLine const&) = delete;
 		void operator=(CommandLine const&) = delete;
