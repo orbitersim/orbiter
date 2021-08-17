@@ -412,6 +412,7 @@ private:
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
+	HWND            hConsoleWnd;   // console window handle (graphics-less mode only)
 	HWND            hServerWnd;    // server dialog (graphics-less mode only)
 	HWND            hDlg;          // main dialog handle
 	HWND            hBk;           // background window handle (demo mode only)

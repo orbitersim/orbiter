@@ -330,6 +330,7 @@ Orbiter::Orbiter ()
 	NetClient       = NULL;
 #endif // NETCONNECT
 	hRenderWnd      = NULL;
+	hConsoleWnd     = NULL;
 	hServerWnd      = NULL;
 	hBk             = NULL;
 	hConsoleTh      = NULL;
@@ -692,6 +693,9 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	} else {
 		hRenderWnd = NULL;
 		if (AllocConsole() == TRUE) {
+			SetConsoleTitle("Orbiter Server Console");
+			Sleep(40);
+			hConsoleWnd = FindWindow(NULL, "Orbiter Server Console");
 			DWORD id;
 			hConsoleTh = CreateThread (NULL, 4096, ConsoleInputProc, this, 0, &id);
 			SetConsole(true);
@@ -781,6 +785,9 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 		
 		// playback screen annotation manager
 		snote_playback = gclient->clbkCreateAnnotation ();
+	}
+	else {
+		pDlgMgr = new DialogManager(this, hConsoleWnd);
 	}
 
 #ifdef INLINEGRAPHICS
@@ -1196,12 +1203,36 @@ bool Orbiter::ParseConsoleCmd ()
 			ConsoleOut ("Without arguments, the current simulation state is displayed.");
 		} else if (!_strnicmp (pc, "step", 4)) {
 			ConsoleOut ("Display momentary simulation step length and steps per second.");
-		} else if (!_strnicmp (pc, "gui", 3)) {
-			ConsoleOut ("Toggles the display of a dialog box that continuously monitors the simulation");
-			ConsoleOut ("state.");
+		}
+		else if (!_strnicmp(pc, "dlg", 3)) {
+			ppc = trim_string(pc + 3);
+			if (!_strnicmp(ppc, "focus", 5)) {
+				ConsoleOut("Open the vessel selection dialog.");
+			}
+			else if (!_strnicmp(ppc, "map", 3)) {
+				ConsoleOut("Open the map window.");
+			}
+			else if (!_strnicmp(ppc, "info", 4)) {
+				ConsoleOut("Open the object info dialog.");
+			}
+			else if (!_strnicmp(ppc, "tacc", 4)) {
+				ConsoleOut("Open the time acceleration dialog.");
+			}
+			else if (!_strnicmp(ppc, "function", 8)) {
+				ConsoleOut("Open the Plugin function list.");
+			}
+			else {
+				ConsoleOut("Open a dialog. The following sub-commands are recognize:\n");
+				ConsoleOut("focus map info tacc function\n");
+				ConsoleOut("Type \"help dlg <subcommand>\" to get information for a command.");
+			}
+		}
+		else if (!_strnicmp(pc, "gui", 3)) {
+			ConsoleOut("Toggles the display of a dialog box that continuously monitors the simulation");
+			ConsoleOut("state.");
 		} else {
 			ConsoleOut ("The following top-level commands are available:\n");
-			ConsoleOut ("  help exit vessel time tacc pause step gui\n");
+			ConsoleOut ("  help exit vessel time tacc pause step dlg gui\n");
 			ConsoleOut ("To get help for a command, type \"help <cmd>\"");
 		}
 	} else if (!_strnicmp (cmd, "exit", 4)) {
@@ -1257,6 +1288,19 @@ bool Orbiter::ParseConsoleCmd ()
 	} else if (!_strnicmp (cmd, "gui", 3)) {
 		if (!DestroyServerGuiDlg())
 			hServerWnd = CreateDialog (hInst, MAKEINTRESOURCE(IDD_SERVER), hDlg, ServerDlgProc);
+	}
+	else if (!_strnicmp(cmd, "dlg", 3)) {
+		pc = trim_string(cmd + 3);
+		if (!_strnicmp(pc, "focus", 5))
+			pDlgMgr->EnsureEntry<DlgFocus>();
+		else if (!_strnicmp(pc, "map", 3))
+			pDlgMgr->EnsureEntry<DlgMap>();
+		else if (!_strnicmp(pc, "info", 4))
+			pDlgMgr->EnsureEntry<DlgInfo>();
+		else if (!_strnicmp(pc, "tacc", 4))
+			pDlgMgr->EnsureEntry<DlgTacc>();
+		else if (!_strnicmp(pc, "function", 8))
+			pDlgMgr->EnsureEntry<DlgFunction>();
 	}
 	return false;
 }
@@ -1517,6 +1561,8 @@ void Orbiter::NotifyObjectSize (const Body *obj)
 //-----------------------------------------------------------------------------
 void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 {
+	if (warp == td.Warp())
+		return; // nothing to do
 	if (bPlayback && pConfig->CfgRecPlayPrm.bReplayWarp && !force) return;
 	const double EPS = 1e-6;
 	if      (warp < MinWarpLimit) warp = MinWarpLimit;
