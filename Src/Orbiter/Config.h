@@ -15,6 +15,7 @@
 #include "Vecmat.h"
 #include <iostream>
 #include <fstream>
+#include <list>
 #include "GraphicsAPI.h"
 
 // body force modes
@@ -287,6 +288,18 @@ struct CFG_WINDOWPOS {
 	int LaunchpadExtListWidth;  // width of Launchpad extras list
 };
 
+struct CFG_CMDLINEPRM {
+	bool   bFastExit;           // Terminate Orbiter at session end?
+	bool   bOpenVideoTab;       // Open Launchpad on video tab?
+	bool   bAppendLog;          // Orbiter log: append instead of overwrite?
+	size_t FrameLimit;          // max number of timeframes before session termination (0 = unlimited)
+	double FixedStep;           // fixed time step length (0 = disabled). If != 0, overrides CFG_DEBUGPRM::FixedStep
+	double MaxSysTime;          // Max session runtime (sys time). 0 = unlimited
+	double MaxSimTime;          // Max session runtime (sim time). 0 = unlimited
+	std::string LaunchScenario; // if not empty, start scenario instantly without opening Launchpad
+	std::list<std::string> LoadPlugins; // list of plugins to load
+};
+
 // =============================================================
 
 char *trim_string (char *cbuf);
@@ -303,6 +316,7 @@ char *readline (std::istream &is);
 bool GetItemString (std::istream &is, const char *label, char *val);
 bool GetItemReal   (std::istream &is, const char *label, double &val);
 bool GetItemInt    (std::istream &is, const char *label, int &val);
+bool GetItemSize   (std::istream& is, const char* label, size_t& val);
 bool GetItemHex    (std::istream &is, const char *label, int &val);
 bool GetItemBool   (std::istream &is, const char *label, bool &val);
 bool GetItemVector (std::istream &is, const char *label, Vector &val);
@@ -346,6 +360,8 @@ public:
 	void SetDefaults_Capture ();
 
 	bool FoundFile() const { return found_config_file; }
+
+	bool Load(const char* fname);
 
 	BOOL Write (const char *fname = 0) const;
 	// write config parameters to file "fname"
@@ -401,6 +417,7 @@ public:
 	CFG_CAMERAPRM CfgCameraPrm;			// camera parameters
 	CFG_MPLAYERPRM CfgMplayerPrm;		// multiplayer parameters (not currently used)
 	CFG_WINDOWPOS CfgWindowPos;         // subwindow positions
+	CFG_CMDLINEPRM CfgCmdlinePrm;       // Populated by command line parameters. Overrides interactive settings
 
 	// set/get planetarium mode and individual items
 	bool PlanetariumItem (int item) const;
@@ -431,6 +448,7 @@ public:
 	bool GetString (char *category, char *val);
 	bool GetReal (char *category, double &val);
 	bool GetInt (char *category, int &val);
+	bool GetSize (char* category, size_t& val);
 	bool GetBool (char *category, bool &val);
 	bool GetVector (char *category, Vector &val);
 
@@ -438,6 +456,7 @@ private:
 	bool GetString (std::istream &is, char *category, char *val);
 	bool GetReal (std::istream &is, char *category, double &val);
 	bool GetInt (std::istream &is, char *category, int &val);
+	bool GetSize (std::istream& is, char* category, size_t& val);
 	bool GetBool (std::istream &is, char *category, bool &val);
 	bool GetVector (std::istream &is, char *category, Vector &val);
 

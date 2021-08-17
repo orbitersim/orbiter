@@ -1189,10 +1189,21 @@ void ExtraFixedStep::SetDialog (HWND hWnd, const CFG_DEBUGPRM &prm)
 {
 	char cbuf[256];
 	double step = prm.FixedStep;
-	SendDlgItemMessage (hWnd, IDC_CHECK1, BM_SETCHECK, step ? BST_CHECKED : BST_UNCHECKED, 0);
-	sprintf (cbuf, "%0.4g", step ? step : 0.01);
-	SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
-	ToggleEnable (hWnd);
+
+	if (pTab->Cfg()->CfgCmdlinePrm.FixedStep) {
+		// fixed step is set by command line options - disable the dialog
+		SendDlgItemMessage(hWnd, IDC_CHECK1, BM_SETCHECK, BST_CHECKED, 0);
+		sprintf(cbuf, "%0.4g", pTab->Cfg()->CfgCmdlinePrm.FixedStep);
+		SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), cbuf);
+		EnableWindow(GetDlgItem(hWnd, IDC_CHECK1), FALSE);
+		EnableWindow(GetDlgItem(hWnd, IDC_EDIT1), FALSE);
+	}
+	else {
+		SendDlgItemMessage(hWnd, IDC_CHECK1, BM_SETCHECK, step ? BST_CHECKED : BST_UNCHECKED, 0);
+		sprintf(cbuf, "%0.4g", step ? step : 0.01);
+		SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), cbuf);
+		ToggleEnable(hWnd);
+	}
 }
 
 bool ExtraFixedStep::StoreParams (HWND hWnd)

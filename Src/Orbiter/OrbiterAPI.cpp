@@ -15,6 +15,7 @@
 #include "Select.h"
 #include "DlgMgr.h"
 #include "Config.h"
+#include "cmdline.h"
 #include "Script.h"
 #include "Util.h"
 #include "Log.h"
@@ -64,7 +65,7 @@ DLLEXPORT int oapiGetOrbiterVersion ()
 
 DLLEXPORT const char *oapiGetCmdLine ()
 {
-	return g_pOrbiter->CmdLine();
+	return orbiter::CommandLine::Instance().CmdLine();
 }
 
 DLLEXPORT void oapiGetViewportSize (DWORD *w, DWORD *h, DWORD *bpp)

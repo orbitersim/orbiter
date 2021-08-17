@@ -179,6 +179,14 @@ void ModuleTab::RefreshLists ()
 				break;
 			}
 
+		// check if module is set active in command line
+		std::string modname(rec->name);
+		auto idx = std::find(pLp->Cfg()->CfgCmdlinePrm.LoadPlugins.begin(), pLp->Cfg()->CfgCmdlinePrm.LoadPlugins.end(), modname);
+		if (idx != pLp->Cfg()->CfgCmdlinePrm.LoadPlugins.end()) {
+			rec->active = true;
+			rec->locked = true;
+		}
+
 		sprintf (cbuf, "Modules\\Plugin\\%s", fdata.name);
 		HMODULE hMod = LoadLibraryEx (cbuf, 0, LOAD_LIBRARY_AS_DATAFILE);
 		if (hMod) {
@@ -304,13 +312,20 @@ void ModuleTab::ActivateFromList ()
 			MODULEREC *rec = (MODULEREC*)subitem.lParam;
 			bool checked = (TreeView_GetCheckState (hTree, subitem.hItem) != 0);
 			if (checked != rec->active) {
-				rec->active = checked;
-				if (checked) {
-					pCfg->AddModule(rec->name);
-					pLp->App()->LoadModule (path, rec->name);
-				} else {
-					pCfg->DelModule(rec->name);
-					pLp->App()->UnloadModule (rec->name);
+				if (!rec->locked) {
+					rec->active = checked;
+					if (checked) {
+						pCfg->AddModule(rec->name);
+						pLp->App()->LoadModule(path, rec->name);
+					}
+					else {
+						pCfg->DelModule(rec->name);
+						pLp->App()->UnloadModule(rec->name);
+					}
+				}
+				else {
+					TreeView_SetCheckState(hTree, subitem.hItem, rec->active ? TRUE : FALSE);
+					MessageBox(NULL, "This module has been requested on the command line and cannot be deactivated interactively.", "Orbiter: Plugin Modules", MB_ICONWARNING | MB_OK);
 				}
 			}
 			subitem.hItem = TreeView_GetNextSibling (hTree, subitem.hItem);
@@ -339,65 +354,12 @@ void ModuleTab::DeactivateAll ()
 }
 
 //-----------------------------------------------------------------------------
-// Name: ModuleActivate()
-// Desc: Move modules between active/inactive lists
-//-----------------------------------------------------------------------------
-void ModuleTab::ModuleActivate (int idx, bool act)
-{
-	int fromlist, tolist, idx0, idx1, i, j;
-	char cbuf[64];
-	const char *path = "Modules\\Plugin";
-
-	if (act) // activate
-		fromlist = IDC_MOD_INACTLIST, tolist = IDC_MOD_ACTLIST;
-	else     // deactivate
-		fromlist = IDC_MOD_ACTLIST, tolist = IDC_MOD_INACTLIST;
-
-	if (idx >= 0)
-		idx0 = idx, idx1 = idx+1;
-	else
-		idx0 = 0, idx1 = SendDlgItemMessage (hTab, fromlist, LB_GETCOUNT, 0, 0);
-
-	for (i = idx1-1; i >= idx0; i--)
-		if (SendDlgItemMessage (hTab, fromlist, LB_GETTEXT, i, (LPARAM)cbuf) != LB_ERR) {
-			char *info = (char*)SendDlgItemMessage (hTab, fromlist, LB_GETITEMDATA, i, 0);
-			SendDlgItemMessage (hTab, fromlist, LB_DELETESTRING, i, 0);
-			j = SendDlgItemMessage (hTab, tolist, LB_ADDSTRING, 0, (LPARAM)cbuf);
-			SendDlgItemMessage (hTab, tolist, LB_SETITEMDATA, j, (LPARAM)info);
-			if (act) pCfg->AddModule (cbuf), pLp->App()->LoadModule (path, cbuf);
-			else     pCfg->DelModule (cbuf), pLp->App()->UnloadModule (cbuf);
-		}
-}
-
-//-----------------------------------------------------------------------------
 
 INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const int MAXSEL = 100;
 	int i;
 	NM_TREEVIEW *pnmtv;
-
-	// debug only
-	static int count = 0;
-	static bool active = false;
-	static UINT lastmsg = 0;
-	HTREEITEM hitem = TreeView_GetRoot(GetDlgItem (hTab, IDC_TREE1));
-	if (hitem) {
-		TVITEM item;
-		item.mask = TVIF_STATE;
-		item.hItem = hitem;
-		if (TreeView_GetItem (GetDlgItem (hTab, IDC_TREE1), &item)) {
-			if (count == 32)
-				i = count;
-			if ((item.state & TVIS_STATEIMAGEMASK) == 8192) {
-				active = true;
-				lastmsg = uMsg;
-			} else if (active) {
-				i = count;
-			}
-			if (active) count++;
-		}
-	}
 
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -416,11 +378,6 @@ INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_NOTIFY:
 		switch (LOWORD(wParam)) {
 		case IDC_TREE1:
-
-			// debug
-			HTREEITEM hti = TreeView_GetRoot (GetDlgItem (hTab, IDC_TREE1));
-			hti = TreeView_GetChild (GetDlgItem (hTab, IDC_TREE1), hti);
-			BOOL isChecked = TreeView_GetCheckState (GetDlgItem (hTab, IDC_TREE1), hti);
 
 			pnmtv = (NM_TREEVIEW FAR *)lParam;
 			switch (pnmtv->hdr.code) {
