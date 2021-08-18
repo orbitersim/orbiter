@@ -29,6 +29,9 @@ class PlaybackEditor;
 class MemStat;
 class DDEServer;
 class ImageIO;
+namespace orbiter {
+	class ConsoleNG;
+}
 
 //-----------------------------------------------------------------------------
 // Structure for module callback functions
@@ -133,7 +136,6 @@ public:
 	void OutputLoadTick (int line, bool ok = true);
 	void TerminateOnError();
 	void UpdateServerWnd (HWND hWnd);
-	bool ParseConsoleCmd ();
 	void InitRotationMode ();
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
@@ -168,8 +170,6 @@ public:
 	bool RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag);
 
 	void UpdateDeallocationProgress();
-
-	bool DestroyServerGuiDlg();
 
 	// plugin module loading/unloading
 	HINSTANCE LoadModule (const char *path, const char *name);   // load a plugin
@@ -409,14 +409,12 @@ private:
 	State          *pState;
 	MainDialog     *pMainDlg;
 	DialogManager  *pDlgMgr;
+	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
-	HWND            hConsoleWnd;   // console window handle (graphics-less mode only)
-	HWND            hServerWnd;    // server dialog (graphics-less mode only)
 	HWND            hDlg;          // main dialog handle
 	HWND            hBk;           // background window handle (demo mode only)
-	HANDLE          hConsoleTh;    // console input thread
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
 	bool			bUseStencil;   // render device provides stencil buffer (and user requests it)
