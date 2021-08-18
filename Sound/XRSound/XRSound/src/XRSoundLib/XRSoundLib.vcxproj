@@ -125,7 +125,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ORBITER_ROOT)\Orbitersdk\include;..\XRSoundDLL</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ORBITER_ROOT_X64)\Orbitersdk\include;..\XRSoundDLL</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -176,7 +176,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ORBITER_ROOT)\Orbitersdk\include;..\XRSoundDLL</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ORBITER_ROOT_RELEASE_X64)\Orbitersdk\include;..\XRSoundDLL</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
