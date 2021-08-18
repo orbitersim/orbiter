@@ -32,7 +32,6 @@ MFDWindow::MFDWindow (HINSTANCE _hInst, const MFDSPEC &spec): ExternMFD (spec), 
 	fnth = 0;
 	vstick = false;
 	bFailed = false;
-	bDrvMode = false; // D3D
 
 	oapiOpenDialogEx (hInst, IDD_MFD, DlgProc, DLG_ALLOWMULTI|DLG_CAPTIONCLOSE|DLG_CAPTIONHELP, this);
 }
@@ -184,7 +183,7 @@ void MFDWindow::RepaintButton (HWND hWnd)
 	} else {
 		static const char *lbl[3] = {"PWR","SEL","MNU"};
 		static const char *drv[2] = {"N/A","N/A"};
-		if (id == 15) label = drv[bDrvMode];
+		if (id == 15) label = drv[0];
 		else {
 			label = lbl[id - 12];
 			if (id == 12) SetTextColor(hDC, 0x0000FF);
@@ -216,9 +215,6 @@ void MFDWindow::ProcessButton (int bt, int event)
 		break;
 	case 15:
 		if (event == PANEL_MOUSE_LBDOWN) {
-			//bDrvMode = !bDrvMode;
-			//InvalidateRect(GetDlgItem(hDlg, IDC_BUTTON_DRV), NULL, FALSE);
-			//ToggleDrvMode();
 		}
 		break;
 	default:
@@ -227,28 +223,9 @@ void MFDWindow::ProcessButton (int bt, int event)
 	}
 }
 
-
-void MFDWindow::ToggleDrvMode()
-{
-	gcCore *pCore = gcGetCoreInterface();
-	if (!pCore) return;
-
-	SURFHANDLE surf = GetDisplaySurface();
-
-	if (bDrvMode) pCore->ConvertSurface(surf, OAPISURFACE_SYSMEM); // GDI
-	else pCore->ConvertSurface(surf, OAPISURFACE_RENDERTARGET); // D3D
-}
-
-
 void MFDWindow::clbkRefreshDisplay (SURFHANDLE)
 {
 	if (bFailed) return;
-
-	if (bDrvMode) {
-		// GDI Mode
-		InvalidateRect(hDsp, NULL, false);
-		return;
-	}
 
 	gcCore *pCore = gcGetCoreInterface();
 	if (!pCore) return;
@@ -262,8 +239,8 @@ void MFDWindow::clbkRefreshDisplay (SURFHANDLE)
 	SURFHANDLE tgt = pCore->GetRenderTarget(hSwap);
 	SURFHANDLE surf = GetDisplaySurface();
 
-	if (surf) oapiBlt(tgt, surf, 0, 0, 0, 0, DW, DH);
-	else oapiClearSurface(tgt);
+	if (surf) pCore->StretchRectInScene(tgt, surf);
+	else pCore->ClearSurfaceInScene(tgt, 0);
 
 	pCore->FlipSwap(hSwap);
 }
