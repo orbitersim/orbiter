@@ -594,11 +594,17 @@ int Interpreter::RunChunk (const char *chunk, int n)
 		luaL_loadbuffer (L, chunk, n, "line");
 		res = lua_pcall (L, 0, 0, 0);
 		if (res) {
-			if (is_term) {
-				// term_strout ("Execution error.");
-				term_strout(lua_tostring(L, -1), true);
+			auto error = lua_tostring(L, -1);
+			if (error) { // can be nullptr
+				if (is_term) {
+					// term_strout ("Execution error.");
+					term_strout(error, true);
+				}
+				else {
+					oapiWriteLogError(error);
+				}
+				return res;
 			}
-			return res;
 		}
 		// check for leftover background jobs
 		lua_getfield (L, LUA_GLOBALSINDEX, "_nbranch");
@@ -680,7 +686,9 @@ void Interpreter::LoadAPI ()
 		{"del_annotation", oapiDelAnnotation},
 		{"get_annotations", oapiGetAnnotations},
 		{"dbg_out", oapiDbgOut},
+		{"write_log", oapiWriteLog},
 		{"open_help", oapiOpenHelp},
+		{"exit", oapiExit},
 		{"open_inputbox", oapiOpenInputBox},
 		{"receive_input", oapiReceiveInput},
 		{"del_vessel", oapi_del_vessel},
@@ -1917,6 +1925,20 @@ int Interpreter::oapiDbgOut (lua_State *L)
 	const char *str = lua_tostringex (L, 1);
 	strcpy (oapiDebugString(), str);
 	return 0;
+}
+
+int Interpreter::oapiWriteLog(lua_State* L)
+{
+	const char* str = lua_tostringex(L, 1);
+	::oapiWriteLog(str);
+	return 0;
+}
+
+int Interpreter::oapiExit(lua_State* L)
+{
+	auto code = lua_tointeger(L, 1);
+	exit(code);
+	return 0; // compiler warnings
 }
 
 static bool bInputClosed;
