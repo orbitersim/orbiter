@@ -401,7 +401,7 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 //
 SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags) :
 	pResource(pRes),
-	hDC(NULL),
+	pDX7(NULL),
 	pSkp(NULL),
 	pSub(NULL),
 	pTexSurf(NULL),
@@ -419,6 +419,7 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags) :
 
 	memset(pMap, 0, sizeof(pMap));
 	memset(&desc, 0, sizeof(desc));
+	memset(&DC, 0, sizeof(DC));
 
 	strcpy_s(name, sizeof(name), "null");
 
@@ -446,6 +447,7 @@ SurfNative::~SurfNative()
 	for (int i = 0; i < MAP_MAX_COUNT; i++) SAFE_RELEASE(pMap[i]);
 
 	SAFE_RELEASE(pSub);
+	SAFE_RELEASE(pDX7);
 	SAFE_RELEASE(pTexSurf);
 	SAFE_RELEASE(pResource);
 	SAFE_RELEASE(pGDICache);
@@ -621,7 +623,6 @@ bool SurfNative::GenerateMipMaps()
 			DWORD nMip = pTex->GetLevelCount();
 			if (nMip <= 1) return false;
 
-			LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 			LPDIRECT3DSURFACE9 pHigh = NULL;
 			LPDIRECT3DSURFACE9 pLow = NULL;
 
@@ -630,7 +631,7 @@ bool SurfNative::GenerateMipMaps()
 			if (pHigh) {
 				for (DWORD i = 1; i < nMip; i++) {
 					if (pTex->GetSurfaceLevel(i, &pLow) == S_OK) {
-						HR(pDev->StretchRect(pHigh, NULL, pLow, NULL, D3DTEXF_LINEAR));
+						HR(pDevice->StretchRect(pHigh, NULL, pLow, NULL, D3DTEXF_LINEAR));
 						pHigh->Release();
 						pHigh = pLow;
 					}
@@ -643,6 +644,38 @@ bool SurfNative::GenerateMipMaps()
 		}
 	}
 	return false;
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
+bool SurfNative::CreateDX7()
+{
+	if (pDX7) return true;
+	if (desc.Format == D3DFMT_X8R8G8B8)
+	{
+		if (S_OK == g_client->GetDevice()->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, true, &pDX7, NULL))
+		{
+			oapiWriteLogV("Surface %s (%u,%u) going in DX7 compatibility mode", _PTR(this), desc.Width, desc.Height);
+			return true;
+		}
+	}
+	else {
+		return false;
+	}
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
+void SurfNative::DX7Sync(bool bUp)
+{
+	if (bUp) {
+		HR(pDevice->StretchRect(GetSurface(), NULL, pDX7, NULL, D3DTEXF_POINT));		
+	}
+	else {
+		HR(pDevice->StretchRect(pDX7, NULL, GetSurface(), NULL, D3DTEXF_POINT));
+	}
 }
 
 
@@ -677,10 +710,27 @@ bool SurfNative::Fill(LPRECT rect, DWORD c)
 //
 HDC	SurfNative::GetDC()
 {
-	if (!hDC)
+	if (!DC.hDC)
 	{
-		LPDIRECT3DSURFACE9 pSrf = GetSurface();
-		if (pSrf->GetDC(&hDC) == S_OK) return hDC;
+		if (IsGDISurface()) {
+			LPDIRECT3DSURFACE9 pSrf = GetSurface();
+			if (pSrf->GetDC(&DC.hDC) == S_OK)
+			{
+				DC.pSrf = pSrf;
+				return DC.hDC;
+			}
+		}
+		else {
+			if (CreateDX7())
+			{
+				DX7Sync(true);
+				if (pDX7->GetDC(&DC.hDC) == S_OK)
+				{
+					DC.pSrf = pDX7;
+					return DC.hDC;
+				}
+			}
+		}
 	}
 	else
 	{
@@ -701,12 +751,19 @@ void SurfNative::ReleaseDC(HDC _hDC)
 {
 	if (!_hDC) return;
 
-	assert(_hDC == hDC);
+	assert(_hDC == DC.hDC);
 
-	LPDIRECT3DSURFACE9 pSrf = GetSurface();
-	HR(pSrf->ReleaseDC(hDC));
-	hDC = NULL;	
+	HR(DC.pSrf->ReleaseDC(DC.hDC));
+
+	if (DC.pSrf == pDX7)
+	{
+		DX7Sync(false);
+	}
+
+	DC.pSrf = NULL;
+	DC.hDC = NULL;	
 }
+
 
 
 // -----------------------------------------------------------------------------------------------
@@ -806,7 +863,8 @@ void SurfNative::LogSpecs() const
 	LogErr("Surface name is [%s] OAPI_Handle=%s", name, _PTR(this));
 	if (pTexSurf) LogErr("Has a Surface Interface");
 	if (pSub) LogErr("Has a SubSurface Interface");
-	if (hDC) LogErr("Has a HDC [%s]", _PTR(hDC));
+	if (pDX7) LogErr("Surface is in DX7 compatibility mode");
+	if (DC.hDC) LogErr("Has a HDC [%s]", _PTR(DC.hDC));
 	LogErr("OAPI_Attribs: %s", NatOAPIFlags(Flags));
 	NatDumpResource(pResource);
 }

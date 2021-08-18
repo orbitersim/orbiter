@@ -58,6 +58,11 @@ class SurfNative
 	friend class D3D9Pad;
 	friend class GDIPad;
 
+	struct _HDC_LOCAL {
+		HDC hDC;
+		LPDIRECT3DSURFACE9 pSrf;
+	};
+
 public:
 
 							SurfNative(LPDIRECT3DRESOURCE9 pSrf, DWORD Flags);
@@ -116,6 +121,8 @@ public:
 	DWORD					GetFormatSizeInBytes(D3DFORMAT Format, DWORD pixels);
 
 	void					LogSpecs() const;
+	bool					CreateDX7();
+	void					DX7Sync(bool bUp);
 
 
 	// -------------------------------------------------------------------------------
@@ -127,6 +134,7 @@ public:
 	LPDIRECT3DSURFACE9		pSub;					// Sublayer or DepthStencil surface
 	LPDIRECT3DSURFACE9		pTexSurf;				// Texture "surface" level cache
 	LPDIRECT3DRESOURCE9		pResource;				// Main resource
+	LPDIRECT3DSURFACE9		pDX7;
 	LPDIRECT3DTEXTURE9		pMap[MAP_MAX_COUNT];	// Additional texture maps _norm, _rghn, _spec, etc...
 	LPDIRECT3DDEVICE9		pDevice;
 	DWORD					ColorKey;
@@ -134,7 +142,7 @@ public:
 	DWORD					Mipmaps;				// Mipmap count. 1 = no mipmaps
 	int						RefCount;
 	D3D9Pad*				pSkp;					// Pooled sketchpad interface cache
-	HDC						hDC;
+	_HDC_LOCAL				DC;
 };
 
 
