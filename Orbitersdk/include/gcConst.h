@@ -52,20 +52,19 @@ inline gcCore *gcGetCoreInterface()
 /// \defgroup PixelFormats Common pixelformats for surfaces, for Native Only (i.e. HSURFNATIVE)
 ///@{
 #define OAPISURFACE_PF_MASK				0xFF0000	///< PixelFormat Mask
-#define OAPISURFACE_PF_XRGB				0x000000	///< 32bit RGB no-alpha
-#define OAPISURFACE_PF_ARGB				0x010000	///< 32bit ARGB with-alpha	0xAARRGGBB
-#define OAPISURFACE_PF_RGB565			0x020000	///< 16bit RGB no-alpha
-#define OAPISURFACE_PF_S16R				0x030000	///< Signed integer 16-bit (1-channel)
-#define OAPISURFACE_PF_F32R				0x040000	///< Float 32-bit (1-channel)
-#define OAPISURFACE_PF_F32RG			0x050000	///< Float 64-bit (2-channel)
-#define OAPISURFACE_PF_F32RGBA			0x060000	///< Float 128-bit (4-channel) float4(r,g,b,a)
-#define OAPISURFACE_PF_F16R				0x070000	///< Float 16-bit (1-channel) 
-#define OAPISURFACE_PF_F16RG			0x080000	///< Float 32-bit (2-channel) 
-#define OAPISURFACE_PF_F16RGBA			0x090000	///< Float 64-bit (4-channel) float4(r,g,b,a)
-#define OAPISURFACE_PF_DXT1				0x0A0000	///< Compressed DXT1 format
-#define OAPISURFACE_PF_DXT3				0x0B0000	///< Compressed DXT3 format
-#define OAPISURFACE_PF_DXT5				0x0C0000	///< Compressed DXT5 format
-#define OAPISURFACE_PF_DEPTH			0x0D0000	///< Depth-Stencil Surface (This will cause all other OAPISURFACE_* flags being ignored)
+#define OAPISURFACE_PF_XRGB				0x010000	///< 32bit RGB no-alpha
+#define OAPISURFACE_PF_ARGB				0x020000	///< 32bit ARGB with-alpha	0xAARRGGBB
+#define OAPISURFACE_PF_RGB565			0x030000	///< 16bit RGB no-alpha
+#define OAPISURFACE_PF_S16R				0x040000	///< Signed integer 16-bit (1-channel)
+#define OAPISURFACE_PF_F32R				0x050000	///< Float 32-bit (1-channel)
+#define OAPISURFACE_PF_F32RG			0x060000	///< Float 64-bit (2-channel)
+#define OAPISURFACE_PF_F32RGBA			0x070000	///< Float 128-bit (4-channel) float4(r,g,b,a)
+#define OAPISURFACE_PF_F16R				0x080000	///< Float 16-bit (1-channel) 
+#define OAPISURFACE_PF_F16RG			0x090000	///< Float 32-bit (2-channel) 
+#define OAPISURFACE_PF_F16RGBA			0x0A0000	///< Float 64-bit (4-channel) float4(r,g,b,a)
+#define OAPISURFACE_PF_DXT1				0x0B0000	///< Compressed DXT1 format
+#define OAPISURFACE_PF_DXT3				0x0C0000	///< Compressed DXT3 format
+#define OAPISURFACE_PF_DXT5				0x0D0000	///< Compressed DXT5 format
 #define OAPISURFACE_PF_ALPHA			0x0E0000	///< Alpha only surface 8-bit
 #define OAPISURFACE_PF_GRAY				0x0F0000	///< Grayscale Image 8-bit
 ///@}
@@ -1451,6 +1450,8 @@ public:
 	virtual void			RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pWorld, DWORD color);
 	//@}
 
+	virtual bool			StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr = NULL, LPRECT sr = NULL);
+	virtual bool			ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr = NULL);
 
 
 	/**

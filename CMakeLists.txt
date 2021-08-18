@@ -27,7 +27,7 @@ else()
 endif()
 set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
 
-set(ORBITER_SOURCE_SDK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/include)
+set(ORBITER_SOURCE_SDK_INCLUDE_DIR "${CMAKE_BINARY_DIR}/Orbitersdk/include" "${CMAKE_SOURCE_DIR}/Orbitersdk/include")
 set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
 
 add_subdirectory(Orbitersdk/D3D9Client)
