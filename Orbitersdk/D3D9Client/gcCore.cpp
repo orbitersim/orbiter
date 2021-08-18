@@ -119,7 +119,7 @@ HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
 //
 void gcCore::FlipSwap(HSWAP hSwap) 
 { 
-	HR(((gcSwap*)hSwap)->pSwap->Present(0, 0, 0, 0, D3DPRESENT_DONOTWAIT));
+	HR(((gcSwap*)hSwap)->pSwap->Present(0, 0, 0, 0, 0));
 }
 
 
@@ -627,6 +627,35 @@ void gcCore::RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int n
 // Some Helper Functions
 // ===============================================================================================
 //
+
+// ===============================================================================================
+//
+bool gcCore::StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr, LPRECT sr)
+{
+	if (S_OK == g_client->BeginScene())
+	{
+		LPDIRECT3DSURFACE9 pss = SURFACE(src)->GetSurface();
+		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+		HRESULT hr = g_client->GetDevice()->StretchRect(pss, sr, pts, tr, D3DTEXF_LINEAR);
+		g_client->EndScene();
+		return hr == S_OK;
+	}
+	return false;
+}
+
+// ===============================================================================================
+//
+bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr)
+{
+	if (S_OK == g_client->BeginScene())
+	{
+		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+		HRESULT hr = g_client->GetDevice()->ColorFill(pts, tr, (D3DCOLOR)color);
+		g_client->EndScene();
+		return hr == S_OK;
+	}
+	return false;
+}
 
 void gcCore::GetSystemSpecs(SystemSpecs *sp, int size)
 {

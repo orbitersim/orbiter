@@ -871,6 +871,8 @@ public:
 	virtual void			RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pWorld, DWORD color);
 	//@}
 
+	virtual bool			StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr = NULL, LPRECT sr = NULL);
+	virtual bool			ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr = NULL);
 
 
 	/**
