@@ -239,6 +239,7 @@ void MFDWindow::clbkRefreshDisplay (SURFHANDLE)
 	SURFHANDLE tgt = pCore->GetRenderTarget(hSwap);
 	SURFHANDLE surf = GetDisplaySurface();
 
+	// WARNING: Blit src must be a texture otherwise nVidia driver will crash.
 	if (surf) pCore->StretchRectInScene(tgt, surf);
 	else pCore->ClearSurfaceInScene(tgt, 0);
 

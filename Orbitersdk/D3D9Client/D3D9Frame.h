@@ -68,6 +68,7 @@ private:
     DWORD                  MultiSample;
 	DWORD				   dwDisplayMode;
     LPDIRECT3DSURFACE9     pRenderTarget;
+	LPDIRECT3DSURFACE9     pDepthStencil;
     SURFHANDLE			   pBackBuffer;
 	D3DPRESENT_PARAMETERS  d3dPP;
 	D3DCAPS9               caps;

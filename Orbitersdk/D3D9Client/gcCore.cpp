@@ -37,28 +37,18 @@ extern std::set<Font *> g_fonts;
 
 class gcSwap
 {
-	DWORD alloc_id;
 public:
-	gcSwap() : alloc_id('gcSW'), pSwap(NULL), hSurf(NULL) { }
+	gcSwap() : pSwap(NULL), hSurf(NULL), pBack(NULL) { }
 	~gcSwap() { Release(); }
-	void Release() { SAFE_RELEASE(pSwap); if (hSurf) delete SURFACE(hSurf);	hSurf = NULL; }
+	void Release() {
+		DELETE_SURFACE(hSurf);
+		SAFE_RELEASE(pBack);
+		SAFE_RELEASE(pSwap);
+	}
 	LPDIRECT3DSWAPCHAIN9 pSwap;
+	LPDIRECT3DSURFACE9 pBack;
 	SURFHANDLE hSurf;
 };
-
-
-/*
-struct TexEx
-{
-	static const int size = 4;
-	TexEx() { for (int i = 0; i < size; i++) pArray[i] = NULL; }
-	bool HasAny() { for (int i = 0; i < size; i++) if (pArray[i]) return true; return false; }
-	void Release() { for (int i = 0; i < size; i++) SAFE_RELEASE(pArray[i]); }
-	LPDIRECT3DTEXTURE9 pArray[size];
-};*/
-
-
-
 
 
 
@@ -92,19 +82,20 @@ HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
 	LPDIRECT3DDEVICE9 pDev = pClient->GetDevice();
 	LPDIRECT3DSWAPCHAIN9 pSwap = NULL;
 
-	if (pDev->CreateAdditionalSwapChain(&pp, &pSwap) == S_OK) {
-
+	if (pDev->CreateAdditionalSwapChain(&pp, &pSwap) == S_OK)
+	{
 		if (!pData) pData = new gcSwap();
 		else pData->Release();
 		
-		LPDIRECT3DSURFACE9 pBack;
+		LPDIRECT3DSURFACE9 pBack = NULL;
 		HR(pSwap->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBack));
-
-		SurfNative *pSrf = new SurfNative(pBack, OAPISURFACE_BACKBUFFER | OAPISURFACE_RENDER3D);
-		pSrf->SetName("SwapChain BackBuffer");
+		
+		SurfNative *pSrf = new SurfNative(pBack, OAPISURFACE_BACKBUFFER | OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET);
+		pSrf->SetName("SwapChainBackBuffer");
 
 		pData->hSurf = SURFHANDLE(pSrf);
 		pData->pSwap = pSwap;
+		pData->pBack = pBack;
 
 		return HSWAP(pData);
 	}

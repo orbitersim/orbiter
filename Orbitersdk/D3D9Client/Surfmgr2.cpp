@@ -22,6 +22,7 @@
 #include "VectorHelpers.h"
 #include "DebugControls.h"
 #include "gcConst.h"
+#include "D3D9Surface.h"
 
 // =======================================================================
 extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
@@ -1569,7 +1570,7 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 		}
 	}
 
-	if (bOk && pTex) return SURFHANDLE(pTex);
+	if (bOk && pTex) return new SurfNative(pTex, OAPISURFACE_TEXTURE);
 	return NULL;
 }
 

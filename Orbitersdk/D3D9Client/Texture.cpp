@@ -185,6 +185,7 @@ bool TextureManager::GetTexture(const char *fname, SURFHANDLE *pd3dt, int flags)
 	if (texrec) {
 		// found in repository
 		*pd3dt = texrec->tex;
+		SURFACE(texrec->tex)->IncRef();
 		return true;
 	}
 	else if (SUCCEEDED(LoadTexture(fname, pd3dt, flags))) {

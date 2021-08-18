@@ -1004,7 +1004,7 @@ public:
 	 *   terrain collision data in the same way. As soon as the internal collision tile
 	 *   is loaded in the core, the callback is invoked.
 	 */
-	virtual bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev);
+	bool clbkFilterElevation(OBJHANDLE hPlanet, int ilat, int ilng, int lvl, double elev_res, INT16* elev);
 	// @}
 
 
@@ -1038,6 +1038,7 @@ public:
 	void				HackFriendlyHack();
 	void				PickTerrain(DWORD uMsg, int xpos, int ypos);
 	DEVMESHHANDLE		GetDevMesh(MESHHANDLE hMesh);
+	HANDLE				GetMainThread() const {	return hMainThread;	}
 
 
 	// ==================================================================
@@ -1294,7 +1295,6 @@ private:
 	bool bAAEnabled;
 	bool bFailed;
 	bool bRunning;
-	bool bHalt;
 	bool bVertexTex;
 	bool bVSync;
 	bool bRendering;

@@ -65,12 +65,10 @@ class SurfNative
 
 public:
 
-							SurfNative(LPDIRECT3DRESOURCE9 pSrf, DWORD Flags);
+							SurfNative(LPDIRECT3DRESOURCE9 pSrf, DWORD Flags, LPDIRECT3DSURFACE9 pDep = NULL);
 							~SurfNative();
 
 	void					AddMap(DWORD id, LPDIRECT3DTEXTURE9 pMap);
-	void					AddSubSurface(LPDIRECT3DSURFACE9 pSub);
-
 	const D3DSURFACE_DESC*	GetDesc() const { return &desc; }
 	bool					GenerateMipMaps();
 	bool					Decompress();
@@ -92,7 +90,6 @@ public:
 	HDC						GetDC();
 	void					ReleaseDC(HDC);
 
-	bool					HasSubSurface() const { return (pSub != NULL); }
 	bool					IsGDISurface() const;
 	bool					IsCompressed() const;
 	bool					IsBackBuffer() const;
@@ -101,13 +98,13 @@ public:
 	bool					Is3DRenderTarget() const;
 	bool					IsPowerOfTwo() const;
 	bool					IsSystemMem() const { return (desc.Pool == D3DPOOL_SYSTEMMEM); }
-	bool					IsDynamic() const { return (desc.Usage & D3DUSAGE_DYNAMIC) != 0; }
 	bool					IsAdvanced() const { return (Flags & OAPISURFACE_MAPS); }
 	bool					IsColorKeyEnabled() const { return (ColorKey != SURF_NO_CK); }
 
-	LPDIRECT3DSURFACE9		GetSubSurface();
+
+	LPDIRECT3DSURFACE9		GetTempSurface();
 	LPDIRECT3DRESOURCE9		GetResource() const { return pResource; }
-	LPDIRECT3DSURFACE9		GetDepthStencil() const { return pSub; }
+	LPDIRECT3DSURFACE9		GetDepthStencil() const { return pDepth; }
 	LPDIRECT3DSURFACE9		GetSurface();
 	LPDIRECT3DTEXTURE9		GetTexture() const;
 	LPDIRECT3DTEXTURE9		GetMap(int type) const { return pMap[type]; }
@@ -131,7 +128,8 @@ public:
 	D3DSURFACE_DESC			desc;					// Surface size and format description
 	D3DRESOURCETYPE			type;					// Resource type
 	LPDIRECT3DTEXTURE9		pGDICache;				// Low level GDI cache for surface syncing
-	LPDIRECT3DSURFACE9		pSub;					// Sublayer or DepthStencil surface
+	LPDIRECT3DSURFACE9		pTemp;					// Cache for in-surface blitting
+	LPDIRECT3DSURFACE9		pDepth;					// DepthStencil surface for 3D rendering
 	LPDIRECT3DSURFACE9		pTexSurf;				// Texture "surface" level cache
 	LPDIRECT3DRESOURCE9		pResource;				// Main resource
 	LPDIRECT3DSURFACE9		pDX7;

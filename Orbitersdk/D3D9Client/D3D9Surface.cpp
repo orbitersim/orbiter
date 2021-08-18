@@ -103,70 +103,73 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 	// Load more complex surface
 	//
 	D3DXIMAGE_INFO info;
-	HR(D3DXGetImageInfoFromFileA(path, &info));
-
-	if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
-	if (flags & OAPISURFACE_RENDERTARGET) flags |= OAPISURFACE_UNCOMPRESS;
-
-	DWORD Mips = D3DX_FROM_FILE;
-	DWORD Usage = 0;
-	D3DFORMAT Format = info.Format;
-	D3DPOOL Pool = D3DPOOL_DEFAULT;
-	D3DMULTISAMPLE_TYPE Multi = D3DMULTISAMPLE_NONE;
-	bool bLock = false;
-
-	// File Formats Not Supported
-	if (info.Format == D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
-	if (info.Format == D3DFMT_X4R4G4B4) Format = D3DFMT_X8R8G8B8;
-
-	// Predict the surface format
-	//
-	if (info.ImageFileFormat == D3DXIFF_JPG) Format = D3DFMT_X8R8G8B8;
-	if (info.ImageFileFormat == D3DXIFF_PNG) Format = D3DFMT_X8R8G8B8;
-	if (info.ImageFileFormat == D3DXIFF_BMP) Format = D3DFMT_X8R8G8B8;
-
-	if (flags & OAPISURFACE_UNCOMPRESS)
+	if (S_OK == D3DXGetImageInfoFromFileA(path, &info))
 	{
-		D3DFORMAT Fmt = (flags & OAPISURFACE_ALPHA) ? D3DFMT_A8R8G8B8 : D3DFMT_X8R8G8B8;
-		if (info.Format == D3DFMT_DXT1) Format = Fmt;
-		if (info.Format == D3DFMT_DXT5) Format = Fmt;
-		if (info.Format == D3DFMT_DXT3) Format = Fmt;
-	}
+		if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
+		if (flags & OAPISURFACE_RENDERTARGET) flags |= OAPISURFACE_UNCOMPRESS;
 
-	// User defined format
-	//
-	D3DFORMAT Fmt = D3DFORMAT(NatConvertFormat_OAPI_to_DX(flags));
-	if (Fmt != 0) Format = Fmt;
-	
-	if (flags & OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET;
-	if (flags & OAPISURFACE_GDI) Usage = D3DUSAGE_DYNAMIC;
-	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
-	if (flags & OAPISURFACE_NOMIPMAPS) Mips = 1;
-	if (flags & OAPISURFACE_MIPMAPS) Mips = 0;
-	
-	if (flags & OAPISURFACE_TEXTURE)
-	{
-		if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips,
-			Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
+		DWORD Mips = D3DX_FROM_FILE;
+		DWORD Usage = 0;
+		D3DFORMAT Format = info.Format;
+		D3DPOOL Pool = D3DPOOL_DEFAULT;
+		D3DMULTISAMPLE_TYPE Multi = D3DMULTISAMPLE_NONE;
+		bool bLock = false;
+
+		// File Formats Not Supported
+		if (info.Format == D3DFMT_A4R4G4B4) Format = D3DFMT_A8R8G8B8;
+		if (info.Format == D3DFMT_X4R4G4B4) Format = D3DFMT_X8R8G8B8;
+
+		// Predict the surface format
+		//
+		if (info.ImageFileFormat == D3DXIFF_JPG) Format = D3DFMT_X8R8G8B8;
+		if (info.ImageFileFormat == D3DXIFF_PNG) Format = D3DFMT_X8R8G8B8;
+		if (info.ImageFileFormat == D3DXIFF_BMP) Format = D3DFMT_X8R8G8B8;
+
+		if (flags & OAPISURFACE_UNCOMPRESS)
 		{
-			LogBlu("TextureLoaded[%s] Usage=%u, Format=%u (%u,%u)", file, Usage, Format, info.Width, info.Height);
-			SurfNative *pSrf = new SurfNative(pTex, flags);
-			pSrf->SetName(file);
-			return pSrf;
+			D3DFORMAT Fmt = (flags & OAPISURFACE_ALPHA) ? D3DFMT_A8R8G8B8 : D3DFMT_X8R8G8B8;
+			if (info.Format == D3DFMT_DXT1) Format = Fmt;
+			if (info.Format == D3DFMT_DXT5) Format = Fmt;
+			if (info.Format == D3DFMT_DXT3) Format = Fmt;
 		}
-	}
 
-	if (flags & OAPISURFACE_RENDERTARGET)
-	{
-		LPDIRECT3DSURFACE9 pSurf = NULL;
-		if (S_OK == g_client->GetDevice()->CreateRenderTarget(info.Width, info.Height, Format, Multi, 0, bLock, &pSurf, NULL))
+		// User defined format
+		//
+		D3DFORMAT Fmt = D3DFORMAT(NatConvertFormat_OAPI_to_DX(flags));
+		if (Fmt != 0) Format = Fmt;
+
+		if (flags & OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET;
+		if (flags & OAPISURFACE_GDI) Usage = D3DUSAGE_DYNAMIC;
+		if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
+		if (flags & OAPISURFACE_NOMIPMAPS) Mips = 1;
+		if (flags & OAPISURFACE_MIPMAPS) Mips = 0;
+
+		if (flags & OAPISURFACE_TEXTURE)
 		{
-			if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, path, NULL, D3DX_DEFAULT, 0, NULL))
+			if (S_OK == D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, info.Width, info.Height, Mips,
+				Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
 			{
-				LogBlu("SurfaceLoaded[%s] RENDERTARGET Format=%u (%u,%u)", file, Format, info.Width, info.Height);
-				SurfNative* pSrf = new SurfNative(pSurf, flags);
+				LogBlu("TextureLoaded[%s] Usage=%u, Format=%u (%u,%u)", file, Usage, Format, info.Width, info.Height);
+				SurfNative* pSrf = new SurfNative(pTex, flags);
 				pSrf->SetName(file);
-				return pSrf;
+				return SURFHANDLE(pSrf);
+			}
+			assert(false);
+			return NULL;
+		}
+
+		if (flags & OAPISURFACE_RENDERTARGET)
+		{
+			LPDIRECT3DSURFACE9 pSurf = NULL;
+			if (S_OK == g_client->GetDevice()->CreateRenderTarget(info.Width, info.Height, Format, Multi, 0, bLock, &pSurf, NULL))
+			{
+				if (S_OK == D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, path, NULL, D3DX_DEFAULT, 0, NULL))
+				{
+					LogBlu("SurfaceLoaded[%s] RENDERTARGET Format=%u (%u,%u)", file, Format, info.Width, info.Height);
+					SurfNative* pSrf = new SurfNative(pSurf, flags);
+					pSrf->SetName(file);
+					return SURFHANDLE(pSrf);
+				}
 			}
 		}
 	}
@@ -264,7 +267,7 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 
 	if (flags & OAPISURFACE_MIPMAPS) {
 		assert((flags & OAPISURFACE_TEXTURE) != 0);		// Potentially invalid combo
-		assert((flags & OAPISURFACE_GDI) == 0);			// Potentially invalid combo
+		assert((flags & OAPISURFACE_GDI) == 0);			// Invalid combo
 	}
 
 	
@@ -291,15 +294,11 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 
 		if (S_OK == D3DXCreateTexture(pDev, width, height, Mips, Usage, Format, Pool, &pTex))
 		{
-			SurfNative* pNat = new SurfNative(pTex, flags);
-
 			if (flags & OAPISURFACE_RENDER3D)
 			{
 				HR(pDev->CreateDepthStencilSurface(width, height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, true, &pDepth, NULL));	
-				pNat->AddSubSurface(pDepth);
 			}
-
-			return SURFHANDLE(pNat);
+			return SURFHANDLE(new SurfNative(pTex, flags, pDepth));
 		}
 	}
 
@@ -311,15 +310,11 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 
 		if (S_OK == pDev->CreateRenderTarget(width, height, Format, Multi, 0, false, &pSurf, NULL))
 		{
-			SurfNative* pNat = new SurfNative(pSurf, flags);
-
 			if (flags & OAPISURFACE_RENDER3D)
 			{
 				HR(pDev->CreateDepthStencilSurface(width, height, D3DFMT_D24S8, Multi, 0, true, &pDepth, NULL));
-				pNat->AddSubSurface(pDepth);
 			}
-
-			return SURFHANDLE(pNat);
+			return SURFHANDLE(new SurfNative(pSurf, flags, pDepth));
 		}
 	}
 
@@ -399,11 +394,12 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 
 // -----------------------------------------------------------------------------------------------
 //
-SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags) :
+SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags, LPDIRECT3DSURFACE9 _pDepth) :
 	pResource(pRes),
 	pDX7(NULL),
 	pSkp(NULL),
-	pSub(NULL),
+	pTemp(NULL),
+	pDepth(_pDepth),
 	pTexSurf(NULL),
 	pGDICache(NULL),
 	pDevice(g_client->GetDevice()),
@@ -413,7 +409,9 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags) :
 	Mipmaps(1),
 	RefCount(1)
 {
+
 	assert(pRes != NULL);
+	assert(GetCurrentThread() == g_client->GetMainThread());
 
 	SurfaceCatalog.insert(this);
 
@@ -429,12 +427,13 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags) :
 		LPDIRECT3DSURFACE9 pSrf = static_cast<LPDIRECT3DSURFACE9>(pResource);
 		pSrf->GetDesc(&desc);
 	}
-
+	else 
 	if (type == D3DRTYPE_TEXTURE) {
 		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(pResource);
 		pTex->GetLevelDesc(0, &desc);
 		Mipmaps = pTex->GetLevelCount();
 	}
+	else assert(false);
 }
 
 
@@ -446,10 +445,15 @@ SurfNative::~SurfNative()
 
 	for (int i = 0; i < MAP_MAX_COUNT; i++) SAFE_RELEASE(pMap[i]);
 
-	SAFE_RELEASE(pSub);
+	if (!(Flags & OAPISURFACE_BACKBUFFER))
+	{
+		SAFE_RELEASE(pResource);
+		SAFE_RELEASE(pDepth);
+	}
+
+	SAFE_RELEASE(pTemp);
 	SAFE_RELEASE(pDX7);
 	SAFE_RELEASE(pTexSurf);
-	SAFE_RELEASE(pResource);
 	SAFE_RELEASE(pGDICache);
 	SAFE_DELETE(pSkp);
 }
@@ -468,15 +472,6 @@ void SurfNative::AddMap(DWORD id, LPDIRECT3DTEXTURE9 _pMap)
 
 // -----------------------------------------------------------------------------------------------
 //
-void SurfNative::AddSubSurface(LPDIRECT3DSURFACE9 _pSub)
-{
-	SAFE_RELEASE(pSub);
-	pSub = _pSub;
-}
-
-
-// -----------------------------------------------------------------------------------------------
-//
 LPDIRECT3DTEXTURE9 SurfNative::GetTexture() const
 {
 	if (type == D3DRTYPE_TEXTURE) return static_cast<LPDIRECT3DTEXTURE9>(pResource);
@@ -486,11 +481,11 @@ LPDIRECT3DTEXTURE9 SurfNative::GetTexture() const
 
 // -----------------------------------------------------------------------------------------------
 //
-LPDIRECT3DSURFACE9 SurfNative::GetSubSurface()
+LPDIRECT3DSURFACE9 SurfNative::GetTempSurface()
 {
-	if (pSub) return pSub;
-	HR(pDevice->CreateRenderTarget(desc.Width, desc.Height, desc.Format, D3DMULTISAMPLE_NONE, 0, false, &pSub, NULL));
-	return pSub;
+	if (pTemp) return pTemp;
+	HR(pDevice->CreateRenderTarget(desc.Width, desc.Height, desc.Format, D3DMULTISAMPLE_NONE, 0, false, &pTemp, NULL));
+	return pTemp;
 }
 
 
@@ -545,9 +540,7 @@ bool SurfNative::IsRenderTarget() const
 //
 bool SurfNative::Is3DRenderTarget() const
 {
-	if (Flags & OAPISURFACE_BACKBUFFER) return true;
-	if (Flags & OAPISURFACE_RENDER3D) return true;
-	return false;
+	return (pDepth != NULL) && ((Flags & OAPISURFACE_RENDER3D) != 0);
 }
 
 
@@ -660,9 +653,7 @@ bool SurfNative::CreateDX7()
 			return true;
 		}
 	}
-	else {
-		return false;
-	}
+	return false;
 }
 
 
@@ -772,8 +763,8 @@ bool SurfNative::Decompress()
 {
 	if (IsCompressed())
 	{
-		LPDIRECT3DTEXTURE9 pDecomp;
-		LPDIRECT3DSURFACE9 pDeSrf;
+		LPDIRECT3DTEXTURE9 pDecomp = NULL;
+		LPDIRECT3DSURFACE9 pDeSrf = NULL;
 		D3DFORMAT Format = D3DFMT_FROM_FILE;
 
 		if (desc.Format == D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
@@ -790,18 +781,20 @@ bool SurfNative::Decompress()
 		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
 			D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pDecomp))
 		{
-			if (S_OK == pDecomp->GetSurfaceLevel(0, &pDeSrf))
-			{
-				SAFE_RELEASE(pTexSurf);
-				SAFE_RELEASE(pResource);
-				pResource = pDecomp;
-				pTexSurf = pDeSrf;
-				HR(pDecomp->GetLevelDesc(0, &desc));
-				Mipmaps = pDecomp->GetLevelCount();
-				type = pDecomp->GetType();
-				Flags = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
-				return true;		
-			}
+			HR(pDecomp->GetSurfaceLevel(0, &pDeSrf))
+			
+			SAFE_RELEASE(pTexSurf);
+			SAFE_RELEASE(pResource);
+
+			pResource = pDecomp;
+			pTexSurf = pDeSrf;
+
+			HR(pDecomp->GetLevelDesc(0, &desc));
+			Mipmaps = pDecomp->GetLevelCount();
+			type = pDecomp->GetType();
+			Flags = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
+			return true;		
+			
 		}
 
 		LogSpecs();
@@ -862,7 +855,8 @@ void SurfNative::LogSpecs() const
 {
 	LogErr("Surface name is [%s] OAPI_Handle=%s", name, _PTR(this));
 	if (pTexSurf) LogErr("Has a Surface Interface");
-	if (pSub) LogErr("Has a SubSurface Interface");
+	if (pTemp) LogErr("Has a In-surface temp layer");
+	if (pDepth) LogErr("Has a DepthStencil surface");
 	if (pDX7) LogErr("Surface is in DX7 compatibility mode");
 	if (DC.hDC) LogErr("Has a HDC [%s]", _PTR(DC.hDC));
 	LogErr("OAPI_Attribs: %s", NatOAPIFlags(Flags));

@@ -503,7 +503,6 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	bAAEnabled    (false),
 	bFailed       (false),
 	bRunning      (false),
-	bHalt         (false),
 	bVertexTex    (false),
 	bVSync        (false),
 	bRendering	  (false),
@@ -535,35 +534,6 @@ D3D9Client::~D3D9Client()
 			delete[] g_cm_list[n].label[1];
 		}
 		delete[] g_cm_list;
-	}
-
-	//
-	// Orbiter seems not to release all resources :(
-	//
-
-	// --- Fonts
-	if (g_fonts.size()) {
-		LogWrn("%u un-released fonts!", g_fonts.size());
-		for (auto it = g_fonts.begin(); it != g_fonts.end(); ) {
-			clbkReleaseFont(*it++);
-		}
-		g_fonts.clear();
-	}
-	// --- Brushes
-	if (g_brushes.size()) {
-		LogWrn("%u un-released brushes!", g_brushes.size());
-		for (auto it = g_brushes.begin(); it != g_brushes.end(); ) {
-			clbkReleaseBrush(*it++);
-		}
-		g_brushes.clear();
-	}
-	// --- Pens
-	if (g_pens.size()) {
-		LogWrn("%u un-released pens!", g_pens.size());
-		for (auto it = g_pens.begin(); it != g_pens.end(); ) {
-			clbkReleasePen(*it++);
-		}
-		g_pens.clear();
 	}
 }
 
@@ -638,7 +608,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bFullscreen      = false;
 	bFailed			 = false;
 	bRunning		 = false;
-	bHalt			 = false;
 	bVertexTex		 = false;
 	viewW = viewH    = 0;
 	viewBPP          = 0;
@@ -1166,13 +1135,12 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	SAFE_RELEASE(pSplashScreen);	// Splash screen related
 	SAFE_RELEASE(pTextScreen);		// Splash screen related
-	SAFE_RELEASE(pDepthStencil);
-
-	SURFHANDLE hBBuf = GetBackBufferHandle();
-
-	DELETE_SURFACE(hBBuf);
 	DELETE_SURFACE(pDefaultTex);
 	SAFE_RELEASE(pNoiseTex);
+
+	SURFHANDLE hBackBuffer = GetBackBufferHandle();
+
+	DELETE_SURFACE(hBackBuffer);
 
 	LogAlw("============ Checking Object Catalogs ===========");
 
@@ -1187,6 +1155,47 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 			LogWrn("Surface %s (%s) (%u,%u)", _PTR(srf), srf->GetName(), srf->GetWidth(), srf->GetHeight());
 			delete srf;
 		}
+	}
+
+	// Check mesh catalog --------------------------------------------------------------------------------------
+	//
+	if (MeshCatalog.size() > 0)
+	{
+		LogErr("UnDeleted Meshe(s) Detected %u", (DWORD)MeshCatalog.size());
+		auto Undeleted(MeshCatalog);
+		for (auto msh : Undeleted)
+		{
+			LogWrn("Mesh[%s] Handle = %s ", msh->GetName(), _PTR(msh));
+			delete msh;
+		}
+	}
+
+	// Check Fonts catalog --------------------------------------------------------------------------------------
+	//
+	if (g_fonts.size()) {
+		LogWrn("%u un-released fonts!", g_fonts.size());
+		for (auto it = g_fonts.begin(); it != g_fonts.end(); ) {
+			clbkReleaseFont(*it++);
+		}
+		g_fonts.clear();
+	}
+
+	// --- Brushes
+	if (g_brushes.size()) {
+		LogWrn("%u un-released brushes!", g_brushes.size());
+		for (auto it = g_brushes.begin(); it != g_brushes.end(); ) {
+			clbkReleaseBrush(*it++);
+		}
+		g_brushes.clear();
+	}
+
+	// --- Pens
+	if (g_pens.size()) {
+		LogWrn("%u un-released pens!", g_pens.size());
+		for (auto it = g_pens.begin(); it != g_pens.end(); ) {
+			clbkReleasePen(*it++);
+		}
+		g_pens.clear();
 	}
 
 	// Check tile catalog --------------------------------------------------------------------------------------
@@ -1366,16 +1375,6 @@ void D3D9Client::clbkRenderScene()
 	if (pDevice->TestCooperativeLevel()!=S_OK) {
 		bFailed=true;
 		MessageBoxA(pFramework->GetRenderWindow(),"Connection to Direct3DDevice is lost\nExit the simulation with Ctrl+Q and restart.\n\nAlt-Tabing not supported in a true fullscreen mode.\nDialog windows won't work with multi-sampling in a true fullscreen mode.","D3D9Client: Lost Device",0);
-		return;
-	}
-
-	if (bHalt) {
-		pDevice->BeginScene();
-		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-		pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
-		rect2.left-=4; rect2.top-=4;
-		pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
-		pDevice->EndScene();
 		return;
 	}
 
@@ -2496,14 +2495,11 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
 
-	// Can't blit in a compressed surface
+	// Can't blit in a compressed surface, decompress..
 	//
 	if (!SURFACE(tgt)->Decompress())
 	{
-		// Failed
-		LogErr("oapiBlt() Failed. Target is compressed. OAPIHandle = %s", _PTR(tgt));
-		assert(false);
-		return false;
+		HALT();	return false;
 	}
 
 
@@ -2544,7 +2540,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 
 
-	if ((sd->Format == td->Format) && !bCK && !bCL && !bSC)
+	if ((sd->Format == td->Format) && !bCK && !bSC)
 	{
 
 		// Most common case: Target is a render-target and source is in a video memory
@@ -2563,7 +2559,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 			{
 				// Source and Target are the same surface, reroute through temp.
 				//
-				LPDIRECT3DSURFACE9 tmp = SURFACE(src)->GetSubSurface();
+				LPDIRECT3DSURFACE9 tmp = SURFACE(src)->GetTempSurface();
 
 				if (S_OK == pDevice->StretchRect(pss, &rs, tmp, &rs, D3DTEXF_POINT))
 				{
@@ -2575,7 +2571,10 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 				return false;
 			}
 		}
+	}
 
+	if ((sd->Format == td->Format) && !bCK && !bSC && !bCL)
+	{
 
 		// Texture Update: Source is in system memory and target is a texture
 		// 
@@ -2599,10 +2598,6 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 			BltError(src, tgt, &rs, &rt);
 			return false;
 		}
-
-		LogErr("oapiBlt() Failed (Main)");
-		BltError(src, tgt, &rs, &rt);
-		return false;
 	}
 
 

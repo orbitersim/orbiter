@@ -146,10 +146,6 @@ void D3D9Client::RenderControlPanel()
 					rendt_size += pSurf->GetSizeInBytes();
 				}
 			}
-			else if (pSurf->IsDynamic()) {
-				dyntx_count++;
-				dyntx_size += pSurf->GetSizeInBytes();
-			}
 			else {
 				textr_count++;
 				textr_size += pSurf->GetSizeInBytes();

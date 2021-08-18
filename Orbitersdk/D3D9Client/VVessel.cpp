@@ -128,7 +128,6 @@ void vVessel::GlobalExit ()
 {
 	DELETE_SURFACE(defexhausttex);
 	DELETE_SURFACE(defreentrytex);
-	SAFE_DELETE(tHUD);
 }
 
 
@@ -1985,7 +1984,6 @@ void vVessel::ReloadTextures()
 // ===========================================================================================
 //
 
-SurfNative * vVessel::tHUD = 0;
 SurfNative * vVessel::defreentrytex = 0;
 SurfNative * vVessel::defexhausttex = 0;
 

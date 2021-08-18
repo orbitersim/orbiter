@@ -288,7 +288,6 @@ extern IDirect3DVertexDeclaration9	*pPositionDecl;
 extern IDirect3DVertexDeclaration9	*pVector4Decl;
 extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
-extern IDirect3DVertexDeclaration9	*pGPUBlitDecl;
 extern IDirect3DVertexDeclaration9	*pSketchpadDecl;
 
 inline void swap(double &a, double &b)
