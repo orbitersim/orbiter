@@ -800,7 +800,7 @@ bool OrbiterGraphics::clbkGetRenderParam (DWORD prm, DWORD *value) const
 
 // =======================================================================
 
-int OrbiterGraphics::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, UINT context)
+int OrbiterGraphics::clbkVisEvent (OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR context)
 {
 	VObject *vo = (VObject*)vis;
 	vo->clbkEvent (msg, context);
