@@ -171,6 +171,7 @@ void ModuleTab::RefreshLists ()
 		rec->name[len] = '\0';
 		rec->info = 0;
 		rec->active = false;
+		rec->locked = false;
 
 		// check if module is set active in config
 		for (idx = pCfg->nactmod-1; idx >= 0; idx--)
