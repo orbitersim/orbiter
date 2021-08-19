@@ -31,6 +31,11 @@ target_link_libraries(XRSound_dll
 	${IRRKLANG_LIB}
 )
 
+add_dependencies(XRSound_dll
+	${OrbiterTgt}
+	Orbitersdk
+)
+
 install(TARGETS XRSound_dll
 	RUNTIME
 	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
