@@ -48,17 +48,13 @@ jobs:
         mkdir out\build
         mkdir out\install
       
-    - name: Configure
+    - name: Build & test
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture}} 
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture}}
         cmake --preset ${{ matrix.architecture}}-release .
-
-    - name: Build
-      run: 'cmake --preset build-${{ matrix.architecture}}-release --build .'
-
-    - name: Test
-      run: 'ctest --preset test-${{ matrix.architecture }}-release'
+        cmake --preset build-${{ matrix.architecture}}-release --build .
+        ctest --preset test-${{ matrix.architecture }}-release
 
     - name: Install
       run: 'cmake --install .'
