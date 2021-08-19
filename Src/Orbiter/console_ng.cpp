@@ -12,6 +12,7 @@
 #include "DlgInfo.h"
 #include "DlgTacc.h"
 #include "DlgFunction.h"
+#include "DlgRecorder.h"
 #include "DlgHelp.h"
 #include "resource.h"
 
@@ -132,6 +133,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 			Echo("dlg info     -- Open the object info dialog");
 			Echo("dlg tacc     -- Open the time acceleration dialog");
 			Echo("dlg help     -- Open the help dialog");
+			Echo("dlg record   -- Open the flight recorder dialog");
 			Echo("dlg function -- Open the plugin function list");
 		}
 		else if (!_strnicmp(pc, "gui", 3)) {
@@ -225,6 +227,8 @@ bool orbiter::ConsoleNG::ParseCmd()
 				pDlgMgr->EnsureEntry<DlgTacc>();
 			else if (!_strnicmp(pc, "function", 8))
 				pDlgMgr->EnsureEntry<DlgFunction>();
+			else if (!_strnicmp(pc, "record", 6))
+				pDlgMgr->EnsureEntry<DlgRecorder>();
 			else if (!_strnicmp(pc, "help", 4))
 				pDlgMgr->EnsureEntry<DlgHelp>();
 		}
