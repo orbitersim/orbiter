@@ -20,6 +20,38 @@ using namespace oapi;
 extern D3D9Client* g_client;
 
 
+void NatCheckFlags(DWORD flags)
+{
+	// Append dependend flags
+	if (flags & OAPISURFACE_RENDER3D) flags |= OAPISURFACE_RENDERTARGET;
+	if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
+
+	if (flags & OAPISURFACE_RENDERTARGET) {
+		if (flags & OAPISURFACE_GDI)
+		{
+			oapiWriteLog("OAPISURFACE_GDI is incomaptible with OAPISURFACE_RENDERTARGET and OAPISURFACE_SKETCHPAD");
+			HALT();
+		}
+		if (flags & OAPISURFACE_SYSMEM)
+		{
+			oapiWriteLog("OAPISURFACE_SYSMEM is incomaptible with OAPISURFACE_RENDERTARGET and OAPISURFACE_SKETCHPAD");
+			HALT();
+		}
+	}
+
+	if (flags & OAPISURFACE_MIPMAPS) {
+		if ((flags & OAPISURFACE_TEXTURE) == 0)
+		{
+			oapiWriteLog("OAPISURFACE_MIPMAPS can be only assigned to a OAPISURFACE_TEXTURE");
+			HALT();
+		}
+		if (flags & OAPISURFACE_SYSMEM)
+		{
+			oapiWriteLog("OAPISURFACE_MIPMAPS is incomaptible with OAPISURFACE_SYSMEM");
+			HALT();
+		}
+	}
+}
 
 LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* fname, const char* ext)
 {
@@ -57,6 +89,8 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 {
 	LPDIRECT3DTEXTURE9 pTex = NULL;
 	SurfNative* pNat = NULL;
+
+	NatCheckFlags(flags);
 
 	char path[MAX_PATH];
 
@@ -256,26 +290,18 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 	D3DMULTISAMPLE_TYPE Multi = D3DMULTISAMPLE_NONE;
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 
-	// Append dependend flags
-	if (flags & OAPISURFACE_RENDER3D) flags |= OAPISURFACE_RENDERTARGET;
-	if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
-
-	if (flags & OAPISURFACE_RENDERTARGET) {
-		assert((flags & OAPISURFACE_GDI) == 0);			// Potentially invalid combo
-		assert((flags & OAPISURFACE_SYSMEM) == 0);		// Potentially invalid combo
-	}
-
-	if (flags & OAPISURFACE_MIPMAPS) {
-		assert((flags & OAPISURFACE_TEXTURE) != 0);		// Potentially invalid combo
-		assert((flags & OAPISURFACE_GDI) == 0);			// Invalid combo
-	}
-
+	NatCheckFlags(flags);
 	
 	if (flags & OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET;
 	if (flags & OAPISURFACE_GDI) Usage = D3DUSAGE_DYNAMIC;
 	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
 	if (flags & OAPISURFACE_NOMIPMAPS) Mips = 1;
-	if (flags & OAPISURFACE_MIPMAPS) Mips = 0;	// Fullchain
+	if (flags & OAPISURFACE_MIPMAPS)
+	{
+		Mips = 0;
+		Usage |= D3DUSAGE_AUTOGENMIPMAP;
+	}
+
 	if (flags & OAPISURFACE_ANTIALIAS) Multi = D3DMULTISAMPLE_8_SAMPLES;
 
 	D3DFORMAT Format = D3DFORMAT(NatConvertFormat_OAPI_to_DX(flags));
@@ -325,7 +351,7 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 
 // ===============================================================================================
 //
-SURFHANDLE	NatGetMipSublevel(SURFHANDLE hSrf, int level)
+SURFHANDLE NatGetMipSublevel(SURFHANDLE hSrf, int level)
 {
 	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSrf);
 
@@ -688,6 +714,16 @@ bool SurfNative::Fill(LPRECT rect, DWORD c)
 			LPDIRECT3DSURFACE9 pSrf = GetSurface();
 			if (pDevice->ColorFill(pSrf, r, c) == S_OK) return true;
 		}
+	}
+
+	if (IsGDISurface())
+	{
+		HDC hDC = SurfNative::GetDC();
+		HBRUSH hBr = CreateSolidBrush(c);
+		FillRect(hDC, &re, hBr);
+		DeleteObject(hBr);
+		SurfNative::ReleaseDC(hDC);
+		return true;
 	}
 
 	LogErr("ColorFill Failed");
