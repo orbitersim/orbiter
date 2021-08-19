@@ -799,7 +799,7 @@ void Orbiter::FRecorder_Activate (bool active, const char *fname, bool append)
 	} else {
 		bRecord = false;
 	}
-	if (g_pane->MIBar()) g_pane->MIBar()->SetRecording(bRecord);
+	if (g_pane && g_pane->MIBar()) g_pane->MIBar()->SetRecording(bRecord);
 }
 
 // Save a system event

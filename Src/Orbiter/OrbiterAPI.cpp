@@ -1639,12 +1639,13 @@ DLLEXPORT void oapiRegisterMFD (int mfd, const EXTMFDSPEC *spec)
 
 DLLEXPORT void oapiRegisterExternMFD (ExternMFD *emfd, const MFDSPEC &spec)
 {
-	g_pane->RegisterExternMFD (emfd, spec);
+	if (g_pane)
+		g_pane->RegisterExternMFD (emfd, spec);
 }
 
 DLLEXPORT bool oapiUnregisterExternMFD (ExternMFD *emfd)
 {
-	return g_pane->UnregisterExternMFD (emfd);
+	return (g_pane ? g_pane->UnregisterExternMFD (emfd) : false);
 }
 
 DLLEXPORT void oapiDisableMFDMode (int mode)
