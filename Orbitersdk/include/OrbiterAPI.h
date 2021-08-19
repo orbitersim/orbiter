@@ -346,6 +346,8 @@ typedef struct {
 #define OAPISURFACE_UNCOMPRESS   0x0100 ///< Create an uncompressed surface. If loaded from file, uncompress if required.
 #define OAPISURFACE_SYSMEM       0x0200 ///< Create the surface in system (host) memory
 #define OAPISURFACE_RENDER3D     0x0400 ///< Create a surface that can act as a target for rendering a 3D scene
+#define OAPISURFACE_ANTIALIAS    0x0800 ///< Create a surface with anti-aliasing the level will depend on launchpad settings.
+#define OAPISURFACE_SHARED		 0x1000 ///< Create a shared resource
 //@}
 
 /**
