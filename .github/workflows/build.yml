@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [x64, Win32]
+        architecture: [x64, x86]
       
     runs-on: windows-latest
 
@@ -48,24 +48,21 @@ jobs:
         mkdir out\install
       
     - name: Configure
-      run: 'cmake -A ${{ matrix.architecture }} -G "Visual Studio 16 2019" -S ../.. -DORBITER_MAKE_DOC=OFF -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
-      working-directory: ${{ github.workspace }}/out/build
+      run: 'cmake --preset ${{ matrix.architecture}}-release .'
 
     - name: Build
-      run: 'cmake --build . --config Release -- "-maxCpuCount:2" /p:CL_MPcount=2'
-      working-directory: ${{ github.workspace }}/out/build
+      run: 'cmake --preset build-${{ matrix.architecture}}-release --build .'
 
     - name: Test
-      run: 'ctest --build-config Release'
-      working-directory: ${{ github.workspace }}/out/build
+      run: 'ctest --preset test-${{ matrix.architecture }}-release'
 
     - name: Install
-      run: 'cmake --install . --prefix "${{ github.workspace }}\out\install"'
-      working-directory: ${{ github.workspace }}/out/build
+      run: 'cmake --install .'
+      working-directory: ${{ github.workspace }}/out/build/${{ matrix.architecture }}-release
 
     - name: Pack
       if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
-      working-directory: ${{ github.workspace }}/out/install/Orbiter
+      working-directory: ${{ github.workspace }}/out/install/${{ matrix.architecture }}-release/Orbiter
       shell: cmd
       run: '7z a "${{ github.workspace }}/out/Orbiter.zip" .'
 
