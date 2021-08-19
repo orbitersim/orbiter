@@ -19,7 +19,8 @@ extern TimeData td;
 char logname[256] = "Orbiter.log";
 char logs[256] = "";
 bool finelog = false;
-HANDLE hStdO = NULL;
+
+LogOutFunc logOut = 0;
 
 void InitLog (char *logfile, bool append)
 {
@@ -28,29 +29,14 @@ void InitLog (char *logfile, bool append)
 	ofs << "**** " << logname << endl;
 }
 
+void SetLogOutFunc(LogOutFunc func)
+{
+	logOut = func;
+}
+
 void SetLogVerbosity (bool verbose)
 {
 	finelog = verbose;
-}
-
-void SetConsole (bool active)
-{
-	if (active) hStdO = GetStdHandle (STD_OUTPUT_HANDLE);
-	else        hStdO = NULL;
-}
-
-void ConsoleOut (const char *msg)
-{
-	if (!hStdO) return;
-	DWORD count;
-	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	SetConsoleTextAttribute (hStdO, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-	GetConsoleScreenBufferInfo (hStdO, &csbi);
-	csbi.dwCursorPosition.X = 0;
-	SetConsoleCursorPosition (hStdO, csbi.dwCursorPosition);
-	WriteConsole (hStdO, msg, strlen(msg), &count, NULL);
-	SetConsoleTextAttribute (hStdO, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	WriteConsole (hStdO, "\n> ", 3, &count, NULL);
 }
 
 void LogOut (const char *msg, ...)
@@ -69,9 +55,9 @@ void LogOutVA(const char *format, va_list ap)
 	vfprintf(f, format, ap);
 	fputc('\n', f);
 	fclose(f);
-	if (hStdO) {
+	if (logOut) {
 		vsnprintf(logs, 255, format, ap);
-		ConsoleOut(logs);
+		(*logOut)(logs);
 	}
 }
 
@@ -86,9 +72,9 @@ void LogOutFine (const char *msg, ...)
 		vfprintf (f, msg, ap);
 		fputc ('\n', f);
 		fclose (f);
-		if (hStdO) {
+		if (logOut) {
 			vsnprintf (logs, 255, msg, ap);
-			ConsoleOut (logs);
+			(*logOut)(logs);
 		}
 		va_end (ap);
 	}
