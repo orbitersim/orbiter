@@ -19,6 +19,7 @@ namespace orbiter {
 		HWND WindowHandle() const { return m_hWnd; }
 		bool ParseCmd();
 		void Echo(const char* str) const;
+		void EchoIntro() const;
 		bool DestroyStatDlg();
 
 	private:
@@ -26,7 +27,7 @@ namespace orbiter {
 		Orbiter* m_pOrbiter;
 		HWND m_hWnd;       // console window handle
 		HWND m_hStatWnd;   // stats dialog
-		HANDLE hThread;  // console thread handle
+		HANDLE m_hThread;  // console thread handle
 	};
 
 }

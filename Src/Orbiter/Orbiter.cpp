@@ -855,6 +855,9 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 		Pause (TRUE);
 	}
 
+	if (m_pConsole)
+		m_pConsole->EchoIntro();
+
 	return hRenderWnd;
 }
 

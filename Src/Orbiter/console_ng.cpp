@@ -12,15 +12,19 @@
 #include "DlgInfo.h"
 #include "DlgTacc.h"
 #include "DlgFunction.h"
+#include "DlgHelp.h"
 #include "resource.h"
 
 extern PlanetarySystem* g_psys;
 extern Vessel* g_focusobj;
 extern TimeData td;
 
-DWORD WINAPI InputProc(LPVOID);
-INT_PTR CALLBACK ServerDlgProc(HWND, UINT, WPARAM, LPARAM);
+static DWORD WINAPI InputProc(LPVOID);
+static INT_PTR CALLBACK ServerDlgProc(HWND, UINT, WPARAM, LPARAM);
+static void ConsoleOut(const char* msg);
+
 static HANDLE hMutex = 0;
+static HANDLE s_hStdO = NULL;
 static char cConsoleCmd[1024] = "\0";
 static orbiter::ConsoleNG* s_console = NULL; // access to console instance from message callback functions
 
@@ -28,7 +32,7 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
 	: m_pOrbiter(pOrbiter)
 	, m_hWnd(NULL)
 	, m_hStatWnd(NULL)
-	, hThread(NULL)
+	, m_hThread(NULL)
 {
 	static const PSTR title = "Orbiter Server Console";
 	static SIZE_T stackSize = 4096;
@@ -40,23 +44,22 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
 		SetConsoleTitle(title);
 		Sleep(40); // Ugly, but suggested by MS document to make sure title is changed
 		m_hWnd = FindWindow(NULL, title); // Ugly, but apparently nothing better is available
-		hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
-		SetConsole(true);
-
-		ConsoleOut("-----------------\nOrbiter NG (no graphics)");
-		ConsoleOut("Running in server mode (no graphics client attached).");
-		ConsoleOut("Type \"help\" for a list of commands.");
+		m_hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
+		s_hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetLogOutFunc(&ConsoleOut); // clone log output to console
 	}
 }
 
 orbiter::ConsoleNG::~ConsoleNG()
 {
 	DestroyStatDlg();
-	if (hThread) {
-		TerminateThread(hThread, 0);
+	SetLogOutFunc(0);
+	if (m_hThread) {
+		TerminateThread(m_hThread, 0);
 		FreeConsole();
 	}
 	s_console = NULL;
+	s_hStdO = NULL;
 }
 
 bool orbiter::ConsoleNG::ParseCmd()
@@ -73,86 +76,72 @@ bool orbiter::ConsoleNG::ParseCmd()
 	if (!_strnicmp(cmd, "help", 4)) {
 		pc = trim_string(cmd + 4);
 		if (!_strnicmp(pc, "help", 4)) {
-			ConsoleOut("Brief onscreen help for console commands.");
-			ConsoleOut("Type \"help\" followed by a top-level command to get information for this command.");
+			Echo("Brief onscreen help for console commands.");
+			Echo("Type \"help\" followed by a top-level command to get information for this command.");
 		}
 		else if (!_strnicmp(pc, "exit", 4)) {
-			ConsoleOut("Exits the simulation session and returns to the Launchpad dialog.");
+			Echo("Exits the simulation session and returns to the Launchpad dialog.");
 		}
 		else if (!_strnicmp(pc, "vessel", 6)) {
 			ppc = trim_string(pc + 6);
 			if (!_strnicmp(ppc, "list", 4)) {
-				ConsoleOut("Lists all vessels in the current session.");
+				Echo("Lists all vessels in the current session.");
 			}
 			else if (!_strnicmp(ppc, "count", 5)) {
-				ConsoleOut("Prints the number of vessels in the current session.");
+				Echo("Prints the number of vessels in the current session.");
 			}
 			else if (!_strnicmp(ppc, "focus", 5)) {
-				ConsoleOut("Prints the name of the current focus vessel.");
+				Echo("Prints the name of the current focus vessel.");
 			}
 			else if (!_strnicmp(ppc, "del", 3)) {
-				ConsoleOut("vessel del <name> -- Destroy vessel <name>.");
+				Echo("vessel del <name> -- Destroy vessel <name>.");
 			}
 			else {
-				ConsoleOut("Vessel-specific commands. The following sub-commands are recognized:\n");
-				ConsoleOut("list count focus del\n");
-				ConsoleOut("Type \"help vessel <subcommand>\" to get information for a command.");
+				Echo("Vessel-specific commands. The following sub-commands are recognized:\n");
+				Echo("list count focus del\n");
+				Echo("Type \"help vessel <subcommand>\" to get information for a command.");
 			}
 		}
 		else if (!_strnicmp(pc, "time", 4)) {
-			ConsoleOut("Output current simulation time.");
-			ConsoleOut("time syst  --  Session up time (seconds)");
-			ConsoleOut("time simt  --  Simulation time (seconds)");
-			ConsoleOut("time mjd   --  Absolute simulation time (MJD format)");
-			ConsoleOut("time ut    --  Absolute simulation time (UT format)");
-			ConsoleOut("Without arguments, all 4 time values are displayed.");
+			Echo("Output current simulation time.");
+			Echo("time syst  --  Session up time (seconds)");
+			Echo("time simt  --  Simulation time (seconds)");
+			Echo("time mjd   --  Absolute simulation time (MJD format)");
+			Echo("time ut    --  Absolute simulation time (UT format)");
+			Echo("Without arguments, all 4 time values are displayed.");
 		}
 		else if (!_strnicmp(pc, "tacc", 4)) {
-			ConsoleOut("Display or set time acceleration factor.");
-			ConsoleOut("tacc <x>  --  Set new time acceleration factor x.");
-			ConsoleOut("Without argument, prints the current time acceleration factor.");
+			Echo("Display or set time acceleration factor.");
+			Echo("tacc <x>  --  Set new time acceleration factor x.");
+			Echo("Without argument, prints the current time acceleration factor.");
 		}
 		else if (!_strnicmp(pc, "pause", 5)) {
-			ConsoleOut("Pause/resume simulation session.");
-			ConsoleOut("pause on      --  pause simulation");
-			ConsoleOut("pause off     --  resume simulation");
-			ConsoleOut("pause toggle  --  toggle pause/resume state");
-			ConsoleOut("Without arguments, the current simulation state is displayed.");
+			Echo("Pause/resume simulation session.");
+			Echo("pause on      --  pause simulation");
+			Echo("pause off     --  resume simulation");
+			Echo("pause toggle  --  toggle pause/resume state");
+			Echo("Without arguments, the current simulation state is displayed.");
 		}
 		else if (!_strnicmp(pc, "step", 4)) {
-			ConsoleOut("Display momentary simulation step length and steps per second.");
+			Echo("Display momentary simulation step length and steps per second.");
 		}
 		else if (!_strnicmp(pc, "dlg", 3)) {
-			ppc = trim_string(pc + 3);
-			if (!_strnicmp(ppc, "focus", 5)) {
-				ConsoleOut("Open the vessel selection dialog.");
-			}
-			else if (!_strnicmp(ppc, "map", 3)) {
-				ConsoleOut("Open the map window.");
-			}
-			else if (!_strnicmp(ppc, "info", 4)) {
-				ConsoleOut("Open the object info dialog.");
-			}
-			else if (!_strnicmp(ppc, "tacc", 4)) {
-				ConsoleOut("Open the time acceleration dialog.");
-			}
-			else if (!_strnicmp(ppc, "function", 8)) {
-				ConsoleOut("Open the Plugin function list.");
-			}
-			else {
-				ConsoleOut("Open a dialog. The following sub-commands are recognize:\n");
-				ConsoleOut("focus map info tacc function\n");
-				ConsoleOut("Type \"help dlg <subcommand>\" to get information for a command.");
-			}
+			Echo("Open a dialog.");
+			Echo("dlg focus    -- Open the vessel selction dialog");
+			Echo("dlg map      -- Open the map window");
+			Echo("dlg info     -- Open the object info dialog");
+			Echo("dlg tacc     -- Open the time acceleration dialog");
+			Echo("dlg help     -- Open the help dialog");
+			Echo("dlg function -- Open the plugin function list");
 		}
 		else if (!_strnicmp(pc, "gui", 3)) {
-			ConsoleOut("Toggles the display of a dialog box that continuously monitors the simulation");
-			ConsoleOut("state.");
+			Echo("Toggles the display of a dialog box that continuously monitors the simulation");
+			Echo("state.");
 		}
 		else {
-			ConsoleOut("The following top-level commands are available:\n");
-			ConsoleOut("  help exit vessel time tacc pause step dlg gui\n");
-			ConsoleOut("To get help for a command, type \"help <cmd>\"");
+			Echo("The following top-level commands are available:\n");
+			Echo("  help exit vessel time tacc pause step dlg gui\n");
+			Echo("To get help for a command, type \"help <cmd>\"");
 		}
 	}
 	else if (!_strnicmp(cmd, "exit", 4)) {
@@ -163,15 +152,15 @@ bool orbiter::ConsoleNG::ParseCmd()
 		pc = trim_string(cmd + 6);
 		if (!_strnicmp(pc, "list", 4)) {
 			for (i = 0; i < g_psys->nVessel(); i++)
-				ConsoleOut(g_psys->GetVessel(i)->Name());
+				Echo(g_psys->GetVessel(i)->Name());
 			return true;
 		}
 		else if (!_strnicmp(pc, "count", 5)) {
 			_itoa(g_psys->nVessel(), cbuf, 10);
-			ConsoleOut(cbuf);
+			Echo(cbuf);
 		}
 		else if (!_strnicmp(pc, "focus", 5)) {
-			ConsoleOut(g_focusobj->Name());
+			Echo(g_focusobj->Name());
 		}
 		else if (!_strnicmp(pc, "del", 3)) {
 			Vessel* v = g_psys->GetVessel(trim_string(pc + 3), true);
@@ -184,7 +173,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 			m_pOrbiter->SetWarpFactor(w);
 		else {
 			sprintf(cbuf, "Time acceleration is %0.1f", td.Warp());
-			ConsoleOut(cbuf);
+			Echo(cbuf);
 		}
 	}
 	else if (!_strnicmp(cmd, "time", 4)) {
@@ -204,7 +193,7 @@ bool orbiter::ConsoleNG::ParseCmd()
 		else {
 			sprintf(cbuf, "SysT=%0.1f SimT=%0.1f, MJD=%0.6f, UT=%s", td.SysT0, td.SimT0, td.MJD0, DateStr(td.MJD0));
 		}
-		ConsoleOut(cbuf);
+		Echo(cbuf);
 	}
 	else if (!_strnicmp(cmd, "pause", 5)) {
 		pc = trim_string(cmd + 5);
@@ -212,11 +201,11 @@ bool orbiter::ConsoleNG::ParseCmd()
 		else if (!_strnicmp(pc, "off", 3)) m_pOrbiter->Pause(false);
 		else if (!_strnicmp(pc, "toggle", 6)) m_pOrbiter->TogglePause();
 		sprintf_s(cbuf, 256, "Simulation %s", m_pOrbiter->IsRunning() ? "running" : "paused");
-		ConsoleOut(cbuf);
+		Echo(cbuf);
 	}
 	else if (!_strnicmp(cmd, "step", 4)) {
 		sprintf_s(cbuf, 256, "dt=%f, FPS=%f", td.SimDT, td.FPS());
-		ConsoleOut(cbuf);
+		Echo(cbuf);
 	}
 	else if (!_strnicmp(cmd, "gui", 3)) {
 		if (!DestroyStatDlg())
@@ -236,6 +225,8 @@ bool orbiter::ConsoleNG::ParseCmd()
 				pDlgMgr->EnsureEntry<DlgTacc>();
 			else if (!_strnicmp(pc, "function", 8))
 				pDlgMgr->EnsureEntry<DlgFunction>();
+			else if (!_strnicmp(pc, "help", 4))
+				pDlgMgr->EnsureEntry<DlgHelp>();
 		}
 	}
 	return false;
@@ -244,6 +235,13 @@ bool orbiter::ConsoleNG::ParseCmd()
 void orbiter::ConsoleNG::Echo(const char* str) const
 {
 	ConsoleOut(str);
+}
+
+void orbiter::ConsoleNG::EchoIntro() const
+{
+	Echo("-----------------\nOrbiter NG (no graphics)");
+	Echo("Running in server mode (no graphics client attached).");
+	Echo("Type \"help\" for a list of commands.\n");
 }
 
 bool orbiter::ConsoleNG::DestroyStatDlg()
@@ -307,4 +305,18 @@ INT_PTR CALLBACK ServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		return 0;
 	}
 	return FALSE;
+}
+
+void ConsoleOut(const char* msg)
+{
+	if (!s_hStdO) return;
+	DWORD count;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	SetConsoleTextAttribute(s_hStdO, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+	GetConsoleScreenBufferInfo(s_hStdO, &csbi);
+	csbi.dwCursorPosition.X = 0;
+	SetConsoleCursorPosition(s_hStdO, csbi.dwCursorPosition);
+	WriteConsole(s_hStdO, msg, strlen(msg), &count, NULL);
+	SetConsoleTextAttribute(s_hStdO, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	WriteConsole(s_hStdO, "\n> ", 3, &count, NULL);
 }
