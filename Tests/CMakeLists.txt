@@ -60,3 +60,11 @@ foreach(Scenario ${TestScenarios})
 	)
 	set_tests_properties(Scenario.${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
+
+
+add_test(
+	NAME "Scenario.BasicTest"
+	COMMAND $<TARGET_FILE:Orbiter_server> "--scenariox=${CMAKE_SOURCE_DIR}/Scenarios/Dragonfly/Dragonfly.scn" "--maxframes=60"
+	WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
+)
+set_tests_properties(Scenario.BasicTest PROPERTIES TIMEOUT 60)

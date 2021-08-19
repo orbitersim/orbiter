@@ -49,13 +49,13 @@ jobs:
     - name: Build & test
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture}}
-        cmake --preset ${{ matrix.architecture}}-release .
-        cmake --build --preset build-${{ matrix.architecture}}-release .
-        ctest --preset test-${{ matrix.architecture }}-release
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
+        cmake --preset ${{ matrix.architecture }}-release .
+        cmake --build --preset build-${{ matrix.architecture }}-release .
+        ctest --preset test-${{ matrix.architecture }}-release --output-on-failure --parallel 2
 
     - name: Install
-      run: 'cmake --install .'
+      run: cmake --install .
       working-directory: ${{ github.workspace }}/out/build/${{ matrix.architecture }}-release
 
     - name: Pack
