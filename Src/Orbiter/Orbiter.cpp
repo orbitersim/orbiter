@@ -19,9 +19,11 @@
 #include <strstream>
 #include <iomanip>
 #include <io.h>
+#include "cmdline.h"
 #include "D3d7util.h"
 #include "D3dmath.h"
 #include "Log.h"
+#include "console_ng.h"
 #include "State.h"
 #include "Astro.h"
 #include "Camera.h"
@@ -56,8 +58,7 @@
 #include "CSphereMgr.h"
 #include "VVessel.h"
 #include "ScreenNote.h"
-
-TextureManager  *g_texmanager = 0;
+TextureManager* g_texmanager = 0;
 #endif // INLINEGRAPHICS
 
 using namespace std;
@@ -86,7 +87,6 @@ TCHAR* CurrentScenario = "(Current state)";
 char ScenarioName[256] = "\0";
 // some global string resources
 
-char cConsoleCmd[1024] = "\0";
 char cwd[512];
 
 // =======================================================================
@@ -110,7 +110,6 @@ BOOL		    g_bOutputFPS     = TRUE;
 BOOL            g_bOutputDim     = TRUE;
 bool		    g_bForceUpdate   = true;
 bool            g_bShowGrapple   = false;
-bool            startvideotab    = false;
 bool            g_bStateUpdate   = false;
 
 // Timing parameters
@@ -167,8 +166,6 @@ HRESULT ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*);
 //LRESULT CALLBACK WndProc3D (HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK ServerDlgProc (HWND, UINT, WPARAM, LPARAM);
-DWORD WINAPI ConsoleInputProc (LPVOID);
 
 VOID    DestroyWorld ();
 bool    Select_Main (Select &sel);
@@ -194,7 +191,8 @@ int _matherr(struct _exception *except )
 // WinMain()
 // Application entry containing message loop
 
-INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
+
+INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdShow)
 {
 #ifdef INLINEGRAPHICS
 	// determine whether another instance already exists
@@ -209,51 +207,25 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
 
-	// interpret command line
-	char *scenario = 0;
-	bool keeplog = false;
-	startvideotab = false;
-	char *cbuf = new char[strlen(strCmdLine)+1]; TRACENEW
-	strcpy (cbuf, strCmdLine);
-	char *pc = strtok (cbuf, " ");
-	while (pc) {
-		if (pc[0] == '-') {
-			switch (pc[1]) {
-			case 's':
-				scenario = strtok (NULL, "\"");
-				g_pOrbiter->SetFastExit (true);
-				break;
-			case 'S':
-				scenario = strtok (NULL, "\"");
-				break;
-			case 'x':
-				g_pOrbiter->SetFastExit (true);
-				break;
-			case 'l':
-				keeplog = true;
-				break;
-			case 'v':
-				startvideotab = true;
-				break;
-			}
-		}
-		pc = strtok (NULL, " ");
-	}
+	// Parse command line
+	orbiter::CommandLine::Parse(g_pOrbiter, strCmdLine);
 
-	INITLOG ("Orbiter.log", keeplog); // init log file
+	// Initialise the log
+	INITLOG("Orbiter.log", g_pOrbiter->Cfg()->CfgCmdlinePrm.bAppendLog); // init log file
 #ifdef ISBETA
-	LOGOUT ("Build %s BETA [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
+	LOGOUT("Build %s BETA [v.%06d]", __DATE__, GetVersion());
 #else
-	LOGOUT ("Build %s [v.%06d]", __DATE__, g_pOrbiter->GetVersion());
+	LOGOUT("Build %s [v.%06d]", __DATE__, GetVersion());
 #endif
+
 	// Initialise random number generator
 	//srand ((unsigned)time (NULL));
 	srand(12345);
-	LOGOUT ("Timer precision: %g sec", fine_counter_step);
+	LOGOUT("Timer precision: %g sec", fine_counter_step);
 
 	HRESULT hr;
 	// Create application
-	if (FAILED (hr = g_pOrbiter->Create (hInstance, strCmdLine))) {
+	if (FAILED (hr = g_pOrbiter->Create (hInstance))) {
 		LOGOUT("Application creation failed");
 		MessageBox (NULL, "Application creation failed!\nTerminating.",
 			"Orbiter Error", MB_OK | MB_ICONERROR);
@@ -263,9 +235,8 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdSh
 	oapiRegisterCustomControls (hInstance);
 	setlocale (LC_CTYPE, "");
 
-	g_pOrbiter->Run (scenario);
+	g_pOrbiter->Run ();
 	delete g_pOrbiter;
-	delete []cbuf;
 	return 0;
 }
 
@@ -329,19 +300,21 @@ Orbiter::Orbiter ()
     //m_bAppUseZBuffer  = TRUE;
     //m_fnConfirmDevice = ConfirmDevice;
 
-	timeBeginPeriod (1);
-	if (use_fine_counter = QueryPerformanceFrequency (&fine_counter_freq)) {
+	// Initialise timer
+	timeBeginPeriod(1);
+	if (use_fine_counter = QueryPerformanceFrequency(&fine_counter_freq)) {
 		double freq = fine_counter_freq.LowPart;
-		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart*4294967296.0;
-		fine_counter_step = 1.0/freq;
+		if (fine_counter_freq.HighPart) freq += fine_counter_freq.HighPart * 4294967296.0;
+		fine_counter_step = 1.0 / freq;
 	}
-	
+
 	nmodule         = 0;
-	pDI             = new DInput (this); TRACENEW
-	pConfig         = NULL;
+	pDI             = new DInput(this); TRACENEW
+	pConfig         = new Config; TRACENEW
 	pState          = NULL;
 	pMainDlg        = NULL;
 	pDlgMgr         = NULL;
+	m_pConsole      = NULL;
 	ddeserver       = NULL;
 	bFullscreen     = false;
 	viewW = viewH = viewBPP = 0;
@@ -355,9 +328,7 @@ Orbiter::Orbiter ()
 	NetClient       = NULL;
 #endif // NETCONNECT
 	hRenderWnd      = NULL;
-	hServerWnd      = NULL;
 	hBk             = NULL;
-	hConsoleTh      = NULL;
 	hScnInterp      = NULL;
 	snote_playback  = NULL;
 	nsnote          = 0;
@@ -376,6 +347,7 @@ Orbiter::Orbiter ()
 	bCapture        = false;
 	bFastExit       = false;
 	bRoughType      = false;
+	bStartVideoTab  = false;
 	//lstatus.bkgDC   = 0;
 	cfglen          = 0;
 	ncustomcmd      = 0;
@@ -392,6 +364,7 @@ Orbiter::Orbiter ()
 #ifdef NETCONNECT
 	OrbiterConnect::Startup();
 #endif // NETCONNECT
+
 }
 
 //-----------------------------------------------------------------------------
@@ -407,14 +380,12 @@ Orbiter::~Orbiter ()
 // Name: Create()
 // Desc: This method selects a D3D device
 //-----------------------------------------------------------------------------
-HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
+HRESULT Orbiter::Create (HINSTANCE hInstance)
 {
 	if (pMainDlg) return S_OK; // already created
 
 	HRESULT hr;
 	WNDCLASS wndClass;
-
-	cmdline = strCmdLine;
 
 	// Enable tab controls
 	InitCommonControls();
@@ -422,7 +393,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 
 	// parameter manager - parses from master config file
 	hInst = hInstance;
-	pConfig = new Config (MasterConfigFile); TRACENEW
+	pConfig->Load(MasterConfigFile);
 	strcpy (cfgpath, pConfig->CfgDirPrm.ConfigDir);   cfglen = strlen (cfgpath);
 
 	if (FAILED (hr = pDI->Create (hInstance))) return hr;
@@ -450,6 +421,11 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	RegisterHtmlCtrl (hInstance, UseHtmlInline());
 	SplitterCtrl::RegisterClass (hInstance);
 
+	if (pConfig->CfgCmdlinePrm.bFastExit)
+		SetFastExit(true);
+	if (pConfig->CfgCmdlinePrm.bOpenVideoTab)
+		OpenVideoTab();
+
 	if (pConfig->CfgDemoPrm.bBkImage) {
 		hBk = CreateDialog (hInstance, MAKEINTRESOURCE(IDD_DEMOBK), NULL, BkMsgProc);
 		ShowWindow (hBk, SW_MAXIMIZE);
@@ -457,7 +433,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	
 	// Create the "launchpad" main dialog window
 	pMainDlg = new MainDialog (this); TRACENEW
-	hDlg     = pMainDlg->Create (startvideotab);
+	hDlg     = pMainDlg->Create (bStartVideoTab);
 
 #ifdef INLINEGRAPHICS
 	oclient = new OrbiterGraphics (this); TRACENEW
@@ -484,6 +460,10 @@ HRESULT Orbiter::Create (HINSTANCE hInstance, TCHAR* strCmdLine)
 	// preload fixed plugin modules
 	LoadFixedModules ();
 	memstat = new MemStat;
+
+	// preload modules from command line requests
+	for (auto it = pConfig->CfgCmdlinePrm.LoadPlugins.begin(); it != pConfig->CfgCmdlinePrm.LoadPlugins.end(); it++)
+		LoadModule("Modules\\Plugin", it->c_str());
 
 	// preload active plugin modules
 	for (int i = 0; i < pConfig->nactmod; i++)
@@ -526,7 +506,6 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
 		if (pMainDlg) delete pMainDlg;
-		if (hServerWnd) DestroyWindow (hServerWnd);
 		if (hBk) DestroyWindow (hBk);
 		if (pState)   delete pState;
 		if (ddeserver) delete ddeserver;
@@ -707,11 +686,7 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 		GetRenderParameters ();
 	} else {
 		hRenderWnd = NULL;
-		if (AllocConsole() == TRUE) {
-			DWORD id;
-			hConsoleTh = CreateThread (NULL, 4096, ConsoleInputProc, this, 0, &id);
-			SetConsole(true);
-		}
+		m_pConsole = new orbiter::ConsoleNG(this);
 	}
 
 	if (hRenderWnd) {
@@ -756,7 +731,13 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	}
 	BroadcastGlobalInit ();
 	RigidBody::GlobalSetup();
-	td.Reset (this, pState->Mjd());
+
+	td.Reset (pState->Mjd());
+	if (Cfg()->CfgCmdlinePrm.FixedStep > 0.0)
+		td.SetFixedStep(Cfg()->CfgCmdlinePrm.FixedStep);
+	else if (Cfg()->CfgDebugPrm.FixedStep > 0.0)
+		td.SetFixedStep(Cfg()->CfgDebugPrm.FixedStep);
+
 	if (!InitializeWorld (pState->Solsys())) {
 		LOGOUT_ERR_FILENOTFOUND_MSG(g_pOrbiter->ConfigPath (pState->Solsys()), "while initialising solar system %s", pState->Solsys());
 		TerminateOnError();
@@ -791,6 +772,9 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 		
 		// playback screen annotation manager
 		snote_playback = gclient->clbkCreateAnnotation ();
+	}
+	else {
+		pDlgMgr = new DialogManager(this, m_pConsole->WindowHandle());
 	}
 
 #ifdef INLINEGRAPHICS
@@ -847,11 +831,6 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	// make sure render window has focus on start
 
 	LOGOUT ("Finished setting up render state");
-	if (hConsoleTh) {
-		ConsoleOut ("-----------------\nOrbiter NG (no graphics)");
-		ConsoleOut ("Running in server mode (no graphics client attached).");
-		ConsoleOut ("Type \"help\" for a list of commands.");
-	}
 
 	const char *scriptcmd = pState->Script();
 	hScnInterp = (scriptcmd ? script->RunInterpreter (scriptcmd) : NULL);
@@ -875,6 +854,9 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 		EndTimeStep (true);
 		Pause (TRUE);
 	}
+
+	if (m_pConsole)
+		m_pConsole->EchoIntro();
 
 	return hRenderWnd;
 }
@@ -902,14 +884,13 @@ void Orbiter::CloseSession ()
 	else if (bPlayback) EndPlayback();
 	char *desc = "Current scenario state\n\n\nContains the latest simulation state.";
 	SaveScenario (CurrentScenario, desc);
-	DestroyServerGuiDlg();
 	if (hScnInterp) {
 		script->DelInterpreter (hScnInterp);
 		hScnInterp = NULL;
 	}
-	if (hConsoleTh) {
-		TerminateThread (hConsoleTh, 0);
-		FreeConsole();
+	if (m_pConsole) {
+		delete m_pConsole;
+		m_pConsole = NULL;
 	}
 	if (ddeserver) {
 		delete ddeserver;
@@ -1035,16 +1016,15 @@ void Orbiter::ScreenToClient (POINT *pt) const
 // Name: Run()
 // Desc: Message-processing loop. Idle time is used to render the scene.
 //-----------------------------------------------------------------------------
-INT Orbiter::Run (const char *scenario)
+INT Orbiter::Run ()
 {
     // Recieve and process Windows messages
-    BOOL  bGotMsg, bCanRender, bpCanRender;
+    BOOL  bGotMsg, bCanRender, bpCanRender = TRUE;
     MSG   msg;
     PeekMessage (&msg, NULL, 0U, 0U, PM_NOREMOVE);
 
-	if (scenario != NULL) {
-		Launch (scenario);
-	}
+	if (!pConfig->CfgCmdlinePrm.LaunchScenario.empty())
+		Launch (pConfig->CfgCmdlinePrm.LaunchScenario.c_str());
 	// otherwise wait for the user to make a selection from the scenario
 	// list in the launchpad dialog
 
@@ -1086,7 +1066,8 @@ INT Orbiter::Run (const char *scenario)
 						CaptureVideoFrame ();
 					}
 				}
-				if (hConsoleTh) ParseConsoleCmd();
+				if (m_pConsole)
+					m_pConsole->ParseCmd();
 			}
         }
 		if (bRenderOnce && bVisible) {
@@ -1155,123 +1136,6 @@ void Orbiter::UpdateServerWnd (HWND hWnd)
 	SetWindowText (GetDlgItem (hWnd, IDC_STATIC7), cbuf);
 }
 
-bool Orbiter::ParseConsoleCmd ()
-{
-	if (!cConsoleCmd[0]) return false;
-	char cmd[1024], cbuf[256], *pc, *ppc;
-
-	WaitForSingleObject (hConsoleMutex, 1000);
-	strcpy (cmd, cConsoleCmd+1);
-	cConsoleCmd[0] = '\0';
-	ReleaseMutex (hConsoleMutex);
-
-	DWORD i;
-	if (!_strnicmp (cmd, "help", 4)) {
-		pc = trim_string (cmd+4);
-		if (!_strnicmp (pc, "help", 4)) {
-			ConsoleOut ("Brief onscreen help for console commands.");
-			ConsoleOut ("Type \"help\" followed by a top-level command to get information for this command.");
-		} else if (!_strnicmp (pc, "exit", 4)) {
-			ConsoleOut ("Exits the simulation session and returns to the Launchpad dialog.");
-		} else if (!_strnicmp (pc, "vessel", 6)) {
-			ppc = trim_string (pc+6);
-			if (!_strnicmp (ppc, "list", 4)) {
-				ConsoleOut ("Lists all vessels in the current session.");
-			} else if (!_strnicmp (ppc, "count", 5)) {
-				ConsoleOut ("Prints the number of vessels in the current session.");
-			} else if (!_strnicmp (ppc, "focus", 5)) {
-				ConsoleOut ("Prints the name of the current focus vessel.");
-			} else if (!_strnicmp (ppc, "del", 3)) {
-				ConsoleOut ("vessel del <name> -- Destroy vessel <name>.");
-			} else {
-				ConsoleOut ("Vessel-specific commands. The following sub-commands are recognized:\n");
-				ConsoleOut ("list count focus del\n");
-				ConsoleOut ("Type \"help vessel <subcommand>\" to get information for a command.");
-			}
-		} else if (!_strnicmp (pc, "time", 4)) {
-			ConsoleOut ("Output current simulation time.");
-			ConsoleOut ("time syst  --  Session up time (seconds)");
-			ConsoleOut ("time simt  --  Simulation time (seconds)");
-			ConsoleOut ("time mjd   --  Absolute simulation time (MJD format)");
-			ConsoleOut ("time ut    --  Absolute simulation time (UT format)");
-			ConsoleOut ("Without arguments, all 4 time values are displayed.");
-		} else if (!_strnicmp (pc, "tacc", 4)) {
-			ConsoleOut ("Display or set time acceleration factor.");
-			ConsoleOut ("tacc <x>  --  Set new time acceleration factor x.");
-			ConsoleOut ("Without argument, prints the current time acceleration factor.");
-		} else if (!_strnicmp (pc, "pause", 5)) {
-			ConsoleOut ("Pause/resume simulation session.");
-			ConsoleOut ("pause on      --  pause simulation");
-			ConsoleOut ("pause off     --  resume simulation");
-			ConsoleOut ("pause toggle  --  toggle pause/resume state");
-			ConsoleOut ("Without arguments, the current simulation state is displayed.");
-		} else if (!_strnicmp (pc, "step", 4)) {
-			ConsoleOut ("Display momentary simulation step length and steps per second.");
-		} else if (!_strnicmp (pc, "gui", 3)) {
-			ConsoleOut ("Toggles the display of a dialog box that continuously monitors the simulation");
-			ConsoleOut ("state.");
-		} else {
-			ConsoleOut ("The following top-level commands are available:\n");
-			ConsoleOut ("  help exit vessel time tacc pause step gui\n");
-			ConsoleOut ("To get help for a command, type \"help <cmd>\"");
-		}
-	} else if (!_strnicmp (cmd, "exit", 4)) {
-		CloseSession();
-		return true;
-	} else if (!_strnicmp (cmd, "vessel", 6)) {
-		pc = trim_string (cmd+6);
-		if (!_strnicmp (pc, "list", 4)) {
-			for (i = 0; i < g_psys->nVessel(); i++)
-				ConsoleOut (g_psys->GetVessel(i)->Name());
-			return true;
-		} else if (!_strnicmp (pc, "count", 5)) {
-			_itoa (g_psys->nVessel(), cbuf, 10);
-			ConsoleOut (cbuf);
-		} else if (!_strnicmp (pc, "focus", 5)) {
-			ConsoleOut (g_focusobj->Name());
-		} else if (!_strnicmp (pc, "del", 3)) {
-			Vessel *v = g_psys->GetVessel (trim_string(pc+3), true);
-			if (v) v->RequestDestruct();
-		}
-	} else if (!_strnicmp (cmd, "tacc", 4)) {
-		double w;
-		if (sscanf (trim_string(cmd+4), "%lf", &w) == 1)
-			SetWarpFactor (w);
-		else {
-			sprintf (cbuf, "Time acceleration is %0.1f", td.Warp());
-			ConsoleOut (cbuf);
-		}
-	} else if (!_strnicmp (cmd, "time", 4)) {
-		pc = trim_string(cmd+4);
-		if (!_strnicmp (pc, "simt", 4)) {
-			sprintf (cbuf, "%0.1f", td.SimT0);
-		} else if (!_strnicmp (pc, "syst", 4)) {
-			sprintf (cbuf, "%0.1f", td.SysT0);
-		} else if (!_strnicmp (pc, "mjd", 3)) {
-			sprintf (cbuf, "%0.6f", td.MJD0);
-		} else if (!_strnicmp (pc, "ut", 2)) {
-			strcpy (cbuf, DateStr (td.MJD0));
-		} else {
-			sprintf (cbuf, "SysT=%0.1f SimT=%0.1f, MJD=%0.6f, UT=%s", td.SysT0, td.SimT0, td.MJD0, DateStr(td.MJD0));
-		}
-		ConsoleOut (cbuf);
-	} else if (!_strnicmp (cmd, "pause", 5)) {
-		pc = trim_string (cmd+5);
-		if (!_strnicmp (pc, "on", 2)) Pause (true);
-		else if (!_strnicmp (pc, "off", 3)) Pause (false);
-		else if (!_strnicmp (pc, "toggle", 6)) Pause (bRunning);
-		sprintf_s (cbuf, 256, "Simulation %s", bRunning ? "running":"paused");
-		ConsoleOut (cbuf);
-	} else if (!_strnicmp (cmd, "step", 4)) {
-		sprintf_s (cbuf, 256, "dt=%f, FPS=%f", td.SimDT, td.FPS());
-		ConsoleOut (cbuf);
-	} else if (!_strnicmp (cmd, "gui", 3)) {
-		if (!DestroyServerGuiDlg())
-			hServerWnd = CreateDialog (hInst, MAKEINTRESOURCE(IDD_SERVER), hDlg, ServerDlgProc);
-	}
-	return false;
-}
-
 void Orbiter::InitRotationMode ()
 {
 	bKeepFocus = true;
@@ -1301,16 +1165,6 @@ void Orbiter::ExitRotationMode ()
 	if (!bFullscreen && hRenderWnd) {
 		ClipCursor (NULL);
 	}
-}
-
-bool Orbiter::DestroyServerGuiDlg()
-{
-	if (hServerWnd) {
-		DestroyWindow (hServerWnd);
-		hServerWnd = NULL;
-		return true;
-	} else
-		return false;
 }
 
 #ifdef DO_NETWORK_OLD
@@ -1491,10 +1345,10 @@ bool Orbiter::KillVessels ()
 			//if (gclient) gclient->clbkDialogBroadcast (MSG_KILLVESSEL, vessel);
 			if (pDlgMgr) pDlgMgr->BroadcastMessage (MSG_KILLVESSEL, vessel);
 			// echo deletion on console window
-			if (hConsoleTh) {
+			if (m_pConsole) {
 				char cbuf[256];
 				sprintf (cbuf, "Vessel %s deleted", vessel->Name());
-				ConsoleOut (cbuf);
+				m_pConsole->Echo(cbuf);
 			}
 			// kill the vessel
 			g_psys->DelVessel (vessel, 0);
@@ -1528,6 +1382,8 @@ void Orbiter::NotifyObjectSize (const Body *obj)
 //-----------------------------------------------------------------------------
 void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 {
+	if (warp == td.Warp())
+		return; // nothing to do
 	if (bPlayback && pConfig->CfgRecPlayPrm.bReplayWarp && !force) return;
 	const double EPS = 1e-6;
 	if      (warp < MinWarpLimit) warp = MinWarpLimit;
@@ -1546,10 +1402,10 @@ void Orbiter::SetWarpFactor (double warp, bool force, double delay)
 			//	g_psys->GetVessel(i)->FRecorder_SaveEvent ("TACC", cbuf);
 		}
 	}
-	if (hConsoleTh) {
+	if (m_pConsole) {
 		char cbuf[256];
 		sprintf (cbuf, "Time acceleration set to %0.1f", warp);
-		ConsoleOut (cbuf);
+		m_pConsole->Echo(cbuf);
 	}
 }
 
@@ -2151,8 +2007,23 @@ void Orbiter::EndTimeStep (bool running)
 	g_bForceUpdate = false;                        // clear flag
 
 	// check for termination of demo mode
+	if (SessionLimitReached())
+		if (hRenderWnd) PostMessage(hRenderWnd, WM_CLOSE, 0, 0);
+		else CloseSession();
+}
+
+bool Orbiter::SessionLimitReached() const
+{
+	if (pConfig->CfgCmdlinePrm.FrameLimit && td.FrameCount() >= pConfig->CfgCmdlinePrm.FrameLimit)
+		return true;
+	if (pConfig->CfgCmdlinePrm.MaxSysTime && td.SysT0 >= pConfig->CfgCmdlinePrm.MaxSysTime)
+		return true;
+	if (pConfig->CfgCmdlinePrm.MaxSimTime && td.SimT0 >= pConfig->CfgCmdlinePrm.MaxSimTime)
+		return true;
 	if (pConfig->CfgDemoPrm.bDemo && td.SysT0 > pConfig->CfgDemoPrm.MaxDemoTime)
-		if (hRenderWnd) PostMessage (hRenderWnd, WM_CLOSE, 0, 0);
+		return true;
+
+	return false;
 }
 
 bool Orbiter::Timejump (double _mjd, int pmode)
@@ -3173,7 +3044,7 @@ TimeData::TimeData ()
 	Reset();
 }
 
-void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
+void TimeData::Reset (double mjd_ref)
 {
 	TWarp = TWarpTarget = 1.0;
 	TWarpDelay = 0.0;
@@ -3182,10 +3053,16 @@ void TimeData::Reset (Orbiter *orbiter, double mjd_ref)
 	SimT1_ofs = SimT1_inc = 0.0;
 	MJD_ref = MJD0 = MJD1 = mjd_ref;
 	fps = syst_acc = 0.0;
-	framecount = sys_tick = 0;
+	framecount = frame_tick = sys_tick = 0;
 	bWarpChanged = false;
 
-	fixed_step = (orbiter ? orbiter->Cfg()->CfgDebugPrm.FixedStep : 0.0);
+	fixed_step = 0.0;
+	bFixedStep = false;
+}
+
+void TimeData::SetFixedStep(double step)
+{
+	fixed_step = step;
 	bFixedStep = (fixed_step > 0.0);
 }
 
@@ -3196,12 +3073,13 @@ void TimeData::BeginStep (double deltat, bool running)
 	iSysDT = 1.0/SysDT; // note that delta_ms==0 is trapped earlier
 
 	framecount++;
+	frame_tick++;
 	syst_acc += SysDT;
-	if ((int)SysT1 != sys_tick) {
-		fps = framecount/syst_acc;
-		framecount = 0;
+	if ((size_t)SysT1 != sys_tick) {
+		fps = frame_tick/syst_acc;
+		frame_tick = 0;
 		syst_acc = 0.0;
-		sys_tick = (int)SysT1;
+		sys_tick = (size_t)SysT1;
 	}
 
 	if (running) { // only advance simulation time if simulation is not paused
@@ -3297,51 +3175,4 @@ INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return 0;
-}
-
-INT_PTR CALLBACK ServerDlgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		SetTimer (hDlg, 1, 1000, NULL);
-		return TRUE;
-	case WM_TIMER:
-		g_pOrbiter->UpdateServerWnd (hDlg);
-		return 0;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDOK:
-			g_pOrbiter->CloseSession ();
-		}
-		break;
-	case WM_CLOSE:
-		g_pOrbiter->DestroyServerGuiDlg();
-		return 0;
-	case WM_DESTROY:
-		KillTimer (hDlg, 1);
-		return 0;
-	}
-	return FALSE;
-}
-
-DWORD WINAPI ConsoleInputProc (LPVOID context)
-{
-	DWORD count, c;
-	char cbuf[1024];
-	HANDLE hStdI = GetStdHandle (STD_INPUT_HANDLE);
-	HANDLE hStdO = GetStdHandle (STD_OUTPUT_HANDLE);
-	Orbiter *orbiter = (Orbiter*)context;
-	SetConsoleMode (hStdI, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
-	SetConsoleTextAttribute (hStdI, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	hConsoleMutex = CreateMutex (NULL, FALSE, NULL);
-	for (;;) {
-		ReadConsole (hStdI, cbuf, 1024, &count, NULL);
-		WriteConsole (hStdO, "> ", 2, &c, NULL);
-
-		WaitForSingleObject (hConsoleMutex, 1000);
-		cConsoleCmd[0] = 'x';
-		memcpy (cConsoleCmd+1, cbuf, count);
-		cConsoleCmd[count-1] = '\0'; // eliminates CR
-		ReleaseMutex (hConsoleMutex);
-	}
 }

@@ -30,7 +30,7 @@ public:
 	DWORD GetCaps () const { return VOCAPS_HASENGINES; }
 	const Vessel *GetVessel() const { return vessel; }
 
-	void clbkEvent (DWORD msg, UINT content);
+	void clbkEvent (DWORD msg, DWORD_PTR content);
 	void RegisterMeshes ();
 	void InsertMesh (UINT idx);
 	void DelMesh (UINT idx);

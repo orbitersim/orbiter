@@ -113,7 +113,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>XRSOUND_DLL_BUILD;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;XRSOUNDDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ORBITER_ROOT)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT_X64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ORBITER_ROOT_X64)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT_X64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
@@ -139,7 +139,7 @@
       <PreprocessorDefinitions>WIN32;XRSOUND_DLL_BUILD;_CRT_SECURE_NO_WARNINGS;IRRKLANG_STATIC;NDEBUG;_WINDOWS;_USRDLL;XRSOUNDDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ORBITER_ROOT)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ORBITER_ROOT_RELEASE)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -153,12 +153,12 @@
       <AdditionalDependencies>irrKlang.lib;orbiter.lib;orbitersdk.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <AdditionalLibraryDirectories>$(ORBITER_ROOT)\Orbitersdk\lib;$(IRRKLANG_ROOT)\lib\Win32-visualStudio</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ORBITER_ROOT_RELEASE)\Orbitersdk\lib;$(IRRKLANG_ROOT)\lib\Win32-visualStudio</AdditionalLibraryDirectories>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT)\Modules\Plugin\XRSound.dll /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE)\Modules\Plugin\XRSound.dll /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -170,7 +170,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>XRSOUND_DLL_BUILD;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;XRSOUNDDLL_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ORBITER_ROOT)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT_X64)\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ORBITER_ROOT_RELEASE_X64)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT_X64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
@@ -182,10 +182,10 @@
       <AdditionalDependencies>irrKlang.lib;orbiter.lib;orbitersdk.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <AdditionalLibraryDirectories>$(ORBITER_ROOT_X64)\Orbitersdk\lib;$(IRRKLANG_ROOT_X64)\lib\Winx64-visualStudio</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ORBITER_ROOT_RELEASE_X64)\Orbitersdk\lib;$(IRRKLANG_ROOT_X64)\lib\Winx64-visualStudio</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_X64)\Modules\Plugin\XRSound.dll /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE_X64)\Modules\Plugin\XRSound.dll /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -9,7 +9,9 @@ set(common_src
 # General source files
 	Astro.cpp
 	Camera.cpp
+	cmdline.cpp
 	Config.cpp
+	console_ng.cpp
 	ddeserver.cpp
 	Element.cpp
 	elevmgr.cpp

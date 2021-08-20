@@ -7,5 +7,5 @@
 INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, LPSTR strCmdLine, INT nCmdShow)
 {
 	const char *cmd = "Modules\\Server\\Orbiter.exe";
-	return _execv(cmd, __argv);
+	return _execl(cmd, cmd, strCmdLine, NULL);
 }
