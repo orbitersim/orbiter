@@ -895,8 +895,6 @@ public:
 	 */
 	virtual bool Text (int x, int y, const char *str, int len) { return false; }
 
-	virtual bool TextW (int x, int y, const LPWSTR str, int len) { return false; }
-
 	/**
 	 * \brief Draw a text string into a rectangle.
 	 * \param x1 left edge [pixel]
@@ -1058,6 +1056,8 @@ public:
 	 * \return NULL
 	 */
 	virtual HDC GetDC() { return NULL; }
+
+	virtual bool TextW(int x, int y, const LPWSTR str, int len) { return false; }
 
 	virtual int GetVersion() { return 1; }
 
