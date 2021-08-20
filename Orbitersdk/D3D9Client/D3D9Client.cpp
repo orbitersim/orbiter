@@ -2101,7 +2101,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 	if (hTemplate) attrib = SURFACE(hTemplate)->GetOAPIFlags();
 	
 	SURFHANDLE hNew = NatCreateSurface(w, h, attrib);
-	SURFACE(hNew)->SetName("clbkCreateSurface_Template");
+	SURFACE(hNew)->SetName("clbkCreateSurface");
 	return hNew;
 }
 
@@ -2442,6 +2442,7 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 			clbkReleaseSurfaceDC(pdds, hdc);
 		}
 		DeleteDC(hdcImage);
+		SURFACE(pdds)->SetName("clbkCopyBitmap");
 		return true;
 	}
 	else 
@@ -2469,6 +2470,7 @@ bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int 
 
 				DeleteDC(hdcImage);
 				pSrf->Release();
+				SURFACE(pdds)->SetName("clbkCopyBitmap");
 				return true;
 			}
 			else {

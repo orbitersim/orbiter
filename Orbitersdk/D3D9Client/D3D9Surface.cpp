@@ -702,7 +702,7 @@ bool SurfNative::CreateDX7()
 	{
 		if (S_OK == g_client->GetDevice()->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, true, &pDX7, NULL))
 		{
-			LogBreak("Surface %s (%u,%u) going in DX7 compatibility mode", _PTR(this), desc.Width, desc.Height);
+			LogBreak("Surface[%s] Handle=%s (%u,%u) going in DX7 compatibility mode", name, _PTR(this), desc.Width, desc.Height);
 			return true;
 		}
 	}
