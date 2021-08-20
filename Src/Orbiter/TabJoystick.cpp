@@ -16,13 +16,13 @@
 //-----------------------------------------------------------------------------
 // JoystickTab class
 
-JoystickTab::JoystickTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
+orbiter::JoystickTab::JoystickTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
 //-----------------------------------------------------------------------------
 
-void JoystickTab::Create ()
+void orbiter::JoystickTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_JOY);
 
@@ -37,7 +37,7 @@ void JoystickTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-void JoystickTab::GetConfig (const Config *cfg)
+void orbiter::JoystickTab::GetConfig (const Config *cfg)
 {
 	DWORD ndev;
 	DIDEVICEINSTANCE *joylist;
@@ -71,7 +71,7 @@ void JoystickTab::GetConfig (const Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-void JoystickTab::SetConfig (Config *cfg)
+void orbiter::JoystickTab::SetConfig (Config *cfg)
 {
 	cfg->CfgJoystickPrm.Joy_idx = SendDlgItemMessage (hTab, IDC_JOY_DEVICE, CB_GETCURSEL, 0, 0);
 	cfg->CfgJoystickPrm.ThrottleAxis = SendDlgItemMessage (hTab, IDC_JOY_THROTTLE, CB_GETCURSEL, 0, 0);
@@ -82,7 +82,7 @@ void JoystickTab::SetConfig (Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-bool JoystickTab::OpenHelp ()
+bool orbiter::JoystickTab::OpenHelp ()
 {
 	OpenTabHelp ("tab_joystick");
 	return true;
@@ -90,7 +90,7 @@ bool JoystickTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -127,7 +127,7 @@ INT_PTR JoystickTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 //-----------------------------------------------------------------------------
 
-void JoystickTab::JoystickChanged (DWORD idx)
+void orbiter::JoystickTab::JoystickChanged (DWORD idx)
 {
 	BOOL bJoy = (idx != 0);
 	for (DWORD i = IDC_JOY_STATIC2; i <= IDC_JOY_INIT; i++)

@@ -15,7 +15,7 @@
 
 class Extra_RenderOptions: public BuiltinLaunchpadItem {
 public:
-	Extra_RenderOptions (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	Extra_RenderOptions (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 };
@@ -24,7 +24,7 @@ public:
 
 class Extra_PlanetRenderOptions: public BuiltinLaunchpadItem {
 public:
-	Extra_PlanetRenderOptions (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	Extra_PlanetRenderOptions (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);

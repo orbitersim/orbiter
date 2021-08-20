@@ -18,13 +18,13 @@
 //-----------------------------------------------------------------------------
 // AboutTab class
 
-AboutTab::AboutTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
+orbiter::AboutTab::AboutTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
 //-----------------------------------------------------------------------------
 
-bool AboutTab::OpenHelp ()
+bool orbiter::AboutTab::OpenHelp ()
 {
 	OpenTabHelp ("tab_about");
 	return true;
@@ -32,7 +32,7 @@ bool AboutTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-void AboutTab::Create ()
+void orbiter::AboutTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_ABT);
 
@@ -62,7 +62,7 @@ void AboutTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -87,7 +87,7 @@ INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Name: AboutProc()
 // Desc: Minimal message proc function for the about box
 //-----------------------------------------------------------------------------
-INT_PTR CALLBACK AboutTab::AboutProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK orbiter::AboutTab::AboutProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:

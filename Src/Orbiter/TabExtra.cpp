@@ -25,14 +25,14 @@ extern Orbiter *g_pOrbiter;
 //-----------------------------------------------------------------------------
 // ExtraTab class
 
-ExtraTab::ExtraTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
+orbiter::ExtraTab::ExtraTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	nExtPrm = 0;
 }
 
 //-----------------------------------------------------------------------------
 
-ExtraTab::~ExtraTab ()
+orbiter::ExtraTab::~ExtraTab ()
 {
 	if (nExtPrm) {
 		for (DWORD i = 0; i < nExtPrm; i++) delete ExtPrm[i];
@@ -42,7 +42,7 @@ ExtraTab::~ExtraTab ()
 
 //-----------------------------------------------------------------------------
 
-void ExtraTab::Create ()
+void orbiter::ExtraTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_EXT);
 
@@ -55,7 +55,7 @@ void ExtraTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-void ExtraTab::GetConfig (const Config *cfg)
+void orbiter::ExtraTab::GetConfig (const Config *cfg)
 {
 	HTREEITEM ht;
 	ht = RegisterExtraParam (new ExtraPropagation (this), NULL); TRACENEW
@@ -86,14 +86,14 @@ void ExtraTab::GetConfig (const Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-void ExtraTab::SetConfig (Config *cfg)
+void orbiter::ExtraTab::SetConfig (Config *cfg)
 {
 	cfg->CfgWindowPos.LaunchpadExtListWidth = splitListDesc.GetPaneWidth (SplitterCtrl::PANE1);
 }
 
 //-----------------------------------------------------------------------------
 
-bool ExtraTab::OpenHelp ()
+bool orbiter::ExtraTab::OpenHelp ()
 {
 	OpenTabHelp ("tab_extra");
 	return true;
@@ -101,7 +101,7 @@ bool ExtraTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-BOOL ExtraTab::Size (int w, int h)
+BOOL orbiter::ExtraTab::Size (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -136,7 +136,7 @@ BOOL ExtraTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-HTREEITEM ExtraTab::RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent)
+HTREEITEM orbiter::ExtraTab::RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent)
 {
 	// first check that the item doesn't already exist
 	HTREEITEM hti = FindExtraParam (item->Name(), parent);
@@ -168,7 +168,7 @@ HTREEITEM ExtraTab::RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent)
 
 //-----------------------------------------------------------------------------
 
-bool ExtraTab::UnregisterExtraParam (LaunchpadItem *item)
+bool orbiter::ExtraTab::UnregisterExtraParam (LaunchpadItem *item)
 {
 	DWORD i, j, k;
 	for (i = 0; i < nExtPrm; i++) {
@@ -192,7 +192,7 @@ bool ExtraTab::UnregisterExtraParam (LaunchpadItem *item)
 
 //-----------------------------------------------------------------------------
 
-HTREEITEM ExtraTab::FindExtraParam (const char *name, const HTREEITEM parent)
+HTREEITEM orbiter::ExtraTab::FindExtraParam (const char *name, const HTREEITEM parent)
 {
 	HTREEITEM hti = FindExtraParamChild (parent);
 	if (!name) return hti; // no name given - return first child
@@ -216,7 +216,7 @@ HTREEITEM ExtraTab::FindExtraParam (const char *name, const HTREEITEM parent)
 
 //-----------------------------------------------------------------------------
 
-HTREEITEM ExtraTab::FindExtraParamChild (const HTREEITEM parent)
+HTREEITEM orbiter::ExtraTab::FindExtraParamChild (const HTREEITEM parent)
 {
 	HWND hCtrl = GetDlgItem (hTab, IDC_EXT_LIST);
 	if (parent) return TreeView_GetChild (hCtrl, parent);
@@ -225,7 +225,7 @@ HTREEITEM ExtraTab::FindExtraParamChild (const HTREEITEM parent)
 
 //-----------------------------------------------------------------------------
 
-void ExtraTab::WriteExtraParams ()
+void orbiter::ExtraTab::WriteExtraParams ()
 {
 	for (DWORD i = 0; i < nExtPrm; i++)
 		ExtPrm[i]->clbkWriteConfig ();
@@ -233,7 +233,7 @@ void ExtraTab::WriteExtraParams ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 
@@ -287,7 +287,7 @@ INT_PTR ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Additional functions (under the "Extra" tab)
 //-----------------------------------------------------------------------------
 
-BuiltinLaunchpadItem::BuiltinLaunchpadItem (const ExtraTab *tab): LaunchpadItem ()
+BuiltinLaunchpadItem::BuiltinLaunchpadItem (const orbiter::ExtraTab *tab): LaunchpadItem ()
 {
 	pTab = tab;
 }

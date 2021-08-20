@@ -26,6 +26,9 @@ INT_PTR CALLBACK WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 namespace orbiter {
 
+	class LaunchpadTab;
+	class ExtraTab;
+
 	//-----------------------------------------------------------------------------
 	// Name: class LaunchpadDialog
 	// Desc: Handles the startup dialog ("Launchpad")
@@ -170,8 +173,9 @@ namespace orbiter {
 		int dy_bt;             // button separation
 		bool m_bVisible;       // launchpad dialog visible?
 
-		ExtraTab* pExtra;      // tab object
+		orbiter::ExtraTab* pExtra;      // tab object
 	};
 
 }
+
 #endif // !__LAUNCHPAD_H
