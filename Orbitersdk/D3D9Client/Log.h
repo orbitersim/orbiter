@@ -51,6 +51,7 @@ void   LogTrace(const char *format, ...);
 void   LogErr(const char *format, ...);
 void   LogWrn(const char *format, ...);
 void   LogOk (const char *format, ...);
+void   LogBreak(const char* format, ...);
 void   LogBlu(const char *format, ...);
 void   LogOapi(const char *format, ...);
 void   LogAlw(const char *format, ...);

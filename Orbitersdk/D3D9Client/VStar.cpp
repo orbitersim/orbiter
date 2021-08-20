@@ -11,7 +11,6 @@
 // ==============================================================
 
 #include "Mesh.h"
-#include "Texture.h"
 #include "VStar.h"
 #include "D3D9Surface.h"
 #include "D3D9Config.h"

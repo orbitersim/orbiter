@@ -203,3 +203,4 @@
 #define IDC_GFX_THRESHOLD_RESET                 2195
 #define IDC_DBG_CONES                           2196
 #define IDC_DBG_RELOADTEX                       2197
+#define IDC_BREAK                               2198

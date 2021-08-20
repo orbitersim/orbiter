@@ -26,7 +26,6 @@
 #include "VPlanet.h"
 #include "VStar.h"
 #include "VBase.h"
-#include "Texture.h"
 #include "D3D9Util.h"
 #include "Mesh.h"
 #include "D3D9Surface.h"

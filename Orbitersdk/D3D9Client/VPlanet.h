@@ -17,6 +17,7 @@ class D3D9Mesh;
 class SurfTile;
 class CloudTile;
 
+bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16* elev);
 
 // ==============================================================
 // class vPlanet (interface)
@@ -53,6 +54,7 @@ public:
 
 	virtual bool	GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void	UpdateBoundingBox();
+	static void		GlobalExit();
 
 	bool			IsMesh() { return mesh != NULL; }
 	bool			Update (bool bMainScene);

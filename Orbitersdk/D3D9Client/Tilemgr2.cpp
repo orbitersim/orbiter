@@ -11,7 +11,6 @@
 // ==============================================================
 
 #include "Tilemgr2.h"
-#include "Texture.h"
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
 #include "Scene.h"

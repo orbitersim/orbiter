@@ -65,11 +65,10 @@ void RuntimeError(const char* File, const char* Fnc, UINT Line)
 {
 	if (Config->DebugLvl == 0) return;
 	char buf[256];
-	sprintf_s(buf, 256, "[%s] [%s] Line: %u See Orbiter.log for further details.", File, Fnc, Line);
-	MessageBoxA(g_client->GetRenderWindow(), buf, "Runtime Error:", MB_OK);
-	abort();
+	sprintf_s(buf, 256, "[%s] [%s] Line: %u See Orbiter.log for details.", File, Fnc, Line);
+	MessageBoxA(g_client->GetRenderWindow(), buf, "Critical Error:", MB_OK);
+	DebugBreak();
 }
-
 
 //-------------------------------------------------------------------------------------------
 //
@@ -361,7 +360,7 @@ void LogErr(const char *format, ...)
 		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
 		va_end(args);
 
-		oapiWriteLogV("D3D9: ERROR: %s", ErrBuf);
+		oapiWriteLogV("D3D9ERROR: %s", ErrBuf);
 
 		escape_ErrBuf();
 		fputs(ErrBuf,d3d9client_log);
@@ -415,8 +414,36 @@ void LogWrn(const char *format, ...)
 		fputs(ErrBuf,d3d9client_log);
 		fputs("</font><br>\n",d3d9client_log);
 		fflush(d3d9client_log);
-		oapiWriteLogV("D3D9: WARNING: %s", ErrBuf);
+		oapiWriteLogV("D3D9Info: %s", ErrBuf);
 		LeaveCriticalSection(&LogCrit);
+	}
+}
+
+// ---------------------------------------------------
+//
+void LogBreak(const char* format, ...)
+{
+	if (d3d9client_log == NULL) return;
+	if (iLine > LOG_MAX_LINES) return;
+	if (uEnableLog > 1) {
+
+		EnterCriticalSection(&LogCrit);
+		DWORD th = GetCurrentThreadId();
+		fprintf(d3d9client_log, "<font color=Gray>(%s)(0x%lX)</font><font color=Yellow> [WARNING] ", my_ctime(), th);
+
+		va_list args;
+		va_start(args, format);
+		_vsnprintf_s(ErrBuf, ERRBUF, ERRBUF, format, args);
+		va_end(args);
+
+		escape_ErrBuf();
+		fputs(ErrBuf, d3d9client_log);
+		fputs("</font><br>\n", d3d9client_log);
+		fflush(d3d9client_log);
+		oapiWriteLogV("D3D9Debug: %s", ErrBuf);
+		LeaveCriticalSection(&LogCrit);
+
+		if (Config->DebugBreak) DebugBreak();
 	}
 }
 

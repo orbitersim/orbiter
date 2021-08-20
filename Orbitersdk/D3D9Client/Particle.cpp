@@ -10,7 +10,6 @@
 
 #include "Particle.h"
 #include "Scene.h"
-#include "Texture.h"
 #include "D3D9Surface.h"
 #include "D3D9Config.h"
 #include <stdio.h>

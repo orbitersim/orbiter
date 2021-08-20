@@ -46,7 +46,6 @@ set(SourceFiles
 	Spherepatch.cpp
 	SurfMgr.cpp
 	Surfmgr2.cpp
-	Texture.cpp
 	TileLabel.cpp
 	TileMgr.cpp
 	Tilemgr2.cpp
@@ -99,7 +98,6 @@ set(IncludeFiles
 	Spherepatch.h
 	SurfMgr.h
 	Surfmgr2.h
-	Texture.h
 	TileLabel.h
 	TileMgr.h
 	Tilemgr2.h

@@ -15,7 +15,6 @@
 
 #include "HazeMgr.h"
 #include "VPlanet.h"
-#include "Texture.h"
 #include "D3D9Surface.h"
 #include "D3D9Util.h"
 #include "VectorHelpers.h"
@@ -62,7 +61,7 @@ void HazeManager::GlobalInit(D3D9Client *gclient)
 		double phi = (double)i/(double)HORIZON_NSEG * PI*2.0;
 		CosP[i] = (float)cos(phi), SinP[i] = (float)sin(phi);
 	}
-	gclient->GetTexMgr()->LoadTexture("Horizon.dds", &horizon, 0);
+	horizon = gclient->clbkLoadTexture("Horizon.dds");
 }
 
 // -----------------------------------------------------------------------

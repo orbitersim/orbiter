@@ -25,7 +25,6 @@
 #include "Mesh.h"
 #include "VVessel.h"
 #include "VStar.h"
-#include "Texture.h"
 #include "MeshMgr.h"
 #include "Particle.h"
 #include "TileMgr.h"
@@ -68,7 +67,8 @@ D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
 
 set<D3D9Mesh*> MeshCatalog;
 set<SurfNative*> SurfaceCatalog;
-
+unordered_map<string, SURFHANDLE> SharedTextures;
+unordered_map<string, SURFHANDLE> ClonedTextures;
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
 _D3D9Stats D3D9Stats;
@@ -207,267 +207,6 @@ DLLCLBK gcCore * gcGetCoreAPI()
 }
 
 
-// ==============================================================
-// Face's Terrain Flattening section
-// ==============================================================
-
-struct FlatShape
-{
-	double Lat;
-	double Lng;
-	double Dim1;
-	double Dim2;
-	double Cos;
-	double Sin;
-	double Falloff;
-	int Height;
-	int Type;
-};
-
-struct TilePixelPosition
-{
-	int iLat;
-	int iLng;
-	int X;
-	int Y;
-	bool operator==(const TilePixelPosition& other) const
-	{
-		return iLat == other.iLat && iLng == other.iLng && X == other.X && Y == other.Y;
-	}
-};
-
-std::unordered_map<OBJHANDLE, std::unordered_map<int, std::unordered_map<int, std::unordered_map<int, std::vector<FlatShape*>>>>> g_ElevationFlatteningShapes;
-std::unordered_map<OBJHANDLE, std::vector<FlatShape*>> g_ShapeStore;
-std::unordered_map<OBJHANDLE, bool> g_ShapesLoaded;
-
-std::vector<std::string> EnumerateDirectory(std::string directory, std::string filter)
-{
-	std::vector<std::string> result;
-	std::string search_path = directory + "\\" + filter;
-	WIN32_FIND_DATA fd;
-	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
-		do
-		{
-			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) result.push_back(fd.cFileName);
-		} while (::FindNextFile(hFind, &fd));
-		::FindClose(hFind);
-	}
-	return result;
-}
-
-void GetTilePixelPosition(int lvl, double lat, double lng, TilePixelPosition &pos)
-{
-	//Normalize input
-	if (lat < -90) lat = -90;
-	if (lat > 90) lat = 90;
-	while (lng < -180)
-	{
-		lng += 360;
-	}
-	while (lng > 180)
-	{
-		lng -= 360;
-	}
-
-	//Calculate tile position and pixel position
-	double bands = pow((double)2, lvl);
-	double width = 180 / bands;
-	pos.iLat = (int)((-lat + 90) / width);
-	pos.iLng = (int)((lng + 180) / width);
-	double step = width / 256;
-	double latmin = 90 - width*(pos.iLat + 1);
-	double lngmin = -180 + width*pos.iLng;
-	pos.X = (int)((lng - lngmin) / width * 256);
-	pos.Y = (int)(-(lat - latmin) / width * 256 + 256);
-}
-
-void ProcessPlanetFlats(OBJHANDLE hPlanet)
-{
-	char name[MAX_PATH];
-	char fname[MAX_PATH];
-	oapiGetObjectName(hPlanet, name, ARRAYSIZE(name) - 6);
-	sprintf_s(fname, ARRAYSIZE(fname), "%s\\Flat", name);
-	g_client->TexturePath(fname, name);
-	auto files = EnumerateDirectory(name, "*.flt");
-	// Load all planet shapes
-	for (auto file : files)
-	{
-		auto radius = oapiGetSize(hPlanet);
-		sprintf_s(fname, ARRAYSIZE(fname), "%s\\%s", name, file.c_str());
-		auto f = fopen(fname, "r");
-		if (f != 0)
-		{
-			while (!feof(f))
-			{
-				int height, dim1, dim2, falloff, read;
-				double lat, lng, phi;
-				if ((read = fscanf(f, "%s %d %lf %lf %d %d %lf %d", fname, &height, &lng, &lat, &dim1, &dim2, &phi, &falloff)) < 5) continue; // Skip incomplete lines
-				if (fname[0] == '/' && fname[1] == '/') continue; // Skip commented lines
-				_strlwr(fname);
-				if (read < 6)	dim2 = dim1; // Fallback for one dimension only
-				if (read < 7)	phi = 0;     // Fallback for no angle given
-				if (read < 8)	falloff = 0; // Fallback for no falloff given
-				auto decdeg = radius*cos(lat*RAD) * 2 * PI;
-				decdeg = 360 / decdeg;
-				if (strcmp(fname, "ellipse") == 0)
-				{
-					g_ShapeStore[hPlanet].push_back(new FlatShape{ lat ,lng , (double)dim1*decdeg, (double)dim2*decdeg, cos(-phi*RAD),sin(-phi*RAD), (double)falloff / 100, height, 1 });
-				}
-				else if (strcmp(fname, "rect") == 0)
-				{
-					g_ShapeStore[hPlanet].push_back(new FlatShape{ lat ,lng , (double)dim1*decdeg / 2, (double)dim2*decdeg / 2, cos(-phi*RAD),sin(-phi*RAD), (double)falloff / 100, height, 4 });
-				}
-			}
-			fclose(f);
-		}
-	}
-	// Build up planet map only if at least one shape was added
-	if (g_ShapeStore.find(hPlanet) != g_ShapeStore.end()) for (auto shape : g_ShapeStore[hPlanet])
-	{
-		double offset = sqrt(shape->Dim1*shape->Dim1 + shape->Dim2*shape->Dim2);
-		double latmin = shape->Lat - offset;
-		double latmax = shape->Lat + offset;
-		double lngmin = shape->Lng - offset;
-		double lngmax = shape->Lng + offset;
-		TilePixelPosition leftUpper, rightUpper, leftLower, rightLower;
-		for (auto lvl = 13; lvl >= 0; lvl--)
-		{
-			int latBands = 1 << lvl;
-			int lngBands = latBands * 2;
-
-			// Get tile pixel position of all corner points
-			GetTilePixelPosition(lvl, latmax, lngmin, leftUpper);
-			GetTilePixelPosition(lvl, latmax, lngmax, rightUpper);
-			GetTilePixelPosition(lvl, latmin, lngmin, leftLower);
-			// Since we are symmetrically, we can deduce the last corner directly
-			rightLower.iLat = leftLower.iLat;
-			rightLower.iLng = rightUpper.iLng;
-			rightLower.X = rightUpper.X;
-			rightLower.Y = leftLower.Y;
-			// Check for subpixel visibility
-			if (leftUpper == rightUpper || leftLower == rightLower || leftUpper == leftLower || rightUpper == rightLower) break;
-			// Shift if longitude edge is crossed
-			if (leftUpper.iLng > rightUpper.iLng)
-			{
-				leftUpper.iLng -= lngBands;
-				leftLower.iLng -= lngBands;
-			}
-			// Check for edge pixel to compensate overlapping in elevation tiles
-			if (leftUpper.X == 0)
-			{
-				leftUpper.iLng--;
-				leftLower.iLng--;
-			}
-			if (rightUpper.X == 255)
-			{
-				rightUpper.iLng++;
-				rightLower.iLng++;
-			}
-			if (leftUpper.Y == 0 && leftUpper.iLat>0)
-			{
-				leftUpper.iLat--;
-				rightUpper.iLat--;
-			}
-			if (leftLower.Y == 255 && leftLower.iLat<latBands)
-			{
-				leftLower.iLat++;
-				rightLower.iLat++;
-			}
-			// Sweep over the tile set to put in shape paths
-			for (auto ilat = leftUpper.iLat; ilat <= leftLower.iLat; ilat++)
-				for (auto ilng = leftUpper.iLng; ilng <= rightUpper.iLng; ilng++)
-				{
-					// Compensate for longitude edge switch
-					g_ElevationFlatteningShapes[hPlanet][lvl][ilat][ilng < 0 ? lngBands + ilng : ilng].push_back(shape);
-				}
-		}
-	}
-	g_ShapesLoaded[hPlanet] = true;
-}
-
-template <typename Type>
-bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, Type *elev)
-{
-	if (!elev) return false;
-	if (g_ShapesLoaded.find(hPlanet) == g_ShapesLoaded.end()) ProcessPlanetFlats(hPlanet);
-	if (g_ElevationFlatteningShapes.find(hPlanet) == g_ElevationFlatteningShapes.end()) return false; // Nothing for planet
-	auto planetShapes = g_ElevationFlatteningShapes[hPlanet];
-	if (planetShapes.find(lvl) == planetShapes.end()) return false; // Nothing at this level
-	auto levelShapes = planetShapes[lvl];
-	if (levelShapes.find(ilat) == levelShapes.end()) return false; // Nothing at this latitude
-	auto latShapes = levelShapes[ilat];
-	if (latShapes.find(ilng) == latShapes.end()) return false; // Nothing at this longitude
-	auto shapes = latShapes[ilng];
-	double bands = pow((double)2, lvl);
-	double width = 180 / bands;
-	double step = width / 256;
-	double latmin = 90 - width*(ilat + 1) - step * 1.5;
-	double lngmin = -180 + width*ilng - step * 1.5;;
-	for (auto i = 0; i < TILE_ELEVSTRIDE*TILE_ELEVSTRIDE; i++)
-	{
-		for (auto shape : shapes)
-		{
-			double y = latmin + (i / 259)*step - shape->Lat;
-			double x = lngmin + (i % 259)*step - shape->Lng;
-			double x1 = (x * shape->Cos - y * shape->Sin) / shape->Dim1;
-			double y1 = (x * shape->Sin + y * shape->Cos) / shape->Dim2;
-			for (auto pot = 0; pot < shape->Type; pot++)
-			{
-				x1 *= x1;
-				y1 *= y1;
-			}
-			double dist = x1 + y1;
-			if (dist <= 1.0)
-			{
-				// Do the math in INT16 basis even for "float" output
-				INT16 elevation = INT16((double)shape->Height / elev_res);
-				if (shape->Falloff > 0)
-				{
-					for (auto pot = 0; pot < shape->Type; pot++)
-					{
-						dist = sqrt(dist);
-					}
-					if (dist >= 1 - shape->Falloff)
-					{
-						double alpha = (dist - 1 + shape->Falloff) / shape->Falloff;
-						elevation = INT16(elev[i] * alpha + (double)shape->Height / elev_res * (1 - alpha));
-					}
-				}
-				// Convert to float or keep as an INT16 depending on case
-				elev[i] = Type(elevation);
-			}
-		}
-	}
-	return true;
-}
-
-
-bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16 *elev)
-{
-	if (!Config->bFlatsEnabled) return false;
-	char name[64];
-	oapiGetObjectName(hPlanet, name, 64);
-	auto result = FilterElevation<INT16>(hPlanet, lvl, ilat, ilng, elev_res, elev);
-	if (result)
-		LogClr("Coral", "FilterElevation[Physics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
-	return result;
-}
-
-
-void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev)
-{
-	if (!Config->bFlatsEnabled) return;
-	char name[64];
-	oapiGetObjectName(hPlanet, name, 64);
-	if (FilterElevation<float>(hPlanet, lvl, ilat, ilng, 1.0, elev))
-		LogClr("Coral", "FilterElevation[Graphics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
-}
-
-
-
-
 
 // ==============================================================
 // D3D9Client class implementation
@@ -485,7 +224,6 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	pScatterTest(NULL),
 	pFramework  (NULL),
 	pItemsSkp   (NULL),
-	texmgr      (NULL),
 	hLblFont1   (NULL),
 	hLblFont2   (NULL),
 	hMainThread (NULL),
@@ -614,7 +352,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	frame_timer		 = 0;
 	scene            = NULL;
 	meshmgr          = NULL;
-	texmgr           = NULL;
 	pFramework       = NULL;
 	pDevice			 = NULL;
 	parser			 = NULL;
@@ -687,7 +424,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	LogAlw("DepthStencil = %s", _PTR(pDepthStencil));
 
 	meshmgr		= new MeshManager(this);
-	texmgr	    = new TextureManager(this);
 
 	// Bring Sketchpad Online
 	D3D9PadFont::D3D9TechInit(pDevice);
@@ -1046,19 +782,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	bRunning = false;
 
 
-	// Face's Cleanup ShapeStore -----------------------
-	//
-	for (auto store : g_ShapeStore)
-	{
-		for (auto shape : store.second)
-		{
-			delete shape;
-		}
-	}
-	g_ShapeStore.clear();
-	g_ElevationFlatteningShapes.clear();
-	g_ShapesLoaded.clear();
-
 	// At first, shutdown tile loaders -------------------------------------------------------
 	//
 	if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
@@ -1107,10 +830,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	}
 #endif
 
-	
-	LogAlw("=========== Clearing Texture Repository =========");
-	SAFE_DELETE(texmgr);
-
 	LogAlw("===== Calling GlobalExit() for sub-systems ======");
 	HazeManager::GlobalExit();
 	HazeManager2::GlobalExit();
@@ -1144,15 +863,27 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 	LogAlw("============ Checking Object Catalogs ===========");
 
+	
+	// Check surface catalog --------------------------------------------------------------------------------------
+	//
+	if (SharedTextures.size() > 0)
+	{
+		LogWrn("Texture Repository has %u entries... Releasing...", (DWORD)SharedTextures.size());
+		auto Undeleted(SharedTextures);
+		for (auto srf : Undeleted) {
+			LogWrn("Texture [%s]", SURFACE(srf.second)->GetName());
+			delete lpSurfNative(srf.second);
+		}
+	}
+
 	// Check surface catalog --------------------------------------------------------------------------------------
 	//
 	if (SurfaceCatalog.size() > 0)
 	{
-		LogErr("UnDeleted Surface(s) Detected %u", (DWORD)SurfaceCatalog.size());
+		LogErr("UnDeleted Surfaces(s) Detected %u... Releasing...", (DWORD)SurfaceCatalog.size());
 		auto Undeleted(SurfaceCatalog);
-		for (auto srf : Undeleted)
-		{
-			LogWrn("Surface %s (%s) (%u,%u)", _PTR(srf), srf->GetName(), srf->GetWidth(), srf->GetHeight());
+		for (auto srf : Undeleted) {
+			LogErr("Surface [%s] (%u, %u)", srf->GetName(), srf->GetWidth(), srf->GetHeight());
 			delete srf;
 		}
 	}
@@ -1165,7 +896,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 		auto Undeleted(MeshCatalog);
 		for (auto msh : Undeleted)
 		{
-			LogWrn("Mesh[%s] Handle = %s ", msh->GetName(), _PTR(msh));
+			LogErr("Mesh[%s] Handle = %s ", msh->GetName(), _PTR(msh));
 			delete msh;
 		}
 	}
@@ -1203,6 +934,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	size_t nt = TileCatalog->CountEntries();
 	if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
 
+	SharedTextures.clear();
 	SurfaceCatalog.clear();
 	MeshCatalog.clear();
 	TileCatalog->Clear();
@@ -1638,11 +1370,6 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 	if (hMesh==NULL) return;
 
 	int idx = meshmgr->StoreMesh(hMesh, fname);
-
-	if (idx>=0) {
-		if (fname) LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,fname);
-		else	   LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,_PTR(hMesh));
-	}
 }
 
 // ==============================================================
@@ -2251,23 +1978,13 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 
-	SURFHANDLE pTex = NULL;
+	DWORD attrib = OAPISURFACE_TEXTURE;
+	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
+	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS | OAPISURFACE_RENDERTARGET;
+	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
+	if (flags & 0x8) attrib |= OAPISURFACE_SHARED;
 
-	char path[MAX_PATH];
-
-	if (TexturePath(fname, path)==false) {
-		LogWrn("Texture %s not found.", fname);
-		return NULL;
-	}
-
-	if (flags & 8) {
-		if (texmgr->GetTexture(fname, &pTex, flags)==false) return NULL;
-	}
-	else {
-		if (texmgr->LoadTexture(fname, &pTex, flags)!=S_OK) return NULL;
-	}
-
-	return pTex;
+	return clbkLoadSurface(fname, attrib);
 }
 
 // ==============================================================
@@ -2276,6 +1993,63 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
+
+	static const DWORD val = OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI | OAPISURFACE_SYSMEM;
+	static const DWORD exclude = ~(OAPISURFACE_SHARED | OAPISURFACE_ORIGIN);
+
+	if (!(attrib & val))
+	{
+		// It's a regular texture, let's manage it
+		//
+		string name(fname);
+
+		if (attrib & OAPISURFACE_SHARED)
+		{
+			auto ent = SharedTextures.find(name);
+
+			if (ent == SharedTextures.end())
+			{
+				SURFHANDLE hSrf = NatLoadSurface(fname, attrib);
+				if (hSrf) SharedTextures[name] = hSrf;
+				return hSrf;
+			}
+			else return ent->second;
+		}
+
+		/*
+		auto ent = ClonedTextures.find(name);
+
+		if (ent == ClonedTextures.end())
+		{
+			SURFHANDLE hSrf = NatLoadSurface(fname, attrib);
+			if (hSrf) SharedTextures[name] = hSrf;
+			return hSrf;
+		}
+		else
+		{
+			DWORD original = SURFACE(ent->second)->GetOAPIFlags();
+
+			if (original & OAPISURFACE_ORIGIN)
+			{
+				if ((attrib & exclude) == (original & exclude))
+				{
+					return SURFHANDLE(new SurfNative(SURFACE(ent->second))); // Clone it
+				}
+			}
+			else
+			{
+				// Create "origin" for cloning
+				SURFHANDLE hSrf = NatLoadSurface(fname, attrib | OAPISURFACE_ORIGIN);
+				if (hSrf) {
+					ent->second = hSrf;
+					return SURFHANDLE(new SurfNative(SURFACE(hSrf))); // Clone it
+				}
+				else return NULL;
+			}
+		}
+		*/
+	}
+	
 	return NatLoadSurface(fname, attrib);
 }
 
@@ -2292,23 +2066,7 @@ HBITMAP D3D9Client::gcReadImageFromFile(const char *_path)
 
 void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 {
-	_TRACE;
-	if (ChkDev(__FUNCTION__)) return;
-
-	// Do not release surfaces stored in repository
-	if (texmgr->IsInRepository(hTex)) return;	
-
-	// Don't release surfaces used by meshes
-	for (auto mesh : MeshCatalog) if (mesh && mesh->HasTexture(hTex)) return;
-
-	// If the surface exists, delete it.
-	if (SURFACE(hTex)->DecRef())
-	{
-		if (SurfaceCatalog.count(SURFACE(hTex)))
-		{
-			delete SURFACE(hTex);
-		}
-	}
+	clbkReleaseSurface(hTex);
 }
 
 // ==============================================================
@@ -2385,14 +2143,18 @@ void D3D9Client::clbkIncrSurfaceRef(SURFHANDLE surf)
 bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 {
 	_TRACE;
-	if (ChkDev(__FUNCTION__)) return NULL;
+	if (ChkDev(__FUNCTION__)) return false;
 
-	if (surf==NULL) { LogErr("D3D9Client::clbkReleaseSurface() Input Surface is NULL");	return false; }
+	// Do not release 'origin' (i.e. reference) for cloned surfaces.
+	if (SURFACE(surf)->GetOAPIFlags() & OAPISURFACE_ORIGIN) return false;
 
-	if (texmgr->IsInRepository(surf)) return false;	// Do not release surfaces stored in repository
+	// Do not release surfaces stored in repository
+	for (auto ent : SharedTextures) if (ent.second == surf) return false;
 
+	// Don't release surfaces used by meshes
 	for (auto mesh : MeshCatalog) if (mesh && mesh->HasTexture(surf)) return false;
 
+	// If the surface exists, delete it.
 	if (SURFACE(surf)->DecRef())
 	{
 		if (SurfaceCatalog.count(SURFACE(surf)))
@@ -2401,7 +2163,6 @@ bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 			return true;
 		}
 	}
-	
 	return false;
 }
 
@@ -2495,19 +2256,30 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
 
+	RECT rs = _RECT(srcx, srcy, srcx + srcw, srcy + srch);
+	RECT rt = _RECT(tgtx, tgty, tgtx + tgtw, tgty + tgth);
+
+
+	// Can't blit in a clone, declone..
+	//
+	if (SURFACE(tgt)->IsClone()) SURFACE(tgt)->DeClone();
+
 	// Can't blit in a compressed surface, decompress..
 	//
-	if (!SURFACE(tgt)->Decompress())
+	if (SURFACE(tgt)->IsCompressed())
 	{
-		HALT();	return false;
+		if (uEnableLog > 1) {
+			LogWrn("oapiBlt() Performed to a compressed destination surface... Decompressing.... ----------------- ");
+			BltError(src, tgt, &rs, &rt, Config->DebugBreak!=0);
+		}
 	}
 
-
-	RECT rs = _RECT( srcx, srcy, srcx+srcw, srcy+srch );
-	RECT rt = _RECT( tgtx, tgty, tgtx+tgtw, tgty+tgth );
+	if (!SURFACE(tgt)->Decompress())
+	{
+		HALT();
+	}
 
 	POINT tp = { (long)tgtx, (long)tgty };
-
 
 	const D3DSURFACE_DESC* td = SURFACE(tgt)->GetDesc();
 	const D3DSURFACE_DESC* sd = SURFACE(src)->GetDesc();
@@ -2531,7 +2303,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 	// Check Blt conditions
 	//
-	bool bCK = SURFACE(src)->ColorKey != SURF_NO_CK;	// ColorKey In Use
+	bool bCK = SURFACE(src)->GetColorKey() != SURF_NO_CK;	// ColorKey In Use
 	bool bCL = (srcw != tgtw) || (srch != tgth);		// Scaling In Use
 	bool bSC = SURFACE(src)->IsCompressed();			// Compressed source
 
@@ -2610,7 +2382,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 		{
 			Sketchpad3* pSkp = static_cast<Sketchpad3 *>(clbkGetSketchpad_const(tgt));
 
-			if (SURFACE(src)->ColorKey != SURF_NO_CK)
+			if (SURFACE(src)->GetColorKey() != SURF_NO_CK)
 			{
 				pSkp->ColorKey(src, &rs, tgtx, tgty);
 				clbkReleaseSketchpad_const(pSkp);
@@ -2732,7 +2504,7 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w
 
 // =======================================================================
 
-void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t) const
+void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t, bool bHalt) const
 {
 	LogErr("Source Rect (%d,%d,%d,%d) (w=%u,h=%u)", s->left, s->top, s->right, s->bottom, abs(s->left - s->right), abs(s->top - s->bottom));
 	LogErr("Target Rect (%d,%d,%d,%d) (w=%u,h=%u)", t->left, t->top, t->right, t->bottom, abs(t->left - t->right), abs(t->top - t->bottom));
@@ -2740,7 +2512,7 @@ void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const 
 	SURFACE(src)->LogSpecs();
 	LogErr("Target Data Below: ----------------------------------");
 	SURFACE(tgt)->LogSpecs();
-	HALT();
+	if (bHalt) HALT();
 }
 
 

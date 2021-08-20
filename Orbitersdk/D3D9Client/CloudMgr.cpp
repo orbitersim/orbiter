@@ -14,7 +14,6 @@
 
 #include "CloudMgr.h"
 #include "VPlanet.h"
-#include "Texture.h"
 #include "D3D9Surface.h"
 
 using namespace oapi;

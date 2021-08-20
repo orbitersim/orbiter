@@ -20,7 +20,7 @@ using namespace oapi;
 extern D3D9Client* g_client;
 
 
-void NatCheckFlags(DWORD flags)
+void NatCheckFlags(DWORD &flags)
 {
 	// Append dependend flags
 	if (flags & OAPISURFACE_RENDER3D) flags |= OAPISURFACE_RENDERTARGET;
@@ -188,7 +188,6 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 				pSrf->SetName(file);
 				return SURFHANDLE(pSrf);
 			}
-			assert(false);
 			return NULL;
 		}
 
@@ -208,7 +207,6 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 		}
 	}
 
-	assert(false);
 	return NULL;
 }
 
@@ -296,6 +294,7 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 	if (flags & OAPISURFACE_GDI) Usage = D3DUSAGE_DYNAMIC;
 	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
 	if (flags & OAPISURFACE_NOMIPMAPS) Mips = 1;
+
 	if (flags & OAPISURFACE_MIPMAPS)
 	{
 		Mips = 0;
@@ -343,7 +342,6 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 			return SURFHANDLE(new SurfNative(pSurf, flags, pDepth));
 		}
 	}
-
 	assert(false);
 	return NULL;
 }
@@ -426,6 +424,7 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags, LPDIRECT3DSURFACE9
 	pSkp(NULL),
 	pTemp(NULL),
 	pDepth(_pDepth),
+	hOrigin(this),
 	pTexSurf(NULL),
 	pGDICache(NULL),
 	pDevice(g_client->GetDevice()),
@@ -465,21 +464,49 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags, LPDIRECT3DSURFACE9
 
 // -----------------------------------------------------------------------------------------------
 //
+SurfNative::SurfNative(SurfNative* pOrigin)
+{
+	pResource = pOrigin->pResource;
+	pDX7 = NULL;
+	pSkp = NULL;
+	pTemp = NULL;
+	pDepth = pOrigin->pDepth;
+	hOrigin = pOrigin;
+	pTexSurf = pOrigin->pTexSurf;
+	pGDICache = NULL;
+	pDevice = g_client->GetDevice();
+	ColorKey = pOrigin->ColorKey;
+	Flags = pOrigin->Flags;
+	type = pOrigin->type;
+	Mipmaps = pOrigin->Mipmaps;
+	RefCount = 1;
+
+	for (int i = 0; i < MAP_MAX_COUNT; i++) pMap[i] = pOrigin->pMap[i];
+
+	strcpy_s(name, 128, pOrigin->name);
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
 SurfNative::~SurfNative()
 {
 	if (SurfaceCatalog.erase(this) != 1) assert(false);
 
-	for (int i = 0; i < MAP_MAX_COUNT; i++) SAFE_RELEASE(pMap[i]);
-
-	if (!(Flags & OAPISURFACE_BACKBUFFER))
+	if (hOrigin == this)
 	{
-		SAFE_RELEASE(pResource);
-		SAFE_RELEASE(pDepth);
+		for (int i = 0; i < MAP_MAX_COUNT; i++) SAFE_RELEASE(pMap[i]);
+
+		if (!(Flags & OAPISURFACE_BACKBUFFER))
+		{
+			SAFE_RELEASE(pResource);
+			SAFE_RELEASE(pDepth);
+		}
+		SAFE_RELEASE(pTexSurf);
 	}
 
 	SAFE_RELEASE(pTemp);
 	SAFE_RELEASE(pDX7);
-	SAFE_RELEASE(pTexSurf);
 	SAFE_RELEASE(pGDICache);
 	SAFE_DELETE(pSkp);
 }
@@ -675,7 +702,7 @@ bool SurfNative::CreateDX7()
 	{
 		if (S_OK == g_client->GetDevice()->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, true, &pDX7, NULL))
 		{
-			oapiWriteLogV("Surface %s (%u,%u) going in DX7 compatibility mode", _PTR(this), desc.Width, desc.Height);
+			LogBreak("Surface %s (%u,%u) going in DX7 compatibility mode", _PTR(this), desc.Width, desc.Height);
 			return true;
 		}
 	}
@@ -747,7 +774,8 @@ HDC	SurfNative::GetDC()
 				return DC.hDC;
 			}
 		}
-		else {
+		else if (IsRenderTarget())
+		{
 			if (CreateDX7())
 			{
 				DX7Sync(true);
@@ -840,6 +868,55 @@ bool SurfNative::Decompress()
 	return true;
 }
 
+
+// -----------------------------------------------------------------------------------------------
+//
+bool SurfNative::DeClone()
+{
+	char path[MAX_PATH];
+
+	if (!IsClone()) return false;
+	else
+	{
+		LogWrn("DeCloning Surface [%s] Handle=%s", name, _PTR(this));
+
+		assert(pGDICache == NULL);
+		assert(pDX7 == NULL);
+		assert(pTemp == NULL);
+		assert(DC.hDC == NULL);
+
+		D3DFORMAT Format = D3DFMT_FROM_FILE;
+		LPDIRECT3DTEXTURE9 pTex = NULL;
+
+		// Decompress
+		if (desc.Format == D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
+		if (desc.Format == D3DFMT_DXT5) Format = D3DFMT_A8R8G8B8;
+		if (desc.Format == D3DFMT_DXT3) Format = D3DFMT_A8R8G8B8;
+
+		if (!g_client->TexturePath(name, path)) {
+			oapiWriteLogV("SurfNative::DeClone() File Not Found [%s]", path);
+			return false;
+		}
+
+		if (S_OK == D3DXCreateTextureFromFileExA(pDevice, path, desc.Width, desc.Height, Mipmaps, D3DUSAGE_RENDERTARGET, Format,
+			D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex))
+		{
+			pResource = pTex;
+			hOrigin = this;
+
+			HR((pTex)->GetSurfaceLevel(0, &pTexSurf));
+			HR(pTex->GetLevelDesc(0, &desc));
+			Mipmaps = pTex->GetLevelCount();
+			type = pTex->GetType();
+			Flags = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
+			return true;
+		}
+	}
+	
+	LogErr("DeClone Failed");
+	LogSpecs();
+	return false;
+}
 
 // -----------------------------------------------------------------------------------------------
 //

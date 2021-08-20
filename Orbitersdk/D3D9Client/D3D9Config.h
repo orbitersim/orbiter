@@ -40,6 +40,7 @@ public:
 	int DisableDriverManagement;	///< Disable the D3D9 driver management \[sets the D3DCREATE_DISABLE_DRIVER_MANAGEMENT behavior flag\]  (0=default, 1:disabled)
 	int DisableVisualHelperReadout;	///< Disable the hooking of the visual helper windows, to allow acces to config parameter that Orbiter core doesn't provide (0=normal mode, 1=disable any hooking)
 	int NearClipPlane;				///< Near clip plane mode (0,1)
+	int DebugBreak;					///< Enable Debug Break
 	int PreLBaseVis;				///< Preload base visuals (0=load on demand, 1=preload)
 	int DebugFontSize;				///< Debug font height \[pixel\] (default=18px)
 	int UseNormalMap;				///< Enable normal mapping (0,1)

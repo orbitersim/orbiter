@@ -1011,7 +1011,6 @@ public:
 	HWND				GetRenderWindow () const { return hRenderWnd; }
 	CD3DFramework9 *    GetFramework() const { return pFramework; }
 	Scene *             GetScene() const { return scene; }
-	TextureManager *    GetTexMgr() const { return texmgr; }
 	MeshManager *       GetMeshMgr() const { return meshmgr; }
 	void 				WriteLog (const char *msg) const;
     LPDIRECT3DDEVICE9   GetDevice() const { return pDevice; }
@@ -1261,7 +1260,7 @@ public:
 	bool OutputLoadStatus (const char *msg, int line);
 
 private:
-	void BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t) const;
+	void BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t, bool bHalt = true) const;
 	void SketchPadTest();
 	void PresentScene();
 	void Label(const char *format, ...);
@@ -1310,7 +1309,6 @@ private:
 	Scene *scene;           // Scene description
 
 	MeshManager *meshmgr;   // mesh manager
-	TextureManager *texmgr; // texture manager
 	D3DXMATRIX ident;
 
 	struct RenderProcData;

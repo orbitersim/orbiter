@@ -15,7 +15,6 @@
 #include "Surfmgr2.h"
 #include "Tilemgr2.h"
 #include "Cloudmgr2.h"
-#include "Texture.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
 #include "vVessel.h"

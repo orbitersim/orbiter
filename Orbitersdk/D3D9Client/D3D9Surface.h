@@ -26,8 +26,10 @@
 #define	MAP_HEAT			8
 #define MAP_MAX_COUNT		9
 
-#define OAPISURFACE_MAPS		0x80000000
-#define OAPISURFACE_BACKBUFFER	0x40000000
+#define OAPISURFACE_MAPS		0x80000000		// Additional Texture Maps
+#define OAPISURFACE_BACKBUFFER	0x40000000		// It's a backbuffer
+#define OAPISURFACE_ORIGIN		0x20000000		// The origin from where the clones are being made, can't change (immutable)
+
 
 
 LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext);
@@ -66,6 +68,7 @@ class SurfNative
 public:
 
 							SurfNative(LPDIRECT3DRESOURCE9 pSrf, DWORD Flags, LPDIRECT3DSURFACE9 pDep = NULL);
+							SurfNative(SurfNative* hOrigin);
 							~SurfNative();
 
 	void					AddMap(DWORD id, LPDIRECT3DTEXTURE9 pMap);
@@ -75,6 +78,7 @@ public:
 	LPDIRECT3DTEXTURE9		GetGDICache(DWORD Flags);
 	void					IncRef() { RefCount++; }
 	bool					DecRef() { RefCount--; return RefCount <= 0; }
+	bool					DeClone();
 
 	void					Reload();
 
@@ -100,7 +104,7 @@ public:
 	bool					IsSystemMem() const { return (desc.Pool == D3DPOOL_SYSTEMMEM); }
 	bool					IsAdvanced() const { return (Flags & OAPISURFACE_MAPS); }
 	bool					IsColorKeyEnabled() const { return (ColorKey != SURF_NO_CK); }
-
+	bool					IsClone() const { return hOrigin != this; }
 
 	LPDIRECT3DSURFACE9		GetTempSurface();
 	LPDIRECT3DRESOURCE9		GetResource() const { return pResource; }
@@ -111,6 +115,7 @@ public:
 	LPDIRECT3DTEXTURE9		GetMap(int type, int type2) const { return (pMap[type] ? pMap[type] : pMap[type2]); }
 	D3D9Pad*				GetPooledSketchPad();
 	void					SetColorKey(DWORD ck);			// Enable and set color key
+	DWORD					GetColorKey() const { return ColorKey; }
 
 	bool					Fill(LPRECT r, DWORD color);
 
@@ -125,6 +130,7 @@ public:
 	// -------------------------------------------------------------------------------
 
 	char					name[128];				// Surface name
+	SURFHANDLE				hOrigin;
 	D3DSURFACE_DESC			desc;					// Surface size and format description
 	D3DRESOURCETYPE			type;					// Resource type
 	LPDIRECT3DTEXTURE9		pGDICache;				// Low level GDI cache for surface syncing

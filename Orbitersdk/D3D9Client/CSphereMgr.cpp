@@ -10,7 +10,6 @@
 #include "D3D9util.h"
 #include "CSphereMgr.h"
 #include "Scene.h"
-#include "Texture.h"
 #include "D3D9Config.h"
 #include "D3D9Catalog.h"
 #include "Spherepatch.h"
@@ -292,7 +291,7 @@ void CSphereManager::LoadTextures ()
 
 	ntex = patchidx[maxbaselvl];
 	texbuf = new LPDIRECT3DTEXTURE9[ntex];
-	if (ntex = gc->GetTexMgr()->LoadTextures(fname, texbuf, 0, ntex)) {
+	if (ntex = LoadPlanetTextures(fname, texbuf, 0, ntex)) {
 		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
 		while ((int)ntex > patchidx[maxbaselvl]) ReleaseTex(texbuf[--ntex]);
 		// not enough textures loaded for requested resolution level
@@ -410,7 +409,7 @@ void CSphereManager::SetWorldMatrix (int ilng, int nlng, int ilat, int nlat)
 	// set up world transformation matrix
 	D3DXMATRIX rtile;
 
-	double lng = PI2 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180°
+	double lng = PI2 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180Â°
 	D3DMAT_RotY (&rtile, lng);
 	D3DXMatrixMultiply(&mWorld, &rtile, &RenderParam.wmat);
 }
