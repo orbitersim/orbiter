@@ -57,6 +57,7 @@ orbiter::LaunchpadDialog::LaunchpadDialog (Orbiter *app)
 	pCfg    = app->Cfg();
 	g_pDlg  = this; // for nonmember callbacks
 	CTab    = NULL;
+	m_bVisible = false;
 
 	hDlgBrush = CreateSolidBrush (dlgcol);
 	hShadowImg = LoadImage (hInst, MAKEINTRESOURCE(IDB_SHADOW), IMAGE_BITMAP, 0, 0, 0);
@@ -132,7 +133,7 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 		strcat (cbuf, "  ");
 		SetWindowText (GetDlgItem (hDlg, IDC_BLACKBOX), cbuf);
 		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), uscram(SIG7));
-		ShowWindow (hDlg, SW_SHOW);
+		Show();
 		if (startvideotab) {
 			UnhidePage (4, "Video");
 			SwitchTabPage (hDlg, 4);
@@ -156,6 +157,9 @@ void orbiter::LaunchpadDialog::SetTitle(PSTR title)
 void orbiter::LaunchpadDialog::Show()
 {
 	ShowWindow(hDlg, SW_SHOW);
+	m_bVisible = true;
+	for (int i = 0; i < ntab; i++)
+		Tab[i]->LaunchpadShowing(true);
 }
 
 //-----------------------------------------------------------------------------
@@ -163,6 +167,9 @@ void orbiter::LaunchpadDialog::Show()
 void orbiter::LaunchpadDialog::Hide()
 {
 	ShowWindow(hDlg, SW_HIDE);
+	m_bVisible = false;
+	for (int i = 0; i < ntab; i++)
+		Tab[i]->LaunchpadShowing(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1059,24 +1066,6 @@ void MainDialog::Network_PlayerListChanged ()
 	}
 }
 #endif // DO_NETWORK_OLD
-
-//-----------------------------------------------------------------------------
-// Name: RefreshScenarioList()
-// Desc: Re-scan scenario list
-//-----------------------------------------------------------------------------
-void orbiter::LaunchpadDialog::RefreshScenarioList ()
-{
-	((ScenarioTab*)Tab[0])->RefreshList();
-}
-
-//-----------------------------------------------------------------------------
-// Name: SelRootScenario()
-// Desc: select the given scenario
-//-----------------------------------------------------------------------------
-bool orbiter::LaunchpadDialog::SelRootScenario (char *scn)
-{
-	return ((ScenarioTab*)Tab[0])->SelRootScenario (scn);
-}
 
 
 //=============================================================================

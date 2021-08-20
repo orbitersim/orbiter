@@ -895,7 +895,6 @@ void Orbiter::CloseSession ()
 	}
 
 	if (pConfig->CfgDebugPrm.ShutdownMode == 0 && !bFastExit) { // normal cleanup
-		m_pLaunchpad->SelRootScenario (CurrentScenario);
 		m_pLaunchpad->Show(); // show launchpad dialog again
 		m_pLaunchpad->ShowWaitPage (true, simheapsize);
 		if (gclient) {
@@ -1038,7 +1037,6 @@ INT Orbiter::Run ()
 #endif
         if (bGotMsg) {
 			if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
-//			if (!hDlg || !IsDialogMessage (hDlg, &msg)) {
 				TranslateMessage (&msg);
 				DispatchMessage (&msg);
 			}
@@ -1502,8 +1500,6 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc)
 				ofs << "END" << endl;
 			}
 		}
-
-		m_pLaunchpad->RefreshScenarioList();
 		return true;
 
 	} else return false;

@@ -59,6 +59,7 @@ public:
 
 	virtual void Show ();
 	virtual void Hide ();
+	virtual void LaunchpadShowing(bool show) {}
 	inline bool IsActive () const { return bActive; }
 	inline HWND TabWnd () const { return hTab; }
 	inline HWND LaunchpadWnd() const { return pLp->hDlg; }

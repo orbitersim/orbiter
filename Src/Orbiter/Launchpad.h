@@ -47,6 +47,8 @@ namespace orbiter {
 		void Show(); // Show the launchpad window
 		void Hide(); // Hide the launchpad window
 
+		inline bool Visible() const { return m_bVisible; }
+
 		bool ConsumeMessage(LPMSG msg);
 		// Consume message msg, if intended for the dialog,
 		// otherwise return false
@@ -86,9 +88,6 @@ namespace orbiter {
 
 		void UpdateConfig();
 		// save current dialog settings in application configuration
-
-		bool SelRootScenario(char* scn);
-		// set scenario selection to scn, if available
 
 		void ShowWaitPage(bool show, long mem_committed = 0);
 		void UpdateWaitProgress();
@@ -146,9 +145,6 @@ namespace orbiter {
 		void SwitchTabPage(HWND hWnd, int pg);
 		// display a new page
 
-		void RefreshScenarioList();
-		// Refresh the scenario list
-
 		INT_PTR DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		INT_PTR WaitProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		// Dialog message callbacks
@@ -172,6 +168,7 @@ namespace orbiter {
 
 		DWORD shadowh;         // shadow bar height
 		int dy_bt;             // button separation
+		bool m_bVisible;       // launchpad dialog visible?
 
 		ExtraTab* pExtra;      // tab object
 	};

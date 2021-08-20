@@ -18,6 +18,7 @@
 
 using namespace std;
 
+extern TCHAR* CurrentScenario;
 const char *htmlstyle = "<style type=""text/css"">body{font-family:Arial;font-size:12px} p{margin-top:0;margin-bottom:0.5em} h1{font-size:150%;font-weight:normal;margin-bottom:0.5em;color:blue;background-color:#E0E0FF;padding:0.1em}</style>";
 
 //-----------------------------------------------------------------------------
@@ -47,8 +48,7 @@ void ScenarioTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_SCN);
 
-	RefreshList();
-	SelRootScenario ("(Current state)");
+	RefreshList(false);
 	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SETIMAGELIST, (WPARAM)TVSIL_NORMAL, (LPARAM)imglist);
 
 	r_list0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_SCN_LIST)); // REMOVE!
@@ -197,62 +197,61 @@ INT_PTR ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::RefreshList ()
+void ScenarioTab::RefreshList (bool preserveSelection)
 {
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
-	// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
-	DWORD styles = GetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
-	TreeView_DeleteAllItems(GetDlgItem(hTab, IDC_SCN_LIST));
-	SetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
-	ScanDirectory (pCfg->CfgDirPrm.ScnDir, NULL);
-}
+	if (Launchpad()->Visible()) {
+		char cbuf[256], ch[256], * pc, * c;
+		GetSelScenario(cbuf, 256);
+		SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
+		// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
+		//DWORD styles = GetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
+		SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT);
+		//SetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
+		ScanDirectory(pCfg->CfgDirPrm.ScnDir, NULL);
 
-//-----------------------------------------------------------------------------
-
-void ScenarioTab::UpdateList ()
-{
-	char cbuf[256], ch[256], *pc, *c;
-	GetSelScenario (cbuf, 256);
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
-	// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT);
-	ScanDirectory (pCfg->CfgDirPrm.ScnDir, NULL);
-
-	pc = cbuf;
-	HTREEITEM hti = TreeView_GetRoot (GetDlgItem (hTab, IDC_SCN_LIST));
-
-	while (*pc) {
-		for (c = pc; *c && *c != '\\'; c++);
-		bool isdir = (*c == '\\');
-		*c = '\0';
-		TV_ITEM tvi = {TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256};
-		for (tvi.hItem = hti; tvi.hItem; tvi.hItem = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
-			SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
-			if (!strcmp (tvi.pszText, pc)) {
-				hti = tvi.hItem;
-				if (isdir)
-					hti = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
-				break;
+		HTREEITEM hti = TreeView_GetRoot(GetDlgItem(hTab, IDC_SCN_LIST));
+		if (preserveSelection) { // find the previous selection in the newly created list and re-select it
+			pc = cbuf;
+			while (*pc) {
+				for (c = pc; *c && *c != '\\'; c++);
+				bool isdir = (*c == '\\');
+				*c = '\0';
+				TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
+				for (tvi.hItem = hti; tvi.hItem; tvi.hItem = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
+					SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
+					if (!strcmp(tvi.pszText, pc)) {
+						hti = tvi.hItem;
+						if (isdir)
+							hti = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
+						break;
+					}
+				}
+				pc = c;
+				if (isdir) pc++;
 			}
 		}
-
-		pc = c;
-		if (isdir) pc++;
+		else { // Select the "current" scenario
+			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
+			for (tvi.hItem = hti; tvi.hItem; tvi.hItem = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
+				SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
+				if (!strcmp(tvi.pszText, CurrentScenario)) {
+					hti = tvi.hItem;
+					break;
+				}
+			}
+		}
+		SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
 	}
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
 }
 
 //-----------------------------------------------------------------------------
 
-bool ScenarioTab::SelRootScenario (char *scn)
+void ScenarioTab::LaunchpadShowing(bool show)
 {
-	// this currently simply selects the first item
-	HTREEITEM hti = TreeView_GetRoot (GetDlgItem (hTab, IDC_SCN_LIST));
-	TreeView_SelectItem (GetDlgItem (hTab, IDC_SCN_LIST), hti);
-	ScenarioChanged();
-	return true;
+	if (show) {
+		RefreshList(false);
+	}
 }
-
 //-----------------------------------------------------------------------------
 
 void ScenarioTab::ScanDirectory (const char *ppath, HTREEITEM hti)
@@ -655,7 +654,6 @@ int ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 		else if (!skip)
 			ofs << cbuf << endl;
 	}
-	RefreshList ();
 	return 0;
 }
 
@@ -720,7 +718,6 @@ void ScenarioTab::ClearQSFolder()
 		fname[strlen(fname)-4] = '\0';
 		_findclose (hf);
 		remove (pLp->App()->ScnPath (fname));
-		RefreshList ();
 	}
 }
 
@@ -740,7 +737,7 @@ void ScenarioTab::OpenScenarioHelp ()
 }
 
 //-----------------------------------------------------------------------------
-// Thread function for scenario list watcher
+// Thread function for scenario directory tree watcher
 //-----------------------------------------------------------------------------
 DWORD WINAPI ScenarioTab::threadWatchScnList (LPVOID pPrm)
 {
@@ -756,7 +753,7 @@ DWORD WINAPI ScenarioTab::threadWatchScnList (LPVOID pPrm)
 		dwWaitStatus = WaitForSingleObject (dwChangeHandle, INFINITE);
 		switch (dwWaitStatus) {
 			case WAIT_OBJECT_0:
-				tab->UpdateList();
+				tab->RefreshList(true);
 				FindNextChangeNotification (dwChangeHandle);
 				break;
 		}

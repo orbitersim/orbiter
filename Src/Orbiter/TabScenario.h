@@ -30,17 +30,14 @@ public:
 	// returns name of currently selected scenario file
 	// (without path or extension)
 
-	void RefreshList ();
-	// refresh the scenario list
-
-	void UpdateList ();
-
-	bool SelRootScenario (char *scn);
-	// select the given scenario in the list
+	void LaunchpadShowing(bool show);
 
 	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
+	void RefreshList(bool preserveSelection);
+	// refresh the scenario list
+
 	void ScanDirectory (const char *path, HTREEITEM hti);
 	// scan scenario files from a subdirectory
 
@@ -80,7 +77,7 @@ private:
 	RECT r_pause0;           // initial position of "start paused" button
 	int infoId;              // IDC_SCN_HTML or IDC_SCN_INFO, depending on which is active
 	bool htmldesc;           // Use embedded html viewer for scenario description
-	HANDLE hThread;          // scenario list watcher
+	HANDLE hThread;          // scenario directory tree watcher
 };
 
 #endif // !__TABSCENARIO_H
