@@ -15,6 +15,7 @@
 #include "Select.h"
 #include "DlgMgr.h"
 #include "Config.h"
+#include "cmdline.h"
 #include "Script.h"
 #include "Util.h"
 #include "Log.h"
@@ -64,7 +65,7 @@ DLLEXPORT int oapiGetOrbiterVersion ()
 
 DLLEXPORT const char *oapiGetCmdLine ()
 {
-	return g_pOrbiter->CmdLine();
+	return orbiter::CommandLine::Instance().CmdLine();
 }
 
 DLLEXPORT void oapiGetViewportSize (DWORD *w, DWORD *h, DWORD *bpp)
@@ -1365,6 +1366,13 @@ DLLEXPORT SURFHANDLE oapiLoadTexture (const char *fname, bool dynamic)
 	else return NULL;
 }
 
+DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	if (gc) return gc->clbkLoadSurface(fname, attrib);
+	else return NULL;
+}
+
 DLLEXPORT void oapiReleaseTexture (SURFHANDLE hTex)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
@@ -1638,12 +1646,13 @@ DLLEXPORT void oapiRegisterMFD (int mfd, const EXTMFDSPEC *spec)
 
 DLLEXPORT void oapiRegisterExternMFD (ExternMFD *emfd, const MFDSPEC &spec)
 {
-	g_pane->RegisterExternMFD (emfd, spec);
+	if (g_pane)
+		g_pane->RegisterExternMFD (emfd, spec);
 }
 
 DLLEXPORT bool oapiUnregisterExternMFD (ExternMFD *emfd)
 {
-	return g_pane->UnregisterExternMFD (emfd);
+	return (g_pane ? g_pane->UnregisterExternMFD (emfd) : false);
 }
 
 DLLEXPORT void oapiDisableMFDMode (int mode)

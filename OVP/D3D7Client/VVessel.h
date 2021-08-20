@@ -48,7 +48,7 @@ public:
 	static void GlobalInit (oapi::D3D7Client *gc);
 	static void GlobalExit ();
 
-	void clbkEvent (DWORD event, UINT context);
+	void clbkEvent (DWORD event, DWORD_PTR context);
 
 	virtual MESHHANDLE GetMesh (UINT idx);
 

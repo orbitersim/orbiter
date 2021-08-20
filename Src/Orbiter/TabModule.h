@@ -35,9 +35,6 @@ protected:
 	void RefreshLists ();
 	// Update active and inactive module lists
 
-	void ModuleActivate (int idx, bool act);
-	// Move modules between active/inactive lists
-
 	void DeactivateAll ();
 	// deactivate all modules
 
@@ -61,6 +58,7 @@ private:
 		char *name;
 		char *info;
 		bool active;
+		bool locked;
 	} **modulerec;
 	int nmodulerec;
 };

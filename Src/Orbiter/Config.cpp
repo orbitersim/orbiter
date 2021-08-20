@@ -236,6 +236,18 @@ CFG_MPLAYERPRM CfgMplayerPrm_default = {
 	""			// mpConnection (preferred connection type)
 };
 
+CFG_CMDLINEPRM CfgCmdlinePrm_default = {
+	false,              // fast exit (false = return to Launchpad dialog)
+	false,              // open video tab (false = open Scenarios tab)
+	false,              // append to log file (false = overwrite)
+	0,                  // FrameLimit (0 = unlimited)
+	0.0,                // fixed time step length (0 = disabled)
+	0.0,                // Max sys time (0 = unlimited)
+	0.0,                // Max sim time (0 = unlimited)
+	std::string(),      // launch scenario (empty: open Launchpad dialog)
+	std::list<std::string>() // list of plugins to load
+};
+
 CFG_WINDOWPOS CfgWindowPos_default = {
 	{0,0,0,0},  // map window
 	{0,0,0,0},  // info window
@@ -361,6 +373,12 @@ bool GetItemInt (istream &is, const char *label, int &val)
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
+bool GetItemSize(istream& is, const char* label, size_t& val)
+{
+	if (!GetItemString(is, label, g_cbuf)) return false;
+	return (sscanf(g_cbuf, "%zu", &val) == 1);
+}
+
 bool GetItemHex (istream &is, const char *label, int &val)
 {
 	if (!GetItemString (is, label, g_cbuf)) return false;
@@ -432,21 +450,27 @@ Config::Config()
 	SetDefaults ();
 }
 
-Config::Config (char *fname)
+Config::Config(char* fname)
+{
+	Root = 0;
+	SetDefaults();
+
+	Load(fname);
+}
+
+bool Config::Load(const char *fname)
 {
 	int i;
 	double d;
 	bool b;
 	char cbuf[256], tag[256];
 
-	Root = 0;
-	SetDefaults ();
-
 	Root = new char[strlen(fname)+1]; TRACENEW
 	strcpy (Root, fname);
 
 	ifstream ifs (fname);
-	if (!ifs) return;
+	if (!ifs) return false;
+
 	found_config_file = true;
 
 	GetBool ("EchoAllParams", bEchoAll);
@@ -775,6 +799,7 @@ Config::Config (char *fname)
 			strcpy (actmod[nactmod++], pc);
 		}
 	}
+	return true;
 }
 
 Config::~Config()
@@ -835,6 +860,7 @@ void Config::SetDefaults ()
 	CfgCameraPrm = CfgCameraPrm_default;         // camera parameters
 	CfgMplayerPrm = CfgMplayerPrm_default;       // multiplayer options
 	CfgWindowPos = CfgWindowPos_default;         // subwindow positions
+	CfgCmdlinePrm = CfgCmdlinePrm_default;       // command line parameters
 
 	found_config_file = false;
 }
@@ -1544,6 +1570,12 @@ bool Config::GetInt (istream &is, char *category, int &val)
 	return (sscanf (g_cbuf, "%d", &val) == 1);
 }
 
+bool Config::GetSize(istream& is, char* category, size_t& val)
+{
+	if (!GetString(is, category, g_cbuf)) return false;
+	return (sscanf(g_cbuf, "%zu", &val) == 1);
+}
+
 bool Config::GetBool (istream &is, char *category, bool &val)
 {
 	if (!GetString (is, category, g_cbuf)) return false;
@@ -1583,6 +1615,14 @@ bool Config::GetInt (char *category, int &val)
 	ifstream ifs (Root);
 	if (!ifs) return false;
 	return GetInt (ifs, category, val);
+}
+
+bool Config::GetSize(char* category, size_t& val)
+{
+	if (!Root) return false;
+	ifstream ifs(Root);
+	if (!ifs) return false;
+	return GetSize(ifs, category, val);
 }
 
 bool Config::GetBool (char *category, bool &val)

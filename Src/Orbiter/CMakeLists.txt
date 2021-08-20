@@ -9,7 +9,9 @@ set(common_src
 # General source files
 	Astro.cpp
 	Camera.cpp
+	cmdline.cpp
 	Config.cpp
+	console_ng.cpp
 	ddeserver.cpp
 	Element.cpp
 	elevmgr.cpp
@@ -197,6 +199,7 @@ if(BUILD_ORBITER_DX7)
 	set_target_properties(Orbiter
 		PROPERTIES
 		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
+		COMPILE_FLAGS "/MP"
 		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}
 		COMPILE_DEFINITIONS "INLINEGRAPHICS;DIRECTINPUT_VERSION=0x0800"
 		ENABLE_EXPORTS 1
@@ -240,6 +243,7 @@ if(BUILD_ORBITER_SERVER)
 	set_target_properties(Orbiter_server
 		PROPERTIES
 		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
+		COMPILE_FLAGS "/MP"
 		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR}/Server
 		OUTPUT_NAME Orbiter
 		VS_DEBUGGER_WORKING_DIRECTORY ${ORBITER_BINARY_ROOT_DIR}

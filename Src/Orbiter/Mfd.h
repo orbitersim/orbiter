@@ -115,6 +115,8 @@ public:
 	SURFHANDLE Surface () { return surf; }
 	SURFHANDLE Texture () { return tex; }
 
+	bool IsRuningInExternMFD() const { return (id > MAXMFD || id < 0); }
+
 	void DisplayTitle (oapi::Sketchpad *skp, const char *title) const;
 	// to be called from UpdateDraw
 

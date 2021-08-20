@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Astro.h"
 
+
 class DInput;
 class Config;
 class State;
@@ -28,6 +29,9 @@ class PlaybackEditor;
 class MemStat;
 class DDEServer;
 class ImageIO;
+namespace orbiter {
+	class ConsoleNG;
+}
 
 //-----------------------------------------------------------------------------
 // Structure for module callback functions
@@ -41,7 +45,16 @@ typedef void (*OPC_Proc)(void);
 class TimeData {
 public:
 	TimeData ();
-	void Reset (Orbiter *orbiter = NULL, double mjd_ref = 0.0);
+
+	void Reset (double mjd_ref = 0.0);
+	// Reset all sim and sys times to 0. Set time warp to 1
+	// Disable fixed step mode
+
+	void TimeData::SetFixedStep(double step);
+	// set a fixed time interval for each time step [s]
+	// step=0 disables the fixed step modus
+
+	double TimeData::FixedStep() const { return (bFixedStep ? fixed_step : 0.0); }
 
 	void BeginStep (double deltat, bool running);
 	// advance time by deltat (seconds)
@@ -55,6 +68,7 @@ public:
 	void SetWarp (double warp, double delay = 0.0);
 	inline double Warp () const { return TWarp; }
 	inline bool WarpChanged () const { return bWarpChanged; }
+	inline size_t FrameCount() const { return framecount; }
 
 	double MJD (double simt) const { return MJD_ref + Day(simt); }
 	// Convert simulation time to MJD
@@ -83,8 +97,9 @@ private:
 	double  TWarpDelay;   // warp acceleration delay
 	bool    bWarpChanged; // time acceleration changed in last step?
 	bool    bFixedStep;   // use fixed time steps?
-	int     framecount;   // number of frames (for fps calculation)
-	int     sys_tick;     // flush index for fps calculation
+	size_t  framecount;   // number of frames since simulation start (including pause)
+	size_t  frame_tick;   // number of frames since last fps calculation
+	size_t  sys_tick;     // flush index for fps calculation
 	double  syst_acc;     // accumulated system time for fps calculation
 	double  fps;          // current frame rate [Hz]
 };
@@ -103,7 +118,7 @@ public:
 	Orbiter ();
 	~Orbiter ();
 
-    HRESULT Create (HINSTANCE, TCHAR*);
+    HRESULT Create (HINSTANCE);
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
@@ -121,12 +136,11 @@ public:
 	void OutputLoadTick (int line, bool ok = true);
 	void TerminateOnError();
 	void UpdateServerWnd (HWND hWnd);
-	bool ParseConsoleCmd ();
 	void InitRotationMode ();
 	void ExitRotationMode ();
 	bool StickyFocus() const { return bKeepFocus; }
-
-	INT Run (const char *scenario = 0);
+	void OpenVideoTab() { bStartVideoTab = true; }
+	INT Run ();
 	void SingleFrame ();
     void Pause (bool bPause);
 	void Freeze (bool bFreeze);
@@ -156,8 +170,6 @@ public:
 	bool RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag);
 
 	void UpdateDeallocationProgress();
-
-	bool DestroyServerGuiDlg();
 
 	// plugin module loading/unloading
 	HINSTANCE LoadModule (const char *path, const char *name);   // load a plugin
@@ -239,7 +251,6 @@ public:
 	inline char *HTexPath   (const char *name, const char *ext = 0)
 		{ return pConfig->HTexPath (name, ext); }
 	inline const char *ScnPath    (const char *name) { return pConfig->ScnPath (name); }
-	inline const char *CmdLine () const { return cmdline; }
 
 	FILE *OpenTextureFile (const char *name, const char *ext);
 	// return texture file handle. Searches in hightex and standard directories
@@ -372,6 +383,9 @@ protected:
 	void EndTimeStep (bool running);
 	// Finish step update by copying next frame time data to current frame time data
 
+	bool SessionLimitReached() const;
+	// Return true if a session duration limit has been reached (frame limit/time limit, if any)
+
 	void ModulePreStep ();
 	void ModulePostStep ();
 	VOID UpdateWorld ();
@@ -395,17 +409,17 @@ private:
 	State          *pState;
 	MainDialog     *pMainDlg;
 	DialogManager  *pDlgMgr;
+	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
-	HWND            hServerWnd;    // server dialog (graphics-less mode only)
 	HWND            hDlg;          // main dialog handle
 	HWND            hBk;           // background window handle (demo mode only)
-	HANDLE          hConsoleTh;    // console input thread
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
 	bool			bUseStencil;   // render device provides stencil buffer (and user requests it)
 	bool            bKeepFocus;    // disable focus switch on mouse move (during rotations)
+	bool            bStartVideoTab; // Open Launchpad dialog on video tab
 	bool            bWINEenv;      // we are running under Linux/WINE
 	bool            ignorefirst;   // flag for first joystick action
 	long            plZ4;          // previous joystick throttle setting
@@ -421,7 +435,7 @@ private:
 	DWORD           viewW, viewH;  // render viewport dimensions
 	DWORD			viewBPP;       // render colour depth (bits per pixel)
 
-	char           *cmdline;       // orbiter command line
+	//char           *cmdline;       // orbiter command line
 	char            cfgpath[256];
 	int             cfglen;
 	char            simkstate[256];// accumulated simulated key state

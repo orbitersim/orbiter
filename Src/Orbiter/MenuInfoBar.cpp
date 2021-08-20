@@ -9,6 +9,7 @@
 #include "DlgMgr.h"
 #include "DlgMenuCfg.h"
 #include "Log.h"
+#include "GraphicsAPI.h"
 
 // =======================================================================
 // Externs
@@ -409,7 +410,7 @@ MenuInfoBar::MenuInfoBar (const Pane *_pane)
 	menumode = g_pOrbiter->Cfg()->CfgUIPrm.MenuMode;
 	infomode = g_pOrbiter->Cfg()->CfgUIPrm.InfoMode;
 	pausemode = g_pOrbiter->Cfg()->CfgUIPrm.PauseIndMode;
-    fixedstep = (g_pOrbiter->Cfg()->CfgDebugPrm.FixedStep != 0);
+	fixedstep = (td.FixedStep() > 0.0);
 	warp_always = g_pOrbiter->Cfg()->CfgUIPrm.bWarpAlways;
 	warp_scientific = g_pOrbiter->Cfg()->CfgUIPrm.bWarpScientific;
 	menustate = (menumode == 0 ? 1:0);
@@ -417,8 +418,13 @@ MenuInfoBar::MenuInfoBar (const Pane *_pane)
 	scrollpos = (menumode == 0 ? scrollrange : 0.0);
 	scrollpos_info = (infomode == 0 ? menuH : 0.0);
 	scrolldir = scrolldir_info = 0;
-	menuSrc = gc->clbkLoadTexture ("main_menu.dds", 0x4);
-	menuTgt = gc->clbkLoadTexture ("main_menu_tgt.dds", 0x4);
+#ifdef INLINEGRAPHICS
+	menuSrc = gc->clbkLoadTexture("main_menu.dds", 0x4);
+	menuTgt = gc->clbkLoadTexture("main_menu_tgt.dds", 0x4);
+#else
+	menuSrc = gc->clbkLoadSurface("main_menu.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+	menuTgt = gc->clbkLoadSurface("main_menu_tgt.dds", OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+#endif
 	dASSERT(menuSrc && menuTgt, "MenuInfoBar: main_menu.dds or main_menu_tgt.dds could not be loaded from Textures directory.");
 	gc->clbkBlt (menuTgt, 0, tgtTexH-menuH, menuSrc, 0, 23+menuH, menuW, menuH);
 	int yofs = (menumode == 0 ? -menuH+scrollrange:-menuH);
@@ -733,7 +739,7 @@ void MenuInfoBar::SetWarp (double _warp)
 	char cbuf[32];
 	warp = _warp;
 	if (fixedstep)
-		sprintf (cbuf, "(%gs/f)", g_pOrbiter->Cfg()->CfgDebugPrm.FixedStep*warp);
+		sprintf (cbuf, "(%gs/f)", td.FixedStep()*warp);
 	else if (fabs(warp-1.0) > 1e-6) {
 		if (!warp_scientific || warp < 100.0) {
 			sprintf (cbuf, "\002 %0.*fx", warp < 9.99 ? 1:0, warp);

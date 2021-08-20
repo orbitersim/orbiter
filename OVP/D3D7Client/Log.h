@@ -43,12 +43,12 @@ void LogOut_Obsolete (char *func, char *msg = 0);      // Write obsolete-functio
 void LogOut_Warning (const char *msg, ...);            // Write general warning to log file
 
 #ifdef _DEBUG
-#define dVERIFY(test) { if (FAILED(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); exit(1); }}
+#define dVERIFY(test) { if (FAILED(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); DebugBreak(); exit(1); }}
 #else
 #define dVERIFY(test) (test)
 #endif
 
-#define ASSERT(test) { if (!(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); exit(1); }}
+#define ASSERT(test) { if (!(test)) { LogOut_Error (__FUNCTION__, __FILE__, __LINE__, "Assertion failure"); DebugBreak(); exit(1); }}
 
 #define CHECKCWD(cwd,name) { char c[512]; _getcwd(c,512); if(strcmp(c,cwd)) { _chdir(cwd); sprintf (c,"CWD modified by module %s - Fixing.",name); LogOut_Warning(c); } }
 

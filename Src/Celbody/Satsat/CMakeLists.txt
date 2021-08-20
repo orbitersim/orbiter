@@ -1,7 +1,7 @@
 # Copyright (c) Martin Schweiger
 # Licensed under the MIT License
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Modules)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR})
 
 add_library(Satsat SHARED
 	Satsat.cpp

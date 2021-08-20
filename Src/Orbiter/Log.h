@@ -9,11 +9,12 @@
 // comment the following line to suppress log file output
 #define GENERATE_LOG
 
+typedef void (*LogOutFunc)(const char* msg);
+
 // The following routines are for message output into a log file
 void InitLog (char *logfile, bool append);   // Set log file name and clear if exists
 void SetLogVerbosity (bool verbose);
-void SetConsole (bool active);        // Activate/deactivate console output
-void ConsoleOut (const char *msg);    // Write a message to the console
+void SetLogOutFunc(LogOutFunc func); // clone log output to a function
 void LogOut (const char *msg, ...);   // Write a message to the log file
 void LogOutVA(const char *format, va_list ap);
 void LogOutFine (const char *msg, ...);   // Write a message to the log file if fine-grain output enabled
@@ -75,6 +76,7 @@ void LogOut_Location(const char* func, const char* file, int line);
 		LogOut_Error_End(); \
 		if(fatal) { \
 			LogOut(">>> TERMINATING <<<"); \
+			DebugBreak(); \
 			exit(1); \
 		} \
 	} \
