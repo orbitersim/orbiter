@@ -67,8 +67,6 @@ inline gcCore *gcGetCoreInterface()
 #define OAPISURFACE_PF_DXT5				0x0D0000	///< Compressed DXT5 format
 #define OAPISURFACE_PF_ALPHA			0x0E0000	///< Alpha only surface 8-bit
 #define OAPISURFACE_PF_GRAY				0x0F0000	///< Grayscale Image 8-bit
-#define OAPISURFACE_ANTIALIAS			0x000800
-#define OAPISURFACE_SHARED				0x001000
 ///@}
 
 
