@@ -14,10 +14,10 @@
 #include "CustomControls.h"
 
 class ExtraTab: public LaunchpadTab {
-	friend class MainDialog;
+	friend class orbiter::LaunchpadDialog;
 
 public:
-	ExtraTab (const MainDialog *lp);
+	ExtraTab (const orbiter::LaunchpadDialog *lp);
 	~ExtraTab ();
 
 	void Create ();

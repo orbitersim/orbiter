@@ -14,7 +14,7 @@
 
 class ScenarioTab: public LaunchpadTab {
 public:
-	ScenarioTab (const MainDialog *lp);
+	ScenarioTab (const orbiter::LaunchpadDialog *lp);
 	~ScenarioTab ();
 
 	void Create ();

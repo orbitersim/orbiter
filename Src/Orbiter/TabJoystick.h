@@ -13,7 +13,7 @@
 
 class JoystickTab: public LaunchpadTab {
 public:
-	JoystickTab (const MainDialog *lp);
+	JoystickTab (const orbiter::LaunchpadDialog *lp);
 
 	void Create ();
 

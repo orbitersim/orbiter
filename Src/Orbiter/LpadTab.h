@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include "Config.h"
+#include "Launchpad.h"
 
 // Property page indices
 #define PG_SCN  0
@@ -24,7 +25,9 @@
 //-----------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------
-class MainDialog;
+namespace orbiter {
+	class LaunchpadDialog;
+}
 
 //-----------------------------------------------------------------------------
 // Name: class LaunchpadTab
@@ -32,11 +35,11 @@ class MainDialog;
 //-----------------------------------------------------------------------------
 class LaunchpadTab {
 public:
-	LaunchpadTab (const MainDialog *lp);
+	LaunchpadTab (const orbiter::LaunchpadDialog *lp);
 	virtual ~LaunchpadTab ();
 	virtual void Create () {}
 
-	inline const MainDialog *Launchpad () const { return pLp; }
+	inline const orbiter::LaunchpadDialog *Launchpad () const { return pLp; }
 	inline Config *Cfg () const { return pCfg; }
 
 	virtual void GetConfig (const Config *cfg) {}
@@ -49,6 +52,8 @@ public:
 
 	virtual bool OpenHelp () { return false; }
 
+	void OpenTabHelp(const char* topic);
+
 	virtual BOOL Size (int w, int h);
 	// by default, this re-centers the items if RegisterItemPositions has been called
 
@@ -56,6 +61,8 @@ public:
 	virtual void Hide ();
 	inline bool IsActive () const { return bActive; }
 	inline HWND TabWnd () const { return hTab; }
+	inline HWND LaunchpadWnd() const { return pLp->hDlg; }
+	inline HINSTANCE AppInstance() const { return pLp->hInst; }
 
 	virtual INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	// generic message handler
@@ -69,7 +76,7 @@ protected:
 
 	static INT_PTR CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	const MainDialog *pLp;
+	const orbiter::LaunchpadDialog *pLp;
 	Config *pCfg;
 	HWND hTab;
 	RECT pos0;  // initial position in Launchpad dialog

@@ -8,13 +8,11 @@
 #include <windows.h>
 #include <commctrl.h>
 #include "TabParam.h"
-#include "Launchpad.h"
-#include "Help.h"
 #include "resource.h"
 
 //-----------------------------------------------------------------------------
 
-ParameterTab::ParameterTab (const MainDialog *_lp): LaunchpadTab (_lp)
+ParameterTab::ParameterTab (const orbiter::LaunchpadDialog *_lp): LaunchpadTab (_lp)
 {
 }
 
@@ -137,6 +135,6 @@ void ParameterTab::SetConfig (Config *cfg)
 
 bool ParameterTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_param");
+	OpenTabHelp ("tab_param");
 	return true;
 }

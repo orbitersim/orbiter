@@ -8,15 +8,15 @@
 #define STRICT 1
 #include <windows.h>
 #include <commctrl.h>
-#include "Launchpad.h"
 #include "LpadTab.h"
 #include "Log.h"
+#include "Help.h"
 #include "resource.h"
 
 //-----------------------------------------------------------------------------
 // LaunchpadTab base class
 
-LaunchpadTab::LaunchpadTab (const MainDialog *lp)
+LaunchpadTab::LaunchpadTab (const orbiter::LaunchpadDialog *lp)
 {
 	pLp = lp;
 	pCfg = lp->Cfg();
@@ -56,6 +56,13 @@ void LaunchpadTab::Hide ()
 
 //-----------------------------------------------------------------------------
 
+void LaunchpadTab::OpenTabHelp(const char* topic)
+{
+	::OpenDefaultHelp(LaunchpadWnd(), topic);
+}
+
+//-----------------------------------------------------------------------------
+
 BOOL LaunchpadTab::Size (int w, int h)
 {
 	if (nitem) {
@@ -75,12 +82,12 @@ BOOL LaunchpadTab::Size (int w, int h)
 
 HWND LaunchpadTab::CreateTab (int resid)
 {
-	HWND hT = CreateDialogParam (pLp->GetInstance(), MAKEINTRESOURCE(resid), pLp->GetWindow(), TabProcHook, (LPARAM)this);
+	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), LaunchpadWnd(), TabProcHook, (LPARAM)this);
 	SetWindowLongPtr (hT, DWLP_USER, (LONG_PTR)this);
 
 	POINT p0, p1;
 	GetClientRect (hT, &pos0);
-	p0.x = p0.y = 0; ClientToScreen (pLp->GetWindow(), &p0);
+	p0.x = p0.y = 0; ClientToScreen (LaunchpadWnd(), &p0);
 	p1.x = p1.y = 0; ClientToScreen (hT, &p1);
 	int dx = p1.x-p0.x, dy = p1.y-p0.y;
 	pos0.left += dx, pos0.right += dx;

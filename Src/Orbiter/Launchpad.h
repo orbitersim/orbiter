@@ -21,144 +21,160 @@ class BuiltinLaunchpadItem;
 RECT GetClientPos (HWND hWnd, HWND hChild);
 void SetClientPos (HWND hWnd, HWND hChild, RECT &r);
 
-//-----------------------------------------------------------------------------
-// Name: class MainDialog
-// Desc: Handles the startup dialog ("Launchpad")
-//-----------------------------------------------------------------------------
-class MainDialog {
-	friend class Orbiter;
+INT_PTR CALLBACK AppDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-public:
-	MainDialog (Orbiter *app);
-	~MainDialog ();
+namespace orbiter {
 
-	HWND Create (bool startvideotab = false);
-	// create dialog window
-	// If return value=0 then the window could not be created
+	//-----------------------------------------------------------------------------
+	// Name: class LaunchpadDialog
+	// Desc: Handles the startup dialog ("Launchpad")
+	//-----------------------------------------------------------------------------
+	class LaunchpadDialog {
+		friend class Orbiter;
+		friend class LaunchpadTab;
 
-	inline const HINSTANCE GetInstance () const { return hInst; }
-	inline const HWND GetWindow () const { return hDlg; }
-	const HWND GetTabWindow (int i) const;
-	const HWND GetWaitWindow () const { return hWait; }
+	public:
+		LaunchpadDialog(Orbiter* app);
+		~LaunchpadDialog();
 
-	inline Orbiter *App() const { return pApp; }
-	inline Config *Cfg() const { return pCfg; }
+		bool Create(bool startvideotab = false);
+		// create dialog window
+		// If return value==false then the window could not be created
 
-	void AddTab (LaunchpadTab *tab);
-	// Inserts a new tab into the list
+		void SetTitle(PSTR title);
 
-	void EnableLaunchButton (bool enable) const;
-	// Enable/disable "Launch Orbiter" button
+		void Show(); // Show the launchpad window
+		void Hide(); // Hide the launchpad window
 
-	HTREEITEM RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent = 0);
-	// Register an item in the "Extra" list. If parent=0, the item is registered
-	// as a root (top level) item. Otherwise it appears as a sub-item under
-	// the parent item.
+		bool ConsumeMessage(LPMSG msg);
+		// Consume message msg, if intended for the dialog,
+		// otherwise return false
 
-	bool UnregisterExtraParam (LaunchpadItem *item);
-	// Unregister an item in the "Extra" list.
+		const HWND GetTabWindow(int i) const;
+		const HWND GetWaitWindow() const { return hWait; }
 
-	HTREEITEM FindExtraParam (const char *name, const HTREEITEM parent = 0);
-	// Return item 'name' below parent 'parent', or NULL if not found
+		inline Orbiter* App() const { return pApp; }
+		inline Config* Cfg() const { return pCfg; }
 
-	void WriteExtraParams ();
-	// allow all externally registered "Extra" items to write their data to file
-	// (internal "extra" items use the Config class to write to Orbiter.cfg)
+		void AddTab(LaunchpadTab* tab);
+		// Inserts a new tab into the list
 
-	ExtraTab *GetExtraTab() const
-	{ return pExtra; }
-	// tab object
+		void EnableLaunchButton(bool enable) const;
+		// Enable/disable "Launch Orbiter" button
 
-	void UpdateConfig ();
-	// save current dialog settings in application configuration
+		HTREEITEM RegisterExtraParam(LaunchpadItem* item, HTREEITEM parent = 0);
+		// Register an item in the "Extra" list. If parent=0, the item is registered
+		// as a root (top level) item. Otherwise it appears as a sub-item under
+		// the parent item.
 
-	bool SelRootScenario (char *scn);
-	// set scenario selection to scn, if available
+		bool UnregisterExtraParam(LaunchpadItem* item);
+		// Unregister an item in the "Extra" list.
 
-	void ShowWaitPage (HWND hWnd, bool show, long mem_committed = 0);
-	void UpdateWaitProgress ();
-	long mem_wait; // amount of memory to be deallocated during wait
-	long mem0;     // initial memory status
+		HTREEITEM FindExtraParam(const char* name, const HTREEITEM parent = 0);
+		// Return item 'name' below parent 'parent', or NULL if not found
 
-private:
-	HINSTANCE hInst;         // instance handle
-	HWND hDlg;               // dialog window handle
-	LaunchpadTab **Tab;      // list of tab objects
-	LaunchpadTab *CTab;      // current tab page
-	HWND hWait;              // "wait" page
-	HBRUSH hDlgBrush;
-	HANDLE hShadowImg;
-	Orbiter *pApp;           // application pointer
-	Config  *pCfg;           // config pointer
-	//DPSessionInfo DPSIHead;  // pointer to list of multiplayer sessions
+		void WriteExtraParams();
+		// allow all externally registered "Extra" items to write their data to file
+		// (internal "extra" items use the Config class to write to Orbiter.cfg)
 
-	void SetDemoMode ();
-	// Set launchpad controls to demo mode
+		ExtraTab* GetExtraTab() const
+		{
+			return pExtra;
+		}
+		// tab object
 
-	int SelectDemoScenario ();
-	// Select an arbitrary scenario from the demo folder
+		void UpdateConfig();
+		// save current dialog settings in application configuration
 
-	void HidePage (int idx);
-	void UnhidePage (int idx, char *tab);
+		bool SelRootScenario(char* scn);
+		// set scenario selection to scn, if available
 
-	void InitSize (HWND hWnd);
-	BOOL Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode);
+		void ShowWaitPage(bool show, long mem_committed = 0);
+		void UpdateWaitProgress();
+		long mem_wait; // amount of memory to be deallocated during wait
+		long mem0;     // initial memory status
 
-	void InitTabControl (HWND hWnd);
-	// initialise the tabs
+	private:
+		HINSTANCE hInst;         // instance handle
+		HWND hDlg;               // dialog window handle
+		LaunchpadTab** Tab;      // list of tab objects
+		LaunchpadTab* CTab;      // current tab page
+		HWND hWait;              // "wait" page
+		HBRUSH hDlgBrush;
+		HANDLE hShadowImg;
+		Orbiter* pApp;           // application pointer
+		Config* pCfg;           // config pointer
+		//DPSessionInfo DPSIHead;  // pointer to list of multiplayer sessions
 
-	//void InitDevicePage (D3D7Enum_DeviceInfo *devlist, DWORD ndev, D3D7Enum_DeviceInfo *dev);
-	// Set dialog controls for device tab according to device list
-	// and current device dev
+		void SetDemoMode();
+		// Set launchpad controls to demo mode
 
-	void InitNetworkPage ();
-	// Set multiplayer options
+		int SelectDemoScenario();
+		// Select an arbitrary scenario from the demo folder
 
-	// network-related methods and data
-	void Network_ShowPage1 ();
-	void Network_ShowPage2 ();
-	void Network_ShowPage3 ();
-	HRESULT Network_CreateGame (HWND hWnd);
-	HRESULT Network_JoinGame (HWND hWnd);
-	HRESULT Network_SearchGames (HWND hWnd);
-	void Network_SessionsCleanup ();
-	void Network_InitSessionListbox ();
-	void Network_PlayerListChanged ();
-	bool bSessionSearch;
-	int  nSessionMaxPlayer;
-	char cSessionName[256];
+		void HidePage(int idx);
+		void UnhidePage(int idx, char* tab);
 
-	void SwitchTabPage (HWND hWnd, int pg);
-	// display a new page
+		void InitSize(HWND hWnd);
+		BOOL Resize(HWND hWnd, DWORD w, DWORD h, DWORD mode);
 
-	void RefreshScenarioList ();
-	// Refresh the scenario list
+		void InitTabControl(HWND hWnd);
+		// initialise the tabs
 
-	INT_PTR DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	INT_PTR WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	// Dialog message callbacks
+		//void InitDevicePage (D3D7Enum_DeviceInfo *devlist, DWORD ndev, D3D7Enum_DeviceInfo *dev);
+		// Set dialog controls for device tab according to device list
+		// and current device dev
 
-	friend INT_PTR CALLBACK AppDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	friend INT_PTR CALLBACK WaitPageProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	friend LONG_PTR FAR PASCAL MsgProc_CopyrightFrame (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		void InitNetworkPage();
+		// Set multiplayer options
 
-	int ntab;              // number of tab pages
-	int *pagidx;           // map from tab to page index
-	int *tabidx;           // map from page to tab index
+		// network-related methods and data
+		void Network_ShowPage1();
+		void Network_ShowPage2();
+		void Network_ShowPage3();
+		HRESULT Network_CreateGame(HWND hWnd);
+		HRESULT Network_JoinGame(HWND hWnd);
+		HRESULT Network_SearchGames(HWND hWnd);
+		void Network_SessionsCleanup();
+		void Network_InitSessionListbox();
+		void Network_PlayerListChanged();
+		bool bSessionSearch;
+		int  nSessionMaxPlayer;
+		char cSessionName[256];
 
-	RECT client0;          // initial client window size
-	RECT copyr0;           // initial copyright box size
-	RECT r_launch0;        // initial position of launch button
-	RECT r_help0;          // initial position of help button
-	RECT r_exit0;          // initial position of exit button
-	RECT r_data0;          // initial position of data area
-	RECT r_wait0;          // initial position of wait dialog
-	RECT r_version0;       // initial position of version string
+		void SwitchTabPage(HWND hWnd, int pg);
+		// display a new page
 
-	DWORD shadowh;         // shadow bar height
-	int dy_bt;             // button separation
+		void RefreshScenarioList();
+		// Refresh the scenario list
 
-	ExtraTab *pExtra;      // tab object
-};
+		INT_PTR DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		INT_PTR WaitProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		// Dialog message callbacks
 
+		friend INT_PTR CALLBACK ::AppDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		friend INT_PTR CALLBACK ::WaitPageProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		friend LONG_PTR FAR PASCAL MsgProc_CopyrightFrame(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+		int ntab;              // number of tab pages
+		int* pagidx;           // map from tab to page index
+		int* tabidx;           // map from page to tab index
+
+		RECT client0;          // initial client window size
+		RECT copyr0;           // initial copyright box size
+		RECT r_launch0;        // initial position of launch button
+		RECT r_help0;          // initial position of help button
+		RECT r_exit0;          // initial position of exit button
+		RECT r_data0;          // initial position of data area
+		RECT r_wait0;          // initial position of wait dialog
+		RECT r_version0;       // initial position of version string
+
+		DWORD shadowh;         // shadow bar height
+		int dy_bt;             // button separation
+
+		ExtraTab* pExtra;      // tab object
+	};
+
+}
 #endif // !__LAUNCHPAD_H

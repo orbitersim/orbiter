@@ -13,7 +13,7 @@
 
 class VisualTab: public LaunchpadTab {
 public:
-	VisualTab (const MainDialog *lp);
+	VisualTab (const orbiter::LaunchpadDialog *lp);
 	~VisualTab ();
 
 	void Create ();

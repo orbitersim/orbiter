@@ -25,7 +25,7 @@ extern Orbiter *g_pOrbiter;
 //-----------------------------------------------------------------------------
 // ExtraTab class
 
-ExtraTab::ExtraTab (const MainDialog *lp): LaunchpadTab (lp)
+ExtraTab::ExtraTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	nExtPrm = 0;
 }
@@ -95,7 +95,7 @@ void ExtraTab::SetConfig (Config *cfg)
 
 bool ExtraTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_extra");
+	OpenTabHelp ("tab_extra");
 	return true;
 }
 
@@ -246,7 +246,7 @@ INT_PTR ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			tvi.mask = TVIF_PARAM;
 			if (TreeView_GetItem (GetDlgItem (hWnd, IDC_EXT_LIST), &tvi) && tvi.lParam) {
 				BuiltinLaunchpadItem *func = (BuiltinLaunchpadItem*)tvi.lParam;
-				func->clbkOpen (pLp->GetWindow());
+				func->clbkOpen (LaunchpadWnd());
 			}
 			} return TRUE;
 		}
@@ -268,7 +268,7 @@ INT_PTR ExtraTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				tvi.mask = TVIF_PARAM;
 				if (TreeView_GetItem (GetDlgItem (hWnd, IDC_EXT_LIST), &tvi) && tvi.lParam) {
 					BuiltinLaunchpadItem *func = (BuiltinLaunchpadItem*)tvi.lParam;
-					func->clbkOpen (pLp->GetWindow());
+					func->clbkOpen (LaunchpadWnd());
 				}
 				} return TRUE;
 			}
@@ -294,12 +294,12 @@ BuiltinLaunchpadItem::BuiltinLaunchpadItem (const ExtraTab *tab): LaunchpadItem 
 
 bool BuiltinLaunchpadItem::OpenDialog (HWND hParent, int resid, DLGPROC pDlg)
 {
-	return LaunchpadItem::OpenDialog (pTab->Launchpad()->GetInstance(), hParent, resid, pDlg);
+	return LaunchpadItem::OpenDialog (pTab->AppInstance(), hParent, resid, pDlg);
 }
 
 void BuiltinLaunchpadItem::Error (const char *msg)
 {
-	MessageBox (pTab->Launchpad()->GetWindow(), msg, "Orbiter configuration error", MB_OK|MB_ICONERROR);
+	MessageBox (pTab->LaunchpadWnd(), msg, "Orbiter configuration error", MB_OK|MB_ICONERROR);
 }
 
 INT_PTR CALLBACK BuiltinLaunchpadItem::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -516,7 +516,7 @@ bool ExtraDynamics::StoreParams (HWND hWnd)
 
 bool ExtraDynamics::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_linprop");
+	OpenDefaultHelp (hWnd, "extra_linprop");
 	return true;
 }
 
@@ -866,7 +866,7 @@ void ExtraStabilisation::ToggleEnable (HWND hWnd)
 
 bool ExtraStabilisation::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_orbitstab");
+	OpenDefaultHelp (hWnd, "extra_orbitstab");
 	return true;
 }
 
@@ -1001,7 +1001,7 @@ void ExtraMfdConfig::ToggleEnable (HWND hWnd)
 
 bool ExtraMfdConfig::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_mfdconfig");
+	OpenDefaultHelp (hWnd, "extra_mfdconfig");
 	return true;
 }
 
@@ -1125,7 +1125,7 @@ bool ExtraShutdown::StoreParams (HWND hWnd)
 
 bool ExtraShutdown::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_shutdown");
+	OpenDefaultHelp (hWnd, "extra_shutdown");
 	return true;
 }
 
@@ -1234,7 +1234,7 @@ void ExtraFixedStep::ToggleEnable (HWND hWnd)
 
 bool ExtraFixedStep::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_fixedstep");
+	OpenDefaultHelp (hWnd, "extra_fixedstep");
 	return true;
 }
 
@@ -1390,7 +1390,7 @@ bool ExtraTimerSettings::StoreParams (HWND hWnd)
 
 bool ExtraTimerSettings::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_timer");
+	OpenDefaultHelp (hWnd, "extra_timer");
 	return true;
 }
 
@@ -1470,7 +1470,7 @@ bool ExtraPerformanceSettings::StoreParams (HWND hWnd)
 
 bool ExtraPerformanceSettings::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_performance");
+	OpenDefaultHelp (hWnd, "extra_performance");
 	return true;
 }
 

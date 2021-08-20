@@ -11,7 +11,6 @@
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabModule.h"
-#include "Help.h"
 #include "resource.h"
 
 extern char DBG_MSG[256];
@@ -19,7 +18,7 @@ static int counter = -1;
 
 //-----------------------------------------------------------------------------
 
-ModuleTab::ModuleTab (const MainDialog *lp): LaunchpadTab (lp)
+ModuleTab::ModuleTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	nmodulerec = 0;
 }
@@ -92,7 +91,7 @@ void ModuleTab::SetConfig (Config *cfg)
 
 bool ModuleTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_modules");
+	OpenTabHelp ("tab_modules");
 	return true;
 }
 

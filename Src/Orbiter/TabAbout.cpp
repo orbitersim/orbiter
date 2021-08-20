@@ -9,7 +9,6 @@
 #include <commctrl.h>
 #include <io.h>
 #include "Orbiter.h"
-#include "Launchpad.h"
 #include "TabAbout.h"
 #include "Util.h"
 #include "Help.h"
@@ -19,7 +18,7 @@
 //-----------------------------------------------------------------------------
 // AboutTab class
 
-AboutTab::AboutTab (const MainDialog *lp): LaunchpadTab (lp)
+AboutTab::AboutTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
@@ -27,7 +26,7 @@ AboutTab::AboutTab (const MainDialog *lp): LaunchpadTab (lp)
 
 bool AboutTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_about");
+	OpenTabHelp ("tab_about");
 	return true;
 }
 
@@ -72,11 +71,11 @@ INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ShellExecute (NULL, "open", "http://orbit.medphys.ucl.ac.uk/", NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		case IDC_ABT_DISCLAIM:
-			DialogBoxParam (pLp->GetInstance(), MAKEINTRESOURCE(IDD_MSG), pLp->GetWindow(), AboutProc,
+			DialogBoxParam (AppInstance(), MAKEINTRESOURCE(IDD_MSG), LaunchpadWnd(), AboutProc,
 				IDT_DISCLAIMER);
 			return TRUE;
 		case IDC_ABT_CREDIT:
-			OpenCredits (hWnd, pLp->GetInstance());
+			::OpenHelp(hWnd, "html\\Credit.chm", "Credit");
 			return TRUE;
 		}
 		break;

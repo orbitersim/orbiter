@@ -580,7 +580,7 @@ bool OrbiterGraphics::clbkInitialise ()
 	vtab->Init();
 
 	// render parameter dialogs in extra tab
-	MainDialog *launchpad = g_pOrbiter->Launchpad();
+	orbiter::LaunchpadDialog *launchpad = g_pOrbiter->Launchpad();
 	ExtraTab *tExtra = launchpad->GetExtraTab();
 	HTREEITEM ht = launchpad->RegisterExtraParam (new Extra_RenderOptions (tExtra), NULL); TRACENEW
 	launchpad->RegisterExtraParam (new Extra_PlanetRenderOptions (tExtra), ht); TRACENEW

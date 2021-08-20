@@ -13,7 +13,7 @@
 
 class AboutTab: public LaunchpadTab {
 public:
-	AboutTab (const MainDialog *lp);
+	AboutTab (const orbiter::LaunchpadDialog *lp);
 
 	void Create ();
 	bool OpenHelp ();

@@ -168,7 +168,6 @@ INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 VOID    DestroyWorld ();
-bool    Select_Main (Select &sel);
 void    SetEnvironmentVars ();
 HANDLE hMutex = 0;
 HANDLE hConsoleMutex = 0;
@@ -312,7 +311,7 @@ Orbiter::Orbiter ()
 	pDI             = new DInput(this); TRACENEW
 	pConfig         = new Config; TRACENEW
 	pState          = NULL;
-	pMainDlg        = NULL;
+	m_pLaunchpad    = NULL;
 	pDlgMgr         = NULL;
 	m_pConsole      = NULL;
 	ddeserver       = NULL;
@@ -382,7 +381,7 @@ Orbiter::~Orbiter ()
 //-----------------------------------------------------------------------------
 HRESULT Orbiter::Create (HINSTANCE hInstance)
 {
-	if (pMainDlg) return S_OK; // already created
+	if (m_pLaunchpad) return S_OK; // already created
 
 	HRESULT hr;
 	WNDCLASS wndClass;
@@ -432,16 +431,14 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	}
 	
 	// Create the "launchpad" main dialog window
-	pMainDlg = new MainDialog (this); TRACENEW
-	hDlg     = pMainDlg->Create (bStartVideoTab);
+	m_pLaunchpad = new orbiter::LaunchpadDialog (this); TRACENEW
+	m_pLaunchpad->Create (bStartVideoTab);
 
 #ifdef INLINEGRAPHICS
 	oclient = new OrbiterGraphics (this); TRACENEW
 	gclient = oclient;
 	gclient->clbkInitialise();
-	pMainDlg->UnhidePage (4, "Video");
-#else
-	SetWindowText (hDlg, "OpenOrbiter Server Launchpad");
+	m_pLaunchpad->UnhidePage (4, "Video");
 #endif // INLINEGRAPHICS
 
 	Instrument::RegisterBuiltinModes();
@@ -479,7 +476,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 void Orbiter::SaveConfig ()
 {
 	pConfig->Write (); // save current settings
-	pMainDlg->WriteExtraParams ();
+	m_pLaunchpad->WriteExtraParams ();
 }
 
 //-----------------------------------------------------------------------------
@@ -505,7 +502,7 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		delete pDI;
 		if (memstat) delete memstat;
 		if (pConfig)  delete pConfig;
-		if (pMainDlg) delete pMainDlg;
+		if (m_pLaunchpad) delete m_pLaunchpad;
 		if (hBk) DestroyWindow (hBk);
 		if (pState)   delete pState;
 		if (ddeserver) delete ddeserver;
@@ -653,7 +650,7 @@ VOID Orbiter::Launch (const char *scenario)
 	HCURSOR hCursor = SetCursor (LoadCursor (NULL, IDC_WAIT));
 	bool have_state = false;
 	pConfig->Write (); // save current settings
-	pMainDlg->WriteExtraParams ();
+	m_pLaunchpad->WriteExtraParams ();
 
 	if (!have_state && !pState->Read (ScnPath (scenario))) {
 		LOGOUT_ERR ("Scenario not found: %s", scenario);
@@ -662,7 +659,7 @@ VOID Orbiter::Launch (const char *scenario)
 	DlgHelp::SetScenarioHelp (pState->ScnHelp());
 
 	long m0 = memstat->HeapUsage();
-	CreateRenderWindow (hDlg, pConfig, scenario);
+	CreateRenderWindow (pConfig, scenario);
 	simheapsize = memstat->HeapUsage()-m0;
 	SetCursor (hCursor);
 }
@@ -671,7 +668,7 @@ VOID Orbiter::Launch (const char *scenario)
 // Name: CreateRenderWindow()
 // Desc: Create the window used for rendering the scene
 //-----------------------------------------------------------------------------
-HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scenario)
+HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 {
 	DWORD i;
 
@@ -679,7 +676,7 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	LOGOUT("");
 	LOGOUT("**** Creating simulation session");
 
-	ShowWindow (hDlg, SW_HIDE); // hide launchpad dialog
+	m_pLaunchpad->Hide(); // hide launchpad dialog while the render window is visible
 	
 	if (gclient) {
 		hRenderWnd = gclient->InitRenderWnd (gclient->clbkCreateRenderWindow());
@@ -824,8 +821,8 @@ HWND Orbiter::CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scen
 	//}
 
 	if (gclient) {
-		SetFocus (hDlg);
-		Sleep(2);
+//		SetFocus (hDlg);
+//		Sleep(2);
 		SetFocus (hRenderWnd);
 	}
 	// make sure render window has focus on start
@@ -898,10 +895,9 @@ void Orbiter::CloseSession ()
 	}
 
 	if (pConfig->CfgDebugPrm.ShutdownMode == 0 && !bFastExit) { // normal cleanup
-		pMainDlg->SelRootScenario (CurrentScenario);
-		ShowWindow (hDlg, SW_SHOW); // show launchpad dialog
-		pMainDlg->ShowWaitPage (hDlg, true, simheapsize);
-		RedrawWindow (hDlg, NULL, NULL, RDW_UPDATENOW|RDW_ALLCHILDREN);
+		m_pLaunchpad->SelRootScenario (CurrentScenario);
+		m_pLaunchpad->Show(); // show launchpad dialog again
+		m_pLaunchpad->ShowWaitPage (true, simheapsize);
 		if (gclient) {
 			gclient->clbkCloseSession (false);
 			Base::DestroyStaticDeviceObjects ();
@@ -930,8 +926,7 @@ void Orbiter::CloseSession ()
 
 		hRenderWnd = NULL;
 		pDI->DestroyDevices();
-		pMainDlg->ShowWaitPage (hDlg, false);
-		RedrawWindow (hDlg, NULL, NULL, RDW_UPDATENOW|RDW_ALLCHILDREN);
+		m_pLaunchpad->ShowWaitPage (false);
 	} else {
 		if (pDlgMgr)  { delete pDlgMgr; pDlgMgr = 0; }
 		if (gclient) {
@@ -1042,7 +1037,8 @@ INT Orbiter::Run ()
 		}
 #endif
         if (bGotMsg) {
-			if (!hDlg || !IsDialogMessage (hDlg, &msg)) {
+			if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
+//			if (!hDlg || !IsDialogMessage (hDlg, &msg)) {
 				TranslateMessage (&msg);
 				DispatchMessage (&msg);
 			}
@@ -1507,7 +1503,7 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc)
 			}
 		}
 
-		pMainDlg->RefreshScenarioList();
+		m_pLaunchpad->RefreshScenarioList();
 		return true;
 
 	} else return false;
@@ -2851,21 +2847,6 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 //-----------------------------------------------------------------------------
-// Name: Select_Main()
-// Desc: Create main menu
-//-----------------------------------------------------------------------------
-bool Orbiter::Select_Main (Select &sel)
-{
-	sel.Append (bRunning ? "Pause":"Resume");
-	sel.AppendSeparator();
-	sel.Append ("Exit to Launchpad");
-	sel.Append ("Quit");
-	sel.Open ("Main menu", 0, Callback_Main);
-	bRenderOnce = TRUE;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
 // Name: ActivateRoughType()
 // Desc: Suppress font smoothing
 //-----------------------------------------------------------------------------
@@ -2907,7 +2888,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 {
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
-	if (gc->clbkUseLaunchpadVideoTab()) pMainDlg->UnhidePage (4, "Video");
+	if (gc->clbkUseLaunchpadVideoTab()) m_pLaunchpad->UnhidePage (4, "Video");
 	gclient = gc;
 	gclient->clbkInitialise();
 	return true;
@@ -2920,7 +2901,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 {
 	if (!gclient || gclient != gc) return false; // no client attached
-	pMainDlg->HidePage (4);
+	m_pLaunchpad->HidePage (4);
 	gclient = NULL;
 	return true;
 }
@@ -2933,7 +2914,7 @@ bool Orbiter::RegisterWindow (HINSTANCE hInstance, HWND hWnd, DWORD flag)
 
 void Orbiter::UpdateDeallocationProgress()
 {
-	pMainDlg->UpdateWaitProgress();
+	m_pLaunchpad->UpdateWaitProgress();
 }
 
 HWND Orbiter::OpenDialog (int id, DLGPROC pDlg, void *context)
@@ -2968,7 +2949,7 @@ HWND Orbiter::OpenHelp (HELPCONTEXT *hcontext)
 
 void Orbiter::OpenLaunchpadHelp (HELPCONTEXT *hcontext)
 {
-	::OpenHelp (0, hInst, hcontext->helpfile, hcontext->topic);
+	::OpenHelp (0, hcontext->helpfile, hcontext->topic);
 }
 
 void Orbiter::CloseDialog (HWND hDlg)
@@ -3138,27 +3119,6 @@ void TimeData::SetWarp (double warp, double delay) {
 //=============================================================================
 // Nonmember functions
 //=============================================================================
-
-//-----------------------------------------------------------------------------
-// Name: Callback_Main()
-// Desc: Callback for main menu
-//-----------------------------------------------------------------------------
-bool Callback_Main (Select *sel, int item, char*, void *data)
-{
-	switch (item) {
-	case 0:
-		g_pOrbiter->Pause (g_pOrbiter->bRunning);
-		break;
-	case 1:
-		if (g_pOrbiter->hRenderWnd) PostMessage (g_pOrbiter->hRenderWnd, WM_CLOSE, 0, 0);
-		break;
-	case 2:
-		if (g_pOrbiter->hRenderWnd) PostMessage (g_pOrbiter->hRenderWnd, WM_CLOSE, 0, 0);
-		PostMessage (g_pOrbiter->hDlg, WM_CLOSE, 0, 0);
-		break;
-	}
-	return true;
-}
 
 INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

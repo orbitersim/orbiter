@@ -13,7 +13,7 @@
 
 class ParameterTab: public LaunchpadTab {
 public:
-	ParameterTab (const MainDialog *lp);
+	ParameterTab (const orbiter::LaunchpadDialog *lp);
 
 	void Create ();
 

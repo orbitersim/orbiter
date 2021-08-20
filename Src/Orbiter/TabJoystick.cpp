@@ -11,13 +11,12 @@
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabJoystick.h"
-#include "Help.h"
 #include "resource.h"
 
 //-----------------------------------------------------------------------------
 // JoystickTab class
 
-JoystickTab::JoystickTab (const MainDialog *lp): LaunchpadTab (lp)
+JoystickTab::JoystickTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
@@ -85,7 +84,7 @@ void JoystickTab::SetConfig (Config *cfg)
 
 bool JoystickTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_joystick");
+	OpenTabHelp ("tab_joystick");
 	return true;
 }
 

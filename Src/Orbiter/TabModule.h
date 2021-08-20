@@ -14,7 +14,7 @@
 
 class ModuleTab: public LaunchpadTab {
 public:
-	ModuleTab (const MainDialog *lp);
+	ModuleTab (const orbiter::LaunchpadDialog *lp);
 	~ModuleTab ();
 
 	void Create ();

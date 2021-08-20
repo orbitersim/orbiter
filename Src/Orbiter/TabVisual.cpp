@@ -8,14 +8,12 @@
 #include <windows.h>
 #include <commctrl.h>
 #include "TabVisual.h"
-#include "Launchpad.h"
-#include "Help.h"
 #include "resource.h"
 #include <fstream>
 
 //-----------------------------------------------------------------------------
 
-VisualTab::VisualTab (const MainDialog *lp): LaunchpadTab (lp)
+VisualTab::VisualTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	ncsphere_img = 0;
 }
@@ -164,7 +162,7 @@ void VisualTab::SetConfig (Config *cfg)
 
 bool VisualTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_visual");
+	OpenTabHelp ("tab_visual");
 	return true;
 }
 

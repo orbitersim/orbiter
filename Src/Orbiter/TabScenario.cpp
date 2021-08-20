@@ -10,7 +10,6 @@
 #include <io.h>
 #include <direct.h>
 #include "Orbiter.h"
-#include "Launchpad.h"
 #include "TabScenario.h"
 #include "Log.h"
 #include "Help.h"
@@ -23,13 +22,13 @@ const char *htmlstyle = "<style type=""text/css"">body{font-family:Arial;font-si
 
 //-----------------------------------------------------------------------------
 
-ScenarioTab::ScenarioTab (const MainDialog *lp): LaunchpadTab (lp)
+ScenarioTab::ScenarioTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	imglist = ImageList_Create (16, 16, ILC_COLOR8, 4, 0);
-	treeicon_idx[0] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER1)), 0);
-	treeicon_idx[1] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER2)), 0);
-	treeicon_idx[2] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN1)), 0);
-	treeicon_idx[3] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN2)), 0);
+	treeicon_idx[0] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER1)), 0);
+	treeicon_idx[1] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER2)), 0);
+	treeicon_idx[2] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN1)), 0);
+	treeicon_idx[3] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN2)), 0);
 	scnhelp[0] = '\0';
 	htmldesc = pLp->App()->UseHtmlInline();
 }
@@ -105,7 +104,7 @@ void ScenarioTab::SetConfig (Config *cfg)
 
 bool ScenarioTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_scenario");
+	OpenTabHelp ("tab_scenario");
 	return true;
 }
 
@@ -186,7 +185,7 @@ INT_PTR ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				ScenarioChanged ();
 				return TRUE;
 			case NM_DBLCLK:
-				PostMessage (pLp->GetWindow(), WM_COMMAND, IDLAUNCH, 0);
+				PostMessage (LaunchpadWnd(), WM_COMMAND, IDLAUNCH, 0);
 				return TRUE;
 			}
 			break;
@@ -617,9 +616,9 @@ void ScenarioTab::SaveCurScenario ()
 	extern TCHAR* CurrentScenario;
 	ifstream ifs (pLp->App()->ScnPath (CurrentScenario), ios::in);
 	if (ifs) {
-		DialogBoxParam (pLp->GetInstance(), MAKEINTRESOURCE(IDD_SAVESCN), pLp->GetWindow(), SaveProc, (LPARAM)this);
+		DialogBoxParam (AppInstance(), MAKEINTRESOURCE(IDD_SAVESCN), LaunchpadWnd(), SaveProc, (LPARAM)this);
 	} else {
-		MessageBox (pLp->GetWindow(), "No current simulation state available", "Save Error", MB_OK|MB_ICONEXCLAMATION);
+		MessageBox (LaunchpadWnd(), "No current simulation state available", "Save Error", MB_OK|MB_ICONEXCLAMATION);
 	}
 }
 
@@ -732,11 +731,12 @@ void ScenarioTab::ClearQSFolder()
 void ScenarioTab::OpenScenarioHelp ()
 {
 	if (!scnhelp[0]) return;
-	char str[256], *path, *topic;
-	strcpy (str, scnhelp);
-	path = strtok (str, ",");
+	char str[256], path[256], *scenario, *topic;
+	strncpy (str, scnhelp, 256);
+	scenario = strtok (str, ",");
 	topic = strtok (NULL, "\n");
-	::OpenScenarioHelp (pLp->GetWindow(), pLp->GetInstance(), path, topic);
+	sprintf(path, "html\\scenarios\\%s.chm", scenario);
+	::OpenHelp(LaunchpadWnd(), path, topic);
 }
 
 //-----------------------------------------------------------------------------

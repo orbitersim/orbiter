@@ -11,9 +11,7 @@
 #include <commctrl.h>
 #include <io.h>
 #include "Orbiter.h"
-#include "Launchpad.h"
 #include "TabVideo.h"
-#include "Help.h"
 #include "resource.h"
 
 using namespace std;
@@ -21,7 +19,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 // DefVideoTab class
 
-DefVideoTab::DefVideoTab (const MainDialog *lp): LaunchpadTab (lp)
+DefVideoTab::DefVideoTab (const orbiter::LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
@@ -80,7 +78,7 @@ void DefVideoTab::SetConfig (Config *cfg)
 
 bool DefVideoTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_video");
+	OpenTabHelp ("tab_video");
 	return true;
 }
 

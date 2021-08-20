@@ -13,7 +13,7 @@
 
 class DefVideoTab: public LaunchpadTab {
 public:
-	DefVideoTab (const MainDialog *lp);
+	DefVideoTab (const orbiter::LaunchpadDialog *lp);
 
 	void Create ();
 
