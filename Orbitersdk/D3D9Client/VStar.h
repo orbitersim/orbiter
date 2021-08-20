@@ -52,7 +52,7 @@ public:
 
 private:
 	double maxdist;                    ///< max render distance
-	static LPD3D9CLIENTSURFACE deftex; ///< default texture
+	static SURFHANDLE deftex; ///< default texture
 };
 
 #endif // !__VSTAR_H

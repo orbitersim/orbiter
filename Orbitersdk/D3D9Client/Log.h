@@ -43,6 +43,7 @@ extern std::queue<std::string> D3D9DebugQueue;
 #define _UNDEBUGED LogWrn("[Undebuged/Unfinished code section reached in %s (File %s, Line %d)]",__FUNCTION__,__FILE__,__LINE__);
 //#define _UNDEBUGED
 
+void   RuntimeError(const char* File, const char* Fnc, UINT Line);
 void   D3D9DebugLog(const char *format, ...);
 void   D3D9InitLog(char *file);
 void   D3D9CloseLog();
@@ -50,6 +51,7 @@ void   LogTrace(const char *format, ...);
 void   LogErr(const char *format, ...);
 void   LogWrn(const char *format, ...);
 void   LogOk (const char *format, ...);
+void   LogBreak(const char* format, ...);
 void   LogBlu(const char *format, ...);
 void   LogOapi(const char *format, ...);
 void   LogAlw(const char *format, ...);
@@ -61,5 +63,7 @@ void   D3D9SetTime(D3D9Time &inout, double ref);
 
 void   MissingRuntimeError();
 void   LogAttribs(DWORD attrib, DWORD w, DWORD h, LPCSTR origin);
+
+#define HALT() { RuntimeError(__FILE__,__FUNCTION__,__LINE__); }
 
 #endif

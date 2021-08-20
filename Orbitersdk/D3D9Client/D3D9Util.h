@@ -60,7 +60,7 @@ const char *_PTR(const void *p);
 
 #define PI 3.141592653589793238462643383279
 
-#define SURFACE(x) ((class D3D9ClientSurface *)x)
+#define SURFACE(x) ((class SurfNative *)x)
 
 // ------------------------------------------------------------------------------------
 // Vertex Declaration equal to NTVERTEX
@@ -288,7 +288,6 @@ extern IDirect3DVertexDeclaration9	*pPositionDecl;
 extern IDirect3DVertexDeclaration9	*pVector4Decl;
 extern IDirect3DVertexDeclaration9	*pPosTexDecl;
 extern IDirect3DVertexDeclaration9	*pPatchVertexDecl;
-extern IDirect3DVertexDeclaration9	*pGPUBlitDecl;
 extern IDirect3DVertexDeclaration9	*pSketchpadDecl;
 
 inline void swap(double &a, double &b)
@@ -447,6 +446,7 @@ void CreateDefaultMat(D3D9MatExt *pOut);
 void GetMatExt(const D3D9MatExt *pIn, D3DMATERIAL9 *pOut);
 bool CopyBuffer(LPDIRECT3DRESOURCE9 _pDst, LPDIRECT3DRESOURCE9 _pSrc);
 void D3D9TuneInit(D3D9Tune *);
+int LoadPlanetTextures(const char* fname, LPDIRECT3DTEXTURE9* ppdds, DWORD flags, int amount);
 
 LPDIRECT3DPIXELSHADER9 CompilePixelShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
 LPDIRECT3DVERTEXSHADER9 CompileVertexShader(LPDIRECT3DDEVICE9 pDev, const char *file, const char *function, const char *options=NULL, LPD3DXCONSTANTTABLE *pConst=NULL);
@@ -625,6 +625,7 @@ struct AutoFile
 // Miscellaneous helper functions
 // ------------------------------------------------------------------------------------
 
+#define DELETE_SURFACE(p) { if (p) { delete ((SurfNative*)p); p = NULL; } }
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETEA(p)  { if(p) { delete []p;     (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }

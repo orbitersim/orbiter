@@ -15,7 +15,6 @@
 
 #include "HazeMgr.h"
 #include "VPlanet.h"
-#include "Texture.h"
 #include "D3D9Surface.h"
 #include "D3D9Util.h"
 #include "VectorHelpers.h"
@@ -62,14 +61,14 @@ void HazeManager::GlobalInit(D3D9Client *gclient)
 		double phi = (double)i/(double)HORIZON_NSEG * PI*2.0;
 		CosP[i] = (float)cos(phi), SinP[i] = (float)sin(phi);
 	}
-	gclient->GetTexMgr()->LoadTexture("Horizon.dds", &horizon, 0);
+	horizon = gclient->clbkLoadTexture("Horizon.dds");
 }
 
 // -----------------------------------------------------------------------
 
 void HazeManager::GlobalExit()
 {
-	SAFE_DELETE(horizon);
+	DELETE_SURFACE(horizon);
 }
 
 // -----------------------------------------------------------------------
@@ -180,7 +179,7 @@ void HazeManager::Render(LPDIRECT3DDEVICE9 pDev, D3DXMATRIX &wmat, bool dual)
 	
 	HR(FX->SetTechnique(eHazeTech));
 	HR(FX->SetMatrix(eW, &transm));
-	HR(FX->SetTexture(eTex0, horizon->GetTexture()));	
+	HR(FX->SetTexture(eTex0, SURFACE(horizon)->GetTexture()));	
 
 	HR(pDev->SetVertexDeclaration(pHazeVertexDecl));
 
@@ -220,7 +219,7 @@ DWORD    HazeManager::nIdx = HORIZON_NSEG*2+2;
 float HazeManager::CosP[HORIZON_NSEG];
 float HazeManager::SinP[HORIZON_NSEG];
 
-LPD3D9CLIENTSURFACE HazeManager::horizon = 0;
+SURFHANDLE HazeManager::horizon = 0;
 
 
 

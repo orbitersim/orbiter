@@ -25,7 +25,6 @@
 #include "Mesh.h"
 #include "VVessel.h"
 #include "VStar.h"
-#include "Texture.h"
 #include "MeshMgr.h"
 #include "Particle.h"
 #include "TileMgr.h"
@@ -64,10 +63,12 @@ using namespace oapi;
 
 HINSTANCE g_hInst = 0;
 D3D9Client *g_client = 0;
-D3D9Catalog<D3D9Mesh*>			 *MeshCatalog;
 D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
-D3D9Catalog<LPD3D9CLIENTSURFACE> *SurfaceCatalog;
 
+set<D3D9Mesh*> MeshCatalog;
+set<SurfNative*> SurfaceCatalog;
+unordered_map<string, SURFHANDLE> SharedTextures;
+unordered_map<string, SURFHANDLE> ClonedTextures;
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
 _D3D9Stats D3D9Stats;
@@ -155,8 +156,6 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 
 	Config			= new D3D9Config();
 	TileCatalog		= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
-	MeshCatalog		= new D3D9Catalog<D3D9Mesh*>;
-	SurfaceCatalog	= new D3D9Catalog<LPD3D9CLIENTSURFACE>();
 
 	DebugControls::Create();
 	AtmoControls::Create();
@@ -178,8 +177,6 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 	LogAlw("--------------ExitModule------------");
 
 	delete TileCatalog;
-	delete MeshCatalog;
-	delete SurfaceCatalog;
 	delete Config;
 
 	DebugControls::Release();
@@ -210,267 +207,6 @@ DLLCLBK gcCore * gcGetCoreAPI()
 }
 
 
-// ==============================================================
-// Face's Terrain Flattening section
-// ==============================================================
-
-struct FlatShape
-{
-	double Lat;
-	double Lng;
-	double Dim1;
-	double Dim2;
-	double Cos;
-	double Sin;
-	double Falloff;
-	int Height;
-	int Type;
-};
-
-struct TilePixelPosition
-{
-	int iLat;
-	int iLng;
-	int X;
-	int Y;
-	bool operator==(const TilePixelPosition& other) const
-	{
-		return iLat == other.iLat && iLng == other.iLng && X == other.X && Y == other.Y;
-	}
-};
-
-std::unordered_map<OBJHANDLE, std::unordered_map<int, std::unordered_map<int, std::unordered_map<int, std::vector<FlatShape*>>>>> g_ElevationFlatteningShapes;
-std::unordered_map<OBJHANDLE, std::vector<FlatShape*>> g_ShapeStore;
-std::unordered_map<OBJHANDLE, bool> g_ShapesLoaded;
-
-std::vector<std::string> EnumerateDirectory(std::string directory, std::string filter)
-{
-	std::vector<std::string> result;
-	std::string search_path = directory + "\\" + filter;
-	WIN32_FIND_DATA fd;
-	HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
-		do
-		{
-			if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) result.push_back(fd.cFileName);
-		} while (::FindNextFile(hFind, &fd));
-		::FindClose(hFind);
-	}
-	return result;
-}
-
-void GetTilePixelPosition(int lvl, double lat, double lng, TilePixelPosition &pos)
-{
-	//Normalize input
-	if (lat < -90) lat = -90;
-	if (lat > 90) lat = 90;
-	while (lng < -180)
-	{
-		lng += 360;
-	}
-	while (lng > 180)
-	{
-		lng -= 360;
-	}
-
-	//Calculate tile position and pixel position
-	double bands = pow((double)2, lvl);
-	double width = 180 / bands;
-	pos.iLat = (int)((-lat + 90) / width);
-	pos.iLng = (int)((lng + 180) / width);
-	double step = width / 256;
-	double latmin = 90 - width*(pos.iLat + 1);
-	double lngmin = -180 + width*pos.iLng;
-	pos.X = (int)((lng - lngmin) / width * 256);
-	pos.Y = (int)(-(lat - latmin) / width * 256 + 256);
-}
-
-void ProcessPlanetFlats(OBJHANDLE hPlanet)
-{
-	char name[MAX_PATH];
-	char fname[MAX_PATH];
-	oapiGetObjectName(hPlanet, name, ARRAYSIZE(name) - 6);
-	sprintf_s(fname, ARRAYSIZE(fname), "%s\\Flat", name);
-	g_client->TexturePath(fname, name);
-	auto files = EnumerateDirectory(name, "*.flt");
-	// Load all planet shapes
-	for (auto file : files)
-	{
-		auto radius = oapiGetSize(hPlanet);
-		sprintf_s(fname, ARRAYSIZE(fname), "%s\\%s", name, file.c_str());
-		auto f = fopen(fname, "r");
-		if (f != 0)
-		{
-			while (!feof(f))
-			{
-				int height, dim1, dim2, falloff, read;
-				double lat, lng, phi;
-				if ((read = fscanf(f, "%s %d %lf %lf %d %d %lf %d", fname, &height, &lng, &lat, &dim1, &dim2, &phi, &falloff)) < 5) continue; // Skip incomplete lines
-				if (fname[0] == '/' && fname[1] == '/') continue; // Skip commented lines
-				_strlwr(fname);
-				if (read < 6)	dim2 = dim1; // Fallback for one dimension only
-				if (read < 7)	phi = 0;     // Fallback for no angle given
-				if (read < 8)	falloff = 0; // Fallback for no falloff given
-				auto decdeg = radius*cos(lat*RAD) * 2 * PI;
-				decdeg = 360 / decdeg;
-				if (strcmp(fname, "ellipse") == 0)
-				{
-					g_ShapeStore[hPlanet].push_back(new FlatShape{ lat ,lng , (double)dim1*decdeg, (double)dim2*decdeg, cos(-phi*RAD),sin(-phi*RAD), (double)falloff / 100, height, 1 });
-				}
-				else if (strcmp(fname, "rect") == 0)
-				{
-					g_ShapeStore[hPlanet].push_back(new FlatShape{ lat ,lng , (double)dim1*decdeg / 2, (double)dim2*decdeg / 2, cos(-phi*RAD),sin(-phi*RAD), (double)falloff / 100, height, 4 });
-				}
-			}
-			fclose(f);
-		}
-	}
-	// Build up planet map only if at least one shape was added
-	if (g_ShapeStore.find(hPlanet) != g_ShapeStore.end()) for (auto shape : g_ShapeStore[hPlanet])
-	{
-		double offset = sqrt(shape->Dim1*shape->Dim1 + shape->Dim2*shape->Dim2);
-		double latmin = shape->Lat - offset;
-		double latmax = shape->Lat + offset;
-		double lngmin = shape->Lng - offset;
-		double lngmax = shape->Lng + offset;
-		TilePixelPosition leftUpper, rightUpper, leftLower, rightLower;
-		for (auto lvl = 13; lvl >= 0; lvl--)
-		{
-			int latBands = 1 << lvl;
-			int lngBands = latBands * 2;
-
-			// Get tile pixel position of all corner points
-			GetTilePixelPosition(lvl, latmax, lngmin, leftUpper);
-			GetTilePixelPosition(lvl, latmax, lngmax, rightUpper);
-			GetTilePixelPosition(lvl, latmin, lngmin, leftLower);
-			// Since we are symmetrically, we can deduce the last corner directly
-			rightLower.iLat = leftLower.iLat;
-			rightLower.iLng = rightUpper.iLng;
-			rightLower.X = rightUpper.X;
-			rightLower.Y = leftLower.Y;
-			// Check for subpixel visibility
-			if (leftUpper == rightUpper || leftLower == rightLower || leftUpper == leftLower || rightUpper == rightLower) break;
-			// Shift if longitude edge is crossed
-			if (leftUpper.iLng > rightUpper.iLng)
-			{
-				leftUpper.iLng -= lngBands;
-				leftLower.iLng -= lngBands;
-			}
-			// Check for edge pixel to compensate overlapping in elevation tiles
-			if (leftUpper.X == 0)
-			{
-				leftUpper.iLng--;
-				leftLower.iLng--;
-			}
-			if (rightUpper.X == 255)
-			{
-				rightUpper.iLng++;
-				rightLower.iLng++;
-			}
-			if (leftUpper.Y == 0 && leftUpper.iLat>0)
-			{
-				leftUpper.iLat--;
-				rightUpper.iLat--;
-			}
-			if (leftLower.Y == 255 && leftLower.iLat<latBands)
-			{
-				leftLower.iLat++;
-				rightLower.iLat++;
-			}
-			// Sweep over the tile set to put in shape paths
-			for (auto ilat = leftUpper.iLat; ilat <= leftLower.iLat; ilat++)
-				for (auto ilng = leftUpper.iLng; ilng <= rightUpper.iLng; ilng++)
-				{
-					// Compensate for longitude edge switch
-					g_ElevationFlatteningShapes[hPlanet][lvl][ilat][ilng < 0 ? lngBands + ilng : ilng].push_back(shape);
-				}
-		}
-	}
-	g_ShapesLoaded[hPlanet] = true;
-}
-
-template <typename Type>
-bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, Type *elev)
-{
-	if (!elev) return false;
-	if (g_ShapesLoaded.find(hPlanet) == g_ShapesLoaded.end()) ProcessPlanetFlats(hPlanet);
-	if (g_ElevationFlatteningShapes.find(hPlanet) == g_ElevationFlatteningShapes.end()) return false; // Nothing for planet
-	auto planetShapes = g_ElevationFlatteningShapes[hPlanet];
-	if (planetShapes.find(lvl) == planetShapes.end()) return false; // Nothing at this level
-	auto levelShapes = planetShapes[lvl];
-	if (levelShapes.find(ilat) == levelShapes.end()) return false; // Nothing at this latitude
-	auto latShapes = levelShapes[ilat];
-	if (latShapes.find(ilng) == latShapes.end()) return false; // Nothing at this longitude
-	auto shapes = latShapes[ilng];
-	double bands = pow((double)2, lvl);
-	double width = 180 / bands;
-	double step = width / 256;
-	double latmin = 90 - width*(ilat + 1) - step * 1.5;
-	double lngmin = -180 + width*ilng - step * 1.5;;
-	for (auto i = 0; i < TILE_ELEVSTRIDE*TILE_ELEVSTRIDE; i++)
-	{
-		for (auto shape : shapes)
-		{
-			double y = latmin + (i / 259)*step - shape->Lat;
-			double x = lngmin + (i % 259)*step - shape->Lng;
-			double x1 = (x * shape->Cos - y * shape->Sin) / shape->Dim1;
-			double y1 = (x * shape->Sin + y * shape->Cos) / shape->Dim2;
-			for (auto pot = 0; pot < shape->Type; pot++)
-			{
-				x1 *= x1;
-				y1 *= y1;
-			}
-			double dist = x1 + y1;
-			if (dist <= 1.0)
-			{
-				// Do the math in INT16 basis even for "float" output
-				INT16 elevation = INT16((double)shape->Height / elev_res);
-				if (shape->Falloff > 0)
-				{
-					for (auto pot = 0; pot < shape->Type; pot++)
-					{
-						dist = sqrt(dist);
-					}
-					if (dist >= 1 - shape->Falloff)
-					{
-						double alpha = (dist - 1 + shape->Falloff) / shape->Falloff;
-						elevation = INT16(elev[i] * alpha + (double)shape->Height / elev_res * (1 - alpha));
-					}
-				}
-				// Convert to float or keep as an INT16 depending on case
-				elev[i] = Type(elevation);
-			}
-		}
-	}
-	return true;
-}
-
-
-bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16 *elev)
-{
-	if (!Config->bFlatsEnabled) return false;
-	char name[64];
-	oapiGetObjectName(hPlanet, name, 64);
-	auto result = FilterElevation<INT16>(hPlanet, lvl, ilat, ilng, elev_res, elev);
-	if (result)
-		LogClr("Coral", "FilterElevation[Physics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
-	return result;
-}
-
-
-void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev)
-{
-	if (!Config->bFlatsEnabled) return;
-	char name[64];
-	oapiGetObjectName(hPlanet, name, 64);
-	if (FilterElevation<float>(hPlanet, lvl, ilat, ilng, 1.0, elev))
-		LogClr("Coral", "FilterElevation[Graphics][%s]: Level=%d, ilat=%d, ilng=%d", name, lvl, ilat, ilng);
-}
-
-
-
-
 
 // ==============================================================
 // D3D9Client class implementation
@@ -488,12 +224,13 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	pScatterTest(NULL),
 	pFramework  (NULL),
 	pItemsSkp   (NULL),
-	texmgr      (NULL),
 	hLblFont1   (NULL),
 	hLblFont2   (NULL),
 	hMainThread (NULL),
 	pCaps       (NULL),
 	pWM			(NULL),
+	pBltSkp		(NULL),
+	pBltGrpTgt	(NULL),
 	parser    (),
 	hRenderWnd(),
 	scene     (),
@@ -504,7 +241,6 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	bAAEnabled    (false),
 	bFailed       (false),
 	bRunning      (false),
-	bHalt         (false),
 	bVertexTex    (false),
 	bVSync        (false),
 	bRendering	  (false),
@@ -536,35 +272,6 @@ D3D9Client::~D3D9Client()
 			delete[] g_cm_list[n].label[1];
 		}
 		delete[] g_cm_list;
-	}
-
-	//
-	// Orbiter seems not to release all resources :(
-	//
-
-	// --- Fonts
-	if (g_fonts.size()) {
-		LogWrn("%u un-released fonts!", g_fonts.size());
-		for (auto it = g_fonts.begin(); it != g_fonts.end(); ) {
-			clbkReleaseFont(*it++);
-		}
-		g_fonts.clear();
-	}
-	// --- Brushes
-	if (g_brushes.size()) {
-		LogWrn("%u un-released brushes!", g_brushes.size());
-		for (auto it = g_brushes.begin(); it != g_brushes.end(); ) {
-			clbkReleaseBrush(*it++);
-		}
-		g_brushes.clear();
-	}
-	// --- Pens
-	if (g_pens.size()) {
-		LogWrn("%u un-released pens!", g_pens.size());
-		for (auto it = g_pens.begin(); it != g_pens.end(); ) {
-			clbkReleasePen(*it++);
-		}
-		g_pens.clear();
 	}
 }
 
@@ -639,14 +346,12 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	bFullscreen      = false;
 	bFailed			 = false;
 	bRunning		 = false;
-	bHalt			 = false;
 	bVertexTex		 = false;
 	viewW = viewH    = 0;
 	viewBPP          = 0;
 	frame_timer		 = 0;
 	scene            = NULL;
 	meshmgr          = NULL;
-	texmgr           = NULL;
 	pFramework       = NULL;
 	pDevice			 = NULL;
 	parser			 = NULL;
@@ -662,8 +367,9 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	oapiDebugString()[0] = '\0';
 
 	TileCatalog->Clear();
-	MeshCatalog->Clear();
-	SurfaceCatalog->Clear();
+
+	MeshCatalog.clear();
+	SurfaceCatalog.clear();
 
 	hRenderWnd = GraphicsClient::clbkCreateRenderWindow();
 
@@ -711,8 +417,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	HR(D3DXCreateTextureFromFileA(pDevice, "Textures/D3D9Noise.dds", &pNoiseTex));
 
-	D3D9ClientSurface::D3D9TechInit(this, pDevice, fld);
-
 	HR(pDevice->GetRenderTarget(0, &pBackBuffer));
 	HR(pDevice->GetDepthStencilSurface(&pDepthStencil));
 
@@ -720,7 +424,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	LogAlw("DepthStencil = %s", _PTR(pDepthStencil));
 
 	meshmgr		= new MeshManager(this);
-	texmgr	    = new TextureManager(this);
 
 	// Bring Sketchpad Online
 	D3D9PadFont::D3D9TechInit(pDevice);
@@ -741,7 +444,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	hLblFont1 = CreateFont(24+x, 0, 0, 0, 700, false, false, 0, 0, 3, 2, 1, 49, "Courier New");
 	hLblFont2 = CreateFont(18+x, 0, 0, 0, 700, false, false, 0, 0, 3, 2, 1, 49, "Courier New");
 
-	SplashScreen();  // Warning D3D9ClientSurface is not yet fully initialized here
+	SplashScreen();  // Warning SurfNative is not yet fully initialized here
 
 	ShowWindow(hRenderWnd, SW_SHOW);
 
@@ -1079,19 +782,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	bRunning = false;
 
 
-	// Face's Cleanup ShapeStore -----------------------
-	//
-	for (auto store : g_ShapeStore)
-	{
-		for (auto shape : store.second)
-		{
-			delete shape;
-		}
-	}
-	g_ShapeStore.clear();
-	g_ElevationFlatteningShapes.clear();
-	g_ShapesLoaded.clear();
-
 	// At first, shutdown tile loaders -------------------------------------------------------
 	//
 	if (TileBuffer::ShutDown()==false) LogErr("Failed to Shutdown TileBuffer()");
@@ -1140,10 +830,6 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	}
 #endif
 
-	
-	LogAlw("=========== Clearing Texture Repository =========");
-	SAFE_DELETE(texmgr);
-
 	LogAlw("===== Calling GlobalExit() for sub-systems ======");
 	HazeManager::GlobalExit();
 	HazeManager2::GlobalExit();
@@ -1165,33 +851,82 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	D3D9Pad::GlobalExit();
 	D3D9Text::GlobalExit();
 	D3D9Effect::GlobalExit();
-	D3D9ClientSurface::GlobalExit();
 
 	SAFE_RELEASE(pSplashScreen);	// Splash screen related
 	SAFE_RELEASE(pTextScreen);		// Splash screen related
-	SAFE_RELEASE(pBackBuffer);
-	SAFE_RELEASE(pDepthStencil);
-
-	LPD3D9CLIENTSURFACE pBBuf = GetBackBufferHandle();
-
-	SAFE_DELETE(pBBuf);
-	SAFE_DELETE(pDefaultTex);
+	DELETE_SURFACE(pDefaultTex);
 	SAFE_RELEASE(pNoiseTex);
+
+	SURFHANDLE hBackBuffer = GetBackBufferHandle();
+
+	DELETE_SURFACE(hBackBuffer);
 
 	LogAlw("============ Checking Object Catalogs ===========");
 
+	
 	// Check surface catalog --------------------------------------------------------------------------------------
 	//
-	auto it = SurfaceCatalog->begin();
-	if (it != SurfaceCatalog->end())
+	if (SharedTextures.size() > 0)
 	{
-		LogErr("UnDeleted Surface(s) Detected");
-		while (it != SurfaceCatalog->end())
-		{
-			LogWrn("Surface %s (%s) (%u,%u)", _PTR(*it), (*it)->GetName(), (*it)->GetWidth(), (*it)->GetHeight());
-			delete *it;
-			it = SurfaceCatalog->begin();
+		LogWrn("Texture Repository has %u entries... Releasing...", (DWORD)SharedTextures.size());
+		auto Undeleted(SharedTextures);
+		for (auto srf : Undeleted) {
+			LogWrn("Texture [%s]", SURFACE(srf.second)->GetName());
+			delete lpSurfNative(srf.second);
 		}
+	}
+
+	// Check surface catalog --------------------------------------------------------------------------------------
+	//
+	if (SurfaceCatalog.size() > 0)
+	{
+		LogErr("UnDeleted Surfaces(s) Detected %u... Releasing...", (DWORD)SurfaceCatalog.size());
+		auto Undeleted(SurfaceCatalog);
+		for (auto srf : Undeleted) {
+			LogErr("Surface [%s] (%u, %u)", srf->GetName(), srf->GetWidth(), srf->GetHeight());
+			delete srf;
+		}
+	}
+
+	// Check mesh catalog --------------------------------------------------------------------------------------
+	//
+	if (MeshCatalog.size() > 0)
+	{
+		LogErr("UnDeleted Meshe(s) Detected %u", (DWORD)MeshCatalog.size());
+		auto Undeleted(MeshCatalog);
+		for (auto msh : Undeleted)
+		{
+			LogErr("Mesh[%s] Handle = %s ", msh->GetName(), _PTR(msh));
+			delete msh;
+		}
+	}
+
+	// Check Fonts catalog --------------------------------------------------------------------------------------
+	//
+	if (g_fonts.size()) {
+		LogWrn("%u un-released fonts!", g_fonts.size());
+		for (auto it = g_fonts.begin(); it != g_fonts.end(); ) {
+			clbkReleaseFont(*it++);
+		}
+		g_fonts.clear();
+	}
+
+	// --- Brushes
+	if (g_brushes.size()) {
+		LogWrn("%u un-released brushes!", g_brushes.size());
+		for (auto it = g_brushes.begin(); it != g_brushes.end(); ) {
+			clbkReleaseBrush(*it++);
+		}
+		g_brushes.clear();
+	}
+
+	// --- Pens
+	if (g_pens.size()) {
+		LogWrn("%u un-released pens!", g_pens.size());
+		for (auto it = g_pens.begin(); it != g_pens.end(); ) {
+			clbkReleasePen(*it++);
+		}
+		g_pens.clear();
 	}
 
 	// Check tile catalog --------------------------------------------------------------------------------------
@@ -1199,8 +934,9 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	size_t nt = TileCatalog->CountEntries();
 	if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
 
-	SurfaceCatalog->Clear();
-	MeshCatalog->Clear();
+	SharedTextures.clear();
+	SurfaceCatalog.clear();
+	MeshCatalog.clear();
 	TileCatalog->Clear();
 
 	pFramework->DestroyObjects();
@@ -1220,22 +956,7 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 
 // ==============================================================
 
-void D3D9Client::clbkSurfaceDeleted(LPD3D9CLIENTSURFACE hSurf)
-{
-	LPDIRECT3DSURFACE9 pSurf = hSurf->GetSurface();
-	if (pSurf == NULL) return;
-
-	for each (RenderTgtData data in RenderStack)
-	{
-		if (data.pColor == pSurf) {
-			LogErr("Deleting a surface located in render stack %s", _PTR(hSurf));
-		}
-	}
-}
-
-// ==============================================================
-
-void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp)
+void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp) const
 {
 	if (surf) {
 		LPDIRECT3DSURFACE9 pTgt = SURFACE(surf)->GetSurface();
@@ -1245,19 +966,10 @@ void D3D9Client::PushSketchpad(SURFHANDLE surf, D3D9Pad *pSkp)
 	}
 }
 
-// ==============================================================
-
-void D3D9Client::PushSketchpadNative(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepth, D3D9Pad *pSkp)
-{
-	if (pColor) {
-		PushRenderTarget(pColor, pDepth, RENDERPASS_SKETCHPAD);
-		RenderStack.front().pSkp = pSkp;
-	}
-}
 
 // ==============================================================
 
-void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil, int code)
+void D3D9Client::PushRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9 pDepthStencil, int code) const
 {
 	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
 
@@ -1296,7 +1008,7 @@ void D3D9Client::AlterRenderTarget(LPDIRECT3DSURFACE9 pColor, LPDIRECT3DSURFACE9
 
 // ==============================================================
 
-void D3D9Client::PopRenderTargets()
+void D3D9Client::PopRenderTargets() const
 {
 	static char *labels[] = { "NULL", "MAIN", "ENV", "CUSTOMCAM", "SHADOWMAP", "PICK", "SKETCHPAD", "OVERLAY" };
 
@@ -1305,7 +1017,6 @@ void D3D9Client::PopRenderTargets()
 	RenderStack.pop_front();
 
 	if (RenderStack.empty()) {
-		HackFriendlyHack();
 		LogDbg("Orange", "POP: Last one out ------------------------------------");
 		return;
 	}
@@ -1396,16 +1107,6 @@ void D3D9Client::clbkRenderScene()
 	if (pDevice->TestCooperativeLevel()!=S_OK) {
 		bFailed=true;
 		MessageBoxA(pFramework->GetRenderWindow(),"Connection to Direct3DDevice is lost\nExit the simulation with Ctrl+Q and restart.\n\nAlt-Tabing not supported in a true fullscreen mode.\nDialog windows won't work with multi-sampling in a true fullscreen mode.","D3D9Client: Lost Device",0);
-		return;
-	}
-
-	if (bHalt) {
-		pDevice->BeginScene();
-		RECT rect2 = _RECT(0, viewH - 60, viewW, viewH - 20);
-		pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 0, 0));
-		rect2.left-=4; rect2.top-=4;
-		pFramework->GetLargeFont()->DrawTextA(0, "Critical error has occured", 26, &rect2, DT_CENTER | DT_TOP, D3DCOLOR_XRGB(255, 255, 255));
-		pDevice->EndScene();
 		return;
 	}
 
@@ -1669,11 +1370,6 @@ void D3D9Client::clbkStoreMeshPersistent(MESHHANDLE hMesh, const char *fname)
 	if (hMesh==NULL) return;
 
 	int idx = meshmgr->StoreMesh(hMesh, fname);
-
-	if (idx>=0) {
-		if (fname) LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,fname);
-		else	   LogWrn("MeshGroup(%d) in a mesh %s is larger than 1km",idx,_PTR(hMesh));
-	}
 }
 
 // ==============================================================
@@ -1867,18 +1563,6 @@ int D3D9Client::clbkVisEvent(OBJHANDLE hObj, VISHANDLE vis, DWORD msg, DWORD_PTR
 		}
 	}
 	return 1;
-}
-
-
-// ==============================================================
-//
-
-void D3D9Client::EmergencyShutdown()
-{
-	bool b = oapiSaveScenario("D3D9ClientRescue","Contains the current simulation state before shutdown due to an unexpected error");
-	if (b) LogAlw("ORBITER SCENARIO SAVED SUCCESSFULLY (D3D9ClientRescue.scn)");
-	else   LogErr("FAILED TO SAVE A SCENARIO");
-	bHalt = true;
 }
 
 
@@ -2199,7 +1883,7 @@ DWORD D3D9Client::clbkGetDeviceColour (BYTE r, BYTE g, BYTE b)
 // Surface functions
 // =======================================================================
 
-bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, ImageFileFormat  fmt, float quality)
+bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE surf, const char *fname, ImageFileFormat  fmt, float quality)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return false;
@@ -2208,37 +1892,35 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, Im
 
 	LPDIRECT3DSURFACE9 pRTG = NULL;
 	LPDIRECT3DSURFACE9 pSystem = NULL;
-	LPDIRECT3DSURFACE9 pSurf = SURFACE(surf)->pSurf;
+	LPDIRECT3DSURFACE9 pSurf = SURFACE(surf)->GetSurface();
 
 	if (pSurf==NULL) return false;
 
 	bool bRet = false;
 	ImageData ID;
-	D3DSURFACE_DESC desc;
+	const D3DSURFACE_DESC *desc = SURFACE(surf)->GetDesc();
 	D3DLOCKED_RECT pRect;
 
-	SURFACE(surf)->GetDesc(&desc);
-
-	if (desc.Pool!=D3DPOOL_SYSTEMMEM) {
-
-		HR(pDevice->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
-		HR(pDevice->CreateOffscreenPlainSurface(desc.Width, desc.Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
+	if (desc->Pool!=D3DPOOL_SYSTEMMEM)
+	{
+		HR(pDevice->CreateRenderTarget(desc->Width, desc->Height, D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &pRTG, NULL));
+		HR(pDevice->CreateOffscreenPlainSurface(desc->Width, desc->Height, D3DFMT_X8R8G8B8, D3DPOOL_SYSTEMMEM, &pSystem, NULL));
 		HR(pDevice->StretchRect(pSurf, NULL, pRTG, NULL, D3DTEXF_NONE));
 		HR(pDevice->GetRenderTargetData(pRTG, pSystem));
 
 		if (pSystem->LockRect(&pRect, NULL, 0)==S_OK) {
 
 			ID.bpp = 24;
-			ID.height = desc.Height;
-			ID.width = desc.Width;
+			ID.height = desc->Height;
+			ID.width = desc->Width;
 			ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
 			ID.bufsize = ID.stride * ID.height;
 
 			BYTE *tgt = ID.data = new BYTE[ID.bufsize];
 			BYTE *src = (BYTE *)pRect.pBits;
 
-			for (DWORD k=0;k<desc.Height;k++) {
-				for (DWORD i=0;i<desc.Width;i++) {
+			for (DWORD k=0;k<desc->Height;k++) {
+				for (DWORD i=0;i<desc->Width;i++) {
 					tgt[0+i*3] = src[0+i*4];
 					tgt[1+i*3] = src[1+i*4];
 					tgt[2+i*3] = src[2+i*4];
@@ -2261,16 +1943,16 @@ bool D3D9Client::clbkSaveSurfaceToImage(SURFHANDLE  surf,  const char *fname, Im
 	if (pSurf->LockRect(&pRect, NULL, D3DLOCK_READONLY)==S_OK) {
 
 		ID.bpp = 24;
-		ID.height = desc.Height;
-		ID.width = desc.Width;
+		ID.height = desc->Height;
+		ID.width = desc->Width;
 		ID.stride = ((ID.width * ID.bpp + 31) & ~31) >> 3;
 		ID.bufsize = ID.stride * ID.height;
 
 		BYTE *tgt = ID.data = new BYTE[ID.bufsize];
 		BYTE *src = (BYTE *)pRect.pBits;
 
-		for (DWORD k=0;k<desc.Height;k++) {
-			for (DWORD i=0;i<desc.Width;i++) {
+		for (DWORD k=0;k<desc->Height;k++) {
+			for (DWORD i=0;i<desc->Width;i++) {
 				tgt[0+i*3] = src[0+i*4];
 				tgt[1+i*3] = src[1+i*4];
 				tgt[2+i*3] = src[2+i*4];
@@ -2296,23 +1978,13 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 
-	LPD3D9CLIENTSURFACE pTex = NULL;
+	DWORD attrib = OAPISURFACE_TEXTURE;
+	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
+	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS | OAPISURFACE_RENDERTARGET;
+	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
+	if (flags & 0x8) attrib |= OAPISURFACE_SHARED;
 
-	char path[MAX_PATH];
-
-	if (TexturePath(fname, path)==false) {
-		LogWrn("Texture %s not found.", fname);
-		return NULL;
-	}
-
-	if (flags & 8) {
-		if (texmgr->GetTexture(fname, &pTex, flags)==false) return NULL;
-	}
-	else {
-		if (texmgr->LoadTexture(fname, &pTex, flags)!=S_OK) return NULL;
-	}
-
-	return pTex;
+	return clbkLoadSurface(fname, attrib);
 }
 
 // ==============================================================
@@ -2322,26 +1994,63 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 
-	DWORD flags = 0;
+	static const DWORD val = OAPISURFACE_RENDERTARGET | OAPISURFACE_GDI | OAPISURFACE_SYSMEM;
+	static const DWORD exclude = ~(OAPISURFACE_SHARED | OAPISURFACE_ORIGIN);
 
-	// Process flag conflicts and issues ---------------------------------------------------------------------------------
-	//
-	flags = OAPISURFACE_RENDERTARGET|OAPISURFACE_SYSMEM;
+	if (!(attrib & val))
+	{
+		// It's a regular texture, let's manage it
+		//
+		string name(fname);
 
-	if ((attrib&flags)==flags) {
-		LogErr("clbkLoadSurface() Can not combine OAPISURFACE_RENDERTARGET | OAPISURFACE_SYSMEM");
-		attrib-=OAPISURFACE_SYSMEM;
+		if (attrib & OAPISURFACE_SHARED)
+		{
+			auto ent = SharedTextures.find(name);
+
+			if (ent == SharedTextures.end())
+			{
+				SURFHANDLE hSrf = NatLoadSurface(fname, attrib);
+				if (hSrf) SharedTextures[name] = hSrf;
+				return hSrf;
+			}
+			else return ent->second;
+		}
+
+		/*
+		auto ent = ClonedTextures.find(name);
+
+		if (ent == ClonedTextures.end())
+		{
+			SURFHANDLE hSrf = NatLoadSurface(fname, attrib);
+			if (hSrf) SharedTextures[name] = hSrf;
+			return hSrf;
+		}
+		else
+		{
+			DWORD original = SURFACE(ent->second)->GetOAPIFlags();
+
+			if (original & OAPISURFACE_ORIGIN)
+			{
+				if ((attrib & exclude) == (original & exclude))
+				{
+					return SURFHANDLE(new SurfNative(SURFACE(ent->second))); // Clone it
+				}
+			}
+			else
+			{
+				// Create "origin" for cloning
+				SURFHANDLE hSrf = NatLoadSurface(fname, attrib | OAPISURFACE_ORIGIN);
+				if (hSrf) {
+					ent->second = hSrf;
+					return SURFHANDLE(new SurfNative(SURFACE(hSrf))); // Clone it
+				}
+				else return NULL;
+			}
+		}
+		*/
 	}
-
-	if (attrib==OAPISURFACE_SKETCHPAD) {
-		attrib |= OAPISURFACE_RENDERTARGET;
-		attrib &= ~(OAPISURFACE_SYSMEM|OAPISURFACE_GDI);
-	}
-
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, fname);
-	if (surf->LoadSurface(fname, attrib)) return surf;
-	delete surf;
-	return NULL;
+	
+	return NatLoadSurface(fname, attrib);
 }
 
 // ==============================================================
@@ -2357,21 +2066,7 @@ HBITMAP D3D9Client::gcReadImageFromFile(const char *_path)
 
 void D3D9Client::clbkReleaseTexture(SURFHANDLE hTex)
 {
-	_TRACE;
-	if (ChkDev(__FUNCTION__)) return;
-
-	if (texmgr->IsInRepository(hTex)) return;	// Do not release surfaces stored in repository
-
-	if (SURFACE(hTex)->Release()) {
-		for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
-			if (*it && (*it)->HasTexture(hTex)) {
-				LogErr( "Something is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
-						(*it)->GetName() );
-				return;
-			}
-		}
-		delete SURFACE(hTex);
-	}
+	clbkReleaseSurface(hTex);
 }
 
 // ==============================================================
@@ -2387,22 +2082,9 @@ SURFHANDLE D3D9Client::clbkCreateSurfaceEx(DWORD w, DWORD h, DWORD attrib)
 
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
 
-	const DWORD noalpha_sketchpad_gdi = OAPISURFACE_NOALPHA | OAPISURFACE_SKETCHPAD | OAPISURFACE_GDI;
-	const DWORD gdi_texture = OAPISURFACE_GDI | OAPISURFACE_TEXTURE;
-
-	if (attrib == noalpha_sketchpad_gdi) attrib = gdi_texture;
-
-
-	// VC MFD mipmaps hack ---
-	bool bSize = false;
-	if (w==h) if (w == 256 || w == 512 || w == 1024) bSize = true;
-	if ((attrib&OAPISURFACE_TEXTURE) && !(attrib&OAPISURFACE_GDI) && bSize) attrib |= OAPISURFACE_MIPMAPS;
-	// --- end hack ---
-
-
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurfaceEx");
-	surf->CreateSurface(w, h, attrib);
-	return surf;
+	SURFHANDLE hNew = NatCreateSurface(w, h, attrib);
+	SURFACE(hNew)->SetName("clbkCreateSurfaceEx");
+	return hNew;
 }
 
 
@@ -2412,11 +2094,15 @@ SURFHANDLE D3D9Client::clbkCreateSurface(DWORD w, DWORD h, SURFHANDLE hTemplate)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
-
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
-	D3D9ClientSurface *surf = new D3D9ClientSurface(pDevice, "clbkCreateSurface");
-	surf->MakeEmptySurfaceEx(w, h);
-	return surf;
+
+	DWORD attrib = OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
+
+	if (hTemplate) attrib = SURFACE(hTemplate)->GetOAPIFlags();
+	
+	SURFHANDLE hNew = NatCreateSurface(w, h, attrib);
+	SURFACE(hNew)->SetName("clbkCreateSurface");
+	return hNew;
 }
 
 // =======================================================================
@@ -2427,6 +2113,7 @@ SURFHANDLE D3D9Client::clbkCreateSurface(HBITMAP hBmp)
 	if (ChkDev(__FUNCTION__)) return NULL;
 
 	SURFHANDLE hSurf = GraphicsClient::clbkCreateSurface(hBmp);
+	SURFACE(hSurf)->SetName("clbkCreateSurface_HBITMAP");
 	return hSurf;
 }
 
@@ -2436,12 +2123,11 @@ SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
-
 	if (w == 0 || h == 0) return NULL;	// Inline engine returns NULL for a zero surface
-	D3D9ClientSurface *pSurf = new D3D9ClientSurface(pDevice, "clbkCreateTexture");
-	// DO NOT USE ALPHA
-	pSurf->MakeEmptyTextureEx(w, h);
-	return (SURFHANDLE)pSurf;
+
+	SURFHANDLE hNew = NatCreateSurface(w, h, OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+	SURFACE(hNew)->SetName("clbkCreateTexture");
+	return hNew;
 }
 
 // =======================================================================
@@ -2449,8 +2135,7 @@ SURFHANDLE D3D9Client::clbkCreateTexture(DWORD w, DWORD h)
 void D3D9Client::clbkIncrSurfaceRef(SURFHANDLE surf)
 {
 	_TRACE;
-	if (surf==NULL) { LogErr("D3D9Client::clbkIncrSurfaceRef() Input Surface is NULL");	return; }
-	SURFACE(surf)->IncRef();
+	if (surf) SURFACE(surf)->IncRef();
 }
 
 // =======================================================================
@@ -2458,26 +2143,27 @@ void D3D9Client::clbkIncrSurfaceRef(SURFHANDLE surf)
 bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 {
 	_TRACE;
-	if (ChkDev(__FUNCTION__)) return NULL;
+	if (ChkDev(__FUNCTION__)) return false;
 
-	if (surf==NULL) { LogErr("D3D9Client::clbkReleaseSurface() Input Surface is NULL");	return false; }
+	// Do not release 'origin' (i.e. reference) for cloned surfaces.
+	if (SURFACE(surf)->GetOAPIFlags() & OAPISURFACE_ORIGIN) return false;
 
-	if (texmgr->IsInRepository(surf)) return false;	// Do not release surfaces stored in repository
+	// Do not release surfaces stored in repository
+	for (auto ent : SharedTextures) if (ent.second == surf) return false;
 
-	bool bRel = SURFACE(surf)->Release();
+	// Don't release surfaces used by meshes
+	for (auto mesh : MeshCatalog) if (mesh && mesh->HasTexture(surf)) return false;
 
-	if (bRel) {
-
-		for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
-			if (*it && (*it)->HasTexture(surf)) {
-				LogErr( "Orbiter is attempting to delete a texture (%s) that is currently used by a mesh. Attempt rejected to prevent a CTD",
-						(*it)->GetName() );
-				return true;
-			}
+	// If the surface exists, delete it.
+	if (SURFACE(surf)->DecRef())
+	{
+		if (SurfaceCatalog.count(SURFACE(surf)))
+		{
+			delete SURFACE(surf);
+			return true;
 		}
-		delete SURFACE(surf);
 	}
-	return bRel;
+	return false;
 }
 
 // =======================================================================
@@ -2512,73 +2198,43 @@ int D3D9Client::clbkBeginBltGroup(SURFHANDLE tgt)
 	_TRACE;
 	if (pBltGrpTgt) return -1;
 
-	if (tgt==RENDERTGT_NONE) {
+	if (tgt == RENDERTGT_NONE) {
 		pBltGrpTgt = NULL;
 		return -2;
 	}
 
-	if (tgt==RENDERTGT_MAINWINDOW) pBltGrpTgt = pFramework->GetBackBufferHandle();
-	else						   pBltGrpTgt = tgt;
+	if (tgt == RENDERTGT_MAINWINDOW) pBltGrpTgt = pFramework->GetBackBufferHandle();
+	else pBltGrpTgt = tgt;
 
-	if (SURFACE(pBltGrpTgt)->IsRenderTarget()==false) {
+	if (!SURFACE(tgt)->IsRenderTarget()) {
 		pBltGrpTgt = NULL;
 		return -3;
 	}
 
+	//pBltSkp = SURFACE(tgt)->GetPooledSketchPad();
+	//pBltSkp->BeginDrawing();
 	return 0;
 }
+
+// =======================================================================
 
 int D3D9Client::clbkEndBltGroup()
 {
 	_TRACE;
 	if (pBltGrpTgt==NULL) return -2;
-	SURFACE(pBltGrpTgt)->EndBlitGroup(); // Flush queue and release GPU
+	//pBltSkp->EndDrawing();
+	pBltSkp = NULL;
 	pBltGrpTgt = NULL;
 	return 0;
 }
 
-
-bool D3D9Client::CheckBltGroup(SURFHANDLE src, SURFHANDLE tgt) const
-{
-	if (tgt==pBltGrpTgt) {
-		if (SURFACE(src)->pTex!=NULL) {
-			if (SURFACE(src)->ColorKey) { // Use blit groups only for color keyed source surfaces
-				if (SURFACE(pBltGrpTgt)->BeginBlitGroup()==S_OK) return true;
-			}
-		}
-	}
-	// Flush queue, release GPU and disable blit group
-	SURFACE(pBltGrpTgt)->EndBlitGroup();
-	pBltGrpTgt = NULL;
-	return false;
-}
-
-
+// =======================================================================
 
 bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD flag) const
 {
 	_TRACE;
-
-	double time = D3D9GetTime();
-
-	if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
-	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
-
-	int w = SURFACE(src)->GetWidth();
-	int h = SURFACE(src)->GetHeight();
-
-	RECT rs = { 0, 0, w, h };
-	RECT rt = _RECT( tgtx, tgty, tgtx+w, tgty+h );
-
-	if (pBltGrpTgt) {
-		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-		else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-	}
-	else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-
-	D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
-
-	return true;
+	const D3DSURFACE_DESC* sd = SURFACE(src)->GetDesc();
+	return clbkScaleBlt(tgt, tgtx, tgty, sd->Width, sd->Height, src, 0, 0, sd->Width, sd->Height, flag);
 }
 
 // =======================================================================
@@ -2586,24 +2242,7 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD w, DWORD h, DWORD flag) const
 {
 	_TRACE;
-
-	double time = D3D9GetTime();
-
-	if (src==NULL) { LogErr("D3D9Client::clbkBlt() Source surface is NULL"); return false; }
-	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
-
-	RECT rs = _RECT( srcx, srcy, srcx+w, srcy+h );
-	RECT rt = _RECT( tgtx, tgty, tgtx+w, tgty+h );
-
-	if (pBltGrpTgt) {
-		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-		else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-	}
-	else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
-
-	D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
-
-	return true;
+	return clbkScaleBlt(tgt, tgtx, tgty, w, h, src, srcx, srcy, w, h, flag);
 }
 
 // =======================================================================
@@ -2611,33 +2250,237 @@ bool D3D9Client::clbkBlt(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, SURFHANDLE src,
 bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgtw, DWORD tgth,
                                SURFHANDLE src, DWORD srcx, DWORD srcy, DWORD srcw, DWORD srch, DWORD flag) const
 {
-	_TRACE;
 	
-	double time = D3D9GetTime();
+	if (src==NULL) { oapiWriteLog("ERROR: oapiBlt() Source surface is NULL"); return false; }
 
-	if (src==NULL) { LogErr("D3D9Client::clbkScaleBlt() Source surface is NULL"); return false; }
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
 
-	RECT rs = _RECT( srcx, srcy, srcx+srcw, srcy+srch );
-	RECT rt = _RECT( tgtx, tgty, tgtx+tgtw, tgty+tgth );
 
-	if (pBltGrpTgt) {
-		if (CheckBltGroup(src,tgt)) SURFACE(pBltGrpTgt)->AddQueue(SURFACE(src), &rs, &rt);
-		else 						SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
+	RECT rs = _RECT(srcx, srcy, srcx + srcw, srcy + srch);
+	RECT rt = _RECT(tgtx, tgty, tgtx + tgtw, tgty + tgth);
+
+
+	// Can't blit in a clone, declone..
+	//
+	if (SURFACE(tgt)->IsClone()) SURFACE(tgt)->DeClone();
+
+	// Can't blit in a compressed surface, decompress..
+	//
+	if (SURFACE(tgt)->IsCompressed())
+	{
+		if (uEnableLog > 1) {
+			LogWrn("oapiBlt() Performed to a compressed destination surface... Decompressing.... ----------------- ");
+			BltError(src, tgt, &rs, &rt, Config->DebugBreak!=0);
+		}
 	}
-	else SURFACE(tgt)->CopyRect(SURFACE(src), &rs, &rt, flag);
 
-	D3D9SetTime(D3D9Stats.Timer.BlitTime, time);
+	if (!SURFACE(tgt)->Decompress())
+	{
+		HALT();
+	}
 
-	return true;
+	POINT tp = { (long)tgtx, (long)tgty };
+
+	const D3DSURFACE_DESC* td = SURFACE(tgt)->GetDesc();
+	const D3DSURFACE_DESC* sd = SURFACE(src)->GetDesc();
+
+
+	// Check failure and abort conditions, Match with know DX7 behavior ---------------------
+	//
+	if (rt.right > (long)td->Width || rt.bottom > (long)td->Height) return true;
+	if (rt.left < 0 || rt.top < 0)  return true;
+
+	if (rs.right > (long)sd->Width || rs.bottom > (long)sd->Height)  return true;
+	if (rs.left < 0 || rs.top < 0) return true;
+
+	if (rs.left > rs.right) return true;
+	if (rt.left > rt.right) return true;
+	if (rs.top > rs.bottom) return true;
+	if (rt.top > rt.bottom) return true;
+
+	if (srcw == 0 || srch == 0 || tgtw == 0 || tgth == 0) return true;
+
+
+	// Check Blt conditions
+	//
+	bool bCK = SURFACE(src)->GetColorKey() != SURF_NO_CK;	// ColorKey In Use
+	bool bCL = (srcw != tgtw) || (srch != tgth);		// Scaling In Use
+	bool bSC = SURFACE(src)->IsCompressed();			// Compressed source
+
+	LPDIRECT3DSURFACE9 pss = SURFACE(src)->GetSurface();
+	LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+
+
+
+	if ((sd->Format == td->Format) && !bCK && !bSC)
+	{
+
+		// Most common case: Target is a render-target and source is in a video memory
+		//
+		if ((td->Usage & D3DUSAGE_RENDERTARGET) && (sd->Pool == D3DPOOL_DEFAULT))
+		{
+			if (src != tgt)
+			{
+				if (S_OK == pDevice->StretchRect(pss, &rs, pts, &rt, D3DTEXF_POINT)) return true;
+
+				LogErr("oapiBlt() StretchRect() Failed 1");
+				BltError(src, tgt, &rs, &rt);
+				return false;
+			}
+			else
+			{
+				// Source and Target are the same surface, reroute through temp.
+				//
+				LPDIRECT3DSURFACE9 tmp = SURFACE(src)->GetTempSurface();
+
+				if (S_OK == pDevice->StretchRect(pss, &rs, tmp, &rs, D3DTEXF_POINT))
+				{
+					if (S_OK == pDevice->StretchRect(tmp, &rs, pts, &rt, D3DTEXF_POINT)) return true;
+				}
+
+				LogErr("oapiBlt() StretchRect() Failed 2");
+				BltError(src, tgt, &rs, &rt);
+				return false;
+			}
+		}
+	}
+
+	if ((sd->Format == td->Format) && !bCK && !bSC && !bCL)
+	{
+
+		// Texture Update: Source is in system memory and target is a texture
+		// 
+		if (sd->Pool == D3DPOOL_SYSTEMMEM)
+		{
+			if (S_OK == pDevice->UpdateSurface(pss, &rs, pts, &tp))	return true;
+
+			LogErr("oapiBlt() UpdateSurface() Failed");
+			BltError(src, tgt, &rs, &rt);
+			return false;
+		}
+
+
+		// Screen Capture: Target is in system memory and source is a render taeget
+		// 
+		if ((td->Pool == D3DPOOL_SYSTEMMEM) && (sd->Usage & D3DUSAGE_RENDERTARGET))
+		{
+			if (S_OK == pDevice->GetRenderTargetData(pss, pts))	return true;
+		
+			LogErr("oapiBlt() GetRenderTargetData() Failed");
+			BltError(src, tgt, &rs, &rt);
+			return false;
+		}
+	}
+
+
+	// Scaling.. Format mismatch.. ColorKey.. Compressed Source..
+	// Go for SketchPad
+	//
+	if (src != tgt)
+	{
+		if ((td->Usage & D3DUSAGE_RENDERTARGET) && (SURFACE(src)->GetType() == D3DRTYPE_TEXTURE) && (sd->Pool == D3DPOOL_DEFAULT))
+		{
+			Sketchpad3* pSkp = static_cast<Sketchpad3 *>(clbkGetSketchpad_const(tgt));
+
+			if (SURFACE(src)->GetColorKey() != SURF_NO_CK)
+			{
+				pSkp->ColorKey(src, &rs, tgtx, tgty);
+				clbkReleaseSketchpad_const(pSkp);
+				return true;
+			}
+			else
+			{		
+				pSkp->StretchRect(src, &rs, &rt);
+				clbkReleaseSketchpad_const(pSkp);
+				return true;
+			}
+		}
+	}
+
+	LogErr("oapiBlt() Failed (End)");
+	BltError(src, tgt, &rs, &rt);
+	return false;
 }
 
 // =======================================================================
 
 bool D3D9Client::clbkCopyBitmap(SURFHANDLE pdds, HBITMAP hbm, int x, int y, int dx, int dy)
 {
-	_TRACE;
-	return GraphicsClient::clbkCopyBitmap(pdds, hbm, x,y,dx,dy);;
+	HDC                     hdcImage;
+	HDC                     hdc;
+	BITMAP                  bm;
+
+	if (hbm == NULL || pdds == NULL) return false;
+
+	// Select bitmap into a memoryDC so we can use it.
+	//
+	hdcImage = CreateCompatibleDC(NULL);
+
+	if (!hdcImage) OutputDebugString("createcompatible dc failed\n");
+
+	SelectObject(hdcImage, hbm);
+
+	// Get size of the bitmap
+	//
+	GetObject(hbm, sizeof(bm), &bm);
+	dx = dx == 0 ? bm.bmWidth : dx;     // Use the passed size, unless zero
+	dy = dy == 0 ? bm.bmHeight : dy;
+
+
+	// Get size of surface.
+	//
+	DWORD surfW = SURFACE(pdds)->GetWidth();
+	DWORD surfH = SURFACE(pdds)->GetHeight();
+
+	RECT r = { 0, 0, (long)surfW, (long)surfH };
+	POINT tp = { 0, 0 };
+
+	if (SURFACE(pdds)->IsGDISurface())
+	{
+		if (hdc = clbkGetSurfaceDC(pdds)) {
+			StretchBlt(hdc, 0, 0, surfW, surfH, hdcImage, x, y,	dx, dy, SRCCOPY);
+			clbkReleaseSurfaceDC(pdds, hdc);
+		}
+		DeleteDC(hdcImage);
+		SURFACE(pdds)->SetName("clbkCopyBitmap");
+		return true;
+	}
+	else 
+	{
+		LPDIRECT3DTEXTURE9 pTemp = NULL;
+		LPDIRECT3DSURFACE9 pSrf = NULL;
+
+		if (SURFACE(pdds)->IsRenderTarget()) pTemp = SURFACE(pdds)->GetGDICache(0);
+		else								 pTemp = SURFACE(pdds)->GetGDICache(OAPISURFACE_SYSMEM);
+
+		if (S_OK == pTemp->GetSurfaceLevel(0, &pSrf))
+		{
+			if (S_OK == pSrf->GetDC(&hdc))
+			{
+				StretchBlt(hdc, 0, 0, surfW, surfH, hdcImage, x, y, dx, dy, SRCCOPY);
+
+				pSrf->ReleaseDC(hdc);
+
+				if (SURFACE(pdds)->IsRenderTarget()) {
+					HR(pDevice->StretchRect(pSrf, &r, SURFACE(pdds)->GetSurface(), &r, D3DTEXF_LINEAR));
+				}
+				else {
+					HR(pDevice->UpdateSurface(pSrf, &r, SURFACE(pdds)->GetSurface(), &tp));
+				}
+
+				DeleteDC(hdcImage);
+				pSrf->Release();
+				SURFACE(pdds)->SetName("clbkCopyBitmap");
+				return true;
+			}
+			else {
+				pSrf->Release();
+				assert(false);
+			}		
+		}
+	}
+	DeleteDC(hdcImage);
+	return false;
 }
 
 // =======================================================================
@@ -2646,7 +2489,7 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD col) const
 {
 	_TRACE;
 	if (tgt==NULL) tgt = pFramework->GetBackBufferHandle();
-	bool ret = SURFACE(tgt)->Clear(col);
+	bool ret = SURFACE(tgt)->Fill(NULL, col);
 	return ret;
 }
 
@@ -2660,6 +2503,21 @@ bool D3D9Client::clbkFillSurface(SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD w
 	bool ret = SURFACE(tgt)->Fill(&r, col);
 	return ret;
 }
+
+// =======================================================================
+
+void D3D9Client::BltError(SURFHANDLE src, SURFHANDLE tgt, const LPRECT s, const LPRECT t, bool bHalt) const
+{
+	LogErr("Source Rect (%d,%d,%d,%d) (w=%u,h=%u)", s->left, s->top, s->right, s->bottom, abs(s->left - s->right), abs(s->top - s->bottom));
+	LogErr("Target Rect (%d,%d,%d,%d) (w=%u,h=%u)", t->left, t->top, t->right, t->bottom, abs(t->left - t->right), abs(t->top - t->bottom));
+	LogErr("Source Data Below: ----------------------------------");
+	SURFACE(src)->LogSpecs();
+	LogErr("Target Data Below: ----------------------------------");
+	SURFACE(tgt)->LogSpecs();
+	if (bHalt) HALT();
+}
+
+
 
 #pragma endregion
 
@@ -2798,7 +2656,7 @@ bool D3D9Client::clbkSplashLoadMsg (const char *msg, int line)
 
 // =======================================================================
 
-LPD3D9CLIENTSURFACE D3D9Client::GetDefaultTexture() const
+lpSurfNative D3D9Client::GetDefaultTexture() const
 {
 	return pDefaultTex;
 }
@@ -2812,10 +2670,10 @@ HWND D3D9Client::GetWindow()
 
 // =======================================================================
 
-LPD3D9CLIENTSURFACE D3D9Client::GetBackBufferHandle() const
+SURFHANDLE D3D9Client::GetBackBufferHandle() const
 {
 	_TRACE;
-	return SURFACE(pFramework->GetBackBufferHandle());
+	return pFramework->GetBackBufferHandle();
 }
 
 // =======================================================================
@@ -3127,7 +2985,7 @@ double sketching_time;
 // =======================================================================
 // 2D Drawing Interface
 //
-oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
+oapi::Sketchpad *D3D9Client::clbkGetSketchpad_const(SURFHANDLE surf) const
 {
 	if (ChkDev(__FUNCTION__)) return NULL;
 
@@ -3136,14 +2994,12 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 		return NULL;
 	}
 
-	sketching_time = D3D9GetTime();
+	if (surf == RENDERTGT_MAINWINDOW) surf = GetBackBufferHandle();
 
-	if (surf == NULL) surf = GetBackBufferHandle();
-
-	if (SURFACE(surf)->IsRenderTarget()) {
-
+	if (SURFACE(surf)->IsRenderTarget())
+	{
 		// Get Pooled Sketchpad
-		D3D9Pad *pPad = SURFACE(surf)->GetD3D9Pad();
+		D3D9Pad *pPad = SURFACE(surf)->GetPooledSketchPad();
 
 		// Get Current interface if any
 		D3D9Pad *pCur = GetTopInterface();
@@ -3172,8 +3028,55 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 }
 
 // =======================================================================
+// 2D Drawing Interface
+//
+oapi::Sketchpad* D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
+{
+	return clbkGetSketchpad_const(surf);
+	/*
+	if (ChkDev(__FUNCTION__)) return NULL;
 
-void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
+	if (GetCurrentThread() != hMainThread) {
+		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
+		return NULL;
+	}
+
+	if (surf == RENDERTGT_MAINWINDOW) surf = GetBackBufferHandle();
+
+	if (SURFACE(surf)->IsRenderTarget())
+	{
+		// Get Pooled Sketchpad
+		D3D9Pad* pPad = SURFACE(surf)->GetPooledSketchPad();
+
+		// Get Current interface if any
+		D3D9Pad* pCur = GetTopInterface();
+
+		// Do we have an existing SketchPad interface in use
+		if (pCur) {
+			if (pCur == pPad) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
+			pCur->EndDrawing();	// Put the current one in hold
+			LogDbg("Red", "Switching to another sketchpad in a middle");
+		}
+
+		// Push a new Sketchpad onto a stack
+		PushSketchpad(surf, pPad);
+
+		pPad->BeginDrawing();
+		pPad->LoadDefaults();
+
+		return pPad;
+	}
+	else {
+		HDC hDC = SURFACE(surf)->GetDC();
+		if (hDC) return new GDIPad(surf, hDC);
+	}
+
+	return NULL;*/
+}
+
+// =======================================================================
+
+void D3D9Client::clbkReleaseSketchpad_const(oapi::Sketchpad* sp) const
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return;
@@ -3184,7 +3087,7 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 
 	if (SURFACE(hSrf)->IsRenderTarget()) {
 
-		D3D9Pad *pPad = ((D3D9Pad*)sp);
+		D3D9Pad* pPad = ((D3D9Pad*)sp);
 
 		assert(!pPad->IsNative());
 
@@ -3195,107 +3098,24 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 		PopRenderTargets();
 
 		// Do we have an old interface ?
-		D3D9Pad *pOld = GetTopInterface();
+		D3D9Pad* pOld = GetTopInterface();
 		if (pOld) {
 			pOld->BeginDrawing();	// Continue with the old one
 			LogDbg("Red", "Continue Previous Sketchpad");
 		}
 	}
 	else {
-		GDIPad *pGDI = (GDIPad *)sp;
+		GDIPad* pGDI = (GDIPad*)sp;
 		SURFACE(hSrf)->ReleaseDC(pGDI->GetDC());
 		delete pGDI;
 	}
-
-	sketching_time = D3D9GetTime() - sketching_time;
 }
 
 // =======================================================================
 
-oapi::Sketchpad *D3D9Client::GetSketchpadNative(HSURFNATIVE hNat, HSURFNATIVE hDep)
+void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 {
-	if (ChkDev(__FUNCTION__)) return NULL;
-
-	D3DSURFACE_DESC	desc;
-	LPDIRECT3DSURFACE9 pSurf = NULL;
-	LPDIRECT3DTEXTURE9 pTex = NULL;
-
-	if (GetCurrentThread() != hMainThread) {
-		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
-		return NULL;
-	}
-
-	if (hNat == NULL) hNat = pBackBuffer;
-
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hNat);
-
-	if (pResource->GetType() == D3DRTYPE_SURFACE) {
-		pSurf = static_cast<LPDIRECT3DSURFACE9>(hNat);
-		pSurf->GetDesc(&desc);
-	}
-
-	if (pResource->GetType() == D3DRTYPE_TEXTURE) {
-		pTex = static_cast<LPDIRECT3DTEXTURE9>(hNat);
-		pTex->GetLevelDesc(0, &desc);
-		pTex->GetSurfaceLevel(0, &pSurf);
-	}
-
-	if (desc.Usage & D3DUSAGE_RENDERTARGET)
-	{
-		// Get Pooled Sketchpad
-		D3D9Pad *pPad = new D3D9Pad("GetSketchpadNative", hNat);
-
-		// Get Current interface if any
-		D3D9Pad *pCur = GetTopInterface();
-
-		// Do we have an existing SketchPad interface in use
-		if (pCur) {
-			if (pCur->GetSurface() == hNat) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
-			pCur->EndDrawing();	// Put the current one in hold
-		}
-
-		// Push a new Sketchpad onto a stack
-		PushSketchpadNative(pSurf, static_cast<LPDIRECT3DSURFACE9>(hDep), pPad);
-
-		pPad->BeginDrawing();
-		pPad->LoadDefaults();
-
-		return pPad;
-	}
-	else {
-		if (pTex) pSurf->Release();
-	}
-
-	return NULL;
-}
-
-// =======================================================================
-
-void D3D9Client::ReleaseSketchpadNative(Sketchpad *sp)
-{
-	if (ChkDev(__FUNCTION__)) return;
-	if (!sp) return;
-
-	D3D9Pad *pPad = static_cast<D3D9Pad*>(sp);
-
-	assert(pPad->IsNative());
-
-	if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
-
-	pPad->EndDrawing();
-
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(pPad->GetSurface());
-
-	// Must release top render target if acquired for a texture due to "pTex->GetSurfaceLevel(0, &pSurf)"
-	if (pResource->GetType() == D3DRTYPE_TEXTURE) GetTopRenderTarget()->Release();
-
-	PopRenderTargets();
-
-	// Do we have an old interface ?
-	D3D9Pad *pOld = GetTopInterface();
-	if (pOld) pOld->BeginDrawing();	// Continue with the old one
-
-	delete pPad;
+	clbkReleaseSketchpad_const(sp);
 }
 
 // =======================================================================

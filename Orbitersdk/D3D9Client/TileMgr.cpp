@@ -16,7 +16,6 @@
 #include <ddraw.h>
 #include "TileMgr.h"
 #include "VPlanet.h"
-#include "Texture.h"
 #include "D3D9Config.h"
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
@@ -67,7 +66,7 @@ TileManager::TileManager (D3D9Client *gclient, const vPlanet *vplanet) : D3D9Eff
 	nmask = 0;
 	nhispec = 0;
 	maxlvl = maxbaselvl = 0;
-	microtex = 0;
+	microtex = NULL;
 	microlvl = 0.0;
 	tiledesc = NULL;
 	texbuf   = NULL;
@@ -94,7 +93,7 @@ TileManager::~TileManager ()
 			ReleaseTex(specbuf[i]);
 		delete []specbuf;
 	}
-
+	DELETE_SURFACE(microtex);
 	if (tiledesc) delete []tiledesc;
 	if (objname) delete []objname;
 }
@@ -292,7 +291,7 @@ void TileManager::LoadTextures (char *modstr)
 	if (modstr) strcat_s (fname, 256, modstr);
 	strcat_s (fname, 256, ".tex");
 
-	if (ntex = gc->GetTexMgr()->LoadTextures (fname, texbuf, 0, ntex)) {
+	if (ntex = LoadPlanetTextures(fname, texbuf, 0, ntex)) {
 		while ((int)ntex < patchidx[maxbaselvl]) maxlvl = --maxbaselvl;
 		while ((int)ntex > patchidx[maxbaselvl]) ReleaseTex(texbuf[--ntex]);
 		// not enough textures loaded for requested resolution level
@@ -329,7 +328,7 @@ void TileManager::PreloadTileTextures (TILEDESC *tile8, DWORD ntex, DWORD nmask)
 
 		gc->OutputLoadStatus(fname, 1);
 
-		nt = gc->GetTexMgr()->LoadTextures (fname, texbuf, 0, ntex);
+		nt = LoadPlanetTextures(fname, texbuf, 0, ntex);
 		LogAlw("Number of textures loaded = %u",nt);
 	}
 	if (nmask) { // load mask/light textures
@@ -339,7 +338,7 @@ void TileManager::PreloadTileTextures (TILEDESC *tile8, DWORD ntex, DWORD nmask)
 
 		gc->OutputLoadStatus(fname, 1);
 
-		nm = gc->GetTexMgr()->LoadTextures (fname, maskbuf, 0, nmask);
+		nm = LoadPlanetTextures(fname, maskbuf, 0, nmask);
 	}
 	// copy textures into tile tree
 	for (i = 0; i < 364; i++) {
@@ -376,7 +375,7 @@ void TileManager::AddSubtileTextures (TILEDESC *td, LPDIRECT3DTEXTURE9 *tbuf, DW
 
 	LONG_PTR tidx = (LONG_PTR)td->tex;  // copy surface texture
 	if (tidx != NOTILE) {
-		if (tidx < nt) {
+		if (tidx < LONG_PTR(nt)) {
 			td->tex = tbuf[tidx];
 			tbuf[tidx] = NULL;
 		} else {                   // inconsistency
@@ -387,7 +386,7 @@ void TileManager::AddSubtileTextures (TILEDESC *td, LPDIRECT3DTEXTURE9 *tbuf, DW
 
 	LONG_PTR midx = (LONG_PTR)td->ltex;  // copy mask/light texture
 	if (midx != NOTILE) {
-		if (midx < nm) {
+		if (midx < LONG_PTR(nm)) {
 			td->ltex = mbuf[midx];
 			mbuf[midx] = NULL;
 		} else {                  // inconsistency
@@ -418,7 +417,7 @@ void TileManager::LoadSpecularMasks ()
 		gc->OutputLoadStatus(fname, 1);
 
 		specbuf = new LPDIRECT3DTEXTURE9[nmask];
-		if (n = gc->GetTexMgr()->LoadTextures (fname, specbuf, 0, nmask)) {
+		if (n = LoadPlanetTextures(fname, specbuf, 0, nmask)) {
 			if (n < nmask) {
 				//LOGOUT1P("Transparency texture mask file too short: %s_lmask.tex", cbody->Name());
 				//LOGOUT("Disabling specular reflection for this planet");
@@ -715,7 +714,7 @@ void TileManager::SetWorldMatrix (int ilng, int nlng, int ilat, int nlat)
 {
 	// set up world transformation matrix
 	D3DXMATRIX rtile, wtrans;
-	double lng = PI*2.0 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180°
+	double lng = PI*2.0 * (double)ilng/(double)nlng + PI; // add pi so texture wraps at +-180Â°
 	D3DMAT_RotY (&rtile, lng);
 
 	if (nlat > 8) {
@@ -866,8 +865,8 @@ void TileManager::GlobalExit ()
 
 void TileManager::SetMicrotexture (const char *fname)
 {
-	if (fname) gc->GetTexMgr()->GetTexture (fname, &microtex, 0);
-	else microtex = 0;
+	if (fname) microtex = gc->clbkLoadTexture(fname);
+	else microtex = NULL;
 }
 
 // ==============================================================

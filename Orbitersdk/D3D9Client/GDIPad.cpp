@@ -31,8 +31,6 @@ GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 	hFont0 = NULL;
 	hFontA = NULL;
 
-	SURFACE(GetSurface())->SketchPad = SKETCHPAD_GDI;
-
 	// Default initial drawing settings
 	SetBkMode (hDC, TRANSPARENT); // transparent text background
 	SelectObject(hDC, GetStockObject (NULL_PEN));
@@ -43,8 +41,6 @@ GDIPad::GDIPad (SURFHANDLE s, HDC hdc): Sketchpad (s)
 //
 GDIPad::~GDIPad ()
 {
-	SURFACE(GetSurface())->SketchPad = SKETCHPAD_NONE;
-
 	// make sure to deselect custom resources before destroying the DC
 	if (hFont0) SelectObject (hDC, hFont0);
 	SelectObject (hDC, GetStockObject (NULL_PEN));

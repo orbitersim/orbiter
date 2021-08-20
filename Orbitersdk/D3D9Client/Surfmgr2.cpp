@@ -15,13 +15,13 @@
 #include "Surfmgr2.h"
 #include "Tilemgr2.h"
 #include "Cloudmgr2.h"
-#include "Texture.h"
 #include "D3D9Catalog.h"
 #include "D3D9Config.h"
 #include "vVessel.h"
 #include "VectorHelpers.h"
 #include "DebugControls.h"
 #include "gcConst.h"
+#include "D3D9Surface.h"
 
 // =======================================================================
 extern void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float *elev);
@@ -1540,7 +1540,7 @@ void TileManager2<SurfTile>::Pick(D3DXVECTOR3 &vRay, TILEPICK *pPick)
 // -----------------------------------------------------------------------
 
 template<>
-HSURFNATIVE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level, int flags)
+SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level, int flags)
 {
 	bool bOk = false;
 	LPDIRECT3DTEXTURE9 pTex = NULL;
@@ -1569,7 +1569,7 @@ HSURFNATIVE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int leve
 		}
 	}
 
-	if (bOk && pTex) return HSURFNATIVE(pTex);
+	if (bOk && pTex) return new SurfNative(pTex, OAPISURFACE_TEXTURE);
 	return NULL;
 }
 

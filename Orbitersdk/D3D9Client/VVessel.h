@@ -221,7 +221,7 @@ private:
 	double tCheckLight;		// time for next lighting check
 	float ExhaustLength;
 
-	static class D3D9ClientSurface *defreentrytex, *defexhausttex, *tHUD;
+	static class SurfNative *defreentrytex, *defexhausttex;
 };
 
 #endif // !__VVESSEL_H

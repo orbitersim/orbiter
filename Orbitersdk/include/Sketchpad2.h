@@ -440,13 +440,6 @@ namespace oapi {
 		virtual void GradientFillRect(const LPRECT tgt, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
 
 		/**
-		* \brief [EXPERIMENTAL] Fill a rectangle with pattern
-		* \param hPat Handle to a texture containing the pattern
-		* \param tgt a Rect specifying the bounds
-		*/
-		virtual void PatternFill(SURFHANDLE hPat, const LPRECT tgt) { assert(false); }
-
-		/**
 		* \brief Fill a rectangle with color
 		* \param color Fill color
 		* \param tgt a Rect specifying the bounds, NULL for entire surface
@@ -455,10 +448,7 @@ namespace oapi {
 
 
 		virtual void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out) { assert(false); }
-		virtual void CopyRectNative(HSURFNATIVE pSrc, const LPRECT s, int tx, int ty) { assert(false); }
-		virtual void StretchRectNative(HSURFNATIVE pSrc, const LPRECT s, const LPRECT t) { assert(false); }
-		virtual void CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin = NULL, int npin = 0) { assert(false); }
-
+		
 
 		/**
 		* \brief Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF

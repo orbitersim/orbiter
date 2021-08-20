@@ -37,100 +37,18 @@ extern std::set<Font *> g_fonts;
 
 class gcSwap
 {
-	DWORD alloc_id;
 public:
-	gcSwap() : alloc_id('gcSW'), pSwap(NULL), hSurf(NULL) { }
+	gcSwap() : pSwap(NULL), hSurf(NULL), pBack(NULL) { }
 	~gcSwap() { Release(); }
-	void Release() { SAFE_RELEASE(pSwap); if (hSurf) delete SURFACE(hSurf);	hSurf = NULL; }
+	void Release() {
+		DELETE_SURFACE(hSurf);
+		SAFE_RELEASE(pBack);
+		SAFE_RELEASE(pSwap);
+	}
 	LPDIRECT3DSWAPCHAIN9 pSwap;
-	LPDIRECT3DSURFACE9 pSurf;
+	LPDIRECT3DSURFACE9 pBack;
 	SURFHANDLE hSurf;
 };
-
-
-struct TexEx
-{
-	static const int size = 4;
-	TexEx() { for (int i = 0; i < size; i++) pArray[i] = NULL; }
-	bool HasAny() { for (int i = 0; i < size; i++) if (pArray[i]) return true; return false; }
-	void Release() { for (int i = 0; i < size; i++) SAFE_RELEASE(pArray[i]); }
-	LPDIRECT3DTEXTURE9 pArray[size];
-};
-
-
-void DumpResource(LPDIRECT3DRESOURCE9 pResource)
-{
-	D3DSURFACE_DESC desc;
-
-	if (pResource->GetType() == D3DRTYPE_SURFACE) {
-		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(pResource);
-		pSurf->GetDesc(&desc);
-	}
-	else if (pResource->GetType() == D3DRTYPE_TEXTURE) {
-		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(pResource);
-		pTex->GetLevelDesc(0, &desc);
-		oapiWriteLogV("SRF_DUMP: Mips = %d", pTex->GetLevelCount());
-	}
-
-	oapiWriteLogV("SRF_DUMP: Usage = 0x%X", desc.Usage);
-	oapiWriteLogV("SRF_DUMP: Pool = %u", desc.Pool);
-	oapiWriteLogV("SRF_DUMP: Format = %u", desc.Format);
-	oapiWriteLogV("SRF_DUMP: Multisample = %u", desc.MultiSampleType);
-	oapiWriteLogV("SRF_DUMP: Size = (%u, %u)", desc.Width, desc.Height);
-}
-
-
-DWORD ConvertFormat_DX_to_OAPI(DWORD Format)
-{
-	DWORD Out = OAPISURFACE_NOALPHA;
-	if (Format == D3DFMT_X8R8G8B8) return Out | OAPISURFACE_PF_XRGB;
-	if (Format == D3DFMT_R5G6B5) return Out | OAPISURFACE_PF_RGB565;
-	if (Format == D3DFMT_L16) return Out | OAPISURFACE_PF_S16R;
-	if (Format == D3DFMT_R16F) return Out | OAPISURFACE_PF_F16R;
-	if (Format == D3DFMT_G16R16F) return Out | OAPISURFACE_PF_F16RG;
-	if (Format == D3DFMT_R32F) return Out | OAPISURFACE_PF_F32R;
-	if (Format == D3DFMT_G32R32F) return Out | OAPISURFACE_PF_F32RG;
-	if (Format == D3DFMT_DXT1) return Out | OAPISURFACE_PF_DXT1;
-	if (Format == D3DFMT_L8) return Out | OAPISURFACE_PF_GRAY;
-	Out = OAPISURFACE_ALPHA;
-	if (Format == D3DFMT_A8) return Out | OAPISURFACE_PF_ALPHA;
-	if (Format == D3DFMT_A32B32G32R32F) return Out | OAPISURFACE_PF_F32RGBA;
-	if (Format == D3DFMT_A16B16G16R16F) return Out | OAPISURFACE_PF_F16RGBA;
-	if (Format == D3DFMT_A8R8G8B8) return Out | OAPISURFACE_PF_ARGB;
-	if (Format == D3DFMT_DXT3) return Out | OAPISURFACE_PF_DXT3;
-	if (Format == D3DFMT_DXT5) return Out | OAPISURFACE_PF_DXT5;
-	return 0;
-}
-
-
-DWORD ConvertFormat_OAPI_to_DX(DWORD Format)
-{
-	if ((Format & OAPISURFACE_PF_MASK) == 0) {
-		if (Format & OAPISURFACE_ALPHA) return D3DFMT_A8R8G8B8;
-		if (Format & OAPISURFACE_NOALPHA) return D3DFMT_X8R8G8B8;
-		return 0;
-	}
-
-	Format &= OAPISURFACE_PF_MASK;
-
-	if (Format == OAPISURFACE_PF_XRGB) return D3DFMT_X8R8G8B8;
-	if (Format == OAPISURFACE_PF_RGB565) return D3DFMT_R5G6B5;
-	if (Format == OAPISURFACE_PF_S16R) return D3DFMT_L16;
-	if (Format == OAPISURFACE_PF_F16R) return D3DFMT_R16F;
-	if (Format == OAPISURFACE_PF_F16RG) return D3DFMT_G16R16F;
-	if (Format == OAPISURFACE_PF_F32R) return D3DFMT_R32F;
-	if (Format == OAPISURFACE_PF_F32RG) return D3DFMT_G32R32F;
-	if (Format == OAPISURFACE_PF_DXT1) return D3DFMT_DXT1;
-	if (Format == OAPISURFACE_PF_F32RGBA) return D3DFMT_A32B32G32R32F;
-	if (Format == OAPISURFACE_PF_F16RGBA) return D3DFMT_A16B16G16R16F;
-	if (Format == OAPISURFACE_PF_ARGB) return D3DFMT_A8R8G8B8;
-	if (Format == OAPISURFACE_PF_DXT3) return D3DFMT_DXT3;
-	if (Format == OAPISURFACE_PF_DXT5) return D3DFMT_DXT5;
-	if (Format == OAPISURFACE_PF_GRAY) return D3DFMT_L8;
-	if (Format == OAPISURFACE_PF_ALPHA) return D3DFMT_A8;
-	return 0;
-}
-
 
 
 
@@ -164,20 +82,20 @@ HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
 	LPDIRECT3DDEVICE9 pDev = pClient->GetDevice();
 	LPDIRECT3DSWAPCHAIN9 pSwap = NULL;
 
-	if (pDev->CreateAdditionalSwapChain(&pp, &pSwap) == S_OK) {
-
+	if (pDev->CreateAdditionalSwapChain(&pp, &pSwap) == S_OK)
+	{
 		if (!pData) pData = new gcSwap();
 		else pData->Release();
 		
-		LPDIRECT3DSURFACE9 pBack;
+		LPDIRECT3DSURFACE9 pBack = NULL;
 		HR(pSwap->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pBack));
 
-		D3D9ClientSurface *pSrf = new D3D9ClientSurface(pDev);
-		pSrf->MakeBackBuffer(pBack);
+		SurfNative *pSrf = new SurfNative(pBack, OAPISURFACE_BACKBUFFER | OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET);
+		pSrf->SetName("SwapChainBackBuffer");
 
 		pData->hSurf = SURFHANDLE(pSrf);
 		pData->pSwap = pSwap;
-		pData->pSurf = pBack;
+		pData->pBack = pBack;
 
 		return HSWAP(pData);
 	}
@@ -192,7 +110,7 @@ HSWAP gcCore::RegisterSwap(HWND hWnd, HSWAP hData, int AA)
 //
 void gcCore::FlipSwap(HSWAP hSwap) 
 { 
-	((gcSwap*)hSwap)->pSwap->Present(0, 0, 0, 0, 0);
+	HR(((gcSwap*)hSwap)->pSwap->Present(0, 0, 0, 0, 0));
 }
 
 
@@ -202,15 +120,6 @@ SURFHANDLE gcCore::GetRenderTarget(HSWAP hSwap)
 { 
 	return ((gcSwap*)hSwap)->hSurf;
 }
-
-
-// ===============================================================================================
-//
-HSURFNATIVE gcCore::GetRenderTargetNative(HSWAP hSwap)
-{
-	return ((gcSwap*)hSwap)->pSurf;
-}
-
 
 // ===============================================================================================
 //
@@ -278,6 +187,7 @@ int gcCore::SketchpadVersion(oapi::Sketchpad *pSkp)
 
 // ===============================================================================================
 //
+/*
 Sketchpad* gcCore::GetSketchpadNative(HSURFNATIVE hSrf, HSURFNATIVE hDep)
 {
 	return g_client->GetSketchpadNative(hSrf, hDep);
@@ -290,7 +200,7 @@ void gcCore::ReleaseSketchpadNative(Sketchpad *pSkp)
 {
 	g_client->ReleaseSketchpadNative(pSkp);
 }
-
+*/
 
 // ===============================================================================================
 //
@@ -540,7 +450,7 @@ void * gcCore::SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level,
 
 // ===============================================================================================
 //
-HSURFNATIVE gcCore::SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, void *reserved)
+SURFHANDLE gcCore::SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, void *reserved)
 {
 	if (!hMgr) return NULL;
 	if (((vPlanet *)(hMgr))->SurfMgr2()) {
@@ -573,7 +483,7 @@ int gcCore::GetElevation(HTILE hTile, double lng, double lat, double *out_elev)
 
 // ===============================================================================================
 //
-HSURFNATIVE	gcCore::SetTileOverlay(HTILE hTile, const HSURFNATIVE hOverlay)
+SURFHANDLE	gcCore::SetTileOverlay(HTILE hTile, const SURFHANDLE hOverlay)
 {
 	//SurfTile *pTile = static_cast<SurfTile *>(hTile);
 	//LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hOverlay);
@@ -584,11 +494,11 @@ HSURFNATIVE	gcCore::SetTileOverlay(HTILE hTile, const HSURFNATIVE hOverlay)
 
 // ===============================================================================================
 //
-HOVERLAY gcCore::AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const HSURFNATIVE hOverlay, HOVERLAY hOld)
+HOVERLAY gcCore::AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const SURFHANDLE hOverlay, HOVERLAY hOld)
 {
 	if (!hMgr) return NULL;
 	vPlanet *vP = static_cast<vPlanet *>(hMgr);
-	LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hOverlay);
+	LPDIRECT3DTEXTURE9 pTex = SURFACE(hOverlay)->GetTexture();
 	vPlanet::sOverlay *oLay = static_cast<vPlanet::sOverlay *>(hOld);
 	return vP->AddOverlaySurface(mmll, pTex, oLay);
 }
@@ -603,358 +513,6 @@ HOVERLAY gcCore::AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const HSURFNATI
 // Custom Render Interface
 // ===============================================================================================
 //
-
-HSURFNATIVE gcCore::LoadSurfaceNative(const char *file, DWORD flags)
-{
-	static const char *lbl[] = { "_norm", "_refl", "_spec", "_rghn" };
-
-	LPDIRECT3DTEXTURE9 pTex = NULL;
-	//TexEx tex;
-	char path[MAX_PATH];
-
-	/*if (!g_client->TexturePath(file, path)) {
-		oapiWriteLogV("LoadSurfaceNative: File Not Found [%s]", path);
-		return NULL;
-	}*/
-
-	if (flags == OAPISURFACE_TEXTURE) 
-	{
-		/*for (int i = 0; i < 4; i++) if (g_client->TexturePathEx(file, path, lbl[i])) 
-			D3DXCreateTextureFromFileA(g_client->GetDevice(), path, &tex.pArray[i])	
-		pTex->SetPrivateData(TextureArray, &tex, sizeof(tex), 0);*/
-
-		HR(D3DXCreateTextureFromFileExA(g_client->GetDevice(), file, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 0,
-			0, D3DFMT_FROM_FILE, D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex));
-
-		return HSURFNATIVE(pTex);
-	}
-
-	D3DXIMAGE_INFO info;
-	HR(D3DXGetImageInfoFromFileA(path, &info));
-
-	DWORD Mips = D3DX_FROM_FILE;
-	DWORD Usage = 0;
-	D3DFORMAT Format = D3DFMT_FROM_FILE;
-	D3DPOOL Pool = D3DPOOL_DEFAULT;
-
-	assert((flags & OAPISURFACE_RENDER3D) == 0);
-
-	if (info.ImageFileFormat == D3DXIFF_JPG) Format = D3DFMT_X8R8G8B8;
-	if (info.ImageFileFormat == D3DXIFF_PNG) Format = D3DFMT_X8R8G8B8;
-	if (info.ImageFileFormat == D3DXIFF_BMP) Format = D3DFMT_X8R8G8B8;
-
-	if (flags & OAPISURFACE_UNCOMPRESS) {
-		if (info.Format == D3DFMT_DXT1) Format = D3DFMT_X8R8G8B8;
-		if (info.Format == D3DFMT_DXT5) Format = D3DFMT_A8R8G8B8;
-		if (info.Format == D3DFMT_DXT3) Format = D3DFMT_A8R8G8B8;
-	}
-
-	if (flags & OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET;
-	if (flags & OAPISURFACE_GDI) Usage = D3DUSAGE_DYNAMIC;
-	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
-	if (flags & OAPISURFACE_NOMIPMAPS) Mips = 1;
-	if (flags & OAPISURFACE_MIPMAPS) Mips = 0;
-	
-	D3DFORMAT Fmt = D3DFORMAT(ConvertFormat_OAPI_to_DX(flags));
-	if (Fmt != 0) Format = Fmt;
-
-
-	if (flags & OAPISURFACE_TEXTURE) {
-		HR(D3DXCreateTextureFromFileExA(g_client->GetDevice(), path, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, Mips,
-			Usage, Format, Pool, D3DX_DEFAULT, D3DX_DEFAULT, 0, NULL, NULL, &pTex));
-		return HSURFNATIVE(pTex);
-	}
-
-	if (flags & OAPISURFACE_RENDERTARGET) {
-		LPDIRECT3DSURFACE9 pSurf = NULL;
-		HR(g_client->GetDevice()->CreateRenderTarget(info.Width, info.Height, Format, D3DMULTISAMPLE_NONE, 0, false, &pSurf, NULL));
-		HR(D3DXLoadSurfaceFromFile(pSurf, NULL, NULL, path, NULL, D3DX_DEFAULT, 0, NULL));
-		return HSURFNATIVE(pSurf);	
-	}
-
-	assert(false);
-	return NULL;
-}
-
-
-// ===============================================================================================
-//
-bool gcCore::StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr, LPRECT sr)
-{
-	if (S_OK == g_client->BeginScene())
-	{
-		LPDIRECT3DSURFACE9 pss = SURFACE(src)->GetSurface();
-		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
-		HRESULT hr = g_client->GetDevice()->StretchRect(pss, sr, pts, tr, D3DTEXF_LINEAR);
-		g_client->EndScene();
-		return hr == S_OK;
-	}
-	return false;
-}
-
-// ===============================================================================================
-//
-bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr)
-{
-	if (S_OK == g_client->BeginScene())
-	{
-		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
-		HRESULT hr = g_client->GetDevice()->ColorFill(pts, tr, (D3DCOLOR)color);
-		g_client->EndScene();
-		return hr == S_OK;
-	}
-	return false;
-}
-
-
-// ===============================================================================================
-//
-bool gcCore::SaveSurfaceNative(const char *file, HSURFNATIVE hSrf)
-{
-	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSrf);
-
-	D3DXIMAGE_FILEFORMAT fmt = D3DXIMAGE_FILEFORMAT(0);
-
-	if (contains(file, ".dds")) fmt = D3DXIFF_DDS;
-	if (contains(file, ".bmp")) fmt = D3DXIFF_BMP;
-	if (contains(file, ".jpg")) fmt = D3DXIFF_JPG;
-	if (contains(file, ".png")) fmt = D3DXIFF_PNG;
-
-	if (pResource->GetType() == D3DRTYPE_SURFACE) {
-		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(hSrf);
-		if (D3DXSaveSurfaceToFileA(file, fmt, pSurf, NULL, NULL) == S_OK) return true;
-		oapiWriteLog("gcCore::SaveSurfaceNative(SURF):");
-		DumpResource(static_cast<LPDIRECT3DRESOURCE9>(hSrf));
-		return false;
-	}
-
-
-	if (pResource->GetType() == D3DRTYPE_TEXTURE) {
-
-		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
-		D3DSURFACE_DESC desc;
-		pTex->GetLevelDesc(0, &desc);
-
-		if (desc.Pool == D3DPOOL_SYSTEMMEM || desc.Usage&D3DUSAGE_DYNAMIC) {
-			if (D3DXSaveTextureToFileA(file, fmt, pTex, NULL) == S_OK) return true;
-			oapiWriteLog("gcCore::SaveSurfaceNative(TEX):");
-			DumpResource(static_cast<LPDIRECT3DRESOURCE9>(hSrf));
-			return false;
-		}
-
-		if (desc.Usage&D3DUSAGE_RENDERTARGET) {
-			LPDIRECT3DTEXTURE9 pSys = NULL;
-			DWORD Mips = pTex->GetLevelCount();
-			HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, desc.Format, D3DPOOL_SYSTEMMEM, &pSys));
-			for (DWORD i = 0; i < Mips; i++) {
-				LPDIRECT3DSURFACE9 pSrc, pTgt;
-				HR(pTex->GetSurfaceLevel(i, &pSrc));
-				HR(pSys->GetSurfaceLevel(i, &pTgt));
-				HR(pDev->GetRenderTargetData(pSrc, pTgt));
-				pSrc->Release();
-				pTgt->Release();
-			}
-			if (D3DXSaveTextureToFile(file, fmt, pSys, NULL) == S_OK) {
-				pSys->Release();
-				return true;
-			}
-			pSys->Release();
-		}
-
-		if (D3DXSaveTextureToFileA(file, fmt, pTex, NULL) == S_OK) return true;
-	}
-
-	oapiWriteLog("gcCore::SaveSurfaceNative():");
-	DumpResource(static_cast<LPDIRECT3DRESOURCE9>(hSrf));
-	return false;
-}
-
-
-// ===============================================================================================
-//
-HSURFNATIVE gcCore::CreateSurfaceNative(int width, int height, DWORD flags)
-{
-	DWORD Mips = 1;
-	DWORD Usage = 0;
-	D3DPOOL Pool = D3DPOOL_DEFAULT;
-
-	assert((flags & OAPISURFACE_RENDER3D) == 0);		// Currently not supported but valid otherwise
-	assert((flags & OAPISURFACE_UNCOMPRESS) == 0);		// Makes no sense
-
-	if (flags & OAPISURFACE_RENDERTARGET) {
-		assert((flags & OAPISURFACE_GDI) == 0);			// Potentially invalid combo
-		assert((flags & OAPISURFACE_SYSMEM) == 0);		// Potentially invalid combo
-	}
-
-	if (flags & OAPISURFACE_SKETCHPAD) {
-		assert((flags & OAPISURFACE_GDI) == 0);			// Potentially invalid combo
-		assert((flags & OAPISURFACE_SYSMEM) == 0);		// Potentially invalid combo
-	}
-	
-	if (flags & OAPISURFACE_SKETCHPAD) Usage = D3DUSAGE_RENDERTARGET;
-	if (flags & OAPISURFACE_RENDERTARGET) Usage = D3DUSAGE_RENDERTARGET;
-	if (flags & OAPISURFACE_GDI) Usage = D3DUSAGE_DYNAMIC;
-	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
-	if (flags & OAPISURFACE_NOMIPMAPS) Mips = 1;
-	if (flags & OAPISURFACE_MIPMAPS) Mips = 0;	// Fullchain
-
-	D3DFORMAT Format = D3DFORMAT(ConvertFormat_OAPI_to_DX(flags));
-	
-	if (Format == 0) Format = D3DFMT_X8R8G8B8;
-
-	if (flags & OAPISURFACE_TEXTURE) {
-		LPDIRECT3DTEXTURE9 pTex = NULL;
-		HR(D3DXCreateTexture(g_client->GetDevice(), width, height, Mips, Usage, Format, Pool, &pTex));
-		return HSURFNATIVE(pTex);
-	}
-
-	if (flags & OAPISURFACE_RENDERTARGET) {
-		LPDIRECT3DSURFACE9 pSurf = NULL;
-		HR(g_client->GetDevice()->CreateRenderTarget(width, height, Format, D3DMULTISAMPLE_NONE, 0, false, &pSurf, NULL));
-		return HSURFNATIVE(pSurf);
-	}
-
-	assert(false);
-	return NULL;
-}
-
-
-// ===============================================================================================
-//
-HSURFNATIVE	gcCore::GetMipSublevel(HSURFNATIVE hSrf, int level)
-{
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSrf);
-	if (pResource->GetType() == D3DRTYPE_TEXTURE) {
-		LPDIRECT3DSURFACE9 pSurf = NULL;
-		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
-		if (pTex->GetSurfaceLevel(level, &pSurf) == S_OK) return HSURFNATIVE(pSurf);
-	}
-	return NULL;
-}
-
-
-// ===============================================================================================
-//
-bool gcCore::GetSurfaceSpecs(HSURFNATIVE hSrf, SurfaceSpecs *pOut)
-{
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSrf);
-	D3DSURFACE_DESC desc;
-
-	pOut->Mips = 1;
-	pOut->Flags = 0;
-
-	if (pResource->GetType() == D3DRTYPE_SURFACE) {
-		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(hSrf);
-		pSurf->GetDesc(&desc);
-	}
-	else if (pResource->GetType() == D3DRTYPE_TEXTURE) {
-		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
-		pTex->GetLevelDesc(0, &desc);
-		pOut->Mips = pTex->GetLevelCount();
-		pOut->Flags |= OAPISURFACE_TEXTURE;
-	}
-	else return false;
-
-	pOut->Width = desc.Width;
-	pOut->Height = desc.Height;
-
-	if (pOut->Mips > 1)  pOut->Flags |= OAPISURFACE_MIPMAPS;
-	else pOut->Flags |= OAPISURFACE_NOMIPMAPS;
-
-	if (desc.Usage & D3DUSAGE_RENDERTARGET) pOut->Flags |= OAPISURFACE_RENDERTARGET;
-	if (desc.Usage & D3DUSAGE_DYNAMIC) pOut->Flags |= OAPISURFACE_GDI;
-	if (desc.Pool == D3DPOOL_SYSTEMMEM) pOut->Flags |= OAPISURFACE_SYSMEM;
-
-	pOut->Flags |= ConvertFormat_DX_to_OAPI(desc.Format);
-	
-	return true;
-}
-
-
-// ===============================================================================================
-//
-bool gcCore::GenerateMipMaps(HSURFNATIVE hSrf)
-{
-	LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
-	DWORD nMip = pTex->GetLevelCount();
-	if (nMip <= 1) return false;
-
-	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	LPDIRECT3DSURFACE9 pHigh = NULL;
-	LPDIRECT3DSURFACE9 pLow = NULL;
-
-	HR(pTex->GetSurfaceLevel(0, &pHigh));
-
-	if (pHigh) {
-		for (DWORD i = 1; i < nMip; i++) {
-			if (pTex->GetSurfaceLevel(i, &pLow) == S_OK) {
-				HR(pDev->StretchRect(pHigh, NULL, pLow, NULL, D3DTEXF_LINEAR));
-				pHigh->Release();
-				pHigh = pLow;
-			}
-		}
-		pHigh->Release();
-		return true;
-	}
-	return false;
-}
-
-
-// ===============================================================================================
-//
-HSURFNATIVE	gcCore::CompressSurface(HSURFNATIVE hSurface, DWORD flags)
-{
-	D3DSURFACE_DESC desc;
-	LPDIRECT3DSURFACE9 pDest = NULL;
-	LPDIRECT3DTEXTURE9 pTex = NULL;
-	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSurface);
-
-	DWORD Mips = 1;
-	D3DFORMAT Fmt = D3DFMT_DXT1;
-	D3DPOOL Pool = D3DPOOL_DEFAULT;
-	if (flags & OAPISURFACE_MIPMAPS) Mips = 0;
-	if ((flags & OAPISURFACE_PF_MASK) == OAPISURFACE_PF_DXT3) Fmt = D3DFMT_DXT3;
-	if ((flags & OAPISURFACE_PF_MASK) == OAPISURFACE_PF_DXT5) Fmt = D3DFMT_DXT5;
-	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
-	
-	if (pResource->GetType() == D3DRTYPE_SURFACE) {
-		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(hSurface);
-		HR(pSurf->GetDesc(&desc));
-		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, Fmt, Pool, &pTex));
-		for (DWORD i = 0; i < pTex->GetLevelCount(); i++) {
-			HR(pTex->GetSurfaceLevel(i, &pDest));
-			HR(D3DXLoadSurfaceFromSurface(pDest, NULL, NULL, pSurf, NULL, NULL, D3DX_FILTER_BOX, 0));
-			pDest->Release();
-		}
-		return HSURFNATIVE(pTex);
-	}
-	else if (pResource->GetType() == D3DRTYPE_TEXTURE) {
-		LPDIRECT3DSURFACE9 pSurf = NULL;
-		LPDIRECT3DTEXTURE9 pInp = static_cast<LPDIRECT3DTEXTURE9>(hSurface);
-		HR(pInp->GetLevelDesc(0, &desc));
-		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, Fmt, Pool, &pTex));
-		HR(pInp->GetSurfaceLevel(0, &pSurf));
-		for (DWORD i = 0; i < pTex->GetLevelCount(); i++) {
-			HR(pTex->GetSurfaceLevel(i, &pDest));
-			HR(D3DXLoadSurfaceFromSurface(pDest, NULL, NULL, pSurf, NULL, NULL, D3DX_FILTER_BOX, 0));
-			pDest->Release();
-		}
-		pSurf->Release();
-		return HSURFNATIVE(pTex);
-	}
-
-	return NULL;
-}
-
-// ===============================================================================================
-//
-void gcCore::ReleaseSurface(HSURFNATIVE hSrf)
-{
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSrf);
-	pResource->Release();
-}
 
 
 // ===============================================================================================
@@ -1061,6 +619,35 @@ void gcCore::RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int n
 // ===============================================================================================
 //
 
+// ===============================================================================================
+//
+bool gcCore::StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr, LPRECT sr)
+{
+	if (S_OK == g_client->BeginScene())
+	{
+		LPDIRECT3DSURFACE9 pss = SURFACE(src)->GetSurface();
+		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+		HRESULT hr = g_client->GetDevice()->StretchRect(pss, sr, pts, tr, D3DTEXF_LINEAR);
+		g_client->EndScene();
+		return hr == S_OK;
+	}
+	return false;
+}
+
+// ===============================================================================================
+//
+bool gcCore::ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr)
+{
+	if (S_OK == g_client->BeginScene())
+	{
+		LPDIRECT3DSURFACE9 pts = SURFACE(tgt)->GetSurface();
+		HRESULT hr = g_client->GetDevice()->ColorFill(pts, tr, (D3DCOLOR)color);
+		g_client->EndScene();
+		return hr == S_OK;
+	}
+	return false;
+}
+
 void gcCore::GetSystemSpecs(SystemSpecs *sp, int size)
 {
 	if (size == sizeof(SystemSpecs)) {
@@ -1082,14 +669,14 @@ bool gcCore::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
 //
 void gcCore::ConvertSurface(SURFHANDLE hSurf, DWORD attrib)
 {
-	SURFACE(hSurf)->ConvertSurface(attrib);
+	//SURFACE(hSurf)->ConvertSurface(attrib);
 }
 
 // ===============================================================================================
 //
 DWORD gcCore::GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
 {
-	return SURFACE(hSurf)->GetAttribs(bCreation);
+	return SURFACE(hSurf)->GetOAPIFlags();
 }
 
 // ===============================================================================================

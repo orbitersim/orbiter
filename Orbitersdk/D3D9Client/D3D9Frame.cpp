@@ -32,7 +32,6 @@ IDirect3DVertexDeclaration9	*pPositionDecl = NULL;
 IDirect3DVertexDeclaration9	*pVector4Decl  = NULL;
 IDirect3DVertexDeclaration9	*pPosTexDecl   = NULL;
 IDirect3DVertexDeclaration9	*pPatchVertexDecl = NULL;
-IDirect3DVertexDeclaration9	*pGPUBlitDecl = NULL;
 IDirect3DVertexDeclaration9 *pSketchpadDecl = NULL;
 
 static char *d3dmessage={"Required DirectX version (June 2010 or newer) not found\0"};
@@ -96,6 +95,7 @@ void CD3DFramework9::Clear()
 	MultiSample		  = 0;
 	pRenderTarget	  = NULL;
 	pBackBuffer		  = NULL;
+	pDepthStencil	  = NULL;
 	
 	memset((void *)&rcScreenRect, 0, sizeof(RECT));
 	memset((void *)&d3dPP, 0, sizeof(D3DPRESENT_PARAMETERS));
@@ -110,9 +110,13 @@ HRESULT CD3DFramework9::DestroyObjects ()
 {
 	_TRACE;
 	LogAlw("========== Destroying framework objects ==========");
+
+	SAFE_RELEASE(pRenderTarget);
+	SAFE_RELEASE(pDepthStencil);
 	SAFE_RELEASE(pLargeFont);
 	SAFE_RELEASE(pSmallFont);
 	SAFE_RELEASE(pNTVertexDecl);
+	SAFE_RELEASE(pBAVertexDecl);
 	SAFE_RELEASE(pPosColorDecl);
 	SAFE_RELEASE(pPositionDecl);
 	SAFE_RELEASE(pVector4Decl);
@@ -120,8 +124,9 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	SAFE_RELEASE(pHazeVertexDecl);
 	SAFE_RELEASE(pMeshVertexDecl);
 	SAFE_RELEASE(pPatchVertexDecl);
-	SAFE_RELEASE(pGPUBlitDecl);
 	SAFE_RELEASE(pSketchpadDecl);
+
+	Sleep(200);
 
 	if (pDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
 	else								LogErr("[Failed to Reset DirectX Device] (Likely blocked by undeleted resources)");
@@ -426,7 +431,6 @@ HRESULT CD3DFramework9::Initialize(HWND _hWnd, GraphicsClient::VIDEODATA *vData)
 	HR(pDevice->CreateVertexDeclaration(HazeVertexDecl,  &pHazeVertexDecl));
 	HR(pDevice->CreateVertexDeclaration(MeshVertexDecl,  &pMeshVertexDecl));
 	HR(pDevice->CreateVertexDeclaration(PatchVertexDecl, &pPatchVertexDecl));
-	HR(pDevice->CreateVertexDeclaration(GPUBlitDecl, &pGPUBlitDecl));
 	HR(pDevice->CreateVertexDeclaration(SketchpadDecl, &pSketchpadDecl));
 
 	// Setup some default fomts
@@ -518,8 +522,9 @@ HRESULT CD3DFramework9::CreateFullscreenMode()
 	// Get Backbuffer
 	if (pDevice) {
 		pDevice->GetRenderTarget(0, &pRenderTarget);
-		pBackBuffer = new D3D9ClientSurface(pDevice, "BackBuffer-Fullscreen");
-		pBackBuffer->MakeBackBuffer(pRenderTarget);
+		pDevice->GetDepthStencilSurface(&pDepthStencil);
+		pBackBuffer = (SURFHANDLE) new SurfNative(pRenderTarget, OAPISURFACE_BACKBUFFER | OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET, pDepthStencil);
+		SURFACE(pBackBuffer)->SetName("BackBuffer");
 		return S_OK;
 	}
 
@@ -625,8 +630,9 @@ HRESULT CD3DFramework9::CreateWindowedMode()
 	// Get Backbuffer
 	if (pDevice) {
 		pDevice->GetRenderTarget(0, &pRenderTarget);
-		pBackBuffer = new D3D9ClientSurface(pDevice, "BackBuffer-Wnd");
-		pBackBuffer->MakeBackBuffer(pRenderTarget);
+		pDevice->GetDepthStencilSurface(&pDepthStencil);
+		pBackBuffer = (SURFHANDLE) new SurfNative(pRenderTarget, OAPISURFACE_BACKBUFFER | OAPISURFACE_RENDER3D | OAPISURFACE_RENDERTARGET, pDepthStencil);
+		SURFACE(pBackBuffer)->SetName("BackBuffer");
 		return S_OK;
 	}
 

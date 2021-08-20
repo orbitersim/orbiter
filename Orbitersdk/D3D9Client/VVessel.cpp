@@ -9,7 +9,6 @@
 #include <set>
 #include "VVessel.h"
 #include "MeshMgr.h"
-#include "Texture.h"
 #include "AABBUtil.h"
 #include "D3D9Surface.h"
 #include "D3D9Catalog.h"
@@ -117,8 +116,8 @@ vVessel::~vVessel ()
 void vVessel::GlobalInit(D3D9Client *gc)
 {
 	_TRACE;
-	gc->GetTexMgr()->LoadTexture("Reentry.dds", &defreentrytex, 0);
-	gc->GetTexMgr()->LoadTexture("Exhaust.dds", &defexhausttex, 0);
+	defreentrytex = SURFACE(gc->clbkLoadTexture("Reentry.dds", 0));
+	defexhausttex = SURFACE(gc->clbkLoadTexture("Exhaust.dds", 0));
 }
 
 
@@ -126,9 +125,8 @@ void vVessel::GlobalInit(D3D9Client *gc)
 //
 void vVessel::GlobalExit ()
 {
-	SAFE_DELETE(defexhausttex);
-	SAFE_DELETE(defreentrytex);
-	SAFE_DELETE(tHUD);
+	DELETE_SURFACE(defexhausttex);
+	DELETE_SURFACE(defreentrytex);
 }
 
 
@@ -1985,9 +1983,8 @@ void vVessel::ReloadTextures()
 // ===========================================================================================
 //
 
-D3D9ClientSurface * vVessel::tHUD = 0;
-D3D9ClientSurface * vVessel::defreentrytex = 0;
-D3D9ClientSurface * vVessel::defexhausttex = 0;
+SurfNative * vVessel::defreentrytex = 0;
+SurfNative * vVessel::defexhausttex = 0;
 
 
 // ==============================================================

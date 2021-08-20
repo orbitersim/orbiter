@@ -804,6 +804,7 @@ void VideoTab::InitSetupDialog(HWND hWnd)
 	SendDlgItemMessage(hWnd, IDC_NORMALMAPS, BM_SETCHECK, Config->UseNormalMap==1, 0);
 	SendDlgItemMessage(hWnd, IDC_BASEVIS,    BM_SETCHECK, Config->PreLBaseVis==1, 0);
 	SendDlgItemMessage(hWnd, IDC_NEARPLANE,  BM_SETCHECK, Config->NearClipPlane==1, 0);
+	SendDlgItemMessage(hWnd, IDC_BREAK,		 BM_SETCHECK, Config->DebugBreak == 1, 0);
 	
 	sprintf_s(cbuf,32,"%d", Config->PlanetLoadFrequency);
 	SetWindowText(GetDlgItem(hWnd, IDC_HZ), cbuf);
@@ -870,6 +871,7 @@ void VideoTab::SaveSetupState(HWND hWnd)
 	Config->bAbsAnims	  = (int)SendDlgItemMessage (hWnd, IDC_ABSANIM, BM_GETCHECK, 0, 0);
 	Config->bCloudNormals = (int)SendDlgItemMessage(hWnd, IDC_CLOUDNORM, BM_GETCHECK, 0, 0);
 	Config->bFlats		  = (int)SendDlgItemMessage(hWnd, IDC_FLATS, BM_GETCHECK, 0, 0);
+	Config->DebugBreak	  = (int)SendDlgItemMessage(hWnd, IDC_BREAK, BM_GETCHECK, 0, 0);
 
 	// Sliders
 	Config->Convergence   = double(SendDlgItemMessage(hWnd, IDC_CONVERGENCE, TBM_GETPOS, 0, 0)) * 0.01;
@@ -1048,4 +1050,3 @@ void VideoTab::InitCreditsDialog(HWND hWnd)
 }
 
 
-		

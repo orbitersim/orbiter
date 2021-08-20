@@ -66,7 +66,7 @@ private:
 		DWORD    dcol;
 		float tu, tv; } Vtx[HORIZON_NSEG*2];
 	static float CosP[HORIZON_NSEG], SinP[HORIZON_NSEG];
-	static LPD3D9CLIENTSURFACE horizon;
+	static SURFHANDLE horizon;
 };
 
 

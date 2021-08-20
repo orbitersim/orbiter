@@ -89,108 +89,35 @@ TextureManager::~TextureManager ()
 }
 
 
-HRESULT TextureManager::LoadTexture(const char *fname, LPD3D9CLIENTSURFACE *pSurf, int flags)
+HRESULT TextureManager::LoadTexture(const char *fname, SURFHANDLE *pSurf, int flags)
 {
-	(*pSurf) = new D3D9ClientSurface(pDev, fname);
 
 	DWORD attrib = OAPISURFACE_TEXTURE;
 	if (flags & 0x1) attrib |= OAPISURFACE_SYSMEM;
 	if (flags & 0x2) attrib |= OAPISURFACE_UNCOMPRESS | OAPISURFACE_NOALPHA;
 	if (flags & 0x4) attrib |= OAPISURFACE_NOMIPMAPS;
-	//else			 attrib |= OAPISURFACE_MIPMAPS;
-
+	
 	if ((flags&0x2) && ((flags&0x1)==0)) attrib |= OAPISURFACE_RENDERTARGET; // Uncompress means that it's going to do something bad, so, let's prepare for the worst.
 
-	if ((*pSurf)->LoadSurface(fname, attrib)==true) return S_OK;
+	if ((*pSurf = NatLoadSurface(fname, attrib)) != NULL) return S_OK;
 	
-	delete (*pSurf);
-	*pSurf = NULL;
 	return -1;
 }
 
 
-int TextureManager::LoadTextures(const char *fname, LPDIRECT3DTEXTURE9 *ppdds, DWORD flags, int amount)
-{
-	_TRACE;
-
-	char path[MAX_PATH];
-
-	if (gc->TexturePath (fname, path)) {
-
-		FILE *f;
-
-		if (fopen_s(&f, path, "rb")) return 0;
-
-		int ntex = 0;
-		char *buffer, *location;
-		fseek(f, 0, SEEK_END);
-		long size = ftell(f);
-		long BytesLeft = size;
-		buffer = new char[size+1];
-		rewind(f);
-		fread(buffer, 1, size, f);
-		fclose(f);
-
-		location = buffer;
-		while (ntex < amount && BytesLeft > 0)
-		{
-			DWORD Magic = *(DWORD*)location;
-			if (Magic != MAKEFOURCC('D','D','S',' ')) break;
-
-			DDSURFACEDESC2 *header = (DDSURFACEDESC2*)(location + sizeof(Magic));
-
-			if ((header->dwFlags&DDSD_LINEARSIZE)==0 && (header->dwFlags&DDSD_PITCH)==0) {
-				header->dwFlags|=DDSD_LINEARSIZE;
-				     if (header->ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X','T','5')) header->dwLinearSize = header->dwHeight * header->dwWidth;
-				else if (header->ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X','T','3')) header->dwLinearSize = header->dwHeight * header->dwWidth;
-				else if (header->ddpfPixelFormat.dwFourCC==MAKEFOURCC('D','X','T','1')) header->dwLinearSize = header->dwHeight * header->dwWidth / 2;
-				else header->dwLinearSize = header->dwHeight * header->dwWidth * header->ddpfPixelFormat.dwRGBBitCount/8;
-			}
-
-			long bytes = (header->dwFlags & DDSD_LINEARSIZE) ? header->dwLinearSize : (header->dwHeight * header->dwWidth * header->ddpfPixelFormat.dwRGBBitCount/8);
-
-			bytes += sizeof(Magic) + sizeof(DDSURFACEDESC2_x64);
-
-			D3DXIMAGE_INFO Info;
-			LPDIRECT3DTEXTURE9 pTex = NULL;
-
-			if (D3DXCreateTextureFromFileInMemoryEx(pDev, location, bytes, 0, 0, 1, 0, D3DFMT_FROM_FILE,
-				D3DPOOL_DEFAULT, D3DX_DEFAULT, D3DX_DEFAULT, 0, &Info, NULL, &pTex)==S_OK) {
-				ppdds[ntex] = pTex;
-				TileCatalog->Add(pTex);
-				//LogAlw("Loaded a texture from %s, 0x%X (%u x %u)", fname, pTex, Info.Width, Info.Height);
-			}
-			else {
-				delete[] buffer;
-				LogErr("Failed to surface tile (%d tiles loaded for %s)",ntex,fname);
-				return ntex;
-			}
-
-			location += bytes;
-			BytesLeft -= bytes;
-			ntex++;
-		}
-		delete[] buffer;
-		LogOk("Loaded %d textures for %s",ntex,fname);
-		return ntex;
-	}
-	LogWrn("File %s not found",fname);
-	return 0;
-}
 
 // =======================================================================
 // Retrieve a texture. First scans the repository of loaded textures.
 // If not found, loads the texture from file and adds it to the repository
 //
-bool TextureManager::GetTexture(const char *fname, LPD3D9CLIENTSURFACE *pd3dt, int flags)
+bool TextureManager::GetTexture(const char *fname, SURFHANDLE *pd3dt, int flags)
 {
 	TexRec *texrec = ScanRepository(fname);
 
 	if (texrec) {
 		// found in repository
 		*pd3dt = texrec->tex;
-		texrec->tex->IncRef();
-		LogOk("Texture %s (%s) found from repository. ReferenceCount=%d", _PTR(*pd3dt), fname, (*pd3dt)->RefCount());
+		SURFACE(texrec->tex)->IncRef();
 		return true;
 	}
 	else if (SUCCEEDED(LoadTexture(fname, pd3dt, flags))) {
@@ -234,7 +161,7 @@ bool TextureManager::IsInRepository (SURFHANDLE p)
 // =======================================================================
 // Add a new entry to the repository
 
-void TextureManager::AddToRepository (const char *fname, LPD3D9CLIENTSURFACE pdds)
+void TextureManager::AddToRepository (const char *fname, SURFHANDLE pdds)
 {
 	TexRec *texrec = new TexRec;
 	texrec->tex = pdds;
@@ -252,7 +179,7 @@ void TextureManager::ClearRepository()
 	while (firstTex) {
 		TexRec *tmp = firstTex;
 		firstTex = firstTex->next;
-		SAFE_DELETE(tmp->tex);
+		if (tmp->tex) delete SURFACE(tmp->tex);
 		delete tmp;
 	}
 }

@@ -34,15 +34,6 @@
 // Sketchpad2 Interface
 // ===============================================================================================
 
-
-bool D3D9Pad::IsTexture(HSURFNATIVE pSrc)
-{
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(pSrc);
-	if (pResource->GetType() == D3DRTYPE_TEXTURE) return true;
-	return false;
-}
-
-
 // ===============================================================================================
 //
 void D3D9Pad::GetRenderSurfaceSize(LPSIZE size)
@@ -272,18 +263,17 @@ void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRectNative(HSURFNATIVE pSrc, const LPRECT _s, int tx, int ty)
+void D3D9Pad::CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
 	Log("CopyRectNative(0x%X)", DWORD(pSrc));
 #endif
 
-	assert(IsTexture(pSrc));
-	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
+	TexChangeNative(pSrc);
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRectNative((LPDIRECT3DTEXTURE9)pSrc, _s);
+		LPRECT s = CheckRectNative(pSrc, _s);
 
 		int h = abs(s->bottom - s->top);
 		int w = abs(s->right - s->left);
@@ -307,18 +297,17 @@ void D3D9Pad::CopyRectNative(HSURFNATIVE pSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRectNative(HSURFNATIVE pSrc, const LPRECT _s, const LPRECT t)
+void D3D9Pad::StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const LPRECT t)
 {
 #ifdef SKPDBG 
 	Log("StretchRectNative(0x%X)", DWORD(pSrc));
 #endif
 
-	assert(IsTexture(pSrc));
-	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
+	TexChangeNative(pSrc);
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRectNative((LPDIRECT3DTEXTURE9)pSrc, _s);
+		LPRECT s = CheckRectNative(pSrc, _s);
 
 		AddRectIdx(vI);
 
@@ -339,21 +328,20 @@ void D3D9Pad::StretchRectNative(HSURFNATIVE pSrc, const LPRECT _s, const LPRECT 
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin, int npin)
+void D3D9Pad::CopyQuadNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin, int npin)
 {
 #ifdef SKPDBG 
 	Log("CopyQuadNative(0x%X)", DWORD(pSrc));
 #endif
 
-	assert(IsTexture(pSrc));
-	TexChangeNative((LPDIRECT3DTEXTURE9)pSrc);
+	TexChangeNative(pSrc);
 	
 	IVECTOR2 spn = { 0, 0 };
 	FVECTOR2 tpn = 0.0f;
 
 	if (Topology(TRIANGLE)) {
 
-		LPRECT s = CheckRectNative((LPDIRECT3DTEXTURE9)pSrc, _s);
+		LPRECT s = CheckRectNative(pSrc, _s);
 
 		s->bottom--;
 		s->right--;
@@ -674,13 +662,9 @@ bool D3D9Pad::TexChangeNative(LPDIRECT3DTEXTURE9 hNew)
 //
 void D3D9Pad::TexChange(SURFHANDLE hNew)
 {
-	static bool bOnce = true;
-
 	if (!SURFACE(hNew)->IsTexture()) {
-		if (bOnce) {
-			LogErr("Sketchpad2: Source is not a texture");
-			bOnce = false;
-		}
+		LogErr("Sketchpad2: Source is not a texture");
+		HALT();
 		return;
 	}
 
@@ -688,7 +672,7 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 
 	if (SURFACE(hNew)->IsColorKeyEnabled()) {
 		bColorKey = true;
-		cColorKey = SURFACE(hNew)->ClrKey;
+		cColorKey = D3DXCOLOR(SURFACE(hNew)->ColorKey);
 	}
 	else {
 		bColorKey = false;
@@ -925,7 +909,7 @@ bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
 	// -----------------------------------------------------------------------
 
 	nTex = oapiMeshTextureCount(hMesh) + 1;
-	Tex = new LPD3D9CLIENTSURFACE[nTex];
+	Tex = new SURFHANDLE[nTex];
 	Tex[0] = 0; // 'no texture'
 	for (DWORD i = 1; i<nTex; i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
 

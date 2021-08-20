@@ -12,7 +12,6 @@
 
 #define D3D_OVERLOADS
 #include "RingMgr.h"
-#include "Texture.h"
 #include "D3D9Catalog.h"
 
 using namespace oapi;
@@ -86,7 +85,7 @@ DWORD RingManager::LoadTextures ()
 	// Fallback for old method
 	strcat_s(fname, ARRAYSIZE(fname), "_ring.tex");
 	
-	return gc->GetTexMgr()->LoadTextures(fname, tex, 0, MAXRINGRES);
+	return LoadPlanetTextures(fname, tex, 0, MAXRINGRES);
 }
 
 bool RingManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &mWorld, bool front)

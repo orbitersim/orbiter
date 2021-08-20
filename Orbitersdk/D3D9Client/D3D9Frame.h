@@ -30,7 +30,7 @@
 #include "Orbitersdk.h"
 #include "D3D9Client.h"
 
-class D3D9ClientSurface;
+class SurfNative;
 
 //-----------------------------------------------------------------------------
 // Name: CD3DFramework9
@@ -68,7 +68,8 @@ private:
     DWORD                  MultiSample;
 	DWORD				   dwDisplayMode;
     LPDIRECT3DSURFACE9     pRenderTarget;
-    D3D9ClientSurface *    pBackBuffer;
+	LPDIRECT3DSURFACE9     pDepthStencil;
+    SURFHANDLE			   pBackBuffer;
 	D3DPRESENT_PARAMETERS  d3dPP;
 	D3DCAPS9               caps;
     RECT                   rcScreenRect;       // Screen rect for window

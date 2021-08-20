@@ -222,7 +222,6 @@ public:
 	 * \param s surface handle
 	 */
 	explicit D3D9Pad(SURFHANDLE s, const char *name = NULL);
-	explicit D3D9Pad(const char *name, HSURFNATIVE hSrf);
 	explicit D3D9Pad(const char *name = NULL);
 
 	/**
@@ -544,9 +543,6 @@ public:
 	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
 	void ColorFill(const FVECTOR4 &color, const LPRECT tgt);
 	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out);
-	void CopyRectNative(HSURFNATIVE pSrc, const LPRECT s, int tx, int ty);
-	void StretchRectNative(HSURFNATIVE pSrc, const LPRECT s, const LPRECT t);
-	void CopyQuadNative(HSURFNATIVE pSrc, const LPRECT _s, const FVECTOR2 *pt, const skpPin *pin = NULL, int npin = 0);
 	void ColorCompatibility(bool bEnable);
 	
 
@@ -577,6 +573,10 @@ public:
 	void LoadDefaults();
 	bool IsNative() const { return bNative; }
 
+	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, int tx, int ty);
+	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, const LPRECT t);
+	void CopyQuadNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const FVECTOR2* pt, const skpPin* pin = NULL, int npin = 0);
+
 private:
 
 	bool Topology(Topo tRequest);
@@ -587,7 +587,6 @@ private:
 	bool HasBrush() const;
 	bool IsDashed() const;
 	bool IsAlphaTarget() const;
-	bool IsTexture(HSURFNATIVE pSrc);
 
 	float GetPenWidth() const;
 
@@ -886,7 +885,7 @@ private:
 	DWORD nTex;                 // number of mesh textures
 
 	LPDIRECT3DDEVICE9 pDev;
-	LPD3D9CLIENTSURFACE *Tex;	// list of mesh textures
+	SURFHANDLE *Tex;	// list of mesh textures
 	SKETCHGRP *Grp;            // list of mesh groups
 	D3DXCOLOR *Mtrl;
 };

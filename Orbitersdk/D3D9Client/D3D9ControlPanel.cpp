@@ -131,17 +131,13 @@ void D3D9Client::RenderControlPanel()
 	DWORD sysme_count = 0, sysme_size = 0;
 	DWORD duall_count = 0, duall_size = 0;
 
-	size_t nSurf = SurfaceCatalog->CountEntries();
+	size_t nSurf = SurfaceCatalog.size();
 
-	for (auto it = SurfaceCatalog->cbegin(); it != SurfaceCatalog->cend(); ++it) {
-		LPD3D9CLIENTSURFACE pSurf = *it;
+	for (auto pSurf : SurfaceCatalog)
+	{
 		if (pSurf->desc.Pool==D3DPOOL_DEFAULT) {
-			if (pSurf->IsRenderTarget()) {
-				if (pSurf->IsDualLayer()) {
-					duall_count++;
-					duall_size += pSurf->GetSizeInBytes();
-				}
-				else if (pSurf->IsTexture()) {
+			if (pSurf->IsRenderTarget()) {	
+				if (pSurf->IsTexture()) {
 					rttex_count++;
 					rttex_size += pSurf->GetSizeInBytes();
 				}
@@ -149,14 +145,6 @@ void D3D9Client::RenderControlPanel()
 					rendt_count++;
 					rendt_size += pSurf->GetSizeInBytes();
 				}
-			}
-			else if (pSurf->IsDynamic()) {
-				dyntx_count++;
-				dyntx_size += pSurf->GetSizeInBytes();
-			}
-			else if (pSurf->IsPlainSurface()) {
-				plain_count++;
-				plain_size += pSurf->GetSizeInBytes();
 			}
 			else {
 				textr_count++;
@@ -177,10 +165,9 @@ void D3D9Client::RenderControlPanel()
 	Label("Render Targets.......: %u (%u MB)", rendt_count, rendt_size>>20);
 	Label("Render Textures......: %u (%u MB)", rttex_count, rttex_size>>20);
 	Label("Dual Layer Surfaces..: %u (%u MB)", duall_count, duall_size>>20);
-	Label("Plain Surfaces.......: %u (%u MB)", plain_count, plain_size>>20);
 	Label("Plain Textures.......: %u (%u MB)", textr_count, textr_size>>20);
 
-	size_t mesh_count = MeshCatalog->CountEntries();
+	size_t mesh_count = MeshCatalog.size();
 	size_t tile_count = TileCatalog->CountEntries();
 	DWORD tile_size = 0;
 	DWORD tile_render_countA = 0;
@@ -203,15 +190,12 @@ void D3D9Client::RenderControlPanel()
 	Label("Tile Vertex Cache....: %u (%u MB)", D3D9Stats.TilesCached, D3D9Stats.TilesCachedMB>>20);
 
 
-
-
-
 	DWORD tot_verts = 0;
 	DWORD tot_trans = 0;
 	DWORD tot_group = 0;
 
-	for (auto it = MeshCatalog->cbegin(); it != MeshCatalog->cend(); ++it) {
-		D3D9Mesh *pMesh = *it;
+	for (auto pMesh : MeshCatalog)
+	{
 		if (pMesh) {
 			tot_verts += pMesh->GetVertexCount();
 			tot_trans += pMesh->GetGroupTransformCount();

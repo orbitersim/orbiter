@@ -14,7 +14,6 @@
 #include "resource.h"
 #include <stdio.h> // temporary
 #include "gcConst.h"
-#include "Sketchpad2.h"
 
 #define IDSTICK 999
 
@@ -240,6 +239,7 @@ void MFDWindow::clbkRefreshDisplay (SURFHANDLE)
 	SURFHANDLE tgt = pCore->GetRenderTarget(hSwap);
 	SURFHANDLE surf = GetDisplaySurface();
 
+	// WARNING: Blit src must be a texture otherwise nVidia driver will crash.
 	if (surf) pCore->StretchRectInScene(tgt, surf);
 	else pCore->ClearSurfaceInScene(tgt, 0);
 

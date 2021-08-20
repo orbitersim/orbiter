@@ -26,7 +26,6 @@
 #include "VPlanet.h"
 #include "VStar.h"
 #include "VBase.h"
-#include "Texture.h"
 #include "D3D9Util.h"
 #include "Mesh.h"
 #include "D3D9Surface.h"
@@ -36,9 +35,9 @@ using namespace oapi;
 
 // Initialisation of static members
 
-D3D9Client*        vObject::gc = NULL;
-D3D9ClientSurface* vObject::blobtex[3] = { NULL };
-D3D9Mesh*          vObject::hStockMesh[16] = { NULL };
+D3D9Client*		vObject::gc = NULL;
+SurfNative*		vObject::blobtex[3] = { NULL };
+D3D9Mesh*		vObject::hStockMesh[16] = { NULL };
 
 
 // ===========================================================================================
@@ -113,7 +112,7 @@ void vObject::GlobalInit(D3D9Client *gclient)
 void vObject::GlobalExit()
 {
 	_TRACE;
-	for (int i=0;i<3;i++) SAFE_DELETE(blobtex[i]);
+	for (int i=0;i<3;i++) DELETE_SURFACE(blobtex[i]);
 	for (int i = 0; i < ARRAYSIZE(hStockMesh); i++) SAFE_DELETE(hStockMesh[i]);
 }
 

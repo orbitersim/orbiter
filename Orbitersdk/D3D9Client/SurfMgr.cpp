@@ -15,7 +15,6 @@
 
 #include "SurfMgr.h"
 #include "VPlanet.h"
-#include "Texture.h"
 #include "D3D9Surface.h"
 #include "DebugControls.h"
 
@@ -77,7 +76,7 @@ void SurfaceManager::Render(LPDIRECT3DDEVICE9 dev, D3DXMATRIX &wmat, double scal
 	if (bGlobalSpecular) {
 		extern D3DMATERIAL9 watermat;
 		SpecularColour (&watermat.Specular);
-		watermat.Power = (microtex ? 30.0f : 35.0f);
+		watermat.Power = (microtex ? 40.0f : 35.0f);
 	}
 
 	TileManager::Render (dev, wmat, scale, level, viewap, bfog);
@@ -212,7 +211,7 @@ void SurfaceManager::RenderTile (int lvl, int hemisp, int ilat, int nlat, int il
 	HR(FX->SetTexture(eTex1, ltex));  // Specular Mask and Night Lights
 	
 	if (microtex) {
-		HR(FX->SetTexture(eTex3, microtex->GetTexture())); 
+		HR(FX->SetTexture(eTex3, SURFACE(microtex)->GetTexture())); 
 		HR(FX->SetFloat(eMix, 1.0f));
 	}
 	else HR(FX->SetFloat(eMix, 0.0f));

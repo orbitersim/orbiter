@@ -10,7 +10,6 @@
 
 #include "Particle.h"
 #include "Scene.h"
-#include "Texture.h"
 #include "D3D9Surface.h"
 #include "D3D9Config.h"
 #include <stdio.h>
@@ -45,8 +44,8 @@ static PARTICLESTREAMSPEC DefaultParticleStreamSpec = {
 	1e-4, 1						  // amin and amax densities for mapping
 };
 
-LPD3D9CLIENTSURFACE D3D9ParticleStream::deftex = 0;
-LPD3D9CLIENTSURFACE D3D9ParticleStream::deftexems = 0;
+SURFHANDLE D3D9ParticleStream::deftex = 0;
+SURFHANDLE D3D9ParticleStream::deftexems = 0;
 bool D3D9ParticleStream::bShadows = false;
 
 D3D9ParticleStream::D3D9ParticleStream(GraphicsClient *_gc, PARTICLESTREAMSPEC *pss) : ParticleStream (_gc, pss), D3D9Effect()
@@ -104,8 +103,8 @@ void D3D9ParticleStream::GlobalInit (oapi::D3D9Client *gclient)
 
 void D3D9ParticleStream::GlobalExit ()
 {
-	SAFE_DELETE(deftex);
-	SAFE_DELETE(deftexems);
+	DELETE_SURFACE(deftex);
+	DELETE_SURFACE(deftexems);
 }
 
 void D3D9ParticleStream::SetSpecs(PARTICLESTREAMSPEC *pss)
@@ -440,7 +439,7 @@ void D3D9ParticleStream::RenderDiffuse(LPDIRECT3DDEVICE9 dev)
 	HR(FX->SetTechnique(eDiffuseTech));
 	HR(FX->SetMatrix(eW, &mWorld));
 
-	if (tex) HR(FX->SetTexture(eTex0, tex->GetTexture()));
+	if (tex) HR(FX->SetTexture(eTex0, SURFACE(tex)->GetTexture()));
 
 	HR(FX->Begin(&numPasses, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
@@ -496,7 +495,7 @@ void D3D9ParticleStream::RenderEmissive(LPDIRECT3DDEVICE9 dev)
 	HR(FX->SetTechnique(eEmissiveTech));
 	HR(FX->SetMatrix(eW, &mWorld));
 
-	if (tex) HR(FX->SetTexture(eTex0, tex->GetTexture()));
+	if (tex) HR(FX->SetTexture(eTex0, SURFACE(tex)->GetTexture()));
 
 	D3DCOLORVALUE color;
 	SetMaterial(color);
@@ -717,7 +716,7 @@ void ExhaustStream::RenderGroundShadow (LPDIRECT3DDEVICE9 dev, LPDIRECT3DTEXTURE
 	HR(FX->SetTechnique(eEmissiveTech));
 	HR(FX->SetMatrix(eW, &mWorld));
 
-	if (tex) FX->SetTexture(eTex0, tex->GetTexture());
+	if (tex) FX->SetTexture(eTex0, SURFACE(tex)->GetTexture());
 
 	UINT numPasses = 0;
 

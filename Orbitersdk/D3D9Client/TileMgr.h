@@ -173,7 +173,7 @@ protected:
 
 	LPDIRECT3DTEXTURE9 *texbuf;		// texture buffer for surface textures (level <= 8)
 	LPDIRECT3DTEXTURE9 *specbuf;	// texture buffer for specular masks (level <= 8);
-	LPD3D9CLIENTSURFACE microtex;	// microtexture overlay
+	SURFHANDLE microtex;	// microtexture overlay
 
 	// object-independent configuration data
 	static bool bGlobalSpecular;     // user wants specular reflections
