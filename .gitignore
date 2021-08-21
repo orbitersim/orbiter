@@ -4,6 +4,7 @@
 meshres*.h
 CMakeSettings.json
 out/**
+!/Sound/XRSound/XRSound/**/*.vcxproj.user
 **/*.bak
 Sound/XRSound/**/Debug/
 Sound/XRSound/**/Release/
