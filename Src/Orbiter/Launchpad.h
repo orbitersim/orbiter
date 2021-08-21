@@ -126,23 +126,6 @@ namespace orbiter {
 		// Set dialog controls for device tab according to device list
 		// and current device dev
 
-		void InitNetworkPage();
-		// Set multiplayer options
-
-		// network-related methods and data
-		void Network_ShowPage1();
-		void Network_ShowPage2();
-		void Network_ShowPage3();
-		HRESULT Network_CreateGame(HWND hWnd);
-		HRESULT Network_JoinGame(HWND hWnd);
-		HRESULT Network_SearchGames(HWND hWnd);
-		void Network_SessionsCleanup();
-		void Network_InitSessionListbox();
-		void Network_PlayerListChanged();
-		bool bSessionSearch;
-		int  nSessionMaxPlayer;
-		char cSessionName[256];
-
 		void SwitchTabPage(HWND hWnd, int pg);
 		// display a new page
 

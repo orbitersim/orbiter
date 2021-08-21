@@ -122,7 +122,6 @@ public:
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
-	GUID &GetGUID() const { return AppGUID; }
 	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
 	void PreCloseSession();
 	void CloseSession ();
@@ -403,7 +402,6 @@ protected:
 	void ReleaseGDIResources ();
 
 private:
-	static GUID     AppGUID;
 	Config         *pConfig;
 	State          *pState;
 	orbiter::LaunchpadDialog *m_pLaunchpad;
@@ -503,20 +501,6 @@ public:
 	inline OrbiterGraphics *GetInlineGraphicsClient() { return oclient; }
 	// (to access special inline graphics features. Eventually this should no longer
 	// be necessary)
-
-#ifdef NETCONNECT
-public:
-	bool SendScenario (OrbiterConnect *oc, const char *desc);
-	void CheckRequests (OrbiterConnect *oc);
-	void SendMJD (OrbiterConnect *oc);
-	bool RecvMJD (OrbiterConnect *oc, double *mjd);
-
-private:
-	// Network connection instances
-	OrbiterConnect *NetConn;  // !=0 if networking is enabled
-	OrbiterServer *NetServer; // !=0 if Orbiter runs as network server
-	OrbiterClient *NetClient; // !=0 if Orbiter runs as network client
-#endif // NETCONNECT
 
 };
 

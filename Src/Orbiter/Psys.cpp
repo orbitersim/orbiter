@@ -130,25 +130,6 @@ void PlanetarySystem::Write (ostream &os)
 	os << "END_SHIPS" << endl;
 }
 
-#ifdef NETCONNECT
-bool PlanetarySystem::Send (OrbiterConnect *oc)
-{
-	bool isok = true;
-	for (DWORD i = 0; i < nvessel; i++)
-		if (!vessel[i]->Send (oc, SD_NAME, true)) isok = false;
-	DWORD eos = 0;
-	oc->Send ((char*)&eos, sizeof(DWORD)); // end of transmission
-	return isok;
-}
-
-void PlanetarySystem::InitState (OrbiterConnect *oc)
-{
-	Vessel *v;
-	while (v = Vessel::Create (this, oc))
-		AddVessel (v);
-}
-#endif // NETCONNECT
-
 Body *PlanetarySystem::GetObj (const char *name, bool ignorecase)
 {
 	for (DWORD i = 0; i < nbody; i++)

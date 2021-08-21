@@ -1718,7 +1718,6 @@ BEGIN
     IDS_TABJOYSTICK         "Joystick"
     IDS_TABEXTRA            "Extra"
     IDS_TABABOUT            "About"
-    IDS_TABNETWORK          "Network"
 END
 
 #endif    // English (United Kingdom) resources
