@@ -8,19 +8,17 @@
 #include <windows.h>
 #include <commctrl.h>
 #include "TabParam.h"
-#include "Launchpad.h"
-#include "Help.h"
 #include "resource.h"
 
 //-----------------------------------------------------------------------------
 
-ParameterTab::ParameterTab (const MainDialog *_lp): LaunchpadTab (_lp)
+orbiter::ParameterTab::ParameterTab (const LaunchpadDialog *_lp): LaunchpadTab (_lp)
 {
 }
 
 //-----------------------------------------------------------------------------
 
-void ParameterTab::Create ()
+void orbiter::ParameterTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_OPT);
 
@@ -42,7 +40,7 @@ void ParameterTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-void ParameterTab::GetConfig (const Config *cfg)
+void orbiter::ParameterTab::GetConfig (const Config *cfg)
 {
 	char cbuf[20];
 	SendDlgItemMessage (hTab, IDC_OPT_MFDTRANSP, BM_SETCHECK,
@@ -87,7 +85,7 @@ void ParameterTab::GetConfig (const Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-void ParameterTab::SetConfig (Config *cfg)
+void orbiter::ParameterTab::SetConfig (Config *cfg)
 {
 	DWORD i;
 	char cbuf[128];
@@ -135,8 +133,8 @@ void ParameterTab::SetConfig (Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-bool ParameterTab::OpenHelp ()
+bool orbiter::ParameterTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_param");
+	OpenTabHelp ("tab_param");
 	return true;
 }

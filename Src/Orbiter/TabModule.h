@@ -12,55 +12,59 @@
 #include "LpadTab.h"
 #include "CustomControls.h"
 
-class ModuleTab: public LaunchpadTab {
-public:
-	ModuleTab (const MainDialog *lp);
-	~ModuleTab ();
+namespace orbiter {
 
-	void Create ();
-	BOOL InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam);
+	class ModuleTab : public LaunchpadTab {
+	public:
+		ModuleTab(const LaunchpadDialog* lp);
+		~ModuleTab();
 
-	void GetConfig (const Config *cfg);
-	void SetConfig (Config *cfg);
+		void Create();
+		BOOL InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
-	bool OpenHelp ();
+		void GetConfig(const Config* cfg);
+		void SetConfig(Config* cfg);
 
-	BOOL Size (int w, int h);
+		bool OpenHelp();
 
-	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL Size(int w, int h);
 
-protected:
-	void Show ();
+		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	void RefreshLists ();
-	// Update active and inactive module lists
+	protected:
+		void Show();
 
-	void DeactivateAll ();
-	// deactivate all modules
+		void RefreshLists();
+		// Update active and inactive module lists
 
-	void ActivateFromList ();
-	// synchronises module activation with list by activating/deactivating
-	// appropriate modules
+		void DeactivateAll();
+		// deactivate all modules
 
-	void InitActivation ();
-	// activate modules listed in config file and tick entries in list
+		void ActivateFromList();
+		// synchronises module activation with list by activating/deactivating
+		// appropriate modules
 
-	void ExpandCollapseAll (bool expand);
-	HTREEITEM GetCategoryItem (char *cat);
+		void InitActivation();
+		// activate modules listed in config file and tick entries in list
 
-private:
-	SplitterCtrl splitListDesc;  // splitter control for module list(left) and description(right)
-	RECT r_bt0, r_bt1, r_bt2;
-	RECT r_lst0, r_dsc0;     // REMOVE!
-	RECT r_pane;             // initial position of list/description splitter pane
+		void ExpandCollapseAll(bool expand);
+		HTREEITEM GetCategoryItem(char* cat);
 
-	struct MODULEREC {
-		char *name;
-		char *info;
-		bool active;
-		bool locked;
-	} **modulerec;
-	int nmodulerec;
-};
+	private:
+		SplitterCtrl splitListDesc;  // splitter control for module list(left) and description(right)
+		RECT r_bt0, r_bt1, r_bt2;
+		RECT r_lst0, r_dsc0;     // REMOVE!
+		RECT r_pane;             // initial position of list/description splitter pane
+
+		struct MODULEREC {
+			char* name;
+			char* info;
+			bool active;
+			bool locked;
+		} **modulerec;
+		int nmodulerec;
+	};
+
+}
 
 #endif // !__TABMODULE_H

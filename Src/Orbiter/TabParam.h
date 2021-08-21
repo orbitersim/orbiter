@@ -11,16 +11,20 @@
 
 #include "LpadTab.h"
 
-class ParameterTab: public LaunchpadTab {
-public:
-	ParameterTab (const MainDialog *lp);
+namespace orbiter {
 
-	void Create ();
+	class ParameterTab : public LaunchpadTab {
+	public:
+		ParameterTab(const LaunchpadDialog* lp);
 
-	void GetConfig (const Config *cfg);
-	void SetConfig (Config *cfg);
+		void Create();
 
-	bool OpenHelp ();
-};
+		void GetConfig(const Config* cfg);
+		void SetConfig(Config* cfg);
+
+		bool OpenHelp();
+	};
+
+}
 
 #endif // !__TABPARAM_H

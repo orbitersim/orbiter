@@ -13,52 +13,56 @@
 #include "OrbiterAPI.h"
 #include "CustomControls.h"
 
-class ExtraTab: public LaunchpadTab {
-	friend class MainDialog;
+namespace orbiter {
 
-public:
-	ExtraTab (const MainDialog *lp);
-	~ExtraTab ();
+	class ExtraTab : public LaunchpadTab {
+		friend class LaunchpadDialog;
 
-	void Create ();
+	public:
+		ExtraTab(const LaunchpadDialog* lp);
+		~ExtraTab();
 
-	void GetConfig (const Config *cfg);
-	void SetConfig (Config *cfg);
+		void Create();
 
-	bool OpenHelp ();
+		void GetConfig(const Config* cfg);
+		void SetConfig(Config* cfg);
 
-	BOOL Size (int w, int h);
+		bool OpenHelp();
 
-	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		BOOL Size(int w, int h);
 
-protected:
-	HTREEITEM RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent = 0);
-	// Register an item in the "Extra" list. If parent=0, the item is registered
-	// as a root (top level) item. Otherwise it appears as a sub-item under
-	// the parent item.
+		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	bool UnregisterExtraParam (LaunchpadItem *item);
-	// Unregister an item in the "Extra" list.
+	protected:
+		HTREEITEM RegisterExtraParam(LaunchpadItem* item, HTREEITEM parent = 0);
+		// Register an item in the "Extra" list. If parent=0, the item is registered
+		// as a root (top level) item. Otherwise it appears as a sub-item under
+		// the parent item.
 
-	HTREEITEM FindExtraParam (const char *name, const HTREEITEM parent = 0);
-	// Return item 'name' below parent 'parent', or NULL if not found
+		bool UnregisterExtraParam(LaunchpadItem* item);
+		// Unregister an item in the "Extra" list.
 
-	HTREEITEM FindExtraParamChild (const HTREEITEM parent = 0);
-	// Return first child of entry 'parent' (or first root item if root==0)
-	// or 0 if parent has no children
+		HTREEITEM FindExtraParam(const char* name, const HTREEITEM parent = 0);
+		// Return item 'name' below parent 'parent', or NULL if not found
 
-	void WriteExtraParams ();
-	// allow all externally registered "Extra" items to write their data to file
-	// (internal "extra" items use the Config class to write to Orbiter.cfg)
+		HTREEITEM FindExtraParamChild(const HTREEITEM parent = 0);
+		// Return first child of entry 'parent' (or first root item if root==0)
+		// or 0 if parent has no children
 
-private:
-	LaunchpadItem **ExtPrm;  // list of parameter items on "Extra" list
-	DWORD nExtPrm;
+		void WriteExtraParams();
+		// allow all externally registered "Extra" items to write their data to file
+		// (internal "extra" items use the Config class to write to Orbiter.cfg)
 
-	SplitterCtrl splitListDesc;  // splitter control for extras list(left) and description(right)
-	RECT r_pane, r_edit0;
-	RECT r_lst0, r_dsc0; // REMOVE!
-};
+	private:
+		LaunchpadItem** ExtPrm;  // list of parameter items on "Extra" list
+		DWORD nExtPrm;
+
+		SplitterCtrl splitListDesc;  // splitter control for extras list(left) and description(right)
+		RECT r_pane, r_edit0;
+		RECT r_lst0, r_dsc0; // REMOVE!
+	};
+
+}
 
 // ****************************************************************************
 
@@ -68,13 +72,13 @@ private:
 
 class BuiltinLaunchpadItem: public LaunchpadItem {
 public:
-	BuiltinLaunchpadItem (const ExtraTab *tab);
+	BuiltinLaunchpadItem (const orbiter::ExtraTab *tab);
 	bool OpenDialog (HWND hParent, int resid, DLGPROC pDlg);
 	static INT_PTR CALLBACK DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	void Error (const char *msg);
-	const ExtraTab *pTab;
+	const orbiter::ExtraTab *pTab;
 };
 
 //=============================================================================
@@ -83,7 +87,7 @@ protected:
 
 class ExtraPropagation: public BuiltinLaunchpadItem {
 public:
-	ExtraPropagation (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraPropagation (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 };
@@ -94,7 +98,7 @@ public:
 
 class ExtraDynamics: public BuiltinLaunchpadItem {
 public:
-	ExtraDynamics (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraDynamics (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -140,7 +144,7 @@ private:
 
 class ExtraStabilisation: public BuiltinLaunchpadItem {
 public:
-	ExtraStabilisation (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraStabilisation (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -162,7 +166,7 @@ private:
 
 class ExtraInstruments: public BuiltinLaunchpadItem {
 public:
-	ExtraInstruments (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraInstruments (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 };
@@ -173,7 +177,7 @@ public:
 
 class ExtraMfdConfig: public BuiltinLaunchpadItem {
 public:
-	ExtraMfdConfig (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraMfdConfig (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -195,7 +199,7 @@ private:
 
 class ExtraVesselConfig: public BuiltinLaunchpadItem {
 public:
-	ExtraVesselConfig (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraVesselConfig (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 };
@@ -206,7 +210,7 @@ public:
 
 class ExtraPlanetConfig: public BuiltinLaunchpadItem {
 public:
-	ExtraPlanetConfig (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraPlanetConfig (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 };
@@ -217,7 +221,7 @@ public:
 
 class ExtraDebug: public BuiltinLaunchpadItem {
 public:
-	ExtraDebug (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraDebug (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 };
@@ -228,7 +232,7 @@ public:
 
 class ExtraShutdown: public BuiltinLaunchpadItem {
 public:
-	ExtraShutdown (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraShutdown (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -248,7 +252,7 @@ private:
 
 class ExtraFixedStep: public BuiltinLaunchpadItem {
 public:
-	ExtraFixedStep (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraFixedStep (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -269,7 +273,7 @@ private:
 
 class ExtraRenderingOptions: public BuiltinLaunchpadItem {
 public:
-	ExtraRenderingOptions (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraRenderingOptions (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -288,7 +292,7 @@ private:
 
 class ExtraTimerSettings: public BuiltinLaunchpadItem {
 public:
-	ExtraTimerSettings (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraTimerSettings (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -308,7 +312,7 @@ private:
 
 class ExtraPerformanceSettings: public BuiltinLaunchpadItem {
 public:
-	ExtraPerformanceSettings (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraPerformanceSettings (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -328,7 +332,7 @@ private:
 
 class ExtraLaunchpadOptions: public BuiltinLaunchpadItem {
 public:
-	ExtraLaunchpadOptions (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraLaunchpadOptions (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);
@@ -347,7 +351,7 @@ private:
 
 class ExtraLogfileOptions: public BuiltinLaunchpadItem {
 public:
-	ExtraLogfileOptions (const ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
+	ExtraLogfileOptions (const orbiter::ExtraTab *tab): BuiltinLaunchpadItem (tab) {}
 	char *Name ();
 	char *Description ();
 	bool clbkOpen (HWND hParent);

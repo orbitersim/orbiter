@@ -8,15 +8,15 @@
 #define STRICT 1
 #include <windows.h>
 #include <commctrl.h>
-#include "Launchpad.h"
 #include "LpadTab.h"
 #include "Log.h"
+#include "Help.h"
 #include "resource.h"
 
 //-----------------------------------------------------------------------------
 // LaunchpadTab base class
 
-LaunchpadTab::LaunchpadTab (const MainDialog *lp)
+orbiter::LaunchpadTab::LaunchpadTab (const LaunchpadDialog *lp)
 {
 	pLp = lp;
 	pCfg = lp->Cfg();
@@ -29,7 +29,7 @@ LaunchpadTab::LaunchpadTab (const MainDialog *lp)
 
 //-----------------------------------------------------------------------------
 
-LaunchpadTab::~LaunchpadTab ()
+orbiter::LaunchpadTab::~LaunchpadTab ()
 {
 	if (hTab) DestroyWindow (hTab);
 	if (nitem) {
@@ -40,7 +40,7 @@ LaunchpadTab::~LaunchpadTab ()
 
 //-----------------------------------------------------------------------------
 
-void LaunchpadTab::Show ()
+void orbiter::LaunchpadTab::Show ()
 {
 	if (hTab) ShowWindow (hTab, SW_SHOW);
 	bActive = true;
@@ -48,7 +48,7 @@ void LaunchpadTab::Show ()
 
 //-----------------------------------------------------------------------------
 
-void LaunchpadTab::Hide ()
+void orbiter::LaunchpadTab::Hide ()
 {
 	if (hTab) ShowWindow (hTab, SW_HIDE);
 	bActive = false;
@@ -56,7 +56,14 @@ void LaunchpadTab::Hide ()
 
 //-----------------------------------------------------------------------------
 
-BOOL LaunchpadTab::Size (int w, int h)
+void orbiter::LaunchpadTab::OpenTabHelp(const char* topic)
+{
+	::OpenDefaultHelp(LaunchpadWnd(), topic);
+}
+
+//-----------------------------------------------------------------------------
+
+BOOL orbiter::LaunchpadTab::Size (int w, int h)
 {
 	if (nitem) {
 		int dx = max (0, (w - (int)(pos0.right-pos0.left))/2);
@@ -73,14 +80,14 @@ BOOL LaunchpadTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-HWND LaunchpadTab::CreateTab (int resid)
+HWND orbiter::LaunchpadTab::CreateTab (int resid)
 {
-	HWND hT = CreateDialogParam (pLp->GetInstance(), MAKEINTRESOURCE(resid), pLp->GetWindow(), TabProcHook, (LPARAM)this);
+	HWND hT = CreateDialogParam (AppInstance(), MAKEINTRESOURCE(resid), LaunchpadWnd(), TabProcHook, (LPARAM)this);
 	SetWindowLongPtr (hT, DWLP_USER, (LONG_PTR)this);
 
 	POINT p0, p1;
 	GetClientRect (hT, &pos0);
-	p0.x = p0.y = 0; ClientToScreen (pLp->GetWindow(), &p0);
+	p0.x = p0.y = 0; ClientToScreen (LaunchpadWnd(), &p0);
 	p1.x = p1.y = 0; ClientToScreen (hT, &p1);
 	int dx = p1.x-p0.x, dy = p1.y-p0.y;
 	pos0.left += dx, pos0.right += dx;
@@ -91,7 +98,7 @@ HWND LaunchpadTab::CreateTab (int resid)
 
 //-----------------------------------------------------------------------------
 
-void LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
+void orbiter::LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 {
 	if (nitem) {
 		delete []item;
@@ -112,14 +119,14 @@ void LaunchpadTab::RegisterItemPositions (int *_item, int _nitem)
 
 //-----------------------------------------------------------------------------
 
-INT_PTR LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::LaunchpadTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
 
-INT_PTR CALLBACK LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK orbiter::LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LaunchpadTab *lt = (LaunchpadTab*)GetWindowLongPtr (hWnd, DWLP_USER);
 	switch (uMsg) {

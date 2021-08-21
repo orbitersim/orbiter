@@ -11,7 +11,6 @@
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabModule.h"
-#include "Help.h"
 #include "resource.h"
 
 extern char DBG_MSG[256];
@@ -19,14 +18,14 @@ static int counter = -1;
 
 //-----------------------------------------------------------------------------
 
-ModuleTab::ModuleTab (const MainDialog *lp): LaunchpadTab (lp)
+orbiter::ModuleTab::ModuleTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	nmodulerec = 0;
 }
 
 //-----------------------------------------------------------------------------
 
-ModuleTab::~ModuleTab ()
+orbiter::ModuleTab::~ModuleTab ()
 {
 	int i;
 
@@ -43,7 +42,7 @@ ModuleTab::~ModuleTab ()
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::Create ()
+void orbiter::ModuleTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_MOD);
 
@@ -58,7 +57,7 @@ void ModuleTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-BOOL ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	SetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
 	SetWindowPos (GetDlgItem (hTab, IDC_TREE1), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
@@ -68,7 +67,7 @@ BOOL ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::GetConfig (const Config *cfg)
+void orbiter::ModuleTab::GetConfig (const Config *cfg)
 {
 	RefreshLists();
 	SetWindowText (GetDlgItem (hTab, IDC_MOD_INFO), "Optional Orbiter plugin modules.\r\n\r\nDouble-click on a category to show or hide its entries.\r\n\r\nCheck or uncheck items to activate the corresponding modules.\r\n\r\nSelect an item to see a description of the module function.");
@@ -83,22 +82,22 @@ void ModuleTab::GetConfig (const Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::SetConfig (Config *cfg)
+void orbiter::ModuleTab::SetConfig (Config *cfg)
 {
 	cfg->CfgWindowPos.LaunchpadModListWidth = splitListDesc.GetPaneWidth (SplitterCtrl::PANE1);
 }
 
 //-----------------------------------------------------------------------------
 
-bool ModuleTab::OpenHelp ()
+bool orbiter::ModuleTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_modules");
+	OpenTabHelp ("tab_modules");
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-BOOL ModuleTab::Size (int w, int h)
+BOOL orbiter::ModuleTab::Size (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -133,14 +132,14 @@ BOOL ModuleTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::Show ()
+void orbiter::ModuleTab::Show ()
 {
 	LaunchpadTab::Show();
 }
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::RefreshLists ()
+void orbiter::ModuleTab::RefreshLists ()
 {
 	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
 	TreeView_DeleteAllItems (hTree);
@@ -227,7 +226,7 @@ void ModuleTab::RefreshLists ()
 	counter = 0;
 }
 
-HTREEITEM ModuleTab::GetCategoryItem (char *cat)
+HTREEITEM orbiter::ModuleTab::GetCategoryItem (char *cat)
 {
 	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
 	HTREEITEM root = TreeView_GetRoot (hTree);
@@ -252,7 +251,7 @@ HTREEITEM ModuleTab::GetCategoryItem (char *cat)
 	return TreeView_InsertItem (hTree, &tvis);
 }
 
-void ModuleTab::ExpandCollapseAll (bool expand)
+void orbiter::ModuleTab::ExpandCollapseAll (bool expand)
 {
 	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
 	UINT code = (expand ? TVE_EXPAND : TVE_COLLAPSE);
@@ -265,7 +264,7 @@ void ModuleTab::ExpandCollapseAll (bool expand)
 	}
 }
 
-void ModuleTab::InitActivation ()
+void orbiter::ModuleTab::InitActivation ()
 {
 	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
 	TVITEM catitem, subitem;
@@ -297,7 +296,7 @@ void ModuleTab::InitActivation ()
 	ExpandCollapseAll (true);
 }
 
-void ModuleTab::ActivateFromList ()
+void orbiter::ModuleTab::ActivateFromList ()
 {
 	const char *path = "Modules\\Plugin";
 
@@ -335,7 +334,7 @@ void ModuleTab::ActivateFromList ()
 	}
 }
 
-void ModuleTab::DeactivateAll ()
+void orbiter::ModuleTab::DeactivateAll ()
 {
 	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
 	TVITEM catitem, subitem;
@@ -356,7 +355,7 @@ void ModuleTab::DeactivateAll ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const int MAXSEL = 100;
 	int i;

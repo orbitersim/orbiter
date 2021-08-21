@@ -10,7 +10,6 @@
 #include <io.h>
 #include <direct.h>
 #include "Orbiter.h"
-#include "Launchpad.h"
 #include "TabScenario.h"
 #include "Log.h"
 #include "Help.h"
@@ -19,24 +18,25 @@
 
 using namespace std;
 
+extern TCHAR* CurrentScenario;
 const char *htmlstyle = "<style type=""text/css"">body{font-family:Arial;font-size:12px} p{margin-top:0;margin-bottom:0.5em} h1{font-size:150%;font-weight:normal;margin-bottom:0.5em;color:blue;background-color:#E0E0FF;padding:0.1em}</style>";
 
 //-----------------------------------------------------------------------------
 
-ScenarioTab::ScenarioTab (const MainDialog *lp): LaunchpadTab (lp)
+orbiter::ScenarioTab::ScenarioTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	imglist = ImageList_Create (16, 16, ILC_COLOR8, 4, 0);
-	treeicon_idx[0] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER1)), 0);
-	treeicon_idx[1] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER2)), 0);
-	treeicon_idx[2] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN1)), 0);
-	treeicon_idx[3] = ImageList_Add (imglist, LoadBitmap (lp->GetInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN2)), 0);
+	treeicon_idx[0] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER1)), 0);
+	treeicon_idx[1] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_FOLDER2)), 0);
+	treeicon_idx[2] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN1)), 0);
+	treeicon_idx[3] = ImageList_Add (imglist, LoadBitmap (AppInstance(), MAKEINTRESOURCE (IDB_TREEICON_SCN2)), 0);
 	scnhelp[0] = '\0';
 	htmldesc = pLp->App()->UseHtmlInline();
 }
 
 //-----------------------------------------------------------------------------
 
-ScenarioTab::~ScenarioTab ()
+orbiter::ScenarioTab::~ScenarioTab ()
 {
 	ImageList_Destroy (imglist);
 	TerminateThread (hThread, 0);
@@ -44,12 +44,11 @@ ScenarioTab::~ScenarioTab ()
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::Create ()
+void orbiter::ScenarioTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_SCN);
 
-	RefreshList();
-	SelRootScenario ("(Current state)");
+	RefreshList(false);
 	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SETIMAGELIST, (WPARAM)TVSIL_NORMAL, (LPARAM)imglist);
 
 	r_list0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_SCN_LIST)); // REMOVE!
@@ -80,7 +79,7 @@ void ScenarioTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::GetConfig (const Config *cfg)
+void orbiter::ScenarioTab::GetConfig (const Config *cfg)
 {
 	SendDlgItemMessage (hTab, IDC_SCN_PAUSED, BM_SETCHECK,
 		cfg->CfgLogicPrm.bStartPaused ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -95,7 +94,7 @@ void ScenarioTab::GetConfig (const Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::SetConfig (Config *cfg)
+void orbiter::ScenarioTab::SetConfig (Config *cfg)
 {
 	cfg->CfgLogicPrm.bStartPaused = (SendDlgItemMessage (hTab, IDC_SCN_PAUSED, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	cfg->CfgWindowPos.LaunchpadScnListWidth = splitListDesc.GetPaneWidth (SplitterCtrl::PANE1);
@@ -103,15 +102,15 @@ void ScenarioTab::SetConfig (Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-bool ScenarioTab::OpenHelp ()
+bool orbiter::ScenarioTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_scenario");
+	OpenTabHelp ("tab_scenario");
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-BOOL ScenarioTab::Size (int w, int h)
+BOOL orbiter::ScenarioTab::Size (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -159,7 +158,7 @@ BOOL ScenarioTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-INT_PTR ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	NM_TREEVIEW *pnmtv;
 
@@ -186,7 +185,7 @@ INT_PTR ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				ScenarioChanged ();
 				return TRUE;
 			case NM_DBLCLK:
-				PostMessage (pLp->GetWindow(), WM_COMMAND, IDLAUNCH, 0);
+				PostMessage (LaunchpadWnd(), WM_COMMAND, IDLAUNCH, 0);
 				return TRUE;
 			}
 			break;
@@ -198,65 +197,64 @@ INT_PTR ScenarioTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::RefreshList ()
+void orbiter::ScenarioTab::RefreshList (bool preserveSelection)
 {
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
-	// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
-	DWORD styles = GetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
-	TreeView_DeleteAllItems(GetDlgItem(hTab, IDC_SCN_LIST));
-	SetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
-	ScanDirectory (pCfg->CfgDirPrm.ScnDir, NULL);
-}
+	if (Launchpad()->Visible()) {
+		char cbuf[256], ch[256], * pc, * c;
+		GetSelScenario(cbuf, 256);
+		SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
+		// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
+		//DWORD styles = GetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE);
+		SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT);
+		//SetWindowLongPtr(GetDlgItem(hTab, IDC_SCN_LIST), GWL_STYLE, styles);
+		ScanDirectory(pCfg->CfgDirPrm.ScnDir, NULL);
 
-//-----------------------------------------------------------------------------
-
-void ScenarioTab::UpdateList ()
-{
-	char cbuf[256], ch[256], *pc, *c;
-	GetSelScenario (cbuf, 256);
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, NULL);
-	// remove selection to avoid repeated TVN_SELCHANGED messages while the list is cleared
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT);
-	ScanDirectory (pCfg->CfgDirPrm.ScnDir, NULL);
-
-	pc = cbuf;
-	HTREEITEM hti = TreeView_GetRoot (GetDlgItem (hTab, IDC_SCN_LIST));
-
-	while (*pc) {
-		for (c = pc; *c && *c != '\\'; c++);
-		bool isdir = (*c == '\\');
-		*c = '\0';
-		TV_ITEM tvi = {TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256};
-		for (tvi.hItem = hti; tvi.hItem; tvi.hItem = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
-			SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
-			if (!strcmp (tvi.pszText, pc)) {
-				hti = tvi.hItem;
-				if (isdir)
-					hti = (HTREEITEM)SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
-				break;
+		HTREEITEM hti = TreeView_GetRoot(GetDlgItem(hTab, IDC_SCN_LIST));
+		if (preserveSelection) { // find the previous selection in the newly created list and re-select it
+			pc = cbuf;
+			while (*pc) {
+				for (c = pc; *c && *c != '\\'; c++);
+				bool isdir = (*c == '\\');
+				*c = '\0';
+				TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
+				for (tvi.hItem = hti; tvi.hItem; tvi.hItem = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
+					SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
+					if (!strcmp(tvi.pszText, pc)) {
+						hti = tvi.hItem;
+						if (isdir)
+							hti = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hti);
+						break;
+					}
+				}
+				pc = c;
+				if (isdir) pc++;
 			}
 		}
-
-		pc = c;
-		if (isdir) pc++;
+		else { // Select the "current" scenario
+			TV_ITEM tvi = { TVIF_HANDLE | TVIF_TEXT, 0, 0, 0, ch, 256 };
+			for (tvi.hItem = hti; tvi.hItem; tvi.hItem = (HTREEITEM)SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)tvi.hItem)) {
+				SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_GETITEM, 0, (LPARAM)&tvi);
+				if (!strcmp(tvi.pszText, CurrentScenario)) {
+					hti = tvi.hItem;
+					break;
+				}
+			}
+		}
+		SendDlgItemMessage(hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
 	}
-	SendDlgItemMessage (hTab, IDC_SCN_LIST, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
 }
 
 //-----------------------------------------------------------------------------
 
-bool ScenarioTab::SelRootScenario (char *scn)
+void orbiter::ScenarioTab::LaunchpadShowing(bool show)
 {
-	// this currently simply selects the first item
-	HTREEITEM hti = TreeView_GetRoot (GetDlgItem (hTab, IDC_SCN_LIST));
-	TreeView_SelectItem (GetDlgItem (hTab, IDC_SCN_LIST), hti);
-	ScenarioChanged();
-	return true;
+	if (show) {
+		RefreshList(false);
+	}
 }
-
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::ScanDirectory (const char *ppath, HTREEITEM hti)
+void orbiter::ScenarioTab::ScanDirectory (const char *ppath, HTREEITEM hti)
 {
 	TV_INSERTSTRUCT tvis;
 	HTREEITEM ht, hts0, ht0;
@@ -487,7 +485,7 @@ void Text2Html (char **pbuf)
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::ScenarioChanged ()
+void orbiter::ScenarioTab::ScenarioChanged ()
 {
 	const int linelen = 256;
 	bool have_info = false;
@@ -583,7 +581,7 @@ void ScenarioTab::ScenarioChanged ()
 
 //-----------------------------------------------------------------------------
 
-int ScenarioTab::GetSelScenario (char *scn, int len)
+int orbiter::ScenarioTab::GetSelScenario (char *scn, int len)
 {
 	TV_ITEM tvi;
 	char cbuf[256];
@@ -612,14 +610,14 @@ int ScenarioTab::GetSelScenario (char *scn, int len)
 
 //-----------------------------------------------------------------------------
 
-void ScenarioTab::SaveCurScenario ()
+void orbiter::ScenarioTab::SaveCurScenario ()
 {
 	extern TCHAR* CurrentScenario;
 	ifstream ifs (pLp->App()->ScnPath (CurrentScenario), ios::in);
 	if (ifs) {
-		DialogBoxParam (pLp->GetInstance(), MAKEINTRESOURCE(IDD_SAVESCN), pLp->GetWindow(), SaveProc, (LPARAM)this);
+		DialogBoxParam (AppInstance(), MAKEINTRESOURCE(IDD_SAVESCN), LaunchpadWnd(), SaveProc, (LPARAM)this);
 	} else {
-		MessageBox (pLp->GetWindow(), "No current simulation state available", "Save Error", MB_OK|MB_ICONEXCLAMATION);
+		MessageBox (LaunchpadWnd(), "No current simulation state available", "Save Error", MB_OK|MB_ICONEXCLAMATION);
 	}
 }
 
@@ -628,7 +626,7 @@ void ScenarioTab::SaveCurScenario ()
 // Desc: copy current scenario file into 'name', replacing description with 'desc'.
 //		 return value: 0=ok, 1=failed, 2=file exists (only checked if replace=false)
 //-----------------------------------------------------------------------------
-int ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
+int orbiter::ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 {
 	extern TCHAR* CurrentScenario;
 	char cbuf[256];
@@ -656,7 +654,6 @@ int ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 		else if (!skip)
 			ofs << cbuf << endl;
 	}
-	RefreshList ();
 	return 0;
 }
 
@@ -664,7 +661,7 @@ int ScenarioTab::SaveCurScenarioAs (const char *name, char *desc, bool replace)
 // Name: SaveProc()
 // Desc: Scenario save dialog message proc
 //-----------------------------------------------------------------------------
-INT_PTR CALLBACK ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK orbiter::ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static ScenarioTab *pTab;
 	int res, name_len, desc_len;
@@ -710,7 +707,7 @@ INT_PTR CALLBACK ScenarioTab::SaveProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 // Name: ClearQSFolder()
 // Desc: Delete all scenarios in the Quicksave folder
 //-----------------------------------------------------------------------------
-void ScenarioTab::ClearQSFolder()
+void orbiter::ScenarioTab::ClearQSFolder()
 {
 	char filespec[256], fname[256] = "Quicksave\\";
 	strcpy (filespec, pLp->App()->ScnPath ("Quicksave\\*"));
@@ -721,7 +718,6 @@ void ScenarioTab::ClearQSFolder()
 		fname[strlen(fname)-4] = '\0';
 		_findclose (hf);
 		remove (pLp->App()->ScnPath (fname));
-		RefreshList ();
 	}
 }
 
@@ -729,20 +725,21 @@ void ScenarioTab::ClearQSFolder()
 // Name: OpenScenarioHelp()
 // Desc: Opens the help file associated with the scenario
 //-----------------------------------------------------------------------------
-void ScenarioTab::OpenScenarioHelp ()
+void orbiter::ScenarioTab::OpenScenarioHelp ()
 {
 	if (!scnhelp[0]) return;
-	char str[256], *path, *topic;
-	strcpy (str, scnhelp);
-	path = strtok (str, ",");
+	char str[256], path[256], *scenario, *topic;
+	strncpy (str, scnhelp, 256);
+	scenario = strtok (str, ",");
 	topic = strtok (NULL, "\n");
-	::OpenScenarioHelp (pLp->GetWindow(), pLp->GetInstance(), path, topic);
+	sprintf(path, "html\\scenarios\\%s.chm", scenario);
+	::OpenHelp(LaunchpadWnd(), path, topic);
 }
 
 //-----------------------------------------------------------------------------
-// Thread function for scenario list watcher
+// Thread function for scenario directory tree watcher
 //-----------------------------------------------------------------------------
-DWORD WINAPI ScenarioTab::threadWatchScnList (LPVOID pPrm)
+DWORD WINAPI orbiter::ScenarioTab::threadWatchScnList (LPVOID pPrm)
 {
 	ScenarioTab *tab = (ScenarioTab*)pPrm;
 	HANDLE dwChangeHandle;
@@ -756,7 +753,7 @@ DWORD WINAPI ScenarioTab::threadWatchScnList (LPVOID pPrm)
 		dwWaitStatus = WaitForSingleObject (dwChangeHandle, INFINITE);
 		switch (dwWaitStatus) {
 			case WAIT_OBJECT_0:
-				tab->UpdateList();
+				tab->RefreshList(true);
 				FindNextChangeNotification (dwChangeHandle);
 				break;
 		}

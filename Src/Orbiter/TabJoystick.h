@@ -11,22 +11,26 @@
 
 #include "LpadTab.h"
 
-class JoystickTab: public LaunchpadTab {
-public:
-	JoystickTab (const MainDialog *lp);
+namespace orbiter {
 
-	void Create ();
+	class JoystickTab : public LaunchpadTab {
+	public:
+		JoystickTab(const LaunchpadDialog* lp);
 
-	void GetConfig (const Config *cfg);
-	void SetConfig (Config *cfg);
+		void Create();
 
-	bool OpenHelp ();
+		void GetConfig(const Config* cfg);
+		void SetConfig(Config* cfg);
 
-	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		bool OpenHelp();
 
-protected:
-	void JoystickChanged (DWORD idx);
-	// Respond to user joystick selection
-};
+		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	protected:
+		void JoystickChanged(DWORD idx);
+		// Respond to user joystick selection
+	};
+
+}
 
 #endif // !__TABJOYSTICK_H

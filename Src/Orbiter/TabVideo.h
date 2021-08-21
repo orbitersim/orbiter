@@ -11,17 +11,21 @@
 
 #include "LpadTab.h"
 
-class DefVideoTab: public LaunchpadTab {
-public:
-	DefVideoTab (const MainDialog *lp);
+namespace orbiter {
 
-	void Create ();
+	class DefVideoTab : public LaunchpadTab {
+	public:
+		DefVideoTab(const LaunchpadDialog* lp);
 
-	void SetConfig (Config *cfg);
+		void Create();
 
-	bool OpenHelp ();
+		void SetConfig(Config* cfg);
 
-	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-};
+		bool OpenHelp();
+
+		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	};
+
+}
 
 #endif // !__TABVIDEO_H

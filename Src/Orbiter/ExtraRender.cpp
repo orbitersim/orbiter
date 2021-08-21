@@ -155,7 +155,7 @@ void Extra_PlanetRenderOptions::Update (HWND hWnd)
 
 bool Extra_PlanetRenderOptions::OpenHelp (HWND hWnd)
 {
-	OpenDefaultHelp (hWnd, pTab->Launchpad()->GetInstance(), "extra_planetrender");
+	OpenDefaultHelp (hWnd, "extra_planetrender");
 	return true;
 }
 

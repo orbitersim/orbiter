@@ -11,9 +11,7 @@
 #include <commctrl.h>
 #include <io.h>
 #include "Orbiter.h"
-#include "Launchpad.h"
 #include "TabVideo.h"
-#include "Help.h"
 #include "resource.h"
 
 using namespace std;
@@ -21,13 +19,13 @@ using namespace std;
 //-----------------------------------------------------------------------------
 // DefVideoTab class
 
-DefVideoTab::DefVideoTab (const MainDialog *lp): LaunchpadTab (lp)
+orbiter::DefVideoTab::DefVideoTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
 //-----------------------------------------------------------------------------
 
-void DefVideoTab::Create ()
+void orbiter::DefVideoTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_DEV);
 
@@ -45,7 +43,7 @@ void DefVideoTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-void DefVideoTab::SetConfig (Config *cfg)
+void orbiter::DefVideoTab::SetConfig (Config *cfg)
 {
 	// retrieve standard parameters from client, if available
 	oapi::GraphicsClient *gc = pLp->App()->GetGraphicsClient();
@@ -78,15 +76,15 @@ void DefVideoTab::SetConfig (Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-bool DefVideoTab::OpenHelp ()
+bool orbiter::DefVideoTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_video");
+	OpenTabHelp ("tab_video");
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-INT_PTR DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// divert video parameters to graphics clients
 	oapi::GraphicsClient *gc = pLp->App()->GetGraphicsClient();
