@@ -141,14 +141,7 @@ PlanetarySystem *g_psys = 0;
 Vessel          *g_focusobj = 0;       // current vessel with input focus
 Vessel          *g_pfocusobj = 0;      // previous vessel with input focus
 
-// This GUID allows DirectPlay to find other instances of the same game on
-// the network.  So it must be unique for every game, and the same for 
-// every instance of that game.  // {C6334FC0-3B80-4fed-89F1-A4DEFEB6DB20}
-GUID Orbiter::AppGUID = { 0xc6334fc0, 0x3b80, 0x4fed, { 0x89, 0xf1, 0xa4, 0xde, 0xfe, 0xb6, 0xdb, 0x20 } };
-
 char DBG_MSG[256] = "";
-
-enum APPMSGTYPE { MSG_NONE, MSGERR_APPMUSTEXIT, MSGWARN_SWITCHTOSOFTWARE };
 
 // Default help context (for main help system)
 HELPCONTEXT DefHelpContext = {
@@ -165,7 +158,6 @@ HRESULT ConfirmDevice (DDCAPS*, D3DDEVICEDESC7*);
 
 //LRESULT CALLBACK WndProc3D (HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 VOID    DestroyWorld ();
 void    SetEnvironmentVars ();
@@ -321,11 +313,6 @@ Orbiter::Orbiter ()
 	oclient         = NULL;
 #endif
 	gclient         = NULL;
-#ifdef NETCONNECT
-	NetConn         = NULL;
-	NetServer       = NULL;
-	NetClient       = NULL;
-#endif // NETCONNECT
 	hRenderWnd      = NULL;
 	hBk             = NULL;
 	hScnInterp      = NULL;
@@ -359,10 +346,6 @@ Orbiter::Orbiter ()
 		ctrlKeyboard[i] = ctrlJoystick[i] = ctrlTotal[i] = 0; // reset keyboard and joystick attitude requests
 
 	memset (simkstate, 0, 256);
-
-#ifdef NETCONNECT
-	OrbiterConnect::Startup();
-#endif // NETCONNECT
 
 }
 
@@ -1018,9 +1001,6 @@ INT Orbiter::Run ()
 
 	while (WM_QUIT != msg.message) {
 
-#ifdef DO_NETWORK_OLD
-		bGotMsg = PeekMessage (&msg, NULL, 0U, 0U, PM_REMOVE);
-#else
         // Use PeekMessage() if the app is active, so we can use idle time to
         // render the scene. Else, use GetMessage() to avoid eating CPU time.
 		if (bSession) {
@@ -1028,19 +1008,12 @@ INT Orbiter::Run ()
 		} else {
             bGotMsg = GetMessage (&msg, NULL, 0U, 0U);
 		}
-#endif
         if (bGotMsg) {
 			if (!m_pLaunchpad || !m_pLaunchpad->ConsumeMessage(&msg)) {
 				TranslateMessage (&msg);
 				DispatchMessage (&msg);
 			}
 		} else {
-
-#ifdef DO_NETWORK_OLD
-			// pick multiplayer messages
-			if (bMultiplayer) GetDPlay()->Receive ();
-#endif
-
 			if (bSession) {
 				if (bAllowInput) bActive = true, bAllowInput = false;
 				if (BeginTimeStep (bRunning)) {
@@ -1154,41 +1127,6 @@ void Orbiter::ExitRotationMode ()
 		ClipCursor (NULL);
 	}
 }
-
-#ifdef DO_NETWORK_OLD
-//-----------------------------------------------------------------------------
-// Name: ProcessDPSystemMsg()
-// Desc: Evaluates DirectPlay system messages and performs appropriate actions
-//-----------------------------------------------------------------------------
-void Orbiter::ProcessDPSystemMsg (DPMSG_GENERIC *pMsg, DWORD size, DPID from, DPID to)
-{
-	switch (pMsg->dwType) {
-	case DPSYS_CREATEPLAYERORGROUP: {
-		DPMSG_CREATEPLAYERORGROUP *msg = (DPMSG_CREATEPLAYERORGROUP*)pMsg;
-		GetDPlay()->RefreshPlayerList();
-		pMainDlg->Network_PlayerListChanged();
-		LOGOUT1P ("Player joined: %s", (msg->dpnName.lpszLongNameA));
-		} break;
-	case DPSYS_DESTROYPLAYERORGROUP: {
-		DPMSG_DESTROYPLAYERORGROUP *msg = (DPMSG_DESTROYPLAYERORGROUP*)pMsg;
-		GetDPlay()->RefreshPlayerList();
-		pMainDlg->Network_PlayerListChanged();
-		LOGOUT1P ("Player left: %s", (msg->dpnName.lpszLongNameA));
-		} break;
-	}
-}
-
-void Orbiter::ProcessDPApplicationMsg (LPVOID data, DWORD size, DPID from, DPID to)
-{
-	DpMsg *msg = (DpMsg*)data;
-	switch (msg->id) {
-	case MPMSG_LAUNCH:
-		LOGOUT("Multiplayer game launched by remote server");
-		Launch(*(double*)msg->data);
-		break;
-	}
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // Name: Pause()
@@ -1499,55 +1437,6 @@ bool Orbiter::SaveScenario (const char *fname, const char *desc)
 	} else return false;
 }
 
-//-----------------------------------------------------------------------------
-// Name: SendScenario()
-// Desc: send current simulation state as a scenario to a socket
-//-----------------------------------------------------------------------------
-#ifdef NETCONNECT
-bool Orbiter::SendScenario (OrbiterConnect *oc, const char *desc)
-{
-	pState->Update (desc);
-
-	if (!pState->Send (oc)) return false;
-	if (!g_psys->Send (oc)) return false;
-	if (!g_camera->Send (oc)) return false;
-	return true;
-}
-
-void Orbiter::CheckRequests (OrbiterConnect *oc)
-{
-	DWORD req;
-	if (oc->RecvRequest (req) != SOCKET_ERROR) {
-		switch (req) {
-		case CON_REQ_MJD:
-			SendMJD (oc);
-			break;
-		}
-	}
-}
-
-struct Packet_MJD {
-	DWORD req;
-	double mjd;
-};
-
-void Orbiter::SendMJD (OrbiterConnect *oc)
-{
-	Packet_MJD pMJD;
-	pMJD.req = CON_REQ_MJD;
-	pMJD.mjd = mjd;
-	oc->Send ((char*)&pMJD, sizeof(Packet_MJD));
-}
-
-bool Orbiter::RecvMJD (OrbiterConnect *oc, double *mjd)
-{
-	Packet_MJD pMJD;
-	if (oc->Recv ((char*)&pMJD, sizeof(Packet_MJD)) == SOCKET_ERROR || pMJD.req != CON_REQ_MJD) return false;
-	*mjd = pMJD.mjd;
-	return true;
-}
-
-#endif // NETCONNECT
 //-----------------------------------------------------------------------------
 // Name: Quicksave()
 // Desc: save current status in-game
@@ -2737,23 +2626,6 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	    }return 0;
 
-#ifdef NETCONNECT
-		// Asynchronous network support
-	case WM_CONN_EVENT:
-		switch LOWORD(lParam) {
-		case FD_ACCEPT:
-			if (NetServer) {
-				NetServer->Accept();
-				SendScenario (NetServer, "Sent scenario");
-			}
-			break;
-		case FD_READ:
-			if (NetConn) CheckRequests (NetConn);
-			break;
-		}
-		break;
-#endif // NETCONNECT
-
 #ifdef UNDEF
 		// These messages could be intercepted to suspend the simulation
 		// during resizing and menu operations. Not a good idea for real-time
@@ -3119,10 +2991,5 @@ INT_PTR CALLBACK BkMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		MoveWindow (GetDlgItem (hDlg, IDC_IMG), 0, 0, r.right, r.bottom, TRUE);
 		} return 1;
 	}
-	return 0;
-}
-
-INT_PTR CALLBACK CloseMsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
 	return 0;
 }

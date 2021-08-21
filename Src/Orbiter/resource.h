@@ -12,7 +12,6 @@
 #define IDS_TABJOYSTICK                 7
 #define IDS_TABEXTRA                    8
 #define IDS_TABABOUT                    9
-#define IDS_TABNETWORK                  10
 #define IDI_MAIN_ICON                   101
 #define IDI_MAIN_ICON_BAK               102
 #define IDR_MAIN_ACCEL                  113

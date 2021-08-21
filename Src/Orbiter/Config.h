@@ -270,12 +270,6 @@ struct CFG_CAMERAPRM {
 	int    HUDCol;				// HUD colour index
 };
 
-struct CFG_MPLAYERPRM {			// multiplayer options
-	char mpName[256];			// player name
-	char mpCallsign[64];		// player callsign
-	char mpConnection[256];		// preferred connection type
-};
-
 struct CFG_WINDOWPOS {
 	RECT DlgMap;                // map window position
 	RECT DlgInfo;               // info window position
@@ -415,7 +409,6 @@ public:
 	CFG_DEBUGPRM CfgDebugPrm;			// debugging parameters (shutdown method, fixed time steps, timer interface)
 	CFG_FONTPRM CfgFontPrm;				// ingame font characteristics
 	CFG_CAMERAPRM CfgCameraPrm;			// camera parameters
-	CFG_MPLAYERPRM CfgMplayerPrm;		// multiplayer parameters (not currently used)
 	CFG_WINDOWPOS CfgWindowPos;         // subwindow positions
 	CFG_CMDLINEPRM CfgCmdlinePrm;       // Populated by command line parameters. Overrides interactive settings
 

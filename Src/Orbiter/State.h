@@ -12,10 +12,6 @@
 #include <iostream>
 #include <fstream>
 
-#ifdef NETCONNECT
-class OrbiterConnect;
-#endif
-
 class State {
 public:
 	State();
@@ -44,11 +40,6 @@ private:
 	char playback[128]; // playback folder name, if applicable
 	const char *desc;
 
-#ifdef NETCONNECT
-public:
-	bool Send (OrbiterConnect *oc);
-	bool Recv (OrbiterConnect *oc);
-#endif // NETCONNECT
 };
 
 #endif // !__STATE_H

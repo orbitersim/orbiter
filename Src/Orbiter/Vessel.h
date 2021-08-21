@@ -1231,8 +1231,6 @@ protected:
 	void ApplyPackedState (const char *data);
 	// Set the vessel state from the packed parameters
 
-	static void PacketToVesselstatus2 (char *data, VESSELSTATUS2 &vs);
-
 	void WriteDefault (std::ostream &ofs) const;
 	// Writes standard vessel status parameters, while "Write" allows
 	// custom output by vessel modules implementing clbkSaveState
@@ -1595,16 +1593,6 @@ private:
 	static bool ClbkSelect_Undock (Select *menu, int item, char *str, void *data);
 	static bool ClbkEnter_Undock (Select *menu, int item, char *str, void *data);
 	static bool ClbkName_Undock (InputBox*, char *str, void *data);
-
-#ifdef NETCONNECT
-	// =======================================================
-	// Network routines
-public:
-	bool Send (OrbiterConnect *oc, DWORD flag, bool sendsize);
-	bool Recv (OrbiterConnect *oc);
-	static Vessel *Create (const PlanetarySystem *psys, OrbiterConnect *oc);
-	// create a vessel from data received remotely
-#endif
 
 	// =======================================================
 	// Flight recorder routines (should be a class!)
