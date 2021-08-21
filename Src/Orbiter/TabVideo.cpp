@@ -27,18 +27,30 @@ orbiter::DefVideoTab::DefVideoTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 
 void orbiter::DefVideoTab::Create ()
 {
-	hTab = CreateTab (IDD_PAGE_DEV);
+	hTab = CreateTab (IDD_PAGE_VID);
 
 	static int item[] = {
-		IDC_VID_STATIC1, IDC_VID_STATIC2, IDC_VID_STATIC3, IDC_VID_STATIC5,
-		IDC_VID_STATIC6, IDC_VID_STATIC7, IDC_VID_STATIC8, IDC_VID_STATIC9,
-		IDC_VID_DEVICE, IDC_VID_ENUM, IDC_VID_STENCIL,
-		IDC_VID_FULL, IDC_VID_WINDOW, IDC_VID_MODE, IDC_VID_BPP, IDC_VID_VSYNC,
-		IDC_VID_PAGEFLIP, IDC_VID_WIDTH, IDC_VID_HEIGHT, IDC_VID_ASPECT,
-		IDC_VID_4X3, IDC_VID_16X10, IDC_VID_16X9, IDC_VID_INFO
+		IDC_VID_LABEL_MODULE, IDC_VID_COMBO_MODULE, IDD_PAGE_DEV
 	};
 
-	RegisterItemPositions (item, 24);
+	RegisterItemPositions (item, 3);
+}
+
+//-----------------------------------------------------------------------------
+static INT_PTR CALLBACK msgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return FALSE;
+}
+
+
+BOOL orbiter::DefVideoTab::InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+	HWND hT = CreateDialogParam(AppInstance(), MAKEINTRESOURCE(IDD_PAGE_DEV), hTab, msgProc, (LPARAM)this);
+	SetWindowLongPtr(hT, GWLP_ID, IDD_PAGE_DEV); // set the control ID to make GetDlgItem work for the sub-dialog
+	ShowWindow(hT, SW_HIDE);
+
+	EnumerateClients();
+	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -84,8 +96,66 @@ bool orbiter::DefVideoTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
+void orbiter::DefVideoTab::EnumerateClients()
+{
+	const PSTR strConsole = "Console mode (no engine loaded)";
+	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_RESETCONTENT, 0, 0);
+	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strConsole);
+
+	ScanDir("Modules\\Plugin");
+
+	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, 0, 0);
+}
+
+//-----------------------------------------------------------------------------
+
+void orbiter::DefVideoTab::ScanDir(const PSTR dir)
+{
+	char pattern[256], name[256];
+	sprintf(pattern, "%s\\*.dll", dir);
+	struct _finddata_t fdata;
+	intptr_t fh = _findfirst(pattern, &fdata);
+	if (fh == -1) return; // nothing found
+	do {
+		sprintf(name, "%s\\%s", dir, fdata.name);
+		HMODULE hMod = LoadLibraryEx(name, 0, LOAD_LIBRARY_AS_DATAFILE);
+		if (hMod) {
+			char catstr[256];
+			// read category string
+			if (LoadString(hMod, 1001, catstr, 256)) {
+				if (!strcmp(catstr, "Graphics engines")) {
+					char clientname[256];
+					strncpy(clientname, fdata.name, strlen(fdata.name) - 4);
+					clientname[strlen(fdata.name) - 4] = '\0';
+					SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)clientname);
+				}
+			}
+		}
+	} while (!_findnext(fh, &fdata));
+	_findclose(fh);
+}
+
+//-----------------------------------------------------------------------------
+
+void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
+{
+	ShowWindow(GetDlgItem(hTab, IDD_PAGE_DEV), idx ? SW_SHOW : SW_HIDE);
+}
+
+//-----------------------------------------------------------------------------
+
 INT_PTR orbiter::DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	switch (uMsg) {
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDC_VID_COMBO_MODULE && HIWORD(wParam) == CBN_SELCHANGE) {
+			UINT idx = (UINT)SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETCURSEL, 0, 0);
+			if (idx != CB_ERR) SelectClientIndex(idx);
+			return 0;
+		}
+		break;
+	}
+
 	// divert video parameters to graphics clients
 	oapi::GraphicsClient *gc = pLp->App()->GetGraphicsClient();
 	if (gc)
