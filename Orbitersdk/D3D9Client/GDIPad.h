@@ -139,8 +139,6 @@ public:
 	 */
 	bool Text (int x, int y, const char *str, int len);
 
-	bool TextW (int x, int y, const LPWSTR str, int len);
-
 	/**
 	 * \brief Draw a text string into a rectangle.
 	 * \param x1 left edge [pixel]
@@ -264,6 +262,8 @@ public:
 	void PolyPolyline (const oapi::IVECTOR2 *pt, const int *npt, const int nline);
 
 	HDC GetDC();
+
+	bool TextW(int x, int y, const LPWSTR str, int len);
 
 private:
 	HDC hDC;

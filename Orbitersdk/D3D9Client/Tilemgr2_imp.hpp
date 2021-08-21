@@ -15,7 +15,6 @@
 
 #include "Tilemgr2.h"
 #include "DebugControls.h"
-#include "Sketchpad2.h"
 
 // -----------------------------------------------------------------------
 

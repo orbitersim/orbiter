@@ -23,7 +23,6 @@
 #ifndef __WNDMGR_H
 #define __WNDMGR_H
 
-#include <Sketchpad2.h>
 #include <Windows.h>
 #include <gcConst.h>
 #include <vector>

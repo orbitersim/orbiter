@@ -23,11 +23,11 @@
 
 #include "OrbiterAPI.h"
 #include "D3D9Client.h"
-#include "Sketchpad2.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <memory>
 #include <stack>
+#include "DrawAPI.h"
 
 using namespace oapi;
 
@@ -193,7 +193,7 @@ template <typename Type> int CreatePolyIndexList(const Type *pt, short npt, WORD
  * \brief The D3D9Pad class defines the context for 2-D drawing using
  *  DirectX calls.
  */
-class D3D9Pad : public Sketchpad3
+class D3D9Pad : public Sketchpad
 {
 	friend D3D9Text;
 
@@ -242,19 +242,6 @@ public:
 	 * \brief Release global parameters
 	 */
 	static void GlobalExit();
-
-	/**
-	 * \brief Return the Windows device context handle, if applicable.
-	 * \return device context handle
-	 * \default None, returns NULL.
-	 * \note The device context returned by this function should not be
-	 *   released (e.g. with ReleaseDC). The device context is released
-	 *   automatically when the Sketchpad instance is destroyed.
-	 * \note This method should be regarded as temporary. Ultimately, the
-	 *   device-dependent drawing mechanism should be hidden outside the
-	 *   sketchpad implementation.
-	 */
-	HDC GetDC();
 
 	/**
 	 * \brief Selects a new font to use.
@@ -405,8 +392,6 @@ public:
 	 */
 	bool Text (int x, int y, const char *str, int len);
 
-	bool TextW (int x, int y, const LPWSTR str, int len = -1);
-
 	/**
 	 * \brief Draw a text string into a rectangle.
 	 * \param x1 left edge [pixel]
@@ -490,8 +475,13 @@ public:
 	 */
 	void Polyline (const oapi::IVECTOR2 *pt, int npt);
 
+	/**
+	 * \brief Obsolete. Will return NULL
+	 * \return null
+	 */
+	HDC GetDC();
 
-
+	bool TextW(int x, int y, const LPWSTR str, int len = -1);
 
 	// ===============================================================================
 	// Sketchpad2 Additions
@@ -502,8 +492,7 @@ public:
 	void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
 	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
-	int  DrawSketchMesh(SKETCHMESH hMesh, DWORD grp, DWORD flags = MF_SMOOTH_SHADE, SURFHANDLE hTex = NULL);
-	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, DWORD flags = MF_SMOOTH_SHADE, SURFHANDLE hTex = NULL);
+	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, SURFHANDLE hTex = NULL);
 	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
 	void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
@@ -533,16 +522,17 @@ public:
 	const FMATRIX4 *GetColorMatrix();
 	void SetColorMatrix(const FMATRIX4 *pMatrix = NULL);
 	void SetBrightness(const FVECTOR4 *pBrightness = NULL);
-	FVECTOR4 GetRenderParam(int param);
-	void SetRenderParam(int param, const FVECTOR4 *data = NULL);
-	void SetBlendState(DWORD dwState = SKPBS_ALPHABLEND);
+	FVECTOR4 GetRenderParam(RenderParam param);
+	void SetRenderParam(RenderParam param, const FVECTOR4 *data = NULL);
+	void SetBlendState(BlendState dwState);
 	FMATRIX4 GetWorldTransform() const;
 	void PushWorldTransform();
 	void PopWorldTransform();
 	void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL);
 	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
-	void ColorFill(const FVECTOR4 &color, const LPRECT tgt);
+	void ColorFill(DWORD color, const LPRECT tgt);
 	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out);
+	void CopyTetragon(SURFHANDLE pSrc, const LPRECT _s, const FVECTOR2 pt[4]);
 	void ColorCompatibility(bool bEnable);
 	
 
@@ -575,7 +565,7 @@ public:
 
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, int tx, int ty);
 	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, const LPRECT t);
-	void CopyQuadNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const FVECTOR2* pt, const skpPin* pin = NULL, int npin = 0);
+	
 
 private:
 
@@ -637,7 +627,7 @@ private:
 	D3DXMATRIX mV, mP, mW, mO;
 	D3DXVECTOR4 vTarget;
 	DWORD bkmode;
-	DWORD dwBlendState;
+	BlendState dwBlendState;
 	TAlign_horizontal tah;
 	TAlign_vertical tav;
 	float linescale, pattern;

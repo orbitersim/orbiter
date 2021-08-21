@@ -27,7 +27,6 @@
 #include "D3D9Config.h"
 #include "Log.h"
 #include "Mesh.h"
-#include "Sketchpad2.h"
 
 using namespace oapi;
 
@@ -258,7 +257,7 @@ void D3D9Pad::LoadDefaults()
 	tCurrent = NONE;
 	Change = SKPCHG_ALL;
 	bkmode = TRANSPARENT;
-	dwBlendState = SKPBS_ALPHABLEND;
+	dwBlendState = Sketchpad::BlendState::ALPHABLEND;
 
 	bColorComp = true;
 	bLine = false;
@@ -293,7 +292,7 @@ void D3D9Pad::LoadDefaults()
 // Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
 // BeginDrawing() must be called
 //
-D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
+D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad(s),
 	_isSaveBuffer(false),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
@@ -315,7 +314,7 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad3(s),
 // Constructor will create D3D9Pad interface but doesn't prepare it for drawing.
 // BeginDrawing() must be called
 //
-D3D9Pad::D3D9Pad(const char *_name) : Sketchpad3(NULL),
+D3D9Pad::D3D9Pad(const char *_name) : Sketchpad(NULL),
 	_isSaveBuffer(false),
 	_saveBuffer(NULL),
 	_saveBufferSize(0)
@@ -472,25 +471,25 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 		HR(FX->BeginPass(1));
 	}
 
-	if (dwBlend == SKPBS_ALPHABLEND) {
+	if (dwBlend == Sketchpad::BlendState::ALPHABLEND) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));
 	}
-	else if (dwBlend == SKPBS_COPY) {
+	else if (dwBlend == Sketchpad::BlendState::COPY) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
 	}
-	else if (dwBlend == SKPBS_COPY_ALPHA) {
+	else if (dwBlend == Sketchpad::BlendState::COPY_ALPHA) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x8);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
 	}
-	else if (dwBlend == SKPBS_COPY_COLOR) {
+	else if (dwBlend == Sketchpad::BlendState::COPY_COLOR) {
 		pDev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x7);
 		HR(pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
 	}
 
 	if (dwFilter) {
-		if (dwFilter == SKPBS_FILTER_POINT) {
+		if (dwFilter == Sketchpad::BlendState::FILTER_POINT) {
 			pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 			pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
 		}

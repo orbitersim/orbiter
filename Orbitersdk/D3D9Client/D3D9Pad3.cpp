@@ -89,11 +89,11 @@ void D3D9Pad::SetBrightness(const FVECTOR4 *pBrightness)
 
 // ===============================================================================================
 //
-FVECTOR4 D3D9Pad::GetRenderParam(int param)
+FVECTOR4 D3D9Pad::GetRenderParam(RenderParam param)
 {
 	switch (param) {
-	case SKP3_PRM_GAMMA: return Gamma;
-	case SKP3_PRM_NOISE: return Noise;
+	case Sketchpad::RenderParam::PRM_GAMMA: return Gamma;
+	case Sketchpad::RenderParam::PRM_NOISE: return Noise;
 	}
 	return FVECTOR4(0, 0, 0, 0);
 }
@@ -101,24 +101,22 @@ FVECTOR4 D3D9Pad::GetRenderParam(int param)
 
 // ===============================================================================================
 //
-void D3D9Pad::SetRenderParam(int param, const FVECTOR4 *d)
+void D3D9Pad::SetRenderParam(RenderParam param, const FVECTOR4 *d)
 {
 #ifdef SKPDBG 
 	Log("SetRenderParam(%u, 0x%X)", param, DWORD(d));
 #endif
 	if (d == NULL) {
-
 		switch (param) {
-		case SKP3_PRM_GAMMA: Gamma = FVECTOR4(1, 1, 1, 1); ClearEnable(SKP3E_GAMMA); break;
-		case SKP3_PRM_NOISE: Noise = FVECTOR4(0, 0, 0, 0); ClearEnable(SKP3E_NOISE); break;
+		case Sketchpad::RenderParam::PRM_GAMMA: Gamma = FVECTOR4(1, 1, 1, 1); ClearEnable(SKP3E_GAMMA); break;
+		case Sketchpad::RenderParam::PRM_NOISE: Noise = FVECTOR4(0, 0, 0, 0); ClearEnable(SKP3E_NOISE); break;
 		}
-
 		return;
 	}
 
 	switch (param) {
-	case SKP3_PRM_GAMMA: Gamma = FVECTOR4(d->r, d->g, d->b, d->a); SetEnable(SKP3E_GAMMA);  break;
-	case SKP3_PRM_NOISE: Noise = *d; SetEnable(SKP3E_NOISE);  break;
+	case Sketchpad::RenderParam::PRM_GAMMA: Gamma = FVECTOR4(d->r, d->g, d->b, d->a); SetEnable(SKP3E_GAMMA);  break;
+	case Sketchpad::RenderParam::PRM_NOISE: Noise = *d; SetEnable(SKP3E_NOISE);  break;
 	}
 }
 
@@ -142,7 +140,7 @@ void D3D9Pad::ClearEnable(DWORD config)
 
 // ===============================================================================================
 //
-void D3D9Pad::SetBlendState(DWORD dwState)
+void D3D9Pad::SetBlendState(BlendState dwState)
 {
 #ifdef SKPDBG 
 	Log("SetBlendState(%u)", dwState);
@@ -246,7 +244,7 @@ void D3D9Pad::GradientFillRect(const LPRECT R, DWORD c1, DWORD c2, bool bVertica
 
 // ===============================================================================================
 //
-void D3D9Pad::ColorFill(const FVECTOR4 &color, const LPRECT tgt)
+void D3D9Pad::ColorFill(DWORD color, const LPRECT tgt)
 {
 #ifdef SKPDBG 
 	Log("ColorFill()");

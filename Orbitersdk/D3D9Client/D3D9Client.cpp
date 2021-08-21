@@ -571,7 +571,7 @@ void D3D9Client::SketchPadTest()
 
 	oapiSetSurfaceColourKey(hSrc, 0xFFFFFFFF);
 
-	Sketchpad3 *pSkp = static_cast<Sketchpad3 *>(oapiGetSketchpad(hTgt));
+	Sketchpad *pSkp = oapiGetSketchpad(hTgt);
 
 	RECT r = { 17, 1, 31, 15 };
 	RECT t = { 1, 33, 31, 63 };
@@ -580,7 +580,7 @@ void D3D9Client::SketchPadTest()
 
 	pSkp->CopyRect(hSrc, &r, 1, 1);
 	pSkp->ColorKey(hSrc, &r, 33, 1);
-	pSkp->SetBlendState(SKPBS_ALPHABLEND | SKPBS_FILTER_POINT);
+	pSkp->SetBlendState((Sketchpad::BlendState)(Sketchpad::BlendState::ALPHABLEND | Sketchpad::BlendState::FILTER_POINT));
 	pSkp->StretchRect(hSrc, &r, &t);
 	pSkp->SetBlendState();
 	pSkp->StretchRect(hSrc, &r, &w);
@@ -589,7 +589,7 @@ void D3D9Client::SketchPadTest()
 	pSkp->RotateRect(hSrc, &q, 56, 24, float(-PI05));
 
 	RECT tr = { 33, 49, 47, 63 };
-	pSkp->ColorFill(FVECTOR4((DWORD)0xFFFF00FF), &tr);
+	pSkp->ColorFill(0xFFFF00FF, &tr);
 
 	pSkp->QuickPen(0xFF000000);
 	pSkp->QuickBrush(0x80FFFF00);
@@ -611,7 +611,7 @@ void D3D9Client::SketchPadTest()
 
 	RECT cr = { 33, 33, 47, 47 };
 	pSkp->ClipRect(&cr);
-	pSkp->ColorFill(FVECTOR4((DWORD)0xFFFFFF00), NULL);
+	pSkp->ColorFill(0xFFFFFF00, NULL);
 	pSkp->ClipRect();
 
 	oapiReleaseSketchpad(pSkp);
@@ -704,10 +704,11 @@ void D3D9Client::SketchPadTest()
 	IVECTOR2 pos2 = { 384, 128 };
 	IVECTOR2 pos3 = { 640, 128 };
 	IVECTOR2 pos4 = { 384, 384 };
+	IVECTOR2 pos5 = { 640, 384 };
 
-	pSkp = static_cast<Sketchpad3 *>(oapiGetSketchpad(hTgt));
+	pSkp = oapiGetSketchpad(hTgt);
 
-	pSkp->ColorFill(FVECTOR4((DWORD)0xFFFFFFFF), NULL);
+	pSkp->ColorFill(0xFFFFFFFF, NULL);
 
 	pSkp->QuickBrush(0xA0000088);
 	pSkp->QuickPen(0xA0000000, 3.0f);
@@ -730,8 +731,21 @@ void D3D9Client::SketchPadTest()
 	pSkp->QuickPen(0xFF000000, 25.0f);
 	pSkp->DrawPoly(hOutline);
 
+	hSrc = clbkLoadSurface("generic/noisep.dds", OAPISURFACE_TEXTURE);
+
+	pSkp->SetWorldScaleTransform2D(&FVECTOR2(1.0f, 1.0f), &pos5);
+
+	FVECTOR2 pt[4];
+	pt[0] = FVECTOR2(-100.0f, -100.0f);
+	pt[1] = FVECTOR2(-100.0f, 50.0f);
+	pt[2] = FVECTOR2(100.0f, 100.0f);
+	pt[3] = FVECTOR2(100.0f, -50.0f);
+
+	pSkp->CopyTetragon(hSrc, NULL, pt);
 	pSkp->PopWorldTransform();
-	
+
+
+	oapiReleaseTexture(hSrc);
 	oapiReleaseSketchpad(pSkp);
 
 
@@ -2380,7 +2394,7 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 	{
 		if ((td->Usage & D3DUSAGE_RENDERTARGET) && (SURFACE(src)->GetType() == D3DRTYPE_TEXTURE) && (sd->Pool == D3DPOOL_DEFAULT))
 		{
-			Sketchpad3* pSkp = static_cast<Sketchpad3 *>(clbkGetSketchpad_const(tgt));
+			Sketchpad* pSkp = clbkGetSketchpad_const(tgt);
 
 			if (SURFACE(src)->GetColorKey() != SURF_NO_CK)
 			{
@@ -2685,7 +2699,7 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 			D3D9Pad *pSkp2 = (D3D9Pad *)pSkp;
 			pSkp2->LoadDefaults();
 			if (id == RENDERPROC_EXTERIOR || id == RENDERPROC_PLANETARIUM) {
-				pSkp2->SetViewMode(Sketchpad2::USER);
+				pSkp2->SetViewMode(Sketchpad::USER);
 			}
 			pSkp2->SetViewMatrix((FMATRIX4 *)pV);
 			pSkp2->SetProjectionMatrix((FMATRIX4 *)pP);

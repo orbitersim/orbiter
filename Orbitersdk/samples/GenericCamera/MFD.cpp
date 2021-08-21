@@ -30,8 +30,8 @@
 #include "orbitersdk.h"
 #include "MFD.h"
 #include "gcConst.h"
-#include "Sketchpad2.h"
 #include "Shell.h"
+#include "DrawAPI.h"
 
 
 #define ENABLE_OVERLAY false
@@ -356,7 +356,7 @@ int CameraMFD::ButtonMenu (const MFDBUTTONMENU **menu) const
 
 // ============================================================================================================
 //
-bool CameraMFD::Update(oapi::Sketchpad *skp)
+bool CameraMFD::Update(oapi::Sketchpad *pSkp)
 {
 	
 	hShell->InvalidateDisplay();
@@ -372,29 +372,27 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 	RECT sr = { 0, 0, long(W - 2), long(H - 3) };
 	
-	skp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
+	pSkp->SetTextAlign(Sketchpad::TAlign_horizontal::CENTER);
 
 	if (hRenderSrf) {
-
-		oapi::Sketchpad3 *pSkp3 = (oapi::Sketchpad3 *)skp;
 
 		if (nDock != 0 || nAtch != 0) {
 
 			if (bNightVis) {
-				pSkp3->SetBrightness(&FVECTOR4(0.0, 4.0, 0.0, 1.0));
-				pSkp3->SetRenderParam(SKP3_PRM_GAMMA, &FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
-				pSkp3->SetRenderParam(SKP3_PRM_NOISE, &FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
+				pSkp->SetBrightness(&FVECTOR4(0.0, 4.0, 0.0, 1.0));
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(0.5f, 0.5f, 0.5f, 1.0f));
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_NOISE, &FVECTOR4(0.0f, 0.3f, 0.0f, 0.0f));
 			}
 
 
 			// Blit the camera view into the sketchpad.
-			pSkp3->CopyRect(hRenderSrf, &sr, 1, 1);
+			pSkp->CopyRect(hRenderSrf, &sr, 1, 1);
 
 
 			if (bNightVis) {
-				pSkp3->SetBrightness(NULL);
-				pSkp3->SetRenderParam(SKP3_PRM_GAMMA, NULL);
-				pSkp3->SetRenderParam(SKP3_PRM_NOISE, NULL);
+				pSkp->SetBrightness(NULL);
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, NULL);
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_NOISE, NULL);
 			}
 		}
 
@@ -414,39 +412,39 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 
 			RECT ch = { 0, 0, len, 4 };
 		
-			pSkp3->CopyRect(hTexture, &ch, x - len, y);
-			pSkp3->CopyRect(hTexture, &ch, x, y);
+			pSkp->CopyRect(hTexture, &ch, x - len, y);
+			pSkp->CopyRect(hTexture, &ch, x, y);
 
-			pSkp3->SetWorldTransform2D(1.0f, float(PI05), &rc, NULL);
+			pSkp->SetWorldTransform2D(1.0f, float(PI05), &rc, NULL);
 
-			pSkp3->CopyRect(hTexture, &ch, x - len, y);
-			pSkp3->CopyRect(hTexture, &ch, x, y);
+			pSkp->CopyRect(hTexture, &ch, x - len, y);
+			pSkp->CopyRect(hTexture, &ch, x, y);
 
 			// Back to defaults
-			pSkp3->SetWorldTransform();
+			pSkp->SetWorldTransform();
 		}
 	}
 	else {
 		static char *msg = { "No Graphics API" };
-		skp->Text(W / 2, H / 2, msg, lstrlen(msg));
+		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 	
 
 	if (!hCamera) {
 		static char *msg = { "Custom Cameras Disabled" };
-		skp->Text(W / 2, H / 2, msg, lstrlen(msg));
+		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 
 	if (nDock == 0 && nAtch == 0) {
 		static char *msg = { "No Dock/Attachment points" };
-		skp->Text(W / 2, H / 2, msg, lstrlen(msg));
+		pSkp->Text(W / 2, H / 2, msg, lstrlen(msg));
 		return true;
 	}
 
 
-	skp->SetTextAlign();
+	pSkp->SetTextAlign();
 
 	char text[256];
 	static const char* mode[] = { "Attach(", "Dock(" };
@@ -459,18 +457,17 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 	sprintf_s(text, 256, "Viewing %s %s%d)%s", hVessel->GetName(), mode[type], index, atchId.c_str());
 
 	
-	oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)skp;
-	pSkp2->QuickBrush(0xA0000000);
-	pSkp2->QuickPen(0);
-	pSkp2->Rectangle(1, 1, W - 1, tbgh);
-	pSkp2->Rectangle(1, H - tbgh, W - 1, H - 1);
+	pSkp->QuickBrush(0xA0000000);
+	pSkp->QuickPen(0);
+	pSkp->Rectangle(1, 1, W - 1, tbgh);
+	pSkp->Rectangle(1, H - tbgh, W - 1, H - 1);
 	
 
-	hShell->Title (skp, text);
+	hShell->Title (pSkp, text);
 
 	sprintf_s(text, 256, "[%s] FOV=%0.0f° Ofs=%2.2f[m]", paci[bParent], fov*2.0, offset);
 
-	skp->Text(10, H - tbgh, text, lstrlen(text));
+	pSkp->Text(10, H - tbgh, text, lstrlen(text));
 	
 	return true;
 }
@@ -480,14 +477,12 @@ bool CameraMFD::Update(oapi::Sketchpad *skp)
 //
 void CameraMFD::DrawOverlay(oapi::Sketchpad *pSkp)
 {
-	Sketchpad3 *pSkp3 = dynamic_cast<Sketchpad3*>(pSkp);
-
 	// Must identify the surface, no pre-filtering exists in a caller application
 	// This callback function may receive "render overlay" calls not intended for this CameraMFD
-	if (pSkp3->GetSurface() == hRenderSrf) {
-		pSkp3->QuickPen(0xFF0000FF, 3.0f);
-		pSkp3->Line(0, 0, W, H);
-		pSkp3->Line(0, H, W, 0);
+	if (pSkp->GetSurface() == hRenderSrf) {
+		pSkp->QuickPen(0xFF0000FF, 3.0f);
+		pSkp->Line(0, 0, W, H);
+		pSkp->Line(0, H, W, 0);
 	}
 }
 
