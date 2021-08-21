@@ -63,6 +63,18 @@ namespace oapi {
 			y = _y;
 		}
 
+		FVECTOR2(long _x, long _y)
+		{
+			x = float(_x);
+			y = float(_y);
+		}
+
+		FVECTOR2(int _x, int _y)
+		{
+			x = float(_x);
+			y = float(_y);
+		}
+
 		FVECTOR2(const POINT& p)
 		{
 			x = float(p.x);
@@ -542,6 +554,21 @@ namespace oapi {
 	inline FVECTOR4 saturate(FVECTOR4& v)
 	{
 		return FVECTOR4(saturate(v.x), saturate(v.y), saturate(v.z), saturate(v.w));
+	}
+
+	inline FVECTOR2 lerp(const FVECTOR2& a, const FVECTOR2& b, float x)
+	{
+		return a + (b - a) * x;
+	}
+
+	inline FVECTOR3 lerp(const FVECTOR3& a, const FVECTOR3& b, float x)
+	{
+		return a + (b - a) * x;
+	}
+
+	inline FVECTOR4 lerp(const FVECTOR4& a, const FVECTOR4& b, float x)
+	{
+		return a + (b - a) * x;
 	}
 
 
@@ -1052,12 +1079,22 @@ public:
 	inline SURFHANDLE GetSurface() const { return surf; }
 
 	/**
-	 * \brief Obsolete function will return NULL.
+	 * \brief Obsolete function. Will return NULL.
 	 * \return NULL
 	 */
 	virtual HDC GetDC() { return NULL; }
 
+	/**
+	 * \brief Draw a text string using WCHAR.
+	 * \param x reference x position [pixel]
+	 * \param y reference y position [pixel]
+	 * \param str text string
+	 * \param len string length for output
+	 * \return \e true on success, \e false on failure.
+	 * \default None, returns false.
+	 */
 	virtual bool TextW(int x, int y, const LPWSTR str, int len) { return false; }
+
 
 	virtual int GetVersion() { return 1; }
 
@@ -1067,7 +1104,6 @@ public:
 		*/
 	virtual void GetRenderSurfaceSize(LPSIZE size) { assert(false); }
 
-
 	/**
 	* \brief Setup a quick pen, removes any other pen from use. Set to zero to disable a pen from use.
 	* \param color Pen color in 0xAABBGGRR
@@ -1076,13 +1112,11 @@ public:
 	*/
 	virtual void QuickPen(DWORD color, float width = 1.0f, DWORD style = 1) { assert(false); }
 
-
 	/**
 	* \brief Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
 	* \param color Brush color in 0xAABBGGRR
 	*/
 	virtual void QuickBrush(DWORD color) { assert(false); }
-
 
 	/**
 	* \brief Set up a global line width scale factor
@@ -1090,7 +1124,6 @@ public:
 	* \param pattern Line pattern scale factor. (Default 1.0f)
 	*/
 	virtual void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f) { assert(false); }
-
 
 	/**
 	* \brief Set up a global world transformation matrix.
@@ -1102,31 +1135,26 @@ public:
 	*/
 	virtual	void SetWorldTransform(const FMATRIX4* pWT = NULL) { assert(false); }
 
-
 	/**
 	* \brief Get a View matrix. [Read only]
 	*/
 	virtual	const FMATRIX4* ViewMatrix() const { assert(false); return NULL; }
-
 
 	/**
 	* \brief Get a Projection matrix. [Read only]
 	*/
 	virtual	const FMATRIX4* ProjectionMatrix() const { assert(false); return NULL; }
 
-
 	/**
 	* \brief Get combined view projection matrix. [Read only]
 	*/
 	virtual	const FMATRIX4* GetViewProjectionMatrix() const { assert(false); return NULL; }
-
 
 	/**
 	* \brief Set an active view mode. Switch between modes doesn't reset the view matrices and setups.
 	* \param mode, SkpView mode setting.
 	*/
 	virtual void SetViewMode(SkpView mode = ORTHO) { assert(false); }
-
 
 	/**
 	* \brief Set up a global world transformation matrix.
@@ -1141,13 +1169,11 @@ public:
 	*/
 	virtual void SetWorldTransform2D(float scale = 1.0f, float rot = 0.0f, IVECTOR2* ctr = NULL, IVECTOR2* trl = NULL) { assert(false); }
 
-
 	/**
 	* \brief Set up a screen space clip rectangle. Usefull when need to draw in a smaller sub section of the render target.
 	* \param pClip A pointer to clipping rectangle, Set to NULL to disable clipping.
 	*/
 	virtual void ClipRect(const LPRECT pClip = NULL) { assert(false); }
-
 
 	/**
 	* \brief Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
@@ -1160,13 +1186,11 @@ public:
 	*/
 	virtual void Clipper(int idx, const VECTOR3* pPos = NULL, double cos_angle = 0.0, double dist = 0.0) { assert(false); }
 
-
 	/**
 	* \brief Enable a use of depth buffer.
 	* \param bEnable Toggle depth buffer.
 	*/
 	virtual void DepthEnable(bool bEnable) { assert(false); }
-
 
 	/**
 	* \brief Draws a template mesh group (from a system memory) in the render target.
@@ -1181,9 +1205,8 @@ public:
 	* \note Final color = Texture Color * Material Color * Pen Color
 	* \sa DrawSketchMesh
 	*/
-	virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, MeshFlags = SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
+	virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 	
-
 	/**
 	* \brief Copy 'Blit' a rectangle
 	* \param hSrc Source surface handle
@@ -1194,7 +1217,6 @@ public:
 	*/
 	virtual void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
-
 	/**
 	* \brief Copy 'Blit' a rectangle
 	* \param hSrc Source surface handle
@@ -1203,7 +1225,6 @@ public:
 	* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 	*/
 	virtual void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt) { assert(false); }
-
 
 	/**
 	* \brief Copy 'Blit' a rectangle with rotation and scaling
@@ -1219,7 +1240,6 @@ public:
 	*/
 	virtual void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
 
-
 	/**
 	* \brief Copy 'Blit' a rectangle using a color-key stored in a source surface.
 	* \param hSrc Source surface handle
@@ -1230,7 +1250,6 @@ public:
 	* \note Can mirror by a use of negative width/height in source rectangle
 	*/
 	virtual void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
-
 
 	/**
 	* \brief Write a line of text using text scaling and rotation
@@ -1245,7 +1264,6 @@ public:
 	*/
 	virtual void TextEx(float x, float y, const char* str, float scale = 1.0f, float angle = 0.0f) { assert(false); }
 
-
 	/**
 	* \brief Draw a pre-created polyline or polygon object
 	* \param hPoly Handle to a poly object
@@ -1254,7 +1272,6 @@ public:
 	*/
 	virtual void DrawPoly(HPOLY hPoly, DWORD flags = 0) { assert(false); }
 
-
 	/**
 	* \brief Draw a list of independent lines. 0-1, 2-3, 4-5,...
 	* \param pt list of vertex points.
@@ -1262,13 +1279,11 @@ public:
 	*/
 	virtual void Lines(FVECTOR2* pt1, int nlines) { assert(false); }
 
-
 	/**
 	* \brief Set up a view matrix.
 	* \param pV A pointet to FMATRIX4, NULL to reset default settings.
 	*/
 	virtual	void SetViewMatrix(const FMATRIX4* pV = NULL) { assert(false); }
-
 
 	/**
 	* \brief Set up a projection matrix.
@@ -1276,13 +1291,11 @@ public:
 	*/
 	virtual	void SetProjectionMatrix(const FMATRIX4* pP = NULL) { assert(false); }
 
-
 	/**
 	* \brief Get a read only pointer to current ColorMatrix.
 	* \sa SetColorMatrix, SetBrightness
 	*/
 	virtual const FMATRIX4* GetColorMatrix() { assert(false); return NULL; }
-
 
 	/**
 	* \brief Set a ColorMatrix for color correrctions. Reset to default by passing NULL pointer
@@ -1291,14 +1304,12 @@ public:
 	*/
 	virtual void SetColorMatrix(const FMATRIX4* pMatrix = NULL) { assert(false); }
 
-
 	/**
 	* \brief Automatically set a ColorMatrix for brightness control. NULL to restore default settings.
 	* \param pBrightness Pointer into a float values color vector, or NULL.
 	* \sa GetColorMatrix, SetColorMatrix
 	*/
 	virtual void SetBrightness(const FVECTOR4* pBrightness = NULL) { assert(false); }
-
 
 	/**
 	* \brief Get a render configuration setting or "effect".
@@ -1310,14 +1321,12 @@ public:
 	*/
 	virtual FVECTOR4 GetRenderParam(RenderParam param) { assert(false); return FVECTOR4(0, 0, 0, 0); }
 
-
 	/**
 	* \brief Set a render configuration paramater or "effect".
 	* \param param A setting ID to set, or NULL to disable effect from use.
 	* \sa SetRenderParam
 	*/
 	virtual void SetRenderParam(RenderParam param, const FVECTOR4* data = NULL) { assert(false); }
-
 
 	/**
 	* \brief Setup a blending state
@@ -1329,18 +1338,15 @@ public:
 	*/
 	virtual void SetBlendState(BlendState State = (BlendState)(ALPHABLEND | FILTER_LINEAR)) { assert(false); }
 
-
 	/**
 	* \brief Get world transformation matrix
 	*/
 	virtual FMATRIX4 GetWorldTransform() const { return FMATRIX4(); }
 
-
 	/**
 	* \brief Push current world transformation matrix onto a stack
 	*/
 	virtual void PushWorldTransform() { assert(false); }
-
 
 	/**
 	* \brief Pop a world transformation matrix from a stack and make it active
@@ -1377,7 +1383,13 @@ public:
 
 	virtual void StretchRegion(const skpRegion* rgn, SURFHANDLE hSrc, const LPRECT out) { assert(false); }
 
-	// DOTO: Add CopyTertagon() function from 2016 implementation
+	/**
+	* \brief Copy 'Blit' a tetragon
+	* \param hSrc Source surface handle
+	* \param sr Source rectangle, (or NULL for whole surface)
+	* \param pt Pointer to an array of 4 FVECTOR2 target points forming shape of the tetragon.
+	*/
+	virtual void CopyTetragon(SURFHANDLE hSrc, const LPRECT sr, const FVECTOR2 pt[4]) { assert(false); }
 
 	/**
 	* \brief Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF
