@@ -31,4 +31,17 @@ extern "C" typedef XRSoundEngine20 *(__cdecl *ModuleXRSoundEngineInstanceFuncPtr
 // Note: set XRSOUND_BETA to empty string if this is not a beta build.
 // If beta build, remember to add a trailing space to the string; e.g., "Beta-1 "; otherwise, make it "".
 #define XRSOUND_ENGINE_VERSION 3.0f
-#define XRSOUND_BETA_STR ""
+#define XRSOUND_BETA_STR "RC1 "
+
+// for use by build version strings
+#ifdef _WIN64
+#define ARCH_TYPE "64-bit"
+#else
+#define ARCH_TYPE "32-bit"
+#endif
+
+#ifdef _DEBUG
+#define BUILD_TYPE "Debug"
+#else
+#define BUILD_TYPE "Release"
+#endif

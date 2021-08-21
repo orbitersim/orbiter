@@ -530,7 +530,7 @@ double XRSoundEngine::ComputeVariableLevel(const double min, const double max, d
 const char *XRSoundEngine::GetVersionStr()
 {
     if (s_csVersion.IsEmpty())
-        s_csVersion.Format("XRSound %.2f %s(Build Date: %s)", XRSOUND_ENGINE_VERSION, XRSOUND_BETA_STR, __DATE__);
+        s_csVersion.Format("XRSound %.2f %s[%s %s], Build Date : %s", XRSOUND_ENGINE_VERSION, XRSOUND_BETA_STR, ARCH_TYPE, BUILD_TYPE, __DATE__);
 
     return static_cast<const char *>(s_csVersion);
 }
