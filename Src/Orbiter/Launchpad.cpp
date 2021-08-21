@@ -113,7 +113,7 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 			timerid = SetTimer (hDlg, 1, 1000, NULL);
 		}
 		Resize (hDlg, client0.right, client0.bottom, SIZE_RESTORED);
-		HidePage (PG_VID); // no video options by default
+//		HidePage (PG_VID); // no video options by default
 		if (pCfg->rLaunchpad.right > pCfg->rLaunchpad.left) {
 			RECT dr, lr = pCfg->rLaunchpad;
 			int x = lr.left, y = lr.top, w = lr.right-lr.left, h = lr.bottom-lr.top;
@@ -135,7 +135,7 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), uscram(SIG7));
 		Show();
 		if (startvideotab) {
-			UnhidePage (4, "Video");
+//			UnhidePage (4, "Video");
 			SwitchTabPage (hDlg, 4);
 		}
 	} else

@@ -421,7 +421,7 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	oclient = new OrbiterGraphics (this); TRACENEW
 	gclient = oclient;
 	gclient->clbkInitialise();
-	m_pLaunchpad->UnhidePage (4, "Video");
+//	m_pLaunchpad->UnhidePage (4, "Video");
 #endif // INLINEGRAPHICS
 
 	Instrument::RegisterBuiltinModes();
@@ -2750,7 +2750,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 {
 	if (gclient) return false; // another client is already attached
 	register_module = gc;
-	if (gc->clbkUseLaunchpadVideoTab()) m_pLaunchpad->UnhidePage (4, "Video");
+//	if (gc->clbkUseLaunchpadVideoTab()) m_pLaunchpad->UnhidePage (4, "Video");
 	gclient = gc;
 	gclient->clbkInitialise();
 	return true;
@@ -2763,7 +2763,7 @@ bool Orbiter::AttachGraphicsClient (oapi::GraphicsClient *gc)
 bool Orbiter::RemoveGraphicsClient (oapi::GraphicsClient *gc)
 {
 	if (!gclient || gclient != gc) return false; // no client attached
-	m_pLaunchpad->HidePage (4);
+//	m_pLaunchpad->HidePage (4);
 	gclient = NULL;
 	return true;
 }
