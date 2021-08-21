@@ -146,14 +146,6 @@ bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 
 //-----------------------------------------------------------------------------
 
-void orbiter::LaunchpadDialog::SetTitle(PSTR title)
-{
-	if (hDlg)
-		SetWindowText(hDlg, title);
-}
-
-//-----------------------------------------------------------------------------
-
 void orbiter::LaunchpadDialog::Show()
 {
 	ShowWindow(hDlg, SW_SHOW);
@@ -176,7 +168,7 @@ void orbiter::LaunchpadDialog::Hide()
 
 bool orbiter::LaunchpadDialog::ConsumeMessage(LPMSG pmsg)
 {
-	return (IsDialogMessage(hDlg, pmsg) == TRUE);
+	return (bool)IsDialogMessage(hDlg, pmsg);
 }
 
 //-----------------------------------------------------------------------------

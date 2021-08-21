@@ -45,8 +45,6 @@ namespace orbiter {
 		// create dialog window
 		// If return value==false then the window could not be created
 
-		void SetTitle(PSTR title);
-
 		void Show(); // Show the launchpad window
 		void Hide(); // Hide the launchpad window
 

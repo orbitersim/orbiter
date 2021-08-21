@@ -687,6 +687,7 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	}
 
 	if (hRenderWnd) {
+		bActive = true;
 
 		// Create keyboard device
 		if (!pDI->CreateKbdDevice (hRenderWnd)) {
@@ -819,13 +820,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	//	module[i].module->clbkSimulationStart (rendermode);
 	//	CHECKCWD(cwd,module[i].name);
 	//}
-
-	if (gclient) {
-//		SetFocus (hDlg);
-//		Sleep(2);
-		SetFocus (hRenderWnd);
-	}
-	// make sure render window has focus on start
 
 	LOGOUT ("Finished setting up render state");
 
