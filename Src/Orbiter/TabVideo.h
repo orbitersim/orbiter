@@ -35,6 +35,9 @@ namespace orbiter {
 		// and enter them in the combo box
 
 		void SelectClientIndex(UINT idx);
+
+	private:
+		UINT idxClient;
 	};
 
 }

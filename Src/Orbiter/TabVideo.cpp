@@ -21,6 +21,7 @@ using namespace std;
 
 orbiter::DefVideoTab::DefVideoTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
+	idxClient = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -139,6 +140,9 @@ void orbiter::DefVideoTab::ScanDir(const PSTR dir)
 
 void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 {
+	if (idxClient) {
+
+	}
 	ShowWindow(GetDlgItem(hTab, IDD_PAGE_DEV), idx ? SW_SHOW : SW_HIDE);
 }
 

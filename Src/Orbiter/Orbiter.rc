@@ -11,7 +11,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#include "resource2.h"
+#include "resource2.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -589,10 +590,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Plugin modules",IDC_MOD_ACTGRP,4,4,48,8
     EDITTEXT        IDC_MOD_INFO,155,56,118,177,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "",IDC_TREE1,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_CHECKBOXES | WS_BORDER | WS_HSCROLL | WS_TABSTOP,4,16,147,217
+    CONTROL         "",IDC_MOD_TREE,"SysTreeView32",TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | TVS_CHECKBOXES | WS_BORDER | WS_HSCROLL | WS_TABSTOP,4,16,147,217
     PUSHBUTTON      "Deactivate all",IDC_MOD_DEACTALL,130,237,61,14
-    PUSHBUTTON      "Expand all",IDC_BUTTON1,4,237,61,14
-    PUSHBUTTON      "Collapse all",IDC_BUTTON2,67,237,61,14
+    PUSHBUTTON      "Expand all",IDC_MOD_BUTTON1,4,237,61,14
+    PUSHBUTTON      "Collapse all",IDC_MOD_BUTTON2,67,237,61,14
     CONTROL         "Custom1",IDC_MOD_SPLIT1,"SplitterCtrl",WS_CLIPSIBLINGS,4,16,269,217
 END
 
@@ -1738,7 +1739,8 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-#include "orbiter.rc2"
+#include "orbiter.rc2"
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
