@@ -169,6 +169,14 @@ bool orbiter::LaunchpadDialog::ConsumeMessage(LPMSG pmsg)
 	return (bool)IsDialogMessage(hDlg, pmsg);
 }
 
+orbiter::LaunchpadTab* orbiter::LaunchpadDialog::GetTab(UINT i) const
+{
+	if (i < ntab)
+		return Tab[i];
+	else
+		return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 // Name: AddTab()
 // Desc: Inserts a new tab into the list

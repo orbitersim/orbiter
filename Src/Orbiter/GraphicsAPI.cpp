@@ -6,6 +6,8 @@
 
 #include "Orbiter.h"
 #include "Launchpad.h"
+#include "LpadTab.h"
+#include "TabVideo.h"
 #include "Psys.h"
 #include "Pane.h"
 #include "VCockpit.h"
@@ -98,6 +100,12 @@ bool GraphicsClient::clbkInitialise ()
 	VideoData.modeidx    = (int)cfg->CfgDevPrm.Device_mode;
 	VideoData.winw       = (int)cfg->CfgDevPrm.WinW;
 	VideoData.winh       = (int)cfg->CfgDevPrm.WinH;
+
+#ifndef INLINEGRAPHICS
+	char fname[256];
+	GetModuleFileName(hModule, fname, 256);
+	((orbiter::DefVideoTab*)g_pOrbiter->Launchpad()->GetTab(PG_VID))->OnGraphicsClientLoaded(this, fname);
+#endif
 
 	return true;
 }
@@ -483,11 +491,6 @@ HBITMAP GraphicsClient::ReadImageFromFile (const char *fname, UINT w, UINT h)
 		return 0;
 	}
 }
-
-// ======================================================================
-
-HWND GraphicsClient::LaunchpadVideoTab() const
-	{ return GetDlgItem(hVid, IDD_PAGE_DEV); }
 
 // ======================================================================
 

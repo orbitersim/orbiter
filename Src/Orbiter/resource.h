@@ -24,11 +24,10 @@
 #define IDD_PAGE_OPT                    173
 #define IDD_PAGE_VIS                    174
 #define IDD_PAGE_MOD                    175
-#define IDD_PAGE_VID                    176
+#define IDD_PAGE_DEV                    176
 #define IDD_PAGE_JOY                    177
 #define IDD_PAGE_EXT                    178
 #define IDD_PAGE_ABT                    179
-#define IDD_PAGE_DEV                    180
 #define IDD_SAVESCN                     181
 #define IDD_CAMERA                      182
 #define IDD_CAM_PG_TARGET               184

@@ -204,10 +204,8 @@ void orbiter::ModuleTab::RefreshLists ()
 			FreeLibrary (hMod);
 		}
 
-#ifdef INLINEGRAPHICS
 		if (!strcmp (catstr, "Graphics engines"))
-			continue; // don't display graphics client modules in orbiter.exe
-#endif
+			continue; // graphics client modules are loaded via the Video tab
 
 		// find the category entry
 		HTREEITEM catItem = GetCategoryItem (catstr);

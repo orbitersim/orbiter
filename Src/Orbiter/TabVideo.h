@@ -21,6 +21,8 @@ namespace orbiter {
 
 		BOOL InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam);
 
+		void OnGraphicsClientLoaded(oapi::GraphicsClient* gc, const PSTR moduleName);
+
 		void SetConfig(Config* cfg);
 
 		bool OpenHelp();
@@ -28,6 +30,8 @@ namespace orbiter {
 		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
+		void ShowInterface(HWND hTab, bool show);
+
 		void EnumerateClients(HWND hTab);
 
 		void ScanDir(HWND hTab, const PSTR dir);

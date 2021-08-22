@@ -1618,7 +1618,7 @@ protected:
 	 * If clbkUseLanuchpadVideoTab() is overloaded to return false, this
 	 * function will return NULL.
 	 */
-	HWND LaunchpadVideoTab() const;
+	HWND LaunchpadVideoTab() const { return hVid; }
 
 	// ==================================================================
 	// Functions for the celestial sphere
