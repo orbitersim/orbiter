@@ -1026,7 +1026,7 @@ public:
 	HWND 				GetWindow();
 	bool 				HasVertexTextureSupport() const { return bVertexTex; }
 	const D3DCAPS9 *	GetHardwareCaps() const { return pCaps; }
-	FileParser *		GetFileParser() const { return parser; }
+	//FileParser *		GetFileParser() const { return parser; }
 	LPDIRECT3DSURFACE9	GetBackBuffer() const { return pBackBuffer; }
 	LPDIRECT3DSURFACE9	GetDepthStencil() const { return pDepthStencil; }
 	const void *		GetConfigParam (DWORD paramtype) const;
@@ -1283,7 +1283,7 @@ private:
 	LPDIRECT3DSURFACE9		pDepthStencil;
 	CD3DFramework9 *		pFramework;
 	const D3DCAPS9 *		pCaps;
-	FileParser *			parser;
+	//FileParser *			parser;
 	std::string				scenarioName;
 	HANDLE					hMainThread;
 	WindowManager *			pWM;

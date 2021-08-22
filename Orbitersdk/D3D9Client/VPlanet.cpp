@@ -31,7 +31,6 @@
 #include "CloudMgr.h"
 #include "HazeMgr.h"
 #include "RingMgr.h"
-#include "FileParser.h"
 #include "DebugControls.h"
 #include "AtmoControls.h"
 #include "VectorHelpers.h"
@@ -482,7 +481,7 @@ vPlanet::vPlanet (OBJHANDLE _hObj, const Scene *scene): vObject (_hObj, scene)
 	//
 	MicroCfg.bEnabled = ParseMicroTextures();
 
-	albedo = gc->GetFileParser()->GetAlbedo(hObj);
+	ParseConfig(oapiGetObjectFileName(hObj));
 }
 
 // ==============================================================
@@ -515,6 +514,42 @@ vPlanet::~vPlanet ()
 	if (hazemgr2) delete hazemgr2;
 	if (ringmgr)  delete ringmgr;
 	if (mesh)     delete mesh;
+}
+
+
+// ===========================================================================================
+//
+bool vPlanet::ParseConfig(const char* fname)
+{
+	std::string dummy;   
+	std::ifstream fs(fname);
+
+	if (fs.fail()) {
+		LogErr("Could not open a planet configuration file '%s'", fname);
+		return false;
+	}
+
+	OBJHANDLE hPlanet = NULL;
+	std::string line; // One file line
+
+	while (std::getline(fs, line))
+	{
+		line = trim(line);
+
+		// skip empty lines and comments
+		if (!line.length() || line[0] == ';') continue;
+
+		// AlbedoRGB = <float> <float> <float>
+		if (startsWith(line, "AlbedoRGB"))
+		{
+			std::istringstream iss(line);
+			iss >> dummy >> dummy
+				>> albedo.x
+				>> albedo.y
+				>> albedo.z;
+		}
+	}
+	return true;
 }
 
 // ==============================================================

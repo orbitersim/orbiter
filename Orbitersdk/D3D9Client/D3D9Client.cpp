@@ -33,7 +33,6 @@
 #include "Log.h"
 #include "VideoTab.h"
 #include "GDIPad.h"
-#include "FileParser.h"
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "Surfmgr2.h"
@@ -231,7 +230,6 @@ D3D9Client::D3D9Client (HINSTANCE hInstance) :
 	pWM			(NULL),
 	pBltSkp		(NULL),
 	pBltGrpTgt	(NULL),
-	parser    (),
 	hRenderWnd(),
 	scene     (),
 	meshmgr   (),
@@ -354,7 +352,6 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	meshmgr          = NULL;
 	pFramework       = NULL;
 	pDevice			 = NULL;
-	parser			 = NULL;
 	pBltGrpTgt		 = NULL;	// Let's set this NULL here, constructor is called only once. Not when exiting and restarting a simulation.
 	pNoiseTex		 = NULL;
 	surfBltTgt		 = NULL;	// This variable is not used, set it to NULL anyway
@@ -533,11 +530,6 @@ void D3D9Client::clbkPostCreation()
 {
 	_TRACE;
 	LogAlw("================ clbkPostCreation ===============");
-
-	if (parser) return;
-
-	parser = new FileParser(scenarioName);
-	parser->LogContent();
 
 	if (scene) scene->Initialise();
 
@@ -816,7 +808,6 @@ void D3D9Client::clbkCloseSession(bool fastclose)
 	//GraphicsClient::clbkCloseSession(fastclose);
 
 	SAFE_DELETE(pWM);
-	SAFE_DELETE(parser);
 	LogAlw("================= Deleting Scene ================");
 	Scene::GlobalExit();
 	SAFE_DELETE(scene);

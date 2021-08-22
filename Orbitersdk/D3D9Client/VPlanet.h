@@ -52,6 +52,7 @@ public:
 	vPlanet (OBJHANDLE _hObj, const Scene *scene);
 	~vPlanet ();
 
+	bool			ParseConfig(const char *fname);
 	virtual bool	GetMinMaxDistance(float *zmin, float *zmax, float *dmin);
 	virtual void	UpdateBoundingBox();
 	static void		GlobalExit();

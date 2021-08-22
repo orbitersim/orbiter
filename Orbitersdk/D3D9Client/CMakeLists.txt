@@ -27,7 +27,6 @@ set(SourceFiles
 	D3D9TextMgr.cpp
 	D3D9Util.cpp
 	DebugControls.cpp
-	FileParser.cpp
 	gcCore.cpp
 	GDIPad.cpp
 	HazeMgr.cpp
@@ -78,7 +77,6 @@ set(IncludeFiles
 	D3D9TextMgr.h
 	D3D9Util.h
 	DebugControls.h
-	FileParser.h
 	GDIPad.h
 	HazeMgr.h
 	IProcess.h

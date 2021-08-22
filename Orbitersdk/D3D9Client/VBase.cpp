@@ -21,7 +21,6 @@
 #include "D3D9Surface.h"
 #include "BeaconArray.h"
 #include "RunwayLights.h"
-#include "FileParser.h"
 #include "AABBUtil.h"
 #include "OrbiterAPI.h"
 #include "DebugControls.h"
@@ -216,7 +215,7 @@ double vBase::GetElevation() const
 //
 void vBase::CreateRunwayLights()
 {
-	const char *file = gc->GetFileParser()->GetConfigFile(hObj);
+	const char *file = oapiGetObjectFileName(hObj);
 	if (file) numRunwayLights = RunwayLights::CreateRunwayLights(this, scn, file, runwayLights);
 	else LogErr("Configuration file not found for object %s", _PTR(hObj));
 }
@@ -225,7 +224,7 @@ void vBase::CreateRunwayLights()
 //
 void vBase::CreateTaxiLights()
 {
-	const char *file = gc->GetFileParser()->GetConfigFile(hObj);
+	const char *file = oapiGetObjectFileName(hObj);
 	if (file) numTaxiLights = TaxiLights::CreateTaxiLights(hObj, scn, file, taxiLights);
 	else LogErr("Configuration file not found for object %s", _PTR(hObj));
 }
