@@ -305,17 +305,19 @@ public:
 	 *   the following codes: 0="success", 3="invalid mesh handle", 4="material index out of range"
 	 * \default, None, returns 2 ("client does not support operation").
 	 */
-	int clbkSetMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat);
+	int clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL* mat);
+	int clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in);
 
 	/**
-	 * \brief Retrieve the properties of one of the mesh materials.
-	 * \param hMesh device mesh handle
-	 * \param matidx material index (>= 0)
-	 * \param mat [out] pointer to MATERIAL structure to be filled by the method.
-	 * \return true if successful, false on error (index out of range)
-	 * \default None, returns 2 ("client does not support operation").
-	 */
-	int clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat);
+	* \brief Retrieve the properties of one of the mesh materials.
+	* \param hMesh device mesh handle
+	* \param matidx material index (>= 0)
+	* \param mat [out] pointer to MATERIAL structure to be filled by the method.
+	* \return true if successful, false on error (index out of range)
+	* \default None, returns 2 ("client does not support operation").
+	*/
+	int clbkMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL* mat);
+	int clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4* out);
 
 	/**
      * \brief Set custom properties for a device-specific mesh.
@@ -914,8 +916,8 @@ public:
 	 *   \ref oapi::Font::Font
 	 * \sa clbkReleaseFont, oapi::Font
 	 */
-	Font *clbkCreateFont (int height, bool prop, const char *face, oapi::Font::Style style = oapi::Font::NORMAL, int orientation = 0) const;
-	Font *clbkCreateFontEx(int height, int width, bool prop, const char *face, DWORD flags, int orientation) const;
+	Font* clbkCreateFont(int height, bool prop, const char* face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) const;
+	Font* clbkCreateFontEx(int height, char* face, int width, int weight, FontStyle style, float spacing) const;
 
 	/**
 	 * \brief De-allocate a font resource.

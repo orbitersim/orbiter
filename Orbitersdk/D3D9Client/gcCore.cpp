@@ -159,6 +159,13 @@ void gcCore::CustomCameraOnOff(CAMERAHANDLE hCam, bool bOn)
 	}
 }
 
+// ===============================================================================================
+//
+void gcCore::CustomCameraOverlay(CAMERAHANDLE hCam, __gcRenderProc clbk, void *pUser)
+{
+	CAMERA(hCam)->pRenderProc = clbk;
+	CAMERA(hCam)->pUser = pUser;
+}
 
 // ===============================================================================================
 //
@@ -178,49 +185,6 @@ int gcCore::DeleteCustomCamera(CAMERAHANDLE hCam)
 // SketchPad Interface
 // ===============================================================================================
 //
-int gcCore::SketchpadVersion(oapi::Sketchpad *pSkp)
-{
-	if (pSkp->GetTextWidth("_SkpVerInfo") == 2) return 2;
-	return 1;
-}
-
-
-// ===============================================================================================
-//
-/*
-Sketchpad* gcCore::GetSketchpadNative(HSURFNATIVE hSrf, HSURFNATIVE hDep)
-{
-	return g_client->GetSketchpadNative(hSrf, hDep);
-}
-
-
-// ===============================================================================================
-//
-void gcCore::ReleaseSketchpadNative(Sketchpad *pSkp)
-{
-	g_client->ReleaseSketchpadNative(pSkp);
-}
-*/
-
-// ===============================================================================================
-//
-SKETCHMESH gcCore::LoadSketchMesh(const char *name)
-{
-	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
-	SketchMesh *pSM = new SketchMesh(pDev);
-	if (pSM->LoadMesh(name)) return pSM;
-	delete pSM;
-	return NULL;
-}
-
-
-// ===============================================================================================
-//
-void gcCore::DeleteSketchMesh(SKETCHMESH hMesh)
-{
-	if (hMesh) delete ((SketchMesh*)hMesh);
-}
-
 
 // ===============================================================================================
 //
@@ -270,13 +234,6 @@ DWORD gcCore::GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int p
 	return DWORD((static_cast<D3D9PadFont *>(hFont))->GetIndexByPosition(pText, pos, len));
 }
 
-// ===============================================================================================
-//
-oapi::Font *gcCore::CreateSketchpadFont(int height, char *face, int width, int weight, int style, float spacing)
-{
-	_TRACE;
-	return *g_fonts.insert(new D3D9PadFont(height, face, width, weight, style, spacing)).first;
-}
 
 // ===============================================================================================
 //
@@ -321,17 +278,6 @@ int gcCore::SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group,
 	if (pVes) return pVes->SetMatrixTransform(matrix_id, mesh, group, pMat);
 	return -11;
 }
-
-
-// ===============================================================================================
-//
-int gcCore::MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int param, FVECTOR4 *value, bool bSet)
-{
-	if (!hMesh) return -4;
-	D3D9Mesh *pMesh = (D3D9Mesh *)hMesh;
-	return pMesh->Material(idx, param, value, bSet);
-}
-
 
 
 
@@ -663,27 +609,6 @@ void gcCore::GetSystemSpecs(SystemSpecs *sp, int size)
 bool gcCore::RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam)
 {
 	return g_client->RegisterGenericProc(proc, id, pParam);
-}
-
-// ===============================================================================================
-//
-void gcCore::ConvertSurface(SURFHANDLE hSurf, DWORD attrib)
-{
-	//SURFACE(hSurf)->ConvertSurface(attrib);
-}
-
-// ===============================================================================================
-//
-DWORD gcCore::GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation)
-{
-	return SURFACE(hSurf)->GetOAPIFlags();
-}
-
-// ===============================================================================================
-//
-SURFHANDLE gcCore::LoadSurface(const char *fname, DWORD flags)
-{
-	return g_client->clbkLoadSurface(fname, flags);
 }
 
 // ===============================================================================================

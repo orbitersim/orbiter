@@ -119,7 +119,6 @@ Scene::Scene(D3D9Client *_gc, DWORD w, DWORD h)
 	CLEARARRAY(psgBuffer);
 
 	vobjFirst = vobjLast = NULL;
-	camFirst = camLast = camCurrent = NULL;
 	nstream = 0;
 	iVCheck = 0;
 
@@ -1071,30 +1070,29 @@ void Scene::RenderMainScene()
 	// Render Custom Camera view for a focus vessel
 	// --------------------------------------------------------------------------------------------------------
 
-	if (dwTurn == RENDERTURN_CUSTOMCAM) {
-		if (Config->CustomCamMode) {
-			if (camCurrent == NULL) camCurrent = camFirst;
+	if (dwTurn == RENDERTURN_CUSTOMCAM)
+	{
+		if (Config->CustomCamMode && (CustomCams.size() > 0))
+		{
+			if (camCurrent == CustomCams.cend()) camCurrent = CustomCams.cbegin();
+
 			OBJHANDLE hVessel = vFocus->GetObjectA();
-			while (camCurrent) {
+			
+			vObject *vO = GetVisObject((*camCurrent)->hVessel);
+			double maxd = min(500e3, GetCameraAltitude() + 15e3);
 
-				vObject *vO = GetVisObject(camCurrent->hVessel);
-				double maxd = min(500e3, GetCameraAltitude() + 15e3);
+			if (vO->CamDist() < maxd && (*camCurrent)->bActive)
+			{
+				RenderCustomCameraView((*camCurrent));
 
-				if (vO->CamDist() < maxd && camCurrent->bActive) {
-
-					RenderCustomCameraView(camCurrent);
-
-					if (camCurrent->dwFlags & CUSTOMCAM_OVERLAY) {
-						oapi::Sketchpad *pSkp = gc->clbkGetSketchpad(camCurrent->hSurface);
-						gc->MakeRenderProcCall(pSkp, RENDERPROC_CUSTOMCAM_OVERLAY, NULL, NULL);
-						gc->clbkReleaseSketchpad(pSkp);
-					}
-
-					camCurrent = camCurrent->next;
-					break;
+				if ((*camCurrent)->pRenderProc) {
+					D3D9Pad *pSkp = (D3D9Pad * )gc->clbkGetSketchpad((*camCurrent)->hSurface);
+					pSkp->LoadDefaults();
+					(*camCurrent)->pRenderProc(pSkp, (*camCurrent)->pUser);
+					gc->clbkReleaseSketchpad(pSkp);
 				}
-				camCurrent = camCurrent->next;
 			}
+			camCurrent++;
 		}
 	}
 
@@ -3023,7 +3021,7 @@ void Scene::InitGDIResources ()
 
 	const int fsize[4] = { 12, 16, 20, 26 };
 	for (int i = 0; i < 4; ++i) {
-		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", oapi::Font::BOLD);
+		label_font[i] = gc->clbkCreateFont(fsize[i], true, "Arial", FONT_BOLD);
 	}
 	//@todo: different pens for different fonts?
 	label_pen = gc->clbkCreatePen(1, 0, RGB(255, 255, 255));
@@ -3359,20 +3357,10 @@ void Scene::SetupInternalCamera(D3DXMATRIX *mNew, VECTOR3 *gpos, double apr, dou
 int Scene::DeleteCustomCamera(CAMERAHANDLE hCam)
 {
 	if (!hCam) return 0;
-
-	CAMREC *pv = (CAMREC *)hCam;
-
-	int iError = pv->iError;
-
-	if (pv->prev) pv->prev->next = pv->next;
-	else          camFirst = pv->next;
-
-	if (pv->next) pv->next->prev = pv->prev;
-	else          camLast = pv->prev;
-
-	if (pv == camCurrent) camCurrent = NULL;
-
-	delete pv;
+	int iError = CAMERA(hCam)->iError;
+	CustomCams.erase(CAMERA(hCam));
+	delete CAMERA(hCam);
+	camCurrent = CustomCams.cbegin();
 	return iError;
 }
 
@@ -3380,13 +3368,8 @@ int Scene::DeleteCustomCamera(CAMERAHANDLE hCam)
 //
 void Scene::DeleteAllCustomCameras()
 {
-	CAMREC *pv = camFirst;
-	while (pv) {
-		CAMREC *pvn = pv->next;
-		delete pv;
-		pv = pvn;
-	}
-	camFirst = camLast = camCurrent = NULL;
+	for (auto x : CustomCams) delete CAMERA(x);
+	CustomCams.clear();
 }
 
 // ===========================================================================================
@@ -3400,16 +3383,9 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 	if (SURFACE(hSurf)->Is3DRenderTarget()==false) return NULL;
 
 	if (hCamera==NULL) {
-
-		pv = new CAMREC;
-
-		memset(pv, 0, sizeof(CAMREC));
-
-		pv->prev = camLast;
-		pv->next = NULL;
-		if (camLast) camLast->next = pv;
-		else         camFirst = pv;
-		camLast = pv;
+		pv = new CAMREC; memset(pv, 0, sizeof(CAMREC));
+		CustomCams.insert(pv);
+		camCurrent = CustomCams.cbegin();
 	}
 	else {
 		pv = (CAMREC *)hCamera;
@@ -3434,8 +3410,7 @@ CAMERAHANDLE Scene::SetupCustomCamera(CAMERAHANDLE hCamera, OBJHANDLE hVessel, M
 void Scene::CustomCameraOnOff(CAMERAHANDLE hCamera, bool bOn)
 {
 	if (!hCamera) return;
-	CAMREC *pv = (CAMREC *)hCamera;
-	pv->bActive = bOn;
+	CAMERA(hCamera)->bActive = bOn;
 }
 
 // ===========================================================================================

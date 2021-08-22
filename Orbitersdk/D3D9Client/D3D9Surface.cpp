@@ -432,7 +432,8 @@ SurfNative::SurfNative(LPDIRECT3DRESOURCE9 pRes, DWORD flags, LPDIRECT3DSURFACE9
 	Flags(flags),
 	type(D3DRTYPE_FORCE_DWORD),
 	Mipmaps(1),
-	RefCount(1)
+	RefCount(1),
+	ClientFlags(0)
 {
 
 	assert(pRes != NULL);
@@ -1026,6 +1027,14 @@ DWORD SurfNative::GetSizeInBytes()
 		return size;
 	}
 	return 0;
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
+DWORD* SurfNative::GetClientFlags()
+{
+	return &ClientFlags;
 }
 
 

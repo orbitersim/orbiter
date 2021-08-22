@@ -67,6 +67,8 @@ class D3D9Pad;
 
 #define OBJTP_BUILDING			1000
 
+#define CAMERA(x) ((Scene::CAMREC*)x)
+
 class Scene {
 
 
@@ -80,6 +82,8 @@ class Scene {
 	} *vobjFirst, *vobjLast;   // first and last list entry
 
 
+public:
+
 	// Custom camera parameters ========================================================
 	//
 	struct CAMREC {
@@ -91,10 +95,12 @@ class Scene {
 		DWORD		dwFlags;
 		int			iError;
 		bool		bActive;
-		CAMREC  *prev, *next;
-	} *camFirst, *camLast, *camCurrent;
+		__gcRenderProc pRenderProc;
+		void*		pUser;
+	};
 
-public:
+	std::set<CAMREC*> CustomCams;
+	std::set<CAMREC*>::const_iterator camCurrent{};
 
 	// Camera frustum parameters ========================================================
 	//
@@ -462,6 +468,7 @@ private:
 	DWORD		nplanets;		// Number of distance sorted planets to render
 	DWORD		dwTurn;
 	DWORD		dwFrameId;
+	DWORD		camIndex;
 	bool		bRendering;
 
 	oapi::Font *pAxisFont;

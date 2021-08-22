@@ -1036,173 +1036,188 @@ void D3D9Mesh::SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bStat)
 	if (bStat) CheckMeshStatus();
 }
 
+
 // ===========================================================================================
-// -1 = idx out of range
-// -2 = material property not defined cannot get it
-// -3 = invalid marerial id (mid)
-// -4 = invalid input parameters
+//0 = success, 1=no graphics engine attached,
+//2 = graphics engine does not support operation, 3 = invalid mesh handle,
+//4 = material index out of range, 5 = material property not supported by shader used by the mesh.
 //
-int D3D9Mesh::Material(DWORD idx, int mid, FVECTOR4 *value, bool bSet)
+int D3D9Mesh::SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* value)
 {
 
-	if (idx >= nMtrl) return -1;
+	if (idx >= nMtrl) return 4;
 
 	// SET ---------------------------------------------------------------
-	if (bSet && value) {
+	if (value) {
 		switch (mid) {
-		case MESHM_DIFFUSE:
+		case MatProp::Diffuse:
 			Mtrl[idx].Diffuse = *((D3DXVECTOR4*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_DIFFUSE;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_AMBIENT:
+		case MatProp::Ambient:
 			Mtrl[idx].Ambient = *((D3DXVECTOR3*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_AMBIENT;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_SPECULAR:
+		case MatProp::Specular:
 			Mtrl[idx].Specular = *((D3DXVECTOR4*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_SPECULAR;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_EMISSION:
+		case MatProp::Light:
 			Mtrl[idx].Emissive = *((D3DXVECTOR3*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSIVE;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_EMISSION2:
+		case MatProp::Emission:
 			Mtrl[idx].Emission2 = *((D3DXVECTOR3*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_EMISSION2;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_REFLECT:
+		case MatProp::Reflect:
 			Mtrl[idx].Reflect = *((D3DXVECTOR3*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_REFLECT;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_ROUGHNESS:
+		case MatProp::Smooth:
 			Mtrl[idx].Roughness = D3DXVECTOR2(value->g, value->r);
 			Mtrl[idx].ModFlags |= D3D9MATEX_ROUGHNESS;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_FRESNEL:
+		case MatProp::Fresnel:
 			Mtrl[idx].Fresnel = *((D3DXVECTOR3*)value);
 			Mtrl[idx].ModFlags |= D3D9MATEX_FRESNEL;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_METALNESS:
+		case MatProp::Metal:
 			Mtrl[idx].Metalness = value->r;
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_SPECIALFX:
-			 Mtrl[idx].SpecialFX = *((D3DXVECTOR4*)value);
-			 bMtrlModidied = true;
+		case MatProp::SpecialFX:
+			Mtrl[idx].SpecialFX = *((D3DXVECTOR4*)value);
+			bMtrlModidied = true;
 			return 0;
 		}
-		return -3;
-	}
-
-	// GET ---------------------------------------------------------------
-	if ((!bSet) && value) {
-		switch (mid) {
-		case MESHM_DIFFUSE:
-			*((D3DXVECTOR4*)value) = Mtrl[idx].Diffuse;
-			return 0;
-		case MESHM_AMBIENT:
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Ambient;
-			return 0;
-		case MESHM_SPECULAR:
-			*((D3DXVECTOR4*)value) = Mtrl[idx].Specular;
-			return 0;
-		case MESHM_EMISSION:
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Emissive;
-			return 0;
-		case MESHM_EMISSION2:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_EMISSION2) == 0) return -2;
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Emission2;
-			return 0;
-		case MESHM_REFLECT:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_REFLECT) == 0) return -2;
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Reflect;
-			return 0;
-		case MESHM_ROUGHNESS:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_ROUGHNESS) == 0) return -2;
-			value->g = Mtrl[idx].Roughness.x;
-			value->r = Mtrl[idx].Roughness.y;
-			return 0;
-		case MESHM_FRESNEL:
-			if ((Mtrl[idx].ModFlags&D3D9MATEX_FRESNEL) == 0) return -2;
-			*((D3DXVECTOR3*)value) = Mtrl[idx].Fresnel;
-			return 0;
-		case MESHM_METALNESS:
-			if ((Mtrl[idx].ModFlags&MESHM_METALNESS) == 0) return -2;
-			value->r = Mtrl[idx].Metalness;
-			return 0;
-		case MESHM_SPECIALFX:
-			if ((Mtrl[idx].ModFlags&MESHM_SPECIALFX) == 0) return -2;
-			*((D3DXVECTOR4*)value) = Mtrl[idx].SpecialFX;
-			return 0;
-		}
-		return -3;
+		return 5;
 	}
 
 	// CLEAR -------------------------------------------------------------
-	if (value==NULL) {
+
+	if (value == NULL)
+	{
 		switch (mid) {
-		case MESHM_DIFFUSE:
+		case MatProp::Diffuse:
 			Mtrl[idx].Diffuse = D3DXVECTOR4(1, 1, 1, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_DIFFUSE);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_AMBIENT:
+		case MatProp::Ambient:
 			Mtrl[idx].Ambient = D3DXVECTOR3(1, 1, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_AMBIENT);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_SPECULAR:
+		case MatProp::Specular:
 			Mtrl[idx].Specular = D3DXVECTOR4(1, 1, 1, 20.0);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_SPECULAR);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_EMISSION:
+		case MatProp::Light:
 			Mtrl[idx].Emissive = D3DXVECTOR3(0, 0, 0);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_EMISSIVE);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_EMISSION2:
+		case MatProp::Emission:
 			Mtrl[idx].Emission2 = D3DXVECTOR3(1, 1, 1);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_EMISSION2);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_REFLECT:
-			Mtrl[idx].Reflect = D3DXVECTOR3(0,0,0);
+		case MatProp::Reflect:
+			Mtrl[idx].Reflect = D3DXVECTOR3(0, 0, 0);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_REFLECT);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_ROUGHNESS:
+		case MatProp::Smooth:
 			Mtrl[idx].Roughness = D3DXVECTOR2(0.0f, 1.0f);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_ROUGHNESS);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_FRESNEL:
+		case MatProp::Fresnel:
 			Mtrl[idx].Fresnel = D3DXVECTOR3(1, 0, 1024.0f);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_FRESNEL);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_METALNESS:
+		case MatProp::Metal:
 			Mtrl[idx].Metalness = 0.0f;
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_METALNESS);
 			bMtrlModidied = true;
 			return 0;
-		case MESHM_SPECIALFX:
+		case MatProp::SpecialFX:
 			Mtrl[idx].SpecialFX = D3DXVECTOR4(0, 0, 0, 0);
 			Mtrl[idx].ModFlags &= (~D3D9MATEX_SPECIALFX);
 			bMtrlModidied = true;
 			return 0;
 		}
-		return -3;
+		return 5;
 	}
-	return -4;
+	return 5;
+}
+
+
+// ===========================================================================================
+//0 = success, 1=no graphics engine attached,
+//2 = graphics engine does not support operation, 3 = invalid mesh handle,
+//4 = material index out of range, 5 = material property not supported by shader used by the mesh.
+//
+int D3D9Mesh::GetMaterialEx(DWORD idx, MatProp mid, FVECTOR4* value)
+{
+	if (idx >= nMtrl) return 4;
+
+	if (value)
+	{
+		switch (mid)
+		{
+		case MatProp::Diffuse:
+			*((D3DXVECTOR4*)value) = Mtrl[idx].Diffuse;
+			return 0;
+		case MatProp::Ambient:
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Ambient;
+			return 0;
+		case MatProp::Specular:
+			*((D3DXVECTOR4*)value) = Mtrl[idx].Specular;
+			return 0;
+		case MatProp::Light:
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Emissive;
+			return 0;
+		case  MatProp::Emission:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_EMISSION2) == 0) return -2;
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Emission2;
+			return 0;
+		case MatProp::Reflect:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_REFLECT) == 0) return -2;
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Reflect;
+			return 0;
+		case MatProp::Smooth:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_ROUGHNESS) == 0) return -2;
+			value->g = Mtrl[idx].Roughness.x;
+			value->r = Mtrl[idx].Roughness.y;
+			return 0;
+		case MatProp::Fresnel:
+			if ((Mtrl[idx].ModFlags&D3D9MATEX_FRESNEL) == 0) return -2;
+			*((D3DXVECTOR3*)value) = Mtrl[idx].Fresnel;
+			return 0;
+		case MatProp::Metal:
+			if ((Mtrl[idx].ModFlags&MESHM_METALNESS) == 0) return -2;
+			value->r = Mtrl[idx].Metalness;
+			return 0;
+		case MatProp::SpecialFX:
+			if ((Mtrl[idx].ModFlags&MESHM_SPECIALFX) == 0) return -2;
+			*((D3DXVECTOR4*)value) = Mtrl[idx].SpecialFX;
+			return 0;
+		}
+		return 5;
+	}
+	return 5;
 }
 
 // ===========================================================================================

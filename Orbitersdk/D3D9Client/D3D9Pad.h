@@ -250,7 +250,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa oapi::Font, oapi::GraphicsClient::clbkCreateFont
 	 */
-	oapi::Font  *SetFont (oapi::Font *font) const;
+	oapi::Font  *SetFont (oapi::Font *font);
 
 	/**
 	 * \brief Selects a new pen to use.
@@ -259,7 +259,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa oapi::Pen, oapi::GraphicsClient::clbkCreatePen
 	 */
-	oapi::Pen   *SetPen (oapi::Pen *pen) const;
+	oapi::Pen   *SetPen (oapi::Pen *pen);
 
 	/**
 	 * \brief Selects a new brush to use.
@@ -268,7 +268,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa oapi::Brush, oapi::GraphicsClient::clbkCreateBrush
 	 */
-	oapi::Brush *SetBrush (oapi::Brush *brush) const;
+	oapi::Brush *SetBrush (oapi::Brush *brush);
 
 	/**
 	 * \brief Set horizontal and vertical text alignment.
@@ -561,7 +561,6 @@ public:
 	LPDIRECT3DSURFACE9 GetRenderTarget() const { return pTgt; }
 	bool IsStillDrawing() const { return bBeginDraw; }
 	void LoadDefaults();
-	bool IsNative() const { return bNative; }
 
 	void CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, int tx, int ty);
 	void StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT s, const LPRECT t);
@@ -611,7 +610,6 @@ private:
 	SkpColor		 bkcolor;
 
 	bool			 bColorComp;
-	bool			 bNative;
 	bool			 bColorKey;
 	bool			 bEnableScissor;
 	bool			 bDepthEnable;
@@ -749,8 +747,8 @@ public:
 	 * \note if the specified face name is not recognised, then 'sans' is
 	 *   selected for \e prop==true, and 'fixed' is selected for \e prop==false.
 	 */
-	D3D9PadFont (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0, DWORD flags=0);
-	D3D9PadFont (int height, char *face, int width = 0, int weight = 400, int gcFontStyle = 0, float spacing = 0.0f);
+	D3D9PadFont (int height, bool prop, const char *face, FontStyle style = FontStyle::FONT_NORMAL, int orientation=0, DWORD flags=0);
+	D3D9PadFont (int height, char *face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f);
 	/**
 	 * \brief Font destructor.
 	 */
@@ -800,7 +798,6 @@ private:
 	int width;
 	SkpColor clr;
 	HPEN hPen;
-	//static LPDIRECT3DDEVICE9 pDev;
 };
 
 
@@ -829,7 +826,6 @@ public:
 private:
 	SkpColor clr;
 	HBRUSH hBrush;
-	//static LPDIRECT3DDEVICE9 pDev;
 };
 
 

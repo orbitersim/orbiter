@@ -203,7 +203,8 @@ public:
 	bool			GetMaterial(D3D9MatExt *pMat, DWORD idx) const;
 	void			SetMaterial(const D3D9MatExt *pMat, DWORD idx, bool bUpdateStatus = true);
 	void			SetMaterial(const D3DMATERIAL9 *pMat, DWORD idx, bool bUpdateStatus = true);
-	int				Material(DWORD grp, int mid, FVECTOR4 *value, bool bSet);
+	int				SetMaterialEx(DWORD idx, MatProp mid, const FVECTOR4* in);
+	int				GetMaterialEx(DWORD idx, MatProp mid, FVECTOR4* out);
 	bool			GetTexTune(D3D9Tune *pT, DWORD idx) const;
 	void			SetTexTune(const D3D9Tune *pT, DWORD idx);
 

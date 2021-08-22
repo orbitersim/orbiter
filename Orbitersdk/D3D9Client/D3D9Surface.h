@@ -30,7 +30,7 @@
 #define OAPISURFACE_BACKBUFFER	0x40000000		// It's a backbuffer
 #define OAPISURFACE_ORIGIN		0x20000000		// The origin from where the clones are being made, can't change (immutable)
 
-
+#define OAPISURF_SKP_GDI_WARN	0x00000001
 
 LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext);
 SURFHANDLE			NatLoadSurface(const char* file, DWORD flags);
@@ -88,6 +88,7 @@ public:
 	DWORD					GetOAPIFlags() const { return Flags; }
 	DWORD					GetType() const { return (DWORD)type; }
 	DWORD					GetSizeInBytes();
+	DWORD*					GetClientFlags();
 
 	const char*				GetName() const { return name; }
 	void					SetName(const char*);
@@ -144,6 +145,7 @@ public:
 	DWORD					ColorKey;
 	DWORD					Flags;					// Surface Flags/Attribs
 	DWORD					Mipmaps;				// Mipmap count. 1 = no mipmaps
+	DWORD					ClientFlags;
 	int						RefCount;
 	D3D9Pad*				pSkp;					// Pooled sketchpad interface cache
 	_HDC_LOCAL				DC;

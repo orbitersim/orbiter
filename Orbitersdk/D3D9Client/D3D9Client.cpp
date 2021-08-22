@@ -1414,6 +1414,7 @@ bool D3D9Client::clbkSetMeshTexture(DEVMESHHANDLE hMesh, DWORD texidx, SURFHANDL
 int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat)
 {
 	_TRACE;
+	if (!hMesh) return 3;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
@@ -1429,12 +1430,31 @@ int D3D9Client::clbkSetMeshMaterial(DEVMESHHANDLE hMesh, DWORD matidx, const MAT
 int D3D9Client::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat)
 {
 	_TRACE;
+	if (!hMesh) return 3;
 	D3D9Mesh *mesh = (D3D9Mesh*)hMesh;
 	DWORD nmat = mesh->GetMaterialCount();
 	if (matidx >= nmat) return 4; // "index out of range"
 	const D3D9MatExt *meshmat = mesh->GetMaterial(matidx);
 	if (meshmat) GetMatExt(meshmat, (D3DMATERIAL9 *)mat);
 	return 0;
+}
+
+// ==============================================================
+
+int D3D9Client::clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
+{
+	if (!hMesh) return 3;
+	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;
+	return mesh->SetMaterialEx(matidx, mat, in);
+}
+
+// ==============================================================
+
+int D3D9Client::clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4* out)
+{
+	if (!hMesh) return 3;
+	D3D9Mesh* mesh = (D3D9Mesh*)hMesh;
+	return mesh->GetMaterialEx(matidx, mat, out);
 }
 
 // ==============================================================
@@ -1473,6 +1493,9 @@ int D3D9Client::clbkEditMeshGroup(DEVMESHHANDLE hMesh, DWORD grpidx, GROUPEDITSP
 	_TRACE;
 	return ((D3D9Mesh*)hMesh)->EditGroup(grpidx, ges);
 }
+
+// =======================================================================
+
 
 int D3D9Client::clbkGetMeshGroup (DEVMESHHANDLE hMesh, DWORD grpidx, GROUPREQUESTSPEC *grs)
 {
@@ -3103,8 +3126,6 @@ void D3D9Client::clbkReleaseSketchpad_const(oapi::Sketchpad* sp) const
 
 		D3D9Pad* pPad = ((D3D9Pad*)sp);
 
-		assert(!pPad->IsNative());
-
 		if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
 
 		pPad->EndDrawing();
@@ -3134,12 +3155,20 @@ void D3D9Client::clbkReleaseSketchpad(oapi::Sketchpad *sp)
 
 // =======================================================================
 
-Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, Font::Style style, int orientation) const
+Font *D3D9Client::clbkCreateFont(int height, bool prop, const char *face, FontStyle style, int orientation) const
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
 	return *g_fonts.insert(new D3D9PadFont(height, prop, face, style, orientation)).first;
 }
+
+Font* D3D9Client::clbkCreateFontEx(int height, char* face, int width, int weight, FontStyle style, float spacing) const
+{
+	_TRACE;
+	if (ChkDev(__FUNCTION__)) return NULL;
+	return *g_fonts.insert(new D3D9PadFont(height, face, width, weight, style, spacing)).first;
+}
+
 
 // =======================================================================
 

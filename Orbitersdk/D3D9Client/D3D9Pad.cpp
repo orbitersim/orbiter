@@ -40,7 +40,7 @@ struct FontCache {
 	int         orient;
 	bool        prop;
 	char        face[64];
-	Font::Style style;
+	FontStyle	style;
 	D3D9TextPtr pFont;
 };
 
@@ -49,7 +49,7 @@ struct QFontCache {
 	int         width;
 	int			weight;
 	char        face[64];
-	int			style;
+	FontStyle	style;
 	float		spacing;
 	D3D9TextPtr pFont;
 };
@@ -302,7 +302,6 @@ D3D9Pad::D3D9Pad(SURFHANDLE s, const char *_name) : Sketchpad(s),
 #endif
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
-	bNative = false;
 	Reset();
 	LoadDefaults();
 }
@@ -324,7 +323,6 @@ D3D9Pad::D3D9Pad(const char *_name) : Sketchpad(NULL),
 #endif
 	if (_name) strcpy_s(name, 32, _name);
 	else strcpy_s(name, 32, "NoName");
-	bNative = false;
 	Reset();
 	LoadDefaults();
 }
@@ -757,14 +755,21 @@ SkpColor D3D9Pad::ColorComp(const SkpColor &c) const
 //
 HDC D3D9Pad::GetDC()
 {
-	//assert(false);
+	DWORD *cf = SURFACE(GetSurface())->GetClientFlags();
+
+	if ((*cf & OAPISURF_SKP_GDI_WARN) == 0) {
+		*cf |= OAPISURF_SKP_GDI_WARN;
+		LogErr("Call to obsolete Sketchpad::GetDC() detected. Returned NULL");
+		if (Config->DebugBreak) DebugBreak();
+	}
+
 	return NULL;
 }
 
 
 // ===============================================================================================
 //
-Font *D3D9Pad::SetFont(Font *font) const
+Font *D3D9Pad::SetFont(Font *font)
 {
 	if (cfont == font) return font;
 
@@ -784,7 +789,7 @@ Font *D3D9Pad::SetFont(Font *font) const
 
 // ===============================================================================================
 //
-Brush *D3D9Pad::SetBrush (Brush *brush) const
+Brush *D3D9Pad::SetBrush (Brush *brush)
 {
 	if (cbrush == brush && QBrush.bEnabled == false) return brush;
 
@@ -809,7 +814,7 @@ Brush *D3D9Pad::SetBrush (Brush *brush) const
 
 // ===============================================================================================
 //
-Pen *D3D9Pad::SetPen (Pen *pen) const
+Pen *D3D9Pad::SetPen (Pen *pen)
 {
 	if (cpen == pen && QPen.bEnabled == false) return pen;
 
@@ -1772,8 +1777,6 @@ WORD * D3D9Pad::Idx = 0;
 SkpVtx * D3D9Pad::Vtx = 0;
 LPD3DXVECTOR2 D3D9Pad::pSinCos[];
 LPDIRECT3DDEVICE9 D3D9PadFont::pDev = 0;
-//LPDIRECT3DDEVICE9 D3D9PadPen::pDev = 0;
-//LPDIRECT3DDEVICE9 D3D9PadBrush::pDev = 0;
 LPDIRECT3DDEVICE9 D3D9Pad::pDev = 0;
 LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;
 
@@ -1784,8 +1787,9 @@ CRITICAL_SECTION D3D9Pad::LogCrit;
 // ======================================================================
 // class GDIFont
 // ======================================================================
+using namespace oapi;
 
-D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, int orientation, DWORD flags) : Font(height, prop, face, style, orientation)
+D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, FontStyle style, int orientation, DWORD flags) : Font(height, prop, face, style, orientation)
 {
 	char *def_fixedface = "Courier New";
 	char *def_sansface = "Arial";
@@ -1816,9 +1820,10 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 		break;
 	}
 
-	int weight = (style & BOLD) ? FW_BOLD : FW_NORMAL;
-	DWORD italic = (style & ITALIC) ? TRUE : FALSE;
-	DWORD underline = (style & UNDERLINE) ? TRUE : FALSE;
+	int weight = (style & FONT_BOLD) ? FW_BOLD : FW_NORMAL;
+	DWORD italic = (style & FONT_ITALIC) ? TRUE : FALSE;
+	DWORD underline = (style & FONT_UNDERLINE) ? TRUE : FALSE;
+	DWORD strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
 
 	Quality = NONANTIALIASED_QUALITY;
 
@@ -1835,12 +1840,7 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 	//
 	if (pFont==NULL) {
 
-		//if (Quality == CLEARTYPE_QUALITY) {
-		//	height *= 3;
-		//	Quality = NONANTIALIASED_QUALITY;
-		//}
-
-		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
+		HFONT hNew = CreateFont(height, 0, 0, 0, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
 
 		pFont = std::make_shared<D3D9Text>(pDev);
 		pFont->Init(hNew);
@@ -1861,18 +1861,18 @@ D3D9PadFont::D3D9PadFont(int height, bool prop, const char *face, Style style, i
 
 	// Create Rotated windows GDI Font for a use with GDIPad ---------------------------
 	//
-	hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
+	hFont = CreateFontA(height, 0, orientation, orientation, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
 
 	if (hFont==NULL) {
 		face  = (prop ? def_sansface : def_fixedface);
-		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, 0, 0, 0, 2, Quality, 49, face);
+		hFont = CreateFont(height, 0, orientation, orientation, weight, italic, underline, strikeout, 0, 0, 2, Quality, 49, face);
 	}
 }
 
 
 
-D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, int style, float spacing) 
-: Font(height, false, face, Style(0), 0)
+D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, FontStyle style, float spacing)
+: Font(height, false, face, style, 0)
 {
 
 	hFont = NULL;
@@ -1891,16 +1891,16 @@ D3D9PadFont::D3D9PadFont(int height, char *face, int width, int weight, int styl
 		break;
 	}
 
-	DWORD italic = (style & gcFont::ITALIC) ? TRUE : FALSE;
-	DWORD underline = (style & gcFont::UNDERLINE) ? TRUE : FALSE;
-	DWORD strikeout = (style & gcFont::STRIKEOUT) ? TRUE : FALSE;
+	DWORD italic = (style & FONT_ITALIC) ? TRUE : FALSE;
+	DWORD underline = (style & FONT_UNDERLINE) ? TRUE : FALSE;
+	DWORD strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
 
 	Quality = NONANTIALIASED_QUALITY;
 	if (Config->SketchpadFont == 1) Quality = ANTIALIASED_QUALITY;
 	if (Config->SketchpadFont == 2) Quality = PROOF_QUALITY;
 	
-	if (style & gcFont::CRISP) Quality = NONANTIALIASED_QUALITY;
-	if (style & gcFont::ANTIALIAS) Quality = ANTIALIASED_QUALITY;
+	if (style & FONT_CRISP) Quality = NONANTIALIASED_QUALITY;
+	if (style & FONT_ANTIALIAS) Quality = ANTIALIASED_QUALITY;
 	
 	
 	// Create DirectX accelerated font for a use with D3D9Pad ------------------

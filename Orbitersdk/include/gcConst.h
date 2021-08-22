@@ -76,7 +76,6 @@ inline gcCore *gcGetCoreInterface()
 #define RENDERPROC_HUD_1ST				0x0001	///< Register a HUD callback to draw under Orbiter's main HUD
 #define RENDERPROC_HUD_2ND				0x0002	///< Register a HUD callback to draw over Orbiter's main HUD
 #define RENDERPROC_PLANETARIUM			0x0003	///< Register a HUD callback to draw into a planetarium view using perspective projection
-#define RENDERPROC_CUSTOMCAM_OVERLAY	0x0004  ///< Register a callback to draw an overlay into a custom camerea view
 #define RENDERPROC_EXTERIOR				0x0005  ///< Register a callback to draw into an exterior vessel view using perspective projection
 ///@}
 
@@ -172,19 +171,6 @@ namespace gcTileFlags
 	static const int TREE = 0x10;			///< Search/Use Tree Archive
 	static const int CACHE = 0x20;			///< Search/Use Cache
 	static const int MOD = 0x40;			///< Search/Use ElevMod Cache
-};
-
-
-/**
-* \brief Flags for 
-*/
-namespace gcFont
-{
-	static const int ITALIC = 0x1;
-	static const int UNDERLINE = 0x2;
-	static const int STRIKEOUT = 0x4;
-	static const int CRISP = 0x8;			///< Override app-default, No Antialiasing
-	static const int ANTIALIAS = 0x10;		///< Override app-default, Use Antialiashing
 };
 
 
@@ -506,6 +492,13 @@ public:
 	virtual void		CustomCameraOnOff(CAMERAHANDLE hCam, bool bOn);
 
 	/**
+	* \brief Setup a custom camera overlay drawing callback
+	* \param hCam camera handle to toggle
+	* \param clbk pointer to a function to be called after each frame.
+	*/
+	virtual void		CustomCameraOverlay(CAMERAHANDLE hCam, __gcRenderProc clbk, void* pUser);
+
+	/**
 	* \brief Create a new custom camera that can be used to render views into a surfaces and textures
 	* \param hCam camera handle to modify an existing camera or, NULL
 	* \param hVessel handle to a vessel where the camera is attached to.
@@ -530,26 +523,6 @@ public:
 	/// \name Sketchpad related functions
 	// ===========================================================================
 	//@{
-	/**
-	* \brief Get the sketchpad version
-	* \param pSkp handle to a sketchpad interface.
-	* \return Currently returns 2 or (1 in some very special cases). 
-	*/
-	virtual int			SketchpadVersion(Sketchpad *pSkp);
-
-	/**
-	* \brief Load a mesh from a harddrive to be used with Sketchpad2::SketchMesh
-	* \param name Name of the mesh file without ".msh" identifier.
-	* \sa gcDeleteSketchMesh
-	* \note SKETCHMESH handle isn't compatible with MESHHANDLE nor DEVMESHHANDLE.
-	*/
-	virtual SKETCHMESH	LoadSketchMesh(const char *name);
-
-	/**
-	* \brief Delete a mesh previously loaded with gcLoadSketchMesh
-	* \sa gcLoadSketchMesh
-	*/
-	virtual void		DeleteSketchMesh(SKETCHMESH hMesh);
 
 	/**
 	* \brief Create or Update a polyline composed form piecewise straight segments.
@@ -616,17 +589,6 @@ public:
 	*/
 	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
 
-	/**
-	* \brief Create a Font
-	* \param height Font height
-	* \param face Name of the font
-	* \param width Width of the font (0 for default aspect ration)
-	* \param weight Font thikness (400 for default weight)
-	* \param style A combination of \see gcFont flags (0 for default)
-	* \param spacing A spacing between charters in a string (0.0f for default)
-	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
-	*/
-	virtual oapi::Font *CreateSketchpadFont(int height, char *face, int width = 0, int weight = 400, int gcFontStyle = 0, float spacing = 0.0f);
 	//@}
 
 
@@ -637,17 +599,7 @@ public:
 	/// \name Mesh interface functions
 	// ===========================================================================
 	//@{
-	/**
-	* \brief This function will register a custom render callback function
-	* \param hMesh Handle to a devmesh containing the material
-	* \param idx Material index
-	* \param prop material property identifier (\ref MeshMaterialFlags)
-	* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
-	* \param bSet \e true to set material value, \e false to get a meterial value
-	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
-	*/
-	virtual int			MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4 *value, bool bSet);
-
+	
 	/**
 	* \brief A Function to get a mesh transformation/animation matrix.
 	* \param matrix_id Id of the matrix to get. One of gcMatrix::xxx datatypes.
@@ -657,7 +609,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 struct for receiving the data.
 	* \return 0 = on Success, or error code.
 	*/
-	virtual int			GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4 *pMat);
+	virtual int				GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4 *pMat);
 
 
 	/**
@@ -669,7 +621,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 containing the data to set.
 	* \return 0 = on Success, or error code.
 	*/
-	virtual int			SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4 *pMat);
+	virtual int				SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4 *pMat);
 	//@}
 
 
@@ -709,30 +661,6 @@ public:
 	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
 	*/
 	virtual COLOUR4			Colour4(DWORD dwABGR);
-
-
-	/**
-	* \brief Get Surface Attributes (e.g. OAPISURFACE_TEXTURE)
-	* \param hSurf handle to a surface
-	* \param bCreation if true return creation time attributes, if false return current attributes
-	* \return Surface attributes
-	*/
-	virtual DWORD			GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation = false);
-
-	/**
-	* \brief Convert an existing surface to an other type.
-	* \param hSurf handle to a surface
-	* \param attrib new attributes
-	*/
-	virtual void			ConvertSurface(SURFHANDLE hSurf, DWORD attrib);
-
-	/**
-	* \brief Load a texture into a specific type of a surface
-	* \param fname name of a texture to be loaded.
-	* \param flags surface attributes (see: OAPISURFACE_x flags)
-	* \return surface handle or NULL in a case of an error
-	*/
-	virtual SURFHANDLE		LoadSurface(const char *fname, DWORD flags);
 
 	/**
 	* \brief Load a bitmap from file (*.bmp *.png *.jpg *.gif)

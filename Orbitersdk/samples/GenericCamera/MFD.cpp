@@ -143,9 +143,6 @@ CameraMFD::CameraMFD(DWORD w, DWORD h, VESSEL *vessel)
 
 	// Clear the surface
 	oapiClearSurface(hRenderSrf);	
-
-	// Register camera overlay render proc to draw into the actual rendering surface
-	if (ENABLE_OVERLAY)	pCore->RegisterRenderProc(CameraMFD::DrawOverlay, RENDERPROC_CUSTOMCAM_OVERLAY, this);
 	
 
 	SelectVessel(hVessel, Type::Dock);
@@ -277,6 +274,9 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 	if (ENABLE_OVERLAY) dwFlags |= CUSTOMCAM_OVERLAY;	// Enable overlays for this camera
 
 	hCamera = pCore->SetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, dwFlags);
+
+	// Register camera overlay render proc to draw into the actual rendering surface
+	if (ENABLE_OVERLAY)	pCore->CustomCameraOverlay(hCamera, CameraMFD::DrawOverlay, this);
 }
 
 // ============================================================================================================
