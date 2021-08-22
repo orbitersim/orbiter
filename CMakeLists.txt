@@ -259,6 +259,11 @@ option(ORBITER_MAKE_SDK_SAMPLES
 	OFF
 )
 
+option(ORBITER_ENABLE_ASAN
+	"Build binaries with Address Sanitizer"
+	OFF
+)
+
 if(ORBITER_BUILD_XRSOUND)
 	set(IRRKLANG_DIR
 		irrKlang_NOTFOUND
@@ -448,4 +453,19 @@ cpack_add_component(RuntimeLibraries
 if (ORBITER_MAKE_TESTS)
       enable_testing()
       add_subdirectory(Tests)
+endif()
+
+if (ORBITER_ENABLE_ASAN)
+    message("Address Sanitizer Enabled")
+    set(asan_binary_dir "$ENV{VCToolsInstallDir}bin\\Host${ARCH}\\${ARCH}")
+	add_compile_options("/fsanitize=address /EHsc")
+	add_custom_command(
+		COMMENT "Copying ASAN Clang runtime from ${asan_binary_dir}"
+		OUTPUT "clang_rt.asan_dynamic-x86_64.dll"
+ 		OUTPUT "clang_rt.asan_dbg_dynamic-x86_64.dll"
+		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\clang_rt.asan_dynamic-x86_64.dll ${ORBITER_BINARY_ROOT_DIR}
+		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\clang_rt.asan_dbg_dynamic-x86_64.dll ${ORBITER_BINARY_ROOT_DIR}
+	)
+    add_custom_target(AsanBinaries DEPENDS "clang_rt.asan_dynamic-x86_64.dll")
+    add_dependencies(Orbiter_server AsanBinaries)
 endif()
