@@ -177,7 +177,7 @@ GDIPad::~GDIPad ()
 	if (cbrush) SelectObject (hDC, GetStockObject (NULL_BRUSH));
 }
 
-Font *GDIPad::SetFont (Font *font) const
+Font *GDIPad::SetFont (Font *font)
 {
 	Font *pfont = cfont;
 	if (font) {
@@ -191,7 +191,7 @@ Font *GDIPad::SetFont (Font *font) const
 	return pfont;
 }
 
-Pen *GDIPad::SetPen (Pen *pen) const
+Pen *GDIPad::SetPen (Pen *pen)
 {
 	Pen *ppen = cpen;
 	if (pen) {
@@ -203,7 +203,7 @@ Pen *GDIPad::SetPen (Pen *pen) const
 	return ppen;
 }
 
-Brush *GDIPad::SetBrush (Brush *brush) const
+Brush *GDIPad::SetBrush (Brush *brush)
 {
 	Brush *pbrush = cbrush;
 	if (brush) {

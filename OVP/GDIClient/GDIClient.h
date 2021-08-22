@@ -167,7 +167,7 @@ public:
 	 * \return Previously selected font.
 	 * \sa GDIFont, GDIClient::clbkCreateFont
 	 */
-	oapi::Font *SetFont (oapi::Font *font) const;
+	oapi::Font *SetFont (oapi::Font *font);
 
 	/**
 	 * \brief Selects a new pen to use.
@@ -175,7 +175,7 @@ public:
 	 * \return Previously selected pen.
 	 * \sa GDIPen, GDIClient::clbkCreatePen
 	 */
-	oapi::Pen *SetPen (oapi::Pen *pen) const;
+	oapi::Pen *SetPen (oapi::Pen *pen);
 
 	/**
 	 * \brief Selects a new brush to use.
@@ -183,7 +183,7 @@ public:
 	 * \return Previously selected brush.
 	 * \sa GDIBrush, GDIClient::clbkCreateBrush
 	 */
-	oapi::Brush *SetBrush (oapi::Brush *brush) const;
+	oapi::Brush *SetBrush (oapi::Brush *brush);
 
 	/**
 	 * \brief Set horizontal and vertical text alignment.
