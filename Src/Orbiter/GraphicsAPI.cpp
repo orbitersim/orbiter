@@ -486,6 +486,11 @@ HBITMAP GraphicsClient::ReadImageFromFile (const char *fname, UINT w, UINT h)
 
 // ======================================================================
 
+HWND GraphicsClient::LaunchpadVideoTab() const
+	{ return GetDlgItem(hVid, IDD_PAGE_DEV); }
+
+// ======================================================================
+
 bool GraphicsClient::WriteImageDataToFile (const ImageData &data,
 	const char *fname, ImageFileFormat fmt, float quality)
 {

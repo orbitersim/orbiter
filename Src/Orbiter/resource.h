@@ -28,10 +28,9 @@
 #define IDD_PAGE_JOY                    177
 #define IDD_PAGE_EXT                    178
 #define IDD_PAGE_ABT                    179
-#define IDD_PAGE_NET                    180
-#define IDD_PAGE_DEV                    181
-#define IDD_SAVESCN                     182
-#define IDD_CAMERA                      183
+#define IDD_PAGE_DEV                    180
+#define IDD_SAVESCN                     181
+#define IDD_CAMERA                      182
 #define IDD_CAM_PG_TARGET               184
 #define IDD_CAM_PG_VIEW                 185
 #define IDD_CAM_PG_GROUND               186
@@ -240,7 +239,7 @@
 #define IDC_SCN_DELQS                   1096
 #define IDC_SAVE_DESC                   1097
 #define IDC_SCN_INFO                    1098
-#define IDC_TREE1                       1099
+#define IDC_TREE1                       1113
 #define IDC_EDIT1                       1118
 #define IDC_EDIT2                       1119
 #define IDC_EDIT3                       1120

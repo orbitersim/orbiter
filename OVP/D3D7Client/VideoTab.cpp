@@ -138,6 +138,9 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	DWORD i, ndev, idx;
 	D3D7Enum_GetDevices (&devlist, &ndev);
 
+	//HWND hTabParent = hTab;
+	//hTab = GetDlgItem(hTabParent, IDD_PAGE_DEV);
+
 	SendDlgItemMessage (hTab, IDC_VID_DEVICE, CB_RESETCONTENT, 0, 0);
 	for (i = 0; i < ndev; i++) {
 		SendMessage (GetDlgItem (hTab, IDC_VID_DEVICE), CB_ADDSTRING, 0,
@@ -172,6 +175,8 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	SelectDispmode (dev, data->fullscreen ? FALSE:TRUE);
 
 	ShowWindow (GetDlgItem (hTab, IDC_VID_INFO), SW_SHOW);
+
+	//hTab = hTabParent;
 }
 
 // ==============================================================

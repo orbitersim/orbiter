@@ -28,9 +28,9 @@ namespace orbiter {
 		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	protected:
-		void EnumerateClients();
+		void EnumerateClients(HWND hTab);
 
-		void ScanDir(const PSTR dir);
+		void ScanDir(HWND hTab, const PSTR dir);
 		// scan directory dir (relative to Orbiter root) for graphics clients
 		// and enter them in the combo box
 

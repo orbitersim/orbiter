@@ -38,19 +38,19 @@ void orbiter::DefVideoTab::Create ()
 }
 
 //-----------------------------------------------------------------------------
+
 static INT_PTR CALLBACK msgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return FALSE;
 }
 
-
 BOOL orbiter::DefVideoTab::InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-	HWND hT = CreateDialogParam(AppInstance(), MAKEINTRESOURCE(IDD_PAGE_DEV), hTab, msgProc, (LPARAM)this);
+	HWND hT = CreateDialogParam(AppInstance(), MAKEINTRESOURCE(IDD_PAGE_DEV), hWnd, TabProcHook, (LPARAM)this);
 	SetWindowLongPtr(hT, GWLP_ID, IDD_PAGE_DEV); // set the control ID to make GetDlgItem work for the sub-dialog
 	ShowWindow(hT, SW_HIDE);
 
-	EnumerateClients();
+	EnumerateClients(hWnd);
 	return TRUE;
 }
 
@@ -97,20 +97,20 @@ bool orbiter::DefVideoTab::OpenHelp ()
 
 //-----------------------------------------------------------------------------
 
-void orbiter::DefVideoTab::EnumerateClients()
+void orbiter::DefVideoTab::EnumerateClients(HWND hTab)
 {
 	const PSTR strConsole = "Console mode (no engine loaded)";
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_ADDSTRING, 0, (LPARAM)strConsole);
 
-	ScanDir("Modules\\Plugin");
+	ScanDir(hTab, "Modules\\Plugin");
 
 	SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
 
-void orbiter::DefVideoTab::ScanDir(const PSTR dir)
+void orbiter::DefVideoTab::ScanDir(HWND hTab, const PSTR dir)
 {
 	char pattern[256], name[256];
 	sprintf(pattern, "%s\\*.dll", dir);
@@ -140,8 +140,17 @@ void orbiter::DefVideoTab::ScanDir(const PSTR dir)
 
 void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 {
+	char name[256];
 	if (idxClient) {
-
+		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
+		pCfg->DelModule(name);
+		pLp->App()->UnloadModule(name);
+	}
+	if (idxClient = idx) {
+		const char* path = "Modules\\Plugin";
+		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETLBTEXT, idxClient, (LPARAM)name);
+		pCfg->AddModule(name);
+		pLp->App()->LoadModule(path, name);
 	}
 	ShowWindow(GetDlgItem(hTab, IDD_PAGE_DEV), idx ? SW_SHOW : SW_HIDE);
 }

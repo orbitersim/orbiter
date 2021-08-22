@@ -132,7 +132,6 @@ INT_PTR CALLBACK orbiter::LaunchpadTab::TabProcHook (HWND hWnd, UINT uMsg, WPARA
 	switch (uMsg) {
 	case WM_INITDIALOG:
 		lt = (LaunchpadTab*)lParam;
-		lt->hTab = hWnd;
 		return lt->InitDialog (hWnd, wParam, lParam);
 	case WM_SIZE:
 		return lt->Size (LOWORD(lParam), HIWORD(lParam));
