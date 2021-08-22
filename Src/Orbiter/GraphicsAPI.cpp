@@ -382,7 +382,7 @@ void GraphicsClient::ShowDefaultSplash ()
 	DWORD x0 = 10;//rw-fontsize*25;
 	DWORD y0 = rh-fontsize; //tgty + (DWORD)(rw*0.078);
 	if (splashFont) clbkReleaseFont (splashFont);
-	splashFont = clbkCreateFont(fontsize,true,"Arial",oapi::Font::NORMAL);
+	splashFont = clbkCreateFont(fontsize,true,"Arial", FONT_NORMAL);
 	skp->SetFont (splashFont);
 	skp->SetTextColor (texcol);
 	skp->SetTextAlign (oapi::Sketchpad::LEFT, oapi::Sketchpad::TOP);

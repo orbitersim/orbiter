@@ -123,6 +123,7 @@ namespace oapi {
 	class Font;
 	class Pen;
 	class Brush;
+	union FVECTOR4;
 }
 
 // ======================================================================
@@ -446,6 +447,20 @@ typedef struct {
 	COLOUR4 emissive;  ///< emissive component
 	float power;       ///< specular power
 } MATERIAL;
+
+
+enum MatProp {
+	Diffuse,			///< Material Diffuse color or Albedo depending on shader used. [.rgba]
+	Ambient,			///< Ambient color or Ambien occlusion [.rgb]
+	Specular,			///< Specular color [.rgb] power in [.a]
+	Light,				///< DX7 Style emission (color is added in light that lits the diffuse texture) (i.e. light map) [.rgb]
+	Emission,			///< Still in a development currently: output = max(diffuse*light, emission) [.rgb]
+	Reflect,			///< Reflectivity [.rgb]
+	Smooth,				///< Smoothness in [.r] (1 = smooth, 0 = rough)
+	Metal,				///< Meralness in [.r]  (1 = metal, 0 = non-metal)
+	Fresnel,			///< Fresnel terms for fresnel effect. Used in older 2nd generation shader. 
+	SpecialFX			///< Heat map effect control variable in [.r] (i.e. average part temperature)
+};
 
 /**
  * \brief Kepler orbital elements
@@ -2646,6 +2661,12 @@ OAPIFUNC DWORD oapiGetBaseCount (OBJHANDLE hPlanet);
 OAPIFUNC void oapiGetObjectName (OBJHANDLE hObj, char *name, int n);
 
 /**
+* \brief Returns the configuration filename for an object or NULL is no configuration file is used.
+* \param hObj object handle
+*/
+OAPIFUNC const char* oapiGetObjectFileName(OBJHANDLE hObj);
+
+/**
  * \brief Returns the handle for the current focus object.
  * \return Focus object handle
  * \note The focus object is the user-controlled vessel which receives keyboard and
@@ -4676,14 +4697,24 @@ OAPIFUNC DWORD oapiMeshMaterialCount (MESHHANDLE hMesh);
 	*/
 OAPIFUNC MATERIAL *oapiMeshMaterial (MESHHANDLE hMesh, DWORD idx);
 
-/**
- * \brief Retrieve properties of a device mesh material.
- * \param hMesh device mesh handle
- * \param idx material index (>= 0)
- * \param mat pointer to MATERIAL structure to be filled by the method
- * \return Error code (0 = success)
- */
+	/**
+	 * \brief Retrieve properties of a device mesh material.
+	 * \param hMesh device mesh handle
+	 * \param idx material index (>= 0)
+	 * \param mat pointer to MATERIAL structure to be filled by the method
+	 * \return Error code (0 = success)
+	 */
 OAPIFUNC int oapiMeshMaterial (DEVMESHHANDLE hMesh, DWORD idx, MATERIAL *mat);
+
+	/**
+	 * \brief Retrieve properties of a device mesh material.
+	 * \param hMesh device mesh handle
+	 * \param idx material index (>= 0)
+	 * \param prp material property to be acquired.
+	 * \param out pointer to FVECTOR4 structure to be filled by the method.
+	 * \return Error code (0 = success)
+	 */
+OAPIFUNC int oapiMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD idx, MatProp prp, oapi::FVECTOR4* out);
 
 	/**
 	 * \brief Add a material definition to a mesh.
@@ -4721,6 +4752,21 @@ OAPIFUNC bool oapiDeleteMaterial (MESHHANDLE hMesh, DWORD idx);
 	 * \note To add a new material, use \ref oapiAddMaterial instead.
 	 */
 OAPIFUNC int oapiSetMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat);
+
+	/**
+	 * \brief Reset the properties of a mesh material.
+	 * \param hMesh device mesh handle
+	 * \param matidx material index (>= 0)
+	 * \param prp Material property to be set.
+	 * \param in pointer to new material properties. Set to NULL to reset to shader defaults.
+	 * \return Error flag: 0=success, 1=no graphics engine attached,
+	 *   2=graphics engine does not support operation, 3=invalid mesh handle,
+	 *   4=material index out of range, 5 = material property not supported by shader used by the mesh.
+	 * \note This function can be used to reset the parameters of an existing
+	 *   mesh material.
+	 * \note To add a new material, use \ref oapiAddMaterial instead.
+	 */
+OAPIFUNC int oapiSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp prp, const oapi::FVECTOR4* in);
 
 	/**
 	 * \brief Set custom properties for a mesh.
@@ -5237,10 +5283,13 @@ OAPIFUNC oapi::Sketchpad *oapiGetSketchpad (SURFHANDLE surf);
 OAPIFUNC void oapiReleaseSketchpad (oapi::Sketchpad *skp);
 
 enum FontStyle {
-	FONT_NORMAL = 0,
-	FONT_BOLD = 1,
-	FONT_ITALIC = 2,
-	FONT_UNDERLINE = 4
+	FONT_NORMAL = 0x0,
+	FONT_BOLD = 0x1,
+	FONT_ITALIC = 0x2,
+	FONT_UNDERLINE = 0x4,
+	FONT_STRIKEOUT = 0x8,		
+	FONT_CRISP = 0x10,			///< Override app-default, No Antialiasing
+	FONT_ANTIALIAS = 0x20		///< Override app-default, Use Antialiashing
 };
 
 /**
@@ -5276,6 +5325,18 @@ OAPIFUNC oapi::Font *oapiCreateFont (int height, bool prop, char *face, FontStyl
  *   contains the additional orientation parameter.
  */
 OAPIFUNC oapi::Font *oapiCreateFont (int height, bool prop, const char *face, FontStyle style, int orientation);
+
+/**
+* \brief Creates a font resource for drawing text into surfaces.
+* \param height Font height in pixels
+* \param face Name of the font
+* \param width Width of the font (0 for default aspect ration)
+* \param weight Font thikness (400 for default weight)
+* \param style Ccombination of \see FontStyle flags (0 for default)
+* \param spacing Spacing between charters in a string (0.0f for default)
+* \return A pointer to a created or pre-existing font or NULL in a case of an error.
+*/
+OAPIFUNC oapi::Font* oapiCreateFontEx(int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f);
 
 /**
  * \brief Release a font resource.

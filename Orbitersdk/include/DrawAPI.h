@@ -601,19 +601,8 @@ public:
  *   typeface, slant, weight, etc. Fonts can be selected into a Sketchpad
  *   and then apply to all subsequent Text calls.
  */
-class OAPIFUNC Font: public DrawingTool {
-public:
-	/**
-	 * \brief Font decoration style.
-	 * \sa Font(int,bool,char*,Style)
-	 */
-	enum Style {
-		NORMAL=0,    ///< no decoration
-		BOLD=1,      ///< boldface
-		ITALIC=2,    ///< italic
-		UNDERLINE=4  ///< underlined
-	};
-
+class OAPIFUNC Font : public DrawingTool 
+{
 protected:
 	/**
 	 * \brief Font constructor.
@@ -636,7 +625,8 @@ protected:
 	 *   checked. If prop==true, the default "Sans" font should be used. If
 	 *   false, the default "Fixed" font should be used.
 	 */
-	Font (int height, bool prop, const char *face, Style style=NORMAL, int orientation=0) {}
+	Font(int height, bool prop, const char* face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) { }
+	Font(int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f);
 
 public:
 	/**
@@ -767,7 +757,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa oapi::Font, oapi::GraphicsClient::clbkCreateFont
 	 */
-	virtual Font *SetFont (Font *font) const { return NULL; }
+	virtual Font *SetFont (Font *font) { assert(false); return NULL; }
 
 	/**
 	 * \brief Selects a new pen to use.
@@ -776,7 +766,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa oapi::Pen, oapi::GraphicsClient::clbkCreatePen
 	 */
-	virtual Pen *SetPen (Pen *pen) const { return NULL; }
+	virtual Pen *SetPen (Pen *pen) { assert(false); return NULL; }
 
 	/**
 	 * \brief Selects a new brush to use.
@@ -785,7 +775,7 @@ public:
 	 * \default None, returns NULL.
 	 * \sa oapi::Brush, oapi::GraphicsClient::clbkCreateBrush
 	 */
-	virtual Brush *SetBrush (Brush *brush) const { return NULL; }
+	virtual Brush *SetBrush (Brush *brush) { assert(false); return NULL; }
 
 	/**
 	 * \brief Horizontal text alignment modes.
@@ -813,7 +803,7 @@ public:
 	 * \param tav vertical alignment
 	 * \default None.
 	 */
-	virtual void SetTextAlign (TAlign_horizontal tah=LEFT, TAlign_vertical tav=TOP) {}
+	virtual void SetTextAlign (TAlign_horizontal tah=LEFT, TAlign_vertical tav=TOP) { assert(false); }
 
 	/**
 	 * \brief Set the foreground colour for text output.
@@ -821,7 +811,7 @@ public:
 	 * \return Previous colour setting.
 	 * \default None, returns 0.
 	 */
-	virtual DWORD SetTextColor (DWORD col) { return 0; }
+	virtual DWORD SetTextColor(DWORD col) { assert(false); return 0; }
 
 	/**
 	 * \brief Set the background colour for text output.
@@ -832,7 +822,7 @@ public:
 	 *   is set to BK_OPAQUE.
 	 * \sa SetBackgroundMode
 	 */
-	virtual DWORD SetBackgroundColor (DWORD col) { return 0; }
+	virtual DWORD SetBackgroundColor (DWORD col) { assert(false); return 0; }
 
 	/**
 	 * \brief Background modes for text output.
@@ -856,7 +846,7 @@ public:
 	 *   SetBackgroundMode) should be transparent.
 	 * \sa SetBackgroundColor, SetTextColor
 	 */
-	virtual void SetBackgroundMode (BkgMode mode) {}
+	virtual void SetBackgroundMode (BkgMode mode) { assert(false); }
 
 	/**
 	 * \brief Return height and (average) width of a character in the currently
@@ -870,7 +860,7 @@ public:
 	 * \note For proportional fonts, the width value should be an approximate average
 	 *   character width.
 	 */
-	virtual DWORD GetCharSize () { return 0; }
+	virtual DWORD GetCharSize () { assert(false); return 0; }
 
 	/**
 	 * \brief Return the width of a text string in the currently selected font.
@@ -880,7 +870,7 @@ public:
 	 * \default None, returns 0.
 	 * \sa SetFont
 	 */
-	virtual DWORD GetTextWidth (const char *str, int len = 0) { return 0; }
+	virtual DWORD GetTextWidth (const char *str, int len = 0) { assert(false); return 0; }
 
 	/**
 	 * \brief Set the position in the surface bitmap which is mapped to the
@@ -899,7 +889,7 @@ public:
 	 *   shift in origin, by subtracting the offset from all coordinate values.
 	 * \sa GetOrigin
 	 */
-	virtual void SetOrigin (int x, int y) {}
+	virtual void SetOrigin (int x, int y) { assert(false); }
 
 	/**
 	 * \brief Returns the position in the surface bitmap which is mapped to
@@ -909,7 +899,7 @@ public:
 	 * \default Returns (0,0)
 	 * \sa SetOrigin
 	 */
-	virtual void GetOrigin (int *x, int *y) const { *x = 0, *y = 0; }
+	virtual void GetOrigin (int *x, int *y) const { assert(false); *x = 0, *y = 0; }
 
 	/**
 	 * \brief Draw a text string.
@@ -920,7 +910,7 @@ public:
 	 * \return \e true on success, \e false on failure.
 	 * \default None, returns false.
 	 */
-	virtual bool Text (int x, int y, const char *str, int len) { return false; }
+	virtual bool Text (int x, int y, const char *str, int len) { assert(false); return false; }
 
 	/**
 	 * \brief Draw a text string into a rectangle.
@@ -946,7 +936,7 @@ public:
 	 * \param y y-coordinate of point [pixel]
 	 * \param col pixel colour (format: 0xBBGGRR)
 	 */
-	virtual void Pixel (int x, int y, DWORD col) {}
+	virtual void Pixel (int x, int y, DWORD col) { assert(false); }
 
 	/**
 	 * \brief Move the drawing reference to a new point.
@@ -957,7 +947,7 @@ public:
 	 * \default None.
 	 * \sa LineTo
 	 */
-	virtual void MoveTo (int x, int y) {}
+	virtual void MoveTo (int x, int y) { assert(false); }
 
 	/**
 	 * \brief Draw a line to a specified point.
@@ -968,7 +958,7 @@ public:
 	 *   point.
 	 * \sa MoveTo
 	 */
-	virtual void LineTo (int x, int y) {}
+	virtual void LineTo (int x, int y) { assert(false); }
 
 	/**
 	 * \brief Draw a line between two points.
@@ -980,7 +970,7 @@ public:
 	 * \note The line is drawn with the currently selected pen.
 	 * \sa SetPen
 	 */
-	virtual void Line (int x0, int y0, int x1, int y1) {}
+	virtual void Line (int x0, int y0, int x1, int y1) { assert(false); }
 
 	/**
 	 * \brief Draw a rectangle (filled or outline).
@@ -1011,7 +1001,7 @@ public:
 	 *   currently selected brush resource.
 	 * \sa Rectangle, Polygon
 	 */
-	virtual void Ellipse (int x0, int y0, int x1, int y1) {}
+	virtual void Ellipse (int x0, int y0, int x1, int y1) { assert(false); }
 
 	/**
 	 * \brief Draw a closed polygon given by vertex points.
@@ -1025,7 +1015,7 @@ public:
 	 *   joined with the first one.
 	 * \sa Polyline, PolyPolygon, Rectangle, Ellipse
 	 */
-	virtual void Polygon (const IVECTOR2 *pt, int npt) {}
+	virtual void Polygon (const IVECTOR2 *pt, int npt) { assert(false); }
 
 	/**
 	 * \brief Draw a line of piecewise straight segments.
@@ -1038,7 +1028,7 @@ public:
 	 *   not connected, and no fill operation is performed.
 	 * \sa Polygon, PolyPolyline, Rectangle, Ellipse
 	 */
-	virtual void Polyline (const IVECTOR2 *pt, int npt) {}
+	virtual void Polyline (const IVECTOR2 *pt, int npt) { assert(false); }
 
 	/**
 	 * \brief Draw a set of polygons.
@@ -1099,13 +1089,13 @@ public:
 	virtual int GetVersion() { return 1; }
 
 	/**
-		* \brief Get a render surface size in pixels
-		* \param size Pointer to SIZE structure receiving the size
-		*/
+	* \brief [DX9] Get a render surface size in pixels
+	* \param size Pointer to SIZE structure receiving the size
+	*/
 	virtual void GetRenderSurfaceSize(LPSIZE size) { assert(false); }
 
 	/**
-	* \brief Setup a quick pen, removes any other pen from use. Set to zero to disable a pen from use.
+	* \brief [DX9] Setup a quick pen, removes any other pen from use. Set to zero to disable a pen from use.
 	* \param color Pen color in 0xAABBGGRR
 	* \param width Pen width in pixels
 	* \param style 0 = Disabled, 1 = Solid, 2 = Dashed
@@ -1113,20 +1103,20 @@ public:
 	virtual void QuickPen(DWORD color, float width = 1.0f, DWORD style = 1) { assert(false); }
 
 	/**
-	* \brief Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
+	* \brief [DX9] Setup a quick brush, removes any other brush from use. Set to zero to disable a brush from use.
 	* \param color Brush color in 0xAABBGGRR
 	*/
 	virtual void QuickBrush(DWORD color) { assert(false); }
 
 	/**
-	* \brief Set up a global line width scale factor
+	* \brief [DX9] Set up a global line width scale factor
 	* \param width A line width scale factor. (Default 1.0f)
 	* \param pattern Line pattern scale factor. (Default 1.0f)
 	*/
 	virtual void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f) { assert(false); }
 
 	/**
-	* \brief Set up a global world transformation matrix.
+	* \brief [DX9] Set up a global world transformation matrix.
 	* \param pWT A pointet to FMATRIX4, NULL to reset default settings.
 	* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
 	* \note Everything is transformed including CopyRect() and Text().
@@ -1136,28 +1126,28 @@ public:
 	virtual	void SetWorldTransform(const FMATRIX4* pWT = NULL) { assert(false); }
 
 	/**
-	* \brief Get a View matrix. [Read only]
+	* \brief [DX9] Get a View matrix. [Read only]
 	*/
 	virtual	const FMATRIX4* ViewMatrix() const { assert(false); return NULL; }
 
 	/**
-	* \brief Get a Projection matrix. [Read only]
+	* \brief [DX9] Get a Projection matrix. [Read only]
 	*/
 	virtual	const FMATRIX4* ProjectionMatrix() const { assert(false); return NULL; }
 
 	/**
-	* \brief Get combined view projection matrix. [Read only]
+	* \brief [DX9] Get combined view projection matrix. [Read only]
 	*/
 	virtual	const FMATRIX4* GetViewProjectionMatrix() const { assert(false); return NULL; }
 
 	/**
-	* \brief Set an active view mode. Switch between modes doesn't reset the view matrices and setups.
+	* \brief [DX9] Set an active view mode. Switch between modes doesn't reset the view matrices and setups.
 	* \param mode, SkpView mode setting.
 	*/
 	virtual void SetViewMode(SkpView mode = ORTHO) { assert(false); }
 
 	/**
-	* \brief Set up a global world transformation matrix.
+	* \brief [DX9] Set up a global world transformation matrix.
 	* \param scale Graphics scale factor.
 	* \param rot Rotation angle [rad]
 	* \param ctr Pointer to a IVECTOR containing a rotation center or NULL for origin.
@@ -1170,13 +1160,13 @@ public:
 	virtual void SetWorldTransform2D(float scale = 1.0f, float rot = 0.0f, IVECTOR2* ctr = NULL, IVECTOR2* trl = NULL) { assert(false); }
 
 	/**
-	* \brief Set up a screen space clip rectangle. Usefull when need to draw in a smaller sub section of the render target.
+	* \brief [DX9] Set up a screen space clip rectangle. Usefull when need to draw in a smaller sub section of the render target.
 	* \param pClip A pointer to clipping rectangle, Set to NULL to disable clipping.
 	*/
 	virtual void ClipRect(const LPRECT pClip = NULL) { assert(false); }
 
 	/**
-	* \brief Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
+	* \brief [DX9] Set up a world space clip cone to clip pixels within it. Does not work with orthographic projection.
 	* \param idx Index of the clipper object. Valids are "0" and "1".
 	* \param pPos a pointer to a unit vector containing cone direction in camera centric frame, Set to NULL to disable clipping.
 	* \param angle cosine of the half-angle of the cone.
@@ -1187,13 +1177,13 @@ public:
 	virtual void Clipper(int idx, const VECTOR3* pPos = NULL, double cos_angle = 0.0, double dist = 0.0) { assert(false); }
 
 	/**
-	* \brief Enable a use of depth buffer.
+	* \brief [DX9] Enable a use of depth buffer.
 	* \param bEnable Toggle depth buffer.
 	*/
 	virtual void DepthEnable(bool bEnable) { assert(false); }
 
 	/**
-	* \brief Draws a template mesh group (from a system memory) in the render target.
+	* \brief [DX9] Draws a template mesh group (from a system memory) in the render target.
 	* \param hMesh Pointer to mesh containing the geometry.
 	* \param grp Group index to draw.
 	* \param flags SkpMeshFlags
@@ -1208,7 +1198,7 @@ public:
 	virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 	
 	/**
-	* \brief Copy 'Blit' a rectangle
+	* \brief [DX9] Copy 'Blit' a rectangle
 	* \param hSrc Source surface handle
 	* \param src Source rectangle, (or NULL for whole surface)
 	* \param tx Target x-coordinate
@@ -1218,7 +1208,7 @@ public:
 	virtual void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
 	/**
-	* \brief Copy 'Blit' a rectangle
+	* \brief [DX9] Copy 'Blit' a rectangle
 	* \param hSrc Source surface handle
 	* \param src Source rectangle, (or NULL for whole surface)
 	* \param tgt Target rectangle, (must be defined)
@@ -1227,7 +1217,7 @@ public:
 	virtual void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt) { assert(false); }
 
 	/**
-	* \brief Copy 'Blit' a rectangle with rotation and scaling
+	* \brief [DX9] Copy 'Blit' a rectangle with rotation and scaling
 	* \param hSrc Source surface handle
 	* \param src Source rectangle, (or NULL for whole surface)
 	* \param cx Target center x-coordinate
@@ -1241,7 +1231,7 @@ public:
 	virtual void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
 
 	/**
-	* \brief Copy 'Blit' a rectangle using a color-key stored in a source surface.
+	* \brief [DX9] Copy 'Blit' a rectangle using a color-key stored in a source surface.
 	* \param hSrc Source surface handle
 	* \param src Source rectangle, (or NULL for whole surface)
 	* \param tx Target x-coordinate
@@ -1252,7 +1242,7 @@ public:
 	virtual void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
 	/**
-	* \brief Write a line of text using text scaling and rotation
+	* \brief [DX9] Write a line of text using text scaling and rotation
 	* \param x x-coordinate of the text alignment point
 	* \param y y-coordinate of the text alignment point
 	* \param str pointer to NULL terminated string to write.
@@ -1265,7 +1255,7 @@ public:
 	virtual void TextEx(float x, float y, const char* str, float scale = 1.0f, float angle = 0.0f) { assert(false); }
 
 	/**
-	* \brief Draw a pre-created polyline or polygon object
+	* \brief [DX9] Draw a pre-created polyline or polygon object
 	* \param hPoly Handle to a poly object
 	* \param flags (reserved for later use, set to zero for now)
 	* \sa gcCreatePoly, gcDeletePoly
@@ -1273,46 +1263,46 @@ public:
 	virtual void DrawPoly(HPOLY hPoly, DWORD flags = 0) { assert(false); }
 
 	/**
-	* \brief Draw a list of independent lines. 0-1, 2-3, 4-5,...
+	* \brief [DX9] Draw a list of independent lines. 0-1, 2-3, 4-5,...
 	* \param pt list of vertex points.
 	* \param nlines number of lines to draw
 	*/
 	virtual void Lines(FVECTOR2* pt1, int nlines) { assert(false); }
 
 	/**
-	* \brief Set up a view matrix.
+	* \brief [DX9] Set up a view matrix.
 	* \param pV A pointet to FMATRIX4, NULL to reset default settings.
 	*/
 	virtual	void SetViewMatrix(const FMATRIX4* pV = NULL) { assert(false); }
 
 	/**
-	* \brief Set up a projection matrix.
+	* \brief [DX9] Set up a projection matrix.
 	* \param pP A pointet to FMATRIX4, NULL to reset default settings.
 	*/
 	virtual	void SetProjectionMatrix(const FMATRIX4* pP = NULL) { assert(false); }
 
 	/**
-	* \brief Get a read only pointer to current ColorMatrix.
+	* \brief [DX9] Get a read only pointer to current ColorMatrix.
 	* \sa SetColorMatrix, SetBrightness
 	*/
 	virtual const FMATRIX4* GetColorMatrix() { assert(false); return NULL; }
 
 	/**
-	* \brief Set a ColorMatrix for color correrctions. Reset to default by passing NULL pointer
+	* \brief [DX9] Set a ColorMatrix for color correrctions. Reset to default by passing NULL pointer
 	* \param pMatrix Pointer to a matrix or NULL.
 	* \sa GetColorMatrix, SetBrightness
 	*/
 	virtual void SetColorMatrix(const FMATRIX4* pMatrix = NULL) { assert(false); }
 
 	/**
-	* \brief Automatically set a ColorMatrix for brightness control. NULL to restore default settings.
+	* \brief [DX9] Automatically set a ColorMatrix for brightness control. NULL to restore default settings.
 	* \param pBrightness Pointer into a float values color vector, or NULL.
 	* \sa GetColorMatrix, SetColorMatrix
 	*/
 	virtual void SetBrightness(const FVECTOR4* pBrightness = NULL) { assert(false); }
 
 	/**
-	* \brief Get a render configuration setting or "effect".
+	* \brief [DX9] Get a render configuration setting or "effect".
 	* \param param A setting ID to get.
 	* \note Valid ID Flags:
 	* \note SKP3_PRM_GAMMA, Get Gamma correction value (.rgb)
@@ -1322,14 +1312,14 @@ public:
 	virtual FVECTOR4 GetRenderParam(RenderParam param) { assert(false); return FVECTOR4(0, 0, 0, 0); }
 
 	/**
-	* \brief Set a render configuration paramater or "effect".
+	* \brief [DX9] Set a render configuration paramater or "effect".
 	* \param param A setting ID to set, or NULL to disable effect from use.
 	* \sa SetRenderParam
 	*/
 	virtual void SetRenderParam(RenderParam param, const FVECTOR4* data = NULL) { assert(false); }
 
 	/**
-	* \brief Setup a blending state
+	* \brief [DX9] Setup a blending state
 	* \param dwState Desired configuration.
 	* \note SKPBS_ALPHABLEND, AlphaBlend source.color to destination.color, will retain destination alpha unchanged (if exists).
 	* \note SKPBS_COPY, Copy both source color and alpha to destination
@@ -1339,22 +1329,22 @@ public:
 	virtual void SetBlendState(BlendState State = (BlendState)(ALPHABLEND | FILTER_LINEAR)) { assert(false); }
 
 	/**
-	* \brief Get world transformation matrix
+	* \brief [DX9] Get world transformation matrix
 	*/
 	virtual FMATRIX4 GetWorldTransform() const { return FMATRIX4(); }
 
 	/**
-	* \brief Push current world transformation matrix onto a stack
+	* \brief [DX9] Push current world transformation matrix onto a stack
 	*/
 	virtual void PushWorldTransform() { assert(false); }
 
 	/**
-	* \brief Pop a world transformation matrix from a stack and make it active
+	* \brief [DX9] Pop a world transformation matrix from a stack and make it active
 	*/
 	virtual void PopWorldTransform() { assert(false); }
 
 	/**
-	* \brief Set up a global world transformation matrix.
+	* \brief [DX9] Set up a global world transformation matrix.
 	* \param scl Pointer to a FVECTOR2 containing a scaling information or NULL for 1.0
 	* \param trl Pointer to a IVECTOR2 containing a translation or NULL.
 	* \note This function will conflict and resets any settings set by SetOrigin(). Setting to NULL does not restore SetOrigin().
@@ -1365,7 +1355,7 @@ public:
 	virtual void SetWorldScaleTransform2D(const FVECTOR2* scl = NULL, const IVECTOR2* trl = NULL) { assert(false); }
 
 	/**
-	* \brief Fill a rectangle with color gradient
+	* \brief [DX9] Fill a rectangle with color gradient
 	* \param tgt a Rect specifying the bounds
 	* \param c1 Left or Top color
 	* \param c2 Right or Bottom color
@@ -1374,17 +1364,19 @@ public:
 	virtual void GradientFillRect(const LPRECT tgt, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
 
 	/**
-	* \brief Fill a rectangle with color
+	* \brief [DX9] Fill a rectangle with color
 	* \param color Fill color
 	* \param tgt a Rect specifying the bounds, NULL for entire surface
 	*/
 	virtual void ColorFill(DWORD color, const LPRECT tgt) { assert(false); }
 
-
+	/**
+	* \brief [DX9] Drawing function designed for drawing GUI elements. Buttons, Windows, Boxes, etc..  
+	*/
 	virtual void StretchRegion(const skpRegion* rgn, SURFHANDLE hSrc, const LPRECT out) { assert(false); }
 
 	/**
-	* \brief Copy 'Blit' a tetragon
+	* \brief [DX9] Copy 'Blit' a tetragon
 	* \param hSrc Source surface handle
 	* \param sr Source rectangle, (or NULL for whole surface)
 	* \param pt Pointer to an array of 4 FVECTOR2 target points forming shape of the tetragon.
@@ -1392,7 +1384,7 @@ public:
 	virtual void CopyTetragon(SURFHANDLE hSrc, const LPRECT sr, const FVECTOR2 pt[4]) { assert(false); }
 
 	/**
-	* \brief Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF
+	* \brief [DX9] Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF
 	* \note Default: Enabled, Only effects to a colors assigned to pens and brushes after a mode change.
 	*/
 	virtual void ColorCompatibility(bool bEnable) { assert(false); }

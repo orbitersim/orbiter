@@ -24,6 +24,7 @@
 #include "Mesh.h"
 #include "MenuInfoBar.h"
 #include "zlib.h"
+#include "DrawAPI.h"
 
 #ifdef INLINEGRAPHICS  // should be temporary
 #include "OGraphics.h"
@@ -263,6 +264,11 @@ DLLEXPORT OBJHANDLE oapiGetBasePlanet (OBJHANDLE hBase)
 DLLEXPORT void oapiGetObjectName (OBJHANDLE hObj, char *name, int n)
 {
 	strncpy (name, ((Body*)hObj)->Name(), n);
+}
+
+DLLEXPORT const char *oapiGetObjectFileName(OBJHANDLE hObj)
+{
+	return ((Body*)hObj)->FileName();
 }
 
 DLLEXPORT OBJHANDLE oapiGetFocusObject ()
@@ -1486,6 +1492,18 @@ DLLEXPORT int oapiMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERIAL *mat
 	return (gc ? gc->clbkMeshMaterial (hMesh, matidx, mat) : 1);
 }
 
+DLLEXPORT int oapiMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4 *out)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	return (gc ? gc->clbkMeshMaterialEx(hMesh, matidx, mat, out) : 1);
+}
+
+DLLEXPORT int oapiSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	return (gc ? gc->clbkSetMeshMaterialEx(hMesh, matidx, mat, in) : 1);
+}
+
 DLLEXPORT int oapiSetMaterial (DEVMESHHANDLE hMesh, DWORD matidx, const MATERIAL *mat)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
@@ -1803,7 +1821,7 @@ DLLEXPORT oapi::Font *oapiCreateFont (int height, bool prop, char *face, FontSty
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	oapi::Font *font = NULL;
-	if (gc) font = gc->clbkCreateFont (height, prop, face, (oapi::Font::Style)style);
+	if (gc) font = gc->clbkCreateFont (height, prop, face, style);
 	return font;
 }
 
@@ -1811,7 +1829,26 @@ DLLEXPORT oapi::Font *oapiCreateFont (int height, bool prop, const char *face, F
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();
 	oapi::Font *font = NULL;
-	if (gc) font = gc->clbkCreateFont (height, prop, face, (oapi::Font::Style)style, orientation);
+	if (gc) font = gc->clbkCreateFont (height, prop, face, style, orientation);
+	return font;
+}
+
+/**
+	* \brief Create a Font
+	* \param height Font height
+	* \param face Name of the font
+	* \param width Width of the font (0 for default aspect ration)
+	* \param weight Font thikness (400 for default weight)
+	* \param style A combination of \see FontStyle flags (0 for default)
+	* \param spacing A spacing between charters in a string (0.0f for default)
+	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
+	*/
+
+DLLEXPORT oapi::Font* oapiCreateFontEx(int height, char* face, int width, int weight, FontStyle style, float spacing)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	oapi::Font* font = NULL;
+	if (gc) font = gc->clbkCreateFontEx(height, face, width, weight, style, spacing);
 	return font;
 }
 

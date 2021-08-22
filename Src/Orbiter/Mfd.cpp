@@ -664,7 +664,7 @@ void Instrument::SetSize (const Spec &spec, bool defer_alloc)
 		cw = 10, ch = 16; // temporary defaults
 		mfdfont[0] = gc->clbkCreateFont (-h, false, "Fixed");
 		mfdfont[1] = gc->clbkCreateFont (-(h*3)/4, true, "Sans");
-		mfdfont[2] = gc->clbkCreateFont (-(h*3)/4, true, "Sans", oapi::Font::NORMAL, 900);
+		mfdfont[2] = gc->clbkCreateFont (-(h*3)/4, true, "Sans", FONT_NORMAL, 900);
 		mfdfont[3] = gc->clbkCreateFont (-h, true, "Sans");
 
 		oapi::Sketchpad *skp = gc->clbkGetSketchpad (surf);

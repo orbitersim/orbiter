@@ -45,11 +45,18 @@ void GDIClient::clbkReleaseSketchpad (oapi::Sketchpad *sp)
 	}
 }
 
-Font *GDIClient::clbkCreateFont (int height, bool prop, const char *face, Font::Style style, int orientation) const
+Font *GDIClient::clbkCreateFont (int height, bool prop, const char *face, FontStyle style, int orientation) const
 {
 	refCountFont++;
 	return new GDIFont (height, prop, face, style, orientation);
 }
+
+Font* GDIClient::clbkCreateFontEx(int height, char* face, int width, int weight, FontStyle style, float spacing) const
+{
+	refCountFont++;
+	return new GDIFont(height, face, width, weight, style, spacing);
+}
+
 
 void GDIClient::clbkReleaseFont (Font *font) const
 {
@@ -347,7 +354,7 @@ void GDIPad::PolyPolyline (const IVECTOR2 *pt, const int *npt, const int nline)
 // class GDIFont
 // ======================================================================
 
-GDIFont::GDIFont (int height, bool prop, const char *face, Style style, int orientation): oapi::Font (height, prop, face, style, orientation)
+GDIFont::GDIFont (int height, bool prop, const char *face, FontStyle style, int orientation): oapi::Font (height, prop, face, style, orientation)
 {
 	char *def_fixedface = "Courier New";
 	char *def_sansface = "Arial";
@@ -364,10 +371,19 @@ GDIFont::GDIFont (int height, bool prop, const char *face, Style style, int orie
 			   _stricmp (face, def_serifface)) {
 		face = (prop ? def_sansface : def_fixedface);
 	}
-	int weight = (style & BOLD ? FW_BOLD : FW_NORMAL);
-	DWORD italic = (style & ITALIC ? TRUE : FALSE);
-	DWORD underline = (style & UNDERLINE ? TRUE : FALSE);
-	hFont = CreateFont (height, 0, orientation, orientation, weight, italic, underline, 0, 0, 3, 2, 1, 49, face);
+	int weight = (style & FONT_BOLD ? FW_BOLD : FW_NORMAL);
+	DWORD italic = (style & FONT_ITALIC ? TRUE : FALSE);
+	DWORD underline = (style & FONT_UNDERLINE ? TRUE : FALSE);
+	DWORD strikeout = (style & FONT_STRIKEOUT) ? TRUE : FALSE;
+	hFont = CreateFont (height, 0, orientation, orientation, weight, italic, underline, strikeout, 0, 3, 2, 1, 49, face);
+}
+
+GDIFont::GDIFont(int height, char* face, int width, int weight, FontStyle style, float spacing) : oapi::Font(height, false, face, style, 0)
+{
+	DWORD italic = (style & FontStyle::FONT_ITALIC ? TRUE : FALSE);
+	DWORD underline = (style & FontStyle::FONT_UNDERLINE ? TRUE : FALSE);
+	DWORD strikeout = (style & FontStyle::FONT_STRIKEOUT ? TRUE : FALSE);
+	hFont = CreateFont(height, width, 0, 0, weight, italic, underline, strikeout, 0, 3, 2, 1, 49, face);
 }
 
 GDIFont::~GDIFont ()
