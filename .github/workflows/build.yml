@@ -50,7 +50,6 @@ jobs:
       
     - name: Build & Test
       shell: cmd
-      continue-on-error: true
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
         cmake --preset ${{ matrix.architecture }}-release -DORBITER_MAKE_DOC=OFF
