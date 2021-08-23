@@ -366,7 +366,10 @@ void D3D9Pad::BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDe
 
 	if (vI != 0) LogErr("Sketchpad %s has received drawing commands outside Begin() End() pair", _PTR(this));
 
-	if (bBeginDraw == true) _wassert(L"D3D9Pad::BeginDrawing() called multiple times", _CRT_WIDE(__FILE__), __LINE__);
+	if (bBeginDraw == true) {
+		LogErr("D3D9Pad::BeginDrawing() called multiple times");
+		HALT();
+	}
 	
 	Reset();
 	
@@ -400,7 +403,10 @@ void D3D9Pad::EndDrawing()
 	Log("==== EndDrawing ====\n");
 #endif
 
-	if (bBeginDraw == false) _wassert(L"D3D9Pad::EndDrawing() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
+	if (bBeginDraw == false) {
+		LogErr("D3D9Pad::EndDrawing() called without BeginDrawing()");
+		HALT();
+	}
 
 	Flush();
 
@@ -418,7 +424,10 @@ void D3D9Pad::EndDrawing()
 //
 bool D3D9Pad::Flush(HPOLY hPoly)
 {
-	if (bBeginDraw == false) _wassert(L"D3D9Pad::Flush() called without BeginDrawing()", _CRT_WIDE(__FILE__), __LINE__);
+	if (bBeginDraw == false) {
+		LogErr("D3D9Pad::Flush() called without BeginDrawing()");
+		HALT();
+	}
 	
 	UINT numPasses;
 	static DWORD bkALPHA, bkZEN, bkZW, bkCULL;

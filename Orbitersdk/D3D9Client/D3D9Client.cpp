@@ -3021,8 +3021,8 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad_const(SURFHANDLE surf) const
 	if (ChkDev(__FUNCTION__)) return NULL;
 
 	if (GetCurrentThread() != hMainThread) {
-		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
-		return NULL;
+		LogErr("Sketchpad called from a worker thread !");
+		HALT();
 	}
 
 	if (surf == RENDERTGT_MAINWINDOW) surf = GetBackBufferHandle();
@@ -3037,7 +3037,10 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad_const(SURFHANDLE surf) const
 
 		// Do we have an existing SketchPad interface in use
 		if (pCur) {
-			if (pCur == pPad) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
+			if (pCur == pPad) {
+				LogErr("Sketchpad already exists for this surface");
+				HALT();
+			}
 			pCur->EndDrawing();	// Put the current one in hold
 			LogDbg("Red", "Switching to another sketchpad in a middle");
 		}
@@ -3120,7 +3123,10 @@ void D3D9Client::clbkReleaseSketchpad_const(oapi::Sketchpad* sp) const
 
 		D3D9Pad* pPad = ((D3D9Pad*)sp);
 
-		if (GetTopInterface() != pPad) _wassert(L"Sketchpad release failed. Not a top one.", _CRT_WIDE(__FILE__), __LINE__);
+		if (GetTopInterface() != pPad) {
+			LogErr("Sketchpad release failed. Not a top one.");
+			HALT();
+		}
 
 		pPad->EndDrawing();
 
