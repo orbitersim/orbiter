@@ -21,6 +21,7 @@
 #include "meshres.h"
 #include "meshres_vc.h"
 #include "resource.h"
+#include "DrawAPI.h"
 #include <stdio.h>
 #include <fstream>
 
@@ -1179,14 +1180,12 @@ void Atlantis::UpdateMesh ()
 
 	// update MFD brightness
 	if (vis) {
-		int i;
-		MATERIAL mat;
-		memset (&mat, 0, sizeof(MATERIAL));
+		oapi::FVECTOR4 mat;
 		DEVMESHHANDLE hMesh = GetDevMesh (vis, mesh_vc);
-		for (i = 0; i < 10; i++) {
-			mat.emissive.r = mat.emissive.g = mat.emissive.b = (float)mfdbright[i];
-			mat.emissive.a = 1.0f;
-			oapiSetMaterial (hMesh, 10+i, &mat);
+		for (int i = 0; i < 10; i++) {
+			mat.rgb = (float)mfdbright[i];
+			mat.a = 1.0f;
+			oapiSetMaterialEx (hMesh, 10+i, MatProp::Light, &mat);
 		}
 	}
 }
