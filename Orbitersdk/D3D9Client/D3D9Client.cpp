@@ -2392,7 +2392,10 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 		// 
 		if ((td->Pool == D3DPOOL_SYSTEMMEM) && (sd->Usage & D3DUSAGE_RENDERTARGET))
 		{
-			if (S_OK == pDevice->GetRenderTargetData(pss, pts))	return true;
+			if (S_OK == pDevice->GetRenderTargetData(pss, pts)) {
+				SURFACE(tgt)->Flags |= OAPISURFACE_CAPTURE;
+				return true;
+			}
 		
 			LogErr("oapiBlt() GetRenderTargetData() Failed");
 			BltError(src, tgt, &rs, &rt);

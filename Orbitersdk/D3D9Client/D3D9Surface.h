@@ -29,6 +29,7 @@
 #define OAPISURFACE_MAPS		0x80000000		// Additional Texture Maps
 #define OAPISURFACE_BACKBUFFER	0x40000000		// It's a backbuffer
 #define OAPISURFACE_ORIGIN		0x20000000		// The origin from where the clones are being made, can't change (immutable)
+#define OAPISURFACE_CAPTURE		0x10000000		// The origin from where the clones are being made, can't change (immutable)
 
 #define OAPISURF_SKP_GDI_WARN	0x00000001
 

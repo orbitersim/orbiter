@@ -767,6 +767,24 @@ HDC	SurfNative::GetDC()
 {
 	if (!DC.hDC)
 	{
+		if (Flags & OAPISURFACE_CAPTURE) {
+			bool bReady = false;
+			LPDIRECT3DSURFACE9 pSrf = GetSurface();
+			D3DLOCKED_RECT rect;
+			if (S_OK == pSrf->LockRect(&rect, NULL, D3DLOCK_DONOTWAIT)) {
+				bReady = true;
+				pSrf->UnlockRect();
+			}
+			if (bReady) {
+				if (pSrf->GetDC(&DC.hDC) == S_OK)
+				{
+					DC.pSrf = pSrf;
+					return DC.hDC;
+				}
+			}
+			return NULL;
+		}
+
 		if (IsGDISurface()) {
 			LPDIRECT3DSURFACE9 pSrf = GetSurface();
 			if (pSrf->GetDC(&DC.hDC) == S_OK)
