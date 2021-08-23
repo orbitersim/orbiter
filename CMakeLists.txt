@@ -456,9 +456,12 @@ if (ORBITER_MAKE_TESTS)
 endif()
 
 if (ORBITER_ENABLE_ASAN)
-    message("Address Sanitizer Enabled")
     set(asan_binary_dir "$ENV{VCToolsInstallDir}bin\\Host${ARCH}\\${ARCH}")
-	add_compile_options("/fsanitize=address /EHsc")
+    if (NOT EXISTS "${asan_binary_dir}")
+		message( FATAL_ERROR "ASAN: Visual Studio tools directory ${asan_binary_dir} not valid, check VCToolsInstallDir environment variable" )
+    endif()
+    
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /fsanitize=address /EHsc")
 	add_custom_command(
 		COMMENT "Copying ASAN Clang runtime from ${asan_binary_dir}"
 		OUTPUT "clang_rt.asan_dynamic-x86_64.dll"
@@ -468,4 +471,5 @@ if (ORBITER_ENABLE_ASAN)
 	)
     add_custom_target(AsanBinaries DEPENDS "clang_rt.asan_dynamic-x86_64.dll")
     add_dependencies(Orbiter_server AsanBinaries)
+    message("Address Sanitizer Enabled")
 endif()
