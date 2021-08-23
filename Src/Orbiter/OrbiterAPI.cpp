@@ -2193,7 +2193,7 @@ DLLEXPORT void oapiWriteLine (FILEHANDLE file, char *line)
 	ofs << line << endl;
 }
 
-DLLEXPORT void oapiWriteLog (const char *line)
+DLLEXPORT void oapiWriteLog (char *line)
 {
 	LOGOUT (line);
 }

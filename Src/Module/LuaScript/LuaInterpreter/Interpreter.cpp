@@ -1930,7 +1930,7 @@ int Interpreter::oapiDbgOut (lua_State *L)
 int Interpreter::oapiWriteLog(lua_State* L)
 {
 	const char* str = lua_tostringex(L, 1);
-	::oapiWriteLog(str);
+	::oapiWriteLog(const_cast<char*>(str));
 	return 0;
 }
 
