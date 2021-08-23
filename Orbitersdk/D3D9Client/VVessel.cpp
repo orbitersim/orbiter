@@ -1252,7 +1252,7 @@ bool vVessel::RenderENVMap(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 
 	for (DWORD i=0;i<cnt;i++) {
 
-		assert(SUCCEEDED(pEnv[ENVMAP_MAIN]->GetCubeMapSurface(D3DCUBEMAP_FACES(eFace), 0, &pSrf)));
+		HR(pEnv[ENVMAP_MAIN]->GetCubeMapSurface(D3DCUBEMAP_FACES(eFace), 0, &pSrf));
 	
 		gc->AlterRenderTarget(pSrf, pEnvDS);
 
@@ -1370,7 +1370,7 @@ bool vVessel::ProbeIrradiance(LPDIRECT3DDEVICE9 pDev, DWORD cnt, DWORD flags)
 	
 	for (DWORD i = 0; i<cnt; i++) {
 
-		assert(SUCCEEDED(pIrdEnv->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf)));
+		HR(pIrdEnv->GetCubeMapSurface(D3DCUBEMAP_FACES(iFace), 0, &pSrf));
 
 		gc->AlterRenderTarget(pSrf, pIrDS);
 
