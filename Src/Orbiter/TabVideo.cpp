@@ -16,12 +16,24 @@
 
 using namespace std;
 
+static PSTR strInfo_Console = "No graphics engine has been selected. Orbiter will run in console mode.";
+
 //-----------------------------------------------------------------------------
 // DefVideoTab class
 
 orbiter::DefVideoTab::DefVideoTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	idxClient = 0;
+	strInfo = 0;
+	SetInfoString(strInfo_Console);
+}
+
+//-----------------------------------------------------------------------------
+
+orbiter::DefVideoTab::~DefVideoTab()
+{
+	if (strInfo)
+		delete[]strInfo;
 }
 
 //-----------------------------------------------------------------------------
@@ -88,6 +100,17 @@ void orbiter::DefVideoTab::OnGraphicsClientLoaded(oapi::GraphicsClient* gc, cons
 	if (newIdx != oldIdx) {
 		SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_SETCURSEL, newIdx, 0);
 		SelectClientIndex(newIdx);
+	}
+
+	HMODULE hMod = LoadLibraryEx(moduleName, 0, LOAD_LIBRARY_AS_DATAFILE);
+	if (hMod) {
+		char buf[1024];
+		// read module info string
+		if (LoadString(hMod, 1000, buf, 1024)) {
+			buf[1023] = '\0';
+			SetInfoString(buf);
+		}
+		FreeLibrary(hMod);
 	}
 }
 
@@ -192,7 +215,34 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 		pCfg->AddModule(name);
 		pLp->App()->LoadModule(path, name);
 	}
+	else
+		SetInfoString(strInfo_Console);
+
 	ShowInterface(hTab, idx > 0);
+}
+
+void orbiter::DefVideoTab::SetInfoString(PSTR str)
+{
+	if (strInfo)
+		delete[]strInfo;
+	strInfo = new char[strlen(str) + 1];
+	strcpy(strInfo, str);
+}
+
+//-----------------------------------------------------------------------------
+
+INT_PTR CALLBACK orbiter::DefVideoTab::InfoProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg) {
+	case WM_INITDIALOG:
+		SetWindowText(GetDlgItem(hWnd, IDC_MSG), (PSTR)lParam);
+		return TRUE;
+	case WM_COMMAND:
+		if (IDOK == LOWORD(wParam) || IDCANCEL == LOWORD(wParam))
+			EndDialog(hWnd, TRUE);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -201,10 +251,18 @@ INT_PTR orbiter::DefVideoTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 {
 	switch (uMsg) {
 	case WM_COMMAND:
-		if (LOWORD(wParam) == IDC_VID_COMBO_MODULE && HIWORD(wParam) == CBN_SELCHANGE) {
-			UINT idx = (UINT)SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETCURSEL, 0, 0);
-			if (idx != CB_ERR) SelectClientIndex(idx);
-			return 0;
+		switch (LOWORD(wParam)) {
+		case IDC_VID_COMBO_MODULE:
+			if (HIWORD(wParam) == CBN_SELCHANGE) {
+				UINT idx = (UINT)SendDlgItemMessage(hTab, IDC_VID_COMBO_MODULE, CB_GETCURSEL, 0, 0);
+				if (idx != CB_ERR) SelectClientIndex(idx);
+				return 0;
+			}
+			break;
+		case IDC_VID_MODULE_INFO:
+			DialogBoxParam(AppInstance(), MAKEINTRESOURCE(IDD_MSG), LaunchpadWnd(), InfoProc,
+				(LPARAM)strInfo);
+			return TRUE;
 		}
 		break;
 	}

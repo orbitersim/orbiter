@@ -212,6 +212,7 @@
 #define IDC_VID_STATIC1                 1623
 #define IDC_VID_STATIC2                 1624
 #define IDC_VID_STATIC3                 1625
+#define IDC_VID_MODULE_INFO             1626
 
 #define IDC_ABT_CREDIT                  1700
 #define IDC_ABT_WEB                     1701

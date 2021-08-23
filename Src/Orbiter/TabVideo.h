@@ -16,6 +16,7 @@ namespace orbiter {
 	class DefVideoTab : public LaunchpadTab {
 	public:
 		DefVideoTab(const LaunchpadDialog* lp);
+		~DefVideoTab();
 
 		void Create();
 
@@ -40,8 +41,13 @@ namespace orbiter {
 
 		void SelectClientIndex(UINT idx);
 
+		void SetInfoString(PSTR str);
+
+		static INT_PTR CALLBACK InfoProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 	private:
 		UINT idxClient;
+		char* strInfo;
 	};
 
 }
