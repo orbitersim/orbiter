@@ -1,0 +1,202 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "description": "Sets generator, build and install directory, vcpkg",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl",
+        "ORBITER_MAKE_DOC": "OFF",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      },
+      "environment": {
+        "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
+      }
+    },
+    {
+      "name": "x86-debug",
+      "description": "32-bit Debug build",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x64-debug",
+      "description": "64-bit Debug build",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x86-release",
+      "description": "32-bit Release build",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x64-release",
+      "description": "64-bit Release build",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    },
+    {
+      "name": "x64-asan",
+      "description": "64-bit ASAN build",
+      "inherits": [ "base" ],
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ORBITER_ENABLE_ASAN": "ON"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ]
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "core-build",
+      "description": "Inherits environment from base configurePreset",
+      "configurePreset": "base",
+      "hidden": true,
+      "inheritConfigureEnvironment": true
+    },
+    {
+      "name": "build-x86-debug",
+      "description": "Build selected configuration",
+      "configurePreset": "x86-debug",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x64-debug",
+      "description": "Build selected configuration",
+      "configurePreset": "x64-debug",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x64-debug-verbose",
+      "description": "Build selected configuration",
+      "configurePreset": "x64-debug",
+      "inherits": "core-build",
+      "cleanFirst": false,
+      "verbose": true
+    },
+    {
+      "name": "build-x86-release",
+      "description": "Build selected configuration",
+      "configurePreset": "x86-release",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x64-release",
+      "description": "Build selected configuration",
+      "configurePreset": "x64-release",
+      "inherits": "core-build",
+      "cleanFirst": false
+    },
+    {
+      "name": "build-x64-asan",
+      "description": "Build selected configuration",
+      "configurePreset": "x64-asan",
+      "inherits": "core-build",
+      "cleanFirst": false,
+      "verbose": true
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "core-test",
+      "description": "Enable output on failure",
+      "configurePreset": "base",
+      "hidden": false,
+      "output": {
+        "outputOnFailure": true,
+        "verbosity": "extra"
+      }      
+    },
+    {
+      "name": "test-x64-debug",
+      "configurePreset": "x64-debug",
+      "inherits": "core-test"
+    },
+    {
+      "name": "test-x64-release",
+      "configurePreset": "x64-release",
+      "inherits": "core-test"
+    },
+    {
+      "name": "test-x86-debug",
+      "configurePreset": "x86-debug",
+      "inherits": "core-test"
+    },
+    {
+      "name": "test-x86-release",
+      "configurePreset": "x86-release",
+      "inherits": "core-test"
+    },
+    {
+      "name": "test-x64-asan",
+      "configurePreset": "x64-asan",
+      "inherits": "core-test"
+    }
+  ]
+}

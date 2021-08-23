@@ -2193,9 +2193,14 @@ DLLEXPORT void oapiWriteLine (FILEHANDLE file, char *line)
 	ofs << line << endl;
 }
 
-DLLEXPORT void oapiWriteLog (char *line)
+DLLEXPORT void oapiWriteLog (const char *line)
 {
 	LOGOUT (line);
+}
+
+DLLEXPORT void oapiExitOrbiter(int code)
+{
+	exit(code);
 }
 
 DLLEXPORT void oapiWriteLogV (const char *format, ...)

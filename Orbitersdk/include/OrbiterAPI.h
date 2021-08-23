@@ -6101,7 +6101,7 @@ OAPIFUNC void oapiWriteLine (FILEHANDLE file, char *line);
 	*  from within the simulation loop.
 	* \sa oapiWriteLogV
 	*/
-OAPIFUNC void oapiWriteLog (char *line);
+OAPIFUNC void oapiWriteLog (const char *line);
 
 	/**
 	* \brief Writes a formatted string with variable number of arguments to orbiter.log.
