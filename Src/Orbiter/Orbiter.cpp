@@ -421,7 +421,6 @@ HRESULT Orbiter::Create (HINSTANCE hInstance)
 	oclient = new OrbiterGraphics (this); TRACENEW
 	gclient = oclient;
 	gclient->clbkInitialise();
-//	m_pLaunchpad->UnhidePage (4, "Video");
 #endif // INLINEGRAPHICS
 
 	Instrument::RegisterBuiltinModes();
