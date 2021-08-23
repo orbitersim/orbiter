@@ -269,12 +269,13 @@ DWORD WINAPI InputProc(LPVOID context)
 	SetConsoleTextAttribute(hStdI, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	hMutex = CreateMutex(NULL, FALSE, NULL);
 	for (;;) {
-		ReadConsole(hStdI, cbuf, 1024, &count, NULL);
+		if (!ReadConsole(hStdI, cbuf, 1024, &count, NULL))
+			break; // Console not available, exiting
 		WriteConsole(hStdO, "> ", 2, &c, NULL);
 
 		WaitForSingleObject(hMutex, 1000);
 		cConsoleCmd[0] = 'x';
-		memcpy(cConsoleCmd + 1, cbuf, count);
+		strncpy(cConsoleCmd + 1, cbuf, count);
 		cConsoleCmd[count - 1] = '\0'; // eliminates CR
 		ReleaseMutex(hMutex);
 	}
