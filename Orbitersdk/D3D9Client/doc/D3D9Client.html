@@ -388,7 +388,17 @@
     </p>
   <li>Enable absolute animation handling</li>
     <p>
-      ...to be documented...
+      By default Orbiter uses <b><em>incremental animations</em></b>, meaning
+      that for each frame the previous animation state is incremented by a small
+      amount, which will induce some small error.<br />
+      Over time these errors accumulate and the animation is no longer in the
+      orientation it's supposed to be (3-10 mins in worst cases).<br />
+      <b><em>Absolute animations</em></b> updates the animation state from a
+      default state for each frame. Which doesn't suffer from the accumulted
+      error mentioned before. But absolute animations can fail if an add-on
+      alters the order of operations (rotations).<br />
+      Therefore it's not 100% backwards compatible. So far however, no add-on is
+      known to fail.
     </p>
   <!-- not (yet) in BETA
   <li>Enable terrain flattening</li>
