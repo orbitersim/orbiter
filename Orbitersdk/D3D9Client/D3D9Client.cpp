@@ -2199,6 +2199,7 @@ bool D3D9Client::clbkReleaseSurface(SURFHANDLE surf)
 bool D3D9Client::clbkGetSurfaceSize(SURFHANDLE surf, DWORD *w, DWORD *h)
 {
 	_TRACE;
+	if (!w || !h) return false;
 	if (surf==NULL) surf = pFramework->GetBackBufferHandle();
 	*w = SURFACE(surf)->GetWidth();
 	*h = SURFACE(surf)->GetHeight();
@@ -2294,14 +2295,6 @@ bool D3D9Client::clbkScaleBlt (SURFHANDLE tgt, DWORD tgtx, DWORD tgty, DWORD tgt
 
 	// Can't blit in a compressed surface, decompress..
 	//
-	if (SURFACE(tgt)->IsCompressed())
-	{
-		if (uEnableLog > 1) {
-			LogWrn("oapiBlt() Performed to a compressed destination surface... Decompressing.... ----------------- ");
-			BltError(src, tgt, &rs, &rt, Config->DebugBreak!=0);
-		}
-	}
-
 	if (!SURFACE(tgt)->Decompress())
 	{
 		HALT();
