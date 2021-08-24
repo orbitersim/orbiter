@@ -16,7 +16,11 @@
 
 using namespace std;
 
-static PSTR strInfo_Console = "No graphics engine has been selected. Orbiter will run in console mode.";
+#ifdef INLINEGRAPHICS
+static PSTR strInfo_Default = "The built-in DX7 graphics engine.";
+#else
+static PSTR strInfo_Default = "No graphics engine has been selected. Orbiter will run in console mode.";
+#endif
 
 //-----------------------------------------------------------------------------
 // DefVideoTab class
@@ -25,7 +29,7 @@ orbiter::DefVideoTab::DefVideoTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	idxClient = 0;
 	strInfo = 0;
-	SetInfoString(strInfo_Console);
+	SetInfoString(strInfo_Default);
 }
 
 //-----------------------------------------------------------------------------
@@ -43,7 +47,7 @@ void orbiter::DefVideoTab::Create ()
 	hTab = CreateTab (IDD_PAGE_DEV);
 
 	static int item[] = {
-		IDC_VID_LABEL_MODULE, IDC_VID_COMBO_MODULE,
+		IDC_VID_LABEL_MODULE, IDC_VID_COMBO_MODULE, IDC_VID_MODULE_INFO,
 		IDC_VID_STATIC1, IDC_VID_STATIC2, IDC_VID_STATIC3, IDC_VID_STATIC5,
 		IDC_VID_STATIC6, IDC_VID_STATIC7, IDC_VID_STATIC8, IDC_VID_STATIC9,
 		IDC_VID_DEVICE, IDC_VID_ENUM, IDC_VID_STENCIL,
@@ -52,7 +56,7 @@ void orbiter::DefVideoTab::Create ()
 		IDC_VID_4X3, IDC_VID_16X10, IDC_VID_16X9, IDC_VID_INFO
 	};
 
-	RegisterItemPositions (item, 26);
+	RegisterItemPositions (item, ARRAYSIZE(item));
 }
 
 //-----------------------------------------------------------------------------
@@ -216,7 +220,7 @@ void orbiter::DefVideoTab::SelectClientIndex(UINT idx)
 		pLp->App()->LoadModule(path, name);
 	}
 	else
-		SetInfoString(strInfo_Console);
+		SetInfoString(strInfo_Default);
 
 	ShowInterface(hTab, idx > 0);
 }
