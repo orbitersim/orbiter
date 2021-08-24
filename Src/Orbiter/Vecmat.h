@@ -433,9 +433,16 @@ inline double PointLineDist (const Vector &a, const Vector &p, const Vector &d)
 	//return dotp(d,a-p)/d.length();
 }
 
+// Distance of point 'p' from a plane defined by coefficients a,b,c,d (ax+by+cz+d=0)
+// This is a signed distance, so return value < 0 is possible
+double PointPlaneDist(const Vector& p, double a, double b, double c, double d);
+
 // Calculate intersection r of a line (given by point p and direction s) with a plane
 // given by coefficients ax+by+cz+d = 0. If return value=false then no intersection exists
 bool LinePlaneIntersect (double a, double b, double c, double d, const Vector &p, const Vector &s, Vector &r);
+
+// Return the normal to the plane defined by coefficients a,b,c,d
+inline Vector PlaneNormal(double a, double b, double c, double d) { return Vector(a, b, c).unit(); }
 
 // Convert a cartesian reference frame given by orthonormal vectors X, Y, Z (expressed in the global frame) into
 // a rotation matrix, such that a point p in the global frame is transformed to p' in the XYZ frame by p' = Rp.

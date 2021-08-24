@@ -744,6 +744,13 @@ void PlaneCoeffs (const Vector &p1, const Vector &p2, const Vector &p3,
 	d = -p1.x*a - p1.y*b - p1.z*c;
 }
 
+double PointPlaneDist(const Vector& p, double a, double b, double c, double d)
+{
+	double D = -sqrt(a * a + b * b + c * c);
+	// for a valid plane definition, this should never be 0, so we don't check for division by zero here
+	return (a * p.x + b * p.y + c * p.z + d) / D;
+}
+
 bool LinePlaneIntersect (double a, double b, double c, double d, const Vector &p, const Vector &s, Vector &r)
 {
 	double D = a*s.x + b*s.y + c*s.z;
