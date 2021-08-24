@@ -1900,6 +1900,12 @@ DLLEXPORT void oapiReleaseDC (SURFHANDLE surf, HDC hDC)
 		gc->clbkReleaseSurfaceDC (surf, hDC);
 }
 
+DLLEXPORT bool oapiGetSurfaceSize(SURFHANDLE hSrf, int *width, int *height)
+{
+	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
+	return (gc ? gc->clbkGetSurfaceSize(hSrf, (DWORD*)width, (DWORD*)height) : false);
+}
+
 DLLEXPORT SURFHANDLE oapiCreateSurface (int width, int height)
 {
 	oapi::GraphicsClient *gc = g_pOrbiter->GetGraphicsClient();

@@ -5493,6 +5493,16 @@ OAPIFUNC SURFHANDLE oapiCreateSurface (HBITMAP hBmp, bool release_bmp = true);
 OAPIFUNC SURFHANDLE oapiCreateTextureSurface (int width, int height);
 
 	/**
+	* \brief Get surface size information
+	* \param hSrf handle to a surface
+	* \param width [out] width of surface bitmap (pixels)
+	* \param height [out] height of surface bitmap (pixels)
+	* \return false if an error occured, true otherwise
+	*/
+OAPIFUNC bool oapiGetSurfaceSize(SURFHANDLE hSrf, int* width, int* height);
+
+
+	/**
 	* \brief Destroy a surface previously created with oapiCreateSurface.
 	* \param surf surface handle
 	*/

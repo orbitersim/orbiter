@@ -4983,12 +4983,16 @@ void Vessel::DrawHUD (HUD *hud, oapi::Sketchpad *skp)
 			drawn = ((VESSEL3*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), skp);
 		}
 		if (!drawn) {
+#ifdef INLINEGRAPHICS
 			HDC hDC = skp->GetDC();
 			if (hDC) {
 				hudskp = skp; // need to store the sketchpad instance for the callback
 				((VESSEL2*)modIntf.v)->clbkDrawHUD (hud->Mode(), hud->PaintSpec(), hDC);
 				hudskp = NULL;
 			}
+#else
+			// If this is really required then need to figure out a work-a-round.
+#endif // INLINEGRAPHICS
 		}
 	} else
 		hud->DrawDefault (skp);
