@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "OrbiterSDK.h"
-#include "XRSoundEngine20.h"   // current version implments the XRSoundEngine 2.0 interface
+#include "XRSoundEngine30.h"   // latest interface version 
 
 using namespace std;
 
@@ -134,7 +134,7 @@ struct WavContext
 // Do NOT use any inline code for any methods invoked by XRSoundImpl, or it will reside in the caller's DLL instead of XRSound.dll.
 //
 // NOTE: this class is not thread-safe!  However, Orbiter is not multi-threaded, so that should not be an issue.
-class XRSoundEngine : public XRSoundEngine20   
+class XRSoundEngine : public XRSoundEngine30   
 {
 public:
     // Note: constructor and destructor are private by design; callers should always use CreateInstance (defined in each subclass) 
@@ -142,7 +142,7 @@ public:
     static void DestroyInstance(XRSoundEngine *pInst);
 
     //============================================================================================
-    // Public abstract methods: these implement the XRSoundEngine10 and XRSoundEngine20 interfaces
+    // Public abstract methods: these implement the XRSoundEngine interfaces
     //============================================================================================
     // XRSound version 1.x 
     virtual float GetVersion() const override;
@@ -174,6 +174,16 @@ public:
     virtual EngineType GetEngineType() override = 0;
     virtual const char *GetLogID() override = 0;  // e.g., vessel or module name
 
+    // XRSound version 3.x
+    virtual bool  SetPan(const int soundID, const float pan);
+    virtual float GetPan(const int soundID);
+
+    virtual bool  SetPlaybackSpeed(const int soundID, const float speed = 1.0);
+    virtual float GetPlaybackSpeed(const int soundID);
+
+    virtual bool  SetPlayPosition(const int soundID, const unsigned int positionMillis);
+    virtual int   GetPlayPosition(const int soundID);
+    
     // --------------------------------------------------------------------
 
     // Methods only invoked by XRSoundDLL (our Orbiter module class).  Because these are non-virtual, it is impossible for XRSoundLib to invoke them
@@ -258,3 +268,8 @@ private:
 // utility macros
 #define MPS_TO_KNOTS(mps)   (mps / 0.5148)    /* meters-per-second to knots */
 #define KNOTS_TO_MPS(knots) (knots * 0.5148)  /* knots to meters-per-second */
+
+// These are used to dynamically bind to DLL-exported methods.  Note that DLLCLBK specifies 'extern "C"', which uses the __cdecl
+// calling convention, NOT the normal __stdcall that C++ uses.
+extern "C" typedef XRSoundEngine* (__cdecl* VesselXRSoundEngineInstanceFuncPtr)(OBJHANDLE hVessel);
+extern "C" typedef XRSoundEngine* (__cdecl* ModuleXRSoundEngineInstanceFuncPtr)(const char* pUniqueModuleName);

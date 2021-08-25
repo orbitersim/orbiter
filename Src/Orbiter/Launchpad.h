@@ -59,6 +59,7 @@ namespace orbiter {
 
 		inline Orbiter* App() const { return pApp; }
 		inline Config* Cfg() const { return pCfg; }
+		LaunchpadTab* GetTab(UINT i) const;
 
 		void AddTab(LaunchpadTab* tab);
 		// Inserts a new tab into the list

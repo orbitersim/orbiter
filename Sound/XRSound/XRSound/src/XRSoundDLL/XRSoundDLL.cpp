@@ -13,7 +13,7 @@
 
 // Exported DLL method; invoked only by our static XRSound.lib to obtain an XRSoundEngine object for a given vessel.
 // Added in API version 1.0
-DLLCLBK XRSoundEngine10 *GetXRSoundEngineInstance(OBJHANDLE hVessel)
+DLLCLBK XRSoundEngine *GetXRSoundEngineInstance(OBJHANDLE hVessel)
 {
     // Note: the XRSoundEngine vtable has not changed between XRSound version 1.x and 2.0, so we don't need a bridge object here.
     return XRSoundDLL::GetXRSoundEngineInstance(hVessel, true);
@@ -21,7 +21,7 @@ DLLCLBK XRSoundEngine10 *GetXRSoundEngineInstance(OBJHANDLE hVessel)
 
 // Exported DLL method; invoked only by our static XRSound.lib to obtain an XRSoundEngine object for a given unique module name.
 // Added in API version 2.0
-DLLCLBK XRSoundEngine20 *GetModuleXRSoundEngineInstance(const char *pUniqueModuleName)
+DLLCLBK XRSoundEngine *GetModuleXRSoundEngineInstance(const char *pUniqueModuleName)
 {
     return XRSoundDLL::GetXRSoundEngineInstance(pUniqueModuleName);
 }

@@ -598,6 +598,8 @@ protected:
 	///   to initialise their global device-specific objects.
 	HRESULT Initialise3DEnvironment ();
 
+	void GlobalExit();
+
 	/// \brief Clean up the device framework
 	void Cleanup3DEnvironment ();
 

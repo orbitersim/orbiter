@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound engine implementation.
 // 
-// Copyright (c) 2017-2021 Douglas Beachy
+// Copyright (c) 2018-2021 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -317,7 +317,7 @@ bool XRSoundEngine::StopWav(const int soundID)
     WavContext *pContext = FindWavContext(soundID);
     if (pContext)
     {
-        StopWavImpl(pContext, this);
+        XRSoundEngine::StopWavImpl(pContext, this);
         retVal = true;
     }
     return retVal;
@@ -332,7 +332,7 @@ bool XRSoundEngine::StopWavImpl(WavContext *pContext, XRSoundEngine *pEngine)
 
     bool bStopped = false;
     ISound *pISound = pContext->pISound;
-    if (pISound)   // was sound ever started via StartWav?
+    if (pISound)   // was sound ever started via PlayWav?
     {
         if (!pISound->isFinished())
         {
@@ -358,7 +358,7 @@ bool XRSoundEngine::IsWavPlaying(const int soundID)
     if (pContext)
     {
         ISound *pISound = pContext->pISound;
-        if (pISound)   // was sound ever started via StartWav?
+        if (pISound)   // was sound ever started via PlayWav?
             bIsPlaying = !pISound->isFinished();
     }
     return bIsPlaying;
@@ -426,7 +426,6 @@ bool XRSoundEngine::IsPaused(const int soundID)
 
     return bIsPaused;
 }
-
 
 // ========================================================================
 

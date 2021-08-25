@@ -171,7 +171,7 @@ void VideoTab::Initialise (D3D7Enum_DeviceInfo *dev)
 	SelectDevice (dev);
 	SelectDispmode (dev, data->fullscreen ? FALSE:TRUE);
 
-	ShowWindow (GetDlgItem (hTab, IDC_VID_INFO), SW_SHOW);
+	ShowWindow (GetDlgItem (hTab, IDC_VID_INFO), SW_HIDE);
 }
 
 // ==============================================================
@@ -411,7 +411,7 @@ INT_PTR CALLBACK VideoTab::AboutDlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LP
 	switch (uMsg) {
 	case WM_INITDIALOG: {
 		char cbuf[1024];
-		LoadString ((HINSTANCE)GetWindowLongPtr (hWnd, GWLP_HINSTANCE), IDS_STRING1, cbuf, 1024);
+		LoadString ((HINSTANCE)GetWindowLongPtr (hWnd, GWLP_HINSTANCE), IDS_INFO, cbuf, 1024);
 		SetWindowText (GetDlgItem (hWnd, IDC_EDIT1), cbuf);
 		} return TRUE;
 	case WM_COMMAND:

@@ -456,16 +456,28 @@ if (ORBITER_MAKE_TESTS)
 endif()
 
 if (ORBITER_ENABLE_ASAN)
-    message("Address Sanitizer Enabled")
     set(asan_binary_dir "$ENV{VCToolsInstallDir}bin\\Host${ARCH}\\${ARCH}")
-	add_compile_options("/fsanitize=address /EHsc")
+    if (NOT EXISTS "${asan_binary_dir}")
+		message( FATAL_ERROR "ASAN: Visual Studio tools directory ${asan_binary_dir} not valid, check VCToolsInstallDir environment variable" )
+    endif()
+    
+	if (BUILD64)
+		set(asan_arch_id "x86_64")
+	else()
+		set(asan_arch_id "i386")
+	endif()
+	set(asan_dll "clang_rt.asan_dynamic-${asan_arch_id}.dll")
+	set(asan_dbg_dll "clang_rt.asan_dbg_dynamic-${asan_arch_id}.dll")
+
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /fsanitize=address /EHsc")
 	add_custom_command(
 		COMMENT "Copying ASAN Clang runtime from ${asan_binary_dir}"
-		OUTPUT "clang_rt.asan_dynamic-x86_64.dll"
- 		OUTPUT "clang_rt.asan_dbg_dynamic-x86_64.dll"
-		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\clang_rt.asan_dynamic-x86_64.dll ${ORBITER_BINARY_ROOT_DIR}
-		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\clang_rt.asan_dbg_dynamic-x86_64.dll ${ORBITER_BINARY_ROOT_DIR}
+		OUTPUT ${asan_dll}
+ 		OUTPUT ${asan_dbg_dll}
+		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dll} ${ORBITER_BINARY_ROOT_DIR}
+		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dbg_dll} ${ORBITER_BINARY_ROOT_DIR}
 	)
-    add_custom_target(AsanBinaries DEPENDS "clang_rt.asan_dynamic-x86_64.dll")
+    add_custom_target(AsanBinaries DEPENDS ${asan_dll})
     add_dependencies(Orbiter_server AsanBinaries)
+    message("Address Sanitizer Enabled")
 endif()

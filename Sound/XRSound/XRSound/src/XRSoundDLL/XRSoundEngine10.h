@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSoundEngine10.h : Defines the XRSoundEngine version 1.x interface.
 //
-// Copyright (c) 2017-2021 Douglas Beachy
+// Copyright (c) 2018-2021 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -34,3 +34,22 @@ public:
     virtual bool IsDefaultSoundGroup(const int soundID) const = 0;
     virtual bool IsDefaultSoundOrGroup(const int soundID) const = 0;
 };
+
+// {XXX} UPDATE THIS FOR THE CURRENT BUILD VERSION; DO NOT REMOVE THIS {XXX} COMMENT
+// Note: set XRSOUND_BETA to empty string if this is not a beta build.
+// If beta build, remember to add a trailing space to the string; e.g., "Beta-1 "; otherwise, make it "".
+#define XRSOUND_ENGINE_VERSION 3.0f
+#define XRSOUND_BETA_STR "RC2 "
+
+// for use by build version strings
+#ifdef _WIN64
+#define ARCH_TYPE "64-bit"
+#else
+#define ARCH_TYPE "32-bit"
+#endif
+
+#ifdef _DEBUG
+#define BUILD_TYPE "Debug"
+#else
+#define BUILD_TYPE "Release"
+#endif

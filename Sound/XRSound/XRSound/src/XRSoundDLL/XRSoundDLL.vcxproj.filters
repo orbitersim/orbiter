@@ -66,6 +66,9 @@
     <ClInclude Include="..\Utils\FileList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="XRSoundEngine30.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="XRSoundDLL.cpp">
@@ -93,6 +96,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Utils\FileList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XRSoundEngine30.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
