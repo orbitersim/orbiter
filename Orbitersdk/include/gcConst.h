@@ -49,7 +49,7 @@ inline gcCore *gcGetCoreInterface()
 */
 
 
-/// \defgroup PixelFormats Common pixelformats for surfaces, for Native Only (i.e. HSURFNATIVE)
+/// \defgroup PixelFormats Common pixelformats for surfaces
 ///@{
 #define OAPISURFACE_PF_MASK				0xFF0000	///< PixelFormat Mask
 #define OAPISURFACE_PF_XRGB				0x010000	///< 32bit RGB no-alpha
@@ -93,7 +93,6 @@ inline gcCore *gcGetCoreInterface()
 #define GENERICPROC_TILE_DELETED		0x0021	///< 
 ///@}
 
-
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
 #define CUSTOMCAM_DEFAULTS				0x00FF
@@ -112,19 +111,6 @@ inline gcCore *gcGetCoreInterface()
 #define	PF_FAN			2
 ///@}
 
-/// \defgroup MeshMaterialFlags Mesh material flags for gcMeshMaterial function
-///@{
-#define	MESHM_DIFFUSE		0x01	///< Stock material
-#define	MESHM_AMBIENT		0x02	///< Stock material
-#define	MESHM_SPECULAR		0x04	///< Stock material
-#define	MESHM_EMISSION		0x08	///< Stock material
-#define	MESHM_EMISSION2		0x10	///< D3D9 material
-#define	MESHM_REFLECT		0x20	///< D3D9 material
-#define	MESHM_ROUGHNESS		0x40	///< D3D9 material
-#define	MESHM_FRESNEL		0x80	///< D3D9 material
-#define	MESHM_METALNESS		0x100	///< D3D9 material
-#define	MESHM_SPECIALFX		0x200	///< D3D9 material
-///@}
 
 namespace gcGUI 
 {
@@ -176,8 +162,6 @@ namespace gcTileFlags
 
 /// \brief Handle to a surface manager's glogal overlay
 typedef void * HOVERLAY;
-/// \brief Handle to a native DirectX9 surface
-typedef void * HSURFNATIVE;
 /// \brief Handle to a planet/surface manager
 typedef void * HPLANETMGR;
 /// \brief Handle to an instance buffer
@@ -190,8 +174,6 @@ typedef void * HNODE;
 typedef void * HSWAP;
 /// \brief Custom camera handle
 typedef void * CAMERAHANDLE;
-/// \brief Sketchmesh handle
-typedef void * SKETCHMESH;
 /// \brief Poly object handle
 typedef void * HPOLY;
 
@@ -378,19 +360,6 @@ public:
 	} TriangleVtx;
 
 	typedef struct {
-		WORD			Size;			///< sizeof(ElevInfo)
-		WORD			Format;
-		double			Resolution;
-	} ElevInfo;
-
-	typedef struct {
-		HTILE			pTile;			
-		int				Lvl;
-		int				iLng;
-		int				iLat;
-	} TileCreated;
-
-	typedef struct {
 		OBJHANDLE		hVessel;		///< Handle to a vessel that was clicked
 		MESHHANDLE		mesh;			///< Mesh index that was clicked
 		int				group;			///< Mesh group index that was clicked
@@ -408,33 +377,13 @@ public:
 	} PickMeshStruct;
 
 	typedef struct {
-		double			lng, lat;		///< Longitude and Latigude of the point being clicked
-		double			elev;			///< Elevation of the point being clicked above mean radius
-		double			dist;			///< Distance from a camera to a click point
-		DRECT			Bounds;			///< Tile bounds (i.e. min/max * lng/lat)
-		FVECTOR3		normal;			///< Normal in ecliptic frame
-		FVECTOR3		pos;			///< Position from a camera in ecliptic frame
-		float			emax;			///< Max elevation within the tile
-		float			emin;			///< Min elevation within the tile
-		UINT			msg;			///< Zero or (WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_LBUTTONUP, WM_RBUTTONUP) or (WM_MOUSEMOVE, WM_MOUSEWHEEL)
-		int				level;			///< Tile level
-		int				iLng, iLat;		///< Tile Index
-		HTILE			hTile;			///< Tile handle being clicked. WARNING: Tile returned by this data entry can become invalid without notice.
-	} PickGround;
-
-	typedef struct {
 		int				MaxTexSize;		///< Maximum texture size in pixels
 		int				DisplayMode;	///< 0 = True Fullscreen, 1 = Fullscreen Window, 2 = Windowed
 		int				MaxTexRep;		///< Maximum texture repeat count
 		DWORD			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
 	} SystemSpecs;
 
-	typedef struct {
-		HTILE			hTile;			///< WARNING: Tile returned by this data entry can become invalid without notice.
-		FMATRIX4		mWorld;
-	} RenderTileData;
-
-
+	
 	// ===========================================================================
 	/// \name Custom swap-chain management functions
 	// ===========================================================================
@@ -513,7 +462,7 @@ public:
 	* \note Only a cameras attached to currently active vessel are operational and recodring.
 	* \note Having multiple cameras active at the same time doesn't impact in a frame rate, however, camera refresh rates are reduced.
 	*/
-	virtual CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3 &vPos, VECTOR3 &vDir, VECTOR3 &vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
+	virtual CAMERAHANDLE SetupCustomCamera(CAMERAHANDLE hCam, OBJHANDLE hVessel, VECTOR3& vPos, VECTOR3& vDir, VECTOR3& vUp, double dFov, SURFHANDLE hSurf, DWORD dwFlags = 0xFF);
 	//@}
 
 
@@ -534,7 +483,7 @@ public:
 	* \note Poly objects should be created during initialization not for every frame or update. Updating existing (pre created) poly object is pretty fast.
 	* \note During update number of points must be equal or smaller than during initial creation of poly object.
 	*/
-	virtual HPOLY		CreatePoly(HPOLY hPoly, const oapi::FVECTOR2 *pt, int npt, DWORD flags = 0);
+	virtual HPOLY		CreatePoly(HPOLY hPoly, const oapi::FVECTOR2* pt, int npt, DWORD flags = 0);
 
 
 	/**
@@ -551,7 +500,7 @@ public:
 	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
 	* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)
 	*/
-	virtual HPOLY		CreateTriangles(HPOLY hPoly, const gcCore::TriangleVtx *pt, int npt, DWORD flags);
+	virtual HPOLY		CreateTriangles(HPOLY hPoly, const gcCore::TriangleVtx* pt, int npt, DWORD flags);
 
 
 	/**
@@ -567,7 +516,7 @@ public:
 	* \param pText a Pointer into a text string
 	* \param len a Length of the text string to process. -1 will scan to a NULL terminator.
 	*/
-	virtual DWORD		GetTextLength(oapi::Font *hFont, const char *pText, int len = -1);
+	virtual DWORD		GetTextLength(oapi::Font* hFont, const char* pText, int len = -1);
 
 	/**
 	* \brief Find index of nearest "cap" between charters in specified location. (i.e. distance from start of the string in pixels)
@@ -578,7 +527,7 @@ public:
 	* \return index from 0 to number of charters. For just one char it can be either "0" or "1" depending which side is closer to "pos".
 	* \note This is used for finding a spot for a "cursor" when a text string is clicked with mouse.
 	*/
-	virtual DWORD		GetCharIndexByPosition(oapi::Font *hFont, const char *pText, int pos, int len = -1);
+	virtual DWORD		GetCharIndexByPosition(oapi::Font* hFont, const char* pText, int pos, int len = -1);
 
 	/**
 	* \brief This function will register a custom render callback function
@@ -587,7 +536,7 @@ public:
 	* \param pParam a pointer to user data (to a class for an example)
 	* \return false if an error occured, true otherwise.
 	*/
-	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void *pParam);
+	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void* pParam);
 
 	//@}
 
@@ -599,7 +548,7 @@ public:
 	/// \name Mesh interface functions
 	// ===========================================================================
 	//@{
-	
+
 	/**
 	* \brief A Function to get a mesh transformation/animation matrix.
 	* \param matrix_id Id of the matrix to get. One of gcMatrix::xxx datatypes.
@@ -609,7 +558,7 @@ public:
 	* \param pMat A pointer to FMATRIX4 struct for receiving the data.
 	* \return 0 = on Success, or error code.
 	*/
-	virtual int				GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4 *pMat);
+	virtual int				GetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, oapi::FMATRIX4* pMat);
 
 
 	/**
@@ -621,7 +570,26 @@ public:
 	* \param pMat A pointer to FMATRIX4 containing the data to set.
 	* \return 0 = on Success, or error code.
 	*/
-	virtual int				SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4 *pMat);
+	virtual int				SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4* pMat);
+
+
+	/**
+	* \brief Get device specific mesh from Orbiter mesh template
+	* \param hMesh handle to a mesh acquired from oapiLoadMeshGlobal()
+	* \param pBox a pointer to an array of 8 FVECTOR3s
+	*/
+	virtual DEVMESHHANDLE	GetDevMesh(MESHHANDLE hMesh);
+	virtual DEVMESHHANDLE	LoadDevMeshGlobal(const char* file_name, bool bUseCache = true);
+	virtual void			ReleaseDevMesh(DEVMESHHANDLE hMesh);
+
+
+	/**
+	* \brief Recover tile bounding box data
+	* \param hTile handle to a tile
+	* \param pBox a pointer to an array of 8 FVECTOR3s
+	*/
+	virtual void			RenderMesh(DEVMESHHANDLE hMesh, const FMATRIX4* pWorld);
+	virtual bool			PickMesh(gcCore::PickMeshStruct* pm, DEVMESHHANDLE hMesh, const FMATRIX4* pWorld, short x, short y);
 	//@}
 
 
@@ -636,39 +604,15 @@ public:
 	* \param sp A pointer to SystemSpecs struct
 	* \param size sizeof(SystemSpecs)
 	*/
-	virtual void			GetSystemSpecs(SystemSpecs *sp, int size);
-
-	/**
-	* \brief Conver a floating point color to DWORD color value
-	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
-	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
-	*/
-	virtual DWORD			Color(const COLOUR4 *c);
-
-	/**
-	* \brief Conver a floating point color to DWORD color value
-	* \param c A pointer to a color
-	* \return DWORD color in 0xAABBGGRR
-	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
-	*/
-	virtual DWORD			Color(const oapi::FVECTOR4 *c);
-
-	/**
-	* \brief Conver a DWORD color to floating point COLOUR4 value
-	* \param dwABGR A color in 0xAABBGGRR
-	* \return COLOUR4
-	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
-	*/
-	virtual COLOUR4			Colour4(DWORD dwABGR);
+	virtual void			GetSystemSpecs(SystemSpecs* sp, int size);
 
 	/**
 	* \brief Load a bitmap from file (*.bmp *.png *.jpg *.gif)
 	* \param fname name of the file to be loaded.
 	* \return Bitmap handle of NULL in a case of an error
 	*/
-	virtual HBITMAP			LoadBitmapFromFile(const char *fname);
-	
+	virtual HBITMAP			LoadBitmapFromFile(const char* fname);
+
 	/**
 	* \brief Get render window handle
 	* \return Render window handle
@@ -682,11 +626,45 @@ public:
 	* \param pParam a pointer to user data (to a class for an example)
 	* \return false if an error occured, true otherwise.
 	*/
-	virtual bool			RegisterGenericProc(__gcGenericProc proc, DWORD id, void *pParam);
+	virtual bool			RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam);
+
+	/**
+	* \brief Do not use these functions unless you know what's you doing.
+	*/
+	virtual bool			StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr = NULL, LPRECT sr = NULL);
+	virtual bool			ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr = NULL);
 	//@}
+};
 
 
 
+
+
+class gcCore2 : gcCore
+{
+
+public:
+
+	typedef struct {
+		double			lng, lat;		///< Longitude and Latigude of the point being clicked
+		double			elev;			///< Elevation of the point being clicked above mean radius
+		double			dist;			///< Distance from a camera to a click point
+		DRECT			Bounds;			///< Tile bounds (i.e. min/max * lng/lat)
+		FVECTOR3		normal;			///< Normal in ecliptic frame
+		FVECTOR3		pos;			///< Position from a camera in ecliptic frame
+		float			emax;			///< Max elevation within the tile
+		float			emin;			///< Min elevation within the tile
+		UINT			msg;			///< Zero or (WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_LBUTTONUP, WM_RBUTTONUP) or (WM_MOUSEMOVE, WM_MOUSEWHEEL)
+		int				level;			///< Tile level
+		int				iLng, iLat;		///< Tile Index
+		HTILE			hTile;			///< Tile handle being clicked. WARNING: Tile returned by this data entry can become invalid without notice.
+	} PickGround;
+
+	typedef struct {
+		WORD			Size;			///< sizeof(ElevInfo)
+		WORD			Format;
+		double			Resolution;
+	} ElevInfo;
 
 
 
@@ -749,25 +727,9 @@ public:
 
 
 	// ===========================================================================
-	/// \name Native Object Interface
+	/// \name Some rendering routines
 	// ===========================================================================
 	//@{
-	/**
-	* \brief Get device specific mesh from Orbiter mesh template
-	* \param hMesh handle to a mesh acquired from oapiLoadMeshGlobal()
-	* \param pBox a pointer to an array of 8 FVECTOR3s
-	*/
-	virtual DEVMESHHANDLE	GetDevMesh(MESHHANDLE hMesh);
-	virtual DEVMESHHANDLE	LoadDevMeshGlobal(const char *file_name, bool bUseCache = true);
-	virtual void			ReleaseDevMesh(DEVMESHHANDLE hMesh);
-
-	/**
-	* \brief Recover tile bounding box data
-	* \param hTile handle to a tile
-	* \param pBox a pointer to an array of 8 FVECTOR3s
-	*/
-	virtual void			RenderMesh(DEVMESHHANDLE hMesh, const FMATRIX4 *pWorld);
-	virtual bool			PickMesh(gcCore::PickMeshStruct *pm, DEVMESHHANDLE hMesh, const FMATRIX4 *pWorld, short x, short y);
 
 	/**
 	* \brief Recover tile bounding box data
@@ -797,8 +759,6 @@ public:
 	virtual void			RenderLines(const FVECTOR3 *pVtx, const WORD *pIdx, int nVtx, int nIdx, const FMATRIX4 *pWorld, DWORD color);
 	//@}
 
-	virtual bool			StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr = NULL, LPRECT sr = NULL);
-	virtual bool			ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr = NULL);
 
 
 	/**

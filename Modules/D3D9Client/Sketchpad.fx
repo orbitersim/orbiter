@@ -275,10 +275,10 @@ float4 SketchpadPS(float4 sc : VPOS, OutputVS frg) : COLOR
 
 		// Apply noise
 		float noise = (tex2D(NoiseS, sc.xy*(1.0f / 128.0f) + float2(gRandom, gRandom*7.0)).r * 2.0f) - 1.0f;
-		c.rgb = saturate(c.rgb + lerp(float3(1, 1, 1), c.rgb, gNoiseColor.a)*gNoiseColor.rgb*noise);	
+		c.rgb += lerp(float3(1, 1, 1), c.rgb, gNoiseColor.a) * gNoiseColor.rgb * noise;	
 	}
 
-	return c;
+	return saturate(c);
 }
 
 
