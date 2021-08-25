@@ -50,15 +50,16 @@ jobs:
       
     - name: Build & Test
       shell: cmd
+      working-directory: ${{ github.workspace }}/out/build
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
-        cmake --preset ${{ matrix.architecture }}-release -DORBITER_MAKE_DOC=OFF
-        cmake --build --preset build-${{ matrix.architecture }}-release
-        ctest --preset test-${{ matrix.architecture }}-release
+        cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF
+        cmake --build . --config RelWithDebInfo
+        ctest --config RelWithDebInfo .
 
     - name: Install
       run: cmake --install . --prefix  ${{ github.workspace }}/out/install
-      working-directory: ${{ github.workspace }}/out/build/${{ matrix.architecture }}-release
+      working-directory: ${{ github.workspace }}/out/build
 
     - name: Pack
       if: ${{ github.ref == 'refs/heads/main' && matrix.architecture == 'x64' }}
