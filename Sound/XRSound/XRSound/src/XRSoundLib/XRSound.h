@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound.h : Defines the XRSound 2.0 public API.
 // 
-// Copyright (c) 2017-2021 Douglas Beachy
+// Copyright (c) 2018-2021 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 
@@ -125,7 +125,7 @@ public:
     //
     // Returns true on success, false if file not found or XRSound.dll not present.
     virtual bool LoadWav(const int soundID, const char *pSoundFilename, const PlaybackType playbackType) = 0;
-
+    
     // Play the sound file with the specified ID.  If the sound is already playing, this call will only alter its loop or volume settings.
     //   soundID: vessel-instance-unique sound ID originally passed to LoadWav
     //   bLoop: true to loop sound continuously until StopWav called, false to play only once
@@ -178,6 +178,54 @@ public:
     // Not supported for module sounds.
     //   groupdefaultSoundID: which default XRSound group to update (only DefaultSoundIDs that end in "Group" are valid for this call).
     virtual const char *GetDefaultSoundGroupFolder(const DefaultSoundID defaultSoundID) const = 0;
+
+    // Sets the pan (left/right balance) of the sound with the specified  ID.
+    // Note: the sound must have already started playing via PlayWav for this to have any effect.
+    //   soundID: unique sound ID originally passed to LoadWav and PlayWav
+    //   pan: range is from -1.0 (full left) to 1.0 (full right). Zero is the center.
+    // Returns true on  success, false if sound ID is invalid or is not currently playing.
+    virtual bool SetPan(const int soundID, const float pan) = 0;
+
+    // Returns the pan of the sound with the specified ID, from -1.0 (full left) to 1.0 (full right). Zero is the center.
+    // Note: the sound must have already started playing via PlayWav.
+    //   soundID: unique sound ID originally passed to LoadWav and PlayWav
+    //   pan: range is from -1.0 (full left) to 1.0 (full right). Zero is the center.
+    // 
+    // Returns -100 if sound ID is invalid or is not currently playing.
+    virtual float GetPan(const int soundID) = 0;
+
+    // Sets the playback speed of the sound with the specified ID.
+    // Note: the sound must have already started playing via PlayWav for this to have any effect.
+    // Plays the sound at a higher or lower speed, increasing or decreasing its frequency, which makes it sound lower or higher.
+    //   soundID: unique sound ID originally passed to LoadWav and PlayWav
+    //   speed: factor of the speed increase or decrease; 2 is twice as fast, 0.5 is only half as fast. The default is 1.0.
+    // 
+    // Returns true on success, false if sound ID is invalid or is not currently playing.
+    virtual bool SetPlaybackSpeed(const int soundID, const float speed = 1.0) = 0;
+
+    // Returns the playback speed of the sound with the specified ID.
+    // Note: the sound must have already started playing via PlayWav.
+    //   soundID: unique sound ID originally passed to LoadWav and PlayWav
+    // 
+    // Returns factor of the speed increase or decrease; 2 is twice as fast, 0.5 is only half as fast. The default is 1.0.
+    // Returns 0 if sound ID is invalid or is not currently playing.
+    virtual float GetPlaybackSpeed(const int soundID) = 0;
+
+    // Sets the playback position of the sound with the specified ID.
+    // Note: the sound must have already started playing via PlayWav for this to have any effect.
+    //   soundID: unique sound ID originally passed to LoadWav and PlayWav
+    //   positionMillis: must be between zero (the start of the file) and the length of the file, in milliseconds
+    // 
+    // Returns true on success, false if positionMillis is invalid or if sound ID is invalid or is not currently playing.
+    virtual bool SetPlayPosition(const int soundID, const unsigned int positionMillis) = 0;
+
+    // Returns the playback position of the sound in milliseconds with the specified ID.
+    // Note: the sound must have already started playing via PlayWav.
+    //   soundID: unique sound ID originally passed to LoadWav and PlayWav
+    // 
+    // Returns between zero (the start of the file) and the length of the file, in milliseconds.
+    // Returns < 0 if sound ID is invalid or is not currently playing.
+    virtual int GetPlayPosition(const int soundID) = 0;
 
     virtual ~XRSound() { };
 

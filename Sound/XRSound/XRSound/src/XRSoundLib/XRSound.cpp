@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound source file with static methods.
 // 
-// Copyright (c) 2017-2021 Douglas Beachy
+// Copyright (c) 2018-2021 Douglas Beachy
 // Licensed under the MIT License
 // ==============================================================
 

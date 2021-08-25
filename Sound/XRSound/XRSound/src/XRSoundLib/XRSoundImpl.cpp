@@ -1,7 +1,7 @@
 // ==============================================================
 // XRSound static library main source file.
 // 
-// Copyright (c) 2017-2021 Douglas Beachy
+// Copyright (c) 2018-2021 Douglas Beachy
 // Licensed under the MIT License
 //
 // This software is FREEWARE and may not be sold!
@@ -56,7 +56,7 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
             if (dllVersion >= 2.0)
             {
                 const char *pVesselOrModuleName = GetLogID();
-                const XRSoundEngine20::EngineType engineType = GetEngineType();
+                const XRSoundEngine::EngineType engineType = GetEngineType();
                 const char *pEngineType = XRSoundImpl::EngineTypeToStr(engineType);  // "Vessel", "Module", etc.
 
                 StringCchPrintf(messageBuf, sizeof(messageBuf), "[XRSound INFO] %s '%s' built with XRSound API version %.2f", 
@@ -78,16 +78,16 @@ bool XRSoundImpl::Initialize(VESSEL *pVessel)
 }
 
 // Static method that returns a string for the supplied engineType
-const char *XRSoundImpl::EngineTypeToStr(const XRSoundEngine20::EngineType engineType)
+const char *XRSoundImpl::EngineTypeToStr(const XRSoundEngine::EngineType engineType)
 {
     const char *pStr;    // always initialized below
     switch (engineType)
     {
-    case XRSoundEngine20::EngineType::Module:
+    case XRSoundEngine::EngineType::Module:
         pStr = "Module";
         break;
 
-    case XRSoundEngine20::EngineType::Vessel:
+    case XRSoundEngine::EngineType::Vessel:
         pStr = "Vessel";
         break;
 
@@ -286,10 +286,10 @@ const char *XRSoundImpl::GetDefaultSoundGroupFolder(const DefaultSoundID default
 //===========================================================================================
 
 // Calls XRSound.dll and returns the engine type
-XRSoundEngine20::EngineType XRSoundImpl::GetEngineType() const
+XRSoundEngine::EngineType XRSoundImpl::GetEngineType() const
 {
     if (!HaveMinDLLVersion(2.0))
-        return XRSoundEngine20::EngineType::Unknown;
+        return XRSoundEngine::EngineType::Unknown;
 
     return m_pEngine->GetEngineType();
 }
@@ -301,6 +301,58 @@ const char *XRSoundImpl::GetLogID() const
         return "(name unknown)";
 
     return m_pEngine->GetLogID();
+}
+
+//===========================================================================================
+// Methods added in XRSound API version 3.0
+//===========================================================================================
+
+bool XRSoundImpl::SetPan(const int soundID, const float pan)
+{
+    if (!HaveMinDLLVersion(3.0))
+        return false;
+
+    return m_pEngine->SetPan(soundID, pan);
+}
+
+float XRSoundImpl::GetPan(const int soundID)
+{
+    if (!HaveMinDLLVersion(3.0))
+        return 0;
+
+    return m_pEngine->GetPan(soundID);
+}
+
+bool XRSoundImpl::SetPlaybackSpeed(const int soundID, const float speed)
+{
+    if (!HaveMinDLLVersion(3.0))
+        return false;
+
+    return m_pEngine->SetPlaybackSpeed(soundID, speed);
+}
+
+float XRSoundImpl::GetPlaybackSpeed(const int soundID)
+{
+    if (!HaveMinDLLVersion(3.0))
+        return 0;
+
+    return m_pEngine->GetPlaybackSpeed(soundID);
+}
+
+bool XRSoundImpl::SetPlayPosition(const int soundID, const unsigned int positionMillis)
+{
+    if (!HaveMinDLLVersion(3.0))
+        return false;
+
+    return m_pEngine->SetPlayPosition(soundID, positionMillis);
+}
+
+int XRSoundImpl::GetPlayPosition(const int soundID)
+{
+    if (!HaveMinDLLVersion(3.0))
+        return 0;
+
+    return m_pEngine->GetPlayPosition(soundID);
 }
 
 //===========================================================================================
