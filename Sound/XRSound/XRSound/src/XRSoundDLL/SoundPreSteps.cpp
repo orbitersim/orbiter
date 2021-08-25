@@ -408,9 +408,9 @@ void RCSDefaultSoundPreStep::clbkPreStep(const double simt, const double simdt, 
         totalThrustLevel = maxTotalThrustLevel;
 
     // Play or halt the RCS sustain sound
-    // tweaked per user feedback: do not play a thruster sounds if thrust level is under a certain minimum threshold; 
+    // tweaked per user feedback: do not play thruster sound if total thrust level is under a certain minimum threshold; 
     // e.g., when Prograde or Retrograde autopilot is enabled and firing thrusters at very low levels.
-    if (totalThrustLevel > 0.10)   // should sound be playing?
+    if (totalThrustLevel > GetConfig().MinThrusterLevelForRCSSoundEffects)   // should sound be playing?
     {
         const float volume = XRSoundEngine::ComputeVariableVolume(s_minThrustLevelForSound, 1.0, totalThrustLevel / maxTotalThrustLevel);
 

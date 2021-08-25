@@ -138,7 +138,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_INFO                "D3D7 Graphics Client:  *** Do not use with Orbiter.exe! ***\r\n\r\nA render engine plugin for Orbiter_ng. This is a reference implementation that provides roughly the same functionality as the engine built into Orbiter.exe."
+    IDS_INFO                "D3D7 Graphics Client:\r\n\r\nA render engine plugin for Orbiter_ng. This is a reference implementation that provides roughly the same functionality as the engine built into Orbiter.exe."
     IDS_TYPE                "Graphics engines"
 END
 

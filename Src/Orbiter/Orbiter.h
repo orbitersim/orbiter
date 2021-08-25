@@ -31,6 +31,7 @@ class DDEServer;
 class ImageIO;
 namespace orbiter {
 	class ConsoleNG;
+	class LaunchpadDialog;
 }
 
 //-----------------------------------------------------------------------------
@@ -109,7 +110,6 @@ private:
 // Desc: Main application class
 //-----------------------------------------------------------------------------
 class Orbiter {
-	friend class MainDialog;
 	friend class ScriptInterface;
 	friend class oapi::GraphicsClient;
 	friend class OrbiterGraphics;
@@ -122,8 +122,7 @@ public:
 	VOID Launch (const char *scenario);
 	void CloseApp (bool fast_shutdown = false);
 	int GetVersion () const;
-	GUID &GetGUID() const { return AppGUID; }
-	HWND CreateRenderWindow (HWND parentWnd, Config *pCfg, const char *scenario);
+	HWND CreateRenderWindow (Config *pCfg, const char *scenario);
 	void PreCloseSession();
 	void CloseSession ();
 	void GetRenderParameters ();
@@ -217,11 +216,10 @@ public:
 	inline DWORD   ViewW() const { return viewW; }
 	inline DWORD   ViewH() const { return viewH; }
 	inline DWORD   ViewBPP() const { return viewBPP; }
-	inline HWND    Get_hDlg()   const { return hDlg; }
 	inline Config* Cfg() const { return pConfig; }
 	inline ScriptInterface *Script() const { return script; }
 	inline DialogManager *DlgMgr() const { return pDlgMgr; }
-	inline MainDialog *Launchpad() const { return pMainDlg; }
+	inline orbiter::LaunchpadDialog *Launchpad() const { return m_pLaunchpad; }
 	inline State*  PState() const { return pState; }
 	inline bool    IsActive() const { return bActive; } // temporary
 	inline bool    IsRunning() const { return bRunning; }
@@ -404,16 +402,14 @@ protected:
 	void ReleaseGDIResources ();
 
 private:
-	static GUID     AppGUID;
 	Config         *pConfig;
 	State          *pState;
-	MainDialog     *pMainDlg;
+	orbiter::LaunchpadDialog *m_pLaunchpad;
 	DialogManager  *pDlgMgr;
 	orbiter::ConsoleNG* m_pConsole;    // The console window opened when Orbiter server is launched without a graphics client
 	DInput         *pDI;
 	HINSTANCE       hInst;         // orbiter instance handle
 	HWND            hRenderWnd;    // render window handle (NULL if no render support)
-	HWND            hDlg;          // main dialog handle
 	HWND            hBk;           // background window handle (demo mode only)
 	BOOL            bRenderOnce;   // flag for single frame render request
 	BOOL            bEnableLighting;
@@ -435,7 +431,6 @@ private:
 	DWORD           viewW, viewH;  // render viewport dimensions
 	DWORD			viewBPP;       // render colour depth (bits per pixel)
 
-	//char           *cmdline;       // orbiter command line
 	char            cfgpath[256];
 	int             cfglen;
 	char            simkstate[256];// accumulated simulated key state
@@ -461,10 +456,6 @@ private:
 	DWORD ctrlJoystick[15];
 	DWORD ctrlKeyboard[15];
 	DWORD ctrlTotal[15];
-
-	bool Select_Main (Select &sel);
-	friend bool Callback_Main (Select *sel, int item, char*, void *data);
-	// Create main menu
 
 	VOID SavePlaybackScn (const char *fname);
 
@@ -510,20 +501,6 @@ public:
 	inline OrbiterGraphics *GetInlineGraphicsClient() { return oclient; }
 	// (to access special inline graphics features. Eventually this should no longer
 	// be necessary)
-
-#ifdef NETCONNECT
-public:
-	bool SendScenario (OrbiterConnect *oc, const char *desc);
-	void CheckRequests (OrbiterConnect *oc);
-	void SendMJD (OrbiterConnect *oc);
-	bool RecvMJD (OrbiterConnect *oc, double *mjd);
-
-private:
-	// Network connection instances
-	OrbiterConnect *NetConn;  // !=0 if networking is enabled
-	OrbiterServer *NetServer; // !=0 if Orbiter runs as network server
-	OrbiterClient *NetClient; // !=0 if Orbiter runs as network client
-#endif // NETCONNECT
 
 };
 

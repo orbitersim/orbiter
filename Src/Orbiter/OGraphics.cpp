@@ -580,8 +580,8 @@ bool OrbiterGraphics::clbkInitialise ()
 	vtab->Init();
 
 	// render parameter dialogs in extra tab
-	MainDialog *launchpad = g_pOrbiter->Launchpad();
-	ExtraTab *tExtra = launchpad->GetExtraTab();
+	orbiter::LaunchpadDialog *launchpad = g_pOrbiter->Launchpad();
+	orbiter::ExtraTab *tExtra = launchpad->GetExtraTab();
 	HTREEITEM ht = launchpad->RegisterExtraParam (new Extra_RenderOptions (tExtra), NULL); TRACENEW
 	launchpad->RegisterExtraParam (new Extra_PlanetRenderOptions (tExtra), ht); TRACENEW
 
@@ -672,11 +672,11 @@ HWND OrbiterGraphics::clbkCreateRenderWindow ()
 		// remove window border to avoid problems with mouse coordinates
 	    hWnd = CreateWindow (strWndClass, "",
 			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, OrbiterInstance(), 0);
+			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, OrbiterInstance(), (LPVOID)this);
 	} else {
 	    hWnd = CreateWindow (strWndClass, "",
 			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, vd->winw, vd->winh, 0, 0, OrbiterInstance(), 0);
+			CW_USEDEFAULT, CW_USEDEFAULT, vd->winw, vd->winh, 0, 0, OrbiterInstance(), (LPVOID)this);
 		//// Borderless:
 		//hWnd = CreateWindow(strWndClass, "",
 		//	WS_POPUP | WS_VISIBLE,

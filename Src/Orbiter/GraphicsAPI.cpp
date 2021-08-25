@@ -6,6 +6,8 @@
 
 #include "Orbiter.h"
 #include "Launchpad.h"
+#include "LpadTab.h"
+#include "TabVideo.h"
 #include "Psys.h"
 #include "Pane.h"
 #include "VCockpit.h"
@@ -98,6 +100,12 @@ bool GraphicsClient::clbkInitialise ()
 	VideoData.modeidx    = (int)cfg->CfgDevPrm.Device_mode;
 	VideoData.winw       = (int)cfg->CfgDevPrm.WinW;
 	VideoData.winh       = (int)cfg->CfgDevPrm.WinH;
+
+#ifndef INLINEGRAPHICS
+	char fname[256];
+	GetModuleFileName(hModule, fname, 256);
+	((orbiter::DefVideoTab*)g_pOrbiter->Launchpad()->GetTab(PG_VID))->OnGraphicsClientLoaded(this, fname);
+#endif
 
 	return true;
 }
@@ -270,11 +278,11 @@ HWND GraphicsClient::clbkCreateRenderWindow ()
 	if (VideoData.fullscreen) {
 		hWnd = CreateWindow (strWndClass, "", // dummy window
 			WS_POPUP | WS_EX_TOPMOST| WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, 0);
+			CW_USEDEFAULT, CW_USEDEFAULT, 10, 10, 0, 0, hModule, (LPVOID)this);
 	} else {
 		hWnd = CreateWindow (strWndClass, "",
 			WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_VISIBLE,
-			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, hModule, 0);
+			CW_USEDEFAULT, CW_USEDEFAULT, VideoData.winw, VideoData.winh, 0, 0, hModule, (LPVOID)this);
 	}
 	return hWnd;
 }

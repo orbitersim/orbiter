@@ -230,6 +230,7 @@ void D3D7Client::clbkCloseSession (bool fastclose)
 		delete scene;
 		scene = NULL;
 	}
+	GlobalExit();
 }
 
 // ==============================================================
@@ -501,6 +502,18 @@ HRESULT D3D7Client::Initialise3DEnvironment ()
 
 // ==============================================================
 
+void D3D7Client::GlobalExit()
+{
+	TileManager::GlobalExit();
+	TileManager2Base::GlobalExit();
+	D3D7ParticleStream::GlobalExit();
+	vVessel::GlobalExit();
+	vStar::GlobalExit();
+	vObject::GlobalExit();
+}
+
+// ==============================================================
+
 void D3D7Client::Cleanup3DEnvironment ()
 {
 	if (texmgr) {
@@ -511,12 +524,6 @@ void D3D7Client::Cleanup3DEnvironment ()
 		clipper->Release();
 		clipper = NULL;
 	}
-	TileManager::GlobalExit();
-	TileManager2Base::GlobalExit();
-	D3D7ParticleStream::GlobalExit();
-	vVessel::GlobalExit();
-	vStar::GlobalExit();
-	vObject::GlobalExit();
 	m_pFramework->DestroyObjects();
 	pd3dDevice = NULL;
 	pddsRenderTarget = NULL;

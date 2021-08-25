@@ -11,30 +11,34 @@
 
 #include "LpadTab.h"
 
-class VisualTab: public LaunchpadTab {
-public:
-	VisualTab (const MainDialog *lp);
-	~VisualTab ();
+namespace orbiter {
 
-	void Create ();
+	class VisualTab : public LaunchpadTab {
+	public:
+		VisualTab(const LaunchpadDialog* lp);
+		~VisualTab();
 
-	void GetConfig (const Config *cfg);
-	void SetConfig (Config *cfg);
+		void Create();
 
-	bool OpenHelp ();
+		void GetConfig(const Config* cfg);
+		void SetConfig(Config* cfg);
 
-	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		bool OpenHelp();
 
-protected:
-	void VisualsChanged ();
-	// Something on the visual params tab has changed which requires a reset
+		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	void EmptyCSphereList();
-	void AddCSphereList (const char *c);
+	protected:
+		void VisualsChanged();
+		// Something on the visual params tab has changed which requires a reset
 
-private:
-	char **csphere_img_path;
-	int ncsphere_img;
-};
+		void EmptyCSphereList();
+		void AddCSphereList(const char* c);
+
+	private:
+		char** csphere_img_path;
+		int ncsphere_img;
+	};
+
+}
 
 #endif // !__TABVISUAL_H

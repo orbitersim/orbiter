@@ -230,12 +230,6 @@ CFG_CAMERAPRM CfgCameraPrm_default = {
 	0			// HUDCol (green HUD colour)
 };
 
-CFG_MPLAYERPRM CfgMplayerPrm_default = {
-	"",			// mpName (player name)
-	"",			// mpCallsign (player callsign)
-	""			// mpConnection (preferred connection type)
-};
-
 CFG_CMDLINEPRM CfgCmdlinePrm_default = {
 	false,              // fast exit (false = return to Launchpad dialog)
 	false,              // open video tab (false = open Scenarios tab)
@@ -751,11 +745,6 @@ bool Config::Load(const char *fname)
 	if (GetReal (ifs, "DialogFont_Scale", d)) CfgFontPrm.dlgFont_Scale = (float)d;
 	GetString (ifs, "DialogFont1_Face", CfgFontPrm.dlgFont1_Face);
 
-	// multiplayer options
-	GetString (ifs, "MP_Name", CfgMplayerPrm.mpName);
-	GetString (ifs, "MP_Callsign", CfgMplayerPrm.mpCallsign);
-	GetString (ifs, "MP_Connection", CfgMplayerPrm.mpConnection);
-
 	// misc. options
 	if (GetString (ifs, "LPadRect", cbuf)) {
 		sscanf (cbuf, "%d%d%d%d", &rLaunchpad.left, &rLaunchpad.top,
@@ -858,7 +847,6 @@ void Config::SetDefaults ()
 	CfgDemoPrm = CfgDemoPrm_default;             // demo parameters
 	CfgFontPrm = CfgFontPrm_default;             // ingame font characteristics
 	CfgCameraPrm = CfgCameraPrm_default;         // camera parameters
-	CfgMplayerPrm = CfgMplayerPrm_default;       // multiplayer options
 	CfgWindowPos = CfgWindowPos_default;         // subwindow positions
 	CfgCmdlinePrm = CfgCmdlinePrm_default;       // command line parameters
 
@@ -1358,16 +1346,6 @@ BOOL Config::Write (const char *fname) const
 			ofs << "DialogFont_Scale = " << CfgFontPrm.dlgFont_Scale << '\n';
 		if (strcmp (CfgFontPrm.dlgFont1_Face, CfgFontPrm_default.dlgFont1_Face) || bEchoAll)
 			ofs << "DialogFont1_Face = " << CfgFontPrm.dlgFont1_Face << '\n';
-	}
-
-	if (memcmp (&CfgMplayerPrm, &CfgMplayerPrm_default, sizeof(CFG_MPLAYERPRM)) || bEchoAll) {
-		ofs << "\n; === Multiplayer parameters ===\n";
-		if (strcmp (CfgMplayerPrm.mpName, CfgMplayerPrm_default.mpName) || bEchoAll)
-			ofs << "MP_Name = " << CfgMplayerPrm.mpName << '\n';
-		if (strcmp (CfgMplayerPrm.mpCallsign, CfgMplayerPrm_default.mpCallsign) || bEchoAll)
-			ofs << "MP_Callsign = " << CfgMplayerPrm.mpCallsign << '\n';
-		if (strcmp (CfgMplayerPrm.mpConnection, CfgMplayerPrm_default.mpConnection) || bEchoAll)
-			ofs << "MP_Connection = " << CfgMplayerPrm.mpConnection << '\n';
 	}
 
 	if (memcmp (&CfgWindowPos, &CfgWindowPos_default, sizeof(CFG_WINDOWPOS)) || bEchoAll) {

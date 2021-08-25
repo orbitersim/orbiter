@@ -17,7 +17,7 @@ XRSoundConfigFileParser::XRSoundConfigFileParser(const char *pConfigFile) :
     ATCVolume(1.0), ATCMinDelay(15), ATCMaxDelay(120), ATCAllowWhileLanded(true), ATCAllowDuringReentry(false), ATCAllowInAtmosphere(true),
     ATCDelayPlanetDistance(400.0), ATCDelayPlanetMultiplier(5.0), LandingGearAnimationID(-1),
     MusicOrder(SeqRandom::Random), MusicPlayInternal(MusicPlay::Off), MusicPlayExternal(MusicPlay::Space), UpdateInterval(0.05), SilenceOfSpace(true),
-    WarningGearIsUpAltitude(275), DisableAutopilotsTimeAccThreshold(100)
+    WarningGearIsUpAltitude(275), DisableAutopilotsTimeAccThreshold(100), MinThrusterLevelForRCSSoundEffects(0.05)
 {
     // No prefix: SetLogPrefix(XRSOUND_CONFIG_FILE);  // will show "<timestamp> [Sound\XRSound.cfg] <log message>" in log file
 #ifdef _DEBUG
@@ -190,6 +190,11 @@ bool XRSoundConfigFileParser::ParseLine(const char *pSection, const char *pPrope
                 WriteLog("Invalid value for parameter 'MusicOrder'; valid values are 'random' or 'sequential'");
                 return false;
             }
+        }
+        else if (PNAME_MATCHES("MinThrusterLevelForRCSSoundEffects"))
+        {
+            SSCANF1("%lf", &MinThrusterLevelForRCSSoundEffects);
+            VALIDATE_DOUBLE(&MinThrusterLevelForRCSSoundEffects, 0, 1.0, 0);
         }
         else
         {

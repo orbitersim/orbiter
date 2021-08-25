@@ -11,7 +11,6 @@
 #include "Orbiter.h"
 #include "Launchpad.h"
 #include "TabModule.h"
-#include "Help.h"
 #include "resource.h"
 
 extern char DBG_MSG[256];
@@ -19,14 +18,14 @@ static int counter = -1;
 
 //-----------------------------------------------------------------------------
 
-ModuleTab::ModuleTab (const MainDialog *lp): LaunchpadTab (lp)
+orbiter::ModuleTab::ModuleTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 	nmodulerec = 0;
 }
 
 //-----------------------------------------------------------------------------
 
-ModuleTab::~ModuleTab ()
+orbiter::ModuleTab::~ModuleTab ()
 {
 	int i;
 
@@ -43,39 +42,39 @@ ModuleTab::~ModuleTab ()
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::Create ()
+void orbiter::ModuleTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_MOD);
 
-	r_lst0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_TREE1)); // REMOVE!
+	r_lst0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_MOD_TREE)); // REMOVE!
 	r_dsc0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_MOD_INFO)); // REMOVE!
 	r_pane  = GetClientPos (hTab, GetDlgItem (hTab, IDC_MOD_SPLIT1));
-	r_bt0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_BUTTON1));
-	r_bt1 = GetClientPos (hTab, GetDlgItem (hTab, IDC_BUTTON2));
+	r_bt0 = GetClientPos (hTab, GetDlgItem (hTab, IDC_MOD_BUTTON1));
+	r_bt1 = GetClientPos (hTab, GetDlgItem (hTab, IDC_MOD_BUTTON2));
 	r_bt2 = GetClientPos (hTab, GetDlgItem (hTab, IDC_MOD_DEACTALL));
-	splitListDesc.SetHwnd (GetDlgItem (hTab, IDC_MOD_SPLIT1), GetDlgItem (hTab, IDC_TREE1), GetDlgItem (hTab, IDC_MOD_INFO));
+	splitListDesc.SetHwnd (GetDlgItem (hTab, IDC_MOD_SPLIT1), GetDlgItem (hTab, IDC_MOD_TREE), GetDlgItem (hTab, IDC_MOD_INFO));
 }
 
 //-----------------------------------------------------------------------------
 
-BOOL ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
+BOOL orbiter::ModuleTab::InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
-	SetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
-	SetWindowPos (GetDlgItem (hTab, IDC_TREE1), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+	SetWindowLongPtr (GetDlgItem (hTab, IDC_MOD_TREE), GWL_STYLE, TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | TVS_NOTOOLTIPS | WS_BORDER | WS_TABSTOP);
+	SetWindowPos (GetDlgItem (hTab, IDC_MOD_TREE), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 
 	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::GetConfig (const Config *cfg)
+void orbiter::ModuleTab::GetConfig (const Config *cfg)
 {
 	RefreshLists();
 	SetWindowText (GetDlgItem (hTab, IDC_MOD_INFO), "Optional Orbiter plugin modules.\r\n\r\nDouble-click on a category to show or hide its entries.\r\n\r\nCheck or uncheck items to activate the corresponding modules.\r\n\r\nSelect an item to see a description of the module function.");
 	int listw = cfg->CfgWindowPos.LaunchpadModListWidth;
 	if (!listw) {
 		RECT r;
-		GetClientRect (GetDlgItem (hTab, IDC_TREE1), &r);
+		GetClientRect (GetDlgItem (hTab, IDC_MOD_TREE), &r);
 		listw = r.right;
 	}
 	splitListDesc.SetStaticPane (SplitterCtrl::PANE1, listw);
@@ -83,22 +82,22 @@ void ModuleTab::GetConfig (const Config *cfg)
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::SetConfig (Config *cfg)
+void orbiter::ModuleTab::SetConfig (Config *cfg)
 {
 	cfg->CfgWindowPos.LaunchpadModListWidth = splitListDesc.GetPaneWidth (SplitterCtrl::PANE1);
 }
 
 //-----------------------------------------------------------------------------
 
-bool ModuleTab::OpenHelp ()
+bool orbiter::ModuleTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_modules");
+	OpenTabHelp ("tab_modules");
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-BOOL ModuleTab::Size (int w, int h)
+BOOL orbiter::ModuleTab::Size (int w, int h)
 {
 	int dw = w - (int)(pos0.right-pos0.left);
 	int dh = h - (int)(pos0.bottom-pos0.top);
@@ -118,10 +117,10 @@ BOOL ModuleTab::Size (int w, int h)
 	SetWindowPos (GetDlgItem (hTab, IDC_MOD_SPLIT1), NULL,
 		0, 0, w0+dw, h0+dh,
 		SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	SetWindowPos (GetDlgItem (hTab, IDC_BUTTON1), NULL,
+	SetWindowPos (GetDlgItem (hTab, IDC_MOD_BUTTON1), NULL,
 		r_bt0.left, r_bt0.top+dh, 0, 0,
 		SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-	SetWindowPos (GetDlgItem (hTab, IDC_BUTTON2), NULL,
+	SetWindowPos (GetDlgItem (hTab, IDC_MOD_BUTTON2), NULL,
 		r_bt1.left, r_bt1.top+dh, 0, 0,
 		SWP_NOACTIVATE|SWP_NOSIZE|SWP_NOOWNERZORDER|SWP_NOZORDER);
 	SetWindowPos (GetDlgItem (hTab, IDC_MOD_DEACTALL), NULL,
@@ -133,16 +132,16 @@ BOOL ModuleTab::Size (int w, int h)
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::Show ()
+void orbiter::ModuleTab::Show ()
 {
 	LaunchpadTab::Show();
 }
 
 //-----------------------------------------------------------------------------
 
-void ModuleTab::RefreshLists ()
+void orbiter::ModuleTab::RefreshLists ()
 {
-	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
+	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
 	TreeView_DeleteAllItems (hTree);
 
 	TV_INSERTSTRUCT tvis;
@@ -153,8 +152,6 @@ void ModuleTab::RefreshLists ()
 	struct _finddata_t fdata;
 	intptr_t fh = _findfirst ("Modules\\Plugin\\*.dll", &fdata);
 	if (fh == -1) return; // no files found
-	SendDlgItemMessage (hTab, IDC_MOD_ACTLIST, LB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage (hTab, IDC_MOD_INACTLIST, LB_RESETCONTENT, 0, 0);
 	do {
 		// add module record
 		MODULEREC **tmp = new MODULEREC*[nmodulerec+1];
@@ -207,10 +204,8 @@ void ModuleTab::RefreshLists ()
 			FreeLibrary (hMod);
 		}
 
-#ifdef INLINEGRAPHICS
 		if (!strcmp (catstr, "Graphics engines"))
-			continue; // don't display graphics client modules in orbiter.exe
-#endif
+			continue; // graphics client modules are loaded via the Video tab
 
 		// find the category entry
 		HTREEITEM catItem = GetCategoryItem (catstr);
@@ -227,9 +222,9 @@ void ModuleTab::RefreshLists ()
 	counter = 0;
 }
 
-HTREEITEM ModuleTab::GetCategoryItem (char *cat)
+HTREEITEM orbiter::ModuleTab::GetCategoryItem (char *cat)
 {
-	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
+	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
 	HTREEITEM root = TreeView_GetRoot (hTree);
 	char cbuf[256];
 	TVITEM item;
@@ -252,9 +247,9 @@ HTREEITEM ModuleTab::GetCategoryItem (char *cat)
 	return TreeView_InsertItem (hTree, &tvis);
 }
 
-void ModuleTab::ExpandCollapseAll (bool expand)
+void orbiter::ModuleTab::ExpandCollapseAll (bool expand)
 {
-	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
+	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
 	UINT code = (expand ? TVE_EXPAND : TVE_COLLAPSE);
 	TVITEM catitem;
 	catitem.mask = NULL;
@@ -265,9 +260,9 @@ void ModuleTab::ExpandCollapseAll (bool expand)
 	}
 }
 
-void ModuleTab::InitActivation ()
+void orbiter::ModuleTab::InitActivation ()
 {
-	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
+	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
 	TVITEM catitem, subitem;
 	catitem.mask = TVIF_PARAM;
 	HTREEITEM hRoot = TreeView_GetRoot (hTree);
@@ -297,11 +292,11 @@ void ModuleTab::InitActivation ()
 	ExpandCollapseAll (true);
 }
 
-void ModuleTab::ActivateFromList ()
+void orbiter::ModuleTab::ActivateFromList ()
 {
 	const char *path = "Modules\\Plugin";
 
-	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
+	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
 	TVITEM catitem, subitem;
 	catitem.mask = TVIF_PARAM;
 	catitem.hItem = TreeView_GetRoot (hTree);
@@ -335,9 +330,9 @@ void ModuleTab::ActivateFromList ()
 	}
 }
 
-void ModuleTab::DeactivateAll ()
+void orbiter::ModuleTab::DeactivateAll ()
 {
-	HWND hTree = GetDlgItem (hTab, IDC_TREE1);
+	HWND hTree = GetDlgItem (hTab, IDC_MOD_TREE);
 	TVITEM catitem, subitem;
 	catitem.mask = NULL;
 	catitem.hItem = TreeView_GetRoot (hTree);
@@ -356,7 +351,7 @@ void ModuleTab::DeactivateAll ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	const int MAXSEL = 100;
 	int i;
@@ -368,17 +363,17 @@ INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_MOD_DEACTALL:
 			DeactivateAll ();
 			return TRUE;
-		case IDC_BUTTON1:
+		case IDC_MOD_BUTTON1:
 			ExpandCollapseAll (true);
 			return TRUE;
-		case IDC_BUTTON2:
+		case IDC_MOD_BUTTON2:
 			ExpandCollapseAll (false);
 			return TRUE;
 		}
 		break;
 	case WM_NOTIFY:
 		switch (LOWORD(wParam)) {
-		case IDC_TREE1:
+		case IDC_MOD_TREE:
 
 			pnmtv = (NM_TREEVIEW FAR *)lParam;
 			switch (pnmtv->hdr.code) {
@@ -411,9 +406,9 @@ INT_PTR ModuleTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		InitActivation();
 
 		// hack: hide horizontal scroll bar
-		LONG style = GetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE);
-		SetWindowLongPtr (GetDlgItem (hTab, IDC_TREE1), GWL_STYLE, style & ~WS_HSCROLL);
-		SetWindowPos (GetDlgItem (hTab, IDC_TREE1), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
+		LONG style = GetWindowLongPtr (GetDlgItem (hTab, IDC_MOD_TREE), GWL_STYLE);
+		SetWindowLongPtr (GetDlgItem (hTab, IDC_MOD_TREE), GWL_STYLE, style & ~WS_HSCROLL);
+		SetWindowPos (GetDlgItem (hTab, IDC_MOD_TREE), NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER);
 
 		return 0;
 	}

@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include "Config.h"
+#include "Launchpad.h"
 
 // Property page indices
 #define PG_SCN  0
@@ -21,63 +22,69 @@
 #define PG_NET2 10
 #define PG_NET3 11
 
-//-----------------------------------------------------------------------------
-// Forward declarations
-//-----------------------------------------------------------------------------
-class MainDialog;
+namespace orbiter {
 
-//-----------------------------------------------------------------------------
-// Name: class LaunchpadTab
-// Desc: Base class for main dialog tabs
-//-----------------------------------------------------------------------------
-class LaunchpadTab {
-public:
-	LaunchpadTab (const MainDialog *lp);
-	virtual ~LaunchpadTab ();
-	virtual void Create () {}
+	class LaunchpadDialog;
 
-	inline const MainDialog *Launchpad () const { return pLp; }
-	inline Config *Cfg () const { return pCfg; }
+	//-----------------------------------------------------------------------------
+	// Name: class LaunchpadTab
+	// Desc: Base class for main dialog tabs
+	//-----------------------------------------------------------------------------
+	class LaunchpadTab {
+	public:
+		LaunchpadTab(const LaunchpadDialog* lp);
+		virtual ~LaunchpadTab();
+		virtual void Create() {}
 
-	virtual void GetConfig (const Config *cfg) {}
-	// Read config parameters
+		inline const LaunchpadDialog* Launchpad() const { return pLp; }
+		inline Config* Cfg() const { return pCfg; }
 
-	virtual void SetConfig (Config *cfg) {}
-	// Write config parameters back
+		virtual void GetConfig(const Config* cfg) {}
+		// Read config parameters
 
-	virtual BOOL InitDialog (HWND hWnd, WPARAM wParam, LPARAM lParam) { return FALSE; }
+		virtual void SetConfig(Config* cfg) {}
+		// Write config parameters back
 
-	virtual bool OpenHelp () { return false; }
+		virtual BOOL InitDialog(HWND hWnd, WPARAM wParam, LPARAM lParam) { return FALSE; }
 
-	virtual BOOL Size (int w, int h);
-	// by default, this re-centers the items if RegisterItemPositions has been called
+		virtual bool OpenHelp() { return false; }
 
-	virtual void Show ();
-	virtual void Hide ();
-	inline bool IsActive () const { return bActive; }
-	inline HWND TabWnd () const { return hTab; }
+		void OpenTabHelp(const char* topic);
 
-	virtual INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	// generic message handler
+		virtual BOOL Size(int w, int h);
+		// by default, this re-centers the items if RegisterItemPositions has been called
 
-protected:
-	HWND CreateTab (int resid);
+		virtual void Show();
+		virtual void Hide();
+		virtual void LaunchpadShowing(bool show) {}
+		inline bool IsActive() const { return bActive; }
+		inline HWND TabWnd() const { return hTab; }
+		inline HWND LaunchpadWnd() const { return pLp->hDlg; }
+		inline HINSTANCE AppInstance() const { return pLp->hInst; }
 
-	void RegisterItemPositions (int *_item, int _nitem);
-	// Keep a record of the positions of dialog items
-	// (for auto-recentering)
+		virtual INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		// generic message handler
 
-	static INT_PTR CALLBACK TabProcHook (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	protected:
+		HWND CreateTab(int resid);
 
-	const MainDialog *pLp;
-	Config *pCfg;
-	HWND hTab;
-	RECT pos0;  // initial position in Launchpad dialog
-	bool bActive;
+		void RegisterItemPositions(int* _item, int _nitem);
+		// Keep a record of the positions of dialog items
+		// (for auto-recentering)
 
-	int *item;
-	POINT *itempos;  // registered dialog item postions
-	int nitem;    // list length
-};
+		static INT_PTR CALLBACK TabProcHook(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+		const LaunchpadDialog* pLp;
+		Config* pCfg;
+		HWND hTab;
+		RECT pos0;  // initial position in Launchpad dialog
+		bool bActive;
+
+		int* item;
+		POINT* itempos;  // registered dialog item postions
+		int nitem;    // list length
+	};
+
+}
 
 #endif // !__LPADTAB_H

@@ -11,17 +11,21 @@
 
 #include "LpadTab.h"
 
-class AboutTab: public LaunchpadTab {
-public:
-	AboutTab (const MainDialog *lp);
+namespace orbiter {
 
-	void Create ();
-	bool OpenHelp ();
+	class AboutTab : public LaunchpadTab {
+	public:
+		AboutTab(const LaunchpadDialog* lp);
 
-	INT_PTR TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		void Create();
+		bool OpenHelp();
 
-private:
-	static INT_PTR CALLBACK AboutProc (HWND, UINT, WPARAM, LPARAM);
-};
+		INT_PTR TabProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	private:
+		static INT_PTR CALLBACK AboutProc(HWND, UINT, WPARAM, LPARAM);
+	};
+
+}
 
 #endif // !__TABABOUT_H

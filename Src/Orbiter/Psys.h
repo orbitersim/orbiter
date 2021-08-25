@@ -17,9 +17,6 @@
 
 class Vessel;
 class SuperVessel;
-#ifdef NETCONNECT
-class OrbiterConnect;
-#endif
 
 class PlanetarySystem {
 	friend class Body;
@@ -243,11 +240,6 @@ private:
 	bool DelSuperVessel (SuperVessel *sv);
 	// remove a vessel superstructure from the list
 
-#ifdef NETCONNECT
-public:
-	bool Send (OrbiterConnect *oc);
-	void InitState (OrbiterConnect *oc);
-#endif // NETCONNECT
 };
 
 #endif // !__PSYS_H

@@ -149,6 +149,8 @@ public:
     SeqRandom MusicOrder;
     MusicPlay MusicPlayInternal;
     MusicPlay MusicPlayExternal;
+
+    double MinThrusterLevelForRCSSoundEffects;
     
     CString AudioGreeting;
 

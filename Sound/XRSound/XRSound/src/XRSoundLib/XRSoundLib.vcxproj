@@ -66,15 +66,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -114,7 +118,7 @@
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT)\Orbitersdk\XRSound\XRSoundD.lib /y &amp; copy XRSound.h $(ORBITER_ROOT)\Orbitersdk\XRSound\* /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT)\Orbitersdk\XRSound\XRSoundD.lib /y &amp;&amp; copy XRSound.h $(ORBITER_ROOT)\Orbitersdk\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -128,12 +132,13 @@
       <AdditionalIncludeDirectories>$(ORBITER_ROOT_X64)\Orbitersdk\include;..\XRSoundDLL</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_X64)\Orbitersdk\XRSound\XRSoundD.lib /y &amp; copy XRSound.h $(ORBITER_ROOT_X64)\Orbitersdk\XRSound\* /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_X64)\Orbitersdk\XRSound\XRSoundD.lib /y &amp;&amp; copy XRSound.h $(ORBITER_ROOT_X64)\Orbitersdk\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -163,7 +168,7 @@
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT)\Orbitersdk\XRSound\* /y &amp; copy XRSound.h $(ORBITER_ROOT)\Orbitersdk\XRSound\* /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE)\Orbitersdk\XRSound\* /y &amp;&amp; copy XRSound.h $(ORBITER_ROOT_RELEASE)\Orbitersdk\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -189,7 +194,7 @@
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
     </Lib>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_X64)\Orbitersdk\XRSound\* /y &amp; copy XRSound.h $(ORBITER_ROOT_X64)\Orbitersdk\XRSound\* /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE_X64)\Orbitersdk\XRSound\* /y &amp;&amp; copy XRSound.h $(ORBITER_ROOT_RELEASE_X64)\Orbitersdk\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

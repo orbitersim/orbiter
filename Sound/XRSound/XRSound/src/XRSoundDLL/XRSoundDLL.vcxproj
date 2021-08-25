@@ -58,15 +58,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\GlobalShared.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -94,6 +98,7 @@
       <AdditionalIncludeDirectories>$(ORBITER_ROOT)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,7 +108,7 @@
       <AdditionalLibraryDirectories>$(ORBITER_ROOT)\Orbitersdk\lib;$(IRRKLANG_ROOT)\lib\Win32-visualStudio</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT)\Modules\Plugin\XRSound.dll /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT)\Modules\Plugin\XRSound.dll /y &amp;&amp; copy $(SolutionDir)\..\assets\XRSound\XRSound.cfg $(ORBITER_ROOT)\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -116,6 +121,7 @@
       <AdditionalIncludeDirectories>$(ORBITER_ROOT_X64)\Orbitersdk\include;..\Utils\;..\XRSoundLib;$(IRRKLANG_ROOT_X64)\include</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -126,7 +132,7 @@
       <AdditionalLibraryDirectories>$(ORBITER_ROOT_X64)\Orbitersdk\lib;$(IRRKLANG_ROOT_X64)\lib\Winx64-visualStudio</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_X64)\Modules\Plugin\XRSound.dll /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_X64)\Modules\Plugin\XRSound.dll /y &amp;&amp; copy $(SolutionDir)..\assets\XRSound\XRSound.cfg $(ORBITER_ROOT_X64)\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -158,7 +164,7 @@
       </LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE)\Modules\Plugin\XRSound.dll /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE)\Modules\Plugin\XRSound.dll /y &amp;&amp; copy $(SolutionDir)..\assets\XRSound\XRSound.cfg $(ORBITER_ROOT_RELEASE)\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -185,7 +191,7 @@
       <AdditionalLibraryDirectories>$(ORBITER_ROOT_RELEASE_X64)\Orbitersdk\lib;$(IRRKLANG_ROOT_X64)\lib\Winx64-visualStudio</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE_X64)\Modules\Plugin\XRSound.dll /y</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ORBITER_ROOT_RELEASE_X64)\Modules\Plugin\XRSound.dll /y &amp;&amp; copy $(SolutionDir)..\assets\XRSound\XRSound.cfg $(ORBITER_ROOT_RELEASE_X64)\XRSound\* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -205,6 +211,7 @@
     <ClInclude Include="XRSoundEngine.h" />
     <ClInclude Include="XRSoundEngine10.h" />
     <ClInclude Include="XRSoundEngine20.h" />
+    <ClInclude Include="XRSoundEngine30.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Utils\ConfigFileParser.cpp" />
@@ -216,6 +223,7 @@
     <ClCompile Include="XRSoundConfigFileParser.cpp" />
     <ClCompile Include="XRSoundDLL.cpp" />
     <ClCompile Include="XRSoundEngine.cpp" />
+    <ClCompile Include="XRSoundEngine30.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\XRSound\XRSound-Atlantis.cfg" />

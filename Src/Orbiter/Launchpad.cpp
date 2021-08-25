@@ -29,11 +29,11 @@
 using namespace std;
 
 //=============================================================================
-// Name: class MainDialog
+// Name: class LaunchpadDialog
 // Desc: Handles the startup dialog ("Launchpad")
 //=============================================================================
 
-static MainDialog *g_pDlg = 0;
+static orbiter::LaunchpadDialog *g_pDlg = 0;
 static time_t time0 = 0;
 static UINT timerid = 0;
 
@@ -45,10 +45,10 @@ static int mnubt[] = {
 };
 
 //-----------------------------------------------------------------------------
-// Name: MainDialog()
-// Desc: This is the constructor for MainDialog
+// Name: LaunchpadDialog()
+// Desc: This is the constructor for LaunchpadDialog
 //-----------------------------------------------------------------------------
-MainDialog::MainDialog (Orbiter *app)
+orbiter::LaunchpadDialog::LaunchpadDialog (Orbiter *app)
 {
 	hDlg    = NULL;
 	hInst   = app->GetInstance();
@@ -57,6 +57,7 @@ MainDialog::MainDialog (Orbiter *app)
 	pCfg    = app->Cfg();
 	g_pDlg  = this; // for nonmember callbacks
 	CTab    = NULL;
+	m_bVisible = false;
 
 	hDlgBrush = CreateSolidBrush (dlgcol);
 	hShadowImg = LoadImage (hInst, MAKEINTRESOURCE(IDB_SHADOW), IMAGE_BITMAP, 0, 0, 0);
@@ -64,10 +65,10 @@ MainDialog::MainDialog (Orbiter *app)
 }
 
 //-----------------------------------------------------------------------------
-// Name: ~MainDialog()
-// Desc: This is the destructor for MainDialog
+// Name: ~LaunchpadDialog()
+// Desc: This is the destructor for LaunchpadDialog
 //-----------------------------------------------------------------------------
-MainDialog::~MainDialog ()
+orbiter::LaunchpadDialog::~LaunchpadDialog ()
 {
 	int i;
 
@@ -86,7 +87,7 @@ MainDialog::~MainDialog ()
 // Name: Create()
 // Desc: Creates the main application dialog
 //-----------------------------------------------------------------------------
-HWND MainDialog::Create (bool startvideotab)
+bool orbiter::LaunchpadDialog::Create (bool startvideotab)
 {
 	if (!hDlg) {
 		CreateDialog (hInst, MAKEINTRESOURCE(IDD_MAIN), NULL, AppDlgProc);
@@ -106,14 +107,12 @@ HWND MainDialog::Create (bool startvideotab)
 		InitTabControl (hDlg);
 		InitSize (hDlg);
 		SwitchTabPage (hDlg, 0);
-		SetFocus (GetDlgItem (GetTabWindow(0), IDC_SCN_LIST)); // MOVE TO TAB CLASS!
 		if (pCfg->CfgDemoPrm.bDemo) {
 			SetDemoMode ();
 			time0 = time (NULL);
 			timerid = SetTimer (hDlg, 1, 1000, NULL);
 		}
 		Resize (hDlg, client0.right, client0.bottom, SIZE_RESTORED);
-		HidePage (PG_VID); // no video options by default
 		if (pCfg->rLaunchpad.right > pCfg->rLaunchpad.left) {
 			RECT dr, lr = pCfg->rLaunchpad;
 			int x = lr.left, y = lr.top, w = lr.right-lr.left, h = lr.bottom-lr.top;
@@ -133,22 +132,56 @@ HWND MainDialog::Create (bool startvideotab)
 		strcat (cbuf, "  ");
 		SetWindowText (GetDlgItem (hDlg, IDC_BLACKBOX), cbuf);
 		SetWindowText (GetDlgItem (hDlg, IDC_VERSION), uscram(SIG7));
-		ShowWindow (hDlg, SW_SHOW);
+		Show();
 		if (startvideotab) {
-			UnhidePage (4, "Video");
 			SwitchTabPage (hDlg, 4);
 		}
 	} else
 		SwitchTabPage (hDlg, 0);
 
-	return hDlg;
+	return (hDlg != NULL);
+}
+
+//-----------------------------------------------------------------------------
+
+void orbiter::LaunchpadDialog::Show()
+{
+	ShowWindow(hDlg, SW_SHOW);
+	m_bVisible = true;
+	for (int i = 0; i < ntab; i++)
+		Tab[i]->LaunchpadShowing(true);
+}
+
+//-----------------------------------------------------------------------------
+
+void orbiter::LaunchpadDialog::Hide()
+{
+	ShowWindow(hDlg, SW_HIDE);
+	m_bVisible = false;
+	for (int i = 0; i < ntab; i++)
+		Tab[i]->LaunchpadShowing(false);
+}
+
+//-----------------------------------------------------------------------------
+
+bool orbiter::LaunchpadDialog::ConsumeMessage(LPMSG pmsg)
+{
+	return (bool)IsDialogMessage(hDlg, pmsg);
+}
+
+orbiter::LaunchpadTab* orbiter::LaunchpadDialog::GetTab(UINT i) const
+{
+	if (i < ntab)
+		return Tab[i];
+	else
+		return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 // Name: AddTab()
 // Desc: Inserts a new tab into the list
 //-----------------------------------------------------------------------------
-void MainDialog::AddTab (LaunchpadTab *tab)
+void orbiter::LaunchpadDialog::AddTab (LaunchpadTab *tab)
 {
 	LaunchpadTab **tmp = new LaunchpadTab*[ntab+1]; TRACENEW
 	if (ntab) {
@@ -159,7 +192,9 @@ void MainDialog::AddTab (LaunchpadTab *tab)
 	Tab[ntab++] = tab;
 }
 
-const HWND MainDialog::GetTabWindow (int i) const
+//-----------------------------------------------------------------------------
+
+const HWND orbiter::LaunchpadDialog::GetTabWindow (int i) const
 {
 	return (i < ntab ? Tab[i]->TabWnd() : NULL);
 }
@@ -168,7 +203,7 @@ const HWND MainDialog::GetTabWindow (int i) const
 // Name: InitTabControl()
 // Desc: Sets up the tabs for the tab control interface
 //-----------------------------------------------------------------------------
-void MainDialog::InitTabControl (HWND hWnd)
+void orbiter::LaunchpadDialog::InitTabControl (HWND hWnd)
 {
 	for (int i = 0; i < ntab; i++) {
 		Tab[i]->Create();
@@ -181,12 +216,14 @@ void MainDialog::InitTabControl (HWND hWnd)
 // Name: EnableLaunchButton()
 // Desc: Enable/disable "Launch Orbiter" button
 //-----------------------------------------------------------------------------
-void MainDialog::EnableLaunchButton (bool enable) const
+void orbiter::LaunchpadDialog::EnableLaunchButton (bool enable) const
 {
 	EnableWindow (GetDlgItem (hDlg, IDLAUNCH), enable ? TRUE:FALSE);
 }
 
-void MainDialog::InitSize (HWND hWnd)
+//-----------------------------------------------------------------------------
+
+void orbiter::LaunchpadDialog::InitSize (HWND hWnd)
 {
 	RECT r, rl;
 	GetClientRect (hWnd, &client0);
@@ -213,7 +250,9 @@ void MainDialog::InitSize (HWND hWnd)
 	}
 }
 
-BOOL MainDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
+//-----------------------------------------------------------------------------
+
+BOOL orbiter::LaunchpadDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 {
 	if (mode == SIZE_MINIMIZED) return TRUE;
 
@@ -275,7 +314,7 @@ BOOL MainDialog::Resize (HWND hWnd, DWORD w, DWORD h, DWORD mode)
 // Desc: Set launchpad controls into demo mode
 //-----------------------------------------------------------------------------
 
-void MainDialog::SetDemoMode ()
+void orbiter::LaunchpadDialog::SetDemoMode ()
 {
 	//EnableWindow (GetDlgItem (hDlg, IDC_MAINTAB), FALSE);
 	//ShowWindow (GetDlgItem (hDlg, IDC_MAINTAB), FALSE);
@@ -292,7 +331,7 @@ void MainDialog::SetDemoMode ()
 // Name: UpdateConfig()
 // Desc: Save current dialog settings in configuration
 //-----------------------------------------------------------------------------
-void MainDialog::UpdateConfig ()
+void orbiter::LaunchpadDialog::UpdateConfig ()
 {
 	for (int i = 0; i < ntab; i++)
 		Tab[i]->SetConfig (pCfg);
@@ -306,7 +345,7 @@ void MainDialog::UpdateConfig ()
 // Name: DlgProc()
 // Desc: Message callback function for main dialog
 //-----------------------------------------------------------------------------
-INT_PTR MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::LaunchpadDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	char cbuf[256];
 
@@ -424,7 +463,7 @@ INT_PTR MainDialog::DlgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Name: WaitProc()
 // Desc: Message callback function for wait page
 //-----------------------------------------------------------------------------
-INT_PTR MainDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::LaunchpadDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
@@ -448,7 +487,7 @@ INT_PTR MainDialog::WaitProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 // Name: SwitchTabPage()
 // Desc: Display a new page
 //-----------------------------------------------------------------------------
-void MainDialog::SwitchTabPage (HWND hWnd, int cpg)
+void orbiter::LaunchpadDialog::SwitchTabPage (HWND hWnd, int cpg)
 {
 	int idx = cpg;
 	for (int pg = 0; pg < ntab; pg++)
@@ -457,7 +496,9 @@ void MainDialog::SwitchTabPage (HWND hWnd, int cpg)
 	CTab->Show();
 }
 
-void MainDialog::ShowWaitPage (HWND hWnd, bool show, long mem_committed)
+//-----------------------------------------------------------------------------
+
+void orbiter::LaunchpadDialog::ShowWaitPage (bool show, long mem_committed)
 {
 	int pg, i;
 	int showtab = (show ? SW_HIDE:SW_SHOW);
@@ -475,16 +516,18 @@ void MainDialog::ShowWaitPage (HWND hWnd, bool show, long mem_committed)
 	} else {
 		SetCursor(LoadCursor(NULL, IDC_ARROW));
 		ShowWindow (hWait, SW_HIDE);
-		SwitchTabPage (hWnd, 0);
+		SwitchTabPage (hDlg, 0);
 	}
 	for (i = 0; i < 3; i++)
-		ShowWindow (GetDlgItem (hWnd, item[i]), showtab);
+		ShowWindow (GetDlgItem (hDlg, item[i]), showtab);
 	for (i = 0; i < ntab; i++)
 		if (tabidx[i] >= 0)
-			ShowWindow (GetDlgItem (hWnd, mnubt[i]), showtab);
+			ShowWindow (GetDlgItem (hDlg, mnubt[i]), showtab);
+
+	RedrawWindow(hDlg, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
-void MainDialog::UpdateWaitProgress ()
+void orbiter::LaunchpadDialog::UpdateWaitProgress ()
 {
 	if (mem_wait) {
 		long mem = pApp->memstat->HeapUsage();
@@ -492,7 +535,7 @@ void MainDialog::UpdateWaitProgress ()
 	}
 }
 
-void MainDialog::HidePage (int idx)
+void orbiter::LaunchpadDialog::HidePage (int idx)
 {
 	if (tabidx[idx] < 0) return; // already hidden
 
@@ -515,7 +558,7 @@ void MainDialog::HidePage (int idx)
 	InvalidateRect (hDlg, NULL, TRUE);
 }
 
-void MainDialog::UnhidePage (int idx, char *tab)
+void orbiter::LaunchpadDialog::UnhidePage (int idx, char *tab)
 {
 	int i, j;
 	RECT r;
@@ -552,7 +595,7 @@ void MainDialog::UnhidePage (int idx, char *tab)
 // Name: GetDemoScenario()
 // Desc: returns the name of an arbitrary scenario in the demo folder
 //-----------------------------------------------------------------------------
-int MainDialog::SelectDemoScenario ()
+int orbiter::LaunchpadDialog::SelectDemoScenario ()
 {
 	char cbuf[256];
 	HWND hTree = GetDlgItem (GetTabWindow(PG_SCN), IDC_SCN_LIST);
@@ -603,441 +646,24 @@ static char *desc_fixedstep = "Force Orbiter to advance the simulation by a fixe
 
 void OpenDynamics (HINSTANCE, HWND);
 
-HTREEITEM MainDialog::RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent)
+HTREEITEM orbiter::LaunchpadDialog::RegisterExtraParam (LaunchpadItem *item, HTREEITEM parent)
 {
 	return pExtra->RegisterExtraParam (item, parent);
 }
 
-bool MainDialog::UnregisterExtraParam (LaunchpadItem *item)
+bool orbiter::LaunchpadDialog::UnregisterExtraParam (LaunchpadItem *item)
 {
 	return pExtra->UnregisterExtraParam (item);
 }
 
-HTREEITEM MainDialog::FindExtraParam (const char *name, const HTREEITEM parent)
+HTREEITEM orbiter::LaunchpadDialog::FindExtraParam (const char *name, const HTREEITEM parent)
 {
 	return pExtra->FindExtraParam (name, parent);
 }
 
-void MainDialog::WriteExtraParams ()
+void orbiter::LaunchpadDialog::WriteExtraParams ()
 {
 	pExtra->WriteExtraParams ();
-}
-
-#ifdef DO_NETWORK_OLD
-//-----------------------------------------------------------------------------
-// Name: ConnectionsCallback()
-// Desc: Callback function for connections enumeration
-//-----------------------------------------------------------------------------
-BOOL FAR PASCAL ConnectionsCallback (LPCGUID pguidSP, VOID* pConnection, 
-    DWORD dwConnectionSize, LPCDPNAME pName, DWORD dwFlags, VOID* pvContext)
-{
-    HRESULT       hr;
-    LPDIRECTPLAY4 pDP = NULL;
-    VOID*         pConnectionBuffer = NULL;
-    HWND          hWndListBox = (HWND)pvContext;
-    LRESULT       iIndex;
-
-    // Create a IDirectPlay object
-    if( FAILED( hr = CoCreateInstance( CLSID_DirectPlay, NULL, CLSCTX_ALL, 
-                                       IID_IDirectPlay4A, (VOID**)&pDP ) ) )
-        return FALSE; // Error, stop enumerating
-    
-    // Test the if the connection is available by attempting to initialize 
-    // the connection
-    if( FAILED( hr = pDP->InitializeConnection( pConnection, 0 ) ) )
-    {
-		pDP->Release();
-        return TRUE; // Unavailable connection, keep enumerating
-    }
-
-    // Don't need the IDirectPlay interface anymore, so release it
-	pDP->Release();
-    
-    // Found a good connection, so put it in the listbox
-    iIndex = SendMessage( hWndListBox, LB_ADDSTRING, 0, 
-                          (LPARAM)pName->lpszShortNameA );
-    if( iIndex == CB_ERR )
-        return FALSE; // Error, stop enumerating
-
-    pConnectionBuffer = new BYTE[ dwConnectionSize ]; TRACENEW
-    if( pConnectionBuffer == NULL )
-        return FALSE; // Error, stop enumerating
-
-    // Store pointer to GUID in listbox
-    memcpy( pConnectionBuffer, pConnection, dwConnectionSize );
-    SendMessage( hWndListBox, LB_SETITEMDATA, iIndex, 
-                 (LPARAM)pConnectionBuffer );
-
-    return TRUE; // Keep enumerating
-}
-
-//-----------------------------------------------------------------------------
-// Name: InitNetworkPage()
-// Desc: Set multiplayer options
-//-----------------------------------------------------------------------------
-void MainDialog::InitNetworkPage ()
-{
-	int i;
-	HWND hWndConn = GetDlgItem (hPage[PG_NET], IDC_LIST1);
-	SetWindowText (GetDlgItem (hPage[PG_NET], IDC_EDIT1), pCfg->CfgMplayerPrm.mpName);
-	SetWindowText (GetDlgItem (hPage[PG_NET], IDC_EDIT2), pCfg->CfgMplayerPrm.mpCallsign);
-	pApp->GetDPlay()->GetDP()->EnumConnections (&pApp->GetGUID(), ConnectionsCallback, hWndConn, 0);
-	i = SendDlgItemMessage (hPage[PG_NET], IDC_LIST1, LB_FINDSTRINGEXACT, (WPARAM)-1, (LPARAM)pCfg->CfgMplayerPrm.mpConnection);
-    SendDlgItemMessage(hPage[PG_NET], IDC_LIST1, LB_SETCURSEL, i != LB_ERR ? i:0, 0);
-	ZeroMemory (&DPSIHead, sizeof (DPSessionInfo));
-	DPSIHead.pDPSINext = &DPSIHead;
-}
-
-void MainDialog::Network_ShowPage1 ()
-{
-	ShowWindow (hPage[PG_NET2], SW_HIDE);
-	ShowWindow (hPage[PG_NET3], SW_HIDE);
-	ShowWindow (hPage[PG_NET], SW_SHOW);
-}
-
-void MainDialog::Network_ShowPage2 ()
-{
-	HRESULT hr;
-	char cbuf[256];
-	GetWindowText (GetDlgItem (hPage[PG_NET], IDC_EDIT1), cbuf, 256);
-	if (!cbuf[0]) {
-		MessageBeep (-1);
-		return;
-	}
-	LRESULT idx = SendDlgItemMessage (hPage[PG_NET], IDC_LIST1, LB_GETCURSEL, 0, 0);
-	VOID *pConnection = (VOID*)SendDlgItemMessage (hPage[PG_NET], IDC_LIST1, LB_GETITEMDATA, idx, 0);
-
-	if (FAILED (pApp->GetDPlay()->Restart())) {
-		LOGOUT_ERR("Could not create DirectPlay instance");
-		return;
-	}
-	if (FAILED (hr = pApp->GetDPlay()->GetDP()->InitializeConnection (pConnection, 0))) {
-		LOGOUT_DPERR(hr);
-		return;
-	}
-
-	ShowWindow (hPage[PG_NET], SW_HIDE);
-	ShowWindow (hPage[PG_NET3], SW_HIDE);
-	ShowWindow (hPage[PG_NET2], SW_SHOW);
-	SendDlgItemMessage (hPage[PG_NET2], IDC_LIST1, LB_RESETCONTENT, 0, 0);
-	SendDlgItemMessage (hPage[PG_NET2], IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)"Click Create to start new game. Click Search to see a list of games.");
-	bSessionSearch = false;
-	SetDlgItemText (hPage[PG_NET2], IDC_NET_SEARCH, "Start Search");
-	Network_InitSessionListbox();
-}
-
-void MainDialog::Network_ShowPage3 ()
-{
-	LPDPSESSIONDESC2 pdesc;
-	HRESULT hr;
-	if (FAILED (hr = pApp->GetDPlay()->GetSessionDesc (&pdesc))) {
-		LOGOUT_DPERR(hr);
-	} else {
-		char cbuf[256];
-		sprintf (cbuf, "ORBITER %s '%s'", pApp->GetDPlay()->isServer() ? "SERVER":"CLIENT",
-			pdesc->lpszSessionNameA);
-		SetWindowText (GetDlgItem (hPage[PG_NET3], IDC_STATIC1), cbuf);
-	}
-
-	ShowWindow (hPage[PG_NET], SW_HIDE);
-	ShowWindow (hPage[PG_NET2], SW_HIDE);
-	ShowWindow (hPage[PG_NET3], SW_SHOW);
-}
-
-HRESULT MainDialog::Network_CreateGame (HWND hWnd)
-{
-	char player_name[256], player_callsign[64];
-	DPSESSIONDESC2 dpsd;
-	DPNAME dpname;
-	HRESULT hr;
-
-	int res = DialogBox ((HINSTANCE)GetWindowLongPtr (hWnd, GWLP_HINSTANCE),
-		MAKEINTRESOURCE(IDD_NET_CREATE), hWnd, DlgCreateSessionProc);
-	if (res == IDCANCEL) return S_OK;
-
-	// Create a new session
-	ZeroMemory (&dpsd, sizeof (dpsd));
-	dpsd.dwSize           = sizeof (dpsd);
-	dpsd.guidApplication  = pApp->AppGUID;
-	dpsd.lpszSessionNameA = cSessionName;
-	dpsd.dwMaxPlayers     = nSessionMaxPlayer;
-	dpsd.dwFlags          = DPSESSION_KEEPALIVE /*| DPSESSION_MIGRATEHOST*/;
-
-	if (FAILED (hr = pApp->GetDPlay()->GetDP()->Open (&dpsd, DPOPEN_CREATE))) {
-		LOGOUT_DPERR (hr);
-		return hr;
-	} else
-		LOGOUT1P("Server created for session '%s'", cSessionName);
-
-	// Add the local player to the session
-	GetWindowText (GetDlgItem (hPage[PG_NET], IDC_EDIT1), player_name, 256);
-	GetWindowText (GetDlgItem (hPage[PG_NET], IDC_EDIT2), player_callsign, 64);
-	ZeroMemory (&dpname, sizeof (DPNAME));
-	dpname.dwSize = sizeof (DPNAME);
-	dpname.lpszLongNameA = player_name;
-	dpname.lpszShortNameA = player_callsign;
-	if (FAILED (hr = pApp->GetDPlay()->CreateLocalPlayer (&dpname, true))) {
-		LOGOUT_DPERR (hr);
-		return hr;
-	}
-	pApp->GetDPlay()->RefreshPlayerList();
-	pApp->bMultiplayer = TRUE;
-	pApp->bServer = TRUE;
-	Network_PlayerListChanged();
-	LOGOUT1P ("Local player added to session: '%s'", player_name);
-
-	Network_ShowPage3();
-
-	return S_OK;
-}
-
-INT_PTR MainDialog::CreateSessionProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	char cbuf[256];
-	int clen;
-
-	switch (uMsg) {
-	case WM_INITDIALOG:
-		GetWindowText (GetDlgItem (hPage[PG_NET], IDC_EDIT1), cbuf, 256);
-		strcat (cbuf, "'s Orbiter Server");
-		SetDlgItemText (hWnd, IDC_NET_SESSION, cbuf);
-		SetDlgItemText (hWnd, IDC_NET_MAXPLAYER, "10");
-		return TRUE;
-
-	case WM_COMMAND:
-		switch (LOWORD (wParam)) {
-		case IDOK:
-			clen = GetDlgItemText (hWnd, IDC_NET_SESSION, cSessionName, 256);
-			if (!clen) return TRUE; // don't accept blank sessio name
-			GetDlgItemText (hWnd, IDC_NET_MAXPLAYER, cbuf, 256);
-			if (!sscanf (cbuf, "%d", &nSessionMaxPlayer) || nSessionMaxPlayer < 1 ||
-				nSessionMaxPlayer > 100) return TRUE;
-			EndDialog (hWnd, IDOK);
-			return TRUE;
-		case IDCANCEL:
-			EndDialog (hWnd, IDCANCEL);
-			return TRUE;
-		}
-		break;
-	}
-	return FALSE;
-}
-
-HRESULT MainDialog::Network_JoinGame (HWND hWnd)
-{
-	char player_name[256], player_callsign[64];
-	HRESULT hr;
-    DPSESSIONDESC2 dpsd;
-    DPNAME         dpname;
-	HWND hList = GetDlgItem (hWnd, IDC_LIST1);
-    DPSessionInfo* pDPSISelected = NULL;
-	int nItemSelected = SendMessage (hList, LB_GETCURSEL, 0, 0);
-
-	// Add status text in list box
-	pDPSISelected = (DPSessionInfo*) SendMessage (hList, LB_GETITEMDATA, nItemSelected, 0);
-	if (pDPSISelected == NULL) {
-		MessageBeep (-1);
-		return S_OK;
-	}
-
-    // Setup the DPSESSIONDESC2, and get the session guid from 
-    // the selected listbox item
-    ZeroMemory (&dpsd, sizeof (dpsd));
-    dpsd.dwSize          = sizeof (dpsd);
-    dpsd.guidInstance    = pDPSISelected->guidSession;
-    dpsd.guidApplication = pApp->AppGUID;
-
-    // Join the session
-    // **** g_bHostPlayer = FALSE;
-    if (FAILED (hr = pApp->GetDPlay()->GetDP()->Open (&dpsd, DPOPEN_JOIN))) {
-		LOGOUT_DPERR (hr);
-        return hr;
-	}
-
-    // Create player based on g_strLocalPlayerName.  
-    // Store the player's DPID in g_LocalPlayerDPID.
-    // Also all DirectPlay messages for this player will signal g_hDPMessageEvent
-	GetDlgItemText (hPage[PG_NET], IDC_EDIT1, player_name, 256);
-	GetDlgItemText (hPage[PG_NET], IDC_EDIT2, player_callsign, 64);
-    ZeroMemory (&dpname, sizeof (DPNAME));
-    dpname.dwSize         = sizeof (DPNAME);
-	dpname.lpszLongNameA = player_name;
-	dpname.lpszShortNameA = player_callsign;
-
-    if (FAILED (hr = pApp->GetDPlay()->CreateLocalPlayer (&dpname))) {
-		LOGOUT_DPERR (hr);
-        return hr;
-	}
-	pApp->GetDPlay()->RefreshPlayerList();
-	pApp->bMultiplayer = TRUE;
-	pApp->bServer = FALSE;
-	Network_PlayerListChanged();
-	LOGOUT1P ("Local player added to session: '%s'", player_name);
-
-	Network_ShowPage3();
-
-	return S_OK;
-}
-
-BOOL FAR PASCAL Network_EnumSessionsCallback (LPCDPSESSIONDESC2 pdpsd, DWORD *pdwTimeout,
-	DWORD dwFlags, VOID *pvContext)
-{
-	MainDialog *md = (MainDialog*)pvContext;
-	DPSessionInfo *pDPSINew = NULL;
-	if (dwFlags & DPESC_TIMEDOUT) return FALSE;
-	pDPSINew = new DPSessionInfo; TRACENEW
-	if (pDPSINew == NULL) return FALSE;
-	ZeroMemory (pDPSINew, sizeof (DPSessionInfo));
-	pDPSINew->guidSession = pdpsd->guidInstance;
-	sprintf (pDPSINew->szSession, "%s (%d/%d)", pdpsd->lpszSessionNameA,
-		pdpsd->dwCurrentPlayers, pdpsd->dwMaxPlayers);
-	pDPSINew->pDPSINext = md->DPSIHead.pDPSINext;
-	md->DPSIHead.pDPSINext = pDPSINew;
-	return TRUE;
-}
-
-HRESULT MainDialog::Network_SearchGames (HWND hWnd)
-{
-	HRESULT hr;
-	HWND hList = GetDlgItem (hPage[PG_NET2], IDC_LIST1);
-	DPSESSIONDESC2 dpsd;
-	DPSessionInfo *pDPSISelected = NULL;
-	GUID guidSelectedSession;
-
-	bool bFindSelectedGUID = false;
-	bool bFoundSelectedGUID = true;
-
-	int nItemSelected = SendMessage (hList, LB_GETCURSEL, 0, 0);
-	if (nItemSelected != LB_ERR) {
-		pDPSISelected = (DPSessionInfo*)SendMessage (hList, LB_GETITEMDATA, nItemSelected, 0);
-		if (pDPSISelected != NULL) {
-			guidSelectedSession = pDPSISelected->guidSession;
-			bFindSelectedGUID = true;
-		}
-	}
-
-	// remove previous games from linked list
-	Network_SessionsCleanup();
-
-	// enum sessions and let DirectPlay decide the timeout
-	ZeroMemory (&dpsd, sizeof (dpsd));
-	dpsd.dwSize = sizeof (dpsd);
-	dpsd.guidApplication = pApp->AppGUID;
-
-	// enumerate all the active DirectPlay games on the selected connection
-	hr = pApp->GetDPlay()->GetDP()->EnumSessions (&dpsd, 0, Network_EnumSessionsCallback, this,
-		DPENUMSESSIONS_ALL | DPENUMSESSIONS_ASYNC);
-
-	if (FAILED (hr)) {
-		if (hr == DPERR_USERCANCEL) {
-			if (bSessionSearch) {
-				CheckDlgButton (hPage[PG_NET2], IDC_NET_SEARCH, BST_UNCHECKED);
-				SendMessage (hPage[PG_NET2], WM_COMMAND, IDC_NET_SEARCH, 0);
-			}
-			return S_OK;
-		} else {
-			Network_InitSessionListbox ();
-			if (hr == DPERR_CONNECTING)
-				return S_OK;
-			return hr;
-		}
-	}
-
-	// Tell listbox not to redraw itself since the contents are going to change
-	SendMessage (hList, WM_SETREDRAW, FALSE, 0);
-
-	// Add the enumerated sessions to the listbox
-	if (DPSIHead.pDPSINext != &DPSIHead) {
-
-		// Clear the contents of the listbox and enable the join button
-		SendMessage (hList, LB_RESETCONTENT, 0, 0);
-		EnableWindow (GetDlgItem (hWnd, IDC_NET_JOIN), TRUE);
-
-		DPSessionInfo *pDPSI = DPSIHead.pDPSINext;
-		while (pDPSI != &DPSIHead) {
-			int idx = SendMessage (hList, LB_ADDSTRING, 0, (LPARAM)pDPSI->szSession);
-			SendMessage (hList, LB_SETITEMDATA, idx, (LPARAM)pDPSI);
-			if (bFindSelectedGUID) {
-				// Look for the session that was selected before
-				if (pDPSI->guidSession == guidSelectedSession) {
-					SendMessage (hList, LB_SETCURSEL, idx, 0);
-					bFoundSelectedGUID = true;
-				}
-			}
-			pDPSI = pDPSI->pDPSINext;
-		}
-		if (!bFindSelectedGUID || !bFoundSelectedGUID)
-			SendMessage (hList, LB_SETCURSEL, 0, 0);
-	} else {
-		// There are no active sessions, so just reset the listbox
-		Network_InitSessionListbox();
-	}
-
-	// Tell the list to redraw itself now
-	SendMessage (hList, WM_SETREDRAW, TRUE, 0);
-	InvalidateRect (hList, NULL, FALSE);
-	
-	return S_OK;
-}
-
-void MainDialog::Network_SessionsCleanup ()
-{
-	DPSessionInfo *pDPSI = DPSIHead.pDPSINext;
-	DPSessionInfo *pDPSIDelete;
-
-	while (pDPSI != &DPSIHead) {
-		pDPSIDelete = pDPSI;
-		pDPSI = pDPSI->pDPSINext;
-		SAFE_DELETE (pDPSIDelete);
-	}
-	DPSIHead.pDPSINext = &DPSIHead;
-}
-
-void MainDialog::Network_InitSessionListbox ()
-{
-	HWND hList = GetDlgItem (hPage[PG_NET2], IDC_LIST1);
-	SendMessage (hList, LB_RESETCONTENT, 0, 0);
-	if (bSessionSearch)
-		SendMessage (hList, LB_ADDSTRING, 0, (LPARAM)"Looking for games ...");
-	else
-		SendMessage (hList, LB_ADDSTRING, 0, (LPARAM)"Click Start Search to search for games. Click Create to start a new game.");
-	SendMessage (hList, LB_SETITEMDATA, 0, NULL);
-	SendMessage (hList, LB_SETCURSEL, 0, 0);
-
-	// Disable the Join button until sessions are found
-	EnableWindow (GetDlgItem (hPage[PG_NET2], IDC_NET_JOIN), FALSE);
-}
-
-void MainDialog::Network_PlayerListChanged ()
-{
-	char cbuf[256];
-	HWND hList = GetDlgItem (hPage[PG_NET3], IDC_LIST1);
-	SendMessage (hList, LB_RESETCONTENT, 0, 0);
-	DPlayer *pdp = pApp->GetDPlay()->FirstPlayer();
-	while (pdp) {
-		sprintf (cbuf, "%s [%s]", pdp->name, pdp->call);
-		SendMessage (hList, LB_ADDSTRING, 0, (LPARAM)cbuf);
-		pdp = pdp->next;
-	}
-}
-#endif // DO_NETWORK_OLD
-
-//-----------------------------------------------------------------------------
-// Name: RefreshScenarioList()
-// Desc: Re-scan scenario list
-//-----------------------------------------------------------------------------
-void MainDialog::RefreshScenarioList ()
-{
-	((ScenarioTab*)Tab[0])->RefreshList();
-}
-
-//-----------------------------------------------------------------------------
-// Name: SelRootScenario()
-// Desc: select the given scenario
-//-----------------------------------------------------------------------------
-bool MainDialog::SelRootScenario (char *scn)
-{
-	return ((ScenarioTab*)Tab[0])->SelRootScenario (scn);
 }
 
 

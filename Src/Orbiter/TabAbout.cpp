@@ -9,7 +9,6 @@
 #include <commctrl.h>
 #include <io.h>
 #include "Orbiter.h"
-#include "Launchpad.h"
 #include "TabAbout.h"
 #include "Util.h"
 #include "Help.h"
@@ -19,21 +18,21 @@
 //-----------------------------------------------------------------------------
 // AboutTab class
 
-AboutTab::AboutTab (const MainDialog *lp): LaunchpadTab (lp)
+orbiter::AboutTab::AboutTab (const LaunchpadDialog *lp): LaunchpadTab (lp)
 {
 }
 
 //-----------------------------------------------------------------------------
 
-bool AboutTab::OpenHelp ()
+bool orbiter::AboutTab::OpenHelp ()
 {
-	OpenDefaultHelp (pLp->GetWindow(), pLp->GetInstance(), "tab_about");
+	OpenTabHelp ("tab_about");
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-void AboutTab::Create ()
+void orbiter::AboutTab::Create ()
 {
 	hTab = CreateTab (IDD_PAGE_ABT);
 
@@ -63,7 +62,7 @@ void AboutTab::Create ()
 
 //-----------------------------------------------------------------------------
 
-INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR orbiter::AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_COMMAND:
@@ -72,11 +71,11 @@ INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			ShellExecute (NULL, "open", "http://orbit.medphys.ucl.ac.uk/", NULL, NULL, SW_SHOWNORMAL);
 			return true;
 		case IDC_ABT_DISCLAIM:
-			DialogBoxParam (pLp->GetInstance(), MAKEINTRESOURCE(IDD_MSG), pLp->GetWindow(), AboutProc,
+			DialogBoxParam (AppInstance(), MAKEINTRESOURCE(IDD_MSG), LaunchpadWnd(), AboutProc,
 				IDT_DISCLAIMER);
 			return TRUE;
 		case IDC_ABT_CREDIT:
-			OpenCredits (hWnd, pLp->GetInstance());
+			::OpenHelp(hWnd, "html\\Credit.chm", "Credit");
 			return TRUE;
 		}
 		break;
@@ -88,7 +87,7 @@ INT_PTR AboutTab::TabProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Name: AboutProc()
 // Desc: Minimal message proc function for the about box
 //-----------------------------------------------------------------------------
-INT_PTR CALLBACK AboutTab::AboutProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK orbiter::AboutTab::AboutProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg) {
 	case WM_INITDIALOG:
