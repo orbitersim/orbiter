@@ -10,7 +10,7 @@
 #include <windows.h>
 
 #include "XRSound.h"   
-#include "XRSoundEngine20.h" 
+#include "XRSoundEngine.h" 
 
 class XRSoundImpl : public XRSound
 {
@@ -39,6 +39,21 @@ public:
     virtual bool SetDefaultSoundGroupFolder(const DefaultSoundID groupSoundID, const char *pSubfolderPath) override;
     virtual const char *GetDefaultSoundGroupFolder(const DefaultSoundID groupSoundID) const override;
 
+    // Added in XRSound 2.0
+    XRSoundEngine::EngineType GetEngineType() const;  // calls XRSound.dll
+    const char *GetLogID() const;                     // calls XRSound.dll
+    bool HaveMinDLLVersion(const float) const;
+
+    // Added in XRSound 3.0
+    virtual bool  SetPan(const int soundID, const float pan);
+    virtual float GetPan(const int soundID);
+
+    virtual bool  SetPlaybackSpeed(const int soundID, const float speed = 1.0);
+    virtual float GetPlaybackSpeed(const int soundID);
+
+    virtual bool  SetPlayPosition(const int soundID, const unsigned int positionMillis);
+    virtual int   GetPlayPosition(const int soundID);
+
     //========================================================================================================================
     // NOTE: methods below here are not part of the public API; however, we call these DLL methods from here on the impl side
     //========================================================================================================================
@@ -46,18 +61,12 @@ public:
     bool IsDefaultSoundGroup(const int soundID) const;
     bool IsDefaultSoundOrGroup(const int soundID) const;
 
-    // Added in XRSound 2.0
-    XRSoundEngine20::EngineType GetEngineType() const;  // calls XRSound.dll
-    const char *GetLogID() const;                       // calls XRSound.dll
-    
-    bool HaveMinDLLVersion(const float) const;
-
     // static methods
-    static const char *EngineTypeToStr(const XRSoundEngine20::EngineType engineType);
+    static const char *EngineTypeToStr(const XRSoundEngine::EngineType engineType);
 
     // -------------------------------------------------------------------------------
 
 private:
     HMODULE m_hDLL;
-    XRSoundEngine20 *m_pEngine;   // created by XRSound.dll; this is a BORROWED reference; do not free it from this side!
+    XRSoundEngine *m_pEngine;   // created by XRSound.dll; this is a BORROWED reference; do not free it from this side!
 };
