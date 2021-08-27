@@ -14,6 +14,7 @@ add_library(Dragonfly SHARED
 	Hsystems.cpp
 	Thermal.cpp
 	Esystems.cpp
+	panel.rc
 )
 
 set_target_properties(Dragonfly
