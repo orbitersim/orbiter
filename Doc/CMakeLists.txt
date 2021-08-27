@@ -209,25 +209,6 @@ install(FILES ${out}
 	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
 )
 
-# Dragonfly.pdf ----------------------------------------------------------
-
-set(name Dragonfly.pdf)
-set(out ${ORBITER_BINARY_ROOT_DIR}/Doc/${name})
-add_custom_command(
-	OUTPUT ${out}
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${name} ${out}
-)
-add_custom_target(DocDragonfly
-	DEPENDS ${out}
-)
-add_dependencies(OrbiterDoc
-	DocDragonfly
-)
-install(FILES ${out}
-	DESTINATION ${ORBITER_INSTALL_DOC_DIR}
-)
-
-
 # Technotes --------------------------------------------------------------
 
 add_subdirectory(Technotes)
