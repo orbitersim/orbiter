@@ -1,3 +1,25 @@
+if (NOT EXISTS ${IRRKLANG_DIR})
+	string(COMPARE EQUAL ${IRRKLANG_DIR} "irrKlang_DOWNLOAD" IRRKLANG_DOWNLOAD)
+	if (IRRKLANG_DOWNLOAD)
+		# Try downloading the irrKlang library on the fly
+		set(IRRKLANG_DOWNLOAD_DIR ${ORBITER_BINARY_ROOT_DIR}/Extern/irrKlang/)
+		if (BUILD64)
+			set(IRRKLANG_URL "https://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip")
+			set(IRRKLANG_DIR ${IRRKLANG_DOWNLOAD_DIR}/irrKlang-64bit-1.6.0)
+		else()
+			set(IRRKLANG_URL "https://www.ambiera.at/downloads/irrKlang-32bit-1.6.0.zip")
+			set(IRRKLANG_DIR ${IRRKLANG_DOWNLOAD_DIR}/irrKlang-1.6.0)
+		endif()
+		if (NOT EXISTS ${IRRKLANG_DIR})
+			message(STATUS "Downloading irrKlang ...")
+			file(MAKE_DIRECTORY ${IRRKLANG_DOWNLOAD_DIR})
+			file(DOWNLOAD ${IRRKLANG_URL} ${IRRKLANG_DOWNLOAD_DIR}/irrKlang.zip)
+			file(ARCHIVE_EXTRACT INPUT ${IRRKLANG_DOWNLOAD_DIR}/irrKlang.zip
+				DESTINATION ${IRRKLANG_DOWNLOAD_DIR})
+		endif()
+	endif()
+endif()
+
 # The irrKlang library location
 if (BUILD64)
 	set(IRRKLANG_LIB_DIR "${IRRKLANG_DIR}/lib/Winx64-visualStudio")
