@@ -301,6 +301,32 @@ if (ORBITER_MAKE_DOC)
 
 endif()
 
+# Enable Address SANitizer
+if (ORBITER_ENABLE_ASAN AND MSVC)
+    set(asan_binary_dir "$ENV{VCToolsInstallDir}bin\\Host${ARCH}\\${ARCH}")
+    if (NOT EXISTS "${asan_binary_dir}")
+		message( FATAL_ERROR "ASAN: Visual Studio tools directory ${asan_binary_dir} not valid, check VCToolsInstallDir environment variable" )
+    endif()
+    
+	if (BUILD64)
+		set(asan_arch_id "x86_64")
+	else()
+		set(asan_arch_id "i386")
+	endif()
+	set(asan_dll "clang_rt.asan_dynamic-${asan_arch_id}.dll")
+	set(asan_dbg_dll "clang_rt.asan_dbg_dynamic-${asan_arch_id}.dll")
+	
+	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /fsanitize=address /EHsc")
+	add_custom_command(
+		COMMENT "Copying ASAN Clang runtime from ${asan_binary_dir}"
+		OUTPUT ${asan_dll}
+ 		OUTPUT ${asan_dbg_dll}
+		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dll} ${ORBITER_BINARY_ROOT_DIR}
+		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dbg_dll} ${ORBITER_BINARY_ROOT_DIR}
+	)
+    add_custom_target(AsanBinaries DEPENDS ${asan_dll})
+    message("Address Sanitizer Enabled")
+endif()
 
 # For a given argument string template (odt_to_pdf_arglist) and source file name (infile)
 # return the explicit argument string (arglist), full source path (source_path) and full target path (target_path)
@@ -455,29 +481,6 @@ if (ORBITER_MAKE_TESTS)
       add_subdirectory(Tests)
 endif()
 
-if (ORBITER_ENABLE_ASAN)
-    set(asan_binary_dir "$ENV{VCToolsInstallDir}bin\\Host${ARCH}\\${ARCH}")
-    if (NOT EXISTS "${asan_binary_dir}")
-		message( FATAL_ERROR "ASAN: Visual Studio tools directory ${asan_binary_dir} not valid, check VCToolsInstallDir environment variable" )
-    endif()
-    
-	if (BUILD64)
-		set(asan_arch_id "x86_64")
-	else()
-		set(asan_arch_id "i386")
-	endif()
-	set(asan_dll "clang_rt.asan_dynamic-${asan_arch_id}.dll")
-	set(asan_dbg_dll "clang_rt.asan_dbg_dynamic-${asan_arch_id}.dll")
-
-	set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /fsanitize=address /EHsc")
-	add_custom_command(
-		COMMENT "Copying ASAN Clang runtime from ${asan_binary_dir}"
-		OUTPUT ${asan_dll}
- 		OUTPUT ${asan_dbg_dll}
-		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dll} ${ORBITER_BINARY_ROOT_DIR}
-		COMMAND ${CMAKE_COMMAND} -E copy ${asan_binary_dir}\\${asan_dbg_dll} ${ORBITER_BINARY_ROOT_DIR}
-	)
-    add_custom_target(AsanBinaries DEPENDS ${asan_dll})
-    add_dependencies(Orbiter_server AsanBinaries)
-    message("Address Sanitizer Enabled")
+if (ORBITER_ENABLE_ASAN AND MSVC)
+	add_dependencies(Orbiter_server AsanBinaries)
 endif()
