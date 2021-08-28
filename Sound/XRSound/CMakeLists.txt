@@ -3,6 +3,7 @@ if (NOT EXISTS ${IRRKLANG_DIR})
 	if (IRRKLANG_DOWNLOAD)
 		# Try downloading the irrKlang library on the fly
 		set(IRRKLANG_DOWNLOAD_DIR ${ORBITER_BINARY_ROOT_DIR}/Extern/irrKlang/)
+		message(STATUS "Checking for irrKlang download in ${IRRKLANG_DOWNLOAD_DIR}")
 		if (BUILD64)
 			set(IRRKLANG_URL "https://www.ambiera.at/downloads/irrKlang-64bit-1.6.0.zip")
 			set(IRRKLANG_DIR ${IRRKLANG_DOWNLOAD_DIR}/irrKlang-64bit-1.6.0)
