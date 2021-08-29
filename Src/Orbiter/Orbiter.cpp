@@ -48,6 +48,7 @@
 #include "htmlctrl.h"
 #include "DlgCtrl.h"
 #include "GraphicsAPI.h"
+#include "ConsoleManager.h"
 
 #ifdef INLINEGRAPHICS
 #include "OGraphics.h"
@@ -195,7 +196,11 @@ INT WINAPI WinMain (HINSTANCE hInstance, HINSTANCE, PSTR strCmdLine, INT nCmdSho
 	}
 #endif
 
-	SetEnvironmentVars();
+    // If we're not running from actual console, hide the window
+    if (ConsoleManager::IsConsoleExclusive())
+        ConsoleManager::ShowConsole(false);
+    
+    SetEnvironmentVars();
 	g_pOrbiter = new Orbiter; // application instance
 
 	// Parse command line
