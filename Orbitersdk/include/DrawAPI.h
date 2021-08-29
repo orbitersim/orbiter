@@ -253,6 +253,12 @@ namespace oapi {
 			return (da << 24) | (dr << 16) | (dg << 8) | db;
 		}
 
+		COLOUR4 Colour4() const
+		{
+			COLOUR4 clr = { r,g,b,a };
+			return clr;
+		}
+
 		FVECTOR4()
 		{
 			r = g = b = a = 0.0f;
@@ -438,6 +444,17 @@ namespace oapi {
 	typedef union FMATRIX4 
 	{
 		FMATRIX4() {}
+
+		FMATRIX4(float m11, float m12, float m13, float m14,
+				 float m21, float m22, float m23, float m24,
+				 float m31, float m32, float m33, float m34,
+				 float m41, float m42, float m43, float m44) :
+			m11(m11), m12(m12), m13(m13), m14(m14),
+			m21(m21), m22(m22), m23(m23), m24(m24),
+			m31(m31), m32(m32), m33(m33), m34(m34),
+			m41(m41), m42(m42), m43(m43), m44(m44)
+		{
+		}
 
 		FMATRIX4(const float* pSrc) {
 			for (int i = 0; i < 16; i++) data[i] = pSrc[i];
@@ -1083,10 +1100,6 @@ public:
 	 * \return \e true on success, \e false on failure.
 	 * \default None, returns false.
 	 */
-	virtual bool TextW(int x, int y, const LPWSTR str, int len) { return false; }
-
-
-	virtual int GetVersion() { return 1; }
 
 	/**
 	* \brief [DX9] Get a render surface size in pixels
@@ -1183,17 +1196,28 @@ public:
 	virtual void DepthEnable(bool bEnable) { assert(false); }
 
 	/**
-	* \brief [DX9] Draws a template mesh group (from a system memory) in the render target.
+	 * \brief Draw a text string.
+	 * \param x reference x position [pixel]
+	 * \param y reference y position [pixel]
+	 * \param str text string
+	 * \param len string length for output
+	 * \return \e true on success, \e false on failure.
+	 * \default None, returns false.
+	 */
+	virtual bool TextW(int x, int y, const LPWSTR str, int len) { return false; }
+	
+	/**
+	* \brief [DX9] Draws a mesh group or entire mesh in the render target.
 	* \param hMesh Pointer to mesh containing the geometry.
 	* \param grp Group index to draw.
-	* \param flags SkpMeshFlags
+	* \param flags MeshFlags
 	* \param hTex a texture override, render with this texture regardless what ever is specified in the mesh.
 	* \return Number of groups in the mesh or -1 if the group index is out of range.
 	* \note Use SetWorldTransform() to move, rotate and scale the object.
-	* \note Vertex count should be kept low due to rendering from a system memory. This is a good choise when
-	* a vertex data changes in a per frame basis. Bad for static vertex data.
-	* \note Final color = Texture Color * Material Color * Pen Color
-	* \sa DrawSketchMesh
+	* \note This function creates a local Vertex/Index buffers, so, vertex count isn't a major factor.
+	* \note Modifications to input meah has no effects due to local copy.
+	* \note Final color = Texture Color * Material Color, only diffure material is in use.
+	* \note To draw the entire mesh at once, use MeshFlags::RENDER_ALL flag.
 	*/
 	virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
 	
@@ -1362,6 +1386,8 @@ public:
 	* \param bVertical Direction of the gradient.
 	*/
 	virtual void GradientFillRect(const LPRECT tgt, DWORD c1, DWORD c2, bool bVertical = false) { assert(false); }
+
+	virtual int GetVersion() { return 1; }
 
 	/**
 	* \brief [DX9] Fill a rectangle with color
