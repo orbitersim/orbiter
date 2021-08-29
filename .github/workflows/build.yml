@@ -26,6 +26,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       
+    - name: Setup Problem Matcher
+      uses: ammaraskar/msvc-problem-matcher@master
+      
     - name: Prepare
       run: |
         mkdir out\build
