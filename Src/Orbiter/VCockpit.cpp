@@ -300,6 +300,7 @@ bool VirtualCockpit::SetClickZone_Spherical (int i, const Vector &cnt, double ra
 bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	const Vector &p1, const Vector &p2, const Vector &p3, const Vector &p4)
 {
+	const double EPS = 1e-8;
 	int j;
 
 	// save corner points
@@ -316,15 +317,20 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	area[i]->c = (float)c;
 	area[i]->d = (float)d;
 
+	double pdst = fabs(PointPlaneDist(p4, a, b, c, d));
+	if (pdst < EPS) { // the 4 points are coplanar, so we need to avoid singularity
+		Vector nml(PlaneNormal(a, b, c, d));
+		area[i]->p[3].Set(p4 + nml * EPS);
+	}
+
 	// calculate coefficients for mapping global quadrilateral to local square (0,1)x(0,1)
 	// x' = u0 x + u1 y + u2 z + u3;     y' = v0 x + v1 y + v2 z + v3
-	Matrix4 P1(p1.x, p1.y, p1.z, 1,  p2.x, p2.y, p2.z, 1,  p3.x, p3.y, p3.z, 1, p4.x, p4.y, p4.z, 1);
-	double zmin = min(p1.z, min(p2.z, min(p3.z,p4.z)));
-	double zmax = max(p1.z, max(p2.z, max(p3.z,p4.z)));
-	if (zmax-zmin < 1e-10) { // wiggle z-coords to avoid singular matrix - should be done also for other axes
-		P1.m13 -= 1e-10;
-		P1.m23 -= 1e-10;
-	}
+	Matrix4 P1(
+		area[i]->p[0].x, area[i]->p[0].y, area[i]->p[0].z, 1,
+		area[i]->p[1].x, area[i]->p[1].y, area[i]->p[1].z, 1,
+		area[i]->p[2].x, area[i]->p[2].y, area[i]->p[2].z, 1,
+		area[i]->p[3].x, area[i]->p[3].y, area[i]->p[3].z, 1
+	);
 	Matrix4 P2(P1);
 	Vector4 cc, dd, r;
 	Vector4 u(0,1,0,1), v(0,0,1,1);
@@ -334,14 +340,6 @@ bool VirtualCockpit::SetClickZone_Quadrilateral (int i,
 	qrdcmp (P2, cc, dd);
 	qrsolv (P2, cc, dd, v);
 	for (j = 0; j < 4; j++) area[i]->v[j] = (float)v(j);
-
-	//static const Vector4 b1(0,1,0,1), b2(0,0,1,1);
-	//QRFactorize (P1, cc, dd);
-	//QRSolve (P1, cc, dd, b1, r);
-	//for (j = 0; j < 4; j++) area[i]->u[j] = (float)r(j);
-	//QRFactorize (P2, cc, dd);
-	//QRSolve (P2, cc, dd, b2, r);
-	//for (j = 0; j < 4; j++) area[i]->v[j] = (float)r(j);
 
 	area[i]->cmode = Area::CMODE_QUAD;
 	return true;

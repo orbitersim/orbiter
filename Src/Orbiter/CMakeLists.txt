@@ -29,6 +29,7 @@ set(common_src
 	State.cpp
 	Vecmat.cpp
 	VectorMap.cpp
+    ConsoleManager.cpp
 # Launchpad
 	Launchpad.cpp
 	LpadTab.cpp
@@ -242,7 +243,7 @@ if(BUILD_ORBITER_SERVER)
 
 	set_target_properties(Orbiter_server
 		PROPERTIES
-		LINK_FLAGS "/SUBSYSTEM:WINDOWS"
+		LINK_FLAGS "/SUBSYSTEM:CONSOLE /ENTRY:WinMainCRTStartup"
 		COMPILE_FLAGS "/MP"
 		RUNTIME_OUTPUT_DIRECTORY ${ORBITER_BINARY_MODULE_DIR}/Server
 		OUTPUT_NAME Orbiter
