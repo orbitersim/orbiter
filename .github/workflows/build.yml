@@ -31,11 +31,11 @@ jobs:
         mkdir out\build
         mkdir out\install
       
-#    - name: Cache irrKlang package
-#      uses: actions/cache@v2
-#      with:
-#        path: ${{ github.workspace }}/out/build/Extern/irrKlang
-#        key: irrKlang-${{ matrix.architecture }}
+    - name: Cache irrKlang package
+      uses: actions/cache@v2
+      with:
+        path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
+        key: irrKlang-${{ matrix.architecture }}
       
     - name: Configure
       run: 'cmake -A ${{ matrix.architecture }} -G "Visual Studio 16 2019" -S ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
