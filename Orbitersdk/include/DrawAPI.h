@@ -752,6 +752,11 @@ public:
 	};
 
 	typedef struct {
+		FVECTOR2 pos;
+		DWORD color;
+	} TriangleVtx;
+
+	typedef struct {
 		RECT intr;
 		RECT outr;
 	} skpRegion;

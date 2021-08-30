@@ -5453,7 +5453,15 @@ OAPIFUNC SURFHANDLE oapiCreateSurface (int width, int height);
 	* \sa oapiDestroySurface
 	*/
 OAPIFUNC SURFHANDLE oapiCreateSurfaceEx (int width, int height, DWORD attrib);
-OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib);
+
+	/**
+	* \brief Load a texture from a file (*.dds, *.png, *.jpg, *.bmp)
+	* \param fname texture file name
+	* \param attrib OAPISURFACE_* attribute flags defining surface type.
+	* \param bPath if 'true' then 'fname' must contain absolute path to a file. If 'false' a normal Orbiter texture search path is used.
+	* \return Surface handle for the loaded texture, or NULL if not found.
+	*/
+OAPIFUNC SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPath = false);
 
 	/**
 	* \brief Create a surface from a bitmap. Bitmap surfaces are typically used for blitting

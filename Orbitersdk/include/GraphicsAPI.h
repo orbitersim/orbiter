@@ -400,7 +400,7 @@ public:
 	 *   the existing surface object, instead of reading it again from file.
 	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
-	virtual SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib)
+	virtual SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false)
 	{ return NULL; }
 
 	/**

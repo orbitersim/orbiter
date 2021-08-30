@@ -1372,10 +1372,10 @@ DLLEXPORT SURFHANDLE oapiLoadTexture (const char *fname, bool dynamic)
 	else return NULL;
 }
 
-DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib)
+DLLEXPORT SURFHANDLE oapiLoadSurfaceEx(const char* fname, DWORD attrib, bool bPath)
 {
 	oapi::GraphicsClient* gc = g_pOrbiter->GetGraphicsClient();
-	if (gc) return gc->clbkLoadSurface(fname, attrib);
+	if (gc) return gc->clbkLoadSurface(fname, attrib, bPath);
 	else return NULL;
 }
 
