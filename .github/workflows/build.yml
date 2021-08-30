@@ -15,10 +15,11 @@ jobs:
     name: Build with CMake
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
+      VCToolsInstallDir: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30133\\"
     strategy:
       fail-fast: false
       matrix:
-        architecture: [x64, Win32]
+        architecture: [x64, x86]
       
     runs-on: windows-latest
 
@@ -40,20 +41,17 @@ jobs:
         path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
       
-    - name: Configure
-      run: 'cmake -A ${{ matrix.architecture }} -G "Visual Studio 16 2019" -S ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD" -DHTML_HELP_LIBRARY="C:\Program Files (x86)\Windows Kits\10\Lib\10.0.19041.0\um\x86\Htmlhelp.Lib"'
+    - name: Build & Test
+      shell: cmd
       working-directory: ${{ github.workspace }}/out/build
-
-    - name: Build
-      run: 'cmake --build . --config Release -- "-maxCpuCount:2" /p:CL_MPcount=2'
-      working-directory: ${{ github.workspace }}/out/build
-
-    - name: Test
-      run: 'ctest --build-config Release'
-      working-directory: ${{ github.workspace }}/out/build
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
+        cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD"
+        cmake --build . --config RelWithDebInfo
+        ctest --config RelWithDebInfo .
 
     - name: Install
-      run: 'cmake --install . --prefix "${{ github.workspace }}\out\install"'
+      run: cmake --install . --prefix  ${{ github.workspace }}/out/install
       working-directory: ${{ github.workspace }}/out/build
 
     - name: Pack

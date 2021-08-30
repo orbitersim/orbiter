@@ -6,7 +6,7 @@ END_HYPERDESC
 BEGIN_ENVIRONMENT
   System Sol
   Date MJD 51982.5292925579
-  Script Tests/unit_test
+  Script Tests/VesselApiTest
 END_ENVIRONMENT
 
 BEGIN_FOCUS

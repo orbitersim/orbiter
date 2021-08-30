@@ -15,10 +15,12 @@ aap.maxdsc = -20
 dg_aap = {file='Html/Script/Stockvessels/DG/aap.chm'}
 
 function setvessel (_v)
-    v = _v
-    class = _v:get_classname()
-    if (class ~= 'DeltaGlider') and (class ~= 'DG-S') then
-        term.out('Warning: Autopilot is designed for use with DeltaGlider.')
+    if _v then
+        v = _v
+        class = _v:get_classname()
+        if (class ~= 'DeltaGlider') and (class ~= 'DG-S') then
+            term.out('Warning: Autopilot is designed for use with DeltaGlider.')
+        end
     end
 end
 
