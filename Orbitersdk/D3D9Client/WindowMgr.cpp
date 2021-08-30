@@ -785,15 +785,6 @@ void WindowManager::UpdateSize(HWND hDlg)
 // ===============================================================================================
 // Virtual
 //
-void WindowManager::UnregisterApp(gcGUIApp *pApp)
-{
-	g_gcGUIAppList.remove(pApp);
-}
-
-
-// ===============================================================================================
-// Virtual
-//
 HNODE WindowManager::GetNode(HWND hDlg)
 {
 	for each (SideBar* sb in sbList)
@@ -830,9 +821,10 @@ bool WindowManager::UnRegister(HNODE hNode)
 {
 	if (!DoesExist(APPNODE(hNode))) return false;
 
-	if (APPNODE(hNode)->IsRoot()) {
+	if (APPNODE(hNode)->IsRoot()) return false;
 
 		// Delete/Remove every child node
+	/*
 		for each (SideBar *sb in sbList)
 		{
 			list<Node *> remlist;
@@ -842,8 +834,7 @@ bool WindowManager::UnRegister(HNODE hNode)
 				sb->RemoveWindow(pn);
 				delete pn;
 			}
-		}
-	}
+	}*/
 
 	SideBar *pSB = APPNODE(hNode)->GetSideBar();
 	pSB->RemoveWindow(APPNODE(hNode));
@@ -909,7 +900,7 @@ void WindowManager::CloseWindow(Node *pAp)
 //
 void WindowManager::Animate()
 {
-	if (Config->gcGUIMode == 1) for each (SideBar * sb in sbList) if (!sb->IsInactive()) sb->Animate();
+	//if (Config->gcGUIMode == 1) for each (SideBar * sb in sbList) if (!sb->IsInactive()) sb->Animate();
 }
 
 

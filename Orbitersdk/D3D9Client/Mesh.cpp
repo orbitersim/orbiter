@@ -1207,11 +1207,11 @@ int D3D9Mesh::GetMaterialEx(DWORD idx, MatProp mid, FVECTOR4* value)
 			*((D3DXVECTOR3*)value) = Mtrl[idx].Fresnel;
 			return 0;
 		case MatProp::Metal:
-			if ((Mtrl[idx].ModFlags&MESHM_METALNESS) == 0) return -2;
+			if ((Mtrl[idx].ModFlags& D3D9MATEX_METALNESS) == 0) return -2;
 			value->r = Mtrl[idx].Metalness;
 			return 0;
 		case MatProp::SpecialFX:
-			if ((Mtrl[idx].ModFlags&MESHM_SPECIALFX) == 0) return -2;
+			if ((Mtrl[idx].ModFlags& D3D9MATEX_SPECIALFX) == 0) return -2;
 			*((D3DXVECTOR4*)value) = Mtrl[idx].SpecialFX;
 			return 0;
 		}

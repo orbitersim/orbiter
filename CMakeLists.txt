@@ -33,6 +33,7 @@ set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
 add_subdirectory(Orbitersdk/D3D9Client)
 add_subdirectory(Orbitersdk/samples/DX9ExtMFD)
 add_subdirectory(Orbitersdk/samples/GenericCamera)
+add_subdirectory(Orbitersdk/samples/TerrainToolBox)
 
 file( COPY ${CMAKE_SOURCE_DIR}/Meshes/ DESTINATION ${CMAKE_BINARY_DIR}/Meshes )
 file( COPY ${CMAKE_SOURCE_DIR}/Config/ DESTINATION ${CMAKE_BINARY_DIR}/Config )

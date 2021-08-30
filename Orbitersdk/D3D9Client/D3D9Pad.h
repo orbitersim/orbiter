@@ -195,7 +195,7 @@ template <typename Type> int CreatePolyIndexList(const Type *pt, short npt, WORD
  */
 class D3D9Pad : public Sketchpad
 {
-	friend D3D9Text;
+	friend class D3D9Text;
 
 	mutable struct {
 		DWORD style;
@@ -508,7 +508,7 @@ public:
 	//-----------------------------------------
 	const FMATRIX4 *ViewMatrix() const;
 	const FMATRIX4 *ProjectionMatrix() const;
-	const FMATRIX4 *GetViewProjectionMatrix() const;
+	const FMATRIX4 *GetViewProjectionMatrix();
 	void SetViewMatrix(const FMATRIX4 *pV = NULL);
 	void SetProjectionMatrix(const FMATRIX4 *pP = NULL);
 
@@ -589,22 +589,22 @@ private:
 	void SetFontTextureNative(LPDIRECT3DTEXTURE9 hNew);
 	void SetupDevice(Topo tNew);
 	LPRECT CheckRect(SURFHANDLE hSrc, const LPRECT s);
-	void IsLineTopologyAllowed() const;
+	void IsLineTopologyAllowed();
 	DWORD ColorComp(DWORD c) const;
 	SkpColor ColorComp(const SkpColor &c) const;
 
 	template <typename Type> void AppendLineVertexList(const Type *pt, int npt, bool bLoop);
 	template <typename Type> void AppendLineVertexList(const Type *pt);
 
-	mutable oapi::Font  *cfont;  ///< currently selected font (NULL if none)
-	mutable oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
-	mutable oapi::Brush *cbrush; ///< currently selected brush (NULL if none)
+	oapi::Font  *cfont;  ///< currently selected font (NULL if none)
+	oapi::Pen   *cpen;   ///< currently selected pen (NULL if none)
+	oapi::Brush *cbrush; ///< currently selected brush (NULL if none)
 
-	mutable SkpColor pencolor;
-	mutable SkpColor brushcolor;
-	mutable DWORD	 Change;
-	mutable bool	 bLine;
-	mutable D3DXMATRIX mVP;
+	SkpColor pencolor;
+	SkpColor brushcolor;
+	DWORD	 Change;
+	bool	 bLine;
+	D3DXMATRIX mVP;
 
 	SkpColor		 textcolor;
 	SkpColor		 bkcolor;
@@ -646,6 +646,7 @@ private:
 	DWORD Enable;
 	FMATRIX4 ColorMatrix;
 	FVECTOR4 Gamma, Noise;
+
 	std::stack<D3DXMATRIX> mWStack;
 
 
@@ -664,7 +665,7 @@ private:
 	void Log(const char *format, ...) const;
 	static FILE *log;
 	static CRITICAL_SECTION LogCrit;
-
+	static std::map< MESHHANDLE, class SketchMesh*> MeshMap;
 	static WORD *Idx;				// List of indices
 	static SkpVtx *Vtx;		// List of vertices
 	static D3D9Client *gc;
@@ -871,19 +872,20 @@ private:
 	DWORD nTex;                 // number of mesh textures
 
 	LPDIRECT3DDEVICE9 pDev;
-	SURFHANDLE *Tex;	// list of mesh textures
+	SURFHANDLE *Tex;			// list of mesh textures
 	SKETCHGRP *Grp;            // list of mesh groups
 	D3DXCOLOR *Mtrl;
 };
 
 
 
-class D3D9PolyBase {
+class D3D9PolyBase
+{
 	DWORD alloc_id;
 public:
 					D3D9PolyBase(int _type) : alloc_id('POLY') { type = _type; version = 1; }
 	virtual			~D3D9PolyBase() { }
-	virtual	void	Draw(LPDIRECT3DDEVICE9 pDev) = 0;
+	virtual	void	Draw(D3D9Pad*, LPDIRECT3DDEVICE9 pDev) = 0;
 	virtual void	Release() = 0;
 
 	int version;
@@ -901,7 +903,7 @@ public:
 	~D3D9PolyLine();
 
 	void Update(const FVECTOR2 *pt, int npt, bool bConnect);
-	void Draw(LPDIRECT3DDEVICE9 pDev);
+	void Draw(D3D9Pad*, LPDIRECT3DDEVICE9 pDev);
 	void Release();
 
 private:
@@ -917,11 +919,11 @@ class D3D9Triangle : public D3D9PolyBase
 {
 
 public:
-	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const gcCore::TriangleVtx *pt, int npt, int style);
+	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const Sketchpad::TriangleVtx *pt, int npt, int style);
 	~D3D9Triangle();
 
-	void Update(const gcCore::TriangleVtx *pt, int npt);
-	void Draw(LPDIRECT3DDEVICE9 pDev);
+	void Update(const Sketchpad::TriangleVtx *pt, int npt);
+	void Draw(D3D9Pad*, LPDIRECT3DDEVICE9 pDev);
 	void Release();
 
 private:
@@ -929,7 +931,6 @@ private:
 	WORD nPt;
 	LPDIRECT3DVERTEXBUFFER9 pVB;
 };
-
 
 #endif
 

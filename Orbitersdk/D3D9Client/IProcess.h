@@ -127,7 +127,7 @@ private:
 		DWORD flags;
 	} pTextures[16];
 
-	std::map<string, SHADER> Shaders;
+	std::map<std::string, SHADER> Shaders;
 	LPDIRECT3DDEVICE9 pDevice;
 	LPDIRECT3DSURFACE9 pRtg[4], pRtgBak[4];
 	LPD3DXCONSTANTTABLE pVSConst;

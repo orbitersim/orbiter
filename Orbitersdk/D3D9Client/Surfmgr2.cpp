@@ -20,7 +20,7 @@
 #include "vVessel.h"
 #include "VectorHelpers.h"
 #include "DebugControls.h"
-#include "gcConst.h"
+#include "gcCore.h"
 #include "D3D9Surface.h"
 
 // =======================================================================
@@ -1544,9 +1544,12 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 {
 	bool bOk = false;
 	LPDIRECT3DTEXTURE9 pTex = NULL;
-
-	if ((flags & 0xF) == gcTileFlags::TEXTURE) {
-		if (flags & gcTileFlags::CACHE) {
+	int type = flags & 0xF;
+		
+	if (type == gcTileFlags::TEXTURE)
+	{
+		if (flags & gcTileFlags::CACHE)
+		{
 			char name[128];	char path[MAX_PATH];
 			sprintf_s(name, 128, "%s\\Surf\\%02d\\%06d\\%06d.dds", CbodyName(), level + 4, iLat, iLng);
 			bOk = GetClient()->TexturePath(name, path);
@@ -1554,7 +1557,8 @@ SURFHANDLE TileManager2<SurfTile>::SeekTileTexture(int iLng, int iLat, int level
 				D3DX_FILTER_NONE, D3DX_FILTER_BOX, 0, NULL, NULL, &pTex) != S_OK) bOk = false;
 		}
 
-		if (flags & gcTileFlags::TREE) {
+		if (flags & gcTileFlags::TREE)
+		{
 			if (!bOk) {
 				if (ZTreeManager(0)) {
 					BYTE *buf;
@@ -1579,8 +1583,9 @@ template<>
 bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flags)
 {
 	bool bOk = false;
+	int type = flags & 0xF;
 
-	if ((flags & 0xF) == gcTileFlags::TEXTURE) {
+	if (type == gcTileFlags::TEXTURE) {
 		if (flags & gcTileFlags::CACHE) {
 			char name[128];	char path[MAX_PATH];
 			sprintf_s(name, 128, "%s\\Surf\\%02d\\%06d\\%06d.dds", CbodyName(), level + 4, iLat, iLng);
@@ -1590,7 +1595,7 @@ bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flag
 		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(0)) if (ZTreeManager(0)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
 	}
 
-	if ((flags & 0xF) == gcTileFlags::MASK) {
+	if (type == gcTileFlags::MASK) {
 		if (flags & gcTileFlags::CACHE) {
 			char name[128];	char path[MAX_PATH];
 			sprintf_s(name, 128, "%s\\Mask\\%02d\\%06d\\%06d.dds", CbodyName(), level + 4, iLat, iLng);
@@ -1599,7 +1604,7 @@ bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flag
 		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(1)) if (ZTreeManager(1)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
 	}
 
-	if ((flags & 0xF) == gcTileFlags::ELEVATION) {
+	if (type == gcTileFlags::ELEVATION) {
 		if (flags & gcTileFlags::CACHE) {
 			char name[128];	char path[MAX_PATH];
 			sprintf_s(name, 128, "%s\\Elev\\%02d\\%06d\\%06d.elv", CbodyName(), level, iLat, iLng);

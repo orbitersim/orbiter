@@ -88,6 +88,8 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 	InitializeCriticalSectionAndSpinCount(&LogCrit, 256);
 
+	MeshMap.clear();
+
 #ifdef SKPDBG
 	if (fopen_s(&log, "Sketchpad.log", "w+")) { log = NULL; } // Failed
 #endif // SKPDBG
@@ -186,6 +188,8 @@ void D3D9Pad::GlobalExit()
 	}
 	fcache.clear();
 	qcache.clear();
+
+	for (auto it : MeshMap)	SAFE_DELETE(it.second);
 
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
@@ -514,7 +518,7 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 	if (hPoly) {
 		assert(iI == 0);
 		D3D9PolyBase *pBase = static_cast<D3D9PolyBase *>(hPoly);
-		pBase->Draw(pDev);
+		pBase->Draw(this, pDev);
 	}
 	else {
 		if (tCurrent == TRIANGLE) HR(pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, vI, iI / 3, Idx, D3DFMT_INDEX16, Vtx, sizeof(SkpVtx)));
@@ -960,7 +964,7 @@ bool D3D9Pad::HasPen() const
 
 // ===============================================================================================
 //
-void D3D9Pad::IsLineTopologyAllowed() const
+void D3D9Pad::IsLineTopologyAllowed()
 {
 	bLine = false;
 	if ((HasPen() == true) && (GetPenWidth() < 1.1f)) bLine = true;
@@ -1791,6 +1795,7 @@ LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;
 
 FILE* D3D9Pad::log = 0;
 CRITICAL_SECTION D3D9Pad::LogCrit;
+std::map< MESHHANDLE, class SketchMesh*> D3D9Pad::MeshMap;
 
 
 // ======================================================================

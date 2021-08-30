@@ -6,6 +6,15 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 # set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(ShaderDir ${CMAKE_SOURCE_DIR}/Modules/D3D9Client)
+set(D3D9SourceDir ${CMAKE_SOURCE_DIR}/Orbitersdk/D3D9Client)
+set(IncludeDir ${CMAKE_SOURCE_DIR}/Orbitersdk/include)
+
+add_custom_command(
+	OUTPUT ${IncludeDir}/gcCoreAPI.h
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	COMMAND InterfaceBuilder.exe ${IncludeDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
+	VERBATIM
+)
 
 set(SourceFiles
 	AABBUtil.cpp
@@ -28,6 +37,7 @@ set(SourceFiles
 	D3D9Util.cpp
 	DebugControls.cpp
 	gcCore.cpp
+	gcConst.cpp
 	GDIPad.cpp
 	HazeMgr.cpp
 	IProcess.cpp
@@ -110,6 +120,13 @@ set(IncludeFiles
 	ZTreeMgr.h
 )
 
+set(APIHeaders
+    ${IncludeDir}/gcGUI.h
+	${IncludeDir}/gcConst.h
+	${IncludeDir}/gcCore.h
+	${IncludeDir}/gcCoreAPI.h
+)
+
 set(ShaderFiles
 	${ShaderDir}/BeaconArray.fx
 	${ShaderDir}/CKBlit.fx
@@ -133,6 +150,8 @@ set(ShaderFiles
 	${ShaderDir}/Vessel.fx
 )
 
+source_group(APIHeaders FILES ${APIHeaders})
+
 source_group(Shaders FILES ${ShaderFiles})
 
 set_property(SOURCE ${ShaderFiles}
@@ -142,6 +161,7 @@ set_property(SOURCE ${ShaderFiles}
 add_library(D3D9Client MODULE
 	${SourceFiles}
 	${IncludeFiles}
+    ${APIHeaders}
 	${ShaderFiles}
 	D3D9Client.rc
 )
@@ -190,6 +210,13 @@ set_target_properties(D3D9Client
 add_custom_command(
 	TARGET D3D9Client POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ShaderDir}/ ${CMAKE_BINARY_DIR}/Modules/D3D9Client
+)
+
+add_custom_command(
+	TARGET D3D9Client PRE_BUILD
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	COMMAND InterfaceBuilder.exe ${IncludeDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
+	VERBATIM
 )
 
 install(TARGETS D3D9Client

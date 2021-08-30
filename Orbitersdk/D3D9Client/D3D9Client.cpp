@@ -36,6 +36,8 @@
 #include "OapiExtension.h"
 #include "DebugControls.h"
 #include "Surfmgr2.h"
+#include "gcCore.h"
+#include "gcConst.h"
 #include <unordered_map>
 
 
@@ -62,6 +64,8 @@ using namespace oapi;
 
 HINSTANCE g_hInst = 0;
 D3D9Client *g_client = 0;
+class gcConst* g_pConst = 0;
+
 D3D9Catalog<LPDIRECT3DTEXTURE9>	 *TileCatalog;
 
 set<D3D9Mesh*> MeshCatalog;
@@ -153,8 +157,9 @@ DLLCLBK void InitModule(HINSTANCE hDLL)
 	LogAlw("[Not Compiled With nVidia API]");
 #endif
 
-	Config			= new D3D9Config();
-	TileCatalog		= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
+	g_pConst = new gcConst();
+	Config = new D3D9Config();
+	TileCatalog	= new D3D9Catalog<LPDIRECT3DTEXTURE9>();
 
 	DebugControls::Create();
 	AtmoControls::Create();
@@ -177,6 +182,7 @@ DLLCLBK void ExitModule(HINSTANCE hDLL)
 
 	delete TileCatalog;
 	delete Config;
+	delete g_pConst;
 
 	DebugControls::Release();
 	AtmoControls::Release();
@@ -200,9 +206,9 @@ DLLCLBK gcGUIBase * gcGetGUICore()
 }
 
 
-DLLCLBK gcCore * gcGetCoreAPI()
+DLLCLBK gcConst * gcGetCoreAPI()
 {
-	return dynamic_cast<gcCore *>(g_client);
+	return dynamic_cast<gcConst *>(g_pConst);
 }
 
 
@@ -212,7 +218,6 @@ DLLCLBK gcCore * gcGetCoreAPI()
 // ==============================================================
 
 D3D9Client::D3D9Client (HINSTANCE hInstance) :
-	gcCore(),
 	GraphicsClient(hInstance),
 	vtab(NULL),
 	scenarioName("(none selected)"),
@@ -621,14 +626,14 @@ void D3D9Client::SketchPadTest()
 
 	if (!hTgt) return;
 
-	gcCore *pCore = gcGetCoreInterface();
+	gcCore2* pCore = gcGetCoreInterface();
 
 	if (!pCore) return;
 
 	float a = 0.0f;
 	float s = float(PI2 / 6.0);
 
-	gcCore::TriangleVtx Vtx[8];
+	Sketchpad::TriangleVtx Vtx[8];
 	oapi::FVECTOR2 Pol[6];
 
 	for (int i = 0; i < 6; i++) {
@@ -1603,10 +1608,10 @@ void D3D9Client::PickTerrain(DWORD uMsg, int xpos, int ypos)
 	bool bHov = IsGenericProcEnabled(GENERICPROC_HOVER_TERRAIN) && (uMsg == WM_MOUSEMOVE || uMsg == WM_MOUSEWHEEL);
 
 	if (bPrs || bHov) {
-		PickGround pg = ScanScreen(xpos, ypos);
+		gcCore::PickGround pg = gcCore2::ScanScreen(xpos, ypos);
 		pg.msg = uMsg;
-		if (bPrs) MakeGenericProcCall(GENERICPROC_PICK_TERRAIN, sizeof(PickGround), &pg);
-		if (bHov) MakeGenericProcCall(GENERICPROC_HOVER_TERRAIN, sizeof(PickGround), &pg);
+		if (bPrs) MakeGenericProcCall(GENERICPROC_PICK_TERRAIN, sizeof(gcCore::PickGround), &pg);
+		if (bHov) MakeGenericProcCall(GENERICPROC_HOVER_TERRAIN, sizeof(gcCore::PickGround), &pg);
 	}
 }
 
@@ -1675,14 +1680,14 @@ LRESULT D3D9Client::RenderWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 			if (DebugControls::IsActive() || bPckVsl || (bShift && bCtrl)) {
 				pick = GetScene()->PickScene(xpos, ypos);
 				if (bPckVsl) {
-					PickData out;
+					gcCore::PickData out;
 					out.hVessel = pick.vObj->GetObjectA();
 					out.mesh = MESHHANDLE(pick.pMesh);
 					out.group = pick.group;
 					out.pos = _FV(pick.pos);
 					out.normal = _FV(pick.normal);
 					out.dist = pick.dist;
-					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(PickData), &out);
+					MakeGenericProcCall(GENERICPROC_PICK_VESSEL, sizeof(gcCore::PickData), &out);
 				}
 			}
 
@@ -2017,7 +2022,7 @@ SURFHANDLE D3D9Client::clbkLoadTexture(const char *fname, DWORD flags)
 
 // ==============================================================
 
-SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
+SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib, bool bPath)
 {
 	_TRACE;
 	if (ChkDev(__FUNCTION__)) return NULL;
@@ -2037,7 +2042,7 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 
 			if (ent == SharedTextures.end())
 			{
-				SURFHANDLE hSrf = NatLoadSurface(fname, attrib);
+				SURFHANDLE hSrf = NatLoadSurface(fname, attrib, bPath);
 				if (hSrf) SharedTextures[name] = hSrf;
 				return hSrf;
 			}
@@ -2078,7 +2083,7 @@ SURFHANDLE D3D9Client::clbkLoadSurface (const char *fname, DWORD attrib)
 		*/
 	}
 	
-	return NatLoadSurface(fname, attrib);
+	return NatLoadSurface(fname, attrib, bPath);
 }
 
 // ==============================================================

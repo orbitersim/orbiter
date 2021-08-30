@@ -24,9 +24,10 @@
 #define __WNDMGR_H
 
 #include <Windows.h>
-#include <gcConst.h>
+#include <gcCore.h>
 #include <vector>
 #include <map>
+#include "gcGUI.h"
 
 using namespace std;
 
@@ -227,7 +228,6 @@ public:
 	HNODE		GetNode(HWND hDlg);
 	HWND		GetDialog(HNODE hNode);
 	void		UpdateSize(HWND hDlg);
-	void		UnregisterApp(gcGUIApp *pApp);
 
 	// ===============================================================================================
 

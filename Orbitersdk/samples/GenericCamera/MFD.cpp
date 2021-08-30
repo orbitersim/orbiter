@@ -29,7 +29,7 @@
 #include "windows.h"
 #include "orbitersdk.h"
 #include "MFD.h"
-#include "gcConst.h"
+#include "gcCoreAPI.h"
 #include "Shell.h"
 #include "DrawAPI.h"
 
@@ -270,8 +270,6 @@ void CameraMFD::SelectVessel(VESSEL *hVes, Type _type)
 	// Camera orientation can be changed by calling this function again with an existing camera handle instead of NULL.
 
 	DWORD dwFlags = 0xFF;
-
-	if (ENABLE_OVERLAY) dwFlags |= CUSTOMCAM_OVERLAY;	// Enable overlays for this camera
 
 	hCamera = pCore->SetupCustomCamera(hCamera, hVessel->GetHandle(), pos, dir, rot, fov*PI / 180.0, hRenderSrf, dwFlags);
 

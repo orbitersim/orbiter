@@ -13,7 +13,6 @@
 #include "MFDWindow.h"
 #include "resource.h"
 #include <stdio.h> // temporary
-#include "gcConst.h"
 
 #define IDSTICK 999
 

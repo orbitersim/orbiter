@@ -85,7 +85,7 @@ LPDIRECT3DTEXTURE9 NatLoadSpecialTexture(const char* fname, const char* ext)
 // ======================================================================================
 // Main loading routine
 //
-SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
+SURFHANDLE NatLoadSurface(const char* file, DWORD flags, bool bPath)
 {
 	LPDIRECT3DTEXTURE9 pTex = NULL;
 	SurfNative* pNat = NULL;
@@ -94,8 +94,11 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 
 	char path[MAX_PATH];
 
-	if (!g_client->TexturePath(file, path)) {
-		return NULL;
+	if (bPath) strcpy_s(path, MAX_PATH, file);
+	else {
+		if (!g_client->TexturePath(file, path)) {
+			return NULL;
+		}
 	}
 
 	// Load regular texture with additional maps if exists
@@ -106,6 +109,10 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 
 		if (D3DXGetImageInfoFromFileA(path, &info) == S_OK)
 		{
+
+			if (info.ImageFileFormat == D3DXIFF_JPG) info.Format = D3DFMT_X8R8G8B8;
+			if (info.ImageFileFormat == D3DXIFF_PNG) info.Format = D3DFMT_X8R8G8B8;
+			if (info.ImageFileFormat == D3DXIFF_BMP) info.Format = D3DFMT_X8R8G8B8;
 
 			DWORD Mips = D3DFMT_FROM_FILE;
 			if (Config->TextureMips == 2) Mips = 0;                         // Autogen all
@@ -128,7 +135,9 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 				pNat->AddMap(MAP_TRANSLUCENCE, NatLoadSpecialTexture(file, "transl"));
 				pNat->AddMap(MAP_TRANSMITTANCE, NatLoadSpecialTexture(file, "transm"));
 			}
+			else oapiWriteLogV("FAILED: NatLoadSurface(%d)", path);
 		}
+		else oapiWriteLogV("FAILED: NatLoadSurface(%d)", path);
 
 		return SURFHANDLE(pNat);
 	}
@@ -137,6 +146,7 @@ SURFHANDLE NatLoadSurface(const char* file, DWORD flags)
 	// Load more complex surface
 	//
 	D3DXIMAGE_INFO info;
+
 	if (S_OK == D3DXGetImageInfoFromFileA(path, &info))
 	{
 		if (flags & OAPISURFACE_SKETCHPAD) flags |= OAPISURFACE_RENDERTARGET;
@@ -351,13 +361,19 @@ SURFHANDLE NatCreateSurface(int width, int height, DWORD flags)
 //
 SURFHANDLE NatGetMipSublevel(SURFHANDLE hSrf, int level)
 {
-	LPDIRECT3DRESOURCE9 pResource = static_cast<LPDIRECT3DRESOURCE9>(hSrf);
+	static const DWORD fl = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE;
 
-	if (pResource->GetType() == D3DRTYPE_TEXTURE)
+	if ((SURFACE(hSrf)->Flags & fl) == fl)
 	{
 		LPDIRECT3DSURFACE9 pSurf = NULL;
-		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
-		if (pTex->GetSurfaceLevel(level, &pSurf) == S_OK) return SURFHANDLE(pSurf);
+		LPDIRECT3DTEXTURE9 pTex = SURFACE(hSrf)->GetTexture();
+		if (pTex->GetSurfaceLevel(level, &pSurf) == S_OK) {
+			SurfNative* pNat = new SurfNative(pSurf, OAPISURFACE_RENDERTARGET, NULL);
+			return SURFHANDLE(pNat);
+		}
+	}
+	else {
+		LogErr("NatGetMipSublevel() Surface is not a rendertarget-texture. Handle = %s", _PTR(hSrf));
 	}
 	return NULL;
 }
@@ -408,6 +424,37 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 	}
 
 	return NULL;
+}
+
+
+// ===============================================================================================
+//
+bool NatGenerateMipmaps(SURFHANDLE hSrf)
+{
+	LPDIRECT3DTEXTURE9 pTex = SURFACE(hSrf)->GetTexture();
+	if (!pTex) return false;
+
+	DWORD nMip = pTex->GetLevelCount();
+	if (nMip <= 1) return false;
+
+	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
+	LPDIRECT3DSURFACE9 pHigh = NULL;
+	LPDIRECT3DSURFACE9 pLow = NULL;
+
+	HR(pTex->GetSurfaceLevel(0, &pHigh));
+
+	if (pHigh) {
+		for (DWORD i = 1; i < nMip; i++) {
+			if (pTex->GetSurfaceLevel(i, &pLow) == S_OK) {
+				HR(pDev->StretchRect(pHigh, NULL, pLow, NULL, D3DTEXF_LINEAR));
+				pHigh->Release();
+				pHigh = pLow;
+			}
+		}
+		pHigh->Release();
+		return true;
+	}
+	return false;
 }
 
 
@@ -650,6 +697,22 @@ LPDIRECT3DTEXTURE9 SurfNative::GetGDICache(DWORD Flags)
 	DWORD Usage = (Flags & OAPISURFACE_SYSMEM) ? 0 : D3DUSAGE_DYNAMIC;
 	HR(D3DXCreateTexture(pDevice, desc.Width, desc.Height, 1, Usage, D3DFMT_X8R8G8B8, Pool, (LPDIRECT3DTEXTURE9 *)&pGDICache));
 	return pGDICache;
+}
+
+
+// -----------------------------------------------------------------------------------------------
+//
+bool SurfNative::GetSpecs(gcCore::SurfaceSpecs* sp, int size)
+{
+	if (size == sizeof(gcCore::SurfaceSpecs))
+	{
+		sp->Flags = Flags;
+		sp->Width = desc.Width;
+		sp->Height = desc.Height;
+		sp->Mips = Mipmaps;
+		return true;
+	}
+	return false;
 }
 
 

@@ -10,7 +10,7 @@
 
 #include "OrbiterAPI.h"
 #include "Log.h"
-#include "gcConst.h"
+#include "DrawAPI.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 

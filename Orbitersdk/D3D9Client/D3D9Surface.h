@@ -11,7 +11,7 @@
 #include "D3D9Client.h"
 #include "D3D9Pad.h"
 #include "GDIPad.h"
-#include "gcConst.h"
+//#include "gcCore.h"
 #include <d3d9.h>
 #include <d3dx9.h>
 
@@ -34,10 +34,11 @@
 #define OAPISURF_SKP_GDI_WARN	0x00000001
 
 LPDIRECT3DTEXTURE9	NatLoadSpecialTexture(const char* fname, const char* ext);
-SURFHANDLE			NatLoadSurface(const char* file, DWORD flags);
+SURFHANDLE			NatLoadSurface(const char* file, DWORD flags, bool bPath = false);
 bool				NatSaveSurface(const char* file, LPDIRECT3DRESOURCE9 pResource);
 SURFHANDLE			NatCreateSurface(int width, int height, DWORD flags);
 SURFHANDLE			NatGetMipSublevel(SURFHANDLE hSrf, int level);
+bool				NatGenerateMipmaps(SURFHANDLE hSrf);
 SURFHANDLE			NatCompressSurface(SURFHANDLE hSurface, DWORD flags);
 bool				NatCreateName(char* out, int mlen, const char* fname, const char* id);
 DWORD				NatConvertFormat_DX_to_OAPI(DWORD Format);
@@ -80,6 +81,7 @@ public:
 	void					IncRef() { RefCount++; }
 	bool					DecRef() { RefCount--; return RefCount <= 0; }
 	bool					DeClone();
+	bool					GetSpecs(gcCore::SurfaceSpecs* sp, int size);
 
 	void					Reload();
 

@@ -27,7 +27,7 @@
 #include <assert.h>
 #include "OrbiterAPI.h"
 #include "D3D9Frame.h"
-#include "gcConst.h"
+//#include "gcCore.h"
 #include <vector>
 #include <stack>
 #include <list>
@@ -132,6 +132,7 @@ extern _D3D9Stats D3D9Stats;
 extern bool bFreeze;
 extern bool bFreezeEnable;
 
+
 namespace oapi {
 
 
@@ -141,7 +142,7 @@ namespace oapi {
 // The DX9 render client for Orbiter
 // ==============================================================
 
-class D3D9Client: public gcCore, public GraphicsClient 
+class D3D9Client : public GraphicsClient 
 {
 
 	friend class ::Scene;	// <= likes to call Render2DOverlay()
@@ -257,7 +258,7 @@ public:
 	 *  - OAPISURFACE_UNCOMPRESS: Uncompress the surface on loading.
 	 * \sa oapiCreateSurface(DWORD,DWORD,DWORD)
 	 */
-	SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib);
+	SURFHANDLE clbkLoadSurface (const char *fname, DWORD attrib, bool bPath = false);
 
 
 	/**

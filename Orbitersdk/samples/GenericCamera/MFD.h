@@ -27,7 +27,7 @@
 #ifndef __CAMERA_H
 #define __CAMERA_H
 
-#include "gcConst.h"
+#include "gcCoreAPI.h"
 
 class CameraMFD : public MFD2 {
 
@@ -65,7 +65,6 @@ private:
 	DOCKHANDLE			hDock;
 	ATTACHMENTHANDLE	hAttach;
 	CAMERAHANDLE		hCamera;
-	SKETCHMESH			hMesh;
 	bool				bNightVis;
 	bool				bParent;
 	bool				bCross;

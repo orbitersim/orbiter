@@ -28,114 +28,20 @@
 using namespace std;
 using namespace oapi;
 
-class gcCore;
 
-
-inline gcCore *gcGetCoreInterface()
-{
-	typedef gcCore * (__cdecl *__gcGetCoreAPI)();
-	HMODULE hModule = GetModuleHandle("D3D9Client.dll");
-	if (hModule) {
-		__gcGetCoreAPI pGetCoreAPI = (__gcGetCoreAPI)GetProcAddress(hModule, "gcGetCoreAPI");
-		if (pGetCoreAPI) return pGetCoreAPI();
-	}
-	return NULL;
-}
-
-
-/**
-* \file gcConst.h
-* \brief Structures and definations
-*/
-
-
-/// \defgroup PixelFormats Common pixelformats for surfaces
+/// \defgroup MeshMaterialFlags Mesh material flags for gcMeshMaterial function
 ///@{
-#define OAPISURFACE_PF_MASK				0xFF0000	///< PixelFormat Mask
-#define OAPISURFACE_PF_XRGB				0x010000	///< 32bit RGB no-alpha
-#define OAPISURFACE_PF_ARGB				0x020000	///< 32bit ARGB with-alpha	0xAARRGGBB
-#define OAPISURFACE_PF_RGB565			0x030000	///< 16bit RGB no-alpha
-#define OAPISURFACE_PF_S16R				0x040000	///< Signed integer 16-bit (1-channel)
-#define OAPISURFACE_PF_F32R				0x050000	///< Float 32-bit (1-channel)
-#define OAPISURFACE_PF_F32RG			0x060000	///< Float 64-bit (2-channel)
-#define OAPISURFACE_PF_F32RGBA			0x070000	///< Float 128-bit (4-channel) float4(r,g,b,a)
-#define OAPISURFACE_PF_F16R				0x080000	///< Float 16-bit (1-channel) 
-#define OAPISURFACE_PF_F16RG			0x090000	///< Float 32-bit (2-channel) 
-#define OAPISURFACE_PF_F16RGBA			0x0A0000	///< Float 64-bit (4-channel) float4(r,g,b,a)
-#define OAPISURFACE_PF_DXT1				0x0B0000	///< Compressed DXT1 format
-#define OAPISURFACE_PF_DXT3				0x0C0000	///< Compressed DXT3 format
-#define OAPISURFACE_PF_DXT5				0x0D0000	///< Compressed DXT5 format
-#define OAPISURFACE_PF_ALPHA			0x0E0000	///< Alpha only surface 8-bit
-#define OAPISURFACE_PF_GRAY				0x0F0000	///< Grayscale Image 8-bit
+#define	MESHM_DIFFUSE		0x01	///< Stock material
+#define	MESHM_AMBIENT		0x02	///< Stock material
+#define	MESHM_SPECULAR		0x04	///< Stock material
+#define	MESHM_EMISSION		0x08	///< Stock material
+#define	MESHM_EMISSION2		0x10	///< D3D9 material
+#define	MESHM_REFLECT		0x20	///< D3D9 material
+#define	MESHM_ROUGHNESS		0x40	///< D3D9 material
+#define	MESHM_FRESNEL		0x80	///< D3D9 material
+#define	MESHM_METALNESS		0x100	///< D3D9 material
+#define	MESHM_SPECIALFX		0x200	///< D3D9 material
 ///@}
-
-
-/// \defgroup RenderProc Specify a SketchPad render callback function
-///@{
-#define RENDERPROC_DELETE				0x0000	///< Unregister/Remove existing callback 
-#define RENDERPROC_HUD_1ST				0x0001	///< Register a HUD callback to draw under Orbiter's main HUD
-#define RENDERPROC_HUD_2ND				0x0002	///< Register a HUD callback to draw over Orbiter's main HUD
-#define RENDERPROC_PLANETARIUM			0x0003	///< Register a HUD callback to draw into a planetarium view using perspective projection
-#define RENDERPROC_EXTERIOR				0x0005  ///< Register a callback to draw into an exterior vessel view using perspective projection
-///@}
-
-
-/// \defgroup GenericProc Specify a generic callback function
-///@{
-#define GENERICPROC_DELETE				0x0000	///< Unregister/Remove existing callback 
-#define GENERICPROC_PICK_VESSEL			0x0001	///< Called when user clicks a vessel with LMB, RMB
-#define GENERICPROC_PICK_TERRAIN		0x0002	///< Called when user clicks a terrain with LMB, RMB
-#define GENERICPROC_HOVER_TERRAIN		0x0003	///< Called when hovering over terrain with mouse (Performance heavy AVOID !!)
-#define GENERICPROC_SHUTDOWN			0x0004	///< Callback for resource/memory deallocation
-#define GENERICPROC_RENDERTILE			0x0010	///< Render Tile Callback
-#define GENERICPROC_RENDER_EXTERIOR		0x0011	///< Render Post Scene Exterior Only Callback
-#define GENERICPROC_TILE_CREATED		0x0020	///< 
-#define GENERICPROC_TILE_DELETED		0x0021	///< 
-///@}
-
-/// \defgroup dwFlags for gcSetupCustomCamera() API function
-///@{
-#define CUSTOMCAM_DEFAULTS				0x00FF
-#define CUSTOMCAM_OVERLAY				0x0100
-///@}
-
-/// \defgroup Polyline Polyline object creation and update flags
-///@{
-#define	PF_CONNECT		0x01	///< Connect line endpoints forming a loop
-///@}
-
-/// \defgroup Triangle Triangle object creation and update flags
-///@{
-#define	PF_TRIANGLES	0
-#define	PF_STRIP		1
-#define	PF_FAN			2
-///@}
-
-
-namespace gcGUI 
-{
-	// -----------------------------
-	// Dialog status identifiers 
-	//
-	static const int INACTIVE = 0;
-	static const int DS_FLOAT = 1;
-	static const int DS_LEFT = 2;
-	static const int DS_RIGHT = 3;
-
-	// -----------------------------
-	// Bitmap Identifiers
-	//
-	static const int BM_TITLE = 0;
-	static const int BM_SUBTITLE = 1;
-	static const int BM_ICONS = 2;
-
-	// -----------------------------
-	// Messages passed to gcGUIApp::clbkMessge
-	//
-	static const int MSG_OPEN_NODE = 1;
-	static const int MSG_CLOSE_NODE = 2;
-	static const int MSG_CLOSE_APP = 3;
-};
 
 
 namespace gcMatrix
@@ -146,34 +52,36 @@ namespace gcMatrix
 	static const int combined = 4;		///< Get combined Mesh*Group*Offset matrix. (Can't 'set' this)
 };
 
-namespace gcTileFlags
+
+/**
+* \brief Flags for 
+*/
+namespace gcFont
 {
-	static const int TEXTURE = 0x1;			///< Texture data
-	static const int MASK = 0x2;			///< Nightlights/Water mask
-	static const int ELEVATION = 0x3;		///< Elevation
-	static const int CLOUD = 0x4;			///< Texture data
-	static const int ELEV_MOD = 0x5;		///< Elevation
-	// ------------------------------------------------------------------
-	static const int TREE = 0x10;			///< Search/Use Tree Archive
-	static const int CACHE = 0x20;			///< Search/Use Cache
-	static const int MOD = 0x40;			///< Search/Use ElevMod Cache
+	static const int ITALIC = 0x1;
+	static const int UNDERLINE = 0x2;
+	static const int STRIKEOUT = 0x4;
+	static const int CRISP = 0x8;			///< Override app-default, No Antialiasing
+	static const int ANTIALIAS = 0x10;		///< Override app-default, Use Antialiashing
 };
 
 
 /// \brief Handle to a surface manager's glogal overlay
 typedef void * HOVERLAY;
+/// \brief Handle to a native DirectX9 surface (Obsolete)
+typedef void * HSURFNATIVE;
 /// \brief Handle to a planet/surface manager
 typedef void * HPLANETMGR;
 /// \brief Handle to an instance buffer
 typedef void * HINSTBUF;
 /// \brief Handle to a surface tile (SurfTile)
 typedef void * HTILE;
-/// \brief Hnadle to a dialog node in gcGUI
-typedef void * HNODE;
 /// \brief Custom swapchain handle
 typedef void * HSWAP;
 /// \brief Custom camera handle
 typedef void * CAMERAHANDLE;
+/// \brief Sketchmesh handle
+typedef void * SKETCHMESH;
 /// \brief Poly object handle
 typedef void * HPOLY;
 
@@ -185,164 +93,12 @@ typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
 
 // ===========================================================================
 /**
-* \class gcGUI
-* \brief gcGUI Access and management functions
-*/
-// ===========================================================================
-
-class gcGUIBase
-{
-	friend class gcGUIApp;
-
-private:
-
-	virtual HNODE			RegisterApplication(gcGUIApp *pApp, const char *label, HWND hDlg, DWORD docked, DWORD color) = 0;
-	virtual HNODE			RegisterSubsection(HNODE hNode, const char *label, HWND hDlg, DWORD color) = 0;
-	virtual void			UpdateStatus(HNODE hNode, const char *label, HWND hDlg, DWORD color) = 0;
-	virtual bool			IsOpen(HNODE hNode) = 0;
-	virtual void			OpenNode(HNODE hNode, bool bOpen = true) = 0;
-	virtual void			DisplayWindow(HNODE hNode, bool bShow = true) = 0;
-	virtual HFONT			GetFont(int id) = 0;
-	virtual HNODE			GetNode(HWND hDlg) = 0;
-	virtual HWND			GetDialog(HNODE hNode) = 0;
-	virtual void			UpdateSize(HWND hDlg) = 0;
-	virtual void			UnregisterApp(gcGUIApp *pApp) = 0;
-	virtual bool			UnRegister(HNODE hNode) = 0;
-};
-
-
-
-// ===========================================================================
-/**
-* \class gcGUI
-* \brief gcGUI Access and management functions
-*/
-// ===========================================================================
-
-class gcGUIApp
-{
-
-public:
-
-	gcGUIApp() : pApp(NULL) 
-	{  
-
-	}
-
-
-	~gcGUIApp() 
-	{ 
-		// Can do nothing here, too late
-	}
-
-	// -----------------------------------------------------
-	
-	virtual void clbkShutdown() 
-	{
-		if (pApp) pApp->UnregisterApp(this);
-	}
-
-	virtual bool clbkMessage(DWORD uMsg, HNODE hNode, int data)
-	{
-		return false;
-	}
-
-	// -----------------------------------------------------
-
-	inline bool Initialize()
-	{
-		typedef gcGUIBase * (__cdecl *__gcGetGUICore)();
-		HMODULE hModule = GetModuleHandle("D3D9Client.dll");
-		if (hModule) {
-			__gcGetGUICore pGetGUICore = (__gcGetGUICore)GetProcAddress(hModule, "gcGetGUICore");
-			if (pGetGUICore) return ((pApp = pGetGUICore()) != NULL);
-		}
-		return false;
-	}
-
-	HNODE RegisterApplication(const char *label, HWND hDlg, DWORD docked, DWORD color = 0)
-	{
-		assert(pApp);
-		return pApp->RegisterApplication(this, label, hDlg, docked, color);
-	}
-
-	HNODE RegisterSubsection(HNODE hNode, const char *label, HWND hDlg, DWORD color = 0) 
-	{ 
-		assert(pApp);
-		return pApp->RegisterSubsection(hNode, label, hDlg, color);
-	}
-
-	void UpdateStatus(HNODE hNode, const char *label, HWND hDlg, DWORD color = 0)
-	{
-		assert(pApp);
-		return pApp->UpdateStatus(hNode, label, hDlg, color);
-	}
-
-	bool IsOpen(HNODE hNode) 
-	{
-		assert(pApp);
-		return pApp->IsOpen(hNode);
-	}
-
-	void OpenNode(HNODE hNode, bool bOpen = true) 
-	{ 
-		assert(pApp);
-		pApp->OpenNode(hNode, bOpen);
-	}
-
-	void DisplayWindow(HNODE hNode, bool bShow = true) 
-	{ 
-		assert(pApp);
-		pApp->DisplayWindow(hNode, bShow);
-	}
-
-	HFONT GetFont(int id) 
-	{ 
-		assert(pApp);
-		return pApp->GetFont(id);
-	}
-
-	HNODE GetNode(HWND hDlg) 
-	{ 
-		assert(pApp);
-		return pApp->GetNode(hDlg);
-	}
-
-	HWND GetDialog(HNODE hNode)
-	{ 
-		assert(pApp);
-		return pApp->GetDialog(hNode);
-	}
-
-	void UpdateSize(HWND hDlg) 
-	{ 
-		assert(pApp);
-		pApp->UpdateSize(hDlg);
-	}
-
-	bool UnRegister(HNODE hNode)
-	{
-		assert(pApp);
-		return pApp->UnRegister(hNode);
-	}
-
-private:
-
-	gcGUIBase *pApp;
-};
-
-
-
-
-
-// ===========================================================================
-/**
 * \class gcCore
 * \brief Core class for graphics services 
 */
 // ===========================================================================
 
-class gcCore
+class gcConst
 {
 
 public:
@@ -355,9 +111,17 @@ public:
 	} SurfaceSpecs;
 
 	typedef struct {
-		FVECTOR2		pos;
-		DWORD			color;
-	} TriangleVtx;
+		WORD			Size;			///< sizeof(ElevInfo)
+		WORD			Format;
+		double			Resolution;
+	} ElevInfo;
+
+	typedef struct {
+		HTILE			pTile;			
+		int				Lvl;
+		int				iLng;
+		int				iLat;
+	} TileCreated;
 
 	typedef struct {
 		OBJHANDLE		hVessel;		///< Handle to a vessel that was clicked
@@ -377,13 +141,33 @@ public:
 	} PickMeshStruct;
 
 	typedef struct {
+		double			lng, lat;		///< Longitude and Latigude of the point being clicked
+		double			elev;			///< Elevation of the point being clicked above mean radius
+		double			dist;			///< Distance from a camera to a click point
+		DRECT			Bounds;			///< Tile bounds (i.e. min/max * lng/lat)
+		FVECTOR3		normal;			///< Normal in ecliptic frame
+		FVECTOR3		pos;			///< Position from a camera in ecliptic frame
+		float			emax;			///< Max elevation within the tile
+		float			emin;			///< Min elevation within the tile
+		UINT			msg;			///< Zero or (WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_LBUTTONUP, WM_RBUTTONUP) or (WM_MOUSEMOVE, WM_MOUSEWHEEL)
+		int				level;			///< Tile level
+		int				iLng, iLat;		///< Tile Index
+		HTILE			hTile;			///< Tile handle being clicked. WARNING: Tile returned by this data entry can become invalid without notice.
+	} PickGround;
+
+	typedef struct {
 		int				MaxTexSize;		///< Maximum texture size in pixels
 		int				DisplayMode;	///< 0 = True Fullscreen, 1 = Fullscreen Window, 2 = Windowed
 		int				MaxTexRep;		///< Maximum texture repeat count
 		DWORD			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
 	} SystemSpecs;
-
 	
+	typedef struct {
+		HTILE			hTile;			///< WARNING: Tile returned by this data entry can become invalid without notice.
+		FMATRIX4		mWorld;
+	} RenderTileData;
+
+
 	// ===========================================================================
 	/// \name Custom swap-chain management functions
 	// ===========================================================================
@@ -396,7 +180,7 @@ public:
 	* \return Handle to a Swap object or NULL in a case of an error
 	*/
 	virtual HSWAP		RegisterSwap(HWND hWnd, HSWAP hSwap = NULL, int AA = 0);
-
+	
 	/**
 	* \brief Flip backbuffer to a front
 	* \param hSwap Handle to a swap object.
@@ -409,6 +193,7 @@ public:
 	* \return A Handle to a rendering surface (i.e. backbuffer)
 	*/
 	virtual SURFHANDLE	GetRenderTarget(HSWAP hSwap);
+	virtual HSURFNATIVE obsolete_GetRenderTargetNative(HSWAP hSwap) { return NULL; }
 
 	/**
 	* \brief Release a swap object after it's no longer needed.
@@ -441,13 +226,6 @@ public:
 	virtual void		CustomCameraOnOff(CAMERAHANDLE hCam, bool bOn);
 
 	/**
-	* \brief Setup a custom camera overlay drawing callback
-	* \param hCam camera handle to toggle
-	* \param clbk pointer to a function to be called after each frame.
-	*/
-	virtual void		CustomCameraOverlay(CAMERAHANDLE hCam, __gcRenderProc clbk, void* pUser);
-
-	/**
 	* \brief Create a new custom camera that can be used to render views into a surfaces and textures
 	* \param hCam camera handle to modify an existing camera or, NULL
 	* \param hVessel handle to a vessel where the camera is attached to.
@@ -472,6 +250,40 @@ public:
 	/// \name Sketchpad related functions
 	// ===========================================================================
 	//@{
+	/**
+	* \brief Get the sketchpad version
+	* \param pSkp handle to a sketchpad interface.
+	* \return Currently returns 2 or (1 in some very special cases). 
+	*/
+	virtual int			SketchpadVersion(Sketchpad *pSkp);
+
+	/**
+	* \brief Get a Sketchpad for a native DirectX 9 surface
+	* \param hSrf handle to a surface
+	* \param hDep handle to optional depth stencil surface
+	* \return a pointer to a new sketchpad interface or NULL if an error occurs.
+	*/
+	virtual Sketchpad*	obsolete_GetSketchpadNative(HSURFNATIVE hSrf, HSURFNATIVE hDep = NULL) { return NULL; }
+
+	/**
+	* \brief Release a native sketchpad interface acquired by GetSketchpadNative()
+	* \param pSkp handle to a sketchpad interface to release.
+	*/
+	virtual void		obsolete_ReleaseSketchpadNative(Sketchpad *pSkp) {}
+
+	/**
+	* \brief Load a mesh from a harddrive to be used with Sketchpad2::SketchMesh
+	* \param name Name of the mesh file without ".msh" identifier.
+	* \sa gcDeleteSketchMesh
+	* \note SKETCHMESH handle isn't compatible with MESHHANDLE nor DEVMESHHANDLE.
+	*/
+	virtual SKETCHMESH	obsolete_LoadSketchMesh(const char *name) { return NULL; }
+
+	/**
+	* \brief Delete a mesh previously loaded with gcLoadSketchMesh
+	* \sa gcLoadSketchMesh
+	*/
+	virtual void		obsolete_DeleteSketchMesh(SKETCHMESH hMesh) {}
 
 	/**
 	* \brief Create or Update a polyline composed form piecewise straight segments.
@@ -500,7 +312,7 @@ public:
 	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
 	* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)
 	*/
-	virtual HPOLY		CreateTriangles(HPOLY hPoly, const gcCore::TriangleVtx* pt, int npt, DWORD flags);
+	virtual HPOLY		CreateTriangles(HPOLY hPoly, const Sketchpad::TriangleVtx *pt, int npt, DWORD flags);
 
 
 	/**
@@ -538,6 +350,17 @@ public:
 	*/
 	virtual bool		RegisterRenderProc(__gcRenderProc proc, DWORD id, void* pParam);
 
+	/**
+	* \brief Create a Font
+	* \param height Font height
+	* \param face Name of the font
+	* \param width Width of the font (0 for default aspect ration)
+	* \param weight Font thikness (400 for default weight)
+	* \param style A combination of \see gcFont flags (0 for default)
+	* \param spacing A spacing between charters in a string (0.0f for default)
+	* \return A pointer to a created or pre-existing font or NULL in a case of an error.
+	*/
+	virtual oapi::Font *CreateSketchpadFont(int height, char *face, int width = 0, int weight = 400, int gcFontStyle = 0, float spacing = 0.0f);
 	//@}
 
 
@@ -548,6 +371,16 @@ public:
 	/// \name Mesh interface functions
 	// ===========================================================================
 	//@{
+	/**
+	* \brief This function will register a custom render callback function
+	* \param hMesh Handle to a devmesh containing the material
+	* \param idx Material index
+	* \param prop material property identifier (\ref MeshMaterialFlags)
+	* \param value a pointer to COLOUR4 structure containing/receiving the data, or \e NULL to reset a default value or to unspecify a property.
+	* \param bSet \e true to set material value, \e false to get a meterial value
+	* \return -4 = Invalid handle \n -3 = Unknown property flag \n -2 = Property not specified cannot get it \n -1 = Index out of range \n 0 = Success
+	*/
+	virtual int				MeshMaterial(DEVMESHHANDLE hMesh, DWORD idx, int prop, FVECTOR4 *value, bool bSet);
 
 	/**
 	* \brief A Function to get a mesh transformation/animation matrix.
@@ -571,25 +404,6 @@ public:
 	* \return 0 = on Success, or error code.
 	*/
 	virtual int				SetMatrix(int matrix_id, OBJHANDLE hVessel, DWORD mesh, DWORD group, const oapi::FMATRIX4* pMat);
-
-
-	/**
-	* \brief Get device specific mesh from Orbiter mesh template
-	* \param hMesh handle to a mesh acquired from oapiLoadMeshGlobal()
-	* \param pBox a pointer to an array of 8 FVECTOR3s
-	*/
-	virtual DEVMESHHANDLE	GetDevMesh(MESHHANDLE hMesh);
-	virtual DEVMESHHANDLE	LoadDevMeshGlobal(const char* file_name, bool bUseCache = true);
-	virtual void			ReleaseDevMesh(DEVMESHHANDLE hMesh);
-
-
-	/**
-	* \brief Recover tile bounding box data
-	* \param hTile handle to a tile
-	* \param pBox a pointer to an array of 8 FVECTOR3s
-	*/
-	virtual void			RenderMesh(DEVMESHHANDLE hMesh, const FMATRIX4* pWorld);
-	virtual bool			PickMesh(gcCore::PickMeshStruct* pm, DEVMESHHANDLE hMesh, const FMATRIX4* pWorld, short x, short y);
 	//@}
 
 
@@ -605,6 +419,54 @@ public:
 	* \param size sizeof(SystemSpecs)
 	*/
 	virtual void			GetSystemSpecs(SystemSpecs* sp, int size);
+
+	/**
+	* \brief Conver a floating point color to DWORD color value
+	* \param c A pointer to a color
+	* \return DWORD color in 0xAABBGGRR
+	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
+	*/
+	virtual DWORD			Color(const COLOUR4 *c);
+
+	/**
+	* \brief Conver a floating point color to DWORD color value
+	* \param c A pointer to a color
+	* \return DWORD color in 0xAABBGGRR
+	* \note Alpha will range from 1 to 255. Zero is never returned because of backwards compatibility issues 0-alpha is mapped to 255
+	*/
+	virtual DWORD			Color(const oapi::FVECTOR4 *c);
+
+	/**
+	* \brief Conver a DWORD color to floating point COLOUR4 value
+	* \param dwABGR A color in 0xAABBGGRR
+	* \return COLOUR4
+	* \note Alpha will range from 1 to 255. Zero is never used because of backwards compatibility issues 0-alpha is mapped to 255
+	*/
+	virtual COLOUR4			Colour4(DWORD dwABGR);
+
+
+	/**
+	* \brief Get Surface Attributes (e.g. OAPISURFACE_TEXTURE)
+	* \param hSurf handle to a surface
+	* \param bCreation if true return creation time attributes, if false return current attributes
+	* \return Surface attributes
+	*/
+	virtual DWORD			obsolete_GetSurfaceAttribs(SURFHANDLE hSurf, bool bCreation = false) { return 0; }
+
+	/**
+	* \brief Convert an existing surface to an other type.
+	* \param hSurf handle to a surface
+	* \param attrib new attributes
+	*/
+	virtual void			obsolete_ConvertSurface(SURFHANDLE hSurf, DWORD attrib) {}
+
+	/**
+	* \brief Load a texture into a specific type of a surface
+	* \param fname name of a texture to be loaded.
+	* \param flags surface attributes (see: OAPISURFACE_x flags)
+	* \return surface handle or NULL in a case of an error
+	*/
+	virtual SURFHANDLE		LoadSurface(const char *fname, DWORD flags);
 
 	/**
 	* \brief Load a bitmap from file (*.bmp *.png *.jpg *.gif)
@@ -627,44 +489,7 @@ public:
 	* \return false if an error occured, true otherwise.
 	*/
 	virtual bool			RegisterGenericProc(__gcGenericProc proc, DWORD id, void* pParam);
-
-	/**
-	* \brief Do not use these functions unless you know what's you doing.
-	*/
-	virtual bool			StretchRectInScene(SURFHANDLE tgt, SURFHANDLE src, LPRECT tr = NULL, LPRECT sr = NULL);
-	virtual bool			ClearSurfaceInScene(SURFHANDLE tgt, DWORD color, LPRECT tr = NULL);
-	//@}
-};
-
-
-
-
-
-class gcCore2 : gcCore
-{
-
-public:
-
-	typedef struct {
-		double			lng, lat;		///< Longitude and Latigude of the point being clicked
-		double			elev;			///< Elevation of the point being clicked above mean radius
-		double			dist;			///< Distance from a camera to a click point
-		DRECT			Bounds;			///< Tile bounds (i.e. min/max * lng/lat)
-		FVECTOR3		normal;			///< Normal in ecliptic frame
-		FVECTOR3		pos;			///< Position from a camera in ecliptic frame
-		float			emax;			///< Max elevation within the tile
-		float			emin;			///< Min elevation within the tile
-		UINT			msg;			///< Zero or (WM_LBUTTONDOWN, WM_RBUTTONDOWN, WM_LBUTTONUP, WM_RBUTTONUP) or (WM_MOUSEMOVE, WM_MOUSEWHEEL)
-		int				level;			///< Tile level
-		int				iLng, iLat;		///< Tile Index
-		HTILE			hTile;			///< Tile handle being clicked. WARNING: Tile returned by this data entry can become invalid without notice.
-	} PickGround;
-
-	typedef struct {
-		WORD			Size;			///< sizeof(ElevInfo)
-		WORD			Format;
-		double			Resolution;
-	} ElevInfo;
+		//@}
 
 
 
@@ -674,9 +499,9 @@ public:
 	/// This API can't access tile data outside visual range
 	// ===========================================================================
 	//@{
-	virtual HPLANETMGR		GetPlanetManager(OBJHANDLE hPlanet);
-	virtual SURFHANDLE		SetTileOverlay(HTILE hTile, const SURFHANDLE hOverlay);
-	virtual HOVERLAY		AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const SURFHANDLE hOverlay = NULL, HOVERLAY hOld = NULL);
+	virtual HPLANETMGR		obsolete_GetPlanetManager(OBJHANDLE hPlanet) { return NULL; }
+	virtual SURFHANDLE		obsolete_SetTileOverlay(HTILE hTile, const SURFHANDLE hOverlay) { return NULL; }
+	virtual HOVERLAY		obsolete_AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const SURFHANDLE hOverlay = NULL, HOVERLAY hOld = NULL) { return NULL; }
 
 	/**
 	* \brief Find a tile from a specified coordinates. Limited to a highest allocated level found from memory. 
@@ -687,8 +512,14 @@ public:
 	* \return NULL, or a tile handle at the current render resolution
 	* \note WARNING: Tile returned by this function can become invalid without notice.
 	*/
-	virtual PickGround		GetTileData(HPLANETMGR hMgr, double lng, double lat, int maxlevel = -1);
-	virtual HTILE			GetTile(HPLANETMGR hMgr, double lng, double lat, int maxlevel = -1);
+	virtual PickGround		obsolete_GetTileData(HPLANETMGR hMgr, double lng, double lat, int maxlevel = -1)
+	{
+		PickGround pg; memset(&pg, 0, sizeof(PickGround));
+		return pg;
+	}
+
+	virtual HTILE			obsolete_GetTile(HPLANETMGR hMgr, double lng, double lat, int maxlevel = -1) { return NULL; }
+
 
 	/**
 	* \brief Find a tile from a specified coordinates. Limited to a highest allocated level found from memory.
@@ -700,9 +531,9 @@ public:
 	* \return NULL, or a tile handle at the current render resolution
 	* \note WARNING: Tile returned by this function can become invalid without notice.
 	*/
-	virtual bool			HasTileData(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags);
-	virtual SURFHANDLE		SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags = 3, void *reserved = NULL);
-	virtual void *			SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pEI);
+	virtual bool			obsolete_HasTileData(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags) { return false; }
+	virtual SURFHANDLE		obsolete_SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags = 3, void *reserved = NULL) { return NULL; }
+	virtual void *			obsolete_SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pEI) { return NULL; }
 	
 
 	/**
@@ -726,27 +557,83 @@ public:
 
 
 
+
+
+
 	// ===========================================================================
-	/// \name Some rendering routines
+	/// \name Native Object Interface
 	// ===========================================================================
 	//@{
+
+	/**
+	* \brief Load a file into native DirectX. Valid formats are (*.dds, *.jpg, *.bmp, *.png)
+	* \param file filename.
+	* \param flags a combination of OAPISURFACE_ flags.
+	* \return NULL in a case of failure.
+	*/
+	virtual HSURFNATIVE		obsolete_LoadSurfaceNative(const char *file, DWORD flags) { return NULL; }
+
+	/**
+	* \brief Create a native DirectX 9 Surface
+	* \param width surface width in pixels 
+	* \param height surface height in pixels
+	* \param flags a combination of OAPISURFACE_ flags.
+	* \return Surface handle or NULL in a case of a failure.
+	*/
+	virtual HSURFNATIVE		obsolete_CreateSurfaceNative(int width, int height, DWORD flags) { return NULL; }
+
+	/**
+	* \brief Get a handle to a specific mipmap sub-level
+	* \param hSrf Handle to a texture containing mipmaps
+	* \param level Level of the mipmap to acquire. (level >= 1) (0 = "hSrf" it self with surface interface)
+	* \return Surface handle or NULL in a case of a failure. Must be released with ReleaseSurface() after nolonger accessed.
+	*/
+	virtual HSURFNATIVE		obsolete_GetMipSublevel(HSURFNATIVE hSrf, int level) { return NULL; }
+	virtual void			obsolete_ReleaseSurface(HSURFNATIVE hSrf) { }
+	virtual bool			obsolete_GetSurfaceSpecs(HSURFNATIVE hSrf, SurfaceSpecs* pOut) { return false; }
+
+	/**
+	* \brief Save a native DirectX surface to a file (*.dds, *.jpg, *.bmp, *.png)  
+	* \param file filename.
+	* \param hSrf handle to a surface to same.
+	* \return false in a case of failure.
+	*/
+	virtual bool			obsolete_SaveSurfaceNative(const char *file, HSURFNATIVE hSrf) { return false; }
+
+	/**
+	* \brief Realtime Mipmap auto-generation from the top/main level.
+	* \param hSurface handle to a surface
+	* \return false if an error occured, true otherwise.
+	* \note Surface must be created with (OAPISURFACE_TEXTURE | OAPISURFACE_RENDERTARGET | OAPISURFACE_MIPMAPS)
+	* \note Exact attribute requirements/conflicts are unknown.
+	*/
+	virtual bool			obsolete_GenerateMipMaps(HSURFNATIVE hSurface) { return false; }
+
+	/**
+	* \brief On the fly texture compression into a DXT format. Input remains uncanged.
+	* \param hSurface handle to a surface to compress
+	* \param flags combination of OAPISURFACE_PF_DXT1, OAPISURFACE_PF_DXT3, OAPISURFACE_PF_DXT5, OAPISURFACE_MIPMAPS, OAPISURFACE_SYSMEM
+	* \return Handle to a compressed texture, user must release this.
+	* \note Compression is slow, separate thread recommended for realtime compression.
+	*/
+	virtual HSURFNATIVE		obsolete_CompressSurface(HSURFNATIVE hSurface, DWORD flags) { return NULL; }
+
+	/**
+	* \brief Get device specific mesh from Orbiter mesh template
+	* \param hMesh handle to a mesh acquired from oapiLoadMeshGlobal()
+	* \param pBox a pointer to an array of 8 FVECTOR3s
+	*/
+	virtual DEVMESHHANDLE	GetDevMesh(MESHHANDLE hMesh);
+	virtual DEVMESHHANDLE	LoadDevMeshGlobal(const char *file_name, bool bUseCache = true);
+	virtual void			ReleaseDevMesh(DEVMESHHANDLE hMesh);
 
 	/**
 	* \brief Recover tile bounding box data
 	* \param hTile handle to a tile
 	* \param pBox a pointer to an array of 8 FVECTOR3s
 	*/
-	virtual void			RenderMesh(DEVMESHHANDLE hMesh, HINSTBUF hInst);
-	virtual bool			PickMesh(gcCore::PickMeshStruct *pm, DEVMESHHANDLE hMesh, HINSTBUF hInst);
-
-	/**
-	* \brief Create or Update instance data buffer
-	* \param pData a pointer to world matrix array
-	* \param size size of the array in bytes (i.e. sizeof(pData))
-	* \param hBuf handle to an existing buffer when updating data.
-	*/
-	virtual HINSTBUF		CreateInstanceBuffer(const FMATRIX4 *pData, int size, HINSTBUF hBuf = NULL);
-	virtual void			ReleaseInstanceBuffer(HINSTBUF hBuf);
+	virtual void			RenderMesh(DEVMESHHANDLE hMesh, const FMATRIX4 *pWorld);
+	virtual bool			PickMesh(PickMeshStruct *pm, DEVMESHHANDLE hMesh, const FMATRIX4 *pWorld, short x, short y);
 
 	/**
 	* \brief Render a list of independent lines 0-1, 2-3,...

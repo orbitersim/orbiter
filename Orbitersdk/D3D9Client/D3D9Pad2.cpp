@@ -354,11 +354,14 @@ void D3D9Pad::CopyTetragon(SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4
 		sp[3] = FVECTOR2(s->right, s->top);
 
 		// Create indices
-		for (int i = 0; i < 11; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			WORD q = vI + i;
-			Idx[iI++] = q + 0; Idx[iI++] = q + 1; Idx[iI++] = q + 5;
-			Idx[iI++] = q + 0; Idx[iI++] = q + 5; Idx[iI++] = q + 4;
+			for (int i = 0; i < 3; i++)
+			{
+				WORD q = vI + i + j * 4;
+				Idx[iI++] = q + 0; Idx[iI++] = q + 1; Idx[iI++] = q + 5;
+				Idx[iI++] = q + 0; Idx[iI++] = q + 5; Idx[iI++] = q + 4;
+			}
 		}
 
 		// Create grid points
@@ -375,8 +378,9 @@ void D3D9Pad::CopyTetragon(SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4
 			for (int k = 0; k < 4; k++) {
 				FVECTOR2 tv = lerp(a, b, float(k) * 0.333333f);
 				FVECTOR2 sv = lerp(c, d, float(k) * 0.333333f);
+				SkpVtxFF(Vtx[vI], tv.x, tv.y, sv.x, sv.y);
 				Vtx[vI].fnc = fn;
-				SkpVtxFF(Vtx[vI++], tv.x, tv.y, sv.x, sv.y);			
+				vI++;
 			}
 		}
 	}
@@ -528,7 +532,7 @@ const FMATRIX4 *D3D9Pad::ProjectionMatrix() const
 
 // ===============================================================================================
 //
-const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix() const
+const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix()
 {
 	D3DXMatrixMultiply(&mVP, &mV, &mP);
 	return (const FMATRIX4 *)&mVP;
@@ -678,19 +682,31 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 
 // ===============================================================================================
 //
-/*
-int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, Sketchpad::MeshFlags flags, SURFHANDLE hTex)
+int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, SURFHANDLE hTex)
 {
-
 #ifdef SKPDBG 
-	Log("DrawSketchMesh(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(_hMesh), grp, flags, DWORD(hTex));
+	Log("DrawMeshGroup(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(hMesh), grp, flags, DWORD(hTex));
 #endif
-
 	UINT num;
+	SketchMesh* pMesh = NULL;
 
-	SketchMesh *hMesh = static_cast<SketchMesh *>(_hMesh);
+	if (MeshMap.find(hMesh) == MeshMap.end())
+	{
+		pMesh = new SketchMesh(pDev);
 
-	DWORD nGrp = hMesh->GroupCount();
+		if (pMesh->LoadMeshFromHandle(hMesh))
+		{
+			MeshMap[hMesh] = pMesh;
+		}
+	}
+	else
+	{
+		pMesh = MeshMap[hMesh];
+	}
+
+	if (!pMesh) return -1;
+
+	DWORD nGrp = pMesh->GroupCount();
 
 	if (grp >= nGrp) return -1;
 
@@ -698,43 +714,44 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, Sketchpad::MeshFlags f
 	//
 	SetupDevice(tCurrent);
 
-
 	// Initialize device for drawing a mesh ----------------------
 	//
-	hMesh->Init();
+	pMesh->Init();
 	pDev->SetVertexDeclaration(pNTVertexDecl);
 
-	if (flags&MF_CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	else				    pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	if (flags&MF_RENDER_ALL) grp = 0;
-	else nGrp = grp + 1;
+	if (flags & Sketchpad::MeshFlags::CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	else pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	HR(FX->SetTechnique(eDrawMesh));
 	HR(FX->Begin(&num, D3DXFX_DONOTSAVESTATE));
 	HR(FX->BeginPass(0));
 
-	HR(FX->SetBool(eShade, (flags&MF_SMOOTH_SHADE) != 0));
+	HR(FX->SetBool(eShade, (flags & Sketchpad::MeshFlags::SMOOTH_SHADE) != 0));
 	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
 
+	if (flags & Sketchpad::MeshFlags::RENDER_ALL) grp = 0;
 
 	// Draw a mesh group(s) ----------------------------------------
 	//
-	while (grp < nGrp) {
+	while (grp < nGrp)
+	{
+		SURFHANDLE pTex = hTex ? hTex : pMesh->GetTexture(grp);
+		D3DXCOLOR   Mat = pMesh->GetMaterial(grp);
 
-		SURFHANDLE pTex = hMesh->GetTexture(grp);
-		D3DXCOLOR   Mat = hMesh->GetMaterial(grp);
-
-		if (hTex) {
+		if (hTex)
+		{
 			HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
 			HR(FX->SetBool(eTexEn, true));
 		}
-		else {
-			if (pTex) {
+		else
+		{
+			if (pTex)
+			{
 				HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 				HR(FX->SetBool(eTexEn, true));
 			}
-			else {
+			else
+			{
 				HR(FX->SetBool(eTexEn, false));
 			}
 		}
@@ -742,85 +759,18 @@ int D3D9Pad::DrawSketchMesh(SKETCHMESH _hMesh, DWORD grp, Sketchpad::MeshFlags f
 		HR(FX->SetValue(eMtrl, &Mat, sizeof(D3DXCOLOR)));
 		HR(FX->CommitChanges());
 
-		hMesh->RenderGroup(grp);
+		pMesh->RenderGroup(grp);
 
 		grp++;
+
+		if (!(flags & Sketchpad::MeshFlags::RENDER_ALL)) break;
 	}
 
 	HR(FX->EndPass());
 	HR(FX->End());
 
-	return hMesh->GroupCount();
-}*/
-
-
-// ===============================================================================================
-//
-int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, SURFHANDLE hTex)
-{
-#ifdef SKPDBG 
-	Log("DrawMeshGroup(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(hMesh), grp, flags, DWORD(hTex));
-#endif
-	UINT num;
-
-	MESHGROUP *gr = oapiMeshGroup(hMesh, grp);
-
-	if (!gr) return -1;
-
-	// Flush Pending graphics ------------------------------------
-	//
-	SetupDevice(tCurrent);
-
-
-	// Initialize device for drawing a mesh ----------------------
-	//
-	pDev->SetVertexDeclaration(pNTVertexDecl);
-	HR(FX->SetTechnique(eDrawMesh));
-	HR(FX->Begin(&num, D3DXFX_DONOTSAVESTATE));
-	HR(FX->BeginPass(0));
-
-	if (!hTex && gr->TexIdx>0) hTex = oapiGetTextureHandle(hMesh, gr->TexIdx);
-
-	MATERIAL *mat = oapiMeshMaterial(hMesh, gr->MtrlIdx);
-
-	if (mat) {
-		HR(FX->SetValue(eMtrl, &mat->diffuse, sizeof(D3DXCOLOR)));
-	}
-	else {
-		HR(FX->SetValue(eMtrl, &D3DXCOLOR(1,1,1,1), sizeof(D3DXCOLOR)));
-	}
-
-	if (hTex) {
-		HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
-		HR(FX->SetBool(eTexEn, true));
-	}
-	else {
-		HR(FX->SetBool(eTexEn, false));
-	}
-
-	HR(FX->SetBool(eShade, (flags & MeshFlags::SMOOTH_SHADE) != 0));
-	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
-
-	HR(FX->CommitChanges());
-
-	if (flags&MeshFlags::CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	else							pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	if (bDepthEnable && pDep) {
-		pDev->SetRenderState(D3DRS_ZENABLE, 1);
-		pDev->SetRenderState(D3DRS_ZWRITEENABLE, 1);
-	}
-
-	pDev->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, gr->nVtx, gr->nIdx/3, gr->Idx, D3DFMT_INDEX16, gr->Vtx, sizeof(NTVERTEX));
-
-	HR(FX->EndPass());
-	HR(FX->End());
-
-	return oapiMeshGroupCount(hMesh);
+	return nGrp;
 }
-
-
-
 
 
 // ===============================================================================================
@@ -836,6 +786,7 @@ const LPRECT D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s)
 	src.bottom = desc.Height;
 	return &src;
 }
+
 
 
 
@@ -867,22 +818,6 @@ SketchMesh::~SketchMesh()
 	SAFE_RELEASE(pIB);
 }
 
-// ===============================================================================================
-//
-bool SketchMesh::LoadMesh(const char *name)
-{
-	MESHHANDLE hMesh = oapiLoadMesh(name);
-
-	if (hMesh) {
-		bool bRet = LoadMeshFromHandle(hMesh);
-		oapiDeleteMesh(hMesh);
-		return bRet;
-	}
-
-	oapiWriteLogV("gcLoadSketchMesh(%s): Mesh not found", name);
-
-	return false;
-}
 
 // ===============================================================================================
 //
@@ -1074,7 +1009,7 @@ void D3D9PolyLine::Release()
 
 // ===============================================================================================
 //
-void D3D9PolyLine::Draw(LPDIRECT3DDEVICE9 pDev)
+void D3D9PolyLine::Draw(D3D9Pad *pSkp, LPDIRECT3DDEVICE9 pDev)
 {
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	pDev->SetIndices(pIB);
@@ -1158,7 +1093,7 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 
 
 
-D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const gcCore::TriangleVtx *pt, int npt, int _style) : D3D9PolyBase(1)
+D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const Sketchpad::TriangleVtx *pt, int npt, int _style) : D3D9PolyBase(1)
 {
 	nPt = npt;
 	style = _style;
@@ -1185,7 +1120,7 @@ void D3D9Triangle::Release()
 
 // ===============================================================================================
 //
-void D3D9Triangle::Draw(LPDIRECT3DDEVICE9 pDev)
+void D3D9Triangle::Draw(D3D9Pad* pSkp, LPDIRECT3DDEVICE9 pDev)
 {
 	pDev->SetStreamSource(0, pVB, 0, sizeof(SkpVtx));
 	if (style == PF_TRIANGLES) 	pDev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, nPt / 3);
@@ -1196,7 +1131,7 @@ void D3D9Triangle::Draw(LPDIRECT3DDEVICE9 pDev)
 
 // ===============================================================================================
 //
-void D3D9Triangle::Update(const gcCore::TriangleVtx *pt, int npt)
+void D3D9Triangle::Update(const Sketchpad::TriangleVtx *pt, int npt)
 {
 	SkpVtx *Vtx = NULL;
 	HR(pVB->Lock(0, 0, (LPVOID*)&Vtx, D3DLOCK_DISCARD));
