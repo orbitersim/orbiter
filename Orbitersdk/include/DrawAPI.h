@@ -732,12 +732,13 @@ public:
 	};
 
 	enum BlendState {
-		ALPHABLEND = 0x1,		///< AlphaBlend source.color to destination.color, will retain destination alpha unchanged (if exists). 
-		COPY = 0x2,				///< Copy source color and alpha to destination
-		COPY_ALPHA = 0x3,		///< Copy source.alpha to destination.alpha, will retain destination color unchanged
-		COPY_COLOR = 0x4,		///< Copy source.color to destination.color, will retain destination alpha unchanged
-		FILTER_LINEAR =	0x00,	///< Use "linear" filter in CopyRect and similar functions
-		FILTER_POINT = 0x10		///< Use "point" filter in CopyRect and similar functions
+		ALPHABLEND = 0x1,				///< AlphaBlend source.color to destination.color, will retain destination alpha unchanged (if exists). 
+		COPY = 0x2,						///< Copy source color and alpha to destination
+		COPY_ALPHA = 0x3,				///< Copy source.alpha to destination.alpha, will retain destination color unchanged
+		COPY_COLOR = 0x4,				///< Copy source.color to destination.color, will retain destination alpha unchanged
+		FILTER_LINEAR = 0x00,			///< Use "linear" filter in CopyRect and similar functions
+		FILTER_POINT = 0x10,			///< Use "point" filter in CopyRect and similar functions
+		FILTER_ANISOTROPIC = 0x20
 	};
 
 	enum RenderParam {
@@ -1355,7 +1356,7 @@ public:
 	* \note SKPBS_COPY_ALPHA, Copy source.alpha to destination.alpha, will retain destination color unchanged
 	* \note SKPBS_COPY_COLOR, Copy source.color to destination.color, will retain destination alpha unchanged (if exists)
 	*/
-	virtual void SetBlendState(BlendState State = (BlendState)(ALPHABLEND | FILTER_LINEAR)) { assert(false); }
+	virtual void SetBlendState(BlendState State = (BlendState)(BlendState::ALPHABLEND | BlendState::FILTER_LINEAR)) { assert(false); }
 
 	/**
 	* \brief [DX9] Get world transformation matrix
@@ -1413,6 +1414,7 @@ public:
 	* \param pt Pointer to an array of 4 FVECTOR2 target points forming shape of the tetragon.
 	*/
 	virtual void CopyTetragon(SURFHANDLE hSrc, const LPRECT sr, const FVECTOR2 pt[4]) { assert(false); }
+	virtual void FillTetragon(DWORD color, const FVECTOR2 pt[4]) { assert(false); }
 
 	/**
 	* \brief [DX9] Enable and Disable color compatibility mode where Pen/Brush Alpha value 0x00 is translated to 0xFF
