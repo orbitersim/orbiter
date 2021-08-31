@@ -68,8 +68,8 @@ sampler TexS : register(s0) = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = 8;
-	AddressU = WRAP;
-	AddressV = WRAP;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler FntS : register(s1) = sampler_state
@@ -79,8 +79,8 @@ sampler FntS : register(s1) = sampler_state
 	MagFilter = LINEAR;
 	MipFilter = LINEAR;
 	MaxAnisotropy = 8;
-	AddressU = WRAP;
-	AddressV = WRAP;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler NoiseS : register(s2) = sampler_state

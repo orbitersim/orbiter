@@ -239,6 +239,7 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	hOverlayBkg = NULL;
 	hOverlay = NULL;
 	hSource = NULL;
+	hGradient = NULL;
 	down_corner = -1;
 	sel_corner = -1;
 	bGo = false;
@@ -403,7 +404,19 @@ bool ToolKit::Initialize()
 		return false;
 	}
 
+	// Create edge-blend gradient
+	//
+	hGradient = oapiCreateSurfaceEx(128, 128, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS | OAPISURFACE_PF_ARGB);
 	
+	Sketchpad* pSkp = oapiGetSketchpad(hGradient);
+	RECT r = { 0, 0, 129, 129 };
+	pSkp->SetBlendState(Sketchpad::BlendState::COPY);
+	pSkp->GradientFillRect(&r, 0x00000000, 0xFFFFFFFF, true);
+	pSkp->SetBlendState();
+	oapiReleaseSketchpad(pSkp);
+
+	pCore->SaveSurface("Grad.dds", hGradient);
+
 	// Create GUI Sections --------------------------------------------------------------------------
 	//
 	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, gDlgProc, 0);
@@ -1358,6 +1371,7 @@ void ToolKit::UpdateOverlay()
 		pSkp->GetRenderSurfaceSize(&size);
 
 		FVECTOR2 pt[4];
+		FVECTOR2 in[4];
 
 		double w = fabs(selection.bounds.left - selection.bounds.right);
 		double h = fabs(selection.bounds.top - selection.bounds.bottom);
@@ -1368,7 +1382,16 @@ void ToolKit::UpdateOverlay()
 			pt[i].x = float((points[i].lng - selection.bounds.left) / w) * float(size.cx);
 			pt[i].y = float((selection.bounds.top - points[i].lat) / h) * float(size.cy);
 		}
-	
+		
+		int nGrad = int(pProp->GetSliderValue(hGEdg));
+
+		for (int i = 0; i < 4; i++) {
+			int q = (i - 1) < 0 ? 3 : i - 1;
+			int w = (i + 1) > 3 ? 0 : i + 1;
+			FVECTOR2 a = unit((pt[q] - pt[i]) + (pt[w] - pt[i]));
+			in[i] = pt[i] + a * float(nGrad);
+		}
+
 		// Copy src to tgt with corrections
 		pSkp->CopyTetragon(hSource, NULL, pt);	
 
@@ -1377,18 +1400,31 @@ void ToolKit::UpdateOverlay()
 		pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA);
 
 		// Render Edge transparency
-		pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-		pSkp->QuickBrush(0);
-		int nGrad = int(pProp->GetSliderValue(hGEdg));
-		for (int i = 0; i < nGrad; i++) {
-			float x = float(i) / float(nGrad);
-			pSkp->QuickPen(FVECTOR4(1.0f, 1.0f, 1.0f, x).dword_abgr());
-			pSkp->Rectangle(i, i, size.cx - i, size.cy - i);
-		}
+		pSkp->SetBlendState((Sketchpad::BlendState)(Sketchpad::BlendState::COPY_ALPHA | Sketchpad::BlendState::FILTER_ANISOTROPIC));
+		pSkp->ColorFill(0x00000000, NULL); // Clear Alpha Channel
+		
+		FVECTOR2 a[4] = { pt[0], in[0], in[3], pt[3] };
+		pSkp->CopyTetragon(hGradient, NULL, a);
 
-		// We are done drawing
+		FVECTOR2 b[4] = { pt[1], in[1], in[0], pt[0] };
+		pSkp->CopyTetragon(hGradient, NULL, b);
+
+		FVECTOR2 c[4] = { pt[2], in[2], in[1], pt[1] };
+		pSkp->CopyTetragon(hGradient, NULL, c);
+
+		FVECTOR2 d[4] = { pt[3], in[3], in[2], pt[2] };
+		pSkp->CopyTetragon(hGradient, NULL, d);
+		
+		FVECTOR2 e[4] = { in[0], in[1], in[2], in[3] };
+		pSkp->FillTetragon(0xFFFFFFFF, e);
+	
+		// Make sure that the overlay border is transparent
+		pSkp->QuickBrush(0);	
+		pSkp->QuickPen(FVECTOR4(1.0f, 1.0f, 1.0f, 0.0f).dword_abgr(), 3.0f);
+		pSkp->Rectangle(0, 0, size.cx, size.cy);
+		
+		pSkp->SetBlendState();
 		oapiReleaseSketchpad(pSkp);
-
 
 		// Generate Mip sublevels
 		//

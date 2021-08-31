@@ -504,6 +504,11 @@ bool D3D9Pad::Flush(HPOLY hPoly)
 			pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 			pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
 		}
+		if (dwFilter == Sketchpad::BlendState::FILTER_ANISOTROPIC) {
+			pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
+			pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
+			HR(pDev->SetSamplerState(0, D3DSAMP_MAXANISOTROPY, 8));
+		}
 	}
 
 	if (bDepthEnable && pDep) {

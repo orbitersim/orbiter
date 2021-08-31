@@ -141,8 +141,8 @@ private:
 	DEVMESHHANDLE		dmSphere;
 	OBJHANDLE			hPlanet;
 	HOVERLAY			hOverlay;
-	SURFHANDLE			hOverlaySrf, hSource, hOverlayBkg;
-	gcPropertyTree			*pProp;
+	SURFHANDLE			hOverlaySrf, hSource, hOverlayBkg, hGradient;
+	gcPropertyTree		*pProp;
 	gcCore2				*pCore;
 	QTree				*pRoot;
 	QTree				*pFirst, *pSecond;

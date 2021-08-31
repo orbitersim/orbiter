@@ -342,11 +342,7 @@ void D3D9Pad::CopyTetragon(SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4
 
 	if (Topology(TRIANGLE))
 	{
-
 		LPRECT s = CheckRect(hSrc, _s);
-
-		s->bottom--;
-		s->right--;
 
 		sp[0] = FVECTOR2(s->left, s->top);
 		sp[1] = FVECTOR2(s->left, s->bottom);
@@ -383,6 +379,26 @@ void D3D9Pad::CopyTetragon(SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4
 				vI++;
 			}
 		}
+	}
+}
+
+
+// ===============================================================================================
+//
+void D3D9Pad::FillTetragon(DWORD c, const FVECTOR2 pt[4])
+{
+#ifdef SKPDBG 
+	Log("CopyTetragon(0x%X)", DWORD(pSrc));
+#endif
+
+	DWORD fn = SKPSW_TEXTURE | SKPSW_CENTER;
+
+	if (Topology(TRIANGLE)) {
+		AddRectIdx(vI);
+		SkpVtxFC(Vtx[vI++], pt[0].x, pt[0].y, c);
+		SkpVtxFC(Vtx[vI++], pt[1].x, pt[1].y, c);
+		SkpVtxFC(Vtx[vI++], pt[2].x, pt[2].y, c);
+		SkpVtxFC(Vtx[vI++], pt[3].x, pt[3].y, c);
 	}
 }
 

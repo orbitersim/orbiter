@@ -128,8 +128,17 @@ struct SkpVtx {
 // GradientFillRect [only]
 inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 {
-	v.x = float(_x);
-	v.y = float(_y);
+	v.x = float(_x) - 0.5f;
+	v.y = float(_y) - 0.5f;
+	v.clr = c;
+	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
+	v.l = 0.0f;
+}
+
+inline void SkpVtxFC(SkpVtx& v, float _x, float _y, DWORD c)
+{
+	v.x = _x - 0.5f;
+	v.y = _y - 0.5f;
 	v.clr = c;
 	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 	v.l = 0.0f;
@@ -138,8 +147,8 @@ inline void SkpVtxGF(SkpVtx &v, int _x, int _y, DWORD c)
 // Fill Rect, Ellipse, Polygon [only]
 inline void SkpVtxIC(SkpVtx &v, int _x, int _y, SkpColor &c)
 {
-	v.x = float(_x);
-	v.y = float(_y);
+	v.x = float(_x) - 0.5f;
+	v.y = float(_y) - 0.5f;
 	v.clr = c.dclr;
 	v.fnc = SKPSW_CENTER | SKPSW_FRAGMENT;
 	v.l = 0.0f;
@@ -486,6 +495,7 @@ public:
 	// ===============================================================================
 	// Sketchpad2 Additions
 	// ===============================================================================
+
 	void GetRenderSurfaceSize(LPSIZE size);
 	void QuickPen(DWORD color, float width = 1.0f, DWORD style = 0);
 	void QuickBrush(DWORD color);
@@ -534,6 +544,7 @@ public:
 	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out);
 	void CopyTetragon(SURFHANDLE pSrc, const LPRECT _s, const FVECTOR2 pt[4]);
 	void ColorCompatibility(bool bEnable);
+	void FillTetragon(DWORD c, const FVECTOR2 pt[4]);
 	
 
 	// ===============================================================================
