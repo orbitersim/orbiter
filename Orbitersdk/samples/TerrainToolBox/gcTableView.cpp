@@ -174,7 +174,11 @@ void gcPropertyTree::CloseTree(HPROP hPar)
 	{
 		if (hp->parent == hPar) {
 			if (hp->bChildren) CloseTree(hp);
-			else if (hp->hCtrl) ShowWindow(hp->hCtrl, SW_HIDE);
+			else if (hp->hCtrl) {
+				hp->oldx = 65536;
+				hp->oldy = 65536;
+				ShowWindow(hp->hCtrl, SW_HIDE);
+			}
 		}
 	}
 }
@@ -567,7 +571,7 @@ void gcPropertyTree::Update()
 		len = h;
 	}
 
-	InvalidateRect(hWnd, NULL, false);
+	InvalidateRect(hWnd, NULL, true);
 }
 
 
