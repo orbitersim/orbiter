@@ -152,7 +152,7 @@ namespace oapi {
 			z = _z;
 		}
 
-		FVECTOR3(VECTOR3& v)
+		FVECTOR3(const VECTOR3& v)
 		{
 			x = float(v.x);
 			y = float(v.y);
@@ -563,12 +563,12 @@ namespace oapi {
 		return min(1, max(0, x));
 	}
 
-	inline FVECTOR3 saturate(FVECTOR3& v)
+	inline FVECTOR3 saturate(const FVECTOR3& v)
 	{
 		return FVECTOR3(saturate(v.x), saturate(v.y), saturate(v.z));
 	}
 
-	inline FVECTOR4 saturate(FVECTOR4& v)
+	inline FVECTOR4 saturate(const FVECTOR4& v)
 	{
 		return FVECTOR4(saturate(v.x), saturate(v.y), saturate(v.z), saturate(v.w));
 	}
@@ -643,7 +643,7 @@ protected:
 	 *   false, the default "Fixed" font should be used.
 	 */
 	Font(int height, bool prop, const char* face, FontStyle style = FontStyle::FONT_NORMAL, int orientation = 0) { }
-	Font(int height, char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f);
+	Font(int height, const char* face, int width = 0, int weight = 400, FontStyle style = FontStyle::FONT_NORMAL, float spacing = 0.0f);
 
 public:
 	/**
@@ -752,10 +752,6 @@ public:
 		RENDER_ALL = 0x04		///< Render all meshgroups
 	};
 
-	typedef struct {
-		FVECTOR2 pos;
-		DWORD color;
-	} TriangleVtx;
 
 	typedef struct {
 		RECT intr;
@@ -1176,7 +1172,7 @@ public:
 	* \warning Graphics results from a CopyRect() and Text() can be blurry when non-default SetViewProjectionMatrix or SetWorldTransform is in use
 	*		due to source-target pixels miss aligments.
 	*/
-	virtual void SetWorldTransform2D(float scale = 1.0f, float rot = 0.0f, IVECTOR2* ctr = NULL, IVECTOR2* trl = NULL) { assert(false); }
+	virtual void SetWorldTransform2D(float scale = 1.0f, float rot = 0.0f, const IVECTOR2* ctr = NULL, const IVECTOR2* trl = NULL) { assert(false); }
 
 	/**
 	* \brief [DX9] Set up a screen space clip rectangle. Usefull when need to draw in a smaller sub section of the render target.
@@ -1225,7 +1221,7 @@ public:
 	* \note Final color = Texture Color * Material Color, only diffure material is in use.
 	* \note To draw the entire mesh at once, use MeshFlags::RENDER_ALL flag.
 	*/
-	virtual int DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, SURFHANDLE hTex = NULL) { assert(false); return -2; }
+	virtual int DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, MeshFlags flags = MeshFlags::SMOOTH_SHADE, const SURFHANDLE hTex = NULL) { assert(false); return -2; }
 	
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle
@@ -1235,7 +1231,7 @@ public:
 	* \param ty Target y-coordinate
 	* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
+	virtual void CopyRect(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle
@@ -1244,7 +1240,7 @@ public:
 	* \param tgt Target rectangle, (must be defined)
 	* \note Can alpha-blend and mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt) { assert(false); }
+	virtual void StretchRect(const SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle with rotation and scaling
@@ -1258,7 +1254,7 @@ public:
 	* \note Does not change or effect in SetWorldTransform()
 	* \note Can alpha-blend, should be able to mirror via negative scale factor.
 	*/
-	virtual void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
+	virtual void RotateRect(const SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle = 0.0f, float sw = 1.0f, float sh = 1.0f) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a rectangle using a color-key stored in a source surface.
@@ -1269,7 +1265,7 @@ public:
 	* \note ColorKey() does not work properly with SetWorldTransform() due to color interpolation
 	* \note Can mirror by a use of negative width/height in source rectangle
 	*/
-	virtual void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
+	virtual void ColorKey(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty) { assert(false); }
 
 	/**
 	* \brief [DX9] Write a line of text using text scaling and rotation
@@ -1290,14 +1286,14 @@ public:
 	* \param flags (reserved for later use, set to zero for now)
 	* \sa gcCreatePoly, gcDeletePoly
 	*/
-	virtual void DrawPoly(HPOLY hPoly, DWORD flags = 0) { assert(false); }
+	virtual void DrawPoly(const HPOLY hPoly, DWORD flags = 0) { assert(false); }
 
 	/**
 	* \brief [DX9] Draw a list of independent lines. 0-1, 2-3, 4-5,...
 	* \param pt list of vertex points.
 	* \param nlines number of lines to draw
 	*/
-	virtual void Lines(FVECTOR2* pt1, int nlines) { assert(false); }
+	virtual void Lines(const FVECTOR2* pt1, int nlines) { assert(false); }
 
 	/**
 	* \brief [DX9] Set up a view matrix.
@@ -1405,7 +1401,7 @@ public:
 	/**
 	* \brief [DX9] Drawing function designed for drawing GUI elements. Buttons, Windows, Boxes, etc..  
 	*/
-	virtual void StretchRegion(const skpRegion* rgn, SURFHANDLE hSrc, const LPRECT out) { assert(false); }
+	virtual void StretchRegion(const skpRegion* rgn, const SURFHANDLE hSrc, const LPRECT out) { assert(false); }
 
 	/**
 	* \brief [DX9] Copy 'Blit' a tetragon
@@ -1413,7 +1409,7 @@ public:
 	* \param sr Source rectangle, (or NULL for whole surface)
 	* \param pt Pointer to an array of 4 FVECTOR2 target points forming shape of the tetragon.
 	*/
-	virtual void CopyTetragon(SURFHANDLE hSrc, const LPRECT sr, const FVECTOR2 pt[4]) { assert(false); }
+	virtual void CopyTetragon(const SURFHANDLE hSrc, const LPRECT sr, const FVECTOR2 pt[4]) { assert(false); }
 	virtual void FillTetragon(DWORD color, const FVECTOR2 pt[4]) { assert(false); }
 
 	/**
