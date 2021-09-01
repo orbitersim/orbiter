@@ -357,7 +357,7 @@ Switch *sw1;
 	   new Switch(810,260,-1,3,0,&Sock[4]->socket_handle ,&PanelList[i]);
 	   new Switch(855,260,-1,3,0,&Sock[5]->socket_handle ,&PanelList[i]);
 
-       hg1=new HGauge(780,570,85,190,&FC[0]->O2_flow,&FC[3]->H2_flow,"gr/s",0,15,1,2,4,&PanelList[i]);
+       hg1=new HGauge(780,570,85,190,&FC[0]->O2_flow,&FC[0]->H2_flow,"gr/s",0,15,1,2,4,&PanelList[i]);
 	   rot1=new Rotary(870,570,"FC SEL",names,0,2,&PanelList[i]);
 	   
 	   RotEl=new RotElement(&hg1->SRC1,&rot1->set,&PanelList[i]);	   
