@@ -125,14 +125,6 @@ det-=p[_ZZ]*p[_XY]*p[_YX];
 return det;
 }
 
-void matrix::trans(float ax,float ay,float az)
-{
-identity();
-p[14]=az;
-p[15]=ay;
-p[16]=ax;
-}
-
 void matrix::setrot(float theta,vector3 axis)
 {
 	
