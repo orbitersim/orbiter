@@ -529,7 +529,7 @@ void Mesh::ReleaseTextures ()
 
 DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
 {
-	DWORD i, mi, pmi, ti, pti, zb, gcount = 0, wrap, owrap = 0;
+	DWORD i, mi, pmi, ti, pti, zb = 0, gcount = 0, wrap, owrap = 0;
 
 	if (!GrpSetup) Setup();
 	dev->ComputeSphereVisibility (GrpCnt, GrpRad, nGrp, 0, GrpVis);
