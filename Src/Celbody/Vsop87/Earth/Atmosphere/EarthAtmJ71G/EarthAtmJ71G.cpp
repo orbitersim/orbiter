@@ -270,7 +270,7 @@ double J77_Dens_low (double Z)
 {
 	const double wm0 = 28.96;
 
-	double h, hbase, pbase, tbase, tgrad, T, CM, WM, x, y;
+	double h, hbase, pbase, tbase, tgrad, T, CM = 0.0, WM, x, y;
 	int flag;
 
 	// For Z < 86km, use US Standard Atmosphere 1976

@@ -442,7 +442,7 @@ void Base::ScanObjectMeshes () const
 	DWORD i, j, k, ng, spec, nvtx, nidx;
 	LONGLONG texid;
 	bool undersh, groundsh;
-	GroupSpec *grp_os, *grp_us; // mesh groups for the meshes compiled from generic primitives (over and under shadows)
+	GroupSpec *grp_os = 0, *grp_us = 0; // mesh groups for the meshes compiled from generic primitives (over and under shadows)
 	DWORD ngrp_os = 0, ngrp_us = 0;
 	nobjmsh_os = nobjmsh_us = nobjmsh_sh = 0;
 	bool bshadow = g_pOrbiter->Cfg()->CfgVisualPrm.bShadows;
