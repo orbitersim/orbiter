@@ -466,7 +466,9 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 	for (i = 0; i < nv; i++)
 		if (count[i] > 0) {
 			D3DVALUE icount = 1.0f/count[i];
-			vtx[i].nx *= icount, vtx[i].ny *= icount, vtx[i].nz *= icount;
+			D3DVECTOR nml; nml.x = vtx[i].nx * icount, nml.y = vtx[i].ny * icount, nml.z = vtx[i].nz * icount;
+			D3DVALUE lgt = D3DMath_Length( nml );
+			vtx[i].nx = nml.x / lgt, vtx[i].ny = nml.y / lgt, vtx[i].nz = nml.z / lgt;
 		}
 	delete []count;
 }
