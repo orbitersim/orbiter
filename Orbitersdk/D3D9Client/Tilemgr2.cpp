@@ -445,6 +445,8 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 	VECTOR3 pref = {radius*clat0*0.5*(clng1+clng0), radius*slat0, radius*clat0*0.5*(slng1+slng0)}; // origin
 	VECTOR3 tpmin, tpmax;
 
+	float e = 0.0f;
+	
 	// patch translation vector
 	if (shift_origin) {
 		dx = (north ? clat0:clat1)*radius;
@@ -467,7 +469,8 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 			slng = sin(lng), clng = cos(lng);
 
 			eradius = radius + globelev; // radius including node elevation
-			if (elev) eradius += (double)elev[(i+1)*TILE_ELEVSTRIDE + j+1] * elev_scale;
+			if (elev) e = elev[(i+1)*TILE_ELEVSTRIDE + j+1] * float(elev_scale);
+			eradius += double(e);
 
 			nml = _V(clat*clng, slat, clat*slng);
 			pos = nml*eradius;
@@ -486,6 +489,7 @@ VBMESH *Tile::CreateMesh_quadpatch (int grdlat, int grdlng, float *elev, double 
 			vtx[n].x = D3DVAL(pos.x - dx); vtx[n].nx = D3DVAL(nml.x);
 			vtx[n].y = D3DVAL(pos.y - dy); vtx[n].ny = D3DVAL(nml.y);
 			vtx[n].z = D3DVAL(pos.z);      vtx[n].nz = D3DVAL(nml.z);
+			vtx[n].e = D3DVAL(e);
 
 			vtx[n].tu0 = D3DVAL((c1*j)/grdlng+c2); // overlap to avoid seams
 			vtx[n].tv0 = D3DVAL(grdlat-i)/D3DVAL(grdlat);

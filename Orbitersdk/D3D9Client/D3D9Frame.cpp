@@ -129,7 +129,7 @@ HRESULT CD3DFramework9::DestroyObjects ()
 	Sleep(200);
 
 	if (pDevice->Reset(&d3dPP)==S_OK)	LogAlw("[DirectX Device Reset Succesfull]");
-	else								LogErr("[Failed to Reset DirectX Device] (Likely blocked by undeleted resources)");
+	else								LogWrn("[Failed to Reset DirectX Device] (Likely blocked by undeleted resources)");
 
 	SAFE_RELEASE(pDevice);
 

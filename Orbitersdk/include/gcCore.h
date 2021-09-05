@@ -23,7 +23,9 @@
 #include "DrawAPI.h"
 #include <assert.h>
 
-#pragma once
+#ifndef __GC_CORE
+#define __GC_CORE
+
 #define INTERFACE_BUILDER
 #define gc_interface static
 
@@ -87,6 +89,23 @@ static __gcBindCoreMethod pBindCoreMethod = NULL;
 #define GENERICPROC_TILE_DELETED		0x0021	///< 
 ///@}
 
+#define IPF_WRAP		0x0000
+#define IPF_WRAP_U		0x0000
+#define IPF_WRAP_V		0x0000
+#define IPF_WRAP_W		0x0000
+#define IPF_CLAMP		0x0007
+#define IPF_CLAMP_U		0x0001
+#define IPF_CLAMP_V		0x0002
+#define IPF_CLAMP_W		0x0004
+#define IPF_MIRROR		0x0038
+#define IPF_MIRROR_U	0x0008
+#define IPF_MIRROR_V	0x0010
+#define IPF_MIRROR_W	0x0020
+#define IPF_POINT		0x0000
+#define IPF_LINEAR		0x0040
+#define IPF_PYRAMIDAL	0x0080
+#define IPF_GAUSSIAN	0x0100
+
 /// \defgroup dwFlags for gcSetupCustomCamera() API function
 ///@{
 #define CUSTOMCAM_DEFAULTS				0x00FF
@@ -125,13 +144,13 @@ namespace gcTileFlags
 {
 	static const int TEXTURE = 0x1;			///< Texture data
 	static const int MASK = 0x2;			///< Nightlights/Water mask
-	static const int ELEVATION = 0x3;		///< Elevation
-	static const int CLOUD = 0x4;			///< Texture data
-	static const int ELEV_MOD = 0x5;		///< Elevation
+	static const int ELEVATION = 0x4;		///< Elevation
+	static const int CLOUD = 0x8;			///< Texture data
+	static const int ELEV_MOD = 0x10;		///< Elevation
 	// ------------------------------------------------------------------
-	static const int TREE = 0x10;			///< Search/Use Tree Archive
-	static const int CACHE = 0x20;			///< Search/Use Cache
-	static const int MOD = 0x40;			///< Search/Use ElevMod Cache
+	static const int TREE = 0x1000;			///< Search/Use Tree Archive
+	static const int CACHE = 0x2000;		///< Search/Use Cache
+	static const int MOD = 0x4000;			///< Search/Use ElevMod Cache
 };
 
 
@@ -139,6 +158,107 @@ namespace gcTileFlags
 /// \brief Render HUD and Planetarium callback function 
 typedef void(__cdecl *__gcRenderProc)(oapi::Sketchpad *pSkp, void *pParam);
 typedef void(__cdecl *__gcGenericProc)(int iUser, void *pUser, void *pParam);
+
+
+
+
+// ===========================================================================
+/**
+* \class gcIPInterface
+* \brief Image Processing Interface, Feed data through user supplied shader.
+*/
+// ===========================================================================
+
+class gcIPInterface 
+{
+
+public:
+
+	friend class gcCore2;
+
+	enum ipitemplate { Rect, Octagon, Mesh };
+	enum ipicull { None, CCW, CW };
+
+	gcIPInterface(class ImageProcessing* p) : pIPI(p) { }
+
+	virtual ~gcIPInterface();
+
+	// ----------------------------------------------------------------------------------
+	// Compile and Activate Additional Shaders, Each shader has it's own local set of variables. 
+	// Variables are not shared between shaders 
+	// ----------------------------------------------------------------------------------
+	virtual bool	CompileShader(const char* PSEntry);
+	virtual bool	Activate(const char* Shader = NULL);
+
+	// ----------------------------------------------------------------------------------
+	// Use the 'Set' functions to assign a value into a shader constants ( e.g. uniform extern float4 myVector; )
+	// If the variable "var" is defined but NOT used by the shader code, the variable "var" doesn't exists in
+	// a constant table and an error is printed when trying to assign a value to it.
+	// ----------------------------------------------------------------------------------
+	virtual void	SetFloat(const char* var, float val);
+	virtual void	SetInt(const char* var, int val);
+	virtual void	SetBool(const char* var, bool val);
+	// ----------------------------------------------------------------------------------
+	virtual void	SetFloat(const char* var, const void* val, int bytes);
+	virtual void	SetInt(const char* var, const int* val, int bytes);
+	virtual void	SetBool(const char* var, const bool* val, int bytes);
+	virtual void	SetStruct(const char* var, const void* val, int bytes);
+
+	// ----------------------------------------------------------------------------------
+	// Use the 'SetVS' functions to assign a value into a vertex shader constants ( e.g. uniform extern float4 myVector; )
+	// If the variable "var" is defined but NOT used by the shader code, the variable "var" doesn't exists in
+	// a constant table and an error is printed when trying to assign a value to it.
+	// ----------------------------------------------------------------------------------
+	virtual void	SetVSFloat(const char* var, float val);
+	virtual void	SetVSInt(const char* var, int val);
+	virtual void	SetVSBool(const char* var, bool val);
+	// ----------------------------------------------------------------------------------
+	virtual void	SetVSFloat(const char* var, const void* val, int bytes);
+	virtual void	SetVSInt(const char* var, const int* val, int bytes);
+	virtual void	SetVSBool(const char* var, const bool* val, int bytes);
+	virtual void	SetVSStruct(const char* var, const void* val, int bytes);
+
+	// ----------------------------------------------------------------------------------
+	// SetTexture can be used to assign a taxture and a sampler state flags to a sampler
+	// In a shader code sampler is defined as (e.g. sampler mySamp; ) where "mySamp" is
+	// the variable passed to SetTexture function. It's then used in a shader code like
+	// tex2D(mySamp, float2(x,y))
+	// ----------------------------------------------------------------------------------
+	virtual void	SetTexture(const char* var, SURFHANDLE hTex, DWORD flags);
+
+	// ----------------------------------------------------------------------------------
+	// SetOutput assigns a render target to the IP interface. "id" is an index of the render
+	// target with a maximum value of 3. It is possible to render in four different targets
+	// at the same time. Multisample AA is only supported with one render target. Unbound
+	// a render target by setting it to NULL. After a NULL render target all later targets
+	// are ignored.
+	// ----------------------------------------------------------------------------------
+	virtual void	SetOutput(int id, SURFHANDLE hSrf);
+
+	// ----------------------------------------------------------------------------------
+	// Set output rect is need to render into a specific subsection
+	// ----------------------------------------------------------------------------------
+	virtual void	SetOutputRegion(float w = 1.0f, float h = 1.0f, float x = 0.0f, float y = 0.0f);
+
+	// ----------------------------------------------------------------------------------
+	// Check that everything is Initialized OK and Execute the shader
+	// ----------------------------------------------------------------------------------
+	virtual bool	IsOK();
+	virtual void	SetMesh(const MESHHANDLE hMesh, const char* tex = NULL, ipicull = ipicull::None);
+
+	virtual bool	Execute(bool bInScene = false);
+	virtual bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
+	virtual bool	Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
+
+	// ----------------------------------------------------------------------------------
+	virtual int		FindDefine(const char* key);
+
+private:
+
+	class ImageProcessing* pIPI;
+};
+
+
 
 
 
@@ -176,6 +296,19 @@ public:
 		COMBINED = 4		///< Get combined Mesh*Group*Offset matrix. (Can't 'set' this)
 	};
 
+	enum class OlayType
+	{
+		SET_BLEND = -2,
+		RELEASE_ALL = -1,
+		SURFACE = 0,
+		MASK = 1,
+		ELEVATION = 2
+	};
+
+	typedef struct {
+		void* pData;
+		DWORD			Pitch;
+	} Lock;
 
 	typedef struct {
 		double			lng, lat;		///< Longitude and Latigude of the point being clicked
@@ -196,7 +329,12 @@ public:
 	typedef struct {
 		WORD			Size;			///< sizeof(ElevInfo)
 		WORD			Format;
+		float*			pElevData;
 		double			Resolution;
+		double			Offset;
+		double			MinElev;
+		double			MaxElev;
+		double			MeanElev;
 	} ElevInfo;
 
 
@@ -233,6 +371,12 @@ public:
 		int				MaxTexRep;		///< Maximum texture repeat count
 		DWORD			gcAPIVer;		///< gcAPI Build Date 0xYYYYMMDD
 	} SystemSpecs;
+
+
+	typedef struct {
+		FVECTOR2 pos;
+		DWORD color;
+	} clrVtx;
 
 
 	// ===========================================================================
@@ -358,7 +502,7 @@ public:
 	* \note PF_FAN Triangle fan. The first vertex is in a centre of the fan/circle and other lie at the edge. ("npt" must be "number of triangles" + 2)
 	* \note PF_STRIP Is build from quads. Where each quad requires two vertics. ("npt" must be "number of quads" * 2 + 2)
 	*/
-	gc_interface HPOLY CreateTriangles(HPOLY hPoly, const Sketchpad::TriangleVtx* pt, int npt, DWORD flags);
+	gc_interface HPOLY CreateTriangles(HPOLY hPoly, const clrVtx* pt, int npt, DWORD flags);
 
 
 	/**
@@ -590,6 +734,15 @@ public:
 	*/
 	gc_interface PickGround ScanScreen(int scr_x, int scr_y);
 
+	/**
+	* \brief Lock a surface created with OAPISURFACE_SYSMEM or OAPISURFACE_TEXTURE | OAPISURFACE_GDI flags.
+	* \param hSrf Handle to a surface/texture to lock
+	* \param pOut Data structure receiving pointer and row pitch/length
+	* \param bWait if "true" will wait other threads to release lock on resource if already locked.
+	* \return true if lock was gained, false otherwise
+	*/
+	gc_interface bool LockSurface(SURFHANDLE hSrf, Lock* pOut, bool bWait = false);
+	gc_interface void ReleaseLock(SURFHANDLE hSrf);
 
 	/**
 	* \brief Conver a floating point color to DWORD color value
@@ -698,7 +851,7 @@ public:
 
 	gc_interface SURFHANDLE SetTileOverlay(HTILE hTile, const SURFHANDLE hOverlay);
 
-	gc_interface HOVERLAY AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const SURFHANDLE hOverlay = NULL, HOVERLAY hOld = NULL);
+	gc_interface HOVERLAY AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, OlayType type, const SURFHANDLE hOverlay = NULL, HOVERLAY hOld = NULL, const FVECTOR4 *pBlend = NULL);
 
 	
 	
@@ -729,7 +882,7 @@ public:
 
 	gc_interface SURFHANDLE SeekTileTexture(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags = 3, void *reserved = NULL);
 
-	gc_interface void * SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pEI);
+	gc_interface bool SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pEI);
 	
 
 	/**
@@ -741,6 +894,18 @@ public:
 	* \return 1 = Nominal, 0 = Tile Invisible but valid, -1 = (lng,lat) out of bounds, -3 = Fail
 	*/
 	gc_interface int GetElevation(HTILE hTile, double lng, double lat, double *out_elev);
+
+
+	/**
+	* \brief Create Image processing interface which allows user to process and create data via GPU
+	* \param file *.hlsl file name containing the shader
+	* \param PSEntry Entry point name for per pixel operations
+	* \param VSEntry Entry point name for vertex operations or NULL for a simple rectangular shape
+	* \param ppf a list of preprocessor directives e.g. "_MYSECTION;_DEBUG" used like #if defined(_MYSECTION) ..code.. #endif
+	* \return Pointer to IPInterface
+	*/
+	gc_interface gcIPInterface* CreateIPInterface(const char* file, const char* PSEntry, const char* VSEntry = NULL, const char* ppf = NULL);
+	gc_interface void ReleaseIPInterface(gcIPInterface* pIPI);
 	//@}
 };
 
@@ -758,4 +923,4 @@ inline gcCore2* gcGetCoreInterface()
 	return NULL;
 }
 
-
+#endif // !__GC_CORE

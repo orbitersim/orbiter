@@ -13,6 +13,7 @@ QTree::QTree(gcCore2 *pC, OBJHANDLE hP)
 	pCore = pC;
 	pParent = NULL;
 	pElev = NULL;
+	hMask = NULL;
 	hTex = NULL;
 	hMgr = pCore->GetPlanetManager(hP);
 	Bounds = { -PI, PI05, PI, -PI05 };
@@ -36,6 +37,7 @@ QTree::QTree(QTree *pPar, int q)
 	hMgr = pPar->hMgr;
 	hTex = NULL;
 	pElev = NULL;
+	hMask = NULL;
 
 	quarant = q;
 	level = pParent->level + 1;

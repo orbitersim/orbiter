@@ -193,7 +193,7 @@ struct TILEVERTEX {                         // Vertex declaration used for surfa
 	float3 posL     : POSITION0;
 	float3 normalL  : NORMAL0;
 	float2 tex0     : TEXCOORD0;
-	float2 tex1     : TEXCOORD1;
+	float  elev     : TEXCOORD1;
 };
 
 struct HZVERTEX {

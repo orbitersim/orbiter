@@ -32,7 +32,7 @@ public:
 	 * \return Previously selected font.
 	 * \sa GDIFont, GDIClient::clbkCreateFont
 	 */
-	oapi::Font *SetFont (oapi::Font *font) const;
+	oapi::Font *SetFont (oapi::Font *font);
 
 	/**
 	 * \brief Selects a new pen to use.
@@ -40,7 +40,7 @@ public:
 	 * \return Previously selected pen.
 	 * \sa GDIPen, GDIClient::clbkCreatePen
 	 */
-	oapi::Pen *SetPen (oapi::Pen *pen) const;
+	oapi::Pen *SetPen (oapi::Pen *pen);
 
 	/**
 	 * \brief Selects a new brush to use.
@@ -48,7 +48,7 @@ public:
 	 * \return Previously selected brush.
 	 * \sa GDIBrush, GDIClient::clbkCreateBrush
 	 */
-	oapi::Brush *SetBrush (oapi::Brush *brush) const;
+	oapi::Brush *SetBrush (oapi::Brush *brush);
 
 	/**
 	 * \brief Set horizontal and vertical text alignment.
@@ -269,10 +269,10 @@ private:
 	HDC hDC;
 	HFONT hFontA;
 
-	mutable HFONT hFont0;      // original GDI font
-	mutable oapi::Font *cfont; // currently selected font (NULL if none)
-	mutable oapi::Pen *cpen;   // currently selected pen (NULL if none)
-	mutable oapi::Brush *cbrush; // currently selected brush (NULL if none)
+	HFONT hFont0;      // original GDI font
+	oapi::Font *cfont; // currently selected font (NULL if none)
+	oapi::Pen *cpen;   // currently selected pen (NULL if none)
+	oapi::Brush *cbrush; // currently selected brush (NULL if none)
 };
 
 #endif // !__GDICLIENT_H

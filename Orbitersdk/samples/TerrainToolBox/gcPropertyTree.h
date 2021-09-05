@@ -43,6 +43,7 @@ public:
 
 	HWND	GetHWND() const;
 	HWND	GetControl(HPROP hEntry);
+	void*	GetUserRef(HPROP hEntry);
 	HPROP	GetEntry(int idx);
 	HPROP	GetEntry(HWND hCtrl);
 	void	OpenEntry(HPROP hEntry, bool bOpen = true);
@@ -50,9 +51,9 @@ public:
 
 	//		--------------------------------------------------------------------------
 
-	HPROP	AddEditControl(const string &lbl, WORD id, HPROP parent = NULL, const string &text = "");
-	HPROP	AddComboBox(const string &lbl, WORD id, HPROP parent = NULL);
-	HPROP	AddSlider(const string &lbl, WORD id, HPROP parent = NULL);
+	HPROP	AddEditControl(const string &lbl, WORD id, HPROP parent = NULL, const string &text = "", void *pUser = NULL);
+	HPROP	AddComboBox(const string &lbl, WORD id, HPROP parent = NULL, void* pUser = NULL);
+	HPROP	AddSlider(const string &lbl, WORD id, HPROP parent = NULL, void* pUser = NULL);
 	LRESULT SendCtrlMessage(HPROP hCtrl, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	//		--------------------------------------------------------------------------
@@ -67,19 +68,19 @@ public:
 
 	//		--------------------------------------------------------------------------
 
-	void		SetSliderScale(HPROP hSlider, double fmin, double fmax, Scale scl);
+	void	SetSliderScale(HPROP hSlider, double fmin, double fmax, Scale scl);
 	void	SetSliderValue(HPROP hSlider, double val);
 	double  GetSliderValue(HPROP hSlider);
 	//		--------------------------------------------------------------------------
 
-	string		GetTextBoxContent(HPROP hTextBox);
-	void		SetTextBoxContent(HPROP hTextBox, string text);
+	string	GetTextBoxContent(HPROP hTextBox);
+	void	SetTextBoxContent(HPROP hTextBox, string text);
 
 	//		--------------------------------------------------------------------------
-	void		SetComboBoxSelection(HPROP hCombo, int idx);
-	int			GetComboBoxSelection(HPROP hCombo);
-	void		ClearComboBox(HPROP hCombo);
-	int			AddComboBoxItem(HPROP hCombo, const char *label);
+	void	SetComboBoxSelection(HPROP hCombo, int idx);
+	int		GetComboBoxSelection(HPROP hCombo);
+	void	ClearComboBox(HPROP hCombo);
+	int		AddComboBoxItem(HPROP hCombo, const char *label);
 
 	//		--------------------------------------------------------------------------
 
@@ -97,7 +98,7 @@ private:
 	HWND	CreateEditControl(WORD id, bool bReadOnly = true);
 	HWND	CreateComboBox(WORD id);
 	HWND	CreateSlider(WORD id);
-	bool		HasMoved(HPROP hP, int x, int y);
+	bool	HasMoved(HPROP hP, int x, int y);
 
 	gcCore2 *pCore;
 	gcGUIApp *pApp;
@@ -129,12 +130,10 @@ typedef struct gcProperty
 	bool bChildren;
 	bool bOn;
 	HWND hCtrl;
+	void* pUser;
 	gcPropertyTree::gcSlider *pSlider;
 	RECT rect;
 	gcPropertyTree::Style style;
 	WORD idc;
 	int oldx, oldy;
 } gcProperty;
-
-
-//typedef gcProperty * HPROP;

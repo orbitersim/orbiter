@@ -48,6 +48,25 @@
 // =======================================================================
 // Type definitions
 
+
+#pragma pack(push,1)
+
+struct ELEVFILEHEADER { // file header for patch elevation data file
+	char id[4];            // ID string + version ('E','L','E',1)
+	int hdrsize;           // header size (76 expected)
+	int dtype;             // data format (0=flat, no data block; 8=uint8; -8=int8; 16=uint16; -16=int16)
+	int xgrd, ygrd;         // data grid size (259 x 259 expected)
+	int xpad, ypad;         // horizontal, vertical padding width (1, 1 expected)
+	double scale;          // data scaling factor (1.0 expected)
+	double offset;         // data offset (elevation = raw value * scale + offset)
+	double latmin, latmax; // latitude range [rad]
+	double lngmin, lngmax; // longitude range [rad]
+	double emin, emax, emean; // min, max, mean elevation [m]
+};
+
+#pragma pack(pop)
+
+
 typedef struct {
 	float tumin, tumax;
 	float tvmin, tvmax;
@@ -443,7 +462,7 @@ public:
 	inline TileType *GlobalTile (int lvl) const {	return (lvl >= -3 && lvl < 0 ? globtile[lvl + 3] : NULL); }
 //	{ return globtile[lvl]; } @todo: Is that ( above) OK for us?
 
-// Returns a low-res global tile
+	// Returns a low-res global tile
 
 	int Coverage (double latmin, double latmax, double lngmin, double lngmax, int maxlvl, const Tile **tbuf, int nt) const;
 	// fills tbuf with a list of tiles up to maxlvl currently covering the area latmin,latmax,lngmin,lngmax
@@ -455,8 +474,11 @@ public:
 	inline ZTreeMgr *ZTreeManager (int i) const { return (i<ntreeMgr) ? treeMgr[i] : NULL; }
 	inline bool DoLoadIndividualFiles (int i) const { return (i < ntreeMgr) ? hasIndividualFiles[i] : true; }
 
+	float *BrowseElevationData(int lvl, int ilat, int ilng, int flags, ELEVFILEHEADER *hdr = NULL);
+
 	// Load tile texture
 	SURFHANDLE SeekTileTexture(int iLng, int iLat, int level, int flags = 3);
+	//float *SeekTileElevation(int iLng, int iLat, int level, int flags = 3);
 
 	// Check if tile texture exists
 	bool HasTileData(int iLng, int iLat, int level, int flags = 3);

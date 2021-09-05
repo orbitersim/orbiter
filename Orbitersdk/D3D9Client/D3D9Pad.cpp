@@ -88,7 +88,6 @@ void D3D9Pad::D3D9TechInit(D3D9Client *_gc, LPDIRECT3DDEVICE9 pDevice)
 
 	InitializeCriticalSectionAndSpinCount(&LogCrit, 256);
 
-	MeshMap.clear();
 
 #ifdef SKPDBG
 	if (fopen_s(&log, "Sketchpad.log", "w+")) { log = NULL; } // Failed
@@ -188,8 +187,6 @@ void D3D9Pad::GlobalExit()
 	}
 	fcache.clear();
 	qcache.clear();
-
-	for (auto it : MeshMap)	SAFE_DELETE(it.second);
 
 	SAFE_RELEASE(FX);
 	SAFE_DELETEA(Idx);
@@ -826,7 +823,7 @@ Brush *D3D9Pad::SetBrush (Brush *brush)
 
 	IsLineTopologyAllowed();
 
-	return pbrush;
+	return const_cast<Brush*>(pbrush);
 }
 
 
@@ -907,7 +904,7 @@ DWORD D3D9Pad::GetCharSize ()
 {
 	TEXTMETRIC tm;
 	if (cfont==NULL) return 0;
-	static_cast<D3D9PadFont *>(cfont)->pFont->GetD3D9TextMetrics(&tm);
+	static_cast<const D3D9PadFont *>(cfont)->pFont->GetD3D9TextMetrics(&tm);
 	return MAKELONG(tm.tmHeight-tm.tmInternalLeading, tm.tmAveCharWidth);
 }
 
@@ -918,7 +915,7 @@ DWORD D3D9Pad::GetLineHeight () // ... *with* "internal leading"
 {
 	TEXTMETRIC tm;
 	if (cfont == NULL) return 0;
-	static_cast<D3D9PadFont *>(cfont)->pFont->GetD3D9TextMetrics(&tm);
+	static_cast<const D3D9PadFont *>(cfont)->pFont->GetD3D9TextMetrics(&tm);
 	return tm.tmHeight;
 }
 
@@ -1369,7 +1366,7 @@ void D3D9Pad::DrawPoly (HPOLY hPoly, DWORD flags)
 
 // ===============================================================================================
 //
-void D3D9Pad::Lines(FVECTOR2 *pt, int nlines)
+void D3D9Pad::Lines(const FVECTOR2 *pt, int nlines)
 {
 #ifdef SKPDBG 
 	Log("Lines(%d)", nlines);
@@ -1800,7 +1797,6 @@ LPDIRECT3DTEXTURE9 D3D9Pad::pNoise = 0;
 
 FILE* D3D9Pad::log = 0;
 CRITICAL_SECTION D3D9Pad::LogCrit;
-std::map< MESHHANDLE, class SketchMesh*> D3D9Pad::MeshMap;
 
 
 // ======================================================================

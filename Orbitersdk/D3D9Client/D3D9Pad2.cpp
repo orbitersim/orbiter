@@ -115,7 +115,7 @@ LPRECT D3D9Pad::CheckRect(SURFHANDLE hSrc, const LPRECT s)
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRect(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
+void D3D9Pad::CopyRect(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
 	Log("CopyRect(0x%X)", DWORD(hSrc));
@@ -149,7 +149,7 @@ void D3D9Pad::CopyRect(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRect(SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
+void D3D9Pad::StretchRect(const SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
 {
 #ifdef SKPDBG 
 	Log("StretchRect(0x%X)", DWORD(hSrc));
@@ -180,7 +180,7 @@ void D3D9Pad::StretchRect(SURFHANDLE hSrc, const LPRECT _s, const LPRECT t)
 
 // ===============================================================================================
 //
-void D3D9Pad::RotateRect(SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, float angle, float sw, float sh)
+void D3D9Pad::RotateRect(const SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, float angle, float sw, float sh)
 {
 #ifdef SKPDBG 
 	Log("RotateRect(0x%X)", DWORD(hSrc));
@@ -229,7 +229,7 @@ void D3D9Pad::RotateRect(SURFHANDLE hSrc, const LPRECT _s, int tcx, int tcy, flo
 
 // ===============================================================================================
 //
-void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
+void D3D9Pad::ColorKey(const SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
 	Log("ColorKey(0x%X)", DWORD(hSrc));
@@ -263,7 +263,7 @@ void D3D9Pad::ColorKey(SURFHANDLE hSrc, const LPRECT _s, int tx, int ty)
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int tx, int ty)
+void D3D9Pad::CopyRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int tx, int ty)
 {
 #ifdef SKPDBG 
 	Log("CopyRectNative(0x%X)", DWORD(pSrc));
@@ -297,7 +297,7 @@ void D3D9Pad::CopyRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, int tx, i
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const LPRECT t)
+void D3D9Pad::StretchRectNative(const LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const LPRECT t)
 {
 #ifdef SKPDBG 
 	Log("StretchRectNative(0x%X)", DWORD(pSrc));
@@ -328,7 +328,7 @@ void D3D9Pad::StretchRectNative(LPDIRECT3DTEXTURE9 pSrc, const LPRECT _s, const 
 
 // ===============================================================================================
 //
-void D3D9Pad::CopyTetragon(SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4])
+void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR2 tp[4])
 {
 #ifdef SKPDBG 
 	Log("CopyTetragon(0x%X)", DWORD(pSrc));
@@ -417,7 +417,7 @@ bool D3D9Pad::TextW (int x, int y, const LPWSTR str, int len)
 	if (len == -1) len = int(wcslen(str));
 	if (!len) return true;
 
-	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+	D3D9TextPtr pText = static_cast<const D3D9PadFont *>(cfont)->pFont;
 
 	int lineSpace = pText->GetLineSpace();
 
@@ -446,7 +446,7 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 
 	if (cfont == NULL) return;
 
-	D3D9TextPtr pText = static_cast<D3D9PadFont *>(cfont)->pFont;
+	D3D9TextPtr pText = static_cast<const D3D9PadFont *>(cfont)->pFont;
 
 	switch (tah) {
 		default:
@@ -470,7 +470,7 @@ void D3D9Pad::TextEx(float x, float y, const char *str, float scale, float angle
 
 // ===============================================================================================
 //
-void D3D9Pad::ClipRect(LPRECT clip)
+void D3D9Pad::ClipRect(const LPRECT clip)
 {
 #ifdef SKPDBG 
 	Log("ClipRect(0x%X)", DWORD(clip));
@@ -608,7 +608,7 @@ LPD3DXMATRIX D3D9Pad::WorldMatrix()
 
 // ===============================================================================================
 //
-void D3D9Pad::SetWorldTransform2D(float scale, float rot, IVECTOR2 *c, IVECTOR2 *t)
+void D3D9Pad::SetWorldTransform2D(float scale, float rot, const IVECTOR2 *c, const IVECTOR2 *t)
 {
 #ifdef SKPDBG 
 	Log("SetWorldTransform2D(%f, %f, 0x%X, 0x%X)", scale, rot, DWORD(c), DWORD(t));
@@ -698,27 +698,13 @@ void D3D9Pad::TexChange(SURFHANDLE hNew)
 
 // ===============================================================================================
 //
-int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, SURFHANDLE hTex)
+int D3D9Pad::DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex)
 {
 #ifdef SKPDBG 
 	Log("DrawMeshGroup(0x%X, gpr=%u, flags=0x%X, hTex=0x%X)", DWORD(hMesh), grp, flags, DWORD(hTex));
 #endif
 	UINT num;
-	SketchMesh* pMesh = NULL;
-
-	if (MeshMap.find(hMesh) == MeshMap.end())
-	{
-		pMesh = new SketchMesh(pDev);
-
-		if (pMesh->LoadMeshFromHandle(hMesh))
-		{
-			MeshMap[hMesh] = pMesh;
-		}
-	}
-	else
-	{
-		pMesh = MeshMap[hMesh];
-	}
+	SketchMesh* pMesh = GetSketchMesh(hMesh);
 
 	if (!pMesh) return -1;
 
@@ -733,7 +719,6 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags fla
 	// Initialize device for drawing a mesh ----------------------
 	//
 	pMesh->Init();
-	pDev->SetVertexDeclaration(pNTVertexDecl);
 
 	if (flags & Sketchpad::MeshFlags::CULL_NONE) pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	else pDev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -743,8 +728,7 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags fla
 	HR(FX->BeginPass(0));
 
 	HR(FX->SetBool(eShade, (flags & Sketchpad::MeshFlags::SMOOTH_SHADE) != 0));
-	HR(FX->SetValue(ePen, &pencolor.fclr, sizeof(D3DXCOLOR)));
-
+	
 	if (flags & Sketchpad::MeshFlags::RENDER_ALL) grp = 0;
 
 	// Draw a mesh group(s) ----------------------------------------
@@ -753,25 +737,17 @@ int D3D9Pad::DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags fla
 	{
 		SURFHANDLE pTex = hTex ? hTex : pMesh->GetTexture(grp);
 		D3DXCOLOR   Mat = pMesh->GetMaterial(grp);
-
-		if (hTex)
+	
+		if (pTex)
 		{
-			HR(FX->SetTexture(eTex0, SURFACE(hTex)->GetTexture()));
+			HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
 			HR(FX->SetBool(eTexEn, true));
 		}
 		else
 		{
-			if (pTex)
-			{
-				HR(FX->SetTexture(eTex0, SURFACE(pTex)->GetTexture()));
-				HR(FX->SetBool(eTexEn, true));
-			}
-			else
-			{
-				HR(FX->SetBool(eTexEn, false));
-			}
+			HR(FX->SetBool(eTexEn, false));
 		}
-
+		
 		HR(FX->SetValue(eMtrl, &Mat, sizeof(D3DXCOLOR)));
 		HR(FX->CommitChanges());
 
@@ -802,170 +778,6 @@ const LPRECT D3D9Pad::CheckRectNative(LPDIRECT3DTEXTURE9 hSrc, const LPRECT s)
 	src.bottom = desc.Height;
 	return &src;
 }
-
-
-
-
-
-
-// ======================================================================================
-// SketchMesh Interface
-// ======================================================================================
-
-SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev) :
-	MaxVert(0), MaxIdx(0),
-	nGrp(0), nMtrl(0), nTex(0),
-	pDev(_pDev),
-	Tex(NULL),
-	Grp(NULL),
-	Mtrl(NULL)
-{
-}
-
-
-// ===============================================================================================
-//
-SketchMesh::~SketchMesh()
-{
-	SAFE_DELETEA(Mtrl);
-	SAFE_DELETEA(Tex);
-	SAFE_DELETEA(Grp);
-	SAFE_RELEASE(pVB);
-	SAFE_RELEASE(pIB);
-}
-
-
-// ===============================================================================================
-//
-bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
-{
-	pVB = NULL;
-	pIB = NULL;
-	Mtrl = NULL;
-	Tex = NULL;
-	Grp = NULL;
-
-	MaxVert = MaxIdx = 0;
-
-	nGrp = oapiMeshGroupCount(hMesh);
-	if (nGrp == 0) return false;
-
-	Grp = new SKETCHGRP[nGrp];
-	memset(Grp, 0, sizeof(SKETCHGRP) * nGrp);
-
-	// -----------------------------------------------------------------------
-
-	nTex = oapiMeshTextureCount(hMesh) + 1;
-	Tex = new SURFHANDLE[nTex];
-	Tex[0] = 0; // 'no texture'
-	for (DWORD i = 1; i<nTex; i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
-
-	// -----------------------------------------------------------------------
-
-	nMtrl = oapiMeshMaterialCount(hMesh);
-	if (nMtrl) Mtrl = new D3DXCOLOR[nMtrl];
-	for (DWORD i = 0; i < nMtrl; i++) {
-		MATERIAL *pMat = oapiMeshMaterial(hMesh, i);
-		if (pMat) {
-			Mtrl[i].r = pMat->diffuse.r;
-			Mtrl[i].g = pMat->diffuse.g;
-			Mtrl[i].b = pMat->diffuse.b;
-			Mtrl[i].a = pMat->diffuse.a;
-		}
-	}
-
-	// -----------------------------------------------------------------------
-
-	for (DWORD i = 0; i < nGrp; i++) {
-		MESHGROUPEX *pEx = oapiMeshGroupEx(hMesh, i);
-		Grp[i].MtrlIdx = pEx->MtrlIdx;
-		Grp[i].TexIdx = pEx->TexIdx;
-		Grp[i].nVert = pEx->nVtx;
-		Grp[i].nIdx = pEx->nIdx;
-		Grp[i].VertOff = MaxVert;
-		Grp[i].IdxOff = MaxIdx;
-		MaxVert += pEx->nVtx;
-		MaxIdx += pEx->nIdx;
-	}
-
-	if (MaxVert == 0 || MaxIdx == 0) return false;
-
-	// -----------------------------------------------------------------------
-
-	if (Grp[0].MtrlIdx == SPEC_INHERIT) Grp[0].MtrlIdx = SPEC_DEFAULT;
-	if (Grp[0].TexIdx == SPEC_INHERIT) Grp[0].TexIdx = SPEC_DEFAULT;
-
-	for (DWORD i = 0; i<nGrp; i++) {
-
-		if (Grp[i].MtrlIdx == SPEC_INHERIT) Grp[i].MtrlIdx = Grp[i - 1].MtrlIdx;
-
-		if (Grp[i].TexIdx == SPEC_DEFAULT) Grp[i].TexIdx = 0;
-		else if (Grp[i].TexIdx == SPEC_INHERIT) Grp[i].TexIdx = Grp[i - 1].TexIdx;
-		else Grp[i].TexIdx++;
-	}
-
-	// -----------------------------------------------------------------------
-
-	HR(pDev->CreateVertexBuffer(MaxVert * sizeof(NTVERTEX), 0, 0, D3DPOOL_DEFAULT, &pVB, NULL));
-	HR(pDev->CreateIndexBuffer(MaxIdx * sizeof(WORD), 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL));
-
-	NTVERTEX *pVert = NULL;
-	WORD *pIndex = NULL;
-
-	for (DWORD i = 0; i < nGrp; i++) {
-		MESHGROUPEX *pEx = oapiMeshGroupEx(hMesh, i);
-		HR(pIB->Lock(Grp[i].IdxOff * sizeof(WORD), Grp[i].nIdx * sizeof(WORD), (LPVOID*)&pIndex, 0));
-		HR(pVB->Lock(Grp[i].VertOff * sizeof(NTVERTEX), Grp[i].nVert * sizeof(NTVERTEX), (LPVOID*)&pVert, 0));
-		memcpy(pIndex, pEx->Idx, sizeof(WORD) * pEx->nIdx);
-		memcpy(pVert, pEx->Vtx, sizeof(NTVERTEX) * pEx->nVtx);
-		HR(pIB->Unlock());
-		HR(pVB->Unlock());
-	}
-
-	return true;
-}
-
-
-// ===============================================================================================
-//
-void SketchMesh::Init()
-{
-	pDev->SetStreamSource(0, pVB, 0, sizeof(NTVERTEX));
-	pDev->SetIndices(pIB);
-}
-
-
-// ===============================================================================================
-//
-void SketchMesh::RenderGroup(DWORD idx)
-{
-	if (!pVB) return;
-	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[idx].VertOff, 0, Grp[idx].nVert, Grp[idx].IdxOff, Grp[idx].nIdx/3);
-}
-
-
-// ===============================================================================================
-//
-SURFHANDLE SketchMesh::GetTexture(DWORD idx)
-{
-	assert(idx < nGrp);
-	if (Grp[idx].TexIdx) return Tex[Grp[idx].TexIdx];
-	return NULL;
-}
-
-
-// ===============================================================================================
-//
-D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
-{
-	assert(idx < nGrp);
-	if (Grp[idx].MtrlIdx!= SPEC_DEFAULT && Mtrl) return Mtrl[Grp[idx].MtrlIdx];
-	return D3DXCOLOR(1,1,1,1);
-}
-
-
-
-
 
 
 
@@ -1109,7 +921,7 @@ void D3D9PolyLine::Update(const FVECTOR2 *_pt, int _npt, bool bConnect)
 
 
 
-D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const Sketchpad::TriangleVtx *pt, int npt, int _style) : D3D9PolyBase(1)
+D3D9Triangle::D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const gcCore::clrVtx *pt, int npt, int _style) : D3D9PolyBase(1)
 {
 	nPt = npt;
 	style = _style;
@@ -1147,7 +959,7 @@ void D3D9Triangle::Draw(D3D9Pad* pSkp, LPDIRECT3DDEVICE9 pDev)
 
 // ===============================================================================================
 //
-void D3D9Triangle::Update(const Sketchpad::TriangleVtx *pt, int npt)
+void D3D9Triangle::Update(const gcCore::clrVtx *pt, int npt)
 {
 	SkpVtx *Vtx = NULL;
 	HR(pVB->Lock(0, 0, (LPVOID*)&Vtx, D3DLOCK_DISCARD));

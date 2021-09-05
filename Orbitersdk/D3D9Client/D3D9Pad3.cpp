@@ -255,7 +255,7 @@ void D3D9Pad::ColorFill(DWORD color, const LPRECT tgt)
 
 // ===============================================================================================
 //
-void D3D9Pad::StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out)
+void D3D9Pad::StretchRegion(const skpRegion *rgn, const SURFHANDLE hSrc, const LPRECT out)
 {
 #ifdef SKPDBG 
 	Log("StretchRegion()");

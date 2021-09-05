@@ -2707,7 +2707,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	pIrradiance->SetBool("bUp", false);
 	pIrradiance->SetTemplate(0.5f, 1.0f, 0.0f, 0.0f);
 
-	if (!pIrradiance->ExecuteTemplate(true, ImageProcessing::Rect)) {
+	if (!pIrradiance->ExecuteTemplate(true)) {
 		LogErr("pIrradiance Execute Failed");
 		return false;
 	}
@@ -2715,7 +2715,7 @@ bool Scene::IntegrateIrradiance(vVessel *vV, LPDIRECT3DCUBETEXTURE9 pSrc, LPDIRE
 	pIrradiance->SetBool("bUp", true);
 	pIrradiance->SetTemplate(0.5f, 1.0f, 0.5f, 0.0f);
 
-	if (!pIrradiance->ExecuteTemplate(true, ImageProcessing::Rect)) {
+	if (!pIrradiance->ExecuteTemplate(true)) {
 		LogErr("pIrradiance Execute Failed");
 		return false;
 	}

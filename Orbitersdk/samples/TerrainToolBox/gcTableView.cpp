@@ -198,7 +198,7 @@ LRESULT gcPropertyTree::WndProc(HWND hCtrl, UINT uMsg, WPARAM wParam, LPARAM lPa
 				if (uMsg == WM_COMMAND) {
 					if (LOWORD(wParam) == hp->idc) {
 						if (HIWORD(wParam) == EN_SETFOCUS || HIWORD(wParam) == EN_KILLFOCUS) {
-							if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, HIWORD(wParam)), LPARAM(hp->hCtrl));
+							if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, HIWORD(wParam)), LPARAM(hp));
 						}
 						return 1;
 					}
@@ -211,7 +211,7 @@ LRESULT gcPropertyTree::WndProc(HWND hCtrl, UINT uMsg, WPARAM wParam, LPARAM lPa
 					case TB_PAGEDOWN:
 						WORD pos = WORD(SendMessage(hp->hCtrl, TBM_GETPOS, 0, 0));
 						hp->pSlider->lin_pos = (double(pos) / 1000.0);
-						if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, TB_THUMBTRACK), LPARAM(hp->hCtrl));
+						if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, TB_THUMBTRACK), LPARAM(hp));
 						break;
 					}
 					return 1;
@@ -227,7 +227,7 @@ LRESULT gcPropertyTree::WndProc(HWND hCtrl, UINT uMsg, WPARAM wParam, LPARAM lPa
 		for each (HPROP hp in Data)	{
 			if (hp->style == Style::TEXTBOX || hp->style == Style::COMBOBOX) {
 				if (hp->hCtrl == HWND(lParam) && hp->hCtrl != NULL)	{
-					if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, HIWORD(wParam)), LPARAM(hp->hCtrl));
+					if (pCallback) pCallback(hDlg, WM_COMMAND, MAKELONG(hp->idc, HIWORD(wParam)), LPARAM(hp));
 				}
 			}
 		}
@@ -663,37 +663,40 @@ HPROP gcPropertyTree::AddEntry(const string &lbl, HPROP parent)
 
 // ==================================================================================
 //
-HPROP gcPropertyTree::AddEditControl(const string &lbl, WORD id, HPROP parent, const string &text)
+HPROP gcPropertyTree::AddEditControl(const string &lbl, WORD id, HPROP parent, const string &text, void *pUser)
 {
 	HPROP hProp = AddEntry(lbl, parent);
 	hProp->hCtrl = CreateEditControl(id, false);
 	hProp->style = Style::TEXTBOX;
 	hProp->idc = id;
+	hProp->pUser = pUser;
 	return hProp;
 }
 
 
 // ==================================================================================
 //
-HPROP gcPropertyTree::AddComboBox(const string &lbl, WORD id, HPROP parent)
+HPROP gcPropertyTree::AddComboBox(const string &lbl, WORD id, HPROP parent, void* pUser)
 {
 	HPROP hProp = AddEntry(lbl, parent);
 	hProp->hCtrl = CreateComboBox(id);
 	hProp->style = Style::COMBOBOX;
 	hProp->idc = id;
+	hProp->pUser = pUser;
 	return hProp;
 }
 
 
 // ==================================================================================
 //
-HPROP gcPropertyTree::AddSlider(const string &lbl, WORD id, HPROP parent)
+HPROP gcPropertyTree::AddSlider(const string &lbl, WORD id, HPROP parent, void* pUser)
 {
 	HPROP hProp = AddEntry(lbl, parent);
 	hProp->hCtrl = CreateSlider(id);
 	hProp->pSlider = new gcSlider;
 	hProp->style = Style::SLIDER;
 	hProp->idc = id;
+	hProp->pUser = pUser;
 	return hProp;
 }
 
@@ -713,6 +716,12 @@ HPROP gcPropertyTree::GetEntry(HWND hCtrl)
 {
 	if (hCtrl == NULL) return NULL;
 	for each (HPROP hp in Data) if (hp->hCtrl == hCtrl) return hp;
+	return NULL;
+}
+
+void* gcPropertyTree::GetUserRef(HPROP hEntry)
+{
+	if (hEntry) return hEntry->pUser;
 	return NULL;
 }
 

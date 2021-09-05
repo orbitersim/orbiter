@@ -45,8 +45,9 @@ class vPlanet: public vObject {
 public:
 
 	struct sOverlay {
-		LPDIRECT3DTEXTURE9 pSurf;
+		LPDIRECT3DTEXTURE9 pSurf[4];
 		VECTOR4 lnglat;
+		D3DXVECTOR4 Ctrl;
 	};
 
 	vPlanet (OBJHANDLE _hObj, const Scene *scene);
@@ -78,7 +79,7 @@ public:
 	SurfTile *		FindTile(double lng, double lat, int maxres);
 	void 			PickSurface(D3DXVECTOR3 &vRay, TILEPICK *pPick);
 	DWORD			GetPhysicsPatchRes() const { return physics_patchres; }
-	sOverlay *		AddOverlaySurface(VECTOR4 lnglat, LPDIRECT3DTEXTURE9 pSrf = NULL, sOverlay *pOld = NULL);
+	sOverlay *		AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType type, LPDIRECT3DTEXTURE9 pSrf = NULL, sOverlay *pOld = NULL, const FVECTOR4* pB = NULL);
 	sOverlay *		IntersectOverlay(VECTOR4 bounds, D3DXVECTOR4 *texcoord) const;
 
 	// Surface base interface -------------------------------------------------

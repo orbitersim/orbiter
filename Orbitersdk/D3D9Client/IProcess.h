@@ -27,9 +27,11 @@
 #include <map>
 #include "OrbiterAPI.h"
 #include "D3D9Util.h"
+#include "gcCore.h"
 
 // Address mode WRAP is assumed by default
 // Filter POINT is assumed by default
+/*
 #define IPF_WRAP		0x0000
 #define IPF_WRAP_U		0x0000
 #define IPF_WRAP_V		0x0000
@@ -45,14 +47,13 @@
 #define IPF_POINT		0x0000
 #define IPF_LINEAR		0x0040
 #define IPF_PYRAMIDAL	0x0080
-#define IPF_GAUSSIAN	0x0100
+#define IPF_GAUSSIAN	0x0100*/
 
 
 class ImageProcessing {
 
 public:
 
-	enum ipitemplate { Rect, Octagon };
 
 	// ----------------------------------------------------------------------------------
 	// Create a IPI (Image processing interface) which allows to process and create data via GPU
@@ -61,7 +62,7 @@ public:
 	// which contains the executed code with two input variables x, y
 	// ppf is a list of preprocessor directives e.g. "_MYSECTION;_DEBUG" used like #if defined(_MYSECTION) ..code.. #endif
 	// ----------------------------------------------------------------------------------
-			ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, const char *_entry, const char *ppf=NULL);
+			ImageProcessing(LPDIRECT3DDEVICE9 pDev, const char *_file, const char *_entry, const char *ppf = NULL, const char *_vsentry = NULL);
 			~ImageProcessing();
 
 	bool	CompileShader(const char *Entry);
@@ -82,13 +83,27 @@ public:
 	void	SetStruct(const char *var, const void *val, int bytes);
 
 	// ----------------------------------------------------------------------------------
+	// Use the 'Set' functions to assign a value into a shader constants ( e.g. uniform extern float4 myVector; )
+	// If the variable "var" is defined but NOT used by the shader code, the variable "var" doesn't exists in
+	// a constant table and an error is printed when trying to assign a value to it.
+	// ----------------------------------------------------------------------------------
+	void	SetVSFloat(const char *var, float val);
+	void	SetVSInt(const char *var, int val);
+	void	SetVSBool(const char *var, bool val);
+	// ----------------------------------------------------------------------------------
+	void	SetVSFloat(const char *var, const void *val, int bytes);
+	void	SetVSInt(const char *var, const int *val, int bytes);
+	void	SetVSBool(const char *var, const bool *val, int bytes);
+	void	SetVSStruct(const char *var, const void *val, int bytes);
+
+	// ----------------------------------------------------------------------------------
 	// SetTexture can be used to assign a taxture and a sampler state flags to a sampler
 	// In a shader code sampler is defined as (e.g. sampler mySamp; ) where "mySamp" is
 	// the variable passed to SetTexture function. It's then used in a shader code like
 	// tex2D(mySamp, float2(x,y))
 	// ----------------------------------------------------------------------------------
 	void	SetTexture(const char *var, SURFHANDLE hTex, DWORD flags);
-
+	
 	// ----------------------------------------------------------------------------------
 	// SetOutput assigns a render target to the IP interface. "id" is an index of the render
 	// target with a maximum value of 3. It is possible to render in four different targets
@@ -101,15 +116,18 @@ public:
 	// ----------------------------------------------------------------------------------
 	bool	IsOK();
 	void	SetTemplate(float w = 1.0f, float h = 1.0f, float x = 0.0f, float y = 0.0f);
+	void	SetMesh(const MESHHANDLE hMesh, const char *tex = NULL, gcIPInterface::ipicull = gcIPInterface::ipicull::None);
+
 	bool	Execute(bool bInScene = false);
-	bool	ExecuteTemplate(bool bInScene = false, ipitemplate = Rect);
-	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, ipitemplate mde = Rect);
+	bool	ExecuteTemplate(bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect);
+	bool    Execute(DWORD blendop, DWORD src, DWORD dest, bool bInScene = false, gcIPInterface::ipitemplate tmp = gcIPInterface::ipitemplate::Rect, int gpr = -1);
 
 	// ----------------------------------------------------------------------------------
 	int		FindDefine(const char *key);
 
 	// Native DirectX calls -------------------------------------------------------------
 	//
+	void	SetDepthStencil(LPDIRECT3DSURFACE9 hSrf = NULL);
 	void	SetOutputNative(int id, LPDIRECT3DSURFACE9 hSrf);
 	void	SetTextureNative(const char *var, LPDIRECT3DBASETEXTURE9 hTex, DWORD flags);
 
@@ -125,11 +143,15 @@ private:
 	struct {
 		LPDIRECT3DBASETEXTURE9 hTex;
 		DWORD flags;
-	} pTextures[16];
+	} pTextures[8];
 
+	gcIPInterface::ipicull mesh_cull;
+
+	SketchMesh *pMesh;
 	std::map<std::string, SHADER> Shaders;
 	LPDIRECT3DDEVICE9 pDevice;
 	LPDIRECT3DSURFACE9 pRtg[4], pRtgBak[4];
+	LPDIRECT3DSURFACE9 pDepth, pDepthBak;
 	LPD3DXCONSTANTTABLE pVSConst;
 	LPD3DXCONSTANTTABLE pPSConst;
 	LPDIRECT3DVERTEXSHADER9 pVertex;
@@ -143,6 +165,7 @@ private:
 	D3DXHANDLE   hSiz;
 	SMVERTEX	*pOcta;
 
+	int		mesh_tex_idx;
 	char	file[256];
 	char	ppf[256];
 	char	entry[32];

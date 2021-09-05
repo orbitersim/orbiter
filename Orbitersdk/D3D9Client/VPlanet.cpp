@@ -504,7 +504,7 @@ vPlanet::~vPlanet ()
 		}
 	}
 
-	for each (sOverlay *x in overlays) SAFE_RELEASE(x->pSurf);
+	for (auto x : overlays) for (auto y : x->pSurf) if (y) y->Release();
 
 	if (clouddata) {
 		delete clouddata->cloudmgr;
@@ -1602,24 +1602,33 @@ vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, D3DXVECTOR4 *texcoord) 
 
 // ===========================================================================================
 //
-vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, LPDIRECT3DTEXTURE9 pSrf, vPlanet::sOverlay *pOld)
+vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType type, LPDIRECT3DTEXTURE9 pSrf, vPlanet::sOverlay *pOld, const FVECTOR4 *pB)
 {
-	if (pSrf) {
-		if (pOld) {
-			pOld->pSurf = pSrf;
-			pOld->lnglat = lnglat;
-			return pOld;
-		}
-		sOverlay *oLay = new sOverlay();
-		oLay->pSurf = pSrf;
-		oLay->lnglat = lnglat;
-		overlays.push_back(oLay);
-		return oLay;
+	if (type == gcCore::OlayType::SET_BLEND) {
+		if (pB) pOld->Ctrl = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+		else pOld->Ctrl = D3DXVECTOR4(0, 0, 0, 0);
+		return pOld;
 	}
-	else if (pOld) {
+
+	if (type == gcCore::OlayType::RELEASE_ALL) {
 		overlays.remove(pOld);
+		return NULL;
 	}
-	return NULL;
+
+	if (pOld) {
+		pOld->pSurf[int(type)] = pSrf;
+		pOld->lnglat = lnglat;
+		return pOld;
+	}
+
+	sOverlay *oLay = new sOverlay();
+	memset(&oLay->pSurf, 0, sizeof(oLay->pSurf));
+	oLay->pSurf[int(type)] = pSrf;
+	oLay->lnglat = lnglat;
+	if (pB) oLay->Ctrl = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+	else oLay->Ctrl = D3DXVECTOR4(1, 1, 1, 1);
+	overlays.push_back(oLay);
+	return oLay;
 }
 
 

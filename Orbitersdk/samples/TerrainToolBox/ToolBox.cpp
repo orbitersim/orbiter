@@ -16,7 +16,7 @@
 #include "VesselAPI.h"
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
-#include "gcConst.h"
+#include "gcCoreAPI.h"
 #include "ToolBox.h"
 #include "resource.h"
 #include "gcPropertyTree.h"
@@ -28,11 +28,7 @@
 using namespace std;
 
 ToolKit *g_pTK = NULL;
-
-const static char *create_selection_first = { "\
-You need to select a target zone first. You can later adjust the zone if need to.\
-Also, it's better to select 1-6 low-level tiles rather than 200 high-level tiles due to tile alignments." };
-
+gcCore2* g_pCore = NULL;
 
 
 
@@ -50,15 +46,8 @@ void __cdecl MouseClickClbk(int iUser, void *pUser, void *pParam)
 	((ToolKit*)pParam)->clbkMouseClick(iUser, pUser);
 }
 
-string LngLat(Position p)
-{
-	string s;
-	if (p.lng < 0) s = std::to_string(-p.lng*DEG) + "°W  ";
-	else s = std::to_string(p.lng*DEG) + "°E  ";
-	if (p.lat < 0) s += std::to_string(-p.lat*DEG) + "°S";
-	else s += std::to_string(p.lat*DEG) + "°N";
-	return s;
-}
+
+string LngLat(Position p);
 
 
 
@@ -103,35 +92,16 @@ BOOL CALLBACK gDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //
 BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	
+
 	switch (uMsg) {
 
 	case WM_INITDIALOG:
 		return true;
 
 	case WM_COMMAND:
-
+	{
 		switch (LOWORD(wParam))
 		{
-		case IDC_PINX:
-		case IDC_PINY:
-		case IDC_PINW:
-		case IDC_PINN:
-		{
-			Pin pn;
-			if (CreatePin(pn, selection.bounds)) {
-				UpdateOverlay();
-			}
-			break;
-		}
-
-		case IDC_DISABLEPIN:
-		{
-			ComputeLevel();
-			UpdateOverlay();
-			break;
-		}
-
 		case IDC_LIGHTNESS:
 		case IDC_BRIGHTNESS:
 		case IDC_GAMMA:
@@ -140,25 +110,67 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_GREEN:
 		case IDC_BLUE:
 		{
-			UpdateOverlay();
+			if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed");
 			break;
 		}
 
+		case IDC_LAYER:
+		{
+			Layer *pLr = (Layer*)pProp->GetUserRef(HPROP(lParam));
+		}
+
+		// Bake level combobox Msg
 		case IDC_IMPLEVEL:
 		{
-			ComputeLevel();
-			UpdateOverlay();
+			break;
+		}
+
+		// Bake level combobox Msg
+		case IDC_STARTIMPORT:
+		{
+			if (selection.selw == 0 || selection.selh == 0) {
+				MessageBox(pCore->GetRenderWindow(), "You need to drag a box around the import area first.", "Reminder", MB_OK);
+				break;
+			}
+			if (CreateOverlays())
+			{
+				AutoSelectCorners();
+				if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in IDC_STARTIMPORT");
+			}
 			break;
 		}
 
 		case IDC_OPENIMAGE:
 		{
-			if (selection.area.size() == 0) {
-				MessageBoxA(hAppMainWnd, create_selection_first, "Info", MB_OK);
-				return false;
-			}
-			ImportImage();
-			break;
+			OpenImage(Layer::LayerType::TEXTURE);
+			SetMode(MODE_IMPORT);
+			return true;
+		}
+
+		case IDC_OPENELEV:
+		{
+			OpenImage(Layer::LayerType::ELEVATION);
+			SetMode(MODE_IMPORT);
+			return true;
+		}
+
+		case IDC_OPENNIGHT:
+		{
+			OpenImage(Layer::LayerType::NIGHT);
+			SetMode(MODE_IMPORT);
+			return true;
+		}
+
+		case IDC_OPENWATER:
+		{
+			OpenImage(Layer::LayerType::WATER);
+			SetMode(MODE_IMPORT);
+			return true;
+		}
+
+		case IDC_OPENMESH:
+		{
+			return true;
 		}
 
 		case IDC_UPDATECLIP:
@@ -176,7 +188,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			if (HPROP(lParam) == hIRT) sel_corner = 3;
 			break;
 		}
-		
+
 		case IDC_CALLBACK:
 		{
 			break;
@@ -185,14 +197,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_CORNERS:
 		{
 			AutoSelectCorners();
-			ComputeLevel();
-			UpdateOverlay();
-			break;
-		}
-
-		case IDC_TRANSP:
-		{
-			UpdateOverlay();
+			if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in IDC_CORNERS");
 			break;
 		}
 
@@ -213,9 +218,9 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			BakeImport();
 			break;
 		}
-		}
-	}
-
+		} // switch(wParam)
+	} // WM_COMMAND
+	} // switch(uMsg)
 	return false;
 }
 
@@ -236,9 +241,10 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	dmSphere = NULL;
 	hAppMainWnd = NULL;
 	hOverlaySrf = NULL;
+	hOverlayMsk = NULL;
+	hOverlayElv = NULL;
 	hOverlayBkg = NULL;
 	hOverlay = NULL;
-	hSource = NULL;
 	hGradient = NULL;
 	down_corner = -1;
 	sel_corner = -1;
@@ -271,10 +277,9 @@ void ToolKit::clbkShutdown()
 	pCore->RegisterGenericProc(RenderClbk, GENERICPROC_DELETE, this);
 	pCore->RegisterGenericProc(MouseClickClbk, GENERICPROC_DELETE, this);
 	
-	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), NULL, hOverlay);
+	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), gcCore::OlayType::RELEASE_ALL, NULL, hOverlay);
 	if (hOverlaySrf) oapiReleaseTexture(hOverlaySrf);
 	if (hOverlayBkg) oapiReleaseTexture(hOverlayBkg);
-	if (hSource) oapiReleaseTexture(hSource);
 	if (dmSphere) pCore->ReleaseDevMesh(dmSphere);
 		
 	selection.area.clear();
@@ -291,9 +296,10 @@ void ToolKit::clbkShutdown()
 	dmSphere = NULL;
 	hAppMainWnd = NULL;
 	hOverlaySrf = NULL;
+	hOverlayMsk = NULL;
+	hOverlayElv = NULL;
 	hOverlayBkg = NULL;
 	hOverlay = NULL;
-	hSource = NULL;
 	hRootNode = NULL;
 	down_corner = -1;
 	sel_corner = -1;
@@ -333,23 +339,6 @@ void ToolKit::SetMode(int mode)
 
 
 // =================================================================================================
-// Abort Import Process, Release resources...
-//
-void ToolKit::StopImport()
-{
-	if (hSource) oapiReleaseTexture(hSource);
-	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), NULL, hOverlay);
-	if (hOverlaySrf) oapiReleaseTexture(hOverlaySrf);
-	hSource = hOverlaySrf = NULL;
-	hOverlay = NULL;
-	selection.area.clear();
-	oldsel.area.clear();
-	pFirst = pSecond = NULL;
-	SetMode(MODE_EXPORT);
-}
-
-
-// =================================================================================================
 //
 void ToolKit::SetupPlanet(OBJHANDLE hPln)
 {
@@ -366,7 +355,7 @@ void ToolKit::SetupPlanet(OBJHANDLE hPln)
 //
 bool ToolKit::Initialize()
 {
-	pCore = gcGetCoreInterface();
+	g_pCore = pCore = gcGetCoreInterface();
 	if (!pCore) return false;
 
 	hAppMainWnd = pCore->GetRenderWindow();
@@ -378,6 +367,8 @@ bool ToolKit::Initialize()
 		hAppMainWnd = NULL;
 		return false;
 	}
+
+	memset(pLr, 0, sizeof(pLr));
 
 	pCore->GetSystemSpecs(&sp, sizeof(gcCore::SystemSpecs));
 
@@ -419,8 +410,10 @@ bool ToolKit::Initialize()
 
 	// Create GUI Sections --------------------------------------------------------------------------
 	//
-	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, gDlgProc, 0);
 	hRootNode = RegisterApplication("Terrain ToolKit", NULL, gcGUI::DS_LEFT);
+	hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
+	hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
+	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, gDlgProc, 0);
 	hCtrlNode = RegisterSubsection(hRootNode, "Selection Oprions", hCtrlDlg);
 	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, gDlgProc, 0);
 	hImpoNode = RegisterSubsection(hRootNode, "Import Options", hImpoDlg, 0xC0FFE0);
@@ -466,67 +459,19 @@ bool ToolKit::Initialize()
 	hSLat = pProp->AddEntry("Min Lat", hSecExp);
 	hMLng = pProp->AddEntry("Max Lng", hSecExp);
 	hMLat = pProp->AddEntry("Max Lat", hSecExp);
-	hSLvl = pProp->AddEntry("Tile Level", hSecExp);
 	hSXPx = pProp->AddEntry("Width pixels", hSecExp);
 	hSYPx = pProp->AddEntry("Height pixels", hSecExp);
 	
 	// ---------------------------------------------------
 	hSecImp = pProp->SubSection("Import properties");
 	// ---------------------------------------------------
-	hIFil = pProp->AddEntry("Filename", hSecImp);
-	hIWid = pProp->AddEntry("Width [px]", hSecImp);
-	hIHei = pProp->AddEntry("Height [px]", hSecImp);
-	hILog = pProp->AddEntry("Log Level", hSecImp);
 	
 	hILT = pProp->AddEntry("Left-Top", hSecImp);
 	hILB = pProp->AddEntry("Left-Btm", hSecImp);
 	hIRB = pProp->AddEntry("Right-Btm", hSecImp);
 	hIRT = pProp->AddEntry("Right-Top", hSecImp);
 
-	// ---------------------------------------------------
-	hSecPin = pProp->SubSection("Pin known location", hSecImp);
-	// ---------------------------------------------------
-	hPinX = pProp->AddEditControl("Pixel PosX", IDC_PINX, hSecPin);
-	hPinY = pProp->AddEditControl("Pixel PosY", IDC_PINY, hSecPin);
-	hPinW = pProp->AddEditControl("Longitude", IDC_PINW, hSecPin);
-	hPinN = pProp->AddEditControl("Latitude", IDC_PINN, hSecPin);
-	hPinF = pProp->AddEntry("Status", hSecPin);
-
-
-	// ---------------------------------------------------
-	hSecGfx = pProp->SubSection("Graphics Adjustments", hSecImp);
-	// ---------------------------------------------------
-	hGLig = pProp->AddSlider("Lightness", IDC_LIGHTNESS, hSecGfx);
-	hGBri = pProp->AddSlider("Brightness", IDC_BRIGHTNESS, hSecGfx);
-	hGGam = pProp->AddSlider("Gamma", IDC_GAMMA, hSecGfx);
-	hGEdg = pProp->AddSlider("Edge Alpha", IDC_ALPHA, hSecGfx);
-
-	// ---------------------------------------------------
-	hSecClr = pProp->SubSection("Color Balance", hSecGfx);
-	// ---------------------------------------------------
-	hBRed = pProp->AddSlider("Red", IDC_RED, hSecClr);
-	hBGrn = pProp->AddSlider("Green", IDC_GREEN, hSecClr);
-	hBBlu = pProp->AddSlider("Blue", IDC_BLUE, hSecClr);
-
-	pProp->SetSliderScale(hGLig, -0.4, 0.4, gcPropertyTree::Scale::LINEAR);
-	pProp->SetSliderScale(hGBri, 0.625, 1.6, gcPropertyTree::Scale::LOG);
-	pProp->SetSliderScale(hGGam, 0.5, 2.0, gcPropertyTree::Scale::LOG);
-	pProp->SetSliderScale(hGEdg, 1.0, 1000.0, gcPropertyTree::Scale::LOG);
-	pProp->SetSliderScale(hBRed, 0.8333, 1.2, gcPropertyTree::Scale::LOG);
-	pProp->SetSliderScale(hBGrn, 0.8333, 1.2, gcPropertyTree::Scale::LOG);
-	pProp->SetSliderScale(hBBlu, 0.8333, 1.2, gcPropertyTree::Scale::LOG);
-
-	pProp->SetSliderValue(hGLig, 0.0);
-	pProp->SetSliderValue(hGBri, 1.0);
-	pProp->SetSliderValue(hGGam, 1.0);
-	pProp->SetSliderValue(hGEdg, 32.0);
-	pProp->SetSliderValue(hBRed, 1.0);
-	pProp->SetSliderValue(hBGrn, 1.0);
-	pProp->SetSliderValue(hBBlu, 1.0);
-	
 	pProp->ShowEntry(hSecImp, false);
-	pProp->OpenEntry(hSecClr, false);
-	pProp->OpenEntry(hSecPin, false);
 	pProp->Update();
 
 	
@@ -591,268 +536,20 @@ Direct Draw Surface (.dds)\0*.dds\0\0";
 	return true;
 }
 
-// =================================================================================================
-//
-bool IsStringValid(const char *a, const char *b)
-{
-	const char *c = b;
-	while (*a != 0) {
-		while (true) {
-			if (*a == *b) break;
-			else b++;
-			if (*b == 0) return false;
-		}
-		a++; b = c;
-	}
-	return true;
-}
 
 // =================================================================================================
 //
-bool ToolKit::CreatePin(Pin &pn, DRECT bounds)
+int ToolKit::SelectionFlags()
 {
-	static const char valids[] = { "0123456789,.NWES " };
-	gcCore::SurfaceSpecs specs;
-	char buf[128]; bool bOk = false;
-	int lenval = strlen(valids);
+	int what = SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_GETCURSEL, 0, 0);
 
-	if (!hSource) {
-		pProp->SetValue(hPinF, "No Image Loaded");
-		return false;
+	switch (what) {
+	case Select::WTexture: return gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
+	case Select::WNightlight: return gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
+	case Select::WElevation: return gcTileFlags::ELEVATION | gcTileFlags::CACHE | gcTileFlags::TREE;
 	}
-
-	if (!pCore->GetSurfaceSpecs(hSource, &specs, sizeof(gcCore::SurfaceSpecs))) {
-		pProp->SetValue(hPinF, "No Image Loaded");
-		return false;
-	}
-
-	// --------------------------------------------------------------------------
-
-	HWND hEC = pProp->GetControl(hPinX);
-	if (hEC) GetWindowTextA(hEC, buf, sizeof(buf));
-	pn.x = atoi(buf);
-
-	if (pn.x<=0 || pn.x>specs.Width) {
-		pProp->SetValue(hPinF, "Invalid X-Coordinate");
-		return false;
-	}
-
-	// --------------------------------------------------------------------------
-
-	hEC = pProp->GetControl(hPinY);
-	if (hEC) GetWindowTextA(hEC, buf, sizeof(buf));
-	pn.y = atoi(buf);
-
-	if (pn.y<=0 || pn.y>specs.Height) {
-		pProp->SetValue(hPinF, "Invalid Y-Coordinate");
-		return false;
-	}
-
-	// --------------------------------------------------------------------------
-
-	hEC = pProp->GetControl(hPinW);
-	if (hEC) GetWindowTextA(hEC, buf, sizeof(buf));
-	
-	if (!IsStringValid(buf, valids)) {
-		pProp->SetValue(hPinF, "Invalid chater(s)");
-		return false;
-	}
-	
-	char *pos = strstr(buf, "W"); if (!pos) pos = strstr(buf, "E");
-	
-	if (!pos) {
-		pProp->SetValue(hPinF, "Missing 'E' or 'W'");
-		return false;
-	}
-
-	if (*pos == 'W') { *pos = 0; pn.lng = -atof(buf) * RAD;	}
-	else { *pos = 0; pn.lng = atof(buf) * RAD; }
-
-	// --------------------------------------------------------------------------
-
-	hEC = pProp->GetControl(hPinN);
-	if (hEC) GetWindowTextA(hEC, buf, sizeof(buf));
-
-
-	if (!IsStringValid(buf, valids)) {
-		pProp->SetValue(hPinF, "Invalid chater(s)");
-		return false;
-	}
-
-	pos = strstr(buf, "N"); if (!pos) pos = strstr(buf, "S");
-
-	if (!pos) {
-		pProp->SetValue(hPinF, "Missing 'N' or 'S'");
-		return false;
-	}
-
-	if (*pos == 'N') { *pos = 0; pn.lat = atof(buf) * RAD; }
-	else { *pos = 0; pn.lat = -atof(buf) * RAD; }
-
-	if (pn.lng<bounds.left || pn.lng>bounds.right || pn.lat > bounds.top || pn.lat < bounds.bottom) {
-		pProp->SetValue(hPinF, "Pin is outside bounds");
-		return false;
-	}
-
-	pProp->SetValue(hPinF, "All is fine");
-	return true;
+	return 0;
 }
-
-
-// =================================================================================================
-//
-FMATRIX4 ToolKit::CreateWorldMatrix(OBJHANDLE hPlanet, double lng, double lat, double elev, float scale)
-{
-	double rad = oapiGetSize(hPlanet) + elev;
-	MATRIX3 mRot;
-	oapiGetRotationMatrix(hPlanet, &mRot);
-	VECTOR3 vRot = mul(mRot, _V(0, 1, 0));
-
-	VECTOR3 lpos, cpos, gp;
-	oapiEquToLocal(hPlanet, lng, lat, rad, &lpos);
-	lpos = mul(mRot, lpos);
-
-	oapiCameraGlobalPos(&cpos);
-	oapiGetGlobalPos(hPlanet, &gp);
-
-	FMATRIX4 m;
-
-	VECTOR3 y = unit(lpos);				// up
-	VECTOR3 x = unit(crossp(y, vRot));	// west
-	VECTOR3 z = crossp(x, y);			// north
-	VECTOR3 p = ((gp + lpos) - cpos);
-
-	x *= scale;
-	y *= scale;
-	z *= scale;
-
-	m._x = FVECTOR4(x, 0.0f);
-	m._y = FVECTOR4(y, 0.0f);
-	m._z = FVECTOR4(z, 0.0f);
-	m._p = FVECTOR4(p, 1.0f);
-
-	return m;
-}
-
-
-// =================================================================================================
-//
-void ToolKit::DrawBox(FVECTOR3 *box, DWORD color)
-{
-	WORD Idx[24] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
-	pCore->RenderLines(box, Idx, 8, ARRAYSIZE(Idx), &mIdent, color);
-}
-
-
-// =================================================================================================
-//
-
-void ToolKit::RenderTileBounds(gcCore::PickGround &pg, DWORD color)
-{
-	double size = oapiGetSize(hPlanet);
-	VECTOR3 cpos, bpos;
-
-	oapiCameraGlobalPos(&cpos);
-	oapiGetGlobalPos(hPlanet, &bpos);
-	cpos -= bpos;
-
-	VECTOR3 V[4];
-	V[0] = GetSurfacePosUnit(pg.Bounds.left, pg.Bounds.top);
-	V[1] = GetSurfacePosUnit(pg.Bounds.left, pg.Bounds.bottom);
-	V[2] = GetSurfacePosUnit(pg.Bounds.right, pg.Bounds.bottom);
-	V[3] = GetSurfacePosUnit(pg.Bounds.right, pg.Bounds.top);
-
-	double h = fabs(pg.Bounds.top - pg.Bounds.bottom);
-	double s = size - cos(h*0.5) * size;
-
-	FVECTOR3 box[8];
-	for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + pg.emax + s) - cpos);
-	for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + pg.emin) - cpos);
-
-	DrawBox(box, color);
-}
-
-
-// =================================================================================================
-//
-void ToolKit::RenderTileBounds(QTree *tn, DWORD color)
-{
-
-	// Acquire min/max elevation for this tile
-	gcCore::PickGround pg = pCore->GetTileData(hMgr, tn->clng, tn->clat, tn->level);
-
-	if (pg.hTile) {
-
-		double size = oapiGetSize(hPlanet);
-		VECTOR3 cpos, bpos;
-
-		oapiCameraGlobalPos(&cpos);
-		oapiGetGlobalPos(hPlanet, &bpos);
-		cpos -= bpos;
-
-		VECTOR3 V[4];
-		V[0] = GetSurfacePosUnit(tn->Bounds.left, tn->Bounds.top);
-		V[1] = GetSurfacePosUnit(tn->Bounds.left, tn->Bounds.bottom);
-		V[2] = GetSurfacePosUnit(tn->Bounds.right, tn->Bounds.bottom);
-		V[3] = GetSurfacePosUnit(tn->Bounds.right, tn->Bounds.top);
-
-		double h = fabs(tn->Bounds.top - tn->Bounds.bottom);
-		double s = size - cos(h*0.5) * size;
-		
-		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + pg.emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + pg.emin) - cpos);
-
-		DrawBox(box, color);
-	}
-}
-
-
-// =================================================================================================
-//
-void ToolKit::RenderSelection(sSelection *sel, int mode, DWORD color)
-{
-	if (mode == 0) {
-		for each (selentry se in sel->area) RenderTileBounds(se.pNode, color);
-		return;
-	}
-
-	float emin =  1e6;
-	float emax = -1e6;
-
-	if (mode == 1) {
-
-		for each (selentry se in sel->area) {
-			gcCore::PickGround pg = pCore->GetTileData(hMgr, se.pNode->clng, se.pNode->clat, se.pNode->level);
-			emin = min(emin, pg.emin);
-			emax = max(emax, pg.emax);
-		}
-
-		double size = oapiGetSize(hPlanet);
-		VECTOR3 cpos, bpos;
-
-		oapiCameraGlobalPos(&cpos);
-		oapiGetGlobalPos(hPlanet, &bpos);
-		cpos -= bpos;
-
-		VECTOR3 V[4];
-		V[0] = GetSurfacePosUnit(sel->bounds.left, sel->bounds.top);
-		V[1] = GetSurfacePosUnit(sel->bounds.left, sel->bounds.bottom);
-		V[2] = GetSurfacePosUnit(sel->bounds.right, sel->bounds.bottom);
-		V[3] = GetSurfacePosUnit(sel->bounds.right, sel->bounds.top);
-
-		double h = fabs(sel->bounds.top - sel->bounds.bottom);
-		double w = fabs(sel->bounds.right - sel->bounds.left);
-		double s = size - cos(max(w, h)*0.5) * size;
-
-		FVECTOR3 box[8];
-		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
-		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + emin) - cpos);
-
-		DrawBox(box, color);
-	}
-}
-
 
 
 // =================================================================================================
@@ -873,49 +570,67 @@ void ToolKit::clbkRender()
 	if (!dmSphere) return;
 
 	bool bAutoHighlight = (SendDlgItemMessageA(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	bool bHideClip = (SendDlgItemMessageA(hImpoDlg, IDC_HIDECLIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	bool bDisablePin = (SendDlgItemMessageA(hImpoDlg, IDC_DISABLEPIN, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	bool bHideClip = false; // (SendDlgItemMessageA(hImpoDlg, IDC_HIDECLIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	
 	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
-	int what = SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_GETCURSEL, 0, 0);
-
+	
 	gcCore::PickGround pg; memset(&pg, 0, sizeof(gcCore::PickGround));
 	QTree *pHover = NULL;
 
 
+
 	if (bAutoHighlight || !pSecond || !hOverlay || oldsel.area.size() != 0)
 	{
+		// ---------------------------------------------------------------------
+		// Optain infomation about mouse cursor location  
+		// ---------------------------------------------------------------------
+
 		pg = pCore->ScanScreen(xpos, ypos);
 		if (pFirst) pHover = pRoot->FindNode(pg.lng, pg.lat, pFirst->level);
 	}
 
 
-	// Auto highlight the tile where mouse is hovering
-	//
+
+
 	if (bAutoHighlight || !pSecond || !hOverlay || oldsel.area.size() != 0)
 	{
+		// ---------------------------------------------------------------------
+		// Highlight the tile where mouse is hovering and print some information 
+		// ---------------------------------------------------------------------
+
 		if (select == Select::SRender) RenderTileBounds(pg, 0xFF00FF00);
-		else {
-			if (select == Select::SHighestOwn) {
-				int flags = gcTileFlags::CACHE | gcTileFlags::TREE | gcTileFlags::TEXTURE;
+		else 
+		{
+			int flags = SelectionFlags();
+
+			if (select == Select::SHighestOwn) 
+			{
 				QTree *pSel = pRoot->HighestOwn(flags, pg.lng, pg.lat);
-				RenderTileBounds(pSel, 0xFF00FF00);
-				UpdateTileInfo(pSel, &pg);
+				if (pSel) RenderTileBounds(pSel, 0xFF00FF00);
+				UpdateTileInfo(flags, pSel, &pg);		
 			}
-			else {
+			else 
+			{
 				int lvl = SelectedLevel();
 				if (lvl > 0) {
 					QTree *pSel = pRoot->FindNode(pg.lng, pg.lat, lvl);
-					RenderTileBounds(pSel, 0xFF00FF00);
-					UpdateTileInfo(pSel, &pg);
+					if (pSel) RenderTileBounds(pSel, 0xFF00FF00);
+					UpdateTileInfo(flags, pSel, &pg);
 				}
 			}
 		}
 	}
 	
 
+
+	
+
 	if (pFirst && (pHover || pSecond))
 	{
+		// ---------------------------------------------------------------------
+		// User has clicked a tile and is dragging a selection box or
+		// the selection box is already completed
+		// ---------------------------------------------------------------------
 
 		QTree *pOther = (pSecond ? pSecond : pHover);
 
@@ -939,7 +654,12 @@ void ToolKit::clbkRender()
 		double clng = (pOther->clng < pFirst->clng ? pFirst->clng - width * double(selw - 1) : pFirst->clng);
 		double clat = (pOther->clat > pFirst->clat ? pFirst->clat + height * double(selh - 1) : pFirst->clat);
 
-		if (!pSecond) {
+
+		if (!pSecond)
+		{
+			// ---------------------------------------------------------------------
+			// User is dragging a selection box
+			// ---------------------------------------------------------------------
 
 			selection.area.clear();
 
@@ -981,17 +701,26 @@ void ToolKit::clbkRender()
 	}
 
 
-	if (oldsel.area.size() != 0) {
+
+	if (oldsel.area.size() != 0) 
+	{
+		// ---------------------------------------------------------------------
+		// Draw tile outlines for old selection
+		// ---------------------------------------------------------------------
 		if (!bHideClip) RenderSelection(&oldsel, 1, 0xFF0000FF);
 	}
 
-
-	if (selection.area.size() != 0) {
-		if (!bHideClip || !hSource) {
-			if (hSource) RenderSelection(&selection, 1, 0xFFFFFF00);
+	if (selection.area.size() != 0) 
+	{
+		// ---------------------------------------------------------------------
+		// Draw tile outlines for selection
+		// ---------------------------------------------------------------------
+		if (!bHideClip) {
+			if (bImport) RenderSelection(&selection, 1, 0xFFFFFF00);
 			else RenderSelection(&selection, 0, 0xFFFFFF00);
 		}
 	}
+
 
 	if (hOverlay) {
 		pProp->SetValue(hILT, LngLat(points[0]));
@@ -1000,10 +729,14 @@ void ToolKit::clbkRender()
 		pProp->SetValue(hIRT, LngLat(points[3]));
 	}
 
-	// Render corner sphere markers
-	//
-	if (selection.area.size() != 0 && hSource && hOverlay) {
-		
+
+	
+	if (selection.area.size() != 0 && bImport && hOverlay)
+	{
+		// ---------------------------------------------------------------------
+		// Render corner sphere markers
+		// ---------------------------------------------------------------------
+
 		VECTOR3 cpos, bpos;
 		oapiCameraGlobalPos(&cpos);
 		oapiGetGlobalPos(hPlanet, &bpos);
@@ -1034,338 +767,68 @@ void ToolKit::clbkRender()
 
 
 // =================================================================================================
+// Update the Overlay image seen on a planets surface
 //
-void ToolKit::Export()
+bool ToolKit::UpdateOverlays()
 {
-	int what = SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_GETCURSEL, 0, 0);
-	int flags = gcTileFlags::TREE | gcTileFlags::CACHE;
-
-	if (what == 0) flags |= gcTileFlags::TEXTURE;
-	if (what == 1) flags |= gcTileFlags::MASK;
-	if (what == 2) {
-		ExportElev();
-		return;
-	}
-	
-	SURFHANDLE hSrf = oapiCreateSurfaceEx(selw * 512, selh * 512, OAPISURFACE_RENDERTARGET);
-
-	if (hSrf) {
-
-		Sketchpad *pSkp = oapiGetSketchpad(hSrf);
-
-		if (pSkp) {
-
-			for each (selentry se in selection.area)
-			{
-				SubTex st = se.pNode->GetSubTexRange(flags);
-				if (st.pNode) {
-					SURFHANDLE hSrc = st.pNode->GetTexture(flags); // Do not release
-					if (hSrc) {
-						RECT t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
-						pSkp->StretchRect(hSrc, &st.range, &t);
-					}
-				}
-			}
-			oapiReleaseSketchpad(pSkp);
-		}
-
-
-		if (SaveFile(SaveImage)) {
-			if (!pCore->SaveSurface(SaveImage.lpstrFile, hSrf)) {
-				oapiWriteLogV("Failed to create a file [%s]", SaveImage.lpstrFile);
-			}	
-		}
-
-		oapiReleaseTexture(hSrf);
-	}
-	else oapiWriteLog("hSrf == NULL");
-}
-
-
-// =================================================================================================
-//
-SURFHANDLE ToolKit::GetBaseElevation(int elev_fmt)
-{
-
-	int Width = 256 * selw;
-	int Height = 256 * selh;
-
-	float *pFloat = NULL;
-	INT16 *pInt = NULL;
-
-	if (elev_fmt == 0) pInt = new INT16[Width * Height];
-	if (elev_fmt == 1) pFloat = new float[Width * Height];
-
-	for each (selentry se in selection.area)
-	{
-		int pos = se.x * 256 + se.y * 256 * Width;
-		INT16 *pElev = se.pNode->GetElevation();
-		for (int y = 0; y < 256; y++)
-		{
-			int q = y * Width + pos;
-			int z = y * 258;
-			for (int x = 0; x < 256; x++) {
-				if (pFloat) pFloat[q + x] = float(pElev[z + x + 259]);
-				if (pInt) pInt[q + x] = pElev[z + x + 259];
-			}
-		}
-	}
-
-	DWORD flg = OAPISURFACE_SYSMEM;
-	if (elev_fmt == 0) flg |= OAPISURFACE_PF_S16R;
-	if (elev_fmt == 1) flg |= OAPISURFACE_PF_F32R;
-
-	/*
-	SURFHANDLE hSrf = oapiCreateSurfaceEx(selw * 256, selh * 256, flg);
-
-	if (hSrf)
-	{
-		gcCore::Lock lock;
-		if (pCore->LockSurface(hSrf, &lock, true))
-		{
-			BYTE *pPtr = (BYTE*)lock.pData;
-			for (int y = 0; y < Height; y++)
-			{
-				int q = y * Width;
-				for (int x = 0; x < Width; x++) {
-					if (elev_fmt == 0) ((INT16*)pPtr)[x] = pInt[x + q];
-					if (elev_fmt == 1) ((float*)pPtr)[x] = pFloat[x + q];
-				}
-				pPtr += lock.Pitch;
-			}
-
-			pCore->ReleaseLock(hSrf);
-		}
-	}
-
-	return hSrf;*/
-
-	return NULL;
-}
-
-
-// =================================================================================================
-//
-void ToolKit::ExportElev()
-{
-
-	for each (selentry se in selection.area)
-	{
-		INT16 *pElev = se.pNode->GetElevation();
-		if (!pElev) {
-			char msg[256];
-			sprintf_s(msg, 256, "Tile (iLng=%d, iLat=%d) has no elevation for level %d", se.pNode->ilng, se.pNode->ilat, selection.slvl);
-			MessageBoxA(pCore->GetRenderWindow(), msg, "Error:", MB_OK);
-			return;
-		}
-	}
-
-
-	if (GetSaveFileNameA(&SaveElevation)) {
-
-		int type = 0;
-
-		// Pick the file type from a file name
-		if (strstr(SaveImage.lpstrFile, ".dds") || strstr(SaveImage.lpstrFile, ".DDS")) type = 1;
-
-		if (type == 0) {
-			// If above fails then use selected "filter" to appeand file "id".
-			if (SaveImage.nFilterIndex == 0) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".dds"), type = 1;
-		}
-
-		if (type == 0) {
-			MessageBoxA(pCore->GetRenderWindow(), "Invalid File Type", "Error:", MB_OK);
-			return;
-		}
-
-		int fmt = 0;
-
-		SURFHANDLE hSrf = GetBaseElevation(fmt);
-
-		if (hSrf) {
-			if (!pCore->SaveSurface(SaveImage.lpstrFile, hSrf)) {
-				MessageBoxA(pCore->GetRenderWindow(), "Failed to Save a file", "Error:", MB_OK);
-				return;
-			}	
-			oapiReleaseTexture(hSrf);
-		}
-	}
-}
-
-
-// =================================================================================================
-//
-void ToolKit::MakeProgress()
-{
-	progress++;
-	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, progress, 0);
-	UpdateWindow(hProgDlg);
-}
-
-
-// =================================================================================================
-//
-void ToolKit::BakeImport()
-{
-	char cur[16];
-
-	int idx = SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETCURSEL, 0, 0);
-	SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETLBTEXT, idx, (LPARAM)cur);
-	int maxlvl = atoi(cur);
-
-	if (maxlvl < selection.slvl) {
-		MessageBoxA(pCore->GetRenderWindow(), "Clip level can't be higher than Bake level", "Error:", MB_OK);
-		return;
-	}
-
-	
-	if (MessageBox(pCore->GetRenderWindow(), "Bake and Write the tiles in 'OrbiterRoot/TerrainToolBox/' Folder ?", "Are you sure", MB_YESNO | MB_ICONEXCLAMATION) != IDYES) return;
-
-
-	SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-
-	progress = 0;
-
-	int nTiles = selection.area.size();
-	nTiles += (nTiles / 2 + nTiles / 4 + nTiles / 8);
-	
-	hProgDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_PROGRESS), hAppMainWnd, gDlgProc, 0);
-	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETRANGE, 0, MAKELONG(0, nTiles));
-	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, 0, 0);
-
-	ShowWindow(hProgDlg, SW_SHOW);
-
-	list<QTree *> parents;
-
-	for each (selentry s in selection.area)
-	{
-		int rv = s.pNode->SaveTile(hOverlaySrf, hTemp, selection.bounds, maxlvl - 4, 1.0f);
-		if (rv < 0) {
-			oapiWriteLogV("ERROR: s.pNode->SaveTile() returned %d", rv);
-			return;
-		}
-		MakeProgress();
-		parents.push_back(s.pNode->GetParent());
-	}
-
-	parents.unique();
-
-	BakeParents(hTemp, parents);
-
-	oapiReleaseTexture(hTemp);
-	DestroyWindow(hProgDlg);
-}
-
-
-
-// =================================================================================================
-//
-void ToolKit::BakeParents(SURFHANDLE hTemp, list<QTree *> parents)
-{
-	list<QTree *> grands;
-
-	for each (QTree * qt in parents)
-	{
-		float alpha = 1.0f;
-		if (qt->HasOwnTex() == false) grands.push_back(qt->GetParent());
-		else alpha = 0.5f;
-		int rv = qt->SaveTile(hOverlaySrf, hTemp, selection.bounds, -1, alpha);
-		MakeProgress();
-		if (rv < 0) {
-			oapiWriteLogV("ERROR: qt->SaveTile() returned %d", rv);
-			return;
-		}
-	}
-
-	grands.unique();
-	if (grands.size()) BakeParents(hTemp, grands);
-}
-
-
-
-// =================================================================================================
-//
-void ToolKit::ImportImage()
-{
-	char buf[MAX_PATH + 32];
-
-	if (GetOpenFileNameA(&SaveImage)) 
-	{
-		if (hSource) {
-			oapiReleaseTexture(hSource);
-			hSource = NULL;
-		}
-
-		hSource = oapiLoadSurfaceEx(SaveImage.lpstrFile, OAPISURFACE_TEXTURE, true);
-
-		if (!hSource) {
-			sprintf_s(buf, 32 + MAX_PATH, "Unable to load file [%s]", SaveImage.lpstrFile);
-			MessageBoxA(hAppMainWnd, buf, "Error:", MB_OK);
-			return;
-		}
-
-		gcCore::SurfaceSpecs specs;
-
-		if (pCore->GetSurfaceSpecs(hSource, &specs, sizeof(gcCore::SurfaceSpecs))) {
-
-			pProp->SetValue(hIFil, SaveImage.lpstrFileTitle);
-			pProp->SetValue(hIWid, specs.Width);
-			pProp->SetValue(hIHei, specs.Height);
-			
-			AutoSelectCorners();
-			ComputeLevel();
-			UpdateOverlay();
-
-			SetMode(MODE_IMPORT);
-		}
-	}
+	if (!UpdateOverlay(0)) return false;
+	if (!UpdateOverlay(1)) return false;
+	return true;
 }
 
 
 // =================================================================================================
 // Update the Overlay image seen on a planets surface
 //
-void ToolKit::UpdateOverlay()
+bool ToolKit::UpdateOverlay(int olay)
 {
-	if (!hSource || !hOverlaySrf) return;	// No graphics
+	if (!bImport) return false;
 
-	bool bTransp = (SendDlgItemMessageA(hImpoDlg, IDC_TRANSP, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	bool bDisPin = (SendDlgItemMessageA(hImpoDlg, IDC_DISABLEPIN, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	SURFHANDLE hSrf = NULL;
+	Layer* pLr = NULL;
 	
+	if (olay == 0) hSrf = hOverlaySrf, pLr = GetLayer(Layer::LayerType::TEXTURE);
+	if (olay == 1) hSrf = hOverlayMsk, pLr = GetLayer(Layer::LayerType::NIGHT);
+	
+	if (!pLr) return false;
+	if (!hSrf) return false;
+
+
+	// Clear/Initialize the background image
+	//
+	if (olay == 0) {
+		ClearOverlay(hSrf, gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE);
+	}
+	else {
+		ClearOverlay(hSrf, gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE);
+	}
+
+
 	// Acquire Sketchpad for Overlay Surface
-	Sketchpad *pSkp = oapiGetSketchpad(hOverlaySrf);
+	Sketchpad *pSkp = oapiGetSketchpad(hSrf);
 
-	if (pSkp) {
-
-		float bri = float(pProp->GetSliderValue(hGBri));
-		float red = float(pProp->GetSliderValue(hBRed) * bri);
-		float grn = float(pProp->GetSliderValue(hBGrn) * bri);
-		float blu = float(pProp->GetSliderValue(hBBlu) * bri);
-		float lgh = float(pProp->GetSliderValue(hGLig));
-		float gma = float(pProp->GetSliderValue(hGGam));
-
-		pSkp->ColorCompatibility(false);
-		pSkp->SetBlendState(Sketchpad::BlendState::COPY);	
-
-		// Clear/Initialize the background image
-		if (hOverlayBkg) pSkp->CopyRect(hOverlayBkg, NULL, 0, 0);
+	if (pSkp) 
+	{
+		FVECTOR4 clr = pLr->GetColor();
+		FVECTOR4 adj = pLr->GetAdjustments();
 
 		FMATRIX4 mColor;
-		mColor.Ident();
-		mColor.m11 = red;
-		mColor.m22 = grn;
-		mColor.m33 = blu;
-		mColor.m41 = lgh;
-		mColor.m42 = lgh;
-		mColor.m43 = lgh;
 
-		if (bTransp) mColor.m44 = 0.5f;
+		mColor.Ident();
+		mColor.m11 = clr.r;
+		mColor.m22 = clr.g;
+		mColor.m33 = clr.b;
+		mColor.m41 = adj.x;
+		mColor.m42 = adj.x;
+		mColor.m43 = adj.x;
+
+		if (pLr->GetTransparency()) mColor.m44 = 0.5f;
 
 		// Setup a color matrix for corrections
 		pSkp->SetColorMatrix(&mColor);	
 
 		// Setup gamma correction
-		pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(gma, gma, gma, 1.0f));
+		pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f));
 
 		SIZE size;
 		pSkp->GetRenderSurfaceSize(&size);
@@ -1383,48 +846,95 @@ void ToolKit::UpdateOverlay()
 			pt[i].y = float((selection.bounds.top - points[i].lat) / h) * float(size.cy);
 		}
 		
-		int nGrad = int(pProp->GetSliderValue(hGEdg));
-
 		for (int i = 0; i < 4; i++) {
 			int q = (i - 1) < 0 ? 3 : i - 1;
 			int w = (i + 1) > 3 ? 0 : i + 1;
 			FVECTOR2 a = unit((pt[q] - pt[i]) + (pt[w] - pt[i]));
-			in[i] = pt[i] + a * float(nGrad);
+			in[i] = pt[i] + a * float(adj.z);
 		}
 
-		// Copy src to tgt with corrections
-		pSkp->CopyTetragon(hSource, NULL, pt);	
+		pSkp->ColorCompatibility(false);
+		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
+
+
+		// Copy Surface Texture
+		//
+		if (olay == 0) 
+		{
+			pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+		}
+		
+		// Copy NightLights Texture
+		//
+		if (olay == 1)
+		{
+			int mode = pLr->GetWaterMode();
+
+			if (mode == 0) { // No Water 
+
+				pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
+				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+
+				Layer* pLrW = GetLayer(Layer::LayerType::WATER);
+
+				if (pLrW) {
+					FMATRIX4 mMix; mMix.Zero(); mMix.m24 = 1.0f;
+					pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
+					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
+					pSkp->CopyTetragon(pLrW->hSource, NULL, pt); // Copy to destination alpha
+				}
+			}
+
+			if (mode == 1) {
+				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+			}
+
+			if (mode == 2) { // All Land
+				pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
+				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+				pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
+				pSkp->FillTetragon(0x00000000, pt);
+			}
+		}
+
 
 		// Restore default Matrix and Gamma
 		pSkp->SetColorMatrix();
 		pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA);
 
-		// Render Edge transparency
-		pSkp->SetBlendState((Sketchpad::BlendState)(Sketchpad::BlendState::COPY_ALPHA | Sketchpad::BlendState::FILTER_ANISOTROPIC));
-		pSkp->ColorFill(0x00000000, NULL); // Clear Alpha Channel
-		
-		FVECTOR2 a[4] = { pt[0], in[0], in[3], pt[3] };
-		pSkp->CopyTetragon(hGradient, NULL, a);
+		if (olay == 0)
+		{
+			// Render Edge transparency
+			pSkp->SetBlendState((Sketchpad::BlendState)(Sketchpad::BlendState::COPY_ALPHA | Sketchpad::BlendState::FILTER_ANISOTROPIC));
+			pSkp->ColorFill(0x00000000, NULL); // Clear Alpha Channel
 
-		FVECTOR2 b[4] = { pt[1], in[1], in[0], pt[0] };
-		pSkp->CopyTetragon(hGradient, NULL, b);
+			FVECTOR2 a[4] = { pt[0], in[0], in[3], pt[3] };
+			pSkp->CopyTetragon(hGradient, NULL, a);
 
-		FVECTOR2 c[4] = { pt[2], in[2], in[1], pt[1] };
-		pSkp->CopyTetragon(hGradient, NULL, c);
+			FVECTOR2 b[4] = { pt[1], in[1], in[0], pt[0] };
+			pSkp->CopyTetragon(hGradient, NULL, b);
 
-		FVECTOR2 d[4] = { pt[3], in[3], in[2], pt[2] };
-		pSkp->CopyTetragon(hGradient, NULL, d);
-		
-		FVECTOR2 e[4] = { in[0], in[1], in[2], in[3] };
-		pSkp->FillTetragon(0xFFFFFFFF, e);
-	
+			FVECTOR2 c[4] = { pt[2], in[2], in[1], pt[1] };
+			pSkp->CopyTetragon(hGradient, NULL, c);
+
+			FVECTOR2 d[4] = { pt[3], in[3], in[2], pt[2] };
+			pSkp->CopyTetragon(hGradient, NULL, d);
+
+			FVECTOR2 e[4] = { in[0], in[1], in[2], in[3] };
+			pSkp->FillTetragon(0xFFFFFFFF, e);
+		}
+
+		pSkp->SetBlendState();
+
+		oapiReleaseSketchpad(pSkp);
+
+		/*
 		// Make sure that the overlay border is transparent
 		pSkp->QuickBrush(0);	
 		pSkp->QuickPen(FVECTOR4(1.0f, 1.0f, 1.0f, 0.0f).dword_abgr(), 3.0f);
 		pSkp->Rectangle(0, 0, size.cx, size.cy);
 		
-		pSkp->SetBlendState();
-		oapiReleaseSketchpad(pSkp);
+		
 
 		// Generate Mip sublevels
 		//
@@ -1448,164 +958,117 @@ void ToolKit::UpdateOverlay()
 			}
 			else break;
 		}
+		*/
+		return true;
 	}
+
+	assert(false);
+	return false;
 }
 
 
 
 // =================================================================================================
 //
-void ToolKit::ComputeLevel()
+bool ToolKit::CreateOverlays()
 {
-	char buf[16];
-	char cur[16];
-	gcCore::SurfaceSpecs specs;
 	
-	if (!hSource) return;
+	int Width = selection.selw * 512;
+	int Height = selection.selh * 512;
 
-	if (pCore->GetSurfaceSpecs(hSource, &specs, sizeof(gcCore::SurfaceSpecs))) {
+	if (Width == 0 || Height == 0) return false;
 
-		// Figure out the level the input texture is good for ------------------
-		//
-		double w1 = fabs(points[0].lng - points[3].lng);
-		double w2 = fabs(points[1].lng - points[2].lng);
-		double h1 = fabs(points[0].lat - points[1].lat);
-		double h2 = fabs(points[2].lat - points[3].lat);
-		if (w1 > PI) w1 = PI2 - w1;
-		if (w2 > PI) w2 = PI2 - w2;
-
-		double sw = fabs(selection.bounds.right - selection.bounds.left);
-		double sh = fabs(selection.bounds.top - selection.bounds.bottom);
-		if (sw > PI) sw = PI2 - sw;
-
-		double wr = sw / min(w1, w2);
-		double hr = sh / min(h1, h2);
-
-		double logw = double(selection.slvl) + log(double(specs.Width) * min(1.0, wr) / double(selection.selw * 512)) / log(2.0);
-		double logh = double(selection.slvl) + log(double(specs.Height) * min(1.0, hr) / double(selection.selh * 512)) / log(2.0);
-		double logl = max(logw, logh);
-		double frac = logl - floor(logl);
-		int lvl = int(floor(logl)) + 4;
-
-		// Display current level 
-		pProp->SetValue(hILog, logl + 4.0, 2);
-
-		// Get Current value from combobox
-		int idx = SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETCURSEL, 0, 0);
-		SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETLBTEXT, idx, (LPARAM)cur);
-	
-
-		sprintf_s(buf, sizeof(buf), "%d", lvl);
-		SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_RESETCONTENT, 0, 0);
-		SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_ADDSTRING, 0, (LPARAM)buf);
-		
-		if (frac > 0.25) {
-			sprintf_s(buf, sizeof(buf), "%d", lvl + 1);
-			SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_ADDSTRING, 0, (LPARAM)buf);
+	if (hOverlaySrf) 
+	{
+		gcCore::SurfaceSpecs ovlspecs;
+		if (pCore->GetSurfaceSpecs(hOverlaySrf, &ovlspecs, sizeof(gcCore::SurfaceSpecs))) {
+			if (ovlspecs.Width != Width || ovlspecs.Height != Height) {
+				oapiReleaseTexture(hOverlaySrf);
+				hOverlaySrf = NULL;
+			}
 		}
+	}
 
-		// Select Item from the combobox 
-		if (SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_SELECTSTRING, -1, (LPARAM)cur) == CB_ERR) {
-			SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_SETCURSEL, 0, 0);
+	if (hOverlayMsk)
+	{
+		gcCore::SurfaceSpecs ovlspecs;
+		if (pCore->GetSurfaceSpecs(hOverlayMsk, &ovlspecs, sizeof(gcCore::SurfaceSpecs))) {
+			if (ovlspecs.Width != Width || ovlspecs.Height != Height) {
+				oapiReleaseTexture(hOverlayMsk);
+				hOverlayMsk = NULL;
+			}
 		}
-		
+	}
 
-		// Setup a selected level --------------------------------------
-		//
-		idx = SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETCURSEL, 0, 0);
-		SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETLBTEXT, idx, (LPARAM)cur);
-		int sellvl = atoi(cur);
+	if (hOverlayElv)
+	{
+		gcCore::SurfaceSpecs ovlspecs;
+		if (pCore->GetSurfaceSpecs(hOverlayElv, &ovlspecs, sizeof(gcCore::SurfaceSpecs))) {
+			if (ovlspecs.Width != Width || ovlspecs.Height != Height) {
+				oapiReleaseTexture(hOverlayElv);
+				hOverlayElv = NULL;
+			}
+		}
+	}
 
-		int dlvl = max(0, (sellvl - (selection.slvl + 4)));
-		int Width = (1 << dlvl) * selection.selw * 512;
-		int Height = (1 << dlvl) * selection.selh * 512;
+	if (!hOverlaySrf && IsLayerValid(Layer::LayerType::TEXTURE))
+	{
+		hOverlaySrf = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
+		if (!hOverlaySrf) return false;
+		hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::SURFACE, hOverlaySrf, hOverlay);
+	}
 
-		if (hOverlaySrf) {
-			gcCore::SurfaceSpecs ovlspecs;
-			if (pCore->GetSurfaceSpecs(hOverlaySrf, &ovlspecs, sizeof(gcCore::SurfaceSpecs))) {
-				if (ovlspecs.Width != Width || ovlspecs.Height != Height) {
-					oapiReleaseTexture(hOverlaySrf);
-					hOverlaySrf = NULL;
+	if (!hOverlayMsk && (IsLayerValid(Layer::LayerType::NIGHT) || IsLayerValid(Layer::LayerType::WATER)))
+	{
+		hOverlayMsk = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
+		if (!hOverlayMsk) return false;
+		hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::MASK, hOverlayMsk, hOverlay);
+	}
+
+	if (!hOverlayElv && IsLayerValid(Layer::LayerType::ELEVATION))
+	{
+		hOverlayElv = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_F32R | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_NOMIPMAPS);
+		if (!hOverlayElv) return false;
+		hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::ELEVATION, hOverlayElv, hOverlay);
+	}
+
+	bImport = (hOverlay != NULL);
+
+	return bImport;
+}
+
+
+// =================================================================================================
+//
+bool ToolKit::ClearOverlay(SURFHANDLE hSrf, DWORD flags)
+{
+	if (!hSrf) return false;
+
+	Sketchpad* pSkp = oapiGetSketchpad(hSrf);
+
+	if (pSkp) 
+	{
+		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
+
+		for (auto se : selection.area)
+		{
+			SubTex st = se.pNode->GetSubTexRange(flags);
+			if (st.pNode) {
+				SURFHANDLE hSrc = st.pNode->GetTexture(flags); // Do not release
+				if (hSrc) {
+					RECT t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
+					pSkp->StretchRect(hSrc, &st.range, &t);
 				}
 			}
 		}
 
-		if (!hOverlaySrf) {
-
-			if (hOverlayBkg) oapiReleaseTexture(hOverlayBkg);
-
-			hOverlaySrf = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
-			hOverlayBkg = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, hOverlaySrf, hOverlay);
-
-			Sketchpad *pSkp = oapiGetSketchpad(hOverlayBkg);
-
-			if (pSkp) {
-
-				for each (selentry s in selection.area)
-				{
-					SubTex st = s.pNode->GetSubTexRange(gcTileFlags::TEXTURE | gcTileFlags::TREE | gcTileFlags::CACHE);
-					if (st.pNode) {
-						RECT src, tgt;
-						st.pNode->MapRect(selection.bounds, hOverlaySrf, src, tgt);
-						SURFHANDLE hSrf = st.pNode->GetTexture();
-						if (hSrf) pSkp->StretchRect(hSrf, &tgt, &src);
-					}
-				}
-				oapiReleaseSketchpad(pSkp);
-			}
-		}
+		pSkp->SetBlendState();
+		oapiReleaseSketchpad(pSkp);
 	}
+	return true;
 }
 
 
-// =================================================================================================
-//
-void ToolKit::AutoSelectCorners()
-{
-	points[0].lng = selection.bounds.left;
-	points[0].lat = selection.bounds.top;
-	points[1].lng = selection.bounds.left;
-	points[1].lat = selection.bounds.bottom;
-	points[2].lng = selection.bounds.right;
-	points[2].lat = selection.bounds.bottom;
-	points[3].lng = selection.bounds.right;
-	points[3].lat = selection.bounds.top;
-
-	for (int i = 0; i < 4; i++) {
-		double elev;
-		HTILE hTile = pCore->GetTile(hMgr, points[i].lng, points[i].lat);
-		if (hTile) {
-			if (pCore->GetElevation(hTile, points[i].lng, points[i].lat, &elev) >= 0) {
-				points[i].elev = elev;
-			}
-		}
-	}
-}
-
-
-// =================================================================================================
-//
-void ToolKit::UpdateTileInfo(QTree *pF, gcCore::PickGround *pP)
-{
-	if (!pF || !pP) return;
-	char name[64];
-	sprintf_s(name, 63, "Surf/%d/%d/%d.dds", pF->level + 4, pF->ilat, pF->ilng);
-	pProp->SetValue(hCLng, pP->lng, 4, gcPropertyTree::LONGITUDE);
-	pProp->SetValue(hCLat, pP->lat, 4, gcPropertyTree::LATITUDE);
-	pProp->SetValue(hCEle, pP->elev, 1);
-	pProp->SetValue(hCFil, string(name));
-	pProp->Update();
-}
-
-
-// =================================================================================================
-//
-int	ToolKit::SelectedLevel()
-{
-	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
-	return max(select - 1, -1);
-}
 
 
 // =================================================================================================
@@ -1656,8 +1119,6 @@ void ToolKit::clbkMouseClick(int iUser, void *pData)
 			{
 				oldsel.area.clear();
 				pSecond = pRoot->FindNode(pPick->lng, pPick->lat, pFirst->level);
-				ComputeLevel();
-				UpdateOverlay();
 				return;
 			}
 		}
@@ -1682,8 +1143,8 @@ bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
 	pick.grp_inst = -1;
 
 	if (event == WM_LBUTTONDOWN) {
-		down_corner = -1;
-		if (hSource && hOverlay) {
+		down_corner = -1; // down_corner is the ID of the draggable corner balls
+		if (bImport && hOverlay) {
 			for (int i = 0; i < 4; i++) {
 				if (pCore->PickMesh(&pick, dmSphere, &points[i].mWorld, short(x), short(y))) {
 					sel_corner = i;
@@ -1695,13 +1156,14 @@ bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
 
 	if (event == WM_LBUTTONUP) down_corner = -1;
 
-	if ((x != xpos || y != ypos) && down_corner >= 0) {
+
+	if ((x != xpos || y != ypos) && down_corner >= 0)
+	{
 		gcCore::PickGround pg = pCore->ScanScreen(x, y);
 		points[down_corner].lng = pg.lng;
 		points[down_corner].lat = pg.lat;
 		points[down_corner].elev = pg.elev;
-		ComputeLevel();
-		UpdateOverlay();
+		if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in clbkProcessMouse()");
 	}
 
 	xpos = x, ypos = y;
@@ -1725,46 +1187,6 @@ bool ToolKit::clbkProcessKeyboardBuffered(DWORD key, char kstate[256], bool simR
 	}
 
 	return false;
-}
-
-
-// =================================================================================================
-//
-bool ToolKit::SaveFile(OPENFILENAMEA &SaveImage)
-{
-	if (GetSaveFileNameA(&SaveImage)) {
-
-		int type = 0;
-
-		// Pick the file type from a file name
-		if (strstr(SaveImage.lpstrFile, ".dds") || strstr(SaveImage.lpstrFile, ".DDS")) type = 1;
-		if (strstr(SaveImage.lpstrFile, ".bmp") || strstr(SaveImage.lpstrFile, ".BMP")) type = 2;
-		if (strstr(SaveImage.lpstrFile, ".png") || strstr(SaveImage.lpstrFile, ".PGN")) type = 3;
-		if (strstr(SaveImage.lpstrFile, ".jpg") || strstr(SaveImage.lpstrFile, ".JPG")) type = 4;
-		if (strstr(SaveImage.lpstrFile, ".jpeg") || strstr(SaveImage.lpstrFile, ".JPEG")) type = 4;
-
-		if (type == 0) {
-			// If above fails then use selected "filter" to appeand file "id".
-			if (SaveImage.nFilterIndex == 0) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".jpg");
-			if (SaveImage.nFilterIndex == 1) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".dds");
-			if (SaveImage.nFilterIndex == 2) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".bmp");
-			if (SaveImage.nFilterIndex == 3) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".png");
-			if (SaveImage.nFilterIndex == 4) strcat_s(SaveImage.lpstrFile, MAX_PATH, ".jpg");
-		}
-		return true;
-	}
-	return false;
-}
-
-
-// =================================================================================================
-//
-VECTOR3 ToolKit::GetSurfacePosUnit(double lng, double lat)
-{
-	MATRIX3 mRot;
-	double w = cos(lat);
-	oapiGetRotationMatrix(hPlanet, &mRot);
-	return mul(mRot, _V(w*cos(lng), sin(lat), w*sin(lng)));
 }
 
 

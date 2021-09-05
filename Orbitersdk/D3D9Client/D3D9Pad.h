@@ -501,17 +501,17 @@ public:
 	void QuickBrush(DWORD color);
 	void SetGlobalLineScale(float width = 1.0f, float pattern = 1.0f);
 	void SetWorldTransform(const FMATRIX4 *pWT = NULL);
-	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, IVECTOR2 *c=NULL, IVECTOR2 *t=NULL);
-	int  DrawMeshGroup(MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, SURFHANDLE hTex = NULL);
-	void CopyRect(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
-	void StretchRect(SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
-	void RotateRect(SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
-	void ColorKey(SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
+	void SetWorldTransform2D(float scale=1.0f, float rot=0.0f, const IVECTOR2 *c=NULL, const IVECTOR2 *t=NULL);
+	int  DrawMeshGroup(const MESHHANDLE hMesh, DWORD grp, Sketchpad::MeshFlags flags, const SURFHANDLE hTex = NULL);
+	void CopyRect(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
+	void StretchRect(const SURFHANDLE hSrc, const LPRECT src, const LPRECT tgt);
+	void RotateRect(const SURFHANDLE hSrc, const LPRECT src, int cx, int cy, float angle, float sw = 1.0f, float sh = 1.0f);
+	void ColorKey(const SURFHANDLE hSrc, const LPRECT src, int tx, int ty);
 	void TextEx(float x, float y, const char *str, float scale = 100.0f, float angle = 0.0f);
 	void ClipRect(const LPRECT clip = NULL);
 	void Clipper(int idx, const VECTOR3 *pPos = NULL, double cos_angle = 0.0, double dist = 0.0);
-	void DrawPoly(HPOLY hPoly, DWORD flags = 0);
-	void Lines(FVECTOR2 *pt1, int nlines);
+	void DrawPoly(const HPOLY hPoly, DWORD flags = 0);
+	void Lines(const FVECTOR2 *pt1, int nlines);
 	void DepthEnable(bool bEnable);
 
 	void SetViewMode(SkpView mode = ORTHO);
@@ -535,13 +535,13 @@ public:
 	FVECTOR4 GetRenderParam(RenderParam param);
 	void SetRenderParam(RenderParam param, const FVECTOR4 *data = NULL);
 	void SetBlendState(BlendState dwState);
-	FMATRIX4 GetWorldTransform() const;
+	 FMATRIX4 GetWorldTransform() const;
 	void PushWorldTransform();
 	void PopWorldTransform();
 	void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL);
 	void GradientFillRect(const LPRECT rect, DWORD c1, DWORD c2, bool bVertical = false);
 	void ColorFill(DWORD color, const LPRECT tgt);
-	void StretchRegion(const skpRegion *rgn, SURFHANDLE hSrc, const LPRECT out);
+	void StretchRegion(const skpRegion *rgn, const SURFHANDLE hSrc, const LPRECT out);
 	void CopyTetragon(SURFHANDLE pSrc, const LPRECT _s, const FVECTOR2 pt[4]);
 	void ColorCompatibility(bool bEnable);
 	void FillTetragon(DWORD c, const FVECTOR2 pt[4]);
@@ -842,54 +842,6 @@ private:
 
 
 
-
-
-
-class SketchMesh
-{
-
-public:
-
-	struct SKETCHGRP {			// mesh group definition
-		DWORD VertOff;			// Main mesh Vertex Offset
-		DWORD IdxOff;			// Main mesh Index Offset
-		DWORD nIdx;				// Index count
-		DWORD nVert;			// Vertex count
-		DWORD MtrlIdx;			// material index
-		DWORD TexIdx;			// texture index 0=None
-	};
-
-	explicit		SketchMesh(LPDIRECT3DDEVICE9 pDev);
-					~SketchMesh();
-
-	void			Init();
-	bool			LoadMesh(const char *name);
-	bool			LoadMeshFromHandle(MESHHANDLE hMesh);
-	void			RenderGroup(DWORD idx);
-	SURFHANDLE		GetTexture(DWORD idx);
-	D3DXCOLOR		GetMaterial(DWORD idx);
-	DWORD			GroupCount() const { return nGrp; }
-
-private:
-
-	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
-	LPDIRECT3DINDEXBUFFER9 pIB;
-
-	DWORD MaxVert;
-	DWORD MaxIdx;
-
-	DWORD nGrp;                 // number of mesh groups
-	DWORD nMtrl;                // number of mesh materials
-	DWORD nTex;                 // number of mesh textures
-
-	LPDIRECT3DDEVICE9 pDev;
-	SURFHANDLE *Tex;			// list of mesh textures
-	SKETCHGRP *Grp;            // list of mesh groups
-	D3DXCOLOR *Mtrl;
-};
-
-
-
 class D3D9PolyBase
 {
 	DWORD alloc_id;
@@ -930,10 +882,10 @@ class D3D9Triangle : public D3D9PolyBase
 {
 
 public:
-	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const Sketchpad::TriangleVtx *pt, int npt, int style);
+	D3D9Triangle(LPDIRECT3DDEVICE9 pDev, const gcCore::clrVtx *pt, int npt, int style);
 	~D3D9Triangle();
 
-	void Update(const Sketchpad::TriangleVtx *pt, int npt);
+	void Update(const gcCore::clrVtx *pt, int npt);
 	void Draw(D3D9Pad*, LPDIRECT3DDEVICE9 pDev);
 	void Release();
 

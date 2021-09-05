@@ -58,7 +58,7 @@ HDC GDIPad::GetDC()
 
 // ===============================================================================================
 //
-Font *GDIPad::SetFont (Font *font) const
+Font *GDIPad::SetFont (Font *font)
 {
 	Font *pfont = cfont;
 	if (font) {
@@ -74,7 +74,7 @@ Font *GDIPad::SetFont (Font *font) const
 
 // ===============================================================================================
 //
-Pen *GDIPad::SetPen (Pen *pen) const
+Pen *GDIPad::SetPen (Pen *pen)
 {
 	Pen *ppen = cpen;
 	if (pen) cpen = pen;
@@ -86,7 +86,7 @@ Pen *GDIPad::SetPen (Pen *pen) const
 
 // ===============================================================================================
 //
-Brush *GDIPad::SetBrush (Brush *brush) const
+Brush *GDIPad::SetBrush (Brush *brush)
 {
 	Brush *pbrush = cbrush;
 	cbrush = brush;

@@ -44,6 +44,7 @@ D3DXHANDLE PlanetRenderer::svSunDir = NULL;
 D3DXHANDLE PlanetRenderer::svCloudOff = NULL;
 D3DXHANDLE PlanetRenderer::svMicroOff = NULL;
 D3DXHANDLE PlanetRenderer::svOverlayOff = NULL;
+D3DXHANDLE PlanetRenderer::svOverlayCtrl = NULL;
 D3DXHANDLE PlanetRenderer::svTangent = NULL;
 D3DXHANDLE PlanetRenderer::svBiTangent = NULL;
 D3DXHANDLE PlanetRenderer::svPolarAxis = NULL;
@@ -68,6 +69,7 @@ D3DXHANDLE PlanetRenderer::siDebug = NULL;
 D3DXHANDLE PlanetRenderer::sbDebug = NULL;
 D3DXHANDLE PlanetRenderer::sbShadows = NULL;
 D3DXHANDLE PlanetRenderer::sbOverlay = NULL;
+D3DXHANDLE PlanetRenderer::sbElevOvrl = NULL;
 D3DXHANDLE PlanetRenderer::sbSpherical = NULL;
 D3DXHANDLE PlanetRenderer::sbCloudNorm = NULL;
 D3DXHANDLE PlanetRenderer::sbEarth = NULL;
@@ -87,6 +89,8 @@ D3DXHANDLE PlanetRenderer::stShadowMap = NULL;
 D3DXHANDLE PlanetRenderer::stCloudMicro = NULL;
 D3DXHANDLE PlanetRenderer::stCloudMicroNorm = NULL;
 D3DXHANDLE PlanetRenderer::stOverlay = NULL;
+D3DXHANDLE PlanetRenderer::stMskOverlay = NULL;
+D3DXHANDLE PlanetRenderer::stElvOverlay = NULL;
 // ------------------------------------------------------------
 D3DXHANDLE PlanetRenderer::sfGlobalAmb = NULL;
 D3DXHANDLE PlanetRenderer::sfAmbient0 = NULL;
@@ -262,6 +266,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	svCloudOff			= pShader->GetParameterByName(0,"vCloudOff");
 	svMicroOff			= pShader->GetParameterByName(0,"vMicroOff");
 	svOverlayOff		= pShader->GetParameterByName(0,"vOverlayOff");
+	svOverlayCtrl		= pShader->GetParameterByName(0,"vOverlayCtrl");
 	svWater				= pShader->GetParameterByName(0,"vWater");
 	svSunDir			= pShader->GetParameterByName(0,"vSunDir");
 	svTangent			= pShader->GetParameterByName(0,"vTangent");
@@ -288,6 +293,7 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	sbLocals			= pShader->GetParameterByName(0,"bLocals");
 	sbShadows			= pShader->GetParameterByName(0,"bShadows");
 	sbOverlay			= pShader->GetParameterByName(0,"bOverlay");
+	sbElevOvrl			= pShader->GetParameterByName(0,"bElevOvrl");
 	sbSpherical			= pShader->GetParameterByName(0,"bSpherical");
 	sbCloudNorm			= pShader->GetParameterByName(0,"bCloudNorm");
 	sbEarth				= pShader->GetParameterByName(0,"bEarth");
@@ -307,6 +313,8 @@ void PlanetRenderer::GlobalInit (class oapi::D3D9Client *gclient)
 	stMicroRot			= pShader->GetParameterByName(0,"tMicroRot");
 	stShadowMap			= pShader->GetParameterByName(0,"tShadowMap");
 	stOverlay			= pShader->GetParameterByName(0,"tOverlay");
+	stMskOverlay		= pShader->GetParameterByName(0,"tMskOverlay");
+	stElvOverlay		= pShader->GetParameterByName(0,"tElvOverlay");
 	// ------------------------------------------------------------
 	sfGlobalAmb			= pShader->GetParameterByName(0,"fGlobalAmb");
 	sfAmbient0			= pShader->GetParameterByName(0,"fAmbient");

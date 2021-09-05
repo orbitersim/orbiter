@@ -72,6 +72,8 @@ set<D3D9Mesh*> MeshCatalog;
 set<SurfNative*> SurfaceCatalog;
 unordered_map<string, SURFHANDLE> SharedTextures;
 unordered_map<string, SURFHANDLE> ClonedTextures;
+unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
+
 DWORD uCurrentMesh = 0;
 vObject *pCurrentVisual = 0;
 _D3D9Stats D3D9Stats;
@@ -633,7 +635,7 @@ void D3D9Client::SketchPadTest()
 	float a = 0.0f;
 	float s = float(PI2 / 6.0);
 
-	Sketchpad::TriangleVtx Vtx[8];
+	gcCore::clrVtx Vtx[8];
 	oapi::FVECTOR2 Pol[6];
 
 	for (int i = 0; i < 6; i++) {
@@ -944,6 +946,9 @@ void D3D9Client::clbkDestroyRenderWindow (bool fastclose)
 	size_t nt = TileCatalog->CountEntries();
 	if (nt) LogErr("SurfaceTile catalog contains %lu unreleased entries", nt);
 
+	for (auto it : MeshMap)	SAFE_DELETE(it.second);
+
+	MeshMap.clear();
 	SharedTextures.clear();
 	SurfaceCatalog.clear();
 	MeshCatalog.clear();

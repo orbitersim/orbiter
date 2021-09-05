@@ -75,6 +75,7 @@ public:
 	static D3DXHANDLE svCloudOff;
 	static D3DXHANDLE svMicroOff;
 	static D3DXHANDLE svOverlayOff;
+	static D3DXHANDLE svOverlayCtrl;
 	static D3DXHANDLE svTangent;
 	static D3DXHANDLE svBiTangent;
 	static D3DXHANDLE svPolarAxis;
@@ -99,6 +100,7 @@ public:
 	static D3DXHANDLE sbDebug;
 	static D3DXHANDLE sbShadows;
 	static D3DXHANDLE sbOverlay;
+	static D3DXHANDLE sbElevOvrl;
 	static D3DXHANDLE sbSpherical;
 	static D3DXHANDLE sbCloudNorm;
 	static D3DXHANDLE sbEarth;
@@ -118,6 +120,8 @@ public:
 	static D3DXHANDLE stMicroRot;
 	static D3DXHANDLE stShadowMap;
 	static D3DXHANDLE stOverlay;
+	static D3DXHANDLE stMskOverlay;
+	static D3DXHANDLE stElvOverlay;
 	// ------------------------------------------------------------
 	static D3DXHANDLE sfGlobalAmb;
 	static D3DXHANDLE sfAmbient0;
@@ -150,7 +154,6 @@ public:
 	static D3DXHANDLE sfInvAux1;
 	static D3DXHANDLE sfInvParameter;
 	static D3DXHANDLE sfTime;
-
 };
 
 #endif

@@ -11,6 +11,7 @@
 #include "TileLabel.h"
 #include "D3D9Pad.h"
 
+/*
 #pragma pack(push,1)
 
 struct ELEVFILEHEADER { // file header for patch elevation data file
@@ -27,6 +28,7 @@ struct ELEVFILEHEADER { // file header for patch elevation data file
 };
 
 #pragma pack(pop)
+*/
 
 /**
  * \brief Planetary surface rendering engine.

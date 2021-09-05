@@ -94,6 +94,7 @@ const D3DVERTEXELEMENT9 PatchVertexDecl[] = {
 	{0, 0,  D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
 	{0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 	{0, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+	{0, 32, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 	D3DDECL_END()
 };
 
@@ -201,6 +202,50 @@ private:
 		float	range, range2;
 		float	intensity;
 		const   LightEmitter *le;
+};
+
+
+
+class SketchMesh
+{
+
+public:
+
+	struct SKETCHGRP {			// mesh group definition
+		DWORD VertOff;			// Main mesh Vertex Offset
+		DWORD IdxOff;			// Main mesh Index Offset
+		DWORD nIdx;				// Index count
+		DWORD nVert;			// Vertex count
+		DWORD MtrlIdx;			// material index
+		DWORD TexIdx;			// texture index 0=None
+	};
+
+	explicit		SketchMesh(LPDIRECT3DDEVICE9 pDev);
+	~SketchMesh();
+
+	void			Init();
+	bool			LoadMeshFromHandle(MESHHANDLE hMesh);
+	void			RenderGroup(DWORD idx);
+	SURFHANDLE		GetTexture(DWORD idx);
+	D3DXCOLOR		GetMaterial(DWORD idx);
+	DWORD			GroupCount() const { return nGrp; }
+
+private:
+
+	LPDIRECT3DVERTEXBUFFER9 pVB; ///< (Local) Vertex buffer pointer
+	LPDIRECT3DINDEXBUFFER9 pIB;
+
+	DWORD MaxVert;
+	DWORD MaxIdx;
+
+	DWORD nGrp;                 // number of mesh groups
+	DWORD nMtrl;                // number of mesh materials
+	DWORD nTex;                 // number of mesh textures
+
+	LPDIRECT3DDEVICE9 pDev;
+	SURFHANDLE* Tex;			// list of mesh textures
+	SKETCHGRP* Grp;            // list of mesh groups
+	D3DXCOLOR* Mtrl;
 };
 
 typedef struct {
@@ -437,6 +482,7 @@ void SurfaceLighting(D3D9Sun *light, OBJHANDLE hP, OBJHANDLE hO, float ao);
 void OrbitalLighting(D3D9Sun *light, const class vPlanet *vP, const VECTOR3 &GO, float ao);
 
 const char *RemovePath(const char *in);
+SketchMesh * GetSketchMesh(const MESHHANDLE hMesh);
 
 bool CreateVolumeTexture(LPDIRECT3DDEVICE9 pDevice, int count, LPDIRECT3DTEXTURE9 *pIn, LPDIRECT3DVOLUMETEXTURE9 *pOut);
 
@@ -492,14 +538,14 @@ struct VERTEX_XYZ_TEX {
 };
 
 // untransformed unlit vertex with two sets of texture coordinates
-struct VERTEX_2TEX  {
+struct VERTEX_2TEX {
 	float x, y, z, nx, ny, nz;
-	float tu0, tv0; // , tu1, tv1;
+	float tu0, tv0, e;
 	inline VERTEX_2TEX() : x(0.0f), y(0.0f), z(0.0f), nx(0.0f), ny(0.0f), nz(0.0f),
-		tu0(0.0f), tv0(0.0f) {} //, tu1(0.0f), tv1(0.0f) {}
+		tu0(0.0f), tv0(0.0f), e(0.0f) {}
 	inline VERTEX_2TEX(const D3DVECTOR& p, const D3DVECTOR& n, float u0, float v0, float u1, float v1)
 		: x(p.x), y(p.y), z(p.z), nx(n.x), ny(n.y), nz(n.z),
-		tu0(u0), tv0(v0) {} //, tu1(u1), tv1(v1) {}
+		tu0(u0), tv0(v0), e(0.0f) {}
 };
 
 // -----------------------------------------------------------------------------------

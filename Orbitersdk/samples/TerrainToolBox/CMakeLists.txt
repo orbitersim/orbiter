@@ -8,6 +8,9 @@ add_library(TerrainToolBox MODULE
 	ToolBox.h
 	ToolBox.cpp
 	ToolBox.rc
+	ExportImport.cpp
+	Basics.cpp
+	Layer.cpp
 	resource.h
 )
 

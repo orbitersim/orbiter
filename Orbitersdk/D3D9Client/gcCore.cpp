@@ -28,6 +28,7 @@
 #include "VVessel.h"
 #include "VPlanet.h"
 #include "Surfmgr2.h"
+#include "IProcess.h"
 
 extern D3D9Client *g_client;
 extern std::set<Font *> g_fonts;
@@ -92,6 +93,8 @@ DLLCLBK void gcBindCoreMethod(void** ppFnc, const char* name)
 	if (strcmp(name,"StretchRectInScene")==0) *ppFnc = &gcCore2::StretchRectInScene;
 	if (strcmp(name,"ClearSurfaceInScene")==0) *ppFnc = &gcCore2::ClearSurfaceInScene;
 	if (strcmp(name,"ScanScreen")==0) *ppFnc = &gcCore2::ScanScreen;
+	if (strcmp(name,"LockSurface")==0) *ppFnc = &gcCore2::LockSurface;
+	if (strcmp(name,"ReleaseLock")==0) *ppFnc = &gcCore2::ReleaseLock;
 	if (strcmp(name,"GetPlanetManager")==0) *ppFnc = &gcCore2::GetPlanetManager;
 	if (strcmp(name,"SetTileOverlay")==0) *ppFnc = &gcCore2::SetTileOverlay;
 	if (strcmp(name,"AddGlobalOverlay")==0) *ppFnc = &gcCore2::AddGlobalOverlay;
@@ -101,6 +104,8 @@ DLLCLBK void gcBindCoreMethod(void** ppFnc, const char* name)
 	if (strcmp(name,"SeekTileTexture")==0) *ppFnc = &gcCore2::SeekTileTexture;
 	if (strcmp(name,"SeekTileElevation")==0) *ppFnc = &gcCore2::SeekTileElevation;
 	if (strcmp(name,"GetElevation")==0) *ppFnc = &gcCore2::GetElevation;
+	if (strcmp(name,"CreateIPInterface")==0) *ppFnc = &gcCore2::CreateIPInterface;
+	if (strcmp(name,"ReleaseIPInterface")==0) *ppFnc = &gcCore2::ReleaseIPInterface;
 #define binder_end
 	if (*ppFnc == NULL) oapiWriteLogV("ERROR:gcCoreAPI: Function [%s] failed to bind", name);
 }
@@ -270,7 +275,7 @@ HPOLY gcCore::CreatePoly(HPOLY hPoly, const FVECTOR2 *pt, int npt, DWORD flags)
 
 // ===============================================================================================
 //
-HPOLY gcCore::CreateTriangles(HPOLY hPoly, const Sketchpad::TriangleVtx *pt, int npt, DWORD flags)
+HPOLY gcCore::CreateTriangles(HPOLY hPoly, const gcCore::clrVtx *pt, int npt, DWORD flags)
 {
 	LPDIRECT3DDEVICE9 pDev = g_client->GetDevice();
 	if (!hPoly) return new D3D9Triangle(pDev, pt, npt, flags);
@@ -648,9 +653,22 @@ gcCore::PickGround gcCore2::GetTileData(HPLANETMGR vPl, double lng, double lat, 
 
 // ===============================================================================================
 //
-void * gcCore2::SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pInfo)
+bool gcCore2::SeekTileElevation(HPLANETMGR hMgr, int iLng, int iLat, int level, int flags, ElevInfo *pInfo)
 {
-	return NULL;
+	ELEVFILEHEADER hdr;
+	if (!hMgr) return false;
+	if (((vPlanet*)(hMgr))->SurfMgr2()) {
+		float* pData = ((vPlanet*)(hMgr))->SurfMgr2()->BrowseElevationData(level, iLat, iLng, flags, &hdr);
+		if (!pData) return false;
+		pInfo->MaxElev = hdr.emax;
+		pInfo->MinElev = hdr.emin;
+		pInfo->MeanElev = hdr.emean;
+		pInfo->Resolution = hdr.scale;
+		pInfo->Offset = hdr.offset;
+		pInfo->pElevData = pData;
+		return true;
+	}
+	return false;
 }
 
 
@@ -700,15 +718,85 @@ SURFHANDLE gcCore2::SetTileOverlay(HTILE hTile, const SURFHANDLE hOverlay)
 
 // ===============================================================================================
 //
-HOVERLAY gcCore2::AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, const SURFHANDLE hOverlay, HOVERLAY hOld)
+HOVERLAY gcCore2::AddGlobalOverlay(HPLANETMGR hMgr, VECTOR4 mmll, OlayType type, const SURFHANDLE hOverlay, HOVERLAY hOld, const FVECTOR4* pBlend)
 {
 	if (!hMgr) return NULL;
 	vPlanet *vP = static_cast<vPlanet *>(hMgr);
 	vPlanet::sOverlay* oLay = static_cast<vPlanet::sOverlay*>(hOld);
 	if (hOverlay) {
 		LPDIRECT3DTEXTURE9 pTex = SURFACE(hOverlay)->GetTexture();
-		return vP->AddOverlaySurface(mmll, pTex, oLay);
+		return vP->AddOverlaySurface(mmll, type, pTex, oLay, pBlend);
 	}
-	return vP->AddOverlaySurface(mmll, NULL, oLay);
+	return vP->AddOverlaySurface(mmll, type, NULL, oLay, pBlend);
+}
+
+// ===============================================================================================
+//
+bool gcCore::LockSurface(SURFHANDLE hSrf, Lock* pOut, bool bWait)
+{
+	D3DLOCKED_RECT lock;
+	LPDIRECT3DRESOURCE9 pResource = SURFACE(hSrf)->GetResource();
+	DWORD flags = 0;
+	if (!bWait) flags |= D3DLOCK_DONOTWAIT;
+
+	if (pResource->GetType() == D3DRTYPE_SURFACE) {
+		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(hSrf);
+		if (HROK(pSurf->LockRect(&lock, NULL, flags))) {
+			pOut->pData = lock.pBits;
+			pOut->Pitch = lock.Pitch;
+			return true;
+		}
+		return false;
+	}
+
+	if (pResource->GetType() == D3DRTYPE_TEXTURE) {
+		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
+		if (HROK(pTex->LockRect(0, &lock, NULL, flags))) {
+			pOut->pData = lock.pBits;
+			pOut->Pitch = lock.Pitch;
+			return true;
+		}
+		return false;
+	}
+
+	return false;
+}
+
+
+// ===============================================================================================
+//
+void gcCore::ReleaseLock(SURFHANDLE hSrf)
+{
+	LPDIRECT3DRESOURCE9 pResource = SURFACE(hSrf)->GetResource();
+	if (pResource->GetType() == D3DRTYPE_SURFACE) {
+		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(hSrf);
+		HR(pSurf->UnlockRect());
+	}
+	if (pResource->GetType() == D3DRTYPE_TEXTURE) {
+		LPDIRECT3DTEXTURE9 pTex = static_cast<LPDIRECT3DTEXTURE9>(hSrf);
+		HR(pTex->UnlockRect(0));
+	}
+}
+
+// ===============================================================================================
+//
+gcIPInterface* gcCore2::CreateIPInterface(const char* file, const char* PSEntry, const char* VSEntry, const char* ppf)
+{
+	ImageProcessing* pIPI = new ImageProcessing(g_client->GetDevice(), file, PSEntry, ppf);
+
+	if (pIPI->IsOK() == false) {
+		oapiWriteLogV("gcCore::CreateIPInterface() Failed !  File = [%s]", file);
+		return NULL;
+	}
+	return new gcIPInterface(pIPI);
+}
+
+// ===============================================================================================
+//
+void gcCore2::ReleaseIPInterface(gcIPInterface* pIPI)
+{
+	if (!pIPI) return;
+	if (pIPI->pIPI) delete pIPI->pIPI;
+	delete pIPI;
 }
 

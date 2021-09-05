@@ -15,10 +15,13 @@
 #include "VectorHelpers.h"
 #include "D3D9Config.h"
 #include "VPlanet.h"
+#include "Mesh.h"
 #include <functional>
 #include <cctype>
+#include <unordered_map>
 
 extern D3D9Client* g_client;
+extern unordered_map<MESHHANDLE, class SketchMesh*> MeshMap;
 
 DWORD BuildDate()
 {
@@ -1417,3 +1420,186 @@ int LoadPlanetTextures(const char* fname, LPDIRECT3DTEXTURE9* ppdds, DWORD flags
 	LogWrn("File %s not found", fname);
 	return 0;
 }
+
+
+
+
+
+
+// ======================================================================================
+// SketchMesh Interface
+// ======================================================================================
+
+SketchMesh* GetSketchMesh(const MESHHANDLE hMesh)
+{
+	if (MeshMap.find(hMesh) == MeshMap.end())
+	{
+		SketchMesh* pMesh = new SketchMesh(g_client->GetDevice());
+
+		if (pMesh->LoadMeshFromHandle(hMesh))
+		{
+			MeshMap[hMesh] = pMesh;
+			return pMesh;
+		}
+		delete pMesh;
+		return NULL;
+	}
+	else return MeshMap[hMesh];
+}
+
+
+SketchMesh::SketchMesh(LPDIRECT3DDEVICE9 _pDev) :
+	MaxVert(0), MaxIdx(0),
+	nGrp(0), nMtrl(0), nTex(0),
+	pDev(_pDev),
+	Tex(NULL),
+	Grp(NULL),
+	Mtrl(NULL)
+{
+}
+
+
+// ===============================================================================================
+//
+SketchMesh::~SketchMesh()
+{
+	SAFE_DELETEA(Mtrl);
+	SAFE_DELETEA(Tex);
+	SAFE_DELETEA(Grp);
+	SAFE_RELEASE(pVB);
+	SAFE_RELEASE(pIB);
+}
+
+
+// ===============================================================================================
+//
+bool SketchMesh::LoadMeshFromHandle(MESHHANDLE hMesh)
+{
+	pVB = NULL;
+	pIB = NULL;
+	Mtrl = NULL;
+	Tex = NULL;
+	Grp = NULL;
+
+	MaxVert = MaxIdx = 0;
+
+	nGrp = oapiMeshGroupCount(hMesh);
+	if (nGrp == 0) return false;
+
+	Grp = new SKETCHGRP[nGrp];
+	memset(Grp, 0, sizeof(SKETCHGRP) * nGrp);
+
+	// -----------------------------------------------------------------------
+
+	nTex = oapiMeshTextureCount(hMesh) + 1;
+	Tex = new SURFHANDLE[nTex];
+	Tex[0] = 0; // 'no texture'
+	for (DWORD i = 1; i < nTex; i++) Tex[i] = SURFACE(oapiGetTextureHandle(hMesh, i));
+
+	// -----------------------------------------------------------------------
+
+	nMtrl = oapiMeshMaterialCount(hMesh);
+	if (nMtrl) Mtrl = new D3DXCOLOR[nMtrl];
+	for (DWORD i = 0; i < nMtrl; i++) {
+		MATERIAL* pMat = oapiMeshMaterial(hMesh, i);
+		if (pMat) {
+			Mtrl[i].r = pMat->diffuse.r;
+			Mtrl[i].g = pMat->diffuse.g;
+			Mtrl[i].b = pMat->diffuse.b;
+			Mtrl[i].a = pMat->diffuse.a;
+		}
+	}
+
+	// -----------------------------------------------------------------------
+
+	for (DWORD i = 0; i < nGrp; i++) {
+		MESHGROUPEX* pEx = oapiMeshGroupEx(hMesh, i);
+		Grp[i].MtrlIdx = pEx->MtrlIdx;
+		Grp[i].TexIdx = pEx->TexIdx;
+		Grp[i].nVert = pEx->nVtx;
+		Grp[i].nIdx = pEx->nIdx;
+		Grp[i].VertOff = MaxVert;
+		Grp[i].IdxOff = MaxIdx;
+		MaxVert += pEx->nVtx;
+		MaxIdx += pEx->nIdx;
+	}
+
+	if (MaxVert == 0 || MaxIdx == 0) return false;
+
+	// -----------------------------------------------------------------------
+
+	if (Grp[0].MtrlIdx == SPEC_INHERIT) Grp[0].MtrlIdx = SPEC_DEFAULT;
+	if (Grp[0].TexIdx == SPEC_INHERIT) Grp[0].TexIdx = SPEC_DEFAULT;
+
+	for (DWORD i = 0; i < nGrp; i++) {
+
+		if (Grp[i].MtrlIdx == SPEC_INHERIT) Grp[i].MtrlIdx = Grp[i - 1].MtrlIdx;
+
+		if (Grp[i].TexIdx == SPEC_DEFAULT) Grp[i].TexIdx = 0;
+		else if (Grp[i].TexIdx == SPEC_INHERIT) Grp[i].TexIdx = Grp[i - 1].TexIdx;
+		else Grp[i].TexIdx++;
+	}
+
+	// -----------------------------------------------------------------------
+
+	HR(pDev->CreateVertexBuffer(MaxVert * sizeof(NTVERTEX), 0, 0, D3DPOOL_DEFAULT, &pVB, NULL));
+	HR(pDev->CreateIndexBuffer(MaxIdx * sizeof(WORD), 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &pIB, NULL));
+
+	NTVERTEX* pVert = NULL;
+	WORD* pIndex = NULL;
+
+	for (DWORD i = 0; i < nGrp; i++) {
+		MESHGROUPEX* pEx = oapiMeshGroupEx(hMesh, i);
+		HR(pIB->Lock(Grp[i].IdxOff * sizeof(WORD), Grp[i].nIdx * sizeof(WORD), (LPVOID*)&pIndex, 0));
+		HR(pVB->Lock(Grp[i].VertOff * sizeof(NTVERTEX), Grp[i].nVert * sizeof(NTVERTEX), (LPVOID*)&pVert, 0));
+		memcpy(pIndex, pEx->Idx, sizeof(WORD) * pEx->nIdx);
+		memcpy(pVert, pEx->Vtx, sizeof(NTVERTEX) * pEx->nVtx);
+		HR(pIB->Unlock());
+		HR(pVB->Unlock());
+	}
+
+	return true;
+}
+
+
+// ===============================================================================================
+//
+void SketchMesh::Init()
+{
+	pDev->SetVertexDeclaration(pNTVertexDecl);
+	pDev->SetStreamSource(0, pVB, 0, sizeof(NTVERTEX));
+	pDev->SetIndices(pIB);
+}
+
+
+// ===============================================================================================
+//
+void SketchMesh::RenderGroup(DWORD idx)
+{
+	if (!pVB) return;
+	pDev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, Grp[idx].VertOff, 0, Grp[idx].nVert, Grp[idx].IdxOff, Grp[idx].nIdx / 3);
+}
+
+
+// ===============================================================================================
+//
+SURFHANDLE SketchMesh::GetTexture(DWORD idx)
+{
+	assert(idx < nGrp);
+	if (Grp[idx].TexIdx) return Tex[Grp[idx].TexIdx];
+	return NULL;
+}
+
+
+// ===============================================================================================
+//
+D3DXCOLOR SketchMesh::GetMaterial(DWORD idx)
+{
+	assert(idx < nGrp);
+	if (Grp[idx].MtrlIdx != SPEC_DEFAULT && Mtrl) return Mtrl[Grp[idx].MtrlIdx];
+	return D3DXCOLOR(1, 1, 1, 1);
+}
+
+
+
+

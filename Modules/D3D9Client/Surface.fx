@@ -35,6 +35,7 @@ struct TILEVERTEX					// (VERTEX_2TEX) Vertex declaration used for surface tiles
 	float3 posL     : POSITION0;
 	float3 normalL  : NORMAL0;
 	float2 tex0     : TEXCOORD0;
+	float  elev     : TEXCOORD1;
 };
 
 
@@ -100,6 +101,7 @@ uniform extern float4    vTexOff;			// Texture offsets used by surface manager (
 uniform extern float4    vCloudOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vMicroOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vOverlayOff;       // Texture offsets used by surface manager (i.e. SubTexRange)
+uniform extern float4    vOverlayCtrl;
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power)
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float3    vTangent;			// Unit Vector
@@ -121,6 +123,7 @@ uniform extern bool		 bDebug;			// Debug Mode enabled
 uniform extern bool		 bLocals;			// Local light sources enabled for this tile
 uniform extern bool		 bShadows;			// Enable shadow projection
 uniform extern bool		 bOverlay;			// Enable shadow projection
+uniform extern bool		 bElevOvrl;	
 uniform extern bool		 bSpherical;		// Force Spherical planet (discard elevation) 
 uniform extern bool		 bCloudNorm;
 uniform extern bool		 bEarth;
@@ -139,19 +142,42 @@ uniform extern texture	 tMicroB;
 uniform extern texture	 tMicroC;
 uniform extern texture	 tShadowMap;
 uniform extern texture	 tOverlay;
+uniform extern texture	 tMskOverlay;
+uniform extern texture	 tElvOverlay;
 
 
 // ----------------------------------------------------------------------------
 // Texture Sampler implementations
 // ----------------------------------------------------------------------------
 
-sampler OverlayS = sampler_state
+sampler SrfOverlayS = sampler_state
 {
 	Texture = <tOverlay>;
 	MinFilter = ANISOTROPIC;
 	MagFilter = ANISOTROPIC;
 	MipFilter = LINEAR;
 	MaxAnisotropy = ANISOTROPY_MACRO;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+sampler MskOverlayS = sampler_state
+{
+	Texture = <tMskOverlay>;
+	MinFilter = ANISOTROPIC;
+	MagFilter = ANISOTROPIC;
+	MipFilter = LINEAR;
+	MaxAnisotropy = ANISOTROPY_MACRO;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
+sampler ElevationS = sampler_state
+{
+	Texture = <tElvOverlay>;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = POINT;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };
@@ -649,14 +675,43 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 {
 	// Zero output.
 	TileVS outVS = (TileVS)0;
+	float4 vElev = 0;
+	float3 vNrmW;
+	float3 vVrt;
+	float3 vPlN;
 
 	// Apply a world transformation matrix
 	float3 vPosW = mul(float4(vrt.posL, 1.0f), mWorld).xyz;
 
+	if (bElevOvrl) 
+	{
+		// ----------------------------------------------------------
+		// Elevation Overlay
+		//
+		float2 vUVOvl = vrt.tex0.xy * vOverlayOff.zw + vOverlayOff.xy;
+
+		// Sample Elevation Map
+		vElev = tex2Dlod(ElevationS, float4(vUVOvl, 0, 0));
+
+		// Construct world space normal
+		vNrmW = float3(vElev.xy, sqrt(saturate(1.0f - dot(vElev.xy, vElev.xy))));
+		vNrmW = mul(float4(vNrmW, 0.0f), mWorld).xyz;
+
+		// Reconstruct Elevation
+		vPosW += normalize(vCameraPos + vPosW) * (vElev.z - vrt.elev) * vElev.w;
+
+		vVrt = vCameraPos + vPosW;
+		vPlN = normalize(vVrt);
+	}
+	else {
+		vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
+		vVrt = vCameraPos + vPosW;
+		vPlN = normalize(vVrt);
+	}
+
 	// Disrecard elevation and make the surface spherical
 	if (bSpherical) vPosW = (normalize(vCameraPos + vPosW) * fRadius) - vCameraPos;
 	
-	float3 vNrmW = mul(float4(vrt.normalL, 0.0f), mWorld).xyz;
 	outVS.posH	 = mul(float4(vPosW, 1.0f), mViewProj);
 
 #if defined(_SHDMAP)
@@ -665,8 +720,6 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 
 	outVS.texUV.xy = vrt.tex0.xy;						// Note: vrt.tex0 is un-used (hardcoded in Tile::CreateMesh and varies per tile)
 
-	float3 vVrt  = vCameraPos + vPosW;					// Geo-centric vertex position
-	float3 vPlN  = normalize(vVrt);
 	float3 vRay  = normalize(-vPosW);					// Unit viewing ray
 	float  fDPS  = dot(vPlN,  vSunDir);					// Dot mean normal, sun direction
 	float  fRay  = abs(dot(vPosW, vRay));				// Vertex camera distance
@@ -732,7 +785,10 @@ TileVS SurfaceTechVS(TILEVERTEX vrt,
 
 
 
-
+bool InRange(float2 a)
+{
+	return (a.x > 0.0f && a.x < 1.0f) && (a.y > 0.0f && a.y < 1.0f);
+}
 
 
 float4 SurfaceTechPS(TileVS frg,
@@ -749,18 +805,22 @@ float4 SurfaceTechPS(TileVS frg,
 
 	vUVWtr.x += fTime/180.0f;
 
-	float4 cMsk = tex2D(MaskTexS, vUVSrf);
 	float3 cNrm;
 	float fChA, fChB;
 
 	if (sbRipples) cNrm = tex2D(OceaTexS, vUVWtr).xyz;
 
+	float4 cMsk = tex2D(MaskTexS, vUVSrf);
 	float4 cTex = tex2D(DiffTexS, vUVSrf);
 
 	if (bOverlay) {
 		float2 vUVOvl = frg.texUV.xy * vOverlayOff.zw + vOverlayOff.xy;
-		float4 cOvl = tex2D(OverlayS, vUVOvl);
-		cTex.rgb = lerp(cTex.rgb, cOvl.rgb, cOvl.a);
+		if (InRange(vUVOvl)) {
+			float4 cOvl = tex2D(SrfOverlayS, vUVOvl);
+			float4 cWtr = tex2D(MskOverlayS, vUVOvl);
+			cTex.rgb = lerp(cTex.rgb, cOvl.rgb, cOvl.a * vOverlayCtrl.r);
+			cMsk.rgb = lerp(cMsk.rgb, cWtr.rgb, cOvl.a * vOverlayCtrl.g);
+		}
 	}
 
 	if (sbShadows) {

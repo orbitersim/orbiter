@@ -36,7 +36,7 @@ public:
 	QTree *		HighestOwn(int what, double lng, double lat);
 	QTree *		GetTextureOwner();
 	SubTex		GetSubTexRange(int flags);
-	SURFHANDLE GetTexture(int flags = 0);	// Do not release the surface
+	SURFHANDLE	GetTexture(int flags = 0);	// Do not release the surface
 	INT16 *		GetElevation();
 	double		Width() { return fabs(Bounds.right - Bounds.left); }
 	double		Height() { return fabs(Bounds.bottom - Bounds.top); }
@@ -51,7 +51,8 @@ public:
 	// --------------------
 	gcCore2 *	pCore;
 	HPLANETMGR	hMgr;
-	SURFHANDLE hTex;				// Texture
+	SURFHANDLE	hTex;				// Texture
+	SURFHANDLE	hMask;				// Nightlights
 	INT16 *		pElev;				// Elevation
 	// --------------------
 	DRECT		Bounds;				// Bounds (i.e. min/max lng/lat)
