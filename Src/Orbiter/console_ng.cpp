@@ -54,7 +54,7 @@ orbiter::ConsoleNG::~ConsoleNG()
 {
 	DestroyStatDlg();
 	SetLogOutFunc(0);
-	if (m_hThread) {
+	if (WaitForSingleObject(m_hThread, 1000) == WAIT_TIMEOUT) {
 		TerminateThread(m_hThread, 0);
 	}
 	if (hMutex) {
@@ -272,6 +272,8 @@ DWORD WINAPI InputProc(LPVOID context)
 	SetConsoleMode(hStdI, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
 	SetConsoleTextAttribute(hStdI, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	hMutex = CreateMutex(NULL, FALSE, NULL);
+	if (!hMutex)
+		return 1;
 	for (;;) {
 		if (!ReadConsole(hStdI, cbuf, 1024, &count, NULL))
 			break; // Console not available, exiting
@@ -282,6 +284,11 @@ DWORD WINAPI InputProc(LPVOID context)
 		strncpy(cConsoleCmd + 1, cbuf, count);
 		cConsoleCmd[count - 1] = '\0'; // eliminates CR
 		ReleaseMutex(hMutex);
+
+		// handle "exit" directly so we can terminate the console thread in an orderly fashion
+		if (!strcmp(cbuf, "exit")) {
+			break;
+		}
 	}
 	return 0;
 }
