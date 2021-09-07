@@ -45,6 +45,8 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
     DWORD id;
     SetConsoleTitle(title);
     m_hWnd = GetConsoleWindow();
+	if (ConsoleManager::IsConsoleExclusive())
+		DeleteMenu(GetSystemMenu(m_hWnd, false), SC_CLOSE, MF_BYCOMMAND);
     m_hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
     s_hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
     SetLogOutFunc(&ConsoleOut); // clone log output to console
@@ -247,7 +249,8 @@ void orbiter::ConsoleNG::EchoIntro() const
 {
 	Echo("-----------------\nOrbiter NG (no graphics)");
 	Echo("Running in server mode (no graphics client attached).");
-	Echo("Type \"help\" for a list of commands.\n");
+	Echo("Type \"help\" for a list of commands.");
+	Echo("Type \"exit\" to return to the Launchpad dialog.\n");
 }
 
 bool orbiter::ConsoleNG::DestroyStatDlg()
@@ -286,7 +289,7 @@ DWORD WINAPI InputProc(LPVOID context)
 		ReleaseMutex(hMutex);
 
 		// handle "exit" directly so we can terminate the console thread in an orderly fashion
-		if (!strcmp(cbuf, "exit")) {
+		if (!strncmp(cbuf, "exit\r\n", 6)) {
 			break;
 		}
 	}
