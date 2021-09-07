@@ -645,7 +645,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 				sscanf (cbuf+5, "%hd", &zbias);
 			} else if (!_strnicmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
 				char uvstr[10] = "";
-				sscanf (cbuf+7, "%s", uvstr);
+				sscanf (cbuf+7, "%9s", uvstr);
 				if (uvstr[0] == 'U' || uvstr[1] == 'U') flag |= 0x01;
 				if (uvstr[0] == 'V' || uvstr[1] == 'V') flag |= 0x02;
 			} else if (!_strnicmp (cbuf, "NONORMAL", 8)) {

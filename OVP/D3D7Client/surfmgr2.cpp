@@ -650,9 +650,9 @@ void SurfTile::MatchEdges ()
 	edgeok = true;
 	if (!mesh) return;  // sanity check
 
-	QuadTreeNode<SurfTile> *lngnbr = smgr->FindNode (lvl, ilat, ilng + (ilng & 1 ? 1 : -1));
-	QuadTreeNode<SurfTile> *latnbr = smgr->FindNode (lvl, ilat + (ilat & 1 ? 1 : -1), ilng);
-	QuadTreeNode<SurfTile> *dianbr = smgr->FindNode (lvl, ilat + (ilat & 1 ? 1 : -1), ilng + (ilng & 1 ? 1 : -1));
+	QuadTreeNode<SurfTile> *lngnbr = smgr->FindNode (lvl, ilng + (ilng & 1 ? 1 : -1), ilat);
+	QuadTreeNode<SurfTile> *latnbr = smgr->FindNode (lvl, ilng, ilat + (ilat & 1 ? 1 : -1));
+	QuadTreeNode<SurfTile> *dianbr = smgr->FindNode (lvl, ilng + (ilng & 1 ? 1 : -1), ilat + (ilat & 1 ? 1 : -1));
 
 	if (lngnbr && !(lngnbr->Entry()->state & TILE_VALID)) lngnbr = 0;
 	if (latnbr && !(latnbr->Entry()->state & TILE_VALID)) latnbr = 0;

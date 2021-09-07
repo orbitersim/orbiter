@@ -82,15 +82,16 @@ void CelestialSphere::LoadStars ()
 	gc->SetDefault (vbdesc);
 	vbdesc.dwFVF = D3DFVF_XYZ | D3DFVF_DIFFUSE;
 
-	struct StarRec {
-		float lng, lat, mag;
-	} *data = new StarRec[buflen];
-
 	if (prm->mag_lo <= prm->mag_hi) return;
 
 	// Read binary data from file
 	FILE *f = fopen ("Star.bin", "rb");
 	if (!f) return;
+
+	struct StarRec {
+		float lng, lat, mag;
+	} *data = new StarRec[buflen];
+
 	while (nv = fread (data, sizeof(StarRec), buflen, f)) {
 		// limit number of stars to predefined magnitude - SHOULD BE BINARY SEARCH
 		for (i = 0; i < nv; i++)
@@ -110,7 +111,7 @@ void CelestialSphere::LoadStars ()
 			for (j = 0; j < nv; j++) {
 				StarRec &rec = data[j];
 				VERTEX_XYZC &v = vbuf[j];
-				xz = sphere_r * cos (rec.lat);
+				xz = (double)sphere_r * cos (rec.lat);
 				v.x = (float)(xz * cos (rec.lng));
 				v.z = (float)(xz * sin (rec.lng));
 				v.y = (float)(sphere_r * sin (rec.lat));

@@ -289,7 +289,7 @@ public:
 	  m31=a31, m32=a32, m33=a33, m34=a34,
 	  m41=a41, m42=a42, m43=a43, m44=a44; }
 
-	inline void Set (const Matrix &A)
+	inline void Set (const Matrix4 &A)
 	{ memcpy (data, A.data, 16*sizeof(double)); }
 
 	inline double &operator() (int i, int j)

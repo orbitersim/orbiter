@@ -38,6 +38,7 @@ CloudManager::CloudManager (const D3D7Client *gclient, const vPlanet *vplanet)
 	lightfac = *(double*)gc->GetConfigParam (CFGPRM_SURFACELIGHTBRT);
 	nmask = 0;
 	nhitex = nhispec = 0;
+	cloudtexidx = 0;
 
 	atmc = oapiGetPlanetAtmConstants (obj);
 

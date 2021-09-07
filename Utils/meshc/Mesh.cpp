@@ -529,7 +529,7 @@ void Mesh::ReleaseTextures ()
 
 DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
 {
-	DWORD i, mi, pmi, ti, pti, zb, gcount = 0, wrap, owrap = 0;
+	DWORD i, mi, pmi, ti, pti, zb = 0, gcount = 0, wrap, owrap = 0;
 
 	if (!GrpSetup) Setup();
 	dev->ComputeSphereVisibility (GrpCnt, GrpRad, nGrp, 0, GrpVis);
@@ -622,7 +622,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 				sscanf (cbuf+5, "%hu", &zbias);
 			} else if (!_strnicmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
 				char uvstr[10] = "";
-				sscanf (cbuf+7, "%s", uvstr);
+				sscanf (cbuf+7, "%9s", uvstr);
 				if (uvstr[0] == 'U' || uvstr[1] == 'U') flag |= 0x01;
 				if (uvstr[0] == 'V' || uvstr[1] == 'V') flag |= 0x02;
 			} else if (!_strnicmp (cbuf, "NONORMAL", 8)) {
@@ -682,7 +682,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 		Str256 mnm;
 		for (i = 0; i < nmtrl; i++) {
 			is.getline (cbuf, 256);
-			sscanf (cbuf, "%s", matname[i]);
+			sscanf (cbuf, "%255s", matname[i]);
 		}
 		for (i = 0; i < nmtrl; i++) {
 			ZeroMemory (&mtrl, sizeof (D3DMATERIAL7));

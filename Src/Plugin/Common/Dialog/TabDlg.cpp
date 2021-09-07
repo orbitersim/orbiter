@@ -23,7 +23,9 @@ TabbedDialog::TabbedDialog (int _dlgId, int _tabId)
 	dlgId = _dlgId;
 	tabId = _tabId;
 	nTab = 0;
+	pTab = NULL;
 	hDlg = NULL;
+	hInst = NULL;
 }
 
 // --------------------------------------------------------------
@@ -97,6 +99,7 @@ void TabbedDialog::ClearTabs ()
 			delete pTab[i];
 		delete []pTab;
 		nTab = 0;
+		pTab = NULL;
 	}
 }
 

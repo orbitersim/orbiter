@@ -501,7 +501,7 @@ SURFHANDLE Instrument_MapOld::LoadBitmap (const char *cbuf, int *w, int *h)
 void Instrument_MapOld::SetZoom (bool newzoom)
 {
 	zoom = newzoom;
-	Spec spec; // dummy
+	Spec spec = { 10, 10, 0, 0, 0, 10, 0 }; // dummy
 	SetSize (spec);
 	needmap = true;
 }

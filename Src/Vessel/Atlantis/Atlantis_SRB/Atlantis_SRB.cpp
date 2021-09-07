@@ -81,7 +81,7 @@ double Atlantis_SRB::ThrustProfile (double met)
 	else {
 		for (i = nsample-1; i >= 0; i--)
 			if (met >= ts[i]) break;
-		lvl = (met-ts[i])/(ts[i+1]-ts[i]) * (lvls[i+1]-lvls[i]) + lvls[i];
+		lvl = (i >= 0 ? (met-ts[i])/(ts[i+1]-ts[i]) * (lvls[i+1]-lvls[i]) + lvls[i] : lvls[0]);
 	}
 	return lvl;
 }
