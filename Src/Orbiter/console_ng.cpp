@@ -57,6 +57,10 @@ orbiter::ConsoleNG::~ConsoleNG()
 	if (m_hThread) {
 		TerminateThread(m_hThread, 0);
 	}
+	if (hMutex) {
+		CloseHandle(hMutex);
+		hMutex = 0;
+	}
 	s_console = NULL;
 	s_hStdO = NULL;
 }
