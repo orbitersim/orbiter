@@ -101,7 +101,7 @@ uniform extern float4    vTexOff;			// Texture offsets used by surface manager (
 uniform extern float4    vCloudOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vMicroOff;         // Texture offsets used by surface manager (i.e. SubTexRange)
 uniform extern float4    vOverlayOff;       // Texture offsets used by surface manager (i.e. SubTexRange)
-uniform extern float4    vOverlayCtrl;
+uniform extern float4    vOverlayCtrl[4];
 uniform extern float4    vWater;			// Water material input structure (specular rgb, power)
 uniform extern float3    vSunDir;			// Unit Vector towards the Sun
 uniform extern float3    vTangent;			// Unit Vector
@@ -818,8 +818,9 @@ float4 SurfaceTechPS(TileVS frg,
 		if (InRange(vUVOvl)) {
 			float4 cOvl = tex2D(SrfOverlayS, vUVOvl);
 			float4 cWtr = tex2D(MskOverlayS, vUVOvl);
-			cTex.rgb = lerp(cTex.rgb, cOvl.rgb, cOvl.a * vOverlayCtrl.r);
-			cMsk.rgb = lerp(cMsk.rgb, cWtr.rgb, cOvl.a * vOverlayCtrl.g);
+			cTex.rgb = lerp(cTex.rgb, cOvl.rgb, cOvl.a * vOverlayCtrl[0].rgb);
+			cMsk.rgb = lerp(cMsk.rgb, cWtr.rgb, cOvl.a * vOverlayCtrl[1].rgb);
+			cMsk.a = lerp(cMsk.a, cWtr.a, vOverlayCtrl[1].a);
 		}
 	}
 

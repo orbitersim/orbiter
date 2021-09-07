@@ -46,8 +46,8 @@ public:
 
 	struct sOverlay {
 		LPDIRECT3DTEXTURE9 pSurf[4];
+		D3DXVECTOR4 Blend[4];
 		VECTOR4 lnglat;
-		D3DXVECTOR4 Ctrl;
 	};
 
 	vPlanet (OBJHANDLE _hObj, const Scene *scene);

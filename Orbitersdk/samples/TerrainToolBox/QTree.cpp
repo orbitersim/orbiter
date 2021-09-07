@@ -138,7 +138,7 @@ INT16 * QTree::GetElevation()
 //
 bool QTree::HasOwnTex(int flags)
 {
-	if (flags == 0) int flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
+	assert (flags != 0);
 	return pCore->HasTileData(hMgr, ilng, ilat, level, flags);
 }
 
@@ -290,7 +290,7 @@ bool QTree::MapRect(DRECT OvlRect, SURFHANDLE hOvlSrf, RECT &src, RECT &tgt)
 
 // ==================================================================================
 //
-int QTree::SaveTile(SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int maxlvl, float alpha)
+int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int maxlvl, float alpha)
 {
 	if (level > maxlvl && maxlvl != -1) return 0;
 
@@ -318,6 +318,10 @@ int QTree::SaveTile(SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int maxlvl
 	}
 	else return 0;
 
+	char dir[8];
+	if (flags & gcTileFlags::TEXTURE) strcpy_s(dir, 8, "Surf");
+	if (flags & gcTileFlags::MASK) strcpy_s(dir, 8, "Mask");
+	
 
 	char test[MAX_PATH];
 	char name[MAX_PATH];
@@ -330,20 +334,21 @@ int QTree::SaveTile(SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int maxlvl
 	
 	// ---------------------------------------------------------
 
-	fa = GetFileAttributesA("TerrainToolBox\\Surf");
-	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA("TerrainToolBox\\Surf", NULL);
+	sprintf_s(name, 63, "TerrainToolBox\\%s", dir);
+	fa = GetFileAttributesA(name);
+	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -2;
 
 	// ---------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\Surf\\%02d", level + 4);
+	sprintf_s(name, 63, "TerrainToolBox\\%s\\%02d", dir, level + 4);
 	fa = GetFileAttributesA(name);
 	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -3;
 
 	// ---------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\Surf\\%02d\\%06d", level +4, ilat);
+	sprintf_s(name, 63, "TerrainToolBox\\%s\\%02d\\%06d", dir, level +4, ilat);
 	fa = GetFileAttributesA(name);
 	if (fa == INVALID_FILE_ATTRIBUTES) CreateDirectoryA(name, NULL);
 	else if ((fa & FILE_ATTRIBUTE_DIRECTORY) == 0) return -4;
@@ -351,21 +356,22 @@ int QTree::SaveTile(SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int maxlvl
 
 	//----------------------------------------------------------
 
-	sprintf_s(name, 63, "TerrainToolBox\\Surf\\%02d\\%06d\\%06d.dds", level + 4, ilat, ilng);
+	sprintf_s(name, 63, "TerrainToolBox\\%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
 
 	Sketchpad *pSkp = oapiGetSketchpad(hTemp);
 
 	SubTex st; memset(&st, 0, sizeof(SubTex));
 
-	if (pSkp) {
+	if (pSkp) 
+	{
 
-		st = GetSubTexRange(gcTileFlags::TEXTURE | gcTileFlags::TREE | gcTileFlags::CACHE);
+		st = GetSubTexRange(flags); // Find a parent with data and give a "this" tile rect into it.
 
 		if (st.pNode) {
 			SURFHANDLE hTex = st.pNode->GetTexture();
 			if (hTex) {
 				RECT t = { 0, 0, 512, 512 };
-				pSkp->StretchRect(hTex, &st.range, &t);
+				pSkp->StretchRect(hTex, &st.range, &t); // Copy parent data into this tile
 			}
 		}
 
@@ -406,13 +412,13 @@ int QTree::SaveTile(SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int maxlvl
 	int sl = 0;
 	if (st.pNode) sl = st.pNode->level + 4;
 
-	sprintf_s(test, MAX_PATH, "Surf\\%02d\\%06d\\%06d.dds", level + 4, ilat, ilng);
+	sprintf_s(test, MAX_PATH, "%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
 	oapiWriteLogV("BAKING.. Name = %s,  Tgt(x=%d, y=%d, w=%d, h=%d) Src(x=%d, y=%d, w=%d, h=%d) SubTexLvl=%d", test, tgt.left, tgt.top, tw, th, src.left, src.top, sw, sh, sl);
 
 	if (maxlvl != -1) {
 		for (int i = 0; i < 4; i++)
 		{
-			int rv = GetChild(i)->SaveTile(hSurf, hTemp, bounds, maxlvl, alpha);
+			int rv = GetChild(i)->SaveTile(flags, hSurf, hTemp, bounds, maxlvl, alpha);
 			if (rv < 0) return rv;
 		}
 	}

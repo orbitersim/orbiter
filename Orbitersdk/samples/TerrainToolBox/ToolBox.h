@@ -72,6 +72,8 @@ public:
 	int			GetWaterMode();
 	FVECTOR4	GetColor();
 	FVECTOR4	GetAdjustments();
+	double		Max(double a, double b, double c, double d);
+		double		Min(double a, double b, double c, double d);
 
 	SURFHANDLE hSource;
 	string name;
@@ -143,7 +145,7 @@ private:
 	// ------------------------------------------------------ 
 
 	bool		CreateOverlays();
-	bool		ClearOverlay(SURFHANDLE hSrf, DWORD flags);
+	bool		UpdateBackGround(SURFHANDLE hSrf, DWORD flags);
 	Layer*		GetLayer(Layer::LayerType type) { return pLr[(int)type]; }
 	SURFHANDLE	GetBaseElevation(int elev_fmt);
 	VECTOR3		GetSurfacePosUnit(double lng, double lat);
@@ -154,7 +156,7 @@ private:
 	void		AutoSelectCorners();
 	void		BakeImport();
 	void		StopImport();
-	void		BakeParents(SURFHANDLE hTemp, list<QTree *> parents);
+	void		BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents);
 	void		MakeProgress();
 
 
@@ -173,7 +175,7 @@ private:
 	DEVMESHHANDLE		dmSphere;
 	OBJHANDLE			hPlanet;
 	HOVERLAY			hOverlay;
-	SURFHANDLE			hOverlayBkg, hGradient;
+	SURFHANDLE			hGradient;
 	SURFHANDLE			hOverlaySrf, hOverlayMsk, hOverlayElv;
 	Layer				*pLr[4];
 	gcPropertyTree		*pProp;
@@ -190,10 +192,10 @@ private:
 
 	//	Dialogs and User Interface ------------------------------
 	//
-	HPROP				hSecCur, hSecExp, hSecImp;
+	HPROP				hSecCur, hSecExp;
 
 	HPROP				hCLng, hCLat, hCEle, hCFil, hSLng, hSLat, hMLng, hMLat, hSXPx, hSYPx;
-	HPROP				hIFil, hIWid, hIHei, hILog, hILT, hILB, hIRB, hIRT;
+	HPROP				hIFil, hIWid, hIHei, hILog;
 
 	
 

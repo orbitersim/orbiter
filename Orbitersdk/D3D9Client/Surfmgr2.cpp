@@ -894,7 +894,7 @@ void SurfTile::Render ()
 			HR(Shader->SetTexture(TileManager2Base::stOverlay, oLay->pSurf[0]));
 			HR(Shader->SetTexture(TileManager2Base::stMskOverlay, oLay->pSurf[1]));
 			HR(Shader->SetTexture(TileManager2Base::stElvOverlay, oLay->pSurf[2]));
-			HR(Shader->SetVector(TileManager2Base::svOverlayCtrl, &(oLay->Ctrl)));
+			HR(Shader->SetVectorArray(TileManager2Base::svOverlayCtrl, oLay->Blend, 4));
 			HR(Shader->SetVector(TileManager2Base::svOverlayOff, &texcoord));
 
 			if (oLay->pSurf[0] || oLay->pSurf[1]) {
@@ -1649,10 +1649,10 @@ bool TileManager2<SurfTile>::HasTileData(int iLng, int iLat, int level, int flag
 	if (flags & gcTileFlags::ELEVATION) {
 		if (flags & gcTileFlags::CACHE) {
 			char name[128];	char path[MAX_PATH];
-			sprintf_s(name, 128, "%s\\Elev\\%02d\\%06d\\%06d.elv", CbodyName(), level, iLat, iLng);
+			sprintf_s(name, 128, "%s\\Elev\\%02d\\%06d\\%06d.elv", CbodyName(), level + 4, iLat, iLng);
 			bOk = GetClient()->TexturePath(name, path);
 		}
-		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(2)) if (ZTreeManager(2)->Idx(level, iLat, iLng) != ((DWORD)-1)) bOk = true;
+		if (flags & gcTileFlags::TREE) if (!bOk && ZTreeManager(2)) if (ZTreeManager(2)->Idx(level + 4, iLat, iLng) != ((DWORD)-1)) bOk = true;
 	}
 
 	return bOk;
@@ -1673,7 +1673,7 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 
 	// Elevation data
 	if (flags & gcTileFlags::CACHE) { // try loading from individual tile file
-		sprintf_s(fname, ARRAYSIZE(fname), "%s\\Elev\\%02d\\%06d\\%06d.elv", CbodyName(), lvl, ilat, ilng);
+		sprintf_s(fname, ARRAYSIZE(fname), "%s\\Elev\\%02d\\%06d\\%06d.elv", CbodyName(), lvl + 4, ilat, ilng);
 		bool found = GetClient()->TexturePath(fname, path);
 		if (found && !fopen_s(&f, path, "rb")) {
 			elev = new float[ndat];
@@ -1706,7 +1706,7 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 	}
 	if (!elev && (flags & gcTileFlags::TREE) && ZTreeManager(2)) { // try loading from compressed archive
 		BYTE* buf;
-		DWORD ndata = ZTreeManager(2)->ReadData(lvl, ilat, ilng, &buf);
+		DWORD ndata = ZTreeManager(2)->ReadData(lvl + 4, ilat, ilng, &buf);
 		if (ndata) {
 			BYTE* p = buf;
 			elev = new float[ndat];
@@ -1736,7 +1736,7 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 		bool ok = false;
 		ELEVFILEHEADER hdr;
 		if (flags & gcTileFlags::CACHE) { // try loading from individual tile file
-			sprintf_s(fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", CbodyName(), lvl, ilat, ilng);
+			sprintf_s(fname, ARRAYSIZE(fname), "%s\\Elev_mod\\%02d\\%06d\\%06d.elv", CbodyName(), lvl + 4, ilat, ilng);
 			bool found = GetClient()->TexturePath(fname, path);
 			if (found && !fopen_s(&f, path, "rb")) {
 
@@ -1777,7 +1777,7 @@ float* TileManager2<SurfTile>::BrowseElevationData(int lvl, int ilat, int ilng, 
 
 		if (!ok && (flags & gcTileFlags::TREE) && ZTreeManager(3)) { // try loading from compressed archive
 			BYTE* buf;
-			DWORD ndata = ZTreeManager(3)->ReadData(lvl, ilat, ilng, &buf);
+			DWORD ndata = ZTreeManager(3)->ReadData(lvl + 4, ilat, ilng, &buf);
 			if (ndata) {
 				BYTE* p = buf;
 				ELEVFILEHEADER* phdr = (ELEVFILEHEADER*)p;

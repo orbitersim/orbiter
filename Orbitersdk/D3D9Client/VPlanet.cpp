@@ -1604,12 +1604,6 @@ vPlanet::sOverlay * vPlanet::IntersectOverlay(VECTOR4 q, D3DXVECTOR4 *texcoord) 
 //
 vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType type, LPDIRECT3DTEXTURE9 pSrf, vPlanet::sOverlay *pOld, const FVECTOR4 *pB)
 {
-	if (type == gcCore::OlayType::SET_BLEND) {
-		if (pB) pOld->Ctrl = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
-		else pOld->Ctrl = D3DXVECTOR4(0, 0, 0, 0);
-		return pOld;
-	}
-
 	if (type == gcCore::OlayType::RELEASE_ALL) {
 		overlays.remove(pOld);
 		return NULL;
@@ -1618,6 +1612,8 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	if (pOld) {
 		pOld->pSurf[int(type)] = pSrf;
 		pOld->lnglat = lnglat;
+		if (pB) pOld->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+		else pOld->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
 		return pOld;
 	}
 
@@ -1625,8 +1621,8 @@ vPlanet::sOverlay * vPlanet::AddOverlaySurface(VECTOR4 lnglat, gcCore::OlayType 
 	memset(&oLay->pSurf, 0, sizeof(oLay->pSurf));
 	oLay->pSurf[int(type)] = pSrf;
 	oLay->lnglat = lnglat;
-	if (pB) oLay->Ctrl = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
-	else oLay->Ctrl = D3DXVECTOR4(1, 1, 1, 1);
+	if (pB) oLay->Blend[int(type)] = D3DXVECTOR4(pB->r, pB->g, pB->b, pB->a);
+	else oLay->Blend[int(type)] = D3DXVECTOR4(1, 1, 1, 1);
 	overlays.push_back(oLay);
 	return oLay;
 }

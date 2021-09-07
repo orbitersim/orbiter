@@ -332,6 +332,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 
 	LogAlw("================ clbkCreateRenderWindow ===============");
 
+	Config->WriteParams();
 	Config->bFlatsEnabled = (Config->bFlats != 0);
 
 	// Disable flattening with "cubic interpolation" it's not going to work.

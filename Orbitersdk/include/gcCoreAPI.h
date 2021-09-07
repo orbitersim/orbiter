@@ -303,7 +303,6 @@ public:
 
 	enum class OlayType
 	{
-		SET_BLEND = -2,
 		RELEASE_ALL = -1,
 		SURFACE = 0,
 		MASK = 1,

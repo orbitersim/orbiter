@@ -4,7 +4,6 @@
 
 #include <winres.h>
 #include <commctrl.h>
-#include <richedit.h>
 #include "resource.h"
 
 
@@ -30,10 +29,11 @@ FONT 8, "Ms Shell Dlg"
 {
     COMBOBOX        IDC_SELECT, 80, 13, 95, 12, CBS_DROPDOWN | CBS_HASSTRINGS, WS_EX_LEFT
     COMBOBOX        IDC_WHAT, 80, 40, 95, 12, CBS_DROPDOWN | CBS_HASSTRINGS, WS_EX_LEFT
-    LTEXT           "Selection Level", IDC_STATIC, 80, 3, 50, 8, SS_LEFT, WS_EX_LEFT
-    LTEXT           "What to select", IDC_STATIC, 81, 30, 47, 8, SS_LEFT, WS_EX_LEFT
-    AUTOCHECKBOX    "Display Cursor", IDC_AUTOHIGHLIGHT, 7, 7, 61, 8, 0, WS_EX_LEFT
+    LTEXT           "Export or Bake level:", IDC_STATIC, 80, 3, 66, 9, SS_LEFT, WS_EX_LEFT
+    LTEXT           "What to export:", IDC_STATIC, 81, 30, 50, 9, SS_LEFT, WS_EX_LEFT
+    AUTOCHECKBOX    "Display cursor", IDC_AUTOHIGHLIGHT, 5, 5, 60, 8, 0, WS_EX_LEFT
     PUSHBUTTON      "Export Selection", IDC_EXPORT, 5, 40, 65, 14, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Display guides", IDC_GUIDES, 5, 20, 61, 8, 0, WS_EX_LEFT
 }
 
 
@@ -43,19 +43,17 @@ IDD_IMPORT DIALOG 0, 0, 180, 120
 STYLE DS_CENTER | DS_SHELLFONT | WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS
 FONT 8, "Ms Shell Dlg"
 {
-    LTEXT           "Max Bake Level", IDC_STATIC, 5, 90, 52, 8, SS_LEFT, WS_EX_LEFT
-    PUSHBUTTON      "Open Elevation", IDC_OPENELEV, 95, 5, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Open Nightlights", IDC_OPENNIGHT, 95, 20, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Open Mesh", IDC_OPENMESH, 5, 35, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Open Elevation", IDC_OPENELEV, 95, 20, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Open Nightlights", IDC_OPENNIGHT, 95, 5, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Open Mesh", IDC_OPENMESH, 5, 45, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Open Surface", IDC_OPENIMAGE, 5, 5, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Bake", IDC_BAKE, 95, 100, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Reset Corners", IDC_CORNERS, 95, 60, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Auto Calibration", IDC_UPDATECLIP, 95, 45, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Cancel Import", IDC_STOP, 95, 75, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Edit Elevation", IDC_EDITELEV, 5, 70, 75, 14, 0, WS_EX_LEFT
-    COMBOBOX        IDC_IMPLEVEL, 5, 100, 74, 15, CBS_DROPDOWN | CBS_HASSTRINGS, WS_EX_LEFT
-    PUSHBUTTON      "Open Water mask", IDC_OPENWATER, 5, 20, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Start Import", IDC_STARTIMPORT, 5, 55, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Edit Elevation", IDC_EDITELEV, 5, 100, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Open Water", IDC_OPENWATER, 5, 20, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Start Import", IDC_STARTIMPORT, 5, 75, 75, 14, 0, WS_EX_LEFT
 }
 
 

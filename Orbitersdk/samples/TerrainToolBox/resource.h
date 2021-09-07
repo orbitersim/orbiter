@@ -16,9 +16,9 @@
 #define IDC_OPENIMAGE                           1014
 #define IDC_STOP                                1015
 #define IDC_UPDATECLIP                          1018
-#define IDC_IMPLEVEL                            1019
 #define IDC_CORNERS                             1020
 #define IDC_PROGBAR                             1021
+#define IDC_GUIDES                              40000
 #define IDC_LOAD                                40000
 #define IDC_OPENNIGHT                           40000
 #define IDS_INFO                                40000

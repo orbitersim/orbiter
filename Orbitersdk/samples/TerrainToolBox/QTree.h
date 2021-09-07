@@ -40,7 +40,7 @@ public:
 	INT16 *		GetElevation();
 	double		Width() { return fabs(Bounds.right - Bounds.left); }
 	double		Height() { return fabs(Bounds.bottom - Bounds.top); }
-	int			SaveTile(SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int res, float alpha);
+	int			SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds, int res, float alpha);
 	bool		Intersect(DRECT ovl, DRECT *src, DRECT *tgt) const;
 	bool		MapRect(DRECT OvlRect, SURFHANDLE hOvlSrf, RECT &src, RECT &tgt);
 	bool		HasOwnTex(int type = 0);

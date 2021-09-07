@@ -190,6 +190,19 @@ Layer::LrFmt Layer::GetFormat()
 	return LrFmt(2 + pProp->GetComboBoxSelection(hIFmt));
 }
 
+double Layer::Max(double a, double b, double c, double d)
+{
+	double q = max(a, b);
+	double w = max(c, d);
+	return max(q, w);
+}
+
+double Layer::Min(double a, double b, double c, double d)
+{
+	double q = min(a, b);
+	double w = min(c, d);
+	return min(q, w);
+}
 
 // ==================================================================================
 //
@@ -197,22 +210,22 @@ void Layer::ComputeLevel(Position points[4])
 {
 	// Figure out the level the input texture is good for ------------------
 	//
-	double w1 = fabs(points[0].lng - points[3].lng);
-	double w2 = fabs(points[1].lng - points[2].lng);
-	double h1 = fabs(points[0].lat - points[1].lat);
-	double h2 = fabs(points[2].lat - points[3].lat);
-	
-	if (w1 > PI) w1 = PI2 - w1;
-	if (w2 > PI) w2 = PI2 - w2;
+	double w1 = Max(points[0].lng, points[3].lng, points[1].lng, points[2].lng);
+	double w2 = Min(points[0].lng, points[3].lng, points[1].lng, points[2].lng);
+	double h1 = Max(points[0].lat, points[3].lat, points[1].lat, points[2].lat);
+	double h2 = Min(points[0].lat, points[3].lat, points[1].lat, points[2].lat);
+
+	//if (w1 > PI) w1 = PI2 - w1;
+	//if (w2 > PI) w2 = PI2 - w2;
 
 	// Resolution pixels/rad
-	double wr = double(width) / max(w1, w2);
-	double hr = double(height) / max(h1, h2);
+	double wr = double(width) / abs(w1 - w2);
+	double hr = double(height) / abs(h1 - h2);
 
-	double logw = log(wr/512.0) / log(2.0);
-	double logh = log(hr/512.0) / log(2.0);
+	double logw = log(wr*PI/512.0) / log(2.0);
+	double logh = log(hr*PI/512.0) / log(2.0);
 
-	lvl = max(logw, logh);
+	lvl = max(logw, logh) + 4;
 
 	UpdateProps();
 }

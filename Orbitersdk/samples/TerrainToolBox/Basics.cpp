@@ -251,7 +251,6 @@ SURFHANDLE ToolKit::GetBaseElevation(int elev_fmt)
 	if (elev_fmt == 0) flg |= OAPISURFACE_PF_S16R;
 	if (elev_fmt == 1) flg |= OAPISURFACE_PF_F32R;
 
-	/*
 	SURFHANDLE hSrf = oapiCreateSurfaceEx(selw * 256, selh * 256, flg);
 
 	if (hSrf)
@@ -274,9 +273,7 @@ SURFHANDLE ToolKit::GetBaseElevation(int elev_fmt)
 		}
 	}
 
-	return hSrf;*/
-
-	return NULL;
+	return hSrf;
 }
 
 
@@ -312,6 +309,8 @@ void ToolKit::AutoSelectCorners()
 			}
 		}
 	}
+
+	for (auto x : pLr) if (x) x->ComputeLevel(points);
 }
 
 

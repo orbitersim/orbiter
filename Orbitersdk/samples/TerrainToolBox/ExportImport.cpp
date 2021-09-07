@@ -154,19 +154,12 @@ void ToolKit::ExportElev()
 //
 void ToolKit::BakeImport()
 {
-	char cur[16];
 
-	int idx = SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETCURSEL, 0, 0);
-	SendDlgItemMessage(hImpoDlg, IDC_IMPLEVEL, CB_GETLBTEXT, idx, (LPARAM)cur);
-	int maxlvl = atoi(cur);
-
-	if (maxlvl < selection.slvl) {
-		MessageBoxA(pCore->GetRenderWindow(), "Clip level can't be higher than Bake level", "Error:", MB_OK);
-		return;
-	}
-
-	
 	if (MessageBox(pCore->GetRenderWindow(), "Bake and Write the tiles in 'OrbiterRoot/TerrainToolBox/' Folder ?", "Are you sure", MB_YESNO | MB_ICONEXCLAMATION) != IDYES) return;
+
+	bool bWater = IsLayerValid(Layer::LayerType::WATER);
+	bool bNight = IsLayerValid(Layer::LayerType::NIGHT);
+	bool bSurf = IsLayerValid(Layer::LayerType::TEXTURE);
 
 
 	SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
@@ -182,22 +175,60 @@ void ToolKit::BakeImport()
 
 	ShowWindow(hProgDlg, SW_SHOW);
 
-	list<QTree *> parents;
-
-	for each (selentry s in selection.area)
+	// ------------------------------------------------------------------
+	//
+	if (bSurf) 
 	{
-		int rv = s.pNode->SaveTile(hOverlaySrf, hTemp, selection.bounds, maxlvl - 4, 1.0f);
-		if (rv < 0) {
-			oapiWriteLogV("ERROR: s.pNode->SaveTile() returned %d", rv);
-			return;
+		int flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
+
+		SetWindowText(hProgDlg, "Baking Surface:");
+		list<QTree*> parents;
+
+		for (auto s : selection.area)
+		{
+			int rv = s.pNode->SaveTile(flags, hOverlaySrf, hTemp, selection.bounds, selection.slvl - 4, 1.0f);
+			if (rv < 0) {
+				oapiWriteLogV("ERROR: s.pNode->SaveTile() returned %d", rv);
+				return;
+			}
+			MakeProgress();
+			parents.push_back(s.pNode->GetParent());
 		}
-		MakeProgress();
-		parents.push_back(s.pNode->GetParent());
+
+		parents.unique();
+
+		BakeParents(hOverlaySrf, hTemp, flags, parents);
 	}
 
-	parents.unique();
 
-	BakeParents(hTemp, parents);
+	// ------------------------------------------------------------------
+	//
+	if (bNight || bWater)
+	{
+		int flags = gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
+
+		progress = 0;
+		SetWindowText(hProgDlg, "Baking Nightlights:");
+		SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETRANGE, 0, MAKELONG(0, nTiles));
+		SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, 0, 0);
+
+		list<QTree*> parents;
+
+		for (auto s : selection.area)
+		{
+			int rv = s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl - 4, 1.0f);
+			if (rv < 0) {
+				oapiWriteLogV("ERROR: s.pNode->SaveTile() returned %d", rv);
+				return;
+			}
+			MakeProgress();
+			parents.push_back(s.pNode->GetParent());
+		}
+
+		parents.unique();
+
+		BakeParents(hOverlayMsk, hTemp, flags, parents);
+	}
 
 	oapiReleaseTexture(hTemp);
 	DestroyWindow(hProgDlg);
@@ -207,16 +238,16 @@ void ToolKit::BakeImport()
 
 // =================================================================================================
 //
-void ToolKit::BakeParents(SURFHANDLE hTemp, list<QTree *> parents)
+void ToolKit::BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents)
 {
 	list<QTree *> grands;
 
-	for each (QTree * qt in parents)
+	for (auto qt : parents)
 	{
 		float alpha = 1.0f;
-		if (qt->HasOwnTex() == false) grands.push_back(qt->GetParent());
+		if (qt->HasOwnTex(flags) == false) grands.push_back(qt->GetParent());
 		else alpha = 0.5f;
-		int rv = qt->SaveTile(hOverlaySrf, hTemp, selection.bounds, -1, alpha);
+		int rv = qt->SaveTile(flags, hOvrl, hTemp, selection.bounds, -1, alpha);
 		MakeProgress();
 		if (rv < 0) {
 			oapiWriteLogV("ERROR: qt->SaveTile() returned %d", rv);
@@ -225,7 +256,7 @@ void ToolKit::BakeParents(SURFHANDLE hTemp, list<QTree *> parents)
 	}
 
 	grands.unique();
-	if (grands.size()) BakeParents(hTemp, grands);
+	if (grands.size()) BakeParents(hOvrl, hTemp, flags, grands);
 }
 
 

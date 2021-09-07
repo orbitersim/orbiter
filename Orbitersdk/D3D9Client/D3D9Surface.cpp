@@ -392,13 +392,16 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 	DWORD Mips = 1;
 	D3DFORMAT Fmt = D3DFMT_DXT1;
 	D3DPOOL Pool = D3DPOOL_DEFAULT;
+
 	if (flags & OAPISURFACE_MIPMAPS) Mips = 0;
+	if ((flags & OAPISURFACE_PF_MASK) == OAPISURFACE_PF_DXT1) Fmt = D3DFMT_DXT1;
 	if ((flags & OAPISURFACE_PF_MASK) == OAPISURFACE_PF_DXT3) Fmt = D3DFMT_DXT3;
 	if ((flags & OAPISURFACE_PF_MASK) == OAPISURFACE_PF_DXT5) Fmt = D3DFMT_DXT5;
 	if (flags & OAPISURFACE_SYSMEM) Pool = D3DPOOL_SYSTEMMEM;
 
-	if (pResource->GetType() == D3DRTYPE_SURFACE) {
-		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(hSurface);
+	if (pResource->GetType() == D3DRTYPE_SURFACE)
+	{
+		LPDIRECT3DSURFACE9 pSurf = static_cast<LPDIRECT3DSURFACE9>(pResource);
 		HR(pSurf->GetDesc(&desc));
 		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, Fmt, Pool, &pTex));
 		for (DWORD i = 0; i < pTex->GetLevelCount(); i++) {
@@ -406,11 +409,13 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 			HR(D3DXLoadSurfaceFromSurface(pDest, NULL, NULL, pSurf, NULL, NULL, D3DX_FILTER_BOX, 0));
 			pDest->Release();
 		}
-		return SURFHANDLE(pTex);
+		return new SurfNative(pTex, flags);
 	}
-	else if (pResource->GetType() == D3DRTYPE_TEXTURE) {
+
+	if (pResource->GetType() == D3DRTYPE_TEXTURE)
+	{
 		LPDIRECT3DSURFACE9 pSurf = NULL;
-		LPDIRECT3DTEXTURE9 pInp = static_cast<LPDIRECT3DTEXTURE9>(hSurface);
+		LPDIRECT3DTEXTURE9 pInp = static_cast<LPDIRECT3DTEXTURE9>(pResource);
 		HR(pInp->GetLevelDesc(0, &desc));
 		HR(D3DXCreateTexture(pDev, desc.Width, desc.Height, Mips, 0, Fmt, Pool, &pTex));
 		HR(pInp->GetSurfaceLevel(0, &pSurf));
@@ -420,7 +425,7 @@ SURFHANDLE NatCompressSurface(SURFHANDLE hSurface, DWORD flags)
 			pDest->Release();
 		}
 		pSurf->Release();
-		return SURFHANDLE(pTex);
+		return new SurfNative(pTex, flags);
 	}
 
 	return NULL;

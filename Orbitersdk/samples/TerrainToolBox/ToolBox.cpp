@@ -120,16 +120,10 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 
 		// Bake level combobox Msg
-		case IDC_IMPLEVEL:
-		{
-			break;
-		}
-
-		// Bake level combobox Msg
 		case IDC_STARTIMPORT:
 		{
 			if (selection.selw == 0 || selection.selh == 0) {
-				MessageBox(pCore->GetRenderWindow(), "You need to drag a box around the import area first.", "Reminder", MB_OK);
+				MessageBox(pCore->GetRenderWindow(), "You need to drag a box around the import area first.", "Info", MB_OK);
 				break;
 			}
 			if (CreateOverlays())
@@ -149,8 +143,9 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDC_OPENELEV:
 		{
-			OpenImage(Layer::LayerType::ELEVATION);
-			SetMode(MODE_IMPORT);
+			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
+			//OpenImage(Layer::LayerType::ELEVATION);
+			//SetMode(MODE_IMPORT);
 			return true;
 		}
 
@@ -170,6 +165,13 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDC_OPENMESH:
 		{
+			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
+			return true;
+		}
+
+		case IDC_EDITELEV:
+		{
+			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
 			return true;
 		}
 
@@ -182,10 +184,6 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 		case IDC_DATAVIEW:
 		{
-			if (HPROP(lParam) == hILT) sel_corner = 0;
-			if (HPROP(lParam) == hILB) sel_corner = 1;
-			if (HPROP(lParam) == hIRB) sel_corner = 2;
-			if (HPROP(lParam) == hIRT) sel_corner = 3;
 			break;
 		}
 
@@ -243,7 +241,6 @@ ToolKit::ToolKit(HINSTANCE hInst) : gcGUIApp(), Module(hInst)
 	hOverlaySrf = NULL;
 	hOverlayMsk = NULL;
 	hOverlayElv = NULL;
-	hOverlayBkg = NULL;
 	hOverlay = NULL;
 	hGradient = NULL;
 	down_corner = -1;
@@ -279,7 +276,6 @@ void ToolKit::clbkShutdown()
 	
 	if (hOverlay) pCore->AddGlobalOverlay(hMgr, _V(0, 0, 0, 0), gcCore::OlayType::RELEASE_ALL, NULL, hOverlay);
 	if (hOverlaySrf) oapiReleaseTexture(hOverlaySrf);
-	if (hOverlayBkg) oapiReleaseTexture(hOverlayBkg);
 	if (dmSphere) pCore->ReleaseDevMesh(dmSphere);
 		
 	selection.area.clear();
@@ -298,7 +294,6 @@ void ToolKit::clbkShutdown()
 	hOverlaySrf = NULL;
 	hOverlayMsk = NULL;
 	hOverlayElv = NULL;
-	hOverlayBkg = NULL;
 	hOverlay = NULL;
 	hRootNode = NULL;
 	down_corner = -1;
@@ -328,11 +323,9 @@ bool ToolKit::clbkMessage(DWORD uMsg, HNODE hNode, int data)
 void ToolKit::SetMode(int mode)
 {
 	if (mode == MODE_EXPORT) {
-		pProp->ShowEntry(hSecImp, false);
 		pProp->ShowEntry(hSecExp, true);
 	}
 	if (mode == MODE_IMPORT) {
-		pProp->ShowEntry(hSecImp, true);
 		pProp->ShowEntry(hSecExp, false);		
 	}
 }
@@ -461,17 +454,8 @@ bool ToolKit::Initialize()
 	hMLat = pProp->AddEntry("Max Lat", hSecExp);
 	hSXPx = pProp->AddEntry("Width pixels", hSecExp);
 	hSYPx = pProp->AddEntry("Height pixels", hSecExp);
-	
-	// ---------------------------------------------------
-	hSecImp = pProp->SubSection("Import properties");
-	// ---------------------------------------------------
-	
-	hILT = pProp->AddEntry("Left-Top", hSecImp);
-	hILB = pProp->AddEntry("Left-Btm", hSecImp);
-	hIRB = pProp->AddEntry("Right-Btm", hSecImp);
-	hIRT = pProp->AddEntry("Right-Top", hSecImp);
 
-	pProp->ShowEntry(hSecImp, false);
+
 	pProp->Update();
 
 	
@@ -721,16 +705,6 @@ void ToolKit::clbkRender()
 		}
 	}
 
-
-	if (hOverlay) {
-		pProp->SetValue(hILT, LngLat(points[0]));
-		pProp->SetValue(hILB, LngLat(points[1]));
-		pProp->SetValue(hIRB, LngLat(points[2]));
-		pProp->SetValue(hIRT, LngLat(points[3]));
-	}
-
-
-	
 	if (selection.area.size() != 0 && bImport && hOverlay)
 	{
 		// ---------------------------------------------------------------------
@@ -790,17 +764,22 @@ bool ToolKit::UpdateOverlay(int olay)
 	if (olay == 0) hSrf = hOverlaySrf, pLr = GetLayer(Layer::LayerType::TEXTURE);
 	if (olay == 1) hSrf = hOverlayMsk, pLr = GetLayer(Layer::LayerType::NIGHT);
 	
-	if (!pLr) return false;
+	if (!pLr) return true;
 	if (!hSrf) return false;
+
+	bool bWater = IsLayerValid(Layer::LayerType::WATER);
+	bool bNight = IsLayerValid(Layer::LayerType::NIGHT);
+	bool bSurf = IsLayerValid(Layer::LayerType::TEXTURE);
 
 
 	// Clear/Initialize the background image
 	//
 	if (olay == 0) {
-		ClearOverlay(hSrf, gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE);
+		if (bSurf) UpdateBackGround(hSrf, gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE);
 	}
-	else {
-		ClearOverlay(hSrf, gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE);
+
+	if (olay == 1) {
+		if (bNight) UpdateBackGround(hSrf, gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE);
 	}
 
 
@@ -857,44 +836,76 @@ bool ToolKit::UpdateOverlay(int olay)
 		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 
 
-		// Copy Surface Texture
+
+		// Create Surface Overlay
 		//
 		if (olay == 0) 
 		{
-			pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+			if (bSurf) pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+			else pSkp->ColorFill(0x00000000, NULL);
+
+			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::SURFACE, hOverlaySrf, hOverlay);
 		}
 		
-		// Copy NightLights Texture
+
+		// Create Nightlights/Water Overlay
 		//
 		if (olay == 1)
 		{
-			int mode = pLr->GetWaterMode();
+			FVECTOR4 Blend;
 
-			if (mode == 0) { // No Water 
+			if (bNight) 
+			{
+				Blend.rgb = 1.0f;
 
-				pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
-				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+				int mode = pLr->GetWaterMode();
 
-				Layer* pLrW = GetLayer(Layer::LayerType::WATER);
+				if (mode == 0) // No Water in Alpha 
+				{
+					pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
+					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+					
+					if (bWater) // Use additional water layer if available
+					{
+						Layer* pWaterLr = GetLayer(Layer::LayerType::WATER);
 
-				if (pLrW) {
+						FMATRIX4 mMix; mMix.Zero(); mMix.m24 = 1.0f;
+						pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
+						pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
+						pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
+						Blend.a = 1.0f;
+					}
+				}
+
+				if (mode == 1) { // Water mask in alpha channel
+					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+					Blend.a = 1.0f;
+				}
+
+				if (mode == 2) { // All Land, no water information
+					pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
+					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
+					pSkp->FillTetragon(0x00000000, pt);
+					Blend.a = 0.0f;
+				}
+			}
+			else 
+			{
+				pSkp->ColorFill(0x00000000, NULL); // No Nightlights at all
+
+				if (bWater) // Use additional water layer if available
+				{
+					Layer* pWaterLr = GetLayer(Layer::LayerType::WATER);
 					FMATRIX4 mMix; mMix.Zero(); mMix.m24 = 1.0f;
 					pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-					pSkp->CopyTetragon(pLrW->hSource, NULL, pt); // Copy to destination alpha
+					pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
+					Blend.a = 1.0f;
 				}
 			}
 
-			if (mode == 1) {
-				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
-			}
-
-			if (mode == 2) { // All Land
-				pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
-				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
-				pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-				pSkp->FillTetragon(0x00000000, pt);
-			}
+			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::MASK, hOverlayMsk, hOverlay, &Blend);
 		}
 
 
@@ -925,40 +936,8 @@ bool ToolKit::UpdateOverlay(int olay)
 		}
 
 		pSkp->SetBlendState();
-
 		oapiReleaseSketchpad(pSkp);
 
-		/*
-		// Make sure that the overlay border is transparent
-		pSkp->QuickBrush(0);	
-		pSkp->QuickPen(FVECTOR4(1.0f, 1.0f, 1.0f, 0.0f).dword_abgr(), 3.0f);
-		pSkp->Rectangle(0, 0, size.cx, size.cy);
-		
-		
-
-		// Generate Mip sublevels
-		//
-		pCore->GenerateMipmaps(hOverlaySrf);
-		
-
-		// Process/Fix the edge transparency from mipmaps, the outmost rect fully transpatent in every level
-		//
-		for (int i = 0;;i++) {
-			SURFHANDLE hMip = pCore->GetMipSublevel(hOverlaySrf, i + 1);
-			if (hMip) {
-				SIZE size;
-				Sketchpad *pSkp = oapiGetSketchpad(hMip);
-				pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-				pSkp->GetRenderSurfaceSize(&size);
-				pSkp->ColorCompatibility(false);
-				pSkp->QuickPen(0x00FFFFFF);
-				pSkp->Rectangle(0, 0, size.cx, size.cy);
-				oapiReleaseSketchpad(pSkp);
-				oapiReleaseTexture(hMip);
-			}
-			else break;
-		}
-		*/
 		return true;
 	}
 
@@ -977,6 +956,10 @@ bool ToolKit::CreateOverlays()
 	int Height = selection.selh * 512;
 
 	if (Width == 0 || Height == 0) return false;
+
+	bool bWater = IsLayerValid(Layer::LayerType::WATER);
+	bool bNight = IsLayerValid(Layer::LayerType::NIGHT);
+	bool bSurf = IsLayerValid(Layer::LayerType::TEXTURE);
 
 	if (hOverlaySrf) 
 	{
@@ -1011,18 +994,16 @@ bool ToolKit::CreateOverlays()
 		}
 	}
 
-	if (!hOverlaySrf && IsLayerValid(Layer::LayerType::TEXTURE))
+	if (!hOverlaySrf && (bSurf || bNight)) // Needed for nightlights due to alpha blending control channel
 	{
 		hOverlaySrf = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
 		if (!hOverlaySrf) return false;
-		hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::SURFACE, hOverlaySrf, hOverlay);
 	}
 
-	if (!hOverlayMsk && (IsLayerValid(Layer::LayerType::NIGHT) || IsLayerValid(Layer::LayerType::WATER)))
+	if (!hOverlayMsk && (bNight || bWater))
 	{
 		hOverlayMsk = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
 		if (!hOverlayMsk) return false;
-		hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::MASK, hOverlayMsk, hOverlay);
 	}
 
 	if (!hOverlayElv && IsLayerValid(Layer::LayerType::ELEVATION))
@@ -1032,7 +1013,7 @@ bool ToolKit::CreateOverlays()
 		hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::ELEVATION, hOverlayElv, hOverlay);
 	}
 
-	bImport = (hOverlay != NULL);
+	bImport = true;
 
 	return bImport;
 }
@@ -1040,7 +1021,7 @@ bool ToolKit::CreateOverlays()
 
 // =================================================================================================
 //
-bool ToolKit::ClearOverlay(SURFHANDLE hSrf, DWORD flags)
+bool ToolKit::UpdateBackGround(SURFHANDLE hSrf, DWORD flags)
 {
 	if (!hSrf) return false;
 
@@ -1164,6 +1145,7 @@ bool ToolKit::clbkProcessMouse(UINT event, DWORD state, DWORD x, DWORD y)
 		points[down_corner].lat = pg.lat;
 		points[down_corner].elev = pg.elev;
 		if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed in clbkProcessMouse()");
+		else for (auto x : pLr) if (x) x->ComputeLevel(points);
 	}
 
 	xpos = x, ypos = y;
