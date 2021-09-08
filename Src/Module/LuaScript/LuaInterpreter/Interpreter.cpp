@@ -1031,7 +1031,7 @@ void Interpreter::LoadAnnotationAPI ()
 
 void Interpreter::LoadStartupScript ()
 {
-	luaL_dofile (L, "Script\\oapi_init.lua");
+	luaL_dofile (L, ".\\Script\\oapi_init.lua");
 }
 
 bool Interpreter::InitialiseVessel (lua_State *L, VESSEL *v)
