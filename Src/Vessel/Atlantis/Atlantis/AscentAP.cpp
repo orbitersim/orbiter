@@ -220,8 +220,9 @@ double AscentAP::SSMEThrustProfile(double met)
 		int i;
 		if (met < ts[nsample - 1]) {
 			for (i = nsample - 1; i >= 0; i--)
-				if (met >= ts[i]) break;
-			return (met - ts[i]) / (ts[i + 1] - ts[i]) * (lvls[i + 1] - lvls[i]) + lvls[i];
+				if (met >= ts[i])
+					return (met - ts[i]) / (ts[i + 1] - ts[i]) * (lvls[i + 1] - lvls[i]) + lvls[i];
+			return lvls[0];
 		}
 		else if (met < 400) {
 			return 1.0;

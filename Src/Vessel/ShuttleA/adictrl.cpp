@@ -306,7 +306,7 @@ void ADICtrl::DispAngle (SURFHANDLE surf, double angle, int x, int y, char curst
 	y += dsp_y0;
 	for (i = 0; i < 3; i++) {
 		w = small_font_width[cbuf[i]];
-		if (!curstr || cbuf[i] != curstr[i]) {
+		if (cbuf[i] != curstr[i]) {
 			oapiBlt (surf, surf, x, y, small_font_xpos[cbuf[i]], small_font_ypos[0], w, small_font_height);
 			curstr[i] = cbuf[i];
 		}

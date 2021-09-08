@@ -34,12 +34,12 @@ void LogOut_Location(const char* func, const char* file, int line);
 
 #ifdef GENERATE_LOG
 #define INITLOG(x,app) InitLog(x,app)
-#define LOGOUT(msg,...) LogOut(msg,__VA_ARGS__)
-#define LOGOUT_FINE(msg,...) LogOutFine(msg,__VA_ARGS__)
-#define LOGOUT_ERR(msg, ...) LogOut_Error(__FUNCTION__,__FILE__,__LINE__, msg, __VA_ARGS__)
+#define LOGOUT(msg,...) LogOut(msg, ##__VA_ARGS__)
+#define LOGOUT_FINE(msg,...) LogOutFine(msg, ##__VA_ARGS__)
+#define LOGOUT_ERR(msg, ...) LogOut_Error(__FUNCTION__,__FILE__,__LINE__, msg, ##__VA_ARGS__)
 #define LOGOUT_LASTERR() LogOut_LastError(__FUNCTION__,__FILE__,__LINE__);
-#define LOGOUT_WARN(msg,...) LogOut_Warning(__FUNCTION__,__FILE__,__LINE__,msg,__VA_ARGS__)
-#define LOGOUT_ERR_FILENOTFOUND(file) LogOut_Error(__FUNCTION__,__FILE__,__LINE__, "File not found: %s", file)
+#define LOGOUT_WARN(msg,...) LogOut_Warning(__FUNCTION__, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+#define LOGOUT_ERR_FILENOTFOUND(file) LogOut_Error(__FUNCTION__, __FILE__, __LINE__, "File not found: %s", file)
 #define LOGOUT_ERR_FILENOTFOUND_MSG(file,msg,...) { \
 	LogOut_Error_Start(); \
 	LogOut("File not found: %s", file); \
@@ -71,8 +71,8 @@ void LogOut_Location(const char* func, const char* file, int line);
 	if (!(test)) { \
 		LogOut_Error_Start(); \
 		LogOut("Assertion failure:"); \
-		LogOut(msg, __VA_ARGS__); \
-		LogOut_Location(__FUNCTION__,__FILE__,__LINE__); \
+		LogOut(msg, ##__VA_ARGS__); \
+		LogOut_Location(__FUNCTION__, __FILE__, __LINE__); \
 		LogOut_Error_End(); \
 		if(fatal) { \
 			LogOut(">>> TERMINATING <<<"); \
@@ -85,10 +85,10 @@ void LogOut_Location(const char* func, const char* file, int line);
 // Debug build-only assertions. Assume debug assertion failures are always fatal
 #ifdef _DEBUG
 #define dASSERT(test,msg,...) { \
-	ASSERT(test, true, msg, __VA_ARGS__); \
+	ASSERT(test, true, msg, ##__VA_ARGS__); \
 }
 #define dVERIFY(test,msg,...) { \
-	ASSERT(!FAILED(test), true, msg, __VA_ARGS__); \
+	ASSERT(!FAILED(test), true, msg, ##__VA_ARGS__); \
 }
 #else
 #define dASSERT(test,msg,...) (test)

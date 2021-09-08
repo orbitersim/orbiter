@@ -429,7 +429,7 @@ oapiBlt(parent->surf,temps,85-22,0,10,0,9,190);
 Rotary::Rotary(int x,int y,char i_name[15],char i_names[7][12], int i_set, int i_poz,Panel* parent):instrument(x,y,parent)
 {
 	 strcpy(screentext,i_name); 
-	 for (int i=0;i<11;i++)  strcpy(names[i],i_names[i]);
+	 for (int i=0;i<7;i++)  strcpy(names[i],i_names[i]);
 	 set=i_set;poznr=i_poz;
 	 draw[0].x=-11;draw[0].y=40;
 	 draw[1].x= 11;draw[1].y=40;
@@ -1481,7 +1481,7 @@ else
 void Radar::LBD(int x, int y)
 {
 y-=55;
- int bt;
+ int bt = -1; // MS 210831: initialised this, assuming that no button is hit if the y condition is not met.
 if (y%34 <18)  bt=(int)(y/34);//which button
 if ((bt>=0)&&(bt<=2)) {
 	if ((x>19)&&(x<47)) 

@@ -39,7 +39,7 @@ Instrument_HSI::Instrument_HSI (Pane *_pane, INT_PTR _id, const Spec &spec, Vess
 		pen[1] = gc->clbkCreatePen (1, 1, RGB(255,128,0));
 		brush  = gc->clbkCreateBrush (col_yellow1);
 	} else {
-		for (i = 0; i < 5; i++) pen[i] = 0;
+		for (i = 0; i < 2; i++) pen[i] = 0;
 		brush = 0;
 	}
 	if (instrDT > 0.25) instrDT = 0.25; // force at least 4 Hz refresh rate
