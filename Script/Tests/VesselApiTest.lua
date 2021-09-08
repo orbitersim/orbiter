@@ -1,57 +1,26 @@
-note = oapi.create_annotation()
-note:set_pos (0.2,0.1,0.8,0.9);
-note:set_size(0.5)
-note:set_colour ({r=0.7,g=0.8,b=1})
-
 maxline = 20
 nline = 0
 first_line = 0
 linebuf = {}
 
 function disp_output()
-	buf = ""
-	for i=0,nline-1 do
-		idx = first_line + i
-		if idx >= maxline then
-			idx = idx - maxline
-		end
-		buf = buf .. linebuf[idx] .. "\n"
-	end
-	note:set_text(buf)
 end
 
 function add_line(line)
-	idx = first_line + nline
-	if idx >= maxline then
-		idx = idx - maxline
-	end
-	linebuf[idx] = line
-	if nline < maxline then
-		nline = nline + 1
-	else
-		first_line = first_line + 1
-		if first_line >= maxline then
-			first_line = first_line - maxline
-		end
-	end
-	disp_output()
+	oapi.dbg_out(line)
+	oapi.write_log(line)
 end
 
 function assert(cond)
 	if cond == false then
-		add_line("Test failed!")
-		error("Test failed!")
+		add_line(" - FAILED!")
+		error("Assertion failed\n"..debug.traceback())
+        oapi.exit(1)
 	end
 end
 
 function pass()
-	idx = first_line + nline - 1
-	if idx >= maxline then
-		idx = idx - maxline
-	end
-	linebuf[idx] = linebuf[idx] .. " - passed!"
-	disp_output()
-	proc.wait_sysdt(0.5)
+	add_line(" - passed")
 end
 
 add_line("=== Lua script unit tests ===")
@@ -266,21 +235,21 @@ cs = v:get_crosssections()
 assert(cs.x == 53 and cs.y == 186.9 and cs.z == 25.9)
 pass()
 
-add_line("Test: vessel:get_gravitygradientdamping()")
-v = vessel.get_interface("GL-01")
-assert(v:get_gravitygradientdamping() == 20)
-v = vessel.get_interface("ISS")
-assert(v:get_gravitygradientdamping() == 0)
-pass()
-
-add_line("Test: vessel:set_gravitygradientdamping(number)")
-v = vessel.get_interface("GL-01")
-pggd = v:get_gravitygradientdamping()
-v:set_gravitygradientdamping(100)
-assert(v:get_gravitygradientdamping() == 100)
-v:set_gravitygradientdamping(pggd)
-assert(v:get_gravitygradientdamping() == 20)
-pass()
+-- add_line("Test: vessel:get_gravitygradientdamping()")
+-- v = vessel.get_interface("GL-01")
+-- assert(v:get_gravitygradientdamping() == 20)
+-- v = vessel.get_interface("ISS")
+-- assert(v:get_gravitygradientdamping() == 0)
+-- pass()
+-- 
+-- add_line("Test: vessel:set_gravitygradientdamping(number)")
+-- v = vessel.get_interface("GL-01")
+-- pggd = v:get_gravitygradientdamping()
+-- v:set_gravitygradientdamping(100)
+-- assert(v:get_gravitygradientdamping() == 100)
+-- v:set_gravitygradientdamping(pggd)
+-- assert(v:get_gravitygradientdamping() == 20)
+-- pass()
 
 add_line("Test: vessel:get_touchdownpoints()")
 v = vessel.get_interface("GL-01")
@@ -388,5 +357,5 @@ arr[6] = v:get_touchdownpoints(5) -- NEW,   "     "     "
 v:set_touchdownpoints(arr)
 pass()
 
-note:set_colour ({r=0,g=0.9,b=0})
 add_line("=== All tests passed ===")
+oapi.exit(0)
