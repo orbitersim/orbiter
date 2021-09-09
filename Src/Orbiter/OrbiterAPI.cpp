@@ -2248,6 +2248,11 @@ DLLEXPORT void oapiWriteLog (char *line)
 	LOGOUT (line);
 }
 
+DLLEXPORT void oapiExitOrbiter(int code)
+{
+	exit(code);
+}
+
 DLLEXPORT void oapiWriteLogV (const char *format, ...)
 {
 #ifdef GENERATE_LOG

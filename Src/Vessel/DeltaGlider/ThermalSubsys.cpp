@@ -229,13 +229,13 @@ double ThermalSubsystem::SolarRadiation(VECTOR3 *sdir)
 	// For simplicity, assume sun position is at origin
 	VECTOR3 Ppos, Vpos;
 	double vdist, pdist, prad, srad;
+	DG()->GetGlobalPos(Vpos);
+	vdist = length(Vpos); // distance from sun
 	OBJHANDLE hObj = DG()->GetSurfaceRef();
 	while (hObj && oapiGetObjectType(hObj) == OBJTP_PLANET) {
 		prad = oapiGetSize(hObj);
 		oapiGetGlobalPos(hObj, &Ppos);
 		pdist = length(Ppos);
-		DG()->GetGlobalPos(Vpos);
-		vdist = length(Vpos);
 		if (vdist > pdist) {
 			double d = length(crossp(Ppos, Ppos-Vpos))/vdist;
 			if (d < prad) return 0.0;

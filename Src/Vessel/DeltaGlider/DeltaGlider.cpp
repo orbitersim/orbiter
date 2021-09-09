@@ -103,15 +103,21 @@ void UpdateCtrlDialog (DeltaGlider *dg, HWND hWnd = 0);
 
 void VLiftCoeff (VESSEL *v, double aoa, double M, double Re, void *context, double *cl, double *cm, double *cd)
 {
-	int i;
 	const int nabsc = 9;
 	static const double AOA[nabsc] = {-180*RAD,-60*RAD,-30*RAD, -2*RAD, 15*RAD,20*RAD,25*RAD,60*RAD,180*RAD};
 	static const double CL[nabsc]  = {       0,      0,   -0.4,      0,    0.7,     1,   0.8,     0,      0};
 	static const double CM[nabsc]  = {       0,      0,  0.014, 0.0039, -0.006,-0.008,-0.010,     0,      0};
+	int i;
 	for (i = 0; i < nabsc-1 && AOA[i+1] < aoa; i++);
-	double f = (aoa-AOA[i]) / (AOA[i+1]-AOA[i]);
-	*cl = CL[i] + (CL[i+1]-CL[i]) * f;  // aoa-dependent lift coefficient
-	*cm = CM[i] + (CM[i+1]-CM[i]) * f;  // aoa-dependent moment coefficient
+	if (i < nabsc - 1) {
+		double f = (aoa - AOA[i]) / (AOA[i + 1] - AOA[i]);
+		*cl = CL[i] + (CL[i + 1] - CL[i]) * f;  // aoa-dependent lift coefficient
+		*cm = CM[i] + (CM[i + 1] - CM[i]) * f;  // aoa-dependent moment coefficient
+	}
+	else {
+		*cl = CL[nabsc - 1];
+		*cm = CM[nabsc - 1];
+	}
 	double saoa = sin(aoa);
 	double pd = 0.015 + 0.4*saoa*saoa;  // profile drag
 	*cd = pd + oapiGetInducedDrag (*cl, 1.5, 0.7) + oapiGetWaveDrag (M, 0.75, 1.0, 1.1, 0.04);
@@ -127,7 +133,12 @@ void HLiftCoeff (VESSEL *v, double beta, double M, double Re, void *context, dou
 	static const double BETA[nabsc] = {-180*RAD,-135*RAD,-90*RAD,-45*RAD,45*RAD,90*RAD,135*RAD,180*RAD};
 	static const double CL[nabsc]   = {       0,    +0.3,      0,   -0.3,  +0.3,     0,   -0.3,      0};
 	for (i = 0; i < nabsc-1 && BETA[i+1] < beta; i++);
-	*cl = CL[i] + (CL[i+1]-CL[i]) * (beta-BETA[i]) / (BETA[i+1]-BETA[i]);
+	if (i < nabsc - 1) {
+		*cl = CL[i] + (CL[i + 1] - CL[i]) * (beta - BETA[i]) / (BETA[i + 1] - BETA[i]);
+	}
+	else {
+		*cl = CL[nabsc - 1];
+	}
 	*cm = 0.0;
 	*cd = 0.015 + oapiGetInducedDrag (*cl, 1.5, 0.6) + oapiGetWaveDrag (M, 0.75, 1.0, 1.1, 0.04);
 }
@@ -405,7 +416,7 @@ void DeltaGlider::clbkRenderHUD (int mode, const HUDPAINTSPEC *hps, SURFHANDLE h
 
 	static float texw = 512.0f, texh = 256.0f;
 	float cx = (float)hps->CX, cy = (float)hps->CY;
-	int i, nvtx = 0, nidx = 0;
+	DWORD i, nvtx = 0, nidx = 0;
 	static NTVERTEX vtx[12+16+4];
 	static WORD idx[18+36+6];
 	static float scl = 0;

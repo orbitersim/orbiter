@@ -40,7 +40,6 @@ class matrix
    void identity();
    matrix invert();
 
-   void trans(float ax,float ay,float az);
    void rotx(float aa);
    void roty(float aa);
    void rotz(float aa);

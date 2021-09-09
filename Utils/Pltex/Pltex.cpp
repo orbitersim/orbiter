@@ -105,7 +105,7 @@ struct PATCHDATA {
 	double latmin, latmax;
 	double lngmin, lngmax;
 	int ntile, ntot, sout, mout, sidx, midx;
-	int patchflag;
+	DWORD patchflag;
 	TILEFILESPEC *tfs;
 	int ntfs;
 	FILE *texf, *mtexf;
@@ -293,7 +293,7 @@ int main (int argc, char *argv[])
 
 void CreateGlobalSurface ()
 {
-	int i, k, which, lmax, idx = 0;
+	int i, k, which, lmax;
 	int minres = g_minres, maxres = g_maxres;
 	char c;
 	char *fname = g_fname;
@@ -302,6 +302,7 @@ void CreateGlobalSurface ()
 	LONG mapw, maph;
 	WORD bpp;
 	DWORD patchflag;
+	DWORD idx = 0;
 	RGB *img = 0, *tgt, *patch = 0;
 	RGB *limg = 0, *ltgt = 0, *lpatch = 0;
 	Alpha *aimg = 0, *atgt = 0, *apatch = 0;
@@ -2439,6 +2440,7 @@ WORD CatMaskDDS (FILE *texf, RGB *img, Alpha *aimg, LONG imgw, LONG imgh)
 	fread (buf, 1, ddssize, ddsf);
 	fclose (ddsf);
 	fwrite (buf, 1, ddssize, texf);
+	delete[]buf;
 
 	remove (bmpname);
 	remove (ddsname);

@@ -276,6 +276,7 @@ Battery::Battery(e_object *i_src, double i_power)
  load_handle=-1; //no loading;
  max_power=power=i_power;
  loading=0;
+ load_cb = 1; // MS 210831: added this since it was used undefined, causing an exception. No idea what it is or what it should be set to. It is never set anywhere.
  c_breaker=1;
  //Volts=28.8;
 };

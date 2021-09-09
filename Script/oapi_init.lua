@@ -24,7 +24,7 @@ ktable = {Q=0x10, W=0x11, E=0x12, R=0x13, T=0x14, Y=0x15, U=0x16, I=0x17,
 
 -- execute a script in the 'Script' folder (.lua extension is assumed)
 function run (script)
-  dofile('Script/'..script..'.lua')
+  dofile('./Script/'..script..'.lua')
 end
 
 -- execute a script in the Orbiter root folder

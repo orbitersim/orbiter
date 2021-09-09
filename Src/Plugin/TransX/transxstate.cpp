@@ -493,7 +493,7 @@ bool transxstate::doupdate(Sketchpad *sketchpad, int tw, int th,unsigned int cur
 		cfunction->doupdate(sketchpad,tw,th,currview);
 	}
 	char buffer[20];
-	int length=sprintf(buffer,"Stage %i:%i",curfunction,baselist.size());
+	int length=sprintf(buffer,"Stage %i:%z",curfunction,baselist.size());
 	sketchpad->Text(tw/2,0,buffer,length);
 	length=sprintf(buffer,"Vars Stage %i",curvarfunction);
 	sketchpad->Text(tw/2,4*linespacing,buffer,length);

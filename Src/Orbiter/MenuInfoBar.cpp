@@ -177,7 +177,7 @@ void GraphInfoBar::LabelSmax (double smax)
 void GraphInfoBar::RescaleGraph (double smax)
 {
 	gc->clbkBeginBltGroup (infoSrc);
-	int i, i0, i1, n, y0, y1, h;
+	int i, i0 = 0, i1, n, y0, y1, h;
 	for (n = nsample-1, i = isample; n > 0; n--, i--) {
 		i1 = i;
 		if (i1 < 0) i1 += FPSMAXSAMPLE;

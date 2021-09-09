@@ -466,7 +466,9 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 	for (i = 0; i < nv; i++)
 		if (count[i] > 0) {
 			D3DVALUE icount = 1.0f/count[i];
-			vtx[i].nx *= icount, vtx[i].ny *= icount, vtx[i].nz *= icount;
+			D3DVECTOR nml; nml.x = vtx[i].nx * icount, nml.y = vtx[i].ny * icount, nml.z = vtx[i].nz * icount;
+			D3DVALUE lgt = D3DMath_Length( nml );
+			vtx[i].nx = nml.x / lgt, vtx[i].ny = nml.y / lgt, vtx[i].nz = nml.z / lgt;
 		}
 	delete []count;
 }
@@ -645,7 +647,7 @@ istream &operator>> (istream &is, Mesh &mesh)
 				sscanf (cbuf+5, "%hd", &zbias);
 			} else if (!_strnicmp (cbuf, "TEXWRAP", 7)) { // read wrap flags
 				char uvstr[10] = "";
-				sscanf (cbuf+7, "%s", uvstr);
+				sscanf (cbuf+7, "%9s", uvstr);
 				if (uvstr[0] == 'U' || uvstr[1] == 'U') flag |= 0x01;
 				if (uvstr[0] == 'V' || uvstr[1] == 'V') flag |= 0x02;
 			} else if (!_strnicmp (cbuf, "NONORMAL", 8)) {

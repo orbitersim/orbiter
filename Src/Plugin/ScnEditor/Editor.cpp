@@ -2678,7 +2678,7 @@ void EditorTab_Propellant::Refresh ()
 	if (!hP) return;
 	m0 = vessel->GetPropellantMaxMass (hP);
 	m  = vessel->GetPropellantMass (hP);
-	sprintf (cbuf, "%Mass (0-%0.2f kg)", m0);
+	sprintf (cbuf, "Mass (0-%0.2f kg)", m0);
 	SetWindowText (GetDlgItem (hTab, IDC_STATIC2), cbuf);
 	sprintf (cbuf, "%0.4f", m/m0);
 	SetWindowText (GetDlgItem (hTab, IDC_EDIT2), cbuf);

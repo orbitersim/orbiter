@@ -46,10 +46,16 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 {
 	bool isLongKey;
 	bool isQuotedVal;
+	bool isQuotedParam = false; // Is full parameter quoted? "--scenario=my_scenario"
 
 	// Parse next key
 	if (!groupKey) {
 		while (*cmdLine == ' ' || *cmdLine == '\t') cmdLine++; // skip whitespace
+		if (*cmdLine == '"')
+		{
+			cmdLine++;
+			isQuotedParam = true;
+		}
 		if (*cmdLine == '\0')
 			return false; // nothing left to parse
 		if (*cmdLine != '-')
@@ -96,7 +102,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 		return false;     // for long keys, '=' is mandatory before values
 	if (isQuotedVal = (*cmdLine == '\"'))
 		cmdLine++; // skip starting quotes
-	char* termValChar = (isQuotedVal ? "\"" : " \t"); // for quoted values, only accept quotes as terminator
+	char* termValChar = (isQuotedParam || isQuotedVal ? "\"" : " \t"); // for quoted values, only accept quotes as terminator
 	std::set<char> termV(termValChar, termValChar + strlen(termValChar) + 1); // include '\0' in set
 	PSTR endVal = cmdLine;
 	while (termV.find(*endVal) == termV.end())
@@ -104,7 +110,7 @@ bool CommandLine::ParseNextOption(PSTR& cmdLine, bool& groupKey, Option& option)
 	size_t valLen = endVal - cmdLine;
 	option.strVal = std::string(cmdLine, valLen);
 	cmdLine = endVal; // advance command line pointer
-	if (isQuotedVal && *cmdLine == '\"')
+	if ((isQuotedParam || isQuotedVal) && *cmdLine == '\"')
 		cmdLine++;  // skip trailing quotes
 
 	return true;

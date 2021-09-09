@@ -375,7 +375,7 @@ void Instrument_Docking::UpdateDraw (oapi::Sketchpad *skp)
 		x1 = x + msize; if (x1 >  rlimit) x1 =  rlimit;
 		y0 = y - msize; if (y0 < -rlimit) y0 = -rlimit;
 		y1 = y + msize; if (y1 >  rlimit) y1 =  rlimit;
-		skp->SetPen (draw[0][3].solidpen);
+		skp->SetPen (draw[r>z?0:3][0].solidpen);
 		skp->Line (circx+x0, circy-y, circx+x1+1, circy-y);
 		skp->Line (circx+x, circy-y0, circx+x, circy-y1-1);
 

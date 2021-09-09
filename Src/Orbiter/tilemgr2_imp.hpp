@@ -11,7 +11,7 @@
 // -----------------------------------------------------------------------
 
 template<class TileType>
-QuadTreeNode<TileType> *TileManager2Base::FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilat, int ilng)
+QuadTreeNode<TileType> *TileManager2Base::FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilng, int ilat)
 {
 	int i, sublat, sublng, subidx;
 

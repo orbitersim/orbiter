@@ -24,11 +24,11 @@ Orbiter is now published as an Open Source project under the MIT License (see
 
 Get the Orbiter source repository from github
 ```bash
-git clone git@github.com:mschweiger/orbiter.git
+git clone git@github.com:orbitersim/orbiter.git
 ```
 or
 ```bash
-git clone https://github.com/mschweiger/orbiter.git
+git clone https://github.com/orbitersim/orbiter.git
 ```
 
 To configure and generate the makefiles, you need a recent

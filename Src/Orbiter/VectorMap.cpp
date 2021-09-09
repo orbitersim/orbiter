@@ -1155,15 +1155,15 @@ void VectorMap::DrawSunnySide (double sunlng, double sunlat, bool terminator)
 		pt[i].y = mapy(p[i].lat);
 	}
 	for (cut = 1; cut <= NVTX_CIRCLE; cut++) {
-		if (abs(pt[cut-1].x-pt[cut%NVTX_CIRCLE].x) > mapw/2) break;
+		if (abs(pt[cut-1].x-pt[cut % NVTX_CIRCLE].x) > mapw/2) break;
 	}
-	bool prograde = (pt[cut-1].x > pt[cut%NVTX_CIRCLE].x);
+	bool prograde = (pt[(cut-1) % NVTX_CIRCLE].x > pt[cut % NVTX_CIRCLE].x);
 	if (prograde) {
 		for (i = 0; i < NVTX_CIRCLE; i++)
-			ptt[2+i] = pt[(cut+i)%NVTX_CIRCLE];
+			ptt[2+i] = pt[(cut+i) % NVTX_CIRCLE];
 	} else {
 		for (i = 0; i < NVTX_CIRCLE; i++)
-			ptt[1+NVTX_CIRCLE-i] = pt[(cut+i)%NVTX_CIRCLE];
+			ptt[1+NVTX_CIRCLE-i] = pt[(cut+i) % NVTX_CIRCLE];
 	}
 	if (ptt[2].x > 0) {
 		ptt[1].x = ptt[NVTX_CIRCLE+1].x - mapw;

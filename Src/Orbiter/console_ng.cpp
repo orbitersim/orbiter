@@ -45,6 +45,8 @@ orbiter::ConsoleNG::ConsoleNG(Orbiter* pOrbiter)
     DWORD id;
     SetConsoleTitle(title);
     m_hWnd = GetConsoleWindow();
+	if (ConsoleManager::IsConsoleExclusive())
+		DeleteMenu(GetSystemMenu(m_hWnd, false), SC_CLOSE, MF_BYCOMMAND);
     m_hThread = CreateThread(NULL, stackSize, InputProc, this, 0, &id);
     s_hStdO = GetStdHandle(STD_OUTPUT_HANDLE);
     SetLogOutFunc(&ConsoleOut); // clone log output to console
@@ -54,8 +56,12 @@ orbiter::ConsoleNG::~ConsoleNG()
 {
 	DestroyStatDlg();
 	SetLogOutFunc(0);
-	if (m_hThread) {
+	if (WaitForSingleObject(m_hThread, 1000) == WAIT_TIMEOUT) {
 		TerminateThread(m_hThread, 0);
+	}
+	if (hMutex) {
+		CloseHandle(hMutex);
+		hMutex = 0;
 	}
 	s_console = NULL;
 	s_hStdO = NULL;
@@ -243,7 +249,8 @@ void orbiter::ConsoleNG::EchoIntro() const
 {
 	Echo("-----------------\nOrbiter NG (no graphics)");
 	Echo("Running in server mode (no graphics client attached).");
-	Echo("Type \"help\" for a list of commands.\n");
+	Echo("Type \"help\" for a list of commands.");
+	Echo("Type \"exit\" to return to the Launchpad dialog.\n");
 }
 
 bool orbiter::ConsoleNG::DestroyStatDlg()
@@ -268,15 +275,23 @@ DWORD WINAPI InputProc(LPVOID context)
 	SetConsoleMode(hStdI, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
 	SetConsoleTextAttribute(hStdI, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 	hMutex = CreateMutex(NULL, FALSE, NULL);
+	if (!hMutex)
+		return 1;
 	for (;;) {
-		ReadConsole(hStdI, cbuf, 1024, &count, NULL);
+		if (!ReadConsole(hStdI, cbuf, 1024, &count, NULL))
+			break; // Console not available, exiting
 		WriteConsole(hStdO, "> ", 2, &c, NULL);
 
 		WaitForSingleObject(hMutex, 1000);
 		cConsoleCmd[0] = 'x';
-		memcpy(cConsoleCmd + 1, cbuf, count);
+		strncpy(cConsoleCmd + 1, cbuf, count);
 		cConsoleCmd[count - 1] = '\0'; // eliminates CR
 		ReleaseMutex(hMutex);
+
+		// handle "exit" directly so we can terminate the console thread in an orderly fashion
+		if (!strncmp(cbuf, "exit\r\n", 6)) {
+			break;
+		}
 	}
 	return 0;
 }

@@ -866,6 +866,10 @@ void Orbiter::CloseSession ()
 		script->DelInterpreter (hScnInterp);
 		hScnInterp = NULL;
 	}
+
+	if (ConsoleManager::IsConsoleExclusive())
+		ConsoleManager::ShowConsole(false);
+
 	if (m_pConsole) {
 		delete m_pConsole;
 		m_pConsole = NULL;
