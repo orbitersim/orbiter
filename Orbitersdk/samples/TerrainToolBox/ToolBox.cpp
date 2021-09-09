@@ -137,7 +137,6 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_OPENIMAGE:
 		{
 			OpenImage(Layer::LayerType::TEXTURE);
-			SetMode(MODE_IMPORT);
 			return true;
 		}
 
@@ -145,21 +144,18 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			MessageBox(pCore->GetRenderWindow(), "This feature is not yet implemented.", "Info", MB_OK);
 			//OpenImage(Layer::LayerType::ELEVATION);
-			//SetMode(MODE_IMPORT);
 			return true;
 		}
 
 		case IDC_OPENNIGHT:
 		{
 			OpenImage(Layer::LayerType::NIGHT);
-			SetMode(MODE_IMPORT);
 			return true;
 		}
 
 		case IDC_OPENWATER:
 		{
 			OpenImage(Layer::LayerType::WATER);
-			SetMode(MODE_IMPORT);
 			return true;
 		}
 
@@ -318,18 +314,6 @@ bool ToolKit::clbkMessage(DWORD uMsg, HNODE hNode, int data)
 }
 
 
-// =================================================================================================
-//
-void ToolKit::SetMode(int mode)
-{
-	if (mode == MODE_EXPORT) {
-		pProp->ShowEntry(hSecExp, true);
-	}
-	if (mode == MODE_IMPORT) {
-		pProp->ShowEntry(hSecExp, false);		
-	}
-}
-
 
 // =================================================================================================
 //
@@ -446,7 +430,7 @@ bool ToolKit::Initialize()
 	hCFil = pProp->AddEntry("Filename", hSecCur);
 
 	// ---------------------------------------------------
-	hSecExp = pProp->SubSection("Export selection range");
+	hSecExp = pProp->SubSection("Selection range");
 	// ---------------------------------------------------
 	hSLng = pProp->AddEntry("Min Lng", hSecExp);
 	hSLat = pProp->AddEntry("Min Lat", hSecExp);
@@ -454,8 +438,15 @@ bool ToolKit::Initialize()
 	hMLat = pProp->AddEntry("Max Lat", hSecExp);
 	hSXPx = pProp->AddEntry("Width pixels", hSecExp);
 	hSYPx = pProp->AddEntry("Height pixels", hSecExp);
+	hCLvl = pProp->AddEntry("SelectionLvl", hSecExp);
+	hBLvs = pProp->AddComboBox("Lvls to Bake", 0, hSecExp);
 
-
+	for (int i = 0; i < 8; i++) {
+		char buf[8]; sprintf_s(buf, 8, "%d", i);
+		pProp->AddComboBoxItem(hBLvs, buf);
+	}
+	pProp->SetComboBoxSelection(hBLvs, 0);
+	
 	pProp->Update();
 
 	
@@ -553,6 +544,7 @@ void ToolKit::clbkRender()
 	if (!hPlanet) return;
 	if (!dmSphere) return;
 
+	bool bGuides = (SendDlgItemMessageA(hCtrlDlg, IDC_GUIDES, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	bool bAutoHighlight = (SendDlgItemMessageA(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	bool bHideClip = false; // (SendDlgItemMessageA(hImpoDlg, IDC_HIDECLIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	
@@ -681,6 +673,22 @@ void ToolKit::clbkRender()
 			pProp->SetValue(hMLat, selection.bounds.bottom, 4, gcPropertyTree::Format::LATITUDE);
 			pProp->SetValue(hSXPx, 512 * selw);
 			pProp->SetValue(hSYPx, 512 * selh);
+			pProp->SetValue(hCLvl, selection.slvl + 4);
+
+			if (bGuides)
+			{
+				list<QTree*> parents;
+				list<QTree*> grands;
+
+				for (auto& x : selection.area) parents.push_back(x.pNode->GetParent());
+				parents.unique();
+
+				for (auto x : parents) grands.push_back(x->GetParent());		
+				grands.unique();
+
+				RenderSelection(grands, 1, 0xFFFF00FF);
+				RenderSelection(parents, 1, 0xFF00FFFF);			
+			}
 		}
 	}
 

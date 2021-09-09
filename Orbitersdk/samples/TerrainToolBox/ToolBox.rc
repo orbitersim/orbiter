@@ -49,7 +49,7 @@ FONT 8, "Ms Shell Dlg"
     PUSHBUTTON      "Open Surface", IDC_OPENIMAGE, 5, 5, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Bake", IDC_BAKE, 95, 100, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Reset Corners", IDC_CORNERS, 95, 60, 75, 14, 0, WS_EX_LEFT
-    PUSHBUTTON      "Auto Calibration", IDC_UPDATECLIP, 95, 45, 75, 14, 0, WS_EX_LEFT
+    PUSHBUTTON      "Reselect Region", IDC_UPDATECLIP, 95, 45, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Cancel Import", IDC_STOP, 95, 75, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Edit Elevation", IDC_EDITELEV, 5, 100, 75, 14, 0, WS_EX_LEFT
     PUSHBUTTON      "Open Water", IDC_OPENWATER, 5, 20, 75, 14, 0, WS_EX_LEFT

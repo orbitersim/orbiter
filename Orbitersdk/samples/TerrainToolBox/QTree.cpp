@@ -415,13 +415,6 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 	sprintf_s(test, MAX_PATH, "%s\\%02d\\%06d\\%06d.dds", dir, level + 4, ilat, ilng);
 	oapiWriteLogV("BAKING.. Name = %s,  Tgt(x=%d, y=%d, w=%d, h=%d) Src(x=%d, y=%d, w=%d, h=%d) SubTexLvl=%d", test, tgt.left, tgt.top, tw, th, src.left, src.top, sw, sh, sl);
 
-	if (maxlvl != -1) {
-		for (int i = 0; i < 4; i++)
-		{
-			int rv = GetChild(i)->SaveTile(flags, hSurf, hTemp, bounds, maxlvl, alpha);
-			if (rv < 0) return rv;
-		}
-	}
 	return 0;
 }
 

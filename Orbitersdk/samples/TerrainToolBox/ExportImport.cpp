@@ -44,7 +44,6 @@ void ToolKit::StopImport()
 	selection.area.clear();
 	oldsel.area.clear();
 	pFirst = pSecond = NULL;
-	SetMode(MODE_EXPORT);
 }
 
 
@@ -179,6 +178,7 @@ void ToolKit::BakeImport()
 	//
 	if (bSurf) 
 	{
+		int levels = pProp->GetComboBoxSelection(hBLvs);
 		int flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
 
 		SetWindowText(hProgDlg, "Baking Surface:");
@@ -186,9 +186,9 @@ void ToolKit::BakeImport()
 
 		for (auto s : selection.area)
 		{
-			int rv = s.pNode->SaveTile(flags, hOverlaySrf, hTemp, selection.bounds, selection.slvl - 4, 1.0f);
-			if (rv < 0) {
-				oapiWriteLogV("ERROR: s.pNode->SaveTile() returned %d", rv);
+			if (s.pNode->SaveTile(flags, hOverlaySrf, hTemp, selection.bounds, selection.slvl, 1.0f) < 0) 
+			{
+				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
 				return;
 			}
 			MakeProgress();
@@ -196,8 +196,7 @@ void ToolKit::BakeImport()
 		}
 
 		parents.unique();
-
-		BakeParents(hOverlaySrf, hTemp, flags, parents);
+		BakeParents(hOverlaySrf, hTemp, flags, parents, levels);
 	}
 
 
@@ -205,6 +204,7 @@ void ToolKit::BakeImport()
 	//
 	if (bNight || bWater)
 	{
+		int levels = pProp->GetComboBoxSelection(hBLvs);
 		int flags = gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
 
 		progress = 0;
@@ -216,9 +216,9 @@ void ToolKit::BakeImport()
 
 		for (auto s : selection.area)
 		{
-			int rv = s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl - 4, 1.0f);
-			if (rv < 0) {
-				oapiWriteLogV("ERROR: s.pNode->SaveTile() returned %d", rv);
+			if (s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl - 4, 1.0f) < 0) 
+			{
+				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
 				return;
 			}
 			MakeProgress();
@@ -226,8 +226,7 @@ void ToolKit::BakeImport()
 		}
 
 		parents.unique();
-
-		BakeParents(hOverlayMsk, hTemp, flags, parents);
+		BakeParents(hOverlayMsk, hTemp, flags, parents, levels);
 	}
 
 	oapiReleaseTexture(hTemp);
@@ -238,25 +237,30 @@ void ToolKit::BakeImport()
 
 // =================================================================================================
 //
-void ToolKit::BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents)
+void ToolKit::BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents, int levels)
 {
+	levels--;
 	list<QTree *> grands;
 
 	for (auto qt : parents)
 	{
 		float alpha = 1.0f;
-		if (qt->HasOwnTex(flags) == false) grands.push_back(qt->GetParent());
-		else alpha = 0.5f;
-		int rv = qt->SaveTile(flags, hOvrl, hTemp, selection.bounds, -1, alpha);
-		MakeProgress();
-		if (rv < 0) {
-			oapiWriteLogV("ERROR: qt->SaveTile() returned %d", rv);
-			return;
+
+		if ((qt->HasOwnTex(flags) == false) || (levels > 0))
+		{
+			MakeProgress();
+			grands.push_back(qt->GetParent());
+
+			if (qt->SaveTile(flags, hOvrl, hTemp, selection.bounds, -1, alpha) < 0) 
+			{
+				oapiWriteLogV("ERROR: qt->SaveTile() failed");
+				return;
+			}
 		}
 	}
 
 	grands.unique();
-	if (grands.size()) BakeParents(hOvrl, hTemp, flags, grands);
+	if (grands.size()) BakeParents(hOvrl, hTemp, flags, grands, levels);
 }
 
 

@@ -117,7 +117,6 @@ public:
 	bool		UpdateOverlays();
 	bool		Initialize();
 	bool		IsLayerValid(Layer::LayerType lr);
-	void		SetMode(int mode);
 	void		SetupPlanet(OBJHANDLE hPln);
 	BOOL		DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -137,13 +136,14 @@ public:
 	void		clbkRender();
 
 private:
+	void		RenderSelection(list<QTree*> sel, int mode, DWORD color);
 	void		RenderSelection(sSelection *sel, int mode, DWORD color);
 	void		RenderTileBounds(QTree *tn, DWORD color);
 	void		RenderTileBounds(gcCore::PickGround &pg, DWORD color);
 	void		DrawBox(FVECTOR3 *box, DWORD color);
 
 	// ------------------------------------------------------ 
-
+	DRECT		GetBounds(list<QTree*> sel);
 	bool		CreateOverlays();
 	bool		UpdateBackGround(SURFHANDLE hSrf, DWORD flags);
 	Layer*		GetLayer(Layer::LayerType type) { return pLr[(int)type]; }
@@ -156,7 +156,7 @@ private:
 	void		AutoSelectCorners();
 	void		BakeImport();
 	void		StopImport();
-	void		BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents);
+	void		BakeParents(SURFHANDLE hOvrl, SURFHANDLE hTemp, int flags, list<QTree *> parents, int levels);
 	void		MakeProgress();
 
 
@@ -194,7 +194,7 @@ private:
 	//
 	HPROP				hSecCur, hSecExp;
 
-	HPROP				hCLng, hCLat, hCEle, hCFil, hSLng, hSLat, hMLng, hMLat, hSXPx, hSYPx;
+	HPROP				hCLng, hCLat, hCEle, hCFil, hCLvl, hBLvs, hSLng, hSLat, hMLng, hMLat, hSXPx, hSYPx;
 	HPROP				hIFil, hIWid, hIHei, hILog;
 
 	

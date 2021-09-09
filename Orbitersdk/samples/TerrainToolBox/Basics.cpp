@@ -38,23 +38,6 @@ string LngLat(Position p)
 
 // =================================================================================================
 //
-bool IsStringValid(const char *a, const char *b)
-{
-	const char *c = b;
-	while (*a != 0) {
-		while (true) {
-			if (*a == *b) break;
-			else b++;
-			if (*b == 0) return false;
-		}
-		a++; b = c;
-	}
-	return true;
-}
-
-
-// =================================================================================================
-//
 bool ToolKit::IsLayerValid(Layer::LayerType type)
 { 
 	Layer* pLr = GetLayer(type);
@@ -208,6 +191,71 @@ void ToolKit::RenderSelection(sSelection *sel, int mode, DWORD color)
 		double h = fabs(sel->bounds.top - sel->bounds.bottom);
 		double w = fabs(sel->bounds.right - sel->bounds.left);
 		double s = size - cos(max(w, h)*0.5) * size;
+
+		FVECTOR3 box[8];
+		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
+		for (int i = 0; i < 4; i++) box[i + 4] = FVECTOR3(V[i] * (size + emin) - cpos);
+
+		DrawBox(box, color);
+	}
+}
+
+
+// =================================================================================================
+//
+DRECT ToolKit::GetBounds(list<QTree*> sel)
+{
+	DRECT dr = DRECT(10.0, -10.0, -10.0, 10.0);
+
+	for (auto x : sel) {
+		dr.left = min(dr.left, x->Bounds.left);
+		dr.right = max(dr.right, x->Bounds.right);
+		dr.top = max(dr.top, x->Bounds.top);
+		dr.bottom = min(dr.bottom, x->Bounds.bottom);
+	}
+	return dr;
+}
+
+
+// =================================================================================================
+//
+void ToolKit::RenderSelection(list<QTree*> sel, int mode, DWORD color)
+{
+	if (mode == 0) {
+		for (auto x : sel) RenderTileBounds(x, color);
+		return;
+	}
+
+	float emin = 1e6;
+	float emax = -1e6;
+
+	if (mode == 1) 
+	{
+		for (auto x : sel) 
+		{
+			gcCore::PickGround pg = pCore->GetTileData(hMgr, x->clng, x->clat, x->level);
+			emin = min(emin, pg.emin);
+			emax = max(emax, pg.emax);
+		}
+
+		DRECT Bounds = GetBounds(sel);
+	
+		double size = oapiGetSize(hPlanet);
+		VECTOR3 cpos, bpos;
+
+		oapiCameraGlobalPos(&cpos);
+		oapiGetGlobalPos(hPlanet, &bpos);
+		cpos -= bpos;
+
+		VECTOR3 V[4];
+		V[0] = GetSurfacePosUnit(Bounds.left, Bounds.top);
+		V[1] = GetSurfacePosUnit(Bounds.left, Bounds.bottom);
+		V[2] = GetSurfacePosUnit(Bounds.right, Bounds.bottom);
+		V[3] = GetSurfacePosUnit(Bounds.right, Bounds.top);
+
+		double h = fabs(Bounds.top - Bounds.bottom);
+		double w = fabs(Bounds.right - Bounds.left);
+		double s = size - cos(max(w, h) * 0.5) * size;
 
 		FVECTOR3 box[8];
 		for (int i = 0; i < 4; i++) box[i] = FVECTOR3(V[i] * (size + emax + s) - cpos);
