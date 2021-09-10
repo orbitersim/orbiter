@@ -102,9 +102,7 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 		HR(D3DXComputeBoundingSphere((const D3DXVECTOR3 *)&vtx->x, nv, sizeof(VERTEX_2TEX), &bsCnt, &bsRad));
 
 		if (pVB) {
-			double time = D3D9GetTime();
 			if (HROK(pVB->Lock(0, 0, (LPVOID*)&pVBuffer, D3DLOCK_DISCARD))) {
-				D3D9SetTime(D3D9Stats.Timer.LockWait, time);
 				memcpy(pVBuffer, vtx, nv*sizeof(VERTEX_2TEX));
 				pVB->Unlock();
 			}
@@ -113,9 +111,7 @@ void VBMESH::MapVertices(LPDIRECT3DDEVICE9 pDev, DWORD MemFlag)
 
 	if (idx) {
 		if (pIB) {
-			double time = D3D9GetTime();
 			if (HROK(pIB->Lock(0, 0, (LPVOID*)&pIBuffer, D3DLOCK_DISCARD))) {
-				D3D9SetTime(D3D9Stats.Timer.LockWait, time);
 				memcpy(pIBuffer, idx, nf*sizeof(WORD)*3);
 				pIB->Unlock();
 			}
@@ -166,7 +162,7 @@ void CreateSphere (LPDIRECT3DDEVICE9 pDev, VBMESH &mesh, DWORD nrings, bool hemi
 		FLOAT tv = fDAngY0/(FLOAT)PI;
 
         for (x = 0; x < x2; x++) {
-            FLOAT fDAngX0 = x*fDAng - (FLOAT)PI;  // subtract Pi to wrap at +-180°
+            FLOAT fDAngX0 = x*fDAng - (FLOAT)PI;  // subtract Pi to wrap at +-180Â°
 			if (hemisphere && which_half) fDAngX0 += (FLOAT)PI;
 
 			D3DVECTOR v = {r0*(FLOAT)cos(fDAngX0), y0, r0*(FLOAT)sin(fDAngX0)};

@@ -19,7 +19,7 @@
 // -----------------------------------------------------------------------
 
 template<class TileType>
-QuadTreeNode<TileType> *TileManager2Base::FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilat, int ilng)
+QuadTreeNode<TileType> *TileManager2Base::FindNode (QuadTreeNode<TileType> root[2], int lvl, int ilng, int ilat)
 {
 	int i, sublat, sublng, subidx;
 
@@ -126,7 +126,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		if (lvl == 0)
 			bstepdown = false;                // force render at lowest resolution
 		else {
-			if (!bNoRelease) node->DelChildren ();             // remove the sub-tree
+			if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) node->DelChildren();
 			tile->state = Tile::Invisible;
 			return;                           // no need to continue
 		}
@@ -140,7 +140,6 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 		else {
 			// Keep a tile allocated as long as the tile can be seen from a current camera position.
 			// We have multible views and only the active (current) view is checked here.
-			if (Config->EnvMapMode == 0 && Config->CustomCamMode == 0 && !bNoRelease) node->DelChildren();  // remove the sub-tree
 			tile->state = Tile::Invisible;
 			return;
 		}
@@ -164,7 +163,6 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 
 		bias -=  2.0 * sqrt(max(0,adist) / prm.viewap);
 		int maxlvl = prm.maxlvl;
-		//if (DebugControls::IsEquEnabled()) maxlvl += 2;
 
 		double apr = tdist * scene->GetTanAp() * resolutionScale;
 		tgtres = (apr < 1e-6 ? maxlvl : max(0, min(maxlvl, (int)(bias - log(apr)*res_scale))));
@@ -179,6 +177,7 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 
 	if (!bstepdown) {	
 		// Search elevated tilels from sub-trees
+		// This can severally impact in performance if used incorrectly
 		if ((ElevMode == eElevMode::ForcedElevated) && (tile->IsElevated() == false)) bstepdown = true;	
 	}
 	
@@ -204,10 +203,8 @@ void TileManager2Base::ProcessNode (QuadTreeNode<TileType> *node)
 			return; // otherwise render at current resolution until all subtiles are available
 		}
 	}
-
-	if (!bstepdown) {
-		// Delete tile and sub-tree if the tile has not been needeed for a while
-		if (scene->GetRenderPass()==RENDERPASS_MAINSCENE && (scene->GetFrameId()-tile->FrameId)>64) node->DelChildren ();
+	else {
+		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) node->DelChildren();
 	}
 }
 
@@ -221,7 +218,7 @@ void TileManager2Base::RenderNode (QuadTreeNode<TileType> *node)
 
 	if (tile->state == Tile::ForRender) {
 		int lvl = tile->lvl;
-		tile->MatchEdges ();
+		if (scene->GetRenderPass() == RENDERPASS_MAINSCENE) tile->MatchEdges ();
 		SetWorldMatrix (tile->mWorld);
 		tile->StepIn ();
 		tile->Render ();
