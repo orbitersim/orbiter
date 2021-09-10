@@ -668,6 +668,8 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 	}
 	for (i = 0; i < nt; i++) {
 		DWORD i0 = idx[i*3], i1 = idx[i*3+1], i2 = idx[i*3+2];
+		if (!calcNml[i0] && !calcNml[i1] && !calcNml[i2])
+			continue; // nothing to do for this triangle
 		D3DVECTOR V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
 		D3DVECTOR V02 = { vtx[i2].x - vtx[i0].x, vtx[i2].y - vtx[i0].y, vtx[i2].z - vtx[i0].z };
 		D3DVECTOR V12 = { vtx[i2].x - vtx[i1].x, vtx[i2].y - vtx[i1].y, vtx[i2].z - vtx[i1].z };
