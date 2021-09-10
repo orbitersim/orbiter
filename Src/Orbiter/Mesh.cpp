@@ -668,21 +668,30 @@ void Mesh::CalcNormals (DWORD grp, bool missingonly)
 	}
 	for (i = 0; i < nt; i++) {
 		DWORD i0 = idx[i*3], i1 = idx[i*3+1], i2 = idx[i*3+2];
-		D3DVECTOR d2 = {vtx[i2].x-vtx[i0].x, vtx[i2].y-vtx[i0].y, vtx[i2].z-vtx[i0].z};
-		D3DVECTOR d1 = {vtx[i1].x-vtx[i0].x, vtx[i1].y-vtx[i0].y, vtx[i1].z-vtx[i0].z};
-		D3DVECTOR nm = D3DMath_CrossProduct (d1, d2);
+		D3DVECTOR V01 = { vtx[i1].x - vtx[i0].x, vtx[i1].y - vtx[i0].y, vtx[i1].z - vtx[i0].z };
+		D3DVECTOR V02 = { vtx[i2].x - vtx[i0].x, vtx[i2].y - vtx[i0].y, vtx[i2].z - vtx[i0].z };
+		D3DVECTOR V12 = { vtx[i2].x - vtx[i1].x, vtx[i2].y - vtx[i1].y, vtx[i2].z - vtx[i1].z };
+		D3DVECTOR nm = D3DMath_CrossProduct (V01, V02);
 		D3DVALUE len = D3DMath_Length (nm);
+		D3DVALUE d01 = D3DMath_Length(V01);
+		D3DVALUE d02 = D3DMath_Length(V02);
+		D3DVALUE d12 = D3DMath_Length(V12);
+		D3DVALUE a0 = acos((d01 * d01 + d02 * d02 - d12 * d12) / (2.0f * d01 * d02));
+		D3DVALUE a1 = acos((d01 * d01 + d12 * d12 - d02 * d02) / (2.0f * d01 * d12));
+		D3DVALUE a2 = acos((d02 * d02 + d12 * d12 - d01 * d01) / (2.0f * d02 * d12));
+
 		if (len >= eps) {
 			nm.x /= len, nm.y /= len, nm.z /= len;
-			if (count[i0] >= 0) vtx[i0].nx += nm.x, vtx[i0].ny += nm.y, vtx[i0].nz += nm.z, count[i0]++;
-			if (count[i1] >= 0) vtx[i1].nx += nm.x, vtx[i1].ny += nm.y, vtx[i1].nz += nm.z, count[i1]++;
-			if (count[i2] >= 0) vtx[i2].nx += nm.x, vtx[i2].ny += nm.y, vtx[i2].nz += nm.z, count[i2]++;
+			if (count[i0] >= 0) vtx[i0].nx += nm.x*a0, vtx[i0].ny += nm.y*a0, vtx[i0].nz += nm.z*a0, count[i0]++;
+			if (count[i1] >= 0) vtx[i1].nx += nm.x*a1, vtx[i1].ny += nm.y*a1, vtx[i1].nz += nm.z*a1, count[i1]++;
+			if (count[i2] >= 0) vtx[i2].nx += nm.x*a2, vtx[i2].ny += nm.y*a2, vtx[i2].nz += nm.z*a2, count[i2]++;
 		}
 	}
 	for (i = 0; i < nv; i++)
 		if (count[i] > 0) {
-			D3DVALUE icount = 1.0f/count[i];
-			vtx[i].nx *= icount, vtx[i].ny *= icount, vtx[i].nz *= icount;
+			D3DVECTOR nm = { vtx[i].nx, vtx[i].ny, vtx[i].nz };
+			D3DVALUE len = D3DMath_Length(nm);
+			vtx[i].nx /= len, vtx[i].ny /= len, vtx[i].nz /= len;
 		}
 	delete []count;
 }
