@@ -119,10 +119,18 @@ SubTex QTree::GetSubTexRange(int flags)
 // ==================================================================================
 //
 SURFHANDLE QTree::GetTexture(int flags)
-{
-	if (flags == 0) flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
-	if (!hTex) hTex = pCore->SeekTileTexture(hMgr, ilng, ilat, level, flags);
-	return hTex;
+{	
+	assert(flags != 0);
+
+	if (flags & gcTileFlags::TEXTURE) {
+		if (!hTex) hTex = pCore->SeekTileTexture(hMgr, ilng, ilat, level, flags);
+		return hTex;
+	}
+	if (flags & gcTileFlags::MASK) {
+		if (!hMask) hMask = pCore->SeekTileTexture(hMgr, ilng, ilat, level, flags);
+		return hMask;
+	}
+	return NULL;
 }
 
 // ==================================================================================

@@ -117,6 +117,8 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_LAYER:
 		{
 			Layer *pLr = (Layer*)pProp->GetUserRef(HPROP(lParam));
+			UpdateOverlays();
+			break;
 		}
 
 		// Bake level combobox Msg
@@ -212,6 +214,8 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			BakeImport();
 			break;
 		}
+		default:
+			break;
 		} // switch(wParam)
 	} // WM_COMMAND
 	} // switch(uMsg)
@@ -401,6 +405,7 @@ bool ToolKit::Initialize()
 
 
 	SendDlgItemMessage(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_SETCHECK, true, 0);
+	SendDlgItemMessage(hCtrlDlg, IDC_DISPSEL, BM_SETCHECK, true, 0);
 
 	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Texture");			// 0
@@ -544,58 +549,62 @@ void ToolKit::clbkRender()
 	if (!hPlanet) return;
 	if (!dmSphere) return;
 
-	bool bGuides = (SendDlgItemMessageA(hCtrlDlg, IDC_GUIDES, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	bool bGuides = false; // (SendDlgItemMessageA(hCtrlDlg, IDC_GUIDES, BM_GETCHECK, 0, 0) == BST_CHECKED);
 	bool bAutoHighlight = (SendDlgItemMessageA(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_GETCHECK, 0, 0) == BST_CHECKED);
-	bool bHideClip = false; // (SendDlgItemMessageA(hImpoDlg, IDC_HIDECLIP, BM_GETCHECK, 0, 0) == BST_CHECKED);
+	bool bHideClip = (SendDlgItemMessageA(hCtrlDlg, IDC_DISPSEL, BM_GETCHECK, 0, 0) != BST_CHECKED);
 	
 	int select = SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_GETCURSEL, 0, 0);
-	
+	int flags = SelectionFlags();
+
 	gcCore::PickGround pg; memset(&pg, 0, sizeof(gcCore::PickGround));
 	QTree *pHover = NULL;
 
 
+	// ---------------------------------------------------------------------
+	// Optain infomation about mouse cursor location  
+	// ---------------------------------------------------------------------
 
-	if (bAutoHighlight || !pSecond || !hOverlay || oldsel.area.size() != 0)
+	pg = pCore->ScanScreen(xpos, ypos);
+	if (pFirst && !pSecond) pHover = pRoot->FindNode(pg.lng, pg.lat, pFirst->level);
+	
+
+
+
+	// ---------------------------------------------------------------------
+	// Highlight the tile where mouse is hovering and print some information 
+	// ---------------------------------------------------------------------
+
+	if (select == Select::SRender) 
 	{
-		// ---------------------------------------------------------------------
-		// Optain infomation about mouse cursor location  
-		// ---------------------------------------------------------------------
-
-		pg = pCore->ScanScreen(xpos, ypos);
-		if (pFirst) pHover = pRoot->FindNode(pg.lng, pg.lat, pFirst->level);
+		QTree* pSel = pRoot->FindNode(pg.lng, pg.lat, pg.level);
+		if (pSel) {
+			if (bAutoHighlight) RenderTileBounds(pSel, 0xFF00FF00);
+			UpdateTileInfo(flags, pSel, &pg);
+		}
 	}
-
-
-
-
-	if (bAutoHighlight || !pSecond || !hOverlay || oldsel.area.size() != 0)
+	else 
 	{
-		// ---------------------------------------------------------------------
-		// Highlight the tile where mouse is hovering and print some information 
-		// ---------------------------------------------------------------------
-
-		if (select == Select::SRender) RenderTileBounds(pg, 0xFF00FF00);
+		if (select == Select::SHighestOwn) 
+		{
+			QTree *pSel = pRoot->HighestOwn(flags, pg.lng, pg.lat);
+			if (pSel) {
+				if (bAutoHighlight) RenderTileBounds(pSel, 0xFF00FF00);
+				UpdateTileInfo(flags, pSel, &pg);
+			}
+		}
 		else 
 		{
-			int flags = SelectionFlags();
-
-			if (select == Select::SHighestOwn) 
-			{
-				QTree *pSel = pRoot->HighestOwn(flags, pg.lng, pg.lat);
-				if (pSel) RenderTileBounds(pSel, 0xFF00FF00);
-				UpdateTileInfo(flags, pSel, &pg);		
-			}
-			else 
-			{
-				int lvl = SelectedLevel();
-				if (lvl > 0) {
-					QTree *pSel = pRoot->FindNode(pg.lng, pg.lat, lvl);
-					if (pSel) RenderTileBounds(pSel, 0xFF00FF00);
+			int lvl = SelectedLevel();
+			if (lvl > 0) {
+				QTree *pSel = pRoot->FindNode(pg.lng, pg.lat, lvl);
+				if (pSel) {
+					if (bAutoHighlight) RenderTileBounds(pSel, 0xFF00FF00);
 					UpdateTileInfo(flags, pSel, &pg);
 				}
 			}
 		}
 	}
+	
 	
 
 
@@ -813,6 +822,7 @@ bool ToolKit::UpdateOverlay(int olay)
 
 		// Setup a color matrix for corrections
 		pSkp->SetColorMatrix(&mColor);	
+		pSkp->ColorCompatibility(false);
 
 		// Setup gamma correction
 		pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f));
@@ -840,17 +850,20 @@ bool ToolKit::UpdateOverlay(int olay)
 			in[i] = pt[i] + a * float(adj.z);
 		}
 
-		pSkp->ColorCompatibility(false);
-		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
-
 
 
 		// Create Surface Overlay
 		//
 		if (olay == 0) 
 		{
-			if (bSurf) pSkp->CopyTetragon(pLr->hSource, NULL, pt);
-			else pSkp->ColorFill(0x00000000, NULL);
+			if (bSurf) {
+				pSkp->SetBlendState(Sketchpad::BlendState::ALPHABLEND);
+				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+			}
+			else {
+				pSkp->SetBlendState(Sketchpad::BlendState::COPY);
+				pSkp->ColorFill(0x00000000, NULL);
+			}
 
 			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::SURFACE, hOverlaySrf, hOverlay);
 		}
@@ -860,12 +873,8 @@ bool ToolKit::UpdateOverlay(int olay)
 		//
 		if (olay == 1)
 		{
-			FVECTOR4 Blend;
-
 			if (bNight) 
 			{
-				Blend.rgb = 1.0f;
-
 				int mode = pLr->GetWaterMode();
 
 				if (mode == 0) // No Water in Alpha 
@@ -881,26 +890,26 @@ bool ToolKit::UpdateOverlay(int olay)
 						pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
 						pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
 						pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
-						Blend.a = 1.0f;
 					}
 				}
 
 				if (mode == 1) { // Water mask in alpha channel
+					pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
-					Blend.a = 1.0f;
 				}
 
 				if (mode == 2) { // All Land, no water information
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
 					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
-					pSkp->FillTetragon(0x00000000, pt);
-					Blend.a = 0.0f;
+					pSkp->FillTetragon(0xFF000000, pt);
 				}
 			}
 			else 
 			{
-				pSkp->ColorFill(0x00000000, NULL); // No Nightlights at all
+				
+				pSkp->SetBlendState(Sketchpad::BlendState::COPY);
+				pSkp->ColorFill(0xFF000000, NULL); // No Nightlights at all
 
 				if (bWater) // Use additional water layer if available
 				{
@@ -909,10 +918,9 @@ bool ToolKit::UpdateOverlay(int olay)
 					pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
 					pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
-					Blend.a = 1.0f;
 				}
 			}
-
+			FVECTOR4 Blend = 1.0f;
 			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::MASK, hOverlayMsk, hOverlay, &Blend);
 		}
 
@@ -1029,14 +1037,15 @@ bool ToolKit::CreateOverlays()
 
 // =================================================================================================
 //
-bool ToolKit::UpdateBackGround(SURFHANDLE hSrf, DWORD flags)
+bool ToolKit::UpdateBackGround(SURFHANDLE hSurf, DWORD flags)
 {
-	if (!hSrf) return false;
+	if (!hSurf) return false;
 
-	Sketchpad* pSkp = oapiGetSketchpad(hSrf);
+	Sketchpad* pSkp = oapiGetSketchpad(hSurf);
 
 	if (pSkp) 
 	{
+		pSkp->SetColorMatrix();
 		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 
 		for (auto se : selection.area)
@@ -1047,11 +1056,10 @@ bool ToolKit::UpdateBackGround(SURFHANDLE hSrf, DWORD flags)
 				if (hSrc) {
 					RECT t = { se.x * 512, se.y * 512 , (se.x + 1) * 512, (se.y + 1) * 512 };
 					pSkp->StretchRect(hSrc, &st.range, &t);
+					
 				}
 			}
 		}
-
-		pSkp->SetBlendState();
 		oapiReleaseSketchpad(pSkp);
 	}
 	return true;

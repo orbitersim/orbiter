@@ -4,6 +4,7 @@
 
 #include <winres.h>
 #include <commctrl.h>
+#include <richedit.h>
 #include "resource.h"
 
 
@@ -33,7 +34,7 @@ FONT 8, "Ms Shell Dlg"
     LTEXT           "What to export:", IDC_STATIC, 81, 30, 50, 9, SS_LEFT, WS_EX_LEFT
     AUTOCHECKBOX    "Display cursor", IDC_AUTOHIGHLIGHT, 5, 5, 60, 8, 0, WS_EX_LEFT
     PUSHBUTTON      "Export Selection", IDC_EXPORT, 5, 40, 65, 14, 0, WS_EX_LEFT
-    AUTOCHECKBOX    "Display guides", IDC_GUIDES, 5, 20, 61, 8, 0, WS_EX_LEFT
+    AUTOCHECKBOX    "Display selection", IDC_DISPSEL, 5, 20, 69, 8, 0, WS_EX_LEFT
 }
 
 

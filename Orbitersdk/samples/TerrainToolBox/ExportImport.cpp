@@ -178,7 +178,7 @@ void ToolKit::BakeImport()
 	//
 	if (bSurf) 
 	{
-		int levels = pProp->GetComboBoxSelection(hBLvs);
+		int levels = pProp->GetComboBoxSelection(hBLvs) + 1;
 		int flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
 
 		SetWindowText(hProgDlg, "Baking Surface:");
@@ -204,7 +204,7 @@ void ToolKit::BakeImport()
 	//
 	if (bNight || bWater)
 	{
-		int levels = pProp->GetComboBoxSelection(hBLvs);
+		int levels = pProp->GetComboBoxSelection(hBLvs) + 1;
 		int flags = gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
 
 		progress = 0;
