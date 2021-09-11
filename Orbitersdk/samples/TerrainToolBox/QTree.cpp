@@ -372,24 +372,20 @@ int QTree::SaveTile(int flags, SURFHANDLE hSurf, SURFHANDLE hTemp, DRECT bounds,
 
 	if (pSkp) 
 	{
+		pSkp->SetBlendState(Sketchpad::BlendState::COPY);
 
 		st = GetSubTexRange(flags); // Find a parent with data and give a "this" tile rect into it.
 
 		if (st.pNode) {
-			SURFHANDLE hTex = st.pNode->GetTexture();
+			SURFHANDLE hTex = st.pNode->GetTexture(flags);
 			if (hTex) {
 				RECT t = { 0, 0, 512, 512 };
 				pSkp->StretchRect(hTex, &st.range, &t); // Copy parent data into this tile
 			}
 		}
 
-		FMATRIX4 mColor;
-		mColor.Ident();
-		mColor.m44 = alpha;
-
-		pSkp->SetColorMatrix(&mColor);
 		pSkp->StretchRect(hSurf, &src, &tgt);
-		pSkp->SetColorMatrix();
+		
 		oapiReleaseSketchpad(pSkp);
 	
 		SURFHANDLE hFile = pCore->CompressSurface(hTemp, OAPISURFACE_PF_DXT1 | OAPISURFACE_MIPMAPS | OAPISURFACE_SYSMEM);

@@ -14,7 +14,7 @@
 
 #pragma once
 
-#define IDC_CALLBACK	4000
+#define IDC_CALLBACK	3000
 #define IDC_LIGHTNESS	2000
 #define IDC_BRIGHTNESS	2001
 #define IDC_GAMMA		2002
@@ -23,6 +23,7 @@
 #define IDC_GREEN		2005
 #define IDC_BLUE		2006
 #define IDC_LAYER		2007
+#define IDC_ALPHAEDG	2008
 
 
 namespace Select
@@ -85,7 +86,7 @@ public:
 
 	HPROP hSecGfx, hSecClr;
 	HPROP hIFil, hIWid, hIHei, hIFmt, hILog, hISec, hIRes, hIRef, hITrs, hIWtr;
-	HPROP hGLig, hGBri, hGGam, hGEdg;
+	HPROP hGLig, hGBri, hGGam;
 	HPROP hBRed, hBGrn, hBBlu;
 
 	gcPropertyTree* pProp;
@@ -194,7 +195,7 @@ private:
 	//
 	HPROP				hSecCur, hSecExp;
 
-	HPROP				hCLng, hCLat, hCEle, hCFil, hCLvl, hBLvs, hSLng, hSLat, hMLng, hMLat, hSXPx, hSYPx;
+	HPROP				hCLng, hCLat, hCEle, hCFil, hCLvl, hBLvs, hCEdg, hSLng, hSLat, hMLng, hMLat, hSXPx, hSYPx;
 	HPROP				hIFil, hIWid, hIHei, hILog;
 
 	

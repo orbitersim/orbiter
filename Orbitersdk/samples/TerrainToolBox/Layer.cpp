@@ -36,7 +36,7 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 	bAlpha = true;
 
 	hIFil = hIWid = hIHei = hIFmt = hILog = hISec = hIRes = hIRef = hIWtr = NULL;
-	hGLig = hGBri = hGGam = hGEdg = hBRed = hBGrn = hBBlu = NULL;
+	hGLig = hGBri = hGGam = hBRed = hBGrn = hBBlu = NULL;
 
 	switch (type) {
 	case LayerType::TEXTURE: lname = "Surface texture"; break;
@@ -102,7 +102,6 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 		hGLig = pProp->AddSlider("Lightness", IDC_LIGHTNESS, hSecGfx);
 		hGBri = pProp->AddSlider("Brightness", IDC_BRIGHTNESS, hSecGfx);
 		hGGam = pProp->AddSlider("Gamma", IDC_GAMMA, hSecGfx);
-		hGEdg = pProp->AddSlider("Edge Alpha", IDC_ALPHA, hSecGfx);
 
 		// ---------------------------------------------------
 		hSecClr = pProp->SubSection("Color Balance", hSecGfx);
@@ -114,7 +113,6 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 		pProp->SetSliderScale(hGLig, -0.4, 0.4, gcPropertyTree::Scale::LINEAR);
 		pProp->SetSliderScale(hGBri, 0.625, 1.6, gcPropertyTree::Scale::LOG);
 		pProp->SetSliderScale(hGGam, 0.5, 2.0, gcPropertyTree::Scale::LOG);
-		pProp->SetSliderScale(hGEdg, 1.0, 1000.0, gcPropertyTree::Scale::LOG);
 		pProp->SetSliderScale(hBRed, 0.8333, 1.2, gcPropertyTree::Scale::LOG);
 		pProp->SetSliderScale(hBGrn, 0.8333, 1.2, gcPropertyTree::Scale::LOG);
 		pProp->SetSliderScale(hBBlu, 0.8333, 1.2, gcPropertyTree::Scale::LOG);
@@ -122,7 +120,6 @@ Layer::Layer(gcPropertyTree* pProp, gcCore2* pCore, SURFHANDLE hSr, LayerType ty
 		pProp->SetSliderValue(hGLig, 0.0);
 		pProp->SetSliderValue(hGBri, 1.0);
 		pProp->SetSliderValue(hGGam, 1.0);
-		pProp->SetSliderValue(hGEdg, 32.0);
 		pProp->SetSliderValue(hBRed, 1.0);
 		pProp->SetSliderValue(hBGrn, 1.0);
 		pProp->SetSliderValue(hBBlu, 1.0);
@@ -161,8 +158,7 @@ FVECTOR4 Layer::GetAdjustments()
 {
 	float lgh = float(pProp->GetSliderValue(hGLig));
 	float gma = float(pProp->GetSliderValue(hGGam));
-	float edg = float(pProp->GetSliderValue(hGEdg));
-	return FVECTOR4(lgh, gma, edg, 1.0f);
+	return FVECTOR4(lgh, gma, 0.0f, 1.0f);
 }
 
 

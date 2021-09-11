@@ -161,8 +161,6 @@ void ToolKit::BakeImport()
 	bool bSurf = IsLayerValid(Layer::LayerType::TEXTURE);
 
 
-	SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
-
 	progress = 0;
 
 	int nTiles = selection.area.size();
@@ -178,6 +176,8 @@ void ToolKit::BakeImport()
 	//
 	if (bSurf) 
 	{
+		SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_PF_XRGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+
 		int levels = pProp->GetComboBoxSelection(hBLvs) + 1;
 		int flags = gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE;
 
@@ -197,6 +197,8 @@ void ToolKit::BakeImport()
 
 		parents.unique();
 		BakeParents(hOverlaySrf, hTemp, flags, parents, levels);
+
+		oapiReleaseTexture(hTemp);
 	}
 
 
@@ -204,6 +206,8 @@ void ToolKit::BakeImport()
 	//
 	if (bNight || bWater)
 	{
+		SURFHANDLE hTemp = oapiCreateSurfaceEx(512, 512, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+
 		int levels = pProp->GetComboBoxSelection(hBLvs) + 1;
 		int flags = gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE;
 
@@ -216,7 +220,7 @@ void ToolKit::BakeImport()
 
 		for (auto s : selection.area)
 		{
-			if (s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl - 4, 1.0f) < 0) 
+			if (s.pNode->SaveTile(flags, hOverlayMsk, hTemp, selection.bounds, selection.slvl, 1.0f) < 0) 
 			{
 				oapiWriteLogV("ERROR: s.pNode->SaveTile() failed");
 				return;
@@ -227,9 +231,10 @@ void ToolKit::BakeImport()
 
 		parents.unique();
 		BakeParents(hOverlayMsk, hTemp, flags, parents, levels);
+
+		oapiReleaseTexture(hTemp);
 	}
 
-	oapiReleaseTexture(hTemp);
 	DestroyWindow(hProgDlg);
 }
 

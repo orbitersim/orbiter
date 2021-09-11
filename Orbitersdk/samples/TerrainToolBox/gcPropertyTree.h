@@ -90,7 +90,7 @@ public:
 
 private:
 
-	int		PaintSection(HDC hDC, HPROP hPar, int ident, int wlbl, int y);
+	int		PaintSection(HDC hDC, HPROP hPar, int ident, int wlbl, int y, int lvl);
 	void	PaintIcon(int x, int y, int id);
 	int		GetSubsentionLength(HPROP hP);
 	void	CopyToClipboard();
@@ -107,7 +107,8 @@ private:
 	HDC	hSr, hBM;
 	HFONT hFont;
 	HPEN hPen;
-	HBRUSH hBr0, hBr1, hBr2, hBr3, hBr4;
+	HBRUSH hBr0, hBr1, hBr2, hBr4;
+	HBRUSH hBrTit[3];
 	HBITMAP hBuf;
 	HBITMAP	hIcons;
 	HINSTANCE hInst;

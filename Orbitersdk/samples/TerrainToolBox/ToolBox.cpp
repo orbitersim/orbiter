@@ -109,6 +109,7 @@ BOOL ToolKit::DlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDC_RED:
 		case IDC_GREEN:
 		case IDC_BLUE:
+		case IDC_ALPHAEDG:
 		{
 			if (!UpdateOverlays()) oapiWriteLog("UpdateOverlays() Failed");
 			break;
@@ -391,9 +392,9 @@ bool ToolKit::Initialize()
 
 	// Create GUI Sections --------------------------------------------------------------------------
 	//
-	hRootNode = RegisterApplication("Terrain ToolKit", NULL, gcGUI::DS_LEFT);
-	hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
-	hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
+	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, gcGUI::DS_LEFT);
+	//hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
+	//hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
 	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, gDlgProc, 0);
 	hCtrlNode = RegisterSubsection(hRootNode, "Selection Oprions", hCtrlDlg);
 	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, gDlgProc, 0);
@@ -403,14 +404,13 @@ bool ToolKit::Initialize()
 
 	DisplayWindow(hRootNode);
 
-
 	SendDlgItemMessage(hCtrlDlg, IDC_AUTOHIGHLIGHT, BM_SETCHECK, true, 0);
 	SendDlgItemMessage(hCtrlDlg, IDC_DISPSEL, BM_SETCHECK, true, 0);
 
 	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_RESETCONTENT, 0, 0);
 	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Texture");			// 0
 	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Nightlights");		// 1
-	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Elevation");		// 2
+	//SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_ADDSTRING, 0, (LPARAM)"Elevation");		// 2
 	SendDlgItemMessage(hCtrlDlg, IDC_WHAT, CB_SETCURSEL, 0, 0);
 
 	SendDlgItemMessage(hCtrlDlg, IDC_SELECT, CB_RESETCONTENT, 0, 0);
@@ -435,7 +435,7 @@ bool ToolKit::Initialize()
 	hCFil = pProp->AddEntry("Filename", hSecCur);
 
 	// ---------------------------------------------------
-	hSecExp = pProp->SubSection("Selection range");
+	hSecExp = pProp->SubSection("Selection and Bake");
 	// ---------------------------------------------------
 	hSLng = pProp->AddEntry("Min Lng", hSecExp);
 	hSLat = pProp->AddEntry("Min Lat", hSecExp);
@@ -444,6 +444,7 @@ bool ToolKit::Initialize()
 	hSXPx = pProp->AddEntry("Width pixels", hSecExp);
 	hSYPx = pProp->AddEntry("Height pixels", hSecExp);
 	hCLvl = pProp->AddEntry("SelectionLvl", hSecExp);
+	hCEdg = pProp->AddSlider("Edge Blend", IDC_ALPHAEDG, hSecExp);
 	hBLvs = pProp->AddComboBox("Lvls to Bake", 0, hSecExp);
 
 	for (int i = 0; i < 8; i++) {
@@ -452,6 +453,9 @@ bool ToolKit::Initialize()
 	}
 	pProp->SetComboBoxSelection(hBLvs, 0);
 	
+	pProp->SetSliderScale(hCEdg, 1.0, 480.0, gcPropertyTree::Scale::LOG);
+	pProp->SetSliderValue(hCEdg, 32.0);
+
 	pProp->Update();
 
 	
@@ -578,7 +582,7 @@ void ToolKit::clbkRender()
 	{
 		QTree* pSel = pRoot->FindNode(pg.lng, pg.lat, pg.level);
 		if (pSel) {
-			if (bAutoHighlight) RenderTileBounds(pSel, 0xFF00FF00);
+			if (bAutoHighlight || (selection.area.size() == 0)) RenderTileBounds(pSel, 0xFF00FF00);
 			UpdateTileInfo(flags, pSel, &pg);
 		}
 	}
@@ -588,7 +592,7 @@ void ToolKit::clbkRender()
 		{
 			QTree *pSel = pRoot->HighestOwn(flags, pg.lng, pg.lat);
 			if (pSel) {
-				if (bAutoHighlight) RenderTileBounds(pSel, 0xFF00FF00);
+				if (bAutoHighlight || (selection.area.size() == 0)) RenderTileBounds(pSel, 0xFF00FF00);
 				UpdateTileInfo(flags, pSel, &pg);
 			}
 		}
@@ -598,7 +602,7 @@ void ToolKit::clbkRender()
 			if (lvl > 0) {
 				QTree *pSel = pRoot->FindNode(pg.lng, pg.lat, lvl);
 				if (pSel) {
-					if (bAutoHighlight) RenderTileBounds(pSel, 0xFF00FF00);
+					if (bAutoHighlight || (selection.area.size() == 0)) RenderTileBounds(pSel, 0xFF00FF00);
 					UpdateTileInfo(flags, pSel, &pg);
 				}
 			}
@@ -778,10 +782,16 @@ bool ToolKit::UpdateOverlay(int olay)
 	SURFHANDLE hSrf = NULL;
 	Layer* pLr = NULL;
 	
-	if (olay == 0) hSrf = hOverlaySrf, pLr = GetLayer(Layer::LayerType::TEXTURE);
-	if (olay == 1) hSrf = hOverlayMsk, pLr = GetLayer(Layer::LayerType::NIGHT);
+	if (olay == 0) {
+		hSrf = hOverlaySrf;
+		pLr = GetLayer(Layer::LayerType::TEXTURE);
+	}
+
+	if (olay == 1) {
+		hSrf = hOverlayMsk;
+		pLr = GetLayer(Layer::LayerType::NIGHT);
+	}
 	
-	if (!pLr) return true;
 	if (!hSrf) return false;
 
 	bool bWater = IsLayerValid(Layer::LayerType::WATER);
@@ -792,11 +802,11 @@ bool ToolKit::UpdateOverlay(int olay)
 	// Clear/Initialize the background image
 	//
 	if (olay == 0) {
-		if (bSurf) UpdateBackGround(hSrf, gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE);
+		UpdateBackGround(hSrf, gcTileFlags::TEXTURE | gcTileFlags::CACHE | gcTileFlags::TREE);
 	}
 
 	if (olay == 1) {
-		if (bNight) UpdateBackGround(hSrf, gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE);
+		if (bNight || bWater) UpdateBackGround(hSrf, gcTileFlags::MASK | gcTileFlags::CACHE | gcTileFlags::TREE);
 	}
 
 
@@ -805,8 +815,13 @@ bool ToolKit::UpdateOverlay(int olay)
 
 	if (pSkp) 
 	{
-		FVECTOR4 clr = pLr->GetColor();
-		FVECTOR4 adj = pLr->GetAdjustments();
+		FVECTOR4 clr = 1.0f;
+		FVECTOR4 adj = FVECTOR4(0, 1, 0, 0);
+
+		if (pLr) {
+			clr = pLr->GetColor();
+			adj = pLr->GetAdjustments();
+		}
 
 		FMATRIX4 mColor;
 
@@ -818,14 +833,9 @@ bool ToolKit::UpdateOverlay(int olay)
 		mColor.m42 = adj.x;
 		mColor.m43 = adj.x;
 
-		if (pLr->GetTransparency()) mColor.m44 = 0.5f;
+		if (pLr) if (pLr->GetTransparency()) mColor.m44 = 0.5f;
 
-		// Setup a color matrix for corrections
-		pSkp->SetColorMatrix(&mColor);	
 		pSkp->ColorCompatibility(false);
-
-		// Setup gamma correction
-		pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f));
 
 		SIZE size;
 		pSkp->GetRenderSurfaceSize(&size);
@@ -847,7 +857,7 @@ bool ToolKit::UpdateOverlay(int olay)
 			int q = (i - 1) < 0 ? 3 : i - 1;
 			int w = (i + 1) > 3 ? 0 : i + 1;
 			FVECTOR2 a = unit((pt[q] - pt[i]) + (pt[w] - pt[i]));
-			in[i] = pt[i] + a * float(adj.z);
+			in[i] = pt[i] + a * float(pProp->GetSliderValue(hCEdg));
 		}
 
 
@@ -856,15 +866,12 @@ bool ToolKit::UpdateOverlay(int olay)
 		//
 		if (olay == 0) 
 		{
-			if (bSurf) {
+			if (bSurf && pLr) {
+				pSkp->SetColorMatrix(&mColor);	// Setup a color matrix for corrections
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f)); // Setup gamma correction
 				pSkp->SetBlendState(Sketchpad::BlendState::ALPHABLEND);
 				pSkp->CopyTetragon(pLr->hSource, NULL, pt);
 			}
-			else {
-				pSkp->SetBlendState(Sketchpad::BlendState::COPY);
-				pSkp->ColorFill(0x00000000, NULL);
-			}
-
 			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::SURFACE, hOverlaySrf, hOverlay);
 		}
 		
@@ -873,8 +880,11 @@ bool ToolKit::UpdateOverlay(int olay)
 		//
 		if (olay == 1)
 		{
-			if (bNight) 
+			if (bNight && pLr) 
 			{
+				pSkp->SetColorMatrix(&mColor);	// Setup a color matrix for corrections
+				pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA, &FVECTOR4(adj.y, adj.y, adj.y, 1.0f)); // Setup gamma correction
+
 				int mode = pLr->GetWaterMode();
 
 				if (mode == 0) // No Water in Alpha 
@@ -888,6 +898,7 @@ bool ToolKit::UpdateOverlay(int olay)
 
 						FMATRIX4 mMix; mMix.Zero(); mMix.m24 = 1.0f;
 						pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
+						pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA);
 						pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
 						pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
 					}
@@ -901,25 +912,30 @@ bool ToolKit::UpdateOverlay(int olay)
 				if (mode == 2) { // All Land, no water information
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
 					pSkp->CopyTetragon(pLr->hSource, NULL, pt);
+					// ---------------
+					pSkp->SetRenderParam(Sketchpad::RenderParam::PRM_GAMMA);
+					pSkp->SetColorMatrix();
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
 					pSkp->FillTetragon(0xFF000000, pt);
 				}
 			}
 			else 
-			{
-				
-				pSkp->SetBlendState(Sketchpad::BlendState::COPY);
-				pSkp->ColorFill(0xFF000000, NULL); // No Nightlights at all
+			{		
+				// No Nightlights, just a water layer
+				pSkp->SetBlendState(Sketchpad::BlendState::COPY_COLOR);
+				pSkp->FillTetragon(0, pt);
 
 				if (bWater) // Use additional water layer if available
 				{
 					Layer* pWaterLr = GetLayer(Layer::LayerType::WATER);
+
 					FMATRIX4 mMix; mMix.Zero(); mMix.m24 = 1.0f;
 					pSkp->SetColorMatrix(&mMix); // Mix green channel to alpha
 					pSkp->SetBlendState(Sketchpad::BlendState::COPY_ALPHA);
 					pSkp->CopyTetragon(pWaterLr->hSource, NULL, pt); // Copy to destination alpha	
 				}
 			}
+
 			FVECTOR4 Blend = 1.0f;
 			hOverlay = pCore->AddGlobalOverlay(hMgr, selection.bounds.vec, gcCore::OlayType::MASK, hOverlayMsk, hOverlay, &Blend);
 		}
@@ -1010,7 +1026,7 @@ bool ToolKit::CreateOverlays()
 		}
 	}
 
-	if (!hOverlaySrf && (bSurf || bNight)) // Needed for nightlights due to alpha blending control channel
+	if (!hOverlaySrf) // Needed for nightlights due to alpha blending control channel
 	{
 		hOverlaySrf = oapiCreateSurfaceEx(Width, Height, OAPISURFACE_PF_ARGB | OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | OAPISURFACE_MIPMAPS);
 		if (!hOverlaySrf) return false;

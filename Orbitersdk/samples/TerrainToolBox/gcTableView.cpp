@@ -89,7 +89,9 @@ gcPropertyTree::gcPropertyTree(gcGUIApp *_pApp, HWND _hWnd, WORD _idc, DLGPROC p
 	hBr0 = CreateSolidBrush(0xFFFFFF);
 	hBr1 = CreateSolidBrush(0xF0F0F0);
 	hBr2 = CreateSolidBrush(0xFFFFFF);
-	hBr3 = CreateSolidBrush(0xAAFFFF);
+	hBrTit[0] = CreateSolidBrush(0xDDFFFF);
+	hBrTit[1] = CreateSolidBrush(0xDDFFDD);
+	hBrTit[2] = CreateSolidBrush(0xFFFFBB);
 	hBr4 = CreateSolidBrush(0xAAFFFF);
 	hPen = CreatePen(PS_SOLID, 1, 0x808080);
 	hFont = hFnt;
@@ -133,9 +135,11 @@ gcPropertyTree::~gcPropertyTree()
 	DeleteObject(hBr0);
 	DeleteObject(hBr1);
 	DeleteObject(hBr2);
-	DeleteObject(hBr3);
 	DeleteObject(hBr4);
 	DeleteObject(hPen);
+	DeleteObject(hBrTit[0]);
+	DeleteObject(hBrTit[1]);
+	DeleteObject(hBrTit[2]);
 }
 
 
@@ -404,7 +408,7 @@ void gcPropertyTree::Paint(HDC _hDC)
 	HRGN hRgn = CreateRectRgn(0, 0, w, h);
 	SelectClipRgn(_hDC, hRgn);
 
-	int y = PaintSection(_hDC, NULL, 0, wlbl, 0);
+	int y = PaintSection(_hDC, NULL, 0, wlbl, 0, 0);
 	
 	if (!BitBlt(_hDC, 0, 0, w, h, hBM, 0, 0, SRCCOPY))
 	{
@@ -429,7 +433,7 @@ bool gcPropertyTree::HasMoved(HPROP hP, int x, int y)
 
 // ==================================================================================
 //
-int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int y)
+int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int y, int lvl)
 {
 
 	RECT wr;
@@ -461,7 +465,8 @@ int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int 
 
 		bOdd = !bOdd;
 
-		FillRect(hBM, &rect, hSel);
+		if (hp->bChildren) FillRect(hBM, &rect, hBrTit[lvl%3]);
+		else FillRect(hBM, &rect, hSel);
 
 		MoveToEx(hBM, ident, y + hlbl - 1, NULL);
 		LineTo(hBM, w, y + hlbl - 1);
@@ -484,9 +489,9 @@ int gcPropertyTree::PaintSection(HDC _hDC, HPROP hPar, int ident, int wlbl, int 
 
 			if (hp->bOpen) {
 				int slen = GetSubsentionLength(hp);
-				SelectObject(hBM, hBr3);
+				SelectObject(hBM, hBr4);
 				Rectangle(hBM, ident - 1, y - 1, ident + 4, y + slen);
-				y = PaintSection(_hDC, hp, ident + 4, wlbl, y);
+				y = PaintSection(_hDC, hp, ident + 4, wlbl, y, lvl + 1);
 			}
 
 			continue;
