@@ -23,6 +23,8 @@ function pass()
 	add_line(" - passed")
 end
 
+oapi.set_tacc(10)
+
 add_line("=== Lua script unit tests ===")
 
 add_line("")
