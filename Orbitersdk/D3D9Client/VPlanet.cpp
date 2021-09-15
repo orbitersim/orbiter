@@ -290,7 +290,7 @@ bool FilterElevation(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev
 
 bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, double elev_res, INT16* elev)
 {
-	if (!Config->bFlatsEnabled) return false;
+	if (!Config->bFlats) return false;
 	char name[64];
 	oapiGetObjectName(hPlanet, name, 64);
 	auto result = FilterElevation<INT16>(hPlanet, lvl, ilat, ilng, elev_res, elev);
@@ -302,7 +302,7 @@ bool FilterElevationPhysics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, doub
 
 void FilterElevationGraphics(OBJHANDLE hPlanet, int lvl, int ilat, int ilng, float* elev)
 {
-	if (!Config->bFlatsEnabled) return;
+	if (!Config->bFlats) return;
 	char name[64];
 	oapiGetObjectName(hPlanet, name, 64);
 	if (FilterElevation<float>(hPlanet, lvl, ilat, ilng, 1.0, elev))

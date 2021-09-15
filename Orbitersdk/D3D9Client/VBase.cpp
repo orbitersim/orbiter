@@ -442,7 +442,7 @@ void vBase::RenderRunwayLights(LPDIRECT3DDEVICE9 dev)
 
 	for(int i=0; i<numRunwayLights; i++)
 	{
-		runwayLights[i]->Update(vP);
+		if (scn->GetRenderPass() == RENDERPASS_MAINSCENE) runwayLights[i]->Update(vP);
 		runwayLights[i]->Render(dev, &mWorld, lights);
 	}
 

@@ -394,7 +394,7 @@ INT16 *SurfTile::ReadElevationFile (const char *name, int lvl, int ilat, int iln
 				smgr->ZTreeManager(3)->ReleaseData(buf);
 			}
 		}
-		if (Config->bFlatsEnabled) FilterElevationGraphics(mgr->GetPlanet()->Object(), lvl - 4, ilat, ilng, elev);
+		if (Config->bFlats) FilterElevationGraphics(mgr->GetPlanet()->Object(), lvl - 4, ilat, ilng, elev);
 	}
 	return e;
 }
@@ -662,8 +662,8 @@ int SurfTile::GetElevation(double lng, double lat, double *elev, FVECTOR3 *nrm, 
 				assert(j0 > 0);
 				assert((j0 + i1) < ndat);
 
-				float q = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx); j0++;
-				float w = lerp(float(ggelev[j0+i0]), float(ggelev[j0+i1]), fx);
+				float q = lerp(ggelev[j0+i0], ggelev[j0+i1], fx); j0++;
+				float w = lerp(ggelev[j0+i0], ggelev[j0+i1], fx);
 
 				*elev = double(lerp(q,w,fy));
 			}

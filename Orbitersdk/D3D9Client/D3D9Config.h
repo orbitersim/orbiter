@@ -18,7 +18,6 @@ extern class D3D9Config *Config;
  */
 class D3D9Config {
 public:
-	bool bFlatsEnabled;
 
 	D3D9Config ();
 	~D3D9Config ();

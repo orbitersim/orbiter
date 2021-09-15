@@ -333,13 +333,7 @@ HWND D3D9Client::clbkCreateRenderWindow()
 	LogAlw("================ clbkCreateRenderWindow ===============");
 
 	Config->WriteParams();
-	Config->bFlatsEnabled = (Config->bFlats != 0);
-
-	// Disable flattening with "cubic interpolation" it's not going to work.
-	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
-		Config->bFlatsEnabled = false;
-	}
-
+	
 	uEnableLog		 = Config->DebugLvl;
 	pSplashScreen    = NULL;
 	pBackBuffer      = NULL;
@@ -2943,8 +2937,8 @@ void D3D9Client::SplashScreen()
 
 	char dataB[128]; sprintf_s(dataB,128,"Build %s %lu 20%lu [%u]", months[m], d, y, oapiGetOrbiterVersion());
 	char dataD[] = { "Warning: Config folder not present in /Modules/Server/. Please create symbolic link." };
-	char dataE[] = { "Note: Cubic Interpolation is use... Consider using linear for better elevation matching" };
-	char dataF[] = { "Note: Terrain flattening offline due to cubic interpolation" };
+	//char dataE[] = { "Note: Cubic Interpolation is use... Consider using linear for better elevation matching" };
+	//char dataF[] = { "Note: Terrain flattening offline due to cubic interpolation" };
 
 	int xc = viewW*750/1280;
 	int yc = viewH*545/800;
@@ -2963,22 +2957,6 @@ void D3D9Client::SplashScreen()
 		TextOut(hDC, viewW/2, VPOS, dataD, lstrlen(dataD));
 		VPOS -= LSPACE;
 	}
-
-	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
-		TextOut(hDC, viewW / 2, VPOS, dataE, lstrlen(dataE));
-		VPOS -= LSPACE;
-	}
-
-	if ((*(int*)GetConfigParam(CFGPRM_ELEVATIONMODE)) == 2) {
-		TextOut(hDC, viewW / 2, VPOS, dataE, lstrlen(dataE));
-		VPOS -= LSPACE;
-	}
-
-	if (Config->bFlats && !Config->bFlatsEnabled) {
-		TextOut(hDC, viewW / 2, VPOS, dataF, lstrlen(dataF));
-		VPOS -= LSPACE;
-	}
-
 
 	SelectObject(hDC, hO);
 	DeleteObject(hF);
@@ -3071,45 +3049,6 @@ oapi::Sketchpad *D3D9Client::clbkGetSketchpad_const(SURFHANDLE surf) const
 oapi::Sketchpad* D3D9Client::clbkGetSketchpad(SURFHANDLE surf)
 {
 	return clbkGetSketchpad_const(surf);
-	/*
-	if (ChkDev(__FUNCTION__)) return NULL;
-
-	if (GetCurrentThread() != hMainThread) {
-		_wassert(L"Sketchpad called from a worker thread !", _CRT_WIDE(__FILE__), __LINE__);
-		return NULL;
-	}
-
-	if (surf == RENDERTGT_MAINWINDOW) surf = GetBackBufferHandle();
-
-	if (SURFACE(surf)->IsRenderTarget())
-	{
-		// Get Pooled Sketchpad
-		D3D9Pad* pPad = SURFACE(surf)->GetPooledSketchPad();
-
-		// Get Current interface if any
-		D3D9Pad* pCur = GetTopInterface();
-
-		// Do we have an existing SketchPad interface in use
-		if (pCur) {
-			if (pCur == pPad) _wassert(L"Sketchpad already exists for this surface", _CRT_WIDE(__FILE__), __LINE__);
-			pCur->EndDrawing();	// Put the current one in hold
-			LogDbg("Red", "Switching to another sketchpad in a middle");
-		}
-
-		// Push a new Sketchpad onto a stack
-		PushSketchpad(surf, pPad);
-
-		pPad->BeginDrawing();
-		pPad->LoadDefaults();
-
-		return pPad;
-	}
-	else {
-		HDC hDC = SURFACE(surf)->GetDC();
-		if (hDC) return new GDIPad(surf, hDC);
-	}
-
-	return NULL;*/
 }
 
 // =======================================================================
