@@ -2716,8 +2716,7 @@ void D3D9Client::MakeRenderProcCall(Sketchpad *pSkp, DWORD id, LPD3DXMATRIX pV, 
 			if (id == RENDERPROC_EXTERIOR || id == RENDERPROC_PLANETARIUM) {
 				pSkp2->SetViewMode(Sketchpad::USER);
 			}
-			pSkp2->SetViewMatrix((FMATRIX4 *)pV);
-			pSkp2->SetProjectionMatrix((FMATRIX4 *)pP);
+			pSkp2->SetViewProj(pV, pP);
 			it->proc(pSkp, it->pParam);
 		}
 	}

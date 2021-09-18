@@ -298,3 +298,22 @@ void D3D9Pad::StretchRegion(const skpRegion *rgn, const SURFHANDLE hSrc, const L
 	// Center
 	StretchRect(hSrc, &_R(x1, y1, x2, y2), &_R(tx1, ty1, tx2, ty2));
 }
+
+// ===============================================================================================
+//
+void D3D9Pad::Clear(DWORD color, bool bColor, bool bDepth)
+{
+	DWORD flags = 0;
+	if (bColor) flags |= D3DCLEAR_TARGET;
+	if (bDepth) flags |= D3DCLEAR_ZBUFFER;
+	pDev->Clear(0, NULL, flags, color, 1.0f, 0);
+}
+
+// ===============================================================================================
+//
+void D3D9Pad::SetClipDistance(float nr, float fr)
+{
+	D3DXMatrixOrthoOffCenterLH(&mO, 0.0f, (float)tgt_desc.Width, (float)tgt_desc.Height, 0.0f, nr, fr);
+	mP._33 = fr / (fr - nr);
+	mP._43 = -nr * mP._33;
+}

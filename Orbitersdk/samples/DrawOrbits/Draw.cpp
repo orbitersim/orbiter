@@ -325,7 +325,7 @@ void Orbits::clbkRender(oapi::Sketchpad *pSkp2)
 		orb.Create(hVes);
 		orb.ReferencePole(_I_ECL, _K_ECL);
 
-		SetClipper(pSkp2, oapiCameraTarget(), PLN_MOON);
+		//SetClipper(pSkp2, oapiCameraTarget(), PLN_MOON);
 		SetClipper(pSkp2, hRef, PLN_MAIN);
 
 		DrawOrbit(pSkp2, &orb, hRef, color, ODR_APS|ODR_LON|ODR_NOD|ODR_LAB);
@@ -358,11 +358,11 @@ void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 		if (idx == PLN_MOON) Clip[idx].hdst = 0.0;
 		else				 Clip[idx].hdst = hdst;
 
-		//pSkp2->Clipper(idx, &Clip[idx].uPos, Clip[idx].vcov, Clip[idx].hdst);
+		pSkp2->Clipper(idx, &Clip[idx].uPos, Clip[idx].vcov, Clip[idx].hdst);
 	}
 	else {
 		Clip[idx].vcov = 2.0; // This will disable clipping
-		//pSkp2->Clipper(idx);
+		pSkp2->Clipper(idx);
 	}
 }
 
@@ -441,12 +441,10 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 		smi = sqrt(eHyp[idx] * eHyp[idx] - 1.0);
 	}
 
-	//oapiWriteLogV("Using Templete %d for Orbit=0x%X", idx, pOrb);
-
 	// Set pen colors
 	//
 	DWORD black = FVECTOR4(0.0f, 0.0f, 0.0f, color.a).dword_abgr();
-	DWORD draw = 0xFFFFFFFF;// color.dword_abgr();
+	DWORD draw = color.dword_abgr();
 
 
 	// Build Matrix to render from a pre-computed orbit templates
@@ -466,7 +464,9 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	SIZE screen;
 	pSkp2->GetRenderSurfaceSize(&screen);
 	pSkp2->SetWorldTransform(&mat);
-	//pSkp2->SetViewMode(Sketchpad::USER);
+
+	pSkp2->SetViewMode(Sketchpad::USER);
+	pSkp2->SetClipDistance(1.0f, 1e13f);
 	pSkp2->QuickPen(draw, 2.0f);
 	
 
@@ -514,6 +514,7 @@ void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVE
 	// Switch to orthographic projection to draw markers and other things
 	//
 	pSkp2->SetViewMode(Sketchpad::SkpView::ORTHO);
+	pSkp2->SetClipDistance(-1.0f, 1.0f);
 	pSkp2->SetWorldTransform();
 	pSkp2->QuickPen(draw);
 

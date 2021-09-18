@@ -545,6 +545,8 @@ public:
 	void CopyTetragon(SURFHANDLE pSrc, const LPRECT _s, const FVECTOR2 pt[4]);
 	void ColorCompatibility(bool bEnable);
 	void FillTetragon(DWORD c, const FVECTOR2 pt[4]);
+	void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true);
+	void SetClipDistance(float _near, float _far);
 	
 
 	// ===============================================================================
@@ -562,10 +564,8 @@ public:
 	void BeginDrawing(LPDIRECT3DSURFACE9 pRenderTgt, LPDIRECT3DSURFACE9 pDepthStensil = NULL);
 	void BeginDrawing();
 
+	void SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP);
 
-	// ===============================================================================
-	// D3D9Client Privates
-	// ===============================================================================
 	LPD3DXMATRIX WorldMatrix();
 	DWORD GetLineHeight(); ///< Return height of a character in the currently selected font with "internal leading"
 	const char *GetName() const { return name; }
@@ -634,6 +634,7 @@ private:
 	WORD vI, iI;
 	mutable D3DXMATRIX mVP;
 	D3DXMATRIX mV, mP, mW, mO;
+	D3DXMATRIX mVOrig, mPOrig;
 	D3DXVECTOR4 vTarget;
 	DWORD bkmode;
 	BlendState dwBlendState;

@@ -564,7 +564,7 @@ void D3D9Pad::SetViewMatrix(const FMATRIX4 *pV)
 #endif
 	Change |= SKPCHG_TRANSFORM;
 	if (pV) memcpy(&mV, pV, sizeof(FMATRIX4));
-	else D3DXMatrixIdentity(&mV);
+	else mV = mVOrig;
 }
 
 
@@ -577,7 +577,7 @@ void D3D9Pad::SetProjectionMatrix(const FMATRIX4 *pP)
 #endif
 	Change |= SKPCHG_TRANSFORM;
 	if (pP) memcpy(&mP, pP, sizeof(FMATRIX4));
-	else D3DXMatrixIdentity(&mP);
+	else mP = mPOrig;
 }
 
 

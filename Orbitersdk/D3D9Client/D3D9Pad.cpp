@@ -225,6 +225,8 @@ void D3D9Pad::Reset()
 	vI = 0;
 	iI = 0;
 	D3DXMatrixIdentity(&mO);
+	D3DXMatrixIdentity(&mVOrig);
+	D3DXMatrixIdentity(&mPOrig);
 	vTarget = D3DXVECTOR4(1,1,1,1);
 	pTgt = NULL;
 	pDep = NULL;
@@ -277,6 +279,7 @@ void D3D9Pad::LoadDefaults()
 	textcolor  = SkpColor(0xFF00FF00);
 	pencolor   = SkpColor(0xFF00FF00);
 
+	D3DXMatrixIdentity(&mVP);
 	D3DXMatrixIdentity(&mW);
 	D3DXMatrixIdentity(&mP);
 	D3DXMatrixIdentity(&mV);
@@ -341,6 +344,15 @@ D3D9Pad::~D3D9Pad ()
 	SAFE_DELETEA(_saveBuffer);
 }
 
+
+// ===============================================================================================
+// Private
+//
+void D3D9Pad::SetViewProj(const D3DXMATRIX* pV, const D3DXMATRIX* pP)
+{
+	mV = mVOrig = *pV;
+	mP = mPOrig = *pP;
+}
 
 
 // ===============================================================================================
