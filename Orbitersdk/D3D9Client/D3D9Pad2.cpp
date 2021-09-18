@@ -548,7 +548,7 @@ const FMATRIX4 *D3D9Pad::ProjectionMatrix() const
 
 // ===============================================================================================
 //
-const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix()
+const FMATRIX4 *D3D9Pad::GetViewProjectionMatrix() const
 {
 	D3DXMatrixMultiply(&mVP, &mV, &mP);
 	return (const FMATRIX4 *)&mVP;
@@ -589,6 +589,7 @@ void D3D9Pad::SetViewMode(SkpView mode)
 	Log("SetViewMode(0x%X)", DWORD(mode));
 #endif
 	Flush();	// Must Flush() here before a mode change
+	Change |= SKPCHG_TRANSFORM;
 	vmode = mode;
 }
 

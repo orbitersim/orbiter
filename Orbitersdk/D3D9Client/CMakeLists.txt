@@ -12,7 +12,7 @@ set(IncludeDir ${CMAKE_SOURCE_DIR}/Orbitersdk/include)
 add_custom_command(
 	OUTPUT ${IncludeDir}/gcCoreAPI.h
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND InterfaceBuilder.exe ${IncludeDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
+	COMMAND InterfaceBuilder.exe ${D3D9SourceDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
 	VERBATIM
 )
 
@@ -118,12 +118,12 @@ set(IncludeFiles
 	VVessel.h
 	WindowMgr.h
 	ZTreeMgr.h
+	gcConst.h
+	gcCore.h
 )
 
 set(APIHeaders
     ${IncludeDir}/gcGUI.h
-	${IncludeDir}/gcConst.h
-	${IncludeDir}/gcCore.h
 	${IncludeDir}/gcCoreAPI.h
 )
 
@@ -215,7 +215,7 @@ add_custom_command(
 add_custom_command(
 	TARGET D3D9Client PRE_BUILD
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND InterfaceBuilder.exe ${IncludeDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
+	COMMAND InterfaceBuilder.exe ${D3D9SourceDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
 	VERBATIM
 )
 

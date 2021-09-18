@@ -133,8 +133,6 @@ static __gcBindCoreMethod pBindCoreMethod = NULL;
 typedef void * HOVERLAY;
 /// \brief Handle to a planet/surface manager
 typedef void * HPLANETMGR;
-/// \brief Handle to an instance buffer
-typedef void * HINSTBUF;
 /// \brief Handle to a surface tile (SurfTile)
 typedef void * HTILE;
 /// \brief Custom swapchain handle

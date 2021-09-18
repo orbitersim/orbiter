@@ -170,7 +170,7 @@ OutputVS Sketch3DVS(InputVS v)
 	outVS.color.rgba = v.clr.bgra;
 	outVS.posW = float4(posW, fPosD);
 	outVS.sw = v.fnc;
-	outVS.posH = mul(float4(posW.xyz*100.0, 1.0f), gVP);
+	outVS.posH = mul(float4(posW.xyz, 1.0f), gVP);
 	outVS.tex = float4(v.dir.xy * gSize.xy, v.dir.xy * gSize.zw);
 
 	return outVS;

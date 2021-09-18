@@ -31,6 +31,7 @@ set(ORBITER_SOURCE_SDK_INCLUDE_DIR "${CMAKE_BINARY_DIR}/Orbitersdk/include" "${C
 set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
 
 add_subdirectory(Orbitersdk/D3D9Client)
+add_subdirectory(Orbitersdk/samples/DrawOrbits)
 add_subdirectory(Orbitersdk/samples/DX9ExtMFD)
 add_subdirectory(Orbitersdk/samples/GenericCamera)
 add_subdirectory(Orbitersdk/samples/TerrainToolBox)

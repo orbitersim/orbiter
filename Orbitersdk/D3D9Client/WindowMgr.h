@@ -24,7 +24,7 @@
 #define __WNDMGR_H
 
 #include <Windows.h>
-#include <gcCore.h>
+#include "gcCore.h"
 #include <vector>
 #include <map>
 #include "gcGUI.h"

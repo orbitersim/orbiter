@@ -23,6 +23,7 @@
 // IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // =================================================================================================================================
 
+
 #define STRICT 1
 #define ORBITER_MODULE
 
@@ -31,15 +32,14 @@
 #include "ModuleAPI.h"
 #include "DrawAPI.h"
 #include <windowsx.h>
-#include "gcAPI.h"
-#include "Sketchpad2.h"
+#include "gcCoreAPI.h"
 #include "Orbit.h"
 #include "Reference.h"
 
 #define NTEMP 5
 
-static float eEll[NTEMP] = { 0.0f, 0.5f, 0.75f, 0.88f, 0.95f };
-static float eHyp[NTEMP] = { 1.01f, 1.1f, 1.3f, 1.6f, 2.0f };
+static double eEll[NTEMP] = { 0.0f, 0.5f, 0.75f, 0.88f, 0.95f };
+static double eHyp[NTEMP] = { 1.01f, 1.1f, 1.3f, 1.6f, 2.0f };
 
 
 struct Body {
@@ -78,12 +78,13 @@ public:
 	void		clbkPreStep(double simt, double simdt, double mjd);
 	
 private:
-	void		Label(Sketchpad2 *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *label);
-	void		DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVECTOR4 &color, DWORD flags = 0);
+	void		Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *label);
+	void		DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVECTOR4 &color, DWORD flags = 0);
 	void		CreateOrbitTemplates();
-	bool		IsVisible(VECTOR3 pos, oapi::IVECTOR2 *pt);
-	VECTOR3		WorldDirection(VECTOR3 d, MATRIX4 &mVP);
-	void		SetClipper(Sketchpad2 *pSkp2, OBJHANDLE hObj, DWORD Idx=0);
+	bool		IsVisible(VECTOR3 pos, oapi::IVECTOR2 *pt, const SIZE& s);
+	FVECTOR3	WorldDirection(VECTOR3 d);
+	bool		WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const FMATRIX4* pVP, const SIZE& s, float clip = 1.0f);
+	void		SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD Idx=0);
 
 	HPOLY		pElliptic[NTEMP];
 	HPOLY		pHyperbolic[NTEMP];
@@ -95,10 +96,10 @@ private:
 	
 	SURFHANDLE  hTex;
 	oapi::Font  *hFnt;
-	oapi::FMATRIX4 mVP;
-	MATRIX4		dmVP;
+	const oapi::FMATRIX4* pVP;
 	ReferenceClass *Ref;
 	Body *pBody;
+	gcCore* pCore;
 };
 
 
@@ -135,8 +136,9 @@ DLLCLBK void ExitModule(HINSTANCE  hModule)
 // Orbiter Module
 // =================================================================================================
 //
-Orbits::Orbits(HINSTANCE hInst) : Module(hInst)
+Orbits::Orbits(HINSTANCE hInst) : Module(hInst), pCore(NULL), Ref(NULL), pBody(NULL)
 {
+
 	FILE *fp = fopen("Config/DrawOrbits.cfg", "rt");
 
 	if (fp) {
@@ -162,7 +164,6 @@ Orbits::~Orbits()
 //
 void Orbits::clbkSimulationStart(RenderMode rm)
 {
-	Ref = NULL;
 	upidx = 0;
 
 	oapiWriteLog("oapi::Module::clbkSimulationStart");
@@ -172,13 +173,14 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 	pBody = new Body[bcnt+1];
 	memset(pBody, 0, (bcnt+1) * sizeof(Body));
 
+	pCore = gcGetCoreInterface();
 
-	if (gcInitialize()) {
-
+	if (pCore)
+	{
 		hTex = oapiLoadTexture("samples/DrawOrbits/Orbits.dds");
-		hFnt = oapiCreateFont(15, false, "Arial");
+		hFnt = oapiCreateFontEx(15, "Arial");
 
-		gcRegisterRenderProc(RenderOrbitClbk, RENDERPROC_PLANETARIUM, this);
+		pCore->RegisterRenderProc(RenderOrbitClbk, RENDERPROC_PLANETARIUM, this);
 
 		CreateOrbitTemplates();
 
@@ -190,10 +192,11 @@ void Orbits::clbkSimulationStart(RenderMode rm)
 				pBody[i].pOrb = new COrbit(pBody[i].hObj, pBody[i].hRef);
 			}
 			else {
-				if (i!=0) oapiWriteLogV("Orbits: No Reference for object %u, 0x%X", i, pBody[i].hObj);
+				if (i != 0) oapiWriteLogV("Orbits: No Reference for object %u, 0x%X", i, pBody[i].hObj);
 			}
 		}
 	}
+	else oapiWriteLog("Error: No pCore");
 }
 
 
@@ -203,8 +206,8 @@ void Orbits::clbkSimulationEnd()
 {
 	oapiWriteLog("oapi::Module::clbkSimulationEnd");
 
-	if (gcEnabled()) {
-
+	if (pCore) 
+	{
 		//oapiReleaseTexture(hTex);
 		//oapiReleaseFont(hFnt);
 		//gcRegisterRenderProc(RenderOrbitClbk, RENDERPROC_DELETE, NULL);	// Unregister callback 
@@ -280,18 +283,15 @@ void Orbits::clbkPreStep(double simt, double simdt, double mjd)
 
 // =================================================================================================
 //
-void Orbits::clbkRender(oapi::Sketchpad *pSkp)
+void Orbits::clbkRender(oapi::Sketchpad *pSkp2)
 {
 
 	oapiCameraGlobalPos(&CamPos);
 
-	if ((gcSketchpadVersion(pSkp) == 2) && (oapiCameraInternal() == false)) {
-		
-		oapi::Sketchpad2 *pSkp2 = (oapi::Sketchpad2 *)pSkp;
+	if (oapiCameraInternal() == false)
+	{	
 
-		memcpy(&mVP, pSkp2->GetViewProjectionMatrix(), sizeof(FMATRIX4));
-
-		dmVP = gcMatrix4(&mVP);
+		pVP = pSkp2->GetViewProjectionMatrix();
 
 		pSkp2->SetFont(hFnt);
 		pSkp2->QuickPen(0x80808080, 1.0f);
@@ -304,7 +304,7 @@ void Orbits::clbkRender(oapi::Sketchpad *pSkp)
 				if (pBody[i].pOrb) {
 
 					float fI = pBody[i].fInts;
-					FVECTOR4 color = _FVECTOR4(0.3f*fI, 0.3f*fI, 0.3f*fI, fI*fI);
+					FVECTOR4 color = FVECTOR4(0.3f*fI, 0.3f*fI, 0.3f*fI, fI*fI);
 
 					SetClipper(pSkp2, pBody[i].hObj, PLN_MOON);
 					SetClipper(pSkp2, pBody[i].hRef, PLN_MAIN);
@@ -316,7 +316,7 @@ void Orbits::clbkRender(oapi::Sketchpad *pSkp)
 			i++;
 		}
 
-		FVECTOR4 color = _FVECTOR4(0, 1, 0, 1);
+		FVECTOR4 color = FVECTOR4(0, 1, 0, 1);
 
 		VESSEL *hVes = oapiGetFocusInterface();
 		OBJHANDLE hRef = hVes->GetGravityRef();
@@ -335,7 +335,7 @@ void Orbits::clbkRender(oapi::Sketchpad *pSkp)
 
 // =================================================================================================
 // 
-void Orbits::SetClipper(Sketchpad2 *pSkp2, OBJHANDLE hObj, DWORD idx)
+void Orbits::SetClipper(Sketchpad *pSkp2, OBJHANDLE hObj, DWORD idx)
 {
 	VECTOR3 bpos;
 
@@ -358,11 +358,11 @@ void Orbits::SetClipper(Sketchpad2 *pSkp2, OBJHANDLE hObj, DWORD idx)
 		if (idx == PLN_MOON) Clip[idx].hdst = 0.0;
 		else				 Clip[idx].hdst = hdst;
 
-		pSkp2->Clipper(idx, &Clip[idx].uPos, Clip[idx].vcov, Clip[idx].hdst);
+		//pSkp2->Clipper(idx, &Clip[idx].uPos, Clip[idx].vcov, Clip[idx].hdst);
 	}
 	else {
 		Clip[idx].vcov = 2.0; // This will disable clipping
-		pSkp2->Clipper(idx);
+		//pSkp2->Clipper(idx);
 	}
 }
 
@@ -371,39 +371,61 @@ void Orbits::SetClipper(Sketchpad2 *pSkp2, OBJHANDLE hObj, DWORD idx)
 // Convert a world space direction to screen space direction
 // Positive directions in screen space are (right, down, away from camera)
 //
-VECTOR3 Orbits::WorldDirection(VECTOR3 d, MATRIX4 &mVP)
+FVECTOR3 Orbits::WorldDirection(VECTOR3 d)
 {
-	VECTOR4 in = _V(d.x, d.y, d.z, 0.0);
-	VECTOR4 sc = mul(in, mVP);
-	double f = abs(1.0 / sc.w);
+	FVECTOR4 sc = mul(FVECTOR4(d), *pVP);
+	float f = abs(1.0f / sc.w);
 	sc.x *= f;
 	sc.y *= -f;
 	sc.z *= f;
-	return unit(_V(sc.x, sc.y, sc.z));
+	return unit(sc.xyz);
+}
+
+
+bool Orbits::WorldToScreenSpace(const VECTOR3& wpos, oapi::IVECTOR2* pt, const FMATRIX4* pVP, const SIZE& s, float clip)
+{
+
+	FVECTOR4 homog = mul(FVECTOR4(wpos, 1.0f), *pVP);
+
+	if (homog.w < 0.0f) return false;
+
+	homog.xyz /= homog.w;
+	
+	bool bVis = true;
+	if (homog.x < -clip || homog.x > clip || homog.y < -clip || homog.y > clip) bVis = false;
+
+	if (_hypot(homog.x, homog.y) < 1e-6) {
+		pt->x = s.cx / 2;
+		pt->y = s.cy / 2;
+	}
+	else {
+		pt->x = (long)((float(s.cx) * 0.5f * (1.0f + homog.x)) + 0.5f);
+		pt->y = (long)((float(s.cy) * 0.5f * (1.0f - homog.y)) + 0.5f);
+	}
+
+	return bVis;
 }
 
 
 // =================================================================================================
 // Check if orbital location is visible. pos = location relative to reference body which must be Clip[0]
 //
-bool Orbits::IsVisible(VECTOR3 pos, oapi::IVECTOR2 *pt)
+bool Orbits::IsVisible(VECTOR3 pos, oapi::IVECTOR2 *pt, const SIZE &s)
 {
-	pos += Clip[0].Pos;				// Conver to camera centric location. Clip[0].Pos = camera centric planet position
+	pos += Clip[0].Pos;	// Conver to camera centric location. Clip[0].Pos = camera centric planet position
 	double len = length(pos);
 	VECTOR3 uPos = pos / len;
 
 	for (int i = 0; i < 2; i++) if ((Clip[i].vcov < dotp(Clip[i].uPos, uPos)) && (len > Clip[i].hdst)) return false;
 
-	return gcWorldToScreenSpace(pos, pt, &mVP);
+	return WorldToScreenSpace(pos, pt, pVP, s);
 }
 
 
 // =================================================================================================
 //
-void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVECTOR4 &color, DWORD of)
-{
-	FMATRIX4 mat;
-	
+void Orbits::DrawOrbit(Sketchpad *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FVECTOR4 &color, DWORD of)
+{	
 	double smi = 0.0;
 	double ecc = pOrb->Ecc();
 	double diff = 1e6;
@@ -419,10 +441,12 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 		smi = sqrt(eHyp[idx] * eHyp[idx] - 1.0);
 	}
 
+	//oapiWriteLogV("Using Templete %d for Orbit=0x%X", idx, pOrb);
+
 	// Set pen colors
 	//
-	DWORD black = gcColor(&_FVECTOR4(0, 0, 0, color.a));
-	DWORD draw  = gcColor(&color);
+	DWORD black = FVECTOR4(0.0f, 0.0f, 0.0f, color.a).dword_abgr();
+	DWORD draw = 0xFFFFFFFF;// color.dword_abgr();
 
 
 	// Build Matrix to render from a pre-computed orbit templates
@@ -430,19 +454,19 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 	VECTOR3 _P = pOrb->_P;
 	VECTOR3 _Q = pOrb->_Q;
 	VECTOR3 _W = crossp_LH(_P, _Q);
+	VECTOR3 _F = _P * (pOrb->SMa() * pOrb->Ecc()); // Offset the template to actual planet position
 
-	mat._y = _FVECTOR4(_Q * (pOrb->SMi() / smi) );
-	mat._x = _FVECTOR4(_P * (pOrb->SMa()) );
-	mat._z = _FVECTOR4(_W);
+	FMATRIX4 mat;
+	mat._y = FVECTOR4(_Q * (pOrb->SMi() / smi) );
+	mat._x = FVECTOR4(_P * (pOrb->SMa()) );
+	mat._z = FVECTOR4(_W);
+	mat._p = FVECTOR4(Clip[0].Pos - _F, 1.0f);
 
-	// Offset the template to actual planet position
-	//
-	VECTOR3 offs = _P * (pOrb->SMa()*pOrb->Ecc());
 
-	gcSetTranslation(&mat, Clip[0].Pos - offs);
-
+	SIZE screen;
+	pSkp2->GetRenderSurfaceSize(&screen);
 	pSkp2->SetWorldTransform(&mat);
-	pSkp2->SetViewMode(Sketchpad2::USER);
+	//pSkp2->SetViewMode(Sketchpad::USER);
 	pSkp2->QuickPen(draw, 2.0f);
 	
 
@@ -452,17 +476,14 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 
 	// Update matrix for generic drawing in 3D ----------------------
 	//
-	mat._y = _FVECTOR4(_Q);
-	mat._x = _FVECTOR4(_P);
-	mat._z = _FVECTOR4(_W);
-
-	// Move origin to the center of the reference planet
-	//
-	gcSetTranslation(&mat, Clip[0].Pos);
+	mat._y = FVECTOR4(_Q);
+	mat._x = FVECTOR4(_P);
+	mat._z = FVECTOR4(_W);
+	mat._p = FVECTOR4(Clip[0].Pos, 1.0f);
 
 	pSkp2->SetWorldTransform(&mat);
 
-	double dLan = pOrb->TrAOfAscendingNode(pOrb->GetPole());		// TrA of AN
+	double dLan = pOrb->TrAOfAscendingNode(pOrb->GetPole());	// TrA of AN
 	double dLdn = limit(dLan + PI);								// TrA of DN
 	double dLPe = 0.0;											// TrA of PE
 	double dLAp = PI;											// TrA of AP
@@ -492,7 +513,7 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 
 	// Switch to orthographic projection to draw markers and other things
 	//
-	pSkp2->SetViewMode(Sketchpad2::ORTHO);
+	pSkp2->SetViewMode(Sketchpad::SkpView::ORTHO);
 	pSkp2->SetWorldTransform();
 	pSkp2->QuickPen(draw);
 
@@ -501,7 +522,7 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 	if (of&ODR_NOD) {
 		if (pOrb->IsTrAValid(dLan)) {
 			VECTOR3 pos = pOrb->PosByTrA(dLan);
-			if (IsVisible(pos, &pt)) {
+			if (IsVisible(pos, &pt, screen)) {
 				pSkp2->QuickBrush(draw);
 				pSkp2->Rectangle(pt.x - s, pt.y - s, pt.x + s, pt.y + s);
 				if (of&ODR_LAB) {
@@ -515,7 +536,7 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 		}
 		if (pOrb->IsTrAValid(dLdn)) {
 			VECTOR3 pos = pOrb->PosByTrA(dLdn);
-			if (IsVisible(pos, &pt)) {
+			if (IsVisible(pos, &pt, screen)) {
 				pSkp2->QuickBrush(black);
 				pSkp2->Rectangle(pt.x - s, pt.y - s, pt.x + s, pt.y + s);
 				if (of&ODR_LAB) {
@@ -530,9 +551,11 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 	}
 
 	if (of&ODR_APS) {
-		if (pOrb->IsTrAValid(dLPe)) {
+		if (pOrb->IsTrAValid(dLPe)) 
+		{
 			VECTOR3 pos = pOrb->PosByTrA(dLPe);
-			if (IsVisible(pos, &pt)) {
+			if (IsVisible(pos, &pt, screen)) 
+			{
 				pSkp2->QuickBrush(draw);
 				pSkp2->Ellipse(pt.x - s, pt.y - s, pt.x + s, pt.y + s);
 				if (of&ODR_LAB) {
@@ -546,7 +569,7 @@ void Orbits::DrawOrbit(Sketchpad2 *pSkp2, COrbit *pOrb, OBJHANDLE hRef, oapi::FV
 		}
 		if (pOrb->IsTrAValid(dLAp)) {
 			VECTOR3 pos = pOrb->PosByTrA(dLAp);
-			if (IsVisible(pos, &pt)) {
+			if (IsVisible(pos, &pt, screen)) {
 				pSkp2->QuickBrush(black);
 				pSkp2->Ellipse(pt.x - s, pt.y - s, pt.x + s, pt.y + s);
 				if (of&ODR_LAB) {
@@ -570,7 +593,7 @@ inline void Swap(long *a, long *b)
 
 // =================================================================================================
 //
-void Orbits::Label(Sketchpad2 *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *label)
+void Orbits::Label(Sketchpad *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char *label)
 {
 	int w = 95;
 	int h = 60;
@@ -584,7 +607,7 @@ void Orbits::Label(Sketchpad2 *pSkp2, IVECTOR2 *pt, VECTOR3 &plnDir, const char 
 
 	RECT src = { 0, 0, w, h };
 
-	VECTOR3 sd = WorldDirection(plnDir, dmVP);
+	FVECTOR3 sd = WorldDirection(plnDir);
 
 	// Horizontal Mirroring
 	if (sd.x<0) {
@@ -625,32 +648,34 @@ void Orbits::CreateOrbitTemplates()
 {
 	FVECTOR2 points[512];
 
-	for (int i = 0; i < NTEMP; i++) {
-
+	for (int i = 0; i < NTEMP; i++) 
+	{
 		double ecc = eEll[i];
 		double smi = sqrt(1.0 - ecc*ecc);
 		double nra = 0.0;
 		double stp = PI2 / 512.0;
 
-		for (int i = 0; i < 511; i++) {
+		for (int i = 0; i < 511; i++) 
+		{
 			double eca = nra2eca(nra, ecc);
 			points[i].x = float(cos(eca));
 			points[i].y = float(sin(eca)*smi);
 			nra += stp;
 		}
 
-		pElliptic[i] = gcCreatePoly(NULL, points, 511, PF_CONNECT);
+		pElliptic[i] = pCore->CreatePoly(NULL, points, 511, PF_CONNECT);
 	}
 
 
-	for (int i = 0; i < NTEMP; i++) {
-
+	for (int i = 0; i < NTEMP; i++) 
+	{
 		double ecc = eHyp[i];
 		double smi = sqrt(ecc*ecc-1.0);
 		double nra = eca2nra(6.0, ecc);
 		double stp = abs(nra*2.0) / 511.0;
 		nra = PI2-nra;
-		for (int i = 0; i < 512; i++) {
+		for (int i = 0; i < 512; i++) 
+		{
 			nra = limit(nra);
 			double eca = nra2eca(nra, ecc);
 			points[i].x = float(cosh(eca));
@@ -658,6 +683,6 @@ void Orbits::CreateOrbitTemplates()
 			nra += stp;
 		}
 
-		pHyperbolic[i] = gcCreatePoly(NULL, points, 512, 0);
+		pHyperbolic[i] = pCore->CreatePoly(NULL, points, 512, 0);
 	}
 }

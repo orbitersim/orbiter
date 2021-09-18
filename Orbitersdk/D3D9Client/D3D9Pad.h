@@ -518,7 +518,7 @@ public:
 	//-----------------------------------------
 	const FMATRIX4 *ViewMatrix() const;
 	const FMATRIX4 *ProjectionMatrix() const;
-	const FMATRIX4 *GetViewProjectionMatrix();
+	const FMATRIX4 *GetViewProjectionMatrix() const;
 	void SetViewMatrix(const FMATRIX4 *pV = NULL);
 	void SetProjectionMatrix(const FMATRIX4 *pP = NULL);
 
@@ -535,7 +535,7 @@ public:
 	FVECTOR4 GetRenderParam(RenderParam param);
 	void SetRenderParam(RenderParam param, const FVECTOR4 *data = NULL);
 	void SetBlendState(BlendState dwState);
-	 FMATRIX4 GetWorldTransform() const;
+	FMATRIX4 GetWorldTransform() const;
 	void PushWorldTransform();
 	void PopWorldTransform();
 	void SetWorldScaleTransform2D(const FVECTOR2 *scl = NULL, const IVECTOR2 *trl = NULL);
@@ -615,7 +615,6 @@ private:
 	SkpColor brushcolor;
 	DWORD	 Change;
 	bool	 bLine;
-	D3DXMATRIX mVP;
 
 	SkpColor		 textcolor;
 	SkpColor		 bkcolor;
@@ -633,6 +632,7 @@ private:
 
 
 	WORD vI, iI;
+	mutable D3DXMATRIX mVP;
 	D3DXMATRIX mV, mP, mW, mO;
 	D3DXVECTOR4 vTarget;
 	DWORD bkmode;

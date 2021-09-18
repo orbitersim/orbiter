@@ -27,7 +27,7 @@
 #include "OrbiterAPI.h"
 #include "VesselAPI.h"
 #include "Tools.h"
-#include "gcAPI.h"
+#include "gcCoreAPI.h"
 
 
 using namespace oapi;
