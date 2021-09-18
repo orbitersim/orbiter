@@ -299,7 +299,7 @@ namespace oapi {
 			w = float(v.w);
 		}
 
-		FVECTOR4(const VECTOR3& v, float _w)
+		FVECTOR4(const VECTOR3& v, float _w = 0.0f)
 		{
 			x = float(v.x);
 			y = float(v.y);
@@ -307,7 +307,7 @@ namespace oapi {
 			w = _w;
 		}
 
-		FVECTOR4(const FVECTOR3& v, float _w)
+		FVECTOR4(const FVECTOR3& v, float _w = 0.0f)
 		{
 			rgb = v;
 			w = _w;
@@ -1417,6 +1417,21 @@ public:
 	* \note Default: Enabled, Only effects to a colors assigned to pens and brushes after a mode change.
 	*/
 	virtual void ColorCompatibility(bool bEnable) { assert(false); }
+
+	/**
+	* \brief [DX9] Clear drawing surface with a color and a depth buffer
+	* \param color Desired background color
+	* \param bColor if true, fills the background with 'color'
+	* \param bDepth if true, clears the depth buffer (if exists)
+	*/
+	virtual void Clear(DWORD color = 0, bool bColor = true, bool bDepth = true) { assert(false); }
+
+	/**
+	* \brief [DX9] Set near/far clip distances
+	* \param _near near distance to be set
+	* \param _far far distance to be set
+	*/
+	virtual void SetClipDistance(float _near, float _far) { assert(false); }
 
 private:
 	SURFHANDLE surf;
