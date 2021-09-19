@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <title>D3D9Client documentation</title>
+  <style type="text/css">
+   .brk  { page-break-before:always; }
+   .nbrk { page-break-inside:avoid; }
+    body { font-size: 16pt; }
+    p    { page-break-inside:avoid; text-align: justify; }
+    dt   { margin-top:10px; }
+    dd   { margin-left:20px; }
+    li   { text-decoration:underline; font-weight:bold; page-break-inside:avoid; }
+    li.nodeco { text-decoration:none; font-weight:normal; page-break-inside:avoid; }
+    code { background-color: #E0E0E0; }
+  </style>
+</head>
+<body style="padding: 10px; margin: 10px;">
+
+<div style="font-weight:bold;font-size:28pt;">
+  <center>D3D9Client documentation</center>
+</div>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>Features &amp; Limitations</h1>
+<p>
+  D3D9Client tries to be as backwards compatible with the inline graphics client
+  of Orbiter as possible. Additionally some features of DirectX 9 enable it to do
+  some things that the DirectX 7 runtimes do not allow. On the other hand there
+  might be some things that are not implemented at all or in  different fashion.
+  Here is a brief overview of features &amp; limitations of the D3D9Client.
+  <ul>
+    <li>Advanced Texture Maps</li>
+      Additional texture information for meshes. These define for example how
+      "rough" or "shiny" a texture appears.
+    <li>Cloud Normal Maps</li>
+      To make clouds look more "voluminous", D3D9Client allows normal maps for
+      planetary cloud layers.
+    <li>Custom Cameras</li>
+      Custom cameras allow add-ons to render images on isolated surfaces
+      (like camera screens for example).
+    <li>Local Lights</li>
+      The number of local lights in a scenario is unlimited.
+      Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
+      So, each mesh can have its own set of local lights.<br />
+      (Whether 4 or 8 lights are used for rendering, depends on the
+      <a href="#_local_lights">Local lights</a> settings used).
+    <li>Reflections</li>
+      Environment mapping is used to draw reflections of the surrounding
+      environment onto reflective surfaces.
+    <li>Self Shadowing</li>
+      Vessels cast shadows onto themselves or onto other vessel structures.
+    <li>Sketchpad2</li>
+      A feature-enhanced Sketchpad to draw 2D graphics onto surfaces;
+      for example MFD Displays or announcements in the Simulation.
+    <li>Surface Micro Textures</li>
+      Surfaces of planets (or moons) will have a much more realistic look when
+      viewed from very close to the surface (when landed on the surface for
+      example).
+    <li>Symbolic Links Creation</li>
+      Spacecraft3.dll and Orbiter Sound (Version 3.5) require some extra
+      symbolic links in <code>/Modules/Server/</code> folder to run properly
+      with Orbiter 2016 (see <a href="#_junctions">Orbiter Sound 3.5,
+      Spacecraft3.dll</a>).<br />
+      D3D9Clients "Advanced Setup" dialog provides a simple button for that.
+<!-- not (yet) in BETA
+    <li>Terrain Flattening</li>
+      With the planetary elevation model, some areas of a planet (or moon) might
+      not be perfectly "flat" and make it hard for some vessels to stand upright
+      for example. With the "terrain flattening" feature one can define specific
+      regions to be modified (See <strong>Enable terrain flattening</strong> under
+      <a href="#_graphics_options">Graphics options</a> and
+      <a href="#_terrain_flattening">Terrain Flattening definitions</a> for details).
+ -->  </ul>
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Requirements</h1>
+<p>
+  D3D9Client uses external libraries that need support for the SSE2
+  Instruction set (GPSVC.DLL e.g.) and requires XNA Math support, so that the
+  processor must support those
+  <a href="http://en.wikipedia.org/wiki/SSE2" target="_blank">Streaming SIMD Extensions</a>.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>Installation</h1>
+<p>
+  You need a DirectX February 2010 or newer to run D3D9Client. To install the
+  client itself you need to extract the zip package in the root folder of the
+  Orbiter. In order to use a graphics client you need to run "Orbiter_ng.exe"
+  instead of "Orbiter.exe". Also the client must be activated from the Modules
+  tab.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>DirectX Runtimes</h1>
+<p>
+  If the redistributable package isn't installed in your computer you will
+  receive an error message "The program can't start because d3dx9_42.dll is
+  missing from your computer". Or you may see a pop-up window in Orbiter
+  LaunchPad telling about a missing runtimes. If that happens then download and
+  extract the content of the package in any empty directory you want and then
+  find a Setup.exe and run it. You can delete the contents of the directory
+  after the setup is completed. The directory is just a temporary storage for
+  the installation files.
+</p>
+<p>
+  Here is a link: <a href="https://www.microsoft.com/en-us/download/details.aspx?id=8109" target="_blank">
+               https://www.microsoft.com/en-us/download/details.aspx?id=8109</a>
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 id="_junctions">Orbiter Sound 3.5, Spacecraft3.dll</h1>
+<p>
+  In order to use Spacecraft3.dll and Orbiter Sound (Version 3.5) with an
+  external graphics client &ndash;like D3D9Client is one&ndash;, symbolic links
+  in <code>/Modules/Server/</code> folder must be created.
+</p>
+<p>
+  Note, that for the current version of Orbiter Sound (Version 4.0) the "Sound"
+  link is not necessary anymore. It will not be created via the according Button
+  in D3D9Clients "Advanced Setup" dialog, if D3DClient detects that the loaded
+  Orbiter Sound Module if of Version 4.0. Anyhow, it does not harm if the
+  "Sound" link is present for a Orbiter Sound 4.0 setup.
+</p>
+<p>
+  The two symbolic links in <code>/Modules/Server/</code> folder for
+  <code>Config</code> and <code>Sound</code> folders point (or link) to their
+  "originals" located in the root folder of the Orbiter installation.<br />
+  If you are using Windows XP or newer and your installation is on a
+  <a href="http://en.wikipedia.org/wiki/NTFS" target="_blank">NTFS</a>
+  filesystem, these links can easily be created from Video Tab -&gt; Advanced
+  Setup. If you have problems with creating the links you can also use a
+  software called Link Shell Extension (see link below) or you can simply copy
+  the <code>Config</code> and <code>Sound</code> folders into
+  <code>/Modules/Server/</code>. But then you have to keep them updated
+  manually.
+</p>
+<p>
+  Here is the link: <a href="http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html" target="_blank">
+          http://schinagl.priv.at/nt/hardlinkshellext/hardlinkshellext.html</a>
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Fullscreen Mode and Alt-Tabing</h1>
+<p>
+  D3D9Client doesn't support alt-tabing in a so-called "True Fullscreen Mode".
+  Therefore, it's recommended that you use a windowed fullscreen mode that will
+  run the orbiter in a fullscreen sized borderless window. There is also a
+  conflict between a GDI based dialog (i.e. pop-up) windows and anti-aliasing
+  in a true fullscreen mode which will disable the anti-aliasing.
+</p>
+
+<hr />
+<!-- ====================================================================== -->
+<h1>D3D9Client Advanced Setup</h1>
+<p>
+  Under the regular Video Tab of the Orbiter (Orbiter_NG) Launchpad you find
+  the "Advanced" Button that will show the "D3D9Client Advanced Setup" Dialog.
+  Here you can change several settings to tweak your experience with the
+  D3D9Client.
+</p>
+<blockquote>
+  <img title="D3D9Client Advanced Setup"
+       src="images/D3D9Client%20Advanced%20Setup.png"
+       alt="D3D9Client Advanced Setup" />
+</blockquote>
+<p>
+  On the lower left side of the Dialog you'll find the "Create symbolic links"
+  button that will create the symbolic links that are needed for some add-ons.
+  The symbolic links can only be created on an NTFS filesystem, so if you have
+  installed your Orbiter installation for example on an FAT32 of extFS
+  filesystem this feature will not work. In this case you have to copy the
+  according folders as explained in the "<a href="#_junctions">Orbiter Sound,
+  Spacecraft3.dll</a>" chapter.
+</p>
+
+<h2 class="brk">Surface texture load options</h2>
+<p>
+  Here you can change the behavior how the D3D9Client will load surface
+  textures. The two options available are either "Load on demand (recommended)"
+  or "Pre-load at session start":
+</p>
+<ul>
+  <li>Load on demand (recommended)</li>
+    <p>
+      With this recommended option selected the D3D9Client will only load
+      surface textures when they come into view while you are orbiting a
+      planet. The value in the "Max. load frequency [Hz]" input field lets you
+      tune the maximum frequency the D3D9Client will check whether some new
+      surface textures have come into view.
+    </p>
+  <li>Pre-load at session start</li>
+    <p>
+      With this option selected the D3D9Client will load all surface textures
+      at startup of a scenario which results in a longer loading time.
+    </p>
+  <li>Tile Archive</li>
+    <p>
+      The tile archive selector lets you choose the type and order of planetary
+      body rendering option.
+      The planetary body data is located under the
+      <code>/Textures/&lt;Planet&gt;</code> folder and comes in two "flavors".
+      The <code>Archive</code> sub folder contains compressed data, while the
+      <code>Elev_mod</code>, <code>Label</code>, <code>Mask</code> and
+      <code>Surf</code> folders contain the data structures as file system
+      folders and files.<br />
+      Access through the archive files is generally faster and should be
+      preferred over cache access.<br />
+      <p style="margin-bottom: 5px;">
+       The tile archive selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Cache only</em></b>:
+            Planetary body data will be loaded from cache only.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Archive only</em></b>:
+            Planetary body data will be loaded from archive only.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Cache &amp; Archive</em></b>:
+            Planetary body data will be loaded from archive but if tiles were
+            found in cache, those will be taken.<br />
+            This is useful to "overwrite" some parts of a planet, which could
+            be a correction of a erroneous archive part or just some additional
+            details provided by an add-on.
+        </div>
+      </p>
+    </p>
+</ul>
+
+<h2 id="_graphics_options">Graphics options</h2>
+<p>
+  Here you can change settings according to your graphic hardware:
+</p>
+<ul>
+  <li>Anti-aliasing</li>
+    <p>
+      Depending on your hardware you can select the anti-aliasing feature that
+      will "smoothen" the visual artifacts that occur when displaying edges.
+    </p>
+  <li>Anisotropic filtering</li>
+    <p>
+      Depending on your hardware you can select the level of anisotropic
+      filtering. For further details about this topic take a look at
+      <a href ="http://en.wikipedia.org/wiki/Anisotropic_filtering" target="_blank">Anisotropic
+      filtering</a> in the wikipedia.
+    </p>
+    <li>Planet glow</li>
+    <p>
+      The value set here is a factor that lets you brighten or dim the "shine"
+      produced by the reflection of a planet. The higher the value the more the
+      current orbiting planet acts like a additional light source.
+      The supported value range is from 0.01 to 2.0. Although you might be able
+      to enter bigger or smaller values, those will be clipped to that range.
+    </p>
+    <li class="brk">Texture Mipmaps</li>
+    <p>
+      The texture mipmaps selector lets you choose the texture mipmap auto
+      generation policy. The select box lets you decide how to deal with
+      missing (not defined) mipmaps at load time.<br />
+      <p style="margin-bottom: 5px;">
+        The texture mipmaps selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Load as defined</em></b>:
+            Only defined mipmaps will be loaded. No automatic generation of
+            mipmaps will be performed.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Autogen missing</em></b>:
+            Defined mipmaps will be loaded unaltered. Missing (not defined)
+            mipmaps will be generated automatically.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Autogen all</em></b>:
+            All mipmaps (defined or not defined) will be generated automatically.
+        </div>
+      </p>
+    </p>
+    <li id="_post_processing">Post Processing</li>
+    <p>
+      The post processing selector lets you choose whether to add one of two
+      additional post processing shaders.<br />
+      Note that enabling any post processing will impact framerates.<br />
+      <p style="margin-bottom: 5px;">
+        The post processing selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+            No post processing shader will be applied.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Light glow</em></b>:
+            The light glow post processing will "enhance" bright surfaces.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>LensFlare</em></b>:
+            The lens flare post processing will create the (infamous) lens
+            flare effect for the sun.
+        </div>
+      </p>
+    </p>
+    <li>gcGUI Mode</li>
+    <p>
+      The graphic client Graphical User Interface (gcGUI) mode selector lets
+      you enable and chose what kind of user interface should be used in case
+      it is enabled.<br />
+      The gcGUI is an interface that allows implementation of user specific UI
+      elements to be used during a simulation session. These may be vessel
+      specific controls or general simulation settings.<br />
+      Note that this feature is still under development and that the API for
+      programming it may change.<br />
+      <p style="margin-bottom: 5px;">
+        The gcGUI Mode selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Disabled</em></b>:
+            No gcGUI elements will be rendered.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Default</em></b>:
+            The gcGUI elements will be accessible via the left and right
+            borders of the simulation screen.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Windowed</em></b>:
+            The gcGUI elements will be rendered as separate window.
+        </div>
+      </p>
+      <i>Note that this feature might interfere with the keyboard and / or mouse.
+      In case every keystroke triggers the "windows alert" sound,
+      <b>disabling</b> the gcGUI Mode altogether should help.</i>
+    </p>
+</ul>
+<p>
+  Following checkboxes can be checked (enabled) or unchecked (disabled) to
+  further fine-tune your D3D9Client experience:
+</p>
+<ul>
+  <li>Pre-load base visuals at startup</li>
+    <p>
+      With this option <b><em>enabled</em></b> the D3D9Client
+      will load all base visuals at startup of a scenario which results in a
+      longer loading time.
+      <br />
+      With this option <b><em>disabled</em></b> the D3D9Client
+      will only load base visuals when they come into view while you are e.g.
+      flying through the atmosphere or orbiting a planet.
+    </p>
+  <li>Enable advanced texture maps</li>
+    <p>
+      With this option enabled D3D9Client will try to add additional texture
+      information for meshes that supply them. This advanced texture maps
+      define for example how "rough" or "shiny" a texture appears.
+    </p>
+  <li>Enable improved glass shading</li>
+    <p>
+      With this option enabled D3D9Client will try to add improved glass
+      shading (Fresnel reflection) for meshes that supply them.
+    </p>
+  <li>Disable near clip plane compatibility mode</li>
+    <p>
+      If the near clip-plane compatibility mode is enabled then the minimum
+      clip-plane distance is 1.0 meters as is in the Orbiters internal engine.
+      If the compatibility mode is disabled then the client can reduce the clip
+      distance down to 0.1 meters, if there is a graphics close to the camera.
+      This setting will only effect in so-called exterior pass. Virtual cockpit
+      near clip-plane distance is defined in D3D9Client.cfg and the default
+      value is 0.1 meters.
+    </p>
+  <li>Cloud micro-textures</li>
+    <p>
+      With this option enabled D3D9Client will create micro textured cloud
+      surfaces that will make clouds appear much more realistic.
+    </p>
+  <li>Cloud normal maps</li>
+    <p>
+      With this option enabled D3D9Client will render cloud textures as if they
+      were normal-maps. This lets couds look more "voluminous".
+    </p>
+  <li>Enable GDI Overlay</li>
+    <p>
+      ...to be documented...
+    </p>
+  <li>Enable absolute animation handling</li>
+    <p>
+      By default Orbiter uses <b><em>incremental animations</em></b>, meaning
+      that for each frame the previous animation state is incremented by a small
+      amount, which will induce some small error.<br />
+      Over time these errors accumulate and the animation is no longer in the
+      orientation it's supposed to be (3-10 mins in worst cases).<br />
+      <b><em>Absolute animations</em></b> updates the animation state from a
+      default state for each frame. Which doesn't suffer from the accumulted
+      error mentioned before. But absolute animations can fail if an add-on
+      alters the order of operations (rotations).<br />
+      Therefore it's not 100% backwards compatible. So far however, no add-on is
+      known to fail.
+    </p>
+  <!-- not (yet) in BETA
+  <li>Enable terrain flattening</li>
+    <p>
+      With the planetary elevation model, some areas of a planet (or moon) might
+      not be perfectly "flat" and make it hard for some vessels to stand upright
+      for example. With the "terrain flattening" feature enabled, one can define
+      specific regions to be modified.
+      For the details on how to set up <strong>.flt</strong> files, see section
+      <a href="#_terrain_flattening">Terrain Flattening definitions</a>.
+    </p>
+  -->
+  <!-- removed
+  <li>Enable surface tile mipmaps</li>
+    <p>
+      In some situations planetary (or minor body) surfaces appear to be noisy
+      and are flickering.
+      <a href="http://en.wikipedia.org/wiki/Mipmap" target="_blank">Mipmaps</a> are one
+      solution to address these problems. By enabling this option these
+      artifacts should greatly be reduced and the surface will appear smooth.
+      <br />
+      The impact of enabling mipmaps is an increased load time because the
+      mipmaps are generated during texture loading.
+    </p>
+  <li class="brk">Enable geometry instancing</li>
+    <p>
+      Currently disabled
+    </p>
+  <li>Enable environment maps</li>
+    <p>
+      With this option enabled D3D9Client will try to add additional texture
+      information for meshes that supply them. This environment maps define how
+      "reflective" a texture appears. This reflections can be seen best on
+      shiny metal surfaces, which do reflect the "environment" more or less
+      mirror-like.
+      <p style="text-indent:1em;">Note: This option must be
+        <b><em>enabled</em></b> to be able to use the "D3D9 Debug Controls"
+        dialogs option which displays the current environment (as a flattened
+        cuboid) for debugging purposes.
+      </p>
+    </p>
+  -->
+</ul>
+
+<h2 id="_local_lights">Local lights</h2>
+<p>
+  Here you can change settings regarding the rendering of local lights.<br />
+  In contrast to the global light (the sun) local lights are individual light
+  sources that might be a flood-light or a special beacon light source in a
+  fright bay or anywhere else on a vessel.
+  <br />
+  The number of local lights in a scenario is unlimited.
+  Each mesh picks 4 or 8 lights which are most relevant to it for rendering.
+  So, each mesh can have its own set of local lights
+  (4 or 8 depends on setting described below.
+  "Partial" lights only compute diffuse part of the lighting while
+  "Full" lights do specular part too).<br />
+  The following settings are available:
+</p>
+<ul>
+  <li>Local lights</li>
+  <p style="margin-bottom: 5px;">
+    Each local lights mode also affects the value of the <code>LMODE</code>
+    definition in the shader files.<br />
+    The Local lights selection offers these settings:
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>None</em></b>:
+      No rendering of local lights.<br />
+      (<tt>LMODE = 0</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>4x Partial</em></b>:
+      A maximum of four local lights will be rendered, computing only diffuse
+      part. (<tt>LMODE = 1</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>4x Full</em></b>:
+      A maximum of four local lights will be rendered, computing diffuse and
+      specular parts. (<tt>LMODE = 2</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>8x Partial</em></b>:
+      A maximum of eight local lights will be rendered, computing only diffuse
+      part. (<tt>LMODE = 3</tt>)
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+      <b><em>8x Full</em></b>:
+      A maximum of eight local lights will be rendered, computing diffuse and
+      specular parts. (<tt>LMODE = 4</tt>)
+    </div>
+  </p>
+</ul>
+
+<h2>Self Shadows</h2>
+<p>
+  Here you can change settings that will affect the rendering of shadows that
+  vessels will cast onto themselves or onto other vessel structures.
+</p>
+<ul>
+  <li>Vessel mapping</li>
+    <p>
+      This will control how many vessels will receive shadowing feature,
+      varying from "None" to "All visible" vessels.
+      <p style="margin-bottom: 5px;">
+        The vessel mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No vessels will receive shadowing feature.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Focus + payload</em></b>:
+          The vessel in focus and its payload will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Near by objects</em></b>:
+          All nearby vessels (objects) will cast shadows.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>All visible objects</em></b>:
+          All visible vessels (objects) will cast shadows.
+        </div>
+      </p>
+    </p>
+  <li>Filter options</li>
+    <p>
+      This will select filtering for shadow maps. "9 Samples" is the fastest
+      setting for older computers and "27s dither" is the best that is
+      currently available.<br />
+      Better filtering produce smoother (better) edges for shadows. The
+      difference becomes more visible when zooming the camera into a shadow.
+      <p style="margin-bottom: 5px;">
+        The filter options selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>9 samples</em></b>:
+          Shadow maps use 9 samples (fastest setting for older computers).
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27 samples</em></b>:
+          Shadow maps using 27 samples.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>27s dither</em></b>:
+          Shadow maps using 27 samples with dithering.
+        </div>
+        <!--
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>40 samples</em></b>:
+          ToDo...
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>40s dither</em></b>:
+          ToDo...
+        </div>
+        -->
+      </p>
+    </p>
+  <li>Terrain mapping</li>
+    <p>
+      This setting will choose the shadowing mode for planetary surface and
+      base-objects.
+      "Stencil" is the legacy mode that's been there for ages.
+      "Projective" produces more realistic surface shadows for the focused
+      (i.e. currently active) vessel but doesn't effect any other vessels (all
+      the other vessels are using Stencil shadows).<br />
+      In this mode the focus vessel can cast shadows on base objects. This
+      shadowing option doesn't work well if the vessel is inside a base object.
+      <p style="margin-bottom: 5px;">
+        The terrain mapping selection offers three settings:
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>None</em></b>:
+          No shadowing for planetary surface and base-objects.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Stencil</em></b>:
+          This is the legacy mode that's been there for ages.
+        </div>
+        <div style="text-indent:-1em; margin-left:1em">
+          <b><em>Projected</em></b>:
+          Produces more realistic surface shadows for the focused (i.e.
+          currently active) vessel but doesn't effect any other vessels (all
+          the other vessels are using Stencil shadows).
+        </div>
+      </p>
+    </p>
+</ul>
+
+<h2>Terrain Resolution</h2>
+<p>
+  Here you can change settings that will affect the rendering of planetary
+  terrains.
+</p>
+<ul>
+  <li>LOD Bias</li>
+  <p>
+    This slider allows to adjust the terrain tile resolution level-of-detail
+    (LOD) bias.
+    Sharper uses higher resolution tiles, which give a sharper appearance, but
+    can induce flickering. Smoother uses lower lower resolution tiles which
+    look smoother and produce less flickering.
+  </p>
+  <li>Mesh resolution</li>
+  <p>
+    This slider allows to adjust the terrain tile mesh resolution.
+    Higher values will result in smoother appearance, but can affect frame
+    rates on some systems.
+  </p>
+</ul>
+
+<h2 class="brk">SketchPad settings</h2>
+<p>
+  The SketchPad is used in Orbiter to draw 2D graphics onto surfaces. These are
+  for example MFD Displays or announcements in the Simulation.
+</p>
+<ul>
+  <li>Device to use</li>
+    <p>
+      The two options you can choose from at "Device to use" are "GDI/DirectX"
+      and "GDI Only".
+    <dl>
+      <dt><b><em>GDI/DirectX</em></b></dt>
+      <dd>
+        will use the DirectX 2D drawing capabilities of your graphic hardware to
+        draw 2D surfaces. Normally this is the recommended setting, because it
+        will not produce so much CPU load that the "GDI Only" option.
+      </dd>
+      <dt><b><em>GDI Only</em></b>
+      <dd>
+        will only use GDI to draw 2D surfaces which might be the option when you
+        experience any glitches or graphical artifacts in MFD screens. This mode
+        is used for older graphic hardware to be able to run Orbiter.
+      </dd>
+    </dl>
+    </p>
+  <li>Font rendering</li>
+    <p>
+      The four options you can choose from at "<b><em>Font rendering</em></b>"
+      are:<br />
+      "<b><em>Crisp</em></b>", "<b><em>Default</em></b>",
+      "<b><em>Cleartype</em></b>" and "<b><em>Proof Quality</em></b>".
+    </p>
+    <p>
+      Each setting will effect how the fonts are pre-rendered for sketchpad
+      use. Choose what ever gives the best visual results. No performance
+      impact.
+    </p>
+</ul>
+
+<h2>Generic configuration</h2>
+<p>
+  The generic configuration contains options that will change the general
+  behavior of D3D9Client. For most of the time the default setup should be fine
+  ("Default" Shader set and Debug Level "1").
+  But you can for example change the verbosity of the internal logging system
+  to be able to report more detailed issue information when you experience an
+  error or failure.
+</p>
+<ul>
+  <!-- removed
+  <li>Shader set</li>
+    <p>
+      If you have different shader sets you like to switch between, this select
+      box lets you choose between them.
+      <br />
+      Note however, that this option is not always available and strongly
+      depends on the version of D3D9Client! The R6 release for example has only
+      the "Default" shader set to select.
+    </p>
+  -->
+  <li>Debug level</li>
+    <p>
+      The five options you can choose from here [0...4] represent the level of
+      information that will be written into the log-file. The log-file is
+      called D3D9ClientLog.html which can be found in
+      <em>Modules\D3D9Client\</em> directory. Higher values will create more
+      detailed output.
+    </p>
+    <p>
+      Until you have any problems and like to have more detailed information
+      what's going on, you should keep this level reasonably low as higher
+      values will result in more disk I/O what slows down the Simulation.
+    </p>
+  <li>Enable mesh debugger</li>
+    <p>
+      With this option enabled D3D9Client will provide additional mesh
+      debugging options at runtime. The "D3D9 Debug Controls" dialog will
+      provide a user interface to access several options. For further details
+      see the <a href="#_debug_controls">D3D9 Debug Controls Dialog</a> section
+      below.
+    </p>
+</ul>
+
+<h2 class="brk">Terrain Resolution</h2>
+<p>
+  Here you can change settings that will affect the rendering of planetary
+  terrains.
+</p>
+<ul>
+  <li>Texture Bias</li>
+  <p>
+    This slider allows to adjust the terrain tile resolution
+    <a href="https://en.wikipedia.org/wiki/Level_of_detail" target="_blank">
+      level-of-detail (LOD)</a> bias.
+    Sharper uses higher resolution tiles, which give a sharper appearance, but
+    can induce flickering. Smoother uses lower lower resolution tiles which
+    look smoother and produce less flickering.
+  </p>
+  <li>Mesh resolution</li>
+  <p>
+    This slider allows to adjust the terrain tile mesh resolution.
+    Higher values will result in smoother appearance, but can affect frame
+    rates on some systems.
+  </p>
+  <li>Tile mipmap policy</li>
+  <p style="margin-bottom: 5px;">
+    The Tile mipmap policy selection offers two settings:
+    <div style="text-indent:-1em; margin-left:1em">
+    <b><em>None</em></b>:
+      ...to be documented...
+    </div>
+    <div style="text-indent:-1em; margin-left:1em">
+    <b><em>Low level only</em></b>:
+      ...to be documented...
+    </div>
+  </p>
+</ul>
+
+<h2 id="_stereoscopic_3d">StereoScopic 3D</h2>
+<p>
+  The stereoScopic 3D settings allow you to tweak the 3D experience if you are
+  using a NVIDIA graphic card that provides this feature.
+</p>
+<ul>
+  <li>Convergence</li>
+    <p>
+      The convergence value lets you choose "how far your eyes are apart".
+      The default value is 0.2 meters (20 cm / 7.8 inches) which is round about
+      the average distance between your eyes. Increasing this value might
+      result in a view with "more depth".
+    </p>
+  <li>Field Depth</li>
+    <p>
+      In optics, particularly as it relates to film and photography, depth of
+      field (DOF) is the distance between the nearest and farthest objects in a
+      scene that appear acceptably sharp in an image. In the context of
+      Stereoscopic 3D it defines the distance where the relative position
+      between the "right eye objects" and the
+      "left eye objects" are overlapping exactly and switch their
+      position when further away or closer that that "point".
+      For further details about this topic take a look at
+      <a href ="http://en.wikipedia.org/wiki/Depth_of_field" target="_blank">Depth of field</a>
+      in the wikipedia.
+    </p>
+</ul>
+
+<h2 class="brk">Reflections and Custom camera settings</h2>
+<p>
+  The reflections and custom camera settings allow you to tweak the parameters
+  that define the behavior of the environment mapping feature. Environment
+  mapping is a feature used to draw reflections of the surrounding environment
+  on reflective surfaces. Custom camera settings will allow add-ons to render
+  images on isolated surfaces (camera screens).
+</p>
+<ul>
+  <li>Reflection Mode</li>
+    <p style="margin-bottom: 5px;">
+      The reflection mode selection offers three settings:
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Disable</em></b> will completely disable the environment mapping
+        feature.</div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Planet Only</em></b> will only "reflect" the currently orbiting
+        planet or moon.</div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Full Scene</em></b> will "reflect" the complete scene, that is all
+        other ships, moons and planets.</div>
+    </p>
+  <li>Custom Cameras</li>
+    <p>
+      The custom camera interface can be used by add-ons to create e.g.
+      payload-bay cameras, docking cameras and other things like that.
+      The camera image rendered by a custom camera can be displayed in an MFD
+      screen or any other screen in a virtual cockpit or in a panel.
+      Developer note : See ogci.h for additional details.
+      <br />
+      The custom camera selection offers therefore only two settings:
+      <b><em>Enabled</em></b> or <b><em>Disable</em></b>.
+      <br />
+      (Note: This has nothing to do with environment maps; it merely uses the
+      same code and update mechanism to do the rendering)
+    </p>
+  <li>Update Rate</li>
+    <p>
+      Selects the number of environment map faces that will be rendered per
+      frame.
+      The update rate selection offers three settings: <b><em>Light</em></b>,
+      <b><em>Medium</em></b> or <b><em>Heavy</em></b>
+    </p>
+</ul>
+
+<h2 class="brk">Surface micro textures</h2>
+<p>
+  The Surface micro textures settings allow you to tweak the parameters that
+  define the rendering of additional extra details on (planetary body) surfaces
+  when viewed from very close. The settings include texture filtering  options,
+  blend modes and <a href="https://en.wikipedia.org/wiki/Mipmap" target="_blank">
+  Mipmap</a> settings.<br />
+  Note that, for this feature to work, additional files (micro textures) are
+  needed. These can for example be downloaded from the D3D9Client download page
+  at the section "<a href="http://users.kymp.net/~p501474a/D3D9Client/"
+  target="_blank">MicroTexture Pack</a>".
+</p>
+<ul>
+  <li>Render Mode</li>
+    <p style="margin-bottom: 5px;">
+      The Render Mode selection offers two settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Disabled</em></b>:
+        Turns the rendering of surface micro textures off.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Enabled</em></b>:
+        Turns the rendering of surface micro textures on.
+      </div>
+    </p>
+  <li>Texture filter</li>
+    <p style="margin-bottom: 5px;">
+      The Texture filter selection offers six settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Point (Fast)</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Linear (Bad)</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 2x</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 4x (Good)</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 8x</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Anisotropic 16x (Slow)</em></b>:
+        ...to be documented...
+      </div>
+    </p>
+  <li>Blend Mode</li>
+    <p style="margin-bottom: 5px;">
+      The Blend Mode selection offers three settings:
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Soft light</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Normal light</em></b>:
+        ...to be documented...
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+        <b><em>Hard light</em></b>:
+        ...to be documented...
+      </div>
+    </p>
+  <li>Mipmap bias</li>
+    <p style="margin-bottom: 5px;">
+      The Mipmap bias slider lets you select the bias level from <b><em>Sharp</em></b>
+      to <b><em>Smooth</em></b>.
+    </p>
+</ul>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 id="_debug_controls"
+    class="brk">D3D9 Debug Controls Dialog</h1>
+<p>
+  The D3D9 Debug Controls Dialog allows you look at different things while the
+  simulation is running.
+  <br />
+  Such things are for example the highlighting of Meshes or Groups, so their
+  location and look can be easily checked. Looking at a complete scene in
+  wireframe mode might for example help in finding any mesh parts that are not
+  placed correct.
+  <br />
+  The D3D9 Debug Controls Dialog also allows you to change the settings of
+  materials at runtime, so that changes can be 'seen' while changing them.
+  <blockquote>
+    <img title="D3D9 Debug Controls" src="images/D3D9%20Debug%20Controls.png"
+         alt="D3D9 Debug Controls" />
+  </blockquote>
+</p>
+
+<h2 class="brk">Mesh debugger</h2>
+<p>
+  The mesh debugger group contains elements to inspect a mesh. It gives a mesh
+  developer some tools at hand to better inspect a mesh in its 'natural
+  environment', the Orbiter Simulation environment.<br />
+  With the options available in this group one can for example separate
+  individual parts of the shown scene and leave out all the rest, so it might
+  be easier to see what really happens at rendering.<br />
+  Other settings change the environment so that the current lighting
+  conditions do not apply, so when the mesh is currently in the shadowed part
+  of the orbit it can still be seen with some artificial ambient light.<br />
+  For all possibilities, please read the descriptions of the individual GUI-
+  Elements, below.
+</p>
+<ul>
+  <li id="_display">Display</li>
+    <p>
+      This combo box lets you select what parts of a scene is rendered. The
+      possible options are: "Everything", "Selected Visual", "Selected Mesh" or
+      "Selected Group".
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Everything</em></b> will, as the name suggests, display
+      everything. This will show the scene as it will be shown normally when
+      running a Orbiter simulation session.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Selected Visual</em></b> will display only the currently selected
+      visual. Planets and moons for example are excluded.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Selected Mesh</em></b> will display only the currently selected
+      mesh. If for example two vessels are in the complete scene, only one of
+      them will be displayed. All other vessels, planets and moons are
+      excluded.
+      </div>
+      <div style="text-indent:-1em; margin-left:1em">
+      <b><em>Selected Group</em></b> will display only the current selected
+      group. This is often just a "part" of a vessels mesh. All other groups,
+      vessels, planets and moons are excluded.
+      </div>
+    </p>
+  <li id ="_camera">Camera</li>
+    <p>
+      This combo box lets you select the camera-mode. It can be either "Center
+      on visual" or "Wheel Fly/Pan Cam".
+      <br />
+      <b><em>Center on visual</em></b> will select the 'normal' Orbiter camera
+      operations where with pressed right mouse button you can 'drag' the
+      camera around the current selected visual.
+      <br />
+      <b><em>Wheel Fly/Pan Cam</em></b> will select another camera-mode where
+      with pressed left mouse button you can pan the camera left/right or
+      up/down and with the right mouse button pressed it can be 'tilted'.
+    </p>
+  <li>Speed</li>
+    <p>
+      This control lets you change the speed of the camera movements when you
+      are in "Wheel Fly/Pan Cam" camera-mode (see
+      <a href="#_camera">Camera</a>).<br />
+      The value is a kind of 'factor' applied to the movement of the mouse (or
+      the mouse-wheel). It ranges from 1 (being the lowest speed) to 8192
+      (beeing <u>very fast</u>).
+    </p>
+  <li id="_mesh_idx">Mesh Idx</li>
+    <p>
+      This control lets you select one mesh of a multi-mesh vessel by its
+      index. If a vessel consists of a "hull"-mesh and a cockpit-mesh, you will
+      be able to select the two meshes individually by selecting the according
+      mesh index here.
+    </p>
+  <li>Group Idx</li>
+    <p>
+      This control lets you select one group out of the current selected mesh
+      (see <a href="#_mesh_idx">Mesh Idx</a>) of a multi-group mesh by its
+      index. If a mesh consists of multiple groups, you will be able to select
+      the individual groups by selecting the according group index here.
+    </p>
+  <li class="brk">Highlight selected group</li>
+    <p>
+      With this option <b><em>enabled</em></b> the current selected group will
+      be permanently highlighted (green).
+    </p>
+  <li>Highlight selected mesh</li>
+    <p>
+      With this option <b><em>enabled</em></b> the current selected mesh will
+      be permanently highlighted (blue).
+    </p>
+  <li>Add ambient light</li>
+    <p>
+      With this option <b><em>enabled</em></b> the current selected mesh will
+      be lit by artificial ambient light independent of the current 'global'
+      lighting conditions. The mesh is then not only lit from the sun (lighting
+      only parts of the mesh), but from all sides. This also applies to
+      situations when the mesh is usually not lit at all, when on the night
+      (dark) side of an orbit.
+    </p>
+  <li>Dual sided</li>
+    <p>
+      Faces are normally only rendered from one side (the "backside" is kind of
+      completely transparent). With this option <b><em>enabled</em></b> all
+      faces are rendered opaque from both sides.
+      <br />
+      This option might help developers to identify parts of the mesh that are
+      "sticking out" of another mesh-part, that are normally only to be seen
+      from the "inside". A cockpit mesh inside a hull mesh can be for example
+      much bigger than the hull and it will not be easy to find out, cause from
+      the "inside", the hull faces are transparent so the (to big) cockpit mesh
+      can be seen. And from the "outside" the cockpit faces are transparent
+      although "covering" the hull.
+    </p>
+  <li>Wireframe</li>
+    <p>
+      With this option <b><em>enabled</em></b> the scene (or only parts of it,
+      see <a href="#_display">Display</a>) will be rendered as wireframe model.
+      In a wireframe model only the edges (the lines connecting vertices) of
+      the meshes are drawn. This can be helpful to identify 'useless' parts a
+      mesh.
+    </p>
+  <li>Pick</li>
+    <p>
+      The Pick option is one of the most useful tools for selecting materials.
+      With this option <b><em>enabled</em></b> you can just select a material
+      by clicking onto it with the left mouse button.
+      <div style="left:5%; position:relative">
+      <img title="Pick in action" src="images/PickInAction.png"
+           alt="Pick in action"
+           height="300px" />
+      </div>
+      Whenever a material is picked it will light up in green, so it is easy to
+      see which material is chosen. After a material is chosen all the settings
+      in the lower part of the D3D9 Debug Controls Dialog apply to that
+      material.
+    </p>
+</ul>
+
+<h2 class="brk">Bounding geometry</h2>
+<p>
+  The options in this group offers additional rendering of bounding boxes or
+  spheres of individual mesh parts.
+</p>
+<ul>
+  <li>Boxes</li>
+    <p>
+      With this option <b><em>enabled</em></b>, objects of the scene will have
+      their bounding boxes also drawn.
+    </p>
+  <li>Spheres</li>
+    <p>
+      With this option <b><em>enabled</em></b>, objects of the scene will have
+      their bounding spheres drawn. The sphere represents the smallest volume
+      that still fits the complete geometry.
+    </p>
+  <li>Selected group only</li>
+    <p>
+      This is one of three options that let you limit the parts of the mesh
+      that are rendered.
+      With this option <b><em>enabled</em></b>, only the currently selected
+      <b>group</b> will be rendered.
+    </p>
+  <li>Selected mesh only</li>
+    <p>
+      This is the second of three options that let you limit the parts of the
+      mesh that are rendered.
+      With this option <b><em>enabled</em></b>, only the currently selected
+      <b>mesh</b> will be rendered.
+    </p>
+  <li>Selected visual only</li>
+    <p>
+      This is the third of the three options that let you limit the parts of
+      the mesh that are rendered.
+      With this option <b><em>enabled</em></b>, only the currently selected
+      <b>visual</b> (vessel mesh) will be rendered.
+    </p>
+</ul>
+
+<h2>Misc.</h2>
+<p>
+  This group contains some debugging options to assist on more severe problems
+  or let you see the current environment, that is used for the environment
+  mapping feature of the D3D9Client.
+</p>
+<ul>
+  <li>Tile debugger</li>
+    <p>
+      Client development utility/debugger. Unimportant from user point of view.
+    </p>
+  <li>Identify RTC</li>
+    <p>
+      Identifies GDI - Render Target conflicts by flashing surfaces in red and
+      yellow. These conflicts can cause a major framerate impact.
+    </p>
+  <li>Display env mapping</li>
+    <p>
+      With this option <b><em>enabled</em></b> the environment mapping "box"
+      will be displayed as a flattened box. This will become a cross-like area
+      that shows the environment of each of the sides of that "virtual box".
+      <br />
+      This box can be imagined as a box with mirror-surfaces which show the
+      environment the face of the box 'sees'
+    </p>
+  <li>FPS Limiter</li>
+    <p>
+      With this option <b><em>enabled</em></b> a frames per second limiter is
+      enabled that will limit the number of frames that will be rendered per
+      time interval (per second that is). Limiter FPS value is set using
+      D3D9Client.cfg
+      <br />
+      This feature is created to reduce unnecessary GPU/CPU load. Not to
+      produce a stable frame rate. Improper setting can cause extreme tearing
+      on the screen. Setting the frame rate limiter to 200fps usually works
+      pretty well. It is recommended to use vertical sync feature from a video
+      tab instead of this.
+    </p>
+
+</ul>
+
+<h2 id="_material_x">Material 'X'</h2>
+<p>
+  This group contains all the elements that enable you to tweak the different
+  parameter of materials.
+</p>
+<ul>
+  <li>Dissolve effect</li>
+  <p>
+    This field is used to select a special effect texture for dissolve effect.
+  </p>
+  <li>Material property</li>
+    <dl>
+      <dt><b>Diffuse</b></dt>
+      <dd>
+        Defines diffuse material color [RGBA]. Texture is modulated with this
+        color. The range for every property in this section is [0.0 to 1.0]
+        unless otherwise noted.
+      </dd>
+      <dt><b>Ambient</b></dt>
+      <dd>
+        Defines ambient material color [RGB].
+      </dd>
+      <dt><b>Specular</b></dt>
+      <dd>
+        Defines specular material color [RGBP]. The last field is a specular
+        power from [0.0 to 1000.0].
+      </dd>
+      <dt><b>Emissive</b></dt>
+      <dd>
+        Defines emissive material color [RGB].
+      </dd>
+      <dt><b>Reflect</b></dt>
+      <dd>
+        Defines reflection color [RGB] for a metallic (mirror a-like)
+        reflection which intensity is independent from a viewing angle. This is
+        also used to define minimum reflection offset for a fresnel reflection.
+        Due to some implementation problems a non-zero value must be entered to
+        enable fresnel reflections. For a mirror like reflections a typical
+        range is [0.0 to 1.0] and for a fresnel reflections a typical range is
+        [0.05 to 0.2].
+      </dd>
+      <dt><b>Dissolve</b></dt>
+      <dd>
+        Dissolve is an experimental technique that can be used to create blurry
+        or noisy reflections. Currently it can be only applied to non-normal
+        mapped surface that has a texture. It would be possible to use a
+        screen-space coordinates to create a similar effect to a non-textured
+        materials as well. The first field is the effect scale factor (i.e.
+        particle size). The second field is the effect strength. If either
+        parameter is zero the effect will be disabled. This property requires
+        dissolve effect texture.
+      </dd>
+      <dt><b>Fresnel</b></dt>
+      <dd>
+        The first field in fresnel parameters is a power value. A typical range
+        for the power is [2.5 to 4.5]. The power value will effect in a viewing
+        angle dependency of the reflection. The second field is a multiplier.
+        It will define a maximum reflection intensity when viewed from a
+        shallow angle. This value must be zero to disable fresnel reflections
+        otherwise a typical range is [0.8 to 0.95].
+      </dd>
+    </dl>
+  <li>(4) Channel values &amp; Slider</li>
+  <p>
+    Meaning of the fields will depend about the selected material property.
+    See properties from above.
+  </p>
+  <li>Copy &amp; Paste</li>
+  <p>
+    Copy and paste buttons can be used to copy [RGB] values from different
+    material properties for an example from specular color to reflect color.
+  </p>
+  <li>Link channels</li>
+  <p>
+    The link checkbox allows the link the R, G and B fields and after that
+    they can be adjusted simultaneously with the slider.
+  </p>
+  <li>Use specular color</li>
+  <p>
+    Not implemented.
+  </p>
+</ul>
+
+<h2>Save materials (<i>Button</i>)</h2>
+<p>
+  The <b><em>save materials</em></b> button in the "D3D9 Debug Controls" Dialog
+  does just that: it saves the materials ;)
+  <br />
+  Once you are happy with the result you have adjusted in the
+  <a href="#_material_x">Material 'X'</a> group, click on "save materials" and
+  the changed material specifications will be saved in the
+  <code>Config\GC\</code> folder of your Orbiter installation.
+  <br />
+  Then of course you can tweak these file(s) in <code>Config\GC\</code> folder
+  with notepad etc.
+  <br />
+  So next time you fly with a ship of the same class it will have the
+  properties, you have defined or changed, applied.
+  <br />
+  If you want to have the "default" look back, just delete the according file
+  from that folder (e.g. <code>Config\GC\DeltaGlider.cfg</code>) and the
+  standard Orbiter appearance will be restored.
+  <br />
+  The install ZIP of D3D9Client contains some of those files already, that
+  contain some nice "advanced looks" for some of the standard vessels. You can
+  always take those and place it back into that folder to get the
+  "D3D9-Default" look.
+</p>
+
+
+<hr />
+<!-- ====================================================================== -->
+<h1>Graphic Controls Dialog</h1>
+<p>
+  The Graphic Controls Dialog allows you tweak and modify scene rendering
+  settings for specific <a href="#_post_processing">Post Processing</a>
+  configurations while the simulation is running.
+  <blockquote>
+    <img title="Graphic Controls" src="images/Graphic%20Controls.png"
+         alt="Graphic Controls" />
+  </blockquote>
+</p>
+<!--
+<ul>
+  <li>a</li><p>
+    ToDo...
+  </p>
+  <li>b</li><p>
+    ToDo...
+  </p>
+</ul>
+-->
+
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Base Configuration settings</h1>
+<p>
+  The D3D9Client allows you to to configure some more details when settings up
+  runway lights.
+  <br />
+  Additionally to the parameters that Orbiter itself defines (see
+  <em>Doc\OrbiterConfig.pdf</em> for further details) there are some extra
+  parameters you can define.
+  <br />
+  For a better understanding how some of those parameters will affect the
+  rendering of the runway lights this image might help:
+  <blockquote>
+    <img title="Runway lights" src="images/rwylights.png" alt="Runway lights"/>
+  </blockquote>
+</p>
+
+<div style="text-decoration:underline;font-weight:bold;">&lt;RUNWAYLIGHTS&gt;</div>
+<ul>
+  <li><strong>&lt;END1 V&gt;</strong></li>
+    <p>
+      First end point of runway (center line).
+    </p>
+  <li><strong>&lt;END2 V&gt;</strong></li>
+    <p>
+      Second end point of runway (center line).
+    </p>
+  <li><strong>&lt;WIDTH F&gt;</strong></li>
+    <p>
+      Runway width (m)
+      <br />
+      Note: Two different light configurations exists (wide&gt;59m) and
+      (narrow&lt;59m)
+    </p>
+  <li class="brk"><strong>&lt;PAPI F F F I I&gt;</strong></li>
+    <p>
+      Precision Approach Path Indicator (PAPI).<br />
+      Parameters:<br />
+      Designated approach angle (deg)<br />
+      Approach cone aperture (deg)<br />
+      Offset of PAPI location from runway endpoints. (m)<br />
+      PAPI Mode (int:0-3) (this is optional parameter)<br />
+      PAPI runway end point (int: 0-1) (if this parameter is not defined then
+      PAPI is added in both ends)<br />
+      <br />
+      PAPI Modes:<br />
+      0: On center line<br />
+      1: On left side<br />
+      2: On right side<br />
+      3 or none: On both sides<br />
+      <br />
+      PAPI Endpoint:<br />
+      0: PAPI lights added to END1 only<br />
+      1: PAPI lights added to END2 only<br />
+      Not Defined: PAPI lights added in both ends<br />
+      <br />
+      Note: Runwaylights can have 12 PAPI lights. Orbiter's inline engine will
+      ignore the last parameter. If more than one PAPI entries exists in the
+      runwaylights the inline engine will only use the last one.
+    </p>
+  <li><strong>&lt;VASI F F F I&gt;</strong></li>
+    <p>
+      Visual Approach Slope Indicator (VASI).<br />
+      Parameters:<br />Designated approach angle (deg)<br />
+      Distance between white and red indicator lights (m)<br />
+      Offset of VASI (red bar) location from runway endpoints (m)<br />
+      VASI runway end point (int: 0-1) (if not defined then VASI is added in
+      both ends)<br />
+      <br />
+      Note: Runwaylights can have 2 VASI lights.
+    </p>
+  <li><strong>&lt;TD_DISP F&gt;</strong></li>
+    <p>
+      Touch Down displacement (m). (default: 0m)<br />
+      Displacement between runway endpoint and the green line.
+    </p>
+  <li><strong>&lt;TD_DISP2 F&gt;</strong></li>
+    <p>
+      Touch Down displacement for the other end of the runway (m).
+      (default: 0m)<br />
+      Displacement between runway endpoint and the green line. If this value
+      isn't specified then TD_DISP is used for both ends of the runway.
+    </p>
+  <li><strong>&lt;TD_LENGTH F&gt;</strong></li>
+    <p>
+      Length of the Touchdown zone (m). (default: 600m)<br />
+      Two columns of lights on a runway each containing 3 parallel lights.
+    </p>
+  <li><strong>&lt;DECISION_DIST F&gt;</strong></li>
+    <p>
+      Length of the "red lights" zone (m). (default: 257m)<br />
+      This zone contains 2 x 3 x 9 red lights and the spacing between lights
+      will depend about the length of the zone. The touchdown zone will use the
+      same spacing about 30m.
+    </p>
+  <li class="brk"><strong>&lt;APPROACH_START F&gt;</strong></li>
+    <p>
+      Length of the approach lights from the green line (m).
+      (default: 900m)<br />
+      It's the long column of 5 parallel lights.
+    </p>
+  <li><strong>&lt;SINGLEENDED&gt;</strong></li>
+    <p>
+      If the singleended keyword is defined then the lights are only rendered
+      when approaching a runway from END1 towards END2. If you want a
+      asymmetric runwaylights then you need two runwaylight sections in a base
+      configuration file.
+    </p>
+  <li><strong>&lt;CATEGORY&gt;</strong></li>
+    <p>
+      Defines the category of runway lights. 1 = SSALR, 2 = ALSF-II, If this
+      value isn't specified then the category is automatically selected based
+      on a runway width. ALSF-II is used if the width is greater than 59m.
+    </p>
+</ul>
+
+<p>
+  Example of runway lights for KSC:
+</p>
+<blockquote style="background-color:silver; font-size:9pt; padding:10px; width:100%">
+<pre>RUNWAYLIGHTS
+  END1 -8220 -3 -600
+  END2 -12670 -12 -3155
+  WIDTH 100
+  PAPI 5.0 3.0 257 3      ; both sides of the green line, in both ends
+  PAPI 20.0 3.0 -2000 0 0 ; on a center line 2km before rwy in END 1
+  PAPI 20.0 3.0 -2000 3 1 ; both sides of center line, 2km before rwy, in END 2
+  VASI 1.5 152 671
+  TD_DISP 257
+  TD_LENGTH 600
+  DECISION_DIST 257
+  APPROACH_START 900
+END</pre>
+</blockquote>
+
+<hr />
+<!-- ====================================================================== -->
+<h1 class="brk">Advanced Texture Maps</h1>
+<p>
+  Additional texture maps can be automatically assigned for a mesh simply by
+  placing additional textures into a texture folder. Additional textures are
+  identified by using an identifier in the end of the textures name like
+  "dgmk4_1_bump.dds" where "dgmk4_1.dds" is the name of the base texture.
+</p>
+<p>
+  A fully specified texture set could for example consist of these files:
+  <pre>
+    cube.dds       &lt;= 'base' texture
+    cube_bump.dds  &lt;= 'advanced texture Bump-map'
+    cube_spec.dds  &lt;= 'advanced texture Specular-map'
+    cube_emis.dds  &lt;= 'advanced texture Emission-map'
+    cube_refl.dds  &lt;= 'advanced texture Reflection-map'
+  </pre>
+</p>
+<p>
+  Available identifiers are:<br />
+</p>
+<ul>
+  <li id="_norm"><strong>&lt;_norm&gt;</strong></li>
+    <p>
+      Tangent space normal map and the valid formats are:
+      <table>
+        <tr><td>&lt;R8G8B8&gt;</td>
+            <td>3-bytes per pixel. Best quality (uncompressed)</td></tr>
+        <tr><td>&lt;V8U8&gt;</td>
+            <td>2-bytes per pixel. Good quality (uncompressed)</td></tr>
+        <tr><td>&lt;DXT1&gt;</td>
+            <td>1-byte per pixel. Bad quality (compressed)</td></tr>
+      </table>
+    </p>
+    <p>
+      <strong style="color:red">Note:</strong>
+      The configuration of this (<em>_norm</em>) identifier is ignored if a
+      <em>_bump</em> configuration is also found. However, the <em>_norm</em>
+      configuration is the preferred one that should be used when you have the
+      choice (see also <a href="#_bump">_bump</a>).
+    </p>
+  <li id="_spec"><strong>&lt;_spec&gt;</strong></li>
+    <p>
+      Specular map controls a specular reflection in per pixel basis.
+      Alpha channel is containing a specular power setting. Value 255 is mapped
+      to maximum matarial defined power and 0 is mapped to 0.0. Specular map is
+      modulated by specular material color. Valid formats are &lt;R8G8B8A8&gt;,
+      &lt;DXT3&gt; or &lt;DXT5&gt;.
+    </p>
+  <li id="_bump"><strong>&lt;_bump&gt;</strong></li>
+    <p style="margin-bottom:5px">
+      Bump maps are also supported by the D3D9Client. They are automatically
+      converted into normal maps during loading of bump maps (see note).<br />
+      The <b>recommended</b> formats are &lt;A8&gt; and &lt;L8&gt;:
+      <table>
+        <tr><td>&lt;A8&gt;</td><td>1-byte per pixel alpha</td></tr>
+        <tr><td>&lt;L8&gt;</td><td>1-byte per pixel luminance</td></tr>
+      </table>
+      <br />
+      From the <b>not recommended</b> multi-channel textures only the <b>red</b>
+      channel is used;<br />They are:
+      <table>
+        <tr><td>&lt;R8B8G8&gt;</td>
+            <td>3-bytes per pixel (only red is used anyway</td></tr>
+        <tr><td>&lt;DXT1&gt;</td>
+            <td>1-byte per pixel compressed</td></tr>
+        <tr><td>&lt;R16F&gt;</td>
+            <td>2-bytes per pixel (might work, not tested!)</td></tr>
+      </table>
+    </p>
+    <p>
+      <strong style="color:red">Note:</strong>
+      The configuration using the (<em>_bump</em>) identifier will overwrite
+      any <em>_norm</em> configuration in case both identifiers are found. The
+      <em>_norm</em> configuration is however the one that should be used when
+      you have the choice (see also <a href="#_norm">_norm</a>).
+    </p>
+  <li class="brk"><strong>&lt;_emis&gt;</strong></li>
+    <p>
+      Currently emission map works more like a light map and the simplified
+      equation is:
+      <pre style="font-size:9pt;">pixel_color.rgb = texture.rgb * clamp(emission_map.rgb +
+                                      sun_light.rgb + local_lights.rgb)</pre>
+      Alpha channel is ignored therefore the recommended formats are
+      &lt;R8G8B8&gt; or &lt;DXT1&gt;.<br />
+      The exact implementation would require some discussion with an add-on
+      developers to define the function for the emission map. An other
+      possibility is:
+      <pre style="font-size:9pt;">pixel_color.rgb = texture.rgb * clamp(sun_light.rgb + local_lights.rgb)
+                + emission_map.rgb</pre>
+      Of course, the clamp function can be changed to a different kind of
+      color curve manipulation function to control contrast and lightness.
+    </p>
+      <li><strong>&lt;_refl&gt;</strong></li>
+    <p>
+      Reflection map controls material reflectivity and color in a per pixel
+      basis. Fresnel reflection works independently from a reflection map.
+      However, a zero (black) reflection map value will mask off the fresnel
+      reflections as well. A non zero value will apply full fresnel reflections
+      for that pixel. Only [RGB] channels from a texture are used.
+    </p>
+      <li><strong>&lt;_transl&gt;</strong></li>
+    <p>
+      Translucence map controls the material translucency on a per pixel basis.
+      The texture behaves much like a diffuse texture, except that it is
+      illuminated from behind. Illumination is based on the angle of the sun
+      relative to the surface; if the sun is directly behind the surface, the
+      illumination is strong, and if the sun is at a low angle but still behind
+      the surface, the illumination is dim. If the sun begins to illuminate the
+      surface from in front, the translucence effect is no longer visible.
+      <br />
+      Only [RGB] channels from a texture are used.
+    </p>
+      <li><strong>&lt;_transm&gt;</strong></li>
+    <p>
+      Transmittance map controls the amount of light that passes through a
+      translucent material without being diffused. The effect is very similar
+      to a specular reflection, except that it simulates the bright spot on a
+      semi-transparent material that is directly between the sun and the
+      observer.<br />
+      The [RGBA] channels from a texture are used. The RGB channels provide
+      color and brightness, while the alpha channel changes the size of the
+      bright spot. This is analogous to how the <a href="#_spec">specular map</a>
+      is used.
+    </p>
+</ul>
+<br />
+<p>
+  Note, that not all objects support all advanced texture maps:
+  <table style="text-align:center">
+    <thead style="background-color:silver">
+      <td style="background-color:silver">Type</td>
+      <td style="background-color:silver">Identifier&emsp;</td>
+      <td style="background-color:silver">Vessel</td>
+      <td style="background-color:silver">Base</td>
+      <td style="background-color:silver">Planetary Surface</td>
+    </thead>
+    <tr><td style="background-color:silver;text-align:left">Bump-map</td><td><tt>_bump</tt></td><td style="color:green">supported</td><td style="color:green">supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Specular-map</td><td><tt>_spec</tt></td><td style="color:green">supported</td><td style="color:green">supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Emission-map</td><td><tt>_emis</tt></td><td style="color:green">supported</td><td style="color:green">supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Reflection-map</td><td><tt>_refl</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Translucence-map</td><td><tt>_transl</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
+    <tr><td style="background-color:silver;text-align:left">Transmittance-map</td><td><tt>_transm</tt></td><td style="color:green">supported</td><td style="color:red">not supported</td><td style="color:red">not supported</td></tr>
+  </table>
+</p>
+
+<!-- not (yet) in BETA
+<hr />
+ ======================================================================
+<h1 class="brk" id="_terrain_flattening">Terrain Flattening definitions</h1>
+<p>
+  With the planetary elevation model, some areas of a planet (or moon) might not
+  be perfectly "flat" and make it hard for some vessels to stand upright for
+  example.<br />
+  With the "terrain flattening" feature enabled, one can define specific regions
+  to be modified.<br />
+  <br />
+  <strong>.flt</strong>-files for a planet (or moon) must be placed in a
+  <tt>Flat</tt> folder in the bodies texture-folder:
+  <tt>/Textures/&lt;planet&gt;/Flat</tt>).<br />
+  There can be multiple <strong>.flt</strong>-files in each folder, so different
+  add-ons should be able to co-exist.
+  <br />
+  In every <strong>.flt</strong>-file, one or more of the following line entries are parsed:
+  <blockquote style="background-color:silver; font-size:normal; padding:10px; width:100%">
+  <pre style="margin-bottom:0; margin-top:0">ELLIPSE &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;major&gt; &lt;minor&gt; &lt;phi&gt; &lt;falloff&gt;
+// or
+RECT &lt;height&gt; &lt;lng&gt; &lt;lat&gt; &lt;length&gt; &lt;width&gt; &lt;phi&gt; &lt;falloff&gt;</pre>
+  </blockquote>
+
+  <ul>
+    <li class="nodeco">Lines that start with double-slashes (//) are treated as
+      comments</li>
+    <li class="nodeco"><strong>&lt;height&gt;</strong> [Integer]
+      in meter, supposedly w.r.t. mean sphere radius.<br />
+      Height values are altitude (in meters) relative to mean surface level.
+      For Earth for example, a value of 8 means "8 meters above mean sea level"
+      (MSL).<br />
+      To get a starting value for &lt;height&gt;, one can use the altitude
+      value provided by "Surface MFD".
+    </li>
+    <li class="nodeco"><strong>&lt;lng&gt;</strong> &amp;
+                       <strong>&lt;lat&gt;</strong> [Float]
+      longitude and latitude coordinates, as defined in e.g. base configuration
+      file</li>
+    <li class="nodeco"><strong>&lt;major&gt;</strong> &amp;
+                       <strong>&lt;minor&gt;</strong> [Integer]
+      are ellipse major and minor radius in meter,<br />
+      &lt;minor&gt; defaults to &lt;major&gt; if not defined<br />
+      - the meter definition might not be exact, as it uses a decimal degree
+      guess at the latitude circle</li>
+    <li class="nodeco"><strong>&lt;length&gt;</strong> &amp;
+                       <strong>&lt;width&gt;</strong> [Integer]
+      are rectangle length and width in meter,<br />
+      &lt;width&gt; defaults to &lt;length&gt; if not defined<br />
+      - meter definition same as above</li>
+    <li class="nodeco"><strong>&lt;phi&gt;</strong> [Float]
+      is a rotation angle in degrees from the equator, with &lt;major&gt; and
+      &lt;length&gt; being parallel to the equator</li>
+    <li class="nodeco"><strong>&lt;falloff&gt;</strong> [Integer]
+      is the percentage value (e.g. 50 for 50%) of the shape radius where
+      transparent merging with original height is done</li>
+  </ul>
+  <ul>
+    <li class="nodeco"><strong>ELLIPSE</strong> is defined with the midpoint
+      at &lt;lng&gt;/&lt;lat&gt;, &lt;major&gt; axis radius in meter,
+      &lt;minor&gt; axis radius in meter,<br />
+      &lt;phi&gt; rotation 0-90&deg; tilted major axis,
+      flattened to &lt;height&gt; in meter
+      with &lt;falloff&gt; percent (of full radius seen from edge of shape)
+      gradual transparency merging with actual height.
+      Only the first 4 parameters are necessary,
+      &lt;minor&gt; defaults to &lt;major&gt;, the rest to zero.</li>
+    <li class="nodeco"><strong>RECT</strong>ANGLE is with midpoint at
+      &lt;lng&gt;/&lt;lat&gt;, &lt;length&gt; and &lt;width&gt; in meter,<br />
+      tilted with &lt;phi&gt; 0-90&deg;,
+      flattened to &lt;height&gt; in meter
+      with &lt;falloff&gt; percent (of full radius seen from edge of shape)
+      gradual transparency merging with actual height.
+      Only the first 4 parameters are necessary,
+      &lt;width&gt; defaults to &lt;length&gt;, the rest to zero.</li>
+    <li class="nodeco">Shapes are loaded in order of file and line position,
+      last shapes overriding first.</li>
+    <li class="nodeco">Shapes are preprocessed into a cascaded map, creating a
+      GBody->level->ilat->ilng database. Whenever a shape touches a given path
+      (so it has multiple paths due to higher levels), it is within that tile
+      and will be taken into account.
+      If a shape's tile contribution is below pixel size, it will not land in
+      the path.</li>
+    <li class="nodeco">The filter function will check the database, then do the
+      drawing algorithm for all shapes in the path's list.</li>
+  </ul>
+
+  <p class="brk">
+    <strong style="color:red">Notes:</strong>
+    <ul>
+      <li class="nodeco">The resolution of the flattening shapes is only as
+      	high as the tiles they operate on. I.e.: if you have low resolution
+      	terrain, too small shapes could be invisible or distorted.</li>
+      <li class="nodeco">When in doubt about terrain resolution, start with a
+      	large area (2 or 3 km) and lower it until you get a good results.</li>
+      <li class="nodeco">Terrain interpolation mode (linear, cubic) will impact
+        the results.</li>
+      <li class="nodeco">The shape keywords are case-insensitive. Using UPPERCASE
+        however is recommended.</li>
+      <li class="nodeco">All lines that are not recognized as a valid shape
+      	configuration (<strong>ELLIPSE</strong>- rsp. <strong>RECT</strong>-line)
+      	will be ignored (as if they are comment lines). It is however recommended
+      	to only use the double-slashes (//) to start comment lines.</li>
+    </ul>
+  </p>
+
+  <p>
+    Example of a <strong>.flt</strong>-file <tt>/Textures/Moon/Flat/test.flt</tt>
+  </p>
+  <blockquote style="background-color:silver; font-size:9pt; padding:10px; width:100%">
+  <pre>// *** Example Terrain Flattening .flt file ***
+ELLIPSE -2700 -32.6  +41.5  2500
+ELLIPSE -2600 -32.6  +41.5  1700
+ELLIPSE -2700 -32.6  +41.5  1500
+RECT    -2700 -32.6  +41.47 3400 2400
+ELLIPSE -2600 -32.55 +41.46 250
+ELLIPSE -2600 -32.65 +41.46 250</pre>
+</blockquote>
+
+  <p>
+    Another example of a <strong>.flt</strong>-file <tt>/Textures/Earth/Flat/Cape1.flt</tt>
+  </p>
+  <blockquote style="background-color:silver; font-size:9pt; padding:10px; width:100%">
+  <pre>;; LC11
+Ellipse 7 -80.5405960 28.4752030 1000 1000 0 20
+;; LC12
+Ellipse 7 -80.5430260 28.4805330 1000 1000 0 20
+;; LC13
+Ellipse 7 -80.5454560 28.4857930 1000 1000 0 20
+;; LC14
+Ellipse 7 -80.5478960 28.4910830 1000 1000 0 20</pre>
+  </blockquote>
+  <blockquote style="padding:10px; width:100%">...for the Atlas pads on Cape Canaveral
+  	(We have good resolution there &amp; it also demonstrates that invalid lines
+  	will be treated as comments - although not recommended).
+  </blockquote>
+-->
+</body>
+</html>
