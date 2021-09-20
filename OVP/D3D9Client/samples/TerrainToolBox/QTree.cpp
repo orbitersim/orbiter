@@ -1,3 +1,7 @@
+// ==================================================================
+// Copyright (c) 2021 Jarmo Nikkanen
+// Licensed under the MIT License
+// ==================================================================
 
 #include "OrbiterAPI.h"
 #include "QTree.h"

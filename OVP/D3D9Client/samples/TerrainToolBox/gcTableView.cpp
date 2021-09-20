@@ -1,4 +1,7 @@
-
+// ==================================================================
+// Copyright (c) 2021 Jarmo Nikkanen
+// Licensed under the MIT License
+// ==================================================================
 
 #include "gcPropertyTree.h"
 #include <sstream>
@@ -773,13 +776,13 @@ void gcPropertyTree::SetValue(HPROP hEntry, double val, int digits, Format st)
 		if (x > 1e9) val /= 1e6, u = "G";
 		else if (x > 1e6) val /= 1e6, u = "M";
 		else if (x > 1e3) val /= 1e3, u = "k";
-		if (x < 1e-6) val /= 1e-6, u = "µ";
+		if (x < 1e-6) val /= 1e-6, u = "Âµ";
 		else if (x < 1e-3) val /= 1e-3, u = "m";	
 		oss << val << u;
 	}
 
-	if (st == LATITUDE) if (val < 0) oss << fabs(val*DEG) << "°S"; else oss << val*DEG << "°N";
-	if (st == LONGITUDE) if (val < 0) oss << fabs(val*DEG) << "°W"; else oss << val*DEG << "°E";
+	if (st == LATITUDE) if (val < 0) oss << fabs(val*DEG) << "Â°S"; else oss << val*DEG << "Â°N";
+	if (st == LONGITUDE) if (val < 0) oss << fabs(val*DEG) << "Â°W"; else oss << val*DEG << "Â°E";
 	if (st == NORMAL) oss << val;
 
 	hEntry->val = oss.str();

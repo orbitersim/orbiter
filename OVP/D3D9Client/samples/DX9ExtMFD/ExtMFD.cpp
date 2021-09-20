@@ -1,8 +1,7 @@
+// ==============================================================          
+// Copyright (C) 2006 Martin Schweiger
+// Licensed under the MIT License
 // ==============================================================
-//                  ORBITER MODULE: ExtMFD
-//                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
-//                   All rights reserved
 //
 // ExtMFD.cpp
 //

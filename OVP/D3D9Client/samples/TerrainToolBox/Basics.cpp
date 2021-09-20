@@ -1,9 +1,7 @@
-// =================================================================================================================================
-//
-// Copyright (c) 2020 Jarmo Nikkanen
-// All rights reserved
-// 
-// =================================================================================================================================
+// ==================================================================
+// Copyright (c) 2021 Jarmo Nikkanen
+// Licensed under the MIT License
+// ==================================================================
 
 
 #include <Windows.h>
@@ -28,10 +26,10 @@ extern ToolKit *g_pTK;
 string LngLat(Position p)
 {
 	string s;
-	if (p.lng < 0) s = std::to_string(-p.lng*DEG) + "캷  ";
-	else s = std::to_string(p.lng*DEG) + "캞  ";
-	if (p.lat < 0) s += std::to_string(-p.lat*DEG) + "캳";
-	else s += std::to_string(p.lat*DEG) + "캮";
+	if (p.lng < 0) s = std::to_string(-p.lng*DEG) + "째W  ";
+	else s = std::to_string(p.lng*DEG) + "째E  ";
+	if (p.lat < 0) s += std::to_string(-p.lat*DEG) + "째S";
+	else s += std::to_string(p.lat*DEG) + "째N";
 	return s;
 }
 

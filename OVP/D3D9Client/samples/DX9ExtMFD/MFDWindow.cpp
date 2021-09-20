@@ -1,13 +1,6 @@
-// ==============================================================
-//                  ORBITER MODULE: ExtMFD
-//                  Part of the ORBITER SDK
-//            Copyright (C) 2006 Martin Schweiger
-//                   All rights reserved
-//
-// MFDWindow.cpp
-//
-// Class implementation for MFDWindow. Defines the properties and
-// state of an MFD display in a dialog box
+// ==============================================================          
+// Copyright (C) 2006 Martin Schweiger
+// Licensed under the MIT License
 // ==============================================================
 
 #include "MFDWindow.h"
