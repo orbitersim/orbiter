@@ -235,7 +235,7 @@ SURFHANDLE VirtualCockpit::CreateHUDSurface (const VCHUDSPEC *spec, COLORREF col
 {
 	const int HUDSIZE = g_pOrbiter->Cfg()->CfgInstrumentPrm.PanelMFDHUDSize;
 	if (!hud.surf) {
-		hud.surf = gc->clbkCreateSurfaceEx (HUDSIZE, HUDSIZE, OAPISURFACE_SKETCHPAD);
+		hud.surf = gc->clbkCreateSurfaceEx (HUDSIZE, HUDSIZE, OAPISURFACE_SKETCHPAD | OAPISURFACE_TEXTURE);
 	}
 	memcpy (&hud.spec, spec, sizeof (VCHUDSPEC));
 	return hud.surf;

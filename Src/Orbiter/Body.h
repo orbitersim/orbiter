@@ -31,6 +31,7 @@ public:
 	virtual int Type() const { return OBJTP_GENERIC; }
 
 	inline char *Name() const { return name; }
+	inline const char* FileName() const { return filename; }
 
 	virtual const void *GetParam (DWORD paramtype) const { return 0; }
 
@@ -177,6 +178,7 @@ protected:
 	void Setup ();       // initialise body with default params
 
 	char *name;          // object name
+	char *filename;	
 
 	Vector rpos_base, rpos_add; // base and incremental parts of rpos
 	Vector rvel_base, rvel_add; // base and incremental parts of rvel

@@ -1480,6 +1480,58 @@ int OrbiterGraphics::clbkMeshMaterial (DEVMESHHANDLE hMesh, DWORD matidx, MATERI
 	return 0;
 }
 
+int OrbiterGraphics::clbkSetMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, const oapi::FVECTOR4* in)
+{
+	Mesh* mesh = (Mesh*)hMesh;
+	DWORD nmat = mesh->nMaterial();
+	if (matidx >= nmat) return 4; // "index out of range"
+	D3DMATERIAL7* meshmat = mesh->GetMaterial(matidx);
+	switch (mat) {
+	case MatProp::Diffuse:
+		meshmat->diffuse = *((D3DCOLORVALUE*)in);
+		return 0;
+	case MatProp::Ambient:
+		meshmat->ambient = *((D3DCOLORVALUE*)in);
+		return 0;
+	case MatProp::Specular:
+		meshmat->specular = *((D3DCOLORVALUE*)in);
+		meshmat->specular.a = 0.0f;
+		meshmat->power = ((D3DCOLORVALUE*)in)->a;
+		return 0;
+	case MatProp::Light:
+		meshmat->emissive = *((D3DCOLORVALUE*)in);
+		return 0;
+	}
+	return 5;
+}
+
+// ==============================================================
+
+int OrbiterGraphics::clbkMeshMaterialEx(DEVMESHHANDLE hMesh, DWORD matidx, MatProp mat, oapi::FVECTOR4* out)
+{
+	Mesh* mesh = (Mesh*)hMesh;
+	DWORD nmat = mesh->nMaterial();
+	if (matidx >= nmat) return 4; // "index out of range"
+	D3DMATERIAL7* meshmat = mesh->GetMaterial(matidx);
+
+	switch (mat) {
+	case MatProp::Diffuse:
+		*((D3DCOLORVALUE*)out) = meshmat->diffuse;
+		return 0;
+	case MatProp::Ambient:
+		*((D3DCOLORVALUE*)out) = meshmat->ambient;
+		return 0;
+	case MatProp::Specular:
+		*((D3DCOLORVALUE*)out) = meshmat->specular;
+		((D3DCOLORVALUE*)out)->a = meshmat->power;
+		return 0;
+	case MatProp::Light:
+		*((D3DCOLORVALUE*)out) = meshmat->emissive;
+		return 0;
+	}
+	return 5;
+}
+
 // ==============================================================
 
 bool OrbiterGraphics::clbkSetMeshProperty (DEVMESHHANDLE hMesh, DWORD property, DWORD value)

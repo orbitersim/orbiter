@@ -32,6 +32,7 @@
 #include "meshres.h"
 #include "meshres_vc.h"
 #include "meshres_p0.h"
+#include "DrawAPI.h"
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
@@ -655,8 +656,8 @@ bool DeltaGlider::RedrawPanel_ScramTempDisp (SURFHANDLE surf)
 	int i, j, x0, y0, dx, dy;
 	bool isVC = (oapiCockpitMode() == COCKPIT_VIRTUAL);
 
-	HDC hDC = oapiGetDC (surf);
-	SelectObject (hDC, g_Param.pen[0]);
+	oapi::Sketchpad *pSkp = oapiGetSketchpad(surf);
+	pSkp->SetPen(g_Param.pen[0]);
 	for (j = 0; j < 3; j++) {
 		for (i = 0; i < 2; i++) {
 			T = ssys_scram->Temp (i, j);
@@ -664,11 +665,10 @@ bool DeltaGlider::RedrawPanel_ScramTempDisp (SURFHANDLE surf)
 			dx = (int)(rad*sin(phi)), dy = (int)(rad*cos(phi));
 			x0 = (isVC ? 20 : 22-j) + i*43;
 			y0 = 19+j*46;
-			MoveToEx (hDC, x0, y0, NULL); LineTo (hDC, x0+dx, y0-dy);
+			pSkp->MoveTo (x0, y0); pSkp->LineTo (x0+dx, y0-dy);
 		}
 	}
-	SelectObject (hDC, GetStockObject (BLACK_PEN));
-	oapiReleaseDC (surf, hDC);
+	oapiReleaseSketchpad (pSkp);
 	return true;
 }
 
@@ -832,7 +832,8 @@ void DeltaGlider::SetDamageVisuals ()
 	}
 }
 
-void DeltaGlider::DrawNeedle (HDC hDC, int x, int y, double rad, double angle, double *pangle, double vdial)
+/* Not it use 
+void DeltaGlider::DrawNeedle (oapi::Sketchpad *pSkp, int x, int y, double rad, double angle, double *pangle, double vdial)
 {
 	if (pangle) { // needle response delay
 		double dt = oapiGetSimStep();
@@ -841,11 +842,11 @@ void DeltaGlider::DrawNeedle (HDC hDC, int x, int y, double rad, double angle, d
 		*pangle = angle;
 	}
 	double dx = rad * cos(angle), dy = rad * sin(angle);
-	SelectObject (hDC, g_Param.pen[1]);
-	MoveToEx (hDC, x, y, 0); LineTo (hDC, x + (int)(0.85*dx+0.5), y - (int)(0.85*dy+0.5));
-	SelectObject (hDC, g_Param.pen[0]);
-	MoveToEx (hDC, x, y, 0); LineTo (hDC, x + (int)(dx+0.5), y - (int)(dy+0.5));
-}
+	pSkp->SetPen (g_Param.pen[1]);
+	pSkp->MoveTo (x, y); pSkp->LineTo (x + (int)(0.85*dx+0.5), y - (int)(0.85*dy+0.5));
+	pSkp->SetPen (g_Param.pen[0]);
+	pSkp->MoveTo (x, y); pSkp->LineTo (x + (int)(dx+0.5), y - (int)(dy+0.5));
+}*/
 
 void DeltaGlider::InitVCMesh()
 {
@@ -1598,9 +1599,9 @@ DLLCLBK void InitModule (HINSTANCE hModule)
 	g_Param.hDLL = hModule;
 	oapiRegisterCustomControls (hModule);
 
-	// allocate GDI resources
-	g_Param.pen[0] = CreatePen (PS_SOLID, 1, RGB(224,224,224));
-	g_Param.pen[1] = CreatePen (PS_SOLID, 3, RGB(164,164,164));
+	// allocate SketchPad resources
+	g_Param.pen[0] = oapiCreatePen (PS_SOLID, 1, RGB(224,224,224));
+	g_Param.pen[1] = oapiCreatePen (PS_SOLID, 3, RGB(164,164,164));
 	g_Param.surf = oapiLoadTexture ("DG\\blitsrc1.dds", true);
 }
 
@@ -1613,8 +1614,8 @@ DLLCLBK void ExitModule (HINSTANCE hModule)
 
 	int i;
 
-	// deallocate GDI resources
-	for (i = 0; i < 2; i++) DeleteObject (g_Param.pen[i]);
+	// deallocate SketchPad resources
+	for (i = 0; i < 2; i++) oapiReleasePen(g_Param.pen[i]);
 	oapiReleaseTexture (g_Param.surf);
 }
 

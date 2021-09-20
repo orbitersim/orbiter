@@ -664,7 +664,7 @@ void Instrument::SetSize (const Spec &spec, bool defer_alloc)
 		cw = 10, ch = 16; // temporary defaults
 		mfdfont[0] = gc->clbkCreateFont (-h, false, "Fixed");
 		mfdfont[1] = gc->clbkCreateFont (-(h*3)/4, true, "Sans");
-		mfdfont[2] = gc->clbkCreateFont (-(h*3)/4, true, "Sans", oapi::Font::NORMAL, 900);
+		mfdfont[2] = gc->clbkCreateFont (-(h*3)/4, true, "Sans", FONT_NORMAL, 900);
 		mfdfont[3] = gc->clbkCreateFont (-h, true, "Sans");
 
 		oapi::Sketchpad *skp = gc->clbkGetSketchpad (surf);
@@ -682,11 +682,27 @@ void Instrument::AllocSurface (DWORD w, DWORD h)
 {
 	if (!gc) return;
 
-	DWORD attrib = OAPISURFACE_SKETCHPAD | OAPISURFACE_NOALPHA;
-	attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET : OAPISURFACE_GDI);
+	if (IsRuningInExternMFD())
+	{
+		DWORD attrib = OAPISURFACE_NOALPHA;
+		attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+		surf = gc->clbkCreateSurfaceEx(w, h, attrib);
+		//tex = gc->clbkCreateSurfaceEx(w, h, attrib); // no need for tex
+		if (surf) ClearSurface();
+		return;
+	}
 
-	surf = gc->clbkCreateSurfaceEx (w, h, attrib);
-	tex  = gc->clbkCreateSurfaceEx (w, h, OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE);
+	DWORD s_attrib = 0;
+	DWORD t_attrib = OAPISURFACE_RENDERTARGET | OAPISURFACE_TEXTURE | 0;
+
+	s_attrib |= (use_skp_interface ? OAPISURFACE_RENDERTARGET : OAPISURFACE_GDI | OAPISURFACE_TEXTURE);
+	
+	// Add mipmaps in virtual cockpit mode
+	t_attrib |= (pane->panelmode == 3 ? OAPISURFACE_MIPMAPS : 0);
+	
+	surf = gc->clbkCreateSurfaceEx (w, h, s_attrib);
+	tex  = gc->clbkCreateSurfaceEx (w, h, t_attrib);
+
 	if (surf) ClearSurface();
 }
 
@@ -781,7 +797,7 @@ bool Instrument::Update (double upDTscale)
 				EndDrawHDC (hDC);
 			}
 		}
-		gc->clbkBlt (tex, 0, 0, surf);
+		if (tex) gc->clbkBlt (tex, 0, 0, surf); // 'tex' not used in ExternMFD
 		updT = td.SimT1 + instrDT * upDTscale;
 		updSysT = td.SysT1 + 0.1; // don't exceed 10Hz update rate
 		return true;
@@ -910,7 +926,7 @@ void Instrument::DisplayModes (int page)
 		slot++;
 	}
 	EndDraw (skp);
-	gc->clbkBlt (tex, 0, 0, surf);
+	if (tex) gc->clbkBlt (tex, 0, 0, surf);
 }
 
 char *Instrument::ModeLabel (int bt)
@@ -972,7 +988,7 @@ void Instrument::DrawMenu ()
 		}
 	}
 	EndDraw (skp);
-	gc->clbkBlt (tex, 0, 0, surf);
+	if (tex) gc->clbkBlt (tex, 0, 0, surf);
 }
 
 void Instrument::OpenSelect_CelBody (char *title, Select::Callbk enter_cbk, DWORD flag)

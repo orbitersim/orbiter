@@ -57,7 +57,7 @@ void InlineDialog::GlobalInit (oapi::GraphicsClient *gclient)
 	draw.fontH = (int)(viewH*0.02*scale);
 	if (draw.fontH < 8) draw.fontH = 8;
 	draw.fontNorm = gclient->clbkCreateFont (draw.fontH, true, face1);
-	draw.fontInactive = gclient->clbkCreateFont (draw.fontH, true, face1, oapi::Font::ITALIC);
+	draw.fontInactive = gclient->clbkCreateFont (draw.fontH, true, face1, FONT_ITALIC);
 	draw.fontInput = gclient->clbkCreateFont (draw.fontH, false, "Courier New");
 }
 
