@@ -194,6 +194,11 @@ add_library(D3D9Client MODULE
 	D3D9Client.rc
 )
 
+add_dependencies(D3D9Client
+	${OrbiterTgt}
+	Orbitersdk
+)
+
 target_include_directories(D3D9Client PUBLIC
 	${ORBITER_SOURCE_SDK_INCLUDE_DIR}
 	${DXSDK_DIR}/Include

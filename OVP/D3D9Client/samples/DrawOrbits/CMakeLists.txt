@@ -11,6 +11,10 @@ add_library(DrawOrbits MODULE
 	Orbits.rc
 )
 
+add_dependencies(DrawOrbits
+	D3D9Client
+)
+
 target_link_libraries(DrawOrbits
 	orbiter.lib
 	orbitersdk.lib

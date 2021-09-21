@@ -14,6 +14,10 @@ add_library(TerrainToolBox MODULE
 	resource.h
 )
 
+add_dependencies(TerrainToolBox
+	D3D9Client
+)
+
 target_link_libraries(TerrainToolBox
 	orbiter.lib
 	orbitersdk.lib

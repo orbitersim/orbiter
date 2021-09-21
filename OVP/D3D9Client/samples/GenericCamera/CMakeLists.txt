@@ -8,6 +8,10 @@ add_library(GenericCamera MODULE
 	GenericCamera.rc
 )
 
+add_dependencies(GenericCamera
+	D3D9Client
+)
+
 target_link_libraries(GenericCamera
 	orbiter.lib
 	orbitersdk.lib

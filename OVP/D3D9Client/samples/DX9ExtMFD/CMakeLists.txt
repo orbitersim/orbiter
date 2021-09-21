@@ -7,6 +7,10 @@ add_library(DX9ExtMFD MODULE
 	ExtMFD.rc
 )
 
+add_dependencies(DX9ExtMFD
+	D3D9Client
+)
+
 target_link_libraries(DX9ExtMFD
 	orbiter.lib
 	orbitersdk.lib
