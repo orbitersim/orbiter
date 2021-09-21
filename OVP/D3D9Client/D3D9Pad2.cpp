@@ -320,6 +320,8 @@ void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR
 #endif
 	FVECTOR2 sp[4];
 	FVECTOR2 a, b, c, d;
+	static const int n = 6;
+	static const float step = 1.0 / float(n - 1);
 
 	DWORD fn = SKPSW_TEXTURE | SKPSW_CENTER;
 
@@ -335,30 +337,30 @@ void D3D9Pad::CopyTetragon(const SURFHANDLE hSrc, const LPRECT _s, const FVECTOR
 		sp[3] = FVECTOR2(s->right, s->top);
 
 		// Create indices
-		for (int j = 0; j < 3; j++)
+		for (int j = 0; j < (n-1); j++)
 		{
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < (n-1); i++)
 			{
-				WORD q = vI + i + j * 4;
-				Idx[iI++] = q + 0; Idx[iI++] = q + 1; Idx[iI++] = q + 5;
-				Idx[iI++] = q + 0; Idx[iI++] = q + 5; Idx[iI++] = q + 4;
+				WORD q = vI + i + j * n;
+				Idx[iI++] = q + 0; Idx[iI++] = q + 1; Idx[iI++] = q + (n + 1);
+				Idx[iI++] = q + 0; Idx[iI++] = q + (n + 1); Idx[iI++] = q + n;
 			}
 		}
 
 		// Create grid points
 		int j = 0;
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < n; i++)
 		{
-			float x = float(i) * 0.333333f;
+			float x = float(i) * step;
 
 			a = lerp(tp[0], tp[3], x);
 			b = lerp(tp[1], tp[2], x);
 			c = lerp(sp[0], sp[3], x);
 			d = lerp(sp[1], sp[2], x);
 
-			for (int k = 0; k < 4; k++) {
-				FVECTOR2 tv = lerp(a, b, float(k) * 0.333333f);
-				FVECTOR2 sv = lerp(c, d, float(k) * 0.333333f);
+			for (int k = 0; k < n; k++) {
+				FVECTOR2 tv = lerp(a, b, float(k) * step);
+				FVECTOR2 sv = lerp(c, d, float(k) * step);
 				SkpVtxFF(Vtx[vI], tv.x, tv.y, sv.x, sv.y);
 				Vtx[vI].fnc = fn;
 				vI++;

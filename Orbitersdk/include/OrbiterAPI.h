@@ -4466,6 +4466,12 @@ typedef void (*LoadMeshClbkFunc)(MESHHANDLE hMesh, bool firstload);
 OAPIFUNC const MESHHANDLE oapiLoadMeshGlobal (const char *fname, LoadMeshClbkFunc fClbk);
 
 	/**
+	 * \brief Retrieves a mesh finename form a handle.
+	 * \param hMesh mesh handle
+	 */
+OAPIFUNC const char* oapiGetMeshFilename(MESHHANDLE hMesh);
+
+	/**
 	 * \brief Creates a new mesh from a list of mesh group definitions.
 	 * \param ngrp number of groups in the list
 	 * \param grp list of mesh groups

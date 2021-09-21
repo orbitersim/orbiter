@@ -149,7 +149,7 @@ public:
 					D3D9Mesh(const char *fname);
 					D3D9Mesh(DWORD nGrp, const MESHGROUPEX **hGroup, const SURFHANDLE *hSurf);
 					D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, SurfNative *pTex);
-					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL, float *scale = NULL, const char *meshName = NULL);
+					D3D9Mesh(MESHHANDLE hMesh, bool asTemplate = false, D3DXVECTOR3 *reorig = NULL, float *scale = NULL);
 					D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp);
 					~D3D9Mesh();
 

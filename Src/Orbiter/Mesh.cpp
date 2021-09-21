@@ -62,6 +62,7 @@ void Triangle::SetNodes (int n0, int n1, int n2)
 
 Mesh::Mesh ()
 {
+	name = NULL;
 	nGrp = nMtrl = nTex = 0;
 	GrpVis   = 0;
 	GrpSetup = false;
@@ -70,6 +71,7 @@ Mesh::Mesh ()
 
 Mesh::Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWORD texidx)
 {
+	name = NULL;
 	nGrp = nMtrl = nTex = 0;
 	GrpVis   = 0;
 	GrpSetup = false;
@@ -80,6 +82,7 @@ Mesh::Mesh (NTVERTEX *vtx, DWORD nvtx, WORD *idx, DWORD nidx, DWORD matidx, DWOR
 
 Mesh::Mesh (const Mesh &mesh)
 {
+	name = NULL;
 	nGrp = nMtrl = nTex = 0;
 	GrpVis = 0;
 	GrpSetup = false;
@@ -127,6 +130,7 @@ void Mesh::Set (const Mesh &mesh)
 	} else {
 		GrpVis = 0;
 	}
+	SetName(mesh.GetName());
 	bModulateMatAlpha = mesh.bModulateMatAlpha;
 }
 
@@ -476,6 +480,7 @@ void Mesh::Clear ()
 		delete []GrpVis;
 		GrpVis = 0;
 	}
+	if (name) delete []name;
 	GrpSetup = false;
 	ReleaseTextures ();
 }
@@ -795,6 +800,20 @@ void Mesh::GlobalEnableSpecular (bool enable)
 void Mesh::EnableMatAlpha (bool enable)
 {
 	bModulateMatAlpha = enable;
+}
+
+const char* Mesh::GetName() const
+{
+	return name;
+}
+
+void Mesh::SetName(const char* n)
+{
+	if (n) {
+		int len = lstrlen(n) + 1;
+		name = new char[len];
+		strcpy_s(name, len, n);
+	}
 }
 
 DWORD Mesh::Render (LPDIRECT3DDEVICE7 dev)
@@ -1269,6 +1288,7 @@ const Mesh *MeshManager::LoadMesh (const char *fname, bool *firstload)
 		}
 		mlist = tmp;
 	}
+	mesh->SetName(fname);
 	mlist[nmlist].mesh = mesh;
 	mlist[nmlist].crc  = crc;
 	strncpy (mlist[nmlist].fname, fname, 32);
@@ -1285,6 +1305,7 @@ bool LoadMesh (const char *meshname, Mesh &mesh)
 	ifstream ifs (g_pOrbiter->MeshPath (meshname), ios::in);
 	ifs >> mesh;
 	if (ifs.good()) {
+		mesh.SetName(meshname);
 		return true;
 	} else {
 		LOGOUT_ERR ("Mesh not found: %s", g_pOrbiter->MeshPath (meshname));

@@ -80,6 +80,9 @@ public:
 	// call after all groups are assembled or whenever groups change,
 	// to set up group parameters
 
+	const char* GetName() const;
+	void SetName(const char* name);
+
 	DWORD GetFlags () const { return Flags; }
 	void SetFlags (DWORD flags) { Flags = flags; }
 
@@ -224,6 +227,7 @@ private:
 	D3DVECTOR *GrpCnt;  // list of barycentres for each group (local coords)
 	D3DVALUE *GrpRad;   // list of max. radii for each group
 	DWORD *GrpVis;      // visibility flags for each group
+	char* name;
 
 	// global mesh flags
 	static bool bEnableSpecular;   // enable specular reflection

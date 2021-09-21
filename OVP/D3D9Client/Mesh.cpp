@@ -193,7 +193,7 @@ void D3D9Mesh::Null(const char *meshName /* = NULL */)
 //
 D3D9Mesh::D3D9Mesh(const char *fname) : D3D9Effect()
 {
-	Null(fname);
+	Null();
 	MESHHANDLE hMesh = oapiLoadMesh(fname);
 
 	if (hMesh) {
@@ -207,9 +207,9 @@ D3D9Mesh::D3D9Mesh(const char *fname) : D3D9Effect()
 
 // ===========================================================================================
 //
-D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig, float *scale, const char *meshName) : D3D9Effect()
+D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, bool asTemplate, D3DXVECTOR3 *reorig, float *scale) : D3D9Effect()
 {
-	Null(meshName);
+	Null();
 	LoadMeshFromHandle(hMesh, reorig, scale);
 	bIsTemplate = asTemplate;
 	MeshCatalog.insert(this);
@@ -298,7 +298,7 @@ D3D9Mesh::D3D9Mesh(const MESHGROUPEX *pGroup, const MATERIAL *pMat, SurfNative *
 //
 D3D9Mesh::D3D9Mesh(MESHHANDLE hMesh, const D3D9Mesh &hTemp)
 {
-	Null();
+	Null(oapiGetMeshFilename(hMesh));
 
 	// Confirm the source is global template
 	assert(hTemp.bIsTemplate == true);
@@ -382,6 +382,8 @@ void D3D9Mesh::Release()
 
 void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 {
+	const char* meshn = oapiGetMeshFilename(hMesh);
+	strcpy_s(name, 128, meshn ? meshn : "???");
 
 	// Relese buffers, Tex, Mtrl and Grp counts may have changed.
 	SAFE_DELETEA(Tex);
@@ -442,6 +444,9 @@ void D3D9Mesh::ReLoadMeshFromHandle(MESHHANDLE hMesh)
 //
 void D3D9Mesh::LoadMeshFromHandle(MESHHANDLE hMesh, D3DXVECTOR3 *reorig, float *scale)
 {
+	const char* meshn = oapiGetMeshFilename(hMesh);
+	strcpy_s(name, 128, meshn ? meshn : "???");
+
 	nGrp = oapiMeshGroupCount(hMesh);
 
 	if (nGrp == 0) return;

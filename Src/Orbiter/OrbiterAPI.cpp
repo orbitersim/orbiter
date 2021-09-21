@@ -1334,6 +1334,11 @@ DLLEXPORT const MESHHANDLE oapiLoadMeshGlobal (const char *fname, LoadMeshClbkFu
 	return (const MESHHANDLE)g_pOrbiter->LoadMeshGlobal (fname, fClbk);
 }
 
+DLLEXPORT const char* oapiGetMeshFilename(MESHHANDLE hMesh)
+{
+	return hMesh ? ((Mesh*)hMesh)->GetName() : NULL;
+}
+
 DLLEXPORT MESHHANDLE oapiCreateMesh (DWORD ngrp, MESHGROUP *grp)
 {
 	Mesh *mesh = new Mesh;
