@@ -393,11 +393,11 @@ bool ToolKit::Initialize()
 	hRootNode = RegisterApplication("Terrain ToolKit V1.1", NULL, gcGUI::DS_LEFT);
 	//hMainDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_MAIN), hAppMainWnd, gDlgProc, 0);
 	//hMainNode = RegisterSubsection(hRootNode, "Main", hMainDlg);
-	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, gDlgProc, 0);
+	hCtrlDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_EXPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hCtrlNode = RegisterSubsection(hRootNode, "Selection Oprions", hCtrlDlg);
-	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, gDlgProc, 0);
+	hImpoDlg = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_IMPORT), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hImpoNode = RegisterSubsection(hRootNode, "Import Options", hImpoDlg, 0xC0FFE0);
-	hDataDlg  = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, gDlgProc, 0);
+	hDataDlg  = CreateDialogParam(hModule, MAKEINTRESOURCE(IDD_DATA), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	hDataNode = RegisterSubsection(hRootNode, "Properties", hDataDlg);
 
 	DisplayWindow(hRootNode);
@@ -422,7 +422,7 @@ bool ToolKit::Initialize()
 	}
 
 
-	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, gDlgProc, GetFont(0), GetModule());
+	pProp = new gcPropertyTree(this, hDataDlg, IDC_DATAVIEW, (DLGPROC)gDlgProc, GetFont(0), GetModule());
 
 	// ---------------------------------------------------
 	hSecCur = pProp->SubSection("Mouse cursor location");

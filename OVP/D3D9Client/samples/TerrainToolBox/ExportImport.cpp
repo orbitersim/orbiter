@@ -163,7 +163,7 @@ void ToolKit::BakeImport()
 	int nTiles = selection.area.size();
 	nTiles += (nTiles / 2 + nTiles / 4 + nTiles / 8);
 	
-	hProgDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_PROGRESS), hAppMainWnd, gDlgProc, 0);
+	hProgDlg = CreateDialogParamA(hModule, MAKEINTRESOURCE(IDD_PROGRESS), hAppMainWnd, (DLGPROC)gDlgProc, 0);
 	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETRANGE, 0, MAKELONG(0, nTiles));
 	SendDlgItemMessage(hProgDlg, IDC_PROGBAR, PBM_SETPOS, 0, 0);
 

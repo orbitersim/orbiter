@@ -607,7 +607,7 @@ HWND gcPropertyTree::CreateEditControl(WORD id, bool bReadOnly)
 	DWORD dwStyle = WS_CHILD | WS_VISIBLE;
 	if (bReadOnly) dwStyle |= ES_READONLY;
 	HWND hEdit = CreateWindowExA(0, "EDIT", NULL, dwStyle,
-		0, 0, 0, 0, hWnd, (HMENU)id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		0, 0, 0, 0, hWnd, (HMENU)id, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	SendMessageA(hEdit, WM_SETFONT, (WPARAM)hFont, 0);
 	return hEdit;
 }
@@ -619,7 +619,7 @@ HWND gcPropertyTree::CreateComboBox(WORD id)
 {
 	DWORD dwStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWN;
 	HWND hEdit = CreateWindowExA(WS_EX_TRANSPARENT | WS_EX_CLIENTEDGE, "COMBOBOX", NULL, dwStyle,
-		0, 0, 0, 0, hWnd, (HMENU)id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		0, 0, 0, 0, hWnd, (HMENU)id, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	SendMessageA(hEdit, WM_SETFONT, (WPARAM)hFont, 0);
 	return hEdit;
 }
@@ -631,7 +631,7 @@ HWND gcPropertyTree::CreateSlider(WORD id)
 {
 	DWORD dwStyle = WS_CHILD | WS_VISIBLE | TBS_NOTICKS | TBS_TRANSPARENTBKGND | TBS_BOTH;
 	HWND hEdit = CreateWindowExA(WS_EX_TRANSPARENT, TRACKBAR_CLASS, NULL, dwStyle,
-		0, 0, 0, 0, hWnd, (HMENU)id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL);
+		0, 0, 0, 0, hWnd, (HMENU)id, (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE), NULL);
 	SendMessage(hEdit, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 1000));
 	return hEdit;
 }
