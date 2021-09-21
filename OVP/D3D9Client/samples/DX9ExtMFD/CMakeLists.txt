@@ -25,11 +25,6 @@ target_link_directories(DX9ExtMFD PUBLIC
 )
 
 
-#add_dependencies(DX9ExtMFD
-#	Orbiter
-#	Orbitersdk
-#)
-
 set_target_properties(DX9ExtMFD
 	PROPERTIES
 	COMPILE_FLAGS ${Flags}
@@ -38,3 +33,8 @@ set_target_properties(DX9ExtMFD
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
 	FOLDER OVP
 )
+
+install(TARGETS DX9ExtMFD
+	LIBRARY	
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+) 

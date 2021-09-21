@@ -242,7 +242,7 @@ set_target_properties(D3D9Client
 )
 
 add_custom_command(
-	TARGET D3D9Client POST_BUILD
+	TARGET D3D9Client PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ShaderDir}/ ${CMAKE_BINARY_DIR}/Modules/D3D9Client
 )
 
@@ -255,7 +255,7 @@ add_custom_command(
 
 install(TARGETS D3D9Client
 	LIBRARY	
-	DESTINATION Modules/Plugin
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
 )
 
 add_subdirectory(samples/DrawOrbits)
@@ -263,10 +263,10 @@ add_subdirectory(samples/DX9ExtMFD)
 add_subdirectory(samples/GenericCamera)
 add_subdirectory(samples/TerrainToolBox)
 
-file( COPY ${CMAKE_SOURCE_DIR}/Meshes/ DESTINATION ${CMAKE_BINARY_DIR}/Meshes )
-file( COPY ${CMAKE_SOURCE_DIR}/Config/ DESTINATION ${CMAKE_BINARY_DIR}/Config )
-file( COPY ${CMAKE_SOURCE_DIR}/Textures/ DESTINATION ${CMAKE_BINARY_DIR}/Textures )
-file( COPY ${CMAKE_SOURCE_DIR}/Orbitersdk/doc/ DESTINATION ${CMAKE_BINARY_DIR}/Orbitersdk/doc )
-file( COPY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/shaders/ DESTINATION ${CMAKE_BINARY_DIR}/Modules/D3D9Client )
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Meshes/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Meshes)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Config/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Textures/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Textures)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Orbitersdk/doc/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/doc)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/shaders/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Modules/D3D9Client)
 
 

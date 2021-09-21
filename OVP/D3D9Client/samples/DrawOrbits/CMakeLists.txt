@@ -28,11 +28,6 @@ target_link_directories(DrawOrbits PUBLIC
 	${ORBITER_SOURCE_SDK_LIB_DIR}
 )
 
-#add_dependencies(DrawOrbits
-#	Orbiter
-#	Orbitersdk
-#)
-
 set_target_properties(DrawOrbits
 	PROPERTIES
 	COMPILE_FLAGS ${Flags}
@@ -41,3 +36,8 @@ set_target_properties(DrawOrbits
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
 	FOLDER OVP
 )
+
+install(TARGETS DrawOrbits
+	LIBRARY	
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+) 

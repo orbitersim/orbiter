@@ -25,11 +25,6 @@ target_link_directories(GenericCamera PUBLIC
 	${ORBITER_SOURCE_SDK_LIB_DIR}
 )
 
-#add_dependencies(GenericCamera
-#	Orbiter
-#	Orbitersdk
-#)
-
 set_target_properties(GenericCamera
 	PROPERTIES
 	COMPILE_FLAGS ${Flags}
@@ -38,3 +33,8 @@ set_target_properties(GenericCamera
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
 	FOLDER OVP
 )
+
+install(TARGETS GenericCamera
+	LIBRARY	
+	DESTINATION ${ORBITER_INSTALL_PLUGIN_DIR}
+) 
