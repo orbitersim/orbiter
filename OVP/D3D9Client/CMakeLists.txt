@@ -8,9 +8,6 @@ configure_file(D3D9ClientConfig.h.in D3D9ClientConfig.h)
 # set the project name and version
 project(D3D9Client VERSION 31.0)
 
-# Additional compiler flags
-set(Flags "/MP")
-
 # Check build platform
 if(CMAKE_SIZEOF_VOID_P EQUAL 8) # 64-bit build?
 	set(BUILD64 1)
@@ -33,14 +30,14 @@ set(DXSDK_LIB_DIR ${DXSDK_DIR}/lib/${ARCH})
 set(ORBITER_SOURCE_SDK_INCLUDE_DIR "${CMAKE_BINARY_DIR}/Orbitersdk/include" "${CMAKE_SOURCE_DIR}/Orbitersdk/include")
 set(ORBITER_SOURCE_SDK_LIB_DIR ${CMAKE_BINARY_DIR}/Orbitersdk/lib)
 
-set(ShaderDir ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/shaders)
-set(D3D9SourceDir ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
+set(D3D9_SOURCE_DIR ${CMAKE_SOURCE_DIR}/OVP/D3D9Client)
+set(ShaderDir ${D3D9_SOURCE_DIR}/shaders)
 set(IncludeDir ${CMAKE_SOURCE_DIR}/Orbitersdk/include)
 
 add_custom_command(
 	OUTPUT ${IncludeDir}/gcCoreAPI.h
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND InterfaceBuilder.exe ${D3D9SourceDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
+	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
 	VERBATIM
 )
 
@@ -233,8 +230,6 @@ target_link_libraries(D3D9Client
 
 set_target_properties(D3D9Client
 	PROPERTIES
-	COMPILE_FLAGS ${Flags}
-	LINK_FLAGS "/SUBSYSTEM:WINDOWS"
 	LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Modules/Plugin
 	LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Modules/Plugin
 	COMPILE_DEFINITIONS D3D9CLIENT_EXPORTS
@@ -249,7 +244,7 @@ add_custom_command(
 add_custom_command(
 	TARGET D3D9Client PRE_BUILD
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-	COMMAND InterfaceBuilder.exe ${D3D9SourceDir}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9SourceDir}/gcCore.cpp
+	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
 	VERBATIM
 )
 
@@ -267,9 +262,9 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/Meshes/ DESTINATION ${ORBITER_INSTALL_ROOT
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/Config/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Config)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/Textures/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Textures)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/Orbitersdk/doc/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/doc)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/shaders/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Modules/D3D9Client)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/samples/DrawOrbits/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DrawOrbits)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/samples/DX9ExtMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DX9ExtMFD)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/samples/GenericCamera/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/GenericCamera)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/OVP/D3D9Client/samples/TerrainToolBox/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolBox)
+install(DIRECTORY ${D3D9_SOURCE_DIR}/shaders/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Modules/D3D9Client)
+install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DrawOrbits/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DrawOrbits)
+install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DX9ExtMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DX9ExtMFD)
+install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/GenericCamera/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/GenericCamera)
+install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/TerrainToolBox/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolBox)
 
