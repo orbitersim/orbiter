@@ -1162,7 +1162,7 @@ inline gcCore2* gcGetCoreInterface()
 	HMODULE hModule = GetModuleHandle("D3D9Client.dll");
 	if (hModule) {
 		pBindCoreMethod = (__gcBindCoreMethod)GetProcAddress(hModule, "gcBindCoreMethod");	
-		if (pBindCoreMethod) return new gcCore2();
+		if (pBindCoreMethod) return (pCoreInterface = new gcCore2());
 		else oapiWriteLogV("gcGetCoreInterface() FAILED");
 	}
 	return NULL;

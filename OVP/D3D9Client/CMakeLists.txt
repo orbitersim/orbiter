@@ -238,11 +238,6 @@ set_target_properties(D3D9Client
 
 add_custom_command(
 	TARGET D3D9Client PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ShaderDir}/ ${CMAKE_BINARY_DIR}/Modules/D3D9Client
-)
-
-add_custom_command(
-	TARGET D3D9Client PRE_BUILD
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	COMMAND InterfaceBuilder.exe ${D3D9_SOURCE_DIR}/gcCore.h ${IncludeDir}/gcCoreAPI.h ${D3D9_SOURCE_DIR}/gcCore.cpp
 	VERBATIM
@@ -267,4 +262,6 @@ install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DrawOrbits/ DESTINATION ${ORBITER_I
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/DX9ExtMFD/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/DX9ExtMFD)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/GenericCamera/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/GenericCamera)
 install(DIRECTORY ${D3D9_SOURCE_DIR}/samples/TerrainToolBox/ DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/samples/TerrainToolBox)
+install(FILES ${IncludeDir}/gcCoreAPI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
+install(FILES ${IncludeDir}/gcGUI.h DESTINATION ${ORBITER_INSTALL_ROOT_DIR}/Orbitersdk/include)
 

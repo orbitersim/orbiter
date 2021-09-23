@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -54,29 +54,21 @@ namespace InterfaceBuilder
         }
 
 
-        static void Main(string[] a)
+        static void Main(string[] args)
         {
             bool bInterface = false;
             bool bParse = false;
             char[] sep = { ' ' };
             int Brackets = 0;
 
-            string[] args = new string[3];
-
             string wd = Directory.GetCurrentDirectory();
 
-            if (a.Length != 3)
+            if (args.Length != 3)
             {
-                args[0] = wd + "\\Orbitersdk\\D3D9Client\\gcCore.h";
-                args[1] = wd + "\\Orbitersdk\\include\\gcCoreAPI.h";
-                args[2] = wd + "\\Orbitersdk\\D3D9Client\\gcCore.cpp";
+                Debug.WriteLine("Invalid arguments");              
+                return;
             }
-            else
-            {
-                args = a;
-            }
-            
-
+          
             Debug.WriteLine("HdrInput = {0}", args[0]);
             Debug.WriteLine("HdrOutput = {0}", args[1]);
             Debug.WriteLine("CppFile = {0}", args[2]);
@@ -109,7 +101,7 @@ namespace InterfaceBuilder
             List<MethodData> Methods = new List<MethodData>();
 
 
-            // Take a first look at the source file and create function database =======
+            // Take a first look at the source file gcCore.h and create function database =======
             //
             while (true)
             {
@@ -186,15 +178,16 @@ namespace InterfaceBuilder
 
 
 
-            // Create End User Header File gcCore.h ==================================================
+            // Create End User Header File gcCoreAPI.h ==================================================
             //
             // Back to begining
             In.BaseStream.Seek(0, SeekOrigin.Begin);
             Hdr.WriteLine("");
-            Hdr.WriteLine("// WARNING ======================================");
-            Hdr.WriteLine("// This is computer generated file. Do not modify");
-            Hdr.WriteLine("// WARNING ======================================");
+            Hdr.WriteLine("// WARNING ===============================================================================");
+            Hdr.WriteLine("// This is computer generated file. Do not modify. Make modifications to gcCore.h instead.");
+            Hdr.WriteLine("// WARNING ===============================================================================");
             Hdr.WriteLine("");
+
             while (true)
             {
                 string line = In.ReadLine();
@@ -307,7 +300,7 @@ namespace InterfaceBuilder
             }
 
 
-            // Create gcCore.cpp File ==================================================
+            // Modify gcCore.cpp File ==================================================
             //
             StreamWriter Cpp = new StreamWriter(args[2]);
 
