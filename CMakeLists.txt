@@ -32,6 +32,14 @@ else()
 	set(PLATFORM_STRING "Win32")
 endif()
 
+if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
+	message(STATUS "USING: MultiCore VS Solution")
+	set(CompileFlags "/MP")
+else()
+	message(STATUS "USING: Ninja Configuration")
+	set(CompileFlags "")
+endif()
+
 # Define directories and file paths for some common binaries
 set(OVP_DIR "${CMAKE_SOURCE_DIR}/OVP")
 set(GDICLIENT_DIR "${OVP_DIR}/GDIClient")
