@@ -13,9 +13,6 @@ on:
 jobs:
   build:
     name: Build with CMake
-    env:
-      CMAKE_BUILD_PARALLEL_LEVEL: 2
-      VCToolsInstallDir: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30133\\"
     strategy:
       fail-fast: false
       matrix:
