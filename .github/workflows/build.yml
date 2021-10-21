@@ -50,7 +50,7 @@ jobs:
       working-directory: ${{ github.workspace }}/out/build
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
-        cmake --build . --config RelWithDebInfo
+        cmake --build . -j2 --config RelWithDebInfo
 
     - name: Test
       shell: cmd
