@@ -41,13 +41,25 @@ jobs:
         path: ${{ github.workspace }}/out/build/Extern/irrKlang/${{ matrix.architecture }}
         key: irrKlang-${{ matrix.architecture }}
       
-    - name: Build & Test
+    - name: Configure
       shell: cmd
       working-directory: ${{ github.workspace }}/out/build
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
         cmake -G Ninja ../.. -DORBITER_MAKE_DOC=OFF -DIRRKLANG_DIR:STRING="irrKlang_DOWNLOAD"
+
+    - name: Build
+      shell: cmd
+      working-directory: ${{ github.workspace }}/out/build
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
         cmake --build . --config RelWithDebInfo
+
+    - name: Test
+      shell: cmd
+      working-directory: ${{ github.workspace }}/out/build
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.architecture }}
         ctest --config RelWithDebInfo .
 
     - name: Install
