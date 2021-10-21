@@ -40,7 +40,6 @@
 #include "Dialogs.h"
 #include "DialogWin.h"
 #include "Script.h"
-#include "ddeserver.h"
 #include "Memstat.h"
 #include "CustomControls.h"
 #include "Help.h"
@@ -311,7 +310,6 @@ Orbiter::Orbiter ()
 	m_pLaunchpad    = NULL;
 	pDlgMgr         = NULL;
 	m_pConsole      = NULL;
-	ddeserver       = NULL;
 	bFullscreen     = false;
 	viewW = viewH = viewBPP = 0;
 #ifdef INLINEGRAPHICS
@@ -492,7 +490,6 @@ VOID Orbiter::CloseApp (bool fast_shutdown)
 		if (m_pLaunchpad) delete m_pLaunchpad;
 		if (hBk) DestroyWindow (hBk);
 		if (pState)   delete pState;
-		if (ddeserver) delete ddeserver;
 		if (script) delete script;
 		if (ncustomcmd) {
 			for (DWORD i = 0; i < ncustomcmd; i++) delete []customcmd[i].label;
@@ -766,8 +763,6 @@ HWND Orbiter::CreateRenderWindow (Config *pCfg, const char *scenario)
 	//snote_playback = new ScreenNote (this, viewW, viewH);
 #endif // INLINEGRAPHICS
 
-	ddeserver = new DDEServer (hRenderWnd);
-
 	bSession = true;
 	bVisible = (hRenderWnd != NULL);
 	bRunning = bRequestRunning = true;
@@ -873,10 +868,6 @@ void Orbiter::CloseSession ()
 	if (m_pConsole) {
 		delete m_pConsole;
 		m_pConsole = NULL;
-	}
-	if (ddeserver) {
-		delete ddeserver;
-		ddeserver = NULL;
 	}
 
 	if (pConfig->CfgDebugPrm.ShutdownMode == 0 && !bFastExit) { // normal cleanup
@@ -2691,13 +2682,6 @@ LRESULT Orbiter::MsgProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-		// DDE dynamic data exchange support
-	case WM_DDE_INITIATE:
-	case WM_DDE_REQUEST:
-	case WM_DDE_ACK:
-		if (ddeserver) ddeserver->MsgProc (hWnd, uMsg, wParam, lParam);
-		break;
-
 	case WM_NCHITTEST:
         // Prevent the user from selecting the menu in fullscreen mode
         if (IsFullscreen()) return HTCLIENT;
@@ -2828,60 +2812,6 @@ void Orbiter::CloseDialog (HWND hDlg)
 HWND Orbiter::IsDialog (HINSTANCE hInstance, DWORD resId)
 {
 	return (pDlgMgr ? pDlgMgr->IsEntry (hInstance, resId) : NULL);
-}
-
-//-----------------------------------------------------------------------------
-// DDE (dynamic data exchange) interface
-//-----------------------------------------------------------------------------
-void Orbiter::DDEInit (HWND hClient, ATOM topic)
-{
-	char cbuf[256];
-	if (topic) {
-		GlobalGetAtomName (topic, cbuf, 256);
-		if (!_stricmp (cbuf, "data")) {
-			ATOM app = GlobalAddAtom ("orbiter");
-			ATOM tpc = GlobalAddAtom ("data");
-			SendMessage (hClient, WM_DDE_ACK, (WPARAM)hRenderWnd, MAKELPARAM (app, tpc));
-			GlobalDeleteAtom (app);
-			GlobalDeleteAtom (tpc);
-		}
-	}
-}
-
-void Orbiter::DDERequest (HWND hClient, int format, ATOM item)
-{
-	char citem[256], cbuf[256]; cbuf[0] = '\0';
-	GlobalGetAtomName (item, citem, 256);
-	if (!_stricmp (citem, "simtime")) {
-		sprintf (cbuf, "%f", td.SimT0);
-	} else if (!_stricmp (citem, "altitude")) {
-		const SurfParam *sp = g_focusobj->GetSurfParam ();
-		if (sp) sprintf (cbuf, "%f", sp->alt);
-	} else if (!_stricmp (citem, "airspeed")) {
-		const SurfParam *sp = g_focusobj->GetSurfParam ();
-		if (sp) sprintf (cbuf, "%f", sp->airspd);
-	} else if (!_stricmp (citem, "cpos")) {
-		const CelestialBody *cbody = g_focusobj->ElRef();
-		if (cbody) {
-			Vector p (g_focusobj->GPos() - cbody->GPos());
-			sprintf (cbuf, "%g %g %g", p.x, p.y, p.z);
-		}
-	}
-	if (cbuf[0]) { // request can be served
-		HGLOBAL hData = GlobalAlloc (GMEM_MOVEABLE | GMEM_DDESHARE, (LONG)sizeof(DDEDATA) + lstrlen(cbuf) + 1);
-		DDEDATA *pData = (DDEDATA*)GlobalLock (hData);
-		pData->cfFormat = CF_TEXT;
-		pData->fResponse = 1;
-		pData->fRelease = 1;
-		pData->fAckReq = 0;
-		lstrcpy ((LPSTR)pData->Value, (LPSTR)cbuf);
-		GlobalUnlock (hData);
-		ATOM a = GlobalAddAtom (citem);
-		LPARAM lParam = PackDDElParam (WM_DDE_ACK, (UINT_PTR)hData, a);
-		PostMessage (hClient, WM_DDE_DATA, (WPARAM)hRenderWnd, lParam);
-	} else {       // request can't be served
-		// to do
-	}
 }
 
 //=============================================================================

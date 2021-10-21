@@ -480,11 +480,6 @@ private:
 	DWORD ncustomcmd;
 	friend class DlgFunction;
 
-	// DDE interface
-	DDEServer *ddeserver;
-	void DDEInit (HWND hClient, ATOM topic);
-	void DDERequest (HWND hClient, int format, ATOM item);
-
 public:
 #ifndef INLINEGRAPHICS
 	// external graphics client
