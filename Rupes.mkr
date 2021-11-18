@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++294.50	-65.10	:	Adventure Rupes
++289.30	-42.60	:	Astrolabe Rupes
++321.70	-56.30	:	Discovery Rupes
++328.70	+37.50	:	Endeavour Rupes
++266.70	-56.90	:	Fram Rupes
++200.70	-66.70	:	Gjöa Rupes
++234.70	+25.90	:	Heemskerck Rupes
++188.60	-58.40	:	Hero Rupes
++320.10	-37.30	:	Mirni Rupes
++204.00	-58.10	:	Pourquoi-Pas Rupes
++308.30	-63.80	:	Resolution Rupes
++340.30	+5.50	:	Santa María Rupes
++328.90	+50.90	:	Victoria Rupes
++340.50	-37.70	:	Vostok Rupes
++339.50	-42.80	:	Zarya Rupes
++203.00	+51.00	:	Zeehaen Rupes

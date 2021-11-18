@@ -1,0 +1,37 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++45.00	+45.00	:	Apollonia
++270.00	+45.00	:	Aurora
++360.00	-72.50	:	Australia
++360.00	+75.00	:	Borea
++225.00	+45.00	:	Caduceata
++90.00	-41.00	:	Cyllene
++190.00	+40.00	:	Heliocaminus
++5.00	-45.00	:	Hesperis
++135.00	+45.00	:	Liguria
++50.00	+5.00	:	Pentas
++193.00	+0.00	:	Phaethontias
++90.00	+0.00	:	Pieria
++230.00	+25.00	:	Pleias Gallia
++25.00	-10.00	:	Sinus Argiphontae
++270.00	+55.00	:	Solitudo Admetei
++70.00	-15.00	:	Solitudo Alarum
++70.00	+25.00	:	Solitudo Aphrodites
++150.00	-35.00	:	Solitudo Atlantis
++130.00	+0.00	:	Solitudo Criophori
++180.00	-10.00	:	Solitudo Helii
++315.00	-45.00	:	Solitudo Hermae Trismegisti
++245.00	+25.00	:	Solitudo Horarum
++360.00	+0.00	:	Solitudo Iovis
++253.00	+0.00	:	Solitudo Lycaonis
++205.00	-15.00	:	Solitudo Maiae
++260.00	-35.00	:	Solitudo Martis
++210.00	+30.00	:	Solitudo Neptuni
++135.00	-41.00	:	Solitudo Persephones
++135.00	+25.00	:	Solitudo Phoenicis
++217.50	-45.00	:	Solitudo Promethei
++324.00	+0.00	:	Tricrena

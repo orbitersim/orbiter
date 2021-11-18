@@ -1,0 +1,10 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
++331.60	-27.50	:	Arecibo Vallis
++328.30	-15.80	:	Goldstone Vallis
++313.80	+4.70	:	Haystack Vallis
++295.70	-13.20	:	Simeiz Vallis

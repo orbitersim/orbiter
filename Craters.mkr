@@ -1,0 +1,246 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+END_HEADER
+
+BEGIN_DATA
++339.60	+17.40	:	Abu Nuwas
++318.80	-51.50	:	Africanus Horton
++233.20	+58.50	:	Ahmad Baba
++263.00	+59.20	:	Al-Akhtal
++270.30	+38.80	:	Al-Hamadhani
++338.50	+1.20	:	Al-J?hiz
++256.50	-63.50	:	Alencar
++184.40	+12.30	:	Amru Al-Qays
++322.30	-47.70	:	Andal
++348.60	+82.00	:	Aristoxenus
++339.00	+10.40	:	A?vaghosa
++256.60	-68.50	:	Bach
++346.30	-22.60	:	Balagtas
++215.90	+10.30	:	Balzac
++197.20	-41.30	:	Barma
++225.40	-29.60	:	Bartók
++190.30	-32.70	:	Bash?
++236.40	-20.80	:	Beethoven
++256.60	-76.00	:	Belinskij
++240.00	-18.90	:	Bello
++223.50	-79.20	:	Bernini
++250.80	+73.10	:	Bjornson
++330.20	-80.70	:	Boccaccio
++286.70	-0.90	:	Boethius
++250.40	+63.70	:	Botticelli
++183.80	+58.50	:	Brahms
++298.20	-47.50	:	Bramante
++234.10	+38.70	:	Brontë
++252.50	+49.80	:	Bruegel
++337.80	-9.10	:	Brunelleschi
++244.30	+54.40	:	Burns
++327.30	-8.50	:	Byron
++327.40	-66.30	:	Callicrates
++290.40	-70.60	:	Camões
++270.10	-36.60	:	Carducci
++238.00	-74.60	:	Cervantes
++236.60	-8.50	:	Cézanne
++309.60	+7.40	:	Chaikovskij
++225.80	-87.30	:	Chao Meng-Fu
++298.50	-36.20	:	Chekhov
++257.30	+13.80	:	Chiang K'ui
++243.80	+46.40	:	Ch?ng Ch'?l
++236.90	-65.10	:	Chopin
++254.90	+2.20	:	Chu Ta
++293.30	-55.90	:	Coleridge
++274.80	-38.40	:	Copley
++208.60	+29.80	:	Couperin
++350.00	-26.50	:	Darío
++233.60	+37.40	:	Degas
++231.00	-44.70	:	Delacroix
++324.70	+44.90	:	Derzhavin
++269.30	+80.80	:	Despréz
++206.70	-72.90	:	Dickens
++346.20	+2.80	:	Donne
++183.60	-45.10	:	Dostoevskij
++180.50	-53.50	:	Dowland
++241.00	+21.90	:	Dürer
++348.10	-9.60	:	Dvorák
++340.80	+42.70	:	Echegaray
++203.10	-22.10	:	Eitoku
++329.30	-40.20	:	Equiano
++180.10	-4.90	:	Fet
++287.80	-13.70	:	Flaubert
++277.00	-16.20	:	Futabatei
++176.70	-36.10	:	Gainsborough
++263.70	+66.30	:	Gauguin
++279.80	-48.40	:	Ghiberti
++304.20	+12.00	:	Giotto
++341.90	+37.30	:	Gluck
++315.50	+78.50	:	Goethe
++213.60	-28.10	:	Gogol
++208.00	-7.20	:	Goya
++346.00	+51.10	:	Grieg
++341.70	-38.70	:	Guido d'Arezzo
++245.00	-54.80	:	Hals
++216.20	-71.60	:	Han Kan
++326.20	+3.40	:	Handel
++219.30	+15.00	:	Harunobu
++180.10	-23.70	:	Hauptmann
++244.90	-51.30	:	Hawthorne
++288.40	-27.30	:	Haydn
++235.90	+32.60	:	Heine
++325.00	-58.50	:	Hesiod
++333.30	-13.40	:	Hiroshige
++344.20	-16.20	:	Hitomaro
++331.10	+35.60	:	Holbein
++298.90	-67.00	:	Holberg
++323.80	-1.20	:	Homer
++308.00	-68.90	:	Horace
++313.00	+38.90	:	Hugo
++340.00	-0.50	:	Hun Kal
++324.40	-24.10	:	Ibsen
++194.80	-79.10	:	Ictinus
++322.70	-18.10	:	Imhotep
++248.60	-32.90	:	Ives
++206.20	+56.00	:	Janá?ek
++224.70	+72.40	:	Jókai
++252.30	+10.90	:	Judah Ha-Levi
++180.80	-18.10	:	K?lid?s?
++205.50	-69.90	:	Keats
++343.90	-21.50	:	Kenk?
++308.10	-59.70	:	Khansa
++221.80	+60.10	:	K?sh?
++307.60	+29.40	:	Kuan Han-Ch'ing
++328.90	-11.30	:	Kuiper
++338.20	-53.40	:	Kurosawa
++179.90	-73.00	:	Leopardi
++311.90	+15.20	:	Lermontov
++270.30	-28.70	:	Lessing
++286.90	-77.10	:	Li Ch'ing-Chao
++325.00	+16.90	:	Li Po
++177.20	-40.30	:	Liang K'ai
++191.90	-16.10	:	Liszt
++336.60	+0.00	:	Lu Hsun
++227.50	+0.80	:	Lysippus
++282.00	-60.40	:	Ma Chih-Yuan
++277.90	-1.90	:	Machaut
++341.30	-20.00	:	Mahler
++241.30	+73.20	:	Mansart
++197.40	+47.80	:	Mansur
++184.50	+31.10	:	March
++222.10	-11.20	:	Mark Twain
++195.40	-75.60	:	Martí
++182.90	+69.10	:	Martial
++270.20	-24.00	:	Matisse
++349.90	+21.50	:	Melville
++235.60	-0.20	:	Mena
++342.20	-61.30	:	Mendes Pinto
++250.90	-45.00	:	Michelangelo
++256.90	+23.60	:	Mickiewicz
++185.20	-26.20	:	Milton
++306.00	+4.50	:	Mistral
++331.80	-37.70	:	Mofolo
++343.10	+15.60	:	Molière
++349.70	+44.40	:	Monet
++282.70	+63.80	:	Monteverdi
++169.50	+8.00	:	Mozart
++329.80	-12.60	:	Murasaki
++263.50	+32.80	:	Mussorgskij
++280.70	+70.90	:	Myron
++309.90	-40.60	:	Nampeyo
++181.00	+43.00	:	Nervo
++325.50	-37.30	:	Neumann
++195.00	+71.50	:	Niz?m?
++284.20	-69.10	:	?kyo
++337.50	-69.50	:	Ovid
++333.80	-30.60	:	Petrarch
++210.70	+8.70	:	Phidias
++248.50	-8.70	:	Philoxenus
++350.50	-38.50	:	Pigalle
++194.90	-7.20	:	Po Chü-I
++339.80	-46.20	:	Po Ya
++291.60	-0.30	:	Polygnotus
++300.80	+27.30	:	Praxiteles
++313.30	+19.70	:	Proust
++313.20	-65.30	:	Puccini
++213.20	+81.30	:	Purcell
++337.60	-66.30	:	Pushkin
++297.60	-61.00	:	Rabelais
++264.20	+4.50	:	Rajnis
++322.50	-54.90	:	Rameau
++284.10	-19.90	:	Raphael
++322.00	-12.00	:	Ravel
++308.50	-18.60	:	Renoir
++297.00	-19.20	:	Repin
++260.40	-52.80	:	Riemenschneider
++347.70	-45.20	:	Rilke
++212.00	-62.00	:	Rimbaud
++341.80	+21.10	:	Rodin
++285.90	+59.80	:	Rubens
++203.20	-15.10	:	Rublev
++308.90	-4.00	:	R?daki
++280.40	-32.80	:	Rude
++255.30	-24.10	:	R?m?
++304.00	-78.60	:	Sad?
++183.70	+72.90	:	Saikaku
++172.30	-29.80	:	Sarmiento
++237.90	-28.40	:	Sayat-Nova
++260.00	+40.50	:	Scarlatti
++224.30	-16.00	:	Schoenberg
++305.70	-43.40	:	Schubert
++187.10	-81.10	:	Scopas
++270.90	-64.30	:	Sei
++209.10	+49.70	:	Shakespeare
++232.20	-47.80	:	Shelley
++313.50	-53.80	:	Shevchenko
++272.30	+50.40	:	Sholem Aleichem
++215.30	-49.60	:	Sibelius
++315.00	-29.10	:	Simonides
++330.20	+15.50	:	Sinan
++289.80	-48.50	:	Smetana
++277.10	-9.00	:	Snorri
++214.30	-7.00	:	Sophocles
++336.10	+49.00	:	Sor Juana
++322.30	+38.90	:	S?seki
++341.90	-49.10	:	S?tatsu
++298.20	-68.60	:	Spitteler
++286.50	+50.50	:	Stravinsky
++224.70	+53.70	:	Strindberg
++273.70	-16.90	:	Sullivan
++266.70	-47.10	:	S?r D?s
++235.40	-37.10	:	Surikov
++251.80	+30.80	:	Takanobu
++196.90	-37.50	:	Takayoshi
++289.10	+3.90	:	Tansen
++296.50	-3.00	:	Th?kur
++217.60	-4.90	:	Theophanes
++227.70	+5.90	:	Thoreau
++337.10	-48.10	:	Tintoretto
++317.90	-3.60	:	Titian
++196.50	-16.30	:	Tolstoj
++337.80	+22.80	:	Ts'ai Wen-Chi
++218.00	-13.40	:	Ts'ao Chan
++338.70	-63.00	:	Tsurayuki
++305.00	+73.60	:	Tung Yüan
++225.00	+65.70	:	Turgenev
++211.60	+3.70	:	Tyagaraja
++297.30	-31.90	:	Unkei
++194.70	-32.10	:	Ustad Isa
++219.00	-23.50	:	V?lmiki
++196.20	+76.70	:	Van Dijck
++201.20	+43.20	:	Van Eyck
++225.10	-76.50	:	van Gogh
++306.30	+37.50	:	Velázquez
++191.40	+64.70	:	Verdi
++217.60	-56.80	:	Vincente
++275.00	+13.70	:	Vivaldi
++347.30	+28.00	:	Vlaminck
++278.90	+48.30	:	Vy?sa
++246.00	-67.40	:	Wagner
++256.20	+8.80	:	Wang Meng
++303.50	-38.00	:	Wergeland
++249.60	+41.40	:	Whitman
++324.80	+24.30	:	Wren
++360.00	+0.00	:	[Yakovlev]
++325.40	+9.20	:	Yeats
++250.60	-72.50	:	Yun S?n-Do
++212.80	-3.10	:	Zeami
++182.70	+50.10	:	Zola

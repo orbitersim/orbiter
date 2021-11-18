@@ -1,0 +1,13 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+BEGIN_DATA
++280.50	+73.40	:	Borealis Planitia
++209.10	+22.00	:	Budh Planitia
++170.20	+30.50	:	Caloris Planitia
++188.40	+23.30	:	Odin Planitia
++230.10	+39.90	:	Sobkou Planitia
++209.20	+59.20	:	Suisei Planitia
++183.90	+0.80	:	Tir Planitia
