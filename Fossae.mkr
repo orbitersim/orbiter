@@ -1,11 +1,12 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
-ShapeIdx 3
+ColourIdx 5
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
-;Updated 17 November 2021
+;File created 17 November 2021
 
 BEGIN_DATA
--174.15	+31.46	:	Caloris Montes
++88.5	-32.77	:	Borobudur Fossae
++162.83	+30.19	:	Pantheon Fossae
+

@@ -3,20 +3,46 @@ InitialState on
 ColourIdx 2
 END_HEADER
 
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;16 items updated, 24 new items added 17 November 2021
+
 BEGIN_DATA
-+294.50	-65.10	:	Adventure Rupes
-+289.30	-42.60	:	Astrolabe Rupes
-+321.70	-56.30	:	Discovery Rupes
-+328.70	+37.50	:	Endeavour Rupes
-+266.70	-56.90	:	Fram Rupes
-+200.70	-66.70	:	Gj�a Rupes
-+234.70	+25.90	:	Heemskerck Rupes
-+188.60	-58.40	:	Hero Rupes
-+320.10	-37.30	:	Mirni Rupes
-+204.00	-58.10	:	Pourquoi-Pas Rupes
-+308.30	-63.80	:	Resolution Rupes
-+340.30	+5.50	:	Santa Mar�a Rupes
-+328.90	+50.90	:	Victoria Rupes
-+340.50	-37.70	:	Vostok Rupes
-+339.50	-42.80	:	Zarya Rupes
-+203.00	+51.00	:	Zeehaen Rupes
+-65.3	-65.48	:	Adventure Rupes
++131.69	-13.48	:	Alpha Crucis Rupēs
++173.51	-70.48	:	Altair Rupes
++151.28	+8.3	:	Alvin Rupes
+-70.9	-42.55	:	Astrolabe Rupes
++100.76	-3.22	:	Beagle Rupes
++63.76	-50.45	:	Belgica Rupes
++89.85	-3.04	:	Blossom Rupes
++43.52	+19.53	:	Calypso Rupes
+-53.25	+58.52	:	Carnegie Rupes
++100.38	-53.82	:	Chikyu Rupes
+-37.24	-54.7	:	Discovery Rupes
+-131.93	-20.88	:	Duyfken Rupes
++90.6	-74.99	:	Eltanin Rupes
+-31.38	+38.36	:	Endeavour Rupes
++76.54	-36.54	:	Enterprise Rupes
+-93.2	-57.68	:	Fram Rupes
+-158.5	-66.89	:	Gjöa Rupes
++5.38	+7.9	:	Grifo Rupes
+-124.31	+27.3	:	Heemskerck Rupes
+-171.7	-58.72	:	Hero Rupes
++136.04	-25.39	:	Investigator Rupes
++29.2	-29.8	:	Kainan Rupēs
+-26.62	+66.3	:	La Dauphine Rupes
++14.3	-47.7	:	Meteor Rupēs
+-39.01	-38.54	:	Mirni Rupes
++66.67	-28.23	:	Nautilus Rupes
+-106.28	-26.07	:	Palmer Rupes
++147.46	-0.08	:	Paramour Rupes
+-156.17	-58.54	:	Pourquoi-Pas Rupes
+-50.66	-63.25	:	Resolution Rupes
+-20	+5.81	:	Santa María Rupes
++66.63	-6.47	:	Soya Rupes
++84.31	-72.06	:	Terror Rupes
++84.8	+27.16	:	Unity Rupes
+-34.16	+52.71	:	Victoria Rupes
+-19.6	-37.88	:	Vostok Rupes
+-20.42	-42.73	:	Zarya Rupes
+-158.15	+49.64	:	Zeehaen Rupes

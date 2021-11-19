@@ -1,0 +1,34 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;File created 17 November 2021
+
+BEGIN_DATA
++145.4	+21.7	:	Abeeso Facula
++146.3	+22.4	:	Agwo Facula
++10.5	-49.8	:	Amaru Facula
++157.2	+16.4	:	Bibilava Faculae
+-28.45	-51.55	:	Bitin Facula
++143.45	-29.75	:	Coatl Facula
++159.5	+14.5	:	Ejo Faculae
++38.6	-52.9	:	Gata Facula
+-28.45	-52.22	:	Havu Facula
++160.8	+14.5	:	Ibab Facula
++162.3	+14	:	Inyoka Faculae
++164	+14.9	:	Maciji Facula
++17.8	-52.7	:	Nākahi Facula
++64.5	+36	:	Nathair Facula
++57.3	+35.9	:	Neidr Facula
++165.3	+15.4	:	Nzoka Facula
+-59.68	+26.58	:	Orm Faculae
+-31.79	-57.76	:	Pampu Facula
+-30.87	-53.07	:	Sarpa Facula
+-179.3	+24.5	:	Slang Faculae
++59.6	+26.1	:	Suge Facula
++159.5	+48.7	:	Thueban Facula
+-29.95	-55.1	:	Ular Facula
++168.78	-46.32	:	Yinshe Facula
++92.25	-37.35	:	Zmija Facula

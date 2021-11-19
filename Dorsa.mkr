@@ -3,6 +3,10 @@ InitialState on
 ColourIdx 5
 END_HEADER
 
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;Updated 16 November 2021
+
+
 BEGIN_DATA
-+329.50	+25.10	:	Antoniadi Dorsum
-+195.90	+23.00	:	Schiaparelli Dorsum
+-29.65	+28	:	Antoniadi Dorsum	;central coordinates = +330.35 +27.2, marker moved out of crater
+-164.3	+23.26	:	Schiaparelli Dorsum
