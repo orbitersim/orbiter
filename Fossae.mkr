@@ -7,6 +7,6 @@ END_HEADER
 ;File created 17 November 2021
 
 BEGIN_DATA
-+88.5	-32.77	:	Borobudur Fossae
-+162.83	+30.19	:	Pantheon Fossae
+88.5	-32.77	:	Borobudur Fossae
+162.83	30.19	:	Pantheon Fossae
 

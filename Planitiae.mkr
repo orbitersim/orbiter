@@ -7,18 +7,18 @@ END_HEADER
 ;7 items updated, 8 new items added, 17 November 2021
 
 BEGIN_DATA
-+70.62	+6.7	:	Apārangi Planitia
-+32.6	+67.3	:	Borealis Planitia
--150.46	+19.52	:	Budh Planitia
-+161.98	+31.65	:	Caloris Planitia
+70.62	6.7	:	Apārangi Planitia
+32.6	67.3	:	Borealis Planitia
+-150.46	19.52	:	Budh Planitia
+161.98	31.65	:	Caloris Planitia
 -98.66	-6.24	:	Lugus Planitia
-+132.1	+31.4	:	Mearcair Planitia
-+190.14	+23.6	:	Odin Planitia
-+22.39	+18.26	:	Otaared Planitia
-+88.37	-16.25	:	Papsukkal Planitia
+132.1	31.4	:	Mearcair Planitia
+190.14	23.6	:	Odin Planitia
+22.39	18.26	:	Otaared Planitia
+88.37	-16.25	:	Papsukkal Planitia
 -55.57	-2.82	:	Sihtu Planitia
--128.02	+39	:	Sobkou Planitia
--147.81	+60.88	:	Suisei Planitia
+-128.02	39	:	Sobkou Planitia
+-147.81	60.88	:	Suisei Planitia
 176.69	-1.04	:	Tir Planitia
-+9.19	-31.05	:	Turms Planitia
-+89.83	-65.5	:	Utaridi Planitia
+9.19	-31.05	:	Turms Planitia
+89.83	-65.5	:	Utaridi Planitia
