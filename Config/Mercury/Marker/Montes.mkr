@@ -1,0 +1,11 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+ShapeIdx 3
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;Updated 17 November 2021
+
+BEGIN_DATA
+-174.15	31.46	:	Caloris Montes

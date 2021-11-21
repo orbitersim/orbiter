@@ -1,0 +1,40 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;updated 11 November 2021
+
+BEGIN_DATA
+45.00	45.00	:	Apollonia
+-90.00	45.00	:	Aurora
+0	-72.50	:	Australia
+0	75.00	:	Borea
+-135.00	45.00	:	Caduceata
+90.00	-41.00	:	Cyllene
+-120	40	:	Gallia
+-170.00	40.00	:	Heliocaminus
+5.00	-45.00	:	Hesperis
+135.00	45.00	:	Liguria
+50.00	5.00	:	Pentas
+-167.00	0.00	:	Phaethontias
+90.00	0.00	:	Pieria
+-140.00	15.00	:	Pleias
+-90.00	55.00	:	Solitudo Admetei
+70.00	-15.00	:	Solitudo Alarum
+70.00	25.00	:	Solitudo Aphrodites
+25.00	-10.00	:	Solitudo Argiphontae
+150.00	-35.00	:	Solitudo Atlantis
+130.00	0.00	:	Solitudo Criophori
+180.00	-10.00	:	Solitudo Helii
+-45.00	-45.00	:	Solitudo Hermae Trismegisti
+-115.00	25.00	:	Solitudo Horarum
+0	0.00	:	Solitudo Iovis
+-107.00	0.00	:	Solitudo Lycaonis
+-155.00	-15.00	:	Solitudo Maiae
+-100.00	-35.00	:	Solitudo Martis
+-150.00	30.00	:	Solitudo Neptuni
+135.00	-41.00	:	Solitudo Persephones
+135.00	25.00	:	Solitudo Phoenicis
+-142.5	-45.00	:	Solitudo Promethei
+-36	0.00	:	Tricrena

@@ -1,0 +1,14 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;3 items moved to Catena.cfg, 5 new items added 17 November 2021
+
+BEGIN_DATA
+114.04	-57.28	:	Angkor Vallis
+126.94	65.55	:	Cahokia Vallis
+129.29	62.66	:	Caral Vallis
+126.04	60.28	:	Paestum Vallis
+116.44	60.88	:	Timgad Vallis
