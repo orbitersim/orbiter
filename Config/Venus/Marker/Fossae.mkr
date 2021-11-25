@@ -1,0 +1,44 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 21 November 2021
+
+BEGIN_DATA
+131	67	:	Aife Fossae
+-102	-45	:	Ajina Fossae
+-23.5	-9	:	Albasty Fossae
+-120.1	37	:	Arianrod Fossae
+-137.9	38	:	Bellona Fossae
+18	-26	:	Brynhild Fossae
+-9	-62	:	Enyo Fossae
+-136	27.5	:	Fea Fossae
+46.5	34.5	:	Felesta Fossae
+109.5	50.2	:	Friagabi Fossae
+-31	-5	:	Gulaim Fossae
+148.5	29	:	Hanekasa Fossae
+;159.4	45.4	:	[Hildr Fossa]		;dropped 1985
+-105.4	71.9	:	Ilbis Fossae
+-18	28	:	Karra-māhte Fossae
+-57	-13	:	Khosedem Fossae
+-27.5	-12	:	Magura Fossae
+64.9	63.6	:	Manto Fossae
+-107.5	64.5	:	Minerva Fossae
+;-112.7	39.5	:	[Mist Fossae]		1985, changed to Mist Chasma
+159.3	-35.6	:	Naguchitsa Fossae
+-23	-70.2	:	Naijok Fossae
+2.7	2.5	:	Namjyalma Fossae
+-31	-66.5	:	Narundi Fossae
+-20	-59.5	:	Nike Fossae
+-146	-12	:	Penthesilea Fossa
+-53	-10	:	Perunitsa Fossae
+-3.6	62.7	:	Rangrid Fossae
+139	73	:	Saykal Fossae
+18	50.5	:	Sigrun Fossae
+7	58.2	:	Valkyrie Fossae
+7	-48	:	Yenkhoboy Fossae
+-136	48	:	Yuzut-Arkh Fossae
+-178	-67.5	:	Zheztyrnak Fossae
+

@@ -1,0 +1,133 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+ShapeIdx 3
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 21 November 2021
+
+BEGIN_DATA
+-86.9	-44.8	:	Abeona Mons
+-41.8	68.9	:	Akna Montes
+-51.5	-9	:	Aleksota Mons
+14.1	11	:	Anala Mons
+54.7	38.9	:	Api Mons
+-69	-22	:	Atai Mons
+-51.1	9.5	:	Atanua Mons
+-92.4	52.2	:	Atira Mons
+-133	-78.5	:	Atsyrkhus Mons
+-112	-60	:	Awenhai Mons
+-81	65.5	:	Bagbartu Mons
+21.9	34	:	Bécuma Mons
+-5.1	45.8	:	Bunzi Mons
+-65.4	-45.4	:	Chloris Mons
+-114	-38	:	Chuginadak Mons
+-27.5	-31.5	:	Cipactli Mons
+150.9	53	:	Ciuacoatl Mons
+-83.2	34.8	:	Copacati Mons
+;-126.9	44.1	:	[Cotis Mons]		;removed 1985, Name changed to Cotis Tholus
+-26	58.5	:	Danu Montes
+34	0.5	:	Dzalarhons Mons
+134	-59	:	Egle Mons
+-30.9	45.1	:	Eostre Mons
+8	-68	:	Erzulie Mons
+158	7	:	Fand Mons
+-51	-43.5	:	Faravari Mons
+-26.2	74.1	:	Freyja Montes
+;-123.6	35.9	:	[Furki Mons]		;removed 1985, name changed to Furki Tholus
+102.2	-20.2	:	Gauri Mons
+-0.9	21.9	:	Gula Mons
+58.5	-47.5	:	Gurshi Mons
+-121.3	-21.4	:	Gwen Mons
+-161.7	53.1	:	Hallgerda Mons
+-35.3	-38.7	:	Hathor Mons
+-145.5	-46.5	:	Idunn Mons
+-44.5	-13.5	:	Ilithyia Mons
+-31.5	-34.6	:	Innini Mons
+16	14.6	:	Irnini Mons
+171	9	:	Iseghey Mons
+-117.8	15.7	:	Ixtab Mons
+120.8	51.2	:	Jael Mons
+29.2	9.4	:	Kali Mons
+126	-69	:	Katl-Imi Mons
+-148	35.5	:	Kokyanwuti Mons
+-92	19.5	:	Kono Mons
+58	-54.9	:	Kshumay Mons
+86	-33.9	:	Kunapipi Mons
+103	48.7	:	Kurukulla Mons
+162	14	:	Lahar Mons
+-98	79.9	:	Laka Mons
+172.7	2.8	:	Lamashtu Mons
+91	-68.5	:	Lanig Mons
+56	-59.5	:	Loo-Wit Mons
+;-109	-12	:	[Ludjatako Mons]		;removed 1997, name changed to Ludjatako Corona
+-165.4	0.5	:	Maat Mons
+3.3	65.2	:	Maxwell Montes
+-144.8	-15.1	:	Mbokomu Mons
+119.3	62.8	:	Melia Mons
+-151	9.5	:	Mem Loimis Mons
+;-122.7	43	:	[Mentha Mons]			;removed 1985, name changed to Mentha Tholus
+-89.7	-38.1	:	Mertseger Mons
+-107	71	:	Metis Mons
+-79.5	-27.8	:	Mielikki Mons
+159.4	52.5	:	Milda Mons
+-105	57.7	:	Mokosha Mons
+174.5	10.6	:	Muhongo Mons
+-1.7	55.5	:	Muta Mons
+-155	14	:	Nahas-tsan Mons
+83	2	:	Nayunuwi Montes
+-120	22.5	:	Nazit Mons
+-102.5	-43	:	Ne Ngam Mons
+-42.5	-33	:	Nepthys Mons
+-175	45	:	Nijole Mons
+-162.5	25.7	:	Ninisinna Mons
+-171	20	:	Nokomis Montes
+48.5	30	:	Nyx Mons
+-165.5	-2	:	Ongwuti Mons
+-159	4.5	:	Ozza Mons
+114.5	-64.5	:	Pahto Mons
+-96	24.5	:	Polik-mana Mons
+45.4	2.8	:	Ptesanwi Mons
+-38.5	-43.7	:	Rakapila Mons
+-123.8	76	:	Renpet Mons
+-77.8	32.4	:	Rhea Mons
+-58.5	2.5	:	Rhpisunt Mons
+-140.5	35	:	Sakwap-mana Mons
+-69	13.6	:	Samodiva Mons
+-171.7	8.5	:	Sapas Mons
+-5.5	75.7	:	Sarasvati Mons
+-119.5	44.5	:	Sekmet Mons
+28	-43	:	Sephira Mons
+;33.2	26.3	:	[Seshat Mons]			;removed 1991
+-152	39.4	:	Shala Mons
+-62.7	-42.3	:	Siduri Mons
+-7.6	22	:	Sif Mons
+4	64	:	Skadi Mons
+-11.5	9.3	:	Somagalags Montes
+-105	-16.5	:	Spandarmat Mons
+-4.6	-11	:	Talakin Mons
+-56	-38.6	:	Tefnut Mons
+44.3	29	:	Tepev Mons
+-129	74.5	:	Thallo Mons
+-79	22.7	:	Theia Mons
+-128	-12.9	:	Toma Mons
+-87.1	-27.2	:	Ts'an Nu Mons
+-45.4	13.3	:	Tuli Mons
+-85.3	10.3	:	Tuulikki Mons
+41.5	-42.5	:	Tuzandi Mons
+117	40.5	:	Ua-ogrere Mons
+-99	-12	:	Uretsete Mons
+-35.4	-24.3	:	Ushas Mons
+69	16	:	Uti Hiata Mons
+-43.8	1.2	:	Var Mons
+-121.2	32.7	:	Venilia Mons
+-60.6	-6.3	:	Vostrukha Mons
+-152.3	26.3	:	Waka Mons
+-112.8	14	:	Wyrd Mons
+-90	3.5	:	Xochiquetzal Mons
+-165.8	39.7	:	Xtoh Mons
+-166	17	:	Yolkai-Estsan Mons
+-75	-18	:	Yunya-mana Mons
+163.5	18	:	Zaltu Mons
+

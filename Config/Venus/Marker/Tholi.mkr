@@ -1,0 +1,68 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 21 November 2021
+
+BEGIN_DATA
+-127	75.1	:	Akka Tholus
+-103.6	-2.1	:	Alcyone Tholus
+-113	68.2	:	Ale Tholus
+98	53	:	Amra Tholus
+-72.8	-29.8	:	Angerona Tholus
+116	-73.8	:	Angrboda Tholus
+-151.2	40.3	:	Apakura Tholus
+-113	48.7	:	Ashtart Tholus
+-110.65	-34.05	:	Azimua Tholi
+130.3	57.8	:	Bast Tholus
+;-114	49	:	[Brigit Tholus]			;removed 1985
+-127	44.3	:	Cotis Tholus
+6.3	24.2	:	Dröl-ma Tholus
+-130	75.5	:	Eirene Tholus
+-17.8	37.6	:	Evaki Tholus
+91.3	23.7	:	Ezili Tholus
+-123.6	35.9	:	Furki Tholus
+-68.5	-54.5	:	Gerd Tholi
+-104.2	-8.6	:	Grechukha Tholi
+-104.7	5.2	:	Iaso Tholus
+-63.5	-28.7	:	Justitia Tholus
+177.8	-9.1	:	Khotal-Ekva Tholi
+-63.2	-26.3	:	Kwannon Tholus
+-94	7.8	:	Lama Tholus
+164.7	-37.5	:	Mahuea Tholus
+-78.7	-44.7	:	Meiboia Tholus
+-122.7	43	:	Mentha Tholus
+-108	-37.7	:	Monoshi Tholus
+-54.5	-9	:	Muru Tholus
+80	-25.8	:	Narina Tholi
+16	-57.5	:	Ndara Tholus
+-160	-68.6	:	Neegyauks Tholus
+-112.1	61.2	:	Nertus Tholus
+-104.3	8.4	:	Nipa Tholus
+-172	-77	:	Norterma Tholus
+46.3	28.7	:	Otafuku Tholi
+-91.8	-32	:	Otohime Tholus
+68.3	-34.7	:	Padma Tholi
+-107.8	8.3	:	Pajan Yan Tholus
+-92	10.5	:	Paoro Tholi
+-6.8	-0.7	:	Perynya Tholus
+2	-56.3	:	Podaga Tholus
+-64.6	-40.6	:	Rohina Tholus
+73.3	-25.5	:	Rosna Tholi
+-157.1	64.3	:	Semele Tholi
+-24.8	-6.9	:	Shamiram Tholus
+-107.8	-13.8	:	Sumerla Tholi
+-4.9	29.5	:	Toci Tholus
+-137.7	-66.9	:	Turi Tholus
+-154.8	-35.4	:	Tursa Tholus
+-107.6	66.2	:	Upunusa Tholus
+176.5	-6.5	:	Vilakh Tholus
+-54	-13.5	:	Vupar Tholus
+-71.9	41.4	:	Wohpe Tholus
+-150.1	40.6	:	Wurunsemu Tholus
+-127.8	76.1	:	Yansa Tholus
+-18.5	-13.8	:	Yurt-Ava Tholus
+-24.7	-9.4	:	Zorya Tholus
+

@@ -1,0 +1,13 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 21 November 2021
+
+BEGIN_DATA
+20	-45	:	Astkhik Planum
+-20.7	+68.6	:	Lakshmi Planum
+116.5	-13	:	Turan Planum
+112	-20	:	Viriplaca Planum

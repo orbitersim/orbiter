@@ -1,0 +1,51 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 25 November 2021
+
+BEGIN_DATA
+25	-73	:	Aibarchin Planitia
+94.5	-40.5	:	Aino Planitia
+65	27	:	Akhtamar Planitia
+100	-76	:	Alma-Merghen Planitia
+165.8	45.6	:	Atalanta Planitia
+72	61	:	Audra Planitia
+23.6	28.6	:	Bereghinya Planitia
+-65	-15	:	Dzerassa Planitia
+48	-44	:	Fonueha Planitia
+-158	40	:	Ganiki Planitia
+-35	21.9	:	Guinevere Planitia
+-93	-16	:	Gunda Planitia
+-96.1	-51.7	:	Helen Planitia
+-95	5	:	Hinemoa Planitia
+142	-60	:	Imapinua Planitia
+-10	-10	:	Kanykey Planitia
+-113.5	32.8	:	Kawelu Planitia
+117	-58	:	Laimdota Planitia
+-12.5	-47.3	:	Lavinia Planitia
+65.1	44	:	Leda Planitia
+-70	60	:	Libuše Planitia
+145	18	:	Llorona Planitia
+120.5	80.5	:	Louhi Planitia
+98	43	:	Lowana Planitia
+60	-69	:	Mugazo Planitia
+-42.4	-8.1	:	Navka Planitia
+112.3	21	:	Niobe Planitia
+-165	-53	:	Nsomeka Planitia
+-110	-73	:	Nuptadi Planitia
+170	3	:	Rusalka Planitia
+-19.3	42.7	:	Sedna Planitia
+-32	86.6	:	Snegurochka Planitia
+107	8	:	Sogolon Planitia
+80	-23	:	Tahmina Planitia
+120	54	:	Tilli-Hanum Planitia
+16	-2	:	Tinatin Planitia
+-57	13	:	Undine Planitia
+149.1	45.4	:	Vellamo Planitia
+-152.4	53.8	:	Vinmara Planitia
+-143	-30	:	Wawalag Planitia
+157	-40	:	Zhibek Planitia
+

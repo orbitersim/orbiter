@@ -1,0 +1,99 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 21 November 2021
+
+BEGIN_DATA
+-10.6	-16.7	:	Aitchison Patera
+57.8	66.5	:	Anning Paterae
+32.6	48.2	:	Anthony Patera
+83.8	43.1	:	Apgar Patera
+;-171	56.4	:	[Aspasia Patera]		;removed 1985
+-132.7	6	:	Ayrton Patera
+;0.1	48.4	:	[Ba'het Patera]			;removed 1991
+-140.5	45.5	:	Bakhtadze Patera
+-130.8	-15.5	:	Barnes Patera
+-177	-66.7	:	Bers Patera
+-38.7	46.5	:	Bethune Patera
+96.5	56.6	:	Boadicea Paterae
+63.7	66.8	:	Bremer Patera
+;48.8	48.6	:	[Carriera Patera]		;removed 1991
+;-152.3	65.6	:	[Cassatt Patera]		;removed 1991, name changed to Cassatt Corona
+;18.7	37.9	:	[Cavell Patera]			;removed 1991, name changed to Cavell Corona
+-127.5	-5.2	:	Cherskaya Patera
+;6.9	66	:	[Cleopatra Patera]		;removed 1982, name changed to Cleopatra as crater
+-37.2	66.3	:	Colette Patera
+;40.2	62.7	:	[Corday Patera]			;removed 1991
+-96.2	-37.4	:	Darclée Patera
+-90.7	47.2	:	Davies Patera
+-109.8	-31.5	:	Destinnová Patera
+-124.7	-5.3	:	Dietrich Patera
+-161.5	33.8	:	Dutrieu Patera
+79	39.1	:	Eliot Patera
+-133.5	-24	:	Fedchenko Patera
+171.8	45	:	Fedosova Patera
+-101.8	1.5	:	Garbo Patera
+-153.2	32.7	:	Garland Patera
+6	-6	:	Graham Patera
+-60.4	16.7	:	Grizodubova Patera
+64.5	28.1	:	Hatshepsut Patera
+97.4	48.2	:	Hiei Chu Patera
+34.8	35.8	:	Hroswitha Patera
+-166.4	50	:	Izumi Patera
+-55	32	:	Jaszai Patera
+-146	-6.5	:	Jotuni Patera
+-86	45	:	Keller Patera
+39.6	36.7	:	Kottauer Patera
+-164.5	-41.9	:	Kupo Patera
+69	-9.5	:	Kvasha Patera
+;-86.9	52.1	:	[Labé Patera]			;removed 1991		
+-135.2	-9.2	:	Ledoux Patera
+-160.5	-34.5	:	Libby Patera
+-118.6	28.1	:	Lindgren Patera
+-135.4	-18.4	:	Malibran Patera
+81.5	57	:	Malintzin Patera
+-132.5	29.5	:	Mansfield Patera
+-49	16	:	Mehseti Patera
+68.8	-33.3	:	Mezrina Patera
+-11.8	-26.8	:	Mikhaylova Patera
+-92.5	33.9	:	Nikolaeva Patera
+-94	-35	:	Nordenflycht Patera
+;-154.3	68.7	:	[Nzingha Patera]		;removed 1991, name changed to Nzingha Corona
+-50.2	-13	:	Panina Patera
+-164	-25.5	:	Payne-Gaposchkin Patera
+-126	26.5	:	Pchilka Patera
+49.4	64.9	:	Pocahontas Patera
+-137.2	-51	:	Raskova Paterae
+-162.2	46.2	:	Razia Patera
+-139.5	-2.8	:	Rogneda Patera
+-24.6	64.3	:	Sacajawea Patera
+-25.8	49.1	:	Sachs Patera
+;15.5	41.7	:	[Sand Patera]			;removed 1991, name changed to Sand Corona
+16.5	14.1	:	Sappho Patera
+;-145.5	74.3	:	[Schumann-Heink Patera]		;removed 1991, name changed to Schumann-Heink Corona
+-113	20	:	Serova Patera
+162.5	-75.7	:	Shelikhova Patera
+-95.5	6.5	:	Shulzhenko Patera
+-19.4	61.6	:	Siddons Patera
+46.5	42.6	:	Stopes Patera
+-8.5	-58.2	:	Tarbell Patera
+-170.9	-67.6	:	Teasdale Patera
+-105.2	-1.4	:	Tenisheva Patera
+-10.9	-17.8	:	Tey Patera
+;-80	23	:	[Theodora Patera]		;removed 1982, Feature resolved to be part of chasma
+43	38.9	:	Tipporah Patera
+;-145.3	42.4	:	[Tituba Patera]			;removed 1982, name changed to Tituba Corona
+;18.9	41.3	:	[Trotula Patera]		;removed 1985, name changed to Trotula Corona
+-105.7	-7	:	Viardot Patera
+-165.7	-11.6	:	Vibert-Douglas Patera
+-150	-22	:	Villepreux-Power Patera
+-50	-38	:	Vovchok Patera
+-93.7	-21.3	:	Wilde Patera
+-112.35	-25.8	:	Witte Patera
+;-54.6	37.4	:	[Woodhull Patera]		;removed 1991
+;21.2	38.8	:	[Yaroslavna Patera]		;removed 1985, name changed to Yaroslavna Corona
+-97	-35	:	Žemaite Patera
+

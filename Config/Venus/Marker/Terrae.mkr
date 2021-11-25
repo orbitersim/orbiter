@@ -1,0 +1,9 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+BEGIN_DATA
+104.8	-5.8	:	Aphrodite Terra
+27.5	70.4	:	Ishtar Terra
+20	-62.5	:	Lada Terra
