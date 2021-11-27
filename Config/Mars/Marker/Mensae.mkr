@@ -1,0 +1,48 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+:Updated 23 November 2021
+
+BEGIN_DATA
+-75.6	81.17	:	Abalos Mensa
+-25.34	46.69	:	Acidalia Mensa
+140.63	-3.25	:	Aeolis Mensae
+-146.9	-1.98	:	Amazonis Mensa
+-107.89	11.72	:	Ascraeus Mensa
+97.72	-30.02	:	Ausonia Mensa
+-2.76	-86.88	:	Australe Mensa
+-72.45	-5.17	:	Baetis Mensa
+-73.52	-6.26	:	Candor Mensa
+-47.19	-13.73	:	Capri Mensa
+-76.02	-5.89	:	Ceti Mensa
+-70.1	-6.77	:	Chrysas Mensa
+-71.16	-12.2	:	Coprates Mensa
+-12.33	34.56	:	Cydonia Mensae
+23.92	45.11	:	Deuteronilus Mensae
+-42.16	-11.01	:	Eos Mensa
+;147.3	36.18	:	[Galaxias Mensae]			;dropped, feature is part of Galaxias Colles
+-48.75	-7.23	:	Ganges Mensa
+-76.78	-1.02	:	Hebes Mensa
+-75.32	-8.6	:	Ius Mensa
+54.29	-25.89	:	Izola Mensa
+-65.63	-7.93	:	Juventae Mensa
+-74.47	25.5	:	Labeatis Mensa
+-62.5	23.91	:	Lunae Mensa
+-74.15	-10.72	:	Melas Mensa
+119.42	9.19	:	Nepenthes Mensae
+-67.32	-7.72	:	Nia Mensa
+-51.95	30.48	:	Nilokeras Mensae
+68.47	34.77	:	Nilosyrtis Mensae
+-72.23	22.2	:	Nilus Mensae
+119.98	78	:	Olympia Mensae
+-73.49	-3.99	:	Ophir Mensa
+55.1	-45.46	:	Peneus Mensa
+48.86	43.87	:	Protonilus Mensae
+-68.22	24.64	:	Sacra Mensa
+-71.59	27.94	:	Tempe Mensa
+-92.96	81.13	:	Tenuis Mensa
+171.98	-11.62	:	Zephyria Mensae
+

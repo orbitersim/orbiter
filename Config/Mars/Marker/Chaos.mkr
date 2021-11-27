@@ -1,0 +1,39 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;updated 23 November 2021
+
+BEGIN_DATA
+150.6	-7.13	:	Aeolis Chaos
+-22.39	2.52	:	Aram Chaos
+-42.97	-1.03	:	Aromatum Chaos
+-27.92	-7.66	:	Arsinoes Chaos
+-177.31	-34.28	:	Atlantis Chaos
+-26.96	-3.89	:	Aureum Chaos
+-34.81	-8.47	:	Aurorae Chaos
+-60.4	-.017	:	Baetis Chaos
+-72.58	-6.94	:	Candor Chaos
+178.6	-37.2	:	Caralis Chaos
+-37.19	9.86	:	Chryse Chaos
+-74.72	10.79	:	Echus Chaos
+-46.52	-16.82	:	Eos Chaos
+-12.38	-21.84	:	Erythraeum Chaos
+146.52	33.83	:	Galaxias Chaos
+-46.04	-9.76	:	Ganges Chaos
+-170.9	-37.26	:	Gorgonum Chaos
+64.41	-47.12	:	Hellas Chaos
+-26.93	3.09	:	Hydaspis Chaos
+-59.97	-5.9	:	Hydrae Chaos
+-35.29	1.12	:	Hydraotes Chaos
+-40.61	-0.28	:	Iamuna Chaos
+-17.04	-2.19	:	Iani Chaos
+-56.56	12.95	:	Ister Chaos
+-21.7	-9.3	:	Margaritifer Chaos
+-67.38	-6.74	:	Nia Chaos
+-76.95	25.39	:	Nilus Chaos
+-39.87	0.22	:	Oxia Chaos
+-28.4	-10.46	:	Pyrrhae Chaos
+-42.22	11.87	:	Xanthe Chaos

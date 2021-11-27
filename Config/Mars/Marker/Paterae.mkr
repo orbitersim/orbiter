@@ -1,0 +1,41 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 24 November 2021
+
+BEGIN_DATA
+-109.18	39.53	:	Alba Patera
+60.87	-58.7	:	Amphitrites Patera
+;-79.5	-80.59	:	[Angusta Patera]			;dropped September, 2006, feature incorrectly named
+174.18	-8.57	:	Apollinaris Patera
+-133.55	17.94	:	Apollo Patera
+-132.82	18.74	:	Athena Patera
+;-51.7	-80.09	:	[Australis Patera]			;dropped September, 2006, feature incorrectly named
+-123.82	2.36	:	Biblis Patera
+-132.6	34.58	:	[Diacria Patera]			;dropped, from albedo feature at 170W, 48N
+-133.23	17.96	:	Dionysus Patera
+-11.06	33.77	:	Eden Patera
+10.26	38.43	:	Euphrates Patera
+92.79	-30.2	:	Hadriaca Patera
+-133.77	18.45	:	Hera Patera
+-133.43	18.33	:	Hermes Patera
+1.8	38.55	:	Ismenia Patera
+-90.25	38.13	:	Issedon Paterae
+51.59	-63.54	:	Malea Patera
+68.77	6.98	:	Meroe Patera
+;89	11.86	:	[Nepenthes Patera]			; dropped 1979
+67.17	8.97	:	Nili Patera
+-133.19	18.32	:	Olympus Paterae
+178.35	14.13	:	Orcus Patera
+-0.34	38.97	:	Oxus Patera
+52.65	-57.82	:	Peneus Patera
+48.7	30.27	:	Phison Patera
+36.86	-66.88	:	Pityusa Patera
+6.55	35.3	:	Siloe Patera
+106.63	-21.39	:	Tyrrhena Patera
+-121.42	2.95	:	Ulysses Patera
+-92.8	26.32	:	Uranius Patera
+-132.93	18.39	:	Zeus Patera

@@ -1,0 +1,48 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 23 November 2021
+
+BEGIN_DATA
+152.63	-5.05	:	Aeolis Dorsa
+153.15	36.82	:	Aesacus Dorsum
+29.39	9.74	:	Arago Dorsa
+-11.24	7.8	:	Aram Dorsum
+-137.56	55.9	:	Arcadia Dorsa
+68.94	12.71	:	Arena Dorsum
+;-89	38.19	:	[Atrax Dorsum]			;dropped
+-41.76	-55.72	:	Auxo Dorsum
+170.9	-6.03	:	Avernus Dorsa
+-5.28	9.5	:	Cantabras Dorsum
+105.29	-13.74	:	Cerberus Dorsa
+-41.47	-55.86	:	Charis Dorsum
+-45.99	-54.86	:	Cleia Dorsum
+-33.39	-77.63	:	Dorsa Argentea
+63.18	-71.05	:	Dorsa Brevia
+-156.4	4.79	:	Eumenides Dorsum
+-65.9	-21.87	:	Felis Dorsa
+-144.14	4.11	:	Gordii Dorsum
+-44.9	-54.72	:	Hegemone Dorsum
+113.16	-22.8	:	Hesperia Dorsa
+130.32	13.16	:	Hyblaeus Dorsa
+-50.4	20.97	:	Iamuna Dorsa
+88.21	12.92	:	Isidis Dorsa
+-71.02	0.39	:	Juventae Dorsa
+-72.1	-18.92	:	Melas Dorsa
+-79.06	20.68	:	Nilus Dorsa
+-41.58	-55.14	:	Pasithea Dorsum
+-43.29	-53.79	:	Phaenna Dorsum
+170.37	25.08	:	Phlegra Dorsa
+;29.5	-64.24	:	[Pityusa Dorsa]			;name changed to Pityusa Rupes
+-66.09	11.21	:	Sacra Dorsa
+-78.92	-12.77	:	Sinai Dorsa
+-79.74	-22.88	:	Solis Dorsa
+151.86	30.81	:	Styx Dorsum
+115.72	-24.2	:	Tyrrhena Dorsa
+-75.04	23.79	:	Uranius Dorsum
+-34.04	35.9	:	Xanthe Dorsa
+80.54	-48.87	:	Zea Dorsa
+		

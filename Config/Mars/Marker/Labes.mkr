@@ -1,0 +1,16 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 23 November 2021
+
+BEGIN_DATA
+-71.46	-3.67	:	Baetis Labēs
+-75.99	-4.79	:	Candor Labes
+-75.73	-6.78	:	Ceti Labes
+-67.79	-11.82	:	Coprates Labes
+-78.46	-7.47	:	Ius Labes
+-71.7	-8.53	:	Melas Labes
+-68.28	-11.01	:	Ophir Labes

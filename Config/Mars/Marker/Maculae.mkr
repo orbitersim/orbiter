@@ -1,0 +1,10 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+:Updated 23 November 2021
+
+BEGIN_DATA
+-142.84	17.36	:	Olympus Maculae

@@ -1,0 +1,14 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 23 November 2021
+
+BEGIN_DATA
+68.56	-84.05	:	Australe Lingula
+2.59	81.87	:	Gemina Lingula
+-53.54	80.32	:	Hyperborea Lingula
+119.89	-82.8	:	Promethei Lingula
+142.56	-76.32	:	Ultima Lingula

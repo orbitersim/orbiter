@@ -1,0 +1,12 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 23 November 2021
+
+BEGIN_DATA
+143.03	30.96	:	Galaxias Fluctus
+-95.68	35.93	:	Tantalus Fluctus
+155.53	0.72	:	Zephyria Fluctus

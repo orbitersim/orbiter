@@ -1,0 +1,46 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 2
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+:Updated 24 November 2021
+
+BEGIN_DATA
+144.76	-1.14	:	Aeolis Planum
+105.92	3.4	:	Amenthes Planum
+-78.67	-57.9	:	Aonia Planum
+-61.67	-72.49	:	Argentea Planum
+-80.78	40.59	:	Ascuris Planum
+-48.62	-10.41	:	Aurorae Planum
+;-106	-42.66	:	[Bathys Planum]				;name changed to Icaris Planum
+-64.49	-33.87	:	Bosporos Planum
+65.41	-32.68	:	Coronae Planum
+-125.95	-18.35	:	Daedalia Planum
+;-65	-34.18	:	[Erythraeum Planum]			;named changed to Bosporos Planum
+109.89	-21.42	:	Hesperia Planum
+-106.04	-43.27	:	Icaria Planum
+-177.17	-4.99	:	Lucus Planum
+-65.51	10.79	:	Lunae Planum
+62.94	-65.82	:	Malea Planum				;from albedo feature at 60S, 290W
+-3.14	-0.04	:	Meridiani Planum
+113.79	14.01	:	Nepenthes Planum
+77.1	18.6	:	Nili Planum
+76.64	-8.14	:	Oenotria Plana
+-171.19	82.18	:	Olympia Planum
+-57.82	-8.45	:	Ophir Planum
+-25.71	17.28	:	Oxia Planum
+-95.07	-73.67	:	Parva Planum
+-83.2	-79.8	:	Planum Angustum
+157.7	-83.35	:	Planum Australe
+54.96	87.32	:	Planum Boreum
+139.5	-59.14	:	Planum Chronium
+88.36	-79.18	:	Promethei Planum
+-87.76	-13.72	:	Sinai Planum
+6.41	-69.64	:	Sisyphi Planum
+-89.67	-26.4	:	Solis Planum
+-103.9	-12.09	:	Syria Planum
+67.1	9.2	:	Syrtis Major Planum			;Albedo feature name; changed from Planitia to Planum
+-65.22	-21.66	:	Thaumasia Planum
+153.73	-1.08	:	Zephyria Planum
+			
