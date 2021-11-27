@@ -1,0 +1,12 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Created 26 November 2021
+
+BEGIN_DATA
+1.8	12.5	:	Swift
+-3.5	22	:	Voltaire
