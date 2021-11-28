@@ -1,0 +1,12 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/
+;File created 28 November 2021
+
+BEGIN_DATA
+-163.77	-9.05	:	Divalia Fossae
+-117.4	10.33	:	Lupercalia Fossa
+37.05	28.05	:	Saturnalia Fossae
