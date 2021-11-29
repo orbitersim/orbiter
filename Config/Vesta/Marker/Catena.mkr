@@ -1,0 +1,11 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/
+;File created 28 November 2021
+
+BEGIN_DATA
+72.61	-7.17	:	Albalonga Catena
+19.78	-14.04	:	Robigalia Catena

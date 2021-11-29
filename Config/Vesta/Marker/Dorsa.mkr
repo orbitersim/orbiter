@@ -1,0 +1,13 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 28 November 2021
+
+
+BEGIN_DATA
+109.15	96.35	:	Lavinium Dorsum
+80.75	-45.14	:	Neptunalia Dorsa
+123.84	-56.71	:	Parilia Dorsa
