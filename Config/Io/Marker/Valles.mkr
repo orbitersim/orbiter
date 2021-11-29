@@ -1,0 +1,10 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
+
+BEGIN_DATA
+-72.76	+0.31	:	Tawhaki Vallis

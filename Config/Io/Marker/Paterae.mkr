@@ -1,0 +1,154 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
+
+BEGIN_DATA
+-142.17	12.78	:	Ababinili Patera
+26.91	-40.78	:	Agni Patera
+-106.98	10.36	:	Ah Peku Patera
+-177.11	-1.76	:	Aidne Patera
+-108.82	-34.4	:	Altjirra Patera
+53.45	38.21	:	Amaterasu Patera
+-8.85	-21.18	:	Angpetu Patera
+23.39	-73.57	:	Aramazd Patera
+-101.49	-38.99	:	Arusha Patera
+134.42	-8.84	:	Asha Patera
+81.35	30.87	:	Ātar Patera
+50.03	-48.45	:	Aten Patera
+88.41	-39.81	:	Babbar Patera
+-156.16	11.46	:	Balder Patera
+-157.73	2.93	:	Belenus Patera
+-18.88	-61.5	:	Bochica Patera
+-136.8	15.28	:	Camaxtli Patera
+42.72	1.52	:	Carancho Patera
+-16.66	-24.21	:	Cataquil Patera
+-101.58	-53.72	:	Catha Patera
+-157.44	11.96	:	Chaac Patera
+110.09	68.42	:	Chors Patera
+17.45	-53.31	:	Creidne Patera
+-144.65	-0.83	:	Cuchi Patera
+-160.11	-19.88	:	Culann Patera
+85.69	19.5	:	Daedalus Patera
+58.48	55.13	:	Dazhbog Patera
+18.61	-4.12	:	Dingir Patera
+-119.03	37.53	:	Dusura Patera
+-88.49	-28.36	:	Ekhi Patera
+-119.85	-3.37	:	Emakong Patera
+-87.59	21.53	:	Estan Patera
+168.75	41.78	:	Fo Patera
+32.4	28.41	:	Fuchi Patera
+157.47	-51.9	:	Gabija Patera
+71.9	-10.8	:	Galai Patera
+65.41	-14.91	:	Gibil Patera
+120	22.83	:	Girru Patera
+-90.3	16.18	:	Gish Bar Patera
+-145.34	11.17	:	Grannos Patera
+-11.85	-11.3	:	Grian Patera
+173.37	-20.85	:	Haokah Patera
+-31.97	-59.51	:	Hatchawa Patera
+115.51	29.95	:	Heiseb Patera
+48.36	-57.09	:	Heno Patera
+70.22	1.85	:	Hephaestus Patera
+-79.48	-3.55	:	Hi'iaka Patera
+31.13	-65.09	:	Hiruko Patera
+22.63	-9.91	:	Horus Patera
+29.7	-16.69	:	Huo Shen Patera
+-1.2	-14.41	:	Ilmarinen Patera
+12.5	-68.37	:	Inti Patera
+151.47	29.86	:	Isum Patera
+-99.18	-15.81	:	Itzamna Patera
+-39.02	-4.56	:	Janus Patera
+124.91	-8.82	:	Kami-Nari Patera
+-11.75	-48.42	:	Kane Patera
+-13.17	0.2	:	Karei Patera
+18.59	-16.82	:	Kava Patera
+56.73	6.18	:	Khalla Patera
+54.89	-11.83	:	Kibero Patera
+49.75	49.35	:	Kinich Ahau Patera
+141.77	-50.57	:	Kurdalagon Patera
+-58.36	-40	:	Laki-oi Patera
+117.66	12.16	:	Llew Patera
+51.21	13.01	:	Loki Patera
+6.9	-38.56	:	Lu Huo Patera
+20.89	-40.28	:	Maasaw Patera
+100.58	-13.58	:	Mafuike Patera
+-129.66	-34.15	:	Malik Patera
+4.67	-11.29	:	Mama Patera
+38.18	35.91	:	Manua Patera
+15.42	-22.62	:	Masaya Patera
+-124.23	16.61	:	Maui Patera
+46.99	-8.2	:	Mazda Paterae
+-4.96	-31.43	:	Mbali Patera
+15.16	-31.34	:	Menahka Patera
+-139.39	7.01	:	Mentu Patera
+-167.56	1.13	:	Michabo Patera
+54.58	-16.46	:	Mihr Patera
+93.52	-59.04	:	Mithra Patera
+-104.81	19.82	:	Monan Patera
+142.12	17.29	:	Mulungu Patera
+-175.52	10.06	:	Namarrkun Patera
+-162.63	-38.15	:	Nina Patera
+44.81	-16.79	:	Ninurta Patera
+-3.61	-64.96	:	Nusku Patera
+16.84	0.32	:	Nyambe Patera
+142.62	-1.14	:	Ot Patera
+1.45	-45.69	:	Päive Patera
+14.41	-34.2	:	Pautiwa Patera
+116.71	-12.3	:	Pillan Patera
+55.25	-18.5	:	Podja Patera
+-152.41	-0.64	:	Prometheus Patera
+62.74	-2.37	:	Purgine Patera
+108.94	-55.65	:	Pyerun Patera
+-159.99	-27.81	:	Radegast Patera
+35.18	-8.59	:	Ra Patera
+55.7	-41.63	:	Rarog Patera
+160.31	-35.6	:	Rata Patera
+124.53	-13.3	:	Reiden Patera
+-158.05	27.7	:	Reshef Patera
+54.38	0.79	:	Reshet Patera
+-139.74	14.72	:	Ruaumoko Patera
+-1.65	0.2	:	Ruwa Patera
+-123.19	48.51	:	Savitr Patera
+56.28	-2.94	:	Sêd Patera
+56.21	-32.86	:	Sengen Patera
+166.13	-52.29	:	Sethlaus Patera
+-132.03	-5.31	:	Seth Patera
+94.1	24	:	Shakuru Patera
+-152.53	-35.49	:	Shamash Patera
+-63.17	-9.95	:	Shamshu Patera
+-100.51	32.46	:	Shango Patera
+35.29	-20.38	:	Shoshu Patera
+-98.05	-5.77	:	Sigurd Patera
+-0.32	-49.75	:	Siun Patera
+-138.92	15.5	:	Steropes Patera
+-2.56	-19.14	:	Sui Jen Patera
+-151.36	21.53	:	Surya Patera
+140.25	22.46	:	Susanoo Patera
+94.35	-48.51	:	Svarog Patera
+5.24	-26.35	:	Talos Paterae
+-27.97	-71.12	:	Taranis Patera
+-76.21	3.39	:	Tawhaki Patera
+1.63	-33.65	:	Taw Patera
+-165.97	25.65	:	Thomagata Patera
+-134.34	12.31	:	Tien Mu Patera
+9.85	22.29	:	Tiermes Patera
+-158.09	-26.25	:	Tohil Patera
+37.96	1.75	:	Tol-Ava Patera
+-0.95	-18	:	Tung Yo Patera
+-141.15	-18.68	:	Tupan Patera
+-123.53	62.76	:	Tvashtar Paterae
+-18.48	30.82	:	Ukko Patera
+72.78	-40.74	:	Ülgen Patera
+-22.52	-35.86	:	Uta Patera
+9.27	-24.19	:	Vahagn Patera
+79.93	-61.75	:	Viracocha Patera
+66.48	75.59	:	Vivasvant Patera
+-166.65	-22.89	:	Wabasso Patera
+134.17	-32.55	:	Wayland Patera
+-132.34	9.62	:	Yaw Patera
+-74.46	40.14	:	Zal Patera
+

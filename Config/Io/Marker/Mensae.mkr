@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 28 November 2021
+
+BEGIN_DATA
+-121.4	-16.82	:	Capaneus Mensa
+5.47	-79.92	:	Echo Mensa
+120.05	-53.05	:	Epaphus Mensa
+113.66	-43.65	:	Hermes Mensa
+54	-62.28	:	Iynx Mensa
+-30.86	-51.8	:	Pan Mensa
+-152.17	-2.49	:	Prometheus Mensa
+-115.37	-52.37	:	Telegonus Mensae
+-119.94	61.6	:	Tvashtar Mensae
