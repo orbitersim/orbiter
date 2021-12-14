@@ -14,6 +14,7 @@
 #include "Celbody.h"
 #include "Log.h"
 #include "Orbitersdk.h"
+#include "PinesGrav.h"
 
 using namespace std;
 
@@ -28,17 +29,20 @@ void InterpretEphemeris (double *data, int flg, Vector *pos, Vector *vel, Vector
 // class CelestialBody
 
 CelestialBody::CelestialBody (double _mass, double _size)
-: RigidBody (_mass, _size, Vector (1,1,1))
+: RigidBody (_mass, _size, Vector (1,1,1)), pinesgrav(NULL)
 {
 	DefaultParam();
 	el = new Elements; TRACENEW
 	ClearModule();
+	usePinesGravity = false;
 }
 
 CelestialBody::CelestialBody (char *fname)
-: RigidBody (fname)
+: RigidBody (fname), pinesgrav(this)
 {
 	char cbuf[256];
+	int gravcoeff = 0;
+	usePinesGravity = false;
 
 	DefaultParam ();
 	ClearModule ();
@@ -62,6 +66,10 @@ CelestialBody::CelestialBody (char *fname)
 	// precession parameters
 	GetItemReal (ifs, "PrecessionObliquity", eps_ref);
 	GetItemReal (ifs, "PrecessionLAN", lan_ref);
+
+	if (GetItemString(ifs, "GravModel", cbuf) && GetItemInt(ifs, "GravCoeff", gravcoeff)) {
+		usePinesGravity = pinesgrav.readGravModel(cbuf, gravcoeff);
+	}
 
 	if (GetItemString (ifs, "JCoeff", cbuf)) {
 		char *str;

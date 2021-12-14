@@ -687,6 +687,14 @@ Vector SingleGacc_perturbation (const Vector &rpos, const CelestialBody *body)
 
 	Vector dg;
 
+	if (body->UseComplexGravity() && body->usePines()) {
+		Matrix rot = body->GRot();
+		Vector lpos = mul(rot,rpos);
+		CelestialBody* unconstbody = const_cast<CelestialBody*>(body);
+		dg = unconstbody->pinesAccel(rpos,10,10);
+		return dg;
+	}
+
 	if (body->UseComplexGravity() && body->nJcoeff() > 0) {
 
 		const double eps = 1e-10; // perturbation limit
