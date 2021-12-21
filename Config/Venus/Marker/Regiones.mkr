@@ -1,10 +1,14 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 0
+Size 1
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;updated 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 0.3	-25.5	:	Alpha Regio
@@ -19,8 +23,8 @@ BEGIN_DATA
 -148	-43	:	Imdr Regio
 -115	-61	:	Ishkus Regio
 -45	7	:	Laufey Regio
-;-108.2	70.9	:	[Metis Regio]			;removed 1982
-;-82.1	65.8	:	[Mnemosyne Regio]		;removed 1982
+;-108.2	70.9	:	[Metis Regio]
+;-82.1	65.8	:	[Mnemosyne Regio]
 -72	-65	:	Neringa Regio
 85.6	-2.8	:	Ovda Regio
 -77.2	-6	:	Phoebe Regio
@@ -29,3 +33,5 @@ BEGIN_DATA
 129.9	-11.4	:	Thetis Regio
 -135	27	:	Ulfrun Regio
 -28	-11	:	Vasilisa Regio
+
+

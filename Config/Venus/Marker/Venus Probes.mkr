@@ -3,6 +3,10 @@
 BEGIN_HEADER
 InitialState on
 ColourIdx 2
+ShapeIdx 5
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://nssdc.gsfc.nasa.gov/planetary/planets/venuspage.html
@@ -10,7 +14,7 @@ END_HEADER
 
 BEGIN_DATA
 
-38 	19	:	Venera 4 entry
+37.999 	18.999	:	Venera 4 entry	;moved 0.0001 west and south to get it off marker for Didilia Corona
 18 	-3	:	Venera 5 entry
 23 	-5	:	Venera 6 entry
 -9 	-5	:	Venera 7 lander

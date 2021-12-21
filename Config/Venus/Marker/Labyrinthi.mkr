@@ -1,10 +1,13 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
 END_HEADER
 
 Source: https://planetarynames.wr.usgs.gov
-;updated 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
--8.7	-8.90	:	Radunitsa Labyrinthus
+-8.7	-8.9	:	Radunitsa Labyrinthus

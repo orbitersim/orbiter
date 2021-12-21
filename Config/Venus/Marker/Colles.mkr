@@ -1,9 +1,16 @@
+;Small hills or knobs. 
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
+
 ;Source: https://planetarynames.wr.usgs.gov
-;updated 16 items, 21 November 2021
+;updated 21 December 2021
 
 BEGIN_DATA
 115.5	46.1	:	Akkruva Colles
@@ -22,3 +29,4 @@ BEGIN_DATA
 167	-63	:	Salofa Colles
 15.1	30.7	:	T'ien Hu Colles
 154	10	:	Urutonga Colles
+

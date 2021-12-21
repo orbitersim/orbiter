@@ -1,14 +1,17 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
 END_HEADER
 
 ;Source: https;//planetarynames.wr.usgs.gov
-;updated 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 79	-24	:	Ahsabkab Vallis
-157.1	-3.3	:	Alajen Vallis
+-22.9	-3.3	:	Alajen Vallis
 30.5	-39.5	:	Albys Vallis
 8	66.7	:	Anuket Vallis
 17	-66.5	:	Apisuahts Vallis
@@ -16,19 +19,19 @@ BEGIN_DATA
 70	2	:	Avfruvva Vallis
 161.4	37.3	:	Baltis Vallis
 4	-7	:	Banumbirr Vallis
-167.5	-7.5	:	Bastryk Vallis
+-12.5	-7.5	:	Bastryk Vallis
 16.5	45.6	:	Bayara Vallis
 22.5	50	:	Belisama Vallis
-161.2	1.3	:	Bennu Vallis
-179	-52.8	:	Chasca Vallis
-7	-51.8	:	Citlalpul Vallis
-4	-55	:	Dilbat Vallis
-2	-16	:	Dzyzlan Vallis
-165.5	-1.2	:	Fara Vallis
-74.7	-61	:	Fetu-ao Vallis
-161	46	:	Fufei Vallis
+-18.8	1.3	:	Bennu Vallis
+-1	-52.8	:	Chasca Vallis
+-173	-51.8	:	Citlalpul Vallis
+-176	-55	:	Dilbat Vallis
+-178	-16	:	Dzyzlan Vallis
+-14.5	-1.2	:	Fara Vallis
+-105.3	-61	:	Fetu-ao Vallis
+-19	46	:	Fufei Vallis
 53	4.8	:	Ganga Valles
-79	-63	:	Gendenwitha Vallis
+-101	-63	:	Gendenwitha Vallis
 171.3	-33.9	:	Helmud Vallis
 166.5	28	:	Hoku-ao Vallis
 147.8	16	:	Ikhwezi Vallis
@@ -38,45 +41,47 @@ BEGIN_DATA
 67	-46.5	:	Kimtinh Vallis
 140.2	13.8	:	Kinsei Vallis
 130	-76.5	:	Koidutäht Vallis
-155	-80.5	:	Kumanyefie Vallis
+-25	-80.5	:	Kumanyefie Vallis
 152.5	-59	:	Kūmsong Vallis
 151	-73	:	Laidamlulum Vallis
 89.6	-12.8	:	Lo Shen Valles
-130	68.2	:	Lunang Vallis
+-50	68.2	:	Lunang Vallis
 164	-47.5	:	Lusaber Vallis
 156	23	:	Martuv Vallis
 167.5	-33	:	Matlalcue Vallis
 162	-63.5	:	Merak Vallis
 111.4	-20	:	Morongo Valles
 171	-55.1	:	Nahid Valles
-13	-61.9	:	Nantosuelta Vallis
+-167	-61.9	:	Nantosuelta Vallis
 24.2	1.4	:	Nepra Vallis
 12	-62	:	Ngyandu Vallis
 87.3	-40.7	:	Nommo Valles
-159	47.5	:	Nyakaio Vallis
-89	81.5	:	Olokun Vallis
-112	33	:	Omutnitsa Vallis
+-21	47.5	:	Nyakaio Vallis
+-91	81.5	:	Olokun Vallis
+-68	33	:	Omutnitsa Vallis
 178.5	-21	:	Poranica Valles
-160.6	76.1	:	Saga Vallis
-167.1	-24.1	:	Samundra Vallis
-154.4	3.2	:	Sati Vallis
+-19.4	76.1	:	Saga Vallis
+-12.9	-24.1	:	Samundra Vallis
+-25.6	3.2	:	Sati Vallis
 37	-44	:	Sezibwa Vallis
 150	-63.9	:	Sholpan Vallis
-90	-49	:	Sinann Vallis
+-90	-49	:	Sinann Vallis
 156.5	11	:	Tai-pe Valles
 87	-41.5	:	Tan-yondozo Vallis
-124	27	:	Tapati Vallis
-67.5	-80.2	:	Ta'urua Vallis
+-56	27	:	Tapati Vallis
+-112.5	-80.2	:	Ta'urua Vallis
 67.5	-11.6	:	Tawera Vallis
-138.6	6	:	Tingoi Vallis
+-41.4	6	:	Tingoi Vallis
 152	-49	:	Umaga Valles
-59	12.5	:	Uottakh-sulus Valles
-100	55	:	Utrenitsa Vallis
-156.4	5	:	Vakarine Vallis
+-121	12.5	:	Uottakh-sulus Valles
+-80	55	:	Utrenitsa Vallis
+-23.6	5	:	Vakarine Vallis
 141	-15	:	Veden-Ema Vallis
 180	-59.3	:	Vesper Vallis
 161.6	-33.1	:	Vishera Vallis
-6	-57.5	:	Xulab Vallis
-24.8	-71.6	:	Ymoja Vallis
-59.5	10.5	:	Yuvkha Valles
+-174	-57.5	:	Xulab Vallis
+-155.2	-71.6	:	Ymoja Vallis
+-120.5	10.5	:	Yuvkha Valles
+
+
 

@@ -1,10 +1,14 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 5
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;102 items updated, 1 new item added, 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 -148	47	:	Abe Mango Dorsa
@@ -27,7 +31,7 @@ BEGIN_DATA
 36.5	30.4	:	Bezlea Dorsa
 138	-47	:	Biliku Dorsa
 105	-19.5	:	Boszorkány Dorsa
-;-56	35.9	:	[Breksta Dorsa]			;name changed to Breksta Linea August 2004
+;-56	35.9	:	[Breksta Dorsa]
 -75	54.5	:	Charykh-Keyok Dorsa
 -165	-73	:	Chih Nu Dorsum
 -154.1	85.6	:	Dennitsa Dorsa
@@ -42,7 +46,7 @@ BEGIN_DATA
 29.5	36.4	:	Hera Dorsa
 -138.7	52.7	:	Iris Dorsa
 -81.3	50	:	Iyele Dorsa
-;95.6	-31	:	[Juno Dorsum]			;dropped
+;95.6	-31	:	[Juno Dorsum]
 -172	-69.5	:	Kadlu Dorsa
 -51	18	:	Kalm Dorsa
 55.8	59.2	:	Kamari Dorsa
@@ -88,8 +92,8 @@ BEGIN_DATA
 -35	-73.5	:	Spidola Dorsa
 134	-53	:	Sunna Dorsa
 -151	71.7	:	Surupa Dorsa
-;81.3	79.4	:	[Szél-anya Dorsa]			;dropped
-47.1	81.4	:	[Tezan Dorsa]				;dropped
+;81.3	79.4	:	[Szél-anya Dorsa]
+;47.1	81.4	:	[Tezan Dorsa]
 -135	56	:	Tikoiwuti Dorsa
 -121	-51	:	Tinianavyt Dorsa
 7.2	31.2	:	Tomem Dorsa
@@ -110,3 +114,5 @@ BEGIN_DATA
 170	0	:	Zaryanitsa Dorsa
 73.5	-47.5	:	Zimcerla Dorsa
 -21.6	39.9	:	Zorile Dorsa
+
+

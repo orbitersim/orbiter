@@ -1,10 +1,14 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;updated 334 items, 13 new items, 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 125	18.5	:	Abundia Corona
@@ -19,7 +23,7 @@ BEGIN_DATA
 -142.1	-67.2	:	Ament Corona
 -146.5	-13.4	:	Among Corona
 -82.7	77.1	:	Anahit Corona
-;14	11	:	[Anala Corona]	;Removed, name changed to Anala Mons
+;14	11	:	[Anala Corona]
 -77.2	-29	:	Anjea Corona
 152	-35.5	:	Annapurna Corona
 82	-26.3	:	Aramaiti Corona
@@ -70,7 +74,7 @@ BEGIN_DATA
 -114.5	-29.2	:	Chanum Coronae
 -19.5	18.3	:	Chiun Corona
 -94.5	-23.5	:	Chuku Corona
-;150.9	53	:	[Ciuacoatl Corona]	;Removed, name changed to Ciuacoatl Mons
+;150.9	53	:	[Ciuacoatl Corona]
 167.4	16	:	Clonia Corona
 -87	63.2	:	Coatlicue Corona
 56	-46	:	Codidon Corona
@@ -114,7 +118,7 @@ BEGIN_DATA
 -78.3	68	:	Feronia Corona
 177.3	-24.5	:	Flidais Corona
 163.5	-58.5	:	Fotla Corona
-;-102	-38	:	[Furachoga Corona]	;Removed 1997
+;-102	-38	:	[Furachoga Corona]
 21.5	6	:	Gaia Corona
 -116.3	11.7	:	Gashan-Ki Corona
 98.5	-33.5	:	Gefjun Corona
@@ -167,14 +171,14 @@ BEGIN_DATA
 132.5	15.5	:	Kubebe Corona
 -98.1	-27.8	:	Kulimina Corona
 11.8	25	:	Kumang Corona
-;86	-33.9	:	[Kunapipi Corona]	;Removed, name changed to Kunapipi Mons
+;86	-33.9	:	[Kunapipi Corona]
 80.1	19.3	:	Kunhild Corona
 -109.5	-24	:	Lalohonua Corona
 123	-64	:	Latmikaik Corona
 -73	-38.6	:	Latta Corona
 -137	2.5	:	Lengdin Corona
 24	12.5	:	Libera Corona
-;22	34	:	[Lilinau Corona]	;Removed 1994
+;22	34	:	[Lilinau Corona]
 -88.5	-29.5	:	Lilwani Corona
 -109.5	-12.5	:	Ludjatako Corona
 -125.5	-11.5	:	Lumimuut Corona
@@ -299,7 +303,7 @@ BEGIN_DATA
 -99.7	17.3	:	Sinlaku Corona
 -113.2	-36.5	:	Sitapi Coronae
 176.5	-10.2	:	Sith Corona
-;-11.5	9.3	:	[Somagalags Corona]	;Removed, changed to Somagalags Mons
+;-11.5	9.3	:	[Somagalags Corona]
 39	-78	:	Su-Anasy Corona
 14.2	44.3	:	Sulis Corona
 11.7	8.3	:	Sunrta Corona
@@ -354,4 +358,6 @@ BEGIN_DATA
 -72.5	13	:	Zhivana Corona
 -139	12	:	Zisa Corona
 -68.8	-38.6	:	Zywie Corona
+
+
 

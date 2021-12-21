@@ -1,9 +1,13 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 ;Source: https://planetarynames.wr.usgs.gov
-;62 items updated, 1 new added 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 -68	32	:	Aikhylu Chasma
@@ -69,4 +73,6 @@ BEGIN_DATA
 70	-54	:	Xaratanga Chasma
 -148	9	:	Zewana Chasma
 -89	18.5	:	Žverine Chasma
+
+
 

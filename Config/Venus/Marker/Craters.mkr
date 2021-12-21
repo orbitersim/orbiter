@@ -2,10 +2,13 @@ BEGIN_HEADER
 InitialState on
 ColourIdx 1
 ShapeIdx 1
+Size 0.5
+DistanceFactor 0.75
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 894 items, 13 new items, 21 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 111.2	-52.2	:	Abigail
@@ -47,7 +50,7 @@ BEGIN_DATA
 123.3	46.6	:	Almeida
 69.9	1.4	:	Altana
 -23.9	32.9	:	Al-Taymuriyya
-;-17.6	-11.5	:	[Amalasthuna]	;Removed 1991
+;-17.6	-11.5	:	[Amalasthuna]
 -17.6	-11.5	:	Amalasuntha
 94.5	-29.2	:	Amanda
 89.4	11.3	:	Amaya
@@ -154,9 +157,9 @@ BEGIN_DATA
 -26.5	6.3	:	Clio
 143.4	51.9	:	Cochran
 -151.9	-33.3	:	Cohn
-;-38	65	:	[Colette]	;Removed 1982
+;-38	65	:	[Colette]
 162.2	-60.8	:	Colleen
-;-143.2	64.7	:	[Colonna]	;Removed 1994
+;-143.2	64.7	:	[Colonna]
 -16.3	1.2	:	Comnena
 39	48.3	:	Conway
 72.9	25.4	:	Cori
@@ -206,7 +209,7 @@ BEGIN_DATA
 -132.3	-62.3	:	Durant
 -2	-82.5	:	Duse
 -62.4	5.1	:	Dyasya
-;136	72	:	[Earhart]	;removed 1982
+;136	72	:	[Earhart]
 22.8	32.2	:	Edgeworth
 -151.5	-68.8	:	Edinger
 -137	81	:	Efimova
@@ -236,7 +239,7 @@ BEGIN_DATA
 -158	-59.1	:	Eudocia
 105.4	80.6	:	Eugenia
 -138.1	69.6	:	Evangeline
-;0.1	-32	:	[Eve]		;Removed 1994
+;0.1	-32	:	[Eve]
 -147.7	-61.2	:	Evelyn
 31.4	-5.1	:	Evika
 -173.2	57	:	Ezraela
@@ -248,7 +251,7 @@ BEGIN_DATA
 87.4	-0.7	:	Fava
 106	32.4	:	Fazu
 65.6	59.7	:	Fedorets
-;171.8	45	:	[Fedosova]	;Removed 1992, changed to Fedosova Patera
+;171.8	45	:	[Fedosova]
 -133.5	-19.8	:	Felicia
 12.9	26.4	:	Ferber
 17.2	76.2	:	Fernandez
@@ -277,7 +280,7 @@ BEGIN_DATA
 -119.8	17.9	:	Gaze
 -99.4	45.2	:	Gentileschi
 58.8	-20.4	:	Georgina
-;91	45.9	:	[Gerda]			;Removed 1994
+;91	45.9	:	[Gerda]
 63.7	-37.9	:	Germain
 142.1	-72.9	:	Giliani
 50.1	-15.2	:	Gillian
@@ -290,9 +293,9 @@ BEGIN_DATA
 26.8	59.7	:	Goeppert-Mayer
 -73.5	60.3	:	Golubkina
 97.7	-63	:	Goncharova
-;26.8	59.7	:	[Goppert-Mayer]		;Removed 1991
--91.1	-13.8	:	Grace			
-;6	-6	:	[Graham]		;Removed 1994, changed to Graham Patera
+;26.8	59.7	:	[Goppert-Mayer]
+-91.1	-13.8	:	Grace
+;6	-6	:	[Graham]
 -22.5	72.4	:	Gražina
 145.1	22.9	:	Greenaway
 95.8	7.1	:	Gregory
@@ -383,7 +386,7 @@ BEGIN_DATA
 -112.7	19.5	:	Johanna
 -105.4	51.8	:	Johnson
 62.4	-1.6	:	Joliot-Curie
-;32.3	44.9	:	[Josefina]		;Removed 1994
+;32.3	44.9	:	[Josefina]
 -71.3	5.5	:	Joshee
 90	-62.8	:	Juanita
 104.5	-29.1	:	Judith
@@ -459,7 +462,7 @@ BEGIN_DATA
 -100	1	:	Leyster
 -59.9	-75.8	:	Lhagva
 -86.1	36.6	:	Lida
-;94.5	-29.2	:	[Lida]			;Removed 1994, changed to Amanda
+;94.5	-29.2	:	[Lida]
 -24	25.6	:	Lilian
 31.1	30.2	:	Liliya
 -5	50.2	:	Lind
@@ -472,7 +475,7 @@ BEGIN_DATA
 51.6	-32.9	:	Lockwood
 -145.3	-17.9	:	Lois
 -137.6	55.6	:	Lonsdale
-;-116.1	55.7	:	[Lorelei]		; Removed 1997
+;-116.1	55.7	:	[Lorelei]
 -157.4	-19.7	:	Loretta
 -24.1	51.1	:	Lotta
 67.8	-62.1	:	Lucia
@@ -512,7 +515,7 @@ BEGIN_DATA
 75.1	53.3	:	Marysya
 -111.7	-58.9	:	Marzhan
 53.2	-30.2	:	Masako
-;88	63	:	[Masha]			;Removed 1994
+;88	63	:	[Masha]
 88.5	60.7	:	Masha
 92.5	-35.7	:	Ma Shouzhen
 65.9	-72.3	:	Matahina
@@ -537,7 +540,7 @@ BEGIN_DATA
 48.2	36.5	:	Miriam
 25.1	25.6	:	Mona Lisa
 122.4	72.3	:	Monika
-;177.7	36.9	:	[Montagu]			;Removed 1994
+;177.7	36.9	:	[Montagu]
 -80	59.4	:	Montessori
 -93.5	17.9	:	Montez
 -111.6	-30.4	:	Moore
@@ -574,7 +577,7 @@ BEGIN_DATA
 61.8	-53.3	:	Ngaio
 -28.1	6	:	Ngone
 -100.7	48.4	:	Nicole
-;132	62	:	[Nightingale]		;Removed 1982
+;132	62	:	[Nightingale]
 122.5	25.8	:	Nijinskaya
 -28.6	-38.2	:	Nilanti
 -82.4	-75.9	:	Nilsson
@@ -631,7 +634,7 @@ BEGIN_DATA
 156.5	-1.3	:	Patimat
 -58.4	35	:	Patti
 158.7	-25.5	:	Pavlinka
-;39.2	14.6	:	[Pavlova]		;Removed 1992
+;39.2	14.6	:	[Pavlova]
 -65.7	-28.9	:	Peck
 -2.8	-20.4	:	Peggy
 -169.4	-23.6	:	Peña
@@ -695,7 +698,7 @@ BEGIN_DATA
 19.9	43.3	:	Ruth
 -85.3	-38.5	:	Sabin
 -120.1	-5.8	:	Sabira
-;-24.6	64.3	:	[Sacajawea]		;Removed 1982
+;-24.6	64.3	:	[Sacajawea]
 161.4	-10.8	:	Safarmo
 -58	28.2	:	Saida
 97.7	-5	:	Salika
@@ -725,11 +728,11 @@ BEGIN_DATA
 -41.1	18.4	:	Shih Mai-Yu
 55.4	31.5	:	Shirley
 70.2	-43.8	:	Shushan
-;-19.4	61.6	:	[Siddons]		;Removed 1992, changed to Siddons Patera
+;-19.4	61.6	:	[Siddons]
 -160.4	13.4	:	Sidney
 -45.6	63.6	:	Sigrid
 130	-74.4	:	Simbya
-;82	59.5	:	[Simone]		;Removed 1994
+;82	59.5	:	[Simone]
 97.6	-26.9	:	Simonenko
 -129.6	-31.5	:	Sirani
 -169.6	16.6	:	Sitwell
@@ -908,4 +911,6 @@ BEGIN_DATA
 94.8	32.1	:	Zumrad
 -84.8	-12.8	:	Zurka
 -76.9	45.4	:	Zvereva
+
+
 

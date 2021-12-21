@@ -2,8 +2,11 @@
 
 BEGIN_HEADER
 InitialState on
-ColourIdx 3
-ShapeIdx 5
+ColourIdx 0
+ShapeIdx 6
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 BEGIN_DATA

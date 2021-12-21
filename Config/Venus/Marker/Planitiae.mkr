@@ -1,10 +1,14 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 3
+ShapeIdx 0
+Size 1
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;updated 25 November 2021
+;Updated 21 December 2021
 
 BEGIN_DATA
 25	-73	:	Aibarchin Planitia
@@ -48,4 +52,6 @@ BEGIN_DATA
 -152.4	53.8	:	Vinmara Planitia
 -143	-30	:	Wawalag Planitia
 157	-40	:	Zhibek Planitia
+
+
 
