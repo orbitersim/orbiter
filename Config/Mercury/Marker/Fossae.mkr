@@ -1,0 +1,18 @@
+;Fossa - Long, narrow shallow depression
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;File created 17 November 2021
+
+BEGIN_DATA
+88.5	-32.77	:	Borobudur Fossae
+162.83	30.19	:	Pantheon Fossae
+
+
