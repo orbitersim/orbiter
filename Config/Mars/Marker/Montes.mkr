@@ -1,11 +1,16 @@
+;Montes - Mountain
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 5
 ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 24 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 137.85	-5.08	:	Aeolis Mons
@@ -52,7 +57,7 @@ BEGIN_DATA
 -42.85	-55.26	:	Octantis Mons
 -133.8	18.65	:	Olympus Mons
 -112.96	1.48	:	Pavonis Mons
-;86.1	-30.9	:	[Peneus Mons]			;dropped, same feature as Peraea Mons
+;86.1	-30.9	:	[Peneus Mons]
 86.11	-31.08	:	Peraea Mons
 163.71	40.4	:	Phlegra Montes
 -88.52	39.47	:	Pindus Mons
@@ -66,8 +71,9 @@ BEGIN_DATA
 167.54	15.46	:	Tartarus Montes
 -112.58	1.57	:	Tharsis Montes
 126.54	-69.88	:	Thyles Montes
-;101.1	-24.15	:	[Tyrrhena Mons]			;dropped
+;101.1	-24.15	:	[Tyrrhena Mons]
 105.88	-21.63	:	Tyrrhenus Mons
 -92.15	26.9	:	Uranius Mons
 -54.92	18.13	:	Xanthe Montes
+
 		

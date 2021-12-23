@@ -1,4 +1,4 @@
-;Macula - dark spot, regular or irregular
+;Montes - Mountain
 
 BEGIN_HEADER
 InitialState on
@@ -13,4 +13,10 @@ END_HEADER
 ;Updated 22 December 2021
 
 BEGIN_DATA
--142.84	17.36	:	Olympus Maculae
+137.42	-4.47	:	Aeolis Palus
+148.15	5.78	:	Cerberus Palus
+-77.27	12.29	:	Echus Palus
+77.3	-27.25	:	Hadriacus Palus
+56.71	-35.06	:	Peneus Palus
+
+		

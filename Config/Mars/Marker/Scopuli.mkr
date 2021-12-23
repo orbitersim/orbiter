@@ -1,6 +1,12 @@
+;Sopuli - Lobate or irregular scarp
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
@@ -9,18 +15,18 @@ END_HEADER
 BEGIN_DATA
 -76.56	80.72	:	Abalos Scopuli
 -112.94	-83.48	:	Australe Scopuli			
--90.16	88.88	:	Boreales Scopuli			
-20.08	-24.14	:	Charybdis Scopulus			
+-90.16	88.11	:	Boreales Scopuli			
+19.98	-24.14	:	Charybdis Scopulus			
 64.94	-33.26	:	Coronae Scopulus			
-141.79	-52.61	:	Eridania Scopulus			
+141.91	-52.55	:	Eridania Scopulus			
 ;176	79.38	:	[Frigoris Scopulus]			;dropped 1984			
 26.1	80.39	:	Gemini Scopuli			
 ;200	82.41	:	[Hyperboreus Scopulus]			;dropped 1984		
 ;88	-77.86	:	[Hypernotius Scopulus]			;dropped 1984
--55.85	31.72	:	Nilokeras Scopulus
-77.11	-6.62	:	Oenotria Scopuli			
+-56.24	31.49	:	Nilokeras Scopulus
+74.51	-10.85	:	Oenotria Scopuli			
 ;77.36	-7.77	:	[Oenotria Scopulus]			;dropped			
 18.34	-25.22	:	Scylla Scopulus			
-177.25	-4.23	:	Tartarus Scopulus			
-179.04	-77.88	:	Ultimi Scopuli			
--52.51	19.38	:	Xanthe Scopulus			
+177.17	-4.07	:	Tartarus Scopulus			
+-178.63	-77.78	:	Ultimi Scopuli			
+-52.57	19.43	:	Xanthe Scopulus			

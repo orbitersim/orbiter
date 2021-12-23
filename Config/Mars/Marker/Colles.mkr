@@ -1,31 +1,38 @@
+;Small hills or knobs. 
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;updated 23 November 2021
+;updated 22 December 2021
 
 BEGIN_DATA
--71.65	76.83	:	Abalos Colles			
--23.09	50.34	:	Acidalia Colles			
-61.53	-39.38	:	Alpheus Colles			
-82.93	24.63	:	Arena Colles			
-172.78	34.5	:	Ariadnes Colles			
-88.08	35.46	:	Astapus Colles			
-171.02	-1.73	:	Avernus Colles			
+-71.65	76.83	:	Abalos Colles
+-23.09	50.34	:	Acidalia Colles
+61.53	-39.38	:	Alpheus Colles
+82.93	24.63	:	Arena Colles
+172.78	-34.5	:	Ariadnes Colles
+88.08	35.46	:	Astapus Colles
+171.02	-1.73	:	Avernus Colles
 -75.57	-6.63	:	Candor Colles
 -41.86	8.15	:	Chryse Colles
-62.88	38.72	:	Colles Nili			
--12.22	39.07	:	Cydonia Colles			
-21.7	41.95	:	Deuteronilus Colles			
-147.48	36.8	:	Galaxias Colles			
+62.88	38.72	:	Colles Nili
+-12.22	39.07	:	Cydonia Colles
+21.7	41.95	:	Deuteronilus Colles
+147.48	36.8	:	Galaxias Colles
 -33.68	-0.02	:	Hydraotes Colles
--9.3	53.9	:	Ortygia Colles			
--26.27	21.24	:	Oxia Colles			
--139.13	65.47	:	Scandia Colles	
+-9.3	53.9	:	Ortygia Colles
+-26.27	21.24	:	Oxia Colles
+-139.13	65.47	:	Scandia Colles
 -176.59	-37.72	:	Simois Colles
--100.73	-13.46	:	Syria Colles		
-175.19	21.24	:	Tartarus Colles			
+-100.73	-13.46	:	Syria Colles
+175.19	21.24	:	Tartarus Colles
 -82.56	33.75	:	Tempe Colles
 -123.09	6.14	:	Ulysses Colles
+

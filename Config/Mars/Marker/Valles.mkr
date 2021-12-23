@@ -1,10 +1,16 @@
+;Vallis - valley
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;https://planetarynames.wr.usgs.gov
-;Updated 25 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 -147.2	-5.49	:	Abus Vallis
@@ -32,13 +38,13 @@ BEGIN_DATA
 50.37	14.05	:	Cusus Valles
 -42.42	-12.07	:	Daga Vallis
 88.89	-37.61	:	Dao Vallis
--156.9	-7.81	:	[Deva Valles]			;dropped
+-156.9	-7.81	:	[Deva Valles]
 -156.87	-7.67	:	Deva Vallis
 -66.86	-1.43	:	Dittaino Valles
 -25.59	-63.02	:	Doanus Vallis
 165.99	-48.86	:	Drava Valles
 -52.34	7.17	:	Drilon Vallis
--17.5	-22.96	:	[Drinus Valles]			;dropped 1984
+-17.5	-22.96	:	[Drinus Valles]
 -148.13	-5.16	:	Dubis Vallis
 136.54	-4.82	:	Dulce Vallis
 171.98	-17.3	:	Durius Valles
@@ -163,4 +169,5 @@ BEGIN_DATA
 -54.46	-9.88	:	Walla Walla Vallis
 -92.15	-41.84	:	Warrego Valles
 80.59	0.32	:	Zarqa Valles
+
 

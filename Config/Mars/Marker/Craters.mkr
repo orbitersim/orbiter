@@ -1,11 +1,18 @@
+;Crater - impact crater
+
+;D's are done, E +longitude going down
+
 BEGIN_HEADER
 InitialState on
 ColourIdx 1
 ShapeIdx 1
+Size 0.5
+DistanceFactor 0.75
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 23 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 111.1	15.91	:	Aban
@@ -26,7 +33,7 @@ BEGIN_DATA
 -38.14	-34.91	:	Alitus
 -31.09	-15.14	:	Alnif
 -0.02	9.84	:	Alofi
-;-57.4	23.45	:	[Amet]			;dropped 
+;-57.4	23.45	:	[Amet]
 -47	23	:	Amsterdam
 -4.73	-5.33	:	Andapa
 76.95	18.65	:	Angelica
@@ -242,7 +249,7 @@ BEGIN_DATA
 -157.69	-30.2	:	Cross
 -69.31	82.21	:	Crotone
 163.03	-42.91	:	Cruls
--197	38.46	:	Cruz
+-1.97	38.46	:	Cruz
 93.23	-35.84	:	Cue
 -53.93	-8.84	:	Culter
 -4.75	28.78	:	Curie
@@ -251,6 +258,7 @@ BEGIN_DATA
 77.95	18.34	:	Dacono
 -41.8	-7.29	:	Daet
 -23.12	-66.29	:	Daly
+-156.37	-15.73	:	Dampier
 -32.79	-72.49	:	Dana
 -7.05	7.97	:	Danielson
 107	21.96	:	Dank
@@ -366,7 +374,7 @@ BEGIN_DATA
 141.28	-6.39	:	Garu
 129.4	-35.72	:	Gasa
 112.53	24.61	:	Gastre
-;-21.13	-20.87	:	[Gatico]			;dropped
+;-21.13	-20.87	:	[Gatico]
 86.08	-68	:	Gilbert
 5.55	15.76	:	Gill
 -26.59	-20.62	:	Glazov
@@ -393,10 +401,12 @@ BEGIN_DATA
 -44.55	-4.06	:	Groves
 -45.03	25.66	:	Guaymas
 -20.5	-21.54	:	Guir
+109.9	24.98	:	Gujiang
 109.02	15.85	:	Gulch
 146.66	-0.17	:	Gunjur
 102.92	-43.67	:	Gunnison
 175.52	-14.53	:	Gusev
+110.23	24.96	:	Gutian
 -3.16	38.96	:	Gwash
 156.97	-19.26	:	Hadley
 -56.14	-26.01	:	Halba
@@ -422,7 +432,7 @@ BEGIN_DATA
 53.9	-59.72	:	Henry Moore
 -58.65	19.31	:	Herculaneum
 129.89	-14.48	:	Herschel
-;-35.5	-44.46	:	[Hilo]			;dropped, crater cannot be located in imagery
+;-35.5	-44.46	:	[Hilo]
 -151.2	-44.45	:	Hipparchus
 138.35	47.06	:	Hīt
 -34.02	-26.04	:	Holden
@@ -463,7 +473,7 @@ BEGIN_DATA
 37.61	2.69	:	Janssen
 83.85	-9.37	:	Jarry-Desloges
 154.18	-69.64	:	Jeans
-;-52.3	23.65	:	[Jeki]			;dropped
+;-52.3	23.65	:	[Jeki]
 -10.57	39.88	:	Jen
 77.69	18.41	:	Jezero
 -37.92	-48.42	:	Jezža
@@ -500,6 +510,7 @@ BEGIN_DATA
 -17.58	-24.44	:	Kantang
 14.35	-0.12	:	Kaporo
 -32.15	-45.57	:	Karpinsk
+-156.4	-15.69	:	Karratha
 -19.32	-23.28	:	Karshi
 -52.46	-40.85	:	Kartabo
 -131.74	18.4	:	Karzok
@@ -520,6 +531,7 @@ BEGIN_DATA
 122.23	45.99	:	Keul'
 102	20.73	:	Khanpur
 -42	-7.21	:	Kholm
+-156.97	-16.29	:	Khujirt
 112.96	-20.94	:	Khurli
 -178.18	-29.13	:	Kibuye
 -54.31	-45.64	:	Kifrī
@@ -566,7 +578,7 @@ BEGIN_DATA
 -35.51	-43.96	:	Kushva
 -48.07	-34.94	:	Labria
 -39.76	-4.27	:	Lachute
--5.9	48.01	:	Laf
+-5.99	48.01	:	Laf
 -8.29	49.86	:	Lagarto
 -20.64	-26.99	:	Lamas
 25.39	-19.97	:	Lambert
@@ -628,6 +640,7 @@ BEGIN_DATA
 51.91	-11.55	:	Lucaya
 -36.91	17.26	:	Luck
 -47.42	-44.25	:	Luga
+110.13	24.83	:	Lukeqin
 -37.37	-29.53	:	Luki
 131.82	-18.23	:	Luqa
 -3.09	38.7	:	Lutsk
@@ -645,6 +658,7 @@ BEGIN_DATA
 -46.69	11.89	:	Magong
 -54.22	-41.56	:	Maidstone
 49.01	-76.54	:	Main
+109.9	25.04	:	Maji
 84.33	-33.26	:	Majuro
 -40.47	28.43	:	Makhambet
 -24.72	18	:	Malino
@@ -691,13 +705,14 @@ BEGIN_DATA
 85.1	-21.19	:	Millochau
 -12.24	-23.46	:	Milna
 -51.76	22.12	:	Mirtos
-;-35.5	-0.89	:	[Misk]				;dropped, crater cannot be located in imagery
+;-35.5	-0.89	:	[Misk]
 -109.13	-24.68	:	Mistretta
 76.01	-67.53	:	Mitchel
 -6.95	-2.87	:	Miyamoto
 87.98	-39.61	:	Mliba
 -39.95	-35.93	:	Moanda
 -5.35	42.89	:	Mohawk
+110.14	24.77	:	Mohe
 -32.99	7.48	:	Mojave
 149.27	-27.5	:	Molesworth
 18.77	-47.01	:	Moni
@@ -710,7 +725,7 @@ BEGIN_DATA
 127.89	-25.74	:	Müller
 -22.45	-23.64	:	Murgoo
 28.06	-23.29	:	Murray
-;-55.7	24.54	:	[Musmar]			;dropped
+;-55.7	24.54	:	[Musmar]
 -35.76	22.36	:	Mut
 -55.21	0.6	:	Mutch
 -42.13	22.91	:	Naar
@@ -809,6 +824,7 @@ BEGIN_DATA
 -53.23	19.82	:	Pica
 -132.61	-33.48	:	Pickering
 111.74	18.37	:	Piña
+110.7	25.98	:	Pingle
 -36.76	-2.92	:	Pinglo
 -1.45	4.48	:	Piscinas
 -62.28	-9.27	:	Pital
@@ -841,6 +857,7 @@ BEGIN_DATA
 -173.94	-43.43	:	Qaqortoq
 -150.3	16.43	:	Qara
 103.09	17.13	:	Qibā
+110.26	25.11	:	Qidu
 40.67	34.27	:	Quenisset
 -49.25	18.19	:	Quick
 89.25	-41.86	:	Quines
@@ -1008,6 +1025,7 @@ BEGIN_DATA
 175.98	-14.47	:	Thira
 92.35	-41.11	:	Thom
 -25.72	-23.37	:	Thule
+109.93	25.07	:	Tianzhushan
 -54.87	12.56	:	Tibrikot
 87.04	-30.74	:	Tignish
 35.93	13.28	:	Tikhonravov
@@ -1027,7 +1045,7 @@ BEGIN_DATA
 161.92	3.56	:	Tombaugh
 -44.55	-42.4	:	Tombe
 125.88	16.26	:	Tomini
-;-52.2	-44.86	:	[Tōno]			;dropped, crater cannot be located in imagery
+;-52.2	-44.86	:	[Tōno]
 -152.24	23.21	:	Tooting
 -92.21	15.83	:	Topola
 114.08	17.87	:	Torbay
@@ -1104,6 +1122,7 @@ BEGIN_DATA
 -4.07	-64.3	:	Wegener
 114.57	-65.53	:	Weinbaum
 122.4	-59.94	:	Wells
+109.44	25.22	:	Wenjiashi
 -6.19	45.67	:	Wer
 -40.53	-2.01	:	Wicklow
 139.75	-10.57	:	Wien
@@ -1122,14 +1141,18 @@ BEGIN_DATA
 -151.01	-58.51	:	Wright
 -102.8	-31.81	:	Wukari
 0.99	10.24	:	Wulai
-;113.8	15.92	:	[Wum]				;dropped, crater cannot be located in imagery
+;113.8	15.92	:	[Wum]
+110.1	24.91	:	Wuxing
 60.21	-55.1	:	Wynn-Williams
 -3.94	0.78	:	Xainza
+110.11	25.66	:	Xibaipo
 112.63	15.09	:	Xui
 -3.15	43.03	:	Yakima
 -38.58	17.37	:	Yala
 106.17	21.81	:	Yalata
 84.23	4.93	:	Yalgoo
+110.06	24.89	:	Yangliuqing
+109.7	25.03	:	Yaodian
 -39.15	22.27	:	Yar
 -137.45	-43.88	:	Yaren
 -29.03	18.13	:	Yat
@@ -1146,6 +1169,7 @@ BEGIN_DATA
 -1.5	-3.41	:	Zarand
 113.05	12.09	:	Zaranj
 -102.59	-29.1	:	Zhigou
+109.8	24.87	:	Zhouzhuang
 -32.94	-31.81	:	Zilair
 -36.54	18.54	:	Zir
 -41.69	-33.76	:	Zongo
@@ -1154,4 +1178,5 @@ BEGIN_DATA
 -29.58	19.22	:	Zuni
 166.19	7.7	:	Zunil
 174.32	-13.85	:	Zutphen
+
 

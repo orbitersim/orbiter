@@ -1,10 +1,16 @@
+;Chaos - A distinctive area of broken or jumbled terrain
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;updated 23 November 2021
+;updated 22 December 2021
 
 BEGIN_DATA
 150.6	-7.13	:	Aeolis Chaos
@@ -14,7 +20,7 @@ BEGIN_DATA
 -177.31	-34.28	:	Atlantis Chaos
 -26.96	-3.89	:	Aureum Chaos
 -34.81	-8.47	:	Aurorae Chaos
--60.4	-.017	:	Baetis Chaos
+-60.4	-0.17	:	Baetis Chaos
 -72.58	-6.94	:	Candor Chaos
 178.6	-37.2	:	Caralis Chaos
 -37.19	9.86	:	Chryse Chaos
@@ -37,3 +43,4 @@ BEGIN_DATA
 -39.87	0.22	:	Oxia Chaos
 -28.4	-10.46	:	Pyrrhae Chaos
 -42.22	11.87	:	Xanthe Chaos
+

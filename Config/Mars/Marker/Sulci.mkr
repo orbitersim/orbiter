@@ -1,14 +1,20 @@
+;Sulci - furrows and ridges
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
 ;Updated 24 November 2021
 
 BEGIN_DATA
-143.71	-2.15	:	Amazonis Sulci			
-177.47	-11.06	:	Apollinaris Sulci			
+-144.43	-1.76	:	Amazonis Sulci			
+176.6	-11.06	:	Apollinaris Sulci			
 -129.81	-6.29	:	Arsia Sulci			
 -108.75	12.06	:	Ascraeus Sulci			
 133.06	-84.99	:	Australe Sulci
@@ -17,7 +23,7 @@ BEGIN_DATA
 -127.73	10.02	:	Gigas Sulci			
 -144.47	28.14	:	Lycus Sulci			
 -159.7	-5.04	:	Medusae Sulci			
--175.83	-7.16	:	Memnonia Sulci			
+-175.83	-6.15	:	Memnonia Sulci			
 -117.37	4.01	:	Pavonis Sulci			
--74.7	22.16	:	Sacra Sulci			
+-74.7	22.57	:	Sacra Sulci			
 -125.73	19.02	:	Sulci Gordii			

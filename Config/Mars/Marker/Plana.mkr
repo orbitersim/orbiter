@@ -1,6 +1,12 @@
+;Plana - High plain or plateau
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov

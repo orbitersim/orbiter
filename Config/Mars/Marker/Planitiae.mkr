@@ -1,6 +1,12 @@
+;Planitiae - low plain
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 2
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
@@ -13,9 +19,9 @@ BEGIN_DATA
 -43.31	-49.84	:	Argyre Planitia			
 -40.31	28.43	:	Chryse Planitia			
 154.74	2.98	:	Elysium Planitia
-122.21	-38.15	:	Eridania Planitia			
+122.21	-38.02	:	Eridania Planitia			
 70.5	-42.43	:	Hellas Planitia			
 88.38	13.94	:	Isidis Planitia			
-;180	81.4	:	[Olympia Planitia]			;Name dropped because the region is high relative to the surrounding area, and planitia is therefore not a correct descriptor term			
+;180	81.4	:	[Olympia Planitia]			;Name dropped because the region is high relative to the 					;surrounding area, and planitia is therefore not a correct descriptor term			
 ;69.5	9.39	:	[Syrtis Major Planitia]			;name changed from Planitia to Planum, 1982		
 117.52	46.74	:	Utopia Planitia			

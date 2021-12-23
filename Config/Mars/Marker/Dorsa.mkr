@@ -1,10 +1,16 @@
+;Dorsa - ridge or wrinkle ridge
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 5
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 23 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 152.63	-5.05	:	Aeolis Dorsa
@@ -13,7 +19,7 @@ BEGIN_DATA
 -11.24	7.8	:	Aram Dorsum
 -137.56	55.9	:	Arcadia Dorsa
 68.94	12.71	:	Arena Dorsum
-;-89	38.19	:	[Atrax Dorsum]			;dropped
+;-89	38.19	:	[Atrax Dorsum]
 -41.76	-55.72	:	Auxo Dorsum
 170.9	-6.03	:	Avernus Dorsa
 -5.28	9.5	:	Cantabras Dorsum
@@ -36,7 +42,7 @@ BEGIN_DATA
 -41.58	-55.14	:	Pasithea Dorsum
 -43.29	-53.79	:	Phaenna Dorsum
 170.37	25.08	:	Phlegra Dorsa
-;29.5	-64.24	:	[Pityusa Dorsa]			;name changed to Pityusa Rupes
+;29.5	-64.24	:	[Pityusa Dorsa]
 -66.09	11.21	:	Sacra Dorsa
 -78.92	-12.77	:	Sinai Dorsa
 -79.74	-22.88	:	Solis Dorsa
@@ -45,4 +51,5 @@ BEGIN_DATA
 -75.04	23.79	:	Uranius Dorsum
 -34.04	35.9	:	Xanthe Dorsa
 80.54	-48.87	:	Zea Dorsa
+
 		

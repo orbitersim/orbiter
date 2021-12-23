@@ -1,38 +1,47 @@
+;Cavus, cavi - irregular steep-sided depression
+
 BEGIN_HEADER
 InitialState on
 ColourIdx 4
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
+;Source = https://planetarynames.wr.usgs.gov
+;Updated 22 December 2021
+
 BEGIN_DATA
-114.52	16.23	:	Amenthes Cavi			
-;95.5	-29.71	:	[Anseris Cavus]			;dropped , same feature as Peraea Cavus			
--40.12	-48.31	:	Argyre Cavi			
-96.55	-31.92	:	Ausonia Cavus			
-172.52	-3.72	:	Avernus Cavi			
--20.15	84.64	:	Boreum Cavus			
--74.75	-78.16	:	Cavi Angusti			
-;-59.8	-78.97	:	[Cavi Frigorēs]			;dropped September 1986, this area covered with Cavi Angusti			
-;30	-67.26	:	[Cavi Novi]			;dropped 1984
--99	-6.9	:	Dalu Cavus			
+114.52	16.23	:	Amenthes Cavi
+;95.5	-29.71	:	[Anseris Cavus]
+-40.12	-48.31	:	Argyre Cavi
+96.55	-31.92	:	Ausonia Cavus
+172.52	-3.72	:	Avernus Cavi
+-20.15	84.64	:	Boreum Cavus
+-74.75	-78.16	:	Cavi Angusti
+;-59.8	-78.97	:	[Cavi Frigorēs]
+;30	-67.26	:	[Cavi Novi]
+-99	-6.9	:	Dalu Cavus
 -51.45	-10.09	:	Ganges Cavus
 78.05	-27.25	:	Hadriacus Cavi
 16.24	29.43	:	Hiddekel Cavus
--61.31	-7.93	:	Hydrae Cavus			
+-61.31	-7.93	:	Hydrae Cavus
 -49.7	79.91	:	Hyperborei Cavi
 17.08	33.9	:	Ismenius Cavus
 -58.16	-3.91	:	Juventae Cavi
 -98.6	-10.4	:	Layl Cavus
 -98.1	-11.2	:	Malam Cavus
 -96.9	-11.9	:	Nat Cavus
--96.7	-13.4	:	Noc Cavus			
+-96.7	-13.4	:	Noc Cavus
 -45.97	-52.57	:	Octantis Cavi
 78.9	-3.86	:	Oenotria Cavi
-182.23	85.06	:	Olympia Cavi			
+-177.77	85.06	:	Olympia Cavi
 -55.04	-9.89	:	Ophir Cavus
--0.52	37.41	:	Oxus Cavus			
-95.43	-29.61	:	Peraea Cavus			
--150.35	77.55	:	Scandia Cavi			
+-0.52	37.41	:	Oxus Cavus
+95.43	-29.61	:	Peraea Cavus
+-150.35	77.55	:	Scandia Cavi
 -6.3	-72.2	:	Sisyphi Cavi
 1.39	84.76	:	Tenuis Cavus
-;155.5	-74.32	:	[Ultimi Cavi]			;dropped 1984
+;155.5	-74.32	:	[Ultimi Cavi]
 -96.3	-11.2	:	Usiku Cavus

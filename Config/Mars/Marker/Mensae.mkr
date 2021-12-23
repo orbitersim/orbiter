@@ -1,10 +1,16 @@
+;Mensa - mesa, like a flat-topped mountain
+
 BEGIN_HEADER
 InitialState on
 ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-:Updated 23 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 -75.6	81.17	:	Abalos Mensa
@@ -23,7 +29,7 @@ BEGIN_DATA
 -12.33	34.56	:	Cydonia Mensae
 23.92	45.11	:	Deuteronilus Mensae
 -42.16	-11.01	:	Eos Mensa
-;147.3	36.18	:	[Galaxias Mensae]			;dropped, feature is part of Galaxias Colles
+147.3	36.18	:	[Galaxias Mensae]
 -48.75	-7.23	:	Ganges Mensa
 -76.78	-1.02	:	Hebes Mensa
 -75.32	-8.6	:	Ius Mensa
@@ -44,5 +50,7 @@ BEGIN_DATA
 -68.22	24.64	:	Sacra Mensa
 -71.59	27.94	:	Tempe Mensa
 -92.96	81.13	:	Tenuis Mensa
+109.57	24.81	:	Wenjiashi Mensa
 171.98	-11.62	:	Zephyria Mensae
+
 

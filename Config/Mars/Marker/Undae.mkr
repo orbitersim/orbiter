@@ -1,15 +1,22 @@
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+;Undae - field of dunes
+
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 25 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 -87.5	78.52	:	Abalos Undae
--50.35	73.06	:	Aspledon Undae			
--49.49	79.96	:	Hyperboreae Unda
--66.21	-49.66	:	Ogygis Undae			
+-50.35	73.06	:	Aspledon Undae
+-49.49	79.96	:	Hyperboreae Undae
+-66.21	-49.66	:	Ogygis Undae
 178.48	81.16	:	Olympia Undae
--62.72	75.55	:	Siton Undae			
+-62.72	75.55	:	Siton Undae
+	

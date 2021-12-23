@@ -1,10 +1,16 @@
+;Chasmata - Deep, elongated, steep-sided depression
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 24 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
 -119.35	-7.47	:	Arsia Chasmata
@@ -30,6 +36,7 @@ BEGIN_DATA
 -72.35	-4	:	Ophir Chasma
 -111.02	2.73	:	Pavonis Chasma
 141.39	-82.66	:	Promethei Chasma
-;127.5	-70.79	:	[Thyles Chasma]			;name changed to Thyles Rupes
+;127.5	-70.79	:	[Thyles Chasma]
 -84.29	-4.6	:	Tithonium Chasma
 151.37	-81.1	:	Ultimum Chasma
+

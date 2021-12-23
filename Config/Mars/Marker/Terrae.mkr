@@ -1,21 +1,27 @@
+;Terrae - tile-like, polygonal terrain
+
 BEGIN_HEADER
 InitialState on
-ColourIdx 4
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+
 END_HEADER
 
 ;Source: https://planetarynames.wr.usgs.gov
-;Updated 25 November 2021
+;Updated 22 December 2021
 
 BEGIN_DATA
--97.05	-60.2	:	Aonia Terra			
-5.72	21.25	:	Arabia Terra			
--24.92	-1.85	:	Margaritifer Terra			
--5.16	-50.41	:	Noachis Terra			
-97	-64.37	:	Promethei Terra			
--70.61	38.69	:	Tempe Terra			
-147.75	-32.68	:	Terra Cimmeria			
-4	-7.12	:	[Terra Meridiani]			
-51.3	2.72	:	Terra Sabaea			
--154.15	-39.49	:	Terra Sirenum			
-88.84	-11.9	:	Tyrrhena Terra			
--48.05	1.6	:	Xanthe Terra			
+-97.05	-60.2	:	Aonia Terra
+5.72	21.25	:	Arabia Terra
+-24.92	-1.85	:	Margaritifer Terra
+-5.16	-50.41	:	Noachis Terra
+97	-64.37	:	Promethei Terra
+-70.61	38.69	:	Tempe Terra
+147.75	-32.68	:	Terra Cimmeria
+;4	-7.12	:	[Terra Meridiani]
+51.3	2.72	:	Terra Sabaea
+-154.15	-39.49	:	Terra Sirenum
+88.84	-11.9	:	Tyrrhena Terra
+-48.05	1.6	:	Xanthe Terra
