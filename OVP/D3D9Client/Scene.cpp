@@ -2805,7 +2805,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	// render vessel shadows
 	VOBJREC *pv;
 	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive() && !pv->vobj->IsVisible()) continue;
+		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible()) continue;
 		if (oapiGetObjectType(pv->vobj->Object()) == OBJTP_VESSEL)
 			((vVessel*)(pv->vobj))->RenderGroundShadow(pDevice, hPlanet, depth);
 	}
