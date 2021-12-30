@@ -77,7 +77,7 @@ bool TransxMFD::Update (Sketchpad *sketchpad)
 	
 	if (debug!=0)
 	{
-		char buffer[20];
+		char buffer[20]="";
 
 		int length=sprintf(buffer,"Debug:%g",debug);
 		sketchpad->Text(0, linespacing*22, buffer, length);

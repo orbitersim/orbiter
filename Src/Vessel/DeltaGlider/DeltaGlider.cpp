@@ -1156,7 +1156,7 @@ void DeltaGlider::clbkSaveState (FILEHANDLE scn)
 	// Write custom parameters
 	for (i = 0; i < 4; i++)
 		if (psngr[i]) {
-			sprintf (cbuf, "%d", i+1);
+			snprintf (cbuf, sizeof(cbuf) - 1, "%d", i+1);
 			for (++i; i < 4; i++)
 				if (psngr[i]) sprintf (cbuf+strlen(cbuf), " %d", i+1);
 			oapiWriteScenario_string (scn, "PSNGR", cbuf);
@@ -1169,7 +1169,7 @@ void DeltaGlider::clbkSaveState (FILEHANDLE scn)
 	}
 	for (i = 0; i < 8; i++)
 		if (beacon[i].active) {
-			sprintf (cbuf, "%d %d %d %d", beacon[0].active, beacon[3].active, beacon[5].active, beacon[7].active);
+			snprintf (cbuf, sizeof(cbuf) - 1, "%d %d %d %d", beacon[0].active, beacon[3].active, beacon[5].active, beacon[7].active);
 			oapiWriteScenario_string (scn, "LIGHTS", cbuf);
 			break;
 		}
@@ -1658,11 +1658,11 @@ void UpdateDamage (HWND hTab, DeltaGlider *dg)
 	char cbuf[256];
 
 	i = (int)(dg->lwingstatus*100.0+0.5);
-	sprintf (cbuf, "%d %%", i);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%d %%", i);
 	SetWindowText (GetDlgItem (hTab, IDC_LEFTWING_STATUS), cbuf);
 	oapiSetGaugePos (GetDlgItem (hTab, IDC_LEFTWING_SLIDER), i);
 	i = (int)(dg->rwingstatus*100.0+0.5);
-	sprintf (cbuf, "%d %%", i);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%d %%", i);
 	SetWindowText (GetDlgItem (hTab, IDC_RIGHTWING_STATUS), cbuf);
 	oapiSetGaugePos (GetDlgItem (hTab, IDC_RIGHTWING_SLIDER), i);
 }
@@ -1747,7 +1747,7 @@ INT_PTR CALLBACK EdPg2Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		dg = (DeltaGlider*)oapiGetVesselInterface ((OBJHANDLE)lParam);
 		for (i = 0; i < 4; i++)
 			SendDlgItemMessage (hTab, IDC_CHECK1+i, BM_SETCHECK, dg->psngr[i] ? BST_CHECKED : BST_UNCHECKED, 0);
-		sprintf (cbuf, "%0.2f kg", dg->GetMass());
+		snprintf (cbuf, sizeof(cbuf) - 1, "%0.2f kg", dg->GetMass());
 		SetWindowText (GetDlgItem (hTab, IDC_MASS), cbuf);
 		} break;
 	case WM_COMMAND:
@@ -1762,7 +1762,7 @@ INT_PTR CALLBACK EdPg2Proc (HWND hTab, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			dg->psngr[LOWORD(wParam)-IDC_CHECK1] = (i ? true:false);
 			dg->SetPassengerVisuals();
 			dg->SetEmptyMass();
-			sprintf (cbuf, "%0.2f kg", dg->GetMass());
+			snprintf (cbuf, sizeof(cbuf) - 1, "%0.2f kg", dg->GetMass());
 			SetWindowText (GetDlgItem (hTab, IDC_MASS), cbuf);
 			} break;
 		}
@@ -2052,9 +2052,9 @@ void UpdateDamageDialog (DeltaGlider *dg, HWND hWnd)
 	if (!hWnd) return;
 
 	char cbuf[16];
-	sprintf (cbuf, "%0.0f %%", dg->lwingstatus*100.0);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%0.0f %%", dg->lwingstatus*100.0);
 	SetWindowText (GetDlgItem (hWnd, IDC_LEFTWING_STATUS), cbuf);
-	sprintf (cbuf, "%0.0f %%", dg->rwingstatus*100.0);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%0.0f %%", dg->rwingstatus*100.0);
 	SetWindowText (GetDlgItem (hWnd, IDC_RIGHTWING_STATUS), cbuf);
 }
 #endif

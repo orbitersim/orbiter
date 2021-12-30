@@ -844,46 +844,46 @@ bool CoolantLoopDisplay::Redraw ()
 	upt = t + 0.5;
 
 	char cbuf[16];
-	sprintf (cbuf, "%5.2lf", component->node[CoolantLoop::PUMP].pumprate);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.2lf", component->node[CoolantLoop::PUMP].pumprate);
 	BlitReadout (0, 67, 78, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->Tref_tgt);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->Tref_tgt);
 	BlitReadout (1, 67, 227, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::EXCHANGER_CABIN].T0);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::EXCHANGER_CABIN].T0);
 	BlitReadout (2, 67, 200, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::EXCHANGER_CABIN].T1);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::EXCHANGER_CABIN].T1);
 	BlitReadout (3, 67, 149, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::EXCHANGER_CABIN].cprm->T);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::EXCHANGER_CABIN].cprm->T);
 	BlitReadout (4, 67, 178, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::EXCHANGER_AVIONICSCOLDPLATE].T1);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::EXCHANGER_AVIONICSCOLDPLATE].T1);
 	BlitReadout (5, 67, 98, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::EXCHANGER_RADIATOR].T1);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::EXCHANGER_RADIATOR].T1);
 	BlitReadout (6, 238, 113, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::MERGER_WINGDISTRIBUTE].T1);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::MERGER_WINGDISTRIBUTE].T1);
 	BlitReadout (7, 238, 189, cbuf);
 
-	sprintf (cbuf, "%5.1lf", component->node[CoolantLoop::MERGER_WINGBYPASS].T1);
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", component->node[CoolantLoop::MERGER_WINGBYPASS].T1);
 	BlitReadout (8, 238, 211, cbuf);
 
-	sprintf (cbuf, "%5.1lf", 0.5*(component->node[CoolantLoop::EXCHANGER_PROPRWING].cprm->T+component->node[CoolantLoop::EXCHANGER_PROPLWING].cprm->T));
+	snprintf (cbuf, sizeof(cbuf) - 1, "%5.1lf", 0.5*(component->node[CoolantLoop::EXCHANGER_PROPRWING].cprm->T+component->node[CoolantLoop::EXCHANGER_PROPLWING].cprm->T));
 	BlitReadout (10, 238, 169, cbuf);
 
-	sprintf (cbuf, "%4.2lf", component->node[CoolantLoop::SPLITTER_WINGBYPASS].Flowrate(&component->node[CoolantLoop::MERGER_WINGBYPASS]));
+	snprintf (cbuf, sizeof(cbuf) - 1, "%4.2lf", component->node[CoolantLoop::SPLITTER_WINGBYPASS].Flowrate(&component->node[CoolantLoop::MERGER_WINGBYPASS]));
 	BlitReadout (11, 167, 125, cbuf, 4);
 
-	sprintf (cbuf, "%4.2lf", component->node[CoolantLoop::SPLITTER_WINGBYPASS].Flowrate(&component->node[CoolantLoop::SPLITTER_WINGDISTRIBUTE]));
+	snprintf (cbuf, sizeof(cbuf) - 1, "%4.2lf", component->node[CoolantLoop::SPLITTER_WINGBYPASS].Flowrate(&component->node[CoolantLoop::SPLITTER_WINGDISTRIBUTE]));
 	BlitReadout (12, 202, 125, cbuf, 4);
 
-	sprintf (cbuf, "%4.2lf", component->node[CoolantLoop::SPLITTER_HEATSINKBYPASS].Flowrate(&component->node[CoolantLoop::MERGER_HEATSINKBYPASS]));
+	snprintf (cbuf, sizeof(cbuf) - 1, "%4.2lf", component->node[CoolantLoop::SPLITTER_HEATSINKBYPASS].Flowrate(&component->node[CoolantLoop::MERGER_HEATSINKBYPASS]));
 	BlitReadout (13, 145, 60, cbuf, 4);
 
-	sprintf (cbuf, "%4.2lf", component->node[CoolantLoop::SPLITTER_HEATSINKBYPASS].Flowrate(&component->node[CoolantLoop::EXCHANGER_RADIATOR]));
+	snprintf (cbuf, sizeof(cbuf) - 1, "%4.2lf", component->node[CoolantLoop::SPLITTER_HEATSINKBYPASS].Flowrate(&component->node[CoolantLoop::EXCHANGER_RADIATOR]));
 	BlitReadout (14, 180, 60, cbuf, 4);
 
 	return false;

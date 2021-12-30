@@ -616,7 +616,7 @@ private:
 	Topo			 tCurrent;
 
 
-	WORD vI, iI;
+	WORD vI = 0, iI = 0;
 	mutable D3DXMATRIX mVP;
 	D3DXMATRIX mV, mP, mW, mO;
 	D3DXMATRIX mVOrig, mPOrig;
