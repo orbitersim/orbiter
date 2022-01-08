@@ -218,7 +218,7 @@ void Instrument_OSync::UpdateDraw (oapi::Sketchpad *skp)
 
 	// find best match
 	double mindt = 1e10;
-	int mini, minj;
+	int mini = 0, minj = 0;
 	for (i = 0; i < norbit; i++) {
 		double t0 = dt0 + i*T0;
 		for (j = 0; j < norbit; j++) {

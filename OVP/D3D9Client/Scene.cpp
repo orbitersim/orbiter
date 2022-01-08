@@ -942,7 +942,7 @@ void Scene::UpdateCamVis()
 
 		VOBJREC *pv = NULL;
 		for (pv = vobjFirst; pv; pv = pv->next) {
-			if (!pv->vobj->IsActive()) continue;
+			if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetScene()->nLights < 1) continue;
 			OBJHANDLE hObj = pv->vobj->Object();
 			if (oapiGetObjectType (hObj) == OBJTP_VESSEL) {
 				VESSEL *vessel = oapiGetVesselInterface (hObj);
@@ -1032,6 +1032,7 @@ void Scene::RenderMainScene()
 	// Update Vessel Animations
 	//
 	for (VOBJREC *pv = vobjFirst; pv; pv = pv->next) {
+		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetMeshCount() < 1) continue;
 		if (pv->type == OBJTP_VESSEL) {
 			vVessel *vv = (vVessel *)pv->vobj;
 			vv->UpdateAnimations();
@@ -1758,8 +1759,7 @@ void Scene::RenderMainScene()
 	// render exhausts
 	//
 	for (pv=vobjFirst; pv; pv=pv->next) {
-		if (!pv->vobj->IsActive()) continue;
-		if (!pv->vobj->IsVisible()) continue;
+		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible() || pv->vobj->GetMeshCount() < 1) continue;
 		OBJHANDLE hObj = pv->vobj->Object();
 		if (oapiGetObjectType(hObj) == OBJTP_VESSEL) {
 			((vVessel*)pv->vobj)->RenderExhaust();
@@ -2805,7 +2805,7 @@ void Scene::RenderVesselShadows (OBJHANDLE hPlanet, float depth) const
 	// render vessel shadows
 	VOBJREC *pv;
 	for (pv = vobjFirst; pv; pv = pv->next) {
-		if (!pv->vobj->IsActive()) continue;
+		if (!pv->vobj->IsActive() || !pv->vobj->IsVisible()) continue;
 		if (oapiGetObjectType(pv->vobj->Object()) == OBJTP_VESSEL)
 			((vVessel*)(pv->vobj))->RenderGroundShadow(pDevice, hPlanet, depth);
 	}

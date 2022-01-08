@@ -248,7 +248,7 @@ bool vVessel::Update(bool bMainScene)
 {
 	_TRACE;
 
-	if (!active) return false;
+	if (!active || nmesh < 1) return false;
 
 	vObject::Update(bMainScene);
 
@@ -982,6 +982,7 @@ bool vVessel::RenderExhaust()
 //
 void vVessel::RenderBeacons(LPDIRECT3DDEVICE9 dev)
 {
+	if (nmesh < 1) return;
 	DWORD idx = 0;
 	const BEACONLIGHTSPEC *bls = vessel->GetBeacon(idx);
 	if (!bls) return; // nothing to do
@@ -1735,7 +1736,7 @@ void vVessel::AnimateComponent (ANIMATIONCOMP *comp, const D3DXMATRIX &T)
 void vVessel::RenderReentry(LPDIRECT3DDEVICE9 dev)
 {
 
-	if (defreentrytex==NULL) return;
+	if (defreentrytex == NULL || nmesh < 1) return;
 
 	double p = vessel->GetAtmDensity();
 	double v = vessel->GetAirspeed();

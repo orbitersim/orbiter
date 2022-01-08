@@ -761,7 +761,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 	calculate(&targetvel);
 	int wpos=0;
 	int hpos=linespacing;
-	char buffer[20];
+	char buffer[20]="";
 	OrbitElements plan;
 	if (planpointer!=NULL)
 	{
@@ -817,7 +817,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 		double rvel=graph.vectorpointdisplay(sketchpad, targetvel-craftvel, state->GetMFDpointer(), pV, false);
 		TextShow(sketchpad,"Delta V: ",0,18*linespacing,rvel);
 		TextShow(sketchpad,"T to Mnvre ",0,19*linespacing,timeoffset);
-		TextShow(sketchpad,"Begin Burn",0,20*linespacing,GetBurnStart(pV, timeoffset, rvel));
+		TextShow(sketchpad,"Begin Burn ",0,20*linespacing,GetBurnStart(pV, timeoffset, rvel));
 	}
 	else
 	{
@@ -912,7 +912,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				//Describe targeting quality
 				int hpos=8*linespacing;
 				int wpos=0;
-				int len=sprintf(buffer, "Cl. App. (rough)");
+				int len=snprintf(buffer, sizeof(buffer) - 1, "Cl. App. (rough)");
 				sketchpad->Text(wpos, hpos, buffer, len);
 				hpos+=linespacing;
 				TextShow(sketchpad, " ", wpos, hpos, length(craftpos-targetpos));
@@ -923,7 +923,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				hpos+=linespacing;
 				double intercepttime=primary.gettimeintercept();
 				double arrmjd=oapiTime2MJD(intercepttime);
-				len=sprintf(buffer,"Enc. MJD %.4f", arrmjd);
+				len=snprintf(buffer, sizeof(buffer) - 1, "Enc. MJD %.4f", arrmjd);
 				sketchpad->Text(wpos, hpos, buffer, len);
 			}
 		}
@@ -944,11 +944,11 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				}
 				hpos+=linespacing;
 				char buffer[20];
-				int length=sprintf(buffer,"Pe MJD:   %.4f",(craft.getpedeltatime()+craft.gettimestamp())/SECONDS_PER_DAY+simstartMJD);
+				int length=snprintf(buffer, sizeof(buffer) - 1, "Pe MJD:   %.4f",(craft.getpedeltatime()+craft.gettimestamp())/SECONDS_PER_DAY+simstartMJD);
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;
 				VECTOR3 south = {0, -1, 0};
-				length = sprintf(buffer, "Inc:      %.4g°", 180/PI*acos(cosangle(south, craft.getplanevector())));
+				length = snprintf(buffer, sizeof(buffer) - 1, "Inc:      %.4g°", 180/PI*acos(cosangle(south, craft.getplanevector())));
 				sketchpad->Text(wpos,hpos,buffer, length);
 				hpos+=linespacing;
 			}
@@ -957,7 +957,7 @@ void basefunction::doupdate(Sketchpad *sketchpad,int tw, int th,int viewmode)
 				TextShow(sketchpad,"Hyp PeD ",wpos,hpos,hypormaj.getpedistance());
 				hpos+=linespacing;
 				double timeatped=(hypormaj.gettimestamp()+hypormaj.getpedeltatime())/SECONDS_PER_DAY+simstartMJD;
-				int length=sprintf(buffer,"H. Pe MJD %.2f",timeatped);
+				int length=snprintf(buffer, sizeof(buffer) - 1, "H. Pe MJD %.2f", timeatped);
 				sketchpad->Text(wpos,hpos,buffer,length);
 			}
 		}

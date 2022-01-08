@@ -436,7 +436,7 @@ void slingshot::wordupdate(Sketchpad *sketchpad, int width, int height, basefunc
 		pos+=linespacing;
 		OBJHANDLE hcraft=base->gethcraft();
 		VESSEL *pV=oapiGetVesselInterface(hcraft);
-		TextShow(sketchpad,"Begin Burn",0,pos,GetBurnStart(pV, timetope, (outplanpevel-craftreqvel)));
+		TextShow(sketchpad,"Begin Burn:",0,pos,GetBurnStart(pV, timetope, (outplanpevel-craftreqvel)));
 		pos+=linespacing;
 	}
 }
