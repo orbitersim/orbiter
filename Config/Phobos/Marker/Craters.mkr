@@ -1,1 +1,32 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 4
+
+END_HEADER
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 4 January 2022
+
+BEGIN_DATA
+-91	60	:	Clustril
+-179	-39	:	D'Arrest
+-92	36.5	:	Drunlo
+10	60	:	Flimnap
+165	81	:	Grildrig
+-163	62	:	Gulliver
+150	-80	:	Hall
+-54	-11	:	Limtoc
+63	-7	:	Öpik
+-39	41	:	Reldresal
+177	53	:	Roche
+-154	-27.5	:	Sharpless
+112	24	:	Shklovsky
+40	52.5	:	Skyresh
+-49	1	:	Stickney
+-153	-9	:	Todd
+-132	-1	:	Wendell
 

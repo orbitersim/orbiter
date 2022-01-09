@@ -1,0 +1,17 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 3
+Size 0.5
+DistanceFactor 4
+
+END_HEADER
+
+;Dorsum, dorsa (Ridge)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 4 January 2022
+
+BEGIN_DATA
+4	-45	:	Kepler Dorsum
+		
