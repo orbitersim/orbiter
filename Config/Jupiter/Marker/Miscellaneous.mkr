@@ -1,1 +1,14 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 6
+Size 0.5
+DistanceFactor 1
+END_HEADER
 
+; Miscellaneous labels
+
+BEGIN_DATA
+
++0 +90                  : North Pole
++0 -90                  : South Pole
