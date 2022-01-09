@@ -1,1 +1,25 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+-130.3	4.5	:	Brabo
+-9.5	31.9	:	Cendrillon
+50	-31.2	:	Kibidango
+157.8	0.4	:	Kintaro
+-26.5	-1.5	:	Kolobok
+51.9	-12.5	:	Momotaro
+92.9	-8.1	:	Urashima
+
+
 

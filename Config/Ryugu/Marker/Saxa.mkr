@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Saxum (Boulder or rock)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 4 January 2022
+
+BEGIN_DATA
+0	-5.5	:	Catafo Saxum
+101.1	-32	:	Ejima Saxum
+-85.6	-69.8	:	Otohime Saxum
+
+
