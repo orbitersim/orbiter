@@ -1,0 +1,19 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Cryptic ringed features
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 
+
+BEGIN_DATA
+-35.6	-48.5	:	Adlinda
+-139.9	32.2	:	Asgard
+-134	45	:	Utgard
+-56	14.7	:	Valhalla
+		

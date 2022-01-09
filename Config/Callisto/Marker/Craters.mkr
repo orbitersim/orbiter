@@ -1,0 +1,161 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater - circular depression, likely impact origin
+
+;Source: https://planetarynames.wr.usgs.gov/Page/MERCURY/target
+;Updated 2 January 2022
+
+
+
+BEGIN_DATA
+-79.7	75.5	:	Adal
+-103.8	-45.8	:	Aegir
+-82.4	-47.7	:	Agloolik
+-10.9	43.2	:	Ägröi
+-102.4	41.4	:	Ahti
+-101.4	22.7	:	Ajleke
+41.3	72.6	:	Akycha
+137.3	-9.9	:	Alfr
+-55.9	59	:	Áli
+-0.5	44	:	Ánarr
+;-8.2	50.5	:	[Aningan]
+-67.5	-85.6	:	Arcas
+35.9	51.8	:	Askr
+-80.6	-30.9	:	Audr
+-64.5	-80.9	:	Austri
+-178.2	35.4	:	Aziren
+-11.7	28.9	:	Balkr
+-70.5	-31.5	:	Barri
+-20	49.1	:	Bavörr
+-80.2	62.6	:	Beli
+-74.1	-53.6	:	Biflindi
+-60.7	75.5	:	Bragi
+-19	28.8	:	Brami
+154.4	-24.2	:	Bran
+36.1	22.3	:	Buga
+-45.5	-37.5	:	Buri
+-134.5	42.7	:	Burr
+-73.3	58.5	:	Dag
+-76.9	62.5	:	Danr
+-166.2	10.2	:	Debegey
+-50.5	73	:	Dia
+-141.4	30.6	:	Doh
+-34.8	80	:	Dryops
+-89.1	67	:	Durinn
+-35.9	33.9	:	Egdir
+-176.6	42.5	:	Egres
+-1.3	66.8	:	Erlik
+-12.6	56.6	:	Fadir
+10.3	64.2	:	Fili
+-4.3	15.5	:	Finnr
+8.3	79.8	:	Freki
+-139.9	68.4	:	Frodi
+-108.1	74	:	Fulla
+-35.3	60.1	:	Fulnir
+-63.6	-80.5	:	Gandalfr
+6.2	66.7	:	Geri
+-52.1	-85.3	:	Ginandi
+-34.6	57.2	:	Gisl
+115	49	:	Gloi
+40.3	57.3	:	Göll
+-114.1	60	:	Göndul
+145.4	41.5	:	Grimr
+-104.7	64.6	:	Gunnr
+-48.8	63.7	:	Gymir
+-131.9	76.2	:	Hábrok
+44.9	25	:	Haki
+2	-3.5	:	Hár
+3	-63.5	:	Heimdall
+-23.4	64.5	:	Hepti
+-171.5	63.1	:	Hijsi
+-89.2	69.1	:	Hödr
+99.1	-33.7	:	Hoenir
+-4.8	-11.8	:	Högni
+-108.2	43.9	:	Höldr
+44	5.6	:	Igaluk
+-167.2	-29.9	:	Ilma
+38.6	-5.8	:	Ivarr
+-82.7	-38.6	:	Jalkr
+-118	58.9	:	Jumal
+-11.8	65.7	:	Jumo
+-116.3	48.2	:	Kári
+29.4	56.4	:	Karl
+-90.9	-76.8	:	Keelut
+-121.9	62.9	:	Kul'
+40.1	-25.2	:	Lempo
+-162.3	49.1	:	Ljekio
+89.9	-50.8	:	Lodurr
+-22.3	-56.5	:	Lofn
+145.7	-3.6	:	Loni
+36.7	65.3	:	Losy
+-5.9	-45.4	:	Lycaon
+-95.3	30.7	:	Maderatcha
+-75.2	64.1	:	Mera
+-53.2	32.6	:	Mimir
+-103.7	57.5	:	Mitsina
+-119.3	66.4	:	Modi
+-69.7	-56.4	:	Nakki
+29	57	:	Nama
+-46	-1.5	:	Nár
+-56.4	-16.9	:	Nerrivik
+-94.9	66.4	:	Nidi
+-164.3	31.4	:	Nirkes
+-132.6	16.7	:	Njord
+16.4	45.2	:	Nori
+-112.8	54.6	:	Norov-Ava
+87.5	62.3	:	Nuada
+-92.9	-50.1	:	Numi-Torum
+-3.9	-62.8	:	Nyctimus
+-63.5	-47.8	:	Oluksak
+-116.9	42.3	:	Omol'
+-47.7	-46.7	:	Orestheus
+91	57.5	:	Oski
+-103.9	61.5	:	Ottar
+-5.4	18.3	:	Pekko
+-53.9	-71.9	:	Randver
+-96.5	-66	:	Reginleif
+-90.1	39.8	:	Reginn
+-54.3	-50.8	:	Reifnir
+115.4	70.8	:	Rigr
+-106.1	53.6	:	Rongoteus
+-108.4	27.2	:	Rota
+34.1	0.6	:	Saga
+-53.5	-3.3	:	Sarakka
+-25.4	55.5	:	Seqinek
+-16.2	53.7	:	Sholmo
+-29	35.9	:	Sigyn
+-31.9	-49.7	:	Skeggold
+44.4	55.6	:	Sköll
+-37.9	10	:	Skuld
+-135.6	55.9	:	Sudri
+34.8	67.1	:	Sumbur
+-108.6	30.1	:	Tapio
+-62	-80.3	:	Thekkr
+-66.7	-31.9	:	Thorir
+4.5	-2.3	:	Tindr
+-100.3	27.6	:	Tontu
+-127.6	28.8	:	Tornarsuk
+-166.5	44.8	:	Tyll
+127.5	71.1	:	Tyn
+-42.2	-49.5	:	Uksakka
+113	-1.3	:	Valfödr
+34.7	9.7	:	Vali
+-158.5	39.5	:	Vanapagan
+-95.5	33.3	:	Veralden
+-52.5	45.3	:	Vestri
+166.6	12.1	:	Vidarr
+144.1	32.6	:	Vili
+10.6	-22.1	:	Vitr
+-170.3	21.5	:	Vu-Murt
+-102.3	31.6	:	Vutash
+-99.7	51.5	:	Ymir
+-85.7	-54.7	:	Yuryung
+
+
+
