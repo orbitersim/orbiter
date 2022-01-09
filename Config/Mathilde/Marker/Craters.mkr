@@ -1,1 +1,41 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+-60.9	9.2	:	Aachen
+168.4	14.6	:	Baganur
+112.8	19	:	Benham
+99.2	18.9	:	Clackmannan
+96.2	73	:	Damodar
+-151.6	-15.3	:	Enugu
+173.1	-66.2	:	Ishikari
+-177.3	42.1	:	Jerada
+103.5	-12.3	:	Jixi
+-123.7	-7.7	:	Kalimantan
+-98.4	33.5	:	Karoo
+-88.9	-45.9	:	Kuznetsk
+-142.5	48.1	:	Lorraine
+-156.8	55.3	:	Lublin
+-151.5	44.6	:	Maritsa
+142.7	27.3	:	Matanuska
+-176.1	57.7	:	Mulgildie
+173.7	38.7	:	Oaxaca
+-164.5	23.7	:	Otago
+-165.5	45.6	:	Quetta
+-104.7	-13.5	:	Similkameen
+-142.7	-28.1	:	Teruel
+-30.9	-39.5	:	Zulia
+
+
 
