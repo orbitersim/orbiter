@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Mare, maria (“Sea”; on the Moon, low albedo, relatively smooth plain, 
+;generally of large extent; on Mars, 
+;dark albedo areas of no known geological significance; on Titan, 
+;large expanses of dark materials thought to be liquid hydrocarbons)
+
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+50	68	:	Kraken Mare
+112.1	79.7	:	Ligeia Mare
+20.3	85.1	:	Punga Mare

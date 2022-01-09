@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fretum, freta (Strait, a narrow passage of liquid connecting two larger areas of liquid)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+48.8	73	:	Bayta Fretum
+42.2	57.3	:	Hardin Fretum
+43.4	66	:	Seldon Fretum
+90.1	74.4	:	Trevize Fretum
+
+
+

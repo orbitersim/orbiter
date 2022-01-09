@@ -1,0 +1,21 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Collis, colles (Small hills or knobs)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;updated 4 January 2022
+
+BEGIN_DATA
+100	-7.5	:	Arwen Colles
+-38.56	-4.23	:	Bilbo Colles
+-153.8	4	:	Faramir Colles
+150.46	14.61	:	Gandalf Colles
+3.32	10	:	Handir Colles
+-151.3	11.86	:	Nimloth Colles
+

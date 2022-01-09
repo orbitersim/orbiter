@@ -1,0 +1,43 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 4
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Sinus, sinūs ("Bay"; small plain; on Titan, bays within seas or lakes of liquid hydrocarbons)
+
+;Source = https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+38	72.6	:	Arnar Sinus
+24.57	82.87	:	Avacha Sinus
+15.38	80.35	:	Baffin Sinus
+14.62	78.69	:	Boni Sinus
+23.56	81.36	:	Dingle Sinus
+39.5	82.9	:	Fagaloa Sinus
+64.7	64.9	:	Flensborg Sinus
+44.36	83.26	:	Fundy Sinus
+70.4	67.6	:	Gabes Sinus
+33.39	80.11	:	Genova Sinus
+56.2	56.8	:	Kumbaru Sinus
+43.12	67.19	:	Lulworth Sinus
+7.47	78.9	:	Maizuru Sinus
+13.9	79.29	:	Manza Sinus
+78.6	76.6	:	Moray Sinus
+108.8	74.8	:	Nicoya Sinus
+78	73.7	:	Okahu Sinus
+135.2	77.2	:	Patos Sinus
+118.9	82.4	:	Puget Sinus
+127.1	75.3	:	Rombaken Sinus
+37.5	82.42	:	Saldanha Sinus
+45.1	76.8	:	Skelton Sinus
+67.3	71.3	:	Trold Sinus
+44.78	82.55	:	Tumaco Sinus
+60.2	79.2	:	Tunu Sinus
+90	80.7	:	Wakasa Sinus
+35.9	58.2	:	Walvis Sinus
+
+		

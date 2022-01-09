@@ -1,0 +1,96 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Lacus, lacūs ("Lake" or small plain; on Titan, a "lake" or small, dark plain with discrete, sharp boundaries)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+-45.55	73.17	:	Abaya Lacus
+-55.6	85.1	:	Akmena Lacus
+123.6	65.9	:	Albano Lacus
+-128.9	76.8	:	Annecy Lacus
+-124.9	78.1	:	Arala Lacus
+121.2	69.3	:	Atitlán Lacus
+-87.5	82.9	:	Balaton Lacus
+-10.28	75.75	:	Bolsena Lacus
+-43.8	85.3	:	Brienz Lacus
+-129.6	76.4	:	Buada Lacus
+153.5	70.2	:	Cardiel Lacus
+130	69.8	:	Cayuga Lacus
+-131.3	75	:	Chilwa Lacus
+175.09	-79.55	:	Crveno Lacus
+-125	76.2	:	Dilolo Lacus
+-131.3	78.9	:	Dridzis Lacus
+-64.41	73.7	:	Feia Lacus
+-98	81.9	:	Fogo Lacus
+148.9	73.6	:	Freeman Lacus
+-103.1	72.3	:	Grasmere Lacus
+51.71	48.6	:	Hammar Lacus
+-103.6	76.6	:	Hlawga Lacus
+-137.2	76.1	:	Ihotry Lacus
+-111.8	71.1	:	Imogene Lacus
+24	73	:	Jingpo Lacus
+123.1	66.9	:	Junín Lacus
+-56.6	86.3	:	Karakul Lacus
+157.83	-86.3	:	Kayangan Lacus
+-121	87	:	Kivu Lacus
+-36.14	79.4	:	Koitere Lacus
+-26.1	74.8	:	Ladoga Lacus
+-125.7	75.5	:	Lagdo Lacus
+142.3	71	:	Lanao Lacus
+-88.2	81.3	:	Letas Lacus
+133.9	70.8	:	Logtak Lacus
+-97.53	78.32	:	Mackay Lacus
+-127.7	75.3	:	Maracaibo Lacus
+156.5	84.44	:	Müggel Lacus
+-126.3	74.8	:	Muzhwi Lacus
+-131.8	71.9	:	Mweru Lacus
+-135.28	78.19	:	Mývatn Lacus
+-32.16	81.11	:	Neagh Lacus
+-128.9	75.5	:	Negra Lacus
+138.1	71.8	:	Ohrid Lacus
+-122.2	78.7	:	Olomega Lacus
+-131.83	76.14	:	Oneida Lacus
+177	-72	:	Ontario Lacus
+-124	72.2	:	Phewa Lacus
+-135.7	73.1	:	Prespa Lacus
+-51.5	83.4	:	Qinghai Lacus
+-120.1	80.3	:	Quilotoa Lacus
+-129.3	74.2	:	Rannoch Lacus
+-123.5	79.8	:	Roca Lacus
+-134.8	74.8	:	Rukwa Lacus
+-105.2	71.5	:	Rwegura Lacus
+134.4	69.7	:	Sevan Lacus
+-166.37	-79.74	:	Shoji Lacus
+81.88	-41.52	:	Sionascaig Lacus
+-17.49	76.75	:	Sotonera Lacus
+-64.7	84.3	:	Sparrow Lacus
+-135.2	74.1	:	Suwa Lacus
+-53.6	81	:	Synevyr Lacus
+-132.6	72.7	:	Taupo Lacus
+-105.6	73.2	:	Tengiz Lacus
+-108.1	70.9	:	Toba Lacus
+115.8	71.4	:	Towada Lacus
+-65.3	81.3	:	Trichonida Lacus
+-162.41	-86.37	:	Tsomgo Lacus
+83.45	-39.27	:	Urmia Lacus
+114.3	69.6	:	Uvs Lacus
+136.9	70.4	:	Vänern Lacus
+-137.3	74.2	:	Van Lacus
+-125.7	72	:	Viedma Lacus
+-126	81.6	:	Waikare Lacus
+32.32	68.77	:	Weija Lacus
+-153.31	78.05	:	Winnipeg Lacus
+-72.9	82.3	:	Xolotlán Lacus
+-110.8	73	:	Yessey Lacus
+-54.1	78.1	:	Yojoa Lacus
+-132.2	73.4	:	Ypoa Lacus
+-106.9	72.4	:	Zaza Lacus
+-102.6	71.7	:	Zub Lacus

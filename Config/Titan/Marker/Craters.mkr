@@ -1,1 +1,29 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+159.7	25.8	:	Afekan
+-169.55	-34.74	:	Beag
+-10.4	25.53	:	Forseti
+14.9	40.3	:	Hano
+-65.4	14	:	Ksa
+-87.2	20.1	:	Menrva
+-44.6	11.6	:	Momoy
+165.14	0.07	:	Mystis
+161	7	:	Selk
+-16	11.3	:	Sinlap
+-140.9	24.3	:	Soi
+
+
 
