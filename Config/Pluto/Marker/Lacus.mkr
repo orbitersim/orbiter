@@ -1,0 +1,15 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Lacus, lacūs ("Lake" or small plain; on Titan, a "lake" or small, dark plain with discrete, sharp boundaries)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+151.95	36.44	:	Alcyonia Lacus

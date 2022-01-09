@@ -1,0 +1,26 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Mons, montes (Mountain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+156.01	33.99	:	Al-Idrisi Montes
+157.8	14.6	:	Baret Montes
+167.98	-24.17	:	Coleman Mons
+143.7	-26.04	:	Elcano Montes
+169.58	3.26	:	Hillary Montes
+176.79	-35.26	:	Piccard Mons
+146.44	-6.83	:	Pigafetta Montes
+164.33	-11.73	:	Tabei Montes
+177.38	-15.61	:	Tenzing Montes
+173.24	-21.36	:	Wright Mons
+160.57	19.01	:	Zheng He Montes
+

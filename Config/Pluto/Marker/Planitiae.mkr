@@ -1,0 +1,18 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 3
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Planitia, planitiae (Low plain)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+109.57	30.75	:	Lunokhod Planitia
+127.91	20.89	:	Ranger Planitia
+178.69	19.51	:	Sputnik Planitia
+

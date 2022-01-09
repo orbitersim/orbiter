@@ -1,0 +1,27 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Fossa - Long, narrow shallow depression
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+BEGIN_DATA
+129.26	0.19	:	Beatrice Fossa
+84.31	41	:	Djanggawul Fossae
+127.9	30.56	:	Dumuzi Fossa
+119.34	-8.63	:	Hermod Fossae
+129.29	33.05	:	Inanna Fossa
+122.07	-30.45	:	Kaknú Fossa
+-114.22	34.74	:	Mwindo Fossae
+-125.49	23.7	:	Sleipnir Fossa
+142.62	23.96	:	Uncama Fossa
+122.76	5.23	:	Virgil Fossae
+
+
+

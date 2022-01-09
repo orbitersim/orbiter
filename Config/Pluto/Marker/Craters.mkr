@@ -1,1 +1,30 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 4 January 2022
+
+
+BEGIN_DATA
+133.79	45.68	:	Burney
+150.54	15.24	:	Coughlin
+109.42	6.86	:	Edgeworth
+138.86	12.04	:	Elliot
+140.97	46.85	:	Hardaway
+141.58	23.82	:	Hardie
+94.56	27.85	:	Khare
+-147.08	28.39	:	Kiladze
+92.05	7.86	:	Oort
+135.99	77.8	:	Pulfrich
+-45.24	12.79	:	Simonelli
+155.23	-5.74	:	Zagar
+
+
 
