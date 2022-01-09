@@ -1,1 +1,37 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 1
+ShapeIdx 1
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Crater, craters (A circular depression)
+
+;Source: https://planetarynames.wr.usgs.gov/
+;Updated 3 January 2022
+
+
+BEGIN_DATA
+49	46	:	Bagacum
+-176	73	:	Basilia
+67	62	:	Bonna
+-149	52	:	Burdigala
+137	23	:	Florentia
+5	58	:	Gaudiaco
+117	11	:	Genua
+68	78	:	Gerunda
+0	37	:	Lauriacum
+-141	10	:	Lugdunum
+96	41	:	Massilia
+-179	43	:	Nicaea
+52	31	:	Patavium
+-117	13	:	Roma
+109	11	:	Salomacus
+37	32	:	Salona
+-32	39	:	Syracusae
+161	87	:	Toletum
+158	20	:	Turicum
+
+
 

@@ -1,0 +1,19 @@
+
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Labes - landslide debris
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+-27	70	:	Danuvius Labes
+-73	77	:	Gallicum Labes
+-75	63	:	Sarnus Labes
+
