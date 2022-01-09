@@ -1,0 +1,49 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 3
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+;Tholus, tholi (Small domical mountain or hill)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+150.47	18.87	:	Albor Tholus
+-80.04	-59.04	:	Aonia Tholus
+175.75	-17.64	:	Apollinaris Tholus
+;37	-58.7	:	[Australis Tholus]
+-124.38	2.52	:	Biblis Tholus
+-97.25	24	:	Ceraunius Tholus
+164.41	4.48	:	Cerberus Tholi
+;-41	-54.68	:	[Charitum Tholus]
+158.55	-34.59	:	Cimmeria Tholi
+-85.13	35.92	:	E. Mareotis Tholus
+150.24	32.12	:	Hecates Tholus
+138.72	-37.56	:	Hesperus Tholus
+;-15	71.8	:	[Iaxartes Tholus]
+-94.83	36.05	:	Issedon Tholus
+-117.41	18.2	:	Jovis Tholus
+;2	72.81	:	[Kison Tholus]
+110.13	24.69	:	Mohe Tholi
+-165.11	-40.48	:	Newton Tholus
+-74.95	-6.59	:	Nia Tholus
+67.35	9.15	:	Nili Tholus
+-86.21	36.38	:	N. Mareotis Tholus
+-98.2	-12.3	:	Noctis Tholus
+;-8	69.78	:	[Ortygia Tholus]
+-158.72	73.91	:	Scandia Tholi
+-80.03	-15.54	:	Sinai Tholus
+-144.79	-34.64	:	Sirenum Tholus
+-18.53	-75.68	:	Sisyphi Tholus
+-90.69	13.25	:	Tharsis Tholus
+-121.5	2.96	:	Ulysses Tholus
+-97.57	26.25	:	Uranius Tholus
+109.77	24.75	:	Wenjiashi Tholi
+-87.96	35.56	:	W. Mareotis Tholus
+109.86	25.16	:	Yaodian Tholus
+172.92	-19.75	:	Zephyria Tholus
+

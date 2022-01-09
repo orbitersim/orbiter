@@ -1,0 +1,22 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 4
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+Labes, labēs (Landslide)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+-71.46	-3.67	:	Baetis Labēs
+-75.99	-4.79	:	Candor Labes
+-75.73	-6.78	:	Ceti Labes
+-67.79	-11.82	:	Coprates Labes
+-78.46	-7.47	:	Ius Labes
+-71.7	-8.53	:	Melas Labes
+-68.28	-11.01	:	Ophir Labes
+

@@ -1,0 +1,15 @@
+BEGIN_HEADER
+InitialState on
+ColourIdx 5
+ShapeIdx 0
+Size 0.5
+DistanceFactor 1
+END_HEADER
+
+Macula, maculae (Dark spot, may be irregular)
+
+;Source: https://planetarynames.wr.usgs.gov
+;Updated 3 January 2022
+
+BEGIN_DATA
+-142.84	17.36	:	Olympus Maculae
